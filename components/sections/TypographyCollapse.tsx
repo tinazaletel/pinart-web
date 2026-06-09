@@ -243,6 +243,7 @@ export default function TypographyCollapse() {
       gsap.killTweensOf(revealPts);
       spans.forEach(s => { if (s) gsap.killTweensOf(s); });
       phase = 'idle';
+      triggered = false;
       window.dispatchEvent(new CustomEvent('pinart-lenis-start'));
       coverPts.fill(100);
       revealPts.fill(100);
@@ -302,6 +303,11 @@ export default function TypographyCollapse() {
         resetLetters();
       }
 
+      // Scroll gor čez sekcijo → resetiraj ink transition da se naslednjič znova zaigra
+      if (scrollingUp && triggered && rect.top >= window.innerHeight * 0.5) {
+        resetTransition();
+      }
+
       wasVisible = isVisible;
     };
 
@@ -317,6 +323,8 @@ export default function TypographyCollapse() {
         svgEl.style.pointerEvents = 'none';
       }
       revealSpans();
+      // Po Lenis scroll animaciji resetiraj triggered da se ink naslednjič znova zaigra
+      setTimeout(() => { triggered = false; }, 2000);
     };
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
