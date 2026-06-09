@@ -188,6 +188,16 @@ export default function TypographyCollapse() {
             onComplete: k === spans.length - 1 ? () => {
               measureBaselines();
               kicksEnabled = true;
+              // Auto-pokaži hint po 0.8s da uporabnik ve da lahko udari črke
+              if (hint && !coarse) {
+                setTimeout(() => {
+                  if (hasCollapsed) return;
+                  const sRect = section.getBoundingClientRect();
+                  hint.style.transform = `translate3d(${sRect.width * 0.52}px,${sRect.height * 0.55}px,0) rotate(-7deg)`;
+                  hint.style.opacity = '1';
+                  setTimeout(() => { hint.style.opacity = '0'; }, 2200);
+                }, 200);
+              }
             } : undefined,
           },
         );

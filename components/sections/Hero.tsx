@@ -126,7 +126,7 @@ export default function Hero() {
     });
     replay.style.opacity      = '0';
     replay.style.pointerEvents = 'none';
-    cue.style.opacity = window.matchMedia('(pointer: fine)').matches ? '1' : '0';
+    cue.style.opacity = '0';
 
     /* ── wait for Bodoni Moda ───────────────────────────────────────────── */
     try {
