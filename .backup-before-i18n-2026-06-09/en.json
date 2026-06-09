@@ -1,0 +1,361 @@
+{
+  "meta": {
+    "title": "Pinart — Ideas that stay",
+    "description": "A studio for creative direction, branding and digital experiences."
+  },
+  "nav": {
+    "home": "Home",
+    "work": "Work",
+    "services": "Services",
+    "about": "About",
+    "contact": "Contact",
+    "toggle": "SI"
+  },
+  "hero": {
+    "tagline": "Ideas that stay",
+    "cue": "click the drop",
+    "headlinePrimary": "IDEAS",
+    "headlineSecondary": "that move",
+    "headlineTertiary": "through",
+    "headlineQuat": "emotion",
+    "wordRest": "that move through emotions",
+    "finalL1": "WE CREATE IDEAS,",
+    "finalL2": "THAT STAY.",
+    "restart": "start over"
+  },
+  "typography": {
+    "words": ["DESIGN", "EMOTION", "STORY", "INTERACTION", "MOTION", "ATMOSPHERE"]
+  },
+  "services": {
+    "kicker": "Services",
+    "items": {
+      "direction": { "title": "Creative Direction", "desc": "Visual strategy and creative leadership for brands with character." },
+      "branding": { "title": "Branding", "desc": "Identity systems that carry meaning, memory, and emotion." },
+      "graphic": { "title": "Graphic Design", "desc": "Editorial layouts and visual communication for campaigns." },
+      "marketing": { "title": "Marketing", "desc": "Strategies and campaigns that connect brands with people and build recognition." },
+      "web": { "title": "Web Development", "desc": "Web experiences that combine story, motion, and precision." },
+      "ideas": { "title": "Developing Ideas", "desc": "Strategic development of concepts from first spark to execution." }
+    }
+  },
+  "projects": {
+    "kicker": "Featured Work",
+    "headline": "Work that builds feeling first.",
+    "intro": "Pinart brings together creative direction, design and the development of ideas into cohesive visual systems. It doesn't chase trends — it finds the tone that belongs to the brand.",
+    "moreWork": "More work"
+  },
+  "moreWork": {
+    "kicker": "More work",
+    "heading": "A wider view of the work.",
+    "intro": "A compact gallery of campaigns, brand systems, product visuals and digital experiences from the wider Pinart archive.",
+    "back": "Back to work",
+    "open": "Open work",
+    "close": "Close",
+    "items": {
+      "petrolPortal": {
+        "title": "Petrol Pay Portal",
+        "meta": "UX/UI · Loyalty",
+        "desc": "A card and loyalty portal interface shaped around onboarding, clarity and daily use."
+      },
+      "lucky7": {
+        "title": "Lucky 7",
+        "meta": "Product Design · Gaming",
+        "desc": "A visual direction for a digital lottery experience with a strong game-like atmosphere."
+      },
+      "isla": {
+        "title": "Isla Campaign",
+        "meta": "Creative Direction · Campaign",
+        "desc": "Campaign visuals built around a bold, playful product story and distinctive visual tone."
+      },
+      "pupaGlam": {
+        "title": "Pupa Glam",
+        "meta": "Branding · Identity",
+        "desc": "A soft visual identity system for a beauty-focused brand with a delicate handmade feeling."
+      },
+      "universum": {
+        "title": "Universum",
+        "meta": "Web Design · Travel",
+        "desc": "A digital travel experience designed around atmosphere, spacious imagery and clear booking flows."
+      },
+      "mollyLolly": {
+        "title": "Molly Lolly",
+        "meta": "Brand World · Product",
+        "desc": "A character-led brand world spanning story, product, photography and digital presentation."
+      },
+      "wishCard": {
+        "title": "Wish Card",
+        "meta": "Branding · Campaign",
+        "desc": "A bright card identity with campaign visuals and a recognizable graphic language."
+      },
+      "mbillsMini": {
+        "title": "mBills Mini",
+        "meta": "Campaign · Payment",
+        "desc": "A campaign visual for a payment product, combining playful product communication with clear brand cues."
+      },
+      "ribbonLips": {
+        "title": "Ribbon Lips",
+        "meta": "Branding · Hosiery",
+        "desc": "Visual language for a Slovenian hosiery brand — from logo to campaign visuals and packaging."
+      },
+      "karieraKnjiga": {
+        "title": "Kariera Book",
+        "meta": "Editorial · Print",
+        "desc": "Book design and production direction for a career publication."
+      },
+      "rokusKlett": {
+        "title": "Rokus Klett",
+        "meta": "Educational · Brand",
+        "desc": "Visual solutions for one of Slovenia's most recognised educational publishers."
+      },
+      "portalZnanja": {
+        "title": "Knowledge Portal",
+        "meta": "Web · Education",
+        "desc": "A learning platform with clear information architecture and a friendly UI."
+      },
+      "tapAndPay": {
+        "title": "Tap and Pay",
+        "meta": "Campaign · Payment",
+        "desc": "Poster and campaign visuals for a contactless payment solution."
+      },
+      "maxMorrison": {
+        "title": "Max Morrison",
+        "meta": "App · UI",
+        "desc": "User interface design for a mobile app with character."
+      },
+      "vseStoritve": {
+        "title": "Vse storitve",
+        "meta": "Branding · Marketing",
+        "desc": "Visual identity and marketing materials for a services portal — from roll-up to website."
+      },
+      "digitrajni": {
+        "title": "Digitrajni.si",
+        "meta": "Brand · Web · Campaign",
+        "desc": "Identity and visual language for a national digital literacy programme for teachers."
+      },
+      "chewieGreen": {
+        "title": "Chewie Green",
+        "meta": "Character · EU project",
+        "desc": "Character and visual campaign for EFSA — the European Food Safety Authority."
+      },
+      "sag": {
+        "title": "SAG",
+        "meta": "Branding · Identity",
+        "desc": "Corporate identity and visual language for SAG."
+      },
+      "izziRokus": {
+        "title": "Izzi Rokus Conference",
+        "meta": "Event · Branding",
+        "desc": "Identity and event materials for the Izzi Rokus education conference."
+      },
+      "combisafe": {
+        "title": "Combisafe",
+        "meta": "Web · Shopify",
+        "desc": "Shopify storefront setup and theme customization for Combisafe."
+      },
+      "kraljZara": {
+        "title": "Kralj žara",
+        "meta": "Editorial · Brand",
+        "desc": "Book and brochure for the grill-master brand Kralj žara — from concept to print."
+      },
+      "mdRevija": {
+        "title": "Career publications",
+        "meta": "Editorial · Print",
+        "desc": "Career magazine, brochures and publication design."
+      },
+      "petrolOglasi": {
+        "title": "Petrol ads",
+        "meta": "Campaigns · Print",
+        "desc": "Campaign visuals and posters for Petrol — from loyalty to card propositions."
+      },
+      "mbills": {
+        "title": "mBills",
+        "meta": "Web · Branding · Campaigns",
+        "desc": "Companion visuals — Mastercard card, portal and ads — from the long mBills partnership."
+      },
+      "appleWatch": {
+        "title": "Apple Watch · mBills",
+        "meta": "App · Wearable",
+        "desc": "mBills experience for Apple Watch — minimal UI for quick wrist payments."
+      },
+      "inovis": {
+        "title": "Inovis",
+        "meta": "Web · Brand",
+        "desc": "Website and visual identity for Inovis."
+      },
+      "cankarjevDom": {
+        "title": "Cankarjev dom",
+        "meta": "Print · Cards",
+        "desc": "Card design and printed materials for Cankarjev dom."
+      },
+      "familyFun": {
+        "title": "Family Fun",
+        "meta": "Brand · Logo",
+        "desc": "A warm and joyful identity for a family experiences brand."
+      },
+      "spaycy": {
+        "title": "Spaycy",
+        "meta": "Brand · Ghost card",
+        "desc": "Identity and advertising materials for the Spaycy ghost-card brand."
+      },
+      "memGame": {
+        "title": "Memory Game",
+        "meta": "Print · Game",
+        "desc": "Memory game design — from cards to packaging."
+      },
+      "blendedLearnings": {
+        "title": "Blended Learnings",
+        "meta": "Brand · Education",
+        "desc": "Visual language for an educational platform."
+      },
+      "vseVecGostiln": {
+        "title": "More good restaurants",
+        "meta": "Editorial · Book",
+        "desc": "A book featuring a selection of Slovenian restaurants — from design to print."
+      },
+      "logos": {
+        "title": "Logos",
+        "meta": "Branding · Identity",
+        "desc": "A selection of logos and marks for various clients — from medical services to tech companies."
+      }
+    }
+  },
+  "serviceDetail": {
+    "back": "Back to services",
+    "label": "Service",
+    "processLabel": "How I work",
+    "whyLabel": "Why me",
+    "workLabel": "From the archive",
+    "workTitle": "Projects that show how we work.",
+    "ctaLabel": "Let's talk",
+    "ctaTitle": "Ready to collaborate?",
+    "ctaButton": "Contact",
+
+    "direction": {
+      "lede": "Visual strategy and direction — from brand concept to consistent execution across every touchpoint.",
+      "processTitle": "Four steps — from idea to execution.",
+      "steps": {
+        "01": { "title": "Understand the brand", "desc": "A short, sharp brief that surfaces tone, ambition and milestones. I don't guess — I ask." },
+        "02": { "title": "Set the direction", "desc": "Strategy, mood, first visual language. Everything else follows from this." },
+        "03": { "title": "Lead the execution", "desc": "I work with a team (designers, photographers, developers) — as the conductor." },
+        "04": { "title": "Keep it consistent", "desc": "Brand book, systems, guidelines. So the brand works without me." }
+      },
+      "whyTitle": "Why trust me with creative direction?",
+      "reasons": {
+        "01": { "title": "I see the whole", "desc": "From logo to campaign copy — I think design and communication at once." },
+        "02": { "title": "I lead teams", "desc": "I work with developers, photographers and writers — projects run without translation loss." },
+        "03": { "title": "Lasting identity", "desc": "I don't chase trends. Every brand I've built still works today." }
+      }
+    },
+
+    "branding": {
+      "lede": "Identity systems — logo, palette, typography, voice and brand book that make a brand recognisable.",
+      "processTitle": "Branding isn't just a logo. It's a system.",
+      "steps": {
+        "01": { "title": "Understand the story", "desc": "Who are you? Who are you speaking to? Why will they remember you?" },
+        "02": { "title": "Build the mark", "desc": "Logo, palette, typography — brand DNA in a few elements." },
+        "03": { "title": "Extend the system", "desc": "How the brand performs on a business card, poster, screen, package." },
+        "04": { "title": "Pack it into a book", "desc": "Brand book or CGP — so the team can continue without me." }
+      },
+      "whyTitle": "Why branding with Pinart works.",
+      "reasons": {
+        "01": { "title": "System, not just a picture", "desc": "Logo is the start. The system is what keeps a brand recognisable for years." },
+        "02": { "title": "Collaborative", "desc": "The brand isn't built from my taste — it grows from our conversation." },
+        "03": { "title": "Print + digital + product", "desc": "Every brand thought across all media at once. Not separately per channel." }
+      }
+    },
+
+    "graphic": {
+      "lede": "Editorial layouts, visual communication, campaign visuals — design that carries content.",
+      "processTitle": "Design that doesn't overpower the message.",
+      "steps": {
+        "01": { "title": "Brief and content", "desc": "First I understand what I'm communicating, then I design." },
+        "02": { "title": "Sketches and grid", "desc": "Hierarchy, grid, typography — the foundation of the layout." },
+        "03": { "title": "Visual execution", "desc": "Details, images, illustrations, finishing." },
+        "04": { "title": "Print or screen", "desc": "I prepare files for print (CMYK) or web (responsive)." }
+      },
+      "whyTitle": "Why graphic design with Pinart.",
+      "reasons": {
+        "01": { "title": "Editorial precision", "desc": "From the 'More good restaurants' book to Molly Lolly — long-form experience." },
+        "02": { "title": "Campaigns that hold up", "desc": "Not just pretty — consistent across many formats." },
+        "03": { "title": "I understand print", "desc": "Working with printers since 2008. I know what colour does on paper." }
+      }
+    },
+
+    "marketing": {
+      "lede": "A strategic approach to communication — campaigns that connect brands with people at the right moment.",
+      "processTitle": "Marketing without throwing ideas at the wall.",
+      "steps": {
+        "01": { "title": "Understand the goal", "desc": "What are we measuring? Brand awareness, sales, loyalty? No campaign without it." },
+        "02": { "title": "Find the story", "desc": "What makes this brand different? Here the campaign concept is born." },
+        "03": { "title": "Execution across channels", "desc": "Print, digital, social, TV — one message, adapted per medium." },
+        "04": { "title": "Measure and adjust", "desc": "I don't guess what works. I look at the data and adapt." }
+      },
+      "whyTitle": "Why marketing through Pinart.",
+      "reasons": {
+        "01": { "title": "Brand + marketing together", "desc": "A campaign isn't separate from identity — with me you get both connected." },
+        "02": { "title": "National campaign experience", "desc": "Petrol, mBills, Vsestoritve — TV, billboards, social, all firsthand." },
+        "03": { "title": "Audience understanding", "desc": "I don't communicate what I want to say — I communicate what the audience will get." }
+      }
+    },
+
+    "web": {
+      "lede": "Websites and apps that combine story, motion and precision — from concept to live launch.",
+      "processTitle": "From sketch to live launch — without lost translations.",
+      "steps": {
+        "01": { "title": "Discovery and strategy", "desc": "Who are the users? What do they need to achieve? What tone, what tempo?" },
+        "02": { "title": "UX + UI design", "desc": "Wireframes, prototypes in Figma — before any code. Saves weeks of work." },
+        "03": { "title": "Development with my team", "desc": "I work with trusted developers (Next.js, React, GSAP). I lead so the build stays on brand." },
+        "04": { "title": "Launch and support", "desc": "QA, performance, SEO basics. After launch I stay on for tweaks and long-term care." }
+      },
+      "whyTitle": "Why entrust your web to Pinart.",
+      "reasons": {
+        "01": { "title": "Apps and websites — from CMS to native code", "desc": "On the web I work with WordPress and Shopify for catalogs, blogs and e-commerce, through Webflow and Framer for design-driven brochure sites, all the way to Next.js, React, GSAP and headless CMS systems (Sanity, Contentful) when the project demands full control. For apps, from FlutterFlow for quick MVPs, through React Native and Flutter for cross-platform, to Swift and Kotlin for native iOS/Android. Together we pick the stack based on budget, team and long-term maintenance." },
+        "02": { "title": "I lead the team, not just sketch", "desc": "I understand how developers think and can translate design into code in shared language." },
+        "03": { "title": "Brand-first build", "desc": "Every detail — animation, micro-interaction, font fallback — reflects the brand. Not just function." }
+      }
+    },
+
+    "ideas": {
+      "lede": "Strategic concept development — from the first spark to an executable idea we can actually build.",
+      "processTitle": "Ideas that survive the path from thought to execution.",
+      "steps": {
+        "01": { "title": "Shared thinking session", "desc": "Questions, challenges, context. Best ideas don't come alone — they emerge in conversation." },
+        "02": { "title": "Diverge", "desc": "Many directions, no censorship. Many bad ones to reach a great one." },
+        "03": { "title": "Converge", "desc": "Pick the strongest. Develop it into an executable concept." },
+        "04": { "title": "Prepare for execution", "desc": "Brief, visuals, plan. Any team that gets it knows what to do next." }
+      },
+      "whyTitle": "Why idea development with Pinart.",
+      "reasons": {
+        "01": { "title": "My own projects prove it", "desc": "Molly Lolly, Wish & Vibe — ideas I developed from scratch into actual products." },
+        "02": { "title": "Strategy + aesthetics", "desc": "An idea is only strong if you can pitch and execute it. With me you get both." },
+        "03": { "title": "Honesty", "desc": "If the idea doesn't work, I'll tell you. One good idea beats five half-baked ones." }
+      }
+    }
+  },
+
+  "about": {
+    "kicker": "About",
+    "body": "I create digital experiences that combine storytelling, movement and atmosphere. Together with developers and creatives, I build modern websites, branding systems and visual experiences for brands that want character."
+  },
+  "clients": {
+    "kicker": "Reference",
+    "heading": "Clients",
+    "desc": "Working with founders, teams and organisations to create brands, products and digital experiences that connect with people. Each collaboration is shaped by strategy, creativity and a shared ambition to build something meaningful."
+  },
+  "testimonials": {
+    "kicker": "Testimonials",
+    "circle": "WORK*WITH*ME*HAVE*FUN*"
+  },
+  "contact": {
+    "kicker": "Contact",
+    "headline": "Let's create something memorable.",
+    "tagline": "Ideas that stay.",
+    "email": "tina@pinart.si",
+    "showPhone": "Show phone",
+    "callPhone": "Call"
+  },
+  "footer": {
+    "tagline": "Ideas that stay.",
+    "contact": "Contact",
+    "privacy": "Privacy"
+  }
+}

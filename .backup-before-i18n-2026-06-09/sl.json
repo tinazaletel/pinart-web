@@ -1,0 +1,361 @@
+{
+  "meta": {
+    "title": "Pinart — Ustvarjam ideje, ki ostanejo",
+    "description": "Studio za kreativno direkcijo, branding in digitalne izkušnje."
+  },
+  "nav": {
+    "home": "Domov",
+    "work": "Delo",
+    "services": "Storitve",
+    "about": "O meni",
+    "contact": "Kontakt",
+    "toggle": "EN"
+  },
+  "hero": {
+    "tagline": "Ustvarjam ideje, ki ostanejo",
+    "cue": "pritisni packo",
+    "headlinePrimary": "IDEJE",
+    "headlineSecondary": "ki gibljejo",
+    "headlineTertiary": "skozi",
+    "headlineQuat": "občutje",
+    "wordRest": "ki se gibljejo skozi občutje",
+    "finalL1": "USTVARJAMO IDEJE,",
+    "finalL2": "KI OSTANEJO.",
+    "restart": "začni znova"
+  },
+  "typography": {
+    "words": ["OBLIKOVANJE", "OBČUTJE", "ZGODBA", "INTERAKCIJA", "GIBANJE", "ATMOSFERA"]
+  },
+  "services": {
+    "kicker": "Storitve",
+    "items": {
+      "direction": { "title": "Kreativna direkcija", "desc": "Vizualna strategija in kreativno vodstvo za znamke s karakterjem." },
+      "branding": { "title": "Branding", "desc": "Identitetni sistemi, ki nosijo pomen, spomin in čustvo." },
+      "graphic": { "title": "Grafično oblikovanje", "desc": "Editorial layouti in vizualna komunikacija za kampanje." },
+      "marketing": { "title": "Marketing", "desc": "Strategije in kampanje, ki povezujejo znamke z ljudmi ter ustvarjajo prepoznavnost." },
+      "web": { "title": "Spletni razvoj", "desc": "Spletne izkušnje, ki združujejo zgodbo, gibanje in natančnost." },
+      "ideas": { "title": "Razvoj idej", "desc": "Strateški razvoj konceptov od prve iskre do izvedbe." }
+    }
+  },
+  "projects": {
+    "kicker": "Izbrani projekti",
+    "headline": "Delo, ki najprej vzpostavi občutek.",
+    "intro": "Pinart povezuje kreativno direkcijo, oblikovanje in razvoj idej v celostne vizualne sisteme. Ne lovi trenda, ampak išče ton, ki znamki pripada.",
+    "moreWork": "Več del"
+  },
+  "moreWork": {
+    "kicker": "Več del",
+    "heading": "Širši pogled na delo.",
+    "intro": "Kompaktna galerija kampanj, vizualnih sistemov, produktnih predstavitev in digitalnih izkušenj iz širšega Pinart arhiva.",
+    "back": "Nazaj na delo",
+    "open": "Odpri delo",
+    "close": "Zapri",
+    "items": {
+      "petrolPortal": {
+        "title": "Petrol Pay Portal",
+        "meta": "UX/UI · Loyalty",
+        "desc": "Vmesnik za kartično in loyalty izkušnjo, zasnovan okoli jasnega onboardinga in vsakodnevne uporabe."
+      },
+      "lucky7": {
+        "title": "Lucky 7",
+        "meta": "Produktno oblikovanje · Gaming",
+        "desc": "Vizualna smer za digitalno loterijsko izkušnjo z izrazito igralno atmosfero."
+      },
+      "isla": {
+        "title": "Isla kampanja",
+        "meta": "Kreativna direkcija · Kampanja",
+        "desc": "Kampanjski vizuali, zgrajeni okoli igrive produktne zgodbe in prepoznavnega vizualnega tona."
+      },
+      "pupaGlam": {
+        "title": "Pupa Glam",
+        "meta": "Branding · Identiteta",
+        "desc": "Nežen vizualni sistem za beauty znamko z mehkim, ročno izdelanim občutkom."
+      },
+      "universum": {
+        "title": "Universum",
+        "meta": "Spletno oblikovanje · Travel",
+        "desc": "Digitalna travel izkušnja, zasnovana okoli atmosfere, velikih podob in jasnega booking toka."
+      },
+      "mollyLolly": {
+        "title": "Molly Lolly",
+        "meta": "Brand svet · Produkt",
+        "desc": "Avtorski brand svet, ki povezuje zgodbo, produkt, fotografijo in digitalno predstavitev."
+      },
+      "wishCard": {
+        "title": "Wish Card",
+        "meta": "Branding · Kampanja",
+        "desc": "Živahna kartična identiteta s kampanjskimi vizuali in prepoznavnim grafičnim jezikom."
+      },
+      "mbillsMini": {
+        "title": "mBills Mini",
+        "meta": "Kampanja · Plačila",
+        "desc": "Kampanjski vizual za plačilni produkt, ki združuje igrivo komunikacijo in jasne brand elemente."
+      },
+      "ribbonLips": {
+        "title": "Ribbon Lips",
+        "meta": "Branding · Hosiery",
+        "desc": "Vizualni jezik za slovensko hosiery znamko — od logota do oglasnih vizualov in embalaže."
+      },
+      "karieraKnjiga": {
+        "title": "Knjiga Kariera",
+        "meta": "Editorial · Print",
+        "desc": "Oblikovanje knjige in vodenje produkcije za karierno publikacijo."
+      },
+      "rokusKlett": {
+        "title": "Rokus Klett",
+        "meta": "Educational · Brand",
+        "desc": "Vizualne rešitve za eno najbolj prepoznavnih slovenskih izobraževalnih hiš."
+      },
+      "portalZnanja": {
+        "title": "Portal znanja",
+        "meta": "Web · Education",
+        "desc": "Spletna platforma za učenje, z jasno informacijsko arhitekturo in prijaznim UI."
+      },
+      "tapAndPay": {
+        "title": "Tap and Pay",
+        "meta": "Kampanja · Plačila",
+        "desc": "Plakat in kampanjski vizuali za brezstično plačilno rešitev."
+      },
+      "maxMorrison": {
+        "title": "Max Morrison",
+        "meta": "App · UI",
+        "desc": "Oblikovanje uporabniškega vmesnika za mobilno aplikacijo s karakterjem."
+      },
+      "vseStoritve": {
+        "title": "Vse storitve",
+        "meta": "Branding · Marketing",
+        "desc": "Vizualna identiteta in marketinški materiali za portal storitev — od roll-upa do spletne strani."
+      },
+      "digitrajni": {
+        "title": "Digitrajni.si",
+        "meta": "Brand · Web · Kampanja",
+        "desc": "Identiteta in vizualni jezik za nacionalni projekt digitalne pismenosti učiteljev."
+      },
+      "chewieGreen": {
+        "title": "Chewie Green",
+        "meta": "Character · EU project",
+        "desc": "Karakter in vizualna kampanja za EFSA — Evropsko agencijo za varno hrano."
+      },
+      "sag": {
+        "title": "SAG",
+        "meta": "Branding · Identiteta",
+        "desc": "Celostna grafična podoba in vizualni jezik za podjetje SAG."
+      },
+      "izziRokus": {
+        "title": "Izzi Rokus konferenca",
+        "meta": "Event · Branding",
+        "desc": "Identiteta in vizualni materiali za izobraževalno konferenco Izzi Rokus."
+      },
+      "combisafe": {
+        "title": "Combisafe",
+        "meta": "Web · Shopify",
+        "desc": "Postavitev in prilagoditev Shopify teme za spletno trgovino Combisafe."
+      },
+      "kraljZara": {
+        "title": "Kralj žara",
+        "meta": "Editorial · Brand",
+        "desc": "Knjiga in brošura za kuharsko blagovno znamko Kralj žara — od koncepta do tiska."
+      },
+      "mdRevija": {
+        "title": "Karierne tiskovine",
+        "meta": "Editorial · Print",
+        "desc": "Oblikovanje karierne revije, brošur in publikacij."
+      },
+      "petrolOglasi": {
+        "title": "Petrol oglasi",
+        "meta": "Kampanje · Print",
+        "desc": "Oglasni vizuali in plakatne kampanje za Petrol — od loyalty do kartičnih ponudb."
+      },
+      "mbills": {
+        "title": "mBills",
+        "meta": "Web · Branding · Kampanje",
+        "desc": "Vzporedni vizuali — Mastercard kartica, portal in oglasi — iz dolgoletnega sodelovanja z mBills."
+      },
+      "appleWatch": {
+        "title": "Apple Watch · mBills",
+        "meta": "App · Wearable",
+        "desc": "mBills izkušnja za Apple Watch — minimalen UI za hitro plačilo iz zapestja."
+      },
+      "inovis": {
+        "title": "Inovis",
+        "meta": "Web · Brand",
+        "desc": "Spletna stran in vizualna identiteta za podjetje Inovis."
+      },
+      "cankarjevDom": {
+        "title": "Cankarjev dom",
+        "meta": "Print · Kartice",
+        "desc": "Oblikovanje kartic in tiskovin za Cankarjev dom."
+      },
+      "familyFun": {
+        "title": "Family Fun",
+        "meta": "Brand · Logo",
+        "desc": "Vesela in topla identiteta za blagovno znamko družinskih doživetij."
+      },
+      "spaycy": {
+        "title": "Spaycy",
+        "meta": "Brand · Ghost card",
+        "desc": "Identiteta in oglasni materiali za ghost card znamko Spaycy."
+      },
+      "memGame": {
+        "title": "Memory Game",
+        "meta": "Print · Game",
+        "desc": "Oblikovanje spominske igre — od kartic do škatle."
+      },
+      "blendedLearnings": {
+        "title": "Blended Learnings",
+        "meta": "Brand · Education",
+        "desc": "Vizualni jezik za izobraževalno platformo."
+      },
+      "vseVecGostiln": {
+        "title": "Vse več dobrih gostiln",
+        "meta": "Editorial · Knjiga",
+        "desc": "Knjiga, ki predstavi izbor slovenskih gostiln — od oblikovanja do tiska."
+      },
+      "logos": {
+        "title": "Logotipi",
+        "meta": "Branding · Identiteta",
+        "desc": "Izbor logotipov in znakov za različne stranke — od medicinskih storitev do tehnoloških podjetij."
+      }
+    }
+  },
+  "serviceDetail": {
+    "back": "Nazaj na storitve",
+    "label": "Storitev",
+    "processLabel": "Kako delam",
+    "whyLabel": "Zakaj jaz",
+    "workLabel": "Iz arhiva",
+    "workTitle": "Projekti, ki kažejo, kako delamo.",
+    "ctaLabel": "Pišimo si",
+    "ctaTitle": "Pripravljeni na sodelovanje?",
+    "ctaButton": "Kontakt",
+
+    "direction": {
+      "lede": "Vizualna strategija in režija — od koncepta brand-a do konsistentne izvedbe v vseh dotikih.",
+      "processTitle": "Štirje koraki — od ideje do izvedbe.",
+      "steps": {
+        "01": { "title": "Razumeti znamko", "desc": "Kratek, jedrnat brief, ki razkrije ton, ambicije in mejnike. Ne ugibam — vprašam." },
+        "02": { "title": "Postaviti smer", "desc": "Strategija, mood, prvi vizualni jezik. Iz tega izhaja vse nadaljnje." },
+        "03": { "title": "Voditi izvedbo", "desc": "Sodelujem z ekipo (oblikovalci, fotografi, razvijalci) — kot dirigent." },
+        "04": { "title": "Ohraniti konsistenco", "desc": "Brand book, sistemi, navodila. Da znamka deluje brez mene." }
+      },
+      "whyTitle": "Zakaj prav meni zaupati režijo?",
+      "reasons": {
+        "01": { "title": "Vidim celoto", "desc": "Od logotipa do besedila kampanje — istočasno mislim oblikovanje in komunikacijo." },
+        "02": { "title": "Vodim ekipe", "desc": "Sodelujem z razvijalci, fotografi, copywriterji — projekt vodim brez izgubljenega prevoda." },
+        "03": { "title": "Trajna identiteta", "desc": "Ne lovim trendov. Vsaka znamka, ki sem jo postavila, danes še vedno deluje." }
+      }
+    },
+
+    "branding": {
+      "lede": "Identitetni sistemi — logotip, paleta, tipografija, ton in CGP, ki znamko naredijo prepoznavno.",
+      "processTitle": "Branding ni samo logo. To je sistem.",
+      "steps": {
+        "01": { "title": "Razumeti zgodbo", "desc": "Kdo si? Komu govoriš? Zakaj te bo zapomnil?" },
+        "02": { "title": "Postaviti znak", "desc": "Logotip, paleta, tipografija — DNA znamke v par elementih." },
+        "03": { "title": "Razširiti sistem", "desc": "Kako znamka deluje na vizitki, plakatu, ekranu, embalaži." },
+        "04": { "title": "Spakirati v knjigo", "desc": "Brand book ali CGP — da lahko nadaljujejo brez mene." }
+      },
+      "whyTitle": "Zakaj branding pri Pinartu deluje.",
+      "reasons": {
+        "01": { "title": "Sistem, ne le slika", "desc": "Logotip je začetek. Sistem je tisto, kar znamko ohranja prepoznavno skozi leta." },
+        "02": { "title": "Sodelujem", "desc": "Brand ne nastaja iz mojega okusa, ampak iz pogovora s teboj — proces je oseben." },
+        "03": { "title": "Print + digital + product", "desc": "Vsak branding misliš v vseh medijih hkrati. Ne posebej za vsak kanal." }
+      }
+    },
+
+    "graphic": {
+      "lede": "Editorial layouti, vizualna komunikacija, kampanjski vizuali — oblikovanje, ki nosi vsebino.",
+      "processTitle": "Oblikovanje, ki ne preglasi vsebine.",
+      "steps": {
+        "01": { "title": "Brief in vsebina", "desc": "Najprej razumem, kaj sporočam, šele potem oblikujem." },
+        "02": { "title": "Skice in raster", "desc": "Hierarhija, grid, tipografija — temelj layouta." },
+        "03": { "title": "Vizualna izvedba", "desc": "Detajli, slike, ilustracije, finishing." },
+        "04": { "title": "Tisk ali ekran", "desc": "Pripravim datoteke za tisk (do CMYK pač) ali za web (responzivno)." }
+      },
+      "whyTitle": "Zakaj grafično oblikovanje pri Pinartu.",
+      "reasons": {
+        "01": { "title": "Editorial natančnost", "desc": "Vse od knjige Vse več gostiln do Molly Lolly knjig — z izkušnjami iz dolgih izdaj." },
+        "02": { "title": "Kampanje, ki ostanejo", "desc": "Ne le lepe — tudi konsistentne skozi različne formate." },
+        "03": { "title": "Razumem tisk", "desc": "Sodelujem s tiskarji od leta 2008. Vem, kaj barve počnejo na papirju." }
+      }
+    },
+
+    "marketing": {
+      "lede": "Strateški pristop h komunikaciji — kampanje, ki znamke povežejo z ljudmi v pravem trenutku.",
+      "processTitle": "Marketing brez metanja vrečk z idejami.",
+      "steps": {
+        "01": { "title": "Razumeti cilj", "desc": "Kaj merimo? Brand awareness, prodaja, lojalnost? Brez tega ni kampanje." },
+        "02": { "title": "Najti zgodbo", "desc": "Kaj je tisto, kar znamko razlikuje? Tu se rodi kampanjski koncept." },
+        "03": { "title": "Izvedba čez kanale", "desc": "Print, digital, social, TV — eno sporočilo, prilagojeno mediju." },
+        "04": { "title": "Meriti in obračati", "desc": "Ne ugibam, kaj deluje. Pogledam podatke in prilagodim." }
+      },
+      "whyTitle": "Zakaj marketing skozi Pinart.",
+      "reasons": {
+        "01": { "title": "Brand + marketing skupaj", "desc": "Kampanja ni ločena od identitete — pri meni dobiš oboje povezano." },
+        "02": { "title": "Izkušnje iz nacionalnih kampanj", "desc": "Petrol, mBills, Vsestoritve — sodelovala pri TV-jih, jumbo plakatih, social." },
+        "03": { "title": "Razumevanje občinstva", "desc": "Ne komuniciram, kar bi rad rekel — komuniciram, kar bo občinstvo razumelo." }
+      }
+    },
+
+    "web": {
+      "lede": "Spletne strani in aplikacije, ki združujejo zgodbo, gibanje in natančnost — od koncepta do živega launcha.",
+      "processTitle": "Od skice do živega launcha — brez izgubljenih prevodov.",
+      "steps": {
+        "01": { "title": "Discovery in strategija", "desc": "Kdo so uporabniki? Kaj morajo doseči? Kakšen ton in tempo?" },
+        "02": { "title": "UX + UI dizajn", "desc": "Wireframi, prototipi v Figmi, vse pred kodo — prihrani tedne dela." },
+        "03": { "title": "Razvoj z izbrano ekipo", "desc": "Sodelujem s preverjenimi razvijalci (Next.js, React, GSAP). Vodim, da ostane v skladu z znamko." },
+        "04": { "title": "Launch in podpora", "desc": "QA, performance, SEO osnove. Po launchu ostanem na voljo za prilagoditve in dolgoročno vzdrževanje." }
+      },
+      "whyTitle": "Zakaj svoj web zaupati Pinartu.",
+      "reasons": {
+        "01": { "title": "Aplikacije in spletne strani — od CMS-jev do native kode", "desc": "Pri spletu delam s WordPress in Shopify za kataloge, blog in e-trgovine, preko Webflow in Framer za dizajn-driven brošurne strani, do Next.js, React, GSAP in headless CMS-jev (Sanity, Contentful), kadar projekt zahteva popolno kontrolo. Pri aplikacijah od FlutterFlow za hitre MVP-je, preko React Native in Flutter za cross-platform, do Swift in Kotlin za native iOS/Android. Skupaj izberemo stack glede na proračun, ekipo in dolgoročno vzdrževanje." },
+        "02": { "title": "Vodim ekipo, ne le rišem", "desc": "Razumem, kako developerji mislijo, in znam s povsod razumljivim jezikom prevesti dizajn v kodo." },
+        "03": { "title": "Brand-first razvoj", "desc": "Vsak detajl — animacija, mikro-interakcija, font fallback — odraža znamko. Ne le funkcionalnost." }
+      }
+    },
+
+    "ideas": {
+      "lede": "Strateški razvoj konceptov — od prve iskre do izvedljive ideje, ki jo lahko realiziramo.",
+      "processTitle": "Ideje, ki preživijo pot iz misli v izvedbo.",
+      "steps": {
+        "01": { "title": "Skupna miselna seja", "desc": "Vprašanja, izzivi, kontekst. Idej ne išče sama — najboljše se rodijo v pogovoru." },
+        "02": { "title": "Divergiramo", "desc": "Več smeri, brez cenzure. Veliko slabih, da pridemo do dobre." },
+        "03": { "title": "Konvergiramo", "desc": "Izberemo, kar ima največ teže. Razvijemo do izvedljivega koncepta." },
+        "04": { "title": "Pripravimo za izvedbo", "desc": "Brief, vizuali, načrt. Vsaka ekipa, ki to dobi, ve, kaj naprej." }
+      },
+      "whyTitle": "Zakaj razvoj idej pri Pinartu.",
+      "reasons": {
+        "01": { "title": "Lastni projekti to dokazujejo", "desc": "Molly Lolly, Wish & Vibe — ideje, ki sem jih razvila iz nič in pripeljala do produkta." },
+        "02": { "title": "Strategija + estetika", "desc": "Ideja je močna le, če jo lahko predstaviš in izvedeš. Pri meni dobiš oboje." },
+        "03": { "title": "Iskrenost", "desc": "Če ideja ne deluje, ti povem. Bolje ena dobra kot pet polovičnih." }
+      }
+    }
+  },
+
+  "about": {
+    "kicker": "O meni",
+    "body": "Ustvarjam digitalne izkušnje, ki združujejo zgodbo, gibanje in atmosfero. Z razvijalci in ustvarjalci gradim sodobne spletne strani, sisteme blagovnih znamk in vizualne izkušnje za blagovne znamke s karakterjem."
+  },
+  "clients": {
+    "kicker": "Reference",
+    "heading": "Stranke",
+    "desc": "Sodelujem z ustanovitelji, ekipami in organizacijami pri ustvarjanju blagovnih znamk, produktov in digitalnih izkušenj, ki povezujejo ljudi. Vsako sodelovanje oblikujejo strategija, kreativnost in skupna ambicija ustvariti nekaj smiselnega."
+  },
+  "testimonials": {
+    "kicker": "Mnenja",
+    "circle": "USTVARJAJVA*SKUPAJ*"
+  },
+  "contact": {
+    "kicker": "Kontakt",
+    "headline": "Ustvariva nekaj nepozabnega.",
+    "tagline": "Ustvarjam ideje, ki ostanejo.",
+    "email": "tina@pinart.si",
+    "showPhone": "Prikaži telefon",
+    "callPhone": "Pokliči"
+  },
+  "footer": {
+    "tagline": "Ustvarjam ideje, ki ostanejo.",
+    "contact": "Kontakt",
+    "privacy": "Zasebnost"
+  }
+}
