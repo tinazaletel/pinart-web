@@ -40,7 +40,7 @@ const CARDS = [
     quote: 'Preoblikovanje spletne strani in celostne podobe je podjetju Inovis IT d.o.o. prinesla bolj prepoznaven in profesionalen nastop. Tina je odlično razumela naše potrebe ter jih pretvorila v vizualno identiteto in digitalno izkušnjo, ki nas danes veliko bolje predstavlja.',
     author: 'Uroš Lesjak',
     role: 'Direktor, Inovis IT d.o.o.',
-    image: '/Uroš_Lesjak.jpeg',
+    image: '/Uros_Lesjak.jpeg',
     rot: '-8deg', left: '0%',   top: '10%',  width: '48%',
   },
   {
@@ -49,7 +49,7 @@ const CARDS = [
     author: 'Primož Župan',
     role: 'Direktor mBills',
     href: 'https://www.linkedin.com/in/primoz-zupan/',
-    image: '/Primož_Zupan.png',
+    image: '/Primoz_Zupan.png',
     rot:  '8deg', left: '48%',  top: '-2%',  width: '50%',
   },
   {
