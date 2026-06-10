@@ -766,9 +766,10 @@ export default function Hero() {
       <div
         ref={wordRestRef}
         aria-hidden
+        className="hero-word-pills"
         style={{
           position:      'absolute',
-          top:           'calc(100dvh - env(safe-area-inset-bottom, 0px) - 5rem)',
+          top:           'clamp(60%, 72dvh, 79vh)',
           left:          '50%',
           transform:     'translate(-50%,-50%)',
           fontFamily:    '"Bodoni Moda", var(--font-serif)',
