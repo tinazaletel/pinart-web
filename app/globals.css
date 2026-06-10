@@ -347,7 +347,7 @@ div.is-changing img {
   }
 
   .hero-finale .ln {
-    font-size: clamp(3.2rem, 11vw, 5rem) !important;
+    font-size: clamp(3.2rem, 10.5vw, 5rem) !important;
   }
 
   .hero-scroll-arrow {

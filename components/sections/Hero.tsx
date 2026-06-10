@@ -840,7 +840,7 @@ export default function Hero() {
           padding:        '6vw',
         }}
       >
-        {([t('finalL1'), t('finalL2')] as string[]).map((line, i) => (
+        {([t('finalL1'), t('finalL2'), t('finalL3')] as string[]).map((line, i) => (
           <div
             key={i}
             className="ln"
