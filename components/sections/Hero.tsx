@@ -896,6 +896,7 @@ export default function Hero() {
       {/* Scroll-down cue — animated line + dot */}
       <div
         ref={scrollArrowRef}
+        className="hero-scroll-arrow"
         style={{
           position:      'absolute',
           bottom:        'calc(env(safe-area-inset-bottom, 0px) + clamp(2.5rem, 5vw, 3.5rem))',

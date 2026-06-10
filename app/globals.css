@@ -342,6 +342,10 @@ div.is-changing img {
     top: 68dvh !important;
   }
 
+  .hero-scroll-arrow {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 7rem) !important;
+  }
+
   .services-section {
     padding: 8rem 1.25rem 8rem !important;
   }
