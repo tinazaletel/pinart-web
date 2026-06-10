@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
-import Script from 'next/script';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { routing, type Locale } from '@/i18n/routing';
 import { fontVariables } from '@/lib/fonts';
@@ -73,16 +72,6 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} className={fontVariables}>
       <body className="bg-paper text-ink antialiased">
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-0WKP0EZ8LJ"
-          strategy="afterInteractive"
-        />
-        <Script id="ga4" strategy="afterInteractive">{`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-0WKP0EZ8LJ');
-        `}</Script>
         <NextIntlClientProvider messages={messages}>
           <Preloader />
           <SmoothScroll>
