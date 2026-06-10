@@ -700,7 +700,7 @@ export default function Hero() {
             left:          '50%',
             transform:     'translateX(-50%)',
             whiteSpace:    'nowrap',
-            fontFamily:    '"Bradley Hand", "Segoe Print", "Comic Sans MS", cursive',
+            fontFamily:    '"Bradley Hand ITC", "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive',
             fontSize:      '1rem',
             fontWeight:    500,
             letterSpacing: '-0.01em',
