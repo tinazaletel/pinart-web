@@ -691,6 +691,25 @@ export default function Hero() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/packa.svg" alt="" style={{ width: '100%' }} />
+        {/* Mobile-only tap hint */}
+        <span
+          className="md:hidden"
+          style={{
+            position:      'absolute',
+            top:           '110%',
+            left:          '50%',
+            transform:     'translateX(-50%)',
+            whiteSpace:    'nowrap',
+            fontFamily:    'var(--font-sans)',
+            fontSize:      '0.65rem',
+            fontWeight:    600,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color:         'rgba(17,17,17,0.45)',
+          }}
+        >
+          Pritisni packo
+        </span>
       </div>
 
       <div
@@ -750,7 +769,7 @@ export default function Hero() {
         aria-hidden
         style={{
           position:      'absolute',
-          top:           '79vh',
+          top:           'clamp(60%, 72dvh, 79vh)',
           left:          '50%',
           transform:     'translate(-50%,-50%)',
           fontFamily:    '"Bodoni Moda", var(--font-serif)',
@@ -879,7 +898,7 @@ export default function Hero() {
         ref={scrollArrowRef}
         style={{
           position:      'absolute',
-          bottom:        'clamp(1.5rem, 3vw, 2.5rem)',
+          bottom:        'calc(env(safe-area-inset-bottom, 0px) + clamp(2.5rem, 5vw, 3.5rem))',
           left:          '50%',
           transform:     'translateX(-50%)',
           opacity:       0,

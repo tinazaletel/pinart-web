@@ -586,7 +586,7 @@ div.is-changing img {
   .testimonial-cards {
     height: auto !important;
     display: grid;
-    gap: 1rem;
+    gap: 3.5rem;
   }
 
   .testimonial-card {
