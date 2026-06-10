@@ -700,12 +700,11 @@ export default function Hero() {
             left:          '50%',
             transform:     'translateX(-50%)',
             whiteSpace:    'nowrap',
-            fontFamily:    'var(--font-sans)',
-            fontSize:      '0.65rem',
-            fontWeight:    600,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            color:         'rgba(17,17,17,0.45)',
+            fontFamily:    '"Bradley Hand", "Segoe Print", "Comic Sans MS", cursive',
+            fontSize:      '1rem',
+            fontWeight:    500,
+            letterSpacing: '-0.01em',
+            color:         'rgba(17,17,17,0.55)',
           }}
         >
           Pritisni packo
