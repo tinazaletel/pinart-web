@@ -126,16 +126,6 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
   },
   // ───────── decent middle tier ─────────
   {
-    // Hybrid: video → image cycle → video
-    key: 'chewieGreen',
-    src: `${MW}/EFSA/zelenu_cuvaj.png`,
-    video: `${MW}/EFSA/freepik__a-whimsical-character-made-entirely-of-greenery-an__35564.mp4`,
-    images: [
-      `${MW}/EFSA/zelenu_cuvaj.png`,
-      `${MW}/EFSA/efsa_predstavitev_small_Page_6.jpg`,
-    ],
-  },
-  {
     key: 'vseStoritve',
     src: `${MW}/Vsestoritve/Vsestoritve.png`,
     images: [
