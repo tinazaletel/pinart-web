@@ -407,6 +407,7 @@ export default function TypographyCollapse() {
           key={li}
           role="text"
           aria-label={LINES[li]}
+          className="typo-line"
           style={{
             lineHeight:  0.87,
             position:    'relative',

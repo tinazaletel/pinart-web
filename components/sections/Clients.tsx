@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import LogoLoop from '@/components/LogoLoop';
 import SplitText from '@/components/SplitText';
@@ -22,6 +23,12 @@ const CLIENT_LOGOS = [
 
 export default function Clients() {
   const t = useTranslations('clients');
+  const [marqueeSpeed, setMarqueeSpeed] = useState(70);
+
+  useEffect(() => {
+    const isMobile = window.matchMedia('(max-width: 760px)').matches;
+    if (isMobile) setMarqueeSpeed(140);
+  }, []);
 
   return (
     <section
@@ -111,7 +118,7 @@ export default function Clients() {
       {/* ── logo marquee — bleeds to full width ─────────────────────────── */}
       <LogoLoop
         logos={CLIENT_LOGOS}
-        speed={70}
+        speed={marqueeSpeed}
         direction="left"
         logoHeight={48}
         gap={72}

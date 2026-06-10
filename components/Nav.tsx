@@ -140,7 +140,7 @@ export default function Nav() {
                     setTimeout(() => {
                       window.dispatchEvent(new CustomEvent('pinart-goto-hash', { detail: { hash } }));
                       window.history.pushState(null, '', `/${locale}${hash}`);
-                    }, 80);
+                    }, 250);
                   }}
                 >
                   <span

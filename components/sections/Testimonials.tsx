@@ -36,34 +36,30 @@ function buildRevealD(pts: number[]): string {
 
 const CARDS = [
   {
-    title: 'Sodobna podoba za sodobno podjetje',
-    quote: 'Preoblikovanje spletne strani in celostne podobe je podjetju Inovis IT d.o.o. prinesla bolj prepoznaven in profesionalen nastop. Tina je odlično razumela naše potrebe ter jih pretvorila v vizualno identiteto in digitalno izkušnjo, ki nas danes veliko bolje predstavlja.',
+    key:    'inovis' as const,
     author: 'Uroš Lesjak',
-    role: 'Direktor, Inovis IT d.o.o.',
-    image: '/Uros_Lesjak.jpeg',
+    role:   'Direktor, Inovis IT d.o.o.',
+    image:  '/Uros_Lesjak.jpeg',
     rot: '-8deg', left: '0%',   top: '10%',  width: '48%',
   },
   {
-    title: 'Prenova mBills je povečala število strank za več kot 100 %',
-    quote: 'S Tino smo prenovili uporabniško izkušnjo in spletno prisotnost mBills. Rezultati so presegli pričakovanja, saj smo v obdobju po prenovi več kot podvojili število novih strank. Njena sposobnost povezovanja poslovnih ciljev z uporabniško izkušnjo je bila ključna za uspeh projekta. Pomemben rezultat prenove je bilo tudi priznanje za najboljšo mobilno aplikacijo za e-plačila, ki ga je mobilna denarnica prejela v okviru fintech nagrad. K temu uspehu je pomembno prispevala sodobnejša digitalna podoba storitve ter izboljšana uporabniška izkušnja, ki sta pripomogli k večji angažiranosti in rasti števila aktivnih uporabnikov.',
+    key:    'mbills' as const,
     author: 'Primož Župan',
-    role: 'Direktor mBills',
-    href: 'https://www.linkedin.com/in/primoz-zupan/',
-    image: '/Primoz_Zupan.png',
+    role:   'Direktor mBills',
+    href:   'https://www.linkedin.com/in/primoz-zupan/',
+    image:  '/Primoz_Zupan.png',
     rot:  '8deg', left: '48%',  top: '-2%',  width: '50%',
   },
   {
-    title: 'Podoba, ki odraža kakovost storitev',
-    quote: 'Za salon MediPedi je Tina zasnovala celostno podobo in pripravila profesionalno fotografiranje. Rezultat je prepoznavna in usklajena vizualna identiteta, ki odraža strokovnost, zaupanje in skrb za stranke. Njena pozornost do detajlov in razumevanje naše dejavnosti sta pomembno prispevala h končnemu rezultatu, s katerim smo zelo zadovoljni.',
+    key:    'medipedi' as const,
     author: 'Daša Jovanović',
-    role: 'MediPedi',
+    role:   'MediPedi',
     rot:  '7deg', left: '3%',   top: '53%',  width: '49%',
   },
   {
-    title: 'Nova identiteta za rastočo blagovno znamko',
-    quote: 'Tina je za Rekruter zasnovala celostno podobo, ki odlično odraža naše vrednote in smer razvoja podjetja. Že od začetka je razumela našo vizijo ter jo prevedla v sodoben, profesionalen in prepoznaven vizualni sistem. S končnim rezultatom smo izjemno zadovoljni, saj nam omogoča samozavesten in dosleden nastop na trgu.',
+    key:    'rekruter' as const,
     author: 'Jure Košir',
-    role: 'Rekruter',
+    role:   'Rekruter',
     rot: '-9deg', left: '51%',  top: '53%',  width: '48%',
   },
 ];
@@ -106,6 +102,7 @@ export default function Testimonials() {
       if (section) {
         section.style.background = BG;
         section.removeAttribute('data-nav-light-ui');
+        window.dispatchEvent(new Event('scroll'));
       }
 
       // Animate left column children
@@ -266,6 +263,10 @@ export default function Testimonials() {
       card.focus({ preventScroll: true });
     };
 
+    // Set initial light-UI flag via JS (not JSX) so React re-renders
+    // don't override what the animation logic sets via removeAttribute.
+    section.setAttribute('data-nav-light-ui', 'true');
+
     section.addEventListener('pointerdown', activateCard, true);
     section.addEventListener('click', activateCard, true);
     return () => {
@@ -279,7 +280,6 @@ export default function Testimonials() {
       ref={sectionRef}
       id="testimonials"
       data-nav-dark="true"
-      data-nav-light-ui="true"
       style={{
         position:   'relative',
         zIndex:     20,
@@ -486,7 +486,7 @@ export default function Testimonials() {
                   marginBottom: '0.8rem',
                 }}
               >
-                {card.title}
+                {t(`items.${card.key}Title`)}
                 </h3>
                 <p
                 style={{
@@ -497,7 +497,7 @@ export default function Testimonials() {
                   marginBottom: '1rem',
                 }}
               >
-                {card.quote}
+                {t(`items.${card.key}`)}
                 </p>
                 {card.href ? (
                   <a

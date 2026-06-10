@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
+import BackButton from '@/components/BackButton';
 import { gsap } from '@/lib/gsap';
 
 // `src` is the lightbox hero image; `images` (optional) is a rotation
@@ -295,13 +295,16 @@ export default function MoreWorkGallery() {
     <main className="more-work-page">
       <section className="more-work-top">
         <div>
+          <BackButton
+            fallbackHref={`/${locale}/#work`}
+            className="more-work-back"
+          >
+            ← {t('back')}
+          </BackButton>
           <p className="kicker">{t('kicker')}</p>
           <h1 className="more-work-heading">{t('heading')}</h1>
         </div>
         <div className="more-work-intro">
-          <Link href={`/${locale}#work`} className="more-work-back">
-            ← {t('back')}
-          </Link>
           <p>{t('intro')}</p>
         </div>
       </section>

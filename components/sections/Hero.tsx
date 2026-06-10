@@ -707,7 +707,7 @@ export default function Hero() {
             color:         'rgba(17,17,17,0.55)',
           }}
         >
-          Pritisni packo
+          {t('cue')}
         </span>
       </div>
 

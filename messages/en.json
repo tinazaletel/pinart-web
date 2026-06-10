@@ -140,7 +140,7 @@
       "ribbonLips": {
         "title": "Ribbon Lips",
         "meta": "Branding · Hosiery",
-        "desc": "Visual language for a Slovenian hosiery brand — from logo to campaign visuals and packaging."
+        "desc": "Visual language for a hosiery brand — from logo to campaign visuals and packaging."
       },
       "karieraKnjiga": {
         "title": "Kariera Book",
@@ -503,7 +503,7 @@
     "headline": "When an idea gets shape, rhythm and space."
   },
   "clients": {
-    "kicker": "Reference",
+    "kicker": "References",
     "heading": "Clients",
     "desc": "Working with founders, teams and organisations to create brands, products and digital experiences that connect with people. Each collaboration is shaped by strategy, creativity and a shared ambition to build something meaningful."
   },
@@ -511,7 +511,17 @@
     "kicker": "Testimonials",
     "circle": "WORK*WITH*ME*HAVE*FUN*",
     "headlineL1": "Opinions,",
-    "headlineL2": "that matter."
+    "headlineL2": "that matter.",
+    "items": {
+      "inovis": "The redesign of the website and visual identity gave Inovis IT d.o.o. a more recognisable and professional presence. Tina understood our needs and translated them into a visual identity and digital experience that represents us much better today.",
+      "inovisTitle": "A modern identity for a modern company",
+      "mbills": "With Tina, we redesigned the mBills user experience and online presence. The results exceeded expectations — we more than doubled our new customers after the redesign. Her ability to connect business goals with user experience was key to the project's success.",
+      "mbillsTitle": "The mBills redesign more than doubled our customer growth",
+      "medipedi": "For MediPedi, Tina created a complete visual identity and professional photography. The result is a recognisable, cohesive identity that reflects expertise, trust and care for clients. Her attention to detail made a real difference.",
+      "medipediTitle": "A brand that reflects the quality of our service",
+      "rekruter": "Tina designed a complete visual identity for Rekruter that perfectly reflects our values. From the start she understood our vision and translated it into a modern, professional visual system. We're extremely satisfied with the result.",
+      "rekruterTitle": "A new identity for a growing brand"
+    }
   },
   "contact": {
     "kicker": "Contact",

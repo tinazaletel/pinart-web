@@ -339,7 +339,11 @@ div.is-changing img {
 
 @media (max-width: 760px) {
   .hero-word-pills {
-    top: 68dvh !important;
+    top: 76dvh !important;
+  }
+
+  .typo-line span {
+    font-size: clamp(3.2rem, 20vw, 6rem) !important;
   }
 
   .hero-scroll-arrow {
@@ -659,20 +663,19 @@ div.is-changing img {
 .more-work-back {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 3rem;
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  padding: 0 1.5rem;
-  border: 1px solid rgba(17,17,17,0.36);
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid rgba(17,17,17,0.42);
   border-radius: 999px;
   color: var(--ink);
   font-family: var(--font-sans);
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 600;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   text-decoration: none;
   text-transform: uppercase;
+  background: rgba(245,242,234,0.6);
 }
 
 .more-work-grid {

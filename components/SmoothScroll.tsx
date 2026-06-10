@@ -113,7 +113,12 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
     // compensation regardless of how the URL change happened.
     const onGotoHash = (e: Event) => {
       const hash = (e as CustomEvent<{ hash: string }>).detail?.hash;
-      if (hash) scrollToHash(hash);
+      if (!hash) return;
+      // Refresh first so ScrollTrigger has correct positions after any
+      // layout shifts caused by pinart-skip-ink (TypographyCollapse expanding).
+      // Then scroll — triggers fire correctly as Lenis animates through them.
+      ScrollTrigger.refresh();
+      scrollToHash(hash);
     };
 
     // ── scroll position save/restore for back navigation ───────────────────
@@ -183,7 +188,7 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       window.removeEventListener('hashchange',         onHashChange);
       window.removeEventListener('pinart-goto-hash',   onGotoHash);
       window.removeEventListener('popstate',           onPopState);
-      window.removeEventListener('pinart-hero-done',   onHeroDone);
+      window.removeEventListener('pinart-hero-done',    onHeroDone);
     };
   }, []);
 
