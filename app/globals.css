@@ -339,7 +339,7 @@ div.is-changing img {
 
 @media (max-width: 760px) {
   .hero-word-pills {
-    top: calc(100dvh - env(safe-area-inset-bottom, 0px) - 5rem) !important;
+    top: 68dvh !important;
   }
 
   .services-section {
