@@ -103,7 +103,10 @@ export default function Testimonials() {
     function revealContent() {
       if (!content) return;
       isRevealedRef.current = true;
-      if (section) section.style.background = BG;
+      if (section) {
+        section.style.background = BG;
+        section.removeAttribute('data-nav-light-ui');
+      }
 
       // Animate left column children
       Array.from(content.children).forEach((el, i) => {
@@ -183,7 +186,10 @@ export default function Testimonials() {
       gsap.killTweensOf(revealPts);
       phase = 'idle';
       isRevealedRef.current = false;
-      if (section) section.style.background = 'transparent';
+      if (section) {
+        section.style.background = 'transparent';
+        section.setAttribute('data-nav-light-ui', 'true');
+      }
       window.dispatchEvent(new CustomEvent('pinart-lenis-start'));
       coverPts.fill(100);
       revealPts.fill(100);

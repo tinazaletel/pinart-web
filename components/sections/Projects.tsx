@@ -274,6 +274,7 @@ export default function Projects() {
               <Link
                 href={`/${locale}/work/${project.slug}`}
                 className="font-sans uppercase mt-8"
+                onClick={() => window.dispatchEvent(new CustomEvent('pinart-page-leave'))}
                 style={{
                   pointerEvents:  'auto',
                   display:        'inline-flex',
@@ -311,6 +312,7 @@ export default function Projects() {
         <Link
           href={`/${locale}/more-work`}
           className="font-sans uppercase"
+          onClick={() => window.dispatchEvent(new CustomEvent('pinart-page-leave'))}
           style={{
             display:        'inline-flex',
             alignItems:     'center',

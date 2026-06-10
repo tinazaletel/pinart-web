@@ -1,41 +1,71 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 
 /**
- * Fade-overlay for back navigation.
- * - When BackButton fires `pinart-page-leave`, the overlay fades IN (covers the
- *   current page while Next.js navigates and the scroll position is restored).
- * - On `popstate` the overlay is already opaque; after SmoothScroll has had
- *   time to restore the scroll position (~880 ms) it fades OUT, revealing the
- *   correct scroll location smoothly.
+ * Fade-overlay for page transitions (forward and back navigation).
+ *
+ * Forward (e.g. project card → case study):
+ *   - Link fires `pinart-page-leave` → overlay fades IN
+ *   - pathname changes (Next.js navigated) → overlay fades OUT after content renders
+ *
+ * Back (BackButton → router.back()):
+ *   - BackButton fires `pinart-page-leave` → overlay fades IN
+ *   - popstate fires → SmoothScroll restores scroll → overlay fades OUT
  */
 export default function PageTransition() {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref      = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
+  // Fade IN when any navigation starts
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
     const fadeIn = () => {
-      el.style.transition = 'opacity 0.3s ease';
+      el.style.transition = 'opacity 0.28s ease';
       el.style.opacity    = '1';
+      el.style.pointerEvents = 'none';
     };
 
-    const fadeOut = () => {
-      // Wait until SmoothScroll has restored scroll position (800 ms) then reveal
+    window.addEventListener('pinart-page-leave', fadeIn);
+    return () => window.removeEventListener('pinart-page-leave', fadeIn);
+  }, []);
+
+  // Fade OUT when pathname changes (forward navigation landed on new page)
+  // For back navigation, popstate handler below takes over instead.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    // Only fade out if the overlay is actually showing
+    const opacity = parseFloat(el.style.opacity || '0');
+    if (opacity < 0.5) return;
+
+    // Short pause so the new page content has a chance to render
+    const t = setTimeout(() => {
+      el.style.transition = 'opacity 0.55s ease';
+      el.style.opacity    = '0';
+    }, 120);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  // For back navigation: wait longer so SmoothScroll can restore scroll position
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const onPopState = () => {
       setTimeout(() => {
         el.style.transition = 'opacity 0.55s ease';
         el.style.opacity    = '0';
       }, 880);
     };
 
-    window.addEventListener('pinart-page-leave', fadeIn);
-    window.addEventListener('popstate',           fadeOut);
-    return () => {
-      window.removeEventListener('pinart-page-leave', fadeIn);
-      window.removeEventListener('popstate',           fadeOut);
-    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   return (
@@ -43,13 +73,13 @@ export default function PageTransition() {
       ref={ref}
       aria-hidden
       style={{
-        position:       'fixed',
-        inset:          0,
-        zIndex:         9998,
-        background:     'oklch(0.07 0.01 58)',
-        opacity:        0,
-        pointerEvents:  'none',
-        transition:     'opacity 0.3s ease',
+        position:      'fixed',
+        inset:         0,
+        zIndex:        9998,
+        background:    'oklch(0.07 0.01 58)',
+        opacity:       0,
+        pointerEvents: 'none',
+        transition:    'opacity 0.28s ease',
       }}
     />
   );

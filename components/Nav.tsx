@@ -127,30 +127,17 @@ export default function Nav() {
                   className="group relative py-1"
                   onClick={(e) => {
                     e.preventDefault();
-                    const target = document.getElementById(hash.slice(1));
-                    if (!target) return;
-                    const cs = window.getComputedStyle(target);
-                    const mt = parseFloat(cs.marginTop || '0') || 0;
-                    const compensation = mt < 0 ? -mt + 24 : 0;
-                    const y =
-                      target.getBoundingClientRect().top +
-                      window.scrollY +
-                      compensation;
-                    // Skip ink transition only when jumping PAST section 03
-                    // (typography-collapse). For hero/services, let the user
-                    // scroll naturally so the ink fires as intended.
                     const BEFORE_INK = ['hero', 'services'];
                     if (!BEFORE_INK.includes(hash.slice(1))) {
                       window.dispatchEvent(new CustomEvent('pinart-skip-ink'));
                     }
-                    const lenis = (window as unknown as { __pinartLenis?: { scrollTo: (y: number, opts?: object) => void } }).__pinartLenis;
-                    if (lenis) {
-                      lenis.scrollTo(y, { force: true, lock: true, duration: 1.2 });
-                    } else {
-                      window.scrollTo({ top: y, behavior: 'smooth' });
-                    }
-                    // update the URL hash without triggering hashchange
-                    window.history.pushState(null, '', `/${locale}${hash}`);
+                    // pinart-goto-hash is handled by SmoothScroll which
+                    // already applies negative-marginTop compensation and
+                    // uses Lenis with correct easing + duration.
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('pinart-goto-hash', { detail: { hash } }));
+                      window.history.pushState(null, '', `/${locale}${hash}`);
+                    }, 80);
                   }}
                 >
                   <span
@@ -251,23 +238,13 @@ export default function Nav() {
               onClick={() => {
                 setMenuOpen(false);
                 if (!hash) return;
-                requestAnimationFrame(() => {
-                  const target = document.getElementById(hash.slice(1));
-                  if (!target) return;
-                  const cs = window.getComputedStyle(target);
-                  const mt = parseFloat(cs.marginTop || '0') || 0;
-                  const compensation = mt < 0 ? -mt + 24 : 0;
-                  const y =
-                    target.getBoundingClientRect().top +
-                    window.scrollY +
-                    compensation;
-                  const lenis = (window as unknown as { __pinartLenis?: { scrollTo: (y: number, opts?: object) => void } }).__pinartLenis;
-                  if (lenis) {
-                    lenis.scrollTo(y, { force: true });
-                  } else {
-                    window.scrollTo({ top: y, behavior: 'smooth' });
-                  }
-                });
+                const BEFORE_INK = ['hero', 'services'];
+                if (!BEFORE_INK.includes(hash.slice(1))) {
+                  window.dispatchEvent(new CustomEvent('pinart-skip-ink'));
+                }
+                setTimeout(() => {
+                  window.dispatchEvent(new CustomEvent('pinart-goto-hash', { detail: { hash } }));
+                }, 80);
               }}
               className="font-serif leading-none text-ink"
               style={{

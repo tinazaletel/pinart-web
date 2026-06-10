@@ -51,13 +51,17 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       // count the previous section as active right at the boundary.
       const compensation = marginTop < 0 ? -marginTop + 24 : 0;
 
+      const navEasing = (t: number) =>
+        t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      const targetY = target.getBoundingClientRect().top + window.scrollY;
+      const dist = Math.abs(targetY - window.scrollY);
+      const duration = immediate ? 0 : Math.min(3.2, Math.max(1.6, dist / 700));
+
       lenis.scrollTo(target, {
         immediate,
         force: true,
-        // Lenis offset is added to the target position. Negative offset =
-        // scroll less (leaves space above the target, e.g. for a fixed nav).
-        // Positive offset = scroll more (skips over a negative top margin).
         offset: compensation - scrollMarginTop,
+        ...(immediate ? {} : { duration, easing: navEasing }),
       });
 
       window.setTimeout(() => ScrollTrigger.update(), immediate ? 0 : 80);
