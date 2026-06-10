@@ -1124,6 +1124,9 @@ export default function PetrolPayCase({ locale }: Props) {
           .case-hero__visual { height: 38vh; }
           .case-meta-inline { font-size: 12px; gap: 18px; }
           .case-meta-inline div span { font-size: 16px; }
+          .card-slot { padding: 16px; }
+          .card-slot__pic { margin-bottom: 16px; }
+          .case-section { padding: 4rem 1rem; }
         }
       `}</style>
     </article>

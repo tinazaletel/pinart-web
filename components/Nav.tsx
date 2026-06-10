@@ -34,31 +34,32 @@ export default function Nav() {
       const hero = document.getElementById('hero');
       const heroRect = hero?.getBoundingClientRect();
 
-      // The hero controls its own light/dark state through the pinart-dark event,
-      // but the first hero state must stay light so the menu remains visible.
-      if (heroRect && heroRect.top < headerH && heroRect.bottom > headerH) {
+      // Hero is visible and overlapping the nav — use its own dark signal.
+      // Only when hero is actually crossing the nav bar (top above, bottom below).
+      const heroOverlapsNav = !!heroRect &&
+        heroRect.top  <  headerH &&
+        heroRect.bottom > headerH;
+
+      if (heroOverlapsNav) {
         const newDark = heroDarkRef.current;
-        if (newDark !== dark) {
-          dark = newDark;
-          setIsDark(newDark);
-        }
+        if (newDark !== dark) { dark = newDark; setIsDark(newDark); }
         return;
       }
 
+      // Hero fully above the nav (scrolled past) OR below it (not yet reached).
+      // In either case use the data-nav-dark sections to decide colour.
+      // Also handle hero itself: if it's still partially in viewport but its
+      // bottom has cleared the nav, treat it as a light section (no data-nav-dark).
       const darkSections = document.querySelectorAll('[data-nav-dark]');
       const newDark = Array.from(darkSections).some(el => {
         if ((el as HTMLElement).dataset.navLightUi === 'true') return false;
         const rect = el.getBoundingClientRect();
-        // Skip sections that SlideStack has faded to invisible (opacity ~ 0)
         const opacity = parseFloat((el as HTMLElement).style.opacity ?? '1');
         const visible = isNaN(opacity) || opacity > 0.08;
-        return visible && rect.top < headerH && rect.bottom > 0;
+        return visible && rect.top < headerH && rect.bottom > headerH;
       });
 
-      if (newDark !== dark) {
-        dark = newDark;
-        setIsDark(newDark);
-      }
+      if (newDark !== dark) { dark = newDark; setIsDark(newDark); }
     };
 
     // Listen for hero dark-mode signal (final screen vs restart)
@@ -93,10 +94,12 @@ export default function Nav() {
       <header
         ref={headerRef}
         data-scrolled="false"
-        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-10 md:px-14 lg:px-16 py-6 border-b border-transparent"
-        style={{ backgroundColor: 'rgba(245, 242, 234, 0)' }}
+        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 md:px-14 lg:px-16 py-4 md:py-6 border-b border-transparent"
+        style={{
+          backgroundColor: 'rgba(245, 242, 234, 0)',
+        }}
       >
-        {/* Logo */}
+        {/* Logo — follows dark/light state on both mobile and desktop */}
         <Link href="/" onClick={() => setMenuOpen(false)}>
           <Image
             src={isDark ? '/Logos/Logo_pinart_light.svg' : '/Logos/Logo_pinart.svg'}
@@ -195,21 +198,21 @@ export default function Nav() {
           <span
             className="block h-px w-[22px] origin-center transition-[transform,background-color] duration-300"
             style={{
-              backgroundColor: isDark ? 'rgba(248,245,238,0.88)' : 'var(--ink)',
+              backgroundColor: isDark ? 'rgba(248,245,238,0.88)' : 'rgba(17,17,17,0.88)',
               transform: menuOpen ? 'translateY(6px) rotate(45deg)' : 'none',
             }}
           />
           <span
             className="block h-px w-[22px] transition-[opacity,background-color] duration-200"
             style={{
-              backgroundColor: isDark ? 'rgba(248,245,238,0.88)' : 'var(--ink)',
+              backgroundColor: isDark ? 'rgba(248,245,238,0.88)' : 'rgba(17,17,17,0.88)',
               opacity: menuOpen ? 0 : 1,
             }}
           />
           <span
             className="block h-px w-[22px] origin-center transition-[transform,background-color] duration-300"
             style={{
-              backgroundColor: isDark ? 'rgba(248,245,238,0.88)' : 'var(--ink)',
+              backgroundColor: isDark ? 'rgba(248,245,238,0.88)' : 'rgba(17,17,17,0.88)',
               transform: menuOpen ? 'translateY(-6px) rotate(-45deg)' : 'none',
             }}
           />
