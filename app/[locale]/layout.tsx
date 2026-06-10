@@ -31,14 +31,6 @@ export async function generateMetadata({
   return {
     title,
     description,
-    metadataBase: new URL('https://pinart.si'),
-    alternates: {
-      canonical: url,
-      languages: {
-        'sl': 'https://pinart.si/sl',
-        'en': 'https://pinart.si/en',
-      },
-    },
     openGraph: {
       title,
       description,
@@ -48,7 +40,7 @@ export async function generateMetadata({
       type: 'website',
       images: [
         {
-          url: '/og-image.jpg',
+          url: `https://pinart.si/og-image.jpg`,
           width: 1200,
           height: 630,
           alt: 'Pinart — Studio za kreativno direkcijo in branding',
@@ -59,11 +51,7 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title,
       description,
-      images: ['/og-image.jpg'],
-    },
-    icons: {
-      icon: '/Logos/Logo_pinart.svg',
-      apple: '/Logos/Logo_pinart.svg',
+      images: [`https://pinart.si/og-image.jpg`],
     },
   };
 }
