@@ -246,7 +246,21 @@ export default function MoreWorkGallery() {
   const t = useTranslations('moreWork');
   const locale = useLocale();
   const [active, setActive] = useState<GalleryItem | null>(null);
+  const [lbIdx, setLbIdx] = useState(0);
   const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // Keyboard navigation in lightbox
+  useEffect(() => {
+    if (!active) return;
+    const imgs = active.images && active.images.length > 0 ? active.images : [active.src];
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setActive(null); return; }
+      if (e.key === 'ArrowRight') setLbIdx(i => (i + 1) % imgs.length);
+      if (e.key === 'ArrowLeft') setLbIdx(i => (i - 1 + imgs.length) % imgs.length);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [active]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -301,7 +315,7 @@ export default function MoreWorkGallery() {
               cardRefs.current[index] = el;
             }}
             className="more-work-card"
-            onClick={() => setActive(item)}
+            onClick={() => { setActive(item); setLbIdx(0); }}
             aria-label={`${t('open')}: ${t(`items.${item.key}.title`)}`}
           >
             <CardMedia item={item} />
@@ -314,33 +328,59 @@ export default function MoreWorkGallery() {
         ))}
       </section>
 
-      {active && (
-        <div
-          className="more-work-lightbox"
-          role="dialog"
-          aria-modal="true"
-          aria-label={t(`items.${active.key}.title`)}
-          onClick={() => setActive(null)}
-        >
-          <button
-            type="button"
-            className="more-work-lightbox__close"
+      {active && (() => {
+        const lbImgs = active.images && active.images.length > 0 ? active.images : [active.src];
+        const hasMany = lbImgs.length > 1;
+        return (
+          <div
+            className="more-work-lightbox"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t(`items.${active.key}.title`)}
             onClick={() => setActive(null)}
           >
-            {t('close')}
-          </button>
-          <div className="more-work-lightbox__inner" onClick={(e) => e.stopPropagation()}>
-            <img src={active.src} alt={t(`items.${active.key}.title`)} />
-            <div className="more-work-lightbox__caption">
-              <p className="kicker">{t(`items.${active.key}.meta`)}</p>
-              <div>
-                <h2>{t(`items.${active.key}.title`)}</h2>
-                <p>{t(`items.${active.key}.desc`)}</p>
+            <button
+              type="button"
+              className="more-work-lightbox__close"
+              onClick={() => setActive(null)}
+            >
+              {t('close')}
+            </button>
+            <div className="more-work-lightbox__inner" onClick={(e) => e.stopPropagation()}>
+              <div className="more-work-lightbox__img-wrap">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={lbImgs[lbIdx]} alt={t(`items.${active.key}.title`)} />
+                {hasMany && (
+                  <>
+                    <button
+                      type="button"
+                      className="more-work-lightbox__arrow more-work-lightbox__arrow--prev"
+                      onClick={() => setLbIdx(i => (i - 1 + lbImgs.length) % lbImgs.length)}
+                      aria-label="Prejšnja slika"
+                    >‹</button>
+                    <button
+                      type="button"
+                      className="more-work-lightbox__arrow more-work-lightbox__arrow--next"
+                      onClick={() => setLbIdx(i => (i + 1) % lbImgs.length)}
+                      aria-label="Naslednja slika"
+                    >›</button>
+                    <span className="more-work-lightbox__counter">
+                      {lbIdx + 1} / {lbImgs.length}
+                    </span>
+                  </>
+                )}
+              </div>
+              <div className="more-work-lightbox__caption">
+                <p className="kicker">{t(`items.${active.key}.meta`)}</p>
+                <div>
+                  <h2>{t(`items.${active.key}.title`)}</h2>
+                  <p>{t(`items.${active.key}.desc`)}</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </main>
   );
 }
