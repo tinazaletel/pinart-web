@@ -24,9 +24,47 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'meta' });
+  const title = t('title');
+  const description = t('description');
+  const url = `https://pinart.si/${locale}`;
+
   return {
-    title: t('title'),
-    description: t('description')
+    title,
+    description,
+    metadataBase: new URL('https://pinart.si'),
+    alternates: {
+      canonical: url,
+      languages: {
+        'sl': 'https://pinart.si/sl',
+        'en': 'https://pinart.si/en',
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: 'Pinart',
+      locale: locale === 'sl' ? 'sl_SI' : 'en_US',
+      type: 'website',
+      images: [
+        {
+          url: '/og-image.jpg',
+          width: 1200,
+          height: 630,
+          alt: 'Pinart — Studio za kreativno direkcijo in branding',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['/og-image.jpg'],
+    },
+    icons: {
+      icon: '/Logos/Logo_pinart.svg',
+      apple: '/Logos/Logo_pinart.svg',
+    },
   };
 }
 
