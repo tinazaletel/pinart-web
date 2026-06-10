@@ -768,7 +768,7 @@ export default function Hero() {
         aria-hidden
         style={{
           position:      'absolute',
-          top:           'clamp(72dvh, 78dvh, calc(100dvh - 10rem))',
+          top:           'calc(100dvh - env(safe-area-inset-bottom, 0px) - 9rem)',
           left:          '50%',
           transform:     'translate(-50%,-50%)',
           fontFamily:    '"Bodoni Moda", var(--font-serif)',
