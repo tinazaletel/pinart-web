@@ -131,6 +131,7 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
     video: `${MW}/EFSA/freepik__a-whimsical-character-made-entirely-of-greenery-an__35564.mp4`,
     images: [
       `${MW}/EFSA/efsa_predstavitev_small_Page_6.jpg`,
+      `${MW}/EFSA/chewie_green_insta.png`,
     ],
   },
   {
