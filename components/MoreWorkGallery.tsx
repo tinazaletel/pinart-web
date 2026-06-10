@@ -126,6 +126,14 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
   },
   // ───────── decent middle tier ─────────
   {
+    key: 'chewieGreen',
+    src: `${MW}/EFSA/efsa_predstavitev_small_Page_6.jpg`,
+    video: `${MW}/EFSA/freepik__a-whimsical-character-made-entirely-of-greenery-an__35564.mp4`,
+    images: [
+      `${MW}/EFSA/efsa_predstavitev_small_Page_6.jpg`,
+    ],
+  },
+  {
     key: 'vseStoritve',
     src: `${MW}/Vsestoritve/Vsestoritve.png`,
     images: [
