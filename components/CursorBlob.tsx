@@ -1,50 +1,48 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
-/**
- * Packa-shaped custom cursor.
- * - Replaces native pointer on fine-pointer devices only (desktop)
- * - Follows mouse with spring lag (ink-drag feel)
- * - mix-blend-mode: difference → visible on both light and dark backgrounds
- */
 export default function CursorBlob() {
   const blobRef = useRef<HTMLDivElement>(null);
-  const [isFine, setIsFine] = useState(false);
 
   useEffect(() => {
     const fine = window.matchMedia('(pointer: fine)').matches;
-    setIsFine(fine);
     if (!fine) return;
 
     const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const blob = blobRef.current;
     if (!blob) return;
 
-    // hide native cursor
     document.body.classList.add('cursor-active');
 
-    let tx = -120, ty = -120;
+    let tx = -200, ty = -200;
     let cx = tx, cy = ty;
     let prevCx = cx, prevCy = cy;
     let raf = 0;
+    let started = false;
 
     const SPRING = RM ? 1 : 0.13;
-    const SIZE   = 48; // px — matches blob element width/height
+    const SIZE = 48;
 
-    const onMove = (e: PointerEvent) => { tx = e.clientX; ty = e.clientY; };
+    const onMove = (e: PointerEvent) => {
+      tx = e.clientX;
+      ty = e.clientY;
+      if (!started) {
+        started = true;
+        blob.style.opacity = '1';
+      }
+    };
 
     const tick = () => {
       prevCx = cx; prevCy = cy;
       cx += (tx - cx) * SPRING;
       cy += (ty - cy) * SPRING;
 
-      const vx    = cx - prevCx;
-      const vy    = cy - prevCy;
+      const vx = cx - prevCx;
+      const vy = cy - prevCy;
       const speed = Math.sqrt(vx * vx + vy * vy);
       const angle = Math.atan2(vy, vx) * 180 / Math.PI;
 
-      // stretch in direction of movement
       const sx = 1 + Math.min(speed * 0.025, 0.45);
       const sy = 1 / (sx * 0.9 + 0.1);
 
@@ -66,9 +64,6 @@ export default function CursorBlob() {
     };
   }, []);
 
-  // Ne renderiramo nič na touch/mobile napravah
-  if (!isFine) return null;
-
   return (
     <div
       ref={blobRef}
@@ -80,18 +75,14 @@ export default function CursorBlob() {
         pointerEvents: 'none',
         zIndex: 99999,
         willChange: 'transform',
-        transform: 'translate(-200px, -200px)', // začne offscreen
+        opacity: 0, // skrit dokler miška ne premakne
+        transform: 'translate(-200px, -200px)',
         mixBlendMode: 'difference',
         filter: 'invert(1)',
       }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/packa.svg"
-        alt=""
-        aria-hidden
-        style={{ width: '100%', height: '100%', display: 'block' }}
-      />
+      <img src="/packa.svg" alt="" aria-hidden style={{ width: '100%', height: '100%', display: 'block' }} />
     </div>
   );
 }
