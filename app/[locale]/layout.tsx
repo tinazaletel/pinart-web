@@ -72,7 +72,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={fontVariables}>
-      <head>
+      <body className="bg-paper text-ink antialiased">
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-0WKP0EZ8LJ"
           strategy="afterInteractive"
@@ -83,8 +83,6 @@ export default async function LocaleLayout({
           gtag('js', new Date());
           gtag('config', 'G-0WKP0EZ8LJ');
         `}</Script>
-      </head>
-      <body className="bg-paper text-ink antialiased">
         <NextIntlClientProvider messages={messages}>
           <Preloader />
           <SmoothScroll>
