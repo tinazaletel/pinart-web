@@ -1,18 +1,20 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * Packa-shaped custom cursor.
- * - Replaces native pointer on fine-pointer devices
+ * - Replaces native pointer on fine-pointer devices only (desktop)
  * - Follows mouse with spring lag (ink-drag feel)
  * - mix-blend-mode: difference → visible on both light and dark backgrounds
  */
 export default function CursorBlob() {
   const blobRef = useRef<HTMLDivElement>(null);
+  const [isFine, setIsFine] = useState(false);
 
   useEffect(() => {
     const fine = window.matchMedia('(pointer: fine)').matches;
+    setIsFine(fine);
     if (!fine) return;
 
     const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -63,6 +65,9 @@ export default function CursorBlob() {
       document.body.classList.remove('cursor-active');
     };
   }, []);
+
+  // Ne renderiramo nič na touch/mobile napravah
+  if (!isFine) return null;
 
   return (
     <div
