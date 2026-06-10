@@ -616,7 +616,7 @@ div.is-changing img {
   min-height: 100vh;
   background: var(--paper, #f5f2ea);
   color: var(--ink, #111);
-  padding: clamp(8rem, 12vw, 12rem) clamp(1.25rem, 4vw, 4.5rem) clamp(5rem, 8vw, 8rem);
+  padding: clamp(10rem, 14vw, 14rem) clamp(1.25rem, 4vw, 4.5rem) clamp(5rem, 8vw, 8rem);
 }
 
 .more-work-top {
@@ -630,7 +630,8 @@ div.is-changing img {
 
 .more-work-heading {
   max-width: 10ch;
-  margin: 0.65rem 0 0;
+  margin: 3rem 0 0;
+  padding-bottom: 1rem;
   font-family: var(--font-serif);
   font-size: clamp(4rem, 10vw, 11rem);
   font-weight: 400;
@@ -652,7 +653,8 @@ div.is-changing img {
   align-items: center;
   justify-content: center;
   min-height: 3rem;
-  margin-top: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
   padding: 0 1.5rem;
   border: 1px solid rgba(17,17,17,0.36);
   border-radius: 999px;
@@ -783,6 +785,10 @@ div.is-changing img {
   /* Anchor to top so posters / portraits (Isla) don't lose the head
      when cropped to the card aspect ratio. */
   object-position: center top;
+  transition: opacity 0.4s ease;
+}
+.more-work-card__slide.fading {
+  opacity: 0;
 }
 
 .more-work-card__caption {

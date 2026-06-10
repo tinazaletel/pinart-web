@@ -10,6 +10,7 @@ import Preloader from '@/components/Preloader';
 import CursorBlob from '@/components/CursorBlob';
 import SectionDots from '@/components/SectionDots';
 import FloatingUI from '@/components/FloatingUI';
+import PageTransition from '@/components/PageTransition';
 import '../globals.css';
 
 export function generateStaticParams() {
@@ -54,6 +55,7 @@ export default async function LocaleLayout({
           <div className="grain pointer-events-none fixed inset-0 z-[100]" aria-hidden />
           <SectionDots />
           <FloatingUI />
+          <PageTransition />
           <CursorBlob />
         </NextIntlClientProvider>
       </body>

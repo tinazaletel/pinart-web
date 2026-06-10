@@ -108,8 +108,8 @@ export default function Contact() {
                 color: TEXT,
               }}
             >
-              Got a project in mind?<br />
-              Let&apos;s talk!
+              {t('ctaL1')}<br />
+              {t('ctaL2')}
             </h3>
 
             <div
@@ -148,10 +148,10 @@ export default function Contact() {
           </div>
 
           <p style={{ fontSize: 'clamp(1rem, 1.35vw, 1.25rem)', lineHeight: 1.4, maxWidth: '34rem', marginBottom: '1.2rem' }}>
-            Together, we can create solutions that inspire and stand out.
+            {t('body1')}
           </p>
           <p style={{ fontSize: 'clamp(0.95rem, 1.2vw, 1.08rem)', lineHeight: 1.42, maxWidth: '34rem', opacity: 0.82, marginBottom: 'clamp(2.2rem, 4vw, 3.5rem)' }}>
-            Let&apos;s combine our creative strengths and make something extraordinary. Feel free to reach out—I look forward to working with you!
+            {t('body2')}
           </p>
 
           <div style={{ display: 'grid', gap: '0.75rem', marginBottom: 'clamp(2.2rem, 4vw, 3.5rem)' }}>

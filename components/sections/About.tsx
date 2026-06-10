@@ -194,7 +194,7 @@ export default function About() {
           </p>
 
           <SplitText
-            text="Ko ideja dobi obliko, ritem in prostor."
+            text={t('headline')}
             tag="h2"
             textAlign="left"
             splitType="chars"

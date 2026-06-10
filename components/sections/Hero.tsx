@@ -75,6 +75,7 @@ export default function Hero() {
   const wordRestRef  = useRef<HTMLDivElement>(null);
   const splatWrapRef = useRef<HTMLDivElement>(null);
   const blackoutRef  = useRef<HTMLDivElement>(null);
+  const scrollArrowRef = useRef<HTMLDivElement>(null);
   const finalRef     = useRef<HTMLDivElement>(null);
   const replayRef    = useRef<HTMLButtonElement>(null);
   const cueRef       = useRef<HTMLDivElement>(null);
@@ -86,6 +87,29 @@ export default function Hero() {
     const ac  = new AbortController();
     acRef.current = ac;
     const sig = ac.signal;
+
+    // On back navigation: skip animation, jump straight to final state
+    if (sessionStorage.getItem('pinart-hero-played')) {
+      const blackout = blackoutRef.current;
+      const finalEl  = finalRef.current;
+      const replay   = replayRef.current;
+      if (blackout) { blackout.style.transition = 'none'; blackout.style.opacity = '1'; }
+      if (finalEl) {
+        finalEl.style.opacity = '1';
+        finalEl.querySelectorAll<HTMLElement>('.ln').forEach(ln => {
+          ln.style.opacity   = '1';
+          ln.style.transform = 'translateY(0px) scale(1)';
+        });
+      }
+      if (replay) { replay.style.opacity = '0.5'; replay.style.pointerEvents = 'auto'; }
+      const scrollArrow = scrollArrowRef.current;
+      if (scrollArrow) scrollArrow.style.opacity = '1';
+      window.dispatchEvent(new CustomEvent('pinart-dark', { detail: { dark: true } }));
+      window.dispatchEvent(new CustomEvent('pinart-lenis-start'));
+      window.dispatchEvent(new CustomEvent('pinart-hero-done'));
+      document.body.style.overflow = '';
+      return;
+    }
 
     window.dispatchEvent(new CustomEvent('pinart-lenis-stop'));
     window.dispatchEvent(new CustomEvent('pinart-dark', { detail: { dark: false } }));
@@ -612,8 +636,14 @@ export default function Hero() {
     /* ── 10. REPLAY + SCROLL UNLOCK ─────────────────────────────────────── */
     replay.style.opacity       = '0.5';
     replay.style.pointerEvents = 'auto';
+    const scrollArrow = scrollArrowRef.current;
+    if (scrollArrow) scrollArrow.style.opacity = '1';
     document.body.style.overflow = '';
+    sessionStorage.setItem('pinart-hero-played', '1');
     window.dispatchEvent(new CustomEvent('pinart-lenis-start'));
+    // Hero is done — tell SmoothScroll to refresh ScrollTrigger so that
+    // SplitText and other scroll-based animations get correct trigger positions.
+    window.dispatchEvent(new CustomEvent('pinart-hero-done'));
 
   }, [t]);
 
@@ -815,7 +845,10 @@ export default function Hero() {
         {/* Replay button — 100px below finale text, inside the finale container */}
         <button
           ref={replayRef}
-          onClick={startAnimation}
+          onClick={() => {
+            sessionStorage.removeItem('pinart-hero-played');
+            startAnimation();
+          }}
           style={{
             marginTop:      '100px',
             zIndex:         30,
@@ -839,6 +872,39 @@ export default function Hero() {
         >
           {t('restart')}
         </button>
+      </div>
+
+      {/* Scroll-down cue — animated line + dot */}
+      <div
+        ref={scrollArrowRef}
+        style={{
+          position:      'absolute',
+          bottom:        'clamp(1.5rem, 3vw, 2.5rem)',
+          left:          '50%',
+          transform:     'translateX(-50%)',
+          opacity:       0,
+          zIndex:        30,
+          transition:    'opacity 0.6s ease',
+          pointerEvents: 'none',
+        }}
+      >
+        <style>{`
+          @keyframes scroll-dot {
+            0%   { transform: translateY(0);    opacity: 1; }
+            60%  { transform: translateY(22px); opacity: 0; }
+            61%  { transform: translateY(0);    opacity: 0; }
+            100% { transform: translateY(0);    opacity: 1; }
+          }
+        `}</style>
+        <svg width="16" height="48" viewBox="0 0 16 48" fill="none">
+          {/* vertical line */}
+          <line x1="8" y1="0" x2="8" y2="48" stroke="#ECE6D5" strokeWidth="1" strokeOpacity="0.5"/>
+          {/* bouncing dot */}
+          <circle
+            cx="8" cy="6" r="3" fill="#ECE6D5"
+            style={{ animation: 'scroll-dot 1.8s ease-in-out infinite' }}
+          />
+        </svg>
       </div>
 
     </section>

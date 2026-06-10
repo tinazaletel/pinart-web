@@ -55,6 +55,7 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
   {
     key: 'universum',
     src: `${MW}/Universum/Universum_web.png`,
+    video: `${MW}/Universum/universum_web.mp4`,
     images: [
       `${MW}/Universum/Universum_web.png`,
       `${MW}/Universum/Screenshot 2022-11-03 at 16.45.06.png`,
@@ -127,10 +128,10 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
   {
     // Hybrid: video → image cycle → video
     key: 'chewieGreen',
-    src: `${MW}/EFSA/chewie_green_insta.png`,
+    src: `${MW}/EFSA/zelenu_cuvaj.png`,
     video: `${MW}/EFSA/freepik__a-whimsical-character-made-entirely-of-greenery-an__35564.mp4`,
     images: [
-      `${MW}/EFSA/chewie_green_insta.png`,
+      `${MW}/EFSA/zelenu_cuvaj.png`,
       `${MW}/EFSA/efsa_predstavitev_small_Page_6.jpg`,
     ],
   },
@@ -285,10 +286,10 @@ export default function MoreWorkGallery() {
           <h1 className="more-work-heading">{t('heading')}</h1>
         </div>
         <div className="more-work-intro">
-          <p>{t('intro')}</p>
           <Link href={`/${locale}#work`} className="more-work-back">
-            {t('back')}
+            ← {t('back')}
           </Link>
+          <p>{t('intro')}</p>
         </div>
       </section>
 
@@ -356,6 +357,16 @@ function CardMedia({ item }: { item: GalleryItem }) {
   // mode: 'video' or 'images' — start with video if one exists, otherwise images
   const [mode, setMode] = useState<'video' | 'images'>(hasVideo ? 'video' : 'images');
   const [active, setActive] = useState(0);
+  const [fading, setFading] = useState(false);
+
+  const switchMode = (nextMode: 'video' | 'images', nextActive = 0) => {
+    setFading(true);
+    setTimeout(() => {
+      setMode(nextMode);
+      setActive(nextActive);
+      setFading(false);
+    }, 400);
+  };
 
   // Image cycling — only runs while in 'images' mode and there are multiple
   useEffect(() => {
@@ -363,18 +374,22 @@ function CardMedia({ item }: { item: GalleryItem }) {
     if (images.length < 2 && !hasVideo) return;
 
     const id = window.setInterval(() => {
-      setActive((i) => {
-        const next = i + 1;
+      const nextActive = (activeRef: number) => {
+        const next = activeRef + 1;
         if (next >= images.length) {
-          // End of image loop — go back to video if there is one
           if (hasVideo) {
-            setMode('video');
-            return 0;
+            switchMode('video', 0);
+            return activeRef;
           }
-          return 0; // restart from first image
+          return 0;
         }
         return next;
-      });
+      };
+      setFading(true);
+      setTimeout(() => {
+        setActive(prev => nextActive(prev));
+        setFading(false);
+      }, 400);
     }, 3500);
     return () => window.clearInterval(id);
   }, [mode, images.length, hasVideo]);
@@ -386,8 +401,7 @@ function CardMedia({ item }: { item: GalleryItem }) {
     if (mode !== 'video') return;
     if (!item.images || item.images.length === 0) return;
     const t = window.setTimeout(() => {
-      setActive(0);
-      setMode('images');
+      switchMode('images', 0);
     }, 8000);
     return () => window.clearTimeout(t);
   }, [mode, item.images]);
@@ -396,8 +410,7 @@ function CardMedia({ item }: { item: GalleryItem }) {
   // just loop the video.
   const handleVideoEnded = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     if (item.images && item.images.length > 0) {
-      setActive(0);
-      setMode('images');
+      switchMode('images', 0);
     } else {
       // No images — restart the video manually so it keeps looping
       const v = e.currentTarget;
@@ -411,7 +424,7 @@ function CardMedia({ item }: { item: GalleryItem }) {
       <video
         // key forces React to remount on every re-entry so autoplay fires
         key={`video-${item.key}`}
-        className="more-work-card__slide"
+        className={`more-work-card__slide${fading ? ' fading' : ''}`}
         src={item.video}
         poster={item.src}
         autoPlay
@@ -439,8 +452,8 @@ function CardMedia({ item }: { item: GalleryItem }) {
           loading="lazy"
           className="more-work-card__slide"
           style={{
-            opacity: i === active ? 1 : 0,
-            transition: "opacity 900ms ease-in-out",
+            opacity: i === active && !fading ? 1 : 0,
+            transition: "opacity 400ms ease-in-out",
           }}
         />
       ))}

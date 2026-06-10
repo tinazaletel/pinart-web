@@ -94,7 +94,7 @@ export default function Services() {
             {t('kicker')}
           </p>
           <SplitText
-            text="Od strategije do izvedbe, brez izgube občutka."
+            text={t('headline')}
             tag="h2"
             textAlign="left"
             splitType="chars"

@@ -60,13 +60,34 @@
         "title": "Developing Ideas",
         "desc": "Strategic development of concepts from first spark to execution."
       }
-    }
+    },
+    "headline": "From strategy to execution, without losing the feeling."
   },
   "projects": {
     "kicker": "Featured Work",
     "headline": "Work that builds feeling first.",
     "intro": "Pinart brings together creative direction, design and the development of ideas into cohesive visual systems. It doesn't chase trends — it finds the tone that belongs to the brand.",
-    "moreWork": "More work"
+    "moreWork": "More work",
+    "more": "More",
+    "backToWork": "Back to work",
+    "items": {
+      "petrol-pay": {
+        "category": "Payment · Loyalty Experience",
+        "desc": "A premium card experience for a recognizable brand."
+      },
+      "mbills": {
+        "category": "Branding · Mobile Banking App Redesign",
+        "desc": "Branding and redesign of mobile banking applications for a clearer, more confident user experience."
+      },
+      "lucky-7": {
+        "category": "UX/UI · Product Design",
+        "desc": "A new digital lottery experience designed for play, clarity, and momentum."
+      },
+      "molly-lolly": {
+        "category": "Original Brand · Product Universe",
+        "desc": "A playful character world spanning brand, story, product, and digital experience."
+      }
+    }
   },
   "moreWork": {
     "kicker": "More work",
@@ -478,7 +499,8 @@
   },
   "about": {
     "kicker": "About",
-    "body": "I create digital experiences that combine storytelling, movement and atmosphere. Together with developers and creatives, I build modern websites, branding systems and visual experiences for brands that want character."
+    "body": "I create digital experiences that combine storytelling, movement and atmosphere. Together with developers and creatives, I build modern websites, branding systems and visual experiences for brands that want character.",
+    "headline": "When an idea gets shape, rhythm and space."
   },
   "clients": {
     "kicker": "Reference",
@@ -487,7 +509,9 @@
   },
   "testimonials": {
     "kicker": "Testimonials",
-    "circle": "WORK*WITH*ME*HAVE*FUN*"
+    "circle": "WORK*WITH*ME*HAVE*FUN*",
+    "headlineL1": "Opinions,",
+    "headlineL2": "that matter."
   },
   "contact": {
     "kicker": "Contact",
@@ -495,7 +519,11 @@
     "tagline": "Ideas that stay.",
     "email": "tina@pinart.si",
     "showPhone": "Show phone",
-    "callPhone": "Call"
+    "callPhone": "Call",
+    "ctaL1": "Got a project in mind?",
+    "ctaL2": "Let's talk!",
+    "body1": "Together, we can create solutions that inspire and stand out.",
+    "body2": "Let's combine our creative strengths and make something extraordinary. Feel free to reach out — I look forward to working with you!"
   },
   "footer": {
     "tagline": "Ideas that stay.",

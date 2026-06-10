@@ -14,8 +14,6 @@ const PROJECTS = [
     num: '01',
     slug: 'petrol-pay',
     title: 'Petrol Loyalty',
-    category: 'Payment · Loyalty Experience',
-    desc: 'A premium card experience for a recognizable brand.',
     image: '/01_Petrol_kartice_prezentacija_mar_2023_6_gold-scaled.jpg',
     video: '/petrol-card-loop.mp4',
   },
@@ -23,8 +21,6 @@ const PROJECTS = [
     num: '02',
     slug: 'mbills',
     title: 'mBills',
-    category: 'Branding · Mobile Banking App Redesign',
-    desc: 'Branding and redesign of mobile banking applications for a clearer, more confident user experience.',
     image: '/mbills_backrgound.jpg',
     mobileImage: '/New_mBills_background_mobile.jpg',
   },
@@ -32,8 +28,6 @@ const PROJECTS = [
     num: '03',
     slug: 'lucky-7',
     title: 'Lucky 7',
-    category: 'UX/UI · Product Design',
-    desc: 'A new digital lottery experience designed for play, clarity, and momentum.',
     image: '/eloterija-lucky-7.png',
     video: '/lucky-7-loop.mp4',
   },
@@ -41,8 +35,6 @@ const PROJECTS = [
     num: '04',
     slug: 'molly-lolly',
     title: 'Molly Lolly',
-    category: 'Original Brand · Product Universe',
-    desc: 'A playful character world spanning brand, story, product, and digital experience.',
     image: '/Molly_Lolly_plush_toy-scaled.jpg',
   },
 ] as const;
@@ -274,10 +266,10 @@ export default function Projects() {
                 style={{ fontSize: 'clamp(3.5rem, 11vw, 10rem)', letterSpacing: '-0.02em', color: 'var(--paper)' }}
               />
               <span className="font-sans font-semibold text-paper/95 mt-6 uppercase tracking-[0.18em]" style={{ fontSize: 'clamp(13px, 0.95vw, 16px)', textShadow: '0 1px 12px rgba(0,0,0,0.55)' }}>
-                {project.category}
+                {t(`items.${project.slug}.category`)}
               </span>
               <p className="font-sans text-paper/90 mt-4 text-center leading-[1.55]" style={{ fontSize: 'clamp(15px, 1.05vw, 18px)', fontWeight: 500, maxWidth: '34ch', textShadow: '0 1px 14px rgba(0,0,0,0.6)' }}>
-                {project.desc}
+                {t(`items.${project.slug}.desc`)}
               </p>
               <Link
                 href={`/${locale}/work/${project.slug}`}
@@ -300,7 +292,7 @@ export default function Projects() {
                   transition:     'background .2s ease, transform .2s ease',
                 }}
               >
-                More <span aria-hidden="true">→</span>
+                {t('more')} <span aria-hidden="true">→</span>
               </Link>
             </div>
           </div>

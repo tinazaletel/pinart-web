@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { setRequestLocale } from 'next-intl/server';
+import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { routing, type Locale } from '@/i18n/routing';
 import PetrolPayCase from '@/components/sections/cases/PetrolPayCase';
 import MBillsCase from '@/components/sections/cases/MBillsCase';
@@ -43,7 +43,8 @@ export function generateStaticParams() {
   );
 }
 
-function BackToWork({ locale }: { locale: string }) {
+async function BackToWork({ locale }: { locale: string }) {
+  const t = await getTranslations({ locale, namespace: 'projects' });
   return (
     <BackButton
       fallbackHref={`/${locale}/#work`}
@@ -64,7 +65,7 @@ function BackToWork({ locale }: { locale: string }) {
         backdropFilter: 'blur(8px)'
       }}
     >
-      ← Back to work
+      ← {t('backToWork')}
     </BackButton>
   );
 }

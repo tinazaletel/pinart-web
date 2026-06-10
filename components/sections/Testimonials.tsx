@@ -78,7 +78,7 @@ export default function Testimonials() {
   const contentRef  = useRef<HTMLDivElement>(null);
   const triggeredRef = useRef(false);
   const [activeCard, setActiveCard] = useState<number | null>(null);
-  const [isRevealed, setIsRevealed] = useState(false);
+  const isRevealedRef = useRef(false);
 
   useEffect(() => {
     const RM      = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -102,7 +102,10 @@ export default function Testimonials() {
     // ── reveal: blur-in each direct child of content ──────────────────────────
     function revealContent() {
       if (!content) return;
-      setIsRevealed(true);
+      isRevealedRef.current = true;
+      if (section) section.style.background = BG;
+
+      // Animate left column children
       Array.from(content.children).forEach((el, i) => {
         gsap.fromTo(
           el,
@@ -110,11 +113,17 @@ export default function Testimonials() {
           { opacity: 1, filter: 'blur(0px)', y: 0, duration: 0.75, delay: i * 0.10, ease: 'power3.out' },
         );
       });
-      gsap.fromTo(
-        '.testimonial-card',
-        { opacity: 0, scale: 0.88, y: 48 },
-        { opacity: 1, scale: 1, y: 0, duration: 0.85, stagger: 0.18, delay: 0.24, ease: 'back.out(1.35)' },
-      );
+
+      // Animate cards one by one with stagger — GSAP sets opacity:0 first so
+      // no React-state-driven flash can occur
+      const cards = section?.querySelectorAll<HTMLElement>('.testimonial-card');
+      if (cards) {
+        gsap.fromTo(
+          Array.from(cards),
+          { opacity: 0, scale: 0.88, y: 48 },
+          { opacity: 1, scale: 1, y: 0, duration: 0.85, stagger: 0.18, delay: 0.24, ease: 'back.out(1.35)' },
+        );
+      }
     }
 
     // ── two-phase ink transition (identical pattern to TypographyCollapse) ────
@@ -136,6 +145,9 @@ export default function Testimonials() {
           if (section) {
             const top = Math.round(section.getBoundingClientRect().top + window.scrollY);
             window.dispatchEvent(new CustomEvent('pinart-snap', { detail: { y: top } }));
+            // Set background before reveal starts so the light Projects section
+            // below doesn't flash through while the dark ink recedes.
+            section.style.background = BG;
           }
           setTimeout(() => {
             phase = 'revealing';
@@ -170,6 +182,8 @@ export default function Testimonials() {
       gsap.killTweensOf(coverPts);
       gsap.killTweensOf(revealPts);
       phase = 'idle';
+      isRevealedRef.current = false;
+      if (section) section.style.background = 'transparent';
       window.dispatchEvent(new CustomEvent('pinart-lenis-start'));
       coverPts.fill(100);
       revealPts.fill(100);
@@ -181,6 +195,9 @@ export default function Testimonials() {
           (el as HTMLElement).style.filter  = '';
         });
       }
+      // reset cards opacity so they're ready for next reveal
+      const cards = section?.querySelectorAll<HTMLElement>('.testimonial-card');
+      cards?.forEach(c => { c.style.opacity = '0'; c.style.transform = ''; });
     }
 
     // ── scroll trigger ────────────────────────────────────────────────────────
@@ -256,12 +273,12 @@ export default function Testimonials() {
       ref={sectionRef}
       id="testimonials"
       data-nav-dark="true"
-      data-nav-light-ui={isRevealed ? undefined : 'true'}
+      data-nav-light-ui="true"
       style={{
         position:   'relative',
         zIndex:     20,
         isolation:  'isolate',
-        background: isRevealed ? BG : 'transparent',
+        background: 'transparent',
         minHeight:  '100svh',
         overflow:   'hidden',
         display:    'flex',
@@ -330,7 +347,7 @@ export default function Testimonials() {
                   marginBottom:  '1.6rem',
                 }}
               >
-                Mnenja,<br />ki štejejo.
+                {t('headlineL1')}<br />{t('headlineL2')}
               </h2>
               <p
                 style={{
@@ -391,7 +408,6 @@ export default function Testimonials() {
             height: 'clamp(620px,58vw,760px)',
             paddingTop: 'clamp(3.2rem,5vw,4.5rem)',
             marginTop: 'clamp(-3.2rem,-5vw,-4.5rem)',
-            opacity: isRevealed ? undefined : 0,
             pointerEvents: 'auto',
           }}
         >
@@ -415,7 +431,7 @@ export default function Testimonials() {
                 overflow:       'visible',
                 transform:      `rotate(${activeCard === i ? '0deg' : card.rot}) scale(${activeCard === i ? 1.06 : 1})`,
                 zIndex:         activeCard === i ? 80 : i + 1,
-                opacity:      isRevealed ? undefined : 0,
+                opacity:       0,
                 pointerEvents: 'auto',
                 background:   'rgba(245,242,234,0.97)',
                 borderRadius: 'clamp(10px,1.5vw,18px)',

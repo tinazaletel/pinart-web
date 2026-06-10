@@ -189,7 +189,7 @@ export default function TypographyCollapse() {
               measureBaselines();
               kicksEnabled = true;
               // Auto-pokaži hint po 0.8s da uporabnik ve da lahko udari črke
-              if (hint && !coarse) {
+              if (hint && !window.matchMedia('(pointer: coarse), (max-width: 700px)').matches) {
                 setTimeout(() => {
                   if (hasCollapsed) return;
                   const sRect = section.getBoundingClientRect();
@@ -301,7 +301,9 @@ export default function TypographyCollapse() {
       const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
 
       // Down → trigger ink transition (one-shot, never re-fires)
+      // Skip during back navigation recovery (2s window after popstate)
       if (dy > 0 && !triggered && rect.top <= window.innerHeight && rect.bottom > 0) {
+        if (sessionStorage.getItem('pinart-back-nav')) return;
         triggered = true;
         triggerTransition();
       }
@@ -333,13 +335,23 @@ export default function TypographyCollapse() {
         svgEl.style.pointerEvents = 'none';
       }
       revealSpans();
-      // Po Lenis scroll animaciji resetiraj triggered da se ink naslednjič znova zaigra
-      setTimeout(() => { triggered = false; }, 2000);
+      // Med back navigacijo triggered ostane true dokler user ne scrolla nazaj navzgor.
+      // Samo pri hash/nav skoku resetiramo triggered po 2s (da se ink naslednjič znova zaigra).
+      if (!sessionStorage.getItem('pinart-back-nav')) {
+        setTimeout(() => { triggered = false; }, 2000);
+      }
     };
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('pinart-skip-ink', onSkipInk);
+
+    // Back navigation: skip ink if flag was set before this component mounted
+    if (sessionStorage.getItem('pinart-skip-ink')) {
+      sessionStorage.removeItem('pinart-skip-ink');
+      onSkipInk();
+    }
+
     onScroll();
 
     return () => {

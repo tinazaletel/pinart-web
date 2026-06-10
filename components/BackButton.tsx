@@ -39,7 +39,10 @@ export default function BackButton({
         // It can include the initial blank entry, but back() is still safe.
         if (window.history.length > 1) {
           e.preventDefault();
-          router.back();
+          window.dispatchEvent(new CustomEvent('pinart-page-leave'));
+          // small delay so the fade overlay has time to start before
+          // Next.js unmounts the current page
+          setTimeout(() => router.back(), 60);
         }
       }}
     >

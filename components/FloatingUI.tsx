@@ -126,34 +126,7 @@ export default function FloatingUI() {
 
   return (
     <>
-      {/* ── scroll arrow — bottom centre ──────────────────────────────── */}
-      <button
-        onClick={() => window.scrollBy({ top: window.innerHeight * 0.92, behavior: 'smooth' })}
-        aria-label="Scroll down"
-        style={{
-          position:   'fixed',
-          bottom:     'clamp(1.4rem, 2.8vh, 2.2rem)',
-          left:       '50%',
-          transform:  'translateX(-50%)',
-          zIndex:     45,
-          background: 'none',
-          border:     'none',
-          padding:    '0.5rem',
-          cursor:     'pointer',
-          opacity:    arrowVisible && !pastHero && isDark ? 1 : 0,
-          transition: 'opacity 0.7s ease',
-          pointerEvents: arrowVisible && !pastHero && isDark ? 'auto' : 'none',
-        }}
-      >
-        {/* inline errow svg — black strokes so we can tint with filter */}
-        <Image
-          src="/errow.svg"
-          alt="Scroll"
-          width={8}
-          height={20}
-          style={{ filter: isDark ? 'invert(1)' : 'none', transition: 'filter 0.5s ease' }}
-        />
-      </button>
+      {/* scroll arrow removed — replaced by Lottie cue in Hero.tsx */}
 
       {/* ── Let's talk — bottom right ──────────────────────────────────── */}
       <button

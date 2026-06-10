@@ -112,20 +112,74 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       if (hash) scrollToHash(hash);
     };
 
+    // ── scroll position save/restore for back navigation ───────────────────
+    // Save scroll position when navigating away (Next.js uses pushState)
+    const origPushState = history.pushState.bind(history);
+    history.pushState = function (...args: Parameters<typeof history.pushState>) {
+      sessionStorage.setItem(`scroll:${window.location.pathname}`, String(Math.round(window.scrollY)));
+      return origPushState(...args);
+    };
+
+    // On back/forward: ensure lenis is running and restore saved position
+    const onPopState = () => {
+      // Immediately start lenis in case ink transition left it stopped
+      lenis.start();
+      window.dispatchEvent(new CustomEvent('pinart-lenis-start'));
+      // Skip ink transition on back navigation — use sessionStorage so
+      // TypographyCollapse can read it even after it mounts
+      sessionStorage.setItem('pinart-skip-ink', '1');
+      sessionStorage.setItem('pinart-back-nav', '1');
+      setTimeout(() => sessionStorage.removeItem('pinart-back-nav'), 2000);
+      window.dispatchEvent(new CustomEvent('pinart-skip-ink'));
+      // First refresh — components may not be mounted yet
+      setTimeout(() => {
+        lenis.start();
+        ScrollTrigger.refresh();
+        window.dispatchEvent(new CustomEvent('pinart-skip-ink'));
+      }, 100);
+      // Second refresh — after all components have mounted and painted
+      setTimeout(() => {
+        lenis.start();
+        window.dispatchEvent(new CustomEvent('pinart-skip-ink'));
+        ScrollTrigger.refresh();
+        const saved = sessionStorage.getItem(`scroll:${window.location.pathname}`);
+        if (saved) {
+          const y = parseInt(saved);
+          // immediate: true snaps position but may not fire Lenis scroll event,
+          // so we manually update ScrollTrigger afterwards.
+          lenis.scrollTo(y, { immediate: true, force: true });
+          ScrollTrigger.update();
+          // One more update on the next frame once layout has settled
+          requestAnimationFrame(() => ScrollTrigger.update());
+        }
+      }, 800);
+    };
+
+    // After hero animation ends: refresh ScrollTrigger so all SplitText
+    // and scroll-based animations get correct trigger positions.
+    const onHeroDone = () => {
+      setTimeout(() => ScrollTrigger.refresh(), 120);
+    };
+
     window.addEventListener('pinart-snap',         onSnap);
     window.addEventListener('pinart-lenis-stop',   onStop);
     window.addEventListener('pinart-lenis-start',  onStart);
     window.addEventListener('hashchange',          onHashChange);
     window.addEventListener('pinart-goto-hash',    onGotoHash);
+    window.addEventListener('popstate',            onPopState);
+    window.addEventListener('pinart-hero-done',    onHeroDone);
 
     return () => {
       gsap.ticker.remove(tickerFn);
       lenis.destroy();
+      history.pushState = origPushState;
       window.removeEventListener('pinart-snap',        onSnap);
       window.removeEventListener('pinart-lenis-stop',  onStop);
       window.removeEventListener('pinart-lenis-start', onStart);
       window.removeEventListener('hashchange',         onHashChange);
       window.removeEventListener('pinart-goto-hash',   onGotoHash);
+      window.removeEventListener('popstate',           onPopState);
+      window.removeEventListener('pinart-hero-done',   onHeroDone);
     };
   }, []);
 

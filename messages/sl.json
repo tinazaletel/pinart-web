@@ -60,13 +60,34 @@
         "title": "Razvoj idej",
         "desc": "Strateški razvoj konceptov od prve iskre do izvedbe."
       }
-    }
+    },
+    "headline": "Od strategije do izvedbe, brez izgube občutka."
   },
   "projects": {
     "kicker": "Izbrani projekti",
     "headline": "Delo, ki najprej vzpostavi občutek.",
     "intro": "Pinart povezuje kreativno direkcijo, oblikovanje in razvoj idej v celostne vizualne sisteme. Ne lovi trenda, ampak išče ton, ki znamki pripada.",
-    "moreWork": "Več del"
+    "moreWork": "Več del",
+    "more": "Več",
+    "backToWork": "Nazaj na delo",
+    "items": {
+      "petrol-pay": {
+        "category": "Plačila · Loyalty izkušnja",
+        "desc": "Premium kartična izkušnja za prepoznavno znamko."
+      },
+      "mbills": {
+        "category": "Branding · Prenova mobilne banke",
+        "desc": "Branding in prenova mobilnih bančnih aplikacij za jasnejšo in samozavestnejšo izkušnjo."
+      },
+      "lucky-7": {
+        "category": "UX/UI · Produktno oblikovanje",
+        "desc": "Nova digitalna loterijaska izkušnja — igrivost, jasnost, dinamika."
+      },
+      "molly-lolly": {
+        "category": "Izvirna znamka · Produktni svet",
+        "desc": "Igriva svetov likov — znamka, zgodba, produkt, digitalna izkušnja."
+      }
+    }
   },
   "moreWork": {
     "kicker": "Več del",
@@ -478,7 +499,8 @@
   },
   "about": {
     "kicker": "O meni",
-    "body": "Ustvarjam digitalne izkušnje, ki združujejo zgodbo, gibanje in atmosfero. Z razvijalci in ustvarjalci gradim sodobne spletne strani, sisteme blagovnih znamk in vizualne izkušnje za blagovne znamke s karakterjem."
+    "body": "Ustvarjam digitalne izkušnje, ki združujejo zgodbo, gibanje in atmosfero. Z razvijalci in ustvarjalci gradim sodobne spletne strani, sisteme blagovnih znamk in vizualne izkušnje za blagovne znamke s karakterjem.",
+    "headline": "Ko ideja dobi obliko, ritem in prostor."
   },
   "clients": {
     "kicker": "Reference",
@@ -487,7 +509,9 @@
   },
   "testimonials": {
     "kicker": "Mnenja",
-    "circle": "USTVARJAJVA*SKUPAJ*"
+    "circle": "USTVARJAJVA*SKUPAJ*",
+    "headlineL1": "Mnenja,",
+    "headlineL2": "ki štejejo."
   },
   "contact": {
     "kicker": "Kontakt",
@@ -495,7 +519,11 @@
     "tagline": "Ustvarjam ideje, ki ostanejo.",
     "email": "tina@pinart.si",
     "showPhone": "Prikaži telefon",
-    "callPhone": "Pokliči"
+    "callPhone": "Pokliči",
+    "ctaL1": "Imaš projekt v mislih?",
+    "ctaL2": "Pogovoriva se!",
+    "body1": "Skupaj lahko ustvariva rešitve, ki navdihujejo in ostanejo v spominu.",
+    "body2": "Združiva kreativne moči in narediva nekaj izjemnega. Javi se — veselim se sodelovanja!"
   },
   "footer": {
     "tagline": "Ustvarjam ideje, ki ostanejo.",
