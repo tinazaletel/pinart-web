@@ -80,7 +80,7 @@ export default function CursorBlob() {
         pointerEvents: 'none',
         zIndex: 99999,
         willChange: 'transform',
-        // make packa visible on both light + dark backgrounds
+        transform: 'translate(-200px, -200px)', // začne offscreen
         mixBlendMode: 'difference',
         filter: 'invert(1)',
       }}
