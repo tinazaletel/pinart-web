@@ -7,7 +7,6 @@ import { fontVariables } from '@/lib/fonts';
 import SmoothScroll from '@/components/SmoothScroll';
 import Nav from '@/components/Nav';
 import Preloader from '@/components/Preloader';
-import CursorBlob from '@/components/CursorBlob';
 import SectionDots from '@/components/SectionDots';
 import FloatingUI from '@/components/FloatingUI';
 import PageTransition from '@/components/PageTransition';
@@ -86,7 +85,6 @@ export default async function LocaleLayout({
           <SectionDots />
           <FloatingUI />
           <PageTransition />
-          <CursorBlob />
         </NextIntlClientProvider>
       </body>
     </html>
