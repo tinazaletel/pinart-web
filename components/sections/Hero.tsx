@@ -825,6 +825,7 @@ export default function Hero() {
       {/* Final text */}
       <div
         ref={finalRef}
+        className="hero-finale"
         style={{
           position:       'absolute',
           inset:          0,

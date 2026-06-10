@@ -343,7 +343,11 @@ div.is-changing img {
   }
 
   .typo-line span {
-    font-size: clamp(3.2rem, 20vw, 6rem) !important;
+    font-size: clamp(2.8rem, 13.5vw, 13rem) !important;
+  }
+
+  .hero-finale .ln {
+    font-size: clamp(3.2rem, 11vw, 5rem) !important;
   }
 
   .hero-scroll-arrow {
