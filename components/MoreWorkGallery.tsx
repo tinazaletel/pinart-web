@@ -501,10 +501,8 @@ function CardMedia({ item }: { item: GalleryItem }) {
           loading="lazy"
           className="more-work-card__slide"
           style={{
-            // fading=true (mode switch) → all images fade out
-            // otherwise: active stays visible, nextSlide fades in — no black gap
             opacity: fading ? 0 : (i === active || i === nextSlide ? 1 : 0),
-            transition: "opacity 400ms ease-in-out",
+            transition: 'opacity 400ms ease-in-out',
           }}
         />
       ))}

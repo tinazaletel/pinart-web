@@ -9,8 +9,8 @@ import SplitText from '@/components/SplitText';
 const SERVICES = [
   { key: 'direction', image: '/creative_direction.png' },
   { key: 'branding',  image: '/branding.jpg' },
-  { key: 'graphic',   image: '/images/Molly_Lolly_knjigice.png' },
-  { key: 'marketing', image: '/images/Firefly-advertisement-billboard-on-the-buss-stop-in-Ljubljana-6332-2 copy.jpg' },
+  { key: 'graphic',   image: '/work/molly-lolly/Molly_Lolly_knjigice.png' },
+  { key: 'marketing', image: '/firefly-billboard.jpg' },
   { key: 'web',       image: '/web_development.png' },
   { key: 'ideas',     image: '/Molly_Lolly_plush_toy-scaled.jpg' },
 ] as const;
