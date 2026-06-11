@@ -58,7 +58,6 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
     video: `${MW}/Universum/universum_web.mp4`,
     images: [
       `${MW}/Universum/Universum_web.png`,
-      `${MW}/Universum/Screenshot 2022-11-03 at 16.45.06.png`,
     ],
   },
   {
@@ -400,15 +399,27 @@ function CardMedia({ item }: { item: GalleryItem }) {
   const [mode, setMode] = useState<'video' | 'images'>(hasVideo ? 'video' : 'images');
   const [active, setActive] = useState(0);
   const [fading, setFading] = useState(false);
+  // nextSlide: index of the image currently fading IN (outgoing stays visible)
+  const [nextSlide, setNextSlide] = useState<number | null>(null);
 
-  const switchMode = (nextMode: 'video' | 'images', nextActive = 0) => {
+  const switchMode = (nextMode: 'video' | 'images', nextActiveIdx = 0) => {
     setFading(true);
     setTimeout(() => {
+      // First: switch mode (new content renders at opacity 0 because fading=true)
       setMode(nextMode);
-      setActive(nextActive);
-      setFading(false);
+      setActive(nextActiveIdx);
+      setNextSlide(null);
+      // Then on the next paint: clear fading so new content fades in smoothly
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setFading(false));
+      });
     }, 400);
   };
+
+  // Ref so the interval always reads the latest active index without needing
+  // it as a dependency (which would restart the interval on every slide change)
+  const activeRef = useRef(active);
+  activeRef.current = active;
 
   // Image cycling — only runs while in 'images' mode and there are multiple
   useEffect(() => {
@@ -416,22 +427,18 @@ function CardMedia({ item }: { item: GalleryItem }) {
     if (images.length < 2 && !hasVideo) return;
 
     const id = window.setInterval(() => {
-      const nextActive = (activeRef: number) => {
-        const next = activeRef + 1;
-        if (next >= images.length) {
-          if (hasVideo) {
-            switchMode('video', 0);
-            return activeRef;
-          }
-          return 0;
-        }
-        return next;
-      };
-      setFading(true);
-      setTimeout(() => {
-        setActive(prev => nextActive(prev));
-        setFading(false);
-      }, 400);
+      const cur = activeRef.current;
+      const next = cur + 1;
+      if (next >= images.length) {
+        if (hasVideo) { switchMode('video', 0); return; }
+        // wrap around: crossfade to first image
+        setNextSlide(0);
+        setTimeout(() => { setActive(0); setNextSlide(null); }, 400);
+        return;
+      }
+      // crossfade to next image: incoming fades in, outgoing stays visible
+      setNextSlide(next);
+      setTimeout(() => { setActive(next); setNextSlide(null); }, 400);
     }, 3500);
     return () => window.clearInterval(id);
   }, [mode, images.length, hasVideo]);
@@ -494,7 +501,9 @@ function CardMedia({ item }: { item: GalleryItem }) {
           loading="lazy"
           className="more-work-card__slide"
           style={{
-            opacity: i === active && !fading ? 1 : 0,
+            // fading=true (mode switch) → all images fade out
+            // otherwise: active stays visible, nextSlide fades in — no black gap
+            opacity: fading ? 0 : (i === active || i === nextSlide ? 1 : 0),
             transition: "opacity 400ms ease-in-out",
           }}
         />
