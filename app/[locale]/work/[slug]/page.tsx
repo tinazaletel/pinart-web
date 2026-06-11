@@ -82,6 +82,8 @@ export default async function WorkCaseStudyPage({
   const content = CASES[slug];
   if (!content) notFound();
 
+  const t = await getTranslations({ locale, namespace: 'projects' });
+
   // Render the full case study for projects that already have one.
   // Stub for the rest until their dedicated component lands.
   const FULL_CASE: Record<string, JSX.Element> = {
