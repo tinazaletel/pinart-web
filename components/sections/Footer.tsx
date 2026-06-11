@@ -14,6 +14,7 @@ export default function Footer() {
     <footer
       id="footer"
       className="site-footer"
+      data-nav-dark="true"
       style={{
         background: BG,
         color: TEXT,

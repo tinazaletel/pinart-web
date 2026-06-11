@@ -6,6 +6,7 @@ import CircularText from '@/components/CircularText';
 import RevealOnScroll from '@/components/RevealOnScroll';
 import BlurText from '@/components/BlurText';
 import BackButton from '@/components/BackButton';
+import Footer from '@/components/sections/Footer';
 
 const SERVICE_SLUGS = ['direction', 'branding', 'graphic', 'marketing', 'web', 'ideas'] as const;
 type ServiceSlug = (typeof SERVICE_SLUGS)[number];
@@ -147,6 +148,7 @@ export default async function ServiceDetailPage({
   const related = RELATED_WORK[slug as ServiceSlug];
 
   return (
+    <>
     <main
       style={{
         background: 'var(--paper, #F5F2EA)',
@@ -821,5 +823,7 @@ export default async function ServiceDetailPage({
         </Link>
       </RevealOnScroll>
     </main>
+    <Footer />
+    </>
   );
 }

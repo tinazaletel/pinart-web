@@ -160,8 +160,8 @@ const SplitText = ({
     wordWrap:      'break-word',
     willChange:    'transform, opacity',
     ...style,           // caller overrides (fontSize, fontFamily, etc.)
-    paddingBottom: '0.22em',  // descender space — extends overflow:hidden clip boundary
-    marginBottom:  '-0.22em', // cancel the extra layout space so surroundings are unaffected
+    paddingBottom: '0.35em',  // descender space — extends overflow:hidden clip boundary
+    marginBottom:  '-0.35em', // cancel the extra layout space so surroundings are unaffected
   };
 
   // Dynamically render the requested tag

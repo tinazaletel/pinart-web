@@ -421,6 +421,7 @@ export default function TypographyCollapse() {
               <span
                 key={ci}
                 aria-hidden="true"
+                className="typo-char"
                 ref={el => { if (el) spanRefs.current[k] = el; }}
                 style={{
                   display:         'inline-block',

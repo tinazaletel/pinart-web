@@ -1,5 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import MoreWorkGallery from '@/components/MoreWorkGallery';
+import Footer from '@/components/sections/Footer';
 
 export default async function MoreWorkPage({
   params
@@ -9,5 +10,10 @@ export default async function MoreWorkPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <MoreWorkGallery />;
+  return (
+    <>
+      <MoreWorkGallery />
+      <Footer />
+    </>
+  );
 }

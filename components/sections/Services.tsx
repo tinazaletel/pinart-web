@@ -213,11 +213,12 @@ export default function Services() {
                   fontFamily:    'var(--font-condensed)',
                   fontSize:      'clamp(1.85rem,4.25vw,4.65rem)',
                   fontWeight:    500,
-                  lineHeight:    0.98,
+                  lineHeight:    1.05,
                   letterSpacing: '-0.01em',
                   color:         'var(--ink)',
                   mixBlendMode:  'multiply' as React.CSSProperties['mixBlendMode'],
                   display:       'block',
+                  paddingRight:  '0.15em',
                   transition:    'transform 520ms cubic-bezier(0.16,1,0.3,1)',
                 }}
               />

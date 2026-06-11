@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import BackButton from '@/components/BackButton';
+import BlurText from '@/components/BlurText';
 import { gsap } from '@/lib/gsap';
 
 // `src` is the lightbox hero image; `images` (optional) is a rotation
@@ -301,7 +302,15 @@ export default function MoreWorkGallery() {
             ← {t('back')}
           </BackButton>
           <p className="kicker">{t('kicker')}</p>
-          <h1 className="more-work-heading">{t('heading')}</h1>
+          <BlurText
+            tag="h1"
+            className="more-work-heading"
+            text={t('heading')}
+            animateBy="words"
+            direction="bottom"
+            delay={120}
+            stepDuration={0.45}
+          />
         </div>
         <div className="more-work-intro">
           <p>{t('intro')}</p>

@@ -6,6 +6,7 @@ import MBillsCase from '@/components/sections/cases/MBillsCase';
 import Lucky7Case from '@/components/sections/cases/Lucky7Case';
 import MollyLollyCase from '@/components/sections/cases/MollyLollyCase';
 import BackButton from '@/components/BackButton';
+import Footer from '@/components/sections/Footer';
 
 type CaseContent = {
   title: string;
@@ -106,7 +107,7 @@ export default async function WorkCaseStudyPage({
         <BackToWork locale={locale} />
       </div>
 
-      {FULL_CASE[slug] ?? (
+      {FULL_CASE[slug] ? <>{FULL_CASE[slug]}<Footer /></> : (<>
         <main
           style={{
             minHeight: '100vh',
@@ -195,7 +196,8 @@ export default async function WorkCaseStudyPage({
             </div>
           </div>
         </main>
-      )}
+        <Footer />
+      </>)}
     </>
   );
 }

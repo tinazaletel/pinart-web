@@ -404,7 +404,7 @@ div.is-changing img {
 
   .service-row .svc-name {
     grid-column: 2 !important;
-    max-width: 8ch !important;
+    max-width: 14ch !important;
     font-size: clamp(2rem, 11vw, 3.15rem) !important;
     line-height: 0.95 !important;
     transform: none !important;
@@ -1020,5 +1020,12 @@ div.is-changing img {
 
   .more-work-lightbox__inner {
     width: 100%;
+  }
+}
+
+/* ── TypographyCollapse: narrower font on mobile so OBLIKOVANJE fits ────────── */
+@media (max-width: 640px) {
+  .typo-char {
+    font-size: clamp(1.5rem, 8vw, 3rem) !important;
   }
 }
