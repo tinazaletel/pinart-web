@@ -52,7 +52,7 @@ function ScreenCycler({
 
 const LAPTOP_SCREENS = [
   '/work/lucky-7/desktop_wheel.jpg',
-  '/work/lucky-7/desktop_gameplay.png',
+  '/work/lucky-7/desktop_gameplay.jpg',
   '/work/lucky-7/desktop_win.jpg'
 ];
 const PHONE_SCREENS = [

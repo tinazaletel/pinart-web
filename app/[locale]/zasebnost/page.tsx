@@ -105,6 +105,7 @@ export default async function PrivacyPage({
   const content = locale === 'sl' ? sl : en;
 
   return (
+    <>
     <main
       style={{
         background: 'var(--paper)',
@@ -177,5 +178,6 @@ export default async function PrivacyPage({
       </div>
     </main>
     <Footer />
+    </>
   );
 }

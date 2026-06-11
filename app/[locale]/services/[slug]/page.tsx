@@ -154,7 +154,7 @@ export default async function ServiceDetailPage({
         background: 'var(--paper, #F5F2EA)',
         color: 'var(--ink, #111)',
         fontFamily: 'var(--font-sans)',
-        paddingBottom: 'clamp(6rem, 10vw, 10rem)'
+        paddingBottom: 0
       }}
     >
       {/* ── Top wrapper — back-button + hero share one clipping container

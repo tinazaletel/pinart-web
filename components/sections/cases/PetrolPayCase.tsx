@@ -343,11 +343,13 @@ export default function PetrolPayCase({ locale }: Props) {
           </div>
 
           <div className="portal__phone">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <video
               className="portal__media portal__media--phone"
-              src="/work/petrol-pay/portal_phone.gif"
-              alt="Petrol Pay portal — mobile mockup"
+              src="/work/petrol-pay/portal_phone.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
             />
           </div>
         </div>

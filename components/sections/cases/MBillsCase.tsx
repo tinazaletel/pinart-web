@@ -147,7 +147,7 @@ export default function MBillsCase({ locale }: { locale: string }) {
         >
           <div className="tile" style={{ aspectRatio: '4/3' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/work/mbills/mBills_phone_hand.png" alt="mBills wallet — in hand" />
+            <img src="/work/mbills/mBills_phone_hand.jpg" alt="mBills wallet — in hand" />
             <div className="tile-cap">{t('chapter1TileCap')}</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -333,7 +333,8 @@ export default function MBillsCase({ locale }: { locale: string }) {
               '/work/mbills/Photo_direction_0.jpg',
               '/work/mbills/photo_direction.jpg',
               '/work/mbills/photo_direction_1.jpg',
-              '/work/mbills/photo_direction_2.jpg'
+              '/work/mbills/photo_direction_2.jpg',
+              '/work/mbills/photo_direction_3.jpg'
             ]}
           />
         </div>
@@ -486,12 +487,12 @@ export default function MBillsCase({ locale }: { locale: string }) {
           }}
         >
           <LaptopShowcase
-            src="/work/mbills/portal_mbills_screen.png"
+            src="/work/mbills/portal_mbills_screen.jpg"
             label={t('webPortal1Label')}
             tileBg="linear-gradient(135deg, #e8edf3 0%, #c9d2dd 100%)"
           />
           <LaptopShowcase
-            src="/work/mbills/portal_wish_screen.png"
+            src="/work/mbills/portal_wish_screen.jpg"
             label={t('webPortal2Label')}
             tileBg="linear-gradient(135deg, #d4f5e0 0%, #8ec5a3 100%)"
           />

@@ -121,7 +121,7 @@ export default function MollyLollyCase({ locale }: { locale: string }) {
         </div>
 
         <div className="grid-4">
-          <Cap label={t('capPrintLabel')} title={t('capPrintTitle')} desc={t('capPrintDesc')} img="/work/molly-lolly/books_collection.png" imgBg="#ffffff" imgFit="contain" />
+          <Cap label={t('capPrintLabel')} title={t('capPrintTitle')} desc={t('capPrintDesc')} img="/work/molly-lolly/Molly_Lolly_knjigice.png" imgBg="#ffffff" imgFit="contain" />
           <Cap label={t('capActivityLabel')} title={t('capActivityTitle')} desc={t('capActivityDesc')} img="/work/molly-lolly/workbook.jpg" />
           <Cap label={t('capPlushLabel')} title={t('capPlushTitle')} desc={t('capPlushDesc')} img="/work/molly-lolly/plush_room.jpg" />
           <Cap label={t('capDigitalLabel')} title={t('capDigitalTitle')} desc={t('capDigitalDesc')} img="/work/molly-lolly/ar_app.png" />

@@ -180,7 +180,7 @@ export default function About() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/tina 1.png"
+              src="/tina-1.jpg"
               alt="Tina Zaletel"
               style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
             />
