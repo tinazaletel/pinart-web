@@ -198,21 +198,21 @@ export default function Nav() {
           <span
             className="block h-px w-[22px] origin-center transition-[transform,background-color] duration-300"
             style={{
-              backgroundColor: isDark ? 'rgba(248,245,238,0.88)' : 'rgba(17,17,17,0.88)',
+              backgroundColor: (isDark && !menuOpen) ? 'rgba(248,245,238,0.88)' : 'rgba(17,17,17,0.88)',
               transform: menuOpen ? 'translateY(6px) rotate(45deg)' : 'none',
             }}
           />
           <span
             className="block h-px w-[22px] transition-[opacity,background-color] duration-200"
             style={{
-              backgroundColor: isDark ? 'rgba(248,245,238,0.88)' : 'rgba(17,17,17,0.88)',
+              backgroundColor: (isDark && !menuOpen) ? 'rgba(248,245,238,0.88)' : 'rgba(17,17,17,0.88)',
               opacity: menuOpen ? 0 : 1,
             }}
           />
           <span
             className="block h-px w-[22px] origin-center transition-[transform,background-color] duration-300"
             style={{
-              backgroundColor: isDark ? 'rgba(248,245,238,0.88)' : 'rgba(17,17,17,0.88)',
+              backgroundColor: (isDark && !menuOpen) ? 'rgba(248,245,238,0.88)' : 'rgba(17,17,17,0.88)',
               transform: menuOpen ? 'translateY(-6px) rotate(-45deg)' : 'none',
             }}
           />

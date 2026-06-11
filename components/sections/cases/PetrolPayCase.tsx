@@ -714,7 +714,6 @@ export default function PetrolPayCase({ locale }: Props) {
         .brand-apps__video {
           background: #0a0a0a;
           border-radius: 6px;
-          border: 1px solid rgba(245, 242, 234, 0.06);
           overflow: hidden;
           display: flex;
           flex-direction: column;
@@ -739,7 +738,6 @@ export default function PetrolPayCase({ locale }: Props) {
           margin: 0;
           background: #0a0a0a;
           border-radius: 6px;
-          border: 1px solid rgba(245, 242, 234, 0.06);
           overflow: hidden;
           display: flex;
           flex-direction: column;

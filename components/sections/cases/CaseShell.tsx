@@ -398,6 +398,7 @@ export default function CaseShell({ children }: { children: ReactNode }) {
           .pinart-case .next-case__title { font-size: clamp(3rem, 16vw, 8rem); }
         }
         @media (max-width: 560px) {
+          .pinart-case .grid-2 { grid-template-columns: 1fr; }
           .pinart-case .grid-4 { grid-template-columns: 1fr; }
           .pinart-case .stats { grid-template-columns: 1fr; gap: 28px; }
           .pinart-case .case-meta-inline { flex-direction: column; gap: 16px; }

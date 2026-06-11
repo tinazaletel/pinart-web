@@ -1,27 +1,17 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { gsap } from '@/lib/gsap';
 
 // ─── static data ──────────────────────────────────────────────────────────────
 
-const LINES = [
-  'DESIGNING',
-  'DIGITAL',
-  'EMOTION',
-  'THROUGH',
-  'INTERACTIVE',
-  'STORIES',
-];
 const LINE_ALPHA = [0.96, 0.40, 0.96, 0.40, 0.96, 0.40];
 
 interface CharDef { ch: string; li: number; ci: number; }
-const CHARS: CharDef[] = [];
-LINES.forEach((w, li) => w.split('').forEach((ch, ci) => CHARS.push({ ch, li, ci })));
-const LINE_SLICES: CharDef[][] = LINES.map((_, li) => CHARS.filter(c => c.li === li));
-function gIdx(li: number, ci: number) {
-  return CHARS.findIndex(c => c.li === li && c.ci === ci);
+function gIdx(chars: CharDef[], li: number, ci: number) {
+  return chars.findIndex(c => c.li === li && c.ci === ci);
 }
 
 // ─── transition path builders ─────────────────────────────────────────────────
@@ -63,8 +53,17 @@ interface Letter {
 }
 
 export default function TypographyCollapse() {
+  const t          = useTranslations('typography');
   const pathname   = usePathname();
   const sectionRef = useRef<HTMLElement>(null);
+
+  const LINES = useMemo(() => t.raw('words') as string[], [t]);
+  const CHARS = useMemo(() => {
+    const chars: CharDef[] = [];
+    LINES.forEach((w, li) => w.split('').forEach((ch, ci) => chars.push({ ch, li, ci })));
+    return chars;
+  }, [LINES]);
+  const LINE_SLICES = useMemo(() => LINES.map((_, li) => CHARS.filter(c => c.li === li)), [LINES, CHARS]);
   const spanRefs   = useRef<HTMLSpanElement[]>([]);
   const pathRef    = useRef<SVGPathElement>(null);
   const svgRef     = useRef<SVGSVGElement>(null);
@@ -417,7 +416,7 @@ export default function TypographyCollapse() {
           }}
         >
           {slice.map(({ ch, ci }) => {
-            const k = gIdx(li, ci);
+            const k = gIdx(CHARS, li, ci);
             return (
               <span
                 key={ci}

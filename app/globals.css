@@ -13,6 +13,24 @@
   box-sizing: border-box;
 }
 
+h1, h2, h3, h4 {
+  -webkit-text-stroke: 0.3px currentColor;
+}
+
+.pinart-case .case-lede,
+.pinart-case .lede,
+.pinart-case .stats__desc,
+.pinart-case em,
+.pinart-case i {
+  -webkit-text-stroke: 0.3px currentColor;
+}
+
+.typo-line span,
+#testimonials h1, #testimonials h2, #testimonials h3,
+.hero-finale .ln {
+  -webkit-text-stroke: 0.5px currentColor;
+}
+
 html,
 body {
   margin: 0;
@@ -301,6 +319,7 @@ div.is-changing img {
   gap: clamp(1.5rem, 4vw, 4rem);
   align-items: center;
 }
+
 
 @media (min-width: 761px) and (max-width: 1180px) {
   .testimonial-cards {
