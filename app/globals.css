@@ -19,9 +19,7 @@ h1, h2, h3, h4 {
 
 .pinart-case .case-lede,
 .pinart-case .lede,
-.pinart-case .stats__desc,
-.pinart-case em,
-.pinart-case i {
+.pinart-case .stats__desc {
   -webkit-text-stroke: 0.3px currentColor;
 }
 

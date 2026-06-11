@@ -71,6 +71,7 @@
     "moreWork": "Več del",
     "more": "Več",
     "backToWork": "Nazaj na delo",
+    "caseStudyEyebrow": "Izbrano delo · Študija primera",
     "items": {
       "petrol-pay": {
         "category": "Plačila · Loyalty izkušnja",
@@ -272,6 +273,8 @@
     "whyLabel": "Zakaj jaz",
     "workLabel": "Iz arhiva",
     "workTitle": "Projekti, ki kažejo, kako delamo.",
+    "caseStudyLabel": "Študija primera",
+    "viewLabel": "Poglej →",
     "ctaLabel": "Pišimo si",
     "ctaTitle": "Pripravljeni na sodelovanje?",
     "ctaButton": "Kontakt",

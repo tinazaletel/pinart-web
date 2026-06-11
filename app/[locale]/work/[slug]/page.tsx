@@ -125,7 +125,7 @@ export default async function WorkCaseStudyPage({
                 fontWeight: 500
               }}
             >
-              Selected Work · <span style={{ color: '#b25476', fontWeight: 600 }}>Case study</span>
+              {t('caseStudyEyebrow').split('·')[0]}· <span style={{ color: '#b25476', fontWeight: 600 }}>{t('caseStudyEyebrow').split('· ')[1]}</span>
             </p>
 
             <h1

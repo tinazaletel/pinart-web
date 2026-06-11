@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, type ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import Lenis from 'lenis';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 
@@ -13,6 +14,18 @@ import { gsap, ScrollTrigger } from '@/lib/gsap';
  * every Lenis scroll event so scrub progress updates immediately.
  */
 export default function SmoothScroll({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+
+  // Scroll to top on every route change
+  useEffect(() => {
+    const lenis = (window as unknown as { __pinartLenis?: { scrollTo: (v: number, o: object) => void } }).__pinartLenis;
+    if (lenis) {
+      lenis.scrollTo(0, { immediate: true });
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname]);
+
   useEffect(() => {
     // Force every (re)load to start at the top so ScrollTriggers with `once: true`
     // don't get skipped because the browser restored scroll past their start point.

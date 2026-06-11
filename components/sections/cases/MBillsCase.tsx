@@ -187,7 +187,8 @@ export default function MBillsCase({ locale }: { locale: string }) {
                   fontSize: 'clamp(2rem, 3.5vw, 3rem)',
                   lineHeight: 1,
                   fontWeight: 500,
-                  marginBottom: 14
+                  marginBottom: 14,
+                  WebkitTextStroke: '0.3px rgba(245,242,234,0.88)'
                 }}
               >
                 FinTech{' '}
@@ -198,7 +199,8 @@ export default function MBillsCase({ locale }: { locale: string }) {
                     background: 'linear-gradient(135deg,#c16784,#b25476)',
                     WebkitBackgroundClip: 'text',
                     backgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
+                    WebkitTextFillColor: 'transparent',
+                    WebkitTextStroke: '0.3px #c16784'
                   }}
                 >
                   Award

@@ -71,6 +71,7 @@
     "moreWork": "More work",
     "more": "More",
     "backToWork": "Back to work",
+    "caseStudyEyebrow": "Selected Work · Case study",
     "items": {
       "petrol-pay": {
         "category": "Payment · Loyalty Experience",
@@ -272,6 +273,8 @@
     "whyLabel": "Why me",
     "workLabel": "From the archive",
     "workTitle": "Projects that show how we work.",
+    "caseStudyLabel": "Case study",
+    "viewLabel": "View →",
     "ctaLabel": "Let's talk",
     "ctaTitle": "Ready to collaborate?",
     "ctaButton": "Contact",

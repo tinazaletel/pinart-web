@@ -66,7 +66,8 @@ const RELATED_WORK: Record<ServiceSlug, RelatedItem[]> = {
     { kind: 'case', slug: 'molly-lolly', image: CASE_IMAGE['molly-lolly'] },
     // override default app/wallet image with the printed poster, which is
     // the right graphic-design example for mBills.
-    { kind: 'case', slug: 'mbills', image: '/more_work/Mbills_adds/70x100_mBills.png' }
+    { kind: 'case', slug: 'mbills', image: '/more_work/Mbills_adds/70x100_mBills.png' },
+    { kind: 'case', slug: 'petrol-pay', image: '/work/petrol-pay/Petrol_Pay_Business_silver.jpg' }
   ],
   marketing: [
     // override the default mBills image with the printed ads composition,
@@ -598,7 +599,7 @@ export default async function ServiceDetailPage({
                           fontWeight: 500
                         }}
                       >
-                        Case study
+                        {t('caseStudyLabel')}
                       </div>
                       <div
                         style={{
@@ -623,7 +624,7 @@ export default async function ServiceDetailPage({
                           fontWeight: 600
                         }}
                       >
-                        View →
+                        {t('viewLabel')}
                       </div>
                     </div>
                   </Link>
