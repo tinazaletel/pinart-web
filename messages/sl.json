@@ -824,5 +824,10 @@
       "phoneEvo3Year": "Nova podoba",
       "nextCaseTitle": "Lucky 7<em>.</em>"
     }
+  },
+  "cookies": {
+    "text": "Ta spletna stran uporablja piškotke za analitiko (Google Analytics), da razumemo, kako obiskovalci uporabljajo stran. Podatki so anonimni.",
+    "accept": "Sprejmi",
+    "decline": "Zavrni"
   }
 }

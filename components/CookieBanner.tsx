@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function CookieBanner() {
+  const t = useTranslations('cookies');
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -48,8 +50,7 @@ export default function CookieBanner() {
           color: 'rgba(245,242,234,0.82)',
         }}
       >
-        Ta spletna stran uporablja piškotke za analitiko (Google Analytics), da razumemo,
-        kako obiskovalci uporabljajo stran. Podatki so anonimni.
+        {t('text')}
       </p>
 
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -72,7 +73,7 @@ export default function CookieBanner() {
           onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
           onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
         >
-          Sprejmi
+          {t('accept')}
         </button>
         <button
           onClick={() => respond('declined')}
@@ -93,7 +94,7 @@ export default function CookieBanner() {
           onMouseEnter={e => (e.currentTarget.style.opacity = '0.75')}
           onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
         >
-          Zavrni
+          {t('decline')}
         </button>
       </div>
     </div>

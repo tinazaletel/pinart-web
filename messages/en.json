@@ -824,5 +824,10 @@
       "phoneEvo3Year": "New design",
       "nextCaseTitle": "Lucky 7<em>.</em>"
     }
+  },
+  "cookies": {
+    "text": "This website uses cookies for analytics (Google Analytics) to understand how visitors use the site. Data is anonymous.",
+    "accept": "Accept",
+    "decline": "Decline"
   }
 }
