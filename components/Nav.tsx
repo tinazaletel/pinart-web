@@ -96,8 +96,14 @@ export default function Nav() {
       <header
         ref={headerRef}
         data-scrolled="false"
-        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between"
-        style={{ padding: 'clamp(0.75rem,1.4vw,1.1rem) clamp(1.25rem,4vw,4.5rem)' }}
+        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between md:bg-transparent"
+        style={{
+          padding: 'clamp(0.75rem,1.4vw,1.1rem) clamp(1.25rem,4vw,4.5rem)',
+          backgroundColor: isScrolled ? (isDark ? 'rgba(17,17,17,0.15)' : 'rgba(245,242,234,0.15)') : 'transparent',
+          backdropFilter: isScrolled ? 'blur(16px)' : 'none',
+          WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'none',
+          transition: 'background-color 0.35s ease',
+        }}
       >
         {/* Logo — follows dark/light state on both mobile and desktop */}
         <Link href="/" onClick={() => setMenuOpen(false)}>
@@ -203,7 +209,8 @@ export default function Nav() {
 
         {/* Mobile hamburger */}
         <button
-          className="md:hidden flex flex-col justify-center gap-[5px] w-8 h-8"
+          className="md:hidden flex flex-col justify-center w-8 h-8"
+          style={{ gap: '5px' }}
           onClick={() => setMenuOpen(v => !v)}
           aria-label="Toggle menu"
           aria-expanded={menuOpen}
