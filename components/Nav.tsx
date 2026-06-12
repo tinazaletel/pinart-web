@@ -96,18 +96,32 @@ export default function Nav() {
       <header
         ref={headerRef}
         data-scrolled="false"
-        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 md:px-14 lg:px-16 py-4 md:py-6"
-        style={{
-          backgroundColor: isScrolled
-            ? isDark
-              ? 'rgba(17,17,17,0.55)'
-              : 'rgba(245,242,234,0.65)'
-            : 'rgba(245, 242, 234, 0)',
-          backdropFilter: isScrolled ? 'blur(8px)' : 'none',
-          WebkitBackdropFilter: isScrolled ? 'blur(8px)' : 'none',
-          transition: 'background-color 0.3s ease, backdrop-filter 0.3s ease',
-        }}
+        className="fixed inset-x-0 top-0 z-50 flex justify-center"
+        style={{ padding: 'clamp(0.6rem,1.2vw,1rem) clamp(0.75rem,2vw,1.5rem)' }}
       >
+        <div
+          className="flex items-center justify-between w-full"
+          style={{
+            maxWidth: '1480px',
+            padding: isScrolled
+              ? 'clamp(0.5rem,0.8vw,0.75rem) clamp(1rem,2vw,2rem)'
+              : 'clamp(0.5rem,0.8vw,0.75rem) clamp(0.25rem,1vw,0.5rem)',
+            backgroundColor: isScrolled
+              ? isDark
+                ? 'rgba(17,17,17,0.6)'
+                : 'rgba(245,242,234,0.72)'
+              : 'transparent',
+            backdropFilter: isScrolled ? 'blur(14px)' : 'none',
+            WebkitBackdropFilter: isScrolled ? 'blur(14px)' : 'none',
+            borderRadius: isScrolled ? '999px' : '0',
+            transition: 'background-color 0.35s ease, border-radius 0.35s ease, padding 0.35s ease, backdrop-filter 0.35s ease',
+            border: isScrolled
+              ? isDark
+                ? '1px solid rgba(245,242,234,0.08)'
+                : '1px solid rgba(17,17,17,0.07)'
+              : '1px solid transparent',
+          }}
+        >
         {/* Logo — follows dark/light state on both mobile and desktop */}
         <Link href="/" onClick={() => setMenuOpen(false)}>
           <Image
@@ -226,6 +240,7 @@ export default function Nav() {
             }}
           />
         </button>
+        </div>
       </header>
 
       {/* Mobile fullscreen overlay */}
