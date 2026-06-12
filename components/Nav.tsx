@@ -117,13 +117,13 @@ export default function Nav() {
           style={{
             padding: isScrolled ? '0.5rem 1.5rem' : '0',
             backgroundColor: isScrolled
-              ? isDark ? 'rgba(17,17,17,0.55)' : 'rgba(245,242,234,0.45)'
+              ? isDark ? 'rgba(17,17,17,0.28)' : 'rgba(245,242,234,0.28)'
               : 'transparent',
-            backdropFilter: isScrolled ? 'blur(14px)' : 'none',
-            WebkitBackdropFilter: isScrolled ? 'blur(14px)' : 'none',
+            backdropFilter: isScrolled ? 'blur(16px)' : 'none',
+            WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'none',
             borderRadius: '999px',
             border: isScrolled
-              ? isDark ? '1px solid rgba(245,242,234,0.08)' : '1px solid rgba(17,17,17,0.07)'
+              ? isDark ? '1px solid rgba(245,242,234,0.12)' : '1px solid rgba(17,17,17,0.1)'
               : '1px solid transparent',
             transition: 'background-color 0.35s ease, padding 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease',
           }}
