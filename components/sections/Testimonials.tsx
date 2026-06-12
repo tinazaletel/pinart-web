@@ -388,6 +388,7 @@ export default function Testimonials() {
                 loop
                 muted
                 playsInline
+                preload="metadata"
                 aria-hidden
                 style={{
                   position: 'absolute',

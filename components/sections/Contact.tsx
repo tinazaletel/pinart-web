@@ -132,6 +132,7 @@ export default function Contact() {
                 loop
                 muted
                 playsInline
+                preload="metadata"
                 aria-hidden
                 style={{
                   position: 'absolute',
