@@ -828,6 +828,7 @@
   "cookies": {
     "text": "This website uses cookies for analytics (Google Analytics) to understand how visitors use the site. Data is anonymous.",
     "accept": "Accept",
-    "decline": "Decline"
+    "decline": "Decline",
+    "privacy": "Privacy policy"
   }
 }

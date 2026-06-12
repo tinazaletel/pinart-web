@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 
 export default function CookieBanner() {
   const t = useTranslations('cookies');
@@ -50,7 +51,18 @@ export default function CookieBanner() {
           color: 'rgba(245,242,234,0.82)',
         }}
       >
-        {t('text')}
+        {t('text')}{' '}
+        <Link
+          href="/sl/zasebnost"
+          style={{
+            color: 'rgba(245,242,234,0.65)',
+            textDecoration: 'underline',
+            textUnderlineOffset: '0.2em',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {t('privacy')}
+        </Link>
       </p>
 
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
