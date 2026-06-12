@@ -122,9 +122,7 @@ export default function Nav() {
             backdropFilter: isScrolled ? 'blur(16px)' : 'none',
             WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'none',
             borderRadius: '999px',
-            border: isScrolled
-              ? isDark ? '1px solid rgba(245,242,234,0.12)' : '1px solid rgba(17,17,17,0.1)'
-              : '1px solid transparent',
+            border: 'none',
             transition: 'background-color 0.35s ease, padding 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease',
           }}
         >
