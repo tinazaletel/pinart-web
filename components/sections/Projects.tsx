@@ -14,7 +14,7 @@ const PROJECTS = [
     num: '01',
     slug: 'petrol-pay',
     title: 'Petrol Loyalty',
-    image: '/01_Petrol_kartice_prezentacija_mar_2023_6_gold-scaled.jpg',
+    image: '/work/petrol-pay/Petrol_Pay_loyalty_gold.jpg',
     video: '/petrol-card-loop.mp4',
   },
   {
@@ -28,7 +28,7 @@ const PROJECTS = [
     num: '03',
     slug: 'lucky-7',
     title: 'Lucky 7',
-    image: '/eloterija-lucky-7.png',
+    image: '/work/lucky-7/lucky_7_primeri.jpg',
     video: '/lucky-7-loop.mp4',
   },
   {
@@ -319,7 +319,7 @@ export default function Projects() {
             justifyContent: 'center',
             minHeight:      '3.25rem',
             padding:        '0 2rem',
-            border:         '1px solid rgba(17,17,17,0.42)',
+            border:         '1.5px solid var(--ink)',
             borderRadius:   '999px',
             color:          'var(--ink)',
             fontSize:       '0.78rem',
@@ -327,6 +327,8 @@ export default function Projects() {
             letterSpacing:  '0.18em',
           }}
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/album-02.svg" alt="" aria-hidden style={{ width: '1.1rem', height: '1.1rem', marginRight: '0.55rem', display: 'block' }} />
           {t('moreWork')}
         </Link>
       </div>

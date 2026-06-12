@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import CaseShell, { NextCase } from './CaseShell';
 import BlurText from '@/components/BlurText';
 
@@ -40,8 +41,7 @@ export default function MBillsCase({ locale }: { locale: string }) {
         </div>
 
         <div className="case-hero__visual" style={{ aspectRatio: '21/9' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/work/mbills/mBills_wallet_prezentation-scaled.jpg" alt="mBills wallet — brand presentation" />
+          <Image src="/work/mbills/mBills_wallet_prezentation-scaled.jpg" alt="mBills wallet — brand presentation" width={2560} height={1706} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           <div className="tile-cap" style={{ left: 24, bottom: 24 }}>
             {t('heroVisualCap')}
           </div>
@@ -146,8 +146,7 @@ export default function MBillsCase({ locale }: { locale: string }) {
           className="mbills-ch1"
         >
           <div className="tile" style={{ aspectRatio: '4/3' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/work/mbills/mBills_phone_hand.jpg" alt="mBills wallet — in hand" />
+            <Image src="/work/mbills/mBills_phone_hand.jpg" alt="mBills wallet — in hand" width={2500} height={1549} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             <div className="tile-cap">{t('chapter1TileCap')}</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -520,8 +519,7 @@ export default function MBillsCase({ locale }: { locale: string }) {
           className="tile tile--wide"
           style={{ aspectRatio: '16/9', position: 'relative' }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/work/mbills/mBills_app.jpg" alt="mBills 2024 wallet — never shipped" />
+          <Image src="/work/mbills/mBills_app.jpg" alt="mBills 2024 wallet — never shipped" width={2500} height={2000} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           <div
             style={{
               position: 'absolute',

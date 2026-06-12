@@ -298,6 +298,7 @@ export default function PetrolPayCase({ locale }: Props) {
               muted
               loop
               playsInline
+              preload="auto"
             />
             <div className="brand-apps__caption">{t('brandAppsVideoCap')}</div>
           </div>

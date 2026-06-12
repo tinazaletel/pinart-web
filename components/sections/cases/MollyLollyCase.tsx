@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import CaseShell, { NextCase } from './CaseShell';
 import BlurText from '@/components/BlurText';
 
@@ -140,12 +141,10 @@ export default function MollyLollyCase({ locale }: { locale: string }) {
 
         <div className="grid-2" style={{ marginTop: 48 }}>
           <div className="tile tile--wide" style={{ aspectRatio: '3/4' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/work/molly-lolly/child_reading_1.jpg" alt="Child reading" />
+            <Image src="/work/molly-lolly/child_reading_1.jpg" alt="Child reading" width={1706} height={2560} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div className="tile tile--wide" style={{ aspectRatio: '3/4' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/work/molly-lolly/child_reading_2.jpg" alt="Child reading" />
+            <Image src="/work/molly-lolly/child_reading_2.jpg" alt="Child reading" width={1200} height={1800} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         </div>
       </section>
@@ -167,8 +166,7 @@ export default function MollyLollyCase({ locale }: { locale: string }) {
           </p>
         </div>
         <div className="tile tile--wide" style={{ marginTop: 48, aspectRatio: '16/8' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/work/molly-lolly/plush.jpg" alt="Plush Molly Lolly" />
+          <Image src="/work/molly-lolly/plush.jpg" alt="Plush Molly Lolly" width={2560} height={1440} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
       </section>
 
@@ -206,13 +204,11 @@ export default function MollyLollyCase({ locale }: { locale: string }) {
         {/* AR + 3D room side by side */}
         <div className="grid-2" style={{ marginTop: 16 }}>
           <div className="tile tile--wide" style={{ aspectRatio: '4/3' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/work/molly-lolly/ar_app.png" alt="AR app showing 3D monkey on physical book" />
+            <Image src="/work/molly-lolly/ar_app.png" alt="AR app showing 3D monkey on physical book" width={1448} height={1086} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             <div className="tile-cap">{t('digitalArCap')}</div>
           </div>
           <div className="tile tile--wide" style={{ aspectRatio: '4/3' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/work/molly-lolly/room_3d.png" alt="3D room fallback in low light" />
+            <Image src="/work/molly-lolly/room_3d.png" alt="3D room fallback in low light" width={1463} height={1075} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             <div className="tile-cap">{t('digital3dCap')}</div>
           </div>
         </div>

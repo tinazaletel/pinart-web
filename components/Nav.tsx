@@ -144,7 +144,7 @@ export default function Nav() {
                   }}
                 >
                   <span
-                    className="block text-[10px] font-sans font-medium uppercase tracking-[0.22em] transition-colors duration-500"
+                    className="block text-[10px] font-sans font-medium uppercase tracking-[0.22em] transition-colors duration-200"
                     style={{ color: isDark ? '#F5F2EA' : '#111111' }}
                   >
                     {t(key)}
@@ -160,7 +160,7 @@ export default function Nav() {
             return (
               <Link key={key} href={href} className="group relative py-1">
                 <span
-                  className="block text-[10px] font-sans font-medium uppercase tracking-[0.22em] transition-colors duration-500"
+                  className="block text-[10px] font-sans font-medium uppercase tracking-[0.22em] transition-colors duration-200"
                   style={{ color: isDark ? '#F5F2EA' : '#111111' }}
                 >
                   {t(key)}
@@ -175,7 +175,7 @@ export default function Nav() {
           <Link
             href={pathname}
             locale={otherLocale}
-            className="text-[10px] font-sans tracking-[0.18em] hover:opacity-85 transition-[opacity,color,border-color] duration-500 ml-2 inline-flex items-center"
+            className="text-[10px] font-sans tracking-[0.18em] hover:opacity-85 transition-[opacity,color,border-color] duration-200 ml-2 inline-flex items-center"
             style={{
               color: isDark ? 'rgba(248,245,238,0.75)' : 'var(--ink)',
               border: `1px solid ${isDark ? 'rgba(248,245,238,0.35)' : 'rgba(17,17,17,0.28)'}`,

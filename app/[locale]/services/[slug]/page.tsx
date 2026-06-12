@@ -78,13 +78,13 @@ const RELATED_WORK: Record<ServiceSlug, RelatedItem[]> = {
       kind: 'media',
       title: 'Vse storitve',
       meta: 'Marketing · In-store',
-      image: '/more_work/Vsestoritve/vsestoritve_stojnica.png'
+      image: '/more_work/Vsestoritve/vsestoritve_stojnica.jpg'
     },
     {
       kind: 'media',
       title: 'Petrol',
       meta: 'Marketing · LCD telopi',
-      video: '/more_work/Petrol_adds/petrol_telop_web.mp4',
+      video: '/more_work/Petrol_adds/petrol_ad_web.mp4',
       image: '/more_work/Petrol_adds/oglas_petrol.jpg'
     }
   ],
@@ -94,7 +94,7 @@ const RELATED_WORK: Record<ServiceSlug, RelatedItem[]> = {
       title: 'Universum',
       meta: 'Web',
       video: '/more_work/Universum/universum_web.mp4',
-      image: '/more_work/Universum/Universum_web.png',
+      image: '/more_work/Universum/Universum_web.jpg',
       cover: true
     },
     {
@@ -117,7 +117,7 @@ const RELATED_WORK: Record<ServiceSlug, RelatedItem[]> = {
       kind: 'media',
       title: 'Ribbon Lips',
       meta: 'CGP · Produkt',
-      image: '/more_work/RibbonLips/1920x1080_header_ribbon_lips.png'
+      image: '/more_work/RibbonLips/1920x1080_header_ribbon_lips.jpg'
     },
     { kind: 'case', slug: 'mbills', image: CASE_IMAGE['mbills'] }
   ]
@@ -279,11 +279,9 @@ export default async function ServiceDetailPage({
                 spinDuration={26}
                 onHover="speedUp"
               />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/magnific_e-winks-she-laughs-and-spins-386-around-like-she-i_seedance_480p_16-9_24fps_67623-2-2-2.gif"
-                alt=""
-                aria-hidden
+              <video
+                src="/testimonials_girl_spin.mp4"
+                autoPlay loop muted playsInline aria-hidden
                 style={{
                   position: 'absolute',
                   top: '50%',
@@ -780,11 +778,9 @@ export default async function ServiceDetailPage({
               spinDuration={22}
               onHover="speedUp"
             />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/magnific_the-girl-is-working-on-the-laptop-and-at-the-end-s_seedance_480p_16-9_24fps_67587.gif"
-              alt=""
-              aria-hidden
+            <video
+              src="/contact_girl_laptop.mp4"
+              autoPlay loop muted playsInline aria-hidden
               style={{
                 position: 'absolute',
                 top: '50%',

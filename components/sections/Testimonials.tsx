@@ -382,10 +382,12 @@ export default function Testimonials() {
                 spinDuration={22}
                 onHover="speedUp"
               />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/magnific_e-winks-she-laughs-and-spins-386-around-like-she-i_seedance_480p_16-9_24fps_67623-2-2-2.gif"
-                alt=""
+              <video
+                src="/testimonials_girl_spin.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
                 aria-hidden
                 style={{
                   position: 'absolute',

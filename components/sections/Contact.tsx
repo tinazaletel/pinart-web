@@ -125,11 +125,13 @@ export default function Contact() {
               }}
             >
               <CircularText text="LET'S*CREATE*SOMETHING*" spinDuration={22} onHover="speedUp" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <video
                 className="contact-spin-gif__media"
-                src="/magnific_the-girl-is-working-on-the-laptop-and-at-the-end-s_seedance_480p_16-9_24fps_67587.gif"
-                alt=""
+                src="/contact_girl_laptop.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
                 aria-hidden
                 style={{
                   position: 'absolute',

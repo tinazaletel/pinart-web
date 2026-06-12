@@ -211,9 +211,9 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
   {
     key: 'familyFun',
     src: `${MW}/Family_fun/family_fun_logo-scaled.jpg`,
+    video: `${MW}/Family_fun/Sequence-01_web.mp4`,
     images: [
       `${MW}/Family_fun/family_fun_logo-scaled.jpg`,
-      `${MW}/Family_fun/Sequence-01_8-2-1.gif`,
     ],
   },
   {

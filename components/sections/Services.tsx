@@ -271,6 +271,8 @@ export default function Services() {
           <div style={{ borderTop: '1px solid rgba(17,17,17,0.12)' }} />
         </div>
       </div>
+      {/* sentinel — turns nav dark as dark section approaches */}
+      <div data-nav-dark="true" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 'clamp(18rem,28vw,28rem)', pointerEvents: 'none' }} />
     </section>
   );
 }
