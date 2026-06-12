@@ -22,6 +22,7 @@ export default function Nav() {
   const heroDarkRef = useRef(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const header = headerRef.current;
@@ -30,6 +31,7 @@ export default function Nav() {
     let dark = false;
 
     const update = () => {
+      setIsScrolled(window.scrollY > 24);
       const headerH = header.offsetHeight;
       const hero = document.getElementById('hero');
       const heroRect = hero?.getBoundingClientRect();
@@ -96,7 +98,14 @@ export default function Nav() {
         data-scrolled="false"
         className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 md:px-14 lg:px-16 py-4 md:py-6 border-b border-transparent"
         style={{
-          backgroundColor: 'rgba(245, 242, 234, 0)',
+          backgroundColor: isScrolled
+            ? isDark
+              ? 'rgba(17,17,17,0.82)'
+              : 'rgba(245,242,234,0.88)'
+            : 'rgba(245, 242, 234, 0)',
+          backdropFilter: isScrolled ? 'blur(12px)' : 'none',
+          WebkitBackdropFilter: isScrolled ? 'blur(12px)' : 'none',
+          transition: 'background-color 0.3s ease, backdrop-filter 0.3s ease',
         }}
       >
         {/* Logo — follows dark/light state on both mobile and desktop */}
