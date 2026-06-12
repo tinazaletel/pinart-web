@@ -44,21 +44,20 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
   },
   {
     key: 'ribbonLips',
-    src: `${MW}/RibbonLips/1920x1080_header_ribbon_lips.png`,
+    src: `${MW}/RibbonLips/1920x1080_header_ribbon_lips.jpg`,
+    video: `${MW}/RibbonLips/Screen Recording 2026-06-07 at 21.49.31_web.mp4`,
     images: [
-      `${MW}/RibbonLips/1920x1080_header_ribbon_lips.png`,
-      `${MW}/RibbonLips/RibbonLips_embalaža.png`,
+      `${MW}/RibbonLips/1920x1080_header_ribbon_lips.jpg`,
+      `${MW}/RibbonLips/RibbonLips_embalaža.jpg`,
       `${MW}/RibbonLips/Ribbonlips_kolekcija_2021-scaled.jpg`,
-      `${MW}/RibbonLips/3bae1668-0756-443d-bf72-cc547a154bf9_2018-05-31-05-17-37_owJAaB.jpeg`,
-      `${MW}/RibbonLips/ai_img_1.jpeg`,
     ],
   },
   {
     key: 'universum',
-    src: `${MW}/Universum/Universum_web.png`,
+    src: `${MW}/Universum/Universum_web.jpg`,
     video: `${MW}/Universum/universum_web.mp4`,
     images: [
-      `${MW}/Universum/Universum_web.png`,
+      `${MW}/Universum/Universum_web.jpg`,
     ],
   },
   {
@@ -73,10 +72,10 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
   },
   {
     key: 'mbills',
-    src: `${MW}/mBills/mBills_Mastercard.png`,
+    src: `${MW}/mBills/mBills_Mastercard.jpg`,
     video: `${MW}/mBills/mBills_web_min.mp4`,
     images: [
-      `${MW}/mBills/mBills_Mastercard.png`,
+      `${MW}/mBills/mBills_Mastercard.jpg`,
       `${MW}/mBills/Mastercard_mBills.png`,
       `${MW}/mBills/mBills_portal.png`,
     ],
@@ -136,11 +135,11 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
   },
   {
     key: 'vseStoritve',
-    src: `${MW}/Vsestoritve/Vsestoritve.png`,
+    src: `${MW}/Vsestoritve/Vsestoritve.jpg`,
     images: [
-      `${MW}/Vsestoritve/Vsestoritve.png`,
+      `${MW}/Vsestoritve/Vsestoritve.jpg`,
       `${MW}/Vsestoritve/Vsestoritve_web.png`,
-      `${MW}/Vsestoritve/vsestoritve_stojnica.png`,
+      `${MW}/Vsestoritve/vsestoritve_stojnica.jpg`,
       `${MW}/Vsestoritve/3bae1668-0756-443d-bf72-cc547a154bf9_2017-01-26-16-47-52_hSHAW6.jpg`,
       `${MW}/Vsestoritve/3bae1668-0756-443d-bf72-cc547a154bf9_2018-03-27-21-34-39_IiJ0bt.jpg`,
     ],
@@ -170,7 +169,6 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
     src: `${MW}/Kariera/Knjiga-kariera.jpg`,
     images: [
       `${MW}/Kariera/Knjiga-kariera.jpg`,
-      `${MW}/Kariera/Knjiga-kariera-scaled.jpg`,
     ],
   },
   // ───────── older items ─────────
@@ -230,11 +228,11 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
   // ───────── oldest / least relevant — at the very end ─────────
   {
     key: 'mdRevija',
-    src: `${MW}/Moje_delo_tiskovine/MD_karierna_revija.png`,
+    src: `${MW}/Moje_delo_tiskovine/MD_karierna_revija.jpg`,
     images: [
-      `${MW}/Moje_delo_tiskovine/MD_karierna_revija.png`,
-      `${MW}/Moje_delo_tiskovine/Kariera.png`,
-      `${MW}/Moje_delo_tiskovine/student_knjiga.png`,
+      `${MW}/Moje_delo_tiskovine/MD_karierna_revija.jpg`,
+      `${MW}/Moje_delo_tiskovine/Kariera.jpg`,
+      `${MW}/Moje_delo_tiskovine/student_knjiga.jpg`,
     ],
   },
   { key: 'rokusKlett', src: `${MW}/Rokus_Klett/Rokus_Klett.png` },
