@@ -10,6 +10,8 @@ import Preloader from '@/components/Preloader';
 import SectionDots from '@/components/SectionDots';
 import FloatingUI from '@/components/FloatingUI';
 import PageTransition from '@/components/PageTransition';
+import CookieBanner from '@/components/CookieBanner';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 import '../globals.css';
 
 export function generateStaticParams() {
@@ -85,6 +87,8 @@ export default async function LocaleLayout({
           <SectionDots />
           <FloatingUI />
           <PageTransition />
+          <CookieBanner />
+          <GoogleAnalytics />
         </NextIntlClientProvider>
       </body>
     </html>
