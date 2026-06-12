@@ -121,7 +121,7 @@ export default function Nav() {
               : 'transparent',
             backdropFilter: isScrolled ? 'blur(16px)' : 'none',
             WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'none',
-            borderRadius: '999px',
+            borderRadius: '10px',
             border: 'none',
             transition: 'background-color 0.35s ease, padding 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease',
           }}
@@ -210,7 +210,7 @@ export default function Nav() {
             backgroundColor: isScrolled ? (isDark ? 'rgba(17,17,17,0.15)' : 'rgba(245,242,234,0.15)') : 'transparent',
             backdropFilter: isScrolled ? 'blur(16px)' : 'none',
             WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'none',
-            borderRadius: '999px',
+            borderRadius: '10px',
             transition: 'background-color 0.35s ease, padding 0.35s ease',
           }}
           onClick={() => setMenuOpen(v => !v)}
