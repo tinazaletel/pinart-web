@@ -117,7 +117,7 @@ export default function Nav() {
           style={{
             padding: isScrolled ? '0.5rem 1.5rem' : '0',
             backgroundColor: isScrolled
-              ? isDark ? 'rgba(17,17,17,0.28)' : 'rgba(245,242,234,0.28)'
+              ? isDark ? 'rgba(17,17,17,0.15)' : 'rgba(245,242,234,0.15)'
               : 'transparent',
             backdropFilter: isScrolled ? 'blur(16px)' : 'none',
             WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'none',
