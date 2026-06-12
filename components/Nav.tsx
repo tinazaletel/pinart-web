@@ -100,11 +100,11 @@ export default function Nav() {
         style={{
           backgroundColor: isScrolled
             ? isDark
-              ? 'rgba(17,17,17,0.82)'
-              : 'rgba(245,242,234,0.88)'
+              ? 'rgba(17,17,17,0.55)'
+              : 'rgba(245,242,234,0.65)'
             : 'rgba(245, 242, 234, 0)',
-          backdropFilter: isScrolled ? 'blur(12px)' : 'none',
-          WebkitBackdropFilter: isScrolled ? 'blur(12px)' : 'none',
+          backdropFilter: isScrolled ? 'blur(8px)' : 'none',
+          WebkitBackdropFilter: isScrolled ? 'blur(8px)' : 'none',
           transition: 'background-color 0.3s ease, backdrop-filter 0.3s ease',
         }}
       >
