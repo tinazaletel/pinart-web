@@ -99,7 +99,6 @@ export default function Nav() {
         className="fixed inset-x-0 top-0 z-50 flex items-center justify-between"
         style={{ padding: 'clamp(0.75rem,1.4vw,1.1rem) clamp(1.25rem,4vw,4.5rem)' }}
       >
-        <div>
         {/* Logo — follows dark/light state on both mobile and desktop */}
         <Link href="/" onClick={() => setMenuOpen(false)}>
           <Image
@@ -233,7 +232,6 @@ export default function Nav() {
             }}
           />
         </button>
-        </div>
       </header>
 
       {/* Mobile fullscreen overlay */}
