@@ -96,7 +96,7 @@ export default function Nav() {
       <header
         ref={headerRef}
         data-scrolled="false"
-        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 md:px-14 lg:px-16 py-4 md:py-6 border-b border-transparent"
+        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 md:px-14 lg:px-16 py-4 md:py-6"
         style={{
           backgroundColor: isScrolled
             ? isDark
