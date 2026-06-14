@@ -280,7 +280,7 @@
     "ctaButton": "Contact",
     "direction": {
       "lede": "Visual strategy and direction — from brand concept to consistent execution across every touchpoint.",
-      "processTitle": "Four steps — from idea to execution.",
+      "processTitle": "Four steps — from idea to execution",
       "steps": {
         "01": {
           "title": "Understand the brand",
@@ -317,7 +317,7 @@
     },
     "branding": {
       "lede": "Identity systems — logo, palette, typography, voice and brand book that make a brand recognisable.",
-      "processTitle": "Branding isn't just a logo. It's a system.",
+      "processTitle": "Branding isn't just a logo. It's a system",
       "steps": {
         "01": {
           "title": "Understand the story",
@@ -354,7 +354,7 @@
     },
     "graphic": {
       "lede": "Editorial layouts, visual communication, campaign visuals — design that carries content.",
-      "processTitle": "Design that doesn't overpower the message.",
+      "processTitle": "Design that doesn't overpower the message",
       "steps": {
         "01": {
           "title": "Brief and content",
@@ -391,7 +391,7 @@
     },
     "marketing": {
       "lede": "A strategic approach to communication — campaigns that connect brands with people at the right moment.",
-      "processTitle": "Marketing without throwing ideas at the wall.",
+      "processTitle": "Marketing without throwing ideas at the wall",
       "steps": {
         "01": {
           "title": "Understand the goal",
@@ -428,7 +428,7 @@
     },
     "web": {
       "lede": "Websites and apps that combine story, motion and precision — from concept to live launch.",
-      "processTitle": "From sketch to live launch — without lost translations.",
+      "processTitle": "From sketch to live launch — without lost translations",
       "steps": {
         "01": {
           "title": "Discovery and strategy",
@@ -465,7 +465,7 @@
     },
     "ideas": {
       "lede": "Strategic concept development — from the first spark to an executable idea we can actually build.",
-      "processTitle": "Ideas that survive the path from thought to execution.",
+      "processTitle": "Ideas that survive the path from thought to execution",
       "steps": {
         "01": {
           "title": "Shared thinking session",

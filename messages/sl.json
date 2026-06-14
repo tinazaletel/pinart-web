@@ -280,7 +280,7 @@
     "ctaButton": "Kontakt",
     "direction": {
       "lede": "Vizualna strategija in režija — od koncepta brand-a do konsistentne izvedbe v vseh dotikih.",
-      "processTitle": "Štirje koraki — od ideje do izvedbe.",
+      "processTitle": "Štirje koraki — od ideje do izvedbe",
       "steps": {
         "01": {
           "title": "Razumeti znamko",
@@ -317,7 +317,7 @@
     },
     "branding": {
       "lede": "Identitetni sistemi — logotip, paleta, tipografija, ton in CGP, ki znamko naredijo prepoznavno.",
-      "processTitle": "Branding ni samo logo. To je sistem.",
+      "processTitle": "Branding ni samo logo. To je sistem",
       "steps": {
         "01": {
           "title": "Razumeti zgodbo",
@@ -354,7 +354,7 @@
     },
     "graphic": {
       "lede": "Editorial layouti, vizualna komunikacija, kampanjski vizuali — oblikovanje, ki nosi vsebino.",
-      "processTitle": "Oblikovanje, ki ne preglasi vsebine.",
+      "processTitle": "Oblikovanje, ki ne preglasi vsebine",
       "steps": {
         "01": {
           "title": "Brief in vsebina",
@@ -391,7 +391,7 @@
     },
     "marketing": {
       "lede": "Strateški pristop h komunikaciji — kampanje, ki znamke povežejo z ljudmi v pravem trenutku.",
-      "processTitle": "Marketing brez metanja vrečk z idejami.",
+      "processTitle": "Marketing brez metanja vrečk z idejami",
       "steps": {
         "01": {
           "title": "Razumeti cilj",
@@ -428,7 +428,7 @@
     },
     "web": {
       "lede": "Spletne strani in aplikacije, ki združujejo zgodbo, gibanje in natančnost — od koncepta do živega launcha.",
-      "processTitle": "Od skice do živega launcha — brez izgubljenih prevodov.",
+      "processTitle": "Od skice do živega launcha — brez izgubljenih prevodov",
       "steps": {
         "01": {
           "title": "Discovery in strategija",
@@ -465,7 +465,7 @@
     },
     "ideas": {
       "lede": "Strateški razvoj konceptov — od prve iskre do izvedljive ideje, ki jo lahko realiziramo.",
-      "processTitle": "Ideje, ki preživijo pot iz misli v izvedbo.",
+      "processTitle": "Ideje, ki preživijo pot iz misli v izvedbo",
       "steps": {
         "01": {
           "title": "Skupna miselna seja",
