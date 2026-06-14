@@ -203,10 +203,10 @@ export default function Nav() {
 
         {/* Mobile hamburger */}
         <button
-          className="md:hidden flex flex-col justify-center w-8 h-8"
+          className="md:hidden flex flex-col justify-center"
           style={{
             gap: '5px',
-            padding: isScrolled ? '0.45rem 0.6rem' : '0',
+            padding: isScrolled ? '0.75rem 0.75rem' : '0.25rem',
             backgroundColor: isScrolled ? (isDark ? 'rgba(17,17,17,0.15)' : 'rgba(245,242,234,0.15)') : 'transparent',
             backdropFilter: isScrolled ? 'blur(16px)' : 'none',
             WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'none',
@@ -218,23 +218,25 @@ export default function Nav() {
           aria-expanded={menuOpen}
         >
           <span
-            className="block h-px w-[22px] origin-center transition-[transform,background-color] duration-300"
+            className="block w-[22px] origin-center transition-[transform,background-color] duration-300"
             style={{
-              backgroundColor: (isDark && !menuOpen) ? 'rgba(248,245,238,0.88)' : 'rgba(17,17,17,0.88)',
+              height: '1.5px',
+              backgroundColor: isDark ? '#F5F2EA' : '#111111',
               transform: menuOpen ? 'translateY(6px) rotate(45deg)' : 'none',
             }}
           />
           <span
-            className="block h-px w-[22px] transition-[opacity,background-color] duration-200"
+            className="block w-[22px] transition-[background-color] duration-200"
             style={{
-              backgroundColor: (isDark && !menuOpen) ? 'rgba(248,245,238,0.88)' : 'rgba(17,17,17,0.88)',
-              opacity: menuOpen ? 0 : 1,
+              height: '1.5px',
+              backgroundColor: menuOpen ? 'transparent' : (isDark ? '#F5F2EA' : '#111111'),
             }}
           />
           <span
-            className="block h-px w-[22px] origin-center transition-[transform,background-color] duration-300"
+            className="block w-[22px] origin-center transition-[transform,background-color] duration-300"
             style={{
-              backgroundColor: (isDark && !menuOpen) ? 'rgba(248,245,238,0.88)' : 'rgba(17,17,17,0.88)',
+              height: '1.5px',
+              backgroundColor: isDark ? '#F5F2EA' : '#111111',
               transform: menuOpen ? 'translateY(-6px) rotate(-45deg)' : 'none',
             }}
           />

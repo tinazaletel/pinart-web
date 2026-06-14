@@ -336,7 +336,7 @@
           "desc": "Brand book ali CGP — da lahko nadaljujejo brez mene."
         }
       },
-      "whyTitle": "Zakaj branding pri Pinartu deluje.",
+      "whyTitle": "Zakaj branding pri Pinartu deluje",
       "reasons": {
         "01": {
           "title": "Sistem, ne le slika",
@@ -373,7 +373,7 @@
           "desc": "Pripravim datoteke za tisk (do CMYK pač) ali za web (responzivno)."
         }
       },
-      "whyTitle": "Zakaj grafično oblikovanje pri Pinartu.",
+      "whyTitle": "Zakaj grafično oblikovanje pri Pinartu",
       "reasons": {
         "01": {
           "title": "Editorial natančnost",
@@ -410,7 +410,7 @@
           "desc": "Ne ugibam, kaj deluje. Pogledam podatke in prilagodim."
         }
       },
-      "whyTitle": "Zakaj marketing skozi Pinart.",
+      "whyTitle": "Zakaj marketing skozi Pinart",
       "reasons": {
         "01": {
           "title": "Brand + marketing skupaj",
@@ -447,7 +447,7 @@
           "desc": "QA, performance, SEO osnove. Po launchu ostanem na voljo za prilagoditve in dolgoročno vzdrževanje."
         }
       },
-      "whyTitle": "Zakaj svoj web zaupati Pinartu.",
+      "whyTitle": "Zakaj svoj web zaupati Pinartu",
       "reasons": {
         "01": {
           "title": "Aplikacije in spletne strani — od CMS-jev do native kode",
@@ -484,7 +484,7 @@
           "desc": "Brief, vizuali, načrt. Vsaka ekipa, ki to dobi, ve, kaj naprej."
         }
       },
-      "whyTitle": "Zakaj razvoj idej pri Pinartu.",
+      "whyTitle": "Zakaj razvoj idej pri Pinartu",
       "reasons": {
         "01": {
           "title": "Lastni projekti to dokazujejo",
@@ -663,7 +663,7 @@
     "petrolPay": {
       "heroEyebrow": "Izbrano delo · № 01 · 2024",
       "heroTitle": "Petrol Pay",
-      "heroLede": "Začelo se je z logom. Končalo se je z družino kartic, ki gori v žepu — in portalom, kjer jih naročiš v <strong>treh klikih</strong>.",
+      "heroLede": "Začelo se je z logom. Končalo se je z družino kartic, ki žarijo v žepu, in portalom, kjer jih naročiš v nekaj klikih.",
       "metaRoleLabel": "Vloga",
       "metaRoleValue": "Branding · Card · Web",
       "metaYearLabel": "Leto",
@@ -672,7 +672,7 @@
       "metaForValue": "Petrol d.d.",
       "introLabel": "Izhodišče",
       "introTitle": "Nov plačilni brand<br></br>za največjega slovenskega <em>trgovca z gorivom</em>",
-      "introBody1": "<strong>Petrol Pay</strong> je plačilna in zvestobna kartična shema, ki jo Petrol uvaja kot svoj lasten finančni produkt — od osebne Loyalty kartice do Klub in Business različic.",
+      "introBody1": "<strong>Petrol Pay</strong> je Petrolova lastna kartična shema — plačilna kartica in program zvestobe v enem, od osebne Loyalty kartice do Klub in Business različic.",
       "introBody2": "Naloga: postaviti vizualno identiteto, ki <em>diha s krovno znamko</em>, hkrati pa stoji samostojno. Logo, paleta, tipografija, <strong>šest predlogov kartic</strong> — od katerih je ena šla v produkcijo — in portal za naročanje s SVG animacijami in uvodnim videom.",
       "metaCellRoleLabel": "Vloga",
       "metaCellRoleValue": "Branding<br></br>Card design<br></br>UX & UI",
@@ -685,7 +685,7 @@
       "metaCellStatusValue": "Selected card<br></br>in production",
       "metaCellStatusSub": "portal — phased rollout",
       "identityLabel": "Identiteta",
-      "identityTitle": "Znak, ki se bere <em>pri črpalki</em><br></br>in na telefonu",
+      "identityTitle": "Znak, ki se bere<br></br><em>pri črpalki</em><br></br>in na telefonu",
       "familyLabel": "Kartična družina",
       "familyTitle": "Tri kartice.<br></br>En <em>tih</em> jezik",
       "familyLede": "Šest predlogov, en izbor — gold za vse, ki vozijo na svoji poti. Klub za zveste. Business za tiste, ki vozijo službeno.",

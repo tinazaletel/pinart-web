@@ -610,9 +610,6 @@ export default async function ServiceDetailPage({
                         }}
                       >
                         {title}
-                        <em style={{ fontStyle: 'italic', fontWeight: 400, color: '#b25476' }}>
-                          .
-                        </em>
                       </div>
                       <div
                         style={{
@@ -706,9 +703,6 @@ export default async function ServiceDetailPage({
                       }}
                     >
                       {item.title}
-                      <em style={{ fontStyle: 'italic', fontWeight: 400, color: '#b25476' }}>
-                        .
-                      </em>
                     </div>
                   </div>
                 </div>
