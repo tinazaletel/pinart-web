@@ -407,6 +407,10 @@ export default function PetrolPayCase({ locale }: Props) {
           display: flex;
           flex-direction: column;
         }
+        .case-hero__top {
+          width: 100%;
+          overflow: visible;
+        }
         .eyebrow {
           font-size: 12px;
           letter-spacing: 0.4em;
@@ -419,7 +423,7 @@ export default function PetrolPayCase({ locale }: Props) {
           font-family: var(--font-serif);
           /* Lower min so it doesn't overflow on phones */
           font-size: clamp(3rem, 14vw, 13rem);
-          line-height: 1;
+          line-height: 0.85;
           padding-bottom: 0.15em;
           letter-spacing: -0.035em;
           font-weight: 500;
