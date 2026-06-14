@@ -910,7 +910,7 @@ export default function PetrolPayCase({ locale }: Props) {
           margin-top: 14px;
           font-family: var(--font-serif);
           font-style: italic;
-          font-size: 17px;
+          font-size: 20px;
           color: var(--ink-soft);
           line-height: 1.45;
           font-weight: 400;
