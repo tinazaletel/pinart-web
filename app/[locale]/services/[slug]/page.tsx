@@ -245,7 +245,7 @@ export default async function ServiceDetailPage({
           >
             <BlurText
               tag="h1"
-              text={`${ts(`items.${slug}.title`)}.`}
+              text={ts(`items.${slug}.title`)}
               animateBy="words"
               direction="bottom"
               delay={120}
