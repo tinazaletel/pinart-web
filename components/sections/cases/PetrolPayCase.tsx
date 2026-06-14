@@ -442,6 +442,9 @@ export default function PetrolPayCase({ locale }: Props) {
         }
         /* BlurText renders the last word/letter as a span — match the
            old <em> accent gradient on the trailing segment. */
+        :global(h1.case-title) > :global(span) {
+          padding-bottom: 0.18em;
+        }
         :global(h1.case-title) > :global(span:last-child) {
           font-style: italic;
           font-weight: 400;
@@ -450,7 +453,6 @@ export default function PetrolPayCase({ locale }: Props) {
           background-clip: text;
           -webkit-text-fill-color: transparent;
           color: transparent;
-          padding-bottom: 0.2em;
         }
         .case-hero__bottom {
           display: grid;
