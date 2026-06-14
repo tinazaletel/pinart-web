@@ -419,8 +419,8 @@ export default function PetrolPayCase({ locale }: Props) {
           font-family: var(--font-serif);
           /* Lower min so it doesn't overflow on phones */
           font-size: clamp(3rem, 14vw, 13rem);
-          line-height: 0.85;
-          padding-bottom: 0.35em;
+          line-height: 1;
+          padding-bottom: 0.15em;
           letter-spacing: -0.035em;
           font-weight: 500;
           margin: 0;
