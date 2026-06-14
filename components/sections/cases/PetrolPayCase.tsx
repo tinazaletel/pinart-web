@@ -407,10 +407,6 @@ export default function PetrolPayCase({ locale }: Props) {
           display: flex;
           flex-direction: column;
         }
-        .case-hero__top {
-          width: 100%;
-          overflow: visible;
-        }
         .eyebrow {
           font-size: 12px;
           letter-spacing: 0.4em;
@@ -447,7 +443,7 @@ export default function PetrolPayCase({ locale }: Props) {
         /* BlurText renders the last word/letter as a span — match the
            old <em> accent gradient on the trailing segment. */
         :global(h1.case-title) > :global(span) {
-          padding-bottom: 0.18em;
+          display: inline;
         }
         :global(h1.case-title) > :global(span:last-child) {
           font-style: italic;
