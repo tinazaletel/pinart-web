@@ -21,7 +21,7 @@
     "wordRest": "that move through emotions",
     "finalL1": "WE CREATE",
     "finalL2": "IDEAS THAT",
-    "finalL3": "STAY.",
+    "finalL3": "STAY",
     "restart": "start over"
   },
   "typography": {
@@ -296,14 +296,14 @@
         },
         "04": {
           "title": "Keep it consistent",
-          "desc": "Brand book, systems, guidelines. So the brand works without me."
+          "desc": "Brand book, systems, guidelines, so the brand keeps working without me."
         }
       },
       "whyTitle": "Why trust me with creative direction?",
       "reasons": {
         "01": {
           "title": "I see the whole",
-          "desc": "From logo to campaign copy — I think design and communication at once."
+          "desc": "From logo to campaign copy — I think about design and communication at the same time."
         },
         "02": {
           "title": "I lead teams",
@@ -344,11 +344,11 @@
         },
         "02": {
           "title": "Collaborative",
-          "desc": "The brand isn't built from my taste — it grows from our conversation."
+          "desc": "The brand doesn't come from my taste. It comes from your goals, values and understanding of your customers — the process is personal."
         },
         "03": {
           "title": "Print + digital + product",
-          "desc": "Every brand thought across all media at once. Not separately per channel."
+          "desc": "From the start I think about how the brand will work across all media — not separately for each channel."
         }
       }
     },

@@ -21,7 +21,7 @@
     "wordRest": "ki se gibljejo skozi občutje",
     "finalL1": "USTVARJAMO",
     "finalL2": "IDEJE, KI",
-    "finalL3": "OSTANEJO.",
+    "finalL3": "OSTANEJO",
     "restart": "začni znova"
   },
   "typography": {
@@ -292,18 +292,18 @@
         },
         "03": {
           "title": "Voditi izvedbo",
-          "desc": "Sodelujem z ekipo (oblikovalci, fotografi, razvijalci) — kot dirigent."
+          "desc": "Kot dirigent sodelujem z ekipo oblikovalcev, fotografov in razvijalcev."
         },
         "04": {
           "title": "Ohraniti konsistenco",
-          "desc": "Brand book, sistemi, navodila. Da znamka deluje brez mene."
+          "desc": "Brand book, sistemi, navodila, da znamka deluje naprej brez mene."
         }
       },
       "whyTitle": "Zakaj prav meni zaupati režijo?",
       "reasons": {
         "01": {
           "title": "Vidim celoto",
-          "desc": "Od logotipa do besedila kampanje — istočasno mislim oblikovanje in komunikacijo."
+          "desc": "Od logotipa do besedila kampanje — istočasno mislim na oblikovanje in komunikacijo."
         },
         "02": {
           "title": "Vodim ekipe",
@@ -321,19 +321,19 @@
       "steps": {
         "01": {
           "title": "Razumeti zgodbo",
-          "desc": "Kdo si? Komu govoriš? Zakaj te bo zapomnil?"
+          "desc": "Kdo ste? Komu govorite? Kaj Vas naredi nepozabne?"
         },
         "02": {
           "title": "Postaviti znak",
           "desc": "Logotip, paleta, tipografija — DNA znamke v par elementih."
         },
         "03": {
-          "title": "Razširiti sistem",
+          "title": "Aplikativnost znamke",
           "desc": "Kako znamka deluje na vizitki, plakatu, ekranu, embalaži."
         },
         "04": {
           "title": "Spakirati v knjigo",
-          "desc": "Brand book ali CGP — da lahko nadaljujejo brez mene."
+          "desc": "Brand book ali CGP — navodila za pravilno uporabo znamke, da delujete samostojno."
         }
       },
       "whyTitle": "Zakaj branding pri Pinartu deluje",
@@ -344,11 +344,11 @@
         },
         "02": {
           "title": "Sodelujem",
-          "desc": "Brand ne nastaja iz mojega okusa, ampak iz pogovora s teboj — proces je oseben."
+          "desc": "Brand ne nastaja iz mojega okusa. Nastaja iz vaših ciljev, vrednot in poznavanja vaših strank — proces je oseben."
         },
         "03": {
           "title": "Print + digital + product",
-          "desc": "Vsak branding misliš v vseh medijih hkrati. Ne posebej za vsak kanal."
+          "desc": "Od začetka mislim, kako bo znamka delovala na vseh medijih — ne posebej za vsak kanal."
         }
       }
     },
