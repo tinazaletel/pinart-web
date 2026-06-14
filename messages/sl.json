@@ -62,11 +62,11 @@
         "desc": "Strateški razvoj konceptov od prve iskre do izvedbe."
       }
     },
-    "headline": "Od strategije do izvedbe, brez izgube občutka."
+    "headline": "Od strategije do izvedbe, brez izgube občutka"
   },
   "projects": {
     "kicker": "Izbrani projekti",
-    "headline": "Delo, ki najprej vzpostavi občutek.",
+    "headline": "Delo, ki najprej vzpostavi občutek",
     "intro": "Pinart povezuje kreativno direkcijo, oblikovanje in razvoj idej v celostne vizualne sisteme. Ne lovi trenda, ampak išče ton, ki znamki pripada.",
     "moreWork": "Več del",
     "more": "Več",
@@ -93,7 +93,7 @@
   },
   "moreWork": {
     "kicker": "Več del",
-    "heading": "Širši pogled na delo.",
+    "heading": "Širši pogled na delo",
     "intro": "Kompaktna galerija kampanj, vizualnih sistemov, produktnih predstavitev in digitalnih izkušenj iz širšega Pinart arhiva.",
     "back": "Nazaj na delo",
     "open": "Odpri delo",
@@ -504,7 +504,7 @@
   "about": {
     "kicker": "O meni",
     "body": "Ustvarjam digitalne izkušnje, ki združujejo zgodbo, gibanje in atmosfero. Z razvijalci in ustvarjalci gradim sodobne spletne strani, sisteme blagovnih znamk in vizualne izkušnje za blagovne znamke s karakterjem.",
-    "headline": "Ko ideja dobi obliko, ritem in prostor."
+    "headline": "Ko ideja dobi obliko, ritem in prostor"
   },
   "clients": {
     "kicker": "Reference",
@@ -515,7 +515,7 @@
     "kicker": "Mnenja",
     "circle": "USTVARJAJVA*SKUPAJ*",
     "headlineL1": "Mnenja,",
-    "headlineL2": "ki štejejo.",
+    "headlineL2": "ki štejejo",
     "items": {
       "inovis": "Preoblikovanje spletne strani in celostne podobe je podjetju Inovis IT d.o.o. prinesla bolj prepoznaven in profesionalen nastop. Tina je odlično razumela naše potrebe ter jih pretvorila v vizualno identiteto in digitalno izkušnjo, ki nas danes veliko bolje predstavlja.",
       "inovisTitle": "Sodobna podoba za sodobno podjetje",
@@ -529,7 +529,7 @@
   },
   "contact": {
     "kicker": "Kontakt",
-    "headline": "Ustvariva nekaj nepozabnega.",
+    "headline": "Ustvariva nekaj nepozabnega",
     "tagline": "Ustvarjam ideje, ki ostanejo.",
     "email": "tina@pinart.si",
     "showPhone": "Prikaži telefon",
