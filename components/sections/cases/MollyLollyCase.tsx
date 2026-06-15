@@ -195,6 +195,7 @@ export default function MollyLollyCase({ locale }: { locale: string }) {
             <img
               src="/work/molly-lolly/digital_app.png"
               alt="Mud Monster digital book with games"
+              loading="lazy"
               style={{ objectFit: 'contain' }}
             />
             <div className="tile-cap">{t('digitalBookCap')}</div>
@@ -268,6 +269,7 @@ export default function MollyLollyCase({ locale }: { locale: string }) {
             <img
               src="/work/molly-lolly/molly_lolly_store.png"
               alt="Molly Lolly web shop — homepage + product page"
+              loading="lazy"
               style={{ objectFit: 'contain' }}
             />
             <div className="tile-cap">{t('commerceCap')}</div>
@@ -396,6 +398,7 @@ function Cap({
           <img
             src={img}
             alt=""
+            loading="lazy"
             style={{
               width: '100%',
               height: '100%',

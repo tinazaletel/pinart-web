@@ -177,6 +177,7 @@ export default function PetrolPayCase({ locale }: Props) {
               <img
                 src="/work/petrol-pay/Petrol_Pay_loyalty_gold.jpg"
                 alt="Petrol Klub Pay — gold loyalty card"
+                loading="lazy"
               />
             </div>
             <div className="card-slot__name">{t.rich('card1Name', rich)}</div>
@@ -188,6 +189,7 @@ export default function PetrolPayCase({ locale }: Props) {
               <img
                 src="/work/petrol-pay/Petrol_Pay_Business_silver.jpg"
                 alt="Petrol Klub — silver loyalty card"
+                loading="lazy"
               />
             </div>
             <div className="card-slot__name">{t('card2Name')}</div>
@@ -199,6 +201,7 @@ export default function PetrolPayCase({ locale }: Props) {
               <img
                 src="/work/petrol-pay/Petrol_Pay_Business_card.jpg"
                 alt="Petrol Business — black corporate card"
+                loading="lazy"
               />
             </div>
             <div className="card-slot__name">{t('card3Name')}</div>
@@ -248,6 +251,7 @@ export default function PetrolPayCase({ locale }: Props) {
             <img
               src="/work/petrol-pay/concept_business_waves.jpg"
               alt="Concept — black Business card with wave hologram"
+              loading="lazy"
             />
             <figcaption>{t('variation1')}</figcaption>
           </figure>
@@ -256,6 +260,7 @@ export default function PetrolPayCase({ locale }: Props) {
             <img
               src="/work/petrol-pay/concept_klub_maze.jpg"
               alt="Concept — black Klub card with geometric maze hologram"
+              loading="lazy"
             />
             <figcaption>{t('variation2')}</figcaption>
           </figure>
@@ -264,6 +269,7 @@ export default function PetrolPayCase({ locale }: Props) {
             <img
               src="/work/petrol-pay/concept_business_pixel.jpg"
               alt="Concept — black Business card with pixel hologram + P monogram"
+              loading="lazy"
             />
             <figcaption>{t('variation3')}</figcaption>
           </figure>
@@ -272,6 +278,7 @@ export default function PetrolPayCase({ locale }: Props) {
             <img
               src="/work/petrol-pay/concept_klub_pay_horizontal.jpg"
               alt="Concept — gold Klub Pay horizontal with windmills and EV"
+              loading="lazy"
             />
             <figcaption>{t('variation4')}</figcaption>
           </figure>
@@ -307,6 +314,7 @@ export default function PetrolPayCase({ locale }: Props) {
             <img
               src="/work/petrol-pay/Tinka_a_woman_wearing_a_black_t-shirt_with_a_deep_round_neck_li_ee81b535-77f1-4571-9494-c3efadec0598 copy.jpg"
               alt="Petrol — t-shirt with windmills + EV illustration"
+              loading="lazy"
             />
             <figcaption>{t('brandAppsTshirtCap')}</figcaption>
           </figure>
@@ -315,6 +323,7 @@ export default function PetrolPayCase({ locale }: Props) {
             <img
               src="/work/petrol-pay/potrebscine_petrol-pay.jpg"
               alt="Petrol — stationery and brand collateral"
+              loading="lazy"
             />
             <figcaption>{t('brandAppsStationeryCap')}</figcaption>
           </figure>
@@ -340,6 +349,7 @@ export default function PetrolPayCase({ locale }: Props) {
               className="portal__media"
               src="/work/petrol-pay/portal_laptop.jpg"
               alt="Petrol Pay portal — desktop mockup"
+              loading="lazy"
             />
           </div>
 

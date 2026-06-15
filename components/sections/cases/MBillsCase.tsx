@@ -449,6 +449,7 @@ export default function MBillsCase({ locale }: { locale: string }) {
               <img
                 src="/work/mbills/card_wish%26vibe_1.png"
                 alt="Wish + Vibe — comic packaging, glow-in-the-dark"
+                loading="lazy"
                 style={{
                   width: '100%',
                   filter:
@@ -845,6 +846,7 @@ function PhoneTile({ slot, flip }: { slot: EvoSlotTile; flip?: boolean }) {
               <img
                 src={slot.src}
                 alt={`mBills wallet — ${slot.year}`}
+                loading="lazy"
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
             ) : (
@@ -957,6 +959,7 @@ function LaptopShowcase({
                 <img
                   src={src}
                   alt={label}
+                  loading="lazy"
                   style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                 />
               </div>
@@ -1211,6 +1214,7 @@ function CardTile({
             <img
               src={img}
               alt=""
+              loading="lazy"
               style={
                 cover
                   ? {

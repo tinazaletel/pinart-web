@@ -296,6 +296,7 @@ export default function Lucky7Case({ locale }: { locale: string }) {
           <img
             src="/work/lucky-7/lucky_7_primeri.jpg"
             alt={t('explorationCap')}
+            loading="lazy"
             style={{ display: 'block', width: '100%', height: 'auto' }}
           />
         </figure>
