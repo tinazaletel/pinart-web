@@ -361,6 +361,7 @@ export default function PetrolPayCase({ locale }: Props) {
               loop
               muted
               playsInline
+              preload="auto"
             />
           </div>
         </div>
