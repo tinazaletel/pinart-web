@@ -856,6 +856,7 @@ function PhoneTile({ slot, flip }: { slot: EvoSlotTile; flip?: boolean }) {
                 muted
                 loop
                 playsInline
+                preload="auto"
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
             )}
