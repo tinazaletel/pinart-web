@@ -450,8 +450,9 @@ export default function PetrolPayCase({ locale }: Props) {
           background-clip: text;
           -webkit-text-fill-color: transparent;
           color: transparent;
-          padding-right: 0.18em;
-          padding-bottom: 0.2em;
+          padding-right: 0.3em;
+          padding-bottom: 0.25em;
+          display: inline-block;
         }
         .case-hero__bottom {
           display: grid;

@@ -147,6 +147,8 @@ export default function CaseShell({ children }: { children: ReactNode }) {
           -webkit-text-fill-color: transparent;
           color: transparent;
           padding-bottom: 0.2em;
+          padding-right: 0.3em;
+          display: inline-block;
         }
         .pinart-case .case-hero__bottom {
           display: grid;
