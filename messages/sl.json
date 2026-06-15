@@ -43,11 +43,11 @@
       },
       "branding": {
         "title": "Branding",
-        "desc": "Identitetni sistemi, ki nosijo pomen, spomin in čustvo."
+        "desc": "Identiteta blagovne znamke, ki nosi pomen, spomin in čustvo."
       },
       "graphic": {
         "title": "Grafično oblikovanje",
-        "desc": "Editorial layouti in vizualna komunikacija za kampanje."
+        "desc": "Oblikovanje publikacij in vizualna komunikacija za kampanje."
       },
       "marketing": {
         "title": "Marketing",
@@ -316,7 +316,7 @@
       }
     },
     "branding": {
-      "lede": "Identitetni sistemi — logotip, paleta, tipografija, ton in CGP, ki znamko naredijo prepoznavno.",
+      "lede": "Identiteta blagovne znamke — logotip, paleta, tipografija, ton in CGP, ki znamko naredijo prepoznavno.",
       "processTitle": "Branding ni samo logo. To je sistem",
       "steps": {
         "01": {
@@ -353,7 +353,7 @@
       }
     },
     "graphic": {
-      "lede": "Editorial layouti, vizualna komunikacija, kampanjski vizuali — oblikovanje, ki nosi vsebino.",
+      "lede": "Oblikovanje publikacij, vizualna komunikacija, kampanjski vizuali — oblikovanje, ki nosi vsebino.",
       "processTitle": "Oblikovanje, ki ne preglasi vsebine",
       "steps": {
         "01": {
@@ -377,7 +377,7 @@
       "reasons": {
         "01": {
           "title": "Editorial natančnost",
-          "desc": "Vse od knjige Vse več gostiln do Molly Lolly knjig — z izkušnjami iz dolgih izdaj."
+          "desc": "Vse od knjige Kekec do Molly Lolly knjig — z izkušnjami iz dolgih izdaj."
         },
         "02": {
           "title": "Kampanje, ki ostanejo",
@@ -391,7 +391,7 @@
     },
     "marketing": {
       "lede": "Strateški pristop h komunikaciji — kampanje, ki znamke povežejo z ljudmi v pravem trenutku.",
-      "processTitle": "Marketing brez metanja vrečk z idejami",
+      "processTitle": "Marketing brez ugibanja",
       "steps": {
         "01": {
           "title": "Razumeti cilj",
