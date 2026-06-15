@@ -431,7 +431,7 @@ export default function MBillsCase({ locale }: { locale: string }) {
                   marginTop: 20,
                   fontFamily: 'var(--font-serif)',
                   fontStyle: 'italic',
-                  fontSize: 18,
+                  fontSize: 20,
                   lineHeight: 1.55,
                   color: 'rgba(245,242,234,0.85)'
                 }}

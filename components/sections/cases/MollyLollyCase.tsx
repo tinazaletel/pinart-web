@@ -441,7 +441,7 @@ function Cap({
           style={{
             fontFamily: 'var(--font-serif)',
             fontStyle: 'italic',
-            fontSize: 17,
+            fontSize: 18,
             color: 'var(--ink-soft)',
             lineHeight: 1.5,
             marginTop: 'auto'
