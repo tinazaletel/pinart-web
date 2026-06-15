@@ -18,6 +18,8 @@ export default function PetrolPayCase({ locale }: Props) {
   const tc = useTranslations('caseCommon');
   const [logoSvg, setLogoSvg] = useState<string>('');
   const rootRef = useRef<HTMLElement>(null);
+  const cardVideoRef = useRef<HTMLVideoElement>(null);
+  const portalVideoRef = useRef<HTMLVideoElement>(null);
 
   // Inline the brand-mark SVG once so we can recolor via CSS (fill class swaps).
   useEffect(() => {
@@ -51,6 +53,27 @@ export default function PetrolPayCase({ locale }: Props) {
       { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
     );
     sections.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  // Play videos when they scroll into view (browsers pause off-screen autoPlay).
+  useEffect(() => {
+    const videos = [cardVideoRef.current, portalVideoRef.current].filter(Boolean) as HTMLVideoElement[];
+    if (!videos.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const vid = entry.target as HTMLVideoElement;
+          if (entry.isIntersecting) {
+            vid.play().catch(() => {});
+          } else {
+            vid.pause();
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    videos.forEach((v) => io.observe(v));
     return () => io.disconnect();
   }, []);
 
@@ -300,6 +323,7 @@ export default function PetrolPayCase({ locale }: Props) {
         <div className="brand-apps__grid">
           <div className="brand-apps__video">
             <video
+              ref={cardVideoRef}
               src="/work/petrol-pay/430x932_video_pkpk_cards_web.mp4"
               autoPlay
               muted
@@ -355,6 +379,7 @@ export default function PetrolPayCase({ locale }: Props) {
 
           <div className="portal__phone">
             <video
+              ref={portalVideoRef}
               className="portal__media portal__media--phone"
               src="/work/petrol-pay/portal_phone.mp4"
               autoPlay

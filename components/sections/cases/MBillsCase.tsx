@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import CaseShell, { NextCase } from './CaseShell';
@@ -766,6 +766,35 @@ function buildEvoSlots(labels: { first: string; reskin: string; newDesign: strin
   ];
 }
 
+function AutoPlayVideo({ src }: { src: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const vid = ref.current;
+    if (!vid) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) vid.play().catch(() => {});
+        else vid.pause();
+      },
+      { threshold: 0.15 }
+    );
+    io.observe(vid);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <video
+      ref={ref}
+      src={src}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="auto"
+      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+    />
+  );
+}
+
 function PhoneTile({ slot, flip }: { slot: EvoSlotTile; flip?: boolean }) {
   return (
     <div
@@ -850,15 +879,7 @@ function PhoneTile({ slot, flip }: { slot: EvoSlotTile; flip?: boolean }) {
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
             ) : (
-              <video
-                src={slot.src}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="auto"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-              />
+              <AutoPlayVideo src={slot.src} />
             )}
           </div>
         </div>
