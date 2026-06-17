@@ -110,18 +110,19 @@ export default function Testimonials() {
         gsap.fromTo(
           el,
           { opacity: 0, filter: 'blur(14px)', y: 22 },
-          { opacity: 1, filter: 'blur(0px)', y: 0, duration: 0.75, delay: i * 0.10, ease: 'power3.out' },
+          { opacity: 1, filter: 'blur(0px)', y: 0, duration: 0.6, delay: i * 0.06, ease: 'power3.out' },
         );
       });
 
       // Animate cards one by one with stagger — GSAP sets opacity:0 first so
-      // no React-state-driven flash can occur
+      // no React-state-driven flash can occur.
+      // Tight delay/stagger so content appears right after the ink, not late.
       const cards = section?.querySelectorAll<HTMLElement>('.testimonial-card');
       if (cards) {
         gsap.fromTo(
           Array.from(cards),
           { opacity: 0, scale: 0.88, y: 48 },
-          { opacity: 1, scale: 1, y: 0, duration: 0.85, stagger: 0.18, delay: 0.24, ease: 'back.out(1.35)' },
+          { opacity: 1, scale: 1, y: 0, duration: 0.6, stagger: 0.09, delay: 0.06, ease: 'back.out(1.35)' },
         );
       }
     }
