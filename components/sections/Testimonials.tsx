@@ -133,8 +133,14 @@ export default function Testimonials() {
       if (svgEl) svgEl.style.opacity = '1';
       window.dispatchEvent(new CustomEvent('pinart-lenis-stop'));
 
-      const coverDelay  = Array.from({ length: NUM_POINTS }, () => Math.random() * 0.3);
-      const revealDelay = Array.from({ length: NUM_POINTS }, () => Math.random() * 0.3);
+      // Ink-transition timing — skupni zaklep scrolla = cover + gap + reveal.
+      // Skrajšano (~2.3s → ~1s) da scroll ne zmrzne predolgo, ink ostane enak.
+      const INK_COVER  = 0.35;   // prej 0.7
+      const INK_REVEAL = 0.4;    // prej 0.9
+      const INK_STAGGER = 0.1;   // prej 0.3 — organska neenakomernost roba
+      const INK_GAP    = 40;     // ms, prej 80
+      const coverDelay  = Array.from({ length: NUM_POINTS }, () => Math.random() * INK_STAGGER);
+      const revealDelay = Array.from({ length: NUM_POINTS }, () => Math.random() * INK_STAGGER);
 
       phase = 'covering';
       coverPts.fill(100);
@@ -161,15 +167,15 @@ export default function Testimonials() {
                 window.dispatchEvent(new CustomEvent('pinart-lenis-start'));
                 revealContent();
               },
-              defaults: { ease: 'power2.inOut', duration: 0.9 },
+              defaults: { ease: 'power2.inOut', duration: INK_REVEAL },
             });
 
             for (let j = 0; j < NUM_POINTS; j++) {
               tl2.to(revealPts, { [j]: 0 }, revealDelay[j]);
             }
-          }, 80);
+          }, INK_GAP);
         },
-        defaults: { ease: 'power2.inOut', duration: 0.7 },
+        defaults: { ease: 'power2.inOut', duration: INK_COVER },
       });
 
       for (let j = 0; j < NUM_POINTS; j++) {
