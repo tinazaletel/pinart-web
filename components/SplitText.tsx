@@ -122,6 +122,13 @@ const SplitText = ({
               },
               onComplete() {
                 animationDoneRef.current = true;
+                // Mask (overflow:hidden) is only needed to hide the chars as they
+                // rise into place during the reveal. Once revealed, switch the
+                // parent to overflow:visible so serif descenders ("j", "g") and
+                // wide words are never clipped. Imperative (no React re-render)
+                // so the GSAP-split spans are left untouched.
+                const elNow = ref.current as HTMLElement | null;
+                if (elNow) elNow.style.overflow = 'visible';
                 onCompleteRef.current?.();
               },
               willChange: 'transform, opacity',
