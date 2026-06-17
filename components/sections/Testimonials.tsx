@@ -136,10 +136,10 @@ export default function Testimonials() {
 
       // Ink-transition timing — skupni zaklep scrolla = cover + gap + reveal.
       // Skrajšano (~2.3s → ~1s) da scroll ne zmrzne predolgo, ink ostane enak.
-      const INK_COVER  = 0.35;   // prej 0.7
-      const INK_REVEAL = 0.4;    // prej 0.9
-      const INK_STAGGER = 0.1;   // prej 0.3 — organska neenakomernost roba
-      const INK_GAP    = 40;     // ms, prej 80
+      const INK_COVER  = 0.5;    // prej 0.7, vmes 0.35 (prehitro)
+      const INK_REVEAL = 0.55;   // prej 0.9, vmes 0.4 (prehitro)
+      const INK_STAGGER = 0.16;  // prej 0.3 — organska neenakomernost roba
+      const INK_GAP    = 50;     // ms, prej 80
       const coverDelay  = Array.from({ length: NUM_POINTS }, () => Math.random() * INK_STAGGER);
       const revealDelay = Array.from({ length: NUM_POINTS }, () => Math.random() * INK_STAGGER);
 

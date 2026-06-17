@@ -58,7 +58,7 @@ export default function Contact() {
               fontSize:      'clamp(5.8rem, 14vw, 11rem)',
               lineHeight:    0.9,
               letterSpacing: '-0.035em',
-              maxWidth:      '11ch',
+              maxWidth:      '12.5ch',
               display:       'block',
               color:         TEXT,
             }}
