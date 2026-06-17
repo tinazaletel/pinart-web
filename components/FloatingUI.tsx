@@ -224,7 +224,7 @@ export default function FloatingUI() {
             </button>
 
             <p className="kicker" style={{ marginBottom: '1.2rem' }}>{talkCopy.eyebrow}</p>
-            <h2 id="talk-title" style={{ maxWidth: '8ch', margin: '0 0 1rem', fontFamily: 'var(--font-serif)', fontSize: 'clamp(3rem,7vw,5.4rem)', fontWeight: 400, lineHeight: 0.92 }}>
+            <h2 id="talk-title" style={{ maxWidth: '8ch', margin: '0 0 1rem', fontFamily: 'var(--font-serif)', fontSize: 'clamp(3rem,7vw,5.4rem)', fontWeight: 400, lineHeight: 0.98 }}>
               {talkCopy.title}
             </h2>
             <p style={{ maxWidth: '27rem', margin: '0 0 2rem', fontSize: '1rem', lineHeight: 1.5, opacity: 0.68 }}>{talkCopy.body}</p>

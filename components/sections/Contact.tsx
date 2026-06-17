@@ -56,9 +56,9 @@ export default function Contact() {
               fontFamily:    'var(--font-serif)',
               fontWeight:    500,
               fontSize:      'clamp(5.8rem, 14vw, 11rem)',
-              lineHeight:    0.9,
+              lineHeight:    0.96,
               letterSpacing: '-0.035em',
-              maxWidth:      '12.5ch',
+              maxWidth:      '13ch',
               display:       'block',
               color:         TEXT,
             }}

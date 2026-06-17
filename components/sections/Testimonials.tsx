@@ -160,13 +160,16 @@ export default function Testimonials() {
             phase = 'revealing';
             revealPts.fill(100);
 
+            // Start the content reveal AS the ink recedes (not after) so the
+            // cards aren't perceived as appearing late.
+            revealContent();
+
             const tl2 = gsap.timeline({
               onUpdate: renderPath,
               onComplete: () => {
                 phase = 'idle';
                 if (svgEl) { svgEl.style.opacity = '0'; svgEl.style.pointerEvents = 'none'; }
                 window.dispatchEvent(new CustomEvent('pinart-lenis-start'));
-                revealContent();
               },
               defaults: { ease: 'power2.inOut', duration: INK_REVEAL },
             });
@@ -352,9 +355,9 @@ export default function Testimonials() {
               <h2
                 style={{
                   fontFamily:    'var(--font-serif)',
-                  fontSize:      'clamp(3.1rem,6.2vw,7.5rem)',
+                  fontSize:      'clamp(3.6rem,7.4vw,9rem)',
                   fontWeight:    400,
-                  lineHeight:    0.92,
+                  lineHeight:    0.96,
                   letterSpacing: '-0.03em',
                   color:         'rgba(245,242,234,0.96)',
                   marginBottom:  '1.6rem',

@@ -105,6 +105,15 @@ const SplitText = ({
           else if (splitType.includes('lines') && self.lines.length)  targets = self.lines;
           else targets = self.chars || self.words || self.lines;
 
+          // The serif "j" has a descender that overhangs to the LEFT; Safari
+          // clips it on the transformed inline-block char box even with
+          // overflow:visible. Tag only the j chars so CSS can widen just their
+          // box to the left (net position unchanged).
+          (self.chars || []).forEach((c) => {
+            const el = c as HTMLElement;
+            if ((el.textContent || '').trim() === 'j') el.classList.add('split-char--jhook');
+          });
+
           const tween = gsap.fromTo(
             targets,
             { ...from },
@@ -117,18 +126,12 @@ const SplitText = ({
                 trigger:         el,
                 start,
                 once:            true,
-                fastScrollEnd:   true,
-                anticipatePin:   0.4,
+                // No fastScrollEnd: it snaps the reveal to its end state when
+                // the heading is scrolled past quickly, so the animation
+                // appears not to run at all. Let it play consistently.
               },
               onComplete() {
                 animationDoneRef.current = true;
-                // Mask (overflow:hidden) is only needed to hide the chars as they
-                // rise into place during the reveal. Once revealed, switch the
-                // parent to overflow:visible so serif descenders ("j", "g") and
-                // wide words are never clipped. Imperative (no React re-render)
-                // so the GSAP-split spans are left untouched.
-                const elNow = ref.current as HTMLElement | null;
-                if (elNow) elNow.style.overflow = 'visible';
                 onCompleteRef.current?.();
               },
               willChange: 'transform, opacity',
@@ -161,7 +164,10 @@ const SplitText = ({
 
   const baseStyle: React.CSSProperties = {
     textAlign,
-    overflow:      'hidden',
+    // Always visible — never mask. A mask tied to the reveal animation clips
+    // serif descenders whenever the (sometimes unreliable) ScrollTrigger
+    // doesn't complete. Descenders must never be clipped.
+    overflow:      'visible',
     display:       'inline-block',
     whiteSpace:    'normal',
     wordWrap:      'break-word',

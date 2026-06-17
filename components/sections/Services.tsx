@@ -108,7 +108,7 @@ export default function Services() {
               fontFamily:    'var(--font-serif)',
               fontSize:      'clamp(2.7rem,6vw,7.4rem)',
               fontWeight:    400,
-              lineHeight:    0.92,
+              lineHeight:    1.05,
               letterSpacing: '-0.025em',
               maxWidth:      '14ch',
               margin:        0,

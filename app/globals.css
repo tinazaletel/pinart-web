@@ -188,6 +188,10 @@ div.is-changing img {
   object-fit: contain; -webkit-user-drag: none; pointer-events: none;
   transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
 }
+/* Studio Moderna logo renders visually larger than the rest — scale it down. */
+.logoloop__item img[alt="Studio Moderna"] {
+  height: calc(var(--logoloop-logoHeight) * 0.62);
+}
 .logoloop--scale-hover .logoloop__item { overflow: visible; }
 .logoloop--scale-hover .logoloop__item:hover img,
 .logoloop--scale-hover .logoloop__item:hover .logoloop__node {
@@ -638,9 +642,14 @@ div.is-changing img {
   50%       { opacity: 0.4; transform: scale(0.88); }
 }
 
-/* ── SplitText parent overflow clip ─────────────────────────────────────── */
-.split-parent { overflow: hidden; }
+/* ── SplitText parent — never clip serif descenders ─────────────────────── */
+.split-parent { overflow: visible; }
 .split-char, .split-word, .split-line { display: inline-block; will-change: transform, opacity; overflow: visible !important; }
+/* Safari clips the left overhang of the serif "j" descender on transformed
+   inline-block chars even with overflow:visible. Widen ONLY the j char box to
+   the left and pull it back with a negative margin so the glyph's left ink
+   falls INSIDE the box — net letter position is unchanged. */
+.split-char--jhook { padding-left: 0.22em; margin-left: -0.22em; }
 
 /* GSAP SplitText line wrappers — dovoli descenderje */
 .split-line { padding-bottom: 0.18em; }
