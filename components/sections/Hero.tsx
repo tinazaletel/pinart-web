@@ -655,6 +655,17 @@ export default function Hero() {
     };
   }, [startAnimation]);
 
+  // Clicking the logo while already on the home page replays the hero intro
+  // from the start (Nav dispatches this after scrolling to the top).
+  useEffect(() => {
+    const onReplay = () => {
+      sessionStorage.removeItem('pinart-hero-played');
+      startAnimation();
+    };
+    window.addEventListener('pinart-replay-hero', onReplay);
+    return () => window.removeEventListener('pinart-replay-hero', onReplay);
+  }, [startAnimation]);
+
   /* ── JSX ──────────────────────────────────────────────────────────────── */
   return (
     <section

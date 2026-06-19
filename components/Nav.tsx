@@ -100,7 +100,24 @@ export default function Nav() {
         style={{ padding: 'clamp(0.75rem,1.4vw,1.1rem) clamp(1.25rem,4vw,4.5rem)' }}
       >
         {/* Logo — follows dark/light state on both mobile and desktop */}
-        <Link href="/" onClick={() => setMenuOpen(false)}>
+        <Link
+          href="/"
+          onClick={(e) => {
+            setMenuOpen(false);
+            // Let the hero intro play from the start whenever the logo is used.
+            try { sessionStorage.removeItem('pinart-hero-played'); } catch { /* ignore */ }
+            const onHome = pathname === '/' || /^\/[a-z]{2}\/?$/i.test(pathname);
+            if (onHome) {
+              // Already home: no route change would fire, so scroll to the top
+              // and replay the intro manually.
+              e.preventDefault();
+              const lenis = (window as unknown as { __pinartLenis?: { scrollTo: (v: number, o: object) => void } }).__pinartLenis;
+              if (lenis) lenis.scrollTo(0, { immediate: true, force: true });
+              else window.scrollTo(0, 0);
+              window.dispatchEvent(new CustomEvent('pinart-replay-hero'));
+            }
+          }}
+        >
           <Image
             src={isDark ? '/Logos/Logo_pinart_light.svg' : '/Logos/Logo_pinart.svg'}
             alt="Pinart"
