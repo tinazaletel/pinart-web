@@ -77,17 +77,6 @@ const SplitText = ({
         el._rbsplit = undefined;
       }
 
-      // build ScrollTrigger start string from threshold + rootMargin
-      const startPct    = (1 - threshold) * 100;
-      const rmMatch     = /^(-?\d+(?:\.\d+)?)(px|em|rem|%)?$/.exec(rootMargin);
-      const rmVal       = rmMatch ? parseFloat(rmMatch[1]) : 0;
-      const rmUnit      = rmMatch ? (rmMatch[2] || 'px') : 'px';
-      const sign        = rmVal === 0
-        ? ''
-        : rmVal < 0
-          ? `-=${Math.abs(rmVal)}${rmUnit}`
-          : `+=${rmVal}${rmUnit}`;
-      const start       = `top ${startPct}%${sign}`;
 
       let targets: gsap.DOMTarget;
 
@@ -114,37 +103,46 @@ const SplitText = ({
             if ((el.textContent || '').trim() === 'j') el.classList.add('split-char--jhook');
           });
 
-          const tween = gsap.fromTo(
-            targets,
-            { ...from },
-            {
-              ...to,
-              duration,
-              ease,
-              stagger:        delay / 1000,
-              scrollTrigger:  {
-                trigger:         el,
-                start,
-                once:            true,
-                // No fastScrollEnd: it snaps the reveal to its end state when
-                // the heading is scrolled past quickly, so the animation
-                // appears not to run at all. Let it play consistently.
-              },
-              onComplete() {
-                animationDoneRef.current = true;
-                onCompleteRef.current?.();
-              },
-              willChange: 'transform, opacity',
-              force3D:    true,
-            }
+          // Hide the split chars immediately (their "from" state)…
+          gsap.set(targets, { ...from });
+
+          // …then reveal them when the heading enters the viewport. An
+          // IntersectionObserver fires reliably on every scroll-in (and
+          // immediately if already in view, e.g. a hash jump) — ScrollTrigger
+          // could miss fast scrolls/jumps, so the heading appeared without
+          // ever animating.
+          const io = new IntersectionObserver(
+            (entries) => {
+              if (!entries.some((e) => e.isIntersecting)) return;
+              io.disconnect();
+              gsap.to(targets, {
+                ...to,
+                duration,
+                ease,
+                stagger:    delay / 1000,
+                onComplete() {
+                  animationDoneRef.current = true;
+                  onCompleteRef.current?.();
+                },
+                willChange: 'transform, opacity',
+                force3D:    true,
+              });
+            },
+            { threshold, rootMargin }
           );
-          return tween;
+          io.observe(el);
+          (el as HTMLElement & { _rbio?: IntersectionObserver })._rbio = io;
+
+          return undefined;
         },
       });
 
       el._rbsplit = splitInstance;
 
       return () => {
+        const withIo = el as HTMLElement & { _rbio?: IntersectionObserver };
+        withIo._rbio?.disconnect();
+        withIo._rbio = undefined;
         ScrollTrigger.getAll().forEach(st => {
           if (st.trigger === el) st.kill();
         });
