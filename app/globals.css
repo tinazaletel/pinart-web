@@ -651,6 +651,28 @@ div.is-changing img {
    falls INSIDE the box — net letter position is unchanged. */
 .split-char--jhook { padding-left: 0.22em; margin-left: -0.22em; }
 
+/* ── Press feedback (Emil Kowalski) ─────────────────────────────────────────
+   Pressable CTAs scale down slightly on press so the UI feels like it is
+   listening. Strong ease-out curve; transform-only (GPU). On fine-pointer
+   devices a subtle hover lift; press always wins. */
+.press-fb { transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1); }
+.press-fb:active { transform: translateY(1px) scale(0.97); }
+@media (hover: hover) and (pointer: fine) {
+  /* Lift on hover (translate is filter-safe; scale + CSS filter clips edges in
+     Safari). Press down slightly on click. */
+  .press-fb:hover { transform: translateY(-3px); }
+  .press-fb:active { transform: translateY(1px) scale(0.97); }
+}
+
+/* ── Contact icons: radial draw-in reveal ───────────────────────────────────
+   Icons reveal from the centre outward (clip-path circle grows) once the
+   Contact section scrolls into view. 75% covers the square's corners. */
+.icon-draw { clip-path: circle(0% at 50% 50%); transition: clip-path 600ms cubic-bezier(0.23, 1, 0.32, 1); }
+.icons-drawn .icon-draw { clip-path: circle(75% at 50% 50%); }
+@media (prefers-reduced-motion: reduce) {
+  .icon-draw { clip-path: none; transition: none; }
+}
+
 /* GSAP SplitText line wrappers — dovoli descenderje */
 .split-line { padding-bottom: 0.18em; }
 

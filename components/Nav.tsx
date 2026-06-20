@@ -174,13 +174,13 @@ export default function Nav() {
                   }}
                 >
                   <span
-                    className="block text-[10px] font-sans font-medium uppercase tracking-[0.22em] transition-colors duration-200"
+                    className="block text-[10px] font-sans font-medium uppercase tracking-[0.22em] transition-[transform,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:-translate-y-[3px]"
                     style={{ color: isDark ? '#F5F2EA' : '#111111' }}
                   >
                     {t(key)}
                   </span>
                   <span
-                    className="absolute bottom-0 left-0 h-px w-0 group-hover:w-full transition-[width,background-color] duration-300 ease-out"
+                    className="absolute bottom-0 left-0 h-px w-0 group-hover:w-full transition-[width,background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]"
                     style={{ backgroundColor: isDark ? 'rgba(248,245,238,0.45)' : 'rgba(17,17,17,0.5)' }}
                   />
                 </a>
@@ -190,7 +190,7 @@ export default function Nav() {
             return (
               <Link key={key} href={href} className="group relative py-1">
                 <span
-                  className="block text-[10px] font-sans font-medium uppercase tracking-[0.22em] transition-colors duration-200"
+                  className="block text-[10px] font-sans font-medium uppercase tracking-[0.22em] transition-[transform,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:-translate-y-[3px]"
                   style={{ color: isDark ? '#F5F2EA' : '#111111' }}
                 >
                   {t(key)}
