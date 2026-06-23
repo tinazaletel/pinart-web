@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import SplitText from '@/components/SplitText';
 import CircularText from '@/components/CircularText';
@@ -20,29 +20,11 @@ export default function Contact() {
     if (!phone) setPhone([43, 51, 56, 54, 52, 49, 51, 55, 51, 55, 51, 48].map((code) => String.fromCharCode(code)).join(''));
   };
 
-  // Draw the contact icons in (radial clip-path reveal) once the section
-  // scrolls into view.
-  const sectionRef = useRef<HTMLElement>(null);
-  const [iconsIn, setIconsIn] = useState(false);
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) { setIconsIn(true); io.disconnect(); }
-      },
-      { threshold: 0.2 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
   return (
     <section
       id="contact"
-      ref={sectionRef}
       data-nav-dark="true"
-      className={`contact-section relative min-h-screen px-6 md:px-10 py-32${iconsIn ? ' icons-drawn' : ''}`}
+      className="contact-section relative min-h-screen px-6 md:px-10 py-32"
       style={{ background: BG, borderTop: '1px solid rgba(245,242,234,0.07)' }}
     >
       <div
@@ -102,7 +84,7 @@ export default function Contact() {
                 }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.src} alt="" className="icon-draw" style={{ width: '100%', height: '100%', display: 'block' }} />
+                <img src={item.src} alt="" style={{ width: '100%', height: '100%', display: 'block' }} />
               </a>
             ))}
           </div>
@@ -179,13 +161,15 @@ export default function Contact() {
           <div style={{ display: 'grid', gap: '0.75rem', marginBottom: 'clamp(2.2rem, 4vw, 3.5rem)' }}>
             <a href={`mailto:${t('email')}`} className="press-fb" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.9rem', width: 'fit-content', color: TEXT, textDecoration: 'none', fontSize: 'clamp(1.1rem, 1.7vw, 1.5rem)' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/mail-01.svg" alt="" className="icon-draw" style={{ width: '3rem', height: '3rem', display: 'block' }} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/mail-01.svg" alt="" style={{ width: '3rem', height: '3rem', display: 'block', filter: 'contrast(1.45)' }} />
               {t('email')}
             </a>
             {phone ? (
               <a href={`tel:${phone}`} aria-label={t('callPhone')} className="press-fb" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.9rem', width: 'fit-content', color: TEXT, textDecoration: 'none', fontSize: 'clamp(1.1rem, 1.7vw, 1.5rem)' }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/smart-phone-01.svg" alt="" className="icon-draw" style={{ width: '3rem', height: '3rem', display: 'block' }} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/smart-phone-01.svg" alt="" style={{ width: '3rem', height: '3rem', display: 'block', filter: 'contrast(1.45)' }} />
                 {phone}
               </a>
             ) : (
@@ -196,7 +180,8 @@ export default function Contact() {
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.9rem', width: 'fit-content', padding: 0, border: 0, background: 'transparent', color: TEXT, cursor: 'pointer', fontSize: 'clamp(1.1rem, 1.7vw, 1.5rem)', fontFamily: 'inherit' }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/smart-phone-01.svg" alt="" className="icon-draw" style={{ width: '3rem', height: '3rem', display: 'block' }} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/smart-phone-01.svg" alt="" style={{ width: '3rem', height: '3rem', display: 'block', filter: 'contrast(1.45)' }} />
                 {t('showPhone')}
               </button>
             )}
