@@ -44,7 +44,7 @@ export default function About() {
     // ── draw terrain — VERTICAL wavy lines (ported directly from codex) ──────
     function draw(time = 0) {
       const w = canvas!.offsetWidth, h = canvas!.offsetHeight;
-      const idle = time * 0.00008;
+      const idle = time * 0.00014; // a touch faster so the lines always drift gently
 
       // spring-smooth toward pointer
       mouseRef.current.x += (pointerRef.current.x - mouseRef.current.x) * 0.08;
@@ -66,16 +66,16 @@ export default function About() {
           const packaBasin = Math.max(0, 1 - Math.hypot((baseX - w * 0.27) * 0.88, (y - h * 0.5) * 0.72) / 340);
           const rightBasin = Math.max(0, 1 - Math.hypot((baseX - w * 0.95) * 1.25, (y - h * 0.5) * 0.82) / 320);
           const distance   = Math.hypot((baseX - mx) * 1.05, (y - my) * 0.72);
-          const pull       = Math.max(0, 1 - distance / 280);
+          const pull       = Math.max(0, 1 - distance / 360); // wider mouse influence
 
           const wave =
-            Math.sin(y * 0.006 + phase + idle) * 6 +
-            Math.sin(y * 0.017 + phase * 1.7 - idle * 1.4) * 3 +
+            Math.sin(y * 0.006 + phase + idle) * 10 +              // bigger idle drift
+            Math.sin(y * 0.017 + phase * 1.7 - idle * 1.4) * 5 +
             packaBasin * Math.sin((y - h * 0.5) * 0.018 + idle * 0.7) * 112 +
             packaBasin * (baseX < w * 0.27 ? -38 : 38) -
             rightBasin * Math.sin((y - h * 0.5) * 0.015 - idle * 0.8) * 34 +
-            pull * Math.sin((y - my) * 0.028) * 52 +
-            pull * (baseX < mx ? -20 : 20);
+            pull * Math.sin((y - my) * 0.028) * 74 +               // bend more near the mouse
+            pull * (baseX < mx ? -36 : 36);                        // push further away from it
 
           const x = baseX + wave;
 
@@ -226,6 +226,7 @@ export default function About() {
           {/* rotating laptop (flipbook of the Laptop2.svg angle frames) */}
           <div
             ref={laptopRef}
+            className="about-laptop"
             style={{
               alignSelf: 'flex-start',
               marginLeft: 'clamp(-1.5rem, -2.5vw, -3rem)',
@@ -235,8 +236,8 @@ export default function About() {
           >
             <RotatingLaptop
               style={{
-                width: 'clamp(13rem, 22vw, 22rem)',
-                height: 'clamp(8rem, 13vw, 13rem)',
+                width: 'clamp(15rem, 25vw, 25rem)',
+                height: 'clamp(9rem, 15vw, 15rem)',
               }}
             />
           </div>

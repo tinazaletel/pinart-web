@@ -1061,3 +1061,11 @@ div.is-changing img {
     font-size: clamp(1.5rem, 8vw, 3rem) !important;
   }
 }
+
+/* About: nudge the rotating laptop further right on mobile so it overlaps the
+   portrait less (desktop position is set inline). */
+@media (max-width: 700px) {
+  .about-laptop {
+    transform: translate(260px, -120px) !important;
+  }
+}

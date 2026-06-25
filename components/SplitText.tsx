@@ -128,19 +128,31 @@ const SplitText = ({
           };
           (el as HTMLElement & { _rbplay?: () => void })._rbplay = play;
 
-          // …then reveal them when the heading enters the viewport. An
-          // IntersectionObserver fires reliably on every scroll-in (and
-          // immediately if already in view, e.g. a hash jump).
+          // …then reveal them when the heading enters the viewport. Made robust so a
+          // heading NEVER stays unanimated: it plays on scroll-in, plays immediately
+          // if already in view at init, and settles (no anim) if already scrolled
+          // past — covering the cases where the old observer simply never fired.
+          let played = false;
+          const reveal = () => {
+            if (played) return;
+            played = true;
+            io.disconnect();
+            play();
+          };
           const io = new IntersectionObserver(
-            (entries) => {
-              if (!entries.some((e) => e.isIntersecting)) return;
-              io.disconnect();
-              play();
-            },
-            { threshold, rootMargin }
+            (entries) => { if (entries.some((e) => e.isIntersecting)) reveal(); },
+            { threshold: 0, rootMargin: '0px 0px -10% 0px' }
           );
           io.observe(el);
           (el as HTMLElement & { _rbio?: IntersectionObserver })._rbio = io;
+          // Fallback for elements already in/past the viewport when this initialises
+          // (fonts load late, fast scroll) — the observer alone can miss these.
+          requestAnimationFrame(() => {
+            if (played) return;
+            const r = el.getBoundingClientRect();
+            if (r.bottom <= 0) { played = true; io.disconnect(); gsap.set(targets, { ...to }); }
+            else if (r.top < window.innerHeight) reveal();
+          });
 
           return undefined;
         },
