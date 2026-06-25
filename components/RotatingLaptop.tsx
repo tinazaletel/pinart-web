@@ -27,6 +27,7 @@ export default function RotatingLaptop({
     let current = 0;      // eased frame position (float)
     let frontIndex = 0;   // the front-facing (≈0°) frame — readable screen
     let hovering = false; // pointer is over the laptop → freeze on the front frame
+    let tapFrozen = false; // touch: tap toggles freeze (no hover on touch devices)
     let inView = false;
     let cancelled = false;
 
@@ -49,7 +50,7 @@ export default function RotatingLaptop({
 
     const loop = (t: number) => {
       if (inView && frames.length) {
-        if (hovering) {
+        if (hovering || tapFrozen) {
           // ease to the front frame and hold so the on-screen quote is readable
           current += (frontIndex - current) * 0.2;
         } else {
@@ -106,6 +107,10 @@ export default function RotatingLaptop({
         // hovering the laptop freezes it on the readable front frame
         host.addEventListener('pointerenter', () => { hovering = true; });
         host.addEventListener('pointerleave', () => { hovering = false; last = 0; });
+        // touch: tap toggles freeze (touch has no hover), so you can stop it to read
+        host.addEventListener('pointerup', (e) => {
+          if (e.pointerType === 'touch') { tapFrozen = !tapFrozen; last = 0; }
+        });
 
         const io = new IntersectionObserver(
           (es) => { inView = es.some((e) => e.isIntersecting); },
