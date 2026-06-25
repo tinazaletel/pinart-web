@@ -1066,6 +1066,6 @@ div.is-changing img {
    portrait less (desktop position is set inline). */
 @media (max-width: 700px) {
   .about-laptop {
-    transform: translate(260px, -120px) !important;
+    transform: translate(252px, -120px) !important;
   }
 }
