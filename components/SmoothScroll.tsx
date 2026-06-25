@@ -42,7 +42,8 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
     // with the proper negative-marginTop compensation.
     (window as unknown as { __pinartLenis?: Lenis }).__pinartLenis = lenis;
 
-    // Keep ScrollTrigger informed whenever Lenis emits a scroll event
+    // Keep ScrollTrigger informed whenever Lenis emits a scroll event. (Plain smooth
+    // scroll — no section snapping; it fought the scroll-driven animations.)
     lenis.on('scroll', ScrollTrigger.update);
 
     const scrollToHash = (hash: string, immediate = false) => {
@@ -115,6 +116,10 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
     const onSnap = (e: Event) => {
       // force: true so scrollTo works even when lenis.stop() was called
       lenis.scrollTo((e as CustomEvent<{ y: number }>).detail.y, { immediate: true, force: true });
+      // An immediate scroll doesn't emit a Lenis 'scroll' event, so ScrollTrigger
+      // stays out of sync — which then makes the NEXT animated scrollTo a no-op
+      // (e.g. you couldn't scroll back up out of an ink section). Resync here.
+      ScrollTrigger.update();
     };
     // pause / resume smooth scroll during ink transition
     const onStop  = () => lenis.stop();

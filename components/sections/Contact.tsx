@@ -37,7 +37,7 @@ export default function Contact() {
           alignItems: 'end',
         }}
       >
-        <div className="contact-heading-block">
+        <div className="contact-heading-block" style={{ containerType: 'inline-size' }}>
           <p className="kicker mb-16" style={{ color: TEXT, opacity: 1 }}>{t('kicker')}</p>
 
           <SplitText
@@ -55,7 +55,7 @@ export default function Contact() {
             style={{
               fontFamily:    'var(--font-serif)',
               fontWeight:    500,
-              fontSize:      'clamp(5.8rem, 14vw, 11rem)',
+              fontSize:      'clamp(3rem, 17cqi, 11rem)',
               lineHeight:    0.96,
               letterSpacing: '-0.035em',
               maxWidth:      '13ch',

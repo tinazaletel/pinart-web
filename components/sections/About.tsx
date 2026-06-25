@@ -2,12 +2,17 @@
 
 import { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { gsap } from '@/lib/gsap';
 import SplitText from '@/components/SplitText';
+import Reveal from '@/components/Reveal';
+import RotatingLaptop from '@/components/RotatingLaptop';
 
 export default function About() {
   const t = useTranslations('about');
   const canvasRef  = useRef<HTMLCanvasElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
+  const portraitRef = useRef<HTMLDivElement>(null);
+  const laptopRef   = useRef<HTMLDivElement>(null);
   // Separate ref for just the canvas/grid area so the marquee strip is excluded
   const contentRef = useRef<HTMLDivElement>(null);
   const pointerRef = useRef({ x: 0, y: 0 });   // raw pointer (content-relative)
@@ -104,6 +109,37 @@ export default function About() {
     };
   }, []);
 
+  // Portrait "jumps out of the laptop" and bounces onto its spot when scrolled in.
+  useEffect(() => {
+    const portrait = portraitRef.current;
+    const laptop   = laptopRef.current;
+    if (!portrait || !laptop) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let done = false;
+    const play = () => {
+      if (done) return;
+      done = true;
+      const pr = portrait.getBoundingClientRect();
+      const lr = laptop.getBoundingClientRect();
+      // start at the laptop's SCREEN (upper area), tiny — as if popping out of it
+      const dx = (lr.left + lr.width / 2) - (pr.left + pr.width / 2);
+      const dy = (lr.top + lr.height * 0.32) - (pr.top + pr.height / 2);
+      gsap.set(portrait, { x: dx, y: dy, scale: 0.06, autoAlpha: 0, transformOrigin: '50% 50%' });
+      gsap.to(portrait, {
+        x: 0, y: 0, scale: 1, autoAlpha: 1,
+        duration: 1.1, ease: 'back.out(1.9)', // pop + bounce overshoot
+      });
+    };
+
+    const io = new IntersectionObserver(
+      (es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); play(); } },
+      { threshold: 0.35 },
+    );
+    io.observe(portrait);
+    return () => io.disconnect();
+  }, []);
+
   return (
     <section
       ref={sectionRef}
@@ -156,7 +192,7 @@ export default function About() {
           padding: 'clamp(7rem, 10vw, 11rem) clamp(1.25rem, 4vw, 4.5rem) clamp(5rem, 8vw, 8rem)',
         }}
       >
-        {/* ── left: portrait circle ────────────────────────────────────── */}
+        {/* ── left: portrait circle (jumps out of the laptop and bounces in) ─── */}
         <div
           className="about-portrait-wrap"
           style={{
@@ -169,6 +205,7 @@ export default function About() {
         >
           {/* portrait in circle */}
           <div
+            ref={portraitRef}
             className="about-portrait"
             style={{
               width: 'clamp(160px, 22vw, 300px)',
@@ -185,6 +222,24 @@ export default function About() {
               style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
             />
           </div>
+
+          {/* rotating laptop (flipbook of the Laptop2.svg angle frames) */}
+          <div
+            ref={laptopRef}
+            style={{
+              alignSelf: 'flex-start',
+              marginLeft: 'clamp(-1.5rem, -2.5vw, -3rem)',
+              marginTop: 'clamp(-2.5rem, -4vw, -4rem)',
+              transform: 'translate(140px, -120px)',
+            }}
+          >
+            <RotatingLaptop
+              style={{
+                width: 'clamp(13rem, 22vw, 22rem)',
+                height: 'clamp(8rem, 13vw, 13rem)',
+              }}
+            />
+          </div>
         </div>
 
         {/* ── right: text ─────────────────────────────────────────────────── */}
@@ -198,9 +253,9 @@ export default function About() {
             tag="h2"
             textAlign="left"
             splitType="chars"
-            from={{ opacity: 0, y: 40 }}
-            to={{ opacity: 1, y: 0 }}
-            delay={30}
+            from={{ opacity: 0, x: 130 }}
+            to={{ opacity: 1, x: 0 }}
+            delay={26}
             duration={0.85}
             ease="power3.out"
             rootMargin="-60px"
@@ -216,7 +271,11 @@ export default function About() {
             }}
           />
 
-          <p
+          <Reveal
+            as="p"
+            from="right"
+            distance={180}
+            delay={0.18}
             className="about-body"
             style={{
               fontFamily: 'var(--font-sans)',
@@ -229,7 +288,7 @@ export default function About() {
             }}
           >
             {t('body')}
-          </p>
+          </Reveal>
         </div>
       </div>
 

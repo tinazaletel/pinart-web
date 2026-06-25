@@ -188,7 +188,7 @@ export default function Projects() {
         <div
           key={project.num}
           ref={el => { outerRefs.current[i] = el; }}
-          style={{ height: '120vh' }}
+          style={{ height: '105vh' }}
         >
           {/* Sticky viewport */}
           <div

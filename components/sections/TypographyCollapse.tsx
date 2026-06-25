@@ -395,13 +395,13 @@ export default function TypographyCollapse() {
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
         style={{
-          position:      'fixed',
-          inset:         0,
-          width:         '100vw',
-          height:        '100vh',
-          zIndex:        500,
-          pointerEvents: 'none',
-          opacity:       0,
+          position:       'fixed',
+          inset:          0,
+          width:          '100vw',
+          height:         '100vh',
+          zIndex:         500,
+          pointerEvents:  'none',
+          opacity:        0,
         }}
       >
         <path ref={pathRef} fill="oklch(0.137 0.012 58)" />

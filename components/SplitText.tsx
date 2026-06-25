@@ -106,27 +106,36 @@ const SplitText = ({
           // Hide the split chars immediately (their "from" state)…
           gsap.set(targets, { ...from });
 
+          // Reusable reveal so both the IntersectionObserver AND a section-snap
+          // (pinart-reveal event) can play it. Re-runnable: the full-page snap
+          // brings a section to the top at a different moment than its first
+          // scroll-in, so we replay the heading then so it isn't already "used up".
+          const play = () => {
+            gsap.killTweensOf(targets);
+            gsap.set(targets, { ...from });
+            gsap.to(targets, {
+              ...to,
+              duration,
+              ease,
+              stagger:    delay / 1000,
+              onComplete() {
+                animationDoneRef.current = true;
+                onCompleteRef.current?.();
+              },
+              willChange: 'transform, opacity',
+              force3D:    true,
+            });
+          };
+          (el as HTMLElement & { _rbplay?: () => void })._rbplay = play;
+
           // …then reveal them when the heading enters the viewport. An
           // IntersectionObserver fires reliably on every scroll-in (and
-          // immediately if already in view, e.g. a hash jump) — ScrollTrigger
-          // could miss fast scrolls/jumps, so the heading appeared without
-          // ever animating.
+          // immediately if already in view, e.g. a hash jump).
           const io = new IntersectionObserver(
             (entries) => {
               if (!entries.some((e) => e.isIntersecting)) return;
               io.disconnect();
-              gsap.to(targets, {
-                ...to,
-                duration,
-                ease,
-                stagger:    delay / 1000,
-                onComplete() {
-                  animationDoneRef.current = true;
-                  onCompleteRef.current?.();
-                },
-                willChange: 'transform, opacity',
-                force3D:    true,
-              });
+              play();
             },
             { threshold, rootMargin }
           );
@@ -159,6 +168,20 @@ const SplitText = ({
       scope: ref,
     }
   );
+
+  // Replay the reveal when this heading's section is snapped to the top by the
+  // full-page scroller (SmoothScroll dispatches pinart-reveal with the section id).
+  useEffect(() => {
+    const onReveal = (e: Event) => {
+      const id = (e as CustomEvent<{ id?: string }>).detail?.id;
+      const el = ref.current as (HTMLElement & { _rbplay?: () => void }) | null;
+      if (!id || !el) return;
+      const sec = el.closest('section[id]') as HTMLElement | null;
+      if (sec && sec.id === id) el._rbplay?.();
+    };
+    window.addEventListener('pinart-reveal', onReveal);
+    return () => window.removeEventListener('pinart-reveal', onReveal);
+  }, []);
 
   const baseStyle: React.CSSProperties = {
     textAlign,

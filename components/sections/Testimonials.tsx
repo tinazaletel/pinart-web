@@ -318,7 +318,7 @@ export default function Testimonials() {
         style={{
           position:      'fixed',
           top:           '-3vh',
-          left:          0,
+          left:           0,
           width:         '100vw',
           height:        '106vh',
           zIndex:        500,

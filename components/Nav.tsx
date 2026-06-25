@@ -73,16 +73,23 @@ export default function Nav() {
       requestAnimationFrame(update);
     };
 
+    // SmoothScroll fires this after a programmatic snap, since Lenis programmatic
+    // scrolls don't reliably emit a native 'scroll' event. rAF so we read the
+    // settled position.
+    const onNavRefresh = () => requestAnimationFrame(update);
+
     window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update, { passive: true });
     window.addEventListener('hashchange', update);
     window.addEventListener('pinart-dark', onPinartDark);
+    window.addEventListener('pinart-nav-refresh', onNavRefresh);
     update();
     return () => {
       window.removeEventListener('scroll', update);
       window.removeEventListener('resize', update);
       window.removeEventListener('hashchange', update);
       window.removeEventListener('pinart-dark', onPinartDark);
+      window.removeEventListener('pinart-nav-refresh', onNavRefresh);
     };
   }, []);
 
