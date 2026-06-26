@@ -208,7 +208,7 @@ export default function About() {
             ref={portraitRef}
             className="about-portrait"
             style={{
-              width: 'clamp(160px, 22vw, 300px)',
+              width: 'clamp(155px, 22vw, 300px)',
               aspectRatio: '1',
               borderRadius: '50%',
               overflow: 'hidden',

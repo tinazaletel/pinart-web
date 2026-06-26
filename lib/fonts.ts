@@ -1,4 +1,4 @@
-import { Bodoni_Moda, Archivo, Archivo_Narrow } from 'next/font/google';
+import { Bodoni_Moda, Archivo, Archivo_Narrow, Caveat } from 'next/font/google';
 
 /**
  * Bodoni Moda — variable Didone for elegant editorial display.
@@ -31,4 +31,14 @@ export const archivoNarrow = Archivo_Narrow({
   display: 'swap'
 });
 
-export const fontVariables = `${bodoni.variable} ${archivo.variable} ${archivoNarrow.variable}`;
+/**
+ * Caveat — hand-written script used by the rotating laptop SVG's on-screen quote.
+ */
+export const caveat = Caveat({
+  subsets: ['latin'],
+  variable: '--font-caveat',
+  weight: ['500', '600', '700'],
+  display: 'swap'
+});
+
+export const fontVariables = `${bodoni.variable} ${archivo.variable} ${archivoNarrow.variable} ${caveat.variable}`;

@@ -145,13 +145,12 @@ const SplitText = ({
           );
           io.observe(el);
           (el as HTMLElement & { _rbio?: IntersectionObserver })._rbio = io;
-          // Fallback for elements already in/past the viewport when this initialises
-          // (fonts load late, fast scroll) — the observer alone can miss these.
+          // Fallback only for headings already IN the viewport at init (fonts load
+          // late) — never force-settle a "past" one, which showed it unanimated.
           requestAnimationFrame(() => {
             if (played) return;
             const r = el.getBoundingClientRect();
-            if (r.bottom <= 0) { played = true; io.disconnect(); gsap.set(targets, { ...to }); }
-            else if (r.top < window.innerHeight) reveal();
+            if (r.top < window.innerHeight && r.bottom > 0) reveal();
           });
 
           return undefined;

@@ -128,7 +128,8 @@ export default function Hero() {
     /* ── reset ─────────────────────────────────────────────────────────── */
     svgWrap.style.transform  = '';
     svgWrap.style.filter     = '';
-    svgWrap.style.opacity    = '';
+    svgWrap.style.opacity    = '0'; // keep hidden during the font-wait so the OLD
+    svgWrap.innerHTML        = '';  // pupa from a previous play can't flash before the intro
     drop.style.opacity       = '0';
     drop.style.pointerEvents = 'none';
     drop.style.cursor        = '';
@@ -236,6 +237,10 @@ export default function Hero() {
     /* hide ALL layers initially — oči se pokažejo same, ostalo pride med animacijo */
     [eyes, pupils, nose, face, hairG0, hairG1, hairG3, body, hand, handFill, handOutline, dotG]
       .forEach(el => { if (el) el.style.opacity = '0'; });
+
+    /* now that every layer is hidden, reveal the (empty-looking) wrap — no full-pupa
+       flash, since only the animation below brings layers back in */
+    svgWrap.style.opacity = '1';
 
     /* two rAFs so getBBox / getScreenCTM see actual layout */
     await raf2();

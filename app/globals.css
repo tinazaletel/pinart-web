@@ -1066,6 +1066,74 @@ div.is-changing img {
    portrait less (desktop position is set inline). */
 @media (max-width: 700px) {
   .about-laptop {
-    transform: translate(252px, -120px) !important;
+    transform: translate(150px, -120px) !important;
   }
+}
+
+/* Laptop SVG quote: force the hand-written Caveat (the SVG references it but the
+   font wasn't loaded, so it fell back to the serif). */
+.about-laptop svg text,
+.about-laptop svg tspan {
+  font-family: var(--font-caveat), cursive !important;
+}
+
+/* Mobile: more breathing room at the bottom of Services so the next (ink) section
+   doesn't trigger before the last services can be read. */
+@media (max-width: 700px) {
+  .services-section {
+    padding-bottom: clamp(32rem, 70vw, 42rem) !important;
+  }
+}
+
+/* Mobile: drop the hero word-pills a touch so they sit lower and cover the pupa
+   less (they read ~20px too high on phones; desktop is fine). */
+@media (max-width: 700px) {
+  .hero-word-pills {
+    top: calc(clamp(60%, 72dvh, 79vh) + 20px) !important;
+  }
+}
+
+/* Mobile: more room below the About copy so the next section doesn't cut over it. */
+@media (max-width: 700px) {
+  .about-layout {
+    padding-bottom: clamp(13rem, 26vw, 18rem) !important;
+  }
+}
+
+/* Landscape phone (wide but short): the desktop 2-col About layout is too tight —
+   the laptop overlaps the photo, the packa overlaps the copy, and the right
+   padding is too small. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .about-packa { display: none !important; }
+  .about-layout { padding-right: clamp(4rem, 9vw, 8rem) !important; }
+  .about-laptop { transform: translate(0px, -90px) !important; }
+  .contact-main-title { font-size: clamp(2.2rem, 11cqi, 5rem) !important; }
+}
+
+/* Landscape phone: always use the hamburger (the full nav bar overlaps the hero
+   heading), and size the hero finale to the short height so the first line clears
+   the menu. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .nav-desktop { display: none !important; }
+  .nav-burger { display: flex !important; }
+  .hero-finale .ln { font-size: clamp(1.5rem, 8.5vh, 3.4rem) !important; }
+}
+
+/* Landscape: keep the hamburger clear of the camera/notch (viewport-fit=cover lets
+   backgrounds reach the edge, so interactive UI must respect the safe-area). */
+@media (orientation: landscape) and (max-height: 520px) {
+  .nav-burger { margin-right: max(env(safe-area-inset-right), 40px) !important; }
+  /* "Let's talk" sits on the right edge — keep it clear of the camera/notch with
+     the same safe-area offset as the hamburger (same vertical line). */
+  .edge-right-ui { right: max(env(safe-area-inset-right), 40px) !important; }
+
+  /* No room for the section dots / numbering in the short landscape height — hide
+     them entirely (like the packa). */
+  .section-dots { display: none !important; }
+
+  /* The "Let's talk" panel: in the short landscape height the huge serif title
+     pushes the body off-screen and the panel becomes unreadable. Shrink the
+     title + padding so the whole dialog fits and scrolls cleanly. */
+  .talk-panel { max-height: calc(100dvh - 1rem) !important; padding: 1.1rem 1.4rem !important; }
+  .talk-panel-title { font-size: clamp(1.8rem, 6vh, 3rem) !important; margin-bottom: 0.6rem !important; max-width: none !important; }
 }

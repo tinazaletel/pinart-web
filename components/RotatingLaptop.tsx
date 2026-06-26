@@ -78,8 +78,8 @@ export default function RotatingLaptop({
         svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         svgEl.style.width = '100%';
         svgEl.style.height = '100%';
-        // un-hide any display:none wrappers from the export
-        host.querySelectorAll('[display="none"]').forEach((e) => e.removeAttribute('display'));
+        // NOTE: do NOT un-hide the export's display:none group — it holds a template
+        // text block that otherwise pokes outside the laptop during rotation.
 
         const groups = Array.from(svgEl.querySelectorAll('g[id^="Generative_Object"]')) as SVGGElement[];
         frames = groups

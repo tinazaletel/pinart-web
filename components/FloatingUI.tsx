@@ -133,6 +133,7 @@ export default function FloatingUI() {
         type="button"
         onClick={() => setTalkOpen(true)}
         aria-label="Let's talk"
+        className="edge-right-ui"
         style={{
           position:       'fixed',
           right:          'clamp(1rem, 2vw, 1.8rem)',
@@ -202,12 +203,15 @@ export default function FloatingUI() {
             aria-modal="true"
             aria-labelledby="talk-title"
             data-lenis-prevent
+            className="talk-panel"
             style={{
               position: 'relative',
-              width: 'min(31rem,100%)',
+              width: 'min(34rem,100%)',
               maxHeight: 'calc(100vh - 2rem)',
               overflowY: 'auto',
+              overflowX: 'hidden',
               padding: 'clamp(1.5rem,4vw,2.8rem)',
+              paddingRight: 'clamp(1.8rem,4.5vw,3.4rem)',
               background: 'var(--paper)',
               color: 'var(--ink)',
               boxShadow: '0 24px 80px rgba(0,0,0,0.28)',
@@ -224,7 +228,7 @@ export default function FloatingUI() {
             </button>
 
             <p className="kicker" style={{ marginBottom: '1.2rem' }}>{talkCopy.eyebrow}</p>
-            <h2 id="talk-title" style={{ maxWidth: '8ch', margin: '0 0 1rem', fontFamily: 'var(--font-serif)', fontSize: 'clamp(3rem,7vw,5.4rem)', fontWeight: 400, lineHeight: 0.98 }}>
+            <h2 id="talk-title" className="talk-panel-title" style={{ maxWidth: '8ch', margin: '0 0 1rem', fontFamily: 'var(--font-serif)', fontSize: 'clamp(3rem,7vw,5.4rem)', fontWeight: 400, lineHeight: 0.98 }}>
               {talkCopy.title}
             </h2>
             <p style={{ maxWidth: '27rem', margin: '0 0 2rem', fontSize: '1rem', lineHeight: 1.5, opacity: 0.68 }}>{talkCopy.body}</p>

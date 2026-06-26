@@ -89,6 +89,7 @@ export default function SectionDots() {
 
   return (
     <div
+      className="edge-right-ui section-dots"
       style={{
         position: 'fixed',
         right: 'clamp(1.1rem, 2.2vw, 2.2rem)',

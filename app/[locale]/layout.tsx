@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
@@ -17,6 +17,14 @@ import '../globals.css';
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
+
+// viewport-fit=cover so section backgrounds fill edge-to-edge in landscape on
+// notched phones (otherwise the safe-area insets leave cream bars on the sides).
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
 
 export async function generateMetadata({
   params
@@ -76,6 +84,17 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={fontVariables}>
+      <head>
+        {/* Run before hydration: stop the browser restoring scroll and force the top.
+            Otherwise sections briefly sit at a restored scroll position while the
+            heading-reveal observers initialise → reveals misfire ("titles don't
+            animate after a normal refresh"). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "try{history.scrollRestoration='manual';window.scrollTo(0,0);}catch(e){}",
+          }}
+        />
+      </head>
       <body className="bg-paper text-ink antialiased">
         <NextIntlClientProvider messages={messages}>
           <Preloader />

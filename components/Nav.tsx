@@ -137,7 +137,7 @@ export default function Nav() {
 
         {/* Desktop navigation — pill wrapper */}
         <nav
-          className="hidden md:flex items-center gap-10 lg:gap-12"
+          className="nav-desktop hidden md:flex items-center gap-10 lg:gap-12"
           style={{
             padding: isScrolled ? '0.5rem 1.5rem' : '0',
             backgroundColor: isScrolled
@@ -227,7 +227,7 @@ export default function Nav() {
 
         {/* Mobile hamburger */}
         <button
-          className="md:hidden flex flex-col justify-center"
+          className="nav-burger md:hidden flex flex-col justify-center"
           style={{
             gap: '5px',
             padding: isScrolled ? '0.75rem 0.75rem' : '0.25rem',
