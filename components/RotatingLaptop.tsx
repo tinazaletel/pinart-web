@@ -66,6 +66,7 @@ export default function RotatingLaptop({
       raf = requestAnimationFrame(loop);
     };
 
+    const startLoad = () => {
     fetch('/Laptop2.svg')
       .then((r) => r.text())
       .then((txt) => {
@@ -120,12 +121,29 @@ export default function RotatingLaptop({
         (host as HTMLElement & { _laptopIo?: IntersectionObserver })._laptopIo = io;
       })
       .catch(() => {});
+    };
+
+    // Defer the 200KB SVG download until the About section is near the viewport so
+    // it doesn't compete with the homepage videos for bandwidth on slow connections.
+    let started = false;
+    const loadIo = new IntersectionObserver(
+      (es) => {
+        if (!started && es.some((e) => e.isIntersecting)) {
+          started = true;
+          loadIo.disconnect();
+          startLoad();
+        }
+      },
+      { rootMargin: '600px 0px' },
+    );
+    loadIo.observe(host);
 
     raf = requestAnimationFrame(loop);
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
+      loadIo.disconnect();
       (host as HTMLElement & { _laptopIo?: IntersectionObserver })._laptopIo?.disconnect();
     };
   }, []);

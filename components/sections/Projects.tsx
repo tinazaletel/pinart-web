@@ -121,6 +121,33 @@ export default function Projects() {
     return () => ctx.revert();
   }, []);
 
+  // Lazy-load the project loop videos: with preload="none" they don't download on
+  // page load (which choked slow connections and left the poster showing). Each one
+  // loads + plays only once it scrolls near the viewport, and pauses when it leaves.
+  useEffect(() => {
+    const videos = mediaRefs.current.filter(
+      (el): el is HTMLVideoElement => el instanceof HTMLVideoElement,
+    );
+    if (!videos.length) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const v = entry.target as HTMLVideoElement;
+          if (entry.isIntersecting) {
+            if (v.preload !== 'auto') v.preload = 'auto';
+            v.play().catch(() => {});
+          } else {
+            v.pause();
+          }
+        });
+      },
+      { rootMargin: '400px 0px' },
+    );
+    videos.forEach((v) => io.observe(v));
+    return () => io.disconnect();
+  }, []);
+
   return (
     <section
       id="work"
@@ -217,11 +244,11 @@ export default function Projects() {
                   className="absolute inset-0 h-full w-full object-cover"
                   src={project.video}
                   poster={project.image}
-                  autoPlay
+                  data-lazy-video
                   muted
                   loop
                   playsInline
-                  preload="auto"
+                  preload="none"
                 />
               ) : (
                 <picture>

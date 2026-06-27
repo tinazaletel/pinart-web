@@ -30,17 +30,21 @@ export default function Preloader() {
   const [phase, setPhase] = useState<'visible' | 'fading' | 'done'>('visible');
 
   useEffect(() => {
+    let done = false;
     const hide = () => {
+      if (done) return;
+      done = true;
       setPhase('fading');
       setTimeout(() => setPhase('done'), 700);
     };
-    Promise.all([
-      document.fonts.ready,
-      new Promise<void>(res => {
-        if (document.readyState === 'complete') res();
-        else window.addEventListener('load', () => res(), { once: true });
-      }),
-    ]).then(() => setTimeout(hide, 200));
+    // Hide as soon as the fonts are ready — NOT on window 'load', which waits for
+    // every image and video on the page to finish. On a slow connection that event
+    // can take ages (or effectively never fire), leaving the logo stuck forever.
+    document.fonts.ready.then(() => setTimeout(hide, 200));
+    // Hard safety cap: never hold the preloader longer than this, no matter the
+    // network. The page is usable underneath; media streams in progressively.
+    const cap = setTimeout(hide, 3500);
+    return () => clearTimeout(cap);
   }, []);
 
   if (phase === 'done') return null;
