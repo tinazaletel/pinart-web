@@ -270,36 +270,52 @@ export default function Testimonials() {
   // would override a GSAP-set transform; the section's overflow:hidden clips the
   // off-screen start so no horizontal scrollbar appears.
   useEffect(() => {
-    if (!window.matchMedia('(max-width: 700px)').matches) return;
     const section = sectionRef.current;
     if (!section) return;
-    const cards = Array.from(section.querySelectorAll<HTMLElement>('.testimonial-card'));
-    if (!cards.length) return;
-    const dx = Math.round(window.innerWidth * 0.9);
-    const ios: IntersectionObserver[] = [];
-    cards.forEach((card, i) => {
-      const fromX = i % 2 === 0 ? dx : -dx; // even -> right, odd -> left
-      // Keep the card in its layout spot (just invisible) so the observer reads
-      // its true on-screen position; the off-screen start exists only during the
-      // fromTo. Disconnect once it plays so the off-screen frame can't make the
-      // observer fire again mid-animation.
-      gsap.set(card, { opacity: 0 });
-      const io = new IntersectionObserver(
-        (entries) => {
-          if (!entries[0].isIntersecting) return;
-          io.disconnect();
-          gsap.fromTo(
-            card,
-            { opacity: 0, marginLeft: fromX },
-            { opacity: 1, marginLeft: 0, duration: 0.95, ease: 'power3.out' },
-          );
-        },
-        { threshold: 0.35 },
-      );
-      io.observe(card);
-      ios.push(io);
-    });
-    return () => ios.forEach((io) => io.disconnect());
+    let ios: IntersectionObserver[] = [];
+    let active = false;
+
+    const setup = () => {
+      const cards = Array.from(section.querySelectorAll<HTMLElement>('.testimonial-card'));
+      if (!cards.length) return;
+      const dx = Math.round(window.innerWidth * 0.9);
+      cards.forEach((card, i) => {
+        const fromX = i % 2 === 0 ? dx : -dx; // even -> right, odd -> left
+        // Keep the card in its layout spot (just invisible) so the observer reads
+        // its true on-screen position; the off-screen start exists only during the
+        // fromTo. Disconnect once it plays so the off-screen frame can't make the
+        // observer fire again mid-animation.
+        gsap.set(card, { opacity: 0, marginLeft: 0 });
+        const io = new IntersectionObserver(
+          (entries) => {
+            if (!entries[0].isIntersecting) return;
+            io.disconnect();
+            gsap.fromTo(
+              card,
+              { opacity: 0, marginLeft: fromX },
+              { opacity: 1, marginLeft: 0, duration: 0.95, ease: 'power3.out' },
+            );
+          },
+          { threshold: 0.35 },
+        );
+        io.observe(card);
+        ios.push(io);
+      });
+      active = true;
+    };
+    const teardown = () => { ios.forEach((io) => io.disconnect()); ios = []; active = false; };
+
+    // Re-evaluate on resize so the per-card mobile reveal engages whenever the
+    // viewport is mobile — including when a desktop window is narrowed to mobile
+    // after load (otherwise the desktop "all at once" reveal would run instead).
+    const evaluate = () => {
+      const mobile = window.matchMedia('(max-width: 700px)').matches;
+      if (mobile && !active) setup();
+      else if (!mobile && active) teardown(); // desktop revealContent owns the cards
+    };
+    evaluate();
+    window.addEventListener('resize', evaluate);
+    return () => { window.removeEventListener('resize', evaluate); teardown(); };
   }, []);
 
   useEffect(() => {
