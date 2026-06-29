@@ -22,23 +22,28 @@ export const archivo = Archivo({
 });
 
 /**
- * Archivo Narrow — condensed variant za naslove storitev
+ * Archivo Narrow — condensed variant za naslove storitev.
+ * Below the hero (Services section), so it isn't preloaded — it loads when its
+ * section is reached, keeping it out of the blocking first-paint font set.
  */
 export const archivoNarrow = Archivo_Narrow({
   subsets: ['latin', 'latin-ext'],
   variable: '--font-condensed',
   weight: ['400', '500', '600', '700'],
-  display: 'swap'
+  display: 'swap',
+  preload: false
 });
 
 /**
- * Caveat — hand-written script used by the rotating laptop SVG's on-screen quote.
+ * Caveat — hand-written script used only by the rotating laptop SVG's on-screen
+ * quote, deep below the fold. Not preloaded; loads when that section is reached.
  */
 export const caveat = Caveat({
   subsets: ['latin'],
   variable: '--font-caveat',
   weight: ['600', '700'],
-  display: 'swap'
+  display: 'swap',
+  preload: false
 });
 
 export const fontVariables = `${bodoni.variable} ${archivo.variable} ${archivoNarrow.variable} ${caveat.variable}`;
