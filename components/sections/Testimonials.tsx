@@ -119,11 +119,33 @@ export default function Testimonials() {
       // Tight delay/stagger so content appears right after the ink, not late.
       const cards = section?.querySelectorAll<HTMLElement>('.testimonial-card');
       if (cards) {
-        gsap.fromTo(
-          Array.from(cards),
-          { opacity: 0, scale: 0.88, y: 48 },
-          { opacity: 1, scale: 1, y: 0, duration: 0.6, stagger: 0.09, delay: 0.06, ease: 'back.out(1.35)' },
-        );
+        const mobileFly = window.matchMedia('(max-width: 700px)').matches;
+        if (mobileFly) {
+          // Mobile: cards fly in from alternating sides — even indices (left
+          // column) from the left, odd indices (right column) from the right.
+          // The section's overflow:hidden clips the off-screen start, so no
+          // horizontal scrollbar appears.
+          // The mobile .testimonial-card has `transform: rotate(0deg) !important`,
+          // which would override any GSAP-set transform (x) — so slide via
+          // marginLeft instead, which no !important rule touches. The section's
+          // overflow:hidden clips the off-screen start, so no horizontal
+          // scrollbar appears. Even indices (stacked from the left column) come
+          // from the left, odd from the right.
+          const dx = Math.round(window.innerWidth * 0.85);
+          Array.from(cards).forEach((card, i) => {
+            gsap.fromTo(
+              card,
+              { opacity: 0, marginLeft: i % 2 === 0 ? -dx : dx },
+              { opacity: 1, marginLeft: 0, duration: 0.7, delay: 0.06 + i * 0.12, ease: 'power3.out' },
+            );
+          });
+        } else {
+          gsap.fromTo(
+            Array.from(cards),
+            { opacity: 0, scale: 0.88, y: 48 },
+            { opacity: 1, scale: 1, y: 0, duration: 0.6, stagger: 0.09, delay: 0.06, ease: 'back.out(1.35)' },
+          );
+        }
       }
     }
 
