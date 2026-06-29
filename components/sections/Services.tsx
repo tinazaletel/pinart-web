@@ -153,6 +153,8 @@ export default function Services() {
               ref={previewImgRef}
               src={SERVICES[0].image}
               alt=""
+              loading="lazy"
+              decoding="async"
               style={{
                 width:      '100%',
                 height:     '100%',
@@ -263,6 +265,8 @@ export default function Services() {
                 src={image}
                 alt=""
                 aria-hidden
+                loading="lazy"
+                decoding="async"
               />
             </article>
           ))}

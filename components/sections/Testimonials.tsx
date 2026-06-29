@@ -469,6 +469,8 @@ export default function Testimonials() {
                   src={card.image}
                   alt=""
                   aria-hidden
+                  loading="lazy"
+                  decoding="async"
                   style={{
                     position: 'absolute',
                     top: '-2.8rem',

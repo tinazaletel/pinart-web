@@ -219,6 +219,8 @@ export default function About() {
             <img
               src="/tina-1.jpg"
               alt="Tina Zaletel"
+              loading="lazy"
+              decoding="async"
               style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
             />
           </div>
@@ -300,6 +302,8 @@ export default function About() {
         src="/packa.svg"
         alt=""
         aria-hidden
+        loading="lazy"
+        decoding="async"
         style={{
           position:      'absolute',
           right:         'clamp(2rem, 5vw, 6rem)',

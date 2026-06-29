@@ -355,7 +355,7 @@ export default function Projects() {
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/album-02.svg" alt="" aria-hidden style={{ width: '1.1rem', height: '1.1rem', marginRight: '0.55rem', display: 'block' }} />
+          <img src="/album-02.svg" alt="" aria-hidden loading="lazy" decoding="async" style={{ width: '1.1rem', height: '1.1rem', marginRight: '0.55rem', display: 'block' }} />
           {t('moreWork')}
         </Link>
       </div>

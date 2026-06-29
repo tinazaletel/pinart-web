@@ -84,7 +84,7 @@ export default function Contact() {
                 }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.src} alt="" style={{ width: '100%', height: '100%', display: 'block' }} />
+                <img src={item.src} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', display: 'block' }} />
               </a>
             ))}
           </div>
@@ -162,14 +162,14 @@ export default function Contact() {
             <a href={`mailto:${t('email')}`} className="press-fb" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.9rem', width: 'fit-content', color: TEXT, textDecoration: 'none', fontSize: 'clamp(1.1rem, 1.7vw, 1.5rem)' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/mail-01.svg" alt="" style={{ width: '3rem', height: '3rem', display: 'block', filter: 'contrast(1.45)' }} />
+              <img src="/mail-01.svg" alt="" loading="lazy" decoding="async" style={{ width: '3rem', height: '3rem', display: 'block', filter: 'contrast(1.45)' }} />
               {t('email')}
             </a>
             {phone ? (
               <a href={`tel:${phone}`} aria-label={t('callPhone')} className="press-fb" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.9rem', width: 'fit-content', color: TEXT, textDecoration: 'none', fontSize: 'clamp(1.1rem, 1.7vw, 1.5rem)' }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/smart-phone-01.svg" alt="" style={{ width: '3rem', height: '3rem', display: 'block', filter: 'contrast(1.45)' }} />
+                <img src="/smart-phone-01.svg" alt="" loading="lazy" decoding="async" style={{ width: '3rem', height: '3rem', display: 'block', filter: 'contrast(1.45)' }} />
                 {phone}
               </a>
             ) : (
@@ -181,7 +181,7 @@ export default function Contact() {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/smart-phone-01.svg" alt="" style={{ width: '3rem', height: '3rem', display: 'block', filter: 'contrast(1.45)' }} />
+                <img src="/smart-phone-01.svg" alt="" loading="lazy" decoding="async" style={{ width: '3rem', height: '3rem', display: 'block', filter: 'contrast(1.45)' }} />
                 {t('showPhone')}
               </button>
             )}
