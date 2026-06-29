@@ -114,38 +114,16 @@ export default function Testimonials() {
         );
       });
 
-      // Animate cards one by one with stagger — GSAP sets opacity:0 first so
-      // no React-state-driven flash can occur.
-      // Tight delay/stagger so content appears right after the ink, not late.
+      // Desktop: reveal all cards together as the ink recedes. On mobile each
+      // card flies in on its own as it scrolls into view (see the dedicated
+      // mobile effect), so the ink reveal leaves the cards to that observer.
       const cards = section?.querySelectorAll<HTMLElement>('.testimonial-card');
-      if (cards) {
-        const mobileFly = window.matchMedia('(max-width: 700px)').matches;
-        if (mobileFly) {
-          // Mobile: cards fly in from alternating sides — even indices (left
-          // column) from the left, odd indices (right column) from the right.
-          // The section's overflow:hidden clips the off-screen start, so no
-          // horizontal scrollbar appears.
-          // The mobile .testimonial-card has `transform: rotate(0deg) !important`,
-          // which would override any GSAP-set transform (x) — so slide via
-          // marginLeft instead, which no !important rule touches. The section's
-          // overflow:hidden clips the off-screen start, so no horizontal
-          // scrollbar appears. Even indices (stacked from the left column) come
-          // from the left, odd from the right.
-          const dx = Math.round(window.innerWidth * 0.85);
-          Array.from(cards).forEach((card, i) => {
-            gsap.fromTo(
-              card,
-              { opacity: 0, marginLeft: i % 2 === 0 ? -dx : dx },
-              { opacity: 1, marginLeft: 0, duration: 0.7, delay: 0.06 + i * 0.12, ease: 'power3.out' },
-            );
-          });
-        } else {
-          gsap.fromTo(
-            Array.from(cards),
-            { opacity: 0, scale: 0.88, y: 48 },
-            { opacity: 1, scale: 1, y: 0, duration: 0.6, stagger: 0.09, delay: 0.06, ease: 'back.out(1.35)' },
-          );
-        }
+      if (cards && !window.matchMedia('(max-width: 700px)').matches) {
+        gsap.fromTo(
+          Array.from(cards),
+          { opacity: 0, scale: 0.88, y: 48 },
+          { opacity: 1, scale: 1, y: 0, duration: 0.6, stagger: 0.09, delay: 0.06, ease: 'back.out(1.35)' },
+        );
       }
     }
 
@@ -230,9 +208,13 @@ export default function Testimonials() {
           (el as HTMLElement).style.filter  = '';
         });
       }
-      // reset cards opacity so they're ready for next reveal
-      const cards = section?.querySelectorAll<HTMLElement>('.testimonial-card');
-      cards?.forEach(c => { c.style.opacity = '0'; c.style.transform = ''; });
+      // reset cards opacity so they're ready for next reveal (desktop only —
+      // on mobile the per-card scroll observers own the cards; re-hiding them
+      // here would leave them invisible since those observers are one-shot).
+      if (!window.matchMedia('(max-width: 700px)').matches) {
+        const cards = section?.querySelectorAll<HTMLElement>('.testimonial-card');
+        cards?.forEach(c => { c.style.opacity = '0'; c.style.transform = ''; });
+      }
     }
 
     // ── scroll trigger ────────────────────────────────────────────────────────
@@ -278,6 +260,46 @@ export default function Testimonials() {
       gsap.killTweensOf(coverPts);
       gsap.killTweensOf(revealPts);
     };
+  }, []);
+
+  // Mobile (<=700px): each card flies in from an alternating side as it scrolls
+  // into view — 1st from the right, 2nd from the left, 3rd right, 4th left —
+  // slow and soft, with a fade, one after another. (Desktop reveals them all
+  // together via the ink transition.) marginLeft drives the slide because the
+  // mobile .testimonial-card has `transform: rotate(0deg) !important`, which
+  // would override a GSAP-set transform; the section's overflow:hidden clips the
+  // off-screen start so no horizontal scrollbar appears.
+  useEffect(() => {
+    if (!window.matchMedia('(max-width: 700px)').matches) return;
+    const section = sectionRef.current;
+    if (!section) return;
+    const cards = Array.from(section.querySelectorAll<HTMLElement>('.testimonial-card'));
+    if (!cards.length) return;
+    const dx = Math.round(window.innerWidth * 0.9);
+    const ios: IntersectionObserver[] = [];
+    cards.forEach((card, i) => {
+      const fromX = i % 2 === 0 ? dx : -dx; // even -> right, odd -> left
+      // Keep the card in its layout spot (just invisible) so the observer reads
+      // its true on-screen position; the off-screen start exists only during the
+      // fromTo. Disconnect once it plays so the off-screen frame can't make the
+      // observer fire again mid-animation.
+      gsap.set(card, { opacity: 0 });
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (!entries[0].isIntersecting) return;
+          io.disconnect();
+          gsap.fromTo(
+            card,
+            { opacity: 0, marginLeft: fromX },
+            { opacity: 1, marginLeft: 0, duration: 0.95, ease: 'power3.out' },
+          );
+        },
+        { threshold: 0.35 },
+      );
+      io.observe(card);
+      ios.push(io);
+    });
+    return () => ios.forEach((io) => io.disconnect());
   }, []);
 
   useEffect(() => {
