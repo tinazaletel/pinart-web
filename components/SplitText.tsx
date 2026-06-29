@@ -128,30 +128,21 @@ const SplitText = ({
           };
           (el as HTMLElement & { _rbplay?: () => void })._rbplay = play;
 
-          // …then reveal them when the heading enters the viewport. Made robust so a
-          // heading NEVER stays unanimated: it plays on scroll-in, plays immediately
-          // if already in view at init, and settles (no anim) if already scrolled
-          // past — covering the cases where the old observer simply never fired.
-          let played = false;
-          const reveal = () => {
-            if (played) return;
-            played = true;
-            io.disconnect();
-            play();
-          };
+          // (A) Replay every time the heading re-enters the viewport: animate on
+          // enter, and reset to the "from" state on leave so the next enter plays
+          // fresh. Modern IntersectionObserver also reports the initial state, so a
+          // heading already in view at init (late fonts) plays on first observe.
+          let inView = false;
           const io = new IntersectionObserver(
-            (entries) => { if (entries.some((e) => e.isIntersecting)) reveal(); },
+            (entries) => {
+              const isIn = entries.some((e) => e.isIntersecting);
+              if (isIn && !inView) { inView = true; play(); }
+              else if (!isIn && inView) { inView = false; gsap.set(targets, { ...from }); }
+            },
             { threshold: 0, rootMargin: '0px 0px -10% 0px' }
           );
           io.observe(el);
           (el as HTMLElement & { _rbio?: IntersectionObserver })._rbio = io;
-          // Fallback only for headings already IN the viewport at init (fonts load
-          // late) — never force-settle a "past" one, which showed it unanimated.
-          requestAnimationFrame(() => {
-            if (played) return;
-            const r = el.getBoundingClientRect();
-            if (r.top < window.innerHeight && r.bottom > 0) reveal();
-          });
 
           return undefined;
         },
