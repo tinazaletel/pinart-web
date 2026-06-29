@@ -118,7 +118,7 @@ export default function Testimonials() {
       // card flies in on its own as it scrolls into view (see the dedicated
       // mobile effect), so the ink reveal leaves the cards to that observer.
       const cards = section?.querySelectorAll<HTMLElement>('.testimonial-card');
-      if (cards && !window.matchMedia('(max-width: 700px)').matches) {
+      if (cards && !window.matchMedia('(max-width: 760px)').matches) {
         gsap.fromTo(
           Array.from(cards),
           { opacity: 0, scale: 0.88, y: 48 },
@@ -211,7 +211,7 @@ export default function Testimonials() {
       // reset cards opacity so they're ready for next reveal (desktop only —
       // on mobile the per-card scroll observers own the cards; re-hiding them
       // here would leave them invisible since those observers are one-shot).
-      if (!window.matchMedia('(max-width: 700px)').matches) {
+      if (!window.matchMedia('(max-width: 760px)').matches) {
         const cards = section?.querySelectorAll<HTMLElement>('.testimonial-card');
         cards?.forEach(c => { c.style.opacity = '0'; c.style.transform = ''; });
       }
@@ -309,7 +309,7 @@ export default function Testimonials() {
     // viewport is mobile — including when a desktop window is narrowed to mobile
     // after load (otherwise the desktop "all at once" reveal would run instead).
     const evaluate = () => {
-      const mobile = window.matchMedia('(max-width: 700px)').matches;
+      const mobile = window.matchMedia('(max-width: 760px)').matches;
       if (mobile && !active) setup();
       else if (!mobile && active) teardown(); // desktop revealContent owns the cards
     };
