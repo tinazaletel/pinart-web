@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import SplitText from '@/components/SplitText';
 import CircularText from '@/components/CircularText';
@@ -16,9 +16,32 @@ const SOCIALS = [
 export default function Contact() {
   const t = useTranslations('contact');
   const [phone, setPhone] = useState('');
+  const spinVideoRef = useRef<HTMLVideoElement>(null);
   const revealPhone = () => {
     if (!phone) setPhone([43, 51, 56, 54, 52, 49, 51, 55, 51, 55, 51, 48].map((code) => String.fromCharCode(code)).join(''));
   };
+
+  // Decorative spin video: preload="none" so it doesn't download on page load
+  // (it's at the bottom of the page). Load + play only when near the viewport.
+  useEffect(() => {
+    const v = spinVideoRef.current;
+    if (!v) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (v.preload !== 'auto') v.preload = 'auto';
+            v.play().catch(() => {});
+          } else {
+            v.pause();
+          }
+        });
+      },
+      { rootMargin: '400px 0px' },
+    );
+    io.observe(v);
+    return () => io.disconnect();
+  }, []);
 
   return (
     <section
@@ -127,13 +150,13 @@ export default function Contact() {
             >
               <CircularText text="LET'S*CREATE*SOMETHING*" spinDuration={22} onHover="speedUp" />
               <video
+                ref={spinVideoRef}
                 className="contact-spin-gif__media"
                 src="/contact_girl_laptop.mp4"
-                autoPlay
                 loop
                 muted
                 playsInline
-                preload="metadata"
+                preload="none"
                 aria-hidden
                 style={{
                   position: 'absolute',

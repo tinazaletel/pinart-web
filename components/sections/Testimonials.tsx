@@ -75,6 +75,7 @@ export default function Testimonials() {
   const triggeredRef = useRef(false);
   const [activeCard, setActiveCard] = useState<number | null>(null);
   const isRevealedRef = useRef(false);
+  const spinVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const RM      = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -318,6 +319,29 @@ export default function Testimonials() {
     return () => { window.removeEventListener('resize', evaluate); teardown(); };
   }, []);
 
+  // Decorative spin video: with preload="none" it doesn't download on page load
+  // (it's below the fold). Load + play only when it scrolls near the viewport,
+  // pause when it leaves — same pattern as the project loop videos.
+  useEffect(() => {
+    const v = spinVideoRef.current;
+    if (!v) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (v.preload !== 'auto') v.preload = 'auto';
+            v.play().catch(() => {});
+          } else {
+            v.pause();
+          }
+        });
+      },
+      { rootMargin: '400px 0px' },
+    );
+    io.observe(v);
+    return () => io.disconnect();
+  }, []);
+
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
@@ -453,12 +477,12 @@ export default function Testimonials() {
                 onHover="speedUp"
               />
               <video
+                ref={spinVideoRef}
                 src="/testimonials_girl_spin.mp4"
-                autoPlay
                 loop
                 muted
                 playsInline
-                preload="metadata"
+                preload="none"
                 aria-hidden
                 style={{
                   position: 'absolute',
