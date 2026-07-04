@@ -279,7 +279,7 @@ export default function About() {
             from="right"
             distance={180}
             delay={0.18}
-            className="about-body copy-review"
+            className="about-body"
             style={{
               fontFamily: 'var(--font-sans)',
               fontSize: 'clamp(1.02rem,1.25vw,1.2rem)',

@@ -1137,7 +1137,3 @@ div.is-changing img {
   .talk-panel { max-height: calc(100dvh - 1rem) !important; padding: 1.1rem 1.4rem !important; }
   .talk-panel-title { font-size: clamp(1.8rem, 6vh, 3rem) !important; margin-bottom: 0.6rem !important; max-width: none !important; }
 }
-
-/* ZAČASNO: rdeča oznaka spremenjenih besedil za Tinin pregled na demu.
-   Po potrditvi odstrani ta blok + vse `copy-review` razrede v komponentah. */
-.copy-review { color: #e11900 !important; }

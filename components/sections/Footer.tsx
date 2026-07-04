@@ -36,7 +36,7 @@ export default function Footer() {
         }}
       >
         <p style={{ margin: 0 }}>© {year} Pinart</p>
-        <p className="copy-review" style={{ margin: 0, textAlign: 'center' }}>{t('tagline')}</p>
+        <p style={{ margin: 0, textAlign: 'center' }}>{t('tagline')}</p>
         <div className="site-footer__links" style={{ display: 'flex', justifyContent: 'flex-end', gap: '1.25rem', flexWrap: 'wrap' }}>
           <a href="mailto:tina@pinart.si" style={{ color: TEXT, textDecoration: 'none' }}>tina@pinart.si</a>
           <a href={`/${locale}/zasebnost`} style={{ color: TEXT, textDecoration: 'none' }}>{t('privacy')}</a>

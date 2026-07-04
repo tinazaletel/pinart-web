@@ -245,7 +245,6 @@ export default function Services() {
                 {t(`items.${key}.desc`)}
                 {' '}
                 <span
-                  className="copy-review"
                   style={{
                     fontFamily:              'var(--font-sans)',
                     fontWeight:              500,
