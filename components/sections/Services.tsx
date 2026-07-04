@@ -245,6 +245,7 @@ export default function Services() {
                 {t(`items.${key}.desc`)}
                 {' '}
                 <span
+                  className="copy-review"
                   style={{
                     fontFamily:              'var(--font-sans)',
                     fontWeight:              500,
@@ -255,7 +256,7 @@ export default function Services() {
                     whiteSpace:              'nowrap',
                   }}
                 >
-                  more&nbsp;→
+                  {t('more')}&nbsp;→
                 </span>
               </Link>
 

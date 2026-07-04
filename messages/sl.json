@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Pinart — Ustvarjam ideje, ki ostanejo",
-    "description": "Studio za kreativno direkcijo, branding in digitalne izkušnje."
+    "title": "Pinart — Ustvarjamo ideje, ki ostanejo",
+    "description": "Studio za branding, celostne grafične podobe in spletne strani. Od strategije do izvedbe — ustvarjamo ideje, ki znamkam prinesejo prepoznavnost."
   },
   "nav": {
     "home": "Domov",
@@ -12,7 +12,7 @@
     "toggle": "EN"
   },
   "hero": {
-    "tagline": "Ustvarjam ideje, ki ostanejo",
+    "tagline": "Ustvarjamo ideje, ki ostanejo",
     "cue": "pritisni packo",
     "headlinePrimary": "IDEJE",
     "headlineSecondary": "ki gibljejo",
@@ -36,6 +36,7 @@
   },
   "services": {
     "kicker": "Storitve",
+    "more": "več",
     "items": {
       "direction": {
         "title": "Kreativna direkcija",
@@ -83,11 +84,11 @@
       },
       "lucky-7": {
         "category": "UX/UI · Produktno oblikovanje",
-        "desc": "Nova digitalna loterijaska izkušnja — igrivost, jasnost, dinamika."
+        "desc": "Nova digitalna loterijska izkušnja — igrivost, jasnost, dinamika."
       },
       "molly-lolly": {
         "category": "Izvirna znamka · Produktni svet",
-        "desc": "Igriva svetov likov — znamka, zgodba, produkt, digitalna izkušnja."
+        "desc": "Igriv svet likov — znamka, zgodba, produkt, digitalna izkušnja."
       }
     }
   },
@@ -503,13 +504,13 @@
   },
   "about": {
     "kicker": "O meni",
-    "body": "Ustvarjam digitalne izkušnje, ki združujejo zgodbo, gibanje in atmosfero. Z razvijalci in ustvarjalci gradim sodobne spletne strani, sisteme blagovnih znamk in vizualne izkušnje za blagovne znamke s karakterjem.",
+    "body": "Sem Tina, kreativna direktorica Pinarta. Ustvarjam digitalne izkušnje, ki združujejo zgodbo, gibanje in atmosfero. Z ekipo razvijalcev in ustvarjalcev gradimo sodobne spletne strani, sisteme blagovnih znamk in vizualne izkušnje za blagovne znamke s karakterjem.",
     "headline": "Ko ideja dobi obliko, ritem in prostor"
   },
   "clients": {
     "kicker": "Reference",
     "heading": "Stranke",
-    "desc": "Sodelujem z ustanovitelji, ekipami in organizacijami pri ustvarjanju blagovnih znamk, produktov in digitalnih izkušenj, ki povezujejo ljudi. Vsako sodelovanje oblikujejo strategija, kreativnost in skupna ambicija ustvariti nekaj smiselnega."
+    "desc": "Sodelujemo z ustanovitelji, ekipami in organizacijami pri ustvarjanju blagovnih znamk, produktov in digitalnih izkušenj, ki povezujejo ljudi. Vsako sodelovanje oblikujejo strategija, kreativnost in skupna ambicija ustvariti nekaj smiselnega."
   },
   "testimonials": {
     "kicker": "Mnenja",
@@ -530,7 +531,7 @@
   "contact": {
     "kicker": "Kontakt",
     "headline": "Ustvariva nekaj nepozabnega",
-    "tagline": "Ustvarjam ideje, ki ostanejo.",
+    "tagline": "Ustvarjamo ideje, ki ostanejo.",
     "email": "tina@pinart.si",
     "showPhone": "Prikaži telefon",
     "callPhone": "Pokliči",
@@ -540,7 +541,7 @@
     "body2": "Združiva kreativne moči in narediva nekaj izjemnega. Javi se — veselim se sodelovanja!"
   },
   "footer": {
-    "tagline": "Ustvarjam ideje, ki ostanejo.",
+    "tagline": "Ustvarjamo ideje, ki ostanejo.",
     "contact": "Kontakt",
     "privacy": "Zasebnost"
   },

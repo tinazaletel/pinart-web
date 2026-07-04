@@ -295,7 +295,7 @@ export default function Projects() {
               <span className="font-sans font-semibold text-paper/95 mt-6 uppercase tracking-[0.18em]" style={{ fontSize: 'clamp(13px, 0.95vw, 16px)', textShadow: '0 1px 12px rgba(0,0,0,0.55)' }}>
                 {t(`items.${project.slug}.category`)}
               </span>
-              <p className="font-sans text-paper/90 mt-4 text-center leading-[1.55]" style={{ fontSize: 'clamp(15px, 1.05vw, 18px)', fontWeight: 500, maxWidth: '34ch', textShadow: '0 1px 14px rgba(0,0,0,0.6)' }}>
+              <p className={`font-sans text-paper/90 mt-4 text-center leading-[1.55]${project.slug === 'lucky-7' || project.slug === 'molly-lolly' ? ' copy-review' : ''}`} style={{ fontSize: 'clamp(15px, 1.05vw, 18px)', fontWeight: 500, maxWidth: '34ch', textShadow: '0 1px 14px rgba(0,0,0,0.6)' }}>
                 {t(`items.${project.slug}.desc`)}
               </p>
               <Link

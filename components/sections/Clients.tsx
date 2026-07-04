@@ -100,7 +100,7 @@ export default function Clients() {
 
           {/* right: description */}
           <p
-            className="clients-desc"
+            className="clients-desc copy-review"
             style={{
               fontFamily: 'var(--font-sans)',
               fontSize:   'clamp(1rem, 1.3vw, 1.18rem)',

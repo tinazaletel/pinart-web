@@ -210,7 +210,7 @@ export default function Contact() {
             )}
           </div>
 
-          <p style={{ fontSize: 'clamp(1.15rem, 1.65vw, 1.45rem)', opacity: 0.72 }}>
+          <p className="copy-review" style={{ fontSize: 'clamp(1.15rem, 1.65vw, 1.45rem)', opacity: 0.72 }}>
             {t('tagline')}
           </p>
         </div>

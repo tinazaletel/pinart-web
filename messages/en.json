@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Pinart — Ideas that stay",
-    "description": "A studio for creative direction, branding and digital experiences."
+    "description": "A studio for branding, visual identities and websites. From strategy to execution — we create ideas that stay."
   },
   "nav": {
     "home": "Home",
@@ -36,6 +36,7 @@
   },
   "services": {
     "kicker": "Services",
+    "more": "more",
     "items": {
       "direction": {
         "title": "Creative Direction",
@@ -503,7 +504,7 @@
   },
   "about": {
     "kicker": "About",
-    "body": "I create digital experiences that combine storytelling, movement and atmosphere. Together with developers and creatives, I build modern websites, branding systems and visual experiences for brands that want character.",
+    "body": "I'm Tina, creative director of Pinart. I create digital experiences that combine storytelling, movement and atmosphere. Together with a team of developers and creatives, we build modern websites, branding systems and visual experiences for brands that want character.",
     "headline": "When an idea gets shape, rhythm and space"
   },
   "clients": {

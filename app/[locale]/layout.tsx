@@ -81,10 +81,36 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
   const messages = await getMessages();
+  const tMeta = await getTranslations({ locale, namespace: 'meta' });
+
+  // Structured data so Google understands Pinart as a creative studio
+  // (shows richer results; harmless if ignored).
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfessionalService',
+    name: 'Pinart',
+    url: `https://pinart.si/${locale}`,
+    image: 'https://pinart.si/og-image.jpg',
+    description: tMeta('description'),
+    email: 'tina@pinart.si',
+    founder: { '@type': 'Person', name: 'Tina' },
+    areaServed: 'SI',
+    knowsAbout: [
+      'branding',
+      'celostna grafična podoba',
+      'grafično oblikovanje',
+      'kreativna direkcija',
+      'oblikovanje spletnih strani',
+    ],
+  };
 
   return (
     <html lang={locale} className={fontVariables}>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {/* Run before hydration: stop the browser restoring scroll and force the top.
             Otherwise sections briefly sit at a restored scroll position while the
             heading-reveal observers initialise → reveals misfire ("titles don't
