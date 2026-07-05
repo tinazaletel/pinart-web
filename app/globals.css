@@ -373,9 +373,9 @@ div.is-changing img {
   }
 
   .hero-idea-word {
-    /* -25%: pri prejsnjem minimumu 7rem (112px) je bil IDEJE sirok 361px
-       in se rezal na 360px zaslonih. 23.3vw = 84px na 360px. */
-    font-size: min(23.3vw, 5.25rem) !important;
+    /* Prejsnji minimum 7rem (112px) je pri 360px pomenil 361px siroko besedo
+       (rezanje). 28vw = beseda zavzame ~90% sirine na VSAKEM telefonu. */
+    font-size: 28vw !important;
   }
 
   .hero-finale .ln {
