@@ -33,6 +33,10 @@ html,
 body {
   margin: 0;
   padding: 0;
+  /* Samsung Internet / Chrome Android sami povecujejo pisave ("font boosting"),
+     kar razbije naslove, dimenzionirane na sirino zaslona. Izklop. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
@@ -368,7 +372,9 @@ div.is-changing img {
   }
 
   .hero-finale .ln {
-    font-size: clamp(3.2rem, 10.5vw, 5rem) !important;
+    /* Spodnja meja mora ostati pod ~12.5vw za 360px zaslone (Samsung),
+       sicer se "USTVARJAMO" odreze ob robovih. */
+    font-size: clamp(2.4rem, 12.5vw, 5rem) !important;
     -webkit-text-stroke: 0.4px #ffffff;
   }
 
