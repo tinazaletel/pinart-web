@@ -368,7 +368,8 @@ div.is-changing img {
   }
 
   .typo-line span {
-    font-size: clamp(2.8rem, 13.5vw, 13rem) !important;
+    /* -25% na Tinino zeljo: crke (OBLIKOVANJE...) so se rezale na ozkih telefonih */
+    font-size: clamp(2.1rem, 10.1vw, 9.75rem) !important;
   }
 
   .hero-finale .ln {
