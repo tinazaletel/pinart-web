@@ -93,8 +93,11 @@ export default function Projects() {
           { scale: 0.18, ease: 'none', duration: 0.28 },
           0.52,
         );
+        // Slika mora biti nazaj na polni velikosti, PREDEN se rob maske ob
+        // izhodu vrne v vidno polje (maska pade pod ~1.08 sele pri 0.645),
+        // sicer se med krcenjem vidi rob slike znotraj maske.
         tl.to(media,
-          { scale: 1, ease: 'none', duration: 0.28 },
+          { scale: 1, ease: 'none', duration: 0.10 },
           0.52,
         );
 
