@@ -37,14 +37,32 @@ export default function Preloader() {
       setPhase('fading');
       setTimeout(() => setPhase('done'), 700);
     };
-    // Hide as soon as the fonts are ready — NOT on window 'load', which waits for
-    // every image and video on the page to finish. On a slow connection that event
-    // can take ages (or effectively never fire), leaving the logo stuck forever.
-    document.fonts.ready.then(() => setTimeout(hide, 200));
+    // On the homepage the hero needs fonts + the pupa SVG before it shows
+    // anything — hiding on fonts.ready alone left a long WHITE gap between the
+    // logo and the packa on slow phones. So there we hold until the hero says
+    // it's visually ready ('pinart-hero-ready'), with a higher safety cap.
+    // Pages without the hero keep the old fonts-based behaviour.
+    const hasHero = !!document.getElementById('hero');
+    const onHeroReady = () => setTimeout(hide, 100);
+
+    if (hasHero) {
+      if ((window as unknown as { __pinartHeroReady?: boolean }).__pinartHeroReady) {
+        onHeroReady(); // hero was ready before this listener attached
+      } else {
+        window.addEventListener('pinart-hero-ready', onHeroReady, { once: true });
+      }
+    } else {
+      // Hide as soon as the fonts are ready — NOT on window 'load', which waits
+      // for every image and video and can effectively never fire on slow links.
+      document.fonts.ready.then(() => setTimeout(hide, 200));
+    }
     // Hard safety cap: never hold the preloader longer than this, no matter the
     // network. The page is usable underneath; media streams in progressively.
-    const cap = setTimeout(hide, 3500);
-    return () => clearTimeout(cap);
+    const cap = setTimeout(hide, hasHero ? 9000 : 3500);
+    return () => {
+      clearTimeout(cap);
+      window.removeEventListener('pinart-hero-ready', onHeroReady);
+    };
   }, []);
 
   if (phase === 'done') return null;

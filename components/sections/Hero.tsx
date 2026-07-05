@@ -107,6 +107,8 @@ export default function Hero() {
       window.dispatchEvent(new CustomEvent('pinart-dark', { detail: { dark: true } }));
       window.dispatchEvent(new CustomEvent('pinart-lenis-start'));
       window.dispatchEvent(new CustomEvent('pinart-hero-done'));
+      (window as any).__pinartHeroReady = true;
+      window.dispatchEvent(new CustomEvent('pinart-hero-ready'));
       document.body.style.overflow = '';
       return;
     }
@@ -168,6 +170,8 @@ export default function Hero() {
       wordIdea.style.transform = 'translate(-50%,-50%) scale(1)';
       document.body.style.overflow = '';
       window.dispatchEvent(new CustomEvent('pinart-lenis-start'));
+      (window as any).__pinartHeroReady = true;
+      window.dispatchEvent(new CustomEvent('pinart-hero-ready'));
       return;
     }
     if (sig.aborted) return;
@@ -177,6 +181,8 @@ export default function Hero() {
     if (!svg) {
       document.body.style.overflow = '';
       window.dispatchEvent(new CustomEvent('pinart-lenis-start'));
+      (window as any).__pinartHeroReady = true;
+      window.dispatchEvent(new CustomEvent('pinart-hero-ready'));
       return;
     }
     svg.removeAttribute('width');
@@ -241,6 +247,11 @@ export default function Hero() {
     /* now that every layer is hidden, reveal the (empty-looking) wrap — no full-pupa
        flash, since only the animation below brings layers back in */
     svgWrap.style.opacity = '1';
+
+    /* hero je vizualno pripravljen — preloader se lahko umakne (oci/packa
+       se izrisejo v naslednji sekundi, med njegovim fade-outom) */
+    (window as any).__pinartHeroReady = true;
+    window.dispatchEvent(new CustomEvent('pinart-hero-ready'));
 
     /* two rAFs so getBBox / getScreenCTM see actual layout */
     await raf2();

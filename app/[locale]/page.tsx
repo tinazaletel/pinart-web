@@ -20,6 +20,10 @@ export default async function Home({
 
   return (
     <main>
+      {/* Pupa SVG se zacne prenasati ze s HTML-jem, ne sele ko Hero-jev JS
+          po hidraciji poklice fetch — na pocasnih telefonih to odreze vec
+          sekund belega zaslona med preloaderjem in packo. */}
+      <link rel="preload" href="/pupa_pinart_6.svg" as="fetch" />
       <Hero />
       <Services />
       <TypographyCollapse />
