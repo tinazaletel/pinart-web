@@ -372,6 +372,12 @@ div.is-changing img {
     font-size: clamp(2.1rem, 10.1vw, 9.75rem) !important;
   }
 
+  .hero-idea-word {
+    /* -25%: pri prejsnjem minimumu 7rem (112px) je bil IDEJE sirok 361px
+       in se rezal na 360px zaslonih. 23.3vw = 84px na 360px. */
+    font-size: min(23.3vw, 5.25rem) !important;
+  }
+
   .hero-finale .ln {
     /* Spodnja meja mora ostati pod ~12.5vw za 360px zaslone (Samsung),
        sicer se "USTVARJAMO" odreze ob robovih. */

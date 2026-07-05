@@ -753,6 +753,7 @@ export default function Hero() {
       <div
         ref={wordIdeaRef}
         aria-hidden
+        className="hero-idea-word"
         style={{
           position:             'absolute',
           top:                  '50%',
