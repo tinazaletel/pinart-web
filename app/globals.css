@@ -368,8 +368,9 @@ div.is-changing img {
   }
 
   .typo-line span {
-    /* -25% na Tinino zeljo: crke (OBLIKOVANJE...) so se rezale na ozkih telefonih */
-    font-size: clamp(2.1rem, 10.1vw, 9.75rem) !important;
+    /* Skoraj prvotna velikost (13.5vw), a brez fiksnega px minimuma, ki je
+       rezal na 360px zaslonih; 12.5vw = OBLIKOVANJE ~88% sirine zaslona. */
+    font-size: clamp(2rem, 12.5vw, 12rem) !important;
   }
 
   .hero-idea-word {
