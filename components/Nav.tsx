@@ -167,17 +167,20 @@ export default function Nav() {
                   className="group relative py-1"
                   onClick={(e) => {
                     e.preventDefault();
+                    // Zavesa takoj ob kliku — pod njo se zgodi takojsen
+                    // preskok (SmoothScroll), namesto voznje cez sekcije.
+                    window.dispatchEvent(new CustomEvent('pinart-cover', { detail: { on: true } }));
                     const BEFORE_INK = ['hero', 'services'];
                     if (!BEFORE_INK.includes(hash.slice(1))) {
                       window.dispatchEvent(new CustomEvent('pinart-skip-ink'));
                     }
                     // pinart-goto-hash is handled by SmoothScroll which
-                    // already applies negative-marginTop compensation and
-                    // uses Lenis with correct easing + duration.
+                    // applies negative-marginTop compensation and jumps
+                    // immediately under the cover.
                     setTimeout(() => {
                       window.dispatchEvent(new CustomEvent('pinart-goto-hash', { detail: { hash } }));
                       window.history.pushState(null, '', `/${locale}${hash}`);
-                    }, 250);
+                    }, 220);
                   }}
                 >
                   <span
@@ -289,13 +292,14 @@ export default function Nav() {
               onClick={() => {
                 setMenuOpen(false);
                 if (!hash) return;
+                window.dispatchEvent(new CustomEvent('pinart-cover', { detail: { on: true } }));
                 const BEFORE_INK = ['hero', 'services'];
                 if (!BEFORE_INK.includes(hash.slice(1))) {
                   window.dispatchEvent(new CustomEvent('pinart-skip-ink'));
                 }
                 setTimeout(() => {
                   window.dispatchEvent(new CustomEvent('pinart-goto-hash', { detail: { hash } }));
-                }, 80);
+                }, 220);
               }}
               className="font-serif leading-none text-ink"
               style={{

@@ -134,19 +134,9 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       if (!hash) return;
       // Refresh first so ScrollTrigger has correct positions after any
       // layout shifts caused by pinart-skip-ink (TypographyCollapse expanding).
+      // Then scroll — triggers fire correctly as Lenis animates through them.
       ScrollTrigger.refresh();
-      // Meni = zavesa + TAKOJSEN preskok (ne animirana voznja cez sekcije).
-      // Zaveso je Nav ze dvignil ob kliku; tu pocakamo, da je polna,
-      // skocimo pod njo in jo spustimo. Obiskovalec vidi samo "mezik".
-      setTimeout(() => {
-        scrollToHash(hash, true);
-        ScrollTrigger.update();
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          setTimeout(() => {
-            window.dispatchEvent(new CustomEvent('pinart-cover', { detail: { on: false } }));
-          }, 100);
-        }));
-      }, 60);
+      scrollToHash(hash);
     };
 
     // ── scroll position save/restore for back navigation ───────────────────

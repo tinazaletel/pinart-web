@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package,
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
+  CopySimple, DownloadSimple, FileText, FloppyDisk, PaintBucket,
+  PersonSimple, TextAa, TextB, UploadSimple,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -14,6 +16,7 @@ import {
    zajem kontakta (ime+email) ob shranjevanju/prenosu -> /api/inquiry. */
 
 type Storitev = { id: string; ime: string; osnova: number };
+type TonPonudbe = 'formalno' | 'toplo' | 'direktno';
 
 const STORITVE: Storitev[] = [
   { id: 'logo',        ime: 'Logotip + osnovna identiteta', osnova: 1200 },
@@ -49,6 +52,69 @@ const DODATKI = [
   { id: 'nujno',    ime: 'Nujen rok',               opis: '+25 %', mult: 0.25 },
   { id: 'varianta', ime: 'Dodatna idejna varianta', opis: '+15 %', mult: 0.15 },
 ];
+
+const TONI: { id: TonPonudbe; ime: string }[] = [
+  { id: 'formalno', ime: 'Formalno' },
+  { id: 'toplo', ime: 'Toplo profesionalno' },
+  { id: 'direktno', ime: 'Neformalno' },
+];
+
+type ProjektnoVprasanje = { id: string; label: string; placeholder?: string };
+
+const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
+  logo: [
+    { id: 'cilj', label: 'Kaj mora nov znak sporočati?', placeholder: 'npr. bolj premium, bolj zaupanja vredno, bolj igrivo' },
+    { id: 'uporaba', label: 'Kje se bo najpogosteje uporabljal?', placeholder: 'splet, embalaža, tabla, app ikona, vozila ...' },
+    { id: 'omejitve', label: 'Ali že obstajajo barve, pisave ali simboli, ki morajo ostati?' },
+  ],
+  cgp: [
+    { id: 'obseg', label: 'Kaj mora vsebovati CGP?', placeholder: 'logo sistem, barve, tipografija, predloge, brand book, social paket ...' },
+    { id: 'uporabniki', label: 'Kdo bo sistem uporabljal po predaji?', placeholder: 'notranja ekipa, agencija, tiskar, franšize ...' },
+    { id: 'materiali', label: 'Na katerih materialih mora identiteta delovati?', placeholder: 'vizitke, embalaža, vozila, splet, sejem, prezentacije ...' },
+    { id: 'globina', label: 'Ali potrebuješ samo osnovni priročnik ali razširjen brand sistem?' },
+  ],
+  web: [
+    { id: 'tip', label: 'Kakšen tip spletne strani potrebuješ?', placeholder: 'landing page, portfolio, corporate site, trgovina, booking, blog ...' },
+    { id: 'strani', label: 'Koliko podstrani ali ključnih ekranov pričakuješ?', placeholder: 'npr. 5 podstrani + kontakt + blog' },
+    { id: 'funkcije', label: 'Katere funkcionalnosti so nujne?', placeholder: 'CMS, obrazci, plačila, prijave, več jezikov, animacije, SEO ...' },
+    { id: 'vsebina', label: 'Kdo pripravi besedila, slike in strukturo vsebine?' },
+  ],
+  kampanja: [
+    { id: 'kanali', label: 'Na katerih kanalih bo kampanja tekla?', placeholder: 'Meta, Google, tisk, outdoor, email, TikTok ...' },
+    { id: 'formati', label: 'Katere formate potrebuješ?', placeholder: 'story, feed, bannerji, tiskani oglasi, plakati ...' },
+    { id: 'cilj', label: 'Kaj je glavni cilj kampanje?', placeholder: 'prodaja, awareness, prijave, launch, rebranding ...' },
+  ],
+  publikacija: [
+    { id: 'strani', label: 'Koliko strani in kakšen format?', placeholder: 'npr. A4, 32 strani, tisk + PDF' },
+    { id: 'gradiva', label: 'Ali so teksti, slike in grafi že pripravljeni?' },
+    { id: 'tisk', label: 'Ali vključuje pripravo za tisk in komunikacijo s tiskarjem?' },
+  ],
+  embalaza: [
+    { id: 'izdelki', label: 'Za koliko izdelkov ali okusov/variant gre?' },
+    { id: 'tehnika', label: 'Ali že obstaja dieline / tehnična skica embalaže?' },
+    { id: 'trg', label: 'Kje se bo izdelek prodajal?', placeholder: 'splet, trgovine, lekarne, premium butik, HoReCa ...' },
+  ],
+  ilustracija: [
+    { id: 'stil', label: 'Kakšen slog ilustracije želiš?', placeholder: 'editorial, otroško, luksuzno, tehnično, 3D, ročno ...' },
+    { id: 'kolicina', label: 'Koliko ilustracij ali likov potrebuješ?' },
+    { id: 'pravice', label: 'Kje in koliko časa se bodo ilustracije uporabljale?' },
+  ],
+  direkcija: [
+    { id: 'vloga', label: 'Kaj naj kreativna direkcija pokrije?', placeholder: 'koncept, moodboard, izbor ekipe, art direction, nadzor izvedbe ...' },
+    { id: 'ekipa', label: 'Kdo je že v ekipi in koga je treba še vključiti?' },
+    { id: 'trajanje', label: 'Gre za enkraten sprint ali daljše sodelovanje?' },
+  ],
+  fotografija: [
+    { id: 'tip', label: 'Kaj se fotografira?', placeholder: 'produkti, portreti, prostor, kampanja, dogodek ...' },
+    { id: 'dan', label: 'Koliko snemalnih dni in lokacij pričakuješ?' },
+    { id: 'post', label: 'Koliko retuširanih fotografij mora biti predanih?' },
+  ],
+  copy: [
+    { id: 'kanal', label: 'Za kateri kanal nastajajo besedila?', placeholder: 'splet, kampanja, email, social, PR, naming ...' },
+    { id: 'kolicina', label: 'Koliko besedil ali strani potrebuješ?' },
+    { id: 'ton', label: 'Kakšen ton znamke želiš?', placeholder: 'formalno, toplo, drzno, strokovno, igrivo ...' },
+  ],
+};
 
 /* Kje preveris prihodke/dobicek narocnika po trgih — za vrednostno oceno.
    Javni registri dajo osnovne podatke; prihodke zasebnih podjetij pogosto
@@ -137,6 +203,35 @@ function velikostIzPrometa(promet: number) {
 
 const zaokrozi = (n: number) => Math.round(n / 50) * 50;
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const ponudbaVHtml = (s: string): string =>
+  s.split('\n\n')
+    .map((block): string => {
+      const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+      if (!lines.length) return '';
+      if (lines.every(l => /^─+$/.test(l))) return '<hr>';
+
+      const first = lines[0];
+      if (first.startsWith('PONUDBA:')) {
+        return `<h1>${escapeHtml(first.replace('PONUDBA:', '').trim())}</h1>`;
+      }
+      if (/^(OBSEG|DODATNE INFORMACIJE|IZBERITE PAKET|POGOJI)$/.test(first)) {
+        const rest = lines.slice(1);
+        const body: string = rest.length ? ponudbaVHtml(rest.join('\n')) : '';
+        return `<h2>${escapeHtml(first)}</h2>${body}`;
+      }
+      if (lines.every(l => l.startsWith('·'))) {
+        return `<ul>${lines.map(l => `<li>${escapeHtml(l.replace(/^·\s*/, ''))}</li>`).join('')}</ul>`;
+      }
+      if (lines.length >= 2 && /^[A-ZČŠŽ\s]+/.test(first) && first.includes('·')) {
+        const [title, ...rest] = lines;
+        const [, name = title, price = ''] = title.match(/^(.+?)\s*·\s*(.+)$/) ?? [];
+        return `<div class="offer-package"><div class="offer-package-head"><h3>${escapeHtml(name.trim())}</h3><strong>${escapeHtml(price.trim())}</strong></div>${rest.map(l => `<p>${escapeHtml(l)}</p>`).join('')}</div>`;
+      }
+      return `<p>${lines.map(escapeHtml).join('<br>')}</p>`;
+    })
+    .join('');
 
 /* Valuta ponudbe: cene so interno v EUR, prikaz in ponudba pa v izbrani
    valuti (priblizen preracun, zaokrozen na 50). */
@@ -173,6 +268,8 @@ type Profil = {
 
 export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* carovnik: en korak naenkrat, fade-in from bottom (nuSchool slog) */
+  const editorRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [korak, setKorak] = useState(0);
   const [izbrane, setIzbrane] = useState<Set<string>>(new Set(['cgp']));
   /* raba dela: 'znamka' = celotna znamka (bilanca podjetja),
@@ -201,7 +298,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [ddvZavezanec, setDdvZavezanec] = useState(false);
   const [ddvStopnja, setDdvStopnja] = useState('22');
   const [besedilo, setBesedilo] = useState('');
+  const [besediloHtml, setBesediloHtml] = useState('');
   const [rocnoBesedilo, setRocnoBesedilo] = useState(false);
+  const [tonPonudbe, setTonPonudbe] = useState<TonPonudbe>('toplo');
+  const [odgovori, setOdgovori] = useState<Record<string, string>>({});
   const [osnove, setOsnove] = useState<Record<string, number>>({});
   const [profili, setProfili] = useState<Record<string, Profil>>({});
   const [kopirano, setKopirano] = useState(false);
@@ -209,6 +309,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [imeProfila, setImeProfila] = useState('');
   const [leadIme, setLeadIme] = useState('');
   const [leadEmail, setLeadEmail] = useState('');
+  const [kazemDostopnost, setKazemDostopnost] = useState(false);
 
   useEffect(() => {
     try {
@@ -317,6 +418,30 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     };
   }, [izbrane, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek]);
 
+  const skupineVprasanj = useMemo(() => {
+    return vseStoritve
+      .filter(s => izbrane.has(s.id))
+      .map(s => ({
+        storitev: s.ime,
+        vprasanja: (VPRASANJA_PO_STORITVI[s.id] ?? []).map(v => ({ ...v, storitev: s.ime, key: `${s.id}:${v.id}` })),
+      }))
+      .filter(s => s.vprasanja.length);
+  }, [izbrane, vseStoritve]);
+
+  const aktivnaVprasanja = useMemo(() => skupineVprasanj.flatMap(s => s.vprasanja), [skupineVprasanj]);
+
+  const prviPoVprasanjih = 1 + skupineVprasanj.length;
+  const izkusnjeStep = prviPoVprasanjih;
+  const mojTrgStep = prviPoVprasanjih + 1;
+  const narocnikStep = prviPoVprasanjih + 2;
+  const rabaStep = prviPoVprasanjih + 3;
+  const posebnostiStep = prviPoVprasanjih + 4;
+  const cenaStep = prviPoVprasanjih + 5;
+  const podatkiStep = prviPoVprasanjih + 6;
+  const ponudbaStep = prviPoVprasanjih + 7;
+  const KORAKOV = ponudbaStep + 1;
+  const trenutnaSkupina = korak > 0 && korak < prviPoVprasanjih ? skupineVprasanj[korak - 1] : null;
+
   const ponudba = useMemo(() => {
     if (!r) return '';
     const danes = new Date();
@@ -331,7 +456,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     /* Glava ponudbe je VEDNO prisotna — prazna polja pokazejo oglate
        oklepaje, ki uporabnika pozovejo, naj izpolni razdelek 01. */
     const v: string[] = [];
-    v.push(crta);
     v.push(ponudnik.ime.trim() || '[Ime / podjetje — izpolni v razdelku 01]');
     v.push(ponudnik.naslov.trim() || '[Naslov]');
     const kontakt = [
@@ -340,22 +464,41 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       ponudnik.email.trim(),
     ].filter(Boolean).join(' · ');
     v.push(kontakt || '[Davčna št. · Telefon · Email]');
-    v.push(crta);
     v.push('');
     v.push(`PONUDBA: ${r.sez.map(s => s.ime).join(', ')}`);
     v.push('Datum: ' + dat(danes) + ' · Ponudba velja do: ' + dat(velja));
     v.push('Naročnik: [ime podjetja]');
     v.push('');
+    if (tonPonudbe === 'formalno') {
+      v.push('Spoštovani,');
+      v.push('v nadaljevanju pošiljam strukturirano ponudbo za dogovorjeni obseg kreativnih storitev.');
+    } else if (tonPonudbe === 'direktno') {
+      v.push('Pozdravljeni,');
+      v.push('spodaj je predlog obsega, paketov in cene. Izberite paket, ki najbolj ustreza tempu in ambiciji projekta.');
+    } else {
+      v.push('Pozdravljeni,');
+      v.push('hvala za povpraševanje. Pripravila sem tri možnosti, da lahko lažje izberemo pravi obseg za projekt.');
+    }
+    v.push('');
     v.push('OBSEG');
     r.sez.forEach(s => v.push(`· ${s.ime}`));
     postavke.forEach(x => v.push(`· ${x.ime}${x.kolicina > 1 ? ' × ' + x.kolicina : ''}`));
     v.push('· [dopolni po potrebi]');
+    const dodatniOdgovori = aktivnaVprasanja
+      .map(vp => ({ ...vp, odgovor: (odgovori[vp.key] || '').trim() }))
+      .filter(vp => vp.odgovor);
+    if (dodatniOdgovori.length) {
+      v.push('');
+      v.push('DODATNE INFORMACIJE');
+      dodatniOdgovori.forEach(vp => v.push(`· ${vp.label}: ${vp.odgovor}`));
+    }
     v.push('');
     v.push('IZBERITE PAKET');
-    v.push(crta);
+    v.push('');
     r.paketi.forEach(p => {
       v.push(`${p.ime.toUpperCase()}  ·  ${val(p.skupaj)}${ddvZavezanec ? `  (z DDV ${zDdv(p.skupaj)})` : ''}`);
       v.push(`  ${p.opis}`);
+      v.push('');
     });
     v.push(crta);
     if (r.popustPct) {
@@ -379,19 +522,42 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('  prenos na tretjo osebo ali širša raba se dogovori posebej');
     v.push('· moralne avtorske pravice ostanejo avtorju (navedba avtorstva)');
     v.push('');
-    v.push('Hvala za povpraševanje in izkazano zaupanje. Veselim se');
-    v.push('morebitnega sodelovanja, za vsa vprašanja pa sem z veseljem');
-    v.push('na voljo.');
+    if (tonPonudbe === 'formalno') {
+      v.push('Za dodatna vprašanja ali prilagoditev obsega sem vam na voljo.');
+      v.push('Veselim se vašega odziva.');
+    } else if (tonPonudbe === 'direktno') {
+      v.push('Če obseg ustreza, lahko naslednji korak začnemo s potrditvijo paketa in avansom.');
+      v.push('Za prilagoditve sem na voljo.');
+    } else {
+      v.push('Hvala za povpraševanje in izkazano zaupanje. Veselim se');
+      v.push('morebitnega sodelovanja, za vsa vprašanja pa sem z veseljem');
+      v.push('na voljo.');
+    }
     v.push('');
     v.push(ponudnik.ime.trim() || '[Ime]');
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic]);
+  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
   useEffect(() => {
-    if (!rocnoBesedilo) setBesedilo(ponudba);
+    if (!rocnoBesedilo) {
+      const html = ponudbaVHtml(ponudba);
+      setBesedilo(ponudba);
+      setBesediloHtml(html);
+      if (editorRef.current) editorRef.current.innerHTML = html;
+    }
   }, [ponudba, rocnoBesedilo]);
+
+  useEffect(() => {
+    if (korak === ponudbaStep && editorRef.current && !rocnoBesedilo) {
+      editorRef.current.innerHTML = besediloHtml || ponudbaVHtml(besedilo);
+    }
+  }, [korak, ponudbaStep, besediloHtml, besedilo, rocnoBesedilo]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [korak]);
 
   const predlogi = useMemo(() => {
     const q = brezSumnikov(iskanje.trim());
@@ -453,11 +619,52 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     fn(n);
   };
 
+  const sinhronizirajEditor = () => {
+    const html = editorRef.current?.innerHTML || '';
+    const text = editorRef.current?.innerText || '';
+    setBesediloHtml(html);
+    setBesedilo(text);
+    setRocnoBesedilo(true);
+  };
+
+  const oblikuj = (ukaz: string, vrednost?: string) => {
+    editorRef.current?.focus();
+    document.execCommand(ukaz, false, vrednost);
+    sinhronizirajEditor();
+  };
+
+  const uvoziPredlogo = (file?: File) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const raw = String(reader.result || '');
+      const html = /\.html?$/i.test(file.name) ? raw : ponudbaVHtml(raw);
+      setBesediloHtml(html);
+      setBesedilo(raw);
+      setRocnoBesedilo(true);
+      if (editorRef.current) editorRef.current.innerHTML = html;
+    };
+    reader.readAsText(file);
+  };
+
   const kopiraj = async () => {
-    try { await navigator.clipboard.writeText(besedilo); }
+    const html = editorRef.current?.innerHTML || besediloHtml || ponudbaVHtml(besedilo);
+    const text = editorRef.current?.innerText || besedilo;
+    try {
+      if ('ClipboardItem' in window) {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'text/html': new Blob([html], { type: 'text/html' }),
+            'text/plain': new Blob([text], { type: 'text/plain' }),
+          }),
+        ]);
+      } else {
+        await navigator.clipboard.writeText(text);
+      }
+    }
     catch {
       const t = document.createElement('textarea');
-      t.value = besedilo; document.body.appendChild(t); t.select();
+      t.value = text; document.body.appendChild(t); t.select();
       document.execCommand('copy'); t.remove();
     }
     setKopirano(true);
@@ -482,11 +689,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   };
 
   const prenesi = () => {
-    const blob = new Blob([besedilo], { type: 'text/plain;charset=utf-8' });
+    const html = editorRef.current?.innerHTML || besediloHtml || ponudbaVHtml(besedilo);
+    const doc = `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>Ponudba</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:40px auto;line-height:1.55;color:#111}p{margin:0 0 1rem}</style></head><body>${html}</body></html>`;
+    const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'ponudba-pinart-kalkulator.txt';
+    a.download = 'ponudba-pinart-kalkulator.html';
+    document.body.appendChild(a);
     a.click();
+    a.remove();
     URL.revokeObjectURL(a.href);
   };
 
@@ -505,7 +716,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     a.download = 'ponudba-pinart-postavke.csv';
+    document.body.appendChild(a);
     a.click();
+    a.remove();
     URL.revokeObjectURL(a.href);
   };
 
@@ -524,7 +737,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const nov = { ...profili, [ime]: { osnove, mojTrg, izkusnje, postavke, mojeStoritve } };
     setProfili(nov);
     try { localStorage.setItem(K_PROFILI, JSON.stringify(nov)); } catch { /* poln */ }
-    posljiKontakt(`shranjen profil "${ime}"`);
+    if (imamKontakt) posljiKontakt(`shranjen profil "${ime}"`);
     setKazemZajem(null);
     setImeProfila('');
   };
@@ -545,7 +758,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   };
 
   /* ── carovnik: navigacija ─────────────────────────────────────────── */
-  const KORAKOV = 9;
+  useEffect(() => {
+    setKorak(k => Math.min(k, KORAKOV - 1));
+  }, [KORAKOV]);
+
   const naprej = () => {
     if (korak === 0 && !r) return;
     setKorak(k => Math.min(KORAKOV - 1, k + 1));
@@ -575,17 +791,26 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   };
   const ikonaZa = (id: string) => IKONE[id] ?? <Sparkle size={19} />;
 
-  const VPRASANJA: { q: string; sub?: string }[] = [
-    { q: 'Kaj ustvarjaš?', sub: 'Izbereš lahko eno ali več storitev.' },
-    { q: 'Koliko izkušenj imaš?' },
-    { q: 'Kje delaš?', sub: 'Tvoj trg nastavi privzete osnove na tam običajno raven.' },
-    { q: 'Od kod je naročnik?', sub: 'Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.' },
-    { q: 'Kako bo naročnik uporabljal tvoje delo?', sub: 'To je vprašanje, ki ga druga orodja ne postavijo.' },
-    { q: 'Posebnosti projekta?', sub: 'Vse je neobvezno; pusti prazno in pojdi naprej.' },
-    { q: 'Tvoja cena.' },
-    { q: 'Tvoji podatki za ponudbo', sub: 'Izpolniš enkrat, orodje si zapomni.' },
-    { q: 'Tvoja ponudba.', sub: 'Besedilo lahko poljubno urejaš in dopišeš.' },
-  ];
+  const naslovKoraka = korak === 0 ? 'Kaj ustvarjaš?'
+    : trenutnaSkupina ? trenutnaSkupina.storitev
+      : korak === izkusnjeStep ? 'Koliko izkušenj imaš?'
+        : korak === mojTrgStep ? 'Kje delaš?'
+          : korak === narocnikStep ? 'Od kod je naročnik?'
+            : korak === rabaStep ? 'Kako bo naročnik uporabljal tvoje delo?'
+              : korak === posebnostiStep ? 'Posebnosti projekta?'
+                : korak === cenaStep ? 'Tvoja cena.'
+                  : korak === podatkiStep ? 'Tvoji podatki za ponudbo'
+                    : 'Tvoja ponudba.';
+
+  const opisKoraka = korak === 0 ? 'Izbereš lahko eno ali več storitev.'
+    : trenutnaSkupina ? 'Več o projektu. Odgovori pomagajo določiti obseg ponudbe; lahko jih preskočiš.'
+      : korak === mojTrgStep ? 'Tvoj trg nastavi privzete osnove na tam običajno raven.'
+        : korak === narocnikStep ? 'Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.'
+          : korak === rabaStep ? 'To je vprašanje, ki ga druga orodja ne postavijo.'
+            : korak === posebnostiStep ? 'Vse je neobvezno; pusti prazno in pojdi naprej.'
+              : korak === podatkiStep ? 'Izpolniš enkrat, orodje si zapomni.'
+                : korak === ponudbaStep ? 'Besedilo lahko poljubno urejaš in dopišeš.'
+                  : '';
 
   return (
     <div className="cw" onKeyDown={naEnter}>
@@ -595,19 +820,20 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .napredek { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(17,17,17,.1); z-index: 40; }
         .cw .napredek i { display: block; height: 100%; background: var(--ink); transition: width .5s cubic-bezier(.16,1,.3,1); }
 
-        .cw .glava { position: fixed; top: 5.2rem; left: 0; right: 0; display: flex; align-items: center; gap: 1.2rem; padding: 0 clamp(1.2rem, 4vw, 3rem); z-index: 30; }
+        .cw .glava { position: fixed; top: 5.2rem; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: .9rem clamp(1.2rem, 4vw, 3rem) 2.2rem; z-index: 30; pointer-events: none; }
         .cw .glava a { font-size: .74rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); text-decoration: none; }
         .cw .glava a:hover { color: var(--ink); }
-        .cw .glava .stevec { margin-left: auto; font-family: var(--font-serif), serif; font-size: .95rem; color: rgba(17,17,17,.6); }
+        .cw .glava a { pointer-events: auto; }
 
-        .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 9rem; }
+        .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 9rem clamp(1.2rem, 4vw, 3rem) 9rem; }
         .cw .korak-vsebina { width: 100%; max-width: 880px; animation: cwVstop .55s cubic-bezier(.16,1,.3,1) both; }
         @keyframes cwVstop { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
         @media (prefers-reduced-motion: reduce) { .cw .korak-vsebina { animation: none; } }
 
-        .cw h1 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(2.6rem, 7vw, 4.6rem); line-height: 1; letter-spacing: -.012em; margin: 0 0 .8rem; }
+        .cw h1 { position: relative; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(2.6rem, 7vw, 4.6rem); line-height: 1; letter-spacing: -.012em; margin: 0 0 .8rem; }
+        .cw .h1-step { position: absolute; top: .42rem; right: calc(100% + .75rem); font-family: var(--font-sans), system-ui, sans-serif; font-size: .72rem; line-height: 1; font-weight: 800; letter-spacing: .16em; color: rgba(17,17,17,.55); }
         .cw .sub-vrsta { display: flex; justify-content: space-between; align-items: baseline; gap: 2rem; margin: 0 0 2.4rem; flex-wrap: wrap; }
-        .cw .sub { font-size: clamp(1rem, 1.6vw, 1.2rem); line-height: 1.6; color: rgba(17,17,17,.72); margin: 0; max-width: 52ch; }
+        .cw .sub { font-size: clamp(1rem, 1.6vw, 1.2rem); line-height: 1.6; color: rgba(17,17,17,.72); margin: 0; max-width: 52ch; min-width: 0; }
 
         .cw .opts { display: flex; flex-wrap: wrap; gap: .55rem; }
         .cw .pill { padding: .8rem 1.3rem; border: 1px solid rgba(17,17,17,.25); border-radius: 999px; cursor: pointer; font-size: 1rem; background: transparent; font-family: inherit; font-weight: 400; color: var(--ink); transition: border-color .18s ease, background .18s ease, color .18s ease; text-align: left; line-height: 1.25; }
@@ -668,6 +894,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .postavka button { border: none; background: none; cursor: pointer; font-family: inherit; font-size: 1rem; color: var(--ink); opacity: .45; padding: 0 .2rem; }
         .cw .postavka button:hover { opacity: 1; }
 
+        .cw .vprasanja { display: grid; gap: 1rem; max-width: 760px; }
+        .cw .vp { border-top: 1px solid rgba(17,17,17,.16); padding-top: 1rem; }
+        .cw .vp small { display: block; margin-bottom: .35rem; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(17,17,17,.5); font-weight: 700; }
+        .cw .vp label { display: block; margin-bottom: .55rem; font-weight: 600; color: var(--ink); }
+        .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: .95rem; line-height: 1.55; background: rgba(255,255,255,.38); padding: .9rem 1rem; }
+
         .cw .paketi { display: grid; grid-template-columns: 1fr 1.15fr 1fr; margin-top: .6rem; border-top: 1px solid rgba(17,17,17,.18); }
         @media (max-width: 640px) { .cw .paketi { grid-template-columns: 1fr; } }
         .cw .paket { padding: 1.7rem 1.4rem 1.8rem; border-bottom: 1px solid rgba(17,17,17,.18); }
@@ -684,11 +916,39 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
         .cw textarea { width: 100%; min-height: 320px; border: 1px solid rgba(17,17,17,.25); background: rgba(255,255,255,.5); font-family: ui-monospace, Menlo, monospace; font-size: .8rem; line-height: 1.6; padding: 1.4rem; resize: vertical; color: var(--ink); border-radius: 0; }
         .cw textarea:focus { outline: none; border-color: var(--ink); }
+        .cw .tonbar { display: inline-flex; flex-wrap: nowrap; gap: .3rem; align-items: center; max-width: 100%; margin: .1rem 0 .75rem; padding: .25rem; border: 1px solid rgba(17,17,17,.16); border-radius: 999px; background: rgba(255,255,255,.34); }
+        .cw .tonbar button { height: 2rem; border: none; border-radius: 999px; background: transparent; color: rgba(17,17,17,.68); padding: 0 .85rem; font-family: var(--font-sans), system-ui, sans-serif; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
+        .cw .tonbar button:hover { color: var(--ink); background: rgba(17,17,17,.05); }
+        .cw .tonbar button.on { background: var(--ink); color: var(--paper); }
+        @media (max-width: 560px) {
+          .cw .tonbar { display: flex; overflow-x: auto; }
+          .cw .tonbar button { flex: 1 0 auto; }
+        }
+        .cw .orodjarna { display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; margin: 1rem 0 .8rem; }
+        .cw .tool { min-height: 2.25rem; display: inline-flex; align-items: center; gap: .4rem; border: 1px solid rgba(17,17,17,.22); background: rgba(255,255,255,.32); color: var(--ink); border-radius: 999px; padding: 0 .75rem; font-family: inherit; font-weight: 600; font-size: .78rem; cursor: pointer; }
+        .cw .tool:hover { border-color: var(--ink); }
+        .cw .barvica { width: 1.35rem; height: 1.35rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.22); cursor: pointer; }
+        .cw .editor { width: 100%; min-height: 340px; border: 1px solid rgba(17,17,17,.25); background: rgba(255,255,255,.52); padding: 1.35rem; color: var(--ink); font-family: var(--font-sans), system-ui, sans-serif; font-size: .94rem; line-height: 1.62; overflow: auto; }
+        .cw .editor:focus { outline: none; border-color: var(--ink); }
+        .cw .editor b, .cw .editor strong { font-weight: 900; color: var(--ink); }
+        .cw .editor h1 b, .cw .editor h1 strong { font-weight: 900; }
+        .cw .editor h1 { margin: 0 0 1.1rem; font-family: var(--font-serif), Didot, serif; font-size: clamp(2rem, 5vw, 3.4rem); line-height: .98; font-weight: 500; letter-spacing: -.01em; }
+        .cw .editor h2 { margin: 1.7rem 0 .65rem; font-size: .76rem; line-height: 1.2; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; border-top: 1px solid rgba(17,17,17,.18); padding-top: .75rem; }
+        .cw .editor h3 { margin: 0 0 .45rem; font-family: var(--font-serif), Didot, serif; font-size: clamp(1.25rem, 3vw, 1.75rem); line-height: 1.1; font-weight: 500; }
+        .cw .editor p { margin: 0 0 .95rem; max-width: 72ch; }
+        .cw .editor ul { margin: 0 0 1.1rem; padding-left: 1.15rem; }
+        .cw .editor li { margin: .25rem 0; }
+        .cw .editor hr { border: 0; border-top: 1px solid rgba(17,17,17,.2); margin: 1rem 0; }
+        .cw .editor .offer-package { border: 1px solid rgba(17,17,17,.18); background: rgba(236,230,213,.34); padding: .95rem 1rem; margin: .65rem 0; }
+        .cw .editor .offer-package-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .35rem; }
+        .cw .editor .offer-package h3 { margin: 0; font-family: var(--font-sans), system-ui, sans-serif; font-size: .78rem; line-height: 1.2; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+        .cw .editor .offer-package strong { font-family: var(--font-serif), Didot, serif; font-size: 1.35rem; line-height: 1; font-weight: 500; white-space: nowrap; }
+        .cw .editor .offer-package p { margin-bottom: 0; max-width: none; color: rgba(17,17,17,.72); }
         .cw .btnvrsta { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-top: 1.2rem; align-items: center; }
-        .cw .gumb { font-family: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; border-radius: 999px; padding: .95rem 2.2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); transition: opacity .18s ease; }
+        .cw .gumb { font-family: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; border-radius: 999px; padding: .95rem 2.2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); transition: opacity .18s ease; display: inline-flex; align-items: center; justify-content: center; gap: .45rem; }
         .cw .gumb:hover { opacity: .78; }
         .cw .gumb:disabled { opacity: .35; cursor: default; }
-        .cw .povezava { font-family: inherit; font-size: .88rem; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .28em; padding: 0; }
+        .cw .povezava { font-family: inherit; font-size: .88rem; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .28em; padding: 0; display: inline-flex; align-items: center; gap: .38rem; }
         .cw .povezava:hover { opacity: .6; }
 
         .cw .zajem { border-top: 1px solid rgba(17,17,17,.18); margin-top: 1.8rem; padding-top: 1.4rem; max-width: 400px; }
@@ -701,29 +961,93 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .profil button:hover { opacity: 1; }
 
         .cw .noga { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; padding: 1rem clamp(1.2rem, 4vw, 3rem) 1.1rem; background: linear-gradient(to top, var(--paper) 70%, transparent); z-index: 30; }
-        .cw .noga .noga-c { display: flex; flex-direction: column; align-items: center; gap: .45rem; }
+        .cw .noga .noga-c { width: 100%; display: flex; align-items: center; justify-content: center; gap: 1rem; }
         .cw .noga .noga-gumbi { display: flex; align-items: center; gap: .8rem; }
         .cw .gumb-nazaj { width: 3.1rem; height: 3.1rem; border-radius: 999px; border: 1px solid var(--ink); background: transparent; color: var(--ink); font-size: 1.15rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .18s ease, color .18s ease; flex: none; }
         .cw .gumb-nazaj:hover { background: var(--ink); color: var(--paper); }
         .cw .noga .nazaj-g { font-family: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; border: none; background: none; cursor: pointer; color: rgba(17,17,17,.72); padding: .6rem 0; }
         .cw .noga .nazaj-g:hover { color: var(--ink); }
-        .cw .noga .namig { font-size: .8rem; color: rgba(17,17,17,.7); }
-        @media (max-width: 560px) { .cw .noga .namig { display: none; } }
+        .cw .a11y { position: fixed; left: clamp(1.2rem, 4vw, 3rem); bottom: 1.05rem; z-index: 35; }
+        .cw .a11y-btn { width: 2.8rem; height: 2.8rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.28); background: color-mix(in oklab, var(--paper) 92%, white); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 .7rem 1.8rem rgba(17,17,17,.08); }
+        .cw .a11y-btn:hover { border-color: var(--ink); }
+        .cw .a11y-panel { position: absolute; left: 0; bottom: 3.4rem; width: min(27rem, calc(100vw - 2.4rem)); max-height: min(70dvh, 34rem); overflow: auto; border: 1px solid rgba(17,17,17,.22); background: color-mix(in oklab, var(--paper) 98%, white); padding: 1rem 1.1rem; box-shadow: 0 1rem 2.4rem rgba(17,17,17,.14); }
+        .cw .a11y-panel h2 { margin: 0 0 .7rem; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; line-height: 1.2; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
+        .cw .a11y-panel h3 { margin: .9rem 0 .35rem; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; line-height: 1.25; font-weight: 800; color: var(--ink); }
+        .cw .a11y-panel p { margin: 0 0 .6rem; font-size: .9rem; line-height: 1.5; color: rgba(17,17,17,.9); }
+        .cw .a11y-panel ul { margin: 0; padding-left: 1.05rem; }
+        .cw .a11y-panel li { margin: .34rem 0; font-size: .9rem; line-height: 1.48; color: rgba(17,17,17,.9); }
+        .cw .a11y-close { position: absolute; top: .85rem; right: .9rem; border: none; background: none; padding: .2rem; font-family: inherit; font-size: 1rem; line-height: 1; cursor: pointer; color: var(--ink); }
+        @media (max-width: 760px) {
+          .cw .glava { background: var(--paper); padding-top: .75rem; padding-bottom: .75rem; }
+          .cw .glava a { color: var(--ink); }
+          .cw .oder { align-items: flex-start; padding-top: 10.4rem; padding-bottom: 8rem; }
+          .cw h1 { padding-left: 1.65rem; font-size: clamp(2.15rem, 11vw, 2.85rem); line-height: .98; margin-bottom: .6rem; }
+          .cw .h1-step { position: absolute; top: 0; left: calc(-1 * clamp(1.2rem, 4vw, 3rem)); width: 2.15rem; height: 2.05rem; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); border-radius: 0 .35rem .35rem 0; font-size: .62rem; letter-spacing: .08em; }
+          .cw .sub-vrsta { margin-bottom: 1.7rem; gap: .8rem; flex-wrap: nowrap; align-items: baseline; }
+          .cw .sub { flex: 1 1 auto; font-size: .94rem; line-height: 1.5; }
+          .cw .sub-vrsta .op-edit { margin-left: auto; text-align: right; flex: none; white-space: nowrap; justify-content: flex-end; line-height: 1.25; font-size: .66rem; letter-spacing: .13em; }
+          .cw .opts { display: flex; flex-wrap: wrap; gap: .45rem; }
+          .cw .pill { min-width: 0; flex: 1 1 calc(50% - .45rem); padding: .62rem .68rem; gap: .42rem; font-size: .78rem; line-height: 1.18; border-radius: 1.25rem; }
+          .cw .pill small { font-size: .66rem; line-height: 1.2; }
+          .cw .pill .pi svg { width: 15px; height: 15px; }
+          .cw .a11y { bottom: 5.4rem; }
+          .cw .noga .noga-gumbi { gap: .55rem; }
+        }
+        @media (max-width: 420px) {
+          .cw .noga .gumb { padding-left: 1.35rem; padding-right: 1.35rem; }
+        }
       `}</style>
 
       <div className="napredek" aria-hidden><i style={{ width: `${((korak + 1) / KORAKOV) * 100}%` }} /></div>
 
+      <div className="a11y">
+        {kazemDostopnost && (
+          <div className="a11y-panel" role="dialog" aria-label="Dostopnost">
+            <button type="button" className="a11y-close" aria-label="Zapri dostopnost" onClick={() => setKazemDostopnost(false)}>×</button>
+            <h2>Dostopnost</h2>
+            <p>Kalkulator je zasnovan tako, da ga lahko uporabljaš z miško, dotikom, tipkovnico ali podpornimi tehnologijami.</p>
+            <h3>Tipkovnica</h3>
+            <ul>
+              <li>Tab premika fokus med polji, izbirami in gumbi.</li>
+              <li>Enter premakne kalkulator na naslednji korak, ko nisi v večvrstičnem besedilnem polju.</li>
+              <li>Shift + Tab premakne fokus nazaj.</li>
+            </ul>
+            <h3>Bralniki zaslona in prikaz</h3>
+            <ul>
+              <li>Glavna polja in gumbi imajo opisne oznake.</li>
+              <li>Stran podpira povečavo brskalnika in sistemske nastavitve za večji tekst.</li>
+              <li>Animacije spoštujejo nastavitev za zmanjšano gibanje.</li>
+            </ul>
+            <h3>Glasovni ukazi</h3>
+            <ul>
+              <li><strong>macOS:</strong> System Settings → Accessibility → Voice Control → Turn on Voice Control.</li>
+              <li>iPhone/iPad: Settings → Accessibility → Voice Control.</li>
+              <li><strong>Windows:</strong> Settings → Accessibility → Speech ali Voice access.</li>
+              <li>Ko je funkcija vključena, lahko rečeš na primer “Click Naprej”, “Click Nazaj” ali “Show numbers”.</li>
+            </ul>
+          </div>
+        )}
+        <button
+          type="button"
+          className="a11y-btn"
+          aria-label="Dostopnost"
+          aria-expanded={kazemDostopnost}
+          onClick={() => setKazemDostopnost(v => !v)}
+        >
+          <PersonSimple size={22} weight="bold" />
+        </button>
+      </div>
+
       <div className="glava">
         <a href={`/${locale}/kalkulator`}>← Predstavitev</a>
-        <span className="stevec">{korak + 1} / {KORAKOV}</span>
       </div>
 
       <div className="oder">
         <div className="korak-vsebina" key={korak}>
-          <h1>{VPRASANJA[korak].q}</h1>
-          {(VPRASANJA[korak].sub || korak === 0) && (
+          <h1><span className="h1-step">{String(korak + 1).padStart(2, '0')}</span>{naslovKoraka}</h1>
+          {(opisKoraka || korak === 0) && (
             <div className="sub-vrsta">
-              <p className="sub">{VPRASANJA[korak].sub}</p>
+              <p className="sub">{opisKoraka}</p>
               {korak === 0 && (
                 <button type="button" className="op-edit" onClick={() => setKazemCene(!kazemCene)} aria-expanded={kazemCene}>
                   {kazemCene ? '✕ Zapri cene' : '✎ Nastavi svoje cene'}
@@ -834,8 +1158,26 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </>
           )}
 
-          {korak === 1 && (
-            <div className="izbira" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+          {trenutnaSkupina && (
+            <>
+              <div className="vprasanja">
+                {trenutnaSkupina.vprasanja.map(vp => (
+                  <div key={vp.key} className="vp">
+                    <label htmlFor={'cw-vp-' + vp.key}>{vp.label}</label>
+                    <textarea
+                      id={'cw-vp-' + vp.key}
+                      value={odgovori[vp.key] || ''}
+                      placeholder={vp.placeholder || 'Kratek odgovor, lahko pustiš prazno.'}
+                      onChange={e => setOdgovori({ ...odgovori, [vp.key]: e.target.value })}
+                    />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {korak === izkusnjeStep && (
+            <div className="izbira">
               {IZKUSNJE.map(i => (
                 <button key={i.id} type="button" className={izkusnje === i.id ? 'on' : ''}
                   onClick={() => { setIzkusnje(i.id); }}>
@@ -846,7 +1188,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </div>
           )}
 
-          {korak === 2 && (
+          {korak === mojTrgStep && (
             <div className="opts">
               {TRGI.map(t => (
                 <button key={t.id} type="button"
@@ -858,7 +1200,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </div>
           )}
 
-          {korak === 3 && (
+          {korak === narocnikStep && (
             <>
               <div className="opts">
                 {TRGI.map(t => (
@@ -883,7 +1225,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </>
           )}
 
-          {korak === 4 && (
+          {korak === rabaStep && (
             <>
               <div className="izbira">
                 <button type="button" className={raba === 'znamka' ? 'on' : ''} onClick={() => setRaba('znamka')}>
@@ -949,7 +1291,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </>
           )}
 
-          {korak === 5 && (
+          {korak === posebnostiStep && (
             <>
               <div className="opts">
                 {DODATKI.map(d => (
@@ -972,7 +1314,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </>
           )}
 
-          {korak === 6 && r && (
+          {korak === cenaStep && r && (
             <>
               <div className="paketi">
                 {r.paketi.map(p => (
@@ -992,11 +1334,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </p>
             </>
           )}
-          {korak === 6 && !r && (
+          {korak === cenaStep && !r && (
             <p className="sub">Najprej izberi vsaj eno storitev v prvem koraku.</p>
           )}
 
-          {korak === 7 && (
+          {korak === podatkiStep && (
             <>
               <div className="numgrid" style={{ marginTop: '.4rem' }}>
                 <div className="polje">
@@ -1057,10 +1399,61 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </>
           )}
 
-          {korak === 8 && (
+          {korak === ponudbaStep && (
             <>
-              <textarea value={besedilo}
-                onChange={e => { setBesedilo(e.target.value); setRocnoBesedilo(true); }} />
+              <div className="tonbar" aria-label="Ton ponudbe">
+                {TONI.map(t => (
+                  <button key={t.id} type="button" className={tonPonudbe === t.id ? 'on' : ''}
+                    onClick={() => { setTonPonudbe(t.id); setRocnoBesedilo(false); }}>
+                    {t.ime}
+                  </button>
+                ))}
+              </div>
+              <div className="orodjarna" aria-label="Oblikovanje ponudbe">
+                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko">
+                  <TextB size={17} weight="bold" /> Krepko
+                </button>
+                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title="Spremeni vrstico v podnaslov">
+                  <TextAa size={17} /> H2
+                </button>
+                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title="Spremeni vrstico v odstavek">
+                  <TextAa size={15} /> P
+                </button>
+                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('fontSize', '4'); }} title="Povečaj označeno besedilo">
+                  <TextAa size={17} /> Večje
+                </button>
+                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('fontSize', '2'); }} title="Pomanjšaj označeno besedilo">
+                  <TextAa size={15} /> Manjše
+                </button>
+                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('hiliteColor', '#ECE6D5'); }} title="Dodaj podlago">
+                  <PaintBucket size={17} /> Podlaga
+                </button>
+                {['#111111', '#F5F2EA', '#F8E71C', '#50E3C2', '#FA4892'].map(barva => (
+                  <button key={barva} type="button" className="barvica" style={{ background: barva }}
+                    aria-label={'Barva besedila ' + barva} onMouseDown={e => { e.preventDefault(); oblikuj('foreColor', barva); }} />
+                ))}
+                <button type="button" className="tool" onClick={() => fileRef.current?.click()} title="Uvozi HTML ali TXT predlogo">
+                  <UploadSimple size={17} /> Uvozi predlogo
+                </button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept=".txt,.html,.htm"
+                  hidden
+                  onChange={e => {
+                    uvoziPredlogo(e.target.files?.[0]);
+                    e.currentTarget.value = '';
+                  }}
+                />
+              </div>
+              <div
+                ref={editorRef}
+                className="editor"
+                contentEditable
+                suppressContentEditableWarning
+                onInput={() => setRocnoBesedilo(true)}
+                onBlur={sinhronizirajEditor}
+              />
               {rocnoBesedilo && (
                 <p className="hint" style={{ marginTop: '.5rem' }}>
                   Besedilo je ročno urejeno in se ob spremembi izbir ne posodablja več samodejno.{' '}
@@ -1071,16 +1464,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               )}
               <div className="btnvrsta">
                 <button type="button" className="gumb" onClick={kopiraj}>
-                  {kopirano ? 'Skopirano ✓' : 'Kopiraj ponudbo'}
+                  <CopySimple size={17} /> {kopirano ? 'Skopirano ✓' : 'Kopiraj ponudbo'}
                 </button>
-                <button type="button" className="povezava" onClick={() => zahtevaKontakt('prenos')}>
-                  Prenesi besedilo
+                <button type="button" className="povezava" onClick={prenesi}>
+                  <DownloadSimple size={17} /> Prenesi besedilo
                 </button>
                 <button type="button" className="povezava" onClick={prenesiCsv}>
-                  Izvozi postavke (CSV za račune)
+                  <FileText size={17} /> Izvozi postavke (CSV za račune)
                 </button>
                 <button type="button" className="povezava" onClick={() => zahtevaKontakt('profil')}>
-                  Shrani svoje cene kot profil
+                  <FloppyDisk size={17} /> Shrani profil
                 </button>
               </div>
 
@@ -1088,7 +1481,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <div className="zajem">
                   {!imamKontakt && (
                     <>
-                      <p>Samo prvič: pusti ime in email, da vem, da orodje komu koristi. Nobenega nadlegovanja.</p>
+                      <p>Ime in email sta neobvezna; profil lahko shraniš tudi brez tega.</p>
                       <div className="polje">
                         <label htmlFor="cw-zime">Ime</label>
                         <input id="cw-zime" value={leadIme} onChange={e => setLeadIme(e.target.value)} />
@@ -1108,7 +1501,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   )}
                   <div className="btnvrsta" style={{ marginTop: '.2rem' }}>
                     {kazemZajem === 'profil'
-                      ? <button type="button" className="gumb" disabled={!imamKontakt} onClick={shraniProfil}>Shrani profil</button>
+                      ? <button type="button" className="gumb" onClick={shraniProfil}>Shrani profil</button>
                       : <button type="button" className="gumb" disabled={!imamKontakt} onClick={potrdiZajem}>Potrdi in prenesi</button>}
                     <button type="button" className="povezava" onClick={() => setKazemZajem(null)}>Prekliči</button>
                   </div>
@@ -1140,13 +1533,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             {korak < KORAKOV - 1 ? (
               <button type="button" className="gumb"
                 disabled={korak === 0 && !r} onClick={naprej}>
-                {korak === 5 ? 'Pokaži ceno →' : korak === 6 ? 'Pripravi ponudbo →' : 'Naprej →'}
+                {korak === posebnostiStep ? 'Pokaži ceno →' : korak === cenaStep ? 'Pripravi ponudbo →' : 'Naprej →'}
               </button>
             ) : (
               <button type="button" className="nazaj-g" onClick={() => setKorak(0)}>Na začetek ↺</button>
             )}
           </div>
-          {korak < KORAKOV - 1 && <span className="namig">Enter ⏎</span>}
         </div>
       </div>
     </div>
