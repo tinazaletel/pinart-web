@@ -91,9 +91,15 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'vsebina', label: 'Kdo pripravi besedila, slike in strukturo vsebine?' },
   ],
   kampanja: [
-    { id: 'kanali', label: 'Na katerih kanalih bo kampanja tekla?', placeholder: 'Meta, Google, tisk, outdoor, email, TikTok ...' },
-    { id: 'formati', label: 'Katere formate potrebuješ?', placeholder: 'story, feed, bannerji, tiskani oglasi, plakati ...' },
-    { id: 'cilj', label: 'Kaj je glavni cilj kampanje?', placeholder: 'prodaja, awareness, prijave, launch, rebranding ...' },
+    { id: 'kanali', label: 'Na katerih kanalih bo kampanja tekla?', izbire: ['Meta (FB/IG)', 'Google', 'TikTok', 'LinkedIn', 'YouTube', 'TV', 'Radio', 'Tisk', 'Zunanje (plakati, avtobusi)'], vec: true, svoje: 'dopiši svoje ...' },
+    { id: 'formati', label: 'Katere formate potrebuješ?', izbire: ['Story / Reel', 'Feed objave', 'Spletne pasice', 'Video oglas', 'Tiskani oglas', 'Plakat / city light', 'TV spot'], vec: true, svoje: 'dopiši svoje ...' },
+    { id: 'cilj', label: 'Kaj je glavni cilj kampanje?', izbire: ['Prodaja', 'Prepoznavnost', 'Prijave / leadi', 'Lansiranje novega', 'Rebranding'], svoje: 'ali opiši po svoje ...' },
+    { id: 'trajanje', label: 'Kakšna je časovnica kampanje?', izbire: ['Do 2 tedna', '1 mesec', '3 mesece', 'Celoletna'], svoje: 'ali opiši ...' },
+    { id: 'regija', label: 'Katero regijo pokriva?', izbire: ['Lokalno', 'Slovenija', 'Adria regija', 'EU', 'Globalno'], vec: true },
+    { id: 'influencerji', label: 'Ali vključimo influencerje?', izbire: ['Da', 'Ne', 'Morda'], svoje: 'kateri, če že veš ...' },
+    { id: 'email', label: 'Ali potrebuješ tudi email marketing (newsletter)?', izbire: ['Da, kot posebna postavka', 'Ne', 'Še ne vem'] },
+    { id: 'budget', label: 'Okvirni budget naročnika za oblikovanje kampanje?', izbire: ['Do 2.000 €', '2.000 do 5.000 €', '5.000 do 15.000 €', 'Nad 15.000 €', 'Še ne vem'], svoje: 'ali vpiši svoj znesek ...' },
+    { id: 'opomba', label: 'Opomba (neobvezno)', placeholder: 'karkoli, kar naj upoštevam vnaprej ...' },
   ],
   publikacija: [
     { id: 'strani', label: 'Koliko strani in kakšen format?', placeholder: 'npr. A4, 32 strani, tisk + PDF' },
@@ -1333,8 +1339,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                             className="vp-svoje"
                             placeholder={vp.svoje}
                             aria-label={vp.label + ' (svoj vnos)'}
-                            value={vp.izbire.includes(odgovori[vp.key] || '') ? '' : (odgovori[vp.key] || '')}
-                            onChange={e => setOdgovori({ ...odgovori, [vp.key]: e.target.value })}
+                            value={(() => {
+                              const v = odgovori[vp.key] || '';
+                              if (!vp.vec) return vp.izbire.includes(v) ? '' : v;
+                              return v.split(' + ').filter(t => t && !vp.izbire!.includes(t)).join(' + ');
+                            })()}
+                            onChange={e => {
+                              if (!vp.vec) { setOdgovori({ ...odgovori, [vp.key]: e.target.value }); return; }
+                              const obkljukane = (odgovori[vp.key] || '').split(' + ').filter(t => t && vp.izbire!.includes(t));
+                              setOdgovori({ ...odgovori, [vp.key]: [...obkljukane, e.target.value].filter(Boolean).join(' + ') });
+                            }}
                           />
                         ) : null}
                       </div>
