@@ -68,10 +68,12 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'omejitve', label: 'Ali že obstajajo barve, pisave ali simboli, ki morajo ostati?' },
   ],
   cgp: [
-    { id: 'obseg', label: 'Kaj mora vsebovati CGP?', placeholder: 'logo sistem, barve, tipografija, predloge, brand book, social paket ...' },
-    { id: 'uporabniki', label: 'Kdo bo sistem uporabljal po predaji?', placeholder: 'notranja ekipa, agencija, tiskar, franšize ...' },
-    { id: 'materiali', label: 'Na katerih materialih mora identiteta delovati?', placeholder: 'vizitke, embalaža, vozila, splet, sejem, prezentacije ...' },
-    { id: 'globina', label: 'Ali potrebuješ samo osnovni priročnik ali razširjen brand sistem?' },
+    { id: 'stanje', label: 'Ali že obstaja logotip ali predhodni CGP?', placeholder: 'npr. imamo star CGP, imamo samo logotip, začenjamo iz nič' },
+    { id: 'tip-projekta', label: 'Gre za novo identiteto ali osvežitev obstoječe?', placeholder: 'npr. refresh z obstoječimi elementi, popoln rebrand, samo razširitev sistema' },
+    { id: 'smeri', label: 'Koliko različnih kreativnih smeri pričakuješ?', placeholder: 'npr. 1 jasna smer, 3 predlogi, 6 širših raziskav' },
+    { id: 'stil', label: 'Ali že veš, kakšen slog želiš?', placeholder: 'minimalistično, retro, editorial, luksuzno, igrivo, tehnološko, organsko, drzno ...' },
+    { id: 'omejitve', label: 'Ali obstajajo barve, tipografije ali ideje, ki jih je treba upoštevati?', placeholder: 'npr. imamo moodboard, kupljeno pisavo, barvno paleto, primer znamk, ki so nam všeč' },
+    { id: 'obseg', label: 'Na katerih materialih mora identiteta delovati?', placeholder: 'vizitke, embalaža, splet, družbena omrežja, prezentacije, tabla, vozila ...' },
   ],
   web: [
     { id: 'tip', label: 'Kakšen tip spletne strani potrebuješ?', placeholder: 'landing page, portfolio, corporate site, trgovina, booking, blog ...' },
@@ -1511,7 +1513,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <div className="zajem">
                   {!imamKontakt && (
                     <>
-                      <p>Ime in email sta neobvezna; profil lahko shraniš tudi brez tega.</p>
+                      <p>Ime in email sta neobvezna; profil lahko shraniš tudi brez tega. Z oddajo se strinjaš s <a href={`/${locale}/kalkulator/pogoji`} style={{ color: 'var(--ink)' }}>pogoji uporabe</a>.</p>
                       <div className="polje">
                         <label htmlFor="cw-zime">Ime</label>
                         <input id="cw-zime" value={leadIme} onChange={e => setLeadIme(e.target.value)} />

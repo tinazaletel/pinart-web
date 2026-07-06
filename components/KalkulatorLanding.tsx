@@ -167,7 +167,7 @@ export default function KalkulatorLanding({ locale = 'sl' }: { locale?: string }
 
         <p className="podpis">
           Orodje in zapise je pripravila Tina, kreativna direktorica studia <a href={`/${locale}`}>Pinart</a>.{' '}
-          Za projekte: <a href="mailto:tina@pinart.si">tina@pinart.si</a>.
+          Za projekte: <a href="mailto:tina@pinart.si">tina@pinart.si</a> · <a href={`/${locale}/kalkulator/pogoji`}>Pogoji uporabe</a>.
         </p>
       </div>
     </div>
