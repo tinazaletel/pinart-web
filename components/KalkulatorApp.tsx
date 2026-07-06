@@ -59,7 +59,7 @@ const TONI: { id: TonPonudbe; ime: string }[] = [
   { id: 'direktno', ime: 'Neformalno' },
 ];
 
-type ProjektnoVprasanje = { id: string; label: string; placeholder?: string; izbire?: string[]; vec?: boolean };
+type ProjektnoVprasanje = { id: string; label: string; placeholder?: string; izbire?: string[]; vec?: boolean; svoje?: string };
 
 const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
   logo: [
@@ -67,7 +67,7 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'kompleksnost', label: 'Kako kompleksen naj bo logotip?', izbire: ['Enostaven napis ali znak', 'Znak + tipografija (kombiniran)', 'Družina znakov / več različic'] },
     { id: 'uporaba', label: 'Kje se bo najpogosteje uporabljal?', placeholder: 'splet, embalaža, tabla, app ikona, vozila ...' },
     { id: 'omejitve', label: 'Ali že obstajajo barve, pisave ali simboli, ki morajo ostati?' },
-    { id: 'budget', label: 'Kakšen je okvirni budget naročnika?', izbire: ['Do 1.000 €', '1.000 do 2.500 €', 'Nad 2.500 €', 'Še ne vem'] },
+    { id: 'budget', label: 'Kakšen je okvirni budget naročnika?', izbire: ['Do 1.000 €', '1.000 do 2.500 €', 'Nad 2.500 €', 'Še ne vem'], svoje: 'ali vpiši svoj znesek ...' },
   ],
   cgp: [
     { id: 'stanje', label: 'Ali že obstaja logotip ali predhodni CGP?', izbire: ['Začenjamo iz nič', 'Imamo samo logotip', 'Imamo star CGP'] },
@@ -76,7 +76,7 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'stil', label: 'Ali že veš, kakšen slog želiš?', izbire: ['Minimalistično', 'Retro', 'Editorial', 'Luksuzno', 'Igrivo', 'Tehnološko', 'Organsko', 'Drzno', 'Še ne vem'], vec: true },
     { id: 'omejitve', label: 'Ali obstajajo barve, tipografije ali ideje, ki jih je treba upoštevati?', placeholder: 'npr. imamo moodboard, kupljeno pisavo, barvno paleto, primer znamk, ki so nam všeč' },
     { id: 'obseg', label: 'Na katerih materialih mora identiteta delovati?', placeholder: 'vizitke, embalaža, splet, družbena omrežja, prezentacije, tabla, vozila ...' },
-    { id: 'budget', label: 'Kakšen je okvirni budget naročnika?', izbire: ['Do 2.500 €', '2.500 do 5.000 €', 'Nad 5.000 €', 'Še ne vem'] },
+    { id: 'budget', label: 'Kakšen je okvirni budget naročnika?', izbire: ['Do 2.500 €', '2.500 do 5.000 €', 'Nad 5.000 €', 'Še ne vem'], svoje: 'ali vpiši svoj znesek ...' },
     { id: 'opomba', label: 'Opomba (neobvezno)', placeholder: 'karkoli, kar naj upoštevam vnaprej ...' },
   ],
   web: [
@@ -1324,7 +1324,19 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                           );
                         })}
                       </div>
-                    ) : trenutnaSkupina.id === 'web' && vp.id === 'kompleksnost' ? (
+                    ) : null}
+                    {vp.izbire && vp.svoje ? (
+                      <input
+                        id={'cw-vp-' + vp.key + '-svoje'}
+                        type="text"
+                        placeholder={vp.svoje}
+                        aria-label={vp.label + ' (svoj vnos)'}
+                        style={{ marginTop: '.6rem' }}
+                        value={vp.izbire.includes(odgovori[vp.key] || '') ? '' : (odgovori[vp.key] || '')}
+                        onChange={e => setOdgovori({ ...odgovori, [vp.key]: e.target.value })}
+                      />
+                    ) : null}
+                    {vp.izbire ? null : trenutnaSkupina.id === 'web' && vp.id === 'kompleksnost' ? (
                       <div className="choicegrid">
                         {WEB_KOMPLEKSNOST.map(vrednost => (
                           <button
