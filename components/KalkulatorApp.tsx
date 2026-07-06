@@ -928,7 +928,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .soglasje-kartica { max-width: 540px; background: var(--paper); border: 1px solid rgba(17,17,17,.25); border-radius: 16px; padding: clamp(1.6rem, 4vw, 2.6rem); box-shadow: 0 24px 80px rgba(17,17,17,.12); }
         .cw .soglasje-kartica h2 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 4.5vw, 2.4rem); line-height: 1.05; margin: 0 0 1.1rem; }
         .cw .soglasje-kartica ul { margin: 0 0 1.8rem; padding-left: 1.1rem; }
-        .cw .soglasje-kartica li { font-size: .95rem; line-height: 1.7; color: rgba(17,17,17,.8); margin-bottom: .7rem; }
+        .cw .soglasje-kartica li { font-size: 1.02rem; font-weight: 400; line-height: 1.65; color: var(--ink); margin-bottom: .8rem; }
         .cw .soglasje-gumbi { display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap; }
         .cw .napredek { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(17,17,17,.1); z-index: 40; }
         .cw .napredek i { display: block; height: 100%; background: var(--ink); transition: width .5s cubic-bezier(.16,1,.3,1); }
