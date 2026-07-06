@@ -1016,6 +1016,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .vp small { display: block; margin-bottom: .35rem; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(17,17,17,.5); font-weight: 700; }
         .cw .vp label { display: block; margin-bottom: .55rem; font-weight: 600; color: var(--ink); }
         .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: .95rem; line-height: 1.55; background: rgba(255,255,255,.38); padding: .9rem 1rem; }
+        .cw .vp .vp-svoje { width: 100%; max-width: 320px; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1rem; padding: .3rem 0 .4rem; color: var(--ink); border-radius: 0; }
+        .cw .vp .vp-svoje:focus { outline: none; border-bottom: 2px solid var(--ink); margin-bottom: -1px; }
+        .cw .vp .vp-svoje::placeholder { color: rgba(17,17,17,.45); font-weight: 400; }
         .cw .checkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem .7rem; margin: .15rem 0 .75rem; }
         .cw .checkgrid label { display: flex; align-items: flex-start; gap: .5rem; margin: 0; font-size: .9rem; line-height: 1.35; font-weight: 400; cursor: pointer; }
         .cw .checkgrid input { margin-top: .15rem; accent-color: var(--ink); }
@@ -1329,6 +1332,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       <input
                         id={'cw-vp-' + vp.key + '-svoje'}
                         type="text"
+                        className="vp-svoje"
                         placeholder={vp.svoje}
                         aria-label={vp.label + ' (svoj vnos)'}
                         style={{ marginTop: '.6rem' }}
