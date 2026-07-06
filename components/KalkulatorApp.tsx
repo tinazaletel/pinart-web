@@ -555,6 +555,32 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     }
   }, [korak, ponudbaStep, besediloHtml, besedilo, rocnoBesedilo]);
 
+  /* Anonimna cenovna tocka za skupno bazo cen na trgu: enkrat na sejo,
+     ko uporabnik pride do koraka "Tvoja cena". Brez osebnih podatkov —
+     samo kategorije in stevilke (trda ograja v app/api/cene/route.ts). */
+  useEffect(() => {
+    if (korak !== cenaStep || !r) return;
+    try {
+      if (sessionStorage.getItem('pinart-cene-poslano')) return;
+      sessionStorage.setItem('pinart-cene-poslano', '1');
+      fetch('/api/cene', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storitve: r.sez.map(s => s.ime),
+          izkusnje,
+          mojTrg,
+          trgNarocnika,
+          raba: r.raba,
+          izvedbaEUR: r.delo,
+          praviceEUR: r.pravice,
+          valuta,
+        }),
+      }).catch(() => {});
+    } catch { /* zasebni nacin brskalnika ipd. */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [korak, cenaStep]);
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, [korak]);
@@ -1331,6 +1357,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 V vsakem paketu je <b>enkratni prenos avtorskih pravic {val(r.pravice)}</b>.
                 Alternativa: <b>letna licenca {val(r.licenca)}</b>{r.raba === 'projekt' ? <> ali <b>tantieme {r.tantiemePct} % od prodaje</b></> : null}.
                 Tri opcije zato, ker stranka takrat ne izbira med »da« in »ne«, ampak med »katero«.
+              </p>
+              <p className="hint">
+                Tvoj izračun anonimno (brez imena, maila ali česarkoli osebnega) prispeva
+                cenovno točko v skupno statistiko cen za kreativce. Hvala, da gradiš pregled trga.
               </p>
             </>
           )}
