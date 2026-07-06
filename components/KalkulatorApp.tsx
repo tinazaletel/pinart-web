@@ -421,6 +421,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [profili, setProfili] = useState<Record<string, Profil>>({});
   const [kopirano, setKopirano] = useState(false);
   const [kazemZajem, setKazemZajem] = useState<null | 'prenos' | 'profil'>(null);
+  /* Postopni prikaz vprasanj (Tinina koreografija): naslov na sredini,
+     prvo vprasanje prileti od spodaj, naslednje ob odgovoru ALI po
+     nekaj sekundah; stran raste navzdol, nazaj se da poskrolati. */
+  const [vidnaVprasanja, setVidnaVprasanja] = useState(1);
   const [imeProfila, setImeProfila] = useState('');
   const [leadIme, setLeadIme] = useState('');
   const [leadEmail, setLeadEmail] = useState('');
@@ -557,6 +561,38 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const ponudbaStep = prviPoVprasanjih + 7;
   const KORAKOV = ponudbaStep + 1;
   const trenutnaSkupina = korak > 0 && korak < prviPoVprasanjih ? skupineVprasanj[korak - 1] : null;
+
+  /* reset postopnega prikaza ob vsakem koraku */
+  useEffect(() => { setVidnaVprasanja(1); }, [korak]);
+
+  /* naslednje vprasanje po 4 s, tudi ce prejsnje ni odgovorjeno */
+  useEffect(() => {
+    if (!trenutnaSkupina) return;
+    if (vidnaVprasanja >= trenutnaSkupina.vprasanja.length) return;
+    const t = setTimeout(() => setVidnaVprasanja(v => v + 1), 4000);
+    return () => clearTimeout(t);
+  }, [trenutnaSkupina, vidnaVprasanja]);
+
+  /* odgovor takoj odklene naslednje vprasanje */
+  useEffect(() => {
+    if (!trenutnaSkupina) return;
+    let zadnjiOdgovorjen = -1;
+    trenutnaSkupina.vprasanja.forEach((vp, i) => {
+      if ((odgovori[vp.key] || '').trim()) zadnjiOdgovorjen = i;
+    });
+    if (zadnjiOdgovorjen + 2 > vidnaVprasanja) setVidnaVprasanja(zadnjiOdgovorjen + 2);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [odgovori, trenutnaSkupina]);
+
+  /* novo vprasanje pripelji v pogled (stran "potuje" navzgor) */
+  useEffect(() => {
+    if (!trenutnaSkupina || vidnaVprasanja <= 1) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    requestAnimationFrame(() => {
+      const zadnji = document.querySelector('.cw .vprasanja .vp:last-of-type');
+      zadnji?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+    });
+  }, [vidnaVprasanja, trenutnaSkupina]);
 
   const ponudba = useMemo(() => {
     if (!r) return '';
@@ -989,6 +1025,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
         .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 9rem clamp(1.2rem, 4vw, 3rem) 9rem; }
         .cw .korak-vsebina { width: 100%; max-width: 880px; animation: cwVstop .55s cubic-bezier(.16,1,.3,1) both; }
+        .cw .h1-maska { display: inline-block; overflow: hidden; vertical-align: bottom; }
+        .cw .h1-beseda { display: inline-block; transform: translateY(110%); animation: cwBeseda .7s cubic-bezier(.16,1,.3,1) forwards; }
+        @keyframes cwBeseda { to { transform: translateY(0); } }
+        @media (prefers-reduced-motion: reduce) { .cw .h1-beseda { animation: none; transform: none; } }
         @keyframes cwVstop { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
         @media (prefers-reduced-motion: reduce) { .cw .korak-vsebina { animation: none; } }
 
@@ -1233,7 +1273,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
       <div className="oder">
         <div className="korak-vsebina" key={korak}>
-          <h1><span className="h1-step">{String(korak + 1).padStart(2, '0')}</span>{naslovKoraka}</h1>
+          <h1><span className="h1-step">{String(korak + 1).padStart(2, '0')}</span>{naslovKoraka.split(' ').map((b, bi) => (
+            <span key={bi} className="h1-maska"><span className="h1-beseda" style={{ animationDelay: `${bi * 90}ms` }}>{b}&nbsp;</span></span>
+          ))}</h1>
           {(opisKoraka || korak === 0) && (
             <div className="sub-vrsta">
               <p className="sub">{opisKoraka}</p>
@@ -1350,7 +1392,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           {trenutnaSkupina && (
             <>
               <div className="vprasanja">
-                {trenutnaSkupina.vprasanja.map((vp, vi) => (
+                {trenutnaSkupina.vprasanja.slice(0, vidnaVprasanja).map((vp, vi) => (
                   <div key={vp.key} className="vp" style={{ animationDelay: `${vi * 110}ms` }}>
                     <label htmlFor={'cw-vp-' + vp.key}>{vp.label}</label>
                     {vp.izbire ? (
