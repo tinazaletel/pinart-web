@@ -1055,10 +1055,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .postavka button { border: none; background: none; cursor: pointer; font-family: inherit; font-size: 1rem; color: var(--ink); opacity: .45; padding: 0 .2rem; }
         .cw .postavka button:hover { opacity: 1; }
 
-        .cw .vprasanja { display: grid; gap: 1rem; max-width: 760px; }
-        .cw .vp { border-top: 1px solid rgba(17,17,17,.16); padding-top: 1rem; }
+        .cw .vprasanja { display: grid; gap: 2.8rem; max-width: 760px; }
+        .cw .vp { animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
+        @media (prefers-reduced-motion: reduce) { .cw .vp { animation: none; } }
         .cw .vp small { display: block; margin-bottom: .35rem; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(17,17,17,.68); font-weight: 700; }
-        .cw .vp label { display: block; margin-bottom: .55rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
+        .cw .vp label { display: block; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; line-height: 1.55; background: rgba(255,255,255,.38); padding: .9rem 1rem; }
         .cw .vp .vp-svoje { width: 210px; align-self: center; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .3rem 0 .4rem; color: var(--ink); border-radius: 0; }
         .cw .vp .vp-svoje:focus { outline: none; border-bottom: 2px solid var(--ink); margin-bottom: -1px; }
@@ -1348,8 +1349,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           {trenutnaSkupina && (
             <>
               <div className="vprasanja">
-                {trenutnaSkupina.vprasanja.map(vp => (
-                  <div key={vp.key} className="vp">
+                {trenutnaSkupina.vprasanja.map((vp, vi) => (
+                  <div key={vp.key} className="vp" style={{ animationDelay: `${vi * 110}ms` }}>
                     <label htmlFor={'cw-vp-' + vp.key}>{vp.label}</label>
                     {vp.izbire ? (
                       <div className="choicegrid">
