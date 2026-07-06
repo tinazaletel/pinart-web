@@ -40,9 +40,10 @@ export default function BackButton({
         if (window.history.length > 1) {
           e.preventDefault();
           window.dispatchEvent(new CustomEvent('pinart-page-leave'));
-          // small delay so the fade overlay has time to start before
-          // Next.js unmounts the current page
-          setTimeout(() => router.back(), 60);
+          // Wait until the fade overlay is fully OPAQUE before navigating,
+          // otherwise the hero (black finale at scroll 0) flashes through
+          // the half-transparent overlay while scroll is being restored.
+          setTimeout(() => router.back(), 180);
         }
       }}
     >

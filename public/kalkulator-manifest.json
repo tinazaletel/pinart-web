@@ -1,0 +1,14 @@
+{
+  "name": "Pinart — kalkulator cen za kreativce",
+  "short_name": "Kalkulator",
+  "description": "Izračunaj pošteno ceno za kreativno delo: izvedba, avtorske pravice, licenca in trije paketi ponudbe.",
+  "start_url": "/sl/kalkulator/orodje",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F5F2EA",
+  "theme_color": "#F5F2EA",
+  "icons": [
+    { "src": "/kalk-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/kalk-icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

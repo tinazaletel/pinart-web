@@ -24,7 +24,9 @@ export default function PageTransition() {
     if (!el) return;
 
     const fadeIn = () => {
-      el.style.transition = 'opacity 0.28s ease';
+      // Hitro do polne prekrivnosti — vse, kar se zgodi pod zaveso
+      // (menjava strani, obnova scrolla), mora biti zares skrito.
+      el.style.transition = 'opacity 0.15s ease';
       el.style.opacity    = '1';
       el.style.pointerEvents = 'none';
     };
@@ -57,15 +59,28 @@ export default function PageTransition() {
     const el = ref.current;
     if (!el) return;
 
+    let fallback: ReturnType<typeof setTimeout> | null = null;
+
+    const fadeOut = () => {
+      if (fallback) { clearTimeout(fallback); fallback = null; }
+      el.style.transition = 'opacity 0.45s ease';
+      el.style.opacity    = '0';
+    };
+
     const onPopState = () => {
-      setTimeout(() => {
-        el.style.transition = 'opacity 0.55s ease';
-        el.style.opacity    = '0';
-      }, 880);
+      // Zavesa se umakne takoj, ko SmoothScroll javi obnovljen polozaj
+      // (~100ms) — dolg fiksni timeout je izgledal kot glitch. Varovalka,
+      // ce dogodek ne pride: umik po 900ms.
+      window.addEventListener('pinart-back-restored', fadeOut, { once: true });
+      fallback = setTimeout(fadeOut, 900);
     };
 
     window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
+    return () => {
+      window.removeEventListener('popstate', onPopState);
+      window.removeEventListener('pinart-back-restored', fadeOut);
+      if (fallback) clearTimeout(fallback);
+    };
   }, []);
 
   return (
