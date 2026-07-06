@@ -1023,7 +1023,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .checkgrid label { display: flex; align-items: flex-start; gap: .5rem; margin: 0; font-size: .9rem; line-height: 1.35; font-weight: 400; cursor: pointer; }
         .cw .checkgrid input { margin-top: .15rem; accent-color: var(--ink); }
         .cw .choicegrid { display: flex; flex-wrap: wrap; gap: .45rem; margin: .15rem 0 .2rem; }
-        .cw .choicegrid button { border: 1px solid rgba(17,17,17,.22); background: rgba(255,255,255,.28); color: var(--ink); border-radius: 999px; padding: .55rem .85rem; font-family: inherit; font-size: .86rem; cursor: pointer; }
+        .cw .choicegrid button { border: 1px solid rgba(17,17,17,.4); background: rgba(255,255,255,.28); color: var(--ink); border-radius: 999px; padding: .6rem 1rem; font-family: inherit; font-size: .95rem; font-weight: 500; cursor: pointer; }
         .cw .choicegrid button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 
         .cw .paketi { display: grid; grid-template-columns: 1fr 1.15fr 1fr; margin-top: .6rem; border-top: 1px solid rgba(17,17,17,.18); }
