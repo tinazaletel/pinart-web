@@ -1013,17 +1013,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
         .cw .vprasanja { display: grid; gap: 1rem; max-width: 760px; }
         .cw .vp { border-top: 1px solid rgba(17,17,17,.16); padding-top: 1rem; }
-        .cw .vp small { display: block; margin-bottom: .35rem; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(17,17,17,.5); font-weight: 700; }
-        .cw .vp label { display: block; margin-bottom: .55rem; font-weight: 600; color: var(--ink); }
-        .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: .95rem; line-height: 1.55; background: rgba(255,255,255,.38); padding: .9rem 1rem; }
-        .cw .vp .vp-svoje { width: 200px; align-self: center; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1rem; padding: .3rem 0 .4rem; color: var(--ink); border-radius: 0; }
+        .cw .vp small { display: block; margin-bottom: .35rem; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(17,17,17,.68); font-weight: 700; }
+        .cw .vp label { display: block; margin-bottom: .55rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
+        .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; line-height: 1.55; background: rgba(255,255,255,.38); padding: .9rem 1rem; }
+        .cw .vp .vp-svoje { width: 210px; align-self: center; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .3rem 0 .4rem; color: var(--ink); border-radius: 0; }
         .cw .vp .vp-svoje:focus { outline: none; border-bottom: 2px solid var(--ink); margin-bottom: -1px; }
         .cw .vp .vp-svoje::placeholder { color: rgba(17,17,17,.45); font-weight: 400; }
         .cw .checkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem .7rem; margin: .15rem 0 .75rem; }
-        .cw .checkgrid label { display: flex; align-items: flex-start; gap: .5rem; margin: 0; font-size: .9rem; line-height: 1.35; font-weight: 400; cursor: pointer; }
+        .cw .checkgrid label { display: flex; align-items: flex-start; gap: .55rem; margin: 0; font-size: 1.02rem; line-height: 1.4; font-weight: 400; cursor: pointer; }
         .cw .checkgrid input { margin-top: .15rem; accent-color: var(--ink); }
         .cw .choicegrid { display: flex; flex-wrap: wrap; gap: .45rem; margin: .15rem 0 .2rem; }
-        .cw .choicegrid button { border: 1px solid rgba(17,17,17,.4); background: rgba(255,255,255,.28); color: var(--ink); border-radius: 999px; padding: .6rem 1rem; font-family: inherit; font-size: .95rem; font-weight: 500; cursor: pointer; }
+        .cw .choicegrid button { border: 1px solid rgba(17,17,17,.4); background: rgba(255,255,255,.28); color: var(--ink); border-radius: 999px; padding: .65rem 1.1rem; font-family: inherit; font-size: 1rem; font-weight: 500; cursor: pointer; }
         .cw .choicegrid button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 
         .cw .paketi { display: grid; grid-template-columns: 1fr 1.15fr 1fr; margin-top: .6rem; border-top: 1px solid rgba(17,17,17,.18); }
