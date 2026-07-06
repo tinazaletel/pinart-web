@@ -59,7 +59,7 @@ const TONI: { id: TonPonudbe; ime: string }[] = [
   { id: 'direktno', ime: 'Neformalno' },
 ];
 
-type ProjektnoVprasanje = { id: string; label: string; placeholder?: string; izbire?: string[] };
+type ProjektnoVprasanje = { id: string; label: string; placeholder?: string; izbire?: string[]; vec?: boolean };
 
 const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
   logo: [
@@ -79,7 +79,7 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'opomba', label: 'Opomba (neobvezno)', placeholder: 'karkoli, kar naj upoštevam vnaprej ...' },
   ],
   web: [
-    { id: 'tip', label: 'Kaj ustvarjamo ali prenavljamo?', placeholder: 'nova spletna stran, redesign, landing page, portfolio, trgovina, custom aplikacija ...' },
+    { id: 'tip', label: 'Kaj ustvarjamo ali prenavljamo?', izbire: ['Nova spletna stran', 'Prenova (redesign)', 'Landing page', 'Portfolio', 'Spletna trgovina', 'Custom aplikacija'], vec: true },
     { id: 'stil', label: 'Kakšne so oblikovalske preference ali reference?', placeholder: 'stil, barve, primeri strani, občutek znamke, kaj jim je všeč / ni všeč ...' },
     { id: 'kompleksnost', label: 'Kako kompleksen je projekt?' },
     { id: 'strani', label: 'Koliko podstrani ali ključnih ekranov pričakuješ?', placeholder: 'npr. 5 podstrani + kontakt + blog' },
@@ -1305,16 +1305,23 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <label htmlFor={'cw-vp-' + vp.key}>{vp.label}</label>
                     {vp.izbire ? (
                       <div className="choicegrid">
-                        {vp.izbire.map(vrednost => (
-                          <button
-                            key={vrednost}
-                            type="button"
-                            className={odgovori[vp.key] === vrednost ? 'on' : ''}
-                            onClick={() => setOdgovori({ ...odgovori, [vp.key]: odgovori[vp.key] === vrednost ? '' : vrednost })}
-                          >
-                            {vrednost}
-                          </button>
-                        ))}
+                        {vp.izbire.map(vrednost => {
+                          const izbrane_v = vp.vec ? (odgovori[vp.key] || '').split(' + ').filter(Boolean) : [];
+                          const aktiven = vp.vec ? izbrane_v.includes(vrednost) : odgovori[vp.key] === vrednost;
+                          const nova = vp.vec
+                            ? (aktiven ? izbrane_v.filter(x => x !== vrednost) : [...izbrane_v, vrednost]).join(' + ')
+                            : (aktiven ? '' : vrednost);
+                          return (
+                            <button
+                              key={vrednost}
+                              type="button"
+                              className={aktiven ? 'on' : ''}
+                              onClick={() => setOdgovori({ ...odgovori, [vp.key]: nova })}
+                            >
+                              {vp.vec && aktiven ? '✓ ' : ''}{vrednost}
+                            </button>
+                          );
+                        })}
                       </div>
                     ) : trenutnaSkupina.id === 'web' && vp.id === 'kompleksnost' ? (
                       <div className="choicegrid">
