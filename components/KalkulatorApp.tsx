@@ -1169,6 +1169,26 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         }
       `}</style>
 
+              {kazemZajem && (
+                <div className="soglasje" role="dialog" aria-modal="true" aria-label={kazemZajem === 'profil' ? 'Shrani profil' : 'Prenesi ponudbo'}>
+                  <div className="soglasje-kartica zajem">
+                    <h2 style={{ fontFamily: 'var(--font-serif), Didot, serif', fontWeight: 500, fontSize: 'clamp(1.5rem, 4vw, 2rem)', margin: '0 0 1rem' }}>
+                      {kazemZajem === 'profil' ? 'Shrani svoje cene kot profil' : 'Prenesi ponudbo'}
+                    </h2>
+                  {!imamKontakt && (
+                    <>
+                      <p>Ime in email sta neobvezna; profil lahko shraniš tudi brez tega. Z oddajo se strinjaš s <a href={`/${locale}/kalkulator/pogoji`} style={{ color: 'var(--ink)' }}>pogoji uporabe</a>.</p>
+                      <div className="polje">
+                        <label htmlFor="cw-zime">Ime</label>
+                        <input id="cw-zime" value={leadIme} onChange={e => setLeadIme(e.target.value)} />
+                      </div>
+                      <div className="polje">
+                        <label htmlFor="cw-zemail">Email</label>
+                        <input id="cw-zemail" type="email" value={leadEmail} onChange={e => setLeadEmail(e.target.value)} />
+                      </div>
+                    </>
+                  )}
+
       {pogojiOk === false && (
         <div className="soglasje" role="dialog" aria-modal="true" aria-label="Pogoji uporabe">
           <div className="soglasje-kartica">
@@ -1779,25 +1799,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 </button>
               </div>
 
-              {kazemZajem && (
-                <div className="soglasje" role="dialog" aria-modal="true" aria-label={kazemZajem === 'profil' ? 'Shrani profil' : 'Prenesi ponudbo'}>
-                  <div className="soglasje-kartica zajem">
-                    <h2 style={{ fontFamily: 'var(--font-serif), Didot, serif', fontWeight: 500, fontSize: 'clamp(1.5rem, 4vw, 2rem)', margin: '0 0 1rem' }}>
-                      {kazemZajem === 'profil' ? 'Shrani svoje cene kot profil' : 'Prenesi ponudbo'}
-                    </h2>
-                  {!imamKontakt && (
-                    <>
-                      <p>Ime in email sta neobvezna; profil lahko shraniš tudi brez tega. Z oddajo se strinjaš s <a href={`/${locale}/kalkulator/pogoji`} style={{ color: 'var(--ink)' }}>pogoji uporabe</a>.</p>
-                      <div className="polje">
-                        <label htmlFor="cw-zime">Ime</label>
-                        <input id="cw-zime" value={leadIme} onChange={e => setLeadIme(e.target.value)} />
-                      </div>
-                      <div className="polje">
-                        <label htmlFor="cw-zemail">Email</label>
-                        <input id="cw-zemail" type="email" value={leadEmail} onChange={e => setLeadEmail(e.target.value)} />
-                      </div>
-                    </>
-                  )}
+
                   {kazemZajem === 'profil' && (
                     <div className="polje">
                       <label htmlFor="cw-zprofil">Ime profila</label>
