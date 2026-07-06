@@ -118,6 +118,21 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
   ],
 };
 
+const WEB_FUNKCIONALNOSTI = [
+  'CMS / urejanje vsebin',
+  'Kontaktni obrazci',
+  'Večjezičnost',
+  'Blog / novice',
+  'SEO osnova',
+  'Newsletter prijava',
+  'E-trgovina / plačila',
+  'Booking / rezervacije',
+  'Članski dostop / prijava',
+  'Animacije',
+  'Analitika',
+  'Integracije z zunanjimi orodji',
+];
+
 /* Kje preveris prihodke/dobicek narocnika po trgih — za vrednostno oceno.
    Javni registri dajo osnovne podatke; prihodke zasebnih podjetij pogosto
    le ocenis (D&B, LinkedIn stevilo zaposlenih). Zadnja dva sta univerzalna. */
@@ -269,6 +284,18 @@ type Profil = {
 };
 
 export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
+  /* Vstopno soglasje (kot Paperform): pogoji pred prvo uporabo orodja.
+     Sprejem se shrani lokalno; ob naslednjih obiskih se ne prikaze vec. */
+  const [pogojiOk, setPogojiOk] = useState<boolean | null>(null);
+  useEffect(() => {
+    try { setPogojiOk(localStorage.getItem('pinart-kalk-pogoji-ok') === '1'); }
+    catch { setPogojiOk(true); }
+  }, []);
+  const sprejmiPogoje = () => {
+    try { localStorage.setItem('pinart-kalk-pogoji-ok', '1'); } catch { /* ignoriraj */ }
+    setPogojiOk(true);
+  };
+
   /* carovnik: en korak naenkrat, fade-in from bottom (nuSchool slog) */
   const editorRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -424,6 +451,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     return vseStoritve
       .filter(s => izbrane.has(s.id))
       .map(s => ({
+        id: s.id,
         storitev: s.ime,
         vprasanja: (VPRASANJA_PO_STORITVI[s.id] ?? []).map(v => ({ ...v, storitev: s.ime, key: `${s.id}:${v.id}` })),
       }))
@@ -487,7 +515,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     postavke.forEach(x => v.push(`· ${x.ime}${x.kolicina > 1 ? ' × ' + x.kolicina : ''}`));
     v.push('· [dopolni po potrebi]');
     const dodatniOdgovori = aktivnaVprasanja
-      .map(vp => ({ ...vp, odgovor: (odgovori[vp.key] || '').trim() }))
+      .map(vp => ({
+        ...vp,
+        odgovor: [odgovori[vp.key], odgovori[vp.key + ':drugo']]
+          .map(vrednost => (vrednost || '').trim())
+          .filter(Boolean)
+          .join(' · '),
+      }))
       .filter(vp => vp.odgovor);
     if (dodatniOdgovori.length) {
       v.push('');
@@ -645,6 +679,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const n = new Set(set);
     if (n.has(id)) n.delete(id); else n.add(id);
     fn(n);
+  };
+
+  const preklopiOdgovor = (key: string, vrednost: string) => {
+    const izbraneVrednosti = (odgovori[key] || '').split(' · ').filter(Boolean);
+    const n = izbraneVrednosti.includes(vrednost)
+      ? izbraneVrednosti.filter(v => v !== vrednost)
+      : [...izbraneVrednosti, vrednost];
+    setOdgovori({ ...odgovori, [key]: n.join(' · ') });
   };
 
   const sinhronizirajEditor = () => {
@@ -845,6 +887,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       <style>{`
         .cw { min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 300; }
 
+        .cw .soglasje { position: fixed; inset: 0; z-index: 60; background: var(--paper); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+        .cw .soglasje-kartica { max-width: 580px; }
+        .cw .soglasje-kartica h2 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(2rem, 6vw, 3rem); line-height: 1.05; margin: 0 0 1.2rem; }
+        .cw .soglasje-kartica ul { margin: 0 0 1.8rem; padding-left: 1.1rem; }
+        .cw .soglasje-kartica li { font-size: .95rem; line-height: 1.7; color: rgba(17,17,17,.8); margin-bottom: .7rem; }
+        .cw .soglasje-gumbi { display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap; }
         .cw .napredek { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(17,17,17,.1); z-index: 40; }
         .cw .napredek i { display: block; height: 100%; background: var(--ink); transition: width .5s cubic-bezier(.16,1,.3,1); }
 
@@ -927,6 +975,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .vp small { display: block; margin-bottom: .35rem; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(17,17,17,.5); font-weight: 700; }
         .cw .vp label { display: block; margin-bottom: .55rem; font-weight: 600; color: var(--ink); }
         .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: .95rem; line-height: 1.55; background: rgba(255,255,255,.38); padding: .9rem 1rem; }
+        .cw .checkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem .7rem; margin: .15rem 0 .75rem; }
+        .cw .checkgrid label { display: flex; align-items: flex-start; gap: .5rem; margin: 0; font-size: .9rem; line-height: 1.35; font-weight: 400; cursor: pointer; }
+        .cw .checkgrid input { margin-top: .15rem; accent-color: var(--ink); }
 
         .cw .paketi { display: grid; grid-template-columns: 1fr 1.15fr 1fr; margin-top: .6rem; border-top: 1px solid rgba(17,17,17,.18); }
         @media (max-width: 640px) { .cw .paketi { grid-template-columns: 1fr; } }
@@ -1025,6 +1076,23 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           .cw .noga .gumb { padding-left: 1.35rem; padding-right: 1.35rem; }
         }
       `}</style>
+
+      {pogojiOk === false && (
+        <div className="soglasje" role="dialog" aria-modal="true" aria-label="Pogoji uporabe">
+          <div className="soglasje-kartica">
+            <h2>Preden začneš</h2>
+            <ul>
+              <li>Kalkulator je informativno orodje. Priporočene cene so strokovna ocena, ne izmerjeni tržni podatki, zato ne jamčimo, da so prave za tvoj primer.</li>
+              <li>Za cene v svojih ponudbah se odločaš sam in zanje sam odgovarjaš.</li>
+              <li>Ob prikazu izračuna anonimno zabeležimo izbrane kategorije in zneske (brez imena, e-naslova ali IP) za skupno statistiko cen na trgu.</li>
+            </ul>
+            <div className="soglasje-gumbi">
+              <button type="button" className="gumb" onClick={sprejmiPogoje}>Razumem, začni →</button>
+              <a className="povezava" href={`/${locale}/kalkulator/pogoji`}>Preberi celotne pogoje</a>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="napredek" aria-hidden><i style={{ width: `${((korak + 1) / KORAKOV) * 100}%` }} /></div>
 
@@ -1192,12 +1260,35 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 {trenutnaSkupina.vprasanja.map(vp => (
                   <div key={vp.key} className="vp">
                     <label htmlFor={'cw-vp-' + vp.key}>{vp.label}</label>
-                    <textarea
-                      id={'cw-vp-' + vp.key}
-                      value={odgovori[vp.key] || ''}
-                      placeholder={vp.placeholder || 'Kratek odgovor, lahko pustiš prazno.'}
-                      onChange={e => setOdgovori({ ...odgovori, [vp.key]: e.target.value })}
-                    />
+                    {trenutnaSkupina.id === 'web' && vp.id === 'funkcije' ? (
+                      <>
+                        <div className="checkgrid">
+                          {WEB_FUNKCIONALNOSTI.map(f => (
+                            <label key={f}>
+                              <input
+                                type="checkbox"
+                                checked={(odgovori[vp.key] || '').split(' · ').includes(f)}
+                                onChange={() => preklopiOdgovor(vp.key, f)}
+                              />
+                              <span>{f}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <textarea
+                          id={'cw-vp-' + vp.key}
+                          value={odgovori[vp.key + ':drugo'] || ''}
+                          placeholder="Drugo ali bolj specifično: npr. kalkulator, portal, konfigurator, povezava z ERP ..."
+                          onChange={e => setOdgovori({ ...odgovori, [vp.key + ':drugo']: e.target.value })}
+                        />
+                      </>
+                    ) : (
+                      <textarea
+                        id={'cw-vp-' + vp.key}
+                        value={odgovori[vp.key] || ''}
+                        placeholder={vp.placeholder || 'Kratek odgovor, lahko pustiš prazno.'}
+                        onChange={e => setOdgovori({ ...odgovori, [vp.key]: e.target.value })}
+                      />
+                    )}
                   </div>
                 ))}
               </div>

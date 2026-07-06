@@ -41,10 +41,21 @@ export default async function KalkulatorPogojiPage({
         <section style={S}>
           <h2 style={H}>1. Informativna narava izračunov</h2>
           <p style={P}>
-            Vsi izračuni, cene, razponi in besedila ponudb so zgolj informativne in
-            orientacijske narave. Ne predstavljajo cenovnega, davčnega, računovodskega
-            ali pravnega svetovanja. Za vsebino, cene in pravno ustreznost ponudb, ki
-            jih na podlagi orodja pošlješ svojim naročnikom, odgovarjaš izključno sam.
+            Vsi izračuni, cene, razponi in besedila ponudb so zgolj informativni in
+            orientacijski. <strong>Ne jamčimo, da orodje izračuna pravo ceno za tvoj
+            primer.</strong> Izračuni ne predstavljajo cenovnega, davčnega,
+            računovodskega ali pravnega svetovanja. Za cene v svojih ponudbah se
+            odločaš sam in zanje odgovarjaš izključno sam.
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>1a. Od kod priporočene cene</h2>
+          <p style={P}>
+            Privzete cene in množitelji so strokovna ocena avtorice orodja na podlagi
+            njenih izkušenj in javno dostopnih virov. <strong>Zaenkrat ne temeljijo na
+            izmerjenih tržnih podatkih</strong>; anonimna statistika (točka 5) tako
+            bazo šele gradi. Vse zneske lahko in naj prilagodiš svojim razmeram.
           </p>
         </section>
 
@@ -79,10 +90,13 @@ export default async function KalkulatorPogojiPage({
         <section style={S}>
           <h2 style={H}>5. Anonimna statistika cen</h2>
           <p style={P}>
-            Ob prikazu izračuna orodje anonimno zabeleži cenovno točko: vrsto storitev,
-            raven izkušenj, trga, rabo ter izračunane zneske. Zapis ne vsebuje imena,
-            e-naslova, IP-naslova ali drugih osebnih podatkov in ga ni mogoče povezati
-            s teboj. Namen je skupna statistika cen na trgu za kreativce.
+            Ob prvem prikazu izračuna v seji orodje anonimno zabeleži natanko tole:
+            izbrane storitve, raven izkušenj, tvoj trg, trg naročnika, vrsto rabe
+            (znamka ali projekt), izračunan znesek izvedbe in avtorskih pravic ter
+            valuto. Zapis ne vsebuje imena, e-naslova, IP-naslova ali drugih osebnih
+            podatkov in ga ni mogoče povezati s teboj. Podatki se shranijo v
+            ponudnikovo preglednico (Google Sheets) in se uporabijo izključno za
+            skupno statistiko cen na trgu za kreativce.
           </p>
         </section>
 
