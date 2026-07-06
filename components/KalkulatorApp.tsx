@@ -76,6 +76,7 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'stil', label: 'Ali že veš, kakšen slog želiš?', izbire: ['Minimalistično', 'Retro', 'Editorial', 'Luksuzno', 'Igrivo', 'Tehnološko', 'Organsko', 'Drzno', 'Še ne vem'], vec: true },
     { id: 'omejitve', label: 'Ali obstajajo barve, tipografije ali ideje, ki jih je treba upoštevati?', placeholder: 'npr. imamo moodboard, kupljeno pisavo, barvno paleto, primer znamk, ki so nam všeč' },
     { id: 'obseg', label: 'Na katerih materialih mora identiteta delovati?', placeholder: 'vizitke, embalaža, splet, družbena omrežja, prezentacije, tabla, vozila ...' },
+    { id: 'budget', label: 'Kakšen je okvirni budget naročnika?', izbire: ['Do 2.500 €', '2.500 do 5.000 €', 'Nad 5.000 €', 'Še ne vem'] },
     { id: 'opomba', label: 'Opomba (neobvezno)', placeholder: 'karkoli, kar naj upoštevam vnaprej ...' },
   ],
   web: [
