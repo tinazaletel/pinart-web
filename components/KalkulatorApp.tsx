@@ -1037,7 +1037,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .sub-vrsta { display: flex; justify-content: space-between; align-items: baseline; gap: 2rem; margin: 0 0 2.4rem; flex-wrap: wrap; }
         .cw .sub { font-size: clamp(1rem, 1.6vw, 1.2rem); line-height: 1.6; color: rgba(17,17,17,.72); margin: 0; max-width: 52ch; min-width: 0; }
 
-        .cw .opts { display: flex; flex-wrap: wrap; gap: .55rem; }
+        .cw .opts { display: flex; flex-wrap: wrap; gap: 1rem .65rem; }
         .cw .pill { padding: .8rem 1.3rem; border: 1px solid rgba(17,17,17,.25); border-radius: 999px; cursor: pointer; font-size: 1rem; background: transparent; font-family: inherit; font-weight: 400; color: var(--ink); transition: border-color .18s ease, background .18s ease, color .18s ease; text-align: left; line-height: 1.25; }
         .cw .pill small { display: block; font-size: .82rem; color: rgba(17,17,17,.82); font-weight: 400; margin-top: .1rem; }
         .cw .pill:hover { border-color: var(--ink); }
@@ -1108,7 +1108,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .checkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem .7rem; margin: .15rem 0 .75rem; }
         .cw .checkgrid label { display: flex; align-items: flex-start; gap: .55rem; margin: 0; font-size: 1.02rem; line-height: 1.4; font-weight: 400; cursor: pointer; }
         .cw .checkgrid input { margin-top: .15rem; accent-color: var(--ink); }
-        .cw .choicegrid { display: flex; flex-wrap: wrap; gap: .45rem; margin: .15rem 0 .2rem; }
+        .cw .choicegrid { display: flex; flex-wrap: wrap; gap: .8rem .55rem; margin: .15rem 0 .2rem; }
         .cw .choicegrid button { border: 1px solid rgba(17,17,17,.4); background: rgba(255,255,255,.28); color: var(--ink); border-radius: 999px; padding: .65rem 1.1rem; font-family: inherit; font-size: 1rem; font-weight: 500; cursor: pointer; }
         .cw .choicegrid button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 
