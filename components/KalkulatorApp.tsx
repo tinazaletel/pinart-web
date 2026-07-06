@@ -320,8 +320,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      Sprejem se shrani lokalno; ob naslednjih obiskih se ne prikaze vec. */
   const [pogojiOk, setPogojiOk] = useState<boolean | null>(null);
   useEffect(() => {
-    try { setPogojiOk(localStorage.getItem('pinart-kalk-pogoji-ok') === '1'); }
-    catch { setPogojiOk(true); }
+    try {
+      /* ?soglasje v URL ponastavi sprejem — za testiranje in ponoven ogled */
+      if (new URL(window.location.href).searchParams.has('soglasje')) {
+        localStorage.removeItem('pinart-kalk-pogoji-ok');
+      }
+      setPogojiOk(localStorage.getItem('pinart-kalk-pogoji-ok') === '1');
+    } catch { setPogojiOk(true); }
   }, []);
   const sprejmiPogoje = () => {
     try { localStorage.setItem('pinart-kalk-pogoji-ok', '1'); } catch { /* ignoriraj */ }
