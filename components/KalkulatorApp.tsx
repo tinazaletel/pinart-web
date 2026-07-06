@@ -267,6 +267,9 @@ const KATALOG = [
   { id: 'lokacija',     ime: 'Lokacija in prevoz (pavšal)',       cena: 120 },
   { id: 'font-licenca', ime: 'Licenca pisave (za tisk)',          cena: 150 },
   { id: 'sw-strosek',   ime: 'Programska oprema / naročnine (projekt)', cena: 100 },
+  { id: 'zvok',         ime: 'Zvočna podoba / jingle',            cena: 400 },
+  { id: '3d-render',    ime: '3D vizualizacija / render (kos)',   cena: 350 },
+  { id: 'motion',       ime: 'Motion graphics video (do 30 s)',   cena: 600 },
   { id: 'foto-produkt', ime: 'Fotografiranje produktov (dan)',    cena: 600 },
   { id: 'foto-portret', ime: 'Fotografiranje portretov / ekipe',  cena: 450 },
   { id: 'foto-dogodek', ime: 'Fotografiranje dogodka (dan)',      cena: 550 },
@@ -1339,7 +1342,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 ))}
                 <button type="button" className="pill dodaj" onClick={() => setKazemDodaj(!kazemDodaj)}>
                   <span className="pi" aria-hidden><Plus size={19} /></span>
-                  <span>dodaj postavko<small>foto, video, AI, besedila, svoje …</small></span>
+                  <span>dodaj postavko<small>animacija, zvok, 3D, AI, svoje …</small></span>
                 </button>
               </div>
 
