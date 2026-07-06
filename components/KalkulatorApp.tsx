@@ -1126,9 +1126,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <li>Tvoje cene, postavke in podatki ostanejo shranjeni samo v tvojem brskalniku.</li>
               <li>Ob prikazu izračuna anonimno zabeležimo izbrane kategorije in zneske (brez imena, e-naslova ali IP). S tem skupaj gradimo prvo statistiko cen za kreativce: ko bo baza dovolj velika, boš videl, koliko kolegi s podobnimi izkušnjami dejansko računajo. Nihče drug tega podatka danes nima.</li>
             </ul>
-            <div className="soglasje-gumbi">
-              <button type="button" className="gumb" onClick={sprejmiPogoje}>Razumem, gremo →</button>
+            <div className="soglasje-gumbi" style={{ justifyContent: 'space-between' }}>
               <a className="povezava" href={`/${locale}/kalkulator/pogoji`}>Preberi celotne pogoje</a>
+              <button type="button" className="gumb" onClick={sprejmiPogoje}>Razumem, gremo →</button>
             </div>
           </div>
         </div>
