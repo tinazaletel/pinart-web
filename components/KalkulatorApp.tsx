@@ -924,9 +924,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       <style>{`
         .cw { min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 300; }
 
-        .cw .soglasje { position: fixed; inset: 0; z-index: 60; background: var(--paper); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
-        .cw .soglasje-kartica { max-width: 580px; }
-        .cw .soglasje-kartica h2 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(2rem, 6vw, 3rem); line-height: 1.05; margin: 0 0 1.2rem; }
+        .cw .soglasje { position: fixed; inset: 0; z-index: 60; background: rgba(245,242,234,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+        .cw .soglasje-kartica { max-width: 540px; background: var(--paper); border: 1px solid rgba(17,17,17,.25); border-radius: 16px; padding: clamp(1.6rem, 4vw, 2.6rem); box-shadow: 0 24px 80px rgba(17,17,17,.12); }
+        .cw .soglasje-kartica h2 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 4.5vw, 2.4rem); line-height: 1.05; margin: 0 0 1.1rem; }
         .cw .soglasje-kartica ul { margin: 0 0 1.8rem; padding-left: 1.1rem; }
         .cw .soglasje-kartica li { font-size: .95rem; line-height: 1.7; color: rgba(17,17,17,.8); margin-bottom: .7rem; }
         .cw .soglasje-gumbi { display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap; }
@@ -1120,14 +1120,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       {pogojiOk === false && (
         <div className="soglasje" role="dialog" aria-modal="true" aria-label="Pogoji uporabe">
           <div className="soglasje-kartica">
-            <h2>Preden začneš</h2>
+            <h2>Samo troje, preden začneš</h2>
             <ul>
-              <li>Kalkulator je informativno orodje. Priporočene cene so strokovna ocena, ne izmerjeni tržni podatki, zato ne jamčimo, da so prave za tvoj primer.</li>
-              <li>Za cene v svojih ponudbah se odločaš sam in zanje sam odgovarjaš.</li>
-              <li>Ob prikazu izračuna anonimno zabeležimo izbrane kategorije in zneske (brez imena, e-naslova ali IP). S tem skupaj gradimo prvo statistiko cen za kreativce: ko bo baza dovolj velika, boš videl, koliko kolegi s podobnimi izkušnjami na tvojem trgu dejansko računajo. Nihče drug tega podatka danes nima.</li>
+              <li>Priporočene cene so pametno izhodišče, ne uradni cenik: nastale so iz izkušenj, tržno bazo pa šele gradimo. Svobodno jih prilagodi — končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.</li>
+              <li>Tvoje cene, postavke in podatki ostanejo shranjeni samo v tvojem brskalniku.</li>
+              <li>Ob prikazu izračuna anonimno zabeležimo izbrane kategorije in zneske (brez imena, e-naslova ali IP). S tem skupaj gradimo prvo statistiko cen za kreativce: ko bo baza dovolj velika, boš videl, koliko kolegi s podobnimi izkušnjami dejansko računajo. Nihče drug tega podatka danes nima.</li>
             </ul>
             <div className="soglasje-gumbi">
-              <button type="button" className="gumb" onClick={sprejmiPogoje}>Razumem, začni →</button>
+              <button type="button" className="gumb" onClick={sprejmiPogoje}>Razumem, gremo →</button>
               <a className="povezava" href={`/${locale}/kalkulator/pogoji`}>Preberi celotne pogoje</a>
             </div>
           </div>
