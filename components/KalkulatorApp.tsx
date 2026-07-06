@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package,
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
@@ -1779,8 +1780,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 </button>
               </div>
 
-              {kazemZajem && (
-                <div className="soglasje" role="dialog" aria-modal="true" aria-label={kazemZajem === 'profil' ? 'Shrani profil' : 'Prenesi ponudbo'}>
+              {kazemZajem && typeof document !== 'undefined' && createPortal(
+                <div className="cw soglasje" role="dialog" aria-modal="true" aria-label={kazemZajem === 'profil' ? 'Shrani profil' : 'Prenesi ponudbo'}>
                   <div className="soglasje-kartica zajem">
                     <h2 style={{ fontFamily: 'var(--font-serif), Didot, serif', fontWeight: 500, fontSize: 'clamp(1.5rem, 4vw, 2rem)', margin: '0 0 1rem' }}>
                       {kazemZajem === 'profil' ? 'Shrani svoje cene kot profil' : 'Prenesi ponudbo'}
@@ -1813,7 +1814,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </div>
                   </div>
                 </div>
-              )}
+              , document.body)}
 
               {Object.keys(profili).length > 0 && (
                 <div className="profili">
