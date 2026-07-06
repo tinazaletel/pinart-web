@@ -134,9 +134,19 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       if (!hash) return;
       // Refresh first so ScrollTrigger has correct positions after any
       // layout shifts caused by pinart-skip-ink (TypographyCollapse expanding).
-      // Then scroll — triggers fire correctly as Lenis animates through them.
       ScrollTrigger.refresh();
-      scrollToHash(hash);
+      // Meni = zavesa + TAKOJSEN preskok (ne animirana voznja cez sekcije).
+      // Zaveso je Nav ze dvignil ob kliku; tu pocakamo, da je polna,
+      // skocimo pod njo in jo spustimo. Obiskovalec vidi samo "mezik".
+      setTimeout(() => {
+        scrollToHash(hash, true);
+        ScrollTrigger.update();
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('pinart-cover', { detail: { on: false } }));
+          }, 100);
+        }));
+      }, 60);
     };
 
     // ── scroll position save/restore for back navigation ───────────────────
@@ -158,11 +168,22 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       sessionStorage.setItem('pinart-back-nav', '1');
       setTimeout(() => sessionStorage.removeItem('pinart-back-nav'), 2000);
       window.dispatchEvent(new CustomEvent('pinart-skip-ink'));
-      // First refresh — components may not be mounted yet
+      // First refresh — components may not be mounted yet. Also try an
+      // EARLY scroll restore so the page doesn't sit at the top (black
+      // hero finale) until the final 800ms restore; the 800ms pass below
+      // corrects the position again once layout has fully settled.
       setTimeout(() => {
         lenis.start();
         ScrollTrigger.refresh();
         window.dispatchEvent(new CustomEvent('pinart-skip-ink'));
+        const early = sessionStorage.getItem(`scroll:${window.location.pathname}`);
+        if (early) {
+          lenis.scrollTo(parseInt(early), { immediate: true, force: true });
+          ScrollTrigger.update();
+        }
+        // Povej zavesi (PageTransition), da je polozaj obnovljen in se
+        // lahko umakne — namesto cakanja na fiksni timeout.
+        window.dispatchEvent(new CustomEvent('pinart-back-restored'));
       }, 100);
       // Second refresh — after all components have mounted and painted
       setTimeout(() => {
