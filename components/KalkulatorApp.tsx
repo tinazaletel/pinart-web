@@ -1122,7 +1122,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .povezava { font-family: inherit; font-size: .88rem; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .28em; padding: 0; display: inline-flex; align-items: center; gap: .38rem; }
         .cw .povezava:hover { opacity: .6; }
 
-        .cw .zajem { border-top: 1px solid rgba(17,17,17,.18); margin-top: 1.8rem; padding-top: 1.4rem; max-width: 400px; }
+        .cw .zajem { max-width: 420px; }
         .cw .zajem p { margin: 0 0 1rem; font-size: .85rem; line-height: 1.65; color: rgba(17,17,17,.75); }
         .cw .zajem .polje { margin-bottom: 1rem; }
         .cw .zajem .polje input { font-size: 1.1rem; font-family: inherit; }
@@ -1780,7 +1780,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </div>
 
               {kazemZajem && (
-                <div className="zajem">
+                <div className="soglasje" role="dialog" aria-modal="true" aria-label={kazemZajem === 'profil' ? 'Shrani profil' : 'Prenesi ponudbo'}>
+                  <div className="soglasje-kartica zajem">
+                    <h2 style={{ fontFamily: 'var(--font-serif), Didot, serif', fontWeight: 500, fontSize: 'clamp(1.5rem, 4vw, 2rem)', margin: '0 0 1rem' }}>
+                      {kazemZajem === 'profil' ? 'Shrani svoje cene kot profil' : 'Prenesi ponudbo'}
+                    </h2>
                   {!imamKontakt && (
                     <>
                       <p>Ime in email sta neobvezna; profil lahko shraniš tudi brez tega. Z oddajo se strinjaš s <a href={`/${locale}/kalkulator/pogoji`} style={{ color: 'var(--ink)' }}>pogoji uporabe</a>.</p>
@@ -1806,6 +1810,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       ? <button type="button" className="gumb" onClick={shraniProfil}>Shrani profil</button>
                       : <button type="button" className="gumb" disabled={!imamKontakt} onClick={potrdiZajem}>Potrdi in prenesi</button>}
                     <button type="button" className="povezava" onClick={() => setKazemZajem(null)}>Prekliči</button>
+                  </div>
                   </div>
                 </div>
               )}
