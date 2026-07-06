@@ -64,8 +64,10 @@ type ProjektnoVprasanje = { id: string; label: string; placeholder?: string; izb
 const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
   logo: [
     { id: 'cilj', label: 'Kaj mora nov znak sporočati?', placeholder: 'npr. bolj premium, bolj zaupanja vredno, bolj igrivo' },
+    { id: 'kompleksnost', label: 'Kako kompleksen naj bo logotip?', izbire: ['Enostaven napis ali znak', 'Znak + tipografija (kombiniran)', 'Družina znakov / več različic'] },
     { id: 'uporaba', label: 'Kje se bo najpogosteje uporabljal?', placeholder: 'splet, embalaža, tabla, app ikona, vozila ...' },
     { id: 'omejitve', label: 'Ali že obstajajo barve, pisave ali simboli, ki morajo ostati?' },
+    { id: 'budget', label: 'Kakšen je okvirni budget naročnika?', izbire: ['Do 1.000 €', '1.000 do 2.500 €', 'Nad 2.500 €', 'Še ne vem'] },
   ],
   cgp: [
     { id: 'stanje', label: 'Ali že obstaja logotip ali predhodni CGP?', izbire: ['Začenjamo iz nič', 'Imamo samo logotip', 'Imamo star CGP'] },
