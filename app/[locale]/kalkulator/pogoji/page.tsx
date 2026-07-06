@@ -96,7 +96,7 @@ export default async function KalkulatorPogojiPage({
             valuto. Zapis ne vsebuje imena, e-naslova, IP-naslova ali drugih osebnih
             podatkov in ga ni mogoče povezati s teboj. Podatki se shranijo v
             ponudnikovo preglednico (Google Sheets) in se uporabijo izključno za
-            skupno statistiko cen na trgu za kreativce.
+            skupno statistiko cen na trgu za kreativce. Ko bo baza dovolj velika, bodo zbirni podatki (npr. mediane cen po storitvah in izkušnjah) na voljo uporabnikom orodja — vsak izračun torej prispeva k pregledu trga, ki ga kreativci danes nimamo.
           </p>
         </section>
 

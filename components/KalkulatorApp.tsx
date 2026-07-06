@@ -76,9 +76,14 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'obseg', label: 'Na katerih materialih mora identiteta delovati?', placeholder: 'vizitke, embalaža, splet, družbena omrežja, prezentacije, tabla, vozila ...' },
   ],
   web: [
-    { id: 'tip', label: 'Kakšen tip spletne strani potrebuješ?', placeholder: 'landing page, portfolio, corporate site, trgovina, booking, blog ...' },
+    { id: 'tip', label: 'Kaj ustvarjamo ali prenavljamo?', placeholder: 'nova spletna stran, redesign, landing page, portfolio, trgovina, custom aplikacija ...' },
+    { id: 'stil', label: 'Kakšne so oblikovalske preference ali reference?', placeholder: 'stil, barve, primeri strani, občutek znamke, kaj jim je všeč / ni všeč ...' },
+    { id: 'kompleksnost', label: 'Kako kompleksen je projekt?' },
     { id: 'strani', label: 'Koliko podstrani ali ključnih ekranov pričakuješ?', placeholder: 'npr. 5 podstrani + kontakt + blog' },
-    { id: 'funkcije', label: 'Katere funkcionalnosti so nujne?', placeholder: 'CMS, obrazci, plačila, prijave, več jezikov, animacije, SEO ...' },
+    { id: 'funkcije', label: 'Katere funkcionalnosti so nujne?' },
+    { id: 'budget', label: 'Kakšen je okvirni budget?' },
+    { id: 'rok', label: 'Kdaj mora stran zaživeti?', placeholder: 'npr. v 1 mesecu, 2-3 meseci, do dogodka, ni nujno ...' },
+    { id: 'dodatno', label: 'Ali potrebuješ dodatne storitve?' },
     { id: 'vsebina', label: 'Kdo pripravi besedila, slike in strukturo vsebine?' },
   ],
   kampanja: [
@@ -131,6 +136,33 @@ const WEB_FUNKCIONALNOSTI = [
   'Animacije',
   'Analitika',
   'Integracije z zunanjimi orodji',
+];
+
+const WEB_KOMPLEKSNOST = [
+  'Osnovna predstavitvena stran',
+  'Standardna poslovna stran',
+  'Napredna stran z več funkcijami',
+  'Kompleksna aplikacija / portal',
+];
+
+const WEB_BUDGETI = [
+  'do 2.500 €',
+  '2.500-5.000 €',
+  '5.000-10.000 €',
+  '10.000-25.000 €',
+  '25.000 €+',
+  'Ne vem še',
+];
+
+const WEB_DODATNE_STORITVE = [
+  'Hosting / domena',
+  'Vzdrževanje',
+  'SEO optimizacija',
+  'Copywriting',
+  'Fotografija / video',
+  'Migracija vsebin',
+  'Izobraževanje za urejanje',
+  'Dostopnost / WCAG pregled',
 ];
 
 /* Kje preveris prihodke/dobicek narocnika po trgih — za vrednostno oceno.
@@ -978,6 +1010,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .checkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem .7rem; margin: .15rem 0 .75rem; }
         .cw .checkgrid label { display: flex; align-items: flex-start; gap: .5rem; margin: 0; font-size: .9rem; line-height: 1.35; font-weight: 400; cursor: pointer; }
         .cw .checkgrid input { margin-top: .15rem; accent-color: var(--ink); }
+        .cw .choicegrid { display: flex; flex-wrap: wrap; gap: .45rem; margin: .15rem 0 .2rem; }
+        .cw .choicegrid button { border: 1px solid rgba(17,17,17,.22); background: rgba(255,255,255,.28); color: var(--ink); border-radius: 999px; padding: .55rem .85rem; font-family: inherit; font-size: .86rem; cursor: pointer; }
+        .cw .choicegrid button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 
         .cw .paketi { display: grid; grid-template-columns: 1fr 1.15fr 1fr; margin-top: .6rem; border-top: 1px solid rgba(17,17,17,.18); }
         @media (max-width: 640px) { .cw .paketi { grid-template-columns: 1fr; } }
@@ -1084,7 +1119,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <ul>
               <li>Kalkulator je informativno orodje. Priporočene cene so strokovna ocena, ne izmerjeni tržni podatki, zato ne jamčimo, da so prave za tvoj primer.</li>
               <li>Za cene v svojih ponudbah se odločaš sam in zanje sam odgovarjaš.</li>
-              <li>Ob prikazu izračuna anonimno zabeležimo izbrane kategorije in zneske (brez imena, e-naslova ali IP) za skupno statistiko cen na trgu.</li>
+              <li>Ob prikazu izračuna anonimno zabeležimo izbrane kategorije in zneske (brez imena, e-naslova ali IP). S tem skupaj gradimo prvo statistiko cen za kreativce: ko bo baza dovolj velika, boš videl, koliko kolegi s podobnimi izkušnjami na tvojem trgu dejansko računajo. Nihče drug tega podatka danes nima.</li>
             </ul>
             <div className="soglasje-gumbi">
               <button type="button" className="gumb" onClick={sprejmiPogoje}>Razumem, začni →</button>
@@ -1260,7 +1295,33 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 {trenutnaSkupina.vprasanja.map(vp => (
                   <div key={vp.key} className="vp">
                     <label htmlFor={'cw-vp-' + vp.key}>{vp.label}</label>
-                    {trenutnaSkupina.id === 'web' && vp.id === 'funkcije' ? (
+                    {trenutnaSkupina.id === 'web' && vp.id === 'kompleksnost' ? (
+                      <div className="choicegrid">
+                        {WEB_KOMPLEKSNOST.map(vrednost => (
+                          <button
+                            key={vrednost}
+                            type="button"
+                            className={odgovori[vp.key] === vrednost ? 'on' : ''}
+                            onClick={() => setOdgovori({ ...odgovori, [vp.key]: vrednost })}
+                          >
+                            {vrednost}
+                          </button>
+                        ))}
+                      </div>
+                    ) : trenutnaSkupina.id === 'web' && vp.id === 'budget' ? (
+                      <div className="choicegrid">
+                        {WEB_BUDGETI.map(vrednost => (
+                          <button
+                            key={vrednost}
+                            type="button"
+                            className={odgovori[vp.key] === vrednost ? 'on' : ''}
+                            onClick={() => setOdgovori({ ...odgovori, [vp.key]: vrednost })}
+                          >
+                            {vrednost}
+                          </button>
+                        ))}
+                      </div>
+                    ) : trenutnaSkupina.id === 'web' && vp.id === 'funkcije' ? (
                       <>
                         <div className="checkgrid">
                           {WEB_FUNKCIONALNOSTI.map(f => (
@@ -1278,6 +1339,27 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                           id={'cw-vp-' + vp.key}
                           value={odgovori[vp.key + ':drugo'] || ''}
                           placeholder="Drugo ali bolj specifično: npr. kalkulator, portal, konfigurator, povezava z ERP ..."
+                          onChange={e => setOdgovori({ ...odgovori, [vp.key + ':drugo']: e.target.value })}
+                        />
+                      </>
+                    ) : trenutnaSkupina.id === 'web' && vp.id === 'dodatno' ? (
+                      <>
+                        <div className="checkgrid">
+                          {WEB_DODATNE_STORITVE.map(f => (
+                            <label key={f}>
+                              <input
+                                type="checkbox"
+                                checked={(odgovori[vp.key] || '').split(' · ').includes(f)}
+                                onChange={() => preklopiOdgovor(vp.key, f)}
+                              />
+                              <span>{f}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <textarea
+                          id={'cw-vp-' + vp.key}
+                          value={odgovori[vp.key + ':drugo'] || ''}
+                          placeholder="Drugo: npr. brand refresh, ilustracije, prevodi, email predloge ..."
                           onChange={e => setOdgovori({ ...odgovori, [vp.key + ':drugo']: e.target.value })}
                         />
                       </>
