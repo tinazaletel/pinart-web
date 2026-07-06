@@ -568,20 +568,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* reset postopnega prikaza ob vsakem koraku */
   useEffect(() => { setVidnaVprasanja(1); }, [korak]);
 
-  /* naslednje vprasanje po 4 s, tudi ce prejsnje ni odgovorjeno */
-  useEffect(() => {
-    if (!trenutnaSkupina) return;
-    if (vidnaVprasanja >= trenutnaSkupina.vprasanja.length) return;
-    const t = setTimeout(() => setVidnaVprasanja(v => v + 1), 4000);
-    return () => clearTimeout(t);
-  }, [trenutnaSkupina, vidnaVprasanja]);
-
   /* odgovor takoj odklene naslednje vprasanje */
   useEffect(() => {
     if (!trenutnaSkupina) return;
     let zadnjiOdgovorjen = -1;
     trenutnaSkupina.vprasanja.forEach((vp, i) => {
-      if ((odgovori[vp.key] || '').trim()) zadnjiOdgovorjen = i;
+      if (vp.izbire && (odgovori[vp.key] || '').trim()) zadnjiOdgovorjen = i;
     });
     if (zadnjiOdgovorjen + 2 > vidnaVprasanja) setVidnaVprasanja(zadnjiOdgovorjen + 2);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1513,6 +1505,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         placeholder={vp.placeholder || 'Kratek odgovor, lahko pustiš prazno.'}
                         onChange={e => setOdgovori({ ...odgovori, [vp.key]: e.target.value })}
                       />
+                    )}
+                    {vi === vidnaVprasanja - 1 && vidnaVprasanja < trenutnaSkupina.vprasanja.length && (
+                      <button type="button" className="povezava" style={{ marginTop: '1rem', display: 'inline-block' }}
+                        onClick={() => setVidnaVprasanja(v => v + 1)}>
+                        Naslednje vprašanje ↓
+                      </button>
                     )}
                   </div>
                 ))}
