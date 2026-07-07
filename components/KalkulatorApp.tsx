@@ -630,6 +630,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [rocnoBesedilo, setRocnoBesedilo] = useState(false);
   const [tonPonudbe, setTonPonudbe] = useState<TonPonudbe>('toplo');
   const [nazivPonudbe, setNazivPonudbe] = useState('');
+  const [narocnikPonudbe, setNarocnikPonudbe] = useState('');
   const [obsegPonudbe, setObsegPonudbe] = useState<'kratka' | 'razsirjena'>('razsirjena');
   const [odgovori, setOdgovori] = useState<Record<string, string>>({});
   const [osnove, setOsnove] = useState<Record<string, number>>({});
@@ -834,7 +835,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('');
     v.push(`PONUDBA: ${nazivPonudbe.trim() || r.sez.map(s => s.ime).join(', ')}`);
     v.push('Datum: ' + dat(danes) + ' · Ponudba velja do: ' + dat(velja));
-    v.push('Naročnik: [ime podjetja]');
+    v.push('Naročnik: ' + (narocnikPonudbe.trim() || '[ime podjetja]'));
     v.push('');
     if (tonPonudbe === 'formalno') {
       v.push('Spoštovani,');
@@ -897,6 +898,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         v.push(`· ${x.ime}${x.kolicina > 1 ? ' × ' + x.kolicina : ''}: ${val(x.cena * x.kolicina)}`));
       v.push(`· Skupaj izvedba: ${val(r.delo)}`);
       v.push(`· Avtorske pravice (enkratni prenos): ${val(r.pravice)}`);
+      /* Ura-osnova (kot v njenih pravih ponudbah): ce je urna postavka
+         vpisana, oceni okvirno stevilo ur iz vrednosti izvedbe. */
+      const urnaZaOceno = urnePostavke.map(u => Math.round(Number(u.cena)) || 0).find(n => n > 0) || 0;
+      if (urnaZaOceno > 0) {
+        const ur = Math.round((r.delo * vfx.fx) / urnaZaOceno / 5) * 5;
+        if (ur > 0) v.push(`Cena izvedbe temelji na okvirni oceni cca ${ur} delovnih ur po ${urnaZaOceno.toLocaleString('sl-SI')} ${vfx.znak}/uro.`);
+      }
       const trajanja = r.sez
         .map(s => TRAJANJE_TEDNOV[s.id])
         .filter((t): t is [number, number] => Boolean(t));
@@ -968,7 +976,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('');
     v.push(ponudnik.ime.trim() || '[Ime]');
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, obsegPonudbe, avansPct]);
+  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, obsegPonudbe, avansPct]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
@@ -2038,8 +2046,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <p className="razlaga">
                 Cena zajema izvedbo ({r.sez.map(s => s.ime.toLowerCase()).join(' + ')}),
                 umerjeno na tvoje izkušnje{r.vel.mult !== 1 || r.trgMult !== 1 ? ' ter velikost in trg naročnika' : ''}.
-                Vsaka od treh opcij vključuje tudi <b>enkratni prenos avtorskih pravic ({val(r.pravice)})</b>;
-                namesto odkupa lahko ponudiš <b>letno licenco {val(r.licenca)}</b>{r.raba === 'projekt' ? <> ali <b>tantieme {r.tantiemePct} % od prodaje</b></> : null}.
+                Vsaka od treh opcij vključuje tudi <b>enkratni prenos avtorskih pravic ({val(r.pravice)})</b>
+                {r.dobicekPodan
+                  ? r.raba === 'projekt'
+                    ? <> — izračunan iz pričakovanega dobička projekta, ki si ga vpisala</>
+                    : <> — izračunan iz dobička naročnika, ki si ga vpisala</>
+                  : <> — privzeto ocenjen; za natančnejši znesek vpiši {r.raba === 'projekt' ? 'pričakovani dobiček projekta' : 'dobiček naročnika'} v prejšnjem koraku</>};
+                {' '}namesto odkupa lahko ponudiš <b>letno licenco {val(r.licenca)}</b>{r.raba === 'projekt' ? <> ali <b>tantieme {r.tantiemePct} % od prodaje</b></> : null}.
                 Vključene korekture: <b>Osnovni 1 krog, Priporočeni 2, Premium 3</b>; nadaljnje po urni postavki{(() => { const u = urnePostavke.map(x => Math.round(Number(x.cena)) || 0).filter(n => n > 0); return u.length ? <> ({u[0].toLocaleString('sl-SI')} {vfx.znak}/uro)</> : null; })()}.
                 Tri opcije zato, ker stranka ne izbira med »da« in »ne«, ampak med »katero«.
               </p>
@@ -2172,6 +2185,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <input id="cw-naziv" type="text"
                     placeholder={r ? `Ponudba: ${r.sez.map(s => s.ime).join(', ')}` : 'npr. Oblikovanje CGP za Odvetniško družbo'}
                     value={nazivPonudbe} onChange={e => setNazivPonudbe(e.target.value)} />
+                </div>
+                <div className="polje">
+                  <label htmlFor="cw-narocnik">Naročnik (ime podjetja)</label>
+                  <input id="cw-narocnik" type="text" placeholder="npr. Odvetniška družba Potočnik"
+                    value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)} />
                 </div>
               </div>
               <div className="tonbar" aria-label="Ton ponudbe">
