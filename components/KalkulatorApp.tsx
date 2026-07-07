@@ -607,6 +607,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [ponudnik, setPonudnik] = useState({ ime: '', davcna: '', email: '', telefon: '', naslov: '', trr: '' });
   const [predklic, setPredklic] = useState('+386');
   const [urnaPostavka, setUrnaPostavka] = useState('');
+  const [avansPct, setAvansPct] = useState('50');
   const [ddvZavezanec, setDdvZavezanec] = useState(false);
   const [ddvStopnja, setDdvStopnja] = useState('22');
   const [besedilo, setBesedilo] = useState('');
@@ -650,6 +651,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         if (m) { setPredklic(m[1]); setPonudnik({ trr: '', ...s.ponudnik, telefon: m[2] }); }
       }
       if (s.urnaPostavka) setUrnaPostavka(String(s.urnaPostavka));
+      if (s.avansPct !== undefined) setAvansPct(String(s.avansPct));
       if (s.postavke) setPostavke(s.postavke);
       if (s.predklic) setPredklic(s.predklic);
       if (s.ddvZavezanec) setDdvZavezanec(true);
@@ -664,11 +666,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     try {
       localStorage.setItem(K_NAST, JSON.stringify({
         osnove, izkusnje, mojTrg, mojeStoritve, ponudnik, postavke,
-        ddvZavezanec, ddvStopnja, predklic, urnaPostavka,
+        ddvZavezanec, ddvStopnja, predklic, urnaPostavka, avansPct,
         valuta: valutaRocna ? valuta : undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnaPostavka]);
+  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnaPostavka, avansPct]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -869,15 +871,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       v.push(`V cenah je že upoštevan ${r.popustPct} % popust (redna cena paketa Priporočeni: ${val(r.paketi[1].redna)}).`);
       v.push('');
     }
-    v.push('Vsaka cena vključuje izvedbo in enkratni prenos materialnih');
-    v.push(`avtorskih pravic za dogovorjeno rabo (${val(r.pravice)} vrednosti).`);
-    v.push(`Alternativa odkupu pravic: letna licenca ${val(r.licenca)} / leto${
-      r.raba === 'projekt' ? ` ali tantieme ${r.tantiemePct} % od prodaje, obračunano letno` : ''
-    }.`);
-    v.push('');
-    v.push(ddvZavezanec
-      ? `DDV: cene so brez DDV; ob izstavitvi računa se obračuna ${st} % DDV.`
-      : 'DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1.');
+    /* Razsirjena ponudba: cenik in okviri takoj za paketi (kot v njenih
+       pravih ponudbah), ne na dnu, kjer se izgubijo. */
     if (obsegPonudbe === 'razsirjena') {
       const cur = (n: number) => Math.round(n * vfx.fx).toLocaleString('sl-SI') + ' ' + vfx.znak;
       v.push('');
@@ -912,10 +907,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         moznosti.forEach(m =>
           v.push(`· ${m.ime}: + ${cur(m.min)}${m.max ? ' do ' + cur(m.max) : ''}`));
       }
+      v.push('');
     }
+    v.push('Vsaka cena vključuje izvedbo in enkratni prenos materialnih');
+    v.push(`avtorskih pravic za dogovorjeno rabo (${val(r.pravice)} vrednosti).`);
+    v.push(`Alternativa odkupu pravic: letna licenca ${val(r.licenca)} / leto${
+      r.raba === 'projekt' ? ` ali tantieme ${r.tantiemePct} % od prodaje, obračunano letno` : ''
+    }.`);
+    v.push('');
+    v.push(ddvZavezanec
+      ? `DDV: cene so brez DDV; ob izstavitvi računa se obračuna ${st} % DDV.`
+      : 'DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1.');
     v.push('');
     v.push('POGOJI');
-    v.push('· 40 % avans ob potrditvi, preostanek ob predaji');
+    const avans = clamp(Math.round(Number(avansPct)) || 50, 10, 100);
+    v.push(`· ${avans} % avans ob potrditvi, preostanek ob predaji`);
     const urna = Number(urnaPostavka) > 0 ? Math.round(Number(urnaPostavka)) : 0;
     v.push(urna
       ? `· popravki nad vključenimi krogi: ${urna.toLocaleString('sl-SI')} ${vfx.znak}/uro${ddvZavezanec ? ' + DDV' : ''}`
@@ -938,7 +944,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('');
     v.push(ponudnik.ime.trim() || '[Ime]');
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnaPostavka, nazivPonudbe, obsegPonudbe]);
+  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnaPostavka, nazivPonudbe, obsegPonudbe, avansPct]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
@@ -2037,6 +2043,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     value={urnaPostavka} onChange={e => setUrnaPostavka(e.target.value)} />
                 </div>
                 <div className="polje">
+                  <label htmlFor="cw-avans">Avans ob potrditvi (%)</label>
+                  <input id="cw-avans" type="number" min={10} max={100} step={5}
+                    value={avansPct} onChange={e => setAvansPct(e.target.value)} />
+                </div>
+              </div>
+              <div className="numgrid">
+                <div className="polje">
                   <label htmlFor="cw-ddv">DDV</label>
                   <select id="cw-ddv" value={ddvZavezanec ? 'da' : 'ne'}
                     onChange={e => setDdvZavezanec(e.target.value === 'da')}>
@@ -2044,24 +2057,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <option value="da">Sem zavezanec za DDV</option>
                   </select>
                 </div>
-              </div>
-              {ddvZavezanec && (
-                <div className="numgrid">
+                {ddvZavezanec && (
                   <div className="polje">
                     <label htmlFor="cw-ddvst">Stopnja DDV (%)</label>
                     <input id="cw-ddvst" type="number" min={0} max={30} step={0.5}
                       value={ddvStopnja} onChange={e => setDdvStopnja(e.target.value)} />
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </>
           )}
 
           {korak === ponudbaStep && (
             <>
-              <div className="numgrid" style={{ marginTop: '.4rem' }}>
+              <div className="numgrid" style={{ marginTop: '.4rem', marginBottom: '2.2rem' }}>
                 <div className="polje">
-                  <label htmlFor="cw-naziv">Kako se bo ponudba imenovala? (to bo zadeva v mailu)</label>
+                  <label htmlFor="cw-naziv">Kako se bo ponudba imenovala?</label>
                   <input id="cw-naziv" type="text"
                     placeholder={r ? `Ponudba: ${r.sez.map(s => s.ime).join(', ')}` : 'npr. Oblikovanje CGP za Odvetniško družbo'}
                     value={nazivPonudbe} onChange={e => setNazivPonudbe(e.target.value)} />
