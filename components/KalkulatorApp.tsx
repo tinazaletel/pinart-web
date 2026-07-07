@@ -1455,7 +1455,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                             className={odgovori[vp.key] === vrednost ? 'on' : ''}
                             onClick={() => setOdgovori({ ...odgovori, [vp.key]: vrednost })}
                           >
-                            {vrednost}
+                            <span className="krogec" aria-hidden />{vrednost}
                           </button>
                         ))}
                       </div>
@@ -1468,7 +1468,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                             className={odgovori[vp.key] === vrednost ? 'on' : ''}
                             onClick={() => setOdgovori({ ...odgovori, [vp.key]: vrednost })}
                           >
-                            {vrednost}
+                            <span className="krogec" aria-hidden />{vrednost}
                           </button>
                         ))}
                       </div>
