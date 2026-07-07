@@ -81,6 +81,7 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'opomba', label: 'Opomba (neobvezno)', placeholder: 'karkoli, kar naj upoštevam vnaprej ...' },
   ],
   web: [
+    { id: 'ima-cgp', label: 'Ali ima naročnik celostno grafično podobo (CGP)?', izbire: ['Da, upoštevam obstoječo', 'Ne, oblikujem svobodno', 'Ne, potrebuje tudi novo CGP'] },
     { id: 'tip', label: 'Kaj ustvarjamo ali prenavljamo?', izbire: ['Nova spletna stran', 'Prenova (redesign)', 'Landing page', 'Portfolio', 'Spletna trgovina', 'Custom aplikacija'], vec: true },
     { id: 'stil', label: 'Kakšne so oblikovalske preference ali reference?', placeholder: 'stil, barve, primeri strani, občutek znamke, kaj jim je všeč / ni všeč ...' },
     { id: 'kompleksnost', label: 'Kako kompleksen je projekt?' },
@@ -546,7 +547,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       .map(s => ({
         id: s.id,
         storitev: s.ime,
-        vprasanja: (VPRASANJA_PO_STORITVI[s.id] ?? []).map(v => ({ ...v, storitev: s.ime, key: `${s.id}:${v.id}` })),
+        vprasanja: (VPRASANJA_PO_STORITVI[s.id] ?? [])
+          .filter(v => !(s.id === 'web' && v.id === 'ima-cgp' && izbrane.has('cgp')))
+          .map(v => ({ ...v, storitev: s.ime, key: `${s.id}:${v.id}` })),
       }))
       .filter(s => s.vprasanja.length);
   }, [izbrane, vseStoritve]);
@@ -1445,6 +1448,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                           />
                         ) : null}
                       </div>
+                    ) : null}
+                    {trenutnaSkupina.id === 'web' && vp.id === 'ima-cgp'
+                      && (odgovori[vp.key] || '').includes('novo CGP') && !izbrane.has('cgp') ? (
+                      <button type="button" className="povezava"
+                        style={{ marginTop: '.9rem', color: 'var(--accent)', fontWeight: 600 }}
+                        onClick={() => preklopi(izbrane, 'cgp', setIzbrane)}>
+                        + Dodaj CGP k ponudbi (odpre se njen vprašalnik)
+                      </button>
                     ) : null}
                     {vp.izbire ? null : trenutnaSkupina.id === 'web' && vp.id === 'kompleksnost' ? (
                       <div className="choicegrid">
