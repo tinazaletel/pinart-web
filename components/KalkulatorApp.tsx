@@ -88,7 +88,7 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'strani', label: 'Koliko podstrani ali ključnih ekranov pričakuješ?', placeholder: 'npr. 5 podstrani + kontakt + blog' },
     { id: 'funkcije', label: 'Katere funkcionalnosti so nujne?' },
     { id: 'budget', label: 'Kakšen je okvirni budget?' },
-    { id: 'rok', label: 'Kdaj mora stran zaživeti?', placeholder: 'npr. v 1 mesecu, 2-3 meseci, do dogodka, ni nujno ...' },
+    { id: 'rok', label: 'Kdaj mora stran zaživeti?', izbire: ['1 mesec', '2-3 mesece', '6 mesecev'], svoje: 'ali vpiši datum ...' },
     { id: 'dodatno', label: 'Ali potrebuješ dodatne storitve?' },
     { id: 'vsebina', label: 'Kdo pripravi besedila, slike in strukturo vsebine?' },
   ],
