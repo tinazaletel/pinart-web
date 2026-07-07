@@ -6,7 +6,7 @@ import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package,
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
   CopySimple, DownloadSimple, FileText, FloppyDisk, PaintBucket,
-  PersonSimple, TextAa, TextB, UploadSimple,
+  PersonSimple, TextAa, TextB, UploadSimple, CalendarBlank,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -1444,6 +1444,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                             </button>
                           );
                         })}
+                        {vp.svoje && vp.id === 'rok' ? (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem', alignSelf: 'center' }}>
+                            <CalendarBlank size={17} aria-hidden style={{ opacity: .7, flex: 'none' }} />
+                          </span>
+                        ) : null}
                         {vp.svoje ? (
                           <input
                             id={'cw-vp-' + vp.key + '-svoje'}
