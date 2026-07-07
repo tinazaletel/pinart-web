@@ -423,6 +423,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [besediloHtml, setBesediloHtml] = useState('');
   const [rocnoBesedilo, setRocnoBesedilo] = useState(false);
   const [tonPonudbe, setTonPonudbe] = useState<TonPonudbe>('toplo');
+  const [nazivPonudbe, setNazivPonudbe] = useState('');
   const [odgovori, setOdgovori] = useState<Record<string, string>>({});
   const [osnove, setOsnove] = useState<Record<string, number>>({});
   const [profili, setProfili] = useState<Record<string, Profil>>({});
@@ -622,7 +623,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     ].filter(Boolean).join(' · ');
     v.push(kontakt || '[Davčna št. · TRR · Telefon · Email]');
     v.push('');
-    v.push(`PONUDBA: ${r.sez.map(s => s.ime).join(', ')}`);
+    v.push(`PONUDBA: ${nazivPonudbe.trim() || r.sez.map(s => s.ime).join(', ')}`);
     v.push('Datum: ' + dat(danes) + ' · Ponudba velja do: ' + dat(velja));
     v.push('Naročnik: [ime podjetja]');
     v.push('');
@@ -702,7 +703,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('');
     v.push(ponudnik.ime.trim() || '[Ime]');
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnaPostavka]);
+  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnaPostavka, nazivPonudbe]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
@@ -890,11 +891,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
   const prenesi = () => {
     const html = editorRef.current?.innerHTML || besediloHtml || ponudbaVHtml(besedilo);
-    const doc = `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>Ponudba</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:40px auto;line-height:1.55;color:#111}p{margin:0 0 1rem}</style></head><body>${html}</body></html>`;
+    const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
+    const doc = `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${escapeHtml(naziv ? 'Ponudba: ' + naziv : 'Ponudba')}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:40px auto;line-height:1.55;color:#111}p{margin:0 0 1rem}</style></head><body>${html}</body></html>`;
     const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'ponudba-pinart-kalkulator.html';
+    const slug = naziv.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    a.download = slug ? `ponudba-${slug}.html` : 'ponudba-pinart-kalkulator.html';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -1818,6 +1822,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
           {korak === ponudbaStep && (
             <>
+              <div className="numgrid" style={{ marginTop: '.4rem' }}>
+                <div className="polje">
+                  <label htmlFor="cw-naziv">Kako se bo ponudba imenovala? (to bo zadeva v mailu)</label>
+                  <input id="cw-naziv" type="text"
+                    placeholder={r ? `Ponudba: ${r.sez.map(s => s.ime).join(', ')}` : 'npr. Oblikovanje CGP za Odvetniško družbo'}
+                    value={nazivPonudbe} onChange={e => setNazivPonudbe(e.target.value)} />
+                </div>
+              </div>
               <div className="tonbar" aria-label="Ton ponudbe">
                 {TONI.map(t => (
                   <button key={t.id} type="button" className={tonPonudbe === t.id ? 'on' : ''}
