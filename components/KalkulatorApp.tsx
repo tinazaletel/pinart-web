@@ -1507,7 +1507,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       />
                     )}
                     {vi === vidnaVprasanja - 1 && vidnaVprasanja < trenutnaSkupina.vprasanja.length && (
-                      <button type="button" className="povezava" style={{ marginTop: '1rem', display: 'inline-block' }}
+                      <button type="button" className="povezava" style={{ marginTop: '1rem', display: 'inline-block', color: '#FA4892', fontWeight: 600 }}
                         onClick={() => setVidnaVprasanja(v => v + 1)}>
                         Naslednje vprašanje ↓
                       </button>
