@@ -412,8 +412,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [novaCena, setNovaCena] = useState('');
   const [valuta, setValuta] = useState('eur');
   const [valutaRocna, setValutaRocna] = useState(false);
-  const [ponudnik, setPonudnik] = useState({ ime: '', davcna: '', email: '', telefon: '', naslov: '' });
+  const [ponudnik, setPonudnik] = useState({ ime: '', davcna: '', email: '', telefon: '', naslov: '', trr: '' });
   const [predklic, setPredklic] = useState('+386');
+  const [urnaPostavka, setUrnaPostavka] = useState('');
   const [ddvZavezanec, setDdvZavezanec] = useState(false);
   const [ddvStopnja, setDdvStopnja] = useState('22');
   const [besedilo, setBesedilo] = useState('');
@@ -450,10 +451,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       if (s.mojeStoritve) setMojeStoritve(s.mojeStoritve);
       if (s.valuta) { setValuta(s.valuta); setValutaRocna(true); }
       if (s.ponudnik) {
-        setPonudnik(s.ponudnik);
+        setPonudnik({ trr: '', ...s.ponudnik });
         const m = /^(\+\d{1,4})\s*(.*)$/.exec(s.ponudnik.telefon || '');
-        if (m) { setPredklic(m[1]); setPonudnik({ ...s.ponudnik, telefon: m[2] }); }
+        if (m) { setPredklic(m[1]); setPonudnik({ trr: '', ...s.ponudnik, telefon: m[2] }); }
       }
+      if (s.urnaPostavka) setUrnaPostavka(String(s.urnaPostavka));
       if (s.postavke) setPostavke(s.postavke);
       if (s.predklic) setPredklic(s.predklic);
       if (s.ddvZavezanec) setDdvZavezanec(true);
@@ -468,11 +470,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     try {
       localStorage.setItem(K_NAST, JSON.stringify({
         osnove, izkusnje, mojTrg, mojeStoritve, ponudnik, postavke,
-        ddvZavezanec, ddvStopnja, predklic,
+        ddvZavezanec, ddvStopnja, predklic, urnaPostavka,
         valuta: valutaRocna ? valuta : undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic]);
+  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnaPostavka]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -612,10 +614,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push(ponudnik.naslov.trim() || '[Naslov]');
     const kontakt = [
       ponudnik.davcna.trim() && 'Davčna št.: ' + ponudnik.davcna.trim(),
+      ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(),
       ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(),
       ponudnik.email.trim(),
     ].filter(Boolean).join(' · ');
-    v.push(kontakt || '[Davčna št. · Telefon · Email]');
+    v.push(kontakt || '[Davčna št. · TRR · Telefon · Email]');
     v.push('');
     v.push(`PONUDBA: ${r.sez.map(s => s.ime).join(', ')}`);
     v.push('Datum: ' + dat(danes) + ' · Ponudba velja do: ' + dat(velja));
@@ -675,7 +678,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('');
     v.push('POGOJI');
     v.push('· 40 % avans ob potrditvi, preostanek ob predaji');
-    v.push('· popravki nad vključenimi krogi: po urni postavki');
+    const urna = Number(urnaPostavka) > 0 ? Math.round(Number(urnaPostavka)) : 0;
+    v.push(urna
+      ? `· popravki nad vključenimi krogi: ${urna.toLocaleString('sl-SI')} ${vfx.znak}/uro${ddvZavezanec ? ' + DDV' : ''}`
+      : '· popravki nad vključenimi krogi: po urni postavki');
     v.push('· pravice veljajo za navedenega naročnika in navedeno rabo;');
     v.push('  prenos na tretjo osebo ali širša raba se dogovori posebej');
     v.push('· moralne avtorske pravice ostanejo avtorju (navedba avtorstva)');
@@ -694,7 +700,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('');
     v.push(ponudnik.ime.trim() || '[Ime]');
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori]);
+  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnaPostavka]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
@@ -1721,7 +1727,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 umerjeno na tvoje izkušnje{r.vel.mult !== 1 || r.trgMult !== 1 ? ' ter velikost in trg naročnika' : ''}.
                 Vsaka od treh opcij vključuje tudi <b>enkratni prenos avtorskih pravic ({val(r.pravice)})</b>;
                 namesto odkupa lahko ponudiš <b>letno licenco {val(r.licenca)}</b>{r.raba === 'projekt' ? <> ali <b>tantieme {r.tantiemePct} % od prodaje</b></> : null}.
-                Vključene korekture: <b>Osnovni 1 krog, Priporočeni 2, Premium 3</b>; nadaljnje po urni postavki.
+                Vključene korekture: <b>Osnovni 1 krog, Priporočeni 2, Premium 3</b>; nadaljnje po urni postavki{Number(urnaPostavka) > 0 ? <> ({Math.round(Number(urnaPostavka)).toLocaleString('sl-SI')} {vfx.znak}/uro)</> : null}.
                 Tri opcije zato, ker stranka ne izbira med »da« in »ne«, ampak med »katero«.
               </p>
               <p className="hint">
@@ -1773,6 +1779,18 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <label htmlFor="cw-pnaslov">Naslov</label>
                   <input id="cw-pnaslov" type="text" placeholder="Ulica 1, 1000 Ljubljana"
                     value={ponudnik.naslov} onChange={e => setPonudnik({ ...ponudnik, naslov: e.target.value })} />
+                </div>
+                <div className="polje">
+                  <label htmlFor="cw-ptrr">TRR (bančni račun)</label>
+                  <input id="cw-ptrr" type="text" placeholder="SI56 1010 0005 1359 749"
+                    value={ponudnik.trr} onChange={e => setPonudnik({ ...ponudnik, trr: e.target.value })} />
+                </div>
+              </div>
+              <div className="numgrid">
+                <div className="polje">
+                  <label htmlFor="cw-urna">Urna postavka za dodatna dela ({vfx.znak}/uro)</label>
+                  <input id="cw-urna" type="number" min={0} step={5} placeholder="50"
+                    value={urnaPostavka} onChange={e => setUrnaPostavka(e.target.value)} />
                 </div>
                 <div className="polje">
                   <label htmlFor="cw-ddv">DDV</label>
