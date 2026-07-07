@@ -1345,8 +1345,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .napredek i { display: block; height: 100%; background: var(--ink); transition: width .5s cubic-bezier(.16,1,.3,1); }
 
         .cw .glava { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1rem clamp(1.2rem, 4vw, 3rem); z-index: 30; pointer-events: none; }
-        .cw .glava .zapri { pointer-events: auto; display: inline-flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); text-decoration: none; background: #ECE6D5; border: 1px solid rgba(17,17,17,.10); border-radius: 999px; padding: .5rem 1.05rem; box-shadow: 0 2px 10px rgba(17,17,17,.05); transition: background .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
-        .cw .glava .zapri:hover { background: #E4DCC6; transform: translateY(-1px); }
+        .cw .glava .zapri { pointer-events: auto; display: inline-flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); text-decoration: none; background: none; border: none; padding: .3rem; transition: color .18s ease; }
+        .cw .glava .zapri:hover { color: var(--ink); }
         .cw .glava .glava-brand { pointer-events: auto; display: inline-flex; align-items: center; gap: .6rem; text-decoration: none; }
         .cw .glava .glava-ime { font-size: .74rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(17,17,17,.68); }
         .cw .glava .glava-logo { width: 42px; height: 42px; display: block; transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
