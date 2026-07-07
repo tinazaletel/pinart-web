@@ -24,7 +24,7 @@ type TonPonudbe = 'formalno' | 'toplo' | 'direktno';
    izkusnje in velikost stranke raztegnejo navzgor/navzdol. */
 const STORITVE: Storitev[] = [
   { id: 'logo',        ime: 'Logotip + osnovna identiteta', osnova: 700  },
-  { id: 'cgp',         ime: 'Celostna grafična podoba',     osnova: 1100 },
+  { id: 'cgp',         ime: 'Celostna grafična podoba',     osnova: 1500 },
   { id: 'web',         ime: 'Spletna stran',                osnova: 1200 },
   { id: 'kampanja',    ime: 'Kampanja / oglasni vizuali',   osnova: 1000 },
   { id: 'publikacija', ime: 'Publikacija / tiskovina',      osnova: 800  },
