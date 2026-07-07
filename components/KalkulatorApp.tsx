@@ -1320,7 +1320,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .pill.dodaj { border-style: dashed; border-color: rgba(17,17,17,.55); font-weight: 500; }
 
         .cw .izbira { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 760px; }
-        @media (max-width: 640px) { .cw .izbira { grid-template-columns: 1fr; } }
+        .cw .izbira-3 { grid-template-columns: repeat(3, 1fr); }
+        @media (max-width: 640px) { .cw .izbira, .cw .izbira-3 { grid-template-columns: 1fr; } }
+        /* vsebina znotraj bele kartice: mreze brez lastnega zgornjega odmika */
+        .cw .kartica .numgrid { margin-top: 0; max-width: none; }
+        .cw .kartica .numgrid + .numgrid { margin-top: 1.1rem; }
+        .cw .kartica .izbira { max-width: none; }
+        .cw .kartica .opts { margin-top: 0; }
         .cw .izbira button { text-align: left; border: 1px solid rgba(17,17,17,.25); background: transparent; border-radius: 14px; padding: 1.4rem 1.5rem; cursor: pointer; font-family: inherit; color: var(--ink); transition: border-color .18s ease, background .18s ease, color .18s ease; }
         .cw .izbira button h3 { margin: 0 0 .3rem; font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.3rem; }
         .cw .izbira button p { margin: 0; font-size: .85rem; line-height: 1.55; color: rgba(17,17,17,.68); font-weight: 300; }
@@ -1373,6 +1379,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .vprasanja { display: grid; gap: 1.5rem; max-width: 720px; }
         .cw .vp { animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; background: #FCFBF7; border: 1px solid rgba(17,17,17,.06); border-radius: 20px; padding: 1.5rem 1.6rem 1.6rem; box-shadow: 0 4px 18px rgba(17,17,17,.04); }
         @media (prefers-reduced-motion: reduce) { .cw .vp { animation: none; } }
+        /* Enotna bela kartica za strukturne korake (izkusnje, trg, raba,
+           podatki ...) — isti videz kot vprasanja, da so vse strani v
+           enakem stilu; naslov kartice = h4. */
+        .cw .kartica { animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; background: #FCFBF7; border: 1px solid rgba(17,17,17,.06); border-radius: 20px; padding: 1.6rem 1.7rem 1.7rem; box-shadow: 0 4px 18px rgba(17,17,17,.04); max-width: 760px; margin-bottom: 1.4rem; }
+        @media (prefers-reduced-motion: reduce) { .cw .kartica { animation: none; } }
+        .cw .kartica > .k-naslov { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .3rem 1rem; margin: 0 0 1.1rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
+        .cw .kartica > .k-naslov .vec { font-size: .82rem; font-weight: 500; color: rgba(17,17,17,.55); text-transform: none; letter-spacing: 0; }
+        .cw .kartica > .hint { margin-top: 1rem; }
+        .cw .dodaj-gumb { display: inline-flex; align-items: center; gap: .4rem; font-family: inherit; font-size: .9rem; font-weight: 600; color: var(--ink); background: transparent; border: 1px dashed rgba(17,17,17,.35); border-radius: 999px; padding: .55rem 1.1rem; cursor: pointer; transition: border-color .18s ease, background .18s ease; }
+        .cw .dodaj-gumb:hover { border-color: var(--ink); background: rgba(17,17,17,.03); }
         .cw .vp small { display: block; margin-bottom: .35rem; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
         .cw .vp label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .4rem 1rem; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; line-height: 1.55; background: var(--paper); border: 1px solid rgba(17,17,17,.15); border-radius: 10px; padding: .9rem 1rem; }
@@ -1844,41 +1860,50 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           )}
 
           {korak === izkusnjeStep && (
-            <div className="izbira">
-              {IZKUSNJE.map(i => (
-                <button key={i.id} type="button" className={izkusnje === i.id ? 'on' : ''}
-                  onClick={() => { setIzkusnje(i.id); }}>
-                  <h3>{i.ime}</h3>
-                  <p>{i.opis}</p>
-                </button>
-              ))}
+            <div className="kartica">
+              <div className="k-naslov">Izberi svojo raven <span className="vec">vpliva na privzete cene</span></div>
+              <div className="izbira izbira-3">
+                {IZKUSNJE.map(i => (
+                  <button key={i.id} type="button" className={izkusnje === i.id ? 'on' : ''}
+                    onClick={() => { setIzkusnje(i.id); }}>
+                    <h3>{i.ime}</h3>
+                    <p>{i.opis}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
           {korak === mojTrgStep && (
-            <div className="opts">
-              {TRGI.map(t => (
-                <button key={t.id} type="button"
-                  className={'pill' + (mojTrg === t.id ? ' on' : '')}
-                  onClick={() => setMojTrg(t.id)}>
-                  {t.ime}
-                </button>
-              ))}
+            <div className="kartica">
+              <div className="k-naslov">Izberi svoj trg</div>
+              <div className="opts">
+                {TRGI.map(t => (
+                  <button key={t.id} type="button"
+                    className={'pill' + (mojTrg === t.id ? ' on' : '')}
+                    onClick={() => setMojTrg(t.id)}>
+                    {t.ime}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
           {korak === narocnikStep && (
             <>
-              <div className="opts">
-                {TRGI.map(t => (
-                  <button key={t.id} type="button"
-                    className={'pill' + (trgNarocnika === t.id ? ' on' : '')}
-                    onClick={() => setTrgNarocnika(t.id)}>
-                    {t.ime}
-                  </button>
-                ))}
+              <div className="kartica">
+                <div className="k-naslov">Trg naročnika</div>
+                <div className="opts">
+                  {TRGI.map(t => (
+                    <button key={t.id} type="button"
+                      className={'pill' + (trgNarocnika === t.id ? ' on' : '')}
+                      onClick={() => setTrgNarocnika(t.id)}>
+                      {t.ime}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="numgrid">
+              <div className="kartica">
                 <div className="polje">
                   <label htmlFor="cw-valuta">Valuta ponudbe</label>
                   <select id="cw-valuta" value={valuta}
@@ -1894,20 +1919,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
           {korak === rabaStep && (
             <>
-              <div className="izbira">
-                <button type="button" className={raba === 'znamka' ? 'on' : ''} onClick={() => setRaba('znamka')}>
-                  <h3>Za celotno znamko</h3>
-                  <p>Logotip, celostna podoba, spletna stran. Tvoje delo nosi vse, kar podjetje počne, zato vrednost sledi bilanci podjetja.</p>
-                </button>
-                <button type="button" className={raba === 'projekt' ? 'on' : ''} onClick={() => setRaba('projekt')}>
-                  <h3>Za določen projekt ali izdelek</h3>
-                  <p>Majice, embalaža enega izdelka, konferenca, knjiga. Vrednost sledi pričakovanemu izkupičku projekta, ne velikosti podjetja.</p>
-                </button>
+              <div className="kartica">
+                <div className="izbira">
+                  <button type="button" className={raba === 'znamka' ? 'on' : ''} onClick={() => setRaba('znamka')}>
+                    <h3>Za celotno znamko</h3>
+                    <p>Logotip, celostna podoba, spletna stran. Tvoje delo nosi vse, kar podjetje počne, zato vrednost sledi bilanci podjetja.</p>
+                  </button>
+                  <button type="button" className={raba === 'projekt' ? 'on' : ''} onClick={() => setRaba('projekt')}>
+                    <h3>Za določen projekt ali izdelek</h3>
+                    <p>Majice, embalaža enega izdelka, konferenca, knjiga. Vrednost sledi pričakovanemu izkupičku projekta, ne velikosti podjetja.</p>
+                  </button>
+                </div>
               </div>
 
               {raba === 'znamka' ? (
-                <>
-                  <div className="numgrid podkartice">
+                <div className="kartica">
+                  <div className="numgrid">
                     <div className="polje">
                       <label htmlFor="cw-promet">Letni promet naročnika (€)</label>
                       <input id="cw-promet" type="number" min={0} step={10000}
@@ -1921,7 +1948,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         onChange={e => setDobicek(e.target.value)} />
                     </div>
                   </div>
-                  <p className="hint podkartice">
+                  <p className="hint">
                     Kje preveriš:{' '}
                     {(REGISTRI[trgNarocnika] ?? REGISTRI.si).concat(REGISTRI_UNIV).map((reg, i) => (
                       <span key={reg.url}>
@@ -1931,10 +1958,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     ))}
                     . Prazno pomeni mikro podjetje. Glej dobiček konkretnega podjetja, ne povprečne plače države.
                   </p>
-                </>
+                </div>
               ) : (
-                <>
-                  <div className="numgrid podkartice">
+                <div className="kartica">
+                  <div className="numgrid">
                     <div className="polje">
                       <label htmlFor="cw-pprihodek">Pričakovani letni prihodek projekta (€)</label>
                       <input id="cw-pprihodek" type="number" min={0} step={5000}
@@ -1948,36 +1975,41 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         onChange={e => setProjDobicek(e.target.value)} />
                     </div>
                   </div>
-                  <p className="hint podkartice">
+                  <p className="hint">
                     Vprašaj naročnika, koliko prodaje pričakuje od izdelka ali projekta; ocena je dovolj.
                     Pravice so 10 % pričakovanega dobička (ali 2 % prihodka), z varovalkama.
                     V ponudbi dobi tudi možnost tantiem: {`${5} %`} od prodaje letno.
                   </p>
-                </>
+                </div>
               )}
             </>
           )}
 
           {korak === posebnostiStep && (
             <>
-              <div className="opts">
-                {DODATKI.map(d => (
-                  <button key={d.id} type="button"
-                    className={'pill' + (dodatki.has(d.id) ? ' on' : '')}
-                    onClick={() => preklopi(dodatki, d.id, setDodatki)}>
-                    {d.ime}<small>{d.opis}</small>
-                  </button>
-                ))}
-              </div>
-              <div className="numgrid">
-                <div className="polje">
-                  <label htmlFor="cw-popust">Popust (%)</label>
-                  <input id="cw-popust" type="number" min={0} max={50} step={5}
-                    placeholder="0" value={popust}
-                    onChange={e => setPopust(e.target.value)} />
+              <div className="kartica">
+                <div className="k-naslov">Dodatki k projektu <span className="vec">izbereš lahko več</span></div>
+                <div className="opts">
+                  {DODATKI.map(d => (
+                    <button key={d.id} type="button"
+                      className={'pill' + (dodatki.has(d.id) ? ' on' : '')}
+                      onClick={() => preklopi(dodatki, d.id, setDodatki)}>
+                      {d.ime}<small>{d.opis}</small>
+                    </button>
+                  ))}
                 </div>
               </div>
-              <p className="hint">Popust naj ima vedno razlog (prvi projekt, paket, dolgoročno sodelovanje) in v ponudbi vedno stoji ob redni ceni.</p>
+              <div className="kartica">
+                <div className="numgrid">
+                  <div className="polje">
+                    <label htmlFor="cw-popust">Popust (%)</label>
+                    <input id="cw-popust" type="number" min={0} max={50} step={5}
+                      placeholder="0" value={popust}
+                      onChange={e => setPopust(e.target.value)} />
+                  </div>
+                </div>
+                <p className="hint">Popust naj ima vedno razlog (prvi projekt, paket, dolgoročno sodelovanje) in v ponudbi vedno stoji ob redni ceni.</p>
+              </div>
             </>
           )}
 
@@ -2013,100 +2045,111 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
           {korak === podatkiStep && (
             <>
-              <div className="numgrid" style={{ marginTop: '.4rem' }}>
-                <div className="polje">
-                  <label htmlFor="cw-pime">Ime / podjetje</label>
-                  <input id="cw-pime" type="text" placeholder="Pinart, Tina Zaletel"
-                    value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })} />
-                </div>
-                <div className="polje">
-                  <label htmlFor="cw-pdavcna">Davčna številka</label>
-                  <input id="cw-pdavcna" type="text" placeholder="SI12345678"
-                    value={ponudnik.davcna} onChange={e => setPonudnik({ ...ponudnik, davcna: e.target.value })} />
-                </div>
-              </div>
-              <div className="numgrid">
-                <div className="polje">
-                  <label htmlFor="cw-pemail">Email</label>
-                  <input id="cw-pemail" type="email" placeholder="tina@pinart.si"
-                    value={ponudnik.email} onChange={e => setPonudnik({ ...ponudnik, email: e.target.value })} />
-                </div>
-                <div className="polje">
-                  <label htmlFor="cw-ptelefon">Telefon</label>
-                  <div className="tel-vrsta">
-                    <select aria-label="Klicna koda države" value={predklic}
-                      onChange={e => setPredklic(e.target.value)}>
-                      {['+386', '+385', '+43', '+49', '+39', '+44', '+33', '+1', '+971', '+20'].map(k => (
-                        <option key={k} value={k}>{k}</option>
-                      ))}
-                    </select>
-                    <input id="cw-ptelefon" type="tel" placeholder="41 373 730"
-                      value={ponudnik.telefon} onChange={e => setPonudnik({ ...ponudnik, telefon: e.target.value })} />
-                  </div>
-                </div>
-              </div>
-              <div className="numgrid">
-                <div className="polje">
-                  <label htmlFor="cw-pnaslov">Naslov</label>
-                  <input id="cw-pnaslov" type="text" placeholder="Ulica 1, 1000 Ljubljana"
-                    value={ponudnik.naslov} onChange={e => setPonudnik({ ...ponudnik, naslov: e.target.value })} />
-                </div>
-                <div className="polje">
-                  <label htmlFor="cw-ptrr">TRR (bančni račun)</label>
-                  <input id="cw-ptrr" type="text" placeholder="SI56 1010 0005 1359 749"
-                    value={ponudnik.trr} onChange={e => setPonudnik({ ...ponudnik, trr: e.target.value })} />
-                </div>
-              </div>
-              <div className="numgrid">
-                <div className="polje">
-                  <label htmlFor="cw-ddv">DDV</label>
-                  <select id="cw-ddv" value={ddvZavezanec ? 'da' : 'ne'}
-                    onChange={e => setDdvZavezanec(e.target.value === 'da')}>
-                    <option value="ne">Nisem zavezanec (94. člen ZDDV-1)</option>
-                    <option value="da">Sem zavezanec za DDV</option>
-                  </select>
-                </div>
-                {ddvZavezanec && (
+              <div className="kartica">
+                <div className="k-naslov">Kontaktni podatki <span className="vec">za glavo ponudbe</span></div>
+                <div className="numgrid">
                   <div className="polje">
-                    <label htmlFor="cw-ddvst">Stopnja DDV (%)</label>
-                    <input id="cw-ddvst" type="number" min={0} max={30} step={0.5}
-                      value={ddvStopnja} onChange={e => setDdvStopnja(e.target.value)} />
-                  </div>
-                )}
-              </div>
-              {urnePostavke.map((u, i) => (
-                <div className="numgrid" key={i}>
-                  <div className="polje">
-                    <label htmlFor={`cw-ura-ime-${i}`}>Urna postavka — za kaj</label>
-                    <input id={`cw-ura-ime-${i}`} type="text" placeholder="npr. oblikovanje, IT / razvoj, art direkcija"
-                      value={u.ime}
-                      onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, ime: e.target.value } : x))} />
+                    <label htmlFor="cw-pime">Ime / podjetje</label>
+                    <input id="cw-pime" type="text" placeholder="Pinart, Tina Zaletel"
+                      value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })} />
                   </div>
                   <div className="polje">
-                    <label htmlFor={`cw-ura-${i}`}>Znesek ({vfx.znak}/uro)</label>
-                    <div style={{ display: 'flex', gap: '.55rem', alignItems: 'center' }}>
-                      <input id={`cw-ura-${i}`} type="number" min={0} step={5} placeholder="50" style={{ flex: 1 }}
-                        value={u.cena}
-                        onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, cena: e.target.value } : x))} />
-                      {urnePostavke.length > 1 && (
-                        <button type="button" aria-label={`Odstrani urno postavko ${u.ime || i + 1}`}
-                          onClick={() => setUrnePostavke(urnePostavke.filter((_, j) => j !== i))}
-                          style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.25rem', color: 'var(--ink)', padding: '.2rem .4rem' }}>×</button>
-                      )}
+                    <label htmlFor="cw-pdavcna">Davčna številka</label>
+                    <input id="cw-pdavcna" type="text" placeholder="SI12345678"
+                      value={ponudnik.davcna} onChange={e => setPonudnik({ ...ponudnik, davcna: e.target.value })} />
+                  </div>
+                </div>
+                <div className="numgrid">
+                  <div className="polje">
+                    <label htmlFor="cw-pemail">Email</label>
+                    <input id="cw-pemail" type="email" placeholder="tina@pinart.si"
+                      value={ponudnik.email} onChange={e => setPonudnik({ ...ponudnik, email: e.target.value })} />
+                  </div>
+                  <div className="polje">
+                    <label htmlFor="cw-ptelefon">Telefon</label>
+                    <div className="tel-vrsta">
+                      <select aria-label="Klicna koda države" value={predklic}
+                        onChange={e => setPredklic(e.target.value)}>
+                        {['+386', '+385', '+43', '+49', '+39', '+44', '+33', '+1', '+971', '+20'].map(k => (
+                          <option key={k} value={k}>{k}</option>
+                        ))}
+                      </select>
+                      <input id="cw-ptelefon" type="tel" placeholder="41 373 730"
+                        value={ponudnik.telefon} onChange={e => setPonudnik({ ...ponudnik, telefon: e.target.value })} />
                     </div>
                   </div>
                 </div>
-              ))}
-              <button type="button" className="povezava" style={{ marginTop: '.2rem' }}
-                onClick={() => setUrnePostavke([...urnePostavke, { ime: '', cena: '' }])}>
-                + Dodaj urno postavko
-              </button>
-              <div className="numgrid" style={{ marginTop: '1rem' }}>
-                <div className="polje">
-                  <label htmlFor="cw-avans">Avans ob potrditvi (%)</label>
-                  <input id="cw-avans" type="number" min={10} max={100} step={5}
-                    value={avansPct} onChange={e => setAvansPct(e.target.value)} />
+                <div className="numgrid">
+                  <div className="polje">
+                    <label htmlFor="cw-pnaslov">Naslov</label>
+                    <input id="cw-pnaslov" type="text" placeholder="Ulica 1, 1000 Ljubljana"
+                      value={ponudnik.naslov} onChange={e => setPonudnik({ ...ponudnik, naslov: e.target.value })} />
+                  </div>
+                  <div className="polje">
+                    <label htmlFor="cw-ptrr">TRR (bančni račun)</label>
+                    <input id="cw-ptrr" type="text" placeholder="SI56 1010 0005 1359 749"
+                      value={ponudnik.trr} onChange={e => setPonudnik({ ...ponudnik, trr: e.target.value })} />
+                  </div>
                 </div>
+              </div>
+
+              <div className="kartica">
+                <div className="k-naslov">Davek in pogoji</div>
+                <div className="numgrid">
+                  <div className="polje">
+                    <label htmlFor="cw-ddv">DDV</label>
+                    <select id="cw-ddv" value={ddvZavezanec ? 'da' : 'ne'}
+                      onChange={e => setDdvZavezanec(e.target.value === 'da')}>
+                      <option value="ne">Nisem zavezanec (94. člen ZDDV-1)</option>
+                      <option value="da">Sem zavezanec za DDV</option>
+                    </select>
+                  </div>
+                  {ddvZavezanec && (
+                    <div className="polje">
+                      <label htmlFor="cw-ddvst">Stopnja DDV (%)</label>
+                      <input id="cw-ddvst" type="number" min={0} max={30} step={0.5}
+                        value={ddvStopnja} onChange={e => setDdvStopnja(e.target.value)} />
+                    </div>
+                  )}
+                </div>
+                <div className="numgrid">
+                  <div className="polje">
+                    <label htmlFor="cw-avans">Avans ob potrditvi (%)</label>
+                    <input id="cw-avans" type="number" min={10} max={100} step={5}
+                      value={avansPct} onChange={e => setAvansPct(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="kartica">
+                <div className="k-naslov">Urne postavke za dodatna dela <span className="vec">v pogojih ponudbe</span></div>
+                {urnePostavke.map((u, i) => (
+                  <div className="numgrid" key={i}>
+                    <div className="polje">
+                      <label htmlFor={`cw-ura-ime-${i}`}>Za kaj</label>
+                      <input id={`cw-ura-ime-${i}`} type="text" placeholder="npr. oblikovanje, IT / razvoj, art direkcija"
+                        value={u.ime}
+                        onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, ime: e.target.value } : x))} />
+                    </div>
+                    <div className="polje">
+                      <label htmlFor={`cw-ura-${i}`}>Znesek ({vfx.znak}/uro)</label>
+                      <div style={{ display: 'flex', gap: '.55rem', alignItems: 'center' }}>
+                        <input id={`cw-ura-${i}`} type="number" min={0} step={5} placeholder="50" style={{ flex: 1 }}
+                          value={u.cena}
+                          onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, cena: e.target.value } : x))} />
+                        {urnePostavke.length > 1 && (
+                          <button type="button" aria-label={`Odstrani urno postavko ${u.ime || i + 1}`}
+                            onClick={() => setUrnePostavke(urnePostavke.filter((_, j) => j !== i))}
+                            style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.25rem', color: 'var(--ink)', padding: '.2rem .4rem' }}>×</button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
+                  onClick={() => setUrnePostavke([...urnePostavke, { ime: '', cena: '' }])}>
+                  + Dodaj urno postavko
+                </button>
               </div>
             </>
           )}
