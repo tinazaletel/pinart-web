@@ -1025,7 +1025,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
         .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 9rem clamp(1.2rem, 4vw, 3rem) 9rem; }
         .cw .korak-vsebina { width: 100%; max-width: 880px; animation: cwVstop .55s cubic-bezier(.16,1,.3,1) both; }
-        .cw .h1-maska { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: .14em; margin-bottom: -.14em; }
+        .cw .h1-maska { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: .24em; margin-bottom: -.24em; }
         .cw .h1-beseda { display: inline-block; transform: translateY(110%); animation: cwBeseda .7s cubic-bezier(.16,1,.3,1) forwards; }
         @keyframes cwBeseda { to { transform: translateY(0); } }
         @media (prefers-reduced-motion: reduce) { .cw .h1-beseda { animation: none; transform: none; } }
