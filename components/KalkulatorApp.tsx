@@ -584,8 +584,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     if (!trenutnaSkupina || vidnaVprasanja <= 1) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     requestAnimationFrame(() => {
-      const zadnji = document.querySelector('.cw .vprasanja .vp:last-of-type');
-      zadnji?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+      const vsi = document.querySelectorAll('.cw .vprasanja .vp');
+      vsi[vsi.length - 1]?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
     });
   }, [vidnaVprasanja, trenutnaSkupina]);
 
