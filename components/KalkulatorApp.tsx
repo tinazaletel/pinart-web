@@ -1344,9 +1344,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .napredek { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(17,17,17,.1); z-index: 40; }
         .cw .napredek i { display: block; height: 100%; background: var(--ink); transition: width .5s cubic-bezier(.16,1,.3,1); }
 
-        .cw .glava { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1.1rem clamp(1.2rem, 4vw, 3rem); z-index: 30; background: color-mix(in oklab, var(--paper) 88%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid rgba(17,17,17,.06); }
-        .cw .glava a { font-size: .74rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); text-decoration: none; }
-        .cw .glava a:hover { color: var(--ink); }
+        .cw .glava { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: flex-start; padding: 1rem clamp(1.2rem, 4vw, 3rem); z-index: 30; pointer-events: none; }
+        .cw .glava a { pointer-events: auto; display: inline-flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); text-decoration: none; background: #ECE6D5; border: 1px solid rgba(17,17,17,.10); border-radius: 999px; padding: .5rem 1.05rem; box-shadow: 0 2px 10px rgba(17,17,17,.05); transition: background .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
+        .cw .glava a:hover { background: #E4DCC6; transform: translateY(-1px); }
 
         .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 8rem; }
         .cw .korak-vsebina { width: 100%; max-width: 880px; animation: cwVstop .55s cubic-bezier(.16,1,.3,1) both; }
@@ -1567,9 +1567,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .a11y-panel li { margin: .34rem 0; font-size: .9rem; line-height: 1.48; color: rgba(17,17,17,.9); }
         .cw .a11y-close { position: absolute; top: .85rem; right: .9rem; border: none; background: none; padding: .2rem; font-family: inherit; font-size: 1rem; line-height: 1; cursor: pointer; color: var(--ink); }
         @media (max-width: 760px) {
-          .cw .glava { background: var(--paper); padding-top: .85rem; padding-bottom: .85rem; }
-          .cw .glava a { color: var(--ink); }
-          .cw .oder { align-items: flex-start; padding-top: 6rem; padding-bottom: 8rem; }
+          .cw .glava { padding-top: .8rem; padding-bottom: .8rem; }
+          .cw .oder { align-items: flex-start; padding-top: 5.4rem; padding-bottom: 8rem; }
           .cw h1 { padding-left: 1.65rem; font-size: clamp(2.15rem, 11vw, 2.85rem); line-height: .98; margin-bottom: .6rem; }
           .cw .h1-step { position: absolute; top: 0; left: calc(-1 * clamp(1.2rem, 4vw, 3rem)); width: 2.15rem; height: 2.05rem; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); border-radius: 0 .35rem .35rem 0; font-size: .62rem; letter-spacing: .08em; }
           .cw .sub-vrsta { margin-bottom: 1.7rem; gap: .8rem; flex-wrap: nowrap; align-items: baseline; }
