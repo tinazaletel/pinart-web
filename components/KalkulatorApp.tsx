@@ -1114,7 +1114,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .kljucek { width: 1.05em; height: 1.05em; border: 1.5px solid rgba(17,17,17,.5); border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: .78em; line-height: 1; flex: none; }
         .cw .choicegrid button.on .kljucek { border-color: #fff; }
         .cw .krogec { width: 1.02em; height: 1.02em; border: 1.5px solid rgba(17,17,17,.5); border-radius: 999px; display: inline-flex; flex: none; position: relative; }
-        .cw .choicegrid button.on .krogec { border-color: #fff; background: #fff; }
+        .cw .choicegrid button.on .krogec { border-color: #fff; background: #fff; box-shadow: inset 0 0 0 2.5px var(--accent); }
         .cw .vec-namig { font-weight: 400; font-size: .85rem; color: rgba(17,17,17,.65); }
         .cw .choicegrid button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 
