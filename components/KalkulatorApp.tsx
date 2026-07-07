@@ -33,9 +33,11 @@ const STORITVE: Storitev[] = [
 ];
 
 const IZKUSNJE = [
-  { id: 'zacetnik',    ime: 'Začetnik',    opis: 'do 3 leta',         mult: 0.7 },
-  { id: 'samostojen',  ime: 'Samostojen',  opis: '3 do 8 let',        mult: 1   },
-  { id: 'strokovnjak', ime: 'Strokovnjak', opis: '8+ let, reference', mult: 1.4 },
+  { id: 'student',     ime: 'Študent',     opis: 'ob študiju, prvi naročniki', mult: 0.5 },
+  { id: 'zacetnik',    ime: 'Začetnik',    opis: 'do 3 leta',                  mult: 0.7 },
+  { id: 'samostojen',  ime: 'Samostojen',  opis: '3 do 8 let',                 mult: 1   },
+  { id: 'strokovnjak', ime: 'Strokovnjak', opis: '8+ let, reference',          mult: 1.4 },
+  { id: 'ekspert',     ime: 'Ekspert',     opis: 'nagrade, prepoznano ime',    mult: 1.8 },
 ];
 
 /* Raven cen po trgih: vpliva na privzete osnove (tvoj trg)
@@ -71,10 +73,10 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'budget', label: 'Kakšen je okvirni budget naročnika?', izbire: ['Do 1.000 €', '1.000 do 2.500 €', 'Nad 2.500 €', 'Še ne vem'], svoje: 'ali vpiši svoj znesek ...' },
   ],
   cgp: [
-    { id: 'stanje', label: 'Ali že obstaja logotip ali predhodni CGP?', izbire: ['Začenjamo iz nič', 'Imamo samo logotip', 'Imamo star CGP'] },
-    { id: 'tip-projekta', label: 'Gre za novo identiteto ali osvežitev obstoječe?', izbire: ['Nova identiteta', 'Osvežitev obstoječe', 'Razširitev sistema'] },
+    { id: 'stanje', label: 'Ali že obstaja logotip ali predhodni CGP?', izbire: ['Začenjamo iz nič', 'Imamo samo logotip', 'Imamo star CGP'], svoje: 'ali dopiši trenutno stanje ...' },
+    { id: 'tip-projekta', label: 'Gre za novo identiteto ali osvežitev obstoječe?', izbire: ['Nova identiteta', 'Osvežitev obstoječe', 'Razširitev sistema'], svoje: 'ali na kratko pojasni ...' },
     { id: 'smeri', label: 'Koliko različnih kreativnih smeri pričakuješ?', izbire: ['1 jasna smer', '2 predloga', '3 predlogi', '6 širših raziskav'] },
-    { id: 'stil', label: 'Ali že veš, kakšen slog želiš?', izbire: ['Minimalistično', 'Retro', 'Editorial', 'Luksuzno', 'Igrivo', 'Tehnološko', 'Organsko', 'Drzno', 'Še ne vem'], vec: true },
+    { id: 'stil', label: 'Če že veš, kakšen slog želiš, označi.', izbire: ['Minimalistično', 'Retro', 'Editorial', 'Luksuzno', 'Igrivo', 'Tehnološko', 'Organsko', 'Drzno', 'Še ne vem'], vec: true, svoje: 'ali dopiši slog / reference ...' },
     { id: 'omejitve', label: 'Ali obstajajo barve, tipografije ali ideje, ki jih je treba upoštevati?', izbire: ['Barvna paleta', 'Tipografija (kupljena pisava)', 'Simbol / znak', 'Moodboard ali smernice', 'Nič, začnemo sveže'], vec: true, svoje: 'dopiši, če še kaj manjka ...' },
     { id: 'obseg', label: 'Katere aplikacije naj pripravim?', izbire: ['Vizitke in dopisi', 'Predloge za družbena omrežja', 'Predstavitvena predloga', 'Embalaža', 'Tabla / označevanje', 'Vozila', 'Oblačila / merch'], vec: true, vse: true, svoje: 'dopiši svoje ...' },
     { id: 'budget', label: 'Kakšen je okvirni budget naročnika?', izbire: ['Do 2.500 €', '2.500 do 5.000 €', 'Nad 5.000 €', 'Še ne vem'], svoje: 'ali vpiši svoj znesek ...' },
@@ -83,7 +85,8 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
   web: [
     { id: 'ima-cgp', label: 'Ali ima naročnik celostno grafično podobo (CGP)?', izbire: ['Da, upoštevam obstoječo', 'Ne, oblikujem svobodno', 'Ne, potrebuje tudi novo CGP'] },
     { id: 'tip', label: 'Kaj ustvarjamo ali prenavljamo?', izbire: ['Nova spletna stran', 'Prenova (redesign)', 'Landing page', 'Portfolio', 'Spletna trgovina', 'Custom aplikacija'], vec: true },
-    { id: 'stil', label: 'Kakšen slog spletne strani želiš?', izbire: ['Minimalistično', 'Retro', 'Editorial', 'Luksuzno', 'Igrivo', 'Tehnološko', 'Organsko', 'Drzno', 'Še ne vem'], vec: true, svoje: 'ali opiši reference ...' },
+    { id: 'ux-ui', label: 'Kaj od UX/UI procesa prevzameš?', izbire: ['Samo postavitev (dizajn že obstaja)', 'UI oblikovanje strani', 'UX zasnova: struktura in user flow', 'Prototip za testiranje', 'Style guide / design system'], vec: true, svoje: 'ali dopiši ...' },
+    { id: 'stil', label: 'Če že veš, kakšen slog želiš za spletno stran, označi.', izbire: ['Minimalistično', 'Retro', 'Editorial', 'Luksuzno', 'Igrivo', 'Tehnološko', 'Organsko', 'Drzno', 'Še ne vem'], vec: true, svoje: 'ali opiši reference ...' },
     { id: 'kompleksnost', label: 'Kako kompleksen je projekt?' },
     { id: 'strani', label: 'Koliko ločenih podstrani bo imela stran? (Sekcije, do katerih poskrolaš, štejejo kot ena stran.)', izbire: ['Ena stran z več sekcijami (one-pager)', 'Do 5 podstrani', '6 do 10', '11 do 20', 'Nad 20'], svoje: 'ali opiši: npr. one-pager z 8 sekcijami + 2 podstrani ...' },
     { id: 'funkcije', label: 'Katere funkcionalnosti so nujne?' },
@@ -606,7 +609,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [valutaRocna, setValutaRocna] = useState(false);
   const [ponudnik, setPonudnik] = useState({ ime: '', davcna: '', email: '', telefon: '', naslov: '', trr: '' });
   const [predklic, setPredklic] = useState('+386');
-  const [urnaPostavka, setUrnaPostavka] = useState('');
+  /* Vec urnih postavk: IT/razvoj ima lahko drugo ceno kot art direkcija
+     ali oblikovanje — v ponudbi se izpisejo poimensko. */
+  const [urnePostavke, setUrnePostavke] = useState<{ ime: string; cena: string }[]>(
+    [{ ime: 'Dodatna dela', cena: '' }]);
   const [avansPct, setAvansPct] = useState('50');
   const [ddvZavezanec, setDdvZavezanec] = useState(false);
   const [ddvStopnja, setDdvStopnja] = useState('22');
@@ -650,7 +656,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         const m = /^(\+\d{1,4})\s*(.*)$/.exec(s.ponudnik.telefon || '');
         if (m) { setPredklic(m[1]); setPonudnik({ trr: '', ...s.ponudnik, telefon: m[2] }); }
       }
-      if (s.urnaPostavka) setUrnaPostavka(String(s.urnaPostavka));
+      if (s.urnePostavke?.length) setUrnePostavke(s.urnePostavke);
+      else if (s.urnaPostavka) setUrnePostavke([{ ime: 'Dodatna dela', cena: String(s.urnaPostavka) }]);
       if (s.avansPct !== undefined) setAvansPct(String(s.avansPct));
       if (s.postavke) setPostavke(s.postavke);
       if (s.predklic) setPredklic(s.predklic);
@@ -666,11 +673,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     try {
       localStorage.setItem(K_NAST, JSON.stringify({
         osnove, izkusnje, mojTrg, mojeStoritve, ponudnik, postavke,
-        ddvZavezanec, ddvStopnja, predklic, urnaPostavka, avansPct,
+        ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct,
         valuta: valutaRocna ? valuta : undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnaPostavka, avansPct]);
+  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -700,7 +707,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const vel = raba === 'projekt'
       ? { mult: 1, opis: 'projektna raba' }
       : velikostIzPrometa(p);
-    const izk = IZKUSNJE.find(i => i.id === izkusnje) ?? IZKUSNJE[1];
+    const izk = IZKUSNJE.find(i => i.id === izkusnje) ?? IZKUSNJE.find(i => i.id === 'samostojen')!;
     const fakDod = DODATKI.filter(x => dodatki.has(x.id)).reduce((a, x) => a + x.mult, 0);
 
     /* bogatejsi trg placa vec, revnejsi manj; nikoli pod 70 % in nikoli cez 220 % */
@@ -922,10 +929,18 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('POGOJI');
     const avans = clamp(Math.round(Number(avansPct)) || 50, 10, 100);
     v.push(`· ${avans} % avans ob potrditvi, preostanek ob predaji`);
-    const urna = Number(urnaPostavka) > 0 ? Math.round(Number(urnaPostavka)) : 0;
-    v.push(urna
-      ? `· popravki nad vključenimi krogi: ${urna.toLocaleString('sl-SI')} ${vfx.znak}/uro${ddvZavezanec ? ' + DDV' : ''}`
-      : '· popravki nad vključenimi krogi: po urni postavki');
+    const ure = urnePostavke
+      .map(u => ({ ime: (u.ime || '').trim() || 'dodatna dela', cena: Math.round(Number(u.cena)) || 0 }))
+      .filter(u => u.cena > 0);
+    const ddvPripis = ddvZavezanec ? ' + DDV' : '';
+    if (ure.length === 0) {
+      v.push('· popravki nad vključenimi krogi: po urni postavki');
+    } else if (ure.length === 1) {
+      v.push(`· popravki nad vključenimi krogi in dodatna dela: ${ure[0].cena.toLocaleString('sl-SI')} ${vfx.znak}/uro${ddvPripis}`);
+    } else {
+      v.push('· popravki nad vključenimi krogi in dodatna dela po urnih postavkah:');
+      ure.forEach(u => v.push(`· ${u.ime}: ${u.cena.toLocaleString('sl-SI')} ${vfx.znak}/uro${ddvPripis}`));
+    }
     v.push('· pravice veljajo za navedenega naročnika in navedeno rabo;');
     v.push('  prenos na tretjo osebo ali širša raba se dogovori posebej');
     v.push('· moralne avtorske pravice ostanejo avtorju (navedba avtorstva)');
@@ -944,7 +959,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('');
     v.push(ponudnik.ime.trim() || '[Ime]');
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnaPostavka, nazivPonudbe, obsegPonudbe, avansPct]);
+  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, obsegPonudbe, avansPct]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
@@ -1417,8 +1432,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .editor h2 { margin: 1.7rem 0 .65rem; font-size: .76rem; line-height: 1.2; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; border-top: 1px solid rgba(17,17,17,.18); padding-top: .75rem; }
         .cw .editor h3 { margin: 0 0 .45rem; font-family: var(--font-serif), Didot, serif; font-size: clamp(1.25rem, 3vw, 1.75rem); line-height: 1.1; font-weight: 500; }
         .cw .editor p { margin: 0 0 .95rem; max-width: 72ch; }
-        .cw .editor ul { margin: 0 0 1.1rem; padding-left: 1.15rem; }
+        .cw .editor ul { margin: 0 0 1.1rem; padding-left: 1.15rem; list-style: disc; }
         .cw .editor li { margin: .25rem 0; }
+        .cw .editor li::marker { color: var(--ink); }
+        .cw #cw-naziv { font-size: 1.35rem; font-weight: 700; }
         .cw .editor hr { border: 0; border-top: 1px solid rgba(17,17,17,.2); margin: 1rem 0; }
         .cw .editor .offer-package { border: 1px solid rgba(17,17,17,.18); background: rgba(236,230,213,.34); padding: .95rem 1rem; margin: .65rem 0; }
         .cw .editor .offer-package-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .35rem; }
@@ -1977,7 +1994,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 umerjeno na tvoje izkušnje{r.vel.mult !== 1 || r.trgMult !== 1 ? ' ter velikost in trg naročnika' : ''}.
                 Vsaka od treh opcij vključuje tudi <b>enkratni prenos avtorskih pravic ({val(r.pravice)})</b>;
                 namesto odkupa lahko ponudiš <b>letno licenco {val(r.licenca)}</b>{r.raba === 'projekt' ? <> ali <b>tantieme {r.tantiemePct} % od prodaje</b></> : null}.
-                Vključene korekture: <b>Osnovni 1 krog, Priporočeni 2, Premium 3</b>; nadaljnje po urni postavki{Number(urnaPostavka) > 0 ? <> ({Math.round(Number(urnaPostavka)).toLocaleString('sl-SI')} {vfx.znak}/uro)</> : null}.
+                Vključene korekture: <b>Osnovni 1 krog, Priporočeni 2, Premium 3</b>; nadaljnje po urni postavki{(() => { const u = urnePostavke.map(x => Math.round(Number(x.cena)) || 0).filter(n => n > 0); return u.length ? <> ({u[0].toLocaleString('sl-SI')} {vfx.znak}/uro)</> : null; })()}.
                 Tri opcije zato, ker stranka ne izbira med »da« in »ne«, ampak med »katero«.
               </p>
               <p className="hint">
@@ -2038,18 +2055,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </div>
               <div className="numgrid">
                 <div className="polje">
-                  <label htmlFor="cw-urna">Urna postavka za dodatna dela ({vfx.znak}/uro)</label>
-                  <input id="cw-urna" type="number" min={0} step={5} placeholder="50"
-                    value={urnaPostavka} onChange={e => setUrnaPostavka(e.target.value)} />
-                </div>
-                <div className="polje">
-                  <label htmlFor="cw-avans">Avans ob potrditvi (%)</label>
-                  <input id="cw-avans" type="number" min={10} max={100} step={5}
-                    value={avansPct} onChange={e => setAvansPct(e.target.value)} />
-                </div>
-              </div>
-              <div className="numgrid">
-                <div className="polje">
                   <label htmlFor="cw-ddv">DDV</label>
                   <select id="cw-ddv" value={ddvZavezanec ? 'da' : 'ne'}
                     onChange={e => setDdvZavezanec(e.target.value === 'da')}>
@@ -2064,6 +2069,40 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       value={ddvStopnja} onChange={e => setDdvStopnja(e.target.value)} />
                   </div>
                 )}
+              </div>
+              {urnePostavke.map((u, i) => (
+                <div className="numgrid" key={i}>
+                  <div className="polje">
+                    <label htmlFor={`cw-ura-ime-${i}`}>Urna postavka — za kaj</label>
+                    <input id={`cw-ura-ime-${i}`} type="text" placeholder="npr. oblikovanje, IT / razvoj, art direkcija"
+                      value={u.ime}
+                      onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, ime: e.target.value } : x))} />
+                  </div>
+                  <div className="polje">
+                    <label htmlFor={`cw-ura-${i}`}>Znesek ({vfx.znak}/uro)</label>
+                    <div style={{ display: 'flex', gap: '.55rem', alignItems: 'center' }}>
+                      <input id={`cw-ura-${i}`} type="number" min={0} step={5} placeholder="50" style={{ flex: 1 }}
+                        value={u.cena}
+                        onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, cena: e.target.value } : x))} />
+                      {urnePostavke.length > 1 && (
+                        <button type="button" aria-label={`Odstrani urno postavko ${u.ime || i + 1}`}
+                          onClick={() => setUrnePostavke(urnePostavke.filter((_, j) => j !== i))}
+                          style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.25rem', color: 'var(--ink)', padding: '.2rem .4rem' }}>×</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <button type="button" className="povezava" style={{ marginTop: '.2rem' }}
+                onClick={() => setUrnePostavke([...urnePostavke, { ime: '', cena: '' }])}>
+                + Dodaj urno postavko
+              </button>
+              <div className="numgrid" style={{ marginTop: '1rem' }}>
+                <div className="polje">
+                  <label htmlFor="cw-avans">Avans ob potrditvi (%)</label>
+                  <input id="cw-avans" type="number" min={10} max={100} step={5}
+                    value={avansPct} onChange={e => setAvansPct(e.target.value)} />
+                </div>
               </div>
             </>
           )}
