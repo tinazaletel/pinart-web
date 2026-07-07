@@ -85,7 +85,7 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'tip', label: 'Kaj ustvarjamo ali prenavljamo?', izbire: ['Nova spletna stran', 'Prenova (redesign)', 'Landing page', 'Portfolio', 'Spletna trgovina', 'Custom aplikacija'], vec: true },
     { id: 'stil', label: 'Kakšen slog spletne strani želiš?', izbire: ['Minimalistično', 'Retro', 'Editorial', 'Luksuzno', 'Igrivo', 'Tehnološko', 'Organsko', 'Drzno', 'Še ne vem'], vec: true, svoje: 'ali opiši reference ...' },
     { id: 'kompleksnost', label: 'Kako kompleksen je projekt?' },
-    { id: 'strani', label: 'Koliko podstrani ali ključnih ekranov pričakuješ?', izbire: ['Do 5', '6 do 10', '11 do 20', 'Nad 20'], svoje: 'ali naštej: npr. 5 podstrani + kontakt + blog ...' },
+    { id: 'strani', label: 'Koliko ločenih podstrani bo imela stran? (Sekcije, do katerih poskrolaš, štejejo kot ena stran.)', izbire: ['Ena stran z več sekcijami (one-pager)', 'Do 5 podstrani', '6 do 10', '11 do 20', 'Nad 20'], svoje: 'ali opiši: npr. one-pager z 8 sekcijami + 2 podstrani ...' },
     { id: 'funkcije', label: 'Katere funkcionalnosti so nujne?' },
     { id: 'budget', label: 'Kakšen je okvirni budget?' },
     { id: 'rok', label: 'Kdaj mora stran zaživeti?', izbire: ['1 mesec', '2-3 mesece', '6 mesecev'], svoje: 'ali vpiši datum ...' },
@@ -405,6 +405,71 @@ const POPRAVKI_PAKETA = [
   'vključeni 3 krogi popravkov in prednostni odziv',
 ];
 
+/* Razsirjena ponudba (vseh 5 tock iz revizije pravih ponudb):
+   specifikacija cen, predviden cas, vzdrzevanje, dodatne moznosti. */
+const TRAJANJE_TEDNOV: Record<string, [number, number]> = {
+  logo: [2, 3], cgp: [3, 5], web: [3, 6], kampanja: [2, 4],
+  publikacija: [2, 4], embalaza: [3, 5], ilustracija: [2, 4],
+  fotografija: [1, 2], copy: [1, 3], /* direkcija: trajni angazma, izpuscena */
+};
+const tedniBeseda = (n: number) =>
+  n === 1 ? 'teden' : n === 2 ? 'tedna' : n <= 4 ? 'tedne' : 'tednov';
+
+type DodatnaMoznost = { ime: string; min: number; max?: number };
+const DODATNE_MOZNOSTI: Record<string, DodatnaMoznost[]> = {
+  logo: [
+    { ime: 'dodatna idejna smer logotipa', min: 250 },
+    { ime: 'animacija logotipa (SVG ali video)', min: 350 },
+    { ime: 'dodatne aplikacije (vizitka, e-mail podpis)', min: 150 },
+  ],
+  cgp: [
+    { ime: 'dodatne tiskovine (mape, plakati, table)', min: 200, max: 400 },
+    { ime: 'razširjen set predlog za družbena omrežja', min: 250 },
+    { ime: 'animacija logotipa', min: 350 },
+  ],
+  web: [
+    { ime: 'večjezičnost (dodaten jezik)', min: 300 },
+    { ime: 'napredna SEO analiza in optimizacija', min: 250 },
+    { ime: 'Google Analytics (GA4) integracija', min: 100 },
+    { ime: 'dodaten modul (blog, novice, galerija)', min: 150, max: 300 },
+    { ime: 'e-mail sistem (newsletter, kontaktna integracija)', min: 150 },
+  ],
+  kampanja: [
+    { ime: 'dodatni formati oglasov', min: 150, max: 300 },
+    { ime: 'e-mail marketing (zasnova in predloga)', min: 300 },
+    { ime: 'priprava objav za nadaljnje mesece', min: 250 },
+  ],
+  publikacija: [
+    { ime: 'interaktivni PDF', min: 200 },
+    { ime: 'e-publikacija (ePub)', min: 300 },
+    { ime: 'dodatna varianta naslovnice', min: 150 },
+  ],
+  embalaza: [
+    { ime: 'dodatna varianta ali okus', min: 250, max: 400 },
+    { ime: '3D vizualizacija embalaže', min: 350 },
+    { ime: 'fotografija izdelka za splet', min: 300 },
+  ],
+  ilustracija: [
+    { ime: 'dodatna ilustracija', min: 150, max: 350 },
+    { ime: 'animacija ilustracije', min: 400 },
+    { ime: 'priprava za velike tiskane formate', min: 150 },
+  ],
+  direkcija: [
+    { ime: 'dodatni dan na lokaciji ali pri naročniku', min: 400 },
+    { ime: 'kreativna delavnica z ekipo naročnika', min: 500 },
+  ],
+  fotografija: [
+    { ime: 'dodatna lokacija ali termin', min: 250 },
+    { ime: 'napredna retuša (na fotografijo)', min: 30, max: 60 },
+    { ime: 'kratki video posnetki ob fotografiranju', min: 400 },
+  ],
+  copy: [
+    { ime: 'dodatni sklop besedil', min: 200, max: 400 },
+    { ime: 'SEO članek', min: 150, max: 250 },
+    { ime: 'priročnik tona komunikacije (ton of voice)', min: 400 },
+  ],
+};
+
 function velikostIzPrometa(promet: number) {
   if (!promet || promet <= 0) return { mult: 1,   opis: 'mikro (brez podatka)' };
   if (promet < 100_000)       return { mult: 1,   opis: 'mikro podjetje' };
@@ -430,7 +495,7 @@ const ponudbaVHtml = (s: string): string =>
         const meta = rest.length ? `<p>${rest.map(escapeHtml).join('<br>')}</p>` : '';
         return `<p class="offer-kicker">Ponudba</p><h1>${escapeHtml(first.replace('PONUDBA:', '').trim())}</h1>${meta}`;
       }
-      if (/^(OBSEG|DODATNE INFORMACIJE|IZBERITE PAKET|POGOJI)$/.test(first)) {
+      if (/^(OBSEG|DODATNE INFORMACIJE|IZBERITE PAKET|POGOJI|SPECIFIKACIJA CEN|PREDVIDEN ČAS IZVEDBE|VZDRŽEVANJE|DODATNE MOŽNOSTI)( \(.+\))?$/.test(first)) {
         const rest = lines.slice(1);
         const body: string = rest.length ? ponudbaVHtml(rest.join('\n')) : '';
         return `<h2>${escapeHtml(first)}</h2>${body}`;
@@ -549,6 +614,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [rocnoBesedilo, setRocnoBesedilo] = useState(false);
   const [tonPonudbe, setTonPonudbe] = useState<TonPonudbe>('toplo');
   const [nazivPonudbe, setNazivPonudbe] = useState('');
+  const [obsegPonudbe, setObsegPonudbe] = useState<'kratka' | 'razsirjena'>('razsirjena');
   const [odgovori, setOdgovori] = useState<Record<string, string>>({});
   const [osnove, setOsnove] = useState<Record<string, number>>({});
   const [profili, setProfili] = useState<Record<string, Profil>>({});
@@ -812,6 +878,41 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push(ddvZavezanec
       ? `DDV: cene so brez DDV; ob izstavitvi računa se obračuna ${st} % DDV.`
       : 'DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1.');
+    if (obsegPonudbe === 'razsirjena') {
+      const cur = (n: number) => Math.round(n * vfx.fx).toLocaleString('sl-SI') + ' ' + vfx.znak;
+      v.push('');
+      v.push('SPECIFIKACIJA CEN (osnova: paket Priporočeni)');
+      r.vrsticeIzvedbe.forEach(x =>
+        v.push(`· ${x.ime}${x.kolicina > 1 ? ' × ' + x.kolicina : ''}: ${val(x.cena * x.kolicina)}`));
+      v.push(`· Skupaj izvedba: ${val(r.delo)}`);
+      v.push(`· Avtorske pravice (enkratni prenos): ${val(r.pravice)}`);
+      const trajanja = r.sez
+        .map(s => TRAJANJE_TEDNOV[s.id])
+        .filter((t): t is [number, number] => Boolean(t));
+      if (trajanja.length) {
+        const od = Math.max(...trajanja.map(t => t[0]));
+        const zg = trajanja.length === 1
+          ? trajanja[0][1]
+          : Math.ceil(trajanja.reduce((a, t) => a + t[1], 0) * 0.8);
+        v.push('');
+        v.push('PREDVIDEN ČAS IZVEDBE');
+        v.push(`${od}–${zg} ${tedniBeseda(zg)} od potrditve vsebin in gradiv; točen terminski načrt uskladimo ob potrditvi.`);
+      }
+      if (r.sez.some(s => s.id === 'web')) {
+        v.push('');
+        v.push('VZDRŽEVANJE (po dogovoru)');
+        v.push(`· vzdrževanje spletne strani (posodobitve, varnostne kopije, 1 ura dela): ${cur(100)} / mesec`);
+        v.push(`· gostovanje in sistemske naročnine: ${cur(30)} / mesec`);
+        v.push('· pogodba za 12 mesecev; dodatne ure po urni postavki');
+      }
+      const moznosti = r.sez.flatMap(s => DODATNE_MOZNOSTI[s.id] ?? []);
+      if (moznosti.length) {
+        v.push('');
+        v.push('DODATNE MOŽNOSTI (po dogovoru)');
+        moznosti.forEach(m =>
+          v.push(`· ${m.ime}: + ${cur(m.min)}${m.max ? ' do ' + cur(m.max) : ''}`));
+      }
+    }
     v.push('');
     v.push('POGOJI');
     v.push('· 40 % avans ob potrditvi, preostanek ob predaji');
@@ -837,7 +938,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('');
     v.push(ponudnik.ime.trim() || '[Ime]');
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnaPostavka, nazivPonudbe]);
+  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnaPostavka, nazivPonudbe, obsegPonudbe]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
@@ -1971,6 +2072,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <button key={t.id} type="button" className={tonPonudbe === t.id ? 'on' : ''}
                     onClick={() => { setTonPonudbe(t.id); setRocnoBesedilo(false); }}>
                     {t.ime}
+                  </button>
+                ))}
+              </div>
+              <div className="tonbar" aria-label="Obseg ponudbe">
+                {([['kratka', 'Kratka ponudba'], ['razsirjena', 'Razširjena ponudba']] as const).map(([id, ime]) => (
+                  <button key={id} type="button" className={obsegPonudbe === id ? 'on' : ''}
+                    onClick={() => { setObsegPonudbe(id); setRocnoBesedilo(false); }}>
+                    {ime}
                   </button>
                 ))}
               </div>
