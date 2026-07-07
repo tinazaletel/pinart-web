@@ -1717,10 +1717,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 ))}
               </div>
               <p className="razlaga">
-                Izvedba: {r.sez.map(s => s.ime.toLowerCase()).join(' + ')} · {r.izk.ime.toLowerCase()} ×{r.izk.mult} · {r.vel.opis}{r.vel.mult !== 1 ? ` ×${r.vel.mult}` : ''}{r.trgMult !== 1 ? ` · trg naročnika ×${r.trgMult.toFixed(2)}` : ''}.
-                V vsakem paketu je <b>enkratni prenos avtorskih pravic {val(r.pravice)}</b>.
-                Alternativa: <b>letna licenca {val(r.licenca)}</b>{r.raba === 'projekt' ? <> ali <b>tantieme {r.tantiemePct} % od prodaje</b></> : null}.
-                Tri opcije zato, ker stranka takrat ne izbira med »da« in »ne«, ampak med »katero«.
+                Cena zajema izvedbo ({r.sez.map(s => s.ime.toLowerCase()).join(' + ')}),
+                umerjeno na tvoje izkušnje{r.vel.mult !== 1 || r.trgMult !== 1 ? ' ter velikost in trg naročnika' : ''}.
+                Vsaka od treh opcij vključuje tudi <b>enkratni prenos avtorskih pravic ({val(r.pravice)})</b>;
+                namesto odkupa lahko ponudiš <b>letno licenco {val(r.licenca)}</b>{r.raba === 'projekt' ? <> ali <b>tantieme {r.tantiemePct} % od prodaje</b></> : null}.
+                Vključene korekture: <b>Osnovni 1 krog, Priporočeni 2, Premium 3</b>; nadaljnje po urni postavki.
+                Tri opcije zato, ker stranka ne izbira med »da« in »ne«, ampak med »katero«.
               </p>
               <p className="hint">
                 Tvoj izračun anonimno (brez imena, maila ali česarkoli osebnega) prispeva
