@@ -632,6 +632,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [nazivPonudbe, setNazivPonudbe] = useState('');
   const [narocnikPonudbe, setNarocnikPonudbe] = useState('');
   const [obsegPonudbe, setObsegPonudbe] = useState<'kratka' | 'razsirjena'>('razsirjena');
+  const [kaziUre, setKaziUre] = useState(false);
+  const [prenosPravic, setPrenosPravic] = useState<'izkljucni' | 'neizkljucni' | 'licenca'>('izkljucni');
   const [odgovori, setOdgovori] = useState<Record<string, string>>({});
   const [osnove, setOsnove] = useState<Record<string, number>>({});
   const [profili, setProfili] = useState<Record<string, Profil>>({});
@@ -739,8 +741,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const surove = raba === 'projekt'
       ? (pd > 0 ? pd * 0.10 : pp * 0.02)
       : (d > 0 ? d * 0.01 : p * 0.002);
-    const pravice = zaokrozi(clamp(surove, delo * 0.25, delo * 3));
-    const licenca = zaokrozi(pravice * 0.2);
+    /* praviceBaza = polna vrednost izkljucnega prenosa (kot doslej).
+       neizkljucni prenos (delo lahko prodas se komu) = 60 %; samo licenca =
+       odkup NI vkljucen v ceno (0), placa se skozi letno licenco. Licenca
+       vedno izhaja iz polne baze. */
+    const praviceBaza = zaokrozi(clamp(surove, delo * 0.25, delo * 3));
+    const pravice = prenosPravic === 'neizkljucni' ? zaokrozi(praviceBaza * 0.6)
+      : prenosPravic === 'licenca' ? 0
+        : praviceBaza;
+    const licenca = zaokrozi(praviceBaza * 0.2);
     const tantiemePct = 5; /* alternativa pri projektni rabi: % od prodaje letno */
 
     const popustPct = clamp(Number(popust) || 0, 0, 50);
@@ -750,11 +759,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     });
 
     return {
-      sez, vel, izk, trgMult, delo, pravice, licenca, paketi, popustPct,
-      vrsticeIzvedbe, raba, tantiemePct,
+      sez, vel, izk, trgMult, delo, pravice, praviceBaza, licenca, paketi, popustPct,
+      vrsticeIzvedbe, raba, tantiemePct, prenos: prenosPravic,
       dobicekPodan: raba === 'projekt' ? pd > 0 : d > 0,
     };
-  }, [izbrane, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek]);
+  }, [izbrane, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic]);
 
   const skupineVprasanj = useMemo(() => {
     return vseStoritve
@@ -897,11 +906,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       r.vrsticeIzvedbe.forEach(x =>
         v.push(`· ${x.ime}${x.kolicina > 1 ? ' × ' + x.kolicina : ''}: ${val(x.cena * x.kolicina)}`));
       v.push(`· Skupaj izvedba: ${val(r.delo)}`);
-      v.push(`· Avtorske pravice (enkratni prenos): ${val(r.pravice)}`);
-      /* Ura-osnova (kot v njenih pravih ponudbah): ce je urna postavka
-         vpisana, oceni okvirno stevilo ur iz vrednosti izvedbe. */
+      if (r.prenos === 'licenca')
+        v.push(`· Avtorske pravice: prek letne licence ${val(r.licenca)} / leto (odkup ni vključen)`);
+      else
+        v.push(`· Avtorske pravice (${r.prenos === 'neizkljucni' ? 'neizključni' : 'enkratni'} prenos): ${val(r.pravice)}`);
+      /* Ura-osnova (kot v njenih pravih ponudbah): PRIVZETO SKRITA (value-based
+         pozicioniranje); prikaze se le, ko jo vklopi s stikalom. */
       const urnaZaOceno = urnePostavke.map(u => Math.round(Number(u.cena)) || 0).find(n => n > 0) || 0;
-      if (urnaZaOceno > 0) {
+      if (kaziUre && urnaZaOceno > 0) {
         const ur = Math.round((r.delo * vfx.fx) / urnaZaOceno / 5) * 5;
         if (ur > 0) v.push(`Cena izvedbe temelji na okvirni oceni cca ${ur} delovnih ur po ${urnaZaOceno.toLocaleString('sl-SI')} ${vfx.znak}/uro.`);
       }
@@ -933,11 +945,26 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       }
       v.push('');
     }
-    v.push('Vsaka cena vključuje izvedbo in enkratni prenos materialnih');
-    v.push(`avtorskih pravic za dogovorjeno rabo (${val(r.pravice)} vrednosti).`);
-    v.push(`Alternativa odkupu pravic: letna licenca ${val(r.licenca)} / leto${
-      r.raba === 'projekt' ? ` ali tantieme ${r.tantiemePct} % od prodaje, obračunano letno` : ''
-    }.`);
+    if (r.prenos === 'licenca') {
+      v.push('Cene vključujejo izvedbo. Avtorske pravice se prenesejo z letno');
+      v.push(`licenco ${val(r.licenca)} / leto za dogovorjeno rabo; odkup (trajni prenos)`);
+      v.push(`ni vključen, na voljo pa je po dogovoru${
+        r.raba === 'projekt' ? ` ali s tantiemami ${r.tantiemePct} % od prodaje, obračunano letno` : ''
+      }.`);
+    } else if (r.prenos === 'neizkljucni') {
+      v.push('Vsaka cena vključuje izvedbo in neizključni prenos materialnih');
+      v.push(`avtorskih pravic za dogovorjeno rabo (${val(r.pravice)} vrednosti); avtor`);
+      v.push('lahko delo uporablja in ponudi tudi drugim naročnikom.');
+      v.push(`Ekskluzivni odkup je na voljo po dogovoru; alternativa je letna licenca ${val(r.licenca)} / leto${
+        r.raba === 'projekt' ? ` ali tantieme ${r.tantiemePct} % od prodaje, obračunano letno` : ''
+      }.`);
+    } else {
+      v.push('Vsaka cena vključuje izvedbo in izključni enkratni prenos materialnih');
+      v.push(`avtorskih pravic za dogovorjeno rabo (${val(r.pravice)} vrednosti).`);
+      v.push(`Alternativa odkupu pravic: letna licenca ${val(r.licenca)} / leto${
+        r.raba === 'projekt' ? ` ali tantieme ${r.tantiemePct} % od prodaje, obračunano letno` : ''
+      }.`);
+    }
     v.push('');
     v.push(ddvZavezanec
       ? `DDV: cene so brez DDV; ob izstavitvi računa se obračuna ${st} % DDV.`
@@ -976,7 +1003,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('');
     v.push(ponudnik.ime.trim() || '[Ime]');
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, obsegPonudbe, avansPct]);
+  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, obsegPonudbe, avansPct, kaziUre]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
@@ -1410,6 +1437,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .profil-nalozi .pn-oznaka { font-size: .82rem; font-weight: 600; color: rgba(17,17,17,.6); }
         .cw .profil-nalozi .pn-chip { font-family: inherit; font-size: .85rem; font-weight: 600; color: var(--ink); background: #FCFBF7; border: 1px solid rgba(17,17,17,.2); border-radius: 999px; padding: .4rem .95rem; cursor: pointer; transition: border-color .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .profil-nalozi .pn-chip:hover { border-color: var(--ink); transform: translateY(-2px); }
+        .cw .ure-preklop { display: flex; align-items: flex-start; gap: .6rem; margin: 0 0 1rem; font-size: .9rem; font-weight: 600; color: var(--ink); cursor: pointer; max-width: 640px; }
+        .cw .ure-preklop input { margin-top: .2rem; width: 1.05rem; height: 1.05rem; accent-color: var(--ink); cursor: pointer; }
+        .cw .ure-preklop em { font-style: normal; font-weight: 400; color: rgba(17,17,17,.62); }
         .cw .vp small { display: block; margin-bottom: .35rem; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
         .cw .vp label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .4rem 1rem; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; line-height: 1.55; background: var(--paper); border: 1px solid rgba(17,17,17,.15); border-radius: 10px; padding: .9rem 1rem; }
@@ -2014,6 +2044,24 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </p>
                 </div>
               )}
+
+              <div className="kartica">
+                <div className="k-naslov">Kako prenašaš avtorske pravice? <span className="vec">vpliva na ceno</span></div>
+                <div className="izbira izbira-3">
+                  <button type="button" className={prenosPravic === 'izkljucni' ? 'on' : ''} onClick={() => setPrenosPravic('izkljucni')}>
+                    <h3>Izključni prenos</h3>
+                    <p>Naročnik dobi delo v izključno rabo; ti ga ne uporabljaš drugje. Najpogostejše, polna cena pravic.</p>
+                  </button>
+                  <button type="button" className={prenosPravic === 'neizkljucni' ? 'on' : ''} onClick={() => setPrenosPravic('neizkljucni')}>
+                    <h3>Neizključni prenos</h3>
+                    <p>Delo lahko ponudiš tudi drugim (npr. predloge, ilustracije). Cenejše pravice (≈ 60 %).</p>
+                  </button>
+                  <button type="button" className={prenosPravic === 'licenca' ? 'on' : ''} onClick={() => setPrenosPravic('licenca')}>
+                    <h3>Samo licenca</h3>
+                    <p>Odkup ni vključen; naročnik plača letno licenco za rabo. V ceni ni odkupa pravic.</p>
+                  </button>
+                </div>
+              </div>
             </>
           )}
 
@@ -2060,13 +2108,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <p className="razlaga">
                 Cena zajema izvedbo ({r.sez.map(s => s.ime.toLowerCase()).join(' + ')}),
                 umerjeno na tvoje izkušnje{r.vel.mult !== 1 || r.trgMult !== 1 ? ' ter velikost in trg naročnika' : ''}.
-                Vsaka od treh opcij vključuje tudi <b>enkratni prenos avtorskih pravic ({val(r.pravice)})</b>
-                {r.dobicekPodan
-                  ? r.raba === 'projekt'
-                    ? <> — izračunan iz pričakovanega dobička projekta, ki si ga vpisala</>
-                    : <> — izračunan iz dobička naročnika, ki si ga vpisala</>
-                  : <> — privzeto ocenjen; za natančnejši znesek vpiši {r.raba === 'projekt' ? 'pričakovani dobiček projekta' : 'dobiček naročnika'} v prejšnjem koraku</>};
-                {' '}namesto odkupa lahko ponudiš <b>letno licenco {val(r.licenca)}</b>{r.raba === 'projekt' ? <> ali <b>tantieme {r.tantiemePct} % od prodaje</b></> : null}.
+                {r.prenos === 'licenca'
+                  ? <>Avtorske pravice se prenesejo z <b>letno licenco {val(r.licenca)} / leto</b> (odkup ni vključen{r.raba === 'projekt' ? <>; možna alternativa so <b>tantieme {r.tantiemePct} % od prodaje</b></> : null}).</>
+                  : <>Vsaka od treh opcij vključuje tudi <b>{r.prenos === 'neizkljucni' ? 'neizključni' : 'enkratni'} prenos avtorskih pravic ({val(r.pravice)})</b>
+                      {r.dobicekPodan
+                        ? r.raba === 'projekt'
+                          ? <> — izračunan iz pričakovanega dobička projekta, ki si ga vpisala</>
+                          : <> — izračunan iz dobička naročnika, ki si ga vpisala</>
+                        : <> — privzeto ocenjen; za natančnejši znesek vpiši {r.raba === 'projekt' ? 'pričakovani dobiček projekta' : 'dobiček naročnika'} v prejšnjem koraku</>}
+                      {r.prenos === 'neizkljucni' ? <> (avtor lahko delo ponudi tudi drugim)</> : null};
+                      {' '}namesto odkupa lahko ponudiš <b>letno licenco {val(r.licenca)}</b>{r.raba === 'projekt' ? <> ali <b>tantieme {r.tantiemePct} % od prodaje</b></> : null}.</>}
                 Vključene korekture: <b>Osnovni 1 krog, Priporočeni 2, Premium 3</b>; nadaljnje po urni postavki{(() => { const u = urnePostavke.map(x => Math.round(Number(x.cena)) || 0).filter(n => n > 0); return u.length ? <> ({u[0].toLocaleString('sl-SI')} {vfx.znak}/uro)</> : null; })()}.
                 Tri opcije zato, ker stranka ne izbira med »da« in »ne«, ampak med »katero«.
               </p>
@@ -2222,6 +2273,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </button>
                 ))}
               </div>
+              {obsegPonudbe === 'razsirjena' && urnePostavke.some(u => Number(u.cena) > 0) && (
+                <label className="ure-preklop">
+                  <input type="checkbox" checked={kaziUre}
+                    onChange={e => { setKaziUre(e.target.checked); setRocnoBesedilo(false); }} />
+                  <span>Prikaži oceno ur v ponudbi <em>(privzeto skrito — cena je po vrednosti; vklopi le, če stranka želi razčlenitev ur)</em></span>
+                </label>
+              )}
               <div className="orodjarna" aria-label="Oblikovanje ponudbe">
                 <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko">
                   <TextB size={17} weight="bold" /> Krepko
