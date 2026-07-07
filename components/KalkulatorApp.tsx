@@ -2119,6 +2119,31 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </div>
                 ))}
               </div>
+              <div className="kartica" style={{ marginTop: '1.6rem' }}>
+                <div className="k-naslov">Avtorske pravice — lahko nastaviš sama <span className="vec">prazno = samodejni izračun</span></div>
+                <div className="numgrid">
+                  <div className="polje">
+                    <label htmlFor="cw-rpravice">
+                      {r.prenos === 'licenca' ? 'Odkup pravic (če ga ponudiš)' : 'Znesek avtorskih pravic'} ({vfx.znak})
+                    </label>
+                    <input id="cw-rpravice" type="number" min={0} step={50}
+                      placeholder={r.praviceAvto > 0 ? String(zaokrozi(r.praviceAvto * vfx.fx)) : 'po dogovoru'}
+                      value={rocnePravice} onChange={e => setRocnePravice(e.target.value)} />
+                  </div>
+                  <div className="polje">
+                    <label htmlFor="cw-rlicenca">Letna licenca ({vfx.znak}/leto)</label>
+                    <input id="cw-rlicenca" type="number" min={0} step={50}
+                      placeholder={String(zaokrozi(r.licencaAvto * vfx.fx))}
+                      value={rocnaLicenca} onChange={e => setRocnaLicenca(e.target.value)} />
+                  </div>
+                </div>
+                {(r.praviceRocne || r.licencaRocna) && (
+                  <button type="button" className="povezava" style={{ marginTop: '.9rem' }}
+                    onClick={() => { setRocnePravice(''); setRocnaLicenca(''); }}>
+                    ↺ Nazaj na samodejni izračun
+                  </button>
+                )}
+              </div>
               <p className="razlaga">
                 Cena zajema izvedbo ({r.sez.map(s => s.ime.toLowerCase()).join(' + ')}),
                 umerjeno na tvoje izkušnje{r.vel.mult !== 1 || r.trgMult !== 1 ? ' ter velikost in trg naročnika' : ''}.
@@ -2137,29 +2162,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 Vključene korekture: <b>Osnovni 1 krog, Priporočeni 2, Premium 3</b>; nadaljnje po urni postavki{(() => { const u = urnePostavke.map(x => Math.round(Number(x.cena)) || 0).filter(n => n > 0); return u.length ? <> ({u[0].toLocaleString('sl-SI')} {vfx.znak}/uro)</> : null; })()}.
                 Tri opcije zato, ker stranka ne izbira med »da« in »ne«, ampak med »katero«.
               </p>
-              <div className="kartica" style={{ marginTop: '1.4rem' }}>
-                <div className="k-naslov">Prilagodi zneska pravic <span className="vec">prazno = samodejni izračun</span></div>
-                <div className="numgrid">
-                  <div className="polje">
-                    <label htmlFor="cw-rpravice">Avtorske pravice ({vfx.znak})</label>
-                    <input id="cw-rpravice" type="number" min={0} step={50}
-                      placeholder={String(zaokrozi(r.praviceAvto * vfx.fx))}
-                      value={rocnePravice} onChange={e => setRocnePravice(e.target.value)} />
-                  </div>
-                  <div className="polje">
-                    <label htmlFor="cw-rlicenca">Letna licenca ({vfx.znak}/leto)</label>
-                    <input id="cw-rlicenca" type="number" min={0} step={50}
-                      placeholder={String(zaokrozi(r.licencaAvto * vfx.fx))}
-                      value={rocnaLicenca} onChange={e => setRocnaLicenca(e.target.value)} />
-                  </div>
-                </div>
-                {(r.praviceRocne || r.licencaRocna) && (
-                  <button type="button" className="povezava" style={{ marginTop: '.9rem' }}
-                    onClick={() => { setRocnePravice(''); setRocnaLicenca(''); }}>
-                    ↺ Nazaj na samodejni izračun
-                  </button>
-                )}
-              </div>
               <p className="hint">
                 Tvoj izračun anonimno (brez imena, maila ali česarkoli osebnega) prispeva
                 cenovno točko v skupno statistiko cen za kreativce. Hvala, da gradiš pregled trga.
