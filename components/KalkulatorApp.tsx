@@ -1107,8 +1107,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .vp .vp-svoje { width: 210px; align-self: center; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .3rem 0 .4rem; color: var(--ink); border-radius: 0; }
         .cw .vp .vp-svoje:focus { outline: none; border-bottom: 2px solid var(--ink); margin-bottom: -1px; }
         .cw .vp .vp-svoje::placeholder { color: rgba(17,17,17,.45); font-weight: 400; }
-        .cw .checkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem .7rem; margin: .15rem 0 .75rem; }
-        .cw .checkgrid label { display: flex; align-items: flex-start; gap: .55rem; margin: 0; font-size: 1.02rem; line-height: 1.4; font-weight: 400; cursor: pointer; }
+        .cw .checkgrid { display: flex; flex-wrap: wrap; gap: .8rem .55rem; margin: .15rem 0 .75rem; }
+        .cw .checkgrid label { display: inline-flex; align-items: center; gap: .5rem; margin: 0; border: 1px solid rgba(17,17,17,.35); border-radius: 999px; padding: .65rem 1.1rem; font-size: 1rem; line-height: 1.25; font-weight: 500; cursor: pointer; transition: transform .2s cubic-bezier(0.23,1,0.32,1), border-color .15s ease, background .15s ease, color .15s ease; }
+        .cw .checkgrid label:hover { border-color: var(--ink); transform: translateY(-2px); }
+        .cw .checkgrid label:active { transform: translateY(0) scale(.96); }
+        .cw .checkgrid label:has(input:checked) { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .cw .checkgrid input[type='checkbox'] { appearance: none; -webkit-appearance: none; width: 1.05em; height: 1.05em; margin: 0; border: 1.5px solid rgba(17,17,17,.5); border-radius: 2px; flex: none; background: transparent; }
+        .cw .checkgrid input[type='checkbox']:checked { border-color: transparent; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2 8.5 6 12.5 14 3.5' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% no-repeat; }
         .cw .checkgrid input { margin-top: .15rem; accent-color: var(--ink); }
         .cw .choicegrid { display: flex; flex-wrap: wrap; gap: .8rem .55rem; margin: .15rem 0 .2rem; }
         .cw .choicegrid button { display: inline-flex; align-items: center; gap: .5rem; border: 1px solid rgba(17,17,17,.35); background: transparent; color: var(--ink); border-radius: 999px; padding: .65rem 1.1rem; font-family: inherit; font-size: 1rem; font-weight: 500; cursor: pointer; transition: transform .15s ease, border-color .15s ease, background .15s ease, color .15s ease; }
