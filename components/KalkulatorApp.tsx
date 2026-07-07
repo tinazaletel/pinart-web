@@ -2076,6 +2076,45 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </button>
                 </div>
               </div>
+
+              {r && (
+                <div className="kartica">
+                  <div className="k-naslov">
+                    Znesek pravic
+                    <span className="vec">{(r.praviceRocne || r.licencaRocna) ? 'nastavila si sama' : 'orodje izračuna samo'}</span>
+                  </div>
+                  <p className="hint" style={{ marginTop: 0 }}>
+                    {r.prenos === 'licenca'
+                      ? <>Pri licenci se pravice ne odkupijo; naročnik plača <b>letno licenco</b>, ki jo orodje oceni kot <b>20 % vrednosti pravic</b>.</>
+                      : r.raba === 'projekt'
+                        ? <>Orodje pravice oceni kot <b>10 % pričakovanega dobička projekta</b> (ali 2 % prihodka), z varovalko med 25 % in 300 % cene izvedbe{r.prenos === 'neizkljucni' ? <>; ker prenos ni izključen, znesek zniža na <b>60 %</b></> : null}.</>
+                        : <>Orodje pravice oceni kot <b>1 % letnega dobička naročnika</b>, z varovalko med 25 % in 300 % cene izvedbe{r.prenos === 'neizkljucni' ? <>; ker prenos ni izključen, znesek zniža na <b>60 %</b></> : null}.</>}
+                    {' '}Znesek lahko kadar koli prepišeš s svojim.
+                  </p>
+                  <div className="numgrid" style={{ marginTop: '1.1rem' }}>
+                    {r.prenos !== 'licenca' && (
+                      <div className="polje">
+                        <label htmlFor="cw-rpravice">Avtorske pravice ({vfx.znak})</label>
+                        <input id="cw-rpravice" type="number" min={0} step={50}
+                          placeholder={String(zaokrozi(r.praviceAvto * vfx.fx))}
+                          value={rocnePravice} onChange={e => setRocnePravice(e.target.value)} />
+                      </div>
+                    )}
+                    <div className="polje">
+                      <label htmlFor="cw-rlicenca">Letna licenca ({vfx.znak}/leto)</label>
+                      <input id="cw-rlicenca" type="number" min={0} step={50}
+                        placeholder={String(zaokrozi(r.licencaAvto * vfx.fx))}
+                        value={rocnaLicenca} onChange={e => setRocnaLicenca(e.target.value)} />
+                    </div>
+                  </div>
+                  {(r.praviceRocne || r.licencaRocna) && (
+                    <button type="button" className="povezava" style={{ marginTop: '.9rem' }}
+                      onClick={() => { setRocnePravice(''); setRocnaLicenca(''); }}>
+                      ↺ Nazaj na samodejni izračun
+                    </button>
+                  )}
+                </div>
+              )}
             </>
           )}
 
@@ -2119,31 +2158,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </div>
                 ))}
               </div>
-              <div className="kartica" style={{ marginTop: '1.6rem' }}>
-                <div className="k-naslov">Avtorske pravice — lahko nastaviš sama <span className="vec">prazno = samodejni izračun</span></div>
-                <div className="numgrid">
-                  <div className="polje">
-                    <label htmlFor="cw-rpravice">
-                      {r.prenos === 'licenca' ? 'Odkup pravic (če ga ponudiš)' : 'Znesek avtorskih pravic'} ({vfx.znak})
-                    </label>
-                    <input id="cw-rpravice" type="number" min={0} step={50}
-                      placeholder={r.praviceAvto > 0 ? String(zaokrozi(r.praviceAvto * vfx.fx)) : 'po dogovoru'}
-                      value={rocnePravice} onChange={e => setRocnePravice(e.target.value)} />
-                  </div>
-                  <div className="polje">
-                    <label htmlFor="cw-rlicenca">Letna licenca ({vfx.znak}/leto)</label>
-                    <input id="cw-rlicenca" type="number" min={0} step={50}
-                      placeholder={String(zaokrozi(r.licencaAvto * vfx.fx))}
-                      value={rocnaLicenca} onChange={e => setRocnaLicenca(e.target.value)} />
-                  </div>
-                </div>
-                {(r.praviceRocne || r.licencaRocna) && (
-                  <button type="button" className="povezava" style={{ marginTop: '.9rem' }}
-                    onClick={() => { setRocnePravice(''); setRocnaLicenca(''); }}>
-                    ↺ Nazaj na samodejni izračun
-                  </button>
-                )}
-              </div>
               <p className="razlaga">
                 Cena zajema izvedbo ({r.sez.map(s => s.ime.toLowerCase()).join(' + ')}),
                 umerjeno na tvoje izkušnje{r.vel.mult !== 1 || r.trgMult !== 1 ? ' ter velikost in trg naročnika' : ''}.
@@ -2151,12 +2165,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   ? <>Avtorske pravice se prenesejo z <b>letno licenco {val(r.licenca)} / leto</b> (odkup ni vključen{r.raba === 'projekt' ? <>; možna alternativa so <b>tantieme {r.tantiemePct} % od prodaje</b></> : null}).</>
                   : <>Vsaka od treh opcij vključuje tudi <b>{r.prenos === 'neizkljucni' ? 'neizključni' : 'enkratni'} prenos avtorskih pravic ({val(r.pravice)})</b>
                       {r.praviceRocne
-                        ? <> — znesek si nastavila sama (spodaj)</>
+                        ? <> — znesek si nastavila sama</>
                         : r.dobicekPodan
                           ? r.raba === 'projekt'
                             ? <> — izračunan iz pričakovanega dobička projekta, ki si ga vpisala</>
                             : <> — izračunan iz dobička naročnika, ki si ga vpisala</>
-                          : <> — privzeto ocenjen; za natančnejši znesek vpiši {r.raba === 'projekt' ? 'pričakovani dobiček projekta' : 'dobiček naročnika'} v prejšnjem koraku ali ga spodaj nastavi ročno</>}
+                          : <> — privzeto ocenjen; natančnejši znesek nastaviš v koraku o prenosu pravic</>}
                       {r.prenos === 'neizkljucni' ? <> (avtor lahko delo ponudi tudi drugim)</> : null};
                       {' '}namesto odkupa lahko ponudiš <b>letno licenco {val(r.licenca)}</b>{r.raba === 'projekt' ? <> ali <b>tantieme {r.tantiemePct} % od prodaje</b></> : null}.</>}
                 Vključene korekture: <b>Osnovni 1 krog, Priporočeni 2, Premium 3</b>; nadaljnje po urni postavki{(() => { const u = urnePostavke.map(x => Math.round(Number(x.cena)) || 0).filter(n => n > 0); return u.length ? <> ({u[0].toLocaleString('sl-SI')} {vfx.znak}/uro)</> : null; })()}.
