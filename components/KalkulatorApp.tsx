@@ -1347,7 +1347,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .glava { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1rem clamp(1.2rem, 4vw, 3rem); z-index: 30; pointer-events: none; }
         .cw .glava .nazaj { pointer-events: auto; display: inline-flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); text-decoration: none; background: #ECE6D5; border: 1px solid rgba(17,17,17,.10); border-radius: 999px; padding: .5rem 1.05rem; box-shadow: 0 2px 10px rgba(17,17,17,.05); transition: background .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .glava .nazaj:hover { background: #E4DCC6; transform: translateY(-1px); }
-        .cw .glava .glava-logo { pointer-events: auto; display: inline-flex; line-height: 0; transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
+        .cw .glava .glava-brand { pointer-events: auto; display: inline-flex; align-items: center; gap: .6rem; }
+        .cw .glava .glava-ime { font-size: .74rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(17,17,17,.68); }
+        .cw .glava .glava-logo { display: inline-flex; line-height: 0; transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .glava .glava-logo:hover { transform: translateY(-1px); }
         .cw .glava .glava-logo img { width: 42px; height: 42px; display: block; }
 
@@ -1571,6 +1573,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .a11y-close { position: absolute; top: .85rem; right: .9rem; border: none; background: none; padding: .2rem; font-family: inherit; font-size: 1rem; line-height: 1; cursor: pointer; color: var(--ink); }
         @media (max-width: 760px) {
           .cw .glava { padding-top: .8rem; padding-bottom: .8rem; }
+          .cw .glava .glava-ime { display: none; }
           .cw .oder { align-items: flex-start; padding-top: 5.4rem; padding-bottom: 8rem; }
           .cw h1 { padding-left: 1.65rem; font-size: clamp(2.15rem, 11vw, 2.85rem); line-height: .98; margin-bottom: .6rem; }
           .cw .h1-step { position: absolute; top: 0; left: calc(-1 * clamp(1.2rem, 4vw, 3rem)); width: 2.15rem; height: 2.05rem; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); border-radius: 0 .35rem .35rem 0; font-size: .62rem; letter-spacing: .08em; }
@@ -1648,10 +1651,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
       <div className="glava">
         <a className="nazaj" href={`/${locale}/kalkulator`}>← Predstavitev</a>
-        <a className="glava-logo" href={`/${locale}`} aria-label="Pinart — domov">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
-        </a>
+        <div className="glava-brand">
+          <span className="glava-ime">Pinart kalkulator</span>
+          <a className="glava-logo" href={`/${locale}`} aria-label="Pinart — domov">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
+          </a>
+        </div>
       </div>
 
       <div className="oder">
