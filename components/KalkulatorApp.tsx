@@ -1344,9 +1344,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .napredek { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(17,17,17,.1); z-index: 40; }
         .cw .napredek i { display: block; height: 100%; background: var(--ink); transition: width .5s cubic-bezier(.16,1,.3,1); }
 
-        .cw .glava { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: flex-start; padding: 1rem clamp(1.2rem, 4vw, 3rem); z-index: 30; pointer-events: none; }
-        .cw .glava a { pointer-events: auto; display: inline-flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); text-decoration: none; background: #ECE6D5; border: 1px solid rgba(17,17,17,.10); border-radius: 999px; padding: .5rem 1.05rem; box-shadow: 0 2px 10px rgba(17,17,17,.05); transition: background .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
-        .cw .glava a:hover { background: #E4DCC6; transform: translateY(-1px); }
+        .cw .glava { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1rem clamp(1.2rem, 4vw, 3rem); z-index: 30; pointer-events: none; }
+        .cw .glava .nazaj { pointer-events: auto; display: inline-flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); text-decoration: none; background: #ECE6D5; border: 1px solid rgba(17,17,17,.10); border-radius: 999px; padding: .5rem 1.05rem; box-shadow: 0 2px 10px rgba(17,17,17,.05); transition: background .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
+        .cw .glava .nazaj:hover { background: #E4DCC6; transform: translateY(-1px); }
+        .cw .glava .glava-logo { pointer-events: auto; display: inline-flex; line-height: 0; transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
+        .cw .glava .glava-logo:hover { transform: translateY(-1px); }
+        .cw .glava .glava-logo img { width: 42px; height: 42px; display: block; }
 
         .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 8rem; }
         .cw .korak-vsebina { width: 100%; max-width: 880px; animation: cwVstop .55s cubic-bezier(.16,1,.3,1) both; }
@@ -1644,7 +1647,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       </div>
 
       <div className="glava">
-        <a href={`/${locale}/kalkulator`}>← Predstavitev</a>
+        <a className="nazaj" href={`/${locale}/kalkulator`}>← Predstavitev</a>
+        <a className="glava-logo" href={`/${locale}`} aria-label="Pinart — domov">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
+        </a>
       </div>
 
       <div className="oder">
