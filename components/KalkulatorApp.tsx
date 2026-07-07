@@ -572,8 +572,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   useEffect(() => {
     if (!trenutnaSkupina) return;
     let zadnjiOdgovorjen = -1;
+    const klikljivaWeb = ['kompleksnost', 'budget', 'funkcije', 'dodatno'];
     trenutnaSkupina.vprasanja.forEach((vp, i) => {
-      if (vp.izbire && (odgovori[vp.key] || '').trim()) zadnjiOdgovorjen = i;
+      const klikljivo = !!vp.izbire || (trenutnaSkupina.id === 'web' && klikljivaWeb.includes(vp.id));
+      if (klikljivo && (odgovori[vp.key] || '').trim()) zadnjiOdgovorjen = i;
     });
     if (zadnjiOdgovorjen + 2 > vidnaVprasanja) setVidnaVprasanja(zadnjiOdgovorjen + 2);
     // eslint-disable-next-line react-hooks/exhaustive-deps
