@@ -1104,6 +1104,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .vp small { display: block; margin-bottom: .35rem; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
         .cw .vp label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .4rem 1rem; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; line-height: 1.55; background: var(--paper); border: 1px solid rgba(17,17,17,.15); border-radius: 10px; padding: .9rem 1rem; }
+        .cw .svoje-vrsta { display: inline-flex; align-items: center; gap: .5rem; }
         .cw .vp .vp-svoje { width: 210px; align-self: center; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .3rem 0 .4rem; color: var(--ink); border-radius: 0; }
         .cw .vp .vp-svoje:focus { outline: none; border-bottom: 2px solid var(--ink); margin-bottom: -1px; }
         .cw .vp .vp-svoje::placeholder { color: rgba(17,17,17,.45); font-weight: 400; }
@@ -1444,12 +1445,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                             </button>
                           );
                         })}
-                        {vp.svoje && vp.id === 'rok' ? (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem', alignSelf: 'center' }}>
-                            <CalendarBlank size={17} aria-hidden style={{ opacity: .7, flex: 'none' }} />
-                          </span>
-                        ) : null}
                         {vp.svoje ? (
+                          <span className="svoje-vrsta">
+                          {vp.id === 'rok' ? <CalendarBlank size={17} aria-hidden style={{ opacity: .7, flex: 'none' }} /> : null}
                           <input
                             id={'cw-vp-' + vp.key + '-svoje'}
                             type="text"
@@ -1467,6 +1465,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                               setOdgovori({ ...odgovori, [vp.key]: [...obkljukane, e.target.value].filter(Boolean).join(' + ') });
                             }}
                           />
+                          </span>
                         ) : null}
                       </div>
                     ) : null}
