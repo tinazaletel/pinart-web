@@ -1092,9 +1092,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .postavka button:hover { opacity: 1; }
 
         .cw .vprasanja { display: grid; gap: 1.5rem; max-width: 720px; }
-        .cw .vp { animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; background: #fff; border: 1px solid rgba(17,17,17,.08); border-radius: 20px 20px 20px 6px; padding: 1.5rem 1.6rem 1.6rem; box-shadow: 0 6px 24px rgba(17,17,17,.05); }
+        .cw .vp { animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; background: #FCFBF7; border: 1px solid rgba(17,17,17,.06); border-radius: 20px 20px 20px 6px; padding: 1.5rem 1.6rem 1.6rem; box-shadow: 0 4px 18px rgba(17,17,17,.04); }
         @media (prefers-reduced-motion: reduce) { .cw .vp { animation: none; } }
-        .cw .vp small { display: block; margin-bottom: .35rem; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(17,17,17,.68); font-weight: 700; }
+        .cw .vp small { display: block; margin-bottom: .35rem; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
         .cw .vp label { display: block; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; line-height: 1.55; background: var(--paper); border: 1px solid rgba(17,17,17,.15); border-radius: 10px; padding: .9rem 1rem; }
         .cw .vp .vp-svoje { width: 210px; align-self: center; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .3rem 0 .4rem; color: var(--ink); border-radius: 0; }
@@ -1104,8 +1104,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .checkgrid label { display: flex; align-items: flex-start; gap: .55rem; margin: 0; font-size: 1.02rem; line-height: 1.4; font-weight: 400; cursor: pointer; }
         .cw .checkgrid input { margin-top: .15rem; accent-color: var(--ink); }
         .cw .choicegrid { display: flex; flex-wrap: wrap; gap: .8rem .55rem; margin: .15rem 0 .2rem; }
-        .cw .choicegrid button { border: 1px solid rgba(17,17,17,.4); background: var(--paper); color: var(--ink); border-radius: 999px; padding: .65rem 1.1rem; font-family: inherit; font-size: 1rem; font-weight: 500; cursor: pointer; }
-        .cw .choicegrid button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+        .cw .choicegrid button { border: 1px solid rgba(17,17,17,.35); background: transparent; color: var(--ink); border-radius: 999px; padding: .65rem 1.1rem; font-family: inherit; font-size: 1rem; font-weight: 500; cursor: pointer; transition: transform .15s ease, border-color .15s ease, background .15s ease, color .15s ease; }
+        .cw .choicegrid button:hover { border-color: var(--ink); transform: translateY(-1px); }
+        .cw .choicegrid button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 
         .cw .paketi { display: grid; grid-template-columns: 1fr 1.15fr 1fr; margin-top: .6rem; border-top: 1px solid rgba(17,17,17,.18); }
         @media (max-width: 640px) { .cw .paketi { grid-template-columns: 1fr; } }
