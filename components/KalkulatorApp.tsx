@@ -1039,7 +1039,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .pill.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
         .cw .pill.on small { color: rgba(245,242,234,.92); }
         .cw .pill:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-        .cw .pill { display: inline-flex; align-items: center; gap: .65rem; }
+        .cw .pill { display: inline-flex; align-items: center; gap: .65rem; transition: transform .2s cubic-bezier(0.23,1,0.32,1), border-color .2s ease, background .2s ease, color .2s ease; }
+        .cw .pill:hover { transform: translateY(-2px); }
+        .cw .pill:active { transform: translateY(0) scale(.97); }
         .cw .pill .pi { display: inline-flex; flex: none; opacity: .8; }
         .cw .pill.on .pi { opacity: 1; }
         .cw .pill.dodaj { border-style: dashed; border-color: rgba(17,17,17,.55); font-weight: 500; }
@@ -1105,7 +1107,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .checkgrid input { margin-top: .15rem; accent-color: var(--ink); }
         .cw .choicegrid { display: flex; flex-wrap: wrap; gap: .8rem .55rem; margin: .15rem 0 .2rem; }
         .cw .choicegrid button { border: 1px solid rgba(17,17,17,.35); background: transparent; color: var(--ink); border-radius: 999px; padding: .65rem 1.1rem; font-family: inherit; font-size: 1rem; font-weight: 500; cursor: pointer; transition: transform .15s ease, border-color .15s ease, background .15s ease, color .15s ease; }
-        .cw .choicegrid button:hover { border-color: var(--ink); transform: translateY(-1px); }
+        .cw .choicegrid button:hover { border-color: var(--ink); transform: translateY(-2px); }
+        .cw .choicegrid button:active { transform: translateY(0) scale(.96); }
         .cw .choicegrid button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 
         .cw .paketi { display: grid; grid-template-columns: 1fr 1.15fr 1fr; margin-top: .6rem; border-top: 1px solid rgba(17,17,17,.18); }
@@ -1154,7 +1157,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .editor .offer-package p { margin-bottom: 0; max-width: none; color: rgba(17,17,17,.72); }
         .cw .btnvrsta { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-top: 1.2rem; align-items: center; }
         .cw .gumb { font-family: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; border-radius: 999px; padding: .95rem 2.2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); transition: opacity .18s ease; display: inline-flex; align-items: center; justify-content: center; gap: .45rem; }
-        .cw .gumb:hover { opacity: .78; }
+        .cw .gumb { transition: opacity .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
+        .cw .gumb:hover { opacity: .85; transform: translateY(-2px); }
+        .cw .gumb:active { transform: translateY(0) scale(.97); }
         .cw .gumb:disabled { opacity: .35; cursor: default; }
         .cw .povezava { font-family: inherit; font-size: .88rem; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .28em; padding: 0; display: inline-flex; align-items: center; gap: .38rem; }
         .cw .povezava:hover { opacity: .6; }
@@ -1172,7 +1177,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .noga .noga-c { width: 100%; display: flex; align-items: center; justify-content: center; gap: 1rem; }
         .cw .noga .noga-gumbi { display: flex; align-items: center; gap: .8rem; }
         .cw .gumb-nazaj { width: 3.1rem; height: 3.1rem; border-radius: 999px; border: 1px solid var(--ink); background: transparent; color: var(--ink); font-size: 1.15rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .18s ease, color .18s ease; flex: none; }
-        .cw .gumb-nazaj:hover { background: var(--ink); color: var(--paper); }
+        .cw .gumb-nazaj:hover { background: var(--ink); color: var(--paper); transform: translateY(-2px); }
+        .cw .gumb-nazaj:active { transform: translateY(0) scale(.95); }
+        .cw .gumb-nazaj { transition: background .18s ease, color .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .noga .nazaj-g { font-family: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; border: none; background: none; cursor: pointer; color: rgba(17,17,17,.72); padding: .6rem 0; }
         .cw .noga .nazaj-g:hover { color: var(--ink); }
         .cw .a11y { position: fixed; left: clamp(1.2rem, 4vw, 3rem); bottom: 1.05rem; z-index: 35; }
