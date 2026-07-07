@@ -1099,7 +1099,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .vp { animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; background: #FCFBF7; border: 1px solid rgba(17,17,17,.06); border-radius: 20px; padding: 1.5rem 1.6rem 1.6rem; box-shadow: 0 4px 18px rgba(17,17,17,.04); }
         @media (prefers-reduced-motion: reduce) { .cw .vp { animation: none; } }
         .cw .vp small { display: block; margin-bottom: .35rem; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
-        .cw .vp label { display: block; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
+        .cw .vp label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .4rem 1rem; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; line-height: 1.55; background: var(--paper); border: 1px solid rgba(17,17,17,.15); border-radius: 10px; padding: .9rem 1rem; }
         .cw .vp .vp-svoje { width: 210px; align-self: center; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .3rem 0 .4rem; color: var(--ink); border-radius: 0; }
         .cw .vp .vp-svoje:focus { outline: none; border-bottom: 2px solid var(--ink); margin-bottom: -1px; }
@@ -1115,7 +1115,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .choicegrid button.on .kljucek { border-color: transparent; font-size: .95em; }
         .cw .krogec { width: 1.02em; height: 1.02em; border: 1.5px solid rgba(17,17,17,.5); border-radius: 999px; display: inline-flex; flex: none; position: relative; }
         .cw .choicegrid button.on .krogec { border-color: #fff; background: #fff; box-shadow: inset 0 0 0 2.5px var(--accent); }
-        .cw .vec-namig { font-weight: 400; font-size: .85rem; color: rgba(17,17,17,.65); }
+        .cw .vec-namig { font-weight: 400; font-size: .85rem; color: rgba(17,17,17,.65); margin-left: auto; white-space: nowrap; }
         .cw .choicegrid button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 
         .cw .paketi { display: grid; grid-template-columns: 1fr 1.15fr 1fr; margin-top: .6rem; border-top: 1px solid rgba(17,17,17,.18); }
@@ -1405,7 +1405,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 {trenutnaSkupina.vprasanja.slice(0, vidnaVprasanja).map((vp, vi) => (
                   <div key={vp.key}>
                   <div className="vp" style={{ animationDelay: vi === 0 ? '.8s' : '0s' }}>
-                    <label htmlFor={'cw-vp-' + vp.key}>{vp.label}{vp.vec ? <span className="vec-namig"> · izbereš lahko več</span> : null}</label>
+                    <label htmlFor={'cw-vp-' + vp.key}>{vp.label}{vp.vec ? <span className="vec-namig">izbereš lahko več</span> : null}</label>
                     {vp.izbire ? (
                       <div className="choicegrid">
                         {vp.izbire.map(vrednost => {
