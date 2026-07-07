@@ -1329,6 +1329,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
         .cw .numgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; max-width: 640px; }
         @media (max-width: 560px) { .cw .numgrid { grid-template-columns: 1fr; gap: 1.4rem; } }
+        /* polja pod karticami raba: enaka sirina in razmik kot .izbira */
+        .cw .numgrid.podkartice { max-width: 760px; gap: 1rem; }
+        @media (max-width: 640px) { .cw .numgrid.podkartice { grid-template-columns: 1fr; } }
+        .cw .hint.podkartice { max-width: 760px; }
         .cw .polje label { display: block; font-size: .72rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.7); margin-bottom: .3rem; }
         .cw .polje input { width: 100%; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.1rem; padding: .35rem 0 .5rem; color: var(--ink); border-radius: 0; }
         .cw .polje input:focus { outline: none; border-bottom: 2px solid var(--ink); margin-bottom: -1px; }
@@ -1903,7 +1907,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
               {raba === 'znamka' ? (
                 <>
-                  <div className="numgrid">
+                  <div className="numgrid podkartice">
                     <div className="polje">
                       <label htmlFor="cw-promet">Letni promet naročnika (€)</label>
                       <input id="cw-promet" type="number" min={0} step={10000}
@@ -1917,7 +1921,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         onChange={e => setDobicek(e.target.value)} />
                     </div>
                   </div>
-                  <p className="hint">
+                  <p className="hint podkartice">
                     Kje preveriš:{' '}
                     {(REGISTRI[trgNarocnika] ?? REGISTRI.si).concat(REGISTRI_UNIV).map((reg, i) => (
                       <span key={reg.url}>
@@ -1930,7 +1934,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 </>
               ) : (
                 <>
-                  <div className="numgrid">
+                  <div className="numgrid podkartice">
                     <div className="polje">
                       <label htmlFor="cw-pprihodek">Pričakovani letni prihodek projekta (€)</label>
                       <input id="cw-pprihodek" type="number" min={0} step={5000}
@@ -1944,7 +1948,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         onChange={e => setProjDobicek(e.target.value)} />
                     </div>
                   </div>
-                  <p className="hint">
+                  <p className="hint podkartice">
                     Vprašaj naročnika, koliko prodaje pričakuje od izdelka ali projekta; ocena je dovolj.
                     Pravice so 10 % pričakovanega dobička (ali 2 % prihodka), z varovalkama.
                     V ponudbi dobi tudi možnost tantiem: {`${5} %`} od prodaje letno.
