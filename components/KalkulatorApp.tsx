@@ -83,7 +83,7 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
   web: [
     { id: 'ima-cgp', label: 'Ali ima naročnik celostno grafično podobo (CGP)?', izbire: ['Da, upoštevam obstoječo', 'Ne, oblikujem svobodno', 'Ne, potrebuje tudi novo CGP'] },
     { id: 'tip', label: 'Kaj ustvarjamo ali prenavljamo?', izbire: ['Nova spletna stran', 'Prenova (redesign)', 'Landing page', 'Portfolio', 'Spletna trgovina', 'Custom aplikacija'], vec: true },
-    { id: 'stil', label: 'Kakšne so oblikovalske preference ali reference?', placeholder: 'stil, barve, primeri strani, občutek znamke, kaj jim je všeč / ni všeč ...' },
+    { id: 'stil', label: 'Kakšen slog spletne strani želiš?', izbire: ['Minimalistično', 'Retro', 'Editorial', 'Luksuzno', 'Igrivo', 'Tehnološko', 'Organsko', 'Drzno', 'Še ne vem'], vec: true, svoje: 'ali opiši reference ...' },
     { id: 'kompleksnost', label: 'Kako kompleksen je projekt?' },
     { id: 'strani', label: 'Koliko podstrani ali ključnih ekranov pričakuješ?', placeholder: 'npr. 5 podstrani + kontakt + blog' },
     { id: 'funkcije', label: 'Katere funkcionalnosti so nujne?' },
