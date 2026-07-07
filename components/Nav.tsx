@@ -98,6 +98,11 @@ export default function Nav() {
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
+  /* Celozaslonsko orodje kalkulatorja ima svojo slim glavo (← Predstavitev);
+     marketinski meni tam samo trka z vprasalnimi karticami — skrijemo ga.
+     Landing (/kalkulator) obdrzi polni meni. */
+  if (pathname?.includes('/kalkulator/orodje')) return null;
+
   return (
     <>
       <header
