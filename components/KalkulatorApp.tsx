@@ -1406,6 +1406,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .kartica > .hint { margin-top: 1rem; }
         .cw .dodaj-gumb { display: inline-flex; align-items: center; gap: .4rem; font-family: inherit; font-size: .9rem; font-weight: 600; color: var(--ink); background: transparent; border: 1px dashed rgba(17,17,17,.35); border-radius: 999px; padding: .55rem 1.1rem; cursor: pointer; transition: border-color .18s ease, background .18s ease; }
         .cw .dodaj-gumb:hover { border-color: var(--ink); background: rgba(17,17,17,.03); }
+        .cw .profil-nalozi { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: 1.4rem; }
+        .cw .profil-nalozi .pn-oznaka { font-size: .82rem; font-weight: 600; color: rgba(17,17,17,.6); }
+        .cw .profil-nalozi .pn-chip { font-family: inherit; font-size: .85rem; font-weight: 600; color: var(--ink); background: #FCFBF7; border: 1px solid rgba(17,17,17,.2); border-radius: 999px; padding: .4rem .95rem; cursor: pointer; transition: border-color .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
+        .cw .profil-nalozi .pn-chip:hover { border-color: var(--ink); transform: translateY(-2px); }
         .cw .vp small { display: block; margin-bottom: .35rem; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
         .cw .vp label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .4rem 1rem; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; line-height: 1.55; background: var(--paper); border: 1px solid rgba(17,17,17,.15); border-radius: 10px; padding: .9rem 1rem; }
@@ -1658,6 +1662,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
           {korak === 0 && (
             <>
+              {Object.keys(profili).length > 0 && (
+                <div className="profil-nalozi">
+                  <span className="pn-oznaka">Naloži svoje cene:</span>
+                  {Object.keys(profili).map(ime => (
+                    <button key={ime} type="button" className="pn-chip" onClick={() => naloziProfil(ime)}>
+                      ↺ {ime}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="opts">
                 {vseStoritve.map(s => (
                   <button key={s.id} type="button"
