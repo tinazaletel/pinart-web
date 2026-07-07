@@ -1092,7 +1092,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .postavka button:hover { opacity: 1; }
 
         .cw .vprasanja { display: grid; gap: 1.5rem; max-width: 720px; }
-        .cw .vp { animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; background: #FCFBF7; border: 1px solid rgba(17,17,17,.06); border-radius: 20px 20px 20px 6px; padding: 1.5rem 1.6rem 1.6rem; box-shadow: 0 4px 18px rgba(17,17,17,.04); }
+        .cw .vp { animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; background: #FCFBF7; border: 1px solid rgba(17,17,17,.06); border-radius: 20px; padding: 1.5rem 1.6rem 1.6rem; box-shadow: 0 4px 18px rgba(17,17,17,.04); }
         @media (prefers-reduced-motion: reduce) { .cw .vp { animation: none; } }
         .cw .vp small { display: block; margin-bottom: .35rem; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
         .cw .vp label { display: block; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
