@@ -316,7 +316,9 @@ const ponudbaVHtml = (s: string): string =>
 
       const first = lines[0];
       if (first.startsWith('PONUDBA:')) {
-        return `<h1>${escapeHtml(first.replace('PONUDBA:', '').trim())}</h1>`;
+        const rest = lines.slice(1);
+        const meta = rest.length ? `<p>${rest.map(escapeHtml).join('<br>')}</p>` : '';
+        return `<p class="offer-kicker">Ponudba</p><h1>${escapeHtml(first.replace('PONUDBA:', '').trim())}</h1>${meta}`;
       }
       if (/^(OBSEG|DODATNE INFORMACIJE|IZBERITE PAKET|POGOJI)$/.test(first)) {
         const rest = lines.slice(1);
@@ -1166,6 +1168,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .editor b, .cw .editor strong { font-weight: 900; color: var(--ink); }
         .cw .editor h1 b, .cw .editor h1 strong { font-weight: 900; }
         .cw .editor h1 { margin: 0 0 1.1rem; font-family: var(--font-serif), Didot, serif; font-size: clamp(2rem, 5vw, 3.4rem); line-height: .98; font-weight: 500; letter-spacing: -.01em; }
+        .cw .editor .offer-kicker { margin: 1.2rem 0 .4rem; font-size: .78rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--ink); }
         .cw .editor h2 { margin: 1.7rem 0 .65rem; font-size: .76rem; line-height: 1.2; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; border-top: 1px solid rgba(17,17,17,.18); padding-top: .75rem; }
         .cw .editor h3 { margin: 0 0 .45rem; font-family: var(--font-serif), Didot, serif; font-size: clamp(1.25rem, 3vw, 1.75rem); line-height: 1.1; font-weight: 500; }
         .cw .editor p { margin: 0 0 .95rem; max-width: 72ch; }
