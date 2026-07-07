@@ -38,7 +38,20 @@ export default function Footer() {
         <p style={{ margin: 0 }}>© {year} Pinart</p>
         <p style={{ margin: 0, textAlign: 'center' }}>{t('tagline')}</p>
         <div className="site-footer__links" style={{ display: 'flex', justifyContent: 'flex-end', gap: '1.25rem', flexWrap: 'wrap' }}>
-          <a href={`/${locale}/kalkulator`} style={{ color: TEXT, textDecoration: 'none' }}>Kalkulator cen</a>
+          <a href={`/${locale}/kalkulator`} style={{ color: TEXT, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
+              <rect x="4" y="2" width="16" height="20" rx="2" />
+              <line x1="8" y1="6" x2="16" y2="6" />
+              <line x1="8" y1="11" x2="8" y2="11" />
+              <line x1="12" y1="11" x2="12" y2="11" />
+              <line x1="16" y1="11" x2="16" y2="11" />
+              <line x1="8" y1="15" x2="8" y2="15" />
+              <line x1="12" y1="15" x2="12" y2="15" />
+              <line x1="16" y1="15" x2="16" y2="18" />
+              <line x1="8" y1="18" x2="12" y2="18" />
+            </svg>
+            Kalkulator cen
+          </a>
           <a href="mailto:tina@pinart.si" style={{ color: TEXT, textDecoration: 'none' }}>tina@pinart.si</a>
           <a href={`/${locale}/zasebnost`} style={{ color: TEXT, textDecoration: 'none' }}>{t('privacy')}</a>
         </div>
