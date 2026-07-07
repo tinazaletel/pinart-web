@@ -19,17 +19,20 @@ import {
 type Storitev = { id: string; ime: string; osnova: number };
 type TonPonudbe = 'formalno' | 'toplo' | 'direktno';
 
+/* Osnove umerjene na slovenski trg (2025/26, viri: Omisli.si agregat cen,
+   smernice DOS) — raven "samostojen", majhna stranka, SI; mnozitelji za
+   izkusnje in velikost stranke raztegnejo navzgor/navzdol. */
 const STORITVE: Storitev[] = [
-  { id: 'logo',        ime: 'Logotip + osnovna identiteta', osnova: 1200 },
-  { id: 'cgp',         ime: 'Celostna grafična podoba',     osnova: 2500 },
-  { id: 'web',         ime: 'Spletna stran',                osnova: 3500 },
-  { id: 'kampanja',    ime: 'Kampanja / oglasni vizuali',   osnova: 1500 },
-  { id: 'publikacija', ime: 'Publikacija / tiskovina',      osnova: 1300 },
-  { id: 'embalaza',    ime: 'Embalaža / produkt',           osnova: 1800 },
-  { id: 'ilustracija', ime: 'Ilustracija / vizualni svet',  osnova: 1400 },
-  { id: 'direkcija',   ime: 'Kreativna direkcija',          osnova: 900  },
-  { id: 'fotografija', ime: 'Fotografiranje',               osnova: 650  },
-  { id: 'copy',        ime: 'Besedila / copywriting',       osnova: 700  },
+  { id: 'logo',        ime: 'Logotip + osnovna identiteta', osnova: 700  },
+  { id: 'cgp',         ime: 'Celostna grafična podoba',     osnova: 1100 },
+  { id: 'web',         ime: 'Spletna stran',                osnova: 1200 },
+  { id: 'kampanja',    ime: 'Kampanja / oglasni vizuali',   osnova: 1000 },
+  { id: 'publikacija', ime: 'Publikacija / tiskovina',      osnova: 800  },
+  { id: 'embalaza',    ime: 'Embalaža / produkt',           osnova: 1000 },
+  { id: 'ilustracija', ime: 'Ilustracija / vizualni svet',  osnova: 800  },
+  { id: 'direkcija',   ime: 'Kreativna direkcija',          osnova: 700  },
+  { id: 'fotografija', ime: 'Fotografiranje',               osnova: 500  },
+  { id: 'copy',        ime: 'Besedila / copywriting',       osnova: 500  },
 ];
 
 const IZKUSNJE = [
