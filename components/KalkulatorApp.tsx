@@ -295,6 +295,116 @@ const PAKETI = [
   { id: 'premium',     ime: 'Premium',     mult: 1.35, opis: 'razširjen obseg, 3 krogi popravkov, dodatna varianta, prednostni odziv' },
 ];
 
+/* Konkretne alineje paketov v ponudbi (vzor: Tinine prave ponudbe — paket
+   prodaja z vsebino, ne s pridevnikom). Na storitev tri ravni:
+   [0] jedro v vseh paketih, [1] dodatno od Priporočenega, [2] samo Premium. */
+const ALINEJE_PAKETOV: Record<string, [string[], string[], string[]]> = {
+  logo: [
+    ['logotip: idejna zasnova in končna izvedba',
+      'datoteke za tisk in splet (SVG, PDF, PNG, EPS)',
+      'osnovna barvna in tipografska določila'],
+    ['različice logotipa (horizontalna, vertikalna, simbol)',
+      'mini priročnik uporabe (PDF)'],
+    ['razširjeni priročnik s primeri rabe',
+      'SVG animacija logotipa'],
+  ],
+  cgp: [
+    ['logotip: oblikovanje in končna verzija',
+      'barvna paleta (CMYK, RGB, HEX)',
+      'tipografija za naslove in besedilo',
+      'datoteke za tisk in digitalno rabo',
+      'osnovni priročnik CGP (PDF)'],
+    ['tiskovine: vizitka, dopisni list, ovojnica',
+      'e-mail podpis in ozadje za videoklice',
+      'predloge za družbena omrežja'],
+    ['napredni brand manual (24+ strani)',
+      'predloga za predstavitve (PowerPoint/Keynote)',
+      'SVG animacija logotipa'],
+  ],
+  web: [
+    ['UX zasnova: struktura strani in uporabniške poti',
+      'oblikovanje ključnih strani',
+      'odzivna izvedba za vse naprave',
+      'osnovni SEO (meta podatki, struktura URL)',
+      'testiranje na napravah in brskalnikih'],
+    ['UI oblikovanje po meri (ne po predlogi)',
+      'optimizacija vsebin in slik',
+      'vodenje projekta in koordinacija'],
+    ['animacije in mikrointerakcije',
+      'napredna SEO optimizacija',
+      'analitika (GA4) in osnovno merjenje'],
+  ],
+  kampanja: [
+    ['koncept kampanje in ključni vizual',
+      'prilagoditve za dogovorjene kanale',
+      'priprava datotek za objavo'],
+    ['razširjen nabor formatov (feed, story, pasice)',
+      'usklajevanje s tiskarno oz. zakupnikom medijev'],
+    ['dodatne variante ključnega vizuala za testiranje',
+      'predloge za nadaljnje objave'],
+  ],
+  publikacija: [
+    ['oblikovna zasnova in tipografska ureditev',
+      'prelom dogovorjenega obsega strani',
+      'priprava za tisk ali digitalno objavo (PDF)'],
+    ['obdelava in umestitev slikovnega gradiva',
+      'komunikacija s tiskarno in pregled poskusnega tiska'],
+    ['dodatna oblikovna varianta naslovnice',
+      'priprava izpeljank (web PDF, e-publikacija)'],
+  ],
+  embalaza: [
+    ['oblikovna zasnova embalaže',
+      'priprava za tisk po specifikaciji (plašč/mreža)',
+      'datoteke za proizvodnjo'],
+    ['prilagoditve za več variant ali okusov',
+      'usklajevanje s tiskarno in pregled vzorca'],
+    ['3D vizualizacija za predstavitev in prodajo',
+      'predloge za nadaljnje izdelke v liniji'],
+  ],
+  ilustracija: [
+    ['idejne skice in izbor smeri',
+      'izvedba dogovorjenih ilustracij',
+      'datoteke v dogovorjenih formatih'],
+    ['barvne variante in prilagoditve za rabo',
+      'osnovna navodila za uporabo'],
+    ['razširjen vizualni svet (dodatni motivi in elementi)',
+      'priprava za animacijo'],
+  ],
+  direkcija: [
+    ['kreativna strategija in usmeritev projekta',
+      'vodenje oblikovalskega procesa',
+      'pregled in potrjevanje izvedb'],
+    ['koordinacija zunanjih izvajalcev',
+      'redna poročila in usklajevanja'],
+    ['celoletni kreativni načrt',
+      'prednostna razpoložljivost'],
+  ],
+  fotografija: [
+    ['fotografiranje po dogovorjenem obsegu',
+      'osnovna obdelava izbranih posnetkov',
+      'oddaja v digitalnih formatih'],
+    ['napredna obdelava (retuša)',
+      'izbor in priprava za splet in tisk'],
+    ['razširjen izbor posnetkov',
+      'barvno usklajena serija za celostno rabo'],
+  ],
+  copy: [
+    ['besedila po dogovorjenem obsegu',
+      'ton komunikacije, usklajen z znamko',
+      'jezikovni pregled napisanega'],
+    ['SEO osnova (ključne besede v besedilih)',
+      'prilagoditve za različne kanale'],
+    ['variante naslovov za testiranje',
+      'vsebinski načrt za nadaljnje objave'],
+  ],
+};
+
+const POPRAVKI_PAKETA = [
+  'vključen 1 krog popravkov',
+  'vključena 2 kroga popravkov',
+  'vključeni 3 krogi popravkov in prednostni odziv',
+];
+
 function velikostIzPrometa(promet: number) {
   if (!promet || promet <= 0) return { mult: 1,   opis: 'mikro (brez podatka)' };
   if (promet < 100_000)       return { mult: 1,   opis: 'mikro podjetje' };
@@ -331,7 +441,22 @@ const ponudbaVHtml = (s: string): string =>
       if (lines.length >= 2 && /^[A-ZČŠŽ\s]+/.test(first) && first.includes('·')) {
         const [title, ...rest] = lines;
         const [, name = title, price = ''] = title.match(/^(.+?)\s*·\s*(.+)$/) ?? [];
-        return `<div class="offer-package"><div class="offer-package-head"><h3>${escapeHtml(name.trim())}</h3><strong>${escapeHtml(price.trim())}</strong></div>${rest.map(l => `<p>${escapeHtml(l)}</p>`).join('')}</div>`;
+        /* zaporedne alineje zdruzimo v <ul>, vmesni podnaslovi (ime
+           storitve pri vec storitvah) ostanejo odstavki */
+        const deli: string[] = [];
+        let kup: string[] = [];
+        const izprazni = () => {
+          if (kup.length) {
+            deli.push(`<ul>${kup.map(l => `<li>${escapeHtml(l.replace(/^·\s*/, ''))}</li>`).join('')}</ul>`);
+            kup = [];
+          }
+        };
+        rest.forEach(l => {
+          if (l.startsWith('·')) kup.push(l);
+          else { izprazni(); deli.push(`<p>${escapeHtml(l)}</p>`); }
+        });
+        izprazni();
+        return `<div class="offer-package"><div class="offer-package-head"><h3>${escapeHtml(name.trim())}</h3><strong>${escapeHtml(price.trim())}</strong></div>${deli.join('')}</div>`;
       }
       return `<p>${lines.map(escapeHtml).join('<br>')}</p>`;
     })
@@ -659,9 +784,18 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('');
     v.push('IZBERITE PAKET');
     v.push('');
-    r.paketi.forEach(p => {
+    r.paketi.forEach((p, i) => {
       v.push(`${p.ime.toUpperCase()}  ·  ${val(p.skupaj)}${ddvZavezanec ? `  (z DDV ${zDdv(p.skupaj)})` : ''}`);
-      v.push(`  ${p.opis}`);
+      const vecStoritev = r.sez.length > 1;
+      r.sez.forEach(s => {
+        const [jedro = [], nadgradnja = [], vrh = []] = ALINEJE_PAKETOV[s.id] ?? [];
+        const alineje = [...jedro, ...(i >= 1 ? nadgradnja : []), ...(i >= 2 ? vrh : [])];
+        if (!alineje.length) { v.push(`  · ${s.ime}: izvedba po dogovorjenem obsegu`); return; }
+        if (vecStoritev) v.push(`  ${s.ime}`);
+        alineje.forEach(a => v.push(`  · ${a}`));
+      });
+      postavke.forEach(x => v.push(`  · ${x.ime}${x.kolicina > 1 ? ' × ' + x.kolicina : ''}`));
+      v.push(`  · ${POPRAVKI_PAKETA[i]}`);
       v.push('');
     });
     v.push(crta);
@@ -1183,7 +1317,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .editor .offer-package-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .35rem; }
         .cw .editor .offer-package h3 { margin: 0; font-family: var(--font-sans), system-ui, sans-serif; font-size: .78rem; line-height: 1.2; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
         .cw .editor .offer-package strong { font-family: var(--font-serif), Didot, serif; font-size: 1.35rem; line-height: 1; font-weight: 500; white-space: nowrap; }
-        .cw .editor .offer-package p { margin-bottom: 0; max-width: none; color: rgba(17,17,17,.72); }
+        .cw .editor .offer-package p { margin: .55rem 0 0; max-width: none; font-weight: 700; color: var(--ink); }
+        .cw .editor .offer-package ul { margin: .45rem 0 0; padding-left: 1.05rem; }
+        .cw .editor .offer-package li { margin: .22rem 0; color: var(--ink); }
         .cw .btnvrsta { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-top: 1.2rem; align-items: center; }
         .cw .gumb { font-family: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; border-radius: 999px; padding: .95rem 2.2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); transition: opacity .18s ease; display: inline-flex; align-items: center; justify-content: center; gap: .45rem; }
         .cw .gumb { transition: opacity .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
