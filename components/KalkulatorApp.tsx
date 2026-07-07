@@ -1113,6 +1113,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .choicegrid button:active { transform: translateY(0) scale(.96); }
         .cw .kljucek { width: 1.05em; height: 1.05em; border: 1.5px solid rgba(17,17,17,.5); border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: .78em; line-height: 1; flex: none; }
         .cw .choicegrid button.on .kljucek { border-color: #fff; }
+        .cw .krogec { width: 1.02em; height: 1.02em; border: 1.5px solid rgba(17,17,17,.5); border-radius: 999px; display: inline-flex; flex: none; position: relative; }
+        .cw .choicegrid button.on .krogec { border-color: #fff; }
+        .cw .choicegrid button.on .krogec::after { content: ''; position: absolute; inset: 3px; border-radius: 999px; background: #fff; }
         .cw .vec-namig { font-weight: 400; font-size: .85rem; color: rgba(17,17,17,.65); }
         .cw .choicegrid button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 
@@ -1419,7 +1422,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                               className={aktiven ? 'on' : ''}
                               onClick={() => setOdgovori({ ...odgovori, [vp.key]: nova })}
                             >
-                              {vp.vec ? <span className={'kljucek' + (aktiven ? ' on' : '')} aria-hidden>{aktiven ? '✓' : ''}</span> : null}{vrednost}
+                              <span className={(vp.vec ? 'kljucek' : 'krogec') + (aktiven ? ' on' : '')} aria-hidden>{vp.vec && aktiven ? '✓' : ''}</span>{vrednost}
                             </button>
                           );
                         })}
