@@ -1388,7 +1388,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <>
               <div className="vprasanja">
                 {trenutnaSkupina.vprasanja.slice(0, vidnaVprasanja).map((vp, vi) => (
-                  <div key={vp.key} className="vp" style={{ animationDelay: `${vi * 110}ms` }}>
+                  <div key={vp.key} className="vp" style={{ animationDelay: vi === 0 ? '.8s' : '0s' }}>
                     <label htmlFor={'cw-vp-' + vp.key}>{vp.label}</label>
                     {vp.izbire ? (
                       <div className="choicegrid">
