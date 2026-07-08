@@ -2575,6 +2575,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .gumb:active { transform: translateY(0) scale(.97); }
         .cw .gumb:disabled { opacity: .35; cursor: default; }
         .cw .povezava { font-family: inherit; font-size: .88rem; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .28em; padding: 0; display: inline-flex; align-items: center; gap: .38rem; }
+        .cw .povezava-roza { color: #8a3d5c; }
+        .cw .povezava-roza:hover { color: var(--accent); }
         .cw .povezava:hover { opacity: .6; }
 
         .cw .zajem { max-width: 420px; }
@@ -2941,7 +2943,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             {profilPogled === 'cene-nastavitve' && (
               <>
                 <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Te cene so <b>podlaga za izračun</b> — privzete (slovenski trg) delujejo takoj, prilagodi jih svojim za točnejši rezultat. Razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš; vrstni red velja tudi na prvem koraku.</p>
-                <button type="button" className="povezava" style={{ marginBottom: '1.3rem' }} onClick={() => { setKazemProfil(false); odpriOnboarding(); }}>↳ Uredi področja dela (kaj ponujaš)</button>
+                <button type="button" className="povezava povezava-roza" style={{ marginBottom: '1.3rem' }} onClick={() => { setKazemProfil(false); odpriOnboarding(); }}>↳ Uredi področja dela (kaj ponujaš)</button>
                 <div className="cene-seznam">
                   {poVrstnemRedu(vidneStoritve).map((s, i) => (
                     <div key={s.id} className="cene-vrsta" draggable
