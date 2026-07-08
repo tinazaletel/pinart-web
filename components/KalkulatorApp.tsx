@@ -321,7 +321,7 @@ const KATALOG = [
   { id: 'seo-opisi',    ime: 'SEO opisi izdelkov (kos)',          cena: 30 },
 ];
 
-type Postavka = { id: string; ime: string; cena: number; kolicina: number };
+type Postavka = { id: string; ime: string; cena: number; kolicina: number; enota?: 'kos' | 'ura' };
 
 const brezSumnikov = (s: string) =>
   s.toLowerCase().replace(/č/g, 'c').replace(/š/g, 's').replace(/ž/g, 'z');
@@ -1018,7 +1018,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('');
     v.push('OBSEG');
     r.sez.forEach(s => v.push(`· ${s.ime}`));
-    postavke.forEach(x => v.push(`· ${x.ime}${x.kolicina > 1 ? ' × ' + x.kolicina : ''}`));
+    postavke.forEach(x => v.push(`· ${x.ime}${x.enota === 'ura' ? ` — ${x.kolicina} ur` : x.kolicina > 1 ? ' × ' + x.kolicina : ''}`));
     v.push('· [dopolni po potrebi]');
     const dodatniOdgovori = aktivnaVprasanja
       .map(vp => ({
@@ -1047,7 +1047,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         if (vecStoritev) v.push(`  ${s.ime}`);
         alineje.forEach(a => v.push(`  · ${a}`));
       });
-      postavke.forEach(x => v.push(`  · ${x.ime}${x.kolicina > 1 ? ' × ' + x.kolicina : ''}`));
+      postavke.forEach(x => v.push(`  · ${x.ime}${x.enota === 'ura' ? ` — ${x.kolicina} ur` : x.kolicina > 1 ? ' × ' + x.kolicina : ''}`));
       v.push(`  · ${POPRAVKI_PAKETA[i]}`);
       v.push('');
     });
@@ -1251,6 +1251,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setKazemDodaj(false);
   };
 
+  const preklopiEnoto = (id: string) => {
+    setPostavke(p => p.map(x => {
+      if (x.id !== id) return x;
+      const naUro = x.enota !== 'ura';
+      return { ...x, enota: naUro ? 'ura' : 'kos', cena: naUro ? 70 : x.cena };
+    }));
+  };
   const uredi = (id: string, polje: 'cena' | 'kolicina', vrednost: number) => {
     setPostavke(p => p.map(x => x.id === id ? { ...x, [polje]: Math.max(polje === 'kolicina' ? 1 : 0, vrednost) } : x));
   };
@@ -1555,7 +1562,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .drag-rocaj { flex: none; display: inline-flex; cursor: grab; color: rgba(17,17,17,.4); }
         .cw .drag-rocaj:active { cursor: grabbing; }
         .cw .cv-ime { flex: 1; min-width: 0; font-size: .96rem; font-weight: 500; color: var(--ink); display: inline-flex; align-items: center; gap: .3rem; }
-        .cw .cene-vrsta input { width: 84px; flex: none; text-align: right; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: .96rem; border: none; border-bottom: 1px solid rgba(17,17,17,.2); background: transparent; padding: .3rem .2rem; color: var(--ink); }
+        .cw .cene-vrsta input { width: 104px; flex: none; text-align: right; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: .96rem; border: none; border-bottom: 1px solid rgba(17,17,17,.2); background: transparent; padding: .4rem .55rem .4rem .3rem; color: var(--ink); }
         .cw .cene-vrsta input:focus { outline: none; border-bottom: 1.5px solid var(--ink); }
         .cw .cv-znak { flex: none; font-size: .9rem; color: rgba(17,17,17,.55); }
         .cw .cene-vrsta .brisi { flex: none; border: none; background: none; cursor: pointer; font-size: 1.1rem; line-height: 1; color: rgba(17,17,17,.4); padding: .1rem .3rem; }
@@ -1679,8 +1686,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .predlogi .svoja { font-weight: 500; }
 
         .cw .postavke { margin-top: 1.6rem; max-width: 540px; }
-        .cw .postavka { display: grid; grid-template-columns: 1fr 3.2rem 5rem auto auto; gap: .7rem; align-items: baseline; border-bottom: 1px solid rgba(17,17,17,.12); padding: .5rem 0; font-size: .92rem; }
-        .cw .postavka input { border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: .95rem; padding: 0 0 .15rem; color: var(--ink); text-align: right; border-radius: 0; width: 100%; }
+        .cw .postavka { display: grid; grid-template-columns: 1fr 3rem 2.7rem 5.2rem auto auto; gap: .7rem; align-items: center; border-bottom: 1px solid rgba(17,17,17,.12); padding: .5rem 0; font-size: .92rem; }
+        .cw .postavka input { border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: .95rem; padding: .1rem .5rem .2rem 0; color: var(--ink); text-align: right; border-radius: 0; width: 100%; }
+        .cw .postavka .enota-toggle { border: 1px solid rgba(17,17,17,.28); border-radius: 999px; background: transparent; font-family: inherit; font-size: .72rem; font-weight: 600; padding: .18rem .5rem; cursor: pointer; color: var(--ink); opacity: 1; justify-self: center; }
+        .cw .postavka .enota-toggle:hover { border-color: var(--ink); }
         .cw .postavka input:focus { outline: none; border-bottom: 2px solid var(--ink); }
         .cw .postavka .enota { color: rgba(17,17,17,.65); font-size: .85rem; }
         .cw .postavka button { border: none; background: none; cursor: pointer; font-family: inherit; font-size: 1rem; color: var(--ink); opacity: .45; padding: 0 .2rem; }
@@ -2108,11 +2117,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   {postavke.map(x => (
                     <div key={x.id} className="postavka">
                       <span>{x.ime}</span>
-                      <input type="number" min={1} step={1} value={x.kolicina} aria-label={'Količina: ' + x.ime}
+                      <input type="number" min={1} step={1} value={x.kolicina} aria-label={(x.enota === 'ura' ? 'Ure' : 'Količina') + ': ' + x.ime}
                         onChange={e => uredi(x.id, 'kolicina', Number(e.target.value) || 1)} />
+                      <button type="button" className="enota-toggle" onClick={() => preklopiEnoto(x.id)}
+                        title="Preklopi enoto (kos / ura)">{x.enota === 'ura' ? 'ur' : 'kos'}</button>
                       <input type="number" min={0} step={10} value={x.cena} aria-label={'Cena: ' + x.ime}
                         onChange={e => uredi(x.id, 'cena', Number(e.target.value) || 0)} />
-                      <span className="enota">€</span>
+                      <span className="enota">{x.enota === 'ura' ? '€/uro' : '€'}</span>
                       <button type="button" title="Odstrani" onClick={() => odstrani(x.id)}>×</button>
                     </div>
                   ))}
