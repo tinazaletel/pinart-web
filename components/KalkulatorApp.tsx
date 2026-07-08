@@ -1356,7 +1356,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .sg-alineje { margin: .55rem 0 0; padding-left: 1.2rem; list-style: disc; }
         .cw .sg-alineje li { margin: .22rem 0; font-size: 1rem; font-weight: 600; color: var(--ink); }
         .cw .sg-alineje li::marker { color: var(--accent); }
-        .cw .sg-motiv { margin: 0 0 1.7rem; padding: 1.05rem 1.2rem; background: rgba(178,84,118,.09); border-left: 3px solid var(--accent); border-radius: 0 12px 12px 0; }
+        .cw .sg-motiv { margin: 1.4rem 0 1.9rem; padding: 1.05rem 1.2rem; background: rgba(178,84,118,.09); border-left: 3px solid var(--accent); border-radius: 0 12px 12px 0; }
         .cw .sg-motiv-ozn { display: block; margin-bottom: .4rem; font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
         .cw .sg-motiv p { margin: 0; font-size: 1.02rem; font-weight: 400; line-height: 1.6; color: var(--ink); }
         .cw .sg-motiv p b { font-weight: 700; }
@@ -1372,7 +1372,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .se-toggle input:checked + .se-slider::before { transform: translateX(calc(2.6rem - 1.5rem)); }
         .cw .se-preklop em { font-style: normal; color: rgba(17,17,17,.55); font-weight: 400; }
         .cw .se-note { margin: .8rem 0 0; font-size: .82rem; line-height: 1.5; color: rgba(17,17,17,.62); }
-        .cw .soglasje-gumbi { display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap; }
+        .cw .soglasje-gumbi { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
         .cw .napredek { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(17,17,17,.1); z-index: 40; }
         .cw .napredek i { display: block; height: 100%; background: var(--ink); transition: width .5s cubic-bezier(.16,1,.3,1); }
 
@@ -1673,9 +1673,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 </>
               )}
             </div>
-            <div className="soglasje-gumbi" style={{ justifyContent: 'space-between' }}>
-              <a className="povezava" href={`/${locale}/kalkulator/pogoji`}>Preberi celotne pogoje</a>
+            <div className="soglasje-gumbi">
               <button type="button" className="gumb" onClick={sprejmiPogoje}>Razumem, gremo →</button>
+              <a className="povezava" href={`/${locale}/kalkulator/pogoji`}>Preberi celotne pogoje</a>
             </div>
           </div>
         </div>
