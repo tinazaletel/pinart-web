@@ -2072,7 +2072,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const svc = poVrstnemRedu(vidneStoritve.filter(s => area.storitve.includes(s.id)));
     if (!svc.length) return null;
     return (
-      <div className="skupina" key={area.id}>
+      <div className="kartica skupina" key={area.id}>
         <div className="skupina-naslov">{area.ime}</div>
         <div className="opts">{svc.map(oblacekStoritve)}</div>
       </div>
@@ -2310,6 +2310,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .cene-dodaj input[type=text] { flex: 1; min-width: 140px; }
         .cw .cene-dodaj input[type=number] { width: 80px; text-align: right; }
         .cw .skupine-storitev { display: flex; flex-direction: column; gap: 1.7rem; }
+        .cw .skupine-storitev .kartica.skupina { margin-bottom: 0; max-width: none; }
         .cw .skupina-naslov { font-size: .72rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--accent); margin-bottom: .75rem; }
         .cw .onboarding { position: fixed; inset: 0; z-index: 60; background: var(--paper); overflow-y: auto; display: flex; flex-direction: column; animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
         @media (prefers-reduced-motion: reduce) { .cw .onboarding { animation: none; } }
@@ -3134,7 +3135,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <div className="skupine-storitev">
                 {izbranaPodrocja.map(skupinaPodrocja)}
                 {mojeVidne.length > 0 && (
-                  <div className="skupina">
+                  <div className="kartica skupina">
                     <div className="skupina-naslov">Moje storitve</div>
                     <div className="opts">{mojeVidne.map(oblacekStoritve)}</div>
                   </div>
