@@ -2275,7 +2275,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         <div className="numgrid" key={i}>
           <div className="polje">
             <label htmlFor={`cw-ura-ime-${i}`}>Za kaj</label>
-            <input id={`cw-ura-ime-${i}`} type="text" placeholder="npr. oblikovanje, IT / razvoj, art direkcija"
+            <input id={`cw-ura-ime-${i}`} type="text" placeholder="npr. Dejan – ilustracija, Andrej – IT"
               value={u.ime}
               onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, ime: e.target.value } : x))} />
           </div>
