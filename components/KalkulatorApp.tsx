@@ -589,6 +589,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     } catch { setPogojiOk(true); }
   }, []);
   const sprejmiPogoje = () => {
+    /* neobvezna prijava na obvescanje ob vstopu (locena od anonimne statistike) */
+    if (zeliEmail && imamKontakt) posljiKontakt('prijava na obveščanje ob vstopu');
     try { localStorage.setItem('pinart-kalk-pogoji-ok', '1'); } catch { /* ignoriraj */ }
     setPogojiOk(true);
   };
@@ -653,6 +655,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [imeProfila, setImeProfila] = useState('');
   const [leadIme, setLeadIme] = useState('');
   const [leadEmail, setLeadEmail] = useState('');
+  const [zeliEmail, setZeliEmail] = useState(false);
   const [kazemDostopnost, setKazemDostopnost] = useState(false);
 
   useEffect(() => {
@@ -1343,6 +1346,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .soglasje-kartica h2 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 4.5vw, 2.4rem); line-height: 1.05; margin: 0 0 1.1rem; }
         .cw .soglasje-kartica ul { margin: 0 0 1.8rem; padding-left: 0; list-style: none; }
         .cw .soglasje-kartica li { font-size: 1.02rem; font-weight: 400; line-height: 1.65; color: var(--ink); margin-bottom: .8rem; }
+        .cw .soglasje-email { border-top: 1px solid rgba(17,17,17,.14); padding-top: 1.3rem; margin-bottom: 1.7rem; }
+        .cw .se-preklop { display: flex; align-items: flex-start; gap: .6rem; cursor: pointer; font-size: .98rem; font-weight: 500; color: var(--ink); line-height: 1.5; }
+        .cw .se-preklop input { margin-top: .18rem; width: 1.1rem; height: 1.1rem; accent-color: var(--ink); cursor: pointer; flex-shrink: 0; }
+        .cw .se-preklop em { font-style: normal; color: rgba(17,17,17,.55); font-weight: 400; }
+        .cw .se-note { margin: .8rem 0 0; font-size: .82rem; line-height: 1.5; color: rgba(17,17,17,.62); }
         .cw .soglasje-gumbi { display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap; }
         .cw .napredek { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(17,17,17,.1); z-index: 40; }
         .cw .napredek i { display: block; height: 100%; background: var(--ink); transition: width .5s cubic-bezier(.16,1,.3,1); }
@@ -1601,8 +1609,29 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <ul>
               <li>Priporočene cene so pametno izhodišče, ne uradni cenik: nastale so iz izkušenj, tržno bazo pa šele gradimo. Svobodno jih prilagodi — končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.</li>
               <li>Tvoje cene, postavke in podatki ostanejo shranjeni samo v tvojem brskalniku.</li>
-              <li>Ob prikazu izračuna anonimno zabeležimo izbrane kategorije in zneske (brez imena, e-naslova ali IP). S tem skupaj gradimo prvo statistiko cen za kreativce: ko bo baza dovolj velika, boš videl, koliko kolegi s podobnimi izkušnjami dejansko računajo. Nihče drug tega podatka danes nima.</li>
+              <li>Ob prikazu izračuna <b>anonimno</b> zabeležimo izbrane kategorije in zneske — <b>brez imena, e-naslova ali IP, nikoli povezano s teboj</b>. S tem skupaj gradimo prvo statistiko cen za kreativce: ko bo baza dovolj velika, boš videl, koliko kolegi s podobnimi izkušnjami dejansko računajo. Nihče drug tega podatka danes nima.</li>
             </ul>
+            <div className="soglasje-email">
+              <label className="se-preklop">
+                <input type="checkbox" checked={zeliEmail} onChange={e => setZeliEmail(e.target.checked)} />
+                <span>Obveščajte me o orodju in nasvetih za kreativce <em>(neobvezno)</em></span>
+              </label>
+              {zeliEmail && (
+                <>
+                  <div className="numgrid" style={{ marginTop: '.9rem' }}>
+                    <div className="polje">
+                      <label htmlFor="cw-sglime">Ime</label>
+                      <input id="cw-sglime" value={leadIme} onChange={e => setLeadIme(e.target.value)} placeholder="Tvoje ime" />
+                    </div>
+                    <div className="polje">
+                      <label htmlFor="cw-sglemail">Email</label>
+                      <input id="cw-sglemail" type="email" value={leadEmail} onChange={e => setLeadEmail(e.target.value)} placeholder="ti@primer.si" />
+                    </div>
+                  </div>
+                  <p className="se-note">Ločeno od anonimne statistike zgoraj. Email uporabimo samo za obvestila; kadar koli se lahko odjaviš.</p>
+                </>
+              )}
+            </div>
             <div className="soglasje-gumbi" style={{ justifyContent: 'space-between' }}>
               <a className="povezava" href={`/${locale}/kalkulator/pogoji`}>Preberi celotne pogoje</a>
               <button type="button" className="gumb" onClick={sprejmiPogoje}>Razumem, gremo →</button>
