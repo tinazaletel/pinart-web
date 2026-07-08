@@ -1116,6 +1116,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [narocnikOseba, setNarocnikOseba] = useState('');
   const [narocnikNaslov, setNarocnikNaslov] = useState('');
   const [narocnikDavcna, setNarocnikDavcna] = useState('');
+  const [dodatniNarocnik, setDodatniNarocnik] = useState(false);
   const [obsegPonudbe, setObsegPonudbe] = useState<'kratka' | 'razsirjena'>('razsirjena');
   const [kaziUre, setKaziUre] = useState(false);
   const [prenosPravic, setPrenosPravic] = useState<'izkljucni' | 'neizkljucni' | 'licenca'>('izkljucni');
@@ -3729,23 +3730,30 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       value={narocnikEmail} onChange={e => setNarocnikEmail(e.target.value)} />
                   </div>
                 </div>
-                <div className="numgrid">
-                  <div className="polje">
-                    <label htmlFor="cw-narocnik-oseba">Kontaktna oseba <span className="vec">neobvezno</span></label>
-                    <input id="cw-narocnik-oseba" type="text" placeholder="npr. Janez Potočnik"
-                      value={narocnikOseba} onChange={e => setNarocnikOseba(e.target.value)} />
+                {(dodatniNarocnik || narocnikOseba || narocnikNaslov || narocnikDavcna) ? (
+                  <div className="numgrid">
+                    <div className="polje">
+                      <label htmlFor="cw-narocnik-oseba">Kontaktna oseba</label>
+                      <input id="cw-narocnik-oseba" type="text" placeholder="npr. Janez Potočnik"
+                        value={narocnikOseba} onChange={e => setNarocnikOseba(e.target.value)} />
+                    </div>
+                    <div className="polje">
+                      <label htmlFor="cw-narocnik-davcna">Davčna številka</label>
+                      <input id="cw-narocnik-davcna" type="text" placeholder="npr. SI12345678"
+                        value={narocnikDavcna} onChange={e => setNarocnikDavcna(e.target.value)} />
+                    </div>
+                    <div className="polje" style={{ gridColumn: '1 / -1' }}>
+                      <label htmlFor="cw-narocnik-naslov">Naslov</label>
+                      <input id="cw-narocnik-naslov" type="text" placeholder="npr. Dunajska cesta 1, 1000 Ljubljana"
+                        value={narocnikNaslov} onChange={e => setNarocnikNaslov(e.target.value)} />
+                    </div>
                   </div>
-                  <div className="polje">
-                    <label htmlFor="cw-narocnik-davcna">Davčna številka <span className="vec">neobvezno</span></label>
-                    <input id="cw-narocnik-davcna" type="text" placeholder="npr. SI12345678"
-                      value={narocnikDavcna} onChange={e => setNarocnikDavcna(e.target.value)} />
-                  </div>
-                  <div className="polje" style={{ gridColumn: '1 / -1' }}>
-                    <label htmlFor="cw-narocnik-naslov">Naslov <span className="vec">neobvezno</span></label>
-                    <input id="cw-narocnik-naslov" type="text" placeholder="npr. Dunajska cesta 1, 1000 Ljubljana"
-                      value={narocnikNaslov} onChange={e => setNarocnikNaslov(e.target.value)} />
-                  </div>
-                </div>
+                ) : (
+                  <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
+                    onClick={() => setDodatniNarocnik(true)}>
+                    + Dodaj kontaktno osebo, davčno, naslov
+                  </button>
+                )}
                 {(() => {
                   const nedavni = Array.from(new Set(
                     Object.values(arhiv).map(a => a.narocnikPonudbe).filter(Boolean)
