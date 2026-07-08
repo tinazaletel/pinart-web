@@ -606,6 +606,26 @@ type Profil = {
   mojeStoritve?: Storitev[];
 };
 
+/* Arhiv ponudb: cel posnetek ene ponudbe (za vrnitev / preklop med strankami).
+   Loceno od cenovnih profilov (ti hranijo le cene). */
+const K_ARHIV = 'pinart-kalkulator-arhiv';
+type ShranjenaP = {
+  datum: string;
+  izbrane: string[];
+  odgovori: Record<string, string>;
+  postavke: Postavka[];
+  raba: 'znamka' | 'projekt';
+  promet: string; dobicek: string; projPrihodek: string; projDobicek: string;
+  popust: string; dodatki: string[];
+  prenosPravic: 'izkljucni' | 'neizkljucni' | 'licenca';
+  rocnePravice: string; rocnaLicenca: string;
+  nazivPonudbe: string; narocnikPonudbe: string;
+  obsegPonudbe: 'kratka' | 'razsirjena'; tonPonudbe: TonPonudbe; avansPct: string;
+  kaziUre: boolean; nogaZnak: boolean;
+  izkusnje: string; mojTrg: string; trgNarocnika: string; valuta: string; valutaRocna: boolean;
+  rocnoBesedilo: boolean; besediloHtml: string;
+};
+
 /* Nevidni Cloudflare Turnstile zeton za anonimni POST cene — aktiven SELE, ce
    je vpisan NEXT_PUBLIC_TURNSTILE_SITE_KEY. Brez kljuca vrne undefined in
    posiljanje tece kot doslej (nic ne blokira med razvojem). Uporabnik ne
@@ -725,6 +745,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [odgovori, setOdgovori] = useState<Record<string, string>>({});
   const [osnove, setOsnove] = useState<Record<string, number>>({});
   const [profili, setProfili] = useState<Record<string, Profil>>({});
+  const [arhiv, setArhiv] = useState<Record<string, ShranjenaP>>({});
   const [kopirano, setKopirano] = useState(false);
   const [kazemZajem, setKazemZajem] = useState<null | 'prenos' | 'profil'>(null);
   /* Postopni prikaz vprasanj (Tinina koreografija): naslov na sredini,
@@ -769,6 +790,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       if (s.ddvZavezanec) setDdvZavezanec(true);
       if (s.ddvStopnja) setDdvStopnja(String(s.ddvStopnja));
       setProfili(JSON.parse(localStorage.getItem(K_PROFILI) || '{}'));
+      setArhiv(JSON.parse(localStorage.getItem(K_ARHIV) || '{}'));
       const l = JSON.parse(localStorage.getItem(K_LEAD) || 'null');
       if (l) { setLeadIme(l.ime || ''); setLeadEmail(l.email || ''); }
     } catch { /* prazno */ }
@@ -1466,6 +1488,50 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     try { localStorage.setItem(K_PROFILI, JSON.stringify(nov)); } catch { /* poln */ }
   };
 
+  /* ── arhiv ponudb: shrani / naloži / izbriši cel posnetek ─────────── */
+  const shraniVArhiv = () => {
+    const ime = (nazivPonudbe.trim() || narocnikPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : 'Ponudba')).slice(0, 60);
+    const zapis: ShranjenaP = {
+      datum: new Date().toISOString(),
+      izbrane: [...izbrane], odgovori, postavke, raba,
+      promet, dobicek, projPrihodek, projDobicek, popust, dodatki: [...dodatki],
+      prenosPravic, rocnePravice, rocnaLicenca,
+      nazivPonudbe, narocnikPonudbe, obsegPonudbe, tonPonudbe, avansPct,
+      kaziUre, nogaZnak, izkusnje, mojTrg, trgNarocnika, valuta, valutaRocna,
+      rocnoBesedilo, besediloHtml: rocnoBesedilo ? (editorRef.current?.innerHTML || besediloHtml) : '',
+    };
+    const nov = { ...arhiv, [ime]: zapis };
+    setArhiv(nov);
+    try { localStorage.setItem(K_ARHIV, JSON.stringify(nov)); } catch { /* poln */ }
+  };
+  const naloziIzArhiva = (ime: string) => {
+    const p = arhiv[ime];
+    if (!p) return;
+    setIzbrane(new Set(p.izbrane)); setOdgovori(p.odgovori || {}); setPostavke(p.postavke || []);
+    setRaba(p.raba); setPromet(p.promet); setDobicek(p.dobicek);
+    setProjPrihodek(p.projPrihodek); setProjDobicek(p.projDobicek);
+    setPopust(p.popust); setDodatki(new Set(p.dodatki || []));
+    setPrenosPravic(p.prenosPravic); setRocnePravice(p.rocnePravice); setRocnaLicenca(p.rocnaLicenca);
+    setNazivPonudbe(p.nazivPonudbe); setNarocnikPonudbe(p.narocnikPonudbe);
+    setObsegPonudbe(p.obsegPonudbe); setTonPonudbe(p.tonPonudbe); setAvansPct(p.avansPct);
+    setKaziUre(p.kaziUre); setNogaZnak(p.nogaZnak);
+    setIzkusnje(p.izkusnje); setMojTrg(p.mojTrg); setTrgNarocnika(p.trgNarocnika);
+    setValuta(p.valuta); setValutaRocna(p.valutaRocna);
+    if (p.rocnoBesedilo && p.besediloHtml) {
+      setRocnoBesedilo(true); setBesediloHtml(p.besediloHtml);
+      if (editorRef.current) editorRef.current.innerHTML = p.besediloHtml;
+    } else {
+      setRocnoBesedilo(false);
+    }
+    setKorak(0);
+  };
+  const izbrisiIzArhiva = (ime: string) => {
+    const nov = { ...arhiv };
+    delete nov[ime];
+    setArhiv(nov);
+    try { localStorage.setItem(K_ARHIV, JSON.stringify(nov)); } catch { /* poln */ }
+  };
+
   /* ── carovnik: navigacija ─────────────────────────────────────────── */
   useEffect(() => {
     setKorak(k => Math.min(k, KORAKOV - 1));
@@ -1796,6 +1862,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .profil-nalozi .pn-oznaka { font-size: .82rem; font-weight: 600; color: rgba(17,17,17,.6); }
         .cw .profil-nalozi .pn-chip { font-family: inherit; font-size: .85rem; font-weight: 600; color: var(--ink); background: #FCFBF7; border: 1px solid rgba(17,17,17,.2); border-radius: 999px; padding: .4rem .95rem; cursor: pointer; transition: border-color .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .profil-nalozi .pn-chip:hover { border-color: var(--ink); transform: translateY(-2px); }
+        .cw .arhiv-chip { display: inline-flex; align-items: center; background: #FCFBF7; border: 1px solid rgba(17,17,17,.2); border-radius: 999px; overflow: hidden; }
+        .cw .arhiv-chip .ac-open { font-family: inherit; font-size: .85rem; font-weight: 600; color: var(--ink); background: none; border: none; padding: .4rem .5rem .4rem .9rem; cursor: pointer; }
+        .cw .arhiv-chip .ac-del { font-family: inherit; font-size: 1rem; line-height: 1; color: rgba(17,17,17,.45); background: none; border: none; padding: .35rem .6rem .35rem .3rem; cursor: pointer; }
+        .cw .arhiv-chip .ac-del:hover { color: var(--accent); }
+        .cw .arhiv-chip:hover { border-color: var(--ink); }
         .cw .ure-preklop { display: flex; align-items: flex-start; gap: .6rem; margin: 0 0 1rem; font-size: .9rem; font-weight: 600; color: var(--ink); cursor: pointer; max-width: 640px; }
         .cw .ure-preklop input { margin-top: .2rem; width: 1.05rem; height: 1.05rem; accent-color: var(--ink); cursor: pointer; }
         .cw .ure-preklop em { font-style: normal; font-weight: 400; color: rgba(17,17,17,.62); }
@@ -2149,6 +2220,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
           {korak === 0 && (
             <>
+              {Object.keys(arhiv).length > 0 && (
+                <div className="profil-nalozi">
+                  <span className="pn-oznaka">Arhiv ponudb:</span>
+                  {Object.keys(arhiv).map(ime => (
+                    <span key={ime} className="arhiv-chip">
+                      <button type="button" className="ac-open" onClick={() => naloziIzArhiva(ime)} title="Odpri ponudbo">↺ {ime}</button>
+                      <button type="button" className="ac-del" onClick={() => izbrisiIzArhiva(ime)} title="Izbriši iz arhiva">×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
               {Object.keys(profili).length > 0 && (
                 <div className="profil-nalozi">
                   <span className="pn-oznaka">Naloži svoje cene:</span>
@@ -2853,7 +2935,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <FileText size={17} /> Izvozi postavke (CSV za račune)
                 </button>
                 <button type="button" className="povezava" onClick={() => zahtevaKontakt('profil')}>
-                  <FloppyDisk size={17} /> Shrani profil
+                  <FloppyDisk size={17} /> Shrani profil (cene)
+                </button>
+                <button type="button" className="povezava" onClick={shraniVArhiv}>
+                  <FloppyDisk size={17} /> Shrani ponudbo v arhiv
                 </button>
                 <button type="button" className="povezava" onClick={novaPonudba}>
                   ↺ Nova ponudba
