@@ -6,7 +6,7 @@ import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package,
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
   CopySimple, DownloadSimple, FileText, FloppyDisk, PaintBucket,
-  PersonSimple, TextAa, TextB, UploadSimple, CalendarBlank,
+  PersonSimple, TextAa, TextB, UploadSimple, CalendarBlank, EnvelopeSimple,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -1362,6 +1362,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .sg-motiv p b { font-weight: 700; }
         .cw .soglasje-email { border-top: 1px solid rgba(17,17,17,.14); padding-top: 1.3rem; margin-bottom: 1.7rem; }
         .cw .se-preklop { display: flex; align-items: center; justify-content: space-between; gap: 1.1rem; cursor: pointer; font-size: .98rem; font-weight: 500; color: var(--ink); line-height: 1.5; }
+        .cw .se-tekst { display: flex; align-items: center; gap: .55rem; min-width: 0; }
+        .cw .se-ikona { flex: none; color: var(--ink); opacity: .7; }
         .cw .se-toggle { position: relative; flex: none; width: 2.6rem; height: 1.5rem; }
         .cw .se-toggle input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
         .cw .se-slider { position: absolute; inset: 0; background: rgba(17,17,17,.24); border-radius: 999px; transition: background .2s ease; pointer-events: none; }
@@ -1651,7 +1653,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </div>
             <div className="soglasje-email">
               <label className="se-preklop">
-                <span>Obveščajte me o orodju in nasvetih za kreativce <em>(neobvezno)</em></span>
+                <span className="se-tekst">
+                  <EnvelopeSimple size={20} className="se-ikona" aria-hidden />
+                  <span>Obveščajte me o orodju in nasvetih za kreativce <em>(neobvezno)</em></span>
+                </span>
                 <span className="se-toggle">
                   <input type="checkbox" checked={zeliEmail} onChange={e => setZeliEmail(e.target.checked)} />
                   <span className="se-slider" aria-hidden />
