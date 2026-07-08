@@ -654,6 +654,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [kazemDodaj, setKazemDodaj] = useState(false);
   const [kazemCene, setKazemCene] = useState(false);
   const [mojeStoritve, setMojeStoritve] = useState<Storitev[]>([]);
+  /* Onboarding / osebni set storitev: kaj uporabnik ponuja, postavljeno v
+     ospredje. null = se ni onboardan; [] = onboardan brez izbire (pokazi vse). */
+  const [mojSet, setMojSet] = useState<string[] | null>(null);
+  const [onboardingOdprt, setOnboardingOdprt] = useState(false);
+  const [obIzbor, setObIzbor] = useState<Set<string>>(new Set());
+  const [kazemDruge, setKazemDruge] = useState(false);
   const [novaIme, setNovaIme] = useState('');
   const [novaCena, setNovaCena] = useState('');
   const [valuta, setValuta] = useState('eur');
@@ -709,6 +715,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         setTrgNarocnika(z);
       }
       if (s.mojeStoritve) setMojeStoritve(s.mojeStoritve);
+      if (Array.isArray(s.mojSet)) setMojSet(s.mojSet);
       if (s.valuta) { setValuta(s.valuta); setValutaRocna(true); }
       if (s.ponudnik) {
         setPonudnik({ trr: '', ...s.ponudnik });
@@ -733,10 +740,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       localStorage.setItem(K_NAST, JSON.stringify({
         osnove, izkusnje, mojTrg, mojeStoritve, ponudnik, postavke,
         ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct,
+        mojSet: mojSet ?? undefined,
         valuta: valutaRocna ? valuta : undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct]);
+  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -744,6 +752,42 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   }, [trgNarocnika, valutaRocna]);
 
   const vseStoritve = useMemo(() => [...STORITVE, ...mojeStoritve], [mojeStoritve]);
+
+  /* Osebni set v ospredju + preostale storitve (za "druge storitve"). */
+  const mojSetStoritve = useMemo(() => {
+    if (!mojSet || !mojSet.length) return null;
+    const map = new Map(vseStoritve.map(s => [s.id, s] as const));
+    return mojSet.map(id => map.get(id)).filter(Boolean) as Storitev[];
+  }, [mojSet, vseStoritve]);
+  const drugeStoritve = useMemo(() => {
+    if (!mojSet || !mojSet.length) return [] as Storitev[];
+    const inSet = new Set(mojSet);
+    return vseStoritve.filter(s => !inSet.has(s.id));
+  }, [vseStoritve, mojSet]);
+
+  /* Onboarding ob prvem obisku (po sprejemu pogojev, ce se ni onboardan). */
+  useEffect(() => {
+    if (pogojiOk === true && mojSet === null) {
+      setObIzbor(new Set(izbrane));
+      setOnboardingOdprt(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pogojiOk, mojSet]);
+
+  const odpriOnboarding = () => {
+    setObIzbor(new Set(mojSet && mojSet.length ? mojSet : [...izbrane]));
+    setOnboardingOdprt(true);
+  };
+  const shraniOnboarding = () => {
+    setMojSet([...obIzbor]);
+    setKazemDruge(false);
+    setOnboardingOdprt(false);
+  };
+  const preskociOnboarding = () => {
+    setMojSet([]);
+    setOnboardingOdprt(false);
+  };
+
   const vfx = VALUTE.find(v => v.id === valuta) ?? VALUTE[0];
   const val = (n: number) => zaokrozi(n * vfx.fx).toLocaleString('sl-SI') + ' ' + vfx.znak;
 
@@ -1405,6 +1449,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .sg-motiv-ozn { display: block; margin-bottom: .4rem; font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
         .cw .sg-motiv p { margin: 0; font-size: 1.02rem; font-weight: 400; line-height: 1.6; color: var(--ink); }
         .cw .sg-motiv p b { font-weight: 700; }
+        .cw .ob-sub { font-size: 1rem; font-weight: 400; line-height: 1.55; color: rgba(17,17,17,.8); margin: 0 0 1.5rem; }
+        .cw .ob-opts { margin-bottom: 1.8rem; }
         .cw .soglasje-email { border-top: 1px solid rgba(17,17,17,.14); padding-top: 1.3rem; margin-bottom: 1.7rem; }
         .cw .se-preklop { display: flex; align-items: center; justify-content: space-between; gap: 1.1rem; cursor: pointer; font-size: .98rem; font-weight: 500; color: var(--ink); line-height: 1.5; }
         .cw .se-tekst { display: flex; align-items: center; gap: .55rem; min-width: 0; }
@@ -1726,6 +1772,29 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         </div>
       )}
 
+      {onboardingOdprt && (
+        <div className="soglasje" role="dialog" aria-modal="true" aria-label="Katere storitve ponujaš">
+          <div className="soglasje-kartica">
+            <h2>Katere storitve ponujaš?</h2>
+            <p className="ob-sub">Izberi svoje — postavimo jih v ospredje, ostale skrijemo (do njih prideš z enim klikom). Kadar koli lahko urediš ali preskočiš.</p>
+            <div className="opts ob-opts">
+              {vseStoritve.map(s => (
+                <button key={s.id} type="button"
+                  className={'pill' + (obIzbor.has(s.id) ? ' on' : '')}
+                  onClick={() => preklopi(obIzbor, s.id, setObIzbor)}>
+                  <span className="pi" aria-hidden>{ikonaZa(s.id)}</span>
+                  <span>{s.ime}</span>
+                </button>
+              ))}
+            </div>
+            <div className="soglasje-gumbi">
+              <button type="button" className="gumb" onClick={shraniOnboarding} disabled={obIzbor.size === 0}>Shrani in začni →</button>
+              <button type="button" className="povezava" onClick={preskociOnboarding}>Preskoči</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="napredek" aria-hidden><i style={{ width: `${((korak + 1) / KORAKOV) * 100}%` }} /></div>
 
       <div className="a11y">
@@ -1843,7 +1912,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 </div>
               )}
               <div className="opts">
-                {vseStoritve.map(s => (
+                {(mojSetStoritve ?? vseStoritve).map(s => (
+                  <button key={s.id} type="button"
+                    className={'pill' + (izbrane.has(s.id) ? ' on' : '')}
+                    onClick={() => preklopi(izbrane, s.id, setIzbrane)}>
+                    <span className="pi" aria-hidden>{ikonaZa(s.id)}</span>
+                    <span>{s.ime}<small>od {val(osnovaZa(s))}</small></span>
+                  </button>
+                ))}
+                {mojSetStoritve && !kazemDruge && drugeStoritve.length > 0 && (
+                  <button type="button" className="pill dodaj" onClick={() => setKazemDruge(true)}>
+                    <span className="pi" aria-hidden><Plus size={19} /></span>
+                    <span>druge storitve<small>{drugeStoritve.length} več …</small></span>
+                  </button>
+                )}
+                {mojSetStoritve && kazemDruge && drugeStoritve.map(s => (
                   <button key={s.id} type="button"
                     className={'pill' + (izbrane.has(s.id) ? ' on' : '')}
                     onClick={() => preklopi(izbrane, s.id, setIzbrane)}>
@@ -1856,6 +1939,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span>dodaj postavko<small>animacija, zvok, 3D, AI, svoje …</small></span>
                 </button>
               </div>
+              {mojSetStoritve && (
+                <button type="button" className="povezava" style={{ marginTop: '.9rem' }} onClick={odpriOnboarding}>
+                  ✎ Uredi svoje storitve
+                </button>
+              )}
 
               {kazemDodaj && (
                 <div className="iskalnik">
