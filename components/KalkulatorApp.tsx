@@ -1342,7 +1342,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw { min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 300; }
 
         .cw .soglasje { position: fixed; inset: 0; z-index: 60; background: rgba(245,242,234,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
-        .cw .soglasje-kartica { max-width: 540px; background: var(--paper); border: 1px solid rgba(17,17,17,.25); border-radius: 16px; padding: clamp(1.6rem, 4vw, 2.6rem); box-shadow: 0 24px 80px rgba(17,17,17,.12); }
+        .cw .soglasje-kartica { max-width: 540px; max-height: calc(100dvh - 2.5rem); overflow-y: auto; background: var(--paper); border: 1px solid rgba(17,17,17,.25); border-radius: 16px; padding: clamp(1.6rem, 4vw, 2.6rem); box-shadow: 0 24px 80px rgba(17,17,17,.12); }
         .cw .soglasje-kartica h2 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 4.5vw, 2.4rem); line-height: 1.05; margin: 0 0 1.1rem; }
         .cw .soglasje-kartica ul { margin: 0 0 1.8rem; padding-left: 0; list-style: none; }
         .cw .soglasje-kartica li { font-size: 1.02rem; font-weight: 400; line-height: 1.65; color: var(--ink); margin-bottom: .8rem; }
@@ -1639,12 +1639,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </div>
               <div className="sg-blok">
                 <h3 className="sg-h">Vedno anonimno</h3>
-                <p className="sg-t">Ob prikazu izračuna anonimno zabeležimo le izbrane kategorije in zneske — nikoli povezano s teboj:</p>
-                <ul className="sg-alineje">
-                  <li>brez imena</li>
-                  <li>brez e-naslova</li>
-                  <li>brez IP-naslova</li>
-                </ul>
+                <p className="sg-t">Ob prikazu izračuna anonimno zabeležimo le izbrane kategorije in zneske — <b>brez imena, e-naslova ali IP</b>, nikoli povezano s teboj.</p>
               </div>
             </div>
             <div className="sg-motiv">
