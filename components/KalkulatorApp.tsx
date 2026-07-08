@@ -2228,37 +2228,42 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         </div>
       </div>
 
-      <div className="kartica">
-        <div className="k-naslov">Urne postavke za dodatna dela <span className="vec">v pogojih ponudbe</span></div>
-        {urnePostavke.map((u, i) => (
-          <div className="numgrid" key={i}>
-            <div className="polje">
-              <label htmlFor={`cw-ura-ime-${i}`}>Za kaj</label>
-              <input id={`cw-ura-ime-${i}`} type="text" placeholder="npr. oblikovanje, IT / razvoj, art direkcija"
-                value={u.ime}
-                onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, ime: e.target.value } : x))} />
-            </div>
-            <div className="polje">
-              <label htmlFor={`cw-ura-${i}`}>Znesek ({vfx.znak}/uro)</label>
-              <div style={{ display: 'flex', gap: '.55rem', alignItems: 'center' }}>
-                <input id={`cw-ura-${i}`} type="number" min={0} step={5} placeholder="50" style={{ flex: 1 }}
-                  value={u.cena}
-                  onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, cena: e.target.value } : x))} />
-                {urnePostavke.length > 1 && (
-                  <button type="button" aria-label={`Odstrani urno postavko ${u.ime || i + 1}`}
-                    onClick={() => setUrnePostavke(urnePostavke.filter((_, j) => j !== i))}
-                    style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.25rem', color: 'var(--ink)', padding: '.2rem .4rem' }}>×</button>
-                )}
-              </div>
+    </>
+  );
+
+  /* Urne postavke za dodatna dela: zivijo pri "Tvoja cena" (ne vec pri
+     kontaktnih podatkih podjetja — Tina: "ni mi to najbolje tam"). */
+  const urnePostavkeUI = () => (
+    <div className="kartica">
+      <div className="k-naslov">Urne postavke za dodatna dela <span className="vec">v pogojih ponudbe</span></div>
+      {urnePostavke.map((u, i) => (
+        <div className="numgrid" key={i}>
+          <div className="polje">
+            <label htmlFor={`cw-ura-ime-${i}`}>Za kaj</label>
+            <input id={`cw-ura-ime-${i}`} type="text" placeholder="npr. oblikovanje, IT / razvoj, art direkcija"
+              value={u.ime}
+              onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, ime: e.target.value } : x))} />
+          </div>
+          <div className="polje">
+            <label htmlFor={`cw-ura-${i}`}>Znesek ({vfx.znak}/uro)</label>
+            <div style={{ display: 'flex', gap: '.55rem', alignItems: 'center' }}>
+              <input id={`cw-ura-${i}`} type="number" min={0} step={5} placeholder="50" style={{ flex: 1 }}
+                value={u.cena}
+                onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, cena: e.target.value } : x))} />
+              {urnePostavke.length > 1 && (
+                <button type="button" aria-label={`Odstrani urno postavko ${u.ime || i + 1}`}
+                  onClick={() => setUrnePostavke(urnePostavke.filter((_, j) => j !== i))}
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.25rem', color: 'var(--ink)', padding: '.2rem .4rem' }}>×</button>
+              )}
             </div>
           </div>
-        ))}
-        <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
-          onClick={() => setUrnePostavke([...urnePostavke, { ime: '', cena: '' }])}>
-          + Dodaj urno postavko
-        </button>
-      </div>
-    </>
+        </div>
+      ))}
+      <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
+        onClick={() => setUrnePostavke([...urnePostavke, { ime: '', cena: '' }])}>
+        + Dodaj urno postavko
+      </button>
+    </div>
   );
 
   const dodajPostavkoUI = (naslov: string) => (
@@ -3665,6 +3670,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
           {korak === cenaStep && r && (
             <>
+              {urnePostavkeUI()}
               <div className="paketi">
                 {r.paketi.map(p => (
                   <div key={p.id} className={'paket' + (p.id === 'priporoceni' ? ' mid' : '')}>
