@@ -1573,7 +1573,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .cene-dodaj input[type=text] { flex: 1; min-width: 140px; }
         .cw .cene-dodaj input[type=number] { width: 80px; text-align: right; }
         .cw .skupine-storitev { display: flex; flex-direction: column; gap: 1.7rem; }
-        .cw .skupina-naslov { font-size: .72rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: rgba(17,17,17,.5); margin-bottom: .75rem; }
+        .cw .skupina-naslov { font-size: .72rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--accent); margin-bottom: .75rem; }
         .cw .onboarding { position: fixed; inset: 0; z-index: 60; background: var(--paper); overflow-y: auto; display: flex; flex-direction: column; animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
         @media (prefers-reduced-motion: reduce) { .cw .onboarding { animation: none; } }
         .cw .ob-naslov { padding-left: 0 !important; }
