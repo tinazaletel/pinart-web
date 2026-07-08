@@ -2070,7 +2070,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             : korak === rabaStep ? 'Kako bo naročnik uporabljal tvoje delo?'
               : korak === posebnostiStep ? 'Posebnosti projekta?'
                 : korak === cenaStep ? 'Tvoja cena.'
-                  : korak === podatkiStep ? 'Tvoji podatki za ponudbo'
+                  : korak === podatkiStep ? 'Tvoji podatki in naročnik'
                     : 'Tvoja ponudba.';
 
   const opisKoraka = korak === 0 ? 'Izberi storitve za to ponudbo — eno ali več.'
@@ -2079,7 +2079,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         : korak === narocnikStep ? 'Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.'
           : korak === rabaStep ? 'To je vprašanje, ki ga druga orodja ne postavijo.'
             : korak === posebnostiStep ? 'Vse je neobvezno; pusti prazno in pojdi naprej.'
-              : korak === podatkiStep ? 'Izpolniš enkrat, orodje si zapomni.'
+              : korak === podatkiStep ? 'Tvoje podatke izpolniš enkrat, naročnika izbereš za vsako ponudbo posebej.'
                 : korak === ponudbaStep ? 'Besedilo lahko poljubno urejaš in dopišeš.'
                   : '';
 
@@ -2540,6 +2540,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .kartica > .hint { margin-top: 1rem; }
         .cw .dodaj-gumb { display: inline-flex; align-items: center; gap: .4rem; font-family: inherit; font-size: .9rem; font-weight: 600; color: var(--ink); background: transparent; border: 1px dashed rgba(17,17,17,.35); border-radius: 999px; padding: .55rem 1.1rem; cursor: pointer; transition: border-color .18s ease, background .18s ease; }
         .cw .dodaj-gumb:hover { border-color: var(--ink); background: rgba(17,17,17,.03); }
+        .cw .narocnik-nedavni { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: 1.1rem; }
+        .cw .narocnik-nedavni .vec { font-size: .78rem; font-weight: 500; color: rgba(17,17,17,.55); margin-right: .1rem; }
+        .cw .narocnik-chip { font-family: inherit; font-size: .78rem; font-weight: 500; padding: .4rem .85rem; border-radius: 999px; border: 1px dashed rgba(17,17,17,.3); background: transparent; color: rgba(17,17,17,.72); cursor: pointer; transition: border-color .15s ease, color .15s ease; }
+        .cw .narocnik-chip:hover { border-color: var(--ink); color: var(--ink); }
         .cw .ure-preklop { display: flex; align-items: flex-start; gap: .6rem; margin: 0 0 1rem; font-size: .9rem; font-weight: 600; color: var(--ink); cursor: pointer; max-width: 640px; }
         .cw .ure-preklop input { margin-top: .2rem; width: 1.05rem; height: 1.05rem; accent-color: var(--ink); cursor: pointer; }
         .cw .ure-preklop em { font-style: normal; font-weight: 400; color: rgba(17,17,17,.62); }
@@ -2574,10 +2578,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .paket { padding: 1.7rem 1.4rem 1.8rem; border-bottom: 1px solid rgba(17,17,17,.18); }
         .cw .paket + .paket { border-left: 1px solid rgba(17,17,17,.18); }
         @media (max-width: 640px) { .cw .paket + .paket { border-left: none; } }
-        .cw .paket.mid { background: var(--ink); color: var(--paper); }
+        .cw .paket.mid { background: var(--accent); color: var(--paper); }
         .cw .paket h3 { margin: 0; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 600; opacity: .85; }
         .cw .paket .redna { font-family: var(--font-serif), serif; font-size: 1.05rem; text-decoration: line-through; opacity: .62; margin-top: .5rem; margin-bottom: -.4rem; }
-        .cw .paket .znesek { font-family: var(--font-serif), Didot, serif; font-size: clamp(2rem, 4.5vw, 2.6rem); font-weight: 500; margin: .5rem 0 .55rem; letter-spacing: -.01em; }
+        .cw .paket .znesek { font-family: var(--font-serif), Didot, serif; font-size: clamp(2rem, 4.5vw, 2.6rem); font-weight: 700; margin: .5rem 0 .55rem; letter-spacing: -.01em; }
         .cw .paket p { margin: 0; font-size: .8rem; line-height: 1.6; opacity: .8; }
         .cw .paket.mid p { opacity: .88; }
         .cw .razlaga { font-size: .85rem; color: rgba(17,17,17,.72); line-height: 1.75; margin: 1.5rem 0 0; max-width: 64ch; }
@@ -3676,17 +3680,38 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <p className="sub">Najprej izberi vsaj eno storitev v prvem koraku.</p>
           )}
 
-          {korak === podatkiStep && podatkiUI()}
+          {korak === podatkiStep && (
+            <>
+              {podatkiUI()}
+              <div className="kartica">
+                <div className="k-naslov">Naročnik <span className="vec">za to ponudbo</span></div>
+                <div className="numgrid" style={{ marginTop: 0, gridTemplateColumns: '1fr' }}>
+                  <div className="polje">
+                    <label htmlFor="cw-narocnik">Ime podjetja</label>
+                    <input id="cw-narocnik" type="text" placeholder="npr. Odvetniška družba Potočnik"
+                      value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)} />
+                  </div>
+                </div>
+                {(() => {
+                  const nedavni = Array.from(new Set(
+                    Object.values(arhiv).map(a => a.narocnikPonudbe).filter(Boolean)
+                  )).filter(n => n !== narocnikPonudbe).slice(0, 8);
+                  return nedavni.length ? (
+                    <div className="narocnik-nedavni">
+                      <span className="vec">nedavni:</span>
+                      {nedavni.map(n => (
+                        <button key={n} type="button" className="narocnik-chip"
+                          onClick={() => setNarocnikPonudbe(n)}>{n}</button>
+                      ))}
+                    </div>
+                  ) : null;
+                })()}
+              </div>
+            </>
+          )}
 
           {korak === ponudbaStep && (
             <>
-              <div className="numgrid" style={{ marginTop: '.4rem', marginBottom: '2.2rem', gridTemplateColumns: '1fr' }}>
-                <div className="polje">
-                  <label htmlFor="cw-narocnik">Naročnik (ime podjetja)</label>
-                  <input id="cw-narocnik" type="text" placeholder="npr. Odvetniška družba Potočnik"
-                    value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)} />
-                </div>
-              </div>
               <div className="tonbar" aria-label="Ton ponudbe">
                 {TONI.map(t => (
                   <button key={t.id} type="button" className={tonPonudbe === t.id ? 'on' : ''}
