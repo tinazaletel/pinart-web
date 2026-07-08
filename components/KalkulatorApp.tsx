@@ -847,6 +847,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* katero shranjeno podjetje je trenutno "aktivno" (nalozeno v ponudnik/ddv/...
      zivo stanje) — null, ce urejamo novo, se nikoli shranjeno podjetje. */
   const [aktivnoPodjetje, setAktivnoPodjetje] = useState<string | null>(null);
+  const [potrdiOdjavo, setPotrdiOdjavo] = useState(false);
   const [mojeStoritve, setMojeStoritve] = useState<Storitev[]>([]);
   /* Onboarding / osebni set storitev: kaj uporabnik ponuja, postavljeno v
      ospredje. null = se ni onboardan; [] = onboardan brez izbire (pokazi vse). */
@@ -997,6 +998,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pogojiOk, mojSet]);
+
+  /* odjavni potrditveni koraki ne smejo lebdeti, ko zapustimo Obvescanja */
+  useEffect(() => {
+    if (profilPogled !== 'obvestila') setPotrdiOdjavo(false);
+  }, [profilPogled]);
 
   const odpriOnboarding = () => {
     /* preslikaj trenutni set nazaj v podrocja (podrocje je izbrano, ce so vse
@@ -2041,8 +2047,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .profil-meni-vrsta small { display: block; font-size: .82rem; font-weight: 400; color: rgba(17,17,17,.6); line-height: 1.4; }
         .cw .profil-meni-vrsta span:not(.pm-puscica) { flex: 1; min-width: 0; }
         .cw .profil-meni-vrsta .pm-puscica { flex: none; font-size: 1.2rem; opacity: .5; }
-        .cw .profil-nevarno { margin-top: .5rem; padding: .7rem 0; border: none; background: none; font-family: inherit; font-size: .82rem; font-weight: 600; color: rgba(17,17,17,.4); text-decoration: underline; text-underline-offset: .28em; cursor: pointer; text-align: left; }
+        .cw .profil-nevarno { margin-top: .5rem; padding: .7rem 0; border: none; background: none; font-family: inherit; font-size: .82rem; font-weight: 600; line-height: 1.5; color: rgba(17,17,17,.4); text-decoration: underline; text-underline-offset: .28em; cursor: pointer; text-align: left; }
         .cw .profil-nevarno:hover { color: #b03030; }
+        .cw .pomoc-mail { display: inline-flex; align-items: center; gap: .5rem; font-family: inherit; font-size: 1rem; font-weight: 700; color: var(--ink); text-decoration: none; background: #fff; border: 1px solid rgba(17,17,17,.15); border-radius: 999px; padding: .8rem 1.4rem; box-shadow: 0 2px 8px rgba(17,17,17,.05); transition: transform .2s cubic-bezier(0.23,1,0.32,1), box-shadow .18s ease; }
+        .cw .pomoc-mail:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(17,17,17,.09); }
+        .cw .odjava-potrdi { padding: .2rem 0; }
         .cw .cene-seznam { display: flex; flex-direction: column; margin-bottom: 1.3rem; }
         .cw .cene-vrsta { display: flex; align-items: center; gap: .55rem; padding: .35rem .3rem; border-radius: 8px; }
         .cw .cene-vrsta:hover { background: rgba(17,17,17,.035); }
@@ -2099,9 +2108,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @media (prefers-reduced-motion: reduce) { .cw .profil-predal { animation: none; } }
         .cw .profil-predal .kartica { max-width: none; }
         .cw .profil-predal .numgrid { grid-template-columns: 1fr; gap: 1.2rem; max-width: none; }
-        .cw .podjetja-shrani { display: flex; gap: .7rem; align-items: center; flex-wrap: wrap; margin-top: 1.1rem; }
-        .cw .podjetja-shrani input { flex: 1; min-width: 180px; border: none; border-bottom: 1px solid rgba(17,17,17,.25); background: transparent; padding: .5rem .2rem; font-family: inherit; font-size: .9rem; color: var(--ink); }
+        .cw .podjetja-shrani { display: flex; flex-direction: column; align-items: flex-start; gap: .9rem; margin-top: 1.1rem; }
+        .cw .podjetja-shrani input { width: 100%; border: none; border-bottom: 1px solid rgba(17,17,17,.25); background: transparent; padding: .5rem .2rem; font-family: inherit; font-size: .9rem; color: var(--ink); }
         .cw .podjetja-shrani input:focus { outline: none; border-bottom: 1.5px solid var(--ink); }
+        .cw .podjetja-shrani .dodaj-gumb:disabled { opacity: .4; cursor: not-allowed; }
+        .cw .podjetja-shrani .dodaj-gumb:disabled:hover { background: transparent; }
         .cw .profil-sekcija { margin-bottom: 1.8rem; padding-bottom: 1.6rem; border-bottom: 1px solid rgba(17,17,17,.12); }
         .cw .profil-sekcija:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .cw .profil-sekcija .k-naslov { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem 1rem; margin-bottom: 1rem; font-weight: 600; font-size: 1.05rem; color: var(--ink); }
@@ -2633,7 +2644,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
                 <button type="button" className="profil-nevarno" onClick={ponastaviVse}>
-                  Ponastavi vse podatke tega orodja
+                  Izbriši VSE podatke orodja (podjetja, cene, zgodovino) — celotna ponastavitev
                 </button>
               </div>
             )}
@@ -2672,9 +2683,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <div className="podjetja-shrani">
                   <input type="text" placeholder="Ime podjetja (npr. Pinart, Moj s.p. …)"
                     value={imePodjetja} onChange={e => setImePodjetja(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') dodajNovoPodjetje(); }}
+                    onKeyDown={e => { if (e.key === 'Enter' && imePodjetja.trim()) dodajNovoPodjetje(); }}
                     aria-label="Ime novega podjetja" />
-                  <button type="button" className="dodaj-gumb" onClick={dodajNovoPodjetje}>+ Dodaj podjetje</button>
+                  <button type="button" className="dodaj-gumb" onClick={dodajNovoPodjetje} disabled={!imePodjetja.trim()}>+ Dodaj podjetje</button>
                 </div>
               </>
             )}
@@ -2707,31 +2718,57 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
             {profilPogled === 'obvestila' && (
               <>
-                <p className="ob-sub" style={{ margin: '0 0 1.2rem' }}>Neobvezno obveščanje o orodju in nasvetih za kreativce — ločeno od anonimne statistike cen.</p>
-                <div className="numgrid" style={{ marginTop: 0 }}>
-                  <div className="polje">
-                    <label htmlFor="cw-profime">Ime</label>
-                    <input id="cw-profime" value={leadIme} onChange={e => setLeadIme(e.target.value)} />
+                {potrdiOdjavo ? (
+                  <div className="odjava-potrdi">
+                    <p className="ob-sub" style={{ margin: '0 0 1.2rem', fontSize: '1.05rem' }}>Res se želiš odjaviti od obveščanja? 😢</p>
+                    <div className="onboarding-noga">
+                      <button type="button" className="gumb" onClick={() => {
+                        setLeadIme(''); setLeadEmail('');
+                        try { localStorage.removeItem(K_LEAD); } catch { /* prazno */ }
+                        setPotrdiOdjavo(false);
+                      }}>Da, odjavi me</button>
+                      <button type="button" className="povezava" onClick={() => setPotrdiOdjavo(false)}>Prekliči</button>
+                    </div>
                   </div>
-                  <div className="polje">
-                    <label htmlFor="cw-profemail">Email</label>
-                    <input id="cw-profemail" type="email" value={leadEmail} onChange={e => setLeadEmail(e.target.value)} />
-                  </div>
-                </div>
-                <div className="onboarding-noga" style={{ marginTop: '1.3rem' }}>
-                  <button type="button" className="gumb" onClick={() => { try { localStorage.setItem(K_LEAD, JSON.stringify({ ime: leadIme, email: leadEmail })); } catch { /* poln */ } }} disabled={!imamKontakt}>Shrani</button>
-                  <button type="button" className="povezava" onClick={() => { setLeadIme(''); setLeadEmail(''); try { localStorage.removeItem(K_LEAD); } catch { /* prazno */ } }}>Prekliči obveščanje</button>
-                </div>
+                ) : (
+                  <>
+                    <label className="se-preklop" style={{ marginBottom: '1.3rem' }}>
+                      <span>Obveščaj me o orodju in nasvetih za kreativce <em>(neobvezno)</em></span>
+                      <span className="se-toggle">
+                        <input type="checkbox" checked={Boolean(leadEmail.trim())}
+                          onChange={() => { if (leadEmail.trim()) setPotrdiOdjavo(true); }} />
+                        <span className="se-slider" aria-hidden />
+                      </span>
+                    </label>
+                    <div className="numgrid" style={{ marginTop: 0 }}>
+                      <div className="polje">
+                        <label htmlFor="cw-profime">Ime</label>
+                        <input id="cw-profime" value={leadIme} onChange={e => {
+                          setLeadIme(e.target.value);
+                          try { localStorage.setItem(K_LEAD, JSON.stringify({ ime: e.target.value, email: leadEmail })); } catch { /* poln */ }
+                        }} />
+                      </div>
+                      <div className="polje">
+                        <label htmlFor="cw-profemail">Email</label>
+                        <input id="cw-profemail" type="email" value={leadEmail} onChange={e => {
+                          setLeadEmail(e.target.value);
+                          try { localStorage.setItem(K_LEAD, JSON.stringify({ ime: leadIme, email: e.target.value })); } catch { /* poln */ }
+                        }} />
+                      </div>
+                    </div>
+                    {!leadEmail.trim() && (
+                      <p className="ob-sub" style={{ margin: '.8rem 0 0', fontSize: '.85rem' }}>Vpiši ime in email, da se prijaviš — shrani se samodejno.</p>
+                    )}
+                  </>
+                )}
               </>
             )}
 
             {profilPogled === 'pomoc' && (
               <>
-                <p className="ob-sub" style={{ margin: '0 0 .9rem' }}>Vprašanje, predlog ali težava z orodjem? Pišem in berem osebno.</p>
-                <p className="ob-sub" style={{ margin: '0 0 .9rem' }}>
-                  <a href="mailto:tina@pinart.si" style={{ color: 'var(--ink)', fontWeight: 600 }}>tina@pinart.si</a>
-                </p>
-                <p className="ob-sub" style={{ margin: 0 }}>
+                <p className="ob-sub" style={{ margin: '0 0 1.3rem' }}>Vprašanje, predlog ali težava z orodjem? Pišem in berem osebno.</p>
+                <a href="mailto:tina@pinart.si" className="pomoc-mail">✉ tina@pinart.si</a>
+                <p className="ob-sub" style={{ margin: '1.3rem 0 0' }}>
                   <a href={`/${locale}/kalkulator/pogoji`} style={{ color: 'var(--ink)' }}>Pogoji uporabe kalkulatorja →</a>
                 </p>
               </>
