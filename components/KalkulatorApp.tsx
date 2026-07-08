@@ -3070,7 +3070,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <FloppyDisk size={17} /> Shrani ponudbo v arhiv
                 </button>
                 <button type="button" className="povezava" onClick={novaPonudba}>
-                  ↺ Nova ponudba
+                  ↺ Nova ponudba (počisti vse)
                 </button>
               </div>
 
@@ -3140,7 +3140,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 {korak === posebnostiStep ? 'Pokaži ceno →' : korak === cenaStep ? 'Pripravi ponudbo →' : 'Naprej →'}
               </button>
             ) : (
-              <button type="button" className="nazaj-g" onClick={() => setKorak(0)}>Na začetek ↺</button>
+              <button type="button" className="nazaj-g" onClick={() => setKorak(0)}>← Uredi od začetka</button>
             )}
           </div>
         </div>
