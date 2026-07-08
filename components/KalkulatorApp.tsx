@@ -2469,7 +2469,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .izbira button { text-align: left; border: 1px solid rgba(17,17,17,.25); background: transparent; border-radius: 14px; padding: 1.4rem 1.5rem; cursor: pointer; font-family: inherit; color: var(--ink); transition: border-color .18s ease, background .18s ease, color .18s ease; }
         .cw .izbira button h3 { margin: 0 0 .3rem; font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.3rem; }
         .cw .izbira button p { margin: 0; font-size: .85rem; line-height: 1.55; color: rgba(17,17,17,.68); font-weight: 300; }
-        .cw .izbira button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+        .cw .izbira button.on { background: var(--accent); border-color: var(--accent); color: var(--paper); }
         .cw .izbira button.on p { color: rgba(245,242,234,.82); }
 
         /* Podrocja (onboarding): ikona v krogcu, ki se ob izbiri "razlije"
