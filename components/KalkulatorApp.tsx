@@ -1933,7 +1933,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         <div className="soglasje" role="dialog" aria-modal="true" aria-label="Tvoje osnovne cene">
           <div className="soglasje-kartica cene-modal">
             <div className="cene-glava">
-              <h2>Moje storitve in cene</h2>
+              <h2>Nastavitve in cene</h2>
               <button type="button" className="op-edit" onClick={() => setKazemCene(false)}>✕ Zapri</button>
             </div>
             <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Prilagodi ceno, razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš. Vrstni red velja tudi na prvem koraku.</p>
@@ -2037,7 +2037,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <p className="sub">{opisKoraka}</p>
               {korak === 0 && (
                 <button type="button" className="op-edit" onClick={() => setKazemCene(true)} aria-expanded={kazemCene}>
-                  ⚙ Moje storitve
+                  ⚙ Nastavitve in cene
                 </button>
               )}
             </div>
@@ -2068,7 +2068,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <div className="opts">
                     <button type="button" className="pill dodaj" onClick={() => setKazemDodaj(!kazemDodaj)}>
                       <span className="pi" aria-hidden><Plus size={19} /></span>
-                      <span>dodaj postavko<small>za to ponudbo: animacija, zvok, 3D …</small></span>
+                      <span>dodaj postavko<small>dodaten strošek za to ponudbo: font licenca, najem studia, tisk, stock …</small></span>
                     </button>
                   </div>
                 </div>
