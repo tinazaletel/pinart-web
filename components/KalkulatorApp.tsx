@@ -1449,8 +1449,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .sg-motiv-ozn { display: block; margin-bottom: .4rem; font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
         .cw .sg-motiv p { margin: 0; font-size: 1.02rem; font-weight: 400; line-height: 1.6; color: var(--ink); }
         .cw .sg-motiv p b { font-weight: 700; }
-        .cw .ob-sub { font-size: 1rem; font-weight: 400; line-height: 1.55; color: rgba(17,17,17,.8); margin: 0 0 1.5rem; }
-        .cw .ob-opts { margin-bottom: 1.8rem; }
+        .cw .onboarding { position: fixed; inset: 0; z-index: 60; background: var(--paper); overflow-y: auto; display: flex; flex-direction: column; animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
+        @media (prefers-reduced-motion: reduce) { .cw .onboarding { animation: none; } }
+        .cw .ob-naslov { padding-left: 0 !important; }
+        .cw .onboarding-noga { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1rem; margin-top: 2.6rem; }
         .cw .soglasje-email { border-top: 1px solid rgba(17,17,17,.14); padding-top: 1.3rem; margin-bottom: 1.7rem; }
         .cw .se-preklop { display: flex; align-items: center; justify-content: space-between; gap: 1.1rem; cursor: pointer; font-size: .98rem; font-weight: 500; color: var(--ink); line-height: 1.5; }
         .cw .se-tekst { display: flex; align-items: center; gap: .55rem; min-width: 0; }
@@ -1773,23 +1775,32 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       )}
 
       {onboardingOdprt && (
-        <div className="soglasje" role="dialog" aria-modal="true" aria-label="Katere storitve ponujaš">
-          <div className="soglasje-kartica">
-            <h2>Katere storitve ponujaš?</h2>
-            <p className="ob-sub">Izberi svoje — postavimo jih v ospredje, ostale skrijemo (do njih prideš z enim klikom). Kadar koli lahko urediš ali preskočiš.</p>
-            <div className="opts ob-opts">
-              {vseStoritve.map(s => (
-                <button key={s.id} type="button"
-                  className={'pill' + (obIzbor.has(s.id) ? ' on' : '')}
-                  onClick={() => preklopi(obIzbor, s.id, setObIzbor)}>
-                  <span className="pi" aria-hidden>{ikonaZa(s.id)}</span>
-                  <span>{s.ime}</span>
-                </button>
-              ))}
-            </div>
-            <div className="soglasje-gumbi">
-              <button type="button" className="gumb" onClick={shraniOnboarding} disabled={obIzbor.size === 0}>Shrani in začni →</button>
-              <button type="button" className="povezava" onClick={preskociOnboarding}>Preskoči</button>
+        <div className="onboarding" role="dialog" aria-modal="true" aria-label="Katere storitve ponujaš">
+          <div className="glava">
+            <a className="glava-brand" href={`/${locale}`} aria-label="Pinart — domov">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
+              <span className="glava-ime">Pinart kalkulator</span>
+            </a>
+          </div>
+          <div className="oder">
+            <div className="korak-vsebina">
+              <h1 className="ob-naslov">Katere storitve ponujaš?</h1>
+              <p className="sub" style={{ marginBottom: '2rem' }}>Izberi svoje — postavimo jih v ospredje, ostale skrijemo (do njih prideš z enim klikom). Kadar koli lahko urediš ali preskočiš.</p>
+              <div className="opts">
+                {vseStoritve.map(s => (
+                  <button key={s.id} type="button"
+                    className={'pill' + (obIzbor.has(s.id) ? ' on' : '')}
+                    onClick={() => preklopi(obIzbor, s.id, setObIzbor)}>
+                    <span className="pi" aria-hidden>{ikonaZa(s.id)}</span>
+                    <span>{s.ime}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="onboarding-noga">
+                <button type="button" className="gumb" onClick={shraniOnboarding} disabled={obIzbor.size === 0}>Shrani in začni →</button>
+                <button type="button" className="povezava" onClick={preskociOnboarding}>Preskoči</button>
+              </div>
             </div>
           </div>
         </div>
