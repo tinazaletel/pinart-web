@@ -1354,6 +1354,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         storitev: s.ime,
         vprasanja: (VPRASANJA_PO_STORITVI[s.id] ?? [])
           .filter(v => !(s.id === 'web' && v.id === 'ima-cgp' && izbrane.has('cgp')))
+          .filter(v => !(s.id === 'logo' && v.id === 'uporaba' && izbrane.has('cgp')))
           .map(v => ({ ...v, storitev: s.ime, key: `${s.id}:${v.id}` })),
       }))
       .filter(s => s.vprasanja.length);
