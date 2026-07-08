@@ -1347,8 +1347,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .soglasje-kartica ul { margin: 0 0 1.8rem; padding-left: 0; list-style: none; }
         .cw .soglasje-kartica li { font-size: 1.02rem; font-weight: 400; line-height: 1.65; color: var(--ink); margin-bottom: .8rem; }
         .cw .soglasje-email { border-top: 1px solid rgba(17,17,17,.14); padding-top: 1.3rem; margin-bottom: 1.7rem; }
-        .cw .se-preklop { display: flex; align-items: flex-start; gap: .75rem; cursor: pointer; font-size: .98rem; font-weight: 500; color: var(--ink); line-height: 1.5; }
-        .cw .se-toggle { position: relative; flex: none; width: 2.6rem; height: 1.5rem; margin-top: .05rem; }
+        .cw .se-preklop { display: flex; align-items: center; justify-content: space-between; gap: 1.1rem; cursor: pointer; font-size: .98rem; font-weight: 500; color: var(--ink); line-height: 1.5; }
+        .cw .se-toggle { position: relative; flex: none; width: 2.6rem; height: 1.5rem; }
         .cw .se-toggle input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
         .cw .se-slider { position: absolute; inset: 0; background: rgba(17,17,17,.24); border-radius: 999px; transition: background .2s ease; pointer-events: none; }
         .cw .se-slider::before { content: ''; position: absolute; top: 2px; left: 2px; width: calc(1.5rem - 4px); height: calc(1.5rem - 4px); background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,.22); transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
@@ -1619,11 +1619,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </ul>
             <div className="soglasje-email">
               <label className="se-preklop">
+                <span>Obveščajte me o orodju in nasvetih za kreativce <em>(neobvezno)</em></span>
                 <span className="se-toggle">
                   <input type="checkbox" checked={zeliEmail} onChange={e => setZeliEmail(e.target.checked)} />
                   <span className="se-slider" aria-hidden />
                 </span>
-                <span>Obveščajte me o orodju in nasvetih za kreativce <em>(neobvezno)</em></span>
               </label>
               {zeliEmail && (
                 <>
