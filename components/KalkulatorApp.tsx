@@ -2829,7 +2829,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </div>
 
               {kazemZajem && typeof document !== 'undefined' && createPortal(
-                <div className="cw soglasje" role="dialog" aria-modal="true" aria-label={kazemZajem === 'profil' ? 'Shrani profil' : 'Prenesi ponudbo'}>
+                <div className="cw">
+                <div className="soglasje" role="dialog" aria-modal="true" aria-label={kazemZajem === 'profil' ? 'Shrani profil' : 'Prenesi ponudbo'}>
                   <div className="soglasje-kartica zajem">
                     <h2 style={{ fontFamily: 'var(--font-serif), Didot, serif', fontWeight: 500, fontSize: 'clamp(1.5rem, 4vw, 2rem)', margin: '0 0 1rem' }}>
                       {kazemZajem === 'profil' ? 'Shrani svoje cene kot profil' : 'Prenesi ponudbo'}
@@ -2861,6 +2862,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <button type="button" className="povezava" onClick={() => setKazemZajem(null)}>Prekliči</button>
                   </div>
                   </div>
+                </div>
                 </div>
               , document.body)}
 
