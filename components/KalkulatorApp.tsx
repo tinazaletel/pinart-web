@@ -907,9 +907,22 @@ const ponudbaVHtml = (s: string): string =>
 /* Valuta ponudbe: cene so interno v EUR, prikaz in ponudba pa v izbrani
    valuti (priblizen preracun, zaokrozen na 50). */
 const VALUTE = [
-  { id: 'eur', znak: '€', fx: 1    },
-  { id: 'usd', znak: '$', fx: 1.1  },
-  { id: 'gbp', znak: '£', fx: 0.85 },
+  { id: 'eur', ime: 'EUR — Evro',            znak: '€',   fx: 1     },
+  { id: 'usd', ime: 'USD — Ameriški dolar',  znak: '$',   fx: 1.1   },
+  { id: 'gbp', ime: 'GBP — Britanski funt',  znak: '£',   fx: 0.85  },
+  { id: 'chf', ime: 'CHF — Švicarski frank', znak: 'CHF', fx: 0.95  },
+  { id: 'jpy', ime: 'JPY — Japonski jen',    znak: '¥',   fx: 160   },
+  { id: 'sek', ime: 'SEK — Švedska krona',   znak: 'SEK', fx: 11.2  },
+  { id: 'nok', ime: 'NOK — Norveška krona',  znak: 'NOK', fx: 11.6  },
+  { id: 'dkk', ime: 'DKK — Danska krona',    znak: 'DKK', fx: 7.46  },
+  { id: 'pln', ime: 'PLN — Poljski zlot',    znak: 'PLN', fx: 4.3   },
+  { id: 'czk', ime: 'CZK — Češka krona',     znak: 'CZK', fx: 25    },
+  { id: 'huf', ime: 'HUF — Madžarski forint',znak: 'HUF', fx: 395   },
+  { id: 'aud', ime: 'AUD — Avstralski dolar',znak: 'AUD', fx: 1.65  },
+  { id: 'cad', ime: 'CAD — Kanadski dolar',  znak: 'CAD', fx: 1.48  },
+  { id: 'cny', ime: 'CNY — Kitajski juan',   znak: 'CNY', fx: 7.85  },
+  { id: 'inr', ime: 'INR — Indijska rupija', znak: 'INR', fx: 91    },
+  { id: 'aed', ime: 'AED — Dirham (ZAE)',    znak: 'AED', fx: 4.0   },
 ];
 
 /* Privzeti trg iz casovnega pasu obiskovalca — brez streznika in piskotkov. */
@@ -955,6 +968,7 @@ type ShranjenaP = {
   kaziUre: boolean; nogaZnak: boolean;
   izkusnje: string; mojTrg: string; trgNarocnika: string; valuta: string; valutaRocna: boolean;
   rocnoBesedilo: boolean; besediloHtml: string;
+  custDrzavaNarocnik?: string;
 };
 
 /* Moja podjetja: vec identitet podjetja (ime/davcna/TRR/DDV/avans/urne
@@ -1122,6 +1136,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [leadEmail, setLeadEmail] = useState('');
   const [zeliEmail, setZeliEmail] = useState(false);
   const [kazemDostopnost, setKazemDostopnost] = useState(false);
+  /* Poljubna drzava (prikazni label poleg 6 sirsih regij, ki ostajajo
+     edine z dejanskim cenovnim mnozitelijem). */
+  const [custDrzavaMoj, setCustDrzavaMoj] = useState('');
+  const [custDrzavaNarocnik, setCustDrzavaNarocnik] = useState('');
+  const [dodajanjeDrzaveMoj, setDodajanjeDrzaveMoj] = useState(false);
+  const [dodajanjeDrzaveNarocnik, setDodajanjeDrzaveNarocnik] = useState(false);
 
   useEffect(() => {
     try {
@@ -1136,6 +1156,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         setMojTrg(z);
         setTrgNarocnika(z);
       }
+      if (s.custDrzavaMoj) setCustDrzavaMoj(s.custDrzavaMoj);
       if (s.mojeStoritve) setMojeStoritve(s.mojeStoritve);
       if (Array.isArray(s.mojSet)) setMojSet(s.mojSet);
       if (Array.isArray(s.vrstniRed)) setVrstniRed(s.vrstniRed);
@@ -1174,9 +1195,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         nogaZnak: nogaZnak ? undefined : false,
         stroski: stroski.length ? stroski : undefined,
         valuta: valutaRocna ? valuta : undefined,
+        custDrzavaMoj: custDrzavaMoj || undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski]);
+  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -1873,6 +1895,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       nazivPonudbe, narocnikPonudbe, obsegPonudbe, tonPonudbe, avansPct,
       kaziUre, nogaZnak, izkusnje, mojTrg, trgNarocnika, valuta, valutaRocna,
       rocnoBesedilo, besediloHtml: rocnoBesedilo ? (editorRef.current?.innerHTML || besediloHtml) : '',
+      custDrzavaNarocnik: custDrzavaNarocnik || undefined,
     };
     const nov = { ...arhiv, [ime]: zapis };
     setArhiv(nov);
@@ -1891,6 +1914,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setKaziUre(p.kaziUre); setNogaZnak(p.nogaZnak);
     setIzkusnje(p.izkusnje); setMojTrg(p.mojTrg); setTrgNarocnika(p.trgNarocnika);
     setValuta(p.valuta); setValutaRocna(p.valutaRocna);
+    setCustDrzavaNarocnik(p.custDrzavaNarocnik || '');
     if (p.rocnoBesedilo && p.besediloHtml) {
       setRocnoBesedilo(true); setBesediloHtml(p.besediloHtml);
       if (editorRef.current) editorRef.current.innerHTML = p.besediloHtml;
@@ -2058,6 +2082,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               : korak === podatkiStep ? 'Izpolniš enkrat, orodje si zapomni.'
                 : korak === ponudbaStep ? 'Besedilo lahko poljubno urejaš in dopišeš.'
                   : '';
+
+  /* "+ Dodaj svojo drzavo": poljubno ime drzave kot dodaten label poleg
+     izbire regije (regija ostaja edina, ki nosi dejanski cenovni mnozitelj). */
+  const custDrzavaUI = (
+    vrednost: string, setVrednost: (v: string) => void,
+    odprto: boolean, setOdprto: (v: boolean) => void
+  ) => (
+    odprto ? (
+      <input type="text" autoFocus placeholder="npr. Uzbekistan" className="drzava-vnos"
+        onBlur={e => { setVrednost(e.target.value.trim()); setOdprto(false); }}
+        onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }} />
+    ) : (
+      <button type="button" className="op-edit" onClick={() => setOdprto(true)}>+ Dodaj svojo državo</button>
+    )
+  );
 
   /* En oblacek storitve (prvi korak). */
   const oblacekStoritve = (s: Storitev) => (
@@ -2414,6 +2453,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .pill-tekst { position: relative; z-index: 1; transition: color .3s cubic-bezier(0.16,1,0.3,1); }
         .cw .pill.dodaj { border-style: dashed; border-color: rgba(17,17,17,.55); font-weight: 500; }
         .cw .pill.dodaj .pi { background: var(--ink); }
+        .cw .pill-cust { background: var(--accent); border-color: var(--accent); color: var(--paper); font-weight: 500; }
+        .cw .pill-cust:hover { border-color: var(--accent); }
+        .cw .drzava-vnos { border: none; border-bottom: 1px solid rgba(17,17,17,.35); background: transparent; font-family: inherit; font-size: .82rem; font-weight: 500; color: var(--ink); padding: 0 0 .15rem; width: 11rem; max-width: 100%; }
+        .cw .drzava-vnos:focus { outline: none; border-color: var(--ink); }
 
         .cw .izbira { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 760px; }
         .cw .izbira-3 { grid-template-columns: repeat(3, 1fr); }
@@ -3383,8 +3426,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
           {korak === mojTrgStep && (
             <div className="kartica">
-              <div className="k-naslov">Izberi svoj trg</div>
+              <div className="k-naslov">Izberi svoj trg
+                {custDrzavaUI(custDrzavaMoj, setCustDrzavaMoj, dodajanjeDrzaveMoj, setDodajanjeDrzaveMoj)}
+              </div>
               <div className="opts">
+                {custDrzavaMoj && (
+                  <button type="button" className="pill pill-cust" onClick={() => setCustDrzavaMoj('')} title="Odstrani">
+                    {custDrzavaMoj} <span aria-hidden>×</span>
+                  </button>
+                )}
                 {TRGI.map(t => (
                   <button key={t.id} type="button"
                     className={'pill' + (mojTrg === t.id ? ' on' : '')}
@@ -3400,8 +3450,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           {korak === narocnikStep && (
             <>
               <div className="kartica">
-                <div className="k-naslov">Trg naročnika</div>
+                <div className="k-naslov">Trg naročnika
+                  {custDrzavaUI(custDrzavaNarocnik, setCustDrzavaNarocnik, dodajanjeDrzaveNarocnik, setDodajanjeDrzaveNarocnik)}
+                </div>
                 <div className="opts">
+                  {custDrzavaNarocnik && (
+                    <button type="button" className="pill pill-cust" onClick={() => setCustDrzavaNarocnik('')} title="Odstrani">
+                      {custDrzavaNarocnik} <span aria-hidden>×</span>
+                    </button>
+                  )}
                   {TRGI.map(t => (
                     <button key={t.id} type="button"
                       className={'pill' + (trgNarocnika === t.id ? ' on' : '')}
@@ -3417,9 +3474,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <label htmlFor="cw-valuta">Valuta ponudbe</label>
                   <select id="cw-valuta" value={valuta}
                     onChange={e => { setValuta(e.target.value); setValutaRocna(true); }}>
-                    <option value="eur">EUR (€)</option>
-                    <option value="usd">USD ($)</option>
-                    <option value="gbp">GBP (£)</option>
+                    {VALUTE.map(v => <option key={v.id} value={v.id}>{v.ime}</option>)}
                   </select>
                 </div>
               </div>
