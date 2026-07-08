@@ -59,11 +59,11 @@ const STORITVE: Storitev[] = [
    da seznam ostane pregleden. */
 const PODROCJA: { id: string; ime: string; opis: string; storitve: string[] }[] = [
   { id: 'graficno',  ime: 'Grafično oblikovanje & branding', opis: 'logotip, CGP, tiskovine, embalaža, ilustracija',   storitve: ['logo', 'cgp', 'publikacija', 'embalaza', 'ilustracija'] },
-  { id: 'prostor',   ime: 'Prostor & arhitektura',           opis: 'interier, arhitektura, razstavni in produktni dizajn', storitve: ['interier', 'arhitektura', 'razstava', 'produktni'] },
   { id: 'splet',     ime: 'Splet & digitalni produkti',      opis: 'spletne strani, UX/UI, aplikacije',                storitve: ['web', 'uxui', 'aplikacija', 'dizajnsistem'] },
   { id: 'marketing', ime: 'Marketing & oglaševanje',         opis: 'kampanje, social media, SEO, PR, besedila',        storitve: ['kampanja', 'smm', 'seo', 'email', 'pr', 'copy'] },
   { id: 'foto',      ime: 'Foto, video & motion',            opis: 'fotografiranje, video, motion, 3D',                storitve: ['fotografija', 'video', 'motion', 'render3d'] },
   { id: 'direkcija', ime: 'Kreativna direkcija & strategija', opis: 'vodenje, koncept, strategija',                     storitve: ['direkcija', 'strategija'] },
+  { id: 'prostor',   ime: 'Prostor & arhitektura',           opis: 'interier, arhitektura, razstavni in produktni dizajn', storitve: ['interier', 'arhitektura', 'razstava', 'produktni'] },
 ];
 
 const IZKUSNJE = [
@@ -2341,7 +2341,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .glava-desno { pointer-events: auto; display: inline-flex; align-items: center; gap: .5rem; }
         .cw .glava-profil { display: inline-flex; align-items: center; gap: .4rem; font-family: inherit; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); background: var(--paper); border: none; border-left: 1px solid rgba(17,17,17,.15); border-radius: 0; padding: .3rem 0 .3rem 1rem; cursor: pointer; transition: color .18s ease; }
         .cw .glava-profil:hover { color: var(--ink); }
-        @media (max-width: 640px) { .cw .glava-profil span { display: none; } }
+
         .cw .profil-zastor { position: fixed; inset: 0; z-index: 60; background: rgba(17,17,17,.28); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
         .cw .profil-predal { position: fixed; top: 0; right: 0; bottom: 0; z-index: 61; width: min(440px, 100vw); background: var(--paper); box-shadow: -12px 0 40px rgba(17,17,17,.14); overflow-y: auto; padding: clamp(1.6rem, 4vw, 2.4rem); animation: cwPredalIn .32s cubic-bezier(0.23,1,0.32,1) both; }
         @keyframes cwPredalIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
@@ -2387,6 +2387,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .h1-step { position: absolute; top: .42rem; right: calc(100% + .75rem); font-family: var(--font-sans), system-ui, sans-serif; font-size: .72rem; line-height: 1; font-weight: 800; letter-spacing: .16em; color: rgba(17,17,17,.55); }
         .cw .sub-vrsta { display: flex; justify-content: space-between; align-items: baseline; gap: 2rem; margin: 0 0 2.4rem; flex-wrap: wrap; }
         .cw .sub { font-size: clamp(1rem, 1.6vw, 1.2rem); line-height: 1.6; color: rgba(17,17,17,.72); margin: 0; max-width: 52ch; min-width: 0; }
+        .cw .korak0-akcije { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 0 2.2rem; }
 
         .cw .opts { display: flex; flex-wrap: wrap; gap: 1rem .65rem; }
         .cw .pill { padding: .8rem 1.3rem; border: 1px solid rgba(17,17,17,.25); border-radius: 999px; cursor: pointer; font-size: 1rem; background: transparent; font-family: inherit; font-weight: 400; color: var(--ink); transition: border-color .18s ease, background .18s ease, color .18s ease; text-align: left; line-height: 1.25; }
@@ -3091,21 +3092,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <span key={bi} className="h1-maska"><span className="h1-beseda" style={{ animationDelay: `${bi * 90}ms` }}>{b}&nbsp;</span></span>
           ))}</h1>
           {(opisKoraka || korak === 0) && (
-            <div className="sub-vrsta">
+            <div className="sub-vrsta" style={korak === 0 ? { marginBottom: '1.1rem' } : undefined}>
               <p className="sub">{korak === 0
                 ? <>Izberi storitve <b>za to ponudbo</b> — eno ali več.</>
                 : opisKoraka}</p>
-              {korak === 0 && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '1.1rem', flexWrap: 'wrap' }}>
-                  {(izbrane.size > 0 || postavke.length > 0 || Object.keys(odgovori).length > 0) && (
-                    <button type="button" className="op-edit" onClick={novaPonudba}>↺ Nova ponudba</button>
-                  )}
-                  <button type="button" className="op-edit" onClick={() => { setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>
-                    <Gear size={17} weight="bold" /> Nastavitve in cene
-                  </button>
-                </span>
-              )}
+            </div>
+          )}
+          {korak === 0 && (
+            <div className="korak0-akcije">
+              {(izbrane.size > 0 || postavke.length > 0 || Object.keys(odgovori).length > 0) ? (
+                <button type="button" className="op-edit" onClick={novaPonudba}>↺ Nova ponudba</button>
+              ) : <span />}
+              <button type="button" className="op-edit" onClick={() => { setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>
+                <Gear size={17} weight="bold" /> Nastavitve in cene
+              </button>
             </div>
           )}
 
