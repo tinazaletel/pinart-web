@@ -1399,16 +1399,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
   const aktivnaVprasanja = useMemo(() => skupineVprasanj.flatMap(s => s.vprasanja), [skupineVprasanj]);
 
+  /* Vrstni red (Tinin redesign 2026-07-09): najprej "o tebi" (kdo si, kje
+     delas, izkusnje — tri zaporedne slajde), nato "o stranki" (kdo je,
+     od kod je), sele nato raba/pravice/posebnosti/cena, na koncu
+     predogled besedila in loceno se zakljucek (oblikovanje + posljanje).
+     Trg (tvoj in narocnikov) ostaja PRED ceno, ker neposredno vpliva na
+     izracun — ce bi bil kasneje, bi se prikazana cena naknadno spremenila. */
   const prviPoVprasanjih = 1 + skupineVprasanj.length;
-  const izkusnjeStep = prviPoVprasanjih;
+  const kdoSiStep = prviPoVprasanjih;
   const mojTrgStep = prviPoVprasanjih + 1;
-  const narocnikStep = prviPoVprasanjih + 2;
-  const rabaStep = prviPoVprasanjih + 3;
-  const posebnostiStep = prviPoVprasanjih + 4;
-  const cenaStep = prviPoVprasanjih + 5;
-  const podatkiStep = prviPoVprasanjih + 6;
-  const ponudbaStep = prviPoVprasanjih + 7;
-  const KORAKOV = ponudbaStep + 1;
+  const izkusnjeStep = prviPoVprasanjih + 2;
+  const narocnikStep = prviPoVprasanjih + 3;
+  const trgNarocnikaStep = prviPoVprasanjih + 4;
+  const rabaStep = prviPoVprasanjih + 5;
+  const praviceStep = prviPoVprasanjih + 6;
+  const posebnostiStep = prviPoVprasanjih + 7;
+  const cenaStep = prviPoVprasanjih + 8;
+  const ponudbaStep = prviPoVprasanjih + 9;
+  const zakljucekStep = prviPoVprasanjih + 10;
+  const KORAKOV = zakljucekStep + 1;
   const trenutnaSkupina = korak > 0 && korak < prviPoVprasanjih ? skupineVprasanj[korak - 1] : null;
 
   /* reset postopnega prikaza ob vsakem koraku */
@@ -2094,24 +2103,31 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
   const naslovKoraka = korak === 0 ? 'Kaj ustvarjaš?'
     : trenutnaSkupina ? trenutnaSkupina.storitev
-      : korak === izkusnjeStep ? 'Koliko izkušenj imaš?'
+      : korak === kdoSiStep ? 'Kdo si?'
         : korak === mojTrgStep ? 'Kje delaš?'
-          : korak === narocnikStep ? 'Od kod je naročnik?'
-            : korak === rabaStep ? 'Kako bo naročnik uporabljal tvoje delo?'
-              : korak === posebnostiStep ? 'Posebnosti projekta?'
-                : korak === cenaStep ? 'Tvoja cena.'
-                  : korak === podatkiStep ? 'Tvoji podatki in naročnik'
-                    : 'Tvoja ponudba.';
+          : korak === izkusnjeStep ? 'Koliko izkušenj imaš?'
+            : korak === narocnikStep ? 'Kdo je stranka?'
+              : korak === trgNarocnikaStep ? 'Od kod je naročnik?'
+                : korak === rabaStep ? 'Kako bo naročnik uporabljal tvoje delo?'
+                  : korak === praviceStep ? 'Avtorske pravice'
+                    : korak === posebnostiStep ? 'Posebnosti projekta?'
+                      : korak === cenaStep ? 'Tvoja cena.'
+                        : korak === ponudbaStep ? 'Tvoja ponudba.'
+                          : 'Zaključek.';
 
   const opisKoraka = korak === 0 ? 'Izberi storitve za to ponudbo — eno ali več.'
     : trenutnaSkupina ? 'Več o projektu. Odgovori pomagajo določiti obseg ponudbe; lahko jih preskočiš.'
-      : korak === mojTrgStep ? 'Tvoj trg nastavi privzete osnove na tam običajno raven.'
-        : korak === narocnikStep ? 'Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.'
-          : korak === rabaStep ? 'To je vprašanje, ki ga druga orodja ne postavijo.'
-            : korak === posebnostiStep ? 'Vse je neobvezno; pusti prazno in pojdi naprej.'
-              : korak === podatkiStep ? 'Tvoje podatke izpolniš enkrat, naročnika izbereš za vsako ponudbo posebej.'
-                : korak === ponudbaStep ? 'Besedilo lahko poljubno urejaš in dopišeš.'
-                  : '';
+      : korak === kdoSiStep ? 'Izpolniš enkrat, orodje si zapomni.'
+        : korak === mojTrgStep ? 'Tvoj trg nastavi privzete osnove na tam običajno raven.'
+          : korak === izkusnjeStep ? 'Vpliva na privzete cene.'
+            : korak === narocnikStep ? 'Vpišeš za vsako ponudbo posebej.'
+              : korak === trgNarocnikaStep ? 'Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.'
+                : korak === rabaStep ? 'To je vprašanje, ki ga druga orodja ne postavijo.'
+                  : korak === praviceStep ? 'Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.'
+                    : korak === posebnostiStep ? 'Vse je neobvezno; pusti prazno in pojdi naprej.'
+                      : korak === ponudbaStep ? 'Besedilo lahko poljubno urejaš in dopišeš.'
+                        : korak === zakljucekStep ? 'Kopiraj, pošlji ali shrani ponudbo.'
+                          : '';
 
   /* "+ Dodaj svojo drzavo": poljubno ime drzave kot dodaten label poleg
      izbire regije (regija ostaja edina, ki nosi dejanski cenovni mnozitelj). */
@@ -3474,20 +3490,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </>
           )}
 
-          {korak === izkusnjeStep && (
-            <div className="kartica">
-              <div className="k-naslov">Izberi svojo raven <span className="vec">vpliva na privzete cene</span></div>
-              <div className="izbira izbira-3">
-                {IZKUSNJE.map(i => (
-                  <button key={i.id} type="button" className={izkusnje === i.id ? 'on' : ''}
-                    onClick={() => { setIzkusnje(i.id); }}>
-                    <h3>{i.ime}</h3>
-                    <p>{i.opis}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          {korak === kdoSiStep && podatkiUI()}
 
           {korak === mojTrgStep && (
             <div className="kartica">
@@ -3512,10 +3515,81 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </div>
           )}
 
+          {korak === izkusnjeStep && (
+            <div className="kartica">
+              <div className="k-naslov">Izberi svojo raven <span className="vec">vpliva na privzete cene</span></div>
+              <div className="izbira izbira-3">
+                {IZKUSNJE.map(i => (
+                  <button key={i.id} type="button" className={izkusnje === i.id ? 'on' : ''}
+                    onClick={() => { setIzkusnje(i.id); }}>
+                    <h3>{i.ime}</h3>
+                    <p>{i.opis}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {korak === narocnikStep && (
+            <div className="kartica">
+              <div className="k-naslov">Naročnik <span className="vec">za to ponudbo</span></div>
+              <div className="numgrid" style={{ marginTop: 0 }}>
+                <div className="polje">
+                  <label htmlFor="cw-narocnik">Ime podjetja</label>
+                  <input id="cw-narocnik" type="text" placeholder="npr. Odvetniška družba Potočnik"
+                    value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)} />
+                </div>
+                <div className="polje">
+                  <label htmlFor="cw-narocnik-email">Email naročnika <span className="vec">za pošiljanje ponudbe</span></label>
+                  <input id="cw-narocnik-email" type="email" placeholder="npr. pisarna@potocnik.si"
+                    value={narocnikEmail} onChange={e => setNarocnikEmail(e.target.value)} />
+                </div>
+              </div>
+              {(dodatniNarocnik || narocnikOseba || narocnikNaslov || narocnikDavcna) ? (
+                <div className="numgrid">
+                  <div className="polje">
+                    <label htmlFor="cw-narocnik-oseba">Kontaktna oseba</label>
+                    <input id="cw-narocnik-oseba" type="text" placeholder="npr. Janez Potočnik"
+                      value={narocnikOseba} onChange={e => setNarocnikOseba(e.target.value)} />
+                  </div>
+                  <div className="polje">
+                    <label htmlFor="cw-narocnik-davcna">Davčna številka</label>
+                    <input id="cw-narocnik-davcna" type="text" placeholder="npr. SI12345678"
+                      value={narocnikDavcna} onChange={e => setNarocnikDavcna(e.target.value)} />
+                  </div>
+                  <div className="polje" style={{ gridColumn: '1 / -1' }}>
+                    <label htmlFor="cw-narocnik-naslov">Naslov (uradni sedež podjetja)</label>
+                    <input id="cw-narocnik-naslov" type="text" placeholder="npr. Dunajska cesta 1, 1000 Ljubljana"
+                      value={narocnikNaslov} onChange={e => setNarocnikNaslov(e.target.value)} />
+                  </div>
+                </div>
+              ) : (
+                <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
+                  onClick={() => setDodatniNarocnik(true)}>
+                  + Dodaj kontaktno osebo, davčno, naslov
+                </button>
+              )}
+              {(() => {
+                const nedavni = Array.from(new Set(
+                  Object.values(arhiv).map(a => a.narocnikPonudbe).filter(Boolean)
+                )).filter(n => n !== narocnikPonudbe).slice(0, 8);
+                return nedavni.length ? (
+                  <div className="narocnik-nedavni">
+                    <span className="vec">nedavni:</span>
+                    {nedavni.map(n => (
+                      <button key={n} type="button" className="narocnik-chip"
+                        onClick={() => setNarocnikPonudbe(n)}>{n}</button>
+                    ))}
+                  </div>
+                ) : null;
+              })()}
+            </div>
+          )}
+
+          {korak === trgNarocnikaStep && (
             <>
               <div className="kartica">
-                <div className="k-naslov">Trg naročnika
+                <div className="k-naslov">Trg naročnika <span className="vec">stranka je lahko drugod kot njen trg</span>
                   {custDrzavaUI(custDrzavaNarocnik, setCustDrzavaNarocnik, dodajanjeDrzaveNarocnik, setDodajanjeDrzaveNarocnik)}
                 </div>
                 <div className="opts">
@@ -3635,7 +3709,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </p>
                 </div>
               )}
+            </>
+          )}
 
+          {korak === praviceStep && (
+            <>
               <div className="kartica">
                 <div className="k-naslov">Kako prenašaš avtorske pravice? <span className="vec">vpliva na ceno</span></div>
                 <div className="izbira izbira-3">
@@ -3717,23 +3795,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   ))}
                 </div>
               </div>
-              <div className="kartica">
-                <div className="numgrid">
-                  <div className="polje">
-                    <label htmlFor="cw-popust">Popust (%)</label>
-                    <input id="cw-popust" type="number" min={0} max={50} step={5}
-                      placeholder="0" value={popust}
-                      onChange={e => setPopust(e.target.value)} />
-                  </div>
-                </div>
-                <p className="hint">Popust naj ima vedno razlog (prvi projekt, paket, dolgoročno sodelovanje) in v ponudbi vedno stoji ob redni ceni.</p>
-              </div>
+              {urnePostavkeUI()}
+              {dodajPostavkoUI('Dodatni stroški za to ponudbo')}
             </>
           )}
 
           {korak === cenaStep && r && (
             <>
-              {urnePostavkeUI()}
               <div className="paketi">
                 {r.paketi.map(p => (
                   <div key={p.id} className={'paket' + (p.id === 'priporoceni' ? ' mid' : '')}>
@@ -3743,6 +3811,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <p>{p.opis}</p>
                   </div>
                 ))}
+              </div>
+              <div className="kartica" style={{ marginTop: '1.4rem' }}>
+                <div className="numgrid" style={{ marginTop: 0 }}>
+                  <div className="polje">
+                    <label htmlFor="cw-popust">Popust (%)</label>
+                    <input id="cw-popust" type="number" min={0} max={50} step={5}
+                      placeholder="0" value={popust}
+                      onChange={e => setPopust(e.target.value)} />
+                  </div>
+                </div>
+                <p className="hint">Popust naj ima vedno razlog (prvi projekt, paket, dolgoročno sodelovanje) in v ponudbi vedno stoji ob redni ceni.</p>
               </div>
               <p className="razlaga">
                 Cena zajema izvedbo ({r.sez.map(s => s.ime.toLowerCase()).join(' + ')}),
@@ -3766,70 +3845,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 Tvoj izračun anonimno (brez imena, maila ali česarkoli osebnega) prispeva
                 cenovno točko v skupno statistiko cen za kreativce. Hvala, da gradiš pregled trga.
               </p>
-              {dodajPostavkoUI('Si pozabil dodatek? Dodaj ga tukaj')}
             </>
           )}
           {korak === cenaStep && !r && (
             <p className="sub">Najprej izberi vsaj eno storitev v prvem koraku.</p>
-          )}
-
-          {korak === podatkiStep && (
-            <>
-              {podatkiUI()}
-              <div className="kartica">
-                <div className="k-naslov">Naročnik <span className="vec">za to ponudbo</span></div>
-                <div className="numgrid" style={{ marginTop: 0 }}>
-                  <div className="polje">
-                    <label htmlFor="cw-narocnik">Ime podjetja</label>
-                    <input id="cw-narocnik" type="text" placeholder="npr. Odvetniška družba Potočnik"
-                      value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)} />
-                  </div>
-                  <div className="polje">
-                    <label htmlFor="cw-narocnik-email">Email naročnika <span className="vec">za pošiljanje ponudbe</span></label>
-                    <input id="cw-narocnik-email" type="email" placeholder="npr. pisarna@potocnik.si"
-                      value={narocnikEmail} onChange={e => setNarocnikEmail(e.target.value)} />
-                  </div>
-                </div>
-                {(dodatniNarocnik || narocnikOseba || narocnikNaslov || narocnikDavcna) ? (
-                  <div className="numgrid">
-                    <div className="polje">
-                      <label htmlFor="cw-narocnik-oseba">Kontaktna oseba</label>
-                      <input id="cw-narocnik-oseba" type="text" placeholder="npr. Janez Potočnik"
-                        value={narocnikOseba} onChange={e => setNarocnikOseba(e.target.value)} />
-                    </div>
-                    <div className="polje">
-                      <label htmlFor="cw-narocnik-davcna">Davčna številka</label>
-                      <input id="cw-narocnik-davcna" type="text" placeholder="npr. SI12345678"
-                        value={narocnikDavcna} onChange={e => setNarocnikDavcna(e.target.value)} />
-                    </div>
-                    <div className="polje" style={{ gridColumn: '1 / -1' }}>
-                      <label htmlFor="cw-narocnik-naslov">Naslov</label>
-                      <input id="cw-narocnik-naslov" type="text" placeholder="npr. Dunajska cesta 1, 1000 Ljubljana"
-                        value={narocnikNaslov} onChange={e => setNarocnikNaslov(e.target.value)} />
-                    </div>
-                  </div>
-                ) : (
-                  <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
-                    onClick={() => setDodatniNarocnik(true)}>
-                    + Dodaj kontaktno osebo, davčno, naslov
-                  </button>
-                )}
-                {(() => {
-                  const nedavni = Array.from(new Set(
-                    Object.values(arhiv).map(a => a.narocnikPonudbe).filter(Boolean)
-                  )).filter(n => n !== narocnikPonudbe).slice(0, 8);
-                  return nedavni.length ? (
-                    <div className="narocnik-nedavni">
-                      <span className="vec">nedavni:</span>
-                      {nedavni.map(n => (
-                        <button key={n} type="button" className="narocnik-chip"
-                          onClick={() => setNarocnikPonudbe(n)}>{n}</button>
-                      ))}
-                    </div>
-                  ) : null;
-                })()}
-              </div>
-            </>
           )}
 
           {korak === ponudbaStep && (
@@ -3915,26 +3934,29 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </button>
                 </p>
               )}
-              <div className="btnvrsta">
-                <button type="button" className="gumb" onClick={kopiraj}>
-                  <CopySimple size={17} /> {kopirano ? 'Skopirano ✓' : 'Kopiraj ponudbo'}
-                </button>
-                <button type="button" className="gumb" disabled={!narocnikEmail.trim()}
-                  title={narocnikEmail.trim() ? undefined : 'Vpiši email naročnika na koraku Tvoji podatki in naročnik'}
-                  onClick={posljiMailto}>
-                  <EnvelopeSimple size={17} /> Pošlji ponudbo
-                </button>
-                <button type="button" className="povezava" onClick={prenesi}>
-                  <DownloadSimple size={17} /> Prenesi besedilo
-                </button>
-                <button type="button" className="povezava" onClick={prenesiCsv}>
-                  <FileText size={17} /> Izvozi postavke (CSV za račune)
-                </button>
-                <button type="button" className="povezava" onClick={shraniVArhiv}>
-                  <FloppyDisk size={17} /> Shrani ponudbo v arhiv
-                </button>
-              </div>
             </>
+          )}
+
+          {korak === zakljucekStep && (
+            <div className="btnvrsta">
+              <button type="button" className="gumb" onClick={kopiraj}>
+                <CopySimple size={17} /> {kopirano ? 'Skopirano ✓' : 'Kopiraj ponudbo'}
+              </button>
+              <button type="button" className="gumb" disabled={!narocnikEmail.trim()}
+                title={narocnikEmail.trim() ? undefined : 'Vpiši email naročnika na koraku Kdo je stranka'}
+                onClick={posljiMailto}>
+                <EnvelopeSimple size={17} /> Pošlji ponudbo
+              </button>
+              <button type="button" className="povezava" onClick={prenesi}>
+                <DownloadSimple size={17} /> Prenesi besedilo
+              </button>
+              <button type="button" className="povezava" onClick={prenesiCsv}>
+                <FileText size={17} /> Izvozi postavke (CSV za račune)
+              </button>
+              <button type="button" className="povezava" onClick={shraniVArhiv}>
+                <FloppyDisk size={17} /> Shrani ponudbo v arhiv
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -3948,7 +3970,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             {korak < KORAKOV - 1 ? (
               <button type="button" className="gumb"
                 disabled={korak === 0 && !r} onClick={naprej}>
-                {korak === posebnostiStep ? 'Pokaži ceno →' : korak === cenaStep ? 'Pripravi ponudbo →' : 'Naprej →'}
+                {korak === posebnostiStep ? 'Pokaži ceno →' : korak === cenaStep ? 'Pripravi ponudbo →' : korak === ponudbaStep ? 'Zaključi →' : 'Naprej →'}
               </button>
             ) : (
               <div className="noga-koncna">
