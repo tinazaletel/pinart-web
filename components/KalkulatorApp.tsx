@@ -1023,6 +1023,19 @@ async function pridobiTurnstileToken(): Promise<string | undefined> {
   });
 }
 
+/* Majhen info-gumb za polja z zargonom (DDV, avtorske pravice ...).
+   Klik namesto hover, da deluje tudi na dotik (mobile). */
+function InfoNamig({ besedilo }: { besedilo: string }) {
+  const [odprto, setOdprto] = useState(false);
+  return (
+    <span className="info-namig">
+      <button type="button" className="info-gumb" aria-label="Pojasnilo" aria-expanded={odprto}
+        onClick={() => setOdprto(o => !o)}>?</button>
+      {odprto && <span className="info-oblacek" role="tooltip">{besedilo}</span>}
+    </span>
+  );
+}
+
 export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* Vstopno soglasje (kot Paperform): pogoji pred prvo uporabo orodja.
      Sprejem se shrani lokalno; ob naslednjih obiskih se ne prikaze vec. */
@@ -2241,7 +2254,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         <div className="k-naslov">Davek in pogoji</div>
         <div className="numgrid">
           <div className="polje">
-            <label htmlFor="cw-ddv">DDV</label>
+            <label htmlFor="cw-ddv">DDV
+              <InfoNamig besedilo="Če tvoj letni promet ne presega zakonskega praga, po 94. členu ZDDV-1 nisi zavezanec — na računih ne obračunavaš DDV. Če si zavezanec (presežen prag ali prostovoljna registracija), na ceno dodaš DDV po veljavni stopnji." />
+            </label>
             <select id="cw-ddv" value={ddvZavezanec ? 'da' : 'ne'}
               onChange={e => setDdvZavezanec(e.target.value === 'da')}>
               <option value="ne">Nisem zavezanec (94. člen ZDDV-1)</option>
@@ -2557,6 +2572,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .hint.podkartice { max-width: 760px; }
         .cw .polje label { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; font-size: .72rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.7); margin-bottom: .3rem; }
         .cw .polje label .vec { font-size: .68rem; font-weight: 500; letter-spacing: 0; text-transform: none; color: rgba(17,17,17,.5); }
+        .cw .info-namig { position: relative; display: inline-flex; margin-left: .4rem; vertical-align: middle; }
+        .cw .info-gumb { width: 1.15rem; height: 1.15rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.4); background: transparent; color: rgba(17,17,17,.6); font-family: inherit; font-size: .68rem; font-weight: 700; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; flex: none; }
+        .cw .info-gumb:hover { border-color: var(--ink); color: var(--ink); }
+        .cw .info-oblacek { position: absolute; z-index: 20; bottom: calc(100% + .5rem); left: 0; width: max(220px, 16rem); max-width: min(80vw, 20rem); background: var(--ink); color: var(--paper); font-size: .8rem; font-weight: 400; line-height: 1.5; padding: .75rem .95rem; border-radius: 10px; text-transform: none; letter-spacing: 0; box-shadow: 0 8px 24px rgba(17,17,17,.22); }
         .cw .polje input { width: 100%; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.1rem; padding: .35rem 0 .5rem; color: var(--ink); border-radius: 0; }
         .cw .polje input:focus { outline: none; border-bottom: 2px solid var(--ink); margin-bottom: -1px; }
         .cw .polje input::placeholder { color: rgba(17,17,17,.42); font-weight: 400; font-size: 1rem; }
@@ -3750,7 +3769,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           {korak === praviceStep && (
             <>
               <div className="kartica">
-                <div className="k-naslov">Kako prenašaš avtorske pravice? <span className="vec">vpliva na ceno</span></div>
+                <div className="k-naslov">Kako prenašaš avtorske pravice?
+                  <InfoNamig besedilo="Izključni prenos: naročnik dobi delo v izključno last, ti ga ne smeš uporabiti drugje (najvišja cena pravic). Neizključni: obdržiš pravico delo ponuditi tudi drugim (npr. predloge) — nižja cena. Samo licenca: naročnik ne kupi pravic, plačuje letno licenco za rabo, ti ostaneš lastnik dela." />
+                  <span className="vec">vpliva na ceno</span>
+                </div>
                 <div className="izbira izbira-3">
                   <button type="button" className={prenosPravic === 'izkljucni' ? 'on' : ''} onClick={() => setPrenosPravic('izkljucni')}>
                     <h3>Izključni prenos</h3>
