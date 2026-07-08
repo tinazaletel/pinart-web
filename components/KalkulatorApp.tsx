@@ -1645,7 +1645,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </div>
             </div>
             <div className="sg-motiv">
-              <span className="sg-motiv-ozn">★ Zakaj to delamo</span>
+              <span className="sg-motiv-ozn">★ Kaj imaš od tega</span>
               <p>Skupaj gradimo <b>prvo statistiko cen za kreativce</b>: ko bo baza dovolj velika, boš videl, <b>koliko kolegi s tvojimi izkušnjami dejansko računajo</b> — česar danes ne pove nihče.</p>
             </div>
             <div className="soglasje-email">
