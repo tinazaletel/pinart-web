@@ -1630,6 +1630,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       v.push('· popravki nad vključenimi krogi in dodatna dela po urnih postavkah:');
       ure.forEach(u => v.push(`· ${u.ime}: ${u.cena.toLocaleString('sl-SI')} ${vfx.znak}/uro${ddvPripis}`));
     }
+    v.push('· delo izven dogovorjenega obsega te ponudbe se obravnava kot');
+    v.push('  nova, ločena ponudba');
     v.push('· pravice veljajo za navedenega naročnika in navedeno rabo;');
     v.push('  prenos na tretjo osebo ali širša raba se dogovori posebej');
     v.push('· moralne avtorske pravice ostanejo avtorju (navedba avtorstva)');
