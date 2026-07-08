@@ -2020,6 +2020,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   };
   const ikonaZa = (id: string) => IKONE[id] ?? <Sparkle size={19} />;
 
+  const PODROCJE_IKONA: Record<string, React.ReactNode> = {
+    graficno:  <Palette size={22} />,
+    prostor:   <Buildings size={22} />,
+    splet:     <Browser size={22} />,
+    marketing: <Megaphone size={22} />,
+    foto:      <Camera size={22} />,
+    direkcija: <Compass size={22} />,
+  };
+
   const naslovKoraka = korak === 0 ? 'Kaj ustvarjaš?'
     : trenutnaSkupina ? trenutnaSkupina.storitev
       : korak === izkusnjeStep ? 'Koliko izkušenj imaš?'
@@ -2299,6 +2308,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .ob-kicker { font-size: .74rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 .6rem; }
         .cw .ob-naslov { padding-left: 0 !important; }
         .cw .onboarding-noga { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1rem; margin-top: 2.6rem; }
+        .cw .onboarding-noga-vrsta { width: 100%; flex-direction: row; align-items: center; justify-content: center; gap: 1.6rem; }
+        @media (max-width: 480px) { .cw .onboarding-noga-vrsta { flex-direction: column; gap: 1rem; } }
         .cw .soglasje-email { border-top: 1px solid rgba(17,17,17,.14); padding-top: 1.3rem; margin-bottom: 1.7rem; }
         .cw .se-preklop { display: flex; align-items: center; justify-content: space-between; gap: 1.1rem; cursor: pointer; font-size: .98rem; font-weight: 500; color: var(--ink); line-height: 1.5; }
         .cw .se-tekst { display: flex; align-items: center; gap: .55rem; min-width: 0; }
@@ -2397,6 +2408,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .izbira button p { margin: 0; font-size: .85rem; line-height: 1.55; color: rgba(17,17,17,.68); font-weight: 300; }
         .cw .izbira button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
         .cw .izbira button.on p { color: rgba(245,242,234,.82); }
+
+        /* Podrocja (onboarding): ikona v krogcu, ki se ob izbiri "razlije"
+           cez celo kartico — bolj zivo od plosko obarvanega .on. */
+        .cw .izbira-podrocja button { position: relative; overflow: hidden; z-index: 0; }
+        .cw .izbira-podrocja button.on { background: transparent; }
+        .cw .izbira-podrocja .pod-fill { position: absolute; top: 1.4rem; left: 1.5rem; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--ink); transform: scale(0); transform-origin: center; transition: transform .55s cubic-bezier(0.16,1,0.3,1); z-index: 0; pointer-events: none; }
+        .cw .izbira-podrocja button.on .pod-fill { transform: scale(22); }
+        .cw .izbira-podrocja .pod-ikona { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: rgba(178,84,118,.12); color: var(--accent); margin-bottom: .9rem; transition: background .3s ease, color .55s ease; }
+        .cw .izbira-podrocja button.on .pod-ikona { background: rgba(245,242,234,.16); color: var(--paper); }
+        .cw .izbira-podrocja button h3, .cw .izbira-podrocja button p { position: relative; z-index: 1; transition: color .55s ease; }
 
         .cw .numgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; max-width: 640px; }
         @media (max-width: 560px) { .cw .numgrid { grid-template-columns: 1fr; gap: 1.4rem; } }
@@ -2671,20 +2692,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           </div>
           <div className="oder">
             <div className="korak-vsebina">
-              <p className="ob-kicker">Kalkulator za pošteno ceno in ponudbo · to nastaviš enkrat</p>
+              <p className="ob-kicker">Kalkulator za pošteno ceno in ponudbo</p>
               <h1 className="ob-naslov">S čim se ukvarjaš?</h1>
-              <p className="sub" style={{ marginBottom: '2rem' }}>Izberi svoja področja dela — pripadajoče storitve postavimo v ospredje, ostale skrijemo (do njih prideš z enim klikom). Kadar koli lahko urediš ali preskočiš.</p>
-              <div className="izbira izbira-3">
+              <p className="sub" style={{ marginBottom: '2rem' }}>To nastaviš enkrat. Izberi svoja področja dela — pripadajoče storitve postavimo v ospredje, ostale skrijemo (do njih prideš z enim klikom). Kadar koli lahko urediš ali preskočiš.</p>
+              <div className="izbira izbira-3 izbira-podrocja">
                 {PODROCJA.map(p => (
                   <button key={p.id} type="button"
                     className={obIzbor.has(p.id) ? 'on' : ''}
                     onClick={() => preklopi(obIzbor, p.id, setObIzbor)}>
+                    <span className="pod-fill" aria-hidden />
+                    <span className="pod-ikona">{PODROCJE_IKONA[p.id]}</span>
                     <h3>{p.ime}</h3>
                     <p>{p.opis}</p>
                   </button>
                 ))}
               </div>
-              <div className="onboarding-noga">
+              <div className="onboarding-noga onboarding-noga-vrsta">
                 <button type="button" className="gumb" onClick={shraniOnboarding} disabled={obIzbor.size === 0}>Shrani in začni →</button>
                 <button type="button" className="povezava" onClick={preskociOnboarding}>Preskoči</button>
               </div>
