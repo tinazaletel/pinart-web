@@ -819,18 +819,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   };
   const povrniStoritev = (id: string) => setSkrite(prev => prev.filter(x => x !== id));
 
-  /* Osebni set v ospredju + preostale storitve (za "druge storitve"). */
-  const mojSetStoritve = useMemo(() => {
-    if (!mojSet || !mojSet.length) return null;
-    const map = new Map(vseStoritve.map(s => [s.id, s] as const));
-    return mojSet.map(id => map.get(id)).filter((s): s is Storitev => Boolean(s) && !skrite.includes(s!.id));
-  }, [mojSet, vseStoritve, skrite]);
-  const drugeStoritve = useMemo(() => {
-    if (!mojSet || !mojSet.length) return [] as Storitev[];
-    const inSet = new Set(mojSet);
-    return vseStoritve.filter(s => !inSet.has(s.id) && !skrite.includes(s.id));
-  }, [vseStoritve, mojSet, skrite]);
-
   /* Onboarding ob prvem obisku (po sprejemu pogojev, ce se ni onboardan). */
   useEffect(() => {
     if (pogojiOk === true && mojSet === null) {
@@ -1512,6 +1500,32 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 : korak === ponudbaStep ? 'Besedilo lahko poljubno urejaš in dopišeš.'
                   : '';
 
+  /* En oblacek storitve (prvi korak). */
+  const oblacekStoritve = (s: Storitev) => (
+    <button key={s.id} type="button"
+      className={'pill' + (izbrane.has(s.id) ? ' on' : '')}
+      onClick={() => preklopi(izbrane, s.id, setIzbrane)}>
+      <span className="pi" aria-hidden>{ikonaZa(s.id)}</span>
+      <span>{s.ime}<small>od {val(osnovaZa(s))}</small></span>
+    </button>
+  );
+  /* Skupina enega podrocja (naslov + oblacki vidnih storitev), ali null. */
+  const skupinaPodrocja = (area: { id: string; ime: string; storitve: string[] }) => {
+    const svc = poVrstnemRedu(vidneStoritve.filter(s => area.storitve.includes(s.id)));
+    if (!svc.length) return null;
+    return (
+      <div className="skupina" key={area.id}>
+        <div className="skupina-naslov">{area.ime}</div>
+        <div className="opts">{svc.map(oblacekStoritve)}</div>
+      </div>
+    );
+  };
+  const jeOnboardan = !!(mojSet && mojSet.length);
+  const izbranaPodrocja = jeOnboardan ? PODROCJA.filter(p => p.storitve.every(sid => mojSet!.includes(sid))) : PODROCJA;
+  const drugaPodrocja = jeOnboardan ? PODROCJA.filter(p => !p.storitve.every(sid => mojSet!.includes(sid))) : [];
+  const drugaImaVidne = drugaPodrocja.some(p => vidneStoritve.some(s => p.storitve.includes(s.id)));
+  const mojeVidne = poVrstnemRedu(vidneStoritve.filter(s => s.id.startsWith('moja-')));
+
   return (
     <div className="cw" onKeyDown={naEnter}>
       <style>{`
@@ -1558,6 +1572,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .cene-dodaj input { border: none; border-bottom: 1px solid rgba(17,17,17,.25); background: transparent; padding: .35rem .2rem; font-family: inherit; font-size: .92rem; color: var(--ink); }
         .cw .cene-dodaj input[type=text] { flex: 1; min-width: 140px; }
         .cw .cene-dodaj input[type=number] { width: 80px; text-align: right; }
+        .cw .skupine-storitev { display: flex; flex-direction: column; gap: 1.7rem; }
+        .cw .skupina-naslov { font-size: .72rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: rgba(17,17,17,.5); margin-bottom: .75rem; }
         .cw .onboarding { position: fixed; inset: 0; z-index: 60; background: var(--paper); overflow-y: auto; display: flex; flex-direction: column; animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
         @media (prefers-reduced-motion: reduce) { .cw .onboarding { animation: none; } }
         .cw .ob-naslov { padding-left: 0 !important; }
@@ -2043,39 +2059,30 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   ))}
                 </div>
               )}
-              <div className="opts">
-                {poVrstnemRedu(mojSetStoritve ?? vidneStoritve).map(s => (
-                  <button key={s.id} type="button"
-                    className={'pill' + (izbrane.has(s.id) ? ' on' : '')}
-                    onClick={() => preklopi(izbrane, s.id, setIzbrane)}>
-                    <span className="pi" aria-hidden>{ikonaZa(s.id)}</span>
-                    <span>{s.ime}<small>od {val(osnovaZa(s))}</small></span>
-                  </button>
-                ))}
-                {mojSetStoritve && !kazemDruge && drugeStoritve.length > 0 && (
-                  <button type="button" className="pill dodaj" onClick={() => setKazemDruge(true)}>
-                    <span className="pi" aria-hidden><Plus size={19} /></span>
-                    <span>druge storitve<small>{drugeStoritve.length} več …</small></span>
-                  </button>
+              <div className="skupine-storitev">
+                {izbranaPodrocja.map(skupinaPodrocja)}
+                {mojeVidne.length > 0 && (
+                  <div className="skupina">
+                    <div className="skupina-naslov">Moje storitve</div>
+                    <div className="opts">{mojeVidne.map(oblacekStoritve)}</div>
+                  </div>
                 )}
-                {mojSetStoritve && kazemDruge && poVrstnemRedu(drugeStoritve).map(s => (
-                  <button key={s.id} type="button"
-                    className={'pill' + (izbrane.has(s.id) ? ' on' : '')}
-                    onClick={() => preklopi(izbrane, s.id, setIzbrane)}>
-                    <span className="pi" aria-hidden>{ikonaZa(s.id)}</span>
-                    <span>{s.ime}<small>od {val(osnovaZa(s))}</small></span>
-                  </button>
-                ))}
-                <button type="button" className="pill dodaj" onClick={() => setKazemDodaj(!kazemDodaj)}>
-                  <span className="pi" aria-hidden><Plus size={19} /></span>
-                  <span>dodaj postavko<small>animacija, zvok, 3D, AI, svoje …</small></span>
-                </button>
+                {jeOnboardan && drugaImaVidne && !kazemDruge && (
+                  <button type="button" className="povezava" onClick={() => setKazemDruge(true)}>+ druge storitve</button>
+                )}
+                {jeOnboardan && kazemDruge && drugaPodrocja.map(skupinaPodrocja)}
+                <div className="skupina">
+                  <div className="opts">
+                    <button type="button" className="pill dodaj" onClick={() => setKazemDodaj(!kazemDodaj)}>
+                      <span className="pi" aria-hidden><Plus size={19} /></span>
+                      <span>dodaj postavko<small>za to ponudbo: animacija, zvok, 3D …</small></span>
+                    </button>
+                  </div>
+                </div>
               </div>
-              {mojSetStoritve && (
-                <button type="button" className="povezava" style={{ marginTop: '.9rem' }} onClick={odpriOnboarding}>
-                  ✎ Uredi svoje storitve
-                </button>
-              )}
+              <button type="button" className="povezava" style={{ marginTop: '1.3rem' }} onClick={odpriOnboarding}>
+                ✎ Uredi svoje storitve
+              </button>
 
               {kazemDodaj && (
                 <div className="iskalnik">
