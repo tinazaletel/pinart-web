@@ -2396,7 +2396,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
         .cw .opts { display: flex; flex-wrap: wrap; gap: 1rem .65rem; }
         .cw .pill { position: relative; overflow: hidden; z-index: 0; padding: .8rem 1.3rem; border: 1px solid rgba(17,17,17,.25); border-radius: 999px; cursor: pointer; font-size: 1rem; background: transparent; font-family: inherit; font-weight: 400; color: var(--ink); transition: border-color .18s ease, background .18s ease, color .18s ease; text-align: left; line-height: 1.25; }
-        .cw .pill small { position: relative; z-index: 1; display: block; font-size: .82rem; color: rgba(17,17,17,.82); font-weight: 400; margin-top: .1rem; transition: color .5s ease; }
+        .cw .pill small { position: relative; z-index: 1; display: block; font-size: .82rem; color: rgba(17,17,17,.82); font-weight: 400; margin-top: .1rem; transition: color .3s cubic-bezier(0.16,1,0.3,1); }
         .cw .pill:hover { border-color: var(--ink); }
         .cw .pill.on { background: transparent; color: var(--paper); border-color: var(--accent); }
         .cw .pill.on small { color: rgba(245,242,234,.92); }
@@ -2404,12 +2404,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .pill { display: inline-flex; align-items: center; gap: .65rem; transition: transform .2s cubic-bezier(0.23,1,0.32,1), border-color .2s ease, background .2s ease, color .2s ease; }
         .cw .pill:hover { transform: translateY(-2px); }
         .cw .pill:active { transform: translateY(0) scale(.97); }
-        .cw .pill-fill { position: absolute; top: 50%; left: 1.3rem; width: 2.15rem; height: 2.15rem; border-radius: 50%; background: var(--accent); transform: translateY(-50%) scale(0); transform-origin: center; transition: transform .55s cubic-bezier(0.16,1,0.3,1); z-index: 0; pointer-events: none; }
-        .cw .pill.on .pill-fill { transform: translateY(-50%) scale(18); }
+        .cw .pill-fill { position: absolute; top: 50%; left: 1.3rem; width: 2.15rem; height: 2.15rem; border-radius: 50%; background: var(--accent); transform: translateY(-50%) scale(0); transform-origin: center; filter: blur(9px); transition: transform .55s cubic-bezier(0.16,1,0.3,1), filter .55s cubic-bezier(0.16,1,0.3,1); z-index: 0; pointer-events: none; }
+        .cw .pill.on .pill-fill { transform: translateY(-50%) scale(18); filter: blur(0); }
         .cw .pill .pi { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.15rem; height: 2.15rem; border-radius: 50%; background: var(--accent); color: var(--paper); transition: background .3s ease, color .55s ease; }
         .cw .pill.on .pi { background: var(--accent); color: var(--paper); }
         .cw .pill .pi svg { width: 22px; height: 22px; }
-        .cw .pill-tekst { position: relative; z-index: 1; transition: color .5s ease; }
+        .cw .pill-tekst { position: relative; z-index: 1; transition: color .3s cubic-bezier(0.16,1,0.3,1); }
         .cw .pill.dodaj { border-style: dashed; border-color: rgba(17,17,17,.55); font-weight: 500; }
         .cw .pill.dodaj .pi { background: var(--ink); }
 
@@ -2431,11 +2431,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
            cez celo kartico — bolj zivo od plosko obarvanega .on. */
         .cw .izbira-podrocja button { position: relative; overflow: hidden; z-index: 0; }
         .cw .izbira-podrocja button.on { background: transparent; border-color: var(--accent); }
-        .cw .izbira-podrocja .pod-fill { position: absolute; top: 1.4rem; left: 1.5rem; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--accent); transform: scale(0); transform-origin: center; transition: transform .55s cubic-bezier(0.16,1,0.3,1); z-index: 0; pointer-events: none; }
-        .cw .izbira-podrocja button.on .pod-fill { transform: scale(22); }
+        .cw .izbira-podrocja .pod-fill { position: absolute; top: 1.4rem; left: 1.5rem; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--accent); transform: scale(0); transform-origin: center; filter: blur(11px); transition: transform .55s cubic-bezier(0.16,1,0.3,1), filter .55s cubic-bezier(0.16,1,0.3,1); z-index: 0; pointer-events: none; }
+        .cw .izbira-podrocja button.on .pod-fill { transform: scale(22); filter: blur(0); }
         .cw .izbira-podrocja .pod-ikona { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--accent); color: var(--paper); margin-bottom: .9rem; transition: background .3s ease, color .55s ease; }
         .cw .izbira-podrocja button.on .pod-ikona { background: var(--accent); color: var(--paper); }
-        .cw .izbira-podrocja button h3, .cw .izbira-podrocja button p { position: relative; z-index: 1; transition: color .55s ease; }
+        .cw .izbira-podrocja button h3, .cw .izbira-podrocja button p { position: relative; z-index: 1; transition: color .3s cubic-bezier(0.16,1,0.3,1); }
 
         .cw .numgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; max-width: 640px; }
         @media (max-width: 560px) { .cw .numgrid { grid-template-columns: 1fr; gap: 1.4rem; } }
