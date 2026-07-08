@@ -2583,7 +2583,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .paket h3 { margin: 0; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 600; opacity: .85; }
         .cw .paket .redna { font-family: var(--font-serif), serif; font-size: 1.05rem; text-decoration: line-through; opacity: .62; margin-top: .5rem; margin-bottom: -.4rem; -webkit-text-stroke: 0.3px currentColor; }
         .cw .paket .znesek { font-family: var(--font-serif), Didot, serif; font-size: clamp(2rem, 4.5vw, 2.6rem); font-weight: 700; margin: .5rem 0 .55rem; letter-spacing: -.01em; -webkit-text-stroke: 0.4px currentColor; }
-        .cw .paket p { margin: 0; font-size: .8rem; line-height: 1.6; opacity: .8; }
+        .cw .paket p { margin: 0; font-size: .9rem; line-height: 1.6; opacity: .8; }
         .cw .paket.mid p { opacity: .88; }
         .cw .razlaga { font-size: .85rem; color: rgba(17,17,17,.72); line-height: 1.75; margin: 1.5rem 0 0; max-width: 64ch; }
         .cw .razlaga b { color: var(--ink); font-weight: 600; }
