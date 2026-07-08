@@ -963,6 +963,7 @@ type ShranjenaP = {
   prenosPravic: 'izkljucni' | 'neizkljucni' | 'licenca';
   rocnePravice: string; rocnaLicenca: string;
   nazivPonudbe: string; narocnikPonudbe: string; narocnikEmail?: string;
+  narocnikOseba?: string; narocnikNaslov?: string; narocnikDavcna?: string;
   obsegPonudbe: 'kratka' | 'razsirjena'; tonPonudbe: TonPonudbe; avansPct: string;
   kaziUre: boolean; nogaZnak: boolean;
   izkusnje: string; mojTrg: string; trgNarocnika: string; valuta: string; valutaRocna: boolean;
@@ -1112,6 +1113,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [nazivPonudbe, setNazivPonudbe] = useState('');
   const [narocnikPonudbe, setNarocnikPonudbe] = useState('');
   const [narocnikEmail, setNarocnikEmail] = useState('');
+  const [narocnikOseba, setNarocnikOseba] = useState('');
+  const [narocnikNaslov, setNarocnikNaslov] = useState('');
+  const [narocnikDavcna, setNarocnikDavcna] = useState('');
   const [obsegPonudbe, setObsegPonudbe] = useState<'kratka' | 'razsirjena'>('razsirjena');
   const [kaziUre, setKaziUre] = useState(false);
   const [prenosPravic, setPrenosPravic] = useState<'izkljucni' | 'neizkljucni' | 'licenca'>('izkljucni');
@@ -1274,6 +1278,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setNazivPonudbe('');
     setNarocnikPonudbe('');
     setNarocnikEmail('');
+    setNarocnikOseba('');
+    setNarocnikNaslov('');
+    setNarocnikDavcna('');
     setPromet('');
     setDobicek('');
     setProjPrihodek('');
@@ -1449,6 +1456,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push(`PONUDBA: ${nazivPonudbe.trim() || r.sez.map(s => s.ime).join(', ')}`);
     v.push('Datum: ' + dat(danes) + ' · Ponudba velja do: ' + dat(velja));
     v.push('Naročnik: ' + (narocnikPonudbe.trim() || '[ime podjetja]'));
+    if (narocnikOseba.trim()) v.push('Kontaktna oseba: ' + narocnikOseba.trim());
+    if (narocnikNaslov.trim()) v.push(narocnikNaslov.trim());
+    const narocnikKontakt = [
+      narocnikDavcna.trim() && 'Davčna št.: ' + narocnikDavcna.trim(),
+      narocnikEmail.trim(),
+    ].filter(Boolean).join(' · ');
+    if (narocnikKontakt) v.push(narocnikKontakt);
     v.push('');
     if (tonPonudbe === 'formalno') {
       v.push('Spoštovani,');
@@ -1611,7 +1625,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       v.push('Pripravljeno s Pinart kalkulatorjem · pinart.si');
     }
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, obsegPonudbe, avansPct, kaziUre, nogaZnak]);
+  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
@@ -1897,6 +1911,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       rocnoBesedilo, besediloHtml: rocnoBesedilo ? (editorRef.current?.innerHTML || besediloHtml) : '',
       custDrzavaNarocnik: custDrzavaNarocnik || undefined,
       narocnikEmail: narocnikEmail || undefined,
+      narocnikOseba: narocnikOseba || undefined,
+      narocnikNaslov: narocnikNaslov || undefined,
+      narocnikDavcna: narocnikDavcna || undefined,
     };
     const nov = { ...arhiv, [ime]: zapis };
     setArhiv(nov);
@@ -1912,6 +1929,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setPrenosPravic(p.prenosPravic); setRocnePravice(p.rocnePravice); setRocnaLicenca(p.rocnaLicenca);
     setNazivPonudbe(p.nazivPonudbe); setNarocnikPonudbe(p.narocnikPonudbe);
     setNarocnikEmail(p.narocnikEmail || '');
+    setNarocnikOseba(p.narocnikOseba || '');
+    setNarocnikNaslov(p.narocnikNaslov || '');
+    setNarocnikDavcna(p.narocnikDavcna || '');
     setObsegPonudbe(p.obsegPonudbe); setTonPonudbe(p.tonPonudbe); setAvansPct(p.avansPct);
     setKaziUre(p.kaziUre); setNogaZnak(p.nogaZnak);
     setIzkusnje(p.izkusnje); setMojTrg(p.mojTrg); setTrgNarocnika(p.trgNarocnika);
@@ -2586,8 +2606,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .paket .redna { font-family: var(--font-serif), serif; font-size: 1.05rem; text-decoration: line-through; opacity: .62; margin-top: .5rem; margin-bottom: -.4rem; -webkit-text-stroke: 0.3px currentColor; }
         .cw .paket .znesek { font-family: var(--font-serif), Didot, serif; font-size: clamp(2rem, 4.5vw, 2.6rem); font-weight: 700; margin: .5rem 0 .55rem; letter-spacing: -.01em; -webkit-text-stroke: 0.4px currentColor; }
         .cw .paket p { margin: 0; font-size: .9rem; line-height: 1.6; opacity: .8; }
-        .cw .paket.mid p { opacity: .88; }
-        .cw .razlaga { font-size: .85rem; color: rgba(17,17,17,.72); line-height: 1.75; margin: 1.5rem 0 0; max-width: 64ch; }
+        .cw .paket.mid p { opacity: 1; color: var(--ink); font-weight: 500; background: var(--paper); border-radius: 10px; padding: .6rem .75rem; margin-top: .5rem; }
+        .cw .razlaga { font-size: .98rem; color: rgba(17,17,17,.75); line-height: 1.7; margin: 1.5rem 0 0; max-width: 64ch; }
         .cw .razlaga b { color: var(--ink); font-weight: 600; }
 
         .cw textarea { width: 100%; min-height: 320px; border: 1px solid rgba(17,17,17,.25); background: rgba(255,255,255,.5); font-family: ui-monospace, Menlo, monospace; font-size: .8rem; line-height: 1.6; padding: 1.4rem; resize: vertical; color: var(--ink); border-radius: 0; }
@@ -3699,6 +3719,23 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <label htmlFor="cw-narocnik-email">Email naročnika <span className="vec">za pošiljanje ponudbe</span></label>
                     <input id="cw-narocnik-email" type="email" placeholder="npr. pisarna@potocnik.si"
                       value={narocnikEmail} onChange={e => setNarocnikEmail(e.target.value)} />
+                  </div>
+                </div>
+                <div className="numgrid">
+                  <div className="polje">
+                    <label htmlFor="cw-narocnik-oseba">Kontaktna oseba <span className="vec">neobvezno</span></label>
+                    <input id="cw-narocnik-oseba" type="text" placeholder="npr. Janez Potočnik"
+                      value={narocnikOseba} onChange={e => setNarocnikOseba(e.target.value)} />
+                  </div>
+                  <div className="polje">
+                    <label htmlFor="cw-narocnik-davcna">Davčna številka <span className="vec">neobvezno</span></label>
+                    <input id="cw-narocnik-davcna" type="text" placeholder="npr. SI12345678"
+                      value={narocnikDavcna} onChange={e => setNarocnikDavcna(e.target.value)} />
+                  </div>
+                  <div className="polje" style={{ gridColumn: '1 / -1' }}>
+                    <label htmlFor="cw-narocnik-naslov">Naslov <span className="vec">neobvezno</span></label>
+                    <input id="cw-narocnik-naslov" type="text" placeholder="npr. Dunajska cesta 1, 1000 Ljubljana"
+                      value={narocnikNaslov} onChange={e => setNarocnikNaslov(e.target.value)} />
                   </div>
                 </div>
                 {(() => {
