@@ -2780,7 +2780,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           <a className="glava-brand" href={`/${locale}`} aria-label="Pinart — domov">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
-            <span className="glava-ime">Pinart kalkulator</span>
+            <span className="glava-ime">Kalkulator</span>
+            <span className="beta">BETA</span>
           </a>
           <button type="button" className="glava-profil" onClick={() => setKazemProfil(true)}>
             <UserCircle size={19} weight="bold" /> <span>Profil</span>
