@@ -1059,6 +1059,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      ospredje. null = se ni onboardan; [] = onboardan brez izbire (pokazi vse). */
   const [mojSet, setMojSet] = useState<string[] | null>(null);
   const [onboardingOdprt, setOnboardingOdprt] = useState(false);
+  /* dvojni scrollbar: stran zadaj ima svojega, onboarding pa svojega —
+     med onboardingom stran zadaj zaklenemo. */
+  useEffect(() => {
+    if (!onboardingOdprt) return;
+    const prej = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prej; };
+  }, [onboardingOdprt]);
   const [obIzbor, setObIzbor] = useState<Set<string>>(new Set());
   /* Poljuben vrstni red storitev (razporejanje z drag-rocajem); prazno = naravni. */
   const [vrstniRed, setVrstniRed] = useState<string[]>([]);
@@ -2412,8 +2420,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         /* Podrocja (onboarding): ikona v krogcu, ki se ob izbiri "razlije"
            cez celo kartico — bolj zivo od plosko obarvanega .on. */
         .cw .izbira-podrocja button { position: relative; overflow: hidden; z-index: 0; }
-        .cw .izbira-podrocja button.on { background: transparent; }
-        .cw .izbira-podrocja .pod-fill { position: absolute; top: 1.4rem; left: 1.5rem; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--ink); transform: scale(0); transform-origin: center; transition: transform .55s cubic-bezier(0.16,1,0.3,1); z-index: 0; pointer-events: none; }
+        .cw .izbira-podrocja button.on { background: transparent; border-color: var(--accent); }
+        .cw .izbira-podrocja .pod-fill { position: absolute; top: 1.4rem; left: 1.5rem; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--accent); transform: scale(0); transform-origin: center; transition: transform .55s cubic-bezier(0.16,1,0.3,1); z-index: 0; pointer-events: none; }
         .cw .izbira-podrocja button.on .pod-fill { transform: scale(22); }
         .cw .izbira-podrocja .pod-ikona { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: rgba(178,84,118,.12); color: var(--accent); margin-bottom: .9rem; transition: background .3s ease, color .55s ease; }
         .cw .izbira-podrocja button.on .pod-ikona { background: rgba(245,242,234,.16); color: var(--paper); }
@@ -2683,12 +2691,20 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       {onboardingOdprt && (
         <div className="onboarding" role="dialog" aria-modal="true" aria-label="Katere storitve ponujaš">
           <div className="glava">
-            <a className="glava-brand" href={`/${locale}`} aria-label="Pinart — domov">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
-              <span className="glava-ime">Kalkulator</span>
-              <span className="beta">BETA</span>
-            </a>
+            <span className="glava-levo">
+              <a className="glava-brand" href={`/${locale}`} aria-label="Pinart — domov">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
+                <span className="glava-ime">Kalkulator</span>
+                <span className="beta">BETA</span>
+              </a>
+              <button type="button" className="glava-profil" onClick={() => setKazemProfil(true)}>
+                <UserCircle size={19} weight="bold" /> <span>Profil</span>
+              </button>
+            </span>
+            <span className="glava-desno">
+              <a className="zapri" href={`/${locale}/kalkulator`} aria-label="Zapri kalkulator">✕ Zapri</a>
+            </span>
           </div>
           <div className="oder">
             <div className="korak-vsebina">
@@ -2708,8 +2724,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 ))}
               </div>
               <div className="onboarding-noga onboarding-noga-vrsta">
-                <button type="button" className="gumb" onClick={shraniOnboarding} disabled={obIzbor.size === 0}>Shrani in začni →</button>
                 <button type="button" className="povezava" onClick={preskociOnboarding}>Preskoči</button>
+                <button type="button" className="gumb" onClick={shraniOnboarding} disabled={obIzbor.size === 0}>Shrani in začni →</button>
               </div>
             </div>
           </div>
