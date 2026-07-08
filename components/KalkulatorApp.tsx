@@ -9,7 +9,7 @@ import {
   PersonSimple, TextAa, TextB, UploadSimple, CalendarBlank, EnvelopeSimple,
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
-  DotsSixVertical, Gear,
+  DotsSixVertical, Gear, UserCircle, ClockCounterClockwise,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -828,6 +828,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [iskanje, setIskanje] = useState('');
   const [kazemDodaj, setKazemDodaj] = useState(false);
   const [kazemCene, setKazemCene] = useState(false);
+  const [kazemProfil, setKazemProfil] = useState(false);
   const [mojeStoritve, setMojeStoritve] = useState<Storitev[]>([]);
   /* Onboarding / osebni set storitev: kaj uporabnik ponuja, postavljeno v
      ospredje. null = se ni onboardan; [] = onboardan brez izbire (pokazi vse). */
@@ -1875,6 +1876,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .glava { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1rem clamp(1.2rem, 4vw, 3rem); z-index: 30; pointer-events: none; }
         .cw .glava .zapri { pointer-events: auto; display: inline-flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); text-decoration: none; background: var(--paper); border: none; border-radius: 999px; padding: .5rem .85rem; transition: color .18s ease; }
         .cw .glava .zapri:hover { color: var(--ink); }
+        .cw .glava-desno { pointer-events: auto; display: inline-flex; align-items: center; gap: .5rem; }
+        .cw .glava-profil { display: inline-flex; align-items: center; gap: .4rem; font-family: inherit; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); background: var(--paper); border: none; border-radius: 999px; padding: .5rem .85rem; cursor: pointer; transition: color .18s ease; }
+        .cw .glava-profil:hover { color: var(--ink); }
+        .cw .profil-sekcija { margin-bottom: 1.8rem; padding-bottom: 1.6rem; border-bottom: 1px solid rgba(17,17,17,.12); }
+        .cw .profil-sekcija:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .cw .profil-sekcija .k-naslov { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem 1rem; margin-bottom: 1rem; font-weight: 600; font-size: 1.05rem; color: var(--ink); }
+        .cw .profil-seznam { display: flex; flex-direction: column; gap: .2rem; }
+        .cw .profil-vrsta { display: flex; align-items: center; gap: .8rem; padding: .5rem 0; border-bottom: 1px solid rgba(17,17,17,.08); }
+        .cw .profil-vrsta:last-child { border-bottom: none; }
+        .cw .profil-vrsta .pv-ime { flex: 1; min-width: 0; font-size: .95rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .cw .glava .glava-brand { pointer-events: auto; display: inline-flex; align-items: center; gap: .6rem; text-decoration: none; }
         .cw .glava .glava-ime { font-size: .74rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(17,17,17,.68); }
         .cw .glava .beta { align-self: center; font-size: .56rem; font-weight: 700; letter-spacing: .1em; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: .08rem .28rem; line-height: 1; }
@@ -1978,20 +1989,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .kartica { animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; background: #FCFBF7; border: 1px solid rgba(17,17,17,.06); border-radius: 20px; padding: 1.6rem 1.7rem 1.7rem; box-shadow: 0 4px 18px rgba(17,17,17,.04); max-width: 760px; margin-bottom: 1.4rem; }
         @media (prefers-reduced-motion: reduce) { .cw .kartica { animation: none; } }
         .cw .kartica > .k-naslov { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .3rem 1rem; margin: 0 0 1.1rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
-        .cw .kartica > .k-naslov .vec { font-size: .82rem; font-weight: 500; color: rgba(17,17,17,.55); text-transform: none; letter-spacing: 0; }
+        .cw .kartica > .k-naslov .vec, .cw .profil-sekcija .k-naslov .vec { font-size: .82rem; font-weight: 500; color: rgba(17,17,17,.55); text-transform: none; letter-spacing: 0; }
         .cw .kartica > .hint { margin-top: 1rem; }
         .cw .dodaj-gumb { display: inline-flex; align-items: center; gap: .4rem; font-family: inherit; font-size: .9rem; font-weight: 600; color: var(--ink); background: transparent; border: 1px dashed rgba(17,17,17,.35); border-radius: 999px; padding: .55rem 1.1rem; cursor: pointer; transition: border-color .18s ease, background .18s ease; }
         .cw .dodaj-gumb:hover { border-color: var(--ink); background: rgba(17,17,17,.03); }
-        .cw .profil-nalozi { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: 1.4rem; }
-        .cw .profil-nalozi .pn-oznaka { font-size: .82rem; font-weight: 600; color: rgba(17,17,17,.6); }
-        .cw .profil-nalozi .pn-oznaka:not(:first-child) { margin-left: .9rem; }
-        .cw .profil-nalozi .pn-chip { font-family: inherit; font-size: .85rem; font-weight: 600; color: var(--ink); background: #FCFBF7; border: 1px solid rgba(17,17,17,.2); border-radius: 999px; padding: .4rem .95rem; cursor: pointer; transition: border-color .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
-        .cw .profil-nalozi .pn-chip:hover { border-color: var(--ink); transform: translateY(-2px); }
-        .cw .arhiv-chip { display: inline-flex; align-items: center; background: #FCFBF7; border: 1px solid rgba(17,17,17,.2); border-radius: 999px; overflow: hidden; }
-        .cw .arhiv-chip .ac-open { font-family: inherit; font-size: .85rem; font-weight: 600; color: var(--ink); background: none; border: none; padding: .4rem .5rem .4rem .9rem; cursor: pointer; }
-        .cw .arhiv-chip .ac-del { font-family: inherit; font-size: 1rem; line-height: 1; color: rgba(17,17,17,.45); background: none; border: none; padding: .35rem .6rem .35rem .3rem; cursor: pointer; }
-        .cw .arhiv-chip .ac-del:hover { color: var(--accent); }
-        .cw .arhiv-chip:hover { border-color: var(--ink); }
         .cw .ure-preklop { display: flex; align-items: flex-start; gap: .6rem; margin: 0 0 1rem; font-size: .9rem; font-weight: 600; color: var(--ink); cursor: pointer; max-width: 640px; }
         .cw .ure-preklop input { margin-top: .2rem; width: 1.05rem; height: 1.05rem; accent-color: var(--ink); cursor: pointer; }
         .cw .ure-preklop em { font-style: normal; font-weight: 400; color: rgba(17,17,17,.62); }
@@ -2324,8 +2325,66 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
           <span className="glava-ime">Pinart kalkulator</span>
         </a>
-        <a className="zapri" href={`/${locale}/kalkulator`} aria-label="Zapri kalkulator">✕ Zapri</a>
+        <span className="glava-desno">
+          <button type="button" className="glava-profil" onClick={() => setKazemProfil(true)}>
+            <UserCircle size={19} weight="bold" /> Profil
+          </button>
+          <a className="zapri" href={`/${locale}/kalkulator`} aria-label="Zapri kalkulator">✕ Zapri</a>
+        </span>
       </div>
+
+      {kazemProfil && (
+        <div className="soglasje" role="dialog" aria-modal="true" aria-label="Profil">
+          <div className="soglasje-kartica cene-modal">
+            <div className="cene-glava">
+              <h2>Profil</h2>
+              <button type="button" className="op-edit" onClick={() => setKazemProfil(false)}>✕ Zapri</button>
+            </div>
+
+            <div className="profil-sekcija">
+              <div className="k-naslov">
+                <ClockCounterClockwise size={17} weight="bold" style={{ marginRight: '.4rem', verticalAlign: '-3px' }} />
+                Zgodovina ponudb
+                <span className="vec">shranjene cele ponudbe za stranke</span>
+              </div>
+              {Object.keys(arhiv).length === 0 ? (
+                <p className="ob-sub" style={{ margin: 0 }}>Še nimaš shranjenih ponudb. Na koraku Tvoja ponudba klikni »Shrani ponudbo v arhiv«.</p>
+              ) : (
+                <div className="profil-seznam">
+                  {Object.keys(arhiv).map(ime => (
+                    <div key={ime} className="profil-vrsta">
+                      <span className="pv-ime">{ime}</span>
+                      <button type="button" className="povezava" onClick={() => { naloziIzArhiva(ime); setKazemProfil(false); }}>↺ Odpri</button>
+                      <button type="button" className="brisi" title={'Izbriši ' + ime} onClick={() => izbrisiIzArhiva(ime)}>×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="profil-sekcija">
+              <div className="k-naslov">
+                <Gear size={17} weight="bold" style={{ marginRight: '.4rem', verticalAlign: '-3px' }} />
+                Cenovni profili
+                <span className="vec">shranjeni kompleti cen (redko — le če jih rabiš več)</span>
+              </div>
+              {Object.keys(profili).length === 0 ? (
+                <p className="ob-sub" style={{ margin: 0 }}>Nimaš shranjenih dodatnih kompletov cen. To so tvoje osnovne cene v »⚙ Nastavitve in cene«.</p>
+              ) : (
+                <div className="profil-seznam">
+                  {Object.keys(profili).map(ime => (
+                    <div key={ime} className="profil-vrsta">
+                      <span className="pv-ime">{ime}</span>
+                      <button type="button" className="povezava" onClick={() => { naloziProfil(ime); setKazemProfil(false); }}>↺ Naloži</button>
+                      <button type="button" className="brisi" title={'Izbriši ' + ime} onClick={() => izbrisiProfil(ime)}>×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="oder">
         <div className="korak-vsebina" key={korak}>
@@ -2354,31 +2413,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
           {korak === 0 && (
             <>
-              {(Object.keys(arhiv).length > 0 || Object.keys(profili).length > 0) && (
-                <div className="profil-nalozi">
-                  {Object.keys(arhiv).length > 0 && (
-                    <>
-                      <span className="pn-oznaka">Arhiv ponudb:</span>
-                      {Object.keys(arhiv).map(ime => (
-                        <span key={ime} className="arhiv-chip">
-                          <button type="button" className="ac-open" onClick={() => naloziIzArhiva(ime)} title="Odpri ponudbo">↺ {ime}</button>
-                          <button type="button" className="ac-del" onClick={() => izbrisiIzArhiva(ime)} title="Izbriši iz arhiva">×</button>
-                        </span>
-                      ))}
-                    </>
-                  )}
-                  {Object.keys(profili).length > 0 && (
-                    <>
-                      <span className="pn-oznaka">Naloži svoje cene:</span>
-                      {Object.keys(profili).map(ime => (
-                        <button key={ime} type="button" className="pn-chip" onClick={() => naloziProfil(ime)}>
-                          ↺ {ime}
-                        </button>
-                      ))}
-                    </>
-                  )}
-                </div>
-              )}
               <div className="skupine-storitev">
                 {izbranaPodrocja.map(skupinaPodrocja)}
                 {mojeVidne.length > 0 && (
