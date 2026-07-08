@@ -2387,8 +2387,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .h1-step { position: absolute; top: .42rem; right: calc(100% + .75rem); font-family: var(--font-sans), system-ui, sans-serif; font-size: .72rem; line-height: 1; font-weight: 800; letter-spacing: .16em; color: rgba(17,17,17,.55); }
         .cw .sub-vrsta { display: flex; justify-content: space-between; align-items: baseline; gap: 2rem; margin: 0 0 2.4rem; flex-wrap: wrap; }
         .cw .sub { font-size: clamp(1rem, 1.6vw, 1.2rem); line-height: 1.6; color: rgba(17,17,17,.72); margin: 0; max-width: 52ch; min-width: 0; }
-        .cw .korak0-akcije { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin: 0 0 2.2rem; max-width: 640px; }
-        .cw .korak0-akcije .dodaj-gumb { flex: none; }
+        .cw .korak0-ime { max-width: 420px; margin: 0 0 1.1rem; }
+        .cw .korak0-ime .polje { width: 100%; }
+        .cw .korak0-akcije { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin: 0 0 2.2rem; }
 
         .cw .opts { display: flex; flex-wrap: wrap; gap: 1rem .65rem; }
         .cw .pill { padding: .8rem 1.3rem; border: 1px solid rgba(17,17,17,.25); border-radius: 999px; cursor: pointer; font-size: 1rem; background: transparent; font-family: inherit; font-weight: 400; color: var(--ink); transition: border-color .18s ease, background .18s ease, color .18s ease; text-align: left; line-height: 1.25; }
@@ -2436,7 +2437,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 640px) { .cw .numgrid.podkartice { grid-template-columns: 1fr; } }
         .cw .hint.podkartice { max-width: 760px; }
         .cw .polje label { display: block; font-size: .72rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.7); margin-bottom: .3rem; }
-        .cw .polje label .vec { font-size: .82rem; font-weight: 500; letter-spacing: 0; text-transform: none; color: rgba(17,17,17,.55); margin-left: .5rem; }
         .cw .polje input { width: 100%; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.1rem; padding: .35rem 0 .5rem; color: var(--ink); border-radius: 0; }
         .cw .polje input:focus { outline: none; border-bottom: 2px solid var(--ink); margin-bottom: -1px; }
         .cw .polje input::placeholder { color: rgba(17,17,17,.42); font-weight: 400; font-size: 1rem; }
@@ -3102,19 +3102,23 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </div>
           )}
           {korak === 0 && (
-            <div className="korak0-akcije">
-              <div className="polje" style={{ flex: 1, minWidth: 0 }}>
-                <label htmlFor="cw-naziv0">Ime ponudbe <span className="vec">tako veš, ali nadaljuješ staro</span></label>
-                <input id="cw-naziv0" type="text"
-                  placeholder={r ? `Ponudba: ${r.sez.map(s => s.ime).join(', ')}` : 'npr. Oblikovanje CGP za Odvetniško družbo'}
-                  value={nazivPonudbe} onChange={e => setNazivPonudbe(e.target.value)} />
+            <>
+              <div className="korak0-ime">
+                <div className="polje">
+                  <label htmlFor="cw-naziv0">Ime ponudbe</label>
+                  <input id="cw-naziv0" type="text"
+                    placeholder={r ? `Ponudba: ${r.sez.map(s => s.ime).join(', ')}` : 'npr. Oblikovanje CGP za Odvetniško družbo'}
+                    value={nazivPonudbe} onChange={e => setNazivPonudbe(e.target.value)} />
+                </div>
               </div>
-              <button type="button" className="dodaj-gumb" onClick={novaPonudba}>+ Nova</button>
-              <button type="button" className="op-edit" onClick={() => { setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>
-                <Gear size={17} weight="bold" /> Nastavitve in cene
-              </button>
-            </div>
+              <div className="korak0-akcije">
+                <button type="button" className="dodaj-gumb" onClick={novaPonudba}>+ Nova ponudba</button>
+                <button type="button" className="op-edit" onClick={() => { setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>
+                  <Gear size={17} weight="bold" /> Nastavitve in cene
+                </button>
+              </div>
+            </>
           )}
 
 
