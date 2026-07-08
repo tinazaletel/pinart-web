@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package,
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
@@ -963,7 +962,7 @@ type ShranjenaP = {
   popust: string; dodatki: string[];
   prenosPravic: 'izkljucni' | 'neizkljucni' | 'licenca';
   rocnePravice: string; rocnaLicenca: string;
-  nazivPonudbe: string; narocnikPonudbe: string;
+  nazivPonudbe: string; narocnikPonudbe: string; narocnikEmail?: string;
   obsegPonudbe: 'kratka' | 'razsirjena'; tonPonudbe: TonPonudbe; avansPct: string;
   kaziUre: boolean; nogaZnak: boolean;
   izkusnje: string; mojTrg: string; trgNarocnika: string; valuta: string; valutaRocna: boolean;
@@ -1112,6 +1111,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [nogaZnak, setNogaZnak] = useState(true);
   const [nazivPonudbe, setNazivPonudbe] = useState('');
   const [narocnikPonudbe, setNarocnikPonudbe] = useState('');
+  const [narocnikEmail, setNarocnikEmail] = useState('');
   const [obsegPonudbe, setObsegPonudbe] = useState<'kratka' | 'razsirjena'>('razsirjena');
   const [kaziUre, setKaziUre] = useState(false);
   const [prenosPravic, setPrenosPravic] = useState<'izkljucni' | 'neizkljucni' | 'licenca'>('izkljucni');
@@ -1126,7 +1126,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [podjetja, setPodjetja] = useState<Record<string, PodjetjeProfil>>({});
   const [imePodjetja, setImePodjetja] = useState('');
   const [kopirano, setKopirano] = useState(false);
-  const [kazemZajem, setKazemZajem] = useState<null | 'prenos' | 'profil'>(null);
   /* Postopni prikaz vprasanj (Tinina koreografija): naslov na sredini,
      prvo vprasanje prileti od spodaj, naslednje ob odgovoru ALI po
      nekaj sekundah; stran raste navzdol, nazaj se da poskrolati. */
@@ -1274,6 +1273,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setPostavke([]);
     setNazivPonudbe('');
     setNarocnikPonudbe('');
+    setNarocnikEmail('');
     setPromet('');
     setDobicek('');
     setProjPrihodek('');
@@ -1828,6 +1828,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     URL.revokeObjectURL(a.href);
   };
 
+  /* Hitro posiljanje: odpre uporabnicin mail program s predizpolnjeno
+     zadevo in golim besedilom (mailto ne zna HTML). Pravo posiljanje iz
+     orodja (lep HTML email) je vecji poseg za kasneje. */
+  const posljiMailto = () => {
+    if (!narocnikEmail.trim()) return;
+    const text = editorRef.current?.innerText || besedilo;
+    const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
+    const zadeva = naziv ? `Ponudba: ${naziv}` : 'Ponudba';
+    window.location.href = `mailto:${narocnikEmail.trim()}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(text)}`;
+  };
+
   /* CSV za uvoz v racunovodski program (postavka, kolicina, cena, znesek).
      Skoraj vsak program (racuni, e-racuni) uvozi CSV. Znesek je v EUR
      (interna valuta), da se v racunu ne izgubi zaradi priblizkov tecaja. */
@@ -1849,23 +1860,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     URL.revokeObjectURL(a.href);
   };
 
-  const zahtevaKontakt = (kaj: 'prenos' | 'profil') => {
-    if (imamKontakt && kaj === 'prenos') { posljiKontakt('prenos ponudbe'); prenesi(); return; }
-    setKazemZajem(kaj);
-  };
-
-  const potrdiZajem = () => {
-    if (!imamKontakt) return;
-    if (kazemZajem === 'prenos') { posljiKontakt('prenos ponudbe'); prenesi(); setKazemZajem(null); }
-  };
-
   const shraniProfil = () => {
     const ime = imeProfila.trim() || 'Moje cene';
     const nov = { ...profili, [ime]: { osnove, mojTrg, izkusnje, postavke, mojeStoritve } };
     setProfili(nov);
     try { localStorage.setItem(K_PROFILI, JSON.stringify(nov)); } catch { /* poln */ }
     if (imamKontakt) posljiKontakt(`shranjen profil "${ime}"`);
-    setKazemZajem(null);
     setImeProfila('');
   };
 
@@ -1896,6 +1896,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       kaziUre, nogaZnak, izkusnje, mojTrg, trgNarocnika, valuta, valutaRocna,
       rocnoBesedilo, besediloHtml: rocnoBesedilo ? (editorRef.current?.innerHTML || besediloHtml) : '',
       custDrzavaNarocnik: custDrzavaNarocnik || undefined,
+      narocnikEmail: narocnikEmail || undefined,
     };
     const nov = { ...arhiv, [ime]: zapis };
     setArhiv(nov);
@@ -1910,6 +1911,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setPopust(p.popust); setDodatki(new Set(p.dodatki || []));
     setPrenosPravic(p.prenosPravic); setRocnePravice(p.rocnePravice); setRocnaLicenca(p.rocnaLicenca);
     setNazivPonudbe(p.nazivPonudbe); setNarocnikPonudbe(p.narocnikPonudbe);
+    setNarocnikEmail(p.narocnikEmail || '');
     setObsegPonudbe(p.obsegPonudbe); setTonPonudbe(p.tonPonudbe); setAvansPct(p.avansPct);
     setKaziUre(p.kaziUre); setNogaZnak(p.nogaZnak);
     setIzkusnje(p.izkusnje); setMojTrg(p.mojTrg); setTrgNarocnika(p.trgNarocnika);
@@ -2019,7 +2021,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     if (e.key !== 'Enter') return;
     const t = e.target as HTMLElement;
     if (/^(TEXTAREA|SELECT|BUTTON|A)$/.test(t.tagName)) return;
-    if (t.closest('.iskalnik') || t.closest('.cene') || t.closest('.zajem')) return;
+    if (t.closest('.iskalnik') || t.closest('.cene')) return;
     naprej();
   };
 
@@ -2635,14 +2637,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .povezava-roza:hover { color: var(--accent); }
         .cw .povezava:hover { opacity: .6; }
 
-        .cw .zajem { max-width: 420px; }
-        .cw .zajem p { margin: 0 0 1rem; font-size: .85rem; line-height: 1.65; color: rgba(17,17,17,.75); }
-        .cw .zajem .polje { margin-bottom: 1rem; }
-        .cw .zajem .polje input { font-size: 1.1rem; font-family: inherit; }
-        .cw .profili { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.4rem; }
-        .cw .profil { display: inline-flex; align-items: center; gap: .3rem; border: 1px solid rgba(17,17,17,.25); border-radius: 999px; padding: .35rem .5rem .35rem .95rem; font-size: .84rem; }
-        .cw .profil button { border: none; background: none; cursor: pointer; font-size: .84rem; padding: .15rem .35rem; font-family: inherit; color: var(--ink); opacity: .6; }
-        .cw .profil button:hover { opacity: 1; }
 
         .cw .noga { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; padding: 1rem clamp(1.2rem, 4vw, 3rem) 1.1rem; background: linear-gradient(to top, var(--paper) 70%, transparent); z-index: 30; }
         .cw .noga .noga-c { width: 100%; display: flex; align-items: center; justify-content: center; gap: 1rem; }
@@ -3043,19 +3037,28 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             )}
 
             {profilPogled === 'cene' && (
-              Object.keys(profili).length === 0 ? (
-                <p className="ob-sub" style={{ margin: 0 }}>Nimaš shranjenih dodatnih kompletov cen. To so tvoje osnovne cene v »⚙ Nastavitve in cene«.</p>
-              ) : (
-                <div className="profil-seznam">
-                  {Object.keys(profili).map(ime => (
-                    <div key={ime} className="profil-vrsta">
-                      <span className="pv-ime">{ime}</span>
-                      <button type="button" className="povezava" onClick={() => { naloziProfil(ime); setKazemProfil(false); setProfilPogled('meni'); }}>↺ Naloži</button>
-                      <button type="button" className="brisi" title={'Izbriši ' + ime} onClick={() => izbrisiProfil(ime)}>×</button>
-                    </div>
-                  ))}
+              <>
+                {Object.keys(profili).length === 0 ? (
+                  <p className="ob-sub" style={{ margin: '0 0 1.1rem' }}>Nimaš shranjenih dodatnih kompletov cen. To so tvoje osnovne cene v »⚙ Nastavitve in cene«.</p>
+                ) : (
+                  <div className="profil-seznam" style={{ marginBottom: '1.1rem' }}>
+                    {Object.keys(profili).map(ime => (
+                      <div key={ime} className="profil-vrsta">
+                        <span className="pv-ime">{ime}</span>
+                        <button type="button" className="povezava" onClick={() => { naloziProfil(ime); setKazemProfil(false); setProfilPogled('meni'); }}>↺ Naloži</button>
+                        <button type="button" className="brisi" title={'Izbriši ' + ime} onClick={() => izbrisiProfil(ime)}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="cene-dodaj">
+                  <input type="text" placeholder="Ime profila (npr. Cene za tujino)" value={imeProfila}
+                    onChange={e => setImeProfila(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && imeProfila.trim()) shraniProfil(); }}
+                    aria-label="Ime novega cenovnega profila" />
+                  <button type="button" className="povezava" disabled={!imeProfila.trim()} onClick={shraniProfil}>+ shrani trenutne cene</button>
                 </div>
-              )
+              </>
             )}
 
             {profilPogled === 'stroski' && (
@@ -3686,11 +3689,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {podatkiUI()}
               <div className="kartica">
                 <div className="k-naslov">Naročnik <span className="vec">za to ponudbo</span></div>
-                <div className="numgrid" style={{ marginTop: 0, gridTemplateColumns: '1fr' }}>
+                <div className="numgrid" style={{ marginTop: 0 }}>
                   <div className="polje">
                     <label htmlFor="cw-narocnik">Ime podjetja</label>
                     <input id="cw-narocnik" type="text" placeholder="npr. Odvetniška družba Potočnik"
                       value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)} />
+                  </div>
+                  <div className="polje">
+                    <label htmlFor="cw-narocnik-email">Email naročnika <span className="vec">za pošiljanje ponudbe</span></label>
+                    <input id="cw-narocnik-email" type="email" placeholder="npr. pisarna@potocnik.si"
+                      value={narocnikEmail} onChange={e => setNarocnikEmail(e.target.value)} />
                   </div>
                 </div>
                 {(() => {
@@ -3798,69 +3806,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <button type="button" className="gumb" onClick={kopiraj}>
                   <CopySimple size={17} /> {kopirano ? 'Skopirano ✓' : 'Kopiraj ponudbo'}
                 </button>
+                <button type="button" className="gumb" disabled={!narocnikEmail.trim()}
+                  title={narocnikEmail.trim() ? undefined : 'Vpiši email naročnika na koraku Tvoji podatki in naročnik'}
+                  onClick={posljiMailto}>
+                  <EnvelopeSimple size={17} /> Pošlji ponudbo
+                </button>
                 <button type="button" className="povezava" onClick={prenesi}>
                   <DownloadSimple size={17} /> Prenesi besedilo
                 </button>
                 <button type="button" className="povezava" onClick={prenesiCsv}>
                   <FileText size={17} /> Izvozi postavke (CSV za račune)
                 </button>
-                <button type="button" className="povezava" onClick={() => zahtevaKontakt('profil')}>
-                  <FloppyDisk size={17} /> Shrani profil (cene)
-                </button>
                 <button type="button" className="povezava" onClick={shraniVArhiv}>
                   <FloppyDisk size={17} /> Shrani ponudbo v arhiv
                 </button>
               </div>
-
-              {kazemZajem && typeof document !== 'undefined' && createPortal(
-                <div className="cw">
-                <div className="soglasje" role="dialog" aria-modal="true" aria-label={kazemZajem === 'profil' ? 'Shrani profil' : 'Prenesi ponudbo'}>
-                  <div className="soglasje-kartica zajem">
-                    <h2 style={{ fontFamily: 'var(--font-serif), Didot, serif', fontWeight: 500, fontSize: 'clamp(1.5rem, 4vw, 2rem)', margin: '0 0 1rem' }}>
-                      {kazemZajem === 'profil' ? 'Shrani svoje cene kot profil' : 'Prenesi ponudbo'}
-                    </h2>
-                  {!imamKontakt && (
-                    <>
-                      <p>Ime in email sta neobvezna; profil lahko shraniš tudi brez tega. Z oddajo se strinjaš s <a href={`/${locale}/kalkulator/pogoji`} style={{ color: 'var(--ink)' }}>pogoji uporabe</a>.</p>
-                      <div className="polje">
-                        <label htmlFor="cw-zime">Ime</label>
-                        <input id="cw-zime" value={leadIme} onChange={e => setLeadIme(e.target.value)} />
-                      </div>
-                      <div className="polje">
-                        <label htmlFor="cw-zemail">Email</label>
-                        <input id="cw-zemail" type="email" value={leadEmail} onChange={e => setLeadEmail(e.target.value)} />
-                      </div>
-                    </>
-                  )}
-                  {kazemZajem === 'profil' && (
-                    <div className="polje">
-                      <label htmlFor="cw-zprofil">Ime profila</label>
-                      <input id="cw-zprofil" placeholder="npr. Moje cene za tujino"
-                        value={imeProfila} onChange={e => setImeProfila(e.target.value)} />
-                    </div>
-                  )}
-                  <div className="btnvrsta" style={{ marginTop: '.2rem' }}>
-                    {kazemZajem === 'profil'
-                      ? <button type="button" className="gumb" onClick={shraniProfil}>Shrani profil</button>
-                      : <button type="button" className="gumb" disabled={!imamKontakt} onClick={potrdiZajem}>Potrdi in prenesi</button>}
-                    <button type="button" className="povezava" onClick={() => setKazemZajem(null)}>Prekliči</button>
-                  </div>
-                  </div>
-                </div>
-                </div>
-              , document.body)}
-
-              {Object.keys(profili).length > 0 && (
-                <div className="profili">
-                  {Object.keys(profili).map(ime => (
-                    <span key={ime} className="profil">
-                      {ime}
-                      <button type="button" title="Naloži profil" onClick={() => naloziProfil(ime)}>↺</button>
-                      <button type="button" title="Izbriši profil" onClick={() => izbrisiProfil(ime)}>×</button>
-                    </span>
-                  ))}
-                </div>
-              )}
             </>
           )}
         </div>
