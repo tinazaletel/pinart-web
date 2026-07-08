@@ -1,5 +1,7 @@
 'use client';
 
+import { PenNib, MagnifyingGlass, FileText } from '@phosphor-icons/react';
+
 /* Landing / predstavitev kalkulatorja: proda motivacijo, vodi v orodje
    (samostojna stran /kalkulator/orodje) in na koncu ponudi zanimive clanke.
    Editorial slog pinart.si (papir/crnilo, Bodoni, kickerji). */
@@ -49,7 +51,7 @@ export default function KalkulatorLanding({ locale = 'sl' }: { locale?: string }
   return (
     <div className="kland">
       <style>{`
-        .kland { max-width: 820px; margin: 0 auto; padding: 8rem 1.4rem 6rem; color: var(--ink); font-weight: 300; position: relative; }
+        .kland { max-width: 1100px; margin: 0 auto; padding: clamp(6rem, 12vw, 9rem) clamp(1.25rem, 4vw, 4.5rem) clamp(5rem, 8vw, 8rem); color: var(--ink); font-weight: 300; position: relative; }
         .kland .hero-vizual { position: absolute; top: 4rem; right: -6rem; width: clamp(260px, 34vw, 460px); opacity: .9; pointer-events: none; z-index: -1; }
         @media (max-width: 900px) { .kland .hero-vizual { position: static; width: min(70vw, 340px); margin: -2rem auto 1.5rem; } }
         .kland .hero-vizual img { width: 100%; height: auto; display: block; }
@@ -69,6 +71,7 @@ export default function KalkulatorLanding({ locale = 'sl' }: { locale?: string }
 
         .kland .kako { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.4rem; margin: 5.5rem 0 0; }
         @media (max-width: 620px) { .kland .kako { grid-template-columns: 1fr; gap: 2.2rem; } }
+        .kland .korak-ikona { width: 2.5rem; height: 2.5rem; border-radius: 50%; background: var(--accent); color: var(--paper); display: inline-flex; align-items: center; justify-content: center; margin-bottom: .9rem; }
         .kland .korak .n { font-family: var(--font-serif), serif; font-size: 1.6rem; color: rgba(17,17,17,.5); }
         .kland .korak h3 { font-size: .95rem; font-weight: 600; margin: .5rem 0 .4rem; }
         .kland .korak p { font-size: .88rem; line-height: 1.6; color: rgba(17,17,17,.72); margin: 0; }
@@ -120,16 +123,19 @@ export default function KalkulatorLanding({ locale = 'sl' }: { locale?: string }
 
       <div className="kako">
         <div className="korak">
+          <div className="korak-ikona" aria-hidden><PenNib size={20} weight="light" /></div>
           <div className="n">01</div>
           <h3>Povej, kaj ustvarjaš</h3>
           <p>Storitve, izkušnje, tvoj trg. Dodaš lahko svoje postavke in cene: od animacije do fotografije, besedil in AI.</p>
         </div>
         <div className="korak">
+          <div className="korak-ikona" aria-hidden><MagnifyingGlass size={20} weight="light" /></div>
           <div className="n">02</div>
           <h3>Poglej naročnika</h3>
           <p>Promet in dobiček podjetja (javno na bizi.si in tujih registrih) povesta, koliko je tvoje delo zanj vredno.</p>
         </div>
         <div className="korak">
+          <div className="korak-ikona" aria-hidden><FileText size={20} weight="light" /></div>
           <div className="n">03</div>
           <h3>Dobiš ponudbo</h3>
           <p>Trije paketi, avtorske pravice ločeno, urejljivo besedilo. Kopiraš v mail ali izvoziš postavke za svoj račun.</p>
