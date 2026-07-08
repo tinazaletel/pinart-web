@@ -2407,7 +2407,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .pill-fill { position: absolute; top: 50%; left: 1.3rem; width: 2.15rem; height: 2.15rem; border-radius: 50%; background: var(--ink); transform: translateY(-50%) scale(0); transform-origin: center; transition: transform .55s cubic-bezier(0.16,1,0.3,1); z-index: 0; pointer-events: none; }
         .cw .pill.on .pill-fill { transform: translateY(-50%) scale(18); }
         .cw .pill .pi { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.15rem; height: 2.15rem; border-radius: 50%; background: var(--ink); color: var(--paper); transition: background .3s ease, color .55s ease; }
-        .cw .pill.on .pi { background: rgba(245,242,234,.18); color: var(--paper); }
+        .cw .pill.on .pi { background: var(--ink); color: var(--paper); }
         .cw .pill .pi svg { width: 22px; height: 22px; }
         .cw .pill-tekst { position: relative; z-index: 1; transition: color .5s ease; }
         .cw .pill.dodaj { border-style: dashed; border-color: rgba(17,17,17,.55); font-weight: 500; }
