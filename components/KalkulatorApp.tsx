@@ -2299,7 +2299,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         + Dodaj urno postavko
       </button>
       <p className="hint" style={{ marginTop: '.9rem' }}>
-        Napredno: dodaš lahko več postavk — ločena cena za vsakega izvajalca ali tehniko (npr. za agencije, ročna ilustracija drugače kot vektorska).
+        Napredno: dodaš lahko več postavk — ločena cena za vsakega izvajalca ali tehniko (npr. za agencije, ročna ilustracija drugače kot vektorska). Urejaš tukaj ali v Profil → Moje podjetje.
       </p>
     </div>
   );
