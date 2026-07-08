@@ -2063,8 +2063,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     <button key={s.id} type="button"
       className={'pill' + (izbrane.has(s.id) ? ' on' : '')}
       onClick={() => preklopi(izbrane, s.id, setIzbrane)}>
+      <span className="pill-fill" aria-hidden />
       <span className="pi" aria-hidden>{ikonaZa(s.id)}</span>
-      <span>{s.ime}<small>od {val(osnovaZa(s))}</small></span>
+      <span className="pill-tekst">{s.ime}<small>od {val(osnovaZa(s))}</small></span>
     </button>
   );
   /* Skupina enega podrocja (naslov + oblacki vidnih storitev), ali null. */
@@ -2394,18 +2395,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .korak0-akcije { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin: 0 0 2.2rem; max-width: 760px; }
 
         .cw .opts { display: flex; flex-wrap: wrap; gap: 1rem .65rem; }
-        .cw .pill { padding: .8rem 1.3rem; border: 1px solid rgba(17,17,17,.25); border-radius: 999px; cursor: pointer; font-size: 1rem; background: transparent; font-family: inherit; font-weight: 400; color: var(--ink); transition: border-color .18s ease, background .18s ease, color .18s ease; text-align: left; line-height: 1.25; }
-        .cw .pill small { display: block; font-size: .82rem; color: rgba(17,17,17,.82); font-weight: 400; margin-top: .1rem; }
+        .cw .pill { position: relative; overflow: hidden; z-index: 0; padding: .8rem 1.3rem; border: 1px solid rgba(17,17,17,.25); border-radius: 999px; cursor: pointer; font-size: 1rem; background: transparent; font-family: inherit; font-weight: 400; color: var(--ink); transition: border-color .18s ease, background .18s ease, color .18s ease; text-align: left; line-height: 1.25; }
+        .cw .pill small { position: relative; z-index: 1; display: block; font-size: .82rem; color: rgba(17,17,17,.82); font-weight: 400; margin-top: .1rem; transition: color .5s ease; }
         .cw .pill:hover { border-color: var(--ink); }
-        .cw .pill.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+        .cw .pill.on { background: transparent; color: var(--paper); border-color: var(--ink); }
         .cw .pill.on small { color: rgba(245,242,234,.92); }
         .cw .pill:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
         .cw .pill { display: inline-flex; align-items: center; gap: .65rem; transition: transform .2s cubic-bezier(0.23,1,0.32,1), border-color .2s ease, background .2s ease, color .2s ease; }
         .cw .pill:hover { transform: translateY(-2px); }
         .cw .pill:active { transform: translateY(0) scale(.97); }
-        .cw .pill .pi { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.15rem; height: 2.15rem; border-radius: 50%; background: rgba(178,84,118,.12); color: var(--accent); transition: background .2s ease, color .2s ease; }
+        .cw .pill-fill { position: absolute; top: 50%; left: 1.3rem; width: 2.15rem; height: 2.15rem; border-radius: 50%; background: var(--ink); transform: translateY(-50%) scale(0); transform-origin: center; transition: transform .55s cubic-bezier(0.16,1,0.3,1); z-index: 0; pointer-events: none; }
+        .cw .pill.on .pill-fill { transform: translateY(-50%) scale(18); }
+        .cw .pill .pi { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.15rem; height: 2.15rem; border-radius: 50%; background: var(--ink); color: var(--paper); transition: background .3s ease, color .55s ease; }
         .cw .pill.on .pi { background: rgba(245,242,234,.18); color: var(--paper); }
-        .cw .pill .pi svg { width: 19px; height: 19px; }
+        .cw .pill .pi svg { width: 22px; height: 22px; }
+        .cw .pill-tekst { position: relative; z-index: 1; transition: color .5s ease; }
         .cw .pill.dodaj { border-style: dashed; border-color: rgba(17,17,17,.55); font-weight: 500; }
 
         .cw .izbira { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 760px; }
@@ -2629,8 +2633,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           .cw .opts { display: flex; flex-wrap: wrap; gap: .45rem; }
           .cw .pill { min-width: 0; flex: 1 1 calc(50% - .45rem); padding: .62rem .68rem; gap: .42rem; font-size: .78rem; line-height: 1.18; border-radius: 1.25rem; }
           .cw .pill small { font-size: .66rem; line-height: 1.2; }
+          .cw .pill-fill { left: .68rem; width: 1.8rem; height: 1.8rem; }
+          .cw .pill.on .pill-fill { transform: translateY(-50%) scale(14); }
           .cw .pill .pi { width: 1.8rem; height: 1.8rem; }
-          .cw .pill .pi svg { width: 16px; height: 16px; }
+          .cw .pill .pi svg { width: 18px; height: 18px; }
           .cw .a11y { bottom: 5.4rem; }
           .cw .noga .noga-gumbi { gap: .55rem; }
         }
