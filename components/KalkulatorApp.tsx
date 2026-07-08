@@ -1046,11 +1046,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [postavke, setPostavke] = useState<Postavka[]>([]);
   const [iskanje, setIskanje] = useState('');
   const [kazemDodaj, setKazemDodaj] = useState(false);
-  const [kazemCene, setKazemCene] = useState(false);
   const [kazemProfil, setKazemProfil] = useState(false);
   /* Profil kot drill-down (meni -> ena "podstran"), ne dolg scroll treh
      razdelkov skupaj — bolj pregledno in mobile-friendly (Tina). */
-  const [profilPogled, setProfilPogled] = useState<'meni' | 'zgodovina' | 'podjetja' | 'podjetje-urejanje' | 'cene' | 'obvestila' | 'pomoc'>('meni');
+  const [profilPogled, setProfilPogled] = useState<'meni' | 'zgodovina' | 'podjetja' | 'podjetje-urejanje' | 'cene-nastavitve' | 'cene' | 'obvestila' | 'pomoc'>('meni');
   /* katero shranjeno podjetje je trenutno "aktivno" (nalozeno v ponudnik/ddv/...
      zivo stanje) — null, ce urejamo novo, se nikoli shranjeno podjetje. */
   const [aktivnoPodjetje, setAktivnoPodjetje] = useState<string | null>(null);
@@ -2239,12 +2238,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .sg-motiv-ozn { display: block; margin-bottom: .4rem; font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
         .cw .sg-motiv p { margin: 0; font-size: 1.02rem; font-weight: 400; line-height: 1.6; color: var(--ink); }
         .cw .sg-motiv p b { font-weight: 700; }
-        .cw .cene-modal { max-width: 580px; }
-        .cw .cene-glava { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .5rem; }
         .cw .profil-glava { display: flex; flex-direction: column; margin-bottom: 1.1rem; }
         .cw .profil-glava-zapri { display: flex; justify-content: flex-end; margin-bottom: .9rem; }
         .cw .profil-glava-naslov { display: flex; align-items: center; gap: .6rem; margin: 0; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.5rem, 4vw, 2.1rem); }
-        .cw .cene-glava h2 { display: flex; align-items: center; gap: .6rem; margin: 0; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.5rem, 4vw, 2.1rem); }
         .cw .profil-nazaj { flex: none; width: 2.1rem; height: 2.1rem; border-radius: 999px; border: 1px solid var(--ink); background: transparent; color: var(--ink); font-size: 1rem; font-family: inherit; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .18s ease, color .18s ease; }
         .cw .profil-nazaj:hover { background: var(--ink); color: var(--paper); }
         .cw .profil-meni { display: flex; flex-direction: column; gap: .6rem; }
@@ -2671,55 +2667,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         </div>
       )}
 
-      {korak === 0 && kazemCene && (
-        <div className="soglasje" role="dialog" aria-modal="true" aria-label="Tvoje osnovne cene">
-          <div className="soglasje-kartica cene-modal">
-            <div className="cene-glava">
-              <h2>Nastavitve in cene</h2>
-              <button type="button" className="op-edit" onClick={() => setKazemCene(false)}>✕ Zapri</button>
-            </div>
-            <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Te cene so <b>podlaga za izračun</b> — privzete (slovenski trg) delujejo takoj, prilagodi jih svojim za točnejši rezultat. Razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš; vrstni red velja tudi na prvem koraku.</p>
-            <button type="button" className="povezava" style={{ marginBottom: '1.3rem' }} onClick={() => { setKazemCene(false); odpriOnboarding(); }}>↳ Uredi področja dela (kaj ponujaš)</button>
-            <div className="cene-seznam">
-              {poVrstnemRedu(vidneStoritve).map((s, i) => (
-                <div key={s.id} className="cene-vrsta" draggable
-                  onDragStart={() => { dragIndex.current = i; }}
-                  onDragOver={e => e.preventDefault()}
-                  onDrop={() => { if (dragIndex.current !== null) premakniStoritev(dragIndex.current, i); dragIndex.current = null; }}>
-                  <span className="drag-rocaj" aria-hidden><DotsSixVertical size={18} weight="bold" /></span>
-                  <span className="cv-ime">{s.ime}</span>
-                  <input type="number" min={0} step={50} value={osnovaZa(s)} aria-label={'Osnovna cena: ' + s.ime}
-                    onChange={e => setOsnove({ ...osnove, [s.id]: Number(e.target.value) || 0 })} />
-                  <span className="cv-znak">{vfx.znak}</span>
-                  <button type="button" className="brisi" title={'Izbriši ' + s.ime}
-                    onClick={() => odstraniStoritev(s.id)}>×</button>
-                </div>
-              ))}
-            </div>
-            {skrite.length > 0 && (
-              <div className="cene-skrite">
-                <span className="cs-oznaka">Izbrisano:</span>
-                {skrite.map(id => {
-                  const st = STORITVE.find(x => x.id === id);
-                  return st ? (
-                    <button key={id} type="button" className="cs-chip" onClick={() => povrniStoritev(id)}>↩ {st.ime}</button>
-                  ) : null;
-                })}
-              </div>
-            )}
-            <div className="cene-dodaj">
-              <input type="text" placeholder="Tvoja storitev (npr. tetovaža)" value={novaIme}
-                onChange={e => setNovaIme(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label="Ime nove storitve" />
-              <input type="number" min={0} step={50} placeholder="cena" value={novaCena}
-                onChange={e => setNovaCena(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label="Cena nove storitve" />
-              <button type="button" className="povezava" onClick={dodajStoritev}>+ dodaj</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="napredek" aria-hidden><i style={{ width: `${((korak + 1) / KORAKOV) * 100}%` }} /></div>
 
       <div className="a11y">
@@ -2794,9 +2741,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   : profilPogled === 'zgodovina' ? 'Zgodovina ponudb'
                     : profilPogled === 'podjetja' ? 'Moje podjetje'
                       : profilPogled === 'podjetje-urejanje' ? (aktivnoPodjetje || 'Podjetje')
-                        : profilPogled === 'cene' ? 'Cenovni profili'
-                          : profilPogled === 'obvestila' ? 'Obveščanja'
-                            : 'Pomoč in kontakt'}
+                        : profilPogled === 'cene-nastavitve' ? 'Cene in storitve'
+                          : profilPogled === 'cene' ? 'Cenovni profili'
+                            : profilPogled === 'obvestila' ? 'Obveščanja'
+                              : 'Pomoč in kontakt'}
               </h2>
             </div>
 
@@ -2818,7 +2766,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
-                <button type="button" className="profil-meni-vrsta" onClick={() => { setKazemProfil(false); setProfilPogled('meni'); setKazemCene(true); }}>
+                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('cene-nastavitve')}>
                   <Gear size={20} weight="bold" />
                   <span>
                     <strong>Cene in storitve</strong>
@@ -2904,6 +2852,49 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   onClick={() => aktivnoPodjetje && izbrisiPodjetje(aktivnoPodjetje)}>
                   Izbriši to podjetje
                 </button>
+              </>
+            )}
+
+            {profilPogled === 'cene-nastavitve' && (
+              <>
+                <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Te cene so <b>podlaga za izračun</b> — privzete (slovenski trg) delujejo takoj, prilagodi jih svojim za točnejši rezultat. Razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš; vrstni red velja tudi na prvem koraku.</p>
+                <button type="button" className="povezava" style={{ marginBottom: '1.3rem' }} onClick={() => { setKazemProfil(false); odpriOnboarding(); }}>↳ Uredi področja dela (kaj ponujaš)</button>
+                <div className="cene-seznam">
+                  {poVrstnemRedu(vidneStoritve).map((s, i) => (
+                    <div key={s.id} className="cene-vrsta" draggable
+                      onDragStart={() => { dragIndex.current = i; }}
+                      onDragOver={e => e.preventDefault()}
+                      onDrop={() => { if (dragIndex.current !== null) premakniStoritev(dragIndex.current, i); dragIndex.current = null; }}>
+                      <span className="drag-rocaj" aria-hidden><DotsSixVertical size={18} weight="bold" /></span>
+                      <span className="cv-ime">{s.ime}</span>
+                      <input type="number" min={0} step={50} value={osnovaZa(s)} aria-label={'Osnovna cena: ' + s.ime}
+                        onChange={e => setOsnove({ ...osnove, [s.id]: Number(e.target.value) || 0 })} />
+                      <span className="cv-znak">{vfx.znak}</span>
+                      <button type="button" className="brisi" title={'Izbriši ' + s.ime}
+                        onClick={() => odstraniStoritev(s.id)}>×</button>
+                    </div>
+                  ))}
+                </div>
+                {skrite.length > 0 && (
+                  <div className="cene-skrite">
+                    <span className="cs-oznaka">Izbrisano:</span>
+                    {skrite.map(id => {
+                      const st = STORITVE.find(x => x.id === id);
+                      return st ? (
+                        <button key={id} type="button" className="cs-chip" onClick={() => povrniStoritev(id)}>↩ {st.ime}</button>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+                <div className="cene-dodaj">
+                  <input type="text" placeholder="Tvoja storitev (npr. tetovaža)" value={novaIme}
+                    onChange={e => setNovaIme(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label="Ime nove storitve" />
+                  <input type="number" min={0} step={50} placeholder="cena" value={novaCena}
+                    onChange={e => setNovaCena(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label="Cena nove storitve" />
+                  <button type="button" className="povezava" onClick={dodajStoritev}>+ dodaj</button>
+                </div>
               </>
             )}
 
@@ -2999,7 +2990,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   {(izbrane.size > 0 || postavke.length > 0 || Object.keys(odgovori).length > 0) && (
                     <button type="button" className="op-edit" onClick={novaPonudba}>↺ Nova ponudba</button>
                   )}
-                  <button type="button" className="op-edit" onClick={() => setKazemCene(true)} aria-expanded={kazemCene}
+                  <button type="button" className="op-edit" onClick={() => { setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>
                     <Gear size={17} weight="bold" /> Nastavitve in cene
                   </button>
