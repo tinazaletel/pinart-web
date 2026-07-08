@@ -10,7 +10,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, Check,
+  CaretDown, CaretUp, Check,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -3532,7 +3532,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
           {korak === narocnikStep && (
             <div className="kartica">
-              <div className="k-naslov">Naročnik <span className="vec">za to ponudbo</span></div>
+              <div className="k-naslov">Naročnik <span className="vec">za pošiljanje ponudbe</span></div>
               <div className="numgrid" style={{ marginTop: 0 }}>
                 <div className="polje">
                   <label htmlFor="cw-narocnik">Ime podjetja</label>
@@ -3540,7 +3540,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)} />
                 </div>
                 <div className="polje">
-                  <label htmlFor="cw-narocnik-email">Email naročnika <span className="vec">za pošiljanje ponudbe</span></label>
+                  <label htmlFor="cw-narocnik-email">Email naročnika</label>
                   <input id="cw-narocnik-email" type="email" placeholder="npr. pisarna@potocnik.si"
                     value={narocnikEmail} onChange={e => setNarocnikEmail(e.target.value)} />
                 </div>
@@ -3563,6 +3563,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       value={narocnikNaslov} onChange={e => setNarocnikNaslov(e.target.value)} />
                   </div>
                 </div>
+              ) : null}
+              {(dodatniNarocnik || narocnikOseba || narocnikNaslov || narocnikDavcna) ? (
+                <button type="button" className="povezava" style={{ marginTop: '1.1rem' }}
+                  onClick={() => {
+                    setDodatniNarocnik(false);
+                    setNarocnikOseba(''); setNarocnikDavcna(''); setNarocnikNaslov('');
+                  }}>
+                  <CaretUp size={14} weight="bold" aria-hidden /> Skrij (počisti kontaktno osebo, davčno, naslov)
+                </button>
               ) : (
                 <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
                   onClick={() => setDodatniNarocnik(true)}>
