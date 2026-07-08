@@ -1119,6 +1119,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [narocnikNaslov, setNarocnikNaslov] = useState('');
   const [narocnikDavcna, setNarocnikDavcna] = useState('');
   const [dodatniNarocnik, setDodatniNarocnik] = useState(false);
+  const [prilagajanjePravic, setPrilagajanjePravic] = useState(false);
   const [obsegPonudbe, setObsegPonudbe] = useState<'kratka' | 'razsirjena'>('razsirjena');
   const [kaziUre, setKaziUre] = useState(false);
   const [prenosPravic, setPrenosPravic] = useState<'izkljucni' | 'neizkljucni' | 'licenca'>('izkljucni');
@@ -3665,28 +3666,35 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       : r.raba === 'projekt'
                         ? <>Orodje pravice oceni kot <b>10 % pričakovanega dobička projekta</b> (ali 2 % prihodka), z varovalko med 25 % in 300 % cene izvedbe{r.prenos === 'neizkljucni' ? <>; ker prenos ni izključen, znesek zniža na <b>60 %</b></> : null}.</>
                         : <>Orodje pravice oceni kot <b>1 % letnega dobička naročnika</b>, z varovalko med 25 % in 300 % cene izvedbe{r.prenos === 'neizkljucni' ? <>; ker prenos ni izključen, znesek zniža na <b>60 %</b></> : null}.</>}
-                    {' '}Znesek lahko kadar koli prepišeš s svojim.
+                    {' '}Znesek je priporočilo — kadar koli ga lahko prepišeš s svojim.
                   </p>
-                  <div className="numgrid" style={{ marginTop: '1.1rem' }}>
-                    {r.prenos !== 'licenca' && (
-                      <div className="polje">
-                        <label htmlFor="cw-rpravice">Avtorske pravice ({vfx.znak})</label>
-                        <input id="cw-rpravice" type="number" min={0} step={50}
-                          placeholder={String(zaokrozi(r.praviceAvto * vfx.fx))}
-                          value={rocnePravice} onChange={e => setRocnePravice(e.target.value)} />
+                  {(prilagajanjePravic || r.praviceRocne || r.licencaRocna) ? (
+                    <>
+                      <div className="numgrid" style={{ marginTop: '1.1rem' }}>
+                        {r.prenos !== 'licenca' && (
+                          <div className="polje">
+                            <label htmlFor="cw-rpravice">Avtorske pravice ({vfx.znak})</label>
+                            <input id="cw-rpravice" type="number" min={0} step={50}
+                              placeholder={String(zaokrozi(r.praviceAvto * vfx.fx))}
+                              value={rocnePravice} onChange={e => setRocnePravice(e.target.value)} />
+                          </div>
+                        )}
+                        <div className="polje">
+                          <label htmlFor="cw-rlicenca">Letna licenca ({vfx.znak}/leto)</label>
+                          <input id="cw-rlicenca" type="number" min={0} step={50}
+                            placeholder={String(zaokrozi(r.licencaAvto * vfx.fx))}
+                            value={rocnaLicenca} onChange={e => setRocnaLicenca(e.target.value)} />
+                        </div>
                       </div>
-                    )}
-                    <div className="polje">
-                      <label htmlFor="cw-rlicenca">Letna licenca ({vfx.znak}/leto)</label>
-                      <input id="cw-rlicenca" type="number" min={0} step={50}
-                        placeholder={String(zaokrozi(r.licencaAvto * vfx.fx))}
-                        value={rocnaLicenca} onChange={e => setRocnaLicenca(e.target.value)} />
-                    </div>
-                  </div>
-                  {(r.praviceRocne || r.licencaRocna) && (
-                    <button type="button" className="povezava" style={{ marginTop: '.9rem' }}
-                      onClick={() => { setRocnePravice(''); setRocnaLicenca(''); }}>
-                      ↺ Nazaj na samodejni izračun
+                      <button type="button" className="povezava" style={{ marginTop: '.9rem' }}
+                        onClick={() => { setRocnePravice(''); setRocnaLicenca(''); setPrilagajanjePravic(false); }}>
+                        ↺ Nazaj na samodejni izračun
+                      </button>
+                    </>
+                  ) : (
+                    <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
+                      onClick={() => setPrilagajanjePravic(true)}>
+                      + Prilagodi znesek pravic
                     </button>
                   )}
                 </div>
