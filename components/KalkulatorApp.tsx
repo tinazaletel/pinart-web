@@ -9,7 +9,7 @@ import {
   PersonSimple, TextAa, TextB, UploadSimple, CalendarBlank, EnvelopeSimple,
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
-  DotsSixVertical,
+  DotsSixVertical, Gear,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -2045,10 +2045,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           ))}</h1>
           {(opisKoraka || korak === 0) && (
             <div className="sub-vrsta">
-              <p className="sub">{opisKoraka}</p>
+              <p className="sub">{korak === 0
+                ? <>Izberi storitve <b>za to ponudbo</b> — eno ali več.</>
+                : opisKoraka}</p>
               {korak === 0 && (
-                <button type="button" className="op-edit" onClick={() => setKazemCene(true)} aria-expanded={kazemCene}>
-                  <span style={{ fontSize: '1.35em', lineHeight: 0, position: 'relative', top: '.12em' }}>⚙</span> Nastavitve in cene
+                <button type="button" className="op-edit" onClick={() => setKazemCene(true)} aria-expanded={kazemCene}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>
+                  <Gear size={17} weight="bold" /> Nastavitve in cene
                 </button>
               )}
             </div>
@@ -2079,7 +2082,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <div className="opts">
                     <button type="button" className="pill dodaj" onClick={() => setKazemDodaj(!kazemDodaj)}>
                       <span className="pi" aria-hidden><Plus size={19} /></span>
-                      <span>dodaj postavko<small>dodaten strošek za to ponudbo: font licenca, najem studia, tisk, stock …</small></span>
+                      <span>dodaj postavko<small>dodaten strošek <b>za to ponudbo</b>: font licenca, najem studia, tisk, stock …</small></span>
                     </button>
                   </div>
                 </div>
