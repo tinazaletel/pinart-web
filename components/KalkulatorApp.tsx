@@ -9,7 +9,7 @@ import {
   PersonSimple, TextAa, TextB, UploadSimple, CalendarBlank, EnvelopeSimple,
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
-  DotsSixVertical, Gear, UserCircle, ClockCounterClockwise,
+  DotsSixVertical, Gear, UserCircle, ClockCounterClockwise, Wallet,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -1049,7 +1049,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [kazemProfil, setKazemProfil] = useState(false);
   /* Profil kot drill-down (meni -> ena "podstran"), ne dolg scroll treh
      razdelkov skupaj — bolj pregledno in mobile-friendly (Tina). */
-  const [profilPogled, setProfilPogled] = useState<'meni' | 'zgodovina' | 'podjetja' | 'podjetje-urejanje' | 'cene-nastavitve' | 'cene' | 'obvestila' | 'pomoc'>('meni');
+  const [profilPogled, setProfilPogled] = useState<'meni' | 'zgodovina' | 'podjetja' | 'podjetje-urejanje' | 'cene-nastavitve' | 'cene' | 'stroski' | 'obvestila' | 'pomoc'>('meni');
   /* katero shranjeno podjetje je trenutno "aktivno" (nalozeno v ponudnik/ddv/...
      zivo stanje) — null, ce urejamo novo, se nikoli shranjeno podjetje. */
   const [aktivnoPodjetje, setAktivnoPodjetje] = useState<string | null>(null);
@@ -1076,6 +1076,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [urnePostavke, setUrnePostavke] = useState<{ ime: string; cena: string }[]>(
     [{ ime: 'Dodatna dela', cena: '' }]);
   const [avansPct, setAvansPct] = useState('50');
+  /* Moji redni mesecni stroski (najem, programska oprema, zavarovanje ...) —
+     zaenkrat informativno, za pregled; se NE vpletajo v izracun cene. */
+  const [stroski, setStroski] = useState<{ ime: string; znesek: string }[]>([]);
+  const [novStrosekIme, setNovStrosekIme] = useState('');
+  const [novStrosekZnesek, setNovStrosekZnesek] = useState('');
   const [ddvZavezanec, setDdvZavezanec] = useState(false);
   const [ddvStopnja, setDdvStopnja] = useState('22');
   const [besedilo, setBesedilo] = useState('');
@@ -1137,6 +1142,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       else if (s.urnaPostavka) setUrnePostavke([{ ime: 'Dodatna dela', cena: String(s.urnaPostavka) }]);
       if (s.avansPct !== undefined) setAvansPct(String(s.avansPct));
       if (s.nogaZnak === false) setNogaZnak(false);
+      if (Array.isArray(s.stroski)) setStroski(s.stroski);
       if (s.postavke) setPostavke(s.postavke);
       if (s.predklic) setPredklic(s.predklic);
       if (s.ddvZavezanec) setDdvZavezanec(true);
@@ -1158,10 +1164,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         vrstniRed: vrstniRed.length ? vrstniRed : undefined,
         skrite: skrite.length ? skrite : undefined,
         nogaZnak: nogaZnak ? undefined : false,
+        stroski: stroski.length ? stroski : undefined,
         valuta: valutaRocna ? valuta : undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak]);
+  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -1938,6 +1945,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     if (aktivnoPodjetje === ime) { setAktivnoPodjetje(null); setProfilPogled('podjetja'); }
   };
 
+  /* ── moji redni mesecni stroski (informativno, se ne racuna v ceno) ── */
+  const dodajStrosek = () => {
+    const ime = novStrosekIme.trim();
+    if (!ime) return;
+    setStroski(s => [...s, { ime, znesek: novStrosekZnesek.trim() || '0' }]);
+    setNovStrosekIme(''); setNovStrosekZnesek('');
+  };
+  const urediStrosek = (i: number, polje: 'ime' | 'znesek', vrednost: string) =>
+    setStroski(s => s.map((x, idx) => (idx === i ? { ...x, [polje]: vrednost } : x)));
+  const odstraniStrosek = (i: number) => setStroski(s => s.filter((_, idx) => idx !== i));
+
   /* ── ponastavi vse podatke orodja (danger zone v profilu) ──────────── */
   const ponastaviVse = () => {
     if (typeof window === 'undefined') return;
@@ -2316,6 +2334,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .podjetja-shrani input:focus { outline: none; border-bottom: 1.5px solid var(--ink); }
         .cw .podjetja-shrani .dodaj-gumb:disabled { opacity: .4; cursor: not-allowed; }
         .cw .podjetja-shrani .dodaj-gumb:disabled:hover { background: transparent; }
+        .cw .strosek-seznam { display: flex; flex-direction: column; margin-bottom: .3rem; }
+        .cw .strosek-vrsta { display: grid; grid-template-columns: 1fr 5rem auto auto; gap: .6rem; align-items: center; padding: .5rem 0; border-bottom: 1px solid rgba(17,17,17,.1); }
+        .cw .strosek-vrsta input { border: none; border-bottom: 1px solid rgba(17,17,17,.2); background: transparent; padding: .3rem .2rem; font-family: inherit; font-size: .92rem; color: var(--ink); }
+        .cw .strosek-vrsta input[type=number] { text-align: right; font-weight: 600; }
+        .cw .strosek-vrsta input:focus { outline: none; border-bottom: 1.5px solid var(--ink); }
+        .cw .strosek-vrsta .sv-znak { font-size: .8rem; color: rgba(17,17,17,.55); white-space: nowrap; }
+        .cw .strosek-skupaj { margin: .9rem 0 1.2rem; font-size: .95rem; color: var(--ink); }
+        .cw .strosek-skupaj b { font-weight: 700; }
         .cw .profil-sekcija { margin-bottom: 1.8rem; padding-bottom: 1.6rem; border-bottom: 1px solid rgba(17,17,17,.12); }
         .cw .profil-sekcija:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .cw .profil-sekcija .k-naslov { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem 1rem; margin-bottom: 1rem; font-weight: 600; font-size: 1.05rem; color: var(--ink); }
@@ -2743,8 +2769,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       : profilPogled === 'podjetje-urejanje' ? (aktivnoPodjetje || 'Podjetje')
                         : profilPogled === 'cene-nastavitve' ? 'Cene in storitve'
                           : profilPogled === 'cene' ? 'Cenovni profili'
-                            : profilPogled === 'obvestila' ? 'Obveščanja'
-                              : 'Pomoč in kontakt'}
+                            : profilPogled === 'stroski' ? 'Moji stroški'
+                              : profilPogled === 'obvestila' ? 'Obveščanja'
+                                : 'Pomoč in kontakt'}
               </h2>
             </div>
 
@@ -2779,6 +2806,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span>
                     <strong>Cenovni profili</strong>
                     <small>shranjeni kompleti cen storitev (redko){Object.keys(profili).length > 0 ? ` (${Object.keys(profili).length})` : ''}</small>
+                  </span>
+                  <span className="pm-puscica" aria-hidden>→</span>
+                </button>
+                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('stroski')}>
+                  <Wallet size={20} weight="bold" />
+                  <span>
+                    <strong>Moji stroški</strong>
+                    <small>redni mesečni stroški (najem, oprema, programska …){stroski.length > 0 ? ` (${stroski.length})` : ''}</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
@@ -2912,6 +2947,42 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   ))}
                 </div>
               )
+            )}
+
+            {profilPogled === 'stroski' && (
+              <>
+                <p className="ob-sub" style={{ margin: '0 0 1.2rem' }}>Redni mesečni stroški (najem, programska oprema, zavarovanje, oprema …) — za tvoj pregled. Zaenkrat se ne vštevajo samodejno v izračun cene ponudb.</p>
+                {stroski.length > 0 && (
+                  <>
+                    <div className="strosek-seznam">
+                      {stroski.map((s, i) => (
+                        <div key={i} className="strosek-vrsta">
+                          <input type="text" value={s.ime} aria-label={'Ime stroška ' + (i + 1)}
+                            onChange={e => urediStrosek(i, 'ime', e.target.value)} />
+                          <input type="number" min={0} step={5} value={s.znesek} aria-label={'Znesek stroška ' + (i + 1)}
+                            onChange={e => urediStrosek(i, 'znesek', e.target.value)} />
+                          <span className="sv-znak">{vfx.znak}/mes.</span>
+                          <button type="button" className="brisi" title="Izbriši" onClick={() => odstraniStrosek(i)}>×</button>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="strosek-skupaj">
+                      Skupaj: <b>{stroski.reduce((a, s) => a + (Number(s.znesek) || 0), 0).toLocaleString('sl-SI')} {vfx.znak} / mesec</b>
+                    </p>
+                  </>
+                )}
+                <div className="podjetja-shrani">
+                  <input type="text" placeholder="Ime stroška (npr. najem studia, Adobe licenca …)" value={novStrosekIme}
+                    onChange={e => setNovStrosekIme(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && novStrosekIme.trim()) dodajStrosek(); }}
+                    aria-label="Ime novega stroška" />
+                  <input type="number" min={0} step={5} placeholder={`znesek / mesec (${vfx.znak})`} value={novStrosekZnesek}
+                    onChange={e => setNovStrosekZnesek(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && novStrosekIme.trim()) dodajStrosek(); }}
+                    aria-label="Znesek novega stroška" />
+                  <button type="button" className="dodaj-gumb" onClick={dodajStrosek} disabled={!novStrosekIme.trim()}>+ Dodaj strošek</button>
+                </div>
+              </>
             )}
 
             {profilPogled === 'obvestila' && (
