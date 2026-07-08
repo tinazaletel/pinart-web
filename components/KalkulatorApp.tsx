@@ -1984,6 +1984,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .dodaj-gumb:hover { border-color: var(--ink); background: rgba(17,17,17,.03); }
         .cw .profil-nalozi { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: 1.4rem; }
         .cw .profil-nalozi .pn-oznaka { font-size: .82rem; font-weight: 600; color: rgba(17,17,17,.6); }
+        .cw .profil-nalozi .pn-oznaka:not(:first-child) { margin-left: .9rem; }
         .cw .profil-nalozi .pn-chip { font-family: inherit; font-size: .85rem; font-weight: 600; color: var(--ink); background: #FCFBF7; border: 1px solid rgba(17,17,17,.2); border-radius: 999px; padding: .4rem .95rem; cursor: pointer; transition: border-color .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .profil-nalozi .pn-chip:hover { border-color: var(--ink); transform: translateY(-2px); }
         .cw .arhiv-chip { display: inline-flex; align-items: center; background: #FCFBF7; border: 1px solid rgba(17,17,17,.2); border-radius: 999px; overflow: hidden; }
@@ -2344,25 +2345,29 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
           {korak === 0 && (
             <>
-              {Object.keys(arhiv).length > 0 && (
+              {(Object.keys(arhiv).length > 0 || Object.keys(profili).length > 0) && (
                 <div className="profil-nalozi">
-                  <span className="pn-oznaka">Arhiv ponudb:</span>
-                  {Object.keys(arhiv).map(ime => (
-                    <span key={ime} className="arhiv-chip">
-                      <button type="button" className="ac-open" onClick={() => naloziIzArhiva(ime)} title="Odpri ponudbo">↺ {ime}</button>
-                      <button type="button" className="ac-del" onClick={() => izbrisiIzArhiva(ime)} title="Izbriši iz arhiva">×</button>
-                    </span>
-                  ))}
-                </div>
-              )}
-              {Object.keys(profili).length > 0 && (
-                <div className="profil-nalozi">
-                  <span className="pn-oznaka">Naloži svoje cene:</span>
-                  {Object.keys(profili).map(ime => (
-                    <button key={ime} type="button" className="pn-chip" onClick={() => naloziProfil(ime)}>
-                      ↺ {ime}
-                    </button>
-                  ))}
+                  {Object.keys(arhiv).length > 0 && (
+                    <>
+                      <span className="pn-oznaka">Arhiv ponudb:</span>
+                      {Object.keys(arhiv).map(ime => (
+                        <span key={ime} className="arhiv-chip">
+                          <button type="button" className="ac-open" onClick={() => naloziIzArhiva(ime)} title="Odpri ponudbo">↺ {ime}</button>
+                          <button type="button" className="ac-del" onClick={() => izbrisiIzArhiva(ime)} title="Izbriši iz arhiva">×</button>
+                        </span>
+                      ))}
+                    </>
+                  )}
+                  {Object.keys(profili).length > 0 && (
+                    <>
+                      <span className="pn-oznaka">Naloži svoje cene:</span>
+                      {Object.keys(profili).map(ime => (
+                        <button key={ime} type="button" className="pn-chip" onClick={() => naloziProfil(ime)}>
+                          ↺ {ime}
+                        </button>
+                      ))}
+                    </>
+                  )}
                 </div>
               )}
               <div className="skupine-storitev">
