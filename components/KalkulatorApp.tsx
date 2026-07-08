@@ -3388,7 +3388,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <button key={t.id} type="button"
                     className={'pill' + (mojTrg === t.id ? ' on' : '')}
                     onClick={() => setMojTrg(t.id)}>
-                    {t.ime}
+                    <span className="pill-fill" aria-hidden />
+                    <span className="pill-tekst">{t.ime}</span>
                   </button>
                 ))}
               </div>
@@ -3404,7 +3405,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <button key={t.id} type="button"
                       className={'pill' + (trgNarocnika === t.id ? ' on' : '')}
                       onClick={() => setTrgNarocnika(t.id)}>
-                      {t.ime}
+                      <span className="pill-fill" aria-hidden />
+                      <span className="pill-tekst">{t.ime}</span>
                     </button>
                   ))}
                 </div>
@@ -3557,7 +3559,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <button key={d.id} type="button"
                       className={'pill' + (dodatki.has(d.id) ? ' on' : '')}
                       onClick={() => preklopi(dodatki, d.id, setDodatki)}>
-                      {d.ime}<small>{d.opis}</small>
+                      <span className="pill-fill" aria-hidden />
+                      <span className="pill-tekst">{d.ime}<small>{d.opis}</small></span>
                     </button>
                   ))}
                 </div>
