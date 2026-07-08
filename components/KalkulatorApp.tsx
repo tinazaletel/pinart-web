@@ -2411,6 +2411,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .pill .pi svg { width: 22px; height: 22px; }
         .cw .pill-tekst { position: relative; z-index: 1; transition: color .5s ease; }
         .cw .pill.dodaj { border-style: dashed; border-color: rgba(17,17,17,.55); font-weight: 500; }
+        .cw .pill.dodaj .pi { background: var(--ink); }
 
         .cw .izbira { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 760px; }
         .cw .izbira-3 { grid-template-columns: repeat(3, 1fr); }
