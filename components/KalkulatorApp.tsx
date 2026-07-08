@@ -2392,7 +2392,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .sub { font-size: clamp(1rem, 1.6vw, 1.2rem); line-height: 1.6; color: rgba(17,17,17,.72); margin: 0; max-width: 52ch; min-width: 0; }
         .cw .korak0-ime { max-width: 420px; margin: 0 0 1.1rem; }
         .cw .korak0-ime .polje { width: 100%; }
-        .cw .korak0-akcije { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin: 0 0 2.2rem; max-width: 760px; }
+        .cw .korak0-akcije { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin: 0 0 2.2rem; }
 
         .cw .opts { display: flex; flex-wrap: wrap; gap: 1rem .65rem; }
         .cw .pill { position: relative; overflow: hidden; z-index: 0; padding: .8rem 1.3rem; border: 1px solid rgba(17,17,17,.25); border-radius: 999px; cursor: pointer; font-size: 1rem; background: transparent; font-family: inherit; font-weight: 400; color: var(--ink); transition: border-color .18s ease, background .18s ease, color .18s ease; text-align: left; line-height: 1.25; }
