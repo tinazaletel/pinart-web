@@ -16,8 +16,31 @@ export default function FloatingUI() {
   const [inquiryType,  setInquiryType]  = useState('');
   const [submitState,  setSubmitState]  = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const isSl = pathname.startsWith('/sl');
+  /* Na kalkulatorju "Let's talk" ne sme prodajati storitev (Tina: "se ne gre
+     vec o mojih storitvah") — tu gre za orodje samo, zato zbiramo povratne
+     informacije in predloge, ne povprasevanj za projekte. */
+  const isKalkulator = pathname.includes('/kalkulator/orodje');
 
-  const talkCopy = isSl ? {
+  const kalkulatorCopy = {
+    eyebrow: 'Povratna informacija',
+    title: 'Kaj bi izboljšali?',
+    body: 'Deli predlog, opozori na napako ali samo povej, kako ti kalkulator služi. Berem osebno.',
+    options: [
+      ['Predlog za izboljšavo', 'kaj bi dodala, spremenila ali poenostavila'],
+      ['Nekaj ne deluje', 'napaka, nejasnost ali cena, ki ne štima'],
+      ['Splošno mnenje', 'kaj ti je všeč, kaj ne'],
+    ],
+    email: 'Piši mi neposredno',
+    back: 'Nazaj',
+    send: 'Pošlji',
+    sending: 'Pošiljam ...',
+    sent: 'Hvala za povratno informacijo!',
+    error: 'Sporočila trenutno ni bilo mogoče poslati. Poskusi znova ali mi piši neposredno.',
+    fields: { name: 'Ime', company: '', email: 'E-pošta', brief: 'Opiši predlog, napako ali mnenje', budget: '', timing: '' },
+    close: 'Zapri',
+  };
+
+  const talkCopy = isKalkulator ? kalkulatorCopy : isSl ? {
     eyebrow: 'Začniva pogovor',
     title: 'Kaj ustvarjava?',
     body: 'Izberi izhodišče. Odgovorila ti bom osebno in skupaj bova določila naslednji korak.',
@@ -254,17 +277,22 @@ export default function FloatingUI() {
               <form onSubmit={submitInquiry} style={{ display: 'grid', gap: '1rem' }}>
                 <input type="hidden" name="type" value={inquiryType} />
                 <input type="hidden" name="locale" value={isSl ? 'sl' : 'en'} />
+                <input type="hidden" name="source" value={isKalkulator ? 'kalkulator-feedback' : 'website'} />
                 <input name="website" tabIndex={-1} autoComplete="off" aria-hidden style={{ position: 'absolute', left: '-10000px' }} />
                 <button type="button" onClick={() => { setInquiryType(''); setSubmitState('idle'); }} style={{ width: 'fit-content', padding: 0, border: 0, background: 'transparent', cursor: 'pointer', font: 'inherit', textDecoration: 'underline', textUnderlineOffset: '0.3rem' }}>← {talkCopy.back}</button>
                 <strong style={{ fontSize: '1.15rem' }}>{inquiryType}</strong>
                 <label style={labelStyle}>{talkCopy.fields.name}<input required name="name" style={inputStyle} /></label>
-                <label style={labelStyle}>{talkCopy.fields.company}<input name="company" style={inputStyle} /></label>
+                {!isKalkulator && (
+                  <label style={labelStyle}>{talkCopy.fields.company}<input name="company" style={inputStyle} /></label>
+                )}
                 <label style={labelStyle}>{talkCopy.fields.email}<input required type="email" name="email" style={inputStyle} /></label>
                 <label style={labelStyle}>{talkCopy.fields.brief}<textarea required name="brief" rows={4} style={{ ...inputStyle, resize: 'vertical' }} /></label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <label style={labelStyle}>{talkCopy.fields.budget}<input name="budget" style={inputStyle} /></label>
-                  <label style={labelStyle}>{talkCopy.fields.timing}<input name="timing" style={inputStyle} /></label>
-                </div>
+                {!isKalkulator && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <label style={labelStyle}>{talkCopy.fields.budget}<input name="budget" style={inputStyle} /></label>
+                    <label style={labelStyle}>{talkCopy.fields.timing}<input name="timing" style={inputStyle} /></label>
+                  </div>
+                )}
                 <button disabled={submitState === 'sending'} type="submit" style={{ padding: '1rem 1.2rem', border: 0, background: 'var(--ink)', color: 'var(--paper)', cursor: 'pointer', font: 'inherit', fontWeight: 600 }}>
                   {submitState === 'sending' ? talkCopy.sending : talkCopy.send}
                 </button>
