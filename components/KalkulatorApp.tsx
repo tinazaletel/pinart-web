@@ -1346,9 +1346,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .soglasje-kartica h2 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 4.5vw, 2.4rem); line-height: 1.05; margin: 0 0 1.1rem; }
         .cw .soglasje-kartica ul { margin: 0 0 1.8rem; padding-left: 0; list-style: none; }
         .cw .soglasje-kartica li { font-size: 1.02rem; font-weight: 400; line-height: 1.65; color: var(--ink); margin-bottom: .8rem; }
-        .cw .soglasje-tocke { margin: 0 0 .25rem; }
+        .cw .soglasje-tocke { margin: 0; }
         .cw .sg-blok { padding: 1.05rem 0; border-top: 1px solid rgba(17,17,17,.14); }
         .cw .sg-blok:first-child { border-top: none; padding-top: .3rem; }
+        .cw .sg-blok:last-child { padding-bottom: .5rem; }
         .cw .sg-h { margin: 0 0 .4rem; font-size: .76rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
         .cw .sg-t { margin: 0; font-size: 1rem; font-weight: 400; line-height: 1.62; color: rgba(17,17,17,.84); }
         .cw .sg-t b { font-weight: 700; color: var(--ink); }
