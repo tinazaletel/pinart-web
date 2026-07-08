@@ -1351,6 +1351,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .sg-blok:first-child { border-top: none; padding-top: .3rem; }
         .cw .sg-h { margin: 0 0 .4rem; font-size: .76rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
         .cw .sg-t { margin: 0; font-size: 1rem; font-weight: 400; line-height: 1.62; color: rgba(17,17,17,.84); }
+        .cw .sg-t b { font-weight: 700; color: var(--ink); }
         .cw .soglasje-email { border-top: 1px solid rgba(17,17,17,.14); padding-top: 1.3rem; margin-bottom: 1.7rem; }
         .cw .se-preklop { display: flex; align-items: center; justify-content: space-between; gap: 1.1rem; cursor: pointer; font-size: .98rem; font-weight: 500; color: var(--ink); line-height: 1.5; }
         .cw .se-toggle { position: relative; flex: none; width: 2.6rem; height: 1.5rem; }
@@ -1628,7 +1629,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </div>
               <div className="sg-blok">
                 <h3 className="sg-h">Vedno anonimno</h3>
-                <p className="sg-t">Ob prikazu izračuna anonimno zabeležimo izbrane kategorije in zneske — brez imena, e-naslova ali IP, nikoli povezano s teboj. Skupaj gradimo prvo statistiko cen za kreativce: ko bo baza dovolj velika, boš videl, koliko kolegi s podobnimi izkušnjami dejansko računajo.</p>
+                <p className="sg-t">Ob prikazu izračuna anonimno zabeležimo izbrane kategorije in zneske — <b>brez imena, e-naslova ali IP</b>, nikoli povezano s teboj. Skupaj gradimo prvo statistiko cen za kreativce: ko bo baza dovolj velika, boš videl, koliko kolegi s podobnimi izkušnjami dejansko računajo.</p>
               </div>
             </div>
             <div className="soglasje-email">
