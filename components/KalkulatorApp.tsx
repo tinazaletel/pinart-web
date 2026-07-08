@@ -3806,10 +3806,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   )}
                   {(prikaziIzjemePravic || izjemePravice) ? (
                     <div className="polje" style={{ marginTop: '1.1rem' }}>
-                      <label htmlFor="cw-izjeme-pravic">Izjeme po storitvi <span className="vec">neobvezno</span></label>
+                      <label htmlFor="cw-izjeme-pravic">Napredno: izjeme po storitvi <span className="vec">neobvezno</span></label>
                       <input id="cw-izjeme-pravic" type="text" placeholder="npr. Ilustracije: neizključni prenos"
                         value={izjemePravice} onChange={e => setIzjemePravice(e.target.value)} />
                     </div>
+                  ) : izbrane.size > 1 ? (
+                    <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
+                      onClick={() => setPrikaziIzjemePravic(true)}>
+                      + Napredno: različne pravice po storitvi
+                    </button>
                   ) : (
                     <button type="button" className="povezava" style={{ marginTop: '1.1rem' }}
                       onClick={() => setPrikaziIzjemePravic(true)}>
