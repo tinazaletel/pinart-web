@@ -1937,10 +1937,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         <div className="soglasje" role="dialog" aria-modal="true" aria-label="Tvoje osnovne cene">
           <div className="soglasje-kartica cene-modal">
             <div className="cene-glava">
-              <h2>Tvoje osnovne cene</h2>
+              <h2>Moje storitve in cene</h2>
               <button type="button" className="op-edit" onClick={() => setKazemCene(false)}>✕ Zapri</button>
             </div>
-            <p className="ob-sub" style={{ marginBottom: '1.2rem' }}>Prilagodi cene in razporedi (povleci za ročaj). Vrstni red velja tudi na prvem koraku.</p>
+            <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Prilagodi ceno, razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš. Vrstni red velja tudi na prvem koraku.</p>
+            <button type="button" className="povezava" style={{ marginBottom: '1.3rem' }} onClick={() => { setKazemCene(false); odpriOnboarding(); }}>↳ Uredi področja dela (kaj ponujaš)</button>
             <div className="cene-seznam">
               {poVrstnemRedu(vidneStoritve).map((s, i) => (
                 <div key={s.id} className="cene-vrsta" draggable
@@ -2040,7 +2041,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <p className="sub">{opisKoraka}</p>
               {korak === 0 && (
                 <button type="button" className="op-edit" onClick={() => setKazemCene(true)} aria-expanded={kazemCene}>
-                  ✎ Nastavi svoje cene
+                  ⚙ Moje storitve
                 </button>
               )}
             </div>
@@ -2068,7 +2069,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </div>
                 )}
                 {jeOnboardan && drugaImaVidne && !kazemDruge && (
-                  <button type="button" className="povezava" onClick={() => setKazemDruge(true)}>+ druge storitve</button>
+                  <button type="button" className="povezava" onClick={() => setKazemDruge(true)}>+ druga področja (za to ponudbo)</button>
                 )}
                 {jeOnboardan && kazemDruge && drugaPodrocja.map(skupinaPodrocja)}
                 <div className="skupina">
@@ -2080,9 +2081,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </div>
                 </div>
               </div>
-              <button type="button" className="povezava" style={{ marginTop: '1.3rem' }} onClick={odpriOnboarding}>
-                ✎ Uredi svoje storitve
-              </button>
 
               {kazemDodaj && (
                 <div className="iskalnik">
