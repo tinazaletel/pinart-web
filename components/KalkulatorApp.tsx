@@ -35,6 +35,18 @@ const STORITVE: Storitev[] = [
   { id: 'copy',        ime: 'Besedila / copywriting',       osnova: 500  },
 ];
 
+/* Podrocja dela za onboarding: uporabnik izbere podrocja, orodje pa v ospredje
+   postavi storitve znotraj njih. Ko se katalog razsiri (interier, motion, SMM,
+   avdio ...), se nove storitve dodajo v ustrezno podrocje in seznam ostane
+   pregleden. */
+const PODROCJA: { id: string; ime: string; opis: string; storitve: string[] }[] = [
+  { id: 'graficno',  ime: 'Grafično oblikovanje & branding', opis: 'logotip, CGP, tiskovine, embalaža, ilustracija', storitve: ['logo', 'cgp', 'publikacija', 'embalaza', 'ilustracija'] },
+  { id: 'splet',     ime: 'Splet & digitalni produkti',      opis: 'spletne strani, UX/UI, aplikacije',              storitve: ['web'] },
+  { id: 'marketing', ime: 'Marketing & oglaševanje',         opis: 'kampanje, oglasi, besedila',                     storitve: ['kampanja', 'copy'] },
+  { id: 'foto',      ime: 'Fotografija & video',             opis: 'fotografiranje, video, motion',                  storitve: ['fotografija'] },
+  { id: 'direkcija', ime: 'Kreativna direkcija & strategija', opis: 'vodenje, koncept, strategija',                   storitve: ['direkcija'] },
+];
+
 const IZKUSNJE = [
   { id: 'student',     ime: 'Študent',     opis: 'ob študiju, prvi naročniki', mult: 0.5 },
   { id: 'zacetnik',    ime: 'Začetnik',    opis: 'do 3 leta',                  mult: 0.7 },
@@ -768,18 +780,24 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* Onboarding ob prvem obisku (po sprejemu pogojev, ce se ni onboardan). */
   useEffect(() => {
     if (pogojiOk === true && mojSet === null) {
-      setObIzbor(new Set(izbrane));
+      setObIzbor(new Set());
       setOnboardingOdprt(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pogojiOk, mojSet]);
 
   const odpriOnboarding = () => {
-    setObIzbor(new Set(mojSet && mojSet.length ? mojSet : [...izbrane]));
+    /* preslikaj trenutni set nazaj v podrocja (podrocje je izbrano, ce so vse
+       njegove storitve v setu) */
+    const set = new Set(mojSet ?? []);
+    const areas = PODROCJA.filter(p => p.storitve.length > 0 && p.storitve.every(sid => set.has(sid))).map(p => p.id);
+    setObIzbor(new Set(areas));
     setOnboardingOdprt(true);
   };
   const shraniOnboarding = () => {
-    setMojSet([...obIzbor]);
+    const ids = new Set<string>();
+    PODROCJA.forEach(p => { if (obIzbor.has(p.id)) p.storitve.forEach(sid => ids.add(sid)); });
+    setMojSet([...ids]);
     setKazemDruge(false);
     setOnboardingOdprt(false);
   };
@@ -1785,15 +1803,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           </div>
           <div className="oder">
             <div className="korak-vsebina">
-              <h1 className="ob-naslov">Katere storitve ponujaš?</h1>
-              <p className="sub" style={{ marginBottom: '2rem' }}>Izberi svoje — postavimo jih v ospredje, ostale skrijemo (do njih prideš z enim klikom). Kadar koli lahko urediš ali preskočiš.</p>
-              <div className="opts">
-                {vseStoritve.map(s => (
-                  <button key={s.id} type="button"
-                    className={'pill' + (obIzbor.has(s.id) ? ' on' : '')}
-                    onClick={() => preklopi(obIzbor, s.id, setObIzbor)}>
-                    <span className="pi" aria-hidden>{ikonaZa(s.id)}</span>
-                    <span>{s.ime}</span>
+              <h1 className="ob-naslov">S čim se ukvarjaš?</h1>
+              <p className="sub" style={{ marginBottom: '2rem' }}>Izberi svoja področja dela — pripadajoče storitve postavimo v ospredje, ostale skrijemo (do njih prideš z enim klikom). Kadar koli lahko urediš ali preskočiš.</p>
+              <div className="izbira izbira-3">
+                {PODROCJA.map(p => (
+                  <button key={p.id} type="button"
+                    className={obIzbor.has(p.id) ? 'on' : ''}
+                    onClick={() => preklopi(obIzbor, p.id, setObIzbor)}>
+                    <h3>{p.ime}</h3>
+                    <p>{p.opis}</p>
                   </button>
                 ))}
               </div>
