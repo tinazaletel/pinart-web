@@ -963,7 +963,7 @@ type ShranjenaP = {
   promet: string; dobicek: string; projPrihodek: string; projDobicek: string;
   popust: string; dodatki: string[];
   prenosPravic: 'izkljucni' | 'neizkljucni' | 'licenca';
-  rocnePravice: string; rocnaLicenca: string;
+  rocnePravice: string; rocnaLicenca: string; izjemePravice?: string;
   nazivPonudbe: string; narocnikPonudbe: string; narocnikEmail?: string;
   narocnikOseba?: string; narocnikNaslov?: string; narocnikDavcna?: string;
   obsegPonudbe: 'kratka' | 'razsirjena'; tonPonudbe: TonPonudbe; avansPct: string;
@@ -1120,6 +1120,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [narocnikDavcna, setNarocnikDavcna] = useState('');
   const [dodatniNarocnik, setDodatniNarocnik] = useState(false);
   const [prilagajanjePravic, setPrilagajanjePravic] = useState(false);
+  /* Enotna izbira prenosa pravic velja za celo ponudbo; ce je za posamezno
+     storitev drugace (npr. ilustracije kot licenca, CGP kot odkup), gre
+     samo v opombo besedila — pravi izracun po storitvi je vecji poseg,
+     zaenkrat backlog za napredni (placljivi) nivo. */
+  const [izjemePravice, setIzjemePravice] = useState('');
+  const [prikaziIzjemePravic, setPrikaziIzjemePravic] = useState(false);
   const [obsegPonudbe, setObsegPonudbe] = useState<'kratka' | 'razsirjena'>('razsirjena');
   const [kaziUre, setKaziUre] = useState(false);
   const [prenosPravic, setPrenosPravic] = useState<'izkljucni' | 'neizkljucni' | 'licenca'>('izkljucni');
@@ -1299,6 +1305,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setPrenosPravic('izkljucni');
     setRocnePravice('');
     setRocnaLicenca('');
+    setIzjemePravice('');
+    setPrikaziIzjemePravic(false);
     setRocnoBesedilo(false);
     setVidnaVprasanja(1);
     try { sessionStorage.removeItem('pinart-cene-poslano'); } catch { /* prazno */ }
@@ -1600,6 +1608,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         r.raba === 'projekt' ? ` ali tantieme ${r.tantiemePct} % od prodaje, obračunano letno` : ''
       }.`);
     }
+    if (izjemePravice.trim()) v.push(izjemePravice.trim());
     v.push('');
     v.push(ddvZavezanec
       ? `DDV: cene so brez DDV; ob izstavitvi računa se obračuna ${st} % DDV.`
@@ -1642,7 +1651,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       v.push('Pripravljeno s Pinart kalkulatorjem · pinart.si');
     }
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak]);
+  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak, izjemePravice]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
@@ -1922,7 +1931,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       datum: new Date().toISOString(),
       izbrane: [...izbrane], odgovori, postavke, raba,
       promet, dobicek, projPrihodek, projDobicek, popust, dodatki: [...dodatki],
-      prenosPravic, rocnePravice, rocnaLicenca,
+      prenosPravic, rocnePravice, rocnaLicenca, izjemePravice: izjemePravice || undefined,
       nazivPonudbe, narocnikPonudbe, obsegPonudbe, tonPonudbe, avansPct,
       kaziUre, nogaZnak, izkusnje, mojTrg, trgNarocnika, valuta, valutaRocna,
       rocnoBesedilo, besediloHtml: rocnoBesedilo ? (editorRef.current?.innerHTML || besediloHtml) : '',
@@ -1944,6 +1953,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setProjPrihodek(p.projPrihodek); setProjDobicek(p.projDobicek);
     setPopust(p.popust); setDodatki(new Set(p.dodatki || []));
     setPrenosPravic(p.prenosPravic); setRocnePravice(p.rocnePravice); setRocnaLicenca(p.rocnaLicenca);
+    setIzjemePravice(p.izjemePravice || '');
     setNazivPonudbe(p.nazivPonudbe); setNarocnikPonudbe(p.narocnikPonudbe);
     setNarocnikEmail(p.narocnikEmail || '');
     setNarocnikOseba(p.narocnikOseba || '');
@@ -2555,6 +2565,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .izbirnik-gumb { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: .6rem; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .35rem 0 .5rem; color: var(--ink); border-radius: 0; cursor: pointer; text-align: left; }
         .cw .izbirnik-gumb:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
         .cw .izbirnik-gumb svg { flex: none; opacity: .6; }
+        .cw .valuta-gumb-mobile { display: none; }
+        @media (max-width: 560px) {
+          .cw .valuta-select { display: none; }
+          .cw .valuta-gumb-mobile { display: flex; }
+        }
         .cw .izbirnik-zastor { position: fixed; inset: 0; z-index: 65; background: rgba(245,242,234,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
         .cw .izbirnik-plosca { width: 100%; max-width: 420px; max-height: min(32rem, 80dvh); display: flex; flex-direction: column; background: var(--paper); border: 1px solid rgba(17,17,17,.18); border-radius: 18px; box-shadow: 0 24px 80px rgba(17,17,17,.14); overflow: hidden; animation: cwVstop .3s cubic-bezier(.16,1,.3,1) both; }
         .cw .izbirnik-glava { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.2rem 1.4rem; border-bottom: 1px solid rgba(17,17,17,.1); font-weight: 600; font-size: .95rem; color: var(--ink); flex: none; }
@@ -3620,7 +3635,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <div className="kartica">
                 <div className="polje">
                   <label htmlFor="cw-valuta">Valuta ponudbe</label>
-                  <button type="button" id="cw-valuta" className="izbirnik-gumb"
+                  <select id="cw-valuta" className="valuta-select" value={valuta}
+                    onChange={e => { setValuta(e.target.value); setValutaRocna(true); }}>
+                    {VALUTE.map(v => <option key={v.id} value={v.id}>{v.ime}</option>)}
+                  </select>
+                  <button type="button" className="izbirnik-gumb valuta-gumb-mobile" aria-label="Valuta ponudbe"
                     onClick={() => setKazemValutaIzbira(true)}>
                     {vfx.ime}
                     <CaretDown size={15} weight="bold" aria-hidden />
@@ -3782,6 +3801,18 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
                       onClick={() => setPrilagajanjePravic(true)}>
                       + Prilagodi znesek pravic
+                    </button>
+                  )}
+                  {(prikaziIzjemePravic || izjemePravice) ? (
+                    <div className="polje" style={{ marginTop: '1.1rem' }}>
+                      <label htmlFor="cw-izjeme-pravic">Izjeme po storitvi <span className="vec">neobvezno</span></label>
+                      <input id="cw-izjeme-pravic" type="text" placeholder="npr. Ilustracije: neizključni prenos"
+                        value={izjemePravice} onChange={e => setIzjemePravice(e.target.value)} />
+                    </div>
+                  ) : (
+                    <button type="button" className="povezava" style={{ marginTop: '1.1rem' }}
+                      onClick={() => setPrikaziIzjemePravic(true)}>
+                      + Dodaj izjemo po storitvi
                     </button>
                   )}
                 </div>
