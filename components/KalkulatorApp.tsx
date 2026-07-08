@@ -9,6 +9,7 @@ import {
   PersonSimple, TextAa, TextB, UploadSimple, CalendarBlank, EnvelopeSimple,
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
+  DotsSixVertical,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -690,6 +691,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [onboardingOdprt, setOnboardingOdprt] = useState(false);
   const [obIzbor, setObIzbor] = useState<Set<string>>(new Set());
   const [kazemDruge, setKazemDruge] = useState(false);
+  /* Poljuben vrstni red storitev (razporejanje z drag-rocajem); prazno = naravni. */
+  const [vrstniRed, setVrstniRed] = useState<string[]>([]);
+  const dragIndex = useRef<number | null>(null);
   const [novaIme, setNovaIme] = useState('');
   const [novaCena, setNovaCena] = useState('');
   const [valuta, setValuta] = useState('eur');
@@ -746,6 +750,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       }
       if (s.mojeStoritve) setMojeStoritve(s.mojeStoritve);
       if (Array.isArray(s.mojSet)) setMojSet(s.mojSet);
+      if (Array.isArray(s.vrstniRed)) setVrstniRed(s.vrstniRed);
       if (s.valuta) { setValuta(s.valuta); setValutaRocna(true); }
       if (s.ponudnik) {
         setPonudnik({ trr: '', ...s.ponudnik });
@@ -771,10 +776,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         osnove, izkusnje, mojTrg, mojeStoritve, ponudnik, postavke,
         ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct,
         mojSet: mojSet ?? undefined,
+        vrstniRed: vrstniRed.length ? vrstniRed : undefined,
         valuta: valutaRocna ? valuta : undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet]);
+  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -782,6 +788,23 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   }, [trgNarocnika, valutaRocna]);
 
   const vseStoritve = useMemo(() => [...STORITVE, ...mojeStoritve], [mojeStoritve]);
+
+  /* Uredi seznam po uporabnikovem vrstnem redu (znane najprej po rangu, ostale
+     ohranijo naravni vrstni red). */
+  const poVrstnemRedu = (list: Storitev[]) => {
+    if (!vrstniRed.length) return list;
+    const rank = new Map(vrstniRed.map((id, i) => [id, i] as const));
+    const znani = list.filter(s => rank.has(s.id)).sort((a, b) => rank.get(a.id)! - rank.get(b.id)!);
+    const ostali = list.filter(s => !rank.has(s.id));
+    return [...znani, ...ostali];
+  };
+  const premakniStoritev = (from: number, to: number) => {
+    const ids = poVrstnemRedu(vseStoritve).map(s => s.id);
+    if (from === to || from < 0 || to < 0 || from >= ids.length || to >= ids.length) return;
+    const [moved] = ids.splice(from, 1);
+    ids.splice(to, 0, moved);
+    setVrstniRed(ids);
+  };
 
   /* Osebni set v ospredju + preostale storitve (za "druge storitve"). */
   const mojSetStoritve = useMemo(() => {
@@ -1500,6 +1523,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .sg-motiv-ozn { display: block; margin-bottom: .4rem; font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
         .cw .sg-motiv p { margin: 0; font-size: 1.02rem; font-weight: 400; line-height: 1.6; color: var(--ink); }
         .cw .sg-motiv p b { font-weight: 700; }
+        .cw .cene-modal { max-width: 580px; }
+        .cw .cene-glava { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .5rem; }
+        .cw .cene-glava h2 { margin: 0; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.5rem, 4vw, 2.1rem); }
+        .cw .cene-seznam { display: flex; flex-direction: column; margin-bottom: 1.3rem; }
+        .cw .cene-vrsta { display: flex; align-items: center; gap: .55rem; padding: .35rem .3rem; border-radius: 8px; }
+        .cw .cene-vrsta:hover { background: rgba(17,17,17,.035); }
+        .cw .drag-rocaj { flex: none; display: inline-flex; cursor: grab; color: rgba(17,17,17,.4); }
+        .cw .drag-rocaj:active { cursor: grabbing; }
+        .cw .cv-ime { flex: 1; min-width: 0; font-size: .96rem; font-weight: 500; color: var(--ink); display: inline-flex; align-items: center; gap: .3rem; }
+        .cw .cene-vrsta input { width: 84px; flex: none; text-align: right; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: .96rem; border: none; border-bottom: 1px solid rgba(17,17,17,.2); background: transparent; padding: .3rem .2rem; color: var(--ink); }
+        .cw .cene-vrsta input:focus { outline: none; border-bottom: 1.5px solid var(--ink); }
+        .cw .cv-znak { flex: none; font-size: .9rem; color: rgba(17,17,17,.55); }
+        .cw .cene-dodaj { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; border-top: 1px solid rgba(17,17,17,.12); padding-top: 1.1rem; }
+        .cw .cene-dodaj input { border: none; border-bottom: 1px solid rgba(17,17,17,.25); background: transparent; padding: .35rem .2rem; font-family: inherit; font-size: .92rem; color: var(--ink); }
+        .cw .cene-dodaj input[type=text] { flex: 1; min-width: 140px; }
+        .cw .cene-dodaj input[type=number] { width: 80px; text-align: right; }
         .cw .onboarding { position: fixed; inset: 0; z-index: 60; background: var(--paper); overflow-y: auto; display: flex; flex-direction: column; animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
         @media (prefers-reduced-motion: reduce) { .cw .onboarding { animation: none; } }
         .cw .ob-naslov { padding-left: 0 !important; }
@@ -1857,6 +1896,47 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         </div>
       )}
 
+      {korak === 0 && kazemCene && (
+        <div className="soglasje" role="dialog" aria-modal="true" aria-label="Tvoje osnovne cene">
+          <div className="soglasje-kartica cene-modal">
+            <div className="cene-glava">
+              <h2>Tvoje osnovne cene</h2>
+              <button type="button" className="op-edit" onClick={() => setKazemCene(false)}>✕ Zapri</button>
+            </div>
+            <p className="ob-sub" style={{ marginBottom: '1.2rem' }}>Prilagodi cene in razporedi (povleci za ročaj). Vrstni red velja tudi na prvem koraku.</p>
+            <div className="cene-seznam">
+              {poVrstnemRedu(vseStoritve).map((s, i) => (
+                <div key={s.id} className="cene-vrsta" draggable
+                  onDragStart={() => { dragIndex.current = i; }}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={() => { if (dragIndex.current !== null) premakniStoritev(dragIndex.current, i); dragIndex.current = null; }}>
+                  <span className="drag-rocaj" aria-hidden><DotsSixVertical size={18} weight="bold" /></span>
+                  <span className="cv-ime">
+                    {s.ime}
+                    {s.id.startsWith('moja-') && (
+                      <button type="button" className="brisi" title={'Izbriši storitev ' + s.ime}
+                        onClick={() => izbrisiStoritev(s.id)}>×</button>
+                    )}
+                  </span>
+                  <input type="number" min={0} step={50} value={osnovaZa(s)} aria-label={'Osnovna cena: ' + s.ime}
+                    onChange={e => setOsnove({ ...osnove, [s.id]: Number(e.target.value) || 0 })} />
+                  <span className="cv-znak">{vfx.znak}</span>
+                </div>
+              ))}
+            </div>
+            <div className="cene-dodaj">
+              <input type="text" placeholder="Tvoja storitev (npr. tetovaža)" value={novaIme}
+                onChange={e => setNovaIme(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label="Ime nove storitve" />
+              <input type="number" min={0} step={50} placeholder="cena" value={novaCena}
+                onChange={e => setNovaCena(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label="Cena nove storitve" />
+              <button type="button" className="povezava" onClick={dodajStoritev}>+ dodaj</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="napredek" aria-hidden><i style={{ width: `${((korak + 1) / KORAKOV) * 100}%` }} /></div>
 
       <div className="a11y">
@@ -1915,51 +1995,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <div className="sub-vrsta">
               <p className="sub">{opisKoraka}</p>
               {korak === 0 && (
-                <button type="button" className="op-edit" onClick={() => setKazemCene(!kazemCene)} aria-expanded={kazemCene}>
-                  {kazemCene ? '✕ Zapri cene' : '✎ Nastavi svoje cene'}
+                <button type="button" className="op-edit" onClick={() => setKazemCene(true)} aria-expanded={kazemCene}>
+                  ✎ Nastavi svoje cene
                 </button>
               )}
             </div>
           )}
 
-          {korak === 0 && kazemCene && (
-            <div className="cene" style={{ marginBottom: '1.8rem' }}>
-              <div className="isk-glava" style={{ marginBottom: '.9rem', maxWidth: '460px' }}>
-                <span style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.16em', textTransform: 'uppercase', color: 'rgba(17,17,17,.7)' }}>
-                  Tvoje osnovne cene
-                </span>
-                <button type="button" className="op-edit" onClick={() => setKazemCene(false)}>✕ Zapri</button>
-              </div>
-              <div className="basegrid">
-                {vseStoritve.map(s => (
-                  <div key={s.id} style={{ display: 'contents' }}>
-                    <div>
-                      {s.ime}
-                      {s.id.startsWith('moja-') && (
-                        <button type="button" className="brisi" title={'Izbriši storitev ' + s.ime}
-                          onClick={() => izbrisiStoritev(s.id)}>×</button>
-                      )}
-                    </div>
-                    <input type="number" min={0} step={50} value={osnovaZa(s)} aria-label={'Osnovna cena: ' + s.ime}
-                      onChange={e => setOsnove({ ...osnove, [s.id]: Number(e.target.value) || 0 })} />
-                  </div>
-                ))}
-                <div style={{ display: 'contents' }}>
-                  <input type="text" placeholder="Tvoja storitev (npr. 3D vizualizacija)"
-                    value={novaIme} onChange={e => setNovaIme(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }}
-                    aria-label="Ime nove storitve" style={{ textAlign: 'left', fontFamily: 'inherit', fontSize: '.92rem' }} />
-                  <input type="number" min={0} step={50} placeholder="cena"
-                    value={novaCena} onChange={e => setNovaCena(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }}
-                    aria-label="Osnovna cena nove storitve" />
-                </div>
-              </div>
-              <button type="button" className="povezava" style={{ marginTop: '.9rem' }} onClick={dodajStoritev}>
-                + dodaj svojo storitev
-              </button>
-            </div>
-          )}
 
           {korak === 0 && (
             <>
@@ -1974,7 +2016,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 </div>
               )}
               <div className="opts">
-                {(mojSetStoritve ?? vseStoritve).map(s => (
+                {poVrstnemRedu(mojSetStoritve ?? vseStoritve).map(s => (
                   <button key={s.id} type="button"
                     className={'pill' + (izbrane.has(s.id) ? ' on' : '')}
                     onClick={() => preklopi(izbrane, s.id, setIzbrane)}>
@@ -1988,7 +2030,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <span>druge storitve<small>{drugeStoritve.length} več …</small></span>
                   </button>
                 )}
-                {mojSetStoritve && kazemDruge && drugeStoritve.map(s => (
+                {mojSetStoritve && kazemDruge && poVrstnemRedu(drugeStoritve).map(s => (
                   <button key={s.id} type="button"
                     className={'pill' + (izbrane.has(s.id) ? ' on' : '')}
                     onClick={() => preklopi(izbrane, s.id, setIzbrane)}>
