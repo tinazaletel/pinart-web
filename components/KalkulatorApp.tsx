@@ -750,6 +750,18 @@ type ShranjenaP = {
   rocnoBesedilo: boolean; besediloHtml: string;
 };
 
+/* Moja podjetja: vec identitet podjetja (ime/davcna/TRR/DDV/avans/urne
+   postavke), ce delas kot vec razlicnih podjetij ali za vec narocnikov
+   izstavljas pod razlicnimi imeni. Loceno od cenovnih profilov (ti so
+   samo cene storitev) in arhiva ponudb (te so posamezne stranke). */
+const K_PODJETJA = 'pinart-kalkulator-podjetja';
+type PodjetjeProfil = {
+  ponudnik: { ime: string; davcna: string; email: string; telefon: string; naslov: string; trr: string };
+  predklic: string;
+  ddvZavezanec: boolean; ddvStopnja: string; avansPct: string;
+  urnePostavke: { ime: string; cena: string }[];
+};
+
 /* Nevidni Cloudflare Turnstile zeton za anonimni POST cene — aktiven SELE, ce
    je vpisan NEXT_PUBLIC_TURNSTILE_SITE_KEY. Brez kljuca vrne undefined in
    posiljanje tece kot doslej (nic ne blokira med razvojem). Uporabnik ne
@@ -871,6 +883,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [osnove, setOsnove] = useState<Record<string, number>>({});
   const [profili, setProfili] = useState<Record<string, Profil>>({});
   const [arhiv, setArhiv] = useState<Record<string, ShranjenaP>>({});
+  const [podjetja, setPodjetja] = useState<Record<string, PodjetjeProfil>>({});
+  const [imePodjetja, setImePodjetja] = useState('');
   const [kopirano, setKopirano] = useState(false);
   const [kazemZajem, setKazemZajem] = useState<null | 'prenos' | 'profil'>(null);
   /* Postopni prikaz vprasanj (Tinina koreografija): naslov na sredini,
@@ -916,6 +930,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       if (s.ddvStopnja) setDdvStopnja(String(s.ddvStopnja));
       setProfili(JSON.parse(localStorage.getItem(K_PROFILI) || '{}'));
       setArhiv(JSON.parse(localStorage.getItem(K_ARHIV) || '{}'));
+      setPodjetja(JSON.parse(localStorage.getItem(K_PODJETJA) || '{}'));
       const l = JSON.parse(localStorage.getItem(K_LEAD) || 'null');
       if (l) { setLeadIme(l.ime || ''); setLeadEmail(l.email || ''); }
     } catch { /* prazno */ }
@@ -1657,6 +1672,29 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     try { localStorage.setItem(K_ARHIV, JSON.stringify(nov)); } catch { /* poln */ }
   };
 
+  /* ── moja podjetja: vec identitet podjetja (ime/davcna/DDV/urne postavke) ── */
+  const shraniPodjetje = () => {
+    const ime = imePodjetja.trim() || ponudnik.ime.trim() || 'Moje podjetje';
+    const zapis: PodjetjeProfil = { ponudnik, predklic, ddvZavezanec, ddvStopnja, avansPct, urnePostavke };
+    const nov = { ...podjetja, [ime]: zapis };
+    setPodjetja(nov);
+    try { localStorage.setItem(K_PODJETJA, JSON.stringify(nov)); } catch { /* poln */ }
+    setImePodjetja('');
+  };
+  const naloziPodjetje = (ime: string) => {
+    const p = podjetja[ime];
+    if (!p) return;
+    setPonudnik(p.ponudnik); setPredklic(p.predklic);
+    setDdvZavezanec(p.ddvZavezanec); setDdvStopnja(p.ddvStopnja); setAvansPct(p.avansPct);
+    setUrnePostavke(p.urnePostavke);
+  };
+  const izbrisiPodjetje = (ime: string) => {
+    const nov = { ...podjetja };
+    delete nov[ime];
+    setPodjetja(nov);
+    try { localStorage.setItem(K_PODJETJA, JSON.stringify(nov)); } catch { /* poln */ }
+  };
+
   /* ── carovnik: navigacija ─────────────────────────────────────────── */
   useEffect(() => {
     setKorak(k => Math.min(k, KORAKOV - 1));
@@ -1753,6 +1791,120 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
   /* Blok "dodaj postavko" (iskalnik + seznam) — za ponovno uporabo na koraku
      cene, da lahko dodas dodatek brez vracanja na prvi korak. */
+  /* Kontaktni podatki + davek/pogoji + urne postavke — uporabljeno na koraku
+     Tvoji podatki IN v profilnem panelu (Moje podjetje), da ju ni treba
+     podvajati. */
+  const podatkiUI = () => (
+    <>
+      <div className="kartica">
+        <div className="k-naslov">Kontaktni podatki <span className="vec">za glavo ponudbe</span></div>
+        <div className="numgrid">
+          <div className="polje">
+            <label htmlFor="cw-pime">Ime / podjetje</label>
+            <input id="cw-pime" type="text" placeholder="Pinart, Tina Zaletel"
+              value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })} />
+          </div>
+          <div className="polje">
+            <label htmlFor="cw-pdavcna">Davčna številka</label>
+            <input id="cw-pdavcna" type="text" placeholder="SI12345678"
+              value={ponudnik.davcna} onChange={e => setPonudnik({ ...ponudnik, davcna: e.target.value })} />
+          </div>
+        </div>
+        <div className="numgrid">
+          <div className="polje">
+            <label htmlFor="cw-pemail">Email</label>
+            <input id="cw-pemail" type="email" placeholder="tina@pinart.si"
+              value={ponudnik.email} onChange={e => setPonudnik({ ...ponudnik, email: e.target.value })} />
+          </div>
+          <div className="polje">
+            <label htmlFor="cw-ptelefon">Telefon</label>
+            <div className="tel-vrsta">
+              <select aria-label="Klicna koda države" value={predklic}
+                onChange={e => setPredklic(e.target.value)}>
+                {['+386', '+385', '+43', '+49', '+39', '+44', '+33', '+1', '+971', '+20'].map(k => (
+                  <option key={k} value={k}>{k}</option>
+                ))}
+              </select>
+              <input id="cw-ptelefon" type="tel" placeholder="41 373 730"
+                value={ponudnik.telefon} onChange={e => setPonudnik({ ...ponudnik, telefon: e.target.value })} />
+            </div>
+          </div>
+        </div>
+        <div className="numgrid">
+          <div className="polje">
+            <label htmlFor="cw-pnaslov">Naslov</label>
+            <input id="cw-pnaslov" type="text" placeholder="Ulica 1, 1000 Ljubljana"
+              value={ponudnik.naslov} onChange={e => setPonudnik({ ...ponudnik, naslov: e.target.value })} />
+          </div>
+          <div className="polje">
+            <label htmlFor="cw-ptrr">TRR (bančni račun)</label>
+            <input id="cw-ptrr" type="text" placeholder="SI56 1010 0005 1359 749"
+              value={ponudnik.trr} onChange={e => setPonudnik({ ...ponudnik, trr: e.target.value })} />
+          </div>
+        </div>
+      </div>
+
+      <div className="kartica">
+        <div className="k-naslov">Davek in pogoji</div>
+        <div className="numgrid">
+          <div className="polje">
+            <label htmlFor="cw-ddv">DDV</label>
+            <select id="cw-ddv" value={ddvZavezanec ? 'da' : 'ne'}
+              onChange={e => setDdvZavezanec(e.target.value === 'da')}>
+              <option value="ne">Nisem zavezanec (94. člen ZDDV-1)</option>
+              <option value="da">Sem zavezanec za DDV</option>
+            </select>
+          </div>
+          {ddvZavezanec && (
+            <div className="polje">
+              <label htmlFor="cw-ddvst">Stopnja DDV (%)</label>
+              <input id="cw-ddvst" type="number" min={0} max={30} step={0.5}
+                value={ddvStopnja} onChange={e => setDdvStopnja(e.target.value)} />
+            </div>
+          )}
+        </div>
+        <div className="numgrid">
+          <div className="polje">
+            <label htmlFor="cw-avans">Avans ob potrditvi (%)</label>
+            <input id="cw-avans" type="number" min={10} max={100} step={5}
+              value={avansPct} onChange={e => setAvansPct(e.target.value)} />
+          </div>
+        </div>
+      </div>
+
+      <div className="kartica">
+        <div className="k-naslov">Urne postavke za dodatna dela <span className="vec">v pogojih ponudbe</span></div>
+        {urnePostavke.map((u, i) => (
+          <div className="numgrid" key={i}>
+            <div className="polje">
+              <label htmlFor={`cw-ura-ime-${i}`}>Za kaj</label>
+              <input id={`cw-ura-ime-${i}`} type="text" placeholder="npr. oblikovanje, IT / razvoj, art direkcija"
+                value={u.ime}
+                onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, ime: e.target.value } : x))} />
+            </div>
+            <div className="polje">
+              <label htmlFor={`cw-ura-${i}`}>Znesek ({vfx.znak}/uro)</label>
+              <div style={{ display: 'flex', gap: '.55rem', alignItems: 'center' }}>
+                <input id={`cw-ura-${i}`} type="number" min={0} step={5} placeholder="50" style={{ flex: 1 }}
+                  value={u.cena}
+                  onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, cena: e.target.value } : x))} />
+                {urnePostavke.length > 1 && (
+                  <button type="button" aria-label={`Odstrani urno postavko ${u.ime || i + 1}`}
+                    onClick={() => setUrnePostavke(urnePostavke.filter((_, j) => j !== i))}
+                    style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.25rem', color: 'var(--ink)', padding: '.2rem .4rem' }}>×</button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+        <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
+          onClick={() => setUrnePostavke([...urnePostavke, { ime: '', cena: '' }])}>
+          + Dodaj urno postavko
+        </button>
+      </div>
+    </>
+  );
+
   const dodajPostavkoUI = (naslov: string) => (
     <div style={{ marginTop: '1.7rem' }}>
       <div className="skupina-naslov">{naslov}</div>
@@ -1879,6 +2031,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .glava-desno { pointer-events: auto; display: inline-flex; align-items: center; gap: .5rem; }
         .cw .glava-profil { display: inline-flex; align-items: center; gap: .4rem; font-family: inherit; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); background: var(--paper); border: none; border-radius: 999px; padding: .5rem .85rem; cursor: pointer; transition: color .18s ease; }
         .cw .glava-profil:hover { color: var(--ink); }
+        .cw .profil-zastor { position: fixed; inset: 0; z-index: 60; background: rgba(17,17,17,.28); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+        .cw .profil-predal { position: fixed; top: 0; right: 0; bottom: 0; z-index: 61; width: min(440px, 100vw); background: var(--paper); box-shadow: -12px 0 40px rgba(17,17,17,.14); overflow-y: auto; padding: clamp(1.6rem, 4vw, 2.4rem); animation: cwPredalIn .32s cubic-bezier(0.23,1,0.32,1) both; }
+        @keyframes cwPredalIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        @media (prefers-reduced-motion: reduce) { .cw .profil-predal { animation: none; } }
+        .cw .profil-predal .kartica { max-width: none; }
+        .cw .profil-predal .numgrid { grid-template-columns: 1fr; gap: 1.2rem; max-width: none; }
+        .cw .podjetja-shrani { display: flex; gap: .7rem; align-items: center; flex-wrap: wrap; margin-top: 1.1rem; }
+        .cw .podjetja-shrani input { flex: 1; min-width: 180px; border: none; border-bottom: 1px solid rgba(17,17,17,.25); background: transparent; padding: .5rem .2rem; font-family: inherit; font-size: .9rem; color: var(--ink); }
+        .cw .podjetja-shrani input:focus { outline: none; border-bottom: 1.5px solid var(--ink); }
         .cw .profil-sekcija { margin-bottom: 1.8rem; padding-bottom: 1.6rem; border-bottom: 1px solid rgba(17,17,17,.12); }
         .cw .profil-sekcija:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .cw .profil-sekcija .k-naslov { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem 1rem; margin-bottom: 1rem; font-weight: 600; font-size: 1.05rem; color: var(--ink); }
@@ -2334,8 +2495,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       </div>
 
       {kazemProfil && (
-        <div className="soglasje" role="dialog" aria-modal="true" aria-label="Profil">
-          <div className="soglasje-kartica cene-modal">
+        <>
+          <div className="profil-zastor" onClick={() => setKazemProfil(false)} aria-hidden />
+          <div className="profil-predal" role="dialog" aria-modal="true" aria-label="Profil">
             <div className="cene-glava">
               <h2>Profil</h2>
               <button type="button" className="op-edit" onClick={() => setKazemProfil(false)}>✕ Zapri</button>
@@ -2364,9 +2526,36 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
             <div className="profil-sekcija">
               <div className="k-naslov">
+                <Buildings size={17} weight="bold" style={{ marginRight: '.4rem', verticalAlign: '-3px' }} />
+                Moje podjetje
+                <span className="vec">podatki v glavi ponudbe — urejaš tukaj</span>
+              </div>
+              {podatkiUI()}
+              <div className="podjetja-shrani">
+                <input type="text" placeholder="Ime za shranjeno podjetje (npr. Pinart, Moj s.p. …)"
+                  value={imePodjetja} onChange={e => setImePodjetja(e.target.value)}
+                  aria-label="Ime za shranjeno podjetje" />
+                <button type="button" className="dodaj-gumb" onClick={shraniPodjetje}>+ Shrani kot podjetje</button>
+              </div>
+              {Object.keys(podjetja).length > 0 && (
+                <div className="profil-seznam" style={{ marginTop: '.9rem' }}>
+                  <p className="ob-sub" style={{ margin: '0 0 .5rem' }}>Delaš za več podjetij? Preklopi med shranjenimi:</p>
+                  {Object.keys(podjetja).map(ime => (
+                    <div key={ime} className="profil-vrsta">
+                      <span className="pv-ime">{ime}</span>
+                      <button type="button" className="povezava" onClick={() => naloziPodjetje(ime)}>↺ Preklopi</button>
+                      <button type="button" className="brisi" title={'Izbriši ' + ime} onClick={() => izbrisiPodjetje(ime)}>×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="profil-sekcija">
+              <div className="k-naslov">
                 <Gear size={17} weight="bold" style={{ marginRight: '.4rem', verticalAlign: '-3px' }} />
                 Cenovni profili
-                <span className="vec">shranjeni kompleti cen (redko — le če jih rabiš več)</span>
+                <span className="vec">shranjeni kompleti cen storitev (redko — le če jih rabiš več)</span>
               </div>
               {Object.keys(profili).length === 0 ? (
                 <p className="ob-sub" style={{ margin: 0 }}>Nimaš shranjenih dodatnih kompletov cen. To so tvoje osnovne cene v »⚙ Nastavitve in cene«.</p>
@@ -2383,7 +2572,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               )}
             </div>
           </div>
-        </div>
+        </>
       )}
 
       <div className="oder">
@@ -2889,116 +3078,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <p className="sub">Najprej izberi vsaj eno storitev v prvem koraku.</p>
           )}
 
-          {korak === podatkiStep && (
-            <>
-              <div className="kartica">
-                <div className="k-naslov">Kontaktni podatki <span className="vec">za glavo ponudbe</span></div>
-                <div className="numgrid">
-                  <div className="polje">
-                    <label htmlFor="cw-pime">Ime / podjetje</label>
-                    <input id="cw-pime" type="text" placeholder="Pinart, Tina Zaletel"
-                      value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })} />
-                  </div>
-                  <div className="polje">
-                    <label htmlFor="cw-pdavcna">Davčna številka</label>
-                    <input id="cw-pdavcna" type="text" placeholder="SI12345678"
-                      value={ponudnik.davcna} onChange={e => setPonudnik({ ...ponudnik, davcna: e.target.value })} />
-                  </div>
-                </div>
-                <div className="numgrid">
-                  <div className="polje">
-                    <label htmlFor="cw-pemail">Email</label>
-                    <input id="cw-pemail" type="email" placeholder="tina@pinart.si"
-                      value={ponudnik.email} onChange={e => setPonudnik({ ...ponudnik, email: e.target.value })} />
-                  </div>
-                  <div className="polje">
-                    <label htmlFor="cw-ptelefon">Telefon</label>
-                    <div className="tel-vrsta">
-                      <select aria-label="Klicna koda države" value={predklic}
-                        onChange={e => setPredklic(e.target.value)}>
-                        {['+386', '+385', '+43', '+49', '+39', '+44', '+33', '+1', '+971', '+20'].map(k => (
-                          <option key={k} value={k}>{k}</option>
-                        ))}
-                      </select>
-                      <input id="cw-ptelefon" type="tel" placeholder="41 373 730"
-                        value={ponudnik.telefon} onChange={e => setPonudnik({ ...ponudnik, telefon: e.target.value })} />
-                    </div>
-                  </div>
-                </div>
-                <div className="numgrid">
-                  <div className="polje">
-                    <label htmlFor="cw-pnaslov">Naslov</label>
-                    <input id="cw-pnaslov" type="text" placeholder="Ulica 1, 1000 Ljubljana"
-                      value={ponudnik.naslov} onChange={e => setPonudnik({ ...ponudnik, naslov: e.target.value })} />
-                  </div>
-                  <div className="polje">
-                    <label htmlFor="cw-ptrr">TRR (bančni račun)</label>
-                    <input id="cw-ptrr" type="text" placeholder="SI56 1010 0005 1359 749"
-                      value={ponudnik.trr} onChange={e => setPonudnik({ ...ponudnik, trr: e.target.value })} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="kartica">
-                <div className="k-naslov">Davek in pogoji</div>
-                <div className="numgrid">
-                  <div className="polje">
-                    <label htmlFor="cw-ddv">DDV</label>
-                    <select id="cw-ddv" value={ddvZavezanec ? 'da' : 'ne'}
-                      onChange={e => setDdvZavezanec(e.target.value === 'da')}>
-                      <option value="ne">Nisem zavezanec (94. člen ZDDV-1)</option>
-                      <option value="da">Sem zavezanec za DDV</option>
-                    </select>
-                  </div>
-                  {ddvZavezanec && (
-                    <div className="polje">
-                      <label htmlFor="cw-ddvst">Stopnja DDV (%)</label>
-                      <input id="cw-ddvst" type="number" min={0} max={30} step={0.5}
-                        value={ddvStopnja} onChange={e => setDdvStopnja(e.target.value)} />
-                    </div>
-                  )}
-                </div>
-                <div className="numgrid">
-                  <div className="polje">
-                    <label htmlFor="cw-avans">Avans ob potrditvi (%)</label>
-                    <input id="cw-avans" type="number" min={10} max={100} step={5}
-                      value={avansPct} onChange={e => setAvansPct(e.target.value)} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="kartica">
-                <div className="k-naslov">Urne postavke za dodatna dela <span className="vec">v pogojih ponudbe</span></div>
-                {urnePostavke.map((u, i) => (
-                  <div className="numgrid" key={i}>
-                    <div className="polje">
-                      <label htmlFor={`cw-ura-ime-${i}`}>Za kaj</label>
-                      <input id={`cw-ura-ime-${i}`} type="text" placeholder="npr. oblikovanje, IT / razvoj, art direkcija"
-                        value={u.ime}
-                        onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, ime: e.target.value } : x))} />
-                    </div>
-                    <div className="polje">
-                      <label htmlFor={`cw-ura-${i}`}>Znesek ({vfx.znak}/uro)</label>
-                      <div style={{ display: 'flex', gap: '.55rem', alignItems: 'center' }}>
-                        <input id={`cw-ura-${i}`} type="number" min={0} step={5} placeholder="50" style={{ flex: 1 }}
-                          value={u.cena}
-                          onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, cena: e.target.value } : x))} />
-                        {urnePostavke.length > 1 && (
-                          <button type="button" aria-label={`Odstrani urno postavko ${u.ime || i + 1}`}
-                            onClick={() => setUrnePostavke(urnePostavke.filter((_, j) => j !== i))}
-                            style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.25rem', color: 'var(--ink)', padding: '.2rem .4rem' }}>×</button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
-                  onClick={() => setUrnePostavke([...urnePostavke, { ime: '', cena: '' }])}>
-                  + Dodaj urno postavko
-                </button>
-              </div>
-            </>
-          )}
+          {korak === podatkiStep && podatkiUI()}
 
           {korak === ponudbaStep && (
             <>
