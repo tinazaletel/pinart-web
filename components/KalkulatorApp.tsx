@@ -1639,7 +1639,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </div>
               <div className="sg-blok">
                 <h3 className="sg-h">Vedno anonimno</h3>
-                <p className="sg-t">Ob prikazu izračuna anonimno zabeležimo le izbrane kategorije in zneske — <b>brez imena, e-naslova ali IP</b>, nikoli povezano s teboj.</p>
+                <p className="sg-t">Ob prikazu izračuna anonimno zabeležimo le izbrane kategorije in zneske — <b>brez imena, e-naslova ali IP-naslova</b>, nikoli povezano s teboj.</p>
               </div>
             </div>
             <div className="sg-motiv">
