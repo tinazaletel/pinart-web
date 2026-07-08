@@ -9,6 +9,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, UserCircle, ClockCounterClockwise, Wallet,
+  CaretDown, Check,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -1140,6 +1141,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [leadEmail, setLeadEmail] = useState('');
   const [zeliEmail, setZeliEmail] = useState(false);
   const [kazemDostopnost, setKazemDostopnost] = useState(false);
+  /* Valuta ima 16 opcij — na mobilnem je nativen <select> (dolg spustni
+     seznam) neroden, zato custom izbirnik: gumb + list od spodaj navzgor
+     (isti vzorec deluje na desktopu kot centriran modal). */
+  const [kazemValutaIzbira, setKazemValutaIzbira] = useState(false);
   /* Poljubna drzava (prikazni label poleg 6 sirsih regij, ki ostajajo
      edine z dejanskim cenovnim mnozitelijem). */
   const [custDrzavaMoj, setCustDrzavaMoj] = useState('');
@@ -2526,6 +2531,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .tel-vrsta select { width: 6.2rem; flex: none; }
         .cw .polje select:focus { outline: none; border-bottom: 2px solid var(--ink); margin-bottom: -1px; }
 
+        .cw .izbirnik-gumb { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: .6rem; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .35rem 0 .5rem; color: var(--ink); border-radius: 0; cursor: pointer; text-align: left; }
+        .cw .izbirnik-gumb:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+        .cw .izbirnik-gumb svg { flex: none; opacity: .6; }
+        .cw .izbirnik-zastor { position: fixed; inset: 0; z-index: 65; background: rgba(245,242,234,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+        .cw .izbirnik-plosca { width: 100%; max-width: 420px; max-height: min(32rem, 80dvh); display: flex; flex-direction: column; background: var(--paper); border: 1px solid rgba(17,17,17,.18); border-radius: 18px; box-shadow: 0 24px 80px rgba(17,17,17,.14); overflow: hidden; animation: cwVstop .3s cubic-bezier(.16,1,.3,1) both; }
+        .cw .izbirnik-glava { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.2rem 1.4rem; border-bottom: 1px solid rgba(17,17,17,.1); font-weight: 600; font-size: .95rem; color: var(--ink); flex: none; }
+        .cw .izbirnik-glava button { border: none; background: none; cursor: pointer; font-size: 1.05rem; color: rgba(17,17,17,.6); padding: .2rem; line-height: 1; }
+        .cw .izbirnik-glava button:hover { color: var(--ink); }
+        .cw .izbirnik-seznam { overflow-y: auto; padding: .5rem; }
+        .cw .izbirnik-vrsta { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem; border: none; background: none; border-radius: 10px; padding: .8rem .9rem; font-family: inherit; font-size: .96rem; font-weight: 500; color: var(--ink); cursor: pointer; text-align: left; transition: background .15s ease; }
+        .cw .izbirnik-vrsta:hover { background: rgba(17,17,17,.05); }
+        .cw .izbirnik-vrsta.on { color: var(--accent); font-weight: 600; }
+        .cw .izbirnik-vrsta svg { flex: none; color: var(--accent); }
+        @media (max-width: 560px) {
+          .cw .izbirnik-zastor { align-items: flex-end; padding: 0; }
+          .cw .izbirnik-plosca { max-width: none; max-height: 75dvh; border-radius: 20px 20px 0 0; border-width: 1px 0 0; animation: cwListIn .32s cubic-bezier(.16,1,.3,1) both; padding-bottom: env(safe-area-inset-bottom); }
+        }
+        @keyframes cwListIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
         .cw .hint { font-size: .8rem; color: rgba(17,17,17,.68); margin-top: 1.2rem; line-height: 1.65; max-width: 60ch; }
         .cw .hint a { color: var(--ink); }
 
@@ -3508,12 +3532,34 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <div className="kartica">
                 <div className="polje">
                   <label htmlFor="cw-valuta">Valuta ponudbe</label>
-                  <select id="cw-valuta" value={valuta}
-                    onChange={e => { setValuta(e.target.value); setValutaRocna(true); }}>
-                    {VALUTE.map(v => <option key={v.id} value={v.id}>{v.ime}</option>)}
-                  </select>
+                  <button type="button" id="cw-valuta" className="izbirnik-gumb"
+                    onClick={() => setKazemValutaIzbira(true)}>
+                    {vfx.ime}
+                    <CaretDown size={15} weight="bold" aria-hidden />
+                  </button>
                 </div>
               </div>
+              {kazemValutaIzbira && (
+                <div className="izbirnik-zastor" onClick={() => setKazemValutaIzbira(false)}>
+                  <div className="izbirnik-plosca" role="dialog" aria-modal="true" aria-label="Izberi valuto"
+                    onClick={e => e.stopPropagation()}>
+                    <div className="izbirnik-glava">
+                      <span>Valuta ponudbe</span>
+                      <button type="button" onClick={() => setKazemValutaIzbira(false)} aria-label="Zapri">✕</button>
+                    </div>
+                    <div className="izbirnik-seznam">
+                      {VALUTE.map(v => (
+                        <button key={v.id} type="button"
+                          className={'izbirnik-vrsta' + (v.id === valuta ? ' on' : '')}
+                          onClick={() => { setValuta(v.id); setValutaRocna(true); setKazemValutaIzbira(false); }}>
+                          {v.ime}
+                          {v.id === valuta && <Check size={16} weight="bold" aria-hidden />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
 
