@@ -1,0 +1,57 @@
+'use client';
+
+import { useState } from 'react';
+
+export default function AdminLogin() {
+  const [geslo, setGeslo] = useState('');
+  const [napaka, setNapaka] = useState(false);
+  const [nalaganje, setNalaganje] = useState(false);
+
+  const prijava = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setNalaganje(true);
+    setNapaka(false);
+    const res = await fetch('/api/kalkulator-admin/prijava', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ geslo }),
+    });
+    if (res.ok) {
+      window.location.reload();
+    } else {
+      setNapaka(true);
+      setNalaganje(false);
+    }
+  };
+
+  return (
+    <main style={{
+      minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: '#F5F2EA', fontFamily: 'system-ui, sans-serif', padding: '1.5rem',
+    }}>
+      <form onSubmit={prijava} style={{
+        background: '#fff', padding: '2.5rem', borderRadius: 16,
+        boxShadow: '0 4px 18px rgba(17,17,17,.08)', width: 320, maxWidth: '100%',
+      }}>
+        <h1 style={{ fontSize: '1.1rem', marginBottom: '1.2rem', color: '#111' }}>Admin — Kalkulator cene</h1>
+        <input
+          type="password" autoFocus value={geslo} onChange={e => setGeslo(e.target.value)}
+          placeholder="Geslo"
+          style={{
+            width: '100%', boxSizing: 'border-box', padding: '.7rem .9rem', borderRadius: 8,
+            border: '1px solid rgba(17,17,17,.25)', marginBottom: '.9rem', fontSize: '1rem',
+            fontFamily: 'inherit',
+          }}
+        />
+        {napaka && <p style={{ color: '#b25476', fontSize: '.85rem', margin: '0 0 .9rem' }}>Napačno geslo.</p>}
+        <button type="submit" disabled={nalaganje} style={{
+          width: '100%', padding: '.75rem', borderRadius: 8, border: 'none',
+          background: '#111', color: '#fff', fontWeight: 600, fontSize: '.95rem',
+          cursor: nalaganje ? 'default' : 'pointer', opacity: nalaganje ? .6 : 1,
+        }}>
+          {nalaganje ? 'Preverjam ...' : 'Prijava'}
+        </button>
+      </form>
+    </main>
+  );
+}
