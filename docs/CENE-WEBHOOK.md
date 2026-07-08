@@ -10,7 +10,10 @@ Dokler webhook ni nastavljen, se nic ne poslje in nic ne pokvari.
 
 Nov Sheet (npr. "Pinart kalkulator — cene"), v prvo vrstico daj glave:
 
-    submittedAt | storitve | izkusnje | mojTrg | trgNarocnika | raba | izvedbaEUR | praviceEUR | valuta
+    submittedAt | storitve | izkusnje | mojTrg | trgNarocnika | raba | izvedbaEUR | praviceEUR | valuta | prilagojeno
+
+(`prilagojeno` = ali je uporabnik cene rocno prilagodil (da) ali so privzete (ne)
+ — pri branju daj vecjo tezo vrsticam z "da", so bolj realen signal.)
 
 ## 2. Apps Script webhook
 
@@ -21,7 +24,7 @@ function doPost(e) {
   var d = JSON.parse(e.postData.contents);
   SpreadsheetApp.getActiveSpreadsheet().getSheets()[0].appendRow([
     d.submittedAt, d.storitve, d.izkusnje, d.mojTrg,
-    d.trgNarocnika, d.raba, d.izvedbaEUR, d.praviceEUR, d.valuta,
+    d.trgNarocnika, d.raba, d.izvedbaEUR, d.praviceEUR, d.valuta, d.prilagojeno,
   ]);
   return ContentService.createTextOutput('ok');
 }
@@ -35,6 +38,24 @@ Who has access: **Anyone** → Deploy → kopiraj URL (konca se z /exec).
 vercel.com → pinart-web → Settings → Environment Variables:
 
     GOOGLE_SHEETS_CENE_WEBHOOK_URL = <prilepljen URL>
+
+## 3a. Bot-zascita (Turnstile, priporoceno pred javnim zagonom)
+
+Nevidno preverjanje, ki ustavi surove POST-bote (brez kvadratka za uporabnika).
+Aktivira se sele, ko sta vpisana kljuca — do takrat nic ne blokira.
+
+1. cloudflare.com (brezplacen racun) → Turnstile → Add site → domena pinart.si →
+   nacin **Managed** (ali Invisible). Dobis **Site Key** in **Secret Key**.
+2. Vercel env:
+
+       NEXT_PUBLIC_TURNSTILE_SITE_KEY = <Site Key>
+       TURNSTILE_SECRET_KEY           = <Secret Key>
+
+3. Redeploy. Od zdaj mora vsak zapis cez nevidno preverjanje; brez veljavnega
+   zetona strezik vrne 403 in zapis ne pride v bazo.
+
+Poleg tega strezik ze zdaj zavrne nemogoce zneske (izvedba pod 20 € ali nad
+300.000 €) — absurdi ne pridejo v bazo, ne glede na Turnstile.
 
 Redeploy. Konec.
 
