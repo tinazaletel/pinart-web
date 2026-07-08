@@ -2028,6 +2028,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .sg-motiv p b { font-weight: 700; }
         .cw .cene-modal { max-width: 580px; }
         .cw .cene-glava { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .5rem; }
+        .cw .profil-glava { display: flex; flex-direction: column; margin-bottom: 1.1rem; }
+        .cw .profil-glava-zapri { display: flex; justify-content: flex-end; margin-bottom: .9rem; }
+        .cw .profil-glava-naslov { display: flex; align-items: center; gap: .6rem; margin: 0; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.5rem, 4vw, 2.1rem); }
         .cw .cene-glava h2 { display: flex; align-items: center; gap: .6rem; margin: 0; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.5rem, 4vw, 2.1rem); }
         .cw .profil-nazaj { flex: none; width: 2.1rem; height: 2.1rem; border-radius: 999px; border: 1px solid var(--ink); background: transparent; color: var(--ink); font-size: 1rem; font-family: inherit; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .18s ease, color .18s ease; }
         .cw .profil-nazaj:hover { background: var(--ink); color: var(--paper); }
@@ -2559,8 +2562,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         <>
           <div className="profil-zastor" onClick={() => { setKazemProfil(false); setProfilPogled('meni'); }} aria-hidden />
           <div className="profil-predal" role="dialog" aria-modal="true" aria-label="Profil">
-            <div className="cene-glava">
-              <h2>
+            <div className="profil-glava">
+              <div className="profil-glava-zapri">
+                <button type="button" className="op-edit" onClick={() => { setKazemProfil(false); setProfilPogled('meni'); }}>✕ Zapri</button>
+              </div>
+              <h2 className="profil-glava-naslov">
                 {profilPogled !== 'meni' && (
                   <button type="button" className="profil-nazaj"
                     onClick={() => profilPogled === 'podjetje-urejanje' ? zapriUrejanjePodjetja() : setProfilPogled('meni')}
@@ -2574,7 +2580,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                           : profilPogled === 'obvestila' ? 'Obveščanja'
                             : 'Pomoč in kontakt'}
               </h2>
-              <button type="button" className="op-edit" onClick={() => { setKazemProfil(false); setProfilPogled('meni'); }}>✕ Zapri</button>
             </div>
 
             {profilPogled === 'meni' && (

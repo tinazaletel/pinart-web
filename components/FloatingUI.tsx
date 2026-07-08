@@ -205,6 +205,7 @@ export default function FloatingUI() {
       {talkOpen && (
         <div
           role="presentation"
+          className="talk-overlay"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) setTalkOpen(false);
           }}
