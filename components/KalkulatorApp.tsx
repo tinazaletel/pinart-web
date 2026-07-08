@@ -1346,6 +1346,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .soglasje-kartica h2 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 4.5vw, 2.4rem); line-height: 1.05; margin: 0 0 1.1rem; }
         .cw .soglasje-kartica ul { margin: 0 0 1.8rem; padding-left: 0; list-style: none; }
         .cw .soglasje-kartica li { font-size: 1.02rem; font-weight: 400; line-height: 1.65; color: var(--ink); margin-bottom: .8rem; }
+        .cw .soglasje-tocke { margin: 0 0 1.7rem; }
+        .cw .sg-blok { padding: 1.05rem 0; border-top: 1px solid rgba(17,17,17,.14); }
+        .cw .sg-blok:first-child { border-top: none; padding-top: .3rem; }
+        .cw .sg-h { margin: 0 0 .4rem; font-size: .76rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+        .cw .sg-t { margin: 0; font-size: 1rem; font-weight: 400; line-height: 1.62; color: rgba(17,17,17,.84); }
         .cw .soglasje-email { border-top: 1px solid rgba(17,17,17,.14); padding-top: 1.3rem; margin-bottom: 1.7rem; }
         .cw .se-preklop { display: flex; align-items: center; justify-content: space-between; gap: 1.1rem; cursor: pointer; font-size: .98rem; font-weight: 500; color: var(--ink); line-height: 1.5; }
         .cw .se-toggle { position: relative; flex: none; width: 2.6rem; height: 1.5rem; }
@@ -1612,11 +1617,20 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         <div className="soglasje" role="dialog" aria-modal="true" aria-label="Pogoji uporabe">
           <div className="soglasje-kartica">
             <h2>Samo troje, preden začneš</h2>
-            <ul>
-              <li>Priporočene cene so pametno izhodišče, ne uradni cenik: nastale so iz izkušenj, tržno bazo pa šele gradimo. Svobodno jih prilagodi — končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.</li>
-              <li>Tvoje cene, postavke in podatki ostanejo shranjeni samo v tvojem brskalniku.</li>
-              <li>Ob prikazu izračuna <b>anonimno</b> zabeležimo izbrane kategorije in zneske — <b>brez imena, e-naslova ali IP, nikoli povezano s teboj</b>. S tem skupaj gradimo prvo statistiko cen za kreativce: ko bo baza dovolj velika, boš videl, koliko kolegi s podobnimi izkušnjami dejansko računajo. Nihče drug tega podatka danes nima.</li>
-            </ul>
+            <div className="soglasje-tocke">
+              <div className="sg-blok">
+                <h3 className="sg-h">Priporočene cene</h3>
+                <p className="sg-t">So pametno izhodišče, ne uradni cenik — nastale so iz izkušenj, tržno bazo pa šele gradimo. Svobodno jih prilagodi; končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.</p>
+              </div>
+              <div className="sg-blok">
+                <h3 className="sg-h">Shranjeno pri tebi</h3>
+                <p className="sg-t">Tvoje cene, postavke in podatki ostanejo shranjeni samo v tvojem brskalniku — pri nas se nič ne shrani.</p>
+              </div>
+              <div className="sg-blok">
+                <h3 className="sg-h">Vedno anonimno</h3>
+                <p className="sg-t">Ob prikazu izračuna anonimno zabeležimo izbrane kategorije in zneske — brez imena, e-naslova ali IP, nikoli povezano s teboj. Skupaj gradimo prvo statistiko cen za kreativce: ko bo baza dovolj velika, boš videl, koliko kolegi s podobnimi izkušnjami dejansko računajo.</p>
+              </div>
+            </div>
             <div className="soglasje-email">
               <label className="se-preklop">
                 <span>Obveščajte me o orodju in nasvetih za kreativce <em>(neobvezno)</em></span>
