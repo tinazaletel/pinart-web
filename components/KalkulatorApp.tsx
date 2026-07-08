@@ -169,6 +169,7 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
   ],
   ilustracija: [
     { id: 'stil', label: 'Kakšen slog ilustracije želiš?', izbire: ['Editorial', 'Otroško', 'Luksuzno', 'Tehnično', '3D', 'Ročno risano'], vec: true, svoje: 'ali opiši ...' },
+    { id: 'tehnika', label: 'Kakšna tehnika?', izbire: ['Ročno (akvarel, tempera, akril, kreda ...)', 'Računalniška grafika (vektor, digital painting ...)'], svoje: 'ali natančneje opiši tehniko in format ...' },
     { id: 'kolicina', label: 'Koliko ilustracij ali likov?', izbire: ['1 do 3', '4 do 8', '9 ali več'], svoje: 'ali vpiši ...' },
     { id: 'barvnost', label: 'Črtne ali barvne?', izbire: ['Črtne', 'Barvne', 'Oboje'] },
     { id: 'pravice', label: 'Kje in koliko časa se bodo uporabljale?', izbire: ['Ena objava / kampanja', 'Splet neomejeno', 'Vsi mediji neomejeno'], svoje: 'ali opiši ...' },
