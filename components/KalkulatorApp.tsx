@@ -2298,6 +2298,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         onClick={() => setUrnePostavke([...urnePostavke, { ime: '', cena: '' }])}>
         + Dodaj urno postavko
       </button>
+      <p className="hint" style={{ marginTop: '.9rem' }}>
+        Napredno: dodaš lahko več postavk — ločena cena za vsakega izvajalca ali tehniko (npr. za agencije, ročna ilustracija drugače kot vektorska).
+      </p>
     </div>
   );
 
@@ -3075,6 +3078,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             {profilPogled === 'podjetje-urejanje' && (
               <>
                 {podatkiUI()}
+                {urnePostavkeUI()}
                 <button type="button" className="profil-nevarno" style={{ marginTop: '1rem' }}
                   onClick={() => aktivnoPodjetje && izbrisiPodjetje(aktivnoPodjetje)}>
                   Izbriši to podjetje
@@ -3799,7 +3803,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       </button>
                     </>
                   ) : (
-                    <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
+                    <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem', marginRight: '.8rem' }}
                       onClick={() => setPrilagajanjePravic(true)}>
                       + Prilagodi znesek pravic
                     </button>
@@ -3809,6 +3813,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       <label htmlFor="cw-izjeme-pravic">Napredno: izjeme po storitvi <span className="vec">neobvezno</span></label>
                       <input id="cw-izjeme-pravic" type="text" placeholder="npr. Ilustracije: neizključni prenos"
                         value={izjemePravice} onChange={e => setIzjemePravice(e.target.value)} />
+                      <button type="button" className="povezava" style={{ marginTop: '.9rem' }}
+                        onClick={() => { setIzjemePravice(''); setPrikaziIzjemePravic(false); }}>
+                        <CaretUp size={14} weight="bold" aria-hidden /> Skrij izjeme
+                      </button>
                     </div>
                   ) : izbrane.size > 1 ? (
                     <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
