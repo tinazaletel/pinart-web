@@ -7,6 +7,8 @@ import {
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
   CopySimple, DownloadSimple, FileText, FloppyDisk, PaintBucket,
   PersonSimple, TextAa, TextB, UploadSimple, CalendarBlank, EnvelopeSimple,
+  House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
+  ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -33,18 +35,34 @@ const STORITVE: Storitev[] = [
   { id: 'direkcija',   ime: 'Kreativna direkcija',          osnova: 700  },
   { id: 'fotografija', ime: 'Fotografiranje',               osnova: 500  },
   { id: 'copy',        ime: 'Besedila / copywriting',       osnova: 500  },
+  /* razsiritev na vec kreativnih poklicev (2026-07-08) */
+  { id: 'interier',    ime: 'Interier dizajn',                osnova: 1500 },
+  { id: 'arhitektura', ime: 'Arhitekturno oblikovanje',       osnova: 2500 },
+  { id: 'razstava',    ime: 'Razstavni / scenski dizajn',     osnova: 1500 },
+  { id: 'produktni',   ime: 'Produktni / pohištveni dizajn',  osnova: 1800 },
+  { id: 'uxui',        ime: 'UX/UI dizajn',                   osnova: 1200 },
+  { id: 'aplikacija',  ime: 'Mobilna aplikacija',             osnova: 2500 },
+  { id: 'dizajnsistem',ime: 'Dizajn sistem',                  osnova: 1800 },
+  { id: 'smm',         ime: 'Social media vodenje',           osnova: 500  },
+  { id: 'seo',         ime: 'SEO',                            osnova: 500  },
+  { id: 'email',       ime: 'Email marketing',                osnova: 400  },
+  { id: 'pr',          ime: 'PR / odnosi z javnostmi',        osnova: 800  },
+  { id: 'video',       ime: 'Video produkcija',               osnova: 1500 },
+  { id: 'motion',      ime: 'Motion / animacija',             osnova: 900  },
+  { id: 'render3d',    ime: '3D vizualizacije',               osnova: 900  },
+  { id: 'strategija',  ime: 'Brand strategija',               osnova: 1200 },
 ];
 
 /* Podrocja dela za onboarding: uporabnik izbere podrocja, orodje pa v ospredje
-   postavi storitve znotraj njih. Ko se katalog razsiri (interier, motion, SMM,
-   avdio ...), se nove storitve dodajo v ustrezno podrocje in seznam ostane
-   pregleden. */
+   postavi storitve znotraj njih. Nove storitve so umescene v ustrezno podrocje,
+   da seznam ostane pregleden. */
 const PODROCJA: { id: string; ime: string; opis: string; storitve: string[] }[] = [
-  { id: 'graficno',  ime: 'Grafično oblikovanje & branding', opis: 'logotip, CGP, tiskovine, embalaža, ilustracija', storitve: ['logo', 'cgp', 'publikacija', 'embalaza', 'ilustracija'] },
-  { id: 'splet',     ime: 'Splet & digitalni produkti',      opis: 'spletne strani, UX/UI, aplikacije',              storitve: ['web'] },
-  { id: 'marketing', ime: 'Marketing & oglaševanje',         opis: 'kampanje, oglasi, besedila',                     storitve: ['kampanja', 'copy'] },
-  { id: 'foto',      ime: 'Fotografija & video',             opis: 'fotografiranje, video, motion',                  storitve: ['fotografija'] },
-  { id: 'direkcija', ime: 'Kreativna direkcija & strategija', opis: 'vodenje, koncept, strategija',                   storitve: ['direkcija'] },
+  { id: 'graficno',  ime: 'Grafično oblikovanje & branding', opis: 'logotip, CGP, tiskovine, embalaža, ilustracija',   storitve: ['logo', 'cgp', 'publikacija', 'embalaza', 'ilustracija'] },
+  { id: 'prostor',   ime: 'Prostor & arhitektura',           opis: 'interier, arhitektura, razstavni in produktni dizajn', storitve: ['interier', 'arhitektura', 'razstava', 'produktni'] },
+  { id: 'splet',     ime: 'Splet & digitalni produkti',      opis: 'spletne strani, UX/UI, aplikacije',                storitve: ['web', 'uxui', 'aplikacija', 'dizajnsistem'] },
+  { id: 'marketing', ime: 'Marketing & oglaševanje',         opis: 'kampanje, social media, SEO, PR, besedila',        storitve: ['kampanja', 'smm', 'seo', 'email', 'pr', 'copy'] },
+  { id: 'foto',      ime: 'Foto, video & motion',            opis: 'fotografiranje, video, motion, 3D',                storitve: ['fotografija', 'video', 'motion', 'render3d'] },
+  { id: 'direkcija', ime: 'Kreativna direkcija & strategija', opis: 'vodenje, koncept, strategija',                     storitve: ['direkcija', 'strategija'] },
 ];
 
 const IZKUSNJE = [
@@ -1419,6 +1437,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     direkcija:   <Compass size={19} />,
     fotografija: <Camera size={19} />,
     copy:        <TextT size={19} />,
+    interier:    <House size={19} />,
+    arhitektura: <Buildings size={19} />,
+    razstava:    <Presentation size={19} />,
+    produktni:   <Armchair size={19} />,
+    uxui:        <Layout size={19} />,
+    aplikacija:  <DeviceMobile size={19} />,
+    dizajnsistem:<SquaresFour size={19} />,
+    smm:         <ShareNetwork size={19} />,
+    seo:         <MagnifyingGlass size={19} />,
+    email:       <EnvelopeSimple size={19} />,
+    pr:          <Newspaper size={19} />,
+    video:       <VideoCamera size={19} />,
+    motion:      <FilmSlate size={19} />,
+    render3d:    <Cube size={19} />,
+    strategija:  <Lightbulb size={19} />,
   };
   const ikonaZa = (id: string) => IKONE[id] ?? <Sparkle size={19} />;
 
