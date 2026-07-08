@@ -1536,6 +1536,59 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const izbranaPodrocja = jeOnboardan ? PODROCJA.filter(p => p.storitve.every(sid => mojSet!.includes(sid))) : PODROCJA;
   const mojeVidne = poVrstnemRedu(vidneStoritve.filter(s => s.id.startsWith('moja-')));
 
+  /* Blok "dodaj postavko" (iskalnik + seznam) — za ponovno uporabo na koraku
+     cene, da lahko dodas dodatek brez vracanja na prvi korak. */
+  const dodajPostavkoUI = (naslov: string) => (
+    <div style={{ marginTop: '1.7rem' }}>
+      <div className="skupina-naslov">{naslov}</div>
+      <div className="opts">
+        <button type="button" className="pill dodaj" onClick={() => setKazemDodaj(!kazemDodaj)}>
+          <span className="pi" aria-hidden><Plus size={19} /></span>
+          <span>dodaj postavko<small>dodaten strošek za to ponudbo: font licenca, najem studia, tisk, stock …</small></span>
+        </button>
+      </div>
+      {kazemDodaj && (
+        <div className="iskalnik">
+          <div className="polje">
+            <div className="isk-glava">
+              <label htmlFor="cw-iskanje2">Poišči ali vpiši svojo postavko</label>
+              <button type="button" className="op-edit" style={{ marginTop: 0 }} onClick={() => { setKazemDodaj(false); setIskanje(''); }}>✕ Zapri</button>
+            </div>
+            <input id="cw-iskanje2" placeholder="npr. najem studia"
+              value={iskanje} onChange={e => setIskanje(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && predlogi.length) dodajIzKataloga(predlogi[0]); }} />
+          </div>
+          <div className="predlogi">
+            {predlogi.map(k => (
+              <button key={k.id} type="button" onClick={() => dodajIzKataloga(k)}>
+                {k.ime}<span>{val(zaokrozi(k.cena * trg(mojTrg).lvl) || k.cena)}</span>
+              </button>
+            ))}
+            {iskanje.trim() && !predlogi.some(k => brezSumnikov(k.ime) === brezSumnikov(iskanje.trim())) && (
+              <button type="button" className="svoja" onClick={dodajSvojo}>
+                + dodaj »{iskanje.trim()}« kot svojo postavko
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+      {postavke.length > 0 && (
+        <div className="postavke">
+          {postavke.map(x => (
+            <div key={x.id} className="postavka">
+              <span>{x.ime}</span>
+              <input type="number" min={1} step={1} value={x.kolicina} aria-label={(x.enota === 'ura' ? 'Ure' : 'Količina') + ': ' + x.ime} onChange={e => uredi(x.id, 'kolicina', Number(e.target.value) || 1)} />
+              <button type="button" className="enota-toggle" onClick={() => preklopiEnoto(x.id)} title="Preklopi enoto (kos / ura)">{x.enota === 'ura' ? 'ur' : 'kos'}</button>
+              <input type="number" min={0} step={10} value={x.cena} aria-label={'Cena: ' + x.ime} onChange={e => uredi(x.id, 'cena', Number(e.target.value) || 0)} />
+              <span className="enota">{x.enota === 'ura' ? '€/uro' : '€'}</span>
+              <button type="button" title="Odstrani" onClick={() => odstrani(x.id)}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="cw" onKeyDown={naEnter}>
       <style>{`
@@ -2546,6 +2599,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 Tvoj izračun anonimno (brez imena, maila ali česarkoli osebnega) prispeva
                 cenovno točko v skupno statistiko cen za kreativce. Hvala, da gradiš pregled trga.
               </p>
+              {dodajPostavkoUI('Si pozabil dodatek? Dodaj ga tukaj')}
             </>
           )}
           {korak === cenaStep && !r && (
