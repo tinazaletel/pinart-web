@@ -575,6 +575,43 @@ type Profil = {
   mojeStoritve?: Storitev[];
 };
 
+/* Nevidni Cloudflare Turnstile zeton za anonimni POST cene — aktiven SELE, ce
+   je vpisan NEXT_PUBLIC_TURNSTILE_SITE_KEY. Brez kljuca vrne undefined in
+   posiljanje tece kot doslej (nic ne blokira med razvojem). Uporabnik ne
+   vidi nicesar — widget je skrit izven zaslona. */
+async function pridobiTurnstileToken(): Promise<string | undefined> {
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  if (!siteKey || typeof window === 'undefined') return undefined;
+  const w = window as unknown as { turnstile?: { render: (el: HTMLElement, o: Record<string, unknown>) => void } };
+  if (!w.turnstile) {
+    await new Promise<void>((res) => {
+      const s = document.createElement('script');
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      s.async = true; s.defer = true;
+      s.onload = () => res();
+      s.onerror = () => res();
+      document.head.appendChild(s);
+    });
+  }
+  if (!w.turnstile) return undefined;
+  return new Promise<string | undefined>((resolve) => {
+    let done = false;
+    const finish = (v?: string) => { if (!done) { done = true; resolve(v); } };
+    const holder = document.createElement('div');
+    holder.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+    document.body.appendChild(holder);
+    try {
+      w.turnstile!.render(holder, {
+        sitekey: siteKey,
+        callback: (token: string) => finish(token),
+        'error-callback': () => finish(undefined),
+        'timeout-callback': () => finish(undefined),
+      });
+    } catch { finish(undefined); }
+    setTimeout(() => finish(undefined), 8000);
+  });
+}
+
 export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* Vstopno soglasje (kot Paperform): pogoji pred prvo uporabo orodja.
      Sprejem se shrani lokalno; ob naslednjih obiskih se ne prikaze vec. */
@@ -1050,20 +1087,28 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     try {
       if (sessionStorage.getItem('pinart-cene-poslano')) return;
       sessionStorage.setItem('pinart-cene-poslano', '1');
-      fetch('/api/cene', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          storitve: r.sez.map(s => s.ime),
-          izkusnje,
-          mojTrg,
-          trgNarocnika,
-          raba: r.raba,
-          izvedbaEUR: r.delo,
-          praviceEUR: r.pravice,
-          valuta,
-        }),
-      }).catch(() => {});
+      /* bolj realen signal: ali je uporabnik cene prilagodil (svoje osnove ali
+         rocni znesek pravic/licence) ali pa so privzete */
+      const prilagojeno = Object.keys(osnove).length > 0 || Boolean(rocnePravice.trim()) || Boolean(rocnaLicenca.trim());
+      (async () => {
+        const turnstileToken = await pridobiTurnstileToken();
+        fetch('/api/cene', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            storitve: r.sez.map(s => s.ime),
+            izkusnje,
+            mojTrg,
+            trgNarocnika,
+            raba: r.raba,
+            izvedbaEUR: r.delo,
+            praviceEUR: r.pravice,
+            valuta,
+            prilagojeno,
+            ...(turnstileToken ? { turnstileToken } : {}),
+          }),
+        }).catch(() => {});
+      })();
     } catch { /* zasebni nacin brskalnika ipd. */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [korak, cenaStep]);
