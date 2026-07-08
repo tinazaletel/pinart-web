@@ -2370,7 +2370,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .profil-vrsta .pv-ime { flex: 1; min-width: 0; font-size: .95rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .cw .glava .glava-brand { pointer-events: auto; display: inline-flex; align-items: center; gap: .6rem; text-decoration: none; }
         .cw .glava .glava-ime { font-size: .74rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(17,17,17,.68); }
-        .cw .glava .beta { align-self: center; font-size: .56rem; font-weight: 700; letter-spacing: .1em; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: .08rem .28rem; line-height: 1; }
+        .cw .glava .glava-ime-blok { display: flex; flex-direction: column; align-items: flex-end; gap: .25rem; }
+        .cw .glava .beta { font-size: .56rem; font-weight: 700; letter-spacing: .1em; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: .08rem .28rem; line-height: 1; }
         .cw .glava .glava-logo { width: 42px; height: 42px; display: block; transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .glava .glava-brand:hover .glava-logo { transform: translateY(-1px); }
 
@@ -2698,8 +2699,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <a className="glava-brand" href={`/${locale}`} aria-label="Pinart — domov">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
-                <span className="glava-ime">Kalkulator</span>
-                <span className="beta">BETA</span>
+                <span className="glava-ime-blok">
+                  <span className="beta">BETA</span>
+                  <span className="glava-ime">Kalkulator</span>
+                </span>
               </a>
               <button type="button" className="glava-profil" onClick={() => setKazemProfil(true)}>
                 <UserCircle size={19} weight="bold" /> <span>Profil</span>
@@ -2780,8 +2783,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           <a className="glava-brand" href={`/${locale}`} aria-label="Pinart — domov">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
-            <span className="glava-ime">Kalkulator</span>
-            <span className="beta">BETA</span>
+            <span className="glava-ime-blok">
+              <span className="beta">BETA</span>
+              <span className="glava-ime">Kalkulator</span>
+            </span>
           </a>
           <button type="button" className="glava-profil" onClick={() => setKazemProfil(true)}>
             <UserCircle size={19} weight="bold" /> <span>Profil</span>
