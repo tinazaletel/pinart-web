@@ -2098,11 +2098,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .gumb-nazaj { transition: background .18s ease, color .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .noga .nazaj-g { font-family: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; border: none; background: none; cursor: pointer; color: rgba(17,17,17,.72); padding: .6rem 0; }
         .cw .noga .nazaj-g:hover { color: var(--ink); }
-        .cw .noga-koncna { display: flex; align-items: center; gap: 2rem; }
-        .cw .noga .nazaj-g.nova { color: var(--accent); }
-        .cw .noga .nazaj-g.nova:hover { color: var(--ink); }
+        .cw .noga-koncna { display: flex; align-items: center; gap: .9rem; }
+        .cw .noga .noga-koncna .nazaj-g { border: 1px solid rgba(17,17,17,.35); border-radius: 999px; padding: .65rem 1.3rem; transition: border-color .18s ease, color .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
+        .cw .noga .noga-koncna .nazaj-g:hover { border-color: var(--ink); transform: translateY(-2px); }
+        .cw .noga .nazaj-g.nova { color: var(--accent); border-color: var(--accent); }
+        .cw .noga .nazaj-g.nova:hover { color: var(--ink); border-color: var(--ink); }
         @media (max-width: 640px) {
-          .cw .noga-koncna { flex-direction: column; align-items: flex-start; gap: .3rem; }
+          .cw .noga-koncna { flex-direction: column; align-items: stretch; gap: .6rem; }
+          .cw .noga .noga-koncna .nazaj-g { text-align: center; }
         }
         .cw .a11y { position: fixed; left: clamp(1.2rem, 4vw, 3rem); bottom: 1.05rem; z-index: 35; }
         .cw .a11y-btn { width: 2.8rem; height: 2.8rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.28); background: color-mix(in oklab, var(--paper) 92%, white); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 .7rem 1.8rem rgba(17,17,17,.08); }
