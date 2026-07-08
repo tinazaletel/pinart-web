@@ -1347,8 +1347,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .soglasje-kartica ul { margin: 0 0 1.8rem; padding-left: 0; list-style: none; }
         .cw .soglasje-kartica li { font-size: 1.02rem; font-weight: 400; line-height: 1.65; color: var(--ink); margin-bottom: .8rem; }
         .cw .soglasje-email { border-top: 1px solid rgba(17,17,17,.14); padding-top: 1.3rem; margin-bottom: 1.7rem; }
-        .cw .se-preklop { display: flex; align-items: flex-start; gap: .6rem; cursor: pointer; font-size: .98rem; font-weight: 500; color: var(--ink); line-height: 1.5; }
-        .cw .se-preklop input { margin-top: .18rem; width: 1.1rem; height: 1.1rem; accent-color: var(--ink); cursor: pointer; flex-shrink: 0; }
+        .cw .se-preklop { display: flex; align-items: flex-start; gap: .75rem; cursor: pointer; font-size: .98rem; font-weight: 500; color: var(--ink); line-height: 1.5; }
+        .cw .se-toggle { position: relative; flex: none; width: 2.6rem; height: 1.5rem; margin-top: .05rem; }
+        .cw .se-toggle input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+        .cw .se-slider { position: absolute; inset: 0; background: rgba(17,17,17,.24); border-radius: 999px; transition: background .2s ease; pointer-events: none; }
+        .cw .se-slider::before { content: ''; position: absolute; top: 2px; left: 2px; width: calc(1.5rem - 4px); height: calc(1.5rem - 4px); background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,.22); transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
+        .cw .se-toggle input:checked + .se-slider { background: var(--ink); }
+        .cw .se-toggle input:checked + .se-slider::before { transform: translateX(calc(2.6rem - 1.5rem)); }
         .cw .se-preklop em { font-style: normal; color: rgba(17,17,17,.55); font-weight: 400; }
         .cw .se-note { margin: .8rem 0 0; font-size: .82rem; line-height: 1.5; color: rgba(17,17,17,.62); }
         .cw .soglasje-gumbi { display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap; }
@@ -1389,6 +1394,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .pill:active { transform: translateY(0) scale(.97); }
         .cw .pill .pi { display: inline-flex; flex: none; opacity: .8; }
         .cw .pill.on .pi { opacity: 1; }
+        .cw .pill .pi svg { width: 23px; height: 23px; }
         .cw .pill.dodaj { border-style: dashed; border-color: rgba(17,17,17,.55); font-weight: 500; }
 
         .cw .izbira { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 760px; }
@@ -1593,7 +1599,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           .cw .opts { display: flex; flex-wrap: wrap; gap: .45rem; }
           .cw .pill { min-width: 0; flex: 1 1 calc(50% - .45rem); padding: .62rem .68rem; gap: .42rem; font-size: .78rem; line-height: 1.18; border-radius: 1.25rem; }
           .cw .pill small { font-size: .66rem; line-height: 1.2; }
-          .cw .pill .pi svg { width: 15px; height: 15px; }
+          .cw .pill .pi svg { width: 19px; height: 19px; }
           .cw .a11y { bottom: 5.4rem; }
           .cw .noga .noga-gumbi { gap: .55rem; }
         }
@@ -1613,7 +1619,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </ul>
             <div className="soglasje-email">
               <label className="se-preklop">
-                <input type="checkbox" checked={zeliEmail} onChange={e => setZeliEmail(e.target.checked)} />
+                <span className="se-toggle">
+                  <input type="checkbox" checked={zeliEmail} onChange={e => setZeliEmail(e.target.checked)} />
+                  <span className="se-slider" aria-hidden />
+                </span>
                 <span>Obveščajte me o orodju in nasvetih za kreativce <em>(neobvezno)</em></span>
               </label>
               {zeliEmail && (
