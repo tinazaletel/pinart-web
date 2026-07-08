@@ -2401,6 +2401,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .pill:hover { border-color: var(--ink); }
         .cw .pill.on { background: transparent; color: var(--paper); border-color: var(--accent); }
         .cw .pill.on small { color: rgba(245,242,234,.92); }
+        .cw .pill:focus { outline: none; }
         .cw .pill:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
         .cw .pill { display: inline-flex; align-items: center; gap: .65rem; transition: transform .2s cubic-bezier(0.23,1,0.32,1), border-color .2s ease, background .2s ease, color .2s ease; }
         .cw .pill:hover { transform: translateY(-2px); }
