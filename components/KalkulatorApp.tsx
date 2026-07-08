@@ -2526,6 +2526,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .polje input { width: 100%; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.1rem; padding: .35rem 0 .5rem; color: var(--ink); border-radius: 0; }
         .cw .polje input:focus { outline: none; border-bottom: 2px solid var(--ink); margin-bottom: -1px; }
         .cw .polje input::placeholder { color: rgba(17,17,17,.42); font-weight: 400; font-size: 1rem; }
+        .cw input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+        .cw input[type=number]::-webkit-outer-spin-button,
+        .cw input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .cw .polje select { width: 100%; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .35rem 1.6rem .5rem 0; color: var(--ink); border-radius: 0; appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .2rem center; }
         .cw .tel-vrsta { display: flex; gap: .8rem; align-items: baseline; }
         .cw .tel-vrsta select { width: 6.2rem; flex: none; }
@@ -2565,7 +2568,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .iskalnik { margin-top: 1.4rem; max-width: 460px; }
         .cw .isk-glava { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
         .cw .predlogi { border-bottom: 1px solid rgba(17,17,17,.14); }
-        .cw .predlogi button { display: flex; justify-content: space-between; gap: 1rem; width: 100%; text-align: left; border: none; border-top: 1px solid rgba(17,17,17,.1); background: none; font-family: inherit; font-size: .92rem; font-weight: 300; color: var(--ink); padding: .65rem .1rem; cursor: pointer; }
+        .cw .predlogi button { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; min-height: 2.75rem; text-align: left; border: none; border-top: 1px solid rgba(17,17,17,.1); background: none; font-family: inherit; font-size: .95rem; font-weight: 400; color: var(--ink); padding: .85rem .3rem; cursor: pointer; }
         .cw .predlogi button:hover { opacity: .55; }
         .cw .predlogi button span { color: rgba(17,17,17,.65); white-space: nowrap; }
         .cw .predlogi .svoja { font-weight: 500; }
