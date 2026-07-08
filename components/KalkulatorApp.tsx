@@ -2157,19 +2157,19 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         <div className="numgrid">
           <div className="polje">
             <label htmlFor="cw-pime">Ime / podjetje</label>
-            <input id="cw-pime" type="text" placeholder="Pinart, Tina Zaletel"
+            <input id="cw-pime" type="text" placeholder="Rdeča kapica d.o.o."
               value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })} />
           </div>
           <div className="polje">
             <label htmlFor="cw-pdavcna">Davčna številka</label>
-            <input id="cw-pdavcna" type="text" placeholder="SI12345678"
+            <input id="cw-pdavcna" type="text" placeholder="SI98765432"
               value={ponudnik.davcna} onChange={e => setPonudnik({ ...ponudnik, davcna: e.target.value })} />
           </div>
         </div>
         <div className="numgrid">
           <div className="polje">
             <label htmlFor="cw-pemail">Email</label>
-            <input id="cw-pemail" type="email" placeholder="tina@pinart.si"
+            <input id="cw-pemail" type="email" placeholder="kapica@gozd.si"
               value={ponudnik.email} onChange={e => setPonudnik({ ...ponudnik, email: e.target.value })} />
           </div>
           <div className="polje">
@@ -2181,7 +2181,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <option key={k} value={k}>{k}</option>
                 ))}
               </select>
-              <input id="cw-ptelefon" type="tel" placeholder="41 373 730"
+              <input id="cw-ptelefon" type="tel" placeholder="51 234 567"
                 value={ponudnik.telefon} onChange={e => setPonudnik({ ...ponudnik, telefon: e.target.value })} />
             </div>
           </div>
@@ -2189,12 +2189,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         <div className="numgrid">
           <div className="polje">
             <label htmlFor="cw-pnaslov">Naslov</label>
-            <input id="cw-pnaslov" type="text" placeholder="Ulica 1, 1000 Ljubljana"
+            <input id="cw-pnaslov" type="text" placeholder="Gozdna pot 13, 4000 Kranj"
               value={ponudnik.naslov} onChange={e => setPonudnik({ ...ponudnik, naslov: e.target.value })} />
           </div>
           <div className="polje">
             <label htmlFor="cw-ptrr">TRR (bančni račun)</label>
-            <input id="cw-ptrr" type="text" placeholder="SI56 1010 0005 1359 749"
+            <input id="cw-ptrr" type="text" placeholder="SI56 1910 0001 2345 678"
               value={ponudnik.trr} onChange={e => setPonudnik({ ...ponudnik, trr: e.target.value })} />
           </div>
         </div>
@@ -2606,7 +2606,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .paket .redna { font-family: var(--font-serif), serif; font-size: 1.05rem; text-decoration: line-through; opacity: .62; margin-top: .5rem; margin-bottom: -.4rem; -webkit-text-stroke: 0.3px currentColor; }
         .cw .paket .znesek { font-family: var(--font-serif), Didot, serif; font-size: clamp(2rem, 4.5vw, 2.6rem); font-weight: 700; margin: .5rem 0 .55rem; letter-spacing: -.01em; -webkit-text-stroke: 0.4px currentColor; }
         .cw .paket p { margin: 0; font-size: .9rem; line-height: 1.6; opacity: .8; }
-        .cw .paket.mid p { opacity: 1; color: var(--ink); font-weight: 500; background: var(--paper); border-radius: 10px; padding: .6rem .75rem; margin-top: .5rem; }
+        .cw .paket.mid p { opacity: .88; }
         .cw .razlaga { font-size: .98rem; color: rgba(17,17,17,.75); line-height: 1.7; margin: 1.5rem 0 0; max-width: 64ch; }
         .cw .razlaga b { color: var(--ink); font-weight: 600; }
 
