@@ -843,7 +843,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [kazemProfil, setKazemProfil] = useState(false);
   /* Profil kot drill-down (meni -> ena "podstran"), ne dolg scroll treh
      razdelkov skupaj — bolj pregledno in mobile-friendly (Tina). */
-  const [profilPogled, setProfilPogled] = useState<'meni' | 'zgodovina' | 'podjetje' | 'cene'>('meni');
+  const [profilPogled, setProfilPogled] = useState<'meni' | 'zgodovina' | 'podjetja' | 'podjetje-urejanje' | 'cene' | 'obvestila' | 'pomoc'>('meni');
+  /* katero shranjeno podjetje je trenutno "aktivno" (nalozeno v ponudnik/ddv/...
+     zivo stanje) — null, ce urejamo novo, se nikoli shranjeno podjetje. */
+  const [aktivnoPodjetje, setAktivnoPodjetje] = useState<string | null>(null);
   const [mojeStoritve, setMojeStoritve] = useState<Storitev[]>([]);
   /* Onboarding / osebni set storitev: kaj uporabnik ponuja, postavljeno v
      ospredje. null = se ni onboardan; [] = onboardan brez izbire (pokazi vse). */
@@ -1675,14 +1678,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     try { localStorage.setItem(K_ARHIV, JSON.stringify(nov)); } catch { /* poln */ }
   };
 
-  /* ── moja podjetja: vec identitet podjetja (ime/davcna/DDV/urne postavke) ── */
-  const shraniPodjetje = () => {
-    const ime = imePodjetja.trim() || ponudnik.ime.trim() || 'Moje podjetje';
+  /* ── moja podjetja: vec identitet podjetja (ime/davcna/DDV/urne postavke) ──
+     Seznam poimenovanih podjetij + drill-down v urejanje enega. Klik na
+     podjetje ga naloze kot "aktivno" (zivo stanje ponudnik/ddv/...), da
+     ponudbe takoj uporabljajo njegove podatke — ni jih treba vsakic pisati. */
+  const shraniPodPodjetjem = (ime: string) => {
     const zapis: PodjetjeProfil = { ponudnik, predklic, ddvZavezanec, ddvStopnja, avansPct, urnePostavke };
     const nov = { ...podjetja, [ime]: zapis };
     setPodjetja(nov);
     try { localStorage.setItem(K_PODJETJA, JSON.stringify(nov)); } catch { /* poln */ }
-    setImePodjetja('');
   };
   const naloziPodjetje = (ime: string) => {
     const p = podjetja[ime];
@@ -1691,11 +1695,50 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setDdvZavezanec(p.ddvZavezanec); setDdvStopnja(p.ddvStopnja); setAvansPct(p.avansPct);
     setUrnePostavke(p.urnePostavke);
   };
+  const odpriPodjetje = (ime: string) => {
+    naloziPodjetje(ime);
+    setAktivnoPodjetje(ime);
+    setProfilPogled('podjetje-urejanje');
+  };
+  const dodajNovoPodjetje = () => {
+    let ime = imePodjetja.trim() || 'Novo podjetje';
+    let i = 2;
+    while (podjetja[ime]) { ime = `${imePodjetja.trim() || 'Novo podjetje'} (${i})`; i += 1; }
+    const prazno: PodjetjeProfil = {
+      ponudnik: { ime: '', davcna: '', email: '', telefon: '', naslov: '', trr: '' },
+      predklic: '+386', ddvZavezanec: false, ddvStopnja: '22', avansPct: '50', urnePostavke: [{ ime: 'Dodatna dela', cena: '' }],
+    };
+    const nov = { ...podjetja, [ime]: prazno };
+    setPodjetja(nov);
+    try { localStorage.setItem(K_PODJETJA, JSON.stringify(nov)); } catch { /* poln */ }
+    setImePodjetja('');
+    odpriPodjetje(ime);
+  };
+  const zapriUrejanjePodjetja = () => {
+    if (aktivnoPodjetje) shraniPodPodjetjem(aktivnoPodjetje);
+    setProfilPogled('podjetja');
+  };
   const izbrisiPodjetje = (ime: string) => {
     const nov = { ...podjetja };
     delete nov[ime];
     setPodjetja(nov);
     try { localStorage.setItem(K_PODJETJA, JSON.stringify(nov)); } catch { /* poln */ }
+    if (aktivnoPodjetje === ime) { setAktivnoPodjetje(null); setProfilPogled('podjetja'); }
+  };
+
+  /* ── ponastavi vse podatke orodja (danger zone v profilu) ──────────── */
+  const ponastaviVse = () => {
+    if (typeof window === 'undefined') return;
+    if (!window.confirm('Izbrišem vse podatke tega orodja (cene, podjetja, zgodovino ponudb, profile)? Tega ni mogoče razveljaviti.')) return;
+    try {
+      localStorage.removeItem(K_NAST);
+      localStorage.removeItem(K_PROFILI);
+      localStorage.removeItem(K_ARHIV);
+      localStorage.removeItem(K_PODJETJA);
+      localStorage.removeItem(K_LEAD);
+      localStorage.removeItem('pinart-kalk-pogoji-ok');
+    } catch { /* ignoriraj */ }
+    window.location.reload();
   };
 
   /* ── carovnik: navigacija ─────────────────────────────────────────── */
@@ -1995,6 +2038,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .profil-meni-vrsta small { display: block; font-size: .82rem; font-weight: 400; color: rgba(17,17,17,.6); line-height: 1.4; }
         .cw .profil-meni-vrsta span:not(.pm-puscica) { flex: 1; min-width: 0; }
         .cw .profil-meni-vrsta .pm-puscica { flex: none; font-size: 1.2rem; opacity: .5; }
+        .cw .profil-nevarno { margin-top: .5rem; padding: .7rem 0; border: none; background: none; font-family: inherit; font-size: .82rem; font-weight: 600; color: rgba(17,17,17,.4); text-decoration: underline; text-underline-offset: .28em; cursor: pointer; text-align: left; }
+        .cw .profil-nevarno:hover { color: #b03030; }
         .cw .cene-seznam { display: flex; flex-direction: column; margin-bottom: 1.3rem; }
         .cw .cene-vrsta { display: flex; align-items: center; gap: .55rem; padding: .35rem .3rem; border-radius: 8px; }
         .cw .cene-vrsta:hover { background: rgba(17,17,17,.035); }
@@ -2040,9 +2085,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .glava { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1rem clamp(1.2rem, 4vw, 3rem); z-index: 30; pointer-events: none; }
         .cw .glava .zapri { pointer-events: auto; display: inline-flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); text-decoration: none; background: var(--paper); border: none; border-radius: 999px; padding: .5rem .85rem; transition: color .18s ease; }
         .cw .glava .zapri:hover { color: var(--ink); }
+        .cw .glava-levo { pointer-events: auto; display: inline-flex; align-items: center; gap: 1rem; }
         .cw .glava-desno { pointer-events: auto; display: inline-flex; align-items: center; gap: .5rem; }
-        .cw .glava-profil { display: inline-flex; align-items: center; gap: .4rem; font-family: inherit; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); background: var(--paper); border: none; border-radius: 999px; padding: .5rem .85rem; cursor: pointer; transition: color .18s ease; }
+        .cw .glava-profil { display: inline-flex; align-items: center; gap: .4rem; font-family: inherit; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); background: var(--paper); border: none; border-left: 1px solid rgba(17,17,17,.15); border-radius: 0; padding: .3rem 0 .3rem 1rem; cursor: pointer; transition: color .18s ease; }
         .cw .glava-profil:hover { color: var(--ink); }
+        @media (max-width: 640px) { .cw .glava-profil span { display: none; } }
         .cw .profil-zastor { position: fixed; inset: 0; z-index: 60; background: rgba(17,17,17,.28); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
         .cw .profil-predal { position: fixed; top: 0; right: 0; bottom: 0; z-index: 61; width: min(440px, 100vw); background: var(--paper); box-shadow: -12px 0 40px rgba(17,17,17,.14); overflow-y: auto; padding: clamp(1.6rem, 4vw, 2.4rem); animation: cwPredalIn .32s cubic-bezier(0.23,1,0.32,1) both; }
         @keyframes cwPredalIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
@@ -2493,15 +2540,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       </div>
 
       <div className="glava">
-        <a className="glava-brand" href={`/${locale}`} aria-label="Pinart — domov">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
-          <span className="glava-ime">Pinart kalkulator</span>
-        </a>
-        <span className="glava-desno">
+        <span className="glava-levo">
+          <a className="glava-brand" href={`/${locale}`} aria-label="Pinart — domov">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
+            <span className="glava-ime">Pinart kalkulator</span>
+          </a>
           <button type="button" className="glava-profil" onClick={() => setKazemProfil(true)}>
-            <UserCircle size={19} weight="bold" /> Profil
+            <UserCircle size={19} weight="bold" /> <span>Profil</span>
           </button>
+        </span>
+        <span className="glava-desno">
           <a className="zapri" href={`/${locale}/kalkulator`} aria-label="Zapri kalkulator">✕ Zapri</a>
         </span>
       </div>
@@ -2513,12 +2562,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <div className="cene-glava">
               <h2>
                 {profilPogled !== 'meni' && (
-                  <button type="button" className="profil-nazaj" onClick={() => setProfilPogled('meni')} aria-label="Nazaj na profil">←</button>
+                  <button type="button" className="profil-nazaj"
+                    onClick={() => profilPogled === 'podjetje-urejanje' ? zapriUrejanjePodjetja() : setProfilPogled('meni')}
+                    aria-label="Nazaj na profil">←</button>
                 )}
                 {profilPogled === 'meni' ? 'Profil'
                   : profilPogled === 'zgodovina' ? 'Zgodovina ponudb'
-                    : profilPogled === 'podjetje' ? 'Moje podjetje'
-                      : 'Cenovni profili'}
+                    : profilPogled === 'podjetja' ? 'Moje podjetje'
+                      : profilPogled === 'podjetje-urejanje' ? (aktivnoPodjetje || 'Podjetje')
+                        : profilPogled === 'cene' ? 'Cenovni profili'
+                          : profilPogled === 'obvestila' ? 'Obveščanja'
+                            : 'Pomoč in kontakt'}
               </h2>
               <button type="button" className="op-edit" onClick={() => { setKazemProfil(false); setProfilPogled('meni'); }}>✕ Zapri</button>
             </div>
@@ -2533,7 +2587,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
-                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('podjetje')}>
+                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('podjetja')}>
                   <Buildings size={20} weight="bold" />
                   <span>
                     <strong>Moje podjetje</strong>
@@ -2541,13 +2595,40 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
-                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('cene')}>
+                <button type="button" className="profil-meni-vrsta" onClick={() => { setKazemProfil(false); setProfilPogled('meni'); setKazemCene(true); }}>
                   <Gear size={20} weight="bold" />
+                  <span>
+                    <strong>Cene in storitve</strong>
+                    <small>tvoje osnovne cene, razpored, izbris storitev</small>
+                  </span>
+                  <span className="pm-puscica" aria-hidden>→</span>
+                </button>
+                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('cene')}>
+                  <FloppyDisk size={20} weight="bold" />
                   <span>
                     <strong>Cenovni profili</strong>
                     <small>shranjeni kompleti cen storitev (redko){Object.keys(profili).length > 0 ? ` (${Object.keys(profili).length})` : ''}</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
+                </button>
+                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('obvestila')}>
+                  <EnvelopeSimple size={20} weight="bold" />
+                  <span>
+                    <strong>Obveščanja</strong>
+                    <small>{leadEmail ? `naročen na ${leadEmail}` : 'nisi naročen na obveščanje'}</small>
+                  </span>
+                  <span className="pm-puscica" aria-hidden>→</span>
+                </button>
+                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('pomoc')}>
+                  <UserCircle size={20} weight="bold" />
+                  <span>
+                    <strong>Pomoč in kontakt</strong>
+                    <small>vprašanja, pogoji uporabe, pisanje meni osebno</small>
+                  </span>
+                  <span className="pm-puscica" aria-hidden>→</span>
+                </button>
+                <button type="button" className="profil-nevarno" onClick={ponastaviVse}>
+                  Ponastavi vse podatke tega orodja
                 </button>
               </div>
             )}
@@ -2568,27 +2649,38 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               )
             )}
 
-            {profilPogled === 'podjetje' && (
+            {profilPogled === 'podjetja' && (
               <>
-                {podatkiUI()}
-                <div className="podjetja-shrani">
-                  <input type="text" placeholder="Ime za shranjeno podjetje (npr. Pinart, Moj s.p. …)"
-                    value={imePodjetja} onChange={e => setImePodjetja(e.target.value)}
-                    aria-label="Ime za shranjeno podjetje" />
-                  <button type="button" className="dodaj-gumb" onClick={shraniPodjetje}>+ Shrani kot podjetje</button>
-                </div>
+                <p className="ob-sub" style={{ margin: '0 0 1rem' }}>Shrani podatke vsakega podjetja enkrat, da jih ne pišeš znova pri vsaki ponudbi. Klikni podjetje za urejanje.</p>
                 {Object.keys(podjetja).length > 0 && (
-                  <div className="profil-seznam" style={{ marginTop: '.9rem' }}>
-                    <p className="ob-sub" style={{ margin: '0 0 .5rem' }}>Delaš za več podjetij? Preklopi med shranjenimi:</p>
+                  <div className="profil-seznam" style={{ marginBottom: '1.2rem' }}>
                     {Object.keys(podjetja).map(ime => (
                       <div key={ime} className="profil-vrsta">
-                        <span className="pv-ime">{ime}</span>
-                        <button type="button" className="povezava" onClick={() => naloziPodjetje(ime)}>↺ Preklopi</button>
+                        <button type="button" className="povezava pv-ime" style={{ textDecoration: 'none', flex: 1, textAlign: 'left' }} onClick={() => odpriPodjetje(ime)}>
+                          {ime}{aktivnoPodjetje === ime ? ' · aktivno' : ''}
+                        </button>
                         <button type="button" className="brisi" title={'Izbriši ' + ime} onClick={() => izbrisiPodjetje(ime)}>×</button>
                       </div>
                     ))}
                   </div>
                 )}
+                <div className="podjetja-shrani">
+                  <input type="text" placeholder="Ime podjetja (npr. Pinart, Moj s.p. …)"
+                    value={imePodjetja} onChange={e => setImePodjetja(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') dodajNovoPodjetje(); }}
+                    aria-label="Ime novega podjetja" />
+                  <button type="button" className="dodaj-gumb" onClick={dodajNovoPodjetje}>+ Dodaj podjetje</button>
+                </div>
+              </>
+            )}
+
+            {profilPogled === 'podjetje-urejanje' && (
+              <>
+                {podatkiUI()}
+                <button type="button" className="profil-nevarno" style={{ marginTop: '1rem' }}
+                  onClick={() => aktivnoPodjetje && izbrisiPodjetje(aktivnoPodjetje)}>
+                  Izbriši to podjetje
+                </button>
               </>
             )}
 
@@ -2606,6 +2698,38 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   ))}
                 </div>
               )
+            )}
+
+            {profilPogled === 'obvestila' && (
+              <>
+                <p className="ob-sub" style={{ margin: '0 0 1.2rem' }}>Neobvezno obveščanje o orodju in nasvetih za kreativce — ločeno od anonimne statistike cen.</p>
+                <div className="numgrid" style={{ marginTop: 0 }}>
+                  <div className="polje">
+                    <label htmlFor="cw-profime">Ime</label>
+                    <input id="cw-profime" value={leadIme} onChange={e => setLeadIme(e.target.value)} />
+                  </div>
+                  <div className="polje">
+                    <label htmlFor="cw-profemail">Email</label>
+                    <input id="cw-profemail" type="email" value={leadEmail} onChange={e => setLeadEmail(e.target.value)} />
+                  </div>
+                </div>
+                <div className="onboarding-noga" style={{ marginTop: '1.3rem' }}>
+                  <button type="button" className="gumb" onClick={() => { try { localStorage.setItem(K_LEAD, JSON.stringify({ ime: leadIme, email: leadEmail })); } catch { /* poln */ } }} disabled={!imamKontakt}>Shrani</button>
+                  <button type="button" className="povezava" onClick={() => { setLeadIme(''); setLeadEmail(''); try { localStorage.removeItem(K_LEAD); } catch { /* prazno */ } }}>Prekliči obveščanje</button>
+                </div>
+              </>
+            )}
+
+            {profilPogled === 'pomoc' && (
+              <>
+                <p className="ob-sub" style={{ margin: '0 0 .9rem' }}>Vprašanje, predlog ali težava z orodjem? Pišem in berem osebno.</p>
+                <p className="ob-sub" style={{ margin: '0 0 .9rem' }}>
+                  <a href="mailto:tina@pinart.si" style={{ color: 'var(--ink)', fontWeight: 600 }}>tina@pinart.si</a>
+                </p>
+                <p className="ob-sub" style={{ margin: 0 }}>
+                  <a href={`/${locale}/kalkulator/pogoji`} style={{ color: 'var(--ink)' }}>Pogoji uporabe kalkulatorja →</a>
+                </p>
+              </>
             )}
           </div>
         </>
