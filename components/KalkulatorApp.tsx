@@ -849,6 +849,30 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setOnboardingOdprt(false);
   };
 
+  /* Nova ponudba: pocisti VSE za to ponudbo (izbor, odgovori, postavke,
+     narocnik, zneski), a OHRANI nastavitve (cene, profil, tvoji podatki). */
+  const novaPonudba = () => {
+    setIzbrane(new Set());
+    setOdgovori({});
+    setPostavke([]);
+    setNazivPonudbe('');
+    setNarocnikPonudbe('');
+    setPromet('');
+    setDobicek('');
+    setProjPrihodek('');
+    setProjDobicek('');
+    setPopust('');
+    setDodatki(new Set());
+    setRaba('znamka');
+    setPrenosPravic('izkljucni');
+    setRocnePravice('');
+    setRocnaLicenca('');
+    setRocnoBesedilo(false);
+    setVidnaVprasanja(1);
+    try { sessionStorage.removeItem('pinart-cene-poslano'); } catch { /* prazno */ }
+    setKorak(0);
+  };
+
   const vfx = VALUTE.find(v => v.id === valuta) ?? VALUTE[0];
   const val = (n: number) => zaokrozi(n * vfx.fx).toLocaleString('sl-SI') + ' ' + vfx.znak;
 
@@ -2109,10 +2133,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 ? <>Izberi storitve <b>za to ponudbo</b> — eno ali več.</>
                 : opisKoraka}</p>
               {korak === 0 && (
-                <button type="button" className="op-edit" onClick={() => setKazemCene(true)} aria-expanded={kazemCene}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>
-                  <Gear size={17} weight="bold" /> Nastavitve in cene
-                </button>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '1.1rem', flexWrap: 'wrap' }}>
+                  {(izbrane.size > 0 || postavke.length > 0 || Object.keys(odgovori).length > 0) && (
+                    <button type="button" className="op-edit" onClick={novaPonudba}>↺ Nova ponudba</button>
+                  )}
+                  <button type="button" className="op-edit" onClick={() => setKazemCene(true)} aria-expanded={kazemCene}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>
+                    <Gear size={17} weight="bold" /> Nastavitve in cene
+                  </button>
+                </span>
               )}
             </div>
           )}
@@ -2825,6 +2854,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 </button>
                 <button type="button" className="povezava" onClick={() => zahtevaKontakt('profil')}>
                   <FloppyDisk size={17} /> Shrani profil
+                </button>
+                <button type="button" className="povezava" onClick={novaPonudba}>
+                  ↺ Nova ponudba
                 </button>
               </div>
 
