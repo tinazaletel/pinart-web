@@ -712,6 +712,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [besediloHtml, setBesediloHtml] = useState('');
   const [rocnoBesedilo, setRocnoBesedilo] = useState(false);
   const [tonPonudbe, setTonPonudbe] = useState<TonPonudbe>('toplo');
+  const [nogaZnak, setNogaZnak] = useState(true);
   const [nazivPonudbe, setNazivPonudbe] = useState('');
   const [narocnikPonudbe, setNarocnikPonudbe] = useState('');
   const [obsegPonudbe, setObsegPonudbe] = useState<'kratka' | 'razsirjena'>('razsirjena');
@@ -762,6 +763,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       if (s.urnePostavke?.length) setUrnePostavke(s.urnePostavke);
       else if (s.urnaPostavka) setUrnePostavke([{ ime: 'Dodatna dela', cena: String(s.urnaPostavka) }]);
       if (s.avansPct !== undefined) setAvansPct(String(s.avansPct));
+      if (s.nogaZnak === false) setNogaZnak(false);
       if (s.postavke) setPostavke(s.postavke);
       if (s.predklic) setPredklic(s.predklic);
       if (s.ddvZavezanec) setDdvZavezanec(true);
@@ -780,10 +782,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         mojSet: mojSet ?? undefined,
         vrstniRed: vrstniRed.length ? vrstniRed : undefined,
         skrite: skrite.length ? skrite : undefined,
+        nogaZnak: nogaZnak ? undefined : false,
         valuta: valutaRocna ? valuta : undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite]);
+  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -1161,8 +1164,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     }
     v.push('');
     v.push(ponudnik.ime.trim() || '[Ime]');
+    if (nogaZnak) {
+      v.push('');
+      v.push('Pripravljeno s Pinart kalkulatorjem · pinart.si');
+    }
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, obsegPonudbe, avansPct, kaziUre]);
+  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, obsegPonudbe, avansPct, kaziUre, nogaZnak]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
@@ -2694,6 +2701,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span>Prikaži oceno ur v ponudbi <em>(privzeto skrito — cena je po vrednosti; vklopi le, če stranka želi razčlenitev ur)</em></span>
                 </label>
               )}
+              <label className="ure-preklop">
+                <input type="checkbox" checked={nogaZnak}
+                  onChange={e => { setNogaZnak(e.target.checked); setRocnoBesedilo(false); }} />
+                <span>Noga »Pripravljeno s Pinart kalkulatorjem« <em>(lahko izklopiš)</em></span>
+              </label>
               <div className="orodjarna" aria-label="Oblikovanje ponudbe">
                 <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko">
                   <TextB size={17} weight="bold" /> Krepko
