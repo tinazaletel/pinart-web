@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package,
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
@@ -2398,7 +2399,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .se-tekst { display: flex; align-items: center; gap: .55rem; min-width: 0; }
         .cw .se-ikona { flex: none; color: var(--ink); opacity: .7; }
         .cw .se-toggle { position: relative; flex: none; width: 2.6rem; height: 1.5rem; }
-        .cw .se-toggle input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+        .cw .se-toggle input { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 2.75rem; height: 2.75rem; margin: 0; opacity: 0; cursor: pointer; }
         .cw .se-slider { position: absolute; inset: 0; background: rgba(17,17,17,.24); border-radius: 999px; transition: background .2s ease; pointer-events: none; }
         .cw .se-slider::before { content: ''; position: absolute; top: 2px; left: 2px; width: calc(1.5rem - 4px); height: calc(1.5rem - 4px); background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,.22); transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .se-toggle input:checked + .se-slider { background: var(--ink); }
@@ -2731,7 +2732,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           .cw .sub { flex: 1 1 auto; font-size: .94rem; line-height: 1.5; }
           .cw .sub-vrsta .op-edit { margin-left: auto; text-align: right; flex: none; white-space: nowrap; justify-content: flex-end; line-height: 1.25; font-size: .66rem; letter-spacing: .13em; }
           .cw .opts { display: flex; flex-wrap: wrap; gap: .45rem; }
-          .cw .pill { min-width: 0; flex: 1 1 calc(50% - .45rem); padding: .62rem .68rem; gap: .42rem; font-size: .78rem; line-height: 1.18; border-radius: 1.25rem; }
+          .cw .pill { min-width: 0; min-height: 2.75rem; flex: 1 1 calc(50% - .45rem); padding: .68rem .68rem; gap: .42rem; font-size: .78rem; line-height: 1.18; border-radius: 1.25rem; }
           .cw .pill small { font-size: .66rem; line-height: 1.2; }
           .cw .pill-fill { left: .68rem; width: 1.8rem; height: 1.8rem; }
           .cw .pill.on .pill-fill { transform: translateY(-50%) scale(14); }
@@ -3542,27 +3543,29 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </button>
                 </div>
               </div>
-              {kazemValutaIzbira && (
-                <div className="izbirnik-zastor" onClick={() => setKazemValutaIzbira(false)}>
-                  <div className="izbirnik-plosca" role="dialog" aria-modal="true" aria-label="Izberi valuto"
-                    onClick={e => e.stopPropagation()}>
-                    <div className="izbirnik-glava">
-                      <span>Valuta ponudbe</span>
-                      <button type="button" onClick={() => setKazemValutaIzbira(false)} aria-label="Zapri">✕</button>
-                    </div>
-                    <div className="izbirnik-seznam">
-                      {VALUTE.map(v => (
-                        <button key={v.id} type="button"
-                          className={'izbirnik-vrsta' + (v.id === valuta ? ' on' : '')}
-                          onClick={() => { setValuta(v.id); setValutaRocna(true); setKazemValutaIzbira(false); }}>
-                          {v.ime}
-                          {v.id === valuta && <Check size={16} weight="bold" aria-hidden />}
-                        </button>
-                      ))}
+              {kazemValutaIzbira && typeof document !== 'undefined' && createPortal(
+                <div className="cw">
+                  <div className="izbirnik-zastor" onClick={() => setKazemValutaIzbira(false)}>
+                    <div className="izbirnik-plosca" role="dialog" aria-modal="true" aria-label="Izberi valuto"
+                      onClick={e => e.stopPropagation()}>
+                      <div className="izbirnik-glava">
+                        <span>Valuta ponudbe</span>
+                        <button type="button" onClick={() => setKazemValutaIzbira(false)} aria-label="Zapri">✕</button>
+                      </div>
+                      <div className="izbirnik-seznam">
+                        {VALUTE.map(v => (
+                          <button key={v.id} type="button"
+                            className={'izbirnik-vrsta' + (v.id === valuta ? ' on' : '')}
+                            onClick={() => { setValuta(v.id); setValutaRocna(true); setKazemValutaIzbira(false); }}>
+                            {v.ime}
+                            {v.id === valuta && <Check size={16} weight="bold" aria-hidden />}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-              )}
+              , document.body)}
             </>
           )}
 
