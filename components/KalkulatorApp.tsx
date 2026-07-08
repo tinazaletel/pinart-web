@@ -690,7 +690,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [mojSet, setMojSet] = useState<string[] | null>(null);
   const [onboardingOdprt, setOnboardingOdprt] = useState(false);
   const [obIzbor, setObIzbor] = useState<Set<string>>(new Set());
-  const [kazemDruge, setKazemDruge] = useState(false);
   /* Poljuben vrstni red storitev (razporejanje z drag-rocajem); prazno = naravni. */
   const [vrstniRed, setVrstniRed] = useState<string[]>([]);
   const dragIndex = useRef<number | null>(null);
@@ -840,7 +839,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const ids = new Set<string>();
     PODROCJA.forEach(p => { if (obIzbor.has(p.id)) p.storitve.forEach(sid => ids.add(sid)); });
     setMojSet([...ids]);
-    setKazemDruge(false);
     setOnboardingOdprt(false);
   };
   const preskociOnboarding = () => {
@@ -1522,8 +1520,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   };
   const jeOnboardan = !!(mojSet && mojSet.length);
   const izbranaPodrocja = jeOnboardan ? PODROCJA.filter(p => p.storitve.every(sid => mojSet!.includes(sid))) : PODROCJA;
-  const drugaPodrocja = jeOnboardan ? PODROCJA.filter(p => !p.storitve.every(sid => mojSet!.includes(sid))) : [];
-  const drugaImaVidne = drugaPodrocja.some(p => vidneStoritve.some(s => p.storitve.includes(s.id)));
   const mojeVidne = poVrstnemRedu(vidneStoritve.filter(s => s.id.startsWith('moja-')));
 
   return (
@@ -2068,10 +2064,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <div className="opts">{mojeVidne.map(oblacekStoritve)}</div>
                   </div>
                 )}
-                {jeOnboardan && drugaImaVidne && !kazemDruge && (
-                  <button type="button" className="povezava" onClick={() => setKazemDruge(true)}>+ druga področja (za to ponudbo)</button>
-                )}
-                {jeOnboardan && kazemDruge && drugaPodrocja.map(skupinaPodrocja)}
                 <div className="skupina">
                   <div className="opts">
                     <button type="button" className="pill dodaj" onClick={() => setKazemDodaj(!kazemDodaj)}>
