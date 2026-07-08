@@ -2573,15 +2573,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .vec-namig { font-weight: 400; font-size: .85rem; color: rgba(17,17,17,.65); margin-left: auto; white-space: nowrap; }
         .cw .choicegrid button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-        .cw .paketi { display: grid; grid-template-columns: 1fr 1.15fr 1fr; margin-top: .6rem; border-top: 1px solid rgba(17,17,17,.18); }
+        .cw .paketi { display: grid; grid-template-columns: 1fr 1.15fr 1fr; margin-top: .6rem; border-top: 1px solid rgba(17,17,17,.4); }
         @media (max-width: 640px) { .cw .paketi { grid-template-columns: 1fr; } }
-        .cw .paket { padding: 1.7rem 1.4rem 1.8rem; border-bottom: 1px solid rgba(17,17,17,.18); }
-        .cw .paket + .paket { border-left: 1px solid rgba(17,17,17,.18); }
+        .cw .paket { padding: 1.7rem 1.4rem 1.8rem; border-bottom: 1px solid rgba(17,17,17,.4); }
+        .cw .paket + .paket { border-left: 1px solid rgba(17,17,17,.4); }
         @media (max-width: 640px) { .cw .paket + .paket { border-left: none; } }
         .cw .paket.mid { background: var(--accent); color: var(--paper); }
+        .cw .paket.mid, .cw .paket.mid + .paket { border-color: rgba(245,242,234,.4); }
         .cw .paket h3 { margin: 0; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 600; opacity: .85; }
-        .cw .paket .redna { font-family: var(--font-serif), serif; font-size: 1.05rem; text-decoration: line-through; opacity: .62; margin-top: .5rem; margin-bottom: -.4rem; }
-        .cw .paket .znesek { font-family: var(--font-serif), Didot, serif; font-size: clamp(2rem, 4.5vw, 2.6rem); font-weight: 700; margin: .5rem 0 .55rem; letter-spacing: -.01em; }
+        .cw .paket .redna { font-family: var(--font-serif), serif; font-size: 1.05rem; text-decoration: line-through; opacity: .62; margin-top: .5rem; margin-bottom: -.4rem; -webkit-text-stroke: 0.3px currentColor; }
+        .cw .paket .znesek { font-family: var(--font-serif), Didot, serif; font-size: clamp(2rem, 4.5vw, 2.6rem); font-weight: 700; margin: .5rem 0 .55rem; letter-spacing: -.01em; -webkit-text-stroke: 0.4px currentColor; }
         .cw .paket p { margin: 0; font-size: .8rem; line-height: 1.6; opacity: .8; }
         .cw .paket.mid p { opacity: .88; }
         .cw .razlaga { font-size: .85rem; color: rgba(17,17,17,.72); line-height: 1.75; margin: 1.5rem 0 0; max-width: 64ch; }
