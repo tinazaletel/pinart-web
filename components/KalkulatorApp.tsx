@@ -841,6 +841,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [kazemDodaj, setKazemDodaj] = useState(false);
   const [kazemCene, setKazemCene] = useState(false);
   const [kazemProfil, setKazemProfil] = useState(false);
+  /* Profil kot drill-down (meni -> ena "podstran"), ne dolg scroll treh
+     razdelkov skupaj — bolj pregledno in mobile-friendly (Tina). */
+  const [profilPogled, setProfilPogled] = useState<'meni' | 'zgodovina' | 'podjetje' | 'cene'>('meni');
   const [mojeStoritve, setMojeStoritve] = useState<Storitev[]>([]);
   /* Onboarding / osebni set storitev: kaj uporabnik ponuja, postavljeno v
      ospredje. null = se ni onboardan; [] = onboardan brez izbire (pokazi vse). */
@@ -1982,7 +1985,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .sg-motiv p b { font-weight: 700; }
         .cw .cene-modal { max-width: 580px; }
         .cw .cene-glava { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .5rem; }
-        .cw .cene-glava h2 { margin: 0; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.5rem, 4vw, 2.1rem); }
+        .cw .cene-glava h2 { display: flex; align-items: center; gap: .6rem; margin: 0; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.5rem, 4vw, 2.1rem); }
+        .cw .profil-nazaj { flex: none; width: 2.1rem; height: 2.1rem; border-radius: 999px; border: 1px solid var(--ink); background: transparent; color: var(--ink); font-size: 1rem; font-family: inherit; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .18s ease, color .18s ease; }
+        .cw .profil-nazaj:hover { background: var(--ink); color: var(--paper); }
+        .cw .profil-meni { display: flex; flex-direction: column; gap: .6rem; }
+        .cw .profil-meni-vrsta { display: flex; align-items: center; gap: 1rem; width: 100%; padding: 1.1rem 1rem; border: 1px solid rgba(17,17,17,.15); border-radius: 14px; background: #FCFBF7; color: var(--ink); font-family: inherit; text-align: left; cursor: pointer; transition: border-color .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
+        .cw .profil-meni-vrsta:hover { border-color: var(--ink); transform: translateY(-2px); }
+        .cw .profil-meni-vrsta strong { display: block; font-size: 1rem; font-weight: 600; margin-bottom: .2rem; }
+        .cw .profil-meni-vrsta small { display: block; font-size: .82rem; font-weight: 400; color: rgba(17,17,17,.6); line-height: 1.4; }
+        .cw .profil-meni-vrsta span:not(.pm-puscica) { flex: 1; min-width: 0; }
+        .cw .profil-meni-vrsta .pm-puscica { flex: none; font-size: 1.2rem; opacity: .5; }
         .cw .cene-seznam { display: flex; flex-direction: column; margin-bottom: 1.3rem; }
         .cw .cene-vrsta { display: flex; align-items: center; gap: .55rem; padding: .35rem .3rem; border-radius: 8px; }
         .cw .cene-vrsta:hover { background: rgba(17,17,17,.035); }
@@ -2496,81 +2508,105 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
       {kazemProfil && (
         <>
-          <div className="profil-zastor" onClick={() => setKazemProfil(false)} aria-hidden />
+          <div className="profil-zastor" onClick={() => { setKazemProfil(false); setProfilPogled('meni'); }} aria-hidden />
           <div className="profil-predal" role="dialog" aria-modal="true" aria-label="Profil">
             <div className="cene-glava">
-              <h2>Profil</h2>
-              <button type="button" className="op-edit" onClick={() => setKazemProfil(false)}>✕ Zapri</button>
+              <h2>
+                {profilPogled !== 'meni' && (
+                  <button type="button" className="profil-nazaj" onClick={() => setProfilPogled('meni')} aria-label="Nazaj na profil">←</button>
+                )}
+                {profilPogled === 'meni' ? 'Profil'
+                  : profilPogled === 'zgodovina' ? 'Zgodovina ponudb'
+                    : profilPogled === 'podjetje' ? 'Moje podjetje'
+                      : 'Cenovni profili'}
+              </h2>
+              <button type="button" className="op-edit" onClick={() => { setKazemProfil(false); setProfilPogled('meni'); }}>✕ Zapri</button>
             </div>
 
-            <div className="profil-sekcija">
-              <div className="k-naslov">
-                <ClockCounterClockwise size={17} weight="bold" style={{ marginRight: '.4rem', verticalAlign: '-3px' }} />
-                Zgodovina ponudb
-                <span className="vec">shranjene cele ponudbe za stranke</span>
+            {profilPogled === 'meni' && (
+              <div className="profil-meni">
+                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('zgodovina')}>
+                  <ClockCounterClockwise size={20} weight="bold" />
+                  <span>
+                    <strong>Zgodovina ponudb</strong>
+                    <small>shranjene cele ponudbe za stranke{Object.keys(arhiv).length > 0 ? ` (${Object.keys(arhiv).length})` : ''}</small>
+                  </span>
+                  <span className="pm-puscica" aria-hidden>→</span>
+                </button>
+                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('podjetje')}>
+                  <Buildings size={20} weight="bold" />
+                  <span>
+                    <strong>Moje podjetje</strong>
+                    <small>podatki v glavi ponudbe, DDV, urne postavke{Object.keys(podjetja).length > 0 ? ` · ${Object.keys(podjetja).length} shranjenih` : ''}</small>
+                  </span>
+                  <span className="pm-puscica" aria-hidden>→</span>
+                </button>
+                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('cene')}>
+                  <Gear size={20} weight="bold" />
+                  <span>
+                    <strong>Cenovni profili</strong>
+                    <small>shranjeni kompleti cen storitev (redko){Object.keys(profili).length > 0 ? ` (${Object.keys(profili).length})` : ''}</small>
+                  </span>
+                  <span className="pm-puscica" aria-hidden>→</span>
+                </button>
               </div>
-              {Object.keys(arhiv).length === 0 ? (
+            )}
+
+            {profilPogled === 'zgodovina' && (
+              Object.keys(arhiv).length === 0 ? (
                 <p className="ob-sub" style={{ margin: 0 }}>Še nimaš shranjenih ponudb. Na koraku Tvoja ponudba klikni »Shrani ponudbo v arhiv«.</p>
               ) : (
                 <div className="profil-seznam">
                   {Object.keys(arhiv).map(ime => (
                     <div key={ime} className="profil-vrsta">
                       <span className="pv-ime">{ime}</span>
-                      <button type="button" className="povezava" onClick={() => { naloziIzArhiva(ime); setKazemProfil(false); }}>↺ Odpri</button>
+                      <button type="button" className="povezava" onClick={() => { naloziIzArhiva(ime); setKazemProfil(false); setProfilPogled('meni'); }}>↺ Odpri</button>
                       <button type="button" className="brisi" title={'Izbriši ' + ime} onClick={() => izbrisiIzArhiva(ime)}>×</button>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              )
+            )}
 
-            <div className="profil-sekcija">
-              <div className="k-naslov">
-                <Buildings size={17} weight="bold" style={{ marginRight: '.4rem', verticalAlign: '-3px' }} />
-                Moje podjetje
-                <span className="vec">podatki v glavi ponudbe — urejaš tukaj</span>
-              </div>
-              {podatkiUI()}
-              <div className="podjetja-shrani">
-                <input type="text" placeholder="Ime za shranjeno podjetje (npr. Pinart, Moj s.p. …)"
-                  value={imePodjetja} onChange={e => setImePodjetja(e.target.value)}
-                  aria-label="Ime za shranjeno podjetje" />
-                <button type="button" className="dodaj-gumb" onClick={shraniPodjetje}>+ Shrani kot podjetje</button>
-              </div>
-              {Object.keys(podjetja).length > 0 && (
-                <div className="profil-seznam" style={{ marginTop: '.9rem' }}>
-                  <p className="ob-sub" style={{ margin: '0 0 .5rem' }}>Delaš za več podjetij? Preklopi med shranjenimi:</p>
-                  {Object.keys(podjetja).map(ime => (
-                    <div key={ime} className="profil-vrsta">
-                      <span className="pv-ime">{ime}</span>
-                      <button type="button" className="povezava" onClick={() => naloziPodjetje(ime)}>↺ Preklopi</button>
-                      <button type="button" className="brisi" title={'Izbriši ' + ime} onClick={() => izbrisiPodjetje(ime)}>×</button>
-                    </div>
-                  ))}
+            {profilPogled === 'podjetje' && (
+              <>
+                {podatkiUI()}
+                <div className="podjetja-shrani">
+                  <input type="text" placeholder="Ime za shranjeno podjetje (npr. Pinart, Moj s.p. …)"
+                    value={imePodjetja} onChange={e => setImePodjetja(e.target.value)}
+                    aria-label="Ime za shranjeno podjetje" />
+                  <button type="button" className="dodaj-gumb" onClick={shraniPodjetje}>+ Shrani kot podjetje</button>
                 </div>
-              )}
-            </div>
+                {Object.keys(podjetja).length > 0 && (
+                  <div className="profil-seznam" style={{ marginTop: '.9rem' }}>
+                    <p className="ob-sub" style={{ margin: '0 0 .5rem' }}>Delaš za več podjetij? Preklopi med shranjenimi:</p>
+                    {Object.keys(podjetja).map(ime => (
+                      <div key={ime} className="profil-vrsta">
+                        <span className="pv-ime">{ime}</span>
+                        <button type="button" className="povezava" onClick={() => naloziPodjetje(ime)}>↺ Preklopi</button>
+                        <button type="button" className="brisi" title={'Izbriši ' + ime} onClick={() => izbrisiPodjetje(ime)}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
 
-            <div className="profil-sekcija">
-              <div className="k-naslov">
-                <Gear size={17} weight="bold" style={{ marginRight: '.4rem', verticalAlign: '-3px' }} />
-                Cenovni profili
-                <span className="vec">shranjeni kompleti cen storitev (redko — le če jih rabiš več)</span>
-              </div>
-              {Object.keys(profili).length === 0 ? (
+            {profilPogled === 'cene' && (
+              Object.keys(profili).length === 0 ? (
                 <p className="ob-sub" style={{ margin: 0 }}>Nimaš shranjenih dodatnih kompletov cen. To so tvoje osnovne cene v »⚙ Nastavitve in cene«.</p>
               ) : (
                 <div className="profil-seznam">
                   {Object.keys(profili).map(ime => (
                     <div key={ime} className="profil-vrsta">
                       <span className="pv-ime">{ime}</span>
-                      <button type="button" className="povezava" onClick={() => { naloziProfil(ime); setKazemProfil(false); }}>↺ Naloži</button>
+                      <button type="button" className="povezava" onClick={() => { naloziProfil(ime); setKazemProfil(false); setProfilPogled('meni'); }}>↺ Naloži</button>
                       <button type="button" className="brisi" title={'Izbriši ' + ime} onClick={() => izbrisiProfil(ime)}>×</button>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              )
+            )}
           </div>
         </>
       )}
