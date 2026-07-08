@@ -2082,7 +2082,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <div className="opts">
                     <button type="button" className="pill dodaj" onClick={() => setKazemDodaj(!kazemDodaj)}>
                       <span className="pi" aria-hidden><Plus size={19} /></span>
-                      <span>dodaj postavko<small>dodaten strošek <b>za to ponudbo</b>: font licenca, najem studia, tisk, stock …</small></span>
+                      <span>dodaj postavko<small>dodaten strošek za to ponudbo: font licenca, najem studia, tisk, stock …</small></span>
                     </button>
                   </div>
                 </div>
