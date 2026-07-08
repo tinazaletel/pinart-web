@@ -1488,7 +1488,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   : korak === podatkiStep ? 'Tvoji podatki za ponudbo'
                     : 'Tvoja ponudba.';
 
-  const opisKoraka = korak === 0 ? 'Izbereš lahko eno ali več storitev.'
+  const opisKoraka = korak === 0 ? 'Izberi storitve za to ponudbo — eno ali več.'
     : trenutnaSkupina ? 'Več o projektu. Odgovori pomagajo določiti obseg ponudbe; lahko jih preskočiš.'
       : korak === mojTrgStep ? 'Tvoj trg nastavi privzete osnove na tam običajno raven.'
         : korak === narocnikStep ? 'Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.'
@@ -1572,6 +1572,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .skupina-naslov { font-size: .72rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--accent); margin-bottom: .75rem; }
         .cw .onboarding { position: fixed; inset: 0; z-index: 60; background: var(--paper); overflow-y: auto; display: flex; flex-direction: column; animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
         @media (prefers-reduced-motion: reduce) { .cw .onboarding { animation: none; } }
+        .cw .ob-kicker { font-size: .74rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 .6rem; }
         .cw .ob-naslov { padding-left: 0 !important; }
         .cw .onboarding-noga { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1rem; margin-top: 2.6rem; }
         .cw .soglasje-email { border-top: 1px solid rgba(17,17,17,.14); padding-top: 1.3rem; margin-bottom: 1.7rem; }
@@ -1908,6 +1909,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           </div>
           <div className="oder">
             <div className="korak-vsebina">
+              <p className="ob-kicker">Kalkulator za pošteno ceno in ponudbo · to nastaviš enkrat</p>
               <h1 className="ob-naslov">S čim se ukvarjaš?</h1>
               <p className="sub" style={{ marginBottom: '2rem' }}>Izberi svoja področja dela — pripadajoče storitve postavimo v ospredje, ostale skrijemo (do njih prideš z enim klikom). Kadar koli lahko urediš ali preskočiš.</p>
               <div className="izbira izbira-3">
@@ -1936,7 +1938,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <h2>Nastavitve in cene</h2>
               <button type="button" className="op-edit" onClick={() => setKazemCene(false)}>✕ Zapri</button>
             </div>
-            <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Prilagodi ceno, razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš. Vrstni red velja tudi na prvem koraku.</p>
+            <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Te cene so <b>podlaga za izračun</b> — privzete (slovenski trg) delujejo takoj, prilagodi jih svojim za točnejši rezultat. Razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš; vrstni red velja tudi na prvem koraku.</p>
             <button type="button" className="povezava" style={{ marginBottom: '1.3rem' }} onClick={() => { setKazemCene(false); odpriOnboarding(); }}>↳ Uredi področja dela (kaj ponujaš)</button>
             <div className="cene-seznam">
               {poVrstnemRedu(vidneStoritve).map((s, i) => (
@@ -2037,7 +2039,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <p className="sub">{opisKoraka}</p>
               {korak === 0 && (
                 <button type="button" className="op-edit" onClick={() => setKazemCene(true)} aria-expanded={kazemCene}>
-                  ⚙ Nastavitve in cene
+                  <span style={{ fontSize: '1.35em', lineHeight: 0, position: 'relative', top: '.12em' }}>⚙</span> Nastavitve in cene
                 </button>
               )}
             </div>
