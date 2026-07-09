@@ -103,9 +103,13 @@ export default function FloatingUI() {
       const hero = document.getElementById('hero');
       const heroRect = hero?.getBoundingClientRect();
 
-      // The hero controls its own light/dark state through the pinart-dark
-      // event — but only while it actually sits under the label.
-      if (heroRect && heroRect.top < labelY && heroRect.bottom > labelY) return;
+      /* The hero controls its own light/dark state through the pinart-dark
+         event — but only while it actually sits under the label. Ob odhodu
+         iz crnega finala se prehod v crno zacne ze, ko crni rob doseze
+         SPODNJI rob napisa (labelY + 90), ne sredine — skupaj z 0.2s
+         prehodom napis potemni tocno, ko svetla podlaga pride pod njega
+         (Tina: cisto tocna sredina je delovala zaznavno prepozno). */
+      if (heroRect && heroRect.top < labelY && heroRect.bottom > labelY + 90) return;
 
       const darkSections = document.querySelectorAll('[data-nav-dark]');
       const onDark = Array.from(darkSections).some(el => {
@@ -180,7 +184,7 @@ export default function FloatingUI() {
           background:     'transparent',
           padding:        0,
           cursor:         'pointer',
-          transition:     'opacity 0.3s ease, color 0.5s ease',
+          transition:     'opacity 0.3s ease, color 0.2s ease',
         }}
         onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
         onMouseLeave={e => (e.currentTarget.style.opacity = '0.72')}
@@ -195,7 +199,7 @@ export default function FloatingUI() {
             writingMode:   'vertical-rl',
             transform:     'rotate(180deg)',
             color:         ink,
-            transition:    'color 0.5s ease',
+            transition:    'color 0.2s ease',
           }}
         >
           Let&rsquo;s talk
@@ -205,7 +209,7 @@ export default function FloatingUI() {
           alt=""
           width={26}
           height={26}
-          style={{ filter: isDark ? 'invert(1)' : 'none', transition: 'filter 0.5s ease' }}
+          style={{ filter: isDark ? 'invert(1)' : 'none', transition: 'filter 0.2s ease' }}
         />
       </button>
 
