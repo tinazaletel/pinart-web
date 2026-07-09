@@ -282,16 +282,14 @@ export default function Hero() {
     /* Najblizja tocka na lasni poti do DOT_X/DOT_Y (kje naj se zacne risati
        poteza) je bila prej izracunana OB VSAKEM nalaganju: 301
        getPointAtLength() klicev na pot z >100k znakov v "d" — na
-       pocasnejsih napravah vecsekundna blokada glavne niti (Tina:
-       "zamrznilo za 10s"). Vmesni poskus (grobo-pa-fino priblizno iskanje)
-       je bil hiter, a je pri poti s stevilnimi lokalnimi minimumi
-       (hair_x5F_3, tangled scribble) obcasno pristal na NAPACNI tocki —
-       vidno kot bela vrzel v laseh. Ker je pupa_pinart_6.svg staticna
-       datoteka, je pravi rezultat vedno enak -- izracunan enkrat natancno
-       (301 vzorcev) in trdo kodiran spodaj. Ce se SVG kdaj zamenja, je
-       treba ti dve stevilki ponovno izracunati. */
+       pocasnejsih napravah vecsekundna blokada glavne niti. Ker je
+       pupa_pinart_6.svg staticna datoteka, je rezultat vedno enak —
+       vrednosti spodaj so PREVERJENE DVAKRAT: enkrat v izolirani test-strani
+       in enkrat z zivim console.log() na tej isti komponenti (obakrat
+       enako: 100 in 68.66666666666667). Ce se SVG kdaj zamenja, ju je
+       treba ponovno izracunati. */
     const hairStartPct = 100;
-    const hairG3StartPct = 68.7;
+    const hairG3StartPct = 68.66666666666667;
 
     // Pre-set stroke positions (hair groups still hidden via opacity/display)
     if (hairG0Paths.length) gsap.set(hairG0Paths, { drawSVG: `${hairStartPct.toFixed(1)}% ${hairStartPct.toFixed(1)}%` });
