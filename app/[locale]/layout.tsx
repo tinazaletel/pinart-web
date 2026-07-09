@@ -105,7 +105,10 @@ export default async function LocaleLayout({
   };
 
   return (
-    <html lang={locale} className={fontVariables}>
+    // suppressHydrationWarning: inline skripta v <head> doda data-cookie-consent
+    // na <html> pred hidracijo — React tega atributa ne pozna in bi sicer javil
+    // laznjivo neujemanje. Velja samo za atribute tega elementa.
+    <html lang={locale} className={fontVariables} suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
@@ -118,6 +121,15 @@ export default async function LocaleLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: "try{history.scrollRestoration='manual';window.scrollTo(0,0);}catch(e){}",
+          }}
+        />
+        {/* Run before paint: cookie banner je v streznikovem HTML-ju (da ne
+            caka na JavaScript — bil je LCP element pri 8s na mobile), zato
+            se za obiskovalce, ki so ze odgovorili, skrije se PRED izrisom
+            (CSS pravilo za data-cookie-consent v globals.css). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "try{if(localStorage.getItem('pinart_cookie_consent'))document.documentElement.setAttribute('data-cookie-consent','')}catch(e){}",
           }}
         />
       </head>

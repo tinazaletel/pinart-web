@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useLayoutEffect } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { gsap } from '@/lib/gsap';
@@ -15,6 +15,8 @@ const PROJECTS = [
     slug: 'petrol-pay',
     title: 'Petrol Loyalty',
     image: '/work/petrol-pay/Petrol_Pay_loyalty_gold.jpg',
+    mobileImage: '/work/petrol-pay/Petrol_Pay_loyalty_gold-mobile.jpg',
+    mobileImageHd: '/work/petrol-pay/Petrol_Pay_loyalty_gold-mobile-hd.jpg',
     video: '/petrol-card-loop.mp4',
   },
   {
@@ -29,6 +31,8 @@ const PROJECTS = [
     slug: 'lucky-7',
     title: 'Lucky 7',
     image: '/work/lucky-7/lucky_7_primeri.jpg',
+    mobileImage: '/work/lucky-7/lucky_7_primeri-mobile.jpg',
+    mobileImageHd: '/work/lucky-7/lucky_7_primeri-mobile-hd.jpg',
     video: '/lucky-7-loop.mp4',
   },
   {
@@ -46,6 +50,29 @@ export default function Projects() {
   const titleRefs = useRef<(HTMLDivElement | null)[]>([]);
   const maskRefs = useRef<(HTMLDivElement | null)[]>([]);
   const mediaRefs = useRef<(HTMLElement | null)[]>([]);
+
+  /* video poster nima nativne odzivne sintakse (za razliko od <picture>).
+     Ker strežnik ne pozna viewporta, bi kakršenkoli poster v JSX vedno
+     pomenil desktop verzijo v SSR HTML-ju — brskalnik bi jo pridobil
+     še preden se React sploh hidrira, ne glede na kasnejši client state
+     (od tod prejšnji dvojni fetch). Zato se poster ne izrisuje v JSX-u,
+     ampak se nastavi neposredno na DOM elementu spodaj. */
+  useLayoutEffect(() => {
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    /* Telefoni z gostimi/vecjimi zasloni (novejsi iPhoni, Samsungi:
+       ~360-430 CSS px × DPR 2.6-3 = 1000-1300 fizicnih pik) dobijo 1200px
+       verzijo, manjsi/starejsi (npr. 360×2 = 720) pa se manjso 900px. */
+    const needsHd = window.innerWidth * window.devicePixelRatio > 950;
+    PROJECTS.forEach((project, i) => {
+      const el = mediaRefs.current[i];
+      if (!(el instanceof HTMLVideoElement)) return;
+      if (isMobile && 'mobileImage' in project) {
+        el.poster = needsHd && 'mobileImageHd' in project ? project.mobileImageHd : project.mobileImage;
+      } else {
+        el.poster = project.image;
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -246,7 +273,6 @@ export default function Projects() {
                   ref={el => { mediaRefs.current[i] = el; }}
                   className="absolute inset-0 h-full w-full object-cover"
                   src={project.video}
-                  poster={project.image}
                   data-lazy-video
                   muted
                   loop

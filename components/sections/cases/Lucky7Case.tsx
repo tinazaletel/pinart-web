@@ -295,6 +295,8 @@ export default function Lucky7Case({ locale }: { locale: string }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/work/lucky-7/lucky_7_primeri.jpg"
+            srcSet="/work/lucky-7/lucky_7_primeri-mobile.jpg 900w, /work/lucky-7/lucky_7_primeri-mobile-hd.jpg 1200w, /work/lucky-7/lucky_7_primeri.jpg 1920w"
+            sizes="100vw"
             alt={t('explorationCap')}
             loading="lazy"
             style={{ display: 'block', width: '100%', height: 'auto' }}
