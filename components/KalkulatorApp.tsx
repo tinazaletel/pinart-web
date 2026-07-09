@@ -2628,7 +2628,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .profil-vrsta .pv-ime { flex: 1; min-width: 0; font-size: .95rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .cw .glava .glava-brand { pointer-events: auto; display: inline-flex; align-items: center; gap: .6rem; text-decoration: none; }
         .cw .glava .glava-ime { font-size: .74rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(17,17,17,.68); }
-        .cw .glava .glava-ime-blok { display: flex; flex-direction: column; align-items: flex-end; gap: .25rem; }
+        .cw .glava .glava-ime-blok { display: inline-flex; flex-direction: row; align-items: center; gap: .4rem; }
         .cw .glava .beta { font-size: .56rem; font-weight: 700; letter-spacing: .1em; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: .08rem .28rem; line-height: 1; }
         .cw .glava .glava-logo { width: 42px; height: 42px; display: block; transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .glava .glava-brand:hover .glava-logo { transform: translateY(-1px); }
@@ -2654,16 +2654,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .pill { position: relative; overflow: hidden; z-index: 0; padding: .8rem 1.3rem; border: 1px solid rgba(17,17,17,.25); border-radius: 999px; cursor: pointer; font-size: 1rem; background: transparent; font-family: inherit; font-weight: 400; color: var(--ink); transition: border-color .18s ease, background .18s ease, color .18s ease; text-align: left; line-height: 1.25; }
         .cw .pill small { position: relative; z-index: 1; display: block; font-size: .82rem; color: rgba(17,17,17,.82); font-weight: 400; margin-top: .1rem; transition: color .3s cubic-bezier(0.16,1,0.3,1); }
         .cw .pill:hover { border-color: var(--ink); }
-        .cw .pill.on { background: transparent; color: var(--paper); border-color: var(--accent); transition: color .2s ease .12s, border-color .2s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
+        .cw .pill.on { background: var(--accent); color: var(--paper); border-color: var(--accent); }
         .cw .pill.on small { color: rgba(245,242,234,.92); }
         .cw .pill:focus { outline: none; }
         .cw .pill:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
         .cw .pill { display: inline-flex; align-items: center; gap: .65rem; transition: transform .2s cubic-bezier(0.23,1,0.32,1), border-color .2s ease, background .55s cubic-bezier(0.16,1,0.3,1), color .2s ease; }
         .cw .pill:hover { transform: translateY(-2px); }
         .cw .pill:active { transform: translateY(0) scale(.97); }
-        .cw .pill-fill { position: absolute; inset: 0; background: var(--accent); border-radius: inherit; z-index: 0; pointer-events: none; clip-path: polygon(0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%); transition: clip-path .6s cubic-bezier(0.52,0,0.2,1); }
-        .cw .pill.on .pill-fill { clip-path: polygon(0% 0%, 168% 0%, 132% 44%, 128% 66%, 66% 128%, 44% 132%, 0% 168%); }
-        @media (prefers-reduced-motion: reduce) { .cw .pill-fill { transition: none; } }
+        .cw .pill-fill { position: absolute; top: 50%; left: 1.3rem; width: 2.15rem; height: 2.15rem; border-radius: 50%; background: var(--accent); transform: translateY(-50%) scale(0); transform-origin: center; transition: transform .55s cubic-bezier(0.16,1,0.3,1); z-index: 0; pointer-events: none; }
+        .cw .pill.on .pill-fill { transform: translateY(-50%) scale(18); }
         .cw .pill .pi { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.15rem; height: 2.15rem; border-radius: 50%; background: var(--accent); color: var(--paper); transition: background .3s ease, color .55s ease; }
         .cw .pill.on .pi { background: var(--accent); color: var(--paper); }
         .cw .pill .pi svg { width: 22px; height: 22px; }
@@ -2693,18 +2692,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
            cez celo kartico — bolj zivo od plosko obarvanega .on. Ob hoverju
            se kartica dvigne, dobi robni poudarek in nezno cvetenje iz ikone. */
         .cw .izbira-podrocja button { position: relative; overflow: hidden; z-index: 0; display: flex; flex-direction: column; transition: transform .3s cubic-bezier(0.23,1,0.32,1), border-color .2s ease, box-shadow .3s ease, background .18s ease; }
-        .cw .izbira-podrocja button.on { background: transparent; border-color: var(--accent); transition: border-color .2s ease, transform .3s cubic-bezier(0.23,1,0.32,1); }
+        .cw .izbira-podrocja button.on { background: transparent; border-color: var(--accent); }
         .cw .izbira-podrocja button:hover:not(.on) { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 16px 38px rgba(17,17,17,.10); }
         .cw .izbira-podrocja button:active { transform: translateY(-1px) scale(.995); }
         @media (prefers-reduced-motion: reduce) {
           .cw .izbira-podrocja button, .cw .izbira-podrocja button:hover:not(.on) { transform: none; }
         }
-        /* Diagonalni ink razliv — enak jezik kot ink prehod na prvi strani
-           (valovit mokri rob), le da tu tece po diagonali iz ikone (levo
-           zgoraj) proti desnemu spodnjemu kotu. Poln sloj v barvi, ki ga
-           odkriva clip-path z valovitim diagonalnim robom. */
-        .cw .izbira-podrocja .pod-fill { position: absolute; inset: 0; background: var(--accent); z-index: 0; pointer-events: none; clip-path: polygon(0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%); transition: clip-path .72s cubic-bezier(0.52,0,0.2,1); }
-        .cw .izbira-podrocja button.on .pod-fill { clip-path: polygon(0% 0%, 168% 0%, 132% 44%, 128% 66%, 66% 128%, 44% 132%, 0% 168%); }
+        /* krog v barvi, ki se ob izbiri razleze iz ikone cez celo kartico */
+        .cw .izbira-podrocja .pod-fill { position: absolute; top: 1.4rem; left: 1.5rem; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--accent); transform: scale(0); transform-origin: center; transition: transform .55s cubic-bezier(0.16,1,0.3,1); z-index: 0; pointer-events: none; }
+        .cw .izbira-podrocja button.on .pod-fill { transform: scale(22); }
         @media (prefers-reduced-motion: reduce) { .cw .izbira-podrocja .pod-fill { transition: none; } }
         .cw .izbira-podrocja .pod-glava { position: relative; z-index: 1; display: flex; align-items: center; gap: .85rem; margin-bottom: .75rem; }
         .cw .izbira-podrocja .pod-ikona { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--accent); color: var(--paper); transition: background .3s ease, color .55s ease, transform .3s cubic-bezier(0.23,1,0.32,1); }
@@ -2930,7 +2926,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .a11y-close { position: absolute; top: .85rem; right: .9rem; border: none; background: none; padding: .2rem; font-family: inherit; font-size: 1rem; line-height: 1; cursor: pointer; color: var(--ink); }
         @media (max-width: 760px) {
           .cw .glava { padding-top: .8rem; padding-bottom: .8rem; }
-          .cw .glava .glava-ime { display: none; }
+          /* "Kalkulator BETA" ostane viden tudi na mobilnem (sam "BETA" nic ne
+             pove); na ozkih zaslonih skrijemo besedo "Zapri", ostane ✕ */
+          .cw .glava .zapri-loceno { font-size: 0; padding-left: .7rem; gap: 0; }
+          .cw .glava .zapri-loceno::before { content: "✕"; font-size: .82rem; }
           .cw .oder { align-items: flex-start; padding-top: 5.4rem; padding-bottom: 8rem; }
           .cw h1 { padding-left: 1.65rem; font-size: clamp(2.15rem, 11vw, 2.85rem); line-height: .98; margin-bottom: .6rem; }
           .cw .h1-step { position: absolute; top: 0; left: calc(-1 * clamp(1.2rem, 4vw, 3rem)); width: 2.15rem; height: 2.05rem; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); border-radius: 0 .35rem .35rem 0; font-size: .62rem; letter-spacing: .08em; }
@@ -3017,8 +3016,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
                 <span className="glava-ime-blok">
-                  <span className="beta">BETA</span>
                   <span className="glava-ime">Kalkulator</span>
+                  <span className="beta">BETA</span>
                 </span>
               </a>
               <a className="zapri zapri-loceno" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
@@ -3103,8 +3102,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
             <span className="glava-ime-blok">
-              <span className="beta">BETA</span>
               <span className="glava-ime">Kalkulator</span>
+              <span className="beta">BETA</span>
             </span>
           </a>
           <a className="zapri zapri-loceno" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
