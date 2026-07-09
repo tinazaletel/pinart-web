@@ -16,8 +16,31 @@ export default function FloatingUI() {
   const [inquiryType,  setInquiryType]  = useState('');
   const [submitState,  setSubmitState]  = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const isSl = pathname.startsWith('/sl');
+  /* Na kalkulatorju "Let's talk" ne sme prodajati storitev (Tina: "se ne gre
+     vec o mojih storitvah") — tu gre za orodje samo, zato zbiramo povratne
+     informacije in predloge, ne povprasevanj za projekte. */
+  const isKalkulator = pathname.includes('/kalkulator/orodje');
 
-  const talkCopy = isSl ? {
+  const kalkulatorCopy = {
+    eyebrow: 'Povratna informacija',
+    title: 'Kaj bi izboljšali?',
+    body: 'Deli predlog, opozori na napako ali samo povej, kako ti kalkulator služi. Berem osebno.',
+    options: [
+      ['Predlog za izboljšavo', 'kaj bi dodala, spremenila ali poenostavila'],
+      ['Nekaj ne deluje', 'napaka, nejasnost ali cena, ki ne štima'],
+      ['Splošno mnenje', 'kaj ti je všeč, kaj ne'],
+    ],
+    email: 'Piši mi neposredno',
+    back: 'Nazaj',
+    send: 'Pošlji',
+    sending: 'Pošiljam ...',
+    sent: 'Hvala za povratno informacijo!',
+    error: 'Sporočila trenutno ni bilo mogoče poslati. Poskusi znova ali mi piši neposredno.',
+    fields: { name: 'Ime', company: '', email: 'E-pošta', brief: 'Opiši predlog, napako ali mnenje', budget: '', timing: '' },
+    close: 'Zapri',
+  };
+
+  const talkCopy = isKalkulator ? kalkulatorCopy : isSl ? {
     eyebrow: 'Začniva pogovor',
     title: 'Kaj ustvarjava?',
     body: 'Izberi izhodišče. Odgovorila ti bom osebno in skupaj bova določila naslednji korak.',
@@ -71,11 +94,32 @@ export default function FloatingUI() {
     const t = setTimeout(() => setArrowVisible(true), 13500);
 
     const checkDark = () => {
-      const hero = document.getElementById('hero');
-      const heroRect = hero?.getBoundingClientRect();
+      /* Barva se odloca po tem, kaj lezi POD samim gumbom (spodnji desni rob),
+         ne po tem, kaj je kjerkoli v viewportu — zrcalno Nav.tsx, ki gleda
+         vrstico menija. Prej je gumb ostal bel se cel viewport za herojem,
+         ceprav je bil pod njim ze svetel Services. */
+      const labelY = window.innerHeight - 110; // sredina "Let's talk" stolpca
 
-      // The hero controls its own light/dark state through the pinart-dark event.
-      if (heroRect && heroRect.top < window.innerHeight && heroRect.bottom > 0) return;
+      /* Katera sekcija DEJANSKO lezi pod napisom? Golo primerjanje rectov
+         tu odpove: hero je po finalu se dolgo PRIPET cez viewport (rect
+         pokriva napis), Services pa medtem ze drsi CEZ njega — vizualno je
+         pod napisom ze svetla sekcija. Hit-test vrne resnicno zgornjo
+         plast (fixed UI in pointer-events:none prekrivala preskoci). */
+      const stack = document.elementsFromPoint(window.innerWidth - 24, labelY);
+      let sectionEl: Element | null = null;
+      for (const el of stack) {
+        if (el.closest('.edge-right-ui') || el.closest('#cookie-banner')) continue;
+        const sec = el.closest('section');
+        if (sec) { sectionEl = sec; break; }
+      }
+
+      /* The hero controls its own light/dark state through the pinart-dark
+         event — but only while it is what actually shows under the label. */
+      if (sectionEl && sectionEl.id === 'hero') return;
+      if (!sectionEl) {
+        const heroRect = document.getElementById('hero')?.getBoundingClientRect();
+        if (heroRect && heroRect.top < labelY && heroRect.bottom > labelY + 90) return;
+      }
 
       const darkSections = document.querySelectorAll('[data-nav-dark]');
       const onDark = Array.from(darkSections).some(el => {
@@ -83,7 +127,7 @@ export default function FloatingUI() {
         const rect = el.getBoundingClientRect();
         const op = parseFloat((el as HTMLElement).style.opacity ?? '1');
         const visible = isNaN(op) || op > 0.08;
-        return visible && rect.top < window.innerHeight && rect.bottom > 0;
+        return visible && rect.top < labelY && rect.bottom > labelY;
       });
       setIsDark(onDark);
     };
@@ -150,7 +194,7 @@ export default function FloatingUI() {
           background:     'transparent',
           padding:        0,
           cursor:         'pointer',
-          transition:     'opacity 0.3s ease, color 0.5s ease',
+          transition:     'opacity 0.3s ease, color 0.2s ease',
         }}
         onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
         onMouseLeave={e => (e.currentTarget.style.opacity = '0.72')}
@@ -165,7 +209,7 @@ export default function FloatingUI() {
             writingMode:   'vertical-rl',
             transform:     'rotate(180deg)',
             color:         ink,
-            transition:    'color 0.5s ease',
+            transition:    'color 0.2s ease',
           }}
         >
           Let&rsquo;s talk
@@ -175,13 +219,14 @@ export default function FloatingUI() {
           alt=""
           width={26}
           height={26}
-          style={{ filter: isDark ? 'invert(1)' : 'none', transition: 'filter 0.5s ease' }}
+          style={{ filter: isDark ? 'invert(1)' : 'none', transition: 'filter 0.2s ease' }}
         />
       </button>
 
       {talkOpen && (
         <div
           role="presentation"
+          className="talk-overlay"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) setTalkOpen(false);
           }}
@@ -254,17 +299,22 @@ export default function FloatingUI() {
               <form onSubmit={submitInquiry} style={{ display: 'grid', gap: '1rem' }}>
                 <input type="hidden" name="type" value={inquiryType} />
                 <input type="hidden" name="locale" value={isSl ? 'sl' : 'en'} />
+                <input type="hidden" name="source" value={isKalkulator ? 'kalkulator-feedback' : 'website'} />
                 <input name="website" tabIndex={-1} autoComplete="off" aria-hidden style={{ position: 'absolute', left: '-10000px' }} />
                 <button type="button" onClick={() => { setInquiryType(''); setSubmitState('idle'); }} style={{ width: 'fit-content', padding: 0, border: 0, background: 'transparent', cursor: 'pointer', font: 'inherit', textDecoration: 'underline', textUnderlineOffset: '0.3rem' }}>← {talkCopy.back}</button>
                 <strong style={{ fontSize: '1.15rem' }}>{inquiryType}</strong>
                 <label style={labelStyle}>{talkCopy.fields.name}<input required name="name" style={inputStyle} /></label>
-                <label style={labelStyle}>{talkCopy.fields.company}<input name="company" style={inputStyle} /></label>
+                {!isKalkulator && (
+                  <label style={labelStyle}>{talkCopy.fields.company}<input name="company" style={inputStyle} /></label>
+                )}
                 <label style={labelStyle}>{talkCopy.fields.email}<input required type="email" name="email" style={inputStyle} /></label>
                 <label style={labelStyle}>{talkCopy.fields.brief}<textarea required name="brief" rows={4} style={{ ...inputStyle, resize: 'vertical' }} /></label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <label style={labelStyle}>{talkCopy.fields.budget}<input name="budget" style={inputStyle} /></label>
-                  <label style={labelStyle}>{talkCopy.fields.timing}<input name="timing" style={inputStyle} /></label>
-                </div>
+                {!isKalkulator && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <label style={labelStyle}>{talkCopy.fields.budget}<input name="budget" style={inputStyle} /></label>
+                    <label style={labelStyle}>{talkCopy.fields.timing}<input name="timing" style={inputStyle} /></label>
+                  </div>
+                )}
                 <button disabled={submitState === 'sending'} type="submit" style={{ padding: '1rem 1.2rem', border: 0, background: 'var(--ink)', color: 'var(--paper)', cursor: 'pointer', font: 'inherit', fontWeight: 600 }}>
                   {submitState === 'sending' ? talkCopy.sending : talkCopy.send}
                 </button>
