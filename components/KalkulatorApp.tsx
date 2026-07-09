@@ -2696,9 +2696,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @media (prefers-reduced-motion: reduce) {
           .cw .izbira-podrocja button, .cw .izbira-podrocja button:hover:not(.on) { transform: none; }
         }
-        .cw .izbira-podrocja .pod-fill { position: absolute; top: 1.4rem; left: 1.5rem; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--accent); transform: scale(0); transform-origin: center; opacity: 1; transition: transform .55s cubic-bezier(0.16,1,0.3,1), opacity .4s ease; z-index: 0; pointer-events: none; }
-        .cw .izbira-podrocja button:hover:not(.on) .pod-fill { transform: scale(2.6); opacity: .09; }
-        .cw .izbira-podrocja button.on .pod-fill { transform: scale(22); opacity: 1; }
+        .cw .izbira-podrocja .pod-fill { position: absolute; top: 1.4rem; left: 1.5rem; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--accent); transform: scale(0); transform-origin: center; transition: transform .55s cubic-bezier(0.16,1,0.3,1); z-index: 0; pointer-events: none; }
+        .cw .izbira-podrocja button.on .pod-fill { transform: scale(22); }
         .cw .izbira-podrocja .pod-glava { position: relative; z-index: 1; display: flex; align-items: center; gap: .85rem; margin-bottom: .75rem; }
         .cw .izbira-podrocja .pod-ikona { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--accent); color: var(--paper); transition: background .3s ease, color .55s ease, transform .3s cubic-bezier(0.23,1,0.32,1); }
         .cw .izbira-podrocja button:hover:not(.on) .pod-ikona { transform: scale(1.08) rotate(-5deg); }
