@@ -1,28 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
+/* Banner se namenoma izrise ze na strezniku (v prvem HTML-ju) — prej je na
+   "visible" cakal do konca hidracije, zaradi cesar je bil kot LCP element
+   izmerjen sele pri ~8s na mobilnih napravah. Ali ga je treba skriti
+   (obiskovalec je ze odgovoril), pred izrisom odloci inline skripta v
+   layout <head> + CSS pravilo v globals.css, tukaj pa ob kliku. */
 export default function CookieBanner() {
   const t = useTranslations('cookies');
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('pinart_cookie_consent');
-    if (!stored) setVisible(true);
-  }, []);
 
   const respond = (answer: 'accepted' | 'declined') => {
     localStorage.setItem('pinart_cookie_consent', answer);
-    setVisible(false);
+    document.documentElement.setAttribute('data-cookie-consent', answer);
     window.dispatchEvent(new CustomEvent('pinart-cookie-consent', { detail: answer }));
   };
 
-  if (!visible) return null;
-
   return (
     <div
+      id="cookie-banner"
       role="dialog"
       aria-label="Obvestilo o piškotkih"
       style={{

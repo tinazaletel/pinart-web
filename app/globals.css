@@ -1168,3 +1168,8 @@ div.is-changing img {
   }
   .talk-panel-title { max-width: none !important; }
 }
+/* Cookie banner se izrise ze iz streznikovega HTML-ja (LCP!) — inline
+   skripta v layout <head> pred izrisom nastavi data-cookie-consent na
+   <html>, ce je obiskovalec ze odgovoril, in CSS ga skrije brez utripa. */
+/* !important: banner ima inline display:flex, ki bi sicer zmagal */
+html[data-cookie-consent] #cookie-banner { display: none !important; }
