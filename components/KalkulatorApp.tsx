@@ -2111,6 +2111,39 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     try { localStorage.setItem(K_PODJETJA, JSON.stringify(nov)); } catch { /* poln */ }
     if (aktivnoPodjetje === ime) { setAktivnoPodjetje(null); setProfilPogled('podjetja'); }
   };
+  /* Preklop podjetja neposredno na koraku "Kdo si" (Tina: enkrat pises
+     ponudbo kot art agencija, drugic kot tiskarna). Trenutni vnos se pred
+     preklopom shrani, da se nic ne izgubi. */
+  const shraniTrenutnoPodjetje = () => {
+    const ime = aktivnoPodjetje || ponudnik.ime.trim();
+    if (ime) shraniPodPodjetjem(ime);
+    return ime;
+  };
+  const preklopiPodjetje = (ime: string) => {
+    if (ime === aktivnoPodjetje) return;
+    shraniTrenutnoPodjetje();
+    naloziPodjetje(ime);
+    setAktivnoPodjetje(ime);
+  };
+  const novoPodjetjeKorak = () => {
+    shraniTrenutnoPodjetje();
+    setPonudnik({ ime: '', davcna: '', email: '', telefon: '', naslov: '', trr: '' });
+    setPredklic('+386'); setDdvZavezanec(false); setDdvStopnja('22'); setAvansPct('50');
+    setUrnePostavke([{ ime: 'Dodatna dela', cena: '' }]);
+    setAktivnoPodjetje(null);
+  };
+  /* dokler je neko podjetje aktivno, se vsaka sprememba podatkov sproti
+     shrani v njegov zapis — "zapomni si" brez dodatnega klika */
+  useEffect(() => {
+    if (!aktivnoPodjetje) return;
+    const zapis: PodjetjeProfil = { ponudnik, predklic, ddvZavezanec, ddvStopnja, avansPct, urnePostavke };
+    setPodjetja(prej => {
+      const nov = { ...prej, [aktivnoPodjetje]: zapis };
+      try { localStorage.setItem(K_PODJETJA, JSON.stringify(nov)); } catch { /* poln */ }
+      return nov;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ponudnik, predklic, ddvZavezanec, ddvStopnja, avansPct, urnePostavke]);
 
   /* ── moji redni mesecni stroski (informativno, se ne racuna v ceno) ── */
   const dodajStrosek = () => {
@@ -2273,6 +2306,36 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     <>
       <div className="kartica">
         <div className="k-naslov">Tvoji podatki <span className="vec">za glavo ponudbe</span></div>
+        {Object.keys(podjetja).length > 0 ? (
+          <div className="polje" style={{ marginBottom: '1.2rem' }}>
+            <label>Ponudbo pišeš kot
+              <InfoNamig besedilo="Če delaš za več podjetij (npr. svojo agencijo in tiskarno), tu preklopiš, v čigavem imenu je ponudba. Vsako podjetje si zapomni svoje podatke, DDV, avans in urne postavke. Trenutni vnos se pred preklopom samodejno shrani." />
+              <span className="vec">preklop med tvojimi podjetji</span>
+            </label>
+            <div className="opts">
+              {Object.keys(podjetja).map(ime => (
+                <button key={ime} type="button"
+                  className={'pill' + (aktivnoPodjetje === ime ? ' on' : '')}
+                  onClick={() => preklopiPodjetje(ime)}>
+                  <span className="pill-fill" aria-hidden />
+                  <span className="pill-tekst">{ime}</span>
+                </button>
+              ))}
+              <button type="button" className="pill" onClick={novoPodjetjeKorak}>
+                <span className="pill-fill" aria-hidden />
+                <span className="pill-tekst">+ Novo podjetje</span>
+              </button>
+            </div>
+          </div>
+        ) : ponudnik.ime.trim() ? (
+          <p className="hint" style={{ marginTop: 0 }}>
+            Pišeš ponudbe za več podjetij?{' '}
+            <button type="button" className="povezava" onClick={() => { shraniPodPodjetjem(ponudnik.ime.trim()); setAktivnoPodjetje(ponudnik.ime.trim()); }}>
+              Shrani »{ponudnik.ime.trim()}« kot podjetje
+            </button>{' '}
+            in dodaš lahko še druga — orodje si zapomni vsakega posebej.
+          </p>
+        ) : null}
         <div className="numgrid">
           <div className="polje">
             <label htmlFor="cw-pime">Ime / podjetje</label>
