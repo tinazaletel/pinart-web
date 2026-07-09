@@ -2594,7 +2594,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .glava .zapri { pointer-events: auto; display: inline-flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); text-decoration: none; background: var(--paper); border: none; border-radius: 999px; padding: .5rem .85rem; transition: color .18s ease; }
         .cw .glava .zapri:hover { color: var(--ink); }
         /* locena razlicica (poleg loga): navadno besedilo z locilno crto pred njim */
-        .cw .glava .zapri-loceno { background: none; border-radius: 0; padding: .2rem 0 .2rem 1rem; border-left: 1px solid rgba(17,17,17,.2); }
+        .cw .glava .zapri-loceno { background: none; border-radius: 0; padding: .2rem 0 .2rem 1rem; border-left: 1px solid rgba(17,17,17,.2); text-transform: lowercase; letter-spacing: .02em; color: rgba(17,17,17,.6); }
         .cw .glava-levo { pointer-events: auto; display: inline-flex; align-items: center; gap: 1rem; }
         .cw .glava-desno { pointer-events: auto; display: inline-flex; align-items: center; gap: .5rem; }
         .cw .glava-profil { display: inline-flex; align-items: center; gap: .4rem; font-family: inherit; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.82); background: var(--paper); border: 1px solid rgba(17,17,17,.22); border-radius: 999px; padding: .5rem .85rem; cursor: pointer; transition: color .18s ease, border-color .18s ease; }
@@ -2627,8 +2627,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .profil-vrsta:last-child { border-bottom: none; }
         .cw .profil-vrsta .pv-ime { flex: 1; min-width: 0; font-size: .95rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .cw .glava .glava-brand { pointer-events: auto; display: inline-flex; align-items: center; gap: .6rem; text-decoration: none; }
-        .cw .glava .glava-ime { font-size: .74rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(17,17,17,.68); }
-        .cw .glava .glava-ime-blok { display: inline-flex; flex-direction: row; align-items: center; gap: .4rem; }
+        .cw .glava .glava-ime { font-size: .82rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ink); line-height: 1; }
+        /* BETA znacka NAD besedo KALKULATOR (zlozeno, po Tininim mocku) */
+        .cw .glava .glava-ime-blok { display: inline-flex; flex-direction: column; align-items: flex-start; gap: .18rem; }
         .cw .glava .beta { font-size: .56rem; font-weight: 700; letter-spacing: .1em; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: .08rem .28rem; line-height: 1; }
         .cw .glava .glava-logo { width: 42px; height: 42px; display: block; transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .glava .glava-brand:hover .glava-logo { transform: translateY(-1px); }
@@ -3016,8 +3017,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
                 <span className="glava-ime-blok">
-                  <span className="glava-ime">Kalkulator</span>
                   <span className="beta">BETA</span>
+                  <span className="glava-ime">Kalkulator</span>
                 </span>
               </a>
               <a className="zapri zapri-loceno" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
@@ -3102,8 +3103,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
             <span className="glava-ime-blok">
-              <span className="glava-ime">Kalkulator</span>
               <span className="beta">BETA</span>
+              <span className="glava-ime">Kalkulator</span>
             </span>
           </a>
           <a className="zapri zapri-loceno" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
