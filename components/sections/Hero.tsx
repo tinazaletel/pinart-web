@@ -279,40 +279,19 @@ export default function Hero() {
     // DOT SVG position — packa starts here, hair radiates from here
     const DOT_X = 415.71, DOT_Y = 288;
 
-    /* Najblizja tocka na poti: prej 301 getPointAtLength() klicev na eno
-       samo pot z >100k znakov v "d" — na pocasnejsih napravah je to
-       blokiralo glavno nit za vec sekund (Tina: "zamrznilo za 10s").
-       Grobo-pa-fino iskanje (24 + 20 vzorcev = 44 klicev namesto 301)
-       da vizualno enak rezultat za ulomek cene. */
-    function najblizjiOdstotek(p: SVGPathElement): number {
-      const total = p.getTotalLength();
-      const GROB = 24;
-      let najboljsiI = 0, minDist = Infinity;
-      for (let i = 0; i <= GROB; i++) {
-        const pt   = p.getPointAtLength((i / GROB) * total);
-        const dist = (pt.x - DOT_X) ** 2 + (pt.y - DOT_Y) ** 2;
-        if (dist < minDist) { minDist = dist; najboljsiI = i; }
-      }
-      const sirinaKoraka = total / GROB;
-      const spodaj = Math.max(0, najboljsiI - 1) * sirinaKoraka;
-      const zgoraj = Math.min(GROB, najboljsiI + 1) * sirinaKoraka;
-      const FINO = 20;
-      let najboljsaDolzina = najboljsiI * sirinaKoraka;
-      minDist = Infinity;
-      for (let i = 0; i <= FINO; i++) {
-        const dolzina = spodaj + ((zgoraj - spodaj) * i) / FINO;
-        const pt      = p.getPointAtLength(dolzina);
-        const dist    = (pt.x - DOT_X) ** 2 + (pt.y - DOT_Y) ** 2;
-        if (dist < minDist) { minDist = dist; najboljsaDolzina = dolzina; }
-      }
-      return (najboljsaDolzina / total) * 100;
-    }
-
-    // Find % on Hair_0 path closest to dot position
-    const hairStartPct = hairG0Paths.length > 0 ? najblizjiOdstotek(hairG0Paths[0]) : 0;
-
-    // Find % on Hair_3 path closest to dot position
-    const hairG3StartPct = hairG3Paths.length > 0 ? najblizjiOdstotek(hairG3Paths[0]) : 0;
+    /* Najblizja tocka na lasni poti do DOT_X/DOT_Y (kje naj se zacne risati
+       poteza) je bila prej izracunana OB VSAKEM nalaganju: 301
+       getPointAtLength() klicev na pot z >100k znakov v "d" — na
+       pocasnejsih napravah vecsekundna blokada glavne niti (Tina:
+       "zamrznilo za 10s"). Vmesni poskus (grobo-pa-fino priblizno iskanje)
+       je bil hiter, a je pri poti s stevilnimi lokalnimi minimumi
+       (hair_x5F_3, tangled scribble) obcasno pristal na NAPACNI tocki —
+       vidno kot bela vrzel v laseh. Ker je pupa_pinart_6.svg staticna
+       datoteka, je pravi rezultat vedno enak -- izracunan enkrat natancno
+       (301 vzorcev) in trdo kodiran spodaj. Ce se SVG kdaj zamenja, je
+       treba ti dve stevilki ponovno izracunati. */
+    const hairStartPct = 100;
+    const hairG3StartPct = 68.7;
 
     // Pre-set stroke positions (hair groups still hidden via opacity/display)
     if (hairG0Paths.length) gsap.set(hairG0Paths, { drawSVG: `${hairStartPct.toFixed(1)}% ${hairStartPct.toFixed(1)}%` });
