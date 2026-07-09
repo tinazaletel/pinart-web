@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
-import { Link, usePathname } from '@/i18n/routing';
+import { Link, usePathname, localePath } from '@/i18n/routing';
 
 const NAV_LINKS = [
   { key: 'home' as const, href: '/' },
@@ -168,7 +168,7 @@ export default function Nav() {
               return (
                 <a
                   key={key}
-                  href={`/${locale}${hash}`}
+                  href={`${localePath(locale, '/')}${hash}`}
                   className="group relative py-1"
                   onClick={(e) => {
                     e.preventDefault();

@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
-import { routing, type Locale } from '@/i18n/routing';
+import { routing, type Locale, localePath } from '@/i18n/routing';
 import CircularText from '@/components/CircularText';
 import RevealOnScroll from '@/components/RevealOnScroll';
 import BlurText from '@/components/BlurText';
@@ -198,7 +198,7 @@ export default async function ServiceDetailPage({
           }}
         >
           <BackButton
-            fallbackHref={`/${locale}/#services`}
+            fallbackHref={localePath(locale, `/#services`)}
             className="font-sans uppercase"
             style={{
               display: 'inline-flex',
@@ -562,7 +562,7 @@ export default async function ServiceDetailPage({
                 return (
                   <Link
                     key={workSlug}
-                    href={`/${locale}/work/${workSlug}`}
+                    href={localePath(locale, `/work/${workSlug}`)}
                     style={{
                       display: 'flex',
                       flexDirection: 'column',
@@ -805,7 +805,7 @@ export default async function ServiceDetailPage({
         </div>
 
         <Link
-          href={`/${locale}/#footer`}
+          href={localePath(locale, `/#footer`)}
           className="font-sans uppercase"
           style={{
             display: 'inline-flex',

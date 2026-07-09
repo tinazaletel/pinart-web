@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import { gsap } from '@/lib/gsap';
 
@@ -55,6 +56,7 @@ interface Letter {
 export default function TypographyCollapse() {
   const t          = useTranslations('typography');
   const pathname   = usePathname();
+  const locale     = useLocale();
   const sectionRef = useRef<HTMLElement>(null);
 
   const LINES = useMemo(() => t.raw('words') as string[], [t]);
@@ -469,7 +471,7 @@ export default function TypographyCollapse() {
           willChange: 'transform, opacity',
         }}
       >
-        {pathname.startsWith('/sl') ? 'podri črke' : 'knock them down'}
+        {locale === 'sl' ? 'podri črke' : 'knock them down'}
       </div>
     </section>
   );

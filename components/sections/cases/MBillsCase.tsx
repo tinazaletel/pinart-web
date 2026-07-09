@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import CaseShell, { NextCase } from './CaseShell';
 import BlurText from '@/components/BlurText';
+import { localePath } from '@/i18n/routing';
 
 const rich = {
   em: (chunks: React.ReactNode) => <em>{chunks}</em>,
@@ -609,7 +610,7 @@ export default function MBillsCase({ locale }: { locale: string }) {
         </div>
       </section>
 
-      <NextCase href={`/${locale}/work/lucky-7`} title={t.raw('nextCaseTitle')} />
+      <NextCase href={localePath(locale, `/work/lucky-7`)} title={t.raw('nextCaseTitle')} />
     </CaseShell>
   );
 }

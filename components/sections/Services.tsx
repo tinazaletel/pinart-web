@@ -4,6 +4,7 @@ import { useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import SplitText from '@/components/SplitText';
+import { localePath } from '@/i18n/routing';
 
 // ── service data — images mapped 1-to-1 from codex ───────────────────────────
 const SERVICES = [
@@ -227,7 +228,7 @@ export default function Services() {
 
               {/* Entire description block is a link to the service subpage. */}
               <Link
-                href={`/${locale}/services/${key}`}
+                href={localePath(locale, `/services/${key}`)}
                 className="service-desc"
                 style={{
                   display:    'block',

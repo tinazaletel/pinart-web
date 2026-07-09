@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import BlurText from '@/components/BlurText';
+import { localePath } from '@/i18n/routing';
 
 type Props = { locale: string };
 
@@ -403,7 +404,7 @@ export default function PetrolPayCase({ locale }: Props) {
           className="next-case__title"
           dangerouslySetInnerHTML={{ __html: t.raw('nextCaseTitle') }}
         />
-        <Link href={`/${locale}/work/mbills`} className="next-case__cta">
+        <Link href={localePath(locale, `/work/mbills`)} className="next-case__cta">
           {tc('viewCaseStudy')}
         </Link>
       </section>

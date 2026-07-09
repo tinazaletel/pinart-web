@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { gsap } from '@/lib/gsap';
 import SplitText from '@/components/SplitText';
+import { localePath } from '@/i18n/routing';
 
 const CLIP_ODD  = 'polygon(6% 12%, 92% 0, 100% 48%, 91% 100%, 8% 88%, 0 44%)';
 const CLIP_EVEN = 'polygon(8% 0, 94% 12%, 100% 56%, 92% 88%, 6% 100%, 0 48%)';
@@ -328,7 +329,7 @@ export default function Projects() {
                 {t(`items.${project.slug}.desc`)}
               </p>
               <Link
-                href={`/${locale}/work/${project.slug}`}
+                href={localePath(locale, `/work/${project.slug}`)}
                 className="font-sans uppercase mt-8"
                 onClick={() => window.dispatchEvent(new CustomEvent('pinart-page-leave'))}
                 style={{
@@ -366,7 +367,7 @@ export default function Projects() {
         }}
       >
         <Link
-          href={`/${locale}/more-work`}
+          href={localePath(locale, `/more-work`)}
           className="font-sans uppercase"
           onClick={() => window.dispatchEvent(new CustomEvent('pinart-page-leave'))}
           style={{

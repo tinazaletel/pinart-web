@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
-import { routing, type Locale } from '@/i18n/routing';
+import { routing, type Locale, localePath } from '@/i18n/routing';
 import PetrolPayCase from '@/components/sections/cases/PetrolPayCase';
 import MBillsCase from '@/components/sections/cases/MBillsCase';
 import Lucky7Case from '@/components/sections/cases/Lucky7Case';
@@ -48,7 +48,7 @@ async function BackToWork({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'projects' });
   return (
     <BackButton
-      fallbackHref={`/${locale}/#work`}
+      fallbackHref={localePath(locale, `/#work`)}
       className="font-sans uppercase"
       style={{
         display: 'inline-flex',

@@ -1,6 +1,7 @@
 'use client';
 
 import { PenNib, MagnifyingGlass, FileText } from '@phosphor-icons/react';
+import { localePath } from '@/i18n/routing';
 
 /* Landing / predstavitev kalkulatorja: proda motivacijo, vodi v orodje
    (samostojna stran /kalkulator/orodje) in na koncu ponudi zanimive clanke.
@@ -46,7 +47,7 @@ const ZGODBE = [
 ];
 
 export default function KalkulatorLanding({ locale = 'sl' }: { locale?: string }) {
-  const orodje = `/${locale}/kalkulator/orodje`;
+  const orodje = localePath(locale, `/kalkulator/orodje`);
 
   return (
     <div className="kland">
@@ -169,8 +170,8 @@ export default function KalkulatorLanding({ locale = 'sl' }: { locale?: string }
         </p>
 
         <p className="podpis">
-          Orodje in zapise je pripravila Tina, kreativna direktorica studia <a href={`/${locale}`}>Pinart</a>.{' '}
-          Za projekte: <a href="mailto:tina@pinart.si">tina@pinart.si</a> · <a href={`/${locale}/kalkulator/pogoji`}>Pogoji uporabe</a>.
+          Orodje in zapise je pripravila Tina, kreativna direktorica studia <a href={localePath(locale, ``)}>Pinart</a>.{' '}
+          Za projekte: <a href="mailto:tina@pinart.si">tina@pinart.si</a> · <a href={localePath(locale, `/kalkulator/pogoji`)}>Pogoji uporabe</a>.
         </p>
       </div>
     </div>

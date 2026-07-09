@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
+import { localePath } from '@/i18n/routing';
 
 export const metadata: Metadata = {
   title: 'Pinart kalkulator: pogoji uporabe',
@@ -106,7 +107,7 @@ export default async function KalkulatorPogojiPage({
             Če pri prenosu ponudbe ali shranjevanju profila vpišeš ime in e-naslov,
             ju ponudnik hrani za namen obveščanja o orodju in svojih storitvah
             (pravna podlaga: privolitev). Privolitev lahko kadarkoli prekličeš s
-            sporočilom na tina@pinart.si; več v <a href={`/${locale}/zasebnost`} style={{ color: 'var(--ink)' }}>politiki zasebnosti</a>.
+            sporočilom na tina@pinart.si; več v <a href={localePath(locale, `/zasebnost`)} style={{ color: 'var(--ink)' }}>politiki zasebnosti</a>.
           </p>
         </section>
 
@@ -130,7 +131,7 @@ export default async function KalkulatorPogojiPage({
         </section>
 
         <p style={{ marginTop: '3rem' }}>
-          <a href={`/${locale}/kalkulator`} style={{ color: 'var(--ink)', fontSize: '.88rem' }}>← Nazaj na kalkulator</a>
+          <a href={localePath(locale, `/kalkulator`)} style={{ color: 'var(--ink)', fontSize: '.88rem' }}>← Nazaj na kalkulator</a>
         </p>
       </div>
     </main>

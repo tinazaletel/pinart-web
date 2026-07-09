@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { localePath } from '@/i18n/routing';
 import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package,
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
@@ -2854,7 +2855,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </div>
             <div className="soglasje-gumbi">
               <button type="button" className="gumb" onClick={sprejmiPogoje}>Razumem, gremo →</button>
-              <a className="povezava" href={`/${locale}/kalkulator/pogoji`}>Preberi celotne pogoje</a>
+              <a className="povezava" href={localePath(locale, `/kalkulator/pogoji`)}>Preberi celotne pogoje</a>
             </div>
           </div>
         </div>
@@ -2864,7 +2865,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         <div className="onboarding" role="dialog" aria-modal="true" aria-label="Katere storitve ponujaš">
           <div className="glava">
             <span className="glava-levo">
-              <a className="glava-brand" href={`/${locale}`} aria-label="Pinart — domov">
+              <a className="glava-brand" href={localePath(locale, ``)} aria-label="Pinart — domov">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
                 <span className="glava-ime-blok">
@@ -2877,7 +2878,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </button>
             </span>
             <span className="glava-desno">
-              <a className="zapri" href={`/${locale}/kalkulator`} aria-label="Zapri kalkulator">✕ Zapri</a>
+              <a className="zapri" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
             </span>
           </div>
           <div className="oder">
@@ -2948,7 +2949,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
       <div className="glava">
         <span className="glava-levo">
-          <a className="glava-brand" href={`/${locale}`} aria-label="Pinart — domov">
+          <a className="glava-brand" href={localePath(locale, ``)} aria-label="Pinart — domov">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
             <span className="glava-ime-blok">
@@ -2961,7 +2962,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           </button>
         </span>
         <span className="glava-desno">
-          <a className="zapri" href={`/${locale}/kalkulator`} aria-label="Zapri kalkulator">✕ Zapri</a>
+          <a className="zapri" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
         </span>
       </div>
 
@@ -3264,7 +3265,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <p className="ob-sub" style={{ margin: '0 0 1.3rem' }}>Vprašanje, predlog ali težava z orodjem? Pišem in berem osebno.</p>
                 <a href="mailto:tina@pinart.si" className="pomoc-mail">✉ tina@pinart.si</a>
                 <p className="ob-sub" style={{ margin: '1.3rem 0 0' }}>
-                  <a href={`/${locale}/kalkulator/pogoji`} style={{ color: 'var(--ink)' }}>Pogoji uporabe kalkulatorja →</a>
+                  <a href={localePath(locale, `/kalkulator/pogoji`)} style={{ color: 'var(--ink)' }}>Pogoji uporabe kalkulatorja →</a>
                 </p>
               </>
             )}

@@ -36,10 +36,10 @@ export default function RootNotFound() {
               Mogoče je odšla na kavo, mogoče je nikoli ni bilo. Ti si pa še vedno na pravem mestu.
             </p>
             <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-              <Link href="/sl" style={{ display: 'inline-flex', alignItems: 'center', padding: '14px 28px', borderRadius: '999px', fontSize: '15px', fontWeight: 600, textDecoration: 'none', background: '#1a1a1a', color: '#fcf9f6' }}>
+              <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', padding: '14px 28px', borderRadius: '999px', fontSize: '15px', fontWeight: 600, textDecoration: 'none', background: '#1a1a1a', color: '#fcf9f6' }}>
                 ← Nazaj domov
               </Link>
-              <Link href="/sl/more-work" style={{ display: 'inline-flex', alignItems: 'center', padding: '14px 28px', borderRadius: '999px', fontSize: '15px', fontWeight: 600, textDecoration: 'none', background: 'rgba(252,249,246,0.7)', color: '#1a1a1a', border: '1.5px solid #c8c1b3' }}>
+              <Link href="/more-work" style={{ display: 'inline-flex', alignItems: 'center', padding: '14px 28px', borderRadius: '999px', fontSize: '15px', fontWeight: 600, textDecoration: 'none', background: 'rgba(252,249,246,0.7)', color: '#1a1a1a', border: '1.5px solid #c8c1b3' }}>
                 Projekti
               </Link>
             </div>
