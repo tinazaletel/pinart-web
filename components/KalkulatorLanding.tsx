@@ -72,8 +72,8 @@ export default function KalkulatorLanding({ locale = 'sl' }: { locale?: string }
         .kland .kako { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.4rem; margin: 5.5rem 0 0; }
         @media (max-width: 620px) { .kland .kako { grid-template-columns: 1fr; gap: 2.2rem; } }
         .kland .korak-ikona { width: 2.5rem; height: 2.5rem; border-radius: 50%; background: var(--accent); color: var(--paper); display: inline-flex; align-items: center; justify-content: center; margin-bottom: .9rem; }
-        .kland .korak .n { font-family: var(--font-serif), serif; font-size: 1.6rem; color: rgba(17,17,17,.5); }
-        .kland .korak h3 { font-size: .95rem; font-weight: 600; margin: .5rem 0 .4rem; }
+        .kland .korak .n { font-family: var(--font-serif), serif; font-size: 1.35rem; line-height: 1; color: rgba(17,17,17,.5); }
+        .kland .korak h3 { font-size: .95rem; font-weight: 600; margin: .5rem 0 .4rem; display: flex; align-items: baseline; gap: .5rem; }
         .kland .korak p { font-size: .88rem; line-height: 1.6; color: rgba(17,17,17,.72); margin: 0; }
 
         .kland .ctamid { margin: 5rem 0 0; }
@@ -124,20 +124,17 @@ export default function KalkulatorLanding({ locale = 'sl' }: { locale?: string }
       <div className="kako">
         <div className="korak">
           <div className="korak-ikona" aria-hidden><PenNib size={20} weight="light" /></div>
-          <div className="n">01</div>
-          <h3>Povej, kaj ustvarjaš</h3>
+          <h3><span className="n">01</span> Povej, kaj ustvarjaš</h3>
           <p>Storitve, izkušnje, tvoj trg. Dodaš lahko svoje postavke in cene: od animacije do fotografije, besedil in AI.</p>
         </div>
         <div className="korak">
           <div className="korak-ikona" aria-hidden><MagnifyingGlass size={20} weight="light" /></div>
-          <div className="n">02</div>
-          <h3>Poglej naročnika</h3>
+          <h3><span className="n">02</span> Poglej naročnika</h3>
           <p>Promet in dobiček podjetja (javno na bizi.si in tujih registrih) povesta, koliko je tvoje delo zanj vredno.</p>
         </div>
         <div className="korak">
           <div className="korak-ikona" aria-hidden><FileText size={20} weight="light" /></div>
-          <div className="n">03</div>
-          <h3>Dobiš ponudbo</h3>
+          <h3><span className="n">03</span> Dobiš ponudbo</h3>
           <p>Trije paketi, avtorske pravice ločeno, urejljivo besedilo. Kopiraš v mail ali izvoziš postavke za svoj račun.</p>
         </div>
       </div>
