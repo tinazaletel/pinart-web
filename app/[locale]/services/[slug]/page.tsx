@@ -51,6 +51,14 @@ const CASE_IMAGE: Record<string, string> = {
   'molly-lolly': '/work/molly-lolly/Molly_Lolly_knjigice.png'
 };
 
+/* Odzivne razlicice za slike, ki jih imajo (kljuc = pot v item.image) —
+   brskalnik glede na sirino kartice in gostoto zaslona sam izbere
+   najmanjso zadostno. Slike brez vnosa se servirajo kot doslej. */
+const IMAGE_SRCSET: Record<string, string> = {
+  '/work/petrol-pay/Petrol_Pay_loyalty_gold.jpg':
+    '/work/petrol-pay/Petrol_Pay_loyalty_gold-mobile.jpg 900w, /work/petrol-pay/Petrol_Pay_loyalty_gold-mobile-hd.jpg 1200w, /work/petrol-pay/Petrol_Pay_loyalty_gold.jpg 1920w',
+};
+
 const RELATED_WORK: Record<ServiceSlug, RelatedItem[]> = {
   direction: [
     // hero-level pearl/shell shot for the direction page
@@ -579,6 +587,8 @@ export default async function ServiceDetailPage({
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={item.image}
+                        srcSet={item.image ? IMAGE_SRCSET[item.image] : undefined}
+                        sizes={item.image && IMAGE_SRCSET[item.image] ? '(max-width: 767px) 100vw, 440px' : undefined}
                         alt={title}
                         style={{
                           width: '100%',

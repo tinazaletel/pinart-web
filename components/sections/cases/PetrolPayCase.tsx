@@ -121,6 +121,8 @@ export default function PetrolPayCase({ locale }: Props) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/work/petrol-pay/Petrol_Pay_loyalty_gold.jpg"
+            srcSet="/work/petrol-pay/Petrol_Pay_loyalty_gold-mobile.jpg 900w, /work/petrol-pay/Petrol_Pay_loyalty_gold-mobile-hd.jpg 1200w, /work/petrol-pay/Petrol_Pay_loyalty_gold.jpg 1920w"
+            sizes="100vw"
             alt="Petrol Pay — horizontal card presentation"
             className="case-hero__banner"
           />
@@ -199,6 +201,8 @@ export default function PetrolPayCase({ locale }: Props) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/work/petrol-pay/Petrol_Pay_loyalty_gold.jpg"
+                srcSet="/work/petrol-pay/Petrol_Pay_loyalty_gold-mobile.jpg 900w, /work/petrol-pay/Petrol_Pay_loyalty_gold-mobile-hd.jpg 1200w, /work/petrol-pay/Petrol_Pay_loyalty_gold.jpg 1920w"
+                sizes="(max-width: 767px) 100vw, 33vw"
                 alt="Petrol Klub Pay — gold loyalty card"
                 loading="lazy"
               />
