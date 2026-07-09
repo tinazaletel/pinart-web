@@ -27,6 +27,40 @@ type TonPonudbe = 'formalno' | 'toplo' | 'direktno';
 /* Osnove umerjene na slovenski trg (2025/26, viri: Omisli.si agregat cen,
    smernice DOS) — raven "samostojen", majhna stranka, SI; mnozitelji za
    izkusnje in velikost stranke raztegnejo navzgor/navzdol. */
+/* ── Obseg pravic (intervju z Majo Lubi, ilustratorko, 2026-07-09) ──────────
+   Pravice niso vse-ali-nic: cena je odvisna od trajanja, teritorija, medijev
+   in naklade. Privzetki (7 let, Slovenija, tisk + promocija, naklada do
+   3.000) dajo faktor 1.0 — torej se brez spreminjanja obseg ne pozna na
+   ceni. Po Maji: knjiga + promocija obicajno 5-7 let, izjemoma 10;
+   digitalna izdaja NI vkljucena v tiskano; izvedeni produkti (app, merch)
+   se vedno licencirajo loceno. */
+const PRAV_TRAJANJE = [
+  { id: '1',         ime: '1 leto',    mult: 0.5  },
+  { id: '3',         ime: '3 leta',    mult: 0.75 },
+  { id: '5',         ime: '5 let',     mult: 0.9  },
+  { id: '7',         ime: '7 let',     mult: 1.0  },
+  { id: '10',        ime: '10 let',    mult: 1.3  },
+  { id: 'neomejeno', ime: 'Neomejeno', mult: 1.8  },
+] as const;
+const PRAV_TERITORIJ = [
+  { id: 'slo',    ime: 'Slovenija', mult: 1.0 },
+  { id: 'eu',     ime: 'Evropa',    mult: 1.4 },
+  { id: 'global', ime: 'Globalno',  mult: 1.8 },
+] as const;
+/* tisk + promocija izdelka sta VKLJUCENA v osnovo; tole so doplacila */
+const PRAV_MEDIJI_DODATNI = [
+  { id: 'digital',     ime: 'Digitalna izdaja',  opis: 'e-knjiga, splet — ločeno od tiska', mult: 0.3 },
+  { id: 'oglasevanje', ime: 'Širše oglaševanje', opis: 'kampanje izven samega izdelka',     mult: 0.5 },
+  { id: 'embalaza',    ime: 'Embalaža / merch',  opis: 'izdelki za nadaljnjo prodajo',      mult: 0.5 },
+] as const;
+const PRAV_NAKLADA = [
+  { id: 'do3k',   ime: 'do 3.000',  mult: 1.0 },
+  { id: 'do10k',  ime: 'do 10.000', mult: 1.2 },
+  { id: 'nad10k', ime: 'nad 10.000', mult: 1.5 },
+] as const;
+/* storitve, pri katerih se obseg pravic ponudi takoj (avtorska vizualna dela) */
+const AVTORSKE_STORITVE = ['ilustracija', 'fotografija', 'video', 'motion', 'render3d'];
+
 const STORITVE: Storitev[] = [
   { id: 'logo',        ime: 'Logotip + osnovna identiteta', osnova: 700  },
   { id: 'cgp',         ime: 'Celostna grafična podoba',     osnova: 1500 },
@@ -1144,6 +1178,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [obsegPonudbe, setObsegPonudbe] = useState<'kratka' | 'razsirjena'>('razsirjena');
   const [kaziUre, setKaziUre] = useState(false);
   const [prenosPravic, setPrenosPravic] = useState<'izkljucni' | 'neizkljucni' | 'licenca'>('izkljucni');
+  /* obseg pravic — privzetki dajo faktor 1.0 (glej PRAV_* konstante) */
+  const [pravTrajanje, setPravTrajanje] = useState<string>('7');
+  const [pravTeritorij, setPravTeritorij] = useState<string>('slo');
+  const [pravDodatniMediji, setPravDodatniMediji] = useState<Set<string>>(new Set());
+  const [pravNaklada, setPravNaklada] = useState<string>('do3k');
+  const [pravPonatis, setPravPonatis] = useState(true);
+  const [obsegOdprt, setObsegOdprt] = useState(false);
+  /* pri avtorskih vizualnih delih (ilustracija, fotografija ...) se obseg
+     pokaze odprt takoj — Majin nauk: tam so ta vprasanja jedro cene */
+  const avtorskeIzbrane = AVTORSKE_STORITVE.some(id => izbrane.has(id));
+  const obsegPokazi = obsegOdprt || avtorskeIzbrane;
   /* Rocni prepis samodejnih zneskov (v valuti ponudbe); prazno = samodejno.
      Projektno specificno, zato se NE shranjuje v localStorage. */
   const [rocnePravice, setRocnePravice] = useState('');
@@ -1376,7 +1421,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
        neizkljucni prenos (delo lahko prodas se komu) = 60 %; samo licenca =
        odkup NI vkljucen v ceno (0), placa se skozi letno licenco. Licenca
        vedno izhaja iz polne baze. */
-    const praviceBaza = zaokrozi(clamp(surove, delo * 0.25, delo * 3));
+    /* obseg pravic (trajanje x teritorij x dodatni mediji x naklada) skalira
+       bazo NAD varovalko — sirsa raba legitimno preseze 300 % izvedbe.
+       Privzetki dajo 1.0, torej brez spreminjanja cena ostane enaka. */
+    const trajanjeIz = PRAV_TRAJANJE.find(t => t.id === pravTrajanje) ?? PRAV_TRAJANJE[3];
+    const teritorijIz = PRAV_TERITORIJ.find(t => t.id === pravTeritorij) ?? PRAV_TERITORIJ[0];
+    const medijiIz = PRAV_MEDIJI_DODATNI.filter(m => pravDodatniMediji.has(m.id));
+    const nakladaIz = PRAV_NAKLADA.find(n => n.id === pravNaklada) ?? PRAV_NAKLADA[0];
+    const obsegMult = trajanjeIz.mult * teritorijIz.mult
+      * (1 + medijiIz.reduce((a, m) => a + m.mult, 0)) * nakladaIz.mult;
+    const praviceBaza = zaokrozi(clamp(surove, delo * 0.25, delo * 3) * obsegMult);
     const praviceAvto = prenosPravic === 'neizkljucni' ? zaokrozi(praviceBaza * 0.6)
       : prenosPravic === 'licenca' ? 0
         : praviceBaza;
@@ -1403,8 +1457,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       praviceAvto, licencaAvto, praviceRocne: rocnePravEur > 0, licencaRocna: rocnaLicEur > 0,
       vrsticeIzvedbe, raba, tantiemePct, prenos: prenosPravic,
       dobicekPodan: raba === 'projekt' ? pd > 0 : d > 0,
+      obseg: {
+        mult: obsegMult,
+        opis: `${['tisk + promocija', ...medijiIz.map(m => m.ime.toLowerCase())].join(' + ')}, ${trajanjeIz.ime.toLowerCase()}, ${teritorijIz.ime}, naklada ${nakladaIz.ime}`,
+      },
     };
-  }, [izbrane, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, valuta]);
+  }, [izbrane, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, valuta, pravTrajanje, pravTeritorij, pravDodatniMediji, pravNaklada]);
 
   const skupineVprasanj = useMemo(() => {
     return vseStoritve
@@ -1648,6 +1706,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('  nova, ločena ponudba');
     v.push('· pravice veljajo za navedenega naročnika in navedeno rabo;');
     v.push('  prenos na tretjo osebo ali širša raba se dogovori posebej');
+    if (r && r.prenos !== 'licenca') {
+      v.push(`· obseg prenosa pravic: ${r.obseg.opis};`);
+      v.push('  raba izven tega obsega se licencira posebej');
+      if (pravPonatis) {
+        v.push('· ob ponatisu oz. novi nakladi se licenca obnovi');
+        v.push('  (izhodišče: 50 % prvotne vrednosti pravic)');
+      }
+      v.push('· izvedeni produkti (digitalne izdaje, aplikacije, licenčni izdelki)');
+      v.push('  niso vključeni in se licencirajo ločeno');
+    }
     v.push('· moralne avtorske pravice ostanejo avtorju (navedba avtorstva)');
     v.push('');
     if (tonPonudbe === 'formalno') {
@@ -3788,6 +3856,102 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <p>Odkup ni vključen; naročnik plača letno licenco za rabo. V ceni ni odkupa pravic.</p>
                   </button>
                 </div>
+              </div>
+
+              <div className="kartica">
+                <div className="k-naslov">Obseg pravic
+                  <InfoNamig besedilo="Pravice niso vse-ali-nič: cena je odvisna od tega, KJE, KOLIKO ČASA in V KAKŠNI NAKLADI naročnik delo uporablja. Privzeti obseg (tisk + promocija izdelka, 7 let, Slovenija, naklada do 3.000) je vštet v znesek pravic; širša raba znesek poviša. Pozor: digitalna izdaja NI samodejno vključena v tiskano — e-knjiga iz istih ilustracij je doplačilo. Izvedeni produkti (aplikacije, merch) se vedno licencirajo ločeno." />
+                  <span className="vec">vpliva na ceno pravic</span>
+                </div>
+                <p className="hint" style={{ marginTop: 0 }}>
+                  Vključeno v osnovo: <b>tisk + promocija izdelka</b>, <b>7 let</b>, <b>Slovenija</b>, naklada <b>do 3.000</b>.
+                  Vse izven obsega je doplačljivo — ponudba to tudi zapiše.
+                </p>
+                {obsegPokazi ? (
+                  <>
+                    <div className="polje" style={{ marginTop: '1.1rem' }}>
+                      <label>Trajanje prenosa <span className="vec">običajno 5–7 let</span></label>
+                      <div className="opts">
+                        {PRAV_TRAJANJE.map(t => (
+                          <button key={t.id} type="button"
+                            className={'pill' + (pravTrajanje === t.id ? ' on' : '')}
+                            onClick={() => setPravTrajanje(t.id)}>
+                            <span className="pill-fill" aria-hidden />
+                            <span className="pill-tekst">{t.ime}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="polje" style={{ marginTop: '1.1rem' }}>
+                      <label>Teritorij</label>
+                      <div className="opts">
+                        {PRAV_TERITORIJ.map(t => (
+                          <button key={t.id} type="button"
+                            className={'pill' + (pravTeritorij === t.id ? ' on' : '')}
+                            onClick={() => setPravTeritorij(t.id)}>
+                            <span className="pill-fill" aria-hidden />
+                            <span className="pill-tekst">{t.ime}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="polje" style={{ marginTop: '1.1rem' }}>
+                      <label>Dodatni mediji <span className="vec">izven tiska + promocije</span></label>
+                      <div className="opts">
+                        {PRAV_MEDIJI_DODATNI.map(m => (
+                          <button key={m.id} type="button"
+                            className={'pill' + (pravDodatniMediji.has(m.id) ? ' on' : '')}
+                            onClick={() => preklopi(pravDodatniMediji, m.id, setPravDodatniMediji)}>
+                            <span className="pill-fill" aria-hidden />
+                            <span className="pill-tekst">{m.ime}<small>{m.opis} · +{Math.round(m.mult * 100)} %</small></span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="polje" style={{ marginTop: '1.1rem' }}>
+                      <label>Naklada / obseg izdaje</label>
+                      <div className="opts">
+                        {PRAV_NAKLADA.map(n => (
+                          <button key={n.id} type="button"
+                            className={'pill' + (pravNaklada === n.id ? ' on' : '')}
+                            onClick={() => setPravNaklada(n.id)}>
+                            <span className="pill-fill" aria-hidden />
+                            <span className="pill-tekst">{n.ime}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="polje" style={{ marginTop: '1.1rem' }}>
+                      <label>Klavzula o ponatisu
+                        <InfoNamig besedilo="Ob ponatisu ali novi nakladi se licenca obnovi — izhodišče 50 % prvotne vrednosti pravic. Majin nasvet iz prakse: brez te klavzule naročnik ponatisne brez doplačila." />
+                      </label>
+                      <div className="opts">
+                        <button type="button"
+                          className={'pill' + (pravPonatis ? ' on' : '')}
+                          onClick={() => setPravPonatis(p => !p)}>
+                          <span className="pill-fill" aria-hidden />
+                          <span className="pill-tekst">Ob novi nakladi se licenca obnovi<small>v ponudbo doda stavek (izhodišče 50 %)</small></span>
+                        </button>
+                      </div>
+                    </div>
+                    {r && r.obseg.mult !== 1 && (
+                      <p className="hint" style={{ marginTop: '1.1rem' }}>
+                        Izbrani obseg: <b>{r.obseg.opis}</b> → znesek pravic ×<b>{r.obseg.mult.toFixed(2)}</b>
+                      </p>
+                    )}
+                    {!avtorskeIzbrane && (
+                      <button type="button" className="povezava" style={{ marginTop: '.9rem' }}
+                        onClick={() => setObsegOdprt(false)}>
+                        <CaretUp size={14} weight="bold" aria-hidden /> Skrij obseg
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
+                    onClick={() => setObsegOdprt(true)}>
+                    + Nastavi obseg (trajanje, teritorij, mediji, naklada)
+                  </button>
+                )}
               </div>
 
               {r && (
