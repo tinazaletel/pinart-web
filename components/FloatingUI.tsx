@@ -100,16 +100,26 @@ export default function FloatingUI() {
          ceprav je bil pod njim ze svetel Services. */
       const labelY = window.innerHeight - 110; // sredina "Let's talk" stolpca
 
-      const hero = document.getElementById('hero');
-      const heroRect = hero?.getBoundingClientRect();
+      /* Katera sekcija DEJANSKO lezi pod napisom? Golo primerjanje rectov
+         tu odpove: hero je po finalu se dolgo PRIPET cez viewport (rect
+         pokriva napis), Services pa medtem ze drsi CEZ njega — vizualno je
+         pod napisom ze svetla sekcija. Hit-test vrne resnicno zgornjo
+         plast (fixed UI in pointer-events:none prekrivala preskoci). */
+      const stack = document.elementsFromPoint(window.innerWidth - 24, labelY);
+      let sectionEl: Element | null = null;
+      for (const el of stack) {
+        if (el.closest('.edge-right-ui') || el.closest('#cookie-banner')) continue;
+        const sec = el.closest('section');
+        if (sec) { sectionEl = sec; break; }
+      }
 
       /* The hero controls its own light/dark state through the pinart-dark
-         event — but only while it actually sits under the label. Ob odhodu
-         iz crnega finala se prehod v crno zacne ze, ko crni rob doseze
-         SPODNJI rob napisa (labelY + 90), ne sredine — skupaj z 0.2s
-         prehodom napis potemni tocno, ko svetla podlaga pride pod njega
-         (Tina: cisto tocna sredina je delovala zaznavno prepozno). */
-      if (heroRect && heroRect.top < labelY && heroRect.bottom > labelY + 90) return;
+         event — but only while it is what actually shows under the label. */
+      if (sectionEl && sectionEl.id === 'hero') return;
+      if (!sectionEl) {
+        const heroRect = document.getElementById('hero')?.getBoundingClientRect();
+        if (heroRect && heroRect.top < labelY && heroRect.bottom > labelY + 90) return;
+      }
 
       const darkSections = document.querySelectorAll('[data-nav-dark]');
       const onDark = Array.from(darkSections).some(el => {
