@@ -11,7 +11,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, CaretUp, Check,
+  CaretDown, CaretUp, Check, PencilSimple,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -1193,6 +1193,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      Projektno specificno, zato se NE shranjuje v localStorage. */
   const [rocnePravice, setRocnePravice] = useState('');
   const [rocnaLicenca, setRocnaLicenca] = useState('');
+  /* rocni prepis koncne cene posameznega paketa (v valuti ponudbe); prazno
+     = samodejni izracun. Kljuc = id paketa. urejamPaket = kateri se ureja. */
+  const [rocniPaketi, setRocniPaketi] = useState<Record<string, string>>({});
+  const [urejamPaket, setUrejamPaket] = useState<string | null>(null);
   const [odgovori, setOdgovori] = useState<Record<string, string>>({});
   const [osnove, setOsnove] = useState<Record<string, number>>({});
   const [profili, setProfili] = useState<Record<string, Profil>>({});
@@ -1449,7 +1453,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const popustPct = clamp(Number(popust) || 0, 0, 50);
     const paketi = PAKETI.map(pk => {
       const redna = zaokrozi(delo * pk.mult) + pravice;
-      return { ...pk, redna, skupaj: popustPct ? zaokrozi(redna * (1 - popustPct / 100)) : redna };
+      const samodejno = popustPct ? zaokrozi(redna * (1 - popustPct / 100)) : redna;
+      /* rocni prepis (vnesen v valuti ponudbe) povozi izracun; pretvorimo v EUR,
+         da val() spet pravilno pomnozi nazaj v prikazano valuto */
+      const rocnoEur = zaokrozi((Number(rocniPaketi[pk.id]) || 0) / vfx.fx);
+      return { ...pk, redna, skupaj: rocnoEur > 0 ? rocnoEur : samodejno, rocna: rocnoEur > 0 };
     });
 
     return {
@@ -1462,7 +1470,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         opis: `${['tisk + promocija', ...medijiIz.map(m => m.ime.toLowerCase())].join(' + ')}, ${trajanjeIz.ime.toLowerCase()}, ${teritorijIz.ime}, naklada ${nakladaIz.ime}`,
       },
     };
-  }, [izbrane, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, valuta, pravTrajanje, pravTeritorij, pravDodatniMediji, pravNaklada]);
+  }, [izbrane, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, valuta, pravTrajanje, pravTeritorij, pravDodatniMediji, pravNaklada, rocniPaketi]);
 
   const skupineVprasanj = useMemo(() => {
     return vseStoritve
@@ -2836,7 +2844,19 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .paketi { display: grid; grid-template-columns: 1fr 1.15fr 1fr; margin: 1.4rem 0; background: #FCFBF7; border: 1px solid rgba(17,17,17,.08); border-radius: 20px; overflow: hidden; box-shadow: 0 4px 18px rgba(17,17,17,.04); }
         .cw .cena-urna { max-width: none; }
         @media (max-width: 640px) { .cw .paketi { grid-template-columns: 1fr; } }
-        .cw .paket { padding: 1.7rem 1.4rem 1.8rem; }
+        .cw .paket { padding: 1.7rem 1.4rem 1.8rem; position: relative; }
+        /* svincnik zgoraj desno — rocni popravek cene paketa */
+        .cw .paket-edit { position: absolute; top: 1.1rem; right: 1.1rem; display: inline-flex; align-items: center; justify-content: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.18); background: transparent; color: rgba(17,17,17,.55); cursor: pointer; transition: color .18s ease, border-color .18s ease, background .18s ease; }
+        .cw .paket-edit:hover { color: var(--ink); border-color: var(--ink); }
+        .cw .paket.mid .paket-edit { border-color: rgba(245,242,234,.4); color: rgba(245,242,234,.85); }
+        .cw .paket.mid .paket-edit:hover { color: var(--paper); border-color: var(--paper); background: rgba(245,242,234,.12); }
+        .cw .paket-cena-uredi { display: flex; align-items: baseline; gap: .35rem; margin: .5rem 0 .55rem; }
+        .cw .paket-cena-uredi input { width: 5.5rem; border: none; border-bottom: 2px solid currentColor; background: transparent; font-family: var(--font-serif), Didot, serif; font-size: clamp(1.7rem, 4vw, 2.3rem); font-weight: 700; letter-spacing: -.01em; padding: 0 0 .1rem; color: inherit; border-radius: 0; }
+        .cw .paket-cena-uredi input:focus { outline: none; }
+        .cw .paket-cena-uredi .pe-znak { font-family: var(--font-serif), serif; font-size: 1.4rem; font-weight: 700; }
+        .cw .paket-rocno { font-size: .6rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; opacity: .7; margin: -.35rem 0 .5rem; }
+        .cw .paket-reset { font-size: .75rem; margin: 0 0 .6rem; color: inherit; opacity: .8; }
+        .cw .paket.mid .paket-reset { color: var(--paper); }
         .cw .paket + .paket { border-left: 1px solid rgba(17,17,17,.4); }
         @media (max-width: 640px) { .cw .paket + .paket { border-left: none; border-top: 1px solid rgba(17,17,17,.4); } }
         .cw .paket.mid { background: var(--accent); color: var(--paper); }
@@ -4130,9 +4150,33 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <div className="paketi">
                 {r.paketi.map(p => (
                   <div key={p.id} className={'paket' + (p.id === 'priporoceni' ? ' mid' : '')}>
+                    <button type="button" className="paket-edit"
+                      aria-label={'Ročno popravi ceno paketa ' + p.ime}
+                      title="Ročno popravi ceno"
+                      onClick={() => setUrejamPaket(urejamPaket === p.id ? null : p.id)}>
+                      <PencilSimple size={15} weight="bold" />
+                    </button>
                     <h3>{p.ime}</h3>
-                    {r.popustPct > 0 && <div className="redna">{val(p.redna)}</div>}
-                    <div className="znesek">{val(p.skupaj)}</div>
+                    {r.popustPct > 0 && !p.rocna && <div className="redna">{val(p.redna)}</div>}
+                    {urejamPaket === p.id ? (
+                      <div className="paket-cena-uredi">
+                        <input type="number" min={0} step={50} autoFocus
+                          aria-label={'Cena paketa ' + p.ime}
+                          placeholder={String(zaokrozi(p.skupaj * vfx.fx))}
+                          value={rocniPaketi[p.id] ?? ''}
+                          onChange={e => setRocniPaketi({ ...rocniPaketi, [p.id]: e.target.value })} />
+                        <span className="pe-znak">{vfx.znak}</span>
+                      </div>
+                    ) : (
+                      <div className="znesek">{val(p.skupaj)}</div>
+                    )}
+                    {p.rocna && urejamPaket !== p.id && <div className="paket-rocno">ročno</div>}
+                    {urejamPaket === p.id && (rocniPaketi[p.id] ?? '') !== '' && (
+                      <button type="button" className="povezava paket-reset"
+                        onClick={() => { const n = { ...rocniPaketi }; delete n[p.id]; setRocniPaketi(n); }}>
+                        ↺ Samodejno
+                      </button>
+                    )}
                     <p>{p.opis}</p>
                   </div>
                 ))}
