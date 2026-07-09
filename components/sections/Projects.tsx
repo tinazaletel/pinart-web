@@ -16,6 +16,7 @@ const PROJECTS = [
     title: 'Petrol Loyalty',
     image: '/work/petrol-pay/Petrol_Pay_loyalty_gold.jpg',
     mobileImage: '/work/petrol-pay/Petrol_Pay_loyalty_gold-mobile.jpg',
+    mobileImageHd: '/work/petrol-pay/Petrol_Pay_loyalty_gold-mobile-hd.jpg',
     video: '/petrol-card-loop.mp4',
   },
   {
@@ -31,6 +32,7 @@ const PROJECTS = [
     title: 'Lucky 7',
     image: '/work/lucky-7/lucky_7_primeri.jpg',
     mobileImage: '/work/lucky-7/lucky_7_primeri-mobile.jpg',
+    mobileImageHd: '/work/lucky-7/lucky_7_primeri-mobile-hd.jpg',
     video: '/lucky-7-loop.mp4',
   },
   {
@@ -57,10 +59,17 @@ export default function Projects() {
      ampak se nastavi neposredno na DOM elementu spodaj. */
   useLayoutEffect(() => {
     const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    /* Telefoni z gostimi/vecjimi zasloni (novejsi iPhoni, Samsungi:
+       ~360-430 CSS px × DPR 2.6-3 = 1000-1300 fizicnih pik) dobijo 1200px
+       verzijo, manjsi/starejsi (npr. 360×2 = 720) pa se manjso 900px. */
+    const needsHd = window.innerWidth * window.devicePixelRatio > 950;
     PROJECTS.forEach((project, i) => {
       const el = mediaRefs.current[i];
-      if (el instanceof HTMLVideoElement) {
-        el.poster = isMobile && 'mobileImage' in project ? project.mobileImage : project.image;
+      if (!(el instanceof HTMLVideoElement)) return;
+      if (isMobile && 'mobileImage' in project) {
+        el.poster = needsHd && 'mobileImageHd' in project ? project.mobileImageHd : project.mobileImage;
+      } else {
+        el.poster = project.image;
       }
     });
   }, []);
