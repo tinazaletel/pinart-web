@@ -7,16 +7,19 @@ import SplitText from '@/components/SplitText';
 
 // ─── client logos ─────────────────────────────────────────────────────────────
 
+/* width/height = pravilno razmerje stranic pri visini 48px (dejansko
+   izrisano velikost nadzoruje CSS v LogoLoop) — brskalniku pove prostor
+   vnaprej, da rezervira, in tako prepreci layout shift ob nalaganju. */
 const CLIENT_LOGOS = [
-  { src: '/Logos/Rokus_Klett.svg',      alt: 'Rokus Klett'     },
-  { src: '/Logos/mBills.svg',           alt: 'mBills'          },
-  { src: '/Logos/Honeywell.svg',        alt: 'Honeywell'       },
-  { src: '/Logos/Mojedelo.svg',         alt: 'MojeDelo.com'    },
-  { src: '/Logos/rekruter.svg',         alt: 'Rekruter'        },
-  { src: '/Logos/studio-moderna.svg',   alt: 'Studio Moderna'  },
-  { src: '/Logos/petrol.svg',           alt: 'Petrol'          },
-  { src: '/Logos/cohortem.svg',         alt: 'Cohortem'        },
-  { src: '/Logos/cankarjev dom.svg',    alt: 'Cankarjev dom'   },
+  { src: '/Logos/Rokus_Klett.svg',      alt: 'Rokus Klett',    width: 145, height: 48 },
+  { src: '/Logos/mBills.svg',           alt: 'mBills',         width: 155, height: 48 },
+  { src: '/Logos/Honeywell.svg',        alt: 'Honeywell',      width: 155, height: 48 },
+  { src: '/Logos/Mojedelo.svg',         alt: 'MojeDelo.com',   width: 182, height: 48 },
+  { src: '/Logos/rekruter.svg',         alt: 'Rekruter',       width: 311, height: 48 },
+  { src: '/Logos/studio-moderna.svg',   alt: 'Studio Moderna', width: 585, height: 48 },
+  { src: '/Logos/petrol.svg',           alt: 'Petrol',         width: 161, height: 48 },
+  { src: '/Logos/cohortem.svg',         alt: 'Cohortem',       width: 193, height: 48 },
+  { src: '/Logos/cankarjev dom.svg',    alt: 'Cankarjev dom',  width: 367, height: 48 },
 ];
 
 // ─── component ────────────────────────────────────────────────────────────────
