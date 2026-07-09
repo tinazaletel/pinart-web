@@ -2595,8 +2595,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .glava .zapri:hover { color: var(--ink); }
         .cw .glava-levo { pointer-events: auto; display: inline-flex; align-items: center; gap: 1rem; }
         .cw .glava-desno { pointer-events: auto; display: inline-flex; align-items: center; gap: .5rem; }
-        .cw .glava-profil { display: inline-flex; align-items: center; gap: .4rem; font-family: inherit; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); background: var(--paper); border: none; border-left: 1px solid rgba(17,17,17,.15); border-radius: 0; padding: .3rem 0 .3rem 1rem; cursor: pointer; transition: color .18s ease; }
-        .cw .glava-profil:hover { color: var(--ink); }
+        .cw .glava-profil { display: inline-flex; align-items: center; gap: .4rem; font-family: inherit; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.82); background: var(--paper); border: 1px solid rgba(17,17,17,.22); border-radius: 999px; padding: .5rem .85rem; cursor: pointer; transition: color .18s ease, border-color .18s ease; }
+        .cw .glava-profil:hover { color: var(--ink); border-color: rgba(17,17,17,.5); }
 
         .cw .profil-zastor { position: fixed; inset: 0; z-index: 60; background: rgba(17,17,17,.28); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
         .cw .profil-predal { position: fixed; top: 0; right: 0; bottom: 0; z-index: 61; width: min(440px, 100vw); background: var(--paper); box-shadow: -12px 0 40px rgba(17,17,17,.14); overflow-y: auto; padding: clamp(1.6rem, 4vw, 2.4rem); animation: cwPredalIn .32s cubic-bezier(0.23,1,0.32,1) both; }
@@ -3004,11 +3004,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span className="glava-ime">Kalkulator</span>
                 </span>
               </a>
+            </span>
+            <span className="glava-desno">
               <button type="button" className="glava-profil" onClick={() => setKazemProfil(true)}>
                 <UserCircle size={19} weight="bold" /> <span>Profil</span>
               </button>
-            </span>
-            <span className="glava-desno">
               <a className="zapri" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
             </span>
           </div>
@@ -3088,11 +3088,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <span className="glava-ime">Kalkulator</span>
             </span>
           </a>
+        </span>
+        <span className="glava-desno">
           <button type="button" className="glava-profil" onClick={() => setKazemProfil(true)}>
             <UserCircle size={19} weight="bold" /> <span>Profil</span>
           </button>
-        </span>
-        <span className="glava-desno">
           <a className="zapri" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
         </span>
       </div>
