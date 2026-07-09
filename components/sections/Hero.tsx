@@ -279,31 +279,17 @@ export default function Hero() {
     // DOT SVG position — packa starts here, hair radiates from here
     const DOT_X = 415.71, DOT_Y = 288;
 
-    // Find % on Hair_0 path closest to dot position
-    let hairStartPct = 0;
-    if (hairG0Paths.length > 0) {
-      const p     = hairG0Paths[0];
-      const total = p.getTotalLength();
-      let minDist = Infinity;
-      for (let i = 0; i <= 300; i++) {
-        const pt2  = p.getPointAtLength((i / 300) * total);
-        const dist = (pt2.x - DOT_X) ** 2 + (pt2.y - DOT_Y) ** 2;
-        if (dist < minDist) { minDist = dist; hairStartPct = (i / 300) * 100; }
-      }
-    }
-
-    // Find % on Hair_3 path closest to dot position
-    let hairG3StartPct = 0;
-    if (hairG3Paths.length > 0) {
-      const p     = hairG3Paths[0];
-      const total = p.getTotalLength();
-      let minDist = Infinity;
-      for (let i = 0; i <= 300; i++) {
-        const pt2  = p.getPointAtLength((i / 300) * total);
-        const dist = (pt2.x - DOT_X) ** 2 + (pt2.y - DOT_Y) ** 2;
-        if (dist < minDist) { minDist = dist; hairG3StartPct = (i / 300) * 100; }
-      }
-    }
+    /* Najblizja tocka na lasni poti do DOT_X/DOT_Y (kje naj se zacne risati
+       poteza) je bila prej izracunana OB VSAKEM nalaganju: 301
+       getPointAtLength() klicev na pot z >100k znakov v "d" — na
+       pocasnejsih napravah vecsekundna blokada glavne niti. Ker je
+       pupa_pinart_6.svg staticna datoteka, je rezultat vedno enak —
+       vrednosti spodaj so PREVERJENE DVAKRAT: enkrat v izolirani test-strani
+       in enkrat z zivim console.log() na tej isti komponenti (obakrat
+       enako: 100 in 68.66666666666667). Ce se SVG kdaj zamenja, ju je
+       treba ponovno izracunati. */
+    const hairStartPct = 100;
+    const hairG3StartPct = 68.66666666666667;
 
     // Pre-set stroke positions (hair groups still hidden via opacity/display)
     if (hairG0Paths.length) gsap.set(hairG0Paths, { drawSVG: `${hairStartPct.toFixed(1)}% ${hairStartPct.toFixed(1)}%` });
