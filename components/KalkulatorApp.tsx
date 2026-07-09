@@ -2652,15 +2652,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .pill { position: relative; overflow: hidden; z-index: 0; padding: .8rem 1.3rem; border: 1px solid rgba(17,17,17,.25); border-radius: 999px; cursor: pointer; font-size: 1rem; background: transparent; font-family: inherit; font-weight: 400; color: var(--ink); transition: border-color .18s ease, background .18s ease, color .18s ease; text-align: left; line-height: 1.25; }
         .cw .pill small { position: relative; z-index: 1; display: block; font-size: .82rem; color: rgba(17,17,17,.82); font-weight: 400; margin-top: .1rem; transition: color .3s cubic-bezier(0.16,1,0.3,1); }
         .cw .pill:hover { border-color: var(--ink); }
-        .cw .pill.on { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+        .cw .pill.on { background: var(--accent); color: var(--paper); border-color: var(--accent); transition: background 0s linear .5s, color .2s ease .16s, border-color .2s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .pill.on small { color: rgba(245,242,234,.92); }
         .cw .pill:focus { outline: none; }
         .cw .pill:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
         .cw .pill { display: inline-flex; align-items: center; gap: .65rem; transition: transform .2s cubic-bezier(0.23,1,0.32,1), border-color .2s ease, background .55s cubic-bezier(0.16,1,0.3,1), color .2s ease; }
         .cw .pill:hover { transform: translateY(-2px); }
         .cw .pill:active { transform: translateY(0) scale(.97); }
-        .cw .pill-fill { position: absolute; top: 50%; left: 1.3rem; width: 2.15rem; height: 2.15rem; border-radius: 50%; background: var(--accent); transform: translateY(-50%) scale(0); transform-origin: center; transition: transform .55s cubic-bezier(0.16,1,0.3,1); z-index: 0; pointer-events: none; }
-        .cw .pill.on .pill-fill { transform: translateY(-50%) scale(18); }
+        .cw .pill-fill { position: absolute; top: 50%; left: 1.3rem; width: 2.15rem; height: 2.15rem; background: var(--accent); -webkit-mask: url(/packa_splat.svg) center / 100% 100% no-repeat; mask: url(/packa_splat.svg) center / 100% 100% no-repeat; transform: translateY(-50%) scale(0) rotate(-8deg); transform-origin: center; transition: transform .72s cubic-bezier(0.34,1.02,0.42,1); z-index: 0; pointer-events: none; }
+        .cw .pill.on .pill-fill { transform: translateY(-50%) scale(13) rotate(15deg); }
         .cw .pill .pi { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.15rem; height: 2.15rem; border-radius: 50%; background: var(--accent); color: var(--paper); transition: background .3s ease, color .55s ease; }
         .cw .pill.on .pi { background: var(--accent); color: var(--paper); }
         .cw .pill .pi svg { width: 22px; height: 22px; }
@@ -2690,14 +2690,18 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
            cez celo kartico — bolj zivo od plosko obarvanega .on. Ob hoverju
            se kartica dvigne, dobi robni poudarek in nezno cvetenje iz ikone. */
         .cw .izbira-podrocja button { position: relative; overflow: hidden; z-index: 0; display: flex; flex-direction: column; transition: transform .3s cubic-bezier(0.23,1,0.32,1), border-color .2s ease, box-shadow .3s ease, background .18s ease; }
-        .cw .izbira-podrocja button.on { background: transparent; border-color: var(--accent); }
+        /* solidno ozadje se prizge SELE, ko je ink ze razlit (zapolni morebitne
+           luknje v splatu na koncu) — do takrat vidis razlivajoci se ink */
+        .cw .izbira-podrocja button.on { background: var(--accent); border-color: var(--accent); transition: background 0s linear .68s, border-color .2s ease, transform .3s cubic-bezier(0.23,1,0.32,1); }
         .cw .izbira-podrocja button:hover:not(.on) { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 16px 38px rgba(17,17,17,.10); }
         .cw .izbira-podrocja button:active { transform: translateY(-1px) scale(.995); }
         @media (prefers-reduced-motion: reduce) {
           .cw .izbira-podrocja button, .cw .izbira-podrocja button:hover:not(.on) { transform: none; }
         }
-        .cw .izbira-podrocja .pod-fill { position: absolute; top: 1.4rem; left: 1.5rem; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--accent); transform: scale(0); transform-origin: center; transition: transform .55s cubic-bezier(0.16,1,0.3,1); z-index: 0; pointer-events: none; }
-        .cw .izbira-podrocja button.on .pod-fill { transform: scale(22); }
+        /* ink razliv: splat oblika (packa_splat.svg) namesto ciste okroglice
+           — razlije se iz ikone cez kartico kot cinilo, z rahlim zasukom */
+        .cw .izbira-podrocja .pod-fill { position: absolute; top: 1.4rem; left: 1.5rem; width: 2.6rem; height: 2.6rem; background: var(--accent); -webkit-mask: url(/packa_splat.svg) center / 100% 100% no-repeat; mask: url(/packa_splat.svg) center / 100% 100% no-repeat; transform: scale(0) rotate(-8deg); transform-origin: center; transition: transform .85s cubic-bezier(0.34,1.02,0.42,1); z-index: 0; pointer-events: none; }
+        .cw .izbira-podrocja button.on .pod-fill { transform: scale(15) rotate(18deg); }
         .cw .izbira-podrocja .pod-glava { position: relative; z-index: 1; display: flex; align-items: center; gap: .85rem; margin-bottom: .75rem; }
         .cw .izbira-podrocja .pod-ikona { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--accent); color: var(--paper); transition: background .3s ease, color .55s ease, transform .3s cubic-bezier(0.23,1,0.32,1); }
         .cw .izbira-podrocja button:hover:not(.on) .pod-ikona { transform: scale(1.08) rotate(-5deg); }
@@ -3005,6 +3009,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         <div className="onboarding" role="dialog" aria-modal="true" aria-label="Katere storitve ponujaš">
           <div className="glava">
             <span className="glava-levo">
+              <a className="zapri" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
               <a className="glava-brand" href={localePath(locale, ``)} aria-label="Pinart — domov">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
@@ -3018,7 +3023,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <button type="button" className="glava-profil" onClick={() => setKazemProfil(true)}>
                 <UserCircle size={19} weight="bold" /> <span>Profil</span>
               </button>
-              <a className="zapri" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
             </span>
           </div>
           <div className="oder">
@@ -3091,6 +3095,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
       <div className="glava">
         <span className="glava-levo">
+          <a className="zapri" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
           <a className="glava-brand" href={localePath(locale, ``)} aria-label="Pinart — domov">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
@@ -3104,7 +3109,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           <button type="button" className="glava-profil" onClick={() => setKazemProfil(true)}>
             <UserCircle size={19} weight="bold" /> <span>Profil</span>
           </button>
-          <a className="zapri" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
         </span>
       </div>
 
