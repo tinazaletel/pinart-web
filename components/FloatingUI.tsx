@@ -94,11 +94,18 @@ export default function FloatingUI() {
     const t = setTimeout(() => setArrowVisible(true), 13500);
 
     const checkDark = () => {
+      /* Barva se odloca po tem, kaj lezi POD samim gumbom (spodnji desni rob),
+         ne po tem, kaj je kjerkoli v viewportu — zrcalno Nav.tsx, ki gleda
+         vrstico menija. Prej je gumb ostal bel se cel viewport za herojem,
+         ceprav je bil pod njim ze svetel Services. */
+      const labelY = window.innerHeight - 110; // sredina "Let's talk" stolpca
+
       const hero = document.getElementById('hero');
       const heroRect = hero?.getBoundingClientRect();
 
-      // The hero controls its own light/dark state through the pinart-dark event.
-      if (heroRect && heroRect.top < window.innerHeight && heroRect.bottom > 0) return;
+      // The hero controls its own light/dark state through the pinart-dark
+      // event — but only while it actually sits under the label.
+      if (heroRect && heroRect.top < labelY && heroRect.bottom > labelY) return;
 
       const darkSections = document.querySelectorAll('[data-nav-dark]');
       const onDark = Array.from(darkSections).some(el => {
@@ -106,7 +113,7 @@ export default function FloatingUI() {
         const rect = el.getBoundingClientRect();
         const op = parseFloat((el as HTMLElement).style.opacity ?? '1');
         const visible = isNaN(op) || op > 0.08;
-        return visible && rect.top < window.innerHeight && rect.bottom > 0;
+        return visible && rect.top < labelY && rect.bottom > labelY;
       });
       setIsDark(onDark);
     };
