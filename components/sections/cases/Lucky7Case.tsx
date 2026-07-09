@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import CaseShell, { NextCase } from './CaseShell';
 import BlurText from '@/components/BlurText';
+import { localePath } from '@/i18n/routing';
 
 // Cycles through an array of screen sources every `interval` ms with a soft
 // crossfade. Used inside the laptop / phone mockups below.
@@ -374,7 +375,7 @@ export default function Lucky7Case({ locale }: { locale: string }) {
         </div>
       </section>
 
-      <NextCase href={`/${locale}/work/molly-lolly`} title={t.raw('nextCaseTitle')} />
+      <NextCase href={localePath(locale, `/work/molly-lolly`)} title={t.raw('nextCaseTitle')} />
     </CaseShell>
   );
 }

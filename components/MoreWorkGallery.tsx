@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import BackButton from '@/components/BackButton';
 import BlurText from '@/components/BlurText';
 import { gsap } from '@/lib/gsap';
+import { localePath } from '@/i18n/routing';
 
 // `src` is the lightbox hero image; `images` (optional) is a rotation
 // shown inside the card itself. When `images` has more than one entry the
@@ -294,7 +295,7 @@ export default function MoreWorkGallery() {
       <section className="more-work-top">
         <div>
           <BackButton
-            fallbackHref={`/${locale}/#work`}
+            fallbackHref={localePath(locale, `/#work`)}
             className="more-work-back"
           >
             ← {t('back')}

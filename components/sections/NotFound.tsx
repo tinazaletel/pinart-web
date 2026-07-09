@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
+import { localePath } from '@/i18n/routing';
 
 type Locale = 'sl' | 'en';
 
@@ -35,8 +36,8 @@ export default function NotFound() {
   const rawLocale = useLocale();
   const locale: Locale = rawLocale === 'en' ? 'en' : 'sl';
   const t = COPY[locale];
-  const homeHref = `/${locale}`;
-  const workHref = `/${locale}/more-work`;
+  const homeHref = localePath(locale, ``);
+  const workHref = localePath(locale, `/more-work`);
 
   return (
     <div className="pinart-404">

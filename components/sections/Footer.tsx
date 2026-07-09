@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations, useLocale } from 'next-intl';
+import { localePath } from '@/i18n/routing';
 
 const BG = 'oklch(0.07 0.01 58)';
 const TEXT = 'rgba(245,242,234,0.76)';
@@ -39,7 +40,7 @@ export default function Footer() {
         <p style={{ margin: 0, textAlign: 'center' }}>{t('tagline')}</p>
         <div className="site-footer__links" style={{ display: 'flex', justifyContent: 'flex-end', gap: '1.25rem', flexWrap: 'wrap' }}>
           <a href="mailto:tina@pinart.si" style={{ color: TEXT, textDecoration: 'none' }}>tina@pinart.si</a>
-          <a href={`/${locale}/zasebnost`} style={{ color: TEXT, textDecoration: 'none' }}>{t('privacy')}</a>
+          <a href={localePath(locale, '/zasebnost')} style={{ color: TEXT, textDecoration: 'none' }}>{t('privacy')}</a>
         </div>
       </div>
     </footer>

@@ -1,7 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { localePath } from '@/i18n/routing';
 
 /* Banner se namenoma izrise ze na strezniku (v prvem HTML-ju) — prej je na
    "visible" cakal do konca hidracije, zaradi cesar je bil kot LCP element
@@ -10,6 +11,7 @@ import Link from 'next/link';
    layout <head> + CSS pravilo v globals.css, tukaj pa ob kliku. */
 export default function CookieBanner() {
   const t = useTranslations('cookies');
+  const locale = useLocale();
 
   const respond = (answer: 'accepted' | 'declined') => {
     localStorage.setItem('pinart_cookie_consent', answer);
@@ -50,7 +52,7 @@ export default function CookieBanner() {
       >
         {t('text')}{' '}
         <Link
-          href="/sl/zasebnost"
+          href={localePath(locale, '/zasebnost')}
           style={{
             color: 'rgba(245,242,234,0.65)',
             textDecoration: 'underline',

@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { useLocale } from 'next-intl';
 
 const labelStyle = { display: 'grid', gap: '0.45rem', fontSize: '0.78rem', fontWeight: 600 } as const;
 const inputStyle = { width: '100%', padding: '0.8rem 0', border: 0, borderBottom: '1px solid rgba(17,17,17,0.28)', borderRadius: 0, outline: 'none', background: 'transparent', color: 'var(--ink)', font: 'inherit' } as const;
@@ -15,7 +16,9 @@ export default function FloatingUI() {
   const [talkOpen,     setTalkOpen]     = useState(false);
   const [inquiryType,  setInquiryType]  = useState('');
   const [submitState,  setSubmitState]  = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
-  const isSl = pathname.startsWith('/sl');
+  /* Jezika ne beremo vec iz URL-ja: z localePrefix 'as-needed' slovenske
+     strani NIMAJO /sl predpone, zato bi pathname-sniffing vrnil anglescino. */
+  const isSl = useLocale() === 'sl';
   /* Na kalkulatorju "Let's talk" ne sme prodajati storitev (Tina: "se ne gre
      vec o mojih storitvah") — tu gre za orodje samo, zato zbiramo povratne
      informacije in predloge, ne povprasevanj za projekte. */

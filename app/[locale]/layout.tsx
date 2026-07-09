@@ -35,7 +35,8 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: 'meta' });
   const title = t('title');
   const description = t('description');
-  const url = `https://pinart.si/${locale}`;
+  // sl zivi na korenu brez predpone (localePrefix 'as-needed')
+  const url = locale === 'sl' ? 'https://pinart.si' : `https://pinart.si/${locale}`;
 
   return {
     title,
@@ -89,7 +90,7 @@ export default async function LocaleLayout({
     '@context': 'https://schema.org',
     '@type': 'ProfessionalService',
     name: 'Pinart',
-    url: `https://pinart.si/${locale}`,
+    url: locale === 'sl' ? 'https://pinart.si' : `https://pinart.si/${locale}`,
     image: 'https://pinart.si/og-image.jpg',
     description: tMeta('description'),
     email: 'tina@pinart.si',
