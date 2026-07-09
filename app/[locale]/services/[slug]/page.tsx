@@ -723,6 +723,9 @@ export default async function ServiceDetailPage({
       )}
 
       {/* ============ CTA ============ */}
+      {/* data-nav-dark: temen odsek mora biti oznacen, sicer Nav in
+          "Let's talk" nad njim obdrzita crno barvo (crno na crnem). */}
+      <div data-nav-dark="true">
       <RevealOnScroll as="section"
         style={{
           padding: 'clamp(6rem, 10vw, 10rem) clamp(1.5rem, 3vw, 3rem)',
@@ -822,6 +825,7 @@ export default async function ServiceDetailPage({
           {t('ctaButton')} <span aria-hidden="true">→</span>
         </Link>
       </RevealOnScroll>
+      </div>
     </main>
     <Footer />
     </>
