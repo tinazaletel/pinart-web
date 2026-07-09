@@ -3180,6 +3180,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
+                <button type="button" className="profil-meni-vrsta" onClick={() => { setKazemProfil(false); odpriOnboarding(); }}>
+                  <SquaresFour size={20} weight="bold" />
+                  <span>
+                    <strong>Področja dela</strong>
+                    <small>katera področja ponujaš — določijo, katere storitve so v ospredju</small>
+                  </span>
+                  <span className="pm-puscica" aria-hidden>→</span>
+                </button>
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('cene-nastavitve')}>
                   <Gear size={20} weight="bold" />
                   <span>
