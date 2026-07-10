@@ -2334,6 +2334,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const t = e.target as HTMLElement;
     if (/^(TEXTAREA|SELECT|BUTTON|A)$/.test(t.tagName)) return;
     if (t.closest('.iskalnik') || t.closest('.cene')) return;
+    /* urejanje podrobnosti vrstice (ime, vprasanja) ne sme skociti naprej */
+    if (t.closest('.vrst0-detajl')) return;
     naprej();
   };
 
@@ -3031,6 +3033,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
         .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 8rem; position: relative; z-index: 1; }
         .cw .korak-vsebina { width: 100%; max-width: 880px; animation: cwVstop .55s cubic-bezier(.16,1,.3,1) both; }
+        /* korak 0 rabi vec prostora (orbi + panel drug ob drugem) */
+        .cw .korak-vsebina.siroko { max-width: 1240px; }
         .cw .h1-maska { display: inline-block; overflow: hidden; vertical-align: bottom; padding: .06em .22em .24em; margin: -.06em -.22em -.24em; }
         .cw .h1-beseda { display: inline-block; transform: translateY(110%); animation: cwBeseda .7s cubic-bezier(.16,1,.3,1) forwards; }
         @keyframes cwBeseda { to { transform: translateY(0); } }
@@ -3839,7 +3843,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       )}
 
       <div className="oder">
-        <div className="korak-vsebina" key={korak}>
+        <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '')} key={korak}>
           <h1 className={korak === 0 ? 'h1-roza-konec' : undefined}><span className="h1-step">{String(korak + 1).padStart(2, '0')}</span>{naslovKoraka.split(' ').map((b, bi) => (
             <span key={bi} className="h1-maska"><span className="h1-beseda" style={{ animationDelay: `${bi * 90}ms` }}>{b}&nbsp;</span></span>
           ))}{korak === 0 && (
