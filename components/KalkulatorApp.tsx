@@ -3140,9 +3140,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .vrstica-vprasanja { margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem; }
 
         /* ── fake-chat uvod (gradi intimo) ── */
-        .cw .uvod-chat { position: fixed; inset: 0; z-index: 60; overflow-y: auto; display: flex; flex-direction: column; background: rgba(244,241,234,.92); -webkit-backdrop-filter: blur(28px) saturate(1.2); backdrop-filter: blur(28px) saturate(1.2); animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
+        .cw .uvod-chat { position: fixed; inset: 0; z-index: 60; overflow-y: auto; display: flex; flex-direction: column; background: var(--paper); animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
         @media (prefers-reduced-motion: reduce) { .cw .uvod-chat { animation: none; } }
-        .cw .uvod-oder { width: min(680px, 92vw); margin: 0 auto; padding: clamp(1.5rem, 5vh, 4rem) 0 8rem; flex: 1; }
+        .cw .uvod-chat .glava-ozka { padding-top: .5rem; padding-bottom: .5rem; }
+        /* ozadje uvoda: Tinina gradient blob-a + storitveni mehurcki za chatom */
+        .cw .uvod-ozadje { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        .cw .uvod-ozadje .blob { position: absolute; width: 60vw; max-width: 780px; height: auto; filter: blur(8px); }
+        .cw .uvod-ozadje .blob-roza { top: -18vh; left: -14vw; opacity: .8; animation: blobRoza 30s ease-in-out infinite; }
+        .cw .uvod-ozadje .blob-modra { bottom: -22vh; right: -16vw; opacity: .75; animation: blobModra 34s ease-in-out infinite; }
+        .cw .uvod-ozadje .uorb { position: absolute; opacity: .5; animation: uorbFloat var(--ud, 12s) ease-in-out infinite; }
+        .cw .uorb-0 { width: 118px; top: 13%; left: 3%; --ud: 11s; }
+        .cw .uorb-1 { width: 92px; top: 63%; left: 6%; --ud: 13s; }
+        .cw .uorb-2 { width: 138px; bottom: 5%; left: 19%; --ud: 15s; }
+        .cw .uorb-3 { width: 146px; top: 15%; right: 5%; --ud: 12.5s; }
+        .cw .uorb-4 { width: 120px; top: 56%; right: 3%; --ud: 14s; }
+        .cw .uorb-5 { width: 104px; bottom: 11%; right: 18%; --ud: 10.5s; }
+        @keyframes uorbFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+        @media (max-width: 900px) { .cw .uvod-ozadje .uorb { display: none; } }
+        @media (prefers-reduced-motion: reduce) { .cw .uvod-ozadje .blob, .cw .uvod-ozadje .uorb { animation: none; } }
+        .cw .uvod-oder { position: relative; z-index: 1; width: min(680px, 92vw); margin: 0 auto; padding: clamp(1.5rem, 5vh, 4rem) 0 8rem; flex: 1; }
         .cw .uvod-oder .ob-kicker { text-align: center; }
         .cw .uvod-h { text-align: center; }
         .cw .uvod-sub { text-align: center; max-width: 42ch; margin: .4rem auto 2.4rem; }
@@ -3153,20 +3169,26 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-bot { display: flex; align-items: flex-start; gap: .55rem; max-width: 82%; }
         .cw .chat-obraz { width: 2.5rem; height: 2.5rem; border-radius: 50%; flex: none; position: relative; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 8px 20px rgba(124,58,237,.28); }
         .cw .chat-obraz svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-        .cw .chat-bot .chat-mehur { background: rgba(255,180,205,.32); color: rgba(17,17,17,.72); }
+        .cw .chat-bot .chat-mehur { background: rgba(255,180,205,.32); color: rgba(17,17,17,.72); border-bottom-left-radius: 5px; }
         .cw .chat-bot .chat-mehur b { display: block; color: var(--ink); font-weight: 700; font-size: 1.02rem; }
         .cw .chat-bot .chat-mehur small { display: block; margin-top: .1rem; color: rgba(17,17,17,.5); font-size: .82rem; }
         .cw .chat-jaz { align-self: flex-end; }
-        .cw .chat-jaz .chat-mehur { background: rgba(160,205,235,.4); color: var(--ink); font-weight: 600; }
+        .cw .chat-jaz .chat-mehur { background: rgba(160,205,235,.4); color: var(--ink); font-weight: 600; border-bottom-right-radius: 5px; }
         .cw .chat-mehur { border-radius: 18px; padding: .7rem 1.05rem; font-size: .95rem; line-height: 1.45; font-weight: 400; }
         .cw .chat-izbire { display: flex; flex-direction: column; gap: .6rem; margin: .2rem 0 .2rem 3.05rem; }
         .cw .chat-opcija { display: flex; align-items: center; gap: .9rem; text-align: left; width: min(420px, 100%); background: rgba(255,255,255,.82); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(17,17,17,.1); border-radius: 16px; padding: 1rem 1.15rem; cursor: pointer; font-family: inherit; color: var(--ink); transition: transform .22s cubic-bezier(.34,1.56,.5,1), border-color .2s, box-shadow .22s; }
         .cw .chat-opcija:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 14px 30px rgba(142,52,89,.12); }
-        .cw .chat-opcija .crk { width: 1.9rem; height: 1.9rem; border-radius: 9px; background: var(--ink); color: var(--paper); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .82rem; flex: none; }
+        .cw .chat-opcija .crk { width: 1.9rem; height: 1.9rem; border-radius: 9px; background: #E8E3DA; color: var(--ink); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .82rem; flex: none; }
+        /* A/B/C v razlicnih pastelnih barvah */
+        .cw .chat-izbire .chat-opcija:nth-child(1) .crk { background: #BEEAD9; }
+        .cw .chat-izbire .chat-opcija:nth-child(2) .crk { background: #D6CFF3; }
+        .cw .chat-izbire .chat-opcija:nth-child(3) .crk { background: #F6C9D6; }
         .cw .chat-opcija b { font-weight: 700; font-size: 1.02rem; }
         .cw .chat-opcija small { color: rgba(17,17,17,.45); font-size: .84rem; margin-left: auto; text-align: right; max-width: 48%; }
-        .cw .chat-vnos { display: flex; gap: .7rem; margin: 1.4rem 0 0 3.05rem; }
-        .cw .chat-vnos input { flex: 1; background: rgba(255,255,255,.9); border: 1px solid rgba(17,17,17,.12); border-radius: 999px; padding: .95rem 1.3rem; font-family: inherit; font-size: 1.02rem; font-weight: 600; color: var(--ink); outline: none; transition: border-color .18s; }
+        /* gumb POD inputom, na sredini */
+        .cw .chat-vnos { display: flex; flex-direction: column; align-items: stretch; gap: .9rem; margin: 1.4rem 0 0 3.05rem; }
+        .cw .chat-vnos .gumb { align-self: center; }
+        .cw .chat-vnos input { flex: none; width: 100%; background: rgba(255,255,255,.9); border: 1px solid rgba(17,17,17,.12); border-radius: 999px; padding: .95rem 1.3rem; font-family: inherit; font-size: 1.02rem; font-weight: 600; color: var(--ink); outline: none; transition: border-color .18s; }
         .cw .chat-vnos input:focus { border-color: var(--accent); }
         @media (max-width: 560px) {
           .cw .chat-opcija small { display: none; }
@@ -3650,7 +3672,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
       {uvodChat && (
         <div className="uvod-chat" role="dialog" aria-modal="true" aria-label="Uvod">
-          <div className="glava">
+          <div className="glava glava-ozka">
             <span className="glava-levo">
               <a className="glava-brand" href={localePath(locale, ``)} aria-label="Pinart — domov">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -3662,6 +3684,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </a>
               <a className="zapri zapri-loceno" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
             </span>
+            <span className="glava-desno">
+              <button type="button" className="glava-profil" onClick={() => setKazemProfil(true)}>
+                <UserCircle size={19} weight="bold" /> <span>Profil</span>
+              </button>
+            </span>
+          </div>
+          {/* ozadje: gradient animacija + storitveni mehurcki za chatom */}
+          <div className="uvod-ozadje" aria-hidden>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="blob blob-roza" src="/kalkulator/ozadje/roza.svg" alt="" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="blob blob-modra" src="/kalkulator/ozadje/modra.svg" alt="" />
+            {['logo', 'cgp', 'ilustracija', 'web', 'copy', 'aplikacija'].map((sid, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={sid} className={`uorb uorb-${i}`} src={`/kalkulator/mehurcki/${sid}.svg`} alt="" />
+            ))}
           </div>
           <div className="uvod-oder">
             <p className="ob-kicker">Onboarding</p>
