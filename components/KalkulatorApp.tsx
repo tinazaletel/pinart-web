@@ -22,6 +22,16 @@ import {
    zajem kontakta (ime+email) ob shranjevanju/prenosu -> /api/inquiry. */
 
 type Storitev = { id: string; ime: string; osnova: number };
+
+/* Orbi na koraku 0: barvni par (jedro → rob), krozi po indeksu storitve. */
+const ORB_BARVE: [string, string][] = [
+  ['#7C3AED', '#C084FC'], ['#0EA5A5', '#5EEAD4'], ['#E8A200', '#FCE38A'],
+  ['#DB2777', '#F9A8D4'], ['#2563EB', '#7FB6F0'], ['#5B9E1E', '#B7E86A'],
+  ['#EA580C', '#FDBA74'], ['#84A21E', '#DCEE9B'],
+];
+/* Deterministicen psevdo-random [0,1) — stabilen med renderji in hydration
+   (Math.random bi ob vsakem renderju premaknil orbe). */
+const psr = (k: number) => { const x = Math.sin(k * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 type TonPonudbe = 'formalno' | 'toplo' | 'direktno';
 
 /* Osnove umerjene na slovenski trg (2025/26, viri: Omisli.si agregat cen,
@@ -993,6 +1003,11 @@ const K_ARHIV = 'pinart-kalkulator-arhiv';
 type ShranjenaP = {
   datum: string;
   izbrane: string[];
+  /* postavkovni model (2026-07-10): kolicina na storitev, lastno ime vrstice
+     (npr. "Spletna stran — Combisafe") in vrstni red vrstic v ponudbi */
+  kolicine?: Record<string, number>;
+  imenaPostavk?: Record<string, string>;
+  vrstniRedIzbranih?: string[];
   odgovori: Record<string, string>;
   postavke: Postavka[];
   raba: 'znamka' | 'projekt';
@@ -1058,6 +1073,94 @@ async function pridobiTurnstileToken(): Promise<string | undefined> {
   });
 }
 
+/* Animiran preliv v ozadju orodja (roza → bez → pale modra, pocasno
+   valovanje + dihajoc roza sij) — cisti WebGL2, brez knjiznic. Ce WebGL
+   ni na voljo, canvas ostane prazen in pod njim je papirnata barva.
+   Safari past: fragment shader s for-zanko rabi "precision highp int",
+   sicer se tiho zavrne. Reduced-motion narise le en okvir. */
+function GradientOzadje() {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const cvs = ref.current;
+    if (!cvs) return;
+    const gl = cvs.getContext('webgl2', { alpha: false, antialias: true });
+    if (!gl) return;
+    const VERT = '#version 300 es\nin vec2 position;\nvoid main(){gl_Position=vec4(position,0.0,1.0);}';
+    const FRAG = `#version 300 es
+precision highp float;
+precision highp int;
+uniform float uTime;
+uniform vec2 uRes;
+uniform vec3 c1;
+uniform vec3 c2;
+uniform vec3 c3;
+out vec4 fragColor;
+void main(){
+  vec2 uv=gl_FragCoord.xy/uRes;
+  float w = sin((uv.x*1.6+uv.y*1.1)*3.14159+uTime*0.6)*0.10
+          + sin((uv.x*1.1-uv.y*1.7)*3.14159-uTime*0.45)*0.08
+          + sin((uv.x*0.7+uv.y*0.5)*3.14159+uTime*0.25)*0.06;
+  float g = clamp((uv.x+uv.y)*0.5 + w, 0.0, 1.0);
+  vec3 col = g<0.5 ? mix(c1,c2,smoothstep(0.0,0.5,g)) : mix(c2,c3,smoothstep(0.5,1.0,g));
+  vec3 pink = vec3(0.965,0.808,0.878);
+  vec2 pc = vec2(0.10 + sin(uTime*0.35)*0.06, 0.08 + cos(uTime*0.28)*0.05);
+  float d = distance(uv + vec2(w*0.5, w*0.3), pc);
+  float puls = 0.50 + sin(uTime*0.5)*0.08;
+  col = mix(col, pink, smoothstep(0.62, 0.0, d) * puls);
+  fragColor = vec4(min(col, vec3(1.0)), 1.0);
+}`;
+    const sh = (t: number, src: string) => {
+      const s = gl.createShader(t)!;
+      gl.shaderSource(s, src); gl.compileShader(s);
+      return s;
+    };
+    const prog = gl.createProgram()!;
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VERT));
+    gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+    gl.useProgram(prog);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'position');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const uTime = gl.getUniformLocation(prog, 'uTime');
+    const uRes = gl.getUniformLocation(prog, 'uRes');
+    const hex = (h: string) => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
+    gl.uniform3fv(gl.getUniformLocation(prog, 'c1'), hex('#f3c6da'));
+    gl.uniform3fv(gl.getUniformLocation(prog, 'c2'), hex('#f4f1ea'));
+    gl.uniform3fv(gl.getUniformLocation(prog, 'c3'), hex('#dbf8ff'));
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      cvs.width = Math.max(1, Math.floor(innerWidth * dpr));
+      cvs.height = Math.max(1, Math.floor(innerHeight * dpr));
+      gl.viewport(0, 0, cvs.width, cvs.height);
+      gl.uniform2f(uRes, cvs.width, cvs.height);
+    };
+    window.addEventListener('resize', resize);
+    resize();
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const SPEED = 0.22;
+    let start: number | null = null;
+    let anim = 0;
+    const frame = (t: number) => {
+      if (start === null) start = t;
+      gl.uniform1f(uTime, (t - start) * 0.01 * SPEED);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      if (!reduce) anim = requestAnimationFrame(frame);
+    };
+    anim = requestAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(anim);
+      window.removeEventListener('resize', resize);
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
+    };
+  }, []);
+  return <canvas ref={ref} className="gradient-ozadje" aria-hidden />;
+}
+
 /* Majhen info-gumb za polja z zargonom (DDV, avtorske pravice ...).
    Klik namesto hover, da deluje tudi na dotik (mobile). */
 function InfoNamig({ besedilo }: { besedilo: string }) {
@@ -1096,6 +1199,47 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [korak, setKorak] = useState(0);
   const [izbrane, setIzbrane] = useState<Set<string>>(new Set(['cgp']));
+  /* postavkovni model: kolicina na storitev (privzeto 1), lastno ime vrstice,
+     vrstni red vrstic (drag) in trenutno razprta vrstica s podrobnostmi */
+  const [kolicine, setKolicine] = useState<Record<string, number>>({});
+  const [imenaPostavk, setImenaPostavk] = useState<Record<string, string>>({});
+  const [vrstniRedIzbranih, setVrstniRedIzbranih] = useState<string[]>(['cgp']);
+  const [razprtaVrstica, setRazprtaVrstica] = useState<string | null>(null);
+  const [vlecenaVrstica, setVlecenaVrstica] = useState<string | null>(null);
+
+  /* orb/vrstica: prvi klik izbere storitev, vsak naslednji doda kos (+1) */
+  const izberiVrstico = (id: string) => {
+    if (!izbrane.has(id)) {
+      const nova = new Set(izbrane); nova.add(id); setIzbrane(nova);
+      setVrstniRedIzbranih(red => (red.includes(id) ? red : [...red, id]));
+      setKolicine(k => ({ ...k, [id]: 1 }));
+    } else {
+      setKolicine(k => ({ ...k, [id]: Math.max(1, Math.round(k[id] ?? 1)) + 1 }));
+    }
+  };
+  /* minus: pod 1 kos vrstica izgine (storitev ni vec izbrana) */
+  const odvzemiVrstico = (id: string) => {
+    const q = Math.max(1, Math.round(kolicine[id] ?? 1)) - 1;
+    if (q <= 0) {
+      const nova = new Set(izbrane); nova.delete(id); setIzbrane(nova);
+      setVrstniRedIzbranih(red => red.filter(x => x !== id));
+      setKolicine(k => { const n = { ...k }; delete n[id]; return n; });
+      if (razprtaVrstica === id) setRazprtaVrstica(null);
+    } else {
+      setKolicine(k => ({ ...k, [id]: q }));
+    }
+  };
+  /* premik vrstice na mesto druge (drag & drop v ponudbi) */
+  const premakniVrstico = (odId: string, naId: string) => {
+    if (odId === naId) return;
+    setVrstniRedIzbranih(red => {
+      const nova = red.filter(x => x !== odId);
+      const ix = nova.indexOf(naId);
+      if (ix < 0) return red;
+      nova.splice(ix, 0, odId);
+      return nova;
+    });
+  };
   /* raba dela: 'znamka' = celotna znamka (bilanca podjetja),
      'projekt' = dolocen izdelek/projekt (pricakovani izkupicek projekta) */
   const [raba, setRaba] = useState<'znamka' | 'projekt'>('znamka');
@@ -1207,7 +1351,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* Postopni prikaz vprasanj (Tinina koreografija): naslov na sredini,
      prvo vprasanje prileti od spodaj, naslednje ob odgovoru ALI po
      nekaj sekundah; stran raste navzdol, nazaj se da poskrolati. */
-  const [vidnaVprasanja, setVidnaVprasanja] = useState(1);
   const [imeProfila, setImeProfila] = useState('');
   const [leadIme, setLeadIme] = useState('');
   const [leadEmail, setLeadEmail] = useState('');
@@ -1351,6 +1494,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      narocnik, zneski), a OHRANI nastavitve (cene, profil, tvoji podatki). */
   const novaPonudba = () => {
     setIzbrane(new Set());
+    setKolicine({});
+    setImenaPostavk({});
+    setVrstniRedIzbranih([]);
+    setRazprtaVrstica(null);
     setOdgovori({});
     setPostavke([]);
     setNazivPonudbe('');
@@ -1372,7 +1519,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setIzjemePravice('');
     setPrikaziIzjemePravic(false);
     setRocnoBesedilo(false);
-    setVidnaVprasanja(1);
     try { sessionStorage.removeItem('pinart-cene-poslano'); } catch { /* prazno */ }
     setKorak(0);
   };
@@ -1387,8 +1533,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     osnove[s.id] > 0 ? osnove[s.id] : zaokrozi(s.osnova * trg(mojTrg).lvl);
 
   const r = useMemo(() => {
-    const sez = vseStoritve.filter(s => izbrane.has(s.id));
+    /* vrstni red vrstic sledi njenemu razporedu (drag), nove pridejo na konec */
+    const redIx = (id: string) => {
+      const i = vrstniRedIzbranih.indexOf(id);
+      return i < 0 ? 999 : i;
+    };
+    const sez = vseStoritve.filter(s => izbrane.has(s.id))
+      .slice().sort((a, b) => redIx(a.id) - redIx(b.id));
     if (!sez.length) return null;
+    /* kolicina na storitev (dva CGP-ja, tri spletne strani) — linearno */
+    const kol = (id: string) => Math.max(1, Math.round(kolicine[id] ?? 1));
+    const imeVrstice = (s: Storitev) => (imenaPostavk[s.id] || '').trim() || s.ime;
 
     const p = Number(promet) || 0;
     const d = Number(dobicek) || 0;
@@ -1405,14 +1560,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     /* bogatejsi trg placa vec, revnejsi manj; nikoli pod 70 % in nikoli cez 220 % */
     const trgMult = clamp(trg(trgNarocnika).lvl / trg(mojTrg).lvl, 0.7, 2.2);
 
-    const vsotaStoritev = sez.reduce((a, s) => a + osnovaZa(s), 0);
+    const vsotaStoritev = sez.reduce((a, s) => a + osnovaZa(s) * kol(s.id), 0);
     const vsotaPostavk = postavke.reduce((a, x) => a + x.cena * x.kolicina, 0);
     const mult = izk.mult * vel.mult * trgMult * (1 + fakDod);
     const delo = zaokrozi((vsotaStoritev + vsotaPostavk) * mult);
 
-    /* Razclemba za CSV/racunovodski uvoz — vsota vrstic = delo (priporoceni paket). */
+    /* Razclemba za CSV/racunovodski uvoz — vsota vrstic = delo (priporoceni paket).
+       Vrstica nosi njeno lastno ime postavke in kolicino (linearno). */
     const vrsticeIzvedbe = [
-      ...sez.map(s => ({ ime: s.ime, kolicina: 1, cena: zaokrozi(osnovaZa(s) * mult) })),
+      ...sez.map(s => ({ ime: imeVrstice(s), kolicina: kol(s.id), cena: zaokrozi(osnovaZa(s) * mult) })),
       ...postavke.map(x => ({ ime: x.ime, kolicina: x.kolicina, cena: zaokrozi(x.cena * mult) })),
     ];
 
@@ -1470,7 +1626,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         opis: `${['tisk + promocija', ...medijiIz.map(m => m.ime.toLowerCase())].join(' + ')}, ${trajanjeIz.ime.toLowerCase()}, ${teritorijIz.ime}, naklada ${nakladaIz.ime}`,
       },
     };
-  }, [izbrane, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, valuta, pravTrajanje, pravTeritorij, pravDodatniMediji, pravNaklada, rocniPaketi]);
+  }, [izbrane, kolicine, imenaPostavk, vrstniRedIzbranih, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, valuta, pravTrajanje, pravTeritorij, pravDodatniMediji, pravNaklada, rocniPaketi]);
 
   const skupineVprasanj = useMemo(() => {
     return vseStoritve
@@ -1494,7 +1650,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      predogled besedila in loceno se zakljucek (oblikovanje + posljanje).
      Trg (tvoj in narocnikov) ostaja PRED ceno, ker neposredno vpliva na
      izracun — ce bi bil kasneje, bi se prikazana cena naknadno spremenila. */
-  const prviPoVprasanjih = 1 + skupineVprasanj.length;
+  /* Vprasanja o storitvah niso vec svoji koraki — zivijo v podrobnostih
+     vrstice na koraku 0 (klik na vrstico v "Tvoja ponudba"). Hitra ponudba
+     jih lahko preskoci, podrobna jih odpre po zelji. */
+  const prviPoVprasanjih = 1;
   const kdoSiStep = prviPoVprasanjih;
   const mojTrgStep = prviPoVprasanjih + 1;
   const izkusnjeStep = prviPoVprasanjih + 2;
@@ -1507,33 +1666,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const ponudbaStep = prviPoVprasanjih + 9;
   const zakljucekStep = prviPoVprasanjih + 10;
   const KORAKOV = zakljucekStep + 1;
-  const trenutnaSkupina = korak > 0 && korak < prviPoVprasanjih ? skupineVprasanj[korak - 1] : null;
-
-  /* reset postopnega prikaza ob vsakem koraku */
-  useEffect(() => { setVidnaVprasanja(1); }, [korak]);
-
-  /* odgovor takoj odklene naslednje vprasanje */
-  useEffect(() => {
-    if (!trenutnaSkupina) return;
-    let zadnjiOdgovorjen = -1;
-    const klikljivaWeb = ['kompleksnost', 'budget', 'funkcije', 'dodatno'];
-    trenutnaSkupina.vprasanja.forEach((vp, i) => {
-      const klikljivo = !!vp.izbire || (trenutnaSkupina.id === 'web' && klikljivaWeb.includes(vp.id));
-      if (klikljivo && (odgovori[vp.key] || '').trim()) zadnjiOdgovorjen = i;
-    });
-    if (zadnjiOdgovorjen + 2 > vidnaVprasanja) setVidnaVprasanja(zadnjiOdgovorjen + 2);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [odgovori, trenutnaSkupina]);
-
-  /* novo vprasanje pripelji v pogled (stran "potuje" navzgor) */
-  useEffect(() => {
-    if (!trenutnaSkupina || vidnaVprasanja <= 1) return;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    requestAnimationFrame(() => {
-      const vsi = document.querySelectorAll('.cw .vprasanja .vp');
-      vsi[vsi.length - 1]?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
-    });
-  }, [vidnaVprasanja, trenutnaSkupina]);
+  /* (postopni prikaz vprasanj po korakih je odpadel — vprasanja so v
+     podrobnostih vrstice, prikazana vsa naenkrat) */
 
   const ponudba = useMemo(() => {
     if (!r) return '';
@@ -2022,7 +2156,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const ime = (nazivPonudbe.trim() || narocnikPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : 'Ponudba')).slice(0, 60);
     const zapis: ShranjenaP = {
       datum: new Date().toISOString(),
-      izbrane: [...izbrane], odgovori, postavke, raba,
+      izbrane: [...izbrane], kolicine, imenaPostavk, vrstniRedIzbranih,
+      odgovori, postavke, raba,
       promet, dobicek, projPrihodek, projDobicek, popust, dodatki: [...dodatki],
       prenosPravic, rocnePravice, rocnaLicenca, izjemePravice: izjemePravice || undefined,
       nazivPonudbe, narocnikPonudbe, obsegPonudbe, tonPonudbe, avansPct,
@@ -2042,6 +2177,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const p = arhiv[ime];
     if (!p) return;
     setIzbrane(new Set(p.izbrane)); setOdgovori(p.odgovori || {}); setPostavke(p.postavke || []);
+    setKolicine(p.kolicine || {});
+    setImenaPostavk(p.imenaPostavk || {});
+    setVrstniRedIzbranih(p.vrstniRedIzbranih || p.izbrane || []);
+    setRazprtaVrstica(null);
     setRaba(p.raba); setPromet(p.promet); setDobicek(p.dobicek);
     setProjPrihodek(p.projPrihodek); setProjDobicek(p.projDobicek);
     setPopust(p.popust); setDodatki(new Set(p.dodatki || []));
@@ -2237,9 +2376,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     direkcija: <Compass size={22} />,
   };
 
-  const naslovKoraka = korak === 0 ? 'Kaj ustvarjaš?'
-    : trenutnaSkupina ? trenutnaSkupina.storitev
-      : korak === kdoSiStep ? 'Kdo si?'
+  const naslovKoraka = korak === 0 ? 'Kaj boš danes ustvarila?'
+    : korak === kdoSiStep ? 'Kdo si?'
         : korak === mojTrgStep ? 'Kje delaš?'
           : korak === izkusnjeStep ? 'Koliko izkušenj imaš?'
             : korak === narocnikStep ? 'Kdo je stranka?'
@@ -2252,8 +2390,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                           : 'Zaključek.';
 
   const opisKoraka = korak === 0 ? 'Izberi storitve za to ponudbo — eno ali več.'
-    : trenutnaSkupina ? 'Več o projektu. Odgovori pomagajo določiti obseg ponudbe; lahko jih preskočiš.'
-      : korak === kdoSiStep ? 'Izpolniš enkrat, orodje si zapomni.'
+    : korak === kdoSiStep ? 'Izpolniš enkrat, orodje si zapomni.'
         : korak === mojTrgStep ? 'Tvoj trg nastavi privzete osnove na tam običajno raven.'
           : korak === izkusnjeStep ? 'Vpliva na privzete cene.'
             : korak === narocnikStep ? 'Vpišeš za vsako ponudbo posebej.'
@@ -2281,29 +2418,185 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   );
 
   /* En oblacek storitve (prvi korak). */
-  const oblacekStoritve = (s: Storitev) => (
-    <button key={s.id} type="button"
-      className={'pill' + (izbrane.has(s.id) ? ' on' : '')}
-      onClick={() => preklopi(izbrane, s.id, setIzbrane)}>
-      <span className="pill-fill" aria-hidden />
-      <span className="pi" aria-hidden>{ikonaZa(s.id)}</span>
-      <span className="pill-tekst">{s.ime}<small>od {val(osnovaZa(s))}</small></span>
-    </button>
-  );
-  /* Skupina enega podrocja (naslov + oblacki vidnih storitev), ali null. */
-  const skupinaPodrocja = (area: { id: string; ime: string; storitve: string[] }) => {
-    const svc = poVrstnemRedu(vidneStoritve.filter(s => area.storitve.includes(s.id)));
-    if (!svc.length) return null;
-    return (
-      <div className="kartica skupina" key={area.id}>
-        <div className="skupina-naslov">{area.ime}</div>
-        <div className="opts">{svc.map(oblacekStoritve)}</div>
-      </div>
-    );
-  };
   const jeOnboardan = !!(mojSet && mojSet.length);
+  /* Vprasanja ene storitve — prikazana v razprti vrstici ponudbe (korak 0).
+     Ista logika kot nekdanji vprasalni koraki, le vsa vprasanja naenkrat. */
+  const vprasanjaStoritveUI = (skupina: (typeof skupineVprasanj)[number]) => (
+    <div className="vprasanja vrstica-vprasanja">
+      {skupina.vprasanja.map(vp => (
+        <div key={vp.key}>
+          <div className="vp">
+            <label htmlFor={'cw-vp-' + vp.key}>{vp.label}{vp.vec ? <span className="vec-namig">izbereš lahko več</span> : null}</label>
+            {vp.izbire ? (
+              <div className="choicegrid">
+                {vp.vec && vp.vse ? (() => {
+                  const zetoni = (odgovori[vp.key] || '').split(' + ').filter(Boolean);
+                  const rocni = zetoni.filter(t => !vp.izbire!.includes(t));
+                  const vseIzbrane = vp.izbire!.every(v => zetoni.includes(v));
+                  return (
+                    <button type="button" className={vseIzbrane ? 'on' : ''}
+                      onClick={() => setOdgovori({ ...odgovori, [vp.key]: (vseIzbrane ? rocni : [...vp.izbire!, ...rocni]).join(' + ') })}>
+                      <span className={'kljucek' + (vseIzbrane ? ' on' : '')} aria-hidden>{vseIzbrane ? '✓' : ''}</span>Vse
+                    </button>
+                  );
+                })() : null}
+                {vp.izbire.map(vrednost => {
+                  const izbrane_v = vp.vec ? (odgovori[vp.key] || '').split(' + ').filter(Boolean) : [];
+                  const aktiven = vp.vec ? izbrane_v.includes(vrednost) : odgovori[vp.key] === vrednost;
+                  const nova = vp.vec
+                    ? (aktiven ? izbrane_v.filter(x => x !== vrednost) : [...izbrane_v, vrednost]).join(' + ')
+                    : (aktiven ? '' : vrednost);
+                  return (
+                    <button
+                      key={vrednost}
+                      type="button"
+                      className={aktiven ? 'on' : ''}
+                      onClick={() => setOdgovori({ ...odgovori, [vp.key]: nova })}
+                    >
+                      <span className={(vp.vec ? 'kljucek' : 'krogec') + (aktiven ? ' on' : '')} aria-hidden>{vp.vec && aktiven ? '✓' : ''}</span>{vrednost}
+                    </button>
+                  );
+                })}
+                {vp.svoje ? (
+                  <span className="svoje-vrsta">
+                    {vp.id === 'rok' ? <CalendarBlank size={17} aria-hidden style={{ opacity: .7, flex: 'none' }} /> : null}
+                    <input
+                      id={'cw-vp-' + vp.key + '-svoje'}
+                      type="text"
+                      className="vp-svoje"
+                      placeholder={vp.svoje}
+                      aria-label={vp.label + ' (svoj vnos)'}
+                      value={(() => {
+                        const v = odgovori[vp.key] || '';
+                        if (!vp.vec) return vp.izbire.includes(v) ? '' : v;
+                        return v.split(' + ').filter(t => t && !vp.izbire!.includes(t)).join(' + ');
+                      })()}
+                      onChange={e => {
+                        if (!vp.vec) { setOdgovori({ ...odgovori, [vp.key]: e.target.value }); return; }
+                        const obkljukane = (odgovori[vp.key] || '').split(' + ').filter(t => t && vp.izbire!.includes(t));
+                        setOdgovori({ ...odgovori, [vp.key]: [...obkljukane, e.target.value].filter(Boolean).join(' + ') });
+                      }}
+                    />
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+            {skupina.id === 'web' && vp.id === 'ima-cgp'
+              && (odgovori[vp.key] || '').includes('novo CGP') && !izbrane.has('cgp') ? (
+              <button type="button" className="povezava"
+                style={{ marginTop: '.9rem', color: 'var(--accent)', fontWeight: 600 }}
+                onClick={() => izberiVrstico('cgp')}>
+                + Dodaj CGP k ponudbi (odpre se njen vprašalnik)
+              </button>
+            ) : null}
+            {vp.izbire ? null : skupina.id === 'web' && vp.id === 'kompleksnost' ? (
+              <div className="choicegrid">
+                {WEB_KOMPLEKSNOST.map(vrednost => (
+                  <button
+                    key={vrednost}
+                    type="button"
+                    className={odgovori[vp.key] === vrednost ? 'on' : ''}
+                    onClick={() => setOdgovori({ ...odgovori, [vp.key]: vrednost })}
+                  >
+                    <span className="krogec" aria-hidden />{vrednost}
+                  </button>
+                ))}
+              </div>
+            ) : skupina.id === 'web' && vp.id === 'budget' ? (
+              <div className="choicegrid">
+                {WEB_BUDGETI.map(vrednost => (
+                  <button
+                    key={vrednost}
+                    type="button"
+                    className={odgovori[vp.key] === vrednost ? 'on' : ''}
+                    onClick={() => setOdgovori({ ...odgovori, [vp.key]: vrednost })}
+                  >
+                    <span className="krogec" aria-hidden />{vrednost}
+                  </button>
+                ))}
+              </div>
+            ) : skupina.id === 'web' && vp.id === 'funkcije' ? (
+              <>
+                <div className="checkgrid">
+                  {WEB_FUNKCIONALNOSTI.map(f => (
+                    <label key={f}>
+                      <input
+                        type="checkbox"
+                        checked={(odgovori[vp.key] || '').split(' · ').includes(f)}
+                        onChange={() => preklopiOdgovor(vp.key, f)}
+                      />
+                      <span>{f}</span>
+                    </label>
+                  ))}
+                </div>
+                <textarea
+                  id={'cw-vp-' + vp.key}
+                  value={odgovori[vp.key + ':drugo'] || ''}
+                  placeholder="Drugo ali bolj specifično: npr. kalkulator, portal, konfigurator, povezava z ERP ..."
+                  onChange={e => setOdgovori({ ...odgovori, [vp.key + ':drugo']: e.target.value })}
+                />
+              </>
+            ) : skupina.id === 'web' && vp.id === 'dodatno' ? (
+              <>
+                <div className="checkgrid">
+                  {WEB_DODATNE_STORITVE.map(f => (
+                    <label key={f}>
+                      <input
+                        type="checkbox"
+                        checked={(odgovori[vp.key] || '').split(' · ').includes(f)}
+                        onChange={() => preklopiOdgovor(vp.key, f)}
+                      />
+                      <span>{f}</span>
+                    </label>
+                  ))}
+                </div>
+                <textarea
+                  id={'cw-vp-' + vp.key}
+                  value={odgovori[vp.key + ':drugo'] || ''}
+                  placeholder="Drugo: npr. brand refresh, ilustracije, prevodi, email predloge ..."
+                  onChange={e => setOdgovori({ ...odgovori, [vp.key + ':drugo']: e.target.value })}
+                />
+              </>
+            ) : (
+              <textarea
+                id={'cw-vp-' + vp.key}
+                value={odgovori[vp.key] || ''}
+                placeholder={vp.placeholder || 'Kratek odgovor, lahko pustiš prazno.'}
+                onChange={e => setOdgovori({ ...odgovori, [vp.key]: e.target.value })}
+              />
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   const izbranaPodrocja = jeOnboardan ? PODROCJA.filter(p => p.storitve.every(sid => mojSet!.includes(sid))) : PODROCJA;
   const mojeVidne = poVrstnemRedu(vidneStoritve.filter(s => s.id.startsWith('moja-')));
+
+  /* Storitve za orbe na koraku 0: njena podrocja + lastne storitve, brez dvojnikov. */
+  const orbStoritve = (() => {
+    const iz = izbranaPodrocja.flatMap(a => poVrstnemRedu(vidneStoritve.filter(s => a.storitve.includes(s.id))));
+    const videni = new Set<string>();
+    return [...iz, ...mojeVidne].filter(s => (videni.has(s.id) ? false : (videni.add(s.id), true)));
+  })();
+  /* Velikost orba pada s stevilom storitev; pod minimum ne gre (mobile skrola). */
+  const orbD = orbStoritve.length <= 8 ? 148 : orbStoritve.length <= 14 ? 132 : 118;
+  /* Deterministicna organska razporeditev: stolpci po tri, z zamikom in jitterjem. */
+  const orbPoz = (i: number) => {
+    const n = orbStoritve.length + 1; /* + orb "dodaj" */
+    const stolpcev = Math.max(1, Math.ceil(n / 3));
+    const col = Math.floor(i / 3), row = i % 3;
+    const x = stolpcev === 1 ? 42 : 9 + col * (76 / Math.max(stolpcev - 1, 1)) + (psr(i + 1) * 6 - 3);
+    const y = 16 + row * 27 + (col % 2 ? 7 : 0) + (psr(i + 50) * 8 - 4);
+    return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
+  };
+  /* Vrstni red vrstic v ponudbi: njen drag-razpored, nove na koncu. */
+  const redVrstic = [
+    ...vrstniRedIzbranih.filter(id => izbrane.has(id)),
+    ...[...izbrane].filter(id => !vrstniRedIzbranih.includes(id)),
+  ];
+  const pozdrav = `Hej${ponudnik.ime.trim() ? ' ' + ponudnik.ime.trim().split(/\s+/)[0] : ''}!`;
 
   /* Blok "dodaj postavko" (iskalnik + seznam) — za ponovno uporabo na koraku
      cene, da lahko dodas dodatek brez vracanja na prvi korak. */
@@ -2514,8 +2807,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
   return (
     <div className="cw" onKeyDown={naEnter}>
+      <GradientOzadje />
       <style>{`
-        .cw { min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 300; }
+        .cw { position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 300; }
+        /* animiran preliv pod vsem (fixed, z-index 0 — NIKOLI -1, Safari past) */
+        .gradient-ozadje { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none; }
 
         .cw .soglasje { position: fixed; inset: 0; z-index: 60; background: rgba(245,242,234,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
         .cw .soglasje-kartica { max-width: 540px; max-height: calc(100dvh - 2.5rem); overflow-y: auto; background: var(--paper); border: 1px solid rgba(17,17,17,.25); border-radius: 16px; padding: clamp(1.6rem, 4vw, 2.6rem); box-shadow: 0 24px 80px rgba(17,17,17,.12); }
@@ -2574,6 +2870,96 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .cene-dodaj input[type=number] { width: 80px; text-align: right; }
         .cw .skupine-storitev { display: flex; flex-direction: column; gap: 1.7rem; }
         .cw .skupine-storitev .kartica.skupina { margin-bottom: 0; max-width: none; }
+
+        /* ── korak 0: orbi (levo) + ziva ponudba (desno) ── */
+        .cw .h1-roza-konec .h1-maska:last-of-type .h1-beseda { color: var(--accent); }
+        .cw .h1-iskre { width: .9em; height: .75em; fill: var(--accent); margin-left: -.35em; vertical-align: super; }
+        .cw .h1-iskre path { animation: iskra 2.6s ease-in-out infinite; }
+        .cw .h1-iskre path:nth-child(2) { animation-delay: .5s; }
+        .cw .h1-iskre path:nth-child(3) { animation-delay: 1.1s; }
+        @keyframes iskra { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+
+        .cw .oder0 { display: grid; grid-template-columns: 1.55fr 1fr; gap: clamp(1rem, 2.5vw, 2rem); align-items: stretch; width: min(1240px, 100%); }
+        .cw .platno0-drs { overflow-x: auto; overflow-y: hidden; min-width: 0; }
+        .cw .platno0 { position: relative; min-height: 560px; }
+        .cw .namig0 { position: absolute; left: 0; right: 0; bottom: .2rem; text-align: center; font-size: .78rem; color: rgba(17,17,17,.45); pointer-events: none; }
+
+        .cw .orb0 { position: absolute; border: none; background: none; cursor: pointer; padding: 0; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; font-family: inherit; z-index: 1; animation: orb-plavaj var(--dur, 11s) ease-in-out var(--del, 0s) infinite; will-change: transform; }
+        .cw .orb0:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+        .cw .orb0 .zar0 { position: absolute; inset: -16%; border-radius: 50%; z-index: 0; pointer-events: none; background: radial-gradient(44% 38% at 36% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 60%), radial-gradient(circle at 52% 54%, var(--o2, #C084FC), var(--o1, #7C3AED) 50%, transparent 72%); filter: blur(6px); opacity: .94; transition: opacity .3s, filter .3s; }
+        .cw .orb0:hover .zar0 { opacity: 1; filter: blur(3px); }
+        .cw .orb0::before { content: ""; position: absolute; z-index: 1; top: 15%; left: 25%; width: 26%; height: 19%; border-radius: 50%; background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.95), rgba(255,255,255,0) 72%); filter: blur(1.5px); pointer-events: none; }
+        .cw .orb0 .orb0-ikona { position: relative; z-index: 1; display: block; margin-bottom: .15rem; filter: drop-shadow(0 1px 2px rgba(35,18,45,.45)); }
+        .cw .orb0 .orb0-ime { position: relative; z-index: 1; font-weight: 700; font-size: .92rem; line-height: 1.05; padding: 0 .6em; text-shadow: 0 1px 3px rgba(35,18,45,.5); }
+        .cw .orb0 .orb0-cena { position: relative; z-index: 1; font-size: .68rem; font-weight: 600; opacity: .95; margin-top: .2em; text-shadow: 0 1px 2px rgba(35,18,45,.45); }
+        .cw .orb0 .kolic0 { position: absolute; top: -2%; right: 0; z-index: 3; min-width: 1.9em; height: 1.9em; border-radius: 999px; background: #2A2630; color: #fff; font-weight: 800; font-size: .8rem; display: flex; align-items: center; justify-content: center; padding: 0 .4em; border: 2px solid rgba(255,255,255,.5); box-shadow: 0 5px 14px rgba(0,0,0,.28); cursor: pointer; transition: background .15s; }
+        .cw .orb0 .kolic0:hover { background: var(--accent); }
+        .cw .orb0.orb0-plus { color: rgba(17,17,17,.55); }
+        .cw .orb0.orb0-plus::before { display: none; }
+        .cw .orb0.orb0-plus .orb0-krog { position: absolute; inset: 4%; border-radius: 50%; border: 1.5px dashed rgba(17,17,17,.4); }
+        .cw .orb0.orb0-plus:hover .orb0-krog { border-color: var(--ink); }
+        .cw .orb0.orb0-plus .orb0-ime { font-weight: 600; text-shadow: none; font-size: .82rem; }
+        @keyframes orb-plavaj {
+          0% { transform: translate(0, 0); }
+          25% { transform: translate(var(--fx, 8px), var(--fy, -10px)) scale(1.04); }
+          50% { transform: translate(calc(var(--fx, 8px) * -.6), calc(var(--fy, -10px) * -.7)) scale(.97); }
+          75% { transform: translate(calc(var(--fx, 8px) * .4), var(--fy, -10px)) scale(1.02); }
+          100% { transform: translate(0, 0); }
+        }
+
+        /* AI vodicka: obraz-orb + govorni oblacek */
+        .cw .vodicka { position: absolute; top: -1%; left: 44%; z-index: 4; display: flex; align-items: flex-start; pointer-events: none; animation: orb-plavaj 10s ease-in-out -3s infinite; }
+        .cw .vodicka-obraz { width: 3.2rem; height: 3.2rem; border-radius: 50%; flex: none; position: relative; z-index: 2; margin: .5rem -.8rem 0 0; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 10px 26px rgba(124,58,237,.32); }
+        .cw .vodicka-obraz svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+        .cw .vodicka-karta { background: rgba(255,255,255,.78); -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3); border: 1px solid rgba(255,255,255,.75); border-radius: 20px; padding: .85rem 1.25rem .9rem 1.5rem; font-size: .9rem; line-height: 1.5; color: rgba(17,17,17,.62); box-shadow: 0 14px 40px rgba(40,25,40,.10); font-weight: 400; }
+        .cw .vodicka-karta b { display: block; color: var(--ink); font-size: .96rem; margin-bottom: .1rem; }
+
+        /* ziva ponudba: steklena kartica */
+        .cw .ponudba0 { border-radius: 26px; padding: 1.5rem 1.4rem 1.3rem; display: flex; flex-direction: column; min-height: 0; background: rgba(255,255,255,.72); -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); border: 1px solid rgba(255,255,255,.75); box-shadow: 0 20px 60px rgba(40,25,40,.10); }
+        .cw .ponudba0-glava { display: flex; align-items: center; justify-content: space-between; gap: .8rem; }
+        .cw .ponudba0-glava h2 { font-family: var(--font-bodoni), serif; font-weight: 500; font-size: 1.65rem; margin: 0; }
+        .cw .ponudba0-chip { background: rgba(255,255,255,.85); border: 1px solid rgba(17,17,17,.12); border-radius: 999px; padding: .28rem .7rem; font-size: .74rem; font-weight: 650; color: rgba(17,17,17,.6); white-space: nowrap; }
+        .cw .ponudba0-pod { font-size: .85rem; color: var(--accent); font-weight: 500; margin: .1rem 0 1rem; display: flex; align-items: center; gap: .45rem; }
+        .cw .ponudba0-pod::before { content: ""; width: .55rem; height: .55rem; border-radius: 50%; background: var(--accent); opacity: .85; flex: none; }
+        .cw .ponudba0-prazno { color: rgba(17,17,17,.5); font-size: .95rem; line-height: 1.55; text-align: center; padding: 1.8rem 0; margin: 0; font-weight: 400; }
+        .cw .ponudba0-prazno b { color: rgba(17,17,17,.72); }
+
+        .cw .vrstice0 { display: flex; flex-direction: column; }
+        .cw .vrst0 { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: .55rem; padding: .65rem 0; border-bottom: 1px solid rgba(17,17,17,.12); }
+        .cw .vrst0.vlecem { opacity: .35; }
+        .cw .rocica0 { cursor: grab; color: rgba(17,17,17,.4); font-size: .9rem; line-height: 1; padding: .3rem .15rem; border-radius: 6px; user-select: none; -webkit-user-select: none; }
+        .cw .rocica0:hover { color: var(--ink); background: rgba(17,17,17,.08); }
+        .cw .vrst0-ime { border: none; background: none; padding: 0; text-align: left; font-family: inherit; font-weight: 650; font-size: .95rem; color: var(--ink); cursor: pointer; min-width: 0; }
+        .cw .vrst0-ime:hover { color: var(--accent); }
+        .cw .vrst0-ime small { display: block; font-weight: 500; color: rgba(17,17,17,.42); font-size: .72rem; margin-top: .12rem; }
+        .cw .vrst0-ime small.odg { color: var(--accent); }
+        .cw .stepper0 { display: flex; align-items: center; gap: .3rem; }
+        .cw .stepper0 button { width: 1.55rem; height: 1.55rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.15); background: transparent; color: rgba(17,17,17,.6); cursor: pointer; font-size: .95rem; line-height: 1; display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s; }
+        .cw .stepper0 button:hover { border-color: var(--ink); color: var(--ink); }
+        .cw .stepper0 b { min-width: 1.3em; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; font-size: .92rem; }
+        .cw .vrst0-cena { font-family: var(--font-bodoni), serif; font-size: 1.06rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+        .cw .vrst0-detajl { background: rgba(255,255,255,.85); border: 1px solid rgba(17,17,17,.1); border-radius: 14px; padding: 1rem 1.1rem; margin: .5rem 0 .9rem; }
+        .cw .vrst0-detajl .polje input { font-weight: 650; }
+        .cw .vrst0-brez { font-size: .85rem; color: rgba(17,17,17,.5); margin: .4rem 0 0; font-weight: 400; }
+        .cw .vrstica-vprasanja { margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+        .cw .vrstica-vprasanja .vp { animation: none; max-width: none; }
+
+        .cw .ponudba0-dodaj { margin-top: 1rem; align-self: flex-start; }
+        .cw .ponudba0-vsota { margin-top: 1.1rem; padding-top: .9rem; border-top: 2px solid var(--ink); }
+        .cw .ponudba0-vsota-vrsta { display: flex; justify-content: space-between; align-items: baseline; font-size: .92rem; color: rgba(17,17,17,.62); }
+        .cw .ponudba0-vsota-vrsta b { font-family: var(--font-bodoni), serif; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.15rem; }
+        .cw .ponudba0-opomba { font-size: .76rem; color: var(--accent); margin-top: .45rem; font-weight: 500; }
+
+        @media (max-width: 980px) {
+          .cw .oder0 { grid-template-columns: 1fr; }
+          .cw .vodicka { display: none; }
+          .cw .platno0 { min-height: 480px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .cw .orb0, .cw .vodicka { animation: none; }
+          .cw .h1-iskre path { animation: none; }
+        }
         .cw .skupina-naslov { font-size: .72rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--accent); margin-bottom: .75rem; }
         .cw .onboarding { position: fixed; inset: 0; z-index: 60; background: var(--paper); overflow-y: auto; display: flex; flex-direction: column; animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
         @media (prefers-reduced-motion: reduce) { .cw .onboarding { animation: none; } }
@@ -2598,7 +2984,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .napredek { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(17,17,17,.1); z-index: 40; }
         .cw .napredek i { display: block; height: 100%; background: var(--ink); transition: width .5s cubic-bezier(.16,1,.3,1); }
 
-        .cw .glava { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1rem clamp(1.2rem, 4vw, 3rem); z-index: 30; pointer-events: none; }
+        /* locen bez pas nad prelivom (njen mockup: header ima svoje ozadje) */
+        .cw .glava { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1rem clamp(1.2rem, 4vw, 3rem); z-index: 30; pointer-events: none; background: var(--paper); border-bottom: 1px solid rgba(17,17,17,.08); }
         .cw .glava .zapri { pointer-events: auto; display: inline-flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); text-decoration: none; background: var(--paper); border: none; border-radius: 999px; padding: .5rem .85rem; transition: color .18s ease; }
         .cw .glava .zapri:hover { color: var(--ink); }
         /* locena razlicica (poleg loga): navadno besedilo z locilno crto pred njim */
@@ -2642,7 +3029,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .glava .glava-logo { width: 42px; height: 42px; display: block; transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .glava .glava-brand:hover .glava-logo { transform: translateY(-1px); }
 
-        .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 8rem; }
+        .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 8rem; position: relative; z-index: 1; }
         .cw .korak-vsebina { width: 100%; max-width: 880px; animation: cwVstop .55s cubic-bezier(.16,1,.3,1) both; }
         .cw .h1-maska { display: inline-block; overflow: hidden; vertical-align: bottom; padding: .06em .22em .24em; margin: -.06em -.22em -.24em; }
         .cw .h1-beseda { display: inline-block; transform: translateY(110%); animation: cwBeseda .7s cubic-bezier(.16,1,.3,1) forwards; }
@@ -3453,9 +3840,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
       <div className="oder">
         <div className="korak-vsebina" key={korak}>
-          <h1><span className="h1-step">{String(korak + 1).padStart(2, '0')}</span>{naslovKoraka.split(' ').map((b, bi) => (
+          <h1 className={korak === 0 ? 'h1-roza-konec' : undefined}><span className="h1-step">{String(korak + 1).padStart(2, '0')}</span>{naslovKoraka.split(' ').map((b, bi) => (
             <span key={bi} className="h1-maska"><span className="h1-beseda" style={{ animationDelay: `${bi * 90}ms` }}>{b}&nbsp;</span></span>
-          ))}</h1>
+          ))}{korak === 0 && (
+            <svg className="h1-iskre" viewBox="0 0 48 40" aria-hidden>
+              <path d="M24 2l2.6 7.4L34 12l-7.4 2.6L24 22l-2.6-7.4L14 12l7.4-2.6z" />
+              <path d="M39 18l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z" opacity=".75" />
+              <path d="M9 24l1.2 3.2 3.2 1.2-3.2 1.2L9 32.8 7.8 29.6 4.6 28.4l3.2-1.2z" opacity=".55" />
+            </svg>
+          )}</h1>
           {(opisKoraka || korak === 0) && (
             <div className="sub-vrsta" style={korak === 0 ? { marginBottom: '1.1rem' } : undefined}>
               <p className="sub">{korak === 0
@@ -3485,230 +3878,205 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
 
           {korak === 0 && (
-            <>
-              <div className="skupine-storitev">
-                {izbranaPodrocja.map(skupinaPodrocja)}
-                {mojeVidne.length > 0 && (
-                  <div className="kartica skupina">
-                    <div className="skupina-naslov">Moje storitve</div>
-                    <div className="opts">{mojeVidne.map(oblacekStoritve)}</div>
+            <div className="oder0">
+              {/* ── platno z orbi (levo): klik doda kos, ×N odvzame; ozko platno skrolas ── */}
+              <div className="platno0-drs">
+              <div className="platno0" aria-label="Storitve"
+                style={{ minWidth: Math.max(560, Math.ceil((orbStoritve.length + 1) / 3) * 200) }}>
+                <div className="vodicka" aria-hidden>
+                  <span className="vodicka-obraz">
+                    <svg viewBox="0 0 40 40" aria-hidden>
+                      <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                      <path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                      <path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                      <circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
+                      <circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
+                    </svg>
+                  </span>
+                  <span className="vodicka-karta">
+                    <b>{pozdrav} 👋</b>
+                    Izberi, kaj boš danes ustvarila.<br />Pomagam ti sestaviti ponudbo.
+                  </span>
+                </div>
+                {orbStoritve.map((s, i) => {
+                  const p = orbPoz(i);
+                  const barvi = ORB_BARVE[i % ORB_BARVE.length];
+                  const q = Math.max(1, Math.round(kolicine[s.id] ?? 1));
+                  const on = izbrane.has(s.id);
+                  return (
+                    <button key={s.id} type="button"
+                      className={'orb0' + (on ? ' aktiv' : '')}
+                      aria-pressed={on}
+                      aria-label={`${s.ime}, od ${val(osnovaZa(s))}${on ? `, izbrano ×${q}` : ''}`}
+                      style={{
+                        width: orbD, height: orbD,
+                        left: `calc(${p.x}% - ${orbD / 2}px)`, top: `calc(${p.y}% - ${orbD / 2}px)`,
+                        ['--o1' as string]: barvi[0], ['--o2' as string]: barvi[1],
+                        ['--dur' as string]: (9 + psr(i * 3 + 1) * 5).toFixed(1) + 's',
+                        ['--del' as string]: (-psr(i * 7 + 2) * 6).toFixed(1) + 's',
+                        ['--fx' as string]: ((psr(i + 11) * 5 + 3) * (psr(i + 4) < .5 ? -1 : 1)).toFixed(0) + 'px',
+                        ['--fy' as string]: (-(psr(i + 23) * 5 + 3)).toFixed(0) + 'px',
+                      }}
+                      onClick={() => izberiVrstico(s.id)}>
+                      <span className="zar0" aria-hidden />
+                      {on && (
+                        <span className="kolic0" role="button" tabIndex={0} title="Odstrani en kos"
+                          onClick={e => { e.stopPropagation(); odvzemiVrstico(s.id); }}
+                          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); odvzemiVrstico(s.id); } }}>
+                          ×{q}
+                        </span>
+                      )}
+                      <span className="orb0-ikona" aria-hidden>{ikonaZa(s.id)}</span>
+                      <span className="orb0-ime">{s.ime}</span>
+                      <span className="orb0-cena">od {val(osnovaZa(s))}</span>
+                    </button>
+                  );
+                })}
+                {(() => {
+                  const p = orbPoz(orbStoritve.length);
+                  const d = Math.round(orbD * 0.78);
+                  return (
+                    <button type="button" className="orb0 orb0-plus"
+                      style={{ width: d, height: d, left: `calc(${p.x}% - ${d / 2}px)`, top: `calc(${p.y}% - ${d / 2}px)` }}
+                      onClick={() => setKazemDodaj(!kazemDodaj)}>
+                      <span className="orb0-krog" aria-hidden />
+                      <Plus size={20} aria-hidden />
+                      <span className="orb0-ime">dodaj</span>
+                    </button>
+                  );
+                })()}
+                <div className="namig0" aria-hidden>Klikni storitev — vsak klik doda kos. Ime in podrobnosti urejaš v ponudbi.</div>
+              </div>
+              </div>
+
+              {/* ── živa ponudba (desno): vrstice s podrobnostmi ── */}
+              <aside className="ponudba0" aria-label="Tvoja ponudba">
+                <div className="ponudba0-glava">
+                  <h2>Tvoja ponudba</h2>
+                  <span className="ponudba0-chip">{redVrstic.length === 1 ? '1 postavka'
+                    : redVrstic.length === 2 ? '2 postavki'
+                      : redVrstic.length === 3 || redVrstic.length === 4 ? `${redVrstic.length} postavke`
+                        : `${redVrstic.length} postavk`}</span>
+                </div>
+                <div className="ponudba0-pod">se sestavlja v živo</div>
+
+                {redVrstic.length === 0 && (
+                  <p className="ponudba0-prazno"><b>Klikni storitev</b>, da začneš.<br />Klikni večkrat za več kosov.</p>
+                )}
+
+                <div className="vrstice0">
+                  {redVrstic.map(id => {
+                    const s = vseStoritve.find(x => x.id === id);
+                    if (!s) return null;
+                    const q = Math.max(1, Math.round(kolicine[id] ?? 1));
+                    const skupina = skupineVprasanj.find(g => g.id === id);
+                    const odgovorjenih = skupina ? skupina.vprasanja.filter(vp => (odgovori[vp.key] || '').trim()).length : 0;
+                    const razprta = razprtaVrstica === id;
+                    const status = skupina
+                      ? (odgovorjenih ? `${odgovorjenih}/${skupina.vprasanja.length} podrobnosti` : 'okvirna ocena · klikni za podrobnosti')
+                      : 'klikni za ime postavke';
+                    return (
+                      <div key={id}>
+                        <div className={'vrst0' + (vlecenaVrstica === id ? ' vlecem' : '')}
+                          onDragOver={e => e.preventDefault()}
+                          onDrop={e => { e.preventDefault(); if (vlecenaVrstica) premakniVrstico(vlecenaVrstica, id); setVlecenaVrstica(null); }}>
+                          <span className="rocica0" draggable title="Povleci za vrstni red"
+                            onDragStart={e => { setVlecenaVrstica(id); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', id); } catch { /* star brskalnik */ } }}
+                            onDragEnd={() => setVlecenaVrstica(null)}>⠿</span>
+                          <button type="button" className="vrst0-ime" aria-expanded={razprta}
+                            onClick={() => setRazprtaVrstica(razprta ? null : id)}>
+                            {(imenaPostavk[id] || '').trim() || s.ime}
+                            <small className={odgovorjenih ? 'odg' : ''}>{status}</small>
+                          </button>
+                          <span className="stepper0">
+                            <button type="button" aria-label={'En kos manj: ' + s.ime} onClick={() => odvzemiVrstico(id)}>–</button>
+                            <b>{q}</b>
+                            <button type="button" aria-label={'En kos več: ' + s.ime} onClick={() => izberiVrstico(id)}>+</button>
+                          </span>
+                          <span className="vrst0-cena">{val(osnovaZa(s) * q)}</span>
+                        </div>
+                        {razprta && (
+                          <div className="vrst0-detajl">
+                            <div className="polje">
+                              <label htmlFor={'cw-ime-' + id}>Ime postavke</label>
+                              <input id={'cw-ime-' + id} type="text" value={imenaPostavk[id] || ''}
+                                placeholder={`npr. ${s.ime} — Combisafe`}
+                                onChange={e => setImenaPostavk({ ...imenaPostavk, [id]: e.target.value })} />
+                            </div>
+                            {skupina
+                              ? vprasanjaStoritveUI(skupina)
+                              : <p className="vrst0-brez">Ta storitev nima dodatnih vprašanj — obseg opišeš v ponudbi.</p>}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {postavke.length > 0 && (
+                  <div className="postavke">
+                    {postavke.map(x => (
+                      <div key={x.id} className="postavka">
+                        <span>{x.ime}</span>
+                        <input type="number" min={1} step={1} value={x.kolicina} aria-label={(x.enota === 'ura' ? 'Ure' : 'Količina') + ': ' + x.ime}
+                          onChange={e => uredi(x.id, 'kolicina', Number(e.target.value) || 1)} />
+                        <button type="button" className="enota-toggle" onClick={() => preklopiEnoto(x.id)}
+                          title="Preklopi enoto (kos / ura)">{x.enota === 'ura' ? 'ur' : 'kos'}</button>
+                        <input type="number" min={0} step={10} value={x.cena} aria-label={'Cena: ' + x.ime}
+                          onChange={e => uredi(x.id, 'cena', Number(e.target.value) || 0)} />
+                        <span className="enota">{x.enota === 'ura' ? '€/uro' : '€'}</span>
+                        <button type="button" title="Odstrani" onClick={() => odstrani(x.id)}>×</button>
+                      </div>
+                    ))}
                   </div>
                 )}
-                <div className="skupina">
-                  <div className="opts">
-                    <button type="button" className="pill dodaj" onClick={() => setKazemDodaj(!kazemDodaj)}>
-                      <span className="pi" aria-hidden><Plus size={19} /></span>
-                      <span>dodaj postavko<small>dodaten strošek za to ponudbo: font licenca, najem studia, tisk, stock …</small></span>
-                    </button>
-                  </div>
-                </div>
-              </div>
 
-              {kazemDodaj && (
-                <div className="iskalnik">
-                  <div className="polje">
-                    <div className="isk-glava">
-                      <label htmlFor="cw-iskanje">Poišči ali vpiši svojo postavko</label>
-                      <button type="button" className="op-edit" style={{ marginTop: 0 }}
-                        onClick={() => { setKazemDodaj(false); setIskanje(''); }}>✕ Zapri</button>
+                {kazemDodaj && (
+                  <div className="iskalnik">
+                    <div className="polje">
+                      <div className="isk-glava">
+                        <label htmlFor="cw-iskanje">Poišči ali vpiši svojo postavko</label>
+                        <button type="button" className="op-edit" style={{ marginTop: 0 }}
+                          onClick={() => { setKazemDodaj(false); setIskanje(''); }}>✕ Zapri</button>
+                      </div>
+                      <input id="cw-iskanje" autoFocus placeholder="npr. animacija ikon"
+                        value={iskanje} onChange={e => setIskanje(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter' && predlogi.length) dodajIzKataloga(predlogi[0]); }} />
                     </div>
-                    <input id="cw-iskanje" autoFocus placeholder="npr. animacija ikon"
-                      value={iskanje} onChange={e => setIskanje(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter' && predlogi.length) dodajIzKataloga(predlogi[0]); }} />
-                  </div>
-                  <div className="predlogi">
-                    {predlogi.map(k => (
-                      <button key={k.id} type="button" onClick={() => dodajIzKataloga(k)}>
-                        {k.ime}<span>{val(zaokrozi(k.cena * trg(mojTrg).lvl) || k.cena)}</span>
-                      </button>
-                    ))}
-                    {iskanje.trim() && !predlogi.some(k => brezSumnikov(k.ime) === brezSumnikov(iskanje.trim())) && (
-                      <button type="button" className="svoja" onClick={dodajSvojo}>
-                        + dodaj »{iskanje.trim()}« kot svojo postavko
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {postavke.length > 0 && (
-                <div className="postavke">
-                  {postavke.map(x => (
-                    <div key={x.id} className="postavka">
-                      <span>{x.ime}</span>
-                      <input type="number" min={1} step={1} value={x.kolicina} aria-label={(x.enota === 'ura' ? 'Ure' : 'Količina') + ': ' + x.ime}
-                        onChange={e => uredi(x.id, 'kolicina', Number(e.target.value) || 1)} />
-                      <button type="button" className="enota-toggle" onClick={() => preklopiEnoto(x.id)}
-                        title="Preklopi enoto (kos / ura)">{x.enota === 'ura' ? 'ur' : 'kos'}</button>
-                      <input type="number" min={0} step={10} value={x.cena} aria-label={'Cena: ' + x.ime}
-                        onChange={e => uredi(x.id, 'cena', Number(e.target.value) || 0)} />
-                      <span className="enota">{x.enota === 'ura' ? '€/uro' : '€'}</span>
-                      <button type="button" title="Odstrani" onClick={() => odstrani(x.id)}>×</button>
+                    <div className="predlogi">
+                      {predlogi.map(k => (
+                        <button key={k.id} type="button" onClick={() => dodajIzKataloga(k)}>
+                          {k.ime}<span>{val(zaokrozi(k.cena * trg(mojTrg).lvl) || k.cena)}</span>
+                        </button>
+                      ))}
+                      {iskanje.trim() && !predlogi.some(k => brezSumnikov(k.ime) === brezSumnikov(iskanje.trim())) && (
+                        <button type="button" className="svoja" onClick={dodajSvojo}>
+                          + dodaj »{iskanje.trim()}« kot svojo postavko
+                        </button>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                )}
+                {!kazemDodaj && (
+                  <button type="button" className="dodaj-gumb ponudba0-dodaj" onClick={() => setKazemDodaj(true)}>
+                    + dodaj postavko (tisk, licenca, najem …)
+                  </button>
+                )}
 
-            </>
+                <div className="ponudba0-vsota">
+                  <div className="ponudba0-vsota-vrsta">
+                    <span>Izvedba · okvirno</span>
+                    <b>{val(redVrstic.reduce((a, id) => {
+                      const s = vseStoritve.find(x => x.id === id);
+                      return s ? a + osnovaZa(s) * Math.max(1, Math.round(kolicine[id] ?? 1)) : a;
+                    }, 0) + postavke.reduce((a, x) => a + x.cena * x.kolicina, 0))}</b>
+                  </div>
+                  <div className="ponudba0-opomba">↳ končno ceno izostrijo naslednji koraki (izkušnje, trg, pravice)</div>
+                </div>
+              </aside>
+            </div>
           )}
 
-          {trenutnaSkupina && (
-            <>
-              <div className="vprasanja">
-                {trenutnaSkupina.vprasanja.slice(0, vidnaVprasanja).map((vp, vi) => (
-                  <div key={vp.key}>
-                  <div className="vp" style={{ animationDelay: vi === 0 ? '.8s' : '0s' }}>
-                    <label htmlFor={'cw-vp-' + vp.key}>{vp.label}{vp.vec ? <span className="vec-namig">izbereš lahko več</span> : null}</label>
-                    {vp.izbire ? (
-                      <div className="choicegrid">
-                        {vp.vec && vp.vse ? (() => {
-                          const zetoni = (odgovori[vp.key] || '').split(' + ').filter(Boolean);
-                          const rocni = zetoni.filter(t => !vp.izbire!.includes(t));
-                          const vseIzbrane = vp.izbire!.every(v => zetoni.includes(v));
-                          return (
-                            <button type="button" className={vseIzbrane ? 'on' : ''}
-                              onClick={() => setOdgovori({ ...odgovori, [vp.key]: (vseIzbrane ? rocni : [...vp.izbire!, ...rocni]).join(' + ') })}>
-                              <span className={'kljucek' + (vseIzbrane ? ' on' : '')} aria-hidden>{vseIzbrane ? '✓' : ''}</span>Vse
-                            </button>
-                          );
-                        })() : null}
-                        {vp.izbire.map(vrednost => {
-                          const izbrane_v = vp.vec ? (odgovori[vp.key] || '').split(' + ').filter(Boolean) : [];
-                          const aktiven = vp.vec ? izbrane_v.includes(vrednost) : odgovori[vp.key] === vrednost;
-                          const nova = vp.vec
-                            ? (aktiven ? izbrane_v.filter(x => x !== vrednost) : [...izbrane_v, vrednost]).join(' + ')
-                            : (aktiven ? '' : vrednost);
-                          return (
-                            <button
-                              key={vrednost}
-                              type="button"
-                              className={aktiven ? 'on' : ''}
-                              onClick={() => setOdgovori({ ...odgovori, [vp.key]: nova })}
-                            >
-                              <span className={(vp.vec ? 'kljucek' : 'krogec') + (aktiven ? ' on' : '')} aria-hidden>{vp.vec && aktiven ? '✓' : ''}</span>{vrednost}
-                            </button>
-                          );
-                        })}
-                        {vp.svoje ? (
-                          <span className="svoje-vrsta">
-                          {vp.id === 'rok' ? <CalendarBlank size={17} aria-hidden style={{ opacity: .7, flex: 'none' }} /> : null}
-                          <input
-                            id={'cw-vp-' + vp.key + '-svoje'}
-                            type="text"
-                            className="vp-svoje"
-                            placeholder={vp.svoje}
-                            aria-label={vp.label + ' (svoj vnos)'}
-                            value={(() => {
-                              const v = odgovori[vp.key] || '';
-                              if (!vp.vec) return vp.izbire.includes(v) ? '' : v;
-                              return v.split(' + ').filter(t => t && !vp.izbire!.includes(t)).join(' + ');
-                            })()}
-                            onChange={e => {
-                              if (!vp.vec) { setOdgovori({ ...odgovori, [vp.key]: e.target.value }); return; }
-                              const obkljukane = (odgovori[vp.key] || '').split(' + ').filter(t => t && vp.izbire!.includes(t));
-                              setOdgovori({ ...odgovori, [vp.key]: [...obkljukane, e.target.value].filter(Boolean).join(' + ') });
-                            }}
-                          />
-                          </span>
-                        ) : null}
-                      </div>
-                    ) : null}
-                    {trenutnaSkupina.id === 'web' && vp.id === 'ima-cgp'
-                      && (odgovori[vp.key] || '').includes('novo CGP') && !izbrane.has('cgp') ? (
-                      <button type="button" className="povezava"
-                        style={{ marginTop: '.9rem', color: 'var(--accent)', fontWeight: 600 }}
-                        onClick={() => preklopi(izbrane, 'cgp', setIzbrane)}>
-                        + Dodaj CGP k ponudbi (odpre se njen vprašalnik)
-                      </button>
-                    ) : null}
-                    {vp.izbire ? null : trenutnaSkupina.id === 'web' && vp.id === 'kompleksnost' ? (
-                      <div className="choicegrid">
-                        {WEB_KOMPLEKSNOST.map(vrednost => (
-                          <button
-                            key={vrednost}
-                            type="button"
-                            className={odgovori[vp.key] === vrednost ? 'on' : ''}
-                            onClick={() => setOdgovori({ ...odgovori, [vp.key]: vrednost })}
-                          >
-                            <span className="krogec" aria-hidden />{vrednost}
-                          </button>
-                        ))}
-                      </div>
-                    ) : trenutnaSkupina.id === 'web' && vp.id === 'budget' ? (
-                      <div className="choicegrid">
-                        {WEB_BUDGETI.map(vrednost => (
-                          <button
-                            key={vrednost}
-                            type="button"
-                            className={odgovori[vp.key] === vrednost ? 'on' : ''}
-                            onClick={() => setOdgovori({ ...odgovori, [vp.key]: vrednost })}
-                          >
-                            <span className="krogec" aria-hidden />{vrednost}
-                          </button>
-                        ))}
-                      </div>
-                    ) : trenutnaSkupina.id === 'web' && vp.id === 'funkcije' ? (
-                      <>
-                        <div className="checkgrid">
-                          {WEB_FUNKCIONALNOSTI.map(f => (
-                            <label key={f}>
-                              <input
-                                type="checkbox"
-                                checked={(odgovori[vp.key] || '').split(' · ').includes(f)}
-                                onChange={() => preklopiOdgovor(vp.key, f)}
-                              />
-                              <span>{f}</span>
-                            </label>
-                          ))}
-                        </div>
-                        <textarea
-                          id={'cw-vp-' + vp.key}
-                          value={odgovori[vp.key + ':drugo'] || ''}
-                          placeholder="Drugo ali bolj specifično: npr. kalkulator, portal, konfigurator, povezava z ERP ..."
-                          onChange={e => setOdgovori({ ...odgovori, [vp.key + ':drugo']: e.target.value })}
-                        />
-                      </>
-                    ) : trenutnaSkupina.id === 'web' && vp.id === 'dodatno' ? (
-                      <>
-                        <div className="checkgrid">
-                          {WEB_DODATNE_STORITVE.map(f => (
-                            <label key={f}>
-                              <input
-                                type="checkbox"
-                                checked={(odgovori[vp.key] || '').split(' · ').includes(f)}
-                                onChange={() => preklopiOdgovor(vp.key, f)}
-                              />
-                              <span>{f}</span>
-                            </label>
-                          ))}
-                        </div>
-                        <textarea
-                          id={'cw-vp-' + vp.key}
-                          value={odgovori[vp.key + ':drugo'] || ''}
-                          placeholder="Drugo: npr. brand refresh, ilustracije, prevodi, email predloge ..."
-                          onChange={e => setOdgovori({ ...odgovori, [vp.key + ':drugo']: e.target.value })}
-                        />
-                      </>
-                    ) : (
-                      <textarea
-                        id={'cw-vp-' + vp.key}
-                        value={odgovori[vp.key] || ''}
-                        placeholder={vp.placeholder || 'Kratek odgovor, lahko pustiš prazno.'}
-                        onChange={e => setOdgovori({ ...odgovori, [vp.key]: e.target.value })}
-                      />
-                    )}
-                  </div>
-                    {vi === vidnaVprasanja - 1 && vidnaVprasanja < trenutnaSkupina.vprasanja.length && (
-                      <button type="button" className="povezava" style={{ marginTop: '1rem', display: 'inline-block', color: 'var(--accent)', fontWeight: 600 }}
-                        onClick={() => setVidnaVprasanja(v => v + 1)}>
-                        Naslednje vprašanje ↓
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
 
           {korak === kdoSiStep && podatkiUI()}
 
