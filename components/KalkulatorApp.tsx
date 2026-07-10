@@ -33,6 +33,17 @@ const ORB_BARVE: [string, string][] = [
    (Math.random bi ob vsakem renderju premaknil orbe). */
 const psr = (k: number) => { const x = Math.sin(k * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 
+/* Obraz vodicke (vesele U-ucke + rdecica) — deljen med chat uvodom in delovno mizo. */
+const VODICKA_OBRAZ = (
+  <svg viewBox="0 0 40 40" aria-hidden>
+    <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+    <path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+    <path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+    <circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
+    <circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
+  </svg>
+);
+
 /* Vrstica ponudbe (postavkovni model): ena instanca storitve s svojim imenom.
    KOLICINSKE storitve (ilustracije, logotipi ...) imajo stevec kosov na ENI
    vrstici; vse ostale (web, CGP ...) se ob ponovnem kliku dodajo kot NOVA
@@ -1327,14 +1338,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      ospredje. null = se ni onboardan; [] = onboardan brez izbire (pokazi vse). */
   const [mojSet, setMojSet] = useState<string[] | null>(null);
   const [onboardingOdprt, setOnboardingOdprt] = useState(false);
-  /* dvojni scrollbar: stran zadaj ima svojega, onboarding pa svojega —
-     med onboardingom stran zadaj zaklenemo. */
+  /* fake-chat uvod (gradi intimo): ime -> izkusnje -> nova/obstojeca -> ime ponudbe */
+  const [uvodChat, setUvodChat] = useState(false);
+  const [chatKorak, setChatKorak] = useState(0);
+  const [imeUporabnika, setImeUporabnika] = useState('');
+  const [chatVnos, setChatVnos] = useState('');
+  const [chatNova, setChatNova] = useState<boolean | null>(null);
+  /* testni sprožilec: ?uvod v URL na silo odpre fake-chat uvod (za ogled tudi
+     ko si že onboardana) */
   useEffect(() => {
-    if (!onboardingOdprt) return;
+    try { if (new URL(window.location.href).searchParams.has('uvod')) { setUvodChat(true); setChatKorak(0); } } catch { /* ignore */ }
+  }, []);
+  /* dvojni scrollbar: stran zadaj ima svojega, chat/onboarding pa svojega —
+     med njima stran zadaj zaklenemo. */
+  useEffect(() => {
+    if (!onboardingOdprt && !uvodChat) return;
     const prej = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prej; };
-  }, [onboardingOdprt]);
+  }, [onboardingOdprt, uvodChat]);
   const [obIzbor, setObIzbor] = useState<Set<string>>(new Set());
   /* Poljuben vrstni red storitev (razporejanje z drag-rocajem); prazno = naravni. */
   const [vrstniRed, setVrstniRed] = useState<string[]>([]);
@@ -1517,14 +1539,54 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   };
   const povrniStoritev = (id: string) => setSkrite(prev => prev.filter(x => x !== id));
 
-  /* Onboarding ob prvem obisku (po sprejemu pogojev, ce se ni onboardan). */
+  /* Prvi obisk (po sprejemu pogojev): odpre se fake-chat uvod, ki nagovori
+     po imenu, vpraša izkušnje in ime ponudbe — gradi intimo, preden se
+     odpre delovna miza. Področja se izbirajo pozneje (mehurčki), ne tu. */
   useEffect(() => {
     if (pogojiOk === true && mojSet === null) {
-      setObIzbor(new Set());
-      setOnboardingOdprt(true);
+      setUvodChat(true);
+      setChatKorak(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pogojiOk, mojSet]);
+
+  /* izkusnje (3 chipi v chatu) */
+  const CHAT_IZK: { id: string; crk: string; ime: string; opis: string }[] = [
+    { id: 'zacetnik', crk: 'A', ime: 'Šele začenjam', opis: 'gradim portfelj, prve stranke' },
+    { id: 'samostojen', crk: 'B', ime: 'Nekaj let izkušenj', opis: 'redne stranke, utečen proces' },
+    { id: 'ekspert', crk: 'C', ime: 'Uveljavljeno ime', opis: 'izbiram projekte, premium cene' },
+  ];
+  const zakljuciUvod = () => {
+    setMojSet([]);            /* onboardan (vsi mehurčki v ospredju) */
+    setUvodChat(false);
+    setChatKorak(0);
+    setChatVnos('');
+  };
+  const uvodNaprej = () => {
+    if (chatKorak === 0) {
+      if (chatVnos.trim()) setImeUporabnika(chatVnos.trim());
+      setChatVnos('');
+      setChatKorak(1);
+    } else if (chatKorak === 3) {
+      if (chatVnos.trim()) setNazivPonudbe(chatVnos.trim());
+      setChatVnos('');
+      zakljuciUvod();
+    }
+  };
+  const uvodIzberiIzkusnje = (id: string) => { setIzkusnje(id); setChatKorak(2); };
+  const uvodNovaObstojeca = (nova: boolean) => {
+    setChatNova(nova);
+    if (nova) { setChatKorak(3); return; }
+    /* obstoječa: naloži zadnjo iz arhiva, če obstaja, sicer nadaljuj kot nova */
+    const kljuci = Object.keys(arhiv);
+    if (kljuci.length) {
+      const zadnji = kljuci.sort((a, b) => (arhiv[b].datum || '').localeCompare(arhiv[a].datum || ''))[0];
+      naloziIzArhiva(zadnji);
+      zakljuciUvod();
+    } else {
+      setChatKorak(3);
+    }
+  };
 
   /* odjavni potrditveni koraki ne smejo lebdeti, ko zapustimo Obvescanja */
   useEffect(() => {
@@ -2677,7 +2739,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const y = 16 + row * 27 + (col % 2 ? 7 : 0) + (psr(i + 50) * 8 - 4);
     return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
   };
-  const pozdrav = `Hej${ponudnik.ime.trim() ? ' ' + ponudnik.ime.trim().split(/\s+/)[0] : ''}!`;
+  const prvoIme = (imeUporabnika.trim() || ponudnik.ime.trim()).split(/\s+/)[0];
+  const pozdrav = `Hej${prvoIme ? ' ' + prvoIme : ''}!`;
   /* prikazno ime vrstice: lastno ime, sicer ime storitve (+ zaporedje pri vec instancah) */
   const prikazVrstice = (l: VrsticaP, s: Storitev) => {
     if (l.ime.trim()) return l.ime.trim();
@@ -3033,6 +3096,41 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .vrst0-detajl .polje input { font-weight: 650; }
         .cw .vrst0-brez { font-size: .85rem; color: rgba(17,17,17,.5); margin: .4rem 0 0; font-weight: 400; }
         .cw .vrstica-vprasanja { margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+
+        /* ── fake-chat uvod (gradi intimo) ── */
+        .cw .uvod-chat { position: fixed; inset: 0; z-index: 60; overflow-y: auto; display: flex; flex-direction: column; animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
+        @media (prefers-reduced-motion: reduce) { .cw .uvod-chat { animation: none; } }
+        .cw .uvod-oder { width: min(680px, 92vw); margin: 0 auto; padding: clamp(1.5rem, 5vh, 4rem) 0 8rem; flex: 1; }
+        .cw .uvod-oder .ob-kicker { text-align: center; }
+        .cw .uvod-h { text-align: center; }
+        .cw .uvod-sub { text-align: center; max-width: 42ch; margin: .4rem auto 2.4rem; }
+        .cw .chat { display: flex; flex-direction: column; gap: 1rem; }
+        .cw .chat-bot, .cw .chat-jaz, .cw .chat-izbire { animation: chatVzid .5s cubic-bezier(.16,1,.3,1) both; }
+        @keyframes chatVzid { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .cw .chat-bot, .cw .chat-jaz, .cw .chat-izbire { animation: none; } }
+        .cw .chat-bot { display: flex; align-items: flex-start; gap: .55rem; max-width: 82%; }
+        .cw .chat-obraz { width: 2.5rem; height: 2.5rem; border-radius: 50%; flex: none; position: relative; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 8px 20px rgba(124,58,237,.28); }
+        .cw .chat-obraz svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+        .cw .chat-bot .chat-mehur { background: rgba(255,180,205,.32); color: rgba(17,17,17,.72); }
+        .cw .chat-bot .chat-mehur b { display: block; color: var(--ink); font-weight: 700; font-size: 1.02rem; }
+        .cw .chat-bot .chat-mehur small { display: block; margin-top: .1rem; color: rgba(17,17,17,.5); font-size: .82rem; }
+        .cw .chat-jaz { align-self: flex-end; }
+        .cw .chat-jaz .chat-mehur { background: rgba(160,205,235,.4); color: var(--ink); font-weight: 600; }
+        .cw .chat-mehur { border-radius: 18px; padding: .7rem 1.05rem; font-size: .95rem; line-height: 1.45; font-weight: 400; }
+        .cw .chat-izbire { display: flex; flex-direction: column; gap: .6rem; margin: .2rem 0 .2rem 3.05rem; }
+        .cw .chat-opcija { display: flex; align-items: center; gap: .9rem; text-align: left; width: min(420px, 100%); background: rgba(255,255,255,.82); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(17,17,17,.1); border-radius: 16px; padding: 1rem 1.15rem; cursor: pointer; font-family: inherit; color: var(--ink); transition: transform .22s cubic-bezier(.34,1.56,.5,1), border-color .2s, box-shadow .22s; }
+        .cw .chat-opcija:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 14px 30px rgba(142,52,89,.12); }
+        .cw .chat-opcija .crk { width: 1.9rem; height: 1.9rem; border-radius: 9px; background: var(--ink); color: var(--paper); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .82rem; flex: none; }
+        .cw .chat-opcija b { font-weight: 700; font-size: 1.02rem; }
+        .cw .chat-opcija small { color: rgba(17,17,17,.45); font-size: .84rem; margin-left: auto; text-align: right; max-width: 48%; }
+        .cw .chat-vnos { display: flex; gap: .7rem; margin: 1.4rem 0 0 3.05rem; }
+        .cw .chat-vnos input { flex: 1; background: rgba(255,255,255,.9); border: 1px solid rgba(17,17,17,.12); border-radius: 999px; padding: .95rem 1.3rem; font-family: inherit; font-size: 1.02rem; font-weight: 600; color: var(--ink); outline: none; transition: border-color .18s; }
+        .cw .chat-vnos input:focus { border-color: var(--accent); }
+        @media (max-width: 560px) {
+          .cw .chat-opcija small { display: none; }
+          .cw .chat-izbire, .cw .chat-vnos { margin-left: 0; }
+          .cw .chat-bot { max-width: 92%; }
+        }
         .cw .vrstica-vprasanja .vp { animation: none; max-width: none; }
 
         .cw .ponudba0-dodaj { margin-top: 1rem; align-self: flex-start; }
@@ -3504,6 +3602,85 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <button type="button" className="gumb" onClick={sprejmiPogoje}>Razumem, gremo →</button>
               <a className="povezava" href={localePath(locale, `/kalkulator/pogoji`)}>Preberi celotne pogoje</a>
             </div>
+          </div>
+        </div>
+      )}
+
+      {uvodChat && (
+        <div className="uvod-chat" role="dialog" aria-modal="true" aria-label="Uvod">
+          <div className="glava">
+            <span className="glava-levo">
+              <a className="glava-brand" href={localePath(locale, ``)} aria-label="Pinart — domov">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
+                <span className="glava-ime-blok">
+                  <span className="beta">BETA</span>
+                  <span className="glava-ime">Kalkulator</span>
+                </span>
+              </a>
+              <a className="zapri zapri-loceno" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
+            </span>
+          </div>
+          <div className="uvod-oder">
+            <p className="ob-kicker">Onboarding</p>
+            <h1 className="ob-naslov uvod-h">Kalkulator ponudbe</h1>
+            <p className="sub uvod-sub">Živjo, sem tvoja pomočnica in pomagala ti bom sestaviti ponudbo.</p>
+
+            <div className="chat">
+              {/* 1) ime */}
+              <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                <span className="chat-mehur"><b>Živjo! Kako ti je ime?</b></span></div>
+              {chatKorak > 0 && <div className="chat-jaz"><span className="chat-mehur">{imeUporabnika || '—'}</span></div>}
+
+              {/* 2) izkusnje */}
+              {chatKorak >= 1 && (
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                  <span className="chat-mehur"><b>Kakšne izkušnje imaš?</b><small>Vpliva na ceno ponudbe.</small></span></div>
+              )}
+              {chatKorak >= 1 && chatKorak === 1 && (
+                <div className="chat-izbire">
+                  {CHAT_IZK.map(o => (
+                    <button key={o.id} type="button" className="chat-opcija" onClick={() => uvodIzberiIzkusnje(o.id)}>
+                      <span className="crk">{o.crk}</span><b>{o.ime}</b><small>{o.opis}</small>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {chatKorak > 1 && <div className="chat-jaz"><span className="chat-mehur">{CHAT_IZK.find(o => o.id === izkusnje)?.ime || 'Nekaj let izkušenj'}</span></div>}
+
+              {/* 3) nova / obstojeca */}
+              {chatKorak >= 2 && (
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                  <span className="chat-mehur"><b>Nova ponudba ali nadaljuješ obstoječo?</b></span></div>
+              )}
+              {chatKorak === 2 && (
+                <div className="chat-izbire">
+                  <button type="button" className="chat-opcija" onClick={() => uvodNovaObstojeca(true)}>
+                    <span className="crk">A</span><b>Nova ponudba</b></button>
+                  <button type="button" className="chat-opcija" onClick={() => uvodNovaObstojeca(false)}>
+                    <span className="crk">B</span><b>Obstoječa ponudba</b><small>{Object.keys(arhiv).length ? 'naložim zadnjo iz arhiva' : 'v arhivu še ni ponudb'}</small></button>
+                </div>
+              )}
+              {chatKorak > 2 && chatNova !== null && <div className="chat-jaz"><span className="chat-mehur">{chatNova ? 'Nova ponudba' : 'Obstoječa ponudba'}</span></div>}
+
+              {/* 4) ime ponudbe */}
+              {chatKorak >= 3 && (
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                  <span className="chat-mehur"><b>Kako naj se imenuje ponudba?</b><small>Npr. »Inovis — prenova CGP in spletne strani«.</small></span></div>
+              )}
+            </div>
+
+            {/* vnosna vrstica (ime / ime ponudbe) */}
+            {(chatKorak === 0 || chatKorak === 3) && (
+              <form className="chat-vnos" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
+                <input autoFocus type="text" value={chatVnos}
+                  onChange={e => setChatVnos(e.target.value)}
+                  placeholder={chatKorak === 0 ? 'Ime ali vzdevek' : 'Ime ponudbe'} />
+                <button type="submit" className="gumb" disabled={chatKorak === 0 && !chatVnos.trim()}>
+                  {chatKorak === 3 ? 'Začni →' : 'Naprej →'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}
