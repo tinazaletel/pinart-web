@@ -1478,6 +1478,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       if (s.custDrzavaMoj) setCustDrzavaMoj(s.custDrzavaMoj);
       if (s.mojeStoritve) setMojeStoritve(s.mojeStoritve);
       if (Array.isArray(s.mojSet)) setMojSet(s.mojSet);
+      if (s.imeUporabnika) setImeUporabnika(s.imeUporabnika);
       if (Array.isArray(s.vrstniRed)) setVrstniRed(s.vrstniRed);
       if (Array.isArray(s.skrite)) setSkrite(s.skrite);
       if (s.valuta) { setValuta(s.valuta); setValutaRocna(true); }
@@ -1515,9 +1516,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         stroski: stroski.length ? stroski : undefined,
         valuta: valutaRocna ? valuta : undefined,
         custDrzavaMoj: custDrzavaMoj || undefined,
+        imeUporabnika: imeUporabnika || undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj]);
+  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
