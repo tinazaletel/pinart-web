@@ -2892,6 +2892,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .orb0:hover .zar0 { opacity: 1; filter: blur(3px); }
         .cw .orb0::before { content: ""; position: absolute; z-index: 1; top: 15%; left: 25%; width: 26%; height: 19%; border-radius: 50%; background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.95), rgba(255,255,255,0) 72%); filter: blur(1.5px); pointer-events: none; }
         .cw .orb0 .orb0-ikona { position: relative; z-index: 1; display: block; margin-bottom: .15rem; filter: drop-shadow(0 1px 2px rgba(35,18,45,.45)); }
+        .cw .orb0 .orb0-ikona svg { width: 27px; height: 27px; display: block; }
         .cw .orb0 .orb0-ime { position: relative; z-index: 1; font-weight: 700; font-size: .92rem; line-height: 1.05; padding: 0 .6em; text-shadow: 0 1px 3px rgba(35,18,45,.5); }
         .cw .orb0 .orb0-cena { position: relative; z-index: 1; font-size: .68rem; font-weight: 600; opacity: .95; margin-top: .2em; text-shadow: 0 1px 2px rgba(35,18,45,.45); }
         .cw .orb0 .kolic0 { position: absolute; top: -2%; right: 0; z-index: 3; min-width: 1.9em; height: 1.9em; border-radius: 999px; background: #2A2630; color: #fff; font-weight: 800; font-size: .8rem; display: flex; align-items: center; justify-content: center; padding: 0 .4em; border: 2px solid rgba(255,255,255,.5); box-shadow: 0 5px 14px rgba(0,0,0,.28); cursor: pointer; transition: background .15s; }
@@ -3856,7 +3857,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           {(opisKoraka || korak === 0) && (
             <div className="sub-vrsta" style={korak === 0 ? { marginBottom: '1.1rem' } : undefined}>
               <p className="sub">{korak === 0
-                ? <>Izberi storitve <b>za to ponudbo</b> — eno ali več.</>
+                ? <>Klikni, kar boš delala — vsak klik doda postavko v ponudbo. Isto storitev klikni večkrat za <b>več kosov</b> (dva CGP-ja, tri spletne strani).</>
                 : opisKoraka}</p>
             </div>
           )}
