@@ -51,6 +51,13 @@ const VODICKA_OBRAZ = (
    vsaka s svojimi vprasanji (njen primer: Inovis je prenavljal dva produkta).
    uid prve instance = sid (zdruzljivo s starimi shranjenimi odgovori). */
 type VrsticaP = { uid: string; sid: string; ime: string; kolicina: number };
+/* Tinini narisani mehurcki (public/kalkulator/mehurcki/<sid>.svg) — kjer
+   obstaja, zamenja CSS-gradientni orb (gradient + ikona + napis so vrisani
+   v SVG). Ostale storitve padejo na CSS orb. Dodaj sid, ko prispe nov SVG. */
+const MEHURCEK: Record<string, boolean> = {
+  cgp: true, logo: true, web: true, copy: true,
+  ilustracija: true, fotografija: true, motion: true, aplikacija: true,
+};
 const KOLICINSKE: Record<string, string> = {
   logo: 'logotipov', ilustracija: 'ilustracij', fotografija: 'fotografiranj',
   copy: 'besedil', video: 'videov', motion: 'animacij', render3d: 'renderjev',
@@ -3039,6 +3046,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .orb0 .zar0 { position: absolute; inset: -16%; border-radius: 50%; z-index: 0; pointer-events: none; background: radial-gradient(44% 38% at 36% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 60%), radial-gradient(circle at 52% 54%, var(--o2, #C084FC), var(--o1, #7C3AED) 50%, transparent 72%); filter: blur(6px); opacity: .94; transition: opacity .3s, filter .3s; }
         .cw .orb0:hover .zar0 { opacity: 1; filter: blur(3px); }
         .cw .orb0::before { content: ""; position: absolute; z-index: 1; top: 15%; left: 25%; width: 26%; height: 19%; border-radius: 50%; background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.95), rgba(255,255,255,0) 72%); filter: blur(1.5px); pointer-events: none; }
+        /* Tinini narisani mehurcki: SVG ima svoj gradient/sijaj/ikono/napis vrisan.
+           Vidni krog je ~67 % viewBoxa (senca naokrog), zato sliko povecamo, da
+           mehurcek zapolni mesto; skrijemo CSS sijaj in odsev. */
+        .cw .orb0-foto { background: none; }
+        .cw .orb0-foto::before { display: none; }
+        .cw .orb0-foto .orb0-svg { position: absolute; top: -24%; left: -24%; width: 148%; height: 148%; z-index: 0; pointer-events: none; -webkit-user-drag: none; user-select: none; }
         .cw .orb0 .orb0-ikona { position: relative; z-index: 1; display: block; margin-bottom: .15rem; filter: drop-shadow(0 1px 2px rgba(35,18,45,.45)); }
         .cw .orb0 .orb0-ikona svg { width: 27px; height: 27px; display: block; }
         .cw .orb0 .orb0-ime { position: relative; z-index: 1; font-weight: 700; font-size: .92rem; line-height: 1.05; padding: 0 .6em; text-shadow: 0 1px 3px rgba(35,18,45,.5); }
@@ -4172,7 +4185,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   const on = linijeSid.length > 0;
                   return (
                     <button key={s.id} type="button"
-                      className={'orb0' + (on ? ' aktiv' : '')}
+                      className={'orb0' + (on ? ' aktiv' : '') + (MEHURCEK[s.id] ? ' orb0-foto' : '')}
                       aria-pressed={on}
                       aria-label={`${s.ime}, od ${val(osnovaZa(s))}${on ? `, izbrano ×${q}` : ''}`}
                       style={{
@@ -4185,7 +4198,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         ['--fy' as string]: (-(psr(i + 23) * 5 + 3)).toFixed(0) + 'px',
                       }}
                       onClick={() => izberiVrstico(s.id)}>
-                      <span className="zar0" aria-hidden />
+                      {MEHURCEK[s.id] ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img className="orb0-svg" src={`/kalkulator/mehurcki/${s.id}.svg`} alt="" aria-hidden />
+                      ) : (
+                        <>
+                          <span className="zar0" aria-hidden />
+                          <span className="orb0-ikona" aria-hidden>{ikonaZa(s.id)}</span>
+                          <span className="orb0-ime">{s.ime}</span>
+                          <span className="orb0-cena">od {val(osnovaZa(s))}</span>
+                        </>
+                      )}
                       {on && (
                         <span className="kolic0" role="button" tabIndex={0}
                           title={jeKolicinska(s.id) ? 'Odstrani en kos' : 'Odstrani zadnjo vrstico'}
@@ -4194,9 +4217,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                           ×{q}
                         </span>
                       )}
-                      <span className="orb0-ikona" aria-hidden>{ikonaZa(s.id)}</span>
-                      <span className="orb0-ime">{s.ime}</span>
-                      <span className="orb0-cena">od {val(osnovaZa(s))}</span>
                     </button>
                   );
                 })}
