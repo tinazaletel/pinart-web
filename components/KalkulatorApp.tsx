@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import dynamic from 'next/dynamic';
 import { localePath } from '@/i18n/routing';
+
+/* dotLottie predvajalnik — samo na klientu (uporablja canvas/wasm) */
+const DotLottieReact = dynamic(
+  () => import('@lottiefiles/dotlottie-react').then(m => m.DotLottieReact),
+  { ssr: false }
+);
 import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package,
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
@@ -3085,8 +3092,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .ponudba0-chip { background: rgba(255,255,255,.85); border: 1px solid rgba(17,17,17,.12); border-radius: 999px; padding: .28rem .7rem; font-size: .74rem; font-weight: 650; color: rgba(17,17,17,.6); white-space: nowrap; }
         .cw .ponudba0-pod { font-size: .85rem; color: var(--accent); font-weight: 500; margin: .1rem 0 1rem; display: flex; align-items: center; gap: .45rem; }
         .cw .ponudba0-pod::before { content: ""; width: .55rem; height: .55rem; border-radius: 50%; background: var(--accent); opacity: .85; flex: none; }
-        .cw .ponudba0-prazno { color: rgba(17,17,17,.5); font-size: .95rem; line-height: 1.55; text-align: center; padding: 1.8rem 0; margin: 0; font-weight: 400; }
+        .cw .ponudba0-prazno { color: rgba(17,17,17,.5); font-size: .95rem; line-height: 1.55; text-align: center; padding: 1.2rem 0; margin: 0; font-weight: 400; }
         .cw .ponudba0-prazno b { color: rgba(17,17,17,.72); }
+        .cw .ponudba0-prazno p { margin: 0; }
+        /* Lottie empty-state (mapa + mehurcki) z nasim bot smileyjem na velikem mehurcku */
+        .cw .prazno-lottie { position: relative; width: min(280px, 78%); margin: 0 auto .4rem; aspect-ratio: 985 / 910; }
+        .cw .prazno-lottie canvas, .cw .prazno-lottie > div { width: 100% !important; height: 100% !important; }
+        .cw .prazno-obraz { position: absolute; left: 49.7%; top: 35%; width: 15%; height: 15%; transform: translate(-50%, -50%); pointer-events: none; }
+        .cw .prazno-obraz svg { width: 100%; height: 100%; overflow: visible; }
+        @media (prefers-reduced-motion: reduce) { .cw .prazno-lottie { display: none; } }
 
         .cw .vrstice0 { display: flex; flex-direction: column; }
         .cw .vrst0 { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: .55rem; padding: .65rem 0; border-bottom: 1px solid rgba(17,17,17,.12); }
@@ -4249,7 +4263,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <div className="ponudba0-pod">se sestavlja v živo</div>
 
                 {vrstice.length === 0 && (
-                  <p className="ponudba0-prazno"><b>Klikni storitev</b>, da začneš.<br />Spletna stran ali CGP se ob ponovnem kliku doda kot nova postavka, ilustracije in podobno pa štejejo kose.</p>
+                  <div className="ponudba0-prazno">
+                    <div className="prazno-lottie" aria-hidden>
+                      <DotLottieReact src="/kalkulator/empty-state.lottie" loop autoplay />
+                      {/* naš bot smiley na velikem mehurčku (center ~49.7% / 35%) — enak slog kot vodička */}
+                      <span className="prazno-obraz">{VODICKA_OBRAZ}</span>
+                    </div>
+                    <p><b>Klikni storitev</b>, da začneš.<br />Spletna stran ali CGP se ob ponovnem kliku doda kot nova postavka, ilustracije in podobno pa štejejo kose.</p>
+                  </div>
                 )}
 
                 <div className="vrstice0">
