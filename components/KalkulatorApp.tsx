@@ -32,6 +32,19 @@ const ORB_BARVE: [string, string][] = [
 /* Deterministicen psevdo-random [0,1) — stabilen med renderji in hydration
    (Math.random bi ob vsakem renderju premaknil orbe). */
 const psr = (k: number) => { const x = Math.sin(k * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+
+/* Vrstica ponudbe (postavkovni model): ena instanca storitve s svojim imenom.
+   KOLICINSKE storitve (ilustracije, logotipi ...) imajo stevec kosov na ENI
+   vrstici; vse ostale (web, CGP ...) se ob ponovnem kliku dodajo kot NOVA
+   vrstica z lastnim imenom — nikoli "2× Inovis", ampak Inovis in Itforyou,
+   vsaka s svojimi vprasanji (njen primer: Inovis je prenavljal dva produkta).
+   uid prve instance = sid (zdruzljivo s starimi shranjenimi odgovori). */
+type VrsticaP = { uid: string; sid: string; ime: string; kolicina: number };
+const KOLICINSKE: Record<string, string> = {
+  logo: 'logotipov', ilustracija: 'ilustracij', fotografija: 'fotografiranj',
+  copy: 'besedil', video: 'videov', motion: 'animacij', render3d: 'renderjev',
+};
+const jeKolicinska = (sid: string) => sid in KOLICINSKE || sid.startsWith('moja-');
 type TonPonudbe = 'formalno' | 'toplo' | 'direktno';
 
 /* Osnove umerjene na slovenski trg (2025/26, viri: Omisli.si agregat cen,
@@ -1003,8 +1016,10 @@ const K_ARHIV = 'pinart-kalkulator-arhiv';
 type ShranjenaP = {
   datum: string;
   izbrane: string[];
-  /* postavkovni model (2026-07-10): kolicina na storitev, lastno ime vrstice
-     (npr. "Spletna stran — Combisafe") in vrstni red vrstic v ponudbi */
+  /* postavkovni model (2026-07-10): vrstice ponudbe — instance storitev z
+     lastnim imenom (Inovis, Itforyou) ali kolicino (6 ilustracij) */
+  vrstice?: VrsticaP[];
+  /* starejsa oblika (prehodno obdobje) — ob nalaganju se pretvori v vrstice */
   kolicine?: Record<string, number>;
   imenaPostavk?: Record<string, string>;
   vrstniRedIzbranih?: string[];
@@ -1199,45 +1214,89 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [korak, setKorak] = useState(0);
   const [izbrane, setIzbrane] = useState<Set<string>>(new Set(['cgp']));
-  /* postavkovni model: kolicina na storitev (privzeto 1), lastno ime vrstice,
-     vrstni red vrstic (drag) in trenutno razprta vrstica s podrobnostmi */
-  const [kolicine, setKolicine] = useState<Record<string, number>>({});
-  const [imenaPostavk, setImenaPostavk] = useState<Record<string, string>>({});
-  const [vrstniRedIzbranih, setVrstniRedIzbranih] = useState<string[]>(['cgp']);
+  /* postavkovni model: vrstice ponudbe (instance storitev) so vir resnice;
+     izbrane (Set sid-jev) drzimo sinhronizirano, ker se nanjo naslanjajo
+     kasnejsi koraki (pravice, paketi, raba ...) */
+  const [vrstice, setVrstice] = useState<VrsticaP[]>([{ uid: 'cgp', sid: 'cgp', ime: '', kolicina: 1 }]);
   const [razprtaVrstica, setRazprtaVrstica] = useState<string | null>(null);
   const [vlecenaVrstica, setVlecenaVrstica] = useState<string | null>(null);
 
-  /* orb/vrstica: prvi klik izbere storitev, vsak naslednji doda kos (+1) */
-  const izberiVrstico = (id: string) => {
-    if (!izbrane.has(id)) {
-      const nova = new Set(izbrane); nova.add(id); setIzbrane(nova);
-      setVrstniRedIzbranih(red => (red.includes(id) ? red : [...red, id]));
-      setKolicine(k => ({ ...k, [id]: 1 }));
-    } else {
-      setKolicine(k => ({ ...k, [id]: Math.max(1, Math.round(k[id] ?? 1)) + 1 }));
-    }
+  const uskladiIzbrane = (nove: VrsticaP[]) => setIzbrane(new Set(nove.map(l => l.sid)));
+
+  /* klik na orb: prva instanca vedno; kolicinska storitev potem steje kose
+     na isti vrstici, imenska pa doda NOVO vrstico (Inovis + Itforyou) */
+  const izberiVrstico = (sid: string) => {
+    setVrstice(stare => {
+      const obstojece = stare.filter(l => l.sid === sid);
+      let nove: VrsticaP[];
+      if (!obstojece.length) {
+        nove = [...stare, { uid: sid, sid, ime: '', kolicina: 1 }];
+      } else if (jeKolicinska(sid)) {
+        nove = stare.map(l => (l.sid === sid ? { ...l, kolicina: Math.max(1, Math.round(l.kolicina)) + 1 } : l));
+      } else {
+        let n = obstojece.length + 1;
+        while (stare.some(l => l.uid === `${sid}#${n}`)) n++;
+        nove = [...stare, { uid: `${sid}#${n}`, sid, ime: '', kolicina: 1 }];
+      }
+      uskladiIzbrane(nove);
+      return nove;
+    });
   };
-  /* minus: pod 1 kos vrstica izgine (storitev ni vec izbrana) */
-  const odvzemiVrstico = (id: string) => {
-    const q = Math.max(1, Math.round(kolicine[id] ?? 1)) - 1;
-    if (q <= 0) {
-      const nova = new Set(izbrane); nova.delete(id); setIzbrane(nova);
-      setVrstniRedIzbranih(red => red.filter(x => x !== id));
-      setKolicine(k => { const n = { ...k }; delete n[id]; return n; });
-      if (razprtaVrstica === id) setRazprtaVrstica(null);
-    } else {
-      setKolicine(k => ({ ...k, [id]: q }));
-    }
+  /* orbova znacka ×N: kolicinski odvzame kos, imenski odstrani zadnjo vrstico */
+  const odvzemiStoritev = (sid: string) => {
+    setVrstice(stare => {
+      const obstojece = stare.filter(l => l.sid === sid);
+      if (!obstojece.length) return stare;
+      let nove: VrsticaP[];
+      if (jeKolicinska(sid)) {
+        const l0 = obstojece[0];
+        nove = l0.kolicina > 1
+          ? stare.map(l => (l.uid === l0.uid ? { ...l, kolicina: l.kolicina - 1 } : l))
+          : stare.filter(l => l.uid !== l0.uid);
+      } else {
+        const zadnja = obstojece[obstojece.length - 1];
+        nove = stare.filter(l => l.uid !== zadnja.uid);
+      }
+      uskladiIzbrane(nove);
+      setRazprtaVrstica(r2 => (nove.some(l => l.uid === r2) ? r2 : null));
+      return nove;
+    });
   };
+  /* stevec na kolicinski vrstici (v panelu) */
+  const spremeniKolicino = (uid: string, delta: number) => {
+    setVrstice(stare => {
+      const l = stare.find(x => x.uid === uid);
+      if (!l) return stare;
+      const q = Math.max(0, Math.round(l.kolicina) + delta);
+      const nove = q <= 0 ? stare.filter(x => x.uid !== uid)
+        : stare.map(x => (x.uid === uid ? { ...x, kolicina: q } : x));
+      uskladiIzbrane(nove);
+      setRazprtaVrstica(r2 => (nove.some(x => x.uid === r2) ? r2 : null));
+      return nove;
+    });
+  };
+  /* odstrani celo vrstico (× na imenski vrstici) */
+  const odstraniVrstico = (uid: string) => {
+    setVrstice(stare => {
+      const nove = stare.filter(x => x.uid !== uid);
+      uskladiIzbrane(nove);
+      setRazprtaVrstica(r2 => (r2 === uid ? null : r2));
+      return nove;
+    });
+  };
+  const preimenujVrstico = (uid: string, ime: string) =>
+    setVrstice(stare => stare.map(x => (x.uid === uid ? { ...x, ime } : x)));
   /* premik vrstice na mesto druge (drag & drop v ponudbi) */
-  const premakniVrstico = (odId: string, naId: string) => {
-    if (odId === naId) return;
-    setVrstniRedIzbranih(red => {
-      const nova = red.filter(x => x !== odId);
-      const ix = nova.indexOf(naId);
-      if (ix < 0) return red;
-      nova.splice(ix, 0, odId);
-      return nova;
+  const premakniVrstico = (odUid: string, naUid: string) => {
+    if (odUid === naUid) return;
+    setVrstice(stare => {
+      const od = stare.find(x => x.uid === odUid);
+      if (!od) return stare;
+      const brez = stare.filter(x => x.uid !== odUid);
+      const ix = brez.findIndex(x => x.uid === naUid);
+      if (ix < 0) return stare;
+      brez.splice(ix, 0, od);
+      return brez;
     });
   };
   /* raba dela: 'znamka' = celotna znamka (bilanca podjetja),
@@ -1452,6 +1511,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   };
   const odstraniStoritev = (id: string) => {
     setIzbrane(prev => { const n = new Set(prev); n.delete(id); return n; });
+    setVrstice(prev => prev.filter(l => l.sid !== id));
     if (id.startsWith('moja-')) izbrisiStoritev(id);
     else setSkrite(prev => prev.includes(id) ? prev : [...prev, id]);
   };
@@ -1494,9 +1554,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      narocnik, zneski), a OHRANI nastavitve (cene, profil, tvoji podatki). */
   const novaPonudba = () => {
     setIzbrane(new Set());
-    setKolicine({});
-    setImenaPostavk({});
-    setVrstniRedIzbranih([]);
+    setVrstice([]);
     setRazprtaVrstica(null);
     setOdgovori({});
     setPostavke([]);
@@ -1533,17 +1591,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     osnove[s.id] > 0 ? osnove[s.id] : zaokrozi(s.osnova * trg(mojTrg).lvl);
 
   const r = useMemo(() => {
-    /* vrstni red vrstic sledi njenemu razporedu (drag), nove pridejo na konec */
-    const redIx = (id: string) => {
-      const i = vrstniRedIzbranih.indexOf(id);
-      return i < 0 ? 999 : i;
-    };
-    const sez = vseStoritve.filter(s => izbrane.has(s.id))
-      .slice().sort((a, b) => redIx(a.id) - redIx(b.id));
-    if (!sez.length) return null;
-    /* kolicina na storitev (dva CGP-ja, tri spletne strani) — linearno */
-    const kol = (id: string) => Math.max(1, Math.round(kolicine[id] ?? 1));
-    const imeVrstice = (s: Storitev) => (imenaPostavk[s.id] || '').trim() || s.ime;
+    /* linije = vrstice ponudbe z razreseno storitvijo (njen drag-vrstni red) */
+    const linije = vrstice
+      .map(l => ({ ...l, s: vseStoritve.find(s => s.id === l.sid) }))
+      .filter((l): l is VrsticaP & { s: Storitev } => !!l.s);
+    if (!linije.length) return null;
+    /* sez = unikatne storitve v vrstnem redu prvih pojavitev — nanjo se
+       naslanjajo paketi/trajanje/pravice (vsebina je na storitev, ne vrstico) */
+    const sez: Storitev[] = [];
+    linije.forEach(l => { if (!sez.some(s => s.id === l.sid)) sez.push(l.s); });
+    const imeVrstice = (l: VrsticaP & { s: Storitev }) => l.ime.trim() || l.s.ime;
 
     const p = Number(promet) || 0;
     const d = Number(dobicek) || 0;
@@ -1560,15 +1617,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     /* bogatejsi trg placa vec, revnejsi manj; nikoli pod 70 % in nikoli cez 220 % */
     const trgMult = clamp(trg(trgNarocnika).lvl / trg(mojTrg).lvl, 0.7, 2.2);
 
-    const vsotaStoritev = sez.reduce((a, s) => a + osnovaZa(s) * kol(s.id), 0);
+    const vsotaStoritev = linije.reduce((a, l) => a + osnovaZa(l.s) * Math.max(1, Math.round(l.kolicina)), 0);
     const vsotaPostavk = postavke.reduce((a, x) => a + x.cena * x.kolicina, 0);
     const mult = izk.mult * vel.mult * trgMult * (1 + fakDod);
     const delo = zaokrozi((vsotaStoritev + vsotaPostavk) * mult);
 
     /* Razclemba za CSV/racunovodski uvoz — vsota vrstic = delo (priporoceni paket).
-       Vrstica nosi njeno lastno ime postavke in kolicino (linearno). */
+       Vsaka vrstica ponudbe s svojim imenom (Inovis, Itforyou) in kolicino. */
     const vrsticeIzvedbe = [
-      ...sez.map(s => ({ ime: imeVrstice(s), kolicina: kol(s.id), cena: zaokrozi(osnovaZa(s) * mult) })),
+      ...linije.map(l => ({ ime: imeVrstice(l), kolicina: Math.max(1, Math.round(l.kolicina)), cena: zaokrozi(osnovaZa(l.s) * mult) })),
       ...postavke.map(x => ({ ime: x.ime, kolicina: x.kolicina, cena: zaokrozi(x.cena * mult) })),
     ];
 
@@ -1618,6 +1675,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
     return {
       sez, vel, izk, trgMult, delo, pravice, praviceBaza, licenca, paketi, popustPct,
+      linije: linije.map(l => ({ uid: l.uid, sid: l.sid, ime: imeVrstice(l), kolicina: Math.max(1, Math.round(l.kolicina)) })),
       praviceAvto, licencaAvto, praviceRocne: rocnePravEur > 0, licencaRocna: rocnaLicEur > 0,
       vrsticeIzvedbe, raba, tantiemePct, prenos: prenosPravic,
       dobicekPodan: raba === 'projekt' ? pd > 0 : d > 0,
@@ -1626,21 +1684,36 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         opis: `${['tisk + promocija', ...medijiIz.map(m => m.ime.toLowerCase())].join(' + ')}, ${trajanjeIz.ime.toLowerCase()}, ${teritorijIz.ime}, naklada ${nakladaIz.ime}`,
       },
     };
-  }, [izbrane, kolicine, imenaPostavk, vrstniRedIzbranih, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, valuta, pravTrajanje, pravTeritorij, pravDodatniMediji, pravNaklada, rocniPaketi]);
+  }, [vrstice, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, valuta, pravTrajanje, pravTeritorij, pravDodatniMediji, pravNaklada, rocniPaketi]);
 
+  /* Vprasanja na VRSTICO (ne storitev): dve spletni strani = dva locena
+     vprasalnika. Kljuc odgovora = `${uid}:${vprasanje}`; ker je uid prve
+     instance enak sid, stari shranjeni odgovori se vedno sedejo. */
   const skupineVprasanj = useMemo(() => {
-    return vseStoritve
-      .filter(s => izbrane.has(s.id))
-      .map(s => ({
-        id: s.id,
-        storitev: s.ime,
-        vprasanja: (VPRASANJA_PO_STORITVI[s.id] ?? [])
-          .filter(v => !(s.id === 'web' && v.id === 'ima-cgp' && izbrane.has('cgp')))
-          .filter(v => !(s.id === 'logo' && v.id === 'uporaba' && izbrane.has('cgp')))
-          .map(v => ({ ...v, storitev: s.ime, key: `${s.id}:${v.id}` })),
-      }))
-      .filter(s => s.vprasanja.length);
-  }, [izbrane, vseStoritve]);
+    const steviloPoSid = vrstice.reduce<Record<string, number>>((a, l) => {
+      a[l.sid] = (a[l.sid] || 0) + 1; return a;
+    }, {});
+    return vrstice
+      .map((l, li) => {
+        const s = vseStoritve.find(x => x.id === l.sid);
+        if (!s) return null;
+        const prikaz = l.ime.trim()
+          || (steviloPoSid[l.sid] > 1 ? `${s.ime} ${vrstice.filter(x => x.sid === l.sid).indexOf(l) + 1}` : s.ime);
+        return {
+          id: l.uid,
+          sid: l.sid,
+          storitev: prikaz,
+          /* oznaci, da naj ponudba odgovor pripise konkretni vrstici */
+          vecInstanc: steviloPoSid[l.sid] > 1 || !!l.ime.trim(),
+          _ix: li,
+          vprasanja: (VPRASANJA_PO_STORITVI[l.sid] ?? [])
+            .filter(v => !(l.sid === 'web' && v.id === 'ima-cgp' && izbrane.has('cgp')))
+            .filter(v => !(l.sid === 'logo' && v.id === 'uporaba' && izbrane.has('cgp')))
+            .map(v => ({ ...v, storitev: prikaz, vecInstanc: steviloPoSid[l.sid] > 1 || !!l.ime.trim(), key: `${l.uid}:${v.id}` })),
+        };
+      })
+      .filter((s): s is NonNullable<typeof s> => !!s && s.vprasanja.length > 0);
+  }, [vrstice, izbrane, vseStoritve]);
 
   const aktivnaVprasanja = useMemo(() => skupineVprasanj.flatMap(s => s.vprasanja), [skupineVprasanj]);
 
@@ -1716,7 +1789,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     }
     v.push('');
     v.push('OBSEG');
-    r.sez.forEach(s => v.push(`· ${s.ime}`));
+    r.linije.forEach(l => {
+      const enota = KOLICINSKE[l.sid];
+      v.push(`· ${l.ime}${l.kolicina > 1 ? ` — ${l.kolicina} ${enota || 'kosov'}` : ''}`);
+    });
     postavke.forEach(x => v.push(`· ${x.ime}${x.enota === 'ura' ? ` — ${x.kolicina} ur` : x.kolicina > 1 ? ' × ' + x.kolicina : ''}`));
     v.push('· [dopolni po potrebi]');
     const dodatniOdgovori = aktivnaVprasanja
@@ -1731,7 +1807,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     if (dodatniOdgovori.length) {
       v.push('');
       v.push('DODATNE INFORMACIJE');
-      dodatniOdgovori.forEach(vp => v.push(`· ${vp.label}: ${vp.odgovor}`));
+      /* pri vec instancah iste storitve odgovor pripisemo konkretni vrstici */
+      dodatniOdgovori.forEach(vp => v.push(`· ${vp.vecInstanc ? vp.storitev + ' — ' : ''}${vp.label}: ${vp.odgovor}`));
     }
     v.push('');
     v.push('IZBERITE PAKET');
@@ -1987,6 +2064,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const id = 'moja-' + Date.now();
     setMojeStoritve(m => [...m, { id, ime, osnova: cena }]);
     setIzbrane(z => new Set(z).add(id));
+    setVrstice(prev => (prev.some(l => l.sid === id) ? prev : [...prev, { uid: id, sid: id, ime: '', kolicina: 1 }]));
     setNovaIme('');
     setNovaCena('');
   };
@@ -1994,6 +2072,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const izbrisiStoritev = (id: string) => {
     setMojeStoritve(m => m.filter(s => s.id !== id));
     setIzbrane(z => { const n = new Set(z); n.delete(id); return n; });
+    setVrstice(prev => prev.filter(l => l.sid !== id));
   };
 
   const preklopi = (set: Set<string>, id: string, fn: (s: Set<string>) => void) => {
@@ -2156,7 +2235,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const ime = (nazivPonudbe.trim() || narocnikPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : 'Ponudba')).slice(0, 60);
     const zapis: ShranjenaP = {
       datum: new Date().toISOString(),
-      izbrane: [...izbrane], kolicine, imenaPostavk, vrstniRedIzbranih,
+      izbrane: [...izbrane], vrstice,
       odgovori, postavke, raba,
       promet, dobicek, projPrihodek, projDobicek, popust, dodatki: [...dodatki],
       prenosPravic, rocnePravice, rocnaLicenca, izjemePravice: izjemePravice || undefined,
@@ -2177,9 +2256,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const p = arhiv[ime];
     if (!p) return;
     setIzbrane(new Set(p.izbrane)); setOdgovori(p.odgovori || {}); setPostavke(p.postavke || []);
-    setKolicine(p.kolicine || {});
-    setImenaPostavk(p.imenaPostavk || {});
-    setVrstniRedIzbranih(p.vrstniRedIzbranih || p.izbrane || []);
+    /* stare shranjene ponudbe (brez vrstic) pretvorimo: ena vrstica na storitev */
+    setVrstice(p.vrstice && p.vrstice.length
+      ? p.vrstice
+      : (p.vrstniRedIzbranih || p.izbrane || []).map(sid => ({
+        uid: sid, sid,
+        ime: p.imenaPostavk?.[sid] || '',
+        kolicina: Math.max(1, Math.round(p.kolicine?.[sid] ?? 1)),
+      })));
     setRazprtaVrstica(null);
     setRaba(p.raba); setPromet(p.promet); setDobicek(p.dobicek);
     setProjPrihodek(p.projPrihodek); setProjDobicek(p.projDobicek);
@@ -2593,12 +2677,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const y = 16 + row * 27 + (col % 2 ? 7 : 0) + (psr(i + 50) * 8 - 4);
     return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
   };
-  /* Vrstni red vrstic v ponudbi: njen drag-razpored, nove na koncu. */
-  const redVrstic = [
-    ...vrstniRedIzbranih.filter(id => izbrane.has(id)),
-    ...[...izbrane].filter(id => !vrstniRedIzbranih.includes(id)),
-  ];
   const pozdrav = `Hej${ponudnik.ime.trim() ? ' ' + ponudnik.ime.trim().split(/\s+/)[0] : ''}!`;
+  /* prikazno ime vrstice: lastno ime, sicer ime storitve (+ zaporedje pri vec instancah) */
+  const prikazVrstice = (l: VrsticaP, s: Storitev) => {
+    if (l.ime.trim()) return l.ime.trim();
+    const iste = vrstice.filter(x => x.sid === l.sid);
+    return iste.length > 1 ? `${s.ime} ${iste.indexOf(l) + 1}` : s.ime;
+  };
 
   /* Blok "dodaj postavko" (iskalnik + seznam) — za ponovno uporabo na koraku
      cene, da lahko dodas dodatek brez vracanja na prvi korak. */
@@ -2940,6 +3025,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .stepper0 button { width: 1.55rem; height: 1.55rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.15); background: transparent; color: rgba(17,17,17,.6); cursor: pointer; font-size: .95rem; line-height: 1; display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s; }
         .cw .stepper0 button:hover { border-color: var(--ink); color: var(--ink); }
         .cw .stepper0 b { min-width: 1.3em; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; font-size: .92rem; }
+        .cw .vrst0-x { width: 1.55rem; height: 1.55rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.15); background: transparent; color: rgba(17,17,17,.55); cursor: pointer; font-size: .95rem; line-height: 1; display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s; }
+        .cw .vrst0-x:hover { border-color: var(--accent); color: var(--accent); }
         .cw .vrst0-cena { font-family: var(--font-bodoni), serif; font-size: 1.06rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
         .cw .vrst0-detajl { background: rgba(255,255,255,.85); border: 1px solid rgba(17,17,17,.1); border-radius: 14px; padding: 1rem 1.1rem; margin: .5rem 0 .9rem; }
@@ -3906,8 +3993,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 {orbStoritve.map((s, i) => {
                   const p = orbPoz(i);
                   const barvi = ORB_BARVE[i % ORB_BARVE.length];
-                  const q = Math.max(1, Math.round(kolicine[s.id] ?? 1));
-                  const on = izbrane.has(s.id);
+                  const linijeSid = vrstice.filter(l => l.sid === s.id);
+                  /* kolicinska storitev steje kose, imenska steje vrstice */
+                  const q = jeKolicinska(s.id)
+                    ? linijeSid.reduce((a, l) => a + Math.max(1, Math.round(l.kolicina)), 0)
+                    : linijeSid.length;
+                  const on = linijeSid.length > 0;
                   return (
                     <button key={s.id} type="button"
                       className={'orb0' + (on ? ' aktiv' : '')}
@@ -3925,9 +4016,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       onClick={() => izberiVrstico(s.id)}>
                       <span className="zar0" aria-hidden />
                       {on && (
-                        <span className="kolic0" role="button" tabIndex={0} title="Odstrani en kos"
-                          onClick={e => { e.stopPropagation(); odvzemiVrstico(s.id); }}
-                          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); odvzemiVrstico(s.id); } }}>
+                        <span className="kolic0" role="button" tabIndex={0}
+                          title={jeKolicinska(s.id) ? 'Odstrani en kos' : 'Odstrani zadnjo vrstico'}
+                          onClick={e => { e.stopPropagation(); odvzemiStoritev(s.id); }}
+                          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); odvzemiStoritev(s.id); } }}>
                           ×{q}
                         </span>
                       )}
@@ -3958,55 +4050,61 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <aside className="ponudba0" aria-label="Tvoja ponudba">
                 <div className="ponudba0-glava">
                   <h2>Tvoja ponudba</h2>
-                  <span className="ponudba0-chip">{redVrstic.length === 1 ? '1 postavka'
-                    : redVrstic.length === 2 ? '2 postavki'
-                      : redVrstic.length === 3 || redVrstic.length === 4 ? `${redVrstic.length} postavke`
-                        : `${redVrstic.length} postavk`}</span>
+                  <span className="ponudba0-chip">{vrstice.length === 1 ? '1 postavka'
+                    : vrstice.length === 2 ? '2 postavki'
+                      : vrstice.length === 3 || vrstice.length === 4 ? `${vrstice.length} postavke`
+                        : `${vrstice.length} postavk`}</span>
                 </div>
                 <div className="ponudba0-pod">se sestavlja v živo</div>
 
-                {redVrstic.length === 0 && (
-                  <p className="ponudba0-prazno"><b>Klikni storitev</b>, da začneš.<br />Klikni večkrat za več kosov.</p>
+                {vrstice.length === 0 && (
+                  <p className="ponudba0-prazno"><b>Klikni storitev</b>, da začneš.<br />Spletna stran ali CGP se ob ponovnem kliku doda kot nova postavka, ilustracije in podobno pa štejejo kose.</p>
                 )}
 
                 <div className="vrstice0">
-                  {redVrstic.map(id => {
-                    const s = vseStoritve.find(x => x.id === id);
+                  {vrstice.map(l => {
+                    const s = vseStoritve.find(x => x.id === l.sid);
                     if (!s) return null;
-                    const q = Math.max(1, Math.round(kolicine[id] ?? 1));
-                    const skupina = skupineVprasanj.find(g => g.id === id);
+                    const q = Math.max(1, Math.round(l.kolicina));
+                    const kolicinska = jeKolicinska(l.sid);
+                    const skupina = skupineVprasanj.find(g => g.id === l.uid);
                     const odgovorjenih = skupina ? skupina.vprasanja.filter(vp => (odgovori[vp.key] || '').trim()).length : 0;
-                    const razprta = razprtaVrstica === id;
+                    const razprta = razprtaVrstica === l.uid;
                     const status = skupina
                       ? (odgovorjenih ? `${odgovorjenih}/${skupina.vprasanja.length} podrobnosti` : 'okvirna ocena · klikni za podrobnosti')
                       : 'klikni za ime postavke';
                     return (
-                      <div key={id}>
-                        <div className={'vrst0' + (vlecenaVrstica === id ? ' vlecem' : '')}
+                      <div key={l.uid}>
+                        <div className={'vrst0' + (vlecenaVrstica === l.uid ? ' vlecem' : '')}
                           onDragOver={e => e.preventDefault()}
-                          onDrop={e => { e.preventDefault(); if (vlecenaVrstica) premakniVrstico(vlecenaVrstica, id); setVlecenaVrstica(null); }}>
+                          onDrop={e => { e.preventDefault(); if (vlecenaVrstica) premakniVrstico(vlecenaVrstica, l.uid); setVlecenaVrstica(null); }}>
                           <span className="rocica0" draggable title="Povleci za vrstni red"
-                            onDragStart={e => { setVlecenaVrstica(id); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', id); } catch { /* star brskalnik */ } }}
+                            onDragStart={e => { setVlecenaVrstica(l.uid); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', l.uid); } catch { /* star brskalnik */ } }}
                             onDragEnd={() => setVlecenaVrstica(null)}>⠿</span>
                           <button type="button" className="vrst0-ime" aria-expanded={razprta}
-                            onClick={() => setRazprtaVrstica(razprta ? null : id)}>
-                            {(imenaPostavk[id] || '').trim() || s.ime}
-                            <small className={odgovorjenih ? 'odg' : ''}>{status}</small>
+                            onClick={() => setRazprtaVrstica(razprta ? null : l.uid)}>
+                            {prikazVrstice(l, s)}
+                            <small className={odgovorjenih ? 'odg' : ''}>{kolicinska && q > 1 ? `${q} ${KOLICINSKE[l.sid] || 'kosov'} · ` : ''}{status}</small>
                           </button>
-                          <span className="stepper0">
-                            <button type="button" aria-label={'En kos manj: ' + s.ime} onClick={() => odvzemiVrstico(id)}>–</button>
-                            <b>{q}</b>
-                            <button type="button" aria-label={'En kos več: ' + s.ime} onClick={() => izberiVrstico(id)}>+</button>
-                          </span>
+                          {kolicinska ? (
+                            <span className="stepper0">
+                              <button type="button" aria-label={'En kos manj: ' + s.ime} onClick={() => spremeniKolicino(l.uid, -1)}>–</button>
+                              <b>{q}</b>
+                              <button type="button" aria-label={'En kos več: ' + s.ime} onClick={() => spremeniKolicino(l.uid, 1)}>+</button>
+                            </span>
+                          ) : (
+                            <button type="button" className="vrst0-x" aria-label={'Odstrani: ' + prikazVrstice(l, s)}
+                              onClick={() => odstraniVrstico(l.uid)}>×</button>
+                          )}
                           <span className="vrst0-cena">{val(osnovaZa(s) * q)}</span>
                         </div>
                         {razprta && (
                           <div className="vrst0-detajl">
                             <div className="polje">
-                              <label htmlFor={'cw-ime-' + id}>Ime postavke</label>
-                              <input id={'cw-ime-' + id} type="text" value={imenaPostavk[id] || ''}
-                                placeholder={`npr. ${s.ime} — Combisafe`}
-                                onChange={e => setImenaPostavk({ ...imenaPostavk, [id]: e.target.value })} />
+                              <label htmlFor={'cw-ime-' + l.uid}>Ime postavke</label>
+                              <input id={'cw-ime-' + l.uid} type="text" value={l.ime}
+                                placeholder={`npr. ${s.ime} — Inovis`}
+                                onChange={e => preimenujVrstico(l.uid, e.target.value)} />
                             </div>
                             {skupina
                               ? vprasanjaStoritveUI(skupina)
@@ -4071,9 +4169,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <div className="ponudba0-vsota">
                   <div className="ponudba0-vsota-vrsta">
                     <span>Izvedba · okvirno</span>
-                    <b>{val(redVrstic.reduce((a, id) => {
-                      const s = vseStoritve.find(x => x.id === id);
-                      return s ? a + osnovaZa(s) * Math.max(1, Math.round(kolicine[id] ?? 1)) : a;
+                    <b>{val(vrstice.reduce((a, l) => {
+                      const s = vseStoritve.find(x => x.id === l.sid);
+                      return s ? a + osnovaZa(s) * Math.max(1, Math.round(l.kolicina)) : a;
                     }, 0) + postavke.reduce((a, x) => a + x.cena * x.kolicina, 0))}</b>
                   </div>
                   <div className="ponudba0-opomba">↳ končno ceno izostrijo naslednji koraki (izkušnje, trg, pravice)</div>
