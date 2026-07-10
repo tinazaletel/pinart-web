@@ -2971,11 +2971,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
   return (
     <div className="cw" onKeyDown={naEnter}>
-      <GradientOzadje />
+      <div className="cw-ozadje" aria-hidden>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="blob blob-roza" src="/kalkulator/ozadje/roza.svg" alt="" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="blob blob-modra" src="/kalkulator/ozadje/modra.svg" alt="" />
+      </div>
       <style>{`
         .cw { position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 300; }
-        /* animiran preliv pod vsem (fixed, z-index 0 — NIKOLI -1, Safari past) */
-        .gradient-ozadje { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none; }
+        /* animirano ozadje: dva Tinina soft-gradient blob-a krozita in se krizata (fixed, z-index 0 — NIKOLI -1, Safari past) */
+        .cw-ozadje { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--paper); }
+        .cw-ozadje .blob { position: absolute; width: 70vw; max-width: 920px; height: auto; will-change: transform; filter: blur(8px); }
+        .cw-ozadje .blob-roza { top: -14vh; left: -10vw; opacity: .92; animation: blobRoza 30s ease-in-out infinite; }
+        .cw-ozadje .blob-modra { bottom: -20vh; right: -12vw; opacity: .85; animation: blobModra 34s ease-in-out infinite; }
+        @keyframes blobRoza { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(24vw,16vh) scale(1.12); } 66% { transform: translate(12vw,34vh) scale(.96); } }
+        @keyframes blobModra { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(-20vw,-14vh) scale(1.1); } 66% { transform: translate(-32vw,-6vh) scale(.95); } }
+        @media (prefers-reduced-motion: reduce) { .cw-ozadje .blob { animation: none; } }
 
         .cw .soglasje { position: fixed; inset: 0; z-index: 60; background: rgba(245,242,234,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
         .cw .soglasje-kartica { max-width: 540px; max-height: calc(100dvh - 2.5rem); overflow-y: auto; background: var(--paper); border: 1px solid rgba(17,17,17,.25); border-radius: 16px; padding: clamp(1.6rem, 4vw, 2.6rem); box-shadow: 0 24px 80px rgba(17,17,17,.12); }
@@ -3127,7 +3138,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .vrstica-vprasanja { margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem; }
 
         /* ── fake-chat uvod (gradi intimo) ── */
-        .cw .uvod-chat { position: fixed; inset: 0; z-index: 60; overflow-y: auto; display: flex; flex-direction: column; animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
+        .cw .uvod-chat { position: fixed; inset: 0; z-index: 60; overflow-y: auto; display: flex; flex-direction: column; background: rgba(244,241,234,.92); -webkit-backdrop-filter: blur(28px) saturate(1.2); backdrop-filter: blur(28px) saturate(1.2); animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
         @media (prefers-reduced-motion: reduce) { .cw .uvod-chat { animation: none; } }
         .cw .uvod-oder { width: min(680px, 92vw); margin: 0 auto; padding: clamp(1.5rem, 5vh, 4rem) 0 8rem; flex: 1; }
         .cw .uvod-oder .ob-kicker { text-align: center; }
