@@ -3092,7 +3092,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .vrst0-x:hover { border-color: var(--accent); color: var(--accent); }
         .cw .vrst0-cena { font-family: var(--font-bodoni), serif; font-size: 1.06rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-        .cw .vrst0-detajl { background: rgba(255,255,255,.85); border: 1px solid rgba(17,17,17,.1); border-radius: 14px; padding: 1rem 1.1rem; margin: .5rem 0 .9rem; }
+        .cw .vrst0-detajl { background: rgba(255,255,255,.85); border: 1px solid rgba(17,17,17,.1); border-radius: 14px; padding: 1rem 1.1rem; margin: .5rem 0 .9rem; animation: detajlDrsni .42s cubic-bezier(.16,1,.3,1) both; }
+        @keyframes detajlDrsni { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .cw .vrst0-detajl { animation: none; } }
         .cw .vrst0-detajl .polje input { font-weight: 650; }
         .cw .vrst0-brez { font-size: .85rem; color: rgba(17,17,17,.5); margin: .4rem 0 0; font-weight: 400; }
         .cw .vrstica-vprasanja { margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem; }
@@ -4153,15 +4155,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <div className="platno0" aria-label="Storitve"
                 style={{ minWidth: Math.max(560, Math.ceil((orbStoritve.length + 1) / 3) * 200) }}>
                 <div className="vodicka" aria-hidden>
-                  <span className="vodicka-obraz">
-                    <svg viewBox="0 0 40 40" aria-hidden>
-                      <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
-                      <path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
-                      <path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
-                      <circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
-                      <circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
-                    </svg>
-                  </span>
+                  <span className="vodicka-obraz">{VODICKA_OBRAZ}</span>
                   <span className="vodicka-karta">
                     <b>{pozdrav} 👋</b>
                     Izberi, kaj boš danes ustvarila.<br />Pomagam ti sestaviti ponudbo.
