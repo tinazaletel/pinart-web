@@ -3187,8 +3187,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .uvod-ozadje .blob { position: absolute; width: 58vw; max-width: 760px; height: auto; filter: blur(8px); }
         .cw .uvod-ozadje .blob-roza { top: -16vh; left: -12vw; opacity: .8; animation: blobRoza 30s ease-in-out infinite; }
         .cw .uvod-ozadje .blob-modra { bottom: -20vh; right: -14vw; opacity: .75; animation: blobModra 34s ease-in-out infinite; }
-        /* okrasni mehurcki v OSPREDJU (pred vsebino/steklom) */
-        .cw .uvod-orbs { position: absolute; inset: 0; z-index: 2; overflow: hidden; pointer-events: none; }
+        /* okrasni mehurcki: PRED zamegljenim ozadjem, a POD vsebino (input je vedno nad njimi) */
+        .cw .uvod-orbs { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
         .cw .uvod-orbs .uorb { position: absolute; border-radius: 50%; filter: blur(9px); opacity: 1; animation: uorbDrift var(--ud, 18s) ease-in-out infinite; }
         .cw .uorb-0 { width: 210px; height: 210px; top: 15%; left: 8%;  --ud: 19s; background: radial-gradient(circle at 42% 38%, #EACB55, rgba(234,203,85,0) 76%); }
         .cw .uorb-1 { width: 175px; height: 175px; top: 58%; left: 12%; --ud: 22s; background: radial-gradient(circle at 42% 38%, #B583F2, rgba(181,131,242,0) 76%); }
@@ -3196,7 +3196,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .uorb-3 { width: 235px; height: 235px; top: 16%; right: 9%; --ud: 20s; background: radial-gradient(circle at 42% 38%, #5FD6B8, rgba(95,214,184,0) 76%); }
         .cw .uorb-4 { width: 195px; height: 195px; top: 50%; right: 9%; --ud: 21s; background: radial-gradient(circle at 42% 38%, #F2A166, rgba(242,161,102,0) 76%); }
         .cw .uorb-5 { width: 180px; height: 180px; bottom: 13%; right: 26%; --ud: 17s; background: radial-gradient(circle at 42% 38%, #F28BAE, rgba(242,139,174,0) 76%); }
-        @keyframes uorbDrift { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(4%, -5%); } 50% { transform: translate(-3%, 4%); } 75% { transform: translate(-5%, -2%); } }
+        @keyframes uorbDrift { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(11%, -13%); } 50% { transform: translate(-9%, 11%); } 75% { transform: translate(-13%, -6%); } }
         @media (max-width: 700px) { .cw .uvod-orbs .uorb { opacity: .55; } }
         @media (prefers-reduced-motion: reduce) { .cw .uvod-ozadje .blob, .cw .uvod-orbs .uorb { animation: none; } }
         /* chat vsebina vertikalno na sredini; ko zraste, se pomakne navzgor (scroll) */
