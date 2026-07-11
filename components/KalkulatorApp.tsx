@@ -3187,7 +3187,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .uvod-ozadje .blob { position: absolute; width: 58vw; max-width: 760px; height: auto; filter: blur(8px); }
         .cw .uvod-ozadje .blob-roza { top: -16vh; left: -12vw; opacity: .8; animation: blobRoza 30s ease-in-out infinite; }
         .cw .uvod-ozadje .blob-modra { bottom: -20vh; right: -14vw; opacity: .75; animation: blobModra 34s ease-in-out infinite; }
-        .cw .uvod-ozadje .uorb { position: absolute; border-radius: 50%; filter: blur(9px); opacity: 1; animation: uorbDrift var(--ud, 18s) ease-in-out infinite; }
+        /* okrasni mehurcki v OSPREDJU (pred vsebino/steklom) */
+        .cw .uvod-orbs { position: absolute; inset: 0; z-index: 2; overflow: hidden; pointer-events: none; }
+        .cw .uvod-orbs .uorb { position: absolute; border-radius: 50%; filter: blur(9px); opacity: 1; animation: uorbDrift var(--ud, 18s) ease-in-out infinite; }
         .cw .uorb-0 { width: 210px; height: 210px; top: 15%; left: 8%;  --ud: 19s; background: radial-gradient(circle at 42% 38%, #EACB55, rgba(234,203,85,0) 76%); }
         .cw .uorb-1 { width: 175px; height: 175px; top: 58%; left: 12%; --ud: 22s; background: radial-gradient(circle at 42% 38%, #B583F2, rgba(181,131,242,0) 76%); }
         .cw .uorb-2 { width: 245px; height: 245px; bottom: 9%; left: 26%; --ud: 24s; background: radial-gradient(circle at 42% 38%, #A6DB5F, rgba(166,219,95,0) 76%); }
@@ -3195,8 +3197,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .uorb-4 { width: 195px; height: 195px; top: 50%; right: 9%; --ud: 21s; background: radial-gradient(circle at 42% 38%, #F2A166, rgba(242,161,102,0) 76%); }
         .cw .uorb-5 { width: 180px; height: 180px; bottom: 13%; right: 26%; --ud: 17s; background: radial-gradient(circle at 42% 38%, #F28BAE, rgba(242,139,174,0) 76%); }
         @keyframes uorbDrift { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(4%, -5%); } 50% { transform: translate(-3%, 4%); } 75% { transform: translate(-5%, -2%); } }
-        @media (max-width: 700px) { .cw .uvod-ozadje .uorb { opacity: .4; } }
-        @media (prefers-reduced-motion: reduce) { .cw .uvod-ozadje .blob, .cw .uvod-ozadje .uorb { animation: none; } }
+        @media (max-width: 700px) { .cw .uvod-orbs .uorb { opacity: .55; } }
+        @media (prefers-reduced-motion: reduce) { .cw .uvod-ozadje .blob, .cw .uvod-orbs .uorb { animation: none; } }
         /* chat vsebina vertikalno na sredini; ko zraste, se pomakne navzgor (scroll) */
         .cw .uvod-oder { position: relative; z-index: 1; width: min(680px, 92vw); margin: 0 auto; padding: 2rem 0 3rem; flex: 1; display: flex; flex-direction: column; justify-content: center; }
         .cw .uvod-oder .ob-kicker { text-align: center; }
@@ -3723,6 +3725,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <img className="blob blob-roza" src="/kalkulator/ozadje/roza.svg" alt="" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="blob blob-modra" src="/kalkulator/ozadje/modra.svg" alt="" />
+          </div>
+          {/* okrasni mehurcki V OSPREDJU (pred vsebino/steklom), ob straneh */}
+          <div className="uvod-orbs" aria-hidden>
             {[0, 1, 2, 3, 4, 5].map(i => <span key={i} className={`uorb uorb-${i}`} />)}
           </div>
           <div className="uvod-oder">
