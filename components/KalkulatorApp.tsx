@@ -3251,6 +3251,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           .cw .vodicka { display: none; }
           .cw .platno0 { min-height: 480px; }
         }
+        /* desktop: panel ponudbe = fiksen desni stolpec po CELI VISINI (do headerja) */
+        @media (min-width: 981px) {
+          /* step-0 vsebina samo bledi (brez transforma), da fixed panel deluje na okno.
+             visja specificnost (.korak-vsebina.siroko), da premaga kasnejsi .korak-vsebina */
+          .cw .korak-vsebina.siroko { max-width: none; width: 100%; padding-right: calc(min(410px, 34vw) + clamp(1rem, 2.5vw, 2rem)); box-sizing: border-box; animation-name: cwFade; }
+          .cw .oder0 { display: block; width: auto; }
+          .cw .ponudba0 { position: fixed; top: 3.05rem; right: 0; bottom: 0; width: min(410px, 34vw); border-radius: 22px 0 0 22px; margin: 0; z-index: 20; overflow-y: auto; }
+        }
         @media (prefers-reduced-motion: reduce) {
           .cw .orb0, .cw .vodicka { animation: none; }
           .cw .h1-iskre path { animation: none; }
@@ -3336,6 +3344,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @keyframes cwBeseda { to { transform: translateY(0); } }
         @media (prefers-reduced-motion: reduce) { .cw .h1-beseda { animation: none; transform: none; } }
         @keyframes cwVstop { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+        /* brez transforma (sicer bi "ujel" fixed panel v koraku 0) */
+        @keyframes cwFade { from { opacity: 0; } to { opacity: 1; } }
         @media (prefers-reduced-motion: reduce) { .cw .korak-vsebina { animation: none; } }
 
         .cw h1 { position: relative; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(2.6rem, 7vw, 4.6rem); line-height: 1; letter-spacing: -.012em; margin: 0 0 .8rem; }
