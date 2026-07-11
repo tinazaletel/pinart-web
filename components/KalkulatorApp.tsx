@@ -18,7 +18,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, CaretUp, Check, PencilSimple,
+  CaretDown, CaretUp, Check, PencilSimple, SlidersHorizontal,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -2773,6 +2773,32 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     return iste.length > 1 ? `${s.ime} ${iste.indexOf(l) + 1}` : s.ime;
   };
 
+  /* Deljen header (Pinart KALKULATOR BETA | ✕ zapri  ·  nastavitve + avatar) —
+     enak na uvodu, onboardingu in delovni mizi. Cim ozji. */
+  const avatarCrka = (imeUporabnika.trim() || ponudnik.ime.trim() || 'T').charAt(0).toUpperCase();
+  const glavaUI = () => (
+    <>
+      <span className="glava-levo">
+        <a className="glava-brand" href={localePath(locale, ``)} aria-label="Pinart — domov">
+          <span className="glava-pinart">Pinart</span>
+          <span className="glava-ime">Kalkulator</span>
+          <span className="beta">BETA</span>
+        </a>
+        <a className="zapri zapri-loceno" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ zapri</a>
+      </span>
+      <span className="glava-desno">
+        <button type="button" className="glava-ikona" aria-label="Nastavitve in cene" title="Nastavitve in cene"
+          onClick={() => { setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>
+          <SlidersHorizontal size={18} weight="bold" />
+        </button>
+        <button type="button" className="glava-avatar" aria-label="Profil" title="Profil"
+          onClick={() => { setKazemProfil(true); setProfilPogled('meni'); }}>
+          {avatarCrka}
+        </button>
+      </span>
+    </>
+  );
+
   /* Blok "dodaj postavko" (iskalnik + seznam) — za ponovno uporabo na koraku
      cene, da lahko dodas dodatek brez vracanja na prvi korak. */
   /* Kontaktni podatki + davek/pogoji + urne postavke — uporabljeno na koraku
@@ -3151,8 +3177,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         /* ── fake-chat uvod (gradi intimo) ── */
         .cw .uvod-chat { position: fixed; inset: 0; z-index: 60; overflow-y: auto; display: flex; flex-direction: column; background: var(--paper); animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
         @media (prefers-reduced-motion: reduce) { .cw .uvod-chat { animation: none; } }
-        .cw .uvod-chat .glava-ozka { padding-top: .3rem; padding-bottom: .3rem; }
-        .cw .uvod-chat .glava-ozka .glava-logo { width: 32px; height: 32px; }
+        /* cim ozji header povsod */
+        .cw .glava-ozka { padding-top: .45rem; padding-bottom: .45rem; }
+        /* chat header v toku (ne fixed) -> uvod-oder se lahko vertikalno centrira pod njim */
+        .cw .uvod-chat .glava-ozka { position: static; }
         /* ozadje uvoda: Tinina gradient blob-a + OKRASNI mehurcki (brez ikon/teksta),
            pocasi lebdijo in se malce premikajo po povrsini */
         .cw .uvod-ozadje { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
@@ -3285,13 +3313,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .profil-vrsta { display: flex; align-items: center; gap: .8rem; padding: .5rem 0; border-bottom: 1px solid rgba(17,17,17,.08); }
         .cw .profil-vrsta:last-child { border-bottom: none; }
         .cw .profil-vrsta .pv-ime { flex: 1; min-width: 0; font-size: .95rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .cw .glava .glava-brand { pointer-events: auto; display: inline-flex; align-items: center; gap: .6rem; text-decoration: none; }
-        .cw .glava .glava-ime { font-size: .82rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ink); line-height: 1; }
-        /* BETA znacka NAD besedo KALKULATOR (zlozeno, po Tininim mocku) */
-        .cw .glava .glava-ime-blok { display: inline-flex; flex-direction: column; align-items: flex-start; gap: .18rem; }
-        .cw .glava .beta { font-size: .56rem; font-weight: 700; letter-spacing: .1em; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: .08rem .28rem; line-height: 1; }
-        .cw .glava .glava-logo { width: 42px; height: 42px; display: block; transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
-        .cw .glava .glava-brand:hover .glava-logo { transform: translateY(-1px); }
+        .cw .glava .glava-brand { pointer-events: auto; display: inline-flex; align-items: center; gap: .5rem; text-decoration: none; }
+        .cw .glava .glava-pinart { font-weight: 800; font-size: 1rem; letter-spacing: -.01em; color: var(--ink); line-height: 1; }
+        .cw .glava .glava-ime { font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); line-height: 1; }
+        .cw .glava .beta { font-size: .56rem; font-weight: 700; letter-spacing: .1em; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: .1rem .3rem; line-height: 1; text-transform: uppercase; }
+        /* nastavitve-ikona + avatar (desno) */
+        .cw .glava-ikona, .cw .glava-avatar { pointer-events: auto; width: 2rem; height: 2rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.2); background: var(--paper); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-family: inherit; transition: color .18s, border-color .18s; }
+        .cw .glava-ikona { color: rgba(17,17,17,.65); }
+        .cw .glava-ikona:hover { color: var(--ink); border-color: rgba(17,17,17,.5); }
+        .cw .glava-avatar { font-weight: 700; font-size: .8rem; color: var(--ink); }
+        .cw .glava-avatar:hover { border-color: rgba(17,17,17,.5); }
 
         .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 8rem; position: relative; z-index: 1; }
         .cw .korak-vsebina { width: 100%; max-width: 880px; animation: cwVstop .55s cubic-bezier(.16,1,.3,1) both; }
@@ -3684,24 +3715,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
       {uvodChat && (
         <div className="uvod-chat" role="dialog" aria-modal="true" aria-label="Uvod" ref={uvodRef}>
-          <div className="glava glava-ozka">
-            <span className="glava-levo">
-              <a className="glava-brand" href={localePath(locale, ``)} aria-label="Pinart — domov">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
-                <span className="glava-ime-blok">
-                  <span className="beta">BETA</span>
-                  <span className="glava-ime">Kalkulator</span>
-                </span>
-              </a>
-              <a className="zapri zapri-loceno" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
-            </span>
-            <span className="glava-desno">
-              <button type="button" className="glava-profil" onClick={() => setKazemProfil(true)}>
-                <UserCircle size={19} weight="bold" /> <span>Profil</span>
-              </button>
-            </span>
-          </div>
+          <div className="glava glava-ozka">{glavaUI()}</div>
           {/* ozadje: gradient animacija + storitveni mehurcki za chatom */}
           <div className="uvod-ozadje" aria-hidden>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -3776,24 +3790,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
       {onboardingOdprt && (
         <div className="onboarding" role="dialog" aria-modal="true" aria-label="Katere storitve ponujaš">
-          <div className="glava">
-            <span className="glava-levo">
-              <a className="glava-brand" href={localePath(locale, ``)} aria-label="Pinart — domov">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
-                <span className="glava-ime-blok">
-                  <span className="beta">BETA</span>
-                  <span className="glava-ime">Kalkulator</span>
-                </span>
-              </a>
-              <a className="zapri zapri-loceno" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
-            </span>
-            <span className="glava-desno">
-              <button type="button" className="glava-profil" onClick={() => setKazemProfil(true)}>
-                <UserCircle size={19} weight="bold" /> <span>Profil</span>
-              </button>
-            </span>
-          </div>
+          <div className="glava glava-ozka">{glavaUI()}</div>
           <div className="oder">
             <div className="korak-vsebina">
               <p className="ob-kicker">Kalkulator za pošteno ceno in ponudbo</p>
@@ -3862,24 +3859,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         </button>
       </div>
 
-      <div className="glava">
-        <span className="glava-levo">
-          <a className="glava-brand" href={localePath(locale, ``)} aria-label="Pinart — domov">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="glava-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" width={42} height={42} />
-            <span className="glava-ime-blok">
-              <span className="beta">BETA</span>
-              <span className="glava-ime">Kalkulator</span>
-            </span>
-          </a>
-          <a className="zapri zapri-loceno" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ Zapri</a>
-        </span>
-        <span className="glava-desno">
-          <button type="button" className="glava-profil" onClick={() => setKazemProfil(true)}>
-            <UserCircle size={19} weight="bold" /> <span>Profil</span>
-          </button>
-        </span>
-      </div>
+      <div className="glava glava-ozka">{glavaUI()}</div>
 
       {kazemProfil && (
         <>
