@@ -3096,7 +3096,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .platno0 { position: relative; min-height: 560px; }
         .cw .namig0 { position: absolute; left: 0; right: 0; bottom: .2rem; text-align: center; font-size: .78rem; color: rgba(17,17,17,.45); pointer-events: none; }
 
-        .cw .orb0 { position: absolute; border: none; background: none; cursor: pointer; padding: 0; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; font-family: inherit; z-index: 1; animation: orb-plavaj var(--dur, 11s) ease-in-out var(--del, 0s) infinite; will-change: transform; }
+        .cw .orb0 { position: absolute; border: none; background: none; cursor: pointer; padding: 0; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; font-family: inherit; z-index: 1; animation: orb-plavaj var(--dur, 11s) ease-in-out var(--del, 0s) infinite, orb-vstop .7s cubic-bezier(.2,.8,.3,1) var(--vdel, 0s) both; will-change: transform; }
         .cw .orb0:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
         .cw .orb0 .zar0 { position: absolute; inset: -16%; border-radius: 50%; z-index: 0; pointer-events: none; background: radial-gradient(44% 38% at 36% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 60%), radial-gradient(circle at 52% 54%, var(--o2, #C084FC), var(--o1, #7C3AED) 50%, transparent 72%); filter: blur(6px); opacity: .94; transition: opacity .3s, filter .3s; }
         .cw .orb0:hover .zar0 { opacity: 1; filter: blur(3px); }
@@ -3118,6 +3118,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .orb0.orb0-plus .orb0-krog { position: absolute; inset: 4%; border-radius: 50%; border: 1.5px dashed rgba(17,17,17,.4); }
         .cw .orb0.orb0-plus:hover .orb0-krog { border-color: var(--ink); }
         .cw .orb0.orb0-plus .orb0-ime { font-weight: 600; text-shadow: none; font-size: .82rem; }
+        /* vstop: mehurcek "pride z zameglenega ozadja v fokus" (samo opacity+blur,
+           da ne trci s transform-float); zamaknjeno po indeksu (--vdel) */
+        @keyframes orb-vstop { from { opacity: 0; filter: blur(16px); } to { opacity: 1; filter: blur(0); } }
         @keyframes orb-plavaj {
           0% { transform: translate(0, 0); }
           25% { transform: translate(var(--fx, 8px), var(--fy, -10px)) scale(1.04); }
@@ -4264,6 +4267,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         ['--o1' as string]: barvi[0], ['--o2' as string]: barvi[1],
                         ['--dur' as string]: (9 + psr(i * 3 + 1) * 5).toFixed(1) + 's',
                         ['--del' as string]: (-psr(i * 7 + 2) * 6).toFixed(1) + 's',
+                        ['--vdel' as string]: (i * 0.05).toFixed(2) + 's',
                         ['--fx' as string]: ((psr(i + 11) * 5 + 3) * (psr(i + 4) < .5 ? -1 : 1)).toFixed(0) + 'px',
                         ['--fy' as string]: (-(psr(i + 23) * 5 + 3)).toFixed(0) + 'px',
                       }}
