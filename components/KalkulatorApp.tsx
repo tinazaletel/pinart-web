@@ -3201,7 +3201,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .uvod-oder { position: relative; z-index: 1; width: min(680px, 92vw); margin: 0 auto; padding: 2rem 0 3rem; flex: 1; display: flex; flex-direction: column; justify-content: center; }
         .cw .uvod-oder .ob-kicker { text-align: center; }
         .cw .uvod-h { text-align: center; }
-        .cw .uvod-sub { text-align: center; max-width: 42ch; margin: .4rem auto 2.4rem; }
+        .cw .uvod-sub { text-align: center; max-width: 42ch; margin: .4rem auto clamp(2.8rem, 6vh, 4rem); }
         .cw .chat { display: flex; flex-direction: column; gap: 1rem; }
         .cw .chat-bot, .cw .chat-jaz, .cw .chat-izbire { animation: chatVzid .5s cubic-bezier(.16,1,.3,1) both; }
         @keyframes chatVzid { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
