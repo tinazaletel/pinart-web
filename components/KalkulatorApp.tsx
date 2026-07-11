@@ -1237,6 +1237,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* carovnik: en korak naenkrat, fade-in from bottom (nuSchool slog) */
   const editorRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const uvodRef = useRef<HTMLDivElement>(null);
   const [korak, setKorak] = useState(0);
   const [izbrane, setIzbrane] = useState<Set<string>>(new Set(['cgp']));
   /* postavkovni model: vrstice ponudbe (instance storitev) so vir resnice;
@@ -1572,6 +1573,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     { id: 'samostojen', crk: 'B', ime: 'Nekaj let izkušenj', opis: 'redne stranke, utečen proces' },
     { id: 'ekspert', crk: 'C', ime: 'Uveljavljeno ime', opis: 'izbiram projekte, premium cene' },
   ];
+  /* ob novem koraku chata se vsebina pomakne navzgor (najnovejse ostane v vidu) */
+  useEffect(() => {
+    if (!uvodChat) return;
+    const el = uvodRef.current;
+    if (!el) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    requestAnimationFrame(() => el.scrollTo({ top: el.scrollHeight, behavior: reduce ? 'auto' : 'smooth' }));
+  }, [chatKorak, uvodChat]);
   const zakljuciUvod = () => {
     setMojSet([]);            /* onboardan (vsi mehurčki v ospredju) */
     setUvodChat(false);
@@ -3142,23 +3151,26 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         /* ── fake-chat uvod (gradi intimo) ── */
         .cw .uvod-chat { position: fixed; inset: 0; z-index: 60; overflow-y: auto; display: flex; flex-direction: column; background: var(--paper); animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
         @media (prefers-reduced-motion: reduce) { .cw .uvod-chat { animation: none; } }
-        .cw .uvod-chat .glava-ozka { padding-top: .5rem; padding-bottom: .5rem; }
-        /* ozadje uvoda: Tinina gradient blob-a + storitveni mehurcki za chatom */
+        .cw .uvod-chat .glava-ozka { padding-top: .3rem; padding-bottom: .3rem; }
+        .cw .uvod-chat .glava-ozka .glava-logo { width: 32px; height: 32px; }
+        /* ozadje uvoda: Tinina gradient blob-a + OKRASNI mehurcki (brez ikon/teksta),
+           pocasi lebdijo in se malce premikajo po povrsini */
         .cw .uvod-ozadje { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-        .cw .uvod-ozadje .blob { position: absolute; width: 60vw; max-width: 780px; height: auto; filter: blur(8px); }
-        .cw .uvod-ozadje .blob-roza { top: -18vh; left: -14vw; opacity: .8; animation: blobRoza 30s ease-in-out infinite; }
-        .cw .uvod-ozadje .blob-modra { bottom: -22vh; right: -16vw; opacity: .75; animation: blobModra 34s ease-in-out infinite; }
-        .cw .uvod-ozadje .uorb { position: absolute; opacity: .5; animation: uorbFloat var(--ud, 12s) ease-in-out infinite; }
-        .cw .uorb-0 { width: 118px; top: 13%; left: 3%; --ud: 11s; }
-        .cw .uorb-1 { width: 92px; top: 63%; left: 6%; --ud: 13s; }
-        .cw .uorb-2 { width: 138px; bottom: 5%; left: 19%; --ud: 15s; }
-        .cw .uorb-3 { width: 146px; top: 15%; right: 5%; --ud: 12.5s; }
-        .cw .uorb-4 { width: 120px; top: 56%; right: 3%; --ud: 14s; }
-        .cw .uorb-5 { width: 104px; bottom: 11%; right: 18%; --ud: 10.5s; }
-        @keyframes uorbFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
-        @media (max-width: 900px) { .cw .uvod-ozadje .uorb { display: none; } }
+        .cw .uvod-ozadje .blob { position: absolute; width: 58vw; max-width: 760px; height: auto; filter: blur(8px); }
+        .cw .uvod-ozadje .blob-roza { top: -16vh; left: -12vw; opacity: .8; animation: blobRoza 30s ease-in-out infinite; }
+        .cw .uvod-ozadje .blob-modra { bottom: -20vh; right: -14vw; opacity: .75; animation: blobModra 34s ease-in-out infinite; }
+        .cw .uvod-ozadje .uorb { position: absolute; border-radius: 50%; filter: blur(24px); opacity: .62; animation: uorbDrift var(--ud, 18s) ease-in-out infinite; }
+        .cw .uorb-0 { width: 200px; height: 200px; top: 15%; left: 8%;  --ud: 19s; background: radial-gradient(circle at 42% 38%, #E7D79A, rgba(231,215,154,0) 70%); }
+        .cw .uorb-1 { width: 165px; height: 165px; top: 58%; left: 12%; --ud: 22s; background: radial-gradient(circle at 42% 38%, #C9AEF0, rgba(201,174,240,0) 70%); }
+        .cw .uorb-2 { width: 235px; height: 235px; bottom: 9%; left: 26%; --ud: 24s; background: radial-gradient(circle at 42% 38%, #BEE39A, rgba(190,227,154,0) 70%); }
+        .cw .uorb-3 { width: 225px; height: 225px; top: 16%; right: 9%; --ud: 20s; background: radial-gradient(circle at 42% 38%, #9FE0CE, rgba(159,224,206,0) 70%); }
+        .cw .uorb-4 { width: 185px; height: 185px; top: 50%; right: 9%; --ud: 21s; background: radial-gradient(circle at 42% 38%, #F2C09E, rgba(242,192,158,0) 70%); }
+        .cw .uorb-5 { width: 170px; height: 170px; bottom: 13%; right: 26%; --ud: 17s; background: radial-gradient(circle at 42% 38%, #F2AEC4, rgba(242,174,196,0) 70%); }
+        @keyframes uorbDrift { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(4%, -5%); } 50% { transform: translate(-3%, 4%); } 75% { transform: translate(-5%, -2%); } }
+        @media (max-width: 700px) { .cw .uvod-ozadje .uorb { opacity: .4; } }
         @media (prefers-reduced-motion: reduce) { .cw .uvod-ozadje .blob, .cw .uvod-ozadje .uorb { animation: none; } }
-        .cw .uvod-oder { position: relative; z-index: 1; width: min(680px, 92vw); margin: 0 auto; padding: clamp(1.5rem, 5vh, 4rem) 0 8rem; flex: 1; }
+        /* chat vsebina vertikalno na sredini; ko zraste, se pomakne navzgor (scroll) */
+        .cw .uvod-oder { position: relative; z-index: 1; width: min(680px, 92vw); margin: 0 auto; padding: 2rem 0 3rem; flex: 1; display: flex; flex-direction: column; justify-content: center; }
         .cw .uvod-oder .ob-kicker { text-align: center; }
         .cw .uvod-h { text-align: center; }
         .cw .uvod-sub { text-align: center; max-width: 42ch; margin: .4rem auto 2.4rem; }
@@ -3671,7 +3683,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       )}
 
       {uvodChat && (
-        <div className="uvod-chat" role="dialog" aria-modal="true" aria-label="Uvod">
+        <div className="uvod-chat" role="dialog" aria-modal="true" aria-label="Uvod" ref={uvodRef}>
           <div className="glava glava-ozka">
             <span className="glava-levo">
               <a className="glava-brand" href={localePath(locale, ``)} aria-label="Pinart — domov">
@@ -3696,10 +3708,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <img className="blob blob-roza" src="/kalkulator/ozadje/roza.svg" alt="" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="blob blob-modra" src="/kalkulator/ozadje/modra.svg" alt="" />
-            {['logo', 'cgp', 'ilustracija', 'web', 'copy', 'aplikacija'].map((sid, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={sid} className={`uorb uorb-${i}`} src={`/kalkulator/mehurcki/${sid}.svg`} alt="" />
-            ))}
+            {[0, 1, 2, 3, 4, 5].map(i => <span key={i} className={`uorb uorb-${i}`} />)}
           </div>
           <div className="uvod-oder">
             <p className="ob-kicker">Onboarding</p>
@@ -4316,7 +4325,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 {vrstice.length === 0 && (
                   <div className="ponudba0-prazno">
                     <div className="prazno-lottie" aria-hidden>
-                      <DotLottieReact src="/kalkulator/empty-state.lottie" loop autoplay />
+                      {!uvodChat && <DotLottieReact src="/kalkulator/empty-state.lottie" loop autoplay />}
                       {/* naš bot smiley na velikem mehurčku (center ~49.7% / 35%) — enak slog kot vodička */}
                       <span className="prazno-obraz">{VODICKA_OBRAZ}</span>
                     </div>
