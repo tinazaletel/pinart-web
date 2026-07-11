@@ -3204,8 +3204,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .uvod-oder .ob-kicker { text-align: center; }
         .cw .uvod-h { text-align: center; }
         .cw .uvod-sub { text-align: center; max-width: 42ch; margin: .4rem auto 0; }
-        /* razmik med podnaslovom in chatom (na .chat, ker .sub sili margin:0) */
-        .cw .uvod-oder .chat { display: flex; flex-direction: column; gap: 1rem; margin-top: clamp(4.5rem, 10vh, 7rem); }
+        /* razmik med podnaslovom in chatom (na .chat, ker .sub sili margin:0) — ~80px manj */
+        .cw .uvod-oder .chat { display: flex; flex-direction: column; gap: 1rem; margin-top: clamp(1.5rem, 4vh, 2.5rem); }
         .cw .chat-bot, .cw .chat-jaz, .cw .chat-izbire { animation: chatVzid .5s cubic-bezier(.16,1,.3,1) both; }
         @keyframes chatVzid { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
         @media (prefers-reduced-motion: reduce) { .cw .chat-bot, .cw .chat-jaz, .cw .chat-izbire { animation: none; } }
@@ -3229,9 +3229,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-opcija b { font-weight: 700; font-size: 1.02rem; }
         .cw .chat-opcija small { color: rgba(17,17,17,.45); font-size: .84rem; margin-left: auto; text-align: right; max-width: 48%; }
         /* gumb POD inputom, na sredini */
-        .cw .chat-vnos { display: flex; flex-direction: column; align-items: stretch; gap: .9rem; margin: 1.4rem 0 0 3.05rem; }
+        .cw .chat-vnos { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: stretch; gap: .9rem; margin: 1.4rem 0 0 3.05rem; }
         .cw .chat-vnos .gumb { align-self: center; }
-        .cw .chat-vnos input { flex: none; width: 100%; background: rgba(255,255,255,.9); border: 1px solid rgba(17,17,17,.12); border-radius: 999px; padding: .95rem 1.3rem; font-family: inherit; font-size: 1.02rem; font-weight: 600; color: var(--ink); outline: none; transition: border-color .18s; }
+        .cw .chat-vnos input { flex: none; width: 100%; background: #fff; border: 1px solid rgba(17,17,17,.14); border-radius: 999px; padding: .95rem 1.3rem; font-family: inherit; font-size: 1.02rem; font-weight: 600; color: var(--ink); outline: none; box-shadow: 0 6px 20px rgba(40,25,40,.06); transition: border-color .18s; }
         .cw .chat-vnos input:focus { border-color: var(--accent); }
         @media (max-width: 560px) {
           .cw .chat-opcija small { display: none; }
