@@ -2758,10 +2758,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* Deterministicna organska razporeditev: stolpci po tri, z zamikom in jitterjem. */
   const orbPoz = (i: number) => {
     const n = orbStoritve.length + 1; /* + orb "dodaj" */
-    const stolpcev = Math.max(1, Math.ceil(n / 3));
-    const col = Math.floor(i / 3), row = i % 3;
-    const x = stolpcev === 1 ? 42 : 9 + col * (76 / Math.max(stolpcev - 1, 1)) + (psr(i + 1) * 6 - 3);
-    const y = 16 + row * 27 + (col % 2 ? 7 : 0) + (psr(i + 50) * 8 - 4);
+    /* zbrani v levem delu (panel je desno); napolnijo visino platna, organsko */
+    const vrst = n <= 6 ? 2 : n <= 12 ? 3 : 4;
+    const stolpcev = Math.max(1, Math.ceil(n / vrst));
+    const col = Math.floor(i / vrst), row = i % vrst;
+    const x = stolpcev === 1 ? 30 : 5 + col * (58 / Math.max(stolpcev - 1, 1)) + (psr(i + 1) * 5 - 2.5);
+    const y = 7 + row * (84 / vrst) + (col % 2 ? 6 : 0) + (psr(i + 50) * 6 - 3);
     return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
   };
   const prvoIme = (imeUporabnika.trim() || ponudnik.ime.trim()).split(/\s+/)[0];
@@ -3092,8 +3094,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @keyframes iskra { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
 
         .cw .oder0 { display: grid; grid-template-columns: 1.55fr 1fr; gap: clamp(1rem, 2.5vw, 2rem); align-items: stretch; width: min(1240px, 100%); }
-        .cw .platno0-drs { overflow-x: auto; overflow-y: hidden; min-width: 0; }
-        .cw .platno0 { position: relative; min-height: 560px; }
+        .cw .platno0-drs { overflow: visible; min-width: 0; }
+        .cw .platno0 { position: relative; min-height: 64vh; }
         .cw .namig0 { position: absolute; left: 0; right: 0; bottom: .2rem; text-align: center; font-size: .78rem; color: rgba(17,17,17,.45); pointer-events: none; }
 
         .cw .orb0 { position: absolute; border: none; background: none; cursor: pointer; padding: 0; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; font-family: inherit; z-index: 1; animation: orb-plavaj var(--dur, 11s) ease-in-out var(--del, 0s) infinite, orb-vstop .7s cubic-bezier(.2,.8,.3,1) var(--vdel, 0s) both; will-change: transform; }
@@ -3260,8 +3262,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
              visja specificnost (.korak-vsebina.siroko), da premaga kasnejsi .korak-vsebina */
           .cw .korak-vsebina.siroko { max-width: none; width: 100%; padding-right: calc(min(410px, 34vw) + clamp(1rem, 2.5vw, 2rem)); box-sizing: border-box; animation-name: cwFade; }
           .cw .oder0 { display: block; width: auto; }
-          .cw .ponudba0 { position: fixed; top: 3.05rem; right: 0; bottom: 0; width: min(410px, 34vw); border-radius: 22px 0 0 22px; margin: 0; z-index: 20; overflow-y: auto; }
+          .cw .ponudba0 { position: fixed; top: 3.05rem; right: 0; bottom: 0; width: min(410px, 34vw); border-radius: 22px 0 0 22px; margin: 0; z-index: 20; overflow-y: auto; animation: ponudbaVstop .5s cubic-bezier(.2,.8,.3,1) both; }
         }
+        @keyframes ponudbaVstop { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        @media (prefers-reduced-motion: reduce) { .cw .ponudba0 { animation: none; } }
         @media (prefers-reduced-motion: reduce) {
           .cw .orb0, .cw .vodicka { animation: none; }
           .cw .h1-iskre path { animation: none; }
@@ -4236,10 +4240,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
           {korak === 0 && (
             <div className="oder0">
-              {/* ── platno z orbi (levo): klik doda kos, ×N odvzame; ozko platno skrolas ── */}
+              {/* ── platno z orbi: svobodno lebdijo na istem ozadju (brez obrezovanja) ── */}
               <div className="platno0-drs">
-              <div className="platno0" aria-label="Storitve"
-                style={{ minWidth: Math.max(560, Math.ceil((orbStoritve.length + 1) / 3) * 200) }}>
+              <div className="platno0" aria-label="Storitve">
                 <div className="vodicka" aria-hidden>
                   <span className="vodicka-obraz">{VODICKA_OBRAZ}</span>
                   <span className="vodicka-karta">
