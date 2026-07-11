@@ -3187,13 +3187,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .uvod-ozadje .blob { position: absolute; width: 58vw; max-width: 760px; height: auto; filter: blur(8px); }
         .cw .uvod-ozadje .blob-roza { top: -16vh; left: -12vw; opacity: .8; animation: blobRoza 30s ease-in-out infinite; }
         .cw .uvod-ozadje .blob-modra { bottom: -20vh; right: -14vw; opacity: .75; animation: blobModra 34s ease-in-out infinite; }
-        .cw .uvod-ozadje .uorb { position: absolute; border-radius: 50%; filter: blur(14px); opacity: .92; animation: uorbDrift var(--ud, 18s) ease-in-out infinite; }
-        .cw .uorb-0 { width: 200px; height: 200px; top: 15%; left: 8%;  --ud: 19s; background: radial-gradient(circle at 42% 38%, #E7D79A, rgba(231,215,154,0) 70%); }
-        .cw .uorb-1 { width: 165px; height: 165px; top: 58%; left: 12%; --ud: 22s; background: radial-gradient(circle at 42% 38%, #C9AEF0, rgba(201,174,240,0) 70%); }
-        .cw .uorb-2 { width: 235px; height: 235px; bottom: 9%; left: 26%; --ud: 24s; background: radial-gradient(circle at 42% 38%, #BEE39A, rgba(190,227,154,0) 70%); }
-        .cw .uorb-3 { width: 225px; height: 225px; top: 16%; right: 9%; --ud: 20s; background: radial-gradient(circle at 42% 38%, #9FE0CE, rgba(159,224,206,0) 70%); }
-        .cw .uorb-4 { width: 185px; height: 185px; top: 50%; right: 9%; --ud: 21s; background: radial-gradient(circle at 42% 38%, #F2C09E, rgba(242,192,158,0) 70%); }
-        .cw .uorb-5 { width: 170px; height: 170px; bottom: 13%; right: 26%; --ud: 17s; background: radial-gradient(circle at 42% 38%, #F2AEC4, rgba(242,174,196,0) 70%); }
+        .cw .uvod-ozadje .uorb { position: absolute; border-radius: 50%; filter: blur(9px); opacity: 1; animation: uorbDrift var(--ud, 18s) ease-in-out infinite; }
+        .cw .uorb-0 { width: 210px; height: 210px; top: 15%; left: 8%;  --ud: 19s; background: radial-gradient(circle at 42% 38%, #EACB55, rgba(234,203,85,0) 76%); }
+        .cw .uorb-1 { width: 175px; height: 175px; top: 58%; left: 12%; --ud: 22s; background: radial-gradient(circle at 42% 38%, #B583F2, rgba(181,131,242,0) 76%); }
+        .cw .uorb-2 { width: 245px; height: 245px; bottom: 9%; left: 26%; --ud: 24s; background: radial-gradient(circle at 42% 38%, #A6DB5F, rgba(166,219,95,0) 76%); }
+        .cw .uorb-3 { width: 235px; height: 235px; top: 16%; right: 9%; --ud: 20s; background: radial-gradient(circle at 42% 38%, #5FD6B8, rgba(95,214,184,0) 76%); }
+        .cw .uorb-4 { width: 195px; height: 195px; top: 50%; right: 9%; --ud: 21s; background: radial-gradient(circle at 42% 38%, #F2A166, rgba(242,161,102,0) 76%); }
+        .cw .uorb-5 { width: 180px; height: 180px; bottom: 13%; right: 26%; --ud: 17s; background: radial-gradient(circle at 42% 38%, #F28BAE, rgba(242,139,174,0) 76%); }
         @keyframes uorbDrift { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(4%, -5%); } 50% { transform: translate(-3%, 4%); } 75% { transform: translate(-5%, -2%); } }
         @media (max-width: 700px) { .cw .uvod-ozadje .uorb { opacity: .4; } }
         @media (prefers-reduced-motion: reduce) { .cw .uvod-ozadje .blob, .cw .uvod-ozadje .uorb { animation: none; } }
