@@ -3187,7 +3187,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .uvod-ozadje .blob { position: absolute; width: 58vw; max-width: 760px; height: auto; filter: blur(8px); }
         .cw .uvod-ozadje .blob-roza { top: -16vh; left: -12vw; opacity: .8; animation: blobRoza 30s ease-in-out infinite; }
         .cw .uvod-ozadje .blob-modra { bottom: -20vh; right: -14vw; opacity: .75; animation: blobModra 34s ease-in-out infinite; }
-        .cw .uvod-ozadje .uorb { position: absolute; border-radius: 50%; filter: blur(24px); opacity: .62; animation: uorbDrift var(--ud, 18s) ease-in-out infinite; }
+        .cw .uvod-ozadje .uorb { position: absolute; border-radius: 50%; filter: blur(14px); opacity: .92; animation: uorbDrift var(--ud, 18s) ease-in-out infinite; }
         .cw .uorb-0 { width: 200px; height: 200px; top: 15%; left: 8%;  --ud: 19s; background: radial-gradient(circle at 42% 38%, #E7D79A, rgba(231,215,154,0) 70%); }
         .cw .uorb-1 { width: 165px; height: 165px; top: 58%; left: 12%; --ud: 22s; background: radial-gradient(circle at 42% 38%, #C9AEF0, rgba(201,174,240,0) 70%); }
         .cw .uorb-2 { width: 235px; height: 235px; bottom: 9%; left: 26%; --ud: 24s; background: radial-gradient(circle at 42% 38%, #BEE39A, rgba(190,227,154,0) 70%); }
