@@ -4310,7 +4310,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {/* ── živa ponudba (desno): vrstice s podrobnostmi ── */}
               <aside className="ponudba0" aria-label="Tvoja ponudba">
                 <div className="ponudba0-glava">
-                  <h2>Tvoja ponudba</h2>
+                  <h2>{nazivPonudbe.trim() || 'Tvoja ponudba'}</h2>
                   <span className="ponudba0-chip">{vrstice.length === 1 ? '1 postavka'
                     : vrstice.length === 2 ? '2 postavki'
                       : vrstice.length === 3 || vrstice.length === 4 ? `${vrstice.length} postavke`
