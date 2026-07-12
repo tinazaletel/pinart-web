@@ -3103,7 +3103,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
         .cw .oder0 { display: grid; grid-template-columns: 1.55fr 1fr; gap: clamp(1rem, 2.5vw, 2rem); align-items: stretch; width: min(1240px, 100%); }
         /* korak 0 = nadaljevanje chatbota: mehurcki-transkript zgoraj, orbi spodaj */
-        .cw .chat-izbira { display: flex; flex-direction: column; align-items: flex-start; gap: .7rem; max-width: 560px; margin: 0 0 1.4rem; }
+        .cw .chat-izbira { display: flex; flex-direction: column; align-items: flex-start; gap: .7rem; width: min(620px, 92%); margin: 0 auto 1.8rem; }
         .cw .platno0-drs { overflow: visible; min-width: 0; }
         .cw .platno0 { position: relative; min-height: 56vh; }
         .cw .namig0 { position: absolute; left: 0; right: 0; bottom: .2rem; text-align: center; font-size: .78rem; color: rgba(17,17,17,.45); pointer-events: none; }
@@ -4314,11 +4314,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   );
                 })}
                 {(() => {
-                  const p = orbPoz(orbStoritve.length);
                   const d = Math.round(orbD * 0.78);
                   return (
                     <button type="button" className="orb0 orb0-plus"
-                      style={{ width: d, height: d, left: `calc(${p.x}% - ${d / 2}px)`, top: `calc(${p.y}% - ${d / 2}px)` }}
+                      style={{ width: d, height: d, right: 8, bottom: 8, left: 'auto', top: 'auto' }}
                       onClick={() => setKazemDodaj(!kazemDodaj)}>
                       <span className="orb0-krog" aria-hidden />
                       <Plus size={20} aria-hidden />
