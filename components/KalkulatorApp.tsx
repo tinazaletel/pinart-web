@@ -61,10 +61,9 @@ type VrsticaP = { uid: string; sid: string; ime: string; kolicina: number };
 /* Tinini narisani mehurcki (public/kalkulator/mehurcki/<sid>.svg) — kjer
    obstaja, zamenja CSS-gradientni orb (gradient + ikona + napis so vrisani
    v SVG). Ostale storitve padejo na CSS orb. Dodaj sid, ko prispe nov SVG. */
-const MEHURCEK: Record<string, boolean> = {
-  cgp: true, logo: true, web: true, copy: true,
-  ilustracija: true, fotografija: true, motion: true, aplikacija: true,
-};
+/* VSI mehurcki so enotni CSS orb v CGP videzu (samo barve se razlikujejo) —
+   prej so bili meseani (nekateri njeni SVG-ji, nekateri CSS) in vsak drugacen. */
+const MEHURCEK: Record<string, boolean> = {};
 const KOLICINSKE: Record<string, string> = {
   logo: 'logotipov', ilustracija: 'ilustracij', fotografija: 'fotografiranj',
   copy: 'besedil', video: 'videov', motion: 'animacij', render3d: 'renderjev',
@@ -3127,7 +3126,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
         .cw .orb0 { position: absolute; border: none; background: none; cursor: pointer; padding: 0; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; font-family: inherit; z-index: 1; animation: orb-plavaj var(--dur, 11s) ease-in-out var(--del, 0s) infinite, orb-vstop .7s cubic-bezier(.2,.8,.3,1) var(--vdel, 0s) both; will-change: transform; }
         .cw .orb0:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
-        .cw .orb0 .zar0 { position: absolute; inset: -16%; border-radius: 50%; z-index: 0; pointer-events: none; background: radial-gradient(44% 38% at 36% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 60%), radial-gradient(circle at 52% 54%, var(--o2, #C084FC), var(--o1, #7C3AED) 50%, transparent 72%); filter: blur(6px); opacity: .94; transition: opacity .3s, filter .3s; }
+        /* enoten CGP videz: ziva sredina -> mehko v prosojno rob, ena bela svetloba zgoraj levo */
+        .cw .orb0 .zar0 { position: absolute; inset: -14%; border-radius: 50%; z-index: 0; pointer-events: none; background: radial-gradient(54% 48% at 33% 27%, rgba(255,255,255,.72), rgba(255,255,255,0) 62%), radial-gradient(circle at 50% 52%, var(--o2, #C084FC) 0%, var(--o1, #7C3AED) 46%, transparent 73%); filter: blur(5px); opacity: .96; transition: opacity .3s, filter .3s; }
         .cw .orb0:hover .zar0 { opacity: 1; filter: blur(3px); }
         .cw .orb0::before { content: ""; position: absolute; z-index: 1; top: 15%; left: 25%; width: 26%; height: 19%; border-radius: 50%; background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.95), rgba(255,255,255,0) 72%); filter: blur(1.5px); pointer-events: none; }
         /* Tinini narisani mehurcki: SVG ima svoj gradient/sijaj/ikono/napis vrisan.
