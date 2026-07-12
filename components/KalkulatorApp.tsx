@@ -2761,17 +2761,18 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const orbD = orbStoritve.length <= 8 ? 176 : orbStoritve.length <= 14 ? 156 : 138;
   /* mehurcki v pravih vrsticah, razmaknjeni; platno raste s stevilom -> stran scrolla */
   const orbN = orbStoritve.length + 1; /* + "dodaj" */
-  const orbStolpcev = orbN <= 4 ? 2 : orbN <= 9 ? 3 : 4;
+  const orbStolpcev = orbN <= 3 ? 2 : orbN <= 6 ? 3 : orbN <= 12 ? 4 : 5;
   const orbVrstic = Math.max(1, Math.ceil(orbN / orbStolpcev));
   const orbRowH = Math.round(orbD * 1.16);
   /* Deterministicna organska razporeditev: stolpci po tri, z zamikom in jitterjem. */
   const orbPoz = (i: number) => {
     /* vrstice/stolpci, razmaknjeno; opeka (lihe vrstice zamaknjene), rahel jitter */
     const col = i % orbStolpcev, row = Math.floor(i / orbStolpcev);
-    const zamik = row % 2 ? (72 / orbStolpcev) / 2 : 0;
-    const x = 11 + col * (74 / Math.max(orbStolpcev - 1, 1)) + zamik + (psr(i + 1) * 3 - 1.5);
+    const step = 86 / Math.max(orbStolpcev - 1, 1);
+    const zamik = row % 2 ? step * 0.28 : 0;   /* rahel brick zamik, znotraj robov */
+    const x = 7 + col * step + zamik + (psr(i + 1) * 3 - 1.5);
     const y = ((row + 0.5) / orbVrstic) * 100 + (psr(i + 50) * 3 - 1.5);
-    return { x: Math.round(Math.min(88, Math.max(10, x)) * 10) / 10, y: Math.round(y * 10) / 10 };
+    return { x: Math.round(Math.min(95, Math.max(5, x)) * 10) / 10, y: Math.round(y * 10) / 10 };
   };
   const prvoIme = (imeUporabnika.trim() || ponudnik.ime.trim()).split(/\s+/)[0];
   const pozdrav = `Hej${prvoIme ? ' ' + prvoIme : ''}!`;
@@ -3362,7 +3363,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 8rem; position: relative; z-index: 1; }
         .cw .korak-vsebina { width: 100%; max-width: 880px; animation: cwVstop .55s cubic-bezier(.16,1,.3,1) both; }
         /* korak 0 rabi vec prostora (orbi + panel drug ob drugem) */
-        .cw .korak-vsebina.siroko { max-width: 1240px; }
+        .cw .korak-vsebina.siroko { max-width: none; }
         .cw .h1-maska { display: inline-block; overflow: hidden; vertical-align: bottom; padding: .06em .22em .24em; margin: -.06em -.22em -.24em; }
         .cw .h1-beseda { display: inline-block; transform: translateY(110%); animation: cwBeseda .7s cubic-bezier(.16,1,.3,1) forwards; }
         @keyframes cwBeseda { to { transform: translateY(0); } }
