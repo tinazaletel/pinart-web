@@ -1595,9 +1595,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     PODROCJA.forEach(p => { if (obIzbor.has(p.id)) p.storitve.forEach(sid => ids.add(sid)); });
     setMojSet([...ids]);
     setChatVnos('');
-    /* mehak prehod: miza (panel+mehurcki) se montira in animira, chat zbledi — brez preskoka */
-    setUvodOdhaja(true);
-    window.setTimeout(() => { setUvodChat(false); setUvodOdhaja(false); setChatKorak(0); }, 620);
+    /* ISTA povrsina: samo ugasnemo "onboarding fazo" -> spodaj se pojavijo mehurcki
+       + panel (animirano), transkript ostane na mestu. Brez preskoka/overlaya. */
+    setUvodChat(false);
   };
   const uvodNaprej = () => {
     if (chatKorak === 0) {
@@ -3767,104 +3767,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         </div>
       )}
 
-      {uvodChat && (
-        <div className={'uvod-chat' + (uvodOdhaja ? ' odhaja' : '')} role="dialog" aria-modal="true" aria-label="Uvod" ref={uvodRef}>
-          <div className="glava glava-ozka">{glavaUI()}</div>
-          {/* ozadje: gradient animacija + storitveni mehurcki za chatom */}
-          <div className="uvod-ozadje" aria-hidden>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="blob blob-roza" src="/kalkulator/ozadje/roza.svg" alt="" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="blob blob-modra" src="/kalkulator/ozadje/modra.svg" alt="" />
-          </div>
-          {/* okrasni mehurcki V OSPREDJU (pred vsebino/steklom), ob straneh */}
-          <div className="uvod-orbs" aria-hidden>
-            {[0, 1, 2, 3, 4, 5].map(i => <span key={i} className={`uorb uorb-${i}`} />)}
-          </div>
-          <div className="uvod-oder">
-            <p className="ob-kicker">Onboarding</p>
-            <h1 className="ob-naslov uvod-h">Kalkulator ponudbe</h1>
-            <p className="sub uvod-sub">Živjo, sem tvoja pomočnica in pomagala ti bom sestaviti ponudbo.</p>
-
-            <div className="chat">
-              {/* 1) ime */}
-              <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                <span className="chat-mehur"><b>Živjo! Kako ti je ime?</b></span></div>
-              {chatKorak > 0 && <div className="chat-jaz"><span className="chat-mehur">{imeUporabnika || '—'}</span></div>}
-
-              {/* 2) izkusnje */}
-              {chatKorak >= 1 && (
-                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                  <span className="chat-mehur"><b>Kakšne izkušnje imaš?</b><small>Vpliva na ceno ponudbe.</small></span></div>
-              )}
-              {chatKorak >= 1 && chatKorak === 1 && (
-                <div className="chat-izbire">
-                  {CHAT_IZK.map(o => (
-                    <button key={o.id} type="button" className="chat-opcija" onClick={() => uvodIzberiIzkusnje(o.id)}>
-                      <span className="crk">{o.crk}</span><b>{o.ime}</b><small>{o.opis}</small>
-                    </button>
-                  ))}
-                </div>
-              )}
-              {chatKorak > 1 && <div className="chat-jaz"><span className="chat-mehur">{CHAT_IZK.find(o => o.id === izkusnje)?.ime || 'Nekaj let izkušenj'}</span></div>}
-
-              {/* 3) področja dela (več izbir) — enkratno, filtrira mehurčke */}
-              {chatKorak >= 2 && (
-                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                  <span className="chat-mehur"><b>S katerimi področji se ukvarjaš?</b><small>Izbereš lahko več — pokažem samo tvoje storitve.</small></span></div>
-              )}
-              {chatKorak === 2 && (
-                <>
-                  <div className="chat-podrocja">
-                    {PODROCJA.map(p => (
-                      <button key={p.id} type="button" className={'chip-podrocje' + (obIzbor.has(p.id) ? ' on' : '')}
-                        onClick={() => preklopi(obIzbor, p.id, setObIzbor)}>
-                        <span className="pi-pod" aria-hidden>{PODROCJE_IKONA[p.id]}</span>{p.ime}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="chat-vnos"><button type="button" className="gumb" disabled={obIzbor.size === 0} onClick={uvodPotrdiPodrocja}>Naprej →</button></div>
-                </>
-              )}
-              {chatKorak > 2 && obIzbor.size > 0 && <div className="chat-jaz"><span className="chat-mehur">{[...obIzbor].map(id => PODROCJA.find(p => p.id === id)?.ime).filter(Boolean).join(', ')}</span></div>}
-
-              {/* 4) nova / obstojeca */}
-              {chatKorak >= 3 && (
-                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                  <span className="chat-mehur"><b>Nova ponudba ali nadaljuješ obstoječo?</b></span></div>
-              )}
-              {chatKorak === 3 && (
-                <div className="chat-izbire">
-                  <button type="button" className="chat-opcija" onClick={() => uvodNovaObstojeca(true)}>
-                    <span className="crk">A</span><b>Nova ponudba</b></button>
-                  <button type="button" className="chat-opcija" onClick={() => uvodNovaObstojeca(false)}>
-                    <span className="crk">B</span><b>Obstoječa ponudba</b><small>{Object.keys(arhiv).length ? 'naložim zadnjo iz arhiva' : 'v arhivu še ni ponudb'}</small></button>
-                </div>
-              )}
-              {chatKorak > 3 && chatNova !== null && <div className="chat-jaz"><span className="chat-mehur">{chatNova ? 'Nova ponudba' : 'Obstoječa ponudba'}</span></div>}
-
-              {/* 5) ime ponudbe */}
-              {chatKorak >= 4 && (
-                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                  <span className="chat-mehur"><b>Kako naj se imenuje ponudba?</b><small>Npr. »Inovis — prenova CGP in spletne strani«.</small></span></div>
-              )}
-            </div>
-
-            {/* vnosna vrstica (ime / ime ponudbe) */}
-            {(chatKorak === 0 || chatKorak === 4) && (
-              <form className="chat-vnos" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
-                <input autoFocus type="text" value={chatVnos}
-                  onChange={e => setChatVnos(e.target.value)}
-                  placeholder={chatKorak === 0 ? 'Ime ali vzdevek' : 'Ime ponudbe'} />
-                <button type="submit" className="gumb" disabled={chatKorak === 0 && !chatVnos.trim()}>
-                  {chatKorak === 4 ? 'Začni →' : 'Naprej →'}
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
-
       {onboardingOdprt && (
         <div className="onboarding" role="dialog" aria-modal="true" aria-label="Katere storitve ponujaš">
           <div className="glava glava-ozka">{glavaUI()}</div>
@@ -4271,20 +4173,100 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <div className="sub-vrsta"><p className="sub">{opisKoraka}</p></div>
           )}
           {/* korak 0 = nadaljevanje chatbota (naslov gre stran) */}
-          {korak === 0 && !klasicnaOblika && (!uvodChat || uvodOdhaja) && (
-            <div className="chat chat-izbira">
-              {nazivPonudbe.trim() && (
-                <div className="chat-jaz"><span className="chat-mehur">{nazivPonudbe}</span></div>
+          {korak === 0 && !klasicnaOblika && (
+            <div className="chat chat-izbira" ref={uvodRef}>
+              {uvodChat && (
+                <div className="uvod-uvodnik">
+                  <p className="ob-kicker">Onboarding</p>
+                  <h1 className="ob-naslov uvod-h">Kalkulator ponudbe</h1>
+                  <p className="sub uvod-sub">Živjo, sem tvoja pomočnica in pomagala ti bom sestaviti ponudbo.</p>
+                </div>
               )}
+              {/* transkript vprasanj — ostane viden, se pomika navzgor (ista povrsina) */}
               <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                <span className="chat-mehur"><b>Izberi storitve, ki jih želiš v ponudbi.</b></span></div>
-              <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                <span className="chat-mehur">Po potrebi jim lahko urediš podrobnosti — klikni izbrano storitev v ponudbi desno.</span></div>
+                <span className="chat-mehur"><b>Živjo! Kako ti je ime?</b></span></div>
+              {chatKorak > 0 && <div className="chat-jaz"><span className="chat-mehur">{imeUporabnika || '—'}</span></div>}
+
+              {chatKorak >= 1 && (
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                  <span className="chat-mehur"><b>Kakšne izkušnje imaš?</b><small>Vpliva na ceno ponudbe.</small></span></div>
+              )}
+              {uvodChat && chatKorak === 1 && (
+                <div className="chat-izbire">
+                  {CHAT_IZK.map(o => (
+                    <button key={o.id} type="button" className="chat-opcija" onClick={() => uvodIzberiIzkusnje(o.id)}>
+                      <span className="crk">{o.crk}</span><b>{o.ime}</b><small>{o.opis}</small>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {chatKorak > 1 && <div className="chat-jaz"><span className="chat-mehur">{CHAT_IZK.find(o => o.id === izkusnje)?.ime || 'Nekaj let izkušenj'}</span></div>}
+
+              {chatKorak >= 2 && (
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                  <span className="chat-mehur"><b>S katerimi področji se ukvarjaš?</b><small>Izbereš lahko več — pokažem samo tvoje storitve.</small></span></div>
+              )}
+              {uvodChat && chatKorak === 2 && (
+                <>
+                  <div className="chat-podrocja">
+                    {PODROCJA.map(p => (
+                      <button key={p.id} type="button" className={'chip-podrocje' + (obIzbor.has(p.id) ? ' on' : '')}
+                        onClick={() => preklopi(obIzbor, p.id, setObIzbor)}>
+                        <span className="pi-pod" aria-hidden>{PODROCJE_IKONA[p.id]}</span>{p.ime}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="chat-vnos"><button type="button" className="gumb" disabled={obIzbor.size === 0} onClick={uvodPotrdiPodrocja}>Naprej →</button></div>
+                </>
+              )}
+              {chatKorak > 2 && obIzbor.size > 0 && <div className="chat-jaz"><span className="chat-mehur">{[...obIzbor].map(id => PODROCJA.find(p => p.id === id)?.ime).filter(Boolean).join(', ')}</span></div>}
+
+              {chatKorak >= 3 && (
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                  <span className="chat-mehur"><b>Nova ponudba ali nadaljuješ obstoječo?</b></span></div>
+              )}
+              {uvodChat && chatKorak === 3 && (
+                <div className="chat-izbire">
+                  <button type="button" className="chat-opcija" onClick={() => uvodNovaObstojeca(true)}>
+                    <span className="crk">A</span><b>Nova ponudba</b></button>
+                  <button type="button" className="chat-opcija" onClick={() => uvodNovaObstojeca(false)}>
+                    <span className="crk">B</span><b>Obstoječa ponudba</b><small>{Object.keys(arhiv).length ? 'naložim zadnjo iz arhiva' : 'v arhivu še ni ponudb'}</small></button>
+                </div>
+              )}
+              {chatKorak > 3 && chatNova !== null && <div className="chat-jaz"><span className="chat-mehur">{chatNova ? 'Nova ponudba' : 'Obstoječa ponudba'}</span></div>}
+
+              {chatKorak >= 4 && (
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                  <span className="chat-mehur"><b>Kako naj se imenuje ponudba?</b><small>Npr. »Inovis — prenova CGP in spletne strani«.</small></span></div>
+              )}
+              {!uvodChat && nazivPonudbe.trim() && <div className="chat-jaz"><span className="chat-mehur">{nazivPonudbe}</span></div>}
+
+              {/* po onboardingu: nadaljevanje pogovora za izbiro (ista povrsina, ni preskoka) */}
+              {!uvodChat && (
+                <>
+                  <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                    <span className="chat-mehur"><b>Super! Izberi storitve, ki jih želiš v ponudbi.</b></span></div>
+                  <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                    <span className="chat-mehur">Po potrebi jim lahko urediš podrobnosti — klikni izbrano storitev v ponudbi desno.</span></div>
+                </>
+              )}
+
+              {/* vnosna vrstica (ime / ime ponudbe) — samo med onboardingom */}
+              {uvodChat && (chatKorak === 0 || chatKorak === 4) && (
+                <form className="chat-vnos" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
+                  <input autoFocus type="text" value={chatVnos}
+                    onChange={e => setChatVnos(e.target.value)}
+                    placeholder={chatKorak === 0 ? 'Ime ali vzdevek' : 'Ime ponudbe'} />
+                  <button type="submit" className="gumb" disabled={chatKorak === 0 && !chatVnos.trim()}>
+                    {chatKorak === 4 ? 'Začni →' : 'Naprej →'}
+                  </button>
+                </form>
+              )}
             </div>
           )}
 
 
-          {korak === 0 && (!uvodChat || uvodOdhaja) && (
+          {korak === 0 && (klasicnaOblika || !uvodChat) && (
             <div className="oder0">
               {/* ── platno z orbi: svobodno lebdijo na istem ozadju (brez obrezovanja) ── */}
               <div className="platno0-drs">
