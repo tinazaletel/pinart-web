@@ -2754,17 +2754,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     return [...iz, ...mojeVidne].filter(s => (videni.has(s.id) ? false : (videni.add(s.id), true)));
   })();
   /* Velikost orba pada s stevilom storitev; pod minimum ne gre (mobile skrola). */
-  const orbD = orbStoritve.length <= 8 ? 148 : orbStoritve.length <= 14 ? 132 : 118;
+  const orbD = orbStoritve.length <= 8 ? 176 : orbStoritve.length <= 14 ? 156 : 138;
   /* Deterministicna organska razporeditev: stolpci po tri, z zamikom in jitterjem. */
   const orbPoz = (i: number) => {
     const n = orbStoritve.length + 1; /* + orb "dodaj" */
-    /* zbrani v levem delu (panel je desno); napolnijo visino platna, organsko */
-    const vrst = n <= 6 ? 2 : n <= 12 ? 3 : 4;
+    /* zbrani v levem delu (panel je desno); ostanejo znotraj robov (veliki orbi) */
+    const vrst = n <= 5 ? 2 : n <= 10 ? 3 : 4;
     const stolpcev = Math.max(1, Math.ceil(n / vrst));
     const col = Math.floor(i / vrst), row = i % vrst;
-    const x = stolpcev === 1 ? 30 : 5 + col * (58 / Math.max(stolpcev - 1, 1)) + (psr(i + 1) * 5 - 2.5);
-    const y = 7 + row * (84 / vrst) + (col % 2 ? 6 : 0) + (psr(i + 50) * 6 - 3);
-    return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
+    const x = stolpcev === 1 ? 40 : 13 + col * (70 / Math.max(stolpcev - 1, 1)) + (psr(i + 1) * 4 - 2);
+    const y = 15 + row * (64 / Math.max(vrst - 1, 1)) + (col % 2 ? 5 : 0) + (psr(i + 50) * 5 - 2.5);
+    return { x: Math.round(Math.min(84, Math.max(13, x)) * 10) / 10, y: Math.round(Math.min(82, Math.max(13, y)) * 10) / 10 };
   };
   const prvoIme = (imeUporabnika.trim() || ponudnik.ime.trim()).split(/\s+/)[0];
   const pozdrav = `Hej${prvoIme ? ' ' + prvoIme : ''}!`;
@@ -3094,8 +3094,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @keyframes iskra { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
 
         .cw .oder0 { display: grid; grid-template-columns: 1.55fr 1fr; gap: clamp(1rem, 2.5vw, 2rem); align-items: stretch; width: min(1240px, 100%); }
+        /* korak 0 = nadaljevanje chatbota: mehurcki-transkript zgoraj, orbi spodaj */
+        .cw .chat-izbira { display: flex; flex-direction: column; align-items: flex-start; gap: .7rem; max-width: 560px; margin: 0 0 1.4rem; }
         .cw .platno0-drs { overflow: visible; min-width: 0; }
-        .cw .platno0 { position: relative; min-height: 64vh; }
+        .cw .platno0 { position: relative; min-height: 56vh; }
         .cw .namig0 { position: absolute; left: 0; right: 0; bottom: .2rem; text-align: center; font-size: .78rem; color: rgba(17,17,17,.45); pointer-events: none; }
 
         .cw .orb0 { position: absolute; border: none; background: none; cursor: pointer; padding: 0; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; font-family: inherit; z-index: 1; animation: orb-plavaj var(--dur, 11s) ease-in-out var(--del, 0s) infinite, orb-vstop .7s cubic-bezier(.2,.8,.3,1) var(--vdel, 0s) both; will-change: transform; }
@@ -4201,40 +4203,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
       <div className="oder">
         <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '')} key={korak}>
-          <h1 className={korak === 0 ? 'h1-roza-konec' : undefined}><span className="h1-step">{String(korak + 1).padStart(2, '0')}</span>{naslovKoraka.split(' ').map((b, bi) => (
-            <span key={bi} className="h1-maska"><span className="h1-beseda" style={{ animationDelay: `${bi * 90}ms` }}>{b}&nbsp;</span></span>
-          ))}{korak === 0 && (
-            <svg className="h1-iskre" viewBox="0 0 48 40" aria-hidden>
-              <path d="M24 2l2.6 7.4L34 12l-7.4 2.6L24 22l-2.6-7.4L14 12l7.4-2.6z" />
-              <path d="M39 18l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z" opacity=".75" />
-              <path d="M9 24l1.2 3.2 3.2 1.2-3.2 1.2L9 32.8 7.8 29.6 4.6 28.4l3.2-1.2z" opacity=".55" />
-            </svg>
-          )}</h1>
-          {(opisKoraka || korak === 0) && (
-            <div className="sub-vrsta" style={korak === 0 ? { marginBottom: '1.1rem' } : undefined}>
-              <p className="sub">{korak === 0
-                ? <>Klikni, kar boš delala — vsak klik doda postavko v ponudbo. Isto storitev klikni večkrat za <b>več kosov</b> (dva CGP-ja, tri spletne strani).</>
-                : opisKoraka}</p>
-            </div>
+          {korak !== 0 && (
+            <h1><span className="h1-step">{String(korak + 1).padStart(2, '0')}</span>{naslovKoraka.split(' ').map((b, bi) => (
+              <span key={bi} className="h1-maska"><span className="h1-beseda" style={{ animationDelay: `${bi * 90}ms` }}>{b}&nbsp;</span></span>
+            ))}</h1>
           )}
+          {opisKoraka && korak !== 0 && (
+            <div className="sub-vrsta"><p className="sub">{opisKoraka}</p></div>
+          )}
+          {/* korak 0 = nadaljevanje chatbota (naslov gre stran) */}
           {korak === 0 && (
-            <>
-              <div className="korak0-ime">
-                <div className="polje">
-                  <label htmlFor="cw-naziv0">Ime ponudbe</label>
-                  <input id="cw-naziv0" type="text"
-                    placeholder={r ? `Ponudba: ${r.sez.map(s => s.ime).join(', ')}` : 'npr. Oblikovanje CGP za Odvetniško družbo'}
-                    value={nazivPonudbe} onChange={e => setNazivPonudbe(e.target.value)} />
-                </div>
-              </div>
-              <div className="korak0-akcije">
-                <button type="button" className="dodaj-gumb" onClick={novaPonudba}>+ Nova ponudba</button>
-                <button type="button" className="op-edit" onClick={() => { setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>
-                  <Gear size={17} weight="bold" /> Nastavitve in cene
-                </button>
-              </div>
-            </>
+            <div className="chat chat-izbira">
+              {nazivPonudbe.trim() && (
+                <div className="chat-jaz"><span className="chat-mehur">{nazivPonudbe}</span></div>
+              )}
+              <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                <span className="chat-mehur"><b>Izberi storitve, ki jih želiš v ponudbi.</b></span></div>
+              <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                <span className="chat-mehur">Po potrebi jim lahko urediš podrobnosti — klikni izbrano storitev v ponudbi desno.</span></div>
+            </div>
           )}
 
 
@@ -4243,13 +4230,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {/* ── platno z orbi: svobodno lebdijo na istem ozadju (brez obrezovanja) ── */}
               <div className="platno0-drs">
               <div className="platno0" aria-label="Storitve">
-                <div className="vodicka" aria-hidden>
-                  <span className="vodicka-obraz">{VODICKA_OBRAZ}</span>
-                  <span className="vodicka-karta">
-                    <b>{pozdrav} 👋</b>
-                    Izberi, kaj boš danes ustvarila.<br />Pomagam ti sestaviti ponudbo.
-                  </span>
-                </div>
                 {orbStoritve.map((s, i) => {
                   const p = orbPoz(i);
                   const barvi = ORB_BARVE[i % ORB_BARVE.length];
