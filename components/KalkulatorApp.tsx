@@ -1359,6 +1359,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* fake-chat uvod (gradi intimo): ime -> izkusnje -> nova/obstojeca -> ime ponudbe */
   const [uvodChat, setUvodChat] = useState(false);
   const [uvodOdhaja, setUvodOdhaja] = useState(false);   /* mehak prehod chat -> izbira (brez preskoka) */
+  /* nacin: chat (privzeto) ali klasicen vprasalnik (nastavitve) */
+  const [klasicnaOblika, setKlasicnaOblika] = useState(false);
   const [chatKorak, setChatKorak] = useState(0);
   const [imeUporabnika, setImeUporabnika] = useState('');
   const [chatVnos, setChatVnos] = useState('');
@@ -1484,6 +1486,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       if (s.mojeStoritve) setMojeStoritve(s.mojeStoritve);
       if (Array.isArray(s.mojSet)) setMojSet(s.mojSet);
       if (s.imeUporabnika) setImeUporabnika(s.imeUporabnika);
+      if (s.klasicnaOblika) setKlasicnaOblika(true);
       if (Array.isArray(s.vrstniRed)) setVrstniRed(s.vrstniRed);
       if (Array.isArray(s.skrite)) setSkrite(s.skrite);
       if (s.valuta) { setValuta(s.valuta); setValutaRocna(true); }
@@ -1522,9 +1525,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         valuta: valutaRocna ? valuta : undefined,
         custDrzavaMoj: custDrzavaMoj || undefined,
         imeUporabnika: imeUporabnika || undefined,
+        klasicnaOblika: klasicnaOblika || undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika]);
+  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -1565,11 +1569,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      odpre delovna miza. Področja se izbirajo pozneje (mehurčki), ne tu. */
   useEffect(() => {
     if (pogojiOk === true && mojSet === null) {
-      setUvodChat(true);
-      setChatKorak(0);
+      if (klasicnaOblika) { setObIzbor(new Set()); setOnboardingOdprt(true); }
+      else { setUvodChat(true); setChatKorak(0); }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pogojiOk, mojSet]);
+  }, [pogojiOk, mojSet, klasicnaOblika]);
 
   /* izkusnje (3 chipi v chatu) */
   const CHAT_IZK: { id: string; crk: string; ime: string; opis: string }[] = [
@@ -4086,6 +4090,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
             {profilPogled === 'cene-nastavitve' && (
               <>
+                <label className="se-preklop" style={{ marginBottom: '1.4rem' }}>
+                  <span><b>Klasičen vprašalnik</b><br /><em style={{ fontWeight: 400 }}>namesto chat pogovora — korak za korakom, kot prej</em></span>
+                  <span className="se-toggle">
+                    <input type="checkbox" checked={klasicnaOblika} onChange={() => setKlasicnaOblika(v => !v)} />
+                    <span className="se-slider" aria-hidden />
+                  </span>
+                </label>
                 <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Te cene so <b>podlaga za izračun</b> — privzete (slovenski trg) delujejo takoj, prilagodi jih svojim za točnejši rezultat. Razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš; vrstni red velja tudi na prvem koraku.</p>
                 <button type="button" className="povezava povezava-roza" style={{ marginBottom: '1.3rem' }} onClick={() => { setKazemProfil(false); odpriOnboarding(); }}>↳ Uredi področja dela (kaj ponujaš)</button>
                 <div className="cene-seznam">
@@ -4251,16 +4262,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
       <div className="oder">
         <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '')} key={korak}>
-          {korak !== 0 && (
+          {(korak !== 0 || klasicnaOblika) && (
             <h1><span className="h1-step">{String(korak + 1).padStart(2, '0')}</span>{naslovKoraka.split(' ').map((b, bi) => (
               <span key={bi} className="h1-maska"><span className="h1-beseda" style={{ animationDelay: `${bi * 90}ms` }}>{b}&nbsp;</span></span>
             ))}</h1>
           )}
-          {opisKoraka && korak !== 0 && (
+          {opisKoraka && (korak !== 0 || klasicnaOblika) && (
             <div className="sub-vrsta"><p className="sub">{opisKoraka}</p></div>
           )}
           {/* korak 0 = nadaljevanje chatbota (naslov gre stran) */}
-          {korak === 0 && (!uvodChat || uvodOdhaja) && (
+          {korak === 0 && !klasicnaOblika && (!uvodChat || uvodOdhaja) && (
             <div className="chat chat-izbira">
               {nazivPonudbe.trim() && (
                 <div className="chat-jaz"><span className="chat-mehur">{nazivPonudbe}</span></div>
