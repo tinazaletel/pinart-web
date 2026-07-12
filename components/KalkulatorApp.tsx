@@ -51,32 +51,53 @@ const VODICKA_OBRAZ = (
   </svg>
 );
 
-/* Zareca krogla po strukturi Tininega CGP.svg (isti gradient/svetloba/senca),
-   le prebarvana za vsako storitev (o1 = ziva sredina, o2 = svetlejsi rob). */
-function OrbSfera({ id, o1, o2 }: { id: string; o1: string; o2: string }) {
+/* osvetli hex proti beli (0..1) — za 4-stopenjski gradient kot v CGP.svg */
+function osvetli(hex: string, amt: number) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+  const m = (c: number) => Math.round(c + (255 - c) * amt).toString(16).padStart(2, '0');
+  return `#${m(r)}${m(g)}${m(b)}`;
+}
+/* Krogla VERNO po Tininem CGP.svg (isti gradient 4 stopnje + bela svetloba +
+   drop & inner shadow), le prebarvana iz osnovne barve o1. */
+function OrbSfera({ id, o1 }: { id: string; o1: string }) {
+  const s2 = osvetli(o1, 0.18), s3 = osvetli(o1, 0.6), s4 = osvetli(o1, 0.68);
   return (
     <svg className="orb0-sfera" viewBox="0 0 413 411" aria-hidden preserveAspectRatio="xMidYMid meet">
       <defs>
         <radialGradient id={`osf-${id}`} cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
-          gradientTransform="translate(206.5 201.8) rotate(90) scale(137.2 138.5)">
+          gradientTransform="translate(206.477 201.802) rotate(90) scale(137.225 138.5)">
           <stop stopColor={o1} />
-          <stop offset="0.29" stopColor={o1} />
-          <stop offset="0.68" stopColor={o2} />
-          <stop offset="1" stopColor={o2} stopOpacity="0" />
+          <stop offset="0.288462" stopColor={s2} />
+          <stop offset="0.673077" stopColor={s3} />
+          <stop offset="1" stopColor={s4} stopOpacity="0" />
         </radialGradient>
         <radialGradient id={`osh-${id}`} cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
-          gradientTransform="translate(136.8 129.6) rotate(84.2) scale(105.5 108.3)">
+          gradientTransform="translate(136.802 129.578) rotate(84.2205) scale(105.473 108.261)">
           <stop stopColor="#fff" />
-          <stop offset="0.74" stopColor="#fff" stopOpacity="0.08" />
+          <stop offset="0.740385" stopColor="#fff" stopOpacity="0.077" />
           <stop offset="1" stopColor="#fff" stopOpacity="0" />
         </radialGradient>
-        <filter id={`osd-${id}`} x="0" y="0" width="413" height="410.4" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-          <feDropShadow dx="0" dy="3.4" stdDeviation="26" floodColor="#9a9a9a" floodOpacity="0.18" />
+        <filter id={`osd-${id}`} x="0" y="0" width="412.951" height="410.402" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+          <feFlood floodOpacity="0" result="bg" />
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="ha" />
+          <feOffset dy="3.39877" />
+          <feGaussianBlur stdDeviation="33.9877" />
+          <feComposite in2="ha" operator="out" />
+          <feColorMatrix type="matrix" values="0 0 0 0 0.781907 0 0 0 0 0.781907 0 0 0 0 0.781907 0 0 0 0.15 0" />
+          <feBlend mode="normal" in2="bg" result="ds" />
+          <feBlend mode="normal" in="SourceGraphic" in2="ds" result="shape" />
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="ha2" />
+          <feOffset dy="-3.39877" />
+          <feGaussianBlur stdDeviation="7.64724" />
+          <feComposite in2="ha2" operator="arithmetic" k2="-1" k3="1" />
+          <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.34 0" />
+          <feBlend mode="normal" in2="shape" />
         </filter>
       </defs>
       <g filter={`url(#osd-${id})`}>
-        <rect x="67.98" y="64.58" width="277" height="274.45" rx="137.2" fill={`url(#osf-${id})`} />
-        <ellipse cx="147.4" cy="138.1" rx="99" ry="96.4" fill={`url(#osh-${id})`} />
+        <rect x="67.9766" y="64.5767" width="277" height="274.451" rx="137.225" fill={`url(#osf-${id})`} />
+        <ellipse cx="147.423" cy="138.075" rx="98.9893" ry="96.4402" fill={`url(#osh-${id})`} />
       </g>
     </svg>
   );
@@ -101,6 +122,17 @@ const TEZA: Record<string, number> = {
   cgp: 1.32, publikacija: 1.16, arhitektura: 1.26, aplikacija: 1.2, produktni: 1.16,
   dizajnsistem: 1.16, interier: 1.14, web: 1.14, video: 1.14, uxui: 1.1, razstava: 1.1, strategija: 1.1,
   embalaza: 0.86, copy: 0.86, smm: 0.86, pr: 0.86, seo: 0.8, email: 0.8, logo: 0.94,
+};
+/* kratka imena za mehurcke (na orbu; polno ime ostane v ponudbi/drugod) */
+const KRATKO: Record<string, string> = {
+  cgp: 'CGP', logo: 'Logotip', web: 'Spletna stran', kampanja: 'Oglasi',
+  publikacija: 'Tiskovine', embalaza: 'Embalaža', ilustracija: 'Ilustracija',
+  direkcija: 'Direkcija', fotografija: 'Fotografija', copy: 'Copywriting',
+  interier: 'Interier', arhitektura: 'Arhitektura', razstava: 'Razstave',
+  produktni: 'Produkti', uxui: 'UX/UI', aplikacija: 'Aplikacija',
+  dizajnsistem: 'Dizajn sistem', smm: 'Social media', seo: 'SEO',
+  email: 'Email', pr: 'PR', video: 'Video', motion: 'Animacija',
+  render3d: '3D', strategija: 'Strategija',
 };
 const KOLICINSKE: Record<string, string> = {
   logo: 'logotipov', ilustracija: 'ilustracij', fotografija: 'fotografiranj',
@@ -4355,9 +4387,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         <img className="orb0-svg" src={`/kalkulator/mehurcki/${s.id}.svg`} alt="" aria-hidden />
                       ) : (
                         <>
-                          <OrbSfera id={s.id} o1={barvi[0]} o2={barvi[1]} />
+                          <OrbSfera id={s.id} o1={barvi[0]} />
                           <span className="orb0-ikona" aria-hidden>{ikonaZa(s.id)}</span>
-                          <span className="orb0-ime">{s.ime}</span>
+                          <span className="orb0-ime">{KRATKO[s.id] || s.ime}</span>
                           <span className="orb0-cena">od {val(osnovaZa(s))}</span>
                         </>
                       )}
