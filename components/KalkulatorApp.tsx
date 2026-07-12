@@ -1358,6 +1358,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [onboardingOdprt, setOnboardingOdprt] = useState(false);
   /* fake-chat uvod (gradi intimo): ime -> izkusnje -> nova/obstojeca -> ime ponudbe */
   const [uvodChat, setUvodChat] = useState(false);
+  const [uvodOdhaja, setUvodOdhaja] = useState(false);   /* mehak prehod chat -> izbira (brez preskoka) */
   const [chatKorak, setChatKorak] = useState(0);
   const [imeUporabnika, setImeUporabnika] = useState('');
   const [chatVnos, setChatVnos] = useState('');
@@ -1589,9 +1590,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const ids = new Set<string>();
     PODROCJA.forEach(p => { if (obIzbor.has(p.id)) p.storitve.forEach(sid => ids.add(sid)); });
     setMojSet([...ids]);
-    setUvodChat(false);
-    setChatKorak(0);
     setChatVnos('');
+    /* mehak prehod: miza (panel+mehurcki) se montira in animira, chat zbledi — brez preskoka */
+    setUvodOdhaja(true);
+    window.setTimeout(() => { setUvodChat(false); setUvodOdhaja(false); setChatKorak(0); }, 620);
   };
   const uvodNaprej = () => {
     if (chatKorak === 0) {
@@ -3198,7 +3200,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
         /* ── fake-chat uvod (gradi intimo) ── */
         .cw .uvod-chat { position: fixed; inset: 0; z-index: 60; overflow-y: auto; display: flex; flex-direction: column; background: var(--paper); animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
-        @media (prefers-reduced-motion: reduce) { .cw .uvod-chat { animation: none; } }
+        /* mehak odhod: chat zbledi in se rahlo dvigne, spodaj se miza animira noter (brez preskoka) */
+        .cw .uvod-chat.odhaja { animation: uvodOdhod .6s cubic-bezier(.5,0,.2,1) forwards; pointer-events: none; }
+        @keyframes uvodOdhod { to { opacity: 0; transform: translateY(-24px); } }
+        @media (prefers-reduced-motion: reduce) { .cw .uvod-chat { animation: none; } .cw .uvod-chat.odhaja { animation: none; opacity: 0; } }
         /* cim ozji header povsod */
         .cw .glava-ozka { padding-top: .45rem; padding-bottom: .45rem; }
         /* chat header v toku (ne fixed) -> uvod-oder se lahko vertikalno centrira pod njim */
@@ -3759,7 +3764,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       )}
 
       {uvodChat && (
-        <div className="uvod-chat" role="dialog" aria-modal="true" aria-label="Uvod" ref={uvodRef}>
+        <div className={'uvod-chat' + (uvodOdhaja ? ' odhaja' : '')} role="dialog" aria-modal="true" aria-label="Uvod" ref={uvodRef}>
           <div className="glava glava-ozka">{glavaUI()}</div>
           {/* ozadje: gradient animacija + storitveni mehurcki za chatom */}
           <div className="uvod-ozadje" aria-hidden>
@@ -4255,7 +4260,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <div className="sub-vrsta"><p className="sub">{opisKoraka}</p></div>
           )}
           {/* korak 0 = nadaljevanje chatbota (naslov gre stran) */}
-          {korak === 0 && (
+          {korak === 0 && (!uvodChat || uvodOdhaja) && (
             <div className="chat chat-izbira">
               {nazivPonudbe.trim() && (
                 <div className="chat-jaz"><span className="chat-mehur">{nazivPonudbe}</span></div>
@@ -4268,7 +4273,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           )}
 
 
-          {korak === 0 && (
+          {korak === 0 && (!uvodChat || uvodOdhaja) && (
             <div className="oder0">
               {/* ── platno z orbi: svobodno lebdijo na istem ozadju (brez obrezovanja) ── */}
               <div className="platno0-drs">
