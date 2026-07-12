@@ -64,6 +64,13 @@ type VrsticaP = { uid: string; sid: string; ime: string; kolicina: number };
 /* VSI mehurcki so enotni CSS orb v CGP videzu (samo barve se razlikujejo) —
    prej so bili meseani (nekateri njeni SVG-ji, nekateri CSS) in vsak drugacen. */
 const MEHURCEK: Record<string, boolean> = {};
+/* privzeta TEZA (velikost) po obsegu/pomembnosti storitve — jedrne vecje,
+   niche manjse; poleg tega raste z rabo. */
+const TEZA: Record<string, number> = {
+  cgp: 1.32, publikacija: 1.16, arhitektura: 1.26, aplikacija: 1.2, produktni: 1.16,
+  dizajnsistem: 1.16, interier: 1.14, web: 1.14, video: 1.14, uxui: 1.1, razstava: 1.1, strategija: 1.1,
+  embalaza: 0.86, copy: 0.86, smm: 0.86, pr: 0.86, seo: 0.8, email: 0.8, logo: 0.94,
+};
 const KOLICINSKE: Record<string, string> = {
   logo: 'logotipov', ilustracija: 'ilustracij', fotografija: 'fotografiranj',
   copy: 'besedil', video: 'videov', motion: 'animacij', render3d: 'renderjev',
@@ -4294,8 +4301,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       aria-pressed={on}
                       aria-label={`${s.ime}, od ${val(osnovaZa(s))}${on ? `, izbrano ×${q}` : ''}`}
                       style={{
-                        width: orbD, height: orbD,
-                        left: `calc(${p.x}% - ${orbD / 2}px)`, top: `calc(${p.y}% - ${orbD / 2}px)`,
+                        ['--orbd' as string]: `${Math.round(orbD * (TEZA[s.id] ?? 1))}px`,
+                        width: Math.round(orbD * (TEZA[s.id] ?? 1)), height: Math.round(orbD * (TEZA[s.id] ?? 1)),
+                        left: `calc(${p.x}% - ${Math.round(orbD * (TEZA[s.id] ?? 1)) / 2}px)`, top: `calc(${p.y}% - ${Math.round(orbD * (TEZA[s.id] ?? 1)) / 2}px)`,
                         ['--o1' as string]: barvi[0], ['--o2' as string]: barvi[1],
                         ['--dur' as string]: (9 + psr(i * 3 + 1) * 5).toFixed(1) + 's',
                         ['--del' as string]: (-psr(i * 7 + 2) * 6).toFixed(1) + 's',
