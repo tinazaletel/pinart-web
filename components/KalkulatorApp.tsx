@@ -3127,6 +3127,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .oder0 { display: grid; grid-template-columns: 1.55fr 1fr; gap: clamp(1rem, 2.5vw, 2rem); align-items: stretch; width: min(1240px, 100%); }
         /* korak 0 = nadaljevanje chatbota: mehurcki-transkript zgoraj, orbi spodaj */
         .cw .chat-izbira { display: flex; flex-direction: column; align-items: flex-start; gap: .7rem; width: min(620px, 92%); margin: 0 auto 1.8rem; }
+        /* med onboardingom: vsebina centrirana (kot prej), ozja; ko pride ponudba -> siroka miza */
+        .cw .korak-vsebina.siroko.uvod-faza { max-width: 720px; margin-left: auto; margin-right: auto; padding-right: 0; min-height: calc(100dvh - 6.5rem); display: flex; flex-direction: column; justify-content: center; }
+        .cw .uvod-faza .uvod-uvodnik { text-align: center; margin-bottom: 1.2rem; }
+        .cw .uvod-faza .uvod-uvodnik .ob-kicker { text-align: center; }
+        .cw .uvod-faza .chat-izbira { width: 100%; margin-bottom: 0; }
         .cw .platno0-drs { overflow: visible; min-width: 0; }
         .cw .platno0 { position: relative; min-height: 56vh; }
         .cw .namig0 { position: absolute; left: 0; right: 0; bottom: .2rem; text-align: center; font-size: .78rem; color: rgba(17,17,17,.45); pointer-events: none; }
@@ -4178,7 +4183,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       )}
 
       <div className="oder">
-        <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '')} key={korak}>
+        <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '') + (korak === 0 && uvodChat && !klasicnaOblika ? ' uvod-faza' : '')} key={korak}>
           {(korak !== 0 || klasicnaOblika) && (
             <h1><span className="h1-step">{String(korak + 1).padStart(2, '0')}</span>{naslovKoraka.split(' ').map((b, bi) => (
               <span key={bi} className="h1-maska"><span className="h1-beseda" style={{ animationDelay: `${bi * 90}ms` }}>{b}&nbsp;</span></span>
