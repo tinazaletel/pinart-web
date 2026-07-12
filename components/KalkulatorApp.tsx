@@ -1595,9 +1595,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     PODROCJA.forEach(p => { if (obIzbor.has(p.id)) p.storitve.forEach(sid => ids.add(sid)); });
     setMojSet([...ids]);
     setChatVnos('');
-    /* ISTA povrsina: samo ugasnemo "onboarding fazo" -> spodaj se pojavijo mehurcki
-       + panel (animirano), transkript ostane na mestu. Brez preskoka/overlaya. */
+    /* ISTA povrsina: ugasnemo "onboarding fazo" -> spodaj se pojavijo mehurcki + panel.
+       Nato GLADKO poscrollamo: vprasanja gor (vidna zadnja dva), mehurcki v vidno polje. */
     setUvodChat(false);
+    const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.setTimeout(() => {
+      const pl = document.querySelector('.cw .platno0');
+      if (pl) {
+        const cilj = window.scrollY + pl.getBoundingClientRect().top - 210; /* pusti ~2 vprasanji nad */
+        window.scrollTo({ top: Math.max(0, cilj), behavior: reduce ? 'auto' : 'smooth' });
+      }
+    }, 90);
   };
   const uvodNaprej = () => {
     if (chatKorak === 0) {
