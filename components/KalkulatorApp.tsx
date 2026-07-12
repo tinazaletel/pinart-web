@@ -51,6 +51,37 @@ const VODICKA_OBRAZ = (
   </svg>
 );
 
+/* Zareca krogla po strukturi Tininega CGP.svg (isti gradient/svetloba/senca),
+   le prebarvana za vsako storitev (o1 = ziva sredina, o2 = svetlejsi rob). */
+function OrbSfera({ id, o1, o2 }: { id: string; o1: string; o2: string }) {
+  return (
+    <svg className="orb0-sfera" viewBox="0 0 413 411" aria-hidden preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <radialGradient id={`osf-${id}`} cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+          gradientTransform="translate(206.5 201.8) rotate(90) scale(137.2 138.5)">
+          <stop stopColor={o1} />
+          <stop offset="0.29" stopColor={o1} />
+          <stop offset="0.68" stopColor={o2} />
+          <stop offset="1" stopColor={o2} stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id={`osh-${id}`} cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+          gradientTransform="translate(136.8 129.6) rotate(84.2) scale(105.5 108.3)">
+          <stop stopColor="#fff" />
+          <stop offset="0.74" stopColor="#fff" stopOpacity="0.08" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        </radialGradient>
+        <filter id={`osd-${id}`} x="0" y="0" width="413" height="410.4" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+          <feDropShadow dx="0" dy="3.4" stdDeviation="26" floodColor="#9a9a9a" floodOpacity="0.18" />
+        </filter>
+      </defs>
+      <g filter={`url(#osd-${id})`}>
+        <rect x="67.98" y="64.58" width="277" height="274.45" rx="137.2" fill={`url(#osf-${id})`} />
+        <ellipse cx="147.4" cy="138.1" rx="99" ry="96.4" fill={`url(#osh-${id})`} />
+      </g>
+    </svg>
+  );
+}
+
 /* Vrstica ponudbe (postavkovni model): ena instanca storitve s svojim imenom.
    KOLICINSKE storitve (ilustracije, logotipi ...) imajo stevec kosov na ENI
    vrstici; vse ostale (web, CGP ...) se ob ponovnem kliku dodajo kot NOVA
@@ -3141,7 +3172,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         /* enoten CGP videz: ziva sredina -> mehko v prosojno rob, ena bela svetloba zgoraj levo */
         .cw .orb0 .zar0 { position: absolute; inset: -14%; border-radius: 50%; z-index: 0; pointer-events: none; background: radial-gradient(54% 48% at 33% 27%, rgba(255,255,255,.72), rgba(255,255,255,0) 62%), radial-gradient(circle at 50% 52%, var(--o2, #C084FC) 0%, var(--o1, #7C3AED) 46%, transparent 73%); filter: blur(5px); opacity: .96; transition: opacity .3s, filter .3s; }
         .cw .orb0:hover .zar0 { opacity: 1; filter: blur(3px); }
-        .cw .orb0::before { content: ""; position: absolute; z-index: 1; top: 15%; left: 25%; width: 26%; height: 19%; border-radius: 50%; background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.95), rgba(255,255,255,0) 72%); filter: blur(1.5px); pointer-events: none; }
+        /* CGP-krogla (inline SVG) — senca + gradient + svetloba vrisani; zapolni orb (senca ~33% okoli) */
+        .cw .orb0 .orb0-sfera { position: absolute; top: -22%; left: -22%; width: 144%; height: 144%; z-index: 0; pointer-events: none; }
+        .cw .orb0::before { display: none; }  /* SVG krogla ima svojo svetlobo */
         /* Tinini narisani mehurcki: SVG ima svoj gradient/sijaj/ikono/napis vrisan.
            Vidni krog je ~67 % viewBoxa (senca naokrog), zato sliko povecamo, da
            mehurcek zapolni mesto; skrijemo CSS sijaj in odsev. */
@@ -4322,7 +4355,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         <img className="orb0-svg" src={`/kalkulator/mehurcki/${s.id}.svg`} alt="" aria-hidden />
                       ) : (
                         <>
-                          <span className="zar0" aria-hidden />
+                          <OrbSfera id={s.id} o1={barvi[0]} o2={barvi[1]} />
                           <span className="orb0-ikona" aria-hidden>{ikonaZa(s.id)}</span>
                           <span className="orb0-ime">{s.ime}</span>
                           <span className="orb0-cena">od {val(osnovaZa(s))}</span>
