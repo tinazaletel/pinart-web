@@ -1432,6 +1432,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [klasicnaOblika, setKlasicnaOblika] = useState(false);
   const [chatKorak, setChatKorak] = useState(0);
   const [imeUporabnika, setImeUporabnika] = useState('');
+  /* onboarding opravljen (obstojno) — sprozi se, dokler NI opravljen (ne glede na storitve) */
+  const [uvodKoncan, setUvodKoncan] = useState<boolean | null>(null);
   const [chatVnos, setChatVnos] = useState('');
   const [chatNova, setChatNova] = useState<boolean | null>(null);
   /* testni sprožilec: ?uvod v URL na silo odpre fake-chat uvod (za ogled tudi
@@ -1555,6 +1557,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       if (s.mojeStoritve) setMojeStoritve(s.mojeStoritve);
       if (Array.isArray(s.mojSet)) setMojSet(s.mojSet);
       if (s.imeUporabnika) setImeUporabnika(s.imeUporabnika);
+      setUvodKoncan(s.uvodKoncan === true);
       if (s.klasicnaOblika) setKlasicnaOblika(true);
       if (Array.isArray(s.vrstniRed)) setVrstniRed(s.vrstniRed);
       if (Array.isArray(s.skrite)) setSkrite(s.skrite);
@@ -1595,9 +1598,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         custDrzavaMoj: custDrzavaMoj || undefined,
         imeUporabnika: imeUporabnika || undefined,
         klasicnaOblika: klasicnaOblika || undefined,
+        uvodKoncan: uvodKoncan || undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika]);
+  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, uvodKoncan]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -1637,12 +1641,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      po imenu, vpraša izkušnje in ime ponudbe — gradi intimo, preden se
      odpre delovna miza. Področja se izbirajo pozneje (mehurčki), ne tu. */
   useEffect(() => {
-    if (pogojiOk === true && mojSet === null) {
+    /* sprozi, dokler onboarding NI opravljen (uvodKoncan === false) — ne glede na to,
+       ali so storitve ze izbrane; null = se ni nalozeno iz localStorage, pocakamo */
+    if (pogojiOk === true && uvodKoncan === false && !uvodChat && !onboardingOdprt) {
       if (klasicnaOblika) { setObIzbor(new Set()); setOnboardingOdprt(true); }
       else { setUvodChat(true); setChatKorak(0); }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pogojiOk, mojSet, klasicnaOblika]);
+  }, [pogojiOk, uvodKoncan, klasicnaOblika]);
 
   /* izkusnje (3 chipi v chatu) */
   const CHAT_IZK: { id: string; crk: string; ime: string; opis: string }[] = [
@@ -1664,6 +1670,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     PODROCJA.forEach(p => { if (obIzbor.has(p.id)) p.storitve.forEach(sid => ids.add(sid)); });
     setMojSet([...ids]);
     setChatVnos('');
+    setUvodKoncan(true);
     /* ISTA povrsina: ugasnemo "onboarding fazo" -> spodaj se pojavijo mehurcki + panel.
        Nato GLADKO poscrollamo: vprasanja gor (vidna zadnja dva), mehurcki v vidno polje. */
     setUvodChat(false);
@@ -1720,10 +1727,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const ids = new Set<string>();
     PODROCJA.forEach(p => { if (obIzbor.has(p.id)) p.storitve.forEach(sid => ids.add(sid)); });
     setMojSet([...ids]);
+    setUvodKoncan(true);
     setOnboardingOdprt(false);
   };
   const preskociOnboarding = () => {
     setMojSet([]);
+    setUvodKoncan(true);
     setOnboardingOdprt(false);
   };
 
@@ -4267,7 +4276,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <p className="sub uvod-sub">Živjo, sem tvoja pomočnica in pomagala ti bom sestaviti ponudbo.</p>
                 </div>
               )}
-              {/* transkript vprasanj — ostane viden, se pomika navzgor (ista povrsina) */}
+              {/* transkript vprasanj — samo MED onboardingom ali ko je bil opravljen ta obisk;
+                  za ze onboardanega (chatKorak 0, brez uvodChat) se NE prikaze, da vprasanje ne visi */}
+              {(uvodChat || chatKorak > 0) && (<>
               <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
                 <span className="chat-mehur"><b>Živjo! Kako ti je ime?</b></span></div>
               {chatKorak > 0 && <div className="chat-jaz"><span className="chat-mehur">{imeUporabnika || '—'}</span></div>}
@@ -4325,6 +4336,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span className="chat-mehur"><b>Kako naj se imenuje ponudba?</b><small>Npr. »Inovis — prenova CGP in spletne strani«.</small></span></div>
               )}
               {!uvodChat && nazivPonudbe.trim() && <div className="chat-jaz"><span className="chat-mehur">{nazivPonudbe}</span></div>}
+              </>)}
+
+              {/* ze onboardan (vrnitev): oseben pozdrav namesto visecega vprasanja */}
+              {!uvodChat && chatKorak === 0 && (
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                  <span className="chat-mehur"><b>{prvoIme ? `Hej, ${prvoIme}!` : 'Hej!'}</b></span></div>
+              )}
 
               {/* po onboardingu: nadaljevanje pogovora za izbiro (ista povrsina, ni preskoka) */}
               {!uvodChat && (
