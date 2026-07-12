@@ -2755,16 +2755,19 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   })();
   /* Velikost orba pada s stevilom storitev; pod minimum ne gre (mobile skrola). */
   const orbD = orbStoritve.length <= 8 ? 176 : orbStoritve.length <= 14 ? 156 : 138;
+  /* mehurcki v pravih vrsticah, razmaknjeni; platno raste s stevilom -> stran scrolla */
+  const orbN = orbStoritve.length + 1; /* + "dodaj" */
+  const orbStolpcev = orbN <= 4 ? 2 : orbN <= 9 ? 3 : 4;
+  const orbVrstic = Math.max(1, Math.ceil(orbN / orbStolpcev));
+  const orbRowH = Math.round(orbD * 1.16);
   /* Deterministicna organska razporeditev: stolpci po tri, z zamikom in jitterjem. */
   const orbPoz = (i: number) => {
-    const n = orbStoritve.length + 1; /* + orb "dodaj" */
-    /* zbrani v levem delu (panel je desno); ostanejo znotraj robov (veliki orbi) */
-    const vrst = n <= 5 ? 2 : n <= 10 ? 3 : 4;
-    const stolpcev = Math.max(1, Math.ceil(n / vrst));
-    const col = Math.floor(i / vrst), row = i % vrst;
-    const x = stolpcev === 1 ? 40 : 13 + col * (70 / Math.max(stolpcev - 1, 1)) + (psr(i + 1) * 4 - 2);
-    const y = 15 + row * (64 / Math.max(vrst - 1, 1)) + (col % 2 ? 5 : 0) + (psr(i + 50) * 5 - 2.5);
-    return { x: Math.round(Math.min(84, Math.max(13, x)) * 10) / 10, y: Math.round(Math.min(82, Math.max(13, y)) * 10) / 10 };
+    /* vrstice/stolpci, razmaknjeno; opeka (lihe vrstice zamaknjene), rahel jitter */
+    const col = i % orbStolpcev, row = Math.floor(i / orbStolpcev);
+    const zamik = row % 2 ? (72 / orbStolpcev) / 2 : 0;
+    const x = 11 + col * (74 / Math.max(orbStolpcev - 1, 1)) + zamik + (psr(i + 1) * 3 - 1.5);
+    const y = ((row + 0.5) / orbVrstic) * 100 + (psr(i + 50) * 3 - 1.5);
+    return { x: Math.round(Math.min(88, Math.max(10, x)) * 10) / 10, y: Math.round(y * 10) / 10 };
   };
   const prvoIme = (imeUporabnika.trim() || ponudnik.ime.trim()).split(/\s+/)[0];
   const pozdrav = `Hej${prvoIme ? ' ' + prvoIme : ''}!`;
@@ -4229,7 +4232,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <div className="oder0">
               {/* ── platno z orbi: svobodno lebdijo na istem ozadju (brez obrezovanja) ── */}
               <div className="platno0-drs">
-              <div className="platno0" aria-label="Storitve">
+              <div className="platno0" aria-label="Storitve" style={{ minHeight: orbVrstic * orbRowH + 30 }}>
                 {orbStoritve.map((s, i) => {
                   const p = orbPoz(i);
                   const barvi = ORB_BARVE[i % ORB_BARVE.length];
