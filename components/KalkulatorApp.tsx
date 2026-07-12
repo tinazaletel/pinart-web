@@ -1246,6 +1246,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [vrstice, setVrstice] = useState<VrsticaP[]>([{ uid: 'cgp', sid: 'cgp', ime: '', kolicina: 1 }]);
   const [razprtaVrstica, setRazprtaVrstica] = useState<string | null>(null);
   const [vlecenaVrstica, setVlecenaVrstica] = useState<string | null>(null);
+  /* select "pop" ob kliku na mehurcek — obroc, ki se razsiri (kot na zacetku) */
+  const [klikObroc, setKlikObroc] = useState<{ x: number; y: number; d: number; n: number } | null>(null);
+  const klikNonce = useRef(0);
 
   const uskladiIzbrane = (nove: VrsticaP[]) => setIzbrane(new Set(nove.map(l => l.sid)));
 
@@ -3130,6 +3133,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .orb0.orb0-plus .orb0-krog { position: absolute; inset: 4%; border-radius: 50%; border: 1.5px dashed rgba(17,17,17,.4); }
         .cw .orb0.orb0-plus:hover .orb0-krog { border-color: var(--ink); }
         .cw .orb0.orb0-plus .orb0-ime { font-weight: 600; text-shadow: none; font-size: .82rem; }
+        /* select "pop" obroc ob kliku (kot na zacetku) */
+        .cw .obroc0 { position: absolute; z-index: 2; border-radius: 50%; border: 3px solid rgba(178,84,118,.55); pointer-events: none; animation: obroc0 .6s ease-out forwards; }
+        @keyframes obroc0 { 0% { transform: scale(.62); opacity: .75; } 100% { transform: scale(1.7); opacity: 0; } }
+        @media (prefers-reduced-motion: reduce) { .cw .obroc0 { display: none; } }
         /* vstop: mehurcek "pride z zameglenega ozadja v fokus" (samo opacity+blur,
            da ne trci s transform-float); zamaknjeno po indeksu (--vdel) */
         @keyframes orb-vstop { from { opacity: 0; filter: blur(16px); } to { opacity: 1; filter: blur(0); } }
@@ -4290,7 +4297,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         ['--fx' as string]: ((psr(i + 11) * 5 + 3) * (psr(i + 4) < .5 ? -1 : 1)).toFixed(0) + 'px',
                         ['--fy' as string]: (-(psr(i + 23) * 5 + 3)).toFixed(0) + 'px',
                       }}
-                      onClick={() => izberiVrstico(s.id)}>
+                      onClick={() => { klikNonce.current += 1; setKlikObroc({ x: p.x, y: p.y, d: orbD, n: klikNonce.current }); izberiVrstico(s.id); }}>
                       {MEHURCEK[s.id] ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img className="orb0-svg" src={`/kalkulator/mehurcki/${s.id}.svg`} alt="" aria-hidden />
@@ -4325,6 +4332,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     </button>
                   );
                 })()}
+                {klikObroc && (
+                  <span key={klikObroc.n} className="obroc0" aria-hidden
+                    style={{ width: klikObroc.d, height: klikObroc.d, left: `calc(${klikObroc.x}% - ${klikObroc.d / 2}px)`, top: `calc(${klikObroc.y}% - ${klikObroc.d / 2}px)` }} />
+                )}
                 <div className="namig0" aria-hidden>Klikni storitev — vsak klik doda kos. Ime in podrobnosti urejaš v ponudbi.</div>
               </div>
               </div>
