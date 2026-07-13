@@ -3779,8 +3779,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .editor .offer-package li { margin: .22rem 0; color: var(--ink); }
         .cw .btnvrsta { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-top: 1.2rem; align-items: center; }
         .cw .gumb { font-family: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; border-radius: 999px; padding: .95rem 2.2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); transition: opacity .18s ease; display: inline-flex; align-items: center; justify-content: center; gap: .45rem; }
-        .cw .gumb { transition: opacity .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
-        .cw .gumb:hover { opacity: .85; transform: translateY(-2px); }
+        .cw .gumb { transition: transform .2s ease, box-shadow .2s ease; }
+        .cw .gumb:hover { transform: scale(1.06); box-shadow: 0 8px 22px rgba(35,18,45,.18); }
+        .cw .gumb:active { transform: scale(.97); }
         .cw .gumb:active { transform: translateY(0) scale(.97); }
         .cw .gumb:disabled { opacity: .35; cursor: default; }
         .cw .povezava { font-family: inherit; font-size: .88rem; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .28em; padding: 0; display: inline-flex; align-items: center; gap: .38rem; }
@@ -3793,9 +3794,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .noga .noga-c { width: 100%; display: flex; align-items: center; justify-content: center; gap: 1rem; }
         .cw .noga .noga-gumbi { display: flex; align-items: center; gap: .8rem; }
         .cw .gumb-nazaj { width: 3.1rem; height: 3.1rem; border-radius: 999px; border: 1px solid var(--ink); background: transparent; color: var(--ink); font-size: 1.15rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .18s ease, color .18s ease; flex: none; }
-        .cw .gumb-nazaj:hover { background: var(--ink); color: var(--paper); transform: translateY(-2px); }
-        .cw .gumb-nazaj:active { transform: translateY(0) scale(.95); }
-        .cw .gumb-nazaj { transition: background .18s ease, color .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
+        .cw .gumb-nazaj:hover { background: var(--ink); color: var(--paper); transform: scale(1.08); }
+        .cw .gumb-nazaj:active { transform: scale(.95); }
+        .cw .gumb-nazaj { transition: background .18s ease, color .18s ease, transform .2s ease; }
         .cw .noga .nazaj-g { font-family: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; border: none; background: none; cursor: pointer; color: rgba(17,17,17,.72); padding: .6rem 0; }
         .cw .noga .nazaj-g:hover { color: var(--ink); }
         .cw .noga-koncna { display: flex; align-items: center; gap: .9rem; }
