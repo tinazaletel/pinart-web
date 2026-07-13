@@ -3434,7 +3434,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .ponudba0-zapri { display: none; }
         .cw .ponudba-fab { display: none; }
 
-        @media (max-width: 980px) {
+        @media (max-width: 1200px) {
           .cw .oder0 { grid-template-columns: 1fr; }
           .cw .vodicka { display: none; }
           .cw .platno0 { min-height: 480px; }
@@ -3453,7 +3453,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           .cw .ponudba-fab .fab-znesek b { font-size: .92rem; font-weight: 800; opacity: 1; }
         }
         /* desktop: panel ponudbe = fiksen desni stolpec po CELI VISINI (do headerja) */
-        @media (min-width: 981px) {
+        @media (min-width: 1201px) {
           /* step-0 vsebina samo bledi (brez transforma), da fixed panel deluje na okno.
              visja specificnost (.korak-vsebina.siroko), da premaga kasnejsi .korak-vsebina */
           .cw .korak-vsebina.siroko { max-width: none; width: 100%; padding-right: calc(min(410px, 34vw) + clamp(1rem, 2.5vw, 2rem)); box-sizing: border-box; animation-name: cwFade; }
