@@ -4352,7 +4352,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       const on = obIzbor.has(p.id);
                       return (
                         <button key={p.id} type="button" className={'chip-podrocje' + (on ? ' on' : '')}
-                          style={{ borderColor: on ? bar : 'rgba(17,17,17,.12)', boxShadow: on ? `0 0 0 1.5px ${bar}, 0 6px 18px ${osvetli(bar, 0.55)}` : undefined }}
+                          style={{ borderColor: on ? bar : 'rgba(17,17,17,.12)', boxShadow: on ? `0 6px 18px ${osvetli(bar, 0.5)}` : undefined }}
                           onClick={() => preklopi(obIzbor, p.id, setObIzbor)}>
                           <span className="pi-pod" aria-hidden style={{ background: osvetli(bar, 0.8), color: zatemni(bar, 0.55) }}>{PODROCJE_IKONA[p.id]}</span>
                           <b>{p.ime}</b>
@@ -5265,8 +5265,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       <div className="noga">
         <div className="noga-c">
           <div className="noga-gumbi">
-            {korak > 0 && (
-              <button type="button" className="gumb-nazaj" onClick={nazaj} aria-label="Nazaj">←</button>
+            {(korak > 0 || (korak === 0 && !uvodChat && !klasicnaOblika)) && (
+              <button type="button" className="gumb-nazaj" aria-label="Nazaj"
+                onClick={korak === 0 ? () => { setUvodChat(true); setChatKorak(4); } : nazaj}>←</button>
             )}
             {/* med aktivnim onboarding-chatom flow vodijo inline gumbi -> skrijemo spodnji "Naprej" (samo en gumb) */}
             {korak === 0 && uvodChat && !klasicnaOblika ? null : korak < KORAKOV - 1 ? (
