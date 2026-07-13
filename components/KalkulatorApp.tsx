@@ -1445,6 +1445,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [chatKorak, setChatKorak] = useState(0);
   /* po mehurckih: vprasanja tecejo kot chat NAVZDOL (0 = samo mehurcki, 1 = o stranki, ...) */
   const [poMeh, setPoMeh] = useState(0);
+  /* mobile: ponudba je v nogi (FAB kosarica); tap odpre drsni panel */
+  const [ponudbaOdprta, setPonudbaOdprta] = useState(false);
   const [imeUporabnika, setImeUporabnika] = useState('');
   /* onboarding opravljen (obstojno) — sprozi se, dokler NI opravljen (ne glede na storitve) */
   const [uvodKoncan, setUvodKoncan] = useState<boolean | null>(null);
@@ -2884,6 +2886,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const orbD = orbStoritve.length <= 8 ? 176 : orbStoritve.length <= 14 ? 156 : 138;
   /* mehurcki v pravih vrsticah, razmaknjeni; platno raste s stevilom -> stran scrolla */
   const orbN = orbStoritve.length + 1; /* + "dodaj" */
+  /* za mobilni FAB (kosarica): stevilo postavk + okviren skupni znesek */
+  const stPostavk = vrstice.length + postavke.length;
+  const skupajOkvirno = vrstice.reduce((a, l) => {
+    const s = vseStoritve.find(x => x.id === l.sid);
+    return s ? a + osnovaZa(s) * Math.max(1, Math.round(l.kolicina)) : a;
+  }, 0) + postavke.reduce((a, x) => a + x.cena * x.kolicina, 0);
   /* SATASTA (honeycomb) postavitev: vrste se izmenjujejo siroka/ozja (npr. 3-2-3),
      ozje vrste centrirano padejo v vrzeli sirokih -> mehurcki NISO v ravnih navpicnih
      stolpcih, a kompozicija ostane uravnotezena. Pozicije se se dorecejo po formatu. */
@@ -3422,10 +3430,27 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .ponudba0-vsota-vrsta b { font-family: var(--font-bodoni), serif; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.15rem; }
         .cw .ponudba0-opomba { font-size: .76rem; color: var(--accent); margin-top: .45rem; font-weight: 500; }
 
+        /* mobilna kosarica (FAB) + zapiralni gumb — privzeto skrita (na desktopu je panel fiksen desno) */
+        .cw .ponudba0-zapri { display: none; }
+        .cw .ponudba-fab { display: none; }
+
         @media (max-width: 980px) {
           .cw .oder0 { grid-template-columns: 1fr; }
           .cw .vodicka { display: none; }
           .cw .platno0 { min-height: 480px; }
+          /* ponudba NI vec vmes: postane drsni panel z desne (kosarica) */
+          .cw .ponudba0 { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 90vw); border-radius: 20px 0 0 20px; margin: 0; z-index: 70; overflow-y: auto; transform: translateX(102%); transition: transform .32s cubic-bezier(.2,.8,.3,1); box-shadow: -18px 0 50px rgba(40,25,40,.22); background: rgba(255,255,255,.92); -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4); }
+          .cw .ponudba0.odprta { transform: translateX(0); }
+          .cw .ponudba0-zapri { display: flex; position: absolute; top: .9rem; right: 1rem; width: 2.2rem; height: 2.2rem; align-items: center; justify-content: center; border: none; background: rgba(17,17,17,.06); border-radius: 50%; font-size: 1.3rem; line-height: 1; color: var(--ink); cursor: pointer; z-index: 2; }
+          .cw .ponudba-backdrop { position: fixed; inset: 0; background: rgba(30,18,35,.38); z-index: 65; animation: cwFade .25s ease both; }
+          /* FAB kosarica spodaj (nad nogo) */
+          .cw .ponudba-fab { display: inline-flex; align-items: center; gap: .6rem; position: fixed; right: 1rem; bottom: 5.4rem; z-index: 60; padding: .6rem .95rem .6rem .7rem; border: none; border-radius: 999px; background: var(--ink); color: var(--paper); box-shadow: 0 12px 30px rgba(40,25,40,.3); cursor: pointer; font-family: inherit; transition: transform .2s ease, opacity .2s ease; }
+          .cw .ponudba-fab:active { transform: scale(.96); }
+          .cw .ponudba-fab.skrit { opacity: 0; pointer-events: none; transform: scale(.9); }
+          .cw .ponudba-fab .fab-ikona { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 2.3rem; height: 2.3rem; border-radius: 50%; background: rgba(255,255,255,.16); }
+          .cw .ponudba-fab .fab-tag { position: absolute; top: -.35rem; right: -.35rem; min-width: 1.3rem; height: 1.3rem; padding: 0 .3rem; border-radius: 999px; background: var(--accent); color: #fff; font-size: .72rem; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; border: 2px solid var(--ink); }
+          .cw .ponudba-fab .fab-znesek { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.05; font-size: .68rem; font-weight: 600; opacity: .8; padding-right: .35rem; }
+          .cw .ponudba-fab .fab-znesek b { font-size: .92rem; font-weight: 800; opacity: 1; }
         }
         /* desktop: panel ponudbe = fiksen desni stolpec po CELI VISINI (do headerja) */
         @media (min-width: 981px) {
@@ -3515,6 +3540,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
         .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 8rem; position: relative; z-index: 1; }
         .cw .korak-vsebina { width: 100%; max-width: 880px; animation: cwVstop .55s cubic-bezier(.16,1,.3,1) both; }
+        /* siroko (korak 0 / uvod) brez transforma -> fiksni/drsni panel deluje relativno na okno (tudi mobile) */
+        .cw .korak-vsebina.siroko { animation-name: cwFade; }
         /* korak 0 rabi vec prostora (orbi + panel drug ob drugem) */
         .cw .korak-vsebina.siroko { max-width: none; }
         .cw .h1-maska { display: inline-block; overflow: hidden; vertical-align: bottom; padding: .06em .22em .24em; margin: -.06em -.22em -.24em; }
@@ -4494,8 +4521,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </div>
               </div>
 
-              {/* ── živa ponudba (desno): vrstice s podrobnostmi ── */}
-              <aside className="ponudba0" aria-label="Tvoja ponudba">
+              {/* ── živa ponudba: desktop fiksno desno, mobile drsni panel (kosarica) ── */}
+              <aside className={'ponudba0' + (ponudbaOdprta ? ' odprta' : '')} aria-label="Tvoja ponudba">
+                <button type="button" className="ponudba0-zapri" aria-label="Zapri ponudbo" onClick={() => setPonudbaOdprta(false)}>×</button>
                 <div className="ponudba0-glava">
                   <h2>{nazivPonudbe.trim() || 'Tvoja ponudba'}</h2>
                   <span className="ponudba0-chip">{vrstice.length === 1 ? '1 postavka'
@@ -5288,6 +5316,20 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           )}
         </div>
       </div>
+
+      {/* MOBILE: ponudba v nogi kot FAB (kosarica) — tap odpre drsni panel */}
+      {korak === 0 && !klasicnaOblika && !uvodChat && (
+        <>
+          {ponudbaOdprta && <div className="ponudba-backdrop" onClick={() => setPonudbaOdprta(false)} aria-hidden />}
+          <button type="button" className={'ponudba-fab' + (ponudbaOdprta ? ' skrit' : '')}
+            onClick={() => setPonudbaOdprta(true)} aria-label="Odpri ponudbo">
+            <span className="fab-ikona" aria-hidden><FileText size={22} weight="regular" />
+              {stPostavk > 0 && <span className="fab-tag">{stPostavk}</span>}
+            </span>
+            <span className="fab-znesek">Ponudba<b>od {val(skupajOkvirno)}</b></span>
+          </button>
+        </>
+      )}
 
       <div className="noga">
         <div className="noga-c">
