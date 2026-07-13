@@ -3300,9 +3300,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .ponudba0-prazno { color: rgba(17,17,17,.5); font-size: .95rem; line-height: 1.55; text-align: center; padding: 1.2rem 0; margin: 0; font-weight: 400; }
         .cw .ponudba0-prazno b { color: rgba(17,17,17,.72); }
         .cw .ponudba0-prazno p { margin: 0; }
-        /* empty-state: mapa z enim obrazom (odebeljene linije, slog chatbot ikonce) */
+        /* empty-state: mapa z enim obrazom (odebeljene linije, slog chatbot ikonce), animirana */
         .cw .prazno-mapa { width: min(200px, 58%); margin: 0 auto .5rem; }
-        .cw .prazno-mapa svg { width: 100%; height: auto; display: block; }
+        .cw .prazno-mapa svg { width: 100%; height: auto; display: block; overflow: visible; }
+        .cw .prazno-mapa .mapa-telo { animation: mapaLebdi 3.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+        .cw .prazno-mapa .mapa-senca { animation: mapaSenca 3.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+        .cw .prazno-mapa .mapa-oci { animation: mapaMezik 4.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+        @keyframes mapaLebdi { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-7px) rotate(-1.6deg); } }
+        @keyframes mapaSenca { 0%, 100% { transform: scaleX(1); opacity: .55; } 50% { transform: scaleX(.8); opacity: .3; } }
+        @keyframes mapaMezik { 0%, 88%, 100% { transform: scaleY(1); } 94% { transform: scaleY(.35); } }
+        @media (prefers-reduced-motion: reduce) { .cw .prazno-mapa .mapa-telo, .cw .prazno-mapa .mapa-senca, .cw .prazno-mapa .mapa-oci { animation: none; } }
 
         .cw .vrstice0 { display: flex; flex-direction: column; }
         .cw .vrst0 { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: .55rem; padding: .65rem 0; border-bottom: 1px solid rgba(17,17,17,.12); }
@@ -4499,17 +4506,19 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <div className="prazno-mapa" aria-hidden>
                       {/* mapa z ENIM obrazom (odebeljene linije v slogu chatbot ikonce) */}
                       <svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg">
-                        <ellipse cx="110" cy="186" rx="60" ry="8" fill="rgba(35,18,45,.05)" />
-                        <path d="M46 54 h44 l12 15 h62 q12 0 12 12 v82 q0 12 -12 12 H46 q-12 0 -12 -12 V66 q0 -12 12 -12 z" fill="#E7C074" />
-                        <path d="M40 84 h140 q12 0 12 12 v58 q0 12 -12 12 H40 q-12 0 -12 -12 V96 q0 -12 12 -12 z" fill="#F1D08A" />
-                        <path d="M40 84 h140 q12 0 12 12 v4 H28 v-4 q0 -12 12 -12 z" fill="#F6DCA3" />
-                        <g stroke="#6E5326" strokeWidth="4.5" fill="none" strokeLinecap="round">
-                          <path d="M78 120 q8 -10 16 0" />
-                          <path d="M126 120 q8 -10 16 0" />
-                          <path d="M92 136 q18 13 36 0" />
+                        <ellipse className="mapa-senca" cx="110" cy="188" rx="58" ry="7" fill="rgba(35,18,45,.08)" />
+                        <g className="mapa-telo">
+                          <path d="M46 54 h44 l12 15 h62 q12 0 12 12 v82 q0 12 -12 12 H46 q-12 0 -12 -12 V66 q0 -12 12 -12 z" fill="#E7C074" />
+                          <path d="M40 84 h140 q12 0 12 12 v58 q0 12 -12 12 H40 q-12 0 -12 -12 V96 q0 -12 12 -12 z" fill="#F1D08A" />
+                          <path d="M40 84 h140 q12 0 12 12 v4 H28 v-4 q0 -12 12 -12 z" fill="#F6DCA3" />
+                          <g className="mapa-oci" stroke="#6E5326" strokeWidth="4.5" fill="none" strokeLinecap="round">
+                            <path d="M78 120 q8 -10 16 0" />
+                            <path d="M126 120 q8 -10 16 0" />
+                          </g>
+                          <path d="M92 136 q18 13 36 0" stroke="#6E5326" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+                          <circle cx="80" cy="133" r="6" fill="rgba(255,120,170,.42)" />
+                          <circle cx="140" cy="133" r="6" fill="rgba(255,120,170,.42)" />
                         </g>
-                        <circle cx="80" cy="133" r="6" fill="rgba(255,120,170,.42)" />
-                        <circle cx="140" cy="133" r="6" fill="rgba(255,120,170,.42)" />
                       </svg>
                     </div>
                     <p><b>Klikni storitev</b>, da začneš.<br />Spletna stran ali CGP se ob ponovnem kliku doda kot nova postavka, ilustracije in podobno pa štejejo kose.</p>
