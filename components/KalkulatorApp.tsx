@@ -2,14 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import dynamic from 'next/dynamic';
 import { localePath } from '@/i18n/routing';
 
-/* dotLottie predvajalnik — samo na klientu (uporablja canvas/wasm) */
-const DotLottieReact = dynamic(
-  () => import('@lottiefiles/dotlottie-react').then(m => m.DotLottieReact),
-  { ssr: false }
-);
 import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package,
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
@@ -3239,7 +3233,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
         .cw .oder0 { display: grid; grid-template-columns: 1.55fr 1fr; gap: clamp(1rem, 2.5vw, 2rem); align-items: stretch; width: min(1240px, 100%); }
         /* korak 0 = nadaljevanje chatbota: mehurcki-transkript zgoraj, orbi spodaj */
-        .cw .chat-izbira { display: flex; flex-direction: column; align-items: flex-start; gap: .7rem; width: min(620px, 92%); margin: 0 auto 1.8rem; }
+        .cw .chat-izbira { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1rem; width: min(620px, 92%); margin: 0 auto 1.8rem; }
         /* med onboardingom: vsebina centrirana (kot prej), ozja; ko pride ponudba -> siroka miza */
         .cw .korak-vsebina.siroko.uvod-faza { max-width: 780px; margin-left: auto; margin-right: auto; padding-right: 0; min-height: calc(100dvh - 6.5rem); display: flex; flex-direction: column; justify-content: center; }
         .cw .uvod-faza .uvod-uvodnik { text-align: center; margin-bottom: 1.2rem; }
@@ -3306,12 +3300,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .ponudba0-prazno { color: rgba(17,17,17,.5); font-size: .95rem; line-height: 1.55; text-align: center; padding: 1.2rem 0; margin: 0; font-weight: 400; }
         .cw .ponudba0-prazno b { color: rgba(17,17,17,.72); }
         .cw .ponudba0-prazno p { margin: 0; }
-        /* Lottie empty-state (mapa + mehurcki) z nasim bot smileyjem na velikem mehurcku */
-        .cw .prazno-lottie { position: relative; width: min(280px, 78%); margin: 0 auto .4rem; aspect-ratio: 985 / 910; }
-        .cw .prazno-lottie canvas, .cw .prazno-lottie > div { width: 100% !important; height: 100% !important; }
-        .cw .prazno-obraz { position: absolute; left: 49.7%; top: 35%; width: 15%; height: 15%; transform: translate(-50%, -50%); pointer-events: none; }
-        .cw .prazno-obraz svg { width: 100%; height: 100%; overflow: visible; }
-        @media (prefers-reduced-motion: reduce) { .cw .prazno-lottie { display: none; } }
+        /* empty-state: mapa z enim obrazom (odebeljene linije, slog chatbot ikonce) */
+        .cw .prazno-mapa { width: min(200px, 58%); margin: 0 auto .5rem; }
+        .cw .prazno-mapa svg { width: 100%; height: auto; display: block; }
 
         .cw .vrstice0 { display: flex; flex-direction: column; }
         .cw .vrst0 { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: .55rem; padding: .65rem 0; border-bottom: 1px solid rgba(17,17,17,.12); }
@@ -3381,9 +3372,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-bot .chat-mehur { background: rgba(255,180,205,.32); color: rgba(17,17,17,.72); border-bottom-left-radius: 5px; }
         .cw .chat-bot .chat-mehur b { display: block; color: var(--ink); font-weight: 700; font-size: 1.02rem; }
         .cw .chat-bot .chat-mehur small { display: block; margin-top: .1rem; color: rgba(17,17,17,.5); font-size: .82rem; }
-        .cw .chat-jaz { align-self: flex-end; }
+        .cw .chat-jaz { align-self: flex-end; max-width: 88%; }
         .cw .chat-jaz .chat-mehur { background: rgba(160,205,235,.4); color: var(--ink); font-weight: 600; border-bottom-right-radius: 5px; }
-        .cw .chat-mehur { border-radius: 18px; padding: .7rem 1.05rem; font-size: .95rem; line-height: 1.45; font-weight: 400; }
+        .cw .chat-mehur { border-radius: 18px; padding: .9rem 1.35rem; font-size: .95rem; line-height: 1.5; font-weight: 400; }
         .cw .chat-izbire { display: flex; flex-direction: column; gap: .6rem; margin: .2rem 0 .2rem 3.05rem; }
         .cw .chat-opcija { display: flex; align-items: center; gap: .9rem; text-align: left; width: min(420px, 100%); background: rgba(255,255,255,.82); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(17,17,17,.1); border-radius: 16px; padding: 1rem 1.15rem; cursor: pointer; font-family: inherit; color: var(--ink); transition: transform .22s cubic-bezier(.34,1.56,.5,1), border-color .2s, box-shadow .22s; }
         .cw .chat-opcija:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 14px 30px rgba(142,52,89,.12); }
@@ -3401,7 +3392,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-vnos input:focus { border-color: var(--accent); }
         /* področja dela — kompaktni chipi za več izbir (v chatu) */
         .cw .chat-podrocja { display: flex; flex-wrap: wrap; gap: .75rem; margin: .5rem 0 .3rem 3.05rem; max-width: 680px; }
-        .cw .chip-podrocje { display: inline-flex; align-items: center; gap: .7rem; background: #fff; border: 1.5px solid rgba(17,17,17,.12); border-radius: 999px; padding: .55rem 1.2rem .55rem .55rem; font-family: inherit; font-size: 1rem; font-weight: 700; color: var(--ink); cursor: pointer; box-shadow: 0 2px 10px rgba(35,18,45,.05); transition: border-color .18s, box-shadow .18s, transform .2s cubic-bezier(.34,1.56,.5,1); }
+        .cw .chip-podrocje { display: inline-flex; align-items: center; gap: .7rem; background: #fff; border: 1px solid rgba(17,17,17,.12); border-radius: 999px; padding: .55rem 1.2rem .55rem .55rem; font-family: inherit; font-size: 1rem; font-weight: 700; color: var(--ink); cursor: pointer; box-shadow: 0 2px 10px rgba(35,18,45,.05); transition: border-color .18s, box-shadow .18s, transform .2s cubic-bezier(.34,1.56,.5,1); }
         .cw .chip-podrocje:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(35,18,45,.1); }
         .cw .chip-podrocje .pi-pod { width: 2.15rem; height: 2.15rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; }
         .cw .chip-podrocje .pi-pod svg { width: 1.15rem; height: 1.15rem; }
@@ -4505,10 +4496,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
                 {vrstice.length === 0 && (
                   <div className="ponudba0-prazno">
-                    <div className="prazno-lottie" aria-hidden>
-                      {!uvodChat && <DotLottieReact src="/kalkulator/empty-state.lottie" loop autoplay />}
-                      {/* naš bot smiley na velikem mehurčku (center ~49.7% / 35%) — enak slog kot vodička */}
-                      <span className="prazno-obraz">{VODICKA_OBRAZ}</span>
+                    <div className="prazno-mapa" aria-hidden>
+                      {/* mapa z ENIM obrazom (odebeljene linije v slogu chatbot ikonce) */}
+                      <svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse cx="110" cy="186" rx="60" ry="8" fill="rgba(35,18,45,.05)" />
+                        <path d="M46 54 h44 l12 15 h62 q12 0 12 12 v82 q0 12 -12 12 H46 q-12 0 -12 -12 V66 q0 -12 12 -12 z" fill="#E7C074" />
+                        <path d="M40 84 h140 q12 0 12 12 v58 q0 12 -12 12 H40 q-12 0 -12 -12 V96 q0 -12 12 -12 z" fill="#F1D08A" />
+                        <path d="M40 84 h140 q12 0 12 12 v4 H28 v-4 q0 -12 12 -12 z" fill="#F6DCA3" />
+                        <g stroke="#6E5326" strokeWidth="4.5" fill="none" strokeLinecap="round">
+                          <path d="M78 120 q8 -10 16 0" />
+                          <path d="M126 120 q8 -10 16 0" />
+                          <path d="M92 136 q18 13 36 0" />
+                        </g>
+                        <circle cx="80" cy="133" r="6" fill="rgba(255,120,170,.42)" />
+                        <circle cx="140" cy="133" r="6" fill="rgba(255,120,170,.42)" />
+                      </svg>
                     </div>
                     <p><b>Klikni storitev</b>, da začneš.<br />Spletna stran ali CGP se ob ponovnem kliku doda kot nova postavka, ilustracije in podobno pa štejejo kose.</p>
                   </div>
