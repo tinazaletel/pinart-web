@@ -2888,26 +2888,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const orbD = orbStoritve.length <= 8 ? 176 : orbStoritve.length <= 14 ? 156 : 138;
   /* mehurcki v pravih vrsticah, razmaknjeni; platno raste s stevilom -> stran scrolla */
   const orbN = orbStoritve.length + 1; /* + "dodaj" */
-  /* Stolpci za likovno ravnovesje: priblizno kvadratno-landscape, a se IZOGNEMO
-     osamljeni zadnji vrstici (n % cols === 1), da kompozicija ne "pade ven". */
-  const orbStolpcev = (() => {
-    let c = Math.min(5, Math.max(2, Math.round(Math.sqrt(orbN) * 1.35)));
-    while (c > 2 && orbN % c === 1) c--;
-    return c;
+  /* SATASTA (honeycomb) postavitev: vrste se izmenjujejo siroka/ozja (npr. 3-2-3),
+     ozje vrste centrirano padejo v vrzeli sirokih -> mehurcki NISO v ravnih navpicnih
+     stolpcih, a kompozicija ostane uravnotezena. Pozicije se se dorecejo po formatu. */
+  const orbMax = orbN <= 4 ? 2 : orbN <= 14 ? 3 : 4;   /* mehurckov v siroki vrsti */
+  const orbRowSizes = (() => {
+    const rs: number[] = []; let left = orbN, wide = true;
+    while (left > 0) { const s = Math.min(left, wide ? orbMax : orbMax - 1); rs.push(s); left -= s; wide = !wide; }
+    return rs;
   })();
-  const orbVrstic = Math.max(1, Math.ceil(orbN / orbStolpcev));
-  const orbRowH = Math.round(orbD * 1.16);
-  /* stevilo orbov v dani vrstici (zadnja je lahko krajsa) */
-  const orbVvrstici = (row: number) =>
-    row < orbVrstic - 1 ? orbStolpcev : orbN - (orbVrstic - 1) * orbStolpcev;
-  /* Likovno ravnovesje: vsaka vrstica HORIZONTALNO CENTRIRANA, orbi poravnani po
-     visini (brez jitterja -> ravnotezje); zivost dajo razlicne velikosti + lebdenje. */
+  const orbVrstic = orbRowSizes.length;
+  const orbRowStart = (() => { const a: number[] = []; let acc = 0; for (const s of orbRowSizes) { a.push(acc); acc += s; } return a; })();
+  const orbRowH = Math.round(orbD * 1.02);
+  const orbStep = 84 / Math.max(orbMax - 1, 1);          /* razmik med sredisci na siroki mrezi (%) */
   const orbPoz = (i: number) => {
-    const col = i % orbStolpcev, row = Math.floor(i / orbStolpcev);
-    const vRow = orbVvrstici(row);
-    const step = 84 / Math.max(orbStolpcev - 1, 1);        /* razmik med sredisci (%) */
-    const startX = 50 - ((vRow - 1) * step) / 2;           /* vrstico centriramo */
-    const x = startX + col * step;
+    let row = 0; while (row < orbVrstic - 1 && i >= orbRowStart[row + 1]) row++;
+    const posInRow = i - orbRowStart[row];
+    const cnt = orbRowSizes[row];
+    const startX = 50 - ((cnt - 1) * orbStep) / 2;        /* vsako vrsto centriramo -> zamik nastane sam */
+    const x = startX + posInRow * orbStep;
     const y = ((row + 0.5) / orbVrstic) * 100;
     return { x: Math.round(Math.min(94, Math.max(6, x)) * 10) / 10, y: Math.round(y * 10) / 10 };
   };
@@ -3402,11 +3401,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-vnos input:focus { border-color: var(--accent); }
         /* področja dela — kompaktni chipi za več izbir (v chatu) */
         .cw .chat-podrocja { display: flex; flex-wrap: wrap; gap: .75rem; margin: .5rem 0 .3rem 3.05rem; max-width: 680px; }
-        .cw .chip-podrocje { display: inline-flex; align-items: center; gap: .6rem; border: 1.5px solid transparent; border-radius: 999px; padding: .95rem 1.5rem; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 2px 10px rgba(35,18,45,.06); transition: box-shadow .18s, transform .2s cubic-bezier(.34,1.56,.5,1); }
-        .cw .chip-podrocje:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(35,18,45,.12); }
-        .cw .chip-podrocje.on { box-shadow: 0 4px 16px rgba(35,18,45,.14); }
-        .cw .chip-podrocje .pi-pod { display: inline-flex; }
+        .cw .chip-podrocje { display: inline-flex; align-items: center; gap: .7rem; background: #fff; border: 1.5px solid rgba(17,17,17,.12); border-radius: 999px; padding: .55rem 1.2rem .55rem .55rem; font-family: inherit; font-size: 1rem; font-weight: 700; color: var(--ink); cursor: pointer; box-shadow: 0 2px 10px rgba(35,18,45,.05); transition: border-color .18s, box-shadow .18s, transform .2s cubic-bezier(.34,1.56,.5,1); }
+        .cw .chip-podrocje:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(35,18,45,.1); }
+        .cw .chip-podrocje .pi-pod { width: 2.15rem; height: 2.15rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; }
         .cw .chip-podrocje .pi-pod svg { width: 1.15rem; height: 1.15rem; }
+        .cw .chip-podrocje b { font-weight: 700; }
+        .cw .chip-podrocje .chip-kljuk { width: 1.35rem; height: 1.35rem; border-radius: 50%; border: 1.5px solid; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .78rem; font-weight: 900; margin-left: .3rem; flex: none; transition: background .18s, border-color .18s; }
         @media (max-width: 560px) { .cw .chat-podrocja { margin-left: 0; } }
         @media (max-width: 560px) {
           .cw .chat-opcija small { display: none; }
@@ -4352,13 +4352,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       const on = obIzbor.has(p.id);
                       return (
                         <button key={p.id} type="button" className={'chip-podrocje' + (on ? ' on' : '')}
-                          style={{
-                            background: on ? osvetli(bar, 0.78) : osvetli(bar, 0.9),
-                            borderColor: on ? osvetli(bar, 0.3) : osvetli(bar, 0.72),
-                            color: zatemni(bar, 0.62),
-                          }}
+                          style={{ borderColor: on ? bar : 'rgba(17,17,17,.12)', boxShadow: on ? `0 0 0 1.5px ${bar}, 0 6px 18px ${osvetli(bar, 0.55)}` : undefined }}
                           onClick={() => preklopi(obIzbor, p.id, setObIzbor)}>
-                          <span className="pi-pod" aria-hidden style={{ color: zatemni(bar, 0.68) }}>{PODROCJE_IKONA[p.id]}</span>{p.ime}
+                          <span className="pi-pod" aria-hidden style={{ background: osvetli(bar, 0.8), color: zatemni(bar, 0.55) }}>{PODROCJE_IKONA[p.id]}</span>
+                          <b>{p.ime}</b>
+                          <span className="chip-kljuk" aria-hidden style={{ borderColor: on ? bar : 'rgba(17,17,17,.2)', background: on ? bar : 'transparent' }}>{on ? '✓' : ''}</span>
                         </button>
                       );
                     })}
