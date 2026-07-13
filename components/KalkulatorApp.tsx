@@ -224,7 +224,7 @@ const STORITVE: Storitev[] = [
    da seznam ostane pregleden. */
 const PODROCJA: { id: string; ime: string; opis: string; storitve: string[] }[] = [
   { id: 'graficno',  ime: 'Grafično oblikovanje & branding', opis: 'logotip, CGP, tiskovine, embalaža, ilustracija',   storitve: ['logo', 'cgp', 'publikacija', 'embalaza', 'ilustracija'] },
-  { id: 'splet',     ime: 'Splet & digitalni produkti',      opis: 'spletne strani, UX/UI, aplikacije',                storitve: ['web', 'uxui', 'aplikacija', 'dizajnsistem'] },
+  { id: 'splet',     ime: 'Splet & digitalni produkti',      opis: 'spletne strani, UX/UI, aplikacije',                storitve: ['web', 'uxui', 'aplikacija'] },
   { id: 'marketing', ime: 'Marketing & oglaševanje',         opis: 'kampanje, social media, SEO, PR, besedila',        storitve: ['kampanja', 'smm', 'seo', 'email', 'pr', 'copy'] },
   { id: 'foto',      ime: 'Foto, video & motion',            opis: 'fotografiranje, video, motion, 3D',                storitve: ['fotografija', 'video', 'motion', 'render3d'] },
   { id: 'direkcija', ime: 'Kreativna direkcija & strategija', opis: 'vodenje, koncept, strategija',                     storitve: ['direkcija', 'strategija'] },
@@ -2888,18 +2888,28 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const orbD = orbStoritve.length <= 8 ? 176 : orbStoritve.length <= 14 ? 156 : 138;
   /* mehurcki v pravih vrsticah, razmaknjeni; platno raste s stevilom -> stran scrolla */
   const orbN = orbStoritve.length + 1; /* + "dodaj" */
-  const orbStolpcev = orbN <= 3 ? 2 : orbN <= 6 ? 3 : orbN <= 12 ? 4 : 5;
+  /* Stolpci za likovno ravnovesje: priblizno kvadratno-landscape, a se IZOGNEMO
+     osamljeni zadnji vrstici (n % cols === 1), da kompozicija ne "pade ven". */
+  const orbStolpcev = (() => {
+    let c = Math.min(5, Math.max(2, Math.round(Math.sqrt(orbN) * 1.35)));
+    while (c > 2 && orbN % c === 1) c--;
+    return c;
+  })();
   const orbVrstic = Math.max(1, Math.ceil(orbN / orbStolpcev));
   const orbRowH = Math.round(orbD * 1.16);
-  /* Deterministicna organska razporeditev: stolpci po tri, z zamikom in jitterjem. */
+  /* stevilo orbov v dani vrstici (zadnja je lahko krajsa) */
+  const orbVvrstici = (row: number) =>
+    row < orbVrstic - 1 ? orbStolpcev : orbN - (orbVrstic - 1) * orbStolpcev;
+  /* Likovno ravnovesje: vsaka vrstica HORIZONTALNO CENTRIRANA, orbi poravnani po
+     visini (brez jitterja -> ravnotezje); zivost dajo razlicne velikosti + lebdenje. */
   const orbPoz = (i: number) => {
-    /* vrstice/stolpci, razmaknjeno; opeka (lihe vrstice zamaknjene), rahel jitter */
     const col = i % orbStolpcev, row = Math.floor(i / orbStolpcev);
-    const step = 86 / Math.max(orbStolpcev - 1, 1);
-    const zamik = row % 2 ? step * 0.28 : 0;   /* rahel brick zamik, znotraj robov */
-    const x = 7 + col * step + zamik + (psr(i + 1) * 3 - 1.5);
-    const y = ((row + 0.5) / orbVrstic) * 100 + (psr(i + 50) * 3 - 1.5);
-    return { x: Math.round(Math.min(95, Math.max(5, x)) * 10) / 10, y: Math.round(y * 10) / 10 };
+    const vRow = orbVvrstici(row);
+    const step = 84 / Math.max(orbStolpcev - 1, 1);        /* razmik med sredisci (%) */
+    const startX = 50 - ((vRow - 1) * step) / 2;           /* vrstico centriramo */
+    const x = startX + col * step;
+    const y = ((row + 0.5) / orbVrstic) * 100;
+    return { x: Math.round(Math.min(94, Math.max(6, x)) * 10) / 10, y: Math.round(y * 10) / 10 };
   };
   const prvoIme = (imeUporabnika.trim() || ponudnik.ime.trim()).split(/\s+/)[0];
   const pozdrav = `Hej${prvoIme ? ' ' + prvoIme : ''}!`;
@@ -4465,9 +4475,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 })}
                 {(() => {
                   const d = Math.round(orbD * 0.78);
+                  const p = orbPoz(orbStoritve.length);   /* zadnja celica v mreži -> uravnotežena vrstica */
                   return (
                     <button type="button" className="orb0 orb0-plus"
-                      style={{ width: d, height: d, right: 8, bottom: 8, left: 'auto', top: 'auto' }}
+                      style={{ width: d, height: d, left: `calc(${p.x}% - ${d / 2}px)`, top: `calc(${p.y}% - ${d / 2}px)` }}
                       onClick={() => setKazemDodaj(!kazemDodaj)}>
                       <span className="orb0-krog" aria-hidden />
                       <Plus size={20} aria-hidden />
