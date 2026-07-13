@@ -2627,7 +2627,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     if (korak === 0 && !r) return;
     setKorak(k => Math.min(KORAKOV - 1, k + 1));
   };
-  const nazaj = () => setKorak(k => Math.max(0, k - 1));
+  const nazaj = () => {
+    /* v chat obliki vprasanja zivijo na koraku 0 (poMeh); iz cene se vrnemo tja, ne na prazne vmesne korake */
+    if (!klasicnaOblika && korak === cenaStep) { setKorak(0); return; }
+    setKorak(k => Math.max(0, k - 1));
+  };
 
   const naEnter = (e: React.KeyboardEvent) => {
     if (e.key !== 'Enter') return;
@@ -2886,6 +2890,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const orbD = orbStoritve.length <= 8 ? 176 : orbStoritve.length <= 14 ? 156 : 138;
   /* mehurcki v pravih vrsticah, razmaknjeni; platno raste s stevilom -> stran scrolla */
   const orbN = orbStoritve.length + 1; /* + "dodaj" */
+  /* v chatu (korak 0, po onboardingu, ne klasicna oblika): vprasanja tecejo navzdol */
+  const vChatu = korak === 0 && !uvodChat && !klasicnaOblika;
+  /* naslov koraka kot chat oblacek (v chat obliki) */
+  const chatVpr = (naslov: string, opis?: string) => (
+    <div className="chat-bot chat-vpr">
+      <span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+      <span className="chat-mehur"><b>{naslov}</b>{opis ? <small>{opis}</small> : null}</span>
+    </div>
+  );
   /* za mobilni FAB (kosarica): stevilo postavk + okviren skupni znesek */
   const stPostavk = vrstice.length + postavke.length;
   const skupajOkvirno = vrstice.reduce((a, l) => {
@@ -4676,19 +4689,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </div>
           )}
 
-          {/* PO MEHURCIH: vprasanja tecejo kot chat NAVZDOL (ni skoka na svojo stran) */}
-          {korak === 0 && !uvodChat && !klasicnaOblika && poMeh >= 1 && (
-            <div className="chat chat-izbira chat-po-meh">
-              <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                <span className="chat-mehur"><b>Super izbira! Zdaj še — komu pošiljaš ponudbo?</b><small>Naročnik za pošiljanje; lahko pustiš prazno in izpolniš pozneje.</small></span></div>
-              <div className="chat-vnos">
-                <input type="text" placeholder="Ime podjetja (naročnik)" value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)} />
-                <input type="email" placeholder="Email naročnika" value={narocnikEmail} onChange={e => setNarocnikEmail(e.target.value)} />
-              </div>
-            </div>
-          )}
-
-
           {korak === kdoSiStep && podatkiUI()}
 
           {korak === mojTrgStep && (
@@ -4729,7 +4729,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </div>
           )}
 
-          {korak === narocnikStep && (
+          {((klasicnaOblika && korak === narocnikStep) || (vChatu && poMeh >= 1)) && (
+            <>
+            {vChatu && chatVpr('Super izbira! Zdaj še — komu pošiljaš ponudbo?', 'Naročnik za pošiljanje; lahko pustiš prazno in izpolniš pozneje.')}
             <div className="kartica">
               <div className="k-naslov">Naročnik <span className="vec">za pošiljanje ponudbe</span></div>
               <div className="numgrid" style={{ marginTop: 0 }}>
@@ -4792,10 +4794,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 ) : null;
               })()}
             </div>
+            </>
           )}
 
-          {korak === trgNarocnikaStep && (
+          {((klasicnaOblika && korak === trgNarocnikaStep) || (vChatu && poMeh >= 2)) && (
             <>
+              {vChatu && chatVpr('Za kateri trg delaš ponudbo?', 'Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.')}
               <div className="kartica">
                 <div className="k-naslov">Trg naročnika <span className="vec">stranka je lahko drugod kot njen trg</span>
                   {custDrzavaUI(custDrzavaNarocnik, setCustDrzavaNarocnik, dodajanjeDrzaveNarocnik, setDodajanjeDrzaveNarocnik)}
@@ -4856,8 +4860,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </>
           )}
 
-          {korak === rabaStep && (
+          {((klasicnaOblika && korak === rabaStep) || (vChatu && poMeh >= 3)) && (
             <>
+              {vChatu && chatVpr('Kako bo naročnik uporabljal tvoje delo?', 'To je vprašanje, ki ga druga orodja ne postavijo.')}
               <div className="kartica">
                 <div className="izbira">
                   <button type="button" className={raba === 'znamka' ? 'on' : ''} onClick={() => setRaba('znamka')}>
@@ -4924,8 +4929,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </>
           )}
 
-          {korak === praviceStep && (
+          {((klasicnaOblika && korak === praviceStep) || (vChatu && poMeh >= 4)) && (
             <>
+              {vChatu && chatVpr('Avtorske pravice', 'Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.')}
               <div className="kartica">
                 <div className="k-naslov">Kako prenašaš avtorske pravice?
                   <InfoNamig besedilo="Izključni prenos: naročnik dobi delo v izključno last, ti ga ne smeš uporabiti drugje (najvišja cena pravic). Neizključni: obdržiš pravico delo ponuditi tudi drugim (npr. predloge) — nižja cena. Samo licenca: naročnik ne kupi pravic, plačuje letno licenco za rabo, ti ostaneš lastnik dela." />
@@ -5112,8 +5118,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </>
           )}
 
-          {korak === posebnostiStep && (
+          {((klasicnaOblika && korak === posebnostiStep) || (vChatu && poMeh >= 5)) && (
             <>
+              {vChatu && chatVpr('Posebnosti projekta?', 'Vse je neobvezno; pusti prazno in pojdi naprej.')}
               <div className="kartica">
                 <div className="k-naslov">Dodatki k projektu <span className="vec">izbereš lahko več</span></div>
                 <div className="opts">
@@ -5345,14 +5352,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <button type="button" className="gumb"
                 disabled={korak === 0 && !r}
                 onClick={() => {
-                  /* na mehurckih: prvi Naprej razkrije "o stranki" kot chat navzdol (ni skoka) */
-                  if (korak === 0 && !uvodChat && !klasicnaOblika && poMeh === 0) {
-                    setPoMeh(1);
+                  /* v chatu: vsak Naprej razkrije naslednje vprasanje NAVZDOL (o stranki -> trg -> raba -> pravice -> posebnosti), nato cena */
+                  if (vChatu && poMeh < 5) {
+                    setPoMeh(poMeh + 1);
                     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                    window.setTimeout(() => { document.querySelector('.chat-po-meh')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); }, 60);
+                    window.setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: reduce ? 'auto' : 'smooth' }); }, 70);
+                  } else if (vChatu && poMeh === 5) {
+                    setKorak(cenaStep);
                   } else { naprej(); }
                 }}>
-                {korak === posebnostiStep ? 'Pokaži ceno →' : korak === cenaStep ? 'Pripravi ponudbo →' : korak === ponudbaStep ? 'Zaključi →' : 'Naprej →'}
+                {vChatu && poMeh === 5 ? 'Pokaži ceno →' : korak === posebnostiStep ? 'Pokaži ceno →' : korak === cenaStep ? 'Pripravi ponudbo →' : korak === ponudbaStep ? 'Zaključi →' : 'Naprej →'}
               </button>
             ) : (
               <div className="noga-koncna">
