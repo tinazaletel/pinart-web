@@ -3242,7 +3242,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         /* korak 0 = nadaljevanje chatbota: mehurcki-transkript zgoraj, orbi spodaj */
         .cw .chat-izbira { display: flex; flex-direction: column; align-items: flex-start; gap: .7rem; width: min(620px, 92%); margin: 0 auto 1.8rem; }
         /* med onboardingom: vsebina centrirana (kot prej), ozja; ko pride ponudba -> siroka miza */
-        .cw .korak-vsebina.siroko.uvod-faza { max-width: 720px; margin-left: auto; margin-right: auto; padding-right: 0; min-height: calc(100dvh - 6.5rem); display: flex; flex-direction: column; justify-content: center; }
+        .cw .korak-vsebina.siroko.uvod-faza { max-width: 780px; margin-left: auto; margin-right: auto; padding-right: 0; min-height: calc(100dvh - 6.5rem); display: flex; flex-direction: column; justify-content: center; }
         .cw .uvod-faza .uvod-uvodnik { text-align: center; margin-bottom: 1.2rem; }
         .cw .uvod-faza .uvod-uvodnik .ob-kicker { text-align: center; }
         .cw .uvod-faza .chat-izbira { width: 100%; margin-bottom: 0; }
@@ -3398,7 +3398,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         /* gumb POD inputom, na sredini */
         .cw .chat-vnos { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: stretch; gap: .9rem; margin: 1.4rem 0 0 3.05rem; }
         .cw .chat-vnos .gumb { align-self: center; }
-        .cw .chat-vnos input { flex: none; width: 100%; background: #fff; border: 1px solid rgba(17,17,17,.14); border-radius: 999px; padding: .95rem 1.3rem; font-family: inherit; font-size: 1.02rem; font-weight: 600; color: var(--ink); outline: none; box-shadow: 0 6px 20px rgba(40,25,40,.06); transition: border-color .18s; }
+        .cw .chat-vnos input { flex: none; width: 520px; max-width: 100%; background: #fff; border: 1px solid rgba(17,17,17,.14); border-radius: 999px; padding: .95rem 1.3rem; font-family: inherit; font-size: 1.02rem; font-weight: 600; color: var(--ink); outline: none; box-shadow: 0 6px 20px rgba(40,25,40,.06); transition: border-color .18s; }
         .cw .chat-vnos input:focus { border-color: var(--accent); }
         /* področja dela — kompaktni chipi za več izbir (v chatu) */
         .cw .chat-podrocja { display: flex; flex-wrap: wrap; gap: .75rem; margin: .5rem 0 .3rem 3.05rem; max-width: 680px; }
@@ -4353,12 +4353,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       return (
                         <button key={p.id} type="button" className={'chip-podrocje' + (on ? ' on' : '')}
                           style={{
-                            background: on ? osvetli(bar, 0.62) : osvetli(bar, 0.84),
-                            borderColor: on ? bar : osvetli(bar, 0.55),
-                            color: zatemni(bar, 0.55),
+                            background: on ? osvetli(bar, 0.78) : osvetli(bar, 0.9),
+                            borderColor: on ? osvetli(bar, 0.3) : osvetli(bar, 0.72),
+                            color: zatemni(bar, 0.62),
                           }}
                           onClick={() => preklopi(obIzbor, p.id, setObIzbor)}>
-                          <span className="pi-pod" aria-hidden style={{ color: zatemni(bar, 0.62) }}>{PODROCJE_IKONA[p.id]}</span>{p.ime}
+                          <span className="pi-pod" aria-hidden style={{ color: zatemni(bar, 0.68) }}>{PODROCJE_IKONA[p.id]}</span>{p.ime}
                         </button>
                       );
                     })}
