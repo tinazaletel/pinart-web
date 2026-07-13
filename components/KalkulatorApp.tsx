@@ -55,7 +55,14 @@ const VODICKA_OBRAZ = (
 function osvetli(hex: string, amt: number) {
   const h = hex.replace('#', '');
   const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
-  const m = (c: number) => Math.round(c + (255 - c) * amt).toString(16).padStart(2, '0');
+  const m = (c: number) => Math.max(0, Math.min(255, Math.round(c + (255 - c) * amt))).toString(16).padStart(2, '0');
+  return `#${m(r)}${m(g)}${m(b)}`;
+}
+/* zatemni proti crni (0..1) — za citljivo temno barvo besedila iz osnovne barve */
+function zatemni(hex: string, f: number) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+  const m = (c: number) => Math.max(0, Math.min(255, Math.round(c * f))).toString(16).padStart(2, '0');
   return `#${m(r)}${m(g)}${m(b)}`;
 }
 /* Krogla VERNO po Tininem CGP.svg (isti gradient 4 stopnje + bela svetloba +
@@ -223,6 +230,12 @@ const PODROCJA: { id: string; ime: string; opis: string; storitve: string[] }[] 
   { id: 'direkcija', ime: 'Kreativna direkcija & strategija', opis: 'vodenje, koncept, strategija',                     storitve: ['direkcija', 'strategija'] },
   { id: 'prostor',   ime: 'Prostor & arhitektura',           opis: 'interier, arhitektura, razstavni in produktni dizajn', storitve: ['interier', 'arhitektura', 'razstava', 'produktni'] },
 ];
+
+/* osnovna barva podrocja (za pastelne chipe, uskladjeno z ORB_BARVE) */
+const PODROCJE_BARVA: Record<string, string> = {
+  graficno: '#7C3AED', splet: '#0EA5A5', marketing: '#DB2777',
+  foto: '#2563EB', direkcija: '#EA580C', prostor: '#5B9E1E',
+};
 
 const IZKUSNJE = [
   { id: 'student',     ime: 'Študent',     opis: 'ob študiju, prvi naročniki', mult: 0.5 },
@@ -3378,12 +3391,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-vnos input { flex: none; width: 100%; background: #fff; border: 1px solid rgba(17,17,17,.14); border-radius: 999px; padding: .95rem 1.3rem; font-family: inherit; font-size: 1.02rem; font-weight: 600; color: var(--ink); outline: none; box-shadow: 0 6px 20px rgba(40,25,40,.06); transition: border-color .18s; }
         .cw .chat-vnos input:focus { border-color: var(--accent); }
         /* področja dela — kompaktni chipi za več izbir (v chatu) */
-        .cw .chat-podrocja { display: flex; flex-wrap: wrap; gap: .6rem; margin: .2rem 0 .2rem 3.05rem; max-width: 620px; }
-        .cw .chip-podrocje { display: inline-flex; align-items: center; gap: .5rem; background: rgba(255,255,255,.85); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid rgba(17,17,17,.14); border-radius: 999px; padding: .6rem 1.05rem; font-family: inherit; font-size: .92rem; font-weight: 600; color: var(--ink); cursor: pointer; transition: border-color .18s, background .18s, color .18s, transform .2s cubic-bezier(.34,1.56,.5,1); }
-        .cw .chip-podrocje:hover { transform: translateY(-2px); border-color: var(--accent); }
-        .cw .chip-podrocje.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .cw .chat-podrocja { display: flex; flex-wrap: wrap; gap: .75rem; margin: .5rem 0 .3rem 3.05rem; max-width: 680px; }
+        .cw .chip-podrocje { display: inline-flex; align-items: center; gap: .6rem; border: 1.5px solid transparent; border-radius: 999px; padding: .95rem 1.5rem; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 2px 10px rgba(35,18,45,.06); transition: box-shadow .18s, transform .2s cubic-bezier(.34,1.56,.5,1); }
+        .cw .chip-podrocje:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(35,18,45,.12); }
+        .cw .chip-podrocje.on { box-shadow: 0 4px 16px rgba(35,18,45,.14); }
         .cw .chip-podrocje .pi-pod { display: inline-flex; }
-        .cw .chip-podrocje .pi-pod svg { width: 1.05rem; height: 1.05rem; }
+        .cw .chip-podrocje .pi-pod svg { width: 1.15rem; height: 1.15rem; }
         @media (max-width: 560px) { .cw .chat-podrocja { margin-left: 0; } }
         @media (max-width: 560px) {
           .cw .chat-opcija small { display: none; }
@@ -4324,12 +4337,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {uvodChat && chatKorak === 2 && (
                 <>
                   <div className="chat-podrocja">
-                    {PODROCJA.map(p => (
-                      <button key={p.id} type="button" className={'chip-podrocje' + (obIzbor.has(p.id) ? ' on' : '')}
-                        onClick={() => preklopi(obIzbor, p.id, setObIzbor)}>
-                        <span className="pi-pod" aria-hidden>{PODROCJE_IKONA[p.id]}</span>{p.ime}
-                      </button>
-                    ))}
+                    {PODROCJA.map(p => {
+                      const bar = PODROCJE_BARVA[p.id] || '#7C3AED';
+                      const on = obIzbor.has(p.id);
+                      return (
+                        <button key={p.id} type="button" className={'chip-podrocje' + (on ? ' on' : '')}
+                          style={{
+                            background: on ? osvetli(bar, 0.62) : osvetli(bar, 0.84),
+                            borderColor: on ? bar : osvetli(bar, 0.55),
+                            color: zatemni(bar, 0.55),
+                          }}
+                          onClick={() => preklopi(obIzbor, p.id, setObIzbor)}>
+                          <span className="pi-pod" aria-hidden style={{ color: zatemni(bar, 0.62) }}>{PODROCJE_IKONA[p.id]}</span>{p.ime}
+                        </button>
+                      );
+                    })}
                   </div>
                   <div className="chat-vnos"><button type="button" className="gumb" disabled={obIzbor.size === 0} onClick={uvodPotrdiPodrocja}>Naprej →</button></div>
                 </>
