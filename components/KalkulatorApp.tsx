@@ -94,10 +94,15 @@ function OrbSfera({ id, o1 }: { id: string; o1: string }) {
           <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.34 0" />
           <feBlend mode="normal" in2="shape" />
         </filter>
+        <clipPath id={`oc-${id}`}>
+          <rect x="67.9766" y="64.5767" width="277" height="274.451" rx="137.225" />
+        </clipPath>
       </defs>
       <g filter={`url(#osd-${id})`}>
-        <rect x="67.9766" y="64.5767" width="277" height="274.451" rx="137.225" fill={`url(#osf-${id})`} />
-        <ellipse cx="147.423" cy="138.075" rx="98.9893" ry="96.4402" fill={`url(#osh-${id})`} />
+        <g clipPath={`url(#oc-${id})`}>
+          <rect x="67.9766" y="64.5767" width="277" height="274.451" rx="137.225" fill={`url(#osf-${id})`} />
+          <ellipse cx="147.423" cy="138.075" rx="98.9893" ry="96.4402" fill={`url(#osh-${id})`} />
+        </g>
       </g>
     </svg>
   );
@@ -1434,6 +1439,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [imeUporabnika, setImeUporabnika] = useState('');
   /* onboarding opravljen (obstojno) — sprozi se, dokler NI opravljen (ne glede na storitve) */
   const [uvodKoncan, setUvodKoncan] = useState<boolean | null>(null);
+  /* dokler nastavitve niso nalozene iz localStorage, NE shranjuj (sicer zacetno prazno stanje prepise storage) */
+  const [jeNalozeno, setJeNalozeno] = useState(false);
   const [chatVnos, setChatVnos] = useState('');
   const [chatNova, setChatNova] = useState<boolean | null>(null);
   /* testni sprožilec: ?uvod v URL na silo odpre fake-chat uvod (za ogled tudi
@@ -1558,6 +1565,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       if (Array.isArray(s.mojSet)) setMojSet(s.mojSet);
       if (s.imeUporabnika) setImeUporabnika(s.imeUporabnika);
       setUvodKoncan(s.uvodKoncan === true);
+      /* obnovi potek onboarding-chata (zgodovina prezivi reload) */
+      if (typeof s.chatKorak === 'number') setChatKorak(s.chatKorak);
+      if (typeof s.chatNova === 'boolean') setChatNova(s.chatNova);
+      if (Array.isArray(s.obIzbor)) setObIzbor(new Set(s.obIzbor));
+      if (s.nazivPonudbe) setNazivPonudbe(s.nazivPonudbe);
       if (s.klasicnaOblika) setKlasicnaOblika(true);
       if (Array.isArray(s.vrstniRed)) setVrstniRed(s.vrstniRed);
       if (Array.isArray(s.skrite)) setSkrite(s.skrite);
@@ -1582,9 +1594,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       const l = JSON.parse(localStorage.getItem(K_LEAD) || 'null');
       if (l) { setLeadIme(l.ime || ''); setLeadEmail(l.email || ''); }
     } catch { /* prazno */ }
+    finally { setJeNalozeno(true); }
   }, []);
 
   useEffect(() => {
+    if (!jeNalozeno) return;   /* pocakaj, da se stanje nalozi — sicer prepisemo storage s praznim */
     try {
       localStorage.setItem(K_NAST, JSON.stringify({
         osnove, izkusnje, mojTrg, mojeStoritve, ponudnik, postavke,
@@ -1599,9 +1613,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         imeUporabnika: imeUporabnika || undefined,
         klasicnaOblika: klasicnaOblika || undefined,
         uvodKoncan: uvodKoncan || undefined,
+        /* potek onboarding-chata, da zgodovina (vprasanja + odgovori) prezivi reload */
+        chatKorak: chatKorak || undefined,
+        chatNova: chatNova === null ? undefined : chatNova,
+        obIzbor: obIzbor.size ? [...obIzbor] : undefined,
+        nazivPonudbe: nazivPonudbe || undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, uvodKoncan]);
+  }, [jeNalozeno, osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, uvodKoncan, chatKorak, chatNova, obIzbor, nazivPonudbe]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -3226,7 +3245,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .orb0 .orb0-ikona svg { width: 27px; height: 27px; display: block; }
         .cw .orb0 .orb0-ime { position: relative; z-index: 1; font-weight: 700; font-size: .92rem; line-height: 1.05; padding: 0 .6em; text-shadow: 0 1px 3px rgba(35,18,45,.5); }
         .cw .orb0 .orb0-cena { position: relative; z-index: 1; font-size: .68rem; font-weight: 600; opacity: .95; margin-top: .2em; text-shadow: 0 1px 2px rgba(35,18,45,.45); }
-        .cw .orb0 .kolic0 { position: absolute; top: -2%; right: 0; z-index: 3; min-width: 1.9em; height: 1.9em; border-radius: 999px; background: #2A2630; color: #fff; font-weight: 800; font-size: .8rem; display: flex; align-items: center; justify-content: center; padding: 0 .4em; border: 2px solid rgba(255,255,255,.5); box-shadow: 0 5px 14px rgba(0,0,0,.28); cursor: pointer; transition: background .15s; }
+        .cw .orb0 .kolic0 { position: absolute; top: 8%; right: 8%; z-index: 3; min-width: 1.9em; height: 1.9em; border-radius: 999px; background: #2A2630; color: #fff; font-weight: 800; font-size: .8rem; display: flex; align-items: center; justify-content: center; padding: 0 .4em; border: 2px solid rgba(255,255,255,.5); box-shadow: 0 5px 14px rgba(0,0,0,.28); cursor: pointer; transition: background .15s; }
         .cw .orb0 .kolic0:hover { background: var(--accent); }
         .cw .orb0.orb0-plus { color: rgba(17,17,17,.55); }
         .cw .orb0.orb0-plus::before { display: none; }
@@ -5218,7 +5237,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             {korak > 0 && (
               <button type="button" className="gumb-nazaj" onClick={nazaj} aria-label="Nazaj">←</button>
             )}
-            {korak < KORAKOV - 1 ? (
+            {/* med aktivnim onboarding-chatom flow vodijo inline gumbi -> skrijemo spodnji "Naprej" (samo en gumb) */}
+            {korak === 0 && uvodChat && !klasicnaOblika ? null : korak < KORAKOV - 1 ? (
               <button type="button" className="gumb"
                 disabled={korak === 0 && !r} onClick={naprej}>
                 {korak === posebnostiStep ? 'Pokaži ceno →' : korak === cenaStep ? 'Pripravi ponudbo →' : korak === ponudbaStep ? 'Zaključi →' : 'Naprej →'}
