@@ -1443,6 +1443,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* nacin: chat (privzeto) ali klasicen vprasalnik (nastavitve) */
   const [klasicnaOblika, setKlasicnaOblika] = useState(false);
   const [chatKorak, setChatKorak] = useState(0);
+  /* po mehurckih: vprasanja tecejo kot chat NAVZDOL (0 = samo mehurcki, 1 = o stranki, ...) */
+  const [poMeh, setPoMeh] = useState(0);
   const [imeUporabnika, setImeUporabnika] = useState('');
   /* onboarding opravljen (obstojno) — sprozi se, dokler NI opravljen (ne glede na storitve) */
   const [uvodKoncan, setUvodKoncan] = useState<boolean | null>(null);
@@ -3239,6 +3241,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .uvod-faza .uvod-uvodnik { text-align: center; margin-bottom: 1.2rem; }
         .cw .uvod-faza .uvod-uvodnik .ob-kicker { text-align: center; }
         .cw .uvod-faza .chat-izbira { width: 100%; margin-bottom: 0; }
+        .cw .chat-po-meh { margin-top: 1.8rem; }
         .cw .platno0-drs { overflow: visible; min-width: 0; }
         .cw .platno0 { position: relative; min-height: 56vh; }
         .cw .namig0 { position: absolute; left: 0; right: 0; bottom: .2rem; text-align: center; font-size: .78rem; color: rgba(17,17,17,.45); pointer-events: none; }
@@ -4645,6 +4648,18 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </div>
           )}
 
+          {/* PO MEHURCIH: vprasanja tecejo kot chat NAVZDOL (ni skoka na svojo stran) */}
+          {korak === 0 && !uvodChat && !klasicnaOblika && poMeh >= 1 && (
+            <div className="chat chat-izbira chat-po-meh">
+              <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                <span className="chat-mehur"><b>Super izbira! Zdaj še — komu pošiljaš ponudbo?</b><small>Naročnik za pošiljanje; lahko pustiš prazno in izpolniš pozneje.</small></span></div>
+              <div className="chat-vnos">
+                <input type="text" placeholder="Ime podjetja (naročnik)" value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)} />
+                <input type="email" placeholder="Email naročnika" value={narocnikEmail} onChange={e => setNarocnikEmail(e.target.value)} />
+              </div>
+            </div>
+          )}
+
 
           {korak === kdoSiStep && podatkiUI()}
 
@@ -5279,12 +5294,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           <div className="noga-gumbi">
             {(korak > 0 || (korak === 0 && !uvodChat && !klasicnaOblika)) && (
               <button type="button" className="gumb-nazaj" aria-label="Nazaj"
-                onClick={korak === 0 ? () => { setUvodChat(true); setChatKorak(4); } : nazaj}>←</button>
+                onClick={korak === 0
+                  ? () => { if (poMeh > 0) { setPoMeh(poMeh - 1); } else { setUvodChat(true); setChatKorak(4); } }
+                  : nazaj}>←</button>
             )}
             {/* med aktivnim onboarding-chatom flow vodijo inline gumbi -> skrijemo spodnji "Naprej" (samo en gumb) */}
             {korak === 0 && uvodChat && !klasicnaOblika ? null : korak < KORAKOV - 1 ? (
               <button type="button" className="gumb"
-                disabled={korak === 0 && !r} onClick={naprej}>
+                disabled={korak === 0 && !r}
+                onClick={() => {
+                  /* na mehurckih: prvi Naprej razkrije "o stranki" kot chat navzdol (ni skoka) */
+                  if (korak === 0 && !uvodChat && !klasicnaOblika && poMeh === 0) {
+                    setPoMeh(1);
+                    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    window.setTimeout(() => { document.querySelector('.chat-po-meh')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); }, 60);
+                  } else { naprej(); }
+                }}>
                 {korak === posebnostiStep ? 'Pokaži ceno →' : korak === cenaStep ? 'Pripravi ponudbo →' : korak === ponudbaStep ? 'Zaključi →' : 'Naprej →'}
               </button>
             ) : (
