@@ -3396,7 +3396,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .h1-iskre path:nth-child(3) { animation-delay: 1.1s; }
         @keyframes iskra { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
 
-        .cw .oder0 { display: grid; grid-template-columns: 1.55fr 1fr; gap: clamp(1rem, 2.5vw, 2rem); align-items: stretch; width: min(1240px, 100%); }
+        .cw .oder0 { display: grid; grid-template-columns: 1.55fr 1fr; gap: clamp(1rem, 2.5vw, 2rem); align-items: stretch; width: min(1240px, 100%); margin-top: clamp(2rem, 5vw, 3.4rem); }
         /* korak 0 = nadaljevanje chatbota: mehurcki-transkript zgoraj, orbi spodaj */
         .cw .chat-izbira { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1rem; width: min(620px, 92%); margin: 0 auto 1.8rem; }
         /* med onboardingom: vsebina centrirana (kot prej), ozja; ko pride ponudba -> siroka miza */
@@ -4607,7 +4607,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {/* O TEBI: podjetje + tvoja regija (na zacetku, kot dogovorjeno) */}
               {chatKorak >= 2 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                  <span className="chat-mehur"><b>Kako se imenuje tvoja znamka ali podjetje?</b><small>Za glavo ponudbe; ostale podatke (TRR, logo) dodaš pozneje v nastavitvah.</small></span></div>
+                  <span className="chat-mehur"><b>V imenu katerega podjetja izdajaš ponudbo?</b><small>Ime v glavi ponudbe. Če (še) nimaš podjetja, vpiši svoje ime. Ostalo (TRR, logo) dodaš pozneje.</small></span></div>
               )}
               {chatKorak > 2 && uvodOdgovorMehur(2, ponudnik.ime.trim() || '—')}
 
@@ -4693,7 +4693,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <form className="chat-vnos" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
                   <input autoFocus type="text" value={chatVnos}
                     onChange={e => setChatVnos(e.target.value)}
-                    placeholder={chatKorak === 0 ? 'Ime ali vzdevek' : chatKorak === 2 ? 'Ime znamke / podjetja' : 'Ime ponudbe'} />
+                    placeholder={chatKorak === 0 ? 'Ime ali vzdevek' : chatKorak === 2 ? 'Ime podjetja ali tvoje ime' : 'Ime ponudbe'} />
                   <button type="submit" className="gumb" disabled={chatKorak === 0 && !chatVnos.trim()}>
                     {chatKorak === 6 ? 'Začni →' : 'Naprej →'}
                   </button>
