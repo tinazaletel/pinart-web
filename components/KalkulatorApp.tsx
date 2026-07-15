@@ -11,7 +11,7 @@ import {
   PersonSimple, TextAa, TextB, TextItalic, MagicWand, UploadSimple, CalendarBlank, EnvelopeSimple,
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
-  DotsSixVertical, Gear, UserCircle, ClockCounterClockwise, Wallet,
+  DotsSixVertical, Gear, User, UserCircle, ClockCounterClockwise, Wallet,
   CaretDown, CaretUp, Check, PencilSimple, SlidersHorizontal,
 } from '@phosphor-icons/react';
 
@@ -4246,7 +4246,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             {profilPogled === 'meni' && (
               <div className="profil-meni">
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('moji-podatki')}>
-                  <PersonSimple size={20} weight="bold" />
+                  <User size={20} weight="bold" />
                   <span>
                     <strong>Moji podatki</strong>
                     <small>tvoje ime, izkušnje in država — vplivajo na privzeto raven cen</small>
