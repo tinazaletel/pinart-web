@@ -1089,6 +1089,12 @@ const poudari = (s: string): string => s
   .replace(/(\b\d+\s?%)/g, '<b>$1</b>')
   .replace(/(\b\d+(?:\s?[–-]\s?\d+)?\s?(?:let\b|leto\b|leta\b|tednov\b|teden\b|tedna\b|mesec(?:ev|a)?\b|ur\b|urah\b))/gi, '<b>$1</b>');
 const escP = (s: string) => poudari(escapeHtml(s));
+/* vrstica s ceno na koncu -> label levo, cena poravnana DESNO (flex) */
+const cenaDesno = (l: string): string => {
+  const m = l.match(/^(.+?)\s*[—–:-]*\s+(\d[\d.\s]*\s?(?:€|\$|£))\s*$/);
+  if (!m) return escP(l);
+  return `<span class="offer-vrstica"><span class="offer-oznaka">${escP(m[1].trim())}</span><b class="offer-cena">${escapeHtml(m[2].trim())}</b></span>`;
+};
 const ponudbaVHtml = (s: string): string =>
   s.split('\n\n')
     .map((block): string => {
@@ -1117,7 +1123,7 @@ const ponudbaVHtml = (s: string): string =>
           else if (items.length) items[items.length - 1] += ' ' + l;
           else items.push(l);
         });
-        return `<ul>${items.map(l => `<li>${escP(l)}</li>`).join('')}</ul>`;
+        return `<ul>${items.map(l => `<li>${cenaDesno(l)}</li>`).join('')}</ul>`;
       }
       if (lines.length >= 2 && /^[A-ZČŠŽ\s]+/.test(first) && first.includes('·')) {
         const [title, ...rest] = lines;
@@ -1128,13 +1134,13 @@ const ponudbaVHtml = (s: string): string =>
         let kup: string[] = [];
         const izprazni = () => {
           if (kup.length) {
-            deli.push(`<ul>${kup.map(l => `<li>${escP(l.replace(/^·\s*/, ''))}</li>`).join('')}</ul>`);
+            deli.push(`<ul>${kup.map(l => `<li>${cenaDesno(l.replace(/^·\s*/, ''))}</li>`).join('')}</ul>`);
             kup = [];
           }
         };
         rest.forEach(l => {
           if (l.startsWith('·')) kup.push(l);
-          else { izprazni(); deli.push(`<p>${escP(l)}</p>`); }
+          else { izprazni(); deli.push(`<p class="offer-podnaslov">${cenaDesno(l)}</p>`); }
         });
         izprazni();
         return `<div class="offer-package"><div class="offer-package-head"><h3>${escapeHtml(name.trim())}</h3><strong>${escapeHtml(price.trim())}</strong></div>${deli.join('')}</div>`;
@@ -2611,7 +2617,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const prenesi = () => {
     const html = editorRef.current?.innerHTML || besediloHtml || ponudbaVHtml(besedilo);
     const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
-    const doc = `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${escapeHtml(naziv ? 'Ponudba: ' + naziv : 'Ponudba')}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:40px auto;line-height:1.55;color:#111}p{margin:0 0 1rem}</style></head><body>${html}</body></html>`;
+    const doc = `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${escapeHtml(naziv ? 'Ponudba: ' + naziv : 'Ponudba')}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:40px auto;line-height:1.55;color:#111}p{margin:0 0 1rem}.offer-vrstica{display:flex;justify-content:space-between;align-items:baseline;gap:1.5rem}.offer-cena{white-space:nowrap;font-weight:700}.offer-podnaslov{font-weight:700;margin:.9rem 0 .4rem}.offer-package{border:1px solid #ccc;padding:12px 14px;margin:10px 0}.offer-package-head{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin-bottom:.35rem}.offer-package-head h3{margin:0;font-size:12px;letter-spacing:.14em;text-transform:uppercase}.offer-package-head strong{font-size:20px;white-space:nowrap}ul{padding-left:1.2rem}</style></head><body>${html}</body></html>`;
     const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -4164,6 +4170,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .editor .offer-package-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .35rem; }
         .cw .editor .offer-package h3 { margin: 0; font-family: var(--font-sans), system-ui, sans-serif; font-size: .78rem; line-height: 1.2; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
         .cw .editor .offer-package strong { font-family: var(--font-serif), Didot, serif; font-size: 1.35rem; line-height: 1; font-weight: 500; white-space: nowrap; }
+        .cw .editor .offer-podnaslov { font-weight: 700; margin: .9rem 0 .4rem; }
+        .cw .editor .offer-vrstica { display: flex; justify-content: space-between; align-items: baseline; gap: 1.5rem; }
+        .cw .editor .offer-cena { white-space: nowrap; font-weight: 700; }
         .cw .editor .offer-package p { margin: .55rem 0 0; max-width: none; font-weight: 700; color: var(--ink); }
         .cw .editor .offer-package ul { margin: .45rem 0 0; padding-left: 1.05rem; }
         .cw .editor .offer-package li { margin: .22rem 0; color: var(--ink); }
