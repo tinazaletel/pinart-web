@@ -1621,7 +1621,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [kaziUre, setKaziUre] = useState(false);
   const [prenosPravic, setPrenosPravic] = useState<'izkljucni' | 'neizkljucni' | 'licenca'>('izkljucni');
   /* obseg pravic — privzetki dajo faktor 1.0 (glej PRAV_* konstante) */
-  const [pravTrajanje, setPravTrajanje] = useState<string>('7');
+  const [pravTrajanje, setPravTrajanje] = useState<string>('neomejeno');   /* privzeto sledi znamka/projekt (znamka=trajno, projekt=7 let) */
+  const [pravTrajanjeRocno, setPravTrajanjeRocno] = useState(false);       /* uporabnik rocno izbral -> ne prepisuj vec */
   const [pravTeritorij, setPravTeritorij] = useState<string>('slo');
   const [pravDodatniMediji, setPravDodatniMediji] = useState<Set<string>>(new Set());
   const [pravNaklada, setPravNaklada] = useState<string>('do3k');
@@ -5457,11 +5458,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <div className="kartica">
                 <div className="k-naslov">Za kaj bo naročnik uporabil delo? <span className="vec">določa vrednost pravic</span></div>
                 <div className="izbira">
-                  <button type="button" className={raba === 'znamka' ? 'on' : ''} onClick={() => setRaba('znamka')}>
+                  <button type="button" className={raba === 'znamka' ? 'on' : ''} onClick={() => { setRaba('znamka'); if (!pravTrajanjeRocno) setPravTrajanje('neomejeno'); }}>
                     <h3>Za celotno znamko</h3>
                     <p>Logotip, celostna podoba, spletna stran. Tvoje delo nosi vse, kar podjetje počne, zato vrednost sledi bilanci podjetja.</p>
                   </button>
-                  <button type="button" className={raba === 'projekt' ? 'on' : ''} onClick={() => setRaba('projekt')}>
+                  <button type="button" className={raba === 'projekt' ? 'on' : ''} onClick={() => { setRaba('projekt'); if (!pravTrajanjeRocno) setPravTrajanje('7'); }}>
                     <h3>Za določen projekt ali izdelek</h3>
                     <p>Majice, embalaža enega izdelka, konferenca, knjiga. Vrednost sledi pričakovanemu izkupičku projekta, ne velikosti podjetja.</p>
                   </button>
@@ -5519,8 +5520,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span className="vec">vpliva na ceno pravic</span>
                 </div>
                 <p className="hint" style={{ marginTop: 0 }}>
-                  Vključeno v osnovo: <b>tisk + promocija izdelka</b>, <b>7 let</b>, <b>Slovenija</b>, naklada <b>do 3.000</b>.
-                  Vse izven obsega je doplačljivo — ponudba to tudi zapiše.
+                  Vključeno v osnovo: <b>tisk + promocija izdelka</b>, <b>{(PRAV_TRAJANJE.find(t => t.id === pravTrajanje)?.ime || '7 let').toLowerCase()}</b>, <b>Slovenija</b>, naklada <b>do 3.000</b>.
+                  {raba === 'znamka' ? ' Za celotno znamko je privzeto trajno (logotip/CGP se ne omejuje na dobo).' : ' Za projekt je privzeto 7 let (npr. ilustracija).'}
+                  {' '}Vse izven obsega je doplačljivo — ponudba to tudi zapiše.
                 </p>
                 {obsegPokazi ? (
                   <>
@@ -5530,7 +5532,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         {PRAV_TRAJANJE.map(t => (
                           <button key={t.id} type="button"
                             className={'pill' + (pravTrajanje === t.id ? ' on' : '')}
-                            onClick={() => setPravTrajanje(t.id)}>
+                            onClick={() => { setPravTrajanje(t.id); setPravTrajanjeRocno(true); }}>
                             <span className="pill-fill" aria-hidden />
                             <span className="pill-tekst">{t.ime}</span>
                           </button>
