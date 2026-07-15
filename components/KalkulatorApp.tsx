@@ -1498,7 +1498,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [popust, setPopust] = useState('');
   const [postavke, setPostavke] = useState<Postavka[]>([]);
   const [iskanje, setIskanje] = useState('');
-  const [kazemDodaj, setKazemDodaj] = useState(false);
+  const [kazemDodaj, setKazemDodaj] = useState(false);          /* iskalnik v panelu (Tvoja ponudba) */
+  const [kazemDodajKorak, setKazemDodajKorak] = useState(false); /* iskalnik na vprasalniku — locen, da se ne podvaja s panelom */
   const [kazemUredi, setKazemUredi] = useState(false);       /* modal "dodaj / uredi" storitve */
   const [pogledMreza, setPogledMreza] = useState(false);      /* false = prosti mehurcki, true = urejena mreza po podrocjih */
   const [kazemProfil, setKazemProfil] = useState(false);
@@ -2464,7 +2465,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       kolicina: 1,
     }]);
     setIskanje('');
-    setKazemDodaj(false);
+    setKazemDodaj(false); setKazemDodajKorak(false);
   };
 
   const dodajSvojo = () => {
@@ -2472,7 +2473,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     if (!ime) return;
     setPostavke(p => [...p, { id: 'svoja-' + p.length, ime, cena: 100, kolicina: 1 }]);
     setIskanje('');
-    setKazemDodaj(false);
+    setKazemDodaj(false); setKazemDodajKorak(false);
   };
 
   const preklopiEnoto = (id: string) => {
@@ -3373,17 +3374,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     <div style={{ marginTop: '1.7rem' }}>
       <div className="skupina-naslov">{naslov}</div>
       <div className="opts">
-        <button type="button" className="pill dodaj" onClick={() => setKazemDodaj(!kazemDodaj)}>
+        <button type="button" className="pill dodaj" onClick={() => setKazemDodajKorak(!kazemDodajKorak)}>
           <span className="pi" aria-hidden><Plus size={19} /></span>
           <span>dodaj postavko<small>dodaten strošek za to ponudbo: font licenca, najem studia, tisk, stock …</small></span>
         </button>
       </div>
-      {kazemDodaj && (
+      {kazemDodajKorak && (
         <div className="iskalnik">
           <div className="polje">
             <div className="isk-glava">
               <label htmlFor="cw-iskanje2">Poišči ali vpiši svojo postavko</label>
-              <button type="button" className="op-edit" style={{ marginTop: 0 }} onClick={() => { setKazemDodaj(false); setIskanje(''); }}>✕ Zapri</button>
+              <button type="button" className="op-edit" style={{ marginTop: 0 }} onClick={() => { setKazemDodajKorak(false); setIskanje(''); }}>✕ Zapri</button>
             </div>
             <input id="cw-iskanje2" placeholder="npr. najem studia"
               value={iskanje} onChange={e => setIskanje(e.target.value)}
