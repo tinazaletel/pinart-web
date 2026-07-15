@@ -5045,15 +5045,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     </button>
                   </div>
                 </div>
-                {custDrzavaNarocnik.trim() ? (
-                  <p className="hint" style={{ marginTop: '.9rem' }}>
-                    Trg je privzet glede na državo naročnika (<b>{custDrzavaNarocnik.trim()}</b>). Za globalno podjetje ga lahko ročno dvigneš.
-                  </p>
-                ) : (
-                  <p className="hint" style={{ marginTop: '.9rem' }}>
-                    Vpiši državo naročnika v kartici zgoraj in trg se nastavi sam — ali ga tu izbereš ročno.
-                  </p>
-                )}
+                <p className="hint" style={{ marginTop: '.9rem' }}>
+                  <b>Vpliva na ceno</b> — bogatejši trg plača več.{custDrzavaNarocnik.trim()
+                    ? ` Privzeto glede na državo naročnika (${custDrzavaNarocnik.trim()}); za globalno podjetje ga ročno dvigneš.`
+                    : ' Nastavi se sam iz države naročnika.'}
+                </p>
               </div>
               {kazemValutaIzbira && typeof document !== 'undefined' && createPortal(
                 <div className="cw">
