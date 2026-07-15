@@ -3567,9 +3567,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .mreza-kvadrat .mk-ime { font-weight: 700; font-size: .95rem; line-height: 1.2; }
         .cw .mreza-kvadrat .mk-cena { font-size: .8rem; color: rgba(17,17,17,.55); font-weight: 500; }
         .cw .mreza-kvadrat .mk-kolic { position: absolute; top: .55rem; right: .55rem; min-width: 1.5rem; height: 1.5rem; padding: 0 .4rem; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: .76rem; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
-        .cw .mreza-uredi { align-items: center; justify-content: center; border-style: dashed; background: transparent; color: rgba(17,17,17,.6); min-height: 5rem; }
+        .cw .mreza-uredi { border-style: dashed; background: transparent; color: rgba(17,17,17,.62); }
         .cw .mreza-uredi .mk-ikona { background: rgba(17,17,17,.06); }
-        .cw .mreza-uredi .mk-ime { font-weight: 600; font-size: .85rem; }
         /* ── modal dodaj / uredi ── */
         .cw .uredi-plosca { width: 100%; max-width: 460px; max-height: min(38rem, 84dvh); display: flex; flex-direction: column; background: var(--paper); border: 1px solid rgba(17,17,17,.18); border-radius: 18px; box-shadow: 0 24px 80px rgba(17,17,17,.16); overflow: hidden; animation: cwVstop .3s cubic-bezier(.16,1,.3,1) both; }
         .cw .uredi-telo { overflow-y: auto; padding: 1.1rem 1.35rem 1.5rem; display: flex; flex-direction: column; gap: 1.4rem; }
@@ -4964,6 +4963,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       <button type="button" className="mreza-kvadrat mreza-uredi" onClick={() => setKazemUredi(true)}>
                         <span className="mk-ikona" aria-hidden><Plus size={18} /></span>
                         <span className="mk-ime">dodaj / uredi</span>
+                        <span className="mk-cena">nova storitev ali pogled</span>
                       </button>
                     </div>
                   </div>
