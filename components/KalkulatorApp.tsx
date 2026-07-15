@@ -1546,11 +1546,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* dvojni scrollbar: stran zadaj ima svojega, chat/onboarding pa svojega —
      med njima stran zadaj zaklenemo. */
   useEffect(() => {
-    if (!onboardingOdprt && !uvodChat) return;
+    if (!onboardingOdprt && !uvodChat && !kazemProfil) return;
     const prej = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prej; };
-  }, [onboardingOdprt, uvodChat]);
+  }, [onboardingOdprt, uvodChat, kazemProfil]);
   const [obIzbor, setObIzbor] = useState<Set<string>>(new Set());
   /* Poljuben vrstni red storitev (razporejanje z drag-rocajem); prazno = naravni. */
   const [vrstniRed, setVrstniRed] = useState<string[]>([]);
