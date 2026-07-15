@@ -1547,13 +1547,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      med njima stran zadaj zaklenemo. */
   useEffect(() => {
     if (!onboardingOdprt && !uvodChat && !kazemProfil) return;
+    /* Stran uporablja Lenis smooth-scroll (window.__pinartLenis), ki prestreza wheel
+       in skrola ozadje MIMO overflow:hidden. Zato ga ob odprtem oknu ustavimo. */
+    const lenis = (window as unknown as { __pinartLenis?: { stop: () => void; start: () => void } }).__pinartLenis;
+    lenis?.stop();
     const html = document.documentElement;
     const prejHtml = html.style.overflow;
     const prejBody = document.body.style.overflow;
-    /* zakleni oba: root scroller je lahko <html>, ne <body> — sicer wheel skrola ozadje */
     html.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
-    return () => { html.style.overflow = prejHtml; document.body.style.overflow = prejBody; };
+    return () => { lenis?.start(); html.style.overflow = prejHtml; document.body.style.overflow = prejBody; };
   }, [onboardingOdprt, uvodChat, kazemProfil]);
   const [obIzbor, setObIzbor] = useState<Set<string>>(new Set());
   /* Poljuben vrstni red storitev (razporejanje z drag-rocajem); prazno = naravni. */
@@ -4160,7 +4163,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       )}
 
       {onboardingOdprt && (
-        <div className="onboarding" role="dialog" aria-modal="true" aria-label="Katere storitve ponujaš">
+        <div className="onboarding" role="dialog" aria-modal="true" aria-label="Katere storitve ponujaš" data-lenis-prevent>
           <div className="glava glava-ozka">{glavaUI()}</div>
           <div className="oder">
             <div className="korak-vsebina">
@@ -4235,7 +4238,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       {kazemProfil && (
         <>
           <div className="profil-zastor" onClick={() => { setKazemProfil(false); setProfilPogled('meni'); }} aria-hidden />
-          <div className="profil-predal" role="dialog" aria-modal="true" aria-label="Profil">
+          <div className="profil-predal" role="dialog" aria-modal="true" aria-label="Profil" data-lenis-prevent>
             <div className="profil-glava">
               <div className="profil-glava-zapri">
                 <button type="button" className="op-edit" onClick={() => { setKazemProfil(false); setProfilPogled('meni'); }}>✕ Zapri</button>
@@ -4600,7 +4603,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           )}
           {/* korak 0 = nadaljevanje chatbota (naslov gre stran) */}
           {korak === 0 && !klasicnaOblika && (
-            <div className="chat chat-izbira" ref={uvodRef}>
+            <div className="chat chat-izbira" ref={uvodRef} data-lenis-prevent>
               {uvodChat && (
                 <div className="uvod-uvodnik">
                   <p className="ob-kicker">Onboarding</p>
@@ -4805,7 +4808,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </div>
 
               {/* ── živa ponudba: desktop fiksno desno, mobile drsni panel (kosarica) ── */}
-              <aside className={'ponudba0' + (ponudbaOdprta ? ' odprta' : '')} aria-label="Tvoja ponudba">
+              <aside className={'ponudba0' + (ponudbaOdprta ? ' odprta' : '')} aria-label="Tvoja ponudba" data-lenis-prevent>
                 <button type="button" className="ponudba0-zapri" aria-label="Zapri ponudbo" onClick={() => setPonudbaOdprta(false)}>×</button>
                 <div className="ponudba0-glava">
                   <h2>{nazivPonudbe.trim() || 'Tvoja ponudba'}</h2>
