@@ -3270,6 +3270,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .uvod-faza .uvod-uvodnik .ob-kicker { text-align: center; }
         .cw .uvod-faza .chat-izbira { width: 100%; margin-bottom: 0; }
         .cw .chat-po-meh { margin-top: 1.8rem; }
+        /* v chat obliki: kartice vprasanj + naslovi na SIRINO CHATA (poravnano z oblacki) */
+        .cw .chat-koraki .kartica,
+        .cw .chat-koraki .chat-vpr { max-width: min(620px, 100%); margin-left: auto; margin-right: auto; }
+        .cw .chat-koraki .chat-vpr { margin-top: 1.8rem; }
         .cw .platno0-drs { overflow: visible; min-width: 0; }
         .cw .platno0 { position: relative; min-height: 56vh; }
         .cw .namig0 { position: absolute; left: 0; right: 0; bottom: .2rem; text-align: center; font-size: .78rem; color: rgba(17,17,17,.45); pointer-events: none; }
@@ -4348,7 +4352,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       )}
 
       <div className="oder">
-        <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '') + (korak === 0 && uvodChat && !klasicnaOblika ? ' uvod-faza' : '')} key={korak}>
+        <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '') + (korak === 0 && uvodChat && !klasicnaOblika ? ' uvod-faza' : '') + (vChatu && poMeh > 0 ? ' chat-koraki' : '')} key={korak}>
           {(korak !== 0 || klasicnaOblika) && (
             <h1><span className="h1-step">{String(korak + 1).padStart(2, '0')}</span>{naslovKoraka.split(' ').map((b, bi) => (
               <span key={bi} className="h1-maska"><span className="h1-beseda" style={{ animationDelay: `${bi * 90}ms` }}>{b}&nbsp;</span></span>
