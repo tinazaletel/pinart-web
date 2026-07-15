@@ -3285,6 +3285,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 560px) { .cw .priprava-overlay { border-radius: 0; width: 100vw; } }
         /* priprava = samostojna centrirana stran, malo sirsa od ostalih korakov */
         .cw .korak-vsebina.priprava-korak { max-width: 1000px; }
+        .cw .priprava-nazaj { display: inline-flex; align-items: center; gap: .4rem; background: rgba(255,255,255,.4); border: 1px solid rgba(17,17,17,.16); color: var(--ink); font-family: inherit; font-weight: 600; font-size: .84rem; cursor: pointer; padding: .5rem .95rem; border-radius: 999px; margin: 0 0 1.3rem; transition: background .18s, border-color .18s; }
+        .cw .priprava-nazaj:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
         /* v chat obliki: VSA vsebina vprasanj (kartice, naslovi, dodatni stroski, vrstice)
            na SIRINO CHATA in centrirana; chat (transkript) in oder0 (mehurcki) izvzeta */
         /* enaka sirina za vse (obrazci + paketi cen); 620 je bil pretesen za 3 pakete -> 720 */
@@ -5277,6 +5279,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           {korak === ponudbaStep && (
             <div className="priprava priprava-stran">
               <div className="priprava-telo">
+              {!klasicnaOblika && (
+                <button type="button" className="priprava-nazaj" onClick={() => setKorak(0)}>
+                  ← Uredi podatke in vprašanja
+                </button>
+              )}
               <div className="tonbar" aria-label="Ton ponudbe">
                 {TONI.map(t => (
                   <button key={t.id} type="button" className={tonPonudbe === t.id ? 'on' : ''}
