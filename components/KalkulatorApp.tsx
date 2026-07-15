@@ -1502,7 +1502,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [kazemProfil, setKazemProfil] = useState(false);
   /* Profil kot drill-down (meni -> ena "podstran"), ne dolg scroll treh
      razdelkov skupaj — bolj pregledno in mobile-friendly (Tina). */
-  const [profilPogled, setProfilPogled] = useState<'meni' | 'zgodovina' | 'podjetja' | 'podjetje-urejanje' | 'cene-nastavitve' | 'cene' | 'stroski' | 'obvestila' | 'pomoc'>('meni');
+  const [profilPogled, setProfilPogled] = useState<'meni' | 'moji-podatki' | 'zgodovina' | 'podjetja' | 'podjetje-urejanje' | 'cene-nastavitve' | 'cene' | 'stroski' | 'obvestila' | 'pomoc'>('meni');
   /* katero shranjeno podjetje je trenutno "aktivno" (nalozeno v ponudnik/ddv/...
      zivo stanje) — null, ce urejamo novo, se nikoli shranjeno podjetje. */
   const [aktivnoPodjetje, setAktivnoPodjetje] = useState<string | null>(null);
@@ -4208,6 +4208,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     aria-label="Nazaj na profil">←</button>
                 )}
                 {profilPogled === 'meni' ? 'Profil'
+                  : profilPogled === 'moji-podatki' ? 'Moji podatki'
                   : profilPogled === 'zgodovina' ? 'Zgodovina ponudb'
                     : profilPogled === 'podjetja' ? 'Moje podjetje'
                       : profilPogled === 'podjetje-urejanje' ? (aktivnoPodjetje || 'Podjetje')
@@ -4221,6 +4222,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
             {profilPogled === 'meni' && (
               <div className="profil-meni">
+                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('moji-podatki')}>
+                  <PersonSimple size={20} weight="bold" />
+                  <span>
+                    <strong>Moji podatki</strong>
+                    <small>tvoje ime, izkušnje in država — vplivajo na privzeto raven cen</small>
+                  </span>
+                  <span className="pm-puscica" aria-hidden>→</span>
+                </button>
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('zgodovina')}>
                   <ClockCounterClockwise size={20} weight="bold" />
                   <span>
@@ -4289,6 +4298,38 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   Izbriši VSE podatke orodja (podjetja, cene, zgodovino) — celotna ponastavitev
                 </button>
               </div>
+            )}
+
+            {profilPogled === 'moji-podatki' && (
+              <>
+                <p className="ob-sub" style={{ margin: '0 0 1.3rem' }}>Tvoji osebni podatki — isti, ki jih izpolniš v uvodnem pogovoru. Samodejno se shranijo in določajo privzeto raven cen.</p>
+                <div className="kartica">
+                  <div className="polje" style={{ marginBottom: '1.4rem' }}>
+                    <label htmlFor="mp-ime">Ime ali vzdevek</label>
+                    <input id="mp-ime" type="text" placeholder="npr. Tina"
+                      value={imeUporabnika} onChange={e => setImeUporabnika(e.target.value)} />
+                  </div>
+                  <div className="polje" style={{ marginBottom: '1.4rem' }}>
+                    <label>Izkušnje</label>
+                    <div className="opts">
+                      {CHAT_IZK.map(o => (
+                        <button key={o.id} type="button"
+                          className={'pill' + (izkusnje === o.id ? ' on' : '')}
+                          onClick={() => setIzkusnje(o.id)}>
+                          <span className="pill-fill" aria-hidden />
+                          <span className="pill-tekst">{o.ime}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="polje">
+                    <label htmlFor="mp-drzava">Država <span className="vec">določi privzet trg / raven cen</span></label>
+                    <input id="mp-drzava" type="text" list="cw-drzave-list" placeholder="npr. Slovenija"
+                      value={custDrzavaMoj}
+                      onChange={e => { const v = e.target.value; setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }} />
+                  </div>
+                </div>
+              </>
             )}
 
             {profilPogled === 'zgodovina' && (
