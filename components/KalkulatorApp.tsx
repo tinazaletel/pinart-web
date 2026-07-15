@@ -4318,6 +4318,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
+                <label className="se-preklop" style={{ marginTop: '1.2rem', paddingTop: '1.2rem', borderTop: '1px solid rgba(17,17,17,.1)' }}>
+                  <span><b>Klasičen vprašalnik</b><br /><em style={{ fontWeight: 400 }}>namesto chat pogovora — korak za korakom, kot prej</em></span>
+                  <span className="se-toggle">
+                    <input type="checkbox" checked={klasicnaOblika} onChange={() => setKlasicnaOblika(v => !v)} />
+                    <span className="se-slider" aria-hidden />
+                  </span>
+                </label>
                 <button type="button" className="profil-nevarno" onClick={ponastaviVse}>
                   Izbriši VSE podatke orodja (podjetja, cene, zgodovino) — celotna ponastavitev
                 </button>
@@ -4411,13 +4418,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
             {profilPogled === 'cene-nastavitve' && (
               <>
-                <label className="se-preklop" style={{ marginBottom: '1.4rem' }}>
-                  <span><b>Klasičen vprašalnik</b><br /><em style={{ fontWeight: 400 }}>namesto chat pogovora — korak za korakom, kot prej</em></span>
-                  <span className="se-toggle">
-                    <input type="checkbox" checked={klasicnaOblika} onChange={() => setKlasicnaOblika(v => !v)} />
-                    <span className="se-slider" aria-hidden />
-                  </span>
-                </label>
                 <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Te cene so <b>podlaga za izračun</b> — privzete (slovenski trg) delujejo takoj, prilagodi jih svojim za točnejši rezultat. Razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš; vrstni red velja tudi na prvem koraku.</p>
                 <button type="button" className="povezava povezava-roza" style={{ marginBottom: '1.3rem' }} onClick={() => setProfilPogled('moji-podatki')}>↳ Uredi področja dela (v Moji podatki)</button>
                 <div className="cene-seznam">
