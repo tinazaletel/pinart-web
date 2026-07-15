@@ -2236,18 +2236,34 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('');
     v.push('IZBERITE PAKET');
     v.push('');
+    /* cena posamezne storitve (za priporoceni paket) — vsota priceanih vrstic te storitve */
+    const cenaStoritve = (sid: string) => r.linije.reduce((a, l, j) =>
+      l.sid === sid ? a + (r.vrsticeIzvedbe[j]?.cena || 0) * (r.vrsticeIzvedbe[j]?.kolicina || 1) : a, 0);
     r.paketi.forEach((p, i) => {
       v.push(`${p.ime.toUpperCase()}  ·  ${val(p.skupaj)}${ddvZavezanec ? `  (z DDV ${zDdv(p.skupaj)})` : ''}`);
       const vecStoritev = r.sez.length > 1;
+      /* razsirjena + PRIPOROCENI paket: specifikacija cen je vpisana ob vsaki storitvi (ne locen razdelek) */
+      const kaziCene = obsegPonudbe === 'razsirjena' && i === 1;
       r.sez.forEach(s => {
         const [jedro = [], nadgradnja = [], vrh = []] = ALINEJE_PAKETOV[s.id] ?? [];
         const alineje = [...jedro, ...(i >= 1 ? nadgradnja : []), ...(i >= 2 ? vrh : [])];
-        if (!alineje.length) { v.push(`  · ${s.ime}: izvedba po dogovorjenem obsegu`); return; }
-        if (vecStoritev) v.push(`  ${s.ime}`);
+        const cenaPripis = kaziCene ? `  —  ${val(cenaStoritve(s.id))}` : '';
+        if (!alineje.length) { v.push(`  · ${s.ime}${cenaPripis}: izvedba po dogovorjenem obsegu`); return; }
+        if (vecStoritev || kaziCene) v.push(`  ${s.ime}${cenaPripis}`);
         alineje.forEach(a => v.push(`  · ${a}`));
       });
-      postavke.forEach(x => v.push(`  · ${x.ime}${x.enota === 'ura' ? ` — ${x.kolicina} ur` : x.kolicina > 1 ? ' × ' + x.kolicina : ''}`));
+      postavke.forEach((x, xi) => {
+        const cenaX = kaziCene ? (r.vrsticeIzvedbe[r.linije.length + xi]?.cena || 0) * x.kolicina : 0;
+        v.push(`  · ${x.ime}${x.enota === 'ura' ? ` — ${x.kolicina} ur` : x.kolicina > 1 ? ' × ' + x.kolicina : ''}${cenaX ? `  —  ${val(cenaX)}` : ''}`);
+      });
       v.push(`  · ${POPRAVKI_PAKETA[i]}`);
+      if (kaziCene) {
+        v.push(`  · Skupaj izvedba: ${val(r.delo)}`);
+        if (r.prenos === 'licenca')
+          v.push(`  · Avtorske pravice: prek letne licence ${val(r.licenca)} / leto (odkup ni vključen)`);
+        else
+          v.push(`  · Avtorske pravice (${r.prenos === 'neizkljucni' ? 'neizključni' : 'enkratni'} prenos): ${val(r.pravice)}`);
+      }
       v.push('');
     });
     v.push(crta);
@@ -2259,15 +2275,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
        pravih ponudbah), ne na dnu, kjer se izgubijo. */
     if (obsegPonudbe === 'razsirjena') {
       const cur = (n: number) => Math.round(n * vfx.fx).toLocaleString('sl-SI') + ' ' + vfx.znak;
-      v.push('');
-      v.push('SPECIFIKACIJA CEN (osnova: paket Priporočeni)');
-      r.vrsticeIzvedbe.forEach(x =>
-        v.push(`· ${x.ime}${x.kolicina > 1 ? ' × ' + x.kolicina : ''}: ${val(x.cena * x.kolicina)}`));
-      v.push(`· Skupaj izvedba: ${val(r.delo)}`);
-      if (r.prenos === 'licenca')
-        v.push(`· Avtorske pravice: prek letne licence ${val(r.licenca)} / leto (odkup ni vključen)`);
-      else
-        v.push(`· Avtorske pravice (${r.prenos === 'neizkljucni' ? 'neizključni' : 'enkratni'} prenos): ${val(r.pravice)}`);
+      /* specifikacija cen je zdaj vpisana v priporocenem paketu zgoraj (ne locen razdelek) */
       /* Ura-osnova (kot v njenih pravih ponudbah): PRIVZETO SKRITA (value-based
          pozicioniranje); prikaze se le, ko jo vklopi s stikalom. */
       const urnaZaOceno = urnePostavke.map(u => Math.round(Number(u.cena)) || 0).find(n => n > 0) || 0;
