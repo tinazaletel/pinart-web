@@ -8,7 +8,7 @@ import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package,
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
   CopySimple, DownloadSimple, FileText, FloppyDisk, PaintBucket,
-  PersonSimple, TextAa, TextB, UploadSimple, CalendarBlank, EnvelopeSimple,
+  PersonSimple, TextAa, TextB, TextItalic, UploadSimple, CalendarBlank, EnvelopeSimple,
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, UserCircle, ClockCounterClockwise, Wallet,
@@ -1461,6 +1461,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   useEffect(() => {
     try { if (new URL(window.location.href).searchParams.has('uvod')) { setUvodChat(true); setChatKorak(0); } } catch { /* ignore */ }
   }, []);
+  /* moderne pisave za urejevalnik ponudbe (best-effort; ce CSP blokira, gladek fallback na sistemsko) */
+  useEffect(() => {
+    const id = 'cw-editor-fonts';
+    if (document.getElementById(id)) return;
+    const l = document.createElement('link');
+    l.id = id; l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Roboto:wght@400;500&family=Lora:wght@400;600&display=swap';
+    document.head.appendChild(l);
+  }, []);
   /* dvojni scrollbar: stran zadaj ima svojega, chat/onboarding pa svojega —
      med njima stran zadaj zaklenemo. */
   useEffect(() => {
@@ -1513,6 +1522,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [izjemePravice, setIzjemePravice] = useState('');
   const [prikaziIzjemePravic, setPrikaziIzjemePravic] = useState(false);
   const [obsegPonudbe, setObsegPonudbe] = useState<'kratka' | 'razsirjena'>('razsirjena');
+  /* urejevalnik ponudbe: velikost besedila (1-7, privzeto 3) + cilj barve (crke/podlaga) */
+  const [velikostBesedila, setVelikostBesedila] = useState(3);
+  const [barvaCilj, setBarvaCilj] = useState<'crke' | 'podlaga'>('crke');
   const [kaziUre, setKaziUre] = useState(false);
   const [prenosPravic, setPrenosPravic] = useState<'izkljucni' | 'neizkljucni' | 'licenca'>('izkljucni');
   /* obseg pravic — privzetki dajo faktor 1.0 (glej PRAV_* konstante) */
@@ -2327,6 +2339,24 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     document.execCommand(ukaz, false, vrednost);
     sinhronizirajEditor();
   };
+  /* velikost besedila po korakih (gor/dol skozi privzeto 3) */
+  const velikost = (smer: number) => {
+    const nv = Math.min(7, Math.max(1, velikostBesedila + smer));
+    setVelikostBesedila(nv);
+    oblikuj('fontSize', String(nv));
+  };
+  /* podnaslov = preklop (ce je vrstica ze podnaslov -> nazaj v navadno) */
+  const podnaslovToggle = () => {
+    let blok = '';
+    try { blok = String(document.queryCommandValue('formatBlock') || '').toLowerCase(); } catch { /* ignore */ }
+    oblikuj('formatBlock', blok === 'h2' ? 'p' : 'h2');
+  };
+  /* barva -> na crke ali podlago (glede na barvaCilj); prazna = odstrani/default */
+  const uporabiBarvo = (barva: string) =>
+    oblikuj(barvaCilj === 'podlaga' ? 'hiliteColor' : 'foreColor', barva);
+  const odstraniBarvo = () =>
+    oblikuj(barvaCilj === 'podlaga' ? 'hiliteColor' : 'foreColor', barvaCilj === 'podlaga' ? 'transparent' : '#111111');
+  const uporabiPisavo = (font: string) => oblikuj('fontName', font);
 
   const uvoziPredlogo = (file?: File) => {
     if (!file) return;
@@ -3832,6 +3862,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .tool-vel .tv-aa { font-weight: 700; font-size: .82rem; }
         .cw .tool-vel button { border: none; background: rgba(17,17,17,.07); border-radius: 6px; width: 1.5rem; height: 1.35rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); padding: 0; }
         .cw .tool-vel button:hover { background: var(--ink); color: var(--paper); }
+        .cw .tool-ikona { padding: 0 .6rem; }
+        .cw .pisava-select { min-height: 2.25rem; border: 1px solid rgba(17,17,17,.22); background: rgba(255,255,255,.32); color: var(--ink); border-radius: 999px; padding: 0 .8rem; font-family: inherit; font-weight: 600; font-size: .78rem; cursor: pointer; }
+        .cw .barva-cilj { gap: 0; padding: 0; overflow: hidden; }
+        .cw .barva-cilj button { border: none; background: transparent; color: var(--ink); font-family: inherit; font-weight: 600; font-size: .74rem; padding: .5rem .72rem; cursor: pointer; min-height: 2.25rem; transition: background .15s; }
+        .cw .barva-cilj button.on { background: var(--ink); color: var(--paper); }
         .cw .barvica { width: 1.35rem; height: 1.35rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.22); cursor: pointer; }
         .cw .editor { width: 100%; min-height: 340px; border: 1px solid rgba(17,17,17,.25); background: rgba(255,255,255,.52); padding: 1.35rem; color: var(--ink); font-family: var(--font-sans), system-ui, sans-serif; font-size: .94rem; line-height: 1.62; overflow: auto; }
         .cw .editor:focus { outline: none; border-color: var(--ink); }
@@ -5313,29 +5348,38 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <span>Noga »Pripravljeno s Pinart kalkulatorjem« <em>(lahko izklopiš)</em></span>
               </label>
               <div className="orodjarna" aria-label="Oblikovanje ponudbe">
-                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko">
-                  <TextB size={17} weight="bold" /> Krepko
-                </button>
-                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title="Vrstico spremeni v podnaslov">
-                  <TextAa size={17} /> Podnaslov
-                </button>
-                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title="Vrni v navadno besedilo (iz podnaslova)">
-                  <TextAa size={15} /> Navadno
-                </button>
+                {/* velikost + osnovno oblikovanje */}
                 <div className="tool tool-vel" role="group" aria-label="Velikost besedila">
                   <span className="tv-aa" aria-hidden>Aa</span>
-                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('fontSize', '5'); }} aria-label="Povečaj označeno besedilo" title="Povečaj"><CaretUp size={13} weight="bold" /></button>
-                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('fontSize', '2'); }} aria-label="Pomanjšaj označeno besedilo" title="Pomanjšaj"><CaretDown size={13} weight="bold" /></button>
+                  <button type="button" onMouseDown={e => { e.preventDefault(); velikost(1); }} aria-label="Povečaj besedilo" title="Povečaj"><CaretUp size={13} weight="bold" /></button>
+                  <button type="button" onMouseDown={e => { e.preventDefault(); velikost(-1); }} aria-label="Pomanjšaj besedilo" title="Pomanjšaj (skozi privzeto v manjše)"><CaretDown size={13} weight="bold" /></button>
                 </div>
-                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('hiliteColor', '#EEE8D8'); }} title="Označi besedilo z nežno podlago">
-                  <PaintBucket size={17} /> Podlaga
-                </button>
-                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('hiliteColor', 'transparent'); }} title="Odstrani podlago z označenega besedila">
-                  Brez
-                </button>
-                {['#111111', '#F5F2EA', '#F8E71C', '#50E3C2', '#FA4892'].map(barva => (
+                <button type="button" className="tool tool-ikona" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko"><TextB size={17} weight="bold" /></button>
+                <button type="button" className="tool tool-ikona" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title="Ležeče"><TextItalic size={17} /></button>
+                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); podnaslovToggle(); }} title="Podnaslov — klikni znova za navadno besedilo"><TextAa size={17} /> Podnaslov</button>
+                {/* pisava */}
+                <select className="pisava-select" aria-label="Pisava besedila" defaultValue=""
+                  onMouseDown={() => editorRef.current?.focus()}
+                  onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
+                  <option value="" disabled>Pisava…</option>
+                  <option value="Bodoni Moda">Elegantna (privzeta)</option>
+                  <option value="Montserrat">Montserrat</option>
+                  <option value="Roboto">Roboto</option>
+                  <option value="Lora">Lora</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Arial">Arial</option>
+                </select>
+                {/* barva: kam velja + tolpe (dvojni klik = odstrani) */}
+                <div className="tool barva-cilj" role="group" aria-label="Kam velja barva">
+                  <button type="button" className={barvaCilj === 'crke' ? 'on' : ''} onMouseDown={e => { e.preventDefault(); setBarvaCilj('crke'); }}>Črke</button>
+                  <button type="button" className={barvaCilj === 'podlaga' ? 'on' : ''} onMouseDown={e => { e.preventDefault(); setBarvaCilj('podlaga'); }}>Podlaga</button>
+                </div>
+                {['#111111', '#7C3AED', '#F8E71C', '#50E3C2', '#FA4892', '#EEE8D8'].map(barva => (
                   <button key={barva} type="button" className="barvica" style={{ background: barva }}
-                    aria-label={'Barva besedila ' + barva} onMouseDown={e => { e.preventDefault(); oblikuj('foreColor', barva); }} />
+                    aria-label={'Barva ' + barva}
+                    title={(barvaCilj === 'podlaga' ? 'Podlaga' : 'Črke') + ' — dvojni klik odstrani barvo'}
+                    onMouseDown={e => { e.preventDefault(); uporabiBarvo(barva); }}
+                    onDoubleClick={e => { e.preventDefault(); odstraniBarvo(); }} />
                 ))}
                 <button type="button" className="tool" onClick={() => fileRef.current?.click()} title="Uvozi HTML ali TXT predlogo">
                   <UploadSimple size={17} /> Uvozi predlogo
