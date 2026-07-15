@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { localePath } from '@/i18n/routing';
 
 import {
-  PenNib, Palette, Browser, Megaphone, BookOpen, Package,
+  PenNib, Palette, Browser, Megaphone, BookOpen, Package, Coffee,
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
   CopySimple, DownloadSimple, FileText, FloppyDisk, PaintBucket,
   PersonSimple, TextAa, TextB, TextItalic, MagicWand, UploadSimple, CalendarBlank, EnvelopeSimple,
@@ -2888,10 +2888,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     direkcija:   <Compass size={19} />,
     fotografija: <Camera size={19} />,
     copy:        <TextT size={19} />,
-    interier:    <House size={19} />,
+    interier:    <Armchair size={19} />,
     arhitektura: <Buildings size={19} />,
     razstava:    <Presentation size={19} />,
-    produktni:   <Armchair size={19} />,
+    produktni:   <Coffee size={19} />,
     uxui:        <Layout size={19} />,
     aplikacija:  <DeviceMobile size={19} />,
     dizajnsistem:<SquaresFour size={19} />,
