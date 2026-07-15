@@ -165,6 +165,14 @@ const PRAV_TRAJANJE = [
   { id: '10',        ime: '10 let',    mult: 1.3  },
   { id: 'neomejeno', ime: 'Neomejeno', mult: 1.8  },
 ] as const;
+/* privzeta vrsta pravic + trajanje po storitvi (za tabelo pri vec storitvah) */
+const PRAVICE_TRAJNO = new Set(['logo', 'cgp', 'web', 'embalaza', 'interier', 'arhitektura', 'produktni', 'uxui', 'aplikacija', 'dizajnsistem']);
+const PRAVICE_KAMPANJA = new Set(['kampanja', 'smm', 'razstava', 'seo', 'email', 'pr']);
+const privzetePraviceZa = (sid: string): { prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string } => {
+  if (PRAVICE_TRAJNO.has(sid)) return { prenos: 'izkljucni', trajanje: 'neomejeno' };
+  if (PRAVICE_KAMPANJA.has(sid)) return { prenos: 'licenca', trajanje: '1' };
+  return { prenos: 'izkljucni', trajanje: '7' };   /* ilustracija, foto, publikacija, video, motion, 3d, copy, direkcija, strategija, moja- */
+};
 const PRAV_TERITORIJ = [
   { id: 'slo',    ime: 'Slovenija', mult: 1.0 },
   { id: 'eu',     ime: 'Evropa',    mult: 1.4 },
@@ -1627,6 +1635,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [pravDodatniMediji, setPravDodatniMediji] = useState<Set<string>>(new Set());
   const [pravNaklada, setPravNaklada] = useState<string>('do3k');
   const [pravPonatis, setPravPonatis] = useState(true);
+  /* pravice po storitvi (tabela): sid -> {prenos, trajanje}; manjka = privzeto iz privzetePraviceZa */
+  const [pravicePoStoritvi, setPravicePoStoritvi] = useState<Record<string, { prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string }>>({});
+  const pravRec = (sid: string) => pravicePoStoritvi[sid] || privzetePraviceZa(sid);
+  const nastaviPravRec = (sid: string, del: Partial<{ prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string }>) =>
+    setPravicePoStoritvi(prev => ({ ...prev, [sid]: { ...pravRec(sid), ...del } }));
   const [obsegOdprt, setObsegOdprt] = useState(false);
   /* pri avtorskih vizualnih delih (ilustracija, fotografija ...) se obseg
      pokaze odprt takoj — Majin nauk: tam so ta vprasanja jedro cene */
@@ -3997,6 +4010,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw input[type=number]::-webkit-outer-spin-button,
         .cw input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .cw .polje select { width: 100%; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .35rem 1.6rem .5rem 0; color: var(--ink); border-radius: 0; appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .2rem center; }
+        /* datalist polja (npr. Država): skrij Chromov native indikator, dodaj isto puscico kot pri select */
+        .cw input[list] { padding-right: 1.6rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .2rem center; }
+        .cw input[list]::-webkit-calendar-picker-indicator { opacity: 0; cursor: pointer; }
         .cw .tel-vrsta { display: flex; gap: .8rem; align-items: baseline; }
         .cw .tel-vrsta select { width: 6.2rem; flex: none; }
         .cw .polje select:focus { outline: none; border-bottom: 2px solid var(--ink); margin-bottom: -1px; }
