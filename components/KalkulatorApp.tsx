@@ -4184,6 +4184,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .segpills button { border: none; background: transparent; color: var(--ink); font-family: inherit; font-weight: 700; font-size: .76rem; letter-spacing: .04em; text-transform: uppercase; padding: .58rem 1.05rem; border-radius: 999px; cursor: pointer; transition: background .18s, color .18s; }
         .cw .segpills button.on { background: var(--ink); color: var(--paper); }
         .cw .pon-vrh-desno { margin-left: auto; display: inline-flex; align-items: center; gap: .8rem; }
+        .cw .ponastavi-gumb { opacity: .38; }
+        .cw .ponastavi-gumb.aktiv { opacity: 1; }
+        .cw .ponastavi-gumb:hover { opacity: 1; }
         .cw .ai-gumb { width: 2.9rem; height: 2.9rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.14); background: rgba(255,255,255,.55); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: transform .2s, background .18s, color .18s; }
         .cw .ai-gumb:hover { background: var(--ink); color: var(--paper); transform: scale(1.06); }
         .cw .ai-namig { background: rgba(124,58,237,.09); border-radius: 12px; padding: .7rem .9rem; margin: -.3rem 0 1rem; }
@@ -5851,10 +5854,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   ))}
                 </div>
                 <div className="pon-vrh-desno">
-                  {rocnoBesedilo && (
-                    <button type="button" className="ai-gumb ponastavi-gumb" title="Ponastavi na samodejno besedilo" aria-label="Ponastavi na samodejno besedilo"
-                      onClick={ponastaviBesedilo}><ArrowCounterClockwise size={18} weight="bold" /></button>
-                  )}
+                  <button type="button" className={'ai-gumb ponastavi-gumb' + (rocnoBesedilo ? ' aktiv' : '')} title="Ponastavi na samodejno besedilo" aria-label="Ponastavi na samodejno besedilo"
+                    onClick={ponastaviBesedilo}><ArrowCounterClockwise size={18} weight="bold" /></button>
                   <button type="button" className="ai-gumb" title="AI pomočnik" aria-label="AI pomočnik"
                     onClick={() => setAiKmalu(v => !v)}><MagicWand size={19} /></button>
                 </div>
