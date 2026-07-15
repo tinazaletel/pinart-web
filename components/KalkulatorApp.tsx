@@ -2958,6 +2958,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const s = vseStoritve.find(x => x.id === l.sid);
     return s ? a + osnovaZa(s) * Math.max(1, Math.round(l.kolicina)) : a;
   }, 0) + postavke.reduce((a, x) => a + x.cena * x.kolicina, 0);
+  /* DDV stopnja za prikaz v panelu/specifikaciji */
+  const ddvSt = clamp(Number(ddvStopnja) || 22, 0, 30);
   /* SATASTA (honeycomb) postavitev: vrste se izmenjujejo siroka/ozja (npr. 3-2-3),
      ozje vrste centrirano padejo v vrzeli sirokih -> mehurcki NISO v ravnih navpicnih
      stolpcih, a kompozicija ostane uravnotezena. Pozicije se se dorecejo po formatu. */
@@ -3478,7 +3480,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-bot .chat-mehur small { display: block; margin-top: .1rem; color: rgba(17,17,17,.5); font-size: .82rem; }
         .cw .chat-jaz { align-self: flex-end; max-width: 88%; }
         .cw .chat-jaz .chat-mehur { background: rgba(160,205,235,.4); color: var(--ink); font-weight: 600; border-bottom-right-radius: 5px; }
-        .cw .chat-mehur { border-radius: 18px; padding: .9rem 1.35rem; font-size: .95rem; line-height: 1.5; font-weight: 400; }
+        .cw .chat-mehur { border-radius: 18px; padding: .9rem 1.35rem; font-size: .95rem; line-height: 1.5; font-weight: 400; border: 1px solid rgba(255,255,255,.7); box-shadow: 0 2px 10px rgba(40,25,40,.05); }
+        .cw .noga-skrita { display: none; }
         .cw .chat-izbire { display: flex; flex-direction: column; gap: .6rem; margin: .2rem 0 .2rem 3.05rem; }
         .cw .chat-opcija { display: flex; align-items: center; gap: .9rem; text-align: left; width: min(420px, 100%); background: rgba(255,255,255,.82); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(17,17,17,.1); border-radius: 16px; padding: 1rem 1.15rem; cursor: pointer; font-family: inherit; color: var(--ink); transition: transform .22s cubic-bezier(.34,1.56,.5,1), border-color .2s, box-shadow .22s; }
         .cw .chat-opcija:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 14px 30px rgba(142,52,89,.12); }
@@ -3515,6 +3518,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .ponudba0-vsota-vrsta { display: flex; justify-content: space-between; align-items: baseline; font-size: .92rem; color: rgba(17,17,17,.62); }
         .cw .ponudba0-vsota-vrsta b { font-family: var(--font-bodoni), serif; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.15rem; }
         .cw .ponudba0-opomba { font-size: .76rem; color: var(--accent); margin-top: .45rem; font-weight: 500; }
+        .cw .ponudba0-vsota-vrsta.ponudba0-mini { font-size: .82rem; color: rgba(17,17,17,.55); margin-top: .35rem; }
+        .cw .ponudba0-vsota-vrsta.ponudba0-mini + .ponudba0-vsota-vrsta { margin-top: .35rem; }
 
         /* mobilna kosarica (FAB) + zapiralni gumb — privzeto skrita (na desktopu je panel fiksen desno) */
         .cw .ponudba0-zapri { display: none; }
@@ -4805,10 +4810,28 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <div className="ponudba0-vsota">
                   {r && poMeh >= 6 ? (
                     <>
+                      {r.popustPct > 0 && (
+                        <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                          <span>Popust {r.popustPct} %</span>
+                          <span>redna {val(r.paketi[1].redna)}</span>
+                        </div>
+                      )}
                       <div className="ponudba0-vsota-vrsta">
-                        <span>Priporočena cena</span>
+                        <span>Priporočena cena{ddvZavezanec ? ' (brez DDV)' : ''}</span>
                         <b>{val(r.paketi[1].skupaj)}</b>
                       </div>
+                      {ddvZavezanec && (
+                        <>
+                          <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                            <span>DDV {ddvSt} %</span>
+                            <span>{val(r.paketi[1].skupaj * ddvSt / 100)}</span>
+                          </div>
+                          <div className="ponudba0-vsota-vrsta">
+                            <span>Cena z DDV</span>
+                            <b>{val(r.paketi[1].skupaj * (1 + ddvSt / 100))}</b>
+                          </div>
+                        </>
+                      )}
                       <div className="ponudba0-opomba">↳ končna cena (paket Priporočeni) — levo izbereš paket in prilagodiš</div>
                     </>
                   ) : (
@@ -5499,13 +5522,24 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         </>
       )}
 
-      <div className={'noga' + (vChatu ? ' noga-ob-panelu' : '')}>
+      <div className={'noga' + (vChatu ? ' noga-ob-panelu' : '') + (onboardingOdprt ? ' noga-skrita' : '')}>
         <div className="noga-c">
           <div className="noga-gumbi">
             {(korak > 0 || (korak === 0 && !uvodChat && !klasicnaOblika)) && (
               <button type="button" className="gumb-nazaj" aria-label="Nazaj"
                 onClick={korak === 0
-                  ? () => { if (poMeh > 0) { setPoMeh(poMeh - 1); } else { setUvodChat(true); setChatKorak(6); } }
+                  ? () => {
+                      if (poMeh > 0) {
+                        setPoMeh(poMeh - 1);
+                        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                        window.setTimeout(() => {
+                          const vpr = document.querySelectorAll('.chat-vpr');
+                          const zadnji = vpr[vpr.length - 1];
+                          if (zadnji) zadnji.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+                          else window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+                        }, 60);
+                      } else { setUvodChat(true); setChatKorak(6); }
+                    }
                   : nazaj}>←</button>
             )}
             {/* med aktivnim onboarding-chatom flow vodijo inline gumbi -> skrijemo spodnji "Naprej" (samo en gumb) */}
