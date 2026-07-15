@@ -3555,8 +3555,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .orb0.orb0-plus .orb0-ime { font-weight: 600; text-shadow: none; font-size: .82rem; }
         /* ── pogled MREZA (kvadratki po podrocjih) ── */
         .cw .mreza0-ovoj { width: min(1240px, 100%); margin-top: clamp(1.4rem, 4vw, 2.6rem); }
-        .cw .mreza0 { display: flex; flex-wrap: wrap; gap: clamp(1rem, 2.4vw, 1.8rem); align-items: flex-start; }
-        .cw .mreza-skupina { display: flex; flex-direction: column; gap: .7rem; flex: 1 1 158px; min-width: 150px; max-width: 220px; }
+        .cw .mreza0 { display: grid; grid-template-columns: repeat(auto-fill, 180px); gap: clamp(1rem, 2.4vw, 1.8rem); justify-content: start; align-items: start; }
+        .cw .mreza-skupina { display: flex; flex-direction: column; gap: .7rem; }
         .cw .mreza-naslov { font-size: .78rem; font-weight: 700; letter-spacing: .03em; color: rgba(17,17,17,.6); text-transform: uppercase; padding-left: .15rem; min-height: 1.1rem; }
         .cw .mreza-kvadrati { display: flex; flex-direction: column; gap: .7rem; }
         .cw .mreza-kvadrat { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: .35rem; text-align: left; padding: .8rem .9rem; border-radius: 18px; border: 1.5px solid rgba(17,17,17,.1); background: #fff; box-shadow: 0 3px 12px rgba(35,18,45,.05); cursor: pointer; font-family: inherit; color: var(--ink); transition: transform .18s cubic-bezier(.34,1.4,.5,1), border-color .18s, box-shadow .18s; }
