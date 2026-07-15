@@ -1718,17 +1718,24 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       if (chatVnos.trim()) setImeUporabnika(chatVnos.trim());
       setChatVnos('');
       setChatKorak(1);
-    } else if (chatKorak === 4) {
+    } else if (chatKorak === 2) {
+      /* ime znamke / podjetja -> ponudnik.ime (glava ponudbe) */
+      if (chatVnos.trim()) setPonudnik(p => ({ ...p, ime: chatVnos.trim() }));
+      setChatVnos('');
+      setChatKorak(3);
+    } else if (chatKorak === 6) {
       if (chatVnos.trim()) setNazivPonudbe(chatVnos.trim());
       setChatVnos('');
       zakljuciUvod();
     }
   };
   const uvodIzberiIzkusnje = (id: string) => { setIzkusnje(id); setChatKorak(2); };
-  const uvodPotrdiPodrocja = () => setChatKorak(3);   /* po izbiri podrocij */
+  /* tvoja regija / trg (o tebi) -> privzeta raven cen */
+  const uvodPotrdiRegijo = (id: string) => { setMojTrg(id); setTrgNarocnika(id); setChatKorak(4); };
+  const uvodPotrdiPodrocja = () => setChatKorak(5);   /* po izbiri podrocij */
   const uvodNovaObstojeca = (nova: boolean) => {
     setChatNova(nova);
-    if (nova) { setChatKorak(4); return; }
+    if (nova) { setChatKorak(6); return; }
     /* obstoječa: naloži zadnjo iz arhiva, če obstaja, sicer nadaljuj kot nova */
     const kljuci = Object.keys(arhiv);
     if (kljuci.length) {
@@ -1736,7 +1743,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       naloziIzArhiva(zadnji);
       zakljuciUvod();
     } else {
-      setChatKorak(4);
+      setChatKorak(6);
     }
   };
 
@@ -3281,10 +3288,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .orb0-foto { background: none; }
         .cw .orb0-foto::before { display: none; }
         .cw .orb0-foto .orb0-svg { position: absolute; top: -24%; left: -24%; width: 148%; height: 148%; z-index: 0; pointer-events: none; -webkit-user-drag: none; user-select: none; }
-        .cw .orb0 .orb0-ikona { position: relative; z-index: 1; display: block; margin-bottom: .15rem; filter: drop-shadow(0 1px 2px rgba(35,18,45,.45)); }
-        .cw .orb0 .orb0-ikona svg { width: 27px; height: 27px; display: block; }
-        .cw .orb0 .orb0-ime { position: relative; z-index: 1; font-weight: 700; font-size: .92rem; line-height: 1.05; padding: 0 .6em; text-shadow: 0 1px 3px rgba(35,18,45,.5); }
-        .cw .orb0 .orb0-cena { position: relative; z-index: 1; font-size: .68rem; font-weight: 600; opacity: .95; margin-top: .2em; text-shadow: 0 1px 2px rgba(35,18,45,.45); }
+        .cw .orb0 .orb0-ikona { position: relative; z-index: 1; display: block; margin-bottom: .12rem; filter: drop-shadow(0 1px 2px rgba(35,18,45,.45)); }
+        .cw .orb0 .orb0-ikona svg { width: 24px; height: 24px; display: block; }
+        .cw .orb0 .orb0-ime { position: relative; z-index: 1; font-weight: 700; font-size: .86rem; line-height: 1.12; padding: 0 1.1em; text-shadow: 0 1px 3px rgba(35,18,45,.5); }
+        .cw .orb0 .orb0-cena { position: relative; z-index: 1; font-size: .64rem; font-weight: 600; opacity: .95; margin-top: .18em; text-shadow: 0 1px 2px rgba(35,18,45,.45); }
         .cw .orb0 .kolic0 { position: absolute; top: 8%; right: 8%; z-index: 3; min-width: 1.9em; height: 1.9em; border-radius: 999px; background: #2A2630; color: #fff; font-weight: 800; font-size: .8rem; display: flex; align-items: center; justify-content: center; padding: 0 .4em; border: 2px solid rgba(255,255,255,.5); box-shadow: 0 5px 14px rgba(0,0,0,.28); cursor: pointer; transition: background .15s; }
         .cw .orb0 .kolic0:hover { background: var(--accent); }
         .cw .orb0.orb0-plus { color: rgba(17,17,17,.55); }
@@ -4382,11 +4389,36 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               )}
               {chatKorak > 1 && <div className="chat-jaz"><span className="chat-mehur">{CHAT_IZK.find(o => o.id === izkusnje)?.ime || 'Nekaj let izkušenj'}</span></div>}
 
+              {/* O TEBI: podjetje + tvoja regija (na zacetku, kot dogovorjeno) */}
               {chatKorak >= 2 && (
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                  <span className="chat-mehur"><b>Kako se imenuje tvoja znamka ali podjetje?</b><small>Za glavo ponudbe; ostale podatke (TRR, logo) dodaš pozneje v nastavitvah.</small></span></div>
+              )}
+              {chatKorak > 2 && <div className="chat-jaz"><span className="chat-mehur">{ponudnik.ime.trim() || '—'}</span></div>}
+
+              {chatKorak >= 3 && (
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                  <span className="chat-mehur"><b>Za katero regijo / trg večinoma delaš?</b><small>Nastavi privzeto raven cen.</small></span></div>
+              )}
+              {uvodChat && chatKorak === 3 && (
+                <div className="chat-podrocja">
+                  {TRGI.map(t => (
+                    <button key={t.id} type="button" className={'chip-podrocje' + (mojTrg === t.id ? ' on' : '')}
+                      style={{ borderColor: mojTrg === t.id ? '#7C3AED' : 'rgba(17,17,17,.12)', boxShadow: mojTrg === t.id ? `0 6px 18px ${osvetli('#7C3AED', 0.5)}` : undefined }}
+                      onClick={() => uvodPotrdiRegijo(t.id)}>
+                      <b>{t.ime}</b>
+                      <span className="chip-kljuk" aria-hidden style={{ borderColor: mojTrg === t.id ? '#7C3AED' : 'rgba(17,17,17,.2)', background: mojTrg === t.id ? '#7C3AED' : 'transparent' }}>{mojTrg === t.id ? '✓' : ''}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {chatKorak > 3 && <div className="chat-jaz"><span className="chat-mehur">{TRGI.find(t => t.id === mojTrg)?.ime || '—'}</span></div>}
+
+              {chatKorak >= 4 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
                   <span className="chat-mehur"><b>S katerimi področji se ukvarjaš?</b><small>Izbereš lahko več — pokažem samo tvoje storitve.</small></span></div>
               )}
-              {uvodChat && chatKorak === 2 && (
+              {uvodChat && chatKorak === 4 && (
                 <>
                   <div className="chat-podrocja">
                     {PODROCJA.map(p => {
@@ -4406,13 +4438,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <div className="chat-vnos"><button type="button" className="gumb" disabled={obIzbor.size === 0} onClick={uvodPotrdiPodrocja}>Naprej →</button></div>
                 </>
               )}
-              {chatKorak > 2 && obIzbor.size > 0 && <div className="chat-jaz"><span className="chat-mehur">{[...obIzbor].map(id => PODROCJA.find(p => p.id === id)?.ime).filter(Boolean).join(', ')}</span></div>}
+              {chatKorak > 4 && obIzbor.size > 0 && <div className="chat-jaz"><span className="chat-mehur">{[...obIzbor].map(id => PODROCJA.find(p => p.id === id)?.ime).filter(Boolean).join(', ')}</span></div>}
 
-              {chatKorak >= 3 && (
+              {chatKorak >= 5 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
                   <span className="chat-mehur"><b>Nova ponudba ali nadaljuješ obstoječo?</b></span></div>
               )}
-              {uvodChat && chatKorak === 3 && (
+              {uvodChat && chatKorak === 5 && (
                 <div className="chat-izbire">
                   <button type="button" className="chat-opcija" onClick={() => uvodNovaObstojeca(true)}>
                     <span className="crk">A</span><b>Nova ponudba</b></button>
@@ -4420,9 +4452,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <span className="crk">B</span><b>Obstoječa ponudba</b><small>{Object.keys(arhiv).length ? 'naložim zadnjo iz arhiva' : 'v arhivu še ni ponudb'}</small></button>
                 </div>
               )}
-              {chatKorak > 3 && chatNova !== null && <div className="chat-jaz"><span className="chat-mehur">{chatNova ? 'Nova ponudba' : 'Obstoječa ponudba'}</span></div>}
+              {chatKorak > 5 && chatNova !== null && <div className="chat-jaz"><span className="chat-mehur">{chatNova ? 'Nova ponudba' : 'Obstoječa ponudba'}</span></div>}
 
-              {chatKorak >= 4 && (
+              {chatKorak >= 6 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
                   <span className="chat-mehur"><b>Kako naj se imenuje ponudba?</b><small>Npr. »Inovis — prenova CGP in spletne strani«.</small></span></div>
               )}
@@ -4446,13 +4478,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               )}
 
               {/* vnosna vrstica (ime / ime ponudbe) — samo med onboardingom */}
-              {uvodChat && (chatKorak === 0 || chatKorak === 4) && (
+              {uvodChat && (chatKorak === 0 || chatKorak === 2 || chatKorak === 6) && (
                 <form className="chat-vnos" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
                   <input autoFocus type="text" value={chatVnos}
                     onChange={e => setChatVnos(e.target.value)}
-                    placeholder={chatKorak === 0 ? 'Ime ali vzdevek' : 'Ime ponudbe'} />
+                    placeholder={chatKorak === 0 ? 'Ime ali vzdevek' : chatKorak === 2 ? 'Ime znamke / podjetja' : 'Ime ponudbe'} />
                   <button type="submit" className="gumb" disabled={chatKorak === 0 && !chatVnos.trim()}>
-                    {chatKorak === 4 ? 'Začni →' : 'Naprej →'}
+                    {chatKorak === 6 ? 'Začni →' : 'Naprej →'}
                   </button>
                 </form>
               )}
@@ -4515,10 +4547,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 })}
                 {(() => {
                   const d = Math.round(orbD * 0.78);
-                  const p = orbPoz(orbStoritve.length);   /* zadnja celica v mreži -> uravnotežena vrstica */
+                  const p = orbPoz(orbStoritve.length);   /* y = zadnja vrstica */
+                  /* x: poravnano z desno storitvijo ozje vrste (kot Ilustracija) — vedno bolj desno */
+                  const dodajX = Math.min(92, 50 + Math.max(orbStep / 2, ((orbMax - 2) * orbStep) / 2));
                   return (
                     <button type="button" className="orb0 orb0-plus"
-                      style={{ width: d, height: d, left: `calc(${p.x}% - ${d / 2}px)`, top: `calc(${p.y}% - ${d / 2}px)` }}
+                      style={{ width: d, height: d, left: `calc(${dodajX}% - ${d / 2}px)`, top: `calc(${p.y}% - ${d / 2}px)` }}
                       onClick={() => setKazemDodaj(!kazemDodaj)}>
                       <span className="orb0-krog" aria-hidden />
                       <Plus size={20} aria-hidden />
@@ -5344,7 +5378,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             {(korak > 0 || (korak === 0 && !uvodChat && !klasicnaOblika)) && (
               <button type="button" className="gumb-nazaj" aria-label="Nazaj"
                 onClick={korak === 0
-                  ? () => { if (poMeh > 0) { setPoMeh(poMeh - 1); } else { setUvodChat(true); setChatKorak(4); } }
+                  ? () => { if (poMeh > 0) { setPoMeh(poMeh - 1); } else { setUvodChat(true); setChatKorak(6); } }
                   : nazaj}>←</button>
             )}
             {/* med aktivnim onboarding-chatom flow vodijo inline gumbi -> skrijemo spodnji "Naprej" (samo en gumb) */}
