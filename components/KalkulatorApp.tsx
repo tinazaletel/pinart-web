@@ -1217,17 +1217,19 @@ uniform vec3 c2;
 uniform vec3 c3;
 out vec4 fragColor;
 void main(){
-  vec2 uv=gl_FragCoord.xy/uRes;
-  float w = sin((uv.x*1.6+uv.y*1.1)*3.14159+uTime*0.6)*0.10
-          + sin((uv.x*1.1-uv.y*1.7)*3.14159-uTime*0.45)*0.08
-          + sin((uv.x*0.7+uv.y*0.5)*3.14159+uTime*0.25)*0.06;
-  float g = clamp((uv.x+uv.y)*0.5 + w, 0.0, 1.0);
-  vec3 col = g<0.5 ? mix(c1,c2,smoothstep(0.0,0.5,g)) : mix(c2,c3,smoothstep(0.5,1.0,g));
-  vec3 pink = vec3(0.965,0.808,0.878);
-  vec2 pc = vec2(0.10 + sin(uTime*0.35)*0.06, 0.08 + cos(uTime*0.28)*0.05);
-  float d = distance(uv + vec2(w*0.5, w*0.3), pc);
-  float puls = 0.50 + sin(uTime*0.5)*0.08;
-  col = mix(col, pink, smoothstep(0.62, 0.0, d) * puls);
+  vec2 uv = gl_FragCoord.xy/uRes;
+  float asp = uRes.x / max(uRes.y, 1.0);
+  vec2 p = vec2(uv.x*asp, uv.y);            // aspect-popravek -> bloba sta OKROGLA, ne razpotegnjena
+  // dva krozna bloba, ki lebdita po X in Y z razlicnimi frekvencami -> se priblizata in gresta narazen
+  vec2 cA = vec2((0.34 + sin(uTime*0.50)*0.15 + sin(uTime*0.21)*0.05)*asp,
+                  0.40 + cos(uTime*0.43)*0.20 + sin(uTime*0.17)*0.05);
+  vec2 cB = vec2((0.68 + cos(uTime*0.41)*0.16 + cos(uTime*0.27)*0.04)*asp,
+                  0.58 + sin(uTime*0.37)*0.19 + cos(uTime*0.6)*0.05);
+  float dA = distance(p, cA);
+  float dB = distance(p, cB);
+  vec3 col = c2;                            // bez podlaga
+  col = mix(col, c1, smoothstep(0.60, 0.0, dA));   // roza blob
+  col = mix(col, c3, smoothstep(0.60, 0.0, dB));   // modra blob
   fragColor = vec4(min(col, vec3(1.0)), 1.0);
 }`;
     const sh = (t: number, src: string) => {
@@ -3281,6 +3283,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .priprava-zapri:hover { background: var(--ink); color: var(--paper); transform: scale(1.08); }
         @media (prefers-reduced-motion: reduce) { .cw .priprava-overlay, .cw .priprava-backdrop { animation: none; } }
         @media (max-width: 560px) { .cw .priprava-overlay { border-radius: 0; width: 100vw; } }
+        .cw .priprava-noga { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 1.1rem 0 .5rem; margin-top: 1.4rem; background: linear-gradient(to top, var(--paper) 72%, transparent); }
+        .cw .noga-skrita { display: none; }
         /* v chat obliki: VSA vsebina vprasanj (kartice, naslovi, dodatni stroski, vrstice)
            na SIRINO CHATA in centrirana; chat (transkript) in oder0 (mehurcki) izvzeta */
         /* enaka sirina za vse (obrazci + paketi cen); 620 je bil pretesen za 3 pakete -> 720 */
@@ -5266,20 +5270,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <p className="sub">Najprej izberi vsaj eno storitev v prvem koraku.</p>
           )}
 
-          {korak === ponudbaStep && (
-            <>
-              {!klasicnaOblika && <div className="priprava-backdrop" onClick={() => setKorak(0)} aria-hidden />}
-              <div className={'priprava' + (klasicnaOblika ? '' : ' priprava-overlay')}>
-              {!klasicnaOblika && (
-                <div className="priprava-glava">
-                  <div className="priprava-glava-t">
-                    <p className="ob-kicker">Ponudba</p>
-                    <h2 className="priprava-h">Tvoja ponudba</h2>
-                    <p className="sub">Besedilo lahko poljubno urejaš in dopišeš — to je iste ponudba, ki se je gradila desno.</p>
-                  </div>
-                  <button type="button" className="priprava-zapri" onClick={() => setKorak(0)} aria-label="Zapri urejanje">×</button>
-                </div>
-              )}
+          {korak === ponudbaStep && (() => {
+            const pripravaTelo = (
               <div className="priprava-telo">
               <div className="tonbar" aria-label="Ton ponudbe">
                 {TONI.map(t => (
@@ -5362,10 +5354,33 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </button>
                 </p>
               )}
-              </div>{/* .priprava-telo */}
-              </div>{/* .priprava */}
-            </>
-          )}
+              </div>
+            );
+            /* klasicna oblika = inline stran; chat oblika = razsirjen overlay iz desne,
+               portaliran na <body> (da ga transformiran/centriran prednik ne zlomi) */
+            if (klasicnaOblika) return <div className="priprava">{pripravaTelo}</div>;
+            return typeof document === 'undefined' ? null : createPortal(
+              <div className="cw">
+                <div className="priprava-backdrop" onClick={() => setKorak(0)} aria-hidden />
+                <div className="priprava-overlay">
+                  <div className="priprava-glava">
+                    <div className="priprava-glava-t">
+                      <p className="ob-kicker">Ponudba</p>
+                      <h2 className="priprava-h">Tvoja ponudba</h2>
+                      <p className="sub">Besedilo lahko poljubno urejaš in dopišeš — to je ista ponudba, ki se je gradila desno.</p>
+                    </div>
+                    <button type="button" className="priprava-zapri" onClick={() => setKorak(0)} aria-label="Zapri urejanje">×</button>
+                  </div>
+                  {pripravaTelo}
+                  <div className="priprava-noga">
+                    <button type="button" className="gumb-nazaj" onClick={() => setKorak(0)} aria-label="Nazaj na chat">←</button>
+                    <button type="button" className="gumb" onClick={() => setKorak(zakljucekStep)}>Zaključi →</button>
+                  </div>
+                </div>
+              </div>,
+              document.body
+            );
+          })()}
 
           {korak === zakljucekStep && (
             <div className="btnvrsta">
@@ -5405,7 +5420,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         </>
       )}
 
-      <div className={'noga' + (vChatu ? ' noga-ob-panelu' : '')}>
+      <div className={'noga' + (vChatu ? ' noga-ob-panelu' : '') + (!klasicnaOblika && korak === ponudbaStep ? ' noga-skrita' : '')}>
         <div className="noga-c">
           <div className="noga-gumbi">
             {(korak > 0 || (korak === 0 && !uvodChat && !klasicnaOblika)) && (
