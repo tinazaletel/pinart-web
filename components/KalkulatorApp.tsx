@@ -2636,7 +2636,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   };
   const nazaj = () => {
     /* v chat obliki vprasanja zivijo na koraku 0 (poMeh); iz cene se vrnemo tja, ne na prazne vmesne korake */
-    if (!klasicnaOblika && korak === cenaStep) { setKorak(0); return; }
+    if (!klasicnaOblika && (korak === cenaStep || korak === ponudbaStep)) { setKorak(0); return; }
     setKorak(k => Math.max(0, k - 1));
   };
 
@@ -3270,10 +3270,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .uvod-faza .uvod-uvodnik .ob-kicker { text-align: center; }
         .cw .uvod-faza .chat-izbira { width: 100%; margin-bottom: 0; }
         .cw .chat-po-meh { margin-top: 1.8rem; }
-        /* v chat obliki: kartice vprasanj + naslovi na SIRINO CHATA (poravnano z oblacki) */
-        .cw .chat-koraki .kartica,
-        .cw .chat-koraki .chat-vpr { max-width: min(620px, 100%); margin-left: auto; margin-right: auto; }
-        .cw .chat-koraki .chat-vpr { margin-top: 1.8rem; }
+        /* v chat obliki: VSA vsebina vprasanj (kartice, naslovi, dodatni stroski, vrstice)
+           na SIRINO CHATA in centrirana; chat (transkript) in oder0 (mehurcki) izvzeta */
+        .cw .chat-koraki > *:not(.chat):not(.oder0):not(h1):not(.sub-vrsta):not(.paketi) { max-width: min(620px, 100%); margin-left: auto; margin-right: auto; }
+        /* paketi cen sirsi (3 stolpci), a centrirani */
+        .cw .chat-koraki > .paketi { max-width: min(820px, 100%); margin-left: auto; margin-right: auto; }
+        .cw .chat-koraki .chat-vpr { margin-top: 2.2rem; margin-bottom: .9rem; }
         .cw .platno0-drs { overflow: visible; min-width: 0; }
         .cw .platno0 { position: relative; min-height: 56vh; }
         .cw .namig0 { position: absolute; left: 0; right: 0; bottom: .2rem; text-align: center; font-size: .78rem; color: rgba(17,17,17,.45); pointer-events: none; }
@@ -5176,8 +5178,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </>
           )}
 
-          {korak === cenaStep && r && (
+          {((klasicnaOblika && korak === cenaStep) || (vChatu && poMeh >= 6)) && r && (
             <>
+              {vChatu && chatVpr('Tvoja cena.', 'Pametno izhodišče — prilagodi jo po občutku.')}
               <div className="paketi">
                 {r.paketi.map(p => (
                   <div key={p.id} className={'paket' + (p.id === 'priporoceni' ? ' mid' : '')}>
@@ -5389,16 +5392,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <button type="button" className="gumb"
                 disabled={korak === 0 && !r}
                 onClick={() => {
-                  /* v chatu: vsak Naprej razkrije naslednje vprasanje NAVZDOL (o stranki -> trg -> raba -> pravice -> posebnosti), nato cena */
-                  if (vChatu && poMeh < 5) {
+                  /* v chatu: vsak Naprej razkrije naslednje NAVZDOL (o stranki -> trg -> raba -> pravice -> posebnosti -> CENA), nato priprava ponudbe */
+                  if (vChatu && poMeh < 6) {
                     setPoMeh(poMeh + 1);
                     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                     window.setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: reduce ? 'auto' : 'smooth' }); }, 70);
-                  } else if (vChatu && poMeh === 5) {
-                    setKorak(cenaStep);
+                  } else if (vChatu && poMeh === 6) {
+                    setKorak(ponudbaStep);   /* priprava ponudbe = overlay/urejanje */
                   } else { naprej(); }
                 }}>
-                {vChatu && poMeh === 5 ? 'Pokaži ceno →' : korak === posebnostiStep ? 'Pokaži ceno →' : korak === cenaStep ? 'Pripravi ponudbo →' : korak === ponudbaStep ? 'Zaključi →' : 'Naprej →'}
+                {vChatu && poMeh === 5 ? 'Pokaži ceno →' : vChatu && poMeh === 6 ? 'Pripravi ponudbo →' : korak === posebnostiStep ? 'Pokaži ceno →' : korak === cenaStep ? 'Pripravi ponudbo →' : korak === ponudbaStep ? 'Zaključi →' : 'Naprej →'}
               </button>
             ) : (
               <div className="noga-koncna">
