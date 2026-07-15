@@ -250,6 +250,72 @@ const TRGI = [
   { id: 'asia', ime: 'Azija / Južna Amerika',   lvl: 0.55 },
 ];
 
+/* Država naročnika -> privzet trg (razred cene). Uporabnik ga lahko ročno spremeni.
+   Za globalna podjetja ali izjeme je trg dropdown vedno na voljo. */
+const DRZAVE: { ime: string; trg: string }[] = [
+  { ime: 'Slovenija', trg: 'si' },
+  { ime: 'Avstrija', trg: 'si' },
+  { ime: 'Nemčija', trg: 'si' },
+  { ime: 'Italija', trg: 'west' },
+  { ime: 'Madžarska', trg: 'si' },
+  { ime: 'Češka', trg: 'si' },
+  { ime: 'Slovaška', trg: 'si' },
+  { ime: 'Poljska', trg: 'si' },
+  { ime: 'Švica', trg: 'us' },
+  { ime: 'Liechtenstein', trg: 'us' },
+  { ime: 'Francija', trg: 'west' },
+  { ime: 'Belgija', trg: 'west' },
+  { ime: 'Nizozemska', trg: 'west' },
+  { ime: 'Luksemburg', trg: 'us' },
+  { ime: 'Irska', trg: 'west' },
+  { ime: 'Španija', trg: 'west' },
+  { ime: 'Portugalska', trg: 'west' },
+  { ime: 'Velika Britanija', trg: 'us' },
+  { ime: 'ZDA', trg: 'us' },
+  { ime: 'Kanada', trg: 'us' },
+  { ime: 'Švedska', trg: 'us' },
+  { ime: 'Norveška', trg: 'us' },
+  { ime: 'Danska', trg: 'us' },
+  { ime: 'Finska', trg: 'us' },
+  { ime: 'Islandija', trg: 'us' },
+  { ime: 'Avstralija', trg: 'us' },
+  { ime: 'Nova Zelandija', trg: 'us' },
+  { ime: 'Hrvaška', trg: 'east' },
+  { ime: 'Srbija', trg: 'east' },
+  { ime: 'Bosna in Hercegovina', trg: 'east' },
+  { ime: 'Črna gora', trg: 'east' },
+  { ime: 'Severna Makedonija', trg: 'east' },
+  { ime: 'Kosovo', trg: 'east' },
+  { ime: 'Albanija', trg: 'east' },
+  { ime: 'Bolgarija', trg: 'east' },
+  { ime: 'Romunija', trg: 'east' },
+  { ime: 'Grčija', trg: 'east' },
+  { ime: 'Ukrajina', trg: 'east' },
+  { ime: 'Litva', trg: 'east' },
+  { ime: 'Latvija', trg: 'east' },
+  { ime: 'Estonija', trg: 'east' },
+  { ime: 'Turčija', trg: 'mena' },
+  { ime: 'ZAE', trg: 'mena' },
+  { ime: 'Savdska Arabija', trg: 'mena' },
+  { ime: 'Katar', trg: 'mena' },
+  { ime: 'Egipt', trg: 'mena' },
+  { ime: 'Maroko', trg: 'mena' },
+  { ime: 'Južna Afrika', trg: 'mena' },
+  { ime: 'Izrael', trg: 'us' },
+  { ime: 'Japonska', trg: 'us' },
+  { ime: 'Singapur', trg: 'us' },
+  { ime: 'Kitajska', trg: 'asia' },
+  { ime: 'Indija', trg: 'asia' },
+  { ime: 'Brazilija', trg: 'asia' },
+  { ime: 'Argentina', trg: 'asia' },
+  { ime: 'Mehika', trg: 'asia' },
+];
+const trgIzDrzave = (ime: string): string | null => {
+  const n = ime.trim().toLowerCase();
+  if (!n) return null;
+  return DRZAVE.find(d => d.ime.toLowerCase() === n)?.trg ?? null;
+};
+
 const DODATKI = [
   { id: 'nujno',    ime: 'Nujen rok',               opis: '+25 %', mult: 0.25 },
   { id: 'varianta', ime: 'Dodatna idejna varianta', opis: '+15 %', mult: 0.15 },
@@ -3226,6 +3292,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
   return (
     <div className="cw" onKeyDown={naEnter}>
+      <datalist id="cw-drzave-list">
+        {DRZAVE.map(d => <option key={d.ime} value={d.ime} />)}
+      </datalist>
       <div className="cw-ozadje" aria-hidden>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="blob blob-roza" src="/kalkulator/ozadje/roza.svg" alt="" />
@@ -4480,21 +4549,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
               {chatKorak >= 3 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                  <span className="chat-mehur"><b>Za katero regijo / trg večinoma delaš?</b><small>Nastavi privzeto raven cen.</small></span></div>
+                  <span className="chat-mehur"><b>V kateri državi večinoma delaš?</b><small>Nastavi privzet trg in raven cen — lahko spremeniš pri vsaki ponudbi.</small></span></div>
               )}
               {uvodChat && chatKorak === 3 && (
-                <div className="chat-podrocja">
-                  {TRGI.map(t => (
-                    <button key={t.id} type="button" className={'chip-podrocje' + (mojTrg === t.id ? ' on' : '')}
-                      style={{ borderColor: mojTrg === t.id ? '#7C3AED' : 'rgba(17,17,17,.12)', boxShadow: mojTrg === t.id ? `0 6px 18px ${osvetli('#7C3AED', 0.5)}` : undefined }}
-                      onClick={() => uvodPotrdiRegijo(t.id)}>
-                      <b>{t.ime}</b>
-                      <span className="chip-kljuk" aria-hidden style={{ borderColor: mojTrg === t.id ? '#7C3AED' : 'rgba(17,17,17,.2)', background: mojTrg === t.id ? '#7C3AED' : 'transparent' }}>{mojTrg === t.id ? '✓' : ''}</span>
-                    </button>
-                  ))}
-                </div>
+                <form className="chat-vnos" onSubmit={e => { e.preventDefault(); const t = trgIzDrzave(custDrzavaMoj) || mojTrg || 'si'; setMojTrg(t); setTrgNarocnika(t); setChatKorak(4); }}>
+                  <input autoFocus type="text" list="cw-drzave-list" value={custDrzavaMoj}
+                    onChange={e => { const v = e.target.value; setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }}
+                    placeholder="npr. Slovenija" />
+                  <button type="submit" className="gumb">Naprej →</button>
+                </form>
               )}
-              {chatKorak > 3 && <div className="chat-jaz"><span className="chat-mehur">{TRGI.find(t => t.id === mojTrg)?.ime || '—'}</span></div>}
+              {chatKorak > 3 && <div className="chat-jaz"><span className="chat-mehur">{custDrzavaMoj.trim() || TRGI.find(t => t.id === mojTrg)?.ime || '—'}</span></div>}
 
               {chatKorak >= 4 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
@@ -4891,7 +4956,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     value={narocnikEmail} onChange={e => setNarocnikEmail(e.target.value)} />
                 </div>
               </div>
-              {(dodatniNarocnik || narocnikOseba || narocnikNaslov || narocnikDavcna) ? (
+              <div className="numgrid">
+                <div className="polje">
+                  <label htmlFor="cw-narocnik-naslov">Naslov (ulica, kraj)</label>
+                  <input id="cw-narocnik-naslov" type="text" placeholder="npr. Dunajska cesta 1, 1000 Ljubljana"
+                    value={narocnikNaslov} onChange={e => setNarocnikNaslov(e.target.value)} />
+                </div>
+                <div className="polje">
+                  <label htmlFor="cw-narocnik-drzava">Država <span className="vec">določi trg za ceno</span></label>
+                  <input id="cw-narocnik-drzava" type="text" list="cw-drzave-list" placeholder="npr. Slovenija"
+                    value={custDrzavaNarocnik}
+                    onChange={e => {
+                      const v = e.target.value;
+                      setCustDrzavaNarocnik(v);
+                      const t = trgIzDrzave(v);
+                      if (t) setTrgNarocnika(t);
+                    }} />
+                </div>
+              </div>
+              {(dodatniNarocnik || narocnikOseba || narocnikDavcna) ? (
                 <div className="numgrid">
                   <div className="polje">
                     <label htmlFor="cw-narocnik-oseba">Kontaktna oseba</label>
@@ -4903,25 +4986,20 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <input id="cw-narocnik-davcna" type="text" placeholder="npr. SI12345678"
                       value={narocnikDavcna} onChange={e => setNarocnikDavcna(e.target.value)} />
                   </div>
-                  <div className="polje" style={{ gridColumn: '1 / -1' }}>
-                    <label htmlFor="cw-narocnik-naslov">Naslov (uradni sedež podjetja)</label>
-                    <input id="cw-narocnik-naslov" type="text" placeholder="npr. Dunajska cesta 1, 1000 Ljubljana"
-                      value={narocnikNaslov} onChange={e => setNarocnikNaslov(e.target.value)} />
-                  </div>
                 </div>
               ) : null}
-              {(dodatniNarocnik || narocnikOseba || narocnikNaslov || narocnikDavcna) ? (
+              {(dodatniNarocnik || narocnikOseba || narocnikDavcna) ? (
                 <button type="button" className="povezava" style={{ marginTop: '1.1rem' }}
                   onClick={() => {
                     setDodatniNarocnik(false);
-                    setNarocnikOseba(''); setNarocnikDavcna(''); setNarocnikNaslov('');
+                    setNarocnikOseba(''); setNarocnikDavcna('');
                   }}>
-                  <CaretUp size={14} weight="bold" aria-hidden /> Skrij (počisti kontaktno osebo, davčno, naslov)
+                  <CaretUp size={14} weight="bold" aria-hidden /> Skrij (počisti davčno in kontaktno osebo)
                 </button>
               ) : (
                 <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
                   onClick={() => setDodatniNarocnik(true)}>
-                  + Dodaj kontaktno osebo, davčno, naslov
+                  + Dodaj davčno št. in kontaktno osebo
                 </button>
               )}
               {(() => {
@@ -4944,40 +5022,38 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
           {((klasicnaOblika && korak === trgNarocnikaStep) || (vChatu && poMeh >= 2)) && (
             <>
-              {vChatu && chatVpr('Za kateri trg delaš ponudbo?', 'Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.')}
+              {vChatu && chatVpr('Trg in valuta', 'Privzeto glede na državo naročnika — bogatejši trg plača več. Po želji spremeniš.')}
               <div className="kartica">
-                <div className="k-naslov">Trg naročnika <span className="vec">stranka je lahko drugod kot njen trg</span>
-                  {custDrzavaUI(custDrzavaNarocnik, setCustDrzavaNarocnik, dodajanjeDrzaveNarocnik, setDodajanjeDrzaveNarocnik)}
-                </div>
-                <div className="opts">
-                  {custDrzavaNarocnik && (
-                    <button type="button" className="pill pill-cust" onClick={() => setCustDrzavaNarocnik('')} title="Odstrani">
-                      {custDrzavaNarocnik} <span aria-hidden>×</span>
+                <div className="numgrid" style={{ marginTop: 0 }}>
+                  <div className="polje">
+                    <label htmlFor="cw-trg">Trg naročnika <span className="vec">razred cene</span></label>
+                    <select id="cw-trg" value={trgNarocnika}
+                      onChange={e => setTrgNarocnika(e.target.value)}>
+                      {TRGI.map(t => <option key={t.id} value={t.id}>{t.ime}</option>)}
+                    </select>
+                  </div>
+                  <div className="polje">
+                    <label htmlFor="cw-valuta">Valuta ponudbe</label>
+                    <select id="cw-valuta" className="valuta-select" value={valuta}
+                      onChange={e => { setValuta(e.target.value); setValutaRocna(true); }}>
+                      {VALUTE.map(v => <option key={v.id} value={v.id}>{v.ime}</option>)}
+                    </select>
+                    <button type="button" className="izbirnik-gumb valuta-gumb-mobile" aria-label="Valuta ponudbe"
+                      onClick={() => setKazemValutaIzbira(true)}>
+                      {vfx.ime}
+                      <CaretDown size={15} weight="bold" aria-hidden />
                     </button>
-                  )}
-                  {TRGI.map(t => (
-                    <button key={t.id} type="button"
-                      className={'pill' + (trgNarocnika === t.id ? ' on' : '')}
-                      onClick={() => setTrgNarocnika(t.id)}>
-                      <span className="pill-fill" aria-hidden />
-                      <span className="pill-tekst">{t.ime}</span>
-                    </button>
-                  ))}
+                  </div>
                 </div>
-              </div>
-              <div className="kartica">
-                <div className="polje">
-                  <label htmlFor="cw-valuta">Valuta ponudbe</label>
-                  <select id="cw-valuta" className="valuta-select" value={valuta}
-                    onChange={e => { setValuta(e.target.value); setValutaRocna(true); }}>
-                    {VALUTE.map(v => <option key={v.id} value={v.id}>{v.ime}</option>)}
-                  </select>
-                  <button type="button" className="izbirnik-gumb valuta-gumb-mobile" aria-label="Valuta ponudbe"
-                    onClick={() => setKazemValutaIzbira(true)}>
-                    {vfx.ime}
-                    <CaretDown size={15} weight="bold" aria-hidden />
-                  </button>
-                </div>
+                {custDrzavaNarocnik.trim() ? (
+                  <p className="hint" style={{ marginTop: '.9rem' }}>
+                    Trg je privzet glede na državo naročnika (<b>{custDrzavaNarocnik.trim()}</b>). Za globalno podjetje ga lahko ročno dvigneš.
+                  </p>
+                ) : (
+                  <p className="hint" style={{ marginTop: '.9rem' }}>
+                    Vpiši državo naročnika v kartici zgoraj in trg se nastavi sam — ali ga tu izbereš ročno.
+                  </p>
+                )}
               </div>
               {kazemValutaIzbira && typeof document !== 'undefined' && createPortal(
                 <div className="cw">
