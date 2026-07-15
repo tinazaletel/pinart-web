@@ -1993,27 +1993,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     /* Glava ponudbe je VEDNO prisotna — prazna polja pokazejo oglate
        oklepaje, ki uporabnika pozovejo, naj izpolni razdelek 01. */
     const v: string[] = [];
-    v.push(ponudnik.ime.trim() || '[Ime / podjetje — izpolni v razdelku 01]');
-    v.push(ponudnik.naslov.trim() || '[Naslov]');
     const kontakt = [
       ponudnik.davcna.trim() && 'Davčna št.: ' + ponudnik.davcna.trim(),
       ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(),
       ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(),
       ponudnik.email.trim(),
     ].filter(Boolean).join(' · ');
-    v.push(kontakt || '[Davčna št. · TRR · Telefon · Email]');
-    v.push('');
-    v.push(`PONUDBA: ${nazivPonudbe.trim() || r.sez.map(s => s.ime).join(', ')}`);
-    v.push('Datum: ' + dat(danes) + ' · Ponudba velja do: ' + dat(velja));
-    v.push('Naročnik: ' + (narocnikPonudbe.trim() || '[ime podjetja]'));
-    if (narocnikOseba.trim()) v.push('Kontaktna oseba: ' + narocnikOseba.trim());
-    if (narocnikNaslov.trim()) v.push(narocnikNaslov.trim());
     const narocnikKontakt = [
       narocnikDavcna.trim() && 'Davčna št.: ' + narocnikDavcna.trim(),
       narocnikEmail.trim(),
     ].filter(Boolean).join(' · ');
-    if (narocnikKontakt) v.push(narocnikKontakt);
-    v.push('');
+    /* 1) NAGOVOR (na vrhu, po Tininem vrstnem redu) */
     if (tonPonudbe === 'formalno') {
       v.push('Spoštovani,');
       v.push('v nadaljevanju pošiljam strukturirano ponudbo za dogovorjeni obseg kreativnih storitev.');
@@ -2024,6 +2014,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       v.push('Pozdravljeni,');
       v.push('hvala za povpraševanje. Pripravila sem tri možnosti, da lahko lažje izberemo pravi obseg za projekt.');
     }
+    v.push('');
+    /* 2) TVOJI PODATKI (ponudnik) */
+    v.push(ponudnik.ime.trim() || '[Ime / podjetje — izpolni v razdelku 01]');
+    v.push(ponudnik.naslov.trim() || '[Naslov]');
+    v.push(kontakt || '[Davčna št. · TRR · Telefon · Email]');
+    v.push('');
+    /* 3) NAROČNIK */
+    v.push('Naročnik: ' + (narocnikPonudbe.trim() || '[ime podjetja]'));
+    if (narocnikOseba.trim()) v.push('Kontaktna oseba: ' + narocnikOseba.trim());
+    if (narocnikNaslov.trim()) v.push(narocnikNaslov.trim());
+    if (narocnikKontakt) v.push(narocnikKontakt);
+    v.push('');
+    /* 4) PONUDBA */
+    v.push(`PONUDBA: ${nazivPonudbe.trim() || r.sez.map(s => s.ime).join(', ')}`);
+    v.push('Datum: ' + dat(danes) + ' · Ponudba velja do: ' + dat(velja));
     v.push('');
     v.push('OBSEG');
     r.linije.forEach(l => {
