@@ -3607,6 +3607,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chip-podrocje b { font-weight: 700; }
         .cw .chip-podrocje .chip-kljuk { width: 1.35rem; height: 1.35rem; border-radius: 50%; border: 1.5px solid; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .78rem; font-weight: 900; margin-left: .3rem; flex: none; transition: background .18s, border-color .18s; }
         @media (max-width: 560px) { .cw .chat-podrocja { margin-left: 0; } }
+        .cw .profil-predal .chat-podrocja { margin-left: 0; max-width: none; flex-direction: column; }
+        .cw .profil-predal .chip-podrocje { width: 100%; }
+        .cw .profil-predal .chip-podrocje .chip-kljuk { margin-left: auto; }
         @media (max-width: 560px) {
           .cw .chat-opcija small { display: none; }
           .cw .chat-izbire, .cw .chat-vnos { margin-left: 0; }
