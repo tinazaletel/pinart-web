@@ -3272,9 +3272,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-po-meh { margin-top: 1.8rem; }
         /* v chat obliki: VSA vsebina vprasanj (kartice, naslovi, dodatni stroski, vrstice)
            na SIRINO CHATA in centrirana; chat (transkript) in oder0 (mehurcki) izvzeta */
-        .cw .chat-koraki > *:not(.chat):not(.oder0):not(h1):not(.sub-vrsta):not(.paketi) { max-width: min(620px, 100%); margin-left: auto; margin-right: auto; }
-        /* paketi cen sirsi (3 stolpci), a centrirani */
-        .cw .chat-koraki > .paketi { max-width: min(820px, 100%); margin-left: auto; margin-right: auto; }
+        /* enaka sirina za vse (obrazci + paketi cen); 620 je bil pretesen za 3 pakete -> 720 */
+        .cw .chat-koraki > *:not(.chat):not(.oder0):not(h1):not(.sub-vrsta) { max-width: min(720px, 100%); margin-left: auto; margin-right: auto; }
         .cw .chat-koraki .chat-vpr { margin-top: 2.2rem; margin-bottom: .9rem; }
         .cw .platno0-drs { overflow: visible; min-width: 0; }
         .cw .platno0 { position: relative; min-height: 56vh; }
