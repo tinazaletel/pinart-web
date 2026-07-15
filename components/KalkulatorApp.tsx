@@ -2158,12 +2158,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const izkusnjeStep = prviPoVprasanjih + 2;
   const narocnikStep = prviPoVprasanjih + 3;
   const trgNarocnikaStep = prviPoVprasanjih + 4;
-  const rabaStep = prviPoVprasanjih + 5;
-  const praviceStep = prviPoVprasanjih + 6;
-  const posebnostiStep = prviPoVprasanjih + 7;
-  const cenaStep = prviPoVprasanjih + 8;
-  const ponudbaStep = prviPoVprasanjih + 9;
-  const zakljucekStep = prviPoVprasanjih + 10;
+  /* raba (znamka/projekt) je zdaj del Avtorskih pravic; promet naročnika je pri podatkih naročnika */
+  const praviceStep = prviPoVprasanjih + 5;
+  const posebnostiStep = prviPoVprasanjih + 6;
+  const cenaStep = prviPoVprasanjih + 7;
+  const ponudbaStep = prviPoVprasanjih + 8;
+  const zakljucekStep = prviPoVprasanjih + 9;
   const KORAKOV = zakljucekStep + 1;
   /* (postopni prikaz vprasanj po korakih je odpadel — vprasanja so v
      podrobnostih vrstice, prikazana vsa naenkrat) */
@@ -2939,8 +2939,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           : korak === izkusnjeStep ? 'Koliko izkušenj imaš?'
             : korak === narocnikStep ? 'Kdo je stranka?'
               : korak === trgNarocnikaStep ? 'Od kod je naročnik?'
-                : korak === rabaStep ? 'Kako bo naročnik uporabljal tvoje delo?'
-                  : korak === praviceStep ? 'Avtorske pravice'
+                : korak === praviceStep ? 'Avtorske pravice'
                     : korak === posebnostiStep ? 'Posebnosti projekta?'
                       : korak === cenaStep ? 'Tvoja cena.'
                         : korak === ponudbaStep ? 'Tvoja ponudba.'
@@ -2952,8 +2951,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           : korak === izkusnjeStep ? 'Vpliva na privzete cene.'
             : korak === narocnikStep ? 'Vpišeš za vsako ponudbo posebej.'
               : korak === trgNarocnikaStep ? 'Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.'
-                : korak === rabaStep ? 'To je vprašanje, ki ga druga orodja ne postavijo.'
-                  : korak === praviceStep ? 'Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.'
+                : korak === praviceStep ? 'Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.'
                     : korak === posebnostiStep ? 'Vse je neobvezno; pusti prazno in pojdi naprej.'
                       : korak === ponudbaStep ? 'Besedilo lahko poljubno urejaš in dopišeš.'
                         : korak === zakljucekStep ? 'Kopiraj, pošlji ali shrani ponudbo.'
@@ -5151,7 +5149,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 )}
 
                 <div className="ponudba0-vsota">
-                  {r && poMeh >= 6 ? (
+                  {r && poMeh >= 5 ? (
                     <>
                       {r.popustPct > 0 && (
                         <div className="ponudba0-vsota-vrsta ponudba0-mini">
@@ -5314,6 +5312,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     }} />
                 </div>
               </div>
+              <div className="numgrid">
+                <div className="polje">
+                  <label htmlFor="cw-promet">Letni promet naročnika (€) <span className="vec">za vrednost dela</span></label>
+                  <input id="cw-promet" type="number" min={0} step={10000} placeholder="800000"
+                    value={promet} onChange={e => setPromet(e.target.value)} />
+                </div>
+                <div className="polje">
+                  <label htmlFor="cw-dobicek">Letni dobiček naročnika (€)</label>
+                  <input id="cw-dobicek" type="number" min={0} step={5000} placeholder="60000"
+                    value={dobicek} onChange={e => setDobicek(e.target.value)} />
+                </div>
+              </div>
+              <p className="hint" style={{ marginTop: '.4rem' }}>
+                Kje preveriš:{' '}
+                {(REGISTRI[trgNarocnika] ?? REGISTRI.si).concat(REGISTRI_UNIV).map((reg, i) => (
+                  <span key={reg.url}>{i > 0 && ' · '}<a href={reg.url} target="_blank" rel="noopener noreferrer">{reg.ime}</a></span>
+                ))}
+                . Prazno = mikro podjetje. Upošteva se, kadar delo velja za celotno znamko.
+              </p>
               {(dodatniNarocnik || narocnikOseba || narocnikDavcna) ? (
                 <div className="numgrid">
                   <div className="polje">
@@ -5417,10 +5434,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </>
           )}
 
-          {((klasicnaOblika && korak === rabaStep) || (vChatu && poMeh >= 3)) && (
+          {((klasicnaOblika && korak === praviceStep) || (vChatu && poMeh >= 3)) && (
             <>
-              {vChatu && chatVpr('Kako bo naročnik uporabljal tvoje delo?', 'To je vprašanje, ki ga druga orodja ne postavijo.')}
+              {vChatu && chatVpr('Avtorske pravice', 'Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.')}
               <div className="kartica">
+                <div className="k-naslov">Za kaj bo naročnik uporabil delo? <span className="vec">določa vrednost pravic</span></div>
                 <div className="izbira">
                   <button type="button" className={raba === 'znamka' ? 'on' : ''} onClick={() => setRaba('znamka')}>
                     <h3>Za celotno znamko</h3>
@@ -5432,34 +5450,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </button>
                 </div>
               </div>
-
               {raba === 'znamka' ? (
-                <div className="kartica">
-                  <div className="numgrid">
-                    <div className="polje">
-                      <label htmlFor="cw-promet">Letni promet naročnika (€)</label>
-                      <input id="cw-promet" type="number" min={0} step={10000}
-                        placeholder="800000" value={promet}
-                        onChange={e => setPromet(e.target.value)} />
-                    </div>
-                    <div className="polje">
-                      <label htmlFor="cw-dobicek">Letni dobiček naročnika (€)</label>
-                      <input id="cw-dobicek" type="number" min={0} step={5000}
-                        placeholder="60000" value={dobicek}
-                        onChange={e => setDobicek(e.target.value)} />
-                    </div>
-                  </div>
-                  <p className="hint">
-                    Kje preveriš:{' '}
-                    {(REGISTRI[trgNarocnika] ?? REGISTRI.si).concat(REGISTRI_UNIV).map((reg, i) => (
-                      <span key={reg.url}>
-                        {i > 0 && ' · '}
-                        <a href={reg.url} target="_blank" rel="noopener noreferrer">{reg.ime}</a>
-                      </span>
-                    ))}
-                    . Prazno pomeni mikro podjetje. Glej dobiček konkretnega podjetja, ne povprečne plače države.
-                  </p>
-                </div>
+                <p className="hint" style={{ marginTop: '-.4rem' }}>Vrednost pravic sledi <b>prometu in dobičku naročnika</b> — to vneseš pri podatkih naročnika (korak »Kdo je stranka«). Prazno = mikro podjetje.</p>
               ) : (
                 <div className="kartica">
                   <div className="numgrid">
@@ -5483,12 +5475,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </p>
                 </div>
               )}
-            </>
-          )}
-
-          {((klasicnaOblika && korak === praviceStep) || (vChatu && poMeh >= 4)) && (
-            <>
-              {vChatu && chatVpr('Avtorske pravice', 'Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.')}
               <div className="kartica">
                 <div className="k-naslov">Kako prenašaš avtorske pravice?
                   <InfoNamig besedilo="Izključni prenos: naročnik dobi delo v izključno last, ti ga ne smeš uporabiti drugje (najvišja cena pravic). Neizključni: obdržiš pravico delo ponuditi tudi drugim (npr. predloge) — nižja cena. Samo licenca: naročnik ne kupi pravic, plačuje letno licenco za rabo, ti ostaneš lastnik dela." />
@@ -5675,7 +5661,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </>
           )}
 
-          {((klasicnaOblika && korak === posebnostiStep) || (vChatu && poMeh >= 5)) && (
+          {((klasicnaOblika && korak === posebnostiStep) || (vChatu && poMeh >= 4)) && (
             <>
               {vChatu && chatVpr('Posebnosti projekta?', 'Vse je neobvezno; pusti prazno in pojdi naprej.')}
               <div className="kartica">
@@ -5696,7 +5682,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </>
           )}
 
-          {((klasicnaOblika && korak === cenaStep) || (vChatu && poMeh >= 6)) && r && (
+          {((klasicnaOblika && korak === cenaStep) || (vChatu && poMeh >= 5)) && r && (
             <>
               {vChatu && chatVpr('Tvoja cena.', 'Pametno izhodišče — prilagodi jo po občutku.')}
               <div className="paketi">
@@ -5939,15 +5925,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 disabled={korak === 0 && !r}
                 onClick={() => {
                   /* v chatu: vsak Naprej razkrije naslednje NAVZDOL (o stranki -> trg -> raba -> pravice -> posebnosti -> CENA), nato priprava ponudbe */
-                  if (vChatu && poMeh < 6) {
+                  if (vChatu && poMeh < 5) {
                     setPoMeh(poMeh + 1);
                     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                     window.setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: reduce ? 'auto' : 'smooth' }); }, 70);
-                  } else if (vChatu && poMeh === 6) {
+                  } else if (vChatu && poMeh === 5) {
                     setKorak(ponudbaStep);   /* priprava ponudbe = overlay/urejanje */
                   } else { naprej(); }
                 }}>
-                {vChatu && poMeh === 5 ? 'Pokaži ceno' : vChatu && poMeh === 6 ? 'Pripravi ponudbo' : korak === posebnostiStep ? 'Pokaži ceno' : korak === cenaStep ? 'Pripravi ponudbo' : korak === ponudbaStep ? 'Zaključi' : 'Naprej'}
+                {vChatu && poMeh === 4 ? 'Pokaži ceno' : vChatu && poMeh === 5 ? 'Pripravi ponudbo' : korak === posebnostiStep ? 'Pokaži ceno' : korak === cenaStep ? 'Pripravi ponudbo' : korak === ponudbaStep ? 'Zaključi' : 'Naprej'}
                 <ArrowDown size={16} weight="bold" aria-hidden />
               </button>
             ) : (
