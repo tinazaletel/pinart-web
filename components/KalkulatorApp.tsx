@@ -3065,8 +3065,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      stolpcih, a kompozicija ostane uravnotezena. Pozicije se se dorecejo po formatu. */
   const orbMax = orbN <= 4 ? 2 : orbN <= 14 ? 3 : 4;   /* mehurckov v siroki vrsti */
   const orbRowSizes = (() => {
-    const rs: number[] = []; let left = orbN, wide = true;
+    /* pakiraj SAMO storitve v honeycomb vrste; "+ dodaj" dobi svojo zadnjo vrstico */
+    const rs: number[] = []; let left = orbStoritve.length, wide = true;
     while (left > 0) { const s = Math.min(left, wide ? orbMax : orbMax - 1); rs.push(s); left -= s; wide = !wide; }
+    rs.push(1);   /* "+ dodaj" vedno sam, v zadnji vrstici po vertikali (spodaj, centriran) */
     return rs;
   })();
   const orbVrstic = orbRowSizes.length;
