@@ -1123,7 +1123,7 @@ const ponudbaVHtml = (s: string): string =>
           else if (items.length) items[items.length - 1] += ' ' + l;
           else items.push(l);
         });
-        return `<ul>${items.map(l => `<li>${cenaDesno(l)}</li>`).join('')}</ul>`;
+        return `<ul>${items.map(l => `<li>${escP(l)}</li>`).join('')}</ul>`;
       }
       if (lines.length >= 2 && /^[A-ZČŠŽ\s]+/.test(first) && first.includes('·')) {
         const [title, ...rest] = lines;
@@ -4164,7 +4164,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .tool-locnica { width: 1px; height: 1.7rem; background: rgba(17,17,17,.16); margin: 0 .2rem; }
         .cw .barvica-mavrica { background: conic-gradient(from 0deg, #FA4892, #F8E71C, #50E3C2, #7C3AED, #FA4892); border-color: rgba(17,17,17,.25); }
         .cw .barvica { width: 1.35rem; height: 1.35rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.22); cursor: pointer; }
-        .cw .editor { width: 100%; min-height: 340px; border: 1px solid rgba(17,17,17,.25); background: rgba(255,255,255,.52); padding: 1.35rem; color: var(--ink); font-family: var(--font-sans), system-ui, sans-serif; font-size: .94rem; line-height: 1.62; overflow: auto; }
+        .cw .editor { width: 100%; min-height: 340px; border: 1px solid rgba(17,17,17,.25); background: rgba(255,255,255,.72); padding: 1.35rem; color: var(--ink); font-family: var(--font-sans), system-ui, sans-serif; font-size: .94rem; line-height: 1.62; font-weight: 400; -webkit-text-stroke: 0.28px currentColor; overflow: auto; }
         .cw .editor:focus { outline: none; border-color: var(--ink); }
         .cw .editor b, .cw .editor strong { font-weight: 900; color: var(--ink); }
         .cw .editor h1 b, .cw .editor h1 strong { font-weight: 900; }
@@ -4806,7 +4806,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <input autoFocus type="text" list="cw-drzave-list" value={custDrzavaMoj}
                     onChange={e => { const v = e.target.value; setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }}
                     placeholder="npr. Slovenija" />
-                  <button type="submit" className="gumb">Naprej →</button>
+                  <button type="submit" className="gumb">Naprej ↓</button>
                 </form>
               )}
               {chatKorak > 3 && uvodOdgovorMehur(3, custDrzavaMoj.trim() || TRGI.find(t => t.id === mojTrg)?.ime || '—')}
@@ -4832,7 +4832,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       );
                     })}
                   </div>
-                  <div className="chat-vnos"><button type="button" className="gumb" disabled={obIzbor.size === 0} onClick={uvodPotrdiPodrocja}>Naprej →</button></div>
+                  <div className="chat-vnos"><button type="button" className="gumb" disabled={obIzbor.size === 0} onClick={uvodPotrdiPodrocja}>Naprej ↓</button></div>
                 </>
               )}
               {chatKorak > 4 && obIzbor.size > 0 && uvodOdgovorMehur(4, [...obIzbor].map(id => PODROCJA.find(p => p.id === id)?.ime).filter(Boolean).join(', '))}
@@ -4881,7 +4881,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     onChange={e => setChatVnos(e.target.value)}
                     placeholder={chatKorak === 0 ? 'Ime ali vzdevek' : chatKorak === 2 ? 'Ime podjetja ali tvoje ime' : 'Ime ponudbe'} />
                   <button type="submit" className="gumb" disabled={chatKorak === 0 && !chatVnos.trim()}>
-                    {chatKorak === 6 ? 'Začni →' : 'Naprej →'}
+                    {chatKorak === 6 ? 'Začni ↓' : 'Naprej ↓'}
                   </button>
                 </form>
               )}
@@ -5931,7 +5931,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         }, 60);
                       } else { setUvodChat(true); setChatKorak(6); }
                     }
-                  : nazaj}>←</button>
+                  : nazaj}>↑</button>
             )}
             {/* med aktivnim onboarding-chatom flow vodijo inline gumbi -> skrijemo spodnji "Naprej" (samo en gumb) */}
             {korak === 0 && uvodChat && !klasicnaOblika ? null : korak < KORAKOV - 1 ? (
@@ -5947,7 +5947,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     setKorak(ponudbaStep);   /* priprava ponudbe = overlay/urejanje */
                   } else { naprej(); }
                 }}>
-                {vChatu && poMeh === 5 ? 'Pokaži ceno →' : vChatu && poMeh === 6 ? 'Pripravi ponudbo →' : korak === posebnostiStep ? 'Pokaži ceno →' : korak === cenaStep ? 'Pripravi ponudbo →' : korak === ponudbaStep ? 'Zaključi →' : 'Naprej →'}
+                {vChatu && poMeh === 5 ? 'Pokaži ceno ↓' : vChatu && poMeh === 6 ? 'Pripravi ponudbo ↓' : korak === posebnostiStep ? 'Pokaži ceno ↓' : korak === cenaStep ? 'Pripravi ponudbo ↓' : korak === ponudbaStep ? 'Zaključi ↓' : 'Naprej ↓'}
               </button>
             ) : (
               <div className="noga-koncna">
