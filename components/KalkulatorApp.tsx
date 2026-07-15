@@ -1547,9 +1547,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      med njima stran zadaj zaklenemo. */
   useEffect(() => {
     if (!onboardingOdprt && !uvodChat && !kazemProfil) return;
-    const prej = document.body.style.overflow;
+    const html = document.documentElement;
+    const prejHtml = html.style.overflow;
+    const prejBody = document.body.style.overflow;
+    /* zakleni oba: root scroller je lahko <html>, ne <body> — sicer wheel skrola ozadje */
+    html.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prej; };
+    return () => { html.style.overflow = prejHtml; document.body.style.overflow = prejBody; };
   }, [onboardingOdprt, uvodChat, kazemProfil]);
   const [obIzbor, setObIzbor] = useState<Set<string>>(new Set());
   /* Poljuben vrstni red storitev (razporejanje z drag-rocajem); prazno = naravni. */
