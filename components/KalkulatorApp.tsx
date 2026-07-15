@@ -1783,6 +1783,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     requestAnimationFrame(() => el.scrollTo({ top: el.scrollHeight, behavior: reduce ? 'auto' : 'smooth' }));
   }, [chatKorak, uvodChat]);
+  /* ob vstopu v tekstovni korak uvoda prednapolni polje z obstojeco vrednostjo (za popravke ob skoku nazaj) */
+  useEffect(() => {
+    if (!uvodChat) return;
+    if (chatKorak === 0) setChatVnos(imeUporabnika);
+    else if (chatKorak === 2) setChatVnos(ponudnik.ime);
+    else if (chatKorak === 6) setChatVnos(nazivPonudbe);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatKorak, uvodChat]);
   const zakljuciUvod = () => {
     /* mojSet iz izbranih podrocij (chat) -> mehurcki se filtrirajo; prazno = vsi */
     const ids = new Set<string>();
@@ -1818,6 +1826,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       zakljuciUvod();
     }
   };
+  /* klik na moj (moder) odgovor v uvodnem chatu -> skok nazaj na to vprasanje za popravek */
+  const uvodUredi = (step: number) => setChatKorak(step);
+  const uvodOdgovorMehur = (step: number, vsebina: string) => (
+    <div className="chat-jaz">
+      <button type="button" className="chat-mehur chat-mehur-ured" onClick={() => uvodUredi(step)} title="Klikni za popravek">
+        <span>{vsebina}</span>
+        <PencilSimple size={13} weight="bold" aria-hidden />
+      </button>
+    </div>
+  );
   const uvodIzberiIzkusnje = (id: string) => { setIzkusnje(id); setChatKorak(2); };
   /* tvoja regija / trg (o tebi) -> privzeta raven cen */
   const uvodPotrdiRegijo = (id: string) => { setMojTrg(id); setTrgNarocnika(id); setChatKorak(4); };
@@ -3550,6 +3568,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-jaz { align-self: flex-end; max-width: 88%; }
         .cw .chat-jaz .chat-mehur { background: rgba(160,205,235,.4); color: var(--ink); font-weight: 600; border-bottom-right-radius: 5px; border-color: #EEFCFF; }
         .cw .chat-mehur { border-radius: 18px; padding: .9rem 1.35rem; font-size: .95rem; line-height: 1.5; font-weight: 400; border: 1px solid rgba(255,255,255,.7); box-shadow: 0 2px 10px rgba(40,25,40,.05); }
+        .cw .chat-mehur-ured { font-family: inherit; font-size: .95rem; cursor: pointer; display: inline-flex; align-items: center; gap: .5rem; text-align: left; transition: transform .16s ease, box-shadow .16s ease, background .16s ease; }
+        .cw .chat-mehur-ured svg { opacity: .4; flex: none; transition: opacity .16s ease; }
+        .cw .chat-mehur-ured:hover { transform: translateY(-1px); box-shadow: 0 7px 18px rgba(40,25,40,.13); background: rgba(160,205,235,.58); }
+        .cw .chat-mehur-ured:hover svg { opacity: .85; }
+        .cw .chat-mehur-ured:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
         .cw .noga-skrita { display: none; }
         .cw .chat-izbire { display: flex; flex-direction: column; gap: .6rem; margin: .2rem 0 .2rem 3.05rem; }
         .cw .chat-opcija { display: flex; align-items: center; gap: .9rem; text-align: left; width: min(420px, 100%); background: rgba(255,255,255,.82); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(17,17,17,.1); border-radius: 16px; padding: 1rem 1.15rem; cursor: pointer; font-family: inherit; color: var(--ink); transition: transform .22s cubic-bezier(.34,1.56,.5,1), border-color .2s, box-shadow .22s; }
@@ -4564,7 +4587,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {(uvodChat || chatKorak > 0) && (<>
               <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
                 <span className="chat-mehur"><b>Živjo! Kako ti je ime?</b></span></div>
-              {chatKorak > 0 && <div className="chat-jaz"><span className="chat-mehur">{imeUporabnika || '—'}</span></div>}
+              {chatKorak > 0 && uvodOdgovorMehur(0, imeUporabnika || '—')}
 
               {chatKorak >= 1 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
@@ -4579,14 +4602,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   ))}
                 </div>
               )}
-              {chatKorak > 1 && <div className="chat-jaz"><span className="chat-mehur">{CHAT_IZK.find(o => o.id === izkusnje)?.ime || 'Nekaj let izkušenj'}</span></div>}
+              {chatKorak > 1 && uvodOdgovorMehur(1, CHAT_IZK.find(o => o.id === izkusnje)?.ime || 'Nekaj let izkušenj')}
 
               {/* O TEBI: podjetje + tvoja regija (na zacetku, kot dogovorjeno) */}
               {chatKorak >= 2 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
                   <span className="chat-mehur"><b>Kako se imenuje tvoja znamka ali podjetje?</b><small>Za glavo ponudbe; ostale podatke (TRR, logo) dodaš pozneje v nastavitvah.</small></span></div>
               )}
-              {chatKorak > 2 && <div className="chat-jaz"><span className="chat-mehur">{ponudnik.ime.trim() || '—'}</span></div>}
+              {chatKorak > 2 && uvodOdgovorMehur(2, ponudnik.ime.trim() || '—')}
 
               {chatKorak >= 3 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
@@ -4600,7 +4623,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <button type="submit" className="gumb">Naprej →</button>
                 </form>
               )}
-              {chatKorak > 3 && <div className="chat-jaz"><span className="chat-mehur">{custDrzavaMoj.trim() || TRGI.find(t => t.id === mojTrg)?.ime || '—'}</span></div>}
+              {chatKorak > 3 && uvodOdgovorMehur(3, custDrzavaMoj.trim() || TRGI.find(t => t.id === mojTrg)?.ime || '—')}
 
               {chatKorak >= 4 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
@@ -4626,7 +4649,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <div className="chat-vnos"><button type="button" className="gumb" disabled={obIzbor.size === 0} onClick={uvodPotrdiPodrocja}>Naprej →</button></div>
                 </>
               )}
-              {chatKorak > 4 && obIzbor.size > 0 && <div className="chat-jaz"><span className="chat-mehur">{[...obIzbor].map(id => PODROCJA.find(p => p.id === id)?.ime).filter(Boolean).join(', ')}</span></div>}
+              {chatKorak > 4 && obIzbor.size > 0 && uvodOdgovorMehur(4, [...obIzbor].map(id => PODROCJA.find(p => p.id === id)?.ime).filter(Boolean).join(', '))}
 
               {chatKorak >= 5 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
@@ -4640,7 +4663,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <span className="crk">B</span><b>Obstoječa ponudba</b><small>{Object.keys(arhiv).length ? 'naložim zadnjo iz arhiva' : 'v arhivu še ni ponudb'}</small></button>
                 </div>
               )}
-              {chatKorak > 5 && chatNova !== null && <div className="chat-jaz"><span className="chat-mehur">{chatNova ? 'Nova ponudba' : 'Obstoječa ponudba'}</span></div>}
+              {chatKorak > 5 && chatNova !== null && uvodOdgovorMehur(5, chatNova ? 'Nova ponudba' : 'Obstoječa ponudba')}
 
               {chatKorak >= 6 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
