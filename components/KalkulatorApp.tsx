@@ -3283,8 +3283,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .priprava-zapri:hover { background: var(--ink); color: var(--paper); transform: scale(1.08); }
         @media (prefers-reduced-motion: reduce) { .cw .priprava-overlay, .cw .priprava-backdrop { animation: none; } }
         @media (max-width: 560px) { .cw .priprava-overlay { border-radius: 0; width: 100vw; } }
-        .cw .priprava-noga { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 1.1rem 0 .5rem; margin-top: 1.4rem; background: linear-gradient(to top, var(--paper) 72%, transparent); }
-        .cw .noga-skrita { display: none; }
+        /* priprava = samostojna centrirana stran, malo sirsa od ostalih korakov */
+        .cw .korak-vsebina.priprava-korak { max-width: 1000px; }
         /* v chat obliki: VSA vsebina vprasanj (kartice, naslovi, dodatni stroski, vrstice)
            na SIRINO CHATA in centrirana; chat (transkript) in oder0 (mehurcki) izvzeta */
         /* enaka sirina za vse (obrazci + paketi cen); 620 je bil pretesen za 3 pakete -> 720 */
@@ -3826,6 +3826,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .orodjarna { display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; margin: 1rem 0 .8rem; }
         .cw .tool { min-height: 2.25rem; display: inline-flex; align-items: center; gap: .4rem; border: 1px solid rgba(17,17,17,.22); background: rgba(255,255,255,.32); color: var(--ink); border-radius: 999px; padding: 0 .75rem; font-family: inherit; font-weight: 600; font-size: .78rem; cursor: pointer; }
         .cw .tool:hover { border-color: var(--ink); }
+        .cw .tool-vel { gap: .3rem; padding: 0 .5rem 0 .7rem; }
+        .cw .tool-vel .tv-aa { font-weight: 700; font-size: .82rem; }
+        .cw .tool-vel button { border: none; background: rgba(17,17,17,.07); border-radius: 6px; width: 1.5rem; height: 1.35rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); padding: 0; }
+        .cw .tool-vel button:hover { background: var(--ink); color: var(--paper); }
         .cw .barvica { width: 1.35rem; height: 1.35rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.22); cursor: pointer; }
         .cw .editor { width: 100%; min-height: 340px; border: 1px solid rgba(17,17,17,.25); background: rgba(255,255,255,.52); padding: 1.35rem; color: var(--ink); font-family: var(--font-sans), system-ui, sans-serif; font-size: .94rem; line-height: 1.62; overflow: auto; }
         .cw .editor:focus { outline: none; border-color: var(--ink); }
@@ -4370,13 +4374,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       )}
 
       <div className="oder">
-        <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '') + (korak === 0 && uvodChat && !klasicnaOblika ? ' uvod-faza' : '') + (vChatu && poMeh > 0 ? ' chat-koraki' : '') + (!klasicnaOblika && korak === ponudbaStep ? ' brez-transforma' : '')} key={korak}>
-          {(korak !== 0 || klasicnaOblika) && !(!klasicnaOblika && korak === ponudbaStep) && (
+        <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '') + (korak === 0 && uvodChat && !klasicnaOblika ? ' uvod-faza' : '') + (vChatu && poMeh > 0 ? ' chat-koraki' : '') + (!klasicnaOblika && korak === ponudbaStep ? ' priprava-korak' : '')} key={korak}>
+          {(korak !== 0 || klasicnaOblika) && (
             <h1><span className="h1-step">{String(korak + 1).padStart(2, '0')}</span>{naslovKoraka.split(' ').map((b, bi) => (
               <span key={bi} className="h1-maska"><span className="h1-beseda" style={{ animationDelay: `${bi * 90}ms` }}>{b}&nbsp;</span></span>
             ))}</h1>
           )}
-          {opisKoraka && (korak !== 0 || klasicnaOblika) && !(!klasicnaOblika && korak === ponudbaStep) && (
+          {opisKoraka && (korak !== 0 || klasicnaOblika) && (
             <div className="sub-vrsta"><p className="sub">{opisKoraka}</p></div>
           )}
           {/* korak 0 = nadaljevanje chatbota (naslov gre stran) */}
@@ -5270,8 +5274,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <p className="sub">Najprej izberi vsaj eno storitev v prvem koraku.</p>
           )}
 
-          {korak === ponudbaStep && (() => {
-            const pripravaTelo = (
+          {korak === ponudbaStep && (
+            <div className="priprava priprava-stran">
               <div className="priprava-telo">
               <div className="tonbar" aria-label="Ton ponudbe">
                 {TONI.map(t => (
@@ -5305,20 +5309,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko">
                   <TextB size={17} weight="bold" /> Krepko
                 </button>
-                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title="Spremeni vrstico v podnaslov">
-                  <TextAa size={17} /> H2
+                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title="Vrstico spremeni v podnaslov">
+                  <TextAa size={17} /> Podnaslov
                 </button>
-                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title="Spremeni vrstico v odstavek">
-                  <TextAa size={15} /> P
+                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title="Vrni v navadno besedilo (iz podnaslova)">
+                  <TextAa size={15} /> Navadno
                 </button>
-                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('fontSize', '4'); }} title="Povečaj označeno besedilo">
-                  <TextAa size={17} /> Večje
-                </button>
-                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('fontSize', '2'); }} title="Pomanjšaj označeno besedilo">
-                  <TextAa size={15} /> Manjše
-                </button>
-                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('hiliteColor', '#ECE6D5'); }} title="Dodaj podlago">
+                <div className="tool tool-vel" role="group" aria-label="Velikost besedila">
+                  <span className="tv-aa" aria-hidden>Aa</span>
+                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('fontSize', '5'); }} aria-label="Povečaj označeno besedilo" title="Povečaj"><CaretUp size={13} weight="bold" /></button>
+                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('fontSize', '2'); }} aria-label="Pomanjšaj označeno besedilo" title="Pomanjšaj"><CaretDown size={13} weight="bold" /></button>
+                </div>
+                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('hiliteColor', '#EEE8D8'); }} title="Označi besedilo z nežno podlago">
                   <PaintBucket size={17} /> Podlaga
+                </button>
+                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); oblikuj('hiliteColor', 'transparent'); }} title="Odstrani podlago z označenega besedila">
+                  Brez
                 </button>
                 {['#111111', '#F5F2EA', '#F8E71C', '#50E3C2', '#FA4892'].map(barva => (
                   <button key={barva} type="button" className="barvica" style={{ background: barva }}
@@ -5355,32 +5361,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 </p>
               )}
               </div>
-            );
-            /* klasicna oblika = inline stran; chat oblika = razsirjen overlay iz desne,
-               portaliran na <body> (da ga transformiran/centriran prednik ne zlomi) */
-            if (klasicnaOblika) return <div className="priprava">{pripravaTelo}</div>;
-            return typeof document === 'undefined' ? null : createPortal(
-              <div className="cw">
-                <div className="priprava-backdrop" onClick={() => setKorak(0)} aria-hidden />
-                <div className="priprava-overlay">
-                  <div className="priprava-glava">
-                    <div className="priprava-glava-t">
-                      <p className="ob-kicker">Ponudba</p>
-                      <h2 className="priprava-h">Tvoja ponudba</h2>
-                      <p className="sub">Besedilo lahko poljubno urejaš in dopišeš — to je ista ponudba, ki se je gradila desno.</p>
-                    </div>
-                    <button type="button" className="priprava-zapri" onClick={() => setKorak(0)} aria-label="Zapri urejanje">×</button>
-                  </div>
-                  {pripravaTelo}
-                  <div className="priprava-noga">
-                    <button type="button" className="gumb-nazaj" onClick={() => setKorak(0)} aria-label="Nazaj na chat">←</button>
-                    <button type="button" className="gumb" onClick={() => setKorak(zakljucekStep)}>Zaključi →</button>
-                  </div>
-                </div>
-              </div>,
-              document.body
-            );
-          })()}
+            </div>
+          )}
 
           {korak === zakljucekStep && (
             <div className="btnvrsta">
@@ -5420,7 +5402,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         </>
       )}
 
-      <div className={'noga' + (vChatu ? ' noga-ob-panelu' : '') + (!klasicnaOblika && korak === ponudbaStep ? ' noga-skrita' : '')}>
+      <div className={'noga' + (vChatu ? ' noga-ob-panelu' : '')}>
         <div className="noga-c">
           <div className="noga-gumbi">
             {(korak > 0 || (korak === 0 && !uvodChat && !klasicnaOblika)) && (
