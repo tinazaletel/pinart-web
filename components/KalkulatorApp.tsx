@@ -1499,6 +1499,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [postavke, setPostavke] = useState<Postavka[]>([]);
   const [iskanje, setIskanje] = useState('');
   const [kazemDodaj, setKazemDodaj] = useState(false);
+  const [kazemUredi, setKazemUredi] = useState(false);       /* modal "dodaj / uredi" storitve */
+  const [pogledMreza, setPogledMreza] = useState(false);      /* false = prosti mehurcki, true = urejena mreza po podrocjih */
   const [kazemProfil, setKazemProfil] = useState(false);
   /* Profil kot drill-down (meni -> ena "podstran"), ne dolg scroll treh
      razdelkov skupaj — bolj pregledno in mobile-friendly (Tina). */
@@ -1678,6 +1680,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       if (Array.isArray(s.obIzbor)) setObIzbor(new Set(s.obIzbor));
       if (s.nazivPonudbe) setNazivPonudbe(s.nazivPonudbe);
       if (s.klasicnaOblika) setKlasicnaOblika(true);
+      if (s.pogledMreza) setPogledMreza(true);
       if (Array.isArray(s.vrstniRed)) setVrstniRed(s.vrstniRed);
       if (Array.isArray(s.skrite)) setSkrite(s.skrite);
       if (s.valuta) { setValuta(s.valuta); setValutaRocna(true); }
@@ -1719,6 +1722,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         custDrzavaMoj: custDrzavaMoj || undefined,
         imeUporabnika: imeUporabnika || undefined,
         klasicnaOblika: klasicnaOblika || undefined,
+        pogledMreza: pogledMreza || undefined,
         uvodKoncan: uvodKoncan || undefined,
         /* potek onboarding-chata, da zgodovina (vprasanja + odgovori) prezivi reload */
         chatKorak: chatKorak || undefined,
@@ -1727,7 +1731,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         nazivPonudbe: nazivPonudbe || undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [jeNalozeno, osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, uvodKoncan, chatKorak, chatNova, obIzbor, nazivPonudbe]);
+  }, [jeNalozeno, osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, pogledMreza, uvodKoncan, chatKorak, chatNova, obIzbor, nazivPonudbe]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -3039,6 +3043,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     const videni = new Set<string>();
     return [...iz, ...mojeVidne].filter(s => (videni.has(s.id) ? false : (videni.add(s.id), true)));
   })();
+  /* mreza po podrocjih (drugi pogled): vsaka storitev v prvem ustreznem podrocju, custom v "Moje" */
+  const mrezaSkupine = (() => {
+    const seen = new Set<string>();
+    const sk = izbranaPodrocja.map(p => ({
+      id: p.id, ime: p.ime,
+      storitve: poVrstnemRedu(vidneStoritve.filter(s => p.storitve.includes(s.id) && !seen.has(s.id) && (seen.add(s.id), true))),
+    }));
+    if (mojeVidne.length) sk.push({ id: 'moje', ime: 'Moje storitve', storitve: mojeVidne });
+    return sk.filter(g => g.storitve.length > 0);
+  })();
   /* Velikost orba pada s stevilom storitev; pod minimum ne gre (mobile skrola). */
   const orbD = orbStoritve.length <= 8 ? 176 : orbStoritve.length <= 14 ? 156 : 138;
   /* mehurcki v pravih vrsticah, razmaknjeni; platno raste s stevilom -> stran scrolla */
@@ -3472,6 +3486,34 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .orb0.orb0-plus .orb0-krog { position: absolute; inset: 4%; border-radius: 50%; border: 1.5px dashed rgba(17,17,17,.4); }
         .cw .orb0.orb0-plus:hover .orb0-krog { border-color: var(--ink); }
         .cw .orb0.orb0-plus .orb0-ime { font-weight: 600; text-shadow: none; font-size: .82rem; }
+        /* ── pogled MREZA (kvadratki po podrocjih) ── */
+        .cw .mreza0-ovoj { width: min(1240px, 100%); margin-top: clamp(1.4rem, 4vw, 2.6rem); }
+        .cw .mreza0 { display: flex; flex-wrap: wrap; gap: clamp(1rem, 2.4vw, 1.8rem); align-items: flex-start; }
+        .cw .mreza-skupina { display: flex; flex-direction: column; gap: .7rem; flex: 1 1 158px; min-width: 150px; max-width: 220px; }
+        .cw .mreza-naslov { font-size: .78rem; font-weight: 700; letter-spacing: .03em; color: rgba(17,17,17,.6); text-transform: uppercase; padding-left: .15rem; min-height: 1.1rem; }
+        .cw .mreza-kvadrati { display: flex; flex-direction: column; gap: .7rem; }
+        .cw .mreza-kvadrat { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: .35rem; text-align: left; padding: .8rem .9rem; border-radius: 18px; border: 1.5px solid rgba(17,17,17,.1); background: #fff; box-shadow: 0 3px 12px rgba(35,18,45,.05); cursor: pointer; font-family: inherit; color: var(--ink); transition: transform .18s cubic-bezier(.34,1.4,.5,1), border-color .18s, box-shadow .18s; }
+        .cw .mreza-kvadrat:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(35,18,45,.1); }
+        .cw .mreza-kvadrat.on { border-color: var(--mb); box-shadow: 0 6px 18px color-mix(in oklab, var(--mb) 32%, transparent); }
+        .cw .mreza-kvadrat .mk-ikona { width: 2.2rem; height: 2.2rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+        .cw .mreza-kvadrat .mk-ikona svg { width: 1.2rem; height: 1.2rem; }
+        .cw .mreza-kvadrat .mk-ime { font-weight: 700; font-size: .95rem; line-height: 1.2; }
+        .cw .mreza-kvadrat .mk-cena { font-size: .8rem; color: rgba(17,17,17,.55); font-weight: 500; }
+        .cw .mreza-kvadrat .mk-kolic { position: absolute; top: .55rem; right: .55rem; min-width: 1.5rem; height: 1.5rem; padding: 0 .4rem; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: .76rem; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+        .cw .mreza-uredi { align-items: center; justify-content: center; border-style: dashed; background: transparent; color: rgba(17,17,17,.6); min-height: 5rem; }
+        .cw .mreza-uredi .mk-ikona { background: rgba(17,17,17,.06); }
+        .cw .mreza-uredi .mk-ime { font-weight: 600; font-size: .85rem; }
+        /* ── modal dodaj / uredi ── */
+        .cw .uredi-plosca { width: 100%; max-width: 460px; max-height: min(38rem, 84dvh); display: flex; flex-direction: column; background: var(--paper); border: 1px solid rgba(17,17,17,.18); border-radius: 18px; box-shadow: 0 24px 80px rgba(17,17,17,.16); overflow: hidden; animation: cwVstop .3s cubic-bezier(.16,1,.3,1) both; }
+        .cw .uredi-telo { overflow-y: auto; padding: 1.1rem 1.35rem 1.5rem; display: flex; flex-direction: column; gap: 1.4rem; }
+        .cw .uredi-sekcija { display: flex; flex-direction: column; }
+        .cw .uredi-naslov { font-size: .78rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: rgba(17,17,17,.6); margin-bottom: .7rem; }
+        .cw .pogled-preklop { display: flex; gap: .5rem; }
+        .cw .pogled-preklop button { flex: 1; padding: .7rem .6rem; border-radius: 12px; border: 1.5px solid rgba(17,17,17,.16); background: #fff; font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); cursor: pointer; transition: border-color .18s, background .18s, color .18s; }
+        .cw .pogled-preklop button.on { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+        .cw .uredi-dodaj { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+        .cw .uredi-dodaj input[type=text] { flex: 1; min-width: 150px; border: none; border-bottom: 1px solid rgba(17,17,17,.35); background: transparent; padding: .4rem .2rem; font-family: inherit; font-size: .95rem; color: var(--ink); }
+        .cw .uredi-dodaj input[type=number] { width: 84px; border: none; border-bottom: 1px solid rgba(17,17,17,.35); background: transparent; padding: .4rem .2rem; font-family: inherit; font-size: .95rem; text-align: right; color: var(--ink); }
         /* select "pop" obroc ob kliku (kot na zacetku) */
         .cw .obroc0 { position: absolute; z-index: 2; border-radius: 50%; border: 3px solid rgba(178,84,118,.55); pointer-events: none; animation: obroc0 .6s ease-out forwards; }
         @keyframes obroc0 { 0% { transform: scale(.62); opacity: .75; } 100% { transform: scale(1.7); opacity: 0; } }
@@ -4737,6 +4779,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           {korak === 0 && (klasicnaOblika || !uvodChat) && (
             <div className="oder0">
               {/* ── platno z orbi: svobodno lebdijo na istem ozadju (brez obrezovanja) ── */}
+              {!pogledMreza && (
               <div className="platno0-drs">
               <div className="platno0" aria-label="Storitve" style={{ minHeight: orbVrstic * orbRowH + 30 }}>
                 {orbStoritve.map((s, i) => {
@@ -4795,10 +4838,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   return (
                     <button type="button" className="orb0 orb0-plus"
                       style={{ width: d, height: d, left: `calc(${dodajX}% - ${d / 2}px)`, top: `calc(${p.y}% - ${d / 2}px)` }}
-                      onClick={() => setKazemDodaj(!kazemDodaj)}>
+                      onClick={() => setKazemUredi(true)}>
                       <span className="orb0-krog" aria-hidden />
-                      <Plus size={20} aria-hidden />
-                      <span className="orb0-ime">dodaj</span>
+                      <SlidersHorizontal size={19} aria-hidden />
+                      <span className="orb0-ime">dodaj / uredi</span>
                     </button>
                   );
                 })()}
@@ -4808,6 +4851,49 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 )}
               </div>
               </div>
+              )}
+
+              {pogledMreza && (
+                <div className="mreza0-ovoj">
+                  <div className="mreza0">
+                    {mrezaSkupine.map(g => (
+                      <div key={g.id} className="mreza-skupina">
+                        <div className="mreza-naslov">{g.ime}</div>
+                        <div className="mreza-kvadrati">
+                          {g.storitve.map(s => {
+                            const linije = vrstice.filter(l => l.sid === s.id);
+                            const q = jeKolicinska(s.id) ? linije.reduce((a, l) => a + Math.max(1, Math.round(l.kolicina)), 0) : linije.length;
+                            const on = linije.length > 0;
+                            const bar = PODROCJE_BARVA[g.id] || '#7C3AED';
+                            return (
+                              <button key={s.id} type="button" className={'mreza-kvadrat' + (on ? ' on' : '')}
+                                style={{ ['--mb' as string]: bar, borderColor: on ? bar : undefined }}
+                                aria-pressed={on} aria-label={`${s.ime}, od ${val(osnovaZa(s))}${on ? `, izbrano ×${q}` : ''}`}
+                                onClick={() => izberiVrstico(s.id)}>
+                                <span className="mk-ikona" aria-hidden style={{ background: osvetli(bar, 0.82), color: zatemni(bar, 0.5) }}>{ikonaZa(s.id)}</span>
+                                <span className="mk-ime">{KRATKO[s.id] || s.ime}</span>
+                                <span className="mk-cena">od {val(osnovaZa(s))}</span>
+                                {on && (
+                                  <span className="mk-kolic" role="button" tabIndex={0} title={jeKolicinska(s.id) ? 'Odstrani en kos' : 'Odstrani zadnjo vrstico'}
+                                    onClick={e => { e.stopPropagation(); odvzemiStoritev(s.id); }}
+                                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); odvzemiStoritev(s.id); } }}>×{q}</span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                    <div className="mreza-skupina mreza-skupina-uredi">
+                      <div className="mreza-naslov">&nbsp;</div>
+                      <button type="button" className="mreza-kvadrat mreza-uredi" onClick={() => setKazemUredi(true)}>
+                        <span className="mk-ikona" aria-hidden><SlidersHorizontal size={17} /></span>
+                        <span className="mk-ime">dodaj / uredi</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* ── živa ponudba: desktop fiksno desno, mobile drsni panel (kosarica) ── */}
               <aside className={'ponudba0' + (ponudbaOdprta ? ' odprta' : '')} aria-label="Tvoja ponudba" data-lenis-prevent>
@@ -4991,6 +5077,51 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   )}
                 </div>
               </aside>
+
+              {kazemUredi && typeof document !== 'undefined' && createPortal(
+                <div className="cw">
+                  <div className="izbirnik-zastor" onClick={() => { setKazemUredi(false); setNovaIme(''); setNovaCena(''); }}>
+                    <div className="uredi-plosca" role="dialog" aria-modal="true" aria-label="Dodaj ali uredi storitve"
+                      onClick={e => e.stopPropagation()} data-lenis-prevent>
+                      <div className="izbirnik-glava">
+                        <span>Dodaj / uredi storitve</span>
+                        <button type="button" onClick={() => { setKazemUredi(false); setNovaIme(''); setNovaCena(''); }} aria-label="Zapri">✕</button>
+                      </div>
+                      <div className="uredi-telo">
+                        <div className="uredi-sekcija">
+                          <div className="uredi-naslov">Pogled mehurčkov</div>
+                          <div className="pogled-preklop">
+                            <button type="button" className={!pogledMreza ? 'on' : ''} onClick={() => setPogledMreza(false)}>Prosti mehurčki</button>
+                            <button type="button" className={pogledMreza ? 'on' : ''} onClick={() => setPogledMreza(true)}>Mreža po področjih</button>
+                          </div>
+                          <p className="hint" style={{ margin: '.6rem 0 0' }}>Mreža je bolj strjena in pregledna, ko imaš veliko storitev.</p>
+                        </div>
+                        <div className="uredi-sekcija">
+                          <div className="uredi-naslov">Dodaj svojo storitev</div>
+                          <div className="uredi-dodaj">
+                            <input type="text" placeholder="Ime storitve (npr. montaža videa)" value={novaIme} onChange={e => setNovaIme(e.target.value)} />
+                            <input type="number" min={0} step={50} placeholder="cena €" value={novaCena} onChange={e => setNovaCena(e.target.value)} />
+                            <button type="button" className="gumb" disabled={!novaIme.trim() || !(Number(novaCena) > 0)} onClick={dodajStoritev}>Dodaj</button>
+                          </div>
+                          {skrite.length > 0 && (
+                            <>
+                              <p className="hint" style={{ margin: '1rem 0 .5rem' }}>Skrite storitve — klikni za ponoven prikaz:</p>
+                              <div className="opts">
+                                {skrite.map(id => { const s = vseStoritve.find(x => x.id === id); if (!s) return null; return (
+                                  <button key={id} type="button" className="pill" onClick={() => setSkrite(skrite.filter(x => x !== id))}>
+                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">+ {s.ime}</span>
+                                  </button>
+                                ); })}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        <button type="button" className="povezava povezava-roza" onClick={() => { setKazemUredi(false); setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>↳ Uredi cene, razporedi in skrij → Cene in storitve</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              , document.body)}
             </div>
           )}
 
