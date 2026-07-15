@@ -3484,6 +3484,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           .cw .korak-vsebina.siroko { max-width: none; width: 100%; padding-right: calc(min(410px, 34vw) + clamp(1rem, 2.5vw, 2rem)); box-sizing: border-box; animation-name: cwFade; }
           .cw .oder0 { display: block; width: auto; }
           .cw .ponudba0 { position: fixed; top: 3.05rem; right: 0; bottom: 0; width: min(410px, 34vw); border-radius: 22px 0 0 22px; margin: 0; z-index: 20; overflow-y: auto; animation: ponudbaVstop .5s cubic-bezier(.2,.8,.3,1) both; }
+          /* spodnja gumba centrirana POD vprašalnikom (ne cela stran) — enak odmik kot vsebina za fiksni panel */
+          .cw .noga.noga-ob-panelu { padding-right: calc(min(410px, 34vw) + clamp(1rem, 2.5vw, 2rem) + clamp(1.2rem, 4vw, 3rem)); }
         }
         @keyframes ponudbaVstop { from { transform: translateX(100%); } to { transform: translateX(0); } }
         @media (prefers-reduced-motion: reduce) { .cw .ponudba0 { animation: none; } }
@@ -5377,7 +5379,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         </>
       )}
 
-      <div className="noga">
+      <div className={'noga' + (vChatu ? ' noga-ob-panelu' : '')}>
         <div className="noga-c">
           <div className="noga-gumbi">
             {(korak > 0 || (korak === 0 && !uvodChat && !klasicnaOblika)) && (
