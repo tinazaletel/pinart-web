@@ -12,7 +12,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, User, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, CaretUp, Check, PencilSimple, SlidersHorizontal, ArrowUp, ArrowDown,
+  CaretDown, CaretUp, Check, PencilSimple, SlidersHorizontal, ArrowUp, ArrowDown, ArrowCounterClockwise,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -2578,6 +2578,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const odstraniBarvo = () =>
     oblikuj(barvaCilj === 'podlaga' ? 'hiliteColor' : 'foreColor', barvaCilj === 'podlaga' ? 'transparent' : '#111111');
   const uporabiPisavo = (font: string) => oblikuj('fontName', font);
+  /* ponastavi na samodejno generirano besedilo (razveljavi rocne posege) */
+  const ponastaviBesedilo = () => {
+    setRocnoBesedilo(false);
+    const html = ponudbaVHtml(ponudba);
+    setBesedilo(ponudba);
+    setBesediloHtml(html);
+    if (editorRef.current) editorRef.current.innerHTML = html;
+  };
   useEffect(() => {
     if (!oznaciNamig) return;
     const t = setTimeout(() => setOznaciNamig(false), 2400);
@@ -4175,6 +4183,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .segpills { display: inline-flex; background: rgba(255,255,255,.55); border: 1px solid rgba(17,17,17,.1); border-radius: 999px; padding: .3rem; gap: .2rem; }
         .cw .segpills button { border: none; background: transparent; color: var(--ink); font-family: inherit; font-weight: 700; font-size: .76rem; letter-spacing: .04em; text-transform: uppercase; padding: .58rem 1.05rem; border-radius: 999px; cursor: pointer; transition: background .18s, color .18s; }
         .cw .segpills button.on { background: var(--ink); color: var(--paper); }
+        .cw .pon-vrh-desno { margin-left: auto; display: inline-flex; align-items: center; gap: .8rem; }
         .cw .ai-gumb { width: 2.9rem; height: 2.9rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.14); background: rgba(255,255,255,.55); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: transform .2s, background .18s, color .18s; }
         .cw .ai-gumb:hover { background: var(--ink); color: var(--paper); transform: scale(1.06); }
         .cw .ai-namig { background: rgba(124,58,237,.09); border-radius: 12px; padding: .7rem .9rem; margin: -.3rem 0 1rem; }
@@ -5841,8 +5850,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       onClick={() => { setTonPonudbe(t.id); setRocnoBesedilo(false); }}>{t.ime}</button>
                   ))}
                 </div>
-                <button type="button" className="ai-gumb" title="AI pomočnik" aria-label="AI pomočnik"
-                  onClick={() => setAiKmalu(v => !v)}><MagicWand size={19} /></button>
+                <div className="pon-vrh-desno">
+                  {rocnoBesedilo && (
+                    <button type="button" className="ai-gumb ponastavi-gumb" title="Ponastavi na samodejno besedilo" aria-label="Ponastavi na samodejno besedilo"
+                      onClick={ponastaviBesedilo}><ArrowCounterClockwise size={18} weight="bold" /></button>
+                  )}
+                  <button type="button" className="ai-gumb" title="AI pomočnik" aria-label="AI pomočnik"
+                    onClick={() => setAiKmalu(v => !v)}><MagicWand size={19} /></button>
+                </div>
               </div>
               {aiKmalu && (
                 <p className="hint ai-namig">AI pomočnik (predlaga in izboljša besedilo ponudbe) pride kot naslednja nadgradnja — potrebuje zaledje. Zaenkrat besedilo urejaš ročno z orodji spodaj.</p>
