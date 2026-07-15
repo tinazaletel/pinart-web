@@ -3633,7 +3633,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .vodicka-karta b { display: block; color: var(--ink); font-size: .96rem; margin-bottom: .1rem; }
 
         /* ziva ponudba: steklena kartica */
-        .cw .ponudba0 { border-radius: 26px; padding: 1.5rem 1.4rem 1.3rem; display: flex; flex-direction: column; min-height: 0; background: rgba(255,255,255,.72); -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); border: 1px solid rgba(255,255,255,.75); box-shadow: 0 20px 60px rgba(40,25,40,.10); }
+        .cw .ponudba0 { border-radius: 26px; padding: 1.5rem 1.4rem 5.5rem; display: flex; flex-direction: column; min-height: 0; background: rgba(255,255,255,.72); -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); border: 1px solid rgba(255,255,255,.75); box-shadow: 0 20px 60px rgba(40,25,40,.10); }
         .cw .ponudba0-glava { display: flex; align-items: center; justify-content: space-between; gap: .8rem; }
         .cw .ponudba0-glava h2 { font-family: var(--font-bodoni), serif; font-weight: 500; font-size: 1.65rem; margin: 0; }
         .cw .ponudba0-chip { background: rgba(255,255,255,.85); border: 1px solid rgba(17,17,17,.12); border-radius: 999px; padding: .28rem .7rem; font-size: .74rem; font-weight: 650; color: rgba(17,17,17,.6); white-space: nowrap; }
@@ -3654,7 +3654,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @media (prefers-reduced-motion: reduce) { .cw .prazno-mapa .mapa-telo, .cw .prazno-mapa .mapa-senca, .cw .prazno-mapa .mapa-oci { animation: none; } }
 
         .cw .vrstice0 { display: flex; flex-direction: column; }
-        .cw .vrst0 { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: .55rem; padding: .65rem 0; border-bottom: 1px solid rgba(17,17,17,.12); }
+        .cw .vrst0 { display: grid; grid-template-columns: auto 1fr auto auto auto; align-items: center; gap: .55rem; padding: .65rem 0; border-bottom: 1px solid rgba(17,17,17,.12); }
+        .cw .vrst0-prazno { width: 0; }
         .cw .vrst0.vlecem { opacity: .35; }
         .cw .rocica0 { cursor: grab; color: rgba(17,17,17,.4); font-size: .9rem; line-height: 1; padding: .3rem .15rem; border-radius: 6px; user-select: none; -webkit-user-select: none; }
         .cw .rocica0:hover { color: var(--ink); background: rgba(17,17,17,.08); }
@@ -5074,11 +5075,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                               <b>{q}</b>
                               <button type="button" aria-label={'En kos več: ' + s.ime} onClick={() => spremeniKolicino(l.uid, 1)}>+</button>
                             </span>
-                          ) : (
-                            <button type="button" className="vrst0-x" aria-label={'Odstrani: ' + prikazVrstice(l, s)}
-                              onClick={() => odstraniVrstico(l.uid)}>×</button>
-                          )}
+                          ) : <span className="vrst0-prazno" aria-hidden />}
                           <span className="vrst0-cena">{val(osnovaZa(s) * q)}</span>
+                          <button type="button" className="vrst0-x" aria-label={'Odstrani: ' + prikazVrstice(l, s)}
+                            onClick={() => odstraniVrstico(l.uid)}>×</button>
                         </div>
                         {razprta && (
                           <div className="vrst0-detajl">
@@ -5175,18 +5175,27 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       )}
                       <div className="ponudba0-opomba">↳ končna cena (paket Priporočeni) — levo izbereš paket in prilagodiš</div>
                     </>
-                  ) : (
-                    <>
-                      <div className="ponudba0-vsota-vrsta">
-                        <span>Izvedba · okvirno</span>
-                        <b>{val(vrstice.reduce((a, l) => {
-                          const s = vseStoritve.find(x => x.id === l.sid);
-                          return s ? a + osnovaZa(s) * Math.max(1, Math.round(l.kolicina)) : a;
-                        }, 0) + postavke.reduce((a, x) => a + x.cena * x.kolicina, 0))}</b>
-                      </div>
-                      <div className="ponudba0-opomba">↳ končno ceno izostrijo naslednji koraki (izkušnje, trg, pravice)</div>
-                    </>
-                  )}
+                  ) : (() => {
+                    const okvirno = vrstice.reduce((a, l) => {
+                      const s = vseStoritve.find(x => x.id === l.sid);
+                      return s ? a + osnovaZa(s) * Math.max(1, Math.round(l.kolicina)) : a;
+                    }, 0) + postavke.reduce((a, x) => a + x.cena * x.kolicina, 0);
+                    return (
+                      <>
+                        <div className="ponudba0-vsota-vrsta">
+                          <span>Izvedba · okvirno{ddvZavezanec ? ' (brez DDV)' : ''}</span>
+                          <b>{val(okvirno)}</b>
+                        </div>
+                        {ddvZavezanec && (
+                          <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                            <span>+ DDV {ddvSt} %</span>
+                            <span>z DDV {val(okvirno * (1 + ddvSt / 100))}</span>
+                          </div>
+                        )}
+                        <div className="ponudba0-opomba">↳ končno ceno izostrijo naslednji koraki (izkušnje, trg, pravice)</div>
+                      </>
+                    );
+                  })()}
                 </div>
               </aside>
 
