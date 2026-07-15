@@ -3175,6 +3175,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   };
   const prvoIme = (imeUporabnika.trim() || ponudnik.ime.trim()).split(/\s+/)[0];
   const pozdrav = `Hej${prvoIme ? ' ' + prvoIme : ''}!`;
+  /* pozdrav ob vrnitvi: ime (z veliko) + podjetje, v imenu katerega pisi ponudbo */
+  const imeZaPozdrav = imeUporabnika.trim().split(/\s+/)[0];
+  const imeVelika = imeZaPozdrav ? imeZaPozdrav.charAt(0).toUpperCase() + imeZaPozdrav.slice(1) : '';
+  const podjetjePozdrav = ponudnik.ime.trim();
+  const pozdravVrnitev = 'Hej' + (imeVelika ? ' ' + imeVelika : '') + (podjetjePozdrav ? ', ' + podjetjePozdrav : '!');
   /* prikazno ime vrstice: lastno ime, sicer ime storitve (+ zaporedje pri vec instancah) */
   const prikazVrstice = (l: VrsticaP, s: Storitev) => {
     if (l.ime.trim()) return l.ime.trim();
@@ -4833,7 +4838,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {/* ze onboardan (vrnitev): oseben pozdrav namesto visecega vprasanja */}
               {!uvodChat && chatKorak === 0 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                  <span className="chat-mehur"><b>{prvoIme ? `Hej, ${prvoIme}!` : 'Hej!'}</b></span></div>
+                  <span className="chat-mehur"><b>{pozdravVrnitev}</b>{podjetjePozdrav && <small>Ponudbo pišeš v imenu tega podjetja. Spremeniš v Moji podatki / Moje podjetje.</small>}</span></div>
               )}
 
               {/* po onboardingu: nadaljevanje pogovora za izbiro (ista povrsina, ni preskoka) */}
