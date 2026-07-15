@@ -1016,6 +1016,13 @@ const zaokrozi = (n: number) => Math.round(n / 50) * 50;
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+/* za hitro branje: v telesu (alineje/odstavki) samodejno poudarimo cene, %,
+   trajanja in nekaj ključnih besed — brez rocnega markiranja povsod. */
+const poudari = (s: string): string => s
+  .replace(/(\d[\d.\s]*\s?(?:€|\$|£))/g, '<b>$1</b>')
+  .replace(/(\b\d+\s?%)/g, '<b>$1</b>')
+  .replace(/(\b\d+(?:\s?[–-]\s?\d+)?\s?(?:let\b|leto\b|leta\b|tednov\b|teden\b|tedna\b|mesec(?:ev|a)?\b|ur\b|urah\b))/gi, '<b>$1</b>');
+const escP = (s: string) => poudari(escapeHtml(s));
 const ponudbaVHtml = (s: string): string =>
   s.split('\n\n')
     .map((block): string => {
@@ -1044,7 +1051,7 @@ const ponudbaVHtml = (s: string): string =>
           else if (items.length) items[items.length - 1] += ' ' + l;
           else items.push(l);
         });
-        return `<ul>${items.map(l => `<li>${escapeHtml(l)}</li>`).join('')}</ul>`;
+        return `<ul>${items.map(l => `<li>${escP(l)}</li>`).join('')}</ul>`;
       }
       if (lines.length >= 2 && /^[A-ZČŠŽ\s]+/.test(first) && first.includes('·')) {
         const [title, ...rest] = lines;
@@ -1055,18 +1062,18 @@ const ponudbaVHtml = (s: string): string =>
         let kup: string[] = [];
         const izprazni = () => {
           if (kup.length) {
-            deli.push(`<ul>${kup.map(l => `<li>${escapeHtml(l.replace(/^·\s*/, ''))}</li>`).join('')}</ul>`);
+            deli.push(`<ul>${kup.map(l => `<li>${escP(l.replace(/^·\s*/, ''))}</li>`).join('')}</ul>`);
             kup = [];
           }
         };
         rest.forEach(l => {
           if (l.startsWith('·')) kup.push(l);
-          else { izprazni(); deli.push(`<p>${escapeHtml(l)}</p>`); }
+          else { izprazni(); deli.push(`<p>${escP(l)}</p>`); }
         });
         izprazni();
         return `<div class="offer-package"><div class="offer-package-head"><h3>${escapeHtml(name.trim())}</h3><strong>${escapeHtml(price.trim())}</strong></div>${deli.join('')}</div>`;
       }
-      return `<p>${lines.map(escapeHtml).join('<br>')}</p>`;
+      return `<p>${lines.map(escP).join('<br>')}</p>`;
     })
     .join('');
 
@@ -4796,14 +4803,26 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 )}
 
                 <div className="ponudba0-vsota">
-                  <div className="ponudba0-vsota-vrsta">
-                    <span>Izvedba · okvirno</span>
-                    <b>{val(vrstice.reduce((a, l) => {
-                      const s = vseStoritve.find(x => x.id === l.sid);
-                      return s ? a + osnovaZa(s) * Math.max(1, Math.round(l.kolicina)) : a;
-                    }, 0) + postavke.reduce((a, x) => a + x.cena * x.kolicina, 0))}</b>
-                  </div>
-                  <div className="ponudba0-opomba">↳ končno ceno izostrijo naslednji koraki (izkušnje, trg, pravice)</div>
+                  {r && poMeh >= 6 ? (
+                    <>
+                      <div className="ponudba0-vsota-vrsta">
+                        <span>Priporočena cena</span>
+                        <b>{val(r.paketi[1].skupaj)}</b>
+                      </div>
+                      <div className="ponudba0-opomba">↳ končna cena (paket Priporočeni) — levo izbereš paket in prilagodiš</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="ponudba0-vsota-vrsta">
+                        <span>Izvedba · okvirno</span>
+                        <b>{val(vrstice.reduce((a, l) => {
+                          const s = vseStoritve.find(x => x.id === l.sid);
+                          return s ? a + osnovaZa(s) * Math.max(1, Math.round(l.kolicina)) : a;
+                        }, 0) + postavke.reduce((a, x) => a + x.cena * x.kolicina, 0))}</b>
+                      </div>
+                      <div className="ponudba0-opomba">↳ končno ceno izostrijo naslednji koraki (izkušnje, trg, pravice)</div>
+                    </>
+                  )}
                 </div>
               </aside>
             </div>
