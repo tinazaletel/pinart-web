@@ -158,6 +158,8 @@ type TonPonudbe = 'formalno' | 'toplo' | 'direktno';
    digitalna izdaja NI vkljucena v tiskano; izvedeni produkti (app, merch)
    se vedno licencirajo loceno. */
 const PRAV_TRAJANJE = [
+  { id: '3m',        ime: '3 mesece',  mult: 0.3  },
+  { id: '6m',        ime: '6 mesecev', mult: 0.4  },
   { id: '1',         ime: '1 leto',    mult: 0.5  },
   { id: '3',         ime: '3 leta',    mult: 0.75 },
   { id: '5',         ime: '5 let',     mult: 0.9  },
@@ -165,12 +167,20 @@ const PRAV_TRAJANJE = [
   { id: '10',        ime: '10 let',    mult: 1.3  },
   { id: 'neomejeno', ime: 'Neomejeno', mult: 1.8  },
 ] as const;
+/* recepti pravic (en izbor na vrstici tabele; zdruzi vrsto prenosa + privzeto trajanje) */
+const RECEPTI: { id: string; ime: string; prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string }[] = [
+  { id: 'trajno',      ime: 'Trajno izključno',     prenos: 'izkljucni',   trajanje: 'neomejeno' },
+  { id: 'doba',        ime: 'Izključno za dobo',    prenos: 'izkljucni',   trajanje: '7' },
+  { id: 'neizkljucni', ime: 'Neizključno',          prenos: 'neizkljucni', trajanje: '7' },
+  { id: 'licenca',     ime: 'Samo licenca',         prenos: 'licenca',     trajanje: '7' },
+  { id: 'kampanja',    ime: 'Kampanjska licenca',   prenos: 'licenca',     trajanje: '3m' },
+];
 /* privzeta vrsta pravic + trajanje po storitvi (za tabelo pri vec storitvah) */
 const PRAVICE_TRAJNO = new Set(['logo', 'cgp', 'web', 'embalaza', 'interier', 'arhitektura', 'produktni', 'uxui', 'aplikacija', 'dizajnsistem']);
 const PRAVICE_KAMPANJA = new Set(['kampanja', 'smm', 'razstava', 'seo', 'email', 'pr']);
 const privzetePraviceZa = (sid: string): { prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string } => {
   if (PRAVICE_TRAJNO.has(sid)) return { prenos: 'izkljucni', trajanje: 'neomejeno' };
-  if (PRAVICE_KAMPANJA.has(sid)) return { prenos: 'licenca', trajanje: '1' };
+  if (PRAVICE_KAMPANJA.has(sid)) return { prenos: 'licenca', trajanje: '3m' };
   return { prenos: 'izkljucni', trajanje: '7' };   /* ilustracija, foto, publikacija, video, motion, 3d, copy, direkcija, strategija, moja- */
 };
 const PRAV_TERITORIJ = [
@@ -2081,17 +2091,29 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     /* obseg pravic (trajanje x teritorij x dodatni mediji x naklada) skalira
        bazo NAD varovalko — sirsa raba legitimno preseze 300 % izvedbe.
        Privzetki dajo 1.0, torej brez spreminjanja cena ostane enaka. */
-    const trajanjeIz = PRAV_TRAJANJE.find(t => t.id === pravTrajanje) ?? PRAV_TRAJANJE[3];
     const teritorijIz = PRAV_TERITORIJ.find(t => t.id === pravTeritorij) ?? PRAV_TERITORIJ[0];
     const medijiIz = PRAV_MEDIJI_DODATNI.filter(m => pravDodatniMediji.has(m.id));
     const nakladaIz = PRAV_NAKLADA.find(n => n.id === pravNaklada) ?? PRAV_NAKLADA[0];
-    const obsegMult = trajanjeIz.mult * teritorijIz.mult
-      * (1 + medijiIz.reduce((a, m) => a + m.mult, 0)) * nakladaIz.mult;
-    const praviceBaza = zaokrozi(clamp(surove, delo * 0.25, delo * 3) * obsegMult);
-    const praviceAvto = prenosPravic === 'neizkljucni' ? zaokrozi(praviceBaza * 0.6)
-      : prenosPravic === 'licenca' ? 0
-        : praviceBaza;
-    const licencaAvto = zaokrozi(praviceBaza * 0.2);
+    const teritMedNak = teritorijIz.mult * (1 + medijiIz.reduce((a, m) => a + m.mult, 0)) * nakladaIz.mult;   /* globalni obseg */
+    /* pravice PER STORITEV: baza (surove) razdeljena po delezu izvedbe storitve;
+       vsaka storitev x svoj mnozitelj trajanja x globalni teritMedNak x faktor prenosa.
+       Ce so vse pravice enotne, se vsota ujema z nekdanjim globalnim izracunom (varnostna lastnost). */
+    const clampBaseP = clamp(surove, delo * 0.25, delo * 3);
+    const izvStoritve = (sid: string) => linije.filter(l => l.sid === sid).reduce((b, l) => b + osnovaZa(l.s) * Math.max(1, Math.round(l.kolicina)), 0) * mult;
+    const totStoritevIzv = sez.reduce((a, s) => a + izvStoritve(s.id), 0);
+    let praviceBazaSum = 0, praviceAvtoSum = 0, licencaAvtoSum = 0;
+    const praviceVrstice = sez.map(s => {
+      const rec = pravicePoStoritvi[s.id] || privzetePraviceZa(s.id);
+      const trajMult = PRAV_TRAJANJE.find(t => t.id === rec.trajanje)?.mult ?? 1;
+      const w = totStoritevIzv > 0 ? izvStoritve(s.id) / totStoritevIzv : 0;
+      const sBaza = clampBaseP * w * trajMult * teritMedNak;
+      const sAvto = rec.prenos === 'neizkljucni' ? sBaza * 0.6 : rec.prenos === 'licenca' ? 0 : sBaza;
+      praviceBazaSum += sBaza; praviceAvtoSum += zaokrozi(sAvto); licencaAvtoSum += zaokrozi(sBaza * 0.2);
+      return { sid: s.id, ime: s.ime, prenos: rec.prenos, trajanje: rec.trajanje, trajanjeIme: PRAV_TRAJANJE.find(t => t.id === rec.trajanje)?.ime ?? rec.trajanje, znesek: zaokrozi(sAvto) };
+    });
+    const praviceBaza = zaokrozi(praviceBazaSum);
+    const praviceAvto = praviceAvtoSum;
+    const licencaAvto = licencaAvtoSum;
     /* rocni prepis (vnesen v valuti ponudbe) povozi samodejni izracun;
        prazno polje = samodejno. Ce je rocno nastavljen le odkup, licenca
        sledi kot 20 % rocnega zneska. */
@@ -2117,14 +2139,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       sez, vel, izk, trgMult, delo, pravice, praviceBaza, licenca, paketi, popustPct,
       linije: linije.map(l => ({ uid: l.uid, sid: l.sid, ime: imeVrstice(l), kolicina: Math.max(1, Math.round(l.kolicina)) })),
       praviceAvto, licencaAvto, praviceRocne: rocnePravEur > 0, licencaRocna: rocnaLicEur > 0,
-      vrsticeIzvedbe, raba, tantiemePct, prenos: prenosPravic,
+      vrsticeIzvedbe, raba, tantiemePct, prenos: prenosPravic, praviceVrstice,
       dobicekPodan: raba === 'projekt' ? pd > 0 : d > 0,
       obseg: {
-        mult: obsegMult,
-        opis: `${['tisk + promocija', ...medijiIz.map(m => m.ime.toLowerCase())].join(' + ')}, ${trajanjeIz.ime.toLowerCase()}, ${teritorijIz.ime}, naklada ${nakladaIz.ime}`,
+        mult: teritMedNak,
+        opis: `${['tisk + promocija', ...medijiIz.map(m => m.ime.toLowerCase())].join(' + ')}, ${teritorijIz.ime}, naklada ${nakladaIz.ime}`,
       },
     };
-  }, [vrstice, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, valuta, pravTrajanje, pravTeritorij, pravDodatniMediji, pravNaklada, rocniPaketi]);
+  }, [vrstice, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, valuta, pravicePoStoritvi, pravTeritorij, pravDodatniMediji, pravNaklada, rocniPaketi]);
 
   /* Vprasanja na VRSTICO (ne storitev): dve spletni strani = dva locena
      vprasalnika. Kljuc odgovora = `${uid}:${vprasanje}`; ker je uid prve
@@ -4088,6 +4110,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .kartica { animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; background: #FCFBF7; border: 1px solid rgba(17,17,17,.06); border-radius: 20px; padding: 1.6rem 1.7rem 1.7rem; box-shadow: 0 4px 18px rgba(17,17,17,.04); max-width: 760px; margin-bottom: 1.4rem; }
         @media (prefers-reduced-motion: reduce) { .cw .kartica { animation: none; } }
         .cw .kartica-neobvezno { background: transparent; border: 1px dashed rgba(17,17,17,.22); box-shadow: none; margin-top: -.4rem; }
+        .cw .prav-tabela { display: flex; flex-direction: column; }
+        .cw .prav-vrsta { display: grid; grid-template-columns: minmax(0,1fr) auto auto; align-items: center; gap: .9rem; padding: .7rem 0; border-bottom: 1px solid rgba(17,17,17,.1); }
+        .cw .prav-ime { font-weight: 650; font-size: .98rem; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cw .prav-recept { border: none; border-bottom: 1px solid rgba(17,17,17,.35); background-color: transparent; font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); padding: .3rem 1.4rem .3rem .2rem; appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .1rem center; }
+        .cw .prav-cena { font-family: var(--font-bodoni), serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; min-width: 3.6rem; text-align: right; }
+        .cw .prav-skupaj { display: flex; justify-content: space-between; align-items: baseline; margin-top: .9rem; padding-top: .8rem; border-top: 2px solid var(--ink); }
+        .cw .prav-skupaj b { font-family: var(--font-bodoni), serif; font-size: 1.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+        @media (max-width: 560px) { .cw .prav-vrsta { grid-template-columns: 1fr auto; grid-template-areas: 'ime cena' 'recept recept'; } .cw .prav-ime { grid-area: ime; } .cw .prav-cena { grid-area: cena; } .cw .prav-recept { grid-area: recept; } }
         .cw .kartica > .k-naslov { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .3rem 1rem; margin: 0 0 1.1rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .kartica > .k-naslov .vec, .cw .profil-sekcija .k-naslov .vec { font-size: .82rem; font-weight: 500; color: rgba(17,17,17,.55); text-transform: none; letter-spacing: 0; }
         .cw .kartica > .hint { margin-top: 1rem; }
@@ -5553,51 +5583,48 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 </div>
               )}
               <div className="kartica">
-                <div className="k-naslov">Kako prenašaš avtorske pravice?
-                  <InfoNamig besedilo="Izključni prenos: naročnik dobi delo v izključno last, ti ga ne smeš uporabiti drugje (najvišja cena pravic). Neizključni: obdržiš pravico delo ponuditi tudi drugim (npr. predloge) — nižja cena. Samo licenca: naročnik ne kupi pravic, plačuje letno licenco za rabo, ti ostaneš lastnik dela." />
-                  <span className="vec">vpliva na ceno</span>
+                <div className="k-naslov">Avtorske pravice po storitvah
+                  <InfoNamig besedilo="Vsaka storitev ima svoje pravice. Logotip/CGP je praviloma trajen izključni prenos, ilustracija licenca za dobo (npr. 7 let), kampanja kratka licenca. Privzetki so že nastavljeni glede na tip; recept lahko spremeniš. Podrobnosti (teritorij, mediji, naklada, klavzule) pridejo v naslednji nadgradnji." />
+                  <span className="vec">vsaka storitev svoje</span>
                 </div>
-                <div className="izbira izbira-3">
-                  <button type="button" className={prenosPravic === 'izkljucni' ? 'on' : ''} onClick={() => setPrenosPravic('izkljucni')}>
-                    <h3>Izključni prenos</h3>
-                    <p>Naročnik dobi delo v izključno rabo; ti ga ne uporabljaš drugje. Najpogostejše, polna cena pravic.</p>
-                  </button>
-                  <button type="button" className={prenosPravic === 'neizkljucni' ? 'on' : ''} onClick={() => setPrenosPravic('neizkljucni')}>
-                    <h3>Neizključni prenos</h3>
-                    <p>Delo lahko ponudiš tudi drugim (npr. predloge, ilustracije). Cenejše pravice (≈ 60 %).</p>
-                  </button>
-                  <button type="button" className={prenosPravic === 'licenca' ? 'on' : ''} onClick={() => setPrenosPravic('licenca')}>
-                    <h3>Samo licenca</h3>
-                    <p>Odkup ni vključen; naročnik plača letno licenco za rabo. V ceni ni odkupa pravic.</p>
-                  </button>
-                </div>
+                <p className="hint" style={{ marginTop: 0, marginBottom: '1rem' }}>
+                  Privzetki so nastavljeni glede na tip storitve — spremeni recept, kjer je treba. Vsaka storitev pokaže svojo ceno pravic.
+                </p>
+                {r && r.praviceVrstice.length > 0 ? (
+                  <>
+                    <div className="prav-tabela">
+                      {r.praviceVrstice.map(row => {
+                        const recId = RECEPTI.find(rc => rc.prenos === row.prenos && rc.trajanje === row.trajanje)?.id ?? '';
+                        return (
+                          <div key={row.sid} className="prav-vrsta">
+                            <span className="prav-ime">{row.ime}</span>
+                            <select className="prav-recept" aria-label={'Pravice: ' + row.ime} value={recId}
+                              onChange={e => { const rc = RECEPTI.find(x => x.id === e.target.value); if (rc) setPravicePoStoritvi(prev => ({ ...prev, [row.sid]: { prenos: rc.prenos, trajanje: rc.trajanje } })); }}>
+                              {recId === '' && <option value="">Po meri ({row.trajanjeIme})</option>}
+                              {RECEPTI.map(rc => <option key={rc.id} value={rc.id}>{rc.ime}</option>)}
+                            </select>
+                            <span className="prav-cena">{val(row.znesek)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="prav-skupaj"><span>Skupaj avtorske pravice</span><b>{val(r.pravice)}</b></div>
+                  </>
+                ) : (
+                  <p className="hint" style={{ margin: 0 }}>Dodaj storitve, da nastaviš pravice zanje.</p>
+                )}
               </div>
 
               <div className="kartica">
-                <div className="k-naslov">Obseg pravic
-                  <InfoNamig besedilo="Pravice niso vse-ali-nič: cena je odvisna od tega, KJE, KOLIKO ČASA in V KAKŠNI NAKLADI naročnik delo uporablja. Privzeti obseg (tisk + promocija izdelka, 7 let, Slovenija, naklada do 3.000) je vštet v znesek pravic; širša raba znesek poviša. Pozor: digitalna izdaja NI samodejno vključena v tiskano — e-knjiga iz istih ilustracij je doplačilo. Izvedeni produkti (aplikacije, merch) se vedno licencirajo ločeno." />
-                  <span className="vec">vpliva na ceno pravic</span>
+                <div className="k-naslov">Obseg — velja za vse storitve
+                  <InfoNamig besedilo="Teritorij, dodatni mediji in naklada trenutno veljajo globalno za vse storitve (kmalu tudi per storitev v Podrobnostih). Privzeto: Slovenija, tisk + promocija, naklada do 3.000 — to je vključeno v ceno pravic; širša raba znesek poviša. Trajanje je odslej del pravic po storitvah zgoraj." />
+                  <span className="vec">teritorij · mediji · naklada</span>
                 </div>
                 <p className="hint" style={{ marginTop: 0 }}>
-                  Vključeno v osnovo: <b>tisk + promocija izdelka</b>, <b>{(PRAV_TRAJANJE.find(t => t.id === pravTrajanje)?.ime || '7 let').toLowerCase()}</b>, <b>Slovenija</b>, naklada <b>do 3.000</b>.
-                  {raba === 'znamka' ? ' Za celotno znamko je privzeto trajno (logotip/CGP se ne omejuje na dobo).' : ' Za projekt je privzeto 7 let (npr. ilustracija).'}
-                  {' '}Vse izven obsega je doplačljivo — ponudba to tudi zapiše.
+                  Vključeno v osnovo: <b>tisk + promocija izdelka</b>, <b>Slovenija</b>, naklada <b>do 3.000</b>. Trajanje nastaviš pri vsaki storitvi zgoraj. Vse izven obsega je doplačljivo — ponudba to tudi zapiše.
                 </p>
                 {obsegPokazi ? (
                   <>
-                    <div className="polje" style={{ marginTop: '1.1rem' }}>
-                      <label>Trajanje prenosa <span className="vec">običajno 5–7 let</span></label>
-                      <div className="opts">
-                        {PRAV_TRAJANJE.map(t => (
-                          <button key={t.id} type="button"
-                            className={'pill' + (pravTrajanje === t.id ? ' on' : '')}
-                            onClick={() => { setPravTrajanje(t.id); setPravTrajanjeRocno(true); }}>
-                            <span className="pill-fill" aria-hidden />
-                            <span className="pill-tekst">{t.ime}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
                     <div className="polje" style={{ marginTop: '1.1rem' }}>
                       <label>Teritorij</label>
                       <div className="opts">
