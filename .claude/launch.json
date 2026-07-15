@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3456
+    },
+    {
+      "name": "pinart-prod-test",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd '/private/tmp/claude-501/-Users-tina-Desktop-Pinart-website/0fbc620a-fc7e-487f-a186-674371f91b20/scratchpad/prodtest' && npx next start -p 5178"],
+      "port": 5178
     }
   ]
 }

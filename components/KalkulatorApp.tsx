@@ -3475,11 +3475,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-bot { display: flex; align-items: flex-start; gap: .55rem; max-width: 82%; }
         .cw .chat-obraz { width: 2.5rem; height: 2.5rem; border-radius: 50%; flex: none; position: relative; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 8px 20px rgba(124,58,237,.28); }
         .cw .chat-obraz svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-        .cw .chat-bot .chat-mehur { background: rgba(255,180,205,.32); color: rgba(17,17,17,.72); border-bottom-left-radius: 5px; }
+        .cw .chat-bot .chat-mehur { background: rgba(255,180,205,.32); color: rgba(17,17,17,.72); border-bottom-left-radius: 5px; border-color: #FFEFF6; }
         .cw .chat-bot .chat-mehur b { display: block; color: var(--ink); font-weight: 700; font-size: 1.02rem; }
         .cw .chat-bot .chat-mehur small { display: block; margin-top: .1rem; color: rgba(17,17,17,.5); font-size: .82rem; }
         .cw .chat-jaz { align-self: flex-end; max-width: 88%; }
-        .cw .chat-jaz .chat-mehur { background: rgba(160,205,235,.4); color: var(--ink); font-weight: 600; border-bottom-right-radius: 5px; }
+        .cw .chat-jaz .chat-mehur { background: rgba(160,205,235,.4); color: var(--ink); font-weight: 600; border-bottom-right-radius: 5px; border-color: #EEFCFF; }
         .cw .chat-mehur { border-radius: 18px; padding: .9rem 1.35rem; font-size: .95rem; line-height: 1.5; font-weight: 400; border: 1px solid rgba(255,255,255,.7); box-shadow: 0 2px 10px rgba(40,25,40,.05); }
         .cw .noga-skrita { display: none; }
         .cw .chat-izbire { display: flex; flex-direction: column; gap: .6rem; margin: .2rem 0 .2rem 3.05rem; }
@@ -4240,26 +4240,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
             {profilPogled === 'podjetja' && (
               <>
-                <p className="ob-sub" style={{ margin: '0 0 1rem' }}>Shrani podatke vsakega podjetja enkrat, da jih ne pišeš znova pri vsaki ponudbi. Klikni podjetje za urejanje.</p>
-                {Object.keys(podjetja).length > 0 && (
-                  <div className="profil-seznam" style={{ marginBottom: '1.2rem' }}>
-                    {Object.keys(podjetja).map(ime => (
-                      <div key={ime} className="profil-vrsta">
-                        <button type="button" className="povezava pv-ime" style={{ textDecoration: 'none', flex: 1, textAlign: 'left' }} onClick={() => odpriPodjetje(ime)}>
-                          {ime}{aktivnoPodjetje === ime ? ' · aktivno' : ''}
-                        </button>
-                        <button type="button" className="brisi" title={'Izbriši ' + ime} onClick={() => izbrisiPodjetje(ime)}>×</button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="podjetja-shrani">
-                  <input type="text" placeholder="Ime podjetja (npr. Pinart, Moj s.p. …)"
-                    value={imePodjetja} onChange={e => setImePodjetja(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter' && imePodjetja.trim()) dodajNovoPodjetje(); }}
-                    aria-label="Ime novega podjetja" />
-                  <button type="button" className="dodaj-gumb" onClick={dodajNovoPodjetje} disabled={!imePodjetja.trim()}>+ Dodaj podjetje</button>
-                </div>
+                <p className="ob-sub" style={{ margin: '0 0 1rem' }}>Tvoji podatki za glavo ponudbe. Vpišeš enkrat, samodejno se shranijo — tu jih tudi kadarkoli popraviš. Če delaš za več podjetij, med njimi preklapljaš zgoraj.</p>
+                {podatkiUI()}
+                {urnePostavkeUI()}
               </>
             )}
 
