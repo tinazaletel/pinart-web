@@ -4477,7 +4477,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
                     <span className="chat-mehur"><b>Super! Izberi storitve, ki jih želiš v ponudbi.</b></span></div>
                   <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                    <span className="chat-mehur">Po potrebi jim lahko urediš podrobnosti — klikni izbrano storitev v ponudbi desno.</span></div>
+                    <span className="chat-mehur">Vsak klik doda kos. Po potrebi urediš ime in podrobnosti — klikni izbrano storitev v ponudbi desno.</span></div>
                 </>
               )}
 
@@ -4568,7 +4568,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span key={klikObroc.n} className="obroc0" aria-hidden
                     style={{ width: klikObroc.d, height: klikObroc.d, left: `calc(${klikObroc.x}% - ${klikObroc.d / 2}px)`, top: `calc(${klikObroc.y}% - ${klikObroc.d / 2}px)` }} />
                 )}
-                <div className="namig0" aria-hidden>Klikni storitev — vsak klik doda kos. Ime in podrobnosti urejaš v ponudbi.</div>
               </div>
               </div>
 
