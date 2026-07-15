@@ -12,7 +12,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, User, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, CaretUp, Check, PencilSimple, SlidersHorizontal,
+  CaretDown, CaretUp, Check, PencilSimple, SlidersHorizontal, ArrowUp, ArrowDown,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -4806,7 +4806,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <input autoFocus type="text" list="cw-drzave-list" value={custDrzavaMoj}
                     onChange={e => { const v = e.target.value; setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }}
                     placeholder="npr. Slovenija" />
-                  <button type="submit" className="gumb">Naprej ↓</button>
+                  <button type="submit" className="gumb">Naprej <ArrowDown size={15} weight="bold" aria-hidden /></button>
                 </form>
               )}
               {chatKorak > 3 && uvodOdgovorMehur(3, custDrzavaMoj.trim() || TRGI.find(t => t.id === mojTrg)?.ime || '—')}
@@ -4832,7 +4832,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       );
                     })}
                   </div>
-                  <div className="chat-vnos"><button type="button" className="gumb" disabled={obIzbor.size === 0} onClick={uvodPotrdiPodrocja}>Naprej ↓</button></div>
+                  <div className="chat-vnos"><button type="button" className="gumb" disabled={obIzbor.size === 0} onClick={uvodPotrdiPodrocja}>Naprej <ArrowDown size={15} weight="bold" aria-hidden /></button></div>
                 </>
               )}
               {chatKorak > 4 && obIzbor.size > 0 && uvodOdgovorMehur(4, [...obIzbor].map(id => PODROCJA.find(p => p.id === id)?.ime).filter(Boolean).join(', '))}
@@ -4881,7 +4881,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     onChange={e => setChatVnos(e.target.value)}
                     placeholder={chatKorak === 0 ? 'Ime ali vzdevek' : chatKorak === 2 ? 'Ime podjetja ali tvoje ime' : 'Ime ponudbe'} />
                   <button type="submit" className="gumb" disabled={chatKorak === 0 && !chatVnos.trim()}>
-                    {chatKorak === 6 ? 'Začni ↓' : 'Naprej ↓'}
+                    {chatKorak === 6 ? 'Začni' : 'Naprej'} <ArrowDown size={15} weight="bold" aria-hidden />
                   </button>
                 </form>
               )}
@@ -5931,7 +5931,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         }, 60);
                       } else { setUvodChat(true); setChatKorak(6); }
                     }
-                  : nazaj}>↑</button>
+                  : nazaj}><ArrowUp size={17} weight="bold" aria-hidden /></button>
             )}
             {/* med aktivnim onboarding-chatom flow vodijo inline gumbi -> skrijemo spodnji "Naprej" (samo en gumb) */}
             {korak === 0 && uvodChat && !klasicnaOblika ? null : korak < KORAKOV - 1 ? (
@@ -5947,7 +5947,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     setKorak(ponudbaStep);   /* priprava ponudbe = overlay/urejanje */
                   } else { naprej(); }
                 }}>
-                {vChatu && poMeh === 5 ? 'Pokaži ceno ↓' : vChatu && poMeh === 6 ? 'Pripravi ponudbo ↓' : korak === posebnostiStep ? 'Pokaži ceno ↓' : korak === cenaStep ? 'Pripravi ponudbo ↓' : korak === ponudbaStep ? 'Zaključi ↓' : 'Naprej ↓'}
+                {vChatu && poMeh === 5 ? 'Pokaži ceno' : vChatu && poMeh === 6 ? 'Pripravi ponudbo' : korak === posebnostiStep ? 'Pokaži ceno' : korak === cenaStep ? 'Pripravi ponudbo' : korak === ponudbaStep ? 'Zaključi' : 'Naprej'}
+                <ArrowDown size={16} weight="bold" aria-hidden />
               </button>
             ) : (
               <div className="noga-koncna">
