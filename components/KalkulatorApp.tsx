@@ -1840,6 +1840,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* tvoja regija / trg (o tebi) -> privzeta raven cen */
   const uvodPotrdiRegijo = (id: string) => { setMojTrg(id); setTrgNarocnika(id); setChatKorak(4); };
   const uvodPotrdiPodrocja = () => setChatKorak(5);   /* po izbiri podrocij */
+  /* preklop podrocja v Moji podatki -> takoj posodobi tudi mojSet (kateri mehurcki so v ospredju) */
+  const preklopiPodrocje = (id: string) => {
+    const nov = new Set(obIzbor);
+    if (nov.has(id)) nov.delete(id); else nov.add(id);
+    setObIzbor(nov);
+    const ids = new Set<string>();
+    PODROCJA.forEach(p => { if (nov.has(p.id)) p.storitve.forEach(sid => ids.add(sid)); });
+    setMojSet([...ids]);
+  };
   const uvodNovaObstojeca = (nova: boolean) => {
     setChatNova(nova);
     if (nova) { setChatKorak(6); return; }
@@ -4249,7 +4258,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <User size={20} weight="bold" />
                   <span>
                     <strong>Moji podatki</strong>
-                    <small>tvoje ime, izkušnje in država — vplivajo na privzeto raven cen</small>
+                    <small>ime, izkušnje, država in področja dela — kaj ponujaš in privzeta raven cen</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
@@ -4266,14 +4275,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span>
                     <strong>Moje podjetje</strong>
                     <small>podatki v glavi ponudbe, DDV, urne postavke{Object.keys(podjetja).length > 0 ? ` · ${Object.keys(podjetja).length} shranjenih` : ''}</small>
-                  </span>
-                  <span className="pm-puscica" aria-hidden>→</span>
-                </button>
-                <button type="button" className="profil-meni-vrsta" onClick={() => { setKazemProfil(false); odpriOnboarding(); }}>
-                  <SquaresFour size={20} weight="bold" />
-                  <span>
-                    <strong>Področja dela</strong>
-                    <small>katera področja ponujaš — določijo, katere storitve so v ospredju</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
@@ -4352,6 +4353,24 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       onChange={e => { const v = e.target.value; setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }} />
                   </div>
                 </div>
+                <div className="kartica">
+                  <div className="k-naslov">Področja dela <span className="vec">določijo, katere storitve so v ospredju</span></div>
+                  <div className="chat-podrocja">
+                    {PODROCJA.map(p => {
+                      const bar = PODROCJE_BARVA[p.id] || '#7C3AED';
+                      const on = obIzbor.has(p.id);
+                      return (
+                        <button key={p.id} type="button" className={'chip-podrocje' + (on ? ' on' : '')}
+                          style={{ borderColor: on ? bar : 'rgba(17,17,17,.12)', boxShadow: on ? `0 6px 18px ${osvetli(bar, 0.5)}` : undefined }}
+                          onClick={() => preklopiPodrocje(p.id)}>
+                          <span className="pi-pod" aria-hidden style={{ background: osvetli(bar, 0.8), color: zatemni(bar, 0.55) }}>{PODROCJE_IKONA[p.id]}</span>
+                          <b>{p.ime}</b>
+                          <span className="chip-kljuk" aria-hidden style={{ borderColor: on ? bar : 'rgba(17,17,17,.2)', background: on ? bar : 'transparent' }}>{on ? '✓' : ''}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </>
             )}
 
@@ -4400,7 +4419,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </span>
                 </label>
                 <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Te cene so <b>podlaga za izračun</b> — privzete (slovenski trg) delujejo takoj, prilagodi jih svojim za točnejši rezultat. Razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš; vrstni red velja tudi na prvem koraku.</p>
-                <button type="button" className="povezava povezava-roza" style={{ marginBottom: '1.3rem' }} onClick={() => { setKazemProfil(false); odpriOnboarding(); }}>↳ Uredi področja dela (kaj ponujaš)</button>
+                <button type="button" className="povezava povezava-roza" style={{ marginBottom: '1.3rem' }} onClick={() => setProfilPogled('moji-podatki')}>↳ Uredi področja dela (v Moji podatki)</button>
                 <div className="cene-seznam">
                   {poVrstnemRedu(vidneStoritve).map((s, i) => (
                     <div key={s.id} className="cene-vrsta" draggable
