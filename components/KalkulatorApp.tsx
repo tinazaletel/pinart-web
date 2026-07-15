@@ -4055,6 +4055,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
            enakem stilu; naslov kartice = h4. */
         .cw .kartica { animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; background: #FCFBF7; border: 1px solid rgba(17,17,17,.06); border-radius: 20px; padding: 1.6rem 1.7rem 1.7rem; box-shadow: 0 4px 18px rgba(17,17,17,.04); max-width: 760px; margin-bottom: 1.4rem; }
         @media (prefers-reduced-motion: reduce) { .cw .kartica { animation: none; } }
+        .cw .kartica-neobvezno { background: transparent; border: 1px dashed rgba(17,17,17,.22); box-shadow: none; margin-top: -.4rem; }
         .cw .kartica > .k-naslov { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .3rem 1rem; margin: 0 0 1.1rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .kartica > .k-naslov .vec, .cw .profil-sekcija .k-naslov .vec { font-size: .82rem; font-weight: 500; color: rgba(17,17,17,.55); text-transform: none; letter-spacing: 0; }
         .cw .kartica > .hint { margin-top: 1rem; }
@@ -5321,25 +5322,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     }} />
                 </div>
               </div>
-              <div className="numgrid">
-                <div className="polje">
-                  <label htmlFor="cw-promet">Letni promet naročnika (€) <span className="vec">za vrednost dela</span></label>
-                  <input id="cw-promet" type="number" min={0} step={10000} placeholder="800000"
-                    value={promet} onChange={e => setPromet(e.target.value)} />
-                </div>
-                <div className="polje">
-                  <label htmlFor="cw-dobicek">Letni dobiček naročnika (€)</label>
-                  <input id="cw-dobicek" type="number" min={0} step={5000} placeholder="60000"
-                    value={dobicek} onChange={e => setDobicek(e.target.value)} />
-                </div>
-              </div>
-              <p className="hint" style={{ marginTop: '.4rem' }}>
-                Kje preveriš:{' '}
-                {(REGISTRI[trgNarocnika] ?? REGISTRI.si).concat(REGISTRI_UNIV).map((reg, i) => (
-                  <span key={reg.url}>{i > 0 && ' · '}<a href={reg.url} target="_blank" rel="noopener noreferrer">{reg.ime}</a></span>
-                ))}
-                . Prazno = mikro podjetje. Upošteva se, kadar delo velja za celotno znamko.
-              </p>
               {(dodatniNarocnik || narocnikOseba || narocnikDavcna) ? (
                 <div className="numgrid">
                   <div className="polje">
@@ -5415,6 +5397,28 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <b>Vpliva na ceno</b> — bogatejši trg plača več.{custDrzavaNarocnik.trim()
                     ? ` Privzeto glede na državo naročnika (${custDrzavaNarocnik.trim()}); za globalno podjetje ga ročno dvigneš.`
                     : ' Nastavi se sam iz države naročnika.'}
+                </p>
+              </div>
+              <div className="kartica kartica-neobvezno">
+                <div className="k-naslov">Poslovanje naročnika <span className="vec">neobvezno · lahko preskočiš</span></div>
+                <p className="hint" style={{ marginTop: 0, marginBottom: '1rem' }}>Enako kot trg: podjetje z višjim prometom in dobičkom nosi večjo vrednost dela. Upošteva se le, kadar delo velja za celotno znamko. Če ne veš, pusti prazno.</p>
+                <div className="numgrid">
+                  <div className="polje">
+                    <label htmlFor="cw-promet">Letni promet naročnika (€)</label>
+                    <input id="cw-promet" type="number" min={0} step={10000} placeholder="800000"
+                      value={promet} onChange={e => setPromet(e.target.value)} />
+                  </div>
+                  <div className="polje">
+                    <label htmlFor="cw-dobicek">Letni dobiček naročnika (€)</label>
+                    <input id="cw-dobicek" type="number" min={0} step={5000} placeholder="60000"
+                      value={dobicek} onChange={e => setDobicek(e.target.value)} />
+                  </div>
+                </div>
+                <p className="hint" style={{ marginTop: '.5rem' }}>
+                  Kje preveriš:{' '}
+                  {(REGISTRI[trgNarocnika] ?? REGISTRI.si).concat(REGISTRI_UNIV).map((reg, i) => (
+                    <span key={reg.url}>{i > 0 && ' · '}<a href={reg.url} target="_blank" rel="noopener noreferrer">{reg.ime}</a></span>
+                  ))}. Prazno = mikro podjetje.
                 </p>
               </div>
               {kazemValutaIzbira && typeof document !== 'undefined' && createPortal(
