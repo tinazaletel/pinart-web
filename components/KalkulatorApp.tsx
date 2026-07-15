@@ -1615,6 +1615,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* urejevalnik ponudbe: velikost besedila (1-7, privzeto 3) + cilj barve (crke/podlaga) */
   const [velikostBesedila, setVelikostBesedila] = useState(3);
   const [barvaCilj, setBarvaCilj] = useState<'crke' | 'podlaga'>('crke');
+  const [oznaciNamig, setOznaciNamig] = useState(false);   /* namig "označi besedilo" ob ukazu brez izbora */
   const [aiKmalu, setAiKmalu] = useState(false);   /* AI pomocnik = zaleden, zaenkrat stub */
   const barvaRef = useRef<HTMLInputElement>(null);  /* custom (mavricna) barva */
   const [kaziUre, setKaziUre] = useState(false);
@@ -2535,7 +2536,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setRocnoBesedilo(true);
   };
 
+  /* ukazi na ZNAKE potrebujejo oznacen tekst; blokovni (H2/P) delujejo na trenutno vrstico */
+  const rabiIzbor = new Set(['bold', 'italic', 'underline', 'strikeThrough', 'fontSize', 'foreColor', 'hiliteColor', 'fontName']);
   const oblikuj = (ukaz: string, vrednost?: string) => {
+    const sel = typeof window !== 'undefined' ? window.getSelection() : null;
+    const prazenIzbor = !sel || sel.isCollapsed || !sel.toString().trim();
+    if (rabiIzbor.has(ukaz) && prazenIzbor) { setOznaciNamig(true); return; }
     editorRef.current?.focus();
     document.execCommand(ukaz, false, vrednost);
     sinhronizirajEditor();
@@ -2558,6 +2564,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const odstraniBarvo = () =>
     oblikuj(barvaCilj === 'podlaga' ? 'hiliteColor' : 'foreColor', barvaCilj === 'podlaga' ? 'transparent' : '#111111');
   const uporabiPisavo = (font: string) => oblikuj('fontName', font);
+  useEffect(() => {
+    if (!oznaciNamig) return;
+    const t = setTimeout(() => setOznaciNamig(false), 2400);
+    return () => clearTimeout(t);
+  }, [oznaciNamig]);
 
   const uvoziPredlogo = (file?: File) => {
     if (!file) return;
@@ -4121,7 +4132,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           .cw .tonbar { display: flex; overflow-x: auto; }
           .cw .tonbar button { flex: 1 0 auto; }
         }
-        .cw .orodjarna { display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; margin: 1rem 0 .8rem; }
+        .cw .orodjarna { position: relative; display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; margin: 1rem 0 .8rem; }
+        .cw .oznaci-namig { position: absolute; top: -2.5rem; left: 1rem; background: var(--ink); color: var(--paper); font-size: .8rem; font-weight: 600; padding: .4rem .85rem; border-radius: 999px; white-space: nowrap; box-shadow: 0 8px 22px rgba(17,17,17,.22); z-index: 6; pointer-events: none; animation: cwFade .16s ease both; }
+        .cw .oznaci-namig::after { content: ''; position: absolute; bottom: -5px; left: 1.4rem; border: 5px solid transparent; border-top-color: var(--ink); border-bottom: 0; }
         .cw .tool { min-height: 2.25rem; display: inline-flex; align-items: center; gap: .4rem; border: 1px solid rgba(17,17,17,.22); background: rgba(255,255,255,.32); color: var(--ink); border-radius: 999px; padding: 0 .75rem; font-family: inherit; font-weight: 600; font-size: .78rem; cursor: pointer; }
         .cw .tool:hover { border-color: var(--ink); }
         .cw .tool-vel { gap: .3rem; padding: 0 .5rem 0 .7rem; }
@@ -5791,6 +5804,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               )}
               {/* FORMATIRANJE — okrogli gumbi */}
               <div className="orodjarna" aria-label="Oblikovanje ponudbe">
+                {oznaciNamig && <div className="oznaci-namig" role="status">Najprej označi besedilo</div>}
                 <div className="tool-vel2" role="group" aria-label="Velikost besedila">
                   <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); velikost(-1); }} aria-label="Pomanjšaj" title="Manjše"><CaretDown size={14} weight="bold" /></button>
                   <span className="tv-aa" aria-hidden>Aa</span>
