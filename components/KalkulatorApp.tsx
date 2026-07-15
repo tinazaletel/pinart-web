@@ -8,7 +8,7 @@ import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package,
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
   CopySimple, DownloadSimple, FileText, FloppyDisk, PaintBucket,
-  PersonSimple, TextAa, TextB, TextItalic, UploadSimple, CalendarBlank, EnvelopeSimple,
+  PersonSimple, TextAa, TextB, TextItalic, MagicWand, UploadSimple, CalendarBlank, EnvelopeSimple,
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, UserCircle, ClockCounterClockwise, Wallet,
@@ -257,7 +257,7 @@ const DODATKI = [
 
 const TONI: { id: TonPonudbe; ime: string }[] = [
   { id: 'formalno', ime: 'Formalno' },
-  { id: 'toplo', ime: 'Toplo profesionalno' },
+  { id: 'toplo', ime: 'Profesionalno' },
   { id: 'direktno', ime: 'Neformalno' },
 ];
 
@@ -1525,6 +1525,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* urejevalnik ponudbe: velikost besedila (1-7, privzeto 3) + cilj barve (crke/podlaga) */
   const [velikostBesedila, setVelikostBesedila] = useState(3);
   const [barvaCilj, setBarvaCilj] = useState<'crke' | 'podlaga'>('crke');
+  const [aiKmalu, setAiKmalu] = useState(false);   /* AI pomocnik = zaleden, zaenkrat stub */
+  const barvaRef = useRef<HTMLInputElement>(null);  /* custom (mavricna) barva */
   const [kaziUre, setKaziUre] = useState(false);
   const [prenosPravic, setPrenosPravic] = useState<'izkljucni' | 'neizkljucni' | 'licenca'>('izkljucni');
   /* obseg pravic — privzetki dajo faktor 1.0 (glej PRAV_* konstante) */
@@ -3872,6 +3874,23 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .barva-cilj { gap: 0; padding: 0; overflow: hidden; }
         .cw .barva-cilj button { border: none; background: transparent; color: var(--ink); font-family: inherit; font-weight: 600; font-size: .74rem; padding: .5rem .72rem; cursor: pointer; min-height: 2.25rem; transition: background .15s; }
         .cw .barva-cilj button.on { background: var(--ink); color: var(--paper); }
+        /* PRENOVLJENI TOOLBAR PONUDBE */
+        .cw .pon-vrh { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; margin: .4rem 0 1rem; }
+        .cw .segpills { display: inline-flex; background: rgba(255,255,255,.55); border: 1px solid rgba(17,17,17,.1); border-radius: 999px; padding: .3rem; gap: .2rem; }
+        .cw .segpills button { border: none; background: transparent; color: var(--ink); font-family: inherit; font-weight: 700; font-size: .76rem; letter-spacing: .04em; text-transform: uppercase; padding: .58rem 1.05rem; border-radius: 999px; cursor: pointer; transition: background .18s, color .18s; }
+        .cw .segpills button.on { background: var(--ink); color: var(--paper); }
+        .cw .ai-gumb { width: 2.9rem; height: 2.9rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.14); background: rgba(255,255,255,.55); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: transform .2s, background .18s, color .18s; }
+        .cw .ai-gumb:hover { background: var(--ink); color: var(--paper); transform: scale(1.06); }
+        .cw .ai-namig { background: rgba(124,58,237,.09); border-radius: 12px; padding: .7rem .9rem; margin: -.3rem 0 1rem; }
+        .cw .tool-krog { width: 2.6rem; height: 2.6rem; border-radius: 50%; border: none; background: rgba(17,17,17,.06); color: var(--ink); font-family: inherit; font-weight: 700; font-size: .82rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s, color .15s; padding: 0; }
+        .cw .tool-krog:hover { background: var(--ink); color: var(--paper); }
+        .cw .tool-vel2 { display: inline-flex; align-items: center; gap: .3rem; }
+        .cw .tool-vel2 .tv-aa { font-weight: 700; font-size: .9rem; }
+        .cw .tool-t.on { background: var(--ink); color: var(--paper); }
+        .cw .tool-t .ti { font-weight: 800; font-size: .92rem; line-height: 1; }
+        .cw .tool-t .ti-box { border: 2px solid currentColor; border-radius: 3px; padding: 0 .1em; }
+        .cw .tool-locnica { width: 1px; height: 1.7rem; background: rgba(17,17,17,.16); margin: 0 .2rem; }
+        .cw .barvica-mavrica { background: conic-gradient(from 0deg, #FA4892, #F8E71C, #50E3C2, #7C3AED, #FA4892); border-color: rgba(17,17,17,.25); }
         .cw .barvica { width: 1.35rem; height: 1.35rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.22); cursor: pointer; }
         .cw .editor { width: 100%; min-height: 340px; border: 1px solid rgba(17,17,17,.25); background: rgba(255,255,255,.52); padding: 1.35rem; color: var(--ink); font-family: var(--font-sans), system-ui, sans-serif; font-size: .94rem; line-height: 1.62; overflow: auto; }
         .cw .editor:focus { outline: none; border-color: var(--ink); }
@@ -5324,22 +5343,26 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   ← Uredi podatke in vprašanja
                 </button>
               )}
-              <div className="tonbar" aria-label="Ton ponudbe">
-                {TONI.map(t => (
-                  <button key={t.id} type="button" className={tonPonudbe === t.id ? 'on' : ''}
-                    onClick={() => { setTonPonudbe(t.id); setRocnoBesedilo(false); }}>
-                    {t.ime}
-                  </button>
-                ))}
+              {/* NAČIN + TON + AI */}
+              <div className="pon-vrh">
+                <div className="segpills" role="group" aria-label="Obseg ponudbe">
+                  {([['kratka', 'Kratka ponudba'], ['razsirjena', 'Razširjena ponudba']] as const).map(([id, ime]) => (
+                    <button key={id} type="button" className={obsegPonudbe === id ? 'on' : ''}
+                      onClick={() => { setObsegPonudbe(id); setRocnoBesedilo(false); }}>{ime}</button>
+                  ))}
+                </div>
+                <div className="segpills" role="group" aria-label="Ton ponudbe">
+                  {TONI.map(t => (
+                    <button key={t.id} type="button" className={tonPonudbe === t.id ? 'on' : ''}
+                      onClick={() => { setTonPonudbe(t.id); setRocnoBesedilo(false); }}>{t.ime}</button>
+                  ))}
+                </div>
+                <button type="button" className="ai-gumb" title="AI pomočnik" aria-label="AI pomočnik"
+                  onClick={() => setAiKmalu(v => !v)}><MagicWand size={19} /></button>
               </div>
-              <div className="tonbar" aria-label="Obseg ponudbe">
-                {([['kratka', 'Kratka ponudba'], ['razsirjena', 'Razširjena ponudba']] as const).map(([id, ime]) => (
-                  <button key={id} type="button" className={obsegPonudbe === id ? 'on' : ''}
-                    onClick={() => { setObsegPonudbe(id); setRocnoBesedilo(false); }}>
-                    {ime}
-                  </button>
-                ))}
-              </div>
+              {aiKmalu && (
+                <p className="hint ai-namig">AI pomočnik (predlaga in izboljša besedilo ponudbe) pride kot naslednja nadgradnja — potrebuje zaledje. Zaenkrat besedilo urejaš ročno z orodji spodaj.</p>
+              )}
               {obsegPonudbe === 'razsirjena' && urnePostavke.some(u => Number(u.cena) > 0) && (
                 <label className="ure-preklop">
                   <input type="checkbox" checked={kaziUre}
@@ -5347,42 +5370,46 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span>Prikaži oceno ur v ponudbi <em>(privzeto skrito — cena je po vrednosti; vklopi le, če stranka želi razčlenitev ur)</em></span>
                 </label>
               )}
+              {/* FORMATIRANJE — okrogli gumbi */}
               <div className="orodjarna" aria-label="Oblikovanje ponudbe">
-                {/* velikost + osnovno oblikovanje */}
-                <div className="tool tool-vel" role="group" aria-label="Velikost besedila">
+                <div className="tool-vel2" role="group" aria-label="Velikost besedila">
+                  <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); velikost(-1); }} aria-label="Pomanjšaj" title="Manjše"><CaretDown size={14} weight="bold" /></button>
                   <span className="tv-aa" aria-hidden>Aa</span>
-                  <button type="button" onMouseDown={e => { e.preventDefault(); velikost(1); }} aria-label="Povečaj besedilo" title="Povečaj"><CaretUp size={13} weight="bold" /></button>
-                  <button type="button" onMouseDown={e => { e.preventDefault(); velikost(-1); }} aria-label="Pomanjšaj besedilo" title="Pomanjšaj (skozi privzeto v manjše)"><CaretDown size={13} weight="bold" /></button>
+                  <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); velikost(1); }} aria-label="Povečaj" title="Večje"><CaretUp size={14} weight="bold" /></button>
                 </div>
-                <button type="button" className="tool tool-ikona" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko"><TextB size={17} weight="bold" /></button>
-                <button type="button" className="tool tool-ikona" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title="Ležeče"><TextItalic size={17} /></button>
-                <button type="button" className="tool" onMouseDown={e => { e.preventDefault(); podnaslovToggle(); }} title="Podnaslov — klikni znova za navadno besedilo"><TextAa size={17} /> Podnaslov</button>
-                {/* pisava */}
+                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko" aria-label="Krepko"><TextB size={17} weight="bold" /></button>
+                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title="Ležeče" aria-label="Ležeče"><TextItalic size={17} /></button>
                 <select className="pisava-select" aria-label="Pisava besedila" defaultValue=""
                   onMouseDown={() => editorRef.current?.focus()}
                   onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
-                  <option value="" disabled>Pisava…</option>
-                  <option value="Bodoni Moda">Elegantna (privzeta)</option>
+                  <option value="" disabled>Pisava</option>
+                  <option value="Bodoni Moda">Elegantna</option>
                   <option value="Montserrat">Montserrat</option>
                   <option value="Roboto">Roboto</option>
                   <option value="Lora">Lora</option>
                   <option value="Georgia">Georgia</option>
                   <option value="Arial">Arial</option>
                 </select>
-                {/* barva: kam velja + tolpe (dvojni klik = odstrani) */}
-                <div className="tool barva-cilj" role="group" aria-label="Kam velja barva">
-                  <button type="button" className={barvaCilj === 'crke' ? 'on' : ''} onMouseDown={e => { e.preventDefault(); setBarvaCilj('crke'); }}>Črke</button>
-                  <button type="button" className={barvaCilj === 'podlaga' ? 'on' : ''} onMouseDown={e => { e.preventDefault(); setBarvaCilj('podlaga'); }}>Podlaga</button>
-                </div>
-                {['#111111', '#7C3AED', '#F8E71C', '#50E3C2', '#FA4892', '#EEE8D8'].map(barva => (
+                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h1'); }} title="Naslov" aria-label="Naslov H1">H1</button>
+                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title="Podnaslov" aria-label="Podnaslov H2">H2</button>
+                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title="Navadno besedilo" aria-label="Navadno besedilo P">P</button>
+                {/* barva: cilj (crke / ozadje crk) */}
+                <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'crke' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('crke'); }} title="Barvaj črke" aria-label="Barvaj črke"><span className="ti">T</span></button>
+                <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'podlaga' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('podlaga'); }} title="Barvaj ozadje črk" aria-label="Barvaj ozadje črk"><span className="ti ti-box">T</span></button>
+                <span className="tool-locnica" aria-hidden />
+                {['#111111', '#7C3AED', '#FA4892', '#EEE8D8', '#50E3C2'].map(barva => (
                   <button key={barva} type="button" className="barvica" style={{ background: barva }}
                     aria-label={'Barva ' + barva}
-                    title={(barvaCilj === 'podlaga' ? 'Podlaga' : 'Črke') + ' — dvojni klik odstrani barvo'}
+                    title={(barvaCilj === 'podlaga' ? 'Ozadje' : 'Črke') + ' — dvojni klik odstrani barvo'}
                     onMouseDown={e => { e.preventDefault(); uporabiBarvo(barva); }}
                     onDoubleClick={e => { e.preventDefault(); odstraniBarvo(); }} />
                 ))}
-                <button type="button" className="tool" onClick={() => fileRef.current?.click()} title="Uvozi HTML ali TXT predlogo">
-                  <UploadSimple size={17} /> Uvozi predlogo
+                <button type="button" className="barvica barvica-mavrica" aria-label="Izberi poljubno barvo" title="Izberi poljubno barvo"
+                  onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
+                <input ref={barvaRef} type="color" hidden onChange={e => uporabiBarvo(e.target.value)} />
+                <span className="tool-locnica" aria-hidden />
+                <button type="button" className="tool" onClick={() => fileRef.current?.click()} title="Uvozi predlogo / podlogo (HTML ali TXT)">
+                  <UploadSimple size={17} /> Uvozi podlogo
                 </button>
                 <input
                   ref={fileRef}
