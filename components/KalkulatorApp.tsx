@@ -3270,6 +3270,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .uvod-faza .uvod-uvodnik .ob-kicker { text-align: center; }
         .cw .uvod-faza .chat-izbira { width: 100%; margin-bottom: 0; }
         .cw .chat-po-meh { margin-top: 1.8rem; }
+        /* PRIPRAVA PONUDBE — razsirjen panel/overlay iz desne (isti prostor kot ziva ponudba) */
+        .cw .priprava-backdrop { position: fixed; inset: 0; background: rgba(30,18,35,.4); z-index: 55; animation: cwFade .3s ease both; }
+        .cw .priprava-overlay { position: fixed; top: 0; right: 0; bottom: 0; width: min(1040px, 96vw); z-index: 60; background: var(--paper); box-shadow: -30px 0 80px rgba(40,25,40,.25); overflow-y: auto; padding: 1.8rem clamp(1.4rem, 4vw, 3rem) 6.5rem; border-radius: 26px 0 0 26px; animation: pripravaVstop .42s cubic-bezier(.2,.8,.3,1) both; }
+        @keyframes pripravaVstop { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .cw .priprava-glava { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+        .cw .priprava-glava .priprava-h { font-family: var(--font-bodoni), serif; font-weight: 500; font-size: clamp(1.9rem, 3.6vw, 2.6rem); margin: .1rem 0 .35rem; }
+        .cw .priprava-glava .sub { margin: 0; max-width: 46ch; }
+        .cw .priprava-zapri { flex: none; width: 2.6rem; height: 2.6rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.14); background: #fff; font-size: 1.4rem; line-height: 1; color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: transform .2s ease, background .2s ease; }
+        .cw .priprava-zapri:hover { background: var(--ink); color: var(--paper); transform: scale(1.08); }
+        @media (prefers-reduced-motion: reduce) { .cw .priprava-overlay, .cw .priprava-backdrop { animation: none; } }
+        @media (max-width: 560px) { .cw .priprava-overlay { border-radius: 0; width: 100vw; } }
         /* v chat obliki: VSA vsebina vprasanj (kartice, naslovi, dodatni stroski, vrstice)
            na SIRINO CHATA in centrirana; chat (transkript) in oder0 (mehurcki) izvzeta */
         /* enaka sirina za vse (obrazci + paketi cen); 620 je bil pretesen za 3 pakete -> 720 */
@@ -3568,7 +3579,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 8rem; position: relative; z-index: 1; }
         .cw .korak-vsebina { width: 100%; max-width: 880px; animation: cwVstop .55s cubic-bezier(.16,1,.3,1) both; }
         /* siroko (korak 0 / uvod) brez transforma -> fiksni/drsni panel deluje relativno na okno (tudi mobile) */
-        .cw .korak-vsebina.siroko { animation-name: cwFade; }
+        .cw .korak-vsebina.siroko, .cw .korak-vsebina.brez-transforma { animation-name: cwFade; }
         /* korak 0 rabi vec prostora (orbi + panel drug ob drugem) */
         .cw .korak-vsebina.siroko { max-width: none; }
         .cw .h1-maska { display: inline-block; overflow: hidden; vertical-align: bottom; padding: .06em .22em .24em; margin: -.06em -.22em -.24em; }
@@ -3847,7 +3858,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .povezava:hover { opacity: .6; }
 
 
-        .cw .noga { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; padding: 1rem clamp(1.2rem, 4vw, 3rem) 1.1rem; background: linear-gradient(to top, var(--paper) 70%, transparent); z-index: 30; }
+        .cw .noga { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; padding: 1rem clamp(1.2rem, 4vw, 3rem) 1.1rem; background: linear-gradient(to top, var(--paper) 70%, transparent); z-index: 62; }
         .cw .noga .noga-c { width: 100%; display: flex; align-items: center; justify-content: center; gap: 1rem; }
         .cw .noga .noga-gumbi { display: flex; align-items: center; gap: .8rem; }
         .cw .gumb-nazaj { width: 3.1rem; height: 3.1rem; border-radius: 999px; border: 1px solid var(--ink); background: transparent; color: var(--ink); font-size: 1.15rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .18s ease, color .18s ease; flex: none; }
@@ -4355,13 +4366,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       )}
 
       <div className="oder">
-        <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '') + (korak === 0 && uvodChat && !klasicnaOblika ? ' uvod-faza' : '') + (vChatu && poMeh > 0 ? ' chat-koraki' : '')} key={korak}>
-          {(korak !== 0 || klasicnaOblika) && (
+        <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '') + (korak === 0 && uvodChat && !klasicnaOblika ? ' uvod-faza' : '') + (vChatu && poMeh > 0 ? ' chat-koraki' : '') + (!klasicnaOblika && korak === ponudbaStep ? ' brez-transforma' : '')} key={korak}>
+          {(korak !== 0 || klasicnaOblika) && !(!klasicnaOblika && korak === ponudbaStep) && (
             <h1><span className="h1-step">{String(korak + 1).padStart(2, '0')}</span>{naslovKoraka.split(' ').map((b, bi) => (
               <span key={bi} className="h1-maska"><span className="h1-beseda" style={{ animationDelay: `${bi * 90}ms` }}>{b}&nbsp;</span></span>
             ))}</h1>
           )}
-          {opisKoraka && (korak !== 0 || klasicnaOblika) && (
+          {opisKoraka && (korak !== 0 || klasicnaOblika) && !(!klasicnaOblika && korak === ponudbaStep) && (
             <div className="sub-vrsta"><p className="sub">{opisKoraka}</p></div>
           )}
           {/* korak 0 = nadaljevanje chatbota (naslov gre stran) */}
@@ -5257,6 +5268,19 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
           {korak === ponudbaStep && (
             <>
+              {!klasicnaOblika && <div className="priprava-backdrop" onClick={() => setKorak(0)} aria-hidden />}
+              <div className={'priprava' + (klasicnaOblika ? '' : ' priprava-overlay')}>
+              {!klasicnaOblika && (
+                <div className="priprava-glava">
+                  <div className="priprava-glava-t">
+                    <p className="ob-kicker">Ponudba</p>
+                    <h2 className="priprava-h">Tvoja ponudba</h2>
+                    <p className="sub">Besedilo lahko poljubno urejaš in dopišeš — to je iste ponudba, ki se je gradila desno.</p>
+                  </div>
+                  <button type="button" className="priprava-zapri" onClick={() => setKorak(0)} aria-label="Zapri urejanje">×</button>
+                </div>
+              )}
+              <div className="priprava-telo">
               <div className="tonbar" aria-label="Ton ponudbe">
                 {TONI.map(t => (
                   <button key={t.id} type="button" className={tonPonudbe === t.id ? 'on' : ''}
@@ -5338,6 +5362,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </button>
                 </p>
               )}
+              </div>{/* .priprava-telo */}
+              </div>{/* .priprava */}
             </>
           )}
 
