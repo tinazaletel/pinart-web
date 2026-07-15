@@ -3575,6 +3575,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .mreza-kvadrat .mk-ime { font-weight: 700; font-size: .95rem; line-height: 1.2; }
         .cw .mreza-kvadrat .mk-cena { font-size: .8rem; color: rgba(17,17,17,.55); font-weight: 500; }
         .cw .mreza-kvadrat .mk-kolic { position: absolute; top: .55rem; right: .55rem; min-width: 1.5rem; height: 1.5rem; padding: 0 .4rem; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: .76rem; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+        .cw .mreza-prazno { min-height: 5.4rem; pointer-events: none; }
         .cw .mreza-uredi { border-style: dashed; background: transparent; color: rgba(17,17,17,.62); }
         .cw .mreza-uredi .mk-ikona { background: rgba(17,17,17,.06); }
         /* ── modal dodaj / uredi ── */
@@ -4938,7 +4939,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {pogledMreza && (
                 <div className="mreza0-ovoj">
                   <div className="mreza0">
-                    {mrezaSkupine.map(g => (
+                    {mrezaSkupine.map((g, gi) => (
                       <div key={g.id} className="mreza-skupina">
                         <div className="mreza-naslov">{g.ime}</div>
                         <div className="mreza-kvadrati">
@@ -4963,17 +4964,19 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                               </button>
                             );
                           })}
+                          {gi === mrezaSkupine.length - 1 && (
+                            <>
+                              <div className="mreza-prazno" aria-hidden />
+                              <button type="button" className="mreza-kvadrat mreza-uredi" onClick={() => setKazemUredi(true)}>
+                                <span className="mk-ikona" aria-hidden><Plus size={18} /></span>
+                                <span className="mk-ime">dodaj / uredi</span>
+                                <span className="mk-cena">nova storitev ali pogled</span>
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
-                    <div className="mreza-skupina mreza-skupina-uredi">
-                      <div className="mreza-naslov">&nbsp;</div>
-                      <button type="button" className="mreza-kvadrat mreza-uredi" onClick={() => setKazemUredi(true)}>
-                        <span className="mk-ikona" aria-hidden><Plus size={18} /></span>
-                        <span className="mk-ime">dodaj / uredi</span>
-                        <span className="mk-cena">nova storitev ali pogled</span>
-                      </button>
-                    </div>
                   </div>
                 </div>
               )}
