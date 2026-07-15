@@ -1556,7 +1556,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* dvojni scrollbar: stran zadaj ima svojega, chat/onboarding pa svojega —
      med njima stran zadaj zaklenemo. */
   useEffect(() => {
-    if (!onboardingOdprt && !uvodChat && !kazemProfil) return;
+    if (!onboardingOdprt && !uvodChat && !kazemProfil && !razprtaVrstica && !kazemUredi) return;
     /* Stran uporablja Lenis smooth-scroll (window.__pinartLenis), ki prestreza wheel
        in skrola ozadje MIMO overflow:hidden. Zato ga ob odprtem oknu ustavimo. */
     const lenis = (window as unknown as { __pinartLenis?: { stop: () => void; start: () => void } }).__pinartLenis;
@@ -1567,7 +1567,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     html.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     return () => { lenis?.start(); html.style.overflow = prejHtml; document.body.style.overflow = prejBody; };
-  }, [onboardingOdprt, uvodChat, kazemProfil]);
+  }, [onboardingOdprt, uvodChat, kazemProfil, razprtaVrstica, kazemUredi]);
   const [obIzbor, setObIzbor] = useState<Set<string>>(new Set());
   /* Poljuben vrstni red storitev (razporejanje z drag-rocajem); prazno = naravni. */
   const [vrstniRed, setVrstniRed] = useState<string[]>([]);
@@ -3602,6 +3602,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .mreza-uredi .mk-ikona { background: rgba(17,17,17,.06); }
         /* ── modal dodaj / uredi ── */
         .cw .uredi-plosca { width: 100%; max-width: 460px; max-height: min(38rem, 84dvh); display: flex; flex-direction: column; background: var(--paper); border: 1px solid rgba(17,17,17,.18); border-radius: 18px; box-shadow: 0 24px 80px rgba(17,17,17,.16); overflow: hidden; animation: cwVstop .3s cubic-bezier(.16,1,.3,1) both; }
+        .cw .detajl-modal { width: 100%; max-width: 620px; max-height: min(44rem, 88dvh); display: flex; flex-direction: column; background: var(--paper); border: 1px solid rgba(17,17,17,.18); border-radius: 18px; box-shadow: 0 24px 80px rgba(17,17,17,.18); overflow: hidden; animation: cwVstop .3s cubic-bezier(.16,1,.3,1) both; }
+        .cw .detajl-telo { overflow-y: auto; padding: 1.2rem 1.4rem 1.4rem; display: flex; flex-direction: column; gap: 1.3rem; }
+        .cw .detajl-noga { display: flex; align-items: center; gap: 1rem; padding: .95rem 1.4rem; border-top: 1px solid rgba(17,17,17,.1); background: rgba(255,255,255,.45); }
+        .cw .detajl-noga .gumb { margin-left: auto; }
         .cw .uredi-telo { overflow-y: auto; padding: 1.1rem 1.35rem 1.5rem; display: flex; flex-direction: column; gap: 1.4rem; }
         .cw .uredi-sekcija { display: flex; flex-direction: column; }
         .cw .uredi-naslov { font-size: .78rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: rgba(17,17,17,.6); margin-bottom: .7rem; }
@@ -3808,10 +3812,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           .cw .korak-vsebina.siroko { max-width: none; width: 100%; padding-right: calc(min(410px, 34vw) + clamp(1rem, 2.5vw, 2rem)); box-sizing: border-box; animation-name: cwFade; }
           .cw .oder0 { display: block; width: auto; }
           .cw .ponudba0 { position: fixed; top: 3.05rem; right: 0; bottom: 0; width: min(410px, 34vw); border-radius: 22px 0 0 22px; margin: 0; z-index: 20; overflow-y: auto; animation: ponudbaVstop .5s cubic-bezier(.2,.8,.3,1) both; transition: width .34s cubic-bezier(.2,.8,.3,1); }
-          .cw .ponudba0.razsirjen { width: min(760px, 58vw); box-shadow: -22px 0 60px rgba(40,25,40,.16); }
-          .cw .ponudba0.razsirjen .vrst0-detajl .choicegrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; align-items: stretch; }
-          .cw .ponudba0.razsirjen .vrst0-detajl .choicegrid > button { width: 100%; justify-content: flex-start; }
-          .cw .ponudba0.razsirjen .vrst0-detajl .choicegrid .svoje-vrsta { grid-column: 1 / -1; }
+          .cw .detajl-modal .choicegrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
+          .cw .detajl-modal .choicegrid > button { width: 100%; justify-content: flex-start; }
+          .cw .detajl-modal .choicegrid .svoje-vrsta { grid-column: 1 / -1; }
           /* spodnja gumba centrirana POD vprašalnikom (ne cela stran) — enak odmik kot vsebina za fiksni panel */
           .cw .noga.noga-ob-panelu { padding-right: calc(min(410px, 34vw) + clamp(1rem, 2.5vw, 2rem) + clamp(1.2rem, 4vw, 3rem)); }
         }
@@ -5015,7 +5018,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               )}
 
               {/* ── živa ponudba: desktop fiksno desno, mobile drsni panel (kosarica) ── */}
-              <aside className={'ponudba0' + (ponudbaOdprta ? ' odprta' : '') + (razprtaVrstica ? ' razsirjen' : '')} aria-label="Tvoja ponudba" data-lenis-prevent>
+              <aside className={'ponudba0' + (ponudbaOdprta ? ' odprta' : '')} aria-label="Tvoja ponudba" data-lenis-prevent>
                 <button type="button" className="ponudba0-zapri" aria-label="Zapri ponudbo" onClick={() => setPonudbaOdprta(false)}>×</button>
                 <div className="ponudba0-glava">
                   <h2>{nazivPonudbe.trim() || 'Tvoja ponudba'}</h2>
@@ -5086,19 +5089,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                           <button type="button" className="vrst0-x" aria-label={'Odstrani: ' + prikazVrstice(l, s)}
                             onClick={() => odstraniVrstico(l.uid)}>×</button>
                         </div>
-                        {razprta && (
-                          <div className="vrst0-detajl">
-                            <div className="polje">
-                              <label htmlFor={'cw-ime-' + l.uid}>Ime postavke</label>
-                              <input id={'cw-ime-' + l.uid} type="text" value={l.ime}
-                                placeholder={`npr. ${s.ime} — Inovis`}
-                                onChange={e => preimenujVrstico(l.uid, e.target.value)} />
-                            </div>
-                            {skupina
-                              ? vprasanjaStoritveUI(skupina)
-                              : <p className="vrst0-brez">Ta storitev nima dodatnih vprašanj — obseg opišeš v ponudbi.</p>}
-                          </div>
-                        )}
                       </div>
                     );
                   })}
@@ -5204,6 +5194,47 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   })()}
                 </div>
               </aside>
+
+              {razprtaVrstica && typeof document !== 'undefined' && (() => {
+                const l = vrstice.find(x => x.uid === razprtaVrstica);
+                const s = l && vseStoritve.find(x => x.id === l.sid);
+                if (!l || !s) return null;
+                const skupina = skupineVprasanj.find(g => g.id === l.uid);
+                return createPortal(
+                  <div className="cw">
+                    <div className="izbirnik-zastor" onClick={() => setRazprtaVrstica(null)}>
+                      <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={'Podrobnosti: ' + prikazVrstice(l, s)}
+                        onClick={e => e.stopPropagation()} data-lenis-prevent>
+                        <div className="izbirnik-glava">
+                          <span>{prikazVrstice(l, s)}</span>
+                          <button type="button" onClick={() => setRazprtaVrstica(null)} aria-label="Zapri">✕</button>
+                        </div>
+                        <div className="detajl-telo">
+                          <div className="polje">
+                            <label htmlFor={'cw-ime-' + l.uid}>Ime postavke</label>
+                            <input id={'cw-ime-' + l.uid} type="text" value={l.ime}
+                              placeholder={`npr. ${s.ime} — Inovis`}
+                              onChange={e => preimenujVrstico(l.uid, e.target.value)} />
+                          </div>
+                          {skupina
+                            ? vprasanjaStoritveUI(skupina)
+                            : <p className="vrst0-brez">Ta storitev nima dodatnih vprašanj — obseg opišeš v ponudbi.</p>}
+                        </div>
+                        <div className="detajl-noga">
+                          {skupina && (
+                            <button type="button" className="povezava" onClick={() => setOdgovori(prev => {
+                              const n = { ...prev };
+                              skupina.vprasanja.forEach(vp => { delete n[vp.key]; delete n[vp.key + ':drugo']; });
+                              return n;
+                            })}>Ponastavi odgovore</button>
+                          )}
+                          <button type="button" className="gumb" onClick={() => setRazprtaVrstica(null)}>Shrani</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                , document.body);
+              })()}
 
               {kazemUredi && typeof document !== 'undefined' && createPortal(
                 <div className="cw">
