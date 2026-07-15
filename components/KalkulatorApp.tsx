@@ -5342,11 +5342,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span>Prikaži oceno ur v ponudbi <em>(privzeto skrito — cena je po vrednosti; vklopi le, če stranka želi razčlenitev ur)</em></span>
                 </label>
               )}
-              <label className="ure-preklop">
-                <input type="checkbox" checked={nogaZnak}
-                  onChange={e => { setNogaZnak(e.target.checked); setRocnoBesedilo(false); }} />
-                <span>Noga »Pripravljeno s Pinart kalkulatorjem« <em>(lahko izklopiš)</em></span>
-              </label>
               <div className="orodjarna" aria-label="Oblikovanje ponudbe">
                 {/* velikost + osnovno oblikovanje */}
                 <div className="tool tool-vel" role="group" aria-label="Velikost besedila">
