@@ -3806,7 +3806,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
              visja specificnost (.korak-vsebina.siroko), da premaga kasnejsi .korak-vsebina */
           .cw .korak-vsebina.siroko { max-width: none; width: 100%; padding-right: calc(min(410px, 34vw) + clamp(1rem, 2.5vw, 2rem)); box-sizing: border-box; animation-name: cwFade; }
           .cw .oder0 { display: block; width: auto; }
-          .cw .ponudba0 { position: fixed; top: 3.05rem; right: 0; bottom: 0; width: min(410px, 34vw); border-radius: 22px 0 0 22px; margin: 0; z-index: 20; overflow-y: auto; animation: ponudbaVstop .5s cubic-bezier(.2,.8,.3,1) both; }
+          .cw .ponudba0 { position: fixed; top: 3.05rem; right: 0; bottom: 0; width: min(410px, 34vw); border-radius: 22px 0 0 22px; margin: 0; z-index: 20; overflow-y: auto; animation: ponudbaVstop .5s cubic-bezier(.2,.8,.3,1) both; transition: width .34s cubic-bezier(.2,.8,.3,1); }
+          .cw .ponudba0.razsirjen { width: min(680px, 50vw); box-shadow: -22px 0 60px rgba(40,25,40,.16); }
           /* spodnja gumba centrirana POD vprašalnikom (ne cela stran) — enak odmik kot vsebina za fiksni panel */
           .cw .noga.noga-ob-panelu { padding-right: calc(min(410px, 34vw) + clamp(1rem, 2.5vw, 2rem) + clamp(1.2rem, 4vw, 3rem)); }
         }
@@ -5010,7 +5011,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               )}
 
               {/* ── živa ponudba: desktop fiksno desno, mobile drsni panel (kosarica) ── */}
-              <aside className={'ponudba0' + (ponudbaOdprta ? ' odprta' : '')} aria-label="Tvoja ponudba" data-lenis-prevent>
+              <aside className={'ponudba0' + (ponudbaOdprta ? ' odprta' : '') + (razprtaVrstica ? ' razsirjen' : '')} aria-label="Tvoja ponudba" data-lenis-prevent>
                 <button type="button" className="ponudba0-zapri" aria-label="Zapri ponudbo" onClick={() => setPonudbaOdprta(false)}>×</button>
                 <div className="ponudba0-glava">
                   <h2>{nazivPonudbe.trim() || 'Tvoja ponudba'}</h2>
