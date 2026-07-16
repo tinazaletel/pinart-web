@@ -1149,7 +1149,7 @@ const ponudbaVHtml = (s: string): string =>
         const meta = rest.length ? `<p>${rest.map(escapeHtml).join('<br>')}</p>` : '';
         return `<p class="offer-kicker">Ponudba</p><h1>${escapeHtml(first.replace('PONUDBA:', '').trim())}</h1>${meta}`;
       }
-      if (/^(OBSEG|DODATNE INFORMACIJE|IZBERITE PAKET|POGOJI|SPECIFIKACIJA CEN|PREDVIDEN ČAS IZVEDBE|VZDRŽEVANJE|DODATNE MOŽNOSTI)( \(.+\))?$/.test(first)) {
+      if (/^(OBSEG|DODATNE INFORMACIJE|IZBERITE PAKET|POGOJI|SPECIFIKACIJA CEN|AVTORSKE PRAVICE|PREDVIDEN ČAS IZVEDBE|VZDRŽEVANJE|DODATNE MOŽNOSTI)( \(.+\))?$/.test(first)) {
         const rest = lines.slice(1);
         const body: string = rest.length ? ponudbaVHtml(rest.join('\n')) : '';
         return `<h2>${escapeHtml(first)}</h2>${body}`;
@@ -2391,25 +2391,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       }
       v.push('');
     }
-    if (r.prenos === 'licenca') {
-      v.push('Cene vključujejo izvedbo. Avtorske pravice se prenesejo z letno');
-      v.push(`licenco ${val(r.licenca)} / leto za dogovorjeno rabo; odkup (trajni prenos)`);
-      v.push(`ni vključen, na voljo pa je po dogovoru${
-        r.raba === 'projekt' ? ` ali s tantiemami ${r.tantiemePct} % od prodaje, obračunano letno` : ''
-      }.`);
-    } else if (r.prenos === 'neizkljucni') {
-      v.push('Vsaka cena vključuje izvedbo in neizključni prenos materialnih');
-      v.push(`avtorskih pravic za dogovorjeno rabo (${val(r.pravice)} vrednosti); avtor`);
-      v.push('lahko delo uporablja in ponudi tudi drugim naročnikom.');
-      v.push(`Ekskluzivni odkup je na voljo po dogovoru; alternativa je letna licenca ${val(r.licenca)} / leto${
-        r.raba === 'projekt' ? ` ali tantieme ${r.tantiemePct} % od prodaje, obračunano letno` : ''
-      }.`);
+    /* AVTORSKE PRAVICE — po storitvah (razsirjena) + regijski pravni okvir */
+    v.push('');
+    v.push('AVTORSKE PRAVICE');
+    if (obsegPonudbe === 'razsirjena' && r.praviceVrstice.length > 0) {
+      r.praviceVrstice.forEach(pv => {
+        const vrsta = pv.prenos === 'licenca' ? 'licenca za rabo' : pv.prenos === 'neizkljucni' ? 'neizključni prenos' : 'izključni prenos';
+        const zn = pv.prenos === 'licenca' ? 'prek letne licence' : val(pv.znesek);
+        v.push(`· ${pv.ime} — ${vrsta}, ${pv.trajanjeIme} (${zn})`);
+        pv.klavzule.forEach(kid => { const k = KLAVZULE.find(x => x.id === kid); if (k) v.push(`  · ${k.opis}`); });
+      });
+    }
+    v.push(`· Skupaj vrednost pravic: ${val(r.pravice)}${r.raba === 'projekt' ? `; alternativa: tantieme ${r.tantiemePct} % od prodaje, obračunano letno` : ''}`);
+    const rezimEU = ['si', 'west', 'east'].includes(trgNarocnika);
+    if (rezimEU) {
+      v.push('Skladno s slovenskim in EU pravom (ZASP, DSM 2019): moralne avtorske pravice ostanejo avtorju in se ne prenašajo; nadomestilo je pošteno in sorazmerno; ob širši ali daljši rabi naročnik poroča o izkoriščanju dela.');
+    } else if (trgNarocnika === 'us') {
+      v.push('Za naročnika iz ZDA/UK: prenos velja izrecno za navedeno rabo; ameriška »work for hire« doktrina ne velja samodejno za zunanjega avtorja; moralne pravice avtor ohrani.');
     } else {
-      v.push('Vsaka cena vključuje izvedbo in izključni enkratni prenos materialnih');
-      v.push(`avtorskih pravic za dogovorjeno rabo (${val(r.pravice)} vrednosti).`);
-      v.push(`Alternativa odkupu pravic: letna licenca ${val(r.licenca)} / leto${
-        r.raba === 'projekt' ? ` ali tantieme ${r.tantiemePct} % od prodaje, obračunano letno` : ''
-      }.`);
+      v.push('Za čezmejno rabo prenos velja izrecno za navedeno rabo in trajanje; širša, daljša ali drugačna raba se dogovori posebej.');
     }
     if (izjemePravice.trim()) v.push(izjemePravice.trim());
     v.push('');
@@ -2466,7 +2466,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       v.push('Pripravljeno s Pinart kalkulatorjem · pinart.si');
     }
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak, izjemePravice]);
+  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak, izjemePravice, trgNarocnika]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
