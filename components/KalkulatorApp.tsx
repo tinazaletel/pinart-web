@@ -6203,7 +6203,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   if (vChatu && poMeh < 5) {
                     setPoMeh(poMeh + 1);
                     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                    window.setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: reduce ? 'auto' : 'smooth' }); }, 70);
+                    /* zapelji NOVO vprasanje (zadnji chatVpr) blizu vrha, ne na dno strani */
+                    window.setTimeout(() => {
+                      const vpr = document.querySelectorAll('.chat-vpr');
+                      const zadnji = vpr[vpr.length - 1];
+                      if (zadnji) {
+                        const y = window.scrollY + zadnji.getBoundingClientRect().top - 90;
+                        window.scrollTo({ top: Math.max(0, y), behavior: reduce ? 'auto' : 'smooth' });
+                      } else {
+                        window.scrollTo({ top: document.body.scrollHeight, behavior: reduce ? 'auto' : 'smooth' });
+                      }
+                    }, 90);
                   } else if (vChatu && poMeh === 5) {
                     setKorak(ponudbaStep);   /* priprava ponudbe = overlay/urejanje */
                   } else { naprej(); }
