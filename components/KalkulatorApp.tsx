@@ -5,9 +5,9 @@ import { createPortal } from 'react-dom';
 import { localePath } from '@/i18n/routing';
 
 import {
-  PenNib, Palette, Browser, Megaphone, BookOpen, Package, Coffee,
+  PenNib, Palette, Browser, Megaphone, BookOpen, Package, Gift,
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
-  CopySimple, DownloadSimple, FileText, FloppyDisk, PaintBucket,
+  CopySimple, DownloadSimple, FileText, FilePdf, FloppyDisk, PaintBucket,
   PersonSimple, TextAa, TextB, TextItalic, MagicWand, UploadSimple, CalendarBlank, EnvelopeSimple,
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
@@ -1450,6 +1450,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const editorRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const uvodRef = useRef<HTMLDivElement>(null);
+  const uvodVnosRef = useRef<HTMLInputElement>(null);
   const [korak, setKorak] = useState(0);
   const [izbrane, setIzbrane] = useState<Set<string>>(new Set(['cgp']));
   /* postavkovni model: vrstice ponudbe (instance storitev) so vir resnice;
@@ -1608,7 +1609,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* dvojni scrollbar: stran zadaj ima svojega, chat/onboarding pa svojega —
      med njima stran zadaj zaklenemo. */
   useEffect(() => {
-    if (!onboardingOdprt && !uvodChat && !kazemProfil && !razprtaVrstica && !kazemUredi && !praviceOdprt) return;
+    /* onboarding NI zaklenjen — stran se normalno premika (Lenis). Zaklep velja le za modalne overlaye. */
+    if (!onboardingOdprt && !kazemProfil && !razprtaVrstica && !kazemUredi && !praviceOdprt) return;
     /* Stran uporablja Lenis smooth-scroll (window.__pinartLenis), ki prestreza wheel
        in skrola ozadje MIMO overflow:hidden. Zato ga ob odprtem oknu ustavimo. */
     const lenis = (window as unknown as { __pinartLenis?: { stop: () => void; start: () => void } }).__pinartLenis;
@@ -1619,7 +1621,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     html.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     return () => { lenis?.start(); html.style.overflow = prejHtml; document.body.style.overflow = prejBody; };
-  }, [onboardingOdprt, uvodChat, kazemProfil, razprtaVrstica, kazemUredi, praviceOdprt]);
+  }, [onboardingOdprt, kazemProfil, razprtaVrstica, kazemUredi, praviceOdprt]);
   const [obIzbor, setObIzbor] = useState<Set<string>>(new Set());
   /* Poljuben vrstni red storitev (razporejanje z drag-rocajem); prazno = naravni. */
   const [vrstniRed, setVrstniRed] = useState<string[]>([]);
@@ -1858,19 +1860,37 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     { id: 'samostojen', crk: 'B', ime: 'Nekaj let izkušenj', opis: 'redne stranke, utečen proces' },
     { id: 'ekspert', crk: 'C', ime: 'Uveljavljeno ime', opis: 'izbiram projekte, premium cene' },
   ];
-  /* ob novem koraku chata se vsebina pomakne navzgor (najnovejse ostane v vidu) */
+  /* ob novem koraku chata se STRAN (okno, Lenis) gladko pomakne, tako da je zadnje VPRASANJE
+     blizu vrha vidnega polja — vnos in gumb Naprej sta pod njim. Stran ni zaklenjena: scroll
+     gor/dol deluje normalno. Prvi korak (0) pustimo pri miru, da ostane uvodni pozdrav viden. */
   useEffect(() => {
-    if (!uvodChat) return;
+    if (!uvodChat || chatKorak === 0) return;
     const el = uvodRef.current;
     if (!el) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    requestAnimationFrame(() => el.scrollTo({ top: el.scrollHeight, behavior: reduce ? 'auto' : 'smooth' }));
+    /* kratek timeout: pocakamo, da se nova vsebina koraka postavi (npr. mnozica podrocij);
+       timeout (za razliko od rAF) tece tudi v skritem zavihku */
+    const t = window.setTimeout(() => {
+      const vpr = el.querySelectorAll('.chat-bot');
+      const zadnji = vpr[vpr.length - 1] as HTMLElement | undefined;
+      if (zadnji) {
+        const lenis = (window as unknown as { __pinartLenis?: { scrollTo: (t: number, o?: { immediate?: boolean; force?: boolean }) => void; resize?: () => void } }).__pinartLenis;
+        /* ko vsebina naenkrat zraste, ima Lenis se staro (manjso) mejo scrolla -> osvezimo jo,
+           sicer scrollTo obtici na stari meji in vprasanje se ne premakne v vidno polje */
+        lenis?.resize?.();
+        const cilj = Math.max(0, zadnji.getBoundingClientRect().top + window.scrollY - 112);
+        if (lenis && typeof lenis.scrollTo === 'function') lenis.scrollTo(cilj, { immediate: reduce, force: true });
+        else window.scrollTo({ top: cilj, behavior: reduce ? 'auto' : 'smooth' });
+      }
+      /* fokus na aktivni vnos brez dodatnega skoka */
+      uvodVnosRef.current?.focus({ preventScroll: true });
+    }, 60);
+    return () => window.clearTimeout(t);
   }, [chatKorak, uvodChat]);
   /* ob vstopu v tekstovni korak uvoda prednapolni polje z obstojeco vrednostjo (za popravke ob skoku nazaj) */
   useEffect(() => {
     if (!uvodChat) return;
     if (chatKorak === 0) setChatVnos(imeUporabnika);
-    else if (chatKorak === 2) setChatVnos(ponudnik.ime);
     else if (chatKorak === 6) setChatVnos(nazivPonudbe);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatKorak, uvodChat]);
@@ -1885,13 +1905,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
        Nato GLADKO poscrollamo: vprasanja gor (vidna zadnja dva), mehurcki v vidno polje. */
     setUvodChat(false);
     const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    window.setTimeout(() => {
+    /* poravnaj na mehurcek "Super! Izberi storitve" (blizu vrha), da sta oba uvodna mehurcka vidna,
+       mehurcki storitev pa pod njima. Poklicano dvakrat: hitro + po ustalitvi postavitve (orbi),
+       ker prvi klic zna meriti prezgodaj in cilj obtici. */
+    const poravnajStoritve = () => {
+      const zac = document.getElementById('cw-storitve-zacetek');
       const pl = document.querySelector('.cw .platno0');
-      if (pl) {
-        const cilj = window.scrollY + pl.getBoundingClientRect().top - 210; /* pusti ~2 vprasanji nad */
-        window.scrollTo({ top: Math.max(0, cilj), behavior: reduce ? 'auto' : 'smooth' });
-      }
-    }, 90);
+      const ref = zac || pl;
+      if (!ref) return;
+      const cilj = Math.max(0, ref.getBoundingClientRect().top + window.scrollY - (zac ? 96 : 210));
+      const lenis = (window as unknown as { __pinartLenis?: { scrollTo: (t: number, o?: { immediate?: boolean; force?: boolean }) => void; resize?: () => void } }).__pinartLenis;
+      lenis?.resize?.();
+      if (lenis && typeof lenis.scrollTo === 'function') lenis.scrollTo(cilj, { immediate: reduce, force: true });
+      else window.scrollTo({ top: cilj, behavior: reduce ? 'auto' : 'smooth' });
+    };
+    window.setTimeout(poravnajStoritve, 120);
+    window.setTimeout(poravnajStoritve, 440);
   };
   const uvodNaprej = () => {
     if (chatKorak === 0) {
@@ -1899,10 +1928,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       setChatVnos('');
       setChatKorak(1);
     } else if (chatKorak === 2) {
-      /* ime znamke / podjetja -> ponudnik.ime (glava ponudbe) */
-      if (chatVnos.trim()) setPonudnik(p => ({ ...p, ime: chatVnos.trim() }));
-      setChatVnos('');
-      setChatKorak(3);
+      /* podatki podjetja (vkljucno z drzavo) se vpisujejo neposredno v ponudnik/custDrzavaMoj;
+         drzava doloci privzet trg -> locen korak za drzavo odpade, gremo na podrocja (4) */
+      const t = trgIzDrzave(custDrzavaMoj) || mojTrg || 'si';
+      setMojTrg(t); setTrgNarocnika(t);
+      setChatKorak(4);
     } else if (chatKorak === 6) {
       if (chatVnos.trim()) setNazivPonudbe(chatVnos.trim());
       setChatVnos('');
@@ -1933,17 +1963,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </div>
           )}
           {step === 2 && (
-            <div className="cu-vrsta">
+            <div className="cu-vrsta cu-vrsta-stolpec">
               <input autoFocus type="text" value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })}
                 placeholder="Ime podjetja ali tvoje ime" onKeyDown={e => { if (e.key === 'Enter') zapri(); }} />
-              <button type="button" className="gumb" onClick={zapri}>Shrani</button>
-            </div>
-          )}
-          {step === 3 && (
-            <div className="cu-vrsta">
-              <input autoFocus type="text" list="cw-drzave-list" value={custDrzavaMoj}
-                onChange={e => { const v = e.target.value; setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }}
-                placeholder="npr. Slovenija" onKeyDown={e => { if (e.key === 'Enter') zapri(); }} />
+              <input type="text" list="cw-drzave-list" value={custDrzavaMoj}
+                onChange={e => { const v = e.target.value; setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) { setMojTrg(t); setTrgNarocnika(t); } }}
+                placeholder="Država (npr. Slovenija)" onKeyDown={e => { if (e.key === 'Enter') zapri(); }} />
               <button type="button" className="gumb" onClick={zapri}>Shrani</button>
             </div>
           )}
@@ -2066,8 +2091,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setIzjemePravice('');
     setPrikaziIzjemePravic(false);
     setRocnoBesedilo(false);
+    /* onboarding vprasanja se NE ponovijo (dogovor): transkript se skrije (chatKorak 0 brez
+       uvodChat), pokaze se osebni pozdrav "Hej Tina, <podjetje>" + izbira storitev.
+       poMeh 0 = vprasanja ponudbe (narocnik, trg, pravice ...) zacnejo znova za novo ponudbo. */
+    setChatKorak(0);
+    setChatNova(null);
+    setUrejamKorak(null);
+    setChatVnos('');
+    setPoMeh(0);
     try { sessionStorage.removeItem('pinart-cene-poslano'); } catch { /* prazno */ }
     setKorak(0);
+    /* na vrh, da sta pozdrav in izbira storitev takoj v vidnem polju */
+    window.setTimeout(() => {
+      const lenis = (window as unknown as { __pinartLenis?: { scrollTo: (t: number, o?: { immediate?: boolean }) => void } }).__pinartLenis;
+      if (lenis && typeof lenis.scrollTo === 'function') lenis.scrollTo(0, {});
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 80);
   };
 
   const vfx = VALUTE.find(v => v.id === valuta) ?? VALUTE[0];
@@ -2735,6 +2774,70 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     URL.revokeObjectURL(a.href);
   };
 
+  /* PDF s podlogo: A4 dokument z glavo (ime podjetja, naziv, datum, akcentna linija)
+     in nogo s podatki ponudnika na VSAKI strani (position:fixed se v tisku ponovi).
+     Tisk prek skritega iframa + sistemski "Shrani kot PDF" — brez knjiznic, sumniki ok.
+     Podatke ponudnika, ki jih podloga ze pokaze, iz telesa odstranimo (ce so nespremenjeni). */
+  const prenesiPdf = () => {
+    const html = editorRef.current?.innerHTML || besediloHtml || ponudbaVHtml(besedilo);
+    const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
+    const datum = new Date().toLocaleDateString(locale === 'en' ? 'en-GB' : 'sl-SI', { day: 'numeric', month: 'long', year: 'numeric' });
+    /* enaka kontakt vrstica kot v telesu besedila — za dedup in za nogo */
+    const kontakt = [
+      ponudnik.davcna.trim() && 'Davčna št.: ' + ponudnik.davcna.trim(),
+      ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(),
+      ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(),
+      ponudnik.email.trim(),
+    ].filter(Boolean).join(' · ');
+    const noga = [ponudnik.ime.trim(), ponudnik.naslov.trim(), kontakt].filter(Boolean).join('  ·  ');
+    /* iz telesa odstrani odstavke, ki jih podloga ze vsebuje (natancno ujemanje besedila) */
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    const podvojeno = new Set([ponudnik.ime.trim(), ponudnik.naslov.trim(), kontakt].filter(Boolean));
+    Array.from(tmp.querySelectorAll('p')).slice(0, 12).forEach(p => {
+      if (podvojeno.has((p.textContent || '').trim())) p.remove();
+    });
+    const telo = tmp.innerHTML;
+    const doc = `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${escapeHtml(naziv ? 'Ponudba - ' + naziv : 'Ponudba')}</title><style>
+      @page { size: A4; margin: 16mm 16mm 20mm; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { font-family: Arial, sans-serif; color: #111; line-height: 1.55; font-size: 10.5pt; margin: 0; padding-bottom: 14mm; }
+      .pdf-glava { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; padding-bottom: 12px; border-bottom: 2px solid #B25476; margin-bottom: 22px; }
+      .pdf-znamka { font-family: Georgia, 'Times New Roman', serif; font-size: 21pt; letter-spacing: -.01em; }
+      .pdf-meta { text-align: right; font-size: 9pt; color: #444; line-height: 1.45; }
+      .pdf-meta b { display: block; font-size: 7.5pt; letter-spacing: .2em; text-transform: uppercase; color: #B25476; margin-bottom: 2px; }
+      .pdf-noga { position: fixed; bottom: 0; left: 0; right: 0; border-top: 1px solid #ddd; padding-top: 6px; font-size: 8pt; color: #444; text-align: center; }
+      p { margin: 0 0 .85rem }
+      .offer-vrstica { display: flex; justify-content: space-between; align-items: baseline; gap: 1.5rem }
+      .offer-cena { white-space: nowrap; font-weight: 700 }
+      .offer-podnaslov { font-weight: 700; margin: .9rem 0 .4rem }
+      .offer-package { border: 1px solid #ccc; padding: 12px 14px; margin: 10px 0; break-inside: avoid; }
+      .offer-package-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: .35rem }
+      .offer-package-head h3 { margin: 0; font-size: 9pt; letter-spacing: .14em; text-transform: uppercase }
+      .offer-package-head strong { font-size: 15pt; white-space: nowrap }
+      ul { padding-left: 1.2rem }
+    </style></head><body>
+      ${noga ? `<div class="pdf-noga">${escapeHtml(noga)}</div>` : ''}
+      <div class="pdf-glava">
+        <div class="pdf-znamka">${escapeHtml(ponudnik.ime.trim() || 'Ponudba')}</div>
+        <div class="pdf-meta"><b>${escapeHtml(locale === 'en' ? 'Offer' : 'Ponudba')}</b>${naziv ? escapeHtml(naziv) + '<br/>' : ''}${escapeHtml(datum)}</div>
+      </div>
+      ${telo}
+    </body></html>`;
+    const okvir = document.createElement('iframe');
+    okvir.style.position = 'fixed';
+    okvir.style.right = '0'; okvir.style.bottom = '0';
+    okvir.style.width = '0'; okvir.style.height = '0'; okvir.style.border = '0';
+    document.body.appendChild(okvir);
+    const idoc = okvir.contentDocument;
+    if (!idoc) { okvir.remove(); return; }
+    idoc.open(); idoc.write(doc); idoc.close();
+    const pospravi = () => okvir.remove();
+    okvir.contentWindow?.addEventListener('afterprint', () => window.setTimeout(pospravi, 200));
+    window.setTimeout(pospravi, 120000); /* varovalka, ce afterprint ne pride */
+    window.setTimeout(() => { okvir.contentWindow?.focus(); okvir.contentWindow?.print(); }, 200);
+  };
+
   /* Hitro posiljanje: odpre uporabnicin mail program s predizpolnjeno
      zadevo in golim besedilom (mailto ne zna HTML). Pravo posiljanje iz
      orodja (lep HTML email) je vecji poseg za kasneje. */
@@ -2847,7 +2950,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     } else {
       setRocnoBesedilo(false);
     }
-    setKorak(0);
+    /* odpri NA KONCNI PONUDBI (ne na formularju): vse chat faze odklenjene, onboarding zakljucen;
+       nazaj na urejanje pride z gumbom "Uredi podatke in vprasanja" */
+    setPoMeh(5);
+    setUvodKoncan(true); setUvodChat(false);
+    setKorak(ponudbaStep);
   };
   const izbrisiIzArhiva = (ime: string) => {
     const nov = { ...arhiv };
@@ -3021,7 +3128,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     interier:    <Armchair size={19} />,
     arhitektura: <Buildings size={19} />,
     razstava:    <Presentation size={19} />,
-    produktni:   <Coffee size={19} />,
+    produktni:   <Gift size={19} />,
     uxui:        <Layout size={19} />,
     aplikacija:  <DeviceMobile size={19} />,
     dizajnsistem:<SquaresFour size={19} />,
@@ -3640,7 +3747,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         /* korak 0 = nadaljevanje chatbota: mehurcki-transkript zgoraj, orbi spodaj */
         .cw .chat-izbira { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1rem; width: min(620px, 92%); margin: 0 auto 1.8rem; }
         /* med onboardingom: vsebina centrirana (kot prej), ozja; ko pride ponudba -> siroka miza */
-        .cw .korak-vsebina.siroko.uvod-faza { max-width: 780px; margin-left: auto; margin-right: auto; padding-right: 0; min-height: calc(100dvh - 6.5rem); display: flex; flex-direction: column; justify-content: center; }
+        /* min-height mora upostevati .oder padding (7rem+8rem=15rem), sicer stran vedno prelije
+           za ~8.5rem in je drsnik STALNO viden; -15.5rem = tocno se prilega, drsnik le ko je vsebine vec */
+        .cw .korak-vsebina.siroko.uvod-faza { max-width: 780px; margin-left: auto; margin-right: auto; padding-right: 0; min-height: calc(100dvh - 15.5rem); display: flex; flex-direction: column; justify-content: center; }
         .cw .uvod-faza .uvod-uvodnik { text-align: center; margin-bottom: 1.2rem; }
         .cw .uvod-faza .uvod-uvodnik .ob-kicker { text-align: center; }
         .cw .uvod-faza .chat-izbira { width: 100%; margin-bottom: 0; }
@@ -3666,7 +3775,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-koraki > *:not(.chat):not(.oder0):not(h1):not(.sub-vrsta) { max-width: min(720px, 100%); margin-left: auto; margin-right: auto; }
         .cw .chat-koraki .chat-vpr { margin-top: 2.2rem; margin-bottom: .9rem; }
         .cw .platno0-drs { overflow: visible; min-width: 0; }
-        .cw .platno0 { position: relative; min-height: 56vh; }
+        /* mobile + tablica: orbi lahko strlijo cez rob -> platno se pomika vodoravno ZNOTRAJ sebe,
+           stran sama pa nima vodoravnega scrolla (ta je lomil glavo/postavitev) */
+        @media (max-width: 1200px) { .cw .platno0-drs { overflow-x: auto; -webkit-overflow-scrolling: touch; } }
+        .cw .platno0 { position: relative; min-height: 56vh; padding-bottom: 5.5rem; }
         .cw .namig0 { position: absolute; left: 0; right: 0; bottom: .2rem; text-align: center; font-size: .78rem; color: rgba(17,17,17,.45); pointer-events: none; }
 
         .cw .orb0 { position: absolute; border: none; background: none; cursor: pointer; padding: 0; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; font-family: inherit; z-index: 1; animation: orb-plavaj var(--dur, 11s) ease-in-out var(--del, 0s) infinite, orb-vstop .7s cubic-bezier(.2,.8,.3,1) var(--vdel, 0s) both; will-change: transform; }
@@ -3854,6 +3966,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .pozdrav-select:hover { text-decoration: underline; text-underline-offset: .2em; }
         .cw .chat-uredi { display: flex; flex-direction: column; gap: .5rem; align-items: flex-end; max-width: 100%; }
         .cw .chat-uredi .cu-vrsta { display: flex; gap: .5rem; align-items: center; }
+        .cw .chat-uredi .cu-vrsta-stolpec { flex-direction: column; align-items: stretch; }
+        .cw .chat-uredi .cu-vrsta-stolpec .gumb { align-self: flex-start; }
+        /* popup pravic: po-meri vrstica (stevilo + enota + gumb) — dosledna oblikovana polja */
+        .cw .cu-po-meri { margin-top: .95rem; display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; }
+        .cw .cu-num { width: 4.6rem; background: #fff; border: 1px solid rgba(17,17,17,.2); border-radius: 10px; padding: .5rem .55rem; font-family: inherit; font-size: .95rem; font-weight: 600; color: var(--ink); text-align: center; outline: none; transition: border-color .15s; }
+        .cw .cu-num:focus { border-color: var(--accent); }
+        .cw .cu-select { background: #fff; border: 1px solid rgba(17,17,17,.2); border-radius: 10px; padding: .5rem 2rem .5rem .7rem; font-family: inherit; font-size: .95rem; font-weight: 600; color: var(--ink); appearance: none; -webkit-appearance: none; cursor: pointer; outline: none; transition: border-color .15s; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .75rem center; }
+        .cw .cu-select:focus { border-color: var(--accent); }
+        .cw .cu-po-meri .cu-uporabi { margin-left: .5rem; }
         .cw .chat-uredi .cu-vrsta input { border: 1px solid rgba(17,17,17,.3); border-radius: 12px; background: #fff; padding: .55rem .8rem; font-family: inherit; font-size: .95rem; color: var(--ink); min-width: 11rem; }
         .cw .chat-uredi .cu-opcije { display: flex; flex-wrap: wrap; gap: .45rem; justify-content: flex-end; }
         .cw .chat-uredi .chat-podrocja { margin: 0; justify-content: flex-end; }
@@ -3869,10 +3990,26 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-opcija b { font-weight: 700; font-size: 1.02rem; }
         .cw .chat-opcija small { color: rgba(17,17,17,.45); font-size: .84rem; margin-left: auto; text-align: right; max-width: 48%; }
         /* gumb POD inputom, na sredini */
-        .cw .chat-vnos { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: stretch; gap: .9rem; margin: 1.4rem 0 0 3.05rem; }
+        /* align-self: stretch — starsevski .chat-izbira ima align-items: flex-start, zato bi se
+           forma sicer dimenzionirala po 520px inputu in na telefonu strlela cez rob */
+        .cw .chat-vnos { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: stretch; align-self: stretch; gap: .9rem; margin: 1.4rem 0 0 3.05rem; }
         .cw .chat-vnos .gumb { align-self: center; }
-        .cw .chat-vnos input { flex: none; width: 520px; max-width: 100%; background: #fff; border: 1px solid rgba(17,17,17,.14); border-radius: 999px; padding: .95rem 1.3rem; font-family: inherit; font-size: 1.02rem; font-weight: 600; color: var(--ink); outline: none; box-shadow: 0 6px 20px rgba(40,25,40,.06); transition: border-color .18s; }
+        .cw .chat-vnos input { flex: none; width: 520px; max-width: 100%; box-sizing: border-box; background: #fff; border: 1px solid rgba(17,17,17,.14); border-radius: 999px; padding: .95rem 1.3rem; font-family: inherit; font-size: 1.02rem; font-weight: 600; color: var(--ink); outline: none; box-shadow: 0 6px 20px rgba(40,25,40,.06); transition: border-color .18s; }
         .cw .chat-vnos input:focus { border-color: var(--accent); }
+        /* onboarding: forma s podatki podjetja (glava ponudbe) — vsi podatki zbrani tu */
+        .cw .uv-forma { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: stretch; gap: 1rem; margin: 1.4rem 0 0 3.05rem; width: min(560px, 100%); }
+        .cw .uv-forma .uv-mreza { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem .9rem; }
+        .cw .uv-forma .uv-polje { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+        .cw .uv-forma .uv-polje-siroko { grid-column: 1 / -1; }
+        .cw .uv-forma label { font-size: .84rem; font-weight: 600; color: var(--ink); display: flex; align-items: baseline; gap: .5rem; }
+        .cw .uv-forma .uv-neobvezno { font-size: .7rem; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: rgba(17,17,17,.5); }
+        .cw .uv-forma input, .cw .uv-forma select { width: 100%; background: #fff; border: 1px solid rgba(17,17,17,.14); border-radius: 12px; padding: .72rem .95rem; font-family: inherit; font-size: .98rem; font-weight: 500; color: var(--ink); outline: none; box-shadow: 0 4px 14px rgba(40,25,40,.05); transition: border-color .18s; box-sizing: border-box; }
+        .cw .uv-forma input:focus, .cw .uv-forma select:focus { border-color: var(--accent); }
+        .cw .uv-forma select { appearance: none; -webkit-appearance: none; padding-right: 2.4rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .95rem center; }
+        .cw .uv-forma .tel-vrsta { display: flex; gap: .5rem; }
+        .cw .uv-forma .tel-vrsta select { width: auto; flex: none; }
+        .cw .uv-forma .gumb { align-self: center; margin-top: .5rem; }
+        @media (max-width: 560px) { .cw .uv-forma { margin-left: 0; } .cw .uv-forma .uv-mreza { grid-template-columns: 1fr; } }
         /* področja dela — kompaktni chipi za več izbir (v chatu) */
         .cw .chat-podrocja { display: flex; flex-wrap: wrap; gap: .75rem; margin: .5rem 0 .3rem 3.05rem; max-width: 680px; }
         .cw .chip-podrocje { display: inline-flex; align-items: center; gap: .7rem; background: #fff; border: 1px solid rgba(17,17,17,.12); border-radius: 999px; padding: .55rem 1.2rem .55rem .55rem; font-family: inherit; font-size: 1rem; font-weight: 700; color: var(--ink); cursor: pointer; box-shadow: 0 2px 10px rgba(35,18,45,.05); transition: border-color .18s, box-shadow .18s, transform .2s cubic-bezier(.34,1.56,.5,1); }
@@ -4115,7 +4252,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .cw .polje select { width: 100%; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .35rem 1.6rem .5rem 0; color: var(--ink); border-radius: 0; appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .2rem center; }
         /* datalist polja (npr. Država): skrij Chromov native indikator, dodaj isto puscico kot pri select */
-        .cw input[list] { padding-right: 2.1rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .85rem center; }
+        .cw input[list] { padding-right: 2.7rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1.2rem center; }
         .cw input[list]::-webkit-calendar-picker-indicator { opacity: 0; cursor: pointer; }
         .cw .tel-vrsta { display: flex; gap: .8rem; align-items: baseline; }
         .cw .tel-vrsta select { width: 6.2rem; flex: none; }
@@ -4184,6 +4321,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .kartica { animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; background: #FCFBF7; border: 1px solid rgba(17,17,17,.06); border-radius: 20px; padding: 1.6rem 1.7rem 1.7rem; box-shadow: 0 4px 18px rgba(17,17,17,.04); max-width: 760px; margin-bottom: 1.4rem; }
         @media (prefers-reduced-motion: reduce) { .cw .kartica { animation: none; } }
         .cw .kartica-neobvezno { background: transparent; border: 1px dashed rgba(17,17,17,.22); box-shadow: none; margin-top: -.4rem; }
+        .cw .prav-razlaga { margin: 0 0 1.1rem; border: 1px solid rgba(17,17,17,.14); border-radius: 12px; background: rgba(178,84,118,.05); overflow: hidden; }
+        .cw .prav-razlaga > summary { list-style: none; cursor: pointer; padding: .8rem 1rem; font-weight: 600; font-size: .92rem; color: var(--ink); display: flex; align-items: center; gap: .5rem; }
+        .cw .prav-razlaga > summary::-webkit-details-marker { display: none; }
+        .cw .prav-razlaga > summary::before { content: "＋"; color: var(--accent); font-weight: 700; }
+        .cw .prav-razlaga[open] > summary::before { content: "－"; }
+        .cw .prav-razlaga-telo { padding: 0 1rem 1rem; }
+        .cw .prav-razlaga-telo p { margin: .2rem 0 .6rem; font-size: .9rem; line-height: 1.5; color: var(--ink); }
+        .cw .prav-razlaga-telo ul { margin: .2rem 0 .6rem; padding-left: 1.1rem; }
+        .cw .prav-razlaga-telo li { margin: .35rem 0; font-size: .9rem; line-height: 1.5; color: var(--ink); }
+        .cw .prav-razlaga-telo li::marker { color: var(--accent); }
+        .cw .prav-razlaga-vir { font-size: .82rem !important; color: rgba(17,17,17,.6) !important; margin-bottom: 0 !important; }
         .cw .prav-tabela { display: flex; flex-direction: column; }
         .cw .prav-vrsta { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto; align-items: center; gap: .8rem; padding: .7rem 0; border-bottom: 1px solid rgba(17,17,17,.1); }
         .cw .prav-ime { font-weight: 650; font-size: .98rem; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -4363,9 +4511,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           .cw .noga-koncna { flex-direction: column; align-items: stretch; gap: .6rem; }
           .cw .noga .noga-koncna .nazaj-g { text-align: center; }
         }
-        .cw .a11y { position: fixed; left: clamp(1.2rem, 4vw, 3rem); bottom: 1.05rem; z-index: 35; }
-        .cw .a11y-btn { width: 2.8rem; height: 2.8rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.28); background: color-mix(in oklab, var(--paper) 92%, white); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 .7rem 1.8rem rgba(17,17,17,.08); }
-        .cw .a11y-btn:hover { border-color: var(--ink); }
+        .cw .a11y { position: fixed; left: clamp(1.2rem, 4vw, 3rem); bottom: 4.9rem; z-index: 61; }
+        .cw .a11y-btn { width: 2.8rem; height: 2.8rem; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent); background: color-mix(in oklab, var(--paper) 92%, white); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 .7rem 1.8rem rgba(17,17,17,.08); }
+        .cw .a11y-btn:hover { border-color: color-mix(in oklab, var(--accent) 72%, transparent); }
         .cw .a11y-panel { position: absolute; left: 0; bottom: 3.4rem; width: min(27rem, calc(100vw - 2.4rem)); max-height: min(70dvh, 34rem); overflow: auto; border: 1px solid rgba(17,17,17,.22); background: color-mix(in oklab, var(--paper) 98%, white); padding: 1rem 1.1rem; box-shadow: 0 1rem 2.4rem rgba(17,17,17,.14); }
         .cw .a11y-panel h2 { margin: 0 0 .7rem; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; line-height: 1.2; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
         .cw .a11y-panel h3 { margin: .9rem 0 .35rem; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; line-height: 1.25; font-weight: 800; color: var(--ink); }
@@ -4905,7 +5053,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           )}
           {/* korak 0 = nadaljevanje chatbota (naslov gre stran) */}
           {korak === 0 && !klasicnaOblika && (
-            <div className="chat chat-izbira" ref={uvodRef} data-lenis-prevent>
+            <div className="chat chat-izbira" ref={uvodRef}>
               {uvodChat && (
                 <div className="uvod-uvodnik">
                   <p className="ob-kicker">Onboarding</p>
@@ -4938,23 +5086,59 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {/* O TEBI: podjetje + tvoja regija (na zacetku, kot dogovorjeno) */}
               {chatKorak >= 2 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                  <span className="chat-mehur"><b>V imenu katerega podjetja izdajaš ponudbo?</b><small>Ime v glavi ponudbe. Če (še) nimaš podjetja, vpiši svoje ime. Ostalo (TRR, logo) dodaš pozneje.</small></span></div>
+                  <span className="chat-mehur"><b>V imenu katerega podjetja izdajaš ponudbo?</b><small>Podatki za glavo ponudbe. Obvezno je le ime — če nimaš podjetja, vpiši svoje ime. Ostalo izpolni, kar imaš (lahko dopolniš pozneje).</small></span></div>
               )}
-              {chatKorak > 2 && uvodOdgovorMehur(2, ponudnik.ime.trim() || '—')}
-
-              {chatKorak >= 3 && (
-                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                  <span className="chat-mehur"><b>V kateri državi večinoma delaš?</b><small>Nastavi privzet trg in raven cen — lahko spremeniš pri vsaki ponudbi.</small></span></div>
-              )}
-              {uvodChat && chatKorak === 3 && (
-                <form className="chat-vnos" onSubmit={e => { e.preventDefault(); const t = trgIzDrzave(custDrzavaMoj) || mojTrg || 'si'; setMojTrg(t); setTrgNarocnika(t); setChatKorak(4); }}>
-                  <input autoFocus type="text" list="cw-drzave-list" value={custDrzavaMoj}
-                    onChange={e => { const v = e.target.value; setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }}
-                    placeholder="npr. Slovenija" />
-                  <button type="submit" className="gumb">Naprej <ArrowDown size={15} weight="bold" aria-hidden /></button>
+              {uvodChat && chatKorak === 2 && (
+                <form className="uv-forma" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
+                  <div className="uv-polje uv-polje-siroko">
+                    <label htmlFor="uv-pime">Ime / podjetje <span className="uv-neobvezno">obvezno</span></label>
+                    <input id="uv-pime" ref={uvodVnosRef} type="text" placeholder="Rdeča kapica d.o.o. ali tvoje ime"
+                      value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })} />
+                  </div>
+                  <div className="uv-polje uv-polje-siroko">
+                    <label htmlFor="uv-pdrzava">Država <span className="uv-neobvezno">določi privzet trg / raven cen</span></label>
+                    <input id="uv-pdrzava" type="text" list="cw-drzave-list" placeholder="npr. Slovenija"
+                      value={custDrzavaMoj}
+                      onChange={e => { const v = e.target.value; setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }} />
+                  </div>
+                  <div className="uv-mreza">
+                    <div className="uv-polje">
+                      <label htmlFor="uv-pdavcna">Davčna številka <span className="uv-neobvezno">neobvezno</span></label>
+                      <input id="uv-pdavcna" type="text" placeholder="SI98765432"
+                        value={ponudnik.davcna} onChange={e => setPonudnik({ ...ponudnik, davcna: e.target.value })} />
+                    </div>
+                    <div className="uv-polje">
+                      <label htmlFor="uv-pemail">Email <span className="uv-neobvezno">neobvezno</span></label>
+                      <input id="uv-pemail" type="email" placeholder="kapica@gozd.si"
+                        value={ponudnik.email} onChange={e => setPonudnik({ ...ponudnik, email: e.target.value })} />
+                    </div>
+                    <div className="uv-polje">
+                      <label htmlFor="uv-ptelefon">Telefon <span className="uv-neobvezno">neobvezno</span></label>
+                      <div className="tel-vrsta">
+                        <select aria-label="Klicna koda države" value={predklic} onChange={e => setPredklic(e.target.value)}>
+                          {['+386', '+385', '+43', '+49', '+39', '+44', '+33', '+1', '+971', '+20'].map(k => (
+                            <option key={k} value={k}>{k}</option>
+                          ))}
+                        </select>
+                        <input id="uv-ptelefon" type="tel" placeholder="51 234 567"
+                          value={ponudnik.telefon} onChange={e => setPonudnik({ ...ponudnik, telefon: e.target.value })} />
+                      </div>
+                    </div>
+                    <div className="uv-polje">
+                      <label htmlFor="uv-ptrr">TRR (bančni račun) <span className="uv-neobvezno">neobvezno</span></label>
+                      <input id="uv-ptrr" type="text" placeholder="SI56 1910 0001 2345 678"
+                        value={ponudnik.trr} onChange={e => setPonudnik({ ...ponudnik, trr: e.target.value })} />
+                    </div>
+                    <div className="uv-polje uv-polje-siroko">
+                      <label htmlFor="uv-pnaslov">Naslov <span className="uv-neobvezno">neobvezno</span></label>
+                      <input id="uv-pnaslov" type="text" placeholder="Mladinska ulica 63, 1000 Ljubljana"
+                        value={ponudnik.naslov} onChange={e => setPonudnik({ ...ponudnik, naslov: e.target.value })} />
+                    </div>
+                  </div>
+                  <button type="submit" className="gumb" disabled={!ponudnik.ime.trim()}>Naprej <ArrowDown size={15} weight="bold" aria-hidden /></button>
                 </form>
               )}
-              {chatKorak > 3 && uvodOdgovorMehur(3, custDrzavaMoj.trim() || TRGI.find(t => t.id === mojTrg)?.ime || '—')}
+              {chatKorak > 2 && uvodOdgovorMehur(2, ponudnik.ime.trim() + (custDrzavaMoj.trim() ? ' · ' + custDrzavaMoj.trim() : '') || '—')}
 
               {chatKorak >= 4 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
@@ -5023,22 +5207,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {/* po onboardingu: nadaljevanje pogovora za izbiro (ista povrsina, ni preskoka) */}
               {!uvodChat && !namigSkrit && (
                 <>
-                  <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                  <div className="chat-bot" id="cw-storitve-zacetek"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
                     <span className="chat-mehur"><b>Super! Izberi storitve, ki jih želiš v ponudbi.</b></span></div>
                   <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
                     <span className="chat-mehur chat-mehur-namig">
                       <button type="button" className="namig-zapri" aria-label="Zapri namig" title="Zapri (znova le ob ponastavitvi)" onClick={() => setNamigSkrit(true)}>✕</button>
-                      Klik na storitev jo doda v ponudbo. Prikaz preklopiš med mehurčki in tabelo v »dodaj / uredi«.
+                      S klikom na storitev jo dodaš v ponudbo. Prikaz preklopiš med mehurčki in tabelo v »dodaj / uredi«.
                     </span></div>
                 </>
               )}
 
-              {/* vnosna vrstica (ime / ime ponudbe) — samo med onboardingom */}
-              {uvodChat && (chatKorak === 0 || chatKorak === 2 || chatKorak === 6) && (
+              {/* vnosna vrstica (ime / ime ponudbe) — samo med onboardingom (podjetje ima svojo formo zgoraj) */}
+              {uvodChat && (chatKorak === 0 || chatKorak === 6) && (
                 <form className="chat-vnos" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
                   <input autoFocus type="text" value={chatVnos}
                     onChange={e => setChatVnos(e.target.value)}
-                    placeholder={chatKorak === 0 ? 'Ime ali vzdevek' : chatKorak === 2 ? 'Ime podjetja ali tvoje ime' : 'Ime ponudbe'} />
+                    placeholder={chatKorak === 0 ? 'Ime ali vzdevek' : 'Ime ponudbe'} />
                   <button type="submit" className="gumb" disabled={chatKorak === 0 && !chatVnos.trim()}>
                     {chatKorak === 6 ? 'Začni' : 'Naprej'} <ArrowDown size={15} weight="bold" aria-hidden />
                   </button>
@@ -5680,9 +5864,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <InfoNamig besedilo="Vsaka storitev ima svoje pravice. Logotip/CGP je praviloma trajen izključni prenos, ilustracija licenca za dobo (npr. 7 let), kampanja kratka licenca. Privzetki so že nastavljeni glede na tip; recept lahko spremeniš. Podrobnosti (teritorij, mediji, naklada, klavzule) pridejo v naslednji nadgradnji." />
                   <span className="vec">vsaka storitev svoje</span>
                 </div>
-                <p className="hint" style={{ marginTop: 0, marginBottom: '1rem' }}>
+                <p className="hint" style={{ marginTop: 0, marginBottom: '.8rem' }}>
                   Privzetki so nastavljeni glede na tip storitve — spremeni recept, kjer je treba. Vsaka storitev pokaže svojo ceno pravic.
                 </p>
+                <details className="prav-razlaga">
+                  <summary>Kaj so avtorske pravice in zakaj so ločena postavka?</summary>
+                  <div className="prav-razlaga-telo">
+                    <p>Naročnik plača <b>izvedbo</b> (oblikovanje), <b>pravice do uporabe</b> pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna.</p>
+                    <ul>
+                      <li><b>Vrednost določajo</b> obseg (teritorij, mediji, doba), izključnost in koliko naročnik z delom zasluži.</li>
+                      <li><b>Slovenija / EU:</b> popoln »odkup vsega« pravno ni mogoč — prenesejo se le posamezne materialne pravice, pisno in omejeno. Avtor ohrani moralne pravice in pravico do poštenega nadomestila (ZASP; DSM 2019).</li>
+                      <li><b>Prodajni produkti</b> (majice, embalaža, izdelki): namesto enkratnega odkupa je pošteno honorar + <b>tantieme</b> od prodaje (npr. 3–10 %).</li>
+                    </ul>
+                    <p className="prav-razlaga-vir">Podroben članek s primeri in viri pripravljamo za spletno stran.</p>
+                  </div>
+                </details>
                 {r && r.praviceVrstice.length > 0 ? (
                   <>
                     <div className="prav-tabela">
@@ -5734,13 +5930,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                                 </button>
                               ))}
                             </div>
-                            <div className="cu-vrsta" style={{ marginTop: '.85rem', flexWrap: 'wrap', gap: '.5rem' }}>
+                            <div className="cu-vrsta cu-po-meri">
                               <span className={'pill' + (rec.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">Po meri{rec.trajanje === 'custom' && typeof rec.trajLeta === 'number' ? `: ${trajLetaVBesedo(rec.trajLeta)}` : ''}</span></span>
-                              <input type="number" min={1} value={custStev} onChange={e => setCustStev(e.target.value)} style={{ width: '4rem', borderBottom: '1px solid rgba(17,17,17,.35)', padding: '.3rem .2rem', fontFamily: 'inherit' }} />
-                              <select value={custEnota} onChange={e => setCustEnota(e.target.value as 'teden' | 'mesec' | 'leto')}>
+                              <input type="number" min={1} value={custStev} onChange={e => setCustStev(e.target.value)} className="cu-num" aria-label="Število" />
+                              <select value={custEnota} onChange={e => setCustEnota(e.target.value as 'teden' | 'mesec' | 'leto')} className="cu-select" aria-label="Enota">
                                 <option value="teden">tednov</option><option value="mesec">mesecev</option><option value="leto">let</option>
                               </select>
-                              <button type="button" className="gumb" onClick={() => nastaviPravRec(sid, { trajanje: 'custom', trajLeta: custLeta })}>Uporabi</button>
+                              <button type="button" className="gumb cu-uporabi" onClick={() => nastaviPravRec(sid, { trajanje: 'custom', trajLeta: custLeta })}>Uporabi</button>
                             </div>
                           </div>
                           <div>
@@ -5760,10 +5956,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                           {typeof rec.tantiema === 'number' && (
                             <div>
                               <div className="uredi-naslov">Tantieme — prodajni produkt</div>
-                              <div className="cu-vrsta" style={{ gap: '.5rem', flexWrap: 'wrap' }}>
+                              <div className="cu-vrsta cu-po-meri">
                                 <input type="number" min={0} max={30} step={1} value={rec.tantiema}
                                   onChange={e => nastaviPravRec(sid, { tantiema: Math.max(0, Math.min(30, Math.round(Number(e.target.value)) || 0)) })}
-                                  style={{ width: '4rem', borderBottom: '1px solid rgba(17,17,17,.35)', padding: '.3rem .2rem', fontFamily: 'inherit' }} />
+                                  className="cu-num" aria-label="Odstotek tantieme" />
                                 <span>% od neto veleprodaje</span>
                               </div>
                               <p className="hint" style={{ marginTop: '.5rem' }}>Cena zgoraj je <b>predujem / minimalna garancija</b> (nepovraten, ob podpisu). Tantieme se plačujejo <b>dodatno</b> od prodaje; ponudba doda klavzule (predujem, MG, reverzija, letno poročilo). Izhodišče: dizajn 3–10 %, znamka do 15 % (GAG / Licensing International).</p>
@@ -5772,7 +5968,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                           <p className="hint" style={{ margin: 0 }}>Teritorij, mediji in naklada trenutno veljajo globalno (kartica spodaj). Cena pravic te storitve: <b>{r ? val(r.praviceVrstice.find(x => x.sid === sid)?.znesek || 0) : '—'}</b>.</p>
                         </div>
                         <div className="detajl-noga">
-                          <button type="button" className="gumb" onClick={() => setPraviceOdprt(null)}>Končano</button>
+                          <button type="button" className="gumb" onClick={() => setPraviceOdprt(null)}>Zapri</button>
                         </div>
                       </div>
                     </div>
@@ -6144,6 +6340,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 title={narocnikEmail.trim() ? undefined : 'Vpiši email naročnika na koraku Kdo je stranka'}
                 onClick={posljiMailto}>
                 <EnvelopeSimple size={17} /> Pošlji ponudbo
+              </button>
+              <button type="button" className="povezava" onClick={prenesiPdf} title="A4 s podlogo — glava in noga iz tvojih podatkov; v oknu za tisk izberi »Shrani kot PDF«">
+                <FilePdf size={17} /> Prenesi PDF
               </button>
               <button type="button" className="povezava" onClick={prenesi}>
                 <DownloadSimple size={17} /> Prenesi besedilo
