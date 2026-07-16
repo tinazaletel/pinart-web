@@ -3986,6 +3986,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .namig-zapri { position: absolute; top: .5rem; right: .55rem; width: 1.45rem; height: 1.45rem; border-radius: 50%; border: none; background: rgba(17,17,17,.07); color: rgba(17,17,17,.55); font-size: .72rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; line-height: 1; padding: 0; }
         .cw .namig-zapri:hover { background: rgba(17,17,17,.15); color: var(--ink); }
         .cw .pozdrav-mehur { white-space: nowrap; }
+        /* v pozdravu je <b> INLINE (drugje v mehurckih je block za naslov vprasanja),
+           da sta "Hej Tina," in podjetje v ISTI vrstici */
+        .cw .chat-bot .pozdrav-mehur b { display: inline; }
         .cw .pozdrav-select { border: none; background-color: transparent; font-family: inherit; font-weight: 700; font-size: .95rem; color: var(--ink); padding: 0 1.05rem 0 .3rem; margin-left: .1rem; appearance: none; -webkit-appearance: none; cursor: pointer; vertical-align: baseline; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .05rem center; }
         .cw .pozdrav-select:hover { text-decoration: underline; text-underline-offset: .2em; }
         .cw .chat-uredi { display: flex; flex-direction: column; gap: .5rem; align-items: flex-end; max-width: 100%; }
@@ -5817,7 +5820,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 </div>
               </div>
               {raba === 'znamka' ? (
-                <p className="hint" style={{ marginTop: '-.4rem' }}>Vrednost pravic sledi <b>prometu in dobičku naročnika</b> — to vneseš pri podatkih naročnika (korak »Kdo je stranka«). Prazno = mikro podjetje.</p>
+                <p className="hint" style={{ marginTop: '-.4rem', marginBottom: '1.4rem' }}>Vrednost pravic sledi <b>prometu in dobičku naročnika</b> — to vneseš pri podatkih naročnika (korak »Kdo je stranka«). Prazno = mikro podjetje.</p>
               ) : (
                 <div className="kartica">
                   <div className="numgrid">
