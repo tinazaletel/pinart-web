@@ -175,7 +175,16 @@ const RECEPTI: { id: string; ime: string; prenos: 'izkljucni' | 'neizkljucni' | 
   { id: 'neizkljucni', ime: 'Neizključno',          prenos: 'neizkljucni', trajanje: '7' },
   { id: 'licenca',     ime: 'Samo licenca',         prenos: 'licenca',     trajanje: '7' },
   { id: 'kampanja',    ime: 'Kampanjska licenca',   prenos: 'licenca',     trajanje: '3m' },
+  { id: 'tantieme',    ime: 'Prodajni produkt (tantieme)', prenos: 'izkljucni', trajanje: '3' },
 ];
+/* priporocena tantiema (% neto veleprodaje) po tipu storitve — iz raziskave (GAG/Licensing Intl):
+   art/dizajn licensing 3-10 %, znamka/lik do 15 %, kanal mass 3-5 / specialty 5-10 */
+const tantiemaZa = (sid: string): number => {
+  if (['ilustracija', 'publikacija', 'fotografija'].includes(sid)) return 8;   /* umetniska dela */
+  if (['embalaza', 'produktni'].includes(sid)) return 6;                        /* izdelek/embalaza */
+  if (['cgp', 'logo', 'dizajnsistem'].includes(sid)) return 10;                 /* znamka/lik */
+  return 7;
+};
 /* privzeta vrsta pravic + trajanje po storitvi (za tabelo pri vec storitvah) */
 const PRAVICE_TRAJNO = new Set(['logo', 'cgp', 'web', 'embalaza', 'interier', 'arhitektura', 'produktni', 'uxui', 'aplikacija', 'dizajnsistem']);
 const PRAVICE_KAMPANJA = new Set(['kampanja', 'smm', 'razstava', 'seo', 'email', 'pr']);
@@ -1671,7 +1680,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [pravNaklada, setPravNaklada] = useState<string>('do3k');
   const [pravPonatis, setPravPonatis] = useState(true);
   /* pravice po storitvi (tabela): sid -> {prenos, trajanje}; manjka = privzeto iz privzetePraviceZa */
-  type PravRec = { prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string; trajLeta?: number; klavzule?: string[] };
+  type PravRec = { prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string; trajLeta?: number; klavzule?: string[]; tantiema?: number };
   const [pravicePoStoritvi, setPravicePoStoritvi] = useState<Record<string, PravRec>>({});
   const [custStev, setCustStev] = useState('3');
   const [custEnota, setCustEnota] = useState<'teden' | 'mesec' | 'leto'>('teden');
@@ -2145,7 +2154,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       const trajanjeIme = rec.trajanje === 'custom' && typeof rec.trajLeta === 'number'
         ? trajLetaVBesedo(rec.trajLeta)
         : (PRAV_TRAJANJE.find(t => t.id === rec.trajanje)?.ime ?? rec.trajanje);
-      return { sid: s.id, ime: s.ime, prenos: rec.prenos, trajanje: rec.trajanje, trajanjeIme, znesek: zaokrozi(sAvto), klavzule: rec.klavzule || [] };
+      return { sid: s.id, ime: s.ime, prenos: rec.prenos, trajanje: rec.trajanje, trajanjeIme, znesek: zaokrozi(sAvto), klavzule: rec.klavzule || [], tantiema: rec.tantiema };
     });
     const praviceBaza = zaokrozi(praviceBazaSum);
     const praviceAvto = praviceAvtoSum;
@@ -2396,9 +2405,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push('AVTORSKE PRAVICE');
     if (obsegPonudbe === 'razsirjena' && r.praviceVrstice.length > 0) {
       r.praviceVrstice.forEach(pv => {
-        const vrsta = pv.prenos === 'licenca' ? 'licenca za rabo' : pv.prenos === 'neizkljucni' ? 'neizključni prenos' : 'izključni prenos';
-        const zn = pv.prenos === 'licenca' ? 'prek letne licence' : val(pv.znesek);
-        v.push(`· ${pv.ime} — ${vrsta}, ${pv.trajanjeIme} (${zn})`);
+        if (pv.tantiema) {
+          v.push(`· ${pv.ime} — prodajni produkt: predujem / minimalna garancija ${val(pv.znesek)} + tantieme ${pv.tantiema} % od neto veleprodaje`);
+          v.push('  · predujem je nepovraten in se poračuna s tantiemami; ob prekinitvi pravice revertirajo avtorju; naročnik letno poroča o prodaji');
+        } else {
+          const vrsta = pv.prenos === 'licenca' ? 'licenca za rabo' : pv.prenos === 'neizkljucni' ? 'neizključni prenos' : 'izključni prenos';
+          const zn = pv.prenos === 'licenca' ? 'prek letne licence' : val(pv.znesek);
+          v.push(`· ${pv.ime} — ${vrsta}, ${pv.trajanjeIme} (${zn})`);
+        }
         pv.klavzule.forEach(kid => { const k = KLAVZULE.find(x => x.id === kid); if (k) v.push(`  · ${k.opis}`); });
       });
     }
@@ -5676,12 +5690,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <>
                     <div className="prav-tabela">
                       {r.praviceVrstice.map(row => {
-                        const recId = RECEPTI.find(rc => rc.prenos === row.prenos && rc.trajanje === row.trajanje)?.id ?? '';
+                        const recId = row.tantiema ? 'tantieme' : (RECEPTI.find(rc => rc.prenos === row.prenos && rc.trajanje === row.trajanje && rc.id !== 'tantieme')?.id ?? '');
                         return (
                           <div key={row.sid} className="prav-vrsta">
-                            <span className="prav-ime">{row.ime}{row.klavzule.length > 0 && <small> · {row.klavzule.length} klavzul</small>}</span>
+                            <span className="prav-ime">{row.ime}{row.tantiema ? <small> · {row.tantiema} % tantieme</small> : row.klavzule.length > 0 ? <small> · {row.klavzule.length} klavzul</small> : null}</span>
                             <select className="prav-recept" aria-label={'Pravice: ' + row.ime} value={recId}
-                              onChange={e => { const rc = RECEPTI.find(x => x.id === e.target.value); if (rc) nastaviPravRec(row.sid, { prenos: rc.prenos, trajanje: rc.trajanje, trajLeta: undefined }); }}>
+                              onChange={e => { const rc = RECEPTI.find(x => x.id === e.target.value); if (rc) nastaviPravRec(row.sid, { prenos: rc.prenos, trajanje: rc.trajanje, trajLeta: undefined, tantiema: rc.id === 'tantieme' ? tantiemaZa(row.sid) : undefined }); }}>
                               {recId === '' && <option value="">Po meri ({row.trajanjeIme})</option>}
                               {RECEPTI.map(rc => <option key={rc.id} value={rc.id}>{rc.ime}</option>)}
                             </select>
@@ -5746,6 +5760,18 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                               })}
                             </div>
                           </div>
+                          {typeof rec.tantiema === 'number' && (
+                            <div>
+                              <div className="uredi-naslov">Tantieme — prodajni produkt</div>
+                              <div className="cu-vrsta" style={{ gap: '.5rem', flexWrap: 'wrap' }}>
+                                <input type="number" min={0} max={30} step={1} value={rec.tantiema}
+                                  onChange={e => nastaviPravRec(sid, { tantiema: Math.max(0, Math.min(30, Math.round(Number(e.target.value)) || 0)) })}
+                                  style={{ width: '4rem', borderBottom: '1px solid rgba(17,17,17,.35)', padding: '.3rem .2rem', fontFamily: 'inherit' }} />
+                                <span>% od neto veleprodaje</span>
+                              </div>
+                              <p className="hint" style={{ marginTop: '.5rem' }}>Cena zgoraj je <b>predujem / minimalna garancija</b> (nepovraten, ob podpisu). Tantieme se plačujejo <b>dodatno</b> od prodaje; ponudba doda klavzule (predujem, MG, reverzija, letno poročilo). Izhodišče: dizajn 3–10 %, znamka do 15 % (GAG / Licensing International).</p>
+                            </div>
+                          )}
                           <p className="hint" style={{ margin: 0 }}>Teritorij, mediji in naklada trenutno veljajo globalno (kartica spodaj). Cena pravic te storitve: <b>{r ? val(r.praviceVrstice.find(x => x.sid === sid)?.znesek || 0) : '—'}</b>.</p>
                         </div>
                         <div className="detajl-noga">
