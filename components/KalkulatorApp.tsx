@@ -147,9 +147,10 @@ const KOLICINSKE: Record<string, string> = {
 const jeKolicinska = (sid: string) => sid in KOLICINSKE || sid.startsWith('moja-');
 type TonPonudbe = 'formalno' | 'toplo' | 'direktno';
 
-/* Osnove umerjene na slovenski trg (2025/26, viri: Omisli.si agregat cen,
-   smernice DOS) — raven "samostojen", majhna stranka, SI; mnozitelji za
-   izkusnje in velikost stranke raztegnejo navzgor/navzdol. */
+/* Seed cenik za slovenski trg (2026): raven "samostojen", majhna stranka,
+   priporoceni paket. To niso javni ceniki agencij, ampak zacetna sidra iz
+   trga freelancerjev + EU marketplace signalov; anonimni vnosi uporabnikov
+   jih cez cas validirajo v admin pregledu. */
 /* ── Obseg pravic (intervju z Majo Lubi, ilustratorko, 2026-07-09) ──────────
    Pravice niso vse-ali-nic: cena je odvisna od trajanja, teritorija, medijev
    in naklade. Privzetki (7 let, Slovenija, tisk + promocija, naklada do
@@ -203,32 +204,32 @@ const PRAV_NAKLADA = [
 const AVTORSKE_STORITVE = ['ilustracija', 'fotografija', 'video', 'motion', 'render3d'];
 
 const STORITVE: Storitev[] = [
-  { id: 'logo',        ime: 'Logotip + osnovna identiteta', osnova: 700  },
-  { id: 'cgp',         ime: 'Celostna grafična podoba',     osnova: 1500 },
-  { id: 'web',         ime: 'Spletna stran',                osnova: 1200 },
-  { id: 'kampanja',    ime: 'Kampanja / oglasni vizuali',   osnova: 1000 },
-  { id: 'publikacija', ime: 'Publikacija / tiskovina',      osnova: 800  },
-  { id: 'embalaza',    ime: 'Embalaža / produkt',           osnova: 1000 },
-  { id: 'ilustracija', ime: 'Ilustracija / vizualni svet',  osnova: 800  },
-  { id: 'direkcija',   ime: 'Kreativna direkcija',          osnova: 700  },
-  { id: 'fotografija', ime: 'Fotografiranje',               osnova: 500  },
-  { id: 'copy',        ime: 'Besedila / copywriting',       osnova: 500  },
+  { id: 'logo',        ime: 'Logotip + osnovna identiteta', osnova: 650  },
+  { id: 'cgp',         ime: 'Celostna grafična podoba',     osnova: 1350 },
+  { id: 'web',         ime: 'Spletna stran',                osnova: 1400 },
+  { id: 'kampanja',    ime: 'Kampanja / oglasni vizuali',   osnova: 900  },
+  { id: 'publikacija', ime: 'Publikacija / tiskovina',      osnova: 700  },
+  { id: 'embalaza',    ime: 'Embalaža / produkt',           osnova: 900  },
+  { id: 'ilustracija', ime: 'Ilustracija / vizualni svet',  osnova: 550  },
+  { id: 'direkcija',   ime: 'Kreativna direkcija',          osnova: 900  },
+  { id: 'fotografija', ime: 'Fotografiranje',               osnova: 450  },
+  { id: 'copy',        ime: 'Besedila / copywriting',       osnova: 450  },
   /* razsiritev na vec kreativnih poklicev (2026-07-08) */
-  { id: 'interier',    ime: 'Interier dizajn',                osnova: 1500 },
-  { id: 'arhitektura', ime: 'Arhitekturno oblikovanje',       osnova: 2500 },
-  { id: 'razstava',    ime: 'Razstavni / scenski dizajn',     osnova: 1500 },
-  { id: 'produktni',   ime: 'Produktni / pohištveni dizajn',  osnova: 1800 },
-  { id: 'uxui',        ime: 'UX/UI dizajn',                   osnova: 1200 },
-  { id: 'aplikacija',  ime: 'Mobilna aplikacija',             osnova: 2500 },
-  { id: 'dizajnsistem',ime: 'Dizajn sistem',                  osnova: 1800 },
-  { id: 'smm',         ime: 'Social media vodenje',           osnova: 500  },
-  { id: 'seo',         ime: 'SEO',                            osnova: 500  },
-  { id: 'email',       ime: 'Email marketing',                osnova: 400  },
-  { id: 'pr',          ime: 'PR / odnosi z javnostmi',        osnova: 800  },
-  { id: 'video',       ime: 'Video produkcija',               osnova: 1500 },
-  { id: 'motion',      ime: 'Motion / animacija',             osnova: 900  },
-  { id: 'render3d',    ime: '3D vizualizacije',               osnova: 900  },
-  { id: 'strategija',  ime: 'Brand strategija',               osnova: 1200 },
+  { id: 'interier',    ime: 'Interier dizajn',                osnova: 1200 },
+  { id: 'arhitektura', ime: 'Arhitekturno oblikovanje',       osnova: 2200 },
+  { id: 'razstava',    ime: 'Razstavni / scenski dizajn',     osnova: 1300 },
+  { id: 'produktni',   ime: 'Produktni / pohištveni dizajn',  osnova: 1600 },
+  { id: 'uxui',        ime: 'UX/UI dizajn',                   osnova: 1100 },
+  { id: 'aplikacija',  ime: 'Mobilna aplikacija',             osnova: 2400 },
+  { id: 'dizajnsistem',ime: 'Dizajn sistem',                  osnova: 1600 },
+  { id: 'smm',         ime: 'Social media vodenje',           osnova: 650  },
+  { id: 'seo',         ime: 'SEO',                            osnova: 550  },
+  { id: 'email',       ime: 'Email marketing',                osnova: 350  },
+  { id: 'pr',          ime: 'PR / odnosi z javnostmi',        osnova: 750  },
+  { id: 'video',       ime: 'Video produkcija',               osnova: 1300 },
+  { id: 'motion',      ime: 'Motion / animacija',             osnova: 750  },
+  { id: 'render3d',    ime: '3D vizualizacije',               osnova: 650  },
+  { id: 'strategija',  ime: 'Brand strategija',               osnova: 1100 },
 ];
 
 /* Podrocja dela za onboarding: uporabnik izbere podrocja, orodje pa v ospredje
@@ -250,30 +251,30 @@ const PODROCJE_BARVA: Record<string, string> = {
 };
 
 const IZKUSNJE = [
-  { id: 'student',     ime: 'Študent',     opis: 'ob študiju, prvi naročniki', mult: 0.5 },
-  { id: 'zacetnik',    ime: 'Začetnik',    opis: 'do 3 leta',                  mult: 0.7 },
+  { id: 'student',     ime: 'Študent',     opis: 'ob študiju, prvi naročniki', mult: 0.45 },
+  { id: 'zacetnik',    ime: 'Začetnik',    opis: 'do 3 leta',                  mult: 0.65 },
   { id: 'samostojen',  ime: 'Samostojen',  opis: '3 do 8 let',                 mult: 1   },
-  { id: 'strokovnjak', ime: 'Strokovnjak', opis: '8+ let, reference',          mult: 1.4 },
-  { id: 'ekspert',     ime: 'Ekspert',     opis: 'nagrade, prepoznano ime',    mult: 1.8 },
+  { id: 'strokovnjak', ime: 'Strokovnjak', opis: '8+ let, reference',          mult: 1.45 },
+  { id: 'ekspert',     ime: 'Ekspert',     opis: 'nagrade, prepoznano ime',    mult: 2.1 },
 ];
 
 /* Raven cen po trgih: vpliva na privzete osnove (tvoj trg)
    in na razmerje, ko delas za trg z drugacno ravnjo (trg narocnika). */
 const TRGI = [
-  { id: 'si',   ime: 'Slovenija / srednja EU',  lvl: 1    },
-  { id: 'west', ime: 'Zahodna Evropa',          lvl: 1.4  },
-  { id: 'us',   ime: 'ZDA / UK / Skandinavija', lvl: 1.8  },
-  { id: 'east', ime: 'Vzhodna EU / Balkan',     lvl: 0.8  },
-  { id: 'mena', ime: 'Bližnji vzhod / Afrika',  lvl: 0.6  },
-  { id: 'asia', ime: 'Azija / Južna Amerika',   lvl: 0.55 },
+  { id: 'si',   ime: 'Slovenija / srednja EU',        lvl: 1    },
+  { id: 'west', ime: 'Zahodna Evropa',                lvl: 1.45 },
+  { id: 'us',   ime: 'ZDA / UK / Skandinavija',       lvl: 1.9  },
+  { id: 'east', ime: 'Vzhodna EU / Balkan',           lvl: 0.75 },
+  { id: 'mena', ime: 'Zaliv / bogatejši MENA trgi',   lvl: 1.3  },
+  { id: 'asia', ime: 'Global South / nižji trgi',     lvl: 0.65 },
 ];
 
 /* Država naročnika -> privzet trg (razred cene). Uporabnik ga lahko ročno spremeni.
    Za globalna podjetja ali izjeme je trg dropdown vedno na voljo. */
 const DRZAVE: { ime: string; trg: string }[] = [
   { ime: 'Slovenija', trg: 'si' },
-  { ime: 'Avstrija', trg: 'si' },
-  { ime: 'Nemčija', trg: 'si' },
+  { ime: 'Avstrija', trg: 'west' },
+  { ime: 'Nemčija', trg: 'west' },
   { ime: 'Italija', trg: 'west' },
   { ime: 'Madžarska', trg: 'si' },
   { ime: 'Češka', trg: 'si' },
@@ -312,13 +313,13 @@ const DRZAVE: { ime: string; trg: string }[] = [
   { ime: 'Litva', trg: 'east' },
   { ime: 'Latvija', trg: 'east' },
   { ime: 'Estonija', trg: 'east' },
-  { ime: 'Turčija', trg: 'mena' },
+  { ime: 'Turčija', trg: 'east' },
   { ime: 'ZAE', trg: 'mena' },
   { ime: 'Savdska Arabija', trg: 'mena' },
   { ime: 'Katar', trg: 'mena' },
-  { ime: 'Egipt', trg: 'mena' },
-  { ime: 'Maroko', trg: 'mena' },
-  { ime: 'Južna Afrika', trg: 'mena' },
+  { ime: 'Egipt', trg: 'asia' },
+  { ime: 'Maroko', trg: 'asia' },
+  { ime: 'Južna Afrika', trg: 'asia' },
   { ime: 'Izrael', trg: 'us' },
   { ime: 'Japonska', trg: 'us' },
   { ime: 'Singapur', trg: 'us' },
@@ -1526,6 +1527,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [kazemDodajKorak, setKazemDodajKorak] = useState(false); /* iskalnik na vprasalniku — locen, da se ne podvaja s panelom */
   const [kazemUredi, setKazemUredi] = useState(false);       /* modal "dodaj / uredi" storitve */
   const [pogledMreza, setPogledMreza] = useState(false);      /* false = prosti mehurcki, true = urejena mreza po podrocjih */
+  const [namigSkrit, setNamigSkrit] = useState(false);        /* uvodni namig zaprt — znova le ob ponastavitvi vprasalnika */
   const [kazemProfil, setKazemProfil] = useState(false);
   /* Profil kot drill-down (meni -> ena "podstran"), ne dolg scroll treh
      razdelkov skupaj — bolj pregledno in mobile-friendly (Tina). */
@@ -1714,6 +1716,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       if (s.nazivPonudbe) setNazivPonudbe(s.nazivPonudbe);
       if (s.klasicnaOblika) setKlasicnaOblika(true);
       if (s.pogledMreza) setPogledMreza(true);
+      if (s.namigSkrit) setNamigSkrit(true);
       if (Array.isArray(s.vrstniRed)) setVrstniRed(s.vrstniRed);
       if (Array.isArray(s.skrite)) setSkrite(s.skrite);
       if (s.valuta) { setValuta(s.valuta); setValutaRocna(true); }
@@ -1756,6 +1759,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         imeUporabnika: imeUporabnika || undefined,
         klasicnaOblika: klasicnaOblika || undefined,
         pogledMreza: pogledMreza || undefined,
+        namigSkrit: namigSkrit || undefined,
         uvodKoncan: uvodKoncan || undefined,
         /* potek onboarding-chata, da zgodovina (vprasanja + odgovori) prezivi reload */
         chatKorak: chatKorak || undefined,
@@ -1764,7 +1768,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         nazivPonudbe: nazivPonudbe || undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [jeNalozeno, osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, pogledMreza, uvodKoncan, chatKorak, chatNova, obIzbor, nazivPonudbe]);
+  }, [jeNalozeno, osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, pogledMreza, namigSkrit, uvodKoncan, chatKorak, chatNova, obIzbor, nazivPonudbe]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -2899,6 +2903,24 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const odstraniStrosek = (i: number) => setStroski(s => s.filter((_, idx) => idx !== i));
 
   /* ── ponastavi vse podatke orodja (danger zone v profilu) ──────────── */
+  /* ponastavi vprasalnik: zbrise osebne odgovore uvoda in znova odpre chat (kot prvic),
+     ohrani pa shranjena podjetja, cene, arhiv in lastne storitve */
+  const ponastaviVprasalnik = () => {
+    setUvodKoncan(false);
+    setChatKorak(0);
+    setChatVnos('');
+    setImeUporabnika('');
+    setIzkusnje('samostojen');
+    setObIzbor(new Set());
+    setMojSet(null);
+    setCustDrzavaMoj('');
+    setChatNova(null);
+    setUrejamKorak(null);
+    setNamigSkrit(false);
+    setKorak(0);
+    setKazemProfil(false);
+    setUvodChat(true);
+  };
   const ponastaviVse = () => {
     if (typeof window === 'undefined') return;
     if (!window.confirm('Izbrišem vse podatke tega orodja (cene, podjetja, zgodovino ponudb, profile)? Tega ni mogoče razveljaviti.')) return;
@@ -3778,6 +3800,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-mehur-ured:hover { transform: translateY(-1px); box-shadow: 0 7px 18px rgba(40,25,40,.13); background: rgba(160,205,235,.58); }
         .cw .chat-mehur-ured:hover svg { opacity: .85; }
         .cw .chat-mehur-ured:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+        .cw .chat-mehur-namig { position: relative; padding-right: 2.3rem; }
+        .cw .namig-zapri { position: absolute; top: .5rem; right: .55rem; width: 1.45rem; height: 1.45rem; border-radius: 50%; border: none; background: rgba(17,17,17,.07); color: rgba(17,17,17,.55); font-size: .72rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; line-height: 1; padding: 0; }
+        .cw .namig-zapri:hover { background: rgba(17,17,17,.15); color: var(--ink); }
+        .cw .pozdrav-podj { display: block; margin-top: .45rem; font-size: .85rem; font-weight: 400; color: rgba(17,17,17,.68); }
+        .cw .pozdrav-select { border: none; border-bottom: 1px solid rgba(17,17,17,.4); background-color: transparent; font-family: inherit; font-weight: 700; font-size: .85rem; color: var(--ink); padding: .1rem 1.15rem .1rem .1rem; appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .05rem center; }
+        .cw .pozdrav-podj .povezava { font-size: .85rem; }
         .cw .chat-uredi { display: flex; flex-direction: column; gap: .5rem; align-items: flex-end; max-width: 100%; }
         .cw .chat-uredi .cu-vrsta { display: flex; gap: .5rem; align-items: center; }
         .cw .chat-uredi .cu-vrsta input { border: 1px solid rgba(17,17,17,.3); border-radius: 12px; background: #fff; padding: .55rem .8rem; font-family: inherit; font-size: .95rem; color: var(--ink); min-width: 11rem; }
@@ -4553,6 +4581,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <span className="se-slider" aria-hidden />
                   </span>
                 </label>
+                <button type="button" className="povezava" style={{ marginTop: '1.1rem', display: 'block' }}
+                  onClick={ponastaviVprasalnik}>↻ Ponastavi vprašalnik <span className="vec">znova te vpraša ime, trg, podjetje … (ohrani podjetja in cene)</span></button>
                 <button type="button" className="profil-nevarno" onClick={ponastaviVse}>
                   Izbriši VSE podatke orodja (podjetja, cene, zgodovino) — celotna ponastavitev
                 </button>
@@ -4924,20 +4954,37 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {!uvodChat && nazivPonudbe.trim() && <div className="chat-jaz"><span className="chat-mehur">{nazivPonudbe}</span></div>}
               </>)}
 
-              {/* ze onboardan (vrnitev): oseben pozdrav namesto visecega vprasanja */}
+              {/* ze onboardan (vrnitev): oseben pozdrav + preklop podjetja (Tina lahko dela za podjetje A ali B) */}
               {!uvodChat && chatKorak === 0 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                  <span className="chat-mehur"><b>{pozdravVrnitev}</b>{podjetjePozdrav && <small>Ponudbo pišeš v imenu tega podjetja. Spremeniš v Moji podatki / Moje podjetje.</small>}</span></div>
+                  <span className="chat-mehur">
+                    <b>Hej{imeVelika ? ' ' + imeVelika : ''}!</b>
+                    <span className="pozdrav-podj">
+                      Ponudbo pišeš kot{' '}
+                      {Object.keys(podjetja).length > 0 ? (
+                        <select className="pozdrav-select" aria-label="Podjetje ponudbe"
+                          value={aktivnoPodjetje && podjetja[aktivnoPodjetje] ? aktivnoPodjetje : '__cur'}
+                          onChange={e => { const v = e.target.value; if (v === '__uredi') { setKazemProfil(true); setProfilPogled('podjetja'); } else if (v !== '__cur') preklopiPodjetje(v); }}>
+                          {(!aktivnoPodjetje || !podjetja[aktivnoPodjetje]) && <option value="__cur">{ponudnik.ime.trim() || 'brez podjetja'}</option>}
+                          {Object.keys(podjetja).map(ime => <option key={ime} value={ime}>{ime}</option>)}
+                          <option value="__uredi">+ uredi / dodaj podjetje …</option>
+                        </select>
+                      ) : (
+                        <button type="button" className="povezava" onClick={() => { setKazemProfil(true); setProfilPogled('podjetja'); }}>{ponudnik.ime.trim() || 'dodaj podjetje'}</button>
+                      )}
+                      {' · '}
+                      <button type="button" className="povezava" onClick={() => { setKazemProfil(true); setProfilPogled('moji-podatki'); }}>uredi moje podatke</button>
+                    </span>
+                  </span></div>
               )}
 
               {/* po onboardingu: nadaljevanje pogovora za izbiro (ista povrsina, ni preskoka) */}
-              {!uvodChat && (
-                <>
-                  <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                    <span className="chat-mehur"><b>Super! Izberi storitve, ki jih želiš v ponudbi.</b></span></div>
-                  <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                    <span className="chat-mehur">Vsak klik doda kos. Po potrebi urediš ime in podrobnosti — klikni izbrano storitev v ponudbi desno.</span></div>
-                </>
+              {!uvodChat && !namigSkrit && (
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                  <span className="chat-mehur chat-mehur-namig">
+                    <button type="button" className="namig-zapri" aria-label="Zapri namig" title="Zapri (znova le ob ponastavitvi)" onClick={() => setNamigSkrit(true)}>✕</button>
+                    <b>Izberi storitve.</b> Klik doda storitev; podrobnosti urejaš desno. Prikaz preklopiš med <b>mehurčki in tabelo</b> prek <b>dodaj / uredi</b>.
+                  </span></div>
               )}
 
               {/* vnosna vrstica (ime / ime ponudbe) — samo med onboardingom */}
