@@ -184,6 +184,28 @@ const privzetePraviceZa = (sid: string): { prenos: 'izkljucni' | 'neizkljucni' |
   if (PRAVICE_KAMPANJA.has(sid)) return { prenos: 'licenca', trajanje: '3m' };
   return { prenos: 'izkljucni', trajanje: '7' };   /* ilustracija, foto, publikacija, video, motion, 3d, copy, direkcija, strategija, moja- */
 };
+/* zvezni mnozitelj pravic glede na dolzino v LETIH (za poljubno trajanje, npr. 3 tedne).
+   ujema se z diskretnimi preseti: 3m~0.3, 1l=0.5, 7l=1.0, 10l=1.3, navzgor proti ~1.8. */
+const trajMultLeta = (leta: number): number => {
+  if (leta <= 0) return 1.8;                 /* 0 = neomejeno/trajno */
+  const m = 0.18 + 0.62 * Math.log10(1 + leta / 1.4);
+  return Math.max(0.22, Math.min(1.8, Math.round(m * 100) / 100));
+};
+const trajLetaVBesedo = (leta: number): string => {
+  if (leta <= 0) return 'neomejeno';
+  if (leta < 0.16) { const t = Math.max(1, Math.round(leta * 52)); return t === 1 ? '1 teden' : t < 5 ? `${t} tedne` : `${t} tednov`; }
+  if (leta < 1) { const mo = Math.max(1, Math.round(leta * 12)); return mo === 1 ? '1 mesec' : mo === 2 ? '2 meseca' : mo < 5 ? `${mo} mesece` : `${mo} mesecev`; }
+  const l = Math.round(leta);
+  return l === 1 ? '1 leto' : l === 2 ? '2 leti' : l < 5 ? `${l} leta` : `${l} let`;
+};
+/* pogodbene klavzule (per storitev; vecinoma besedilo v ponudbo, ekskluzivnost vpliva na ceno) */
+const KLAVZULE: { id: string; ime: string; opis: string; mult?: number }[] = [
+  { id: 'moralne',      ime: 'Navedba avtorja',           opis: 'moralne pravice — avtor naveden ob delu' },
+  { id: 'ponatis',      ime: 'Obnova ob novi nakladi',    opis: 'ob ponatisu se licenca obnovi (izhodišče 50 %)' },
+  { id: 'ekskluz',      ime: 'Ekskluzivnost v kategoriji',opis: 'nihče drug v isti kategoriji izdelkov', mult: 0.25 },
+  { id: 'brezPredelav', ime: 'Prepoved predelave',        opis: 'brez sprememb dela brez soglasja avtorja' },
+  { id: 'porocanje',    ime: 'Letno poročilo o prodaji',  opis: 'naročnik letno sporoči obseg izkoriščanja (DSM čl. 19)' },
+];
 const PRAV_TERITORIJ = [
   { id: 'slo',    ime: 'Slovenija', mult: 1.0 },
   { id: 'eu',     ime: 'Evropa',    mult: 1.4 },
@@ -1426,6 +1448,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      kasnejsi koraki (pravice, paketi, raba ...) */
   const [vrstice, setVrstice] = useState<VrsticaP[]>([{ uid: 'cgp', sid: 'cgp', ime: '', kolicina: 1 }]);
   const [razprtaVrstica, setRazprtaVrstica] = useState<string | null>(null);
+  const [praviceOdprt, setPraviceOdprt] = useState<string | null>(null);   /* sid odprte Podrobnosti popup pravic */
   const [vlecenaVrstica, setVlecenaVrstica] = useState<string | null>(null);
   /* select "pop" ob kliku na mehurcek — obroc, ki se razsiri (kot na zacetku) */
   const [klikObroc, setKlikObroc] = useState<{ x: number; y: number; d: number; n: number } | null>(null);
@@ -1576,7 +1599,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* dvojni scrollbar: stran zadaj ima svojega, chat/onboarding pa svojega —
      med njima stran zadaj zaklenemo. */
   useEffect(() => {
-    if (!onboardingOdprt && !uvodChat && !kazemProfil && !razprtaVrstica && !kazemUredi) return;
+    if (!onboardingOdprt && !uvodChat && !kazemProfil && !razprtaVrstica && !kazemUredi && !praviceOdprt) return;
     /* Stran uporablja Lenis smooth-scroll (window.__pinartLenis), ki prestreza wheel
        in skrola ozadje MIMO overflow:hidden. Zato ga ob odprtem oknu ustavimo. */
     const lenis = (window as unknown as { __pinartLenis?: { stop: () => void; start: () => void } }).__pinartLenis;
@@ -1587,7 +1610,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     html.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     return () => { lenis?.start(); html.style.overflow = prejHtml; document.body.style.overflow = prejBody; };
-  }, [onboardingOdprt, uvodChat, kazemProfil, razprtaVrstica, kazemUredi]);
+  }, [onboardingOdprt, uvodChat, kazemProfil, razprtaVrstica, kazemUredi, praviceOdprt]);
   const [obIzbor, setObIzbor] = useState<Set<string>>(new Set());
   /* Poljuben vrstni red storitev (razporejanje z drag-rocajem); prazno = naravni. */
   const [vrstniRed, setVrstniRed] = useState<string[]>([]);
@@ -1648,9 +1671,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [pravNaklada, setPravNaklada] = useState<string>('do3k');
   const [pravPonatis, setPravPonatis] = useState(true);
   /* pravice po storitvi (tabela): sid -> {prenos, trajanje}; manjka = privzeto iz privzetePraviceZa */
-  const [pravicePoStoritvi, setPravicePoStoritvi] = useState<Record<string, { prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string }>>({});
-  const pravRec = (sid: string) => pravicePoStoritvi[sid] || privzetePraviceZa(sid);
-  const nastaviPravRec = (sid: string, del: Partial<{ prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string }>) =>
+  type PravRec = { prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string; trajLeta?: number; klavzule?: string[] };
+  const [pravicePoStoritvi, setPravicePoStoritvi] = useState<Record<string, PravRec>>({});
+  const [custStev, setCustStev] = useState('3');
+  const [custEnota, setCustEnota] = useState<'teden' | 'mesec' | 'leto'>('teden');
+  const pravRec = (sid: string): PravRec => pravicePoStoritvi[sid] || privzetePraviceZa(sid);
+  const nastaviPravRec = (sid: string, del: Partial<PravRec>) =>
     setPravicePoStoritvi(prev => ({ ...prev, [sid]: { ...pravRec(sid), ...del } }));
   const [obsegOdprt, setObsegOdprt] = useState(false);
   /* pri avtorskih vizualnih delih (ilustracija, fotografija ...) se obseg
@@ -2108,12 +2134,18 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     let praviceBazaSum = 0, praviceAvtoSum = 0, licencaAvtoSum = 0;
     const praviceVrstice = sez.map(s => {
       const rec = pravicePoStoritvi[s.id] || privzetePraviceZa(s.id);
-      const trajMult = PRAV_TRAJANJE.find(t => t.id === rec.trajanje)?.mult ?? 1;
+      const trajMult = rec.trajanje === 'custom' && typeof rec.trajLeta === 'number'
+        ? trajMultLeta(rec.trajLeta)
+        : (PRAV_TRAJANJE.find(t => t.id === rec.trajanje)?.mult ?? 1);
+      const klavzMult = 1 + (rec.klavzule || []).reduce((a, k) => a + (KLAVZULE.find(x => x.id === k)?.mult || 0), 0);
       const w = totStoritevIzv > 0 ? izvStoritve(s.id) / totStoritevIzv : 0;
-      const sBaza = clampBaseP * w * trajMult * teritMedNak;
+      const sBaza = clampBaseP * w * trajMult * teritMedNak * klavzMult;
       const sAvto = rec.prenos === 'neizkljucni' ? sBaza * 0.6 : rec.prenos === 'licenca' ? 0 : sBaza;
       praviceBazaSum += sBaza; praviceAvtoSum += zaokrozi(sAvto); licencaAvtoSum += zaokrozi(sBaza * 0.2);
-      return { sid: s.id, ime: s.ime, prenos: rec.prenos, trajanje: rec.trajanje, trajanjeIme: PRAV_TRAJANJE.find(t => t.id === rec.trajanje)?.ime ?? rec.trajanje, znesek: zaokrozi(sAvto) };
+      const trajanjeIme = rec.trajanje === 'custom' && typeof rec.trajLeta === 'number'
+        ? trajLetaVBesedo(rec.trajLeta)
+        : (PRAV_TRAJANJE.find(t => t.id === rec.trajanje)?.ime ?? rec.trajanje);
+      return { sid: s.id, ime: s.ime, prenos: rec.prenos, trajanje: rec.trajanje, trajanjeIme, znesek: zaokrozi(sAvto), klavzule: rec.klavzule || [] };
     });
     const praviceBaza = zaokrozi(praviceBazaSum);
     const praviceAvto = praviceAvtoSum;
@@ -4139,13 +4171,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @media (prefers-reduced-motion: reduce) { .cw .kartica { animation: none; } }
         .cw .kartica-neobvezno { background: transparent; border: 1px dashed rgba(17,17,17,.22); box-shadow: none; margin-top: -.4rem; }
         .cw .prav-tabela { display: flex; flex-direction: column; }
-        .cw .prav-vrsta { display: grid; grid-template-columns: minmax(0,1fr) auto auto; align-items: center; gap: .9rem; padding: .7rem 0; border-bottom: 1px solid rgba(17,17,17,.1); }
+        .cw .prav-vrsta { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto; align-items: center; gap: .8rem; padding: .7rem 0; border-bottom: 1px solid rgba(17,17,17,.1); }
         .cw .prav-ime { font-weight: 650; font-size: .98rem; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cw .prav-ime small { font-weight: 500; color: rgba(17,17,17,.45); font-size: .78rem; }
+        .cw .prav-podr { border: 1px solid rgba(17,17,17,.2); background: transparent; color: rgba(17,17,17,.6); font-family: inherit; font-size: .76rem; font-weight: 600; border-radius: 999px; padding: .28rem .7rem; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s; }
+        .cw .prav-podr:hover { border-color: var(--ink); color: var(--ink); }
         .cw .prav-recept { border: none; border-bottom: 1px solid rgba(17,17,17,.35); background-color: transparent; font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); padding: .3rem 1.4rem .3rem .2rem; appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .1rem center; }
         .cw .prav-cena { font-family: var(--font-bodoni), serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; min-width: 3.6rem; text-align: right; }
         .cw .prav-skupaj { display: flex; justify-content: space-between; align-items: baseline; margin-top: .9rem; padding-top: .8rem; border-top: 2px solid var(--ink); }
         .cw .prav-skupaj b { font-family: var(--font-bodoni), serif; font-size: 1.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-        @media (max-width: 560px) { .cw .prav-vrsta { grid-template-columns: 1fr auto; grid-template-areas: 'ime cena' 'recept recept'; } .cw .prav-ime { grid-area: ime; } .cw .prav-cena { grid-area: cena; } .cw .prav-recept { grid-area: recept; } }
+        @media (max-width: 560px) { .cw .prav-vrsta { grid-template-columns: 1fr auto; grid-template-areas: 'ime cena' 'recept podr'; } .cw .prav-ime { grid-area: ime; } .cw .prav-cena { grid-area: cena; } .cw .prav-recept { grid-area: recept; } .cw .prav-podr { grid-area: podr; justify-self: end; } }
         .cw .kartica > .k-naslov { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .3rem 1rem; margin: 0 0 1.1rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .kartica > .k-naslov .vec, .cw .profil-sekcija .k-naslov .vec { font-size: .82rem; font-weight: 500; color: rgba(17,17,17,.55); text-transform: none; letter-spacing: 0; }
         .cw .kartica > .hint { margin-top: 1rem; }
@@ -5644,13 +5679,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         const recId = RECEPTI.find(rc => rc.prenos === row.prenos && rc.trajanje === row.trajanje)?.id ?? '';
                         return (
                           <div key={row.sid} className="prav-vrsta">
-                            <span className="prav-ime">{row.ime}</span>
+                            <span className="prav-ime">{row.ime}{row.klavzule.length > 0 && <small> · {row.klavzule.length} klavzul</small>}</span>
                             <select className="prav-recept" aria-label={'Pravice: ' + row.ime} value={recId}
-                              onChange={e => { const rc = RECEPTI.find(x => x.id === e.target.value); if (rc) setPravicePoStoritvi(prev => ({ ...prev, [row.sid]: { prenos: rc.prenos, trajanje: rc.trajanje } })); }}>
+                              onChange={e => { const rc = RECEPTI.find(x => x.id === e.target.value); if (rc) nastaviPravRec(row.sid, { prenos: rc.prenos, trajanje: rc.trajanje, trajLeta: undefined }); }}>
                               {recId === '' && <option value="">Po meri ({row.trajanjeIme})</option>}
                               {RECEPTI.map(rc => <option key={rc.id} value={rc.id}>{rc.ime}</option>)}
                             </select>
                             <span className="prav-cena">{val(row.znesek)}</span>
+                            <button type="button" className="prav-podr" onClick={() => setPraviceOdprt(row.sid)} title="Podrobnosti — trajanje, klavzule">Podrobnosti</button>
                           </div>
                         );
                       })}
@@ -5661,6 +5697,65 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <p className="hint" style={{ margin: 0 }}>Dodaj storitve, da nastaviš pravice zanje.</p>
                 )}
               </div>
+
+              {praviceOdprt && typeof document !== 'undefined' && (() => {
+                const sid = praviceOdprt;
+                const s = vseStoritve.find(x => x.id === sid);
+                if (!s) return null;
+                const rec = pravRec(sid);
+                const custLeta = (Number(custStev) || 0) * (custEnota === 'teden' ? 1 / 52 : custEnota === 'mesec' ? 1 / 12 : 1);
+                return createPortal(
+                  <div className="cw">
+                    <div className="izbirnik-zastor" onClick={() => setPraviceOdprt(null)}>
+                      <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={'Pravice: ' + s.ime} onClick={e => e.stopPropagation()} data-lenis-prevent>
+                        <div className="izbirnik-glava">
+                          <span>Pravice: {s.ime}</span>
+                          <button type="button" onClick={() => setPraviceOdprt(null)} aria-label="Zapri">✕</button>
+                        </div>
+                        <div className="detajl-telo">
+                          <div>
+                            <div className="uredi-naslov">Trajanje licence / prenosa</div>
+                            <div className="opts">
+                              {PRAV_TRAJANJE.map(t => (
+                                <button key={t.id} type="button" className={'pill' + (rec.trajanje === t.id ? ' on' : '')}
+                                  onClick={() => nastaviPravRec(sid, { trajanje: t.id, trajLeta: undefined })}>
+                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{t.ime}</span>
+                                </button>
+                              ))}
+                            </div>
+                            <div className="cu-vrsta" style={{ marginTop: '.85rem', flexWrap: 'wrap', gap: '.5rem' }}>
+                              <span className={'pill' + (rec.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">Po meri{rec.trajanje === 'custom' && typeof rec.trajLeta === 'number' ? `: ${trajLetaVBesedo(rec.trajLeta)}` : ''}</span></span>
+                              <input type="number" min={1} value={custStev} onChange={e => setCustStev(e.target.value)} style={{ width: '4rem', borderBottom: '1px solid rgba(17,17,17,.35)', padding: '.3rem .2rem', fontFamily: 'inherit' }} />
+                              <select value={custEnota} onChange={e => setCustEnota(e.target.value as 'teden' | 'mesec' | 'leto')}>
+                                <option value="teden">tednov</option><option value="mesec">mesecev</option><option value="leto">let</option>
+                              </select>
+                              <button type="button" className="gumb" onClick={() => nastaviPravRec(sid, { trajanje: 'custom', trajLeta: custLeta })}>Uporabi</button>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="uredi-naslov">Klavzule <span className="vec">se zapišejo v ponudbo</span></div>
+                            <div className="opts">
+                              {KLAVZULE.map(k => {
+                                const on = (rec.klavzule || []).includes(k.id);
+                                return (
+                                  <button key={k.id} type="button" className={'pill' + (on ? ' on' : '')}
+                                    onClick={() => nastaviPravRec(sid, { klavzule: on ? (rec.klavzule || []).filter(x => x !== k.id) : [...(rec.klavzule || []), k.id] })}>
+                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{k.ime}<small>{k.opis}{k.mult ? ` · +${Math.round(k.mult * 100)} %` : ''}</small></span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          <p className="hint" style={{ margin: 0 }}>Teritorij, mediji in naklada trenutno veljajo globalno (kartica spodaj). Cena pravic te storitve: <b>{r ? val(r.praviceVrstice.find(x => x.sid === sid)?.znesek || 0) : '—'}</b>.</p>
+                        </div>
+                        <div className="detajl-noga">
+                          <button type="button" className="gumb" onClick={() => setPraviceOdprt(null)}>Končano</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                , document.body);
+              })()}
 
               <div className="kartica">
                 <div className="k-naslov">Obseg — velja za vse storitve
