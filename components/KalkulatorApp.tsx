@@ -5009,20 +5009,18 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span className="chat-mehur">
                     <b>Hej{imeVelika ? ' ' + imeVelika : ''}!</b>
                     <span className="pozdrav-podj">
-                      Ponudbo pišeš kot{' '}
                       {Object.keys(podjetja).length > 0 ? (
-                        <select className="pozdrav-select" aria-label="Podjetje ponudbe"
+                        <>Ponudbo pišeš kot <select className="pozdrav-select" aria-label="Podjetje ponudbe"
                           value={aktivnoPodjetje && podjetja[aktivnoPodjetje] ? aktivnoPodjetje : '__cur'}
                           onChange={e => { const v = e.target.value; if (v === '__uredi') { setKazemProfil(true); setProfilPogled('podjetja'); } else if (v !== '__cur') preklopiPodjetje(v); }}>
                           {(!aktivnoPodjetje || !podjetja[aktivnoPodjetje]) && <option value="__cur">{ponudnik.ime.trim() || 'brez podjetja'}</option>}
                           {Object.keys(podjetja).map(ime => <option key={ime} value={ime}>{ime}</option>)}
                           <option value="__uredi">+ uredi / dodaj podjetje …</option>
-                        </select>
-                      ) : (
-                        <button type="button" className="povezava" onClick={() => { setKazemProfil(true); setProfilPogled('podjetja'); }}>{ponudnik.ime.trim() || 'dodaj podjetje'}</button>
-                      )}
-                      {' · '}
-                      <button type="button" className="povezava" onClick={() => { setKazemProfil(true); setProfilPogled('moji-podatki'); }}>uredi moje podatke</button>
+                        </select>{' · '}</>
+                      ) : ponudnik.ime.trim() ? (
+                        <>Ponudbo pišeš kot <b>{ponudnik.ime.trim()}</b>{' · '}</>
+                      ) : null}
+                      <button type="button" className="povezava" onClick={() => { setKazemProfil(true); setProfilPogled('moji-podatki'); }}>uredi podatke</button>
                     </span>
                   </span></div>
               )}
@@ -5032,7 +5030,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
                   <span className="chat-mehur chat-mehur-namig">
                     <button type="button" className="namig-zapri" aria-label="Zapri namig" title="Zapri (znova le ob ponastavitvi)" onClick={() => setNamigSkrit(true)}>✕</button>
-                    <b>Izberi storitve.</b> Klik doda storitev; podrobnosti urejaš desno. Prikaz preklopiš med <b>mehurčki in tabelo</b> prek <b>dodaj / uredi</b>.
+                    Klik na storitev jo doda v ponudbo. Prikaz preklopiš med mehurčki in tabelo v »dodaj / uredi«.
                   </span></div>
               )}
 
