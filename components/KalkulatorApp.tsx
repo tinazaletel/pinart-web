@@ -1158,7 +1158,7 @@ const ponudbaVHtml = (s: string): string =>
         const meta = rest.length ? `<p>${rest.map(escapeHtml).join('<br>')}</p>` : '';
         return `<p class="offer-kicker">Ponudba</p><h1>${escapeHtml(first.replace('PONUDBA:', '').trim())}</h1>${meta}`;
       }
-      if (/^(OBSEG|DODATNE INFORMACIJE|IZBERITE PAKET|POGOJI|SPECIFIKACIJA CEN|AVTORSKE PRAVICE|PREDVIDEN ČAS IZVEDBE|VZDRŽEVANJE|DODATNE MOŽNOSTI)( \(.+\))?$/.test(first)) {
+      if (/^(OBSEG|DODATNE INFORMACIJE|IZBERITE PAKET|CENA IN OBSEG|POGOJI|SPECIFIKACIJA CEN|AVTORSKE PRAVICE|PREDVIDEN ČAS IZVEDBE|VZDRŽEVANJE|DODATNE MOŽNOSTI)( \(.+\))?$/.test(first)) {
         const rest = lines.slice(1);
         const body: string = rest.length ? ponudbaVHtml(rest.join('\n')) : '';
         return `<h2>${escapeHtml(first)}</h2>${body}`;
@@ -1272,6 +1272,8 @@ type ShranjenaP = {
   izkusnje: string; mojTrg: string; trgNarocnika: string; valuta: string; valutaRocna: boolean;
   rocnoBesedilo: boolean; besediloHtml: string;
   custDrzavaNarocnik?: string;
+  /* ena koncna cena namesto treh paketov (2026-07-17) */
+  enaCena?: boolean;
 };
 
 /* Moja podjetja: vec identitet podjetja (ime/davcna/TRR/DDV/avans/urne
@@ -1702,6 +1704,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      = samodejni izracun. Kljuc = id paketa. urejamPaket = kateri se ureja. */
   const [rocniPaketi, setRocniPaketi] = useState<Record<string, string>>({});
   const [urejamPaket, setUrejamPaket] = useState<string | null>(null);
+  /* ena koncna cena (Priporoceni obseg) namesto treh paketov — na ponudbo */
+  const [enaCena, setEnaCena] = useState(false);
   const [odgovori, setOdgovori] = useState<Record<string, string>>({});
   const [osnove, setOsnove] = useState<Record<string, number>>({});
   const [profili, setProfili] = useState<Record<string, Profil>>({});
@@ -2090,6 +2094,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setIzjemePravice('');
     setPrikaziIzjemePravic(false);
     setRocnoBesedilo(false);
+    setEnaCena(false);
+    setRocniPaketi({});
     /* onboarding vprasanja se NE ponovijo (dogovor): transkript se skrije (chatKorak 0 brez
        uvodChat), pokaze se osebni pozdrav "Hej Tina, <podjetje>" + izbira storitev.
        poMeh 0 = vprasanja ponudbe (narocnik, trg, pravice ...) zacnejo znova za novo ponudbo. */
@@ -2361,13 +2367,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       dodatniOdgovori.forEach(vp => v.push(`· ${vp.vecInstanc ? vp.storitev + ' — ' : ''}${vp.label}: ${vp.odgovor}`));
     }
     v.push('');
-    v.push('IZBERITE PAKET');
+    v.push(enaCena ? 'CENA IN OBSEG' : 'IZBERITE PAKET');
     v.push('');
     /* cena posamezne storitve (za priporoceni paket) — vsota priceanih vrstic te storitve */
     const cenaStoritve = (sid: string) => r.linije.reduce((a, l, j) =>
       l.sid === sid ? a + (r.vrsticeIzvedbe[j]?.cena || 0) * (r.vrsticeIzvedbe[j]?.kolicina || 1) : a, 0);
-    r.paketi.forEach((p, i) => {
-      v.push(`${p.ime.toUpperCase()}  ·  ${val(p.skupaj)}${ddvZavezanec ? `  (z DDV ${zDdv(p.skupaj)})` : ''}`);
+    /* ena cena: izpisemo samo Priporoceni obseg kot koncno ceno (brez izbire paketov) */
+    (enaCena ? [r.paketi[1]] : r.paketi).forEach((p, idx) => {
+      const i = enaCena ? 1 : idx;
+      v.push(`${enaCena ? 'CENA' : p.ime.toUpperCase()}  ·  ${val(p.skupaj)}${ddvZavezanec ? `  (z DDV ${zDdv(p.skupaj)})` : ''}`);
       const vecStoritev = r.sez.length > 1;
       /* razsirjena + PRIPOROCENI paket: specifikacija cen je vpisana ob vsaki storitvi (ne locen razdelek) */
       const kaziCene = obsegPonudbe === 'razsirjena' && i === 1;
@@ -2395,7 +2403,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     });
     v.push(crta);
     if (r.popustPct) {
-      v.push(`V cenah je že upoštevan ${r.popustPct} % popust (redna cena paketa Priporočeni: ${val(r.paketi[1].redna)}).`);
+      v.push(enaCena
+        ? `V ceni je že upoštevan ${r.popustPct} % popust (redna cena: ${val(r.paketi[1].redna)}).`
+        : `V cenah je že upoštevan ${r.popustPct} % popust (redna cena paketa Priporočeni: ${val(r.paketi[1].redna)}).`);
       v.push('');
     }
     /* Razsirjena ponudba: cenik in okviri takoj za paketi (kot v njenih
@@ -2518,7 +2528,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       v.push('Pripravljeno s Pinart kalkulatorjem · pinart.si');
     }
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak, izjemePravice, trgNarocnika]);
+  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak, izjemePravice, trgNarocnika, enaCena]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
@@ -2910,6 +2920,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       narocnikOseba: narocnikOseba || undefined,
       narocnikNaslov: narocnikNaslov || undefined,
       narocnikDavcna: narocnikDavcna || undefined,
+      enaCena: enaCena || undefined,
     };
     const nov = { ...arhiv, [ime]: zapis };
     setArhiv(nov);
@@ -2938,6 +2949,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setNarocnikOseba(p.narocnikOseba || '');
     setNarocnikNaslov(p.narocnikNaslov || '');
     setNarocnikDavcna(p.narocnikDavcna || '');
+    setEnaCena(!!p.enaCena);
     setObsegPonudbe(p.obsegPonudbe); setTonPonudbe(p.tonPonudbe); setAvansPct(p.avansPct);
     setKaziUre(p.kaziUre); setNogaZnak(p.nogaZnak);
     setIzkusnje(p.izkusnje); setMojTrg(p.mojTrg); setTrgNarocnika(p.trgNarocnika);
@@ -4409,6 +4421,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .choicegrid button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 
         .cw .paketi { display: grid; grid-template-columns: 1fr 1.15fr 1fr; margin: 1.4rem 0; background: #FCFBF7; border: 1px solid rgba(17,17,17,.08); border-radius: 20px; overflow: hidden; box-shadow: 0 4px 18px rgba(17,17,17,.04); }
+        .cw .paketi.paketi-ena { grid-template-columns: 1fr; max-width: 460px; }
         .cw .cena-urna { max-width: none; }
         @media (max-width: 640px) { .cw .paketi { grid-template-columns: 1fr; } }
         .cw .paket { padding: 1.7rem 1.4rem 1.8rem; position: relative; }
@@ -6136,16 +6149,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           {((klasicnaOblika && korak === cenaStep) || (vChatu && poMeh >= 5)) && r && (
             <>
               {vChatu && chatVpr('Tvoja cena.', 'Pametno izhodišče — prilagodi jo po občutku.')}
-              <div className="paketi">
-                {r.paketi.map(p => (
-                  <div key={p.id} className={'paket' + (p.id === 'priporoceni' ? ' mid' : '')}>
+              {/* preklop: trije paketi ali ena koncna cena (Priporoceni obseg) */}
+              <div className="opts" style={{ marginBottom: '.4rem' }}>
+                <button type="button" className={'pill' + (!enaCena ? ' on' : '')} onClick={() => setEnaCena(false)}>
+                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">Trije paketi</span>
+                </button>
+                <button type="button" className={'pill' + (enaCena ? ' on' : '')} onClick={() => setEnaCena(true)}>
+                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">Ena cena</span>
+                </button>
+              </div>
+              <div className={'paketi' + (enaCena ? ' paketi-ena' : '')}>
+                {(enaCena ? r.paketi.filter(p => p.id === 'priporoceni') : r.paketi).map(p => (
+                  <div key={p.id} className={'paket' + (p.id === 'priporoceni' && !enaCena ? ' mid' : '')}>
                     <button type="button" className="paket-edit"
                       aria-label={'Ročno popravi ceno paketa ' + p.ime}
                       title="Ročno popravi ceno"
                       onClick={() => setUrejamPaket(urejamPaket === p.id ? null : p.id)}>
                       <PencilSimple size={15} weight="bold" />
                     </button>
-                    <h3>{p.ime}</h3>
+                    <h3>{enaCena ? 'Cena' : p.ime}</h3>
                     {r.popustPct > 0 && !p.rocna && <div className="redna">{val(p.redna)}</div>}
                     {urejamPaket === p.id ? (
                       <div className="paket-cena-uredi">
