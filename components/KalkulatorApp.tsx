@@ -1564,7 +1564,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [kazemProfil, setKazemProfil] = useState(false);
   /* Profil kot drill-down (meni -> ena "podstran"), ne dolg scroll treh
      razdelkov skupaj — bolj pregledno in mobile-friendly (Tina). */
-  const [profilPogled, setProfilPogled] = useState<'meni' | 'moji-podatki' | 'zgodovina' | 'podjetja' | 'podjetje-urejanje' | 'cene-nastavitve' | 'cene' | 'stroski' | 'obvestila' | 'pomoc'>('meni');
+  const [profilPogled, setProfilPogled] = useState<'meni' | 'moji-podatki' | 'zgodovina' | 'podjetja' | 'podjetje-urejanje' | 'cene-nastavitve' | 'aplikacija' | 'stroski' | 'obvestila' | 'pomoc'>('meni');
   /* katero shranjeno podjetje je trenutno "aktivno" (nalozeno v ponudnik/ddv/...
      zivo stanje) — null, ce urejamo novo, se nikoli shranjeno podjetje. */
   const [aktivnoPodjetje, setAktivnoPodjetje] = useState<string | null>(null);
@@ -3449,8 +3449,19 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         <a className="zapri zapri-loceno" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ zapri</a>
       </span>
       <span className="glava-desno">
-        <button type="button" className="glava-ikona" aria-label="Nastavitve in cene" title="Nastavitve in cene"
-          onClick={() => { setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>
+        <button type="button" className="glava-ikona" aria-label={klasicnaOblika ? 'Preklopi na chat pogovor' : 'Preklopi na klasični vprašalnik'}
+          title={klasicnaOblika ? 'Prikaz: klasični vprašalnik — klik preklopi na chat' : 'Prikaz: chat pogovor — klik preklopi na klasični vprašalnik'}
+          onClick={preklopiObliko}>
+          <svg width="18" height="18" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            <path d="M18.373 10.9403C18.373 10.9403 18.375 10.5295 18.375 10.0651C18.375 6.14531 18.375 4.18543 17.1577 2.96771C15.9403 1.75 13.981 1.75 10.0625 1.75C6.14395 1.75 4.18467 1.75 2.96734 2.96771C1.75 4.18543 1.75 6.14531 1.75 10.0651C1.75 13.9848 1.75 15.9447 2.96734 17.1624C3.98812 18.1835 5.53059 18.3484 8.3125 18.375" stroke="currentColor" strokeWidth="1.3125" strokeLinecap="round"/>
+            <path d="M1.75 6.125H18.375" stroke="currentColor" strokeWidth="1.3125" strokeLinejoin="round"/>
+            <path d="M5.25 14H6.125M8.75 10.5H13.125M5.25 10.5H6.125" stroke="currentColor" strokeWidth="1.3125" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M14.875 16.1875H14.8829" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M19.0505 15.7697C19.1835 15.9562 19.25 16.0495 19.25 16.1875C19.25 16.3255 19.1835 16.4188 19.0505 16.6053C18.4528 17.4434 16.9265 19.25 14.875 19.25C12.8235 19.25 11.2972 17.4434 10.6995 16.6053C10.5665 16.4188 10.5 16.3255 10.5 16.1875C10.5 16.0495 10.5665 15.9562 10.6995 15.7697C11.2972 14.9316 12.8235 13.125 14.875 13.125C16.9265 13.125 18.4528 14.9316 19.0505 15.7697Z" stroke="currentColor" strokeWidth="1.3125"/>
+          </svg>
+        </button>
+        <button type="button" className="glava-ikona" aria-label="Nastavitve aplikacije" title="Nastavitve aplikacije"
+          onClick={() => { setKazemProfil(true); setProfilPogled('aplikacija'); }}>
           <SlidersHorizontal size={18} weight="bold" />
         </button>
         <button type="button" className="glava-avatar" aria-label="Profil" title="Profil"
@@ -4711,7 +4722,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     : profilPogled === 'podjetja' ? 'Moje podjetje'
                       : profilPogled === 'podjetje-urejanje' ? (aktivnoPodjetje || 'Podjetje')
                         : profilPogled === 'cene-nastavitve' ? 'Cene in storitve'
-                          : profilPogled === 'cene' ? 'Cenovni profili'
+                          : profilPogled === 'aplikacija' ? 'Nastavitve aplikacije'
                             : profilPogled === 'stroski' ? 'Moji stroški'
                               : profilPogled === 'obvestila' ? 'Obveščanja'
                                 : 'Pomoč in kontakt'}
@@ -4748,15 +4759,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <Gear size={20} weight="bold" />
                   <span>
                     <strong>Cene in storitve</strong>
-                    <small>tvoje osnovne cene, razpored, izbris storitev</small>
-                  </span>
-                  <span className="pm-puscica" aria-hidden>→</span>
-                </button>
-                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('cene')}>
-                  <FloppyDisk size={20} weight="bold" />
-                  <span>
-                    <strong>Cenovni profili</strong>
-                    <small>shranjeni kompleti cen storitev (redko){Object.keys(profili).length > 0 ? ` (${Object.keys(profili).length})` : ''}</small>
+                    <small>osnovne cene, razpored, izbris storitev + shranjeni ceniki{Object.keys(profili).length > 0 ? ` (${Object.keys(profili).length})` : ''}</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
@@ -4784,19 +4787,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
-                <label className="se-preklop" style={{ marginTop: '1.2rem', paddingTop: '1.2rem', borderTop: '1px solid rgba(17,17,17,.1)' }}>
+              </div>
+            )}
+
+            {profilPogled === 'aplikacija' && (
+              <>
+                <p className="ob-sub" style={{ margin: '0 0 1.2rem' }}>Prikaz vprašalnika in ponastavitve orodja.</p>
+                <label className="se-preklop">
                   <span><b>Klasičen vprašalnik</b><br /><em style={{ fontWeight: 400 }}>namesto chat pogovora — korak za korakom, kot prej</em></span>
                   <span className="se-toggle">
                     <input type="checkbox" checked={klasicnaOblika} onChange={preklopiObliko} />
                     <span className="se-slider" aria-hidden />
                   </span>
                 </label>
-                <button type="button" className="povezava" style={{ marginTop: '1.1rem', display: 'block' }}
+                <button type="button" className="povezava" style={{ marginTop: '1.4rem', display: 'block' }}
                   onClick={ponastaviVprasalnik}>↻ Ponastavi vprašalnik <span className="vec">znova te vpraša ime, trg, podjetje … (ohrani podjetja in cene)</span></button>
                 <button type="button" className="profil-nevarno" onClick={ponastaviVse}>
                   Izbriši VSE podatke orodja (podjetja, cene, zgodovino) — celotna ponastavitev
                 </button>
-              </div>
+              </>
             )}
 
             {profilPogled === 'moji-podatki' && (
@@ -4924,14 +4933,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label="Cena nove storitve" />
                   <button type="button" className="povezava" onClick={dodajStoritev}>+ dodaj</button>
                 </div>
-              </>
-            )}
 
-            {profilPogled === 'cene' && (
-              <>
-                {Object.keys(profili).length === 0 ? (
-                  <p className="ob-sub" style={{ margin: '0 0 1.1rem' }}>Nimaš shranjenih dodatnih kompletov cen. To so tvoje osnovne cene v »⚙ Nastavitve in cene«.</p>
-                ) : (
+                {/* shranjeni ceniki (prej locen pogled "Cenovni profili") — posnetki celotnega cenika */}
+                <div className="k-naslov" style={{ marginTop: '1.8rem', paddingTop: '1.4rem', borderTop: '1px solid rgba(17,17,17,.1)' }}>
+                  Shranjeni ceniki <span className="vec">posnetek vseh cen — npr. »Cene za tujino«; naložiš ga v enem kliku</span>
+                </div>
+                {Object.keys(profili).length > 0 && (
                   <div className="profil-seznam" style={{ marginBottom: '1.1rem' }}>
                     {Object.keys(profili).map(ime => (
                       <div key={ime} className="profil-vrsta">
@@ -4943,11 +4950,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </div>
                 )}
                 <div className="cene-dodaj">
-                  <input type="text" placeholder="Ime profila (npr. Cene za tujino)" value={imeProfila}
+                  <input type="text" placeholder="Ime cenika (npr. Cene za tujino)" value={imeProfila}
                     onChange={e => setImeProfila(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && imeProfila.trim()) shraniProfil(); }}
-                    aria-label="Ime novega cenovnega profila" />
-                  <button type="button" className="povezava" disabled={!imeProfila.trim()} onClick={shraniProfil}>+ shrani trenutne cene</button>
+                    aria-label="Ime novega shranjenega cenika" />
+                  <button type="button" className="povezava" disabled={!imeProfila.trim()} onClick={shraniProfil}>+ shrani trenutni cenik</button>
                 </div>
               </>
             )}
