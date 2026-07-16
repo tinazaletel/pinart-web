@@ -3849,9 +3849,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-mehur-namig { position: relative; padding-right: 2.3rem; }
         .cw .namig-zapri { position: absolute; top: .5rem; right: .55rem; width: 1.45rem; height: 1.45rem; border-radius: 50%; border: none; background: rgba(17,17,17,.07); color: rgba(17,17,17,.55); font-size: .72rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; line-height: 1; padding: 0; }
         .cw .namig-zapri:hover { background: rgba(17,17,17,.15); color: var(--ink); }
-        .cw .pozdrav-podj { display: block; margin-top: .45rem; font-size: .85rem; font-weight: 400; color: rgba(17,17,17,.68); }
-        .cw .pozdrav-select { border: none; border-bottom: 1px solid rgba(17,17,17,.4); background-color: transparent; font-family: inherit; font-weight: 700; font-size: .85rem; color: var(--ink); padding: .1rem 1.15rem .1rem .1rem; appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .05rem center; }
-        .cw .pozdrav-podj .povezava { font-size: .85rem; }
+        .cw .pozdrav-select { border: none; background-color: transparent; font-family: inherit; font-weight: 700; font-size: .95rem; color: var(--ink); padding: 0 1.05rem 0 .3rem; margin-left: .1rem; appearance: none; -webkit-appearance: none; cursor: pointer; vertical-align: baseline; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .05rem center; }
+        .cw .pozdrav-select:hover { text-decoration: underline; text-underline-offset: .2em; }
         .cw .chat-uredi { display: flex; flex-direction: column; gap: .5rem; align-items: flex-end; max-width: 100%; }
         .cw .chat-uredi .cu-vrsta { display: flex; gap: .5rem; align-items: center; }
         .cw .chat-uredi .cu-vrsta input { border: 1px solid rgba(17,17,17,.3); border-radius: 12px; background: #fff; padding: .55rem .8rem; font-family: inherit; font-size: .95rem; color: var(--ink); min-width: 11rem; }
@@ -5006,22 +5005,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {/* ze onboardan (vrnitev): oseben pozdrav + preklop podjetja (Tina lahko dela za podjetje A ali B) */}
               {!uvodChat && chatKorak === 0 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                  <span className="chat-mehur">
-                    <b>Hej{imeVelika ? ' ' + imeVelika : ''}!</b>
-                    <span className="pozdrav-podj">
-                      {Object.keys(podjetja).length > 0 ? (
-                        <>Ponudbo pišeš kot <select className="pozdrav-select" aria-label="Podjetje ponudbe"
-                          value={aktivnoPodjetje && podjetja[aktivnoPodjetje] ? aktivnoPodjetje : '__cur'}
-                          onChange={e => { const v = e.target.value; if (v === '__uredi') { setKazemProfil(true); setProfilPogled('podjetja'); } else if (v !== '__cur') preklopiPodjetje(v); }}>
-                          {(!aktivnoPodjetje || !podjetja[aktivnoPodjetje]) && <option value="__cur">{ponudnik.ime.trim() || 'brez podjetja'}</option>}
-                          {Object.keys(podjetja).map(ime => <option key={ime} value={ime}>{ime}</option>)}
-                          <option value="__uredi">+ uredi / dodaj podjetje …</option>
-                        </select>{' · '}</>
-                      ) : ponudnik.ime.trim() ? (
-                        <>Ponudbo pišeš kot <b>{ponudnik.ime.trim()}</b>{' · '}</>
-                      ) : null}
-                      <button type="button" className="povezava" onClick={() => { setKazemProfil(true); setProfilPogled('moji-podatki'); }}>uredi podatke</button>
-                    </span>
+                  <span className="chat-mehur pozdrav-mehur">
+                    <b>Hej{imeVelika ? ' ' + imeVelika : ''}{(ponudnik.ime.trim() || Object.keys(podjetja).length > 0) ? ',' : '!'}</b>
+                    {(ponudnik.ime.trim() || Object.keys(podjetja).length > 0) && (
+                      <select className="pozdrav-select" aria-label="Podjetje ponudbe"
+                        value={aktivnoPodjetje && podjetja[aktivnoPodjetje] ? aktivnoPodjetje : '__cur'}
+                        onChange={e => { const v = e.target.value; if (v === '__uredi') { setKazemProfil(true); setProfilPogled('podjetja'); } else if (v !== '__cur') preklopiPodjetje(v); }}>
+                        {(!aktivnoPodjetje || !podjetja[aktivnoPodjetje]) && <option value="__cur">{ponudnik.ime.trim() || 'brez podjetja'}</option>}
+                        {Object.keys(podjetja).map(ime => <option key={ime} value={ime}>{ime}</option>)}
+                        <option value="__uredi">+ dodaj podjetje …</option>
+                      </select>
+                    )}
                   </span></div>
               )}
 
