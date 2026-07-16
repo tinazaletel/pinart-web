@@ -1725,7 +1725,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      edine z dejanskim cenovnim mnozitelijem). */
   const [custDrzavaMoj, setCustDrzavaMoj] = useState('');
   const [custDrzavaNarocnik, setCustDrzavaNarocnik] = useState('');
-  const [dodajanjeDrzaveMoj, setDodajanjeDrzaveMoj] = useState(false);
   const [dodajanjeDrzaveNarocnik, setDodajanjeDrzaveNarocnik] = useState(false);
 
   useEffect(() => {
@@ -2273,17 +2272,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      vrstice na koraku 0 (klik na vrstico v "Tvoja ponudba"). Hitra ponudba
      jih lahko preskoci, podrobna jih odpre po zelji. */
   const prviPoVprasanjih = 1;
-  const kdoSiStep = prviPoVprasanjih;
-  const mojTrgStep = prviPoVprasanjih + 1;
-  const izkusnjeStep = prviPoVprasanjih + 2;
-  const narocnikStep = prviPoVprasanjih + 3;
-  const trgNarocnikaStep = prviPoVprasanjih + 4;
+  /* osebni koraki (kdo si / kje delas / izkusnje) so odpadli tudi iz klasicne oblike:
+     zbere jih onboarding, urejajo se v Moji podatki — vprasanja se NE ponavljajo (dogovor).
+     Vrstni red korakov je s tem enak chat obliki. */
+  const narocnikStep = prviPoVprasanjih;
+  const trgNarocnikaStep = prviPoVprasanjih + 1;
   /* raba (znamka/projekt) je zdaj del Avtorskih pravic; promet naročnika je pri podatkih naročnika */
-  const praviceStep = prviPoVprasanjih + 5;
-  const posebnostiStep = prviPoVprasanjih + 6;
-  const cenaStep = prviPoVprasanjih + 7;
-  const ponudbaStep = prviPoVprasanjih + 8;
-  const zakljucekStep = prviPoVprasanjih + 9;
+  const praviceStep = prviPoVprasanjih + 2;
+  const posebnostiStep = prviPoVprasanjih + 3;
+  const cenaStep = prviPoVprasanjih + 4;
+  const ponudbaStep = prviPoVprasanjih + 5;
+  const zakljucekStep = prviPoVprasanjih + 6;
   const KORAKOV = zakljucekStep + 1;
   /* (postopni prikaz vprasanj po korakih je odpadel — vprasanja so v
      podrobnostih vrstice, prikazana vsa naenkrat) */
@@ -3103,6 +3102,41 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setKorak(k => Math.max(0, k - 1));
   };
 
+  /* Preklop chat <-> klasicna oblika s PRESLIKAVO napredka. Brez nje je stran po preklopu
+     obtiala na koraku, ki ga druga oblika ne izrise (prazen zaslon, "resil" je le refresh). */
+  const preklopiObliko = () => {
+    if (!klasicnaOblika) {
+      /* chat -> klasicna: poMeh faze prevedemo v ustrezen korak carovnika */
+      if (korak === 0) {
+        const cilj = poMeh >= 5 ? cenaStep
+          : poMeh === 4 ? posebnostiStep
+            : poMeh === 3 ? praviceStep
+              : poMeh === 2 ? trgNarocnikaStep
+                : poMeh === 1 ? narocnikStep
+                  : 0;
+        setKorak(cilj);
+      }
+      setUvodChat(false);
+      setKlasicnaOblika(true);
+    } else {
+      /* klasicna -> chat: vmesni koraki zivijo na koraku 0 (poMeh); korak 0, ponudba in
+         zakljucek se izrisejo v obeh oblikah in ostanejo */
+      if (korak >= narocnikStep && korak <= cenaStep) {
+        const m = korak >= cenaStep ? 5
+          : korak === posebnostiStep ? 4
+            : korak === praviceStep ? 3
+              : korak === trgNarocnikaStep ? 2
+                : 1;
+        setPoMeh(p => Math.max(p, m));
+        setKorak(0);
+      }
+      setKlasicnaOblika(false);
+    }
+    /* zapri predal, da je sprememba takoj vidna */
+    setKazemProfil(false);
+    setProfilPogled('meni');
+  };
+
   const naEnter = (e: React.KeyboardEvent) => {
     if (e.key !== 'Enter') return;
     const t = e.target as HTMLElement;
@@ -3153,43 +3187,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   };
 
   const naslovKoraka = korak === 0 ? 'Kaj boš danes ustvarila?'
-    : korak === kdoSiStep ? 'Kdo si?'
-        : korak === mojTrgStep ? 'Kje delaš?'
-          : korak === izkusnjeStep ? 'Koliko izkušenj imaš?'
-            : korak === narocnikStep ? 'Kdo je stranka?'
-              : korak === trgNarocnikaStep ? 'Od kod je naročnik?'
-                : korak === praviceStep ? 'Avtorske pravice'
-                    : korak === posebnostiStep ? 'Posebnosti projekta?'
-                      : korak === cenaStep ? 'Tvoja cena.'
-                        : korak === ponudbaStep ? 'Tvoja ponudba.'
-                          : 'Zaključek.';
+    : korak === narocnikStep ? 'Kdo je stranka?'
+      : korak === trgNarocnikaStep ? 'Od kod je naročnik?'
+        : korak === praviceStep ? 'Avtorske pravice'
+          : korak === posebnostiStep ? 'Posebnosti projekta?'
+            : korak === cenaStep ? 'Tvoja cena.'
+              : korak === ponudbaStep ? 'Tvoja ponudba.'
+                : 'Zaključek.';
 
   const opisKoraka = korak === 0 ? 'Izberi storitve za to ponudbo — eno ali več.'
-    : korak === kdoSiStep ? 'Izpolniš enkrat, orodje si zapomni.'
-        : korak === mojTrgStep ? 'Tvoj trg nastavi privzete osnove na tam običajno raven.'
-          : korak === izkusnjeStep ? 'Vpliva na privzete cene.'
-            : korak === narocnikStep ? 'Vpišeš za vsako ponudbo posebej.'
-              : korak === trgNarocnikaStep ? 'Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.'
-                : korak === praviceStep ? 'Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.'
-                    : korak === posebnostiStep ? 'Vse je neobvezno; pusti prazno in pojdi naprej.'
-                      : korak === ponudbaStep ? 'Besedilo lahko poljubno urejaš in dopišeš.'
-                        : korak === zakljucekStep ? 'Kopiraj, pošlji ali shrani ponudbo.'
-                          : '';
-
-  /* "+ Dodaj svojo drzavo": poljubno ime drzave kot dodaten label poleg
-     izbire regije (regija ostaja edina, ki nosi dejanski cenovni mnozitelj). */
-  const custDrzavaUI = (
-    vrednost: string, setVrednost: (v: string) => void,
-    odprto: boolean, setOdprto: (v: boolean) => void
-  ) => (
-    odprto ? (
-      <input type="text" autoFocus placeholder="npr. Uzbekistan" className="drzava-vnos"
-        onBlur={e => { setVrednost(e.target.value.trim()); setOdprto(false); }}
-        onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }} />
-    ) : (
-      <button type="button" className="op-edit" onClick={() => setOdprto(true)}>+ Dodaj svojo državo</button>
-    )
-  );
+    : korak === narocnikStep ? 'Vpišeš za vsako ponudbo posebej.'
+      : korak === trgNarocnikaStep ? 'Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.'
+        : korak === praviceStep ? 'Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.'
+          : korak === posebnostiStep ? 'Vse je neobvezno; pusti prazno in pojdi naprej.'
+            : korak === ponudbaStep ? 'Besedilo lahko poljubno urejaš in dopišeš.'
+              : korak === zakljucekStep ? 'Kopiraj, pošlji ali shrani ponudbo.'
+                : '';
 
   /* En oblacek storitve (prvi korak). */
   const jeOnboardan = !!(mojSet && mojSet.length);
@@ -4774,7 +4787,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <label className="se-preklop" style={{ marginTop: '1.2rem', paddingTop: '1.2rem', borderTop: '1px solid rgba(17,17,17,.1)' }}>
                   <span><b>Klasičen vprašalnik</b><br /><em style={{ fontWeight: 400 }}>namesto chat pogovora — korak za korakom, kot prej</em></span>
                   <span className="se-toggle">
-                    <input type="checkbox" checked={klasicnaOblika} onChange={() => setKlasicnaOblika(v => !v)} />
+                    <input type="checkbox" checked={klasicnaOblika} onChange={preklopiObliko} />
                     <span className="se-slider" aria-hidden />
                   </span>
                 </label>
@@ -5618,45 +5631,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </div>
           )}
 
-          {korak === kdoSiStep && podatkiUI()}
-
-          {korak === mojTrgStep && (
-            <div className="kartica">
-              <div className="k-naslov">Izberi svoj trg
-                {custDrzavaUI(custDrzavaMoj, setCustDrzavaMoj, dodajanjeDrzaveMoj, setDodajanjeDrzaveMoj)}
-              </div>
-              <div className="opts">
-                {custDrzavaMoj && (
-                  <button type="button" className="pill pill-cust" onClick={() => setCustDrzavaMoj('')} title="Odstrani">
-                    {custDrzavaMoj} <span aria-hidden>×</span>
-                  </button>
-                )}
-                {TRGI.map(t => (
-                  <button key={t.id} type="button"
-                    className={'pill' + (mojTrg === t.id ? ' on' : '')}
-                    onClick={() => setMojTrg(t.id)}>
-                    <span className="pill-fill" aria-hidden />
-                    <span className="pill-tekst">{t.ime}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {korak === izkusnjeStep && (
-            <div className="kartica">
-              <div className="k-naslov">Izberi svojo raven <span className="vec">vpliva na privzete cene</span></div>
-              <div className="izbira izbira-3">
-                {IZKUSNJE.map(i => (
-                  <button key={i.id} type="button" className={izkusnje === i.id ? 'on' : ''}
-                    onClick={() => { setIzkusnje(i.id); }}>
-                    <h3>{i.ime}</h3>
-                    <p>{i.opis}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* osebni koraki (kdo si / trg / izkusnje) odpadejo — zbere jih onboarding, urejajo se v Moji podatki */}
 
           {((klasicnaOblika && korak === narocnikStep) || (vChatu && poMeh >= 1)) && (
             <>
