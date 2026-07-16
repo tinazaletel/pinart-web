@@ -5325,7 +5325,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 })}
                 {(() => {
                   const d = Math.round(orbD * 0.78);
-                  const p = orbPoz(orbStoritve.length);   /* naravna pozicija: zadnji element v zadnji vrsti */
+                  let p = orbPoz(orbStoritve.length);   /* naravna pozicija: zadnji element v zadnji vrsti */
+                  /* Tinino pravilo: ce je "dodaj/uredi" SAM v zadnji vrsti, ne sme biti na sredini —
+                     poravna se z zadnjim (najbolj desnim) mehurckom prejsnje vrste */
+                  if (orbRowSizes[orbRowSizes.length - 1] === 1 && orbStoritve.length > 0) {
+                    p = { x: orbPoz(orbStoritve.length - 1).x, y: p.y };
+                  }
                   return (
                     <button type="button" className="orb0 orb0-plus"
                       style={{ width: d, height: d, left: `calc(${p.x}% - ${d / 2}px)`, top: `calc(${p.y}% - ${d / 2}px)` }}
