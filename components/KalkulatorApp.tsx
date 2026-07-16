@@ -5021,11 +5021,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
               {/* po onboardingu: nadaljevanje pogovora za izbiro (ista povrsina, ni preskoka) */}
               {!uvodChat && !namigSkrit && (
-                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
-                  <span className="chat-mehur chat-mehur-namig">
-                    <button type="button" className="namig-zapri" aria-label="Zapri namig" title="Zapri (znova le ob ponastavitvi)" onClick={() => setNamigSkrit(true)}>✕</button>
-                    Klik na storitev jo doda v ponudbo. Prikaz preklopiš med mehurčki in tabelo v »dodaj / uredi«.
-                  </span></div>
+                <>
+                  <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                    <span className="chat-mehur"><b>Super! Izberi storitve, ki jih želiš v ponudbi.</b></span></div>
+                  <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                    <span className="chat-mehur chat-mehur-namig">
+                      <button type="button" className="namig-zapri" aria-label="Zapri namig" title="Zapri (znova le ob ponastavitvi)" onClick={() => setNamigSkrit(true)}>✕</button>
+                      Klik na storitev jo doda v ponudbo. Prikaz preklopiš med mehurčki in tabelo v »dodaj / uredi«.
+                    </span></div>
+                </>
               )}
 
               {/* vnosna vrstica (ime / ime ponudbe) — samo med onboardingom */}
