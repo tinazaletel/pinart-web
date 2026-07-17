@@ -3476,16 +3476,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     while (left > 0) { const s = Math.min(left, wide ? orbMax : orbMax - 1); rs.push(s); left -= s; wide = !wide; }
     /* ce "dodaj" ostane SAM v zadnji vrsti, ga ne pustimo osamljenega na novi vrsti,
        ampak ga prilepimo kot naslednje mesto na prejsnjo (siroko) vrsto — Tinina zahteva */
-    if (rs.length >= 2 && rs[rs.length - 1] === 1) { rs[rs.length - 2] += 1; rs.pop(); }
     return rs;
   })();
   const orbVrstic = orbRowSizes.length;
   const orbRowStart = (() => { const a: number[] = []; let acc = 0; for (const s of orbRowSizes) { a.push(acc); acc += s; } return a; })();
   const orbRowH = Math.round(orbD * 1.02) - 20;   /* vrstice po visini stisnjene za 20px, da vse pride na en ekran */
-  /* razmik med sredisci: sledi NAJSIRSI vrsti (ne le orbMax), da se merjena 4. vrsta (dodaj prilepljen)
-     enakomerno razporedi in ne pade v luknjo zaradi clampa */
-  const orbNajsirsa = Math.max(...orbRowSizes, orbMax);
-  const orbStep = 84 / Math.max(orbNajsirsa - 1, 1);
+  const orbStep = 84 / Math.max(orbMax - 1, 1);          /* razmik med sredisci na siroki mrezi (%) */
   const orbPoz = (i: number) => {
     let row = 0; while (row < orbVrstic - 1 && i >= orbRowStart[row + 1]) row++;
     const posInRow = i - orbRowStart[row];
