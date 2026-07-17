@@ -4257,7 +4257,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .glava-profil:hover { color: var(--ink); border-color: rgba(17,17,17,.5); }
 
         .cw .profil-zastor { position: fixed; inset: 0; z-index: 60; background: rgba(17,17,17,.28); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
-        .cw .profil-predal { position: fixed; top: 0; right: 0; bottom: 0; z-index: 61; width: min(440px, 100vw); background: var(--paper); box-shadow: -12px 0 40px rgba(17,17,17,.14); overflow-y: auto; padding: clamp(1.6rem, 4vw, 2.4rem); animation: cwPredalIn .32s cubic-bezier(0.23,1,0.32,1) both; }
+        .cw .profil-predal { position: fixed; top: 0; right: 0; bottom: 0; z-index: 61; width: min(440px, 100vw); background: var(--paper); box-shadow: -12px 0 40px rgba(17,17,17,.14); overflow-y: auto; padding: clamp(1.6rem, 4vw, 2.4rem); padding-bottom: 4rem; animation: cwPredalIn .32s cubic-bezier(0.23,1,0.32,1) both; }
         @keyframes cwPredalIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
         @media (prefers-reduced-motion: reduce) { .cw .profil-predal { animation: none; } }
         .cw .profil-predal .kartica { max-width: none; }
@@ -4914,7 +4914,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('cene-nastavitve')}>
-                  <Gear size={20} weight="bold" />
+                  <SlidersHorizontal size={20} weight="bold" />
                   <span>
                     <strong>Cene in storitve</strong>
                     <small>osnovne cene, razpored, izbris storitev + shranjeni ceniki{Object.keys(profili).length > 0 ? ` (${Object.keys(profili).length})` : ''}</small>
@@ -4946,10 +4946,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('aplikacija')}>
-                  <SlidersHorizontal size={20} weight="bold" />
+                  <Gear size={20} weight="bold" />
                   <span>
                     <strong>Nastavitve aplikacije</strong>
-                    <small>prikaz (chat / klasičen vprašalnik), ponastavitve</small>
+                    <small>prikaz chat/klasično, ponastavitve</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
