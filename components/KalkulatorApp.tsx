@@ -267,12 +267,12 @@ const STORITVE: Storitev[] = [
    postavi storitve znotraj njih. Nove storitve so umescene v ustrezno podrocje,
    da seznam ostane pregleden. */
 const PODROCJA: { id: string; ime: string; opis: string; storitve: string[] }[] = [
-  { id: 'graficno',  ime: 'Grafično oblikovanje & branding', opis: 'logotip, CGP, tiskovine, embalaža, ilustracija',   storitve: ['logo', 'cgp', 'publikacija', 'embalaza', 'ilustracija'] },
-  { id: 'splet',     ime: 'Splet & digitalni produkti',      opis: 'spletne strani, UX/UI, aplikacije',                storitve: ['web', 'uxui', 'aplikacija'] },
-  { id: 'marketing', ime: 'Marketing & oglaševanje',         opis: 'kampanje, social media, SEO, PR, besedila',        storitve: ['kampanja', 'smm', 'seo', 'email', 'pr', 'copy'] },
-  { id: 'foto',      ime: 'Foto, video & motion',            opis: 'fotografiranje, video, motion, 3D',                storitve: ['fotografija', 'video', 'motion', 'render3d'] },
-  { id: 'direkcija', ime: 'Kreativna direkcija & strategija', opis: 'vodenje, koncept, strategija',                     storitve: ['direkcija', 'strategija'] },
-  { id: 'prostor',   ime: 'Prostor & arhitektura',           opis: 'interier, arhitektura, razstavni in produktni dizajn', storitve: ['interier', 'arhitektura', 'razstava', 'produktni'] },
+  { id: 'graficno',  ime: 'Grafika in branding',       opis: 'logotip, CGP, tiskovine, embalaža, ilustracija',   storitve: ['logo', 'cgp', 'publikacija', 'embalaza', 'ilustracija'] },
+  { id: 'splet',     ime: 'Splet in produkti',         opis: 'spletne strani, UX/UI, aplikacije',                storitve: ['web', 'uxui', 'aplikacija'] },
+  { id: 'marketing', ime: 'Marketing in oglasi',       opis: 'kampanje, social media, SEO, PR, besedila',        storitve: ['kampanja', 'smm', 'seo', 'email', 'pr', 'copy'] },
+  { id: 'foto',      ime: 'Foto, video, motion',       opis: 'fotografiranje, video, motion, 3D',                storitve: ['fotografija', 'video', 'motion', 'render3d'] },
+  { id: 'direkcija', ime: 'Kreativna direkcija',       opis: 'vodenje, koncept, strategija',                     storitve: ['direkcija', 'strategija'] },
+  { id: 'prostor',   ime: 'Prostor in arhitektura',    opis: 'interier, arhitektura, razstavni in produktni dizajn', storitve: ['interier', 'arhitektura', 'razstava', 'produktni'] },
 ];
 
 /* osnovna barva podrocja (za pastelne chipe, uskladjeno z ORB_BARVE) */
@@ -4159,7 +4159,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 560px) { .cw .chat-podrocja { margin-left: 0; } }
         /* v modalu dodaj/uredi: brez chat-zamika, leva poravnava, DVE na vrsto (mreza) */
         .cw .uredi-plosca .chat-podrocja { margin-left: 0; max-width: none; display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
-        .cw .uredi-plosca .chip-podrocje { justify-content: flex-start; }
+        .cw .uredi-plosca .chip-podrocje { justify-content: flex-start; min-width: 0; }
+        .cw .uredi-plosca .chip-podrocje b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         @media (max-width: 480px) { .cw .uredi-plosca .chat-podrocja { grid-template-columns: 1fr; } }
         .cw .profil-predal .chat-podrocja { margin-left: 0; max-width: none; flex-direction: column; }
         .cw .profil-predal .chip-podrocje { width: 100%; }
