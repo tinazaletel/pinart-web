@@ -3523,40 +3523,43 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* Kontaktni podatki + davek/pogoji + urne postavke — uporabljeno na koraku
      Tvoji podatki IN v profilnem panelu (Moje podjetje), da ju ni treba
      podvajati. */
-  const podatkiUI = () => (
+  const podatkiUI = () => {
+    const imeAkt = ponudnik.ime.trim();
+    const jeShranjeno = !!(aktivnoPodjetje && podjetja[aktivnoPodjetje]);
+    const imaPodjetja = Object.keys(podjetja).length > 0;
+    return (
     <>
-      <div className="kartica">
-        <div className="k-naslov">Tvoji podatki <span className="vec">za glavo ponudbe</span></div>
-        {Object.keys(podjetja).length > 0 ? (
-          <div className="polje" style={{ marginBottom: '1.2rem' }}>
-            <label>Ponudbo pišeš kot
-              <InfoNamig besedilo="Če delaš za več podjetij (npr. svojo agencijo in tiskarno), tu preklopiš, v čigavem imenu je ponudba. Vsako podjetje si zapomni svoje podatke, DDV, avans in urne postavke. Trenutni vnos se pred preklopom samodejno shrani." />
-              <span className="vec">preklop med tvojimi podjetji</span>
-            </label>
-            <div className="opts">
-              {Object.keys(podjetja).map(ime => (
-                <button key={ime} type="button"
-                  className={'pill' + (aktivnoPodjetje === ime ? ' on' : '')}
-                  onClick={() => preklopiPodjetje(ime)}>
-                  <span className="pill-fill" aria-hidden />
-                  <span className="pill-tekst">{ime}</span>
-                </button>
-              ))}
-              <button type="button" className="pill" onClick={novoPodjetjeKorak}>
-                <span className="pill-fill" aria-hidden />
-                <span className="pill-tekst">+ Novo podjetje</span>
-              </button>
-            </div>
+      {/* Preklop / novo podjetje — NAD kartico (Tinina zahteva). */}
+      {(imaPodjetja || imeAkt) && (
+        <div className="podjetja-preklop">
+          <div className="pp-glava">
+            <span className="pp-label">Tvoja podjetja
+              <InfoNamig besedilo="Če izdajaš ponudbe v imenu več podjetij (npr. svoje agencije in tiskarne), tu preklapljaš med njimi. Vsako si zapomni svoje podatke. Trenutni vnos se pred preklopom samodejno shrani." />
+            </span>
+            <button type="button" className="dodaj-gumb" onClick={novoPodjetjeKorak}>+ Novo podjetje</button>
           </div>
-        ) : ponudnik.ime.trim() ? (
-          <p className="hint" style={{ marginTop: 0 }}>
-            Pišeš ponudbe za več podjetij?{' '}
-            <button type="button" className="povezava" onClick={() => { shraniPodPodjetjem(ponudnik.ime.trim()); setAktivnoPodjetje(ponudnik.ime.trim()); }}>
-              Shrani »{ponudnik.ime.trim()}« kot podjetje
-            </button>{' '}
-            in dodaš lahko še druga — orodje si zapomni vsakega posebej.
-          </p>
-        ) : null}
+          {imaPodjetja && (
+            <div className="podjetja-cipi">
+              {Object.keys(podjetja).map(ime => (
+                <span key={ime} className={'podjetje-cip' + (aktivnoPodjetje === ime ? ' on' : '')}>
+                  <button type="button" className="pc-ime" onClick={() => preklopiPodjetje(ime)}>{ime}</button>
+                  <button type="button" className="pc-brisi" aria-label={'Izbriši podjetje ' + ime}
+                    title={'Izbriši ' + ime} onClick={() => izbrisiPodjetje(ime)}>×</button>
+                </span>
+              ))}
+            </div>
+          )}
+          {!jeShranjeno && imeAkt && (
+            <button type="button" className="povezava" style={{ display: 'inline-block', marginTop: '.2rem' }}
+              onClick={() => { shraniPodPodjetjem(imeAkt); setAktivnoPodjetje(imeAkt); }}>
+              ↓ Shrani »{imeAkt}« kot podjetje
+            </button>
+          )}
+        </div>
+      )}
+
+      <div className="kartica">
+        <div className="k-naslov">Podatki podjetja <span className="vec">za glavo ponudbe</span></div>
         <div className="numgrid">
           <div className="polje">
             <label htmlFor="cw-pime">Ime / podjetje</label>
@@ -3601,10 +3604,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               value={ponudnik.trr} onChange={e => setPonudnik({ ...ponudnik, trr: e.target.value })} />
           </div>
         </div>
-      </div>
-
-      <div className="kartica">
-        <div className="k-naslov">Davek in pogoji</div>
+        {/* DDV = davčni podatek podjetja (Tina: davčne podatke v podatke podjetja) */}
         <div className="numgrid">
           <div className="polje">
             <label htmlFor="cw-ddv">DDV
@@ -3624,17 +3624,28 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Pogoji ponudbe: avans + veljavnost skupaj (Tinina zahteva) */}
+      <div className="kartica">
+        <div className="k-naslov">Pogoji ponudbe</div>
         <div className="numgrid">
           <div className="polje">
             <label htmlFor="cw-avans">Avans ob potrditvi (%)</label>
             <input id="cw-avans" type="number" min={10} max={100} step={5}
               value={avansPct} onChange={e => setAvansPct(e.target.value)} />
           </div>
+          <div className="polje">
+            <label htmlFor="cw-veljavnost2">Ponudba velja (dni)</label>
+            <input id="cw-veljavnost2" type="number" min={1} max={365} step={1}
+              placeholder="30" value={veljavnostDni} onChange={e => setVeljavnostDni(e.target.value)} />
+          </div>
         </div>
       </div>
 
     </>
-  );
+    );
+  };
 
   /* Urne postavke za dodatna dela: zivijo pri "Tvoja cena" (ne vec pri
      kontaktnih podatkih podjetja — Tina: "ni mi to najbolje tam"). */
@@ -4421,6 +4432,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .kartica > .k-naslov .vec, .cw .profil-sekcija .k-naslov .vec { font-size: .82rem; font-weight: 500; color: rgba(17,17,17,.55); text-transform: none; letter-spacing: 0; }
         .cw .kartica > .hint { margin-top: 1rem; }
         .cw .dodaj-gumb { display: inline-flex; align-items: center; gap: .4rem; font-family: inherit; font-size: .9rem; font-weight: 600; color: var(--ink); background: transparent; border: 1px dashed rgba(17,17,17,.35); border-radius: 999px; padding: .55rem 1.1rem; cursor: pointer; transition: border-color .18s ease, background .18s ease; }
+        /* Moje podjetje: preklop/brisanje podjetij nad kartico */
+        .cw .podjetja-preklop { margin: 0 0 1.2rem; }
+        .cw .podjetja-preklop .pp-glava { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: .7rem; }
+        .cw .podjetja-preklop .pp-label { font-weight: 600; font-size: .95rem; color: var(--ink); display: inline-flex; align-items: center; gap: .4rem; }
+        .cw .podjetja-cipi { display: flex; flex-wrap: wrap; gap: .5rem; }
+        .cw .podjetje-cip { display: inline-flex; align-items: stretch; border: 1px solid rgba(17,17,17,.25); border-radius: 999px; overflow: hidden; background: transparent; transition: border-color .15s ease, background .15s ease; }
+        .cw .podjetje-cip.on { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); }
+        .cw .podjetje-cip .pc-ime { font-family: inherit; font-size: .9rem; font-weight: 600; color: var(--ink); background: none; border: none; padding: .5rem .3rem .5rem .95rem; cursor: pointer; }
+        .cw .podjetje-cip .pc-brisi { font-family: inherit; font-size: 1.05rem; line-height: 1; color: rgba(17,17,17,.5); background: none; border: none; padding: 0 .7rem 0 .35rem; cursor: pointer; transition: color .15s ease; }
+        .cw .podjetje-cip .pc-brisi:hover { color: var(--accent); }
         .cw .dodaj-gumb:hover { border-color: var(--ink); background: rgba(17,17,17,.03); }
         .cw .narocnik-nedavni { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: 1.1rem; }
         .cw .narocnik-nedavni .vec { font-size: .78rem; font-weight: 500; color: rgba(17,17,17,.55); margin-right: .1rem; }
@@ -4935,7 +4956,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
             {profilPogled === 'podjetja' && (
               <>
-                <p className="ob-sub" style={{ margin: '0 0 1rem' }}>Tvoji podatki za glavo ponudbe. Vpišeš enkrat, samodejno se shranijo — tu jih tudi kadarkoli popraviš. Če delaš za več podjetij, med njimi preklapljaš zgoraj.</p>
+                <p className="ob-sub" style={{ margin: '0 0 1.1rem' }}>Podatki za glavo ponudbe — vpišeš enkrat, shranijo se samodejno.</p>
                 {podatkiUI()}
                 {urnePostavkeUI()}
               </>
@@ -6248,14 +6269,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       placeholder="0" value={popust}
                       onChange={e => setPopust(e.target.value)} />
                   </div>
-                  <div className="polje">
-                    <label htmlFor="cw-veljavnost">Ponudba velja (dni){stevilkaPonudbe ? <span className="vec">št. {stevilkaPonudbe}</span> : null}</label>
-                    <input id="cw-veljavnost" type="number" min={1} max={365} step={1}
-                      placeholder="30" value={veljavnostDni}
-                      onChange={e => setVeljavnostDni(e.target.value)} />
-                  </div>
                 </div>
-                <p className="hint">Popust naj ima vedno razlog (prvi projekt, paket, dolgoročno sodelovanje) in v ponudbi vedno stoji ob redni ceni. Ponudba dobi zaporedno številko in rok veljavnosti (privzeto 30 dni).</p>
+                <p className="hint">Popust naj ima vedno razlog (prvi projekt, paket, dolgoročno sodelovanje) in v ponudbi vedno stoji ob redni ceni. Ponudba dobi zaporedno številko{stevilkaPonudbe ? ` (${stevilkaPonudbe})` : ''}; avans in rok veljavnosti nastaviš v Profil → Moje podjetje → Pogoji ponudbe.</p>
               </div>
               <p className="razlaga">
                 Cena zajema izvedbo ({r.sez.map(s => s.ime.toLowerCase()).join(' + ')}),
