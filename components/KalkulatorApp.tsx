@@ -4427,6 +4427,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .kartica { animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; background: #FCFBF7; border: 1px solid rgba(17,17,17,.06); border-radius: 20px; padding: 1.6rem 1.7rem 1.7rem; box-shadow: 0 4px 18px rgba(17,17,17,.04); max-width: 760px; margin-bottom: 1.4rem; }
         @media (prefers-reduced-motion: reduce) { .cw .kartica { animation: none; } }
         .cw .kartica-neobvezno { background: transparent; border: 1px dashed rgba(17,17,17,.22); box-shadow: none; margin-top: -.4rem; }
+        .cw .prav-napredno { margin: .2rem 0 0; }
+        .cw .prav-napredno > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: .5rem; font-weight: 600; font-size: .92rem; color: rgba(17,17,17,.7); padding: .5rem 0; }
+        .cw .prav-napredno > summary::-webkit-details-marker { display: none; }
+        .cw .prav-napredno > summary::before { content: "＋"; color: var(--accent); font-weight: 700; }
+        .cw .prav-napredno[open] > summary::before { content: "－"; }
+        .cw .prav-napredno > summary:hover { color: var(--ink); }
+        .cw .prav-napredno-telo { margin-top: .6rem; }
+        .cw .prav-napredno:not([open]) > .prav-napredno-telo { display: none; }
         .cw .prav-razlaga { margin: 0 0 1.1rem; border: 1px solid rgba(17,17,17,.14); border-radius: 12px; background: rgba(178,84,118,.05); overflow: hidden; }
         .cw .prav-razlaga > summary { list-style: none; cursor: pointer; padding: .8rem 1rem; font-weight: 600; font-size: .92rem; color: var(--ink); display: flex; align-items: center; gap: .5rem; }
         .cw .prav-razlaga > summary::-webkit-details-marker { display: none; }
@@ -6069,6 +6077,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 , document.body);
               })()}
 
+              <details className="prav-napredno">
+                <summary>Napredno — obseg (teritorij, mediji, naklada) in ročni znesek pravic</summary>
+                <div className="prav-napredno-telo">
               <div className="kartica">
                 <div className="k-naslov">Obseg — velja za vse storitve
                   <InfoNamig besedilo="Teritorij, dodatni mediji in naklada trenutno veljajo globalno za vse storitve (kmalu tudi per storitev v Podrobnostih). Privzeto: Slovenija, tisk + promocija, naklada do 3.000 — to je vključeno v ceno pravic; širša raba znesek poviša. Trajanje je odslej del pravic po storitvah zgoraj." />
@@ -6217,6 +6228,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   )}
                 </div>
               )}
+                </div>
+              </details>
             </>
           )}
 
