@@ -3473,6 +3473,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     /* pakiraj storitve + "dodaj" skupaj; "dodaj" je zadnji element (zadnji mehurcek v zadnji vrsti) */
     const rs: number[] = []; let left = orbN, wide = true;
     while (left > 0) { const s = Math.min(left, wide ? orbMax : orbMax - 1); rs.push(s); left -= s; wide = !wide; }
+    /* ce "dodaj" ostane SAM v zadnji vrsti, ga ne pustimo osamljenega na novi vrsti,
+       ampak ga prilepimo kot naslednje mesto na prejsnjo (siroko) vrsto — Tinina zahteva */
+    if (rs.length >= 2 && rs[rs.length - 1] === 1) { rs[rs.length - 2] += 1; rs.pop(); }
     return rs;
   })();
   const orbVrstic = orbRowSizes.length;
@@ -5422,12 +5425,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 })}
                 {(() => {
                   const d = Math.round(orbD * 0.78);
-                  let p = orbPoz(orbStoritve.length);   /* naravna pozicija: zadnji element v zadnji vrsti */
-                  /* Tinino pravilo: ce je "dodaj/uredi" SAM v zadnji vrsti, ne sme biti na sredini —
-                     poravna se z zadnjim (najbolj desnim) mehurckom prejsnje vrste */
-                  if (orbRowSizes[orbRowSizes.length - 1] === 1 && orbStoritve.length > 0) {
-                    p = { x: orbPoz(orbStoritve.length - 1).x, y: p.y };
-                  }
+                  const p = orbPoz(orbStoritve.length);   /* pozicija sledi pakiranju (dodaj = zadnje mesto zadnje vrste) */
                   return (
                     <button type="button" className="orb0 orb0-plus"
                       style={{ width: d, height: d, left: `calc(${p.x}% - ${d / 2}px)`, top: `calc(${p.y}% - ${d / 2}px)` }}
