@@ -3959,7 +3959,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .mreza-uredi { border-style: dashed; background: transparent; color: rgba(17,17,17,.62); }
         .cw .mreza-uredi .mk-ikona { background: rgba(17,17,17,.06); }
         /* ── modal dodaj / uredi ── */
-        .cw .uredi-plosca { width: 100%; max-width: 560px; max-height: min(38rem, 84dvh); display: flex; flex-direction: column; background: var(--paper); border: 1px solid rgba(17,17,17,.18); border-radius: 18px; box-shadow: 0 24px 80px rgba(17,17,17,.16); overflow: hidden; animation: cwVstop .3s cubic-bezier(.16,1,.3,1) both; }
+        .cw .uredi-plosca { width: 100%; max-width: 560px; max-height: min(46rem, 90dvh); display: flex; flex-direction: column; background: var(--paper); border: 1px solid rgba(17,17,17,.18); border-radius: 18px; box-shadow: 0 24px 80px rgba(17,17,17,.16); overflow: hidden; animation: cwVstop .3s cubic-bezier(.16,1,.3,1) both; }
         .cw .detajl-modal { width: 100%; max-width: 620px; max-height: min(44rem, 88dvh); display: flex; flex-direction: column; background: var(--paper); border: 1px solid rgba(17,17,17,.18); border-radius: 18px; box-shadow: 0 24px 80px rgba(17,17,17,.18); overflow: hidden; animation: cwVstop .3s cubic-bezier(.16,1,.3,1) both; }
         .cw .detajl-telo { overflow-y: auto; padding: 1.2rem 1.4rem 1.4rem; display: flex; flex-direction: column; gap: 1.3rem; }
         .cw .detajl-noga { display: flex; align-items: center; gap: 1rem; padding: .95rem 1.4rem; border-top: 1px solid rgba(17,17,17,.1); background: rgba(255,255,255,.45); }
