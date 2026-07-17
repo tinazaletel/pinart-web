@@ -5123,7 +5123,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
                 {/* nov (prazen) cenik — začneš svež delovni set, ki ga poimenuješ v naslovu */}
                 <button type="button" className="dodaj-gumb" style={{ marginTop: '.6rem' }}
-                  onClick={() => { setAktivniCenik(null); setDelovniCenikOdprt(true); }}>+ Nov cenik</button>
+                  onClick={() => { setAktivniCenik(null); setDelovniCenikOdprt(true); }}>+ Dodaj nov cenik</button>
               </>
               );
             })()}
