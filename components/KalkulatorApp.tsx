@@ -5802,6 +5802,24 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                           <p className="hint" style={{ margin: '.6rem 0 0' }}>Mreža je bolj strjena in pregledna, ko imaš veliko storitev.</p>
                         </div>
                         <div className="uredi-sekcija">
+                          <div className="uredi-naslov">Področja dela <span className="vec">kaj ponujaš — klikni za vklop/izklop</span></div>
+                          <div className="chat-podrocja">
+                            {PODROCJA.map(p => {
+                              const bar = PODROCJE_BARVA[p.id] || '#7C3AED';
+                              const on = obIzbor.has(p.id);
+                              return (
+                                <button key={p.id} type="button" className={'chip-podrocje' + (on ? ' on' : '')}
+                                  style={{ borderColor: on ? bar : 'rgba(17,17,17,.12)', boxShadow: on ? `0 6px 18px ${osvetli(bar, 0.5)}` : undefined }}
+                                  onClick={() => preklopiPodrocje(p.id)}>
+                                  <span className="pi-pod" aria-hidden style={{ background: osvetli(bar, 0.8), color: zatemni(bar, 0.55) }}>{PODROCJE_IKONA[p.id]}</span>
+                                  <b>{p.ime}</b>
+                                  <span className="chip-kljuk" aria-hidden style={{ borderColor: on ? bar : 'rgba(17,17,17,.2)', background: on ? bar : 'transparent' }}>{on ? '✓' : ''}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        <div className="uredi-sekcija">
                           <div className="uredi-naslov">Dodaj svojo storitev</div>
                           <div className="uredi-dodaj">
                             <input type="text" placeholder="Ime storitve (npr. montaža videa)" value={novaIme} onChange={e => setNovaIme(e.target.value)} />
@@ -5821,8 +5839,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                             </>
                           )}
                         </div>
-                        <button type="button" className="povezava povezava-roza" style={{ display: 'block' }} onClick={() => { setKazemUredi(false); setKazemProfil(true); setProfilPogled('moji-podatki'); }}>↳ Uredi področja dela — kaj ponujaš (npr. dodaš »šivanje«)</button>
-                        <button type="button" className="povezava povezava-roza" style={{ display: 'block', marginTop: '.6rem' }} onClick={() => { setKazemUredi(false); setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>↳ Uredi cene, razporedi in skrij → Cene in storitve</button>
+                        <button type="button" className="povezava povezava-roza" style={{ display: 'block' }} onClick={() => { setKazemUredi(false); setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>↳ Cene, razpored in ceniki</button>
                       </div>
                     </div>
                   </div>
