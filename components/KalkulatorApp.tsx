@@ -3876,7 +3876,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 560px) { .cw .priprava-overlay { border-radius: 0; width: 100vw; } }
         /* priprava = samostojna centrirana stran, malo sirsa od ostalih korakov */
         .cw .korak-vsebina.priprava-korak { max-width: 1000px; }
-        .cw .priprava-nazaj { display: inline-flex; align-items: center; gap: .4rem; background: rgba(255,255,255,.4); border: 1px solid rgba(17,17,17,.16); color: var(--ink); font-family: inherit; font-weight: 600; font-size: .84rem; cursor: pointer; padding: .5rem .95rem; border-radius: 999px; margin: 0 0 1.3rem; transition: background .18s, border-color .18s; }
+        .cw .priprava-vrh { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 0 1.3rem; }
+        .cw .priprava-zapri { display: inline-flex; align-items: center; gap: .4rem; background: transparent; border: 1px solid rgba(17,17,17,.16); color: rgba(17,17,17,.7); font-family: inherit; font-weight: 600; font-size: .84rem; cursor: pointer; padding: .5rem .95rem; border-radius: 999px; transition: background .18s, border-color .18s, color .18s; }
+        .cw .priprava-zapri:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+        .cw .priprava-nazaj { display: inline-flex; align-items: center; gap: .4rem; background: rgba(255,255,255,.4); border: 1px solid rgba(17,17,17,.16); color: var(--ink); font-family: inherit; font-weight: 600; font-size: .84rem; cursor: pointer; padding: .5rem .95rem; border-radius: 999px; transition: background .18s, border-color .18s; }
         .cw .priprava-nazaj:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
         /* v chat obliki: VSA vsebina vprasanj (kartice, naslovi, dodatni stroski, vrstice)
            na SIRINO CHATA in centrirana; chat (transkript) in oder0 (mehurcki) izvzeta */
@@ -5208,9 +5211,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       <div className="oder">
         <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '') + (korak === 0 && uvodChat && !klasicnaOblika ? ' uvod-faza' : '') + (vChatu && poMeh > 0 ? ' chat-koraki' : '') + (!klasicnaOblika && korak === ponudbaStep ? ' priprava-korak' : '')} key={korak}>
           {!klasicnaOblika && korak === ponudbaStep && (
-            <button type="button" className="priprava-nazaj" onClick={() => setKorak(0)}>
-              ← Uredi podatke in vprašanja
-            </button>
+            <div className="priprava-vrh">
+              <button type="button" className="priprava-nazaj" onClick={() => setKorak(0)}>
+                ← Uredi podatke in vprašanja
+              </button>
+              <button type="button" className="priprava-zapri" onClick={() => setKorak(0)} title="Zapri ponudbo — nazaj na sestavljanje">
+                Zapri ✕
+              </button>
+            </div>
           )}
           {(korak !== 0 || klasicnaOblika) && (
             <h1><span className="h1-step">{String(korak + 1).padStart(2, '0')}</span>{naslovKoraka.split(' ').map((b, bi) => (
