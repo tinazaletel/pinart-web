@@ -12,7 +12,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, User, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, CaretUp, Check, PencilSimple, SlidersHorizontal, ArrowUp, ArrowDown, ArrowCounterClockwise,
+  CaretDown, CaretUp, Check, PencilSimple, SlidersHorizontal, ArrowUp, ArrowDown, ArrowCounterClockwise, Trash,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -3834,6 +3834,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .profil-nazaj { flex: none; width: 2.1rem; height: 2.1rem; border-radius: 999px; border: 1px solid var(--ink); background: transparent; color: var(--ink); font-size: 1rem; font-family: inherit; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .18s ease, color .18s ease; }
         .cw .profil-nazaj:hover { background: var(--ink); color: var(--paper); }
         .cw .profil-meni { display: flex; flex-direction: column; gap: .6rem; }
+        /* Nastavitve aplikacije: enako velika gumba z ikono spredaj */
+        .cw .nast-akcije { display: flex; flex-direction: column; gap: .7rem; margin-top: 1.5rem; }
+        .cw .nast-akcija { display: flex; align-items: center; gap: .85rem; width: 100%; text-align: left; padding: .95rem 1.1rem; border: 1px solid rgba(17,17,17,.16); border-radius: 12px; background: #FCFBF7; color: var(--ink); font-family: inherit; cursor: pointer; transition: border-color .18s ease, background .18s ease; }
+        .cw .nast-akcija:hover { border-color: var(--ink); }
+        .cw .nast-akcija > svg { flex: none; color: rgba(17,17,17,.65); }
+        .cw .nast-akcija span { display: flex; flex-direction: column; min-width: 0; }
+        .cw .nast-akcija strong { font-size: .95rem; font-weight: 600; }
+        .cw .nast-akcija small { font-size: .8rem; font-weight: 400; color: rgba(17,17,17,.6); line-height: 1.35; margin-top: .1rem; }
+        .cw .nast-akcija-nevarno { border-color: rgba(178,84,118,.4); }
+        .cw .nast-akcija-nevarno > svg { color: var(--accent); }
+        .cw .nast-akcija-nevarno:hover { border-color: var(--accent); background: rgba(178,84,118,.05); }
         .cw .profil-meni-vrsta { display: flex; align-items: center; gap: 1rem; width: 100%; padding: 1.1rem 1rem; border: 1px solid rgba(17,17,17,.15); border-radius: 14px; background: #FCFBF7; color: var(--ink); font-family: inherit; text-align: left; cursor: pointer; transition: border-color .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .profil-meni-vrsta:hover { border-color: var(--ink); transform: translateY(-2px); }
         .cw .profil-meni-vrsta strong { display: block; font-size: 1rem; font-weight: 600; margin-bottom: .2rem; }
@@ -4966,11 +4977,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <span className="se-slider" aria-hidden />
                   </span>
                 </label>
-                <button type="button" className="povezava" style={{ marginTop: '1.4rem', display: 'block' }}
-                  onClick={ponastaviVprasalnik}>↻ Ponastavi vprašalnik <span className="vec">znova te vpraša ime, trg, podjetje … (ohrani podjetja in cene)</span></button>
-                <button type="button" className="profil-nevarno" onClick={ponastaviVse}>
-                  Izbriši VSE podatke orodja (podjetja, cene, zgodovino) — celotna ponastavitev
-                </button>
+                <div className="nast-akcije">
+                  <button type="button" className="nast-akcija" onClick={ponastaviVprasalnik}>
+                    <ArrowCounterClockwise size={19} weight="bold" aria-hidden />
+                    <span><strong>Ponastavi vprašalnik</strong><small>znova vpraša ime, trg … (ohrani cene)</small></span>
+                  </button>
+                  <button type="button" className="nast-akcija nast-akcija-nevarno" onClick={ponastaviVse}>
+                    <Trash size={19} weight="bold" aria-hidden />
+                    <span><strong>Izbriši vse podatke</strong><small>podjetja, cene, zgodovina — celotna ponastavitev</small></span>
+                  </button>
+                </div>
               </>
             )}
 
