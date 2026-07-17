@@ -4515,11 +4515,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .cenik-card > summary::-webkit-details-marker { display: none; }
         .cw .cenik-card .cenik-ime { font-weight: 650; font-size: 1rem; color: var(--ink); }
         .cw .cenik-card.cenik-aktiven .cenik-ime { color: var(--accent); }
-        /* uredljiv naslov cenika (preimenovanje kar v naslovu) */
-        .cw .cenik-ime-vnos { flex: 1; min-width: 0; font-family: inherit; font-weight: 650; font-size: 1rem; color: var(--accent); background: transparent; border: none; border-bottom: 1px dashed transparent; padding: .1rem .1rem .15rem; outline: none; transition: border-color .15s; }
+        /* uredljiv naslov cenika (preimenovanje kar v naslovu) — z vidnim namigom (podcrta + svincnik) */
+        .cw .cenik-ime-ovoj { display: inline-flex; align-items: center; gap: .35rem; flex: 1; min-width: 0; cursor: text; }
+        .cw .cenik-ime-vnos { min-width: 0; width: auto; max-width: 100%; font-family: inherit; font-weight: 650; font-size: 1rem; color: var(--accent); background: transparent; border: none; border-bottom: 1px dashed color-mix(in oklab, var(--accent) 35%, transparent); padding: .1rem .1rem .15rem; outline: none; transition: border-color .15s; }
         .cw .cenik-ime-vnos::placeholder { color: var(--accent); opacity: .85; }
-        .cw .cenik-ime-vnos:hover { border-bottom-color: color-mix(in oklab, var(--accent) 40%, transparent); }
-        .cw .cenik-ime-vnos:focus { border-bottom-color: var(--accent); }
+        .cw .cenik-ime-ovoj:hover .cenik-ime-vnos, .cw .cenik-ime-vnos:focus { border-bottom-color: var(--accent); }
+        .cw .cenik-ime-edit { color: color-mix(in oklab, var(--accent) 65%, transparent); flex: none; transition: color .15s; }
+        .cw .cenik-ime-ovoj:hover .cenik-ime-edit { color: var(--accent); }
         .cw .cenik-card .cenik-znak { font-size: .78rem; font-weight: 500; color: rgba(17,17,17,.5); }
         .cw .cenik-card .cenik-arrow { margin-left: auto; color: rgba(17,17,17,.5); transition: transform .2s ease; flex: none; }
         .cw .cenik-card[open] > summary .cenik-arrow { transform: rotate(180deg); }
@@ -5109,11 +5111,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <details className="cenik-card cenik-aktiven" open={delovniCenikOdprt}
                   onToggle={e => setDelovniCenikOdprt((e.currentTarget as HTMLDetailsElement).open)}>
                   <summary>
-                    <input className="cenik-ime-vnos" key={aktivniCenik || '__osnovni'}
-                      defaultValue={aktivniCenik || ''} placeholder="Osnovni cenik" aria-label="Ime cenika"
-                      onClick={e => e.stopPropagation()}
-                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitCenikIme(e.currentTarget.value); e.currentTarget.blur(); } }}
-                      onBlur={e => commitCenikIme(e.currentTarget.value)} />
+                    <span className="cenik-ime-ovoj" onClick={e => { e.stopPropagation(); (e.currentTarget.querySelector('input') as HTMLInputElement | null)?.focus(); }}>
+                      <input className="cenik-ime-vnos" key={aktivniCenik || '__osnovni'}
+                        defaultValue={aktivniCenik || ''} placeholder="Osnovni cenik" aria-label="Ime cenika — klikni za urejanje"
+                        onClick={e => e.stopPropagation()}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitCenikIme(e.currentTarget.value); e.currentTarget.blur(); } }}
+                        onBlur={e => commitCenikIme(e.currentTarget.value)} />
+                      <PencilSimple className="cenik-ime-edit" size={13} weight="bold" aria-hidden />
+                    </span>
                     <CaretDown className="cenik-arrow" size={16} weight="bold" aria-hidden />
                   </summary>
                   <div className="cenik-telo">{cenikUrejevalnik}</div>
