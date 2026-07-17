@@ -4649,6 +4649,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .barvica-mavrica { background: conic-gradient(from 0deg, #FA4892, #F8E71C, #50E3C2, #7C3AED, #FA4892); border-color: rgba(17,17,17,.25); }
         .cw .barvica { width: 1.35rem; height: 1.35rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.22); cursor: pointer; }
         .cw .editor { width: 100%; min-height: 340px; border: 1px solid rgba(17,17,17,.25); background: rgba(255,255,255,.72); padding: 1.35rem; color: var(--ink); font-family: var(--font-sans), system-ui, sans-serif; font-size: .94rem; line-height: 1.62; font-weight: 400; -webkit-text-stroke: 0.28px currentColor; overflow: auto; }
+        /* zakljucek: kompakten predogled ponudbe (bere se), nad gumbi */
+        .cw .zakljucek-predogled-ovoj { max-width: 760px; margin: 0 auto 1.9rem; text-align: left; }
+        .cw .zakljucek-predogled { min-height: 0; max-height: 42vh; border-radius: 14px; background: #fff; box-shadow: 0 12px 44px rgba(40,25,40,.12); }
+        .cw .zakljucek-uredi { display: inline-flex; align-items: center; gap: .35rem; margin-top: .75rem; }
         .cw .editor:focus { outline: none; border-color: var(--ink); }
         .cw .editor b, .cw .editor strong { font-weight: 900; color: var(--ink); }
         .cw .editor h1 b, .cw .editor h1 strong { font-weight: 900; }
@@ -6565,6 +6569,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           )}
 
           {korak === zakljucekStep && (
+            <>
+            {(besediloHtml || besedilo) && (
+              <div className="zakljucek-predogled-ovoj">
+                <div className="editor zakljucek-predogled" aria-label="Predogled ponudbe"
+                  dangerouslySetInnerHTML={{ __html: besediloHtml || ponudbaVHtml(besedilo) }} />
+                <button type="button" className="povezava zakljucek-uredi" onClick={() => setKorak(ponudbaStep)}>
+                  <ArrowUp size={14} weight="bold" aria-hidden /> Uredi ponudbo
+                </button>
+              </div>
+            )}
             <div className="btnvrsta">
               <button type="button" className="gumb" onClick={kopiraj}>
                 <CopySimple size={17} /> {kopirano ? 'Skopirano ✓' : 'Kopiraj ponudbo'}
@@ -6587,6 +6601,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <FloppyDisk size={17} /> Shrani ponudbo v arhiv
               </button>
             </div>
+            </>
           )}
         </div>
       </div>
