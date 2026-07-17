@@ -5494,11 +5494,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   /* SAMO dodaj premaknemo: v prazen prostor DESNO od skupine mehurckov (platno je centrirano),
                      na isti visini kot zadnja vrsta storitev. Storitev NE premikamo. Velja le, ko dodaj
                      ostane sam v zadnji vrsti (sicer je ze naravno med storitvami). */
-                  if (jeSirokZaslon && orbStoritve.length > 0 && orbRowSizes[orbVrstic - 1] === 1 && orbVrstic >= 2) {
-                    /* SAMO na sirokem zaslonu: desno v vrzel ob centriranem platnu, ista visina kot zadnja vrsta.
+                  if (jeSirokZaslon && orbStoritve.length > 0 && orbRowSizes[orbVrstic - 1] === 1 && orbVrstic >= 3) {
+                    /* SAMO na sirokem zaslonu: desno v vrzel ob centriranem platnu, poravnan po VERTIKALI s
+                       PREDZADNJO vrstico storitev (Ilustracija) — stabilno ne glede na 3/4 v zadnji vrsti.
                        Na ozjem zaslonu (ni vrzeli) ostane naravno spodaj, da je dosegljiv. */
                     p.x = 126;
-                    p.y = Math.round(((orbVrstic - 2 + 0.5) / orbVrstic) * 100 * 10) / 10;
+                    p.y = Math.round(((orbVrstic - 3 + 0.5) / orbVrstic) * 100 * 10) / 10;
                   }
                   return (
                     <button type="button" className="orb0 orb0-plus"
