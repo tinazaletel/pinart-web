@@ -1725,7 +1725,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* Postopni prikaz vprasanj (Tinina koreografija): naslov na sredini,
      prvo vprasanje prileti od spodaj, naslednje ob odgovoru ALI po
      nekaj sekundah; stran raste navzdol, nazaj se da poskrolati. */
-  const [imeProfila, setImeProfila] = useState('');
   const [leadIme, setLeadIme] = useState('');
   const [leadEmail, setLeadEmail] = useState('');
   const [zeliEmail, setZeliEmail] = useState(false);
@@ -2908,16 +2907,36 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     URL.revokeObjectURL(a.href);
   };
 
-  const shraniProfil = () => {
-    const ime = imeProfila.trim() || 'Moje cene';
-    const nov = { ...profili, [ime]: { osnove, mojTrg, izkusnje, postavke, mojeStoritve } };
+
+  /* shrani trenutni cenik pod danim imenom (uporabi urejevalnik naslova) */
+  const shraniProfilKot = (ime: string) => {
+    const n = ime.trim();
+    if (!n) return;
+    const nov = { ...profili, [n]: { osnove, mojTrg, izkusnje, postavke, mojeStoritve } };
     setProfili(nov);
     try { localStorage.setItem(K_PROFILI, JSON.stringify(nov)); } catch { /* poln */ }
-    if (imamKontakt) posljiKontakt(`shranjen profil "${ime}"`);
-    setImeProfila('');
-    setAktivniCenik(ime);   /* pravkar shranjeni cenik postane aktivni (urejanje gre vanj) */
+    setAktivniCenik(n);
   };
-
+  /* preimenuj obstoječi cenik (uredi naslov) — ohrani vrstni red ključev */
+  const preimenujCenik = (staro: string, novo: string) => {
+    const n = novo.trim();
+    if (!n || n === staro || profili[n]) { if (profili[n] && n !== staro) return; }
+    setProfili(prej => {
+      if (!prej[staro] || !n || n === staro) return prej;
+      const nov: Record<string, Profil> = {};
+      Object.keys(prej).forEach(k => { nov[k === staro ? n : k] = prej[k]; });
+      try { localStorage.setItem(K_PROFILI, JSON.stringify(nov)); } catch { /* poln */ }
+      return nov;
+    });
+    if (n && n !== staro && !profili[n]) setAktivniCenik(n);
+  };
+  /* commit iz urejevalnika naslova cenika: preimenuje (če aktiven) ali shrani delovni set pod imenom */
+  const commitCenikIme = (novo: string) => {
+    const n = novo.trim();
+    if (!n) return;
+    if (aktivniCenik) preimenujCenik(aktivniCenik, n);
+    else shraniProfilKot(n);
+  };
   const naloziProfil = (ime: string) => {
     const p = profili[ime];
     if (!p) return;
@@ -4484,6 +4503,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .cenik-card > summary::-webkit-details-marker { display: none; }
         .cw .cenik-card .cenik-ime { font-weight: 650; font-size: 1rem; color: var(--ink); }
         .cw .cenik-card.cenik-aktiven .cenik-ime { color: var(--accent); }
+        /* uredljiv naslov cenika (preimenovanje kar v naslovu) */
+        .cw .cenik-ime-vnos { flex: 1; min-width: 0; font-family: inherit; font-weight: 650; font-size: 1rem; color: var(--accent); background: transparent; border: none; border-bottom: 1px dashed transparent; padding: .1rem .1rem .15rem; outline: none; transition: border-color .15s; }
+        .cw .cenik-ime-vnos::placeholder { color: var(--accent); opacity: .85; }
+        .cw .cenik-ime-vnos:hover { border-bottom-color: color-mix(in oklab, var(--accent) 40%, transparent); }
+        .cw .cenik-ime-vnos:focus { border-bottom-color: var(--accent); }
         .cw .cenik-card .cenik-znak { font-size: .78rem; font-weight: 500; color: rgba(17,17,17,.5); }
         .cw .cenik-card .cenik-arrow { margin-left: auto; color: rgba(17,17,17,.5); transition: transform .2s ease; flex: none; }
         .cw .cenik-card[open] > summary .cenik-arrow { transform: rotate(180deg); }
@@ -5069,24 +5093,26 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Te cene so <b>podlaga za izračun</b> — privzete (slovenski trg) delujejo takoj, prilagodi jih svojim. Razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš.</p>
                 <button type="button" className="povezava povezava-roza" style={{ marginBottom: '1.3rem' }} onClick={() => setProfilPogled('moji-podatki')}>↳ Uredi področja dela (v Moji podatki)</button>
 
-                {/* DELOVNI (aktivni) cenik — kartica z naslovom + puščico; odprta, cene notri */}
+                {/* DELOVNI (aktivni) cenik — naslov je UREDLJIV (preimenuješ ga kar tu); cene notri */}
                 <details className="cenik-card cenik-aktiven" open={delovniCenikOdprt}
                   onToggle={e => setDelovniCenikOdprt((e.currentTarget as HTMLDetailsElement).open)}>
                   <summary>
-                    <span className="cenik-ime">{aktivniCenik || 'Osnovni cenik'}</span>
-                    {aktivniCenik ? <span className="cenik-znak">urejaš — se shranjuje</span> : <span className="cenik-znak">shrani pod imenom spodaj</span>}
+                    <input className="cenik-ime-vnos" key={aktivniCenik || '__osnovni'}
+                      defaultValue={aktivniCenik || ''} placeholder="Osnovni cenik" aria-label="Ime cenika"
+                      onClick={e => e.stopPropagation()}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitCenikIme(e.currentTarget.value); e.currentTarget.blur(); } }}
+                      onBlur={e => commitCenikIme(e.currentTarget.value)} />
                     <CaretDown className="cenik-arrow" size={16} weight="bold" aria-hidden />
                   </summary>
                   <div className="cenik-telo">{cenikUrejevalnik}</div>
                 </details>
 
-                {/* DRUGI shranjeni ceniki — zaprti; klik na naslov naloži za urejanje */}
+                {/* DRUGI shranjeni ceniki — zaprti; klik na naslov naloži za urejanje (in ga tam preimenuješ) */}
                 {drugiCeniki.map(name => (
                   <details key={name} className="cenik-card"
                     onToggle={e => { if ((e.currentTarget as HTMLDetailsElement).open) { naloziProfil(name); setDelovniCenikOdprt(true); } }}>
                     <summary>
                       <span className="cenik-ime">{name}</span>
-                      <span className="cenik-znak">odpri za urejanje</span>
                       <CaretDown className="cenik-arrow" size={16} weight="bold" aria-hidden />
                       <button type="button" className="cenik-brisi" aria-label={'Izbriši cenik ' + name} title={'Izbriši ' + name}
                         onClick={e => { e.preventDefault(); e.stopPropagation(); izbrisiProfil(name); }}>×</button>
@@ -5095,14 +5121,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </details>
                 ))}
 
-                {/* shrani trenutni cenik pod novim imenom -> postane svoja kartica */}
-                <div className="cene-dodaj" style={{ marginTop: '1.4rem' }}>
-                  <input type="text" placeholder="Shrani kot nov cenik (npr. Cene za tujino)" value={imeProfila}
-                    onChange={e => setImeProfila(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter' && imeProfila.trim()) shraniProfil(); }}
-                    aria-label="Ime novega cenika" />
-                  <button type="button" className="povezava" disabled={!imeProfila.trim()} onClick={shraniProfil}>+ shrani kot cenik</button>
-                </div>
+                {/* nov (prazen) cenik — začneš svež delovni set, ki ga poimenuješ v naslovu */}
+                <button type="button" className="dodaj-gumb" style={{ marginTop: '.6rem' }}
+                  onClick={() => { setAktivniCenik(null); setDelovniCenikOdprt(true); }}>+ Nov cenik</button>
               </>
               );
             })()}
@@ -5461,7 +5482,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 })}
                 {(() => {
                   const d = Math.round(orbD * 0.78);
-                  const p = orbPoz(orbStoritve.length);   /* pozicija sledi pakiranju (dodaj = zadnje mesto zadnje vrste) */
+                  const p = orbPoz(orbStoritve.length);   /* naravna pozicija */
+                  /* SAMO dodaj premaknemo desno (kot naslednji stolpec prejsnje vrste), storitev NE diramo.
+                     Velja le, ko dodaj ostane sam v zadnji vrsti (drugace je ze med storitvami). */
+                  if (orbStoritve.length > 0 && orbRowSizes[orbRowSizes.length - 1] === 1 && orbVrstic >= 2) {
+                    const prevCnt = orbRowSizes[orbVrstic - 2];
+                    const prevStartX = 50 - ((prevCnt - 1) * orbStep) / 2;
+                    p.x = Math.round(Math.min(94, prevStartX + prevCnt * orbStep) * 10) / 10;
+                  }
                   return (
                     <button type="button" className="orb0 orb0-plus"
                       style={{ width: d, height: d, left: `calc(${p.x}% - ${d / 2}px)`, top: `calc(${p.y}% - ${d / 2}px)` }}
