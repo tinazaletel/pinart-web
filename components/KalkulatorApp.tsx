@@ -1248,6 +1248,7 @@ type Profil = {
 /* Arhiv ponudb: cel posnetek ene ponudbe (za vrnitev / preklop med strankami).
    Loceno od cenovnih profilov (ti hranijo le cene). */
 const K_ARHIV = 'pinart-kalkulator-arhiv';
+const K_STEVEC = 'pinart-kalkulator-stevec';   /* zaporedni stevec ponudb po letu: { "2026": 4 } */
 type ShranjenaP = {
   datum: string;
   izbrane: string[];
@@ -1274,6 +1275,7 @@ type ShranjenaP = {
   custDrzavaNarocnik?: string;
   /* ena koncna cena namesto treh paketov (2026-07-17) */
   enaCena?: boolean;
+  stevilkaPonudbe?: string; veljavnostDni?: string;
 };
 
 /* Moja podjetja: vec identitet podjetja (ime/davcna/TRR/DDV/avans/urne
@@ -1706,6 +1708,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [urejamPaket, setUrejamPaket] = useState<string | null>(null);
   /* ena koncna cena (Priporoceni obseg) namesto treh paketov — na ponudbo */
   const [enaCena, setEnaCena] = useState(false);
+  /* zaporedna stevilka ponudbe (npr. 2026-0004) — dodeljena ob prvem prikazu ponudbe;
+     veljavnost v dnevih (privzeto 30) se izpise v pogojih */
+  const [stevilkaPonudbe, setStevilkaPonudbe] = useState('');
+  const [veljavnostDni, setVeljavnostDni] = useState('30');
   const [odgovori, setOdgovori] = useState<Record<string, string>>({});
   const [osnove, setOsnove] = useState<Record<string, number>>({});
   const [profili, setProfili] = useState<Record<string, Profil>>({});
@@ -2067,6 +2073,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setOnboardingOdprt(false);
   };
 
+  /* Dodeli naslednjo zaporedno stevilko ponudbe za tekoce leto (format 2026-0004).
+     Stevec je persistenten (localStorage); klice se ob prvem prikazu ponudbe. */
+  const dodeliStevilkoPonudbe = () => {
+    setStevilkaPonudbe(prej => {
+      if (prej) return prej;
+      const leto = new Date().getFullYear().toString();
+      let stevci: Record<string, number> = {};
+      try { stevci = JSON.parse(localStorage.getItem(K_STEVEC) || '{}'); } catch { stevci = {}; }
+      const nasl = (stevci[leto] || 0) + 1;
+      stevci[leto] = nasl;
+      try { localStorage.setItem(K_STEVEC, JSON.stringify(stevci)); } catch { /* poln */ }
+      return `${leto}-${String(nasl).padStart(4, '0')}`;
+    });
+  };
+
   /* Nova ponudba: pocisti VSE za to ponudbo (izbor, odgovori, postavke,
      narocnik, zneski), a OHRANI nastavitve (cene, profil, tvoji podatki). */
   const novaPonudba = () => {
@@ -2096,6 +2117,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setRocnoBesedilo(false);
     setEnaCena(false);
     setRocniPaketi({});
+    setStevilkaPonudbe('');
+    setVeljavnostDni('30');
     /* onboarding vprasanja se NE ponovijo (dogovor): transkript se skrije (chatKorak 0 brez
        uvodChat), pokaze se osebni pozdrav "Hej Tina, <podjetje>" + izbira storitev.
        poMeh 0 = vprasanja ponudbe (narocnik, trg, pravice ...) zacnejo znova za novo ponudbo. */
@@ -2296,7 +2319,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const ponudba = useMemo(() => {
     if (!r) return '';
     const danes = new Date();
-    const velja = new Date(danes.getTime() + 30 * 864e5);
+    const veljDni = clamp(Math.round(Number(veljavnostDni)) || 30, 1, 365);
+    const velja = new Date(danes.getTime() + veljDni * 864e5);
     const dat = (x: Date) => `${x.getDate()}. ${x.getMonth() + 1}. ${x.getFullYear()}`;
     const crta = '──────────────────────────────────';
     const st = clamp(Number(ddvStopnja) || 22, 0, 30);
@@ -2341,8 +2365,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     if (narocnikKontakt) v.push(narocnikKontakt);
     v.push('');
     /* 4) PONUDBA */
-    v.push(`PONUDBA: ${nazivPonudbe.trim() || r.sez.map(s => s.ime).join(', ')}`);
-    v.push('Datum: ' + dat(danes) + ' · Ponudba velja do: ' + dat(velja));
+    v.push(`PONUDBA${stevilkaPonudbe ? ' št. ' + stevilkaPonudbe : ''}: ${nazivPonudbe.trim() || r.sez.map(s => s.ime).join(', ')}`);
+    v.push('Datum: ' + dat(danes) + ' · Ponudba velja do: ' + dat(velja) + ` (${veljDni} dni)`);
     v.push('');
     v.push('OBSEG');
     r.linije.forEach(l => {
@@ -2528,7 +2552,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       v.push('Pripravljeno s Pinart kalkulatorjem · pinart.si');
     }
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak, izjemePravice, trgNarocnika, enaCena]);
+  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak, izjemePravice, trgNarocnika, enaCena, stevilkaPonudbe, veljavnostDni]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
@@ -2829,7 +2853,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       ${noga ? `<div class="pdf-noga">${escapeHtml(noga)}</div>` : ''}
       <div class="pdf-glava">
         <div class="pdf-znamka">${escapeHtml(ponudnik.ime.trim() || 'Ponudba')}</div>
-        <div class="pdf-meta"><b>${escapeHtml(locale === 'en' ? 'Offer' : 'Ponudba')}</b>${naziv ? escapeHtml(naziv) + '<br/>' : ''}${escapeHtml(datum)}</div>
+        <div class="pdf-meta"><b>${escapeHtml((locale === 'en' ? 'Offer' : 'Ponudba') + (stevilkaPonudbe ? ' ' + stevilkaPonudbe : ''))}</b>${naziv ? escapeHtml(naziv) + '<br/>' : ''}${escapeHtml(datum)}</div>
       </div>
       ${telo}
     </body></html>`;
@@ -2921,6 +2945,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       narocnikNaslov: narocnikNaslov || undefined,
       narocnikDavcna: narocnikDavcna || undefined,
       enaCena: enaCena || undefined,
+      stevilkaPonudbe: stevilkaPonudbe || undefined,
+      veljavnostDni: veljavnostDni !== '30' ? veljavnostDni : undefined,
     };
     const nov = { ...arhiv, [ime]: zapis };
     setArhiv(nov);
@@ -2950,6 +2976,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setNarocnikNaslov(p.narocnikNaslov || '');
     setNarocnikDavcna(p.narocnikDavcna || '');
     setEnaCena(!!p.enaCena);
+    setStevilkaPonudbe(p.stevilkaPonudbe || '');
+    setVeljavnostDni(p.veljavnostDni || '30');
     setObsegPonudbe(p.obsegPonudbe); setTonPonudbe(p.tonPonudbe); setAvansPct(p.avansPct);
     setKaziUre(p.kaziUre); setNogaZnak(p.nogaZnak);
     setIzkusnje(p.izkusnje); setMojTrg(p.mojTrg); setTrgNarocnika(p.trgNarocnika);
@@ -3395,6 +3423,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const orbN = orbStoritve.length + 1; /* + "dodaj" */
   /* v chatu (korak 0, po onboardingu, ne klasicna oblika): vprasanja tecejo navzdol */
   const vChatu = korak === 0 && !uvodChat && !klasicnaOblika;
+  /* ob prvem prikazu koncne ponudbe (chat: poMeh>=5; klasicno: korak>=ponudbaStep) dodeli stevilko */
+  useEffect(() => {
+    const naPonudbi = (vChatu && poMeh >= 5) || (klasicnaOblika && korak >= ponudbaStep);
+    if (naPonudbi && r && !stevilkaPonudbe) dodeliStevilkoPonudbe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vChatu, poMeh, klasicnaOblika, korak, r, stevilkaPonudbe]);
   /* naslov koraka kot chat oblacek (v chat obliki) */
   const chatVpr = (naslov: string, opis?: string) => (
     <div className="chat-bot chat-vpr">
@@ -6206,8 +6240,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       placeholder="0" value={popust}
                       onChange={e => setPopust(e.target.value)} />
                   </div>
+                  <div className="polje">
+                    <label htmlFor="cw-veljavnost">Ponudba velja (dni){stevilkaPonudbe ? <span className="vec">št. {stevilkaPonudbe}</span> : null}</label>
+                    <input id="cw-veljavnost" type="number" min={1} max={365} step={1}
+                      placeholder="30" value={veljavnostDni}
+                      onChange={e => setVeljavnostDni(e.target.value)} />
+                  </div>
                 </div>
-                <p className="hint">Popust naj ima vedno razlog (prvi projekt, paket, dolgoročno sodelovanje) in v ponudbi vedno stoji ob redni ceni.</p>
+                <p className="hint">Popust naj ima vedno razlog (prvi projekt, paket, dolgoročno sodelovanje) in v ponudbi vedno stoji ob redni ceni. Ponudba dobi zaporedno številko in rok veljavnosti (privzeto 30 dni).</p>
               </div>
               <p className="razlaga">
                 Cena zajema izvedbo ({r.sez.map(s => s.ime.toLowerCase()).join(' + ')}),
