@@ -3892,7 +3892,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         /* priprava = samostojna centrirana stran, malo sirsa od ostalih korakov */
         .cw .korak-vsebina.priprava-korak { max-width: 1000px; }
         .cw .priprava-vrh { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 0 1.3rem; }
-        .cw .priprava-zapri { display: inline-flex; align-items: center; gap: .4rem; background: transparent; border: 1px solid rgba(17,17,17,.16); color: rgba(17,17,17,.7); font-family: inherit; font-weight: 600; font-size: .84rem; cursor: pointer; padding: .5rem .95rem; border-radius: 999px; transition: background .18s, border-color .18s, color .18s; }
+        .cw .priprava-zapri { display: inline-flex; align-items: center; gap: .45rem; white-space: nowrap; background: transparent; border: 1px solid rgba(17,17,17,.16); color: rgba(17,17,17,.7); font-family: inherit; font-weight: 600; font-size: .84rem; line-height: 1; cursor: pointer; padding: .5rem 1rem; border-radius: 999px; transition: background .18s, border-color .18s, color .18s; }
         .cw .priprava-zapri:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
         .cw .priprava-nazaj { display: inline-flex; align-items: center; gap: .4rem; background: rgba(255,255,255,.4); border: 1px solid rgba(17,17,17,.16); color: var(--ink); font-family: inherit; font-weight: 600; font-size: .84rem; cursor: pointer; padding: .5rem .95rem; border-radius: 999px; transition: background .18s, border-color .18s; }
         .cw .priprava-nazaj:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
@@ -5233,7 +5233,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 ← Uredi podatke in vprašanja
               </button>
               <button type="button" className="priprava-zapri" onClick={() => setKorak(0)} title="Zapri ponudbo — nazaj na sestavljanje">
-                Zapri ✕
+                Zapri <span aria-hidden>✕</span>
               </button>
             </div>
           )}
