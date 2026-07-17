@@ -12,7 +12,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, User, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, CaretUp, Check, PencilSimple, SlidersHorizontal, ArrowUp, ArrowDown, ArrowCounterClockwise, Trash,
+  CaretDown, CaretUp, Check, PencilSimple, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -4883,7 +4883,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 {profilPogled !== 'meni' && (
                   <button type="button" className="profil-nazaj"
                     onClick={() => profilPogled === 'podjetje-urejanje' ? zapriUrejanjePodjetja() : setProfilPogled('meni')}
-                    aria-label="Nazaj na profil">←</button>
+                    aria-label="Nazaj na profil"><ArrowLeft size={17} weight="bold" aria-hidden /></button>
                 )}
                 {profilPogled === 'meni' ? 'Profil'
                   : profilPogled === 'moji-podatki' ? 'Moji podatki'
