@@ -1575,6 +1575,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* trenutno naloženi cenik (cenovni profil) — urejanje cen se sproti shrani vanj */
   const [aktivniCenik, setAktivniCenik] = useState<string | null>(null);
   const [delovniCenikOdprt, setDelovniCenikOdprt] = useState(true);
+  /* širok zaslon (panel ob strani, platno centrirano z vrzeljo) — za pozicijo dodaj mehurčka */
+  const [jeSirokZaslon, setJeSirokZaslon] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1201px)');
+    const upd = () => setJeSirokZaslon(mq.matches);
+    upd(); mq.addEventListener('change', upd);
+    return () => mq.removeEventListener('change', upd);
+  }, []);
   const [potrdiOdjavo, setPotrdiOdjavo] = useState(false);
   const [mojeStoritve, setMojeStoritve] = useState<Storitev[]>([]);
   /* Onboarding / osebni set storitev: kaj uporabnik ponuja, postavljeno v
@@ -5483,12 +5491,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 {(() => {
                   const d = Math.round(orbD * 0.78);
                   const p = orbPoz(orbStoritve.length);   /* naravna pozicija */
-                  /* SAMO dodaj premaknemo desno (kot naslednji stolpec prejsnje vrste), storitev NE diramo.
-                     Velja le, ko dodaj ostane sam v zadnji vrsti (drugace je ze med storitvami). */
-                  if (orbStoritve.length > 0 && orbRowSizes[orbRowSizes.length - 1] === 1 && orbVrstic >= 2) {
-                    const prevCnt = orbRowSizes[orbVrstic - 2];
-                    const prevStartX = 50 - ((prevCnt - 1) * orbStep) / 2;
-                    p.x = Math.round(Math.min(94, prevStartX + prevCnt * orbStep) * 10) / 10;
+                  /* SAMO dodaj premaknemo: v prazen prostor DESNO od skupine mehurckov (platno je centrirano),
+                     na isti visini kot zadnja vrsta storitev. Storitev NE premikamo. Velja le, ko dodaj
+                     ostane sam v zadnji vrsti (sicer je ze naravno med storitvami). */
+                  if (jeSirokZaslon && orbStoritve.length > 0 && orbRowSizes[orbVrstic - 1] === 1 && orbVrstic >= 2) {
+                    /* SAMO na sirokem zaslonu: desno v vrzel ob centriranem platnu, ista visina kot zadnja vrsta.
+                       Na ozjem zaslonu (ni vrzeli) ostane naravno spodaj, da je dosegljiv. */
+                    p.x = 126;
+                    p.y = Math.round(((orbVrstic - 2 + 0.5) / orbVrstic) * 100 * 10) / 10;
                   }
                   return (
                     <button type="button" className="orb0 orb0-plus"
