@@ -4688,7 +4688,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
         .cw .noga { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; padding: 1rem clamp(1.2rem, 4vw, 3rem) 1.1rem; background: linear-gradient(to top, var(--paper) 70%, transparent); z-index: 62; }
         .cw .noga .noga-c { width: 100%; display: flex; align-items: center; justify-content: center; gap: 1rem; }
-        .cw .noga .noga-gumbi { display: flex; align-items: center; gap: .8rem; }
+        .cw .noga .noga-gumbi { display: flex; align-items: center; gap: .8rem; position: relative; }
+        /* ↑ (nazaj) vzet iz toka — levo od centriranega NAPREJ, da je NAPREJ na sredini vprasalnika */
+        .cw .noga .noga-gumbi > .gumb-nazaj { position: absolute; right: calc(100% + .8rem); top: 50%; margin-top: -1.55rem; }
         .cw .gumb-nazaj { width: 3.1rem; height: 3.1rem; border-radius: 999px; border: 1px solid var(--ink); background: transparent; color: var(--ink); font-size: 1.15rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .18s ease, color .18s ease; flex: none; }
         .cw .gumb-nazaj:hover { background: var(--ink); color: var(--paper); transform: scale(1.08); }
         .cw .gumb-nazaj:active { transform: scale(.95); }
