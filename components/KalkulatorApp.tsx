@@ -271,7 +271,7 @@ const PODROCJA: { id: string; ime: string; opis: string; storitve: string[] }[] 
   { id: 'splet',     ime: 'Splet in produkti',         opis: 'spletne strani, UX/UI, aplikacije',                storitve: ['web', 'uxui', 'aplikacija'] },
   { id: 'marketing', ime: 'Marketing in oglasi',       opis: 'kampanje, social media, SEO, PR, besedila',        storitve: ['kampanja', 'smm', 'seo', 'email', 'pr', 'copy'] },
   { id: 'foto',      ime: 'Foto, video, motion',       opis: 'fotografiranje, video, motion, 3D',                storitve: ['fotografija', 'video', 'motion', 'render3d'] },
-  { id: 'direkcija', ime: 'Kreativna direkcija',       opis: 'vodenje, koncept, strategija',                     storitve: ['direkcija', 'strategija'] },
+  { id: 'direkcija', ime: 'Kreativna direkcija in strategija', opis: 'vodenje, koncept, strategija',                 storitve: ['direkcija', 'strategija'] },
   { id: 'prostor',   ime: 'Prostor in arhitektura',    opis: 'interier, arhitektura, razstavni in produktni dizajn', storitve: ['interier', 'arhitektura', 'razstava', 'produktni'] },
 ];
 
@@ -4157,11 +4157,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chip-podrocje b { font-weight: 700; }
         .cw .chip-podrocje .chip-kljuk { width: 1.35rem; height: 1.35rem; border-radius: 50%; border: 1.5px solid; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .78rem; font-weight: 900; margin-left: .3rem; flex: none; transition: background .18s, border-color .18s; }
         @media (max-width: 560px) { .cw .chat-podrocja { margin-left: 0; } }
-        /* v modalu dodaj/uredi: brez chat-zamika, leva poravnava, DVE na vrsto (mreza) */
-        .cw .uredi-plosca .chat-podrocja { margin-left: 0; max-width: none; display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
-        .cw .uredi-plosca .chip-podrocje { justify-content: flex-start; min-width: 0; }
-        .cw .uredi-plosca .chip-podrocje b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        @media (max-width: 480px) { .cw .uredi-plosca .chat-podrocja { grid-template-columns: 1fr; } }
+        /* v modalu dodaj/uredi: brez chat-zamika, leva poravnava; naravne pilule (razlicne sirine),
+           besedilo v eni vrsti, kljukica na desni strani pilule */
+        .cw .uredi-plosca .chat-podrocja { margin-left: 0; max-width: none; }
+        .cw .uredi-plosca .chip-podrocje b { white-space: nowrap; }
         .cw .profil-predal .chat-podrocja { margin-left: 0; max-width: none; flex-direction: column; }
         .cw .profil-predal .chip-podrocje { width: 100%; }
         .cw .profil-predal .chip-podrocje .chip-kljuk { margin-left: auto; }
