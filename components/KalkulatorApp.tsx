@@ -1574,6 +1574,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [aktivnoPodjetje, setAktivnoPodjetje] = useState<string | null>(null);
   /* trenutno naloženi cenik (cenovni profil) — urejanje cen se sproti shrani vanj */
   const [aktivniCenik, setAktivniCenik] = useState<string | null>(null);
+  const [delovniCenikOdprt, setDelovniCenikOdprt] = useState(true);
   const [potrdiOdjavo, setPotrdiOdjavo] = useState(false);
   const [mojeStoritve, setMojeStoritve] = useState<Storitev[]>([]);
   /* Onboarding / osebni set storitev: kaj uporabnik ponuja, postavljeno v
@@ -4474,6 +4475,19 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .podjetje-cip .pc-ime { font-family: inherit; font-size: .9rem; font-weight: 600; color: var(--ink); background: none; border: none; padding: .5rem .3rem .5rem .95rem; cursor: pointer; }
         .cw .podjetje-cip .pc-brisi { font-family: inherit; font-size: 1.05rem; line-height: 1; color: rgba(17,17,17,.5); background: none; border: none; padding: 0 .7rem 0 .35rem; cursor: pointer; transition: color .15s ease; }
         .cw .podjetje-cip .pc-brisi:hover { color: var(--accent); }
+        /* ceniki kot zlozljive kartice: naslov + puscica; en odprt (aktivni), drugi zaprti */
+        .cw .cenik-card { border: 1px solid rgba(17,17,17,.14); border-radius: 14px; background: #FCFBF7; margin-bottom: .8rem; overflow: hidden; }
+        .cw .cenik-card.cenik-aktiven { border-color: color-mix(in oklab, var(--accent) 45%, transparent); }
+        .cw .cenik-card > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: .7rem; padding: .95rem 1.1rem; }
+        .cw .cenik-card > summary::-webkit-details-marker { display: none; }
+        .cw .cenik-card .cenik-ime { font-weight: 650; font-size: 1rem; color: var(--ink); }
+        .cw .cenik-card.cenik-aktiven .cenik-ime { color: var(--accent); }
+        .cw .cenik-card .cenik-znak { font-size: .78rem; font-weight: 500; color: rgba(17,17,17,.5); }
+        .cw .cenik-card .cenik-arrow { margin-left: auto; color: rgba(17,17,17,.5); transition: transform .2s ease; flex: none; }
+        .cw .cenik-card[open] > summary .cenik-arrow { transform: rotate(180deg); }
+        .cw .cenik-card .cenik-brisi { flex: none; font-size: 1.15rem; line-height: 1; color: rgba(17,17,17,.4); background: none; border: none; padding: 0 .2rem; cursor: pointer; transition: color .15s ease; }
+        .cw .cenik-card .cenik-brisi:hover { color: var(--accent); }
+        .cw .cenik-card .cenik-telo { padding: 0 1.1rem 1.1rem; }
         .cw .dodaj-gumb:hover { border-color: var(--ink); background: rgba(17,17,17,.03); }
         .cw .narocnik-nedavni { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: 1.1rem; }
         .cw .narocnik-nedavni .vec { font-size: .78rem; font-weight: 500; color: rgba(17,17,17,.55); margin-right: .1rem; }
@@ -5005,76 +5019,91 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </>
             )}
 
-            {profilPogled === 'cene-nastavitve' && (
+            {profilPogled === 'cene-nastavitve' && (() => {
+              /* urejevalnik cen (seznam osnov + skrite + dodaj lastno) — v telesu odprtega cenika */
+              const cenikUrejevalnik = (
+                <>
+                  <div className="cene-seznam">
+                    {poVrstnemRedu(vidneStoritve).map((s, i) => (
+                      <div key={s.id} className="cene-vrsta" draggable
+                        onDragStart={() => { dragIndex.current = i; }}
+                        onDragOver={e => e.preventDefault()}
+                        onDrop={() => { if (dragIndex.current !== null) premakniStoritev(dragIndex.current, i); dragIndex.current = null; }}>
+                        <span className="drag-rocaj" aria-hidden><DotsSixVertical size={18} weight="bold" /></span>
+                        <span className="cv-ime">{s.ime}</span>
+                        <input type="number" min={0} step={50} value={osnovaZa(s)} aria-label={'Osnovna cena: ' + s.ime}
+                          onChange={e => setOsnove({ ...osnove, [s.id]: Number(e.target.value) || 0 })} />
+                        <span className="cv-znak">{vfx.znak}</span>
+                        <button type="button" className="brisi" title={'Izbriši ' + s.ime}
+                          onClick={() => odstraniStoritev(s.id)}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                  {skrite.length > 0 && (
+                    <div className="cene-skrite">
+                      <span className="cs-oznaka">Izbrisano:</span>
+                      {skrite.map(id => {
+                        const st = STORITVE.find(x => x.id === id);
+                        return st ? (
+                          <button key={id} type="button" className="cs-chip" onClick={() => povrniStoritev(id)}>↩ {st.ime}</button>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
+                  <div className="cene-dodaj">
+                    <input type="text" placeholder="Tvoja storitev (npr. tetovaža)" value={novaIme}
+                      onChange={e => setNovaIme(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label="Ime nove storitve" />
+                    <input type="number" min={0} step={50} placeholder="cena" value={novaCena}
+                      onChange={e => setNovaCena(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label="Cena nove storitve" />
+                    <button type="button" className="povezava" onClick={dodajStoritev}>+ dodaj</button>
+                  </div>
+                </>
+              );
+              const drugiCeniki = Object.keys(profili).filter(n => n !== aktivniCenik);
+              return (
               <>
-                <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Te cene so <b>podlaga za izračun</b> — privzete (slovenski trg) delujejo takoj, prilagodi jih svojim za točnejši rezultat. Razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš; vrstni red velja tudi na prvem koraku.</p>
+                <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Te cene so <b>podlaga za izračun</b> — privzete (slovenski trg) delujejo takoj, prilagodi jih svojim. Razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš.</p>
                 <button type="button" className="povezava povezava-roza" style={{ marginBottom: '1.3rem' }} onClick={() => setProfilPogled('moji-podatki')}>↳ Uredi področja dela (v Moji podatki)</button>
-                {/* aktivni cenik + preklop med shranjenimi ceniki (naslov = cenovni profil) */}
-                {Object.keys(profili).length > 0 && (
-                  <div className="podjetja-preklop">
-                    <div className="pp-glava">
-                      <span className="pp-label">{aktivniCenik ? <>Cenik: <b style={{ color: 'var(--accent)' }}>{aktivniCenik}</b> <span className="vec">urejaš ga, spremembe se shranijo</span></> : <>Cenik: <b>osnovni</b> <span className="vec">shrani ga spodaj, da ga poimenuješ</span></>}</span>
-                    </div>
-                    <div className="podjetja-cipi">
-                      {Object.keys(profili).map(ime => (
-                        <span key={ime} className={'podjetje-cip' + (aktivniCenik === ime ? ' on' : '')}>
-                          <button type="button" className="pc-ime" onClick={() => naloziProfil(ime)}>{ime}</button>
-                          <button type="button" className="pc-brisi" aria-label={'Izbriši cenik ' + ime} title={'Izbriši ' + ime} onClick={() => izbrisiProfil(ime)}>×</button>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div className="cene-seznam">
-                  {poVrstnemRedu(vidneStoritve).map((s, i) => (
-                    <div key={s.id} className="cene-vrsta" draggable
-                      onDragStart={() => { dragIndex.current = i; }}
-                      onDragOver={e => e.preventDefault()}
-                      onDrop={() => { if (dragIndex.current !== null) premakniStoritev(dragIndex.current, i); dragIndex.current = null; }}>
-                      <span className="drag-rocaj" aria-hidden><DotsSixVertical size={18} weight="bold" /></span>
-                      <span className="cv-ime">{s.ime}</span>
-                      <input type="number" min={0} step={50} value={osnovaZa(s)} aria-label={'Osnovna cena: ' + s.ime}
-                        onChange={e => setOsnove({ ...osnove, [s.id]: Number(e.target.value) || 0 })} />
-                      <span className="cv-znak">{vfx.znak}</span>
-                      <button type="button" className="brisi" title={'Izbriši ' + s.ime}
-                        onClick={() => odstraniStoritev(s.id)}>×</button>
-                    </div>
-                  ))}
-                </div>
-                {skrite.length > 0 && (
-                  <div className="cene-skrite">
-                    <span className="cs-oznaka">Izbrisano:</span>
-                    {skrite.map(id => {
-                      const st = STORITVE.find(x => x.id === id);
-                      return st ? (
-                        <button key={id} type="button" className="cs-chip" onClick={() => povrniStoritev(id)}>↩ {st.ime}</button>
-                      ) : null;
-                    })}
-                  </div>
-                )}
-                <div className="cene-dodaj">
-                  <input type="text" placeholder="Tvoja storitev (npr. tetovaža)" value={novaIme}
-                    onChange={e => setNovaIme(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label="Ime nove storitve" />
-                  <input type="number" min={0} step={50} placeholder="cena" value={novaCena}
-                    onChange={e => setNovaCena(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label="Cena nove storitve" />
-                  <button type="button" className="povezava" onClick={dodajStoritev}>+ dodaj</button>
-                </div>
 
-                {/* shrani trenutni cenik pod novim naslovom (postane cenovni profil, ki ga naložiš/urejaš zgoraj) */}
-                <div className="k-naslov" style={{ marginTop: '1.8rem', paddingTop: '1.4rem', borderTop: '1px solid rgba(17,17,17,.1)' }}>
-                  Shrani cenik pod imenom <span className="vec">npr. »Cene za tujino«, »Cene 2027« — nato ga naložiš/urejaš zgoraj</span>
-                </div>
-                <div className="cene-dodaj">
-                  <input type="text" placeholder="Ime cenika (npr. Cene za tujino)" value={imeProfila}
+                {/* DELOVNI (aktivni) cenik — kartica z naslovom + puščico; odprta, cene notri */}
+                <details className="cenik-card cenik-aktiven" open={delovniCenikOdprt}
+                  onToggle={e => setDelovniCenikOdprt((e.currentTarget as HTMLDetailsElement).open)}>
+                  <summary>
+                    <span className="cenik-ime">{aktivniCenik || 'Osnovni cenik'}</span>
+                    {aktivniCenik ? <span className="cenik-znak">urejaš — se shranjuje</span> : <span className="cenik-znak">shrani pod imenom spodaj</span>}
+                    <CaretDown className="cenik-arrow" size={16} weight="bold" aria-hidden />
+                  </summary>
+                  <div className="cenik-telo">{cenikUrejevalnik}</div>
+                </details>
+
+                {/* DRUGI shranjeni ceniki — zaprti; klik na naslov naloži za urejanje */}
+                {drugiCeniki.map(name => (
+                  <details key={name} className="cenik-card"
+                    onToggle={e => { if ((e.currentTarget as HTMLDetailsElement).open) { naloziProfil(name); setDelovniCenikOdprt(true); } }}>
+                    <summary>
+                      <span className="cenik-ime">{name}</span>
+                      <span className="cenik-znak">odpri za urejanje</span>
+                      <CaretDown className="cenik-arrow" size={16} weight="bold" aria-hidden />
+                      <button type="button" className="cenik-brisi" aria-label={'Izbriši cenik ' + name} title={'Izbriši ' + name}
+                        onClick={e => { e.preventDefault(); e.stopPropagation(); izbrisiProfil(name); }}>×</button>
+                    </summary>
+                    <div className="cenik-telo"><p className="hint" style={{ margin: 0 }}>Naložim ta cenik za urejanje …</p></div>
+                  </details>
+                ))}
+
+                {/* shrani trenutni cenik pod novim imenom -> postane svoja kartica */}
+                <div className="cene-dodaj" style={{ marginTop: '1.4rem' }}>
+                  <input type="text" placeholder="Shrani kot nov cenik (npr. Cene za tujino)" value={imeProfila}
                     onChange={e => setImeProfila(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && imeProfila.trim()) shraniProfil(); }}
-                    aria-label="Ime novega shranjenega cenika" />
-                  <button type="button" className="povezava" disabled={!imeProfila.trim()} onClick={shraniProfil}>+ shrani trenutni cenik</button>
+                    aria-label="Ime novega cenika" />
+                  <button type="button" className="povezava" disabled={!imeProfila.trim()} onClick={shraniProfil}>+ shrani kot cenik</button>
                 </div>
               </>
-            )}
+              );
+            })()}
 
             {profilPogled === 'stroski' && (
               <>
