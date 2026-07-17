@@ -3482,7 +3482,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const orbVrstic = orbRowSizes.length;
   const orbRowStart = (() => { const a: number[] = []; let acc = 0; for (const s of orbRowSizes) { a.push(acc); acc += s; } return a; })();
   const orbRowH = Math.round(orbD * 1.02) - 20;   /* vrstice po visini stisnjene za 20px, da vse pride na en ekran */
-  const orbStep = 84 / Math.max(orbMax - 1, 1);          /* razmik med sredisci na siroki mrezi (%) */
+  /* razmik med sredisci: sledi NAJSIRSI vrsti (ne le orbMax), da se merjena 4. vrsta (dodaj prilepljen)
+     enakomerno razporedi in ne pade v luknjo zaradi clampa */
+  const orbNajsirsa = Math.max(...orbRowSizes, orbMax);
+  const orbStep = 84 / Math.max(orbNajsirsa - 1, 1);
   const orbPoz = (i: number) => {
     let row = 0; while (row < orbVrstic - 1 && i >= orbRowStart[row + 1]) row++;
     const posInRow = i - orbRowStart[row];
