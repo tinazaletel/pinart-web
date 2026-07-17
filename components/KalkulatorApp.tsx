@@ -4157,8 +4157,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chip-podrocje b { font-weight: 700; }
         .cw .chip-podrocje .chip-kljuk { width: 1.35rem; height: 1.35rem; border-radius: 50%; border: 1.5px solid; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .78rem; font-weight: 900; margin-left: .3rem; flex: none; transition: background .18s, border-color .18s; }
         @media (max-width: 560px) { .cw .chat-podrocja { margin-left: 0; } }
-        /* v modalu dodaj/uredi: brez chat-zamika, leva poravnava */
-        .cw .uredi-plosca .chat-podrocja { margin-left: 0; max-width: none; }
+        /* v modalu dodaj/uredi: brez chat-zamika, leva poravnava, DVE na vrsto (mreza) */
+        .cw .uredi-plosca .chat-podrocja { margin-left: 0; max-width: none; display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+        .cw .uredi-plosca .chip-podrocje { justify-content: flex-start; }
+        @media (max-width: 480px) { .cw .uredi-plosca .chat-podrocja { grid-template-columns: 1fr; } }
         .cw .profil-predal .chat-podrocja { margin-left: 0; max-width: none; flex-direction: column; }
         .cw .profil-predal .chip-podrocje { width: 100%; }
         .cw .profil-predal .chip-podrocje .chip-kljuk { margin-left: auto; }
