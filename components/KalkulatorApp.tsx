@@ -1572,6 +1572,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* katero shranjeno podjetje je trenutno "aktivno" (nalozeno v ponudnik/ddv/...
      zivo stanje) — null, ce urejamo novo, se nikoli shranjeno podjetje. */
   const [aktivnoPodjetje, setAktivnoPodjetje] = useState<string | null>(null);
+  /* trenutno naloženi cenik (cenovni profil) — urejanje cen se sproti shrani vanj */
+  const [aktivniCenik, setAktivniCenik] = useState<string | null>(null);
   const [potrdiOdjavo, setPotrdiOdjavo] = useState(false);
   const [mojeStoritve, setMojeStoritve] = useState<Storitev[]>([]);
   /* Onboarding / osebni set storitev: kaj uporabnik ponuja, postavljeno v
@@ -1760,6 +1762,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       if (typeof s.chatNova === 'boolean') setChatNova(s.chatNova);
       if (Array.isArray(s.obIzbor)) setObIzbor(new Set(s.obIzbor));
       if (s.nazivPonudbe) setNazivPonudbe(s.nazivPonudbe);
+      if (s.aktivniCenik) setAktivniCenik(s.aktivniCenik);
       if (s.klasicnaOblika) setKlasicnaOblika(true);
       if (s.pogledMreza) setPogledMreza(true);
       if (s.namigSkrit) setNamigSkrit(true);
@@ -1812,9 +1815,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         chatNova: chatNova === null ? undefined : chatNova,
         obIzbor: obIzbor.size ? [...obIzbor] : undefined,
         nazivPonudbe: nazivPonudbe || undefined,
+        aktivniCenik: aktivniCenik || undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [jeNalozeno, osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, pogledMreza, namigSkrit, uvodKoncan, chatKorak, chatNova, obIzbor, nazivPonudbe]);
+  }, [jeNalozeno, osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, pogledMreza, namigSkrit, uvodKoncan, chatKorak, chatNova, obIzbor, nazivPonudbe, aktivniCenik]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -2910,6 +2914,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     try { localStorage.setItem(K_PROFILI, JSON.stringify(nov)); } catch { /* poln */ }
     if (imamKontakt) posljiKontakt(`shranjen profil "${ime}"`);
     setImeProfila('');
+    setAktivniCenik(ime);   /* pravkar shranjeni cenik postane aktivni (urejanje gre vanj) */
   };
 
   const naloziProfil = (ime: string) => {
@@ -2918,6 +2923,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setOsnove(p.osnove); setMojTrg(p.mojTrg); setIzkusnje(p.izkusnje);
     if (p.postavke) setPostavke(p.postavke);
     if (p.mojeStoritve) setMojeStoritve(p.mojeStoritve);
+    setAktivniCenik(ime);
   };
 
   const izbrisiProfil = (ime: string) => {
@@ -2925,7 +2931,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     delete nov[ime];
     setProfili(nov);
     try { localStorage.setItem(K_PROFILI, JSON.stringify(nov)); } catch { /* poln */ }
+    if (aktivniCenik === ime) setAktivniCenik(null);
   };
+
+  /* dokler je cenik aktiven, se urejanje cen (osnove + lastne storitve) sproti shrani vanj —
+     "cenik z naslovom, ki ga odpiraš in editiraš" (Tinina zahteva) */
+  useEffect(() => {
+    if (!aktivniCenik) return;
+    setProfili(prej => {
+      const cur = prej[aktivniCenik];
+      if (!cur) return prej;
+      const nov = { ...prej, [aktivniCenik]: { ...cur, osnove, postavke, mojeStoritve } };
+      try { localStorage.setItem(K_PROFILI, JSON.stringify(nov)); } catch { /* poln */ }
+      return nov;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aktivniCenik, osnove, postavke, mojeStoritve]);
 
   /* ── arhiv ponudb: shrani / naloži / izbriši cel posnetek ─────────── */
   const shraniVArhiv = () => {
@@ -4977,6 +4998,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <>
                 <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Te cene so <b>podlaga za izračun</b> — privzete (slovenski trg) delujejo takoj, prilagodi jih svojim za točnejši rezultat. Razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš; vrstni red velja tudi na prvem koraku.</p>
                 <button type="button" className="povezava povezava-roza" style={{ marginBottom: '1.3rem' }} onClick={() => setProfilPogled('moji-podatki')}>↳ Uredi področja dela (v Moji podatki)</button>
+                {/* aktivni cenik + preklop med shranjenimi ceniki (naslov = cenovni profil) */}
+                {Object.keys(profili).length > 0 && (
+                  <div className="podjetja-preklop">
+                    <div className="pp-glava">
+                      <span className="pp-label">{aktivniCenik ? <>Cenik: <b style={{ color: 'var(--accent)' }}>{aktivniCenik}</b> <span className="vec">urejaš ga, spremembe se shranijo</span></> : <>Cenik: <b>osnovni</b> <span className="vec">shrani ga spodaj, da ga poimenuješ</span></>}</span>
+                    </div>
+                    <div className="podjetja-cipi">
+                      {Object.keys(profili).map(ime => (
+                        <span key={ime} className={'podjetje-cip' + (aktivniCenik === ime ? ' on' : '')}>
+                          <button type="button" className="pc-ime" onClick={() => naloziProfil(ime)}>{ime}</button>
+                          <button type="button" className="pc-brisi" aria-label={'Izbriši cenik ' + ime} title={'Izbriši ' + ime} onClick={() => izbrisiProfil(ime)}>×</button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="cene-seznam">
                   {poVrstnemRedu(vidneStoritve).map((s, i) => (
                     <div key={s.id} className="cene-vrsta" draggable
@@ -5014,21 +5051,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <button type="button" className="povezava" onClick={dodajStoritev}>+ dodaj</button>
                 </div>
 
-                {/* shranjeni ceniki (prej locen pogled "Cenovni profili") — posnetki celotnega cenika */}
+                {/* shrani trenutni cenik pod novim naslovom (postane cenovni profil, ki ga naložiš/urejaš zgoraj) */}
                 <div className="k-naslov" style={{ marginTop: '1.8rem', paddingTop: '1.4rem', borderTop: '1px solid rgba(17,17,17,.1)' }}>
-                  Shranjeni ceniki <span className="vec">posnetek vseh cen — npr. »Cene za tujino«; naložiš ga v enem kliku</span>
+                  Shrani cenik pod imenom <span className="vec">npr. »Cene za tujino«, »Cene 2027« — nato ga naložiš/urejaš zgoraj</span>
                 </div>
-                {Object.keys(profili).length > 0 && (
-                  <div className="profil-seznam" style={{ marginBottom: '1.1rem' }}>
-                    {Object.keys(profili).map(ime => (
-                      <div key={ime} className="profil-vrsta">
-                        <span className="pv-ime">{ime}</span>
-                        <button type="button" className="povezava" onClick={() => { naloziProfil(ime); setKazemProfil(false); setProfilPogled('meni'); }}>↺ Naloži</button>
-                        <button type="button" className="brisi" title={'Izbriši ' + ime} onClick={() => izbrisiProfil(ime)}>×</button>
-                      </div>
-                    ))}
-                  </div>
-                )}
                 <div className="cene-dodaj">
                   <input type="text" placeholder="Ime cenika (npr. Cene za tujino)" value={imeProfila}
                     onChange={e => setImeProfila(e.target.value)}
