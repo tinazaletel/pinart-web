@@ -5821,7 +5821,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                             </>
                           )}
                         </div>
-                        <button type="button" className="povezava povezava-roza" onClick={() => { setKazemUredi(false); setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>↳ Uredi cene, razporedi in skrij → Cene in storitve</button>
+                        <button type="button" className="povezava povezava-roza" style={{ display: 'block' }} onClick={() => { setKazemUredi(false); setKazemProfil(true); setProfilPogled('moji-podatki'); }}>↳ Uredi področja dela — kaj ponujaš (npr. dodaš »šivanje«)</button>
+                        <button type="button" className="povezava povezava-roza" style={{ display: 'block', marginTop: '.6rem' }} onClick={() => { setKazemUredi(false); setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>↳ Uredi cene, razporedi in skrij → Cene in storitve</button>
                       </div>
                     </div>
                   </div>
