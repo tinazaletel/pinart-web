@@ -3506,8 +3506,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <path d="M19.0505 15.7697C19.1835 15.9562 19.25 16.0495 19.25 16.1875C19.25 16.3255 19.1835 16.4188 19.0505 16.6053C18.4528 17.4434 16.9265 19.25 14.875 19.25C12.8235 19.25 11.2972 17.4434 10.6995 16.6053C10.5665 16.4188 10.5 16.3255 10.5 16.1875C10.5 16.0495 10.5665 15.9562 10.6995 15.7697C11.2972 14.9316 12.8235 13.125 14.875 13.125C16.9265 13.125 18.4528 14.9316 19.0505 15.7697Z" stroke="currentColor" strokeWidth="1.3125"/>
           </svg>
         </button>
-        <button type="button" className="glava-ikona" aria-label="Nastavitve aplikacije" title="Nastavitve aplikacije"
-          onClick={() => { setKazemProfil(true); setProfilPogled('aplikacija'); }}>
+        <button type="button" className="glava-ikona" aria-label="Cene in storitve" title="Cene in storitve"
+          onClick={() => { setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>
           <SlidersHorizontal size={18} weight="bold" />
         </button>
         <button type="button" className="glava-avatar" aria-label="Profil" title="Profil"
@@ -4838,6 +4838,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
+                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('aplikacija')}>
+                  <SlidersHorizontal size={20} weight="bold" />
+                  <span>
+                    <strong>Nastavitve aplikacije</strong>
+                    <small>prikaz (chat / klasičen vprašalnik), ponastavitve</small>
+                  </span>
+                  <span className="pm-puscica" aria-hidden>→</span>
+                </button>
               </div>
             )}
 
@@ -5283,7 +5291,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
                     <span className="chat-mehur chat-mehur-namig">
                       <button type="button" className="namig-zapri" aria-label="Zapri namig" title="Zapri (znova le ob ponastavitvi)" onClick={() => setNamigSkrit(true)}>✕</button>
-                      S klikom na storitev jo dodaš v ponudbo. Prikaz preklopiš med mehurčki in tabelo v »dodaj / uredi«.
+                      S klikom na storitev jo dodaš v ponudbo. Prikaz lahko preklopiš med mehurčki in pregledno tabelo v »dodaj / uredi«.
                     </span></div>
                 </>
               )}
