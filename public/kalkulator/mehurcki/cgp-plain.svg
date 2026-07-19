@@ -1,0 +1,45 @@
+<svg width="413" height="411" viewBox="0 0 413 411" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g filter="url(#filter0_di_2247_456)">
+<g clip-path="url(#clip0_2247_456)">
+<rect x="67.9766" y="64.5767" width="277" height="274.451" rx="137.225" fill="url(#paint0_radial_2247_456)" shape-rendering="crispEdges"/>
+
+
+
+
+
+<ellipse cx="147.423" cy="138.075" rx="98.9893" ry="96.4402" fill="url(#paint1_radial_2247_456)"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_di_2247_456" x="0.00110626" y="-2.38419e-07" width="412.951" height="410.402" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="3.39877"/>
+<feGaussianBlur stdDeviation="33.9877"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.781907 0 0 0 0 0.781907 0 0 0 0 0.781907 0 0 0 0.15 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2247_456"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2247_456" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="-3.39877"/>
+<feGaussianBlur stdDeviation="7.64724"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.34 0"/>
+<feBlend mode="normal" in2="shape" result="effect2_innerShadow_2247_456"/>
+</filter>
+<radialGradient id="paint0_radial_2247_456" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(206.477 201.802) rotate(90) scale(137.225 138.5)">
+<stop stop-color="#A319FF"/>
+<stop offset="0.288462" stop-color="#B550F8"/>
+<stop offset="0.673077" stop-color="#D8A6FC"/>
+<stop offset="1" stop-color="#D8B1FF" stop-opacity="0"/>
+</radialGradient>
+<radialGradient id="paint1_radial_2247_456" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(136.802 129.578) rotate(84.2205) scale(105.473 108.261)">
+<stop stop-color="white"/>
+<stop offset="0.740385" stop-color="white" stop-opacity="0.0769231"/>
+<stop offset="1" stop-color="white" stop-opacity="0"/>
+</radialGradient>
+<clipPath id="clip0_2247_456">
+<rect x="67.9766" y="64.5767" width="277" height="274.451" rx="137.225" fill="white"/>
+</clipPath>
+</defs>
+</svg>

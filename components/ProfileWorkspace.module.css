@@ -1,0 +1,19 @@
+.page, .page > form { display: grid; gap: 1rem; }
+.notice { padding: 1rem 1.2rem; border-radius: 1rem; background: oklch(92% .06 155); }
+.card { display: grid; gap: 1.4rem; padding: 1.5rem; border: 1px solid var(--line); border-radius: 1.35rem; background: oklch(98% .008 87 / .94); }
+.card header p { margin: 0 0 .55rem; font-size: .72rem; font-weight: 800; letter-spacing: .15em; }
+.card h2 { margin: 0; font: 500 2rem/1 var(--font-bodoni), Georgia, serif; }
+.card header span { display: block; margin-top: .55rem; color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .9rem; }
+.grid label { display: grid; gap: .45rem; font-size: .84rem; font-weight: 700; }
+.grid input, .grid select { width: 100%; min-height: 3.25rem; box-sizing: border-box; padding: .75rem .9rem; border: 1px solid var(--line); border-radius: .85rem; background: white; color: var(--ink); font: inherit; font-size: 1rem; }
+.areas { display: grid; gap: .75rem; }
+.areas > div { display: flex; flex-wrap: wrap; gap: .55rem; }
+.areas button { min-height: 2.75rem; padding: .65rem .9rem; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink); font: inherit; font-size: .9rem; cursor: pointer; }
+.areas button[data-active="true"] { background: linear-gradient(135deg, oklch(91% .075 295), oklch(91% .065 165)); }
+.actions { display: flex; flex-wrap: wrap; gap: .7rem; align-items: center; }
+.actions > button, .actions > a { min-height: 3.2rem; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; padding: .75rem 1.2rem; border: 1px solid var(--line); border-radius: .85rem; background: transparent; color: var(--ink); font: inherit; font-size: 1rem; text-decoration: none; cursor: pointer; }
+.actions > button:first-child { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.actions .logout { margin-left: auto; }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 620px) { .page, .card { min-width: 0; }.card { padding: 1.1rem; }.grid { grid-template-columns: 1fr; }.actions { align-items: stretch; flex-direction: column; }.actions > * { width: 100%; margin-left: 0; }.areas button { min-height: 2.75rem; } }

@@ -3,16 +3,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { localePath } from '@/i18n/routing';
+import { PRICING_SERVICES as STORITVE } from '@/lib/pricingCatalog';
+import { loadFlowData, saveFlowCollection, type FlowInvoice } from '@/lib/pinartFlowStore';
+import { saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
+import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
+import VidezDokumentov from '@/components/VidezDokumentov';
 
 import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package, Gift,
   PaintBrush, Compass, Sparkle, Plus, Camera, TextT,
   CopySimple, DownloadSimple, FileText, FilePdf, FloppyDisk, PaintBucket,
-  PersonSimple, TextAa, TextB, TextItalic, MagicWand, UploadSimple, CalendarBlank, EnvelopeSimple,
+  PersonSimple, TextAa, TextB, TextItalic, MagicWand, UploadSimple, ImageSquare, CalendarBlank, EnvelopeSimple,
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, User, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, CaretUp, Check, PencilSimple, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash,
+  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, ChatCircle, ListBullets, PaperPlaneTilt,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -144,7 +149,6 @@ const KOLICINSKE: Record<string, string> = {
   logo: 'logotipov', ilustracija: 'ilustracij', fotografija: 'fotografiranj',
   copy: 'besedil', video: 'videov', motion: 'animacij', render3d: 'renderjev',
 };
-const jeKolicinska = (sid: string) => sid in KOLICINSKE || sid.startsWith('moja-');
 type TonPonudbe = 'formalno' | 'toplo' | 'direktno';
 
 /* Seed cenik za slovenski trg (2026): raven "samostojen", majhna stranka,
@@ -188,10 +192,14 @@ const tantiemaZa = (sid: string): number => {
 /* privzeta vrsta pravic + trajanje po storitvi (za tabelo pri vec storitvah) */
 const PRAVICE_TRAJNO = new Set(['logo', 'cgp', 'web', 'embalaza', 'interier', 'arhitektura', 'produktni', 'uxui', 'aplikacija', 'dizajnsistem']);
 const PRAVICE_KAMPANJA = new Set(['kampanja', 'smm', 'razstava', 'seo', 'email', 'pr']);
-const privzetePraviceZa = (sid: string): { prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string } => {
-  if (PRAVICE_TRAJNO.has(sid)) return { prenos: 'izkljucni', trajanje: 'neomejeno' };
-  if (PRAVICE_KAMPANJA.has(sid)) return { prenos: 'licenca', trajanje: '3m' };
-  return { prenos: 'izkljucni', trajanje: '7' };   /* ilustracija, foto, publikacija, video, motion, 3d, copy, direkcija, strategija, moja- */
+/* storitve, pri katerih ima NAKLADA / PONATIS smisel (delo se tiska ali prodaja
+   v nakladi) — te dobijo privzeto vklopljeno klavzulo o ponatisu in izbiro naklade */
+const NAKLADA_STORITVE = ['embalaza', 'ilustracija', 'publikacija', 'produktni', 'fotografija'];
+const privzetePraviceZa = (sid: string): { prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string; klavzule?: string[] } => {
+  const klavzule = NAKLADA_STORITVE.includes(sid) ? ['ponatis'] : undefined;   /* tiskovine/ilustracija: ponatis privzeto vklopljen */
+  if (PRAVICE_TRAJNO.has(sid)) return { prenos: 'izkljucni', trajanje: 'neomejeno', klavzule };
+  if (PRAVICE_KAMPANJA.has(sid)) return { prenos: 'licenca', trajanje: '3m', klavzule };
+  return { prenos: 'izkljucni', trajanje: '7', klavzule };   /* ilustracija, foto, publikacija, video, motion, 3d, copy, direkcija, strategija, moja- */
 };
 /* zvezni mnozitelj pravic glede na dolzino v LETIH (za poljubno trajanje, npr. 3 tedne).
    ujema se z diskretnimi preseti: 3m~0.3, 1l=0.5, 7l=1.0, 10l=1.3, navzgor proti ~1.8. */
@@ -231,37 +239,10 @@ const PRAV_NAKLADA = [
   { id: 'do10k',  ime: 'do 10.000', mult: 1.2 },
   { id: 'nad10k', ime: 'nad 10.000', mult: 1.5 },
 ] as const;
-/* storitve, pri katerih se obseg pravic ponudi takoj (avtorska vizualna dela) */
-const AVTORSKE_STORITVE = ['ilustracija', 'fotografija', 'video', 'motion', 'render3d'];
-
-const STORITVE: Storitev[] = [
-  { id: 'logo',        ime: 'Logotip + osnovna identiteta', osnova: 650  },
-  { id: 'cgp',         ime: 'Celostna grafična podoba',     osnova: 1350 },
-  { id: 'web',         ime: 'Spletna stran',                osnova: 1400 },
-  { id: 'kampanja',    ime: 'Kampanja / oglasni vizuali',   osnova: 900  },
-  { id: 'publikacija', ime: 'Publikacija / tiskovina',      osnova: 700  },
-  { id: 'embalaza',    ime: 'Embalaža / produkt',           osnova: 900  },
-  { id: 'ilustracija', ime: 'Ilustracija / vizualni svet',  osnova: 550  },
-  { id: 'direkcija',   ime: 'Kreativna direkcija',          osnova: 900  },
-  { id: 'fotografija', ime: 'Fotografiranje',               osnova: 450  },
-  { id: 'copy',        ime: 'Besedila / copywriting',       osnova: 450  },
-  /* razsiritev na vec kreativnih poklicev (2026-07-08) */
-  { id: 'interier',    ime: 'Interier dizajn',                osnova: 1200 },
-  { id: 'arhitektura', ime: 'Arhitekturno oblikovanje',       osnova: 2200 },
-  { id: 'razstava',    ime: 'Razstavni / scenski dizajn',     osnova: 1300 },
-  { id: 'produktni',   ime: 'Produktni / pohištveni dizajn',  osnova: 1600 },
-  { id: 'uxui',        ime: 'UX/UI dizajn',                   osnova: 1100 },
-  { id: 'aplikacija',  ime: 'Mobilna aplikacija',             osnova: 2400 },
-  { id: 'dizajnsistem',ime: 'Dizajn sistem',                  osnova: 1600 },
-  { id: 'smm',         ime: 'Social media vodenje',           osnova: 650  },
-  { id: 'seo',         ime: 'SEO',                            osnova: 550  },
-  { id: 'email',       ime: 'Email marketing',                osnova: 350  },
-  { id: 'pr',          ime: 'PR / odnosi z javnostmi',        osnova: 750  },
-  { id: 'video',       ime: 'Video produkcija',               osnova: 1300 },
-  { id: 'motion',      ime: 'Motion / animacija',             osnova: 750  },
-  { id: 'render3d',    ime: '3D vizualizacije',               osnova: 650  },
-  { id: 'strategija',  ime: 'Brand strategija',               osnova: 1100 },
-];
+/* privzet teritorij pravic izpeljan iz trga narocnika (kje se delo uporablja):
+   Slovenija -> slo, Zahodna/Vzhodna EU -> eu, ZDA/MENA/Global -> global */
+const teritorijIzTrga = (trgId: string): string =>
+  trgId === 'si' ? 'slo' : (trgId === 'west' || trgId === 'east') ? 'eu' : 'global';
 
 /* Podrocja dela za onboarding: uporabnik izbere podrocja, orodje pa v ospredje
    postavi storitve znotraj njih. Nove storitve so umescene v ustrezno podrocje,
@@ -987,6 +968,15 @@ const TRAJANJE_TEDNOV: Record<string, [number, number]> = {
   strategija: [3, 6],
   /* smm, pr: trajni mesecni angazma, izpusceni (kot direkcija) */
 };
+
+/* ── DOLGOROCNO SODELOVANJE (retainer) — parametri; po raziskavi le zamenjas cifre ──
+   Popust za zavezo po dobi (dlje = vec); ure/mesec izbire; overage = ure nad blokom. */
+const RETAINER_POPUST: Record<number, number> = { 3: 0.05, 6: 0.10, 12: 0.15 };
+const RETAINER_URE_MOZNOSTI = [5, 10, 20, 40];
+const RETAINER_DOBE = [3, 6, 12];
+const RETAINER_OVERAGE_MULT = 1.0; /* dodatne ure nad blokom = polna urna postavka */
+const RETAINER_ODPOVED_DNI = 30;
+const RETAINER_PRIVZETA_URNA = 45; /* ce nima vpisane urne postavke v ceniku (EUR) */
 const tedniBeseda = (n: number) =>
   n === 1 ? 'teden' : n === 2 ? 'tedna' : n <= 4 ? 'tedne' : 'tednov';
 
@@ -1135,6 +1125,15 @@ const escapeHtml = (s: string) =>
 /* za hitro branje: v telesu (alineje/odstavki) samodejno poudarimo cene, %,
    trajanja in nekaj ključnih besed — brez rocnega markiranja povsod. */
 const poudari = (s: string): string => s
+  /* Narocnik: ime firme v svojo vrsto in krepko */
+  .replace(/^Naročnik:\s*(.+)$/, 'Naročnik<br><b>$1</b>')
+  /* ime storitve na zacetku vrstice (pred " — ") je krepko -> hitro branje */
+  .replace(/^([^—<:]{2,60}?)\s—\s/, '<b>$1</b> — ')
+  /* "Skupaj ..." oznake krepko */
+  .replace(/\b(Skupaj[^:<]{0,40}?):/g, '<b>$1</b>:')
+  /* kljucni pogoji krepko za hitro branje */
+  .replace(/\b(avans)\b/gi, '<b>$1</b>')
+  .replace(/(po urni postavki)/gi, '<b>$1</b>')
   .replace(/(\d[\d.\s]*\s?(?:€|\$|£))/g, '<b>$1</b>')
   .replace(/(\b\d+\s?%)/g, '<b>$1</b>')
   .replace(/(\b\d+(?:\s?[–-]\s?\d+)?\s?(?:let\b|leto\b|leta\b|tednov\b|teden\b|tedna\b|mesec(?:ev|a)?\b|ur\b|urah\b))/gi, '<b>$1</b>');
@@ -1155,10 +1154,10 @@ const ponudbaVHtml = (s: string): string =>
       const first = lines[0];
       if (first.startsWith('PONUDBA:')) {
         const rest = lines.slice(1);
-        const meta = rest.length ? `<p>${rest.map(escapeHtml).join('<br>')}</p>` : '';
-        return `<p class="offer-kicker">Ponudba</p><h1>${escapeHtml(first.replace('PONUDBA:', '').trim())}</h1>${meta}`;
+        const metaHtml = rest.length ? `<div class="offer-head-meta">${rest.map(escapeHtml).join('<br>')}</div>` : '';
+        return `<div class="offer-head"><div class="offer-head-t"><p class="offer-kicker">Ponudba</p><h1>${escapeHtml(first.replace('PONUDBA:', '').trim())}</h1></div>${metaHtml}</div>`;
       }
-      if (/^(OBSEG|DODATNE INFORMACIJE|IZBERITE PAKET|CENA IN OBSEG|POGOJI|SPECIFIKACIJA CEN|AVTORSKE PRAVICE|PREDVIDEN ČAS IZVEDBE|VZDRŽEVANJE|DODATNE MOŽNOSTI)( \(.+\))?$/.test(first)) {
+      if (/^(OBSEG|DODATNE INFORMACIJE|IZBERITE PAKET|CENA IN OBSEG|DOLGOROČNO SODELOVANJE|PLAČILO|POGOJI|PRAVICE|SPECIFIKACIJA CEN|AVTORSKE PRAVICE|PREDVIDEN ČAS IZVEDBE|VZDRŽEVANJE|DODATNE MOŽNOSTI)( \(.+\))?$/.test(first)) {
         const rest = lines.slice(1);
         const body: string = rest.length ? ponudbaVHtml(rest.join('\n')) : '';
         return `<h2>${escapeHtml(first)}</h2>${body}`;
@@ -1198,6 +1197,130 @@ const ponudbaVHtml = (s: string): string =>
       return `<p>${lines.map(escP).join('<br>')}</p>`;
     })
     .join('');
+
+/* Enoten eleganten slog za IZVOZ ponudbe (PDF + HTML prenos) — posnema videz
+   predogleda: Didot/Bodoni serif naslovi in cene, kremne kartice paketov,
+   plum sekcijske oznake s tanko crto, disc pikice. Deljen med prenesi/prenesiPdf. */
+const OFFER_CSS = `
+      body{font-family:'Helvetica Neue',Arial,sans-serif;color:#14110f;line-height:1.6;font-size:10.5pt;margin:0}
+      .pdf-glava{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:14px;border-bottom:1.5px solid #B25476;margin-bottom:22px}
+      .pdf-brand{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:16px}
+      .pdf-brand-txt{min-width:0}
+      .pdf-meta{flex:0 0 auto}
+      .pdf-znamka{font-family:'Helvetica Neue',Arial,sans-serif;font-size:14pt;font-weight:700;letter-spacing:-.01em;color:#111;line-height:1.05;margin-bottom:5px;white-space:nowrap}
+      .pdf-podatki{font-size:8.2pt;color:#666;line-height:1.55}
+      .pdf-meta{text-align:right;font-size:8.5pt;color:#555;line-height:1.55}
+      .pdf-meta b{display:block;font-size:7pt;letter-spacing:.22em;text-transform:uppercase;color:#B25476;margin-bottom:3px;font-weight:700}
+      .pdf-meta .naziv{max-width:220px;margin:0 0 2px auto}
+      .offer-kicker{font-size:7.5pt;letter-spacing:.22em;text-transform:uppercase;color:#9a8a90;margin:0 0 4px}
+      h1{font-family:'Bodoni Moda',Didot,'Bodoni MT',Georgia,serif;font-weight:600;font-size:23pt;line-height:1.08;letter-spacing:-.01em;margin:2px 0 14px;color:#111}
+      .offer-head{display:flex;justify-content:space-between;align-items:flex-start;gap:2rem;margin:0 0 12px}
+      .offer-head-t{min-width:0}.offer-head h1{margin:2px 0 0}
+      .offer-head-meta{flex:0 0 auto;text-align:right;font-size:8.5pt;color:#666;line-height:1.65;white-space:nowrap;padding-top:2px}
+      .offer-cover{box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:250mm;break-after:page;page-break-after:always;padding:18mm 12mm}
+      .oc-kicker{font-size:9pt;letter-spacing:.3em;text-transform:uppercase;color:#B25476;font-weight:700;margin-bottom:20px}
+      .oc-naslov{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:600;font-size:32pt;line-height:1.1;letter-spacing:-.01em;color:#111;max-width:15em;margin:0}
+      .oc-crta{width:56px;height:2px;background:#B25476;margin:24px 0}
+      .oc-firma{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;font-weight:600;color:#111}
+      .oc-za{font-size:10.5pt;color:#555;margin-top:6px}
+      .oc-datum{font-size:9pt;color:#8a8078;margin-top:16px;letter-spacing:.05em}
+      .offer-cover-slika{background-size:cover;background-position:center;position:relative;color:#fff}
+      .offer-cover-slika::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,15,18,.35),rgba(20,15,18,.55))}
+      .offer-cover-slika>*{position:relative;z-index:1}
+      .offer-cover-slika .oc-kicker{color:#fff}
+      .offer-cover-slika .oc-naslov,.offer-cover-slika .oc-firma{color:#fff}
+      .offer-cover-slika .oc-za{color:rgba(255,255,255,.9)}
+      .offer-cover-slika .oc-datum{color:rgba(255,255,255,.8)}
+      .offer-cover-slika .oc-crta{background:#fff}
+      /* Pinart predloga — lahka CSS tekstura notranjega telesa (brez tezkih JPG) */
+      .predloga{background-color:#fdfbf7;background-image:radial-gradient(120% 60% at 50% -10%,rgba(178,84,118,.05),transparent 60%),linear-gradient(180deg,#fdfbf7,#f8f2ea)}
+      /* Pinart predloga — ploscato telo brez kvadratkov (kartic) */
+      .predloga .offer-package{border:0;background:transparent;border-radius:0;padding:0;margin:22px 0}
+      .predloga .offer-package + .offer-package{border-top:1px solid #e7ddce;padding-top:20px}
+      .predloga .offer-package-head{border-bottom:1px solid #e2d6c6}
+      .pdf-logo{max-height:11mm;max-width:30mm;margin:0;flex:none;object-fit:contain}
+      /* velik nezen "Let's Work" vodni znak na bez ozadju telesa; besedilo gre cez */
+      .pdf-telo{position:relative}
+      .pdf-telo>*:not(.pdf-vodni){position:relative;z-index:1}
+      .pdf-vodni{position:fixed;top:88mm;left:-2mm;z-index:0;pointer-events:none;font-family:'Helvetica Neue',Arial,sans-serif;font-size:150pt;line-height:.82;font-weight:800;letter-spacing:-.02em;color:#ffffff}
+      .oc-logo{max-height:20mm;max-width:60mm;margin-bottom:18px;object-fit:contain}
+      h2{font-size:8.5pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#B25476;margin:18px 0 9px;padding-top:11px;border-top:1px solid #ecdfe4;break-after:avoid}
+      h2:first-child{margin-top:0;padding-top:0;border-top:0}
+      hr+h2{border-top:0;padding-top:2px} /* ko naslov pride takoj za locilom: brez dvojne crte */
+      h3{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:500;font-size:14pt;margin:.6rem 0 .3rem;color:#111}
+      p{margin:0 0 .7rem}
+      ul{margin:0 0 .8rem;padding-left:1.15rem;list-style:disc;break-inside:avoid;page-break-inside:avoid}
+      li{margin:3px 0;break-inside:avoid;page-break-inside:avoid}
+      li::marker{color:#c98fa6}
+      .offer-podnaslov{font-weight:700;margin:.85rem 0 .35rem;color:#111}
+      .offer-vrstica{display:flex;justify-content:space-between;align-items:baseline;gap:1.2rem}
+      .offer-cena{white-space:nowrap;font-weight:700;color:#111}
+      .offer-package{border:1px solid #e7ddd0;background:#f8f5ee;border-radius:9px;padding:14px 18px;margin:10px 0;break-inside:avoid;page-break-inside:avoid}
+      .offer-package-head{break-after:avoid;break-inside:avoid;page-break-inside:avoid}
+      .offer-podnaslov{break-after:avoid;break-inside:avoid;page-break-inside:avoid}
+      p{break-inside:avoid;page-break-inside:avoid}
+      .offer-package-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.2rem 1rem;margin-bottom:.5rem;padding-bottom:.5rem;border-bottom:1px solid #e7ddd0}
+      .offer-package-head h3{margin:0;font-family:'Helvetica Neue',Arial,sans-serif;font-size:8.5pt;letter-spacing:.16em;text-transform:uppercase;color:#555;font-weight:700}
+      .offer-package-head strong{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:17pt;font-weight:600;color:#111;display:inline-flex;align-items:center;gap:.38rem;margin-left:auto;max-width:100%}
+      .cena-ikona{width:1.02em;height:.97em;flex:none;color:#B25476;position:relative;top:.02em}
+      .offer-package ul{margin:.2rem 0 .6rem}
+      .offer-package .offer-podnaslov:first-of-type{margin-top:0}
+      hr{border:0;border-top:1px solid #ecdfe4;margin:18px 0}
+      /* ── PINART PREDLOGA: "design proposal" naslovnica (moderna, mavricne kartice) ── */
+      .oc-proposal{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;text-align:left;position:relative;overflow:hidden;background:#f7f5ef;color:#141414;padding:13mm 15mm}
+      .oc-proposal::before{content:'';position:absolute;inset:0;background-image:linear-gradient(90deg,rgba(20,20,20,.045) 1px,transparent 1px),linear-gradient(rgba(20,20,20,.045) 1px,transparent 1px);background-size:70px 70px;z-index:0}
+      .oc-proposal>*{position:relative;z-index:2}
+      .oc-proposal .ocp-wm{position:absolute;left:0;bottom:11%;font-size:86mm;line-height:.8;letter-spacing:-5mm;font-weight:800;color:transparent;-webkit-text-stroke:1.5px rgba(20,20,20,.07);z-index:1;pointer-events:none;font-family:'Helvetica Neue',Arial,sans-serif;white-space:nowrap}
+      .oc-proposal .ocp-top{display:flex;justify-content:space-between;align-items:center}
+      .oc-proposal .ocp-logo{background:#141414;color:#fff;font-weight:700;letter-spacing:.16em;font-size:9pt;padding:8px 20px;border-radius:999px;max-width:48mm;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .oc-proposal .ocp-logo-img{background:transparent;border:0;padding:0;display:inline-flex;align-items:center;border-radius:0}
+      .oc-proposal .ocp-logo-img img{max-height:9mm;max-width:34mm;object-fit:contain;display:block}
+      .oc-proposal .ocp-num{font-weight:700;letter-spacing:.16em;font-size:11pt;font-family:'Helvetica Neue',Arial,sans-serif}
+      .oc-proposal .ocp-title{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-top:13mm}
+      .oc-proposal .ocp-title h1{margin:0;font-family:'Bodoni Moda',Didot,'Bodoni MT',Georgia,serif;font-size:36pt;font-weight:700;line-height:1.05;letter-spacing:-.01em;max-width:150mm;color:#141414}
+      .oc-proposal .ocp-plus{flex:none;position:relative;left:10px;width:60px;height:60px;border-radius:50%;background:conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px}
+      /* pravi Pinart mehurcki (kot orbi v aplikaciji): odblesk + dvobarvni radialni orb */
+      /* Pinart mehurcki = TININI narisani SVG-ji iz public/kalkulator/mehurcki/ (isti kot v
+         aplikaciji: mehak zareci orb + ikona + napis). z-index 1 = ZA besedilom. Velikost
+         img je vecja od vidnega orba (~33% je zar/glow padding v SVG-ju). */
+      .oc-proposal .ocp-bubble{position:absolute;z-index:1;object-fit:contain;pointer-events:none}
+      .oc-proposal .ocp-bp1{width:34mm;height:34mm;top:31%;left:0}
+      .oc-proposal .ocp-bp2{width:34mm;height:34mm;bottom:11%;right:3%}
+      .oc-proposal .ocp-bp3{width:35mm;height:35mm;top:46%;left:18%}
+      .oc-proposal .ocp-bp4{width:28mm;height:28mm;top:77%;left:9%}
+      .oc-proposal .ocp-bp5{width:23mm;height:23mm;bottom:16%;left:50%}
+      .oc-proposal .ocp-mid{display:flex;gap:12mm;margin-top:11mm;flex:1;min-height:0}
+      .oc-proposal .ocp-meta{width:50mm;flex:none;display:flex;flex-direction:column;gap:9mm}
+      .oc-proposal .ocp-field span{display:block;font-size:8pt;letter-spacing:.2em;text-transform:uppercase;color:#141414;font-weight:700;margin-bottom:7px;font-family:'Helvetica Neue',Arial,sans-serif}
+      .oc-proposal .ocp-field p{margin:0;font-size:12.5pt;font-weight:400;color:#333;line-height:1.5}
+      .oc-proposal .ocp-lead b{font-size:14pt;font-weight:500;color:#141414;display:block;padding-bottom:12px;border-bottom:1px solid rgba(20,20,20,.18)}
+      .oc-proposal .ocp-illu{flex:1;display:flex;align-items:flex-start}
+      .oc-proposal .ocp-panel{width:100%;background:#efece4;border-radius:24px;padding:14px;box-shadow:0 24px 54px rgba(20,20,20,.12),inset 0 1px 0 rgba(255,255,255,.7)}
+      .oc-proposal .ocp-bar{display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;padding:11px 15px;margin-bottom:14px}
+      .oc-proposal .ocp-dot{width:15px;height:15px;border-radius:50%;background:conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)}
+      .oc-proposal .ocp-ln{flex:1;height:7px;border-radius:4px;background:#2b2b2b}
+      .oc-proposal .ocp-o{width:15px;height:15px;border-radius:50%;border:2px solid #c9c4ba}
+      .oc-proposal .ocp-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+      .oc-proposal .ocp-card{border-radius:18px;padding:15px 16px;min-height:120px;position:relative;color:#fff;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+      .oc-proposal .ocp-card>span{font-size:8pt;letter-spacing:.12em;text-transform:uppercase;font-weight:700;line-height:1.35;font-family:'Helvetica Neue',Arial,sans-serif}
+      /* nezni gradienti */
+      .oc-proposal .ocp-purple{background:linear-gradient(140deg,#c6b0ff,#8a5cf0)}
+      .oc-proposal .ocp-mint{background:linear-gradient(140deg,#9cf0d3,#3fce9c)}
+      .oc-proposal .ocp-coral{background:linear-gradient(140deg,#ffcea6,#f68f63)}
+      .oc-proposal .ocp-black{background:#141414;flex-direction:row;align-items:center;justify-content:space-between;min-height:58px}
+      /* ilustracije kartic (kolac / dokument / graf) */
+      .oc-proposal .ocp-ill{display:block;margin-top:auto}
+      .oc-proposal .ocp-donut{width:46px;height:46px}
+      .oc-proposal .ocp-doc{width:38px;height:42px}
+      .oc-proposal .ocp-graph{width:66px;height:37px}
+      .oc-proposal .ocp-next{font-size:17pt;font-weight:400}
+      .oc-proposal .ocp-foot{display:flex;justify-content:space-between;align-items:flex-end;margin-top:9mm;padding-top:9px;border-top:1px solid rgba(20,20,20,.15)}
+      .oc-proposal .ocp-comp b{font-size:11pt;letter-spacing:.05em}.oc-proposal .ocp-comp span{display:block;font-size:9pt;color:#666;margin-top:2px}
+      .oc-proposal .ocp-proposal{font-size:9pt;letter-spacing:.2em;font-weight:700;text-transform:uppercase;color:#141414;font-family:'Helvetica Neue',Arial,sans-serif}
+      .oc-proposal .ocp-proposal b{color:#aaa;margin-left:10px}`;
+
+/* ikona "collect money" (Tinin SVG) kot HTML niz — za vgradnjo ob ceno paketa (Pinart predloga) */
+const IKONA_CENA_SVG = '<svg class="cena-ikona" viewBox="0 0 42.51 40.53" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M6.3,35.97c-.22,0-.44.09-.59.24-.16.15-.25.35-.25.57s.09.42.25.57c.16.15.37.23.59.23s.44-.09.59-.23c.16-.15.25-.36.25-.57s-.09-.42-.25-.57c-.16-.15-.37-.24-.59-.24"/><path d="M38.6,14.18c-.22,0-.44.09-.59.24-.16.15-.25.35-.25.57s.09.42.25.57c.16.15.37.23.59.23s.44-.09.59-.23c.16-.15.25-.36.25-.57s-.09-.42-.25-.57c-.16-.15-.37-.24-.59-.24"/><path d="M31.59,22.74c-1.43,0-2.59-1.11-2.59-2.47s1.16-2.47,2.59-2.47,2.59,1.11,2.59,2.47-1.16,2.47-2.59,2.47M41.34,39.41h-6.64l.16-.34c.15-.32.23-.67.23-1.02s-.08-.7-.23-1.02l-.16-.34h.66c1.44,0,2.6-1.11,2.6-2.48,0-.39-.09-.76-.28-1.11l-.14-.26.3-.08c1.13-.3,1.92-1.28,1.92-2.39,0-.54-.18-1.05-.51-1.48l-.05-.06v-10.23c0-.31-.26-.56-.59-.56s-.59.25-.59.56v9.41l-.31-.06c-.19-.04-.37-.06-.56-.06h-.42l.16-.34c.15-.32.23-.67.23-1.02,0-1.37-1.17-2.48-2.6-2.48h-2.58l1.13-.46c1.39-.57,2.29-1.86,2.29-3.3,0-1.98-1.69-3.59-3.77-3.59s-3.77,1.61-3.77,3.59c0,1.44.9,2.73,2.29,3.3l1.13.46h-6.07v-15.66l.2-.04c1.41-.29,2.51-1.35,2.82-2.69l.04-.19h6.73l.04.19c.31,1.34,1.41,2.4,2.82,2.69l.2.04v2.68c0,.31.26.56.59.56s.59-.25.59-.56v-3.2c0-.31-.26-.56-.59-.56-1.39,0-2.51-1.08-2.51-2.4,0-.31-.26-.56-.59-.56h-7.82c-.32,0-.59.25-.59.56,0,1.32-1.13,2.4-2.51,2.4-.33,0-.59.25-.59.56v16.19h-2.14V1.12h19.49s0,38.29,0,38.29ZM32.49,39.41h-15.93c-.68,0-1.33-.23-1.84-.66l-2.11-1.76v-11.29l4.06-3.87.77,2.89c.07.25.3.42.57.42h16.52c.79,0,1.43.61,1.43,1.36s-.64,1.36-1.43,1.36h-8.47c-.32,0-.59.25-.59.56s.26.56.59.56h11.09c.79,0,1.43.61,1.43,1.36s-.64,1.36-1.43,1.36h-11.09c-.32,0-.59.25-.59.56s.26.56.59.56h9.3c.79,0,1.43.61,1.43,1.36s-.64,1.36-1.43,1.36h-9.3c-.32,0-.59.25-.59.56s.26.56.59.56h6.43c.79,0,1.43.61,1.43,1.36s-.64,1.36-1.43,1.36M20.67,10.31v9.41l-2.08-7.35.18-.09c.59-.29,1.08-.73,1.44-1.26l.47-.71ZM13.39,6.06l7.28-1.86v3.46l-.75.19c-.15.04-.28.13-.36.26-.08.13-.1.28-.06.43.36,1.28-.44,2.59-1.78,2.94-.15.04-.28.13-.36.26-.08.13-.1.28-.06.43l3.36,11.86h-2.21l-.92-3.42c-.02-.07-.05-.14-.1-.2l-.03-.04-4.02-14.32ZM11.43,38.37c0,.58-.49,1.04-1.09,1.04H2.27c-.6,0-1.09-.47-1.09-1.04v-13.06c0-.57.49-1.04,1.09-1.04h3.44v9.47c0,.31.26.56.59.56s.59-.25.59-.56v-9.47h3.44c.6,0,1.09.47,1.09,1.04v13.06ZM41.93,0h-20.67c-.32,0-.59.25-.59.56v2.47l-8.15,2.08c-.15.04-.28.13-.36.26-.08.13-.1.28-.06.43l4.17,14.82-3.89,3.71-.17-.24c-.42-.59-1.12-.94-1.87-.94H2.27C1.02,23.15,0,24.12,0,25.31v13.06c0,1.19,1.02,2.16,2.27,2.16h8.07c1.04,0,1.95-.67,2.2-1.64l.1-.38,1.31,1.09c.73.6,1.66.93,2.62.93h25.36c.32,0,.59-.25.59-.56V.56c0-.15-.06-.29-.17-.4-.11-.1-.26-.16-.42-.16"/></svg>';
 
 /* Valuta ponudbe: cene so interno v EUR, prikaz in ponudba pa v izbrani
    valuti (priblizen preracun, zaokrozen na 50). */
@@ -1248,7 +1371,16 @@ type Profil = {
 /* Arhiv ponudb: cel posnetek ene ponudbe (za vrnitev / preklop med strankami).
    Loceno od cenovnih profilov (ti hranijo le cene). */
 const K_ARHIV = 'pinart-kalkulator-arhiv';
+const K_NAROCNIKI = 'pinart-kalkulator-narocniki';   /* nedavni narocniki (celi zapisi), tudi ce ponudba ni shranjena */
+type NarocnikZapis = { ime: string; email?: string; oseba?: string; naslov?: string; davcna?: string };
+const K_LOGO = 'pinart-kalkulator-logo';   /* logo (data URL) v LOCENEM kljucu — velika slika ne pokvari glavnih nastavitev */
 const K_STEVEC = 'pinart-kalkulator-stevec';   /* zaporedni stevec ponudb po letu: { "2026": 4 } */
+const K_STEVEC_RACUN = 'pinart-kalkulator-stevec-racun';   /* zaporedni stevec racunov po letu: { "2026": 3 } */
+/* pravice po storitvi (recept, obseg, klavzule, opomba); manjka = privzeto */
+type PravRec = { prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string; trajLeta?: number; klavzule?: string[]; tantiema?: number; teritorij?: string; mediji?: string[]; naklada?: string; opomba?: string };
+/* lastna pravica (ni vezana na storitev): ime + znesek (v valuti ponudbe) + tip;
+   Podrobnosti (opisno, gre v ponudbo): trajanje, klavzule, opomba */
+type LastnaPravica = { id: string; ime: string; znesek: string; tip: 'enkratno' | 'letno' | 'mesecno'; trajanje?: string; trajLeta?: number; klavzule?: string[]; opomba?: string };
 type ShranjenaP = {
   datum: string;
   izbrane: string[];
@@ -1265,16 +1397,17 @@ type ShranjenaP = {
   promet: string; dobicek: string; projPrihodek: string; projDobicek: string;
   popust: string; dodatki: string[];
   prenosPravic: 'izkljucni' | 'neizkljucni' | 'licenca';
-  rocnePravice: string; rocnaLicenca: string; izjemePravice?: string;
+  rocnePravice: string; rocnaLicenca: string; rocnePraviceStoritvi?: Record<string, string>; pravicePoStoritvi?: Record<string, PravRec>; lastnePravice?: LastnaPravica[]; izjemePravice?: string;
   nazivPonudbe: string; narocnikPonudbe: string; narocnikEmail?: string;
   narocnikOseba?: string; narocnikNaslov?: string; narocnikDavcna?: string;
   obsegPonudbe: 'kratka' | 'razsirjena'; tonPonudbe: TonPonudbe; avansPct: string;
   kaziUre: boolean; nogaZnak: boolean;
   izkusnje: string; mojTrg: string; trgNarocnika: string; valuta: string; valutaRocna: boolean;
-  rocnoBesedilo: boolean; besediloHtml: string;
+  rocnoBesedilo: boolean; besediloHtml: string; podlogaCover?: string; logo?: string; predlogaPinart?: boolean;
   custDrzavaNarocnik?: string;
   /* ena koncna cena namesto treh paketov (2026-07-17) */
   enaCena?: boolean;
+  dolgorocno?: boolean; retModel?: 'ure' | 'paket' | 'oboje'; retUre?: number; retDoba?: number;
   stevilkaPonudbe?: string; veljavnostDni?: string;
 };
 
@@ -1451,18 +1584,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   };
 
   /* carovnik: en korak naenkrat, fade-in from bottom (nuSchool slog) */
-  const editorRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<HTMLDivElement | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const uvodRef = useRef<HTMLDivElement>(null);
   const uvodVnosRef = useRef<HTMLInputElement>(null);
   const [korak, setKorak] = useState(0);
-  const [izbrane, setIzbrane] = useState<Set<string>>(new Set(['cgp']));
+  /* svez zacetek = NIC izbrano (ne prednapolni CGP); v seji naprej/nazaj stanje ostane */
+  const [izbrane, setIzbrane] = useState<Set<string>>(new Set());
   /* postavkovni model: vrstice ponudbe (instance storitev) so vir resnice;
      izbrane (Set sid-jev) drzimo sinhronizirano, ker se nanjo naslanjajo
      kasnejsi koraki (pravice, paketi, raba ...) */
-  const [vrstice, setVrstice] = useState<VrsticaP[]>([{ uid: 'cgp', sid: 'cgp', ime: '', kolicina: 1 }]);
+  const [vrstice, setVrstice] = useState<VrsticaP[]>([]);
   const [razprtaVrstica, setRazprtaVrstica] = useState<string | null>(null);
   const [praviceOdprt, setPraviceOdprt] = useState<string | null>(null);   /* sid odprte Podrobnosti popup pravic */
+  const [lastnaOdprta, setLastnaOdprta] = useState<string | null>(null);   /* id lastne pravice z odprtimi Podrobnostmi */
+  const [konfetiKljuc, setKonfetiKljuc] = useState(0);   /* povecanje kljuca znova sprozi konfeti animacijo na Zakljucku */
+  const proslaviKonfeti = () => setKonfetiKljuc(k => k + 1);   /* sprozi ob kopiranju / posljanju / prenosu ponudbe */
   const [vlecenaVrstica, setVlecenaVrstica] = useState<string | null>(null);
   /* select "pop" ob kliku na mehurcek — obroc, ki se razsiri (kot na zacetku) */
   const [klikObroc, setKlikObroc] = useState<{ x: number; y: number; d: number; n: number } | null>(null);
@@ -1470,16 +1607,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
   const uskladiIzbrane = (nove: VrsticaP[]) => setIzbrane(new Set(nove.map(l => l.sid)));
 
-  /* klik na orb: prva instanca vedno; kolicinska storitev potem steje kose
-     na isti vrstici, imenska pa doda NOVO vrstico (Inovis + Itforyou) */
+  /* klik na orb = VEDNO nova LOCENA vrstica (druga izvedba, svoja vprasanja/cena):
+     mehurcek 2x = dve razlicni sliki/spletni strani. ENAKE kose (ista cena) pa
+     stejes z "+" ob imenu vrstice (spremeniKolicino), ne z mehurckom. */
   const izberiVrstico = (sid: string) => {
     setVrstice(stare => {
       const obstojece = stare.filter(l => l.sid === sid);
       let nove: VrsticaP[];
       if (!obstojece.length) {
         nove = [...stare, { uid: sid, sid, ime: '', kolicina: 1 }];
-      } else if (jeKolicinska(sid)) {
-        nove = stare.map(l => (l.sid === sid ? { ...l, kolicina: Math.max(1, Math.round(l.kolicina)) + 1 } : l));
       } else {
         let n = obstojece.length + 1;
         while (stare.some(l => l.uid === `${sid}#${n}`)) n++;
@@ -1489,21 +1625,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       return nove;
     });
   };
-  /* orbova znacka ×N: kolicinski odvzame kos, imenski odstrani zadnjo vrstico */
+  /* orbova znacka ×N (minus): odstrani ZADNJO vrstico te storitve */
   const odvzemiStoritev = (sid: string) => {
     setVrstice(stare => {
       const obstojece = stare.filter(l => l.sid === sid);
       if (!obstojece.length) return stare;
-      let nove: VrsticaP[];
-      if (jeKolicinska(sid)) {
-        const l0 = obstojece[0];
-        nove = l0.kolicina > 1
-          ? stare.map(l => (l.uid === l0.uid ? { ...l, kolicina: l.kolicina - 1 } : l))
-          : stare.filter(l => l.uid !== l0.uid);
-      } else {
-        const zadnja = obstojece[obstojece.length - 1];
-        nove = stare.filter(l => l.uid !== zadnja.uid);
-      }
+      const zadnja = obstojece[obstojece.length - 1];
+      const nove = stare.filter(l => l.uid !== zadnja.uid);
       uskladiIzbrane(nove);
       setRazprtaVrstica(r2 => (nove.some(l => l.uid === r2) ? r2 : null));
       return nove;
@@ -1568,7 +1696,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [kazemProfil, setKazemProfil] = useState(false);
   /* Profil kot drill-down (meni -> ena "podstran"), ne dolg scroll treh
      razdelkov skupaj — bolj pregledno in mobile-friendly (Tina). */
-  const [profilPogled, setProfilPogled] = useState<'meni' | 'moji-podatki' | 'zgodovina' | 'podjetja' | 'podjetje-urejanje' | 'cene-nastavitve' | 'aplikacija' | 'stroski' | 'obvestila' | 'pomoc'>('meni');
+  const [profilPogled, setProfilPogled] = useState<'meni' | 'moji-podatki' | 'zgodovina' | 'podjetja' | 'podjetje-urejanje' | 'cene-nastavitve' | 'aplikacija' | 'stroski' | 'obvestila' | 'pomoc' | 'videz'>('meni');
   /* katero shranjeno podjetje je trenutno "aktivno" (nalozeno v ponudnik/ddv/...
      zivo stanje) — null, ce urejamo novo, se nikoli shranjeno podjetje. */
   const [aktivnoPodjetje, setAktivnoPodjetje] = useState<string | null>(null);
@@ -1625,7 +1753,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      med njima stran zadaj zaklenemo. */
   useEffect(() => {
     /* onboarding NI zaklenjen — stran se normalno premika (Lenis). Zaklep velja le za modalne overlaye. */
-    if (!onboardingOdprt && !kazemProfil && !razprtaVrstica && !kazemUredi && !praviceOdprt) return;
+    if (!onboardingOdprt && !kazemProfil && !razprtaVrstica && !kazemUredi && !praviceOdprt && !lastnaOdprta) return;
     /* Stran uporablja Lenis smooth-scroll (window.__pinartLenis), ki prestreza wheel
        in skrola ozadje MIMO overflow:hidden. Zato ga ob odprtem oknu ustavimo. */
     const lenis = (window as unknown as { __pinartLenis?: { stop: () => void; start: () => void } }).__pinartLenis;
@@ -1636,7 +1764,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     html.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     return () => { lenis?.start(); html.style.overflow = prejHtml; document.body.style.overflow = prejBody; };
-  }, [onboardingOdprt, kazemProfil, razprtaVrstica, kazemUredi, praviceOdprt]);
+  }, [onboardingOdprt, kazemProfil, razprtaVrstica, kazemUredi, praviceOdprt, lastnaOdprta]);
   const [obIzbor, setObIzbor] = useState<Set<string>>(new Set());
   /* Poljuben vrstni red storitev (razporejanje z drag-rocajem); prazno = naravni. */
   const [vrstniRed, setVrstniRed] = useState<string[]>([]);
@@ -1649,6 +1777,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [valutaRocna, setValutaRocna] = useState(false);
   const [ponudnik, setPonudnik] = useState({ ime: '', davcna: '', email: '', telefon: '', naslov: '', trr: '' });
   const [predklic, setPredklic] = useState('+386');
+  /* Videz dokumentov (barva poudarka + pisava naslovov) — velja cez celotno
+     dokumentacijo (ponudba, racun, pogodba, retainer). Shranjeno v K_NAST. */
+  const [dokBarva, setDokBarva] = useState(DOK_BARVA_PRIVZETA);
+  const [dokFont, setDokFont] = useState(DOK_FONT_PRIVZETI);
   /* Vec urnih postavk: IT/razvoj ima lahko drugo ceno kot art direkcija
      ali oblikovanje — v ponudbi se izpisejo poimensko. */
   const [urnePostavke, setUrnePostavke] = useState<{ ime: string; cena: string }[]>(
@@ -1664,22 +1796,35 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [besedilo, setBesedilo] = useState('');
   const [besediloHtml, setBesediloHtml] = useState('');
   const [rocnoBesedilo, setRocnoBesedilo] = useState(false);
+  /* predogled = DEJANSKI PDF (po straneh, oštevilčena noga) na koraku Tvoja ponudba */
+  const [predogledMode, setPredogledMode] = useState(false);
+  const [predogledStrani, setPredogledStrani] = useState<string[]>([]);   /* strani PDF kot slike (pdf.js) */
+  const [predogledNalaganje, setPredogledNalaganje] = useState(false);
+  const [pdfNalaganje, setPdfNalaganje] = useState(false);
+  /* podloga naslovnice (data URL slike); prazno = privzeti dizajn */
+  const [podlogaCover, setPodlogaCover] = useState('');
+  const podlogaRef = useRef<HTMLInputElement>(null);
+  /* logo (data URL) — za glavo ponudbe (za tiste brez podloge) */
+  const [logo, setLogo] = useState('');
+  const logoRef = useRef<HTMLInputElement>(null);
+  /* Pinart predloga (prvi krogec): oblikuje ponudbo po Tinini predlogi —
+     ozadje naslovnice + notranjega telesa + ikona ob ceni paketa */
+  const [predlogaPinart, setPredlogaPinart] = useState(false);
   const [tonPonudbe, setTonPonudbe] = useState<TonPonudbe>('toplo');
   const [nogaZnak, setNogaZnak] = useState(true);
   const [nazivPonudbe, setNazivPonudbe] = useState('');
   const [narocnikPonudbe, setNarocnikPonudbe] = useState('');
+  const [nedavniNarocniki, setNedavniNarocniki] = useState<NarocnikZapis[]>([]);
   const [narocnikEmail, setNarocnikEmail] = useState('');
   const [narocnikOseba, setNarocnikOseba] = useState('');
   const [narocnikNaslov, setNarocnikNaslov] = useState('');
   const [narocnikDavcna, setNarocnikDavcna] = useState('');
   const [dodatniNarocnik, setDodatniNarocnik] = useState(false);
-  const [prilagajanjePravic, setPrilagajanjePravic] = useState(false);
   /* Enotna izbira prenosa pravic velja za celo ponudbo; ce je za posamezno
      storitev drugace (npr. ilustracije kot licenca, CGP kot odkup), gre
      samo v opombo besedila — pravi izracun po storitvi je vecji poseg,
      zaenkrat backlog za napredni (placljivi) nivo. */
-  const [izjemePravice, setIzjemePravice] = useState('');
-  const [prikaziIzjemePravic, setPrikaziIzjemePravic] = useState(false);
+  const [izjemePravice, setIzjemePravice] = useState('');   /* legacy skupna opomba (starih ponudb); nova opomba je per storitev v PravRec */
   const [obsegPonudbe, setObsegPonudbe] = useState<'kratka' | 'razsirjena'>('razsirjena');
   /* urejevalnik ponudbe: velikost besedila (1-7, privzeto 3) + cilj barve (crke/podlaga) */
   const [velikostBesedila, setVelikostBesedila] = useState(3);
@@ -1692,23 +1837,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* obseg pravic — privzetki dajo faktor 1.0 (glej PRAV_* konstante) */
   const [pravTrajanje, setPravTrajanje] = useState<string>('neomejeno');   /* privzeto sledi znamka/projekt (znamka=trajno, projekt=7 let) */
   const [pravTrajanjeRocno, setPravTrajanjeRocno] = useState(false);       /* uporabnik rocno izbral -> ne prepisuj vec */
-  const [pravTeritorij, setPravTeritorij] = useState<string>('slo');
-  const [pravDodatniMediji, setPravDodatniMediji] = useState<Set<string>>(new Set());
-  const [pravNaklada, setPravNaklada] = useState<string>('do3k');
-  const [pravPonatis, setPravPonatis] = useState(true);
-  /* pravice po storitvi (tabela): sid -> {prenos, trajanje}; manjka = privzeto iz privzetePraviceZa */
-  type PravRec = { prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string; trajLeta?: number; klavzule?: string[]; tantiema?: number };
+  /* pravice po storitvi (tabela): sid -> PravRec; manjka = privzeto iz privzetePraviceZa */
   const [pravicePoStoritvi, setPravicePoStoritvi] = useState<Record<string, PravRec>>({});
   const [custStev, setCustStev] = useState('3');
   const [custEnota, setCustEnota] = useState<'teden' | 'mesec' | 'leto'>('teden');
   const pravRec = (sid: string): PravRec => pravicePoStoritvi[sid] || privzetePraviceZa(sid);
   const nastaviPravRec = (sid: string, del: Partial<PravRec>) =>
     setPravicePoStoritvi(prev => ({ ...prev, [sid]: { ...pravRec(sid), ...del } }));
-  const [obsegOdprt, setObsegOdprt] = useState(false);
-  /* pri avtorskih vizualnih delih (ilustracija, fotografija ...) se obseg
-     pokaze odprt takoj — Majin nauk: tam so ta vprasanja jedro cene */
-  const avtorskeIzbrane = AVTORSKE_STORITVE.some(id => izbrane.has(id));
-  const obsegPokazi = obsegOdprt || avtorskeIzbrane;
+  /* obseg pravic per storitev; kadar ni rocno nastavljen, se PREVZAME iz trga
+     narocnika (teritorij), mediji prazni, naklada do3k. Vpliva na ceno pravic
+     (obsegZa v izracunu) — za SI-narocnika brez sprememb da faktor 1.0. */
+  const pravObseg = (sid: string) => {
+    const r = pravicePoStoritvi[sid];
+    return {
+      teritorij: r?.teritorij ?? teritorijIzTrga(trgNarocnika),
+      teritorijPrevzet: r?.teritorij === undefined,
+      mediji: r?.mediji ?? [],
+      naklada: r?.naklada ?? 'do3k',
+    };
+  };
   /* Rocni prepis samodejnih zneskov (v valuti ponudbe); prazno = samodejno.
      Projektno specificno, zato se NE shranjuje v localStorage. */
   const [rocnePravice, setRocnePravice] = useState('');
@@ -1717,14 +1864,38 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      = samodejni izracun. Kljuc = id paketa. urejamPaket = kateri se ureja. */
   const [rocniPaketi, setRocniPaketi] = useState<Record<string, string>>({});
   const [urejamPaket, setUrejamPaket] = useState<string | null>(null);
+  /* rocni prepis zneska pravic PO STORITVI (v valuti ponudbe); prazno = samodejno.
+     urejamPravSid = katera vrstica se trenutno ureja inline. */
+  const [rocnePraviceStoritvi, setRocnePraviceStoritvi] = useState<Record<string, string>>({});
+  const [urejamPravSid, setUrejamPravSid] = useState<string | null>(null);
+  /* lastne pravice (niso vezane na storitev): enkratni odkup steje v skupni znesek
+     pravic; letno/mesecno je ponavljajoca licenca (glej tip LastnaPravica) */
+  const [lastnePravice, setLastnePravice] = useState<LastnaPravica[]>([]);
+  const dodajLastnoPravico = () => setLastnePravice(prev => [...prev, { id: 'lp' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), ime: '', znesek: '', tip: 'enkratno' }]);
+  const posodobiLastnoPravico = (id: string, del: Partial<LastnaPravica>) => setLastnePravice(prev => prev.map(x => x.id === id ? { ...x, ...del } : x));
+  const izbrisiLastnoPravico = (id: string) => setLastnePravice(prev => prev.filter(x => x.id !== id));
   /* ena koncna cena (Priporoceni obseg) namesto treh paketov — na ponudbo */
   const [enaCena, setEnaCena] = useState(false);
+  /* dolgorocno sodelovanje (retainer): nacin + model + ure/mesec + doba */
+  const [dolgorocno, setDolgorocno] = useState(false);
+  const [retModel, setRetModel] = useState<'ure' | 'paket' | 'oboje'>('ure');
+  const [retUre, setRetUre] = useState(10);
+  const [retDoba, setRetDoba] = useState(12);
   /* zaporedna stevilka ponudbe (npr. 2026-0004) — dodeljena ob prvem prikazu ponudbe;
      veljavnost v dnevih (privzeto 30) se izpise v pogojih */
   const [stevilkaPonudbe, setStevilkaPonudbe] = useState('');
   const [veljavnostDni, setVeljavnostDni] = useState('30');
+  /* RACUN (pretvorba ponudbe v racun): panel na Zakljucku. Stevilka locen stevec,
+     paket = kateri paket je stranka sprejela, rok placila v dneh, oznaka placano. */
+  const [racunOdprt, setRacunOdprt] = useState(false);
+  const [racunStevilka, setRacunStevilka] = useState('');
+  const [racunPaketId, setRacunPaketId] = useState('priporoceni');
+  const [racunDatumISO, setRacunDatumISO] = useState('');
+  const [racunRokDni, setRacunRokDni] = useState('8');
+  const [racunPlacano, setRacunPlacano] = useState(false);
   const [odgovori, setOdgovori] = useState<Record<string, string>>({});
   const [osnove, setOsnove] = useState<Record<string, number>>({});
+  const [cenaResetPotrdi, setCenaResetPotrdi] = useState(false); /* dvoklik potrditev ponastavitve cen */
   const [profili, setProfili] = useState<Record<string, Profil>>({});
   const [arhiv, setArhiv] = useState<Record<string, ShranjenaP>>({});
   const [podjetja, setPodjetja] = useState<Record<string, PodjetjeProfil>>({});
@@ -1791,8 +1962,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       if (s.predklic) setPredklic(s.predklic);
       if (s.ddvZavezanec) setDdvZavezanec(true);
       if (s.ddvStopnja) setDdvStopnja(String(s.ddvStopnja));
+      if (s.dokBarva) setDokBarva(s.dokBarva);
+      if (s.dokFont) setDokFont(s.dokFont);
+      { const lg = localStorage.getItem(K_LOGO) || (s.logo ? String(s.logo) : ''); if (lg) setLogo(lg); }
       setProfili(JSON.parse(localStorage.getItem(K_PROFILI) || '{}'));
       setArhiv(JSON.parse(localStorage.getItem(K_ARHIV) || '{}'));
+      { const nn = JSON.parse(localStorage.getItem(K_NAROCNIKI) || '[]'); if (Array.isArray(nn)) setNedavniNarocniki(nn.map((x: unknown) => typeof x === 'string' ? { ime: x } : x).filter((x): x is NarocnikZapis => !!x && typeof (x as NarocnikZapis).ime === 'string')); }
       setPodjetja(JSON.parse(localStorage.getItem(K_PODJETJA) || '{}'));
       const l = JSON.parse(localStorage.getItem(K_LEAD) || 'null');
       if (l) { setLeadIme(l.ime || ''); setLeadEmail(l.email || ''); }
@@ -1824,9 +1999,26 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         obIzbor: obIzbor.size ? [...obIzbor] : undefined,
         nazivPonudbe: nazivPonudbe || undefined,
         aktivniCenik: aktivniCenik || undefined,
+        dokBarva: dokBarva !== DOK_BARVA_PRIVZETA ? dokBarva : undefined,
+        dokFont: dokFont !== DOK_FONT_PRIVZETI ? dokFont : undefined,
       }));
     } catch { /* ignoriraj */ }
-  }, [jeNalozeno, osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, pogledMreza, namigSkrit, uvodKoncan, chatKorak, chatNova, obIzbor, nazivPonudbe, aktivniCenik]);
+  }, [jeNalozeno, osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, pogledMreza, namigSkrit, uvodKoncan, chatKorak, chatNova, obIzbor, nazivPonudbe, aktivniCenik, dokBarva, dokFont]);
+  useEffect(() => {
+    if (!jeNalozeno) return;
+    const timeout = window.setTimeout(() => {
+      void Promise.all([
+        ponudnik.ime ? saveOrganizationProfile({ name: ponudnik.ime, tax: ponudnik.davcna, address: ponudnik.naslov, email: ponudnik.email, phone: [predklic, ponudnik.telefon].filter(Boolean).join(' '), bankAccount: ponudnik.trr }) : Promise.resolve(),
+        saveCloudSettings({ recurringCosts: stroski, activePriceProfile: aktivniCenik || undefined }),
+      ]).catch(() => undefined);
+    }, 700);
+    return () => window.clearTimeout(timeout);
+  }, [jeNalozeno, ponudnik, predklic, stroski, aktivniCenik]);
+  /* logo v LOCENEM kljucu (velika slika ne pokvari K_NAST). Persist ob spremembi. */
+  useEffect(() => {
+    if (!jeNalozeno) return;
+    try { if (logo) localStorage.setItem(K_LOGO, logo); else localStorage.removeItem(K_LOGO); } catch { /* poln */ }
+  }, [logo, jeNalozeno]);
 
   /* valuta sledi trgu narocnika, dokler je uporabnik ne izbere sam */
   useEffect(() => {
@@ -2063,6 +2255,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   useEffect(() => {
     if (profilPogled !== 'obvestila') setPotrdiOdjavo(false);
   }, [profilPogled]);
+  /* Retainer je zdaj SVOJ produkt (/kalkulator/dolgorocno, RetainerWorkspace);
+     kalkulator ostane cisto projekten (dolgorocno se tu ne vklopi). */
 
   const odpriOnboarding = () => {
     /* preslikaj trenutni set nazaj v podrocja (podrocje je izbrano, ce so vse
@@ -2100,6 +2294,36 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     });
   };
 
+  /* zabelezi ime narocnika v nedavne (dedup brez locevanja velikih/malih crk,
+     najnovejsi spredaj, do 12), da se pokaze med "nedavni" tudi ce ponudba ni
+     shranjena v arhiv. */
+  const zabeleziNarocnika = (ime: string) => {
+    const t = ime.trim();
+    if (!t) return;
+    const zapis: NarocnikZapis = {
+      ime: t,
+      email: narocnikEmail.trim() || undefined,
+      oseba: narocnikOseba.trim() || undefined,
+      naslov: narocnikNaslov.trim() || undefined,
+      davcna: narocnikDavcna.trim() || undefined,
+    };
+    setNedavniNarocniki(prej => {
+      const brez = prej.filter(n => n.ime.toLowerCase() !== t.toLowerCase());
+      const nov = [zapis, ...brez].slice(0, 12);
+      try { localStorage.setItem(K_NAROCNIKI, JSON.stringify(nov)); } catch { /* poln */ }
+      return nov;
+    });
+  };
+  /* klik na nedavnega narocnika izpolni VSE polja (ne le imena) */
+  const uporabiNarocnika = (n: NarocnikZapis) => {
+    setNarocnikPonudbe(n.ime);
+    setNarocnikEmail(n.email || '');
+    setNarocnikOseba(n.oseba || '');
+    setNarocnikNaslov(n.naslov || '');
+    setNarocnikDavcna(n.davcna || '');
+    if (n.oseba || n.naslov || n.davcna) setDodatniNarocnik(true);
+  };
+
   /* Nova ponudba: pocisti VSE za to ponudbo (izbor, odgovori, postavke,
      narocnik, zneski), a OHRANI nastavitve (cene, profil, tvoji podatki). */
   const novaPonudba = () => {
@@ -2124,10 +2348,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setPrenosPravic('izkljucni');
     setRocnePravice('');
     setRocnaLicenca('');
+    setRocnePraviceStoritvi({});
+    setUrejamPravSid(null);
+    setLastnePravice([]);
+    setLastnaOdprta(null);
     setIzjemePravice('');
-    setPrikaziIzjemePravic(false);
     setRocnoBesedilo(false);
     setEnaCena(false);
+    setDolgorocno(false);
     setRocniPaketi({});
     setStevilkaPonudbe('');
     setVeljavnostDni('30');
@@ -2209,13 +2437,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     /* obseg pravic (trajanje x teritorij x dodatni mediji x naklada) skalira
        bazo NAD varovalko — sirsa raba legitimno preseze 300 % izvedbe.
        Privzetki dajo 1.0, torej brez spreminjanja cena ostane enaka. */
-    const teritorijIz = PRAV_TERITORIJ.find(t => t.id === pravTeritorij) ?? PRAV_TERITORIJ[0];
-    const medijiIz = PRAV_MEDIJI_DODATNI.filter(m => pravDodatniMediji.has(m.id));
-    const nakladaIz = PRAV_NAKLADA.find(n => n.id === pravNaklada) ?? PRAV_NAKLADA[0];
-    const teritMedNak = teritorijIz.mult * (1 + medijiIz.reduce((a, m) => a + m.mult, 0)) * nakladaIz.mult;   /* globalni obseg */
+    /* obseg pravic PER STORITEV (teritorij x dodatni mediji x naklada).
+       teritorij prevzame trg narocnika, ce ni rocno nastavljen; naklada steje
+       le pri NAKLADA_STORITVE. Za SI-narocnika brez sprememb = faktor 1.0. */
+    const obsegZa = (sid: string) => {
+      const rr = pravicePoStoritvi[sid];
+      const terId = rr?.teritorij ?? teritorijIzTrga(trgNarocnika);
+      const medIds = rr?.mediji ?? [];
+      const nakId = rr?.naklada ?? 'do3k';
+      const t = PRAV_TERITORIJ.find(x => x.id === terId) ?? PRAV_TERITORIJ[0];
+      const med = PRAV_MEDIJI_DODATNI.filter(m => medIds.includes(m.id));
+      const jeNaklada = NAKLADA_STORITVE.includes(sid);
+      const nak = jeNaklada ? (PRAV_NAKLADA.find(n => n.id === nakId) ?? PRAV_NAKLADA[0]) : PRAV_NAKLADA[0];
+      const mult = t.mult * (1 + med.reduce((a, m) => a + m.mult, 0)) * nak.mult;
+      const opis = [['tisk + promocija', ...med.map(m => m.ime.toLowerCase())].join(' + '), t.ime, jeNaklada ? `naklada ${nak.ime}` : null].filter(Boolean).join(', ');
+      return { mult, opis };
+    };
     /* pravice PER STORITEV: baza (surove) razdeljena po delezu izvedbe storitve;
-       vsaka storitev x svoj mnozitelj trajanja x globalni teritMedNak x faktor prenosa.
-       Ce so vse pravice enotne, se vsota ujema z nekdanjim globalnim izracunom (varnostna lastnost). */
+       vsaka storitev x svoj mnozitelj trajanja x svoj obseg (obsegZa) x faktor prenosa.
+       Ce so obseg in pravice enotni, se vsota ujema z nekdanjim globalnim izracunom. */
     const clampBaseP = clamp(surove, delo * 0.25, delo * 3);
     const izvStoritve = (sid: string) => linije.filter(l => l.sid === sid).reduce((b, l) => b + osnovaZa(l.s) * Math.max(1, Math.round(l.kolicina)), 0) * mult;
     const totStoritevIzv = sez.reduce((a, s) => a + izvStoritve(s.id), 0);
@@ -2227,14 +2467,24 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         : (PRAV_TRAJANJE.find(t => t.id === rec.trajanje)?.mult ?? 1);
       const klavzMult = 1 + (rec.klavzule || []).reduce((a, k) => a + (KLAVZULE.find(x => x.id === k)?.mult || 0), 0);
       const w = totStoritevIzv > 0 ? izvStoritve(s.id) / totStoritevIzv : 0;
-      const sBaza = clampBaseP * w * trajMult * teritMedNak * klavzMult;
+      const ob = obsegZa(s.id);
+      const sBaza = clampBaseP * w * trajMult * ob.mult * klavzMult;
       const sAvto = rec.prenos === 'neizkljucni' ? sBaza * 0.6 : rec.prenos === 'licenca' ? 0 : sBaza;
-      praviceBazaSum += sBaza; praviceAvtoSum += zaokrozi(sAvto); licencaAvtoSum += zaokrozi(sBaza * 0.2);
+      const znesekAuto = zaokrozi(sAvto);
+      const rocnoStorEur = zaokrozi((Number(rocnePraviceStoritvi[s.id]) || 0) / vfx.fx);
+      const znesek = rocnoStorEur > 0 ? rocnoStorEur : znesekAuto;
+      praviceBazaSum += sBaza; praviceAvtoSum += znesek; licencaAvtoSum += zaokrozi(sBaza * 0.2);
       const trajanjeIme = rec.trajanje === 'custom' && typeof rec.trajLeta === 'number'
         ? trajLetaVBesedo(rec.trajLeta)
         : (PRAV_TRAJANJE.find(t => t.id === rec.trajanje)?.ime ?? rec.trajanje);
-      return { sid: s.id, ime: s.ime, prenos: rec.prenos, trajanje: rec.trajanje, trajanjeIme, znesek: zaokrozi(sAvto), klavzule: rec.klavzule || [], tantiema: rec.tantiema };
+      return { sid: s.id, ime: s.ime, prenos: rec.prenos, trajanje: rec.trajanje, trajanjeIme, znesek, znesekAuto, rocno: rocnoStorEur > 0, klavzule: rec.klavzule || [], tantiema: rec.tantiema, obsegOpis: ob.opis, obsegMult: ob.mult, opomba: (rec.opomba || '').trim() };
     });
+    /* lastne pravice z enkratnim odkupom pristejemo k skupnemu znesku pravic
+       (letno/mesecno so ponavljajoce licence in NE gredo v enkratno ceno) */
+    const lastnoEnkratnoEur = lastnePravice
+      .filter(l => l.tip === 'enkratno')
+      .reduce((a, l) => a + zaokrozi((Number(l.znesek) || 0) / vfx.fx), 0);
+    praviceAvtoSum += lastnoEnkratnoEur;
     const praviceBaza = zaokrozi(praviceBazaSum);
     const praviceAvto = praviceAvtoSum;
     const licencaAvto = licencaAvtoSum;
@@ -2265,12 +2515,30 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       praviceAvto, licencaAvto, praviceRocne: rocnePravEur > 0, licencaRocna: rocnaLicEur > 0,
       vrsticeIzvedbe, raba, tantiemePct, prenos: prenosPravic, praviceVrstice,
       dobicekPodan: raba === 'projekt' ? pd > 0 : d > 0,
-      obseg: {
-        mult: teritMedNak,
-        opis: `${['tisk + promocija', ...medijiIz.map(m => m.ime.toLowerCase())].join(' + ')}, ${teritorijIz.ime}, naklada ${nakladaIz.ime}`,
-      },
     };
-  }, [vrstice, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, valuta, pravicePoStoritvi, pravTeritorij, pravDodatniMediji, pravNaklada, rocniPaketi]);
+  }, [vrstice, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, rocnePraviceStoritvi, lastnePravice, valuta, pravicePoStoritvi, rocniPaketi]);
+
+  /* Retainer izracun (dolgorocno sodelovanje) — LOCEN od projektnega r, da ga ne ogrozi.
+     mesecni bruto = ure×urna (model ure) + vrednost izbranih storitev/mesec (model paket);
+     zavezni popust po dobi; skupaj za dobo + letna vrednost; overage za ure nad blokom. */
+  const ret = useMemo(() => {
+    if (!dolgorocno) return null;
+    const urna = urnePostavke.map(u => Math.round(Number(u.cena)) || 0).find(n => n > 0) || RETAINER_PRIVZETA_URNA;
+    const ureBaza = retModel !== 'paket' ? retUre * urna : 0;
+    const paketBaza = retModel !== 'ure' ? (r ? r.delo : 0) : 0;
+    const mesBruto = ureBaza + paketBaza;
+    const popust = RETAINER_POPUST[retDoba] ?? 0;
+    const mesNeto = zaokrozi(mesBruto * (1 - popust));
+    return {
+      urna, ureBaza, paketBaza, mesBruto, popust,
+      mesNeto,
+      skupajDoba: mesNeto * retDoba,
+      letno: mesNeto * 12,
+      overage: zaokrozi(urna * RETAINER_OVERAGE_MULT),
+      ure: retUre, doba: retDoba, model: retModel,
+      odpovedDni: RETAINER_ODPOVED_DNI,
+    };
+  }, [dolgorocno, retModel, retUre, retDoba, urnePostavke, r]);
 
   /* Vprasanja na VRSTICO (ne storitev): dve spletni strani = dva locena
      vprasalnika. Kljuc odgovora = `${uid}:${vprasanje}`; ker je uid prve
@@ -2353,8 +2621,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       narocnikDavcna.trim() && 'Davčna št.: ' + narocnikDavcna.trim(),
       narocnikEmail.trim(),
     ].filter(Boolean).join(' · ');
-    /* 1) NAGOVOR (na vrhu, po Tininem vrstnem redu) */
-    if (tonPonudbe === 'formalno') {
+    /* 1) NAGOVOR — kratek spremni nagovor, LOCEN od same ponudbe (crta pod njim) */
+    if (dolgorocno) {
+      v.push(tonPonudbe === 'formalno' ? 'Spoštovani,' : 'Pozdravljeni,');
+      v.push('v nadaljevanju pošiljam predlog za dolgoročno (mesečno) sodelovanje — obseg, mesečni znesek in pogoje.');
+    } else if (tonPonudbe === 'formalno') {
       v.push('Spoštovani,');
       v.push('v nadaljevanju pošiljam strukturirano ponudbo za dogovorjeni obseg kreativnih storitev.');
     } else if (tonPonudbe === 'direktno') {
@@ -2365,28 +2636,36 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       v.push('hvala za povpraševanje. Pripravila sem tri možnosti, da lahko lažje izberemo pravi obseg za projekt.');
     }
     v.push('');
-    /* 2) TVOJI PODATKI (ponudnik) */
+    v.push(crta);   /* locilo -> <hr>: nagovor ločen od ponudbe */
+    v.push('');
+    /* 2) NASLOV PONUDBE — "PONUDBA:" predpona postane VIDEN naslov
+       (offer-kicker + h1 naziv + meta) v ponudbaVHtml. */
+    v.push(`PONUDBA: ${nazivPonudbe.trim() || r.sez.map(s => s.ime).join(', ')}`);
+    if (stevilkaPonudbe) v.push('Št. ' + stevilkaPonudbe);
+    v.push('Datum: ' + dat(danes));
+    v.push('Velja do: ' + dat(velja) + ` (${veljDni} dni)`);
+    v.push('');
+    /* 3) TVOJI PODATKI (ponudnik) — v izvozu jih pokaze letterhead glava */
     v.push(ponudnik.ime.trim() || '[Ime / podjetje — izpolni v razdelku 01]');
     v.push(ponudnik.naslov.trim() || '[Naslov]');
     v.push(kontakt || '[Davčna št. · TRR · Telefon · Email]');
     v.push('');
-    /* 3) NAROČNIK */
+    /* 4) NAROČNIK */
     v.push('Naročnik: ' + (narocnikPonudbe.trim() || '[ime podjetja]'));
     if (narocnikOseba.trim()) v.push('Kontaktna oseba: ' + narocnikOseba.trim());
     if (narocnikNaslov.trim()) v.push(narocnikNaslov.trim());
     if (narocnikKontakt) v.push(narocnikKontakt);
     v.push('');
-    /* 4) PONUDBA */
-    v.push(`PONUDBA${stevilkaPonudbe ? ' št. ' + stevilkaPonudbe : ''}: ${nazivPonudbe.trim() || r.sez.map(s => s.ime).join(', ')}`);
-    v.push('Datum: ' + dat(danes) + ' · Ponudba velja do: ' + dat(velja) + ` (${veljDni} dni)`);
-    v.push('');
-    v.push('OBSEG');
-    r.linije.forEach(l => {
-      const enota = KOLICINSKE[l.sid];
-      v.push(`· ${l.ime}${l.kolicina > 1 ? ` — ${l.kolicina} ${enota || 'kosov'}` : ''}`);
-    });
-    postavke.forEach(x => v.push(`· ${x.ime}${x.enota === 'ura' ? ` — ${x.kolicina} ur` : x.kolicina > 1 ? ' × ' + x.kolicina : ''}`));
-    v.push('· [dopolni po potrebi]');
+    /* OBSEG (nastevanje storitev) le v razsirjeni; v kratki so storitve v "Vključuje" pri paketu */
+    if (obsegPonudbe === 'razsirjena') {
+      v.push('OBSEG');
+      r.linije.forEach(l => {
+        const enota = KOLICINSKE[l.sid];
+        v.push(`· ${l.ime}${l.kolicina > 1 ? ` — ${l.kolicina} ${enota || 'kosov'}` : ''}`);
+      });
+      postavke.forEach(x => v.push(`· ${x.ime}${x.enota === 'ura' ? ` — ${x.kolicina} ur` : x.kolicina > 1 ? ' × ' + x.kolicina : ''}`));
+      v.push('· [dopolni po potrebi]');
+    }
     const dodatniOdgovori = aktivnaVprasanja
       .map(vp => ({
         ...vp,
@@ -2403,6 +2682,30 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       dodatniOdgovori.forEach(vp => v.push(`· ${vp.vecInstanc ? vp.storitev + ' — ' : ''}${vp.label}: ${vp.odgovor}`));
     }
     v.push('');
+    if (dolgorocno && ret) {
+      /* RETAINER (dolgorocno sodelovanje) — namesto paketov */
+      const modelOpis = ret.model === 'ure'
+        ? `${ret.ure} ur na mesec`
+        : ret.model === 'paket'
+          ? 'dogovorjeni mesečni paket storitev'
+          : `${ret.ure} ur na mesec + dogovorjeni paket storitev`;
+      v.push('DOLGOROČNO SODELOVANJE');
+      v.push('');
+      v.push(`MESEČNI ZNESEK  ·  ${val(ret.mesNeto)}${ddvZavezanec ? `  (z DDV ${zDdv(ret.mesNeto)})` : ''} / mesec`);
+      v.push(`  · Vključeno: ${modelOpis}`);
+      if (ret.ureBaza > 0) v.push(`  · Blok ur: ${ret.ure} h / mesec (urna postavka ${val(ret.urna)})`);
+      if (ret.paketBaza > 0) v.push(`  · Mesečni paket storitev: ${r.sez.map(s => s.ime).join(', ')} (${val(ret.paketBaza)} / mesec)`);
+      v.push(`  · Doba: ${ret.doba} mesecev${ret.popust > 0 ? ` — zavezni popust −${Math.round(ret.popust * 100)} % (redna cena ${val(ret.mesBruto)} / mesec)` : ''}`);
+      v.push(`  · Dodatne ure nad blokom: ${val(ret.overage)} / uro`);
+      v.push(`  · Odpovedni rok: ${ret.odpovedDni} dni`);
+      v.push(`  · Skupaj za dobo (${ret.doba} mes): ${val(ret.skupajDoba)}  ·  letna vrednost: ${val(ret.letno)}`);
+      v.push('');
+      v.push('PLAČILO');
+      v.push('  · Mesečni znesek se zaračuna vnaprej, ob začetku vsakega meseca sodelovanja.');
+      v.push('  · Neporabljene ure se praviloma ne prenašajo v naslednji mesec (po dogovoru).');
+      v.push('  · Dodatno delo nad dogovorjenim blokom se obračuna po urni postavki zgoraj.');
+      v.push('');
+    } else {
     v.push(enaCena ? 'CENA IN OBSEG' : 'IZBERITE PAKET');
     v.push('');
     /* cena posamezne storitve (za priporoceni paket) — vsota priceanih vrstic te storitve */
@@ -2412,24 +2715,36 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     (enaCena ? [r.paketi[1]] : r.paketi).forEach((p, idx) => {
       const i = enaCena ? 1 : idx;
       v.push(`${enaCena ? 'CENA' : p.ime.toUpperCase()}  ·  ${val(p.skupaj)}${ddvZavezanec ? `  (z DDV ${zDdv(p.skupaj)})` : ''}`);
+      /* OSNOVNI (kratka) nacin: SAMO bistvo — 2 nujni aliniji, brez specifikacije
+         in nastevanja pod storitvami (za stranke, ki jih detajli odbijejo) */
+      if (obsegPonudbe === 'kratka') {
+        if ((p as { opis?: string }).opis) v.push(`  · ${(p as { opis?: string }).opis}`);
+        v.push(`  · Vključuje: ${r.sez.map(s => s.ime).join(', ')}`);
+        v.push('');
+        return;
+      }
       const vecStoritev = r.sez.length > 1;
-      /* razsirjena + PRIPOROCENI paket: specifikacija cen je vpisana ob vsaki storitvi (ne locen razdelek) */
-      const kaziCene = obsegPonudbe === 'razsirjena' && i === 1;
+      /* razsirjena ponudba: specifikacija cen ob VSAKEM paketu (osnovni/priporoceni/
+         premium), da so paketi primerljivi. Cene izvedbe se skalirajo z mult paketa
+         (osnovni 0.75, priporoceni 1, premium 1.35), pravice so enake -> vsota
+         podcen = redna cena paketa (glava kaze ceno s popustom, opomba spodaj). */
+      const kaziCene = obsegPonudbe === 'razsirjena';
+      const m = (p as { mult?: number }).mult ?? 1;
       r.sez.forEach(s => {
         const [jedro = [], nadgradnja = [], vrh = []] = ALINEJE_PAKETOV[s.id] ?? [];
         const alineje = [...jedro, ...(i >= 1 ? nadgradnja : []), ...(i >= 2 ? vrh : [])];
-        const cenaPripis = kaziCene ? `  —  ${val(cenaStoritve(s.id))}` : '';
+        const cenaPripis = kaziCene ? `  —  ${val(cenaStoritve(s.id) * m)}` : '';
         if (!alineje.length) { v.push(`  · ${s.ime}${cenaPripis}: izvedba po dogovorjenem obsegu`); return; }
         if (vecStoritev || kaziCene) v.push(`  ${s.ime}${cenaPripis}`);
         alineje.forEach(a => v.push(`  · ${a}`));
       });
       postavke.forEach((x, xi) => {
-        const cenaX = kaziCene ? (r.vrsticeIzvedbe[r.linije.length + xi]?.cena || 0) * x.kolicina : 0;
+        const cenaX = kaziCene ? (r.vrsticeIzvedbe[r.linije.length + xi]?.cena || 0) * x.kolicina * m : 0;
         v.push(`  · ${x.ime}${x.enota === 'ura' ? ` — ${x.kolicina} ur` : x.kolicina > 1 ? ' × ' + x.kolicina : ''}${cenaX ? `  —  ${val(cenaX)}` : ''}`);
       });
       v.push(`  · ${POPRAVKI_PAKETA[i]}`);
       if (kaziCene) {
-        v.push(`  · Skupaj izvedba: ${val(r.delo)}`);
+        v.push(`  · Skupaj izvedba: ${val(r.delo * m)}`);
         if (r.prenos === 'licenca')
           v.push(`  · Avtorske pravice: prek letne licence ${val(r.licenca)} / leto (odkup ni vključen)`);
         else
@@ -2444,9 +2759,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         : `V cenah je že upoštevan ${r.popustPct} % popust (redna cena paketa Priporočeni: ${val(r.paketi[1].redna)}).`);
       v.push('');
     }
+    }
     /* Razsirjena ponudba: cenik in okviri takoj za paketi (kot v njenih
-       pravih ponudbah), ne na dnu, kjer se izgubijo. */
-    if (obsegPonudbe === 'razsirjena') {
+       pravih ponudbah), ne na dnu, kjer se izgubijo. Pri retainerju NE (projektni okviri). */
+    if (!dolgorocno && obsegPonudbe === 'razsirjena') {
       const cur = (n: number) => Math.round(n * vfx.fx).toLocaleString('sl-SI') + ' ' + vfx.znak;
       /* specifikacija cen je zdaj vpisana v priporocenem paketu zgoraj (ne locen razdelek) */
       /* Ura-osnova (kot v njenih pravih ponudbah): PRIVZETO SKRITA (value-based
@@ -2495,12 +2811,29 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         } else {
           const vrsta = pv.prenos === 'licenca' ? 'licenca za rabo' : pv.prenos === 'neizkljucni' ? 'neizključni prenos' : 'izključni prenos';
           const zn = pv.prenos === 'licenca' ? 'prek letne licence' : val(pv.znesek);
-          v.push(`· ${pv.ime} — ${vrsta}, ${pv.trajanjeIme} (${zn})`);
+          v.push(`· ${pv.ime} — ${vrsta}, ${pv.trajanjeIme}, ${pv.obsegOpis} (${zn})`);
         }
         pv.klavzule.forEach(kid => { const k = KLAVZULE.find(x => x.id === kid); if (k) v.push(`  · ${k.opis}`); });
+        if (pv.opomba) v.push(`  · opomba: ${pv.opomba}`);
+      });
+    }
+    if (obsegPonudbe === 'razsirjena') {
+      lastnePravice.forEach(l => {
+        const ime = (l.ime || 'Lastna pravica').trim() || 'Lastna pravica';
+        const zn = Number(l.znesek) || 0;
+        if (zn <= 0 && !l.ime.trim()) return;
+        const znStr = `${zn.toLocaleString('sl-SI')} ${vfx.znak}`;
+        const tipStr = l.tip === 'letno' ? `letna licenca, ${znStr}/leto` : l.tip === 'mesecno' ? `mesečna licenca, ${znStr}/mesec` : `enkratni odkup, ${znStr}`;
+        const trajStr = l.trajanje === 'custom' && typeof l.trajLeta === 'number'
+          ? trajLetaVBesedo(l.trajLeta)
+          : (l.trajanje ? (PRAV_TRAJANJE.find(t => t.id === l.trajanje)?.ime ?? '') : '');
+        v.push(`· ${ime} — ${tipStr}${trajStr ? `, ${trajStr}` : ''}`);
+        (l.klavzule || []).forEach(kid => { const k = KLAVZULE.find(x => x.id === kid); if (k) v.push(`  · ${k.opis}`); });
+        if (l.opomba && l.opomba.trim()) v.push(`  · opomba: ${l.opomba.trim()}`);
       });
     }
     v.push(`· Skupaj vrednost pravic: ${val(r.pravice)}${r.raba === 'projekt' ? `; alternativa: tantieme ${r.tantiemePct} % od prodaje, obračunano letno` : ''}`);
+    v.push('');   /* prazna vrstica -> pravni okvir je LOCEN odstavek, ne zlije se v zadnjo pikico */
     const rezimEU = ['si', 'west', 'east'].includes(trgNarocnika);
     if (rezimEU) {
       v.push('Skladno s slovenskim in EU pravom (ZASP, DSM 2019): moralne avtorske pravice ostanejo avtorju in se ne prenašajo; nadomestilo je pošteno in sorazmerno; ob širši ali daljši rabi naročnik poroča o izkoriščanju dela.');
@@ -2509,7 +2842,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     } else {
       v.push('Za čezmejno rabo prenos velja izrecno za navedeno rabo in trajanje; širša, daljša ali drugačna raba se dogovori posebej.');
     }
-    if (izjemePravice.trim()) v.push(izjemePravice.trim());
+    if (izjemePravice.trim()) v.push('Opomba: ' + izjemePravice.trim());
     v.push('');
     v.push(ddvZavezanec
       ? `DDV: cene so brez DDV; ob izstavitvi računa se obračuna ${st} % DDV.`
@@ -2532,15 +2865,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     }
     v.push('· delo izven dogovorjenega obsega te ponudbe se obravnava kot');
     v.push('  nova, ločena ponudba');
+    v.push('');
+    /* PRAVICE — locen naslov za lazje branje pogojev o pravicah */
+    v.push('PRAVICE');
     v.push('· pravice veljajo za navedenega naročnika in navedeno rabo;');
     v.push('  prenos na tretjo osebo ali širša raba se dogovori posebej');
     if (r && r.prenos !== 'licenca') {
-      v.push(`· obseg prenosa pravic: ${r.obseg.opis};`);
+      v.push('· obseg prenosa pravic (teritorij, mediji, naklada) je naveden pri vsaki storitvi zgoraj;');
       v.push('  raba izven tega obsega se licencira posebej');
-      if (pravPonatis) {
-        v.push('· ob ponatisu oz. novi nakladi se licenca obnovi');
-        v.push('  (izhodišče: 50 % prvotne vrednosti pravic)');
-      }
       v.push('· izvedeni produkti (digitalne izdaje, aplikacije, licenčni izdelki)');
       v.push('  niso vključeni in se licencirajo ločeno');
     }
@@ -2561,10 +2893,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     v.push(ponudnik.ime.trim() || '[Ime]');
     if (nogaZnak) {
       v.push('');
-      v.push('Pripravljeno s Pinart kalkulatorjem · pinart.si');
+      v.push(`${imeUporabnika.trim() ? 'Pripravila ' + imeUporabnika.trim() + ' s' : 'Pripravljeno s'} Pinart kalkulatorjem · pinart.si`);
     }
     return v.join('\n');
-  }, [r, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak, izjemePravice, trgNarocnika, enaCena, stevilkaPonudbe, veljavnostDni]);
+  }, [r, ret, dolgorocno, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak, izjemePravice, lastnePravice, imeUporabnika, trgNarocnika, enaCena, stevilkaPonudbe, veljavnostDni]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
@@ -2577,11 +2909,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     }
   }, [ponudba, rocnoBesedilo]);
 
+  /* polnjenje urejevalnika ob prehodu/predogledu ureja callback-ref napolniEditor */
   useEffect(() => {
-    if (korak === ponudbaStep && editorRef.current && !rocnoBesedilo) {
-      editorRef.current.innerHTML = besediloHtml || ponudbaVHtml(besedilo);
-    }
-  }, [korak, ponudbaStep, besediloHtml, besedilo, rocnoBesedilo]);
+    if (korak !== ponudbaStep) setPredogledMode(false);   /* ob vrnitvi na korak = edit nacin */
+  }, [korak, ponudbaStep]);
 
   /* Anonimna cenovna tocka za skupno bazo cen na trgu: enkrat na sejo,
      ko uporabnik pride do koraka "Tvoja cena". Brez osebnih podatkov —
@@ -2701,9 +3032,33 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const sinhronizirajEditor = () => {
     const html = editorRef.current?.innerHTML || '';
     const text = editorRef.current?.innerText || '';
+    if (!text.trim()) return;   /* NE shrani praznega urejevalnika (sicer izprazni ponudbo) */
     setBesediloHtml(html);
     setBesedilo(text);
-    setRocnoBesedilo(true);
+    /* rocnoBesedilo nastavi onInput ob DEJANSKEM urejanju — samo blur (npr. klik na
+       Predogled) ponudbe ne zaklene v rocni nacin */
+  };
+  /* varno telo ponudbe za izvoz/kopiranje: urejevalnik (ce ima vsebino),
+     sicer shranjeni besediloHtml, sicer sveze generirano (nikoli prazno). */
+  const izvozniHtml = () => {
+    const e = editorRef.current?.innerHTML?.trim();
+    if (e) return e;
+    if (besediloHtml.trim()) return besediloHtml;
+    return ponudbaVHtml(besedilo.trim() ? besedilo : ponudba);
+  };
+  const izvozniText = () => {
+    const e = editorRef.current?.innerText?.trim();
+    if (e) return e;
+    return besedilo.trim() ? besedilo : ponudba;
+  };
+  /* callback-ref: urejevalnik se ob prehodu/predogledu ustvari PRAZEN — napolnimo
+     ga takoj (le ce je prazen, da med tipkanjem ne resetiramo kurzorja). Robustno
+     pokrije: predogled->edit, back po Zakljucku, ponastavi. */
+  const napolniEditor = (el: HTMLDivElement | null) => {
+    editorRef.current = el;
+    if (el && !el.innerHTML.trim()) {
+      el.innerHTML = besediloHtml.trim() ? besediloHtml : ponudbaVHtml(besedilo.trim() ? besedilo : ponudba);
+    }
   };
 
   /* ukazi na ZNAKE potrebujejo oznacen tekst; blokovni (H2/P) delujejo na trenutno vrstico */
@@ -2761,10 +3116,28 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     };
     reader.readAsText(file);
   };
+  /* naloZi podlogo (slika naslovnice) kot data URL */
+  const naloziPodlogo = (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return;
+    if (file.size > 6_000_000) { alert('Slika naj bo manjša od 6 MB.'); return; }
+    const reader = new FileReader();
+    reader.onload = () => { setPodlogaCover(String(reader.result || '')); setPredlogaPinart(false); };
+    reader.readAsDataURL(file);
+  };
+  /* naloZi logo (slika) kot data URL */
+  const naloziLogo = (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return;
+    if (file.size > 3_000_000) { alert('Logo naj bo manjši od 3 MB.'); return; }
+    const reader = new FileReader();
+    reader.onload = () => setLogo(String(reader.result || ''));
+    reader.readAsDataURL(file);
+  };
 
   const kopiraj = async () => {
-    const html = editorRef.current?.innerHTML || besediloHtml || ponudbaVHtml(besedilo);
-    const text = editorRef.current?.innerText || besedilo;
+    const html = izvozniHtml();
+    const text = izvozniText();
     try {
       if ('ClipboardItem' in window) {
         await navigator.clipboard.write([
@@ -2803,10 +3176,136 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     } catch { /* ignoriraj */ }
   };
 
-  const prenesi = () => {
-    const html = editorRef.current?.innerHTML || besediloHtml || ponudbaVHtml(besedilo);
+  /* letterhead glava: ime podjetja (serif) + podatki levo, stevilka/naziv/datum desno */
+  const ponudbaGlava = () => {
     const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
-    const doc = `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${escapeHtml(naziv ? 'Ponudba: ' + naziv : 'Ponudba')}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:40px auto;line-height:1.55;color:#111}p{margin:0 0 1rem}.offer-vrstica{display:flex;justify-content:space-between;align-items:baseline;gap:1.5rem}.offer-cena{white-space:nowrap;font-weight:700}.offer-podnaslov{font-weight:700;margin:.9rem 0 .4rem}.offer-package{border:1px solid #ccc;padding:12px 14px;margin:10px 0}.offer-package-head{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin-bottom:.35rem}.offer-package-head h3{margin:0;font-size:12px;letter-spacing:.14em;text-transform:uppercase}.offer-package-head strong{font-size:20px;white-space:nowrap}ul{padding-left:1.2rem}</style></head><body>${html}</body></html>`;
+    const datum = new Date().toLocaleDateString(locale === 'en' ? 'en-GB' : 'sl-SI', { day: 'numeric', month: 'long', year: 'numeric' });
+    const kontakt = [
+      ponudnik.davcna.trim() && 'Davčna št.: ' + ponudnik.davcna.trim(),
+      ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(),
+      ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(),
+      ponudnik.email.trim(),
+    ].filter(Boolean).join(' · ');
+    const podatki = [ponudnik.naslov.trim(), kontakt].filter(Boolean).map(escapeHtml).join('<br>');
+    /* letterhead (stran 2+): SAMO ime firme + kontakt. Stevilka/datum/velja so na NASLOVNICI (brez podvajanja). */
+    const logoHtml = logo ? `<img class="pdf-logo" src="${logo}" alt="" />` : '';
+    return `<div class="pdf-glava"><div class="pdf-brand">${logoHtml}<div class="pdf-brand-txt"><div class="pdf-znamka">${escapeHtml(ponudnik.ime.trim() || 'Ponudba')}</div>${podatki ? `<div class="pdf-podatki">${podatki}</div>` : ''}</div></div></div>`;
+  };
+  /* NASLOVNICA (svoja stran): Ponudba + naziv + firma + za narocnika + datum + velja */
+  const ponudbaNaslovnica = () => {
+    const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
+    const danes2 = new Date();
+    const datum = danes2.toLocaleDateString(locale === 'en' ? 'en-GB' : 'sl-SI', { day: 'numeric', month: 'long', year: 'numeric' });
+    const veljDni2 = clamp(Math.round(Number(veljavnostDni)) || 30, 1, 365);
+    const veljaDatum = new Date(danes2.getTime() + veljDni2 * 864e5).toLocaleDateString(locale === 'en' ? 'en-GB' : 'sl-SI', { day: 'numeric', month: 'long', year: 'numeric' });
+    const oznaka = (locale === 'en' ? 'Offer' : 'Ponudba') + (stevilkaPonudbe ? ' št. ' + stevilkaPonudbe : '');
+    const za = narocnikPonudbe.trim();
+    /* PINART PREDLOGA = moderna "design proposal" naslovnica z dinamicnimi podatki */
+    if (predlogaPinart) {
+      const kratko = (x: Date) => `${String(x.getDate()).padStart(2, '0')}. ${String(x.getMonth() + 1).padStart(2, '0')}. ${x.getFullYear()}`;
+      const veljaD = new Date(danes2.getTime() + veljDni2 * 864e5);
+      const stevilkaEm = stevilkaPonudbe ? stevilkaPonudbe.replace(/-/g, '—') : '';
+      const imeFirme = ponudnik.ime.trim();
+      const kratkoIme = (imeFirme.split(/\s+/)[0] || 'PINART').toUpperCase();
+      const email = ponudnik.email.trim();
+      const splet = email.includes('@') ? email.split('@')[1] : '';
+      const obseg = r ? r.sez.slice(0, 5).map(s => escapeHtml(s.ime)).join('<br>') : '';
+      const logoBox = logo
+        ? `<div class="ocp-logo ocp-logo-img"><img src="${logo}" alt="" /></div>`
+        : `<div class="ocp-logo">${escapeHtml(kratkoIme)}</div>`;
+      const footSub = [splet, email].filter(Boolean).map(escapeHtml).join(' · ');
+      const numLabel = (locale === 'en' ? 'OFFER' : 'PONUDBA') + (stevilkaEm ? ' / ' + stevilkaEm : '');
+      const stevka = (stevilkaPonudbe.match(/(\d+)\s*$/)?.[1]) || '0';
+      /* mehurcki = Tinini SVG-ji (public/kalkulator/mehurcki/<sid>.svg); prednost storitvam
+         ponudbe, dopolni s privzetimi za lep barvni mix. Absolutni URL, da se nalozi tudi v PDF. */
+      const svgMehur = new Set(['aplikacija', 'cgp', 'copy', 'fotografija', 'ilustracija', 'logo', 'motion', 'web']);
+      const privzetiMehur = ['cgp', 'web', 'logo', 'ilustracija', 'fotografija'];
+      const izbraniMehur: string[] = [];
+      if (r) for (const s of r.sez) if (svgMehur.has(s.id) && !izbraniMehur.includes(s.id)) izbraniMehur.push(s.id);
+      for (const d of privzetiMehur) { if (izbraniMehur.length >= 5) break; if (!izbraniMehur.includes(d)) izbraniMehur.push(d); }
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const pozicije = ['ocp-bp1', 'ocp-bp2', 'ocp-bp3', 'ocp-bp4', 'ocp-bp5'];
+      const mehurHtml = izbraniMehur.slice(0, 5).map((sid, i) => `<img class="ocp-bubble ${pozicije[i]}" src="${origin}/kalkulator/mehurcki/${sid}-plain.svg" alt="" />`).join('');
+      return `<div class="offer-cover oc-proposal">
+        <div class="ocp-wm">${escapeHtml(stevka)}</div>
+        ${mehurHtml}
+        <div class="ocp-top">${logoBox}<div class="ocp-num">${escapeHtml(numLabel)}</div></div>
+        <div class="ocp-title"><h1>${escapeHtml(naziv)}</h1><div class="ocp-plus">+</div></div>
+        <div class="ocp-mid">
+          <div class="ocp-meta">
+            <div class="ocp-field ocp-lead"><span>${locale === 'en' ? 'Client' : 'Naročnik'}</span><b>${escapeHtml(za || '—')}</b></div>
+            <div class="ocp-field"><span>${locale === 'en' ? 'Date' : 'Datum'}</span><p>${kratko(danes2)}</p></div>
+            <div class="ocp-field"><span>${locale === 'en' ? 'Valid until' : 'Velja do'}</span><p>${kratko(veljaD)}</p></div>
+            ${obseg ? `<div class="ocp-field"><span>${locale === 'en' ? 'Scope' : 'Obseg'}</span><p>${obseg}</p></div>` : ''}
+          </div>
+          <div class="ocp-illu"><div class="ocp-panel">
+            <div class="ocp-bar"><span class="ocp-dot"></span><span class="ocp-ln"></span><span class="ocp-o"></span></div>
+            <div class="ocp-cards">
+              <div class="ocp-card ocp-purple"><span>Smart pricing</span><svg class="ocp-ill ocp-donut" viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="13" stroke="rgba(255,255,255,.32)" stroke-width="7"/><circle cx="22" cy="22" r="13" stroke="#fff" stroke-width="7" stroke-dasharray="30 52" stroke-linecap="round" transform="rotate(-90 22 22)"/></svg></div>
+              <div class="ocp-card ocp-mint"><span>Proposals &amp; contracts</span><svg class="ocp-ill ocp-doc" viewBox="0 0 40 44" fill="none"><rect x="6" y="4" width="28" height="36" rx="3" fill="rgba(255,255,255,.24)"/><path d="M12 14h16M12 21h16M12 28h10" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+              <div class="ocp-card ocp-coral"><span>Invoices &amp; payments</span><svg class="ocp-ill ocp-graph" viewBox="0 0 64 36" fill="none"><path d="M3 31 L15 19 L27 25 L39 11 L51 17 L61 9 L61 34 L3 34 Z" fill="rgba(255,255,255,.22)"/><path d="M3 31 L15 19 L27 25 L39 11 L51 17 L61 9" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="ocp-card ocp-black"><span>Ready to create</span><span class="ocp-next">&#8594;</span></div>
+            </div>
+          </div></div>
+        </div>
+        <div class="ocp-foot"><div class="ocp-comp"><b>${escapeHtml(imeFirme.toUpperCase() || 'PINART')}</b>${footSub ? `<span>${footSub}</span>` : ''}</div><div class="ocp-proposal">${locale === 'en' ? 'DESIGN PROPOSAL' : 'PREDLOG PONUDBE'}<b>01</b></div></div>
+      </div>`;
+    }
+    const slika = podlogaCover ? ` offer-cover-slika" style="background-image:url('${podlogaCover}')` : '';
+    const logoHtml = logo ? `<img class="oc-logo" src="${logo}" alt="" />` : '';
+    return `<div class="offer-cover${slika}">${logoHtml}<div class="oc-kicker">${escapeHtml(oznaka)}</div><h1 class="oc-naslov">${escapeHtml(naziv)}</h1><div class="oc-crta"></div><div class="oc-firma">${escapeHtml(ponudnik.ime.trim() || '')}</div>${za ? `<div class="oc-za">za ${escapeHtml(za)}</div>` : ''}<div class="oc-datum">${escapeHtml(datum)} · velja do ${escapeHtml(veljaDatum)}</div></div>`;
+  };
+  /* iz telesa odstranimo podatke, ki jih letterhead glava ze pokaze
+     (blok podjetja, podpis z imenom, vrstica PONUDBA st./Datum) */
+  const ocistiTelo = (html: string): string => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    const ime = ponudnik.ime.trim();
+    const naslov = ponudnik.naslov.trim();
+    const davcna = ponudnik.davcna.trim();
+    const email = ponudnik.email.trim();
+    /* naslovni pas (offer-head) gre na NASLOVNICO — odstranimo ga iz telesa, z
+       njim pa tudi crto (hr) pred njim (locilo nagovora) */
+    Array.from(tmp.querySelectorAll('.offer-head')).forEach(oh => {
+      const prev = oh.previousElementSibling;
+      if (prev && prev.tagName === 'HR') prev.remove();
+      oh.remove();
+    });
+    /* odstranimo odstavke, ki jih letterhead glava ze pokaze: blok/podpis podjetja
+       (ime, naslov, davcna, email) in vrstico PONUDBA st./Datum */
+    Array.from(tmp.querySelectorAll('p, div')).forEach(el => {
+      if (el.querySelector('p, div, ul, h1, h2, h3, .offer-package')) return;   /* preskoci vsebnike */
+      const t = (el.textContent || '').trim();
+      if (!t) return;
+      const jeGlava = /^ponudba\b/i.test(t) || /ponudba\s*(št|#|no)\.?\s*\d/i.test(t) || /^datum\s*:/i.test(t);
+      const jePodjetje = (!!ime && t.startsWith(ime))
+        || (!!naslov && t.includes(naslov))
+        || (!!davcna && t.includes(davcna))
+        || (!!email && t === email);
+      if (jeGlava || jePodjetje) el.remove();
+    });
+    return tmp.innerHTML;
+  };
+  /* Pinart predloga: ikono vgradimo ob ceno vsakega paketa */
+  const dodajIkonoCeni = (html: string): string => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    tmp.querySelectorAll('.offer-package-head strong').forEach(el => {
+      if (!el.querySelector('.cena-ikona')) el.insertAdjacentHTML('afterbegin', IKONA_CENA_SVG + ' ');
+    });
+    return tmp.innerHTML;
+  };
+  /* telo za izvoz: ocisti + (ce Pinart predloga) doda ikono ob ceni */
+  const izvozTelo = () => {
+    const t = ocistiTelo(izvozniHtml());
+    return predlogaPinart ? dodajIkonoCeni(t) : t;
+  };
+  const prenesi = () => {
+    const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
+    const telo = izvozTelo();
+    const doc = `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${escapeHtml('Ponudba' + (stevilkaPonudbe ? ' ' + stevilkaPonudbe : ''))}</title>${dokFontLink(dokFont)}<style>${dokCss(OFFER_CSS)}
+      body{max-width:820px;margin:40px auto;padding:0 26px 60px}
+      .offer-cover{margin-bottom:90px}</style></head><body style="${dokVars(dokBarva, dokFont)}" class="${predlogaPinart ? 'predloga' : ''}">${ponudbaNaslovnica()}${ponudbaGlava()}${telo}</body></html>`;
     const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -2823,52 +3322,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      in nogo s podatki ponudnika na VSAKI strani (position:fixed se v tisku ponovi).
      Tisk prek skritega iframa + sistemski "Shrani kot PDF" — brez knjiznic, sumniki ok.
      Podatke ponudnika, ki jih podloga ze pokaze, iz telesa odstranimo (ce so nespremenjeni). */
-  const prenesiPdf = () => {
-    const html = editorRef.current?.innerHTML || besediloHtml || ponudbaVHtml(besedilo);
-    const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
-    const datum = new Date().toLocaleDateString(locale === 'en' ? 'en-GB' : 'sl-SI', { day: 'numeric', month: 'long', year: 'numeric' });
-    /* enaka kontakt vrstica kot v telesu besedila — za dedup in za nogo */
-    const kontakt = [
-      ponudnik.davcna.trim() && 'Davčna št.: ' + ponudnik.davcna.trim(),
-      ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(),
-      ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(),
-      ponudnik.email.trim(),
-    ].filter(Boolean).join(' · ');
-    const noga = [ponudnik.ime.trim(), ponudnik.naslov.trim(), kontakt].filter(Boolean).join('  ·  ');
-    /* iz telesa odstrani odstavke, ki jih podloga ze vsebuje (natancno ujemanje besedila) */
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    const podvojeno = new Set([ponudnik.ime.trim(), ponudnik.naslov.trim(), kontakt].filter(Boolean));
-    Array.from(tmp.querySelectorAll('p')).slice(0, 12).forEach(p => {
-      if (podvojeno.has((p.textContent || '').trim())) p.remove();
-    });
-    const telo = tmp.innerHTML;
-    const doc = `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${escapeHtml(naziv ? 'Ponudba - ' + naziv : 'Ponudba')}</title><style>
-      @page { size: A4; margin: 16mm 16mm 20mm; }
-      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      body { font-family: Arial, sans-serif; color: #111; line-height: 1.55; font-size: 10.5pt; margin: 0; padding-bottom: 14mm; }
-      .pdf-glava { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; padding-bottom: 12px; border-bottom: 2px solid #B25476; margin-bottom: 22px; }
-      .pdf-znamka { font-family: Georgia, 'Times New Roman', serif; font-size: 21pt; letter-spacing: -.01em; }
-      .pdf-meta { text-align: right; font-size: 9pt; color: #444; line-height: 1.45; }
-      .pdf-meta b { display: block; font-size: 7.5pt; letter-spacing: .2em; text-transform: uppercase; color: #B25476; margin-bottom: 2px; }
-      .pdf-noga { position: fixed; bottom: 0; left: 0; right: 0; border-top: 1px solid #ddd; padding-top: 6px; font-size: 8pt; color: #444; text-align: center; }
-      p { margin: 0 0 .85rem }
-      .offer-vrstica { display: flex; justify-content: space-between; align-items: baseline; gap: 1.5rem }
-      .offer-cena { white-space: nowrap; font-weight: 700 }
-      .offer-podnaslov { font-weight: 700; margin: .9rem 0 .4rem }
-      .offer-package { border: 1px solid #ccc; padding: 12px 14px; margin: 10px 0; break-inside: avoid; }
-      .offer-package-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: .35rem }
-      .offer-package-head h3 { margin: 0; font-size: 9pt; letter-spacing: .14em; text-transform: uppercase }
-      .offer-package-head strong { font-size: 15pt; white-space: nowrap }
-      ul { padding-left: 1.2rem }
-    </style></head><body>
-      ${noga ? `<div class="pdf-noga">${escapeHtml(noga)}</div>` : ''}
-      <div class="pdf-glava">
-        <div class="pdf-znamka">${escapeHtml(ponudnik.ime.trim() || 'Ponudba')}</div>
-        <div class="pdf-meta"><b>${escapeHtml((locale === 'en' ? 'Offer' : 'Ponudba') + (stevilkaPonudbe ? ' ' + stevilkaPonudbe : ''))}</b>${naziv ? escapeHtml(naziv) + '<br/>' : ''}${escapeHtml(datum)}</div>
-      </div>
-      ${telo}
-    </body></html>`;
+  /* REZERVA: ce strezniski PDF ne uspe, natisnemo prek skritega iframa (Shrani kot PDF) */
+  const natisniIzDoc = (doc: string) => {
     const okvir = document.createElement('iframe');
     okvir.style.position = 'fixed';
     okvir.style.right = '0'; okvir.style.bottom = '0';
@@ -2879,19 +3334,363 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     idoc.open(); idoc.write(doc); idoc.close();
     const pospravi = () => okvir.remove();
     okvir.contentWindow?.addEventListener('afterprint', () => window.setTimeout(pospravi, 200));
-    window.setTimeout(pospravi, 120000); /* varovalka, ce afterprint ne pride */
-    window.setTimeout(() => { okvir.contentWindow?.focus(); okvir.contentWindow?.print(); }, 200);
+    window.setTimeout(pospravi, 120000);
+    let natisnjeno = false;
+    const enkrat = () => { if (natisnjeno) return; natisnjeno = true; okvir.contentWindow?.focus(); okvir.contentWindow?.print(); };
+    const idocFonts = (idoc as unknown as { fonts?: { ready?: Promise<unknown> } }).fonts;
+    if (idocFonts?.ready) { idocFonts.ready.then(() => window.setTimeout(enkrat, 120)); }
+    window.setTimeout(enkrat, 1600);
+  };
+  /* PDF: NASLOVNICA in TELO sta LOCENA dokumenta -> naslovnica brez Puppeteer noge
+     (mreza/ozadje do roba), telo z osteviljceno nogo. Route ju zdruzi (pdf-lib). */
+  const pdfGlava = (styleExtra: string): string => `<!doctype html><html lang="${locale}"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      ${predlogaPinart ? 'html{background:#f7f5ef}' : ''}
+      body{margin:0${predlogaPinart ? ';background:#f7f5ef' : ''}}
+      ${predlogaPinart ? 'body.predloga{background:#f7f5ef}' : ''}
+      ${dokCss(OFFER_CSS)}
+      ${styleExtra}
+    </style></head>`;
+  const ponudbaCoverDoc = (): string => `${pdfGlava('@page{size:A4;margin:0} .offer-cover{margin:0;height:297mm;overflow:hidden} .offer-cover:not(.oc-proposal)>*{max-width:150mm}')}<body style="${dokVars(dokBarva, dokFont)}" class="${predlogaPinart ? 'predloga' : ''}">${ponudbaNaslovnica()}</body></html>`;
+  const ponudbaBodyDoc = (): string => {
+    const telo = izvozTelo();
+    return `${pdfGlava('@page{size:A4} .pdf-telo{padding:0 16mm}')}<body style="${dokVars(dokBarva, dokFont)}" class="${predlogaPinart ? 'predloga' : ''}"><div class="pdf-telo">${predlogaPinart ? '<div class="pdf-vodni">Let&rsquo;s<br>Work</div>' : ''}${ponudbaGlava()}${telo}</div></body></html>`;
+  };
+  const ponudbaPdfFooter = (): string => escapeHtml([ponudnik.ime.trim(), 'Ponudba' + (stevilkaPonudbe ? ' ' + stevilkaPonudbe : '')].filter(Boolean).join(' · '));
+  const prenesiPdf = async () => {
+    const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
+    const doc = ponudbaBodyDoc();
+    const slug = naziv.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    /* PRAVI PDF PRENOS: strezniski render (Puppeteer) -> datoteka. Ce ne uspe, rezerva = tisk. */
+    setPdfNalaganje(true);
+    try {
+      const res = await fetch('/api/ponudba-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ html: doc, coverHtml: ponudbaCoverDoc(), ime: slug ? 'ponudba-' + slug : 'ponudba', footer: ponudbaPdfFooter(), margin: { top: '22mm', right: '0mm', bottom: '18mm', left: '0mm' }, bg: predlogaPinart ? '#f7f5ef' : undefined }),
+      });
+      if (!res.ok) throw new Error('pdf ' + res.status);
+      const blob = await res.blob();
+      if (!blob.size) throw new Error('prazen pdf');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (slug ? 'ponudba-' + slug : 'ponudba') + '.pdf';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      natisniIzDoc(doc);   /* rezerva */
+    } finally {
+      setPdfNalaganje(false);
+    }
   };
 
-  /* Hitro posiljanje: odpre uporabnicin mail program s predizpolnjeno
-     zadevo in golim besedilom (mailto ne zna HTML). Pravo posiljanje iz
-     orodja (lep HTML email) je vecji poseg za kasneje. */
+  /* ── RACUN: pretvorba sprejete ponudbe v racun ─────────────────────────────
+     Locen stevec (K_STEVEC_RACUN) po letu. Racun je preprost, profesionalen
+     dokument (letterhead + postavka izbranega paketa + DDV razclemba + placilo),
+     izvozi se v PDF prek iste poti kot ponudba. */
+  const naslednjaStevilkaRacuna = (): string => {
+    const leto = new Date().getFullYear().toString();
+    let stevci: Record<string, number> = {};
+    try { stevci = JSON.parse(localStorage.getItem(K_STEVEC_RACUN) || '{}'); } catch { stevci = {}; }
+    const nasl = (stevci[leto] || 0) + 1;
+    stevci[leto] = nasl;
+    try { localStorage.setItem(K_STEVEC_RACUN, JSON.stringify(stevci)); } catch { /* poln */ }
+    return `${leto}-${String(nasl).padStart(4, '0')}`;
+  };
+  const odpriRacun = () => {
+    setRacunStevilka(prej => prej || naslednjaStevilkaRacuna());
+    setRacunDatumISO(prej => {
+      if (prej) return prej;
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    });
+    setRacunOdprt(true);
+  };
+  const racunTelo = (): string => {
+    if (!r) return '';
+    const st = clamp(Number(ddvStopnja) || 22, 0, 30);
+    const paket = enaCena ? r.paketi[1] : (r.paketi.find(p => p.id === racunPaketId) || r.paketi[1]);
+    const netEur = paket.skupaj;
+    const fmt = (nEur: number) => Math.round(nEur * vfx.fx).toLocaleString('sl-SI') + ' ' + vfx.znak;
+    const net = fmt(netEur);
+    const ddvEur = ddvZavezanec ? netEur * st / 100 : 0;
+    const ddvStr = fmt(ddvEur);
+    const gross = fmt(netEur + ddvEur);
+    const izdaja = racunDatumISO ? new Date(racunDatumISO + 'T00:00:00') : new Date();
+    const rok = new Date(izdaja.getTime() + clamp(Number(racunRokDni) || 8, 0, 180) * 864e5);
+    const datStr = (x: Date) => `${x.getDate()}. ${x.getMonth() + 1}. ${x.getFullYear()}`;
+    const naziv = nazivPonudbe.trim() || r.sez.map(s => s.ime).join(', ');
+    const sklicDigits = racunStevilka.replace(/\D/g, '');
+    const sklic = sklicDigits ? 'SI00 ' + sklicDigits : '';
+    const paketOpis = enaCena ? '' : ` (paket ${paket.ime})`;
+    const prejemnik = [
+      narocnikPonudbe.trim() && `<b>${escapeHtml(narocnikPonudbe.trim())}</b>`,
+      narocnikOseba.trim() && escapeHtml(narocnikOseba.trim()),
+      narocnikNaslov.trim() && escapeHtml(narocnikNaslov.trim()),
+      narocnikDavcna.trim() && ('Davčna št.: ' + escapeHtml(narocnikDavcna.trim())),
+      narocnikEmail.trim() && escapeHtml(narocnikEmail.trim()),
+    ].filter(Boolean).join('<br>');
+    const placiloVrstice = [
+      ponudnik.trr.trim() && ('TRR: ' + escapeHtml(ponudnik.trr.trim())),
+      sklic && ('Sklic: ' + sklic),
+      'Rok plačila: ' + datStr(rok),
+    ].filter(Boolean).join('<br>');
+    return `
+      <div class="rac-head">
+        <div class="rac-title"><span class="rac-kicker">Račun</span><span class="rac-no">${escapeHtml(racunStevilka || '')}</span></div>
+        <div class="rac-meta"><b>Datum izdaje</b>${datStr(izdaja)}<b>Opravljena storitev</b>${datStr(izdaja)}<b>Rok plačila</b>${datStr(rok)}</div>
+      </div>
+      <div class="rac-stranki"><span class="rac-l">Prejemnik računa</span>${prejemnik || '[naročnik]'}</div>
+      <table class="rac-tabela"><thead><tr><th>Postavka</th><th>Kol.</th><th>Cena</th>${ddvZavezanec ? '<th>DDV</th>' : ''}<th>Znesek</th></tr></thead>
+      <tbody><tr><td>Kreativne storitve — ${escapeHtml(naziv)}${paketOpis}</td><td>1</td><td>${net}</td>${ddvZavezanec ? `<td>${st} %</td>` : ''}<td>${net}</td></tr></tbody></table>
+      <div class="rac-vsote"><div><span>Osnova</span><span>${net}</span></div>${ddvZavezanec ? `<div><span>DDV (${st} %)</span><span>${ddvStr}</span></div>` : ''}<div class="rac-skupaj"><span>Za plačilo</span><span>${gross}</span></div></div>
+      ${!ddvZavezanec ? '<p class="rac-opomba">DDV ni obračunan skladno s 1. odstavkom 94. člena ZDDV-1 (nismo zavezanci za DDV).</p>' : ''}
+      <div class="rac-placilo">${placiloVrstice}</div>
+      ${racunPlacano ? `<div class="rac-placano">PLAČANO</div>` : ''}
+      <p class="rac-noga-txt">Račun je izdan v skladu z veljavno zakonodajo. Ob zamudi plačila zaračunamo zakonske zamudne obresti.</p>`;
+  };
+  const RACUN_CSS = `
+    .rac-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin:6px 0 22px}
+    .rac-title{display:flex;flex-direction:column;gap:2px}
+    .rac-kicker{font-size:9pt;letter-spacing:.28em;text-transform:uppercase;color:#B25476}
+    .rac-no{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:26pt;font-weight:600;color:#111;line-height:1.05}
+    .rac-meta{font-size:9pt;color:#444;text-align:right;line-height:1.5}
+    .rac-meta b{display:block;font-size:7.5pt;letter-spacing:.12em;text-transform:uppercase;color:#B25476;margin-top:7px}
+    .rac-stranki{margin:0 0 18px;font-size:10.5pt;color:#222;line-height:1.6}
+    .rac-l{display:block;font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:4px}
+    .rac-tabela{width:100%;border-collapse:collapse;margin:8px 0 14px;font-size:10pt;color:#222}
+    .rac-tabela th{text-align:left;font-size:7.5pt;letter-spacing:.1em;text-transform:uppercase;color:#8a8177;border-bottom:1.5px solid #B25476;padding:0 8px 7px;font-weight:700}
+    .rac-tabela td{padding:9px 8px;border-bottom:1px solid #ece3d8;vertical-align:top}
+    .rac-tabela th:not(:first-child),.rac-tabela td:not(:first-child){text-align:right;white-space:nowrap}
+    .rac-vsote{margin-left:auto;width:290px;font-size:10.5pt;color:#222}
+    .rac-vsote>div{display:flex;justify-content:space-between;padding:5px 8px}
+    .rac-skupaj{border-top:1.5px solid #B25476;margin-top:4px;font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:13pt;font-weight:600;color:#111}
+    .rac-placilo{margin:20px 0 0;font-size:10pt;color:#222;background:#f8f5ee;border:1px solid #eadfce;border-radius:9px;padding:13px 16px;line-height:1.7}
+    .rac-opomba{font-size:9pt;color:#666;margin:10px 0 0}
+    .rac-noga-txt{font-size:8.2pt;color:#9a9088;margin-top:22px}
+    .rac-placano{display:inline-block;margin:18px 0 0;border:3px solid #2e7d5b;color:#2e7d5b;font-weight:700;letter-spacing:.22em;padding:6px 18px;border-radius:8px;transform:rotate(-5deg);font-size:16pt}`;
+  const racunDoc = (): string => `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${escapeHtml('Racun ' + (racunStevilka || ''))}</title>${dokFontLink(dokFont)}<style>
+    @page { size: A4; margin: 15mm 15mm 16mm; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    ${dokCss(OFFER_CSS + RACUN_CSS)}
+    </style></head><body style="${dokVars(dokBarva, dokFont)}">${ponudbaGlava()}${racunTelo()}</body></html>`;
+
+  /* POGODBA o dolgorocnem sodelovanju (retainer) — locen dokument, kot racun.
+     Predloga (cleni); Tina jo dopolni/uskladi po raziskavi. */
+  const POGODBA_CSS = `
+    .pog-naslov{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:19pt;font-weight:600;color:#111;text-align:center;margin:4px 0}
+    .pog-stranki{font-size:10.5pt;color:#222;line-height:1.6;margin:14px 0 6px}
+    .pog-stranki p{margin:.15rem 0}
+    .pog-clen{margin:11px 0;break-inside:avoid;page-break-inside:avoid}
+    .pog-clen h2{border-top:0;padding-top:0;margin:10px 0 4px;font-size:9pt;color:#B25476}
+    .pog-clen p{font-size:10pt;color:#222;line-height:1.6;margin:0}
+    .pog-podpisi{margin-top:26px;break-inside:avoid;page-break-inside:avoid}
+    .pog-kraj{font-size:10pt;color:#222;margin-bottom:22px}
+    .pog-sig{display:flex;gap:40px}
+    .pog-sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}
+    .pog-sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:34px}
+    .pog-linija{border-top:1px solid #111;margin-bottom:4px}`;
+  const pogodbaTelo = (): string => {
+    if (!ret) return '';
+    const datStr = (x: Date) => `${x.getDate()}. ${x.getMonth() + 1}. ${x.getFullYear()}`;
+    const danesD = new Date();
+    const izvajalec = [ponudnik.ime.trim() || '[Izvajalec]', ponudnik.naslov.trim(), ponudnik.davcna.trim() && ('davčna št. ' + ponudnik.davcna.trim()), ponudnik.trr.trim() && ('TRR ' + ponudnik.trr.trim())].filter(Boolean).join(', ');
+    const narocnikStr = [narocnikPonudbe.trim() || '[Naročnik]', narocnikOseba.trim(), narocnikNaslov.trim(), narocnikDavcna.trim() && ('davčna št. ' + narocnikDavcna.trim())].filter(Boolean).join(', ');
+    const modelOpis = ret.model === 'ure' ? `${ret.ure} ur mesečno` : ret.model === 'paket' ? 'dogovorjeni mesečni paket storitev' : `${ret.ure} ur mesečno ter dogovorjeni paket storitev`;
+    const storitve = r ? r.sez.map(s => s.ime.toLowerCase()).join(', ') : 'dogovorjene kreativne storitve';
+    const ddvStr = ddvZavezanec ? ' (+ DDV)' : ' (izvajalec ni zavezanec za DDV — 1. odst. 94. člena ZDDV-1)';
+    return `
+      <div class="pog-naslov">POGODBA O DOLGOROČNEM SODELOVANJU</div>
+      <div class="pog-stranki">
+        <p>sklenjena med:</p>
+        <p><b>Izvajalec:</b> ${escapeHtml(izvajalec)}</p>
+        <p>in</p>
+        <p><b>Naročnik:</b> ${escapeHtml(narocnikStr)}</p>
+      </div>
+      <div class="pog-clen"><h2>1. člen — Predmet</h2><p>Izvajalec za naročnika opravlja kreativne storitve (${escapeHtml(storitve)}) v obliki dolgoročnega mesečnega sodelovanja, pod pogoji te pogodbe.</p></div>
+      <div class="pog-clen"><h2>2. člen — Obseg</h2><p>Mesečni obseg: <b>${modelOpis}</b>.${ret.ureBaza > 0 ? ` Blok ur znaša ${ret.ure} h na mesec.` : ''} Neporabljene ure se praviloma ne prenašajo v naslednji mesec, razen po pisnem dogovoru. Delo nad dogovorjenim obsegom se obračuna po urni postavki ${val(ret.overage)} / uro.</p></div>
+      <div class="pog-clen"><h2>3. člen — Trajanje</h2><p>Pogodba se sklene za dobo <b>${ret.doba} mesecev</b>, z veljavnostjo od dneva podpisa (predvidoma ${datStr(danesD)}). Po izteku se lahko podaljša s pisnim soglasjem obeh strank.</p></div>
+      <div class="pog-clen"><h2>4. člen — Cena in plačilo</h2><p>Mesečno nadomestilo znaša <b>${val(ret.mesNeto)}${ddvStr}</b>. Znesek se zaračuna vnaprej, ob začetku vsakega meseca sodelovanja, z rokom plačila 8 dni. Za celotno dobo (${ret.doba} mesecev) skupaj ${val(ret.skupajDoba)}${ddvZavezanec ? ' + DDV' : ''}.</p></div>
+      <div class="pog-clen"><h2>5. člen — Avtorske pravice</h2><p>Avtorske pravice na delih, ustvarjenih v času sodelovanja, se na naročnika prenesejo v obsegu, dogovorjenem v pripadajoči ponudbi (praviloma licenca za čas trajanja pogodbe). Ob prenehanju pogodbe pravice, ki niso bile odkupljene, revertirajo avtorju. Moralne avtorske pravice ostanejo avtorju.</p></div>
+      <div class="pog-clen"><h2>6. člen — Odpoved</h2><p>Vsaka stranka lahko pogodbo odpove s pisno izjavo, z <b>${ret.odpovedDni}-dnevnim</b> odpovednim rokom. Že opravljeno delo in tekoči mesec se poravnata v celoti.</p></div>
+      <div class="pog-clen"><h2>7. člen — Zaupnost</h2><p>Stranki varujeta zaupne podatke druge stranke in jih ne razkrivata tretjim osebam brez soglasja, tudi po prenehanju sodelovanja.</p></div>
+      <div class="pog-clen"><h2>8. člen — Končne določbe</h2><p>Za razmerja, ki jih ta pogodba ne ureja, se uporablja pravo Republike Slovenije. Morebitne spore stranki rešujeta sporazumno; sicer je pristojno stvarno pristojno sodišče po sedežu izvajalca. Pogodba je sklenjena v dveh enakih izvodih, po enem za vsako stranko.</p></div>
+      <div class="pog-podpisi">
+        <div class="pog-kraj">V ______________, dne ${datStr(danesD)}</div>
+        <div class="pog-sig"><div><span>Izvajalec</span><span class="pog-linija"></span>${escapeHtml(ponudnik.ime.trim() || '')}</div><div><span>Naročnik</span><span class="pog-linija"></span>${escapeHtml(narocnikPonudbe.trim() || '')}</div></div>
+      </div>`;
+  };
+  const pogodbaDoc = (): string => `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>Pogodba o dolgorocnem sodelovanju</title>${dokFontLink(dokFont)}<style>
+    @page { size: A4; margin: 15mm 15mm 16mm; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    ${dokCss(OFFER_CSS + POGODBA_CSS)}
+    </style></head><body style="${dokVars(dokBarva, dokFont)}">${ponudbaGlava()}${pogodbaTelo()}</body></html>`;
+  const prenesiPogodbaPdf = async () => {
+    if (!ret) return;
+    const doc = pogodbaDoc();
+    const ime = 'pogodba-dolgorocno-' + (narocnikPonudbe.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'pinart');
+    setPdfNalaganje(true);
+    try {
+      const footerLevo = escapeHtml([ponudnik.ime.trim(), 'Pogodba o dolgoročnem sodelovanju'].filter(Boolean).join(' · '));
+      const res = await fetch('/api/ponudba-pdf', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ html: doc, ime, footer: footerLevo }),
+      });
+      if (!res.ok) throw new Error('pdf ' + res.status);
+      const blob = await res.blob();
+      if (!blob.size) throw new Error('prazen pdf');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = ime + '.pdf';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      natisniIzDoc(doc);
+    } finally {
+      setPdfNalaganje(false);
+    }
+  };
+  const shraniRacunVPregled = () => {
+    if (!r || !racunStevilka) return null;
+    shraniVArhiv();
+    const st = clamp(Number(ddvStopnja) || 22, 0, 30);
+    const paket = enaCena ? r.paketi[1] : (r.paketi.find(p => p.id === racunPaketId) || r.paketi[1]);
+    const amount = paket.skupaj * (ddvZavezanec ? 1 + st / 100 : 1);
+    const offerId = (nazivPonudbe.trim() || narocnikPonudbe.trim() || r.sez.map(s => s.ime).join(', ') || 'Ponudba').slice(0, 60);
+    const title = nazivPonudbe.trim() || r.sez.map(s => s.ime).join(', ');
+    try {
+      const existing = loadFlowData().invoices;
+      const invoice: FlowInvoice = { id: `calc-${racunStevilka}`, number: racunStevilka, client: narocnikPonudbe.trim() || 'Brez stranke', title, amount, paid: racunPlacano, date: racunDatumISO || new Date().toISOString().slice(0, 10), dueDays: Number(racunRokDni) || 8, sourceOfferId: offerId, source: 'calculator' };
+      const next = [invoice, ...existing.filter(item => item.id !== invoice.id)];
+      saveFlowCollection('invoices', next);
+      return invoice;
+    } catch { /* lokalna evidenca ne sme preprečiti izvoza računa */ }
+    return null;
+  };
+  const prenesiRacunPdf = async () => {
+    if (!r) return;
+    const savedInvoice = shraniRacunVPregled();
+    const doc = racunDoc();
+    const ime = 'racun-' + (racunStevilka || 'pinart').replace(/[^\w-]+/g, '');
+    setPdfNalaganje(true);
+    try {
+      const footerLevo = escapeHtml([ponudnik.ime.trim(), 'Račun' + (racunStevilka ? ' ' + racunStevilka : '')].filter(Boolean).join(' · '));
+      const res = await fetch('/api/ponudba-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ html: doc, ime, footer: footerLevo }),
+      });
+      if (!res.ok) throw new Error('pdf ' + res.status);
+      const blob = await res.blob();
+      if (!blob.size) throw new Error('prazen pdf');
+      if (savedInvoice) {
+        try {
+          const file = new File([blob], `${ime}.pdf`, { type: 'application/pdf' });
+          const filePath = await uploadBusinessDocument(file, 'invoices', savedInvoice.id);
+          const invoices = loadFlowData().invoices.map(item => item.id === savedInvoice.id ? { ...item, filePath, fileName: file.name } : item);
+          saveFlowCollection('invoices', invoices);
+        } catch { /* neprijavljen uporabnik račun še vedno lahko prenese */ }
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = ime + '.pdf';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      natisniIzDoc(doc);   /* rezerva */
+    } finally {
+      setPdfNalaganje(false);
+    }
+  };
+  /* posli racun po emailu (mailto, golo besedilo) — povzetek racuna, PDF prilozi rocno */
+  const posljiRacunMailto = () => {
+    if (!narocnikEmail.trim() || !r) return;
+    shraniRacunVPregled();
+    const st = clamp(Number(ddvStopnja) || 22, 0, 30);
+    const paket = enaCena ? r.paketi[1] : (r.paketi.find(p => p.id === racunPaketId) || r.paketi[1]);
+    const netEur = paket.skupaj;
+    const fmt = (nEur: number) => Math.round(nEur * vfx.fx).toLocaleString('sl-SI') + ' ' + vfx.znak;
+    const ddvEur = ddvZavezanec ? netEur * st / 100 : 0;
+    const izdaja = racunDatumISO ? new Date(racunDatumISO + 'T00:00:00') : new Date();
+    const rok = new Date(izdaja.getTime() + clamp(Number(racunRokDni) || 8, 0, 180) * 864e5);
+    const datStr = (x: Date) => `${x.getDate()}. ${x.getMonth() + 1}. ${x.getFullYear()}`;
+    const naziv = nazivPonudbe.trim() || r.sez.map(s => s.ime).join(', ');
+    const sklicDigits = racunStevilka.replace(/\D/g, '');
+    const paketOpis = enaCena ? '' : ` (paket ${paket.ime})`;
+    const podpis = [ponudnik.ime.trim(), [ponudnik.email.trim(), ponudnik.telefon.trim() && (predklic + ' ' + ponudnik.telefon.trim())].filter(Boolean).join(' · ')].filter(Boolean).join('\n');
+    const v: string[] = ['Pozdravljeni,', '', `pošiljam račun št. ${racunStevilka}${naziv ? ' za: ' + naziv : ''}.`, ''];
+    v.push(`Datum izdaje: ${datStr(izdaja)}`);
+    v.push(`Rok plačila: ${datStr(rok)}`);
+    v.push('', `Kreativne storitve — ${naziv}${paketOpis}`);
+    v.push(`Osnova: ${fmt(netEur)}`);
+    if (ddvZavezanec) v.push(`DDV (${st} %): ${fmt(ddvEur)}`);
+    v.push(`Za plačilo: ${fmt(netEur + ddvEur)}`);
+    v.push('');
+    if (ponudnik.trr.trim()) v.push(`TRR: ${ponudnik.trr.trim()}`);
+    if (sklicDigits) v.push(`Sklic: SI00 ${sklicDigits}`);
+    if (racunPlacano) v.push('', 'Račun je poravnan. Hvala!');
+    v.push('', 'Podroben račun prilagam v PDF.', '', 'Lep pozdrav,');
+    if (podpis) v.push(podpis);
+    const zadeva = `Račun ${racunStevilka}`.trim();
+    window.location.href = `mailto:${narocnikEmail.trim()}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(v.join('\n'))}`;
+  };
+
+  /* PREDOGLED = dejanski PDF, izrisan po STRANEH kot slike (pdf.js) na svetli podlagi —
+     tako ni temnega ozadja vgrajenega pregledovalnika; strani + osteviljcena noga so prave. */
+  const odpriPredogled = () => setPredogledMode(true);
+  useEffect(() => {
+    if (!predogledMode) return;
+    let ziv = true;
+    setPredogledNalaganje(true);
+    const t = window.setTimeout(async () => {
+      try {
+        const res = await fetch('/api/ponudba-pdf', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ html: ponudbaBodyDoc(), coverHtml: ponudbaCoverDoc(), ime: 'predogled', footer: ponudbaPdfFooter(), margin: { top: '22mm', right: '0mm', bottom: '18mm', left: '0mm' }, bg: predlogaPinart ? '#f7f5ef' : undefined }),
+        });
+        if (!res.ok) throw new Error('pdf');
+        const buf = await res.arrayBuffer();
+        if (!buf.byteLength || !ziv) return;
+        const pdfjs = await import('pdfjs-dist');
+        pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+        const pdf = await pdfjs.getDocument({ data: new Uint8Array(buf) }).promise;
+        const strani: string[] = [];
+        for (let i = 1; i <= pdf.numPages && ziv; i++) {
+          const stran = await pdf.getPage(i);
+          const vp = stran.getViewport({ scale: 2 });
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.ceil(vp.width); canvas.height = Math.ceil(vp.height);
+          const ctx = canvas.getContext('2d');
+          if (!ctx) continue;
+          await stran.render({ canvas, canvasContext: ctx, viewport: vp } as unknown as Parameters<typeof stran.render>[0]).promise;
+          strani.push(canvas.toDataURL('image/png'));
+        }
+        if (ziv) setPredogledStrani(strani);
+      } catch { /* pusti prejsnji predogled */ }
+      finally { if (ziv) setPredogledNalaganje(false); }
+    }, 450);
+    return () => { ziv = false; window.clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [predogledMode, besedilo, besediloHtml, predlogaPinart, podlogaCover, logo, nazivPonudbe, narocnikPonudbe, obsegPonudbe, tonPonudbe, stevilkaPonudbe]);
+
+  /* Hitro posiljanje: odpre uporabnicin mail program s KRATKIM spremnim
+     sporocilom (pozdrav + povzetek paketov + veljavnost + podpis). mailto zna
+     samo golo besedilo (brez bold/velikosti), zato je namesto cele stene
+     ponudbe berljiv povzetek; podrobna ponudba gre kot PDF v prilogo. */
   const posljiMailto = () => {
     if (!narocnikEmail.trim()) return;
-    const text = editorRef.current?.innerText || besedilo;
     const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
     const zadeva = naziv ? `Ponudba: ${naziv}` : 'Ponudba';
-    window.location.href = `mailto:${narocnikEmail.trim()}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(text)}`;
+    /* CELO besedilo ponudbe (kot v urejevalniku/predogledu) — ne skrajsan povzetek.
+       Odstranimo le HTML-markerja "PONUDBA:" (naslov je v zadevi) in crte iz razdelilnika. */
+    const telo = izvozniText()
+      .replace(/^PONUDBA:\s*/gm, '')
+      .replace(/^[─—-]{6,}\s*$/gm, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+    zabeleziNarocnika(narocnikPonudbe);
+    window.location.href = `mailto:${narocnikEmail.trim()}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`;
   };
 
   /* CSV za uvoz v racunovodski program (postavka, kolicina, cena, znesek).
@@ -2978,22 +3777,24 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
   /* ── arhiv ponudb: shrani / naloži / izbriši cel posnetek ─────────── */
   const shraniVArhiv = () => {
+    zabeleziNarocnika(narocnikPonudbe);
     const ime = (nazivPonudbe.trim() || narocnikPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : 'Ponudba')).slice(0, 60);
     const zapis: ShranjenaP = {
       datum: new Date().toISOString(),
       izbrane: [...izbrane], vrstice,
       odgovori, postavke, raba,
       promet, dobicek, projPrihodek, projDobicek, popust, dodatki: [...dodatki],
-      prenosPravic, rocnePravice, rocnaLicenca, izjemePravice: izjemePravice || undefined,
+      prenosPravic, rocnePravice, rocnaLicenca, rocnePraviceStoritvi: Object.keys(rocnePraviceStoritvi).length ? rocnePraviceStoritvi : undefined, pravicePoStoritvi: Object.keys(pravicePoStoritvi).length ? pravicePoStoritvi : undefined, lastnePravice: lastnePravice.length ? lastnePravice : undefined, izjemePravice: izjemePravice || undefined,
       nazivPonudbe, narocnikPonudbe, obsegPonudbe, tonPonudbe, avansPct,
       kaziUre, nogaZnak, izkusnje, mojTrg, trgNarocnika, valuta, valutaRocna,
-      rocnoBesedilo, besediloHtml: rocnoBesedilo ? (editorRef.current?.innerHTML || besediloHtml) : '',
+      rocnoBesedilo, besediloHtml: rocnoBesedilo ? (editorRef.current?.innerHTML || besediloHtml) : '', podlogaCover: podlogaCover || undefined, logo: logo || undefined, predlogaPinart: predlogaPinart || undefined,
       custDrzavaNarocnik: custDrzavaNarocnik || undefined,
       narocnikEmail: narocnikEmail || undefined,
       narocnikOseba: narocnikOseba || undefined,
       narocnikNaslov: narocnikNaslov || undefined,
       narocnikDavcna: narocnikDavcna || undefined,
       enaCena: enaCena || undefined,
+      dolgorocno: dolgorocno || undefined, retModel: dolgorocno ? retModel : undefined, retUre: dolgorocno ? retUre : undefined, retDoba: dolgorocno ? retDoba : undefined,
       stevilkaPonudbe: stevilkaPonudbe || undefined,
       veljavnostDni: veljavnostDni !== '30' ? veljavnostDni : undefined,
     };
@@ -3018,6 +3819,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setProjPrihodek(p.projPrihodek); setProjDobicek(p.projDobicek);
     setPopust(p.popust); setDodatki(new Set(p.dodatki || []));
     setPrenosPravic(p.prenosPravic); setRocnePravice(p.rocnePravice); setRocnaLicenca(p.rocnaLicenca);
+    setRocnePraviceStoritvi(p.rocnePraviceStoritvi || {});
+    setPravicePoStoritvi(p.pravicePoStoritvi || {});
+    setLastnePravice(p.lastnePravice || []);
     setIzjemePravice(p.izjemePravice || '');
     setNazivPonudbe(p.nazivPonudbe); setNarocnikPonudbe(p.narocnikPonudbe);
     setNarocnikEmail(p.narocnikEmail || '');
@@ -3025,6 +3829,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setNarocnikNaslov(p.narocnikNaslov || '');
     setNarocnikDavcna(p.narocnikDavcna || '');
     setEnaCena(!!p.enaCena);
+    setDolgorocno(!!p.dolgorocno); if (p.retModel) setRetModel(p.retModel); if (typeof p.retUre === 'number') setRetUre(p.retUre); if (typeof p.retDoba === 'number') setRetDoba(p.retDoba);
     setStevilkaPonudbe(p.stevilkaPonudbe || '');
     setVeljavnostDni(p.veljavnostDni || '30');
     setObsegPonudbe(p.obsegPonudbe); setTonPonudbe(p.tonPonudbe); setAvansPct(p.avansPct);
@@ -3032,6 +3837,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     setIzkusnje(p.izkusnje); setMojTrg(p.mojTrg); setTrgNarocnika(p.trgNarocnika);
     setValuta(p.valuta); setValutaRocna(p.valutaRocna);
     setCustDrzavaNarocnik(p.custDrzavaNarocnik || '');
+    setPodlogaCover(p.podlogaCover || '');
+    setPredlogaPinart(!!p.predlogaPinart);
+    if (p.logo) setLogo(p.logo);   /* stara ponudba brez loga naj ne izbrise zapomnjenega */
     if (p.rocnoBesedilo && p.besediloHtml) {
       setRocnoBesedilo(true); setBesediloHtml(p.besediloHtml);
       if (editorRef.current) editorRef.current.innerHTML = p.besediloHtml;
@@ -3534,7 +4342,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
   /* Deljen header (Pinart KALKULATOR BETA | ✕ zapri  ·  nastavitve + avatar) —
      enak na uvodu, onboardingu in delovni mizi. Cim ozji. */
-  const avatarCrka = (imeUporabnika.trim() || ponudnik.ime.trim() || 'T').charAt(0).toUpperCase();
+  /* avatar: zacetnica imena; ce imena ni, ikona osebe (namesto privzete crke) */
+  const avatarIme = imeUporabnika.trim() || ponudnik.ime.trim();
+  const avatarVsebina = avatarIme ? avatarIme.charAt(0).toUpperCase() : <PersonSimple size={18} weight="bold" />;
   const glavaUI = () => (
     <>
       <span className="glava-levo">
@@ -3549,13 +4359,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         <button type="button" className="glava-ikona" aria-label={klasicnaOblika ? 'Preklopi na chat pogovor' : 'Preklopi na klasični vprašalnik'}
           title={klasicnaOblika ? 'Prikaz: klasični vprašalnik — klik preklopi na chat' : 'Prikaz: chat pogovor — klik preklopi na klasični vprašalnik'}
           onClick={preklopiObliko}>
-          <svg width="18" height="18" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-            <path d="M18.373 10.9403C18.373 10.9403 18.375 10.5295 18.375 10.0651C18.375 6.14531 18.375 4.18543 17.1577 2.96771C15.9403 1.75 13.981 1.75 10.0625 1.75C6.14395 1.75 4.18467 1.75 2.96734 2.96771C1.75 4.18543 1.75 6.14531 1.75 10.0651C1.75 13.9848 1.75 15.9447 2.96734 17.1624C3.98812 18.1835 5.53059 18.3484 8.3125 18.375" stroke="currentColor" strokeWidth="1.3125" strokeLinecap="round"/>
-            <path d="M1.75 6.125H18.375" stroke="currentColor" strokeWidth="1.3125" strokeLinejoin="round"/>
-            <path d="M5.25 14H6.125M8.75 10.5H13.125M5.25 10.5H6.125" stroke="currentColor" strokeWidth="1.3125" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M14.875 16.1875H14.8829" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M19.0505 15.7697C19.1835 15.9562 19.25 16.0495 19.25 16.1875C19.25 16.3255 19.1835 16.4188 19.0505 16.6053C18.4528 17.4434 16.9265 19.25 14.875 19.25C12.8235 19.25 11.2972 17.4434 10.6995 16.6053C10.5665 16.4188 10.5 16.3255 10.5 16.1875C10.5 16.0495 10.5665 15.9562 10.6995 15.7697C11.2972 14.9316 12.8235 13.125 14.875 13.125C16.9265 13.125 18.4528 14.9316 19.0505 15.7697Z" stroke="currentColor" strokeWidth="1.3125"/>
-          </svg>
+          {klasicnaOblika ? <ChatCircle size={18} weight="bold" /> : <ListBullets size={18} weight="bold" />}
         </button>
         <button type="button" className="glava-ikona" aria-label="Cene in storitve" title="Cene in storitve"
           onClick={() => { setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>
@@ -3563,7 +4367,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         </button>
         <button type="button" className="glava-avatar" aria-label="Profil" title="Profil"
           onClick={() => { setKazemProfil(true); setProfilPogled('meni'); }}>
-          {avatarCrka}
+          {avatarVsebina}
         </button>
       </span>
     </>
@@ -3793,20 +4597,18 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         {DRZAVE.map(d => <option key={d.ime} value={d.ime} />)}
       </datalist>
       <div className="cw-ozadje" aria-hidden>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="blob blob-roza" src="/kalkulator/ozadje/roza.svg" alt="" />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="blob blob-modra" src="/kalkulator/ozadje/modra.svg" alt="" />
+        <span className="blob blob-roza" />
+        <span className="blob blob-modra" />
       </div>
       <style>{`
-        .cw { position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 300; }
+        .cw { position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 300; overflow-x: clip; }
         /* animirano ozadje: dva Tinina soft-gradient blob-a krozita in se krizata (fixed, z-index 0 — NIKOLI -1, Safari past) */
-        .cw-ozadje { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--paper); }
-        .cw-ozadje .blob { position: absolute; width: 70vw; max-width: 920px; height: auto; will-change: transform; filter: blur(8px); }
-        .cw-ozadje .blob-roza { top: -14vh; left: -10vw; opacity: .92; animation: blobRoza 30s ease-in-out infinite; }
-        .cw-ozadje .blob-modra { bottom: -20vh; right: -12vw; opacity: .85; animation: blobModra 34s ease-in-out infinite; }
-        @keyframes blobRoza { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(24vw,16vh) scale(1.12); } 66% { transform: translate(12vw,34vh) scale(.96); } }
-        @keyframes blobModra { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(-20vw,-14vh) scale(1.1); } 66% { transform: translate(-32vw,-6vh) scale(.95); } }
+        .cw-ozadje { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background-color: var(--paper); background-image: linear-gradient(rgba(17,17,17,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(17,17,17,.055) 1px, transparent 1px); background-size: 4.5rem 4.5rem; }
+        .cw-ozadje .blob { position: absolute; width: min(60vw, 760px); aspect-ratio: 1; border-radius: 50%; will-change: transform; filter: blur(70px); }
+        .cw-ozadje .blob-roza { top: -16vh; left: -12vw; background: radial-gradient(circle, oklch(74% .18 300 / .55), transparent 68%); opacity: .5; animation: blobRoza 22s ease-in-out infinite; }
+        .cw-ozadje .blob-modra { bottom: -22vh; right: -14vw; background: radial-gradient(circle, oklch(82% .15 162 / .55), transparent 68%); opacity: .45; animation: blobModra 25s ease-in-out infinite; }
+        @keyframes blobRoza { 0%,100% { transform: translate(0,0) scale(1); } 25% { transform: translate(32vw,24vh) scale(1.15); } 50% { transform: translate(16vw,46vh) scale(.92); } 75% { transform: translate(38vw,12vh) scale(1.08); } }
+        @keyframes blobModra { 0%,100% { transform: translate(0,0) scale(1); } 25% { transform: translate(-28vw,-22vh) scale(1.12); } 50% { transform: translate(-44vw,-10vh) scale(.9); } 75% { transform: translate(-16vw,-32vh) scale(1.06); } }
         @media (prefers-reduced-motion: reduce) { .cw-ozadje .blob { animation: none; } }
 
         .cw .soglasje { position: fixed; inset: 0; z-index: 60; background: rgba(245,242,234,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
@@ -3904,8 +4706,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .priprava-glava { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
         .cw .priprava-glava .priprava-h { font-family: var(--font-bodoni), serif; font-weight: 500; font-size: clamp(1.9rem, 3.6vw, 2.6rem); margin: .1rem 0 .35rem; }
         .cw .priprava-glava .sub { margin: 0; max-width: 46ch; }
-        .cw .priprava-zapri { flex: none; width: 2.6rem; height: 2.6rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.14); background: #fff; font-size: 1.4rem; line-height: 1; color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: transform .2s ease, background .2s ease; }
-        .cw .priprava-zapri:hover { background: var(--ink); color: var(--paper); transform: scale(1.08); }
         @media (prefers-reduced-motion: reduce) { .cw .priprava-overlay, .cw .priprava-backdrop { animation: none; } }
         @media (max-width: 560px) { .cw .priprava-overlay { border-radius: 0; width: 100vw; } }
         /* priprava = samostojna centrirana stran, malo sirsa od ostalih korakov */
@@ -3973,6 +4773,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .uredi-plosca { width: 100%; max-width: min(680px, 94vw); max-height: min(54rem, 92dvh); display: flex; flex-direction: column; background: var(--paper); border: 1px solid rgba(17,17,17,.18); border-radius: 18px; box-shadow: 0 24px 80px rgba(17,17,17,.16); overflow: hidden; animation: cwVstop .3s cubic-bezier(.16,1,.3,1) both; }
         .cw .detajl-modal { width: 100%; max-width: 620px; max-height: min(44rem, 88dvh); display: flex; flex-direction: column; background: var(--paper); border: 1px solid rgba(17,17,17,.18); border-radius: 18px; box-shadow: 0 24px 80px rgba(17,17,17,.18); overflow: hidden; animation: cwVstop .3s cubic-bezier(.16,1,.3,1) both; }
         .cw .detajl-telo { overflow-y: auto; padding: 1.2rem 1.4rem 1.4rem; display: flex; flex-direction: column; gap: 1.3rem; }
+        .cw .detajl-opomba { width: 100%; margin-top: .5rem; border: none; border-bottom: 1px solid rgba(17,17,17,.35); background: transparent; font-family: inherit; font-size: .92rem; font-weight: 500; color: var(--ink); padding: .3rem 0; }
+        .cw .detajl-opomba::placeholder { color: rgba(17,17,17,.4); font-weight: 400; }
+        .cw .detajl-opomba:focus { outline: none; border-color: var(--ink); }
         .cw .detajl-noga { display: flex; align-items: center; gap: 1rem; padding: .95rem 1.4rem; border-top: 1px solid rgba(17,17,17,.1); background: rgba(255,255,255,.45); }
         .cw .detajl-noga .gumb { margin-left: auto; }
         .cw .uredi-telo { overflow-y: auto; padding: 1.1rem 1.35rem 1.5rem; display: flex; flex-direction: column; gap: 1.4rem; }
@@ -4053,7 +4856,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .vrstica-vprasanja { margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem; }
 
         /* ── fake-chat uvod (gradi intimo) ── */
-        .cw .uvod-chat { position: fixed; inset: 0; z-index: 60; overflow-y: auto; display: flex; flex-direction: column; background: var(--paper); animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
+        .cw .uvod-chat { position: fixed; inset: 0; z-index: 60; overflow-y: auto; display: flex; flex-direction: column; background: transparent; animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; }
         /* mehak odhod: chat zbledi in se rahlo dvigne, spodaj se miza animira noter (brez preskoka) */
         .cw .uvod-chat.odhaja { animation: uvodOdhod .6s cubic-bezier(.5,0,.2,1) forwards; pointer-events: none; }
         @keyframes uvodOdhod { to { opacity: 0; transform: translateY(-24px); } }
@@ -4093,11 +4896,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-bot { display: flex; align-items: flex-start; gap: .55rem; max-width: 82%; }
         .cw .chat-obraz { width: 2.5rem; height: 2.5rem; border-radius: 50%; flex: none; position: relative; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 8px 20px rgba(124,58,237,.28); }
         .cw .chat-obraz svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-        .cw .chat-bot .chat-mehur { background: rgba(255,180,205,.32); color: rgba(17,17,17,.72); border-bottom-left-radius: 5px; border-color: rgba(233,145,180,.6); }
+        .cw .chat-bot .chat-mehur { background: #F7F2FF; color: rgba(17,17,17,.72); border-bottom-left-radius: 5px; border-color: rgba(185,160,230,.2); }
         .cw .chat-bot .chat-mehur b { display: block; color: var(--ink); font-weight: 700; font-size: 1.02rem; }
-        .cw .chat-bot .chat-mehur small { display: block; margin-top: .1rem; color: rgba(17,17,17,.5); font-size: .82rem; }
+        .cw .chat-bot .chat-mehur small { display: block; margin-top: .1rem; color: rgba(17,17,17,.64); font-size: .82rem; }
         .cw .chat-jaz { align-self: flex-end; max-width: 88%; }
-        .cw .chat-jaz .chat-mehur { background: rgba(160,205,235,.4); color: var(--ink); font-weight: 600; border-bottom-right-radius: 5px; border-color: rgba(120,185,215,.6); }
+        .cw .chat-jaz .chat-mehur { background: #DEFEFF; color: var(--ink); font-weight: 600; border-bottom-right-radius: 5px; border-color: rgba(130,215,230,.12); }
         .cw .chat-mehur { border-radius: 18px; padding: .9rem 1.35rem; font-size: .95rem; line-height: 1.5; font-weight: 400; border: 1px solid rgba(255,255,255,.7); box-shadow: 0 2px 10px rgba(40,25,40,.05); }
         .cw .chat-mehur-ured { font-family: inherit; font-size: .95rem; cursor: pointer; display: inline-flex; align-items: center; gap: .5rem; text-align: left; transition: transform .16s ease, box-shadow .16s ease, background .16s ease; }
         .cw .chat-mehur-ured svg { opacity: .4; flex: none; transition: opacity .16s ease; }
@@ -4216,15 +5019,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @media (min-width: 1201px) {
           /* step-0 vsebina samo bledi (brez transforma), da fixed panel deluje na okno.
              visja specificnost (.korak-vsebina.siroko), da premaga kasnejsi .korak-vsebina */
-          .cw .korak-vsebina.siroko { max-width: none; width: 100%; padding-right: calc(min(410px, 34vw) + clamp(1rem, 2.5vw, 2rem)); box-sizing: border-box; animation-name: cwFade; }
+          .cw .korak-vsebina.siroko { max-width: none; width: 100%; padding-right: calc(min(480px, 40vw) + clamp(1rem, 2.5vw, 2rem)); box-sizing: border-box; animation-name: cwFade; }
           /* platno mehurckov poravnano s (centriranim) chatom — ne cisto ob levem robu */
           .cw .oder0 { display: block; width: auto; max-width: 800px; margin-left: auto; margin-right: auto; }
-          .cw .ponudba0 { position: fixed; top: 3.05rem; right: 0; bottom: 0; width: min(410px, 34vw); border-radius: 22px 0 0 22px; margin: 0; z-index: 20; overflow-y: auto; animation: ponudbaVstop .5s cubic-bezier(.2,.8,.3,1) both; transition: width .34s cubic-bezier(.2,.8,.3,1); }
+          .cw .ponudba0 { position: fixed; top: 3.05rem; right: 0; bottom: 0; width: min(480px, 40vw); border-radius: 22px 0 0 22px; margin: 0; z-index: 20; overflow-y: auto; animation: ponudbaVstop .5s cubic-bezier(.2,.8,.3,1) both; transition: width .34s cubic-bezier(.2,.8,.3,1); }
           .cw .detajl-modal .choicegrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
           .cw .detajl-modal .choicegrid > button { width: 100%; justify-content: flex-start; }
           .cw .detajl-modal .choicegrid .svoje-vrsta { grid-column: 1 / -1; }
           /* spodnja gumba centrirana POD vprašalnikom (ne cela stran) — enak odmik kot vsebina za fiksni panel */
-          .cw .noga.noga-ob-panelu { padding-right: calc(min(410px, 34vw) + clamp(1rem, 2.5vw, 2rem) + clamp(1.2rem, 4vw, 3rem)); }
+          .cw .noga.noga-ob-panelu { padding-right: calc(min(480px, 40vw) + clamp(1rem, 2.5vw, 2rem) + clamp(1.2rem, 4vw, 3rem)); }
         }
         @keyframes ponudbaVstop { from { transform: translateX(100%); } to { transform: translateX(0); } }
         @media (prefers-reduced-motion: reduce) { .cw .ponudba0 { animation: none; } }
@@ -4502,6 +5305,19 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .prav-podr:hover { border-color: var(--ink); color: var(--ink); }
         .cw .prav-recept { border: none; border-bottom: 1px solid rgba(17,17,17,.35); background-color: transparent; font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); padding: .3rem 1.4rem .3rem .2rem; appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .1rem center; }
         .cw .prav-cena { font-family: var(--font-bodoni), serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; min-width: 3.6rem; text-align: right; }
+        .cw .prav-cena-gumb { border: none; background: transparent; cursor: pointer; color: var(--ink); padding: 0 0 .1rem; border-bottom: 1px dashed rgba(17,17,17,.45); transition: border-color .15s, color .15s; }
+        .cw .prav-cena-gumb:hover { border-bottom-color: var(--ink); }
+        .cw .prav-cena-gumb.rocno { border-bottom-style: solid; border-bottom-color: var(--accent); color: var(--accent); }
+        .cw .prav-cena-uredi { display: inline-flex; align-items: baseline; justify-content: flex-end; gap: .15rem; }
+        .cw .prav-cena-uredi input { width: 4.2rem; border: none; border-bottom: 2px solid var(--ink); background: transparent; font-family: var(--font-bodoni), serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; text-align: right; padding: 0 0 .06rem; color: var(--ink); border-radius: 0; }
+        .cw .prav-cena-uredi input:focus { outline: none; }
+        .cw .prav-cena-uredi .pe-znak { font-family: var(--font-bodoni), serif; font-weight: 600; font-size: .95rem; }
+        .cw .prav-lastna-ime { border: none; border-bottom: 1px solid rgba(17,17,17,.35); background: transparent; font-family: inherit; font-size: .95rem; font-weight: 650; color: var(--ink); padding: .15rem 0; min-width: 0; width: 100%; }
+        .cw .prav-lastna-ime:focus { outline: none; border-color: var(--ink); }
+        .cw .prav-lastna-ime::placeholder { color: rgba(17,17,17,.4); font-weight: 500; }
+        .cw .prav-brisi { border-color: rgba(17,17,17,.2); color: rgba(17,17,17,.5); padding: .28rem .55rem; font-size: .9rem; line-height: 1; }
+        .cw .prav-brisi:hover { border-color: #b25476; color: #b25476; }
+        .cw .prav-lastna-akcije { display: inline-flex; gap: .4rem; align-items: center; justify-content: flex-end; }
         .cw .prav-skupaj { display: flex; justify-content: space-between; align-items: baseline; margin-top: .9rem; padding-top: .8rem; border-top: 2px solid var(--ink); }
         .cw .prav-skupaj b { font-family: var(--font-bodoni), serif; font-size: 1.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
         @media (max-width: 560px) { .cw .prav-vrsta { grid-template-columns: 1fr auto; grid-template-areas: 'ime cena' 'recept podr'; } .cw .prav-ime { grid-area: ime; } .cw .prav-cena { grid-area: cena; } .cw .prav-recept { grid-area: recept; } .cw .prav-podr { grid-area: podr; justify-self: end; } }
@@ -4577,12 +5393,35 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .paketi.paketi-ena { grid-template-columns: 1fr; max-width: 460px; }
         .cw .cena-urna { max-width: none; }
         @media (max-width: 640px) { .cw .paketi { grid-template-columns: 1fr; } }
+        /* ── DOLGOROCNO SODELOVANJE (retainer) ── */
+        .cw .retainer { margin: 1.1rem 0 .2rem; }
+        .cw .ret-vrsta { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem .9rem; margin: .55rem 0; }
+        .cw .ret-oznaka { font-size: .82rem; font-weight: 700; color: rgba(17,17,17,.55); letter-spacing: .02em; min-width: 5.4rem; }
+        .cw .ret-izbire { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+        .cw .ret-chip { padding: .42rem .78rem; border: 1px solid rgba(17,17,17,.2); border-radius: 999px; background: transparent; cursor: pointer; font-family: inherit; font-size: .85rem; font-weight: 500; color: var(--ink); transition: border-color .15s, background .15s, color .15s; white-space: nowrap; }
+        .cw .ret-chip:hover { border-color: var(--ink); }
+        .cw .ret-chip.on { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 700; }
+        .cw .ret-vnos { width: 4.6rem; border: none; border-bottom: 1px solid rgba(17,17,17,.28); background: transparent; padding: .3rem .3rem; font-family: inherit; font-size: .9rem; font-weight: 600; color: var(--ink); text-align: right; }
+        .cw .ret-vnos:focus { outline: none; border-bottom-color: var(--ink); }
+        .cw .ret-povzetek { margin-top: .9rem; padding: 1.1rem 1.2rem; border-radius: 16px; background: #FCFBF7; border: 1px solid rgba(17,17,17,.1); }
+        .cw .ret-glavna { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding-bottom: .7rem; border-bottom: 1px solid rgba(17,17,17,.1); }
+        .cw .ret-glavna span { font-size: .82rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: rgba(17,17,17,.55); }
+        .cw .ret-glavna b { font-family: var(--font-bodoni), serif; font-weight: 500; font-size: 1.5rem; color: var(--ink); }
+        .cw .ret-detajli { list-style: none; margin: .7rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .32rem; }
+        .cw .ret-detajli li { font-size: .86rem; color: rgba(17,17,17,.7); padding-left: 1rem; position: relative; }
+        .cw .ret-detajli li::before { content: "·"; position: absolute; left: .2rem; color: var(--accent); font-weight: 700; }
+        .cw .ret-skupaj { display: flex; flex-wrap: wrap; gap: .3rem 1.6rem; margin-top: .8rem; padding-top: .7rem; border-top: 1px solid rgba(17,17,17,.1); font-size: .9rem; color: rgba(17,17,17,.75); }
+        .cw .ret-skupaj b { color: var(--ink); font-weight: 700; }
+        .cw .dolg-gumbi { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 1.3rem; }
+        .cw .dolg-gumbi .gumb { display: inline-flex; align-items: center; gap: .5rem; }
         .cw .paket { padding: 1.7rem 1.4rem 1.8rem; position: relative; }
         /* svincnik zgoraj desno — rocni popravek cene paketa */
-        .cw .paket-edit { position: absolute; top: 1.1rem; right: 1.1rem; display: inline-flex; align-items: center; justify-content: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.18); background: transparent; color: rgba(17,17,17,.55); cursor: pointer; transition: color .18s ease, border-color .18s ease, background .18s ease; }
-        .cw .paket-edit:hover { color: var(--ink); border-color: var(--ink); }
-        .cw .paket.mid .paket-edit { border-color: rgba(245,242,234,.4); color: rgba(245,242,234,.85); }
-        .cw .paket.mid .paket-edit:hover { color: var(--paper); border-color: var(--paper); background: rgba(245,242,234,.12); }
+        .cw .paket-edit { position: absolute; top: .95rem; right: .95rem; z-index: 2; display: inline-flex; align-items: center; justify-content: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.2); background: rgba(255,255,255,.55); color: rgba(17,17,17,.62); cursor: pointer; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); transition: color .18s ease, border-color .18s ease, background .18s ease, transform .18s ease; }
+        .cw .paket-edit svg { pointer-events: none; }
+        .cw .paket-edit:hover { color: var(--ink); border-color: var(--ink); background: #fff; transform: scale(1.08); }
+        .cw .paket-edit:active { transform: scale(.96); }
+        .cw .paket.mid .paket-edit { border-color: rgba(245,242,234,.5); color: rgba(245,242,234,.95); background: rgba(245,242,234,.16); }
+        .cw .paket.mid .paket-edit:hover { color: var(--paper); border-color: var(--paper); background: rgba(245,242,234,.26); }
         .cw .paket-cena-uredi { display: flex; align-items: baseline; gap: .35rem; margin: .5rem 0 .55rem; }
         .cw .paket-cena-uredi input { width: 5.5rem; border: none; border-bottom: 2px solid currentColor; background: transparent; font-family: var(--font-serif), Didot, serif; font-size: clamp(1.7rem, 4vw, 2.3rem); font-weight: 700; letter-spacing: -.01em; padding: 0 0 .1rem; color: inherit; border-radius: 0; }
         .cw .paket-cena-uredi input:focus { outline: none; }
@@ -4627,10 +5466,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .barva-cilj button { border: none; background: transparent; color: var(--ink); font-family: inherit; font-weight: 600; font-size: .74rem; padding: .5rem .72rem; cursor: pointer; min-height: 2.25rem; transition: background .15s; }
         .cw .barva-cilj button.on { background: var(--ink); color: var(--paper); }
         /* PRENOVLJENI TOOLBAR PONUDBE */
-        .cw .pon-vrh { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; margin: .4rem 0 1rem; }
-        .cw .segpills { display: inline-flex; background: rgba(255,255,255,.55); border: 1px solid rgba(17,17,17,.1); border-radius: 999px; padding: .3rem; gap: .2rem; }
-        .cw .segpills button { border: none; background: transparent; color: var(--ink); font-family: inherit; font-weight: 700; font-size: .76rem; letter-spacing: .04em; text-transform: uppercase; padding: .58rem 1.05rem; border-radius: 999px; cursor: pointer; transition: background .18s, color .18s; }
+        .cw .pon-vrh { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: .4rem 0 1rem; }
+        .cw .segpills { display: inline-flex; background: rgba(255,255,255,.55); border: 1px solid rgba(17,17,17,.1); border-radius: 999px; padding: .25rem; gap: .15rem; }
+        .cw .segpills button { border: none; background: transparent; color: var(--ink); font-family: inherit; font-weight: 700; font-size: .72rem; letter-spacing: .03em; text-transform: uppercase; padding: .46rem .8rem; border-radius: 999px; cursor: pointer; white-space: nowrap; transition: background .18s, color .18s; }
         .cw .segpills button.on { background: var(--ink); color: var(--paper); }
+        /* PRIMARNI toggle Uredi/Predogled = temen (izstopa). Sekundarni (obseg/ton) = subtilni. */
+        .cw .segpills-sek { background: transparent; border-color: rgba(17,17,17,.14); }
+        .cw .segpills-sek button { font-weight: 600; color: rgba(17,17,17,.6); }
+        .cw .segpills-sek button.on { background: rgba(17,17,17,.09); color: var(--ink); }
+        .cw .segpills-pogled button { display: inline-flex; align-items: center; gap: .35rem; }
+        .cw .segpills-pogled svg { flex: none; }
         .cw .pon-vrh-desno { margin-left: auto; display: inline-flex; align-items: center; gap: .8rem; }
         .cw .ponastavi-gumb { opacity: .38; }
         .cw .ponastavi-gumb.aktiv { opacity: 1; }
@@ -4648,11 +5493,35 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .tool-locnica { width: 1px; height: 1.7rem; background: rgba(17,17,17,.16); margin: 0 .2rem; }
         .cw .barvica-mavrica { background: conic-gradient(from 0deg, #FA4892, #F8E71C, #50E3C2, #7C3AED, #FA4892); border-color: rgba(17,17,17,.25); }
         .cw .barvica { width: 1.35rem; height: 1.35rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.22); cursor: pointer; }
+        .cw .podloga-oznaka { font-size: .74rem; font-weight: 700; color: rgba(17,17,17,.6); letter-spacing: .02em; margin-right: .1rem; }
+        .cw .podloga-krog { width: 1.7rem; height: 1.7rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.28); background: transparent; color: rgba(17,17,17,.6); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s, background .15s; }
+        .cw .podloga-krog:hover { border-color: var(--ink); color: var(--ink); }
+        .cw .podloga-krog.on { border-color: var(--ink); color: var(--ink); box-shadow: 0 0 0 2px rgba(17,17,17,.12); }
+        .cw .podloga-krog svg { pointer-events: none; }
+        /* Pinart predloga krogec = mavricni gradient (ne prazen); nalozi-krog obdrzi svojo sliko/ikono */
+        .cw .podloga-krog:not(.podloga-nalozi) { background: conic-gradient(from 210deg, #ffd54a, #7be0a0, #63c7e8, #a78bfa, #f78fb0, #ffd54a); border-color: rgba(17,17,17,.22); color: #fff; }
+        .cw .podloga-krog:not(.podloga-nalozi):hover { border-color: var(--ink); color: #fff; }
+        .cw .podloga-krog:not(.podloga-nalozi).on { border-color: var(--ink); color: #fff; box-shadow: 0 0 0 2px rgba(17,17,17,.14); }
+        .cw .logo-kvadrat { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; width: 2.7rem; height: 2.1rem; border: 1px dashed rgba(17,17,17,.32); border-radius: 8px; background: transparent; background-size: contain; background-repeat: no-repeat; background-position: center; color: rgba(17,17,17,.6); font-size: .56rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; transition: border-color .15s, color .15s; }
+        .cw .logo-kvadrat:hover { border-color: var(--ink); color: var(--ink); }
+        .cw .logo-kvadrat.ima { border-style: solid; border-color: rgba(17,17,17,.18); width: 3.2rem; }
+        .cw .logo-kvadrat svg { pointer-events: none; }
+        .cw .logo-odstrani { border: none; background: transparent; color: rgba(17,17,17,.45); font-size: .85rem; cursor: pointer; padding: 0 .15rem; }
+        .cw .logo-odstrani:hover { color: #b25476; }
         .cw .editor { width: 100%; min-height: 340px; border: 1px solid rgba(17,17,17,.25); background: rgba(255,255,255,.72); padding: 1.35rem; color: var(--ink); font-family: var(--font-sans), system-ui, sans-serif; font-size: .94rem; line-height: 1.62; font-weight: 400; -webkit-text-stroke: 0.28px currentColor; overflow: auto; }
         .cw .editor:focus { outline: none; border-color: var(--ink); }
+        .cw .predogled-okvir { position: relative; background: #e9e6e0; border: 1px solid rgba(17,17,17,.12); border-radius: 10px; box-shadow: 0 12px 44px rgba(40,25,40,.11); max-width: 820px; margin: 1rem auto 140px; overflow-x: hidden; }
+        .cw .predogled-strani { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 18px; }
+        .cw .predogled-stran { width: 100%; max-width: 760px; height: auto; display: block; box-shadow: 0 6px 22px rgba(20,20,20,.14); }
+        .cw .predogled-nalaga { display: flex; align-items: center; justify-content: center; height: 60vh; min-height: 420px; color: rgba(17,17,17,.55); font-size: .9rem; }
+        .cw .predogled-osvezi { position: absolute; top: .6rem; right: .6rem; background: rgba(17,17,17,.72); color: #fff; font-size: .72rem; padding: .3rem .6rem; border-radius: 999px; pointer-events: none; z-index: 2; }
         .cw .editor b, .cw .editor strong { font-weight: 900; color: var(--ink); }
         .cw .editor h1 b, .cw .editor h1 strong { font-weight: 900; }
         .cw .editor h1 { margin: 0 0 1.1rem; font-family: var(--font-serif), Didot, serif; font-size: clamp(2rem, 5vw, 3.4rem); line-height: .98; font-weight: 500; letter-spacing: -.01em; }
+        .cw .editor .offer-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 2rem; margin: 0 0 1.4rem; }
+        .cw .editor .offer-head-t { min-width: 0; }
+        .cw .editor .offer-head h1 { margin: .1rem 0 0; }
+        .cw .editor .offer-head-meta { flex: 0 0 auto; text-align: right; font-size: .78rem; line-height: 1.7; color: rgba(17,17,17,.62); white-space: nowrap; padding-top: .2rem; }
         .cw .editor .offer-kicker { margin: 1.2rem 0 .4rem; font-size: .78rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--ink); }
         .cw .editor h2 { margin: 3rem 0 1rem; font-size: .76rem; line-height: 1.2; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; border-top: 1px solid rgba(17,17,17,.18); padding-top: 1.4rem; }
         .cw .editor h2:first-child { margin-top: 0; }
@@ -4674,12 +5543,65 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .editor .offer-package ul { margin: .45rem 0 0; padding-left: 1.05rem; }
         .cw .editor .offer-package li { margin: .22rem 0; color: var(--ink); }
         .cw .btnvrsta { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-top: 1.2rem; align-items: center; }
-        .cw .gumb { font-family: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; border-radius: 999px; padding: .95rem 2.2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); transition: opacity .18s ease; display: inline-flex; align-items: center; justify-content: center; gap: .45rem; }
+        .cw .zakljucek-ikona { display: flex; justify-content: center; color: var(--accent); margin: .2rem 0 1.1rem; }
+        .cw .zakljucek-sredina .zakljucek-ikona { justify-content: center; }
+        /* Zakljucek: vse centrirano (ilustracija + naslov + podnaslov + gumbi) */
+        .cw .zakljucek-sredina { text-align: center; }
+        .cw .zakljucek-sredina h1 { justify-content: center; }
+        .cw .zakljucek-sredina .h1-step { display: none; }
+        .cw .zakljucek-sredina h1 { padding-left: 0; }
+        .cw .zakljucek-sredina .sub-vrsta { justify-content: center; }
+        .cw .zakljucek-sredina .btnvrsta { justify-content: center; }
+        /* Racun panel na Zakljucku */
+        .cw .rac-panel { margin-top: 1.6rem; display: flex; justify-content: center; }
+        .cw .rac-toggle { display: inline-flex; align-items: center; gap: .5rem; }
+        .cw .rac-box { text-align: left; width: 100%; max-width: 560px; border: 1px solid rgba(17,17,17,.14); border-radius: 16px; background: rgba(255,255,255,.55); padding: 1.3rem 1.5rem 1.5rem; }
+        .cw .rac-box-glava { display: flex; align-items: center; gap: .55rem; color: var(--accent); margin-bottom: 1.1rem; }
+        .cw .rac-box-glava b { font-size: 1.05rem; letter-spacing: .02em; color: var(--ink); }
+        .cw .rac-zapri { margin-left: auto; border: 0; background: transparent; color: rgba(17,17,17,.5); font-size: 1rem; cursor: pointer; line-height: 1; padding: .2rem .35rem; }
+        .cw .rac-zapri:hover { color: var(--ink); }
+        .cw .rac-polja { display: grid; grid-template-columns: repeat(3, 1fr); gap: .9rem; }
+        .cw .rac-polje, .cw .rac-polje-l { display: flex; flex-direction: column; gap: .3rem; }
+        .cw .rac-polje > span, .cw .rac-polje-l { font-size: .66rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(17,17,17,.55); }
+        .cw .rac-polje input { font-family: inherit; font-size: .95rem; color: var(--ink); border: 1px solid rgba(17,17,17,.2); border-radius: 9px; padding: .55rem .7rem; background: #fff; }
+        .cw .rac-polje input:focus { outline: none; border-color: var(--accent); }
+        .cw .rac-paketi { margin-top: 1rem; display: flex; flex-direction: column; gap: .4rem; }
+        .cw .rac-placano-chk { display: flex; align-items: center; gap: .5rem; margin-top: 1rem; font-size: .9rem; color: var(--ink); cursor: pointer; }
+        .cw .rac-placano-chk input { width: 1.05rem; height: 1.05rem; accent-color: var(--accent); }
+        .cw .rac-gumbi { margin-top: 1.3rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        .cw .rac-poslji { display: inline-flex; align-items: center; gap: .5rem; }
+        .cw .rac-prenesi { flex: 1 1 auto; min-width: 12rem; }
+        @media (max-width: 560px) { .cw .rac-polja { grid-template-columns: 1fr; } }
+        .cw .gumb { position: relative; overflow: hidden; font-family: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; border-radius: 999px; padding: .95rem 2.2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); transition: opacity .18s ease; display: inline-flex; align-items: center; justify-content: center; gap: .45rem; }
         .cw .gumb { transition: transform .2s ease, box-shadow .2s ease; }
+        .cw .gumb::after { content: ''; position: absolute; top: 0; left: -160%; width: 90%; height: 100%; background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.95) 50%, transparent 100%); transform: skewX(-18deg); transition: left .6s cubic-bezier(.19,1,.22,1); pointer-events: none; }
+        .cw .gumb:hover::after { left: 170%; }
         .cw .gumb:hover { transform: scale(1.06); box-shadow: 0 8px 22px rgba(35,18,45,.18); }
         .cw .gumb:active { transform: scale(.97); }
         .cw .gumb:active { transform: translateY(0) scale(.97); }
         .cw .gumb:disabled { opacity: .35; cursor: default; }
+        .cw .konfeti-sloj { position: absolute; top: 42%; left: 0; right: 0; height: 0; pointer-events: none; z-index: 4; }
+        .cw .konfeti { position: absolute; left: 0; right: 0; top: 0; height: 0; pointer-events: none; z-index: 4; }
+        .cw .konf-kos { position: absolute; left: 50%; top: 0; width: .5rem; height: .78rem; border-radius: 1px; opacity: 0; will-change: transform, opacity; animation-name: konfPok; animation-timing-function: cubic-bezier(.22,.7,.32,1); animation-fill-mode: forwards; }
+        @keyframes konfPok {
+          0% { opacity: 0; transform: translate(-50%, 0) rotate(0) scale(.5); }
+          12% { opacity: 1; }
+          38% { transform: translate(calc(-50% + var(--dx) * .55), calc(var(--dy) * -.45)) rotate(calc(var(--rot) * .4)) scale(1); }
+          100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), var(--dy)) rotate(var(--rot)) scale(.95); }
+        }
+        @media (prefers-reduced-motion: reduce) { .cw .konfeti { display: none; } }
+        .cw .zakljucek-lik { display: flex; flex-direction: column; align-items: center; position: relative; margin: 0 0 1.4rem; }
+        .cw .pon-lik-ovoj { margin: 0; }
+        .cw .pon-lik { width: 8.4rem; height: auto; display: block; overflow: visible; }
+        .cw .pon-telo { transform-box: view-box; transform-origin: 60px 128px; animation: ponFloat 3.4s ease-in-out infinite; }
+        .cw .pon-senca { transform-box: view-box; transform-origin: 60px 133px; animation: ponSenca 3.4s ease-in-out infinite; }
+        .cw .pon-oko { transform-box: fill-box; transform-origin: center; animation: ponMezik 4.2s ease-in-out infinite; }
+        .cw .pon-lice { animation: ponLice 3.4s ease-in-out infinite; }
+        @keyframes ponFloat { 0%,100% { transform: translateY(0) rotate(-1.6deg); } 50% { transform: translateY(-8px) rotate(1.6deg); } }
+        @keyframes ponSenca { 0%,100% { transform: scale(1); opacity: .9; } 50% { transform: scale(.82); opacity: .6; } }
+        @keyframes ponMezik { 0%,90%,100% { transform: scaleY(1); } 95% { transform: scaleY(.12); } }
+        @keyframes ponLice { 0%,100% { opacity: .72; } 50% { opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) { .cw .pon-telo, .cw .pon-senca, .cw .pon-oko, .cw .pon-lice { animation: none; } }
         .cw .povezava { font-family: inherit; font-size: .88rem; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .28em; padding: 0; display: inline-flex; align-items: center; gap: .38rem; }
         .cw .povezava-roza { color: #8a3d5c; }
         .cw .povezava-roza:hover { color: var(--accent); }
@@ -4894,6 +5816,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       : profilPogled === 'podjetje-urejanje' ? (aktivnoPodjetje || 'Podjetje')
                         : profilPogled === 'cene-nastavitve' ? 'Cene in storitve'
                           : profilPogled === 'aplikacija' ? 'Nastavitve aplikacije'
+                            : profilPogled === 'videz' ? 'Videz dokumentov'
                             : profilPogled === 'stroski' ? 'Moji stroški'
                               : profilPogled === 'obvestila' ? 'Obveščanja'
                                 : 'Pomoč in kontakt'}
@@ -4934,6 +5857,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
+                <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('videz')}>
+                  <PaintBucket size={20} weight="bold" />
+                  <span>
+                    <strong>Videz dokumentov</strong>
+                    <small>barva poudarka + pisava naslovov — velja za ponudbe, račune in pogodbe</small>
+                  </span>
+                  <span className="pm-puscica" aria-hidden>→</span>
+                </button>
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('stroski')}>
                   <Wallet size={20} weight="bold" />
                   <span>
@@ -4966,6 +5897,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
+                <a className="profil-meni-vrsta" href={localePath(locale, `/kalkulator/admin`)} style={{ textDecoration: 'none' }}>
+                  <SquaresFour size={20} weight="bold" />
+                  <span>
+                    <strong>Admin</strong>
+                    <small>upravljanje produktov in nastavitev (interno)</small>
+                  </span>
+                  <span className="pm-puscica" aria-hidden>→</span>
+                </a>
               </div>
             )}
 
@@ -4990,6 +5929,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </button>
                 </div>
               </>
+            )}
+
+            {profilPogled === 'videz' && (
+              <VidezDokumentov barva={dokBarva} font={dokFont} onBarva={setDokBarva} onFont={setDokFont} />
             )}
 
             {profilPogled === 'moji-podatki' && (
@@ -5123,7 +6066,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               return (
               <>
                 <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Te cene so <b>podlaga za izračun</b> — privzete (slovenski trg) delujejo takoj, prilagodi jih svojim. Razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš.</p>
-                <button type="button" className="povezava povezava-roza" style={{ marginBottom: '1.3rem' }} onClick={() => setProfilPogled('moji-podatki')}>↳ Uredi področja dela (v Moji podatki)</button>
+                <button type="button" className="povezava povezava-roza" style={{ marginBottom: '.6rem' }} onClick={() => setProfilPogled('moji-podatki')}>↳ Uredi področja dela (v Moji podatki)</button>
+                <button type="button" className="povezava" style={{ display: 'block', marginBottom: '1.3rem', color: cenaResetPotrdi ? 'var(--accent)' : 'rgba(17,17,17,.5)', fontWeight: cenaResetPotrdi ? 700 : 500 }}
+                  title="Vrni vse cene na privzete (Pinart / slovenski trg)"
+                  onClick={() => {
+                    if (cenaResetPotrdi) { setOsnove({}); setCenaResetPotrdi(false); }
+                    else { setCenaResetPotrdi(true); window.setTimeout(() => setCenaResetPotrdi(false), 3500); }
+                  }}>↺ {cenaResetPotrdi ? 'Res ponastavim vse cene? Klikni še enkrat' : 'Ponastavi cene na privzete'}</button>
 
                 {/* DELOVNI (aktivni) cenik — naslov je UREDLJIV (preimenuješ ga kar tu); cene notri */}
                 <details className="cenik-card cenik-aktiven" open={delovniCenikOdprt}
@@ -5162,6 +6111,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </>
               );
             })()}
+
 
             {profilPogled === 'stroski' && (
               <>
@@ -5261,7 +6211,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       )}
 
       <div className="oder">
-        <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '') + (korak === 0 && uvodChat && !klasicnaOblika ? ' uvod-faza' : '') + (vChatu && poMeh > 0 ? ' chat-koraki' : '') + (!klasicnaOblika && korak === ponudbaStep ? ' priprava-korak' : '')} key={korak}>
+        <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '') + (korak === 0 && uvodChat && !klasicnaOblika ? ' uvod-faza' : '') + (vChatu && poMeh > 0 ? ' chat-koraki' : '') + (!klasicnaOblika && korak === ponudbaStep ? ' priprava-korak' : '') + (korak === zakljucekStep ? ' zakljucek-sredina' : '')} key={korak}>
           {!klasicnaOblika && korak === ponudbaStep && (
             <div className="priprava-vrh">
               <button type="button" className="priprava-nazaj" onClick={() => setKorak(0)}>
@@ -5270,6 +6220,47 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <button type="button" className="priprava-zapri" onClick={() => setKorak(0)} title="Zapri ponudbo — nazaj na sestavljanje">
                 Zapri <span aria-hidden>✕</span>
               </button>
+            </div>
+          )}
+          {korak === zakljucekStep && (
+            <div className="zakljucek-lik" aria-hidden>
+              <div className="pon-lik-ovoj">
+                <svg className="pon-lik" viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nasmejana ponudba">
+                  <ellipse className="pon-senca" cx="60" cy="133" rx="30" ry="4.5" fill="rgba(17,17,17,.12)" />
+                  <g className="pon-telo">
+                    <path d="M24 14 h54 l18 18 v78 a7 7 0 0 1 -7 7 H31 a7 7 0 0 1 -7 -7 Z" fill="#fff" stroke="rgba(17,17,17,.16)" strokeWidth="2.4" strokeLinejoin="round" />
+                    <path d="M78 14 l18 18 H82 a4 4 0 0 1 -4 -4 Z" fill="#F0ECE3" stroke="rgba(17,17,17,.16)" strokeWidth="2.4" strokeLinejoin="round" />
+                    <rect x="33" y="27" width="30" height="6.5" rx="3.25" fill="url(#ponGrad)" />
+                    <rect x="33" y="98" width="50" height="5" rx="2.5" fill="rgba(17,17,17,.12)" />
+                    <rect x="33" y="108" width="38" height="5" rx="2.5" fill="rgba(17,17,17,.12)" />
+                    <circle className="pon-lice" cx="43" cy="66" r="5" fill="#F1B7B3" />
+                    <circle className="pon-lice" cx="77" cy="66" r="5" fill="#F1B7B3" />
+                    <g fill="#2A2630">
+                      <rect className="pon-oko" x="45.5" y="55" width="5" height="10" rx="2.5" />
+                      <rect className="pon-oko" x="69.5" y="55" width="5" height="10" rx="2.5" />
+                    </g>
+                    <path className="pon-usta" d="M47 69 q13 12 26 0" stroke="#2A2630" strokeWidth="3.2" strokeLinecap="round" fill="none" />
+                  </g>
+                  <defs>
+                    <linearGradient id="ponGrad" x1="33" y1="27" x2="63" y2="34" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#EC4899" /><stop offset="1" stopColor="#B1C4FF" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <div className="konfeti-sloj">
+                <div className="konfeti" key={konfetiKljuc}>
+                  {konfetiKljuc > 0 && Array.from({ length: 22 }).map((_, i) => {
+                    const barve = ['#EC4899', '#F1B7B3', '#B1C4FF', '#38BDF8', '#50E3C2', '#B25476', '#F59E0B'];
+                    const dx = Math.round(Math.cos(i * 2.39996323) * 240);
+                    const dy = 110 + (i % 5) * 46;
+                    const rot = (i % 2 ? 1 : -1) * (200 + (i % 4) * 80);
+                    const delay = (i % 6) * 0.045;
+                    const dur = 1.25 + (i % 4) * 0.2;
+                    return <span key={i} className="konf-kos" style={{ background: barve[i % barve.length], animationDelay: `${delay}s`, animationDuration: `${dur}s`, ['--dx' as string]: `${dx}px`, ['--dy' as string]: `${dy}px`, ['--rot' as string]: `${rot}deg` } as React.CSSProperties} />;
+                  })}
+                </div>
+              </div>
             </div>
           )}
           {(korak !== 0 || klasicnaOblika) && (
@@ -5471,10 +6462,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   const p = orbPoz(i);
                   const barvi = ORB_BARVE[i % ORB_BARVE.length];
                   const linijeSid = vrstice.filter(l => l.sid === s.id);
-                  /* kolicinska storitev steje kose, imenska steje vrstice */
-                  const q = jeKolicinska(s.id)
-                    ? linijeSid.reduce((a, l) => a + Math.max(1, Math.round(l.kolicina)), 0)
-                    : linijeSid.length;
+                  /* znacka = stevilo LOCENIH vrstic te storitve (mehurcek doda vrstico);
+                     enake kose (kolicino) stejes z "+" ob imenu vrstice */
+                  const q = linijeSid.length;
                   const on = linijeSid.length > 0;
                   return (
                     <button key={s.id} type="button"
@@ -5506,7 +6496,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       )}
                       {on && (
                         <span className="kolic0" role="button" tabIndex={0}
-                          title={jeKolicinska(s.id) ? 'Odstrani en kos' : 'Odstrani zadnjo vrstico'}
+                          title="Odstrani zadnjo vrstico te storitve"
                           onClick={e => { e.stopPropagation(); odvzemiStoritev(s.id); }}
                           onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); odvzemiStoritev(s.id); } }}>
                           ×{q}
@@ -5555,7 +6545,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         <div className="mreza-kvadrati">
                           {g.storitve.map(s => {
                             const linije = vrstice.filter(l => l.sid === s.id);
-                            const q = jeKolicinska(s.id) ? linije.reduce((a, l) => a + Math.max(1, Math.round(l.kolicina)), 0) : linije.length;
+                            const q = linije.length;
                             const on = linije.length > 0;
                             const bar = PODROCJE_BARVA[g.id] || '#7C3AED';
                             return (
@@ -5567,7 +6557,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                                 <span className="mk-ime">{KRATKO[s.id] || s.ime}</span>
                                 <span className="mk-cena">od {val(osnovaZa(s))}</span>
                                 {on && (
-                                  <span className="mk-kolic" role="button" tabIndex={0} title={jeKolicinska(s.id) ? 'Odstrani en kos' : 'Odstrani zadnjo vrstico'}
+                                  <span className="mk-kolic" role="button" tabIndex={0} title="Odstrani zadnjo vrstico te storitve"
                                     onClick={e => { e.stopPropagation(); odvzemiStoritev(s.id); }}
                                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); odvzemiStoritev(s.id); } }}>×{q}</span>
                                 )}
@@ -5623,7 +6613,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         </g>
                       </svg>
                     </div>
-                    <p><b>Klikni storitev</b>, da začneš.<br />Spletna stran ali CGP se ob ponovnem kliku doda kot nova postavka, ilustracije in podobno pa štejejo kose.</p>
+                    <p><b>Klikni storitev</b>, da začneš.<br /><b>Enaka cena, več kosov:</b> pritisni <b>+</b> ob imenu vrstice. <b>Različne izvedbe/cene:</b> klikni mehurček še enkrat — vsaka dobi svojo vrstico, vprašanja in ceno.</p>
                   </div>
                 )}
 
@@ -5632,7 +6622,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     const s = vseStoritve.find(x => x.id === l.sid);
                     if (!s) return null;
                     const q = Math.max(1, Math.round(l.kolicina));
-                    const kolicinska = jeKolicinska(l.sid);
                     const skupina = skupineVprasanj.find(g => g.id === l.uid);
                     const odgovorjenih = skupina ? skupina.vprasanja.filter(vp => (odgovori[vp.key] || '').trim()).length : 0;
                     const razprta = razprtaVrstica === l.uid;
@@ -5650,15 +6639,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                           <button type="button" className="vrst0-ime" aria-expanded={razprta}
                             onClick={() => setRazprtaVrstica(razprta ? null : l.uid)}>
                             {prikazVrstice(l, s)}
-                            <small className={odgovorjenih ? 'odg' : ''}>{kolicinska && q > 1 ? `${q} ${KOLICINSKE[l.sid] || 'kosov'} · ` : ''}{status}</small>
+                            <small className={odgovorjenih ? 'odg' : ''}>{q > 1 ? `${KOLICINSKE[l.sid] ? `${q} ${KOLICINSKE[l.sid]}` : `× ${q}`} · ` : ''}{status}</small>
                           </button>
-                          {kolicinska ? (
-                            <span className="stepper0">
-                              <button type="button" aria-label={'En kos manj: ' + s.ime} onClick={() => spremeniKolicino(l.uid, -1)}>–</button>
-                              <b>{q}</b>
-                              <button type="button" aria-label={'En kos več: ' + s.ime} onClick={() => spremeniKolicino(l.uid, 1)}>+</button>
-                            </span>
-                          ) : <span className="vrst0-prazno" aria-hidden />}
+                          <span className="stepper0">
+                            <button type="button" aria-label={'Ena manj: ' + s.ime} onClick={() => spremeniKolicino(l.uid, -1)}>–</button>
+                            <b>{q}</b>
+                            <button type="button" aria-label={'Ena več, ista cena: ' + s.ime} title={'Še ena po isti ceni (količina). Za drugačno ceno klikni mehurček še enkrat.'}
+                              onClick={() => spremeniKolicino(l.uid, 1)}>+</button>
+                          </span>
                           <span className="vrst0-cena">{val(osnovaZa(s) * q)}</span>
                           <button type="button" className="vrst0-x" aria-label={'Odstrani: ' + prikazVrstice(l, s)}
                             onClick={() => odstraniVrstico(l.uid)}>×</button>
@@ -5885,20 +6873,23 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <div className="numgrid" style={{ marginTop: 0 }}>
                 <div className="polje">
                   <label htmlFor="cw-narocnik">Ime podjetja</label>
-                  <input id="cw-narocnik" type="text" placeholder="npr. Odvetniška družba Potočnik"
-                    value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)} />
+                  <input id="cw-narocnik" type="text" placeholder="npr. Odvetniška družba Volk & Babica"
+                    value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)}
+                    onBlur={e => zabeleziNarocnika(e.target.value)} />
                 </div>
                 <div className="polje">
                   <label htmlFor="cw-narocnik-email">Email naročnika</label>
-                  <input id="cw-narocnik-email" type="email" placeholder="npr. pisarna@potocnik.si"
-                    value={narocnikEmail} onChange={e => setNarocnikEmail(e.target.value)} />
+                  <input id="cw-narocnik-email" type="email" placeholder="npr. pisarna@volk-babica.si"
+                    value={narocnikEmail} onChange={e => setNarocnikEmail(e.target.value)}
+                    onBlur={() => zabeleziNarocnika(narocnikPonudbe)} />
                 </div>
               </div>
               <div className="numgrid">
                 <div className="polje">
                   <label htmlFor="cw-narocnik-naslov">Naslov (ulica, kraj)</label>
                   <input id="cw-narocnik-naslov" type="text" placeholder="npr. Dunajska cesta 1, 1000 Ljubljana"
-                    value={narocnikNaslov} onChange={e => setNarocnikNaslov(e.target.value)} />
+                    value={narocnikNaslov} onChange={e => setNarocnikNaslov(e.target.value)}
+                    onBlur={() => zabeleziNarocnika(narocnikPonudbe)} />
                 </div>
                 <div className="polje">
                   <label htmlFor="cw-narocnik-drzava">Država <span className="vec">določi trg za ceno</span></label>
@@ -5916,13 +6907,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <div className="numgrid">
                   <div className="polje">
                     <label htmlFor="cw-narocnik-oseba">Kontaktna oseba</label>
-                    <input id="cw-narocnik-oseba" type="text" placeholder="npr. Janez Potočnik"
-                      value={narocnikOseba} onChange={e => setNarocnikOseba(e.target.value)} />
+                    <input id="cw-narocnik-oseba" type="text" placeholder="npr. Sivko Volk"
+                      value={narocnikOseba} onChange={e => setNarocnikOseba(e.target.value)}
+                      onBlur={() => zabeleziNarocnika(narocnikPonudbe)} />
                   </div>
                   <div className="polje">
                     <label htmlFor="cw-narocnik-davcna">Davčna številka</label>
                     <input id="cw-narocnik-davcna" type="text" placeholder="npr. SI12345678"
-                      value={narocnikDavcna} onChange={e => setNarocnikDavcna(e.target.value)} />
+                      value={narocnikDavcna} onChange={e => setNarocnikDavcna(e.target.value)}
+                      onBlur={() => zabeleziNarocnika(narocnikPonudbe)} />
                   </div>
                 </div>
               ) : null}
@@ -5941,15 +6934,24 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 </button>
               )}
               {(() => {
-                const nedavni = Array.from(new Set(
-                  Object.values(arhiv).map(a => a.narocnikPonudbe).filter(Boolean)
-                )).filter(n => n !== narocnikPonudbe).slice(0, 8);
+                const zapisi: NarocnikZapis[] = [
+                  ...nedavniNarocniki,
+                  ...Object.values(arhiv).filter(a => a.narocnikPonudbe).map(a => ({
+                    ime: a.narocnikPonudbe, email: a.narocnikEmail, oseba: a.narocnikOseba, naslov: a.narocnikNaslov, davcna: a.narocnikDavcna,
+                  })),
+                ];
+                const videni = new Set<string>();
+                const nedavni = zapisi.filter(z => {
+                  const k = z.ime?.trim().toLowerCase();
+                  if (!k || z.ime === narocnikPonudbe || videni.has(k)) return false;
+                  videni.add(k); return true;
+                }).slice(0, 10);
                 return nedavni.length ? (
                   <div className="narocnik-nedavni">
                     <span className="vec">nedavni:</span>
                     {nedavni.map(n => (
-                      <button key={n} type="button" className="narocnik-chip"
-                        onClick={() => setNarocnikPonudbe(n)}>{n}</button>
+                      <button key={n.ime} type="button" className="narocnik-chip"
+                        onClick={() => uporabiNarocnika(n)}>{n.ime}</button>
                     ))}
                   </div>
                 ) : null;
@@ -6080,7 +7082,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               )}
               <div className="kartica">
                 <div className="k-naslov">Avtorske pravice po storitvah
-                  <InfoNamig besedilo="Vsaka storitev ima svoje pravice. Logotip/CGP je praviloma trajen izključni prenos, ilustracija licenca za dobo (npr. 7 let), kampanja kratka licenca. Privzetki so že nastavljeni glede na tip; recept lahko spremeniš. Podrobnosti (teritorij, mediji, naklada, klavzule) pridejo v naslednji nadgradnji." />
+                  <InfoNamig besedilo="Vsaka storitev ima svoje pravice. Logotip/CGP je praviloma trajen izključni prenos, ilustracija licenca za dobo (npr. 7 let), kampanja kratka licenca. Privzetki so nastavljeni glede na tip; recept lahko spremeniš. V Podrobnostih nastaviš teritorij (privzeto po sedežu naročnika), medije, naklado in klavzule; tiskovine in ilustracija imajo ponatis privzeto vklopljen. Skupni znesek lahko ročno popraviš s svinčnikom ob vsoti." />
                   <span className="vec">vsaka storitev svoje</span>
                 </div>
                 <p className="hint" style={{ marginTop: 0, marginBottom: '.8rem' }}>
@@ -6098,7 +7100,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <p className="prav-razlaga-vir">Podroben članek s primeri in viri pripravljamo za spletno stran.</p>
                   </div>
                 </details>
-                {r && r.praviceVrstice.length > 0 ? (
+                {r && (r.praviceVrstice.length > 0 || lastnePravice.length > 0) ? (
                   <>
                     <div className="prav-tabela">
                       {r.praviceVrstice.map(row => {
@@ -6111,16 +7113,78 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                               {recId === '' && <option value="">Po meri ({row.trajanjeIme})</option>}
                               {RECEPTI.map(rc => <option key={rc.id} value={rc.id}>{rc.ime}</option>)}
                             </select>
-                            <span className="prav-cena">{val(row.znesek)}</span>
+                            {urejamPravSid === row.sid ? (
+                              <span className="prav-cena prav-cena-uredi">
+                                <input type="number" min={0} step={50} autoFocus
+                                  aria-label={'Znesek pravic: ' + row.ime}
+                                  placeholder={String(zaokrozi(row.znesekAuto * vfx.fx))}
+                                  value={rocnePraviceStoritvi[row.sid] ?? ''}
+                                  onChange={e => setRocnePraviceStoritvi({ ...rocnePraviceStoritvi, [row.sid]: e.target.value })}
+                                  onBlur={() => setUrejamPravSid(null)}
+                                  onKeyDown={e => { if (e.key === 'Enter') setUrejamPravSid(null); }} />
+                                <span className="pe-znak">{vfx.znak}</span>
+                              </span>
+                            ) : (
+                              <button type="button" className={'prav-cena prav-cena-gumb' + (row.rocno ? ' rocno' : '')}
+                                title="Klikni za ročni popravek zneska" aria-label={'Ročno popravi znesek: ' + row.ime}
+                                onClick={() => setUrejamPravSid(row.sid)}>{val(row.znesek)}</button>
+                            )}
                             <button type="button" className="prav-podr" onClick={() => setPraviceOdprt(row.sid)} title="Podrobnosti — trajanje, klavzule">Podrobnosti</button>
                           </div>
                         );
                       })}
+                      {lastnePravice.map(l => (
+                        <div key={l.id} className="prav-vrsta prav-vrsta-lastna">
+                          <input className="prav-ime prav-lastna-ime" placeholder="Ime pravice (npr. Kampanjska licenca)"
+                            value={l.ime} onChange={e => posodobiLastnoPravico(l.id, { ime: e.target.value })} />
+                          <select className="prav-recept" aria-label="Tip pravice" value={l.tip}
+                            onChange={e => posodobiLastnoPravico(l.id, { tip: e.target.value as LastnaPravica['tip'] })}>
+                            <option value="enkratno">Enkratni odkup</option>
+                            <option value="letno">Letna licenca</option>
+                            <option value="mesecno">Mesečna licenca</option>
+                          </select>
+                          <span className="prav-cena prav-cena-uredi">
+                            <input type="number" min={0} step={50} placeholder="0" aria-label="Znesek pravice"
+                              value={l.znesek} onChange={e => posodobiLastnoPravico(l.id, { znesek: e.target.value })} />
+                            <span className="pe-znak">{vfx.znak}{l.tip === 'letno' ? '/leto' : l.tip === 'mesecno' ? '/mesec' : ''}</span>
+                          </span>
+                          <span className="prav-lastna-akcije">
+                            <button type="button" className="prav-podr" title="Podrobnosti — trajanje, klavzule, opomba"
+                              onClick={() => setLastnaOdprta(l.id)}>Podrobnosti</button>
+                            <button type="button" className="prav-podr prav-brisi" title="Izbriši pravico"
+                              aria-label="Izbriši pravico" onClick={() => izbrisiLastnoPravico(l.id)}>✕</button>
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                    <div className="prav-skupaj"><span>Skupaj avtorske pravice</span><b>{val(r.pravice)}</b></div>
+                    <button type="button" className="dodaj-gumb" style={{ marginTop: '.85rem' }}
+                      onClick={dodajLastnoPravico}>+ Dodaj pravico</button>
+                    <div className="prav-skupaj">
+                      <span>Skupaj avtorske pravice</span>
+                      <b>{val(r.pravice)}</b>
+                    </div>
+                    {(() => {
+                      const mesecno = lastnePravice.filter(l => l.tip === 'mesecno').reduce((a, l) => a + (Number(l.znesek) || 0), 0);
+                      const letno = lastnePravice.filter(l => l.tip === 'letno').reduce((a, l) => a + (Number(l.znesek) || 0), 0);
+                      if (!mesecno && !letno) return null;
+                      const deli: string[] = [];
+                      if (mesecno) deli.push(`${mesecno.toLocaleString('sl-SI')} ${vfx.znak}/mesec`);
+                      if (letno) deli.push(`${letno.toLocaleString('sl-SI')} ${vfx.znak}/leto`);
+                      return <p className="hint" style={{ marginTop: '.5rem' }}>Ponavljajoče licence (izven enkratnega odkupa): <b>{deli.join(' + ')}</b></p>;
+                    })()}
+                    {(Object.keys(rocnePraviceStoritvi).length > 0 || rocnePravice || rocnaLicenca) && (
+                      <button type="button" className="povezava" style={{ marginTop: '.75rem' }}
+                        onClick={() => { setRocnePraviceStoritvi({}); setRocnePravice(''); setRocnaLicenca(''); setUrejamPravSid(null); }}>
+                        ↺ Vse pravice na samodejni izračun
+                      </button>
+                    )}
                   </>
                 ) : (
-                  <p className="hint" style={{ margin: 0 }}>Dodaj storitve, da nastaviš pravice zanje.</p>
+                  <>
+                    <p className="hint" style={{ margin: 0 }}>Dodaj storitve ali lastno pravico, da nastaviš pravice.</p>
+                    <button type="button" className="dodaj-gumb" style={{ marginTop: '.85rem' }}
+                      onClick={dodajLastnoPravico}>+ Dodaj pravico</button>
+                  </>
                 )}
               </div>
 
@@ -6129,6 +7193,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 const s = vseStoritve.find(x => x.id === sid);
                 if (!s) return null;
                 const rec = pravRec(sid);
+                const ob = pravObseg(sid);
                 const custLeta = (Number(custStev) || 0) * (custEnota === 'teden' ? 1 / 52 : custEnota === 'mesec' ? 1 / 12 : 1);
                 return createPortal(
                   <div className="cw">
@@ -6184,7 +7249,58 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                               <p className="hint" style={{ marginTop: '.5rem' }}>Cena zgoraj je <b>predujem / minimalna garancija</b> (nepovraten, ob podpisu). Tantieme se plačujejo <b>dodatno</b> od prodaje; ponudba doda klavzule (predujem, MG, reverzija, letno poročilo). Izhodišče: dizajn 3–10 %, znamka do 15 % (GAG / Licensing International).</p>
                             </div>
                           )}
-                          <p className="hint" style={{ margin: 0 }}>Teritorij, mediji in naklada trenutno veljajo globalno (kartica spodaj). Cena pravic te storitve: <b>{r ? val(r.praviceVrstice.find(x => x.sid === sid)?.znesek || 0) : '—'}</b>.</p>
+                          <div>
+                            <div className="uredi-naslov">Teritorij <span className="vec">{ob.teritorijPrevzet ? 'kje se delo uporablja · po naročniku' : 'kje se delo uporablja'}</span>
+                              <InfoNamig besedilo="Teritorij se privzeto prevzame po sedežu naročnika (kje se delo uporablja). Širši teritorij poviša ceno pravic. Če ga ročno spremeniš, ga z gumbom »↺ Prevzemi po naročniku« vrneš na privzeto." />
+                            </div>
+                            <div className="opts">
+                              {PRAV_TERITORIJ.map(t => (
+                                <button key={t.id} type="button" className={'pill' + (ob.teritorij === t.id ? ' on' : '')}
+                                  onClick={() => nastaviPravRec(sid, { teritorij: t.id })}>
+                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{t.ime}</span>
+                                </button>
+                              ))}
+                            </div>
+                            {!ob.teritorijPrevzet && (
+                              <button type="button" className="povezava" style={{ marginTop: '.4rem' }}
+                                onClick={() => nastaviPravRec(sid, { teritorij: undefined })}>
+                                ↺ Prevzemi po naročniku ({PRAV_TERITORIJ.find(t => t.id === teritorijIzTrga(trgNarocnika))?.ime})
+                              </button>
+                            )}
+                          </div>
+                          <div>
+                            <div className="uredi-naslov">Dodatni mediji <span className="vec">izven tiska + promocije</span></div>
+                            <div className="opts">
+                              {PRAV_MEDIJI_DODATNI.map(m => {
+                                const on = ob.mediji.includes(m.id);
+                                return (
+                                  <button key={m.id} type="button" className={'pill' + (on ? ' on' : '')}
+                                    onClick={() => nastaviPravRec(sid, { mediji: on ? ob.mediji.filter(x => x !== m.id) : [...ob.mediji, m.id] })}>
+                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{m.ime}<small>{m.opis}</small></span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          {NAKLADA_STORITVE.includes(sid) && (
+                            <div>
+                              <div className="uredi-naslov">Naklada / obseg izdaje</div>
+                              <div className="opts">
+                                {PRAV_NAKLADA.map(n => (
+                                  <button key={n.id} type="button" className={'pill' + (ob.naklada === n.id ? ' on' : '')}
+                                    onClick={() => nastaviPravRec(sid, { naklada: n.id })}>
+                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{n.ime}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          <div>
+                            <div className="uredi-naslov">Opomba <span className="vec">neobvezno · zapiše se v ponudbo pod to storitvijo</span></div>
+                            <input type="text" className="detajl-opomba" placeholder="npr. dovoljena uporaba na embalaži do 2027"
+                              value={rec.opomba ?? ''} onChange={e => nastaviPravRec(sid, { opomba: e.target.value })} />
+                          </div>
+                          <p className="hint" style={{ margin: 0 }}>Obseg zgoraj <b>vpliva na ceno pravic te storitve</b> (teritorij privzeto po naročniku; širši teritorij, dodatni mediji ali večja naklada znesek povišajo). Cena pravic te storitve: <b>{r ? val(r.praviceVrstice.find(x => x.sid === sid)?.znesek || 0) : '—'}</b>.</p>
                         </div>
                         <div className="detajl-noga">
                           <button type="button" className="gumb" onClick={() => setPraviceOdprt(null)}>Zapri</button>
@@ -6195,159 +7311,67 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 , document.body);
               })()}
 
-              <details className="prav-napredno">
-                <summary>Napredno — obseg (teritorij, mediji, naklada) in ročni znesek pravic</summary>
-                <div className="prav-napredno-telo">
-              <div className="kartica">
-                <div className="k-naslov">Obseg — velja za vse storitve
-                  <InfoNamig besedilo="Teritorij, dodatni mediji in naklada trenutno veljajo globalno za vse storitve (kmalu tudi per storitev v Podrobnostih). Privzeto: Slovenija, tisk + promocija, naklada do 3.000 — to je vključeno v ceno pravic; širša raba znesek poviša. Trajanje je odslej del pravic po storitvah zgoraj." />
-                  <span className="vec">teritorij · mediji · naklada</span>
-                </div>
-                <p className="hint" style={{ marginTop: 0 }}>
-                  Vključeno v osnovo: <b>tisk + promocija izdelka</b>, <b>Slovenija</b>, naklada <b>do 3.000</b>. Trajanje nastaviš pri vsaki storitvi zgoraj. Vse izven obsega je doplačljivo — ponudba to tudi zapiše.
-                </p>
-                {obsegPokazi ? (
-                  <>
-                    <div className="polje" style={{ marginTop: '1.1rem' }}>
-                      <label>Teritorij</label>
-                      <div className="opts">
-                        {PRAV_TERITORIJ.map(t => (
-                          <button key={t.id} type="button"
-                            className={'pill' + (pravTeritorij === t.id ? ' on' : '')}
-                            onClick={() => setPravTeritorij(t.id)}>
-                            <span className="pill-fill" aria-hidden />
-                            <span className="pill-tekst">{t.ime}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="polje" style={{ marginTop: '1.1rem' }}>
-                      <label>Dodatni mediji <span className="vec">izven tiska + promocije</span></label>
-                      <div className="opts">
-                        {PRAV_MEDIJI_DODATNI.map(m => (
-                          <button key={m.id} type="button"
-                            className={'pill' + (pravDodatniMediji.has(m.id) ? ' on' : '')}
-                            onClick={() => preklopi(pravDodatniMediji, m.id, setPravDodatniMediji)}>
-                            <span className="pill-fill" aria-hidden />
-                            <span className="pill-tekst">{m.ime}<small>{m.opis} · +{Math.round(m.mult * 100)} %</small></span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="polje" style={{ marginTop: '1.1rem' }}>
-                      <label>Naklada / obseg izdaje</label>
-                      <div className="opts">
-                        {PRAV_NAKLADA.map(n => (
-                          <button key={n.id} type="button"
-                            className={'pill' + (pravNaklada === n.id ? ' on' : '')}
-                            onClick={() => setPravNaklada(n.id)}>
-                            <span className="pill-fill" aria-hidden />
-                            <span className="pill-tekst">{n.ime}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="polje" style={{ marginTop: '1.1rem' }}>
-                      <label>Klavzula o ponatisu
-                        <InfoNamig besedilo="Ob ponatisu ali novi nakladi se licenca obnovi — izhodišče 50 % prvotne vrednosti pravic. Majin nasvet iz prakse: brez te klavzule naročnik ponatisne brez doplačila." />
-                      </label>
-                      <div className="opts">
-                        <button type="button"
-                          className={'pill' + (pravPonatis ? ' on' : '')}
-                          onClick={() => setPravPonatis(p => !p)}>
-                          <span className="pill-fill" aria-hidden />
-                          <span className="pill-tekst">Ob novi nakladi se licenca obnovi<small>v ponudbo doda stavek (izhodišče 50 %)</small></span>
-                        </button>
-                      </div>
-                    </div>
-                    {r && r.obseg.mult !== 1 && (
-                      <p className="hint" style={{ marginTop: '1.1rem' }}>
-                        Izbrani obseg: <b>{r.obseg.opis}</b> → znesek pravic ×<b>{r.obseg.mult.toFixed(2)}</b>
-                      </p>
-                    )}
-                    {!avtorskeIzbrane && (
-                      <button type="button" className="povezava" style={{ marginTop: '.9rem' }}
-                        onClick={() => setObsegOdprt(false)}>
-                        <CaretUp size={14} weight="bold" aria-hidden /> Skrij obseg
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
-                    onClick={() => setObsegOdprt(true)}>
-                    + Nastavi obseg (trajanje, teritorij, mediji, naklada)
-                  </button>
-                )}
-              </div>
-
-              {r && (
-                <div className="kartica">
-                  <div className="k-naslov">
-                    Znesek pravic
-                    <span className="vec">{(r.praviceRocne || r.licencaRocna) ? 'nastavila si sama' : 'orodje izračuna samo'}</span>
-                  </div>
-                  <p className="hint" style={{ marginTop: 0 }}>
-                    {r.prenos === 'licenca'
-                      ? <>Pri licenci se pravice ne odkupijo; naročnik plača <b>letno licenco</b>, ki jo orodje oceni kot <b>20 % vrednosti pravic</b>.</>
-                      : r.raba === 'projekt'
-                        ? <>Orodje pravice oceni kot <b>10 % pričakovanega dobička projekta</b> (ali 2 % prihodka), z varovalko med 25 % in 300 % cene izvedbe{r.prenos === 'neizkljucni' ? <>; ker prenos ni izključen, znesek zniža na <b>60 %</b></> : null}.</>
-                        : <>Orodje pravice oceni kot <b>1 % letnega dobička naročnika</b>, z varovalko med 25 % in 300 % cene izvedbe{r.prenos === 'neizkljucni' ? <>; ker prenos ni izključen, znesek zniža na <b>60 %</b></> : null}.</>}
-                    {' '}Znesek je priporočilo — kadar koli ga lahko prepišeš s svojim.
-                  </p>
-                  {(prilagajanjePravic || r.praviceRocne || r.licencaRocna) ? (
-                    <>
-                      <div className="numgrid" style={{ marginTop: '1.1rem' }}>
-                        {r.prenos !== 'licenca' && (
-                          <div className="polje">
-                            <label htmlFor="cw-rpravice">Avtorske pravice ({vfx.znak})</label>
-                            <input id="cw-rpravice" type="number" min={0} step={50}
-                              placeholder={String(zaokrozi(r.praviceAvto * vfx.fx))}
-                              value={rocnePravice} onChange={e => setRocnePravice(e.target.value)} />
+              {lastnaOdprta && typeof document !== 'undefined' && (() => {
+                const l = lastnePravice.find(x => x.id === lastnaOdprta);
+                if (!l) return null;
+                const custLeta = (Number(custStev) || 0) * (custEnota === 'teden' ? 1 / 52 : custEnota === 'mesec' ? 1 / 12 : 1);
+                return createPortal(
+                  <div className="cw">
+                    <div className="izbirnik-zastor" onClick={() => setLastnaOdprta(null)}>
+                      <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={'Pravica: ' + (l.ime || 'Lastna pravica')} onClick={e => e.stopPropagation()} data-lenis-prevent>
+                        <div className="izbirnik-glava">
+                          <span>Pravica: {l.ime || 'Lastna pravica'}</span>
+                          <button type="button" onClick={() => setLastnaOdprta(null)} aria-label="Zapri">✕</button>
+                        </div>
+                        <div className="detajl-telo">
+                          <div>
+                            <div className="uredi-naslov">Trajanje <span className="vec">za opis v ponudbi</span></div>
+                            <div className="opts">
+                              {PRAV_TRAJANJE.map(t => (
+                                <button key={t.id} type="button" className={'pill' + (l.trajanje === t.id ? ' on' : '')}
+                                  onClick={() => posodobiLastnoPravico(l.id, { trajanje: t.id, trajLeta: undefined })}>
+                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{t.ime}</span>
+                                </button>
+                              ))}
+                            </div>
+                            <div className="cu-vrsta cu-po-meri">
+                              <span className={'pill' + (l.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">Po meri{l.trajanje === 'custom' && typeof l.trajLeta === 'number' ? `: ${trajLetaVBesedo(l.trajLeta)}` : ''}</span></span>
+                              <input type="number" min={1} value={custStev} onChange={e => setCustStev(e.target.value)} className="cu-num" aria-label="Število" />
+                              <select value={custEnota} onChange={e => setCustEnota(e.target.value as 'teden' | 'mesec' | 'leto')} className="cu-select" aria-label="Enota">
+                                <option value="teden">tednov</option><option value="mesec">mesecev</option><option value="leto">let</option>
+                              </select>
+                              <button type="button" className="gumb cu-uporabi" onClick={() => posodobiLastnoPravico(l.id, { trajanje: 'custom', trajLeta: custLeta })}>Uporabi</button>
+                            </div>
                           </div>
-                        )}
-                        <div className="polje">
-                          <label htmlFor="cw-rlicenca">Letna licenca ({vfx.znak}/leto)</label>
-                          <input id="cw-rlicenca" type="number" min={0} step={50}
-                            placeholder={String(zaokrozi(r.licencaAvto * vfx.fx))}
-                            value={rocnaLicenca} onChange={e => setRocnaLicenca(e.target.value)} />
+                          <div>
+                            <div className="uredi-naslov">Klavzule <span className="vec">se zapišejo v ponudbo</span></div>
+                            <div className="opts">
+                              {KLAVZULE.map(k => {
+                                const on = (l.klavzule || []).includes(k.id);
+                                return (
+                                  <button key={k.id} type="button" className={'pill' + (on ? ' on' : '')}
+                                    onClick={() => posodobiLastnoPravico(l.id, { klavzule: on ? (l.klavzule || []).filter(x => x !== k.id) : [...(l.klavzule || []), k.id] })}>
+                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{k.ime}<small>{k.opis}</small></span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="uredi-naslov">Opomba <span className="vec">neobvezno · zapiše se v ponudbo</span></div>
+                            <input type="text" className="detajl-opomba" placeholder="npr. dovoljena uporaba na embalaži do 2027"
+                              value={l.opomba ?? ''} onChange={e => posodobiLastnoPravico(l.id, { opomba: e.target.value })} />
+                          </div>
+                        </div>
+                        <div className="detajl-noga">
+                          <button type="button" className="gumb" onClick={() => setLastnaOdprta(null)}>Zapri</button>
                         </div>
                       </div>
-                      <button type="button" className="povezava" style={{ marginTop: '.9rem' }}
-                        onClick={() => { setRocnePravice(''); setRocnaLicenca(''); setPrilagajanjePravic(false); }}>
-                        ↺ Nazaj na samodejni izračun
-                      </button>
-                    </>
-                  ) : (
-                    <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem', marginRight: '.8rem' }}
-                      onClick={() => setPrilagajanjePravic(true)}>
-                      + Prilagodi znesek pravic
-                    </button>
-                  )}
-                  {(prikaziIzjemePravic || izjemePravice) ? (
-                    <div className="polje" style={{ marginTop: '1.1rem' }}>
-                      <label htmlFor="cw-izjeme-pravic">Napredno: izjeme po storitvi <span className="vec">neobvezno</span></label>
-                      <input id="cw-izjeme-pravic" type="text" placeholder="npr. Ilustracije: neizključni prenos"
-                        value={izjemePravice} onChange={e => setIzjemePravice(e.target.value)} />
-                      <button type="button" className="povezava" style={{ marginTop: '.9rem' }}
-                        onClick={() => { setIzjemePravice(''); setPrikaziIzjemePravic(false); }}>
-                        <CaretUp size={14} weight="bold" aria-hidden /> Skrij izjeme
-                      </button>
                     </div>
-                  ) : izbrane.size > 1 ? (
-                    <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
-                      onClick={() => setPrikaziIzjemePravic(true)}>
-                      + Napredno: različne pravice po storitvi
-                    </button>
-                  ) : (
-                    <button type="button" className="povezava" style={{ marginTop: '1.1rem' }}
-                      onClick={() => setPrikaziIzjemePravic(true)}>
-                      + Dodaj izjemo po storitvi
-                    </button>
-                  )}
-                </div>
-              )}
-                </div>
-              </details>
+                  </div>
+                , document.body);
+              })()}
+
             </>
           )}
 
@@ -6375,7 +7399,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           {((klasicnaOblika && korak === cenaStep) || (vChatu && poMeh >= 5)) && r && (
             <>
               {vChatu && chatVpr('Tvoja cena.', 'Pametno izhodišče — prilagodi jo po občutku.')}
-              {/* preklop: trije paketi ali ena koncna cena (Priporoceni obseg) */}
+              {dolgorocno && <p className="ob-sub" style={{ margin: '0 0 .6rem', fontWeight: 600 }}>Dolgoročno sodelovanje — mesečni retainer. Nastavi model in dobo; pogodbo narediš na Zaključku.</p>}
+              {!dolgorocno && (<>
+              {/* preklop: trije paketi ali ena koncna cena (Priporoceni obseg). Retainer nacin (?retainer=1) pokaze konfigurator namesto paketov. */}
               <div className="opts" style={{ marginBottom: '.4rem' }}>
                 <button type="button" className={'pill' + (!enaCena ? ' on' : '')} onClick={() => setEnaCena(false)}>
                   <span className="pill-fill" aria-hidden /><span className="pill-tekst">Trije paketi</span>
@@ -6447,6 +7473,61 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 Vključene korekture: <b>Osnovni 1 krog, Priporočeni 2, Premium 3</b>; nadaljnje po urni postavki{(() => { const u = urnePostavke.map(x => Math.round(Number(x.cena)) || 0).filter(n => n > 0); return u.length ? <> ({u[0].toLocaleString('sl-SI')} {vfx.znak}/uro)</> : null; })()}.
                 Tri opcije zato, ker stranka ne izbira med »da« in »ne«, ampak med »katero«.
               </p>
+              </>)}
+              {dolgorocno && ret && (
+                <div className="retainer">
+                  <div className="opts opts-3" style={{ marginBottom: '.55rem' }}>
+                    {([['ure', 'Po urah'], ['paket', 'Paket / mesec'], ['oboje', 'Oboje']] as const).map(([id, label]) => (
+                      <button key={id} type="button" className={'pill' + (retModel === id ? ' on' : '')} onClick={() => setRetModel(id)}>
+                        <span className="pill-fill" aria-hidden /><span className="pill-tekst">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {retModel !== 'paket' && (
+                    <div className="ret-vrsta">
+                      <span className="ret-oznaka">Ure / mesec</span>
+                      <div className="ret-izbire">
+                        {RETAINER_URE_MOZNOSTI.map(u => (
+                          <button key={u} type="button" className={'ret-chip' + (retUre === u ? ' on' : '')} onClick={() => setRetUre(u)}>{u} h</button>
+                        ))}
+                        <input className="ret-vnos" type="number" min={1} step={1} value={retUre} aria-label="Ure na mesec"
+                          onChange={e => setRetUre(Math.max(1, Math.round(Number(e.target.value) || 1)))} />
+                      </div>
+                    </div>
+                  )}
+                  {retModel !== 'ure' && (
+                    <p className="hint" style={{ margin: '.1rem 0 .6rem' }}>Paket = vrednost izbranih storitev na mesec: <b>{val(ret.paketBaza)}</b>. Za realen mesečni paket izberi manjše mesečne storitve (npr. objave, grafike).</p>
+                  )}
+                  <div className="ret-vrsta">
+                    <span className="ret-oznaka">Doba</span>
+                    <div className="ret-izbire">
+                      {RETAINER_DOBE.map(m => (
+                        <button key={m} type="button" className={'ret-chip' + (retDoba === m ? ' on' : '')} onClick={() => setRetDoba(m)}>
+                          {m} mes{RETAINER_POPUST[m] ? ` · −${Math.round(RETAINER_POPUST[m] * 100)} %` : ''}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="ret-povzetek">
+                    <div className="ret-glavna">
+                      <span>Mesečni znesek</span>
+                      <b>{val(ret.mesNeto)}{ddvZavezanec ? ` (z DDV ${Math.round(ret.mesNeto * vfx.fx * (1 + clamp(Number(ddvStopnja) || 22, 0, 30) / 100)).toLocaleString('sl-SI')} ${vfx.znak})` : ''} / mes</b>
+                    </div>
+                    <ul className="ret-detajli">
+                      {ret.ureBaza > 0 && <li>{ret.ure} ur/mesec po {val(ret.urna)}/uro</li>}
+                      {ret.paketBaza > 0 && <li>paket izbranih storitev: {val(ret.paketBaza)}/mesec</li>}
+                      {ret.popust > 0 && <li>zavezni popust ({ret.doba} mes): −{Math.round(ret.popust * 100)} % (redno {val(ret.mesBruto)}/mes)</li>}
+                      <li>dodatne ure nad blokom: {val(ret.overage)}/uro</li>
+                      <li>odpovedni rok: {ret.odpovedDni} dni</li>
+                    </ul>
+                    <div className="ret-skupaj">
+                      <span>Za dobo ({ret.doba} mes): <b>{val(ret.skupajDoba)}</b></span>
+                      <span>Letna vrednost: <b>{val(ret.letno)}</b></span>
+                    </div>
+                  </div>
+                  <p className="hint" style={{ marginTop: '.7rem' }}>Nadaljuj do »Tvoja ponudba« za retainer ponudbo, nato na »Zaključku« ustvari pogodbo.</p>
+                </div>
+              )}
               <p className="hint">
                 Tvoj izračun anonimno (brez imena, maila ali česarkoli osebnega) prispeva
                 cenovno točko v skupno statistiko cen za kreativce. Hvala, da gradiš pregled trga.
@@ -6462,13 +7543,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               <div className="priprava-telo">
               {/* NAČIN + TON + AI */}
               <div className="pon-vrh">
-                <div className="segpills" role="group" aria-label="Obseg ponudbe">
-                  {([['kratka', 'Kratka ponudba'], ['razsirjena', 'Razširjena ponudba']] as const).map(([id, ime]) => (
+                <div className="segpills segpills-pogled" role="group" aria-label="Pogled">
+                  <button type="button" className={!predogledMode ? 'on' : ''} onClick={() => setPredogledMode(false)} title="Uredi">
+                    <PencilSimple size={15} weight="bold" /> Uredi
+                  </button>
+                  <button type="button" className={predogledMode ? 'on' : ''} onClick={odpriPredogled} title="Predogled">
+                    <Eye size={16} /> Predogled
+                  </button>
+                </div>
+                <div className="segpills segpills-sek" role="group" aria-label="Obseg ponudbe">
+                  {([['kratka', 'Kratka'], ['razsirjena', 'Razširjena']] as const).map(([id, ime]) => (
                     <button key={id} type="button" className={obsegPonudbe === id ? 'on' : ''}
                       onClick={() => { setObsegPonudbe(id); setRocnoBesedilo(false); }}>{ime}</button>
                   ))}
                 </div>
-                <div className="segpills" role="group" aria-label="Ton ponudbe">
+                <div className="segpills segpills-sek" role="group" aria-label="Ton ponudbe">
                   {TONI.map(t => (
                     <button key={t.id} type="button" className={tonPonudbe === t.id ? 'on' : ''}
                       onClick={() => { setTonPonudbe(t.id); setRocnoBesedilo(false); }}>{t.ime}</button>
@@ -6491,6 +7580,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <span>Prikaži oceno ur v ponudbi <em>(privzeto skrito — cena je po vrednosti; vklopi le, če stranka želi razčlenitev ur)</em></span>
                 </label>
               )}
+              {predogledMode ? (
+              <div className="predogled-okvir">
+                {predogledStrani.length ? (
+                  <div className="predogled-strani">
+                    {predogledStrani.map((u, i) => (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img key={i} className="predogled-stran" src={u} alt={`Stran ${i + 1}`} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="predogled-nalaga">{predogledNalaganje ? 'Pripravljam predogled …' : 'Predogled ni na voljo'}</div>
+                )}
+                {predogledNalaganje && predogledStrani.length > 0 && <div className="predogled-osvezi" role="status">Osvežujem …</div>}
+              </div>
+              ) : (
+              <>
               {/* FORMATIRANJE — okrogli gumbi */}
               <div className="orodjarna" aria-label="Oblikovanje ponudbe">
                 {oznaciNamig && <div className="oznaci-namig" role="status">Najprej označi besedilo</div>}
@@ -6530,9 +7635,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
                 <input ref={barvaRef} type="color" hidden onChange={e => uporabiBarvo(e.target.value)} />
                 <span className="tool-locnica" aria-hidden />
-                <button type="button" className="tool" onClick={() => fileRef.current?.click()} title="Uvozi predlogo / podlogo (HTML ali TXT)">
-                  <UploadSimple size={17} /> Uvozi podlogo
+                <span className="podloga-oznaka">Podloga:</span>
+                <button type="button" className={'podloga-krog' + (predlogaPinart ? ' on' : '')} onClick={() => { const nov = !predlogaPinart; setPredlogaPinart(nov); if (nov) setPodlogaCover(''); }} title="Pinart predloga (oblikuje ponudbo po Pinart dizajnu)" aria-label="Pinart predloga">
+                  {predlogaPinart && <Check size={12} weight="bold" />}
                 </button>
+                <button type="button" className={'podloga-krog podloga-nalozi' + (podlogaCover ? ' on' : '')} onClick={() => podlogaRef.current?.click()} title="Naloži svojo podlogo (slika naslovnice)" aria-label="Naloži podlogo"
+                  style={podlogaCover ? { backgroundImage: `url(${podlogaCover})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
+                  {!podlogaCover && <UploadSimple size={14} weight="bold" />}
+                </button>
+                <input ref={podlogaRef} type="file" accept="image/*" hidden onChange={e => { naloziPodlogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
+                <span className="tool-locnica" aria-hidden />
+                <button type="button" className={'logo-kvadrat' + (logo ? ' ima' : '')} onClick={() => logoRef.current?.click()}
+                  title={logo ? 'Zamenjaj logo' : 'Dodaj logo'} aria-label={logo ? 'Zamenjaj logo' : 'Dodaj logo'}
+                  style={logo ? { backgroundImage: `url(${logo})` } : undefined}>
+                  {!logo && <><ImageSquare size={15} weight="bold" /><span>Logo</span></>}
+                </button>
+                {logo && (
+                  <button type="button" className="logo-odstrani" onClick={() => setLogo('')} title="Odstrani logo" aria-label="Odstrani logo">✕</button>
+                )}
+                <input ref={logoRef} type="file" accept="image/*" hidden onChange={e => { naloziLogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
                 <input
                   ref={fileRef}
                   type="file"
@@ -6545,7 +7666,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 />
               </div>
               <div
-                ref={editorRef}
+                ref={napolniEditor}
                 className="editor"
                 contentEditable
                 suppressContentEditableWarning
@@ -6560,33 +7681,88 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </button>
                 </p>
               )}
+              </>
+              )}
               </div>
             </div>
           )}
 
           {korak === zakljucekStep && (
+            <>
             <div className="btnvrsta">
-              <button type="button" className="gumb" onClick={kopiraj}>
+              <button type="button" className="gumb" onClick={() => { kopiraj(); proslaviKonfeti(); }}>
                 <CopySimple size={17} /> {kopirano ? 'Skopirano ✓' : 'Kopiraj ponudbo'}
               </button>
               <button type="button" className="gumb" disabled={!narocnikEmail.trim()}
                 title={narocnikEmail.trim() ? undefined : 'Vpiši email naročnika na koraku Kdo je stranka'}
-                onClick={posljiMailto}>
+                onClick={() => { posljiMailto(); proslaviKonfeti(); }}>
                 <EnvelopeSimple size={17} /> Pošlji ponudbo
               </button>
-              <button type="button" className="povezava" onClick={prenesiPdf} title="A4 s podlogo — glava in noga iz tvojih podatkov; v oknu za tisk izberi »Shrani kot PDF«">
-                <FilePdf size={17} /> Prenesi PDF
+              <button type="button" className="povezava" disabled={pdfNalaganje} onClick={() => { prenesiPdf(); proslaviKonfeti(); }} title="Prenese ponudbo kot PDF datoteko">
+                <FilePdf size={17} /> {pdfNalaganje ? 'Pripravljam PDF…' : 'Prenesi PDF'}
               </button>
-              <button type="button" className="povezava" onClick={prenesi}>
+              <button type="button" className="povezava" onClick={() => { prenesi(); proslaviKonfeti(); }}>
                 <DownloadSimple size={17} /> Prenesi besedilo
               </button>
-              <button type="button" className="povezava" onClick={prenesiCsv}>
+              <button type="button" className="povezava" onClick={() => { prenesiCsv(); proslaviKonfeti(); }}>
                 <FileText size={17} /> Izvozi postavke (CSV za račune)
               </button>
-              <button type="button" className="povezava" onClick={shraniVArhiv}>
+              <button type="button" className="povezava" onClick={() => { shraniVArhiv(); proslaviKonfeti(); }}>
                 <FloppyDisk size={17} /> Shrani ponudbo v arhiv
               </button>
+              {dolgorocno && ret && (
+                <button type="button" className="povezava" disabled={pdfNalaganje} title="Prenese pogodbo o dolgoročnem sodelovanju kot PDF"
+                  onClick={() => { prenesiPogodbaPdf(); }}>
+                  <FileText size={17} /> Ustvari pogodbo (PDF)
+                </button>
+              )}
             </div>
+            <div className="rac-panel">
+              {!racunOdprt ? (
+                <button type="button" className="povezava rac-toggle" onClick={odpriRacun}>
+                  <Receipt size={17} /> Pretvori v račun
+                </button>
+              ) : (
+                <div className="rac-box">
+                  <div className="rac-box-glava">
+                    <Receipt size={20} /><b>Račun</b>
+                    <button type="button" className="rac-zapri" onClick={() => setRacunOdprt(false)} aria-label="Zapri račun">✕</button>
+                  </div>
+                  <div className="rac-polja">
+                    <label className="rac-polje"><span>Št. računa</span>
+                      <input type="text" value={racunStevilka} onChange={e => setRacunStevilka(e.target.value)} /></label>
+                    <label className="rac-polje"><span>Datum izdaje</span>
+                      <input type="date" value={racunDatumISO} onChange={e => setRacunDatumISO(e.target.value)} /></label>
+                    <label className="rac-polje"><span>Rok plačila (dni)</span>
+                      <input type="number" min={0} max={180} step={1} value={racunRokDni} onChange={e => setRacunRokDni(e.target.value)} /></label>
+                  </div>
+                  {!enaCena && (
+                    <div className="rac-paketi">
+                      <span className="rac-polje-l">Sprejeti paket</span>
+                      <div className="segpills">
+                        {(r?.paketi || []).map(p => (
+                          <button key={p.id} type="button" className={'segpill' + (racunPaketId === p.id ? ' on' : '')} onClick={() => setRacunPaketId(p.id)}>{p.ime} · {val(p.skupaj)}</button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <label className="rac-placano-chk">
+                    <input type="checkbox" checked={racunPlacano} onChange={e => setRacunPlacano(e.target.checked)} /> Označi kot plačano
+                  </label>
+                  <div className="rac-gumbi">
+                    <button type="button" className="povezava rac-poslji" disabled={!narocnikEmail.trim()}
+                      title={narocnikEmail.trim() ? 'Odpre e-pošto s povzetkom računa' : 'Vpiši email naročnika na koraku Kdo je stranka'}
+                      onClick={() => posljiRacunMailto()}>
+                      <PaperPlaneTilt size={17} /> Pošlji račun
+                    </button>
+                    <button type="button" className="gumb rac-prenesi" disabled={pdfNalaganje} onClick={() => { prenesiRacunPdf(); proslaviKonfeti(); }} title="Prenese račun kot PDF datoteko">
+                      <FilePdf size={17} /> {pdfNalaganje ? 'Pripravljam PDF…' : 'Prenesi račun (PDF)'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            </>
           )}
         </div>
       </div>

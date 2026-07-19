@@ -24,6 +24,11 @@ export default async function KalkulatorAdminPage() {
       minHeight: '100dvh', background: '#F5F2EA', padding: '3rem clamp(1rem,4vw,3rem) 6rem',
       fontFamily: 'system-ui, sans-serif', color: '#111',
     }}>
+      <a href="../pregled" style={{
+        display: 'inline-flex', alignItems: 'center', gap: '.4rem', marginBottom: '1.4rem',
+        fontSize: '.82rem', fontWeight: 600, color: '#111', textDecoration: 'none',
+        background: '#fff', border: '1px solid rgba(17,17,17,.12)', borderRadius: 999, padding: '.5rem 1rem',
+      }}>← Pinart Flow</a>
       <h1 style={{ fontSize: '1.6rem', marginBottom: '.3rem' }}>Kalkulator — pregled cen</h1>
       <p style={{ opacity: .65, marginBottom: '2rem', fontSize: '.9rem' }}>
         {skupno} zapisov skupaj{zadnji ? ` · zadnji ${new Date(zadnji).toLocaleString('sl-SI')}` : ''}

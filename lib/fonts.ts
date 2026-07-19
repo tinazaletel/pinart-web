@@ -1,8 +1,7 @@
 import { Bodoni_Moda, Archivo, Archivo_Narrow, Caveat } from 'next/font/google';
 
-/**
- * Bodoni Moda — variable Didone for elegant editorial display.
- */
+/* Bodoni Moda — IZBRANA pisava naslovov (--font-serif). Ker je tanka, je
+   rahlo odebeljena prek -webkit-text-stroke v globals.css. */
 export const bodoni = Bodoni_Moda({
   subsets: ['latin', 'latin-ext'],
   variable: '--font-serif',

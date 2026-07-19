@@ -6,7 +6,7 @@
   --paper: #F5F2EA;
   --paper-deep: #ECE6D5;
   --ink: #111111;
-  --accent: #b25476;
+  --accent: oklch(66% 0.2 297);
 }
 
 * {
@@ -14,7 +14,7 @@
 }
 
 h1, h2, h3, h4 {
-  -webkit-text-stroke: 0.3px currentColor;
+  -webkit-text-stroke: 0.45px currentColor;
 }
 
 .pinart-case .case-lede,

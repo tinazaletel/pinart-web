@@ -101,7 +101,7 @@ export default function Nav() {
   /* Celozaslonsko orodje kalkulatorja ima svojo slim glavo (← Predstavitev);
      marketinski meni tam samo trka z vprasalnimi karticami — skrijemo ga.
      Landing (/kalkulator) obdrzi polni meni. */
-  if (pathname?.includes('/kalkulator/orodje')) return null;
+  if (pathname?.includes('/kalkulator/orodje') || pathname?.includes('/kalkulator/prijava') || pathname?.includes('/kalkulator/pregled') || pathname?.includes('/kalkulator/pogodbe') || pathname?.includes('/kalkulator/racuni') || pathname?.includes('/kalkulator/stroski') || pathname?.includes('/kalkulator/stranke') || pathname?.includes('/kalkulator/projekti') || pathname?.includes('/kalkulator/racunovodstvo') || pathname?.includes('/kalkulator/dolgorocno') || pathname?.includes('/kalkulator/cilji') || pathname?.includes('/kalkulator/poslovni-nacrt') || pathname?.includes('/kalkulator/profil') || pathname?.includes('/kalkulator/ceniki') || pathname?.includes('/kalkulator/admin') || pathname?.includes('/flow')) return null;
 
   return (
     <>

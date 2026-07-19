@@ -26,9 +26,15 @@ export default function AdminLogin() {
 
   return (
     <main style={{
+      position: 'relative',
       minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: '#F5F2EA', fontFamily: 'system-ui, sans-serif', padding: '1.5rem',
     }}>
+      <a href="../pregled" style={{
+        position: 'absolute', top: '1.5rem', left: '1.5rem', display: 'inline-flex', alignItems: 'center', gap: '.4rem',
+        fontSize: '.82rem', fontWeight: 600, color: '#111', textDecoration: 'none',
+        background: '#fff', border: '1px solid rgba(17,17,17,.12)', borderRadius: 999, padding: '.5rem 1rem',
+      }}>← Pinart Flow</a>
       <form onSubmit={prijava} style={{
         background: '#fff', padding: '2.5rem', borderRadius: 16,
         boxShadow: '0 4px 18px rgba(17,17,17,.08)', width: 320, maxWidth: '100%',

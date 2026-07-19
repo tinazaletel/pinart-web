@@ -48,6 +48,7 @@ const ZGODBE = [
 
 export default function KalkulatorLanding({ locale = 'sl' }: { locale?: string }) {
   const orodje = localePath(locale, `/kalkulator/orodje`);
+  const flow = localePath(locale, `/flow`);
 
   return (
     <div className="kland">
@@ -78,6 +79,12 @@ export default function KalkulatorLanding({ locale = 'sl' }: { locale?: string }
         .kland .korak p { font-size: .88rem; line-height: 1.6; color: rgba(17,17,17,.72); margin: 0; }
 
         .kland .ctamid { margin: 5rem 0 0; }
+
+        .kland .flow-namig { margin: 5.5rem 0 0; border-radius: 22px; padding: clamp(1.8rem, 4vw, 2.6rem); background: linear-gradient(135deg, oklch(96% .03 297), oklch(95% .03 165)); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 16px 44px rgba(40,25,60,.08); }
+        .kland .flow-namig .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: .7rem; }
+        .kland .flow-namig p { font-size: clamp(1.05rem, 2.4vw, 1.3rem); font-family: var(--font-serif), serif; line-height: 1.4; margin: 0; max-width: 40ch; }
+        .kland .flow-namig p strong { font-weight: 600; }
+        .kland .flow-namig a { display: inline-block; margin-top: 1.1rem; font-family: var(--font-sans), system-ui, sans-serif; font-size: .8rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: .2rem; }
 
         .kland .clanki { margin: 6.5rem 0 0; border-top: 1px solid rgba(17,17,17,.18); padding-top: 2.6rem; }
         .kland .clanki .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
@@ -142,6 +149,12 @@ export default function KalkulatorLanding({ locale = 'sl' }: { locale?: string }
 
       <div className="ctamid">
         <a className="cta" href={orodje}>Odpri kalkulator →</a>
+      </div>
+
+      <div className="flow-namig">
+        <div className="k">Del Pinart Flow</div>
+        <p>Kalkulator je brezplačen vstop v <strong>Pinart Flow</strong> — okolje, kjer ponudbe, pogodbe, računi in stranke ostanejo skupaj.</p>
+        <a href={flow}>Spoznaj Flow →</a>
       </div>
 
       <div className="clanki">

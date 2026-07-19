@@ -171,6 +171,10 @@ export default function FloatingUI() {
 
   const ink   = isDark ? '#ffffff' : 'var(--ink)';
 
+  /* Flow landing (pinartflow.com) je locen produkt — pinart.si "Let's talk"
+     chrome se tam ne prikaze; Flow ima svoje CTA-je in kontakt. */
+  if (pathname.includes('/flow')) return null;
+
   return (
     <>
       {/* scroll arrow removed — replaced by Lottie cue in Hero.tsx */}

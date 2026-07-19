@@ -1,6 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { localePath } from '@/i18n/routing';
 
@@ -13,10 +14,26 @@ export default function CookieBanner() {
   const t = useTranslations('cookies');
   const locale = useLocale();
 
+  /* Inline skripta v <head> nastavi data-cookie-consent PRED izrisom (brez utripa),
+     A React hidracija ta atribut z <html> ODSTRANI (kljub suppressHydrationWarning),
+     zato se je banner vracal ob vsakem nalaganju, ceprav je privolitev shranjena.
+     Po hidraciji ga tukaj znova nastavimo -> CSS pravilo banner trajno skrije. */
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('pinart_cookie_consent')) {
+        document.documentElement.setAttribute('data-cookie-consent', 'accepted');
+      }
+    } catch { /* ignore */ }
+  }, []);
+
   const respond = (answer: 'accepted' | 'declined') => {
-    localStorage.setItem('pinart_cookie_consent', answer);
+    /* NAJPREJ skrij banner (atribut sprozi CSS pravilo) — da klik deluje tudi, ce
+       localStorage vrze napako (sicer bi se ustavil pred skrivanjem = "sprejmi ne deluje") */
     document.documentElement.setAttribute('data-cookie-consent', answer);
-    window.dispatchEvent(new CustomEvent('pinart-cookie-consent', { detail: answer }));
+    const b = document.getElementById('cookie-banner');
+    if (b) b.style.display = 'none';
+    try { localStorage.setItem('pinart_cookie_consent', answer); } catch { /* ignore */ }
+    try { window.dispatchEvent(new CustomEvent('pinart-cookie-consent', { detail: answer })); } catch { /* ignore */ }
   };
 
   return (
@@ -69,7 +86,7 @@ export default function CookieBanner() {
           onClick={() => respond('accepted')}
           style={{
             fontFamily: 'var(--font-sans)',
-            fontSize: '0.78rem',
+            fontSize: '14px',
             fontWeight: 600,
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
@@ -77,6 +94,7 @@ export default function CookieBanner() {
             color: '#111111',
             border: 'none',
             borderRadius: '999px',
+            minHeight: '44px',
             padding: '0.6rem 1.5rem',
             cursor: 'pointer',
             transition: 'opacity 0.2s',
@@ -90,7 +108,7 @@ export default function CookieBanner() {
           onClick={() => respond('declined')}
           style={{
             fontFamily: 'var(--font-sans)',
-            fontSize: '0.78rem',
+            fontSize: '14px',
             fontWeight: 500,
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
@@ -98,6 +116,7 @@ export default function CookieBanner() {
             color: 'rgba(245,242,234,0.6)',
             border: '1px solid rgba(245,242,234,0.25)',
             borderRadius: '999px',
+            minHeight: '44px',
             padding: '0.6rem 1.5rem',
             cursor: 'pointer',
             transition: 'opacity 0.2s',
