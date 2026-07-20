@@ -100,7 +100,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
-        .fl-herobg { position: absolute; inset: 0 0 auto 0; height: 94svh; z-index: 0; overflow: hidden; pointer-events: none; }
+        .fl-herobg { position: absolute; inset: 0 0 auto 0; height: calc(94svh + 80px); z-index: 0; overflow: hidden; pointer-events: none; }
 
         /* Ilustrirana pupa desno od besedila, čez celo višino. object-fit: contain →
            cel prizor je viden (glava, laptop, roke), NIKOLI odrezan. mix-blend
@@ -108,7 +108,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
            prehod na VSEH robovih (mask zbledi pred robom) — nič grdih rezov. */
         .fl-video { position: absolute; top: 72px; bottom: 0; right: 0; width: 53%; background: var(--paper);
           -webkit-mask-image: radial-gradient(115% 94% at 60% 47%, #000 46%, transparent 90%); mask-image: radial-gradient(115% 94% at 60% 47%, #000 46%, transparent 90%); }
-        .fl-video video { width: 100%; height: 100%; object-fit: contain; object-position: center;
+        .fl-video video { width: 100%; height: 100%; object-fit: contain; object-position: center bottom;
           mix-blend-mode: multiply; opacity: 1; filter: contrast(1.25) saturate(1.05); }
         /* Rahel prehod spodaj v papir */
         .fl-video::after { content: ''; position: absolute; inset: 0; background:

@@ -142,7 +142,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* Hero — sekcija naravne višine (vsebina + spodobna spodnja praznina za
            mehurčke). isolation: izolira ozadje, da ne pokvari izrisa sekcij pod njim.
            Ozadje (.fl-herobg) je height:100% → se ujema s hero sekcijo in NE štrli. */
-        .fl-hero { position: relative; min-height: 94svh; isolation: isolate; }
+        .fl-hero { position: relative; min-height: calc(94svh + 80px); isolation: isolate; }
         .fl .kicker { font-size: .72rem; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl .kicker b { color: var(--accent); font-weight: 700; }
         .fl h1 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(2.7rem, 8.5vw, 5.2rem); line-height: .97; letter-spacing: -.015em; margin: .7rem 0 1.3rem; max-width: 15ch; }
@@ -160,7 +160,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl .cta-note { font-size: .8rem; color: rgba(17,17,17,.6); }
 
         /* Poteka: od ponudbe do racuna */
-        .fl-potek { margin: -11.6875rem 0 0; position: relative; z-index: 2; }
+        .fl-potek { margin: calc(-11.6875rem - 80px) 0 0; position: relative; z-index: 2; }
         .fl-potek .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-potek h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 2.2rem; max-width: 20ch; }
         .fl-koraki { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6rem; }
