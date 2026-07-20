@@ -6,6 +6,7 @@ import {
 } from '@phosphor-icons/react';
 import { localePath } from '@/i18n/routing';
 import FlowHeroBg from '@/components/FlowHeroBg';
+import RotatingLaptop from '@/components/RotatingLaptop';
 
 /* Predstavitev celotnega paketa Pinart Flow (pinartflow.com). Prodaja
    celoto — od ponudbe do racuna na enem mestu — in vodi v prijavo (Flow)
@@ -83,10 +84,16 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-korak h3 { font-size: 1.02rem; font-weight: 650; margin: .5rem 0 .4rem; }
         .fl-korak p { font-size: .9rem; line-height: 1.6; color: rgba(17,17,17,.74); margin: 0; }
 
-        /* Vmesna izjava (editorial prehod) */
-        .fl-izjava { margin: 5.5rem 0 0; padding: clamp(2.4rem, 5vw, 4.5rem) 0; text-align: center; }
-        .fl-izjava p { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 4.6vw, 3.4rem); line-height: 1.12; letter-spacing: -.012em; margin: 0 auto; max-width: 20ch; color: var(--ink); }
-        .fl-izjava em { font-style: italic; color: var(--accent); }
+        /* Vmesna sekcija z vrtečim laptopom */
+        .fl-laptop { margin: 6rem 0 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+        @media (max-width: 860px) { .fl-laptop { grid-template-columns: 1fr; gap: 1.5rem; } }
+        .fl-laptop-txt .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
+        .fl-laptop-txt h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 4.4vw, 3rem); line-height: 1.08; letter-spacing: -.01em; margin: .6rem 0 1rem; max-width: 18ch; }
+        .fl-laptop-txt h2 em { font-style: italic; color: var(--accent); }
+        .fl-laptop-txt p { font-size: 1.02rem; line-height: 1.6; color: rgba(17,17,17,.76); max-width: 42ch; margin: 0; }
+        .fl-laptop-vizual { display: flex; justify-content: center; }
+        .fl-rl { width: 100%; max-width: 560px; aspect-ratio: 4 / 3; }
+        @media (max-width: 860px) { .fl-rl { max-width: 440px; } }
 
         /* Orodja mreza */
         .fl-orodja { margin: 6rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 2.6rem; }
@@ -104,7 +111,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-znacka { font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: oklch(45% .13 155); background: oklch(92% .08 160); border-radius: 999px; padding: .2rem .5rem; }
 
         /* Brezplacni kalkulator pas */
-        .fl-brez { margin: 6rem 0 0; position: relative; overflow: hidden; border-radius: 26px; padding: clamp(2.2rem, 5vw, 3.4rem); background: linear-gradient(135deg, oklch(96% .03 297), oklch(95% .035 320), oklch(95% .03 165)); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 20px 60px rgba(40,25,60,.1); }
+        .fl-brez { margin: 6rem 0 0; position: relative; overflow: hidden; border-radius: 26px; padding: clamp(2.2rem, 5vw, 3.4rem); background: linear-gradient(135deg, oklch(96% .03 297), oklch(95% .035 320), oklch(95% .03 165)); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 20px 60px rgba(40,25,60,.1); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.6rem, 4vw, 3rem); align-items: center; }
+        @media (max-width: 820px) { .fl-brez { grid-template-columns: 1fr; } .fl-brez-vizual { display: none; } }
+        .fl-browser { border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid rgba(17,17,17,.1); box-shadow: 0 24px 60px rgba(40,25,60,.18); }
+        .fl-browser-bar { display: flex; align-items: center; gap: .4rem; padding: .5rem .75rem; background: oklch(96% .008 87); border-bottom: 1px solid rgba(17,17,17,.07); }
+        .fl-browser-bar i { width: .55rem; height: .55rem; border-radius: 50%; background: rgba(17,17,17,.18); }
+        .fl-browser-bar small { margin-left: .5rem; font-size: .62rem; letter-spacing: .04em; color: rgba(17,17,17,.5); }
+        .fl-browser-screen { display: block; position: relative; aspect-ratio: 4 / 3; overflow: hidden; }
+        .fl-browser-screen iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; background: var(--paper); }
         .fl-brez .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
         .fl-brez h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.8rem, 4.5vw, 2.6rem); line-height: 1.08; margin: .5rem 0 .7rem; max-width: 22ch; }
         .fl-brez p { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.8); max-width: 48ch; margin: 0 0 1.8rem; }
@@ -117,8 +131,23 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-konec .zakljucki span { display: inline-flex; align-items: center; gap: .4rem; }
         .fl-konec .zakljucki svg { color: oklch(52% .13 155); }
 
-        .fl-podpis { margin-top: 4rem; text-align: center; font-size: .84rem; color: rgba(17,17,17,.62); line-height: 1.7; }
-        .fl-podpis a { color: var(--ink); }
+        .fl-footer { margin: 6.5rem 0 0; border-top: 1px solid rgba(17,17,17,.14); padding-top: 3rem; }
+        .fl-footer-top { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.6fr); gap: clamp(2rem, 5vw, 4rem); }
+        @media (max-width: 720px) { .fl-footer-top { grid-template-columns: 1fr; gap: 2rem; } }
+        .fl-footer-logo { display: inline-flex; align-items: baseline; gap: .45rem; }
+        .fl-footer-logo i { width: .8rem; height: .8rem; align-self: center; border-radius: 50%; background: linear-gradient(140deg, oklch(72% .17 297), oklch(80% .13 165)); }
+        .fl-footer-logo strong { font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.25rem; }
+        .fl-footer-logo span { font-size: .7rem; font-weight: 700; letter-spacing: .2em; color: rgba(17,17,17,.6); }
+        .fl-footer-brand p { margin: .9rem 0 0; font-size: .9rem; line-height: 1.6; color: rgba(17,17,17,.66); max-width: 36ch; }
+        .fl-footer-brand a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--accent); }
+        .fl-footer-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        @media (max-width: 480px) { .fl-footer-cols { grid-template-columns: 1fr 1fr; } }
+        .fl-footer-cols > div { display: grid; gap: .55rem; align-content: start; }
+        .fl-footer-cols strong { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.5); margin-bottom: .2rem; }
+        .fl-footer-cols a { font-size: .9rem; color: rgba(17,17,17,.75); text-decoration: none; transition: color .15s; }
+        .fl-footer-cols a:hover { color: var(--ink); }
+        .fl-footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-top: 2.6rem; padding: 1.4rem 0 0; border-top: 1px solid rgba(17,17,17,.08); font-size: .8rem; color: rgba(17,17,17,.55); }
+        .fl-footer-bottom a { color: rgba(17,17,17,.7); text-decoration: none; }
       `}</style>
 
       <div className="fl-ozadje" aria-hidden>
@@ -159,8 +188,19 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
         </section>
 
-        <section className="fl-izjava">
-          <p>Ti ustvarjaš vrednost. <em>Flow poskrbi za vse ostalo.</em></p>
+        <section className="fl-laptop">
+          <div className="fl-laptop-txt">
+            <div className="k">Tvoja mirna pisarna</div>
+            <h2>Ti ustvarjaš vrednost. <em>Flow poskrbi za vse ostalo.</em></h2>
+            <p>
+              Namesto Excela, map in razmetanih dokumentov imaš eno mirno delovno okolje.
+              Ponudbe, pogodbe, računi in stranke ostanejo skupaj, urejeni in tvoji, ti pa
+              se lahko posvetiš temu, kar znaš najbolje.
+            </p>
+          </div>
+          <div className="fl-laptop-vizual" aria-hidden>
+            <RotatingLaptop className="fl-rl" />
+          </div>
         </section>
 
         <section className="fl-orodja" id="orodja">
@@ -185,15 +225,25 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         </section>
 
         <section className="fl-brez" id="cenik">
-          <div className="k">Začni brez tveganja</div>
-          <h2>Brezplačni kalkulator je tvoj vstop.</h2>
-          <p>
-            Izračunaj pošteno ceno naslednjega projekta že danes, brez prijave. Ko boš
-            želela ponudbe, pogodbe in račune držati skupaj, te Flow počaka na istem mestu.
-          </p>
-          <div className="cta-vrsta">
-            <a className="cta" href={kalkulator}>Odpri kalkulator <ArrowRight size={17} weight="bold" /></a>
-            <a className="cta duh" href={kalkulatorLanding}>Zakaj cena ni ura →</a>
+          <div className="fl-brez-txt">
+            <div className="k">Začni brez tveganja</div>
+            <h2>Brezplačni kalkulator je tvoj vstop.</h2>
+            <p>
+              Izračunaj pošteno ceno naslednjega projekta že danes, brez prijave. Ko boš
+              želela ponudbe, pogodbe in račune držati skupaj, te Flow počaka na istem mestu.
+            </p>
+            <div className="cta-vrsta">
+              <a className="cta" href={kalkulator}>Odpri kalkulator <ArrowRight size={17} weight="bold" /></a>
+              <a className="cta duh" href={kalkulatorLanding}>Zakaj cena ni ura →</a>
+            </div>
+          </div>
+          <div className="fl-brez-vizual" aria-hidden>
+            <div className="fl-browser">
+              <span className="fl-browser-bar"><i /><i /><i /><small>pinart kalkulator</small></span>
+              <span className="fl-browser-screen">
+                <iframe src={kalkulator} loading="lazy" title="Predogled kalkulatorja" tabIndex={-1} scrolling="no" />
+              </span>
+            </div>
           </div>
         </section>
 
@@ -209,11 +259,37 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
         </section>
 
-        <p className="fl-podpis" id="onas">
-          Pinart Flow pripravlja Tina, kreativna direktorica studia{' '}
-          <a href={localePath(locale, '')}>Pinart</a>.{' '}
-          Za vprašanja: <a href="mailto:tina@pinart.si">tina@pinart.si</a>.
-        </p>
+        <footer className="fl-footer" id="onas">
+          <div className="fl-footer-top">
+            <div className="fl-footer-brand">
+              <span className="fl-footer-logo"><i /><strong>Pinart</strong><span>FLOW</span></span>
+              <p>Vse tvoje poslovanje, na enem mestu. Orodje pripravlja Tina, kreativna direktorica studia <a href={localePath(locale, '')}>Pinart</a>.</p>
+            </div>
+            <nav className="fl-footer-cols">
+              <div>
+                <strong>Produkt</strong>
+                <a href="#orodja">Pinart Flow</a>
+                <a href={kalkulatorLanding}>Kalkulator</a>
+                <a href="#cenik">Cenik</a>
+              </div>
+              <div>
+                <strong>Podjetje</strong>
+                <a href="#onas">O nas</a>
+                <a href="mailto:tina@pinart.si">Kontakt</a>
+                <a href={localePath(locale, '')}>Studio Pinart</a>
+              </div>
+              <div>
+                <strong>Račun</strong>
+                <a href={prijava}>Prijava</a>
+                <a href={prijava}>Ustvari račun</a>
+              </div>
+            </nav>
+          </div>
+          <div className="fl-footer-bottom">
+            <span>© 2026 Pinart · Vse pravice pridržane</span>
+            <a href="mailto:tina@pinart.si">tina@pinart.si</a>
+          </div>
+        </footer>
       </div>
     </div>
   );
