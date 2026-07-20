@@ -7,7 +7,19 @@ const intlMiddleware = createMiddleware(routing);
 
 export default async function middleware(request: NextRequest) {
   const response = intlMiddleware(request);
-  const { response: sessionResponse, user } = await updateSession(request, response);
+
+  /* Supabase seja tece na vsaki zahtevi. Ce Supabase pade ali env manjka, NE
+     zrusimo strani — pinart.si in vse ne-Flow strani morajo delovati normalno. */
+  let sessionResponse = response;
+  let user: Awaited<ReturnType<typeof updateSession>>['user'] = null;
+  try {
+    const r = await updateSession(request, response);
+    sessionResponse = r.response;
+    user = r.user;
+  } catch {
+    return response;
+  }
+
   const protectedFlowRoute = /^\/(?:sl\/|en\/)?kalkulator\/(pregled|projekti|pogodbe|racuni|stroski|stranke|cilji|ceniki|dolgorocno|racunovodstvo)(?:\/|$)/.test(request.nextUrl.pathname);
 
   if (protectedFlowRoute && !user) {
