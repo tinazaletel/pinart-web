@@ -540,7 +540,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* Pupa se sprehodi po spodnjem robu — pride z leve, gre cez ekran, izgine desno,
            in se cez ~pol minute spet sprehodi. Odlozi /public/flow/pupa-hoja.webm (ali .mp4). */
         .fl-pupa-pas { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: 100vw; height: 9rem; overflow: hidden; pointer-events: none; }
-        .fl-pupa { position: absolute; left: 0; bottom: 0; height: 100%; width: auto; mix-blend-mode: multiply; will-change: transform; animation: pupaHoja 34s linear infinite; }
+        .fl-pupa { position: absolute; left: 0; bottom: 0; height: 100%; width: auto; will-change: transform; animation: pupaHoja 34s linear infinite; }
         @keyframes pupaHoja { 0% { transform: translateX(-16vw); } 22% { transform: translateX(116vw); } 100% { transform: translateX(116vw); } }
         @media (prefers-reduced-motion: reduce) { .fl-pupa { display: none; } }
 
