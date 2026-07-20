@@ -9,6 +9,7 @@ import { PersonSimple, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp
 import { saveRetainerDraft } from '@/lib/pinartFlowCloud';
 import { OrbSfera, ORB_BARVE, ikonaZa, ORB0_CSS } from './Orb0';
 import VidezDokumentov from './VidezDokumentov';
+import AmbientBubbles from '@/components/AmbientBubbles';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
 
 const K_NAST = 'pinart-kalkulator-v2';
@@ -393,6 +394,7 @@ export default function RetainerWorkspace({ base }: { base: string }) {
       <div className="rw-ozadje" aria-hidden>
         <span className="rw-blob rw-blob-roza" />
         <span className="rw-blob rw-blob-modra" />
+        <AmbientBubbles />
       </div>
 
       <div className="rw-vsebina">

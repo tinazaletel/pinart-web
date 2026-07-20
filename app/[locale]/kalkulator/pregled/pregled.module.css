@@ -8,6 +8,7 @@
   min-height: 100dvh;
   display: grid;
   grid-template-columns: 17.5rem minmax(0, 1fr);
+  isolation: isolate;              /* stacking kontekst → ambientni mehurcki (z-index:-1) so nad ozadjem, pod vsebino */
   background-color: var(--paper);
   /* POSKUS ozadja: 2 mehka topla orb preliva ZA mrežo (kot naslovnica) — za primerjavo smeri */
   background-image:

@@ -8,6 +8,7 @@ import { loadFlowData, saveFlowCollection, type FlowInvoice } from '@/lib/pinart
 import { saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
 import VidezDokumentov from '@/components/VidezDokumentov';
+import AmbientBubbles from '@/components/AmbientBubbles';
 
 import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package, Gift,
@@ -4355,6 +4356,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     <>
       <span className="glava-levo">
         <a className="glava-brand" href={odFlow ? localePath(locale, `/flow`) : localePath(locale, ``)} aria-label={odFlow ? 'Pinart Flow' : 'Pinart — domov'}>
+          <span className="glava-dot" aria-hidden />
           <span className="glava-pinart">Pinart</span>
           <span className="glava-ime">Kalkulator</span>
           <span className="beta">BETA</span>
@@ -4605,8 +4607,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       <div className="cw-ozadje" aria-hidden>
         <span className="blob blob-roza" />
         <span className="blob blob-modra" />
+        <AmbientBubbles />
       </div>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .cw { position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 300; overflow-x: clip; }
         /* animirano ozadje: dva Tinina soft-gradient blob-a krozita in se krizata (fixed, z-index 0 — NIKOLI -1, Safari past) */
         .cw-ozadje { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background-color: var(--paper); background-image: linear-gradient(rgba(17,17,17,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(17,17,17,.055) 1px, transparent 1px); background-size: 4.5rem 4.5rem; }
@@ -5103,6 +5106,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .profil-vrsta:last-child { border-bottom: none; }
         .cw .profil-vrsta .pv-ime { flex: 1; min-width: 0; font-size: .95rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .cw .glava .glava-brand { pointer-events: auto; display: inline-flex; align-items: center; gap: .5rem; text-decoration: none; }
+        .cw .glava .glava-dot { width: 1.2rem; height: 1.2rem; border-radius: 50%; flex: none; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 3px 10px rgba(124,58,237,.28); }
         .cw .glava .glava-pinart { font-weight: 800; font-size: 1rem; letter-spacing: -.01em; color: var(--ink); line-height: 1; }
         .cw .glava .glava-ime { font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); line-height: 1; }
         .cw .glava .beta { font-size: .56rem; font-weight: 700; letter-spacing: .1em; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: .1rem .3rem; line-height: 1; text-transform: uppercase; }
@@ -5669,7 +5673,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 420px) {
           .cw .noga .gumb { padding-left: 1.35rem; padding-right: 1.35rem; }
         }
-      `}</style>
+      ` }} />
 
       {pogojiOk === false && (
         <div className="soglasje" role="dialog" aria-modal="true" aria-label="Pogoji uporabe">
@@ -6518,11 +6522,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                      na isti visini kot zadnja vrsta storitev. Storitev NE premikamo. Velja le, ko dodaj
                      ostane sam v zadnji vrsti (sicer je ze naravno med storitvami). */
                   if (jeSirokZaslon && orbStoritve.length > 0 && orbRowSizes[orbVrstic - 1] === 1 && orbVrstic >= 3) {
-                    /* SAMO na sirokem zaslonu: desno v vrzel ob centriranem platnu, poravnan po VERTIKALI s
-                       PREDZADNJO vrstico storitev (Ilustracija) — stabilno ne glede na 3/4 v zadnji vrsti.
-                       Na ozjem zaslonu (ni vrzeli) ostane naravno spodaj, da je dosegljiv. */
-                    p.x = 126;
-                    p.y = Math.round(((orbVrstic - 3 + 0.5) / orbVrstic) * 100 * 10) / 10;
+                    /* Ko "dodaj" ostane sam v zadnji vrsti: poravnaj ga po PREDZADNJI VERTIKALI
+                       (drugi stolpec od desne v siroki mrezi) — v svoji vrsti spodaj, poravnan
+                       pod zgornjimi mehurcki (npr. pod PR). NE v skrajno desno vrzel (prej p.x=126,
+                       kar je izgledalo odtrgano). p.y ostane naraven (zadnja vrsta). */
+                    const startXSiroka = 50 - ((orbMax - 1) * orbStep) / 2;
+                    p.x = Math.round((startXSiroka + (orbMax - 2) * orbStep) * 10) / 10;
                   }
                   return (
                     <button type="button" className="orb0 orb0-plus"
