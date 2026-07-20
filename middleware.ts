@@ -6,6 +6,15 @@ import { updateSession } from './utils/supabase/middleware';
 const intlMiddleware = createMiddleware(routing);
 
 export default async function middleware(request: NextRequest) {
+  /* pinartflow.com/ = Flow landing (ne studijski portfolio). Domensko preusmerimo
+     root -> /flow. Velja SAMO za pinartflow.com host; pinart.si ostane portfolio. */
+  const host = request.headers.get('host') || '';
+  if (/(^|\.)pinartflow\.com$/i.test(host) && request.nextUrl.pathname === '/') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/flow';
+    return NextResponse.redirect(url);
+  }
+
   const response = intlMiddleware(request);
 
   /* Supabase seja tece na vsaki zahtevi. Ce Supabase pade ali env manjka, NE

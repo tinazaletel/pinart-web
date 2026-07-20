@@ -27,7 +27,7 @@ function mkBubble(): Bubble {
   };
 }
 
-export default function FlowHeroBg({ video = '/flow/pupa-typing.mp4', count = 12 }: { video?: string; count?: number }) {
+export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4', count = 12 }: { video?: string; count?: number }) {
   /* Prazno na SSR → mehurčke ustvarimo šele na klientu (Math.random ne sme
      teči med hidracijo). */
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
@@ -90,7 +90,7 @@ export default function FlowHeroBg({ video = '/flow/pupa-typing.mp4', count = 12
            bela podlaga izgine, ostane samo skica na papirju. Levi rob se stopi. */
         .fl-video { position: absolute; top: 0; right: 0; width: 54%; height: 100%; }
         .fl-video video { width: 100%; height: 100%; object-fit: cover; object-position: center 40%;
-          mix-blend-mode: multiply; opacity: .9; filter: blur(1.6px) contrast(1.05);
+          mix-blend-mode: multiply; opacity: 1; filter: contrast(1.08);
           -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 30%); mask-image: linear-gradient(to right, transparent 0%, #000 30%); }
         /* Rahel prehod spodaj v papir */
         .fl-video::after { content: ''; position: absolute; inset: 0; background:
