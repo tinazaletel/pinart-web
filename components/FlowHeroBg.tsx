@@ -107,8 +107,8 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
            multiply → bela podlaga izgine, ostane skica na papirju. Mehki gradient
            prehod na VSEH robovih (mask zbledi pred robom) — nič grdih rezov. */
         .fl-video { position: absolute; top: 72px; bottom: 0; right: 0; width: 53%; background: var(--paper);
-          -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 38%); mask-image: linear-gradient(to right, transparent 0%, #000 38%); }
-        .fl-video video { width: 100%; height: 100%; object-fit: contain; object-position: center bottom;
+          -webkit-mask-image: radial-gradient(150% 135% at 60% 46%, #000 66%, transparent 100%); mask-image: radial-gradient(150% 135% at 60% 46%, #000 66%, transparent 100%); }
+        .fl-video video { width: 100%; height: 100%; object-fit: contain; object-position: center;
           mix-blend-mode: multiply; opacity: 1; filter: contrast(1.25) saturate(1.05); }
         /* Rahel prehod spodaj v papir */
         .fl-video::after { content: ''; position: absolute; inset: 0; background:
