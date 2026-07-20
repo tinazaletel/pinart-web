@@ -1735,10 +1735,16 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [jeNalozeno, setJeNalozeno] = useState(false);
   const [chatVnos, setChatVnos] = useState('');
   const [chatNova, setChatNova] = useState<boolean | null>(null);
+  const [odFlow, setOdFlow] = useState(false);
   /* testni sprožilec: ?uvod v URL na silo odpre fake-chat uvod (za ogled tudi
      ko si že onboardana) */
   useEffect(() => {
-    try { if (new URL(window.location.href).searchParams.has('uvod')) { setUvodChat(true); setChatKorak(0); } } catch { /* ignore */ }
+    try {
+      const sp = new URL(window.location.href).searchParams;
+      if (sp.has('uvod')) { setUvodChat(true); setChatKorak(0); }
+      /* ?od=flow: prišel iz pinartflow.com landinga → "zapri" vrne na /flow */
+      if (sp.get('od') === 'flow') setOdFlow(true);
+    } catch { /* ignore */ }
   }, []);
   /* moderne pisave za urejevalnik ponudbe (best-effort; ce CSP blokira, gladek fallback na sistemsko) */
   useEffect(() => {
@@ -4348,12 +4354,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const glavaUI = () => (
     <>
       <span className="glava-levo">
-        <a className="glava-brand" href={localePath(locale, ``)} aria-label="Pinart — domov">
+        <a className="glava-brand" href={odFlow ? localePath(locale, `/flow`) : localePath(locale, ``)} aria-label={odFlow ? 'Pinart Flow' : 'Pinart — domov'}>
           <span className="glava-pinart">Pinart</span>
           <span className="glava-ime">Kalkulator</span>
           <span className="beta">BETA</span>
         </a>
-        <a className="zapri zapri-loceno" href={localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ zapri</a>
+        <a className="zapri zapri-loceno" href={odFlow ? localePath(locale, `/flow`) : localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ zapri</a>
       </span>
       <span className="glava-desno">
         <button type="button" className="glava-ikona" aria-label={klasicnaOblika ? 'Preklopi na chat pogovor' : 'Preklopi na klasični vprašalnik'}

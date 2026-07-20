@@ -15,7 +15,7 @@ import RotatingLaptop from '@/components/RotatingLaptop';
 
 export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const prijava = localePath(locale, '/kalkulator/prijava');
-  const kalkulator = localePath(locale, '/kalkulator/orodje');
+  const kalkulator = localePath(locale, '/kalkulator/orodje') + '?od=flow';
   const kalkulatorLanding = localePath(locale, '/kalkulator');
 
   const ORODJA = [
@@ -42,7 +42,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const CENIKI = [
     {
       ime: 'Brezplačno', za: 'Za začetek in enkratne projekte', cena: '0', enota: '€ za vedno',
-      cta: 'Odpri kalkulator', href: localePath(locale, '/kalkulator/orodje'), izpost: false, znacka: '',
+      cta: 'Odpri kalkulator', href: kalkulator, izpost: false, znacka: '',
       vkljuceno: ['Kalkulator poštenih cen', 'Trije paketi + avtorske pravice', 'Urejljiva ponudba', 'Izvoz v e-pošto / PDF'],
       brez: ['Shranjeni dokumenti', 'Pogodbe in računi', 'Stranke in cilji'],
     },
