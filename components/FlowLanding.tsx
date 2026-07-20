@@ -228,7 +228,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     {
       ime: 'Premium', za: 'Za redno delo s strankami', cena: '9', enota: '€ / mesec',
       cta: 'Začni s Premium', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Najbolj priljubljeno', kmalu: false,
-      vkljuceno: ['Vse iz Brezplačno', 'Shranjene ponudbe, pogodbe, računi', 'Dolgoročni retainerji', 'Kartoteka strank', 'Stroški in cilji', 'Nadzorna plošča'],
+      vkljuceno: ['Vse iz Brezplačno', 'Shranjene ponudbe, pogodbe, računi', 'Dolgoročni retainerji', 'Kartoteka strank', 'Stroški in cilji', 'Časovnik in donosnost dela', 'Nadzorna plošča'],
       brez: ['Poslovni okvir in davki'],
     },
     {
