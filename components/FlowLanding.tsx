@@ -348,7 +348,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-sc-panel { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: clamp(1.6rem, 4vw, 3.2rem); align-items: center; border-radius: 26px; padding: clamp(2rem, 4vw, 3.2rem); background: linear-gradient(135deg, oklch(96% .03 297), oklch(95% .035 320), oklch(95% .03 165)); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 20px 60px rgba(40,25,60,.1); overflow: hidden; }
         @media (max-width: 860px) { .fl-sc-panel { grid-template-columns: 1fr; } }
         .fl-sc-vizual { position: relative; }
-        .fl-sc-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 14px; background: #fff; box-shadow: 0 24px 60px rgba(40,25,60,.18); }
+        .fl-sc-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 14px; opacity: 0; transition: opacity .35s ease; box-shadow: 0 24px 60px rgba(40,25,60,.18); }
         .fl-sc-info h3 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.55rem, 3.6vw, 2.25rem); line-height: 1.08; margin: 0 0 .6rem; max-width: 18ch; }
         .fl-sc-info > p { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.8); max-width: 46ch; margin: 0; }
         .fl-sc-tocke { list-style: none; margin: 1.25rem 0 1.7rem; padding: 0; display: grid; gap: .6rem; }
@@ -689,7 +689,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               {/* Video predstavitev produkta (kot Magnific). Ce datoteke se ni, onError skrije
                   video in ostane ilustracija spodaj. Odlozi v /public/flow/showcase/<id>.mp4 */}
               <video className="fl-sc-video" src={`/flow/showcase/${zav.id}.mp4`} autoPlay muted loop playsInline preload="metadata"
-                onError={e => { (e.currentTarget as HTMLVideoElement).style.display = 'none'; }} />
+                onCanPlay={e => { (e.currentTarget as HTMLVideoElement).style.opacity = '1'; }}
+                onError={e => { (e.currentTarget as HTMLVideoElement).style.opacity = '0'; }} />
             </div>
           </div>
         </section>
