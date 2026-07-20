@@ -287,6 +287,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-footer-talk { display: inline-block; margin-top: 1.1rem; font-size: .82rem; font-weight: 700; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: .15rem; }
         .fl-footer-legal { display: flex; flex-wrap: wrap; gap: 1.1rem; }
         .fl-footer-logo { display: inline-flex; align-items: center; gap: .5rem; }
+        .fl-footer-logo i { width: 1.1rem; height: 1.1rem; border-radius: 50%; flex: none; background: linear-gradient(155deg, oklch(62% .2 288) 0%, oklch(72% .16 350) 50%, oklch(76% .16 55) 100%); }
         .fl-footer-logo strong { font-family: var(--font-sans), system-ui, sans-serif; font-weight: 800; font-size: 1.12rem; letter-spacing: -.01em; color: var(--ink); }
         .fl-footer-logo span { font-size: .7rem; font-weight: 700; letter-spacing: .2em; color: rgba(17,17,17,.6); }
         .fl-footer-brand p { margin: .9rem 0 0; font-size: .9rem; line-height: 1.6; color: rgba(17,17,17,.66); max-width: 36ch; }
@@ -480,7 +481,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         <footer className="fl-footer" id="onas">
           <div className="fl-footer-top">
             <div className="fl-footer-brand">
-              <span className="fl-footer-logo"><strong>Pinart</strong><span>FLOW</span></span>
+              <span className="fl-footer-logo"><i /><strong>Pinart</strong><span>FLOW</span></span>
               <p>Vse tvoje poslovanje, na enem mestu. Orodje pripravlja Tina, kreativna direktorica studia <a href={localePath(locale, '')}>Pinart</a>.</p>
             </div>
             <nav className="fl-footer-cols">

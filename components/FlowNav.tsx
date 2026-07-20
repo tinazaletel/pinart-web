@@ -39,6 +39,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
   return (
     <header className={`flnav${scrolled ? ' scrolled' : ''}`}>
       <a className="flnav-brand" href={flow} onClick={close} aria-label="Pinart Flow">
+        <span className="flnav-dot" aria-hidden />
         <strong className="flnav-pinart">Pinart</strong><span className="flnav-ff">FLOW</span><small>BETA</small>
       </a>
 
@@ -84,6 +85,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
 
         .flnav-brand { display: inline-flex; align-items: center; gap: .5rem; text-decoration: none; color: var(--ink); }
         .flnav-logo { height: 1.55rem; width: auto; display: block; }
+        .flnav-dot { width: 1.15rem; height: 1.15rem; border-radius: 50%; flex: none; background: linear-gradient(155deg, oklch(62% .2 288) 0%, oklch(72% .16 350) 50%, oklch(76% .16 55) 100%); }
         .flnav-brand .flnav-pinart { font-family: var(--font-sans), system-ui, sans-serif; font-weight: 800; font-size: 1.12rem; letter-spacing: -.01em; color: var(--ink); line-height: 1; }
         .flnav-brand .flnav-ff { font-size: .84rem; font-weight: 700; letter-spacing: .12em; color: var(--ink); line-height: 1; }
         .flnav-brand small { font-size: .56rem; font-weight: 700; letter-spacing: .1em; color: #b25476; border: 1px solid color-mix(in oklch, #b25476 45%, transparent); border-radius: 999px; padding: .12rem .4rem; align-self: center; }
