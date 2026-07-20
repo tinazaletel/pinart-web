@@ -160,7 +160,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl .cta-note { font-size: .8rem; color: rgba(17,17,17,.6); }
 
         /* Poteka: od ponudbe do racuna */
-        .fl-potek { margin: 5.5rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 2.6rem; }
+        .fl-potek { margin: 3.4rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 2.6rem; }
         .fl-potek .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-potek h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 2.2rem; max-width: 20ch; }
         .fl-koraki { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6rem; }
@@ -171,7 +171,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-korak p { font-size: .9rem; line-height: 1.6; color: rgba(17,17,17,.74); margin: 0; }
 
         /* Vmesna sekcija z vrtečim laptopom */
-        .fl-laptop { margin: 6rem 0 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+        .fl-laptop { margin: 3.6rem 0 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
         @media (max-width: 860px) { .fl-laptop { grid-template-columns: 1fr; gap: 1.5rem; } }
         .fl-laptop-txt .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
         .fl-laptop-txt h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 4.4vw, 3rem); line-height: 1.08; letter-spacing: -.01em; margin: .6rem 0 1rem; max-width: 18ch; }
@@ -182,7 +182,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 860px) { .fl-rl { max-width: 440px; } }
 
         /* Orodja mreza */
-        .fl-orodja { margin: 6rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 2.6rem; }
+        .fl-orodja { margin: 3.6rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 2.6rem; }
         .fl-orodja .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-orodja h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 .5rem; max-width: 20ch; }
         .fl-orodja .uvod { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.76); max-width: 50ch; margin: 0 0 2.4rem; }
@@ -205,7 +205,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-znacka { font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: oklch(45% .13 155); background: oklch(92% .08 160); border-radius: 999px; padding: .2rem .5rem; }
 
         /* Brezplacni kalkulator pas */
-        .fl-brez { margin: 6rem 0 0; position: relative; overflow: hidden; border-radius: 26px; padding: clamp(2.2rem, 5vw, 3.4rem); background: linear-gradient(135deg, oklch(96% .03 297), oklch(95% .035 320), oklch(95% .03 165)); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 20px 60px rgba(40,25,60,.1); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.6rem, 4vw, 3rem); align-items: center; }
+        .fl-brez { margin: 3.6rem 0 0; position: relative; overflow: hidden; border-radius: 26px; padding: clamp(2.2rem, 5vw, 3.4rem); background: linear-gradient(135deg, oklch(96% .03 297), oklch(95% .035 320), oklch(95% .03 165)); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 20px 60px rgba(40,25,60,.1); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.6rem, 4vw, 3rem); align-items: center; }
         @media (max-width: 820px) { .fl-brez { grid-template-columns: 1fr; } .fl-brez-vizual { display: none; } }
         .fl-browser { border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid rgba(17,17,17,.1); box-shadow: 0 24px 60px rgba(40,25,60,.18); }
         .fl-browser-bar { display: flex; align-items: center; gap: .4rem; padding: .5rem .75rem; background: oklch(96% .008 87); border-bottom: 1px solid rgba(17,17,17,.07); }
@@ -218,7 +218,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-brez p { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.8); max-width: 48ch; margin: 0 0 1.8rem; }
 
         /* Zakljucni CTA */
-        .fl-konec { margin: 6rem 0 0; text-align: center; border-top: 1px solid rgba(17,17,17,.16); padding-top: 3.4rem; }
+        .fl-konec { margin: 3.6rem 0 0; text-align: center; border-top: 1px solid rgba(17,17,17,.16); padding-top: 3.4rem; }
         .fl-konec h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.02; margin: 0 auto 1.6rem; max-width: 18ch; }
         .fl-konec .cta-vrsta { justify-content: center; }
         .fl-konec .zakljucki { margin: 1.8rem 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 1.4rem; font-size: .84rem; color: rgba(17,17,17,.7); }
@@ -226,7 +226,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-konec .zakljucki svg { color: oklch(52% .13 155); }
 
         /* Temna "features" sekcija (Magnific slog) */
-        .fl-funkcije { margin: 6.5rem 0 0; border-radius: 26px; padding: clamp(2.4rem, 5vw, 3.8rem); background: oklch(21% .016 285); color: oklch(95% .01 285); }
+        .fl-funkcije { margin: 3.8rem 0 0; border-radius: 26px; padding: clamp(2.4rem, 5vw, 3.8rem); background: oklch(21% .016 285); color: oklch(95% .01 285); }
         .fl-funkcije-glava { max-width: 46ch; }
         .fl-funkcije-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.7rem, 4vw, 2.6rem); line-height: 1.08; margin: 0 0 .6rem; color: #fff; -webkit-text-stroke: 0; }
         .fl-funkcije-glava p { font-size: 1rem; line-height: 1.55; color: oklch(72% .02 285); margin: 0; }
@@ -238,7 +238,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-funkcija p { font-size: .88rem; line-height: 1.5; color: oklch(70% .02 285); margin: 0; }
 
         /* Cenik (price plans, Magnific slog) */
-        .fl-cenik { margin: 6.5rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 2.6rem; text-align: center; }
+        .fl-cenik { margin: 3.8rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 2.6rem; text-align: center; }
         .fl-cenik > .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-cenik > h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 .5rem; }
         .fl-cenik > .uvod { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.76); max-width: 46ch; margin: 0 auto 2.8rem; }
@@ -264,26 +264,24 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-plan-lista li.ne svg { color: rgba(17,17,17,.3); }
         .fl-cenik-opomba { font-size: .78rem; color: rgba(17,17,17,.5); margin: 1.9rem 0 0; }
 
-        .fl-faq { margin: 6.5rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 3rem; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: clamp(2rem, 6vw, 5rem); align-items: start; }
-        @media (max-width: 820px) { .fl-faq { grid-template-columns: 1fr; gap: 1.6rem; } }
-        .fl-faq-glava { position: relative; }
+        .fl-faq { margin: 3.8rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 3rem; display: flex; flex-wrap: wrap; gap: clamp(1.8rem, 4vw, 3.5rem); align-items: flex-start; }
+        .fl-faq-glava { flex: 1 1 240px; min-width: 240px; }
         .fl-faq-glava .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-faq-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.8rem, 4vw, 2.55rem); line-height: 1.07; margin: .55rem 0 1.4rem; }
         .fl-faq-podpora { display: inline-block; font-family: var(--font-sans), system-ui, sans-serif; font-size: .84rem; font-weight: 600; color: var(--ink); text-decoration: none; padding: .62rem 1.15rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.24); transition: border-color .16s, background .16s; }
         .fl-faq-podpora:hover { border-color: var(--ink); background: rgba(17,17,17,.04); }
-        .fl-faq-lista { display: flex; flex-direction: column; }
+        .fl-faq-lista { flex: 2.3 1 380px; min-width: 300px; display: flex; flex-direction: column; }
         .fl-faq-item { border-top: 1px solid rgba(17,17,17,.12); }
         .fl-faq-item:last-child { border-bottom: 1px solid rgba(17,17,17,.12); }
         .fl-faq-item > button { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1.4rem; padding: 1.25rem .2rem; background: none; border: 0; cursor: pointer; text-align: left; font-family: var(--font-sans), system-ui, sans-serif; font-size: 1rem; font-weight: 550; color: var(--ink); transition: color .15s; }
         .fl-faq-item > button:hover { color: var(--accent); }
         .fl-faq-item > button svg { flex: none; color: var(--accent); transition: transform .25s cubic-bezier(.16,1,.3,1); }
         .fl-faq-item.odprt > button svg { transform: rotate(45deg); }
-        .fl-faq-odg { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .32s cubic-bezier(.16,1,.3,1); }
-        .fl-faq-item.odprt .fl-faq-odg { grid-template-rows: 1fr; }
-        .fl-faq-odg > div { overflow: hidden; }
+        .fl-faq-odg { max-height: 0; overflow: hidden; transition: max-height .32s cubic-bezier(.16,1,.3,1); }
+        .fl-faq-item.odprt .fl-faq-odg { max-height: 320px; }
         .fl-faq-odg p { margin: 0; padding: 0 3rem 1.35rem .2rem; font-size: .92rem; line-height: 1.65; color: rgba(17,17,17,.72); }
 
-        .fl-footer { margin: 6.5rem 0 0; border-top: 1px solid rgba(17,17,17,.14); padding-top: 3rem; }
+        .fl-footer { margin: 3.8rem 0 0; border-top: 1px solid rgba(17,17,17,.14); padding-top: 3rem; }
         .fl-footer-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(2rem, 5vw, 4rem); }
         @media (max-width: 720px) { .fl-footer-top { grid-template-columns: 1fr; gap: 2rem; } }
         .fl-footer-talk { display: inline-block; margin-top: 1.1rem; font-size: .82rem; font-weight: 700; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: .15rem; }
