@@ -9,17 +9,33 @@ import { useEffect, useRef, useState } from 'react';
      nato se po kratkem trenutku znova pojavijo drugje. */
 
 type Hue = 'v' | 'g' | 'p';
-type Bubble = { id: number; x: number; y: number; size: number; hue: Hue; dur: number; delay: number; pop: boolean };
+type Bubble = { id: number; slot: number; x: number; y: number; size: number; hue: Hue; dur: number; delay: number; pop: boolean };
 
 let nextId = 1;
-const HUES: Hue[] = ['v', 'g', 'p', 'v', 'g'];
+const HUES: Hue[] = ['v', 'g', 'p'];
 
-function mkBubble(): Bubble {
+/* Fiksni razmaknjeni sloti — mehurčki se NE prekrivajo. Prvi je spodaj-levo,
+   malce pod gumbom "Vstopi v Flow"; ostali razporejeni po heroju. */
+const SLOTS: { x: number; y: number; base: number }[] = [
+  { x: 16, y: 80, base: 150 },
+  { x: 7, y: 22, base: 108 },
+  { x: 31, y: 51, base: 82 },
+  { x: 47, y: 13, base: 120 },
+  { x: 59, y: 72, base: 132 },
+  { x: 83, y: 20, base: 104 },
+  { x: 91, y: 53, base: 146 },
+  { x: 71, y: 87, base: 92 },
+  { x: 38, y: 34, base: 74 },
+];
+
+function mkBubble(slot: number): Bubble {
+  const s = SLOTS[slot];
   return {
     id: nextId++,
-    x: 3 + Math.random() * 92,
-    y: 5 + Math.random() * 86,
-    size: 66 + Math.random() * 150,
+    slot,
+    x: s.x,
+    y: s.y,
+    size: Math.max(58, s.base + Math.random() * 40 - 20),
     hue: HUES[Math.floor(Math.random() * HUES.length)],
     dur: 9 + Math.random() * 11,
     delay: -Math.random() * 12,
@@ -27,7 +43,7 @@ function mkBubble(): Bubble {
   };
 }
 
-export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4', count = 12 }: { video?: string; count?: number }) {
+export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { video?: string }) {
   /* Prazno na SSR → mehurčke ustvarimo šele na klientu (Math.random ne sme
      teči med hidracijo). */
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
@@ -35,10 +51,10 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4', count = 
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    setBubbles(Array.from({ length: count }, mkBubble));
+    setBubbles(SLOTS.map((_, i) => mkBubble(i)));
     const t = timers.current;
     return () => { t.forEach(id => clearTimeout(id)); };
-  }, [count]);
+  }, []);
 
   /* Nekateri brskalniki ne sprozijo muted-autoplay brez eksplicitnega play(). */
   useEffect(() => {
@@ -48,7 +64,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4', count = 
   function pop(id: number) {
     setBubbles(bs => bs.map(b => (b.id === id && !b.pop ? { ...b, pop: true } : b)));
     const t = window.setTimeout(() => {
-      setBubbles(bs => bs.map(b => (b.id === id ? mkBubble() : b)));
+      setBubbles(bs => bs.map(b => (b.id === id ? mkBubble(b.slot) : b)));
     }, 560);
     timers.current.push(t);
   }
