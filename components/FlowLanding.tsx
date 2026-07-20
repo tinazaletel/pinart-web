@@ -826,6 +826,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <video className="fl-pupa" autoPlay muted loop playsInline preload="metadata"
               onError={e => { (e.currentTarget as HTMLVideoElement).style.display = 'none'; }}>
               <source src="/flow/pupa-hoja.webm" type="video/webm" />
+              <source src="/flow/pupa-hoja.mov" type='video/quicktime; codecs="hvc1"' />
               <source src="/flow/pupa-hoja.mp4" type="video/mp4" />
             </video>
           </div>
