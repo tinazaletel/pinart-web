@@ -281,25 +281,25 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-faq-item.odprt .fl-faq-odg { max-height: 320px; }
         .fl-faq-odg p { margin: 0; padding: 0 3rem 1.35rem .2rem; font-size: .92rem; line-height: 1.65; color: rgba(17,17,17,.72); }
 
-        .fl-footer { margin: 10.05rem 0 0; padding-top: 3rem; }
+        .fl-footer { margin: 10.05rem 0 0; background: oklch(20% .016 285); color: oklch(93% .01 285); border-radius: 26px; padding: clamp(2.6rem, 5vw, 3.6rem) clamp(2rem, 4vw, 3.2rem) clamp(1.8rem, 4vw, 2.4rem); }
         .fl-footer-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(2rem, 5vw, 4rem); }
         @media (max-width: 720px) { .fl-footer-top { grid-template-columns: 1fr; gap: 2rem; } }
         .fl-footer-talk { display: inline-block; margin-top: 1.1rem; font-size: .82rem; font-weight: 700; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: .15rem; }
         .fl-footer-legal { display: flex; flex-wrap: wrap; gap: 1.1rem; }
         .fl-footer-logo { display: inline-flex; align-items: center; gap: .5rem; }
         .fl-footer-logo i { width: 1.2rem; height: 1.2rem; border-radius: 50%; flex: none; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 3px 10px rgba(124,58,237,.28); }
-        .fl-footer-logo strong { font-family: var(--font-sans), system-ui, sans-serif; font-weight: 800; font-size: 1.12rem; letter-spacing: -.01em; color: var(--ink); }
-        .fl-footer-logo span { font-size: .7rem; font-weight: 700; letter-spacing: .2em; color: rgba(17,17,17,.6); }
-        .fl-footer-brand p { margin: .9rem 0 0; font-size: .9rem; line-height: 1.6; color: rgba(17,17,17,.66); max-width: 36ch; }
-        .fl-footer-brand a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--accent); }
+        .fl-footer-logo strong { font-family: var(--font-sans), system-ui, sans-serif; font-weight: 800; font-size: 1.12rem; letter-spacing: -.01em; color: #fff; }
+        .fl-footer-logo span { font-size: .7rem; font-weight: 700; letter-spacing: .2em; color: rgba(255,255,255,.6); }
+        .fl-footer-brand p { margin: .9rem 0 0; font-size: .9rem; line-height: 1.6; color: rgba(255,255,255,.64); max-width: 36ch; }
+        .fl-footer-brand a { color: #fff; text-decoration: none; border-bottom: 1px solid var(--accent); }
         .fl-footer-cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
         @media (max-width: 620px) { .fl-footer-cols { grid-template-columns: 1fr 1fr; gap: 1.6rem; } }
         .fl-footer-cols > div { display: grid; gap: .55rem; align-content: start; }
-        .fl-footer-cols strong { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.5); margin-bottom: .2rem; }
-        .fl-footer-cols a { font-size: .9rem; color: rgba(17,17,17,.75); text-decoration: none; transition: color .15s; }
-        .fl-footer-cols a:hover { color: var(--ink); }
-        .fl-footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-top: 2.6rem; padding: 1.4rem 0 0; border-top: 1px solid rgba(17,17,17,.08); font-size: .8rem; color: rgba(17,17,17,.55); }
-        .fl-footer-bottom a { color: rgba(17,17,17,.7); text-decoration: none; }
+        .fl-footer-cols strong { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.45); margin-bottom: .2rem; }
+        .fl-footer-cols a { font-size: .9rem; color: rgba(255,255,255,.74); text-decoration: none; transition: color .15s; }
+        .fl-footer-cols a:hover { color: #fff; }
+        .fl-footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-top: 2.6rem; padding: 1.4rem 0 0; border-top: 1px solid rgba(255,255,255,.12); font-size: .8rem; color: rgba(255,255,255,.5); }
+        .fl-footer-bottom a { color: rgba(255,255,255,.68); text-decoration: none; }
       `}} />
 
       <div className="fl-ozadje" aria-hidden>
