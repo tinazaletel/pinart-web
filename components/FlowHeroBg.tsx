@@ -121,7 +121,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         }
 
         .fl-bubbles { position: absolute; inset: 0; }
-        .fl-bubble { position: absolute; border-radius: 50%; pointer-events: auto; cursor: pointer; will-change: transform, opacity;
+        .fl-bubble { position: absolute; border-radius: 50%; pointer-events: auto; cursor: pointer;
           background:
             radial-gradient(circle at 32% 27%, rgba(255,255,255,.95), rgba(255,255,255,.08) 42%, transparent 62%),
             radial-gradient(circle at 68% 74%, var(--b-tint), transparent 72%);

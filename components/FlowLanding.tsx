@@ -127,10 +127,12 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
            kot absolute in v Safari/Chrome pokvari izris vsebine nad njim (sekcije
            ostanejo prazne). absolute + polna višina .fl deluje pravilno. */
         .fl-ozadje { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background-color: var(--paper); background-image: linear-gradient(rgba(17,17,17,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(17,17,17,.045) 1px, transparent 1px); background-size: 4.5rem 4.5rem; }
-        .fl-blob { position: absolute; width: min(62vw, 720px); aspect-ratio: 1; border-radius: 50%; filter: blur(72px); opacity: .55; }
-        .fl-blob.v { background: radial-gradient(circle at 50% 50%, oklch(72% .17 297 / .55), transparent 68%); top: -14%; left: -10%; animation: flBlobV 24s ease-in-out infinite; }
-        .fl-blob.g { background: radial-gradient(circle at 50% 50%, oklch(82% .13 165 / .5), transparent 68%); bottom: -16%; right: -12%; animation: flBlobG 28s ease-in-out infinite; }
-        .fl-blob.v2 { background: radial-gradient(circle at 50% 50%, oklch(78% .12 320 / .4), transparent 70%); top: 42%; right: 18%; width: min(40vw, 460px); animation: flBlobV 32s ease-in-out infinite reverse; }
+        /* BREZ filter:blur (težek GPU sloj -> v Chromu se sekcije ne izrišejo).
+           Mehkobo dosežemo z gradientom samim (transparent že pri ~48%). */
+        .fl-blob { position: absolute; width: min(62vw, 720px); aspect-ratio: 1; border-radius: 50%; opacity: .6; }
+        .fl-blob.v { background: radial-gradient(circle at 50% 50%, oklch(72% .17 297 / .5), transparent 55%); top: -14%; left: -10%; animation: flBlobV 24s ease-in-out infinite; }
+        .fl-blob.g { background: radial-gradient(circle at 50% 50%, oklch(82% .13 165 / .48), transparent 55%); bottom: -16%; right: -12%; animation: flBlobG 28s ease-in-out infinite; }
+        .fl-blob.v2 { background: radial-gradient(circle at 50% 50%, oklch(78% .12 320 / .4), transparent 58%); top: 42%; right: 18%; width: min(40vw, 460px); animation: flBlobV 32s ease-in-out infinite reverse; }
         @keyframes flBlobV { 0%,100%{transform:translate(0,0) scale(1)} 25%{transform:translate(7vw,6vh) scale(1.12)} 50%{transform:translate(-4vw,10vh) scale(.94)} 75%{transform:translate(5vw,-5vh) scale(1.06)} }
         @keyframes flBlobG { 0%,100%{transform:translate(0,0) scale(1)} 25%{transform:translate(-6vw,-5vh) scale(1.1)} 50%{transform:translate(5vw,-9vh) scale(.95)} 75%{transform:translate(-4vw,5vh) scale(1.05)} }
         @media (prefers-reduced-motion: reduce) { .fl-blob { animation: none; } .fl-orb { animation: none !important; } }
@@ -194,7 +196,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 560px) { .fl-puscice { display: none; } }
         .fl-orodja-vrsta { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x proximity; padding: .6rem .3rem 1.2rem; padding-right: max(5vw, 3rem); margin: 0 calc(50% - 50vw) 0 -.3rem; scrollbar-width: none; }
         .fl-orodja-vrsta::-webkit-scrollbar { display: none; }
-        .fl-tkarta { flex: 0 0 clamp(15rem, 23vw, 17.5rem); scroll-snap-align: start; display: block; padding: 1.5rem 1.4rem 1.6rem; border-radius: 18px; background: rgba(255,255,255,.78); border: 1px solid rgba(255,255,255,.85); box-shadow: 0 12px 32px rgba(40,25,60,.07); -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3); text-decoration: none; color: var(--ink); transition: transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease; }
+        .fl-tkarta { flex: 0 0 clamp(15rem, 23vw, 17.5rem); scroll-snap-align: start; display: block; padding: 1.5rem 1.4rem 1.6rem; border-radius: 18px; background: rgba(255,255,255,.94); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 12px 32px rgba(40,25,60,.07); text-decoration: none; color: var(--ink); transition: transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease; }
         .fl-tkarta:hover { transform: translateY(-4px); box-shadow: 0 22px 48px rgba(40,25,60,.14); }
         .fl-tkarta-ikona { display: inline-flex; align-items: center; justify-content: center; width: 2.7rem; height: 2.7rem; border-radius: 13px; background: oklch(93% .055 var(--h, 297)); color: oklch(52% .15 var(--h, 297)); margin-bottom: .95rem; transition: transform .22s cubic-bezier(.16,1,.3,1); }
         .fl-tkarta:hover .fl-tkarta-ikona { transform: scale(1.07) rotate(-3deg); }
@@ -242,7 +244,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-cenik > .uvod { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.76); max-width: 46ch; margin: 0 auto 2.8rem; }
         .fl-cenik-mreza { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; text-align: left; align-items: start; }
         @media (max-width: 860px) { .fl-cenik-mreza { grid-template-columns: 1fr; max-width: 30rem; margin: 0 auto; } }
-        .fl-plan { position: relative; display: flex; flex-direction: column; padding: 1.7rem 1.5rem; border-radius: 20px; background: rgba(255,255,255,.72); border: 1px solid rgba(17,17,17,.1); box-shadow: 0 12px 32px rgba(40,25,60,.06); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+        .fl-plan { position: relative; display: flex; flex-direction: column; padding: 1.7rem 1.5rem; border-radius: 20px; background: rgba(255,255,255,.92); border: 1px solid rgba(17,17,17,.1); box-shadow: 0 12px 32px rgba(40,25,60,.06); }
         .fl-plan.izpost { border: 1.5px solid var(--ink); box-shadow: 0 22px 50px rgba(40,25,60,.14); }
         .fl-plan-znacka { position: absolute; top: -.7rem; left: 1.5rem; font-size: .6rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper); background: var(--ink); border-radius: 999px; padding: .28rem .7rem; }
         .fl-plan h3 { font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.6rem; margin: .3rem 0 .2rem; }
@@ -264,8 +266,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
         .fl-faq { margin: 6.5rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 3rem; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: clamp(2rem, 6vw, 5rem); align-items: start; }
         @media (max-width: 820px) { .fl-faq { grid-template-columns: 1fr; gap: 1.6rem; } }
-        .fl-faq-glava { position: sticky; top: 6rem; }
-        @media (max-width: 820px) { .fl-faq-glava { position: static; } }
+        .fl-faq-glava { position: relative; }
         .fl-faq-glava .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-faq-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.8rem, 4vw, 2.55rem); line-height: 1.07; margin: .55rem 0 1.4rem; }
         .fl-faq-podpora { display: inline-block; font-family: var(--font-sans), system-ui, sans-serif; font-size: .84rem; font-weight: 600; color: var(--ink); text-decoration: none; padding: .62rem 1.15rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.24); transition: border-color .16s, background .16s; }
