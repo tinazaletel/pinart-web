@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
+import FlowNav from '@/components/FlowNav';
 import FlowLanding from '@/components/FlowLanding';
 
 /* Predstavitev celotnega paketa Pinart Flow. Namenjeno domeni
@@ -20,6 +21,7 @@ export default async function FlowPage({
 
   return (
     <main style={{ minHeight: '100dvh' }}>
+      <FlowNav locale={locale} />
       <FlowLanding locale={locale} />
     </main>
   );

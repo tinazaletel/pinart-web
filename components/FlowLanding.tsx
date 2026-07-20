@@ -163,7 +163,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           <p>Ti ustvarjaš vrednost. <em>Flow poskrbi za vse ostalo.</em></p>
         </section>
 
-        <section className="fl-orodja">
+        <section className="fl-orodja" id="orodja">
           <div className="k">Orodja v paketu</div>
           <h2>Eno okolje, vsa orodja kreativca.</h2>
           <p className="uvod">
@@ -184,7 +184,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
         </section>
 
-        <section className="fl-brez">
+        <section className="fl-brez" id="cenik">
           <div className="k">Začni brez tveganja</div>
           <h2>Brezplačni kalkulator je tvoj vstop.</h2>
           <p>
@@ -209,7 +209,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
         </section>
 
-        <p className="fl-podpis">
+        <p className="fl-podpis" id="onas">
           Pinart Flow pripravlja Tina, kreativna direktorica studia{' '}
           <a href={localePath(locale, '')}>Pinart</a>.{' '}
           Za vprašanja: <a href="mailto:tina@pinart.si">tina@pinart.si</a>.
