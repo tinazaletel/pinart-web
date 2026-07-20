@@ -396,6 +396,48 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-soon { position: absolute; inset: 0; display: grid; place-content: center; background: oklch(22% .016 285 / .5); backdrop-filter: blur(2px); }
         .fl-soon span { font-family: var(--font-sans), system-ui, sans-serif; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #fff; border: 1px solid rgba(255,255,255,.4); border-radius: 999px; padding: .35rem .9rem; }
 
+        /* Bento "Zacni preprosto" (Magnific slog, Flow paleta) */
+        .fl-bento { margin: 9.85rem 0 0; padding-top: 2.6rem; }
+        .fl-bento-glava { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem 2rem; flex-wrap: wrap; margin-bottom: 1.9rem; }
+        .fl-bento-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.03; margin: 0; max-width: 16ch; }
+        .fl-bento-glava p { font-size: 1rem; line-height: 1.55; color: rgba(17,17,17,.72); margin: .5rem 0 0; max-width: 34ch; }
+        .fl-bento-glava .cta { flex: none; }
+        .fl-bento-mreza { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-auto-rows: 15rem; gap: 1rem; }
+        .fl-bkarta { position: relative; overflow: hidden; border-radius: 22px; padding: 1.6rem 1.5rem; display: flex; flex-direction: column; }
+        .fl-bkarta h3 { font-size: 1.15rem; font-weight: 650; margin: 0 0 .45rem; line-height: 1.2; }
+        .fl-bkarta > p { font-size: .88rem; line-height: 1.5; margin: 0; max-width: 30ch; }
+        .fl-bkarta.a { grid-column: 1; grid-row: 1 / span 2; background: rgba(255,255,255,.92); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 12px 32px rgba(40,25,60,.07); color: var(--ink); }
+        .fl-bkarta.a > p { color: rgba(17,17,17,.72); }
+        .fl-bkarta.b { grid-column: 2 / span 2; grid-row: 1; background: oklch(21% .016 285); color: #fff; }
+        .fl-bkarta.c { grid-column: 2; grid-row: 2; background: linear-gradient(150deg, oklch(44% .17 300), oklch(30% .1 300)); color: #fff; }
+        .fl-bkarta.d { grid-column: 3; grid-row: 2; background: linear-gradient(150deg, oklch(46% .1 190), oklch(31% .06 200)); color: #fff; }
+        .fl-bkarta.b > p, .fl-bkarta.c > p, .fl-bkarta.d > p { color: rgba(255,255,255,.74); }
+        .fl-bthumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-top: 1.2rem; }
+        .fl-bthumbs span { aspect-ratio: 1; border-radius: 11px; background: linear-gradient(135deg, oklch(90% .07 297), oklch(90% .07 165)); }
+        .fl-bthumbs span:nth-child(3n+2) { background: linear-gradient(135deg, oklch(90% .07 330), oklch(90% .06 90)); }
+        .fl-bthumbs span:nth-child(3n) { background: linear-gradient(135deg, oklch(90% .06 200), oklch(90% .07 297)); }
+        .fl-bflow { display: flex; align-items: center; gap: .5rem; margin-top: auto; flex-wrap: wrap; }
+        .fl-bflow b { font-size: .78rem; font-weight: 600; padding: .42rem .72rem; border-radius: 999px; background: rgba(255,255,255,.12); color: #fff; }
+        .fl-bflow i { color: rgba(255,255,255,.5); font-style: normal; }
+        .fl-bavatars { display: flex; margin-top: auto; }
+        .fl-bavatars span { width: 2.1rem; height: 2.1rem; border-radius: 50%; border: 2px solid oklch(35% .12 300); margin-left: -.55rem; display: grid; place-items: center; font-size: .68rem; font-weight: 700; color: #fff; background: oklch(56% .16 300); }
+        .fl-bavatars span:first-child { margin-left: 0; }
+        .fl-bprice { margin-top: auto; display: inline-flex; align-items: baseline; gap: .4rem; }
+        .fl-bprice strong { font-family: var(--font-serif), serif; font-weight: 500; font-size: 2rem; line-height: 1; color: #fff; }
+        .fl-bprice span { font-size: .8rem; color: rgba(255,255,255,.7); }
+        @media (max-width: 900px) {
+          .fl-bento-mreza { grid-template-columns: 1fr 1fr; grid-auto-rows: 13rem; }
+          .fl-bkarta.a { grid-column: 1; grid-row: 1 / span 2; }
+          .fl-bkarta.b { grid-column: 2; grid-row: 1; }
+          .fl-bkarta.c { grid-column: 2; grid-row: 2; }
+          .fl-bkarta.d { grid-column: 1 / span 2; grid-row: 3; }
+        }
+        @media (max-width: 620px) {
+          .fl-bento-mreza { grid-template-columns: 1fr; grid-auto-rows: auto; }
+          .fl-bkarta { min-height: 12rem; }
+          .fl-bkarta.a, .fl-bkarta.b, .fl-bkarta.c, .fl-bkarta.d { grid-column: 1; grid-row: auto; }
+        }
+
         /* Zakljucni CTA */
         .fl-konec { margin: 9.85rem 0 0; text-align: center; padding-top: 3.4rem; }
         .fl-konec h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.02; margin: 0 auto 1.6rem; max-width: 18ch; }
@@ -598,6 +640,38 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             </div>
             <div className="fl-sc-vizual fl-sc-anim" key={`v-${zav.id}`} aria-hidden>
               {predoglediMock(zav.id)}
+            </div>
+          </div>
+        </section>
+
+        <section className="fl-bento" id="zgodba">
+          <div className="fl-bento-glava">
+            <div>
+              <h2>Začni preprosto. Rasti, ko si pripravljena.</h2>
+              <p>Od enega orodja do celotnega poteka — v svojem tempu.</p>
+            </div>
+            <a className="cta" href={kalkulator}>Začni brezplačno <ArrowRight size={16} weight="bold" /></a>
+          </div>
+          <div className="fl-bento-mreza">
+            <div className="fl-bkarta a">
+              <h3>Vsako orodje pripravljeno</h3>
+              <p>Ponudbe, pogodbe, računi, stroški, ceniki. Odpri, kar potrebuješ — brez postavljanja.</p>
+              <div className="fl-bthumbs" aria-hidden><span /><span /><span /><span /><span /><span /></div>
+            </div>
+            <div className="fl-bkarta b">
+              <h3>Celoten posel na enem mestu</h3>
+              <p>Od poštene cene do plačanega računa. Vse teče iz istih podatkov, brez podvajanja.</p>
+              <div className="fl-bflow" aria-hidden><b>Ponudba</b><i>→</i><b>Pogodba</b><i>→</i><b>Račun</b><i>→</i><b>Pregled</b></div>
+            </div>
+            <div className="fl-bkarta c">
+              <h3>Ena baza, vse stranke</h3>
+              <p>Kartoteka strank z dokumenti in zgodovino sodelovanja.</p>
+              <div className="fl-bavatars" aria-hidden><span>MA</span><span>RK</span><span>LJ</span><span>+</span></div>
+            </div>
+            <div className="fl-bkarta d">
+              <h3>Pošteno ceno v enem kliku</h3>
+              <p>Kalkulator predlaga ceno glede na trg in tvoje izkušnje.</p>
+              <div className="fl-bprice" aria-hidden><strong>1.850 €</strong><span>predlog</span></div>
             </div>
           </div>
         </section>
