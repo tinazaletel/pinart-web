@@ -3,7 +3,7 @@
 import {
   FileText, Handshake, Scroll, Receipt, Wallet, Tag, Clock,
   Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, X, CaretLeft, CaretRight,
-  ShieldCheck, Scales, ChatCircle, Sparkle, Plus,
+  ShieldCheck, Scales, ChatCircle, Sparkle, Plus, ChartLineUp,
 } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { localePath } from '@/i18n/routing';
@@ -27,7 +27,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const VPRASANJA = [
     { v: 'Je Pinart Flow res brezplačen?', o: 'Med beto je celoten Pinart Flow brezplačen. Kalkulator poštenih cen ostane brezplačen za vedno; ko potrebuješ napredna orodja, izbereš paket, ki ti ustreza.' },
     { v: 'Ali potrebujem račun za kalkulator?', o: 'Ne. Kalkulator deluje brez prijave: izračunaš pošteno ceno, sestaviš ponudbo in jo preneseš. Račun potrebuješ šele, ko želiš dokumente shraniti in imeti na enem mestu.' },
-    { v: 'Komu pripadajo moji podatki in dokumenti?', o: 'Tebi. Tvoje ponudbe, stranke in ceniki ostanejo tvoji. Podatkov ne prodajamo in jih ne uporabljamo za učenje modelov.' },
+    { v: 'Komu pripadajo moji podatki in dokumenti?', o: 'Tvoje ponudbe, stranke in dokumenti ostanejo tvoji in zasebni — ne prodajamo jih in ne razkrivamo nikomur. Cene storitev, ki jih vpišeš, pa anonimno in združeno pomagajo graditi pregled poštenih tržnih cen, da ti Flow lahko pokaže, kje je tvoja cena glede na trg. Nikoli ne razkrijemo, kdo je vnesel katero ceno.' },
+    { v: 'Kako mi Flow pomaga postaviti pravo ceno?', o: 'Kalkulator razbije ceno na izvedbo, avtorske pravice in licenco, nato pa jo primerja z anonimnim tržnim pregledom vpisanih cen — vidiš, ali si bližje dnu ali vrhu in za koliko se morda podcenjuješ. Cena tako ni več ugibanje.' },
     { v: 'Ali Flow upošteva avtorske pravice?', o: 'Da. Kalkulator loči izvedbo od licence in avtorskih pravic ter ceno prilagodi obsegu uporabe, trajanju in ozemlju, po pravu naročnikove jurisdikcije.' },
     { v: 'Kako iz ponudbe nastane račun?', o: 'Z enim klikom. Ponudbo pretvoriš v račun s samodejnim številčenjem, rokom plačila in statusom, brez ponovnega vnašanja podatkov.' },
     { v: 'Ali lahko Flow uporabljam za tuje naročnike?', o: 'Da. Flow je zasnovan globalno: večjezične predloge dokumentov in pravila, prilagojena jurisdikciji naročnika.' },
@@ -108,8 +109,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const vidnaOrodja = ORODJA.filter(o => taRubrika === 'vse' || o.kat === taRubrika);
 
   const FUNKCIJE = [
-    { Ikona: ShieldCheck, ime: 'Tvoji podatki, tvoja last', opis: 'Vse, kar vneseš, ostane tvoje. Podatkov nikoli ne prodamo ali analiziramo.' },
+    { Ikona: ChartLineUp, ime: 'Veš, koliko si vreden', opis: 'Anonimen tržni pregled ti pokaže, kje je tvoja cena — bližje dnu ali vrhu — da se ne podcenjuješ.' },
     { Ikona: Scales, ime: 'Avtorske pravice vračunane', opis: 'Cena vsakič razbije izvedbo, pravice in licenco — da dela ne prodaš pod ceno.' },
+    { Ikona: ShieldCheck, ime: 'Tvoji podatki, tvoja last', opis: 'Tvoji dokumenti in stranke ostanejo zasebni. Osebnih podatkov nikoli ne prodamo.' },
     { Ikona: Receipt, ime: 'Od ponudbe do računa', opis: 'Ponudba, pogodba, račun in stroški tečejo iz istih podatkov, brez podvajanja.' },
     { Ikona: SquaresFour, ime: 'Brez Excela in map', opis: 'Eno mirno mesto namesto dokumentov, razmetanih po računalniku.' },
     { Ikona: ChatCircle, ime: 'Osebna podpora', opis: 'Pišeš neposredno Tini. Pravi človek, ne oddelek.' },
