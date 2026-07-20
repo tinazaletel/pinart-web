@@ -119,9 +119,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   ];
 
   const KORAKI = [
-    { n: '01', naslov: 'Izračunaj ponudbo', opis: 'Kalkulator ti pokaže pošteno ceno: izvedbo, pravice in licenco, uglašeno z naročnikom.' },
-    { n: '02', naslov: 'Dogovori sodelovanje', opis: 'Pogodba ali dolgoročni retainer nastane iz iste ponudbe, brez ponovnega tipkanja.' },
-    { n: '03', naslov: 'Izstavi in spremljaj', opis: 'Ponudbo z enim klikom pretvoriš v račun, Flow pa sledi plačilom, stroškom in ciljem.' },
+    { n: '01', naslov: 'Lepa ponudba v nekaj klikih', opis: 'Flow napiše IN oblikuje reprezentativno ponudbo — brez ChatGPT-ja in InDesigna.' },
+    { n: '02', naslov: 'Prava cena, brez ugibanja', opis: 'Poštena cena z avtorskimi pravicami in tržni pregled, kje si. Nič več ur iskanja cen.' },
+    { n: '03', naslov: 'Veš, ali si zaslužil', opis: 'Račun z enim klikom, pregled stroškov in dejanskega zaslužka — pripravljeno za računovodstvo.' },
   ];
 
   /* Predlog cenika (cene so okvirne — potrdi/prilagodi). */
@@ -344,8 +344,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           <p className="kicker"><b>Pinart Flow</b> · beta · za samostojne kreativce</p>
           <h1>Veš, koliko je vredno <em>tvoje delo?</em></h1>
           <p className="lead">
-            Poštena cena z avtorskimi pravicami, tržni pregled in vse od ponudbe do računa —
-            da nikoli več ne ugibaš cene. Pinart Flow: narejeno od kreativke za kreativce.
+            V nekaj klikih do lepo oblikovane ponudbe s pravo ceno in avtorskimi pravicami —
+            pa vse do računa in pregleda zaslužka. Nič več ugibanja cen ali skakanja med tremi orodji.
           </p>
           <div className="cta-vrsta">
             <a className="cta" href={prijava}>Vstopi v Flow <ArrowRight size={17} weight="bold" /></a>
