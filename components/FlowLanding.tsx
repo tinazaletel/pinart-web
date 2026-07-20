@@ -122,7 +122,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       p: 'Ponudba, pogodba, račun in stroški tečejo iz istih podatkov. En klik in dogovorjena ponudba postane račun.',
       tocke: ['Oštevilčenje, rok in status plačila', 'Pogodbe o sodelovanju in prenosu pravic', 'Enoten videz vseh dokumentov'],
       cta: 'Poglej orodja', href: '#orodja' },
-    { id: 'pregled', Ikona: ChartLineUp, label: 'Pregled & benchmark',
+    { id: 'pregled', Ikona: ChartLineUp, label: 'Pregled',
       h: 'Veš, koliko je vredno tvoje delo',
       p: 'Anonimen tržni pregled pokaže, kje je tvoja cena — bližje dnu ali vrhu. Nadzorna plošča spremlja promet, plačila in dobiček.',
       tocke: ['Tržni benchmark iz vpisanih cen', 'Promet, plačila in ocenjeni dobiček', 'Cilji in donosnost strank'],
@@ -331,8 +331,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-showcase-glava .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-showcase-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 .5rem; }
         .fl-showcase-glava p { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.76); margin: 0 auto; }
-        .fl-sc-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin: 0 auto 1.7rem; max-width: 54rem; }
-        .fl-sc-pill { display: inline-flex; align-items: center; gap: .5rem; padding: .58rem 1rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.14); background: rgba(255,255,255,.72); font-family: var(--font-sans), system-ui, sans-serif; font-size: .85rem; font-weight: 600; color: rgba(17,17,17,.7); cursor: pointer; transition: color .16s, border-color .16s, background .16s, transform .16s; }
+        .fl-sc-pills { display: flex; flex-wrap: nowrap; justify-content: center; gap: .5rem; margin: 0 auto 1.7rem; max-width: 62rem; }
+        @media (max-width: 900px) { .fl-sc-pills { overflow-x: auto; justify-content: flex-start; scrollbar-width: none; padding-bottom: .2rem; } .fl-sc-pills::-webkit-scrollbar { display: none; } .fl-sc-pill { flex: 0 0 auto; } }
+        .fl-sc-pill { display: inline-flex; align-items: center; gap: .5rem; padding: .58rem .95rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.14); background: rgba(255,255,255,.72); font-family: var(--font-sans), system-ui, sans-serif; font-size: .85rem; font-weight: 600; color: rgba(17,17,17,.7); cursor: pointer; white-space: nowrap; transition: color .16s, border-color .16s, background .16s, transform .16s; }
         .fl-sc-pill svg { opacity: .75; }
         .fl-sc-pill:hover { color: var(--ink); border-color: rgba(17,17,17,.3); transform: translateY(-1px); }
         .fl-sc-pill.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
@@ -344,6 +345,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-sc-pill.on .fl-sc-badge { background: rgba(255,255,255,.18); color: rgba(255,255,255,.92); }
         .fl-sc-panel { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: clamp(1.6rem, 4vw, 3.2rem); align-items: center; border-radius: 26px; padding: clamp(2rem, 4vw, 3.2rem); background: linear-gradient(135deg, oklch(96% .03 297), oklch(95% .035 320), oklch(95% .03 165)); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 20px 60px rgba(40,25,60,.1); overflow: hidden; }
         @media (max-width: 860px) { .fl-sc-panel { grid-template-columns: 1fr; } }
+        .fl-sc-vizual { position: relative; }
+        .fl-sc-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 14px; background: #fff; box-shadow: 0 24px 60px rgba(40,25,60,.18); }
         .fl-sc-info h3 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.55rem, 3.6vw, 2.25rem); line-height: 1.08; margin: 0 0 .6rem; max-width: 18ch; }
         .fl-sc-info > p { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.8); max-width: 46ch; margin: 0; }
         .fl-sc-tocke { list-style: none; margin: 1.25rem 0 1.7rem; padding: 0; display: grid; gap: .6rem; }
@@ -640,6 +643,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             </div>
             <div className="fl-sc-vizual fl-sc-anim" key={`v-${zav.id}`} aria-hidden>
               {predoglediMock(zav.id)}
+              {/* Video predstavitev produkta (kot Magnific). Ce datoteke se ni, onError skrije
+                  video in ostane ilustracija spodaj. Odlozi v /public/flow/showcase/<id>.mp4 */}
+              <video className="fl-sc-video" src={`/flow/showcase/${zav.id}.mp4`} autoPlay muted loop playsInline preload="metadata"
+                onError={e => { (e.currentTarget as HTMLVideoElement).style.display = 'none'; }} />
             </div>
           </div>
         </section>
