@@ -32,28 +32,55 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { v: 'Kako iz ponudbe nastane račun?', o: 'Z enim klikom. Ponudbo pretvoriš v račun s samodejnim številčenjem, rokom plačila in statusom, brez ponovnega vnašanja podatkov.' },
     { v: 'Ali lahko Flow uporabljam za tuje naročnike?', o: 'Da. Flow je zasnovan globalno: večjezične predloge dokumentov in pravila, prilagojena jurisdikciji naročnika.' },
   ];
-  const drsni = (smer: number) => vrstaRef.current?.scrollBy({ left: smer * 340, behavior: 'smooth' });
+  const pauseUntil = useRef(0);
+  const drsni = (smer: number) => {
+    const el = vrstaRef.current;
+    if (!el) return;
+    pauseUntil.current = performance.now() + 1100;  // pavziraj auto med ročnim premikom
+    // Ročna animacija (behavior:'smooth' ni povsod podprt); ease-out.
+    const startL = el.scrollLeft;
+    const target = Math.max(0, Math.min(el.scrollWidth - el.clientWidth, startL + smer * 360));
+    const t0 = performance.now();
+    const anim = (t: number) => {
+      const p = Math.min(1, (t - t0) / 480);
+      el.scrollLeft = startL + (target - startL) * (1 - Math.pow(1 - p, 3));
+      if (p < 1) requestAnimationFrame(anim);
+    };
+    requestAnimationFrame(anim);
+  };
 
-  /* Samodejno počasno drsenje vrste orodij; ustavi ob hoverju/dotiku; spoštuj reduce-motion. */
+  /* Samodejno počasno drsenje vrste orodij (rAF); ustavi ob hoverju/dotiku in po ročnem
+     premiku s puščicami (pauseUntil, da smooth premika ne prekine); spoštuj reduce-motion. */
   useEffect(() => {
     const el = vrstaRef.current;
     if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    let paused = false;
-    const enter = () => { paused = true; };
-    const leave = () => { paused = false; };
+    let hover = false;
+    const enter = () => { hover = true; };
+    const leave = () => { hover = false; };
+    const down = () => { pauseUntil.current = performance.now() + 1500; };
     el.addEventListener('pointerenter', enter);
-    el.addEventListener('pointerdown', enter);
     el.addEventListener('pointerleave', leave);
-    const iv = window.setInterval(() => {
-      if (paused) return;
-      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 2) el.scrollTo({ left: 0, behavior: 'smooth' });
-      else el.scrollLeft += 0.7;
-    }, 22);
+    el.addEventListener('pointerdown', down);
+    let raf = 0;
+    let last = performance.now();
+    const tick = (t: number) => {
+      const dt = Math.min(t - last, 50); last = t;
+      if (!hover && t >= pauseUntil.current && el.scrollWidth > el.clientWidth + 1) {
+        if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 1) {
+          pauseUntil.current = t + 1300;
+          el.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          el.scrollLeft += dt * 0.03;  // ~30px/s, počasi
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
     return () => {
-      clearInterval(iv);
+      cancelAnimationFrame(raf);
       el.removeEventListener('pointerenter', enter);
-      el.removeEventListener('pointerdown', enter);
       el.removeEventListener('pointerleave', leave);
+      el.removeEventListener('pointerdown', down);
     };
   }, [taRubrika]);
 
@@ -194,9 +221,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-puscice button { width: 2.7rem; height: 2.7rem; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(17,17,17,.16); background: var(--paper); color: var(--ink); cursor: pointer; transition: background .16s, border-color .16s; }
         .fl-puscice button:hover { background: rgba(17,17,17,.05); border-color: var(--ink); }
         @media (max-width: 560px) { .fl-puscice { display: none; } }
-        .fl-orodja-vrsta { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x proximity; padding: .6rem .3rem 1.2rem; padding-right: max(5vw, 3rem); margin: 0 calc(50% - 50vw) 0 -.3rem; scrollbar-width: none; }
+        .fl-orodja-vrsta { display: flex; gap: 1rem; overflow-x: auto; padding: .6rem .3rem 1.2rem; padding-right: max(5vw, 3rem); margin: 0 calc(50% - 50vw) 0 -.3rem; scrollbar-width: none; }
         .fl-orodja-vrsta::-webkit-scrollbar { display: none; }
-        .fl-tkarta { flex: 0 0 clamp(15rem, 23vw, 17.5rem); scroll-snap-align: start; display: block; padding: 1.5rem 1.4rem 1.6rem; border-radius: 18px; background: rgba(255,255,255,.94); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 12px 32px rgba(40,25,60,.07); text-decoration: none; color: var(--ink); transition: transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease; }
+        .fl-tkarta { flex: 0 0 clamp(15rem, 23vw, 17.5rem); display: block; padding: 1.5rem 1.4rem 1.6rem; border-radius: 18px; background: rgba(255,255,255,.94); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 12px 32px rgba(40,25,60,.07); text-decoration: none; color: var(--ink); transition: transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease; }
         .fl-tkarta:hover { transform: translateY(-4px); box-shadow: 0 22px 48px rgba(40,25,60,.14); }
         .fl-tkarta-ikona { display: inline-flex; align-items: center; justify-content: center; width: 2.7rem; height: 2.7rem; border-radius: 13px; background: oklch(93% .055 var(--h, 297)); color: oklch(52% .15 var(--h, 297)); margin-bottom: .95rem; transition: transform .22s cubic-bezier(.16,1,.3,1); }
         .fl-tkarta:hover .fl-tkarta-ikona { transform: scale(1.07) rotate(-3deg); }
