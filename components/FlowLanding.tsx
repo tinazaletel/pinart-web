@@ -805,7 +805,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <p>Sem Tina, oblikovalka in načrtovalka produktov. Oblikovanje je moje veselje — ponudbe in računi pa muka, ki požre ure. Ugibala sem, ali sem dovolj zaračunala, pozabljala na avtorske pravice in skakala med tremi orodji.</p>
               <p>Verjetno poznaš tudi ti: ure pripravljaš ponudbo, potem pa ti stranka pokaže z AI generiran logotip. Pojasniš, da nima pravega tona za njeno panogo — pa dobiš, da se o okusu ne razpravlja. Tempo je z umetno inteligenco hitrejši kot kdaj prej, a prav zato je naš občutek za pravo rešitev vreden več, ne manj.</p>
               <p>Oblikovalci, kuharji, kritiki, slikarji, modni kreatorji — vsi gojimo občutek, ki zori leta. Podjetjem ne prodajamo zgolj okusa: ustoličimo njihov vizualni glas in ton, jim vdihnemo življenje, držimo konsistenco čez vse njihove znamke in skrbimo, da se njihova zgodba razvija.</p>
-              <p>Flow je nastal iz te utrujenosti. Da kreativci postanemo narekovalci okusa in ne zgolj izvajalci — da vemo, koliko je vredno naše delo, in ga ne prodamo pod ceno.</p>
+              <p>Flow je nastal iz te utrujenosti. Da kreativci postanemo narekovalci okusa in glasu, ne zgolj izvajalci — da vemo, koliko je vredno naše delo, in ga ne prodamo pod ceno.</p>
               <p>Ker sem na isti strani kot ti, je Flow mišljen kot opora: da imaš več časa za svoj okus in izraz, več drznosti in mirno zavest o svojih pravicah. Ne gradimo le okusa — gradimo glas, ton in zgodbo, po katerih znamke zaživijo.</p>
               <p className="fl-zgodba-podpis">— Tina, Pinart</p>
             </div>
