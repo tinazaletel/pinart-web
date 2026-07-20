@@ -52,7 +52,7 @@ export default function KalkulatorLanding({ locale = 'sl' }: { locale?: string }
 
   return (
     <div className="kland">
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .kland { max-width: 1100px; margin: 0 auto; padding: clamp(6rem, 12vw, 9rem) clamp(1.25rem, 4vw, 4.5rem) clamp(5rem, 8vw, 8rem); color: var(--ink); font-weight: 300; position: relative; }
         .kland .hero-vizual { position: absolute; top: 4rem; right: -6rem; width: clamp(260px, 34vw, 460px); opacity: .9; pointer-events: none; z-index: -1; }
         @media (max-width: 900px) { .kland .hero-vizual { position: static; width: min(70vw, 340px); margin: -2rem auto 1.5rem; } }
@@ -101,7 +101,7 @@ export default function KalkulatorLanding({ locale = 'sl' }: { locale?: string }
         .kland .nauk em { font-style: italic; }
         .kland .podpis { margin-top: 3.6rem; font-size: .85rem; color: rgba(17,17,17,.7); line-height: 1.7; }
         .kland .podpis a { color: var(--ink); }
-      `}</style>
+      `}} />
 
       <div className="hero-vizual" aria-hidden>
         {/* Ko Tina izvozi video pupe (ustvarja, sestankuje), ga da v

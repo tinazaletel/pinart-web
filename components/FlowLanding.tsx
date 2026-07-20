@@ -119,7 +119,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
   return (
     <div className="fl">
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .fl { position: relative; z-index: 1; color: var(--ink); font-weight: 300; overflow-x: clip; }
 
         /* Ozadje: mreza + vijola/zelena animirani blobi (kot naslovnica) */
@@ -300,7 +300,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-footer-cols a:hover { color: var(--ink); }
         .fl-footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-top: 2.6rem; padding: 1.4rem 0 0; border-top: 1px solid rgba(17,17,17,.08); font-size: .8rem; color: rgba(17,17,17,.55); }
         .fl-footer-bottom a { color: rgba(17,17,17,.7); text-decoration: none; }
-      `}</style>
+      `}} />
 
       <div className="fl-ozadje" aria-hidden>
         <span className="fl-blob v" />

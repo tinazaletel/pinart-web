@@ -76,7 +76,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
         </div>
       )}
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .flnav { position: fixed; inset: 0 0 auto 0; z-index: 100; display: flex; align-items: center; gap: 1.4rem;
           padding: clamp(.85rem, 1.6vw, 1.25rem) clamp(1.25rem, 5vw, 5.5rem);
           background: color-mix(in oklch, var(--paper) 90%, transparent);
@@ -122,7 +122,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
           .flnav-burger { display: flex; }
           .flnav { background: color-mix(in oklch, var(--paper) 92%, transparent); }
         }
-      `}</style>
+      `}} />
     </header>
   );
 }

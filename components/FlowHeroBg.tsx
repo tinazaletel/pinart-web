@@ -99,7 +99,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         ))}
       </div>
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .fl-herobg { position: absolute; inset: 0 0 auto 0; height: 82svh; z-index: 0; overflow: hidden; pointer-events: none; }
 
         /* Ilustrirana pupa desno od besedila, čez celo višino. object-fit: contain →
@@ -148,7 +148,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
           .fl-bubble { animation: none; }
           .fl-bubble.pop { animation-duration: .3s; }
         }
-      `}</style>
+      `}} />
     </div>
   );
 }
