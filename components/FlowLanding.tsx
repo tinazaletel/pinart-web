@@ -803,10 +803,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             </div>
             <div className="fl-zgodba-tekst">
               <p>Sem Tina, oblikovalka in načrtovalka produktov. V tem res uživam — a ponudbe in računi so mi muka. Ugibala sem, ali sem dovolj zaračunala, pozabljala na avtorske pravice in skakala med tremi orodji.</p>
-              <p>Danes, s prihodom umetne inteligence, je tempo vse hitrejši in hitrost vse pomembnejša — kar oblikovalce dodatno obremenjuje. Hkrati nekateri naše delo cenijo vse manj: dobiš komentar, da se o okusu ne razpravlja, in pod nos ti pomolijo z umetno inteligenco generiran logotip.</p>
-              <p>Res? Oblikovalec, kuhar, umetnostni zgodovinar, slikar, modni kreator — nihče ne sme govoriti o okusu? Prehajamo iz izvajalcev v idejne vodje in prodajamo okus. Ta je raznolik, a ga ni za podcenjevati, saj se občutek za estetiko gradi vrsto let.</p>
+              <p>Poznaš tisti občutek? Nekaj ur pripravljaš ponudbo, potem pa ti stranka pokaže z umetno inteligenco generiran logotip. Pojasniš, da ni aplikativen in da nima pravega tona za njeno panogo — v odgovor pa v latinščini dobiš, da se o okusu ne razpravlja. S prihodom AI je tempo vse hitrejši, oblikovanje pa nekateri cenijo vse manj.</p>
+              <p>Res se o okusu ne razpravlja? Oblikovalec, kuhar, umetnostni zgodovinar, slikar, modni kreator — vsi gradimo občutek, ki zori vrsto let. In podjetjem ne prodajamo zgolj okusa: ustoličimo njihov vizualni glas in ton, jim vdihnemo življenje, držimo konsistenco čez vse njihove znamke in skrbimo, da se njihova zgodba razvija.</p>
               <p>Flow je nastal iz te utrujenosti. Da kreativci nehamo biti zgolj izvajalci in postanemo narekovalci okusa — da vemo, koliko je vredno naše delo, in ga ne prodamo pod ceno.</p>
-              <p>Želim si, da imamo več časa za urjenje svojega okusa in izraza — in da nas Flow spodbudi k še večji drznosti ter k zavedanju svojih pravic. Ker leta nismo le oblikovalci; smo tisti, ki gradimo okus.</p>
+              <p>Razumem te, ker sem na isti strani. Zato je Flow opora — da imaš več časa za svoj okus in izraz, več drznosti in mirno zavest o svojih pravicah. Ker ne gradimo le okusa; gradimo glas, ton in zgodbo, po katerih znamke zaživijo.</p>
               <p className="fl-zgodba-podpis">— Tina, Pinart</p>
             </div>
           </div>
