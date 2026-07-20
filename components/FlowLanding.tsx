@@ -222,7 +222,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     {
       ime: 'Brezplačno', za: 'Za začetek in enkratne projekte', cena: '0', enota: '€ za vedno',
       cta: 'Odpri kalkulator', href: kalkulator, izpost: false, znacka: '', kmalu: false,
-      vkljuceno: ['Kalkulator poštenih cen', 'Trije paketi + avtorske pravice', 'Urejljiva ponudba', 'Izvoz v e-pošto / PDF'],
+      vkljuceno: ['Kalkulator poštenih cen', 'Trije paketi + avtorske pravice', 'Oblikovana in urejljiva ponudba', 'Izvoz v e-pošto / PDF'],
       brez: ['Shranjeni dokumenti', 'Pogodbe in računi', 'Stranke in cilji'],
     },
     {
