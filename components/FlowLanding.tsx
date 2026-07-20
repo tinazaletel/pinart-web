@@ -3,8 +3,9 @@
 import {
   FileText, Handshake, Scroll, Receipt, Wallet, Tag, Clock,
   Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, X, CaretLeft, CaretRight,
+  ShieldCheck, Scales, ChatCircle, Sparkle,
 } from '@phosphor-icons/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { localePath } from '@/i18n/routing';
 import FlowHeroBg from '@/components/FlowHeroBg';
 import RotatingLaptop from '@/components/RotatingLaptop';
@@ -22,6 +23,29 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const [taRubrika, setTaRubrika] = useState('vse');
   const vrstaRef = useRef<HTMLDivElement>(null);
   const drsni = (smer: number) => vrstaRef.current?.scrollBy({ left: smer * 340, behavior: 'smooth' });
+
+  /* Samodejno počasno drsenje vrste orodij; ustavi ob hoverju/dotiku; spoštuj reduce-motion. */
+  useEffect(() => {
+    const el = vrstaRef.current;
+    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let paused = false;
+    const enter = () => { paused = true; };
+    const leave = () => { paused = false; };
+    el.addEventListener('pointerenter', enter);
+    el.addEventListener('pointerdown', enter);
+    el.addEventListener('pointerleave', leave);
+    const iv = window.setInterval(() => {
+      if (paused) return;
+      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 2) el.scrollTo({ left: 0, behavior: 'smooth' });
+      else el.scrollLeft += 0.7;
+    }, 22);
+    return () => {
+      clearInterval(iv);
+      el.removeEventListener('pointerenter', enter);
+      el.removeEventListener('pointerdown', enter);
+      el.removeEventListener('pointerleave', leave);
+    };
+  }, [taRubrika]);
 
   const RUBRIKE = [
     { id: 'vse', label: 'Vse' },
@@ -45,6 +69,15 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { Ikona: SquaresFour, kat: 'stranke', ime: 'Pregled', opis: 'Nadzorna plošča: promet, odprte ponudbe in čakajoča plačila.', href: localePath(locale, '/kalkulator/pregled') },
   ];
   const vidnaOrodja = ORODJA.filter(o => taRubrika === 'vse' || o.kat === taRubrika);
+
+  const FUNKCIJE = [
+    { Ikona: ShieldCheck, ime: 'Tvoji podatki, tvoja last', opis: 'Vse, kar vneseš, ostane tvoje. Podatkov nikoli ne prodamo ali analiziramo.' },
+    { Ikona: Scales, ime: 'Avtorske pravice vračunane', opis: 'Cena vsakič razbije izvedbo, pravice in licenco — da dela ne prodaš pod ceno.' },
+    { Ikona: Receipt, ime: 'Od ponudbe do računa', opis: 'Ponudba, pogodba, račun in stroški tečejo iz istih podatkov, brez podvajanja.' },
+    { Ikona: SquaresFour, ime: 'Brez Excela in map', opis: 'Eno mirno mesto namesto dokumentov, razmetanih po računalniku.' },
+    { Ikona: ChatCircle, ime: 'Osebna podpora', opis: 'Pišeš neposredno Tini. Pravi človek, ne oddelek.' },
+    { Ikona: Sparkle, ime: 'Med beto brezplačno', opis: 'Vsi paketi so med beto na voljo brezplačno. Brez kartice.' },
+  ];
 
   const KORAKI = [
     { n: '01', naslov: 'Izračunaj ponudbo', opis: 'Kalkulator ti pokaže pošteno ceno: izvedbo, pravice in licenco, uglašeno z naročnikom.' },
@@ -144,7 +177,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-puscice button { width: 2.7rem; height: 2.7rem; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(17,17,17,.16); background: var(--paper); color: var(--ink); cursor: pointer; transition: background .16s, border-color .16s; }
         .fl-puscice button:hover { background: rgba(17,17,17,.05); border-color: var(--ink); }
         @media (max-width: 560px) { .fl-puscice { display: none; } }
-        .fl-orodja-vrsta { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x proximity; padding: .6rem .3rem 1.2rem; margin: 0 -.3rem; scrollbar-width: none; }
+        .fl-orodja-vrsta { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x proximity; padding: .6rem .3rem 1.2rem; padding-right: max(5vw, 3rem); margin: 0 calc(50% - 50vw) 0 -.3rem; scrollbar-width: none; }
         .fl-orodja-vrsta::-webkit-scrollbar { display: none; }
         .fl-tkarta { flex: 0 0 clamp(15rem, 23vw, 17.5rem); scroll-snap-align: start; display: block; padding: 1.5rem 1.4rem 1.6rem; border-radius: 18px; background: rgba(255,255,255,.78); border: 1px solid rgba(255,255,255,.85); box-shadow: 0 12px 32px rgba(40,25,60,.07); -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3); text-decoration: none; color: var(--ink); transition: transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease; }
         .fl-tkarta:hover { transform: translateY(-4px); box-shadow: 0 22px 48px rgba(40,25,60,.14); }
@@ -173,6 +206,18 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-konec .zakljucki { margin: 1.8rem 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 1.4rem; font-size: .84rem; color: rgba(17,17,17,.7); }
         .fl-konec .zakljucki span { display: inline-flex; align-items: center; gap: .4rem; }
         .fl-konec .zakljucki svg { color: oklch(52% .13 155); }
+
+        /* Temna "features" sekcija (Magnific slog) */
+        .fl-funkcije { margin: 6.5rem 0 0; border-radius: 26px; padding: clamp(2.4rem, 5vw, 3.8rem); background: oklch(21% .016 285); color: oklch(95% .01 285); }
+        .fl-funkcije-glava { max-width: 46ch; }
+        .fl-funkcije-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.7rem, 4vw, 2.6rem); line-height: 1.08; margin: 0 0 .6rem; color: #fff; -webkit-text-stroke: 0; }
+        .fl-funkcije-glava p { font-size: 1rem; line-height: 1.55; color: oklch(72% .02 285); margin: 0; }
+        .fl-funkcije-mreza { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.8rem 2rem; margin-top: 2.8rem; }
+        @media (max-width: 780px) { .fl-funkcije-mreza { grid-template-columns: 1fr; gap: 1.4rem; } }
+        .fl-funkcija { display: flex; gap: .9rem; align-items: flex-start; }
+        .fl-funkcija-ikona { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; flex-shrink: 0; border-radius: 10px; background: oklch(29% .02 285); color: oklch(84% .11 297); }
+        .fl-funkcija strong { display: block; font-size: 1rem; font-weight: 650; color: #fff; margin-bottom: .25rem; }
+        .fl-funkcija p { font-size: .88rem; line-height: 1.5; color: oklch(70% .02 285); margin: 0; }
 
         /* Cenik (price plans, Magnific slog) */
         .fl-cenik { margin: 6.5rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 2.6rem; text-align: center; }
@@ -336,6 +381,24 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <span><CheckCircle size={16} weight="fill" /> Brez kartice za začetek</span>
             <span><CheckCircle size={16} weight="fill" /> Kalkulator ostane brezplačen</span>
             <span><CheckCircle size={16} weight="fill" /> Podatki so tvoji</span>
+          </div>
+        </section>
+
+        <section className="fl-funkcije">
+          <div className="fl-funkcije-glava">
+            <h2>Zgrajeno za mirno poslovanje samostojnega kreativca.</h2>
+            <p>Poštene cene, tvoji podatki in vse na enem mestu — brez skritih pasti.</p>
+          </div>
+          <div className="fl-funkcije-mreza">
+            {FUNKCIJE.map(f => {
+              const Ikona = f.Ikona;
+              return (
+                <div className="fl-funkcija" key={f.ime}>
+                  <span className="fl-funkcija-ikona"><Ikona size={20} weight="regular" /></span>
+                  <div><strong>{f.ime}</strong><p>{f.opis}</p></div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
