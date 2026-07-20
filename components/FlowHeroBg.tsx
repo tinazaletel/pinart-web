@@ -100,7 +100,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
       </div>
 
       <style>{`
-        .fl-herobg { position: absolute; inset: 0 0 auto 0; height: 100svh; z-index: 0; overflow: hidden; pointer-events: none; }
+        .fl-herobg { position: absolute; inset: 0 0 auto 0; height: 82svh; z-index: 0; overflow: hidden; pointer-events: none; }
 
         /* Ilustrirana pupa desno od besedila, čez celo višino. object-fit: contain →
            cel prizor je viden (glava, laptop, roke), NIKOLI odrezan. mix-blend

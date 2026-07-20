@@ -137,10 +137,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
         .fl-oder { max-width: 1480px; margin: 0 auto; padding: clamp(5.5rem, 11vw, 8.5rem) clamp(1.5rem, 5vw, 5.5rem) clamp(5rem, 8vw, 8rem); }
 
-        /* Hero — sekcija mora biti VSAJ tako visoka kot ozadje (.fl-herobg = 100svh),
-           sicer absolutno ozadje štrli čez naslednje sekcije in v Safari/Chrome
-           pokvari njihov izris (naslovi/besedilo se ne narišejo). */
-        .fl-hero { position: relative; min-height: 100svh; isolation: isolate; }
+        /* Hero — sekcija naravne višine (vsebina + spodobna spodnja praznina za
+           mehurčke). isolation: izolira ozadje, da ne pokvari izrisa sekcij pod njim.
+           Ozadje (.fl-herobg) je height:100% → se ujema s hero sekcijo in NE štrli. */
+        .fl-hero { position: relative; min-height: 82svh; isolation: isolate; }
         .fl .kicker { font-size: .72rem; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl .kicker b { color: var(--accent); font-weight: 700; }
         .fl h1 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(2.7rem, 8.5vw, 5.2rem); line-height: .97; letter-spacing: -.015em; margin: .7rem 0 1.3rem; max-width: 15ch; }
