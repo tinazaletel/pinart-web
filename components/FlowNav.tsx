@@ -29,6 +29,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
 
   const LINKS = [
     { label: 'Cenik', href: `${flow}#cenik` },
+    { label: 'Vprašanja', href: `${flow}#faq` },
     { label: 'O nas', href: `${flow}#onas` },
     { label: 'Kontakt', href: 'mailto:tina@pinart.si' },
   ];
@@ -78,8 +79,9 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
       <style>{`
         .flnav { position: fixed; inset: 0 0 auto 0; z-index: 100; display: flex; align-items: center; gap: 1.4rem;
           padding: clamp(.85rem, 1.6vw, 1.25rem) clamp(1.25rem, 5vw, 5.5rem);
+          background: color-mix(in oklch, var(--paper) 58%, transparent); -webkit-backdrop-filter: blur(12px) saturate(1.4); backdrop-filter: blur(12px) saturate(1.4);
           transition: background .28s ease, box-shadow .28s ease, border-color .28s ease; border-bottom: 1px solid transparent; }
-        .flnav.scrolled { background: color-mix(in oklch, var(--paper) 82%, transparent); -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3); border-bottom-color: rgba(17,17,17,.08); box-shadow: 0 6px 24px rgba(40,25,60,.05); }
+        .flnav.scrolled { background: color-mix(in oklch, var(--paper) 85%, transparent); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); border-bottom-color: rgba(17,17,17,.08); box-shadow: 0 6px 24px rgba(40,25,60,.05); }
 
         .flnav-brand { display: inline-flex; align-items: baseline; gap: .5rem; text-decoration: none; color: var(--ink); }
         .flnav-mark { width: .85rem; height: .85rem; border-radius: 50%; align-self: center; background: linear-gradient(140deg, oklch(72% .17 297), oklch(80% .13 165)); box-shadow: 0 2px 8px oklch(70% .16 297 / .4); }
