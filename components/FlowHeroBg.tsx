@@ -106,7 +106,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
            cel prizor je viden (glava, laptop, roke), NIKOLI odrezan. mix-blend
            multiply → bela podlaga izgine, ostane skica na papirju. Mehki gradient
            prehod na VSEH robovih (mask zbledi pred robom) — nič grdih rezov. */
-        .fl-video { position: absolute; top: 180px; bottom: 0; right: 0; width: 53%; background: var(--paper);
+        .fl-video { position: absolute; top: 72px; bottom: 0; right: 0; width: 53%; background: var(--paper);
           -webkit-mask-image: radial-gradient(115% 94% at 60% 47%, #000 46%, transparent 90%); mask-image: radial-gradient(115% 94% at 60% 47%, #000 46%, transparent 90%); }
         .fl-video video { width: 100%; height: 100%; object-fit: contain; object-position: center;
           mix-blend-mode: multiply; opacity: 1; filter: contrast(1.25) saturate(1.05); }
