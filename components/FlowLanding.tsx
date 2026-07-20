@@ -525,7 +525,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-faq-odg p { margin: 0; padding: 0 3rem 1.35rem .2rem; font-size: .92rem; line-height: 1.65; color: rgba(17,17,17,.72); }
 
         /* Moja zgodba (O nas) — osebni manifesto, editorial */
-        .fl-zgodba { margin: 10.05rem 0 0; padding-top: 3rem; }
+        .fl-zgodba { position: relative; margin: 10.05rem 0 0; padding: 3rem 0 5.5rem; }
         .fl-zgodba-glava { max-width: 26ch; margin: 0 0 2.2rem; }
         .fl-zgodba-glava .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-zgodba-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 4.5vw, 2.7rem); line-height: 1.06; margin: .55rem 0 0; }
@@ -537,6 +537,12 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-zgodba-tekst p:first-child { font-size: 1.18rem; line-height: 1.6; color: var(--ink); }
         .fl-zgodba-tekst em { font-style: italic; }
         .fl-zgodba-podpis { font-family: var(--font-serif), serif; font-style: italic; font-size: 1.05rem !important; color: var(--ink) !important; margin-top: 1.4rem !important; }
+        /* Pupa se sprehodi po spodnjem robu — pride z leve, gre cez ekran, izgine desno,
+           in se cez ~pol minute spet sprehodi. Odlozi /public/flow/pupa-hoja.webm (ali .mp4). */
+        .fl-pupa-pas { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: 100vw; height: 9rem; overflow: hidden; pointer-events: none; }
+        .fl-pupa { position: absolute; left: 0; bottom: 0; height: 100%; width: auto; mix-blend-mode: multiply; will-change: transform; animation: pupaHoja 34s linear infinite; }
+        @keyframes pupaHoja { 0% { transform: translateX(-16vw); } 22% { transform: translateX(116vw); } 100% { transform: translateX(116vw); } }
+        @media (prefers-reduced-motion: reduce) { .fl-pupa { display: none; } }
 
         .fl-footer { margin: 10.05rem calc(50% - 50vw) calc(-1 * clamp(5rem, 8vw, 8rem)); background: oklch(20% .016 285); color: oklch(93% .01 285); border-radius: 0; padding: clamp(2.8rem, 5vw, 4rem) calc(max(0px, (100vw - 1480px) / 2) + clamp(1.5rem, 5vw, 5.5rem)) clamp(2rem, 4vw, 2.6rem); }
         .fl-footer-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(2rem, 5vw, 4rem); }
@@ -809,6 +815,13 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <p>Ker sem na isti strani kot ti, je Flow mišljen kot opora: da imaš več časa za svoj okus in izraz, več drznosti in mirno zavest o svojih pravicah. Ne gradimo le okusa — gradimo glas, ton in zgodbo, po katerih znamke zaživijo.</p>
               <p className="fl-zgodba-podpis">— Tina, Pinart</p>
             </div>
+          </div>
+          <div className="fl-pupa-pas" aria-hidden>
+            <video className="fl-pupa" autoPlay muted loop playsInline preload="metadata"
+              onError={e => { (e.currentTarget as HTMLVideoElement).style.display = 'none'; }}>
+              <source src="/flow/pupa-hoja.webm" type="video/webm" />
+              <source src="/flow/pupa-hoja.mp4" type="video/mp4" />
+            </video>
           </div>
         </section>
 
