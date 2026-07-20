@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { localePath } from '@/i18n/routing';
 import FlowHeroBg from '@/components/FlowHeroBg';
 import AmbientBubbles from '@/components/AmbientBubbles';
+import CircularText from '@/components/CircularText';
 import RotatingLaptop from '@/components/RotatingLaptop';
 
 /* Predstavitev celotnega paketa Pinart Flow (pinartflow.com). Prodaja
@@ -531,8 +532,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-zgodba-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 4.5vw, 2.7rem); line-height: 1.06; margin: .55rem 0 0; }
         .fl-zgodba-telo { display: grid; grid-template-columns: 17rem minmax(0, 1fr); gap: clamp(1.8rem, 4vw, 3.6rem); align-items: start; }
         @media (max-width: 760px) { .fl-zgodba-telo { grid-template-columns: 1fr; } .fl-zgodba-portret { max-width: 16rem; } }
-        .fl-zgodba-portret { position: relative; aspect-ratio: 4 / 5; border-radius: 20px; overflow: hidden; background: linear-gradient(150deg, oklch(90% .06 297), oklch(91% .05 330), oklch(90% .06 165)); box-shadow: 0 18px 44px rgba(40,25,60,.12); }
-        .fl-zgodba-portret img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .fl-zgodba-portret { position: relative; display: grid; place-items: center; aspect-ratio: 1; }
+        .fl-zgodba-foto { grid-area: 1 / 1; width: 68%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: linear-gradient(150deg, oklch(90% .06 297), oklch(91% .05 330), oklch(90% .06 165)); box-shadow: 0 18px 44px rgba(40,25,60,.18); }
+        .fl-zgodba-foto img { width: 100%; height: 100%; object-fit: cover; }
+        .fl-zgodba-portret .circular-text { grid-area: 1 / 1; width: 100%; height: 100%; color: var(--ink); opacity: .82; }
         .fl-zgodba-tekst p { font-size: 1.02rem; line-height: 1.72; color: rgba(17,17,17,.82); margin: 0 0 1.1rem; max-width: 60ch; }
         .fl-zgodba-tekst p:first-child { font-size: 1.18rem; line-height: 1.6; color: var(--ink); }
         .fl-zgodba-tekst em { font-style: italic; }
@@ -804,8 +807,11 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <h2>Zgradila sem Flow, kakršnega sem sama pogrešala.</h2>
           </div>
           <div className="fl-zgodba-telo">
-            <div className="fl-zgodba-portret" aria-hidden>
-              <img src="/flow/tina.jpg" alt="" loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+            <div className="fl-zgodba-portret">
+              <div className="fl-zgodba-foto" aria-hidden>
+                <img src="/flow/tina.jpg" alt="Tina, Pinart" loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+              </div>
+              <CircularText text="PINART*FLOW*OD*KREATIVKE*ZA*KREATIVCE*" spinDuration={24} onHover="speedUp" />
             </div>
             <div className="fl-zgodba-tekst">
               <p>Sem Tina, oblikovalka in načrtovalka produktov. Oblikovanje je moje veselje — ponudbe in računi pa muka, ki požre ure. Ugibala sem, ali sem dovolj zaračunala, pozabljala na avtorske pravice in skakala med tremi orodji.</p>
