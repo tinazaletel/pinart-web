@@ -221,7 +221,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-konec { margin: 9.85rem 0 0; text-align: center; padding-top: 3.4rem; }
         .fl-konec h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.02; margin: 0 auto 1.6rem; max-width: 18ch; }
         .fl-konec .cta-vrsta { justify-content: center; }
-        .fl-konec .zakljucki { margin: 1.8rem 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 1.4rem; font-size: .84rem; color: rgba(17,17,17,.7); }
+        .fl-konec .zakljucki { margin: 2rem 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 1.6rem; font-size: 1.02rem; color: rgba(17,17,17,.72); }
         .fl-konec .zakljucki span { display: inline-flex; align-items: center; gap: .4rem; }
         .fl-konec .zakljucki svg { color: oklch(52% .13 155); }
 
@@ -413,9 +413,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <a className="cta" href={prijava}>Vstopi v Flow <ArrowRight size={17} weight="bold" /></a>
           </div>
           <div className="zakljucki">
-            <span><CheckCircle size={16} weight="fill" /> Brez kartice za začetek</span>
-            <span><CheckCircle size={16} weight="fill" /> Kalkulator ostane brezplačen</span>
-            <span><CheckCircle size={16} weight="fill" /> Podatki so tvoji</span>
+            <span><CheckCircle size={20} weight="fill" /> Brez kartice za začetek</span>
+            <span><CheckCircle size={20} weight="fill" /> Kalkulator ostane brezplačen</span>
+            <span><CheckCircle size={20} weight="fill" /> Podatki so tvoji</span>
           </div>
         </section>
 
