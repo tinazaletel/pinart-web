@@ -100,13 +100,13 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
       </div>
 
       <style>{`
-        .fl-herobg { position: absolute; inset: 0 0 auto 0; height: calc(100svh - 20px); z-index: 0; overflow: hidden; pointer-events: none; }
+        .fl-herobg { position: absolute; inset: 0 0 auto 0; height: calc(100svh - 90px); z-index: 0; overflow: hidden; pointer-events: none; }
 
         /* Ilustrirana pupa desno od besedila, polna višina. mix-blend multiply →
            bela podlaga izgine, ostane samo skica na papirju. Levi rob se stopi. */
         .fl-video { position: absolute; top: 0; right: 0; width: 54%; height: 100%; }
         .fl-video video { width: 100%; height: 100%; object-fit: cover; object-position: center 42%;
-          mix-blend-mode: multiply; opacity: 1; filter: contrast(1.08);
+          mix-blend-mode: multiply; opacity: 1; filter: contrast(1.22) saturate(1.05);
           -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 30%); mask-image: linear-gradient(to right, transparent 0%, #000 30%); }
         /* Rahel prehod spodaj v papir */
         .fl-video::after { content: ''; position: absolute; inset: 0; background:

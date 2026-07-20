@@ -2,8 +2,9 @@
 
 import {
   FileText, Handshake, Scroll, Receipt, Wallet, Tag, Clock,
-  Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, X,
+  Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, X, CaretLeft, CaretRight,
 } from '@phosphor-icons/react';
+import { useRef, useState } from 'react';
 import { localePath } from '@/i18n/routing';
 import FlowHeroBg from '@/components/FlowHeroBg';
 import RotatingLaptop from '@/components/RotatingLaptop';
@@ -18,19 +19,32 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const kalkulator = localePath(locale, '/kalkulator/orodje') + '?od=flow';
   const kalkulatorLanding = localePath(locale, '/kalkulator');
 
-  const ORODJA = [
-    { Ikona: FileText, ime: 'Kalkulator ponudb', opis: 'Poštena cena projekta: izvedba, avtorske pravice in licenca. Trije paketi in urejljivo besedilo.', href: kalkulator, brezplacno: true },
-    { Ikona: Handshake, ime: 'Dolgoročno sodelovanje', opis: 'Retainer z mesečnim obsegom, urami in dobo. Jasni pogoji dolgoročnega dogovora.', href: localePath(locale, '/kalkulator/dolgorocno') },
-    { Ikona: Scroll, ime: 'Pogodbe', opis: 'Pogodbe o sodelovanju in prenosu pravic, pripravljene za podpis.', href: localePath(locale, '/kalkulator/pogodbe') },
-    { Ikona: Receipt, ime: 'Računi', opis: 'Iz ponudbe v račun z enim klikom. Številčenje, rok in status plačila.', href: localePath(locale, '/kalkulator/racuni') },
-    { Ikona: Wallet, ime: 'Stroški', opis: 'Odhodki in ponavljajoči se stroški, zbrani na enem mestu.', href: localePath(locale, '/kalkulator/stroski') },
-    { Ikona: Tag, ime: 'Ceniki', opis: 'Tvoji cenovni profili: shraniš, urediš in znova uporabiš.', href: localePath(locale, '/kalkulator/ceniki') },
-    { Ikona: Clock, ime: 'Cena & čas', opis: 'Koliko je vredna tvoja ura glede na cilje in obseg dela.', href: localePath(locale, '/kalkulator/cas') },
-    { Ikona: Users, ime: 'Stranke', opis: 'Kartoteka naročnikov s podatki, dokumenti in zgodovino sodelovanja.', href: localePath(locale, '/kalkulator/stranke') },
-    { Ikona: Target, ime: 'Cilji', opis: 'Mesečni cilj prihodkov in koliko projektov te loči do njega.', href: localePath(locale, '/kalkulator/cilji') },
-    { Ikona: Suitcase, ime: 'Poslovni okvir', opis: 'Širša slika: rezerva, davki in spodnja meja poštene cene.', href: localePath(locale, '/kalkulator/poslovni-nacrt') },
-    { Ikona: SquaresFour, ime: 'Pregled', opis: 'Nadzorna plošča: promet, odprte ponudbe in čakajoča plačila.', href: localePath(locale, '/kalkulator/pregled') },
+  const [taRubrika, setTaRubrika] = useState('vse');
+  const vrstaRef = useRef<HTMLDivElement>(null);
+  const drsni = (smer: number) => vrstaRef.current?.scrollBy({ left: smer * 340, behavior: 'smooth' });
+
+  const RUBRIKE = [
+    { id: 'vse', label: 'Vse' },
+    { id: 'ponudbe', label: 'Ponudbe & cene' },
+    { id: 'dogovori', label: 'Dogovori' },
+    { id: 'finance', label: 'Finance' },
+    { id: 'stranke', label: 'Stranke & cilji' },
   ];
+
+  const ORODJA = [
+    { Ikona: FileText, kat: 'ponudbe', ime: 'Kalkulator ponudb', opis: 'Poštena cena projekta: izvedba, avtorske pravice in licenca. Trije paketi in urejljivo besedilo.', href: kalkulator, brezplacno: true },
+    { Ikona: Handshake, kat: 'dogovori', ime: 'Dolgoročno sodelovanje', opis: 'Retainer z mesečnim obsegom, urami in dobo. Jasni pogoji dolgoročnega dogovora.', href: localePath(locale, '/kalkulator/dolgorocno') },
+    { Ikona: Scroll, kat: 'dogovori', ime: 'Pogodbe', opis: 'Pogodbe o sodelovanju in prenosu pravic, pripravljene za podpis.', href: localePath(locale, '/kalkulator/pogodbe') },
+    { Ikona: Receipt, kat: 'finance', ime: 'Računi', opis: 'Iz ponudbe v račun z enim klikom. Številčenje, rok in status plačila.', href: localePath(locale, '/kalkulator/racuni') },
+    { Ikona: Wallet, kat: 'finance', ime: 'Stroški', opis: 'Odhodki in ponavljajoči se stroški, zbrani na enem mestu.', href: localePath(locale, '/kalkulator/stroski') },
+    { Ikona: Tag, kat: 'ponudbe', ime: 'Ceniki', opis: 'Tvoji cenovni profili: shraniš, urediš in znova uporabiš.', href: localePath(locale, '/kalkulator/ceniki') },
+    { Ikona: Clock, kat: 'ponudbe', ime: 'Cena & čas', opis: 'Koliko je vredna tvoja ura glede na cilje in obseg dela.', href: localePath(locale, '/kalkulator/cas') },
+    { Ikona: Users, kat: 'stranke', ime: 'Stranke', opis: 'Kartoteka naročnikov s podatki, dokumenti in zgodovino sodelovanja.', href: localePath(locale, '/kalkulator/stranke') },
+    { Ikona: Target, kat: 'stranke', ime: 'Cilji', opis: 'Mesečni cilj prihodkov in koliko projektov te loči do njega.', href: localePath(locale, '/kalkulator/cilji') },
+    { Ikona: Suitcase, kat: 'finance', ime: 'Poslovni okvir', opis: 'Širša slika: rezerva, davki in spodnja meja poštene cene.', href: localePath(locale, '/kalkulator/poslovni-nacrt') },
+    { Ikona: SquaresFour, kat: 'stranke', ime: 'Pregled', opis: 'Nadzorna plošča: promet, odprte ponudbe in čakajoča plačila.', href: localePath(locale, '/kalkulator/pregled') },
+  ];
+  const vidnaOrodja = ORODJA.filter(o => taRubrika === 'vse' || o.kat === taRubrika);
 
   const KORAKI = [
     { n: '01', naslov: 'Izračunaj ponudbo', opis: 'Kalkulator ti pokaže pošteno ceno: izvedbo, pravice in licenco, uglašeno z naročnikom.' },
@@ -122,14 +136,21 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-orodja .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-orodja h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 .5rem; max-width: 20ch; }
         .fl-orodja .uvod { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.76); max-width: 50ch; margin: 0 0 2.4rem; }
-        .fl-mreza { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-        @media (max-width: 900px) { .fl-mreza { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 560px) { .fl-mreza { grid-template-columns: 1fr; } }
-        .fl-karta { position: relative; display: block; padding: 1.4rem 1.35rem 1.5rem; border-radius: 18px; background: rgba(255,255,255,.72); border: 1px solid rgba(255,255,255,.8); box-shadow: 0 12px 32px rgba(40,25,60,.07); -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3); text-decoration: none; color: var(--ink); transition: transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease; overflow: hidden; }
-        .fl-karta:hover { transform: translateY(-4px); box-shadow: 0 22px 48px rgba(40,25,60,.14); }
-        .fl-karta-ikona { display: inline-flex; align-items: center; justify-content: center; width: 2.7rem; height: 2.7rem; border-radius: 13px; background: linear-gradient(140deg, oklch(94% .05 297), oklch(92% .06 165)); color: var(--accent); margin-bottom: .95rem; }
-        .fl-karta h3 { font-size: 1.02rem; font-weight: 650; margin: 0 0 .35rem; display: flex; align-items: center; gap: .5rem; }
-        .fl-karta p { font-size: .86rem; line-height: 1.55; color: rgba(17,17,17,.72); margin: 0; }
+        .fl-orodja-nadzor { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 1.9rem 0 1.3rem; flex-wrap: wrap; }
+        .fl-rubrike { display: inline-flex; gap: .25rem; padding: .28rem; border-radius: 999px; background: oklch(93% .012 87); flex-wrap: wrap; }
+        .fl-rubrike button { border: 0; background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; font-weight: 650; color: rgba(17,17,17,.62); padding: .5rem 1rem; border-radius: 999px; cursor: pointer; transition: background .18s, color .18s; white-space: nowrap; }
+        .fl-rubrike button.on { background: var(--ink); color: var(--paper); }
+        .fl-puscice { display: flex; gap: .5rem; }
+        .fl-puscice button { width: 2.7rem; height: 2.7rem; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(17,17,17,.16); background: var(--paper); color: var(--ink); cursor: pointer; transition: background .16s, border-color .16s; }
+        .fl-puscice button:hover { background: rgba(17,17,17,.05); border-color: var(--ink); }
+        @media (max-width: 560px) { .fl-puscice { display: none; } }
+        .fl-orodja-vrsta { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x proximity; padding: .6rem .3rem 1.2rem; margin: 0 -.3rem; scrollbar-width: none; }
+        .fl-orodja-vrsta::-webkit-scrollbar { display: none; }
+        .fl-tkarta { flex: 0 0 clamp(15rem, 23vw, 17.5rem); scroll-snap-align: start; display: block; padding: 1.5rem 1.4rem 1.6rem; border-radius: 18px; background: rgba(255,255,255,.78); border: 1px solid rgba(255,255,255,.85); box-shadow: 0 12px 32px rgba(40,25,60,.07); -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3); text-decoration: none; color: var(--ink); transition: transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease; }
+        .fl-tkarta:hover { transform: translateY(-4px); box-shadow: 0 22px 48px rgba(40,25,60,.14); }
+        .fl-tkarta-ikona { display: inline-flex; align-items: center; justify-content: center; width: 2.7rem; height: 2.7rem; border-radius: 13px; background: linear-gradient(140deg, oklch(94% .05 297), oklch(92% .06 165)); color: var(--accent); margin-bottom: .95rem; }
+        .fl-tkarta h3 { font-size: 1.02rem; font-weight: 650; margin: 0 0 .35rem; display: flex; align-items: center; gap: .5rem; }
+        .fl-tkarta p { font-size: .86rem; line-height: 1.55; color: rgba(17,17,17,.72); margin: 0; }
         .fl-znacka { font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: oklch(45% .13 155); background: oklch(92% .08 160); border-radius: 999px; padding: .2rem .5rem; }
 
         /* Brezplacni kalkulator pas */
@@ -256,17 +277,25 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
         <section className="fl-orodja" id="orodja">
           <div className="k">Orodja v paketu</div>
-          <h2>Eno okolje, vsa orodja kreativca.</h2>
-          <p className="uvod">
-            Vsako orodje dela z istimi podatki: kar vneseš enkrat, se prenese naprej.
-            Kalkulator je odprt vsem, ostalo te čaka v Flowu.
-          </p>
-          <div className="fl-mreza">
-            {ORODJA.map(o => {
+          <h2>Izberi orodje, začni ustvarjati.</h2>
+          <p className="uvod">Vsako orodje dela z istimi podatki: kar vneseš enkrat, se prenese naprej. Kalkulator je odprt vsem, ostalo te čaka v Flowu.</p>
+          <div className="fl-orodja-nadzor">
+            <div className="fl-rubrike">
+              {RUBRIKE.map(r => (
+                <button key={r.id} type="button" className={taRubrika === r.id ? 'on' : ''} onClick={() => setTaRubrika(r.id)}>{r.label}</button>
+              ))}
+            </div>
+            <div className="fl-puscice">
+              <button type="button" onClick={() => drsni(-1)} aria-label="Nazaj"><CaretLeft size={18} weight="bold" /></button>
+              <button type="button" onClick={() => drsni(1)} aria-label="Naprej"><CaretRight size={18} weight="bold" /></button>
+            </div>
+          </div>
+          <div className="fl-orodja-vrsta" ref={vrstaRef}>
+            {vidnaOrodja.map(o => {
               const Ikona = o.Ikona;
               return (
-                <a className="fl-karta" href={o.href} key={o.ime}>
-                  <span className="fl-karta-ikona"><Ikona size={22} weight="regular" /></span>
+                <a className="fl-tkarta" href={o.href} key={o.ime}>
+                  <span className="fl-tkarta-ikona"><Ikona size={22} weight="regular" /></span>
                   <h3>{o.ime} {o.brezplacno && <span className="fl-znacka">Brezplačno</span>}</h3>
                   <p>{o.opis}</p>
                 </a>
