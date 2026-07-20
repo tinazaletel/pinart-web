@@ -106,18 +106,24 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
            cel prizor je viden (glava, laptop, roke), NIKOLI odrezan. mix-blend
            multiply → bela podlaga izgine, ostane skica na papirju. Mehki gradient
            prehod na VSEH robovih (mask zbledi pred robom) — nič grdih rezov. */
+        /* Maska bledi LEVO (stik z besedilom) IN zgoraj+spodaj (da morebiten odrez
+           mehko zbledi, ne moti). Presek dveh linearnih gradientov. */
         .fl-video { position: absolute; top: 72px; bottom: 0; right: 0; width: 53%; background: var(--paper);
-          -webkit-mask-image: radial-gradient(150% 135% at 60% 46%, #000 66%, transparent 100%); mask-image: radial-gradient(150% 135% at 60% 46%, #000 66%, transparent 100%); }
+          -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 30%), linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%); -webkit-mask-composite: source-in;
+          mask-image: linear-gradient(to right, transparent 0%, #000 30%), linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%); mask-composite: intersect; }
         .fl-video video { width: 100%; height: 100%; object-fit: contain; object-position: center;
           mix-blend-mode: multiply; opacity: 1; filter: contrast(1.25) saturate(1.05); }
         /* Rahel prehod spodaj v papir */
         .fl-video::after { content: ''; position: absolute; inset: 0; background:
           linear-gradient(180deg, transparent 0%, transparent 82%, var(--paper) 100%); }
 
+        /* Mobile: video NI več prosojno ozadje za tekstom (nečitljivo), ampak poln
+           pas SPODAJ (v spodnjem delu heroja, pod besedilom). Vrh pasu zbledi. */
         @media (max-width: 820px) {
-          .fl-video { width: 100%; }
-          .fl-video video { opacity: .32; object-position: center 34%;
-            -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 86%); mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 86%); }
+          .fl-video { top: auto; bottom: 0; height: 46svh; width: 100%;
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 18%); -webkit-mask-composite: source-over;
+            mask-image: linear-gradient(to bottom, transparent 0%, #000 18%); mask-composite: add; }
+          .fl-video video { opacity: 1; object-position: center; }
         }
 
         .fl-bubbles { position: absolute; inset: 0; }
