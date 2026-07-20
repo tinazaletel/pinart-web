@@ -100,14 +100,14 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
       </div>
 
       <style>{`
-        .fl-herobg { position: absolute; inset: 0 0 auto 0; height: calc(100svh - 90px); z-index: 0; overflow: hidden; pointer-events: none; }
+        .fl-herobg { position: absolute; inset: 0 0 auto 0; height: 82svh; z-index: 0; overflow: hidden; pointer-events: none; }
 
         /* Ilustrirana pupa desno od besedila, polna višina. mix-blend multiply →
            bela podlaga izgine, ostane samo skica na papirju. Levi rob se stopi. */
-        .fl-video { position: absolute; top: 0; right: 0; width: 54%; height: 100%; }
-        .fl-video video { width: 100%; height: 100%; object-fit: cover; object-position: center 42%;
-          mix-blend-mode: multiply; opacity: 1; filter: contrast(1.22) saturate(1.05);
-          -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 30%); mask-image: linear-gradient(to right, transparent 0%, #000 30%); }
+        .fl-video { position: absolute; top: 0; right: 0; width: 54%; height: 100%; background: var(--paper);
+          -webkit-mask-image: radial-gradient(125% 82% at 58% 50%, #000 55%, transparent 94%); mask-image: radial-gradient(125% 82% at 58% 50%, #000 55%, transparent 94%); }
+        .fl-video video { width: 100%; height: 100%; object-fit: contain; object-position: center;
+          mix-blend-mode: multiply; opacity: 1; filter: contrast(1.2) saturate(1.05); }
         /* Rahel prehod spodaj v papir */
         .fl-video::after { content: ''; position: absolute; inset: 0; background:
           linear-gradient(180deg, transparent 0%, transparent 82%, var(--paper) 100%); }

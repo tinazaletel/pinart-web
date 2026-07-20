@@ -276,9 +276,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         </section>
 
         <section className="fl-orodja" id="orodja">
-          <div className="k">Orodja v paketu</div>
-          <h2>Izberi orodje, začni ustvarjati.</h2>
-          <p className="uvod">Vsako orodje dela z istimi podatki: kar vneseš enkrat, se prenese naprej. Kalkulator je odprt vsem, ostalo te čaka v Flowu.</p>
+          <div className="k">Naša orodja</div>
+          <h2>Izbrana orodja za lažje kreativne začetke.</h2>
+          <p className="uvod">Tudi ti raje oblikuješ, kot pripravljaš ponudbe, pogodbe in račune? Naša izbrana zbirka orodij prevzame administracijo, da se lahko posvetiš ustvarjanju. Poglej, kaj te čaka.</p>
           <div className="fl-orodja-nadzor">
             <div className="fl-rubrike">
               {RUBRIKE.map(r => (
