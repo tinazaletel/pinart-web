@@ -27,6 +27,11 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   useEffect(() => {
+    // Flow landing (pinartflow.com/flow, /kalkulator) NE uporablja Lenis smooth
+    // scrolla: v kombinaciji z mix-blend/mask/blur ozadjem povzroči, da se sekcije
+    // pod herojem v Safari/Chrome ne izrišejo. Native scroll to zanesljivo odpravi.
+    if (/\/(flow|kalkulator)(\/|$)/.test(window.location.pathname)) return;
+
     // Force every (re)load to start at the top so ScrollTriggers with `once: true`
     // don't get skipped because the browser restored scroll past their start point.
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
