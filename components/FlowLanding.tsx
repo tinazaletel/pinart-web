@@ -234,7 +234,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     {
       ime: 'Pro', za: 'Za polno poslovanje', cena: '19', enota: '€ / mesec',
       cta: 'Kmalu', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Kmalu', kmalu: true,
-      vkljuceno: ['Vse iz Premium', 'Samodejni pregled prihodkov in dobička od podjetij', 'Poslovni okvir in davki', 'Izvoz za računovodstvo', 'AI agent (beta)', 'MCP & API dostop (kmalu)', 'Prednostna podpora'],
+      vkljuceno: ['Vse iz Premium', 'Celoten analitični pregled — prihodki in dobiček po strankah', 'Sinhronizacija med vsemi orodji', 'Poslovni okvir in davki', 'Posredovanje računovodstvu (izvoz)', 'AI agent (beta)', 'MCP & API dostop (kmalu)', 'Prednostna podpora'],
       brez: [],
     },
   ];
