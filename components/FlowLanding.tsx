@@ -160,7 +160,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl .cta-note { font-size: .8rem; color: rgba(17,17,17,.6); }
 
         /* Poteka: od ponudbe do racuna */
-        .fl-potek { margin: 3.4rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 2.6rem; }
+        .fl-potek { margin: 3.4rem 0 0; padding-top: 2.6rem; }
         .fl-potek .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-potek h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 2.2rem; max-width: 20ch; }
         .fl-koraki { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6rem; }
@@ -182,7 +182,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 860px) { .fl-rl { max-width: 440px; } }
 
         /* Orodja mreza */
-        .fl-orodja { margin: 3.6rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 2.6rem; }
+        .fl-orodja { margin: 3.6rem 0 0; padding-top: 2.6rem; }
         .fl-orodja .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-orodja h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 .5rem; max-width: 20ch; }
         .fl-orodja .uvod { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.76); max-width: 50ch; margin: 0 0 2.4rem; }
@@ -218,7 +218,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-brez p { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.8); max-width: 48ch; margin: 0 0 1.8rem; }
 
         /* Zakljucni CTA */
-        .fl-konec { margin: 3.6rem 0 0; text-align: center; border-top: 1px solid rgba(17,17,17,.16); padding-top: 3.4rem; }
+        .fl-konec { margin: 3.6rem 0 0; text-align: center; padding-top: 3.4rem; }
         .fl-konec h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.02; margin: 0 auto 1.6rem; max-width: 18ch; }
         .fl-konec .cta-vrsta { justify-content: center; }
         .fl-konec .zakljucki { margin: 1.8rem 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 1.4rem; font-size: .84rem; color: rgba(17,17,17,.7); }
@@ -238,7 +238,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-funkcija p { font-size: .88rem; line-height: 1.5; color: oklch(70% .02 285); margin: 0; }
 
         /* Cenik (price plans, Magnific slog) */
-        .fl-cenik { margin: 3.8rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 2.6rem; text-align: center; }
+        .fl-cenik { margin: 3.8rem 0 0; padding-top: 2.6rem; text-align: center; }
         .fl-cenik > .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-cenik > h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 .5rem; }
         .fl-cenik > .uvod { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.76); max-width: 46ch; margin: 0 auto 2.8rem; }
@@ -264,7 +264,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-plan-lista li.ne svg { color: rgba(17,17,17,.3); }
         .fl-cenik-opomba { font-size: .78rem; color: rgba(17,17,17,.5); margin: 1.9rem 0 0; }
 
-        .fl-faq { margin: 3.8rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 3rem; display: flex; flex-wrap: wrap; gap: clamp(1.8rem, 4vw, 3.5rem); align-items: flex-start; }
+        .fl-faq { margin: 3.8rem 0 0; padding-top: 3rem; display: flex; flex-wrap: wrap; gap: clamp(1.8rem, 4vw, 3.5rem); align-items: flex-start; }
         .fl-faq-glava { flex: 1 1 240px; min-width: 240px; }
         .fl-faq-glava .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-faq-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.8rem, 4vw, 2.55rem); line-height: 1.07; margin: .55rem 0 1.4rem; }
@@ -281,7 +281,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-faq-item.odprt .fl-faq-odg { max-height: 320px; }
         .fl-faq-odg p { margin: 0; padding: 0 3rem 1.35rem .2rem; font-size: .92rem; line-height: 1.65; color: rgba(17,17,17,.72); }
 
-        .fl-footer { margin: 3.8rem 0 0; border-top: 1px solid rgba(17,17,17,.14); padding-top: 3rem; }
+        .fl-footer { margin: 3.8rem 0 0; padding-top: 3rem; }
         .fl-footer-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(2rem, 5vw, 4rem); }
         @media (max-width: 720px) { .fl-footer-top { grid-template-columns: 1fr; gap: 2rem; } }
         .fl-footer-talk { display: inline-block; margin-top: 1.1rem; font-size: .82rem; font-weight: 700; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: .15rem; }
