@@ -534,7 +534,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 760px) { .fl-zgodba-telo { grid-template-columns: 1fr; } .fl-zgodba-portret { max-width: 16rem; } }
         .fl-zgodba-portret { position: relative; display: grid; place-items: center; aspect-ratio: 1; }
         .fl-zgodba-foto { grid-area: 1 / 1; width: 68%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: linear-gradient(150deg, oklch(90% .06 297), oklch(91% .05 330), oklch(90% .06 165)); box-shadow: 0 18px 44px rgba(40,25,60,.18); }
-        .fl-zgodba-foto img { width: 100%; height: 100%; object-fit: cover; }
+        .fl-zgodba-foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
         .fl-zgodba-portret .circular-text { grid-area: 1 / 1; width: 100%; height: 100%; color: var(--ink); opacity: .82; }
         .fl-zgodba-tekst p { font-size: 1.02rem; line-height: 1.72; color: rgba(17,17,17,.82); margin: 0 0 1.1rem; max-width: 60ch; }
         .fl-zgodba-tekst p:first-child { font-size: 1.18rem; line-height: 1.6; color: var(--ink); }
@@ -810,7 +810,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           <div className="fl-zgodba-telo">
             <div className="fl-zgodba-portret">
               <div className="fl-zgodba-foto" aria-hidden>
-                <img src="/flow/tina.jpg" alt="Tina, Pinart" loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                <img src="/flow/tina_z.jpg" alt="Tina, Pinart" loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
               </div>
               <CircularText text="PINART*FLOW*OD*KREATIVKE*ZA*KREATIVCE*" spinDuration={24} onHover="speedUp" />
             </div>
@@ -824,12 +824,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             </div>
           </div>
           <div className="fl-pupa-pas" aria-hidden>
-            <video className="fl-pupa" autoPlay muted loop playsInline preload="metadata"
-              onError={e => { (e.currentTarget as HTMLVideoElement).style.display = 'none'; }}>
-              <source src="/flow/pupa-hoja.webm" type="video/webm" />
-              <source src="/flow/pupa-hoja.mov" type='video/quicktime; codecs="hvc1"' />
-              <source src="/flow/pupa-hoja.mp4" type="video/mp4" />
-            </video>
+            {/* Zacasno: staticna pupa (SVG), da se sprehod VIDI. Ko bo pravi video hoje
+                (pupa s psom) v /public/flow/pupa-hoja.webm, zamenjaj <img> nazaj v <video>. */}
+            <img className="fl-pupa" src="/pupa_pinart.svg" alt="" />
           </div>
         </section>
 
