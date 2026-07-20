@@ -160,7 +160,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl .cta-note { font-size: .8rem; color: rgba(17,17,17,.6); }
 
         /* Poteka: od ponudbe do racuna */
-        .fl-potek { margin: -11.9375rem 0 0; position: relative; z-index: 2; }
+        .fl-potek { margin: -11.8125rem 0 0; position: relative; z-index: 2; }
         .fl-potek .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-potek h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 2.2rem; max-width: 20ch; }
         .fl-koraki { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6rem; }
