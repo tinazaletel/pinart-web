@@ -6357,7 +6357,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     </div>
                     <div className="uv-polje uv-polje-siroko">
                       <label htmlFor="uv-pnaslov">Naslov <span className="uv-neobvezno">neobvezno</span></label>
-                      <input id="uv-pnaslov" type="text" placeholder="Mladinska ulica 63, 1000 Ljubljana"
+                      <input id="uv-pnaslov" type="text" placeholder="Gozdna pot 13, 4000 Kranj"
                         value={ponudnik.naslov} onChange={e => setPonudnik({ ...ponudnik, naslov: e.target.value })} />
                     </div>
                   </div>
