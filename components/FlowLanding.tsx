@@ -233,7 +233,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     {
       ime: 'Pro', za: 'Za polno poslovanje', cena: '19', enota: '€ / mesec',
       cta: 'Nadgradi v Pro', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Vse vključeno',
-      vkljuceno: ['Vse iz Premium', 'Dolgoročni retainerji', 'Poslovni okvir in davki', 'Izvoz za računovodstvo', 'Prednostna podpora'],
+      vkljuceno: ['Vse iz Premium', 'Dolgoročni retainerji', 'Poslovni okvir in davki', 'Izvoz za računovodstvo', 'AI agent (beta)', 'MCP & API dostop (kmalu)', 'Prednostna podpora'],
       brez: [],
     },
   ];
@@ -329,7 +329,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-showcase { margin: 9.85rem 0 0; padding-top: 2.6rem; }
         .fl-showcase-glava { text-align: center; max-width: 42ch; margin: 0 auto 1.8rem; }
         .fl-showcase-glava .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
-        .fl-showcase-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 .5rem; }
+        .fl-showcase-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem auto .5rem; max-width: 20ch; text-wrap: balance; }
         .fl-showcase-glava p { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.76); margin: 0 auto; }
         .fl-sc-pills { display: flex; flex-wrap: nowrap; justify-content: center; gap: .5rem; margin: 0 auto 1.7rem; max-width: 62rem; }
         @media (max-width: 900px) { .fl-sc-pills { overflow-x: auto; justify-content: flex-start; scrollbar-width: none; padding-bottom: .2rem; } .fl-sc-pills::-webkit-scrollbar { display: none; } .fl-sc-pill { flex: 0 0 auto; } }
@@ -416,7 +416,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bkarta.d { grid-column: 3; grid-row: 2; background: linear-gradient(150deg, oklch(46% .1 190), oklch(31% .06 200)); color: #fff; }
         .fl-bkarta.b > p, .fl-bkarta.c > p, .fl-bkarta.d > p { color: rgba(255,255,255,.74); }
         .fl-bthumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-top: 1.2rem; }
-        .fl-bthumbs span { aspect-ratio: 1; border-radius: 11px; background: linear-gradient(135deg, oklch(90% .07 297), oklch(90% .07 165)); }
+        .fl-bthumbs span { position: relative; overflow: hidden; aspect-ratio: 1; border-radius: 11px; background: linear-gradient(135deg, oklch(90% .07 297), oklch(90% .07 165)); }
+        .fl-bthumbs span img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
         .fl-bthumbs span:nth-child(3n+2) { background: linear-gradient(135deg, oklch(90% .07 330), oklch(90% .06 90)); }
         .fl-bthumbs span:nth-child(3n) { background: linear-gradient(135deg, oklch(90% .06 200), oklch(90% .07 297)); }
         .fl-bflow { display: flex; align-items: center; gap: .5rem; margin-top: auto; flex-wrap: wrap; }
@@ -450,7 +451,17 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-konec .zakljucki svg { color: oklch(52% .13 155); }
 
         /* Temna "features" sekcija (Magnific slog) */
-        .fl-funkcije { margin: 10.05rem 0 0; border-radius: 26px; padding: clamp(2.4rem, 5vw, 3.8rem); background: oklch(21% .016 285); color: oklch(95% .01 285); }
+        .fl-funkcije { position: relative; overflow: hidden; margin: 10.05rem 0 0; border-radius: 26px; padding: clamp(2.4rem, 5vw, 3.8rem); background: oklch(21% .016 285); color: oklch(95% .01 285); }
+        /* Prelivajoc gradient v krivulji ZA temno podlago (mehke, blur-ane barvne lise, ki pocasi lebdijo) */
+        .fl-funkcije::before { content: ''; position: absolute; inset: -45% -20% -25% -20%; z-index: 0; pointer-events: none; filter: blur(55px); opacity: .9;
+          background:
+            radial-gradient(42% 52% at 20% 16%, oklch(58% .19 297 / .5), transparent 62%),
+            radial-gradient(38% 48% at 84% 40%, oklch(66% .16 200 / .38), transparent 60%),
+            radial-gradient(48% 58% at 60% 96%, oklch(70% .15 330 / .32), transparent 62%);
+          animation: fnFlow 34s ease-in-out infinite; }
+        @keyframes fnFlow { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(2.5%, -2%) scale(1.09); } }
+        @media (prefers-reduced-motion: reduce) { .fl-funkcije::before { animation: none; } }
+        .fl-funkcije > * { position: relative; z-index: 1; }
         .fl-funkcije-glava { max-width: 46ch; }
         .fl-funkcije-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.7rem, 4vw, 2.6rem); line-height: 1.08; margin: 0 0 .6rem; color: #fff; -webkit-text-stroke: 0; }
         .fl-funkcije-glava p { font-size: 1rem; line-height: 1.55; color: oklch(72% .02 285); margin: 0; }
@@ -663,7 +674,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <div className="fl-bkarta a">
               <h3>Vsako orodje pripravljeno</h3>
               <p>Ponudbe, pogodbe, računi, stroški, ceniki. Odpri, kar potrebuješ — brez postavljanja.</p>
-              <div className="fl-bthumbs" aria-hidden><span /><span /><span /><span /><span /><span /></div>
+              <div className="fl-bthumbs" aria-hidden>{[1, 2, 3, 4, 5, 6].map(n => (
+                <span key={n}><img src={`/flow/bento/${n}.jpg`} alt="" loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} /></span>
+              ))}</div>
             </div>
             <div className="fl-bkarta b">
               <h3>Celoten posel na enem mestu</h3>
