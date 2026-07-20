@@ -228,13 +228,13 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     {
       ime: 'Premium', za: 'Za redno delo s strankami', cena: '9', enota: '€ / mesec',
       cta: 'Začni s Premium', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Najbolj priljubljeno', kmalu: false,
-      vkljuceno: ['Vse iz Brezplačno', 'Shranjene ponudbe, pogodbe, računi', 'Kartoteka strank', 'Stroški in cilji', 'Nadzorna plošča'],
-      brez: ['Retainerji in poslovni okvir'],
+      vkljuceno: ['Vse iz Brezplačno', 'Shranjene ponudbe, pogodbe, računi', 'Dolgoročni retainerji', 'Kartoteka strank', 'Stroški in cilji', 'Nadzorna plošča'],
+      brez: ['Poslovni okvir in davki'],
     },
     {
       ime: 'Pro', za: 'Za polno poslovanje', cena: '19', enota: '€ / mesec',
       cta: 'Kmalu', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Kmalu', kmalu: true,
-      vkljuceno: ['Vse iz Premium', 'Samodejni pregled prihodkov in dobička od podjetij', 'Dolgoročni retainerji', 'Poslovni okvir in davki', 'Izvoz za računovodstvo', 'AI agent (beta)', 'MCP & API dostop (kmalu)', 'Prednostna podpora'],
+      vkljuceno: ['Vse iz Premium', 'Samodejni pregled prihodkov in dobička od podjetij', 'Poslovni okvir in davki', 'Izvoz za računovodstvo', 'AI agent (beta)', 'MCP & API dostop (kmalu)', 'Prednostna podpora'],
       brez: [],
     },
   ];
