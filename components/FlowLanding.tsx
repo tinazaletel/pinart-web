@@ -802,9 +802,11 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <img src="/flow/tina.jpg" alt="" loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
             </div>
             <div className="fl-zgodba-tekst">
-              <p>Sem Tina, oblikovalka. Leta sem gradila svoj okus, slog in občutek za estetiko — a vsakič znova obtičala pri ponudbah, cenah in računih. Ugibala sem, ali sem dovolj zaračunala, pozabljala na avtorske pravice, skakala med tremi orodji.</p>
-              <p>Flow je nastal iz te utrujenosti. Da kreativci nehamo biti zgolj izvajalci in postanemo narekovalci okusa — da vemo, koliko je vredno naše delo, in ga ne prodamo pod ceno. <em>De gustibus non est disputandum</em>: o okusu se ne razpravlja, pošteno ceno pa lahko postaviš.</p>
-              <p>Želim si, da Flow kreativce spodbudi k še večji drznosti in k zavedanju svojih pravic. Ker leta nismo le oblikovalci — smo tisti, ki gradimo okus.</p>
+              <p>Sem Tina, oblikovalka in načrtovalka produktov. V tem res uživam — a ponudbe in računi so mi muka. Ugibala sem, ali sem dovolj zaračunala, pozabljala na avtorske pravice in skakala med tremi orodji.</p>
+              <p>Danes, s prihodom umetne inteligence, je tempo vse hitrejši in hitrost vse pomembnejša — kar oblikovalce dodatno obremenjuje. Hkrati nekateri naše delo cenijo vse manj: dobiš komentar, da se o okusu ne razpravlja, in pod nos ti pomolijo z umetno inteligenco generiran logotip.</p>
+              <p>Res? Oblikovalec, kuhar, umetnostni zgodovinar, slikar, modni kreator — nihče ne sme govoriti o okusu? Prehajamo iz izvajalcev v idejne vodje in prodajamo okus. Ta je raznolik, a ga ni za podcenjevati, saj se občutek za estetiko gradi vrsto let.</p>
+              <p>Flow je nastal iz te utrujenosti. Da kreativci nehamo biti zgolj izvajalci in postanemo narekovalci okusa — da vemo, koliko je vredno naše delo, in ga ne prodamo pod ceno.</p>
+              <p>Želim si, da imamo več časa za urjenje svojega okusa in izraza — in da nas Flow spodbudi k še večji drznosti ter k zavedanju svojih pravic. Ker leta nismo le oblikovalci; smo tisti, ki gradimo okus.</p>
               <p className="fl-zgodba-podpis">— Tina, Pinart</p>
             </div>
           </div>
