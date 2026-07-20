@@ -342,11 +342,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       <div className="fl-oder">
         <section className="fl-hero">
           <p className="kicker"><b>Pinart Flow</b> · beta · za samostojne kreativce</p>
-          <h1>Vse tvoje poslovanje, <em>na enem mestu.</em></h1>
+          <h1>Veš, koliko je vredno <em>tvoje delo?</em></h1>
           <p className="lead">
-            Od poštene ponudbe do izdanega računa. Pinart Flow poveže kalkulator cen,
-            pogodbe, retainerje, stranke in cilje v eno mirno delovno okolje, da se lahko
-            posvetiš ustvarjanju, ne administraciji.
+            Poštena cena z avtorskimi pravicami, tržni pregled in vse od ponudbe do računa —
+            da nikoli več ne ugibaš cene. Pinart Flow: narejeno od kreativke za kreativce.
           </p>
           <div className="cta-vrsta">
             <a className="cta" href={prijava}>Vstopi v Flow <ArrowRight size={17} weight="bold" /></a>
