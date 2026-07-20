@@ -123,7 +123,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl { position: relative; z-index: 1; color: var(--ink); font-weight: 300; overflow-x: clip; }
 
         /* Ozadje: mreza + vijola/zelena animirani blobi (kot naslovnica) */
-        .fl-ozadje { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background-color: var(--paper); background-image: linear-gradient(rgba(17,17,17,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(17,17,17,.045) 1px, transparent 1px); background-size: 4.5rem 4.5rem; }
+        /* POZOR: NE position:fixed! Znotraj Lenis transform ovoja se fixed obnaša
+           kot absolute in v Safari/Chrome pokvari izris vsebine nad njim (sekcije
+           ostanejo prazne). absolute + polna višina .fl deluje pravilno. */
+        .fl-ozadje { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background-color: var(--paper); background-image: linear-gradient(rgba(17,17,17,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(17,17,17,.045) 1px, transparent 1px); background-size: 4.5rem 4.5rem; }
         .fl-blob { position: absolute; width: min(62vw, 720px); aspect-ratio: 1; border-radius: 50%; filter: blur(72px); opacity: .55; }
         .fl-blob.v { background: radial-gradient(circle at 50% 50%, oklch(72% .17 297 / .55), transparent 68%); top: -14%; left: -10%; animation: flBlobV 24s ease-in-out infinite; }
         .fl-blob.g { background: radial-gradient(circle at 50% 50%, oklch(82% .13 165 / .5), transparent 68%); bottom: -16%; right: -12%; animation: flBlobG 28s ease-in-out infinite; }
@@ -134,8 +137,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
         .fl-oder { max-width: 1480px; margin: 0 auto; padding: clamp(5.5rem, 11vw, 8.5rem) clamp(1.5rem, 5vw, 5.5rem) clamp(5rem, 8vw, 8rem); }
 
-        /* Hero */
-        .fl-hero { position: relative; }
+        /* Hero — sekcija mora biti VSAJ tako visoka kot ozadje (.fl-herobg = 100svh),
+           sicer absolutno ozadje štrli čez naslednje sekcije in v Safari/Chrome
+           pokvari njihov izris (naslovi/besedilo se ne narišejo). */
+        .fl-hero { position: relative; min-height: 100svh; isolation: isolate; }
         .fl .kicker { font-size: .72rem; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl .kicker b { color: var(--accent); font-weight: 700; }
         .fl h1 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(2.7rem, 8.5vw, 5.2rem); line-height: .97; letter-spacing: -.015em; margin: .7rem 0 1.3rem; max-width: 15ch; }
