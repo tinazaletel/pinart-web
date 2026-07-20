@@ -4950,7 +4950,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         /* gumb POD inputom, na sredini */
         /* align-self: stretch — starsevski .chat-izbira ima align-items: flex-start, zato bi se
            forma sicer dimenzionirala po 520px inputu in na telefonu strlela cez rob */
-        .cw .chat-vnos { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: stretch; align-self: stretch; gap: .9rem; margin: 1.4rem 0 0 3.05rem; }
+        .cw .chat-vnos { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: stretch; align-self: flex-start; width: 520px; max-width: 100%; gap: .9rem; margin: 1.4rem 0 0 3.05rem; }
         .cw .chat-vnos .gumb { align-self: center; }
         .cw .chat-vnos input { flex: none; width: 520px; max-width: 100%; box-sizing: border-box; background: #fff; border: 1px solid rgba(17,17,17,.14); border-radius: 999px; padding: .95rem 1.3rem; font-family: inherit; font-size: 1.02rem; font-weight: 600; color: var(--ink); outline: none; box-shadow: 0 6px 20px rgba(40,25,40,.06); transition: border-color .18s; }
         .cw .chat-vnos input:focus { border-color: var(--accent); }
