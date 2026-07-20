@@ -281,7 +281,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-faq-item.odprt .fl-faq-odg { max-height: 320px; }
         .fl-faq-odg p { margin: 0; padding: 0 3rem 1.35rem .2rem; font-size: .92rem; line-height: 1.65; color: rgba(17,17,17,.72); }
 
-        .fl-footer { margin: 10.05rem 0 0; background: oklch(20% .016 285); color: oklch(93% .01 285); border-radius: 26px; padding: clamp(2.6rem, 5vw, 3.6rem) clamp(2rem, 4vw, 3.2rem) clamp(1.8rem, 4vw, 2.4rem); }
+        .fl-footer { margin: 10.05rem calc(50% - 50vw) 0; background: oklch(20% .016 285); color: oklch(93% .01 285); border-radius: 0; padding: clamp(2.8rem, 5vw, 4rem) calc(max(0px, (100vw - 1480px) / 2) + clamp(1.5rem, 5vw, 5.5rem)) clamp(2rem, 4vw, 2.6rem); }
         .fl-footer-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(2rem, 5vw, 4rem); }
         @media (max-width: 720px) { .fl-footer-top { grid-template-columns: 1fr; gap: 2rem; } }
         .fl-footer-talk { display: inline-block; margin-top: 1.1rem; font-size: .82rem; font-weight: 700; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: .15rem; }
