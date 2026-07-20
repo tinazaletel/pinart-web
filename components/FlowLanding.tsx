@@ -126,7 +126,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* POZOR: NE position:fixed! Znotraj Lenis transform ovoja se fixed obnaša
            kot absolute in v Safari/Chrome pokvari izris vsebine nad njim (sekcije
            ostanejo prazne). absolute + polna višina .fl deluje pravilno. */
-        .fl-ozadje { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background-color: var(--paper); background-image: linear-gradient(rgba(17,17,17,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(17,17,17,.045) 1px, transparent 1px); background-size: 4.5rem 4.5rem; }
+        .fl-ozadje { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background-color: var(--paper); background-image: linear-gradient(rgba(17,17,17,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(17,17,17,.045) 1px, transparent 1px); background-size: 4.5rem 4.5rem; }
         /* BREZ filter:blur (težek GPU sloj -> v Chromu se sekcije ne izrišejo).
            Mehkobo dosežemo z gradientom samim (transparent že pri ~48%). */
         .fl-blob { position: absolute; width: min(62vw, 720px); aspect-ratio: 1; border-radius: 50%; opacity: .6; }
