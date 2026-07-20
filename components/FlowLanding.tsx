@@ -142,7 +142,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* Hero — sekcija naravne višine (vsebina + spodobna spodnja praznina za
            mehurčke). isolation: izolira ozadje, da ne pokvari izrisa sekcij pod njim.
            Ozadje (.fl-herobg) je height:100% → se ujema s hero sekcijo in NE štrli. */
-        .fl-hero { position: relative; min-height: 82svh; isolation: isolate; }
+        .fl-hero { position: relative; min-height: 94svh; isolation: isolate; }
         .fl .kicker { font-size: .72rem; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl .kicker b { color: var(--accent); font-weight: 700; }
         .fl h1 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(2.7rem, 8.5vw, 5.2rem); line-height: .97; letter-spacing: -.015em; margin: .7rem 0 1.3rem; max-width: 15ch; }
