@@ -23,6 +23,7 @@ export default function FloatingUI() {
      vec o mojih storitvah") — tu gre za orodje samo, zato zbiramo povratne
      informacije in predloge, ne povprasevanj za projekte. */
   const isKalkulator = pathname.includes('/kalkulator/orodje');
+  const isFlow = pathname.includes('/flow');
 
   const kalkulatorCopy = {
     eyebrow: 'Povratna informacija',
@@ -43,7 +44,7 @@ export default function FloatingUI() {
     close: 'Zapri',
   };
 
-  const talkCopy = isKalkulator ? kalkulatorCopy : isSl ? {
+  const talkCopy = (isKalkulator || isFlow) ? kalkulatorCopy : isSl ? {
     eyebrow: 'Začniva pogovor',
     title: 'Kaj ustvarjava?',
     body: 'Izberi izhodišče. Odgovorila ti bom osebno in skupaj bova določila naslednji korak.',
@@ -171,9 +172,8 @@ export default function FloatingUI() {
 
   const ink   = isDark ? '#ffffff' : 'var(--ink)';
 
-  /* Flow landing (pinartflow.com) je locen produkt — pinart.si "Let's talk"
-     chrome se tam ne prikaze; Flow ima svoje CTA-je in kontakt. */
-  if (pathname.includes('/flow')) return null;
+  /* Flow landing: isti "Let's talk" plavajoči gumb kot pinart.si/kalkulator
+     (Tina), a s copyjem tipa povratna informacija/vprašanje, ne prodaja studia. */
 
   return (
     <>

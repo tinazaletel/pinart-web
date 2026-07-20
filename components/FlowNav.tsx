@@ -39,8 +39,8 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
   return (
     <header className={`flnav${scrolled ? ' scrolled' : ''}`}>
       <a className="flnav-brand" href={flow} onClick={close} aria-label="Pinart Flow">
-        <span className="flnav-mark" />
-        <strong>Pinart</strong><span className="flnav-ff">FLOW</span><small>BETA</small>
+        <img className="flnav-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" />
+        <span className="flnav-ff">FLOW</span><small>BETA</small>
       </a>
 
       <nav className="flnav-links" aria-label="Glavna navigacija">
@@ -83,9 +83,8 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
           transition: background .28s ease, box-shadow .28s ease, border-color .28s ease; border-bottom: 1px solid transparent; }
         .flnav.scrolled { background: var(--paper); border-bottom-color: rgba(17,17,17,.08); box-shadow: 0 6px 24px rgba(40,25,60,.05); }
 
-        .flnav-brand { display: inline-flex; align-items: baseline; gap: .5rem; text-decoration: none; color: var(--ink); }
-        .flnav-mark { width: .85rem; height: .85rem; border-radius: 50%; align-self: center; background: linear-gradient(140deg, oklch(72% .17 297), oklch(80% .13 165)); box-shadow: 0 2px 8px oklch(70% .16 297 / .4); }
-        .flnav-brand strong { font-family: var(--font-serif), Georgia, serif; font-weight: 500; font-size: 1.32rem; letter-spacing: -.01em; }
+        .flnav-brand { display: inline-flex; align-items: center; gap: .55rem; text-decoration: none; color: var(--ink); }
+        .flnav-logo { height: 1.85rem; width: auto; display: block; }
         .flnav-brand .flnav-ff { font-size: .74rem; font-weight: 700; letter-spacing: .22em; color: rgba(17,17,17,.72); }
         .flnav-brand small { font-size: .56rem; font-weight: 700; letter-spacing: .1em; color: #b25476; border: 1px solid color-mix(in oklch, #b25476 45%, transparent); border-radius: 999px; padding: .12rem .4rem; align-self: center; }
 
