@@ -3,7 +3,7 @@
 import {
   FileText, Handshake, Scroll, Receipt, Wallet, Tag, Clock,
   Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, X, CaretLeft, CaretRight,
-  ShieldCheck, Scales, ChatCircle, Sparkle, Plus, ChartLineUp,
+  ShieldCheck, Scales, ChatCircle, Sparkle, Plus, ChartLineUp, Robot, Plugs,
 } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { localePath } from '@/i18n/routing';
@@ -21,6 +21,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const kalkulatorLanding = localePath(locale, '/kalkulator');
 
   const [taRubrika, setTaRubrika] = useState('vse');
+  const [taZavihek, setTaZavihek] = useState('kalkulator');
   const [odprtoVpr, setOdprtoVpr] = useState<number | null>(0);
   const vrstaRef = useRef<HTMLDivElement>(null);
 
@@ -107,6 +108,97 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { Ikona: SquaresFour, kat: 'stranke', h: 312, ime: 'Pregled', opis: 'Nadzorna plošča: promet, odprte ponudbe in čakajoča plačila.', href: localePath(locale, '/kalkulator/pregled') },
   ];
   const vidnaOrodja = ORODJA.filter(o => taRubrika === 'vse' || o.kat === taRubrika);
+
+  /* Interaktivni prikaz (Magnific slog): pill-i zgoraj, spodaj velik predogled ki
+     se menja ob kliku. Prihodnji zmožnosti nosijo značko (Agent = Beta, MCP & API = Kmalu). */
+  const ZAVIHKI: { id: string; Ikona: React.ElementType; label: string; znacka?: string; zvrst?: 'free' | 'beta' | 'soon'; h: string; p: string; tocke: string[]; cta: string; href: string }[] = [
+    { id: 'kalkulator', Ikona: FileText, label: 'Kalkulator', znacka: 'Brezplačno', zvrst: 'free',
+      h: 'Poštena cena v nekaj klikih',
+      p: 'Kalkulator razbije ceno na izvedbo, avtorske pravice in licenco ter pokaže pošteno številko — brez ugibanja in brez prijave.',
+      tocke: ['Trije paketi in urejljivo besedilo', 'Avtorske pravice in licenca vračunane', 'Prenos v PDF ali pretvorba v račun'],
+      cta: 'Odpri kalkulator', href: kalkulator },
+    { id: 'dokumenti', Ikona: Receipt, label: 'Dokumenti',
+      h: 'Od ponudbe do računa, brez podvajanja',
+      p: 'Ponudba, pogodba, račun in stroški tečejo iz istih podatkov. En klik in dogovorjena ponudba postane račun.',
+      tocke: ['Oštevilčenje, rok in status plačila', 'Pogodbe o sodelovanju in prenosu pravic', 'Enoten videz vseh dokumentov'],
+      cta: 'Poglej orodja', href: '#orodja' },
+    { id: 'pregled', Ikona: ChartLineUp, label: 'Pregled & benchmark',
+      h: 'Veš, koliko je vredno tvoje delo',
+      p: 'Anonimen tržni pregled pokaže, kje je tvoja cena — bližje dnu ali vrhu. Nadzorna plošča spremlja promet, plačila in dobiček.',
+      tocke: ['Tržni benchmark iz vpisanih cen', 'Promet, plačila in ocenjeni dobiček', 'Cilji in donosnost strank'],
+      cta: 'Odpri pregled', href: localePath(locale, '/kalkulator/pregled') },
+    { id: 'agent', Ikona: Robot, label: 'Agent', znacka: 'Beta', zvrst: 'beta',
+      h: 'Tvoj pomočnik za ponudbe',
+      p: 'Agent pomaga sestaviti ponudbo, predlaga pošteno ceno in pojasni avtorske pravice — zadnjo besedo imaš vedno ti.',
+      tocke: ['Predlaga ceno in obseg dela', 'Pojasni pravice po jurisdikciji', 'Ti potrdiš, agent pripravi'],
+      cta: 'Kmalu v beti', href: 'mailto:tina@pinart.si?subject=Flow%20Agent%20beta' },
+    { id: 'mcpapi', Ikona: Plugs, label: 'MCP & API', znacka: 'Kmalu', zvrst: 'soon',
+      h: 'Poveži Flow s svojimi orodji',
+      p: 'Prek MCP in API bo Flow dostopen iz tvojega AI pomočnika, urejevalnika ali računovodstva. V pripravi.',
+      tocke: ['MCP dostop iz AI orodij', 'API za ponudbe, račune in stranke', 'Na tvojem paketu, brez skritih stroškov'],
+      cta: 'Obvesti me', href: 'mailto:tina@pinart.si?subject=Flow%20MCP%20%26%20API' },
+  ];
+  const zav = ZAVIHKI.find(z => z.id === taZavihek) ?? ZAVIHKI[0];
+  const predoglediMock = (id: string) => {
+    if (id === 'dokumenti') return (
+      <div className="fl-mock">
+        <div className="fl-mock-bar"><i /><i /><i /><small>ponudba · PNR-2026-014</small></div>
+        <div className="fl-doc">
+          <div className="fl-doc-lp"><strong>Ponudba</strong><span>PNR-2026-014</span></div>
+          <div className="fl-doc-row"><b>Oblikovanje logotipa</b><span>480 €</span></div>
+          <div className="fl-doc-row"><b>Prenos avtorskih pravic</b><span>240 €</span></div>
+          <div className="fl-doc-row"><b>Licenca (2 leti, EU)</b><span>180 €</span></div>
+          <div className="fl-doc-total"><b>Skupaj</b><span>900 €</span></div>
+        </div>
+      </div>
+    );
+    if (id === 'pregled') return (
+      <div className="fl-mock">
+        <div className="fl-mock-bar"><i /><i /><i /><small>poslovni pregled</small></div>
+        <div className="fl-dash">
+          <div className="fl-dash-top">
+            <div className="fl-donut"><i>62%</i></div>
+            <div className="fl-dash-kpi"><span>Ocenjeni dobiček</span><strong>1.240 €</strong></div>
+          </div>
+          <div className="fl-bench">
+            <div className="fl-bench-label"><span>Tržni razpon cene</span><span className="fl-bench-you">tvoja cena</span></div>
+            <div className="fl-bench-bar"><span className="fl-bench-mark" /></div>
+          </div>
+        </div>
+      </div>
+    );
+    if (id === 'agent') return (
+      <div className="fl-mock">
+        <div className="fl-mock-bar"><i /><i /><i /><small>Flow agent · beta</small></div>
+        <div className="fl-mock-body">
+          <span className="fl-msg me">Pripravi ponudbo za spletno trgovino.</span>
+          <span className="fl-msg bot"><span className="fl-ava" />Predlagam pošteno ceno in obseg …</span>
+          <div className="fl-agent-note"><span className="fl-agent-dot"><Robot size={17} weight="regular" /></span><div><b>Ponudba pripravljena</b><br /><small>1.850 € · pravice vračunane</small></div></div>
+        </div>
+      </div>
+    );
+    if (id === 'mcpapi') return (
+      <div className="fl-mock">
+        <div className="fl-mock-bar"><i /><i /><i /><small>flow API</small></div>
+        <div className="fl-code">
+          <span className="fl-code-line a" /><span className="fl-code-line b" /><span className="fl-code-line c" /><span className="fl-code-line d" /><span className="fl-code-line b" />
+          <div className="fl-soon"><span>Kmalu</span></div>
+        </div>
+      </div>
+    );
+    return (
+      <div className="fl-mock">
+        <div className="fl-mock-bar"><i /><i /><i /><small>pinart kalkulator</small></div>
+        <div className="fl-mock-body">
+          <span className="fl-msg bot"><span className="fl-ava" />Živjo! Kako ti je ime?</span>
+          <span className="fl-msg me">Tina</span>
+          <span className="fl-msg bot"><span className="fl-ava" />Kakšne izkušnje imaš?</span>
+          <span className="fl-msg me">Šele začenjam</span>
+          <span className="fl-chip"><FileText size={14} weight="regular" />Ponudba · od 0 €</span>
+        </div>
+      </div>
+    );
+  };
 
   const FUNKCIJE = [
     { Ikona: ChartLineUp, ime: 'Veš, koliko si vreden', opis: 'Anonimen tržni pregled ti pokaže, kje je tvoja cena — bližje dnu ali vrhu — da se ne podcenjuješ.' },
@@ -233,18 +325,76 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-tkarta p { font-size: .86rem; line-height: 1.55; color: rgba(17,17,17,.72); margin: 0; }
         .fl-znacka { font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: oklch(45% .13 155); background: oklch(92% .08 160); border-radius: 999px; padding: .2rem .5rem; }
 
-        /* Brezplacni kalkulator pas */
-        .fl-brez { margin: 9.85rem 0 0; position: relative; overflow: hidden; border-radius: 26px; padding: clamp(2.2rem, 5vw, 3.4rem); background: linear-gradient(135deg, oklch(96% .03 297), oklch(95% .035 320), oklch(95% .03 165)); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 20px 60px rgba(40,25,60,.1); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.6rem, 4vw, 3rem); align-items: center; }
-        @media (max-width: 820px) { .fl-brez { grid-template-columns: 1fr; } .fl-brez-vizual { display: none; } }
-        .fl-browser { border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid rgba(17,17,17,.1); box-shadow: 0 24px 60px rgba(40,25,60,.18); }
-        .fl-browser-bar { display: flex; align-items: center; gap: .4rem; padding: .5rem .75rem; background: oklch(96% .008 87); border-bottom: 1px solid rgba(17,17,17,.07); }
-        .fl-browser-bar i { width: .55rem; height: .55rem; border-radius: 50%; background: rgba(17,17,17,.18); }
-        .fl-browser-bar small { margin-left: .5rem; font-size: .62rem; letter-spacing: .04em; color: rgba(17,17,17,.5); }
-        .fl-browser-screen { display: block; position: relative; aspect-ratio: 4 / 3; overflow: hidden; }
-        .fl-browser-screen iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; background: var(--paper); }
-        .fl-brez .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
-        .fl-brez h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.8rem, 4.5vw, 2.6rem); line-height: 1.08; margin: .5rem 0 .7rem; max-width: 22ch; }
-        .fl-brez p { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.8); max-width: 48ch; margin: 0 0 1.8rem; }
+        /* Interaktivni prikaz orodij (Magnific slog, Flow paleta) */
+        .fl-showcase { margin: 9.85rem 0 0; padding-top: 2.6rem; }
+        .fl-showcase-glava { text-align: center; max-width: 42ch; margin: 0 auto 1.8rem; }
+        .fl-showcase-glava .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
+        .fl-showcase-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 .5rem; }
+        .fl-showcase-glava p { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.76); margin: 0 auto; }
+        .fl-sc-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin: 0 auto 1.7rem; max-width: 54rem; }
+        .fl-sc-pill { display: inline-flex; align-items: center; gap: .5rem; padding: .58rem 1rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.14); background: rgba(255,255,255,.72); font-family: var(--font-sans), system-ui, sans-serif; font-size: .85rem; font-weight: 600; color: rgba(17,17,17,.7); cursor: pointer; transition: color .16s, border-color .16s, background .16s, transform .16s; }
+        .fl-sc-pill svg { opacity: .75; }
+        .fl-sc-pill:hover { color: var(--ink); border-color: rgba(17,17,17,.3); transform: translateY(-1px); }
+        .fl-sc-pill.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+        .fl-sc-pill.on svg { opacity: 1; }
+        .fl-sc-badge { font-size: .56rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; border-radius: 999px; padding: .16rem .44rem; }
+        .fl-sc-badge.free { color: oklch(45% .13 155); background: oklch(92% .08 160); }
+        .fl-sc-badge.beta { color: oklch(50% .17 297); background: oklch(93% .06 300); }
+        .fl-sc-badge.soon { color: rgba(17,17,17,.5); background: rgba(17,17,17,.08); }
+        .fl-sc-pill.on .fl-sc-badge { background: rgba(255,255,255,.18); color: rgba(255,255,255,.92); }
+        .fl-sc-panel { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: clamp(1.6rem, 4vw, 3.2rem); align-items: center; border-radius: 26px; padding: clamp(2rem, 4vw, 3.2rem); background: linear-gradient(135deg, oklch(96% .03 297), oklch(95% .035 320), oklch(95% .03 165)); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 20px 60px rgba(40,25,60,.1); overflow: hidden; }
+        @media (max-width: 860px) { .fl-sc-panel { grid-template-columns: 1fr; } }
+        .fl-sc-info h3 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.55rem, 3.6vw, 2.25rem); line-height: 1.08; margin: 0 0 .6rem; max-width: 18ch; }
+        .fl-sc-info > p { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.8); max-width: 46ch; margin: 0; }
+        .fl-sc-tocke { list-style: none; margin: 1.25rem 0 1.7rem; padding: 0; display: grid; gap: .6rem; }
+        .fl-sc-tocke li { display: flex; align-items: flex-start; gap: .55rem; font-size: .9rem; line-height: 1.4; color: rgba(17,17,17,.82); }
+        .fl-sc-tocke li svg { flex: none; margin-top: .08rem; color: oklch(52% .13 155); }
+        .fl-sc-anim { animation: flScIn .5s cubic-bezier(.16,1,.3,1); }
+        @keyframes flScIn { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+        @media (prefers-reduced-motion: reduce) { .fl-sc-anim { animation: none; } }
+
+        /* Predogledni mocki v prikazu */
+        .fl-mock { border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid rgba(17,17,17,.1); box-shadow: 0 24px 60px rgba(40,25,60,.18); }
+        .fl-mock-bar { display: flex; align-items: center; gap: .4rem; padding: .5rem .75rem; background: oklch(96% .008 87); border-bottom: 1px solid rgba(17,17,17,.07); }
+        .fl-mock-bar i { width: .55rem; height: .55rem; border-radius: 50%; background: rgba(17,17,17,.18); }
+        .fl-mock-bar small { margin-left: .5rem; font-size: .62rem; letter-spacing: .04em; color: rgba(17,17,17,.5); }
+        .fl-mock-body { padding: 1.15rem; display: grid; gap: .65rem; min-height: 15.5rem; align-content: start; }
+        .fl-msg { display: inline-flex; align-items: center; gap: .5rem; max-width: 82%; padding: .55rem .8rem; border-radius: 14px; font-size: .8rem; font-weight: 600; line-height: 1.3; }
+        .fl-msg.bot { background: oklch(96% .012 297); color: var(--ink); border-top-left-radius: 4px; justify-self: start; }
+        .fl-msg.me { background: oklch(90% .055 190); color: var(--ink); border-top-right-radius: 4px; justify-self: end; }
+        .fl-ava { width: 1.4rem; height: 1.4rem; border-radius: 50%; flex: none; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.9), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); }
+        .fl-chip { justify-self: end; display: inline-flex; align-items: center; gap: .4rem; margin-top: .2rem; padding: .5rem .72rem; border-radius: 12px; background: var(--ink); color: var(--paper); font-size: .74rem; font-weight: 700; }
+        .fl-doc { padding: 1.3rem 1.25rem; display: grid; gap: .45rem; align-content: start; min-height: 15.5rem; }
+        .fl-doc-lp { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid rgba(17,17,17,.1); padding-bottom: .55rem; margin-bottom: .35rem; }
+        .fl-doc-lp strong { font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.15rem; }
+        .fl-doc-lp span { font-size: .66rem; letter-spacing: .04em; color: rgba(17,17,17,.5); }
+        .fl-doc-row { display: flex; justify-content: space-between; gap: 1rem; font-size: .82rem; color: rgba(17,17,17,.78); padding: .22rem 0; }
+        .fl-doc-row b { font-weight: 550; }
+        .fl-doc-total { display: flex; justify-content: space-between; margin-top: .5rem; padding-top: .6rem; border-top: 1px solid rgba(17,17,17,.14); font-family: var(--font-serif), serif; font-size: 1.05rem; }
+        .fl-dash { padding: 1.3rem 1.25rem; display: grid; gap: 1.1rem; align-content: start; min-height: 15.5rem; }
+        .fl-dash-top { display: flex; align-items: center; gap: 1.1rem; }
+        .fl-donut { width: 4.4rem; height: 4.4rem; border-radius: 50%; flex: none; background: conic-gradient(oklch(66% .2 297) 0 62%, oklch(93.5% .005 87) 62% 100%); display: grid; place-items: center; }
+        .fl-donut i { width: 2.9rem; height: 2.9rem; border-radius: 50%; background: #fff; display: grid; place-items: center; font-style: normal; font-size: .8rem; font-weight: 700; color: var(--ink); }
+        .fl-dash-kpi { display: grid; gap: .2rem; }
+        .fl-dash-kpi span { font-size: .7rem; color: rgba(17,17,17,.55); }
+        .fl-dash-kpi strong { font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.5rem; }
+        .fl-bench { display: grid; gap: .5rem; }
+        .fl-bench-label { display: flex; justify-content: space-between; font-size: .7rem; color: rgba(17,17,17,.6); }
+        .fl-bench-you { color: var(--ink); font-weight: 700; }
+        .fl-bench-bar { position: relative; height: .62rem; border-radius: 999px; background: linear-gradient(90deg, oklch(88% .09 30), oklch(92% .1 90), oklch(85% .13 155)); }
+        .fl-bench-mark { position: absolute; top: 50%; left: 68%; width: 1rem; height: 1rem; border-radius: 50%; background: var(--ink); border: 2px solid #fff; transform: translate(-50%, -50%); box-shadow: 0 2px 7px rgba(0,0,0,.28); }
+        .fl-agent-note { margin-top: .3rem; display: flex; gap: .65rem; align-items: center; padding: .7rem .85rem; border-radius: 12px; background: oklch(95% .04 297); border: 1px solid oklch(88% .05 297); }
+        .fl-agent-note b { font-size: .8rem; }
+        .fl-agent-note small { font-size: .7rem; color: rgba(17,17,17,.6); }
+        .fl-agent-dot { width: 1.9rem; height: 1.9rem; border-radius: 50%; flex: none; display: grid; place-items: center; background: var(--ink); color: #fff; }
+        .fl-code { position: relative; padding: 1.3rem 1.35rem; min-height: 15.5rem; background: oklch(22% .016 285); display: grid; gap: .55rem; align-content: start; }
+        .fl-code-line { height: .5rem; border-radius: 999px; background: oklch(40% .03 285); }
+        .fl-code-line.a { width: 68%; background: oklch(62% .13 297); }
+        .fl-code-line.b { width: 88%; }
+        .fl-code-line.c { width: 54%; background: oklch(64% .1 190); }
+        .fl-code-line.d { width: 76%; }
+        .fl-soon { position: absolute; inset: 0; display: grid; place-content: center; background: oklch(22% .016 285 / .5); backdrop-filter: blur(2px); }
+        .fl-soon span { font-family: var(--font-sans), system-ui, sans-serif; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #fff; border: 1px solid rgba(255,255,255,.4); border-radius: 999px; padding: .35rem .9rem; }
 
         /* Zakljucni CTA */
         .fl-konec { margin: 9.85rem 0 0; text-align: center; padding-top: 3.4rem; }
@@ -410,25 +560,44 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
         </section>
 
-        <section className="fl-brez">
-          <div className="fl-brez-txt">
-            <div className="k">Začni brez tveganja</div>
-            <h2>Brezplačni kalkulator je tvoj vstop.</h2>
-            <p>
-              Izračunaj pošteno ceno naslednjega projekta že danes, brez prijave. Ko boš
-              želela ponudbe, pogodbe in račune držati skupaj, te Flow počaka na istem mestu.
-            </p>
-            <div className="cta-vrsta">
-              <a className="cta" href={kalkulator}>Odpri kalkulator <ArrowRight size={17} weight="bold" /></a>
-              <a className="cta duh" href={kalkulatorLanding}>Zakaj cena ni ura →</a>
-            </div>
+        <section className="fl-showcase" id="showcase">
+          <div className="fl-showcase-glava">
+            <div className="k">Eno mesto</div>
+            <h2>Vse tvoje poslovanje na enem mestu</h2>
+            <p>Izberi, kje začneš. Vsako orodje teče iz istih podatkov — od poštene cene do računa.</p>
           </div>
-          <div className="fl-brez-vizual" aria-hidden>
-            <div className="fl-browser">
-              <span className="fl-browser-bar"><i /><i /><i /><small>pinart kalkulator</small></span>
-              <span className="fl-browser-screen">
-                <iframe src={kalkulator} loading="lazy" title="Predogled kalkulatorja" tabIndex={-1} scrolling="no" />
-              </span>
+          <div className="fl-sc-pills" role="tablist" aria-label="Orodja Pinart Flow">
+            {ZAVIHKI.map(z => {
+              const Ik = z.Ikona;
+              return (
+                <button
+                  key={z.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={taZavihek === z.id}
+                  className={`fl-sc-pill${taZavihek === z.id ? ' on' : ''}`}
+                  onClick={() => setTaZavihek(z.id)}
+                >
+                  <Ik size={17} weight="regular" />
+                  {z.label}
+                  {z.znacka && <span className={`fl-sc-badge ${z.zvrst}`}>{z.znacka}</span>}
+                </button>
+              );
+            })}
+          </div>
+          <div className="fl-sc-panel">
+            <div className="fl-sc-info fl-sc-anim" key={`i-${zav.id}`}>
+              <h3>{zav.h}</h3>
+              <p>{zav.p}</p>
+              <ul className="fl-sc-tocke">
+                {zav.tocke.map(t => <li key={t}><CheckCircle size={18} weight="fill" />{t}</li>)}
+              </ul>
+              <a className={`cta${zav.zvrst === 'soon' || zav.zvrst === 'beta' ? ' duh' : ''}`} href={zav.href}>
+                {zav.cta} <ArrowRight size={16} weight="bold" />
+              </a>
+            </div>
+            <div className="fl-sc-vizual fl-sc-anim" key={`v-${zav.id}`} aria-hidden>
+              {predoglediMock(zav.id)}
             </div>
           </div>
         </section>
