@@ -19,7 +19,7 @@ function mkBubble(): Bubble {
     id: nextId++,
     x: 3 + Math.random() * 92,
     y: 5 + Math.random() * 86,
-    size: 24 + Math.random() * 92,
+    size: 66 + Math.random() * 150,
     hue: HUES[Math.floor(Math.random() * HUES.length)],
     dur: 9 + Math.random() * 11,
     delay: -Math.random() * 12,
@@ -84,7 +84,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4', count = 
       </div>
 
       <style>{`
-        .fl-herobg { position: absolute; inset: 0 0 auto 0; height: 100svh; z-index: 0; overflow: hidden; pointer-events: none; }
+        .fl-herobg { position: absolute; inset: 0 0 auto 0; height: calc(100svh - 20px); z-index: 0; overflow: hidden; pointer-events: none; }
 
         /* Ilustrirana pupa desno od besedila, polna višina. mix-blend multiply →
            bela podlaga izgine, ostane samo skica na papirju. Levi rob se stopi. */

@@ -85,7 +85,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
         .flnav-mark { width: .85rem; height: .85rem; border-radius: 50%; align-self: center; background: linear-gradient(140deg, oklch(72% .17 297), oklch(80% .13 165)); box-shadow: 0 2px 8px oklch(70% .16 297 / .4); }
         .flnav-brand strong { font-family: var(--font-serif), Georgia, serif; font-weight: 500; font-size: 1.32rem; letter-spacing: -.01em; }
         .flnav-brand .flnav-ff { font-size: .74rem; font-weight: 700; letter-spacing: .22em; color: rgba(17,17,17,.72); }
-        .flnav-brand small { font-size: .56rem; font-weight: 700; letter-spacing: .1em; color: var(--accent); border: 1px solid color-mix(in oklch, var(--accent) 40%, transparent); border-radius: 999px; padding: .12rem .4rem; align-self: center; }
+        .flnav-brand small { font-size: .56rem; font-weight: 700; letter-spacing: .1em; color: #b25476; border: 1px solid color-mix(in oklch, #b25476 45%, transparent); border-radius: 999px; padding: .12rem .4rem; align-self: center; }
 
         .flnav-links { display: flex; align-items: center; gap: 1.7rem; margin-left: auto; }
         .flnav-links > a, .flnav-prod > button { font-family: var(--font-sans), system-ui, sans-serif; font-size: .84rem; font-weight: 600; letter-spacing: .01em; color: rgba(17,17,17,.72); text-decoration: none; background: none; border: 0; cursor: pointer; padding: 0; transition: color .16s; display: inline-flex; align-items: center; gap: .3rem; }

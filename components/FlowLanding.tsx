@@ -2,7 +2,7 @@
 
 import {
   FileText, Handshake, Scroll, Receipt, Wallet, Tag, Clock,
-  Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle,
+  Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, X,
 } from '@phosphor-icons/react';
 import { localePath } from '@/i18n/routing';
 import FlowHeroBg from '@/components/FlowHeroBg';
@@ -36,6 +36,28 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { n: '01', naslov: 'Izračunaj ponudbo', opis: 'Kalkulator ti pokaže pošteno ceno: izvedbo, pravice in licenco, uglašeno z naročnikom.' },
     { n: '02', naslov: 'Dogovori sodelovanje', opis: 'Pogodba ali dolgoročni retainer nastane iz iste ponudbe, brez ponovnega tipkanja.' },
     { n: '03', naslov: 'Izstavi in spremljaj', opis: 'Ponudbo z enim klikom pretvoriš v račun, Flow pa sledi plačilom, stroškom in ciljem.' },
+  ];
+
+  /* Predlog cenika (cene so okvirne — potrdi/prilagodi). */
+  const CENIKI = [
+    {
+      ime: 'Brezplačno', za: 'Za začetek in enkratne projekte', cena: '0', enota: '€ za vedno',
+      cta: 'Odpri kalkulator', href: localePath(locale, '/kalkulator/orodje'), izpost: false, znacka: '',
+      vkljuceno: ['Kalkulator poštenih cen', 'Trije paketi + avtorske pravice', 'Urejljiva ponudba', 'Izvoz v e-pošto / PDF'],
+      brez: ['Shranjeni dokumenti', 'Pogodbe in računi', 'Stranke in cilji'],
+    },
+    {
+      ime: 'Premium', za: 'Za redno delo s strankami', cena: '9', enota: '€ / mesec',
+      cta: 'Začni s Premium', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Najbolj priljubljeno',
+      vkljuceno: ['Vse iz Brezplačno', 'Shranjene ponudbe, pogodbe, računi', 'Kartoteka strank', 'Stroški in cilji', 'Nadzorna plošča'],
+      brez: ['Retainerji in poslovni okvir'],
+    },
+    {
+      ime: 'Pro', za: 'Za polno poslovanje', cena: '19', enota: '€ / mesec',
+      cta: 'Nadgradi v Pro', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Vse vključeno',
+      vkljuceno: ['Vse iz Premium', 'Dolgoročni retainerji', 'Poslovni okvir in davki', 'Izvoz za računovodstvo', 'Prednostna podpora'],
+      brez: [],
+    },
   ];
 
   return (
@@ -131,17 +153,46 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-konec .zakljucki span { display: inline-flex; align-items: center; gap: .4rem; }
         .fl-konec .zakljucki svg { color: oklch(52% .13 155); }
 
+        /* Cenik (price plans, Magnific slog) */
+        .fl-cenik { margin: 6.5rem 0 0; border-top: 1px solid rgba(17,17,17,.16); padding-top: 2.6rem; text-align: center; }
+        .fl-cenik > .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
+        .fl-cenik > h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 .5rem; }
+        .fl-cenik > .uvod { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.76); max-width: 46ch; margin: 0 auto 2.8rem; }
+        .fl-cenik-mreza { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; text-align: left; align-items: start; }
+        @media (max-width: 860px) { .fl-cenik-mreza { grid-template-columns: 1fr; max-width: 30rem; margin: 0 auto; } }
+        .fl-plan { position: relative; display: flex; flex-direction: column; padding: 1.7rem 1.5rem; border-radius: 20px; background: rgba(255,255,255,.72); border: 1px solid rgba(17,17,17,.1); box-shadow: 0 12px 32px rgba(40,25,60,.06); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+        .fl-plan.izpost { border: 1.5px solid var(--ink); box-shadow: 0 22px 50px rgba(40,25,60,.14); }
+        .fl-plan-znacka { position: absolute; top: -.7rem; left: 1.5rem; font-size: .6rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper); background: var(--ink); border-radius: 999px; padding: .28rem .7rem; }
+        .fl-plan h3 { font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.6rem; margin: .3rem 0 .2rem; }
+        .fl-plan-za { font-size: .82rem; color: rgba(17,17,17,.6); margin: 0 0 1rem; min-height: 2.4em; }
+        .fl-plan-cena { display: flex; align-items: baseline; gap: .35rem; margin-bottom: 1.2rem; }
+        .fl-plan-cena strong { font-family: var(--font-serif), serif; font-weight: 500; font-size: 2.6rem; line-height: 1; }
+        .fl-plan-cena span { font-size: .8rem; color: rgba(17,17,17,.6); }
+        .fl-plan-cta { display: block; text-align: center; font-size: .82rem; font-weight: 700; letter-spacing: .04em; text-decoration: none; padding: .8rem 1rem; border-radius: 999px; border: 1px solid var(--ink); color: var(--ink); transition: background .16s, color .16s, transform .16s; }
+        .fl-plan-cta:hover { transform: translateY(-1px); }
+        .fl-plan-cta.polni { background: var(--ink); color: var(--paper); }
+        .fl-plan-cta:not(.polni):hover { background: rgba(17,17,17,.04); }
+        .fl-plan-lista { list-style: none; margin: 1.4rem 0 0; padding: 1.3rem 0 0; border-top: 1px solid rgba(17,17,17,.1); display: grid; gap: .65rem; }
+        .fl-plan-lista li { display: flex; align-items: flex-start; gap: .55rem; font-size: .86rem; line-height: 1.4; color: rgba(17,17,17,.82); }
+        .fl-plan-lista li svg { flex-shrink: 0; margin-top: .06rem; }
+        .fl-plan-lista li.da svg { color: oklch(55% .14 155); }
+        .fl-plan-lista li.ne { color: rgba(17,17,17,.42); }
+        .fl-plan-lista li.ne svg { color: rgba(17,17,17,.3); }
+        .fl-cenik-opomba { font-size: .78rem; color: rgba(17,17,17,.5); margin: 1.9rem 0 0; }
+
         .fl-footer { margin: 6.5rem 0 0; border-top: 1px solid rgba(17,17,17,.14); padding-top: 3rem; }
-        .fl-footer-top { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.6fr); gap: clamp(2rem, 5vw, 4rem); }
+        .fl-footer-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(2rem, 5vw, 4rem); }
         @media (max-width: 720px) { .fl-footer-top { grid-template-columns: 1fr; gap: 2rem; } }
+        .fl-footer-talk { display: inline-block; margin-top: 1.1rem; font-size: .82rem; font-weight: 700; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: .15rem; }
+        .fl-footer-legal { display: flex; flex-wrap: wrap; gap: 1.1rem; }
         .fl-footer-logo { display: inline-flex; align-items: baseline; gap: .45rem; }
         .fl-footer-logo i { width: .8rem; height: .8rem; align-self: center; border-radius: 50%; background: linear-gradient(140deg, oklch(72% .17 297), oklch(80% .13 165)); }
         .fl-footer-logo strong { font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.25rem; }
         .fl-footer-logo span { font-size: .7rem; font-weight: 700; letter-spacing: .2em; color: rgba(17,17,17,.6); }
         .fl-footer-brand p { margin: .9rem 0 0; font-size: .9rem; line-height: 1.6; color: rgba(17,17,17,.66); max-width: 36ch; }
         .fl-footer-brand a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--accent); }
-        .fl-footer-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-        @media (max-width: 480px) { .fl-footer-cols { grid-template-columns: 1fr 1fr; } }
+        .fl-footer-cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+        @media (max-width: 620px) { .fl-footer-cols { grid-template-columns: 1fr 1fr; gap: 1.6rem; } }
         .fl-footer-cols > div { display: grid; gap: .55rem; align-content: start; }
         .fl-footer-cols strong { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.5); margin-bottom: .2rem; }
         .fl-footer-cols a { font-size: .9rem; color: rgba(17,17,17,.75); text-decoration: none; transition: color .15s; }
@@ -224,7 +275,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
         </section>
 
-        <section className="fl-brez" id="cenik">
+        <section className="fl-brez">
           <div className="fl-brez-txt">
             <div className="k">Začni brez tveganja</div>
             <h2>Brezplačni kalkulator je tvoj vstop.</h2>
@@ -259,11 +310,34 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
         </section>
 
+        <section className="fl-cenik" id="cenik">
+          <div className="k">Cenik</div>
+          <h2>Enostavno, pošteno, brez presenečenj.</h2>
+          <p className="uvod">Kalkulator je za vedno brezplačen. Ko potrebuješ več, izbereš paket, ki ti ustreza.</p>
+          <div className="fl-cenik-mreza">
+            {CENIKI.map(c => (
+              <div className={`fl-plan${c.izpost ? ' izpost' : ''}`} key={c.ime}>
+                {c.znacka && <span className="fl-plan-znacka">{c.znacka}</span>}
+                <h3>{c.ime}</h3>
+                <p className="fl-plan-za">{c.za}</p>
+                <div className="fl-plan-cena"><strong>{c.cena}</strong><span>{c.enota}</span></div>
+                <a className={`fl-plan-cta${c.izpost ? ' polni' : ''}`} href={c.href}>{c.cta}</a>
+                <ul className="fl-plan-lista">
+                  {c.vkljuceno.map(v => <li key={v} className="da"><CheckCircle size={16} weight="fill" /> {v}</li>)}
+                  {c.brez.map(b => <li key={b} className="ne"><X size={15} weight="bold" /> {b}</li>)}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p className="fl-cenik-opomba">Cene ne vključujejo DDV. Med beto so vsi paketi na voljo brezplačno.</p>
+        </section>
+
         <footer className="fl-footer" id="onas">
           <div className="fl-footer-top">
             <div className="fl-footer-brand">
               <span className="fl-footer-logo"><i /><strong>Pinart</strong><span>FLOW</span></span>
               <p>Vse tvoje poslovanje, na enem mestu. Orodje pripravlja Tina, kreativna direktorica studia <a href={localePath(locale, '')}>Pinart</a>.</p>
+              <a className="fl-footer-talk" href="mailto:tina@pinart.si">Let&rsquo;s talk →</a>
             </div>
             <nav className="fl-footer-cols">
               <div>
@@ -273,21 +347,32 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                 <a href="#cenik">Cenik</a>
               </div>
               <div>
-                <strong>Podjetje</strong>
-                <a href="#onas">O nas</a>
-                <a href="mailto:tina@pinart.si">Kontakt</a>
-                <a href={localePath(locale, '')}>Studio Pinart</a>
-              </div>
-              <div>
-                <strong>Račun</strong>
+                <strong>Začni</strong>
                 <a href={prijava}>Prijava</a>
                 <a href={prijava}>Ustvari račun</a>
+                <a href={kalkulator}>Odpri kalkulator</a>
+              </div>
+              <div>
+                <strong>Podjetje</strong>
+                <a href="#onas">O nas</a>
+                <a href={localePath(locale, '')}>Studio Pinart</a>
+                <a href="#faq">Pogosta vprašanja</a>
+              </div>
+              <div>
+                <strong>Kontakt</strong>
+                <a href="mailto:tina@pinart.si">tina@pinart.si</a>
+                <a href="mailto:tina@pinart.si">Let&rsquo;s talk</a>
+                <a href="#cenik">Načini plačila</a>
               </div>
             </nav>
           </div>
           <div className="fl-footer-bottom">
             <span>© 2026 Pinart · Vse pravice pridržane</span>
-            <a href="mailto:tina@pinart.si">tina@pinart.si</a>
+            <span className="fl-footer-legal">
+              <a href={localePath(locale, '/zasebnost')}>Zasebnost</a>
+              <a href={localePath(locale, '/kalkulator/pogoji')}>Pogoji</a>
+              <a href="#cenik">Načini plačila</a>
+            </span>
           </div>
         </footer>
       </div>
