@@ -160,7 +160,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl .cta-note { font-size: .8rem; color: rgba(17,17,17,.6); }
 
         /* Poteka: od ponudbe do racuna */
-        .fl-potek { margin: 3.4rem 0 0; padding-top: 2.6rem; }
+        .fl-potek { margin: 9.65rem 0 0; padding-top: 2.6rem; }
         .fl-potek .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-potek h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 2.2rem; max-width: 20ch; }
         .fl-koraki { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6rem; }
@@ -171,7 +171,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-korak p { font-size: .9rem; line-height: 1.6; color: rgba(17,17,17,.74); margin: 0; }
 
         /* Vmesna sekcija z vrtečim laptopom */
-        .fl-laptop { margin: 3.6rem 0 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+        .fl-laptop { margin: 9.85rem 0 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
         @media (max-width: 860px) { .fl-laptop { grid-template-columns: 1fr; gap: 1.5rem; } }
         .fl-laptop-txt .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
         .fl-laptop-txt h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 4.4vw, 3rem); line-height: 1.08; letter-spacing: -.01em; margin: .6rem 0 1rem; max-width: 18ch; }
@@ -182,7 +182,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 860px) { .fl-rl { max-width: 440px; } }
 
         /* Orodja mreza */
-        .fl-orodja { margin: 3.6rem 0 0; padding-top: 2.6rem; }
+        .fl-orodja { margin: 9.85rem 0 0; padding-top: 2.6rem; }
         .fl-orodja .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-orodja h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 .5rem; max-width: 20ch; }
         .fl-orodja .uvod { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.76); max-width: 50ch; margin: 0 0 2.4rem; }
@@ -205,7 +205,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-znacka { font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: oklch(45% .13 155); background: oklch(92% .08 160); border-radius: 999px; padding: .2rem .5rem; }
 
         /* Brezplacni kalkulator pas */
-        .fl-brez { margin: 3.6rem 0 0; position: relative; overflow: hidden; border-radius: 26px; padding: clamp(2.2rem, 5vw, 3.4rem); background: linear-gradient(135deg, oklch(96% .03 297), oklch(95% .035 320), oklch(95% .03 165)); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 20px 60px rgba(40,25,60,.1); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.6rem, 4vw, 3rem); align-items: center; }
+        .fl-brez { margin: 9.85rem 0 0; position: relative; overflow: hidden; border-radius: 26px; padding: clamp(2.2rem, 5vw, 3.4rem); background: linear-gradient(135deg, oklch(96% .03 297), oklch(95% .035 320), oklch(95% .03 165)); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 20px 60px rgba(40,25,60,.1); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.6rem, 4vw, 3rem); align-items: center; }
         @media (max-width: 820px) { .fl-brez { grid-template-columns: 1fr; } .fl-brez-vizual { display: none; } }
         .fl-browser { border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid rgba(17,17,17,.1); box-shadow: 0 24px 60px rgba(40,25,60,.18); }
         .fl-browser-bar { display: flex; align-items: center; gap: .4rem; padding: .5rem .75rem; background: oklch(96% .008 87); border-bottom: 1px solid rgba(17,17,17,.07); }
@@ -218,7 +218,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-brez p { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.8); max-width: 48ch; margin: 0 0 1.8rem; }
 
         /* Zakljucni CTA */
-        .fl-konec { margin: 3.6rem 0 0; text-align: center; padding-top: 3.4rem; }
+        .fl-konec { margin: 9.85rem 0 0; text-align: center; padding-top: 3.4rem; }
         .fl-konec h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.02; margin: 0 auto 1.6rem; max-width: 18ch; }
         .fl-konec .cta-vrsta { justify-content: center; }
         .fl-konec .zakljucki { margin: 1.8rem 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 1.4rem; font-size: .84rem; color: rgba(17,17,17,.7); }
@@ -226,7 +226,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-konec .zakljucki svg { color: oklch(52% .13 155); }
 
         /* Temna "features" sekcija (Magnific slog) */
-        .fl-funkcije { margin: 3.8rem 0 0; border-radius: 26px; padding: clamp(2.4rem, 5vw, 3.8rem); background: oklch(21% .016 285); color: oklch(95% .01 285); }
+        .fl-funkcije { margin: 10.05rem 0 0; border-radius: 26px; padding: clamp(2.4rem, 5vw, 3.8rem); background: oklch(21% .016 285); color: oklch(95% .01 285); }
         .fl-funkcije-glava { max-width: 46ch; }
         .fl-funkcije-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.7rem, 4vw, 2.6rem); line-height: 1.08; margin: 0 0 .6rem; color: #fff; -webkit-text-stroke: 0; }
         .fl-funkcije-glava p { font-size: 1rem; line-height: 1.55; color: oklch(72% .02 285); margin: 0; }
@@ -238,7 +238,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-funkcija p { font-size: .88rem; line-height: 1.5; color: oklch(70% .02 285); margin: 0; }
 
         /* Cenik (price plans, Magnific slog) */
-        .fl-cenik { margin: 3.8rem 0 0; padding-top: 2.6rem; text-align: center; }
+        .fl-cenik { margin: 10.05rem 0 0; padding-top: 2.6rem; text-align: center; }
         .fl-cenik > .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-cenik > h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 .5rem; }
         .fl-cenik > .uvod { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.76); max-width: 46ch; margin: 0 auto 2.8rem; }
@@ -264,7 +264,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-plan-lista li.ne svg { color: rgba(17,17,17,.3); }
         .fl-cenik-opomba { font-size: .78rem; color: rgba(17,17,17,.5); margin: 1.9rem 0 0; }
 
-        .fl-faq { margin: 3.8rem 0 0; padding-top: 3rem; display: flex; flex-wrap: wrap; gap: clamp(1.8rem, 4vw, 3.5rem); align-items: flex-start; }
+        .fl-faq { margin: 10.05rem 0 0; padding-top: 3rem; display: flex; flex-wrap: wrap; gap: clamp(1.8rem, 4vw, 3.5rem); align-items: flex-start; }
         .fl-faq-glava { flex: 1 1 240px; min-width: 240px; }
         .fl-faq-glava .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-faq-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.8rem, 4vw, 2.55rem); line-height: 1.07; margin: .55rem 0 1.4rem; }
@@ -281,13 +281,13 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-faq-item.odprt .fl-faq-odg { max-height: 320px; }
         .fl-faq-odg p { margin: 0; padding: 0 3rem 1.35rem .2rem; font-size: .92rem; line-height: 1.65; color: rgba(17,17,17,.72); }
 
-        .fl-footer { margin: 3.8rem 0 0; padding-top: 3rem; }
+        .fl-footer { margin: 10.05rem 0 0; padding-top: 3rem; }
         .fl-footer-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(2rem, 5vw, 4rem); }
         @media (max-width: 720px) { .fl-footer-top { grid-template-columns: 1fr; gap: 2rem; } }
         .fl-footer-talk { display: inline-block; margin-top: 1.1rem; font-size: .82rem; font-weight: 700; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: .15rem; }
         .fl-footer-legal { display: flex; flex-wrap: wrap; gap: 1.1rem; }
         .fl-footer-logo { display: inline-flex; align-items: center; gap: .5rem; }
-        .fl-footer-logo i { width: 1.1rem; height: 1.1rem; border-radius: 50%; flex: none; background: linear-gradient(155deg, oklch(62% .2 288) 0%, oklch(72% .16 350) 50%, oklch(76% .16 55) 100%); }
+        .fl-footer-logo i { width: 1.2rem; height: 1.2rem; border-radius: 50%; flex: none; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 3px 10px rgba(124,58,237,.28); }
         .fl-footer-logo strong { font-family: var(--font-sans), system-ui, sans-serif; font-weight: 800; font-size: 1.12rem; letter-spacing: -.01em; color: var(--ink); }
         .fl-footer-logo span { font-size: .7rem; font-weight: 700; letter-spacing: .2em; color: rgba(17,17,17,.6); }
         .fl-footer-brand p { margin: .9rem 0 0; font-size: .9rem; line-height: 1.6; color: rgba(17,17,17,.66); max-width: 36ch; }
