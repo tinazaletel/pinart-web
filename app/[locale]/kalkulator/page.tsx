@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
+import FlowNav from '@/components/FlowNav';
 import KalkulatorLanding from '@/components/KalkulatorLanding';
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default async function KalkulatorPage({
 
   return (
     <main style={{ minHeight: '100dvh' }}>
+      <FlowNav locale={locale} />
       <KalkulatorLanding locale={locale} />
     </main>
   );
