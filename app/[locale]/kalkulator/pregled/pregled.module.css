@@ -80,8 +80,10 @@
 
 .workspace { position: relative; isolation: isolate; min-width: 0; padding: 3rem clamp(1.2rem, 3vw, 3.5rem) 2rem; overflow: hidden; }
 .workspace::before, .workspace::after { content: ''; position: absolute; z-index: -1; aspect-ratio: 1; border-radius: 50%; pointer-events: none; }
-.workspace::before { top: 4.3rem; right: 9rem; width: 8.5rem; background: radial-gradient(circle at 35% 28%, oklch(98% .03 300), transparent 16%), radial-gradient(circle at 68% 72%, oklch(78% .11 160), transparent 48%), linear-gradient(135deg, oklch(68% .2 298), oklch(88% .1 165)); box-shadow: 0 0 4rem oklch(72% .18 297 / .35); opacity: .85; }
-.workspace::after { top: 36rem; left: -4rem; width: 8rem; background: radial-gradient(circle at 34% 28%, oklch(98% .03 300), transparent 17%), linear-gradient(140deg, oklch(70% .19 297), oklch(87% .12 163)); box-shadow: 0 0 3rem oklch(72% .18 297 / .22); opacity: .7; }
+/* Mehki plavajoci mehurcki — poenoteni s Flow landing stranjo (bel highlight,
+   nezen odtenek, mehka senca; brez trdih nasicenih gradientov in mocnega sija). */
+.workspace::before { top: 4.3rem; right: 9rem; width: 8.5rem; background: radial-gradient(circle at 32% 27%, oklch(100% 0 0 / .95), oklch(100% 0 0 / .08) 42%, transparent 62%), radial-gradient(circle at 68% 74%, oklch(80% .13 297 / .5), transparent 72%); border: 1px solid oklch(100% 0 0 / .55); box-shadow: inset 0 0 18px oklch(100% 0 0 / .5), 0 10px 26px oklch(60% .18 297 / .14); opacity: .9; }
+.workspace::after { top: 36rem; left: -4rem; width: 8rem; background: radial-gradient(circle at 32% 27%, oklch(100% 0 0 / .95), oklch(100% 0 0 / .08) 42%, transparent 62%), radial-gradient(circle at 68% 74%, oklch(82% .12 165 / .5), transparent 72%); border: 1px solid oklch(100% 0 0 / .55); box-shadow: inset 0 0 18px oklch(100% 0 0 / .5), 0 10px 26px oklch(60% .18 165 / .12); opacity: .85; }
 .topbar { display: flex; justify-content: space-between; gap: 1.5rem; align-items: end; padding-bottom: 2rem; }
 .eyebrow { margin: 0 0 .55rem; font-size: .64rem; line-height: 1; font-weight: 800; letter-spacing: .14em; }
 .topbar h1, .pulse h2, .sectionHeading h2 { margin: 0; font-family: var(--font-serif), Georgia, serif; font-weight: 500; }
@@ -256,7 +258,7 @@
 .donut > div { z-index: 1; display: grid; text-align: center; transform: rotate(35deg); }
 .donut strong { font: 650 1.15rem var(--font-sans), sans-serif; }
 .donut small { margin-top: .1rem; font-size: .75rem; }
-.donutEmpty { background: conic-gradient(oklch(82% .025 87) 0 100%); }
+.donutEmpty { background: conic-gradient(oklch(93.5% .005 87) 0 100%); }
 .chartLegend { display: grid; gap: .45rem; margin-top: 1.4rem; font-size: .59rem; }
 .chartLegend span { display: flex; align-items: center; gap: .45rem; }
 .chartLegend i { width: .65rem; aspect-ratio: 1; border-radius: 50%; }
@@ -624,7 +626,7 @@
 .goalEdit svg { width: .9rem; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .goalEdit:hover { background: oklch(94% .025 87); transform: translateY(-1px); }
 .goalEdit:focus-visible { outline: 3px solid color-mix(in oklch, var(--purple) 55%, transparent); outline-offset: 2px; }
-.goalDial { position: relative; flex: 0 0 auto; align-self: center; width: 7.25rem; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--purple) 0 var(--goal-progress), oklch(82% .025 87) var(--goal-progress) 100%); transform: rotate(-35deg); }
+.goalDial { position: relative; flex: 0 0 auto; align-self: center; width: 7.25rem; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--purple) 0 var(--goal-progress), oklch(93.5% .005 87) var(--goal-progress) 100%); transform: rotate(-35deg); }
 .goalDial::after { content: ''; position: absolute; width: 62%; aspect-ratio: 1; border-radius: 50%; background: oklch(99% .006 87); }
 .goalDial > div { z-index: 1; display: grid; text-align: center; transform: rotate(35deg); }
 .goalDial strong { font: 650 1.15rem var(--font-sans), sans-serif; }
@@ -894,7 +896,7 @@
 .goalOverviewStats span { display: grid; gap: .25rem; min-width: 9rem; }
 .goalOverviewStats small { color: var(--muted); }
 .goalOverviewStats strong { font: 500 1.55rem var(--font-serif), Georgia, serif; }
-.goalLargeDial { position: relative; width: 7.5rem; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--purple) 0 var(--goal-progress), oklch(86% .025 87) var(--goal-progress) 100%); transform: rotate(-35deg); }
+.goalLargeDial { position: relative; width: 7.5rem; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--purple) 0 var(--goal-progress), oklch(93.5% .005 87) var(--goal-progress) 100%); transform: rotate(-35deg); }
 .goalLargeDial::after { content: ''; position: absolute; width: 72%; aspect-ratio: 1; border-radius: 50%; background: oklch(98% .01 87); }
 .goalLargeDial > div { z-index: 1; display: grid; text-align: center; transform: rotate(35deg); }
 .goalLargeDial strong { font: 500 1.65rem var(--font-serif), Georgia, serif; }
