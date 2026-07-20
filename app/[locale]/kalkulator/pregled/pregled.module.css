@@ -83,8 +83,11 @@
 .workspace::before, .workspace::after { content: ''; position: absolute; z-index: -1; aspect-ratio: 1; border-radius: 50%; pointer-events: none; }
 /* Mehki plavajoci mehurcki — poenoteni s Flow landing stranjo (bel highlight,
    nezen odtenek, mehka senca; brez trdih nasicenih gradientov in mocnega sija). */
-.workspace::before { top: 4.3rem; right: 9rem; width: 8.5rem; background: radial-gradient(circle at 32% 27%, oklch(100% 0 0 / .95), oklch(100% 0 0 / .08) 42%, transparent 62%), radial-gradient(circle at 68% 74%, oklch(80% .13 297 / .5), transparent 72%); border: 1px solid oklch(100% 0 0 / .55); box-shadow: inset 0 0 18px oklch(100% 0 0 / .5), 0 10px 26px oklch(60% .18 297 / .14); opacity: .9; }
-.workspace::after { top: 36rem; left: -4rem; width: 8rem; background: radial-gradient(circle at 32% 27%, oklch(100% 0 0 / .95), oklch(100% 0 0 / .08) 42%, transparent 62%), radial-gradient(circle at 68% 74%, oklch(82% .12 165 / .5), transparent 72%); border: 1px solid oklch(100% 0 0 / .55); box-shadow: inset 0 0 18px oklch(100% 0 0 / .5), 0 10px 26px oklch(60% .18 165 / .12); opacity: .85; }
+.workspace::before { top: 4.3rem; right: 9rem; width: 8.5rem; background: radial-gradient(circle at 32% 27%, oklch(100% 0 0 / .95), oklch(100% 0 0 / .08) 42%, transparent 62%), radial-gradient(circle at 68% 74%, oklch(80% .13 297 / .5), transparent 72%); border: 1px solid oklch(100% 0 0 / .55); box-shadow: inset 0 0 18px oklch(100% 0 0 / .5), 0 10px 26px oklch(60% .18 297 / .14); opacity: .9; animation: wsDrift1 26s ease-in-out infinite; }
+.workspace::after { top: 36rem; left: -4rem; width: 8rem; background: radial-gradient(circle at 32% 27%, oklch(100% 0 0 / .95), oklch(100% 0 0 / .08) 42%, transparent 62%), radial-gradient(circle at 68% 74%, oklch(82% .12 165 / .5), transparent 72%); border: 1px solid oklch(100% 0 0 / .55); box-shadow: inset 0 0 18px oklch(100% 0 0 / .5), 0 10px 26px oklch(60% .18 165 / .12); opacity: .85; animation: wsDrift2 32s ease-in-out infinite; }
+@keyframes wsDrift1 { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(-24px, 30px); } 66% { transform: translate(18px, 46px); } }
+@keyframes wsDrift2 { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(26px, -22px); } 66% { transform: translate(-16px, -42px); } }
+@media (prefers-reduced-motion: reduce) { .workspace::before, .workspace::after { animation: none; } }
 .topbar { display: flex; justify-content: space-between; gap: 1.5rem; align-items: end; padding-bottom: 2rem; }
 .eyebrow { margin: 0 0 .55rem; font-size: .64rem; line-height: 1; font-weight: 800; letter-spacing: .14em; }
 .topbar h1, .pulse h2, .sectionHeading h2 { margin: 0; font-family: var(--font-serif), Georgia, serif; font-weight: 500; }

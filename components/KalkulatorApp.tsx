@@ -6527,7 +6527,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                        pod zgornjimi mehurcki (npr. pod PR). NE v skrajno desno vrzel (prej p.x=126,
                        kar je izgledalo odtrgano). p.y ostane naraven (zadnja vrsta). */
                     const startXSiroka = 50 - ((orbMax - 1) * orbStep) / 2;
-                    p.x = Math.round((startXSiroka + (orbMax - 2) * orbStep) * 10) / 10;
+                    /* VMES med zadnjim in predzadnjim stolpcem siroke mreze (= stolpec ozje vrste,
+                       npr. poravnan pod PR) — sredina med (orbMax-2) in (orbMax-1) stolpcem */
+                    p.x = Math.round((startXSiroka + (orbMax - 1.5) * orbStep) * 10) / 10;
                   }
                   return (
                     <button type="button" className="orb0 orb0-plus"
