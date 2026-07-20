@@ -40,7 +40,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
     <header className={`flnav${scrolled ? ' scrolled' : ''}`}>
       <a className="flnav-brand" href={flow} onClick={close} aria-label="Pinart Flow">
         <img className="flnav-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" />
-        <span className="flnav-ff">FLOW</span><small>BETA</small>
+        <strong className="flnav-pinart">Pinart</strong><span className="flnav-ff">FLOW</span><small>BETA</small>
       </a>
 
       <nav className="flnav-links" aria-label="Glavna navigacija">
@@ -83,9 +83,10 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
           transition: background .28s ease, box-shadow .28s ease, border-color .28s ease; border-bottom: 1px solid transparent; }
         .flnav.scrolled { background: var(--paper); border-bottom-color: rgba(17,17,17,.08); box-shadow: 0 6px 24px rgba(40,25,60,.05); }
 
-        .flnav-brand { display: inline-flex; align-items: center; gap: .55rem; text-decoration: none; color: var(--ink); }
-        .flnav-logo { height: 1.85rem; width: auto; display: block; }
-        .flnav-brand .flnav-ff { font-size: .74rem; font-weight: 700; letter-spacing: .22em; color: rgba(17,17,17,.72); }
+        .flnav-brand { display: inline-flex; align-items: center; gap: .5rem; text-decoration: none; color: var(--ink); }
+        .flnav-logo { height: 1.55rem; width: auto; display: block; }
+        .flnav-brand .flnav-pinart { font-family: var(--font-sans), system-ui, sans-serif; font-weight: 800; font-size: 1.12rem; letter-spacing: -.01em; color: var(--ink); line-height: 1; }
+        .flnav-brand .flnav-ff { font-size: .84rem; font-weight: 700; letter-spacing: .12em; color: var(--ink); line-height: 1; }
         .flnav-brand small { font-size: .56rem; font-weight: 700; letter-spacing: .1em; color: #b25476; border: 1px solid color-mix(in oklch, #b25476 45%, transparent); border-radius: 999px; padding: .12rem .4rem; align-self: center; }
 
         .flnav-links { display: flex; align-items: center; gap: 1.7rem; margin-left: auto; }
