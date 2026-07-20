@@ -104,10 +104,14 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
         .flnav-menu span { font-size: .74rem; color: rgba(17,17,17,.6); }
 
         .flnav-actions { display: flex; align-items: center; gap: .6rem; }
-        .flnav-login { font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; font-weight: 600; color: var(--ink); text-decoration: none; padding: .55rem .95rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.2); transition: border-color .16s, background .16s; }
+        .flnav-login { position: relative; overflow: hidden; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; font-weight: 600; color: var(--ink); text-decoration: none; padding: .55rem .95rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.2); transition: border-color .16s, background .16s; }
         .flnav-login:hover { border-color: var(--ink); background: rgba(17,17,17,.04); }
-        .flnav-signup { font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; font-weight: 700; color: var(--paper); text-decoration: none; padding: .58rem 1.1rem; border-radius: 999px; background: var(--ink); transition: transform .16s, box-shadow .16s; }
+        .flnav-signup { position: relative; overflow: hidden; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; font-weight: 700; color: var(--paper); text-decoration: none; padding: .58rem 1.1rem; border-radius: 999px; background: var(--ink); transition: transform .16s, box-shadow .16s; }
         .flnav-signup:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(40,25,60,.2); }
+        .flnav-login::after, .flnav-signup::after { content: ''; position: absolute; top: 0; left: -160%; width: 90%; height: 100%; transform: skewX(-18deg); transition: left .6s cubic-bezier(.19,1,.22,1); pointer-events: none; }
+        .flnav-signup::after { background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.9) 50%, transparent 100%); }
+        .flnav-login::after { background: linear-gradient(120deg, transparent 0%, rgba(124,58,237,.28) 42%, rgba(56,189,248,.28) 58%, transparent 100%); }
+        .flnav-login:hover::after, .flnav-signup:hover::after { left: 170%; }
 
         .flnav-burger { display: none; flex-direction: column; gap: 4px; width: 2.6rem; height: 2.6rem; align-items: center; justify-content: center; background: none; border: 1px solid rgba(17,17,17,.16); border-radius: 999px; cursor: pointer; margin-left: auto; }
         .flnav-burger span { width: 1.05rem; height: 1.5px; background: var(--ink); border-radius: 2px; transition: transform .2s, opacity .2s; }

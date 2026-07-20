@@ -8,6 +8,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { localePath } from '@/i18n/routing';
 import FlowHeroBg from '@/components/FlowHeroBg';
+import AmbientBubbles from '@/components/AmbientBubbles';
 import RotatingLaptop from '@/components/RotatingLaptop';
 
 /* Predstavitev celotnega paketa Pinart Flow (pinartflow.com). Prodaja
@@ -220,19 +221,19 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const CENIKI = [
     {
       ime: 'Brezplačno', za: 'Za začetek in enkratne projekte', cena: '0', enota: '€ za vedno',
-      cta: 'Odpri kalkulator', href: kalkulator, izpost: false, znacka: '',
+      cta: 'Odpri kalkulator', href: kalkulator, izpost: false, znacka: '', kmalu: false,
       vkljuceno: ['Kalkulator poštenih cen', 'Trije paketi + avtorske pravice', 'Urejljiva ponudba', 'Izvoz v e-pošto / PDF'],
       brez: ['Shranjeni dokumenti', 'Pogodbe in računi', 'Stranke in cilji'],
     },
     {
       ime: 'Premium', za: 'Za redno delo s strankami', cena: '9', enota: '€ / mesec',
-      cta: 'Začni s Premium', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Najbolj priljubljeno',
+      cta: 'Začni s Premium', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Najbolj priljubljeno', kmalu: false,
       vkljuceno: ['Vse iz Brezplačno', 'Shranjene ponudbe, pogodbe, računi', 'Kartoteka strank', 'Stroški in cilji', 'Nadzorna plošča'],
       brez: ['Retainerji in poslovni okvir'],
     },
     {
       ime: 'Pro', za: 'Za polno poslovanje', cena: '19', enota: '€ / mesec',
-      cta: 'Nadgradi v Pro', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Vse vključeno',
+      cta: 'Kmalu', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Kmalu', kmalu: true,
       vkljuceno: ['Vse iz Premium', 'Dolgoročni retainerji', 'Poslovni okvir in davki', 'Izvoz za računovodstvo', 'AI agent (beta)', 'MCP & API dostop (kmalu)', 'Prednostna podpora'],
       brez: [],
     },
@@ -487,10 +488,17 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-plan-cena { display: flex; align-items: baseline; gap: .35rem; margin-bottom: 1.2rem; }
         .fl-plan-cena strong { font-family: var(--font-serif), serif; font-weight: 500; font-size: 2.6rem; line-height: 1; }
         .fl-plan-cena span { font-size: .8rem; color: rgba(17,17,17,.6); }
-        .fl-plan-cta { display: block; text-align: center; font-size: .82rem; font-weight: 700; letter-spacing: .04em; text-decoration: none; padding: .8rem 1rem; border-radius: 999px; border: 1px solid var(--ink); color: var(--ink); transition: background .16s, color .16s, transform .16s; }
+        .fl-plan-cta { position: relative; overflow: hidden; display: block; text-align: center; font-size: .82rem; font-weight: 700; letter-spacing: .04em; text-decoration: none; padding: .8rem 1rem; border-radius: 999px; border: 1px solid var(--ink); color: var(--ink); transition: background .16s, color .16s, transform .16s; }
         .fl-plan-cta:hover { transform: translateY(-1px); }
         .fl-plan-cta.polni { background: var(--ink); color: var(--paper); }
         .fl-plan-cta:not(.polni):hover { background: rgba(17,17,17,.04); }
+        .fl-plan-cta::after { content: ''; position: absolute; top: 0; left: -160%; width: 90%; height: 100%; background: linear-gradient(120deg, transparent 0%, rgba(124,58,237,.28) 42%, rgba(56,189,248,.28) 58%, transparent 100%); transform: skewX(-18deg); transition: left .6s cubic-bezier(.19,1,.22,1); pointer-events: none; }
+        .fl-plan-cta.polni::after { background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.9) 50%, transparent 100%); }
+        .fl-plan-cta:hover::after { left: 170%; }
+        .fl-plan.kmalu { opacity: .62; }
+        .fl-plan.kmalu .fl-plan-znacka { background: rgba(17,17,17,.42); }
+        .fl-plan-cta.cakalna { pointer-events: none; border-style: dashed; border-color: rgba(17,17,17,.3); color: rgba(17,17,17,.5); }
+        .fl-plan-cta.cakalna::after { display: none; }
         .fl-plan-lista { list-style: none; margin: 1.4rem 0 0; padding: 1.3rem 0 0; border-top: 1px solid rgba(17,17,17,.1); display: grid; gap: .65rem; }
         .fl-plan-lista li { display: flex; align-items: flex-start; gap: .55rem; font-size: .86rem; line-height: 1.4; color: rgba(17,17,17,.82); }
         .fl-plan-lista li svg { flex-shrink: 0; margin-top: .06rem; }
@@ -515,6 +523,20 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-faq-odg { max-height: 0; overflow: hidden; transition: max-height .32s cubic-bezier(.16,1,.3,1); }
         .fl-faq-item.odprt .fl-faq-odg { max-height: 320px; }
         .fl-faq-odg p { margin: 0; padding: 0 3rem 1.35rem .2rem; font-size: .92rem; line-height: 1.65; color: rgba(17,17,17,.72); }
+
+        /* Moja zgodba (O nas) — osebni manifesto, editorial */
+        .fl-zgodba { margin: 10.05rem 0 0; padding-top: 3rem; }
+        .fl-zgodba-glava { max-width: 26ch; margin: 0 0 2.2rem; }
+        .fl-zgodba-glava .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
+        .fl-zgodba-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 4.5vw, 2.7rem); line-height: 1.06; margin: .55rem 0 0; }
+        .fl-zgodba-telo { display: grid; grid-template-columns: 17rem minmax(0, 1fr); gap: clamp(1.8rem, 4vw, 3.6rem); align-items: start; }
+        @media (max-width: 760px) { .fl-zgodba-telo { grid-template-columns: 1fr; } .fl-zgodba-portret { max-width: 16rem; } }
+        .fl-zgodba-portret { position: relative; aspect-ratio: 4 / 5; border-radius: 20px; overflow: hidden; background: linear-gradient(150deg, oklch(90% .06 297), oklch(91% .05 330), oklch(90% .06 165)); box-shadow: 0 18px 44px rgba(40,25,60,.12); }
+        .fl-zgodba-portret img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .fl-zgodba-tekst p { font-size: 1.02rem; line-height: 1.72; color: rgba(17,17,17,.82); margin: 0 0 1.1rem; max-width: 60ch; }
+        .fl-zgodba-tekst p:first-child { font-size: 1.18rem; line-height: 1.6; color: var(--ink); }
+        .fl-zgodba-tekst em { font-style: italic; }
+        .fl-zgodba-podpis { font-family: var(--font-serif), serif; font-style: italic; font-size: 1.05rem !important; color: var(--ink) !important; margin-top: 1.4rem !important; }
 
         .fl-footer { margin: 10.05rem calc(50% - 50vw) calc(-1 * clamp(5rem, 8vw, 8rem)); background: oklch(20% .016 285); color: oklch(93% .01 285); border-radius: 0; padding: clamp(2.8rem, 5vw, 4rem) calc(max(0px, (100vw - 1480px) / 2) + clamp(1.5rem, 5vw, 5.5rem)) clamp(2rem, 4vw, 2.6rem); }
         .fl-footer-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(2rem, 5vw, 4rem); }
@@ -542,6 +564,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         <span className="fl-blob g" />
         <span className="fl-blob v2" />
       </div>
+      <AmbientBubbles />
 
       <FlowHeroBg />
 
@@ -732,12 +755,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           <p className="uvod">Kalkulator je za vedno brezplačen. Ko potrebuješ več, izbereš paket, ki ti ustreza.</p>
           <div className="fl-cenik-mreza">
             {CENIKI.map(c => (
-              <div className={`fl-plan${c.izpost ? ' izpost' : ''}`} key={c.ime}>
+              <div className={`fl-plan${c.izpost ? ' izpost' : ''}${c.kmalu ? ' kmalu' : ''}`} key={c.ime}>
                 {c.znacka && <span className="fl-plan-znacka">{c.znacka}</span>}
                 <h3>{c.ime}</h3>
                 <p className="fl-plan-za">{c.za}</p>
                 <div className="fl-plan-cena"><strong>{c.cena}</strong><span>{c.enota}</span></div>
-                <a className={`fl-plan-cta${c.izpost ? ' polni' : ''}`} href={c.href}>{c.cta}</a>
+                {c.kmalu
+                  ? <span className="fl-plan-cta cakalna" aria-disabled="true">{c.cta}</span>
+                  : <a className={`fl-plan-cta${c.izpost ? ' polni' : ''}`} href={c.href}>{c.cta}</a>}
                 <ul className="fl-plan-lista">
                   {c.vkljuceno.map(v => <li key={v} className="da"><CheckCircle size={16} weight="fill" /> {v}</li>)}
                   {c.brez.map(b => <li key={b} className="ne"><X size={15} weight="bold" /> {b}</li>)}
@@ -767,7 +792,25 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
         </section>
 
-        <footer className="fl-footer" id="onas">
+        <section className="fl-zgodba" id="onas">
+          <div className="fl-zgodba-glava">
+            <div className="k">Moja zgodba</div>
+            <h2>Zgradila sem Flow, kakršnega sem sama pogrešala.</h2>
+          </div>
+          <div className="fl-zgodba-telo">
+            <div className="fl-zgodba-portret" aria-hidden>
+              <img src="/flow/tina.jpg" alt="" loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+            </div>
+            <div className="fl-zgodba-tekst">
+              <p>Sem Tina, oblikovalka. Leta sem gradila svoj okus, slog in občutek za estetiko — a vsakič znova obtičala pri ponudbah, cenah in računih. Ugibala sem, ali sem dovolj zaračunala, pozabljala na avtorske pravice, skakala med tremi orodji.</p>
+              <p>Flow je nastal iz te utrujenosti. Da kreativci nehamo biti zgolj izvajalci in postanemo narekovalci okusa — da vemo, koliko je vredno naše delo, in ga ne prodamo pod ceno. <em>De gustibus non est disputandum</em>: o okusu se ne razpravlja, pošteno ceno pa lahko postaviš.</p>
+              <p>Želim si, da Flow kreativce spodbudi k še večji drznosti in k zavedanju svojih pravic. Ker leta nismo le oblikovalci — smo tisti, ki gradimo okus.</p>
+              <p className="fl-zgodba-podpis">— Tina, Pinart</p>
+            </div>
+          </div>
+        </section>
+
+        <footer className="fl-footer">
           <div className="fl-footer-top">
             <div className="fl-footer-brand">
               <span className="fl-footer-logo"><i /><strong>Pinart</strong><span>FLOW</span></span>
