@@ -39,7 +39,6 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
   return (
     <header className={`flnav${scrolled ? ' scrolled' : ''}`}>
       <a className="flnav-brand" href={flow} onClick={close} aria-label="Pinart Flow">
-        <img className="flnav-logo" src="/Logos/Logo_pinart.svg" alt="Pinart" />
         <strong className="flnav-pinart">Pinart</strong><span className="flnav-ff">FLOW</span><small>BETA</small>
       </a>
 
