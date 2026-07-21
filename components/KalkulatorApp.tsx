@@ -5606,6 +5606,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .pon-lik { width: 8.4rem; height: auto; display: block; overflow: visible; }
         .cw .pon-telo { transform-box: view-box; transform-origin: 60px 128px; animation: ponFloat 3.4s ease-in-out infinite; }
         .cw .pon-senca { transform-box: view-box; transform-origin: 60px 133px; animation: ponSenca 3.4s ease-in-out infinite; }
+        .cw .pon-kljuk-znak { transform-box: fill-box; transform-origin: center; animation: kljukPop .5s cubic-bezier(.2,1.5,.4,1) .45s both; }
+        .cw .pon-kljuk { stroke-dasharray: 26; stroke-dashoffset: 26; animation: kljukRis .38s ease-out .8s forwards; }
+        @keyframes kljukPop { 0% { transform: scale(0); } 62% { transform: scale(1.18); } 100% { transform: scale(1); } }
+        @keyframes kljukRis { to { stroke-dashoffset: 0; } }
+        @media (prefers-reduced-motion: reduce) { .cw .pon-kljuk-znak { animation: none; } .cw .pon-kljuk { animation: none; stroke-dashoffset: 0; } }
         .cw .pon-oko { transform-box: fill-box; transform-origin: center; animation: ponMezik 4.2s ease-in-out infinite; }
         .cw .pon-lice { animation: ponLice 3.4s ease-in-out infinite; }
         @keyframes ponFloat { 0%,100% { transform: translateY(0) rotate(-1.6deg); } 50% { transform: translateY(-8px) rotate(1.6deg); } }
@@ -6244,9 +6249,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <path d="M40 54 h40" />
                     <path d="M40 66 h40" />
                     <path d="M40 78 h26" />
-                    <circle cx="78" cy="83" r="13" fill="#fff" />
-                    <circle cx="78" cy="83" r="13" stroke="rgba(124,58,237,.7)" strokeWidth="2.6" />
-                    <path d="M71 83 l5 5 l9 -10" stroke="rgba(124,58,237,.95)" strokeWidth="2.8" />
+                    <g className="pon-kljuk-znak">
+                      <circle cx="78" cy="83" r="13" fill="#fff" stroke="none" />
+                      <circle cx="78" cy="83" r="13" stroke="rgba(124,58,237,.7)" strokeWidth="2.6" />
+                      <path className="pon-kljuk" d="M71 83 l5 5 l9 -10" stroke="rgba(124,58,237,.95)" strokeWidth="2.8" />
+                    </g>
                   </g>
                 </svg>
               </div>
