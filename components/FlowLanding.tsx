@@ -306,6 +306,13 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl .cta.duh { background: transparent; color: var(--ink); border-color: rgba(17,17,17,.28); }
         .fl .cta.duh::after { background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.6) 50%, transparent 100%); }
         .fl .cta-note { font-size: .8rem; color: rgba(17,17,17,.6); }
+        .fl-hero-vid-mob { display: none; }
+        @media (max-width: 820px) {
+          .fl-hero { min-height: auto; }
+          .fl-hero-vid-mob { display: block; margin: 2.8rem calc(50% - 50vw) 0; width: 100vw; overflow: hidden; }
+          .fl-hero-vid-mob video { display: block; width: 100%; height: 40svh; object-fit: cover; object-position: center 42%; mix-blend-mode: multiply; filter: contrast(1.15); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%); }
+          .fl-potek { margin: 2.6rem 0 0; }
+        }
 
         /* Poteka: od ponudbe do racuna */
         .fl-potek { margin: calc(-11.6875rem - 80px) 0 0; position: relative; z-index: 2; }
@@ -615,6 +622,12 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <a className="cta" href={prijava}>Vstopi v Flow <ArrowRight size={17} weight="bold" /></a>
             <a className="cta duh" href={kalkulator}>Preizkusi kalkulator</a>
             <span className="cta-note">Kalkulator je brezplačen, brez prijave.</span>
+          </div>
+          {/* Mobile: hero video kot cist blok POD gumbi (na desktopu skrit — tam je bg) */}
+          <div className="fl-hero-vid-mob" aria-hidden>
+            <video autoPlay muted loop playsInline preload="metadata">
+              <source src="/flow/hero-sequence.mp4" type="video/mp4" />
+            </video>
           </div>
         </section>
 

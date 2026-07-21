@@ -120,10 +120,8 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         /* Mobile: video NI več prosojno ozadje za tekstom (nečitljivo), ampak poln
            pas SPODAJ (v spodnjem delu heroja, pod besedilom). Vrh pasu zbledi. */
         @media (max-width: 820px) {
-          .fl-video { top: auto; bottom: 0; height: 46svh; width: 100%;
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 34%); -webkit-mask-composite: source-over;
-            mask-image: linear-gradient(to bottom, transparent 0%, #000 34%); mask-composite: add; }
-          .fl-video video { opacity: 1; object-position: center; }
+          /* Mobile: bg video skrit — hero video je zdaj cist blok POD gumbi (glej .fl-hero-vid-mob) */
+          .fl-video { display: none; }
         }
 
         .fl-bubbles { position: absolute; inset: 0; }
