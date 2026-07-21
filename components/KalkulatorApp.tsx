@@ -6612,15 +6612,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <div className="prazno-mapa" aria-hidden>
                       {/* Elegantna linijska skica ponudbe (tanke rocne poteze, brez obraza — slog pupe) */}
                       <svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg" fill="none">
-                        <ellipse className="mapa-senca" cx="110" cy="185" rx="50" ry="6" fill="rgba(35,18,45,.07)" />
+                        <ellipse className="mapa-senca" cx="110" cy="184" rx="46" ry="6" fill="rgba(35,18,45,.07)" />
                         <g className="mapa-telo" stroke="rgba(17,17,17,.46)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M70 32 h56 l26 26 v88 a7 7 0 0 1 -7 7 H70 a7 7 0 0 1 -7 -7 V39 a7 7 0 0 1 7 -7 z" />
-                          <path d="M126 32 v20 a6 6 0 0 0 6 6 h20" />
-                          <path d="M82 84 h44" />
-                          <path d="M82 101 h56" />
-                          <path d="M82 118 h56" />
-                          <path d="M82 135 h36" />
-                          <path d="M82 158 h28" stroke="rgba(124,58,237,.6)" strokeWidth="3.4" />
+                          <path d="M79 30 h43 l26 26 v88 a7 7 0 0 1 -7 7 H79 a7 7 0 0 1 -7 -7 V37 a7 7 0 0 1 7 -7 z" />
+                          <path d="M122 30 v20 a6 6 0 0 0 6 6 h20" />
+                          <path d="M86 84 h48" />
+                          <path d="M86 101 h48" />
+                          <path d="M86 118 h48" />
+                          <path d="M92 135 h36" />
+                          <path d="M92 158 h36" stroke="rgba(124,58,237,.6)" strokeWidth="3.4" />
                         </g>
                       </svg>
                     </div>
