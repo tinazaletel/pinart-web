@@ -25,6 +25,28 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const [taRubrika, setTaRubrika] = useState('vse');
   const [taZavihek, setTaZavihek] = useState('kalkulator');
   const [odprtoVpr, setOdprtoVpr] = useState<number | null>(0);
+  const pupaRef = useRef<HTMLVideoElement>(null);
+  const [pupaHodi, setPupaHodi] = useState(false);
+
+  /* Pupa: predvajaj (in zaženi sprehod) ŠELE ko pride v viewport; ob vsakem vstopu
+     resetiraj video + animacijo, da sta sinhrona (pupa ne skoči na začetek sredi prehoda).
+     Upocasnjen (playbackRate) tako, da ena predvajava ~ustreza enemu prehodu. */
+  useEffect(() => {
+    const v = pupaRef.current;
+    if (!v) return;
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) {
+        try { v.currentTime = 0; v.playbackRate = 0.34; } catch {}
+        v.play().catch(() => {});
+        setPupaHodi(true);
+      } else {
+        v.pause();
+        setPupaHodi(false);
+      }
+    }, { threshold: 0.12 });
+    io.observe(v);
+    return () => io.disconnect();
+  }, []);
   const vrstaRef = useRef<HTMLDivElement>(null);
 
   const VPRASANJA = [
@@ -542,9 +564,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-zgodba-podpis { font-family: var(--font-serif), serif; font-style: italic; font-size: 1.05rem !important; color: var(--ink) !important; margin-top: 1.4rem !important; }
         /* Pupa se sprehodi po spodnjem robu — pride z leve, gre cez ekran, izgine desno,
            in se cez ~pol minute spet sprehodi. Odlozi /public/flow/pupa-hoja.webm (ali .mp4). */
-        .fl-pupa-pas { position: absolute; left: 50%; transform: translateX(-50%); bottom: -9rem; width: 100vw; height: clamp(26rem, 36vw, 36rem); overflow: hidden; pointer-events: none; }
-        .fl-pupa { position: absolute; bottom: -12%; left: 0; height: 100%; width: auto; will-change: transform; animation: pupaHoja 28s linear infinite; }
-        @keyframes pupaHoja { 0% { transform: translateX(-44vw); } 72% { transform: translateX(104vw); } 100% { transform: translateX(104vw); } }
+        .fl-pupa-pas { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(-9rem - 150px); width: 100vw; height: clamp(26rem, 36vw, 36rem); overflow: hidden; pointer-events: none; }
+        .fl-pupa { position: absolute; bottom: -12%; left: 0; height: 100%; width: auto; will-change: transform; }
+        .fl-pupa.hodi { animation: pupaHoja 12s linear infinite; }
+        @keyframes pupaHoja { 0% { transform: translateX(-44vw); } 75% { transform: translateX(104vw); } 100% { transform: translateX(104vw); } }
         @media (prefers-reduced-motion: reduce) { .fl-pupa { display: none; } }
 
         .fl-footer { margin: 10.05rem calc(50% - 50vw) calc(-1 * clamp(5rem, 8vw, 8rem)); background: oklch(20% .016 285); color: oklch(93% .01 285); border-radius: 0; padding: clamp(2.8rem, 5vw, 4rem) calc(max(0px, (100vw - 1480px) / 2) + clamp(1.5rem, 5vw, 5.5rem)) clamp(2rem, 4vw, 2.6rem); }
@@ -825,9 +848,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
           <div className="fl-pupa-pas" aria-hidden>
             {/* Pupa sprehaja psa (bela podlaga → mix-blend multiply pusti le skico na papirju) */}
-            <video className="fl-pupa" autoPlay muted loop playsInline preload="auto"
-              onLoadedData={e => { (e.currentTarget as HTMLVideoElement).play().catch(() => {}); }}
-              onCanPlay={e => { (e.currentTarget as HTMLVideoElement).play().catch(() => {}); }}>
+            <video ref={pupaRef} className={`fl-pupa${pupaHodi ? ' hodi' : ''}`} muted loop playsInline preload="auto">
               <source src="/flow/pupa-hoja.webm" type="video/webm" />
               <source src="/flow/pupa-hoja.mov" type='video/mp4; codecs="hvc1"' />
               <source src="/flow/pupa-hoja.mp4" type="video/mp4" />
