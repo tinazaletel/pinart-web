@@ -18,7 +18,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, User, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, ChatCircle, ListBullets, PaperPlaneTilt,
+  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, ChatCircle, ListBullets, PaperPlaneTilt, DotsThree,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -1709,6 +1709,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1201px)');
     const upd = () => setJeSirokZaslon(mq.matches);
+    upd(); mq.addEventListener('change', upd);
+    return () => mq.removeEventListener('change', upd);
+  }, []);
+  /* mobilni zaslon -> manjši mehurcki v mrezi (3-2-3, da dihajo in niso odrezani) */
+  const [jeMobilni, setJeMobilni] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    const upd = () => setJeMobilni(mq.matches);
     upd(); mq.addEventListener('change', upd);
     return () => mq.removeEventListener('change', upd);
   }, []);
@@ -4282,7 +4290,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     return sk.filter(g => g.storitve.length > 0);
   })();
   /* Velikost orba pada s stevilom storitev; pod minimum ne gre (mobile skrola). */
-  const orbD = orbStoritve.length <= 8 ? 176 : orbStoritve.length <= 14 ? 156 : 138;
+  const orbD = jeMobilni
+    ? (orbStoritve.length <= 9 ? 82 : 74)
+    : (orbStoritve.length <= 8 ? 176 : orbStoritve.length <= 14 ? 156 : 138);
   /* mehurcki v pravih vrsticah, razmaknjeni; platno raste s stevilom -> stran scrolla */
   const orbN = orbStoritve.length + 1; /* + "dodaj" */
   /* v chatu (korak 0, po onboardingu, ne klasicna oblika): vprasanja tecejo navzdol */
@@ -4311,7 +4321,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* SATASTA (honeycomb) postavitev: vrste se izmenjujejo siroka/ozja (npr. 3-2-3),
      ozje vrste centrirano padejo v vrzeli sirokih -> mehurcki NISO v ravnih navpicnih
      stolpcih, a kompozicija ostane uravnotezena. Pozicije se se dorecejo po formatu. */
-  const orbMax = orbN <= 4 ? 2 : orbN <= 14 ? 3 : 4;   /* mehurckov v siroki vrsti */
+  const orbMax = orbN <= 4 ? 2 : jeMobilni ? 3 : orbN <= 14 ? 3 : 4;   /* mehurckov v siroki vrsti (mobilno max 3 -> 3-2-3) */
   const orbRowSizes = (() => {
     /* pakiraj storitve + "dodaj" skupaj; "dodaj" je zadnji element (zadnji mehurcek v zadnji vrsti) */
     const rs: number[] = []; let left = orbN, wide = true;
@@ -4322,8 +4332,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   })();
   const orbVrstic = orbRowSizes.length;
   const orbRowStart = (() => { const a: number[] = []; let acc = 0; for (const s of orbRowSizes) { a.push(acc); acc += s; } return a; })();
-  const orbRowH = Math.round(orbD * 1.02) - 20;   /* vrstice po visini stisnjene za 20px, da vse pride na en ekran */
-  const orbStep = 84 / Math.max(orbMax - 1, 1);          /* razmik med sredisci na siroki mrezi (%) */
+  const orbRowH = jeMobilni ? Math.round(orbD * 1.34) : Math.round(orbD * 1.02) - 20;   /* mobilno vec navpicnega diha (ne stiskamo), desktop stisnjeno na en ekran */
+  const orbStep = (jeMobilni ? 60 : 84) / Math.max(orbMax - 1, 1);          /* razmik med sredisci na siroki mrezi (%); mobilno ozji razpon, da robni mehurcki niso odrezani */
   const orbPoz = (i: number) => {
     let row = 0; while (row < orbVrstic - 1 && i >= orbRowStart[row + 1]) row++;
     const posInRow = i - orbRowStart[row];
@@ -4610,7 +4620,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         <AmbientBubbles />
       </div>
       <style dangerouslySetInnerHTML={{ __html: `
+        /* zgornji rob (overscroll / varno obmocje pod URL vrstico) = barva papirja, ne prosojno (da se ne vidi obrazec skozi) */
+        html, body { background-color: var(--paper, oklch(97% 0.012 87)); }
         .cw { position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 300; overflow-x: clip; }
+        /* paper kapa cez vrh (notch/safe-area + morebiten pas nad glavo) da nic ne pogleda izpod */
+        .cw::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: var(--paper); z-index: 31; pointer-events: none; }
         /* animirano ozadje: dva Tinina soft-gradient blob-a krozita in se krizata (fixed, z-index 0 — NIKOLI -1, Safari past) */
         .cw-ozadje { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background-color: var(--paper); background-image: linear-gradient(rgba(17,17,17,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(17,17,17,.055) 1px, transparent 1px); background-size: 4.5rem 4.5rem; }
         .cw-ozadje .blob { position: absolute; width: min(60vw, 760px); aspect-ratio: 1; border-radius: 50%; will-change: transform; filter: blur(70px); }
@@ -4620,7 +4634,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @keyframes blobModra { 0%,100% { transform: translate(0,0) scale(1); } 25% { transform: translate(-28vw,-22vh) scale(1.12); } 50% { transform: translate(-44vw,-10vh) scale(.9); } 75% { transform: translate(-16vw,-32vh) scale(1.06); } }
         @media (prefers-reduced-motion: reduce) { .cw-ozadje .blob { animation: none; } }
 
-        .cw .soglasje { position: fixed; inset: 0; z-index: 60; background: rgba(245,242,234,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+        .cw .soglasje { position: fixed; inset: 0; z-index: 95; background: rgba(245,242,234,.82); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
         .cw .soglasje-kartica { max-width: 540px; max-height: calc(100dvh - 2.5rem); overflow-y: auto; background: var(--paper); border: 1px solid rgba(17,17,17,.25); border-radius: 16px; padding: clamp(1.6rem, 4vw, 2.6rem); box-shadow: 0 24px 80px rgba(17,17,17,.12); }
         .cw .soglasje-kartica h2 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 4.5vw, 2.4rem); line-height: 1.05; margin: 0 0 1.1rem; }
         .cw .soglasje-kartica ul { margin: 0 0 1.8rem; padding-left: 0; list-style: none; }
@@ -4761,6 +4775,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .orb0.orb0-plus .orb0-krog { position: absolute; inset: 4%; border-radius: 50%; border: 1.5px dashed rgba(17,17,17,.4); }
         .cw .orb0.orb0-plus:hover .orb0-krog { border-color: var(--ink); }
         .cw .orb0.orb0-plus .orb0-ime { font-weight: 600; text-shadow: none; font-size: .82rem; }
+        /* mobilno: manjsi mehurcki -> manjse besedilo/ikona, da se lepo prilega in diha */
+        @media (max-width: 640px) {
+          .cw .orb0 .orb0-ikona { margin-bottom: .05rem; }
+          .cw .orb0 .orb0-ikona svg { width: 19px; height: 19px; }
+          .cw .orb0 .orb0-ime { font-size: .72rem; padding: 0 .6em; }
+          .cw .orb0 .orb0-cena { font-size: .56rem; }
+          .cw .orb0.orb0-plus .orb0-ime { font-size: .7rem; }
+        }
         /* ── pogled MREZA (kvadratki po podrocjih) ── */
         .cw .mreza0-ovoj { width: min(1240px, 100%); margin-top: clamp(1.4rem, 4vw, 2.6rem); }
         .cw .mreza0 { display: grid; grid-template-columns: repeat(auto-fill, 180px); gap: clamp(1rem, 2.4vw, 1.8rem); justify-content: start; align-items: start; }
@@ -5014,7 +5036,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           /* ponudba NI vec vmes: postane drsni panel z desne (kosarica) */
           .cw .ponudba0 { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 90vw); border-radius: 20px 0 0 20px; margin: 0; z-index: 70; overflow-y: auto; transform: translateX(102%); transition: transform .32s cubic-bezier(.2,.8,.3,1); box-shadow: -18px 0 50px rgba(40,25,40,.22); background: rgba(255,255,255,.92); -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4); }
           .cw .ponudba0.odprta { transform: translateX(0); }
-          .cw .ponudba0-zapri { display: flex; position: absolute; top: .9rem; right: 1rem; width: 2.2rem; height: 2.2rem; align-items: center; justify-content: center; border: none; background: rgba(17,17,17,.06); border-radius: 50%; font-size: 1.3rem; line-height: 1; color: var(--ink); cursor: pointer; z-index: 2; }
+          /* zapri: PRIPNJEN fiksno na vrh predala (ne odscrolla z vsebino), jasen napis "Zapri" */
+          .cw .ponudba0-zapri { display: inline-flex; position: fixed; top: calc(.7rem + env(safe-area-inset-top, 0px)); right: .8rem; height: 2.3rem; align-items: center; justify-content: center; gap: .35rem; border: none; padding: 0 .9rem 0 .85rem; background: var(--ink); color: var(--paper); border-radius: 999px; font-family: inherit; font-size: .8rem; font-weight: 700; line-height: 1; cursor: pointer; z-index: 75; box-shadow: 0 8px 22px rgba(40,25,40,.28); }
+          .cw .ponudba0-zapri::before { content: 'Zapri'; }
+          .cw .ponudba0-glava { padding-right: 6rem; }
           .cw .ponudba-backdrop { position: fixed; inset: 0; background: rgba(30,18,35,.38); z-index: 65; animation: cwFade .25s ease both; }
           /* FAB kosarica spodaj (nad nogo) */
           .cw .ponudba-fab { display: inline-flex; align-items: center; gap: .6rem; position: fixed; right: 1rem; bottom: 5.4rem; z-index: 60; padding: .6rem .95rem .6rem .7rem; border: none; border-radius: 999px; background: var(--ink); color: var(--paper); box-shadow: 0 12px 30px rgba(40,25,40,.3); cursor: pointer; font-family: inherit; transition: transform .2s ease, opacity .2s ease; }
@@ -5070,7 +5095,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .napredek i { display: block; height: 100%; background: var(--ink); transition: width .5s cubic-bezier(.16,1,.3,1); }
 
         /* locen bez pas nad prelivom (njen mockup: header ima svoje ozadje) */
-        .cw .glava { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1rem clamp(1.2rem, 4vw, 3rem); z-index: 30; pointer-events: none; background: var(--paper); border-bottom: 1px solid rgba(17,17,17,.08); }
+        .cw .glava { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: calc(1rem + env(safe-area-inset-top, 0px)) clamp(1.2rem, 4vw, 3rem) 1rem; z-index: 32; pointer-events: none; background: var(--paper); border-bottom: 1px solid rgba(17,17,17,.08); }
         .cw .glava .zapri { pointer-events: auto; display: inline-flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); text-decoration: none; background: var(--paper); border: none; border-radius: 999px; padding: .5rem .85rem; transition: color .18s ease; }
         .cw .glava .zapri:hover { color: var(--ink); }
         /* locena razlicica (poleg loga): navadno besedilo z locilno crto pred njim */
@@ -5312,8 +5337,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .prav-vrsta { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto; align-items: center; gap: .8rem; padding: .7rem 0; border-bottom: 1px solid rgba(17,17,17,.1); }
         .cw .prav-ime { font-weight: 650; font-size: .98rem; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .cw .prav-ime small { font-weight: 500; color: rgba(17,17,17,.45); font-size: .78rem; }
-        .cw .prav-podr { border: 1px solid rgba(17,17,17,.2); background: transparent; color: rgba(17,17,17,.6); font-family: inherit; font-size: .76rem; font-weight: 600; border-radius: 999px; padding: .28rem .7rem; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s; }
-        .cw .prav-podr:hover { border-color: var(--ink); color: var(--ink); }
+        .cw .prav-podr { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.1rem; height: 2.1rem; border: 1px solid rgba(17,17,17,.2); background: transparent; color: rgba(17,17,17,.6); font-family: inherit; font-size: .76rem; font-weight: 600; border-radius: 999px; padding: 0; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s, background .15s; }
+        .cw .prav-podr:hover { border-color: var(--ink); color: var(--ink); background: rgba(17,17,17,.05); }
         .cw .prav-recept { border: none; border-bottom: 1px solid rgba(17,17,17,.35); background-color: transparent; font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); padding: .3rem 1.4rem .3rem .2rem; appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .1rem center; }
         .cw .prav-cena { font-family: var(--font-bodoni), serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; min-width: 3.6rem; text-align: right; }
         .cw .prav-cena-gumb { border: none; background: transparent; cursor: pointer; color: var(--ink); padding: 0 0 .1rem; border-bottom: 1px dashed rgba(17,17,17,.45); transition: border-color .15s, color .15s; }
@@ -5331,7 +5356,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .prav-lastna-akcije { display: inline-flex; gap: .4rem; align-items: center; justify-content: flex-end; }
         .cw .prav-skupaj { display: flex; justify-content: space-between; align-items: baseline; margin-top: .9rem; padding-top: .8rem; border-top: 2px solid var(--ink); }
         .cw .prav-skupaj b { font-family: var(--font-bodoni), serif; font-size: 1.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-        @media (max-width: 560px) { .cw .prav-vrsta { grid-template-columns: 1fr auto; grid-template-areas: 'ime cena' 'recept podr'; } .cw .prav-ime { grid-area: ime; } .cw .prav-cena { grid-area: cena; } .cw .prav-recept { grid-area: recept; } .cw .prav-podr { grid-area: podr; justify-self: end; } }
+        @media (max-width: 560px) { .cw .prav-vrsta { grid-template-columns: 1fr auto auto; grid-template-areas: 'ime ime ime' 'recept cena podr'; gap: .55rem .7rem; align-items: center; } .cw .prav-ime { grid-area: ime; white-space: normal; } .cw .prav-recept { grid-area: recept; min-width: 0; } .cw .prav-cena { grid-area: cena; justify-self: end; } .cw .prav-podr { grid-area: podr; justify-self: end; } .cw .prav-vrsta-lastna .prav-lastna-akcije { grid-area: podr; } }
         .cw .kartica > .k-naslov { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .3rem 1rem; margin: 0 0 1.1rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .kartica > .k-naslov .vec, .cw .profil-sekcija .k-naslov .vec { font-size: .82rem; font-weight: 500; color: rgba(17,17,17,.55); text-transform: none; letter-spacing: 0; }
         .cw .kartica > .hint { margin-top: 1rem; }
@@ -7138,7 +7163,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                                 title="Klikni za ročni popravek zneska" aria-label={'Ročno popravi znesek: ' + row.ime}
                                 onClick={() => setUrejamPravSid(row.sid)}>{val(row.znesek)}</button>
                             )}
-                            <button type="button" className="prav-podr" onClick={() => setPraviceOdprt(row.sid)} title="Podrobnosti — trajanje, klavzule">Podrobnosti</button>
+                            <button type="button" className="prav-podr" onClick={() => setPraviceOdprt(row.sid)} title="Podrobnosti — trajanje, klavzule" aria-label={'Podrobnosti: ' + row.ime}><DotsThree size={20} weight="bold" /></button>
                           </div>
                         );
                       })}
@@ -7158,8 +7183,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                             <span className="pe-znak">{vfx.znak}{l.tip === 'letno' ? '/leto' : l.tip === 'mesecno' ? '/mesec' : ''}</span>
                           </span>
                           <span className="prav-lastna-akcije">
-                            <button type="button" className="prav-podr" title="Podrobnosti — trajanje, klavzule, opomba"
-                              onClick={() => setLastnaOdprta(l.id)}>Podrobnosti</button>
+                            <button type="button" className="prav-podr" title="Podrobnosti — trajanje, klavzule, opomba" aria-label="Podrobnosti pravice"
+                              onClick={() => setLastnaOdprta(l.id)}><DotsThree size={20} weight="bold" /></button>
                             <button type="button" className="prav-podr prav-brisi" title="Izbriši pravico"
                               aria-label="Izbriši pravico" onClick={() => izbrisiLastnoPravico(l.id)}>✕</button>
                           </span>
