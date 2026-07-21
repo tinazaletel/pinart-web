@@ -56,15 +56,9 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
     return () => { t.forEach(id => clearTimeout(id)); };
   }, []);
 
-  /* PROSOJEN video: Safari/WebKit -> HEVC-alfa .mov; Chrome/FF -> VP9-alfa .webm.
-     (Chrome na Macu zna HEVC brez alfe -> zato NE damo mov v <source>, ampak izberemo z JS.) */
-  useEffect(() => {
-    const v = videoRef.current; if (!v) return;
-    const webkit = typeof navigator !== 'undefined' && /apple/i.test(navigator.vendor || '');
-    v.src = webkit ? '/flow/hero.mov' : '/flow/hero.webm';
-    v.load();
-    v.play().catch(() => {});
-  }, []);
+  /* NAVADEN (neprosojen) video s kremnim ozadjem (barva strani) -> ni alfe, ni Safari robov,
+     deluje enako v vseh brskalnikih. mp4 je univerzalen. */
+  useEffect(() => { videoRef.current?.play().catch(() => {}); }, []);
 
   function pop(id: number) {
     setBubbles(bs => bs.map(b => (b.id === id && !b.pop ? { ...b, pop: true } : b)));
@@ -77,8 +71,10 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
   return (
     <div className="fl-herobg" aria-hidden>
       <div className="fl-video">
-        {/* PROSOJEN video (alfa) — src nastavi useEffect glede na brskalnik (Safari=mov, Chrome=webm) */}
-        <video ref={videoRef} autoPlay muted loop playsInline preload="auto" />
+        {/* Navaden neprosojen video s kremnim ozadjem (barva strani) — deluje enako povsod */}
+        <video ref={videoRef} autoPlay muted loop playsInline preload="auto">
+          <source src="/flow/hero.mp4" type="video/mp4" />
+        </video>
       </div>
 
       <div className="fl-bubbles">
