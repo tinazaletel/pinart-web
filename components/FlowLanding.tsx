@@ -303,7 +303,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 820px) {
           .fl-hero { min-height: auto; }
           .fl-hero-vid-mob { display: block; margin: 2.8rem calc(50% - 50vw) 0; width: 100vw; overflow: hidden; }
-          .fl-hero-vid-mob video { display: block; width: 100%; height: 40svh; object-fit: cover; object-position: center 42%; mix-blend-mode: multiply; filter: contrast(1.15); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%); }
+          /* hero.mp4 je kremni (barva strani) -> brez mix-blenda/filtra; maska mehko zbledi zgoraj/spodaj v stran */
+          .fl-hero-vid-mob video { display: block; width: 100%; height: 40svh; object-fit: cover; object-position: center 40%; -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26%, #000 74%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 26%, #000 74%, transparent 100%); }
           /* visja specificnost (.fl .fl-potek), da premaga bazni negativni margin nize v datoteki
              (sicer kartice zlezejo GOR cez hero video) */
           .fl .fl-potek { margin: 3.2rem 0 0 !important; }
@@ -352,18 +353,26 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           .fl-rubrike button { flex: 0 0 auto; }
           /* Showcase pilule (Kalkulator/Dokumenti/…): zbledi desno, da je jasno, da se drsi */
           .fl-sc-pills { -webkit-mask-image: linear-gradient(to right, #000 80%, transparent); mask-image: linear-gradient(to right, #000 80%, transparent); }
-          /* Manjsi razmiki med sekcijami na mobilu */
-          .fl-laptop, .fl-orodja, .fl-showcase, .fl-bento, .fl-konec, .fl-funkcije, .fl-cenik, .fl-faq, .fl-zgodba { margin-top: 4.5rem; }
-          .fl-footer { margin-top: 5rem; }
+          /* Manjsi razmiki med sekcijami na mobilu (visja specificnost .fl X -> premaga bazni velik margin ~158px; -80px, enakomerno) */
+          .fl .fl-laptop, .fl .fl-orodja, .fl .fl-showcase, .fl .fl-bento, .fl .fl-konec, .fl .fl-funkcije, .fl .fl-cenik, .fl .fl-faq, .fl .fl-zgodba { margin-top: 4.9rem; }
+          .fl .fl-footer { margin-top: 5rem; }
+          /* Pupa na mobilu vecja: vzrok drobne figure = object-fit:contain + max-width:100% stisne SIROK okvir (2200px)
+             v 375px sirino -> figura ~142px. Sprostim sirino (naravna velikost, kot desktop) -> figura ~426px.
+             Element je zdaj sirsi od zaslona (v overflow:hidden pasu), zato korak hoje racunam v % ELEMENTA (pupaHojaM). */
+          .fl .fl-pupa-pas { height: clamp(27.5rem, 82vw, 38rem); bottom: -4.75rem; }
+          .fl .fl-pupa { max-width: none; width: auto; height: 100%; }
+          .fl .fl-pupa.hodi { animation-name: pupaHojaM; }
           .fl-orodja, .fl-showcase, .fl-cenik, .fl-konec, .fl-faq { padding-top: 1.2rem; }
           /* Bento: vec zraka med besedilom in tagi/avatarji/ceno */
-          .fl-bflow, .fl-bavatars, .fl-bprice, .fl-bthumbs { margin-top: 1.6rem; }
+          .fl .fl-bflow, .fl .fl-bavatars, .fl .fl-bprice, .fl .fl-bthumbs { margin-top: 2.8rem; }
           /* Tesnejsi naslovi (manj razmika med vrsticami) */
           .fl h1 { line-height: 1.02; }
           .fl-showcase-glava h2 { line-height: 1.02; }
         }
         /* prva kartica poravnana na LEVI rob vsebine (brez levega margina/reza); desno full-bleed za drs-off */
-        .fl-orodja-vrsta { display: flex; gap: 1rem; overflow-x: auto; padding: .6rem 0 1.2rem; padding-right: max(5vw, 3rem); margin: 0 calc(50% - 50vw) 0 0; scroll-padding-left: 0; scrollbar-width: none; }
+        /* Full-bleed na NE-drsecem wrapperju; scroll vsebnik brez negativne margine -> robusten touch scroll (iOS ne zajame margine pod overflow:clip starsem) */
+        .fl-orodja-bleed { margin-inline: calc(50% - 50vw); }
+        .fl-orodja-vrsta { display: flex; gap: 1rem; overflow-x: auto; padding: .6rem clamp(1.2rem, 4vw, 1.6rem) 1.2rem; scroll-padding-inline: clamp(1.2rem, 4vw, 1.6rem); scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
         .fl-orodja-vrsta::-webkit-scrollbar { display: none; }
         .fl-tkarta { flex: 0 0 clamp(15rem, 23vw, 17.5rem); display: block; padding: 1.5rem 1.4rem 1.6rem; border-radius: 18px; background: rgba(255,255,255,.94); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 12px 32px rgba(40,25,60,.07); text-decoration: none; color: var(--ink); transition: transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease; }
         .fl-tkarta:hover { transform: translateY(-4px); box-shadow: 0 22px 48px rgba(40,25,60,.14); }
@@ -593,6 +602,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* prehod = dolzina videa (14.25s), da se zanka/mezik zgodita, ko je pupa IZVEN zaslona -> ni vidnega skoka (in pocasneje) */
         .fl-pupa.hodi { animation: pupaHoja 14.25s linear infinite; }
         @keyframes pupaHoja { 0% { transform: translateX(-55vw); } 100% { transform: translateX(120vw); } }
+        /* Mobilni korak: element je sirsi od zaslona, zato % ELEMENTA (figura vstopi z leve, gre cez, izstopi desno) */
+        @keyframes pupaHojaM { 0% { transform: translateX(-65%); } 100% { transform: translateX(150%); } }
         @media (prefers-reduced-motion: reduce) { .fl-pupa { display: none; } }
 
         .fl-footer { margin: 10.05rem calc(50% - 50vw) calc(-1 * clamp(5rem, 8vw, 8rem)); background: oklch(20% .016 285); color: oklch(93% .01 285); border-radius: 0; padding: clamp(2.8rem, 5vw, 4rem) calc(max(0px, (100vw - 1480px) / 2) + clamp(1.5rem, 5vw, 5.5rem)) clamp(2rem, 4vw, 2.6rem); }
@@ -641,7 +652,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           {/* Mobile: hero video kot cist blok POD gumbi (na desktopu skrit — tam je bg) */}
           <div className="fl-hero-vid-mob" aria-hidden>
             <video autoPlay muted loop playsInline preload="metadata">
-              <source src="/flow/hero-sequence.mp4" type="video/mp4" />
+              <source src="/flow/hero.mp4" type="video/mp4" />
             </video>
           </div>
         </section>
@@ -688,6 +699,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <button type="button" onClick={() => drsni(1)} aria-label="Naprej"><CaretRight size={18} weight="bold" /></button>
             </div>
           </div>
+          <div className="fl-orodja-bleed">
           <div className="fl-orodja-vrsta" ref={vrstaRef}>
             {vidnaOrodja.map(o => {
               const Ikona = o.Ikona;
@@ -699,6 +711,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                 </a>
               );
             })}
+          </div>
           </div>
         </section>
 
@@ -883,7 +896,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
         </section>
 
-        <footer className="fl-footer">
+        <footer className="fl-footer" data-nav-dark>
           <div className="fl-footer-top">
             <div className="fl-footer-brand">
               <span className="fl-footer-logo"><i /><strong>Pinart</strong><span>FLOW</span></span>

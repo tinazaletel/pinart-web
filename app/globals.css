@@ -1087,7 +1087,9 @@ div.is-changing img {
 /* Laptop SVG quote: force the hand-written Caveat (the SVG references it but the
    font wasn't loaded, so it fell back to the serif). */
 .about-laptop svg text,
-.about-laptop svg tspan {
+.about-laptop svg tspan,
+.fl-rl svg text,
+.fl-rl svg tspan {
   font-family: var(--font-caveat), cursive !important;
 }
 

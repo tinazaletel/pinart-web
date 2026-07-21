@@ -12,13 +12,13 @@
 type Amb = { x: number; y: number; d: number; hue: 'v' | 'g' | 'p'; dur: number; delay: number };
 
 const MEHURCKI: Amb[] = [
-  { x: 9,  y: 22, d: 200, hue: 'v', dur: 27, delay: 0 },
-  { x: 83, y: 15, d: 150, hue: 'g', dur: 31, delay: -6 },
-  { x: 69, y: 70, d: 220, hue: 'p', dur: 35, delay: -13 },
-  { x: 19, y: 76, d: 160, hue: 'g', dur: 29, delay: -3 },
-  { x: 93, y: 54, d: 120, hue: 'v', dur: 33, delay: -9 },
-  { x: 45, y: 34, d: 96,  hue: 'p', dur: 25, delay: -16 },
-  { x: 36, y: 94, d: 132, hue: 'v', dur: 37, delay: -19 },
+  { x: 9,  y: 22, d: 200, hue: 'v', dur: 17, delay: 0 },
+  { x: 83, y: 15, d: 150, hue: 'g', dur: 20, delay: -6 },
+  { x: 69, y: 70, d: 220, hue: 'p', dur: 22, delay: -13 },
+  { x: 19, y: 76, d: 160, hue: 'g', dur: 18, delay: -3 },
+  { x: 93, y: 54, d: 120, hue: 'v', dur: 21, delay: -9 },
+  { x: 45, y: 34, d: 96,  hue: 'p', dur: 16, delay: -16 },
+  { x: 36, y: 94, d: 132, hue: 'v', dur: 23, delay: -19 },
 ];
 
 export default function AmbientBubbles() {
@@ -44,9 +44,9 @@ export default function AmbientBubbles() {
         .ambient-mehurcki .amb-p { --amb-tint: oklch(82% .11 330 / .4); }
         @keyframes ambDrift {
           0%, 100% { transform: translate(-50%, -50%); }
-          25% { transform: translate(calc(-50% + 26px), calc(-50% - 34px)); }
-          50% { transform: translate(calc(-50% - 20px), calc(-50% - 54px)); }
-          75% { transform: translate(calc(-50% + 18px), calc(-50% - 22px)); }
+          25% { transform: translate(calc(-50% + 58px), calc(-50% - 72px)); }
+          50% { transform: translate(calc(-50% - 46px), calc(-50% - 112px)); }
+          75% { transform: translate(calc(-50% + 40px), calc(-50% - 48px)); }
         }
         @media (prefers-reduced-motion: reduce) { .ambient-mehurcki .amb { animation: none; } }
       `}} />
