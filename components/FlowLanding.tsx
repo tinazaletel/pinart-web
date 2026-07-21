@@ -530,10 +530,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-zgodba-glava { max-width: 26ch; margin: 0 0 2.2rem; }
         .fl-zgodba-glava .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-zgodba-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 4.5vw, 2.7rem); line-height: 1.06; margin: .55rem 0 0; }
-        .fl-zgodba-telo { display: grid; grid-template-columns: 17rem minmax(0, 1fr); gap: clamp(1.8rem, 4vw, 3.6rem); align-items: start; }
+        .fl-zgodba-telo { display: grid; grid-template-columns: 21rem minmax(0, 1fr); gap: clamp(1.8rem, 4vw, 3.6rem); align-items: start; }
         @media (max-width: 760px) { .fl-zgodba-telo { grid-template-columns: 1fr; } .fl-zgodba-portret { max-width: 16rem; } }
         .fl-zgodba-portret { position: relative; display: grid; place-items: center; aspect-ratio: 1; }
-        .fl-zgodba-foto { grid-area: 1 / 1; width: 68%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: linear-gradient(150deg, oklch(90% .06 297), oklch(91% .05 330), oklch(90% .06 165)); box-shadow: 0 18px 44px rgba(40,25,60,.18); }
+        .fl-zgodba-foto { grid-area: 1 / 1; width: 76%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: linear-gradient(150deg, oklch(90% .06 297), oklch(91% .05 330), oklch(90% .06 165)); box-shadow: 0 18px 44px rgba(40,25,60,.18); }
         .fl-zgodba-foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
         .fl-zgodba-portret .circular-text { grid-area: 1 / 1; width: 100%; height: 100%; color: var(--ink); opacity: .82; }
         .fl-zgodba-tekst p { font-size: 1.02rem; line-height: 1.72; color: rgba(17,17,17,.82); margin: 0 0 1.1rem; max-width: 60ch; }
