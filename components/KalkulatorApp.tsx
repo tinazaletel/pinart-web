@@ -4904,9 +4904,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @media (prefers-reduced-motion: reduce) { .cw .chat-bot, .cw .chat-jaz, .cw .chat-izbire { animation: none; } }
         .cw .chat-bot { display: flex; align-items: flex-start; gap: .55rem; max-width: 82%; }
         .cw .chat-obraz { display: none; }
-        .cw .chat-bot .chat-mehur { position: relative; padding-left: 2.55rem; background: #F7F2FF; color: rgba(17,17,17,.72); border-bottom-left-radius: 5px; border-color: rgba(185,160,230,.2); }
+        .cw .chat-bot .chat-mehur { position: relative; padding-left: 2.75rem; background: #F7F2FF; color: rgba(17,17,17,.72); border-bottom-left-radius: 5px; border-color: rgba(185,160,230,.2); }
         /* majhna Pinart dot ikonica ZNOTRAJ oblacka (kot showcase mockup) */
-        .cw .chat-bot .chat-mehur::before { content: ""; position: absolute; left: .9rem; top: 1rem; width: 1.1rem; height: 1.1rem; border-radius: 50%; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 2px 6px rgba(124,58,237,.28); }
+        .cw .chat-bot .chat-mehur::before { content: ""; position: absolute; left: .9rem; top: .95rem; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 2px 6px rgba(124,58,237,.28); }
         .cw .chat-bot .chat-mehur b { display: block; color: var(--ink); font-weight: 700; font-size: 1.02rem; }
         .cw .chat-bot .chat-mehur small { display: block; margin-top: .1rem; color: rgba(17,17,17,.64); font-size: .82rem; }
         .cw .chat-jaz { align-self: flex-end; max-width: 88%; }
