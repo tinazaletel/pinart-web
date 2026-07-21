@@ -56,10 +56,16 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
     return () => { t.forEach(id => clearTimeout(id)); };
   }, []);
 
-  /* Nekateri brskalniki ne sprozijo muted-autoplay brez eksplicitnega play(). */
+  /* Izbira vira glede na brskalnik: WebKit/Safari (in iOS brskalniki) NE upostevajo
+     mix-blend na videu -> dobijo HEVC-alfa .mov (prava prosojnost). Chrome/FF na Macu
+     ZNAJO dekodirati HEVC brez alfe (pokazali bi belo), zato dobijo mp4 + mix-blend multiply. */
   useEffect(() => {
-    videoRef.current?.play().catch(() => {});
-  }, []);
+    const v = videoRef.current; if (!v) return;
+    const webkit = typeof navigator !== 'undefined' && /apple/i.test(navigator.vendor || '');
+    v.src = webkit ? '/flow/hero-seq.mov' : video;
+    v.load();
+    v.play().catch(() => {});
+  }, [video]);
 
   function pop(id: number) {
     setBubbles(bs => bs.map(b => (b.id === id && !b.pop ? { ...b, pop: true } : b)));
@@ -77,7 +83,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
           autoPlay muted loop playsInline preload="metadata"
           onError={e => { const p = (e.currentTarget.parentElement as HTMLElement | null); if (p) p.style.display = 'none'; }}
         >
-          <source src={video} type="video/mp4" />
+          {/* src nastavi useEffect glede na brskalnik (Safari=mov, ostali=mp4) */}
         </video>
       </div>
 

@@ -37,6 +37,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     const v = pupaRef.current;
     const pas = pasRef.current;
     if (!v || !pas) return;
+    /* Safari/WebKit -> HEVC-alfa mov; Chrome/FF -> VP9-alfa webm (Chrome na Macu bi HEVC brez alfe pokazal belo). */
+    const webkit = typeof navigator !== 'undefined' && /apple/i.test(navigator.vendor || '');
+    v.src = webkit ? '/flow/pupa3.mov' : '/flow/pupa3.webm';
+    v.load();
     const io = new IntersectionObserver(([e]) => {
       if (e.isIntersecting) {
         try { v.currentTime = 0; v.defaultPlaybackRate = 1; v.playbackRate = 1; } catch {}
@@ -597,7 +601,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
            in se cez ~pol minute spet sprehodi. Odlozi /public/flow/pupa-hoja.webm (ali .mp4). */
         .fl-pupa-pas { position: absolute; left: 50%; transform: translateX(-50%); bottom: -8.5rem; width: 100vw; height: clamp(26rem, 36vw, 36rem); overflow: hidden; pointer-events: none; }
         .fl-pupa { position: absolute; bottom: -6%; left: 0; height: 100%; width: auto; will-change: transform; }
-        .fl-pupa.hodi { animation: pupaHoja 5s linear infinite; }
+        /* prehod = dolzina videa (14.25s), da se zanka/mezik zgodita, ko je pupa IZVEN zaslona -> ni vidnega skoka (in pocasneje) */
+        .fl-pupa.hodi { animation: pupaHoja 14.25s linear infinite; }
         @keyframes pupaHoja { 0% { transform: translateX(-55vw); } 100% { transform: translateX(120vw); } }
         @media (prefers-reduced-motion: reduce) { .fl-pupa { display: none; } }
 
@@ -885,14 +890,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
           <div className="fl-pupa-pas" aria-hidden ref={pasRef}>
             {/* Pupa sprehaja psa (bela podlaga → mix-blend multiply pusti le skico na papirju) */}
+            {/* src (pupa3.mov za Safari / pupa3.webm za ostale) nastavi useEffect glede na brskalnik */}
             <video ref={pupaRef} className={`fl-pupa${pupaHodi ? ' hodi' : ''}`} muted loop playsInline preload="auto"
-              onLoadedMetadata={e => { const v = e.currentTarget as HTMLVideoElement; v.defaultPlaybackRate = 1; v.playbackRate = 1; }}>
-              {/* mov (HEVC-alpha, VideoToolbox) PRVI -> iOS Safari ga izbere pred neprosojnim webmom;
-                  Chrome ne dekodira hvc1 in pade na webm (VP9-alpha). Oba prosojna. */}
-              <source src="/flow/pupa-hoja-alpha.mov" type='video/mp4; codecs="hvc1"' />
-              <source src="/flow/pupa-hoja.webm" type="video/webm" />
-              <source src="/flow/pupa-hoja.mp4" type="video/mp4" />
-            </video>
+              onLoadedMetadata={e => { const v = e.currentTarget as HTMLVideoElement; v.defaultPlaybackRate = 1; v.playbackRate = 1; }} />
           </div>
         </section>
 

@@ -630,7 +630,7 @@
 .goalEdit svg { width: .9rem; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .goalEdit:hover { background: oklch(94% .025 87); transform: translateY(-1px); }
 .goalEdit:focus-visible { outline: 3px solid color-mix(in oklch, var(--purple) 55%, transparent); outline-offset: 2px; }
-.goalDial { position: relative; flex: 0 0 auto; align-self: center; width: 7.25rem; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--purple) 0 var(--goal-progress), oklch(93.5% .005 87) var(--goal-progress) 100%); transform: rotate(-35deg); }
+.goalDial { position: relative; flex: 0 0 auto; align-self: center; width: 7.25rem; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--purple) 0 var(--goal-progress), oklch(93.5% .005 87) var(--goal-progress) 100%); transform: rotate(-35deg); box-shadow: inset 0 0 0 1px oklch(20% .02 55 / .08); }
 .goalDial::after { content: ''; position: absolute; width: 62%; aspect-ratio: 1; border-radius: 50%; background: oklch(99% .006 87); }
 .goalDial > div { z-index: 1; display: grid; text-align: center; transform: rotate(35deg); }
 .goalDial strong { font: 650 1.15rem var(--font-sans), sans-serif; }
