@@ -506,7 +506,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-konec .zakljucki svg { color: oklch(52% .13 155); }
 
         /* Temna "features" sekcija (Magnific slog) */
-        .fl-funkcije { position: relative; overflow: hidden; margin: 10.05rem 0 0; border-radius: 26px; padding: clamp(2.4rem, 5vw, 3.8rem); background: oklch(21% .016 285); color: oklch(95% .01 285); }
+        .fl-funkcije { position: relative; overflow: hidden; margin: 3.8rem 0 0; border-radius: 26px; padding: clamp(2.4rem, 5vw, 3.8rem); background: oklch(21% .016 285); color: oklch(95% .01 285); }
         /* Prelivajoc gradient v krivulji ZA temno podlago (mehke, blur-ane barvne lise, ki pocasi lebdijo) */
         .fl-funkcije::before { content: ''; position: absolute; inset: -45% -20% -25% -20%; z-index: 0; pointer-events: none; filter: blur(55px); opacity: .9;
           background:

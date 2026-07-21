@@ -18,7 +18,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, User, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, ChatCircle, ListBullets, PaperPlaneTilt, DotsThree,
+  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, PaperPlaneTilt, DotsThree,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -4376,15 +4376,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         <a className="zapri zapri-loceno" href={odFlow ? localePath(locale, `/flow`) : localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ zapri</a>
       </span>
       <span className="glava-desno">
-        <button type="button" className="glava-ikona" aria-label={klasicnaOblika ? 'Preklopi na chat pogovor' : 'Preklopi na klasični vprašalnik'}
-          title={klasicnaOblika ? 'Prikaz: klasični vprašalnik — klik preklopi na chat' : 'Prikaz: chat pogovor — klik preklopi na klasični vprašalnik'}
-          onClick={preklopiObliko}>
-          {klasicnaOblika ? <ChatCircle size={18} weight="bold" /> : <ListBullets size={18} weight="bold" />}
-        </button>
-        <button type="button" className="glava-ikona" aria-label="Cene in storitve" title="Cene in storitve"
-          onClick={() => { setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>
-          <SlidersHorizontal size={18} weight="bold" />
-        </button>
+        {/* samo profil — preklop oblike in cene/storitve so v profil meniju (aplikacija / cene) */}
         <button type="button" className="glava-avatar" aria-label="Profil" title="Profil"
           onClick={() => { setKazemProfil(true); setProfilPogled('meni'); }}>
           {avatarVsebina}
