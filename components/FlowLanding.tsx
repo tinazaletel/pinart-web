@@ -542,9 +542,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-zgodba-podpis { font-family: var(--font-serif), serif; font-style: italic; font-size: 1.05rem !important; color: var(--ink) !important; margin-top: 1.4rem !important; }
         /* Pupa se sprehodi po spodnjem robu — pride z leve, gre cez ekran, izgine desno,
            in se cez ~pol minute spet sprehodi. Odlozi /public/flow/pupa-hoja.webm (ali .mp4). */
-        .fl-pupa-pas { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: 100vw; height: clamp(26rem, 36vw, 36rem); overflow: hidden; pointer-events: none; }
-        .fl-pupa { position: absolute; bottom: 0; left: 0; height: 100%; width: auto; mix-blend-mode: darken; will-change: transform; animation: pupaHoja 46s linear infinite; }
-        @keyframes pupaHoja { 0% { transform: translateX(-44vw); } 44% { transform: translateX(104vw); } 100% { transform: translateX(104vw); } }
+        .fl-pupa-pas { position: absolute; left: 50%; transform: translateX(-50%); bottom: -9rem; width: 100vw; height: clamp(26rem, 36vw, 36rem); overflow: hidden; pointer-events: none; }
+        .fl-pupa { position: absolute; bottom: -12%; left: 0; height: 100%; width: auto; will-change: transform; animation: pupaHoja 28s linear infinite; }
+        @keyframes pupaHoja { 0% { transform: translateX(-44vw); } 72% { transform: translateX(104vw); } 100% { transform: translateX(104vw); } }
         @media (prefers-reduced-motion: reduce) { .fl-pupa { display: none; } }
 
         .fl-footer { margin: 10.05rem calc(50% - 50vw) calc(-1 * clamp(5rem, 8vw, 8rem)); background: oklch(20% .016 285); color: oklch(93% .01 285); border-radius: 0; padding: clamp(2.8rem, 5vw, 4rem) calc(max(0px, (100vw - 1480px) / 2) + clamp(1.5rem, 5vw, 5.5rem)) clamp(2rem, 4vw, 2.6rem); }
@@ -828,6 +828,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <video className="fl-pupa" autoPlay muted loop playsInline preload="auto"
               onLoadedData={e => { (e.currentTarget as HTMLVideoElement).play().catch(() => {}); }}
               onCanPlay={e => { (e.currentTarget as HTMLVideoElement).play().catch(() => {}); }}>
+              <source src="/flow/pupa-hoja.webm" type="video/webm" />
               <source src="/flow/pupa-hoja.mov" type='video/mp4; codecs="hvc1"' />
               <source src="/flow/pupa-hoja.mp4" type="video/mp4" />
             </video>
