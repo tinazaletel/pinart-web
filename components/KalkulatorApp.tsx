@@ -4296,7 +4296,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* naslov koraka kot chat oblacek (v chat obliki) */
   const chatVpr = (naslov: string, opis?: string) => (
     <div className="chat-bot chat-vpr">
-      <span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+      <span className="chat-obraz" aria-hidden />
       <span className="chat-mehur"><b>{naslov}</b>{opis ? <small>{opis}</small> : null}</span>
     </div>
   );
@@ -6294,12 +6294,12 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {/* transkript vprasanj — samo MED onboardingom ali ko je bil opravljen ta obisk;
                   za ze onboardanega (chatKorak 0, brez uvodChat) se NE prikaze, da vprasanje ne visi */}
               {(uvodChat || chatKorak > 0) && (<>
-              <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+              <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                 <span className="chat-mehur"><b>Živjo! Kako ti je ime?</b></span></div>
               {chatKorak > 0 && uvodOdgovorMehur(0, imeUporabnika || '—')}
 
               {chatKorak >= 1 && (
-                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                   <span className="chat-mehur"><b>Kakšne izkušnje imaš?</b><small>Vpliva na ceno ponudbe.</small></span></div>
               )}
               {uvodChat && chatKorak === 1 && (
@@ -6315,7 +6315,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
               {/* O TEBI: podjetje + tvoja regija (na zacetku, kot dogovorjeno) */}
               {chatKorak >= 2 && (
-                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                   <span className="chat-mehur"><b>V imenu katerega podjetja izdajaš ponudbo?</b><small>Podatki za glavo ponudbe. Obvezno je le ime — če nimaš podjetja, vpiši svoje ime. Ostalo izpolni, kar imaš (lahko dopolniš pozneje).</small></span></div>
               )}
               {uvodChat && chatKorak === 2 && (
@@ -6371,7 +6371,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {chatKorak > 2 && uvodOdgovorMehur(2, ponudnik.ime.trim() + (custDrzavaMoj.trim() ? ' · ' + custDrzavaMoj.trim() : '') || '—')}
 
               {chatKorak >= 4 && (
-                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                   <span className="chat-mehur"><b>S katerimi področji se ukvarjaš?</b><small>Izbereš lahko več — pokažem samo tvoje storitve.</small></span></div>
               )}
               {uvodChat && chatKorak === 4 && (
@@ -6397,7 +6397,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {chatKorak > 4 && obIzbor.size > 0 && uvodOdgovorMehur(4, [...obIzbor].map(id => PODROCJA.find(p => p.id === id)?.ime).filter(Boolean).join(', '))}
 
               {chatKorak >= 5 && (
-                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                   <span className="chat-mehur"><b>Nova ponudba ali nadaljuješ obstoječo?</b></span></div>
               )}
               {uvodChat && chatKorak === 5 && (
@@ -6411,7 +6411,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {chatKorak > 5 && chatNova !== null && uvodOdgovorMehur(5, chatNova ? 'Nova ponudba' : 'Obstoječa ponudba')}
 
               {chatKorak >= 6 && (
-                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                   <span className="chat-mehur"><b>Kako naj se imenuje ponudba?</b><small>Npr. »Inovis — prenova CGP in spletne strani«.</small></span></div>
               )}
               {!uvodChat && nazivPonudbe.trim() && <div className="chat-jaz"><span className="chat-mehur">{nazivPonudbe}</span></div>}
@@ -6419,7 +6419,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
               {/* ze onboardan (vrnitev): oseben pozdrav + preklop podjetja (Tina lahko dela za podjetje A ali B) */}
               {!uvodChat && chatKorak === 0 && (
-                <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                   <span className="chat-mehur pozdrav-mehur">
                     <b>Hej{imeVelika ? ' ' + imeVelika : ''}{(ponudnik.ime.trim() || Object.keys(podjetja).length > 0) ? ',' : '!'}</b>
                     {(ponudnik.ime.trim() || Object.keys(podjetja).length > 0) && (
@@ -6437,9 +6437,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {/* po onboardingu: nadaljevanje pogovora za izbiro (ista povrsina, ni preskoka) */}
               {!uvodChat && !namigSkrit && (
                 <>
-                  <div className="chat-bot" id="cw-storitve-zacetek"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                  <div className="chat-bot" id="cw-storitve-zacetek"><span className="chat-obraz" aria-hidden />
                     <span className="chat-mehur"><b>Super! Izberi storitve, ki jih želiš v ponudbi.</b></span></div>
-                  <div className="chat-bot"><span className="chat-obraz" aria-hidden>{VODICKA_OBRAZ}</span>
+                  <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                     <span className="chat-mehur chat-mehur-namig">
                       <button type="button" className="namig-zapri" aria-label="Zapri namig" title="Zapri (znova le ob ponastavitvi)" onClick={() => setNamigSkrit(true)}>✕</button>
                       S klikom na storitev jo dodaš v ponudbo. Prikaz lahko preklopiš med mehurčki in pregledno tabelo v »dodaj / uredi«.
@@ -6609,20 +6609,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 {vrstice.length === 0 && (
                   <div className="ponudba0-prazno">
                     <div className="prazno-mapa" aria-hidden>
-                      {/* mapa z ENIM obrazom (odebeljene linije v slogu chatbot ikonce) */}
-                      <svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg">
-                        <ellipse className="mapa-senca" cx="110" cy="188" rx="58" ry="7" fill="rgba(35,18,45,.08)" />
-                        <g className="mapa-telo">
-                          <path d="M46 54 h44 l12 15 h62 q12 0 12 12 v82 q0 12 -12 12 H46 q-12 0 -12 -12 V66 q0 -12 12 -12 z" fill="#E7C074" />
-                          <path d="M40 84 h140 q12 0 12 12 v58 q0 12 -12 12 H40 q-12 0 -12 -12 V96 q0 -12 12 -12 z" fill="#F1D08A" />
-                          <path d="M40 84 h140 q12 0 12 12 v4 H28 v-4 q0 -12 12 -12 z" fill="#F6DCA3" />
-                          <g className="mapa-oci" stroke="#6E5326" strokeWidth="4.5" fill="none" strokeLinecap="round">
-                            <path d="M78 120 q8 -10 16 0" />
-                            <path d="M126 120 q8 -10 16 0" />
-                          </g>
-                          <path d="M92 136 q18 13 36 0" stroke="#6E5326" strokeWidth="4.5" fill="none" strokeLinecap="round" />
-                          <circle cx="80" cy="133" r="6" fill="rgba(255,120,170,.42)" />
-                          <circle cx="140" cy="133" r="6" fill="rgba(255,120,170,.42)" />
+                      {/* Elegantna linijska skica ponudbe (tanke rocne poteze, brez obraza — slog pupe) */}
+                      <svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg" fill="none">
+                        <ellipse className="mapa-senca" cx="110" cy="185" rx="50" ry="6" fill="rgba(35,18,45,.07)" />
+                        <g className="mapa-telo" stroke="rgba(17,17,17,.46)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M70 32 h56 l26 26 v88 a7 7 0 0 1 -7 7 H70 a7 7 0 0 1 -7 -7 V39 a7 7 0 0 1 7 -7 z" />
+                          <path d="M126 32 v20 a6 6 0 0 0 6 6 h20" />
+                          <path d="M82 84 h44" />
+                          <path d="M82 101 h56" />
+                          <path d="M82 118 h56" />
+                          <path d="M82 135 h36" />
+                          <path d="M82 158 h28" stroke="rgba(124,58,237,.6)" strokeWidth="3.4" />
                         </g>
                       </svg>
                     </div>
