@@ -311,7 +311,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           .fl-hero { min-height: auto; }
           .fl-hero-vid-mob { display: block; margin: 2.8rem calc(50% - 50vw) 0; width: 100vw; overflow: hidden; }
           .fl-hero-vid-mob video { display: block; width: 100%; height: 40svh; object-fit: cover; object-position: center 42%; mix-blend-mode: multiply; filter: contrast(1.15); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%); }
-          .fl-potek { margin: 2.6rem 0 0; }
+          /* visja specificnost (.fl .fl-potek), da premaga bazni negativni margin nize v datoteki
+             (sicer kartice zlezejo GOR cez hero video) */
+          .fl .fl-potek { margin: 3.2rem 0 0 !important; }
         }
 
         /* Poteka: od ponudbe do racuna */
@@ -367,7 +369,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           .fl h1 { line-height: 1.02; }
           .fl-showcase-glava h2 { line-height: 1.02; }
         }
-        .fl-orodja-vrsta { display: flex; gap: 1rem; overflow-x: auto; padding: .6rem .3rem 1.2rem; padding-right: max(5vw, 3rem); margin: 0 calc(50% - 50vw) 0 -.3rem; scrollbar-width: none; }
+        /* prva kartica poravnana na LEVI rob vsebine (brez levega margina/reza); desno full-bleed za drs-off */
+        .fl-orodja-vrsta { display: flex; gap: 1rem; overflow-x: auto; padding: .6rem 0 1.2rem; padding-right: max(5vw, 3rem); margin: 0 calc(50% - 50vw) 0 0; scroll-padding-left: 0; scrollbar-width: none; }
         .fl-orodja-vrsta::-webkit-scrollbar { display: none; }
         .fl-tkarta { flex: 0 0 clamp(15rem, 23vw, 17.5rem); display: block; padding: 1.5rem 1.4rem 1.6rem; border-radius: 18px; background: rgba(255,255,255,.94); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 12px 32px rgba(40,25,60,.07); text-decoration: none; color: var(--ink); transition: transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease; }
         .fl-tkarta:hover { transform: translateY(-4px); box-shadow: 0 22px 48px rgba(40,25,60,.14); }
@@ -884,8 +887,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             {/* Pupa sprehaja psa (bela podlaga → mix-blend multiply pusti le skico na papirju) */}
             <video ref={pupaRef} className={`fl-pupa${pupaHodi ? ' hodi' : ''}`} muted loop playsInline preload="auto"
               onLoadedMetadata={e => { const v = e.currentTarget as HTMLVideoElement; v.defaultPlaybackRate = 1; v.playbackRate = 1; }}>
+              {/* mov (HEVC-alpha, VideoToolbox) PRVI -> iOS Safari ga izbere pred neprosojnim webmom;
+                  Chrome ne dekodira hvc1 in pade na webm (VP9-alpha). Oba prosojna. */}
+              <source src="/flow/pupa-hoja-alpha.mov" type='video/mp4; codecs="hvc1"' />
               <source src="/flow/pupa-hoja.webm" type="video/webm" />
-              <source src="/flow/pupa-hoja.mov" type='video/mp4; codecs="hvc1"' />
               <source src="/flow/pupa-hoja.mp4" type="video/mp4" />
             </video>
           </div>
