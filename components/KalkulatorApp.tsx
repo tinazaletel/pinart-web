@@ -4910,7 +4910,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-bot .chat-mehur b { display: block; color: var(--ink); font-weight: 700; font-size: 1.02rem; }
         .cw .chat-bot .chat-mehur small { display: block; margin-top: .1rem; color: rgba(17,17,17,.64); font-size: .82rem; }
         .cw .chat-jaz { align-self: flex-end; max-width: 88%; }
-        .cw .chat-jaz .chat-mehur { background: #d3f3ef; color: var(--ink); font-weight: 600; border-bottom-right-radius: 5px; border-color: rgba(120,200,190,.22); }
+        .cw .chat-jaz .chat-mehur { background: #d3f3ef; color: var(--ink); font-weight: 600; border-bottom-right-radius: 5px; border-color: rgba(150,215,205,.1); }
         .cw .chat-mehur { border-radius: 18px; padding: .9rem 1.35rem; font-size: .95rem; line-height: 1.5; font-weight: 400; border: 1px solid rgba(255,255,255,.7); box-shadow: 0 2px 10px rgba(40,25,40,.05); }
         .cw .chat-mehur-ured { font-family: inherit; font-size: .95rem; cursor: pointer; display: inline-flex; align-items: center; gap: .5rem; text-align: left; transition: transform .16s ease, box-shadow .16s ease, background .16s ease; }
         .cw .chat-mehur-ured svg { opacity: .4; flex: none; transition: opacity .16s ease; }
