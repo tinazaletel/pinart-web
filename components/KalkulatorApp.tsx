@@ -1720,6 +1720,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     upd(); mq.addEventListener('change', upd);
     return () => mq.removeEventListener('change', upd);
   }, []);
+  /* mobilni slide-up sheet urejevalnika ponudbe: null | 'slog' | 'oblika' */
+  const [ponSheet, setPonSheet] = useState<null | 'slog' | 'oblika'>(null);
   const [potrdiOdjavo, setPotrdiOdjavo] = useState(false);
   const [mojeStoritve, setMojeStoritve] = useState<Storitev[]>([]);
   /* Onboarding / osebni set storitev: kaj uporabnik ponuja, postavljeno v
@@ -4609,6 +4611,95 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     </div>
   );
 
+  /* Kontrole urejevalnika ponudbe — izrisane ENKRAT (inline na desktopu ali v slide-up sheetu na mobilu),
+     da se refs (barva/podloga/logo/datoteka) ne podvajajo. */
+  const slogKontrole = (
+    <>
+      <div className="segpills segpills-sek" role="group" aria-label="Obseg ponudbe">
+        {([['kratka', 'Kratka'], ['razsirjena', 'Razširjena']] as const).map(([id, ime]) => (
+          <button key={id} type="button" className={obsegPonudbe === id ? 'on' : ''}
+            onClick={() => { setObsegPonudbe(id); setRocnoBesedilo(false); }}>{ime}</button>
+        ))}
+      </div>
+      <div className="segpills segpills-sek" role="group" aria-label="Ton ponudbe">
+        {TONI.map(t => (
+          <button key={t.id} type="button" className={tonPonudbe === t.id ? 'on' : ''}
+            onClick={() => { setTonPonudbe(t.id); setRocnoBesedilo(false); }}>{t.ime}</button>
+        ))}
+      </div>
+      <div className="pon-vrh-desno">
+        <button type="button" className={'ai-gumb ponastavi-gumb' + (rocnoBesedilo ? ' aktiv' : '')} title="Ponastavi na samodejno besedilo" aria-label="Ponastavi na samodejno besedilo"
+          onClick={ponastaviBesedilo}><ArrowCounterClockwise size={18} weight="bold" /></button>
+        <button type="button" className="ai-gumb" title="AI pomočnik" aria-label="AI pomočnik"
+          onClick={() => setAiKmalu(v => !v)}><MagicWand size={19} /></button>
+      </div>
+      {aiKmalu && (
+        <p className="hint ai-namig">AI pomočnik (predlaga in izboljša besedilo ponudbe) pride kot naslednja nadgradnja — potrebuje zaledje. Zaenkrat besedilo urejaš ročno z orodji spodaj.</p>
+      )}
+    </>
+  );
+  const oblikaKontrole = (
+    <>
+      {oznaciNamig && <div className="oznaci-namig" role="status">Najprej označi besedilo</div>}
+      <div className="tool-vel2" role="group" aria-label="Velikost besedila">
+        <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); velikost(-1); }} aria-label="Pomanjšaj" title="Manjše"><CaretDown size={14} weight="bold" /></button>
+        <span className="tv-aa" aria-hidden>Aa</span>
+        <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); velikost(1); }} aria-label="Povečaj" title="Večje"><CaretUp size={14} weight="bold" /></button>
+      </div>
+      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko" aria-label="Krepko"><TextB size={17} weight="bold" /></button>
+      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title="Ležeče" aria-label="Ležeče"><TextItalic size={17} /></button>
+      <select className="pisava-select" aria-label="Pisava besedila" defaultValue=""
+        onMouseDown={() => editorRef.current?.focus()}
+        onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
+        <option value="" disabled>Pisava</option>
+        <option value="Bodoni Moda">Elegantna</option>
+        <option value="Montserrat">Montserrat</option>
+        <option value="Roboto">Roboto</option>
+        <option value="Lora">Lora</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Arial">Arial</option>
+      </select>
+      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h1'); }} title="Naslov" aria-label="Naslov H1">H1</button>
+      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title="Podnaslov" aria-label="Podnaslov H2">H2</button>
+      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title="Navadno besedilo" aria-label="Navadno besedilo P">P</button>
+      <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'crke' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('crke'); }} title="Barvaj črke" aria-label="Barvaj črke"><span className="ti">T</span></button>
+      <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'podlaga' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('podlaga'); }} title="Barvaj ozadje črk" aria-label="Barvaj ozadje črk"><span className="ti ti-box">T</span></button>
+      <span className="tool-locnica" aria-hidden />
+      {['#111111', '#7C3AED', '#FA4892', '#EEE8D8', '#50E3C2'].map(barva => (
+        <button key={barva} type="button" className="barvica" style={{ background: barva }}
+          aria-label={'Barva ' + barva}
+          title={(barvaCilj === 'podlaga' ? 'Ozadje' : 'Črke') + ' — dvojni klik odstrani barvo'}
+          onMouseDown={e => { e.preventDefault(); uporabiBarvo(barva); }}
+          onDoubleClick={e => { e.preventDefault(); odstraniBarvo(); }} />
+      ))}
+      <button type="button" className="barvica barvica-mavrica" aria-label="Izberi poljubno barvo" title="Izberi poljubno barvo"
+        onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
+      <input ref={barvaRef} type="color" hidden onChange={e => uporabiBarvo(e.target.value)} />
+      <span className="tool-locnica" aria-hidden />
+      <span className="podloga-oznaka">Podloga:</span>
+      <button type="button" className={'podloga-krog' + (predlogaPinart ? ' on' : '')} onClick={() => { const nov = !predlogaPinart; setPredlogaPinart(nov); if (nov) setPodlogaCover(''); }} title="Pinart predloga (oblikuje ponudbo po Pinart dizajnu)" aria-label="Pinart predloga">
+        {predlogaPinart && <Check size={12} weight="bold" />}
+      </button>
+      <button type="button" className={'podloga-krog podloga-nalozi' + (podlogaCover ? ' on' : '')} onClick={() => podlogaRef.current?.click()} title="Naloži svojo podlogo (slika naslovnice)" aria-label="Naloži podlogo"
+        style={podlogaCover ? { backgroundImage: `url(${podlogaCover})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
+        {!podlogaCover && <UploadSimple size={14} weight="bold" />}
+      </button>
+      <input ref={podlogaRef} type="file" accept="image/*" hidden onChange={e => { naloziPodlogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
+      <span className="tool-locnica" aria-hidden />
+      <button type="button" className={'logo-kvadrat' + (logo ? ' ima' : '')} onClick={() => logoRef.current?.click()}
+        title={logo ? 'Zamenjaj logo' : 'Dodaj logo'} aria-label={logo ? 'Zamenjaj logo' : 'Dodaj logo'}
+        style={logo ? { backgroundImage: `url(${logo})` } : undefined}>
+        {!logo && <><ImageSquare size={15} weight="bold" /><span>Logo</span></>}
+      </button>
+      {logo && (
+        <button type="button" className="logo-odstrani" onClick={() => setLogo('')} title="Odstrani logo" aria-label="Odstrani logo">✕</button>
+      )}
+      <input ref={logoRef} type="file" accept="image/*" hidden onChange={e => { naloziLogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
+      <input ref={fileRef} type="file" accept=".txt,.html,.htm" hidden
+        onChange={e => { uvoziPredlogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
+    </>
+  );
+
   return (
     <div className="cw" onKeyDown={naEnter}>
       <datalist id="cw-drzave-list">
@@ -5513,6 +5604,22 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .segpills-pogled button { display: inline-flex; align-items: center; gap: .35rem; }
         .cw .segpills-pogled svg { flex: none; }
         .cw .pon-vrh-desno { margin-left: auto; display: inline-flex; align-items: center; gap: .8rem; }
+        .cw .pon-vrh .ai-namig, .cw .pon-sheet-telo .ai-namig { flex-basis: 100%; width: 100%; }
+        /* mobilna slide-up menija (Apple Mail slog): Slog besedila + Oblikovanje */
+        .cw .pon-sheet-trigi { display: flex; gap: .5rem; margin-left: auto; }
+        .cw .pon-sheet-trig { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem .95rem; border: 1px solid rgba(17,17,17,.22); border-radius: 999px; background: var(--paper); color: var(--ink); font-family: inherit; font-size: .82rem; font-weight: 650; cursor: pointer; }
+        .cw .pon-sheet-trig svg { flex: none; }
+        .cw .pon-sheet-trig:active { background: rgba(17,17,17,.05); }
+        .cw .pon-sheet-back { position: fixed; inset: 0; background: rgba(30,18,35,.34); z-index: 78; animation: cwFade .2s ease both; }
+        .cw .pon-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 80; background: var(--paper); border-radius: 20px 20px 0 0; box-shadow: 0 -16px 44px rgba(40,25,40,.22); transform: translateY(102%); transition: transform .32s cubic-bezier(.2,.8,.3,1); max-height: 76dvh; display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom, 0px); }
+        .cw .pon-sheet.odprt { transform: translateY(0); }
+        .cw .pon-sheet-glava { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 1.35rem 1.2rem .65rem; border-bottom: 1px solid rgba(17,17,17,.1); }
+        .cw .pon-sheet-glava::before { content: ''; position: absolute; top: .5rem; left: 50%; transform: translateX(-50%); width: 2.4rem; height: .3rem; border-radius: 999px; background: rgba(17,17,17,.18); }
+        .cw .pon-sheet-glava b { font-size: 1.05rem; font-weight: 700; }
+        .cw .pon-sheet-x { width: 2.1rem; height: 2.1rem; display: inline-flex; align-items: center; justify-content: center; border: none; background: rgba(17,17,17,.06); border-radius: 50%; font-size: 1.1rem; line-height: 1; color: var(--ink); cursor: pointer; }
+        .cw .pon-sheet-telo { padding: 1.15rem 1.2rem 1.5rem; overflow-y: auto; display: flex; flex-wrap: wrap; gap: .55rem; align-items: center; }
+        .cw .pon-sheet-telo .segpills { width: 100%; justify-content: flex-start; }
+        .cw .pon-sheet-telo .pon-vrh-desno { width: 100%; margin-left: 0; justify-content: flex-start; }
         .cw .ponastavi-gumb { opacity: .38; }
         .cw .ponastavi-gumb.aktiv { opacity: 1; }
         .cw .ponastavi-gumb:hover { opacity: 1; }
@@ -7593,28 +7700,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <Eye size={16} /> Predogled
                   </button>
                 </div>
-                <div className="segpills segpills-sek" role="group" aria-label="Obseg ponudbe">
-                  {([['kratka', 'Kratka'], ['razsirjena', 'Razširjena']] as const).map(([id, ime]) => (
-                    <button key={id} type="button" className={obsegPonudbe === id ? 'on' : ''}
-                      onClick={() => { setObsegPonudbe(id); setRocnoBesedilo(false); }}>{ime}</button>
-                  ))}
-                </div>
-                <div className="segpills segpills-sek" role="group" aria-label="Ton ponudbe">
-                  {TONI.map(t => (
-                    <button key={t.id} type="button" className={tonPonudbe === t.id ? 'on' : ''}
-                      onClick={() => { setTonPonudbe(t.id); setRocnoBesedilo(false); }}>{t.ime}</button>
-                  ))}
-                </div>
-                <div className="pon-vrh-desno">
-                  <button type="button" className={'ai-gumb ponastavi-gumb' + (rocnoBesedilo ? ' aktiv' : '')} title="Ponastavi na samodejno besedilo" aria-label="Ponastavi na samodejno besedilo"
-                    onClick={ponastaviBesedilo}><ArrowCounterClockwise size={18} weight="bold" /></button>
-                  <button type="button" className="ai-gumb" title="AI pomočnik" aria-label="AI pomočnik"
-                    onClick={() => setAiKmalu(v => !v)}><MagicWand size={19} /></button>
-                </div>
+                {/* desktop: kontrole inline; mobilno: gumba ki odpreta slide-up sheet */}
+                {jeMobilni ? (
+                  <div className="pon-sheet-trigi">
+                    <button type="button" className="pon-sheet-trig" onClick={() => setPonSheet('slog')}><MagicWand size={17} /> Slog</button>
+                    <button type="button" className="pon-sheet-trig" onClick={() => setPonSheet('oblika')}><TextAa size={17} weight="bold" /> Oblika</button>
+                  </div>
+                ) : slogKontrole}
               </div>
-              {aiKmalu && (
-                <p className="hint ai-namig">AI pomočnik (predlaga in izboljša besedilo ponudbe) pride kot naslednja nadgradnja — potrebuje zaledje. Zaenkrat besedilo urejaš ročno z orodji spodaj.</p>
-              )}
               {obsegPonudbe === 'razsirjena' && urnePostavke.some(u => Number(u.cena) > 0) && (
                 <label className="ure-preklop">
                   <input type="checkbox" checked={kaziUre}
@@ -7638,7 +7731,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </div>
               ) : (
               <>
-              {/* FORMATIRANJE — okrogli gumbi */}
+              {/* FORMATIRANJE — na desktopu inline; na mobilu v slide-up sheetu "Oblika" (spodaj) */}
+              {!jeMobilni && (
               <div className="orodjarna" aria-label="Oblikovanje ponudbe">
                 {oznaciNamig && <div className="oznaci-namig" role="status">Najprej označi besedilo</div>}
                 <div className="tool-vel2" role="group" aria-label="Velikost besedila">
@@ -7707,6 +7801,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   }}
                 />
               </div>
+              )}
               <div
                 ref={napolniEditor}
                 className="editor"
@@ -7726,6 +7821,20 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </>
               )}
               </div>
+              {/* MOBILNI slide-up sheeti (Apple Mail slog): Slog besedila + Oblikovanje */}
+              {jeMobilni && (
+                <>
+                  {ponSheet && <div className="pon-sheet-back" onClick={() => setPonSheet(null)} aria-hidden />}
+                  <div className={'pon-sheet' + (ponSheet === 'slog' ? ' odprt' : '')} role="dialog" aria-label="Slog besedila" aria-hidden={ponSheet !== 'slog'}>
+                    <div className="pon-sheet-glava"><b>Slog besedila</b><button type="button" className="pon-sheet-x" onClick={() => setPonSheet(null)} aria-label="Zapri">✕</button></div>
+                    <div className="pon-sheet-telo">{slogKontrole}</div>
+                  </div>
+                  <div className={'pon-sheet' + (ponSheet === 'oblika' ? ' odprt' : '')} role="dialog" aria-label="Oblikovanje" aria-hidden={ponSheet !== 'oblika'}>
+                    <div className="pon-sheet-glava"><b>Oblikovanje</b><button type="button" className="pon-sheet-x" onClick={() => setPonSheet(null)} aria-label="Zapri">✕</button></div>
+                    <div className="pon-sheet-telo orodjarna orodjarna-sheet">{oblikaKontrole}</div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
