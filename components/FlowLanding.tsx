@@ -36,7 +36,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     if (!v) return;
     const io = new IntersectionObserver(([e]) => {
       if (e.isIntersecting) {
-        try { v.currentTime = 0; v.playbackRate = 0.34; } catch {}
+        try { v.currentTime = 0; v.defaultPlaybackRate = 0.34; v.playbackRate = 0.34; } catch {}
         v.play().catch(() => {});
         setPupaHodi(true);
       } else {
@@ -564,8 +564,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-zgodba-podpis { font-family: var(--font-serif), serif; font-style: italic; font-size: 1.05rem !important; color: var(--ink) !important; margin-top: 1.4rem !important; }
         /* Pupa se sprehodi po spodnjem robu — pride z leve, gre cez ekran, izgine desno,
            in se cez ~pol minute spet sprehodi. Odlozi /public/flow/pupa-hoja.webm (ali .mp4). */
-        .fl-pupa-pas { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(-9rem - 150px); width: 100vw; height: clamp(26rem, 36vw, 36rem); overflow: hidden; pointer-events: none; }
-        .fl-pupa { position: absolute; bottom: -12%; left: 0; height: 100%; width: auto; will-change: transform; }
+        .fl-pupa-pas { position: absolute; left: 50%; transform: translateX(-50%); bottom: -8.5rem; width: 100vw; height: clamp(26rem, 36vw, 36rem); overflow: hidden; pointer-events: none; }
+        .fl-pupa { position: absolute; bottom: -6%; left: 0; height: 100%; width: auto; will-change: transform; }
         .fl-pupa.hodi { animation: pupaHoja 12s linear infinite; }
         @keyframes pupaHoja { 0% { transform: translateX(-44vw); } 75% { transform: translateX(104vw); } 100% { transform: translateX(104vw); } }
         @media (prefers-reduced-motion: reduce) { .fl-pupa { display: none; } }
@@ -848,7 +848,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
           <div className="fl-pupa-pas" aria-hidden>
             {/* Pupa sprehaja psa (bela podlaga → mix-blend multiply pusti le skico na papirju) */}
-            <video ref={pupaRef} className={`fl-pupa${pupaHodi ? ' hodi' : ''}`} muted loop playsInline preload="auto">
+            <video ref={pupaRef} className={`fl-pupa${pupaHodi ? ' hodi' : ''}`} muted loop playsInline preload="auto"
+              onLoadedMetadata={e => { const v = e.currentTarget as HTMLVideoElement; v.defaultPlaybackRate = 0.34; v.playbackRate = 0.34; }}>
               <source src="/flow/pupa-hoja.webm" type="video/webm" />
               <source src="/flow/pupa-hoja.mov" type='video/mp4; codecs="hvc1"' />
               <source src="/flow/pupa-hoja.mp4" type="video/mp4" />
