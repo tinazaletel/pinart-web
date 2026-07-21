@@ -349,6 +349,18 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-puscice button { width: 2.7rem; height: 2.7rem; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(17,17,17,.16); background: var(--paper); color: var(--ink); cursor: pointer; transition: background .16s, border-color .16s; }
         .fl-puscice button:hover { background: rgba(17,17,17,.05); border-color: var(--ink); }
         @media (max-width: 560px) { .fl-puscice { display: none; } }
+        @media (max-width: 640px) {
+          /* Filter pilule: vodoraven drs namesto grdega lomljenja; zbledi desno = namig za drs */
+          .fl-orodja-nadzor { justify-content: center; }
+          .fl-rubrike { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; scrollbar-width: none; border-radius: 16px; -webkit-mask-image: linear-gradient(to right, #000 88%, transparent); mask-image: linear-gradient(to right, #000 88%, transparent); }
+          .fl-rubrike::-webkit-scrollbar { display: none; }
+          .fl-rubrike button { flex: 0 0 auto; }
+          /* Showcase pilule (Kalkulator/Dokumenti/…): zbledi desno, da je jasno, da se drsi */
+          .fl-sc-pills { -webkit-mask-image: linear-gradient(to right, #000 80%, transparent); mask-image: linear-gradient(to right, #000 80%, transparent); }
+          /* Manjsi razmiki med sekcijami na mobilu */
+          .fl-laptop, .fl-orodja, .fl-showcase, .fl-bento, .fl-konec, .fl-funkcije, .fl-cenik, .fl-faq, .fl-zgodba { margin-top: 5rem; }
+          .fl-footer { margin-top: 5.5rem; }
+        }
         .fl-orodja-vrsta { display: flex; gap: 1rem; overflow-x: auto; padding: .6rem .3rem 1.2rem; padding-right: max(5vw, 3rem); margin: 0 calc(50% - 50vw) 0 -.3rem; scrollbar-width: none; }
         .fl-orodja-vrsta::-webkit-scrollbar { display: none; }
         .fl-tkarta { flex: 0 0 clamp(15rem, 23vw, 17.5rem); display: block; padding: 1.5rem 1.4rem 1.6rem; border-radius: 18px; background: rgba(255,255,255,.94); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 12px 32px rgba(40,25,60,.07); text-decoration: none; color: var(--ink); transition: transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease; }
