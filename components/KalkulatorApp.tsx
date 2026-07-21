@@ -6236,27 +6236,18 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           {korak === zakljucekStep && (
             <div className="zakljucek-lik" aria-hidden>
               <div className="pon-lik-ovoj">
-                <svg className="pon-lik" viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nasmejana ponudba">
+                <svg className="pon-lik" viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ponudba pripravljena">
                   <ellipse className="pon-senca" cx="60" cy="133" rx="30" ry="4.5" fill="rgba(17,17,17,.12)" />
-                  <g className="pon-telo">
-                    <path d="M24 14 h54 l18 18 v78 a7 7 0 0 1 -7 7 H31 a7 7 0 0 1 -7 -7 Z" fill="#fff" stroke="rgba(17,17,17,.16)" strokeWidth="2.4" strokeLinejoin="round" />
-                    <path d="M78 14 l18 18 H82 a4 4 0 0 1 -4 -4 Z" fill="#F0ECE3" stroke="rgba(17,17,17,.16)" strokeWidth="2.4" strokeLinejoin="round" />
-                    <rect x="33" y="27" width="30" height="6.5" rx="3.25" fill="url(#ponGrad)" />
-                    <rect x="33" y="98" width="50" height="5" rx="2.5" fill="rgba(17,17,17,.12)" />
-                    <rect x="33" y="108" width="38" height="5" rx="2.5" fill="rgba(17,17,17,.12)" />
-                    <circle className="pon-lice" cx="43" cy="66" r="5" fill="#F1B7B3" />
-                    <circle className="pon-lice" cx="77" cy="66" r="5" fill="#F1B7B3" />
-                    <g fill="#2A2630">
-                      <rect className="pon-oko" x="45.5" y="55" width="5" height="10" rx="2.5" />
-                      <rect className="pon-oko" x="69.5" y="55" width="5" height="10" rx="2.5" />
-                    </g>
-                    <path className="pon-usta" d="M47 69 q13 12 26 0" stroke="#2A2630" strokeWidth="3.2" strokeLinecap="round" fill="none" />
+                  <g className="pon-telo" fill="none" stroke="rgba(17,17,17,.46)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M36 16 h36 l18 18 v66 a6 6 0 0 1 -6 6 H36 a6 6 0 0 1 -6 -6 V22 a6 6 0 0 1 6 -6 z" />
+                    <path d="M72 16 v12 a6 6 0 0 0 6 6 h12" />
+                    <path d="M40 54 h40" />
+                    <path d="M40 66 h40" />
+                    <path d="M40 78 h26" />
+                    <circle cx="78" cy="83" r="13" fill="#fff" />
+                    <circle cx="78" cy="83" r="13" stroke="rgba(124,58,237,.7)" strokeWidth="2.6" />
+                    <path d="M71 83 l5 5 l9 -10" stroke="rgba(124,58,237,.95)" strokeWidth="2.8" />
                   </g>
-                  <defs>
-                    <linearGradient id="ponGrad" x1="33" y1="27" x2="63" y2="34" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#EC4899" /><stop offset="1" stopColor="#B1C4FF" />
-                    </linearGradient>
-                  </defs>
                 </svg>
               </div>
               <div className="konfeti-sloj">
