@@ -108,7 +108,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
            prehod na VSEH robovih (mask zbledi pred robom) — nič grdih rezov. */
         /* Maska bledi LEVO (stik z besedilom) IN zgoraj+spodaj (da morebiten odrez
            mehko zbledi, ne moti). Presek dveh linearnih gradientov. */
-        .fl-video { position: absolute; top: 0; bottom: 0; right: 0; width: 57%; background: var(--paper);
+        .fl-video { position: absolute; top: 0; bottom: 0; right: 0; width: 66%; background: var(--paper);
           -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 30%), linear-gradient(to bottom, transparent 0%, #000 9%, #000 84%, transparent 100%); -webkit-mask-composite: source-in;
           mask-image: linear-gradient(to right, transparent 0%, #000 30%), linear-gradient(to bottom, transparent 0%, #000 9%, #000 84%, transparent 100%); mask-composite: intersect; }
         .fl-video video { width: 100%; height: 100%; object-fit: contain; object-position: center;
