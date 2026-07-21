@@ -4914,7 +4914,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .chat-mehur { border-radius: 18px; padding: .9rem 1.35rem; font-size: .95rem; line-height: 1.5; font-weight: 400; border: 1px solid rgba(255,255,255,.7); box-shadow: 0 2px 10px rgba(40,25,40,.05); }
         .cw .chat-mehur-ured { font-family: inherit; font-size: .95rem; cursor: pointer; display: inline-flex; align-items: center; gap: .5rem; text-align: left; transition: transform .16s ease, box-shadow .16s ease, background .16s ease; }
         .cw .chat-mehur-ured svg { opacity: .4; flex: none; transition: opacity .16s ease; }
-        .cw .chat-mehur-ured:hover { transform: translateY(-1px); box-shadow: 0 7px 18px rgba(40,25,40,.13); background: rgba(160,205,235,.58); }
+        .cw .chat-mehur-ured:hover { transform: translateY(-1px); box-shadow: 0 7px 18px rgba(40,25,40,.13); background: #aae6e1; }
         .cw .chat-mehur-ured:hover svg { opacity: .85; }
         .cw .chat-mehur-ured:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
         .cw .chat-mehur-namig { position: relative; padding-right: 2.3rem; }
