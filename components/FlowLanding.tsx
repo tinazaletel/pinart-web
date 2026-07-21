@@ -26,25 +26,28 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const [taZavihek, setTaZavihek] = useState('kalkulator');
   const [odprtoVpr, setOdprtoVpr] = useState<number | null>(0);
   const pupaRef = useRef<HTMLVideoElement>(null);
+  const pasRef = useRef<HTMLDivElement>(null);
   const [pupaHodi, setPupaHodi] = useState(false);
 
-  /* Pupa: predvajaj (in zaženi sprehod) ŠELE ko pride v viewport; ob vsakem vstopu
-     resetiraj video + animacijo, da sta sinhrona (pupa ne skoči na začetek sredi prehoda).
-     Upocasnjen (playbackRate) tako, da ena predvajava ~ustreza enemu prehodu. */
+  /* Pupa: predvajaj (in zaženi sprehod) ŠELE ko steza pride v viewport. Opazujemo STEZO
+     (stabilna, čez cel viewport), NE videa (ta je večino časa premaknjen izven zaslona,
+     zato bi sprožilec zatajil). Ob vstopu reset video+animacija skupaj → sinhrono, en
+     prehod od roba do roba = ena predvajava; reset se zgodi, ko je pupa izven zaslona. */
   useEffect(() => {
     const v = pupaRef.current;
-    if (!v) return;
+    const pas = pasRef.current;
+    if (!v || !pas) return;
     const io = new IntersectionObserver(([e]) => {
       if (e.isIntersecting) {
-        try { v.currentTime = 0; v.defaultPlaybackRate = 0.34; v.playbackRate = 0.34; } catch {}
+        try { v.currentTime = 0; v.defaultPlaybackRate = 0.35; v.playbackRate = 0.35; } catch {}
         v.play().catch(() => {});
         setPupaHodi(true);
       } else {
         v.pause();
         setPupaHodi(false);
       }
-    }, { threshold: 0.12 });
-    io.observe(v);
+    }, { threshold: 0 });
+    io.observe(pas);
     return () => io.disconnect();
   }, []);
   const vrstaRef = useRef<HTMLDivElement>(null);
@@ -566,8 +569,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
            in se cez ~pol minute spet sprehodi. Odlozi /public/flow/pupa-hoja.webm (ali .mp4). */
         .fl-pupa-pas { position: absolute; left: 50%; transform: translateX(-50%); bottom: -8.5rem; width: 100vw; height: clamp(26rem, 36vw, 36rem); overflow: hidden; pointer-events: none; }
         .fl-pupa { position: absolute; bottom: -6%; left: 0; height: 100%; width: auto; will-change: transform; }
-        .fl-pupa.hodi { animation: pupaHoja 12s linear infinite; }
-        @keyframes pupaHoja { 0% { transform: translateX(-44vw); } 75% { transform: translateX(104vw); } 100% { transform: translateX(104vw); } }
+        .fl-pupa.hodi { animation: pupaHoja 10s linear infinite; }
+        @keyframes pupaHoja { 0% { transform: translateX(-55vw); } 100% { transform: translateX(120vw); } }
         @media (prefers-reduced-motion: reduce) { .fl-pupa { display: none; } }
 
         .fl-footer { margin: 10.05rem calc(50% - 50vw) calc(-1 * clamp(5rem, 8vw, 8rem)); background: oklch(20% .016 285); color: oklch(93% .01 285); border-radius: 0; padding: clamp(2.8rem, 5vw, 4rem) calc(max(0px, (100vw - 1480px) / 2) + clamp(1.5rem, 5vw, 5.5rem)) clamp(2rem, 4vw, 2.6rem); }
@@ -846,10 +849,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <p className="fl-zgodba-podpis">— Tina, Pinart</p>
             </div>
           </div>
-          <div className="fl-pupa-pas" aria-hidden>
+          <div className="fl-pupa-pas" aria-hidden ref={pasRef}>
             {/* Pupa sprehaja psa (bela podlaga → mix-blend multiply pusti le skico na papirju) */}
             <video ref={pupaRef} className={`fl-pupa${pupaHodi ? ' hodi' : ''}`} muted loop playsInline preload="auto"
-              onLoadedMetadata={e => { const v = e.currentTarget as HTMLVideoElement; v.defaultPlaybackRate = 0.34; v.playbackRate = 0.34; }}>
+              onLoadedMetadata={e => { const v = e.currentTarget as HTMLVideoElement; v.defaultPlaybackRate = 0.35; v.playbackRate = 0.35; }}>
               <source src="/flow/pupa-hoja.webm" type="video/webm" />
               <source src="/flow/pupa-hoja.mov" type='video/mp4; codecs="hvc1"' />
               <source src="/flow/pupa-hoja.mp4" type="video/mp4" />
