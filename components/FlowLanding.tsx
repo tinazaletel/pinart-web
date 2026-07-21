@@ -542,9 +542,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-zgodba-podpis { font-family: var(--font-serif), serif; font-style: italic; font-size: 1.05rem !important; color: var(--ink) !important; margin-top: 1.4rem !important; }
         /* Pupa se sprehodi po spodnjem robu — pride z leve, gre cez ekran, izgine desno,
            in se cez ~pol minute spet sprehodi. Odlozi /public/flow/pupa-hoja.webm (ali .mp4). */
-        .fl-pupa-pas { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: 100vw; height: clamp(13rem, 19vw, 18rem); overflow: hidden; pointer-events: none;
-          -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 34%); mask-image: linear-gradient(to bottom, transparent 0%, #000 34%); }
-        .fl-pupa { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 42%; mix-blend-mode: multiply; opacity: .92; }
+        .fl-pupa-pas { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: 100vw; height: clamp(11rem, 15vw, 14rem); overflow: hidden; pointer-events: none; }
+        .fl-pupa { position: absolute; bottom: 0; left: 0; height: 100%; width: auto; mix-blend-mode: multiply; will-change: transform; animation: pupaHoja 28s linear infinite; }
+        @keyframes pupaHoja { 0% { transform: translateX(-42vw); } 32% { transform: translateX(102vw); } 100% { transform: translateX(102vw); } }
         @media (prefers-reduced-motion: reduce) { .fl-pupa { display: none; } }
 
         .fl-footer { margin: 10.05rem calc(50% - 50vw) calc(-1 * clamp(5rem, 8vw, 8rem)); background: oklch(20% .016 285); color: oklch(93% .01 285); border-radius: 0; padding: clamp(2.8rem, 5vw, 4rem) calc(max(0px, (100vw - 1480px) / 2) + clamp(1.5rem, 5vw, 5.5rem)) clamp(2rem, 4vw, 2.6rem); }
