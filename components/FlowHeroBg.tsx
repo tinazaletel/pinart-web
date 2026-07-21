@@ -62,7 +62,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
   useEffect(() => {
     const v = videoRef.current; if (!v) return;
     const webkit = typeof navigator !== 'undefined' && /apple/i.test(navigator.vendor || '');
-    v.src = webkit ? '/flow/hero-seq.mov' : video;
+    v.src = webkit ? '/flow/hero-seq.mov?v=2' : video;
     v.load();
     v.play().catch(() => {});
   }, [video]);
@@ -118,8 +118,10 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         .fl-video { position: absolute; top: 0; bottom: 0; right: 0; width: 66%; background: transparent;
           -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 30%), linear-gradient(to bottom, transparent 0%, #000 9%, #000 84%, transparent 100%); -webkit-mask-composite: source-in;
           mask-image: linear-gradient(to right, transparent 0%, #000 30%), linear-gradient(to bottom, transparent 0%, #000 9%, #000 84%, transparent 100%); mask-composite: intersect; }
+        /* darken (ne multiply) + brez contrast filtra -> belo ozadje se ciscno odstrani (min per kanal),
+           NI bele skatle; temne linije ostanejo. (Safari itak dobi alfa .mov prek JS.) */
         .fl-video video { width: 100%; height: 100%; object-fit: contain; object-position: center;
-          mix-blend-mode: multiply; opacity: 1; filter: contrast(1.25) saturate(1.05); }
+          mix-blend-mode: darken; opacity: 1; }
         /* Rahel prehod spodaj v papir */
         .fl-video::after { content: ''; position: absolute; inset: 0; background:
           linear-gradient(180deg, transparent 0%, transparent 82%, var(--paper) 100%); }

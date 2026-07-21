@@ -39,7 +39,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     if (!v || !pas) return;
     /* Safari/WebKit -> HEVC-alfa mov; Chrome/FF -> VP9-alfa webm (Chrome na Macu bi HEVC brez alfe pokazal belo). */
     const webkit = typeof navigator !== 'undefined' && /apple/i.test(navigator.vendor || '');
-    v.src = webkit ? '/flow/pupa3.mov' : '/flow/pupa3.webm';
+    v.src = webkit ? '/flow/pupa3.mov?v=2' : '/flow/pupa3.webm?v=2';
     v.load();
     const io = new IntersectionObserver(([e]) => {
       if (e.isIntersecting) {
