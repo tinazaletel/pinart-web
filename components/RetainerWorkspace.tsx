@@ -7,7 +7,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { PersonSimple, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp, TextB, TextItalic } from '@phosphor-icons/react';
 import { saveRetainerDraft } from '@/lib/pinartFlowCloud';
-import { OrbSfera, ORB_BARVE, ikonaZa, ORB0_CSS } from './Orb0';
+import { OrbSfera, ORB_BARVE, ikonaZa, ORB0_CSS, osvetli } from './Orb0';
 import VidezDokumentov from './VidezDokumentov';
 import AmbientBubbles from '@/components/AmbientBubbles';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
@@ -411,9 +411,11 @@ export default function RetainerWorkspace({ base }: { base: string }) {
           </div>
           {obsegTabela ? (
             <div className="rw-obseg-tabela">
-              {SCOPE.map(s => { const on = scope.includes(s.id); return (
+              {SCOPE.map((s, i) => { const on = scope.includes(s.id); const barvi = ORB_BARVE[i % ORB_BARVE.length]; return (
                 <button key={s.id} type="button" className={'rw-ov' + (on ? ' on' : '')} aria-pressed={on} onClick={() => toggle(s.id)}>
-                  <span className="rw-ov-ime">{s.ime}</span><span className="rw-ov-chk" aria-hidden>{on ? '✓' : '+'}</span>
+                  <span className="rw-ov-ikona" aria-hidden style={{ background: osvetli(barvi[0], 0.82), color: barvi[0] }}>{ikonaZa(s.ikon)}</span>
+                  <span className="rw-ov-ime">{s.ime}</span>
+                  <span className="rw-ov-chk" aria-hidden>{on ? '✓' : '+'}</span>
                 </button>
               ); })}
             </div>
@@ -736,10 +738,12 @@ export default function RetainerWorkspace({ base }: { base: string }) {
         /* mehurcki "gledajo cez" — polje je sirse od chata (kot pri kalkulatorju) */
         .rw-platno{position:relative;width:min(960px,96vw);left:50%;transform:translateX(-50%);margin-top:.2rem}
         .rw-obseg-tabela{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.6rem;margin:0 0 .4rem}
-        .rw-ov{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.7rem .95rem;border-radius:12px;border:1px solid rgba(17,17,17,.12);background:#FCFBF7;font:inherit;font-size:.92rem;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;transition:border-color .16s,background .16s,transform .16s}
+        .rw-ov{display:flex;align-items:center;gap:.75rem;padding:.6rem .85rem;border-radius:12px;border:1px solid rgba(17,17,17,.12);background:#FCFBF7;font:inherit;font-size:.92rem;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;transition:border-color .16s,background .16s,transform .16s}
         .rw-ov:hover{border-color:rgba(17,17,17,.28);transform:translateY(-1px)}
         .rw-ov.on{border-color:#7C3AED;background:rgba(124,58,237,.07)}
-        .rw-ov-ime{min-width:0}
+        .rw-ov-ikona{display:grid;place-items:center;width:2.2rem;height:2.2rem;border-radius:50%;flex:none}
+        .rw-ov-ikona svg{width:1.2rem;height:1.2rem}
+        .rw-ov-ime{flex:1;min-width:0}
         .rw-ov-chk{display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;flex:none;font-size:.85rem;font-weight:700;background:rgba(17,17,17,.06);color:rgba(17,17,17,.5)}
         .rw-ov.on .rw-ov-chk{background:#7C3AED;color:#fff}
         ${ORB0_CSS}
