@@ -526,7 +526,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-faq-odg p { margin: 0; padding: 0 3rem 1.35rem .2rem; font-size: .92rem; line-height: 1.65; color: rgba(17,17,17,.72); }
 
         /* Moja zgodba (O nas) — osebni manifesto, editorial */
-        .fl-zgodba { position: relative; margin: 10.05rem 0 0; padding: 3rem 0 clamp(13rem, 21vw, 20rem); }
+        .fl-zgodba { position: relative; margin: 10.05rem 0 0; padding: 3rem 0 clamp(17rem, 27vw, 26rem); }
         .fl-zgodba-glava { max-width: 26ch; margin: 0 0 2.2rem; }
         .fl-zgodba-glava .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-zgodba-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 4.5vw, 2.7rem); line-height: 1.06; margin: .55rem 0 0; }
@@ -542,7 +542,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-zgodba-podpis { font-family: var(--font-serif), serif; font-style: italic; font-size: 1.05rem !important; color: var(--ink) !important; margin-top: 1.4rem !important; }
         /* Pupa se sprehodi po spodnjem robu — pride z leve, gre cez ekran, izgine desno,
            in se cez ~pol minute spet sprehodi. Odlozi /public/flow/pupa-hoja.webm (ali .mp4). */
-        .fl-pupa-pas { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: 100vw; height: clamp(20rem, 29vw, 28rem); overflow: hidden; pointer-events: none; }
+        .fl-pupa-pas { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: 100vw; height: clamp(26rem, 36vw, 36rem); overflow: hidden; pointer-events: none; }
         .fl-pupa { position: absolute; bottom: 0; left: 0; height: 100%; width: auto; mix-blend-mode: darken; will-change: transform; animation: pupaHoja 46s linear infinite; }
         @keyframes pupaHoja { 0% { transform: translateX(-44vw); } 44% { transform: translateX(104vw); } 100% { transform: translateX(104vw); } }
         @media (prefers-reduced-motion: reduce) { .fl-pupa { display: none; } }
