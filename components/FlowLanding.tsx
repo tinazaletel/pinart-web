@@ -25,31 +25,20 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const [taRubrika, setTaRubrika] = useState('vse');
   const [taZavihek, setTaZavihek] = useState('kalkulator');
   const [odprtoVpr, setOdprtoVpr] = useState<number | null>(0);
+  /* Pupa = PROSOJEN video (alfa): Safari -> HEVC-alfa mov, Chrome/FF -> VP9-alfa webm.
+     Predvaja se + hodi sele ko steza pride v viewport (opazujemo stabilno stezo, ne videa). */
   const pupaRef = useRef<HTMLVideoElement>(null);
   const pasRef = useRef<HTMLDivElement>(null);
   const [pupaHodi, setPupaHodi] = useState(false);
-
-  /* Pupa: predvajaj (in zaženi sprehod) ŠELE ko steza pride v viewport. Opazujemo STEZO
-     (stabilna, čez cel viewport), NE videa (ta je večino časa premaknjen izven zaslona,
-     zato bi sprožilec zatajil). Ob vstopu reset video+animacija skupaj → sinhrono, en
-     prehod od roba do roba = ena predvajava; reset se zgodi, ko je pupa izven zaslona. */
   useEffect(() => {
-    const v = pupaRef.current;
-    const pas = pasRef.current;
+    const v = pupaRef.current; const pas = pasRef.current;
     if (!v || !pas) return;
-    /* Safari/WebKit -> HEVC-alfa mov; Chrome/FF -> VP9-alfa webm (Chrome na Macu bi HEVC brez alfe pokazal belo). */
     const webkit = typeof navigator !== 'undefined' && /apple/i.test(navigator.vendor || '');
-    v.src = webkit ? '/flow/pupa3.mov?v=2' : '/flow/pupa3.webm?v=2';
+    v.src = webkit ? '/flow/pupa.mov' : '/flow/pupa.webm';
     v.load();
     const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        try { v.currentTime = 0; v.defaultPlaybackRate = 1; v.playbackRate = 1; } catch {}
-        v.play().catch(() => {});
-        setPupaHodi(true);
-      } else {
-        v.pause();
-        setPupaHodi(false);
-      }
+      if (e.isIntersecting) { try { v.currentTime = 0; } catch {} v.play().catch(() => {}); setPupaHodi(true); }
+      else { v.pause(); setPupaHodi(false); }
     }, { threshold: 0 });
     io.observe(pas);
     return () => io.disconnect();
@@ -889,10 +878,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             </div>
           </div>
           <div className="fl-pupa-pas" aria-hidden ref={pasRef}>
-            {/* Pupa sprehaja psa (bela podlaga → mix-blend multiply pusti le skico na papirju) */}
-            {/* src (pupa3.mov za Safari / pupa3.webm za ostale) nastavi useEffect glede na brskalnik */}
-            <video ref={pupaRef} className={`fl-pupa${pupaHodi ? ' hodi' : ''}`} muted loop playsInline preload="auto"
-              onLoadedMetadata={e => { const v = e.currentTarget as HTMLVideoElement; v.defaultPlaybackRate = 1; v.playbackRate = 1; }} />
+            {/* PROSOJEN video (alfa) — src nastavi useEffect glede na brskalnik (Safari=mov, Chrome=webm) */}
+            <video ref={pupaRef} className={`fl-pupa${pupaHodi ? ' hodi' : ''}`} muted loop playsInline preload="auto" />
           </div>
         </section>
 

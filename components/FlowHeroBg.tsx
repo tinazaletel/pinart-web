@@ -56,16 +56,15 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
     return () => { t.forEach(id => clearTimeout(id)); };
   }, []);
 
-  /* Izbira vira glede na brskalnik: WebKit/Safari (in iOS brskalniki) NE upostevajo
-     mix-blend na videu -> dobijo HEVC-alfa .mov (prava prosojnost). Chrome/FF na Macu
-     ZNAJO dekodirati HEVC brez alfe (pokazali bi belo), zato dobijo mp4 + mix-blend multiply. */
+  /* PROSOJEN video: Safari/WebKit -> HEVC-alfa .mov; Chrome/FF -> VP9-alfa .webm.
+     (Chrome na Macu zna HEVC brez alfe -> zato NE damo mov v <source>, ampak izberemo z JS.) */
   useEffect(() => {
     const v = videoRef.current; if (!v) return;
     const webkit = typeof navigator !== 'undefined' && /apple/i.test(navigator.vendor || '');
-    v.src = webkit ? '/flow/hero-seq.mov?v=2' : video;
+    v.src = webkit ? '/flow/hero.mov' : '/flow/hero.webm';
     v.load();
     v.play().catch(() => {});
-  }, [video]);
+  }, []);
 
   function pop(id: number) {
     setBubbles(bs => bs.map(b => (b.id === id && !b.pop ? { ...b, pop: true } : b)));
@@ -78,13 +77,8 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
   return (
     <div className="fl-herobg" aria-hidden>
       <div className="fl-video">
-        <video
-          ref={videoRef}
-          autoPlay muted loop playsInline preload="metadata"
-          onError={e => { const p = (e.currentTarget.parentElement as HTMLElement | null); if (p) p.style.display = 'none'; }}
-        >
-          {/* src nastavi useEffect glede na brskalnik (Safari=mov, ostali=mp4) */}
-        </video>
+        {/* PROSOJEN video (alfa) — src nastavi useEffect glede na brskalnik (Safari=mov, Chrome=webm) */}
+        <video ref={videoRef} autoPlay muted loop playsInline preload="auto" />
       </div>
 
       <div className="fl-bubbles">
@@ -118,10 +112,8 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         .fl-video { position: absolute; top: 0; bottom: 0; right: 0; width: 66%; background: transparent;
           -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 30%), linear-gradient(to bottom, transparent 0%, #000 9%, #000 84%, transparent 100%); -webkit-mask-composite: source-in;
           mask-image: linear-gradient(to right, transparent 0%, #000 30%), linear-gradient(to bottom, transparent 0%, #000 9%, #000 84%, transparent 100%); mask-composite: intersect; }
-        /* darken (ne multiply) + brez contrast filtra -> belo ozadje se ciscno odstrani (min per kanal),
-           NI bele skatle; temne linije ostanejo. (Safari itak dobi alfa .mov prek JS.) */
-        .fl-video video { width: 100%; height: 100%; object-fit: contain; object-position: center;
-          mix-blend-mode: darken; opacity: 1; }
+        /* video ima ze alfo -> brez mix-blenda; cover = figura napolni prostor (nov posnetek je sirok, z veliko praznine) */
+        .fl-video video { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
         /* Rahel prehod spodaj v papir */
         .fl-video::after { content: ''; position: absolute; inset: 0; background:
           linear-gradient(180deg, transparent 0%, transparent 82%, var(--paper) 100%); }
