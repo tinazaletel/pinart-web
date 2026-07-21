@@ -358,8 +358,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           /* Showcase pilule (Kalkulator/Dokumenti/…): zbledi desno, da je jasno, da se drsi */
           .fl-sc-pills { -webkit-mask-image: linear-gradient(to right, #000 80%, transparent); mask-image: linear-gradient(to right, #000 80%, transparent); }
           /* Manjsi razmiki med sekcijami na mobilu */
-          .fl-laptop, .fl-orodja, .fl-showcase, .fl-bento, .fl-konec, .fl-funkcije, .fl-cenik, .fl-faq, .fl-zgodba { margin-top: 5rem; }
-          .fl-footer { margin-top: 5.5rem; }
+          .fl-laptop, .fl-orodja, .fl-showcase, .fl-bento, .fl-konec, .fl-funkcije, .fl-cenik, .fl-faq, .fl-zgodba { margin-top: 4.5rem; }
+          .fl-footer { margin-top: 5rem; }
+          .fl-orodja, .fl-showcase, .fl-cenik, .fl-konec, .fl-faq { padding-top: 1.2rem; }
+          /* Bento: vec zraka med besedilom in tagi/avatarji/ceno */
+          .fl-bflow, .fl-bavatars, .fl-bprice, .fl-bthumbs { margin-top: 1.6rem; }
+          /* Tesnejsi naslovi (manj razmika med vrsticami) */
+          .fl h1 { line-height: 1.02; }
+          .fl-showcase-glava h2 { line-height: 1.02; }
         }
         .fl-orodja-vrsta { display: flex; gap: 1rem; overflow-x: auto; padding: .6rem .3rem 1.2rem; padding-right: max(5vw, 3rem); margin: 0 calc(50% - 50vw) 0 -.3rem; scrollbar-width: none; }
         .fl-orodja-vrsta::-webkit-scrollbar { display: none; }
