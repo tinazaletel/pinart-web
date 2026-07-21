@@ -25,17 +25,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const [taRubrika, setTaRubrika] = useState('vse');
   const [taZavihek, setTaZavihek] = useState('kalkulator');
   const [odprtoVpr, setOdprtoVpr] = useState<number | null>(0);
-  /* Pupa = PROSOJEN video (alfa): Safari -> HEVC-alfa mov, Chrome/FF -> VP9-alfa webm.
-     Predvaja se + hodi sele ko steza pride v viewport (opazujemo stabilno stezo, ne videa). */
+  /* Pupa = NAVADEN neprosojen video s kremnim ozadjem (barva strani), obrezan tesno na figuro
+     -> ni alfe/Safari robov, deluje enako povsod. Hodi (premik) sele ko steza pride v viewport. */
   const pupaRef = useRef<HTMLVideoElement>(null);
   const pasRef = useRef<HTMLDivElement>(null);
   const [pupaHodi, setPupaHodi] = useState(false);
   useEffect(() => {
     const v = pupaRef.current; const pas = pasRef.current;
     if (!v || !pas) return;
-    const webkit = typeof navigator !== 'undefined' && /apple/i.test(navigator.vendor || '');
-    v.src = webkit ? '/flow/pupa.mov' : '/flow/pupa.webm';
-    v.load();
     const io = new IntersectionObserver(([e]) => {
       if (e.isIntersecting) { try { v.currentTime = 0; } catch {} v.play().catch(() => {}); setPupaHodi(true); }
       else { v.pause(); setPupaHodi(false); }
@@ -878,8 +875,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             </div>
           </div>
           <div className="fl-pupa-pas" aria-hidden ref={pasRef}>
-            {/* PROSOJEN video (alfa) — src nastavi useEffect glede na brskalnik (Safari=mov, Chrome=webm) */}
-            <video ref={pupaRef} className={`fl-pupa${pupaHodi ? ' hodi' : ''}`} muted loop playsInline preload="auto" />
+            {/* Navaden neprosojen video s kremnim ozadjem (barva strani) — deluje enako povsod */}
+            <video ref={pupaRef} className={`fl-pupa${pupaHodi ? ' hodi' : ''}`} muted loop playsInline preload="auto">
+              <source src="/flow/pupa.mp4" type="video/mp4" />
+            </video>
           </div>
         </section>
 
