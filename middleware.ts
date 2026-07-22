@@ -18,20 +18,27 @@ export default async function middleware(request: NextRequest) {
   const response = intlMiddleware(request);
 
   /* Supabase seja tece na vsaki zahtevi. Ce Supabase pade ali env manjka, NE
-     zrusimo strani — pinart.si in vse ne-Flow strani morajo delovati normalno. */
+     zrusimo strani — pinart.si in vse ne-Flow strani morajo delovati normalno.
+     ZAKLENJENE poti pa v tem primeru NE spustimo skozi (fail-closed): prej je
+     ta catch vrnil stran brez preverjanja, zato so bili pregled, dolgorocno in
+     celo admin javno dostopni, ce Supabase ni odgovoril. */
   let sessionResponse = response;
   let user: Awaited<ReturnType<typeof updateSession>>['user'] = null;
+  let sejaPreverjena = false;
   try {
     const r = await updateSession(request, response);
     sessionResponse = r.response;
     user = r.user;
+    sejaPreverjena = true;
   } catch {
-    return response;
+    sejaPreverjena = false;
   }
 
-  const protectedFlowRoute = /^\/(?:sl\/|en\/)?kalkulator\/(pregled|projekti|pogodbe|racuni|stroski|stranke|cilji|ceniki|dolgorocno|racunovodstvo)(?:\/|$)/.test(request.nextUrl.pathname);
+  /* Brezplacna in javna: /kalkulator (landing), /kalkulator/orodje, /prijava, /geslo, /pogoji.
+     Vse ostalo je vezano na racun. */
+  const protectedFlowRoute = /^\/(?:sl\/|en\/)?kalkulator\/(pregled|projekti|pogodbe|racuni|stroski|stranke|cilji|ceniki|dolgorocno|racunovodstvo|admin|profil|cas|poslovni-nacrt|nastavitve)(?:\/|$)/.test(request.nextUrl.pathname);
 
-  if (protectedFlowRoute && !user) {
+  if (protectedFlowRoute && (!sejaPreverjena || !user)) {
     const localePrefix = request.nextUrl.pathname.startsWith('/en/') ? '/en' : '';
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = `${localePrefix}/kalkulator/prijava`;
