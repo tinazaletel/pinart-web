@@ -687,7 +687,7 @@ export default function RetainerWorkspace({ base }: { base: string }) {
               <VidezDokumentov barva={dokBarva} font={dokFont} onBarva={setDokBarva} onFont={setDokFont} />
             </section>
 
-            <a className="rw-profil-admin" href={`${base}/kalkulator/admin`}>Admin — upravljanje produktov ↗</a>
+            <a className="rw-profil-admin" href={`${base}/kalkulator/admin`}>Pregled poslovanja (admin) ↗</a>
           </div>
         </div>
       )}

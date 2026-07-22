@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { MagnifyingGlass } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveOfferAmount, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus } from '@/lib/pinartFlowStore';
+import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 
 /* Ikone poenotene na Phosphor. Inline fill/stroke preglasi stare stroke-based
    CSS pravila (fill:none), da so Phosphor ikone vidne. */
@@ -15,8 +16,11 @@ const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFract
 
 export default function ProjectsWorkspace({ base }: { base: string }) {
   const [offers, setOffers] = useState<FlowOffer[]>([]); const [invoices, setInvoices] = useState<FlowInvoice[]>([]); const [expenses, setExpenses] = useState<FlowExpense[]>([]); const [contracts, setContracts] = useState<FlowContract[]>([]); const [amounts, setAmounts] = useState<Record<string, number>>({});
+  /* Demo/Prazno velja za vse strani — glej lib/predogled.ts */
+  const [nacin] = usePredogled();
+  const samoOgled = nacin !== 'mine';
   const [selectedId, setSelectedId] = useState(''); const [search, setSearch] = useState(''); const [filter, setFilter] = useState<'all' | 'active' | 'waiting' | 'closed'>('all');
-  useEffect(() => { const data = loadFlowData(); const loaded = [...data.offers].sort((a, b) => b.date.localeCompare(a.date)); setOffers(loaded); setSelectedId(loaded[0]?.id || ''); setInvoices(data.invoices); setExpenses(data.expenses); setContracts(data.contracts); setAmounts(Object.fromEntries(data.offers.map(offer => [offer.id, offer.agreedAmount]))); }, []);
+  useEffect(() => { const data = podatkiZaPredogled(nacin, loadFlowData()); const loaded = [...data.offers].sort((a, b) => b.date.localeCompare(a.date)); setOffers(loaded); setSelectedId(loaded[0]?.id || ''); setInvoices(data.invoices); setExpenses(data.expenses); setContracts(data.contracts); setAmounts(Object.fromEntries(data.offers.map(offer => [offer.id, offer.agreedAmount]))); }, [nacin]);
   const projects = useMemo(() => offers.map(offer => { const projectInvoices = invoices.filter(item => item.sourceOfferId === offer.id); const projectExpenses = expenses.filter(item => item.sourceOfferId === offer.id); const projectContracts = contracts.filter(item => item.sourceOfferId === offer.id); const billed = projectInvoices.reduce((sum, item) => sum + item.amount, 0); const paid = projectInvoices.filter(item => item.paid).reduce((sum, item) => sum + item.amount, 0); const costs = projectExpenses.reduce((sum, item) => sum + item.amount, 0); const agreed = amounts[offer.id] || 0; return { offer, invoices: projectInvoices, expenses: projectExpenses, contracts: projectContracts, billed, paid, costs, agreed, unbilled: agreed ? agreed - billed : 0, profit: paid - costs }; }), [offers, invoices, expenses, contracts, amounts]);
   const visible = projects.filter(project => { const text = `${project.offer.title} ${project.offer.client} ${project.offer.number || ''}`.toLocaleLowerCase('sl-SI'); const match = text.includes(search.toLocaleLowerCase('sl-SI')); const state = filter === 'all' || (filter === 'active' ? project.offer.status === 'accepted' : filter === 'waiting' ? project.offer.status === 'sent' : ['rejected'].includes(project.offer.status)); return match && state; });
   const selected = projects.find(project => project.offer.id === selectedId) || visible[0];

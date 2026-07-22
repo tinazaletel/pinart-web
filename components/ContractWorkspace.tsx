@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowContract, type FlowContractStatus } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
+import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 
 type Offer = { id: string; title: string; client: string; scope: string[]; number?: string; status: string };
 
@@ -13,6 +14,11 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const [mode, setMode] = useState<'offer' | 'upload'>('offer');
   const [offers, setOffers] = useState<Offer[]>([]);
   const [contracts, setContracts] = useState<FlowContract[]>([]);
+  /* Demo/Prazno velja za VSE strani (lib/predogled.ts). V teh nacinih je
+     urejanje onemogoceno — sicer bi popravek izmisljenega zapisa pisal v pravo bazo. */
+  const [nacin] = usePredogled();
+  const samoOgled = nacin !== 'mine';
+
   const [offerId, setOfferId] = useState('');
   const [body, setBody] = useState('');
   const [notice, setNotice] = useState('');
@@ -21,12 +27,12 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const [selectedContract, setSelectedContract] = useState<FlowContract | null>(null);
 
   useEffect(() => {
-    const flow = loadFlowData();
+    const flow = podatkiZaPredogled(nacin, loadFlowData());
     setOffers(flow.offers.map(({ id, title, client, number, status, scope }) => ({ id, title, client, number, status, scope })));
     setContracts(flow.contracts);
     const settings = JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}');
     setIssuer(settings.ponudnik?.ime || 'Izvajalec');
-  }, []);
+  }, [nacin]);
 
   const selectedOffer = offers.find(item => item.id === offerId);
   const generate = () => selectedOffer && setBody(`POGODBA O POSLOVNEM SODELOVANJU\n\nki jo skleneta\n\nNAROČNIK: ${selectedOffer.client}\n\nin\n\nIZVAJALEC: ${issuer}\n\nkot sledi:\n\nUvodna določba\n1. člen\nPogodbeni stranki ugotavljata, da ima izvajalec znanje in izkušnje za izvedbo dogovorjenih storitev ter da želita s pogodbo urediti medsebojne pravice in obveznosti. Izvajalec delo opravlja samostojno in ni v delovnem razmerju z naročnikom.\n\nPredmet pogodbe\n2. člen\nPredmet pogodbe je izvedba projekta »${selectedOffer.title}« in naslednjih storitev:\n${selectedOffer.scope.map(item => `- ${item}`).join('\n') || '- skladno s potrjeno ponudbo'}\n\nPotrjena ponudba${selectedOffer.number ? ` št. ${selectedOffer.number}` : ''} je sestavni del pogodbe. Dela zunaj navedenega obsega se pred izvedbo dodatno ovrednotijo in pisno potrdijo.\n\nNačin in kakovost dela\n3. člen\nIzvajalec se zavezuje delo opraviti strokovno, skrbno in v interesu kakovostne izvedbe. Naročnik pravočasno zagotovi informacije, materiale, dostope in potrditve. Izvajalec lahko vključi ustrezno usposobljene podizvajalce in odgovarja za njihovo delo.\n\nRoki izvedbe\n4. člen\nRoki veljajo, kot so določeni v ponudbi oziroma naknadno pisno dogovorjeni. Zamude naročnika pri posredovanju gradiv ali potrditvah ustrezno podaljšajo rok izvedbe.\n\nCena storitev in način plačila\n5. člen\nCena, način obračuna, predplačilo in plačilni roki veljajo skladno s potrjeno ponudbo. Dodatne storitve in potrjeni dodatni stroški se obračunajo posebej. Ob zamudi lahko izvajalec obračuna zakonske zamudne obresti.\n\nObveznosti naročnika\n6. člen\nNaročnik zagotovi potrebna gradiva in povratne informacije, potrjuje posamezne faze ter poravna račune v dogovorjenih rokih.\n\nObveznosti izvajalca\n7. člen\nIzvajalec pogodbena dela izvede strokovno, naročnika obvešča o okoliščinah, ki vplivajo na izvedbo, ter omogoči pregled dogovorjenih faz projekta.\n\nVarovanje podatkov\n8. člen\nPogodbeni stranki varujeta poslovne, osebne in druge zaupne podatke, s katerimi se seznanita pri sodelovanju, tudi po prenehanju pogodbe.\n\nAvtorske pravice\n9. člen\nObseg prenosa oziroma licence avtorskih pravic velja, kot je določen v potrjeni ponudbi. Dogovorjene pravice se na naročnika prenesejo po celotnem plačilu. Delovne datoteke, neizbrane rešitve in sredstva tretjih oseb niso vključeni, če ni pisno dogovorjeno drugače.\n\nTrajanje in prenehanje pogodbe\n10. člen\nPogodba velja od podpisa obeh strank do izpolnitve vseh dogovorjenih obveznosti. Vsaka stranka lahko odstopi ob bistveni kršitvi, če druga stranka kršitve ne odpravi v primernem pisno določenem roku.\n\nSpremembe pogodbe\n11. člen\nSpremembe in dopolnitve so veljavne le v pisni obliki. Potrditve po elektronski pošti se štejejo kot pisni dogovor, kadar jasno določajo spremembo obsega, roka ali cene.\n\nReševanje sporov\n12. člen\nStranki bosta morebitne spore reševali sporazumno. Če to ne bo mogoče, je pristojno stvarno pristojno sodišče v kraju izvajalca, če prisilni predpisi ne določajo drugače.\n\nKončne določbe\n13. člen\nPogodba je sestavljena v dveh enakih izvodih oziroma podpisana elektronsko. Sklenjena je z dnem podpisa obeh pogodbenih strank.\n\nKraj in datum: ____________________\n\nNaročnik\n${selectedOffer.client}\n\nIzvajalec\n${issuer}`);
@@ -44,7 +50,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const downloadPdf = async () => { if (!body) return; setPdfLoading(true); try { const response = await fetch('/api/ponudba-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html: contractHtml(), ime: `pogodba-${selectedOffer?.title || 'pinart'}`, margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' } }) }); if (!response.ok) throw new Error('pdf'); const blob = await response.blob(); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `pogodba-${(selectedOffer?.title || 'pinart').replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.pdf`; link.click(); URL.revokeObjectURL(url); } catch { setNotice('PDF-ja ni bilo mogoče pripraviti. Poskusi znova.'); } finally { setPdfLoading(false); } };
 
   const storeFile = (id: string, file: File) => new Promise<void>((resolve, reject) => { const request = indexedDB.open('pinart-flow-files', 1); request.onupgradeneeded = () => request.result.createObjectStore('contracts'); request.onerror = () => reject(request.error); request.onsuccess = () => { const transaction = request.result.transaction('contracts', 'readwrite'); transaction.objectStore('contracts').put(file, id); transaction.oncomplete = () => { request.result.close(); resolve(); }; }; });
-  const persist = (contract: FlowContract) => { const next = [contract, ...contracts]; setContracts(next); saveFlowCollection('contracts', next); setNotice('Pogodba je shranjena in povezana s projektom.'); };
+  const persist = (contract: FlowContract) => { if (samoOgled) return; const next = [contract, ...contracts]; setContracts(next); saveFlowCollection('contracts', next); setNotice('Pogodba je shranjena in povezana s projektom.'); };
 
   const saveGenerated = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); if (!selectedOffer) return; const data = new FormData(event.currentTarget); persist({ id: crypto.randomUUID(), title: `Pogodba · ${selectedOffer.title}`, client: selectedOffer.client, date: String(data.get('date')), status: 'draft', sourceOfferId: selectedOffer.id, body }); setBody(''); };
   const saveUpload = async (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); const data = new FormData(event.currentTarget); const file = data.get('file'); if (!(file instanceof File) || !file.size) return; const id = crypto.randomUUID(); let filePath: string | undefined; try { filePath = await uploadBusinessDocument(file, 'contracts', id); } catch { await storeFile(id, file); } persist({ id, title: String(data.get('title')), client: String(data.get('client')), date: String(data.get('date')), status: 'received', sourceOfferId: String(data.get('sourceOfferId')) || undefined, fileName: file.name, filePath, notes: String(data.get('notes')) }); event.currentTarget.reset(); };

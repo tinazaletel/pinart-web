@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowInvoice } from '@/lib/pinartFlowStore';
+import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import MetricIcon from '@/components/MetricIcon';
 
 type Offer = { id: string; title: string; client: string; number?: string };
@@ -12,16 +13,21 @@ const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFract
 export default function InvoiceWorkspace({ base }: { base: string }) {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [invoices, setInvoices] = useState<FlowInvoice[]>([]);
+  /* Demo/Prazno velja za VSE strani (lib/predogled.ts). V teh nacinih je
+     urejanje onemogoceno — sicer bi popravek izmisljenega zapisa pisal v pravo bazo. */
+  const [nacin] = usePredogled();
+  const samoOgled = nacin !== 'mine';
+
   const [creating, setCreating] = useState(false);
   const [offerId, setOfferId] = useState('');
   const [filter, setFilter] = useState<'all' | 'open' | 'paid'>('all');
   const [description, setDescription] = useState('');
 
   useEffect(() => {
-    const data = loadFlowData();
+    const data = podatkiZaPredogled(nacin, loadFlowData());
     setOffers(data.offers.map(({ id, title, client, number }) => ({ id, title, client, number })));
     setInvoices(data.invoices);
-  }, []);
+  }, [nacin]);
 
   const selectedOffer = offers.find(item => item.id === offerId);
   const visible = invoices.filter(invoice => filter === 'all' || (filter === 'paid' ? invoice.paid : !invoice.paid));

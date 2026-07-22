@@ -24,14 +24,14 @@ export default function SidebarToggle({ vrsta }: { vrsta: 'zapri' | 'odpri' }) {
   if (vrsta === 'odpri') {
     return (
       <button type="button" className={styles.meniOdpri} aria-label="Odpri meni" title="Odpri meni" onClick={() => nastavi(false)}>
-        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5.5 4.5 4.5L8 14.5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
     );
   }
 
   return (
     <button type="button" className={styles.meniZapri} aria-label="Zloži meni" title="Zloži meni" onClick={() => nastavi(true)}>
-      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m11.5 5.5-4.5 4.5 4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12 5.5-4.5 4.5 4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>
     </button>
   );
 }

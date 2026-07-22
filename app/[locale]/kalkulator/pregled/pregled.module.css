@@ -44,7 +44,7 @@
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding: 2rem 1.4rem 1.5rem;
+  padding: 2rem 1.4rem 2rem;
   border-right: 1px solid var(--line);
   background: color-mix(in oklch, oklch(98% 0.01 87) 94%, transparent);
   backdrop-filter: blur(18px);
@@ -58,7 +58,8 @@
 .brand small { display: inline-flex; align-items: center; line-height: 1; padding: .18rem .4rem; border: 1px solid oklch(64% .18 350); border-radius: 99px; color: oklch(52% .2 350); font-size: .47rem; font-weight: 800; letter-spacing: .08em; }
 .closeApp { flex: 0 0 auto; margin-left: auto; padding: .15rem .1rem .15rem .7rem; border-left: 1px solid var(--line); color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .58rem; font-weight: 700; text-decoration: none; }
 .mobileMenu { display: none; position: relative; }
-.nav { display: grid; gap: .35rem; margin-top: 5rem; }
+/* zgoraj je bilo 5rem + 2rem odmika okvirja = 7rem, spodaj 1.5rem. Uravnotezeno. */
+.nav { display: grid; gap: .35rem; margin-top: 2.4rem; }
 .navItem { display: flex; gap: .8rem; align-items: center; padding: .75rem .8rem; border-radius: .7rem; color: color-mix(in oklch, var(--ink) 65%, transparent); font-size: .82rem; font-weight: 700; text-decoration: none; transition: color 180ms ease, background 180ms ease; }
 .navItem span { font-size: .62rem; letter-spacing: .08em; opacity: .6; }
 .navItem:hover, .active { color: var(--ink); background: oklch(93% .028 87); }
@@ -80,10 +81,23 @@
 .subnav .navItem span { font-size: .52rem; }
 .profile { display: flex; align-items: center; gap: .65rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
 /* ── Zlaganje menija (samo namizje; pod 980px je meni ze vodoravna vrstica) ── */
-.meniZapri { display: grid; place-items: center; width: 1.8rem; height: 1.8rem; margin-left: auto; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--paper); color: color-mix(in oklch, var(--ink) 60%, transparent); cursor: pointer; }
+/* Mini puscica na SREDINI desnega roba menija: "<" zlozi v levo.
+   Sidebar je position:sticky, zato je to njegov referencni okvir. */
+.meniZapri {
+  position: absolute; z-index: 25; top: 50%; right: -.9rem; transform: translateY(-50%);
+  display: grid; place-items: center; width: 1.8rem; height: 1.8rem; padding: 0;
+  border: 1px solid var(--line); border-radius: 50%; background: var(--paper);
+  color: color-mix(in oklch, var(--ink) 60%, transparent); cursor: pointer;
+}
 .meniZapri:hover { color: var(--ink); }
 .meniZapri svg { width: 1rem; height: 1rem; }
-.meniOdpri { display: none; position: fixed; z-index: 90; top: .9rem; left: .9rem; place-items: center; width: 2.4rem; height: 2.4rem; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--paper); color: var(--ink); box-shadow: 0 .5rem 1.5rem oklch(20% .03 55 / .12); cursor: pointer; }
+/* ">" odpre nazaj; sedi na levem robu zaslona, prav tako na sredini visine */
+.meniOdpri {
+  display: none; position: fixed; z-index: 90; top: 50%; left: .4rem; transform: translateY(-50%);
+  place-items: center; width: 2rem; height: 2rem; padding: 0;
+  border: 1px solid var(--line); border-radius: 50%; background: var(--paper);
+  color: var(--ink); box-shadow: 0 .4rem 1.2rem oklch(20% .03 55 / .12); cursor: pointer;
+}
 .meniOdpri svg { width: 1.15rem; height: 1.15rem; }
 
 @media (min-width: 981px) {
@@ -123,7 +137,9 @@
 .eyebrow { margin: 0 0 .55rem; font-size: .64rem; line-height: 1; font-weight: 800; letter-spacing: .14em; }
 .topbar h1, .pulse h2, .sectionHeading h2 { margin: 0; font-family: var(--font-serif), Georgia, serif; font-weight: 500; }
 .topbar h1 { font-size: clamp(2.3rem, 4vw, 4.6rem); line-height: .95; }
-.headerTools { position: relative; display: flex; align-self: flex-start; gap: .55rem; }
+/* stoparica levo, ikone desno: vmesni razmik potisne ikone na rob */
+.headerTools { position: relative; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; align-self: flex-start; gap: .55rem; }
+.headerTools > .stoparicaBliznjica { margin-right: auto; }
 .headerTools button, .profileButton { position: relative; display: grid; place-items: center; width: 2.4rem; aspect-ratio: 1; box-sizing: border-box; border: 1px solid color-mix(in oklch, var(--ink) 8%, transparent); border-radius: 50%; background: oklch(96% .012 87 / .85); color: var(--ink); font: 700 .72rem var(--font-sans), sans-serif; text-decoration: none; cursor: pointer; }
 .headerTools button > svg { width: 1.15rem; height: 1.15rem; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .headerTools .aiLocked { color: color-mix(in oklch, var(--ink) 38%, transparent); background: oklch(93% .008 87 / .82); }
@@ -482,7 +498,9 @@
 .expenseSummary article strong { margin-top: auto; font: 500 1.8rem var(--font-serif), Georgia, serif; }
 .expenseSummary article span { margin-top: .25rem; color: var(--muted); }
 .expenseSummary > button { border: 0; background: var(--ink); color: var(--paper); cursor: pointer; }
-.expenseSummary > button span { display: grid; place-items: center; width: 2rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .3); border-radius: 50%; }
+/* "+" je bil .6rem, ker ga zajame splosno pravilo ".expenseSummary span".
+   Tu ga vrnemo na berljivo velikost — krogec je gumb, ne drobna oznaka. */
+.expenseSummary > button span { display: grid; place-items: center; width: 2.35rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .3); border-radius: 50%; font-size: 1.35rem; font-weight: 400; line-height: 1; }
 .expenseSummary > button strong { margin-top: auto; font: 500 1.4rem var(--font-serif), Georgia, serif; }
 .expenseSummary > button small { margin-top: .25rem; color: oklch(100% 0 0 / .6); }
 .subpageMetricIcon { position: absolute; right: -1rem; bottom: -1.6rem; display: grid; place-items: center; width: 6.6rem; aspect-ratio: 1; border-radius: 1.6rem; background: oklch(100% 0 0 / .24); color: color-mix(in oklch, currentColor 54%, transparent); transform: rotate(-9deg); }
@@ -506,8 +524,10 @@
 .expenseList button { padding: .4rem .6rem; border: 1px solid var(--line); border-radius: .55rem; background: transparent; font: 700 .56rem var(--font-sans), sans-serif; cursor: pointer; }
 .expenseList .expenseDelete { width: 1.8rem; aspect-ratio: 1; padding: 0; border-radius: 50%; color: oklch(52% .16 25); font-size: .9rem; }
 .expenseCoin { display: grid; place-items: center; width: 2rem; aspect-ratio: 1; border-radius: 50%; background: var(--ink); color: var(--paper); font: 700 .7rem var(--font-sans), sans-serif; }
-.recurringCosts { display: grid; grid-template-columns: minmax(14rem, .35fr) 1fr; gap: 1.5rem; }
-.recurringCosts > div:last-child { display: grid; align-content: start; }
+/* levi stolpec dovolj sirok, da se naslov ne lomi; desni omejen, sicer se
+   ena vrstica stroska raztegne cez 1000 px praznine */
+.recurringCosts { display: grid; grid-template-columns: minmax(19rem, .4fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+.recurringCosts > div:last-child { display: grid; align-content: start; max-width: 46rem; }
 .recurringCosts article { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: .8rem; min-height: 3rem; padding: .5rem .7rem; border-bottom: 1px solid var(--line); font-size: .63rem; }
 .recurringCosts article button { display: grid; place-items: center; width: 1.7rem; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 50%; background: none; cursor: pointer; }
 .recurringCosts > div:last-child > p { color: var(--muted); font-size: .63rem; }
@@ -1249,9 +1269,9 @@
    2) zvoncek + AI sta padla v svojo vrstico pod naslov -> gresta v isto vrstico z uvodnico
    3) razmik med "Zadnji dokumenti" in znacko "Za racunovodstvo"                        */
 @media (max-width: 980px) {
-  .backBtn { display: grid; place-items: center; flex: none; width: 2.2rem; height: 2.2rem; margin-right: .15rem; border: 1px solid var(--line); border-radius: 50%; background: var(--paper); color: var(--ink); text-decoration: none; }
-  .backBtn svg { width: 1.05rem; height: 1.05rem; }
-  .closeApp { margin-left: .1rem; }          /* tik ob BETA, ne na drugi konec vrstice */
+  /* "zapri" ostane blizu BETA (tvoja opomba), a z zracnostjo — .1rem je bilo
+     pretesno in znacka ter napis sta se zlepila. */
+  .closeApp { margin-left: .55rem; padding-left: .75rem; }
   .mobileMenu { margin-left: auto; }         /* meni ostane skrajno desno */
   /* Gumb menija = okrogla ikona lojtrice. POZOR: display na <summary> mora ostati
      privzet (list-item) — flex/grid v Safariju zlomi odpiranje <details>, zato je
@@ -1263,8 +1283,12 @@
 }
 
 @media (max-width: 680px) {
-  .topbar { flex-wrap: nowrap; align-items: flex-start; gap: .75rem; padding-bottom: 1.25rem; }
-  .headerTools { align-self: flex-start; margin-top: .1rem; }
+  /* Odkar sta v glavi se stoparica in znacka predogleda, vodoravna vrstica ne
+     zdrzi vec: naslov je padel v tri vrstice, ikone pa so se zlozile v stolpec.
+     Zato na telefonu orodja v SVOJO vrstico nad naslov, ta pa dobi vso sirino. */
+  .topbar { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: .9rem; padding-bottom: 1.25rem; }
+  .headerTools { order: -1; align-self: stretch; justify-content: flex-start; margin-top: 0; }
+  .topbar h1 { font-size: clamp(2.1rem, 9vw, 3rem); }
   /* V STOLPEC z izrecnim razmikom: prej sem dodal row-gap:1rem, kar je razmik celo
      ZMANJSALO (bazni gap je 1.5rem), poleg tega je bil odvisen od preloma vrstice. */
   /* display:flex je NUJEN — vrstica 850 (isti prelom) postavi .sectionHeader na
@@ -1274,4 +1298,48 @@
 }
 
 /* gumb nazaj je samo mobilni — na namizju je navigacija ves cas vidna */
-@media (min-width: 981px) { .backBtn { display: none; } }
+
+
+/* Bližnjica do tekočega merjenja v glavi — vidna na vseh straneh razen na
+   "Cena & čas". Levi del je povezava na štoparico, desno sta pavza in stop.
+   Gumbov NE sme zajeti pravilo ".headerTools button" (krogec 2.4rem). */
+.headerTools .stoparicaBliznjica, .stoparicaBliznjica {
+  width: auto; aspect-ratio: auto;
+  display: inline-flex; align-items: center; gap: .15rem;
+  min-height: 2.5rem; padding: .25rem .25rem .25rem .95rem;
+  border: 1px solid oklch(72% .12 165); border-radius: 999px;
+  background: linear-gradient(115deg, oklch(94% .07 160), oklch(96% .05 295));
+  color: var(--ink); white-space: nowrap;
+}
+.stoparicaBliznjica[data-pavza='true'] {
+  border-color: oklch(78% .04 87);
+  background: linear-gradient(115deg, oklch(95% .015 87), oklch(96% .02 295));
+}
+.stoparicaBliznjica > a { display: inline-flex; align-items: center; gap: .5rem; margin-right: .55rem; color: inherit; text-decoration: none; }
+.stoparicaBliznjica > a > span {
+  width: .5rem; height: .5rem; border-radius: 50%;
+  background: oklch(58% .19 25); animation: bliznjicaUtrip 1.8s ease-in-out infinite;
+}
+/* na pavzi pika ne utripa in je siva — sicer bi lagala, da cas tece */
+.stoparicaBliznjica[data-pavza='true'] > a > span { background: oklch(65% .02 87); animation: none; }
+@keyframes bliznjicaUtrip { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .stoparicaBliznjica > a > span { animation: none; } }
+.stoparicaBliznjica b { font-size: .8rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stoparicaBliznjica small { max-width: 9rem; overflow: hidden; text-overflow: ellipsis; color: var(--muted); font-size: .68rem; }
+/* enak jezik kot glavni gumb na kartici: crn gumb, bela ikona */
+/* flex: none je NUJEN — brez njega gumb ob ozki vrstici skrci sirino, visina
+   pa ostane, in krogec postane jajcast. box-sizing, da obroba nikoli ne siri. */
+.headerTools .stoparicaBliznjica > button, .stoparicaBliznjica > button {
+  flex: none; box-sizing: border-box;
+  width: 2rem; height: 2rem; min-width: 2rem; min-height: 2rem; max-height: 2rem; aspect-ratio: 1;
+  display: grid; place-items: center; padding: 0; line-height: 0;
+  border: 0; border-radius: 50%;
+  background: var(--ink); color: var(--paper); cursor: pointer;
+}
+.stoparicaBliznjica > button:hover { background: color-mix(in oklch, var(--ink) 82%, white); }
+/* ".headerTools button > svg" vsili 1.15rem in povozi `size` na Phosphor ikoni,
+   zato je bila ikona ves cas 18px. Tu jo dejansko zmanjsamo. */
+.headerTools .stoparicaBliznjica > button > svg, .stoparicaBliznjica > button > svg {
+  width: .75rem; height: .75rem;
+}
+@media (max-width: 720px) { .stoparicaBliznjica small { display: none; } }

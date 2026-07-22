@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { MagnifyingGlass } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient } from '@/lib/pinartFlowStore';
+import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 
 /* Ikone poenotene na Phosphor. Inline fill/stroke preglasi stare stroke-based
    CSS pravila (fill:none), da so Phosphor ikone vidne. */
@@ -20,6 +21,11 @@ const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFract
 
 export default function ClientWorkspace() {
   const [clients, setClients] = useState<Client[]>([]);
+  /* Demo/Prazno velja za VSE strani (lib/predogled.ts). V teh nacinih je
+     urejanje onemogoceno — sicer bi popravek izmisljenega zapisa pisal v pravo bazo. */
+  const [nacin] = usePredogled();
+  const samoOgled = nacin !== 'mine';
+
   const [offers, setOffers] = useState<Array<{ id: string } & Offer>>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -31,7 +37,7 @@ export default function ClientWorkspace() {
 
   useEffect(() => {
     const calculator = JSON.parse(localStorage.getItem('pinart-kalkulator-narocniki') || '[]') as Array<CalculatorClient | string>;
-    const flow = loadFlowData();
+    const flow = podatkiZaPredogled(nacin, loadFlowData());
     const dashboard = flow.clients;
     const merged = new Map<string, Client>();
     calculator.forEach(item => { const value = typeof item === 'string' ? { ime: item } : item; if (value.ime) merged.set(key(value.ime), { id: crypto.randomUUID(), name: value.ime, email: value.email, contact: value.oseba, address: value.naslov, tax: value.davcna }); });
@@ -39,9 +45,10 @@ export default function ClientWorkspace() {
     setClients([...merged.values()]);
     const archive = JSON.parse(localStorage.getItem('pinart-kalkulator-arhiv') || '{}') as Record<string, Offer>; setOffers(Object.entries(archive).map(([id, item]) => ({ id, ...item })));
     setInvoices(flow.invoices); setExpenses(flow.expenses); setContracts(flow.contracts);
-  }, []);
+  }, [nacin]);
 
   const persist = (next: Client[]) => {
+    if (samoOgled) return;
     setClients(next);
     saveFlowCollection('clients', next);
     localStorage.setItem('pinart-kalkulator-narocniki', JSON.stringify(next.map(item => ({ ime: item.name, email: item.email, oseba: item.contact, naslov: item.address, davcna: item.tax }))));

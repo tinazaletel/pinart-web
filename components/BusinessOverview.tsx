@@ -6,6 +6,7 @@ import { Handshake, Receipt, Wallet, Tag, Clock, FileText, CheckCircle, TrendUp,
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, saveOfferAmount, saveOfferStatus } from '@/lib/pinartFlowStore';
 import { recordAccountingExport, saveBusinessGoal, saveCloudSettings } from '@/lib/pinartFlowCloud';
+import { demoPodatki, usePredogled } from '@/lib/predogled';
 
 type Offer = { id: string; title: string; client: string; date: string; status: OfferStatus; scope?: string[]; offerNumber?: string };
 type OfferStatus = 'draft' | 'sent' | 'accepted' | 'rejected';
@@ -17,7 +18,6 @@ type ClientRecord = { id: string; name: string; email: string; phone: string; ta
 type HistoryItem = { id: string; type: string; title: string; client: string; date: string; status: string; sourceOfferId?: string };
 type ArchivedOffer = { datum?: string; nazivPonudbe?: string; narocnikPonudbe?: string; stevilkaPonudbe?: string; vrstice?: Array<{ ime?: string; kolicina?: number }> };
 type Period = 'month' | 'quarter' | 'year';
-type Preview = 'empty' | 'mine' | 'demo';
 
 const STATUS: Record<OfferStatus, string> = {
   draft: 'Osnutek', sent: 'Čaka', accepted: 'Sprejeta', rejected: 'Zavrnjena',
@@ -55,7 +55,8 @@ export default function BusinessOverview({ base }: { base: string }) {
   const [showAll, setShowAll] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [period, setPeriod] = useState<Period>('month');
-  const [preview, setPreview] = useState<Preview>('mine');
+  /* prej useState -> preklop je veljal SAMO tu in podstrani so ostale prazne */
+  const [preview, setPreview] = usePredogled();
   const [contractMode, setContractMode] = useState<'offer' | 'upload'>('offer');
   const [contractOfferId, setContractOfferId] = useState('');
   const [contractBody, setContractBody] = useState('');
@@ -65,16 +66,9 @@ export default function BusinessOverview({ base }: { base: string }) {
   const [desiredIncome, setDesiredIncome] = useState(2000);
   const [reservePercent, setReservePercent] = useState(20);
 
-  const demo = useMemo(() => {
-    const clients = ['Studio Sever', 'Mestni muzej', 'Lumi kozmetika', 'Arhitektura 21'];
-    const date = (monthsAgo: number, day = 12) => {
-      const d = new Date(); d.setMonth(d.getMonth() - monthsAgo, day); return d.toISOString().slice(0, 10);
-    };
-    const demoInvoices: Invoice[] = Array.from({ length: 30 }, (_, i) => ({ id: `demo-i-${i}`, client: clients[i % clients.length], amount: 850 + (i % 6) * 430, paid: i % 7 !== 0, date: date(i % 24, 4 + (i % 20)) }));
-    const demoExpenses: Expense[] = Array.from({ length: 38 }, (_, i) => ({ id: `demo-e-${i}`, title: i % 3 === 0 ? 'Zunanji sodelavec' : i % 3 === 1 ? 'Programska oprema' : 'Produkcijski strošek', client: i % 3 === 1 ? '' : clients[i % clients.length], amount: 90 + (i % 5) * 125, date: date(i % 24, 6 + (i % 18)) }));
-    const demoOffers: Offer[] = Array.from({ length: 9 }, (_, i) => ({ id: `demo-o-${i}`, title: ['Nova identiteta', 'Spletna stran', 'Letno poročilo', 'Kampanja'][i % 4], client: clients[i % clients.length], date: new Date(`${date(i, 8)}T00:00:00`).toISOString(), status: (['sent', 'accepted', 'accepted', 'draft', 'rejected'] as OfferStatus[])[i % 5] }));
-    return { invoices: demoInvoices, expenses: demoExpenses, offers: demoOffers };
-  }, []);
+  /* Isti demo kot na podstraneh (lib/predogled.ts) — prej je imela nadzorna
+     plosca svoje izmisljene stranke in zneske, zato se zgodba ni ujemala. */
+  const demo = useMemo(() => demoPodatki(), []);
 
   useEffect(() => {
     try {
@@ -269,6 +263,12 @@ export default function BusinessOverview({ base }: { base: string }) {
 
   if (!ready) return <div className={styles.loading}>Pripravljam tvoj poslovni pregled …</div>;
 
+  /* v spremenljivko: ponovljen clients[0] v JSX prevajalniku ne dokaze, da
+     element obstaja, tudi ce je pogoj clients[0] */
+  const najboljsaStranka = clients[0];
+  /* ime je lahko prazno: strosek sme biti brez stranke */
+  const imeNajboljse = najboljsaStranka?.client || 'Brez stranke';
+
   return (
     <>
       <div className={styles.previewBar}><div><strong>Predogled stanja</strong><span>Primerjaj prvi dan z utečenim poslovanjem.</span></div><div className={styles.previewSwitch}><button className={preview === 'empty' ? styles.previewActive : ''} onClick={() => setPreview('empty')}>Prazno</button><button className={preview === 'mine' ? styles.previewActive : ''} onClick={() => setPreview('mine')}>Moji</button><button className={preview === 'demo' ? styles.previewActive : ''} onClick={() => setPreview('demo')}>Demo</button></div></div>
@@ -364,7 +364,7 @@ export default function BusinessOverview({ base }: { base: string }) {
           <article className={styles.waitingPanel}><p className={styles.eyebrow}>PONUDBE</p><svg className={styles.chatIcon} viewBox="0 0 32 32" aria-hidden="true"><path d="M5 15a11 11 0 1 1 5 9.2L4 27l1.8-6A10.8 10.8 0 0 1 5 15Z"/><path d="M11 15h.1M16 15h.1M21 15h.1"/></svg><strong>{waiting.length}</strong><span>čaka odgovor</span><small>{activeOffers.length} ponudb skupaj</small></article>
           <article className={styles.clientResult}>
             <p className={styles.eyebrow}>STRANKE</p>
-            {clients.length ? <><strong>{clients[0].client}</strong><span>najdonosnejša stranka</span><small>{money(clients[0].profit)} ocenjenega dobička</small><b className={styles.clientAvatar}>{clients[0].client.split(/\s+/).map(word => word[0]).join('').slice(0, 2).toUpperCase()}</b></> : <><strong>{clientRecords.length ? clientRecords[0].name : '—'}</strong><span>{clientRecords.length ? `${clientRecords.length} shranjenih strank` : 'Donosnost strank'}</span><small>{clientRecords.length ? clientRecords[0].email : 'Poveži račune in stroške s stranko.'}</small></>}
+            {najboljsaStranka ? <><strong>{imeNajboljse}</strong><span>najdonosnejša stranka</span><small>{money(najboljsaStranka.profit)} ocenjenega dobička</small><b className={styles.clientAvatar}>{imeNajboljse.split(/\s+/).map(word => word[0] ?? '').join('').slice(0, 2).toUpperCase()}</b></> : <><strong>{clientRecords.length ? clientRecords[0].name : '—'}</strong><span>{clientRecords.length ? `${clientRecords.length} shranjenih strank` : 'Donosnost strank'}</span><small>{clientRecords.length ? clientRecords[0].email : 'Poveži račune in stroške s stranko.'}</small></>}
             <button className={styles.addClient} type="button" onClick={() => setForm('client')}>+ Dodaj stranko</button>
           </article>
         </div>

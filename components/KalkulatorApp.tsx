@@ -4863,7 +4863,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .priprava-overlay { position: fixed; top: 0; right: 0; bottom: 0; width: min(1040px, 96vw); z-index: 60; background: var(--paper); box-shadow: -30px 0 80px rgba(40,25,40,.25); overflow-y: auto; padding: 1.8rem clamp(1.4rem, 4vw, 3rem) 6.5rem; border-radius: 26px 0 0 26px; animation: pripravaVstop .42s cubic-bezier(.2,.8,.3,1) both; }
         @keyframes pripravaVstop { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .cw .priprava-glava { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
-        .cw .priprava-glava .priprava-h { font-family: var(--font-bodoni), serif; font-weight: 500; font-size: clamp(1.9rem, 3.6vw, 2.6rem); margin: .1rem 0 .35rem; }
+        .cw .priprava-glava .priprava-h { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 3.6vw, 2.6rem); margin: .1rem 0 .35rem; }
         .cw .priprava-glava .sub { margin: 0; max-width: 46ch; }
         @media (prefers-reduced-motion: reduce) { .cw .priprava-overlay, .cw .priprava-backdrop { animation: none; } }
         @media (max-width: 560px) { .cw .priprava-overlay { border-radius: 0; width: 100vw; } }
@@ -5013,7 +5013,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .ponudba0-glava h2 { min-width: 0; overflow-wrap: anywhere; }
         .cw .ponudba0-chip { flex: 0 0 auto; white-space: nowrap; }
         @media (max-width: 640px) { .cw .ponudba0-glava h2 { font-size: 1.35rem; line-height: 1.15; } }
-        .cw .ponudba0-glava h2 { font-family: var(--font-bodoni), serif; font-weight: 500; font-size: 1.65rem; margin: 0; }
+        .cw .ponudba0-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.65rem; margin: 0; }
         .cw .ponudba0-chip { background: rgba(255,255,255,.85); border: 1px solid rgba(17,17,17,.12); border-radius: 999px; padding: .28rem .7rem; font-size: .74rem; font-weight: 650; color: rgba(17,17,17,.6); white-space: nowrap; }
         .cw .ponudba0-pod { font-size: .85rem; color: var(--accent); font-weight: 500; margin: .1rem 0 1rem; display: flex; align-items: center; gap: .45rem; }
         .cw .ponudba0-pod::before { content: ""; width: .55rem; height: .55rem; border-radius: 50%; background: var(--accent); opacity: .85; flex: none; }
@@ -5047,7 +5047,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .stepper0 b { min-width: 1.3em; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; font-size: .92rem; }
         .cw .vrst0-x { width: 1.55rem; height: 1.55rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.15); background: transparent; color: rgba(17,17,17,.55); cursor: pointer; font-size: .95rem; line-height: 1; display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s; }
         .cw .vrst0-x:hover { border-color: var(--accent); color: var(--accent); }
-        .cw .vrst0-cena { font-family: var(--font-bodoni), serif; font-size: 1.06rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .cw .vrst0-cena { font-family: var(--font-serif), serif; font-size: 1.06rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
         .cw .vrst0-detajl { background: rgba(255,255,255,.85); border: 1px solid rgba(17,17,17,.1); border-radius: 14px; padding: 1rem 1.1rem; margin: .5rem 0 .9rem; animation: detajlDrsni .42s cubic-bezier(.16,1,.3,1) both; }
         @keyframes detajlDrsni { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
@@ -5190,7 +5190,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .ponudba0-dodaj { margin-top: 1rem; align-self: flex-start; }
         .cw .ponudba0-vsota { margin-top: 1.1rem; padding-top: .9rem; border-top: 2px solid var(--ink); }
         .cw .ponudba0-vsota-vrsta { display: flex; justify-content: space-between; align-items: baseline; font-size: .92rem; color: rgba(17,17,17,.62); }
-        .cw .ponudba0-vsota-vrsta b { font-family: var(--font-bodoni), serif; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.15rem; }
+        .cw .ponudba0-vsota-vrsta b { font-family: var(--font-serif), serif; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.15rem; }
         .cw .ponudba0-opomba { font-size: .76rem; color: var(--accent); margin-top: .45rem; font-weight: 500; }
         .cw .ponudba0-vsota-vrsta.ponudba0-mini { font-size: .82rem; color: rgba(17,17,17,.55); margin-top: .35rem; }
         .cw .ponudba0-vsota-vrsta.ponudba0-mini + .ponudba0-vsota-vrsta { margin-top: .35rem; }
@@ -5518,14 +5518,14 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .prav-podr { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.1rem; height: 2.1rem; border: 1px solid rgba(17,17,17,.2); background: transparent; color: rgba(17,17,17,.6); font-family: inherit; font-size: .76rem; font-weight: 600; border-radius: 999px; padding: 0; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s, background .15s; }
         .cw .prav-podr:hover { border-color: var(--ink); color: var(--ink); background: rgba(17,17,17,.05); }
         .cw .prav-recept { border: none; border-bottom: 1px solid rgba(17,17,17,.35); background-color: transparent; font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); padding: .3rem 1.4rem .3rem .2rem; appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .1rem center; }
-        .cw .prav-cena { font-family: var(--font-bodoni), serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; min-width: 3.6rem; text-align: right; }
+        .cw .prav-cena { font-family: var(--font-serif), serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; min-width: 3.6rem; text-align: right; }
         .cw .prav-cena-gumb { border: none; background: transparent; cursor: pointer; color: var(--ink); padding: 0 0 .1rem; border-bottom: 1px dashed rgba(17,17,17,.45); transition: border-color .15s, color .15s; }
         .cw .prav-cena-gumb:hover { border-bottom-color: var(--ink); }
         .cw .prav-cena-gumb.rocno { border-bottom-style: solid; border-bottom-color: var(--accent); color: var(--accent); }
         .cw .prav-cena-uredi { display: inline-flex; align-items: baseline; justify-content: flex-end; gap: .15rem; }
-        .cw .prav-cena-uredi input { width: 4.2rem; border: none; border-bottom: 2px solid var(--ink); background: transparent; font-family: var(--font-bodoni), serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; text-align: right; padding: 0 0 .06rem; color: var(--ink); border-radius: 0; }
+        .cw .prav-cena-uredi input { width: 4.2rem; border: none; border-bottom: 2px solid var(--ink); background: transparent; font-family: var(--font-serif), serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; text-align: right; padding: 0 0 .06rem; color: var(--ink); border-radius: 0; }
         .cw .prav-cena-uredi input:focus { outline: none; }
-        .cw .prav-cena-uredi .pe-znak { font-family: var(--font-bodoni), serif; font-weight: 600; font-size: .95rem; }
+        .cw .prav-cena-uredi .pe-znak { font-family: var(--font-serif), serif; font-weight: 600; font-size: .95rem; }
         .cw .prav-lastna-ime { border: none; border-bottom: 1px solid rgba(17,17,17,.35); background: transparent; font-family: inherit; font-size: .95rem; font-weight: 650; color: var(--ink); padding: .15rem 0; min-width: 0; width: 100%; }
         .cw .prav-lastna-ime:focus { outline: none; border-color: var(--ink); }
         .cw .prav-lastna-ime::placeholder { color: rgba(17,17,17,.4); font-weight: 500; }
@@ -5533,7 +5533,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .prav-brisi:hover { border-color: #b25476; color: #b25476; }
         .cw .prav-lastna-akcije { display: inline-flex; gap: .4rem; align-items: center; justify-content: flex-end; }
         .cw .prav-skupaj { display: flex; justify-content: space-between; align-items: baseline; margin-top: .9rem; padding-top: .8rem; border-top: 2px solid var(--ink); }
-        .cw .prav-skupaj b { font-family: var(--font-bodoni), serif; font-size: 1.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+        .cw .prav-skupaj b { font-family: var(--font-serif), serif; font-size: 1.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
         @media (max-width: 560px) { .cw .prav-vrsta { grid-template-columns: 1fr auto auto; grid-template-areas: 'ime ime ime' 'recept cena podr'; gap: .55rem .7rem; align-items: center; } .cw .prav-ime { grid-area: ime; white-space: normal; } .cw .prav-recept { grid-area: recept; min-width: 0; } .cw .prav-cena { grid-area: cena; justify-self: end; } .cw .prav-podr { grid-area: podr; justify-self: end; } .cw .prav-vrsta-lastna .prav-lastna-akcije { grid-area: podr; } }
         .cw .kartica > .k-naslov { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .3rem 1rem; margin: 0 0 1.1rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .kartica > .k-naslov .vec, .cw .profil-sekcija .k-naslov .vec { font-size: .82rem; font-weight: 500; color: rgba(17,17,17,.55); text-transform: none; letter-spacing: 0; }
@@ -5620,7 +5620,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .ret-povzetek { margin-top: .9rem; padding: 1.1rem 1.2rem; border-radius: 16px; background: #FCFBF7; border: 1px solid rgba(17,17,17,.1); }
         .cw .ret-glavna { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding-bottom: .7rem; border-bottom: 1px solid rgba(17,17,17,.1); }
         .cw .ret-glavna span { font-size: .82rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: rgba(17,17,17,.55); }
-        .cw .ret-glavna b { font-family: var(--font-bodoni), serif; font-weight: 500; font-size: 1.5rem; color: var(--ink); }
+        .cw .ret-glavna b { font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.5rem; color: var(--ink); }
         .cw .ret-detajli { list-style: none; margin: .7rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .32rem; }
         .cw .ret-detajli li { font-size: .86rem; color: rgba(17,17,17,.7); padding-left: 1rem; position: relative; }
         .cw .ret-detajli li::before { content: "·"; position: absolute; left: .2rem; color: var(--accent); font-weight: 700; }
@@ -5699,10 +5699,15 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .segpills-sek { background: transparent; border-color: rgba(17,17,17,.14); }
         /* Preklop prikaza storitev (Mehurcki/Mreza/Tabela) — LASTEN razred, ne "segpills-pogled",
            ker tega uporablja ze Uredi/Predogled in bi mu vsilil tristolpcno mrezo. */
-        .cw .segpills-orbpogled { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; max-width: 640px; margin-inline: auto; }
+        /* Majhne, po meri besedila — kot v mesecnem retainerju. Prej so bile raztegnjene
+           cez vso sirino in so se dotikale mehurckov. Spodnji odmik je odmik OD mehurckov. */
+        .cw .segpills-orbpogled { display: inline-flex; width: auto; max-width: none; margin: 0 auto 1.6rem; }
         /* text-indent izravna rep, ki ga letter-spacing doda ZA zadnjo crko in besedilo
            optično potisne v levo, čeprav je poravnava na sredino. */
-        .cw .segpills-orbpogled button { display: flex; align-items: center; justify-content: center; padding-inline: .5rem; text-align: center; text-indent: .03em; }
+        /* brez svojega padding-inline — tako je notranji odmik natanko enak retainerju */
+        .cw .segpills-orbpogled button { display: flex; align-items: center; justify-content: center; text-align: center; text-indent: .03em; }
+        /* ovoj poskrbi za sredinjenje, ker je pilula zdaj ozja od vrstice */
+        .cw .orbpogled-vrsta { display: flex; justify-content: center; }
         .cw .segpills-sek button { font-weight: 600; color: rgba(17,17,17,.6); }
         .cw .segpills-sek button.on { background: rgba(17,17,17,.09); color: var(--ink); }
         .cw .segpills-pogled button { display: inline-flex; align-items: center; gap: .35rem; }
@@ -6182,8 +6187,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 <a className="profil-meni-vrsta" href={localePath(locale, `/kalkulator/admin`)} style={{ textDecoration: 'none' }}>
                   <SquaresFour size={20} weight="bold" />
                   <span>
-                    <strong>Admin</strong>
-                    <small>upravljanje produktov in nastavitev (interno)</small>
+                    <strong>Pregled poslovanja</strong>
+                    <small>koliko uporabnikov, kakšne cene, od kod so (interno)</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </a>
@@ -6747,10 +6752,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               {/* preklop prikaza (enako kot retainer): mehurcki <-> tabela. "dodaj / uredi" ostane. */}
               {/* EN preklop za vse tri poglede — "Mreža po področjih" je bila prej skrita
                   v panelu "dodaj / uredi"; prenesena sem, da ni dveh kontrol za isto stvar. */}
-              <div className="segpills segpills-orbpogled" role="group" aria-label="Prikaz storitev" style={{ margin: '0 0 1rem' }}>
-                <button type="button" className={!orbTabela && !pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(false); }}>Mehurčki</button>
-                <button type="button" className={!orbTabela && pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(true); }}>Mreža</button>
-                <button type="button" className={orbTabela ? 'on' : ''} onClick={() => setOrbTabela(true)}>Tabela</button>
+              {/* brez vgrajenega style: ta bi premagal razred in vrnil stari odmik */}
+              <div className="orbpogled-vrsta">
+                <div className="segpills segpills-orbpogled" role="group" aria-label="Prikaz storitev">
+                  <button type="button" className={!orbTabela && !pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(false); }}>Mehurčki</button>
+                  <button type="button" className={!orbTabela && pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(true); }}>Mreža</button>
+                  <button type="button" className={orbTabela ? 'on' : ''} onClick={() => setOrbTabela(true)}>Tabela</button>
+                </div>
               </div>
 
               {orbTabela && (

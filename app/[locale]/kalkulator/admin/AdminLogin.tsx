@@ -44,7 +44,7 @@ export default function AdminLogin() {
         <h1 style={{ fontSize: '1.1rem', marginBottom: '.5rem', color: '#111' }}>Admin — Kalkulator cene</h1>
         {/* pojasnilo, zakaj DRUGO geslo — brez tega izgleda, kot da te je odjavilo */}
         <p style={{ fontSize: '.82rem', lineHeight: 1.45, color: 'rgba(17,17,17,.6)', margin: '0 0 1.2rem' }}>
-          Nisi odjavljena. Ta stran je zaščitena z <b>dodatnim geslom</b>, ker prikazuje cene z vsega trga.
+          Pregled poslovanja Pinart Flow. Ločen od tvojega Flow računa — zaščiten s svojim geslom, ker prikazuje cene z vsega trga.
         </p>
         <input
           type="password" autoFocus value={geslo} onChange={e => setGeslo(e.target.value)}

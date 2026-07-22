@@ -36,7 +36,11 @@ export default async function middleware(request: NextRequest) {
 
   /* Brezplacna in javna: /kalkulator (landing), /kalkulator/orodje, /prijava, /geslo, /pogoji.
      Vse ostalo je vezano na racun. */
-  const protectedFlowRoute = /^\/(?:sl\/|en\/)?kalkulator\/(pregled|projekti|pogodbe|racuni|stroski|stranke|cilji|ceniki|dolgorocno|racunovodstvo|admin|profil|cas|poslovni-nacrt|nastavitve)(?:\/|$)/.test(request.nextUrl.pathname);
+  /* /kalkulator/admin NI na tem seznamu: to ni del Flow racuna, ampak pregled
+     poslovanja. Vsebina je strezniško zascitena z geslom KALKULATOR_ADMIN_GESLO
+     (piskotek pinart_admin), zato dvojna kljucavnica ni potrebna in je samo
+     ovirala dostop. */
+  const protectedFlowRoute = /^\/(?:sl\/|en\/)?kalkulator\/(pregled|projekti|pogodbe|racuni|stroski|stranke|cilji|ceniki|dolgorocno|racunovodstvo|profil|cas|poslovni-nacrt|nastavitve)(?:\/|$)/.test(request.nextUrl.pathname);
 
   if (protectedFlowRoute && (!sejaPreverjena || !user)) {
     const localePrefix = request.nextUrl.pathname.startsWith('/en/') ? '/en' : '';

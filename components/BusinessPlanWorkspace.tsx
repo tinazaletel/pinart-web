@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   calculatePlan, DEFAULT_BUSINESS_PLAN, deleteCloudTimeEntry, loadCloudBusinessPlan,
   loadCloudTimeEntries, loadLocalPlan, loadLocalTimeEntries, type BusinessPlan,
@@ -8,6 +9,9 @@ import {
   saveLocalTimeEntries,
 } from '@/lib/pinartPlanning';
 import { saveBusinessGoal, saveCloudSettings } from '@/lib/pinartFlowCloud';
+import { preklopiPavzo, useTekoceMerjenje, zapisiMerjenje } from '@/lib/tekoceMerjenje';
+import MetricIcon from './MetricIcon';
+import TimerValovi from './TimerValovi';
 import styles from './BusinessPlanWorkspace.module.css';
 
 const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFractionDigits: 0 })} €`;
@@ -16,33 +20,30 @@ const duration = (minutes: number) => `${Math.floor(minutes / 60)} h ${minutes %
 const vnosiSklon = (n: number) => { const d = n % 100; return d === 1 ? 'vnos' : d === 2 ? 'vnosa' : d === 3 || d === 4 ? 'vnosi' : 'vnosov'; };
 
 /**
- * Isti projekt na isti dan = ena vrstica. Različni projekti na isti dan ostanejo
- * ločeni. Brez tega ima en projekt dva gumba "Nadaljuj" na istem datumu in ni
- * jasno, kateremu se ure prištejejo.
+ * Isti projekt na isti dan = ena vrstica, a SAMO v prikazu. Vsako merjenje
+ * ostane svoj zapis, sicer bi izgubili posamezne case "od – do", ki jih
+ * hoces videti pod skupno uro.
  *
- * Ure, vrednost in opombe se seštejejo, začetek je najzgodnejši, konec najpoznejši.
- * Nič se ne izgubi.
+ * Vrne skupine, urejene po zadnjem merjenju, z zaporedjem posameznih merjenj.
  */
-function poenotiDvojnike(list: PrivateTimeEntry[]): PrivateTimeEntry[] {
-  const m = new Map<string, PrivateTimeEntry>();
-  for (const x of list) {
-    const kljuc = `${x.startedAt.slice(0, 10)}|${x.projectName.trim().toLowerCase()}`;
-    const prej = m.get(kljuc);
-    if (!prej) { m.set(kljuc, { ...x }); continue; }
-    const storitve = [...new Set([prej.serviceName, x.serviceName].map(s => s?.trim()).filter(Boolean))];
-    m.set(kljuc, {
-      ...prej,
-      startedAt: prej.startedAt <= x.startedAt ? prej.startedAt : x.startedAt,
-      endedAt: [prej.endedAt, x.endedAt].filter(Boolean).sort().pop() || prej.endedAt,
-      durationMinutes: prej.durationMinutes + x.durationMinutes,
-      amount: prej.amount + x.amount,
-      serviceName: storitve.join(', '),
-      note: [prej.note, x.note].filter(Boolean).join(' · ') || undefined,
-      /* "dodatno delo" prevlada: če je bil del dela izven dogovora, to velja za vrstico */
-      scopeStatus: prej.scopeStatus === 'extra' || x.scopeStatus === 'extra' ? 'extra' : 'included',
-    });
+function zdruziPoProjektu(dnevni: PrivateTimeEntry[]) {
+  const m = new Map<string, PrivateTimeEntry[]>();
+  for (const x of dnevni) {
+    const kljuc = x.projectName.trim().toLowerCase();
+    m.set(kljuc, [...(m.get(kljuc) || []), x]);
   }
-  return [...m.values()].sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+  return [...m.entries()].map(([kljuc, vnosi]) => {
+    const zaporedje = [...vnosi].sort((a, b) => a.startedAt.localeCompare(b.startedAt));
+    return {
+      kljuc,
+      zaporedje,
+      zadnji: zaporedje[zaporedje.length - 1],
+      minute: zaporedje.reduce((s, x) => s + x.durationMinutes, 0),
+      znesek: zaporedje.reduce((s, x) => s + x.amount, 0),
+      storitve: [...new Set(zaporedje.map(x => x.serviceName?.trim()).filter(Boolean))] as string[],
+      dodatno: zaporedje.some(x => x.scopeStatus === 'extra'),
+    };
+  }).sort((a, b) => b.zadnji.startedAt.localeCompare(a.zadnji.startedAt));
 }
 
 export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' | 'time' }) {
@@ -58,29 +59,32 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
   useEffect(() => {
     const localPlan = loadLocalPlan();
     const localEntries = loadLocalTimeEntries();
-    setPlan(localPlan); setEntries(poenotiDvojnike(localEntries));
+    setPlan(localPlan); setEntries(localEntries);
     void Promise.all([loadCloudBusinessPlan(), loadCloudTimeEntries()]).then(([cloudPlan, cloudEntries]) => {
       if (cloudPlan) { setPlan(cloudPlan); saveLocalPlan(cloudPlan); }
-      if (!cloudEntries.length) return;
-      /* stari podvojeni vnosi (isti projekt, isti dan) se zlijejo v enega —
-         ena vrstica, en gumb "Nadaljuj". Zapisemo nazaj, da se ne ponavlja. */
-      const poenoteni = poenotiDvojnike(cloudEntries);
-      setEntries(poenoteni); saveLocalTimeEntries(poenoteni);
-      if (poenoteni.length < cloudEntries.length) {
-        setNotice(`Združila sem ${cloudEntries.length - poenoteni.length} podvojenih vnosov istega projekta na isti dan.`);
-        poenoteni.forEach(x => void saveCloudTimeEntry(x).catch(() => undefined));
-        cloudEntries.filter(x => !poenoteni.some(p => p.id === x.id))
-          .forEach(x => void deleteCloudTimeEntry(x.id).catch(() => undefined));
-      }
+      if (cloudEntries.length) { setEntries(cloudEntries); saveLocalTimeEntries(cloudEntries); }
     }).catch(() => undefined).finally(() => setReady(true));
   }, []);
 
+  /* Cas bere skupna shramba (lib/tekoceMerjenje), da pavza velja tudi tu in da
+     se merjenje ne izgubi ob osvezitvi strani. */
+  const { merjenje, sekunde: sekundeShrambe } = useTekoceMerjenje();
+  useEffect(() => { if (running) setElapsed(sekundeShrambe); }, [running, sekundeShrambe]);
+
+  /* Po osvezitvi strani je bilo merjenje prej izgubljeno — obnovimo ga iz shrambe.
+     Ce je bila ustavitev zahtevana iz bliznjice v glavi, jo izvedemo tukaj, ker
+     je treba vnos se potrditi. */
+  const obnovljeno = useRef(false);
   useEffect(() => {
-    if (!running) return;
-    const tick = () => setElapsed(Math.max(0, Math.floor((Date.now() - new Date(running.startedAt).getTime()) / 1000)));
-    tick(); timerRef.current = window.setInterval(tick, 1000);
-    return () => { if (timerRef.current) window.clearInterval(timerRef.current); };
-  }, [running]);
+    if (!merjenje || running || pending || obnovljeno.current) return;
+    obnovljeno.current = true;
+    setRunning({
+      id: crypto.randomUUID(), projectName: merjenje.projectName,
+      serviceName: merjenje.serviceName || '',
+      startedAt: merjenje.zacetekPrvic || merjenje.startedAt,
+      durationMinutes: 0, amount: 0, scopeStatus: 'included',
+    });
+  }, [merjenje, running, pending]);
 
   const result = useMemo(() => calculatePlan(plan), [plan]);
   const completed = entries.filter(item => item.endedAt && item.durationMinutes > 0);
@@ -107,9 +111,18 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
   const start = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); const data = new FormData(event.currentTarget);
     const projectName = String(data.get('project')).trim(); if (!projectName) return;
+    setTimerSkrit(false);
+    /* skupna shramba: stoparica mora biti vidna tudi na nadzorni plosci */
+    zapisiMerjenje({ projectName, serviceName: String(data.get('service')).trim(), startedAt: new Date().toISOString() });
     setRunning({ id: crypto.randomUUID(), projectName, serviceName: String(data.get('service')).trim(), startedAt: new Date().toISOString(), durationMinutes: 0, amount: Number(data.get('amount')) || 0, scopeStatus: data.get('scope') === 'extra' ? 'extra' : 'included' });
     event.currentTarget.reset();
   };
+
+  /* bliznjica v glavi je zahtevala ustavitev: izvedi jo, ko se stran odpre */
+  useEffect(() => {
+    if (merjenje?.ustavi && running) stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [merjenje?.ustavi, running]);
 
   const stop = () => {
     if (!running) return;
@@ -117,6 +130,7 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
     const finished = { ...running, endedAt: new Date().toISOString(), durationMinutes: minute };
     /* vrednost dela naj bo ze predlagana, ko se odpre potrditev */
     pripraviVnos(finished.startedAt.slice(0, 10), Math.floor(minute / 60), minute % 60, running.amount);
+    zapisiMerjenje(null);
     setPending(finished); setRunning(null); setElapsed(0);
   };
 
@@ -128,31 +142,11 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
       amount: Math.max(0, Number(data.get('amount')) || 0), scopeStatus: data.get('scope') === 'extra' ? 'extra' : 'included',
       overrunReason: String(data.get('reason') || '') || undefined, note: String(data.get('note') || '') || undefined,
     };
-    /* Minute se PRISTEJEJO obstojecemu vnosu (ne nov zapis), ce si stetje
-       nadaljevala — ali ce si isti projekt danes ze merila. Trikrat pritisnjen
-       "Začni meriti" tako da eno vrstico: 03:00 – 04:30, 1 h 30 min. */
-    const danes = new Date().toISOString().slice(0, 10);
-    const istiDanes = entries.find(x =>
-      x.startedAt.slice(0, 10) === danes
-      && x.projectName.trim().toLowerCase() === finished.projectName.trim().toLowerCase());
-    const ciljId = nadaljujeId || istiDanes?.id;
-    if (ciljId) {
-      const next = entries.map(x => (x.id === ciljId
-        ? {
-          ...x,
-          durationMinutes: x.durationMinutes + finished.durationMinutes,
-          amount: x.amount + finished.amount,
-          endedAt: finished.endedAt,
-          note: [x.note, finished.note].filter(Boolean).join(' · ') || undefined,
-        }
-        : x));
-      setEntries(next); saveLocalTimeEntries(next);
-      const posodobljen = next.find(x => x.id === ciljId);
-      if (posodobljen) void saveCloudTimeEntry(posodobljen).catch(() => undefined);
-      setNadaljujeId(null); setPending(null);
-      setNotice(`Prišteto ${duration(finished.durationMinutes)} k vnosu »${finished.projectName}« — skupaj ${duration(posodobljen?.durationMinutes || 0)}.`);
-      return;
-    }
+    /* Vsako merjenje je svoj zapis (zato se vidi vsak "od – do"); v dnevniku se
+       merjenja istega projekta na isti dan prikazejo pod skupno uro.
+       Ob "Nadaljuj" je pending podedoval id starega vnosa — nov id, sicer bi ga
+       novo merjenje prepisalo. */
+    if (nadaljujeId) { finished.id = crypto.randomUUID(); setNadaljujeId(null); }
     const next = [finished, ...entries]; setEntries(next); saveLocalTimeEntries(next); void saveCloudTimeEntry(finished).catch(() => undefined);
     setPending(null); setNotice('Časovni vnos je shranjen samo v tvojem računu.');
   };
@@ -166,6 +160,19 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
      dnevih; vnose se sme urejati in brisati; stetje se da nadaljevati naslednji dan. */
   const [nadaljujeId, setNadaljujeId] = useState<string | null>(null);
   const [rocniOdprt, setRocniOdprt] = useState(false);
+  const [timerSkrit, setTimerSkrit] = useState(false);
+
+  /* Ko med merjenjem odscrollaš do dnevnika, štoparica izgine z zaslona.
+     Zato jo takrat pokažemo kot plavajoč pas na dnu — čas mora biti ves čas viden. */
+  const timerRef2 = useRef<HTMLElement | null>(null);
+  const [kartaVidna, setKartaVidna] = useState(true);
+  useEffect(() => {
+    const el = timerRef2.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const opazovalec = new IntersectionObserver(([v]) => setKartaVidna(v.isIntersecting), { threshold: 0.12 });
+    opazovalec.observe(el);
+    return () => opazovalec.disconnect();
+  }, []);
   const [urejam, setUrejam] = useState<PrivateTimeEntry | null>(null);
 
   /* Vrednost dela se izracuna sama iz ur in tvoje vzdrzne urne vrednosti.
@@ -183,10 +190,21 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
   }, [predlaganZnesek, znesekRocno]);
 
   const [danVnos, setDanVnos] = useState(() => new Date().toISOString().slice(0, 10));
+  const [odVnos, setOdVnos] = useState('');
+  const [doVnos, setDoVnos] = useState('');
+
+  /* ko sta vpisana "od" in "do", polji Ure/Minute samo sledita izracunu */
+  useEffect(() => {
+    const m = minuteMed(odVnos, doVnos);
+    if (!m) return;
+    setUreVnos(String(Math.floor(m / 60))); setMinVnos(String(m % 60));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [odVnos, doVnos]);
 
   /* obrazec vedno odpremo s cistimi polji, sicer se prenese znesek prejsnjega vnosa */
-  const pripraviVnos = (dan: string, ure: number, min: number, znesek: number) => {
+  const pripraviVnos = (dan: string, ure: number, min: number, znesek: number, od = '', doU = '') => {
     setDanVnos(dan); setUreVnos(String(ure)); setMinVnos(String(min));
+    setOdVnos(od); setDoVnos(doU);
     setZnesekRocno(znesek > 0); setZnesekVnos(znesek ? String(znesek) : '');
   };
 
@@ -206,6 +224,33 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
       <small>{new Date(`${danVnos || privzeto}T12:00:00`).toLocaleDateString('sl-SI', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</small>
     </label>
   );
+
+  /* odpiranje urejanja na enem mestu — prej je bilo trikrat prepisano */
+  const odpriUrejanje = (x: PrivateTimeEntry) => {
+    setUrejam(x); setRocniOdprt(false);
+    const imaCas = !!x.endedAt && x.endedAt !== x.startedAt;
+    pripraviVnos(
+      x.startedAt.slice(0, 10), Math.floor(x.durationMinutes / 60), x.durationMinutes % 60, x.amount,
+      imaCas ? ura(x.startedAt) : '', imaCas ? ura(x.endedAt!) : '',
+    );
+  };
+
+  /* Od – do. Trajanje se izracuna samo, tudi cez polnoc (22:00 – 04:00 = 6 h).
+     Ce si delala z odmorom, vpisi dva vnosa; v dnevniku se za isti dan in projekt
+     prikazeta pod skupno uro. */
+  const poljeOdDo = () => {
+    const minute = minuteMed(odVnos, doVnos);
+    const cezPolnoc = minute > 0 && doVnos.slice(0, 5) <= odVnos.slice(0, 5);
+    return <>
+      <label><span>Od</span><input name="od" type="time" step="300" value={odVnos} onChange={e => setOdVnos(e.target.value)} /></label>
+      <label><span>Do</span><input name="do" type="time" step="300" value={doVnos} onChange={e => setDoVnos(e.target.value)} /></label>
+      <p className={styles.trajanje}>
+        {minute
+          ? <><strong>{duration(minute)}</strong>{cezPolnoc && <span> · konec je naslednji dan</span>}</>
+          : <span>Vpiši uro od in do, pa ti trajanje izračunam. Če ne veš ur, ju pusti prazni in vpiši trajanje spodaj.</span>}
+      </p>
+    </>;
+  };
 
   /* Vrednost dela: predlagana iz ur x tvoje urne vrednosti, a jo lahko povoziš. */
   const poljeZnesek = () => (
@@ -229,6 +274,7 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
   const nadaljuj = (item: PrivateTimeEntry) => {
     if (running || pending) return;
     setNadaljujeId(item.id);
+    zapisiMerjenje({ projectName: item.projectName, serviceName: item.serviceName, startedAt: new Date().toISOString() });
     setRunning({ ...item, startedAt: new Date().toISOString(), durationMinutes: 0 });
     setElapsed(0);
   };
@@ -236,10 +282,27 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
   /* Zacetek: ce je vpisana ura, jo uporabimo (potem se v dnevniku izpise
      "03:00 – 04:30"); brez nje ostane poldne, da premik casovnega pasu vnosa
      ne prestavi na sosednji dan. */
+  const jeUra = (v: string) => /^\d{2}:\d{2}/.test(v);
   const zacetek = (dan: string, od: string) =>
-    (/^\d{2}:\d{2}$/.test(od) ? new Date(`${dan}T${od}:00`).toISOString() : obDnevu(dan));
-  const konec = (zacetekIso: string, minute: number, imaUro: boolean) =>
-    (imaUro ? new Date(new Date(zacetekIso).getTime() + minute * 60_000).toISOString() : zacetekIso);
+    (jeUra(od) ? new Date(`${dan}T${od.slice(0, 5)}:00`).toISOString() : obDnevu(dan));
+
+  /* Konec: iz vpisane ure "do". Ce je "do" manjsi ali enak "od", je delo slo
+     cez polnoc — konec je naslednji dan (18:00 -> 04:00 = 10 ur). */
+  const konec = (dan: string, od: string, doU: string, zacetekIso: string, minute: number) => {
+    if (!jeUra(od) || !jeUra(doU)) {
+      return jeUra(od) ? new Date(new Date(zacetekIso).getTime() + minute * 60_000).toISOString() : zacetekIso;
+    }
+    const k = new Date(`${dan}T${doU.slice(0, 5)}:00`);
+    if (k.getTime() <= new Date(zacetekIso).getTime()) k.setDate(k.getDate() + 1);
+    return k.toISOString();
+  };
+
+  /* minute med "od" in "do", s prehodom cez polnoc; 0, ce nista oba vpisana */
+  const minuteMed = (od: string, doU: string) => {
+    if (!jeUra(od) || !jeUra(doU)) return 0;
+    const [a, b] = [od, doU].map(v => Number(v.slice(0, 2)) * 60 + Number(v.slice(3, 5)));
+    return b > a ? b - a : b + 24 * 60 - a;
+  };
 
   const dodajRocno = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -247,11 +310,12 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
     const projectName = String(d.get('project')).trim(); if (!projectName) return;
     const dan = String(d.get('dan') || danesISO());
     const od = String(d.get('od') || '');
-    const minute = vMinute(d.get('ure'), d.get('min'));
+    const doU = String(d.get('do') || '');
+    const minute = minuteMed(od, doU) || vMinute(d.get('ure'), d.get('min'));
     const cas = zacetek(dan, od);
     const zapis: PrivateTimeEntry = {
       id: crypto.randomUUID(), projectName, serviceName: String(d.get('service')).trim(),
-      startedAt: cas, endedAt: konec(cas, minute, !!od), durationMinutes: minute,
+      startedAt: cas, endedAt: konec(dan, od, doU, cas, minute), durationMinutes: minute,
       amount: Number(d.get('amount')) || 0,
       note: String(d.get('note') || '').trim() || undefined,
       scopeStatus: d.get('scope') === 'extra' ? 'extra' : 'included',
@@ -266,14 +330,15 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
     const d = new FormData(event.currentTarget);
     const dan = String(d.get('dan') || urejam.startedAt.slice(0, 10));
     const od = String(d.get('od') || '');
-    const minute = vMinute(d.get('ure'), d.get('min'));
+    const doU = String(d.get('do') || '');
+    const minute = minuteMed(od, doU) || vMinute(d.get('ure'), d.get('min'));
     const cas = zacetek(dan, od);
     const posodobljen: PrivateTimeEntry = {
       ...urejam,
       projectName: String(d.get('project')).trim() || urejam.projectName,
       serviceName: String(d.get('service')).trim(),
       /* prej je urejanje pobrisalo uro zacetka — zdaj se ohrani oz. jo popraviš */
-      startedAt: cas, endedAt: konec(cas, minute, !!od),
+      startedAt: cas, endedAt: konec(dan, od, doU, cas, minute),
       durationMinutes: minute,
       amount: Math.max(0, Number(d.get('amount')) || 0),
       note: String(d.get('note') || '').trim() || undefined,
@@ -363,30 +428,17 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
     URL.revokeObjectURL(url);
   };
 
-  /* ena vrstica dnevnika — deljena med obema pogledoma, da se gumbi in
-     oblika ne razideta, ko se kaj popravi samo na enem mestu */
-  const vrstica = (item: PrivateTimeEntry) => {
-    const rate = item.durationMinutes ? item.amount / (item.durationMinutes / 60) : 0;
-    return <article key={item.id}><div><strong>{item.projectName}</strong><span>{item.serviceName || 'Brez storitve'} · {new Date(item.startedAt).toLocaleDateString('sl-SI')}{razpon(item) && ` · ${razpon(item)}`}</span>{item.note && <small className={styles.opomba}>{item.note}</small>}</div><b>{duration(item.durationMinutes)}</b><b>{rate ? `${money(rate)}/h` : 'brez vrednosti'}</b><em data-extra={item.scopeStatus === 'extra'}>{item.scopeStatus === 'extra' ? 'Dodatno delo' : 'Vključeno'}</em>
-      {/* gumbi v SVOJI celici — prej so vsi trije padli v isto celico mreze in se prekrivali,
-          zaradi cesar je tap na "Nadaljuj" zadel brisanje pod njim */}
-      <div className={styles.akcije}>
-        <button type="button" className={styles.vrsticaGumb} data-glavni onClick={() => nadaljuj(item)} disabled={!!running || !!pending} title={running || pending ? 'Najprej zaključi tekoče merjenje' : 'Nadaljuj štetje na tem vnosu'}>Nadaljuj</button>
-        <button type="button" className={styles.vrsticaGumb} onClick={() => { setUrejam(item); setRocniOdprt(false); pripraviVnos(item.startedAt.slice(0, 10), Math.floor(item.durationMinutes / 60), item.durationMinutes % 60, item.amount); }}>Uredi</button>
-        <button type="button" className={styles.izbrisi} onClick={() => { if (confirm(`Izbrišem vnos »${item.projectName}«?`)) remove(item.id); }} aria-label={`Izbriši ${item.projectName}`} title="Izbriši vnos"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M10 4h4M9 7v12M15 7v12M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" /></svg></button>
-      </div></article>;
-  };
-
   if (!ready) return <p className={styles.loading}>Pripravljam poslovni načrt …</p>;
 
   return <div className={`${styles.page} ${view === 'time' ? styles.casPogled : ''}`}>
     {notice && <div className={styles.notice} role="status">{notice}<button onClick={() => setNotice('')} aria-label="Zapri">×</button></div>}
 
     <section className={styles.summary}>
-      <article><small>Mesečni cilj</small><strong>{money(result.monthlyRevenueTarget)}</strong><span>iz poslovnega načrta</span></article>
-      <article><small>Vzdržna urna vrednost</small><strong>{money(result.sustainableHourlyRate)}</strong><span>pri {plan.billableHoursMonthly} obračunskih urah</span></article>
-      <article><small>Potrebni projekti</small><strong>{result.projectsNeeded}</strong><span>pri povprečju {money(plan.averageProjectValue)}</span></article>
-      <article><small>Dejanska urna vrednost</small><strong>{effectiveRate ? money(effectiveRate) : '—'}</strong><span>iz zaključenih časovnih vnosov</span></article>
+      {/* ikone v istem slogu kot na Stroških in Računih: velika mehka ikona v kotu */}
+      <article><small>Mesečni cilj</small><strong>{money(result.monthlyRevenueTarget)}</strong><span>iz poslovnega načrta</span><b className={styles.metricIkona}><MetricIcon type="cilj" /></b></article>
+      <article><small>Vzdržna urna vrednost</small><strong>{money(result.sustainableHourlyRate)}</strong><span>pri {plan.billableHoursMonthly} obračunskih urah</span><b className={styles.metricIkona}><MetricIcon type="ura" /></b></article>
+      <article><small>Potrebni projekti</small><strong>{result.projectsNeeded}</strong><span>pri povprečju {money(plan.averageProjectValue)}</span><b className={styles.metricIkona}><MetricIcon type="projekti" /></b></article>
+      <article><small>Dejanska urna vrednost</small><strong>{effectiveRate ? money(effectiveRate) : '—'}</strong><span>iz zaključenih časovnih vnosov</span><b className={styles.metricIkona}><MetricIcon type="graf" /></b></article>
     </section>
 
     <div className={`${styles.layout} ${view === 'time' ? styles.timeOnly : ''}`}>
@@ -404,7 +456,7 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
         <button type="submit">Shrani načrt in posodobi cilje</button>
       </form>}
 
-      <section className={styles.timer} id="timer">
+      <section className={styles.timer} id="timer" ref={timerRef2}>
         <header><p>{view === 'time' ? '01' : '02'} · CENA & ČAS</p><h2>Ali se ti je delo po tej ceni splačalo?</h2><span>Timer je zaseben. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.</span></header>
         {pending ? <form className={styles.timerForm} onSubmit={confirmTime}>
           <div className={styles.reviewTitle}><strong>Preglej zaključeni vnos</strong><span>{pending.projectName} · {pending.serviceName || 'brez oznake storitve'}</span></div>
@@ -415,10 +467,41 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
           <label><span>Zakaj je delo odstopalo od načrta?</span><select name="reason"><option value="">Ni odstopanja</option><option>Zahtevnejše od pričakovanega</option><option>Preveč popravkov</option><option>Nejasen brief</option><option>Dodatne zahteve</option><option>Veliko komunikacije</option><option>Administracija</option><option>Novo področje ali učenje</option><option>Ta vrsta dela mi ne ustreza</option></select></label>
           <label><span>Zasebna opomba</span><input name="note" placeholder="Kaj boš naslednjič spremenila pri ceni ali obsegu?" /></label>
           <button type="submit">Potrdi zasebni vnos</button>
-        </form> : running ? <div className={styles.running}>
-          <span><small>TEČE ZDAJ</small><strong>{running.projectName}</strong><em>{running.serviceName || 'Brez oznake storitve'}</em></span>
+        </form> : running && timerSkrit ? <div className={styles.tecePas}>
+          {/* skrito: merjenje NE stoji, samo ne zavzema pol zaslona */}
+          <span className={styles.tecePika} aria-hidden="true" />
+          <strong>{running.projectName}</strong>
           <b>{String(Math.floor(elapsed / 3600)).padStart(2, '0')}:{String(Math.floor(elapsed / 60) % 60).padStart(2, '0')}:{String(elapsed % 60).padStart(2, '0')}</b>
-          <button onClick={stop}>Ustavi in shrani</button>
+          <button type="button" className={styles.skrijGumb} onClick={() => setTimerSkrit(false)}>Pokaži</button>
+          <button type="button" className={styles.skrijGumb} data-glavni onClick={stop}>Ustavi</button>
+        </div> : running ? <div className={styles.running}>
+          <TimerValovi className={styles.valovi} />
+          <span><small>TEČE ZDAJ</small><strong>{running.projectName}</strong><em>{running.serviceName || 'Brez oznake storitve'}</em></span>
+          {/* ura + "skrij" v isti vrstici: ko delaš, ti velika števka pred očmi moti */}
+          <div className={styles.uraVrstica}>
+            <b>{String(Math.floor(elapsed / 3600)).padStart(2, '0')}:{String(Math.floor(elapsed / 60) % 60).padStart(2, '0')}:{String(elapsed % 60).padStart(2, '0')}</b>
+            {/* samo oko — merjenje tece naprej, skrije se le prikaz */}
+            <button type="button" className={styles.okoGumb} onClick={() => setTimerSkrit(true)}
+              aria-label="Skrij štoparico" title="Skrij prikaz — merjenje teče naprej">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6Z" /><circle cx="12" cy="12" r="2.6" /><path d="m4 20 16-16" />
+              </svg>
+            </button>
+          </div>
+          {/* pavza ob glavnem gumbu, ne ob uri */}
+          <div className={styles.glavnaVrsta}>
+            <button type="button" onClick={stop}>
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2.4" /></svg>
+              Ustavi in shrani
+            </button>
+            <button type="button" className={styles.pavzaGumb} onClick={preklopiPavzo}
+              aria-label={merjenje?.pavza ? 'Nadaljuj merjenje' : 'Pavza'}
+              title={merjenje?.pavza ? 'Nadaljuj' : 'Pavza'}>
+              {merjenje?.pavza
+                ? <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>
+                : <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><rect x="7" y="5.5" width="3.6" height="13" rx="1.1" /><rect x="13.4" y="5.5" width="3.6" height="13" rx="1.1" /></svg>}
+            </button>
+          </div>
         </div> : <form className={styles.timerForm} onSubmit={start}>
           <label><span>Projekt ali stranka</span><input name="project" required placeholder="npr. Nova identiteta" /></label>
           <label><span>Storitev</span><input name="service" placeholder="npr. oblikovanje logotipa" /></label>
@@ -439,7 +522,7 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
           <form className={styles.timerForm} onSubmit={dodajRocno}>
             <div className={styles.reviewTitle}><strong>Vpiši ure za nazaj</strong><span>Za dan, ko si delala, a nisi merila.</span></div>
             {poljeDan('dan', danesISO())}
-            <label><span>Ura začetka <small>ni obvezno</small></span><input name="od" type="time" step="300" /></label>
+            {poljeOdDo()}
             <label><span>Projekt ali stranka</span><input name="project" required placeholder="npr. Nova identiteta" /></label>
             <label><span>Storitev</span><input name="service" placeholder="npr. oblikovanje logotipa" /></label>
             <label><span>Ure</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
@@ -455,7 +538,7 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
           <form className={styles.timerForm} onSubmit={shraniUrejanje}>
             <div className={styles.reviewTitle}><strong>Uredi vnos</strong><span>{urejam.projectName}</span></div>
             {poljeDan('dan', urejam.startedAt.slice(0, 10))}
-            <label><span>Ura začetka <small>ni obvezno</small></span><input name="od" type="time" step="300" defaultValue={razpon(urejam) ? ura(urejam.startedAt) : ''} /></label>
+            {poljeOdDo()}
             <label><span>Projekt ali stranka</span><input name="project" defaultValue={urejam.projectName} /></label>
             <label><span>Storitev</span><input name="service" defaultValue={urejam.serviceName} /></label>
             <label><span>Ure</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
@@ -511,7 +594,27 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
               <small>{p.urna ? `${money(p.urna)}/h` : 'brez vrednosti'}</small>
             </span>
           </div>
-          {odprt && p.vnosi.map(item => vrstica(item))}
+          {/* razprto: po dnevih, vsak dan s svojo vsoto, znotraj posamezna merjenja */}
+          {odprt && [...new Set(p.vnosi.map(x => x.startedAt.slice(0, 10)))].map(dan => {
+            const dnevni = p.vnosi.filter(x => x.startedAt.slice(0, 10) === dan)
+              .sort((a, b) => a.startedAt.localeCompare(b.startedAt));
+            return <div key={dan} className={styles.projektDan}>
+              <div className={styles.projektDanGlava}>
+                <span>{new Date(`${dan}T12:00:00`).toLocaleDateString('sl-SI', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                <b>{duration(dnevni.reduce((s, x) => s + x.durationMinutes, 0))}</b>
+              </div>
+              <ul className={styles.merjenja}>
+                {dnevni.map(x => (
+                  <li key={x.id}>
+                    <span>{razpon(x) || 'brez ure'}</span>
+                    <b>{duration(x.durationMinutes)}</b>
+                    <button type="button" onClick={() => odpriUrejanje(x)}>Uredi</button>
+                    <button type="button" onClick={() => { if (confirm(`Izbrišem merjenje ${razpon(x) || duration(x.durationMinutes)}?`)) remove(x.id); }} aria-label="Izbriši merjenje">×</button>
+                  </li>
+                ))}
+              </ul>
+            </div>;
+          })}
         </div>;
       })}
 
@@ -522,9 +625,56 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
             <strong>{new Date(`${dan}T12:00:00`).toLocaleDateString('sl-SI', { weekday: 'long', day: 'numeric', month: 'long' })}</strong>
             <span>{duration(dnevni.reduce((s, x) => s + x.durationMinutes, 0))}</span>
           </div>
-          {dnevni.map(item => vrstica(item))}
+          {zdruziPoProjektu(dnevni).map(g => {
+            const urna = g.minute ? g.znesek / (g.minute / 60) : 0;
+            const zadnji = g.zaporedje[g.zaporedje.length - 1];
+            const prvi = g.zaporedje[0];
+            const dnevniRazpon = razpon(prvi) || razpon(zadnji)
+              ? `${ura(prvi.startedAt)} – ${ura(zadnji.endedAt || zadnji.startedAt)}` : '';
+            return <article key={g.kljuc}>
+              <div>
+                <strong>{g.zadnji.projectName}</strong>
+                <span>{g.storitve.join(', ') || 'Brez storitve'}{dnevniRazpon && ` · ${dnevniRazpon}`}</span>
+                {/* vsako merjenje posebej — ce si ta dan merila veckrat */}
+                {g.zaporedje.length > 1 && <ul className={styles.merjenja}>
+                  {g.zaporedje.map(x => (
+                    <li key={x.id}>
+                      <span>{razpon(x) || 'brez ure'}</span>
+                      <b>{duration(x.durationMinutes)}</b>
+                      <button type="button" onClick={() => odpriUrejanje(x)}>Uredi</button>
+                      <button type="button" onClick={() => { if (confirm(`Izbrišem merjenje ${razpon(x) || duration(x.durationMinutes)}?`)) remove(x.id); }} aria-label="Izbriši merjenje">×</button>
+                    </li>
+                  ))}
+                </ul>}
+                {g.zaporedje.map(x => x.note).filter(Boolean).map((n, i) => <small key={i} className={styles.opomba}>{n}</small>)}
+              </div>
+              <b>{duration(g.minute)}</b>
+              <b>{urna ? `${money(urna)}/h` : 'brez vrednosti'}</b>
+              <em data-extra={g.dodatno}>{g.dodatno ? 'Dodatno delo' : 'Vključeno'}</em>
+              <div className={styles.akcije}>
+                <button type="button" className={styles.vrsticaGumb} data-glavni onClick={() => nadaljuj(g.zadnji)} disabled={!!running || !!pending} title={running || pending ? 'Najprej zaključi tekoče merjenje' : 'Začni novo merjenje na tem projektu'}>Nadaljuj</button>
+                {g.zaporedje.length === 1 && <>
+                  <button type="button" className={styles.vrsticaGumb} onClick={() => odpriUrejanje(g.zadnji)}>Uredi</button>
+                  <button type="button" className={styles.izbrisi} onClick={() => { if (confirm(`Izbrišem vnos »${g.zadnji.projectName}«?`)) remove(g.zadnji.id); }} aria-label={`Izbriši ${g.zadnji.projectName}`} title="Izbriši vnos"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M10 4h4M9 7v12M15 7v12M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" /></svg></button>
+                </>}
+              </div>
+            </article>;
+          })}
         </div>
       )))}
     </section>
+
+    {/* Plavajoča štoparica — v portal na <body>, ker se position:fixed sicer meri
+        glede na prednika s transformom in bi pas pristal sredi strani. */}
+    {running && !kartaVidna && createPortal(
+      <div className={`${styles.tecePas} ${styles.tecePasPlava}`}>
+        <span className={styles.tecePika} aria-hidden="true" />
+        <strong>{running.projectName}</strong>
+        <b>{String(Math.floor(elapsed / 3600)).padStart(2, '0')}:{String(Math.floor(elapsed / 60) % 60).padStart(2, '0')}:{String(elapsed % 60).padStart(2, '0')}</b>
+        <button type="button" className={styles.skrijGumb} onClick={() => document.getElementById('timer')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>Na vrh</button>
+        <button type="button" className={styles.skrijGumb} data-glavni onClick={stop}>Ustavi</button>
+      </div>,
+      document.body,
+    )}
   </div>;
 }

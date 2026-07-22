@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, type FlowExpense, type FlowInvoice } from '@/lib/pinartFlowStore';
 import { saveBusinessGoal, saveCloudSettings } from '@/lib/pinartFlowCloud';
+import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 
 type GoalSettings = { desiredIncome: number; reservePercent: number };
 type RecurringCost = { ime: string; znesek: string };
@@ -15,12 +16,17 @@ export default function GoalsWorkspace({ base }: { base: string }) {
   const [desiredIncome, setDesiredIncome] = useState(2000);
   const [reservePercent, setReservePercent] = useState(20);
   const [invoices, setInvoices] = useState<FlowInvoice[]>([]);
+  /* Demo/Prazno velja za VSE strani (lib/predogled.ts). V teh nacinih je
+     urejanje onemogoceno — sicer bi popravek izmisljenega zapisa pisal v pravo bazo. */
+  const [nacin] = usePredogled();
+  const samoOgled = nacin !== 'mine';
+
   const [expenses, setExpenses] = useState<FlowExpense[]>([]);
   const [recurring, setRecurring] = useState<RecurringCost[]>([]);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    const flow = loadFlowData();
+    const flow = podatkiZaPredogled(nacin, loadFlowData());
     const settings = JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}');
     const goalSettings = JSON.parse(localStorage.getItem('pinart-dashboard-goal-settings') || '{}') as Partial<GoalSettings>;
     setGoal(Number(localStorage.getItem('pinart-dashboard-goal')) || 5000);
@@ -29,7 +35,7 @@ export default function GoalsWorkspace({ base }: { base: string }) {
     setInvoices(flow.invoices);
     setExpenses(flow.expenses);
     setRecurring(Array.isArray(settings.stroski) ? settings.stroski : []);
-  }, []);
+  }, [nacin]);
 
   const now = new Date();
   const currentMonth = (date: string) => { const value = new Date(`${date}T00:00:00`); return value.getMonth() === now.getMonth() && value.getFullYear() === now.getFullYear(); };

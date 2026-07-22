@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import FlowCloudBridge from '@/components/FlowCloudBridge';
 import SidebarUserMenu from '@/components/SidebarUserMenu';
-import SidebarToggle from '@/components/SidebarToggle';
 import AmbientBubbles from '@/components/AmbientBubbles';
+import SidebarToggle from './SidebarToggle';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
 type Section = 'overview' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'prices' | 'accounting' | 'profile' | 'settings';
@@ -36,15 +36,11 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
     {item('projects', `${base}/kalkulator/projekti`, '01', 'Zgodovina')}
     {item('settings', `${base}/kalkulator/nastavitve`, '02', 'Nastavitve')}
   </>;
-  return <><AmbientBubbles /><SidebarToggle vrsta="odpri" /><aside className={styles.sidebar} aria-label="Glavna navigacija">
+  return <><AmbientBubbles /><SidebarToggle vrsta="odpri" /><aside className={styles.sidebar} aria-label="Glavna navigacija"><SidebarToggle vrsta="zapri" />
     <FlowCloudBridge />
-    <div className={styles.brandRow}>{active !== 'overview' && (
-      /* Na mobilu je meni skrit v predal, zato ni bilo poti nazaj — puscica vodi na nadzorno plosco.
-         Na namizju ni potrebna, ker je navigacija ves cas vidna. */
-      <Link className={styles.backBtn} href={`${base}/kalkulator/pregled`} aria-label="Nazaj na nadzorno ploščo" title="Nazaj na nadzorno ploščo">
-        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-      </Link>
-    )}<Link className={styles.brand} href={`${base}/kalkulator/pregled`} aria-label="Pinart Flow pregled"><span className={styles.brandMark} /><strong>Pinart</strong><span>FLOW</span><small>BETA</small></Link><Link className={styles.closeApp} href={`${base}/kalkulator`}>× zapri</Link><SidebarToggle vrsta="zapri" /></div>
+    {/* BREZ back gumba: nazaj sodi na podstrani, ne v glavno navigacijo —
+        tu je celoten meni ves cas viden in puscica je bila samo nered. */}
+    <div className={styles.brandRow}><Link className={styles.brand} href={`${base}/kalkulator/pregled`} aria-label="Pinart Flow pregled"><span className={styles.brandMark} /><strong>Pinart</strong><span>FLOW</span><small>BETA</small></Link><Link className={styles.closeApp} href={`${base}/kalkulator`}>× zapri</Link></div>
     {/* ikona lojtrice namesto napisa "Meni" */}
     <details className={styles.mobileMenu}>
       {/* NE postavljaj display:flex/grid na <summary> — Safari s tem zlomi odpiranje <details>.

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Sparkle, Bell } from '@phosphor-icons/react';
 import { loadFlowData } from '@/lib/pinartFlowStore';
 import { getAccessTier, type AccessTier } from '@/lib/pinartFlowEntitlements';
+import StoparicaBliznjica from './StoparicaBliznjica';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
 /* Ikone poenotene na Phosphor. Inline fill/stroke preglasi stare stroke-based
@@ -33,6 +34,7 @@ export default function DashboardHeaderTools() {
   const count = notifications.offers + notifications.invoices;
   const hasAi = tier === 'pro';
   return <div className={styles.headerTools} aria-label="Uporabniške nastavitve">
+    <StoparicaBliznjica />
     <button type="button" className={`${styles.aiAssistant}${hasAi ? '' : ` ${styles.aiLocked}`}`} title={hasAi ? 'Odpri AI asistenta' : 'AI asistent · plačljivi paket'} aria-label={hasAi ? 'Odpri AI asistenta' : 'AI asistent je na voljo v plačljivem paketu'} aria-expanded={aiOpen} onClick={() => { setNotificationsOpen(false); setAiOpen(value => !value); }}><Sparkle size={18} weight="regular" aria-hidden="true" style={IKONA_SLOG} />{!hasAi && <span className={styles.aiLock} aria-hidden="true">+</span>}</button>
     <button type="button" className={styles.notification} title="Poslovna opozorila" aria-label={`${count} poslovnih opozoril`} aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen(value => !value)}><Bell size={18} weight="regular" aria-hidden="true" style={IKONA_SLOG} />{count > 0 && <span>{count}</span>}</button>
     {/* Profilni gumb odstranjen: podvajal je uporabniski meni na dnu stranske vrstice (SidebarUserMenu). */}
