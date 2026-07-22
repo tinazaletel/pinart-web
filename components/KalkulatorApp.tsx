@@ -6740,6 +6740,19 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 </>
               )}
 
+              {/* preklop prikaza (enako kot retainer): mehurcki <-> tabela. "dodaj / uredi" ostane. */}
+              {/* EN preklop za vse tri poglede — "Mreža po področjih" je bila prej skrita
+                  v panelu "dodaj / uredi"; prenesena sem, da ni dveh kontrol za isto stvar. */}
+              {/* brez vgrajenega style: ta bi premagal razred in vrnil stari odmik */}
+              {/* v oklepu klepeta, da so poravnani z oblackom nad njimi */}
+              <div className="chat-bot orbpogled-vrsta"><span className="chat-obraz" aria-hidden />
+                <div className="segpills segpills-orbpogled" role="group" aria-label="Prikaz storitev">
+                  <button type="button" className={!orbTabela && !pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(false); }}>Mehurčki</button>
+                  <button type="button" className={!orbTabela && pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(true); }}>Mreža</button>
+                  <button type="button" className={orbTabela ? 'on' : ''} onClick={() => setOrbTabela(true)}>Tabela</button>
+                </div>
+              </div>
+
               {/* vnosna vrstica (ime / ime ponudbe) — samo med onboardingom (podjetje ima svojo formo zgoraj) */}
               {uvodChat && (chatKorak === 0 || chatKorak === 6) && (
                 <form className="chat-vnos" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
@@ -6757,18 +6770,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
           {korak === 0 && (klasicnaOblika || !uvodChat) && (
             <div className="oder0">
-              {/* preklop prikaza (enako kot retainer): mehurcki <-> tabela. "dodaj / uredi" ostane. */}
-              {/* EN preklop za vse tri poglede — "Mreža po področjih" je bila prej skrita
-                  v panelu "dodaj / uredi"; prenesena sem, da ni dveh kontrol za isto stvar. */}
-              {/* brez vgrajenega style: ta bi premagal razred in vrnil stari odmik */}
-              {/* v oklepu klepeta, da so poravnani z oblackom nad njimi */}
-              <div className="chat-bot orbpogled-vrsta"><span className="chat-obraz" aria-hidden />
-                <div className="segpills segpills-orbpogled" role="group" aria-label="Prikaz storitev">
-                  <button type="button" className={!orbTabela && !pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(false); }}>Mehurčki</button>
-                  <button type="button" className={!orbTabela && pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(true); }}>Mreža</button>
-                  <button type="button" className={orbTabela ? 'on' : ''} onClick={() => setOrbTabela(true)}>Tabela</button>
-                </div>
-              </div>
 
               {orbTabela && (
                 <div className="orb-tabela">

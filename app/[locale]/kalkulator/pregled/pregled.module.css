@@ -42,6 +42,9 @@
 
 .sidebar {
   position: sticky;
+  /* Lastna plast: kalkulator (.cw) ima z-index:1 in s tem svojo plast, zato je
+     profilni meni na dnu vrstice padel podnjo in klik ni odprl nicesar. */
+  z-index: 30;
   /* pod zgornjo vrstico, sicer bi meni zlezel podnjo */
   top: 3.25rem;
   height: calc(100dvh - 3.25rem);
@@ -1606,7 +1609,11 @@
 
 /* ── Drsenje: vrstica se umakne navzdol, vrne se takoj ob drsenju navzgor ── */
 .flowTopBar { transition: transform .26s cubic-bezier(.22, 1, .36, 1); }
-:global(body[data-drsenje='dol']) .flowTopBar { transform: translateY(-100%); }
+/* Umik glave SAMO na telefonu: tam je vsak piksel visine dragocen. Na namizju
+   ni razloga, umik pa je pustil prazen pas levo in desno od vsebine. */
+@media (max-width: 980px) {
+  :global(body[data-drsenje='dol']) .flowTopBar { transform: translateY(-100%); }
+}
 
 /* Hamburger ostane viden vedno: ko stran ni na vrhu, dobi mlecno steklo,
    sicer bi crna crta izginila v svetli vsebini pod njo. */

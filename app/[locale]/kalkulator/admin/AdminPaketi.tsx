@@ -30,7 +30,9 @@ export default function AdminPaketi({ racuni }: { racuni: Racun[] }) {
   };
 
   const q = iskanje.trim().toLowerCase();
-  const vidni = q ? racuni.filter(r => r.ime.toLowerCase().includes(q)) : racuni;
+  const vidni = q
+    ? racuni.filter(r => r.ime.toLowerCase().includes(q) || r.eposta.toLowerCase().includes(q))
+    : racuni;
 
   const TD = { padding: '.55rem .5rem' } as const;
 
@@ -43,7 +45,7 @@ export default function AdminPaketi({ racuni }: { racuni: Racun[] }) {
       </p>
 
       <input value={iskanje} onChange={e => setIskanje(e.target.value)} type="search"
-        placeholder="Išči račun…" aria-label="Išči račun"
+        placeholder="Išči po imenu ali e-pošti…" aria-label="Išči račun"
         style={{
           width: 'min(22rem, 100%)', padding: '.55rem .95rem', marginBottom: '.8rem',
           borderRadius: 999, border: '1px solid rgba(17,17,17,.12)', background: '#fff',
@@ -64,7 +66,10 @@ export default function AdminPaketi({ racuni }: { racuni: Racun[] }) {
             {vidni.map(r => {
               const paket = stanje[r.id] || r.paket;
               return <tr key={r.id} style={{ borderBottom: '1px solid rgba(17,17,17,.06)' }}>
-                <td style={TD}>{r.ime}</td>
+                <td style={TD}>
+                  <strong>{r.ime}</strong>
+                  {r.eposta && <><br /><small style={{ opacity: .6 }}>{r.eposta}</small></>}
+                </td>
                 <td style={{ ...TD, opacity: .6 }}>{new Date(r.ustvarjen).toLocaleDateString('sl-SI')}</td>
                 <td style={TD}>
                   <b>{paket === 'pro' ? 'Pro' : 'Brezplačno'}</b>
