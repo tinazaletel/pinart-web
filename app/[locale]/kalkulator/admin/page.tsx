@@ -29,7 +29,7 @@ export default async function KalkulatorAdminPage(
   const { obdobje: q } = await searchParams;
   const izbrano = VELJAVNA.find(v => String(v) === q) ?? 90;
   const podatki = await pridobiAnalitiko(izbrano);
-  const { racuni } = await pridobiRacune();
+  const { racuni, napaka: napakaRacunov } = await pridobiRacune();
 
   return (
     <main style={{
@@ -56,7 +56,7 @@ export default async function KalkulatorAdminPage(
       {podatki.napaka && <p style={{ color: '#b25476', marginBottom: '1.4rem' }}>{podatki.napaka}</p>}
 
       <AdminPregled podatki={podatki} />
-      <AdminPaketi racuni={racuni} />
+      <AdminPaketi racuni={racuni} napaka={napakaRacunov} />
     </main>
   );
 }

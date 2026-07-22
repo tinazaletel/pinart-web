@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import DashboardHeaderTools from './DashboardHeaderTools';
 import FlowUkazi from './FlowUkazi';
 import NazajNaPregled from './NazajNaPregled';
+import StoparicaBliznjica from './StoparicaBliznjica';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
 /**
@@ -92,6 +93,13 @@ export default function FlowTopBar() {
 
       {stran && <><span className={styles.topLocilo} aria-hidden="true">/</span>
         <span className={styles.topStran}>{stran}</span></>}
+
+      {/* Stoparica je stanje cele aplikacije, ne lastnost ene strani. Prej je
+          bila v glavi vsake strani in je pri kalkulatorju visela cez panel
+          ponudbe.
+          Namenoma NI v ".topDesno": ta se na telefonu skrije (orodja gredo v
+          predal), tekoce merjenje pa mora biti vidno tudi tam. */}
+      <StoparicaBliznjica />
 
       <div className={styles.topDesno}>
         <a className={styles.feedbackGumb}

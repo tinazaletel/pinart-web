@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import DashboardSidebar from '@/components/DashboardSidebar';
-import StoparicaBliznjica from '@/components/StoparicaBliznjica';
 import styles from '../pregled/pregled.module.css';
 
 export const metadata: Metadata = { title: 'Pomoč | Pinart Flow', robots: { index: false, follow: false } };
@@ -26,7 +25,6 @@ export default async function PomocPage({ params }: { params: Promise<{ locale: 
     <section className={styles.workspace}>
       <header className={styles.topbar}>
         <div><p className={styles.eyebrow}>POMOČ</p><h1>Kje si obtičala?</h1></div>
-        <StoparicaBliznjica />
       </header>
 
       <div className={styles.pomocMreza}>

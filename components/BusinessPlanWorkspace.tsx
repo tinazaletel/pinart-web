@@ -46,7 +46,17 @@ function zdruziPoProjektu(dnevni: PrivateTimeEntry[]) {
   }).sort((a, b) => b.zadnji.startedAt.localeCompare(a.zadnji.startedAt));
 }
 
-export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' | 'time' }) {
+/**
+ * `omejeno` = brezplacen paket.
+ *
+ * Stoparica in vpis danasnjega dela ostaneta odprta: merjenje je vaba, ki
+ * pokaze vrednost. Placljivo je sele tisto, kar iz merjenja naredi orodje —
+ * zgodovina po dnevih in projektih, sestevki, dejanska urna vrednost.
+ * Prej je bila zaklenjena cela stran, stoparico pa se je dalo zagnati z
+ * nadzorne plosce — merjenje je teklo, klik nanj pa je pripeljal na cenik.
+ */
+export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
+  { view?: 'all' | 'time'; omejeno?: boolean }) {
   const [plan, setPlan] = useState<BusinessPlan>(DEFAULT_BUSINESS_PLAN);
   const [entries, setEntries] = useState<PrivateTimeEntry[]>([]);
   const [running, setRunning] = useState<PrivateTimeEntry | null>(null);
@@ -375,6 +385,12 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
     return [...m.entries()];
   })();
 
+  /* Brezplacen paket vidi samo danasnji dan — dovolj, da po ustavitvi vidis,
+     kaj si vpisala, premalo, da bi bilo to zgodovina. */
+  const poDnevihPrikaz = omejeno ? poDnevih.filter(([dan]) => dan === danesISO()) : poDnevih;
+  const dnevnaVsota = poDnevihPrikaz.reduce(
+    (s, [, dnevni]) => s + dnevni.reduce((v, x) => v + x.durationMinutes, 0), 0);
+
   /* zdruzeno po IMENU projekta (velike/male crke in presledki se ne stejejo,
      da "Pinart flow " in "Pinart Flow" nista dva projekta) */
   const poProjektih = (() => {
@@ -433,13 +449,14 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
   return <div className={`${styles.page} ${view === 'time' ? styles.casPogled : ''}`}>
     {notice && <div className={styles.notice} role="status">{notice}<button onClick={() => setNotice('')} aria-label="Zapri">×</button></div>}
 
-    <section className={styles.summary}>
+    {/* Sestevki so analiza, ne merjenje — v brezplacnem paketu jih ni. */}
+    {!omejeno && <section className={styles.summary}>
       {/* ikone v istem slogu kot na Stroških in Računih: velika mehka ikona v kotu */}
       <article><small>Mesečni cilj</small><strong>{money(result.monthlyRevenueTarget)}</strong><span>iz poslovnega načrta</span><b className={styles.metricIkona}><MetricIcon type="cilj" /></b></article>
       <article><small>Vzdržna urna vrednost</small><strong>{money(result.sustainableHourlyRate)}</strong><span>pri {plan.billableHoursMonthly} obračunskih urah</span><b className={styles.metricIkona}><MetricIcon type="ura" /></b></article>
       <article><small>Potrebni projekti</small><strong>{result.projectsNeeded}</strong><span>pri povprečju {money(plan.averageProjectValue)}</span><b className={styles.metricIkona}><MetricIcon type="projekti" /></b></article>
       <article><small>Dejanska urna vrednost</small><strong>{effectiveRate ? money(effectiveRate) : '—'}</strong><span>iz zaključenih časovnih vnosov</span><b className={styles.metricIkona}><MetricIcon type="graf" /></b></article>
-    </section>
+    </section>}
 
     <div className={`${styles.layout} ${view === 'time' ? styles.timeOnly : ''}`}>
       {view === 'all' && <form className={styles.plan} onSubmit={savePlan}>
@@ -555,11 +572,13 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
     </div>
 
     <section className={styles.history}>
-      <header><div><p>03 · ZASEBNI DNEVNIK</p><h2>Izkušnje, ki izboljšajo naslednjo ceno.</h2></div><span>{duration(trackedMinutes)} skupaj</span></header>
+      {omejeno
+        ? <header><div><p>03 · DANES</p><h2>Kaj si danes izmerila.</h2></div><span>{duration(dnevnaVsota)} danes</span></header>
+        : <header><div><p>03 · ZASEBNI DNEVNIK</p><h2>Izkušnje, ki izboljšajo naslednjo ceno.</h2></div><span>{duration(trackedMinutes)} skupaj</span></header>}
 
       {/* iskanje + preklop pogleda: "po dnevih" med delom, "po projektih" ko te
           nekdo cez pol leta vpraša, koliko ur je šlo v dolocen projekt */}
-      {!!entries.length && <div className={styles.dnevnikVrh}>
+      {!omejeno && !!entries.length && <div className={styles.dnevnikVrh}>
         <input type="search" value={iskanje} onChange={e => setIskanje(e.target.value)}
           placeholder="Išči projekt ali storitev…" aria-label="Išči po dnevniku" className={styles.isci} />
         <div className={styles.preklop} role="group" aria-label="Pogled dnevnika">
@@ -577,7 +596,7 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
 
       {!!entries.length && !najdeni.length && <div className={styles.empty}>Za »{iskanje}« ni vnosov.</div>}
 
-      {dnevnikPogled === 'projekti' && poProjektih.map(p => {
+      {!omejeno && dnevnikPogled === 'projekti' && poProjektih.map(p => {
         const odprt = razprti.includes(p.k);
         return <div key={p.k} className={styles.dan}>
           <div className={styles.projektGlava}>
@@ -618,7 +637,7 @@ export default function BusinessPlanWorkspace({ view = 'all' }: { view?: 'all' |
         </div>;
       })}
 
-      {dnevnikPogled === 'dnevi' && (!entries.length ? <div className={styles.empty}>Po prvem zaključenem merjenju boš tukaj videla dejansko urno vrednost projekta.</div> : poDnevih.map(([dan, dnevni]) => (
+      {(omejeno || dnevnikPogled === 'dnevi') && (!poDnevihPrikaz.length ? <div className={styles.empty}>{omejeno ? 'Danes še ni vnosov. Zaženi štoparico ali vpiši ure ročno.' : 'Po prvem zaključenem merjenju boš tukaj videla dejansko urno vrednost projekta.'}</div> : poDnevihPrikaz.map(([dan, dnevni]) => (
         <div key={dan} className={styles.dan}>
           {/* dnevni naslov s sestevkom — pregled po dnevih */}
           <div className={styles.danGlava}>

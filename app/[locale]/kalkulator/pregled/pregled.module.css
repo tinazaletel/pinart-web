@@ -1374,6 +1374,30 @@
 }
 @media (max-width: 720px) { .stoparicaBliznjica small { display: none; } }
 
+/* V zgornji vrstici je pilula nizja od tiste na kartici — vrstica je visoka
+   3.4rem in polna 2.5rem pilula bi jo raztegnila.
+   Selektor je namenoma ".topDesno > …": splosna pravila zgoraj postavljajo
+   min-height in velikost gumbov, zato jih je treba povoziti z visjo
+   specificnostjo, ne samo prepisati. */
+.flowTopBar > .stoparicaBliznjica {
+  /* potisne pilulo in orodja skupaj na desno; ".topDesno" ima svoj
+     margin-left:auto, zato po tem prostora ne ostane vec */
+  margin-left: auto;
+  min-height: 2.1rem; padding: .18rem .18rem .18rem .75rem;
+}
+.flowTopBar > .stoparicaBliznjica > a { margin-right: .4rem; }
+.flowTopBar > .stoparicaBliznjica > button {
+  width: 1.7rem; height: 1.7rem; min-width: 1.7rem; min-height: 1.7rem; max-height: 1.7rem;
+}
+/* Na telefonu se pilula skrci, ne skrije: ostaneta utripajoca pika in cas,
+   da je merjenje se vedno vidno. Pavza in stop sta na "Cena & cas", kamor
+   pelje tap — v vrstici z hamburgerjem zanju ni prostora. */
+@media (max-width: 720px) {
+  .flowTopBar > .stoparicaBliznjica { flex: none; padding-right: .75rem; }
+  .flowTopBar > .stoparicaBliznjica > button { display: none; }
+  .flowTopBar > .stoparicaBliznjica > a { margin-right: 0; }
+}
+
 
 /* ── Zgornja vrstica (FlowTopBar) ────────────────────────────────────────
    Cez vso sirino, nad menijem in vsebino: kje si + kateri paket imas. */

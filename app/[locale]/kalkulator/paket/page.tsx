@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import DashboardSidebar from '@/components/DashboardSidebar';
-import StoparicaBliznjica from '@/components/StoparicaBliznjica';
 import PaketiSeznam from '@/components/PaketiSeznam';
 import { paketUporabnika } from '@/lib/pravice';
 import styles from '../pregled/pregled.module.css';
@@ -29,7 +28,6 @@ export default async function PaketPage({ params }: { params: Promise<{ locale: 
     <section className={styles.workspace}>
       <header className={styles.topbar}>
         <div><p className={styles.eyebrow}>PAKET IN NAROČNINA</p><h1>Kaj imaš in kaj lahko dobiš.</h1></div>
-        <StoparicaBliznjica />
       </header>
 
       <PaketiSeznam trenutni={paket === 'pro' ? 'pro' : 'free'} />

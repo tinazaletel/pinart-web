@@ -37,7 +37,9 @@ const VSEBINA: Record<ZaklenjenaFunkcija, { naslov: string; uvod: string; tocke:
     tocke: [
       'Mesečni cilj iz želenega dohodka, stroškov in rezerv',
       'Vzdržna urna vrednost — koliko mora biti vredna tvoja ura',
-      'Merjenje časa in dejanska urna vrednost po projektu',
+      /* merjenje samo je brezplacno — placljiva je zgodovina, ki iz njega nastane */
+      'Zgodovina ur po dnevih in projektih, tudi leta nazaj',
+      'Dejanska urna vrednost po projektu in izvoz v CSV',
     ],
   },
   accountingExport: {

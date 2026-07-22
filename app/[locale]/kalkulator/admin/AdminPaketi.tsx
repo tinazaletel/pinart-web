@@ -10,7 +10,7 @@ import type { Racun } from './upravljanje';
  * Stolpec "vir" loci podarjeno ("rocno") od placanega, da cez leto dni ves,
  * koga si kdaj sama odklenila.
  */
-export default function AdminPaketi({ racuni }: { racuni: Racun[] }) {
+export default function AdminPaketi({ racuni, napaka: napakaBaze }: { racuni: Racun[]; napaka?: string }) {
   const [stanje, setStanje] = useState<Record<string, 'free' | 'pro'>>(
     Object.fromEntries(racuni.map(r => [r.id, r.paket])),
   );
@@ -51,6 +51,14 @@ export default function AdminPaketi({ racuni }: { racuni: Racun[] }) {
           borderRadius: 999, border: '1px solid rgba(17,17,17,.12)', background: '#fff',
           font: 'inherit', fontSize: '.82rem',
         }} />
+
+      {/* Napaka baze mora biti vidna: prej je manjkajoca pravica izgledala
+          natanko tako kot "ni se nihce registriral" — in iskanje po e-posti
+          je izgledalo pokvarjeno, ceprav sploh ni bilo podatkov. */}
+      {napakaBaze && <p style={{
+        color: '#b25476', fontSize: '.82rem', margin: '0 0 .8rem',
+        padding: '.7rem .95rem', borderRadius: 12, background: 'rgba(178,84,118,.08)',
+      }}>Seznama ni bilo mogoče prebrati: {napakaBaze}</p>}
 
       {napaka && <p style={{ color: '#b25476', fontSize: '.82rem' }}>{napaka}</p>}
 

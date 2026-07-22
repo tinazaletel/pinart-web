@@ -5319,7 +5319,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .glava-avatar { font-weight: 700; font-size: .8rem; color: var(--ink); }
         .cw .glava-avatar:hover { border-color: rgba(17,17,17,.5); }
 
-        .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 8rem; position: relative; z-index: 1; }
+        .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 8rem; }
+        /* v Flow lupini je zgoraj ze glava strani, zato brez 7rem praznine */
+        .cw.cw-lupina .oder { padding-top: 1.5rem; position: relative; z-index: 1; }
         .cw .korak-vsebina { width: 100%; max-width: 880px; animation: cwVstop .55s cubic-bezier(.16,1,.3,1) both; }
         /* siroko (korak 0 / uvod) brez transforma -> fiksni/drsni panel deluje relativno na okno (tudi mobile) */
         .cw .korak-vsebina.siroko, .cw .korak-vsebina.brez-transforma { animation-name: cwFade; }
@@ -5707,15 +5709,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* ovoj poskrbi za sredinjenje, ker je pilula zdaj ozja od vrstice */
         /* levo poravnani s klepetnim oblackom, ne sredinjeni — enaka velikost kot v retainerju */
         .cw .orbpogled-vrsta { display: flex; justify-content: flex-start; margin-bottom: 1.4rem; }
-        /* Slog kot Figma: svetla proga, izbrani odsek bel z rahlo senco — ne crn.
-           Crn odsek je izgledal kot glavni gumb in tekmoval z "NAPREJ". */
-        .cw .segpills-orbpogled { background: rgba(17,17,17,.055); border-color: transparent; padding: .2rem; }
-        .cw .segpills-orbpogled button { font-size: .66rem; padding: .36rem .72rem; color: rgba(17,17,17,.55); }
-        .cw .segpills-orbpogled button:hover { color: var(--ink); }
-        .cw .segpills-orbpogled button.on {
-          background: #fff; color: var(--ink);
-          box-shadow: 0 1px 2px rgba(17,17,17,.14), 0 0 0 .5px rgba(17,17,17,.06);
-        }
+        /* Temen izbrani odsek — Tinina izbira; svetla razlicica je bila moj popravek
+           na podlagi napacno razumljenega "kot Figma" (mislila je model paketov). */
+        .cw .segpills-orbpogled button { font-size: .66rem; padding: .38rem .7rem; }
         .cw .segpills-sek button { font-weight: 600; color: rgba(17,17,17,.6); }
         .cw .segpills-sek button.on { background: rgba(17,17,17,.09); color: var(--ink); }
         .cw .segpills-pogled button { display: inline-flex; align-items: center; gap: .35rem; }
@@ -7103,7 +7099,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 if (!l || !s) return null;
                 const skupina = skupineVprasanj.find(g => g.id === l.uid);
                 return createPortal(
-                  <div className="cw">
+                  <div className={`cw${vLupini ? ' cw-lupina' : ''}`}>
                     <div className="izbirnik-zastor" onClick={() => setRazprtaVrstica(null)}>
                       <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={'Podrobnosti: ' + prikazVrstice(l, s)}
                         onClick={e => e.stopPropagation()} data-lenis-prevent>
@@ -7139,7 +7135,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               })()}
 
               {kazemUredi && typeof document !== 'undefined' && createPortal(
-                <div className="cw">
+                <div className={`cw${vLupini ? ' cw-lupina' : ''}`}>
                   <div className="izbirnik-zastor" onClick={() => { setKazemUredi(false); setNovaIme(''); setNovaCena(''); }}>
                     <div className="uredi-plosca" role="dialog" aria-modal="true" aria-label="Dodaj ali uredi storitve"
                       onClick={e => e.stopPropagation()} data-lenis-prevent>
@@ -7347,7 +7343,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 </p>
               </div>
               {kazemValutaIzbira && typeof document !== 'undefined' && createPortal(
-                <div className="cw">
+                <div className={`cw${vLupini ? ' cw-lupina' : ''}`}>
                   <div className="izbirnik-zastor" onClick={() => setKazemValutaIzbira(false)}>
                     <div className="izbirnik-plosca" role="dialog" aria-modal="true" aria-label="Izberi valuto"
                       onClick={e => e.stopPropagation()}>
@@ -7529,7 +7525,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 const ob = pravObseg(sid);
                 const custLeta = (Number(custStev) || 0) * (custEnota === 'teden' ? 1 / 52 : custEnota === 'mesec' ? 1 / 12 : 1);
                 return createPortal(
-                  <div className="cw">
+                  <div className={`cw${vLupini ? ' cw-lupina' : ''}`}>
                     <div className="izbirnik-zastor" onClick={() => setPraviceOdprt(null)}>
                       <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={'Pravice: ' + s.ime} onClick={e => e.stopPropagation()} data-lenis-prevent>
                         <div className="izbirnik-glava">
@@ -7649,7 +7645,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 if (!l) return null;
                 const custLeta = (Number(custStev) || 0) * (custEnota === 'teden' ? 1 / 52 : custEnota === 'mesec' ? 1 / 12 : 1);
                 return createPortal(
-                  <div className="cw">
+                  <div className={`cw${vLupini ? ' cw-lupina' : ''}`}>
                     <div className="izbirnik-zastor" onClick={() => setLastnaOdprta(null)}>
                       <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={'Pravica: ' + (l.ime || 'Lastna pravica')} onClick={e => e.stopPropagation()} data-lenis-prevent>
                         <div className="izbirnik-glava">
