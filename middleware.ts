@@ -13,7 +13,10 @@ export default async function middleware(request: NextRequest) {
   const host = request.headers.get('host') || '';
   if (/(^|\.)pinartflow\.com$/i.test(host) && request.nextUrl.pathname === '/') {
     const url = request.nextUrl.clone();
-    url.pathname = '/flow';
+    /* MORA biti "/sl/flow", ne "/flow": pot je app/[locale]/flow. Privzeti jezik
+       je sicer brez predpone, a ta rewrite obide next-intl, zato bi "flow"
+       pristal kot vrednost [locale] (neveljaven jezik) -> 404. */
+    url.pathname = '/sl/flow';
     return NextResponse.rewrite(url);
   }
 
