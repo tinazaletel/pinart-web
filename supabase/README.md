@@ -6,6 +6,9 @@ Migracije se izvedejo po imenu oziroma časovnem žigu:
 2. `20260719002500_authenticated_grants.sql`
 3. `20260719011000_legacy_ids_retainers_settings.sql`
 4. `20260719013000_subscription_entitlements.sql`
+5. `20260719134500_business_plan_private_time.sql`
+6. `20260719171500_business_canvas.sql`
+7. `20260722040000_analitika.sql` — anonimno zbiranje podatkov, glej `docs/ANALITIKA.md`
 
 Zadnja migracija doda varne pakete `free/pro`. Uporabnik lahko svoj paket
 prebere, ne more pa ga spreminjati iz brskalnika. Plačilni ponudnik ga bo

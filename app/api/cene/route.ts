@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 
 /**
  * Anonimna cenovna tocka iz kalkulatorja — skupna baza cen na trgu.
@@ -27,7 +28,10 @@ const MAX_PRAVICE = 2_000_000;
 
 export async function POST(request: Request) {
   const endpoint = process.env.GOOGLE_SHEETS_CENE_WEBHOOK_URL;
-  if (!endpoint) return NextResponse.json({ ok: false, reason: 'not-configured' });
+  const baza = createAdminClient();
+  /* Supabase je zdaj glavna shramba, Sheet ostane neobvezen. Ce ni ne enega
+     ne drugega, se pot obnasa kot prej: tiho ne stori nicesar. */
+  if (!endpoint && !baza) return NextResponse.json({ ok: false, reason: 'not-configured' });
 
   let body: Record<string, unknown> = {};
   try { body = await request.json(); } catch { /* prazen zapis odbijemo spodaj */ }
@@ -79,12 +83,40 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Out of range' }, { status: 400 });
   }
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(zapis),
-    redirect: 'follow',
-  });
+  /* ── zapis v Supabase (glavna shramba) ──────────────────────────────────
+     Brez uporabnikovega id-ja, e-poste in IP-ja: cenovna tocka je namenoma
+     nepovezljiva z osebo. "paket" pove le, ali je bila oseba vpisana. */
+  let vBazi = false;
+  if (baza) {
+    const storitve = Array.isArray(body.storitve)
+      ? (body.storitve as unknown[]).slice(0, 20).map(String)
+      : [];
+    const { error } = await baza.from('cenovne_tocke').insert({
+      storitve,
+      izkusnje: zapis.izkusnje || null,
+      moj_trg: zapis.mojTrg || null,
+      trg_narocnika: zapis.trgNarocnika || null,
+      raba: zapis.raba || null,
+      izvedba_eur: zapis.izvedbaEUR,
+      pravice_eur: zapis.praviceEUR,
+      valuta: zapis.valuta,
+      prilagojeno: zapis.prilagojeno === 'da',
+      vir: body.vir === 'retainer' ? 'retainer' : 'orodje',
+      paket: body.paket === 'pro' ? 'pro' : body.paket === 'free' ? 'free' : 'anon',
+    });
+    vBazi = !error;
+  }
 
-  return NextResponse.json({ ok: response.ok });
+  /* Sheet ostane, dokler ga Tina ne ugasne — dvojni zapis nic ne stane. */
+  let vSheetu = false;
+  if (endpoint) {
+    vSheetu = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(zapis),
+      redirect: 'follow',
+    }).then(r => r.ok).catch(() => false);
+  }
+
+  return NextResponse.json({ ok: vBazi || vSheetu });
 }

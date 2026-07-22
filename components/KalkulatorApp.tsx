@@ -10,6 +10,7 @@ import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } f
 import VidezDokumentov from '@/components/VidezDokumentov';
 import IzbirnikDrzave from '@/components/IzbirnikDrzave';
 import AmbientBubbles from '@/components/AmbientBubbles';
+import { ugotoviPaket, zabeleziSPaketom } from '@/lib/analitika';
 
 import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package, Gift,
@@ -2969,6 +2970,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       const prilagojeno = Object.keys(osnove).length > 0 || Boolean(rocnePravice.trim()) || Boolean(rocnaLicenca.trim());
       (async () => {
         const turnstileToken = await pridobiTurnstileToken();
+        const paket = await ugotoviPaket();
+        void zabeleziSPaketom('cena_izracunana', { storitev: r.sez[0]?.ime || '', stevilo: r.sez.length, prilagojeno });
         fetch('/api/cene', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2982,6 +2985,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             praviceEUR: r.pravice,
             valuta,
             prilagojeno,
+            vir: 'orodje',
+            paket,
             ...(turnstileToken ? { turnstileToken } : {}),
           }),
         }).catch(() => {});
@@ -2993,6 +2998,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, [korak]);
+
+  /* en zapis na obisk: koliko ljudi orodje sploh odpre (in koliko jih je vpisanih) */
+  useEffect(() => { void zabeleziSPaketom('orodje_odprto'); }, []);
 
   const predlogi = useMemo(() => {
     const q = brezSumnikov(iskanje.trim());
