@@ -16,8 +16,10 @@ const POSTA = (zadeva: string) =>
   `mailto:tina@pinart.si?subject=${encodeURIComponent(`Pinart Flow — ${zadeva}`)}`;
 
 export default function PaketiSeznam({ trenutni }: { trenutni: 'free' | 'pro' }) {
-  const jeTrenutni = (id: PaketId) =>
-    id === trenutni || (id === 'premium' && trenutni === 'pro');
+  /* Natancno ujemanje. Prej je 'pro' oznacil Premium IN Pro kot "tvoj paket",
+     ker Premium v bazi se ni obstajal — na ceniku sta bili tako dve kartici
+     hkrati oznaceni kot moja. Raje eno pravilno kot dve priblizni. */
+  const jeTrenutni = (id: PaketId) => id === trenutni;
 
   return (
     <>

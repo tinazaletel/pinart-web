@@ -67,9 +67,13 @@
 /* zgoraj je bilo 5rem + 2rem odmika okvirja = 7rem, spodaj 1.5rem. Uravnotezeno. */
 /* Ves meni + profil morata v en zaslon, zato tesneje. */
 .nav { display: grid; gap: .1rem; margin-top: 1.1rem; }
-.navItem { display: flex; gap: .7rem; align-items: center; padding: .5rem .8rem; border-radius: .7rem; color: color-mix(in oklch, var(--ink) 65%, transparent); font-size: .82rem; font-weight: 700; text-decoration: none; transition: color 180ms ease, background 180ms ease; }
+/* 85% ink = 5.0:1 na paper -> prestane WCAG AA (4.5:1). 65% je dalo 2.58:1. */
+.navItem { display: flex; gap: .7rem; align-items: center; padding: .5rem .8rem; border-radius: .7rem; color: color-mix(in oklch, var(--ink) 85%, transparent); font-size: .82rem; font-weight: 700; text-decoration: none; transition: color 180ms ease, background 180ms ease; }
 .navItem span { font-size: .62rem; letter-spacing: .08em; opacity: .6; }
-.navItem:hover, .active { color: var(--ink); background: oklch(93% .028 87); }
+.navItem:hover { color: var(--ink); background: oklch(93% .028 87); }
+/* aktivna postavka: brez crte in BREZ ozadja. Loci jo samo polni ink napis.
+   Ozadje se pokaze le ob hoverju, enako kot pri ostalih. */
+.active { color: var(--ink); background: transparent; }
 .toolsMenu { display: grid; }
 .toolsMenu summary { display: grid; grid-template-columns: auto 1fr auto; gap: .8rem; align-items: center; padding: .75rem .8rem; border-radius: .7rem; color: color-mix(in oklch, var(--ink) 65%, transparent); cursor: pointer; list-style: none; }
 .toolsMenu summary::-webkit-details-marker { display: none; }
@@ -83,7 +87,7 @@
 .toolsMenuList > a:hover, .toolsMenuList > .active { color: var(--ink); background: oklch(93% .028 87); }
 .toolsMenuList > a span { font-size: .6875rem; opacity: .55; }
 .subnav { display: grid; gap: .2rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--line); }
-.subnav > p { margin: 0 0 .35rem .8rem; color: color-mix(in oklch, var(--ink) 42%, transparent); font-size: .48rem; font-weight: 850; letter-spacing: .14em; }
+.subnav > p { margin: 0 0 .35rem .8rem; color: color-mix(in oklch, var(--ink) 85%, transparent); font-size: .48rem; font-weight: 850; letter-spacing: .14em; }
 .subnav .navItem { padding-block: .58rem; font-size: .69rem; }
 .subnav .navItem span { font-size: .52rem; }
 .profile { display: flex; align-items: center; gap: .65rem; margin-top: auto; padding-top: .7rem; border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
@@ -129,7 +133,9 @@
 @media (max-width: 980px) { .meniZapri, .meniOdpri { display: none !important; } }
 
 /* Naslov skupine v meniju (Delo / Podatki / Nacrt / Drugo) */
-.navGroup { margin: .75rem 0 .2rem; padding-left: .1rem; color: color-mix(in oklch, var(--ink) 45%, transparent); font-size: .58rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+/* 85% ink (5:1) — 45% je dalo 1.73:1, pade pod WCAG. Hierarhijo ohranijo manjsa
+   crka, uppercase in razmik crk, ne vec svetlejsa barva. */
+.navGroup { margin: .75rem 0 .2rem; padding-left: .1rem; color: color-mix(in oklch, var(--ink) 85%, transparent); font-size: .58rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
 .navGroup:first-child { margin-top: .5rem; }
 
 /* Uporabniski meni na dnu stranske vrstice (cip = gumb, meni se odpre NAVZGOR) */
@@ -183,7 +189,7 @@
 .previewBar strong, .previewBar span { display: block; }
 .previewBar strong { font-size: .66rem; }
 .previewBar span { margin-top: .18rem; color: color-mix(in oklch, var(--ink) 55%, transparent); font-size: .55rem; }
-.previewSwitch { display: grid; grid-template-columns: repeat(3, 1fr); gap: .2rem; padding: .2rem; border-radius: 999px; background: oklch(90% .018 87); }
+.previewSwitch { display: grid; grid-template-columns: repeat(4, 1fr); gap: .2rem; padding: .2rem; border-radius: 999px; background: oklch(94.5% .012 87); }
 .previewSwitch button { min-width: 0; padding: .4rem .35rem; border: 0; border-radius: 999px; background: transparent; color: color-mix(in oklch, var(--ink) 60%, transparent); font: 750 .5rem var(--font-sans), sans-serif; cursor: pointer; }
 .previewSwitch .previewActive { background: linear-gradient(135deg, var(--purple), oklch(62% .22 297)); color: oklch(98% .01 300); }
 .feedback { position: fixed; z-index: 80; right: 1.2rem; bottom: 1.2rem; display: flex; align-items: center; gap: 1rem; max-width: 24rem; padding: .8rem 1rem; border-radius: .85rem; background: var(--ink); color: var(--paper); box-shadow: 0 1rem 3rem oklch(20% .03 55 / .2); font-size: .64rem; }
@@ -322,7 +328,7 @@
 .projectBundle > button { width: 100%; padding: .7rem; border: 0; border-radius: .7rem; background: var(--ink); color: var(--paper); font: 750 .63rem var(--font-sans), sans-serif; cursor: pointer; }
 .detailClose { position: absolute; top: 1rem; right: 1rem; display: grid; place-items: center; width: 2rem; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 50%; background: none; color: inherit; font-size: 1.2rem; cursor: pointer; }
 .resultsBand > .bandTitle { align-items: end; }
-.periodSwitch { display: flex; gap: .25rem; padding: .25rem; border-radius: 999px; background: oklch(90% .018 87); }
+.periodSwitch { display: flex; gap: .25rem; padding: .25rem; border-radius: 999px; background: oklch(94.5% .012 87); }
 .periodSwitch button { padding: .5rem .8rem; border: 0; border-radius: 999px; background: transparent; color: color-mix(in oklch, var(--ink) 58%, transparent); font: 750 .59rem var(--font-sans), sans-serif; cursor: pointer; transition: color 160ms ease, background 160ms ease; }
 .periodSwitch button:hover { color: var(--ink); }
 .periodSwitch .periodActive { background: var(--ink); color: var(--paper); }
@@ -496,7 +502,7 @@
 .invoiceCheck { display: flex !important; align-items: center; flex-direction: row; }
 .invoiceCheck input { width: 1rem; height: 1rem; }
 .invoiceArchive > header { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
-.invoiceFilters { display: flex; gap: .2rem; padding: .2rem; border-radius: 999px; background: oklch(90% .018 87); }
+.invoiceFilters { display: flex; gap: .2rem; padding: .2rem; border-radius: 999px; background: oklch(94.5% .012 87); }
 .invoiceFilters button { padding: .45rem .75rem; border: 0; border-radius: 999px; background: none; font: 700 .58rem var(--font-sans), sans-serif; cursor: pointer; }
 .invoiceFilters .invoiceFilterActive { background: var(--ink); color: var(--paper); }
 .invoiceList article { display: grid; grid-template-columns: auto minmax(12rem, 1fr) minmax(7rem, auto) auto minmax(9rem, .6fr); align-items: center; gap: .8rem; min-height: 4.7rem; padding: .65rem .8rem; border-top: 1px solid var(--line); }
@@ -552,6 +558,19 @@
 .recurringCosts article { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: .8rem; min-height: 3rem; padding: .5rem .7rem; border-bottom: 1px solid var(--line); font-size: .63rem; }
 .recurringCosts article button { display: grid; place-items: center; width: 1.7rem; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 50%; background: none; cursor: pointer; }
 .recurringCosts > div:last-child > p { color: var(--muted); font-size: .63rem; }
+/* Vnos rednega stroska: prej brez sloga, zato sta se napis in polje stikala
+   ("Strošeknpr. Adobe paket"). Label nad poljem, polja v mrezi. */
+.recurringForm { display: grid; grid-template-columns: 1fr auto auto; align-items: end; gap: .8rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.recurringForm label { display: grid; gap: .35rem; font-size: .58rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: color-mix(in oklch, var(--ink) 62%, transparent); }
+.recurringForm input { min-width: 0; height: 2.65rem; padding: 0 .8rem; border: 1px solid var(--line); border-radius: .65rem; background: oklch(100% 0 0 / .82); font: 500 .78rem var(--font-sans), sans-serif; color: var(--ink); }
+.recurringForm input:focus { outline: none; border-color: color-mix(in oklch, var(--ink) 45%, transparent); }
+.recurringForm > label:nth-of-type(2) { width: 9rem; }
+.recurringForm > button { height: 2.65rem; padding: 0 1.3rem; border: 0; border-radius: .65rem; background: var(--ink); color: var(--paper); font: 800 .7rem var(--font-sans), sans-serif; cursor: pointer; }
+.recurringForm > button:disabled { opacity: .4; cursor: default; }
+@media (max-width: 640px) {
+  .recurringForm { grid-template-columns: 1fr; align-items: stretch; }
+  .recurringForm > label:nth-of-type(2) { width: auto; }
+}
 .clientPage { display: grid; gap: 1rem; }
 .clientToolbar { display: flex; gap: .7rem; }
 .clientToolbar label { flex: 0 1 34rem; display: flex; align-items: center; gap: .75rem; min-height: 3rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 999px; background: oklch(98% .008 87 / .92); }
@@ -609,7 +628,7 @@
 .projectsToolbar > label { display: flex; align-items: center; gap: .6rem; min-height: 3rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 999px; background: oklch(98% .008 87 / .92); }
 .projectsToolbar > label > span { font-size: 1.25rem; line-height: 1; }
 .projectsToolbar input { width: 100%; border: 0; outline: 0; background: transparent; font: 500 .68rem var(--font-sans), sans-serif; }
-.projectsToolbar > div { display: flex; gap: .2rem; padding: .2rem; border-radius: 999px; background: oklch(90% .018 87); }
+.projectsToolbar > div { display: flex; gap: .2rem; padding: .2rem; border-radius: 999px; background: oklch(94.5% .012 87); }
 .projectsToolbar button { padding: .45rem .7rem; border: 0; border-radius: 999px; background: transparent; font: 700 .56rem var(--font-sans), sans-serif; cursor: pointer; }
 .projectsToolbar .projectFilterActive { background: var(--ink); color: var(--paper); }
 .projectsToolbar > a { padding: .82rem 1rem; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: .61rem; font-weight: 800; text-decoration: none; }
@@ -1007,7 +1026,11 @@
 .reserveControl { display: grid; grid-template-columns: 1fr 1.5fr; align-items: center; gap: 1rem; padding: 1rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .reserveControl > span { display: grid; gap: .25rem; }
 .reserveControl > span:last-child { grid-template-columns: 1fr auto; align-items: center; }
-.reserveControl input { width: 100%; accent-color: var(--purple); }
+/* obarvan drsnik: polnilo sledi vrednosti (--val), desno nevtralno; brez sive */
+.reserveControl input { width: 100%; -webkit-appearance: none; appearance: none; height: 6px; border-radius: 999px; background: linear-gradient(90deg, var(--purple), var(--mint)) left / var(--val, 50%) 100% no-repeat, oklch(93% .012 87); cursor: pointer; }
+.reserveControl input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 1.15rem; height: 1.15rem; border-radius: 50%; background: #fff; border: 2px solid var(--purple); box-shadow: 0 2px 6px oklch(20% .03 55 / .18); cursor: pointer; }
+.reserveControl input::-moz-range-thumb { width: 1.15rem; height: 1.15rem; border: 2px solid var(--purple); border-radius: 50%; background: #fff; box-shadow: 0 2px 6px oklch(20% .03 55 / .18); cursor: pointer; }
+.reserveControl input:focus-visible { outline: 3px solid color-mix(in oklch, var(--purple) 45%, transparent); outline-offset: 3px; }
 .reserveControl b { min-width: 3rem; text-align: right; }
 .goalRecommended { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .goalRecommended > span { display: grid; gap: .25rem; }
@@ -1410,6 +1433,10 @@
   background: color-mix(in oklch, oklch(98% 0.01 87) 94%, transparent);
   backdrop-filter: blur(18px);
 }
+/* progress bar na SPODNJEM ROBU headerja, cez vso sirino — del headerja, zato
+   se premika z njim (ko se ob drsenju skrije/pokaze). Prekrije spodnjo obrobo. */
+.topNapredek { position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; background: color-mix(in oklch, var(--ink) 7%, transparent); overflow: hidden; }
+.topNapredek i { display: block; height: 100%; background: linear-gradient(90deg, var(--purple), oklch(72% .14 165)); transition: width .5s cubic-bezier(.16, 1, .3, 1); }
 .topBrand { display: inline-flex; align-items: center; gap: .42rem; color: inherit; text-decoration: none; }
 .topBrand strong { font-size: .9rem; }
 .topBrand > span:not(.brandMark) { font-size: .61rem; font-weight: 850; letter-spacing: .13em; }
@@ -1435,8 +1462,8 @@
 
 /* Znacka BETA — samo oznaka stanja, ne povezava in ne poziv k nakupu. */
 .paketZnacka[data-beta] {
-  border-color: oklch(64% .18 350); color: oklch(48% .18 350);
-  background: oklch(96% .04 350); cursor: default;
+  border-color: oklch(64% .18 297); color: oklch(46% .19 297);
+  background: oklch(96% .04 297); cursor: default;
 }
 
 /* "zapri" pelje nazaj na Flow landing */
@@ -1482,7 +1509,9 @@
    vidna sele, ko je meni zozen. */
 /* Ikona namesto zaporedne stevilke — stevilke so povedale samo vrstni red,
    ikona pove, za kaj gre, in deluje tudi v zozenem meniju. */
-.navIkona { display: grid; place-items: center; width: 1.6rem; height: 1.6rem; flex: none; color: inherit; }
+/* polni ink: Phosphor "regular" ikone so tanke in pri 85% berejo svetleje kot
+   napis ob njih; s polnim inkom so ostre in usklajene z besedilom. */
+.navIkona { display: grid; place-items: center; width: 1.6rem; height: 1.6rem; flex: none; color: var(--ink); }
 .navIkona svg { width: 1.25rem; height: 1.25rem; }
 .navStevilka { display: none; }
 
@@ -1818,7 +1847,9 @@
   font-size: .58rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
 }
 .paketZnackaMoj { background: var(--ink); color: var(--paper); }
-.paketZnackaDruga { background: color-mix(in oklch, var(--ink) 12%, transparent); color: color-mix(in oklch, var(--ink) 65%, transparent); }
+/* "Najbolj priljubljeno" je priporocilo, ne stranska informacija — v sivi je
+   izgledalo kot izklopljeno. Vijola je nasa in loci znacko od crne "Tvoj paket". */
+.paketZnackaDruga { background: color-mix(in oklch, var(--purple) 14%, oklch(99% .005 300)); color: oklch(46% .19 297); }
 .paketKartica h2 { margin: 0; font: 500 1.7rem/1.05 var(--font-serif), Georgia, serif; }
 .paketZa { margin: 0; color: var(--muted); font-size: .82rem; }
 .paketCena { display: flex; align-items: baseline; gap: .35rem; margin: .6rem 0 0; }
@@ -1842,3 +1873,53 @@
 .paketDrugi { border: 1px solid var(--line); color: var(--ink); }
 .paketKmalu { border: 1px dashed var(--line); color: var(--muted); }
 .paketOpomba { max-width: 44rem; margin: 1.4rem 0 0; color: var(--muted); font-size: .82rem; line-height: 1.55; }
+
+/* ── Kartica "Dokoncaj nastavitev" ────────────────────────────────────────
+   Nad pregledom, dokler uvodna vprasanja niso koncana. Namenoma ni opozorilo
+   (rdeca, klicaj): to ni napaka uporabnika, ampak vabilo. */
+.onboardKartica {
+  display: flex; align-items: center; justify-content: space-between; gap: 1.2rem;
+  margin: 1.4rem 0 0; padding: 1rem 1.3rem;
+  border: 1px dashed color-mix(in oklch, var(--ink) 20%, transparent);
+  border-radius: 1.1rem;
+  background: linear-gradient(115deg, oklch(96% .04 300 / .6), oklch(96% .04 165 / .6));
+  color: var(--ink); text-decoration: none;
+  transition: transform .2s cubic-bezier(.16, 1, .3, 1), border-color .2s;
+}
+.onboardKartica:hover { transform: translateY(-1px); border-color: color-mix(in oklch, var(--ink) 45%, transparent); }
+.onboardKartica strong { display: block; font-size: .95rem; }
+.onboardKartica small { display: block; margin-top: .15rem; color: color-mix(in oklch, var(--ink) 62%, transparent); font-size: .8rem; }
+.onboardKartica > b { flex: none; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+
+/* ── Preklop pogleda v zgornji vrstici ────────────────────────────────────
+   Ko gledas izmisljene ali prazne podatke, mora to biti vidno na prvi pogled —
+   sicer se zgodi popravek "svojega" racuna, ki v resnici ni tvoj. */
+.predogledPreklop { display: inline-flex; align-items: center; margin-left: auto; }
+.predogledPreklop button {
+  display: grid; place-items: center; width: 2.1rem; height: 2.1rem; margin-left: .3rem;
+  border: 1px solid var(--line); border-radius: 50%;
+  background: oklch(100% 0 0 / .5); color: color-mix(in oklch, var(--ink) 62%, transparent);
+  font-size: 1rem; line-height: 1; cursor: pointer;
+}
+.predogledPreklop button:hover { color: var(--ink); border-color: color-mix(in oklch, var(--ink) 30%, transparent); }
+.predogledPreklop select {
+  min-height: 2.1rem; padding: .2rem 1.9rem .2rem .8rem;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: oklch(100% 0 0 / .5); color: color-mix(in oklch, var(--ink) 62%, transparent);
+  font: 700 .68rem var(--font-sans), sans-serif;
+  appearance: none; -webkit-appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right .7rem center;
+}
+.predogledPreklop[data-tuji] select {
+  border-color: color-mix(in oklch, var(--purple) 55%, transparent);
+  background-color: color-mix(in oklch, var(--purple) 12%, oklch(99% .005 300));
+  color: oklch(46% .19 297);
+}
+/* stoparica je desno od preklopa: samo prvi otrok potiska vrstico na desno */
+.flowTopBar > .predogledPreklop ~ .stoparicaBliznjica { margin-left: .5rem; }
+@media (max-width: 720px) {
+  /* na telefonu samo barvna pika stanja bi bila premalo — ostane izbirnik,
+     a brez opisa; imena moznosti so v atributu, ne v gumbu */
+  .predogledPreklop select { max-width: 6.6rem; text-overflow: ellipsis; padding-right: 1.6rem; }
+}

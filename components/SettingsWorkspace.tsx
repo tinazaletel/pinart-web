@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import VidezDokumentov from '@/components/VidezDokumentov';
 import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
 import styles from './SettingsWorkspace.module.css';
@@ -65,6 +64,23 @@ export default function SettingsWorkspace({ base }: { base: string }) {
     setSporocilo('Logotip je odstranjen.');
   }
 
+  /* Ponovi uvodni pogovor: v zapisu kalkulatorja odklopi zakljucek uvoda in
+     postavi pogovor na prvi korak. Odgovori (ime, izkusnje, podrocja) ostanejo
+     in se v pogovoru prednapolnijo — samo znova gres skozenj. Cene, stranke in
+     ponudbe se ne dotaknejo. onboarding-koncan zbrisemo, da se vrne tudi kartica
+     "Dokoncaj nastavitev". Nato odpremo kalkulator, ki iz posodobljenega zapisa
+     pogovor tudi zares zene. */
+  function ponastaviVprasalnik() {
+    if (!window.confirm('Ponovim uvodni vprašalnik? Cene in ponudbe ostanejo.')) return;
+    try {
+      const s = JSON.parse(localStorage.getItem(K_NAST) || '{}');
+      s.uvodKoncan = false; s.chatKorak = 0;
+      localStorage.setItem(K_NAST, JSON.stringify(s));
+      localStorage.removeItem('pinart-onboarding-koncan');
+    } catch { /* zasebni nacin */ }
+    window.location.href = `${base}/kalkulator/orodje?uvod=1`;
+  }
+
   /* Enak izbris kot v kalkulatorju (ponastaviVse), da se vedeta enako. */
   function izbrisiVse() {
     if (!window.confirm('Izbrišem vse podatke tega orodja (cene, podjetja, zgodovino ponudb, profile)? Tega ni mogoče razveljaviti.')) return;
@@ -105,18 +121,13 @@ export default function SettingsWorkspace({ base }: { base: string }) {
       <section className={styles.card}>
         <h2>Vprašalnik</h2>
         <p>
-          Ponastavitev vprašalnika ponovno vpraša po imenu, trgu in izkušnjah, cene pa ohrani.
-          Ta gumb živi v kalkulatorju, ker ponastavi pogovor, ki tam teče.
+          Ponovno te vpraša po imenu, trgu in izkušnjah. Tvoje cene, stranke in ponudbe ostanejo.
         </p>
-        <Link className={styles.gumb} href={`${base}/kalkulator/orodje`}>Odpri kalkulator</Link>
+        <button type="button" className={styles.gumb} onClick={ponastaviVprasalnik}>Ponovi vprašalnik</button>
       </section>
 
-      <section className={styles.card}>
-        <h2>Pomoč in kontakt</h2>
-        <p>Za vprašanja o orodju piši neposredno — odgovarja pravi človek, ne oddelek.</p>
-        <a className={styles.gumb} href="mailto:tina@pinart.si">tina@pinart.si</a>
-        <p className={styles.opomba}>Stran s pomočjo in pogostimi vprašanji pripravljamo.</p>
-      </section>
+      {/* "Pomoč in kontakt" odstranjen: Pomoč je zdaj svoja stran v meniju,
+          tukaj je bila podvojena. */}
 
       <section className={`${styles.card} ${styles.nevarno}`}>
         <h2>Izbriši vse podatke</h2>

@@ -8,7 +8,9 @@
 .intro h2, .actions h2, .plan h2 { max-width: 23ch; margin: 0; font: 500 clamp(1.7rem, 3vw, 2.7rem)/1.02 var(--font-serif), Georgia, serif; }
 .intro > div > span, .actions > div > span { display: block; max-width: 62ch; margin-top: .65rem; color: var(--muted); line-height: 1.5; }
 .progress { position: relative; z-index: 1; width: 8.5rem; aspect-ratio: 1; display: grid; place-items: center; align-content: center; border-radius: 50%; box-shadow: inset 0 0 0 1.1rem oklch(97% .01 87), 0 .8rem 2rem oklch(45% .08 285 / .1); text-align: center; }
-.progress strong { font: 500 2.15rem/1 var(--font-serif), Georgia, serif; }.progress small { font-size: .9rem; }.progress span { max-width: 5rem; margin-top: .3rem; color: var(--muted); font-size: .75rem; }
+.progress strong { font: 500 2.15rem/1 var(--font-serif), Georgia, serif; }.progress small { font-size: .9rem; }
+/* ozje in manjse, da besedilo ostane ZNOTRAJ notranjega kroga (ne strli ven) */
+.progress span { max-width: 4.3rem; margin-top: .25rem; color: color-mix(in oklch, var(--ink) 62%, transparent); font-size: .66rem; line-height: 1.2; text-wrap: balance; }
 .canvas { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-areas: 'partners partners activities activities value value value relationships relationships segments' 'partners partners resources resources value value value channels channels segments' 'costs costs costs costs costs revenue revenue revenue revenue revenue'; gap: .75rem; }
 .canvas article { position: relative; isolation: isolate; overflow: hidden; min-height: 13rem; display: grid; grid-template-rows: auto auto 1fr; gap: .7rem; padding: 1.1rem; border: 1px solid oklch(83% .025 80 / .8); border-radius: 1.25rem; background: linear-gradient(145deg, oklch(98% .01 87), oklch(95% .025 87)); transition: transform .2s ease, box-shadow .2s ease; }
 .canvas article::after { content: ''; position: absolute; z-index: -1; right: -2.8rem; bottom: -3.6rem; width: 8.5rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .55); border-radius: 48% 52% 44% 56%; transform: rotate(18deg); }

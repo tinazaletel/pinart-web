@@ -17,7 +17,10 @@ import type { FlowClient, FlowContract, FlowData, FlowExpense, FlowInvoice, Flow
  * urejanje, sicer bi popravek izmišljenega računa poskusil pisati v pravo bazo.
  */
 
-export type Predogled = 'empty' | 'mine' | 'demo';
+/* 'zacetek' = nekaj malega podatkov: prvi teden uporabe. Brez njega sta bila
+   na voljo samo skrajna primera (nic ali polno), vmesno stanje — kjer se
+   prazna stanja in prvi sestevki najveckrat lomijo — pa se ni dalo pogledati. */
+export type Predogled = 'empty' | 'zacetek' | 'mine' | 'demo';
 
 const KLJUC = 'pinart-predogled';
 const DOGODEK = 'pinart-predogled-sprememba';
@@ -25,7 +28,7 @@ const DOGODEK = 'pinart-predogled-sprememba';
 export function preberiPredogled(): Predogled {
   if (typeof window === 'undefined') return 'mine';
   const v = localStorage.getItem(KLJUC);
-  return v === 'empty' || v === 'demo' ? v : 'mine';
+  return v === 'empty' || v === 'demo' || v === 'zacetek' ? v : 'mine';
 }
 
 export function nastaviPredogled(vrednost: Predogled): void {
@@ -140,5 +143,19 @@ export function demoPodatki(): FlowData {
 export function podatkiZaPredogled(nacin: Predogled, moji: FlowData): FlowData {
   if (nacin === 'demo') return demoPodatki();
   if (nacin === 'empty') return { version: 1, offers: [], invoices: [], expenses: [], contracts: [], clients: [] };
+  if (nacin === 'zacetek') {
+    /* Prvi teden: ena poslana in ena sprejeta ponudba, en neplacan racun,
+       dve stranki, brez pogodb. Namenoma NEPOPOLNO — tako se vidi, kako
+       izgledajo delne vsote in prazni razdelki drug ob drugem. */
+    const d = demoPodatki();
+    return {
+      version: 1,
+      offers: d.offers.slice(0, 2),
+      invoices: d.invoices.slice(0, 1),
+      expenses: d.expenses.slice(0, 2),
+      contracts: [],
+      clients: d.clients.slice(0, 2),
+    };
+  }
   return moji;
 }

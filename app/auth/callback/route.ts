@@ -25,9 +25,16 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      const naprej = NextResponse.redirect(`${origin}${next}`);
+      /* Prva prijava gre na uvodno nastavitev, ne na prazno nadzorno plosco.
+         "Nov" = racun, mlajsi od minute; brez tega bi na dobrodoslico padel
+         tudi tisti, ki se je le znova prijavil. Ce je uporabnik prisel po
+         konkretni povezavi (?next / piskotek), spostujemo njegov cilj. */
+      const ustvarjen = data.user?.created_at ? Date.parse(data.user.created_at) : 0;
+      const nov = ustvarjen > 0 && Date.now() - ustvarjen < 60_000;
+      const cilj = nov && !zeljen ? '/kalkulator/orodje' : next;
+      const naprej = NextResponse.redirect(`${origin}${cilj}`);
       naprej.cookies.delete('flow_next'); // enkratna raba
       return naprej;
     }

@@ -79,7 +79,7 @@ export default function GoalsWorkspace({ base }: { base: string }) {
         <div className={styles.goalEquation}>
           <span><small>Redni stroški</small><strong>{money(recurringCosts)}</strong></span><b>+</b><span><small>Drugi stroški ta mesec</small><strong>{money(enteredCosts)}</strong></span><b>+</b><label><small>Želeni osebni dohodek</small><input min="0" step="100" type="number" value={desiredIncome} onChange={event => setDesiredIncome(Number(event.target.value))} /></label>
         </div>
-        <label className={styles.reserveControl}><span><strong>Rezerva</strong><small>Za davke in nepredvidene stroške</small></span><span><input min="0" max="90" type="range" value={reservePercent} onChange={event => setReservePercent(Number(event.target.value))} /><b>{reservePercent}%</b></span></label>
+        <label className={styles.reserveControl}><span><strong>Rezerva</strong><small>Za davke in nepredvidene stroške</small></span><span><input min="0" max="90" type="range" value={reservePercent} onChange={event => setReservePercent(Number(event.target.value))} style={{ ['--val' as string]: `${(reservePercent / 90) * 100}%` }} /><b>{reservePercent}%</b></span></label>
         <div className={styles.goalRecommended}><span><small>Priporočeni mesečni cilj</small><strong>{money(recommended)}</strong></span><button type="submit">Uporabi ta cilj</button></div>
       </form>
 

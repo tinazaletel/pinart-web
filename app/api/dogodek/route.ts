@@ -19,6 +19,9 @@ const DOVOLJENA_IMENA = new Set([
   'ponudba_ustvarjena', 'ponudba_izvozena', 'racun_ustvarjen', 'pogodba_ustvarjena',
   'retainer_odprt', 'retainer_ustvarjen', 'landing_odprt', 'prijava_odprta',
   'racun_ustvarjen_nov', 'nadgradnja_kliknjena', 'pomoc_odprta',
+  /* uvodna nastavitev: podrocja, izkusnje in trg — brez njih so zbrane cene
+     kup stevilk brez konteksta in primerjava s trgom ni mogoca */
+  'onboarding_koncan',
 ]);
 
 /* Vrednosti skrcimo: stevilo, true/false ali najvec 40 znakov brez presledkov

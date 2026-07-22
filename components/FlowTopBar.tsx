@@ -7,6 +7,8 @@ import DashboardHeaderTools from './DashboardHeaderTools';
 import FlowUkazi from './FlowUkazi';
 import NazajNaPregled from './NazajNaPregled';
 import StoparicaBliznjica from './StoparicaBliznjica';
+import PredogledPreklop from './PredogledPreklop';
+import { useFlowNapredek } from '@/lib/flowNapredek';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
 /**
@@ -76,8 +78,17 @@ export default function FlowTopBar() {
   const kljuc = pathname.split('/').reverse().find(d => d in IMENA);
   const stran = kljuc ? IMENA[kljuc] : '';
 
+  /* napredek objavi delovni prostor (kalkulator/retainer); null = ni ga */
+  const napredek = useFlowNapredek();
+
   return (
     <div className={styles.flowTopBar}>
+      {/* progress bar ZNOTRAJ headerja, na spodnjem robu — tako se premika z njim */}
+      {napredek !== null && (
+        <div className={styles.topNapredek} aria-hidden>
+          <i style={{ width: `${Math.round(napredek * 100)}%` }} />
+        </div>
+      )}
       {/* puscica nazaj PRED logom, kot v kalkulatorju */}
       <NazajNaPregled />
       <Link href={`${base}/kalkulator/pregled`} className={styles.topBrand}>
@@ -93,6 +104,11 @@ export default function FlowTopBar() {
 
       {stran && <><span className={styles.topLocilo} aria-hidden="true">/</span>
         <span className={styles.topStran}>{stran}</span></>}
+
+      {/* Preklop pogleda (Prazno / Zacetek / Moji / Demo) mora biti povsod:
+          v nacinu "Prazno" se spremeni tudi uvodni pogovor v kalkulatorju,
+          zato je bila pot nazaj na svoje podatke prej samo prek plosce. */}
+      <PredogledPreklop />
 
       {/* Stoparica je stanje cele aplikacije, ne lastnost ene strani. Prej je
           bila v glavi vsake strani in je pri kalkulatorju visela cez panel

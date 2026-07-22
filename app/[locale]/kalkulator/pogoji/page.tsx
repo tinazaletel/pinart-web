@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import { localePath } from '@/i18n/routing';
+import NazajLink from '@/components/NazajLink';
 
 export const metadata: Metadata = {
   title: 'Pinart kalkulator: pogoji uporabe',
@@ -27,7 +28,10 @@ export default async function KalkulatorPogojiPage({
   return (
     <main style={{ minHeight: '100dvh' }}>
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '8rem 1.4rem 6rem', color: 'var(--ink)', fontWeight: 300 }}>
-        <p style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.24em', textTransform: 'uppercase', color: 'rgba(17,17,17,.72)' }}>
+        {/* Brez tega je stran slepa ulica: iz profila ali onboardinga se je
+            dalo priti sem, nazaj pa samo z gumbom brskalnika. */}
+        <NazajLink />
+        <p style={{ marginTop: '1.4rem', fontSize: '.72rem', fontWeight: 600, letterSpacing: '.24em', textTransform: 'uppercase', color: 'rgba(17,17,17,.72)' }}>
           Pinart kalkulator
         </p>
         <h1 style={{ fontFamily: 'var(--font-serif), Didot, serif', fontWeight: 500, fontSize: 'clamp(2.2rem, 7vw, 3.6rem)', lineHeight: 1, letterSpacing: '-.01em', margin: '.6rem 0 1rem' }}>

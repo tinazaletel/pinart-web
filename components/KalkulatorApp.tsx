@@ -7,6 +7,8 @@ import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import { loadFlowData, saveFlowCollection, type FlowInvoice } from '@/lib/pinartFlowStore';
 import { saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
+import { preberiPredogled } from '@/lib/predogled';
+import { nastaviNapredek } from '@/lib/flowNapredek';
 import VidezDokumentov from '@/components/VidezDokumentov';
 import IzbirnikDrzave from '@/components/IzbirnikDrzave';
 import AmbientBubbles from '@/components/AmbientBubbles';
@@ -1564,6 +1566,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* Vstopno soglasje (kot Paperform): pogoji pred prvo uporabo orodja.
      Sprejem se shrani lokalno; ob naslednjih obiskih se ne prikaze vec. */
   const [pogojiOk, setPogojiOk] = useState<boolean | null>(null);
+  /* med zapiranjem soglasja: okno se se izrisuje, a bledi (odhaja), da izhod
+     ni na rez. Po koncu prehoda ga odklopimo. */
+  const [pogojiOdhaja, setPogojiOdhaja] = useState(false);
   useEffect(() => {
     try {
       /* ?soglasje v URL ponastavi sprejem — za testiranje in ponoven ogled */
@@ -1577,7 +1582,17 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     /* neobvezna prijava na obvescanje ob vstopu (locena od anonimne statistike) */
     if (zeliEmail && imamKontakt) posljiKontakt('prijava na obveščanje ob vstopu');
     try { localStorage.setItem('pinart-kalk-pogoji-ok', '1'); } catch { /* ignoriraj */ }
-    setPogojiOk(true);
+    /* Uvodni pogovor zazenemo TU, v istem kliku, ne sele v useEffect: sicer se
+       med sprejemom in ucinkom za en okvir izrise korak 0 (mehurcki) in slika
+       utripne, kot da je napaka. React posodobitve v istem dogodku zdruzi. */
+    if (uvodKoncan === false) {
+      if (klasicnaOblika) { setObIzbor(new Set()); setOnboardingOdprt(true); }
+      else { setUvodChat(true); setChatKorak(0); }
+    }
+    /* mehak izhod: okno najprej zbledi (odhaja), sele nato ga odklopimo — vsebina
+       spodaj se med tem ze izrisuje in se nezno pokaze */
+    setPogojiOdhaja(true);
+    window.setTimeout(() => { setPogojiOk(true); setPogojiOdhaja(false); }, 420);
   };
 
   /* carovnik: en korak naenkrat, fade-in from bottom (nuSchool slog) */
@@ -1969,7 +1984,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       if (s.mojeStoritve) setMojeStoritve(s.mojeStoritve);
       if (Array.isArray(s.mojSet)) setMojSet(s.mojSet);
       if (s.imeUporabnika) setImeUporabnika(s.imeUporabnika);
-      setUvodKoncan(s.uvodKoncan === true);
+      /* V predogledu "Prazno" pokazi uvodni pogovor, tudi ce si ga ze koncala:
+         to je pogled na to, kar vidi nov uporabnik, in brez uvoda ga ni mogoce
+         preveriti. Zapisa NE brisemo — ob vrnitvi na "Moji" je vse spet tu.
+         Samo na razvoju: v produkciji bi uporabnik, ki je plosco pustil na
+         "Prazno", nepricakovano dobil uvodni pogovor od zacetka. */
+      const ponoviUvod = process.env.NODE_ENV !== 'production' && preberiPredogled() === 'empty';
+      setUvodKoncan(ponoviUvod ? false : s.uvodKoncan === true);
       /* obnovi potek onboarding-chata (zgodovina prezivi reload) */
       if (typeof s.chatKorak === 'number') setChatKorak(s.chatKorak);
       if (typeof s.chatNova === 'boolean') setChatNova(s.chatNova);
@@ -2012,6 +2033,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   useEffect(() => {
     if (!jeNalozeno) return;   /* pocakaj, da se stanje nalozi — sicer prepisemo storage s praznim */
     try {
+      /* v predogledu "Prazno" je uvodKoncan namenoma false; brez tega bi ogled
+         prepisal pravi zapis in bi se uvod pokazal tudi v nacinu "Moji" */
+      const prejsnji = JSON.parse(localStorage.getItem(K_NAST) || '{}');
+      const uvodZaZapis = (process.env.NODE_ENV !== 'production' && preberiPredogled() === 'empty')
+        ? prejsnji.uvodKoncan : uvodKoncan;
       localStorage.setItem(K_NAST, JSON.stringify({
         osnove, izkusnje, mojTrg, mojeStoritve, ponudnik, postavke,
         ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct,
@@ -2026,7 +2052,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         klasicnaOblika: klasicnaOblika || undefined,
         pogledMreza: pogledMreza || undefined,
         namigSkrit: namigSkrit || undefined,
-        uvodKoncan: uvodKoncan || undefined,
+        /* v predogledu "Prazno" je uvodKoncan namenoma false; brez tega bi
+           ogled zbrisal pravi zapis in bi se uvod cez cas pokazal tudi v "Moji" */
+        uvodKoncan: uvodZaZapis || undefined,
         /* potek onboarding-chata, da zgodovina (vprasanja + odgovori) prezivi reload */
         chatKorak: chatKorak || undefined,
         chatNova: chatNova === null ? undefined : chatNova,
@@ -2094,18 +2122,31 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   useEffect(() => {
     /* sprozi, dokler onboarding NI opravljen (uvodKoncan === false) — ne glede na to,
        ali so storitve ze izbrane; null = se ni nalozeno iz localStorage, pocakamo */
-    if (pogojiOk === true && uvodKoncan === false && !uvodChat && !onboardingOdprt) {
+    /* ?uvod=1 pride s kartice "Dokoncaj nastavitev": tam pise, da nekaj manjka,
+       zato mora pogovor steči tudi, ce si ga ze enkrat preskocila — sicer je
+       kartica slepa ulica, ki te pripelje v kalkulator brez vprasanj. */
+    const zahtevanUvod = typeof window !== 'undefined'
+      && new URLSearchParams(window.location.search).get('uvod') === '1';
+    if (pogojiOk === true && (uvodKoncan === false || (zahtevanUvod && uvodKoncan !== null)) && !uvodChat && !onboardingOdprt) {
       if (klasicnaOblika) { setObIzbor(new Set()); setOnboardingOdprt(true); }
-      else { setUvodChat(true); setChatKorak(0); }
+      /* ob vrnitvi s kartice nadaljuj, kjer si ostala (chatKorak je shranjen);
+         na zacetek postavi samo pravi prvi obisk */
+      else { setUvodChat(true); if (uvodKoncan === false) setChatKorak(0); }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pogojiOk, uvodKoncan, klasicnaOblika]);
 
-  /* izkusnje (3 chipi v chatu) */
+  /* Izkusnje v chatu — 4 stopnje.
+     Prej so bile tri in je manjkala 'strokovnjak' (1,45x): skok je sel z 1x
+     naravnost na 2,1x, zato je kdo z osmimi leti in referencami ali podcenil
+     ali preskocil na dvakratnik.
+     'student' (0,45x) namenoma ostane samo v Profilu: pol cene ni odlocitev,
+     ki bi jo kdo sprejel mimogrede med pogovorom. */
   const CHAT_IZK: { id: string; crk: string; ime: string; opis: string }[] = [
     { id: 'zacetnik', crk: 'A', ime: 'Šele začenjam', opis: 'gradim portfelj, prve stranke' },
     { id: 'samostojen', crk: 'B', ime: 'Nekaj let izkušenj', opis: 'redne stranke, utečen proces' },
-    { id: 'ekspert', crk: 'C', ime: 'Uveljavljeno ime', opis: 'izbiram projekte, premium cene' },
+    { id: 'strokovnjak', crk: 'C', ime: 'Osem let + in reference', opis: 'zahtevnejši projekti, priporočila' },
+    { id: 'ekspert', crk: 'D', ime: 'Uveljavljeno ime', opis: 'izbiram projekte, premium cene' },
   ];
   /* ob novem koraku chata se STRAN (okno, Lenis) gladko pomakne, tako da je zadnje VPRASANJE
      blizu vrha vidnega polja — vnos in gumb Naprej sta pod njim. Stran ni zaklenjena: scroll
@@ -2630,6 +2671,17 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const KORAKOV = zakljucekStep + 1;
   /* (postopni prikaz vprasanj po korakih je odpadel — vprasanja so v
      podrobnostih vrstice, prikazana vsa naenkrat) */
+
+  /* Objavi napredek za crto v headerju (FlowTopBar). Crta zivi v headerju, da
+     se premika z njim; ta store je edina vez med korakom tukaj in vrstico tam.
+     Med uvodom sledi vprasanjem, sicer glavnim korakom. V samostojnem
+     kalkulatorju (brez lupine) in v klasicni obliki crte ni. */
+  useEffect(() => {
+    if (!vLupini || klasicnaOblika) { nastaviNapredek(null); return; }
+    const f = uvodChat ? Math.min(chatKorak + 1, 6) / 7 : (korak + 1) / KORAKOV;
+    nastaviNapredek(f);
+    return () => nastaviNapredek(null);
+  }, [vLupini, klasicnaOblika, uvodChat, chatKorak, korak, KORAKOV]);
 
   const ponudba = useMemo(() => {
     if (!r) return '';
@@ -4375,7 +4427,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   })();
   const orbVrstic = orbRowSizes.length;
   const orbRowStart = (() => { const a: number[] = []; let acc = 0; for (const s of orbRowSizes) { a.push(acc); acc += s; } return a; })();
-  const orbRowH = jeMobilni ? Math.round(orbD * 1.34) : Math.round(orbD * 1.02) - 20;   /* mobilno vec navpicnega diha (ne stiskamo), desktop stisnjeno na en ekran */
+  /* vrstica MORA biti visja od premera, sicer se vrste prekrivajo. Prej je bila
+     desktop 1.02x-20 (manjsa od premera) = mehurcki so se dotikali. */
+  const orbRowH = jeMobilni ? Math.round(orbD * 1.34) : Math.round(orbD * 1.16);
   const orbStep = (jeMobilni ? 62 : 84) / Math.max(orbMax - 1, 1);          /* razmik med sredisci na siroki mrezi (%); mobilno 62 -> robni mehurcek ~16px od roba, ne odrezan */
   const orbPoz = (i: number) => {
     let row = 0; while (row < orbVrstic - 1 && i >= orbRowStart[row + 1]) row++;
@@ -4769,6 +4823,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         @media (prefers-reduced-motion: reduce) { .cw-ozadje .blob { animation: none; } }
 
         .cw .soglasje { position: fixed; inset: 0; z-index: 95; background: rgba(245,242,234,.82); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+        /* mehak izhod: celo okno (skupaj z zameglitvijo) nezno zbledi in se rahlo pomakne navzgor */
+        .cw .soglasje-odhaja { animation: sgOdhod .42s cubic-bezier(.4,0,.2,1) forwards; pointer-events: none; }
+        @keyframes sgOdhod { from { opacity: 1; } to { opacity: 0; transform: translateY(-6px); } }
+        @media (prefers-reduced-motion: reduce) { .cw .soglasje-odhaja { animation: none; opacity: 0; } }
         .cw .soglasje-kartica { max-width: 540px; max-height: calc(100dvh - 2.5rem); overflow-y: auto; background: var(--paper); border: 1px solid rgba(17,17,17,.25); border-radius: 16px; padding: clamp(1.6rem, 4vw, 2.6rem); box-shadow: 0 24px 80px rgba(17,17,17,.12); }
         .cw .soglasje-kartica h2 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 4.5vw, 2.4rem); line-height: 1.05; margin: 0 0 1.1rem; }
         .cw .soglasje-kartica ul { margin: 0 0 1.8rem; padding-left: 0; list-style: none; }
@@ -4854,7 +4912,18 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .korak-vsebina.siroko.uvod-faza { max-width: 780px; margin-left: auto; margin-right: auto; padding-right: 0; min-height: calc(100dvh - 15.5rem); display: flex; flex-direction: column; justify-content: center; }
         .cw .uvod-faza .uvod-uvodnik { text-align: center; margin-bottom: 1.2rem; }
         .cw .uvod-faza .uvod-uvodnik .ob-kicker { text-align: center; }
-        .cw .uvod-faza .chat-izbira { width: 100%; margin-bottom: 0; }
+        /* EN sredinski stolpec za ves uvod: mehurcki, kartice IN obrazec imajo
+           iste robove. Prej je bil chat ozek (540), obrazec pa sirsi z levim
+           zamikom, zato je pokukal desno in vse je izgledalo nesredinsko.
+           Zato tu odstranimo zamike in vse poravnamo na sirino stolpca. */
+        .cw .uvod-faza .chat-izbira { width: min(560px, 92%); max-width: none; margin: 0 auto; }
+        .cw .uvod-faza .uv-forma { margin-left: 0; width: 100%; }
+        .cw .uvod-faza .chat-izbire { margin-left: 0; }
+        .cw .uvod-faza .chat-opcija { width: 100%; }
+        /* vnos imena / imena ponudbe: brez levega zamika in cez vso sirino
+           stolpca, da je NAPREJ pod njim res na sredini stolpca (in naslova) */
+        .cw .uvod-faza .chat-vnos { margin-left: 0; width: 100%; }
+        .cw .uvod-faza .chat-vnos input { width: 100%; }
         .cw .chat-po-meh { margin-top: 1.8rem; }
         /* PRIPRAVA PONUDBE — razsirjen panel/overlay iz desne (isti prostor kot ziva ponudba) */
         .cw .priprava-backdrop { position: fixed; inset: 0; background: rgba(30,18,35,.4); z-index: 55; animation: cwFade .3s ease both; }
@@ -5085,8 +5154,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* chat vsebina vertikalno na sredini; ko zraste, se pomakne navzgor (scroll) */
         .cw .uvod-oder { position: relative; z-index: 1; width: min(680px, 92vw); margin: 0 auto; padding: 2rem 0 3rem; flex: 1; display: flex; flex-direction: column; justify-content: center; }
         .cw .uvod-oder .ob-kicker { text-align: center; }
-        .cw .uvod-h { text-align: center; }
-        .cw .uvod-sub { text-align: center; max-width: 42ch; margin: .4rem auto 0; }
+        /* naslovi onboarding hero = ISTA mera kot retainer (.rw-h1/.rw-kicker/.rw-uvod) */
+        .cw .uvod-h { text-align: center; font-size: clamp(2.4rem, 6vw, 4rem); }
+        .cw .uvod-uvodnik .ob-kicker { font-size: .78rem; letter-spacing: .2em; }
+        .cw .uvod-sub { text-align: center; max-width: 42ch; margin: .4rem auto 0; font-size: 1rem; line-height: 1.55; }
+        /* pomiritev "vprasamo enkrat" — berljivo (ink, ne siva): Tina slabo vidi */
+        .cw .uvod-enkrat { text-align: center; max-width: 42ch; margin: .8rem auto 0; font-size: .95rem; line-height: 1.5; color: rgba(17,17,17,.75); }
         /* razmik med podnaslovom in chatom (na .chat, ker .sub sili margin:0) — ~80px manj */
         .cw .uvod-oder .chat { display: flex; flex-direction: column; gap: 1rem; margin-top: clamp(1.5rem, 4vh, 2.5rem); }
         .cw .chat-bot, .cw .chat-jaz, .cw .chat-izbire { animation: chatVzid .5s cubic-bezier(.16,1,.3,1) both; }
@@ -5321,6 +5394,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
         .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 8rem; }
         /* v Flow lupini je zgoraj ze glava strani, zato brez 7rem praznine */
+        /* glava strani v lupini — ista mera kot pri retainerju */
+        .cw .lupina-glava { width: min(1240px, 100%); margin: 0 auto; padding: clamp(1.6rem, 4vw, 2.6rem) clamp(1.2rem, 4vw, 3rem) 0; position: relative; z-index: 2; }
+        .cw .lg-kicker { margin: 0 0 .3rem; font-size: .78rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
+        .cw .lg-naslov { margin: 0 0 .6rem; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(2.4rem, 6vw, 4rem); line-height: 1; letter-spacing: -.012em; color: var(--ink); }
+        .cw .lg-uvod { margin: 0; max-width: 34rem; font-size: 1rem; line-height: 1.55; color: rgba(17,17,17,.72); }
+        /* napredek je zdaj crta V headerju (FlowTopBar), da se premika z njim */
         .cw.cw-lupina .oder { padding-top: 1.5rem; position: relative; z-index: 1; }
         .cw .korak-vsebina { width: 100%; max-width: 880px; animation: cwVstop .55s cubic-bezier(.16,1,.3,1) both; }
         /* siroko (korak 0 / uvod) brez transforma -> fiksni/drsni panel deluje relativno na okno (tudi mobile) */
@@ -5918,8 +5997,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .noga-koncna { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: .5rem; }
           .cw .noga .noga-koncna .nazaj-g { text-align: center; padding: .55rem .85rem; font-size: .68rem; letter-spacing: .05em; }
         }
-        .cw .a11y { position: fixed; left: clamp(1.2rem, 4vw, 3rem); bottom: 4.9rem; z-index: 61; }
-        .cw .a11y-btn { width: 2.8rem; height: 2.8rem; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent); background: color-mix(in oklab, var(--paper) 92%, white); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 .7rem 1.8rem rgba(17,17,17,.08); }
+        /* V stolpcu menija, NAD profilno ikono: levi rob poravnan z avatarjem
+           profila (padding menija 1.4rem), tik nad profilno vrstico. */
+        .cw .a11y { position: fixed; left: 1.4rem; bottom: 4.9rem; z-index: 61; }
+        .cw .a11y-btn { width: 2.3rem; height: 2.3rem; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent); background: color-mix(in oklab, var(--paper) 92%, white); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 .7rem 1.8rem rgba(17,17,17,.08); }
+        /* zlozen meni: ozek stolpec, avatar centriran -> gumb sredinsko nad njim */
+        :global(body[data-meni='zaprt']) .cw .a11y { left: .85rem; bottom: 4.9rem; }
+        /* mobilno (stranska vrstica postane zgornja): v desni spodnji kot */
+        @media (max-width: 980px) { .cw .a11y { left: auto; right: clamp(1rem, 4vw, 1.5rem); bottom: 5rem; } }
         .cw .a11y-btn:hover { border-color: color-mix(in oklab, var(--accent) 72%, transparent); }
         .cw .a11y-panel { position: absolute; left: 0; bottom: 3.4rem; width: min(27rem, calc(100vw - 2.4rem)); max-height: min(70dvh, 34rem); overflow: auto; border: 1px solid rgba(17,17,17,.22); background: color-mix(in oklab, var(--paper) 98%, white); padding: 1rem 1.1rem; box-shadow: 0 1rem 2.4rem rgba(17,17,17,.14); }
         .cw .a11y-panel h2 { margin: 0 0 .7rem; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; line-height: 1.2; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
@@ -5956,8 +6041,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         }
       ` }} />
 
-      {pogojiOk === false && (
-        <div className="soglasje" role="dialog" aria-modal="true" aria-label="Pogoji uporabe">
+      {/* Portal na <body>: v lupini Lenis transformira prednika, zato bi se
+          "position:fixed" meril glede nanj in okno bi padlo levo. Ovoj ".cw"
+          ohrani veljavnost pravil ".cw .soglasje". */}
+      {(pogojiOk === false || pogojiOdhaja) && typeof document !== 'undefined' && createPortal(
+        <div className="cw">
+        <div className={`soglasje${pogojiOdhaja ? ' soglasje-odhaja' : ''}`} role="dialog" aria-modal="true" aria-label="Pogoji uporabe">
           <div className="soglasje-kartica">
             <h2>Samo troje, preden začneš</h2>
             <div className="soglasje-tocke">
@@ -6011,6 +6100,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             </div>
           </div>
         </div>
+        </div>,
+        document.body,
       )}
 
       {onboardingOdprt && (
@@ -6044,7 +6135,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         </div>
       )}
 
-      <div className="napredek" aria-hidden><i style={{ width: `${((korak + 1) / KORAKOV) * 100}%` }} /></div>
+      {/* fiksni pas na vrhu samo v samostojnem kalkulatorju; v lupini je napredek
+          pod glavo (lupina-napredek), sicer bi bila dva */}
+      {!vLupini && <div className="napredek" aria-hidden><i style={{ width: `${((korak + 1) / KORAKOV) * 100}%` }} /></div>}
 
       <div className="a11y">
         {kazemDostopnost && (
@@ -6515,6 +6608,18 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         </>
       )}
 
+      {/* Glava strani je TU, ne na strani: samo kalkulator ve, ali tece uvodni
+          pogovor, ta pa ima svoj naslov. Ko je bila glava na strani, sta bila
+          na zaslonu dva enaka naslova drug pod drugim. */}
+      {vLupini && !uvodChat && (
+        <header className="lupina-glava">
+          <p className="lg-kicker">Ponudba</p>
+          <h1 className="lg-naslov">Kalkulator ponudbe.</h1>
+          <p className="lg-uvod">Za enkraten projekt; izračuna <b>izvedbo</b>, <b>avtorske pravice</b> in <b>licenco</b> ter iz njih sestavi ponudbo v treh različicah.</p>
+        </header>
+      )}
+
+
       <div className="oder">
         <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '') + (korak === 0 && uvodChat && !klasicnaOblika ? ' uvod-faza' : '') + (vChatu && poMeh > 0 ? ' chat-koraki' : '') + (!klasicnaOblika && korak === ponudbaStep ? ' priprava-korak' : '') + (korak === zakljucekStep ? ' zakljucek-sredina' : '')} key={korak}>
           {!klasicnaOblika && korak === ponudbaStep && (
@@ -6574,9 +6679,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             <div className="chat chat-izbira" ref={uvodRef}>
               {uvodChat && (
                 <div className="uvod-uvodnik">
-                  <p className="ob-kicker">Onboarding</p>
-                  <h1 className="ob-naslov uvod-h">Kalkulator ponudbe</h1>
-                  <p className="sub uvod-sub">Živjo, sem tvoja pomočnica in pomagala ti bom sestaviti ponudbo.</p>
+                  {/* Uvodni pogovor je stvar Flowa, ne kalkulatorja: ista vprasanja
+                      pridejo tudi z bannerja na plosci, kalkulator pa je le eno
+                      od orodij. Zato naslov nagovarja na ravni Flowa. */}
+                  <p className="ob-kicker">Spoznajva se</p>
+                  <h1 className="ob-naslov uvod-h">Živjo, sem Flow.</h1>
+                  <p className="sub uvod-sub">Nekaj vprašanj, da te spoznam — potem so cene, ponudbe in cilji nastavljeni po tebi, ne po privzetih številkah.</p>
+                  <p className="uvod-enkrat">To te vprašam samo enkrat. Pozneje se ne ponovi, odgovore lahko kadar koli spremeniš v profilu.</p>
                 </div>
               )}
               {/* transkript vprasanj — samo MED onboardingom ali ko je bil opravljen ta obisk;
@@ -6599,7 +6708,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   ))}
                 </div>
               )}
-              {chatKorak > 1 && uvodOdgovorMehur(1, CHAT_IZK.find(o => o.id === izkusnje)?.ime || 'Nekaj let izkušenj')}
+              {/* rezerva je IZKUSNJE (vseh pet), ne fiksen niz: kdor je v Profilu
+                  izbral "Študent", je prej v pogovoru bral "Nekaj let izkušenj" */}
+              {chatKorak > 1 && uvodOdgovorMehur(1, CHAT_IZK.find(o => o.id === izkusnje)?.ime || IZKUSNJE.find(o => o.id === izkusnje)?.ime || 'Nekaj let izkušenj')}
 
               {/* O TEBI: podjetje + tvoja regija (na zacetku, kot dogovorjeno) */}
               {chatKorak >= 2 && (
@@ -6741,13 +6852,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   v panelu "dodaj / uredi"; prenesena sem, da ni dveh kontrol za isto stvar. */}
               {/* brez vgrajenega style: ta bi premagal razred in vrnil stari odmik */}
               {/* v oklepu klepeta, da so poravnani z oblackom nad njimi */}
-              <div className="chat-bot orbpogled-vrsta"><span className="chat-obraz" aria-hidden />
+              {/* Preklop prikaza storitev se ne sme videti med uvodnim pogovorom:
+                  pri vprasanju "Kako ti je ime?" ni nobenih storitev, ki bi jih
+                  prikazoval, zato je bral kot tri gumbi brez pomena. */}
+              {!uvodChat && <div className="chat-bot orbpogled-vrsta"><span className="chat-obraz" aria-hidden />
                 <div className="segpills segpills-orbpogled" role="group" aria-label="Prikaz storitev">
                   <button type="button" className={!orbTabela && !pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(false); }}>Mehurčki</button>
                   <button type="button" className={!orbTabela && pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(true); }}>Mreža</button>
                   <button type="button" className={orbTabela ? 'on' : ''} onClick={() => setOrbTabela(true)}>Tabela</button>
                 </div>
-              </div>
+              </div>}
 
               {/* vnosna vrstica (ime / ime ponudbe) — samo med onboardingom (podjetje ima svojo formo zgoraj) */}
               {uvodChat && (chatKorak === 0 || chatKorak === 6) && (

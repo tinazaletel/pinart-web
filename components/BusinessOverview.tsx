@@ -93,9 +93,13 @@ export default function BusinessOverview({ base }: { base: string }) {
     if (period === 'quarter') return value.getFullYear() === now.getFullYear() && Math.floor(value.getMonth() / 3) === Math.floor(now.getMonth() / 3);
     return value.getFullYear() === now.getFullYear() && value.getMonth() === now.getMonth();
   };
-  const activeInvoices = preview === 'demo' ? demo.invoices : preview === 'mine' ? invoices : [];
-  const activeExpenses = preview === 'demo' ? demo.expenses : preview === 'mine' ? expenses : [];
-  const activeOffers = preview === 'demo' ? demo.offers : preview === 'mine' ? offers : [];
+  /* "Začetek" = prvi teden: nekaj demo zapisov, namenoma nepopolno (brez
+     pogodb), da se vidi, kako izgledajo delne vsote ob praznih razdelkih.
+     Rezine so iste kot v `podatkiZaPredogled`, ki jo uporabljajo podstrani. */
+  const zac = preview === 'zacetek';
+  const activeInvoices = preview === 'demo' ? demo.invoices : zac ? demo.invoices.slice(0, 1) : preview === 'mine' ? invoices : [];
+  const activeExpenses = preview === 'demo' ? demo.expenses : zac ? demo.expenses.slice(0, 2) : preview === 'mine' ? expenses : [];
+  const activeOffers = preview === 'demo' ? demo.offers : zac ? demo.offers.slice(0, 2) : preview === 'mine' ? offers : [];
   const activeContracts = preview === 'mine' ? contracts : [];
   const periodInvoices = activeInvoices.filter(i => inPeriod(i.date));
   const periodExpenses = activeExpenses.filter(e => inPeriod(e.date));
@@ -271,7 +275,8 @@ export default function BusinessOverview({ base }: { base: string }) {
 
   return (
     <>
-      <div className={styles.previewBar}><div><strong>Predogled stanja</strong><span>Primerjaj prvi dan z utečenim poslovanjem.</span></div><div className={styles.previewSwitch}><button className={preview === 'empty' ? styles.previewActive : ''} onClick={() => setPreview('empty')}>Prazno</button><button className={preview === 'mine' ? styles.previewActive : ''} onClick={() => setPreview('mine')}>Moji</button><button className={preview === 'demo' ? styles.previewActive : ''} onClick={() => setPreview('demo')}>Demo</button></div></div>
+      {/* Preklop stanj je zdaj v zgornji vrstici (samo na razvoju). Tu je bil
+          preozek — stiri gumbi v 12.7rem so se prekrivali in besedila ni bilo brati. */}
       {feedback && <div className={styles.feedback} role="status"><span>{feedback}</span><button type="button" onClick={() => setFeedback('')} aria-label="Zapri obvestilo">×</button></div>}
       <section className={styles.flowBand} id="tools" aria-labelledby="tools-title">
         <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>01 · ORODJA</p><h2 id="tools-title">Kaj boš danes uredila?</h2></div></div>
