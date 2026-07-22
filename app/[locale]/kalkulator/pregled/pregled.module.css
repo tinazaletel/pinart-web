@@ -27,6 +27,11 @@
 .shell :is(input, select, textarea) { min-height: 2.75rem; font-size: 16px !important; line-height: 1.35; }
 .shell input::file-selector-button { min-height: 2.25rem; margin-right: .75rem; padding: 0 1.1rem; border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font: 700 14px var(--font-sans), sans-serif; cursor: pointer; transition: transform .18s ease, opacity .18s ease; }
 .shell input::file-selector-button:hover { transform: translateY(-1px); opacity: .9; }
+/* Datotecno polje: gumb je bil visji od skatle vnosa in je legel cez napis "no file selected".
+   Skatli damo dovolj visine in poravnamo besedilo z gumbom.
+   :not([hidden]) je NUJEN — sicer display:flex povozi atribut hidden in skriti
+   vnos (npr. za logotip v Nastavitvah) pride na plan ter razbije sirino kartice. */
+.shell input[type='file']:not([hidden]) { display: flex; align-items: center; min-height: 3.1rem; padding-block: .45rem; font-size: .8rem; }
 .shell select { padding-right: 3rem !important; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='m5 7.5 5 5 5-5' fill='none' stroke='%231c1815' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: right 1rem center !important; background-repeat: no-repeat; background-size: 1.25rem 1.25rem; }
 .shell input[type='date'] { padding-right: 1rem !important; }
 .shell input[type='date']::-webkit-calendar-picker-indicator { width: 1.25rem; height: 1.25rem; margin-left: .75rem; padding: .15rem; cursor: pointer; opacity: .9; }
@@ -74,6 +79,32 @@
 .subnav .navItem { padding-block: .58rem; font-size: .69rem; }
 .subnav .navItem span { font-size: .52rem; }
 .profile { display: flex; align-items: center; gap: .65rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
+/* ── Zlaganje menija (samo namizje; pod 980px je meni ze vodoravna vrstica) ── */
+.meniZapri { display: grid; place-items: center; width: 1.8rem; height: 1.8rem; margin-left: auto; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--paper); color: color-mix(in oklch, var(--ink) 60%, transparent); cursor: pointer; }
+.meniZapri:hover { color: var(--ink); }
+.meniZapri svg { width: 1rem; height: 1rem; }
+.meniOdpri { display: none; position: fixed; z-index: 90; top: .9rem; left: .9rem; place-items: center; width: 2.4rem; height: 2.4rem; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--paper); color: var(--ink); box-shadow: 0 .5rem 1.5rem oklch(20% .03 55 / .12); cursor: pointer; }
+.meniOdpri svg { width: 1.15rem; height: 1.15rem; }
+
+@media (min-width: 981px) {
+  :global(body[data-meni='zaprt']) .shell { grid-template-columns: 0 minmax(0, 1fr); }
+  :global(body[data-meni='zaprt']) .sidebar { display: none; }
+  :global(body[data-meni='zaprt']) .meniOdpri { display: grid; }
+}
+@media (max-width: 980px) { .meniZapri, .meniOdpri { display: none !important; } }
+
+/* Naslov skupine v meniju (Delo / Podatki / Nacrt / Drugo) */
+.navGroup { margin: 1.15rem 0 .35rem; padding-left: .1rem; color: color-mix(in oklch, var(--ink) 45%, transparent); font-size: .58rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.navGroup:first-child { margin-top: .5rem; }
+
+/* Uporabniski meni na dnu stranske vrstice (cip = gumb, meni se odpre NAVZGOR) */
+.userMenuWrap { position: relative; margin-top: auto; }
+.userMenuWrap .profile { width: 100%; margin-top: 0; border-left: 0; border-right: 0; border-bottom: 0; background: none; font: inherit; text-align: left; cursor: pointer; }
+.userMenu { position: absolute; z-index: 80; bottom: calc(100% + .5rem); left: 0; width: 100%; min-width: 11rem; padding: .45rem; border: 1px solid var(--line); border-radius: .85rem; background: oklch(98% .01 87); box-shadow: 0 1rem 3rem oklch(20% .03 55 / .16); }
+.userMenuMail { margin: 0 0 .3rem; padding: .35rem .5rem; color: color-mix(in oklch, var(--ink) 55%, transparent); font-size: .62rem; overflow-wrap: anywhere; }
+.userMenu a, .userMenuOdjava { display: block; width: 100%; box-sizing: border-box; padding: .5rem; border: 0; border-radius: .5rem; background: none; color: var(--ink); font: 600 .72rem var(--font-sans), sans-serif; text-align: left; text-decoration: none; cursor: pointer; }
+.userMenu a:hover, .userMenuOdjava:hover { background: color-mix(in oklch, var(--ink) 8%, transparent); }
+.userMenuOdjava { margin-top: .35rem; padding-top: .55rem; border-top: 1px solid var(--line); border-radius: 0; }
 .avatar { display: grid; place-items: center; width: 2rem; aspect-ratio: 1; border-radius: 50%; background: var(--ink); color: var(--paper); font: 700 .75rem var(--font-sans), sans-serif; }
 .profile strong, .profile small { display: block; }
 .profile strong { font-size: .73rem; }
@@ -216,8 +247,13 @@
 .status_success { --dot: oklch(62% .15 150); }
 .status_danger { --dot: oklch(58% .19 25); }
 .status_neutral { --dot: oklch(62% .02 70); }
-.historyTable select.statusPill { width: 100%; min-width: 0; max-width: 8.5rem; padding: .38rem 1.65rem .38rem 1.38rem; border: 1px solid oklch(86% .012 87); appearance: none; background-color: oklch(95% .01 87); color: oklch(40% .02 70); background-image: radial-gradient(circle, var(--dot, oklch(62% .02 70)) 42%, transparent 46%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%235b554d' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: left .62rem center, right .55rem center; background-size: .5rem .5rem, 12px 12px; background-repeat: no-repeat, no-repeat; font: 700 .55rem var(--font-sans), sans-serif; cursor: pointer; }
-.historyTable select.statusPill:disabled { cursor: default; opacity: 1; }
+/* !important pri padding IN background-position je nujen: .shell select (vrstica 35) ima
+   padding-right:3rem !important in background-position:right 1rem center !important, kar je
+   (a) piko potisnilo na DESNO cez puscico in (b) odrezalo napis ("Placano" -> "Plac"). */
+.historyTable select.statusPill { width: max-content; min-width: 0; max-width: 100%; padding: .38rem 1.65rem .38rem 1.38rem !important; border: 1px solid oklch(86% .012 87); appearance: none; background-color: oklch(95% .01 87); color: oklch(40% .02 70); background-image: radial-gradient(circle, var(--dot, oklch(62% .02 70)) 42%, transparent 46%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%235b554d' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: left .62rem center, right .55rem center !important; background-size: .5rem .5rem, 12px 12px; background-repeat: no-repeat, no-repeat; font: 700 .55rem var(--font-sans), sans-serif; cursor: pointer; }
+/* Onemogocena (demo predogled) mora biti VIDNO drugacna — prej je imela opacity:1 in je
+   izgledala enako kot delujoca, zato je bilo videti, kot da izbira ne dela. */
+.historyTable select.statusPill:disabled { cursor: not-allowed; opacity: .55; background-image: radial-gradient(circle, var(--dot, oklch(62% .02 70)) 42%, transparent 46%) !important; padding-right: .9rem !important; }
 .rowArrow { display: grid; place-items: center; width: 1.8rem; aspect-ratio: 1; border: 0; border-radius: 50%; background: transparent; color: color-mix(in oklch, var(--ink) 52%, transparent); font-size: 1.45rem; cursor: pointer; transition: background 160ms ease, transform 160ms ease; }
 .rowArrow:hover { background: oklch(92% .025 87); transform: translateX(2px); }
 .openAll { width: 100%; display: flex; align-items: center; gap: .55rem; padding: .9rem 1rem; border: 0; border-top: 1px solid color-mix(in oklch, var(--ink) 10%, transparent); background: oklch(98% .008 87); color: var(--ink); font: 750 .62rem var(--font-sans), sans-serif; cursor: pointer; }
@@ -880,9 +916,13 @@
   .invoiceList article > *, .expenseList article > *,
   .invoiceList article > div:nth-child(3), .invoiceList article > select,
   .expenseList article > div:nth-child(3), .expenseList article > button { grid-column: 1; }
-  .clientDirectory > button, .projectIndex > button { grid-template-columns: auto minmax(0, 1fr); }
+  /* Tretji stolpec za puscico: pri dveh stolpcih je kot 4. otrok padla v novo vrstico
+     in obvisela spodaj levo — videti je bila kot okrasek, ki ne vodi nikamor. */
+  .clientDirectory > button, .projectIndex > button { grid-template-columns: auto minmax(0, 1fr) auto; }
   .clientDirectory > button > span:nth-child(3),
   .projectIndex > button > span:nth-child(3) { grid-column: 2; }
+  .clientDirectory > button > i,
+  .projectIndex > button > i { grid-column: 3; grid-row: 1 / -1; align-self: center; }
   .periodSwitch { max-width: 100%; overflow-x: auto; }
 }
 
@@ -1203,3 +1243,35 @@
 .clientAvatar, .invoiceStamp, .insight blockquote {
   -webkit-text-stroke: 0.5px currentColor;
 }
+
+/* ── Mobilna glava: popravki po Tininih opombah ─────────────────────────────
+   1) "× zapri" je imel margin-left:auto in ga je odrinilo dalec od BETA
+   2) zvoncek + AI sta padla v svojo vrstico pod naslov -> gresta v isto vrstico z uvodnico
+   3) razmik med "Zadnji dokumenti" in znacko "Za racunovodstvo"                        */
+@media (max-width: 980px) {
+  .backBtn { display: grid; place-items: center; flex: none; width: 2.2rem; height: 2.2rem; margin-right: .15rem; border: 1px solid var(--line); border-radius: 50%; background: var(--paper); color: var(--ink); text-decoration: none; }
+  .backBtn svg { width: 1.05rem; height: 1.05rem; }
+  .closeApp { margin-left: .1rem; }          /* tik ob BETA, ne na drugi konec vrstice */
+  .mobileMenu { margin-left: auto; }         /* meni ostane skrajno desno */
+  /* Gumb menija = okrogla ikona lojtrice. POZOR: display na <summary> mora ostati
+     privzet (list-item) — flex/grid v Safariju zlomi odpiranje <details>, zato je
+     meni ostal neodziven. Obliko nosi notranji span. */
+  .mobileMenu summary { display: list-item; list-style: none; width: max-content; min-height: 0; padding: 0; border: 0; background: none; }
+  .mobileMenu summary::marker, .mobileMenu summary::-webkit-details-marker { content: ''; display: none; }
+  .mobileMenu summary > .meniIkona { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 1px solid var(--line); border-radius: 50%; background: var(--paper); }
+  .mobileMenu summary > .meniIkona svg { width: 1.2rem; height: 1.2rem; }
+}
+
+@media (max-width: 680px) {
+  .topbar { flex-wrap: nowrap; align-items: flex-start; gap: .75rem; padding-bottom: 1.25rem; }
+  .headerTools { align-self: flex-start; margin-top: .1rem; }
+  /* V STOLPEC z izrecnim razmikom: prej sem dodal row-gap:1rem, kar je razmik celo
+     ZMANJSALO (bazni gap je 1.5rem), poleg tega je bil odvisen od preloma vrstice. */
+  /* display:flex je NUJEN — vrstica 850 (isti prelom) postavi .sectionHeader na
+     display:block, kar ubije flex, zato gap in flex-direction nista imela ucinka. */
+  .sectionHeader { display: flex; flex-direction: column; align-items: flex-start; gap: 1.15rem; }
+  .sectionHeader .accountingButton { margin-top: 0; }
+}
+
+/* gumb nazaj je samo mobilni — na namizju je navigacija ves cas vidna */
+@media (min-width: 981px) { .backBtn { display: none; } }

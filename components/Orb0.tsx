@@ -93,6 +93,11 @@ export const ORB0_CSS = `
   .rw .orb0 .orb0-ikona { position: relative; z-index: 1; display: block; margin-bottom: .12rem; filter: drop-shadow(0 1px 2px rgba(35,18,45,.45)); }
   .rw .orb0 .orb0-ikona svg { width: 24px; height: 24px; display: block; }
   .rw .orb0 .orb0-ime { position: relative; z-index: 1; font-weight: 700; font-size: .86rem; line-height: 1.12; padding: 0 1.1em; text-shadow: 0 1px 3px rgba(35,18,45,.5); }
+  /* Besede se NE lomijo sredi besede (prej je "Copywriting" postal "Copywritin-g").
+     Prelom je dovoljen samo MED besedami; da napis ne gleda cez rob, so mehurcki
+     dovolj veliki (glej izracun utezi v KalkulatorApp/RetainerWorkspace). */
+  .rw .orb0 .orb0-ime { max-width: 100%; white-space: normal; overflow-wrap: normal; word-break: normal; hyphens: none; }
+  @media (max-width: 640px) { .rw .orb0 .orb0-ime { font-size: .72rem; padding: 0 .45em; } }
   .rw .orb0 .orb0-check { position: absolute; top: 8%; right: 8%; z-index: 3; width: 1.5em; height: 1.5em; border-radius: 999px; background: var(--accent); color: #fff; font-weight: 800; font-size: .82rem; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,.55); box-shadow: 0 5px 14px rgba(0,0,0,.25); }
   .rw .orb0.orb0-plus { color: rgba(17,17,17,.55); }
   .rw .orb0.orb0-plus .orb0-krog { position: absolute; inset: 4%; border-radius: 50%; border: 1.5px dashed rgba(17,17,17,.4); transition: border-color .18s; }

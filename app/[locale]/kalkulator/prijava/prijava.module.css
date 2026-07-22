@@ -55,6 +55,20 @@
 .error { background: oklch(94% .055 25); color: oklch(45% .15 25); }.success { background: oklch(94% .055 145); color: oklch(40% .11 150); }
 .freeNote { margin: 1.5rem 0 .25rem; color: oklch(42% .02 70); font-size: .9rem; }.freeNote strong { color: var(--ink); }
 .calculatorLink { display: inline-block; color: var(--ink); font-size: .92rem; font-weight: 800; text-underline-offset: .3rem; }
+/* Besedilna povezava v obrazcu (Ste pozabili geslo?, ponovna potrditev, nazaj) */
+.textLink { align-self: center; padding: .2rem .1rem; border: 0; background: none; color: oklch(38% .02 70); font: 600 .9rem var(--font-manrope), sans-serif; text-decoration: underline; text-underline-offset: .28rem; cursor: pointer; }
+.textLink:hover { color: var(--ink); }
+.textLink:disabled { cursor: wait; opacity: .6; }
+.textLink:focus-visible { outline: 3px solid oklch(60% .2 270); outline-offset: 3px; border-radius: .35rem; }
 @media (max-width: 900px) { .page { grid-template-columns: 1fr; gap: 2.5rem; padding-top: 7rem; }.page::after { right: -5rem; top: 10rem; bottom: auto; }.authPanel { justify-self: stretch; }.intro h2 { max-width: 12ch; }.intro ul { display: none; } }
-@media (max-width: 560px) { .page { min-width: 0; padding: 4.6rem 1rem 1.4rem; gap: 1.3rem; background-size: 3.5rem 3.5rem; }.brand { top: 1.3rem; left: 1rem; max-width: calc(100vw - 2rem); }.intro, .authPanel { min-width: 0; }.intro > p { margin-bottom: .5rem; }.intro h2 { font-size: 1.95rem; line-height: 1.02; letter-spacing: -.01em; overflow-wrap: anywhere; }.flowLine { display: none; }.authPanel { width: 100%; box-sizing: border-box; padding: 1.25rem; border-radius: 1.1rem; }.modeSwitch { width: 100%; }.modeSwitch button { flex: 1; min-width: 0; padding-inline: .7rem; }.twoColumns { grid-template-columns: 1fr; }.formHeading h1 { font-size: 2.4rem; }.passwordField input { padding-right: 1rem; }.passwordField button { position: static; width: 100%; min-height: 2.75rem; margin-top: .5rem; transform: none; } }
+@media (max-width: 560px) { .page { min-width: 0; padding: 3.4rem 1rem 1.1rem; gap: .9rem; background-size: 3.5rem 3.5rem; }
+  /* Levi predstavitveni stolpec je namizni: na telefonu podvaja naslov panela in poje
+     172px, zaradi cesar prijava ni sla na en zaslon. Panel ima svoj naslov in obljubo. */
+  .intro { display: none; }
+  .formHeading { margin: 1.25rem 0 1rem; }
+  .formHeading > span { margin-top: .55rem; font-size: .92rem; line-height: 1.45; }
+  .googleButton { min-height: 2.9rem; }
+  .form { gap: .8rem; }
+  .submit { min-height: 3rem; }
+  .freeNote { margin: 1rem 0 .2rem; font-size: .85rem; }.brand { top: 1.3rem; left: 1rem; max-width: calc(100vw - 2rem); }.intro, .authPanel { min-width: 0; }.intro > p { margin-bottom: .5rem; }.intro h2 { font-size: 1.95rem; line-height: 1.02; letter-spacing: -.01em; overflow-wrap: anywhere; }.flowLine { display: none; }.authPanel { width: 100%; box-sizing: border-box; padding: 1.25rem; border-radius: 1.1rem; }.modeSwitch { width: 100%; }.modeSwitch button { flex: 1; min-width: 0; padding-inline: .7rem; }.twoColumns { grid-template-columns: 1fr; }.formHeading h1 { font-size: 2.05rem; line-height: 1.04; letter-spacing: -.015em; max-width: 15ch; }.passwordField input { padding-right: 1rem; }.passwordField button { position: static; width: 100%; min-height: 2.75rem; margin-top: .5rem; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .page *, .page *::before, .page *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }

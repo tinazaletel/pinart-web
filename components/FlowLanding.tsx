@@ -589,7 +589,11 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 760px) { .fl-zgodba-telo { grid-template-columns: 1fr; } .fl-zgodba-portret { max-width: 16rem; } }
         .fl-zgodba-portret { position: relative; display: grid; place-items: center; aspect-ratio: 1; }
         .fl-zgodba-foto { grid-area: 1 / 1; width: 80%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: linear-gradient(150deg, oklch(90% .06 297), oklch(91% .05 330), oklch(90% .06 165)); box-shadow: 0 18px 44px rgba(40,25,60,.18); }
-        .fl-zgodba-foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 8%; transform: scale(1.34); transform-origin: 50% 20%; }
+        /* Izrez kroga je izracunan na izvorno sliko (1470x1970): pokaze kvadrat x[233,1107] y[0,875],
+           tj. glava+ramena centrirano — obraz (y~350) pade na 40% visine kroga, njena sredina (x~670) na 50% sirine.
+           Vodoravni zamik dela transform-origin X (39%), ker pri object-fit:cover sirina tocno napolni krog
+           in object-position X zato nima ucinka. */
+        .fl-zgodba-foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; transform: scale(1.68); transform-origin: 39% 0%; }
         .fl-zgodba-portret .circular-text { grid-area: 1 / 1; width: 100%; height: 100%; color: var(--ink); opacity: .82; }
         .fl-zgodba-tekst p { font-size: 1.02rem; line-height: 1.72; color: rgba(17,17,17,.82); margin: 0 0 1.1rem; max-width: 60ch; }
         .fl-zgodba-tekst p:first-child { font-size: 1.18rem; line-height: 1.6; color: var(--ink); }

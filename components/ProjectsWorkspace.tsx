@@ -10,7 +10,7 @@ import { loadFlowData, saveOfferAmount, type FlowContract, type FlowExpense, typ
    CSS pravila (fill:none), da so Phosphor ikone vidne. */
 const IKONA_SLOG = { fill: 'currentColor', stroke: 'none' } as const;
 
-const statusLabel: Record<FlowOfferStatus, string> = { draft: 'Osnutek', sent: 'Čaka odgovor', accepted: 'Sprejeta', rejected: 'Zavrnjena' };
+const statusLabel: Record<FlowOfferStatus, string> = { draft: 'Osnutek', sent: 'Čaka', accepted: 'Sprejeta', rejected: 'Zavrnjena' };
 const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFractionDigits: 2 })} €`;
 
 export default function ProjectsWorkspace({ base }: { base: string }) {

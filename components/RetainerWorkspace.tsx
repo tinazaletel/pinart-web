@@ -5,7 +5,7 @@
    shrambe. Naredi retainer PONUDBO in POGODBO (PDF prek /api/ponudba-pdf). */
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { PersonSimple, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp, TextB, TextItalic } from '@phosphor-icons/react';
+import { User, TextAa, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp, TextB, TextItalic } from '@phosphor-icons/react';
 import { saveRetainerDraft } from '@/lib/pinartFlowCloud';
 import { OrbSfera, ORB_BARVE, ikonaZa, ORB0_CSS, osvetli } from './Orb0';
 import VidezDokumentov from './VidezDokumentov';
@@ -81,27 +81,41 @@ const Vpr = ({ naslov, opis }: { naslov: string; opis?: string }) => (
 
 /* satasta (honeycomb) razporeditev mehurckov — kot pri ponudbi (vrste 3-2-3, zamaknjene) */
 const ORB_D = 156; /* premer mehurcka (px) — enak kot kalkulator (<=14 storitev) */
-function scatter(n: number) {
-  const orbMax = 4; /* siroka vrsta 4, ozja 3 */
+/* Mobilno enako kot kalkulator: 3 v siroki vrsti in premer 84, da najvecji mehurcek
+   pride ~16px od roba zaslona. Prej sta bila 156px in 4 v vrsti fiksna, zato so bili
+   na telefonu preveliki in odrezani ob desnem robu. */
+const ORB_D_MOB = 96;
+function scatter(n: number, jeMobilni = false) {
+  const orbD = jeMobilni ? ORB_D_MOB : ORB_D;
+  const orbMax = jeMobilni ? 3 : 4; /* siroka vrsta 4 (mobilno 3), ozja ena manj */
   const rs: number[] = []; let left = n, wide = true;
   while (left > 0) { const s = Math.min(left, wide ? orbMax : orbMax - 1); rs.push(s); left -= s; wide = !wide; }
   const start: number[] = []; let acc = 0; for (const s of rs) { start.push(acc); acc += s; }
-  const step = 84 / Math.max(orbMax - 1, 1);
-  const rowH = Math.round(ORB_D * 1.02) - 14;
+  const step = (jeMobilni ? 62 : 84) / Math.max(orbMax - 1, 1);
+  const rowH = jeMobilni ? Math.round(orbD * 1.34) : Math.round(orbD * 1.02) - 14;
   const poz = (i: number) => {
     let row = 0; while (row < rs.length - 1 && i >= start[row + 1]) row++;
     const cnt = rs[row]; const inRow = i - start[row];
     const isLast = row === rs.length - 1;
     /* zadnjo vrsto (Kreativna direkcija + dodaj) poravnamo DESNO — zadnji mehurcek (dodaj)
        pade na isti stolpec kot desni mehurcek ozje vrste (Fotografija, x=78%) */
-    const startX = isLast ? (78 - (cnt - 1) * step) : (50 - ((cnt - 1) * step) / 2);
+    /* na mobilu vse vrste centriramo (3-2-3); desna poravnava zadnje vrste je namizni trik */
+    const startX = (isLast && !jeMobilni) ? (78 - (cnt - 1) * step) : (50 - ((cnt - 1) * step) / 2);
     const x = startX + inRow * step;
     return { x: Math.min(92, Math.max(8, x)), row };
   };
-  return { rows: rs.length, rowH, poz };
+  return { rows: rs.length, rowH, poz, orbD };
 }
 
 export default function RetainerWorkspace({ base }: { base: string }) {
+  /* enako kot kalkulator: pod 640px 3 mehurcki v vrsti in manjsi premer */
+  const [jeMobilni, setJeMobilni] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    const upd = () => setJeMobilni(mq.matches);
+    upd(); mq.addEventListener('change', upd);
+    return () => mq.removeEventListener('change', upd);
+  }, []);
   const [ponudnik, setPonudnik] = useState<Ponudnik>({ ime: '', davcna: '', email: '', telefon: '', naslov: '', trr: '' });
   const [predklic, setPredklic] = useState('+386');
   const [urna, setUrna] = useState(PRIVZETA_URNA);
@@ -130,6 +144,8 @@ export default function RetainerWorkspace({ base }: { base: string }) {
   const [predNal, setPredNal] = useState(false);
   /* urejevalnik telesa dokumenta (kot kalkulator: contentEditable + orodjarna) */
   const [predogledMode, setPredogledMode] = useState(false);
+  /* mobilni slide-up predal za oblikovanje — enako kot v kalkulatorju */
+  const [ponSheet, setPonSheet] = useState<null | 'oblika'>(null);
   const [oznaciNamig, setOznaciNamig] = useState(false);
   const [velikostBesedila, setVelikostBesedila] = useState(3);
   const [rocnoTelo, setRocnoTelo] = useState(false);
@@ -212,7 +228,10 @@ export default function RetainerWorkspace({ base }: { base: string }) {
   }, [model, ure, urna, paketMes, doba]);
 
   const vsiScope = [...scope, ...lastna];
-  const L = scatter(SCOPE.length + 1); /* + "dodaj" mehurcek */
+  const L = scatter(SCOPE.length + 1, jeMobilni); /* + "dodaj" mehurcek */
+  /* Enako kot kalkulator: na mobilu stisnemo razpon utezi, da je tudi najlazji mehurcek
+     dovolj velik za svoj napis (npr. "Social media"), najtezji pa ne pride do roba. */
+  const tezaOrb = (t: number) => (jeMobilni ? 0.668 + 0.365 * t : t);
   const zDdv = (n: number) => Math.round(n * (1 + ddvStopnja / 100));
   const toggle = (id: string) => setScope(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
   const dodajLastno = () => { const v = scopeVnos.trim(); if (v && !lastna.includes(v)) setLastna(l => [...l, v]); setScopeVnos(''); };
@@ -377,16 +396,21 @@ export default function RetainerWorkspace({ base }: { base: string }) {
   }, [oznaciNamig]);
 
   const avatarIme = imeUporabnika.trim() || ponudnik.ime.trim();
-  const avatarVsebina = avatarIme ? avatarIme.charAt(0).toUpperCase() : <PersonSimple size={18} weight="bold" />;
+  /* User (doprsje), NE PersonSimple — ta je enaka ikoni za dostopnost. */
+  const avatarVsebina = avatarIme ? avatarIme.charAt(0).toUpperCase() : <User size={19} weight="regular" />;
 
   return (
     <div className="rw">
       <header className="rw-glava">
         <span className="rw-glava-levo">
+          {/* puscica PRED logotipom — enako kot na podstraneh nadzorne plosce */}
+          <a className="rw-nazaj" href={`${base}/kalkulator/pregled`} aria-label="Nazaj na nadzorno ploščo" title="Nazaj na nadzorno ploščo">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </a>
           <span className="rw-brand">
             <b className="rw-pinart">Pinart</b><span className="rw-glava-ime">Dolgoročno</span><span className="rw-beta">BETA</span>
           </span>
-          <a className="rw-zapri" href={`${base}/kalkulator/pregled`} aria-label="Zapri, nazaj na pregled">✕ zapri</a>
+          {/* "zapri" odstranjen: retainer je vedno del admina, zato puscica nazaj zadostuje */}
         </span>
         <button type="button" className="rw-avatar" aria-label="Profil" title="Profil" onClick={() => setProfilOdprt(true)}>
           {avatarVsebina}
@@ -425,10 +449,10 @@ export default function RetainerWorkspace({ base }: { base: string }) {
               const p = L.poz(i);
               const on = scope.includes(s.id);
               const barvi = ORB_BARVE[i % ORB_BARVE.length];
-              const d = Math.round(ORB_D * s.teza);
+              const d = Math.round(L.orbD * tezaOrb(s.teza));
               return (
                 <button key={s.id} type="button" className={'orb0' + (on ? ' on' : '')} aria-pressed={on} onClick={() => toggle(s.id)}
-                  style={{ left: `calc(${p.x}% - ${d / 2}px)`, top: p.row * L.rowH + 8 + (ORB_D - d) / 2, width: d, height: d, ...plavajVars(i) }}>
+                  style={{ left: `calc(${p.x}% - ${d / 2}px)`, top: p.row * L.rowH + 8 + (L.orbD - d) / 2, width: d, height: d, ...plavajVars(i) }}>
                   <OrbSfera id={s.id} o1={barvi[0]} />
                   <span className="orb0-ikona" aria-hidden>{ikonaZa(s.ikon)}</span>
                   <span className="orb0-ime">{s.kratko}</span>
@@ -440,7 +464,7 @@ export default function RetainerWorkspace({ base }: { base: string }) {
               const p = L.poz(SCOPE.length);
               return (
                 <button type="button" className="orb0 orb0-plus" onClick={() => setDodajOdprt(v => !v)}
-                  style={{ left: `calc(${p.x}% - ${ORB_D / 2}px)`, top: p.row * L.rowH + 8, width: ORB_D, height: ORB_D, ...plavajVars(SCOPE.length) }}>
+                  style={{ left: `calc(${p.x}% - ${L.orbD / 2}px)`, top: p.row * L.rowH + 8, width: L.orbD, height: L.orbD, ...plavajVars(SCOPE.length) }}>
                   <span className="orb0-krog" aria-hidden />
                   <span className="orb0-ikona" aria-hidden style={{ fontSize: '1.5rem', lineHeight: 1 }}>+</span>
                   <span className="orb0-ime">dodaj</span>
@@ -553,6 +577,12 @@ export default function RetainerWorkspace({ base }: { base: string }) {
               <button type="button" className={!predogledMode ? 'on' : ''} onClick={() => setPredogledMode(false)}><PencilSimple size={15} weight="bold" /> Uredi</button>
               <button type="button" className={predogledMode ? 'on' : ''} onClick={() => setPredogledMode(true)}><Eye size={16} /> Predogled</button>
             </div>
+            {/* samo ikona, da gre vse v eno vrstico (enako kot kalkulator) */}
+            {jeMobilni && !predogledMode && (
+              <button type="button" className="rw-sheet-trig" onClick={() => setPonSheet(v => (v ? null : 'oblika'))} aria-label="Oblikovanje" title="Oblikovanje">
+                <TextAa size={18} weight="bold" />
+              </button>
+            )}
             <div className="rw-segpills rw-segpills-sek" role="group" aria-label="Dokument">
               <button type="button" className={predType === 'pogodba' ? 'on' : ''} onClick={() => { setPredType('pogodba'); setRocnoTelo(false); }}>Pogodba</button>
               <button type="button" className={predType === 'ponudba' ? 'on' : ''} onClick={() => { setPredType('ponudba'); setRocnoTelo(false); }}>Retainer ponudba</button>
@@ -571,7 +601,11 @@ export default function RetainerWorkspace({ base }: { base: string }) {
             </div>
           ) : (
             <>
-              <div className="rw-orodjarna" aria-label="Oblikovanje besedila">
+              {/* Na mobilu ista orodjarna postane slide-up predal (razred "odprt"), da ne
+                  zaseda stirih vrstic nad dokumentom. Vsebina ostane ena sama -> refi se ne podvojijo. */}
+              {jeMobilni && ponSheet && <div className="rw-sheet-back" onClick={() => setPonSheet(null)} aria-hidden />}
+              <div className={'rw-orodjarna' + (jeMobilni ? ' rw-orodjarna-sheet' : '') + (ponSheet ? ' odprt' : '')} aria-label="Oblikovanje besedila" aria-hidden={jeMobilni && !ponSheet}>
+                {jeMobilni && <div className="rw-sheet-glava"><b>Oblikovanje</b><button type="button" className="rw-sheet-x" onClick={() => setPonSheet(null)} aria-label="Zapri">✕</button></div>}
                 {oznaciNamig && <div className="rw-oznaci-namig" role="status">Najprej označi besedilo</div>}
                 <div className="rw-tool-vel2" role="group" aria-label="Velikost besedila">
                   <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); velikost(-1); }} title="Manjše" aria-label="Pomanjšaj"><CaretDown size={14} weight="bold" /></button>
@@ -662,13 +696,17 @@ export default function RetainerWorkspace({ base }: { base: string }) {
         .rw{position:relative;min-height:100dvh;color:var(--ink);font-weight:400;overflow-x:clip}
         /* header (kot kalkulator: Pinart | Dolgorocno | BETA  ...  x zapri) */
         .rw-glava{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:.85rem clamp(1.2rem,4vw,3rem);background:var(--paper);border-bottom:1px solid rgba(17,17,17,.08)}
-        .rw-glava-levo{display:inline-flex;align-items:center;gap:1rem}
+        /* min-width:0 + shrink: brez tega leva skupina (z novo puscico) preraste prostor in
+           pri space-between stisne avatar ob rob; "zapri" se je lomil v dve vrstici. */
+        .rw-glava-levo{display:inline-flex;align-items:center;gap:1rem;min-width:0;flex:1 1 auto;overflow:hidden}
+        .rw-glava > .rw-avatar{flex:0 0 auto}
         .rw-brand{display:inline-flex;align-items:center;gap:.5rem}
         .rw-pinart{font-weight:800;font-size:1rem;letter-spacing:-.01em;color:var(--ink);line-height:1}
-        .rw-glava-ime{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);line-height:1}
+        /* "DOLGOROCNO" je dolga beseda — tesnejsi razmik crk in malenkost manjsa, da glava diha */
+        .rw-glava-ime{font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--ink);line-height:1;white-space:nowrap}
         .rw-beta{font-size:.56rem;font-weight:700;letter-spacing:.1em;color:var(--accent);border:1px solid var(--accent);border-radius:4px;padding:.1rem .3rem;line-height:1;text-transform:uppercase}
-        .rw-zapri{display:inline-flex;align-items:center;gap:.4rem;font-size:.72rem;font-weight:600;letter-spacing:.02em;color:rgba(17,17,17,.6);text-decoration:none;padding:.2rem 0 .2rem 1rem;border-left:1px solid rgba(17,17,17,.2);transition:color .18s}
-        .rw-zapri:hover{color:var(--ink)}
+        .rw-nazaj{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;margin-right:.2rem;border:1px solid rgba(17,17,17,.2);border-radius:50%;background:var(--paper);color:var(--ink);text-decoration:none;flex:none}
+        .rw-nazaj svg{width:1.05rem;height:1.05rem}
         .rw-avatar{width:2rem;height:2rem;border-radius:50%;border:1px solid rgba(17,17,17,.2);background:var(--paper);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;font-weight:700;font-size:.8rem;color:var(--ink);transition:color .18s,border-color .18s}
         .rw-avatar:hover{border-color:rgba(17,17,17,.5)}
         .rw-profil-zastor{position:fixed;inset:0;z-index:60;background:rgba(20,16,26,.34);backdrop-filter:blur(3px);display:flex;justify-content:flex-end}
@@ -835,6 +873,18 @@ export default function RetainerWorkspace({ base }: { base: string }) {
         .rw-segpills-sek button.on{background:rgba(17,17,17,.09);color:var(--ink)}
         .rw-segpills-pogled button{display:inline-flex;align-items:center;gap:.35rem}
         .rw-orodjarna{position:relative;display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin:1rem 0 .8rem}
+        /* ── Mobilni predal za oblikovanje (enak jezik kot kalkulatorjev pon-sheet) ── */
+        .rw-sheet-trig{display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;padding:0;border:1px solid rgba(17,17,17,.22);border-radius:999px;background:var(--paper);color:var(--ink);cursor:pointer}
+        .rw-sheet-back{position:fixed;inset:0;background:rgba(30,18,35,.34);z-index:78}
+        .rw-sheet-glava{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;padding:1.35rem 1.2rem .65rem;border-bottom:1px solid rgba(17,17,17,.1)}
+        .rw-sheet-glava::before{content:'';position:absolute;top:.5rem;left:50%;transform:translateX(-50%);width:2.4rem;height:.3rem;border-radius:999px;background:rgba(17,17,17,.18)}
+        .rw-sheet-glava b{font-size:1.05rem;font-weight:700}
+        .rw-sheet-x{width:2.1rem;height:2.1rem;display:inline-flex;align-items:center;justify-content:center;border:none;background:rgba(17,17,17,.06);border-radius:50%;font-size:1.1rem;line-height:1;color:var(--ink);cursor:pointer}
+        @media (max-width:640px){
+          .rw-orodjarna.rw-orodjarna-sheet{position:fixed;left:0;right:0;bottom:0;z-index:80;margin:0;max-height:76dvh;overflow-y:auto;padding:0 1.2rem calc(1.5rem + env(safe-area-inset-bottom,0px));background:var(--paper);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px rgba(40,25,40,.22);transform:translateY(102%);transition:transform .32s cubic-bezier(.2,.8,.3,1)}
+          .rw-orodjarna.rw-orodjarna-sheet.odprt{transform:translateY(0)}
+          .rw-orodjarna.rw-orodjarna-sheet > *:not(.rw-sheet-glava){margin-top:.55rem}
+        }
         .rw-oznaci-namig{position:absolute;top:-2.5rem;left:1rem;background:var(--ink);color:var(--paper);font-size:.8rem;font-weight:600;padding:.4rem .85rem;border-radius:999px;white-space:nowrap;box-shadow:0 8px 22px rgba(17,17,17,.22);z-index:6;pointer-events:none}
         .rw-tool-krog{width:2.6rem;height:2.6rem;border-radius:50%;border:none;background:rgba(17,17,17,.06);color:var(--ink);font-family:inherit;font-weight:700;font-size:.82rem;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:background .15s,color .15s}
         .rw-tool-krog:hover{background:var(--ink);color:var(--paper)}

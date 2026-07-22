@@ -25,3 +25,12 @@
 .plan { display: grid; gap: 1rem; padding: 1.5rem; background: linear-gradient(145deg, oklch(98% .01 87), oklch(95% .035 165)); }.plan header { display: flex; justify-content: space-between; align-items: start; }.plan pre { max-height: 36rem; overflow: auto; margin: 0; padding: 1.5rem; border: 1px solid oklch(100% 0 0 / .75); border-radius: 1rem; background: oklch(100% 0 0 / .78); white-space: pre-wrap; overflow-wrap: anywhere; font: 500 1rem/1.65 var(--font-manrope), sans-serif; }.plan > small { color: var(--muted); text-align: right; }
 @media (max-width: 1100px) { .canvas { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: none; }.canvas article[data-block] { grid-area: auto; }.canvas article[data-block='value'] { grid-column: 1 / -1; } }
 @media (max-width: 700px) { .page { min-width: 0; }.intro, .actions { grid-template-columns: 1fr; gap: 1.25rem; padding: 1.15rem; }.intro::after { right: -4rem; }.progress { width: 7rem; }.canvas { grid-template-columns: 1fr; }.canvas article[data-block='value'] { grid-column: auto; }.canvas article { min-width: 0; min-height: auto; padding: 1rem; }.canvas textarea { min-height: 8rem; }.actions > div:last-child, .plan footer { justify-content: stretch; flex-direction: column; }.actions button, .plan footer button { width: 100%; min-height: 3rem; }.plan { min-width: 0; padding: 1rem; }.plan header { gap: .75rem; }.plan header > button { flex: 0 0 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }.plan pre { max-width: 100%; padding: 1rem; box-sizing: border-box; } }
+
+/* Kolac napredka na telefonu: sredinsko in z lazjim obrocem — pri 7rem je bil
+   1.1rem debel obroc pretezak, stevilka pa stisnjena ob napis. */
+@media (max-width: 700px) {
+  .progress { justify-self: center; width: 6.6rem; box-shadow: inset 0 0 0 .8rem oklch(97% .01 87), 0 .6rem 1.6rem oklch(45% .08 285 / .1); }
+  .progress strong { font-size: 1.7rem; }
+  .progress span { max-width: 6rem; margin-top: .25rem; font-size: .66rem; line-height: 1.25; }
+  .intro::after { display: none; }
+}

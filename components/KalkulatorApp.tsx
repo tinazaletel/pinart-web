@@ -8,6 +8,7 @@ import { loadFlowData, saveFlowCollection, type FlowInvoice } from '@/lib/pinart
 import { saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
 import VidezDokumentov from '@/components/VidezDokumentov';
+import IzbirnikDrzave from '@/components/IzbirnikDrzave';
 import AmbientBubbles from '@/components/AmbientBubbles';
 
 import {
@@ -132,7 +133,7 @@ const MEHURCEK: Record<string, boolean> = {};
    niche manjse; poleg tega raste z rabo. */
 const TEZA: Record<string, number> = {
   cgp: 1.32, publikacija: 1.16, arhitektura: 1.26, aplikacija: 1.2, produktni: 1.16,
-  dizajnsistem: 1.16, interier: 1.14, web: 1.14, video: 1.14, uxui: 1.1, razstava: 1.1, strategija: 1.1,
+  dizajnsistem: 1.16, interier: 1.14, web: 1.26, video: 1.14, uxui: 1.1, razstava: 1.1, strategija: 1.1,
   embalaza: 0.86, copy: 0.86, smm: 0.86, pr: 0.86, seo: 0.8, email: 0.8, logo: 0.94,
 };
 /* kratka imena za mehurcke (na orbu; polno ime ostane v ponudbi/drugod) */
@@ -1217,6 +1218,8 @@ const OFFER_CSS = `
       h1{font-family:'Bodoni Moda',Didot,'Bodoni MT',Georgia,serif;font-weight:600;font-size:23pt;line-height:1.08;letter-spacing:-.01em;margin:2px 0 14px;color:#111}
       .offer-head{display:flex;flex-direction:column-reverse;align-items:stretch;gap:6px;margin:0 0 12px}
       .offer-head-t{min-width:0;width:100%}.offer-head h1{margin:0}
+      /* naslov ponudbe poravnan LEVO, enako kot preostalo besedilo (ne podeduj centriranja) */
+      .offer-head,.offer-head-t,.offer-head h1,.offer-head .offer-kicker{text-align:left;text-indent:0}
       .offer-head-meta{text-align:left;font-size:8.5pt;color:#666;line-height:1.6;white-space:normal;padding:0}
       .offer-cover{box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:250mm;break-after:page;page-break-after:always;padding:18mm 12mm}
       .oc-kicker{font-size:9pt;letter-spacing:.3em;text-transform:uppercase;color:#B25476;font-weight:700;margin-bottom:20px}
@@ -1693,6 +1696,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [kazemDodajKorak, setKazemDodajKorak] = useState(false); /* iskalnik na vprasalniku — locen, da se ne podvaja s panelom */
   const [kazemUredi, setKazemUredi] = useState(false);       /* modal "dodaj / uredi" storitve */
   const [pogledMreza, setPogledMreza] = useState(false);      /* false = prosti mehurcki, true = urejena mreza po podrocjih */
+  /* preklop prikaza storitev: mehurcki <-> tabela (enako kot v retainerju) */
+  const [orbTabela, setOrbTabela] = useState(false);
   const [namigSkrit, setNamigSkrit] = useState(false);        /* uvodni namig zaprt — znova le ob ponastavitvi vprasalnika */
   const [kazemProfil, setKazemProfil] = useState(false);
   /* Profil kot drill-down (meni -> ena "podstran"), ne dolg scroll treh
@@ -1704,6 +1709,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   /* trenutno naloženi cenik (cenovni profil) — urejanje cen se sproti shrani vanj */
   const [aktivniCenik, setAktivniCenik] = useState<string | null>(null);
   const [delovniCenikOdprt, setDelovniCenikOdprt] = useState(true);
+  const delovniCenikRef = useRef<HTMLDetailsElement>(null);
   /* širok zaslon (panel ob strani, platno centrirano z vrzeljo) — za pozicijo dodaj mehurčka */
   const [jeSirokZaslon, setJeSirokZaslon] = useState(false);
   useEffect(() => {
@@ -1747,6 +1753,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const [chatVnos, setChatVnos] = useState('');
   const [chatNova, setChatNova] = useState<boolean | null>(null);
   const [odFlow, setOdFlow] = useState(false);
+  /* odprt iz admina (?od=pregled) -> v glavi pokazi puscico nazaj na nadzorno plosco */
+  const [odAdmina, setOdAdmina] = useState(false);
   /* testni sprožilec: ?uvod v URL na silo odpre fake-chat uvod (za ogled tudi
      ko si že onboardana) */
   useEffect(() => {
@@ -1755,7 +1763,23 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
       if (sp.has('uvod')) { setUvodChat(true); setChatKorak(0); }
       /* ?od=flow: prišel iz pinartflow.com landinga → "zapri" vrne na /flow */
       if (sp.get('od') === 'flow') setOdFlow(true);
+      /* ?od=pregled: odprt iz admina → pokaži gumb NAZAJ na nadzorno ploščo */
+      if (sp.get('od') === 'pregled') setOdAdmina(true);
     } catch { /* ignore */ }
+  }, []);
+  /* Puscica nazaj se ne sme zanasati SAMO na ?od=pregled — kalkulator lahko odpres tudi
+     z zaznamkom ali z drugega mesta v aplikaciji. Ce obstaja seja, uporabnik ima kam nazaj.
+     Brezplacni (neprijavljeni) obiskovalec je NE dobi, in ce Supabase manjka, tiho odnehamo. */
+  useEffect(() => {
+    let ziv = true;
+    (async () => {
+      try {
+        const { createClient } = await import('@/utils/supabase/client');
+        const { data } = await createClient().auth.getUser();
+        if (ziv && data.user) setOdAdmina(true);
+      } catch { /* brez Supabase ostane brezplacni nacin */ }
+    })();
+    return () => { ziv = false; };
   }, []);
   /* moderne pisave za urejevalnik ponudbe (best-effort; ce CSP blokira, gladek fallback na sistemsko) */
   useEffect(() => {
@@ -2196,9 +2220,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
             <div className="cu-vrsta cu-vrsta-stolpec">
               <input autoFocus type="text" value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })}
                 placeholder="Ime podjetja ali tvoje ime" onKeyDown={e => { if (e.key === 'Enter') zapri(); }} />
-              <input type="text" list="cw-drzave-list" value={custDrzavaMoj}
-                onChange={e => { const v = e.target.value; setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) { setMojTrg(t); setTrgNarocnika(t); } }}
-                placeholder="Država (npr. Slovenija)" onKeyDown={e => { if (e.key === 'Enter') zapri(); }} />
+              <IzbirnikDrzave id="cw-moja-drzava" ariaLabel="Država" placeholder="Država (npr. Slovenija)"
+                moznosti={DRZAVE.map(d => d.ime)}
+                value={custDrzavaMoj}
+                onChange={v => { setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) { setMojTrg(t); setTrgNarocnika(t); } }} />
               <button type="button" className="gumb" onClick={zapri}>Shrani</button>
             </div>
           )}
@@ -4292,9 +4317,19 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
     return sk.filter(g => g.storitve.length > 0);
   })();
   /* Velikost orba pada s stevilom storitev; pod minimum ne gre (mobile skrola). */
+  /* Mobilno: velikost je nastavljena tako, da NAJVECJI mehurcek (utez 1.32) pri treh
+     v vrsti pride ~16px od roba zaslona (375px): 0.19*375 - (84*1.32)/2 ≈ 16. */
   const orbD = jeMobilni
-    ? (orbStoritve.length <= 9 ? 82 : 74)
+    ? (orbStoritve.length <= 9 ? 100 : 96)
     : (orbStoritve.length <= 8 ? 176 : orbStoritve.length <= 14 ? 156 : 138);
+  /* Mobilni razpon utezi stisnemo v 0.96–1.15, ker sta oba konca omejena:
+     SPODAJ  = najdaljsa beseda ("Copywriting" ~86px) se mora prilegati BREZ lomljenja,
+     ZGORAJ  = pri treh v vrsti (razmik ~122px) se mehurcka ne smeta dotakniti.
+     Pri osnovi 96 to da razpon 92–110px. */
+  const tezaOrb = (id: string) => {
+    const t = TEZA[id] ?? 1;
+    return jeMobilni ? 0.668 + 0.365 * t : t;
+  };
   /* mehurcki v pravih vrsticah, razmaknjeni; platno raste s stevilom -> stran scrolla */
   const orbN = orbStoritve.length + 1; /* + "dodaj" */
   /* v chatu (korak 0, po onboardingu, ne klasicna oblika): vprasanja tecejo navzdol */
@@ -4335,7 +4370,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
   const orbVrstic = orbRowSizes.length;
   const orbRowStart = (() => { const a: number[] = []; let acc = 0; for (const s of orbRowSizes) { a.push(acc); acc += s; } return a; })();
   const orbRowH = jeMobilni ? Math.round(orbD * 1.34) : Math.round(orbD * 1.02) - 20;   /* mobilno vec navpicnega diha (ne stiskamo), desktop stisnjeno na en ekran */
-  const orbStep = (jeMobilni ? 60 : 84) / Math.max(orbMax - 1, 1);          /* razmik med sredisci na siroki mrezi (%); mobilno ozji razpon, da robni mehurcki niso odrezani */
+  const orbStep = (jeMobilni ? 62 : 84) / Math.max(orbMax - 1, 1);          /* razmik med sredisci na siroki mrezi (%); mobilno 62 -> robni mehurcek ~16px od roba, ne odrezan */
   const orbPoz = (i: number) => {
     let row = 0; while (row < orbVrstic - 1 && i >= orbRowStart[row + 1]) row++;
     const posInRow = i - orbRowStart[row];
@@ -4363,17 +4398,25 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
      enak na uvodu, onboardingu in delovni mizi. Cim ozji. */
   /* avatar: zacetnica imena; ce imena ni, ikona osebe (namesto privzete crke) */
   const avatarIme = imeUporabnika.trim() || ponudnik.ime.trim();
-  const avatarVsebina = avatarIme ? avatarIme.charAt(0).toUpperCase() : <PersonSimple size={18} weight="bold" />;
+  /* User (doprsje), NE PersonSimple — ta je figura z razsirjenimi rokami in je enaka
+     ikoni za dostopnost spodaj levo, zato sta bila profil in dostopnost videti isto. */
+  const avatarVsebina = avatarIme ? avatarIme.charAt(0).toUpperCase() : <User size={19} weight="regular" />;
   const glavaUI = () => (
     <>
       <span className="glava-levo">
+        {/* puscica PRED logotipom — enako kot na podstraneh nadzorne plosce */}
+        {odAdmina && (
+          <a className="glava-nazaj" href={localePath(locale, `/kalkulator/pregled`)} aria-label="Nazaj na nadzorno ploščo" title="Nazaj na nadzorno ploščo">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </a>
+        )}
         <a className="glava-brand" href={odFlow ? localePath(locale, `/flow`) : localePath(locale, ``)} aria-label={odFlow ? 'Pinart Flow' : 'Pinart — domov'}>
           <span className="glava-dot" aria-hidden />
           <span className="glava-pinart">Pinart</span>
           <span className="glava-ime">Kalkulator</span>
           <span className="beta">BETA</span>
         </a>
-        <a className="zapri zapri-loceno" href={odFlow ? localePath(locale, `/flow`) : localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ zapri</a>
+        <a className="zapri zapri-loceno" href={odAdmina ? localePath(locale, `/kalkulator/pregled`) : odFlow ? localePath(locale, `/flow`) : localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ zapri</a>
       </span>
       <span className="glava-desno">
         {/* samo profil — preklop oblike in cene/storitve so v profil meniju (aplikacija / cene) */}
@@ -4694,9 +4737,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
   return (
     <div className="cw" onKeyDown={naEnter}>
-      <datalist id="cw-drzave-list">
-        {DRZAVE.map(d => <option key={d.ime} value={d.ime} />)}
-      </datalist>
       <div className="cw-ozadje" aria-hidden>
         <span className="blob blob-roza" />
         <span className="blob blob-modra" />
@@ -4706,6 +4746,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         /* zgornji rob (overscroll / varno obmocje pod URL vrstico) = barva papirja, ne prosojno (da se ne vidi obrazec skozi) */
         html, body { background-color: var(--paper, oklch(97% 0.012 87)); }
         .cw { position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 300; overflow-x: clip; }
+        /* Ovoj portala na <body>: obstaja SAMO zato, da veljajo pravila ".cw ..." za predala.
+           Brez tega bi podedoval min-height:100dvh + z-index:1 in kot prazna ploskev prekril
+           celo aplikacijo (bela stran). Predala sta position:fixed, zato ovoja ne potrebujeta. */
+        .cw.cw-portal { position: static; z-index: auto; min-height: 0; display: block; overflow: visible; }
+        .cw.cw-portal::before { content: none; }
         /* paper kapa cez vrh (notch/safe-area + morebiten pas nad glavo) da nic ne pogleda izpod */
         .cw::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: var(--paper); z-index: 31; pointer-events: none; }
         /* animirano ozadje: dva Tinina soft-gradient blob-a krozita in se krizata (fixed, z-index 0 — NIKOLI -1, Safari past) */
@@ -4829,7 +4874,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .platno0-drs { overflow: visible; min-width: 0; }
         /* mobile + tablica: orbi lahko strlijo cez rob -> platno se pomika vodoravno ZNOTRAJ sebe,
            stran sama pa nima vodoravnega scrolla (ta je lomil glavo/postavitev) */
-        @media (max-width: 1200px) { .cw .platno0-drs { overflow-x: auto; -webkit-overflow-scrolling: touch; } }
+        /* Spustni seznam drzav (IzbirnikDrzave) — nadomesca <datalist>, ki v Safariju ni delal. */
+        .cw .drz-ovoj { position: relative; }
+        .cw .drz-ovoj .drz-vnos { width: 100%; padding-right: 2.4rem; }
+        .cw .drz-puscica { position: absolute; top: 50%; right: .55rem; transform: translateY(-50%); display: grid; place-items: center; width: 1.6rem; height: 1.6rem; padding: 0; border: 0; background: none; color: rgba(17,17,17,.5); cursor: pointer; }
+        .cw .drz-puscica svg { width: 1.05rem; height: 1.05rem; }
+        .cw .drz-puscica:hover { color: var(--ink); }
+        .cw .drz-seznam { position: absolute; z-index: 60; top: calc(100% + .3rem); left: 0; right: 0; max-height: 15rem; overflow-y: auto; margin: 0; padding: .3rem; list-style: none; border: 1px solid rgba(17,17,17,.18); border-radius: .7rem; background: var(--paper); box-shadow: 0 14px 40px rgba(17,17,17,.14); }
+        .cw .drz-seznam li { margin: 0; }
+        .cw .drz-seznam button { display: block; width: 100%; padding: .5rem .6rem; border: 0; border-radius: .45rem; background: none; color: var(--ink); font: inherit; font-size: .9rem; text-align: left; cursor: pointer; }
+        .cw .drz-seznam button.on, .cw .drz-seznam button:hover { background: rgba(17,17,17,.07); }
+
+        /* Vodoravni drs samo v vmesnem obmocju (tablice), kjer siroka mreza res ne gre skozi.
+           Na telefonu so mehurcki 3-2-3 in se v sirino prilegajo -> drsnik je bil samo grd pas. */
+        @media (min-width: 641px) and (max-width: 1200px) { .cw .platno0-drs { overflow-x: auto; -webkit-overflow-scrolling: touch; } }
+        @media (max-width: 640px) { .cw .platno0-drs { overflow-x: hidden; } }
         .cw .platno0 { position: relative; min-height: 56vh; padding-bottom: 5.5rem; }
         .cw .namig0 { position: absolute; left: 0; right: 0; bottom: .2rem; text-align: center; font-size: .78rem; color: rgba(17,17,17,.45); pointer-events: none; }
 
@@ -4853,6 +4912,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .orb0 .orb0-cena { position: relative; z-index: 1; font-size: .64rem; font-weight: 600; opacity: .95; margin-top: .18em; text-shadow: 0 1px 2px rgba(35,18,45,.45); }
         .cw .orb0 .kolic0 { position: absolute; top: 8%; right: 8%; z-index: 3; min-width: 1.9em; height: 1.9em; border-radius: 999px; background: #2A2630; color: #fff; font-weight: 800; font-size: .8rem; display: flex; align-items: center; justify-content: center; padding: 0 .4em; border: 2px solid rgba(255,255,255,.5); box-shadow: 0 5px 14px rgba(0,0,0,.28); cursor: pointer; transition: background .15s; }
         .cw .orb0 .kolic0:hover { background: var(--accent); }
+        /* ── Tabelarni prikaz storitev (preklop Mehurcki / Tabela) ── */
+        /* Videz povzet po retainerju: mehka bela kartica cez celo sirino, barvna ikona v
+           neznem krogu, polno ime. Cena ostane (v kalkulatorju je bistvena informacija). */
+        .cw .orb-tabela { display: grid; gap: .5rem; width: 100%; max-width: 640px; margin: 0 auto 1.5rem; }
+        .cw .orb-vrsta { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr) auto 1.9rem; align-items: center; gap: .85rem; width: 100%; min-height: 3.6rem; padding: .7rem 1rem; border: 1px solid rgba(17,17,17,.08); border-radius: 16px; background: rgba(255,255,255,.72); color: var(--ink); font-family: inherit; text-align: left; cursor: pointer; transition: border-color .18s, background .18s, box-shadow .18s; }
+        .cw .orb-vrsta:hover { border-color: rgba(17,17,17,.2); box-shadow: 0 4px 14px rgba(40,25,45,.06); }
+        .cw .orb-vrsta.on { border-color: var(--ink); background: #fff; }
+        .cw .orb-vrsta-ikona { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; }
+        .cw .orb-vrsta-ikona svg { width: 1.25rem; height: 1.25rem; }
+        .cw .orb-vrsta-ime { min-width: 0; font-size: .95rem; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; }
+        .cw .orb-vrsta-cena { font-size: .78rem; color: rgba(17,17,17,.55); white-space: nowrap; }
+        .cw .orb-vrsta-chk { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: rgba(17,17,17,.06); font-size: .82rem; font-weight: 700; color: rgba(17,17,17,.5); }
+        .cw .orb-vrsta.on .orb-vrsta-chk { background: var(--ink); color: var(--paper); }
+        @media (max-width: 640px) { .cw .orb-vrsta { padding: .65rem .8rem; gap: .7rem; grid-template-columns: 2.3rem minmax(0, 1fr) auto 1.75rem; } .cw .orb-vrsta-ime { font-size: .9rem; } .cw .orb-vrsta-cena { font-size: .72rem; } }
+
         .cw .orb0.orb0-plus { color: rgba(17,17,17,.55); }
         .cw .orb0.orb0-plus::before { display: none; }
         .cw .orb0.orb0-plus .orb0-krog { position: absolute; inset: 4%; border-radius: 50%; border: 1.5px dashed rgba(17,17,17,.4); }
@@ -4862,9 +4936,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 640px) {
           .cw .orb0 .orb0-ikona { margin-bottom: .05rem; }
           .cw .orb0 .orb0-ikona svg { width: 19px; height: 19px; }
-          .cw .orb0 .orb0-ime { font-size: .72rem; padding: 0 .6em; }
+          /* Prelom SAMO med besedami — nikoli sredi besede (glej Orb0.tsx). */
+          .cw .orb0 .orb0-ime { font-size: .72rem; padding: 0 .45em; max-width: 100%; white-space: normal; overflow-wrap: normal; word-break: normal; hyphens: none; }
           .cw .orb0 .orb0-cena { font-size: .56rem; }
-          .cw .orb0.orb0-plus .orb0-ime { font-size: .7rem; }
+          /* "dodaj / uredi" je dolg napis v prekinjenem krogu — vec zraka do roba */
+          .cw .orb0.orb0-plus .orb0-ime { font-size: .66rem; padding: 0 .9em; line-height: 1.2; }
         }
         /* ── pogled MREZA (kvadratki po podrocjih) ── */
         .cw .mreza0-ovoj { width: min(1240px, 100%); margin-top: clamp(1.4rem, 4vw, 2.6rem); }
@@ -4895,9 +4971,6 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .uredi-telo { overflow-y: auto; padding: 1.1rem 1.35rem 1.5rem; display: flex; flex-direction: column; gap: 1.4rem; }
         .cw .uredi-sekcija { display: flex; flex-direction: column; }
         .cw .uredi-naslov { font-size: .78rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: rgba(17,17,17,.6); margin-bottom: .7rem; }
-        .cw .pogled-preklop { display: flex; gap: .5rem; }
-        .cw .pogled-preklop button { flex: 1; padding: .7rem .6rem; border-radius: 12px; border: 1.5px solid rgba(17,17,17,.16); background: #fff; font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); cursor: pointer; transition: border-color .18s, background .18s, color .18s; }
-        .cw .pogled-preklop button.on { border-color: var(--ink); background: var(--ink); color: var(--paper); }
         .cw .uredi-dodaj { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
         .cw .uredi-dodaj input[type=text] { flex: 1; min-width: 150px; border: none; border-bottom: 1px solid rgba(17,17,17,.35); background: transparent; padding: .4rem .2rem; font-family: inherit; font-size: .95rem; color: var(--ink); }
         .cw .uredi-dodaj input[type=number] { width: 84px; border: none; border-bottom: 1px solid rgba(17,17,17,.35); background: transparent; padding: .4rem .2rem; font-family: inherit; font-size: .95rem; text-align: right; color: var(--ink); }
@@ -4925,7 +4998,13 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
         /* ziva ponudba: steklena kartica */
         .cw .ponudba0 { border-radius: 26px; padding: 1.5rem 1.4rem 5.5rem; display: flex; flex-direction: column; min-height: 0; background: rgba(255,255,255,.72); -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); border: 1px solid rgba(255,255,255,.75); box-shadow: 0 20px 60px rgba(40,25,40,.10); }
-        .cw .ponudba0-glava { display: flex; align-items: center; justify-content: space-between; gap: .8rem; }
+        /* align-items:flex-start + min-width:0 na naslovu: pri dolgem nazivu se flex element
+           brez min-width:0 ne more skrciti pod svojo vsebino, zato je naslov ustil cez rob
+           in ga je panel odrezal. Znacka ostane cela. */
+        .cw .ponudba0-glava { display: flex; align-items: flex-start; justify-content: space-between; gap: .7rem; }
+        .cw .ponudba0-glava h2 { min-width: 0; overflow-wrap: anywhere; }
+        .cw .ponudba0-chip { flex: 0 0 auto; white-space: nowrap; }
+        @media (max-width: 640px) { .cw .ponudba0-glava h2 { font-size: 1.35rem; line-height: 1.15; } }
         .cw .ponudba0-glava h2 { font-family: var(--font-bodoni), serif; font-weight: 500; font-size: 1.65rem; margin: 0; }
         .cw .ponudba0-chip { background: rgba(255,255,255,.85); border: 1px solid rgba(17,17,17,.12); border-radius: 999px; padding: .28rem .7rem; font-size: .74rem; font-weight: 650; color: rgba(17,17,17,.6); white-space: nowrap; }
         .cw .ponudba0-pod { font-size: .85rem; color: var(--accent); font-weight: 500; margin: .1rem 0 1rem; display: flex; align-items: center; gap: .45rem; }
@@ -5181,9 +5260,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .glava { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: calc(1rem + env(safe-area-inset-top, 0px)) clamp(1.2rem, 4vw, 3rem) 1rem; z-index: 32; pointer-events: none; background: var(--paper); border-bottom: 1px solid rgba(17,17,17,.08); }
         .cw .glava .zapri { pointer-events: auto; display: inline-flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); text-decoration: none; background: var(--paper); border: none; border-radius: 999px; padding: .5rem .85rem; transition: color .18s ease; }
         .cw .glava .zapri:hover { color: var(--ink); }
+        /* puscica nazaj v admin — vidna samo, ce si kalkulator odprla iz nadzorne plosce */
+        .cw .glava .glava-nazaj { pointer-events: auto; display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.2); background: var(--paper); color: var(--ink); text-decoration: none; }
+        .cw .glava .glava-nazaj svg { width: 1.05rem; height: 1.05rem; }
         /* locena razlicica (poleg loga): navadno besedilo z locilno crto pred njim */
-        .cw .glava .zapri-loceno { background: none; border-radius: 0; padding: .2rem 0 .2rem 1rem; border-left: 1px solid rgba(17,17,17,.2); text-transform: lowercase; letter-spacing: .02em; color: rgba(17,17,17,.6); }
-        .cw .glava-levo { pointer-events: auto; display: inline-flex; align-items: center; gap: 1rem; }
+        /* brez navpicne crtice pred "zapri" (Tina: crtico umakni) */
+        .cw .glava .zapri-loceno { background: none; border-radius: 0; padding: .2rem 0 .2rem 1rem; border-left: 0; text-transform: lowercase; letter-spacing: .02em; color: rgba(17,17,17,.6); }
+        /* min-width:0 + flex-shrink: brez tega leva skupina (z novo puscico nazaj) preraste
+           prostor in pri space-between potisne avatar CEZ desni notranji rob — videti je odrezan. */
+        .cw .glava-levo { pointer-events: auto; display: inline-flex; align-items: center; gap: 1rem; min-width: 0; flex: 1 1 auto; overflow: hidden; }
+        .cw .glava-desno { flex: 0 0 auto; }
+        .cw .glava-brand { min-width: 0; }
         .cw .glava-desno { pointer-events: auto; display: inline-flex; align-items: center; gap: .5rem; }
         .cw .glava-profil { display: inline-flex; align-items: center; gap: .4rem; font-family: inherit; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.82); background: var(--paper); border: 1px solid rgba(17,17,17,.22); border-radius: 999px; padding: .5rem .85rem; cursor: pointer; transition: color .18s ease, border-color .18s ease; }
         .cw .glava-profil:hover { color: var(--ink); border-color: rgba(17,17,17,.5); }
@@ -5586,11 +5673,28 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .barva-cilj button.on { background: var(--ink); color: var(--paper); }
         /* PRENOVLJENI TOOLBAR PONUDBE */
         .cw .pon-vrh { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: .4rem 0 1rem; }
+        /* Na telefonu naj gredo Uredi + Predogled + obe ikoni v ENO vrstico:
+           vrstica se ne lomi, pilule se smejo skrciti, napisi so tesnejsi. */
+        @media (max-width: 640px) {
+          .cw .pon-vrh { flex-wrap: nowrap; gap: .4rem; }
+          .cw .pon-vrh .segpills { min-width: 0; flex: 1 1 auto; }
+          /* NE rezemo besedila (prej overflow:hidden -> "EDI", "PREDOGLEI"); napis je krajsi. */
+          .cw .pon-vrh .segpills { flex: 0 1 auto; }
+          .cw .pon-vrh .segpills button { padding: .46rem .6rem; font-size: .66rem; letter-spacing: .02em; white-space: nowrap; }
+          .cw .pon-sheet-trigi { flex: 0 0 auto; gap: .35rem; }
+          .cw .pon-sheet-trig { width: 2.3rem; height: 2.3rem; }
+        }
         .cw .segpills { display: inline-flex; background: rgba(255,255,255,.55); border: 1px solid rgba(17,17,17,.1); border-radius: 999px; padding: .25rem; gap: .15rem; }
         .cw .segpills button { border: none; background: transparent; color: var(--ink); font-family: inherit; font-weight: 700; font-size: .72rem; letter-spacing: .03em; text-transform: uppercase; padding: .46rem .8rem; border-radius: 999px; cursor: pointer; white-space: nowrap; transition: background .18s, color .18s; }
         .cw .segpills button.on { background: var(--ink); color: var(--paper); }
         /* PRIMARNI toggle Uredi/Predogled = temen (izstopa). Sekundarni (obseg/ton) = subtilni. */
         .cw .segpills-sek { background: transparent; border-color: rgba(17,17,17,.14); }
+        /* Preklop prikaza storitev (Mehurcki/Mreza/Tabela) — LASTEN razred, ne "segpills-pogled",
+           ker tega uporablja ze Uredi/Predogled in bi mu vsilil tristolpcno mrezo. */
+        .cw .segpills-orbpogled { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; max-width: 640px; margin-inline: auto; }
+        /* text-indent izravna rep, ki ga letter-spacing doda ZA zadnjo crko in besedilo
+           optično potisne v levo, čeprav je poravnava na sredino. */
+        .cw .segpills-orbpogled button { display: flex; align-items: center; justify-content: center; padding-inline: .5rem; text-align: center; text-indent: .03em; }
         .cw .segpills-sek button { font-weight: 600; color: rgba(17,17,17,.6); }
         .cw .segpills-sek button.on { background: rgba(17,17,17,.09); color: var(--ink); }
         .cw .segpills-pogled button { display: inline-flex; align-items: center; gap: .35rem; }
@@ -5599,7 +5703,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .pon-vrh .ai-namig, .cw .pon-sheet-telo .ai-namig { flex-basis: 100%; width: 100%; }
         /* mobilna slide-up menija (Apple Mail slog): Slog besedila + Oblikovanje */
         .cw .pon-sheet-trigi { display: flex; gap: .5rem; margin-left: auto; }
-        .cw .pon-sheet-trig { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem .95rem; border: 1px solid rgba(17,17,17,.22); border-radius: 999px; background: var(--paper); color: var(--ink); font-family: inherit; font-size: .82rem; font-weight: 650; cursor: pointer; }
+        /* ikonski gumb (brez napisa) — okrogel, enake visine kot Uredi/Predogled */
+        .cw .pon-sheet-trig { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; width: 2.5rem; height: 2.5rem; padding: 0; border: 1px solid rgba(17,17,17,.22); border-radius: 999px; background: var(--paper); color: var(--ink); font-family: inherit; font-size: .82rem; font-weight: 650; cursor: pointer; }
         .cw .pon-sheet-trig svg { flex: none; }
         .cw .pon-sheet-trig:active { background: rgba(17,17,17,.05); }
         .cw .pon-sheet-back { position: fixed; inset: 0; background: rgba(30,18,35,.34); z-index: 78; animation: cwFade .2s ease both; }
@@ -5647,12 +5752,27 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .editor:focus { outline: none; border-color: var(--ink); }
         /* ponudba cim sirsa na mobilu: manj notranjega paddinga + priprava-korak povrne del oder paddinga */
         @media (max-width: 640px) {
-          .cw .editor { padding: 1.1rem .85rem; }
+          /* Bela ploskev ponudbe cez CELO sirino zaslona: prej so se sestevali trije robovi
+             (oder padding + rob kartice + notranji padding) in je bila ponudba po nepotrebnem ozka.
+             calc(50% - 50vw) potegne element do robov zaslona ne glede na padding nadrejenih. */
+          .cw .editor, .cw .predogled-okvir {
+            margin-inline: calc(50% - 50vw); width: 100vw; max-width: none;
+            border-left: 0; border-right: 0; border-radius: 0;
+          }
+          .cw .editor { padding: 1.1rem clamp(.9rem, 4vw, 1.15rem); }
           .cw .korak-vsebina.priprava-korak { margin-inline: calc(-1 * clamp(.4rem, 2.5vw, 1.4rem)); }
         }
         .cw .predogled-okvir { position: relative; background: #e9e6e0; border: 1px solid rgba(17,17,17,.12); border-radius: 10px; box-shadow: 0 12px 44px rgba(40,25,40,.11); max-width: 820px; margin: 1rem auto 140px; overflow-x: hidden; }
         .cw .predogled-strani { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 18px; }
         .cw .predogled-stran { width: 100%; max-width: 760px; height: auto; display: block; box-shadow: 0 6px 22px rgba(20,20,20,.14); }
+        /* MORA biti ZA pravilom .predogled-okvir zgoraj: tisto ima "margin: 1rem auto 140px",
+           kar je z enako specificnostjo povozilo prejsnji margin-inline in je full-bleed odpadel.
+           Na telefonu odpravimo dvojni rob: okvir cez celo sirino + brez notranjega paddinga. */
+        @media (max-width: 640px) {
+          .cw .predogled-okvir { margin: .5rem calc(50% - 50vw) 140px; width: 100vw; max-width: none; border-left: 0; border-right: 0; border-radius: 0; }
+          .cw .predogled-strani { padding: 10px 0; gap: 12px; }
+          .cw .predogled-stran { max-width: none; }
+        }
         .cw .predogled-nalaga { display: flex; align-items: center; justify-content: center; height: 60vh; min-height: 420px; color: rgba(17,17,17,.55); font-size: .9rem; }
         .cw .predogled-osvezi { position: absolute; top: .6rem; right: .6rem; background: rgba(17,17,17,.72); color: #fff; font-size: .72rem; padding: .3rem .6rem; border-radius: 999px; pointer-events: none; z-index: 2; }
         .cw .editor b, .cw .editor strong { font-weight: 900; color: var(--ink); }
@@ -5662,6 +5782,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         .cw .editor .offer-head { display: flex; flex-direction: column-reverse; align-items: stretch; gap: .55rem; margin: 0 0 1.4rem; }
         .cw .editor .offer-head-t { min-width: 0; width: 100%; }
         .cw .editor .offer-head h1 { margin: 0; }
+        /* Naslov ponudbe poravnan LEVO z ostalim besedilom. Kljucni je padding-left: 0 —
+           mobilno pravilo ".cw h1" doda padding-left: 1.65rem (26.4px) za velike naslove
+           strani; pri naslovu ponudbe je to napacno in ga je zamikalo navznoter. */
+        .cw .editor .offer-head, .cw .editor .offer-head-t, .cw .editor .offer-head .offer-kicker { text-align: left; text-indent: 0; }
+        .cw .editor .offer-head h1 { text-align: left; text-indent: 0; padding-left: 0; }
         .cw .editor .offer-head-meta { text-align: left; font-size: .82rem; line-height: 1.65; color: rgba(17,17,17,.7); white-space: normal; padding: 0; }
         .cw .editor .offer-kicker { margin: 1.2rem 0 .4rem; font-size: .78rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--ink); }
         .cw .editor h2 { margin: 3rem 0 1rem; font-size: .76rem; line-height: 1.2; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; border-top: 1px solid rgba(17,17,17,.18); padding-top: 1.4rem; }
@@ -5790,8 +5915,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
           .cw .glava { padding-top: .8rem; padding-bottom: .8rem; }
           /* "Kalkulator BETA" ostane viden tudi na mobilnem (sam "BETA" nic ne
              pove); na ozkih zaslonih skrijemo besedo "Zapri", ostane ✕ */
-          .cw .glava .zapri-loceno { font-size: 0; padding-left: .7rem; gap: 0; }
-          .cw .glava .zapri-loceno::before { content: "✕"; font-size: .82rem; }
+          /* ikonski, a z dovolj veliko tarco za prst (bil je 22x26px — pretezko zadeti) */
+          .cw .glava .zapri-loceno { font-size: 0; gap: 0; display: inline-flex; align-items: center; justify-content: center; min-width: 2.75rem; min-height: 2.75rem; padding: 0 .35rem 0 .7rem; }
+          .cw .glava .zapri-loceno::before { content: "✕"; font-size: 1rem; }
           .cw .oder { align-items: flex-start; padding-top: 5.4rem; padding-bottom: 8rem; }
           .cw h1 { padding-left: 1.65rem; font-size: clamp(2.15rem, 11vw, 2.85rem); line-height: .98; margin-bottom: .6rem; }
           .cw .h1-step { position: absolute; top: 0; left: calc(-1 * clamp(1.2rem, 4vw, 3rem)); width: 2.15rem; height: 2.05rem; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); border-radius: 0 .35rem .35rem 0; font-size: .62rem; letter-spacing: .08em; }
@@ -6107,9 +6233,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </div>
                   <div className="polje">
                     <label htmlFor="mp-drzava">Država <span className="vec">določi privzet trg / raven cen</span></label>
-                    <input id="mp-drzava" type="text" list="cw-drzave-list" placeholder="npr. Slovenija"
+                    <IzbirnikDrzave id="mp-drzava" placeholder="npr. Slovenija"
+                      moznosti={DRZAVE.map(d => d.ime)}
                       value={custDrzavaMoj}
-                      onChange={e => { const v = e.target.value; setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }} />
+                      onChange={v => { setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }} />
                   </div>
                 </div>
                 <div className="kartica">
@@ -6223,7 +6350,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   }}>↺ {cenaResetPotrdi ? 'Res ponastavim vse cene? Klikni še enkrat' : 'Ponastavi cene na privzete'}</button>
 
                 {/* DELOVNI (aktivni) cenik — naslov je UREDLJIV (preimenuješ ga kar tu); cene notri */}
-                <details className="cenik-card cenik-aktiven" open={delovniCenikOdprt}
+                <details ref={delovniCenikRef} className="cenik-card cenik-aktiven" open={delovniCenikOdprt}
                   onToggle={e => setDelovniCenikOdprt((e.currentTarget as HTMLDetailsElement).open)}>
                   <summary>
                     <span className="cenik-ime-ovoj" onClick={e => { e.stopPropagation(); (e.currentTarget.querySelector('input') as HTMLInputElement | null)?.focus(); }}>
@@ -6254,8 +6381,21 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 ))}
 
                 {/* nov (prazen) cenik — začneš svež delovni set, ki ga poimenuješ v naslovu */}
+                {/* Prej je klik samo nastavil odprt=true; ce je bil cenik ZE odprt, se ni zgodilo nic
+                    vidnega (in je bil se izven zaslona) — zato je izgledalo, da gumb ne dela.
+                    Zdaj ga tudi odpremo v DOM, pripeljemo v pogled in postavimo kazalec v naslov. */}
                 <button type="button" className="dodaj-gumb" style={{ marginTop: '.6rem' }}
-                  onClick={() => { setAktivniCenik(null); setDelovniCenikOdprt(true); }}>+ Dodaj nov cenik</button>
+                  onClick={() => {
+                    setAktivniCenik(null);
+                    setDelovniCenikOdprt(true);
+                    requestAnimationFrame(() => {
+                      const d = delovniCenikRef.current;
+                      if (!d) return;
+                      d.open = true;
+                      d.scrollIntoView({ block: 'start', behavior: 'smooth' });
+                      (d.querySelector('.cenik-ime-ovoj input') as HTMLInputElement | null)?.focus();
+                    });
+                  }}>+ Dodaj nov cenik</button>
               </>
               );
             })()}
@@ -6458,9 +6598,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   </div>
                   <div className="uv-polje uv-polje-siroko">
                     <label htmlFor="uv-pdrzava">Država <span className="uv-neobvezno">določi privzet trg / raven cen</span></label>
-                    <input id="uv-pdrzava" type="text" list="cw-drzave-list" placeholder="npr. Slovenija"
+                    <IzbirnikDrzave id="uv-pdrzava" placeholder="npr. Slovenija"
+                      moznosti={DRZAVE.map(d => d.ime)}
                       value={custDrzavaMoj}
-                      onChange={e => { const v = e.target.value; setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }} />
+                      onChange={v => { setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }} />
                   </div>
                   <div className="uv-mreza">
                     <div className="uv-polje">
@@ -6573,7 +6714,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                     <span className="chat-mehur chat-mehur-namig">
                       <button type="button" className="namig-zapri" aria-label="Zapri namig" title="Zapri (znova le ob ponastavitvi)" onClick={() => setNamigSkrit(true)}>✕</button>
-                      S klikom na storitev jo dodaš v ponudbo. Prikaz lahko preklopiš med mehurčki in pregledno tabelo v »dodaj / uredi«.
+                      S klikom na storitev jo dodaš v ponudbo.
                     </span></div>
                 </>
               )}
@@ -6595,8 +6736,38 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
           {korak === 0 && (klasicnaOblika || !uvodChat) && (
             <div className="oder0">
+              {/* preklop prikaza (enako kot retainer): mehurcki <-> tabela. "dodaj / uredi" ostane. */}
+              {/* EN preklop za vse tri poglede — "Mreža po področjih" je bila prej skrita
+                  v panelu "dodaj / uredi"; prenesena sem, da ni dveh kontrol za isto stvar. */}
+              <div className="segpills segpills-orbpogled" role="group" aria-label="Prikaz storitev" style={{ margin: '0 0 1rem' }}>
+                <button type="button" className={!orbTabela && !pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(false); }}>Mehurčki</button>
+                <button type="button" className={!orbTabela && pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(true); }}>Mreža</button>
+                <button type="button" className={orbTabela ? 'on' : ''} onClick={() => setOrbTabela(true)}>Tabela</button>
+              </div>
+
+              {orbTabela && (
+                <div className="orb-tabela">
+                  {orbStoritve.map((s, i) => {
+                    const barvi = ORB_BARVE[i % ORB_BARVE.length];
+                    const linijeSid = vrstice.filter(l => l.sid === s.id);
+                    const q = linijeSid.length;
+                    const on = q > 0;
+                    return (
+                      <button key={s.id} type="button" className={'orb-vrsta' + (on ? ' on' : '')} aria-pressed={on}
+                        onClick={() => izberiVrstico(s.id)}>
+                        {/* ikona v nezno obarvanem krogu + POLNO ime (kot v retainerju) */}
+                        <span className="orb-vrsta-ikona" aria-hidden style={{ background: osvetli(barvi[0], 0.82), color: barvi[0] }}>{ikonaZa(s.id)}</span>
+                        <span className="orb-vrsta-ime">{s.ime}</span>
+                        <span className="orb-vrsta-cena">od {val(osnovaZa(s))}</span>
+                        <span className="orb-vrsta-chk" aria-hidden>{on ? (q > 1 ? `✓${q}` : '✓') : '+'}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* ── platno z orbi: svobodno lebdijo na istem ozadju (brez obrezovanja) ── */}
-              {!pogledMreza && (
+              {!orbTabela && !pogledMreza && (
               <div className="platno0-drs">
               <div className="platno0" aria-label="Storitve" style={{ minHeight: orbVrstic * orbRowH + 30 }}>
                 {orbStoritve.map((s, i) => {
@@ -6613,9 +6784,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                       aria-pressed={on}
                       aria-label={`${s.ime}, od ${val(osnovaZa(s))}${on ? `, izbrano ×${q}` : ''}`}
                       style={{
-                        ['--orbd' as string]: `${Math.round(orbD * (TEZA[s.id] ?? 1))}px`,
-                        width: Math.round(orbD * (TEZA[s.id] ?? 1)), height: Math.round(orbD * (TEZA[s.id] ?? 1)),
-                        left: `calc(${p.x}% - ${Math.round(orbD * (TEZA[s.id] ?? 1)) / 2}px)`, top: `calc(${p.y}% - ${Math.round(orbD * (TEZA[s.id] ?? 1)) / 2}px)`,
+                        ['--orbd' as string]: `${Math.round(orbD * (tezaOrb(s.id)))}px`,
+                        width: Math.round(orbD * (tezaOrb(s.id))), height: Math.round(orbD * (tezaOrb(s.id))),
+                        left: `calc(${p.x}% - ${Math.round(orbD * (tezaOrb(s.id))) / 2}px)`, top: `calc(${p.y}% - ${Math.round(orbD * (tezaOrb(s.id))) / 2}px)`,
                         ['--o1' as string]: barvi[0], ['--o2' as string]: barvi[1],
                         ['--dur' as string]: (9 + psr(i * 3 + 1) * 5).toFixed(1) + 's',
                         ['--del' as string]: (-psr(i * 7 + 2) * 6).toFixed(1) + 's',
@@ -6647,7 +6818,9 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   );
                 })}
                 {(() => {
-                  const d = Math.round(orbD * 0.78);
+                  /* 0.95 (prej 0.78): pri 0.78 je napis "dodaj / uredi" tocno napolnil krog
+                     in se dotikal crtkanega roba — zdaj ima zrak okoli sebe. */
+                  const d = Math.round(orbD * 0.95);
                   const p = orbPoz(orbStoritve.length);   /* naravna pozicija */
                   /* SAMO dodaj premaknemo: v prazen prostor DESNO od skupine mehurckov (platno je centrirano),
                      na isti visini kot zadnja vrsta storitev. Storitev NE premikamo. Velja le, ko dodaj
@@ -6680,7 +6853,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               </div>
               )}
 
-              {pogledMreza && (
+              {!orbTabela && pogledMreza && (
                 <div className="mreza0-ovoj">
                   <div className="mreza0">
                     {mrezaSkupine.map((g, gi) => (
@@ -6949,14 +7122,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                         <button type="button" onClick={() => { setKazemUredi(false); setNovaIme(''); setNovaCena(''); }} aria-label="Zapri">✕</button>
                       </div>
                       <div className="uredi-telo">
-                        <div className="uredi-sekcija">
-                          <div className="uredi-naslov">Pogled mehurčkov</div>
-                          <div className="pogled-preklop">
-                            <button type="button" className={!pogledMreza ? 'on' : ''} onClick={() => setPogledMreza(false)}>Prosti mehurčki</button>
-                            <button type="button" className={pogledMreza ? 'on' : ''} onClick={() => setPogledMreza(true)}>Mreža po področjih</button>
-                          </div>
-                          <p className="hint" style={{ margin: '.6rem 0 0' }}>Mreža je bolj strjena in pregledna, ko imaš veliko storitev.</p>
-                        </div>
+                        {/* "Pogled mehurčkov" prenesen VEN, med pilule nad platnom (Mehurčki / Mreža / Tabela) */}
                         <div className="uredi-sekcija">
                           <div className="uredi-naslov">Področja dela <span className="vec">kaj ponujaš — klikni za vklop/izklop</span></div>
                           <div className="chat-podrocja">
@@ -7034,10 +7200,10 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                 </div>
                 <div className="polje">
                   <label htmlFor="cw-narocnik-drzava">Država <span className="vec">določi trg za ceno</span></label>
-                  <input id="cw-narocnik-drzava" type="text" list="cw-drzave-list" placeholder="npr. Slovenija"
+                  <IzbirnikDrzave id="cw-narocnik-drzava" placeholder="npr. Slovenija"
+                    moznosti={DRZAVE.map(d => d.ime)}
                     value={custDrzavaNarocnik}
-                    onChange={e => {
-                      const v = e.target.value;
+                    onChange={v => {
                       setCustDrzavaNarocnik(v);
                       const t = trgIzDrzave(v);
                       if (t) setTrgNarocnika(t);
@@ -7688,15 +7854,17 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                   <button type="button" className={!predogledMode ? 'on' : ''} onClick={() => setPredogledMode(false)} title="Uredi">
                     <PencilSimple size={15} weight="bold" /> Uredi
                   </button>
+                  {/* na telefonu krajsi napis, da gre vse v eno vrstico brez rezanja */}
                   <button type="button" className={predogledMode ? 'on' : ''} onClick={odpriPredogled} title="Predogled">
-                    <Eye size={16} /> Predogled
+                    <Eye size={16} /> {jeMobilni ? 'Ogled' : 'Predogled'}
                   </button>
                 </div>
                 {/* desktop: kontrole inline; mobilno: gumba ki odpreta slide-up sheet */}
                 {jeMobilni ? (
                   <div className="pon-sheet-trigi">
-                    <button type="button" className="pon-sheet-trig" onClick={() => setPonSheet('slog')}><MagicWand size={17} /> Slog</button>
-                    <button type="button" className="pon-sheet-trig" onClick={() => setPonSheet('oblika')}><TextAa size={17} weight="bold" /> Oblika</button>
+                    {/* samo ikoni (brez napisa), da Uredi + Predogled + oba gumba gredo v ENO vrstico */}
+                    <button type="button" className="pon-sheet-trig" onClick={() => setPonSheet('slog')} aria-label="Slog besedila" title="Slog besedila"><MagicWand size={18} /></button>
+                    <button type="button" className="pon-sheet-trig" onClick={() => setPonSheet('oblika')} aria-label="Oblikovanje" title="Oblikovanje"><TextAa size={18} weight="bold" /></button>
                   </div>
                 ) : slogKontrole}
               </div>
@@ -7814,8 +7982,11 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
               )}
               </div>
               {/* MOBILNI slide-up sheeti (Apple Mail slog): Slog besedila + Oblikovanje */}
-              {jeMobilni && (
-                <>
+              {/* V PORTAL na <body>: position:fixed neha meriti na zaslon, ce ima katerikoli
+                  nadrejeni element transform/filter/will-change — zato se je predal prej
+                  odprl sredi strani namesto pripet na dno. */}
+              {jeMobilni && typeof document !== 'undefined' && createPortal(
+                <div className="cw cw-portal">
                   {ponSheet && <div className="pon-sheet-back" onClick={() => setPonSheet(null)} aria-hidden />}
                   <div className={'pon-sheet' + (ponSheet === 'slog' ? ' odprt' : '')} role="dialog" aria-label="Slog besedila" aria-hidden={ponSheet !== 'slog'}>
                     <div className="pon-sheet-glava"><b>Slog besedila</b><button type="button" className="pon-sheet-x" onClick={() => setPonSheet(null)} aria-label="Zapri">✕</button></div>
@@ -7825,7 +7996,8 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
                     <div className="pon-sheet-glava"><b>Oblikovanje</b><button type="button" className="pon-sheet-x" onClick={() => setPonSheet(null)} aria-label="Zapri">✕</button></div>
                     <div className="pon-sheet-telo orodjarna orodjarna-sheet">{oblikaKontrole}</div>
                   </div>
-                </>
+                </div>,
+                document.body,
               )}
             </div>
           )}
