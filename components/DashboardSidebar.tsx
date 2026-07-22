@@ -9,6 +9,7 @@ import MeniOrodja from './MeniOrodja';
 import MeniSkupina from './MeniSkupina';
 import DeliAplikacijo from './DeliAplikacijo';
 import MeniProfil from './MeniProfil';
+import PaketZnak from './PaketZnak';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
 type Section = 'overview' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'prices' | 'accounting' | 'profile' | 'settings';
@@ -18,18 +19,25 @@ type Section = 'overview' | 'projects' | 'contracts' | 'invoices' | 'expenses' |
    Prej je bil en sam predal "Orodja", zaradi cesar so bili ceniki hkrati orodje IN
    samostojna postavka (podvojena povezava), meja med orodjem in podatkom pa nejasna. */
 export default function DashboardSidebar({ base, active }: { base: string; active: Section }) {
-  const item = (section: Section, href: string, number: string, label: string, ikona: NavIkonaVrsta) =>
-    <Link className={`${styles.navItem} ${active === section ? styles.active : ''}`} href={href} title={label}>
+  const item = (section: Section, href: string, number: string, label: string, ikona: NavIkonaVrsta, zaklenjeno?: string) =>
+    <Link className={`${styles.navItem} ${active === section ? styles.active : ''}`} href={href} title={label}
+      data-zaklenjeno={zaklenjeno}>
       <span className={styles.navIkona}><NavIkona vrsta={ikona} /></span>
       <span className={styles.navStevilka}>{number}</span>
       <span className={styles.navNapis}>{label}</span>
+      <span className={styles.navKljuc} aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>
+      </span>
     </Link>;
   const skupina = (naslov: string) => <p className={styles.navGroup}>{naslov}</p>;
-  const povezava = (href: string, number: string, label: string, ikona: NavIkonaVrsta) =>
-    <Link className={styles.navItem} href={href} title={label}>
+  const povezava = (href: string, number: string, label: string, ikona: NavIkonaVrsta, zaklenjeno?: string) =>
+    <Link className={styles.navItem} href={href} title={label} data-zaklenjeno={zaklenjeno}>
       <span className={styles.navIkona}><NavIkona vrsta={ikona} /></span>
       <span className={styles.navStevilka}>{number}</span>
       <span className={styles.navNapis}>{label}</span>
+      <span className={styles.navKljuc} aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>
+      </span>
     </Link>;
   const menuVsebina = () => <>
     {item('overview', `${base}/kalkulator/pregled`, '01', 'Nadzorna plošča', 'pregled')}
@@ -39,18 +47,18 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
       {/* ?od=pregled -> kalkulator in retainer pokazeta puscico nazaj na nadzorno plosco */}
       {povezava(`${base}/kalkulator/orodje?od=pregled`, '01', 'Ponudba', 'ponudba')}
       {povezava(`${base}/kalkulator/dolgorocno?od=pregled`, '02', 'Dolgoročno sodelovanje', 'retainer')}
-      {item('contracts', `${base}/kalkulator/pogodbe`, '03', 'Pogodba', 'pogodba')}
+      {item('contracts', `${base}/kalkulator/pogodbe`, '03', 'Pogodba', 'pogodba', 'contracts')}
       {item('invoices', `${base}/kalkulator/racuni`, '04', 'Računi', 'racuni')}
     </MeniSkupina>
     <MeniSkupina naslov="Podatki" aktivna={active === 'clients' || active === 'prices' || active === 'expenses'}>
       {item('clients', `${base}/kalkulator/stranke`, '01', 'Stranke', 'stranke')}
       {item('prices', `${base}/kalkulator/ceniki`, '02', 'Moji ceniki', 'ceniki')}
-      {item('expenses', `${base}/kalkulator/stroski`, '03', 'Stroški', 'stroski')}
+      {item('expenses', `${base}/kalkulator/stroski`, '03', 'Stroški', 'stroski', 'expenses')}
     </MeniSkupina>
     <MeniSkupina naslov="Načrt" aktivna={active === 'goals' || active === 'time' || active === 'plan'}>
-      {item('goals', `${base}/kalkulator/cilji`, '01', 'Cilji', 'cilji')}
-      {item('time', `${base}/kalkulator/cas`, '02', 'Cena & čas', 'cas')}
-      {item('plan', `${base}/kalkulator/poslovni-nacrt`, '03', 'Poslovni okvir', 'okvir')}
+      {item('goals', `${base}/kalkulator/cilji`, '01', 'Cilji', 'cilji', 'businessInsights')}
+      {item('time', `${base}/kalkulator/cas`, '02', 'Cena & čas', 'cas', 'businessInsights')}
+      {item('plan', `${base}/kalkulator/poslovni-nacrt`, '03', 'Poslovni okvir', 'okvir', 'businessInsights')}
     </MeniSkupina>
     <MeniSkupina naslov="Drugo" vednoVidna aktivna={active === 'projects' || active === 'settings'}>
       {item('projects', `${base}/kalkulator/projekti`, '01', 'Zgodovina', 'zgodovina')}
@@ -58,7 +66,7 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
       {povezava(`${base}/kalkulator/pomoc`, '03', 'Pomoč', 'pomoc')}
     </MeniSkupina>
   </>;
-  return <><AmbientBubbles /><FlowTopBar /><SidebarToggle vrsta="odpri" /><aside className={styles.sidebar} aria-label="Glavna navigacija"><SidebarToggle vrsta="zapri" />
+  return <><AmbientBubbles /><PaketZnak /><FlowTopBar /><SidebarToggle vrsta="odpri" /><aside className={styles.sidebar} aria-label="Glavna navigacija"><SidebarToggle vrsta="zapri" />
     <FlowCloudBridge />
     {/* logo in "zapri" sta zdaj v zgornji vrstici (FlowTopBar) — tu sta bila dvakrat */}
     <SidebarToggle vrsta="zapri" />
@@ -84,7 +92,7 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
           <DeliAplikacijo />
         </div>
         {/* pot nazaj na Flow landing — v zgornji vrstici je na telefonu skrita */}
-        <Link className={styles.meniZapriFlow} href={`${base}/kalkulator`}>× Zapri Flow</Link>
+        <Link className={styles.meniZapriFlow} href={`${base}/flow`}>× Zapri Flow</Link>
       </div>
     </details>
     <nav className={styles.nav}>{menuVsebina()}</nav>

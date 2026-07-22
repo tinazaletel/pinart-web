@@ -6,13 +6,15 @@ import { updateSession } from './utils/supabase/middleware';
 const intlMiddleware = createMiddleware(routing);
 
 export default async function middleware(request: NextRequest) {
-  /* pinartflow.com/ = Flow landing (ne studijski portfolio). Domensko preusmerimo
-     root -> /flow. Velja SAMO za pinartflow.com host; pinart.si ostane portfolio. */
+  /* pinartflow.com/ = Flow landing (ne studijski portfolio).
+     REWRITE, ne redirect: stran se postrezi s korena, naslov ostane
+     "www.pinartflow.com" brez "/flow". Preusmeritev je pisala ime izdelka
+     dvakrat in dodala odboj pred nalaganjem. pinart.si ostane portfolio. */
   const host = request.headers.get('host') || '';
   if (/(^|\.)pinartflow\.com$/i.test(host) && request.nextUrl.pathname === '/') {
     const url = request.nextUrl.clone();
     url.pathname = '/flow';
-    return NextResponse.redirect(url);
+    return NextResponse.rewrite(url);
   }
 
   const response = intlMiddleware(request);
@@ -40,7 +42,7 @@ export default async function middleware(request: NextRequest) {
      poslovanja. Vsebina je strezniško zascitena z geslom KALKULATOR_ADMIN_GESLO
      (piskotek pinart_admin), zato dvojna kljucavnica ni potrebna in je samo
      ovirala dostop. */
-  const protectedFlowRoute = /^\/(?:sl\/|en\/)?kalkulator\/(pregled|projekti|pogodbe|racuni|stroski|stranke|cilji|ceniki|dolgorocno|racunovodstvo|profil|cas|poslovni-nacrt|nastavitve|pomoc)(?:\/|$)/.test(request.nextUrl.pathname);
+  const protectedFlowRoute = /^\/(?:sl\/|en\/)?kalkulator\/(pregled|projekti|pogodbe|racuni|stroski|stranke|cilji|ceniki|dolgorocno|racunovodstvo|profil|cas|poslovni-nacrt|nastavitve|pomoc|paket)(?:\/|$)/.test(request.nextUrl.pathname);
 
   if (protectedFlowRoute && (!sejaPreverjena || !user)) {
     const localePrefix = request.nextUrl.pathname.startsWith('/en/') ? '/en' : '';

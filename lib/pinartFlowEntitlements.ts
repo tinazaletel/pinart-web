@@ -14,15 +14,17 @@ export type FlowFeature =
   | 'accountingExport'
   | 'aiConnector';
 
+/* Brezplacni paket: neomejene ponudbe, shranjene v oblaku. Kartoteka strank je
+   placljiva — delna kartoteka (3 stranke) je bila samo obcutek pomanjkanja in je
+   vpis delala manj privlacen od uporabe brez racuna. */
 export const FREE_LIMITS = {
-  clients: 3,
-  documentsPerMonth: 5,
+  documentsPerMonth: 0,   /* 0 = brez omejitve */
   priceProfiles: 1,
 } as const;
 
 const FEATURES: Record<AccessTier, ReadonlySet<FlowFeature>> = {
   anonymous: new Set(['calculator', 'localPdf']),
-  free: new Set(['calculator', 'localPdf', 'cloudBackup', 'basicHistory', 'clients']),
+  free: new Set(['calculator', 'localPdf', 'cloudBackup', 'basicHistory']),
   pro: new Set([
     'calculator', 'localPdf', 'cloudBackup', 'basicHistory', 'clients',
     'contracts', 'expenses', 'businessInsights', 'accountingExport', 'aiConnector',

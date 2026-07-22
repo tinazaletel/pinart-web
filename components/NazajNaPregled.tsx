@@ -19,7 +19,9 @@ export default function NazajNaPregled() {
   const base = pathname.startsWith('/en/') ? '/en' : '';
   const naPregledu = pathname.includes('/kalkulator/pregled');
 
-  const cilj = naPregledu ? `${base}/kalkulator` : `${base}/kalkulator/pregled`;
+  /* z nadzorne plosce navzgor = Flow landing (/flow), NE landing kalkulatorja
+     (/kalkulator) — to sta dva razlicna izdelka. */
+  const cilj = naPregledu ? `${base}/flow` : `${base}/kalkulator/pregled`;
   const opis = naPregledu ? 'Zapri Flow' : 'Nazaj na nadzorno ploščo';
 
   return (

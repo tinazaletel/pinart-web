@@ -73,6 +73,8 @@ export async function POST(request: Request) {
     /* zastavica kakovosti: ali je uporabnik cene prilagodil (bolj realen
        signal) ali so privzete. Bool → 'da'/'ne' za lazji pregled v tabeli. */
     prilagojeno: body.prilagojeno ? 'da' : 'ne',
+    /* razred proracuna, kot ga je izbral uporabnik; prazno = ni odgovoril */
+    budget: String(body.budget ?? '').slice(0, 40),
   };
 
   /* ── zdravorazumske meje: absurdi ne pridejo v bazo ─────────────────── */
@@ -101,6 +103,7 @@ export async function POST(request: Request) {
       pravice_eur: zapis.praviceEUR,
       valuta: zapis.valuta,
       prilagojeno: zapis.prilagojeno === 'da',
+      budget: zapis.budget || null,
       vir: body.vir === 'retainer' ? 'retainer' : 'orodje',
       paket: body.paket === 'pro' ? 'pro' : body.paket === 'free' ? 'free' : 'anon',
     });

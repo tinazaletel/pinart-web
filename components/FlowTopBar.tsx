@@ -88,7 +88,7 @@ export default function FlowTopBar() {
           Zato tudi ni "Nadgradi" ob prehodu miske — nadgrajevati ni cesa. */}
       <span className={styles.paketZnacka} data-beta>BETA</span>
       {/* tik ob BETA, kot prej v meniju — pot nazaj na Flow landing */}
-      <Link className={styles.zapriGumb} href={`${base}/kalkulator`}>× zapri</Link>
+      <Link className={styles.zapriGumb} href={`${base}/flow`}>× zapri</Link>
 
       {stran && <><span className={styles.topLocilo} aria-hidden="true">/</span>
         <span className={styles.topStran}>{stran}</span></>}

@@ -2977,6 +2977,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             praviceEUR: r.pravice,
             valuta,
             prilagojeno,
+            /* Budget naročnika vprašalnik ŽE sprašuje (ključi "uid:budget"), a se
+               doslej ni nikamor shranil. Je boljši pokazatelj velikosti posla od
+               panoge, ker ga uporabnik vpiše naravnost. */
+            budget: Object.entries(odgovori)
+              .filter(([k, v]) => k.endsWith(':budget') && v && v !== 'Še ne vem')
+              .map(([, v]) => v)[0] || '',
             vir: 'orodje',
             paket,
             ...(turnstileToken ? { turnstileToken } : {}),
@@ -5693,13 +5699,23 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
            ker tega uporablja ze Uredi/Predogled in bi mu vsilil tristolpcno mrezo. */
         /* Majhne, po meri besedila — kot v mesecnem retainerju. Prej so bile raztegnjene
            cez vso sirino in so se dotikale mehurckov. Spodnji odmik je odmik OD mehurckov. */
-        .cw .segpills-orbpogled { display: inline-flex; width: auto; max-width: none; margin: 0 auto 1.6rem; }
+        .cw .segpills-orbpogled { display: inline-flex; width: auto; max-width: none; margin: 0 0 1.6rem; }
         /* text-indent izravna rep, ki ga letter-spacing doda ZA zadnjo crko in besedilo
            optično potisne v levo, čeprav je poravnava na sredino. */
         /* brez svojega padding-inline — tako je notranji odmik natanko enak retainerju */
         .cw .segpills-orbpogled button { display: flex; align-items: center; justify-content: center; text-align: center; text-indent: .03em; }
         /* ovoj poskrbi za sredinjenje, ker je pilula zdaj ozja od vrstice */
-        .cw .orbpogled-vrsta { display: flex; justify-content: center; }
+        /* levo poravnani s klepetnim oblackom, ne sredinjeni — enaka velikost kot v retainerju */
+        .cw .orbpogled-vrsta { display: flex; justify-content: flex-start; margin-bottom: 1.4rem; }
+        /* Slog kot Figma: svetla proga, izbrani odsek bel z rahlo senco — ne crn.
+           Crn odsek je izgledal kot glavni gumb in tekmoval z "NAPREJ". */
+        .cw .segpills-orbpogled { background: rgba(17,17,17,.055); border-color: transparent; padding: .2rem; }
+        .cw .segpills-orbpogled button { font-size: .66rem; padding: .36rem .72rem; color: rgba(17,17,17,.55); }
+        .cw .segpills-orbpogled button:hover { color: var(--ink); }
+        .cw .segpills-orbpogled button.on {
+          background: #fff; color: var(--ink);
+          box-shadow: 0 1px 2px rgba(17,17,17,.14), 0 0 0 .5px rgba(17,17,17,.06);
+        }
         .cw .segpills-sek button { font-weight: 600; color: rgba(17,17,17,.6); }
         .cw .segpills-sek button.on { background: rgba(17,17,17,.09); color: var(--ink); }
         .cw .segpills-pogled button { display: inline-flex; align-items: center; gap: .35rem; }
@@ -6745,7 +6761,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {/* EN preklop za vse tri poglede — "Mreža po področjih" je bila prej skrita
                   v panelu "dodaj / uredi"; prenesena sem, da ni dveh kontrol za isto stvar. */}
               {/* brez vgrajenega style: ta bi premagal razred in vrnil stari odmik */}
-              <div className="orbpogled-vrsta">
+              {/* v oklepu klepeta, da so poravnani z oblackom nad njimi */}
+              <div className="chat-bot orbpogled-vrsta"><span className="chat-obraz" aria-hidden />
                 <div className="segpills segpills-orbpogled" role="group" aria-label="Prikaz storitev">
                   <button type="button" className={!orbTabela && !pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(false); }}>Mehurčki</button>
                   <button type="button" className={!orbTabela && pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(true); }}>Mreža</button>

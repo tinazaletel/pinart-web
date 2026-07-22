@@ -27,6 +27,7 @@ export default function FloatingUI() {
   const isKalkulator = pathname.includes('/kalkulator');
   const isFlow = pathname.includes('/flow');
 
+
   const kalkulatorCopy = {
     eyebrow: 'Povratna informacija',
     title: 'Kaj bi izboljšali?',
@@ -177,6 +178,11 @@ export default function FloatingUI() {
   /* Flow landing: isti "Let's talk" plavajoči gumb kot pinart.si/kalkulator
      (Tina), a s copyjem tipa povratna informacija/vprašanje, ne prodaja studia. */
 
+  /* V orodju "Let's talk" odpade: prekriva vsebino, povratna informacija pa je
+     v meniju in na strani Pomoc. Guard je TU, ne pred hooki — predcasni return
+     bi spremenil stevilo klicanih kljukic in React bi javil napako. */
+  if (isKalkulator) return null;
+
   return (
     <>
       {/* scroll arrow removed — replaced by Lottie cue in Hero.tsx */}
@@ -192,7 +198,7 @@ export default function FloatingUI() {
           position:       'fixed',
           right:          'clamp(1rem, 2vw, 1.8rem)',
           /* v orodju visje, da ne sedi na predogledu stanja in stoparici */
-          bottom:         isKalkulator ? 'clamp(5rem, 12vh, 8rem)' : 'clamp(1.2rem, 2.5vh, 2rem)',
+          bottom:         isKalkulator ? 'clamp(2.5rem, 6vh, 4rem)' : 'clamp(1.2rem, 2.5vh, 2rem)',
           zIndex:         45,
           display:        'flex',
           flexDirection:  'column',

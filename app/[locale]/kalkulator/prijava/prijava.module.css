@@ -74,3 +74,24 @@
   .submit { min-height: 3rem; }
   .freeNote { margin: 1rem 0 .2rem; font-size: .85rem; }.brand { top: 1.3rem; left: 1rem; max-width: calc(100vw - 2rem); }.intro, .authPanel { min-width: 0; }.intro > p { margin-bottom: .5rem; }.intro h2 { font-size: 1.95rem; line-height: 1.02; letter-spacing: -.01em; overflow-wrap: anywhere; }.flowLine { display: none; }.authPanel { width: 100%; box-sizing: border-box; padding: 1.25rem; border-radius: 1.1rem; }.modeSwitch { width: 100%; }.modeSwitch button { flex: 1; min-width: 0; padding-inline: .7rem; }.twoColumns { grid-template-columns: 1fr; }.formHeading h1 { font-size: 2.05rem; line-height: 1.04; letter-spacing: -.015em; max-width: 15ch; }.passwordField input { padding-right: 1rem; }.passwordField button { position: static; width: 100%; min-height: 2.75rem; margin-top: .5rem; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .page *, .page *::before, .page *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+
+/* Oko ob geslu. Pri "Nov račun" je desno še gumb "Ustvari varno geslo", zato
+   se oko takrat umakne levo od njega; pri prijavi gre k robu. */
+.okoGesla {
+  position: absolute; top: 50%; right: .5rem; transform: translateY(-50%);
+  display: grid; place-items: center; width: 2.35rem; height: 2.35rem;
+  padding: 0; border: 0; border-radius: 50%; background: none;
+  color: color-mix(in oklch, var(--ink, #1c1815) 55%, transparent); cursor: pointer;
+}
+.okoGesla:hover { color: var(--ink, #1c1815); }
+.passwordField[data-signup] .okoGesla { right: 11.9rem; }
+/* prostor v polju: brez gumba za ustvarjanje zadosca prostor za oko */
+.passwordField input { padding-right: 3.2rem; }
+.passwordField[data-signup] input { padding-right: 14.6rem; }
+
+.gesloNamig {
+  display: block; margin-top: .45rem;
+  color: color-mix(in oklch, var(--ink, #1c1815) 62%, transparent);
+  font-size: .78rem; line-height: 1.45; font-weight: 400;
+}
+.gesloNamig b { font-weight: 700; }

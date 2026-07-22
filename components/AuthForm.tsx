@@ -28,6 +28,8 @@ export default function AuthForm({ base }: { base: string }) {
   const passwordInput = useRef<HTMLInputElement>(null);
   const [mode, setMode] = useState<Mode>('signin');
   const [loading, setLoading] = useState(false);
+  /* oko: brez njega ne vidis, ali si zadela presledek ali napacno crko */
+  const [gesloVidno, setGesloVidno] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   /* zapomnimo si e-posto zadnjega poskusa, da lahko ponudimo "poslji potrditev znova" */
   const [zadnjaEposta, setZadnjaEposta] = useState('');
@@ -232,7 +234,25 @@ export default function AuthForm({ base }: { base: string }) {
         )}
         <label>E-pošta<input className={styles.authInput} name="email" type="email" autoComplete="email" inputMode="email" required /></label>
         {mode !== 'reset' && (
-          <label>Geslo<span className={styles.passwordField}><input className={styles.authInput} ref={passwordInput} name="password" type="password" autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} minLength={8} required />{mode === 'signup' && <button type="button" onClick={generatePassword}>Ustvari varno geslo</button>}</span></label>
+          <label>Geslo<span className={styles.passwordField} data-signup={mode === 'signup' || undefined}>
+            <input className={styles.authInput} ref={passwordInput} name="password"
+              type={gesloVidno ? 'text' : 'password'}
+              autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+              minLength={8} required />
+            <button type="button" className={styles.okoGesla} onClick={() => setGesloVidno(v => !v)}
+              aria-label={gesloVidno ? 'Skrij geslo' : 'Pokaži geslo'} title={gesloVidno ? 'Skrij geslo' : 'Pokaži geslo'}>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6Z" /><circle cx="12" cy="12" r="2.6" />
+                {!gesloVidno && <path d="m4 20 16-16" />}
+              </svg>
+            </button>
+            {mode === 'signup' && <button type="button" onClick={generatePassword}>Ustvari varno geslo</button>}
+          </span>
+          {mode === 'signup' && <small className={styles.gesloNamig}>
+            Vsaj 8 znakov. Najbolj varno je nekaj besed skupaj — <b>modra-pekarna-sonce-42</b> je bolj varno in laže zapomnljivo kot <b>Xk9!q2</b>.
+          </small>}
+        </label>
         )}
 
         {message && <p role="status" className={message.type === 'error' ? styles.error : styles.success}>{message.text}</p>}

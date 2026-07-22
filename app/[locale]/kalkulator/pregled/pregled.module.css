@@ -1730,3 +1730,84 @@
 }
 .ukazZapri:hover { color: var(--ink); background: color-mix(in oklch, var(--ink) 8%, transparent); }
 .ukazOkno input { padding-right: 3.2rem; }
+
+/* ── Ključavnica ob zaklenjeni postavki menija ────────────────────────────
+   Barva ostane, sivine ni: posivela postavka izgleda pokvarjena, ključavnica
+   pa pove, da je funkcija tam in da se da odkleniti. */
+.navKljuc { display: none; margin-left: auto; flex: none; color: color-mix(in oklch, var(--ink) 42%, transparent); }
+.navKljuc svg { width: .95rem; height: .95rem; }
+:global(body[data-paket='free']) .navItem[data-zaklenjeno] .navKljuc,
+:global(body[data-paket='anonymous']) .navItem[data-zaklenjeno] .navKljuc { display: grid; }
+
+/* ── Zaslon namesto zaklenjene funkcije ───────────────────────────────── */
+.zaklenjeno {
+  max-width: 42rem; display: grid; gap: .7rem;
+  padding: 2rem; border: 1px solid var(--line); border-radius: 1.5rem;
+  background: oklch(98% .008 87 / .92);
+}
+.zaklenjeno h2 { margin: 0; font: 500 clamp(1.8rem, 3vw, 2.6rem)/1.05 var(--font-serif), Georgia, serif; }
+.zaklenjenoUvod { margin: 0; color: var(--muted); font-size: .95rem; line-height: 1.55; }
+.zaklenjenoSeznam { display: grid; gap: .55rem; margin: .6rem 0 .3rem; padding: 0; list-style: none; }
+.zaklenjenoSeznam li { position: relative; padding-left: 1.5rem; font-size: .9rem; line-height: 1.5; }
+.zaklenjenoSeznam li::before {
+  content: ''; position: absolute; left: 0; top: .45rem;
+  width: .5rem; height: .5rem; border-radius: 50%;
+  background: oklch(70% .14 300);
+}
+.zaklenjenoGumbi { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .8rem; }
+.zaklenjenoGlavni {
+  display: inline-flex; align-items: center; min-height: 3rem; padding: 0 1.4rem;
+  border-radius: .9rem; background: var(--ink); color: var(--paper);
+  font-weight: 700; text-decoration: none;
+}
+.zaklenjenoDrugi {
+  display: inline-flex; align-items: center; min-height: 3rem; padding: 0 1.2rem;
+  border: 1px solid var(--line); border-radius: .9rem;
+  color: var(--ink); font-weight: 700; text-decoration: none;
+}
+.zaklenjenoOpomba { margin: .4rem 0 0; color: var(--muted); font-size: .8rem; }
+
+/* Paket v profilnem meniju: kateri imas in kje ga urejas. */
+.userMenuPaket { display: flex !important; align-items: center; justify-content: space-between; gap: .8rem; }
+.userMenuPaket b { font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: color-mix(in oklch, var(--ink) 55%, transparent); }
+.userMenuPaket b[data-pro='true'] { color: oklch(48% .18 350); }
+
+/* ── Paket in naročnina ───────────────────────────────────────────────── */
+.paketiMreza { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; align-items: start; }
+.paketKartica {
+  position: relative; display: grid; gap: .5rem; align-content: start;
+  padding: 1.6rem 1.4rem; border: 1px solid var(--line); border-radius: 1.4rem;
+  background: oklch(98% .008 87 / .92);
+}
+/* tvoj paket ima poudarjen rob, ne drugacne barve — barva bi tekmovala s ponudbo */
+.paketKartica[data-moj] { border-color: var(--ink); box-shadow: 0 .5rem 1.8rem oklch(20% .03 55 / .1); }
+.paketZnackaMoj, .paketZnackaDruga {
+  position: absolute; top: -.7rem; left: 1.3rem;
+  padding: .22rem .6rem; border-radius: 999px;
+  font-size: .58rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+}
+.paketZnackaMoj { background: var(--ink); color: var(--paper); }
+.paketZnackaDruga { background: color-mix(in oklch, var(--ink) 12%, transparent); color: color-mix(in oklch, var(--ink) 65%, transparent); }
+.paketKartica h2 { margin: 0; font: 500 1.7rem/1.05 var(--font-serif), Georgia, serif; }
+.paketZa { margin: 0; color: var(--muted); font-size: .82rem; }
+.paketCena { display: flex; align-items: baseline; gap: .35rem; margin: .6rem 0 0; }
+.paketCena strong { font: 500 2.4rem/1 var(--font-serif), Georgia, serif; }
+.paketCena span { color: var(--muted); font-size: .8rem; }
+.paketCena s { color: color-mix(in oklch, var(--ink) 42%, transparent); font-size: .9rem; }
+.paketUstanovna { margin: 0; font-size: .68rem; font-weight: 700; color: oklch(48% .16 350); }
+.paketSeznam { display: grid; gap: .45rem; margin: .9rem 0 0; padding: 0; list-style: none; }
+.paketSeznam li { position: relative; padding-left: 1.3rem; font-size: .84rem; line-height: 1.45; }
+.paketSeznam li::before {
+  content: ''; position: absolute; left: 0; top: .45rem;
+  width: .45rem; height: .45rem; border-radius: 50%; background: oklch(70% .14 300);
+}
+.paketDejanje { margin-top: 1.1rem; }
+.paketGlavni, .paketDrugi, .paketKmalu {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 100%; box-sizing: border-box; min-height: 2.9rem; padding: 0 1.1rem;
+  border-radius: .85rem; font-weight: 700; font-size: .84rem; text-decoration: none;
+}
+.paketGlavni { background: var(--ink); color: var(--paper); }
+.paketDrugi { border: 1px solid var(--line); color: var(--ink); }
+.paketKmalu { border: 1px dashed var(--line); color: var(--muted); }
+.paketOpomba { max-width: 44rem; margin: 1.4rem 0 0; color: var(--muted); font-size: .82rem; line-height: 1.55; }

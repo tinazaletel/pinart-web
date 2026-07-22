@@ -2,7 +2,7 @@
 
 import {
   FileText, Handshake, Scroll, Receipt, Wallet, Tag, Clock,
-  Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, X, CaretLeft, CaretRight,
+  Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, CaretLeft, CaretRight,
   ShieldCheck, Scales, ChatCircle, Sparkle, Plus, ChartLineUp, Robot, Plugs,
 } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
@@ -237,24 +237,28 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   ];
 
   /* Predlog cenika (cene so okvirne — potrdi/prilagodi). */
+  /* Brez seznama "cesa ni": tak seznam ni nikoli popoln (Premium bi moral nasteti
+     vseh osem stvari iz Pro) in bralec iz enega krizca sklepa, da je razlika ena
+     sama. Lestvico nosita "Vse iz Brezplacno" in "Vse iz Premium", vsak paket pa
+     pokaze, kaj DODA. */
   const CENIKI = [
     {
       ime: 'Brezplačno', za: 'Za začetek in enkratne projekte', cena: '0', enota: '€ za vedno',
       cta: 'Odpri kalkulator', href: kalkulator, izpost: false, znacka: '', kmalu: false,
-      vkljuceno: ['Kalkulator poštenih cen', 'Trije paketi + avtorske pravice', 'Oblikovana in urejljiva ponudba', 'Izvoz v e-pošto / PDF'],
-      brez: ['Shranjeni dokumenti', 'Pogodbe in računi', 'Stranke in cilji'],
+      vkljuceno: ['Kalkulator poštenih cen', 'Tri različice ponudbe za stranko', 'Izračun avtorskih pravic in licence', 'Oblikovana in urejljiva ponudba', 'Izvoz v e-pošto / PDF', 'Shranjene ponudbe v oblaku', 'Oštevilčenje ponudb'],
     },
     {
-      ime: 'Premium', za: 'Za redno delo s strankami', cena: '9', enota: '€ / mesec',
+      /* Ustanovna cena: prvih 50 placa 5 € za vedno. Namen ni popust, ampak
+         dokaz pripravljenosti placati — brezplacni vpisi investitorju ne povedo nic. */
+      ime: 'Premium', za: 'Za redno delo s strankami', cena: '5', enota: '€ / mesec', redna: '9',
+      ustanovna: 'Ustanovna cena za prvih 50 — za vedno',
       cta: 'Začni s Premium', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Najbolj priljubljeno', kmalu: false,
       vkljuceno: ['Vse iz Brezplačno', 'Shranjene ponudbe, pogodbe, računi', 'Dolgoročni retainerji', 'Kartoteka strank', 'Stroški in cilji', 'Časovnik in donosnost dela', 'Nadzorna plošča'],
-      brez: ['Poslovni okvir in davki'],
     },
     {
       ime: 'Pro', za: 'Za polno poslovanje', cena: '19', enota: '€ / mesec',
       cta: 'Kmalu', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Kmalu', kmalu: true,
-      vkljuceno: ['Vse iz Premium', 'Celoten analitični pregled — prihodki in dobiček po strankah', 'Sinhronizacija med vsemi orodji', 'Poslovni okvir in davki', 'Posredovanje računovodstvu (izvoz)', 'AI agent (beta)', 'MCP & API dostop (kmalu)', 'Prednostna podpora'],
-      brez: [],
+      vkljuceno: ['Vse iz Premium', 'Primerjava s trgom — koliko za to zaračunajo drugi', 'Celoten analitični pregled — prihodki in dobiček po strankah', 'Sinhronizacija med vsemi orodji', 'Poslovni okvir in davki', 'Posredovanje računovodstvu (izvoz)', 'AI agent (beta)', 'Sodelavci z dostopom samo do izbranih projektov', 'MCP & API dostop (kmalu)', 'Prednostna podpora'],
     },
   ];
 
@@ -544,6 +548,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-plan-cena { display: flex; align-items: baseline; gap: .35rem; margin-bottom: 1.2rem; }
         .fl-plan-cena strong { font-family: var(--font-serif), serif; font-weight: 500; font-size: 2.6rem; line-height: 1; }
         .fl-plan-cena span { font-size: .8rem; color: rgba(17,17,17,.6); }
+        .fl-plan-redna { margin-left: .25rem; color: rgba(17,17,17,.42); font-size: .95rem; text-decoration-thickness: 1px; }
+        .fl-plan-ustanovna { margin: -.9rem 0 1.2rem; font-size: .68rem; font-weight: 700; letter-spacing: .04em; color: oklch(48% .16 350); }
         .fl-plan-cta { position: relative; overflow: hidden; display: block; text-align: center; font-size: .82rem; font-weight: 700; letter-spacing: .04em; text-decoration: none; padding: .8rem 1rem; border-radius: 999px; border: 1px solid var(--ink); color: var(--ink); transition: background .16s, color .16s, transform .16s; }
         .fl-plan-cta:hover { transform: translateY(-1px); }
         .fl-plan-cta.polni { background: var(--ink); color: var(--paper); }
@@ -842,18 +848,24 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                 {c.znacka && <span className="fl-plan-znacka">{c.znacka}</span>}
                 <h3>{c.ime}</h3>
                 <p className="fl-plan-za">{c.za}</p>
-                <div className="fl-plan-cena"><strong>{c.cena}</strong><span>{c.enota}</span></div>
+                <div className="fl-plan-cena">
+                  <strong>{c.cena}</strong><span>{c.enota}</span>
+                  {'redna' in c && <s className="fl-plan-redna">{(c as { redna?: string }).redna} €</s>}
+                </div>
+                {'ustanovna' in c && <p className="fl-plan-ustanovna">{(c as { ustanovna?: string }).ustanovna}</p>}
                 {c.kmalu
                   ? <span className="fl-plan-cta cakalna" aria-disabled="true">{c.cta}</span>
                   : <a className={`fl-plan-cta${c.izpost ? ' polni' : ''}`} href={c.href}>{c.cta}</a>}
                 <ul className="fl-plan-lista">
                   {c.vkljuceno.map(v => <li key={v} className="da"><CheckCircle size={16} weight="fill" /> {v}</li>)}
-                  {c.brez.map(b => <li key={b} className="ne"><X size={15} weight="bold" /> {b}</li>)}
                 </ul>
               </div>
             ))}
           </div>
-          <p className="fl-cenik-opomba">Cene ne vključujejo DDV. Med beto so vsi paketi na voljo brezplačno.</p>
+          <p className="fl-cenik-opomba">Cene ne vključujejo DDV. Paket lahko kadarkoli zamenjaš ali odpoveš.</p>
+          {/* Osebne primerjave cen ("nazadnje si zaracunala …") NE sodijo sem:
+              obiskovalec landinga se nima svojih podatkov. Sodijo v kalkulator ob
+              rezultat in na nadzorno plosco — glej docs/CENA-ARGUMENT.md */}
         </section>
 
         <section className="fl-faq" id="faq">

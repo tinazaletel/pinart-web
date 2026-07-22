@@ -138,3 +138,7 @@ grant select on
 to service_role;
 
 grant select, insert on public.cenovne_tocke, public.dogodki to service_role;
+
+
+-- Razred proracuna narocnika. Vprasalnik ga ze sprasuje, doslej se ni shranil.
+alter table public.cenovne_tocke add column if not exists budget text;
