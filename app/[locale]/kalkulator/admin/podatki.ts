@@ -1,153 +1,165 @@
 /**
- * Bere anonimne podatke iz Supabase (pogledi iz migracije
- * 20260722040000_analitika.sql). Google Sheet ostaja kot rezerva, dokler
- * ga Tina ne ugasne — če Supabase ni nastavljen, pade nazaj nanj.
+ * Podatki za pregled poslovanja. Bere Supabase s service ključem.
  *
- * Vse skupaj je seštevek: nikjer ni e-pošte, imena ali podatkov o strankah.
+ * Bere OSNOVNI tabeli, ne pogledov: pogledi seštevajo vse od nekdaj in ne znajo
+ * omejiti obdobja. Seštevanje v TypeScriptu je pri teh količinah zanemarljivo,
+ * daje pa preklop 30 dni / 3 mesece / leto / vse.
+ *
+ * Vse je seštevek — nikjer ni e-pošte, imena ali podatkov o strankah.
  * Zasebni dnevnik ur se tu NE bere in se ne sme brati.
  */
 import { createAdminClient } from '@/utils/supabase/admin';
+import { podrocjeZaIme } from '@/lib/pricingCatalog';
 
-type Zapis = {
-  submittedAt: string;
-  storitve: string;
-  izkusnje: string;
-  mojTrg: string;
-  trgNarocnika: string;
-  raba: string;
-  izvedbaEUR: number;
-  praviceEUR: number;
-  valuta: string;
-  prilagojeno: string;
-};
+/* Cena paketa PRO na mesec. Dokler plačil ne obdeluje ponudnik, je prihodek
+   OCENA (število PRO × cena), ne dejansko nakazan denar — in tako mora pisati. */
+export const CENA_PRO_MESECNO = 19;
+
+export type Obdobje = 30 | 90 | 365 | 0;   // 0 = vse
 
 export type Skupina = {
-  kljuc: string;
-  storitve: string;
-  izkusnje: string;
-  trgNarocnika: string;
-  stevilo: number;
-  mediana: number;
-  min: number;
-  maks: number;
+  kljuc: string; storitve: string; izkusnje: string; trgNarocnika: string;
+  stevilo: number; mediana: number; min: number; maks: number;
 };
-
-export type Storitev = { storitev: string; stevilo: number; mediana: number };
+export type Storitev = { storitev: string; podrocje: string; stevilo: number; mediana: number };
 export type Trg = { mojTrg: string; stevilo: number; mediana: number };
 export type Racuni = { paket: string; status: string; stevilo: number };
-export type Dan = { dan: string; dogodkov: number; sej: number; nevpisanih: number };
+export type Mesec = { mesec: string; sej: number; nevpisanih: number; dogodkov: number; cenovnihTock: number };
 
 export type Analitika = {
   napaka?: string;
-  vir: 'supabase' | 'sheet' | 'brez';
+  vir: 'supabase' | 'brez';
+  obdobje: Obdobje;
   skupno: number;
   zadnji?: string;
   skupine: Skupina[];
   storitve: Storitev[];
   trgi: Trg[];
   racuni: Racuni[];
-  dnevi: Dan[];
+  meseci: Mesec[];
+  racunovSkupaj: number;
+  proRacunov: number;
+  ocenjenPrihodekMesecno: number;
 };
 
 const prazno: Analitika = {
-  vir: 'brez', skupno: 0, skupine: [], storitve: [], trgi: [], racuni: [], dnevi: [],
+  vir: 'brez', obdobje: 0, skupno: 0, skupine: [], storitve: [], trgi: [],
+  racuni: [], meseci: [], racunovSkupaj: 0, proRacunov: 0, ocenjenPrihodekMesecno: 0,
 };
 
-function mediana(vrednosti: number[]): number {
-  const s = [...vrednosti].sort((a, b) => a - b);
-  const sredina = Math.floor(s.length / 2);
-  return s.length % 2 ? s[sredina] : Math.round((s[sredina - 1] + s[sredina]) / 2);
+function mediana(v: number[]): number {
+  if (!v.length) return 0;
+  const s = [...v].sort((a, b) => a - b);
+  const i = Math.floor(s.length / 2);
+  return s.length % 2 ? s[i]! : Math.round((s[i - 1]! + s[i]!) / 2);
 }
 
-/* ── Supabase ─────────────────────────────────────────────────────────────── */
-async function izSupabase(): Promise<Analitika | null> {
+const mesecKljuc = (iso: string) => iso.slice(0, 7);          // 2026-07
+const odKdaj = (dni: Obdobje) =>
+  (dni ? new Date(Date.now() - dni * 86_400_000).toISOString() : null);
+
+type Tocka = {
+  created_at: string; storitve: string[] | null; izkusnje: string | null;
+  moj_trg: string | null; trg_narocnika: string | null; izvedba_eur: number | string;
+};
+type Dogodek = { created_at: string; seja: string | null; paket: string | null };
+
+export async function pridobiAnalitiko(obdobje: Obdobje = 90): Promise<Analitika> {
   const baza = createAdminClient();
-  if (!baza) return null;
-
-  const [cene, storitve, trgi, racuni, dnevi, zadnja] = await Promise.all([
-    baza.from('analitika_cene').select('*').limit(200),
-    baza.from('analitika_storitve').select('*').limit(50),
-    baza.from('analitika_trgi').select('*').limit(50),
-    baza.from('analitika_racuni').select('*'),
-    baza.from('analitika_dnevno').select('*').limit(30),
-    baza.from('cenovne_tocke').select('created_at').order('created_at', { ascending: false }).limit(1),
-  ]);
-
-  /* Ce pogledov se ni (migracija ni bila pognana), naj se pokaze jasen razlog,
-     ne prazna stran. */
-  if (cene.error) {
-    return { ...prazno, napaka: `Supabase: ${cene.error.message}. Je migracija 20260722040000_analitika.sql pognana?` };
+  if (!baza) {
+    return { ...prazno, napaka: 'Analitika ni nastavljena: manjka SUPABASE_SERVICE_ROLE_KEY.' };
   }
 
-  const skupine: Skupina[] = (cene.data || []).map(r => ({
-    kljuc: `${r.storitve}|${r.izkusnje}|${r.trg_narocnika}`,
-    storitve: String(r.storitve || '—'),
-    izkusnje: String(r.izkusnje || '—'),
-    trgNarocnika: String(r.trg_narocnika || '—'),
-    stevilo: Number(r.stevilo) || 0,
-    mediana: Number(r.mediana) || 0,
-    min: Number(r.najnizja) || 0,
-    maks: Number(r.najvisja) || 0,
-  }));
+  const od = odKdaj(obdobje);
+  let tocke = baza.from('cenovne_tocke')
+    .select('created_at,storitve,izkusnje,moj_trg,trg_narocnika,izvedba_eur')
+    .order('created_at', { ascending: false }).limit(20000);
+  let dogodki = baza.from('dogodki')
+    .select('created_at,seja,paket')
+    .order('created_at', { ascending: false }).limit(50000);
+  if (od) { tocke = tocke.gte('created_at', od); dogodki = dogodki.gte('created_at', od); }
 
-  return {
-    vir: 'supabase',
-    skupno: skupine.reduce((s, x) => s + x.stevilo, 0),
-    zadnji: zadnja.data?.[0]?.created_at,
-    skupine,
-    storitve: (storitve.data || []).map(r => ({ storitev: String(r.storitev), stevilo: Number(r.stevilo) || 0, mediana: Number(r.mediana) || 0 })),
-    trgi: (trgi.data || []).map(r => ({ mojTrg: String(r.moj_trg), stevilo: Number(r.stevilo) || 0, mediana: Number(r.mediana) || 0 })),
-    racuni: (racuni.data || []).map(r => ({ paket: String(r.paket), status: String(r.status), stevilo: Number(r.stevilo) || 0 })),
-    dnevi: (dnevi.data || []).map(r => ({ dan: String(r.dan), dogodkov: Number(r.dogodkov) || 0, sej: Number(r.sej) || 0, nevpisanih: Number(r.nevpisanih) || 0 })),
-  };
-}
+  const [t, d, racuni] = await Promise.all([tocke, dogodki, baza.from('analitika_racuni').select('*')]);
 
-/* ── Google Sheet (stara pot, rezerva) ────────────────────────────────────── */
-async function izSheeta(): Promise<Analitika> {
-  const endpoint = process.env.GOOGLE_SHEETS_CENE_WEBHOOK_URL;
-  const secret = process.env.GOOGLE_SHEETS_CENE_READ_SECRET;
-  if (!endpoint || !secret) {
-    return { ...prazno, napaka: 'Analitika še ni nastavljena. Dodaj SUPABASE_SERVICE_ROLE_KEY in poženi migracijo 20260722040000_analitika.sql.' };
+  if (t.error) {
+    return { ...prazno, obdobje, napaka: `Supabase: ${t.error.message}` };
   }
 
-  let vrstice: Zapis[];
-  try {
-    const res = await fetch(`${endpoint}?secret=${encodeURIComponent(secret)}`, { cache: 'no-store' });
-    if (!res.ok) return { ...prazno, napaka: `Sheet ni odgovoril (${res.status}).` };
-    vrstice = await res.json();
-    if (!Array.isArray(vrstice)) throw new Error('ni seznam');
-  } catch {
-    return { ...prazno, napaka: 'Napaka pri branju iz Google Sheeta.' };
-  }
+  const vrstice = (t.data || []) as Tocka[];
+  const dogodkiV = (d.data || []) as Dogodek[];
 
-  const skupine = new Map<string, { storitve: string; izkusnje: string; trgNarocnika: string; zneski: number[] }>();
+  /* ── cene po storitvi × izkušnjah × trgu ─────────────────────────────── */
+  const skupineMap = new Map<string, { s: string; i: string; tn: string; zneski: number[] }>();
+  const poStoritvi = new Map<string, number[]>();
+  const poTrgu = new Map<string, number[]>();
+
   for (const v of vrstice) {
-    const znesek = Number(v.izvedbaEUR);
+    const znesek = Number(v.izvedba_eur) || 0;
     if (!znesek) continue;
-    const kljuc = `${v.storitve}|${v.izkusnje}|${v.trgNarocnika}`;
-    if (!skupine.has(kljuc)) {
-      skupine.set(kljuc, { storitve: v.storitve, izkusnje: v.izkusnje, trgNarocnika: v.trgNarocnika, zneski: [] });
-    }
-    skupine.get(kljuc)!.zneski.push(znesek);
+    const imena = (v.storitve || []).filter(Boolean);
+    const s = imena.join(' + ') || '—';
+    const i = v.izkusnje || '—';
+    const tn = v.trg_narocnika || '—';
+    const kljuc = `${s}|${i}|${tn}`;
+    if (!skupineMap.has(kljuc)) skupineMap.set(kljuc, { s, i, tn, zneski: [] });
+    skupineMap.get(kljuc)!.zneski.push(znesek);
+
+    /* posamezna storitev: znesek je za cel skupek, zato ga delimo na storitve —
+       drugace bi ponudba s petimi storitvami vsaki pripisala celotno ceno */
+    const delez = imena.length ? znesek / imena.length : znesek;
+    imena.forEach(ime => poStoritvi.set(ime, [...(poStoritvi.get(ime) || []), delez]));
+
+    const trg = v.moj_trg || '—';
+    poTrgu.set(trg, [...(poTrgu.get(trg) || []), znesek]);
   }
 
-  return {
-    ...prazno,
-    vir: 'sheet',
-    skupno: vrstice.length,
-    zadnji: vrstice.length ? vrstice[vrstice.length - 1].submittedAt : undefined,
-    skupine: [...skupine.entries()]
-      .map(([kljuc, s]) => ({
-        kljuc, storitve: s.storitve, izkusnje: s.izkusnje, trgNarocnika: s.trgNarocnika,
-        stevilo: s.zneski.length, mediana: mediana(s.zneski),
-        min: Math.min(...s.zneski), maks: Math.max(...s.zneski),
-      }))
-      .sort((a, b) => b.stevilo - a.stevilo),
-  };
-}
+  const skupine: Skupina[] = [...skupineMap.entries()].map(([kljuc, g]) => ({
+    kljuc, storitve: g.s, izkusnje: g.i, trgNarocnika: g.tn,
+    stevilo: g.zneski.length, mediana: mediana(g.zneski),
+    min: Math.min(...g.zneski), maks: Math.max(...g.zneski),
+  })).sort((a, b) => b.stevilo - a.stevilo);
 
-export async function pridobiCenovnePodatke(): Promise<Analitika> {
-  const iz = await izSupabase();
-  if (iz) return iz;
-  return izSheeta();
+  const storitve: Storitev[] = [...poStoritvi.entries()].map(([ime, z]) => ({
+    storitev: ime,
+    podrocje: podrocjeZaIme(ime)?.ime || 'Drugo',
+    stevilo: z.length, mediana: mediana(z),
+  })).sort((a, b) => b.stevilo - a.stevilo);
+
+  const trgi: Trg[] = [...poTrgu.entries()].map(([mojTrg, z]) => ({
+    mojTrg, stevilo: z.length, mediana: mediana(z),
+  })).sort((a, b) => b.stevilo - a.stevilo);
+
+  /* ── uporaba po mesecih ──────────────────────────────────────────────── */
+  const mesecMap = new Map<string, { seje: Set<string>; anon: Set<string>; dogodkov: number; tocke: number }>();
+  const vzemi = (k: string) => {
+    if (!mesecMap.has(k)) mesecMap.set(k, { seje: new Set(), anon: new Set(), dogodkov: 0, tocke: 0 });
+    return mesecMap.get(k)!;
+  };
+  for (const x of dogodkiV) {
+    const m = vzemi(mesecKljuc(x.created_at));
+    m.dogodkov += 1;
+    if (x.seja) { m.seje.add(x.seja); if ((x.paket || 'anon') === 'anon') m.anon.add(x.seja); }
+  }
+  for (const v of vrstice) vzemi(mesecKljuc(v.created_at)).tocke += 1;
+
+  const meseci: Mesec[] = [...mesecMap.entries()]
+    .map(([mesec, m]) => ({ mesec, sej: m.seje.size, nevpisanih: m.anon.size, dogodkov: m.dogodkov, cenovnihTock: m.tocke }))
+    .sort((a, b) => b.mesec.localeCompare(a.mesec));
+
+  /* ── računi in ocena prihodka ────────────────────────────────────────── */
+  const racuniV: Racuni[] = (racuni.data || []).map(r => ({
+    paket: String(r.paket), status: String(r.status), stevilo: Number(r.stevilo) || 0,
+  }));
+  const racunovSkupaj = racuniV.reduce((s, r) => s + r.stevilo, 0);
+  const proRacunov = racuniV.filter(r => r.paket === 'pro' && r.status === 'active')
+    .reduce((s, r) => s + r.stevilo, 0);
+
+  return {
+    vir: 'supabase', obdobje,
+    skupno: vrstice.length,
+    zadnji: vrstice[0]?.created_at,
+    skupine, storitve, trgi, meseci,
+    racuni: racuniV, racunovSkupaj, proRacunov,
+    ocenjenPrihodekMesecno: proRacunov * CENA_PRO_MESECNO,
+  };
 }

@@ -593,7 +593,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
            tj. glava+ramena centrirano — obraz (y~350) pade na 40% visine kroga, njena sredina (x~670) na 50% sirine.
            Vodoravni zamik dela transform-origin X (39%), ker pri object-fit:cover sirina tocno napolni krog
            in object-position X zato nima ucinka. */
-        .fl-zgodba-foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; transform: scale(1.68); transform-origin: 39% 0%; }
+        /* Krog ostane, slika pa je odmaknjena: scale 1.68 je bil prevelik priblizek
+           in je odrezal ramena. 1.12 pokaze cel portret znotraj kroga. */
+        .fl-zgodba-foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; transform: scale(1.12); transform-origin: 50% 10%; }
         .fl-zgodba-portret .circular-text { grid-area: 1 / 1; width: 100%; height: 100%; color: var(--ink); opacity: .82; }
         .fl-zgodba-tekst p { font-size: 1.02rem; line-height: 1.72; color: rgba(17,17,17,.82); margin: 0 0 1.1rem; max-width: 60ch; }
         .fl-zgodba-tekst p:first-child { font-size: 1.18rem; line-height: 1.6; color: var(--ink); }

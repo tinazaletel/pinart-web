@@ -27,3 +27,24 @@ export const PRICING_SERVICES: PricingService[] = [
   { id: 'render3d', ime: '3D vizualizacije', osnova: 650 },
   { id: 'strategija', ime: 'Brand strategija', osnova: 1100 },
 ];
+
+/* Podrocja dela. Ista razdelitev se uporablja v kalkulatorju (izbira ob
+   onboardingu) in v adminu (skupine v tabeli cen) — zato zivi tukaj, ne v
+   komponenti. "dizajnsistem" je bil prej brez podrocja. */
+export type PricingPodrocje = { id: string; ime: string; opis: string; storitve: string[] };
+
+export const PODROCJA: PricingPodrocje[] = [
+  { id: 'graficno',  ime: 'Grafika in branding',       opis: 'logotip, CGP, tiskovine, embalaža, ilustracija',   storitve: ['logo', 'cgp', 'publikacija', 'embalaza', 'ilustracija'] },
+  { id: 'splet',     ime: 'Splet in produkti',         opis: 'spletne strani, UX/UI, aplikacije',                storitve: ['web', 'uxui', 'aplikacija', 'dizajnsistem'] },
+  { id: 'marketing', ime: 'Marketing in oglasi',       opis: 'kampanje, social media, SEO, PR, besedila',        storitve: ['kampanja', 'smm', 'seo', 'email', 'pr', 'copy'] },
+  { id: 'foto',      ime: 'Foto, video, motion',       opis: 'fotografiranje, video, motion, 3D',                storitve: ['fotografija', 'video', 'motion', 'render3d'] },
+  { id: 'direkcija', ime: 'Kreativna direkcija in strategija', opis: 'vodenje, koncept, strategija',             storitve: ['direkcija', 'strategija'] },
+  { id: 'prostor',   ime: 'Prostor in arhitektura',    opis: 'interier, arhitektura, razstavni in produktni dizajn', storitve: ['interier', 'arhitektura', 'razstava', 'produktni'] },
+];
+
+/* V bazo se shrani IME storitve, ne id — zato iskanje po imenu. */
+export function podrocjeZaIme(ime: string): PricingPodrocje | undefined {
+  const s = PRICING_SERVICES.find(x => x.ime === ime);
+  if (!s) return undefined;
+  return PODROCJA.find(p => p.storitve.includes(s.id));
+}

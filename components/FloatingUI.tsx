@@ -22,7 +22,9 @@ export default function FloatingUI() {
   /* Na kalkulatorju "Let's talk" ne sme prodajati storitev (Tina: "se ne gre
      vec o mojih storitvah") — tu gre za orodje samo, zato zbiramo povratne
      informacije in predloge, ne povprasevanj za projekte. */
-  const isKalkulator = pathname.includes('/kalkulator/orodje');
+  /* Velja za CELO orodje, ne le za /orodje: na nadzorni plosci in podstraneh
+     je bil prej se vedno prodajni nagovor za moje storitve. */
+  const isKalkulator = pathname.includes('/kalkulator');
   const isFlow = pathname.includes('/flow');
 
   const kalkulatorCopy = {
@@ -184,11 +186,13 @@ export default function FloatingUI() {
         type="button"
         onClick={() => setTalkOpen(true)}
         aria-label="Let's talk"
+        data-app={isKalkulator || undefined}
         className="edge-right-ui"
         style={{
           position:       'fixed',
           right:          'clamp(1rem, 2vw, 1.8rem)',
-          bottom:         'clamp(1.2rem, 2.5vh, 2rem)',
+          /* v orodju visje, da ne sedi na predogledu stanja in stoparici */
+          bottom:         isKalkulator ? 'clamp(5rem, 12vh, 8rem)' : 'clamp(1.2rem, 2.5vh, 2rem)',
           zIndex:         45,
           display:        'flex',
           flexDirection:  'column',

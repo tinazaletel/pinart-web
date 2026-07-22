@@ -40,7 +40,7 @@ export default async function middleware(request: NextRequest) {
      poslovanja. Vsebina je strezniško zascitena z geslom KALKULATOR_ADMIN_GESLO
      (piskotek pinart_admin), zato dvojna kljucavnica ni potrebna in je samo
      ovirala dostop. */
-  const protectedFlowRoute = /^\/(?:sl\/|en\/)?kalkulator\/(pregled|projekti|pogodbe|racuni|stroski|stranke|cilji|ceniki|dolgorocno|racunovodstvo|profil|cas|poslovni-nacrt|nastavitve)(?:\/|$)/.test(request.nextUrl.pathname);
+  const protectedFlowRoute = /^\/(?:sl\/|en\/)?kalkulator\/(pregled|projekti|pogodbe|racuni|stroski|stranke|cilji|ceniki|dolgorocno|racunovodstvo|profil|cas|poslovni-nacrt|nastavitve|pomoc)(?:\/|$)/.test(request.nextUrl.pathname);
 
   if (protectedFlowRoute && (!sejaPreverjena || !user)) {
     const localePrefix = request.nextUrl.pathname.startsWith('/en/') ? '/en' : '';

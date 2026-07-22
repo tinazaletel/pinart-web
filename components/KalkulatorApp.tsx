@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { localePath } from '@/i18n/routing';
-import { PRICING_SERVICES as STORITVE } from '@/lib/pricingCatalog';
+import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import { loadFlowData, saveFlowCollection, type FlowInvoice } from '@/lib/pinartFlowStore';
 import { saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
@@ -247,18 +247,7 @@ const PRAV_NAKLADA = [
 const teritorijIzTrga = (trgId: string): string =>
   trgId === 'si' ? 'slo' : (trgId === 'west' || trgId === 'east') ? 'eu' : 'global';
 
-/* Podrocja dela za onboarding: uporabnik izbere podrocja, orodje pa v ospredje
-   postavi storitve znotraj njih. Nove storitve so umescene v ustrezno podrocje,
-   da seznam ostane pregleden. */
-const PODROCJA: { id: string; ime: string; opis: string; storitve: string[] }[] = [
-  { id: 'graficno',  ime: 'Grafika in branding',       opis: 'logotip, CGP, tiskovine, embalaža, ilustracija',   storitve: ['logo', 'cgp', 'publikacija', 'embalaza', 'ilustracija'] },
-  { id: 'splet',     ime: 'Splet in produkti',         opis: 'spletne strani, UX/UI, aplikacije',                storitve: ['web', 'uxui', 'aplikacija'] },
-  { id: 'marketing', ime: 'Marketing in oglasi',       opis: 'kampanje, social media, SEO, PR, besedila',        storitve: ['kampanja', 'smm', 'seo', 'email', 'pr', 'copy'] },
-  { id: 'foto',      ime: 'Foto, video, motion',       opis: 'fotografiranje, video, motion, 3D',                storitve: ['fotografija', 'video', 'motion', 'render3d'] },
-  { id: 'direkcija', ime: 'Kreativna direkcija in strategija', opis: 'vodenje, koncept, strategija',                 storitve: ['direkcija', 'strategija'] },
-  { id: 'prostor',   ime: 'Prostor in arhitektura',    opis: 'interier, arhitektura, razstavni in produktni dizajn', storitve: ['interier', 'arhitektura', 'razstava', 'produktni'] },
-];
-
+/* Podrocja so v lib/pricingCatalog.ts — isto razdelitev bere tudi admin. */
 /* osnovna barva podrocja (za pastelne chipe, uskladjeno z ORB_BARVE) */
 const PODROCJE_BARVA: Record<string, string> = {
   graficno: '#7C3AED', splet: '#0EA5A5', marketing: '#DB2777',
@@ -1568,7 +1557,10 @@ function InfoNamig({ besedilo }: { besedilo: string }) {
   );
 }
 
-export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
+/* vLupini = kalkulator tece znotraj Flow ogrodja (vpisan uporabnik). Takrat
+   svoje glave ne rise — zgornjo vrstico in meni prispeva ogrodje, sicer bi bili
+   dve glavi ena nad drugo. */
+export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { locale?: string; vLupini?: boolean }) {
   /* Vstopno soglasje (kot Paperform): pogoji pred prvo uporabo orodja.
      Sprejem se shrani lokalno; ob naslednjih obiskih se ne prikaze vec. */
   const [pogojiOk, setPogojiOk] = useState<boolean | null>(null);
@@ -6011,7 +6003,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
 
       {onboardingOdprt && (
         <div className="onboarding" role="dialog" aria-modal="true" aria-label="Katere storitve ponujaš" data-lenis-prevent>
-          <div className="glava glava-ozka">{glavaUI()}</div>
+          {!vLupini && <div className="glava glava-ozka">{glavaUI()}</div>}
           <div className="oder">
             <div className="korak-vsebina">
               <p className="ob-kicker">Kalkulator za pošteno ceno in ponudbo</p>
@@ -6080,7 +6072,7 @@ export default function KalkulatorApp({ locale = 'sl' }: { locale?: string }) {
         </button>
       </div>
 
-      <div className="glava glava-ozka">{glavaUI()}</div>
+      {!vLupini && <div className="glava glava-ozka">{glavaUI()}</div>}
 
       {kazemProfil && (
         <>

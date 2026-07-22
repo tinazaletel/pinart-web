@@ -129,3 +129,12 @@ order by dan desc;
 -- Pogledi ne smejo biti dostopni iz brskalnika: samo service-role jih bere.
 revoke all on public.analitika_cene, public.analitika_storitve, public.analitika_trgi,
   public.analitika_racuni, public.analitika_dnevno from anon, authenticated;
+
+-- Service-role mora imeti IZRECNO pravico: privzete pravice Supabase za nove
+-- poglede ne veljajo, zato je admin vracal "permission denied for view".
+grant select on
+  public.analitika_cene, public.analitika_storitve, public.analitika_trgi,
+  public.analitika_racuni, public.analitika_dnevno
+to service_role;
+
+grant select, insert on public.cenovne_tocke, public.dogodki to service_role;

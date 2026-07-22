@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import DashboardSidebar from '@/components/DashboardSidebar';
-import DashboardHeaderTools from '@/components/DashboardHeaderTools';
+import StoparicaBliznjica from '@/components/StoparicaBliznjica';
 import SettingsWorkspace from '@/components/SettingsWorkspace';
 import styles from '../pregled/pregled.module.css';
 
@@ -26,8 +26,7 @@ export default async function NastavitvePage({ params }: { params: Promise<{ loc
             <p className={styles.eyebrow}>NASTAVITVE</p>
             <h1>Enkrat nastaviš. Povsod velja.</h1>
           </div>
-          <DashboardHeaderTools />
-        </header>
+        <StoparicaBliznjica /></header>
 
         <SettingsWorkspace base={base} />
       </section>

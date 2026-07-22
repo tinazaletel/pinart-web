@@ -107,7 +107,9 @@ function scatter(n: number, jeMobilni = false) {
   return { rows: rs.length, rowH, poz, orbD };
 }
 
-export default function RetainerWorkspace({ base }: { base: string }) {
+/* vLupini = retainer tece znotraj Flow ogrodja (vpisan uporabnik); takrat svoje
+   glave ne rise, ker jo prispeva ogrodje. */
+export default function RetainerWorkspace({ base, vLupini = false }: { base: string; vLupini?: boolean }) {
   /* enako kot kalkulator: pod 640px 3 mehurcki v vrsti in manjsi premer */
   const [jeMobilni, setJeMobilni] = useState(false);
   useEffect(() => {
@@ -401,7 +403,7 @@ export default function RetainerWorkspace({ base }: { base: string }) {
 
   return (
     <div className="rw">
-      <header className="rw-glava">
+      {!vLupini && <header className="rw-glava">
         <span className="rw-glava-levo">
           {/* puscica PRED logotipom — enako kot na podstraneh nadzorne plosce */}
           <a className="rw-nazaj" href={`${base}/kalkulator/pregled`} aria-label="Nazaj na nadzorno ploščo" title="Nazaj na nadzorno ploščo">
@@ -415,7 +417,7 @@ export default function RetainerWorkspace({ base }: { base: string }) {
         <button type="button" className="rw-avatar" aria-label="Profil" title="Profil" onClick={() => setProfilOdprt(true)}>
           {avatarVsebina}
         </button>
-      </header>
+      </header>}
       <div className="rw-ozadje" aria-hidden>
         <span className="rw-blob rw-blob-roza" />
         <span className="rw-blob rw-blob-modra" />

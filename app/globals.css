@@ -1175,3 +1175,9 @@ div.is-changing img {
    <html>, ce je obiskovalec ze odgovoril, in CSS ga skrije brez utripa. */
 /* !important: banner ima inline display:flex, ki bi sicer zmagal */
 html[data-cookie-consent] #cookie-banner { display: none !important; }
+
+/* V orodju (Flow) na telefonu "Let's talk" odpade: zaslon je ozek, predal ga
+   prekrije, povratna informacija pa je v meniju in na strani Pomoč. */
+@media (max-width: 980px) {
+  .edge-right-ui[data-app] { display: none !important; }
+}

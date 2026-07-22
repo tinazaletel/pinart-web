@@ -33,7 +33,9 @@
 .modeSwitch .active { background: var(--ink); color: var(--paper); }
 .formHeading { margin: 2.2rem 0 1.7rem; }
 .formHeading > p { margin-bottom: .65rem; }
-.formHeading h1 { max-width: 12ch; margin: 0; font: 500 clamp(2.3rem, 4vw, 4rem)/.98 var(--font-serif), Georgia, serif; }
+/* Tinina odlocitev: naslov v obrazcu NI v serifni pisavi — Bodoni ostane samo
+   levi uvodni naslov. Velikost je zdaj eksplicitna, ne podedovana. */
+.formHeading h1 { max-width: 14ch; margin: 0; font: 700 clamp(1.9rem, 3vw, 2.7rem)/1.06 var(--font-sans), system-ui, sans-serif; letter-spacing: -.015em; }
 .formHeading > span { display: block; max-width: 44ch; margin-top: .9rem; color: oklch(42% .02 70); font-size: 1rem; line-height: 1.55; }
 .form { display: grid; gap: 1rem; }
 .googleButton { width: 100%; min-height: 3.25rem; display: flex; align-items: center; justify-content: center; gap: .7rem; padding: .7rem 1rem; border: 1px solid var(--line); border-radius: .75rem; background: oklch(99% .006 87); color: var(--ink); font: 800 1rem var(--font-manrope), sans-serif; cursor: pointer; }

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import BusinessOverview from '@/components/BusinessOverview';
-import DashboardHeaderTools from '@/components/DashboardHeaderTools';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import StoparicaBliznjica from '@/components/StoparicaBliznjica';
 import styles from './pregled.module.css';
 
 export const metadata: Metadata = {
@@ -30,8 +30,7 @@ export default async function PoslovniPregledPage({
             <p className={styles.eyebrow}>POSLOVNI PREGLED</p>
             <h1>Dobrodošla nazaj.</h1>
           </div>
-          <DashboardHeaderTools />
-        </header>
+        <StoparicaBliznjica /></header>
 
         <BusinessOverview base={base} />
       </section>
