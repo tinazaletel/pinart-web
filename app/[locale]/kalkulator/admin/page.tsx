@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import AdminLogin from './AdminLogin';
 import AdminPregled from './AdminPregled';
+import AdminOdjava from './AdminOdjava';
 import { pridobiAnalitiko, type Obdobje } from './podatki';
 
 /* Ni javno linkana nikjer na strani + geslo pred vsebino + noindex.
@@ -32,12 +33,16 @@ export default async function KalkulatorAdminPage(
       minHeight: '100dvh', background: '#F5F2EA', padding: '3rem clamp(1rem,4vw,3rem) 6rem',
       fontFamily: 'system-ui, sans-serif', color: '#111',
     }}>
-      {/* ABSOLUTNA pot — "../pregled" je z /kalkulator/admin vodil na /pregled (404) */}
-      <a href="/kalkulator/pregled" style={{
-        display: 'inline-flex', alignItems: 'center', gap: '.4rem', marginBottom: '1.4rem',
-        fontSize: '.82rem', fontWeight: 600, color: '#111', textDecoration: 'none',
-        background: '#fff', border: '1px solid rgba(17,17,17,.12)', borderRadius: 999, padding: '.5rem 1rem',
-      }}>← Pinart Flow</a>
+      {/* Obe poti stran s te strani sta skupaj: nazaj v Flow ali odjava.
+          ABSOLUTNA pot — "../pregled" je z /kalkulator/admin vodil na /pregled (404) */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.6rem', marginBottom: '1.4rem' }}>
+        <a href="/kalkulator/pregled" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '.4rem',
+          fontSize: '.82rem', fontWeight: 600, color: '#111', textDecoration: 'none',
+          background: '#fff', border: '1px solid rgba(17,17,17,.12)', borderRadius: 999, padding: '.5rem 1rem',
+        }}>← Pinart Flow</a>
+        <AdminOdjava />
+      </div>
 
       <h1 style={{ fontSize: '1.6rem', marginBottom: '.3rem' }}>Pinart Flow — pregled poslovanja</h1>
       <p style={{ opacity: .65, marginBottom: '1.6rem', fontSize: '.9rem' }}>

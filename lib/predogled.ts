@@ -10,6 +10,9 @@ import type { FlowClient, FlowContract, FlowData, FlowExpense, FlowInvoice, Flow
  * samo tam in je ob prehodu na podstran izginil — Tina je izbrala Demo, podstrani
  * pa so ostale prazne. Zdaj živi v shrambi brskalnika in velja povsod.
  *
+ * ODLOCITEV (Tina, 2026-07-22): demo NE izmislja ur na strani "Cena & cas".
+ * Dnevnik ur je zaseben in mora vedno kazati prave vnose — tudi v demo nacinu.
+ *
  * DEMO JE SAMO ZA GLEDANJE. Vsak delovni prostor mora ob `demo` onemogočiti
  * urejanje, sicer bi popravek izmišljenega računa poskusil pisati v pravo bazo.
  */

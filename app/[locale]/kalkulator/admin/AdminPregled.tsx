@@ -58,11 +58,6 @@ export default function AdminPregled({ podatki }: { podatki: Analitika }) {
     { oznaka: 'Ocenjeni letni prihodek', vrednost: evr(podatki.ocenjenPrihodekMesecno * 12), opomba: 'če se nič ne spremeni' },
   ];
 
-  const odjava = async () => {
-    await fetch('/api/kalkulator-admin/odjava', { method: 'POST' });
-    window.location.reload();
-  };
-
   return <>
     {/* obdobje + iskanje */}
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.7rem', alignItems: 'center', margin: '0 0 1.6rem' }}>
@@ -86,11 +81,6 @@ export default function AdminPregled({ podatki }: { podatki: Analitika }) {
           border: '1px solid rgba(17,17,17,.12)', background: '#fff',
           font: 'inherit', fontSize: '.82rem',
         }} />
-      <button type="button" onClick={odjava} style={{
-        flex: 'none', padding: '.5rem 1rem', borderRadius: 999,
-        border: '1px solid rgba(17,17,17,.12)', background: '#fff',
-        font: 'inherit', fontSize: '.75rem', fontWeight: 700, cursor: 'pointer',
-      }}>Odjava</button>
     </div>
 
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(11rem,1fr))', gap: '1rem' }}>
