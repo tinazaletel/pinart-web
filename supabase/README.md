@@ -9,6 +9,9 @@ Migracije se izvedejo po imenu oziroma časovnem žigu:
 5. `20260719134500_business_plan_private_time.sql`
 6. `20260719171500_business_canvas.sql`
 7. `20260722040000_analitika.sql` — anonimno zbiranje podatkov, glej `docs/ANALITIKA.md`
+8. `20260722060000_service_role_grants.sql`
+9. `20260722070000_onboarding.sql`
+10. `20260723143000_multiple_business_canvases.sql` — več Canvasov in blagovnih znamk brez izgube obstoječega
 
 Zadnja migracija doda varne pakete `free/pro`. Uporabnik lahko svoj paket
 prebere, ne more pa ga spreminjati iz brskalnika. Plačilni ponudnik ga bo

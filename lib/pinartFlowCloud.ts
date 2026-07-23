@@ -2,6 +2,8 @@ import { createClient } from '@/utils/supabase/client';
 import type { FlowClient, FlowContract, FlowData, FlowExpense, FlowInvoice, FlowOffer } from './pinartFlowStore';
 
 type OrganizationContext = { organizationId: string; userId: string };
+export type UserOrganization = { id: string; name: string };
+const ACTIVE_ORGANIZATION_KEY = 'pinart-flow-active-organization';
 export type OrganizationProfile = { name: string; tax?: string; address?: string; email?: string; phone?: string; bankAccount?: string };
 type CloudSettings = {
   monthlyGoal: number;
@@ -31,14 +33,40 @@ export async function getOrganizationContext(): Promise<OrganizationContext | nu
   if (!user) return null;
   const { data, error } = await supabase
     .from('organization_members')
-    .select('organization_id')
+    .select('organization_id,organizations(name)')
     .eq('user_id', user.id)
-    .limit(1)
-    .maybeSingle();
-  if (!error && data) return { organizationId: String(data.organization_id), userId: user.id };
+    .limit(100);
+  if (!error && data?.length) {
+    const stored = typeof window !== 'undefined' ? localStorage.getItem(ACTIVE_ORGANIZATION_KEY) : null;
+    const selected = data.find(item => String(item.organization_id) === stored) || data[0];
+    return { organizationId: String(selected.organization_id), userId: user.id };
+  }
   const { data: organizationId, error: ensureError } = await supabase.rpc('ensure_user_organization');
   if (ensureError || !organizationId) return null;
   return { organizationId: String(organizationId), userId: user.id };
+}
+
+export async function listUserOrganizations(): Promise<UserOrganization[]> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data, error } = await supabase
+    .from('organization_members')
+    .select('organization_id,organizations(name)')
+    .eq('user_id', user.id);
+  if (error) throw error;
+  return (data || []).map(item => {
+    const organization = Array.isArray(item.organizations) ? item.organizations[0] : item.organizations;
+    return { id: String(item.organization_id), name: String(organization?.name || 'Moje podjetje') };
+  });
+}
+
+export function setActiveOrganization(organizationId: string): void {
+  localStorage.setItem(ACTIVE_ORGANIZATION_KEY, organizationId);
+}
+
+export function getActiveOrganizationId(): string | null {
+  return typeof window === 'undefined' ? null : localStorage.getItem(ACTIVE_ORGANIZATION_KEY);
 }
 
 export async function loadOrganizationProfile(): Promise<OrganizationProfile | null> {

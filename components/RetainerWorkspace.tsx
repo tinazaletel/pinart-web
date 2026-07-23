@@ -657,7 +657,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
           )}
           {korak < 3 && (
             <button type="button" className="rw-noga-naprej" onClick={() => setKorak(k => Math.min(3, k + 1))}>
-              Naprej <ArrowDown size={16} weight="bold" aria-hidden />
+              {korak === 2 ? 'Pripravi ponudbo' : 'Naprej'} <ArrowDown size={16} weight="bold" aria-hidden />
             </button>
           )}
         </div>
@@ -752,7 +752,9 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         @keyframes rwSek{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         @media (prefers-reduced-motion:reduce){.rw-sek.rw-vstop{animation:none}}
         /* fiksna noga z gumbi — ENAKO kot kalkulator (okrogel Nazaj s puscico + Naprej pilula) */
-        .rw-noga{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,var(--paper) 70%,transparent);z-index:40}
+        .rw-noga{position:fixed;bottom:0;left:17.5rem;right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,var(--paper) 70%,transparent);z-index:40}
+        :global(body[data-meni='zaprt']) .rw-noga{left:4.4rem}
+        @media (max-width:980px){.rw-noga{left:0}}
         .rw-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.8rem;position:relative}
         .rw-gumb-nazaj{width:3.1rem;height:3.1rem;border-radius:999px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:none;transition:background .18s ease,color .18s ease,transform .2s ease}
         .rw-gumb-nazaj:hover{background:var(--ink);color:var(--paper);transform:scale(1.08)}

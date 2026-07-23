@@ -51,24 +51,43 @@ export default function FlowTopBar() {
      na dosegu. Stanje pise v <body>, da lahko nanj odreagira tudi hamburger
      v stranski vrstici, ki je druga komponenta. */
   useEffect(() => {
-    let zadnji = window.scrollY;
+    const zadnjiPolozaji = new WeakMap<EventTarget, number>();
+    let zadnjiOkna = window.scrollY;
     let ceka = false;
+    let zadnjiDogodek: EventTarget | null = null;
+    const polozaj = (vir: EventTarget | null) => {
+      if (vir instanceof HTMLElement) return vir.scrollTop;
+      return window.scrollY;
+    };
     const oceni = () => {
-      const y = window.scrollY;
+      const vir = zadnjiDogodek;
+      const y = polozaj(vir);
+      if (vir instanceof HTMLElement && !zadnjiPolozaji.has(vir)) {
+        zadnjiPolozaji.set(vir, y);
+        ceka = false;
+        return;
+      }
+      const zadnji = vir instanceof HTMLElement
+        ? zadnjiPolozaji.get(vir)!
+        : zadnjiOkna;
       const b = document.body.dataset;
-      b.odmaknjen = y > 24 ? '1' : '';
+      b.odmaknjen = window.scrollY > 24 || (vir instanceof HTMLElement && y > 24) ? '1' : '';
       /* 6px praga: brez njega drobno tresenje prsta vklaplja in izklaplja vrstico */
       if (Math.abs(y - zadnji) > 6) {
         b.drsenje = y > zadnji && y > 90 ? 'dol' : 'gor';
-        zadnji = y;
+        if (vir instanceof HTMLElement) zadnjiPolozaji.set(vir, y);
+        else zadnjiOkna = y;
       }
       ceka = false;
     };
-    const naDrsenje = () => { if (!ceka) { ceka = true; requestAnimationFrame(oceni); } };
-    window.addEventListener('scroll', naDrsenje, { passive: true });
+    const naDrsenje = (dogodek: Event) => {
+      zadnjiDogodek = dogodek.target;
+      if (!ceka) { ceka = true; requestAnimationFrame(oceni); }
+    };
+    document.addEventListener('scroll', naDrsenje, { passive: true, capture: true });
     oceni();
     return () => {
-      window.removeEventListener('scroll', naDrsenje);
+      document.removeEventListener('scroll', naDrsenje, { capture: true });
       delete document.body.dataset.drsenje;
       delete document.body.dataset.odmaknjen;
     };

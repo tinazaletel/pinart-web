@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { PersonSimple } from '@phosphor-icons/react';
 import FlowUkazi from './FlowUkazi';
 import DashboardHeaderTools from './DashboardHeaderTools';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -14,6 +15,10 @@ import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 export default function MeniOrodja() {
   const pathname = usePathname() || '';
   const base = pathname.startsWith('/en/') ? '/en' : '';
+  const odpriDostopnost = (event: React.MouseEvent<HTMLButtonElement>) => {
+    window.dispatchEvent(new CustomEvent('pinart:odpri-dostopnost'));
+    event.currentTarget.closest('details')?.removeAttribute('open');
+  };
 
   return (
     <div className={styles.meniOrodja}>
@@ -21,6 +26,10 @@ export default function MeniOrodja() {
         <FlowUkazi base={base} />
         <DashboardHeaderTools />
       </div>
+      <button type="button" className={`${styles.navItem} ${styles.meniDostopnost}`} onClick={odpriDostopnost}>
+        <span className={styles.navIkona}><PersonSimple size={20} weight="regular" /></span>
+        <span className={styles.navNapis}>Dostopnost</span>
+      </button>
     </div>
   );
 }

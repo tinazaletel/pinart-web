@@ -26,17 +26,6 @@ export const PRICING_SERVICES: PricingService[] = [
   { id: 'motion', ime: 'Motion / animacija', osnova: 750 },
   { id: 'render3d', ime: '3D vizualizacije', osnova: 650 },
   { id: 'strategija', ime: 'Brand strategija', osnova: 1100 },
-
-  /* PRODUKCIJA / prelom — ceni se na ENOTO (stran, kos), ne po avtorskih
-     pravicah. Kolicino (st. strani / fotk) uporabnik nastavi na postavki.
-     osnova = cena za eno enoto. Za scenarije kot je urejanje kataloga
-     (menjava fotk, besedil, cen v obstojecem InDesignu) — teh je veliko in
-     jih model "od nic + pravice" ni pokrival. */
-  { id: 'prelom',       ime: 'Prelom / postavitev (na stran)',        osnova: 18 },
-  { id: 'vnospodatkov', ime: 'Vnos podatkov in cen (na uro)',         osnova: 35 },
-  { id: 'prevodpriprava', ime: 'Prevod in priprava besedil',         osnova: 150 },
-  { id: 'fotoobdelava', ime: 'Obdelava / retuša fotografij (na kos)', osnova: 15 },
-  { id: 'pripravatisk', ime: 'Priprava za tisk (predpriprava)',       osnova: 120 },
 ];
 
 /* Podrocja dela. Ista razdelitev se uporablja v kalkulatorju (izbira ob
@@ -45,7 +34,7 @@ export const PRICING_SERVICES: PricingService[] = [
 export type PricingPodrocje = { id: string; ime: string; opis: string; storitve: string[] };
 
 export const PODROCJA: PricingPodrocje[] = [
-  { id: 'graficno',  ime: 'Grafika in branding',       opis: 'logotip, CGP, tiskovine, embalaža, ilustracija, prelom in priprava za tisk',   storitve: ['logo', 'cgp', 'publikacija', 'embalaza', 'ilustracija', 'prelom', 'pripravatisk', 'vnospodatkov', 'prevodpriprava', 'fotoobdelava'] },
+  { id: 'graficno',  ime: 'Grafika in branding',       opis: 'logotip, CGP, tiskovine, embalaža, ilustracija',   storitve: ['logo', 'cgp', 'publikacija', 'embalaza', 'ilustracija'] },
   { id: 'splet',     ime: 'Splet in produkti',         opis: 'spletne strani, UX/UI, aplikacije',                storitve: ['web', 'uxui', 'aplikacija', 'dizajnsistem'] },
   { id: 'marketing', ime: 'Marketing in oglasi',       opis: 'kampanje, social media, SEO, PR, besedila',        storitve: ['kampanja', 'smm', 'seo', 'email', 'pr', 'copy'] },
   { id: 'foto',      ime: 'Foto, video, motion',       opis: 'fotografiranje, video, motion, 3D',                storitve: ['fotografija', 'video', 'motion', 'render3d'] },

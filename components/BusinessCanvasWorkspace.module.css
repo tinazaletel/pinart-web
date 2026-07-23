@@ -1,17 +1,27 @@
 .page { display: grid; gap: 1rem; padding-bottom: 2rem; color: var(--ink); }
 .notice { display: flex; justify-content: space-between; align-items: center; min-height: 3rem; padding: .75rem 1rem; border-radius: 1rem; background: oklch(92% .06 155); }
+.noticeError { border: 1px solid oklch(58% .2 28); background: oklch(94% .055 25); color: oklch(40% .16 25); font-weight: 750; }
 .notice button, .plan header > button { border: 0; background: none; color: inherit; font-size: 1.4rem; cursor: pointer; }
+.canvasToolbar, .newCanvasForm { display: flex; align-items: end; gap: .75rem; padding: 1rem; border: 1px solid var(--line); border-radius: 1.25rem; background: oklch(98% .008 87 / .94); }
+.canvasToolbar label, .newCanvasForm label { display: grid; flex: 1 1 14rem; gap: .35rem; }
+.canvasToolbar label > span, .newCanvasForm label > span { font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.canvasToolbar select, .canvasToolbar input, .newCanvasForm input { min-height: 3rem; padding: .65rem .9rem; border: 1px solid var(--line); border-radius: .85rem; background: oklch(100% 0 0 / .78); color: var(--ink); font: 600 16px var(--font-manrope), sans-serif; }
+.newCanvasForm { flex-wrap: wrap; background: linear-gradient(125deg, oklch(98% .01 87), oklch(94% .04 295 / .7)); }
+.newCanvasForm > div { display: flex; gap: .6rem; }
+.newCanvasButton, .newCanvasForm button { min-height: 3rem; padding: .7rem 1rem; border: 1px solid var(--ink); border-radius: 999px; background: var(--ink); color: var(--paper); font: 750 1rem var(--font-manrope), sans-serif; cursor: pointer; }
+.newCanvasForm .secondary { background: transparent; color: var(--ink); }
+.newCanvasButton:disabled { cursor: not-allowed; opacity: .45; }
 .intro, .actions, .plan { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 1.45rem; background: oklch(98% .008 87 / .94); }
 .intro { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: center; padding: 1.7rem; background: linear-gradient(120deg, oklch(98% .008 87 / .97) 40%, oklch(94% .045 295 / .76), oklch(94% .05 165 / .68)); }
 .intro::after { content: ''; position: absolute; right: 6.8rem; top: -5.5rem; width: 12rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .7); border-radius: 50%; box-shadow: 0 0 4rem oklch(70% .16 285 / .18); pointer-events: none; }
 .intro p, .actions p, .plan header p { margin: 0 0 .5rem; font-size: .75rem; font-weight: 850; letter-spacing: .14em; }
 .intro h2, .actions h2, .plan h2 { max-width: 23ch; margin: 0; font: 500 clamp(1.7rem, 3vw, 2.7rem)/1.02 var(--font-serif), Georgia, serif; }
 .intro > div > span, .actions > div > span { display: block; max-width: 62ch; margin-top: .65rem; color: var(--muted); line-height: 1.5; }
-.progress { position: relative; z-index: 1; width: 8.5rem; aspect-ratio: 1; display: grid; place-items: center; align-content: center; border-radius: 50%; box-shadow: inset 0 0 0 1.1rem oklch(97% .01 87), 0 .8rem 2rem oklch(45% .08 285 / .1); text-align: center; }
+.progress { position: relative; z-index: 1; width: 10rem; aspect-ratio: 1; display: grid; place-items: center; align-content: center; border-radius: 50%; box-shadow: inset 0 0 0 1.1rem oklch(97% .01 87), 0 .8rem 2rem oklch(45% .08 285 / .1); text-align: center; }
 .progress strong { font: 500 2.15rem/1 var(--font-serif), Georgia, serif; }.progress small { font-size: .9rem; }
 /* ozje in manjse, da besedilo ostane ZNOTRAJ notranjega kroga (ne strli ven) */
-.progress span { max-width: 4.3rem; margin-top: .25rem; color: color-mix(in oklch, var(--ink) 62%, transparent); font-size: .66rem; line-height: 1.2; text-wrap: balance; }
-.canvas { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-areas: 'partners partners activities activities value value value relationships relationships segments' 'partners partners resources resources value value value channels channels segments' 'costs costs costs costs costs revenue revenue revenue revenue revenue'; gap: .75rem; }
+.progress span { max-width: 6rem; margin-top: .25rem; color: color-mix(in oklch, var(--ink) 62%, transparent); font-size: .66rem; line-height: 1.2; text-wrap: balance; }
+.canvas { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-areas: 'partners partners activities activities value value relationships relationships segments segments' 'partners partners resources resources value value channels channels segments segments' 'costs costs costs costs costs revenue revenue revenue revenue revenue'; gap: .75rem; }
 .canvas article { position: relative; isolation: isolate; overflow: hidden; min-height: 13rem; display: grid; grid-template-rows: auto auto 1fr; gap: .7rem; padding: 1.1rem; border: 1px solid oklch(83% .025 80 / .8); border-radius: 1.25rem; background: linear-gradient(145deg, oklch(98% .01 87), oklch(95% .025 87)); transition: transform .2s ease, box-shadow .2s ease; }
 .canvas article::after { content: ''; position: absolute; z-index: -1; right: -2.8rem; bottom: -3.6rem; width: 8.5rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .55); border-radius: 48% 52% 44% 56%; transform: rotate(18deg); }
 .canvas article:focus-within { transform: translateY(-2px); box-shadow: 0 1rem 2.5rem oklch(45% .08 285 / .11); }
@@ -23,10 +33,42 @@
 .canvas textarea::placeholder { color: color-mix(in oklch, var(--ink) 46%, transparent); }
 .canvas textarea:focus-visible, .actions button:focus-visible, .plan button:focus-visible { outline: 3px solid oklch(60% .2 270); outline-offset: 2px; }
 .actions { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: end; padding: 1.6rem; background: linear-gradient(125deg, oklch(98% .01 87), oklch(94% .04 295 / .7)); }.actions::after { content: ''; position: absolute; right: -4rem; bottom: -6rem; width: 13rem; aspect-ratio: 1; border: 1px solid oklch(72% .12 285 / .2); border-radius: 50%; pointer-events: none; }.actions > div { position: relative; z-index: 1; }.actions > div:last-child, .plan footer { display: flex; gap: .65rem; flex-wrap: wrap; justify-content: flex-end; }
+.actions .saveActions { align-items: center; }
+.saveFeedback { flex: 1 0 100%; min-height: 1.2rem; color: var(--muted); font-size: .8rem; font-weight: 700; text-align: right; }
+.saveFeedback[data-state='dirty'] { color: oklch(48% .13 55); }
+.saveFeedback[data-state='cloud'] { color: oklch(43% .12 155); }
+.saveFeedback[data-state='local'] { color: oklch(48% .13 55); }
 .actions button, .plan footer button { min-height: 3rem; padding: .7rem 1rem; border: 1px solid var(--ink); border-radius: 999px; background: var(--ink); color: var(--paper); font: 750 1rem var(--font-manrope), sans-serif; cursor: pointer; }.actions .secondary, .plan .secondary { background: transparent; color: var(--ink); }.plan button:disabled { cursor: not-allowed; opacity: .45; }
+.saveIcon { display: inline-grid; width: 1.25rem; height: 1.25rem; place-items: center; margin-right: .45rem; }
+.saveIcon svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.saveIcon[data-state='saving'] { animation: saveSpin .8s linear infinite; }
+@keyframes saveSpin { to { transform: rotate(360deg); } }
+.plan footer button { display: inline-flex; align-items: center; justify-content: center; gap: .55rem; }
+.buttonIcon { width: 1.2rem; height: 1.2rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .plan { display: grid; gap: 1rem; padding: 1.5rem; background: linear-gradient(145deg, oklch(98% .01 87), oklch(95% .035 165)); }.plan header { display: flex; justify-content: space-between; align-items: start; }.plan pre { max-height: 36rem; overflow: auto; margin: 0; padding: 1.5rem; border: 1px solid oklch(100% 0 0 / .75); border-radius: 1rem; background: oklch(100% 0 0 / .78); white-space: pre-wrap; overflow-wrap: anywhere; font: 500 1rem/1.65 var(--font-manrope), sans-serif; }.plan > small { color: var(--muted); text-align: right; }
+.savedCanvases { overflow: hidden; border: 1px solid var(--line); border-radius: 1.45rem; background: oklch(98% .008 87 / .94); }
+.savedCanvases > header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.35rem 1.5rem; }
+.savedCanvases > header p { margin: 0 0 .35rem; font-size: .75rem; font-weight: 850; letter-spacing: .14em; }
+.savedCanvases > header h2 { margin: 0; font: 500 clamp(1.35rem, 2vw, 1.9rem)/1.1 var(--font-serif), Georgia, serif; }
+.savedCanvases > header > span { display: grid; width: 2.5rem; aspect-ratio: 1; place-items: center; border-radius: 50%; background: oklch(93% .035 295); font-weight: 800; }
+.canvasTableWrap { overflow-x: auto; border-top: 1px solid var(--line); }
+.canvasTableWrap table { width: 100%; min-width: 52rem; border-collapse: collapse; }
+.canvasTableWrap th, .canvasTableWrap td { padding: .9rem 1rem; border-bottom: 1px solid var(--line); text-align: left; }
+.canvasTableWrap th { color: var(--muted); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
+.canvasTableWrap tbody tr:last-child td { border-bottom: 0; }
+.canvasTableWrap td { font-size: .9rem; }
+.canvasTableWrap td:last-child { text-align: right; }
+.rowActions { display: flex; align-items: center; justify-content: flex-end; gap: .45rem; }
+.rowActions button { min-height: 2.5rem; padding: .55rem .75rem; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink); font: 700 .82rem var(--font-manrope), sans-serif; cursor: pointer; }
+.rowActions button:first-child, .rowActions button:last-child { width: 2.5rem; padding: 0; }
+.rowActions button:disabled { cursor: not-allowed; opacity: .42; }
+.rowActions svg { width: 1.15rem; height: 1.15rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.canvasToolbar input:focus-visible, .canvasToolbar select:focus-visible, .newCanvasButton:focus-visible, .rowActions button:focus-visible { outline: 3px solid oklch(60% .2 270); outline-offset: 2px; }
+.emptySaved { display: grid; gap: .35rem; padding: 1.5rem; border-top: 1px solid var(--line); }
+.emptySaved span { color: var(--muted); }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
 @media (max-width: 1100px) { .canvas { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: none; }.canvas article[data-block] { grid-area: auto; }.canvas article[data-block='value'] { grid-column: 1 / -1; } }
-@media (max-width: 700px) { .page { min-width: 0; }.intro, .actions { grid-template-columns: 1fr; gap: 1.25rem; padding: 1.15rem; }.intro::after { right: -4rem; }.progress { width: 7rem; }.canvas { grid-template-columns: 1fr; }.canvas article[data-block='value'] { grid-column: auto; }.canvas article { min-width: 0; min-height: auto; padding: 1rem; }.canvas textarea { min-height: 8rem; }.actions > div:last-child, .plan footer { justify-content: stretch; flex-direction: column; }.actions button, .plan footer button { width: 100%; min-height: 3rem; }.plan { min-width: 0; padding: 1rem; }.plan header { gap: .75rem; }.plan header > button { flex: 0 0 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }.plan pre { max-width: 100%; padding: 1rem; box-sizing: border-box; } }
+@media (max-width: 700px) { .page { min-width: 0; }.canvasToolbar, .newCanvasForm { align-items: stretch; flex-direction: column; }.canvasToolbar label, .newCanvasForm label { flex-basis: auto; }.canvasToolbar button, .newCanvasForm > div, .newCanvasForm button { width: 100%; }.intro, .actions { grid-template-columns: 1fr; gap: 1.25rem; padding: 1.15rem; }.intro::after { right: -4rem; }.progress { width: 7rem; }.canvas { grid-template-columns: 1fr; }.canvas article[data-block='value'] { grid-column: auto; }.canvas article { min-width: 0; min-height: auto; padding: 1rem; }.canvas textarea { min-height: 8rem; }.actions > div:last-child, .plan footer { justify-content: stretch; flex-direction: column; }.saveFeedback { text-align: left; }.actions button, .plan footer button { width: 100%; min-height: 3rem; }.plan { min-width: 0; padding: 1rem; }.plan header { gap: .75rem; }.plan header > button { flex: 0 0 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }.plan pre { max-width: 100%; padding: 1rem; box-sizing: border-box; } }
 
 /* Kolac napredka na telefonu: sredinsko in z lazjim obrocem — pri 7rem je bil
    1.1rem debel obroc pretezak, stevilka pa stisnjena ob napis. */

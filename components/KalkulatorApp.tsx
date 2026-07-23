@@ -399,6 +399,7 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'opomba', label: 'Opomba (neobvezno)', placeholder: 'karkoli, kar naj upoštevam vnaprej ...' },
   ],
   publikacija: [
+    { id: 'obseg', label: 'Kakšen je obseg tvojega dela?', izbire: ['Kreativa od nič', 'Preoblikovanje po obstoječem dizajnu', 'Samo prelom (postavitev vsebine)', 'Samo priprava za tisk'], svoje: 'ali dopiši ...' },
     { id: 'tip', label: 'Kakšna publikacija je?', izbire: ['Knjiga', 'Brošura', 'Katalog', 'Revija', 'Letak', 'Priročnik'], svoje: 'ali dopiši ...' },
     { id: 'format', label: 'Kakšen format?', izbire: ['A4', 'A5', 'A6', 'Kvadratni', 'DL (letak)'], svoje: 'ali vpiši mere ...' },
     { id: 'izhod', label: 'Za tisk, digital ali oboje?', izbire: ['PDF za tisk', 'PDF za splet', 'ePub', 'Interaktivni PDF'], vec: true },
@@ -412,6 +413,7 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'naklada', label: 'Predvidena naklada tiska?', izbire: ['Samo digital', 'Do 100', '100 do 500', 'Nad 500'], svoje: 'ali vpiši ...' },
     { id: 'proof', label: 'Ali potrebujete tiskarski proof (poskusni odtis)?', izbire: ['Da', 'Ne', 'Ne vem še'] },
     { id: 'tisk', label: 'Vključimo pripravo za tisk in komunikacijo s tiskarjem?', izbire: ['Da, vključi', 'Ne, uredijo sami'] },
+    { id: 'dodatne', label: 'Katere dodatne storitve prevzameš?', izbire: ['Prevod besedil', 'Lektura', 'Priprava za tisk', 'Vnos podatkov / cen', 'Retuša fotografij'], vec: true, svoje: 'dopiši ...' },
     { id: 'opomba', label: 'Opomba (neobvezno)', placeholder: 'karkoli, kar naj upoštevam vnaprej ...' },
   ],
   embalaza: [
@@ -463,17 +465,18 @@ const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
   ],
   interier: [
     { id: 'prostor', label: 'Kateri prostor urejamo?', izbire: ['Stanovanje', 'Poslovni prostor', 'Gostinski lokal', 'Trgovina', 'Razstavni prostor'], vec: true, svoje: 'dopiši ...' },
-    { id: 'obseg', label: 'Koliko prostorov ali m²?', izbire: ['Do 30 m²', '30 do 80 m²', 'Nad 80 m²'], svoje: 'ali vpiši ...' },
-    { id: 'faza', label: 'V kateri fazi je projekt?', izbire: ['Novogradnja', 'Prenova', 'Samo oprema / styling'] },
-    { id: 'storitve', label: 'Kaj vključuje?', izbire: ['Idejna zasnova', 'Tlorisi / postavitev', '3D vizualizacije', 'Izbor materialov in opreme', 'Nadzor izvedbe'], vec: true, svoje: 'dopiši ...' },
+    { id: 'obseg', label: 'Kolikšna kvadratura?', izbire: ['Do 45 m²', '45 do 80 m²', '80 do 130 m²', 'Nad 130 m²'], svoje: 'ali vpiši m² (npr. poslovni prostor) ...' },
+    { id: 'faza', label: 'V kateri fazi je projekt?', izbire: ['Novogradnja (napeljave fiksne)', 'Prenova (spremembe prostorov/napeljav)', 'Samo oprema / styling', 'Mizarsko / pohištvo po meri'] },
+    { id: 'storitve', label: 'Katere faze vključuje?', izbire: ['Idejni tloris', 'Look & feel (moodboard)', 'Kosovna oprema in delavniški načrti', '3D vizualizacija', 'Nadzor izvedbe (ločena ponudba)'], vec: true, svoje: 'dopiši ...' },
     { id: 'budget', label: 'Okvirni budget naročnika?', izbire: ['Do 2.000 €', '2.000 do 6.000 €', 'Nad 6.000 €', 'Še ne vem'], svoje: 'ali vpiši svoj znesek ...' },
     { id: 'opomba', label: 'Opomba (neobvezno)', placeholder: 'karkoli, kar naj upoštevam vnaprej ...' },
   ],
   arhitektura: [
+    { id: 'vrsta', label: 'Katera vrsta arhitekture?', izbire: ['Stavbna', 'Notranja', 'Krajinska'], svoje: 'dopiši ...' },
     { id: 'tip', label: 'Kaj oblikujemo?', izbire: ['Stanovanjski objekt', 'Poslovni objekt', 'Prizidek / prenova', 'Zunanja ureditev'], vec: true, svoje: 'dopiši ...' },
-    { id: 'faza', label: 'V kateri fazi?', izbire: ['Idejna zasnova', 'Dokumentacija (IZP / PGD)', 'Izvedbeni načrti', 'Nadzor'] },
+    { id: 'faza', label: 'Katere faze vključuje?', izbire: ['Idejna zasnova (IDZ)', 'Dokumentacija (IZP / PGD)', 'Izvedbeni načrti (PZI)', 'Nadzor (ločena ponudba)'], vec: true, svoje: 'dopiši ...' },
     { id: 'povrsina', label: 'Okvirna površina?', izbire: ['Do 100 m²', '100 do 300 m²', 'Nad 300 m²'], svoje: 'ali vpiši ...' },
-    { id: 'vizualizacije', label: 'So potrebne 3D vizualizacije?', izbire: ['Da', 'Ne', 'Morda'] },
+    { id: 'vizualizacije', label: 'Kakšna vizualizacija?', izbire: ['2D izris', '3D render'], vec: true, svoje: 'dopiši ...' },
     { id: 'budget', label: 'Okvirni budget naročnika?', izbire: ['Do 3.000 €', '3.000 do 8.000 €', 'Nad 8.000 €', 'Še ne vem'], svoje: 'ali vpiši svoj znesek ...' },
     { id: 'opomba', label: 'Opomba (neobvezno)', placeholder: 'karkoli, kar naj upoštevam vnaprej ...' },
   ],
@@ -1402,10 +1405,12 @@ type ShranjenaP = {
   izkusnje: string; mojTrg: string; trgNarocnika: string; valuta: string; valutaRocna: boolean;
   rocnoBesedilo: boolean; besediloHtml: string; podlogaCover?: string; logo?: string; predlogaPinart?: boolean;
   custDrzavaNarocnik?: string;
+  narocnikTip?: 'podjetje' | 'fizicna'; custNepremicnina?: string;
   /* ena koncna cena namesto treh paketov (2026-07-17) */
   enaCena?: boolean;
   dolgorocno?: boolean; retModel?: 'ure' | 'paket' | 'oboje'; retUre?: number; retDoba?: number;
   stevilkaPonudbe?: string; veljavnostDni?: string;
+  urejenePodrobnosti?: string[];
 };
 
 /* Moja podjetja: vec identitet podjetja (ime/davcna/TRR/DDV/avans/urne
@@ -1609,6 +1614,36 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      kasnejsi koraki (pravice, paketi, raba ...) */
   const [vrstice, setVrstice] = useState<VrsticaP[]>([]);
   const [razprtaVrstica, setRazprtaVrstica] = useState<string | null>(null);
+  const [detajlZapira, setDetajlZapira] = useState(false);
+  const detajlZapriTimer = useRef<number | null>(null);
+  const zakljuciDetajl = () => {
+    setRazprtaVrstica(null);
+    setDetajlZapira(false);
+    detajlZapriTimer.current = null;
+  };
+  const odpriDetajl = (uid: string) => {
+    if (detajlZapriTimer.current !== null) window.clearTimeout(detajlZapriTimer.current);
+    setDetajlZapira(false);
+    setRazprtaVrstica(uid);
+  };
+  const zapriDetajl = () => {
+    if (!razprtaVrstica || detajlZapira) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      zakljuciDetajl();
+      return;
+    }
+    setDetajlZapira(true);
+    detajlZapriTimer.current = window.setTimeout(zakljuciDetajl, 360);
+  };
+  useEffect(() => () => {
+    if (detajlZapriTimer.current !== null) window.clearTimeout(detajlZapriTimer.current);
+  }, []);
+  useEffect(() => {
+    if (!razprtaVrstica) return;
+    document.body.dataset.detajlOdprt = '1';
+    document.body.dataset.drsenje = 'gor';
+    return () => { delete document.body.dataset.detajlOdprt; };
+  }, [razprtaVrstica]);
   const [praviceOdprt, setPraviceOdprt] = useState<string | null>(null);   /* sid odprte Podrobnosti popup pravic */
   const [lastnaOdprta, setLastnaOdprta] = useState<string | null>(null);   /* id lastne pravice z odprtimi Podrobnostmi */
   const [konfetiKljuc, setKonfetiKljuc] = useState(0);   /* povecanje kljuca znova sprozi konfeti animacijo na Zakljucku */
@@ -1752,8 +1787,64 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [urejamKorak, setUrejamKorak] = useState<number | null>(null);   /* urejanje odgovora v mestu (klik na moder oblacek) */
   /* po mehurckih: vprasanja tecejo kot chat NAVZDOL (0 = samo mehurcki, 1 = o stranki, ...) */
   const [poMeh, setPoMeh] = useState(0);
+  const pomakniNaZadnjeVprasanje = () => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.setTimeout(() => {
+      const vprasanja = document.querySelectorAll('.cw .chat-vpr');
+      const zadnje = vprasanja[vprasanja.length - 1] as HTMLElement | undefined;
+      if (!zadnje) return;
+
+      const cilj = Math.max(0, zadnje.getBoundingClientRect().top + window.scrollY - 96);
+      const lenis = (window as unknown as {
+        __pinartLenis?: {
+          scrollTo: (t: number, o?: { immediate?: boolean; force?: boolean }) => void;
+          resize?: () => void;
+        };
+      }).__pinartLenis;
+      lenis?.resize?.();
+      if (lenis?.scrollTo) lenis.scrollTo(cilj, { immediate: reduce, force: true });
+      else window.scrollTo({ top: cilj, behavior: reduce ? 'auto' : 'smooth' });
+    }, 100);
+  };
+  const pomakniNaPovzetekIzbire = () => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.setTimeout(() => {
+      const povzetek = document.querySelector('.cw .izbor-povzetek') as HTMLElement | null;
+      if (!povzetek) return;
+      const cilj = Math.max(0, povzetek.getBoundingClientRect().top + window.scrollY - 96);
+      const lenis = (window as unknown as {
+        __pinartLenis?: {
+          scrollTo: (t: number, o?: { immediate?: boolean; force?: boolean }) => void;
+          resize?: () => void;
+        };
+      }).__pinartLenis;
+      lenis?.resize?.();
+      if (lenis?.scrollTo) lenis.scrollTo(cilj, { immediate: reduce, force: true });
+      else window.scrollTo({ top: cilj, behavior: reduce ? 'auto' : 'smooth' });
+    }, 430);
+  };
   /* mobile: ponudba je v nogi (FAB kosarica); tap odpre drsni panel */
   const [ponudbaOdprta, setPonudbaOdprta] = useState(false);
+  const ponudbaPolozajRef = useRef(0);
+  const odpriMobilnoPonudbo = () => {
+    ponudbaPolozajRef.current = window.scrollY;
+    setPonudbaOdprta(true);
+  };
+  const zapriMobilnoPonudbo = (obnoviPolozaj = true) => {
+    const polozaj = ponudbaPolozajRef.current;
+    setPonudbaOdprta(false);
+    if (!obnoviPolozaj) return;
+    const obnovi = () => {
+      const lenis = (window as unknown as {
+        __pinartLenis?: { scrollTo: (t: number, o?: { immediate?: boolean; force?: boolean }) => void; resize?: () => void };
+      }).__pinartLenis;
+      lenis?.resize?.();
+      if (lenis?.scrollTo) lenis.scrollTo(polozaj, { immediate: true, force: true });
+      else window.scrollTo({ top: polozaj, behavior: 'auto' });
+    };
+    requestAnimationFrame(obnovi);
+    window.setTimeout(obnovi, 340);
+  };
   const [imeUporabnika, setImeUporabnika] = useState('');
   /* onboarding opravljen (obstojno) — sprozi se, dokler NI opravljen (ne glede na storitve) */
   const [uvodKoncan, setUvodKoncan] = useState<boolean | null>(null);
@@ -1815,6 +1906,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     document.body.style.overflow = 'hidden';
     return () => { lenis?.start(); html.style.overflow = prejHtml; document.body.style.overflow = prejBody; };
   }, [onboardingOdprt, kazemProfil, razprtaVrstica, kazemUredi, praviceOdprt, lastnaOdprta]);
+
   const [obIzbor, setObIzbor] = useState<Set<string>>(new Set());
   /* Poljuben vrstni red storitev (razporejanje z drag-rocajem); prazno = naravni. */
   const [vrstniRed, setVrstniRed] = useState<string[]>([]);
@@ -1870,6 +1962,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [narocnikNaslov, setNarocnikNaslov] = useState('');
   const [narocnikDavcna, setNarocnikDavcna] = useState('');
   const [dodatniNarocnik, setDodatniNarocnik] = useState(false);
+  /* naročnik = podjetje ali fizična oseba. Fizične (večina interier/arh strank)
+     nimajo prometa/dobička -> vrednostni signal je vrednost nepremičnine. */
+  const [narocnikTip, setNarocnikTip] = useState<'podjetje' | 'fizicna'>('podjetje');
+  const [custNepremicnina, setCustNepremicnina] = useState('');
   /* Enotna izbira prenosa pravic velja za celo ponudbo; ce je za posamezno
      storitev drugace (npr. ilustracije kot licenca, CGP kot odkup), gre
      samo v opombo besedila — pravi izracun po storitvi je vecji poseg,
@@ -1944,6 +2040,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [racunRokDni, setRacunRokDni] = useState('8');
   const [racunPlacano, setRacunPlacano] = useState(false);
   const [odgovori, setOdgovori] = useState<Record<string, string>>({});
+  const [urejenePodrobnosti, setUrejenePodrobnosti] = useState<Set<string>>(new Set());
   const [osnove, setOsnove] = useState<Record<string, number>>({});
   const [cenaResetPotrdi, setCenaResetPotrdi] = useState(false); /* dvoklik potrditev ponastavitve cen */
   const [profili, setProfili] = useState<Record<string, Profil>>({});
@@ -1958,6 +2055,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [leadEmail, setLeadEmail] = useState('');
   const [zeliEmail, setZeliEmail] = useState(false);
   const [kazemDostopnost, setKazemDostopnost] = useState(false);
+  useEffect(() => {
+    const odpriDostopnost = () => setKazemDostopnost(true);
+    window.addEventListener('pinart:odpri-dostopnost', odpriDostopnost);
+    return () => window.removeEventListener('pinart:odpri-dostopnost', odpriDostopnost);
+  }, []);
   /* Valuta ima 16 opcij — na mobilnem je nativen <select> (dolg spustni
      seznam) neroden, zato custom izbirnik: gumb + list od spodaj navzgor
      (isti vzorec deluje na desktopu kot centriran modal). */
@@ -2408,6 +2510,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     setVrstice([]);
     setRazprtaVrstica(null);
     setOdgovori({});
+    setUrejenePodrobnosti(new Set());
     setPostavke([]);
     setNazivPonudbe('');
     setNarocnikPonudbe('');
@@ -3883,13 +3986,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     const zapis: ShranjenaP = {
       datum: new Date().toISOString(),
       izbrane: [...izbrane], vrstice,
-      odgovori, postavke, raba,
+      odgovori, urejenePodrobnosti: [...urejenePodrobnosti], postavke, raba,
       promet, dobicek, projPrihodek, projDobicek, popust, dodatki: [...dodatki],
       prenosPravic, rocnePravice, rocnaLicenca, rocnePraviceStoritvi: Object.keys(rocnePraviceStoritvi).length ? rocnePraviceStoritvi : undefined, pravicePoStoritvi: Object.keys(pravicePoStoritvi).length ? pravicePoStoritvi : undefined, lastnePravice: lastnePravice.length ? lastnePravice : undefined, izjemePravice: izjemePravice || undefined,
       nazivPonudbe, narocnikPonudbe, obsegPonudbe, tonPonudbe, avansPct,
       kaziUre, nogaZnak, izkusnje, mojTrg, trgNarocnika, valuta, valutaRocna,
       rocnoBesedilo, besediloHtml: rocnoBesedilo ? (editorRef.current?.innerHTML || besediloHtml) : '', podlogaCover: podlogaCover || undefined, logo: logo || undefined, predlogaPinart: predlogaPinart || undefined,
       custDrzavaNarocnik: custDrzavaNarocnik || undefined,
+      narocnikTip, custNepremicnina: custNepremicnina || undefined,
       narocnikEmail: narocnikEmail || undefined,
       narocnikOseba: narocnikOseba || undefined,
       narocnikNaslov: narocnikNaslov || undefined,
@@ -3906,7 +4010,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const naloziIzArhiva = (ime: string) => {
     const p = arhiv[ime];
     if (!p) return;
-    setIzbrane(new Set(p.izbrane)); setOdgovori(p.odgovori || {}); setPostavke(p.postavke || []);
+    setIzbrane(new Set(p.izbrane)); setOdgovori(p.odgovori || {});
+    setUrejenePodrobnosti(new Set(p.urejenePodrobnosti || []));
+    setPostavke(p.postavke || []);
     /* stare shranjene ponudbe (brez vrstic) pretvorimo: ena vrstica na storitev */
     setVrstice(p.vrstice && p.vrstice.length
       ? p.vrstice
@@ -3938,6 +4044,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     setIzkusnje(p.izkusnje); setMojTrg(p.mojTrg); setTrgNarocnika(p.trgNarocnika);
     setValuta(p.valuta); setValutaRocna(p.valutaRocna);
     setCustDrzavaNarocnik(p.custDrzavaNarocnik || '');
+    setNarocnikTip(p.narocnikTip || 'podjetje'); setCustNepremicnina(p.custNepremicnina || '');
     setPodlogaCover(p.podlogaCover || '');
     setPredlogaPinart(!!p.predlogaPinart);
     if (p.logo) setLogo(p.logo);   /* stara ponudba brez loga naj ne izbrise zapomnjenega */
@@ -3952,6 +4059,34 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     setPoMeh(5);
     setUvodKoncan(true); setUvodChat(false);
     setKorak(ponudbaStep);
+  };
+  const podvojiIzArhiva = (ime: string) => {
+    const p = arhiv[ime];
+    if (!p) return;
+    naloziIzArhiva(ime);
+
+    const osnovaImena = `${(p.nazivPonudbe || '').trim() || ime} – kopija`;
+    let novoIme = osnovaImena;
+    let zaporedna = 2;
+    while (arhiv[novoIme]) {
+      novoIme = `${osnovaImena} ${zaporedna}`;
+      zaporedna += 1;
+    }
+
+    setNazivPonudbe(novoIme);
+    setNarocnikPonudbe('');
+    setNarocnikEmail('');
+    setNarocnikOseba('');
+    setNarocnikNaslov('');
+    setNarocnikDavcna('');
+    setCustDrzavaNarocnik('');
+    setCustNepremicnina('');
+    setStevilkaPonudbe('');
+    setRocnoBesedilo(false);
+    setBesediloHtml('');
+    setRazprtaVrstica(null);
+    setPoMeh(1);
+    setKorak(narocnikStep);
   };
   const izbrisiIzArhiva = (ime: string) => {
     const nov = { ...arhiv };
@@ -4432,7 +4567,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* vrstica MORA biti visja od premera, sicer se vrste prekrivajo. Prej je bila
      desktop 1.02x-20 (manjsa od premera) = mehurcki so se dotikali. */
   const orbRowH = jeMobilni ? Math.round(orbD * 1.34) : Math.round(orbD * 1.16);
-  const orbStep = (jeMobilni ? 62 : 84) / Math.max(orbMax - 1, 1);          /* razmik med sredisci na siroki mrezi (%); mobilno 62 -> robni mehurcek ~16px od roba, ne odrezan */
+  const orbStep = (jeMobilni ? 70 : 84) / Math.max(orbMax - 1, 1);          /* mobilno: sirse razporedi po razpolozljivi sirini, da se sence mehurckov ne stikajo */
   const orbPoz = (i: number) => {
     let row = 0; while (row < orbVrstic - 1 && i >= orbRowStart[row + 1]) row++;
     const posInRow = i - orbRowStart[row];
@@ -4798,7 +4933,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   );
 
   return (
-    <div className="cw" onKeyDown={naEnter}>
+    <div className={`cw${vLupini ? ' cw-lupina' : ''}`} onKeyDown={naEnter}>
       <div className="cw-ozadje" aria-hidden>
         <span className="blob blob-roza" />
         <span className="blob blob-modra" />
@@ -5036,6 +5171,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .mreza-prazno { min-height: 5.4rem; pointer-events: none; }
         .cw .mreza-uredi { border-style: dashed; background: transparent; color: rgba(17,17,17,.62); }
         .cw .mreza-uredi .mk-ikona { background: rgba(17,17,17,.06); }
+        @media (max-width: 640px) {
+          .cw .orbpogled-vrsta { margin-bottom: 0; }
+          .cw .segpills-orbpogled { margin-bottom: 0; }
+          .cw .mreza0-ovoj { margin-top: .75rem; }
+          .cw .mreza0 { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; width: 100%; }
+          .cw .mreza-kvadrati { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+          .cw .mreza-kvadrat { min-width: 0; min-height: 7rem; }
+          .cw .mreza-prazno { display: none; }
+        }
         /* ── modal dodaj / uredi ── */
         .cw .uredi-plosca { width: 100%; max-width: min(680px, 94vw); max-height: min(54rem, 92dvh); display: flex; flex-direction: column; background: var(--paper); border: 1px solid rgba(17,17,17,.18); border-radius: 18px; box-shadow: 0 24px 80px rgba(17,17,17,.16); overflow: hidden; animation: cwVstop .3s cubic-bezier(.16,1,.3,1) both; }
         .cw .detajl-modal { width: 100%; max-width: 620px; max-height: min(44rem, 88dvh); display: flex; flex-direction: column; background: var(--paper); border: 1px solid rgba(17,17,17,.18); border-radius: 18px; box-shadow: 0 24px 80px rgba(17,17,17,.18); overflow: hidden; animation: cwVstop .3s cubic-bezier(.16,1,.3,1) both; }
@@ -5088,6 +5232,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ponudba0-pod::before { content: ""; width: .55rem; height: .55rem; border-radius: 50%; background: var(--accent); opacity: .85; flex: none; }
         .cw .ponudba0-prazno { color: rgba(17,17,17,.5); font-size: .95rem; line-height: 1.55; text-align: center; padding: 1.2rem 0; margin: 0; font-weight: 400; }
         .cw .ponudba0-prazno b { color: rgba(17,17,17,.72); }
+        /* vijola tudi na krepkem delu — sicer ga povozi pravilo ".ponudba0-prazno b" */
+        .cw .ponudba0-prazno .vprasanja-vijola, .cw .ponudba0-prazno .vprasanja-vijola b { color: oklch(46% .19 297); }
         .cw .ponudba0-prazno p { margin: 0; }
         /* empty-state: mapa z enim obrazom (odebeljene linije, slog chatbot ikonce), animirana */
         .cw .prazno-mapa { width: min(200px, 58%); margin: 0 auto .5rem; }
@@ -5106,17 +5252,21 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .vrst0.vlecem { opacity: .35; }
         .cw .rocica0 { cursor: grab; color: rgba(17,17,17,.4); font-size: .9rem; line-height: 1; padding: .3rem .15rem; border-radius: 6px; user-select: none; -webkit-user-select: none; }
         .cw .rocica0:hover { color: var(--ink); background: rgba(17,17,17,.08); }
-        .cw .vrst0-ime { border: none; background: none; padding: 0; text-align: left; font-family: inherit; font-weight: 650; font-size: .95rem; color: var(--ink); cursor: pointer; min-width: 0; }
+        .cw .vrst0-ime { border: none; background: none; padding: 0; text-align: left; font-family: inherit; font-weight: 650; font-size: .95rem; color: var(--ink); cursor: pointer; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
         .cw .vrst0-ime:hover { color: var(--accent); }
         .cw .vrst0-ime small { display: block; font-weight: 500; color: rgba(17,17,17,.42); font-size: .72rem; margin-top: .12rem; }
         .cw .vrst0-ime small.odg { color: var(--accent); }
+        /* OCITNA oznaka "Uredi podrobnosti": vijolicna pilula z ikono, ne siva
+           drobna vrstica — da uporabnik takoj vidi, da mora urediti. */
+        .cw .vrst0-ime small.treba-urediti { display: inline-flex; align-items: center; gap: .3rem; margin-top: .28rem; padding: .22rem .6rem; border-radius: 999px; background: color-mix(in oklch, var(--purple) 14%, transparent); color: oklch(46% .19 297); font-weight: 700; font-size: .72rem; }
+        .cw .vrst0-ime.treba:hover small.treba-urediti { background: color-mix(in oklch, var(--purple) 22%, transparent); }
         .cw .stepper0 { display: flex; align-items: center; gap: .3rem; }
         .cw .stepper0 button { width: 1.55rem; height: 1.55rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.15); background: transparent; color: rgba(17,17,17,.6); cursor: pointer; font-size: .95rem; line-height: 1; display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s; }
         .cw .stepper0 button:hover { border-color: var(--ink); color: var(--ink); }
         .cw .stepper0 b { min-width: 1.3em; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; font-size: .92rem; }
         .cw .vrst0-x { width: 1.55rem; height: 1.55rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.15); background: transparent; color: rgba(17,17,17,.55); cursor: pointer; font-size: .95rem; line-height: 1; display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s; }
         .cw .vrst0-x:hover { border-color: var(--accent); color: var(--accent); }
-        .cw .vrst0-cena { font-family: var(--font-serif), serif; font-size: 1.06rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .cw .vrst0-cena { font-family: var(--font-serif), serif; font-size: 1.06rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; -webkit-text-stroke: .4px currentColor; }
 
         .cw .vrst0-detajl { background: rgba(255,255,255,.85); border: 1px solid rgba(17,17,17,.1); border-radius: 14px; padding: 1rem 1.1rem; margin: .5rem 0 .9rem; animation: detajlDrsni .42s cubic-bezier(.16,1,.3,1) both; }
         @keyframes detajlDrsni { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
@@ -5183,6 +5333,23 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .chat-mehur-ured:hover svg { opacity: .85; }
         .cw .chat-mehur-ured:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
         .cw .chat-mehur-namig { position: relative; padding-right: 2.3rem; }
+        /* opomnik "uredi podrobnosti" — vijolicni pridih, da izstopa iz navadnih mehurckov */
+        .cw .chat-mehur-opomnik { background: color-mix(in oklch, var(--purple) 12%, #fff) !important; border-color: color-mix(in oklch, var(--purple) 30%, transparent) !important; }
+        .cw .chat-mehur-opomnik b { color: oklch(46% .19 297); }
+        .cw .chat-mehur-opomnik small { display: block; margin-top: .2rem; color: rgba(17,17,17,.66); }
+        .cw .izbor-povzetek { width: min(620px, 92%); margin: 1.25rem auto 2.25rem; display: flex; flex-direction: column; gap: .9rem; }
+        .cw .izbor-povzetek .chat-jaz { display: flex; }
+        .cw .izbor-povzetek .chat-jaz .chat-mehur {
+          background: #d3f3ef;
+          border-color: rgba(150,215,205,.1);
+        }
+        .cw .izbor-seznam { display: grid; gap: .18rem; margin-top: .35rem; font-weight: 500; }
+        .cw .izbor-preveri { display: grid; gap: .55rem; margin-top: .75rem; }
+        .cw .izbor-preveri-gumb { width: 100%; display: flex; align-items: center; gap: .55rem; border: 1px solid rgba(124,58,237,.2); border-radius: 12px; background: rgba(255,255,255,.75); color: var(--ink); padding: .68rem .8rem; font: inherit; font-size: .9rem; font-weight: 650; text-align: left; cursor: pointer; transition: background .16s ease, border-color .16s ease; }
+        .cw .izbor-preveri-gumb:hover { background: #fff; border-color: var(--purple); }
+        .cw .izbor-preveri-gumb:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
+        .cw .izbor-preveri-gumb svg { flex: none; color: var(--purple); }
+        @media (max-width: 560px) { .cw .izbor-povzetek { width: calc(100% - 2rem); margin-top: 1rem; } }
         .cw .namig-zapri { position: absolute; top: .5rem; right: .55rem; width: 1.45rem; height: 1.45rem; border-radius: 50%; border: none; background: rgba(17,17,17,.07); color: rgba(17,17,17,.55); font-size: .72rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; line-height: 1; padding: 0; }
         .cw .namig-zapri:hover { background: rgba(17,17,17,.15); color: var(--ink); }
         .cw .pozdrav-mehur { white-space: nowrap; }
@@ -5263,7 +5430,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ponudba0-dodaj { margin-top: 1rem; align-self: flex-start; }
         .cw .ponudba0-vsota { margin-top: 1.1rem; padding-top: .9rem; border-top: 2px solid var(--ink); }
         .cw .ponudba0-vsota-vrsta { display: flex; justify-content: space-between; align-items: baseline; font-size: .92rem; color: rgba(17,17,17,.62); }
-        .cw .ponudba0-vsota-vrsta b { font-family: var(--font-serif), serif; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.15rem; }
+        .cw .ponudba0-vsota-vrsta b { font-family: var(--font-serif), serif; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.15rem; -webkit-text-stroke: .45px currentColor; }
         .cw .ponudba0-opomba { font-size: .76rem; color: var(--accent); margin-top: .45rem; font-weight: 500; }
         .cw .ponudba0-vsota-vrsta.ponudba0-mini { font-size: .82rem; color: rgba(17,17,17,.55); margin-top: .35rem; }
         .cw .ponudba0-vsota-vrsta.ponudba0-mini + .ponudba0-vsota-vrsta { margin-top: .35rem; }
@@ -5273,14 +5440,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ponudba-fab { display: none; }
 
         @media (max-width: 1200px) {
-          .cw .oder0 { grid-template-columns: 1fr; }
+          .cw .oder0 { grid-template-columns: 1fr; margin-top: .75rem; }
+          .cw .chat-izbira:has(.orbpogled-vrsta) { margin-bottom: .35rem; }
           .cw .vodicka { display: none; }
           .cw .platno0 { min-height: 480px; }
+          .cw:has(.ponudba0.odprta) .lupina-glava { z-index: 0; }
           /* ponudba NI vec vmes: postane drsni panel z desne (kosarica) */
           .cw .ponudba0 { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 90vw); border-radius: 20px 0 0 20px; margin: 0; z-index: 70; overflow-y: auto; transform: translateX(102%); transition: transform .32s cubic-bezier(.2,.8,.3,1); box-shadow: -18px 0 50px rgba(40,25,40,.22); background: rgba(255,255,255,.92); -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4); }
           .cw .ponudba0.odprta { transform: translateX(0); }
           /* zapri: PRIPNJEN fiksno na vrh predala (ne odscrolla z vsebino), jasen napis "Zapri" */
-          .cw .ponudba0-zapri { display: inline-flex; position: fixed; top: calc(.7rem + env(safe-area-inset-top, 0px)); right: .8rem; height: 2.3rem; align-items: center; justify-content: center; gap: .35rem; border: none; padding: 0 .9rem 0 .85rem; background: var(--ink); color: var(--paper); border-radius: 999px; font-family: inherit; font-size: .8rem; font-weight: 700; line-height: 1; cursor: pointer; z-index: 75; box-shadow: 0 8px 22px rgba(40,25,40,.28); }
+          .cw .ponudba0-zapri { display: inline-flex; position: sticky; top: calc(.7rem + env(safe-area-inset-top, 0px)); align-self: flex-end; flex: none; height: 2.3rem; margin: 0 0 -2.3rem auto; align-items: center; justify-content: center; gap: .35rem; border: none; padding: 0 .9rem 0 .85rem; background: var(--ink); color: var(--paper); border-radius: 999px; font-family: inherit; font-size: .8rem; font-weight: 700; line-height: 1; cursor: pointer; z-index: 3; box-shadow: 0 8px 22px rgba(40,25,40,.28); }
           .cw .ponudba0-zapri::before { content: 'Zapri'; }
           .cw .ponudba0-glava { padding-right: 6rem; }
           .cw .ponudba-backdrop { position: fixed; inset: 0; background: rgba(30,18,35,.38); z-index: 65; animation: cwFade .25s ease both; }
@@ -5293,6 +5462,36 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .ponudba-fab .fab-znesek { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.05; font-size: .68rem; font-weight: 600; opacity: .8; padding-right: .35rem; }
           .cw .ponudba-fab .fab-znesek b { font-size: .92rem; font-weight: 800; opacity: 1; }
         }
+        @media (max-width: 640px) {
+          /* Telefon: ponudba je spodnji list, zato ostaneta orientacija in pot nazaj
+             ves čas jasni. Na tablici ostane stranski predal. */
+          .cw .ponudba0 {
+            top: auto; left: 0; right: 0; bottom: 0;
+            width: 100%; max-height: 84dvh;
+            border-radius: 24px 24px 0 0;
+            padding: 3.5rem 1.15rem max(5.5rem, env(safe-area-inset-bottom));
+            transform: translateY(102%);
+            box-shadow: 0 -18px 50px rgba(40,25,40,.22);
+          }
+          .cw .ponudba0.odprta { transform: translateY(0); }
+          .cw .ponudba0::before {
+            content: ''; position: absolute; top: .65rem; left: 50%;
+            width: 2.8rem; height: 4px; border-radius: 999px;
+            background: rgba(17,17,17,.2); transform: translateX(-50%);
+          }
+          .cw .ponudba0-zapri {
+            position: absolute; top: .8rem; right: .9rem;
+            width: 2.35rem; height: 2.35rem; margin: 0; padding: 0;
+            border: 1px solid rgba(17,17,17,.14);
+            border-radius: 50%; background: rgba(255,255,255,.82);
+            color: var(--ink); font-size: 1.2rem; box-shadow: none;
+          }
+          .cw .ponudba0-zapri::before { content: none; }
+          .cw .ponudba0-glava { padding-right: 3rem; }
+          .cw:has(.detajl-oder) .ponudba0 {
+            visibility: hidden; pointer-events: none;
+          }
+        }
         /* desktop: panel ponudbe = fiksen desni stolpec po CELI VISINI (do headerja) */
         @media (min-width: 1201px) {
           /* step-0 vsebina samo bledi (brez transforma), da fixed panel deluje na okno.
@@ -5304,8 +5503,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .detajl-modal .choicegrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
           .cw .detajl-modal .choicegrid > button { width: 100%; justify-content: flex-start; }
           .cw .detajl-modal .choicegrid .svoje-vrsta { grid-column: 1 / -1; }
-          /* spodnja gumba centrirana POD vprašalnikom (ne cela stran) — enak odmik kot vsebina za fiksni panel */
-          .cw .noga.noga-ob-panelu { padding-right: calc(min(480px, 40vw) + clamp(1rem, 2.5vw, 2rem) + clamp(1.2rem, 4vw, 3rem)); }
+          /* footer SAMO v delu vprašalnika: desni rob konča ob panelu ponudbe (ne čez
+             celo stran), zato so gumbi centrirani nad vsebino, ne nad celim zaslonom */
+          .cw .noga.noga-ob-panelu { right: min(480px, 40vw); padding-right: clamp(1.2rem, 4vw, 3rem); }
         }
         @keyframes ponudbaVstop { from { transform: translateX(100%); } to { transform: translateX(0); } }
         @media (prefers-reduced-motion: reduce) { .cw .ponudba0 { animation: none; } }
@@ -5382,6 +5582,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .profil-vrsta { display: flex; align-items: center; gap: .8rem; padding: .5rem 0; border-bottom: 1px solid rgba(17,17,17,.08); }
         .cw .profil-vrsta:last-child { border-bottom: none; }
         .cw .profil-vrsta .pv-ime { flex: 1; min-width: 0; font-size: .95rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        @media (max-width: 560px) {
+          .cw .profil-vrsta { flex-wrap: wrap; }
+          .cw .profil-vrsta .pv-ime { flex: 1 0 calc(100% - 2rem); }
+        }
         .cw .glava .glava-brand { pointer-events: auto; display: inline-flex; align-items: center; gap: .5rem; text-decoration: none; }
         .cw .glava .glava-dot { width: 1.2rem; height: 1.2rem; border-radius: 50%; flex: none; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 3px 10px rgba(124,58,237,.28); }
         .cw .glava .glava-pinart { font-weight: 800; font-size: 1rem; letter-spacing: -.01em; color: var(--ink); line-height: 1; }
@@ -5519,6 +5723,39 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .valuta-gumb-mobile { display: flex; }
         }
         .cw .izbirnik-zastor { position: fixed; inset: 0; z-index: 65; background: rgba(245,242,234,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+        /* DETAJL = delovna plast neposredno pod globalnim headerjem.
+           Kalkulator poti Lenisa ne uporabljajo, zato je fixed tukaj zanesljiv.
+           Levi meni in header ostaneta nad plastjo, live ponudba pa nad njo. */
+        @media (min-width: 1201px) {
+          .cw .detajl-oder { position: fixed; top: 3.25rem; right: 0; bottom: 0; left: 17.5rem; min-height: 0; z-index: 15; padding: 0 min(560px, 36vw) 0 0; align-items: stretch; justify-content: stretch; background: linear-gradient(135deg, rgba(255,255,255,.64) 0%, rgba(247,243,236,.74) 48%, rgba(242,247,244,.68) 100%); -webkit-backdrop-filter: blur(24px) saturate(1.18); backdrop-filter: blur(24px) saturate(1.18); overflow-y: auto; scrollbar-width: none; animation: detajlZapelji .36s cubic-bezier(.2,.85,.3,1) both; }
+          .cw .detajl-oder::before { content: ''; position: absolute; inset: 0 min(560px, 36vw) 0 0; pointer-events: none; background: linear-gradient(118deg, transparent 8%, rgba(255,255,255,.34) 30%, rgba(255,255,255,.08) 43%, transparent 62%); opacity: .48; mix-blend-mode: screen; }
+          .cw .detajl-oder > .detajl-modal { position: relative; z-index: 1; }
+          :global(body[data-meni='zaprt']) .cw .detajl-oder { left: 4.4rem; }
+          .cw:has(.detajl-oder) .lupina-glava { z-index: 0; }
+          .cw:has(.detajl-oder) .ponudba0 { width: min(560px, 36vw); border-radius: 0; }
+          .cw .detajl-oder { overflow: hidden; }
+          .cw .detajl-oder .detajl-modal { max-width: none; max-height: none; width: 100%; height: 100%; border: 0; border-radius: 0; box-shadow: none; background: transparent; overflow-y: scroll; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: rgba(17,17,17,.24) rgba(17,17,17,.025); }
+          .cw .detajl-oder .detajl-modal::-webkit-scrollbar { display: block; width: 5px; }
+          .cw .detajl-oder .detajl-modal::-webkit-scrollbar-track { background: rgba(17,17,17,.025); }
+          .cw .detajl-oder .detajl-modal::-webkit-scrollbar-thumb { background: rgba(17,17,17,.24); border-radius: 0; }
+          .cw .detajl-oder .detajl-modal::-webkit-scrollbar-thumb:hover { background: rgba(17,17,17,.38); }
+          /* glava + telo + noga: centriran stolpec v prostoru LEVO od pogodbe */
+          .cw .detajl-oder .izbirnik-glava { width: 100%; max-width: 820px; margin: 0 auto; padding: 2.4rem clamp(1.5rem, 3vw, 2.5rem) 1rem; align-items: flex-start; background: transparent; border-bottom: 0; }
+          .cw .detajl-oder .izbirnik-glava > span { color: var(--accent); font-size: .8rem; font-weight: 750; letter-spacing: .18em; text-transform: uppercase; }
+          .cw .detajl-oder .izbirnik-glava > span::after { content: 'Izpolni podrobnosti storitve'; display: block; margin-top: .75rem; color: rgba(17,17,17,.48); font-size: 1.25rem; font-weight: 400; letter-spacing: 0; line-height: 1.25; text-transform: none; }
+          .cw .detajl-oder .detajl-telo { width: 100%; max-width: 820px; margin: 0 auto; padding: 1rem clamp(1.5rem, 3vw, 2.5rem) 5rem; gap: 2.25rem; overflow: visible; flex: none; }
+          .cw .detajl-oder .detajl-noga { width: 100%; max-width: 820px; margin: 0 auto; background: transparent; border-top: 0; }
+          .cw .detajl-oder .detajl-telo > .polje { padding: 1.7rem 2rem; border: 1px solid rgba(255,255,255,.7); border-radius: 20px; background: rgba(252,251,247,.68); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 12px 34px rgba(45,35,30,.055), inset 0 1px 0 rgba(255,255,255,.72); }
+          .cw .detajl-oder .vp { padding: 2rem; border-color: rgba(255,255,255,.68); border-radius: 22px; background: rgba(252,251,247,.66); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 12px 34px rgba(45,35,30,.05), inset 0 1px 0 rgba(255,255,255,.7); }
+          .cw .detajl-oder .vprasanja { max-width: none; }
+          .cw .detajl-oder .choicegrid > button { min-height: 4.8rem; padding: 1.15rem 1.35rem; font-size: 1rem; }
+        }
+        @keyframes detajlZapelji { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .cw .detajl-oder.detajl-zapira { pointer-events: none; animation: detajlOdpelji .36s cubic-bezier(.65,0,.85,.35) both; }
+        @keyframes detajlOdpelji { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
+        @media (prefers-reduced-motion: reduce) {
+          .cw .detajl-oder, .cw .detajl-oder.detajl-zapira { animation: none; }
+        }
         .cw .izbirnik-plosca { width: 100%; max-width: 420px; max-height: min(32rem, 80dvh); display: flex; flex-direction: column; background: var(--paper); border: 1px solid rgba(17,17,17,.18); border-radius: 18px; box-shadow: 0 24px 80px rgba(17,17,17,.14); overflow: hidden; animation: cwVstop .3s cubic-bezier(.16,1,.3,1) both; }
         .cw .izbirnik-glava { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.2rem 1.4rem; border-bottom: 1px solid rgba(17,17,17,.1); font-weight: 600; font-size: .95rem; color: var(--ink); flex: none; }
         .cw .izbirnik-glava button { border: none; background: none; cursor: pointer; font-size: 1.05rem; color: rgba(17,17,17,.6); padding: .2rem; line-height: 1; }
@@ -5531,6 +5768,32 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         @media (max-width: 560px) {
           .cw .izbirnik-zastor { align-items: flex-end; padding: 0; }
           .cw .izbirnik-plosca { max-width: none; max-height: 75dvh; border-radius: 20px 20px 0 0; border-width: 1px 0 0; animation: cwListIn .32s cubic-bezier(.16,1,.3,1) both; padding-bottom: env(safe-area-inset-bottom); }
+          .cw .detajl-oder {
+            top: 3.25rem;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            align-items: stretch;
+            background: rgba(247,244,237,.9);
+          }
+          .cw .detajl-oder .detajl-modal {
+            width: 100%;
+            max-width: none;
+            height: 100%;
+            max-height: none;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+          }
+          .cw .detajl-oder .izbirnik-glava { padding: 1rem 1.25rem; }
+          .cw .detajl-oder .detajl-telo { padding: 1rem 1rem 1.4rem; gap: 1rem; }
+          .cw .detajl-oder .detajl-noga {
+            padding: .85rem 1rem max(.85rem, env(safe-area-inset-bottom));
+            background: rgba(247,244,237,.94);
+          }
+          .cw .detajl-oder .detajl-telo > .polje,
+          .cw .detajl-oder .vp { padding: 1.35rem 1.25rem; }
+          .cw:has(.detajl-oder) .ponudba-fab { display: none; }
         }
         @keyframes cwListIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
@@ -5599,6 +5862,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-podr { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.1rem; height: 2.1rem; border: 1px solid rgba(17,17,17,.2); background: transparent; color: rgba(17,17,17,.6); font-family: inherit; font-size: .76rem; font-weight: 600; border-radius: 999px; padding: 0; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s, background .15s; }
         .cw .prav-podr:hover { border-color: var(--ink); color: var(--ink); background: rgba(17,17,17,.05); }
         .cw .prav-recept { border: none; border-bottom: 1px solid rgba(17,17,17,.35); background-color: transparent; font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); padding: .3rem 1.4rem .3rem .2rem; appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .1rem center; }
+        /* IZVZEM kompaktnih izbirnikov iz teznih .shell select globalov (font 16px!important,
+           padding-right 3rem!important, velika 1.25rem kljukica) — sicer napihnejo kontrole in
+           pokvarijo puscice; visja specificnost + !important povozi globalno pravilo starsa. */
+        .cw .prav-recept { font-size: .9rem !important; min-height: 0 !important; padding: .3rem 1.4rem .3rem .2rem !important; background-size: 12px 8px !important; background-position: right .1rem center !important; }
+        .cw .pisava-select { font-size: .78rem !important; min-height: 2.25rem !important; padding: 0 1.7rem 0 .9rem !important; background-size: 12px 8px !important; background-position: right .7rem center !important; }
         .cw .prav-cena { font-family: var(--font-serif), serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; min-width: 3.6rem; text-align: right; }
         .cw .prav-cena-gumb { border: none; background: transparent; cursor: pointer; color: var(--ink); padding: 0 0 .1rem; border-bottom: 1px dashed rgba(17,17,17,.45); transition: border-color .15s, color .15s; }
         .cw .prav-cena-gumb:hover { border-bottom-color: var(--ink); }
@@ -5670,7 +5938,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .checkgrid label:hover { border-color: var(--ink); transform: translateY(-2px); }
         .cw .checkgrid label:active { transform: translateY(0) scale(.96); }
         .cw .checkgrid label:has(input:checked) { background: var(--accent); border-color: var(--accent); color: #fff; }
-        .cw .checkgrid input[type='checkbox'] { appearance: none; -webkit-appearance: none; width: 1.05em; height: 1.05em; margin: 0; border: 1.5px solid rgba(17,17,17,.5); border-radius: 2px; flex: none; background: transparent; }
+        .cw .checkgrid input[type='checkbox'] { appearance: none; -webkit-appearance: none; width: 1.3em; height: 1.3em; min-height: 0; margin: 0; border: 1.5px solid rgba(17,17,17,.5); border-radius: 5px; flex: none; background: transparent; }
         .cw .checkgrid input[type='checkbox']:checked { border-color: transparent; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2 8.5 6 12.5 14 3.5' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% no-repeat; }
         .cw .checkgrid input { margin-top: .15rem; accent-color: var(--ink); }
         .cw .choicegrid { display: flex; flex-wrap: wrap; gap: .8rem .55rem; margin: .15rem 0 .2rem; }
@@ -5683,6 +5951,27 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .choicegrid button.on .krogec { border-color: #fff; background: #fff; box-shadow: inset 0 0 0 2.5px var(--accent); }
         .cw .vec-namig { font-weight: 400; font-size: .85rem; color: rgba(17,17,17,.65); margin-left: auto; white-space: nowrap; }
         .cw .choicegrid button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+        /* Moderne kartice odgovorov v detajlnem panelu (ne pilule) */
+        .cw .detajl-oder .choicegrid { display: grid; grid-template-columns: 1fr; gap: .8rem; max-width: 24rem; margin: .2rem 0 .1rem; }
+        .cw .detajl-oder .checkgrid { display: grid; grid-template-columns: 1fr; gap: .8rem; max-width: 24rem; }
+        .cw .detajl-oder .choicegrid button { width: 100%; justify-content: flex-start; text-align: left; gap: .8rem; min-height: 3.5rem; padding: .95rem 1.05rem; border-radius: 16px; border: 1.5px solid oklch(24% .02 285 / .14); background: #fff; color: var(--ink); font-size: .96rem; font-weight: 600; line-height: 1.3; box-shadow: 0 1px 2px oklch(24% .02 285 / .04); transition: border-color .18s ease, background .18s ease, box-shadow .18s ease, transform .18s ease; }
+        .cw .detajl-oder .choicegrid button:hover { border-color: oklch(24% .02 285 / .32); box-shadow: 0 6px 18px oklch(24% .02 285 / .08); transform: translateY(-1px); }
+        .cw .detajl-oder .choicegrid button:active { transform: translateY(0); }
+        .cw .detajl-oder .choicegrid button.on { background: color-mix(in oklch, var(--accent) 8%, #fff); border-color: var(--accent); color: var(--ink); box-shadow: 0 2px 10px color-mix(in oklch, var(--accent) 22%, transparent); }
+        /* indikator: kvadratek (multi) / krogec (single), leva stran, moderna kljukica */
+        .cw .detajl-oder .choicegrid .kljucek { width: 1.6rem; height: 1.6rem; border-radius: 8px; border: 1.5px solid oklch(24% .02 285 / .28); font-size: .85rem; color: #fff; flex: none; }
+        .cw .detajl-oder .choicegrid button.on .kljucek { background: var(--accent); border-color: var(--accent); color: #fff; }
+        /* enoizbirni odgovori: črkovna značka A/B/C (prek CSS števca, brez posega v izris) */
+        .cw .detajl-oder .choicegrid { counter-reset: opt; }
+        .cw .detajl-oder .choicegrid button { counter-increment: opt; }
+        .cw .detajl-oder .choicegrid .krogec { width: 2.05rem; height: 2.05rem; border: 0; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: .92rem; color: var(--ink); background: oklch(93% .04 300); box-shadow: none; flex: none; }
+        .cw .detajl-oder .choicegrid .krogec::before { content: counter(opt, upper-latin); }
+        .cw .detajl-oder .choicegrid button:nth-child(3n+1) .krogec { background: oklch(92% .06 165); }
+        .cw .detajl-oder .choicegrid button:nth-child(3n+2) .krogec { background: oklch(91% .06 300); }
+        .cw .detajl-oder .choicegrid button:nth-child(3n+3) .krogec { background: oklch(93% .07 140); }
+        .cw .detajl-oder .choicegrid button.on .krogec { background: var(--accent); color: #fff; box-shadow: none; }
+        .cw .detajl-oder .choicegrid .vec-namig { margin-left: auto; align-self: center; }
 
         .cw .paketi { display: grid; grid-template-columns: 1fr 1.15fr 1fr; margin: 1.4rem 0; background: #FCFBF7; border: 1px solid rgba(17,17,17,.08); border-radius: 20px; overflow: hidden; box-shadow: 0 4px 18px rgba(17,17,17,.04); }
         .cw .paketi.paketi-ena { grid-template-columns: 1fr; max-width: 460px; }
@@ -5979,6 +6268,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
 
         .cw .noga { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; padding: 1rem clamp(1.2rem, 4vw, 3rem) 1.1rem; background: linear-gradient(to top, var(--paper) 70%, transparent); z-index: 62; }
+        /* V lupini je levo stranska vrstica (17.5rem, zlozena 4.4rem). Noga je
+           position:fixed left:0, zato brez tega zamika NAPREJ centrira v celo
+           sirino in izpade LEVO. Zamaknemo za sirino menija. */
+        .cw.cw-lupina .noga { left: 17.5rem; }
+        :global(body[data-meni='zaprt']) .cw.cw-lupina .noga { left: 4.4rem; }
+        @media (max-width: 980px) { .cw.cw-lupina .noga { left: 0; } }
+        /* ko je detajl-panel odprt, NAPREJ (noga) skrijemo — pripada spodnjemu koraku, ne detajlu (ta ima svoj × / Shrani) */
+        .cw:has(.detajl-oder) .noga { display: none; }
         .cw .noga .noga-c { width: 100%; display: flex; align-items: center; justify-content: center; gap: 1rem; }
         .cw .noga .noga-gumbi { display: flex; align-items: center; gap: .8rem; position: relative; }
         /* ↑ (nazaj) vzet iz toka — levo od centriranega NAPREJ, da je NAPREJ na sredini vprasalnika */
@@ -6005,8 +6302,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .a11y-btn { width: 2.3rem; height: 2.3rem; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent); background: color-mix(in oklab, var(--paper) 92%, white); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 .7rem 1.8rem rgba(17,17,17,.08); }
         /* zlozen meni: ozek stolpec, avatar centriran -> gumb sredinsko nad njim */
         :global(body[data-meni='zaprt']) .cw .a11y { left: .85rem; bottom: 4.9rem; }
-        /* mobilno (stranska vrstica postane zgornja): v desni spodnji kot */
-        @media (max-width: 980px) { .cw .a11y { left: auto; right: clamp(1rem, 4vw, 1.5rem); bottom: 5rem; } }
+        /* Na telefonu je dostopnost v glavnem meniju, zato plavajoči gumb ne
+           prekriva ponudbe. Panel ostane samostojen dialog nad vsebino. */
+        @media (max-width: 980px) {
+          .cw .a11y { position: static; }
+          .cw .a11y-btn { display: none; }
+          .cw .a11y-panel { position: fixed; z-index: 130; inset: auto 1rem max(1rem, env(safe-area-inset-bottom)); width: auto; max-height: calc(100dvh - 5rem); border-radius: 1rem; }
+        }
         .cw .a11y-btn:hover { border-color: color-mix(in oklab, var(--accent) 72%, transparent); }
         .cw .a11y-panel { position: absolute; left: 0; bottom: 3.4rem; width: min(27rem, calc(100vw - 2.4rem)); max-height: min(70dvh, 34rem); overflow: auto; border: 1px solid rgba(17,17,17,.22); background: color-mix(in oklab, var(--paper) 98%, white); padding: 1rem 1.1rem; box-shadow: 0 1rem 2.4rem rgba(17,17,17,.14); }
         .cw .a11y-panel h2 { margin: 0 0 .7rem; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; line-height: 1.2; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
@@ -6381,6 +6683,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     <div key={ime} className="profil-vrsta">
                       <span className="pv-ime">{ime}</span>
                       <button type="button" className="povezava" onClick={() => { naloziIzArhiva(ime); setKazemProfil(false); setProfilPogled('meni'); }}>↺ Odpri</button>
+                      <button type="button" className="povezava" title={'Podvoji ' + ime}
+                        onClick={() => { podvojiIzArhiva(ime); setKazemProfil(false); setProfilPogled('meni'); }}>
+                        <CopySimple size={16} weight="bold" aria-hidden /> Podvoji
+                      </button>
                       <button type="button" className="brisi" title={'Izbriši ' + ime} onClick={() => izbrisiIzArhiva(ime)}>×</button>
                     </div>
                   ))}
@@ -6613,7 +6919,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       {/* Glava strani je TU, ne na strani: samo kalkulator ve, ali tece uvodni
           pogovor, ta pa ima svoj naslov. Ko je bila glava na strani, sta bila
           na zaslonu dva enaka naslova drug pod drugim. */}
-      {vLupini && !uvodChat && (
+      {vLupini && !uvodChat && korak === 0 && (
         <header className="lupina-glava">
           <p className="lg-kicker">Ponudba</p>
           <h1 className="lg-naslov">Kalkulator ponudbe.</h1>
@@ -6624,16 +6930,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
       <div className="oder">
         <div className={'korak-vsebina' + (korak === 0 ? ' siroko' : '') + (korak === 0 && uvodChat && !klasicnaOblika ? ' uvod-faza' : '') + (vChatu && poMeh > 0 ? ' chat-koraki' : '') + (!klasicnaOblika && korak === ponudbaStep ? ' priprava-korak' : '') + (korak === zakljucekStep ? ' zakljucek-sredina' : '')} key={korak}>
-          {!klasicnaOblika && korak === ponudbaStep && (
-            <div className="priprava-vrh">
-              <button type="button" className="priprava-nazaj" onClick={() => setKorak(0)}>
-                ← Uredi podatke in vprašanja
-              </button>
-              <button type="button" className="priprava-zapri" onClick={() => setKorak(0)} title="Zapri ponudbo — nazaj na sestavljanje">
-                Zapri <span aria-hidden>✕</span>
-              </button>
-            </div>
-          )}
           {korak === zakljucekStep && (
             <div className="zakljucek-lik" aria-hidden>
               <div className="pon-lik-ovoj">
@@ -6929,7 +7225,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         ['--dur' as string]: (9 + psr(i * 3 + 1) * 5).toFixed(1) + 's',
                         ['--del' as string]: (-psr(i * 7 + 2) * 6).toFixed(1) + 's',
                         ['--vdel' as string]: (i * 0.05).toFixed(2) + 's',
-                        ['--fx' as string]: ((psr(i + 11) * 5 + 3) * (psr(i + 4) < .5 ? -1 : 1)).toFixed(0) + 'px',
+                        ['--fx' as string]: ((psr(i + 11) * (jeMobilni ? 1 : 5) + (jeMobilni ? 1 : 3)) * (psr(i + 4) < .5 ? -1 : 1)).toFixed(0) + 'px',
                         ['--fy' as string]: (-(psr(i + 23) * 5 + 3)).toFixed(0) + 'px',
                       }}
                       onClick={() => { klikNonce.current += 1; setKlikObroc({ x: p.x, y: p.y, d: orbD, n: klikNonce.current }); izberiVrstico(s.id); }}>
@@ -7037,8 +7333,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               )}
 
               {/* ── živa ponudba: desktop fiksno desno, mobile drsni panel (kosarica) ── */}
+              {ponudbaOdprta && <div className="ponudba-backdrop" onClick={() => zapriMobilnoPonudbo()} aria-hidden />}
               <aside className={'ponudba0' + (ponudbaOdprta ? ' odprta' : '')} aria-label="Tvoja ponudba" data-lenis-prevent>
-                <button type="button" className="ponudba0-zapri" aria-label="Zapri ponudbo" onClick={() => setPonudbaOdprta(false)}>×</button>
+                <button type="button" className="ponudba0-zapri" aria-label="Zapri ponudbo" onClick={() => zapriMobilnoPonudbo()}>×</button>
                 <div className="ponudba0-glava">
                   <h2>{nazivPonudbe.trim() || 'Tvoja ponudba'}</h2>
                   <span className="ponudba0-chip">{vrstice.length === 1 ? '1 postavka'
@@ -7046,7 +7343,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       : vrstice.length === 3 || vrstice.length === 4 ? `${vrstice.length} postavke`
                         : `${vrstice.length} postavk`}</span>
                 </div>
-                <div className="ponudba0-pod">se sestavlja v živo</div>
 
                 {vrstice.length === 0 && (
                   <div className="ponudba0-prazno">
@@ -7065,7 +7361,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         </g>
                       </svg>
                     </div>
-                    <p><b>Klikni storitev</b>, da začneš.<br /><b>Enaka cena, več kosov:</b> pritisni <b>+</b> ob imenu vrstice. <b>Različne izvedbe/cene:</b> klikni mehurček še enkrat — vsaka dobi svojo vrstico, vprašanja in ceno.</p>
+                    <p><b>Klikni storitev</b>, da začneš.<br /><span className="vprasanja-vijola"><b>Vsaka storitev ima svoja vprašanja</b> — ko jo dodaš, klikni postavko v seznamu in izpolni podrobnosti za točno ceno.</span><br /><b>Enaka cena, več kosov:</b> pritisni <b>+</b> ob vrstici. <b>Različne izvedbe/cene:</b> klikni mehurček še enkrat.</p>
                   </div>
                 )}
 
@@ -7077,6 +7373,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     const skupina = skupineVprasanj.find(g => g.id === l.uid);
                     const odgovorjenih = skupina ? skupina.vprasanja.filter(vp => (odgovori[vp.key] || '').trim()).length : 0;
                     const razprta = razprtaVrstica === l.uid;
+                    /* postavka ima vprasanja, ki se niso izpolnjena -> OCITNA oznaka
+                       (prej subtilno "klikni za podrobnosti", ki ga nihce ni videl) */
+                    const trebaUrediti = !!skupina && odgovorjenih < skupina.vprasanja.length;
                     const status = skupina
                       ? (odgovorjenih ? `${odgovorjenih}/${skupina.vprasanja.length} podrobnosti` : 'okvirna ocena · klikni za podrobnosti')
                       : 'klikni za ime postavke';
@@ -7088,10 +7387,19 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           <span className="rocica0" draggable title="Povleci za vrstni red"
                             onDragStart={e => { setVlecenaVrstica(l.uid); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', l.uid); } catch { /* star brskalnik */ } }}
                             onDragEnd={() => setVlecenaVrstica(null)}>⠿</span>
-                          <button type="button" className="vrst0-ime" aria-expanded={razprta}
-                            onClick={() => setRazprtaVrstica(razprta ? null : l.uid)}>
+                          <button type="button" className={'vrst0-ime' + (trebaUrediti ? ' treba' : '')} aria-expanded={razprta}
+                            onClick={() => {
+                              if (razprta) {
+                                zapriDetajl();
+                                return;
+                              }
+                              if (window.matchMedia('(max-width: 1200px)').matches) zapriMobilnoPonudbo(false);
+                              odpriDetajl(l.uid);
+                            }}>
                             {prikazVrstice(l, s)}
-                            <small className={odgovorjenih ? 'odg' : ''}>{q > 1 ? `${KOLICINSKE[l.sid] ? `${q} ${KOLICINSKE[l.sid]}` : `× ${q}`} · ` : ''}{status}</small>
+                            {trebaUrediti
+                              ? <small className="treba-urediti"><PencilSimple size={12} weight="bold" /> Uredi podrobnosti</small>
+                              : <small className={odgovorjenih ? 'odg' : ''}>{q > 1 ? `${KOLICINSKE[l.sid] ? `${q} ${KOLICINSKE[l.sid]}` : `× ${q}`} · ` : ''}{status}</small>}
                           </button>
                           <span className="stepper0">
                             <button type="button" aria-label={'Ena manj: ' + s.ime} onClick={() => spremeniKolicino(l.uid, -1)}>–</button>
@@ -7214,14 +7522,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 const s = l && vseStoritve.find(x => x.id === l.sid);
                 if (!l || !s) return null;
                 const skupina = skupineVprasanj.find(g => g.id === l.uid);
-                return createPortal(
-                  <div className={`cw${vLupini ? ' cw-lupina' : ''}`}>
-                    <div className="izbirnik-zastor" onClick={() => setRazprtaVrstica(null)}>
+                return (
+                    <div className={'izbirnik-zastor detajl-oder' + (detajlZapira ? ' detajl-zapira' : '')} onClick={zapriDetajl}>
                       <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={'Podrobnosti: ' + prikazVrstice(l, s)}
                         onClick={e => e.stopPropagation()} data-lenis-prevent>
                         <div className="izbirnik-glava">
                           <span>{prikazVrstice(l, s)}</span>
-                          <button type="button" onClick={() => setRazprtaVrstica(null)} aria-label="Zapri">✕</button>
+                          <button type="button" onClick={zapriDetajl} aria-label="Zapri">✕</button>
                         </div>
                         <div className="detajl-telo">
                           <div className="polje">
@@ -7236,18 +7543,28 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         </div>
                         <div className="detajl-noga">
                           {skupina && (
-                            <button type="button" className="povezava" onClick={() => setOdgovori(prev => {
-                              const n = { ...prev };
-                              skupina.vprasanja.forEach(vp => { delete n[vp.key]; delete n[vp.key + ':drugo']; });
-                              return n;
-                            })}>Ponastavi odgovore</button>
+                            <button type="button" className="povezava" onClick={() => {
+                              setOdgovori(prev => {
+                                const n = { ...prev };
+                                skupina.vprasanja.forEach(vp => { delete n[vp.key]; delete n[vp.key + ':drugo']; });
+                                return n;
+                              });
+                              setUrejenePodrobnosti(prej => {
+                                const naslednje = new Set(prej);
+                                naslednje.delete(l.uid);
+                                return naslednje;
+                              });
+                            }}><ArrowCounterClockwise size={18} aria-hidden /> Ponastavi</button>
                           )}
-                          <button type="button" className="gumb" onClick={() => setRazprtaVrstica(null)}>Shrani</button>
+                          <button type="button" className="gumb" onClick={() => {
+                            setUrejenePodrobnosti(prej => new Set(prej).add(l.uid));
+                            zapriDetajl();
+                            pomakniNaPovzetekIzbire();
+                          }}>Shrani</button>
                         </div>
                       </div>
                     </div>
-                  </div>
-                , document.body);
+                );
               })()}
 
               {kazemUredi && typeof document !== 'undefined' && createPortal(
@@ -7308,6 +7625,52 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             </div>
           )}
 
+          {korak === 0 && !uvodChat && !klasicnaOblika && vrstice.length > 0 && (() => {
+            const postavke = vrstice.map(l => {
+              const storitev = vseStoritve.find(s => s.id === l.sid);
+              const skupina = skupineVprasanj.find(g => g.id === l.uid);
+              const imaOdgovor = skupina?.vprasanja.some(vp =>
+                (odgovori[vp.key] || '').trim() || (odgovori[vp.key + ':drugo'] || '').trim()
+              );
+              const urejena = !skupina || skupina.vprasanja.length === 0
+                || urejenePodrobnosti.has(l.uid) || !!imaOdgovor;
+              return { l, storitev, urejena };
+            }).filter(p => p.storitev);
+            const neurejene = postavke.filter(p => !p.urejena);
+            const urejene = postavke.length - neurejene.length;
+
+            return (
+              <div className="izbor-povzetek" aria-live="polite">
+                <div className="chat-jaz">
+                  <span className="chat-mehur">
+                    <b>V ponudbo sem dodala:</b>
+                    <span className="izbor-seznam">
+                      {postavke.map(({ l, storitev }) => (
+                        <span key={l.uid}>• {prikazVrstice(l, storitev!)}</span>
+                      ))}
+                    </span>
+                  </span>
+                </div>
+                <div className="chat-bot"><span className="chat-obraz" aria-hidden />
+                  <span className={'chat-mehur' + (neurejene.length ? ' chat-mehur-opomnik' : '')}>
+                    <b>{neurejene.length ? `Urejene so ${urejene} od ${postavke.length} postavk.` : 'Vse podrobnosti so urejene.'}</b>
+                    <small>{neurejene.length ? 'Pred nadaljevanjem preveri še manjkajoče podatke, da bo izračun cene natančnejši.' : 'Ponudba je pripravljena za naslednji korak.'}</small>
+                    {neurejene.length > 0 && (
+                      <span className="izbor-preveri">
+                        {neurejene.map(({ l, storitev }) => (
+                          <button key={l.uid} type="button" className="izbor-preveri-gumb" onClick={() => odpriDetajl(l.uid)}>
+                            <PencilSimple size={17} weight="bold" aria-hidden />
+                            Dopolni: {prikazVrstice(l, storitev!)}
+                          </button>
+                        ))}
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* osebni koraki (kdo si / trg / izkusnje) odpadejo — zbere jih onboarding, urejajo se v Moji podatki */}
 
           {((klasicnaOblika && korak === narocnikStep) || (vChatu && poMeh >= 1)) && (
@@ -7315,10 +7678,18 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             {vChatu && chatVpr('Super izbira! Zdaj še — komu pošiljaš ponudbo?', 'Naročnik za pošiljanje; lahko pustiš prazno in izpolniš pozneje.')}
             <div className="kartica">
               <div className="k-naslov">Naročnik <span className="vec">za pošiljanje ponudbe</span></div>
+              <div style={{ display: 'inline-flex', gap: 4, padding: 4, background: 'rgba(17,17,17,.05)', borderRadius: 999, margin: '0 0 1.1rem' }} role="group" aria-label="Tip naročnika">
+                {(['podjetje', 'fizicna'] as const).map(t => (
+                  <button key={t} type="button" onClick={() => setNarocnikTip(t)}
+                    style={{ border: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: '.85rem', fontWeight: 600, padding: '.45rem .95rem', borderRadius: 999, background: narocnikTip === t ? 'var(--ink)' : 'transparent', color: narocnikTip === t ? 'var(--paper)' : 'rgba(17,17,17,.6)', transition: 'background .15s, color .15s' }}>
+                    {t === 'podjetje' ? 'Podjetje' : 'Fizična oseba'}
+                  </button>
+                ))}
+              </div>
               <div className="numgrid" style={{ marginTop: 0 }}>
                 <div className="polje">
-                  <label htmlFor="cw-narocnik">Ime podjetja</label>
-                  <input id="cw-narocnik" type="text" placeholder="npr. Odvetniška družba Volk & Babica"
+                  <label htmlFor="cw-narocnik">{narocnikTip === 'fizicna' ? 'Ime in priimek' : 'Ime podjetja'}</label>
+                  <input id="cw-narocnik" type="text" placeholder={narocnikTip === 'fizicna' ? 'npr. Ana Novak' : 'npr. Odvetniška družba Volk & Babica'}
                     value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)}
                     onBlur={e => zabeleziNarocnika(e.target.value)} />
                 </div>
@@ -7437,26 +7808,41 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 </p>
               </div>
               <div className="kartica kartica-neobvezno">
-                <div className="k-naslov">Poslovanje naročnika <span className="vec">neobvezno · lahko preskočiš</span></div>
-                <p className="hint" style={{ marginTop: 0, marginBottom: '1rem' }}>Enako kot trg: podjetje z višjim prometom in dobičkom nosi večjo vrednost dela. Upošteva se le, kadar delo velja za celotno znamko. Če ne veš, pusti prazno.</p>
-                <div className="numgrid">
-                  <div className="polje">
-                    <label htmlFor="cw-promet">Letni promet naročnika (€)</label>
-                    <input id="cw-promet" type="number" min={0} step={10000} placeholder="800000"
-                      value={promet} onChange={e => setPromet(e.target.value)} />
-                  </div>
-                  <div className="polje">
-                    <label htmlFor="cw-dobicek">Letni dobiček naročnika (€)</label>
-                    <input id="cw-dobicek" type="number" min={0} step={5000} placeholder="60000"
-                      value={dobicek} onChange={e => setDobicek(e.target.value)} />
-                  </div>
-                </div>
-                <p className="hint" style={{ marginTop: '.5rem' }}>
-                  Kje preveriš:{' '}
-                  {(REGISTRI[trgNarocnika] ?? REGISTRI.si).concat(REGISTRI_UNIV).map((reg, i) => (
-                    <span key={reg.url}>{i > 0 && ' · '}<a href={reg.url} target="_blank" rel="noopener noreferrer">{reg.ime}</a></span>
-                  ))}. Prazno = mikro podjetje.
-                </p>
+                <div className="k-naslov">{narocnikTip === 'fizicna' ? 'Vrednost nepremičnine' : 'Poslovanje naročnika'} <span className="vec">neobvezno · lahko preskočiš</span></div>
+                {narocnikTip === 'fizicna' ? (
+                  <>
+                    <p className="hint" style={{ marginTop: 0, marginBottom: '1rem' }}>Pri fizični osebi promet/dobiček ne obstaja. Pri prostoru in arhitekturi vrednost dela bolje odraža vrednost nepremičnine. Neobvezno.</p>
+                    <div className="numgrid">
+                      <div className="polje">
+                        <label htmlFor="cw-nepremicnina">Vrednost nepremičnine (€)</label>
+                        <input id="cw-nepremicnina" type="number" min={0} step={10000} placeholder="250000"
+                          value={custNepremicnina} onChange={e => setCustNepremicnina(e.target.value)} />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="hint" style={{ marginTop: 0, marginBottom: '1rem' }}>Enako kot trg: podjetje z višjim prometom in dobičkom nosi večjo vrednost dela. Upošteva se le, kadar delo velja za celotno znamko. Če ne veš, pusti prazno.</p>
+                    <div className="numgrid">
+                      <div className="polje">
+                        <label htmlFor="cw-promet">Letni promet naročnika (€)</label>
+                        <input id="cw-promet" type="number" min={0} step={10000} placeholder="800000"
+                          value={promet} onChange={e => setPromet(e.target.value)} />
+                      </div>
+                      <div className="polje">
+                        <label htmlFor="cw-dobicek">Letni dobiček naročnika (€)</label>
+                        <input id="cw-dobicek" type="number" min={0} step={5000} placeholder="60000"
+                          value={dobicek} onChange={e => setDobicek(e.target.value)} />
+                      </div>
+                    </div>
+                    <p className="hint" style={{ marginTop: '.5rem' }}>
+                      Kje preveriš:{' '}
+                      {(REGISTRI[trgNarocnika] ?? REGISTRI.si).concat(REGISTRI_UNIV).map((reg, i) => (
+                        <span key={reg.url}>{i > 0 && ' · '}<a href={reg.url} target="_blank" rel="noopener noreferrer">{reg.ime}</a></span>
+                      ))}. Prazno = mikro podjetje.
+                    </p>
+                  </>
+                )}
               </div>
               {kazemValutaIzbira && typeof document !== 'undefined' && createPortal(
                 <div className={`cw${vLupini ? ' cw-lupina' : ''}`}>
@@ -8223,9 +8609,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       {/* MOBILE: ponudba v nogi kot FAB (kosarica) — tap odpre drsni panel */}
       {korak === 0 && !klasicnaOblika && !uvodChat && (
         <>
-          {ponudbaOdprta && <div className="ponudba-backdrop" onClick={() => setPonudbaOdprta(false)} aria-hidden />}
           <button type="button" className={'ponudba-fab' + (ponudbaOdprta ? ' skrit' : '')}
-            onClick={() => setPonudbaOdprta(true)} aria-label="Odpri ponudbo">
+            onClick={odpriMobilnoPonudbo} aria-label="Odpri ponudbo">
             <span className="fab-ikona" aria-hidden><FileText size={22} weight="regular" />
               {stPostavk > 0 && <span className="fab-tag">{stPostavk}</span>}
             </span>
@@ -8262,18 +8647,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   /* v chatu: vsak Naprej razkrije naslednje NAVZDOL (o stranki -> trg -> raba -> pravice -> posebnosti -> CENA), nato priprava ponudbe */
                   if (vChatu && poMeh < 5) {
                     setPoMeh(poMeh + 1);
-                    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                    /* zapelji NOVO vprasanje (zadnji chatVpr) blizu vrha, ne na dno strani */
-                    window.setTimeout(() => {
-                      const vpr = document.querySelectorAll('.chat-vpr');
-                      const zadnji = vpr[vpr.length - 1];
-                      if (zadnji) {
-                        const y = window.scrollY + zadnji.getBoundingClientRect().top - 90;
-                        window.scrollTo({ top: Math.max(0, y), behavior: reduce ? 'auto' : 'smooth' });
-                      } else {
-                        window.scrollTo({ top: document.body.scrollHeight, behavior: reduce ? 'auto' : 'smooth' });
-                      }
-                    }, 90);
+                    /* Lenis vodi glavni scroll, zato navaden window.scrollTo tu ni zanesljiv. */
+                    pomakniNaZadnjeVprasanje();
                   } else if (vChatu && poMeh === 5) {
                     setKorak(ponudbaStep);   /* priprava ponudbe = overlay/urejanje */
                   } else { naprej(); }
