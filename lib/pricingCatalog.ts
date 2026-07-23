@@ -26,6 +26,17 @@ export const PRICING_SERVICES: PricingService[] = [
   { id: 'motion', ime: 'Motion / animacija', osnova: 750 },
   { id: 'render3d', ime: '3D vizualizacije', osnova: 650 },
   { id: 'strategija', ime: 'Brand strategija', osnova: 1100 },
+
+  /* PRODUKCIJA / prelom — ceni se na ENOTO (stran, kos), ne po avtorskih
+     pravicah. Kolicino (st. strani / fotk) uporabnik nastavi na postavki.
+     osnova = cena za eno enoto. Za scenarije kot je urejanje kataloga
+     (menjava fotk, besedil, cen v obstojecem InDesignu) — teh je veliko in
+     jih model "od nic + pravice" ni pokrival. */
+  { id: 'prelom',       ime: 'Prelom / postavitev (na stran)',        osnova: 18 },
+  { id: 'vnospodatkov', ime: 'Vnos podatkov in cen (na uro)',         osnova: 35 },
+  { id: 'prevodpriprava', ime: 'Prevod in priprava besedil',         osnova: 150 },
+  { id: 'fotoobdelava', ime: 'Obdelava / retuša fotografij (na kos)', osnova: 15 },
+  { id: 'pripravatisk', ime: 'Priprava za tisk (predpriprava)',       osnova: 120 },
 ];
 
 /* Podrocja dela. Ista razdelitev se uporablja v kalkulatorju (izbira ob
@@ -40,6 +51,7 @@ export const PODROCJA: PricingPodrocje[] = [
   { id: 'foto',      ime: 'Foto, video, motion',       opis: 'fotografiranje, video, motion, 3D',                storitve: ['fotografija', 'video', 'motion', 'render3d'] },
   { id: 'direkcija', ime: 'Kreativna direkcija in strategija', opis: 'vodenje, koncept, strategija',             storitve: ['direkcija', 'strategija'] },
   { id: 'prostor',   ime: 'Prostor in arhitektura',    opis: 'interier, arhitektura, razstavni in produktni dizajn', storitve: ['interier', 'arhitektura', 'razstava', 'produktni'] },
+  { id: 'produkcija', ime: 'Produkcija in prelom',      opis: 'prelom, DTP, vnos podatkov, prevod, priprava za tisk', storitve: ['prelom', 'vnospodatkov', 'prevodpriprava', 'fotoobdelava', 'pripravatisk'] },
 ];
 
 /* V bazo se shrani IME storitve, ne id — zato iskanje po imenu. */
