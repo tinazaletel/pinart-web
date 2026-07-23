@@ -6435,6 +6435,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .glava .zapri-loceno { font-size: 0; gap: 0; display: inline-flex; align-items: center; justify-content: center; min-width: 2.75rem; min-height: 2.75rem; padding: 0 .35rem 0 .7rem; }
           .cw .glava .zapri-loceno::before { content: "✕"; font-size: 1rem; }
           .cw .oder { align-items: flex-start; padding: 5.4rem 8px 8rem; }
+          /* V prijavljeni lupini .workspace doda ~19px stranskega paddinga, zato
+             je oznaka "07" padla ~20px od roba (namesto da bi se ga dotikala) —
+             samostojna verzija tega paddinga nima. Kalkulator razlijemo nazaj do
+             6px od roba, da se oznaka poravna na rob kot v samostojni verziji.
+             .workspace ima overflow:hidden, zato negativni rob ne povzroči zamika. */
+          .cw.cw-lupina { margin-inline: calc(6px - clamp(1.2rem, 3vw, 3.5rem)); }
           .cw h1 { padding-left: 2.35rem; font-size: clamp(2.15rem, 11vw, 2.85rem); line-height: .98; margin-bottom: .6rem; }
           .cw .lg-naslov { padding-left: 0; }
           /* Oder ima na telefonu natanko 8 px roba. Oznaka koraka se poravna

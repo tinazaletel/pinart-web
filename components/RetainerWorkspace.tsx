@@ -130,8 +130,10 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   const [lastna, setLastna] = useState<string[]>([]);
   const [dodajOdprt, setDodajOdprt] = useState(false);
   const [obsegTabela, setObsegTabela] = useState(false);
-  const [korak, setKorak] = useState(0); /* korak-po-korak razkritje (kot kalkulatorjev chat) */
-  const [dokOdprt, setDokOdprt] = useState(false); /* dokument (predogled/urejevalnik) se pokaze sele po "Pripravi ponudbo" na koraku 3 (po pravicah) */
+  const [korak, setKorak] = useState(0); /* korak-po-korak razkritje vprasanj (kot kalkulatorjev chat) */
+  /* pogled = katera "stran" je prikazana — ENAKO kot kalkulator (vprasanja -> ponudba -> zakljucek).
+     vprasanja: rw-korak-0..3; ponudba: samo dokument (urejevalnik/predogled); zakljucek: prenosi + nova ponudba. */
+  const [pogled, setPogled] = useState<'vprasanja' | 'ponudba' | 'zakljucek'>('vprasanja');
   const [model, setModel] = useState<'ure' | 'paket' | 'oboje'>('ure');
   const [ure, setUre] = useState(10);
   const [paketMes, setPaketMes] = useState(0);
@@ -245,7 +247,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
     const kontakt = [ponudnik.davcna.trim() && 'Davčna št.: ' + ponudnik.davcna.trim(), ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(), ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(), ponudnik.email.trim()].filter(Boolean).join(' · ');
     return `<div class="lg"><div><b>${esc(ponudnik.ime.trim() || '[Tvoje podjetje]')}</b>${ponudnik.naslov.trim() ? '<br>' + esc(ponudnik.naslov.trim()) : ''}${kontakt ? '<br><span class="mut">' + esc(kontakt) + '</span>' : ''}</div><div class="rt">Pinart</div></div>`;
   };
-  const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.5}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:600;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:16px 0 7px;padding-top:9px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 7px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.big{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:16pt;color:#111;font-weight:600}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:11px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:9px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:24px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:34px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}`;
+  const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:600;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.big{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:16pt;color:#111;font-weight:600}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}`;
   const doc = (body: string) => `<!doctype html><html lang="sl"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}</body></html>`;
 
   const modelOpis = model === 'ure' ? `${ure} ur na mesec` : model === 'paket' ? 'dogovorjeni mesečni paket storitev' : `${ure} ur na mesec + dogovorjeni paket storitev`;
@@ -398,6 +400,29 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
     return () => window.clearTimeout(t);
   }, [oznaciNamig]);
 
+  /* ob menjavi pogleda (vprasanja -> ponudba -> zakljucek): urejevalnik nazaj na Uredi in skok na vrh —
+     ENAKO kot kalkulator (predogledMode se resetira ob odhodu s koraka ponudbe, glej korak !== ponudbaStep). */
+  const prviPogled = useRef(true);
+  useEffect(() => {
+    if (pogled !== 'ponudba') setPredogledMode(false);
+    if (prviPogled.current) { prviPogled.current = false; return; }
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const lenis = (window as unknown as { __pinartLenis?: { scrollTo: (t: number, o?: { immediate?: boolean; force?: boolean }) => void; resize?: () => void } }).__pinartLenis;
+    lenis?.resize?.();
+    if (lenis && typeof lenis.scrollTo === 'function') lenis.scrollTo(0, { immediate: reduce, force: true });
+    else window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  }, [pogled]);
+
+  /* "Uredi od začetka" — nazaj na vprasanja, brez brisanja vnosov. */
+  const urediOdZacetka = () => { setPogled('vprasanja'); setKorak(0); };
+  /* "Nova ponudba" — pocisti vnose te ponudbe (obseg, narocnik, telo), profil ostane. */
+  const novaPonudba = () => {
+    setScope([]); setLastna([]); setScopeVnos(''); setDodajOdprt(false);
+    setNar({ ime: '', email: '', oseba: '', naslov: '', davcna: '' }); setDodatniNar(false);
+    setTeloHtml(''); setRocnoTelo(false); setPredType('pogodba'); setNapaka('');
+    setKorak(0); setPogled('vprasanja');
+  };
+
   const avatarIme = imeUporabnika.trim() || ponudnik.ime.trim();
   /* User (doprsje), NE PersonSimple — ta je enaka ikoni za dostopnost. */
   const avatarVsebina = avatarIme ? avatarIme.charAt(0).toUpperCase() : <User size={19} weight="regular" />;
@@ -426,6 +451,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       </div>
 
       <div className="rw-vsebina">
+        {pogled === 'vprasanja' && (<>
         <p className="rw-kicker">Dolgoročno sodelovanje</p>
         <h1 className="rw-h1">Mesečni retainer.</h1>
         <p className="rw-uvod">Za obseg mesečnega dela; naredi <b>ponudbo</b> in <b>pogodbo</b>. Podatki podjetja in urna postavka se berejo iz Moje podjetje.</p>
@@ -575,7 +601,12 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             <label>Avtorske pravice (za čas sodelovanja)<textarea className="rw-txt" value={pravice} onChange={e => setPravice(e.target.value)} /></label>
             <label>Številka<input className="rw-vnos" value={stevilka} onChange={e => setStevilka(e.target.value)} /></label>
           </div>
-          {dokOdprt && (<>
+        </section>)}
+        </>)}
+
+        {/* ── POGLED: PONUDBA (locena stran — vprasanja skrita, samo dokument) — ENAKO kot kalkulatorjev ponudbaStep ── */}
+        {pogled === 'ponudba' && (<section className="rw-sek rw-vstop rw-stran" id="rw-dokument">
+          <Vpr naslov="Dokument je pripravljen." opis="Uredi besedilo, preklapljaj med Pogodbo in Ponudbo, nato prenesi." />
           <div className="rw-pon-vrh" style={{ marginTop: '1.2rem' }}>
             <div className="rw-segpills rw-segpills-pogled" role="group" aria-label="Pogled">
               <button type="button" className={!predogledMode ? 'on' : ''} onClick={() => setPredogledMode(false)}><PencilSimple size={15} weight="bold" /> Uredi</button>
@@ -646,21 +677,48 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
           </div>
           {napaka && <p className="rw-napaka">{napaka}</p>}
           <p className="rw-mini" style={{ marginTop: '.7rem' }}>Ponudbe ni nujno poslati — pogodbo lahko narediš direkt.</p>
-          </>)}
+        </section>)}
+
+        {/* ── POGLED: ZAKLJUCEK (locena stran) — ENAKO kot kalkulatorjev zakljucekStep ── */}
+        {pogled === 'zakljucek' && (<section className="rw-sek rw-vstop rw-stran rw-zakljucek">
+          <p className="rw-kicker">Dolgoročno sodelovanje{stevilka ? ' · št. ' + stevilka : ''}</p>
+          <h1 className="rw-h1">Zaključek.</h1>
+          <p className="rw-uvod">Prenesi pogodbo{nar.ime.trim() ? ' za ' + nar.ime.trim() : ''} in po želji še retainer ponudbo.</p>
+          <div className="rw-gumbi">
+            <button type="button" className="rw-gumb" disabled={pdfNalaganje} onClick={() => prenesi('pogodba')}>{pdfNalaganje ? 'Pripravljam …' : 'Prenesi pogodbo (PDF)'}</button>
+            <button type="button" className="rw-gumb sek" disabled={pdfNalaganje} onClick={() => prenesi('ponudba')}>Retainer ponudba (PDF)</button>
+          </div>
+          {napaka && <p className="rw-napaka">{napaka}</p>}
+          <div className="rw-koncna-nav">
+            <button type="button" className="rw-povezava" onClick={urediOdZacetka}>← Uredi od začetka</button>
+            <button type="button" className="rw-povezava" onClick={novaPonudba}>↺ Nova ponudba</button>
+          </div>
         </section>)}
 
       </div>
 
       <div className="rw-noga">
         <div className="rw-noga-gumbi">
-          {korak > 0 && (
-            <button type="button" className={'rw-gumb-nazaj' + ((korak < 3 || !dokOdprt) ? ' rw-gumb-nazaj-abs' : '')} aria-label="Nazaj" onClick={() => { if (dokOdprt) setDokOdprt(false); else setKorak(k => Math.max(0, k - 1)); }}>
+          {/* NAZAJ — okrogel gumb; navigira nazaj skozi poglede/korake (kot kalkulator) */}
+          {(pogled !== 'vprasanja' || korak > 0) && (
+            <button type="button" className={'rw-gumb-nazaj' + (pogled === 'vprasanja' ? ' rw-gumb-nazaj-abs' : '')} aria-label="Nazaj"
+              onClick={() => {
+                if (pogled === 'zakljucek') setPogled('ponudba');
+                else if (pogled === 'ponudba') setPogled('vprasanja');
+                else setKorak(k => Math.max(0, k - 1));
+              }}>
               <ArrowUp size={17} weight="bold" aria-hidden />
             </button>
           )}
-          {(korak < 3 || !dokOdprt) && (
-            <button type="button" className="rw-noga-naprej" onClick={() => { if (korak < 3) setKorak(k => k + 1); else setDokOdprt(true); }}>
-              {korak === 3 ? 'Pripravi ponudbo' : 'Naprej'} <ArrowDown size={16} weight="bold" aria-hidden />
+          {/* NAPREJ — ena pilula, ki spreminja napis + dejanje glede na pogled/korak (kot kalkulatorjev en gumb) */}
+          {pogled !== 'zakljucek' && (
+            <button type="button" className="rw-noga-naprej"
+              onClick={() => {
+                if (pogled === 'ponudba') setPogled('zakljucek');
+                else if (korak < 3) setKorak(k => k + 1);
+                else setPogled('ponudba');
+              }}>
+              {pogled === 'ponudba' ? 'Zaključi' : korak === 3 ? 'Pripravi ponudbo' : 'Naprej'} <ArrowDown size={16} weight="bold" aria-hidden />
             </button>
           )}
         </div>
@@ -754,6 +812,10 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-sek.rw-vstop{animation:rwSek .5s cubic-bezier(.16,1,.3,1) both}
         @keyframes rwSek{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         @media (prefers-reduced-motion:reduce){.rw-sek.rw-vstop{animation:none}}
+        /* izrazit slide-up (nova stran) za pogled 'ponudba'/'zakljucek' — visja specificnost (.rw-sek.rw-stran), da povozi rwSek */
+        .rw-sek.rw-stran{animation:rwStran .5s cubic-bezier(.16,1,.3,1) both}
+        @keyframes rwStran{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:translateY(0)}}
+        @media (prefers-reduced-motion:reduce){.rw-sek.rw-stran{animation:none}}
         /* fiksna noga z gumbi — ENAKO kot kalkulator (okrogel Nazaj s puscico + Naprej pilula) */
         .rw-noga{position:fixed;bottom:0;left:17.5rem;right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,var(--paper) 70%,transparent);z-index:40}
         :global(body[data-meni='zaprt']) .rw-noga{left:4.4rem}
@@ -863,6 +925,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-gumb:hover{transform:translateY(-2px)}
         .rw-gumb.sek{background:transparent;color:var(--ink);border:1px solid rgba(17,17,17,.28)}
         .rw-gumb:disabled{opacity:.5;cursor:default;transform:none}
+        .rw-koncna-nav{display:flex;flex-wrap:wrap;gap:1.4rem;margin-top:2rem;padding-top:1.4rem;border-top:1px solid rgba(17,17,17,.1)}
         .rw-napaka{color:#b23434;font-size:.86rem;margin:.6rem 0 0}
         /* predogled sirsi od chata (kot mehurcki) — vecje, berljive strani */
         .rw-predogled{position:relative;width:min(880px,94vw);left:50%;transform:translateX(-50%);margin-top:1.4rem;background:#e9e6e0;border:1px solid rgba(17,17,17,.12);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:18px;box-shadow:inset 0 1px 6px rgba(20,20,20,.06)}
@@ -924,6 +987,25 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-editor .sig>div{flex:1;font-size:.85rem;color:#444}
         .rw-editor .sig .lin{display:block;border-top:1px solid #111;margin:2rem 0 .3rem}
         @media (max-width:600px){.rw-mreza,.rw-mreza3,.rw-mreza-prav{grid-template-columns:1fr}}
+        /* ── Mobilni odrez po desni: koren .rw ima overflow-x:clip, zato NIC ne sme biti sirse od .rw-vsebina (min(700px,92vw)). ── */
+        /* .rw-platno (min(960px,96vw)) in .rw-predogled (min(880px,94vw)) sta bila sirsa od starsa in centrirana (translateX) -> desni rob je gledal cez in bil odrezan. */
+        @media (max-width:640px){
+          .rw-platno{width:min(960px,100%);max-width:100%}
+          .rw-predogled{width:min(880px,100%);max-width:100%}
+          .rw-kartica{max-width:100%}
+          /* dolga besedila (e-posta, URL, imena) v generirani pogodbi/letterheadu naj se prelomijo, ne silijo cez rob */
+          .rw-editor,.rw-editor h1,.rw-editor h2,.rw-editor p,.rw-editor li{overflow-wrap:anywhere}
+          /* podpisni stolpci se na ozkem zaslonu zlozijo navpicno (sicer 2x flex:1 + gap 2.5rem stisne cez rob) */
+          .rw-editor .sig{flex-direction:column;gap:1.2rem}
+          /* povzetek "Mesecni znesek": velika serif stevilka (+ moznost "z DDV ...")
+             je v flex vrstici brez preloma -> na ozkem zaslonu je silila cez desni
+             rob (odrezano). Zdaj se ovije in prelomi. */
+          .rw-povz{max-width:100%}
+          .rw-glavna{flex-wrap:wrap;gap:.35rem}
+          .rw-glavna b{overflow-wrap:anywhere;min-width:0}
+          .rw-det li{overflow-wrap:anywhere}
+          .rw-vsebina{width:min(700px,100%);max-width:100%}
+        }
       `}</style>
     </div>
   );

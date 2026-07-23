@@ -6,8 +6,10 @@
 .card > p { margin: 0 0 1.1rem; max-width: 52ch; color: color-mix(in oklch, var(--ink) 68%, transparent); font-size: .88rem; line-height: 1.5; }
 
 .logoRow { display: flex; flex-wrap: wrap; align-items: center; gap: 1.1rem; margin-bottom: 1.2rem; }
-.logoPredogled { display: grid; place-items: center; width: 8.5rem; height: 4.5rem; padding: .6rem; border: 1px dashed var(--line); border-radius: .7rem; background: var(--paper); }
-.logoPredogled img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.logoPredogled { display: grid; place-items: center; width: 8.5rem; height: 4.5rem; padding: .35rem; border: 1px dashed var(--line); border-radius: .7rem; background: var(--paper); overflow: hidden; }
+/* logo se prilega po VIŠINI (napolni okvir po višini), širina sledi razmerju;
+   max-width:100% prepreči uhajanje pri zelo širokih logotipih. */
+.logoPredogled img { display: block; height: 100%; width: auto; max-width: 100%; object-fit: contain; }
 .logoPredogled span { color: color-mix(in oklch, var(--ink) 40%, transparent); font-size: .72rem; }
 .logoAkcije { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
 .logoAkcije small { flex-basis: 100%; color: color-mix(in oklch, var(--ink) 52%, transparent); font-size: .72rem; }

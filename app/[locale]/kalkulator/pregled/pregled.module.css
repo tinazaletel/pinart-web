@@ -413,12 +413,17 @@
 .contractActions button { height: 2.7rem; padding: 0 1.2rem; border: 0; border-radius: .7rem; background: var(--ink); color: var(--paper); font: 800 .66rem var(--font-sans), sans-serif; cursor: pointer; }
 .fileField input { height: auto; min-height: 2.7rem; padding: .55rem; }
 .contractPreview { max-height: 20rem; overflow: auto; margin: 1rem 0; padding: 1rem; border: 1px solid var(--line); border-radius: .8rem; background: oklch(98% .01 80); white-space: pre-wrap; font: 500 .7rem/1.55 var(--font-sans), sans-serif; }
-.contractPage { display: grid; gap: 1rem; }
+.contractPage { display: grid; gap: 1rem; min-width: 0; overflow-x: clip; }
+/* Sekcije so grid-otroci .contractPage (in obrazec ima svoje grid-otroke). Privzeti
+   min-width:auto jim ne pusti, da se skrcijo pod min-content svoje vsebine, zato so na
+   ozkem mobilnem stolpcu gledali cez desni rob (workspace overflow:hidden je odrezal).
+   min-width:0 = otroci se skrcijo na sirino stolpca, kot drugod v tej datoteki. */
+.contractPage > *, .contractDesk form > * { min-width: 0; }
 .contractNotice { display: flex; justify-content: space-between; padding: .75rem 1rem; border-radius: .8rem; background: var(--ink); color: var(--paper); font-size: .65rem; }
 .contractNotice button { border: 0; background: none; color: inherit; cursor: pointer; }
 .contractHero, .contractDesk, .contractArchive { border: 1px solid color-mix(in oklch, var(--ink) 9%, transparent); border-radius: 1.4rem; background: oklch(98% .008 87 / .92); box-shadow: 0 1.2rem 3.5rem oklch(20% .02 55 / .05); }
 .contractHero { display: grid; grid-template-columns: 1fr minmax(25rem, .8fr); align-items: end; gap: 2rem; padding: 1.4rem; }
-.contractHero h2, .contractArchive h2 { margin: 0; font: 500 clamp(1.8rem, 3vw, 3rem)/1 var(--font-serif), Georgia, serif; }
+.contractHero h2, .contractArchive h2 { margin: 0; font: 500 clamp(1.8rem, 3vw, 3rem)/1 var(--font-serif), Georgia, serif; overflow-wrap: anywhere; }
 .contractHero p:last-child { max-width: 34rem; margin: .7rem 0 0; color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .68rem; line-height: 1.5; }
 .contractDesk { min-height: 30rem; padding: 1rem; }
 .contractDesk form { display: grid; grid-template-columns: minmax(13rem, .35fr) 1fr; gap: 1rem; }
@@ -547,12 +552,18 @@
 .expenseEditorActions button { min-height: 2.6rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: .65rem; background: transparent; font: 800 .61rem var(--font-sans), sans-serif; cursor: pointer; }
 .expenseEditorActions button:last-child { border-color: var(--ink); background: var(--ink); color: var(--paper); }
 .expenseArchive > header { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
-.expenseList article { display: grid; grid-template-columns: auto minmax(12rem, 1fr) minmax(10rem, .7fr) auto auto; align-items: center; gap: .8rem; min-height: 4.5rem; padding: .65rem .8rem; border-top: 1px solid var(--line); }
+/* × (izbris) je zdaj absolutno v zgornjem desnem kotu kartice (glej .expenseDelete),
+   zato ni vec svojega stolpca v mrezi. padding-right pusti prostor, da naslov ne
+   tece pod gumb. */
+.expenseList article { position: relative; display: grid; grid-template-columns: auto minmax(12rem, 1fr) minmax(10rem, .7fr) auto; align-items: center; gap: .8rem; min-height: 4.5rem; padding: .65rem 2.4rem .65rem .8rem; border-top: 1px solid var(--line); }
 .expenseList strong, .expenseList small { display: block; }
 .expenseList strong { font-size: .7rem; }
 .expenseList small { margin-top: .2rem; color: var(--muted); font-size: .54rem; }
 .expenseList button { padding: .4rem .6rem; border: 1px solid var(--line); border-radius: .55rem; background: transparent; font: 700 .56rem var(--font-sans), sans-serif; cursor: pointer; }
-.expenseList .expenseDelete { width: 1.8rem; aspect-ratio: 1; padding: 0; border-radius: 50%; color: oklch(52% .16 25); font-size: .9rem; }
+/* Majhen, subtilen × v zgornjem desnem kotu kartice. position:absolute ga vzame
+   iz mreze, zato ne pade vec pod gumb "Uredi". Ohranja onClick + aria-label (TSX). */
+.expenseList .expenseDelete { position: absolute; top: .5rem; right: .5rem; z-index: 1; width: 1.55rem; height: 1.55rem; aspect-ratio: 1; padding: 0; border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent); border-radius: 50%; background: oklch(98% .008 87 / .9); color: oklch(52% .16 25); font-size: .82rem; line-height: 1; }
+.expenseList .expenseDelete:hover { border-color: oklch(52% .16 25); background: oklch(95% .04 25); }
 .expenseCoin { display: grid; place-items: center; width: 2rem; aspect-ratio: 1; border-radius: 50%; background: var(--ink); color: var(--paper); font: 700 .7rem var(--font-sans), sans-serif; }
 /* levi stolpec dovolj sirok, da se naslov ne lomi; desni omejen, sicer se
    ena vrstica stroska raztegne cez 1000 px praznine */
@@ -860,7 +871,7 @@
   .invoiceSource { grid-column: 2 / -1; padding: .5rem 0 0; border-left: 0; border-top: 1px solid var(--line); }
   .expenseSummary { grid-template-columns: repeat(2, 1fr); }
   .expenseEditor, .recurringCosts { grid-template-columns: 1fr; }
-  .expenseList article { grid-template-columns: auto 1fr auto auto; }
+  .expenseList article { grid-template-columns: auto 1fr auto; }
   .expenseList article > div:nth-child(3) { grid-column: 2 / -1; }
   .clientLayout { grid-template-columns: 1fr; }
   .clientEditor { grid-template-columns: 1fr; }
@@ -1205,10 +1216,12 @@
 
 .shell .projectIndexNumber,
 .shell .projectNarrative article > span b,
-.shell .projectNarrative article > span small,
-.shell .projectNarrative article > a {
+.shell .projectNarrative article > span small {
   font-size: .8125rem !important;
 }
+/* NE povozi .projectNarrative article > a — to je ikonski krogec (font-size:0,
+   samo puščica ↗). Prej ga je to splošno pravilo prisililo nazaj na .8125rem in
+   besedilo se je zmečkalo v krogec. */
 
 .shell .eyebrow,
 .shell .navItem span,

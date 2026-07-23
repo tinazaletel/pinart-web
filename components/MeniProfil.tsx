@@ -50,8 +50,11 @@ export default function MeniProfil({ base }: { base: string }) {
         <Link className={styles.navItem} href={`${base}/kalkulator/profil`}>
           <span className={styles.navNapis}>Moj profil</span>
         </Link>
+        {/* Podatki podjetja so v "Moj profil" (/profil, sekcija "02 MOJE PODJETJE"),
+            zato to NI podvojen vnos za iste podatke: "Nastavitve" vodijo na
+            aplikacijske nastavitve (videz dokumentov, račun/varnost, izbris podatkov). */}
         <Link className={styles.navItem} href={`${base}/kalkulator/nastavitve`}>
-          <span className={styles.navNapis}>Nastavitve podjetja</span>
+          <span className={styles.navNapis}>Nastavitve</span>
         </Link>
         <Link className={styles.navItem} href={`${base}/kalkulator/pogoji`}>
           <span className={styles.navNapis}>Pogoji in zasebnost</span>
