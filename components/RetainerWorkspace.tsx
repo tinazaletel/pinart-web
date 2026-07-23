@@ -131,6 +131,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   const [dodajOdprt, setDodajOdprt] = useState(false);
   const [obsegTabela, setObsegTabela] = useState(false);
   const [korak, setKorak] = useState(0); /* korak-po-korak razkritje (kot kalkulatorjev chat) */
+  const [dokOdprt, setDokOdprt] = useState(false); /* dokument (predogled/urejevalnik) se pokaze sele po "Pripravi ponudbo" na koraku 3 (po pravicah) */
   const [model, setModel] = useState<'ure' | 'paket' | 'oboje'>('ure');
   const [ure, setUre] = useState(10);
   const [paketMes, setPaketMes] = useState(0);
@@ -574,6 +575,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             <label>Avtorske pravice (za čas sodelovanja)<textarea className="rw-txt" value={pravice} onChange={e => setPravice(e.target.value)} /></label>
             <label>Številka<input className="rw-vnos" value={stevilka} onChange={e => setStevilka(e.target.value)} /></label>
           </div>
+          {dokOdprt && (<>
           <div className="rw-pon-vrh" style={{ marginTop: '1.2rem' }}>
             <div className="rw-segpills rw-segpills-pogled" role="group" aria-label="Pogled">
               <button type="button" className={!predogledMode ? 'on' : ''} onClick={() => setPredogledMode(false)}><PencilSimple size={15} weight="bold" /> Uredi</button>
@@ -644,6 +646,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
           </div>
           {napaka && <p className="rw-napaka">{napaka}</p>}
           <p className="rw-mini" style={{ marginTop: '.7rem' }}>Ponudbe ni nujno poslati — pogodbo lahko narediš direkt.</p>
+          </>)}
         </section>)}
 
       </div>
@@ -651,13 +654,13 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       <div className="rw-noga">
         <div className="rw-noga-gumbi">
           {korak > 0 && (
-            <button type="button" className={'rw-gumb-nazaj' + (korak < 3 ? ' rw-gumb-nazaj-abs' : '')} aria-label="Nazaj" onClick={() => setKorak(k => Math.max(0, k - 1))}>
+            <button type="button" className={'rw-gumb-nazaj' + ((korak < 3 || !dokOdprt) ? ' rw-gumb-nazaj-abs' : '')} aria-label="Nazaj" onClick={() => { if (dokOdprt) setDokOdprt(false); else setKorak(k => Math.max(0, k - 1)); }}>
               <ArrowUp size={17} weight="bold" aria-hidden />
             </button>
           )}
-          {korak < 3 && (
-            <button type="button" className="rw-noga-naprej" onClick={() => setKorak(k => Math.min(3, k + 1))}>
-              {korak === 2 ? 'Pripravi ponudbo' : 'Naprej'} <ArrowDown size={16} weight="bold" aria-hidden />
+          {(korak < 3 || !dokOdprt) && (
+            <button type="button" className="rw-noga-naprej" onClick={() => { if (korak < 3) setKorak(k => k + 1); else setDokOdprt(true); }}>
+              {korak === 3 ? 'Pripravi ponudbo' : 'Naprej'} <ArrowDown size={16} weight="bold" aria-hidden />
             </button>
           )}
         </div>
@@ -825,7 +828,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-vnos{border:none;border-bottom:1px solid rgba(17,17,17,.4);background:transparent;padding:.35rem 0 .5rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:1.05rem;color:var(--ink);width:100%;border-radius:0}
         .rw-vnos:focus{outline:none;border-bottom:2px solid var(--ink);margin-bottom:-1px}
         .rw-vnos::placeholder{color:rgba(17,17,17,.42);font-weight:400;font-size:.98rem}
-        .rw-txt{border:1px solid rgba(17,17,17,.2);border-radius:12px;padding:.7rem .8rem;font:inherit;font-size:.9rem;line-height:1.5;color:var(--ink);resize:vertical;min-height:8.5rem;background:rgba(255,255,255,.5);overflow:auto}
+        .rw-txt{border:1px solid rgba(17,17,17,.2);border-radius:12px;padding:.7rem .8rem;font:inherit;font-size:.9rem;line-height:1.5;color:var(--ink);resize:vertical;min-height:8.5rem!important;field-sizing:content;background:rgba(255,255,255,.5);overflow:auto}
         .rw-txt:focus{outline:none;border-color:var(--ink)}
         .rw-nedavni{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-top:.9rem}
         .rw-nedavni button{border:1px dashed rgba(17,17,17,.3);background:transparent;border-radius:999px;padding:.35rem .7rem;font:inherit;font-size:.82rem;cursor:pointer;color:var(--ink)}
