@@ -6137,27 +6137,25 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .logo-odstrani:hover { color: #b25476; }
         .cw .editor { width: 100%; min-height: 340px; border: 1px solid rgba(17,17,17,.25); background: rgba(255,255,255,.72); padding: 1.35rem; color: var(--ink); font-family: var(--font-sans), system-ui, sans-serif; font-size: .94rem; line-height: 1.62; font-weight: 400; -webkit-text-stroke: 0.28px currentColor; overflow: auto; }
         .cw .editor:focus { outline: none; border-color: var(--ink); }
-        /* ponudba cim sirsa na mobilu: manj notranjega paddinga + priprava-korak povrne del oder paddinga */
+        /* Ponudba je na mobilu široka toliko kot razpoložljivi prostor.
+           100vw z negativnim odmikom je na ozkih zaslonih rezal levi rob besedila. */
         @media (max-width: 640px) {
-          /* Bela ploskev ponudbe cez CELO sirino zaslona: prej so se sestevali trije robovi
-             (oder padding + rob kartice + notranji padding) in je bila ponudba po nepotrebnem ozka.
-             calc(50% - 50vw) potegne element do robov zaslona ne glede na padding nadrejenih. */
           .cw .editor, .cw .predogled-okvir {
-            margin-inline: calc(50% - 50vw); width: 100vw; max-width: none;
-            border-left: 0; border-right: 0; border-radius: 0;
+            box-sizing: border-box;
+            width: 100%;
+            max-width: none;
+            margin-inline: 0;
           }
-          .cw .editor { padding: 1.1rem clamp(.9rem, 4vw, 1.15rem); }
-          .cw .korak-vsebina.priprava-korak { margin-inline: calc(-1 * clamp(.4rem, 2.5vw, 1.4rem)); }
+          .cw .editor { padding: 1.1rem clamp(.75rem, 3vw, 1rem); }
+          .cw .korak-vsebina.priprava-korak { margin-inline: 0; }
         }
         .cw .predogled-okvir { position: relative; background: #e9e6e0; border: 1px solid rgba(17,17,17,.12); border-radius: 10px; box-shadow: 0 12px 44px rgba(40,25,40,.11); max-width: 820px; margin: 1rem auto 140px; overflow-x: hidden; }
         .cw .predogled-strani { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 18px; }
         .cw .predogled-stran { width: 100%; max-width: 760px; height: auto; display: block; box-shadow: 0 6px 22px rgba(20,20,20,.14); }
-        /* MORA biti ZA pravilom .predogled-okvir zgoraj: tisto ima "margin: 1rem auto 140px",
-           kar je z enako specificnostjo povozilo prejsnji margin-inline in je full-bleed odpadel.
-           Na telefonu odpravimo dvojni rob: okvir cez celo sirino + brez notranjega paddinga. */
+        /* Mobilni predogled ohrani osnovni rob in nikoli ne preseže starša. */
         @media (max-width: 640px) {
-          .cw .predogled-okvir { margin: .5rem calc(50% - 50vw) 140px; width: 100vw; max-width: none; border-left: 0; border-right: 0; border-radius: 0; }
-          .cw .predogled-strani { padding: 10px 0; gap: 12px; }
+          .cw .predogled-okvir { margin: .5rem 0 140px; width: 100%; max-width: none; }
+          .cw .predogled-strani { padding: 6px; gap: 12px; }
           .cw .predogled-stran { max-width: none; }
         }
         .cw .predogled-nalaga { display: flex; align-items: center; justify-content: center; height: 60vh; min-height: 420px; color: rgba(17,17,17,.55); font-size: .9rem; }
