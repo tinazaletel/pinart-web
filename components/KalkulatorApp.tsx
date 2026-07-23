@@ -7164,6 +7164,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     <b>Hej{imeVelika ? ' ' + imeVelika : ''}{(ponudnik.ime.trim() || Object.keys(podjetja).length > 0) ? ',' : '!'}</b>
                     {(ponudnik.ime.trim() || Object.keys(podjetja).length > 0) && (
                       <select className="pozdrav-select" aria-label="Podjetje ponudbe"
+                        style={{ width: `calc(${Math.max((aktivnoPodjetje && podjetja[aktivnoPodjetje] ? aktivnoPodjetje : (ponudnik.ime.trim() || 'brez podjetja')).length, 4)}ch + 1.7rem)` }}
                         value={aktivnoPodjetje && podjetja[aktivnoPodjetje] ? aktivnoPodjetje : '__cur'}
                         onChange={e => { const v = e.target.value; if (v === '__uredi') { setKazemProfil(true); setProfilPogled('podjetja'); } else if (v !== '__cur') preklopiPodjetje(v); }}>
                         {(!aktivnoPodjetje || !podjetja[aktivnoPodjetje]) && <option value="__cur">{ponudnik.ime.trim() || 'brez podjetja'}</option>}
