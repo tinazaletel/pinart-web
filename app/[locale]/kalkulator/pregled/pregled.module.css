@@ -34,7 +34,7 @@
    :not([hidden]) je NUJEN — sicer display:flex povozi atribut hidden in skriti
    vnos (npr. za logotip v Nastavitvah) pride na plan ter razbije sirino kartice. */
 .shell input[type='file']:not([hidden]) { display: flex; align-items: center; min-height: 3.1rem; padding-block: .45rem; font-size: .8rem; }
-.shell select { padding-right: 3rem !important; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='m5 7.5 5 5 5-5' fill='none' stroke='%231c1815' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: right 1rem center !important; background-repeat: no-repeat; background-size: 1.25rem 1.25rem; }
+.shell select { padding-right: 3rem !important; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='m5 7.5 5 5 5-5' fill='none' stroke='%231c1815' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: right 1rem center !important; background-repeat: no-repeat; background-size: auto; }
 .shell input[type='date'] { padding-right: 1rem !important; }
 .shell input[type='date']::-webkit-calendar-picker-indicator { width: 1.25rem; height: 1.25rem; margin-left: .75rem; padding: .15rem; cursor: pointer; opacity: .9; }
 .shell :is(input, textarea)::placeholder { color: color-mix(in oklch, var(--ink) 58%, transparent); opacity: 1; }
