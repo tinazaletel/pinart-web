@@ -6,7 +6,7 @@ import { loadOrganizationProfile, saveOrganizationProfile } from '@/lib/pinartFl
 import { createClient } from '@/utils/supabase/client';
 import styles from './ProfileWorkspace.module.css';
 
-const AREAS = [['graficno', 'Grafika in branding'], ['splet', 'Splet in digitalni produkti'], ['marketing', 'Marketing in oglasi'], ['foto', 'Foto, video in motion'], ['direkcija', 'Kreativna direkcija in strategija'], ['prostor', 'Prostor in arhitektura'], ['produkcija', 'Produkcija in prelom']] as const;
+const AREAS = [['graficno', 'Grafika in branding'], ['splet', 'Splet in digitalni produkti'], ['marketing', 'Marketing in oglasi'], ['foto', 'Foto, video in motion'], ['direkcija', 'Kreativna direkcija in strategija'], ['prostor', 'Prostor in arhitektura']] as const;
 type FormState = { fullName: string; experience: string; country: string; areas: string[]; company: string; tax: string; email: string; phone: string; address: string; bankAccount: string };
 const empty: FormState = { fullName: '', experience: 'samostojen', country: '', areas: [], company: '', tax: '', email: '', phone: '', address: '', bankAccount: '' };
 

@@ -45,13 +45,12 @@ export const PRICING_SERVICES: PricingService[] = [
 export type PricingPodrocje = { id: string; ime: string; opis: string; storitve: string[] };
 
 export const PODROCJA: PricingPodrocje[] = [
-  { id: 'graficno',  ime: 'Grafika in branding',       opis: 'logotip, CGP, tiskovine, embalaža, ilustracija',   storitve: ['logo', 'cgp', 'publikacija', 'embalaza', 'ilustracija'] },
+  { id: 'graficno',  ime: 'Grafika in branding',       opis: 'logotip, CGP, tiskovine, embalaža, ilustracija, prelom in priprava za tisk',   storitve: ['logo', 'cgp', 'publikacija', 'embalaza', 'ilustracija', 'prelom', 'pripravatisk', 'vnospodatkov', 'prevodpriprava', 'fotoobdelava'] },
   { id: 'splet',     ime: 'Splet in produkti',         opis: 'spletne strani, UX/UI, aplikacije',                storitve: ['web', 'uxui', 'aplikacija', 'dizajnsistem'] },
   { id: 'marketing', ime: 'Marketing in oglasi',       opis: 'kampanje, social media, SEO, PR, besedila',        storitve: ['kampanja', 'smm', 'seo', 'email', 'pr', 'copy'] },
   { id: 'foto',      ime: 'Foto, video, motion',       opis: 'fotografiranje, video, motion, 3D',                storitve: ['fotografija', 'video', 'motion', 'render3d'] },
   { id: 'direkcija', ime: 'Kreativna direkcija in strategija', opis: 'vodenje, koncept, strategija',             storitve: ['direkcija', 'strategija'] },
   { id: 'prostor',   ime: 'Prostor in arhitektura',    opis: 'interier, arhitektura, razstavni in produktni dizajn', storitve: ['interier', 'arhitektura', 'razstava', 'produktni'] },
-  { id: 'produkcija', ime: 'Produkcija in prelom',      opis: 'prelom, DTP, vnos podatkov, prevod, priprava za tisk', storitve: ['prelom', 'vnospodatkov', 'prevodpriprava', 'fotoobdelava', 'pripravatisk'] },
 ];
 
 /* V bazo se shrani IME storitve, ne id — zato iskanje po imenu. */
