@@ -1554,11 +1554,11 @@ void main(){
 
 /* Majhen info-gumb za polja z zargonom (DDV, avtorske pravice ...).
    Klik namesto hover, da deluje tudi na dotik (mobile). */
-function InfoNamig({ besedilo }: { besedilo: string }) {
+function InfoNamig({ besedilo, locale = 'sl' }: { besedilo: string; locale?: string }) {
   const [odprto, setOdprto] = useState(false);
   return (
     <span className="info-namig">
-      <button type="button" className="info-gumb" aria-label="Pojasnilo" aria-expanded={odprto}
+      <button type="button" className="info-gumb" aria-label={locale === 'en' ? 'Explanation' : 'Pojasnilo'} aria-expanded={odprto}
         onClick={() => setOdprto(o => !o)}>?</button>
       {odprto && <span className="info-oblacek" role="tooltip">{besedilo}</span>}
     </span>
@@ -1569,6 +1569,8 @@ function InfoNamig({ besedilo }: { besedilo: string }) {
    svoje glave ne rise — zgornjo vrstico in meni prispeva ogrodje, sicer bi bili
    dve glavi ena nad drugo. */
 export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { locale?: string; vLupini?: boolean }) {
+  /* lahek prevajalnik za vidne nize UI: sl privzeto, en za anglescino */
+  const L = (sl: string, en: string) => (locale === 'en' ? en : sl);
   /* Vstopno soglasje (kot Paperform): pogoji pred prvo uporabo orodja.
      Sprejem se shrani lokalno; ob naslednjih obiskih se ne prikaze vec. */
   const [pogojiOk, setPogojiOk] = useState<boolean | null>(null);
@@ -2246,10 +2248,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      'student' (0,45x) namenoma ostane samo v Profilu: pol cene ni odlocitev,
      ki bi jo kdo sprejel mimogrede med pogovorom. */
   const CHAT_IZK: { id: string; crk: string; ime: string; opis: string }[] = [
-    { id: 'zacetnik', crk: 'A', ime: 'Šele začenjam', opis: 'gradim portfelj, prve stranke' },
-    { id: 'samostojen', crk: 'B', ime: 'Nekaj let izkušenj', opis: 'redne stranke, utečen proces' },
-    { id: 'strokovnjak', crk: 'C', ime: 'Osem let + in reference', opis: 'zahtevnejši projekti, priporočila' },
-    { id: 'ekspert', crk: 'D', ime: 'Uveljavljeno ime', opis: 'izbiram projekte, premium cene' },
+    { id: 'zacetnik', crk: 'A', ime: L('Šele začenjam', 'Just starting out'), opis: L('gradim portfelj, prve stranke', 'building a portfolio, first clients') },
+    { id: 'samostojen', crk: 'B', ime: L('Nekaj let izkušenj', 'A few years of experience'), opis: L('redne stranke, utečen proces', 'regular clients, a settled process') },
+    { id: 'strokovnjak', crk: 'C', ime: L('Osem let + in reference', 'Eight years + and references'), opis: L('zahtevnejši projekti, priporočila', 'more demanding projects, referrals') },
+    { id: 'ekspert', crk: 'D', ime: L('Uveljavljeno ime', 'An established name'), opis: L('izbiram projekte, premium cene', 'I pick my projects, premium prices') },
   ];
   /* ob novem koraku chata se STRAN (okno, Lenis) gladko pomakne, tako da je zadnje VPRASANJE
      blizu vrha vidnega polja — vnos in gumb Naprej sta pod njim. Stran ni zaklenjena: scroll
@@ -2340,8 +2342,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           {step === 0 && (
             <div className="cu-vrsta">
               <input autoFocus type="text" value={imeUporabnika} onChange={e => setImeUporabnika(e.target.value)}
-                placeholder="Ime ali vzdevek" onKeyDown={e => { if (e.key === 'Enter') zapri(); }} />
-              <button type="button" className="gumb" onClick={zapri}>Shrani</button>
+                placeholder={L('Ime ali vzdevek', 'Name or nickname')} onKeyDown={e => { if (e.key === 'Enter') zapri(); }} />
+              <button type="button" className="gumb" onClick={zapri}>{L('Shrani', 'Save')}</button>
             </div>
           )}
           {step === 1 && (
@@ -2356,12 +2358,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           {step === 2 && (
             <div className="cu-vrsta cu-vrsta-stolpec">
               <input autoFocus type="text" value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })}
-                placeholder="Ime podjetja ali tvoje ime" onKeyDown={e => { if (e.key === 'Enter') zapri(); }} />
-              <IzbirnikDrzave id="cw-moja-drzava" ariaLabel="Država" placeholder="Država (npr. Slovenija)"
+                placeholder={L('Ime podjetja ali tvoje ime', 'Company name or your name')} onKeyDown={e => { if (e.key === 'Enter') zapri(); }} />
+              <IzbirnikDrzave id="cw-moja-drzava" ariaLabel="Država" placeholder={L('Država (npr. Slovenija)', 'Country (e.g. Slovenia)')}
                 moznosti={DRZAVE.map(d => d.ime)}
                 value={custDrzavaMoj}
                 onChange={v => { setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) { setMojTrg(t); setTrgNarocnika(t); } }} />
-              <button type="button" className="gumb" onClick={zapri}>Shrani</button>
+              <button type="button" className="gumb" onClick={zapri}>{L('Shrani', 'Save')}</button>
             </div>
           )}
           {step === 4 && (
@@ -2376,16 +2378,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </button>
                 ); })}
               </div>
-              <button type="button" className="gumb" style={{ marginTop: '.6rem' }} onClick={zapri}>Končano</button>
+              <button type="button" className="gumb" style={{ marginTop: '.6rem' }} onClick={zapri}>{L('Končano', 'Done')}</button>
             </>
           )}
           {step === 5 && (
             <div className="cu-opcije">
               <button type="button" className={'pill' + (chatNova === true ? ' on' : '')} onClick={() => { setChatNova(true); zapri(); }}>
-                <span className="pill-fill" aria-hidden /><span className="pill-tekst">Nova ponudba</span>
+                <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Nova ponudba', 'New quote')}</span>
               </button>
               <button type="button" className={'pill' + (chatNova === false ? ' on' : '')} onClick={() => { setChatNova(false); zapri(); }}>
-                <span className="pill-fill" aria-hidden /><span className="pill-tekst">Obstoječa ponudba</span>
+                <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Obstoječa ponudba', 'Existing quote')}</span>
               </button>
             </div>
           )}
@@ -2396,7 +2398,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const uvodOdgovorMehur = (step: number, vsebina: string) => (
     urejamKorak === step ? uvodUrejevalnik(step) : (
       <div className="chat-jaz">
-        <button type="button" className="chat-mehur chat-mehur-ured" onClick={() => uvodUredi(step)} title="Klikni za popravek">
+        <button type="button" className="chat-mehur chat-mehur-ured" onClick={() => uvodUredi(step)} title={L('Klikni za popravek', 'Click to edit')}>
           <span>{vsebina}</span>
           <PencilSimple size={13} weight="bold" aria-hidden />
         </button>
@@ -4208,7 +4210,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   };
   const ponastaviVse = () => {
     if (typeof window === 'undefined') return;
-    if (!window.confirm('Izbrišem vse podatke tega orodja (cene, podjetja, zgodovino ponudb, profile)? Tega ni mogoče razveljaviti.')) return;
+    if (!window.confirm(L('Izbrišem vse podatke tega orodja (cene, podjetja, zgodovino ponudb, profile)? Tega ni mogoče razveljaviti.', 'Delete all data in this tool (prices, companies, quote history, profiles)? This cannot be undone.'))) return;
     try {
       localStorage.removeItem(K_NAST);
       localStorage.removeItem(K_PROFILI);
@@ -4320,22 +4322,22 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     produkcija: <Layout size={22} />,
   };
 
-  const naslovKoraka = korak === 0 ? 'Kaj boš danes ustvarila?'
-    : korak === narocnikStep ? 'Kdo je stranka?'
-      : korak === trgNarocnikaStep ? 'Od kod je naročnik?'
-        : korak === praviceStep ? 'Avtorske pravice'
-          : korak === posebnostiStep ? 'Posebnosti projekta?'
-            : korak === cenaStep ? 'Tvoja cena.'
-              : korak === ponudbaStep ? 'Tvoja ponudba.'
-                : 'Zaključek.';
+  const naslovKoraka = korak === 0 ? L('Kaj boš danes ustvarila?', 'What will you create today?')
+    : korak === narocnikStep ? L('Kdo je stranka?', 'Who is the client?')
+      : korak === trgNarocnikaStep ? L('Od kod je naročnik?', 'Where is the client from?')
+        : korak === praviceStep ? L('Avtorske pravice', 'Copyright')
+          : korak === posebnostiStep ? L('Posebnosti projekta?', 'Project specifics?')
+            : korak === cenaStep ? L('Tvoja cena.', 'Your price.')
+              : korak === ponudbaStep ? L('Tvoja ponudba.', 'Your quote.')
+                : L('Zaključek.', 'Finish.');
 
-  const opisKoraka = korak === 0 ? 'Izberi storitve za to ponudbo — eno ali več.'
-    : korak === narocnikStep ? 'Vpišeš za vsako ponudbo posebej.'
-      : korak === trgNarocnikaStep ? 'Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.'
-        : korak === praviceStep ? 'Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.'
-          : korak === posebnostiStep ? 'Vse je neobvezno; pusti prazno in pojdi naprej.'
-            : korak === ponudbaStep ? 'Besedilo lahko poljubno urejaš in dopišeš.'
-              : korak === zakljucekStep ? 'Kopiraj, pošlji ali shrani ponudbo.'
+  const opisKoraka = korak === 0 ? L('Izberi storitve za to ponudbo — eno ali več.', 'Pick the services for this quote — one or more.')
+    : korak === narocnikStep ? L('Vpišeš za vsako ponudbo posebej.', 'You fill this in for each quote separately.')
+      : korak === trgNarocnikaStep ? L('Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.', 'A wealthier market pays more, a poorer one less. The currency follows the market.')
+        : korak === praviceStep ? L('Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.', 'The tool suggests an amount that you can adjust at any time.')
+          : korak === posebnostiStep ? L('Vse je neobvezno; pusti prazno in pojdi naprej.', 'Everything is optional; leave it blank and move on.')
+            : korak === ponudbaStep ? L('Besedilo lahko poljubno urejaš in dopišeš.', 'You can freely edit and add to the text.')
+              : korak === zakljucekStep ? L('Kopiraj, pošlji ali shrani ponudbo.', 'Copy, send or save the quote.')
                 : '';
 
   /* En oblacek storitve (prvi korak). */
@@ -4347,7 +4349,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       {skupina.vprasanja.map(vp => (
         <div key={vp.key}>
           <div className="vp">
-            <label htmlFor={'cw-vp-' + vp.key}>{vp.label}{vp.vec ? <span className="vec-namig">izbereš lahko več</span> : null}</label>
+            <label htmlFor={'cw-vp-' + vp.key}>{vp.label}{vp.vec ? <span className="vec-namig">{L('izbereš lahko več', 'you can pick several')}</span> : null}</label>
             {vp.izbire ? (
               <div className="choicegrid">
                 {vp.vec && vp.vse ? (() => {
@@ -4357,7 +4359,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   return (
                     <button type="button" className={vseIzbrane ? 'on' : ''}
                       onClick={() => setOdgovori({ ...odgovori, [vp.key]: (vseIzbrane ? rocni : [...vp.izbire!, ...rocni]).join(' + ') })}>
-                      <span className={'kljucek' + (vseIzbrane ? ' on' : '')} aria-hidden>{vseIzbrane ? '✓' : ''}</span>Vse
+                      <span className={'kljucek' + (vseIzbrane ? ' on' : '')} aria-hidden>{vseIzbrane ? '✓' : ''}</span>{L('Vse', 'All')}
                     </button>
                   );
                 })() : null}
@@ -4407,7 +4409,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <button type="button" className="povezava"
                 style={{ marginTop: '.9rem', color: 'var(--accent)', fontWeight: 600 }}
                 onClick={() => izberiVrstico('cgp')}>
-                + Dodaj CGP k ponudbi (odpre se njen vprašalnik)
+                {L('+ Dodaj CGP k ponudbi (odpre se njen vprašalnik)', '+ Add corporate identity to the quote (opens its questionnaire)')}
               </button>
             ) : null}
             {vp.izbire ? null : skupina.id === 'web' && vp.id === 'kompleksnost' ? (
@@ -4453,7 +4455,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <textarea
                   id={'cw-vp-' + vp.key}
                   value={odgovori[vp.key + ':drugo'] || ''}
-                  placeholder="Drugo ali bolj specifično: npr. kalkulator, portal, konfigurator, povezava z ERP ..."
+                  placeholder={L('Drugo ali bolj specifično: npr. kalkulator, portal, konfigurator, povezava z ERP ...', 'Something else or more specific: e.g. calculator, portal, configurator, ERP integration ...')}
                   onChange={e => setOdgovori({ ...odgovori, [vp.key + ':drugo']: e.target.value })}
                 />
               </>
@@ -4474,7 +4476,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <textarea
                   id={'cw-vp-' + vp.key}
                   value={odgovori[vp.key + ':drugo'] || ''}
-                  placeholder="Drugo: npr. brand refresh, ilustracije, prevodi, email predloge ..."
+                  placeholder={L('Drugo: npr. brand refresh, ilustracije, prevodi, email predloge ...', 'Other: e.g. brand refresh, illustrations, translations, email templates ...')}
                   onChange={e => setOdgovori({ ...odgovori, [vp.key + ':drugo']: e.target.value })}
                 />
               </>
@@ -4482,7 +4484,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <textarea
                 id={'cw-vp-' + vp.key}
                 value={odgovori[vp.key] || ''}
-                placeholder={vp.placeholder || 'Kratek odgovor, lahko pustiš prazno.'}
+                placeholder={vp.placeholder || L('Kratek odgovor, lahko pustiš prazno.', 'A short answer, you can leave it blank.')}
                 onChange={e => setOdgovori({ ...odgovori, [vp.key]: e.target.value })}
               />
             )}
@@ -4603,21 +4605,21 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       <span className="glava-levo">
         {/* puscica PRED logotipom — enako kot na podstraneh nadzorne plosce */}
         {odAdmina && (
-          <a className="glava-nazaj" href={localePath(locale, `/kalkulator/pregled`)} aria-label="Nazaj na nadzorno ploščo" title="Nazaj na nadzorno ploščo">
+          <a className="glava-nazaj" href={localePath(locale, `/kalkulator/pregled`)} aria-label={L('Nazaj na nadzorno ploščo', 'Back to dashboard')} title={L('Nazaj na nadzorno ploščo', 'Back to dashboard')}>
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </a>
         )}
         <a className="glava-brand" href={odFlow ? localePath(locale, `/flow`) : localePath(locale, ``)} aria-label={odFlow ? 'Pinart Flow' : 'Pinart — domov'}>
           <span className="glava-dot" aria-hidden />
           <span className="glava-pinart">Pinart</span>
-          <span className="glava-ime">Kalkulator</span>
+          <span className="glava-ime">{L('Kalkulator', 'Calculator')}</span>
           <span className="beta">BETA</span>
         </a>
-        <a className="zapri zapri-loceno" href={odAdmina ? localePath(locale, `/kalkulator/pregled`) : odFlow ? localePath(locale, `/flow`) : localePath(locale, `/kalkulator`)} aria-label="Zapri kalkulator">✕ zapri</a>
+        <a className="zapri zapri-loceno" href={odAdmina ? localePath(locale, `/kalkulator/pregled`) : odFlow ? localePath(locale, `/flow`) : localePath(locale, `/kalkulator`)} aria-label={L('Zapri kalkulator', 'Close calculator')}>{L('✕ zapri', '✕ close')}</a>
       </span>
       <span className="glava-desno">
         {/* samo profil — preklop oblike in cene/storitve so v profil meniju (aplikacija / cene) */}
-        <button type="button" className="glava-avatar" aria-label="Profil" title="Profil"
+        <button type="button" className="glava-avatar" aria-label={L('Profil', 'Profile')} title={L('Profil', 'Profile')}
           onClick={() => { setKazemProfil(true); setProfilPogled('meni'); }}>
           {avatarVsebina}
         </button>
@@ -4640,18 +4642,18 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       {(imaPodjetja || imeAkt) && (
         <div className="podjetja-preklop">
           <div className="pp-glava">
-            <span className="pp-label">Tvoja podjetja
+            <span className="pp-label">{L('Tvoja podjetja', 'Your companies')}
               <InfoNamig besedilo="Če izdajaš ponudbe v imenu več podjetij (npr. svoje agencije in tiskarne), tu preklapljaš med njimi. Vsako si zapomni svoje podatke. Trenutni vnos se pred preklopom samodejno shrani." />
             </span>
-            <button type="button" className="dodaj-gumb" onClick={novoPodjetjeKorak}>+ Novo podjetje</button>
+            <button type="button" className="dodaj-gumb" onClick={novoPodjetjeKorak}>{L('+ Novo podjetje', '+ New company')}</button>
           </div>
           {imaPodjetja && (
             <div className="podjetja-cipi">
               {Object.keys(podjetja).map(ime => (
                 <span key={ime} className={'podjetje-cip' + (aktivnoPodjetje === ime ? ' on' : '')}>
                   <button type="button" className="pc-ime" onClick={() => preklopiPodjetje(ime)}>{ime}</button>
-                  <button type="button" className="pc-brisi" aria-label={'Izbriši podjetje ' + ime}
-                    title={'Izbriši ' + ime} onClick={() => izbrisiPodjetje(ime)}>×</button>
+                  <button type="button" className="pc-brisi" aria-label={L('Izbriši podjetje ', 'Delete company ') + ime}
+                    title={L('Izbriši ', 'Delete ') + ime} onClick={() => izbrisiPodjetje(ime)}>×</button>
                 </span>
               ))}
             </div>
@@ -4666,29 +4668,29 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       )}
 
       <div className="kartica">
-        <div className="k-naslov">Podatki podjetja <span className="vec">za glavo ponudbe</span></div>
+        <div className="k-naslov">{L('Podatki podjetja', 'Company details')} <span className="vec">{L('za glavo ponudbe', 'for the quote header')}</span></div>
         <div className="numgrid">
           <div className="polje">
-            <label htmlFor="cw-pime">Ime / podjetje</label>
-            <input id="cw-pime" type="text" placeholder="Rdeča kapica d.o.o."
+            <label htmlFor="cw-pime">{L('Ime / podjetje', 'Name / company')}</label>
+            <input id="cw-pime" type="text" placeholder={L('Rdeča kapica d.o.o.', 'Little Red Riding Hood Ltd.')}
               value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })} />
           </div>
           <div className="polje">
-            <label htmlFor="cw-pdavcna">Davčna številka</label>
-            <input id="cw-pdavcna" type="text" placeholder="SI98765432"
+            <label htmlFor="cw-pdavcna">{L('Davčna številka', 'Tax number')}</label>
+            <input id="cw-pdavcna" type="text" placeholder={L('SI98765432', 'SI98765432')}
               value={ponudnik.davcna} onChange={e => setPonudnik({ ...ponudnik, davcna: e.target.value })} />
           </div>
         </div>
         <div className="numgrid">
           <div className="polje">
-            <label htmlFor="cw-pemail">Email</label>
-            <input id="cw-pemail" type="email" placeholder="kapica@gozd.si"
+            <label htmlFor="cw-pemail">{L('Email', 'Email')}</label>
+            <input id="cw-pemail" type="email" placeholder={L('kapica@gozd.si', 'kapica@gozd.si')}
               value={ponudnik.email} onChange={e => setPonudnik({ ...ponudnik, email: e.target.value })} />
           </div>
           <div className="polje">
-            <label htmlFor="cw-ptelefon">Telefon</label>
+            <label htmlFor="cw-ptelefon">{L('Telefon', 'Phone')}</label>
             <div className="tel-vrsta">
-              <select aria-label="Klicna koda države" value={predklic}
+              <select aria-label={L('Klicna koda države', 'Country calling code')} value={predklic}
                 onChange={e => setPredklic(e.target.value)}>
                 {['+386', '+385', '+43', '+49', '+39', '+44', '+33', '+1', '+971', '+20'].map(k => (
                   <option key={k} value={k}>{k}</option>
@@ -4701,13 +4703,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         </div>
         <div className="numgrid">
           <div className="polje">
-            <label htmlFor="cw-pnaslov">Naslov</label>
-            <input id="cw-pnaslov" type="text" placeholder="Gozdna pot 13, 4000 Kranj"
+            <label htmlFor="cw-pnaslov">{L('Naslov', 'Address')}</label>
+            <input id="cw-pnaslov" type="text" placeholder={L('Gozdna pot 13, 4000 Kranj', 'Forest Road 13, 4000 Kranj')}
               value={ponudnik.naslov} onChange={e => setPonudnik({ ...ponudnik, naslov: e.target.value })} />
           </div>
           <div className="polje">
-            <label htmlFor="cw-ptrr">TRR (bančni račun)</label>
-            <input id="cw-ptrr" type="text" placeholder="SI56 1910 0001 2345 678"
+            <label htmlFor="cw-ptrr">{L('TRR (bančni račun)', 'Bank account (IBAN)')}</label>
+            <input id="cw-ptrr" type="text" placeholder={L('SI56 1910 0001 2345 678', 'SI56 1910 0001 2345 678')}
               value={ponudnik.trr} onChange={e => setPonudnik({ ...ponudnik, trr: e.target.value })} />
           </div>
         </div>
@@ -4719,13 +4721,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             </label>
             <select id="cw-ddv" value={ddvZavezanec ? 'da' : 'ne'}
               onChange={e => setDdvZavezanec(e.target.value === 'da')}>
-              <option value="ne">Nisem zavezanec (94. člen ZDDV-1)</option>
-              <option value="da">Sem zavezanec za DDV</option>
+              <option value="ne">{L('Nisem zavezanec (94. člen ZDDV-1)', 'Not VAT-registered (Art. 94 ZDDV-1)')}</option>
+              <option value="da">{L('Sem zavezanec za DDV', 'VAT-registered')}</option>
             </select>
           </div>
           {ddvZavezanec && (
             <div className="polje">
-              <label htmlFor="cw-ddvst">Stopnja DDV (%)</label>
+              <label htmlFor="cw-ddvst">{L('Stopnja DDV (%)', 'VAT rate (%)')}</label>
               <input id="cw-ddvst" type="number" min={0} max={30} step={0.5}
                 value={ddvStopnja} onChange={e => setDdvStopnja(e.target.value)} />
             </div>
@@ -4735,15 +4737,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
       {/* Pogoji ponudbe: avans + veljavnost skupaj (Tinina zahteva) */}
       <div className="kartica">
-        <div className="k-naslov">Pogoji ponudbe</div>
+        <div className="k-naslov">{L('Pogoji ponudbe', 'Quote terms')}</div>
         <div className="numgrid">
           <div className="polje">
-            <label htmlFor="cw-avans">Avans ob potrditvi (%)</label>
+            <label htmlFor="cw-avans">{L('Avans ob potrditvi (%)', 'Deposit on acceptance (%)')}</label>
             <input id="cw-avans" type="number" min={10} max={100} step={5}
               value={avansPct} onChange={e => setAvansPct(e.target.value)} />
           </div>
           <div className="polje">
-            <label htmlFor="cw-veljavnost2">Ponudba velja (dni)</label>
+            <label htmlFor="cw-veljavnost2">{L('Ponudba velja (dni)', 'Quote valid (days)')}</label>
             <input id="cw-veljavnost2" type="number" min={1} max={365} step={1}
               placeholder="30" value={veljavnostDni} onChange={e => setVeljavnostDni(e.target.value)} />
           </div>
@@ -4758,12 +4760,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      kontaktnih podatkih podjetja — Tina: "ni mi to najbolje tam"). */
   const urnePostavkeUI = () => (
     <div className="kartica cena-urna">
-      <div className="k-naslov">Urne postavke za dodatna dela <span className="vec">v pogojih ponudbe</span></div>
+      <div className="k-naslov">{L('Urne postavke za dodatna dela', 'Hourly rates for extra work')} <span className="vec">{L('v pogojih ponudbe', 'in the quote terms')}</span></div>
       {urnePostavke.map((u, i) => (
         <div className="numgrid" key={i}>
           <div className="polje">
-            <label htmlFor={`cw-ura-ime-${i}`}>Za kaj</label>
-            <input id={`cw-ura-ime-${i}`} type="text" placeholder="npr. Dejan – ilustracija, Andrej – IT"
+            <label htmlFor={`cw-ura-ime-${i}`}>{L('Za kaj', 'What for')}</label>
+            <input id={`cw-ura-ime-${i}`} type="text" placeholder={L('npr. Dejan – ilustracija, Andrej – IT', 'e.g. Dejan – illustration, Andrej – IT')}
               value={u.ime}
               onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, ime: e.target.value } : x))} />
           </div>
@@ -4784,10 +4786,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       ))}
       <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
         onClick={() => setUrnePostavke([...urnePostavke, { ime: '', cena: '' }])}>
-        + Dodaj urno postavko
+        {L('+ Dodaj urno postavko', '+ Add hourly rate')}
       </button>
       <p className="hint" style={{ marginTop: '.9rem' }}>
-        Napredno: dodaš lahko več postavk — ločena cena za vsakega izvajalca ali tehniko (npr. za agencije, ročna ilustracija drugače kot vektorska). Urejaš tukaj ali v Profil → Moje podjetje.
+        {L('Napredno: dodaš lahko več postavk — ločena cena za vsakega izvajalca ali tehniko (npr. za agencije, ročna ilustracija drugače kot vektorska). Urejaš tukaj ali v Profil → Moje podjetje.', 'Advanced: you can add several rates — a separate price for each contractor or technique (e.g. for agencies, hand illustration priced differently from vector). Edit here or in Profile → My company.')}
       </p>
     </div>
   );
@@ -4798,17 +4800,17 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       <div className="opts">
         <button type="button" className="pill dodaj" onClick={() => setKazemDodajKorak(!kazemDodajKorak)}>
           <span className="pi" aria-hidden><Plus size={19} /></span>
-          <span>dodaj postavko<small>dodaten strošek za to ponudbo: font licenca, najem studia, tisk, stock …</small></span>
+          <span>{L('dodaj postavko', 'add item')}<small>{L('dodaten strošek za to ponudbo: font licenca, najem studia, tisk, stock …', 'an extra cost for this quote: font license, studio rental, printing, stock …')}</small></span>
         </button>
       </div>
       {kazemDodajKorak && (
         <div className="iskalnik">
           <div className="polje">
             <div className="isk-glava">
-              <label htmlFor="cw-iskanje2">Poišči ali vpiši svojo postavko</label>
-              <button type="button" className="op-edit" style={{ marginTop: 0 }} onClick={() => { setKazemDodajKorak(false); setIskanje(''); }}>✕ Zapri</button>
+              <label htmlFor="cw-iskanje2">{L('Poišči ali vpiši svojo postavko', 'Search or type your item')}</label>
+              <button type="button" className="op-edit" style={{ marginTop: 0 }} onClick={() => { setKazemDodajKorak(false); setIskanje(''); }}>{L('✕ Zapri', '✕ Close')}</button>
             </div>
-            <input id="cw-iskanje2" placeholder="npr. najem studia"
+            <input id="cw-iskanje2" placeholder={L('npr. najem studia', 'e.g. studio rental')}
               value={iskanje} onChange={e => setIskanje(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && predlogi.length) dodajIzKataloga(predlogi[0]); }} />
           </div>
@@ -4831,11 +4833,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           {postavke.map(x => (
             <div key={x.id} className="postavka">
               <span>{x.ime}</span>
-              <input type="number" min={1} step={1} value={x.kolicina} aria-label={(x.enota === 'ura' ? 'Ure' : 'Količina') + ': ' + x.ime} onChange={e => uredi(x.id, 'kolicina', Number(e.target.value) || 1)} />
-              <button type="button" className="enota-toggle" onClick={() => preklopiEnoto(x.id)} title="Preklopi enoto (kos / ura)">{x.enota === 'ura' ? 'ur' : 'kos'}</button>
-              <input type="number" min={0} step={10} value={x.cena} aria-label={'Cena: ' + x.ime} onChange={e => uredi(x.id, 'cena', Number(e.target.value) || 0)} />
+              <input type="number" min={1} step={1} value={x.kolicina} aria-label={(x.enota === 'ura' ? L('Ure', 'Hours') : L('Količina', 'Quantity')) + ': ' + x.ime} onChange={e => uredi(x.id, 'kolicina', Number(e.target.value) || 1)} />
+              <button type="button" className="enota-toggle" onClick={() => preklopiEnoto(x.id)} title={L('Preklopi enoto (kos / ura)', 'Switch unit (piece / hour)')}>{x.enota === 'ura' ? 'ur' : 'kos'}</button>
+              <input type="number" min={0} step={10} value={x.cena} aria-label={L('Cena: ', 'Price: ') + x.ime} onChange={e => uredi(x.id, 'cena', Number(e.target.value) || 0)} />
               <span className="enota">{x.enota === 'ura' ? '€/uro' : '€'}</span>
-              <button type="button" title="Odstrani" onClick={() => odstrani(x.id)}>×</button>
+              <button type="button" title={L('Odstrani', 'Remove')} onClick={() => odstrani(x.id)}>×</button>
             </div>
           ))}
         </div>
@@ -4847,84 +4849,84 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      da se refs (barva/podloga/logo/datoteka) ne podvajajo. */
   const slogKontrole = (
     <>
-      <div className="segpills segpills-sek" role="group" aria-label="Obseg ponudbe">
-        {([['kratka', 'Kratka'], ['razsirjena', 'Razširjena']] as const).map(([id, ime]) => (
+      <div className="segpills segpills-sek" role="group" aria-label={L('Obseg ponudbe', 'Quote scope')}>
+        {([['kratka', L('Kratka', 'Short')], ['razsirjena', L('Razširjena', 'Extended')]] as const).map(([id, ime]) => (
           <button key={id} type="button" className={obsegPonudbe === id ? 'on' : ''}
             onClick={() => { setObsegPonudbe(id); setRocnoBesedilo(false); }}>{ime}</button>
         ))}
       </div>
-      <div className="segpills segpills-sek" role="group" aria-label="Ton ponudbe">
+      <div className="segpills segpills-sek" role="group" aria-label={L('Ton ponudbe', 'Quote tone')}>
         {TONI.map(t => (
           <button key={t.id} type="button" className={tonPonudbe === t.id ? 'on' : ''}
             onClick={() => { setTonPonudbe(t.id); setRocnoBesedilo(false); }}>{t.ime}</button>
         ))}
       </div>
       <div className="pon-vrh-desno">
-        <button type="button" className={'ai-gumb ponastavi-gumb' + (rocnoBesedilo ? ' aktiv' : '')} title="Ponastavi na samodejno besedilo" aria-label="Ponastavi na samodejno besedilo"
+        <button type="button" className={'ai-gumb ponastavi-gumb' + (rocnoBesedilo ? ' aktiv' : '')} title={L('Ponastavi na samodejno besedilo', 'Reset to automatic text')} aria-label={L('Ponastavi na samodejno besedilo', 'Reset to automatic text')}
           onClick={ponastaviBesedilo}><ArrowCounterClockwise size={18} weight="bold" /></button>
-        <button type="button" className="ai-gumb" title="AI pomočnik" aria-label="AI pomočnik"
+        <button type="button" className="ai-gumb" title={L('AI pomočnik', 'AI assistant')} aria-label={L('AI pomočnik', 'AI assistant')}
           onClick={() => setAiKmalu(v => !v)}><MagicWand size={19} /></button>
       </div>
       {aiKmalu && (
-        <p className="hint ai-namig">AI pomočnik (predlaga in izboljša besedilo ponudbe) pride kot naslednja nadgradnja — potrebuje zaledje. Zaenkrat besedilo urejaš ročno z orodji spodaj.</p>
+        <p className="hint ai-namig">{L('AI pomočnik (predlaga in izboljša besedilo ponudbe) pride kot naslednja nadgradnja — potrebuje zaledje. Zaenkrat besedilo urejaš ročno z orodji spodaj.', 'The AI assistant (suggests and improves the quote text) is coming as the next upgrade — it needs a backend. For now you edit the text manually with the tools below.')}</p>
       )}
     </>
   );
   const oblikaKontrole = (
     <>
-      {oznaciNamig && <div className="oznaci-namig" role="status">Najprej označi besedilo</div>}
-      <div className="tool-vel2" role="group" aria-label="Velikost besedila">
-        <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); velikost(-1); }} aria-label="Pomanjšaj" title="Manjše"><CaretDown size={14} weight="bold" /></button>
+      {oznaciNamig && <div className="oznaci-namig" role="status">{L('Najprej označi besedilo', 'First select the text')}</div>}
+      <div className="tool-vel2" role="group" aria-label={L('Velikost besedila', 'Text size')}>
+        <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); velikost(-1); }} aria-label={L('Pomanjšaj', 'Decrease')} title={L('Manjše', 'Smaller')}><CaretDown size={14} weight="bold" /></button>
         <span className="tv-aa" aria-hidden>Aa</span>
-        <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); velikost(1); }} aria-label="Povečaj" title="Večje"><CaretUp size={14} weight="bold" /></button>
+        <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); velikost(1); }} aria-label={L('Povečaj', 'Increase')} title={L('Večje', 'Larger')}><CaretUp size={14} weight="bold" /></button>
       </div>
-      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko" aria-label="Krepko"><TextB size={17} weight="bold" /></button>
-      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title="Ležeče" aria-label="Ležeče"><TextItalic size={17} /></button>
-      <select className="pisava-select" aria-label="Pisava besedila" defaultValue=""
+      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title={L('Krepko', 'Bold')} aria-label={L('Krepko', 'Bold')}><TextB size={17} weight="bold" /></button>
+      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title={L('Ležeče', 'Italic')} aria-label={L('Ležeče', 'Italic')}><TextItalic size={17} /></button>
+      <select className="pisava-select" aria-label={L('Pisava besedila', 'Text font')} defaultValue=""
         onMouseDown={() => editorRef.current?.focus()}
         onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
-        <option value="" disabled>Pisava</option>
-        <option value="Bodoni Moda">Elegantna</option>
+        <option value="" disabled>{L('Pisava', 'Font')}</option>
+        <option value="Bodoni Moda">{L('Elegantna', 'Elegant')}</option>
         <option value="Montserrat">Montserrat</option>
         <option value="Roboto">Roboto</option>
         <option value="Lora">Lora</option>
         <option value="Georgia">Georgia</option>
         <option value="Arial">Arial</option>
       </select>
-      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h1'); }} title="Naslov" aria-label="Naslov H1">H1</button>
-      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title="Podnaslov" aria-label="Podnaslov H2">H2</button>
-      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title="Navadno besedilo" aria-label="Navadno besedilo P">P</button>
-      <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'crke' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('crke'); }} title="Barvaj črke" aria-label="Barvaj črke"><span className="ti">T</span></button>
-      <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'podlaga' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('podlaga'); }} title="Barvaj ozadje črk" aria-label="Barvaj ozadje črk"><span className="ti ti-box">T</span></button>
+      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h1'); }} title={L('Naslov', 'Heading')} aria-label={L('Naslov H1', 'Heading H1')}>H1</button>
+      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title={L('Podnaslov', 'Subheading')} aria-label={L('Podnaslov H2', 'Subheading H2')}>H2</button>
+      <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title={L('Navadno besedilo', 'Body text')} aria-label={L('Navadno besedilo P', 'Body text P')}>P</button>
+      <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'crke' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('crke'); }} title={L('Barvaj črke', 'Color the text')} aria-label={L('Barvaj črke', 'Color the text')}><span className="ti">T</span></button>
+      <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'podlaga' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('podlaga'); }} title={L('Barvaj ozadje črk', 'Color the text background')} aria-label={L('Barvaj ozadje črk', 'Color the text background')}><span className="ti ti-box">T</span></button>
       <span className="tool-locnica" aria-hidden />
       {['#111111', '#7C3AED', '#FA4892', '#EEE8D8', '#50E3C2'].map(barva => (
         <button key={barva} type="button" className="barvica" style={{ background: barva }}
           aria-label={'Barva ' + barva}
-          title={(barvaCilj === 'podlaga' ? 'Ozadje' : 'Črke') + ' — dvojni klik odstrani barvo'}
+          title={(barvaCilj === 'podlaga' ? L('Ozadje', 'Background') : L('Črke', 'Text')) + L(' — dvojni klik odstrani barvo', ' — double-click removes the color')}
           onMouseDown={e => { e.preventDefault(); uporabiBarvo(barva); }}
           onDoubleClick={e => { e.preventDefault(); odstraniBarvo(); }} />
       ))}
-      <button type="button" className="barvica barvica-mavrica" aria-label="Izberi poljubno barvo" title="Izberi poljubno barvo"
+      <button type="button" className="barvica barvica-mavrica" aria-label={L('Izberi poljubno barvo', 'Pick a custom color')} title={L('Izberi poljubno barvo', 'Pick a custom color')}
         onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
       <input ref={barvaRef} type="color" hidden onChange={e => uporabiBarvo(e.target.value)} />
       <span className="tool-locnica" aria-hidden />
-      <span className="podloga-oznaka">Podloga:</span>
-      <button type="button" className={'podloga-krog' + (predlogaPinart ? ' on' : '')} onClick={() => { const nov = !predlogaPinart; setPredlogaPinart(nov); if (nov) setPodlogaCover(''); }} title="Pinart predloga (oblikuje ponudbo po Pinart dizajnu)" aria-label="Pinart predloga">
+      <span className="podloga-oznaka">{L('Podloga:', 'Background:')}</span>
+      <button type="button" className={'podloga-krog' + (predlogaPinart ? ' on' : '')} onClick={() => { const nov = !predlogaPinart; setPredlogaPinart(nov); if (nov) setPodlogaCover(''); }} title={L('Pinart predloga (oblikuje ponudbo po Pinart dizajnu)', 'Pinart template (styles the quote in the Pinart design)')} aria-label={L('Pinart predloga', 'Pinart template')}>
         {predlogaPinart && <Check size={12} weight="bold" />}
       </button>
-      <button type="button" className={'podloga-krog podloga-nalozi' + (podlogaCover ? ' on' : '')} onClick={() => podlogaRef.current?.click()} title="Naloži svojo podlogo (slika naslovnice)" aria-label="Naloži podlogo"
+      <button type="button" className={'podloga-krog podloga-nalozi' + (podlogaCover ? ' on' : '')} onClick={() => podlogaRef.current?.click()} title={L('Naloži svojo podlogo (slika naslovnice)', 'Upload your own background (cover image)')} aria-label={L('Naloži podlogo', 'Upload background')}
         style={podlogaCover ? { backgroundImage: `url(${podlogaCover})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
         {!podlogaCover && <UploadSimple size={14} weight="bold" />}
       </button>
       <input ref={podlogaRef} type="file" accept="image/*" hidden onChange={e => { naloziPodlogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
       <span className="tool-locnica" aria-hidden />
       <button type="button" className={'logo-kvadrat' + (logo ? ' ima' : '')} onClick={() => logoRef.current?.click()}
-        title={logo ? 'Zamenjaj logo' : 'Dodaj logo'} aria-label={logo ? 'Zamenjaj logo' : 'Dodaj logo'}
+        title={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')} aria-label={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')}
         style={logo ? { backgroundImage: `url(${logo})` } : undefined}>
-        {!logo && <><ImageSquare size={15} weight="bold" /><span>Logo</span></>}
+        {!logo && <><ImageSquare size={15} weight="bold" /><span>{L('Logo', 'Logo')}</span></>}
       </button>
       {logo && (
-        <button type="button" className="logo-odstrani" onClick={() => setLogo('')} title="Odstrani logo" aria-label="Odstrani logo">✕</button>
+        <button type="button" className="logo-odstrani" onClick={() => setLogo('')} title={L('Odstrani logo', 'Remove logo')} aria-label={L('Odstrani logo', 'Remove logo')}>✕</button>
       )}
       <input ref={logoRef} type="file" accept="image/*" hidden onChange={e => { naloziLogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
       <input ref={fileRef} type="file" accept=".txt,.html,.htm" hidden
@@ -4933,7 +4935,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   );
 
   return (
-    <div className={`cw${vLupini ? ' cw-lupina' : ''}`} onKeyDown={naEnter}>
+    <div className={`cw${vLupini ? ' cw-lupina' : ''}${korak === zakljucekStep ? ' cw-zakljucek' : ''}`} onKeyDown={naEnter}>
       <div className="cw-ozadje" aria-hidden>
         <span className="blob blob-roza" />
         <span className="blob blob-modra" />
@@ -5893,12 +5895,23 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-razlaga-telo li::marker { color: var(--accent); }
         .cw .prav-razlaga-vir { font-size: .82rem !important; color: rgba(17,17,17,.6) !important; margin-bottom: 0 !important; }
         .cw .prav-tabela { display: flex; flex-direction: column; }
+        @media (max-width: 560px) {
+          /* Mobilni rob določa .oder (8 px); kartica samo zapolni ta prostor. */
+          .cw .pravice-kartica {
+            position: static;
+            width: 100%;
+            max-width: none;
+            margin-left: 0;
+            margin-right: 0;
+          }
+        }
         .cw .prav-vrsta { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto; align-items: center; gap: .8rem; padding: .7rem 0; border-bottom: 1px solid rgba(17,17,17,.1); }
         .cw .prav-ime { font-weight: 650; font-size: .98rem; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .cw .prav-ime small { font-weight: 500; color: rgba(17,17,17,.45); font-size: .78rem; }
         .cw .prav-podr { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.1rem; height: 2.1rem; border: 1px solid rgba(17,17,17,.2); background: transparent; color: rgba(17,17,17,.6); font-family: inherit; font-size: .76rem; font-weight: 600; border-radius: 999px; padding: 0; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s, background .15s; }
         .cw .prav-podr:hover { border-color: var(--ink); color: var(--ink); background: rgba(17,17,17,.05); }
-        .cw .prav-recept { border: none; border-bottom: 1px solid rgba(17,17,17,.35); background-color: transparent; font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); padding: .3rem 1.4rem .3rem .2rem; appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .1rem center; }
+        .cw .prav-recept { border: 0; border-radius: 0; outline: 0; background-color: transparent; font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); padding: .3rem 1.4rem .3rem .2rem; appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .1rem center; }
+        .cw .prav-recept:focus-visible { box-shadow: inset 0 -2px 0 var(--accent); }
         /* IZVZEM kompaktnih izbirnikov iz teznih .shell select globalov (font 16px!important,
            padding-right 3rem!important, velika 1.25rem kljukica) — sicer napihnejo kontrole in
            pokvarijo puscice; visja specificnost + !important povozi globalno pravilo starsa. */
@@ -5920,7 +5933,22 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-lastna-akcije { display: inline-flex; gap: .4rem; align-items: center; justify-content: flex-end; }
         .cw .prav-skupaj { display: flex; justify-content: space-between; align-items: baseline; margin-top: .9rem; padding-top: .8rem; border-top: 2px solid var(--ink); }
         .cw .prav-skupaj b { font-family: var(--font-serif), serif; font-size: 1.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-        @media (max-width: 560px) { .cw .prav-vrsta { grid-template-columns: 1fr auto auto; grid-template-areas: 'ime ime ime' 'recept cena podr'; gap: .55rem .7rem; align-items: center; } .cw .prav-ime { grid-area: ime; white-space: normal; } .cw .prav-recept { grid-area: recept; min-width: 0; } .cw .prav-cena { grid-area: cena; justify-self: end; } .cw .prav-podr { grid-area: podr; justify-self: end; } .cw .prav-vrsta-lastna .prav-lastna-akcije { grid-area: podr; } }
+        @media (max-width: 560px) {
+          .cw .prav-vrsta { grid-template-columns: minmax(9.25rem,1fr) auto 2.1rem; grid-template-areas: 'ime ime ime' 'recept cena podr'; gap: .25rem .35rem; align-items: center; }
+          .cw .prav-ime { grid-area: ime; white-space: normal; }
+          /* Vizualno ostaneta samo napis in puščica, dejanska dotikalna
+             površina pa je WCAG-prijaznih 44 px in zapolni svoj stolpec. */
+          .cw .prav-recept { grid-area: recept; width: 100%; min-width: 0; min-height: 44px !important; padding: .7rem 1.75rem .7rem 0 !important; background-position: right .2rem center !important; }
+          .cw .prav-cena { grid-area: cena; justify-self: end; }
+          .cw .prav-podr { grid-area: podr; justify-self: end; }
+          .cw .prav-vrsta-lastna .prav-lastna-akcije { grid-area: podr; }
+        }
+        @media (max-width: 360px) {
+          .cw .prav-vrsta {
+            grid-template-columns: minmax(0, 1fr) 2.1rem;
+            grid-template-areas: 'ime ime' 'recept recept' 'cena podr';
+          }
+        }
         .cw .kartica > .k-naslov { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .3rem 1rem; margin: 0 0 1.1rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .kartica > .k-naslov .vec, .cw .profil-sekcija .k-naslov .vec { font-size: .82rem; font-weight: 500; color: rgba(17,17,17,.55); text-transform: none; letter-spacing: 0; }
         .cw .kartica > .hint { margin-top: 1rem; }
@@ -6185,11 +6213,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           }
           .cw .editor { padding: 1.1rem clamp(.75rem, 3vw, 1rem); }
           .cw .korak-vsebina.priprava-korak {
-            position: relative;
-            left: 50%;
-            width: calc(100vw - 16px);
+            position: static;
+            width: 100%;
             max-width: none;
-            margin-left: calc(-50vw + 8px);
+            margin-left: 0;
             margin-right: 0;
           }
         }
@@ -6242,7 +6269,24 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .zakljucek-sredina .zakljucek-ikona { justify-content: center; }
         /* Zakljucek: vse centrirano (ilustracija + naslov + podnaslov + gumbi) */
         .cw .zakljucek-sredina { text-align: center; padding-bottom: 6.5rem; }   /* dovolj prostora, da fiksna noga (Uredi/Nova) NE prekrije prenosnih povezav */
-        @media (max-width: 640px) { .cw .zakljucek-sredina { padding-bottom: 8.5rem; } }
+        @media (max-width: 640px) {
+          /* FlowTopBar je zunaj .cw; 100dvh bi zato zaključku dodal še višino
+             glave in ustvaril prazen scroll. */
+          .cw.cw-lupina.cw-zakljucek { min-height: calc(100dvh - 3.25rem); }
+          .cw.cw-zakljucek .oder { padding-top: 1rem; padding-bottom: 5.5rem; }
+          .cw .zakljucek-sredina { padding-bottom: .5rem; }
+          /* Povezave ostanejo vizualno lahke, celotna vrstica okoli napisa pa
+             je dovolj velika za zanesljiv dotik s prstom. */
+          .cw .zakljucek-sredina .btnvrsta {
+            column-gap: .35rem;
+            row-gap: .35rem;
+          }
+          .cw .zakljucek-sredina .btnvrsta .povezava {
+            min-height: 44px;
+            padding: .55rem .35rem;
+            justify-content: center;
+          }
+        }
         .cw .zakljucek-sredina h1 { justify-content: center; }
         .cw .zakljucek-sredina .h1-step { display: none; }
         .cw .zakljucek-sredina h1 { padding-left: 0; }
@@ -6337,6 +6381,30 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           /* kompaktna vodoravna vrsta (ne dva nalozena gumba -> noga nizja, nic prekrivanja) */
           .cw .noga-koncna { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: .5rem; }
           .cw .noga .noga-koncna .nazaj-g { text-align: center; padding: .55rem .85rem; font-size: .68rem; letter-spacing: .05em; }
+          /* Na zaključku je okrogli gumb samostojen »en korak nazaj«.
+             Postavimo ga v tok neposredno ob »Uredi od začetka«. */
+          .cw.cw-zakljucek .noga .noga-gumbi > .gumb-nazaj {
+            position: static;
+            margin: 0;
+          }
+          .cw.cw-zakljucek .noga { padding-inline: 8px; }
+          .cw.cw-zakljucek .noga .noga-gumbi {
+            display: grid;
+            grid-template-columns: auto auto;
+            width: auto;
+            max-width: calc(100vw - 16px);
+            column-gap: .55rem;
+            row-gap: .55rem;
+          }
+          .cw.cw-zakljucek .noga-koncna { display: contents; }
+          .cw.cw-zakljucek .noga .noga-koncna .nazaj-g {
+            white-space: nowrap;
+            padding-inline: .7rem;
+          }
+          .cw.cw-zakljucek .noga .noga-koncna .nova {
+            grid-column: 1 / -1;
+            justify-self: center;
+          }
         }
         /* V stolpcu menija, NAD profilno ikono: levi rob poravnan z avatarjem
            profila (padding menija 1.4rem), tik nad profilno vrstico. */
@@ -6366,9 +6434,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           /* ikonski, a z dovolj veliko tarco za prst (bil je 22x26px — pretezko zadeti) */
           .cw .glava .zapri-loceno { font-size: 0; gap: 0; display: inline-flex; align-items: center; justify-content: center; min-width: 2.75rem; min-height: 2.75rem; padding: 0 .35rem 0 .7rem; }
           .cw .glava .zapri-loceno::before { content: "✕"; font-size: 1rem; }
-          .cw .oder { align-items: flex-start; padding-top: 5.4rem; padding-bottom: 8rem; }
-          .cw h1 { padding-left: 1.65rem; font-size: clamp(2.15rem, 11vw, 2.85rem); line-height: .98; margin-bottom: .6rem; }
-          .cw .h1-step { position: absolute; top: 0; left: calc(-1 * clamp(1.2rem, 4vw, 3rem) - 1.25rem); width: 2.15rem; height: 2.05rem; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); border-radius: 0 .35rem .35rem 0; font-size: .62rem; letter-spacing: .08em; }
+          .cw .oder { align-items: flex-start; padding: 5.4rem 8px 8rem; }
+          .cw h1 { padding-left: 2.35rem; font-size: clamp(2.15rem, 11vw, 2.85rem); line-height: .98; margin-bottom: .6rem; }
+          .cw .lg-naslov { padding-left: 0; }
+          /* Oder ima na telefonu natanko 8 px roba. Oznaka koraka se poravna
+             na ta zunanji rob, namesto da z negativnim zamikom pade z zaslona. */
+          .cw .h1-step { position: absolute; top: 0; left: -8px; width: 2.15rem; height: 2.05rem; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); border-radius: 0 .35rem .35rem 0; font-size: .62rem; letter-spacing: .08em; }
           .cw .sub-vrsta { margin-bottom: 1.7rem; gap: .8rem; flex-wrap: nowrap; align-items: baseline; }
           .cw .sub { flex: 1 1 auto; font-size: .94rem; line-height: 1.5; }
           .cw .sub-vrsta .op-edit { margin-left: auto; text-align: right; flex: none; white-space: nowrap; justify-content: flex-end; line-height: 1.25; font-size: .66rem; letter-spacing: .13em; }
@@ -6392,32 +6463,32 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           ohrani veljavnost pravil ".cw .soglasje". */}
       {(pogojiOk === false || pogojiOdhaja) && typeof document !== 'undefined' && createPortal(
         <div className="cw">
-        <div className={`soglasje${pogojiOdhaja ? ' soglasje-odhaja' : ''}`} role="dialog" aria-modal="true" aria-label="Pogoji uporabe">
+        <div className={`soglasje${pogojiOdhaja ? ' soglasje-odhaja' : ''}`} role="dialog" aria-modal="true" aria-label={L('Pogoji uporabe', 'Terms of use')}>
           <div className="soglasje-kartica">
-            <h2>Samo troje, preden začneš</h2>
+            <h2>{L('Samo troje, preden začneš', 'Just three things before you start')}</h2>
             <div className="soglasje-tocke">
               <div className="sg-blok">
-                <h3 className="sg-h">Priporočene cene</h3>
-                <p className="sg-t">So pametno izhodišče, ne uradni cenik — nastale so iz izkušenj, tržno bazo pa šele gradimo. Svobodno jih prilagodi; končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.</p>
+                <h3 className="sg-h">{L('Priporočene cene', 'Recommended prices')}</h3>
+                <p className="sg-t">{L('So pametno izhodišče, ne uradni cenik — nastale so iz izkušenj, tržno bazo pa šele gradimo. Svobodno jih prilagodi; končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.', 'They are a smart starting point, not an official price list — they come from experience, and we are still building the market database. Adjust them freely; the final price in your quotes is always your decision and your responsibility.')}</p>
               </div>
               <div className="sg-blok">
-                <h3 className="sg-h">Shranjeno pri tebi</h3>
-                <p className="sg-t">Tvoje cene, postavke in podatki ostanejo shranjeni samo v tvojem brskalniku — pri nas se nič ne shrani.</p>
+                <h3 className="sg-h">{L('Shranjeno pri tebi', 'Stored on your device')}</h3>
+                <p className="sg-t">{L('Tvoje cene, postavke in podatki ostanejo shranjeni samo v tvojem brskalniku — pri nas se nič ne shrani.', 'Your prices, items and data stay saved only in your browser — nothing is stored on our side.')}</p>
               </div>
               <div className="sg-blok">
-                <h3 className="sg-h">Vedno anonimno</h3>
-                <p className="sg-t">Ob prikazu izračuna anonimno zabeležimo le izbrane kategorije in zneske — <b>brez imena, e-naslova ali IP-naslova</b>, nikoli povezano s teboj.</p>
+                <h3 className="sg-h">{L('Vedno anonimno', 'Always anonymous')}</h3>
+                <p className="sg-t">{L('Ob prikazu izračuna anonimno zabeležimo le izbrane kategorije in zneske —', 'When the calculation is shown we anonymously record only the selected categories and amounts —')} <b>{L('brez imena, e-naslova ali IP-naslova', 'without name, email or IP address')}</b>{L(', nikoli povezano s teboj.', ', never linked to you.')}</p>
               </div>
             </div>
             <div className="sg-motiv">
-              <span className="sg-motiv-ozn">★ Kaj imaš od tega</span>
-              <p>Skupaj gradimo <b>prvo statistiko cen za kreativce</b>: ko bo baza dovolj velika, boš videl, <b>koliko kolegi s tvojimi izkušnjami dejansko računajo</b> — česar danes ne pove nihče.</p>
+              <span className="sg-motiv-ozn">{L('★ Kaj imaš od tega', '★ What\'s in it for you')}</span>
+              <p>{L('Skupaj gradimo', 'Together we\'re building')} <b>{L('prvo statistiko cen za kreativce', 'the first pricing statistics for creatives')}</b>{L(': ko bo baza dovolj velika, boš videl,', ': once the database is big enough, you\'ll see')} <b>{L('koliko kolegi s tvojimi izkušnjami dejansko računajo', 'how much peers with your experience actually charge')}</b> {L('— česar danes ne pove nihče.', '— which nobody tells you today.')}</p>
             </div>
             <div className="soglasje-email">
               <label className="se-preklop">
                 <span className="se-tekst">
                   <EnvelopeSimple size={20} className="se-ikona" aria-hidden />
-                  <span>Obveščajte me o orodju in nasvetih za kreativce <em>(neobvezno)</em></span>
+                  <span>{L('Obveščajte me o orodju in nasvetih za kreativce', 'Keep me posted about the tool and tips for creatives')} <em>{L('(neobvezno)', '(optional)')}</em></span>
                 </span>
                 <span className="se-toggle">
                   <input type="checkbox" checked={zeliEmail} onChange={e => setZeliEmail(e.target.checked)} />
@@ -6428,21 +6499,21 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <>
                   <div className="numgrid" style={{ marginTop: '.9rem' }}>
                     <div className="polje">
-                      <label htmlFor="cw-sglime">Ime</label>
-                      <input id="cw-sglime" value={leadIme} onChange={e => setLeadIme(e.target.value)} placeholder="Tvoje ime" />
+                      <label htmlFor="cw-sglime">{L('Ime', 'Name')}</label>
+                      <input id="cw-sglime" value={leadIme} onChange={e => setLeadIme(e.target.value)} placeholder={L('Tvoje ime', 'Your name')} />
                     </div>
                     <div className="polje">
-                      <label htmlFor="cw-sglemail">Email</label>
-                      <input id="cw-sglemail" type="email" value={leadEmail} onChange={e => setLeadEmail(e.target.value)} placeholder="ti@primer.si" />
+                      <label htmlFor="cw-sglemail">{L('Email', 'Email')}</label>
+                      <input id="cw-sglemail" type="email" value={leadEmail} onChange={e => setLeadEmail(e.target.value)} placeholder={L('ti@primer.si', 'you@example.com')} />
                     </div>
                   </div>
-                  <p className="se-note">Ločeno od anonimne statistike zgoraj. Email uporabimo samo za obvestila; kadar koli se lahko odjaviš.</p>
+                  <p className="se-note">{L('Ločeno od anonimne statistike zgoraj. Email uporabimo samo za obvestila; kadar koli se lahko odjaviš.', 'Separate from the anonymous statistics above. We use your email only for notifications; you can unsubscribe at any time.')}</p>
                 </>
               )}
             </div>
             <div className="soglasje-gumbi">
-              <button type="button" className="gumb" onClick={sprejmiPogoje}>Razumem, gremo →</button>
-              <a className="povezava" href={localePath(locale, `/kalkulator/pogoji`)}>Preberi celotne pogoje</a>
+              <button type="button" className="gumb" onClick={sprejmiPogoje}>{L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
+              <a className="povezava" href={localePath(locale, `/kalkulator/pogoji`)}>{L('Preberi celotne pogoje', 'Read the full terms')}</a>
             </div>
           </div>
         </div>
@@ -6451,13 +6522,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       )}
 
       {onboardingOdprt && (
-        <div className="onboarding" role="dialog" aria-modal="true" aria-label="Katere storitve ponujaš" data-lenis-prevent>
+        <div className="onboarding" role="dialog" aria-modal="true" aria-label={L('Katere storitve ponujaš', 'Which services you offer')} data-lenis-prevent>
           {!vLupini && <div className="glava glava-ozka">{glavaUI()}</div>}
           <div className="oder">
             <div className="korak-vsebina">
-              <p className="ob-kicker">Kalkulator za pošteno ceno in ponudbo</p>
-              <h1 className="ob-naslov">S čim se ukvarjaš?</h1>
-              <p className="sub" style={{ marginBottom: '2rem' }}>To nastaviš enkrat. Izberi svoja področja dela — pripadajoče storitve postavimo v ospredje, ostale skrijemo (do njih prideš z enim klikom). Kadar koli lahko urediš ali preskočiš.</p>
+              <p className="ob-kicker">{L('Kalkulator za pošteno ceno in ponudbo', 'A calculator for fair pricing and quotes')}</p>
+              <h1 className="ob-naslov">{L('S čim se ukvarjaš?', 'What do you do?')}</h1>
+              <p className="sub" style={{ marginBottom: '2rem' }}>{L('To nastaviš enkrat. Izberi svoja področja dela — pripadajoče storitve postavimo v ospredje, ostale skrijemo (do njih prideš z enim klikom). Kadar koli lahko urediš ali preskočiš.', 'You set this once. Pick your fields of work — we bring the matching services to the front and hide the rest (still one click away). You can edit or skip at any time.')}</p>
               <div className="izbira izbira-3 izbira-podrocja">
                 {PODROCJA.map(p => (
                   <button key={p.id} type="button"
@@ -6473,8 +6544,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 ))}
               </div>
               <div className="onboarding-noga onboarding-noga-vrsta">
-                <button type="button" className="povezava" onClick={preskociOnboarding}>Preskoči</button>
-                <button type="button" className="gumb" onClick={shraniOnboarding} disabled={obIzbor.size === 0}>Shrani in začni →</button>
+                <button type="button" className="povezava" onClick={preskociOnboarding}>{L('Preskoči', 'Skip')}</button>
+                <button type="button" className="gumb" onClick={shraniOnboarding} disabled={obIzbor.size === 0}>{L('Shrani in začni →', 'Save and start →')}</button>
               </div>
             </div>
           </div>
@@ -6487,35 +6558,35 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
       <div className="a11y">
         {kazemDostopnost && (
-          <div className="a11y-panel" role="dialog" aria-label="Dostopnost">
-            <button type="button" className="a11y-close" aria-label="Zapri dostopnost" onClick={() => setKazemDostopnost(false)}>×</button>
-            <h2>Dostopnost</h2>
-            <p>Kalkulator je zasnovan tako, da ga lahko uporabljaš z miško, dotikom, tipkovnico ali podpornimi tehnologijami.</p>
-            <h3>Tipkovnica</h3>
+          <div className="a11y-panel" role="dialog" aria-label={L('Dostopnost', 'Accessibility')}>
+            <button type="button" className="a11y-close" aria-label={L('Zapri dostopnost', 'Close accessibility')} onClick={() => setKazemDostopnost(false)}>×</button>
+            <h2>{L('Dostopnost', 'Accessibility')}</h2>
+            <p>{L('Kalkulator je zasnovan tako, da ga lahko uporabljaš z miško, dotikom, tipkovnico ali podpornimi tehnologijami.', 'The calculator is designed so you can use it with a mouse, touch, keyboard or assistive technologies.')}</p>
+            <h3>{L('Tipkovnica', 'Keyboard')}</h3>
             <ul>
-              <li>Tab premika fokus med polji, izbirami in gumbi.</li>
-              <li>Enter premakne kalkulator na naslednji korak, ko nisi v večvrstičnem besedilnem polju.</li>
-              <li>Shift + Tab premakne fokus nazaj.</li>
+              <li>{L('Tab premika fokus med polji, izbirami in gumbi.', 'Tab moves focus between fields, choices and buttons.')}</li>
+              <li>{L('Enter premakne kalkulator na naslednji korak, ko nisi v večvrstičnem besedilnem polju.', 'Enter moves the calculator to the next step when you are not in a multi-line text field.')}</li>
+              <li>{L('Shift + Tab premakne fokus nazaj.', 'Shift + Tab moves focus back.')}</li>
             </ul>
-            <h3>Bralniki zaslona in prikaz</h3>
+            <h3>{L('Bralniki zaslona in prikaz', 'Screen readers and display')}</h3>
             <ul>
-              <li>Glavna polja in gumbi imajo opisne oznake.</li>
-              <li>Stran podpira povečavo brskalnika in sistemske nastavitve za večji tekst.</li>
-              <li>Animacije spoštujejo nastavitev za zmanjšano gibanje.</li>
+              <li>{L('Glavna polja in gumbi imajo opisne oznake.', 'Main fields and buttons have descriptive labels.')}</li>
+              <li>{L('Stran podpira povečavo brskalnika in sistemske nastavitve za večji tekst.', 'The page supports browser zoom and system settings for larger text.')}</li>
+              <li>{L('Animacije spoštujejo nastavitev za zmanjšano gibanje.', 'Animations respect the reduced-motion setting.')}</li>
             </ul>
-            <h3>Glasovni ukazi</h3>
+            <h3>{L('Glasovni ukazi', 'Voice commands')}</h3>
             <ul>
               <li><strong>macOS:</strong> System Settings → Accessibility → Voice Control → Turn on Voice Control.</li>
               <li>iPhone/iPad: Settings → Accessibility → Voice Control.</li>
-              <li><strong>Windows:</strong> Settings → Accessibility → Speech ali Voice access.</li>
-              <li>Ko je funkcija vključena, lahko rečeš na primer “Click Naprej”, “Click Nazaj” ali “Show numbers”.</li>
+              <li><strong>Windows:</strong> {L('Settings → Accessibility → Speech ali Voice access.', 'Settings → Accessibility → Speech or Voice access.')}</li>
+              <li>{L('Ko je funkcija vključena, lahko rečeš na primer “Click Naprej”, “Click Nazaj” ali “Show numbers”.', 'When the feature is on, you can say for example “Click Next”, “Click Back” or “Show numbers”.')}</li>
             </ul>
           </div>
         )}
         <button
           type="button"
           className="a11y-btn"
-          aria-label="Dostopnost"
+          aria-label={L('Dostopnost', 'Accessibility')}
           aria-expanded={kazemDostopnost}
           onClick={() => setKazemDostopnost(v => !v)}
         >
@@ -6528,28 +6599,28 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       {kazemProfil && (
         <>
           <div className="profil-zastor" onClick={() => { setKazemProfil(false); setProfilPogled('meni'); }} aria-hidden />
-          <div className="profil-predal" role="dialog" aria-modal="true" aria-label="Profil" data-lenis-prevent>
+          <div className="profil-predal" role="dialog" aria-modal="true" aria-label={L('Profil', 'Profile')} data-lenis-prevent>
             <div className="profil-glava">
               <div className="profil-glava-zapri">
-                <button type="button" className="op-edit" onClick={() => { setKazemProfil(false); setProfilPogled('meni'); }}>✕ Zapri</button>
+                <button type="button" className="op-edit" onClick={() => { setKazemProfil(false); setProfilPogled('meni'); }}>{L('✕ Zapri', '✕ Close')}</button>
               </div>
               <h2 className="profil-glava-naslov">
                 {profilPogled !== 'meni' && (
                   <button type="button" className="profil-nazaj"
                     onClick={() => profilPogled === 'podjetje-urejanje' ? zapriUrejanjePodjetja() : setProfilPogled('meni')}
-                    aria-label="Nazaj na profil"><ArrowLeft size={17} weight="bold" aria-hidden /></button>
+                    aria-label={L('Nazaj na profil', 'Back to profile')}><ArrowLeft size={17} weight="bold" aria-hidden /></button>
                 )}
-                {profilPogled === 'meni' ? 'Profil'
-                  : profilPogled === 'moji-podatki' ? 'Moji podatki'
-                  : profilPogled === 'zgodovina' ? 'Zgodovina ponudb'
-                    : profilPogled === 'podjetja' ? 'Moje podjetje'
-                      : profilPogled === 'podjetje-urejanje' ? (aktivnoPodjetje || 'Podjetje')
-                        : profilPogled === 'cene-nastavitve' ? 'Cene in storitve'
-                          : profilPogled === 'aplikacija' ? 'Nastavitve aplikacije'
-                            : profilPogled === 'videz' ? 'Videz dokumentov'
-                            : profilPogled === 'stroski' ? 'Moji stroški'
-                              : profilPogled === 'obvestila' ? 'Obveščanja'
-                                : 'Pomoč in kontakt'}
+                {profilPogled === 'meni' ? L('Profil', 'Profile')
+                  : profilPogled === 'moji-podatki' ? L('Moji podatki', 'My details')
+                  : profilPogled === 'zgodovina' ? L('Zgodovina ponudb', 'Quote history')
+                    : profilPogled === 'podjetja' ? L('Moje podjetje', 'My company')
+                      : profilPogled === 'podjetje-urejanje' ? (aktivnoPodjetje || L('Podjetje', 'Company'))
+                        : profilPogled === 'cene-nastavitve' ? L('Cene in storitve', 'Prices and services')
+                          : profilPogled === 'aplikacija' ? L('Nastavitve aplikacije', 'App settings')
+                            : profilPogled === 'videz' ? L('Videz dokumentov', 'Document appearance')
+                            : profilPogled === 'stroski' ? L('Moji stroški', 'My costs')
+                              : profilPogled === 'obvestila' ? L('Obveščanja', 'Notifications')
+                                : L('Pomoč in kontakt', 'Help and contact')}
               </h2>
             </div>
 
@@ -6558,15 +6629,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('moji-podatki')}>
                   <User size={20} weight="bold" />
                   <span>
-                    <strong>Moji podatki</strong>
-                    <small>ime, izkušnje, država in področja dela — kaj ponujaš in privzeta raven cen</small>
+                    <strong>{L('Moji podatki', 'My details')}</strong>
+                    <small>{L('ime, izkušnje, država in področja dela — kaj ponujaš in privzeta raven cen', 'name, experience, country and fields of work — what you offer and the default price level')}</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('zgodovina')}>
                   <ClockCounterClockwise size={20} weight="bold" />
                   <span>
-                    <strong>Zgodovina ponudb</strong>
+                    <strong>{L('Zgodovina ponudb', 'Quote history')}</strong>
                     <small>shranjene cele ponudbe za stranke{Object.keys(arhiv).length > 0 ? ` (${Object.keys(arhiv).length})` : ''}</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
@@ -6574,7 +6645,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('podjetja')}>
                   <Buildings size={20} weight="bold" />
                   <span>
-                    <strong>Moje podjetje</strong>
+                    <strong>{L('Moje podjetje', 'My company')}</strong>
                     <small>podatki v glavi ponudbe, DDV, urne postavke{Object.keys(podjetja).length > 0 ? ` · ${Object.keys(podjetja).length} shranjenih` : ''}</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
@@ -6582,7 +6653,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('cene-nastavitve')}>
                   <SlidersHorizontal size={20} weight="bold" />
                   <span>
-                    <strong>Cene in storitve</strong>
+                    <strong>{L('Cene in storitve', 'Prices and services')}</strong>
                     <small>osnovne cene, razpored, izbris storitev + shranjeni ceniki{Object.keys(profili).length > 0 ? ` (${Object.keys(profili).length})` : ''}</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
@@ -6590,15 +6661,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('videz')}>
                   <PaintBucket size={20} weight="bold" />
                   <span>
-                    <strong>Videz dokumentov</strong>
-                    <small>barva poudarka + pisava naslovov — velja za ponudbe, račune in pogodbe</small>
+                    <strong>{L('Videz dokumentov', 'Document appearance')}</strong>
+                    <small>{L('barva poudarka + pisava naslovov — velja za ponudbe, račune in pogodbe', 'accent color + heading font — applies to quotes, invoices and contracts')}</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('stroski')}>
                   <Wallet size={20} weight="bold" />
                   <span>
-                    <strong>Moji stroški</strong>
+                    <strong>{L('Moji stroški', 'My costs')}</strong>
                     <small>redni mesečni stroški (najem, oprema, programska …){stroski.length > 0 ? ` (${stroski.length})` : ''}</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
@@ -6606,32 +6677,32 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('obvestila')}>
                   <EnvelopeSimple size={20} weight="bold" />
                   <span>
-                    <strong>Obveščanja</strong>
-                    <small>{leadEmail ? `naročen na ${leadEmail}` : 'nisi naročen na obveščanje'}</small>
+                    <strong>{L('Obveščanja', 'Notifications')}</strong>
+                    <small>{leadEmail ? (L('naročen na ', 'subscribed to ') + leadEmail) : L('nisi naročen na obveščanje', 'not subscribed to notifications')}</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('pomoc')}>
                   <UserCircle size={20} weight="bold" />
                   <span>
-                    <strong>Pomoč in kontakt</strong>
-                    <small>vprašanja, pogoji uporabe, pisanje meni osebno</small>
+                    <strong>{L('Pomoč in kontakt', 'Help and contact')}</strong>
+                    <small>{L('vprašanja, pogoji uporabe, pisanje meni osebno', 'questions, terms of use, write to me personally')}</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
                 <button type="button" className="profil-meni-vrsta" onClick={() => setProfilPogled('aplikacija')}>
                   <Gear size={20} weight="bold" />
                   <span>
-                    <strong>Nastavitve aplikacije</strong>
-                    <small>prikaz chat/klasično, ponastavitve</small>
+                    <strong>{L('Nastavitve aplikacije', 'App settings')}</strong>
+                    <small>{L('prikaz chat/klasično, ponastavitve', 'chat/classic view, resets')}</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
                 <a className="profil-meni-vrsta" href={localePath(locale, `/kalkulator/admin`)} style={{ textDecoration: 'none' }}>
                   <SquaresFour size={20} weight="bold" />
                   <span>
-                    <strong>Pregled poslovanja</strong>
-                    <small>koliko uporabnikov, kakšne cene, od kod so (interno)</small>
+                    <strong>{L('Pregled poslovanja', 'Business overview')}</strong>
+                    <small>{L('koliko uporabnikov, kakšne cene, od kod so (interno)', 'how many users, what prices, where they are from (internal)')}</small>
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </a>
@@ -6640,9 +6711,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
             {profilPogled === 'aplikacija' && (
               <>
-                <p className="ob-sub" style={{ margin: '0 0 1.2rem' }}>Prikaz vprašalnika in ponastavitve orodja.</p>
+                <p className="ob-sub" style={{ margin: '0 0 1.2rem' }}>{L('Prikaz vprašalnika in ponastavitve orodja.', 'Questionnaire view and tool resets.')}</p>
                 <label className="se-preklop">
-                  <span><b>Klasičen vprašalnik</b><br /><em style={{ fontWeight: 400 }}>namesto chat pogovora — korak za korakom, kot prej</em></span>
+                  <span><b>{L('Klasičen vprašalnik', 'Classic questionnaire')}</b><br /><em style={{ fontWeight: 400 }}>{L('namesto chat pogovora — korak za korakom, kot prej', 'instead of the chat conversation — step by step, as before')}</em></span>
                   <span className="se-toggle">
                     <input type="checkbox" checked={klasicnaOblika} onChange={preklopiObliko} />
                     <span className="se-slider" aria-hidden />
@@ -6651,11 +6722,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <div className="nast-akcije">
                   <button type="button" className="nast-akcija" onClick={ponastaviVprasalnik}>
                     <ArrowCounterClockwise size={19} weight="bold" aria-hidden />
-                    <span><strong>Ponastavi vprašalnik</strong><small>znova vpraša ime, trg … (ohrani cene)</small></span>
+                    <span><strong>{L('Ponastavi vprašalnik', 'Reset questionnaire')}</strong><small>{L('znova vpraša ime, trg … (ohrani cene)', 'asks again for name, market … (keeps prices)')}</small></span>
                   </button>
                   <button type="button" className="nast-akcija nast-akcija-nevarno" onClick={ponastaviVse}>
                     <Trash size={19} weight="bold" aria-hidden />
-                    <span><strong>Izbriši vse podatke</strong><small>podjetja, cene, zgodovina — celotna ponastavitev</small></span>
+                    <span><strong>{L('Izbriši vse podatke', 'Delete all data')}</strong><small>{L('podjetja, cene, zgodovina — celotna ponastavitev', 'companies, prices, history — a full reset')}</small></span>
                   </button>
                 </div>
               </>
@@ -6667,15 +6738,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
             {profilPogled === 'moji-podatki' && (
               <>
-                <p className="ob-sub" style={{ margin: '0 0 1.3rem' }}>Tvoji osebni podatki — isti, ki jih izpolniš v uvodnem pogovoru. Samodejno se shranijo in določajo privzeto raven cen.</p>
+                <p className="ob-sub" style={{ margin: '0 0 1.3rem' }}>{L('Tvoji osebni podatki — isti, ki jih izpolniš v uvodnem pogovoru. Samodejno se shranijo in določajo privzeto raven cen.', 'Your personal details — the same ones you fill in during the intro conversation. They are saved automatically and set the default price level.')}</p>
                 <div className="kartica">
                   <div className="polje" style={{ marginBottom: '1.4rem' }}>
-                    <label htmlFor="mp-ime">Ime ali vzdevek</label>
-                    <input id="mp-ime" type="text" placeholder="npr. Tina"
+                    <label htmlFor="mp-ime">{L('Ime ali vzdevek', 'Name or nickname')}</label>
+                    <input id="mp-ime" type="text" placeholder={L('npr. Tina', 'e.g. Tina')}
                       value={imeUporabnika} onChange={e => setImeUporabnika(e.target.value)} />
                   </div>
                   <div className="polje" style={{ marginBottom: '1.4rem' }}>
-                    <label>Izkušnje</label>
+                    <label>{L('Izkušnje', 'Experience')}</label>
                     <div className="opts">
                       {CHAT_IZK.map(o => (
                         <button key={o.id} type="button"
@@ -6688,15 +6759,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     </div>
                   </div>
                   <div className="polje">
-                    <label htmlFor="mp-drzava">Država <span className="vec">določi privzet trg / raven cen</span></label>
-                    <IzbirnikDrzave id="mp-drzava" placeholder="npr. Slovenija"
+                    <label htmlFor="mp-drzava">{L('Država', 'Country')} <span className="vec">{L('določi privzet trg / raven cen', 'sets the default market / price level')}</span></label>
+                    <IzbirnikDrzave id="mp-drzava" placeholder={L('npr. Slovenija', 'e.g. Slovenia')}
                       moznosti={DRZAVE.map(d => d.ime)}
                       value={custDrzavaMoj}
                       onChange={v => { setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }} />
                   </div>
                 </div>
                 <div className="kartica">
-                  <div className="k-naslov">Področja dela <span className="vec">določijo, katere storitve so v ospredju</span></div>
+                  <div className="k-naslov">{L('Področja dela', 'Fields of work')} <span className="vec">{L('določijo, katere storitve so v ospredju', 'determine which services are in the front')}</span></div>
                   <div className="chat-podrocja">
                     {PODROCJA.map(p => {
                       const bar = PODROCJE_BARVA[p.id] || '#7C3AED';
@@ -6718,18 +6789,18 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
             {profilPogled === 'zgodovina' && (
               Object.keys(arhiv).length === 0 ? (
-                <p className="ob-sub" style={{ margin: 0 }}>Še nimaš shranjenih ponudb. Na koraku Tvoja ponudba klikni »Shrani ponudbo v arhiv«.</p>
+                <p className="ob-sub" style={{ margin: 0 }}>{L('Še nimaš shranjenih ponudb. Na koraku Tvoja ponudba klikni »Shrani ponudbo v arhiv«.', 'You don\'t have any saved quotes yet. On the Your quote step click «Save quote to archive».')}</p>
               ) : (
                 <div className="profil-seznam">
                   {Object.keys(arhiv).map(ime => (
                     <div key={ime} className="profil-vrsta">
                       <span className="pv-ime">{ime}</span>
-                      <button type="button" className="povezava" onClick={() => { naloziIzArhiva(ime); setKazemProfil(false); setProfilPogled('meni'); }}>↺ Odpri</button>
+                      <button type="button" className="povezava" onClick={() => { naloziIzArhiva(ime); setKazemProfil(false); setProfilPogled('meni'); }}>{L('↺ Odpri', '↺ Open')}</button>
                       <button type="button" className="povezava" title={'Podvoji ' + ime}
                         onClick={() => { podvojiIzArhiva(ime); setKazemProfil(false); setProfilPogled('meni'); }}>
-                        <CopySimple size={16} weight="bold" aria-hidden /> Podvoji
+                        <CopySimple size={16} weight="bold" aria-hidden /> {L('Podvoji', 'Duplicate')}
                       </button>
-                      <button type="button" className="brisi" title={'Izbriši ' + ime} onClick={() => izbrisiIzArhiva(ime)}>×</button>
+                      <button type="button" className="brisi" title={L('Izbriši ', 'Delete ') + ime} onClick={() => izbrisiIzArhiva(ime)}>×</button>
                     </div>
                   ))}
                 </div>
@@ -6738,7 +6809,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
             {profilPogled === 'podjetja' && (
               <>
-                <p className="ob-sub" style={{ margin: '0 0 1.1rem' }}>Podatki za glavo ponudbe — vpišeš enkrat, shranijo se samodejno.</p>
+                <p className="ob-sub" style={{ margin: '0 0 1.1rem' }}>{L('Podatki za glavo ponudbe — vpišeš enkrat, shranijo se samodejno.', 'Details for the quote header — enter once, they are saved automatically.')}</p>
                 {podatkiUI()}
                 {urnePostavkeUI()}
               </>
@@ -6750,7 +6821,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 {urnePostavkeUI()}
                 <button type="button" className="profil-nevarno" style={{ marginTop: '1rem' }}
                   onClick={() => aktivnoPodjetje && izbrisiPodjetje(aktivnoPodjetje)}>
-                  Izbriši to podjetje
+                  {L('Izbriši to podjetje', 'Delete this company')}
                 </button>
               </>
             )}
@@ -6767,17 +6838,17 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         onDrop={() => { if (dragIndex.current !== null) premakniStoritev(dragIndex.current, i); dragIndex.current = null; }}>
                         <span className="drag-rocaj" aria-hidden><DotsSixVertical size={18} weight="bold" /></span>
                         <span className="cv-ime">{s.ime}</span>
-                        <input type="number" min={0} step={50} value={osnovaZa(s)} aria-label={'Osnovna cena: ' + s.ime}
+                        <input type="number" min={0} step={50} value={osnovaZa(s)} aria-label={L('Osnovna cena: ', 'Base price: ') + s.ime}
                           onChange={e => setOsnove({ ...osnove, [s.id]: Number(e.target.value) || 0 })} />
                         <span className="cv-znak">{vfx.znak}</span>
-                        <button type="button" className="brisi" title={'Izbriši ' + s.ime}
+                        <button type="button" className="brisi" title={L('Izbriši ', 'Delete ') + s.ime}
                           onClick={() => odstraniStoritev(s.id)}>×</button>
                       </div>
                     ))}
                   </div>
                   {skrite.length > 0 && (
                     <div className="cene-skrite">
-                      <span className="cs-oznaka">Izbrisano:</span>
+                      <span className="cs-oznaka">{L('Izbrisano:', 'Deleted:')}</span>
                       {skrite.map(id => {
                         const st = STORITVE.find(x => x.id === id);
                         return st ? (
@@ -6787,27 +6858,27 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     </div>
                   )}
                   <div className="cene-dodaj">
-                    <input type="text" placeholder="Tvoja storitev (npr. tetovaža)" value={novaIme}
+                    <input type="text" placeholder={L('Tvoja storitev (npr. tetovaža)', 'Your service (e.g. tattoo)')} value={novaIme}
                       onChange={e => setNovaIme(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label="Ime nove storitve" />
-                    <input type="number" min={0} step={50} placeholder="cena" value={novaCena}
+                      onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label={L('Ime nove storitve', 'Name of the new service')} />
+                    <input type="number" min={0} step={50} placeholder={L('cena', 'price')} value={novaCena}
                       onChange={e => setNovaCena(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label="Cena nove storitve" />
-                    <button type="button" className="povezava" onClick={dodajStoritev}>+ dodaj</button>
+                      onKeyDown={e => { if (e.key === 'Enter') dodajStoritev(); }} aria-label={L('Cena nove storitve', 'Price of the new service')} />
+                    <button type="button" className="povezava" onClick={dodajStoritev}>{L('+ dodaj', '+ add')}</button>
                   </div>
                 </>
               );
               const drugiCeniki = Object.keys(profili).filter(n => n !== aktivniCenik);
               return (
               <>
-                <p className="ob-sub" style={{ marginBottom: '.5rem' }}>Te cene so <b>podlaga za izračun</b> — privzete (slovenski trg) delujejo takoj, prilagodi jih svojim. Razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš.</p>
-                <button type="button" className="povezava povezava-roza" style={{ marginBottom: '.6rem' }} onClick={() => setProfilPogled('moji-podatki')}>↳ Uredi področja dela (v Moji podatki)</button>
+                <p className="ob-sub" style={{ marginBottom: '.5rem' }}>{L('Te cene so', 'These prices are')} <b>{L('podlaga za izračun', 'the basis for the calculation')}</b> {L('— privzete (slovenski trg) delujejo takoj, prilagodi jih svojim. Razporedi (povleci ročaj ⣿) in izbriši (×), kar ne ponujaš.', '— the defaults (Slovenian market) work right away, adjust them to your own. Reorder (drag the handle ⣿) and delete (×) what you don\'t offer.')}</p>
+                <button type="button" className="povezava povezava-roza" style={{ marginBottom: '.6rem' }} onClick={() => setProfilPogled('moji-podatki')}>{L('↳ Uredi področja dela (v Moji podatki)', '↳ Edit fields of work (in My details)')}</button>
                 <button type="button" className="povezava" style={{ display: 'block', marginBottom: '1.3rem', color: cenaResetPotrdi ? 'var(--accent)' : 'rgba(17,17,17,.5)', fontWeight: cenaResetPotrdi ? 700 : 500 }}
-                  title="Vrni vse cene na privzete (Pinart / slovenski trg)"
+                  title={L('Vrni vse cene na privzete (Pinart / slovenski trg)', 'Reset all prices to defaults (Pinart / Slovenian market)')}
                   onClick={() => {
                     if (cenaResetPotrdi) { setOsnove({}); setCenaResetPotrdi(false); }
                     else { setCenaResetPotrdi(true); window.setTimeout(() => setCenaResetPotrdi(false), 3500); }
-                  }}>↺ {cenaResetPotrdi ? 'Res ponastavim vse cene? Klikni še enkrat' : 'Ponastavi cene na privzete'}</button>
+                  }}>↺ {cenaResetPotrdi ? L('Res ponastavim vse cene? Klikni še enkrat', 'Reset all prices? Click again') : L('Ponastavi cene na privzete', 'Reset prices to defaults')}</button>
 
                 {/* DELOVNI (aktivni) cenik — naslov je UREDLJIV (preimenuješ ga kar tu); cene notri */}
                 <details ref={delovniCenikRef} className="cenik-card cenik-aktiven" open={delovniCenikOdprt}
@@ -6815,7 +6886,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <summary>
                     <span className="cenik-ime-ovoj" onClick={e => { e.stopPropagation(); (e.currentTarget.querySelector('input') as HTMLInputElement | null)?.focus(); }}>
                       <input className="cenik-ime-vnos" key={aktivniCenik || '__osnovni'}
-                        defaultValue={aktivniCenik || ''} placeholder="Osnovni cenik" aria-label="Ime cenika — klikni za urejanje"
+                        defaultValue={aktivniCenik || ''} placeholder={L('Osnovni cenik', 'Base price list')} aria-label={L('Ime cenika — klikni za urejanje', 'Price list name — click to edit')}
                         onClick={e => e.stopPropagation()}
                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitCenikIme(e.currentTarget.value); e.currentTarget.blur(); } }}
                         onBlur={e => commitCenikIme(e.currentTarget.value)} />
@@ -6833,10 +6904,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     <summary>
                       <span className="cenik-ime">{name}</span>
                       <CaretDown className="cenik-arrow" size={16} weight="bold" aria-hidden />
-                      <button type="button" className="cenik-brisi" aria-label={'Izbriši cenik ' + name} title={'Izbriši ' + name}
+                      <button type="button" className="cenik-brisi" aria-label={L('Izbriši cenik ', 'Delete price list ') + name} title={L('Izbriši ', 'Delete ') + name}
                         onClick={e => { e.preventDefault(); e.stopPropagation(); izbrisiProfil(name); }}>×</button>
                     </summary>
-                    <div className="cenik-telo"><p className="hint" style={{ margin: 0 }}>Naložim ta cenik za urejanje …</p></div>
+                    <div className="cenik-telo"><p className="hint" style={{ margin: 0 }}>{L('Naložim ta cenik za urejanje …', 'Load this price list for editing …')}</p></div>
                   </details>
                 ))}
 
@@ -6855,7 +6926,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       d.scrollIntoView({ block: 'start', behavior: 'smooth' });
                       (d.querySelector('.cenik-ime-ovoj input') as HTMLInputElement | null)?.focus();
                     });
-                  }}>+ Dodaj nov cenik</button>
+                  }}>{L('+ Dodaj nov cenik', '+ Add new price list')}</button>
               </>
               );
             })()}
@@ -6863,36 +6934,36 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
             {profilPogled === 'stroski' && (
               <>
-                <p className="ob-sub" style={{ margin: '0 0 1.2rem' }}>Redni mesečni stroški (najem, programska oprema, zavarovanje, oprema …) — za tvoj pregled. Zaenkrat se ne vštevajo samodejno v izračun cene ponudb.</p>
+                <p className="ob-sub" style={{ margin: '0 0 1.2rem' }}>{L('Redni mesečni stroški (najem, programska oprema, zavarovanje, oprema …) — za tvoj pregled. Zaenkrat se ne vštevajo samodejno v izračun cene ponudb.', 'Regular monthly costs (rent, software, insurance, equipment …) — for your overview. For now they are not automatically included in the quote price calculation.')}</p>
                 {stroski.length > 0 && (
                   <>
                     <div className="strosek-seznam">
                       {stroski.map((s, i) => (
                         <div key={i} className="strosek-vrsta">
-                          <input type="text" value={s.ime} aria-label={'Ime stroška ' + (i + 1)}
+                          <input type="text" value={s.ime} aria-label={L('Ime stroška ', 'Cost name ') + (i + 1)}
                             onChange={e => urediStrosek(i, 'ime', e.target.value)} />
-                          <input type="number" min={0} step={5} value={s.znesek} aria-label={'Znesek stroška ' + (i + 1)}
+                          <input type="number" min={0} step={5} value={s.znesek} aria-label={L('Znesek stroška ', 'Cost amount ') + (i + 1)}
                             onChange={e => urediStrosek(i, 'znesek', e.target.value)} />
                           <span className="sv-znak">{vfx.znak}/mes.</span>
-                          <button type="button" className="brisi" title="Izbriši" onClick={() => odstraniStrosek(i)}>×</button>
+                          <button type="button" className="brisi" title={L('Izbriši', 'Delete')} onClick={() => odstraniStrosek(i)}>×</button>
                         </div>
                       ))}
                     </div>
                     <p className="strosek-skupaj">
-                      Skupaj: <b>{stroski.reduce((a, s) => a + (Number(s.znesek) || 0), 0).toLocaleString('sl-SI')} {vfx.znak} / mesec</b>
+                      {L('Skupaj:', 'Total:')} <b>{stroski.reduce((a, s) => a + (Number(s.znesek) || 0), 0).toLocaleString('sl-SI')} {vfx.znak} / mesec</b>
                     </p>
                   </>
                 )}
                 <div className="podjetja-shrani">
-                  <input type="text" placeholder="Ime stroška (npr. najem studia, Adobe licenca …)" value={novStrosekIme}
+                  <input type="text" placeholder={L('Ime stroška (npr. najem studia, Adobe licenca …)', 'Cost name (e.g. studio rental, Adobe license …)')} value={novStrosekIme}
                     onChange={e => setNovStrosekIme(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && novStrosekIme.trim()) dodajStrosek(); }}
-                    aria-label="Ime novega stroška" />
+                    aria-label={L('Ime novega stroška', 'Name of the new cost')} />
                   <input type="number" min={0} step={5} placeholder={`znesek / mesec (${vfx.znak})`} value={novStrosekZnesek}
                     onChange={e => setNovStrosekZnesek(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && novStrosekIme.trim()) dodajStrosek(); }}
-                    aria-label="Znesek novega stroška" />
-                  <button type="button" className="dodaj-gumb" onClick={dodajStrosek} disabled={!novStrosekIme.trim()}>+ Dodaj strošek</button>
+                    aria-label={L('Znesek novega stroška', 'Amount of the new cost')} />
+                  <button type="button" className="dodaj-gumb" onClick={dodajStrosek} disabled={!novStrosekIme.trim()}>{L('+ Dodaj strošek', '+ Add cost')}</button>
                 </div>
               </>
             )}
@@ -6901,20 +6972,20 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <>
                 {potrdiOdjavo ? (
                   <div className="odjava-potrdi">
-                    <p className="ob-sub" style={{ margin: '0 0 1.2rem', fontSize: '1.05rem' }}>Res se želiš odjaviti od obveščanja? 😢</p>
+                    <p className="ob-sub" style={{ margin: '0 0 1.2rem', fontSize: '1.05rem' }}>{L('Res se želiš odjaviti od obveščanja? 😢', 'Are you sure you want to unsubscribe? 😢')}</p>
                     <div className="onboarding-noga">
                       <button type="button" className="gumb" onClick={() => {
                         setLeadIme(''); setLeadEmail('');
                         try { localStorage.removeItem(K_LEAD); } catch { /* prazno */ }
                         setPotrdiOdjavo(false);
-                      }}>Da, odjavi me</button>
-                      <button type="button" className="povezava" onClick={() => setPotrdiOdjavo(false)}>Prekliči</button>
+                      }}>{L('Da, odjavi me', 'Yes, unsubscribe me')}</button>
+                      <button type="button" className="povezava" onClick={() => setPotrdiOdjavo(false)}>{L('Prekliči', 'Cancel')}</button>
                     </div>
                   </div>
                 ) : (
                   <>
                     <label className="se-preklop" style={{ marginBottom: '1.3rem' }}>
-                      <span>Obveščaj me o orodju in nasvetih za kreativce <em>(neobvezno)</em></span>
+                      <span>{L('Obveščaj me o orodju in nasvetih za kreativce', 'Keep me posted about the tool and tips for creatives')} <em>{L('(neobvezno)', '(optional)')}</em></span>
                       <span className="se-toggle">
                         <input type="checkbox" checked={Boolean(leadEmail.trim())}
                           onChange={() => { if (leadEmail.trim()) setPotrdiOdjavo(true); }} />
@@ -6923,14 +6994,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     </label>
                     <div className="numgrid" style={{ marginTop: 0 }}>
                       <div className="polje">
-                        <label htmlFor="cw-profime">Ime</label>
+                        <label htmlFor="cw-profime">{L('Ime', 'Name')}</label>
                         <input id="cw-profime" value={leadIme} onChange={e => {
                           setLeadIme(e.target.value);
                           try { localStorage.setItem(K_LEAD, JSON.stringify({ ime: e.target.value, email: leadEmail })); } catch { /* poln */ }
                         }} />
                       </div>
                       <div className="polje">
-                        <label htmlFor="cw-profemail">Email</label>
+                        <label htmlFor="cw-profemail">{L('Email', 'Email')}</label>
                         <input id="cw-profemail" type="email" value={leadEmail} onChange={e => {
                           setLeadEmail(e.target.value);
                           try { localStorage.setItem(K_LEAD, JSON.stringify({ ime: leadIme, email: e.target.value })); } catch { /* poln */ }
@@ -6938,7 +7009,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       </div>
                     </div>
                     {!leadEmail.trim() && (
-                      <p className="ob-sub" style={{ margin: '.8rem 0 0', fontSize: '.85rem' }}>Vpiši ime in email, da se prijaviš — shrani se samodejno.</p>
+                      <p className="ob-sub" style={{ margin: '.8rem 0 0', fontSize: '.85rem' }}>{L('Vpiši ime in email, da se prijaviš — shrani se samodejno.', 'Enter your name and email to sign up — it is saved automatically.')}</p>
                     )}
                   </>
                 )}
@@ -6947,10 +7018,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
             {profilPogled === 'pomoc' && (
               <>
-                <p className="ob-sub" style={{ margin: '0 0 1.3rem' }}>Vprašanje, predlog ali težava z orodjem? Pišem in berem osebno.</p>
+                <p className="ob-sub" style={{ margin: '0 0 1.3rem' }}>{L('Vprašanje, predlog ali težava z orodjem? Pišem in berem osebno.', 'A question, suggestion or problem with the tool? I write and read personally.')}</p>
                 <a href="mailto:tina@pinart.si" className="pomoc-mail">✉ tina@pinart.si</a>
                 <p className="ob-sub" style={{ margin: '1.3rem 0 0' }}>
-                  <a href={localePath(locale, `/kalkulator/pogoji`)} style={{ color: 'var(--ink)' }}>Pogoji uporabe kalkulatorja →</a>
+                  <a href={localePath(locale, `/kalkulator/pogoji`)} style={{ color: 'var(--ink)' }}>{L('Pogoji uporabe kalkulatorja →', 'Calculator terms of use →')}</a>
                 </p>
               </>
             )}
@@ -6963,9 +7034,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           na zaslonu dva enaka naslova drug pod drugim. */}
       {vLupini && !uvodChat && korak === 0 && (
         <header className="lupina-glava">
-          <p className="lg-kicker">Ponudba</p>
-          <h1 className="lg-naslov">Kalkulator ponudbe.</h1>
-          <p className="lg-uvod">Za enkraten projekt; izračuna <b>izvedbo</b>, <b>avtorske pravice</b> in <b>licenco</b> ter iz njih sestavi ponudbo v treh različicah.</p>
+          <p className="lg-kicker">{L('Ponudba', 'Quote')}</p>
+          <h1 className="lg-naslov">{L('Kalkulator ponudbe.', 'Quote calculator.')}</h1>
+          <p className="lg-uvod">{L('Za enkraten projekt; izračuna', 'For a one-off project; it calculates')} <b>{L('izvedbo', 'production')}</b>, <b>{L('avtorske pravice', 'copyright')}</b> {L('in', 'and')} <b>{L('licenco', 'a license')}</b> {L('ter iz njih sestavi ponudbo v treh različicah.', 'and assembles them into a quote in three versions.')}</p>
         </header>
       )}
 
@@ -6975,7 +7046,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           {korak === zakljucekStep && (
             <div className="zakljucek-lik" aria-hidden>
               <div className="pon-lik-ovoj">
-                <svg className="pon-lik" viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ponudba pripravljena">
+                <svg className="pon-lik" viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label={L('Ponudba pripravljena', 'Quote ready')}>
                   <ellipse className="pon-senca" cx="60" cy="133" rx="30" ry="4.5" fill="rgba(17,17,17,.12)" />
                   <g className="pon-telo" fill="none" stroke="rgba(17,17,17,.46)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M36 16 h36 l18 18 v66 a6 6 0 0 1 -6 6 H36 a6 6 0 0 1 -6 -6 V22 a6 6 0 0 1 6 -6 z" />
@@ -7022,22 +7093,22 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   {/* Uvodni pogovor je stvar Flowa, ne kalkulatorja: ista vprasanja
                       pridejo tudi z bannerja na plosci, kalkulator pa je le eno
                       od orodij. Zato naslov nagovarja na ravni Flowa. */}
-                  <p className="ob-kicker">Spoznajva se</p>
-                  <h1 className="ob-naslov uvod-h">Živjo, sem Flow.</h1>
-                  <p className="sub uvod-sub">Nekaj vprašanj, da te spoznam — potem so cene, ponudbe in cilji nastavljeni po tebi, ne po privzetih številkah.</p>
-                  <p className="uvod-enkrat">To te vprašam samo enkrat. Pozneje se ne ponovi, odgovore lahko kadar koli spremeniš v profilu.</p>
+                  <p className="ob-kicker">{L('Spoznajva se', 'Let\'s get to know each other')}</p>
+                  <h1 className="ob-naslov uvod-h">{L('Živjo, sem Flow.', 'Hi, I\'m Flow.')}</h1>
+                  <p className="sub uvod-sub">{L('Nekaj vprašanj, da te spoznam — potem so cene, ponudbe in cilji nastavljeni po tebi, ne po privzetih številkah.', 'A few questions so I get to know you — then prices, quotes and goals are set around you, not around default numbers.')}</p>
+                  <p className="uvod-enkrat">{L('To te vprašam samo enkrat. Pozneje se ne ponovi, odgovore lahko kadar koli spremeniš v profilu.', 'I only ask this once. It won\'t repeat later, and you can change your answers anytime in your profile.')}</p>
                 </div>
               )}
               {/* transkript vprasanj — samo MED onboardingom ali ko je bil opravljen ta obisk;
                   za ze onboardanega (chatKorak 0, brez uvodChat) se NE prikaze, da vprasanje ne visi */}
               {(uvodChat || chatKorak > 0) && (<>
               <div className="chat-bot"><span className="chat-obraz" aria-hidden />
-                <span className="chat-mehur"><b>Živjo! Kako ti je ime?</b></span></div>
+                <span className="chat-mehur"><b>{L('Živjo! Kako ti je ime?', 'Hi! What\'s your name?')}</b></span></div>
               {chatKorak > 0 && uvodOdgovorMehur(0, imeUporabnika || '—')}
 
               {chatKorak >= 1 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
-                  <span className="chat-mehur"><b>Kakšne izkušnje imaš?</b><small>Vpliva na ceno ponudbe.</small></span></div>
+                  <span className="chat-mehur"><b>{L('Kakšne izkušnje imaš?', 'How much experience do you have?')}</b><small>{L('Vpliva na ceno ponudbe.', 'Affects the quote price.')}</small></span></div>
               )}
               {uvodChat && chatKorak === 1 && (
                 <div className="chat-izbire">
@@ -7050,42 +7121,42 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               )}
               {/* rezerva je IZKUSNJE (vseh pet), ne fiksen niz: kdor je v Profilu
                   izbral "Študent", je prej v pogovoru bral "Nekaj let izkušenj" */}
-              {chatKorak > 1 && uvodOdgovorMehur(1, CHAT_IZK.find(o => o.id === izkusnje)?.ime || IZKUSNJE.find(o => o.id === izkusnje)?.ime || 'Nekaj let izkušenj')}
+              {chatKorak > 1 && uvodOdgovorMehur(1, CHAT_IZK.find(o => o.id === izkusnje)?.ime || IZKUSNJE.find(o => o.id === izkusnje)?.ime || L('Nekaj let izkušenj', 'A few years of experience'))}
 
               {/* O TEBI: podjetje + tvoja regija (na zacetku, kot dogovorjeno) */}
               {chatKorak >= 2 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
-                  <span className="chat-mehur"><b>V imenu katerega podjetja izdajaš ponudbo?</b><small>Podatki za glavo ponudbe. Obvezno je le ime — če nimaš podjetja, vpiši svoje ime. Ostalo izpolni, kar imaš (lahko dopolniš pozneje).</small></span></div>
+                  <span className="chat-mehur"><b>{L('V imenu katerega podjetja izdajaš ponudbo?', 'On behalf of which company are you issuing the quote?')}</b><small>{L('Podatki za glavo ponudbe. Obvezno je le ime — če nimaš podjetja, vpiši svoje ime. Ostalo izpolni, kar imaš (lahko dopolniš pozneje).', 'Details for the quote header. Only the name is required — if you don\'t have a company, enter your own name. Fill in the rest as you have it (you can complete it later).')}</small></span></div>
               )}
               {uvodChat && chatKorak === 2 && (
                 <form className="uv-forma" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
                   <div className="uv-polje uv-polje-siroko">
-                    <label htmlFor="uv-pime">Ime / podjetje <span className="uv-neobvezno">obvezno</span></label>
-                    <input id="uv-pime" ref={uvodVnosRef} type="text" placeholder="Rdeča kapica d.o.o. ali tvoje ime"
+                    <label htmlFor="uv-pime">{L('Ime / podjetje', 'Name / company')} <span className="uv-neobvezno">{L('obvezno', 'required')}</span></label>
+                    <input id="uv-pime" ref={uvodVnosRef} type="text" placeholder={L('Rdeča kapica d.o.o. ali tvoje ime', 'Little Red Riding Hood Ltd. or your name')}
                       value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })} />
                   </div>
                   <div className="uv-polje uv-polje-siroko">
-                    <label htmlFor="uv-pdrzava">Država <span className="uv-neobvezno">določi privzet trg / raven cen</span></label>
-                    <IzbirnikDrzave id="uv-pdrzava" placeholder="npr. Slovenija"
+                    <label htmlFor="uv-pdrzava">{L('Država', 'Country')} <span className="uv-neobvezno">{L('določi privzet trg / raven cen', 'sets the default market / price level')}</span></label>
+                    <IzbirnikDrzave id="uv-pdrzava" placeholder={L('npr. Slovenija', 'e.g. Slovenia')}
                       moznosti={DRZAVE.map(d => d.ime)}
                       value={custDrzavaMoj}
                       onChange={v => { setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }} />
                   </div>
                   <div className="uv-mreza">
                     <div className="uv-polje">
-                      <label htmlFor="uv-pdavcna">Davčna številka <span className="uv-neobvezno">neobvezno</span></label>
-                      <input id="uv-pdavcna" type="text" placeholder="SI98765432"
+                      <label htmlFor="uv-pdavcna">{L('Davčna številka', 'Tax number')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
+                      <input id="uv-pdavcna" type="text" placeholder={L('SI98765432', 'SI98765432')}
                         value={ponudnik.davcna} onChange={e => setPonudnik({ ...ponudnik, davcna: e.target.value })} />
                     </div>
                     <div className="uv-polje">
-                      <label htmlFor="uv-pemail">Email <span className="uv-neobvezno">neobvezno</span></label>
-                      <input id="uv-pemail" type="email" placeholder="kapica@gozd.si"
+                      <label htmlFor="uv-pemail">{L('Email', 'Email')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
+                      <input id="uv-pemail" type="email" placeholder={L('kapica@gozd.si', 'kapica@gozd.si')}
                         value={ponudnik.email} onChange={e => setPonudnik({ ...ponudnik, email: e.target.value })} />
                     </div>
                     <div className="uv-polje">
-                      <label htmlFor="uv-ptelefon">Telefon <span className="uv-neobvezno">neobvezno</span></label>
+                      <label htmlFor="uv-ptelefon">{L('Telefon', 'Phone')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
                       <div className="tel-vrsta">
-                        <select aria-label="Klicna koda države" value={predklic} onChange={e => setPredklic(e.target.value)}>
+                        <select aria-label={L('Klicna koda države', 'Country calling code')} value={predklic} onChange={e => setPredklic(e.target.value)}>
                           {['+386', '+385', '+43', '+49', '+39', '+44', '+33', '+1', '+971', '+20'].map(k => (
                             <option key={k} value={k}>{k}</option>
                           ))}
@@ -7095,24 +7166,24 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       </div>
                     </div>
                     <div className="uv-polje">
-                      <label htmlFor="uv-ptrr">TRR (bančni račun) <span className="uv-neobvezno">neobvezno</span></label>
-                      <input id="uv-ptrr" type="text" placeholder="SI56 1910 0001 2345 678"
+                      <label htmlFor="uv-ptrr">{L('TRR (bančni račun)', 'Bank account (IBAN)')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
+                      <input id="uv-ptrr" type="text" placeholder={L('SI56 1910 0001 2345 678', 'SI56 1910 0001 2345 678')}
                         value={ponudnik.trr} onChange={e => setPonudnik({ ...ponudnik, trr: e.target.value })} />
                     </div>
                     <div className="uv-polje uv-polje-siroko">
-                      <label htmlFor="uv-pnaslov">Naslov <span className="uv-neobvezno">neobvezno</span></label>
-                      <input id="uv-pnaslov" type="text" placeholder="Gozdna pot 13, 4000 Kranj"
+                      <label htmlFor="uv-pnaslov">{L('Naslov', 'Address')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
+                      <input id="uv-pnaslov" type="text" placeholder={L('Gozdna pot 13, 4000 Kranj', 'Forest Road 13, 4000 Kranj')}
                         value={ponudnik.naslov} onChange={e => setPonudnik({ ...ponudnik, naslov: e.target.value })} />
                     </div>
                   </div>
-                  <button type="submit" className="gumb" disabled={!ponudnik.ime.trim()}>Naprej <ArrowDown size={15} weight="bold" aria-hidden /></button>
+                  <button type="submit" className="gumb" disabled={!ponudnik.ime.trim()}>{L('Naprej', 'Next')} <ArrowDown size={15} weight="bold" aria-hidden /></button>
                 </form>
               )}
               {chatKorak > 2 && uvodOdgovorMehur(2, ponudnik.ime.trim() + (custDrzavaMoj.trim() ? ' · ' + custDrzavaMoj.trim() : '') || '—')}
 
               {chatKorak >= 4 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
-                  <span className="chat-mehur"><b>S katerimi področji se ukvarjaš?</b><small>Izbereš lahko več — pokažem samo tvoje storitve.</small></span></div>
+                  <span className="chat-mehur"><b>{L('S katerimi področji se ukvarjaš?', 'Which fields do you work in?')}</b><small>{L('Izbereš lahko več — pokažem samo tvoje storitve.', 'You can pick several — I\'ll show only your services.')}</small></span></div>
               )}
               {uvodChat && chatKorak === 4 && (
                 <>
@@ -7131,28 +7202,28 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       );
                     })}
                   </div>
-                  <div className="chat-vnos"><button type="button" className="gumb" disabled={obIzbor.size === 0} onClick={uvodPotrdiPodrocja}>Naprej <ArrowDown size={15} weight="bold" aria-hidden /></button></div>
+                  <div className="chat-vnos"><button type="button" className="gumb" disabled={obIzbor.size === 0} onClick={uvodPotrdiPodrocja}>{L('Naprej', 'Next')} <ArrowDown size={15} weight="bold" aria-hidden /></button></div>
                 </>
               )}
               {chatKorak > 4 && obIzbor.size > 0 && uvodOdgovorMehur(4, [...obIzbor].map(id => PODROCJA.find(p => p.id === id)?.ime).filter(Boolean).join(', '))}
 
               {chatKorak >= 5 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
-                  <span className="chat-mehur"><b>Nova ponudba ali nadaljuješ obstoječo?</b></span></div>
+                  <span className="chat-mehur"><b>{L('Nova ponudba ali nadaljuješ obstoječo?', 'A new quote or continuing an existing one?')}</b></span></div>
               )}
               {uvodChat && chatKorak === 5 && (
                 <div className="chat-izbire">
                   <button type="button" className="chat-opcija" onClick={() => uvodNovaObstojeca(true)}>
-                    <span className="crk">A</span><b>Nova ponudba</b></button>
+                    <span className="crk">A</span><b>{L('Nova ponudba', 'New quote')}</b></button>
                   <button type="button" className="chat-opcija" onClick={() => uvodNovaObstojeca(false)}>
-                    <span className="crk">B</span><b>Obstoječa ponudba</b><small>{Object.keys(arhiv).length ? 'naložim zadnjo iz arhiva' : 'v arhivu še ni ponudb'}</small></button>
+                    <span className="crk">B</span><b>{L('Obstoječa ponudba', 'Existing quote')}</b><small>{Object.keys(arhiv).length ? L('naložim zadnjo iz arhiva', "I'll load the latest from the archive") : L('v arhivu še ni ponudb', 'no quotes in the archive yet')}</small></button>
                 </div>
               )}
-              {chatKorak > 5 && chatNova !== null && uvodOdgovorMehur(5, chatNova ? 'Nova ponudba' : 'Obstoječa ponudba')}
+              {chatKorak > 5 && chatNova !== null && uvodOdgovorMehur(5, chatNova ? L('Nova ponudba', 'New quote') : L('Obstoječa ponudba', 'Existing quote'))}
 
               {chatKorak >= 6 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
-                  <span className="chat-mehur"><b>Kako naj se imenuje ponudba?</b><small>Npr. »Inovis — prenova CGP in spletne strani«.</small></span></div>
+                  <span className="chat-mehur"><b>{L('Kako naj se imenuje ponudba?', 'What should the quote be called?')}</b><small>{L('Npr. »Inovis — prenova CGP in spletne strani«.', 'E.g. «Inovis — corporate identity and website redesign».')}</small></span></div>
               )}
               {!uvodChat && nazivPonudbe.trim() && <div className="chat-jaz"><span className="chat-mehur">{nazivPonudbe}</span></div>}
               </>)}
@@ -7163,13 +7234,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <span className="chat-mehur pozdrav-mehur">
                     <b>Hej{imeVelika ? ' ' + imeVelika : ''}{(ponudnik.ime.trim() || Object.keys(podjetja).length > 0) ? ',' : '!'}</b>
                     {(ponudnik.ime.trim() || Object.keys(podjetja).length > 0) && (
-                      <select className="pozdrav-select" aria-label="Podjetje ponudbe"
+                      <select className="pozdrav-select" aria-label={L('Podjetje ponudbe', 'Quote company')}
                         style={{ width: `calc(${Math.max((aktivnoPodjetje && podjetja[aktivnoPodjetje] ? aktivnoPodjetje : (ponudnik.ime.trim() || 'brez podjetja')).length, 4)}ch + 1.7rem)` }}
                         value={aktivnoPodjetje && podjetja[aktivnoPodjetje] ? aktivnoPodjetje : '__cur'}
                         onChange={e => { const v = e.target.value; if (v === '__uredi') { setKazemProfil(true); setProfilPogled('podjetja'); } else if (v !== '__cur') preklopiPodjetje(v); }}>
                         {(!aktivnoPodjetje || !podjetja[aktivnoPodjetje]) && <option value="__cur">{ponudnik.ime.trim() || 'brez podjetja'}</option>}
                         {Object.keys(podjetja).map(ime => <option key={ime} value={ime}>{ime}</option>)}
-                        <option value="__uredi">+ dodaj podjetje …</option>
+                        <option value="__uredi">{L('+ dodaj podjetje …', '+ add company …')}</option>
                       </select>
                     )}
                   </span></div>
@@ -7179,11 +7250,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {!uvodChat && !namigSkrit && (
                 <>
                   <div className="chat-bot" id="cw-storitve-zacetek"><span className="chat-obraz" aria-hidden />
-                    <span className="chat-mehur"><b>Super! Izberi storitve, ki jih želiš v ponudbi.</b></span></div>
+                    <span className="chat-mehur"><b>{L('Super! Izberi storitve, ki jih želiš v ponudbi.', 'Great! Pick the services you want in the quote.')}</b></span></div>
                   <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                     <span className="chat-mehur chat-mehur-namig">
-                      <button type="button" className="namig-zapri" aria-label="Zapri namig" title="Zapri (znova le ob ponastavitvi)" onClick={() => setNamigSkrit(true)}>✕</button>
-                      S klikom na storitev jo dodaš v ponudbo.
+                      <button type="button" className="namig-zapri" aria-label={L('Zapri namig', 'Close hint')} title={L('Zapri (znova le ob ponastavitvi)', 'Close (shows again only after a reset)')} onClick={() => setNamigSkrit(true)}>✕</button>
+                      {L('S klikom na storitev jo dodaš v ponudbo.', 'Click a service to add it to the quote.')}
                     </span></div>
                 </>
               )}
@@ -7197,10 +7268,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   pri vprasanju "Kako ti je ime?" ni nobenih storitev, ki bi jih
                   prikazoval, zato je bral kot tri gumbi brez pomena. */}
               {!uvodChat && <div className="chat-bot orbpogled-vrsta"><span className="chat-obraz" aria-hidden />
-                <div className="segpills segpills-orbpogled" role="group" aria-label="Prikaz storitev">
-                  <button type="button" className={!orbTabela && !pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(false); }}>Mehurčki</button>
-                  <button type="button" className={!orbTabela && pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(true); }}>Mreža</button>
-                  <button type="button" className={orbTabela ? 'on' : ''} onClick={() => setOrbTabela(true)}>Tabela</button>
+                <div className="segpills segpills-orbpogled" role="group" aria-label={L('Prikaz storitev', 'Service view')}>
+                  <button type="button" className={!orbTabela && !pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(false); }}>{L('Mehurčki', 'Bubbles')}</button>
+                  <button type="button" className={!orbTabela && pogledMreza ? 'on' : ''} onClick={() => { setOrbTabela(false); setPogledMreza(true); }}>{L('Mreža', 'Grid')}</button>
+                  <button type="button" className={orbTabela ? 'on' : ''} onClick={() => setOrbTabela(true)}>{L('Tabela', 'Table')}</button>
                 </div>
               </div>}
 
@@ -7209,9 +7280,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <form className="chat-vnos" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
                   <input autoFocus type="text" value={chatVnos}
                     onChange={e => setChatVnos(e.target.value)}
-                    placeholder={chatKorak === 0 ? 'Ime ali vzdevek' : 'Ime ponudbe'} />
+                    placeholder={chatKorak === 0 ? L('Ime ali vzdevek', 'Name or nickname') : L('Ime ponudbe', 'Quote name')} />
                   <button type="submit" className="gumb" disabled={chatKorak === 0 && !chatVnos.trim()}>
-                    {chatKorak === 6 ? 'Začni' : 'Naprej'} <ArrowDown size={15} weight="bold" aria-hidden />
+                    {chatKorak === 6 ? L('Začni', 'Start') : L('Naprej', 'Next')} <ArrowDown size={15} weight="bold" aria-hidden />
                   </button>
                 </form>
               )}
@@ -7246,7 +7317,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {/* ── platno z orbi: svobodno lebdijo na istem ozadju (brez obrezovanja) ── */}
               {!orbTabela && !pogledMreza && (
               <div className="platno0-drs">
-              <div className="platno0" aria-label="Storitve" style={{ minHeight: orbVrstic * orbRowH + 30 }}>
+              <div className="platno0" aria-label={L('Storitve', 'Services')} style={{ minHeight: orbVrstic * orbRowH + 30 }}>
                 {orbStoritve.map((s, i) => {
                   const p = orbPoz(i);
                   const barvi = ORB_BARVE[i % ORB_BARVE.length];
@@ -7285,7 +7356,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       )}
                       {on && (
                         <span className="kolic0" role="button" tabIndex={0}
-                          title="Odstrani zadnjo vrstico te storitve"
+                          title={L('Odstrani zadnjo vrstico te storitve', 'Remove the last row of this service')}
                           onClick={e => { e.stopPropagation(); odvzemiStoritev(s.id); }}
                           onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); odvzemiStoritev(s.id); } }}>
                           ×{q}
@@ -7318,7 +7389,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       onClick={() => setKazemUredi(true)}>
                       <span className="orb0-krog" aria-hidden />
                       <Plus size={22} aria-hidden />
-                      <span className="orb0-ime">dodaj / uredi</span>
+                      <span className="orb0-ime">{L('dodaj / uredi', 'add / edit')}</span>
                     </button>
                   );
                 })()}
@@ -7351,7 +7422,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                                 <span className="mk-ime">{KRATKO[s.id] || s.ime}</span>
                                 <span className="mk-cena">od {val(osnovaZa(s))}</span>
                                 {on && (
-                                  <span className="mk-kolic" role="button" tabIndex={0} title="Odstrani zadnjo vrstico te storitve"
+                                  <span className="mk-kolic" role="button" tabIndex={0} title={L('Odstrani zadnjo vrstico te storitve', 'Remove the last row of this service')}
                                     onClick={e => { e.stopPropagation(); odvzemiStoritev(s.id); }}
                                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); odvzemiStoritev(s.id); } }}>×{q}</span>
                                 )}
@@ -7363,8 +7434,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                               <div className="mreza-prazno" aria-hidden />
                               <button type="button" className="mreza-kvadrat mreza-uredi" onClick={() => setKazemUredi(true)}>
                                 <span className="mk-ikona" aria-hidden><Plus size={18} /></span>
-                                <span className="mk-ime">dodaj / uredi</span>
-                                <span className="mk-cena">nova storitev ali pogled</span>
+                                <span className="mk-ime">{L('dodaj / uredi', 'add / edit')}</span>
+                                <span className="mk-cena">{L('nova storitev ali pogled', 'new service or view')}</span>
                               </button>
                             </>
                           )}
@@ -7377,10 +7448,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
               {/* ── živa ponudba: desktop fiksno desno, mobile drsni panel (kosarica) ── */}
               {ponudbaOdprta && <div className="ponudba-backdrop" onClick={() => zapriMobilnoPonudbo()} aria-hidden />}
-              <aside className={'ponudba0' + (ponudbaOdprta ? ' odprta' : '')} aria-label="Tvoja ponudba" data-lenis-prevent>
-                <button type="button" className="ponudba0-zapri" aria-label="Zapri ponudbo" onClick={() => zapriMobilnoPonudbo()}>×</button>
+              <aside className={'ponudba0' + (ponudbaOdprta ? ' odprta' : '')} aria-label={L('Tvoja ponudba', 'Your quote')} data-lenis-prevent>
+                <button type="button" className="ponudba0-zapri" aria-label={L('Zapri ponudbo', 'Close quote')} onClick={() => zapriMobilnoPonudbo()}>×</button>
                 <div className="ponudba0-glava">
-                  <h2>{nazivPonudbe.trim() || 'Tvoja ponudba'}</h2>
+                  <h2>{nazivPonudbe.trim() || L('Tvoja ponudba', 'Your quote')}</h2>
                   <span className="ponudba0-chip">{vrstice.length === 1 ? '1 postavka'
                     : vrstice.length === 2 ? '2 postavki'
                       : vrstice.length === 3 || vrstice.length === 4 ? `${vrstice.length} postavke`
@@ -7404,7 +7475,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         </g>
                       </svg>
                     </div>
-                    <p><b>Klikni storitev</b>, da začneš.<br /><span className="vprasanja-vijola"><b>Vsaka storitev ima svoja vprašanja</b> — ko jo dodaš, klikni postavko v seznamu in izpolni podrobnosti za točno ceno.</span><br /><b>Enaka cena, več kosov:</b> pritisni <b>+</b> ob vrstici. <b>Različne izvedbe/cene:</b> klikni mehurček še enkrat.</p>
+                    <p><b>{L('Klikni storitev', 'Click a service')}</b>{L(', da začneš.', 'to start.')}<br /><span className="vprasanja-vijola"><b>{L('Vsaka storitev ima svoja vprašanja', 'Each service has its own questions')}</b> {L('— ko jo dodaš, klikni postavko v seznamu in izpolni podrobnosti za točno ceno.', '— once you add it, click the item in the list and fill in the details for an exact price.')}</span><br /><b>{L('Enaka cena, več kosov:', 'Same price, more units:')}</b> {L('pritisni', 'press')} <b>+</b> {L('ob vrstici.', 'next to the row.')} <b>{L('Različne izvedbe/cene:', 'Different versions/prices:')}</b> {L('klikni mehurček še enkrat.', 'click the bubble again.')}</p>
                   </div>
                 )}
 
@@ -7420,14 +7491,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                        (prej subtilno "klikni za podrobnosti", ki ga nihce ni videl) */
                     const trebaUrediti = !!skupina && odgovorjenih < skupina.vprasanja.length;
                     const status = skupina
-                      ? (odgovorjenih ? `${odgovorjenih}/${skupina.vprasanja.length} podrobnosti` : 'okvirna ocena · klikni za podrobnosti')
-                      : 'klikni za ime postavke';
+                      ? (odgovorjenih ? `${odgovorjenih}/${skupina.vprasanja.length} ${L('podrobnosti', 'details')}` : L('okvirna ocena · klikni za podrobnosti', 'rough estimate · click for details'))
+                      : L('klikni za ime postavke', 'click to name the item');
                     return (
                       <div key={l.uid}>
                         <div className={'vrst0' + (vlecenaVrstica === l.uid ? ' vlecem' : '')}
                           onDragOver={e => e.preventDefault()}
                           onDrop={e => { e.preventDefault(); if (vlecenaVrstica) premakniVrstico(vlecenaVrstica, l.uid); setVlecenaVrstica(null); }}>
-                          <span className="rocica0" draggable title="Povleci za vrstni red"
+                          <span className="rocica0" draggable title={L('Povleci za vrstni red', 'Drag to reorder')}
                             onDragStart={e => { setVlecenaVrstica(l.uid); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', l.uid); } catch { /* star brskalnik */ } }}
                             onDragEnd={() => setVlecenaVrstica(null)}>⠿</span>
                           <button type="button" className={'vrst0-ime' + (trebaUrediti ? ' treba' : '')} aria-expanded={razprta}
@@ -7441,13 +7512,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             }}>
                             {prikazVrstice(l, s)}
                             {trebaUrediti
-                              ? <small className="treba-urediti"><PencilSimple size={12} weight="bold" /> Uredi podrobnosti</small>
+                              ? <small className="treba-urediti"><PencilSimple size={12} weight="bold" /> {L('Uredi podrobnosti', 'Edit details')}</small>
                               : <small className={odgovorjenih ? 'odg' : ''}>{q > 1 ? `${KOLICINSKE[l.sid] ? `${q} ${KOLICINSKE[l.sid]}` : `× ${q}`} · ` : ''}{status}</small>}
                           </button>
                           <span className="stepper0">
                             <button type="button" aria-label={'Ena manj: ' + s.ime} onClick={() => spremeniKolicino(l.uid, -1)}>–</button>
                             <b>{q}</b>
-                            <button type="button" aria-label={'Ena več, ista cena: ' + s.ime} title={'Še ena po isti ceni (količina). Za drugačno ceno klikni mehurček še enkrat.'}
+                            <button type="button" aria-label={L('Ena več, ista cena: ', 'One more, same price: ') + s.ime} title={L('Še ena po isti ceni (količina). Za drugačno ceno klikni mehurček še enkrat.', 'One more at the same price (quantity). For a different price click the bubble again.')}
                               onClick={() => spremeniKolicino(l.uid, 1)}>+</button>
                           </span>
                           <span className="vrst0-cena">{val(osnovaZa(s) * q)}</span>
@@ -7464,14 +7535,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     {postavke.map(x => (
                       <div key={x.id} className="postavka">
                         <span>{x.ime}</span>
-                        <input type="number" min={1} step={1} value={x.kolicina} aria-label={(x.enota === 'ura' ? 'Ure' : 'Količina') + ': ' + x.ime}
+                        <input type="number" min={1} step={1} value={x.kolicina} aria-label={(x.enota === 'ura' ? L('Ure', 'Hours') : L('Količina', 'Quantity')) + ': ' + x.ime}
                           onChange={e => uredi(x.id, 'kolicina', Number(e.target.value) || 1)} />
                         <button type="button" className="enota-toggle" onClick={() => preklopiEnoto(x.id)}
-                          title="Preklopi enoto (kos / ura)">{x.enota === 'ura' ? 'ur' : 'kos'}</button>
-                        <input type="number" min={0} step={10} value={x.cena} aria-label={'Cena: ' + x.ime}
+                          title={L('Preklopi enoto (kos / ura)', 'Switch unit (piece / hour)')}>{x.enota === 'ura' ? 'ur' : 'kos'}</button>
+                        <input type="number" min={0} step={10} value={x.cena} aria-label={L('Cena: ', 'Price: ') + x.ime}
                           onChange={e => uredi(x.id, 'cena', Number(e.target.value) || 0)} />
                         <span className="enota">{x.enota === 'ura' ? '€/uro' : '€'}</span>
-                        <button type="button" title="Odstrani" onClick={() => odstrani(x.id)}>×</button>
+                        <button type="button" title={L('Odstrani', 'Remove')} onClick={() => odstrani(x.id)}>×</button>
                       </div>
                     ))}
                   </div>
@@ -7481,11 +7552,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <div className="iskalnik">
                     <div className="polje">
                       <div className="isk-glava">
-                        <label htmlFor="cw-iskanje">Poišči ali vpiši svojo postavko</label>
+                        <label htmlFor="cw-iskanje">{L('Poišči ali vpiši svojo postavko', 'Search or type your item')}</label>
                         <button type="button" className="op-edit" style={{ marginTop: 0 }}
-                          onClick={() => { setKazemDodaj(false); setIskanje(''); }}>✕ Zapri</button>
+                          onClick={() => { setKazemDodaj(false); setIskanje(''); }}>{L('✕ Zapri', '✕ Close')}</button>
                       </div>
-                      <input id="cw-iskanje" autoFocus placeholder="npr. animacija ikon"
+                      <input id="cw-iskanje" autoFocus placeholder={L('npr. animacija ikon', 'e.g. icon animation')}
                         value={iskanje} onChange={e => setIskanje(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter' && predlogi.length) dodajIzKataloga(predlogi[0]); }} />
                     </div>
@@ -7505,7 +7576,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 )}
                 {!kazemDodaj && (
                   <button type="button" className="dodaj-gumb ponudba0-dodaj" onClick={() => setKazemDodaj(true)}>
-                    + dodaj postavko (tisk, licenca, najem …)
+                    {L('+ dodaj postavko (tisk, licenca, najem …)', '+ add item (printing, license, rental …)')}
                   </button>
                 )}
 
@@ -7529,12 +7600,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             <span>{val(r.paketi[1].skupaj * ddvSt / 100)}</span>
                           </div>
                           <div className="ponudba0-vsota-vrsta">
-                            <span>Cena z DDV</span>
+                            <span>{L('Cena z DDV', 'Price incl. VAT')}</span>
                             <b>{val(r.paketi[1].skupaj * (1 + ddvSt / 100))}</b>
                           </div>
                         </>
                       )}
-                      <div className="ponudba0-opomba">↳ končna cena (paket Priporočeni) — levo izbereš paket in prilagodiš</div>
+                      <div className="ponudba0-opomba">{L('↳ končna cena (paket Priporočeni) — levo izbereš paket in prilagodiš', '↳ final price (Recommended package) — pick the package on the left and adjust')}</div>
                     </>
                   ) : (() => {
                     const okvirno = vrstice.reduce((a, l) => {
@@ -7553,7 +7624,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             <span>z DDV {val(okvirno * (1 + ddvSt / 100))}</span>
                           </div>
                         )}
-                        <div className="ponudba0-opomba">↳ končno ceno izostrijo naslednji koraki (izkušnje, trg, pravice)</div>
+                        <div className="ponudba0-opomba">{L('↳ končno ceno izostrijo naslednji koraki (izkušnje, trg, pravice)', '↳ the final price is sharpened by the next steps (experience, market, rights)')}</div>
                       </>
                     );
                   })()}
@@ -7571,18 +7642,18 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         onClick={e => e.stopPropagation()} data-lenis-prevent>
                         <div className="izbirnik-glava">
                           <span>{prikazVrstice(l, s)}</span>
-                          <button type="button" onClick={zapriDetajl} aria-label="Zapri">✕</button>
+                          <button type="button" onClick={zapriDetajl} aria-label={L('Zapri', 'Close')}>✕</button>
                         </div>
                         <div className="detajl-telo">
                           <div className="polje">
-                            <label htmlFor={'cw-ime-' + l.uid}>Ime postavke</label>
+                            <label htmlFor={'cw-ime-' + l.uid}>{L('Ime postavke', 'Item name')}</label>
                             <input id={'cw-ime-' + l.uid} type="text" value={l.ime}
                               placeholder={`npr. ${s.ime} — Inovis`}
                               onChange={e => preimenujVrstico(l.uid, e.target.value)} />
                           </div>
                           {skupina
                             ? vprasanjaStoritveUI(skupina)
-                            : <p className="vrst0-brez">Ta storitev nima dodatnih vprašanj — obseg opišeš v ponudbi.</p>}
+                            : <p className="vrst0-brez">{L('Ta storitev nima dodatnih vprašanj — obseg opišeš v ponudbi.', 'This service has no extra questions — you describe the scope in the quote.')}</p>}
                         </div>
                         <div className="detajl-noga">
                           {skupina && (
@@ -7597,13 +7668,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                                 naslednje.delete(l.uid);
                                 return naslednje;
                               });
-                            }}><ArrowCounterClockwise size={18} aria-hidden /> Ponastavi</button>
+                            }}><ArrowCounterClockwise size={18} aria-hidden /> {L('Ponastavi', 'Reset')}</button>
                           )}
                           <button type="button" className="gumb" onClick={() => {
                             setUrejenePodrobnosti(prej => new Set(prej).add(l.uid));
                             zapriDetajl();
                             pomakniNaPovzetekIzbire();
-                          }}>Shrani</button>
+                          }}>{L('Shrani', 'Save')}</button>
                         </div>
                       </div>
                     </div>
@@ -7613,16 +7684,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {kazemUredi && typeof document !== 'undefined' && createPortal(
                 <div className={`cw${vLupini ? ' cw-lupina' : ''}`}>
                   <div className="izbirnik-zastor" onClick={() => { setKazemUredi(false); setNovaIme(''); setNovaCena(''); }}>
-                    <div className="uredi-plosca" role="dialog" aria-modal="true" aria-label="Dodaj ali uredi storitve"
+                    <div className="uredi-plosca" role="dialog" aria-modal="true" aria-label={L('Dodaj ali uredi storitve', 'Add or edit services')}
                       onClick={e => e.stopPropagation()} data-lenis-prevent>
                       <div className="izbirnik-glava">
-                        <span>Dodaj / uredi storitve</span>
-                        <button type="button" onClick={() => { setKazemUredi(false); setNovaIme(''); setNovaCena(''); }} aria-label="Zapri">✕</button>
+                        <span>{L('Dodaj / uredi storitve', 'Add / edit services')}</span>
+                        <button type="button" onClick={() => { setKazemUredi(false); setNovaIme(''); setNovaCena(''); }} aria-label={L('Zapri', 'Close')}>✕</button>
                       </div>
                       <div className="uredi-telo">
                         {/* "Pogled mehurčkov" prenesen VEN, med pilule nad platnom (Mehurčki / Mreža / Tabela) */}
                         <div className="uredi-sekcija">
-                          <div className="uredi-naslov">Področja dela <span className="vec">kaj ponujaš — klikni za vklop/izklop</span></div>
+                          <div className="uredi-naslov">{L('Področja dela', 'Fields of work')} <span className="vec">{L('kaj ponujaš — klikni za vklop/izklop', 'what you offer — click to toggle on/off')}</span></div>
                           <div className="chat-podrocja">
                             {PODROCJA.map(p => {
                               const bar = PODROCJE_BARVA[p.id] || '#7C3AED';
@@ -7640,15 +7711,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           </div>
                         </div>
                         <div className="uredi-sekcija">
-                          <div className="uredi-naslov">Dodaj svojo storitev</div>
+                          <div className="uredi-naslov">{L('Dodaj svojo storitev', 'Add your own service')}</div>
                           <div className="uredi-dodaj">
-                            <input type="text" placeholder="Ime storitve (npr. montaža videa)" value={novaIme} onChange={e => setNovaIme(e.target.value)} />
-                            <input type="number" min={0} step={50} placeholder="cena €" value={novaCena} onChange={e => setNovaCena(e.target.value)} />
-                            <button type="button" className="gumb" disabled={!novaIme.trim() || !(Number(novaCena) > 0)} onClick={dodajStoritev}>Dodaj</button>
+                            <input type="text" placeholder={L('Ime storitve (npr. montaža videa)', 'Service name (e.g. video editing)')} value={novaIme} onChange={e => setNovaIme(e.target.value)} />
+                            <input type="number" min={0} step={50} placeholder={L('cena €', 'price €')} value={novaCena} onChange={e => setNovaCena(e.target.value)} />
+                            <button type="button" className="gumb" disabled={!novaIme.trim() || !(Number(novaCena) > 0)} onClick={dodajStoritev}>{L('Dodaj', 'Add')}</button>
                           </div>
                           {skrite.length > 0 && (
                             <>
-                              <p className="hint" style={{ margin: '1rem 0 .5rem' }}>Skrite storitve — klikni za ponoven prikaz:</p>
+                              <p className="hint" style={{ margin: '1rem 0 .5rem' }}>{L('Skrite storitve — klikni za ponoven prikaz:', 'Hidden services — click to show again:')}</p>
                               <div className="opts">
                                 {skrite.map(id => { const s = vseStoritve.find(x => x.id === id); if (!s) return null; return (
                                   <button key={id} type="button" className="pill" onClick={() => setSkrite(skrite.filter(x => x !== id))}>
@@ -7659,7 +7730,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             </>
                           )}
                         </div>
-                        <button type="button" className="povezava povezava-roza" style={{ display: 'block' }} onClick={() => { setKazemUredi(false); setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>↳ Cene, razpored in ceniki</button>
+                        <button type="button" className="povezava povezava-roza" style={{ display: 'block' }} onClick={() => { setKazemUredi(false); setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>{L('↳ Cene, razpored in ceniki', '↳ Prices, ordering and price lists')}</button>
                       </div>
                     </div>
                   </div>
@@ -7686,7 +7757,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <div className="izbor-povzetek" aria-live="polite">
                 <div className="chat-jaz">
                   <span className="chat-mehur">
-                    <b>V ponudbo sem dodala:</b>
+                    <b>{L('V ponudbo sem dodala:', 'I\'ve added to the quote:')}</b>
                     <span className="izbor-seznam">
                       {postavke.map(({ l, storitev }) => (
                         <span key={l.uid}>• {prikazVrstice(l, storitev!)}</span>
@@ -7696,8 +7767,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 </div>
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                   <span className={'chat-mehur' + (neurejene.length ? ' chat-mehur-opomnik' : '')}>
-                    <b>{neurejene.length ? `Urejene so ${urejene} od ${postavke.length} postavk.` : 'Vse podrobnosti so urejene.'}</b>
-                    <small>{neurejene.length ? 'Pred nadaljevanjem preveri še manjkajoče podatke, da bo izračun cene natančnejši.' : 'Ponudba je pripravljena za naslednji korak.'}</small>
+                    <b>{neurejene.length ? (L('Urejenih: ', 'Filled in: ') + urejene + ' / ' + postavke.length) : L('Vse podrobnosti so urejene.', 'All details are filled in.')}</b>
+                    <small>{neurejene.length ? L('Pred nadaljevanjem preveri še manjkajoče podatke, da bo izračun cene natančnejši.', 'Before continuing, check the missing details so the price calculation is more accurate.') : L('Ponudba je pripravljena za naslednji korak.', 'The quote is ready for the next step.')}</small>
                     {neurejene.length > 0 && (
                       <span className="izbor-preveri">
                         {neurejene.map(({ l, storitev }) => (
@@ -7718,41 +7789,41 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
           {((klasicnaOblika && korak === narocnikStep) || (vChatu && poMeh >= 1)) && (
             <>
-            {vChatu && chatVpr('Super izbira! Zdaj še — komu pošiljaš ponudbo?', 'Naročnik za pošiljanje; lahko pustiš prazno in izpolniš pozneje.')}
+            {vChatu && chatVpr(L('Super izbira! Zdaj še — komu pošiljaš ponudbo?', 'Great choice! Now — who are you sending the quote to?'), L('Naročnik za pošiljanje; lahko pustiš prazno in izpolniš pozneje.', 'The client for sending; you can leave it blank and fill it in later.'))}
             <div className="kartica">
-              <div className="k-naslov">Naročnik <span className="vec">za pošiljanje ponudbe</span></div>
-              <div style={{ display: 'inline-flex', gap: 4, padding: 4, background: 'rgba(17,17,17,.05)', borderRadius: 999, margin: '0 0 1.1rem' }} role="group" aria-label="Tip naročnika">
+              <div className="k-naslov">Naročnik <span className="vec">{L('za pošiljanje ponudbe', 'for sending the quote')}</span></div>
+              <div style={{ display: 'inline-flex', gap: 4, padding: 4, background: 'rgba(17,17,17,.05)', borderRadius: 999, margin: '0 0 1.1rem' }} role="group" aria-label={L('Tip naročnika', 'Client type')}>
                 {(['podjetje', 'fizicna'] as const).map(t => (
                   <button key={t} type="button" onClick={() => setNarocnikTip(t)}
                     style={{ border: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: '.85rem', fontWeight: 600, padding: '.45rem .95rem', borderRadius: 999, background: narocnikTip === t ? 'var(--ink)' : 'transparent', color: narocnikTip === t ? 'var(--paper)' : 'rgba(17,17,17,.6)', transition: 'background .15s, color .15s' }}>
-                    {t === 'podjetje' ? 'Podjetje' : 'Fizična oseba'}
+                    {t === 'podjetje' ? L('Podjetje', 'Company') : L('Fizična oseba', 'Individual')}
                   </button>
                 ))}
               </div>
               <div className="numgrid" style={{ marginTop: 0 }}>
                 <div className="polje">
-                  <label htmlFor="cw-narocnik">{narocnikTip === 'fizicna' ? 'Ime in priimek' : 'Ime podjetja'}</label>
-                  <input id="cw-narocnik" type="text" placeholder={narocnikTip === 'fizicna' ? 'npr. Ana Novak' : 'npr. Odvetniška družba Volk & Babica'}
+                  <label htmlFor="cw-narocnik">{narocnikTip === 'fizicna' ? L('Ime in priimek', 'Full name') : L('Ime podjetja', 'Company name')}</label>
+                  <input id="cw-narocnik" type="text" placeholder={narocnikTip === 'fizicna' ? L('npr. Ana Novak', 'e.g. Ana Novak') : L('npr. Odvetniška družba Volk & Babica', 'e.g. Wolf & Grandma Law Firm')}
                     value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)}
                     onBlur={e => zabeleziNarocnika(e.target.value)} />
                 </div>
                 <div className="polje">
-                  <label htmlFor="cw-narocnik-email">Email naročnika</label>
-                  <input id="cw-narocnik-email" type="email" placeholder="npr. pisarna@volk-babica.si"
+                  <label htmlFor="cw-narocnik-email">{L('Email naročnika', 'Client email')}</label>
+                  <input id="cw-narocnik-email" type="email" placeholder={L('npr. pisarna@volk-babica.si', 'e.g. office@wolf-grandma.si')}
                     value={narocnikEmail} onChange={e => setNarocnikEmail(e.target.value)}
                     onBlur={() => zabeleziNarocnika(narocnikPonudbe)} />
                 </div>
               </div>
               <div className="numgrid">
                 <div className="polje">
-                  <label htmlFor="cw-narocnik-naslov">Naslov (ulica, kraj)</label>
-                  <input id="cw-narocnik-naslov" type="text" placeholder="npr. Dunajska cesta 1, 1000 Ljubljana"
+                  <label htmlFor="cw-narocnik-naslov">{L('Naslov (ulica, kraj)', 'Address (street, city)')}</label>
+                  <input id="cw-narocnik-naslov" type="text" placeholder={L('npr. Dunajska cesta 1, 1000 Ljubljana', 'e.g. Dunajska cesta 1, 1000 Ljubljana')}
                     value={narocnikNaslov} onChange={e => setNarocnikNaslov(e.target.value)}
                     onBlur={() => zabeleziNarocnika(narocnikPonudbe)} />
                 </div>
                 <div className="polje">
-                  <label htmlFor="cw-narocnik-drzava">Država <span className="vec">določi trg za ceno</span></label>
-                  <IzbirnikDrzave id="cw-narocnik-drzava" placeholder="npr. Slovenija"
+                  <label htmlFor="cw-narocnik-drzava">{L('Država', 'Country')} <span className="vec">{L('določi trg za ceno', 'sets the market for pricing')}</span></label>
+                  <IzbirnikDrzave id="cw-narocnik-drzava" placeholder={L('npr. Slovenija', 'e.g. Slovenia')}
                     moznosti={DRZAVE.map(d => d.ime)}
                     value={custDrzavaNarocnik}
                     onChange={v => {
@@ -7765,14 +7836,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {(dodatniNarocnik || narocnikOseba || narocnikDavcna) ? (
                 <div className="numgrid">
                   <div className="polje">
-                    <label htmlFor="cw-narocnik-oseba">Kontaktna oseba</label>
-                    <input id="cw-narocnik-oseba" type="text" placeholder="npr. Sivko Volk"
+                    <label htmlFor="cw-narocnik-oseba">{L('Kontaktna oseba', 'Contact person')}</label>
+                    <input id="cw-narocnik-oseba" type="text" placeholder={L('npr. Sivko Volk', 'e.g. Grey Wolf')}
                       value={narocnikOseba} onChange={e => setNarocnikOseba(e.target.value)}
                       onBlur={() => zabeleziNarocnika(narocnikPonudbe)} />
                   </div>
                   <div className="polje">
-                    <label htmlFor="cw-narocnik-davcna">Davčna številka</label>
-                    <input id="cw-narocnik-davcna" type="text" placeholder="npr. SI12345678"
+                    <label htmlFor="cw-narocnik-davcna">{L('Davčna številka', 'Tax number')}</label>
+                    <input id="cw-narocnik-davcna" type="text" placeholder={L('npr. SI12345678', 'e.g. SI12345678')}
                       value={narocnikDavcna} onChange={e => setNarocnikDavcna(e.target.value)}
                       onBlur={() => zabeleziNarocnika(narocnikPonudbe)} />
                   </div>
@@ -7784,12 +7855,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     setDodatniNarocnik(false);
                     setNarocnikOseba(''); setNarocnikDavcna('');
                   }}>
-                  <CaretUp size={14} weight="bold" aria-hidden /> Skrij (počisti davčno in kontaktno osebo)
+                  <CaretUp size={14} weight="bold" aria-hidden /> {L('Skrij (počisti davčno in kontaktno osebo)', 'Hide (clears tax number and contact person)')}
                 </button>
               ) : (
                 <button type="button" className="dodaj-gumb" style={{ marginTop: '1.1rem' }}
                   onClick={() => setDodatniNarocnik(true)}>
-                  + Dodaj davčno št. in kontaktno osebo
+                  {L('+ Dodaj davčno št. in kontaktno osebo', '+ Add tax number and contact person')}
                 </button>
               )}
               {(() => {
@@ -7807,7 +7878,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 }).slice(0, 10);
                 return nedavni.length ? (
                   <div className="narocnik-nedavni">
-                    <span className="vec">nedavni:</span>
+                    <span className="vec">{L('nedavni:', 'recent:')}</span>
                     {nedavni.map(n => (
                       <button key={n.ime} type="button" className="narocnik-chip"
                         onClick={() => uporabiNarocnika(n)}>{n.ime}</button>
@@ -7821,11 +7892,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
           {((klasicnaOblika && korak === trgNarocnikaStep) || (vChatu && poMeh >= 2)) && (
             <>
-              {vChatu && chatVpr('Trg in valuta', 'Privzeto glede na državo naročnika — bogatejši trg plača več. Po želji spremeniš.')}
+              {vChatu && chatVpr(L('Trg in valuta', 'Market and currency'), L('Privzeto glede na državo naročnika — bogatejši trg plača več. Po želji spremeniš.', "Default based on the client's country — a wealthier market pays more. Change it if you like."))}
               <div className="kartica">
                 <div className="numgrid" style={{ marginTop: 0 }}>
                   <div className="polje">
-                    <label htmlFor="cw-trg">Trg naročnika <span className="vec">razred cene</span></label>
+                    <label htmlFor="cw-trg">{L('Trg naročnika', 'Client market')} <span className="vec">{L('razred cene', 'price tier')}</span></label>
                     <select id="cw-trg" value={trgNarocnika}
                       onChange={e => setTrgNarocnika(e.target.value)}>
                       {TRGI.map(t => <option key={t.id} value={t.id}>{t.ime}</option>)}
@@ -7837,7 +7908,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       onChange={e => { setValuta(e.target.value); setValutaRocna(true); }}>
                       {VALUTE.map(v => <option key={v.id} value={v.id}>{v.ime}</option>)}
                     </select>
-                    <button type="button" className="izbirnik-gumb valuta-gumb-mobile" aria-label="Valuta ponudbe"
+                    <button type="button" className="izbirnik-gumb valuta-gumb-mobile" aria-label={L('Valuta ponudbe', 'Quote currency')}
                       onClick={() => setKazemValutaIzbira(true)}>
                       {vfx.ime}
                       <CaretDown size={15} weight="bold" aria-hidden />
@@ -7845,19 +7916,19 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </div>
                 </div>
                 <p className="hint" style={{ marginTop: '.9rem' }}>
-                  <b>Vpliva na ceno</b> — bogatejši trg plača več.{custDrzavaNarocnik.trim()
-                    ? ` Privzeto glede na državo naročnika (${custDrzavaNarocnik.trim()}); za globalno podjetje ga ročno dvigneš.`
-                    : ' Nastavi se sam iz države naročnika.'}
+                  <b>{L('Vpliva na ceno', 'Affects the price')}</b>{L(' — bogatejši trg plača več.', ' — a wealthier market pays more.')}{custDrzavaNarocnik.trim()
+                    ? (L(' Privzeto glede na državo naročnika (', " By default based on the client's country (") + custDrzavaNarocnik.trim() + L('); za globalno podjetje ga ročno dvigneš.', '); for a global company raise it manually.'))
+                    : L(' Nastavi se sam iz države naročnika.', " It sets itself from the client's country.")}
                 </p>
               </div>
               <div className="kartica kartica-neobvezno">
-                <div className="k-naslov">{narocnikTip === 'fizicna' ? 'Vrednost nepremičnine' : 'Poslovanje naročnika'} <span className="vec">neobvezno · lahko preskočiš</span></div>
+                <div className="k-naslov">{narocnikTip === 'fizicna' ? L('Vrednost nepremičnine', 'Property value') : L('Poslovanje naročnika', "Client's business")} <span className="vec">{L('neobvezno · lahko preskočiš', 'optional · you can skip')}</span></div>
                 {narocnikTip === 'fizicna' ? (
                   <>
-                    <p className="hint" style={{ marginTop: 0, marginBottom: '1rem' }}>Pri fizični osebi promet/dobiček ne obstaja. Pri prostoru in arhitekturi vrednost dela bolje odraža vrednost nepremičnine. Neobvezno.</p>
+                    <p className="hint" style={{ marginTop: 0, marginBottom: '1rem' }}>{L('Pri fizični osebi promet/dobiček ne obstaja. Pri prostoru in arhitekturi vrednost dela bolje odraža vrednost nepremičnine. Neobvezno.', 'For an individual there is no revenue/profit. For interiors and architecture the value of the work is better reflected by the property value. Optional.')}</p>
                     <div className="numgrid">
                       <div className="polje">
-                        <label htmlFor="cw-nepremicnina">Vrednost nepremičnine (€)</label>
+                        <label htmlFor="cw-nepremicnina">{L('Vrednost nepremičnine (€)', 'Property value (€)')}</label>
                         <input id="cw-nepremicnina" type="number" min={0} step={10000} placeholder="250000"
                           value={custNepremicnina} onChange={e => setCustNepremicnina(e.target.value)} />
                       </div>
@@ -7865,15 +7936,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </>
                 ) : (
                   <>
-                    <p className="hint" style={{ marginTop: 0, marginBottom: '1rem' }}>Enako kot trg: podjetje z višjim prometom in dobičkom nosi večjo vrednost dela. Upošteva se le, kadar delo velja za celotno znamko. Če ne veš, pusti prazno.</p>
+                    <p className="hint" style={{ marginTop: 0, marginBottom: '1rem' }}>{L('Enako kot trg: podjetje z višjim prometom in dobičkom nosi večjo vrednost dela. Upošteva se le, kadar delo velja za celotno znamko. Če ne veš, pusti prazno.', 'Like the market: a company with higher revenue and profit carries a higher work value. It counts only when the work applies to the whole brand. If you don\'t know, leave it blank.')}</p>
                     <div className="numgrid">
                       <div className="polje">
-                        <label htmlFor="cw-promet">Letni promet naročnika (€)</label>
+                        <label htmlFor="cw-promet">{L('Letni promet naročnika (€)', 'Client\'s annual revenue (€)')}</label>
                         <input id="cw-promet" type="number" min={0} step={10000} placeholder="800000"
                           value={promet} onChange={e => setPromet(e.target.value)} />
                       </div>
                       <div className="polje">
-                        <label htmlFor="cw-dobicek">Letni dobiček naročnika (€)</label>
+                        <label htmlFor="cw-dobicek">{L('Letni dobiček naročnika (€)', 'Client\'s annual profit (€)')}</label>
                         <input id="cw-dobicek" type="number" min={0} step={5000} placeholder="60000"
                           value={dobicek} onChange={e => setDobicek(e.target.value)} />
                       </div>
@@ -7890,11 +7961,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {kazemValutaIzbira && typeof document !== 'undefined' && createPortal(
                 <div className={`cw${vLupini ? ' cw-lupina' : ''}`}>
                   <div className="izbirnik-zastor" onClick={() => setKazemValutaIzbira(false)}>
-                    <div className="izbirnik-plosca" role="dialog" aria-modal="true" aria-label="Izberi valuto"
+                    <div className="izbirnik-plosca" role="dialog" aria-modal="true" aria-label={L('Izberi valuto', 'Pick a currency')}
                       onClick={e => e.stopPropagation()}>
                       <div className="izbirnik-glava">
                         <span>Valuta ponudbe</span>
-                        <button type="button" onClick={() => setKazemValutaIzbira(false)} aria-label="Zapri">✕</button>
+                        <button type="button" onClick={() => setKazemValutaIzbira(false)} aria-label={L('Zapri', 'Close')}>✕</button>
                       </div>
                       <div className="izbirnik-seznam">
                         {VALUTE.map(v => (
@@ -7915,33 +7986,33 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
           {((klasicnaOblika && korak === praviceStep) || (vChatu && poMeh >= 3)) && (
             <>
-              {vChatu && chatVpr('Avtorske pravice', 'Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.')}
+              {vChatu && chatVpr(L('Avtorske pravice', 'Copyright'), L('Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.', 'The tool suggests an amount that you can adjust at any time.'))}
               <div className="kartica">
-                <div className="k-naslov">Za kaj bo naročnik uporabil delo? <span className="vec">določa vrednost pravic</span></div>
+                <div className="k-naslov">{L('Za kaj bo naročnik uporabil delo?', 'What will the client use the work for?')} <span className="vec">{L('določa vrednost pravic', 'sets the value of the rights')}</span></div>
                 <div className="izbira">
                   <button type="button" className={raba === 'znamka' ? 'on' : ''} onClick={() => { setRaba('znamka'); if (!pravTrajanjeRocno) setPravTrajanje('neomejeno'); }}>
-                    <h3>Za celotno znamko</h3>
-                    <p>Logotip, celostna podoba, spletna stran. Tvoje delo nosi vse, kar podjetje počne, zato vrednost sledi bilanci podjetja.</p>
+                    <h3>{L('Za celotno znamko', 'For the whole brand')}</h3>
+                    <p>{L('Logotip, celostna podoba, spletna stran. Tvoje delo nosi vse, kar podjetje počne, zato vrednost sledi bilanci podjetja.', 'Logo, corporate identity, website. Your work carries everything the company does, so the value follows the company\'s balance sheet.')}</p>
                   </button>
                   <button type="button" className={raba === 'projekt' ? 'on' : ''} onClick={() => { setRaba('projekt'); if (!pravTrajanjeRocno) setPravTrajanje('7'); }}>
-                    <h3>Za določen projekt ali izdelek</h3>
-                    <p>Majice, embalaža enega izdelka, konferenca, knjiga. Vrednost sledi pričakovanemu izkupičku projekta, ne velikosti podjetja.</p>
+                    <h3>{L('Za določen projekt ali izdelek', 'For a specific project or product')}</h3>
+                    <p>{L('Majice, embalaža enega izdelka, konferenca, knjiga. Vrednost sledi pričakovanemu izkupičku projekta, ne velikosti podjetja.', 'T-shirts, packaging for a single product, a conference, a book. The value follows the expected project proceeds, not the size of the company.')}</p>
                   </button>
                 </div>
               </div>
               {raba === 'znamka' ? (
-                <p className="hint" style={{ marginTop: '-.4rem', marginBottom: '1.4rem' }}>Vrednost pravic sledi <b>prometu in dobičku naročnika</b> — to vneseš pri podatkih naročnika (korak »Kdo je stranka«). Prazno = mikro podjetje.</p>
+                <p className="hint" style={{ marginTop: '-.4rem', marginBottom: '1.4rem' }}>{L('Vrednost pravic sledi', 'The value of the rights follows')} <b>{L('prometu in dobičku naročnika', 'the client\'s revenue and profit')}</b> {L('— to vneseš pri podatkih naročnika (korak »Kdo je stranka«). Prazno = mikro podjetje.', '— you enter this in the client details (the «Who is the client» step). Blank = micro company.')}</p>
               ) : (
                 <div className="kartica">
                   <div className="numgrid">
                     <div className="polje">
-                      <label htmlFor="cw-pprihodek">Pričakovani letni prihodek projekta (€)</label>
+                      <label htmlFor="cw-pprihodek">{L('Pričakovani letni prihodek projekta (€)', 'Expected annual project revenue (€)')}</label>
                       <input id="cw-pprihodek" type="number" min={0} step={5000}
                         placeholder="50000" value={projPrihodek}
                         onChange={e => setProjPrihodek(e.target.value)} />
                     </div>
                     <div className="polje">
-                      <label htmlFor="cw-pdobicek">Pričakovani letni dobiček projekta (€)</label>
+                      <label htmlFor="cw-pdobicek">{L('Pričakovani letni dobiček projekta (€)', 'Expected annual project profit (€)')}</label>
                       <input id="cw-pdobicek" type="number" min={0} step={5000}
                         placeholder="15000" value={projDobicek}
                         onChange={e => setProjDobicek(e.target.value)} />
@@ -7954,24 +8025,24 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </p>
                 </div>
               )}
-              <div className="kartica">
-                <div className="k-naslov">Avtorske pravice po storitvah
+              <div className="kartica pravice-kartica">
+                <div className="k-naslov">{L('Avtorske pravice po storitvah', 'Copyright by service')}
                   <InfoNamig besedilo="Vsaka storitev ima svoje pravice. Logotip/CGP je praviloma trajen izključni prenos, ilustracija licenca za dobo (npr. 7 let), kampanja kratka licenca. Privzetki so nastavljeni glede na tip; recept lahko spremeniš. V Podrobnostih nastaviš teritorij (privzeto po sedežu naročnika), medije, naklado in klavzule; tiskovine in ilustracija imajo ponatis privzeto vklopljen. Skupni znesek lahko ročno popraviš s svinčnikom ob vsoti." />
-                  <span className="vec">vsaka storitev svoje</span>
+                  <span className="vec">{L('vsaka storitev svoje', 'each service its own')}</span>
                 </div>
                 <p className="hint" style={{ marginTop: 0, marginBottom: '.8rem' }}>
-                  Privzetki so nastavljeni glede na tip storitve — spremeni recept, kjer je treba. Vsaka storitev pokaže svojo ceno pravic.
+                  {L('Privzetki so nastavljeni glede na tip storitve — spremeni recept, kjer je treba. Vsaka storitev pokaže svojo ceno pravic.', 'Defaults are set according to the service type — change the recipe where needed. Each service shows its own rights price.')}
                 </p>
                 <details className="prav-razlaga">
-                  <summary>Kaj so avtorske pravice in zakaj so ločena postavka?</summary>
+                  <summary>{L('Kaj so avtorske pravice in zakaj so ločena postavka?', 'What is copyright and why is it a separate item?')}</summary>
                   <div className="prav-razlaga-telo">
-                    <p>Naročnik plača <b>izvedbo</b> (oblikovanje), <b>pravice do uporabe</b> pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna.</p>
+                    <p>{L('Naročnik plača', 'The client pays for')} <b>{L('izvedbo', 'production')}</b> {L('(oblikovanje),', '(the design),')} <b>{L('pravice do uporabe', 'the usage rights')}</b> {L('pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna.', 'are a separate item — like a license. Separate because the same work can be used by a small local company or an international brand; the value of use differs.')}</p>
                     <ul>
-                      <li><b>Vrednost določajo</b> obseg (teritorij, mediji, doba), izključnost in koliko naročnik z delom zasluži.</li>
-                      <li><b>Slovenija / EU:</b> popoln »odkup vsega« pravno ni mogoč — prenesejo se le posamezne materialne pravice, pisno in omejeno. Avtor ohrani moralne pravice in pravico do poštenega nadomestila (ZASP; DSM 2019).</li>
-                      <li><b>Prodajni produkti</b> (majice, embalaža, izdelki): namesto enkratnega odkupa je pošteno honorar + <b>tantieme</b> od prodaje (npr. 3–10 %).</li>
+                      <li><b>{L('Vrednost določajo', 'The value is set by')}</b> {L('obseg (teritorij, mediji, doba), izključnost in koliko naročnik z delom zasluži.', 'scope (territory, media, duration), exclusivity and how much the client earns with the work.')}</li>
+                      <li><b>{L('Slovenija / EU:', 'Slovenia / EU:')}</b> {L('popoln »odkup vsega« pravno ni mogoč — prenesejo se le posamezne materialne pravice, pisno in omejeno. Avtor ohrani moralne pravice in pravico do poštenega nadomestila (ZASP; DSM 2019).', 'a full «buyout of everything» is not legally possible — only individual economic rights are transferred, in writing and limited. The author keeps moral rights and the right to fair remuneration (ZASP; DSM 2019).')}</li>
+                      <li><b>{L('Prodajni produkti', 'Retail products')}</b> {L('(majice, embalaža, izdelki): namesto enkratnega odkupa je pošteno honorar +', '(t-shirts, packaging, products): instead of a one-time buyout it is fair to charge a fee +')} <b>{L('tantieme', 'royalties')}</b> {L('od prodaje (npr. 3–10 %).', 'on sales (e.g. 3–10%).')}</li>
                     </ul>
-                    <p className="prav-razlaga-vir">Podroben članek s primeri in viri pripravljamo za spletno stran.</p>
+                    <p className="prav-razlaga-vir">{L('Podroben članek s primeri in viri pripravljamo za spletno stran.', 'We are preparing a detailed article with examples and sources for the website.')}</p>
                   </div>
                 </details>
                 {r && (r.praviceVrstice.length > 0 || lastnePravice.length > 0) ? (
@@ -7990,7 +8061,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             {urejamPravSid === row.sid ? (
                               <span className="prav-cena prav-cena-uredi">
                                 <input type="number" min={0} step={50} autoFocus
-                                  aria-label={'Znesek pravic: ' + row.ime}
+                                  aria-label={L('Znesek pravic: ', 'Rights amount: ') + row.ime}
                                   placeholder={String(zaokrozi(row.znesekAuto * vfx.fx))}
                                   value={rocnePraviceStoritvi[row.sid] ?? ''}
                                   onChange={e => setRocnePraviceStoritvi({ ...rocnePraviceStoritvi, [row.sid]: e.target.value })}
@@ -8000,41 +8071,41 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                               </span>
                             ) : (
                               <button type="button" className={'prav-cena prav-cena-gumb' + (row.rocno ? ' rocno' : '')}
-                                title="Klikni za ročni popravek zneska" aria-label={'Ročno popravi znesek: ' + row.ime}
+                                title={L('Klikni za ročni popravek zneska', 'Click to edit the amount manually')} aria-label={L('Ročno popravi znesek: ', 'Edit amount manually: ') + row.ime}
                                 onClick={() => setUrejamPravSid(row.sid)}>{val(row.znesek)}</button>
                             )}
-                            <button type="button" className="prav-podr" onClick={() => setPraviceOdprt(row.sid)} title="Podrobnosti — trajanje, klavzule" aria-label={'Podrobnosti: ' + row.ime}><DotsThree size={20} weight="bold" /></button>
+                            <button type="button" className="prav-podr" onClick={() => setPraviceOdprt(row.sid)} title={L('Podrobnosti — trajanje, klavzule', 'Details — duration, clauses')} aria-label={'Podrobnosti: ' + row.ime}><DotsThree size={20} weight="bold" /></button>
                           </div>
                         );
                       })}
                       {lastnePravice.map(l => (
                         <div key={l.id} className="prav-vrsta prav-vrsta-lastna">
-                          <input className="prav-ime prav-lastna-ime" placeholder="Ime pravice (npr. Kampanjska licenca)"
+                          <input className="prav-ime prav-lastna-ime" placeholder={L('Ime pravice (npr. Kampanjska licenca)', 'Right name (e.g. Campaign license)')}
                             value={l.ime} onChange={e => posodobiLastnoPravico(l.id, { ime: e.target.value })} />
-                          <select className="prav-recept" aria-label="Tip pravice" value={l.tip}
+                          <select className="prav-recept" aria-label={L('Tip pravice', 'Right type')} value={l.tip}
                             onChange={e => posodobiLastnoPravico(l.id, { tip: e.target.value as LastnaPravica['tip'] })}>
-                            <option value="enkratno">Enkratni odkup</option>
-                            <option value="letno">Letna licenca</option>
-                            <option value="mesecno">Mesečna licenca</option>
+                            <option value="enkratno">{L('Enkratni odkup', 'One-time buyout')}</option>
+                            <option value="letno">{L('Letna licenca', 'Annual license')}</option>
+                            <option value="mesecno">{L('Mesečna licenca', 'Monthly license')}</option>
                           </select>
                           <span className="prav-cena prav-cena-uredi">
-                            <input type="number" min={0} step={50} placeholder="0" aria-label="Znesek pravice"
+                            <input type="number" min={0} step={50} placeholder="0" aria-label={L('Znesek pravice', 'Right amount')}
                               value={l.znesek} onChange={e => posodobiLastnoPravico(l.id, { znesek: e.target.value })} />
                             <span className="pe-znak">{vfx.znak}{l.tip === 'letno' ? '/leto' : l.tip === 'mesecno' ? '/mesec' : ''}</span>
                           </span>
                           <span className="prav-lastna-akcije">
-                            <button type="button" className="prav-podr" title="Podrobnosti — trajanje, klavzule, opomba" aria-label="Podrobnosti pravice"
+                            <button type="button" className="prav-podr" title={L('Podrobnosti — trajanje, klavzule, opomba', 'Details — duration, clauses, note')} aria-label={L('Podrobnosti pravice', 'Right details')}
                               onClick={() => setLastnaOdprta(l.id)}><DotsThree size={20} weight="bold" /></button>
-                            <button type="button" className="prav-podr prav-brisi" title="Izbriši pravico"
-                              aria-label="Izbriši pravico" onClick={() => izbrisiLastnoPravico(l.id)}>✕</button>
+                            <button type="button" className="prav-podr prav-brisi" title={L('Izbriši pravico', 'Delete right')}
+                              aria-label={L('Izbriši pravico', 'Delete right')} onClick={() => izbrisiLastnoPravico(l.id)}>✕</button>
                           </span>
                         </div>
                       ))}
                     </div>
                     <button type="button" className="dodaj-gumb" style={{ marginTop: '.85rem' }}
-                      onClick={dodajLastnoPravico}>+ Dodaj pravico</button>
+                      onClick={dodajLastnoPravico}>{L('+ Dodaj pravico', '+ Add right')}</button>
                     <div className="prav-skupaj">
-                      <span>Skupaj avtorske pravice</span>
+                      <span>{L('Skupaj avtorske pravice', 'Total copyright')}</span>
                       <b>{val(r.pravice)}</b>
                     </div>
                     {(() => {
@@ -8044,20 +8115,20 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       const deli: string[] = [];
                       if (mesecno) deli.push(`${mesecno.toLocaleString('sl-SI')} ${vfx.znak}/mesec`);
                       if (letno) deli.push(`${letno.toLocaleString('sl-SI')} ${vfx.znak}/leto`);
-                      return <p className="hint" style={{ marginTop: '.5rem' }}>Ponavljajoče licence (izven enkratnega odkupa): <b>{deli.join(' + ')}</b></p>;
+                      return <p className="hint" style={{ marginTop: '.5rem' }}>{L('Ponavljajoče licence (izven enkratnega odkupa):', 'Recurring licenses (outside the one-time buyout):')} <b>{deli.join(' + ')}</b></p>;
                     })()}
                     {(Object.keys(rocnePraviceStoritvi).length > 0 || rocnePravice || rocnaLicenca) && (
                       <button type="button" className="povezava" style={{ marginTop: '.75rem' }}
                         onClick={() => { setRocnePraviceStoritvi({}); setRocnePravice(''); setRocnaLicenca(''); setUrejamPravSid(null); }}>
-                        ↺ Vse pravice na samodejni izračun
+                        {L('↺ Vse pravice na samodejni izračun', '↺ Reset all rights to automatic')}
                       </button>
                     )}
                   </>
                 ) : (
                   <>
-                    <p className="hint" style={{ margin: 0 }}>Dodaj storitve ali lastno pravico, da nastaviš pravice.</p>
+                    <p className="hint" style={{ margin: 0 }}>{L('Dodaj storitve ali lastno pravico, da nastaviš pravice.', 'Add services or a custom right to set up rights.')}</p>
                     <button type="button" className="dodaj-gumb" style={{ marginTop: '.85rem' }}
-                      onClick={dodajLastnoPravico}>+ Dodaj pravico</button>
+                      onClick={dodajLastnoPravico}>{L('+ Dodaj pravico', '+ Add right')}</button>
                   </>
                 )}
               </div>
@@ -8075,11 +8146,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={'Pravice: ' + s.ime} onClick={e => e.stopPropagation()} data-lenis-prevent>
                         <div className="izbirnik-glava">
                           <span>Pravice: {s.ime}</span>
-                          <button type="button" onClick={() => setPraviceOdprt(null)} aria-label="Zapri">✕</button>
+                          <button type="button" onClick={() => setPraviceOdprt(null)} aria-label={L('Zapri', 'Close')}>✕</button>
                         </div>
                         <div className="detajl-telo">
                           <div>
-                            <div className="uredi-naslov">Trajanje licence / prenosa</div>
+                            <div className="uredi-naslov">{L('Trajanje licence / prenosa', 'License / transfer duration')}</div>
                             <div className="opts">
                               {PRAV_TRAJANJE.map(t => (
                                 <button key={t.id} type="button" className={'pill' + (rec.trajanje === t.id ? ' on' : '')}
@@ -8089,16 +8160,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                               ))}
                             </div>
                             <div className="cu-vrsta cu-po-meri">
-                              <span className={'pill' + (rec.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">Po meri{rec.trajanje === 'custom' && typeof rec.trajLeta === 'number' ? `: ${trajLetaVBesedo(rec.trajLeta)}` : ''}</span></span>
-                              <input type="number" min={1} value={custStev} onChange={e => setCustStev(e.target.value)} className="cu-num" aria-label="Število" />
-                              <select value={custEnota} onChange={e => setCustEnota(e.target.value as 'teden' | 'mesec' | 'leto')} className="cu-select" aria-label="Enota">
-                                <option value="teden">tednov</option><option value="mesec">mesecev</option><option value="leto">let</option>
+                              <span className={'pill' + (rec.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">{L('Po meri', 'Custom')}{rec.trajanje === 'custom' && typeof rec.trajLeta === 'number' ? `: ${trajLetaVBesedo(rec.trajLeta)}` : ''}</span></span>
+                              <input type="number" min={1} value={custStev} onChange={e => setCustStev(e.target.value)} className="cu-num" aria-label={L('Število', 'Number')} />
+                              <select value={custEnota} onChange={e => setCustEnota(e.target.value as 'teden' | 'mesec' | 'leto')} className="cu-select" aria-label={L('Enota', 'Unit')}>
+                                <option value="teden">{L('tednov', 'weeks')}</option><option value="mesec">{L('mesecev', 'months')}</option><option value="leto">{L('let', 'years')}</option>
                               </select>
-                              <button type="button" className="gumb cu-uporabi" onClick={() => nastaviPravRec(sid, { trajanje: 'custom', trajLeta: custLeta })}>Uporabi</button>
+                              <button type="button" className="gumb cu-uporabi" onClick={() => nastaviPravRec(sid, { trajanje: 'custom', trajLeta: custLeta })}>{L('Uporabi', 'Apply')}</button>
                             </div>
                           </div>
                           <div>
-                            <div className="uredi-naslov">Klavzule <span className="vec">se zapišejo v ponudbo</span></div>
+                            <div className="uredi-naslov">{L('Klavzule', 'Clauses')} <span className="vec">{L('se zapišejo v ponudbo', 'are written into the quote')}</span></div>
                             <div className="opts">
                               {KLAVZULE.map(k => {
                                 const on = (rec.klavzule || []).includes(k.id);
@@ -8113,18 +8184,18 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           </div>
                           {typeof rec.tantiema === 'number' && (
                             <div>
-                              <div className="uredi-naslov">Tantieme — prodajni produkt</div>
+                              <div className="uredi-naslov">{L('Tantieme — prodajni produkt', 'Royalties — retail product')}</div>
                               <div className="cu-vrsta cu-po-meri">
                                 <input type="number" min={0} max={30} step={1} value={rec.tantiema}
                                   onChange={e => nastaviPravRec(sid, { tantiema: Math.max(0, Math.min(30, Math.round(Number(e.target.value)) || 0)) })}
-                                  className="cu-num" aria-label="Odstotek tantieme" />
-                                <span>% od neto veleprodaje</span>
+                                  className="cu-num" aria-label={L('Odstotek tantieme', 'Royalty percentage')} />
+                                <span>{L('% od neto veleprodaje', '% of net wholesale')}</span>
                               </div>
-                              <p className="hint" style={{ marginTop: '.5rem' }}>Cena zgoraj je <b>predujem / minimalna garancija</b> (nepovraten, ob podpisu). Tantieme se plačujejo <b>dodatno</b> od prodaje; ponudba doda klavzule (predujem, MG, reverzija, letno poročilo). Izhodišče: dizajn 3–10 %, znamka do 15 % (GAG / Licensing International).</p>
+                              <p className="hint" style={{ marginTop: '.5rem' }}>{L('Cena zgoraj je', 'The price above is')} <b>{L('predujem / minimalna garancija', 'an advance / minimum guarantee')}</b> {L('(nepovraten, ob podpisu). Tantieme se plačujejo', '(non-refundable, on signing). Royalties are paid')} <b>{L('dodatno', 'additionally')}</b> {L('od prodaje; ponudba doda klavzule (predujem, MG, reverzija, letno poročilo). Izhodišče: dizajn 3–10 %, znamka do 15 % (GAG / Licensing International).', 'on sales; the quote adds clauses (advance, MG, reversion, annual report). Starting point: design 3–10%, brand up to 15% (GAG / Licensing International).')}</p>
                             </div>
                           )}
                           <div>
-                            <div className="uredi-naslov">Teritorij <span className="vec">{ob.teritorijPrevzet ? 'kje se delo uporablja · po naročniku' : 'kje se delo uporablja'}</span>
+                            <div className="uredi-naslov">{L('Teritorij', 'Territory')} <span className="vec">{ob.teritorijPrevzet ? L('kje se delo uporablja · po naročniku', 'where the work is used · by client') : L('kje se delo uporablja', 'where the work is used')}</span>
                               <InfoNamig besedilo="Teritorij se privzeto prevzame po sedežu naročnika (kje se delo uporablja). Širši teritorij poviša ceno pravic. Če ga ročno spremeniš, ga z gumbom »↺ Prevzemi po naročniku« vrneš na privzeto." />
                             </div>
                             <div className="opts">
@@ -8143,7 +8214,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             )}
                           </div>
                           <div>
-                            <div className="uredi-naslov">Dodatni mediji <span className="vec">izven tiska + promocije</span></div>
+                            <div className="uredi-naslov">{L('Dodatni mediji', 'Additional media')} <span className="vec">{L('izven tiska + promocije', 'beyond print + promotion')}</span></div>
                             <div className="opts">
                               {PRAV_MEDIJI_DODATNI.map(m => {
                                 const on = ob.mediji.includes(m.id);
@@ -8158,7 +8229,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           </div>
                           {NAKLADA_STORITVE.includes(sid) && (
                             <div>
-                              <div className="uredi-naslov">Naklada / obseg izdaje</div>
+                              <div className="uredi-naslov">{L('Naklada / obseg izdaje', 'Print run / edition size')}</div>
                               <div className="opts">
                                 {PRAV_NAKLADA.map(n => (
                                   <button key={n.id} type="button" className={'pill' + (ob.naklada === n.id ? ' on' : '')}
@@ -8170,14 +8241,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             </div>
                           )}
                           <div>
-                            <div className="uredi-naslov">Opomba <span className="vec">neobvezno · zapiše se v ponudbo pod to storitvijo</span></div>
-                            <input type="text" className="detajl-opomba" placeholder="npr. dovoljena uporaba na embalaži do 2027"
+                            <div className="uredi-naslov">{L('Opomba', 'Note')} <span className="vec">{L('neobvezno · zapiše se v ponudbo pod to storitvijo', 'optional · written into the quote under this service')}</span></div>
+                            <input type="text" className="detajl-opomba" placeholder={L('npr. dovoljena uporaba na embalaži do 2027', 'e.g. use permitted on packaging until 2027')}
                               value={rec.opomba ?? ''} onChange={e => nastaviPravRec(sid, { opomba: e.target.value })} />
                           </div>
-                          <p className="hint" style={{ margin: 0 }}>Obseg zgoraj <b>vpliva na ceno pravic te storitve</b> (teritorij privzeto po naročniku; širši teritorij, dodatni mediji ali večja naklada znesek povišajo). Cena pravic te storitve: <b>{r ? val(r.praviceVrstice.find(x => x.sid === sid)?.znesek || 0) : '—'}</b>.</p>
+                          <p className="hint" style={{ margin: 0 }}>{L('Obseg zgoraj', 'The scope above')} <b>{L('vpliva na ceno pravic te storitve', 'affects the rights price of this service')}</b> {L('(teritorij privzeto po naročniku; širši teritorij, dodatni mediji ali večja naklada znesek povišajo). Cena pravic te storitve:', '(territory defaults to the client; a wider territory, extra media or a larger print run raise the amount). Rights price of this service:')} <b>{r ? val(r.praviceVrstice.find(x => x.sid === sid)?.znesek || 0) : '—'}</b>.</p>
                         </div>
                         <div className="detajl-noga">
-                          <button type="button" className="gumb" onClick={() => setPraviceOdprt(null)}>Zapri</button>
+                          <button type="button" className="gumb" onClick={() => setPraviceOdprt(null)}>{L('Zapri', 'Close')}</button>
                         </div>
                       </div>
                     </div>
@@ -8195,11 +8266,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={'Pravica: ' + (l.ime || 'Lastna pravica')} onClick={e => e.stopPropagation()} data-lenis-prevent>
                         <div className="izbirnik-glava">
                           <span>Pravica: {l.ime || 'Lastna pravica'}</span>
-                          <button type="button" onClick={() => setLastnaOdprta(null)} aria-label="Zapri">✕</button>
+                          <button type="button" onClick={() => setLastnaOdprta(null)} aria-label={L('Zapri', 'Close')}>✕</button>
                         </div>
                         <div className="detajl-telo">
                           <div>
-                            <div className="uredi-naslov">Trajanje <span className="vec">za opis v ponudbi</span></div>
+                            <div className="uredi-naslov">{L('Trajanje', 'Duration')} <span className="vec">{L('za opis v ponudbi', 'for the description in the quote')}</span></div>
                             <div className="opts">
                               {PRAV_TRAJANJE.map(t => (
                                 <button key={t.id} type="button" className={'pill' + (l.trajanje === t.id ? ' on' : '')}
@@ -8209,16 +8280,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                               ))}
                             </div>
                             <div className="cu-vrsta cu-po-meri">
-                              <span className={'pill' + (l.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">Po meri{l.trajanje === 'custom' && typeof l.trajLeta === 'number' ? `: ${trajLetaVBesedo(l.trajLeta)}` : ''}</span></span>
-                              <input type="number" min={1} value={custStev} onChange={e => setCustStev(e.target.value)} className="cu-num" aria-label="Število" />
-                              <select value={custEnota} onChange={e => setCustEnota(e.target.value as 'teden' | 'mesec' | 'leto')} className="cu-select" aria-label="Enota">
-                                <option value="teden">tednov</option><option value="mesec">mesecev</option><option value="leto">let</option>
+                              <span className={'pill' + (l.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">{L('Po meri', 'Custom')}{l.trajanje === 'custom' && typeof l.trajLeta === 'number' ? `: ${trajLetaVBesedo(l.trajLeta)}` : ''}</span></span>
+                              <input type="number" min={1} value={custStev} onChange={e => setCustStev(e.target.value)} className="cu-num" aria-label={L('Število', 'Number')} />
+                              <select value={custEnota} onChange={e => setCustEnota(e.target.value as 'teden' | 'mesec' | 'leto')} className="cu-select" aria-label={L('Enota', 'Unit')}>
+                                <option value="teden">{L('tednov', 'weeks')}</option><option value="mesec">{L('mesecev', 'months')}</option><option value="leto">{L('let', 'years')}</option>
                               </select>
-                              <button type="button" className="gumb cu-uporabi" onClick={() => posodobiLastnoPravico(l.id, { trajanje: 'custom', trajLeta: custLeta })}>Uporabi</button>
+                              <button type="button" className="gumb cu-uporabi" onClick={() => posodobiLastnoPravico(l.id, { trajanje: 'custom', trajLeta: custLeta })}>{L('Uporabi', 'Apply')}</button>
                             </div>
                           </div>
                           <div>
-                            <div className="uredi-naslov">Klavzule <span className="vec">se zapišejo v ponudbo</span></div>
+                            <div className="uredi-naslov">{L('Klavzule', 'Clauses')} <span className="vec">{L('se zapišejo v ponudbo', 'are written into the quote')}</span></div>
                             <div className="opts">
                               {KLAVZULE.map(k => {
                                 const on = (l.klavzule || []).includes(k.id);
@@ -8232,13 +8303,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             </div>
                           </div>
                           <div>
-                            <div className="uredi-naslov">Opomba <span className="vec">neobvezno · zapiše se v ponudbo</span></div>
-                            <input type="text" className="detajl-opomba" placeholder="npr. dovoljena uporaba na embalaži do 2027"
+                            <div className="uredi-naslov">{L('Opomba', 'Note')} <span className="vec">{L('neobvezno · zapiše se v ponudbo', 'optional · written into the quote')}</span></div>
+                            <input type="text" className="detajl-opomba" placeholder={L('npr. dovoljena uporaba na embalaži do 2027', 'e.g. use permitted on packaging until 2027')}
                               value={l.opomba ?? ''} onChange={e => posodobiLastnoPravico(l.id, { opomba: e.target.value })} />
                           </div>
                         </div>
                         <div className="detajl-noga">
-                          <button type="button" className="gumb" onClick={() => setLastnaOdprta(null)}>Zapri</button>
+                          <button type="button" className="gumb" onClick={() => setLastnaOdprta(null)}>{L('Zapri', 'Close')}</button>
                         </div>
                       </div>
                     </div>
@@ -8251,9 +8322,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
           {((klasicnaOblika && korak === posebnostiStep) || (vChatu && poMeh >= 4)) && (
             <>
-              {vChatu && chatVpr('Posebnosti projekta?', 'Vse je neobvezno; pusti prazno in pojdi naprej.')}
+              {vChatu && chatVpr(L('Posebnosti projekta?', 'Project specifics?'), L('Vse je neobvezno; pusti prazno in pojdi naprej.', 'Everything is optional; leave it blank and move on.'))}
               <div className="kartica">
-                <div className="k-naslov">Dodatki k projektu <span className="vec">izbereš lahko več</span></div>
+                <div className="k-naslov">{L('Dodatki k projektu', 'Project add-ons')} <span className="vec">{L('izbereš lahko več', 'you can pick several')}</span></div>
                 <div className="opts">
                   {DODATKI.map(d => (
                     <button key={d.id} type="button"
@@ -8266,39 +8337,39 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 </div>
               </div>
               {urnePostavkeUI()}
-              {dodajPostavkoUI('Dodatni stroški za to ponudbo')}
+              {dodajPostavkoUI(L('Dodatni stroški za to ponudbo', 'Additional costs for this quote'))}
             </>
           )}
 
           {((klasicnaOblika && korak === cenaStep) || (vChatu && poMeh >= 5)) && r && (
             <>
-              {vChatu && chatVpr('Tvoja cena.', 'Pametno izhodišče — prilagodi jo po občutku.')}
-              {dolgorocno && <p className="ob-sub" style={{ margin: '0 0 .6rem', fontWeight: 600 }}>Dolgoročno sodelovanje — mesečni retainer. Nastavi model in dobo; pogodbo narediš na Zaključku.</p>}
+              {vChatu && chatVpr(L('Tvoja cena.', 'Your price.'), L('Pametno izhodišče — prilagodi jo po občutku.', 'A smart starting point — adjust it to your gut feeling.'))}
+              {dolgorocno && <p className="ob-sub" style={{ margin: '0 0 .6rem', fontWeight: 600 }}>{L('Dolgoročno sodelovanje — mesečni retainer. Nastavi model in dobo; pogodbo narediš na Zaključku.', 'Long-term collaboration — a monthly retainer. Set the model and duration; you create the contract at Finish.')}</p>}
               {!dolgorocno && (<>
               {/* preklop: trije paketi ali ena koncna cena (Priporoceni obseg). Retainer nacin (?retainer=1) pokaze konfigurator namesto paketov. */}
               <div className="opts" style={{ marginBottom: '.4rem' }}>
                 <button type="button" className={'pill' + (!enaCena ? ' on' : '')} onClick={() => setEnaCena(false)}>
-                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">Trije paketi</span>
+                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Trije paketi', 'Three packages')}</span>
                 </button>
                 <button type="button" className={'pill' + (enaCena ? ' on' : '')} onClick={() => setEnaCena(true)}>
-                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">Ena cena</span>
+                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Ena cena', 'Single price')}</span>
                 </button>
               </div>
               <div className={'paketi' + (enaCena ? ' paketi-ena' : '')}>
                 {(enaCena ? r.paketi.filter(p => p.id === 'priporoceni') : r.paketi).map(p => (
                   <div key={p.id} className={'paket' + (p.id === 'priporoceni' && !enaCena ? ' mid' : '')}>
                     <button type="button" className="paket-edit"
-                      aria-label={'Ročno popravi ceno paketa ' + p.ime}
-                      title="Ročno popravi ceno"
+                      aria-label={L('Ročno popravi ceno paketa ', 'Edit package price manually ') + p.ime}
+                      title={L('Ročno popravi ceno', 'Edit the price manually')}
                       onClick={() => setUrejamPaket(urejamPaket === p.id ? null : p.id)}>
                       <PencilSimple size={15} weight="bold" />
                     </button>
-                    <h3>{enaCena ? 'Cena' : p.ime}</h3>
+                    <h3>{enaCena ? L('Cena', 'Price') : p.ime}</h3>
                     {r.popustPct > 0 && !p.rocna && <div className="redna">{val(p.redna)}</div>}
                     {urejamPaket === p.id ? (
                       <div className="paket-cena-uredi">
                         <input type="number" min={0} step={50} autoFocus
-                          aria-label={'Cena paketa ' + p.ime}
+                          aria-label={L('Cena paketa ', 'Package price ') + p.ime}
                           placeholder={String(zaokrozi(p.skupaj * vfx.fx))}
                           value={rocniPaketi[p.id] ?? ''}
                           onChange={e => setRocniPaketi({ ...rocniPaketi, [p.id]: e.target.value })} />
@@ -8307,11 +8378,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     ) : (
                       <div className="znesek">{val(p.skupaj)}</div>
                     )}
-                    {p.rocna && urejamPaket !== p.id && <div className="paket-rocno">ročno</div>}
+                    {p.rocna && urejamPaket !== p.id && <div className="paket-rocno">{L('ročno', 'manual')}</div>}
                     {urejamPaket === p.id && (rocniPaketi[p.id] ?? '') !== '' && (
                       <button type="button" className="povezava paket-reset"
                         onClick={() => { const n = { ...rocniPaketi }; delete n[p.id]; setRocniPaketi(n); }}>
-                        ↺ Samodejno
+                        {L('↺ Samodejno', '↺ Automatic')}
                       </button>
                     )}
                     <p>{p.opis}</p>
@@ -8321,37 +8392,37 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <div className="kartica" style={{ marginTop: '1.4rem' }}>
                 <div className="numgrid" style={{ marginTop: 0 }}>
                   <div className="polje">
-                    <label htmlFor="cw-popust">Popust (%)</label>
+                    <label htmlFor="cw-popust">{L('Popust (%)', 'Discount (%)')}</label>
                     <input id="cw-popust" type="number" min={0} max={50} step={5}
                       placeholder="0" value={popust}
                       onChange={e => setPopust(e.target.value)} />
                   </div>
                 </div>
-                <p className="hint">Popust naj ima vedno razlog (prvi projekt, paket, dolgoročno sodelovanje) in v ponudbi vedno stoji ob redni ceni. Ponudba dobi zaporedno številko{stevilkaPonudbe ? ` (${stevilkaPonudbe})` : ''}; avans in rok veljavnosti nastaviš v Profil → Moje podjetje → Pogoji ponudbe.</p>
+                <p className="hint">{L('Popust naj ima vedno razlog (prvi projekt, paket, dolgoročno sodelovanje) in v ponudbi vedno stoji ob redni ceni. Ponudba dobi zaporedno številko', 'A discount should always have a reason (first project, package, long-term collaboration) and always appear next to the regular price in the quote. The quote gets a sequential number')}{stevilkaPonudbe ? ` (${stevilkaPonudbe})` : ''}{L('; avans in rok veljavnosti nastaviš v Profil → Moje podjetje → Pogoji ponudbe.', '; you set the deposit and validity period in Profile → My company → Quote terms.')}</p>
               </div>
               <p className="razlaga">
-                Cena zajema izvedbo ({r.sez.map(s => s.ime.toLowerCase()).join(' + ')}),
-                umerjeno na tvoje izkušnje{r.vel.mult !== 1 || r.trgMult !== 1 ? ' ter velikost in trg naročnika' : ''}.
+                {L('Cena zajema izvedbo (', 'The price covers production (')}{r.sez.map(s => s.ime.toLowerCase()).join(' + ')}{L('),', '),')}
+                {' '}{L('umerjeno na tvoje izkušnje', 'calibrated to your experience')}{r.vel.mult !== 1 || r.trgMult !== 1 ? L(' ter velikost in trg naročnika', " as well as the client's size and market") : ''}{'.'}
                 {r.prenos === 'licenca'
-                  ? <>Avtorske pravice se prenesejo z <b>letno licenco {val(r.licenca)} / leto</b> (odkup ni vključen{r.raba === 'projekt' ? <>; možna alternativa so <b>tantieme {r.tantiemePct} % od prodaje</b></> : null}).</>
-                  : <>Vsaka od treh opcij vključuje tudi <b>{r.prenos === 'neizkljucni' ? 'neizključni' : 'enkratni'} prenos avtorskih pravic ({val(r.pravice)})</b>
+                  ? <>{L('Avtorske pravice se prenesejo z', 'Copyright is transferred as')} <b>{L('letno licenco ', 'an annual license of ')}{val(r.licenca)}{L(' / leto', ' / year')}</b>{L(' (odkup ni vključen', ' (buyout not included')}{r.raba === 'projekt' ? <>{L('; možna alternativa so', '; a possible alternative is')} <b>{L('tantieme ', 'royalties ')}{r.tantiemePct}{L(' % od prodaje', '% of sales')}</b></> : null}{L(').', ').')}</>
+                  : <>{L('Vsaka od treh opcij vključuje tudi', 'Each of the three options also includes')} <b>{r.prenos === 'neizkljucni' ? L('neizključni', 'a non-exclusive') : L('enkratni', 'a one-time')}{L(' prenos avtorskih pravic (', ' transfer of copyright (')}{val(r.pravice)}{')'}</b>
                       {r.praviceRocne
-                        ? <> — znesek si nastavila sama</>
+                        ? <> {L('— znesek si nastavila sama', '— you set the amount yourself')}</>
                         : r.dobicekPodan
                           ? r.raba === 'projekt'
-                            ? <> — izračunan iz pričakovanega dobička projekta, ki si ga vpisala</>
-                            : <> — izračunan iz dobička naročnika, ki si ga vpisala</>
-                          : <> — privzeto ocenjen; natančnejši znesek nastaviš v koraku o prenosu pravic</>}
-                      {r.prenos === 'neizkljucni' ? <> (avtor lahko delo ponudi tudi drugim)</> : null};
-                      {' '}namesto odkupa lahko ponudiš <b>letno licenco {val(r.licenca)}</b>{r.raba === 'projekt' ? <> ali <b>tantieme {r.tantiemePct} % od prodaje</b></> : null}.</>}
-                Vključene korekture: <b>Osnovni 1 krog, Priporočeni 2, Premium 3</b>; nadaljnje po urni postavki{(() => { const u = urnePostavke.map(x => Math.round(Number(x.cena)) || 0).filter(n => n > 0); return u.length ? <> ({u[0].toLocaleString('sl-SI')} {vfx.znak}/uro)</> : null; })()}.
-                Tri opcije zato, ker stranka ne izbira med »da« in »ne«, ampak med »katero«.
+                            ? <> {L('— izračunan iz pričakovanega dobička projekta, ki si ga vpisala', '— calculated from the expected project profit you entered')}</>
+                            : <> {L('— izračunan iz dobička naročnika, ki si ga vpisala', '— calculated from the client\'s profit you entered')}</>
+                          : <> {L('— privzeto ocenjen; natančnejši znesek nastaviš v koraku o prenosu pravic', '— estimated by default; you set a more precise amount in the rights transfer step')}</>}
+                      {r.prenos === 'neizkljucni' ? <> {L('(avtor lahko delo ponudi tudi drugim)', '(the author may also offer the work to others)')}</> : null}{'; '}
+                      {L('namesto odkupa lahko ponudiš ', 'instead of a buyout you can offer ')}<b>{L('letno licenco ', 'an annual license of ')}{val(r.licenca)}</b>{r.raba === 'projekt' ? <> {L('ali', 'or')} <b>{L('tantieme ', 'royalties ')}{r.tantiemePct}{L(' % od prodaje', '% of sales')}</b></> : null}{'.'}</>}
+                {' '}{L('Vključene korekture:', 'Included revisions:')} <b>{L('Osnovni 1 krog, Priporočeni 2, Premium 3', 'Basic 1 round, Recommended 2, Premium 3')}</b>{L('; nadaljnje po urni postavki', '; further ones at the hourly rate')}{(() => { const u = urnePostavke.map(x => Math.round(Number(x.cena)) || 0).filter(n => n > 0); return u.length ? <> ({u[0].toLocaleString('sl-SI')} {vfx.znak}/uro)</> : null; })()}{'.'}
+                {' '}{L('Tri opcije zato, ker stranka ne izbira med »da« in »ne«, ampak med »katero«.', 'Three options because the client is not choosing between «yes» and «no», but between «which one».')}
               </p>
               </>)}
               {dolgorocno && ret && (
                 <div className="retainer">
                   <div className="opts opts-3" style={{ marginBottom: '.55rem' }}>
-                    {([['ure', 'Po urah'], ['paket', 'Paket / mesec'], ['oboje', 'Oboje']] as const).map(([id, label]) => (
+                    {([['ure', L('Po urah', 'By the hour')], ['paket', L('Paket / mesec', 'Package / month')], ['oboje', L('Oboje', 'Both')]] as const).map(([id, label]) => (
                       <button key={id} type="button" className={'pill' + (retModel === id ? ' on' : '')} onClick={() => setRetModel(id)}>
                         <span className="pill-fill" aria-hidden /><span className="pill-tekst">{label}</span>
                       </button>
@@ -8359,21 +8430,21 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </div>
                   {retModel !== 'paket' && (
                     <div className="ret-vrsta">
-                      <span className="ret-oznaka">Ure / mesec</span>
+                      <span className="ret-oznaka">{L('Ure / mesec', 'Hours / month')}</span>
                       <div className="ret-izbire">
                         {RETAINER_URE_MOZNOSTI.map(u => (
                           <button key={u} type="button" className={'ret-chip' + (retUre === u ? ' on' : '')} onClick={() => setRetUre(u)}>{u} h</button>
                         ))}
-                        <input className="ret-vnos" type="number" min={1} step={1} value={retUre} aria-label="Ure na mesec"
+                        <input className="ret-vnos" type="number" min={1} step={1} value={retUre} aria-label={L('Ure na mesec', 'Hours per month')}
                           onChange={e => setRetUre(Math.max(1, Math.round(Number(e.target.value) || 1)))} />
                       </div>
                     </div>
                   )}
                   {retModel !== 'ure' && (
-                    <p className="hint" style={{ margin: '.1rem 0 .6rem' }}>Paket = vrednost izbranih storitev na mesec: <b>{val(ret.paketBaza)}</b>. Za realen mesečni paket izberi manjše mesečne storitve (npr. objave, grafike).</p>
+                    <p className="hint" style={{ margin: '.1rem 0 .6rem' }}>{L('Paket = vrednost izbranih storitev na mesec:', 'Package = value of the selected services per month:')} <b>{val(ret.paketBaza)}</b>{L('. Za realen mesečni paket izberi manjše mesečne storitve (npr. objave, grafike).', '. For a realistic monthly package pick smaller monthly services (e.g. posts, graphics).')}</p>
                   )}
                   <div className="ret-vrsta">
-                    <span className="ret-oznaka">Doba</span>
+                    <span className="ret-oznaka">{L('Doba', 'Duration')}</span>
                     <div className="ret-izbire">
                       {RETAINER_DOBE.map(m => (
                         <button key={m} type="button" className={'ret-chip' + (retDoba === m ? ' on' : '')} onClick={() => setRetDoba(m)}>
@@ -8384,7 +8455,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </div>
                   <div className="ret-povzetek">
                     <div className="ret-glavna">
-                      <span>Mesečni znesek</span>
+                      <span>{L('Mesečni znesek', 'Monthly amount')}</span>
                       <b>{val(ret.mesNeto)}{ddvZavezanec ? ` (z DDV ${Math.round(ret.mesNeto * vfx.fx * (1 + clamp(Number(ddvStopnja) || 22, 0, 30) / 100)).toLocaleString('sl-SI')} ${vfx.znak})` : ''} / mes</b>
                     </div>
                     <ul className="ret-detajli">
@@ -8396,20 +8467,19 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     </ul>
                     <div className="ret-skupaj">
                       <span>Za dobo ({ret.doba} mes): <b>{val(ret.skupajDoba)}</b></span>
-                      <span>Letna vrednost: <b>{val(ret.letno)}</b></span>
+                      <span>{L('Letna vrednost:', 'Annual value:')} <b>{val(ret.letno)}</b></span>
                     </div>
                   </div>
-                  <p className="hint" style={{ marginTop: '.7rem' }}>Nadaljuj do »Tvoja ponudba« za retainer ponudbo, nato na »Zaključku« ustvari pogodbo.</p>
+                  <p className="hint" style={{ marginTop: '.7rem' }}>{L('Nadaljuj do »Tvoja ponudba« za retainer ponudbo, nato na »Zaključku« ustvari pogodbo.', 'Continue to «Your quote» for the retainer quote, then create the contract at «Finish».')}</p>
                 </div>
               )}
               <p className="hint">
-                Tvoj izračun anonimno (brez imena, maila ali česarkoli osebnega) prispeva
-                cenovno točko v skupno statistiko cen za kreativce. Hvala, da gradiš pregled trga.
+                {L('Tvoj izračun anonimno (brez imena, maila ali česarkoli osebnega) prispeva cenovno točko v skupno statistiko cen za kreativce. Hvala, da gradiš pregled trga.', 'Your calculation anonymously (without name, email or anything personal) contributes a price point to the shared pricing statistics for creatives. Thank you for helping build a picture of the market.')}
               </p>
             </>
           )}
           {korak === cenaStep && !r && (
-            <p className="sub">Najprej izberi vsaj eno storitev v prvem koraku.</p>
+            <p className="sub">{L('Najprej izberi vsaj eno storitev v prvem koraku.', 'First pick at least one service in the first step.')}</p>
           )}
 
           {korak === ponudbaStep && (
@@ -8417,12 +8487,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <div className="priprava-telo">
               {/* NAČIN + TON + AI */}
               <div className="pon-vrh">
-                <div className="segpills segpills-pogled" role="group" aria-label="Pogled">
-                  <button type="button" className={!predogledMode ? 'on' : ''} onClick={() => setPredogledMode(false)} title="Uredi">
-                    <PencilSimple size={15} weight="bold" /> Uredi
+                <div className="segpills segpills-pogled" role="group" aria-label={L('Pogled', 'View')}>
+                  <button type="button" className={!predogledMode ? 'on' : ''} onClick={() => setPredogledMode(false)} title={L('Uredi', 'Edit')}>
+                    <PencilSimple size={15} weight="bold" /> {L('Uredi', 'Edit')}
                   </button>
                   {/* na telefonu krajsi napis, da gre vse v eno vrstico brez rezanja */}
-                  <button type="button" className={predogledMode ? 'on' : ''} onClick={odpriPredogled} title="Predogled">
+                  <button type="button" className={predogledMode ? 'on' : ''} onClick={odpriPredogled} title={L('Predogled', 'Preview')}>
                     <Eye size={16} /> {jeMobilni ? 'Ogled' : 'Predogled'}
                   </button>
                 </div>
@@ -8430,8 +8500,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 {jeMobilni ? (
                   <div className="pon-sheet-trigi">
                     {/* samo ikoni (brez napisa), da Uredi + Predogled + oba gumba gredo v ENO vrstico */}
-                    <button type="button" className="pon-sheet-trig" onClick={() => setPonSheet('slog')} aria-label="Slog besedila" title="Slog besedila"><MagicWand size={18} /></button>
-                    <button type="button" className="pon-sheet-trig" onClick={() => setPonSheet('oblika')} aria-label="Oblikovanje" title="Oblikovanje"><TextAa size={18} weight="bold" /></button>
+                    <button type="button" className="pon-sheet-trig" onClick={() => setPonSheet('slog')} aria-label={L('Slog besedila', 'Text style')} title={L('Slog besedila', 'Text style')}><MagicWand size={18} /></button>
+                    <button type="button" className="pon-sheet-trig" onClick={() => setPonSheet('oblika')} aria-label={L('Oblikovanje', 'Formatting')} title={L('Oblikovanje', 'Formatting')}><TextAa size={18} weight="bold" /></button>
                   </div>
                 ) : slogKontrole}
               </div>
@@ -8439,7 +8509,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <label className="ure-preklop">
                   <input type="checkbox" checked={kaziUre}
                     onChange={e => { setKaziUre(e.target.checked); setRocnoBesedilo(false); }} />
-                  <span>Prikaži oceno ur v ponudbi <em>(privzeto skrito — cena je po vrednosti; vklopi le, če stranka želi razčlenitev ur)</em></span>
+                  <span>{L('Prikaži oceno ur v ponudbi', 'Show the hour estimate in the quote')} <em>{L('(privzeto skrito — cena je po vrednosti; vklopi le, če stranka želi razčlenitev ur)', '(hidden by default — the price is value-based; turn it on only if the client wants an hours breakdown)')}</em></span>
                 </label>
               )}
               {predogledMode ? (
@@ -8452,69 +8522,69 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     ))}
                   </div>
                 ) : (
-                  <div className="predogled-nalaga">{predogledNalaganje ? 'Pripravljam predogled …' : 'Predogled ni na voljo'}</div>
+                  <div className="predogled-nalaga">{predogledNalaganje ? L('Pripravljam predogled …', 'Preparing preview …') : L('Predogled ni na voljo', 'Preview not available')}</div>
                 )}
-                {predogledNalaganje && predogledStrani.length > 0 && <div className="predogled-osvezi" role="status">Osvežujem …</div>}
+                {predogledNalaganje && predogledStrani.length > 0 && <div className="predogled-osvezi" role="status">{L('Osvežujem …', 'Refreshing …')}</div>}
               </div>
               ) : (
               <>
               {/* FORMATIRANJE — na desktopu inline; na mobilu v slide-up sheetu "Oblika" (spodaj) */}
               {!jeMobilni && (
-              <div className="orodjarna" aria-label="Oblikovanje ponudbe">
-                {oznaciNamig && <div className="oznaci-namig" role="status">Najprej označi besedilo</div>}
-                <div className="tool-vel2" role="group" aria-label="Velikost besedila">
-                  <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); velikost(-1); }} aria-label="Pomanjšaj" title="Manjše"><CaretDown size={14} weight="bold" /></button>
+              <div className="orodjarna" aria-label={L('Oblikovanje ponudbe', 'Quote formatting')}>
+                {oznaciNamig && <div className="oznaci-namig" role="status">{L('Najprej označi besedilo', 'First select the text')}</div>}
+                <div className="tool-vel2" role="group" aria-label={L('Velikost besedila', 'Text size')}>
+                  <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); velikost(-1); }} aria-label={L('Pomanjšaj', 'Decrease')} title={L('Manjše', 'Smaller')}><CaretDown size={14} weight="bold" /></button>
                   <span className="tv-aa" aria-hidden>Aa</span>
-                  <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); velikost(1); }} aria-label="Povečaj" title="Večje"><CaretUp size={14} weight="bold" /></button>
+                  <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); velikost(1); }} aria-label={L('Povečaj', 'Increase')} title={L('Večje', 'Larger')}><CaretUp size={14} weight="bold" /></button>
                 </div>
-                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko" aria-label="Krepko"><TextB size={17} weight="bold" /></button>
-                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title="Ležeče" aria-label="Ležeče"><TextItalic size={17} /></button>
-                <select className="pisava-select" aria-label="Pisava besedila" defaultValue=""
+                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title={L('Krepko', 'Bold')} aria-label={L('Krepko', 'Bold')}><TextB size={17} weight="bold" /></button>
+                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title={L('Ležeče', 'Italic')} aria-label={L('Ležeče', 'Italic')}><TextItalic size={17} /></button>
+                <select className="pisava-select" aria-label={L('Pisava besedila', 'Text font')} defaultValue=""
                   onMouseDown={() => editorRef.current?.focus()}
                   onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
-                  <option value="" disabled>Pisava</option>
-                  <option value="Bodoni Moda">Elegantna</option>
+                  <option value="" disabled>{L('Pisava', 'Font')}</option>
+                  <option value="Bodoni Moda">{L('Elegantna', 'Elegant')}</option>
                   <option value="Montserrat">Montserrat</option>
                   <option value="Roboto">Roboto</option>
                   <option value="Lora">Lora</option>
                   <option value="Georgia">Georgia</option>
                   <option value="Arial">Arial</option>
                 </select>
-                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h1'); }} title="Naslov" aria-label="Naslov H1">H1</button>
-                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title="Podnaslov" aria-label="Podnaslov H2">H2</button>
-                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title="Navadno besedilo" aria-label="Navadno besedilo P">P</button>
+                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h1'); }} title={L('Naslov', 'Heading')} aria-label={L('Naslov H1', 'Heading H1')}>H1</button>
+                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title={L('Podnaslov', 'Subheading')} aria-label={L('Podnaslov H2', 'Subheading H2')}>H2</button>
+                <button type="button" className="tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title={L('Navadno besedilo', 'Body text')} aria-label={L('Navadno besedilo P', 'Body text P')}>P</button>
                 {/* barva: cilj (crke / ozadje crk) */}
-                <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'crke' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('crke'); }} title="Barvaj črke" aria-label="Barvaj črke"><span className="ti">T</span></button>
-                <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'podlaga' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('podlaga'); }} title="Barvaj ozadje črk" aria-label="Barvaj ozadje črk"><span className="ti ti-box">T</span></button>
+                <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'crke' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('crke'); }} title={L('Barvaj črke', 'Color the text')} aria-label={L('Barvaj črke', 'Color the text')}><span className="ti">T</span></button>
+                <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'podlaga' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('podlaga'); }} title={L('Barvaj ozadje črk', 'Color the text background')} aria-label={L('Barvaj ozadje črk', 'Color the text background')}><span className="ti ti-box">T</span></button>
                 <span className="tool-locnica" aria-hidden />
                 {['#111111', '#7C3AED', '#FA4892', '#EEE8D8', '#50E3C2'].map(barva => (
                   <button key={barva} type="button" className="barvica" style={{ background: barva }}
                     aria-label={'Barva ' + barva}
-                    title={(barvaCilj === 'podlaga' ? 'Ozadje' : 'Črke') + ' — dvojni klik odstrani barvo'}
+                    title={(barvaCilj === 'podlaga' ? L('Ozadje', 'Background') : L('Črke', 'Text')) + L(' — dvojni klik odstrani barvo', ' — double-click removes the color')}
                     onMouseDown={e => { e.preventDefault(); uporabiBarvo(barva); }}
                     onDoubleClick={e => { e.preventDefault(); odstraniBarvo(); }} />
                 ))}
-                <button type="button" className="barvica barvica-mavrica" aria-label="Izberi poljubno barvo" title="Izberi poljubno barvo"
+                <button type="button" className="barvica barvica-mavrica" aria-label={L('Izberi poljubno barvo', 'Pick a custom color')} title={L('Izberi poljubno barvo', 'Pick a custom color')}
                   onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
                 <input ref={barvaRef} type="color" hidden onChange={e => uporabiBarvo(e.target.value)} />
                 <span className="tool-locnica" aria-hidden />
-                <span className="podloga-oznaka">Podloga:</span>
-                <button type="button" className={'podloga-krog' + (predlogaPinart ? ' on' : '')} onClick={() => { const nov = !predlogaPinart; setPredlogaPinart(nov); if (nov) setPodlogaCover(''); }} title="Pinart predloga (oblikuje ponudbo po Pinart dizajnu)" aria-label="Pinart predloga">
+                <span className="podloga-oznaka">{L('Podloga:', 'Background:')}</span>
+                <button type="button" className={'podloga-krog' + (predlogaPinart ? ' on' : '')} onClick={() => { const nov = !predlogaPinart; setPredlogaPinart(nov); if (nov) setPodlogaCover(''); }} title={L('Pinart predloga (oblikuje ponudbo po Pinart dizajnu)', 'Pinart template (styles the quote in the Pinart design)')} aria-label={L('Pinart predloga', 'Pinart template')}>
                   {predlogaPinart && <Check size={12} weight="bold" />}
                 </button>
-                <button type="button" className={'podloga-krog podloga-nalozi' + (podlogaCover ? ' on' : '')} onClick={() => podlogaRef.current?.click()} title="Naloži svojo podlogo (slika naslovnice)" aria-label="Naloži podlogo"
+                <button type="button" className={'podloga-krog podloga-nalozi' + (podlogaCover ? ' on' : '')} onClick={() => podlogaRef.current?.click()} title={L('Naloži svojo podlogo (slika naslovnice)', 'Upload your own background (cover image)')} aria-label={L('Naloži podlogo', 'Upload background')}
                   style={podlogaCover ? { backgroundImage: `url(${podlogaCover})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
                   {!podlogaCover && <UploadSimple size={14} weight="bold" />}
                 </button>
                 <input ref={podlogaRef} type="file" accept="image/*" hidden onChange={e => { naloziPodlogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
                 <span className="tool-locnica" aria-hidden />
                 <button type="button" className={'logo-kvadrat' + (logo ? ' ima' : '')} onClick={() => logoRef.current?.click()}
-                  title={logo ? 'Zamenjaj logo' : 'Dodaj logo'} aria-label={logo ? 'Zamenjaj logo' : 'Dodaj logo'}
+                  title={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')} aria-label={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')}
                   style={logo ? { backgroundImage: `url(${logo})` } : undefined}>
-                  {!logo && <><ImageSquare size={15} weight="bold" /><span>Logo</span></>}
+                  {!logo && <><ImageSquare size={15} weight="bold" /><span>{L('Logo', 'Logo')}</span></>}
                 </button>
                 {logo && (
-                  <button type="button" className="logo-odstrani" onClick={() => setLogo('')} title="Odstrani logo" aria-label="Odstrani logo">✕</button>
+                  <button type="button" className="logo-odstrani" onClick={() => setLogo('')} title={L('Odstrani logo', 'Remove logo')} aria-label={L('Odstrani logo', 'Remove logo')}>✕</button>
                 )}
                 <input ref={logoRef} type="file" accept="image/*" hidden onChange={e => { naloziLogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
                 <input
@@ -8541,7 +8611,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <p className="hint" style={{ marginTop: '.5rem' }}>
                   Besedilo je ročno urejeno in se ob spremembi izbir ne posodablja več samodejno.{' '}
                   <button type="button" className="povezava" onClick={() => setRocnoBesedilo(false)}>
-                    Povrni samodejno besedilo
+                    {L('Povrni samodejno besedilo', 'Restore automatic text')}
                   </button>
                 </p>
               )}
@@ -8555,12 +8625,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {jeMobilni && typeof document !== 'undefined' && createPortal(
                 <div className="cw cw-portal">
                   {ponSheet && <div className="pon-sheet-back" onClick={() => setPonSheet(null)} aria-hidden />}
-                  <div className={'pon-sheet' + (ponSheet === 'slog' ? ' odprt' : '')} role="dialog" aria-label="Slog besedila" aria-hidden={ponSheet !== 'slog'}>
-                    <div className="pon-sheet-glava"><b>Slog besedila</b><button type="button" className="pon-sheet-x" onClick={() => setPonSheet(null)} aria-label="Zapri">✕</button></div>
+                  <div className={'pon-sheet' + (ponSheet === 'slog' ? ' odprt' : '')} role="dialog" aria-label={L('Slog besedila', 'Text style')} aria-hidden={ponSheet !== 'slog'}>
+                    <div className="pon-sheet-glava"><b>{L('Slog besedila', 'Text style')}</b><button type="button" className="pon-sheet-x" onClick={() => setPonSheet(null)} aria-label={L('Zapri', 'Close')}>✕</button></div>
                     <div className="pon-sheet-telo">{slogKontrole}</div>
                   </div>
-                  <div className={'pon-sheet' + (ponSheet === 'oblika' ? ' odprt' : '')} role="dialog" aria-label="Oblikovanje" aria-hidden={ponSheet !== 'oblika'}>
-                    <div className="pon-sheet-glava"><b>Oblikovanje</b><button type="button" className="pon-sheet-x" onClick={() => setPonSheet(null)} aria-label="Zapri">✕</button></div>
+                  <div className={'pon-sheet' + (ponSheet === 'oblika' ? ' odprt' : '')} role="dialog" aria-label={L('Oblikovanje', 'Formatting')} aria-hidden={ponSheet !== 'oblika'}>
+                    <div className="pon-sheet-glava"><b>{L('Oblikovanje', 'Formatting')}</b><button type="button" className="pon-sheet-x" onClick={() => setPonSheet(null)} aria-label={L('Zapri', 'Close')}>✕</button></div>
                     <div className="pon-sheet-telo orodjarna orodjarna-sheet">{oblikaKontrole}</div>
                   </div>
                 </div>,
@@ -8576,51 +8646,51 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <CopySimple size={17} /> {kopirano ? 'Skopirano ✓' : 'Kopiraj ponudbo'}
               </button>
               <button type="button" className="gumb" disabled={!narocnikEmail.trim()}
-                title={narocnikEmail.trim() ? undefined : 'Vpiši email naročnika na koraku Kdo je stranka'}
+                title={narocnikEmail.trim() ? undefined : L('Vpiši email naročnika na koraku Kdo je stranka', 'Enter the client email in the Who is the client step')}
                 onClick={() => { posljiMailto(); proslaviKonfeti(); }}>
-                <EnvelopeSimple size={17} /> Pošlji ponudbo
+                <EnvelopeSimple size={17} /> {L('Pošlji ponudbo', 'Send quote')}
               </button>
-              <button type="button" className="povezava" disabled={pdfNalaganje} onClick={() => { prenesiPdf(); proslaviKonfeti(); }} title="Prenese ponudbo kot PDF datoteko">
+              <button type="button" className="povezava" disabled={pdfNalaganje} onClick={() => { prenesiPdf(); proslaviKonfeti(); }} title={L('Prenese ponudbo kot PDF datoteko', 'Downloads the quote as a PDF file')}>
                 <FilePdf size={17} /> {pdfNalaganje ? 'Pripravljam PDF…' : 'Prenesi PDF'}
               </button>
               <button type="button" className="povezava" onClick={() => { prenesi(); proslaviKonfeti(); }}>
-                <DownloadSimple size={17} /> Prenesi besedilo
+                <DownloadSimple size={17} /> {L('Prenesi besedilo', 'Download text')}
               </button>
               <button type="button" className="povezava" onClick={() => { prenesiCsv(); proslaviKonfeti(); }}>
-                <FileText size={17} /> Izvozi postavke (CSV za račune)
+                <FileText size={17} /> {L('Izvozi postavke (CSV za račune)', 'Export items (CSV for invoices)')}
               </button>
               <button type="button" className="povezava" onClick={() => { shraniVArhiv(); proslaviKonfeti(); }}>
-                <FloppyDisk size={17} /> Shrani ponudbo v arhiv
+                <FloppyDisk size={17} /> {L('Shrani ponudbo v arhiv', 'Save quote to archive')}
               </button>
               {dolgorocno && ret && (
-                <button type="button" className="povezava" disabled={pdfNalaganje} title="Prenese pogodbo o dolgoročnem sodelovanju kot PDF"
+                <button type="button" className="povezava" disabled={pdfNalaganje} title={L('Prenese pogodbo o dolgoročnem sodelovanju kot PDF', 'Downloads the long-term collaboration contract as a PDF')}
                   onClick={() => { prenesiPogodbaPdf(); }}>
-                  <FileText size={17} /> Ustvari pogodbo (PDF)
+                  <FileText size={17} /> {L('Ustvari pogodbo (PDF)', 'Create contract (PDF)')}
                 </button>
               )}
             </div>
             <div className="rac-panel">
               {!racunOdprt ? (
                 <button type="button" className="povezava rac-toggle" onClick={odpriRacun}>
-                  <Receipt size={17} /> Pretvori v račun
+                  <Receipt size={17} /> {L('Pretvori v račun', 'Convert to invoice')}
                 </button>
               ) : (
                 <div className="rac-box">
                   <div className="rac-box-glava">
-                    <Receipt size={20} /><b>Račun</b>
-                    <button type="button" className="rac-zapri" onClick={() => setRacunOdprt(false)} aria-label="Zapri račun">✕</button>
+                    <Receipt size={20} /><b>{L('Račun', 'Invoice')}</b>
+                    <button type="button" className="rac-zapri" onClick={() => setRacunOdprt(false)} aria-label={L('Zapri račun', 'Close invoice')}>✕</button>
                   </div>
                   <div className="rac-polja">
-                    <label className="rac-polje"><span>Št. računa</span>
+                    <label className="rac-polje"><span>{L('Št. računa', 'Invoice no.')}</span>
                       <input type="text" value={racunStevilka} onChange={e => setRacunStevilka(e.target.value)} /></label>
-                    <label className="rac-polje"><span>Datum izdaje</span>
+                    <label className="rac-polje"><span>{L('Datum izdaje', 'Issue date')}</span>
                       <input type="date" value={racunDatumISO} onChange={e => setRacunDatumISO(e.target.value)} /></label>
-                    <label className="rac-polje"><span>Rok plačila (dni)</span>
+                    <label className="rac-polje"><span>{L('Rok plačila (dni)', 'Payment due (days)')}</span>
                       <input type="number" min={0} max={180} step={1} value={racunRokDni} onChange={e => setRacunRokDni(e.target.value)} /></label>
                   </div>
                   {!enaCena && (
                     <div className="rac-paketi">
-                      <span className="rac-polje-l">Sprejeti paket</span>
+                      <span className="rac-polje-l">{L('Sprejeti paket', 'Accepted package')}</span>
                       <div className="segpills">
                         {(r?.paketi || []).map(p => (
                           <button key={p.id} type="button" className={'segpill' + (racunPaketId === p.id ? ' on' : '')} onClick={() => setRacunPaketId(p.id)}>{p.ime} · {val(p.skupaj)}</button>
@@ -8629,16 +8699,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     </div>
                   )}
                   <label className="rac-placano-chk">
-                    <input type="checkbox" checked={racunPlacano} onChange={e => setRacunPlacano(e.target.checked)} /> Označi kot plačano
+                    <input type="checkbox" checked={racunPlacano} onChange={e => setRacunPlacano(e.target.checked)} /> {L('Označi kot plačano', 'Mark as paid')}
                   </label>
                   <div className="rac-gumbi">
                     <button type="button" className="povezava rac-poslji" disabled={!narocnikEmail.trim()}
-                      title={narocnikEmail.trim() ? 'Odpre e-pošto s povzetkom računa' : 'Vpiši email naročnika na koraku Kdo je stranka'}
+                      title={narocnikEmail.trim() ? L('Odpre e-pošto s povzetkom računa', 'Opens an email with an invoice summary') : L('Vpiši email naročnika na koraku Kdo je stranka', 'Enter the client email in the Who is the client step')}
                       onClick={() => posljiRacunMailto()}>
-                      <PaperPlaneTilt size={17} /> Pošlji račun
+                      <PaperPlaneTilt size={17} /> {L('Pošlji račun', 'Send invoice')}
                     </button>
-                    <button type="button" className="gumb rac-prenesi" disabled={pdfNalaganje} onClick={() => { prenesiRacunPdf(); proslaviKonfeti(); }} title="Prenese račun kot PDF datoteko">
-                      <FilePdf size={17} /> {pdfNalaganje ? 'Pripravljam PDF…' : 'Prenesi račun (PDF)'}
+                    <button type="button" className="gumb rac-prenesi" disabled={pdfNalaganje} onClick={() => { prenesiRacunPdf(); proslaviKonfeti(); }} title={L('Prenese račun kot PDF datoteko', 'Downloads the invoice as a PDF file')}>
+                      <FilePdf size={17} /> {pdfNalaganje ? L('Pripravljam PDF…', 'Preparing PDF…') : L('Prenesi račun (PDF)', 'Download invoice (PDF)')}
                     </button>
                   </div>
                 </div>
@@ -8653,11 +8723,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       {korak === 0 && !klasicnaOblika && !uvodChat && (
         <>
           <button type="button" className={'ponudba-fab' + (ponudbaOdprta ? ' skrit' : '')}
-            onClick={odpriMobilnoPonudbo} aria-label="Odpri ponudbo">
+            onClick={odpriMobilnoPonudbo} aria-label={L('Odpri ponudbo', 'Open quote')}>
             <span className="fab-ikona" aria-hidden><FileText size={22} weight="regular" />
               {stPostavk > 0 && <span className="fab-tag">{stPostavk}</span>}
             </span>
-            <span className="fab-znesek">Ponudba<b>od {val(skupajOkvirno)}</b></span>
+            <span className="fab-znesek">{L('Ponudba', 'Quote')}<b>od {val(skupajOkvirno)}</b></span>
           </button>
         </>
       )}
@@ -8666,7 +8736,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         <div className="noga-c">
           <div className="noga-gumbi">
             {(korak > 0 || (korak === 0 && !uvodChat && !klasicnaOblika)) && (
-              <button type="button" className="gumb-nazaj" aria-label="Nazaj"
+              <button type="button" className="gumb-nazaj" aria-label={L('Nazaj', 'Back')}
                 onClick={korak === 0
                   ? () => {
                       if (poMeh > 0) {
@@ -8696,13 +8766,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     setKorak(ponudbaStep);   /* priprava ponudbe = overlay/urejanje */
                   } else { naprej(); }
                 }}>
-                {vChatu && poMeh === 4 ? 'Pokaži ceno' : vChatu && poMeh === 5 ? 'Pripravi ponudbo' : korak === posebnostiStep ? 'Pokaži ceno' : korak === cenaStep ? 'Pripravi ponudbo' : korak === ponudbaStep ? 'Zaključi' : 'Naprej'}
+                {vChatu && poMeh === 4 ? L('Pokaži ceno', 'Show price') : vChatu && poMeh === 5 ? L('Pripravi ponudbo', 'Prepare quote') : korak === posebnostiStep ? L('Pokaži ceno', 'Show price') : korak === cenaStep ? L('Pripravi ponudbo', 'Prepare quote') : korak === ponudbaStep ? L('Zaključi', 'Finish') : L('Naprej', 'Next')}
                 <ArrowDown size={16} weight="bold" aria-hidden />
               </button>
             ) : (
               <div className="noga-koncna">
-                <button type="button" className="nazaj-g" onClick={() => setKorak(0)}>← Uredi od začetka</button>
-                <button type="button" className="nazaj-g nova" onClick={novaPonudba}>↺ Nova ponudba</button>
+                <button type="button" className="nazaj-g" onClick={() => setKorak(0)}>{L('← Uredi od začetka', '← Edit from the start')}</button>
+                <button type="button" className="nazaj-g nova" onClick={novaPonudba}>{L('↺ Nova ponudba', '↺ New quote')}</button>
               </div>
             )}
           </div>
