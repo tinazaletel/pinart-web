@@ -5071,8 +5071,43 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .priprava-glava .sub { margin: 0; max-width: 46ch; }
         @media (prefers-reduced-motion: reduce) { .cw .priprava-overlay, .cw .priprava-backdrop { animation: none; } }
         @media (max-width: 560px) { .cw .priprava-overlay { border-radius: 0; width: 100vw; } }
-        /* priprava = samostojna centrirana stran, malo sirsa od ostalih korakov */
-        .cw .korak-vsebina.priprava-korak { max-width: 1000px; }
+        /* Pripravljena ponudba se odpre kot miren dokument, ne kot navaden nov korak. */
+        .cw .korak-vsebina.priprava-korak {
+          max-width: 1000px;
+          animation: pripravaStranVstop .5s cubic-bezier(.22,.8,.28,1) both;
+        }
+        .cw .priprava-korak .editor,
+        .cw .priprava-korak .predogled-okvir {
+          transform-origin: 50% 12%;
+          animation: ponudbaDokumentVstop .68s cubic-bezier(.16,1,.3,1) .08s both;
+          will-change: transform, opacity, filter;
+        }
+        @keyframes pripravaStranVstop {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes ponudbaDokumentVstop {
+          0% {
+            opacity: 0;
+            transform: translateY(24px) scale(.985);
+            filter: blur(7px);
+            box-shadow: 0 6px 20px rgba(40,25,40,.05);
+          }
+          55% { opacity: 1; }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .cw .korak-vsebina.priprava-korak,
+          .cw .priprava-korak .editor,
+          .cw .priprava-korak .predogled-okvir {
+            animation: none;
+            filter: none;
+          }
+        }
         .cw .priprava-vrh { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 0 1.3rem; }
         .cw .priprava-zapri { display: inline-flex; align-items: center; gap: .45rem; white-space: nowrap; background: transparent; border: 1px solid rgba(17,17,17,.16); color: rgba(17,17,17,.7); font-family: inherit; font-weight: 600; font-size: .84rem; line-height: 1; cursor: pointer; padding: .5rem 1rem; border-radius: 999px; transition: background .18s, border-color .18s, color .18s; }
         .cw .priprava-zapri:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
@@ -5357,6 +5392,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
            da sta "Hej Tina," in podjetje v ISTI vrstici */
         .cw .chat-bot .pozdrav-mehur b { display: inline; }
         .cw .pozdrav-select { border: none; background-color: transparent; font-family: inherit; font-weight: 700; font-size: .95rem; color: var(--ink); padding: 0 1.05rem 0 .3rem; margin-left: .1rem; appearance: none; -webkit-appearance: none; cursor: pointer; vertical-align: baseline; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .05rem center; }
+        /* izvzem iz .shell select bloat: kompakten select v pozdravnem oblacku -> oblacek hug-a vsebino IN je poravnan z besedilom v isti liniji */
+        .cw .pozdrav-select { min-height: 0 !important; font-size: .95rem !important; padding-right: 1.05rem !important; background-position: right .05rem center !important; }
         .cw .pozdrav-select:hover { text-decoration: underline; text-underline-offset: .2em; }
         .cw .chat-uredi { display: flex; flex-direction: column; gap: .5rem; align-items: flex-end; max-width: 100%; }
         .cw .chat-uredi .cu-vrsta { display: flex; gap: .5rem; align-items: center; }
@@ -6147,7 +6184,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             margin-inline: 0;
           }
           .cw .editor { padding: 1.1rem clamp(.75rem, 3vw, 1rem); }
-          .cw .korak-vsebina.priprava-korak { margin-inline: 0; }
+          .cw .korak-vsebina.priprava-korak {
+            position: relative;
+            left: 50%;
+            width: calc(100vw - 16px);
+            max-width: none;
+            margin-left: calc(-50vw + 8px);
+            margin-right: 0;
+          }
         }
         .cw .predogled-okvir { position: relative; background: #e9e6e0; border: 1px solid rgba(17,17,17,.12); border-radius: 10px; box-shadow: 0 12px 44px rgba(40,25,40,.11); max-width: 820px; margin: 1rem auto 140px; overflow-x: hidden; }
         .cw .predogled-strani { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 18px; }
@@ -6324,7 +6368,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .glava .zapri-loceno::before { content: "✕"; font-size: 1rem; }
           .cw .oder { align-items: flex-start; padding-top: 5.4rem; padding-bottom: 8rem; }
           .cw h1 { padding-left: 1.65rem; font-size: clamp(2.15rem, 11vw, 2.85rem); line-height: .98; margin-bottom: .6rem; }
-          .cw .h1-step { position: absolute; top: 0; left: calc(-1 * clamp(1.2rem, 4vw, 3rem)); width: 2.15rem; height: 2.05rem; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); border-radius: 0 .35rem .35rem 0; font-size: .62rem; letter-spacing: .08em; }
+          .cw .h1-step { position: absolute; top: 0; left: calc(-1 * clamp(1.2rem, 4vw, 3rem) - 1.25rem); width: 2.15rem; height: 2.05rem; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); border-radius: 0 .35rem .35rem 0; font-size: .62rem; letter-spacing: .08em; }
           .cw .sub-vrsta { margin-bottom: 1.7rem; gap: .8rem; flex-wrap: nowrap; align-items: baseline; }
           .cw .sub { flex: 1 1 auto; font-size: .94rem; line-height: 1.5; }
           .cw .sub-vrsta .op-edit { margin-left: auto; text-align: right; flex: none; white-space: nowrap; justify-content: flex-end; line-height: 1.25; font-size: .66rem; letter-spacing: .13em; }
