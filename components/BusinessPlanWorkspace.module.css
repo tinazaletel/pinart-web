@@ -192,6 +192,7 @@
 @media (max-width: 700px) { .page { min-width: 0; }.fields { grid-template-columns: 1fr; }.plan, .timer, .history { min-width: 0; padding: 1rem; }.history header { align-items: flex-start; flex-direction: column; gap: .4rem; }.history article { grid-template-columns: minmax(0, 1fr) auto; gap: .65rem; }.history article > div { min-width: 0; }.history article > div span { overflow-wrap: anywhere; }.history article > b, .history article > em { justify-self: start; }.history article > b { grid-column: 1; }.history article > em { grid-column: 1; }.history article > .akcije { grid-column: 1 / -1; justify-self: start; gap: .5rem; padding-top: .2rem; }.history article > .akcije .izbrisi { min-width: 2.75rem; min-height: 2.75rem; }.running button { min-height: 3rem; }
   /* Prisotnost na telefonu: en stolpec, cilj polje ni vec stisnjeno na levo */
   .prisotnostCilj { max-width: none; }
+  .prisotnost { grid-template-columns: 1fr; }
   /* mesecna tabela drsi vodoravno namesto da stisne stolpce cez rob (390px) */
   .mesecTabelaOvoj { -webkit-overflow-scrolling: touch; }
   .mesecNav strong { min-width: 8rem; font-size: 1rem; }
@@ -295,7 +296,9 @@
 .rocniGumb:hover { border-color: var(--ink); }
 
 /* ── Prisotnost: cilj delovnika, dnevni vnos (prihod/malica/odhod/vrsta) ── */
-.prisotnost { display: grid; gap: .8rem; }
+/* web: kompaktna mreza (polja vstric, krajsa) — ne dolg stolpec cez celo sirino */
+.prisotnost { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem 1rem; align-items: start; }
+.prisotnost > .komentarPolje, .prisotnost > .prisotnostIzpis, .prisotnost > button { grid-column: 1 / -1; }
 .prisotnostCilj { max-width: 11rem; }
 .prisotnostCilj input { text-align: center; }
 .prisotnostVrstica { display: flex; gap: .5rem; align-items: center; }

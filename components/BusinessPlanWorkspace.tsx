@@ -826,7 +826,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             <option value="praznik">Praznik</option>
           </select>
         </label>
-        <label><span>Komentar <small>ni obvezno</small></span><input type="text" placeholder="npr. pri zdravniku, sestanek …" value={opombaVnos} onChange={e => setOpombaVnos(e.target.value)} /></label>
+        <label className={styles.komentarPolje}><span>Komentar <small>ni obvezno</small></span><input type="text" placeholder="npr. pri zdravniku, sestanek …" value={opombaVnos} onChange={e => setOpombaVnos(e.target.value)} /></label>
 
         <p className={styles.prisotnostIzpis}>
           {brezUrVrsta(vrstaVnos)
