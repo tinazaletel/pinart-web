@@ -776,7 +776,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
             <button type="button" className="pg-det-ponudba-vrstica" aria-expanded={detPonOdprta} aria-label={`Ponudba ${offer.number || offer.title} — prikaži povzetek`} onClick={() => setDetPonOdprta(v => !v)}>
               <span className="pg-kp-ikona" aria-hidden>⌁</span>
               <span className="pg-det-ponudba-ime">Ponudba {offer.number || offer.title}</span>
-              <span className="pg-det-ponudba-kazalec" aria-hidden>{detPonOdprta ? '⌄' : '›'}</span>
+              {/* ikona namesto znaka — znak ⌄/› ni bil opticno na sredini krogca */}
+              <span className="pg-det-ponudba-kazalec" aria-hidden>{detPonOdprta ? <CaretUp size={13} weight="bold" /> : <CaretDown size={13} weight="bold" />}</span>
             </button>
             {detPonOdprta && <div className="pg-kp-vec">
               <p className="pg-det-ponudba-naslov"><b>{offer.title}</b>{offer.agreedAmount > 0 ? ' · ' + eur(offer.agreedAmount) : ''}</p>
