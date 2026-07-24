@@ -8,7 +8,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, CaretUp, Eye, PencilSimple, PenNib, TextAa, TextB, TextItalic, Warning } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, Eye, FileText, PencilSimple, PenNib, TextAa, TextB, TextItalic, Warning } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract, type FlowContractStatus } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
@@ -488,8 +488,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* ── POGLED 1: NASTAVITVE (vstop + arhiv) ── */}
     {pogled === 'nastavitve' && <>
       {/* naslov strani samo tu — v pogledu dokumenta/zakljucka ga ni (kot retainer) */}
-      <header className={`${styles.topbar} pg-stolpec`}><div><p className={styles.eyebrow}>POGODBE</p><h1>Dogovor, brez ugibanja.</h1></div></header>
-      <section className="pg-sek pg-kartica pg-stolpec">
+      <header className={styles.topbar}><div><p className={styles.eyebrow}>POGODBE</p><h1>Dogovor, brez ugibanja.</h1></div></header>
+      <section className="pg-sek pg-kartica">
         <p className={styles.eyebrow}>NOVA POGODBA</p>
         <h2 className="pg-naslov">Iz česa nastane pogodba?</h2>
         <div className="pg-segpills" role="group" aria-label="Vir pogodbe">
@@ -569,8 +569,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
         </div>}
       </section>
 
-      {/* arhiv je sirsi od 700px stolpca (tabela s kolono za opombe), a prav tako sredinski */}
-      <section className={`${styles.contractArchive} pg-arhiv`}>
+      <section className={styles.contractArchive}>
         <div><p className={styles.eyebrow}>SHRANJENE POGODBE</p><h2>Od osnutka do podpisa.</h2></div>
         {contracts.length > 0 && <div className="pg-arhiv-filtri">
           <input className="pg-iskalnik" type="search" value={iskanje} onChange={event => setIskanje(event.target.value)} placeholder="Poišči pogodbo ali stranko …" aria-label="Poišči pogodbo ali stranko" />
@@ -586,22 +585,28 @@ export default function ContractWorkspace({ base }: { base: string }) {
         </div>}
         {contracts.length && !prikazane.length ? <p className={styles.contractArchiveEmpty}>Ni pogodb za ta filter.</p> : null}
         {prikazane.length ? <div className={styles.contractArchiveTable}>
-          <header><span>Pogodba</span><span>Status</span><span>Ponudba</span><span /></header>
+          <header><span>Pogodba</span><span className="pg-op-glava">Opomba</span><span>Status</span><span>Ponudba</span><span /></header>
           {prikazane.map(contract => {
             const offer = offers.find(item => item.id === contract.sourceOfferId);
             return <article key={contract.id}>
               <button className={styles.contractOpen} type="button" onClick={() => { setDetPonOdprta(false); setSelectedContract(contract); }}>
-                <span className={styles.contractArchiveIcon}>⌁</span>
+                {/* prava ikona pogodbe (prej necitljiv znak ⌁) */}
+                <span className={styles.contractArchiveIcon}><FileText size={18} weight="regular" /></span>
                 <span>
                   <strong>{contract.title}</strong>
                   <small>{contract.client} · {new Date(contract.date).toLocaleDateString('sl-SI')}</small>
                   {(() => {
                     const op = opombaInfo(contract.notes);
                     if (!op) return null;
-                    return <small className={'pg-opomba' + (op.alert ? ' pg-opomba-alert' : '')}>{op.alert && <span className="pg-opomba-pika" aria-hidden />}{op.besedilo}</small>;
+                    /* pod naslovom SAMO na mobilnem — na namizju ima opomba svojo kolono */
+                    return <small className={'pg-opomba pg-op-mob' + (op.alert ? ' pg-opomba-alert' : '')}>{op.alert && <span className="pg-opomba-pika" aria-hidden />}{op.besedilo}</small>;
                   })()}
                 </span>
               </button>
+              {(() => {
+                const op = opombaInfo(contract.notes);
+                return <span className="pg-op-cel">{op ? <small className={'pg-opomba' + (op.alert ? ' pg-opomba-alert' : '')}>{op.alert && <span className="pg-opomba-pika" aria-hidden />}{op.besedilo}</small> : null}</span>;
+              })()}
               <select aria-label={`Status pogodbe ${contract.title}`} value={contract.status} onChange={event => changeStatus(contract.id, event.target.value as FlowContractStatus)}>
                 {Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
               </select>
@@ -811,10 +816,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
       @media (prefers-reduced-motion:reduce){.pg-sek,.pg-sek.pg-stran{animation:none}}
       /* pogled dokumenta/zakljucka: sredinski ozek stolpec kot retainer (.rw-vsebina).
          max-width namesto min(700px,92vw), ker je stars ozji od viewporta (stranski meni). */
+      /* sredinski ozek stolpec SAMO za pogled dokumenta/zakljucka (kot retainer);
+         landing (vstop + arhiv) ostane cez sirino delovnega prostora */
       .pg-stolpec{width:100%;max-width:700px;margin-left:auto;margin-right:auto}
-      /* VSE sekcije enaka sirina (700) — mesane sirine so izgledale razbito;
-         opomba zato ostane pod naslovom vrstice, ne v svoji koloni */
-      .pg .pg-arhiv{width:100%;max-width:700px;margin-left:auto;margin-right:auto}
       .pg-nazaj-vrh{margin:0 0 1rem}
 
       .pg-kartica{background:#FCFBF7;border:1px solid rgba(17,17,17,.08);border-radius:20px;padding:1.6rem 1.7rem 1.7rem;box-shadow:0 4px 18px rgba(17,17,17,.04)}
@@ -932,6 +936,11 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
       /* opombe v arhivu: navadne nevtralno sive, ALERT rdece s piko (predpona se skrije) */
       .pg .pg-opomba{display:block;margin-top:.15rem;font-size:.72rem;font-weight:500;color:rgba(17,17,17,.55);overflow-wrap:anywhere}
+      /* opomba: namizje = svoja kolona (pg-op-cel), telefon = pod naslovom (pg-op-mob) */
+      .pg .pg-op-cel{min-width:0}
+      .pg .pg-op-cel .pg-opomba{margin-top:0}
+      @media (min-width:981px){.pg .pg-op-mob{display:none}}
+      @media (max-width:980px){.pg .pg-op-cel,.pg .pg-op-glava{display:none}}
       .pg .pg-opomba.pg-opomba-alert{color:#a92222;font-weight:600}
       .pg-opomba-pika{display:inline-block;width:.5rem;height:.5rem;border-radius:50%;background:#c22525;margin-right:.35rem;vertical-align:middle;flex:none}
       /* alert opomba v detajlu: rdeca kartica z opozorilno ikono */

@@ -453,7 +453,11 @@
 .uploadContract textarea { resize: vertical; }
 .contractArchive { padding: 1.4rem; }
 .contractArchive > div:first-child { margin-bottom: 1rem; }
-.contractArchiveTable > header, .contractArchive article { display: grid; grid-template-columns: minmax(15rem, 1fr) 10rem 8rem 2rem; align-items: center; gap: .8rem; }
+/* peta kolona = Opomba (samo namizje; na telefonu se opomba zlozi pod naslov) */
+.contractArchiveTable > header, .contractArchive article { display: grid; grid-template-columns: minmax(15rem, 1.1fr) minmax(0, 1fr) 10rem 8rem 2rem; align-items: center; gap: .8rem; }
+@media (max-width: 980px) {
+  .contractArchiveTable > header, .contractArchive article { grid-template-columns: minmax(15rem, 1fr) 10rem 8rem 2rem; }
+}
 .contractArchiveTable > header { padding: .6rem .8rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .5rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
 .contractArchive article { min-height: 4.4rem; padding: .65rem .8rem; border-top: 1px solid var(--line); }
 .contractArchive article strong, .contractArchive article small { display: block; }
