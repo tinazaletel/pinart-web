@@ -556,17 +556,17 @@
 .expenseEditorActions button { min-height: 2.6rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: .65rem; background: transparent; font: 800 .61rem var(--font-sans), sans-serif; cursor: pointer; }
 .expenseEditorActions button:last-child { border-color: var(--ink); background: var(--ink); color: var(--paper); }
 .expenseArchive > header { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
-/* × (izbris) je zdaj absolutno v zgornjem desnem kotu kartice (glej .expenseDelete),
-   zato ni vec svojega stolpca v mrezi. padding-right pusti prostor, da naslov ne
-   tece pod gumb. */
-.expenseList article { position: relative; display: grid; grid-template-columns: auto minmax(12rem, 1fr) minmax(10rem, .7fr) auto; align-items: center; gap: .8rem; min-height: 4.5rem; padding: .65rem 2.4rem .65rem .8rem; border-top: 1px solid var(--line); }
+.expenseList article { position: relative; display: grid; grid-template-columns: auto minmax(12rem, 1fr) minmax(10rem, .7fr) auto; align-items: center; gap: .8rem; min-height: 4.5rem; padding: .65rem .8rem; border-top: 1px solid var(--line); }
 .expenseList strong, .expenseList small { display: block; }
 .expenseList strong { font-size: .7rem; }
 .expenseList small { margin-top: .2rem; color: var(--muted); font-size: .54rem; }
-.expenseList button { padding: .4rem .6rem; border: 1px solid var(--line); border-radius: .55rem; background: transparent; font: 700 .56rem var(--font-sans), sans-serif; cursor: pointer; }
-/* Majhen, subtilen × v zgornjem desnem kotu kartice. position:absolute ga vzame
-   iz mreze, zato ne pade vec pod gumb "Uredi". Ohranja onClick + aria-label (TSX). */
-.expenseList .expenseDelete { position: absolute; top: .5rem; right: .5rem; z-index: 1; width: 1.55rem; height: 1.55rem; aspect-ratio: 1; padding: 0; border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent); border-radius: 50%; background: oklch(98% .008 87 / .9); color: oklch(52% .16 25); font-size: .82rem; line-height: 1; }
+/* Uredi (svincnik) + izbris (×) sta zdaj enaka okrogla ikonska gumba, poravnana
+   skupaj v zadnjem stolpcu kartice. */
+.expenseList .expenseActions { display: inline-flex; align-items: center; gap: .4rem; }
+.expenseList .expenseEdit, .expenseList .expenseDelete { display: inline-flex; align-items: center; justify-content: center; width: 1.85rem; height: 1.85rem; aspect-ratio: 1; padding: 0; border-radius: 50%; line-height: 1; cursor: pointer; }
+.expenseList .expenseEdit { border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent); background: oklch(98% .008 87 / .9); color: var(--ink); }
+.expenseList .expenseEdit:hover { border-color: var(--ink); background: oklch(95% .01 87); }
+.expenseList .expenseDelete { border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent); background: oklch(98% .008 87 / .9); color: oklch(52% .16 25); }
 .expenseList .expenseDelete:hover { border-color: oklch(52% .16 25); background: oklch(95% .04 25); }
 .expenseCoin { display: grid; place-items: center; width: 2rem; aspect-ratio: 1; border-radius: 50%; background: var(--ink); color: var(--paper); font: 700 .7rem var(--font-sans), sans-serif; }
 /* levi stolpec dovolj sirok, da se naslov ne lomi; desni omejen, sicer se
