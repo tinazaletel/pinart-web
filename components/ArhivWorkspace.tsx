@@ -138,6 +138,21 @@ export default function ArhivWorkspace({ base }: { base: string }) {
     odprto: invoices.filter(item => !item.paid).reduce((sum, item) => sum + item.amount, 0),
   }), [invoices]);
 
+  /* povzetek zavihka Ponudbe — vedno iz CELOTNEGA flow.offers, ne od filtra
+     (isti vzorec kot racuniMetrike zgoraj) */
+  const ponudbeMetrike = useMemo(() => ({
+    skupaj: offers.reduce((sum, item) => sum + item.agreedAmount, 0),
+    sprejeto: offers.filter(item => item.status === 'accepted').reduce((sum, item) => sum + item.agreedAmount, 0),
+    caka: offers.filter(item => item.status === 'sent').reduce((sum, item) => sum + item.agreedAmount, 0),
+  }), [offers]);
+
+  /* povzetek zavihka Pogodbe — pogodbe nimajo zneska, zato stevilo po statusu */
+  const pogodbeMetrike = useMemo(() => ({
+    podpisane: contracts.filter(item => item.status === 'signed').length,
+    aktivne: contracts.filter(item => item.status === 'active').length,
+    vObravnavi: contracts.filter(item => item.status === 'draft' || item.status === 'received' || item.status === 'review').length,
+  }), [contracts]);
+
   /* stevilo aktivnih filtrov (za stevec na gumbu Filtri v ArhivFilter) */
   const datumAktiven = obdobjeOd !== '' || obdobjeDo !== '';
   const stFiltrov = (datumAktiven ? 1 : 0)
@@ -264,6 +279,21 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         {/* ── PONUDBE ── */}
         {zavihek === 'ponudbe' && (
           <section className="arh-panel">
+            {offers.length > 0 && <div className="arh-metrike">
+              <article className="arh-metrika arh-metrika-skupaj">
+                <small>Skupaj</small><strong>{eur(ponudbeMetrike.skupaj)}</strong><span>{offers.length} ponudb</span>
+                <b className="arh-metrika-ikona"><MetricIcon type="document" /></b>
+              </article>
+              <article className="arh-metrika arh-metrika-sprejeto">
+                <small>Sprejeto</small><strong>{eur(ponudbeMetrike.sprejeto)}</strong><span>sprejete ponudbe</span>
+                <b className="arh-metrika-ikona"><MetricIcon type="paid" /></b>
+              </article>
+              <article className="arh-metrika arh-metrika-caka">
+                <small>Čaka</small><strong>{eur(ponudbeMetrike.caka)}</strong><span>poslane, čakajo</span>
+                <b className="arh-metrika-ikona"><MetricIcon type="profit" /></b>
+              </article>
+            </div>}
+
             {!offers.length ? (
               <p className="arh-prazno">Prva shranjena ponudba se bo prikazala tukaj.</p>
             ) : !ponudbePrikaz.length ? (
@@ -293,6 +323,21 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         {/* ── POGODBE ── */}
         {zavihek === 'pogodbe' && (
           <section className="arh-panel">
+            {contracts.length > 0 && <div className="arh-metrike">
+              <article className="arh-metrika arh-metrika-podpisane">
+                <small>Podpisane</small><strong>{pogodbeMetrike.podpisane}</strong><span>sklenjene</span>
+                <b className="arh-metrika-ikona"><MetricIcon type="paid" /></b>
+              </article>
+              <article className="arh-metrika arh-metrika-aktivne">
+                <small>Aktivne</small><strong>{pogodbeMetrike.aktivne}</strong><span>v teku</span>
+                <b className="arh-metrika-ikona"><MetricIcon type="document" /></b>
+              </article>
+              <article className="arh-metrika arh-metrika-obravnavi">
+                <small>V obravnavi</small><strong>{pogodbeMetrike.vObravnavi}</strong><span>osnutki/pregled</span>
+                <b className="arh-metrika-ikona"><MetricIcon type="profit" /></b>
+              </article>
+            </div>}
+
             {/* štetje statusov odstranjeno — status je že v dropdown filtru (zdaj v arh-glava) */}
             {!contracts.length ? (
               <p className="arh-prazno">Prva shranjena pogodba se bo prikazala tukaj.</p>
@@ -506,6 +551,13 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-metrika-izdano{background:linear-gradient(140deg,oklch(95% .035 295),oklch(90% .065 297))}
         .arh-metrika-placano{background:linear-gradient(140deg,oklch(96% .035 160),oklch(87% .08 163))}
         .arh-metrika-odprto{background:linear-gradient(140deg,oklch(97% .03 65),oklch(90% .07 60))}
+        /* isti trije odtenki (vijola/mint/oranžna), samo poimenovani po novih zavihkih */
+        .arh-metrika-skupaj{background:linear-gradient(140deg,oklch(95% .035 295),oklch(90% .065 297))}
+        .arh-metrika-sprejeto{background:linear-gradient(140deg,oklch(96% .035 160),oklch(87% .08 163))}
+        .arh-metrika-caka{background:linear-gradient(140deg,oklch(97% .03 65),oklch(90% .07 60))}
+        .arh-metrika-podpisane{background:linear-gradient(140deg,oklch(96% .035 160),oklch(87% .08 163))}
+        .arh-metrika-aktivne{background:linear-gradient(140deg,oklch(95% .035 295),oklch(90% .065 297))}
+        .arh-metrika-obravnavi{background:linear-gradient(140deg,oklch(97% .03 65),oklch(90% .07 60))}
         .arh-metrika-ikona{position:absolute;right:-1rem;bottom:-1.6rem;display:grid;place-items:center;width:6.6rem;aspect-ratio:1;border-radius:1.6rem;background:oklch(100% 0 0/.24);color:color-mix(in oklch,currentColor 54%,transparent);transform:rotate(-9deg)}
         @media (max-width:760px){.arh-metrike{grid-template-columns:1fr 1fr}}
         @media (max-width:480px){.arh-metrike{grid-template-columns:1fr}}

@@ -84,6 +84,20 @@ const pwStyles = `
 .pw-status[data-tone='danger']{--pika:oklch(58% .19 25)}
 .pw-status[data-tone='neutral']{--pika:oklch(62% .02 70)}
 .pw-prazno{padding:2rem;color:var(--muted);font-size:.72rem;text-align:center;border:1px solid var(--line);border-radius:1.4rem;background:oklch(98% .008 87 / .92)}
+/* metrike nad tabelo projektov — kopija arh-metrike/arh-metrika (ArhivWorkspace),
+   podvojeno s predpono pw-, ker gre za drugo komponento (SAMO BRANJE videza arh-,
+   ne uvoz iz druge datoteke). Isti veliki stevec (Bodoni serif) kot povsod drugod. */
+.pw-metrike{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:0 0 1rem}
+.pw-metrika{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;min-height:7.4rem;padding:1rem 1.1rem;border:1px solid var(--line);border-radius:14px}
+.pw-metrika small{position:relative;z-index:1;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pw-metrika strong{position:relative;z-index:1;margin-top:auto;font:500 1.7rem var(--font-serif),Georgia,serif;color:var(--ink)}
+.pw-metrika span{position:relative;z-index:1;margin-top:.2rem;color:var(--muted);font-size:.78rem}
+.pw-metrika-vrednost{background:linear-gradient(140deg,oklch(95% .035 295),oklch(90% .065 297))}
+.pw-metrika-zaracunano{background:linear-gradient(140deg,oklch(96% .035 160),oklch(87% .08 163))}
+.pw-metrika-odprto{background:linear-gradient(140deg,oklch(97% .03 65),oklch(90% .07 60))}
+.pw-metrika-ikona{position:absolute;right:-1rem;bottom:-1.6rem;display:grid;place-items:center;width:6.6rem;aspect-ratio:1;border-radius:1.6rem;background:oklch(100% 0 0/.24);color:color-mix(in oklch,currentColor 54%,transparent);transform:rotate(-9deg)}
+@media (max-width:760px){.pw-metrike{grid-template-columns:1fr 1fr}}
+@media (max-width:480px){.pw-metrike{grid-template-columns:1fr}}
 .pw-stran{padding:1rem}
 .pw-nazaj{display:inline-flex;align-items:center;gap:.4rem;margin:0 0 .8rem;padding:.55rem .95rem;border:1px solid var(--line);border-radius:999px;background:oklch(98% .008 87 / .92);font:700 .62rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
 .pw-nazaj:hover{background:var(--ink);color:var(--paper)}
@@ -140,6 +154,13 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   useEffect(() => { const data = podatkiZaPredogled(nacin, loadFlowData()); const loaded = [...data.offers].sort((a, b) => b.date.localeCompare(a.date)); setOffers(loaded); setSelectedId(''); setInvoices(data.invoices); setExpenses(data.expenses); setContracts(data.contracts); setAmounts(Object.fromEntries(data.offers.map(offer => [offer.id, offer.agreedAmount]))); }, [nacin]);
   const projects = useMemo(() => offers.map(offer => { const projectInvoices = invoices.filter(item => item.sourceOfferId === offer.id); const projectExpenses = expenses.filter(item => item.sourceOfferId === offer.id); const projectContracts = contracts.filter(item => item.sourceOfferId === offer.id); const billed = projectInvoices.reduce((sum, item) => sum + item.amount, 0); const paid = projectInvoices.filter(item => item.paid).reduce((sum, item) => sum + item.amount, 0); const costs = projectExpenses.reduce((sum, item) => sum + item.amount, 0); const agreed = amounts[offer.id] || 0; return { offer, invoices: projectInvoices, expenses: projectExpenses, contracts: projectContracts, billed, paid, costs, agreed, unbilled: agreed ? agreed - billed : 0, profit: paid - costs }; }), [offers, invoices, expenses, contracts, amounts]);
   const visible = projects.filter(project => { const text = `${project.offer.title} ${project.offer.client} ${project.offer.number || ''}`.toLocaleLowerCase('sl-SI'); const match = text.includes(search.toLocaleLowerCase('sl-SI')); const state = filter === 'vse' || (filter === 'aktivni' ? project.offer.status === 'accepted' : filter === 'cakajo' ? project.offer.status === 'sent' : ['rejected'].includes(project.offer.status)); return match && state && vObdobju(project.offer.date, datumOd, datumDo); });
+  /* povzetek nad tabelo (glej pw-metrike zgoraj) — iz trenutno vidnih projektov
+     (upostevajo iskanje/filter/datum), da povzetek sledi temu, kar je v tabeli */
+  const pwMetrike = useMemo(() => ({
+    vrednost: visible.reduce((sum, project) => sum + project.agreed, 0),
+    zaracunano: visible.reduce((sum, project) => sum + project.billed, 0),
+    odprto: visible.reduce((sum, project) => sum + Math.max(0, project.agreed - project.billed), 0),
+  }), [visible]);
   const selected = projects.find(project => project.offer.id === selectedId);
   const saveAmount = (id: string, amount: number) => { const next = { ...amounts, [id]: amount }; setAmounts(next); saveOfferAmount(id, amount); };
   /* Detajl projekta je zdaj SAMOSTOJNA stran (view-swap na vseh širinah, ne le
@@ -176,6 +197,21 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         <div className={styles.projectStoryEmpty}><span>↗</span><strong>Najprej ustvari ponudbo.</strong><p>Ta bo postala osnova projekta in povezala vse nadaljnje dokumente.</p></div>
       ) : (
         <div className="pw-seznam">
+          <div className="pw-metrike">
+            <article className="pw-metrika pw-metrika-vrednost">
+              <small>Vrednost</small><strong>{money(pwMetrike.vrednost)}</strong><span>dogovorjeno skupaj</span>
+              <b className="pw-metrika-ikona"><MetricIcon type="document" /></b>
+            </article>
+            <article className="pw-metrika pw-metrika-zaracunano">
+              <small>Zaračunano</small><strong>{money(pwMetrike.zaracunano)}</strong><span>izdani računi</span>
+              <b className="pw-metrika-ikona"><MetricIcon type="paid" /></b>
+            </article>
+            <article className="pw-metrika pw-metrika-odprto">
+              <small>Odprto</small><strong>{money(pwMetrike.odprto)}</strong><span>še ni zaračunano</span>
+              <b className="pw-metrika-ikona"><MetricIcon type="profit" /></b>
+            </article>
+          </div>
+
           {visible.length ? (
             <div className="pw-tabela-ovoj">
               <div className="pw-tabela">
