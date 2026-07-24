@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { localePath } from '@/i18n/routing';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import { loadFlowData, saveFlowCollection, type FlowInvoice } from '@/lib/pinartFlowStore';
-import { saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
+import { getBusinessDocumentUrl, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
 import { preberiPredogled } from '@/lib/predogled';
 import { nastaviNapredek } from '@/lib/flowNapredek';
@@ -22,7 +22,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, User, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, PaperPlaneTilt, DotsThree,
+  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, PaperPlaneTilt, DotsThree, Paperclip, X,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -1414,6 +1414,8 @@ type ShranjenaP = {
   dolgorocno?: boolean; retModel?: 'ure' | 'paket' | 'oboje'; retUre?: number; retDoba?: number;
   stevilkaPonudbe?: string; veljavnostDni?: string;
   urejenePodrobnosti?: string[];
+  /* neobvezna priponka (npr. PDF specifikacije, slika, dodatek) — stari zapisi je nimajo in se delujejo */
+  fileName?: string; filePath?: string;
 };
 
 /* Moja podjetja: vec identitet podjetja (ime/davcna/TRR/DDV/avans/urne
@@ -1954,6 +1956,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* logo (data URL) — za glavo ponudbe (za tiste brez podloge) */
   const [logo, setLogo] = useState('');
   const logoRef = useRef<HTMLInputElement>(null);
+  /* priponka (dodatna priloga k ponudbi — npr. PDF specifikacije, slika, dodatek).
+     priponkaFile = izbrana, a se ne naložena datoteka (naloži se šele ob shranjevanju v arhiv,
+     ko je znan id zapisa); priponkaIme/priponkaPot = zadnje shranjeno stanje (ime za prikaz, pot za povezavo). */
+  const [priponkaFile, setPriponkaFile] = useState<File | null>(null);
+  const [priponkaIme, setPriponkaIme] = useState('');
+  const [priponkaPot, setPriponkaPot] = useState('');
+  const priponkaRef = useRef<HTMLInputElement>(null);
   /* Pinart predloga (prvi krogec): oblikuje ponudbo po Tinini predlogi —
      ozadje naslovnice + notranjega telesa + ikona ob ceni paketa */
   const [predlogaPinart, setPredlogaPinart] = useState(false);
@@ -2544,6 +2553,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     setRocniPaketi({});
     setStevilkaPonudbe('');
     setVeljavnostDni('30');
+    setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot('');
     /* onboarding vprasanja se NE ponovijo (dogovor): transkript se skrije (chatKorak 0 brez
        uvodChat), pokaze se osebni pozdrav "Hej Tina, <podjetje>" + izbira storitev.
        poMeh 0 = vprasanja ponudbe (narocnik, trg, pravice ...) zacnejo znova za novo ponudbo. */
@@ -3343,6 +3353,26 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     reader.onload = () => setLogo(String(reader.result || ''));
     reader.readAsDataURL(file);
   };
+  /* priponka (npr. PDF specifikacije, slika, dodatek) — samo izbere datoteko,
+     dejansko nalaganje v oblak zgodi ob shranjevanju v arhiv (shraniVArhiv), ko je znan id zapisa */
+  const naloziPriponko = (file?: File) => {
+    if (!file) return;
+    setPriponkaFile(file);
+    setPriponkaIme(file.name);
+    setPriponkaPot('');
+  };
+  const odstraniPriponko = () => {
+    setPriponkaFile(null);
+    setPriponkaIme('');
+    setPriponkaPot('');
+  };
+  /* odpre naloženo priponko v novem zavihku — pot v shrambi je zasebna, zato
+     tik pred odpiranjem zahtevamo kratkotrajno podpisano povezavo (kot AccountingWorkspace) */
+  const odpriPriponko = async () => {
+    if (!priponkaPot) return;
+    try { window.open(await getBusinessDocumentUrl(priponkaPot, 300), '_blank', 'noopener,noreferrer'); }
+    catch { /* povezava trenutno ni na voljo */ }
+  };
 
   const kopiraj = async () => {
     const html = izvozniHtml();
@@ -3985,9 +4015,18 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   }, [aktivniCenik, osnove, postavke, mojeStoritve]);
 
   /* ── arhiv ponudb: shrani / naloži / izbriši cel posnetek ─────────── */
-  const shraniVArhiv = () => {
+  const shraniVArhiv = async () => {
     zabeleziNarocnika(narocnikPonudbe);
     const ime = (nazivPonudbe.trim() || narocnikPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : 'Ponudba')).slice(0, 60);
+    /* priponka: ce je izbrana nova (se ne naložena) datoteka, jo poskusi naložiti zdaj — ce ne uspe
+       (npr. brez oblaka), ponudba obdrzi ime priponke, samo brez povezave (kot pri stroskih/pogodbah) */
+    let priponkaFileName = priponkaIme || undefined;
+    let priponkaFilePath = priponkaPot || undefined;
+    if (priponkaFile) {
+      const slugId = ime.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'ponudba';
+      try { priponkaFilePath = await uploadBusinessDocument(priponkaFile, 'offers', slugId); priponkaFileName = priponkaFile.name; }
+      catch { priponkaFileName = priponkaFile.name; priponkaFilePath = undefined; }
+    }
     const zapis: ShranjenaP = {
       datum: new Date().toISOString(),
       izbrane: [...izbrane], vrstice,
@@ -4007,10 +4046,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       dolgorocno: dolgorocno || undefined, retModel: dolgorocno ? retModel : undefined, retUre: dolgorocno ? retUre : undefined, retDoba: dolgorocno ? retDoba : undefined,
       stevilkaPonudbe: stevilkaPonudbe || undefined,
       veljavnostDni: veljavnostDni !== '30' ? veljavnostDni : undefined,
+      fileName: priponkaFileName, filePath: priponkaFilePath,
     };
     const nov = { ...arhiv, [ime]: zapis };
     setArhiv(nov);
     try { localStorage.setItem(K_ARHIV, JSON.stringify(nov)); } catch { /* poln */ }
+    setPriponkaFile(null);
+    setPriponkaIme(priponkaFileName || '');
+    setPriponkaPot(priponkaFilePath || '');
   };
   const naloziIzArhiva = (ime: string) => {
     const p = arhiv[ime];
@@ -4053,6 +4096,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     setPodlogaCover(p.podlogaCover || '');
     setPredlogaPinart(!!p.predlogaPinart);
     if (p.logo) setLogo(p.logo);   /* stara ponudba brez loga naj ne izbrise zapomnjenega */
+    setPriponkaFile(null); setPriponkaIme(p.fileName || ''); setPriponkaPot(p.filePath || '');
     if (p.rocnoBesedilo && p.besediloHtml) {
       setRocnoBesedilo(true); setBesediloHtml(p.besediloHtml);
       if (editorRef.current) editorRef.current.innerHTML = p.besediloHtml;
@@ -4934,6 +4978,22 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       <input ref={logoRef} type="file" accept="image/*" hidden onChange={e => { naloziLogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
       <input ref={fileRef} type="file" accept=".txt,.html,.htm" hidden
         onChange={e => { uvoziPredlogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
+      <span className="tool-locnica" aria-hidden />
+      {/* priponka — dodatna priloga k ponudbi (npr. PDF specifikacije, slika, dodatek); ni del oblikovanega besedila */}
+      <button type="button" className={'tool-krog' + (priponkaIme ? ' on' : '')} onClick={() => priponkaRef.current?.click()} title={priponkaIme ? L('Zamenjaj priponko', 'Replace attachment') : L('Dodaj priponko', 'Add attachment')} aria-label={priponkaIme ? L('Zamenjaj priponko', 'Replace attachment') : L('Dodaj priponko', 'Add attachment')}>
+        <Paperclip size={17} weight="bold" />
+      </button>
+      {priponkaIme && (
+        <span className="priponka-cip">
+          {priponkaPot ? (
+            <button type="button" className="priponka-ime" onClick={odpriPriponko} title={L('Odpri priponko', 'Open attachment')}>{priponkaIme}</button>
+          ) : (
+            <span className="priponka-ime">{priponkaIme}</span>
+          )}
+          <button type="button" onClick={odstraniPriponko} aria-label={L('Odstrani priponko', 'Remove attachment')} title={L('Odstrani priponko', 'Remove attachment')}><X size={11} weight="bold" /></button>
+        </span>
+      )}
+      <input ref={priponkaRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx" hidden onChange={e => { naloziPriponko(e.target.files?.[0]); e.currentTarget.value = ''; }} />
     </>
   );
 
@@ -6180,8 +6240,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ai-namig { background: rgba(124,58,237,.09); border-radius: 12px; padding: .7rem .9rem; margin: -.3rem 0 1rem; }
         .cw .tool-krog { width: 2.6rem; height: 2.6rem; border-radius: 50%; border: none; background: rgba(17,17,17,.06); color: var(--ink); font-family: inherit; font-weight: 700; font-size: .82rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s, color .15s; padding: 0; }
         .cw .tool-krog:hover { background: var(--ink); color: var(--paper); }
+        .cw .tool-krog.on { background: var(--ink); color: var(--paper); }
         .cw .tool-vel2 { display: inline-flex; align-items: center; gap: .3rem; }
         .cw .tool-vel2 .tv-aa { font-weight: 700; font-size: .9rem; }
+        /* priponka: ime + gumb za odstranitev, ob gumbu za dodajanje priponke v orodjarni */
+        .cw .priponka-cip { display: inline-flex; align-items: center; gap: .35rem; max-width: 11rem; padding: .3rem .3rem .3rem .65rem; border-radius: 999px; background: rgba(17,17,17,.06); font-size: .78rem; }
+        .cw .priponka-cip .priponka-ime { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 8rem; border: none; background: none; padding: 0; font: inherit; color: var(--ink); cursor: pointer; text-align: left; }
+        .cw .priponka-cip button.priponka-ime { text-decoration: underline; text-underline-offset: .18em; }
+        .cw .priponka-cip > button:last-child { display: inline-flex; align-items: center; justify-content: center; width: 1.3rem; height: 1.3rem; border: none; border-radius: 50%; background: rgba(17,17,17,.08); color: rgba(17,17,17,.6); cursor: pointer; flex: none; padding: 0; }
+        .cw .priponka-cip > button:last-child:hover { background: var(--ink); color: var(--paper); }
         .cw .tool-t.on { background: var(--ink); color: var(--paper); }
         .cw .tool-t .ti { font-weight: 800; font-size: .92rem; line-height: 1; }
         .cw .tool-t .ti-box { border: 2px solid currentColor; border-radius: 3px; padding: 0 .1em; }
@@ -8606,6 +8673,22 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     e.currentTarget.value = '';
                   }}
                 />
+                <span className="tool-locnica" aria-hidden />
+                {/* priponka — dodatna priloga k ponudbi (npr. PDF specifikacije, slika, dodatek); ni del oblikovanega besedila */}
+                <button type="button" className={'tool-krog' + (priponkaIme ? ' on' : '')} onClick={() => priponkaRef.current?.click()} title={priponkaIme ? L('Zamenjaj priponko', 'Replace attachment') : L('Dodaj priponko', 'Add attachment')} aria-label={priponkaIme ? L('Zamenjaj priponko', 'Replace attachment') : L('Dodaj priponko', 'Add attachment')}>
+                  <Paperclip size={17} weight="bold" />
+                </button>
+                {priponkaIme && (
+                  <span className="priponka-cip">
+                    {priponkaPot ? (
+                      <button type="button" className="priponka-ime" onClick={odpriPriponko} title={L('Odpri priponko', 'Open attachment')}>{priponkaIme}</button>
+                    ) : (
+                      <span className="priponka-ime">{priponkaIme}</span>
+                    )}
+                    <button type="button" onClick={odstraniPriponko} aria-label={L('Odstrani priponko', 'Remove attachment')} title={L('Odstrani priponko', 'Remove attachment')}><X size={11} weight="bold" /></button>
+                  </span>
+                )}
+                <input ref={priponkaRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx" hidden onChange={e => { naloziPriponko(e.target.files?.[0]); e.currentTarget.value = ''; }} />
               </div>
               )}
               <div

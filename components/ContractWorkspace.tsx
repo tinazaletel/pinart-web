@@ -8,10 +8,10 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, CaretUp, Eye, PencilSimple, PenNib, TextAa, TextB, TextItalic } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } from '@/lib/pinartFlowStore';
-import { uploadBusinessDocument } from '@/lib/pinartFlowCloud';
+import { getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
 
@@ -63,6 +63,13 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const [pdfNalaganje, setPdfNalaganje] = useState(false);
   /* id zadnje shranjene pogodbe — ponovni "Shrani" posodobi zapis, ne podvoji */
   const [shranjenaId, setShranjenaId] = useState('');
+  /* priponka (dodatna priloga k pogodbi — npr. PDF specifikacije, slika, dodatek).
+     priponkaFile = izbrana, a se ne naložena datoteka (naloži se šele ob shrani(), ko je znan id zapisa);
+     priponkaIme/priponkaPot = zadnje shranjeno stanje (ime za prikaz, pot za povezavo). */
+  const [priponkaFile, setPriponkaFile] = useState<File | null>(null);
+  const [priponkaIme, setPriponkaIme] = useState('');
+  const [priponkaPot, setPriponkaPot] = useState('');
+  const priponkaRef = useRef<HTMLInputElement | null>(null);
 
   /* urejevalnik telesa dokumenta (kopija retainerjevega vzorca) */
   const [predogledMode, setPredogledMode] = useState(false);
@@ -227,6 +234,24 @@ export default function ContractWorkspace({ base }: { base: string }) {
     e.target.value = '';
   };
 
+  /* ── priponka (npr. PDF specifikacije, slika, dodatek) — samo izbere datoteko,
+     dejansko nalaganje v oblak zgodi ob shrani(), ko je znan id zapisa ── */
+  const naloziPriponko = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; if (!f) return;
+    setPriponkaFile(f);
+    setPriponkaIme(f.name);
+    setPriponkaPot('');
+    e.target.value = '';
+  };
+  const odstraniPriponko = () => { setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot(''); };
+  /* odpre naloženo priponko v novem zavihku — pot v shrambi je zasebna, zato
+     tik pred odpiranjem zahtevamo kratkotrajno podpisano povezavo (kot AccountingWorkspace) */
+  const odpriPriponko = async () => {
+    if (!priponkaPot) return;
+    try { window.open(await getBusinessDocumentUrl(priponkaPot, 300), '_blank', 'noopener,noreferrer'); }
+    catch { /* povezava trenutno ni na voljo */ }
+  };
+
   /* ── PDF prenos (kopija retainerjevega `prenesi`) ── */
   const prenesi = async () => {
     setNapaka('');
@@ -315,17 +340,19 @@ export default function ContractWorkspace({ base }: { base: string }) {
     if (editorRef.current) editorRef.current.innerHTML = html;
     setShranjenaId('');
     setKartaOdprta(false);
+    setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot('');
     setPogled('dokument');
   };
   const novaPogodba = () => {
     setOfferId(''); setRocniNarocnik(''); setRocniObseg(''); setNarEmail('');
     setTeloHtml(''); setRocnoTelo(false); setShranjenaId(''); setNapaka('');
     setDatum(new Date().toISOString().slice(0, 10));
+    setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot('');
     setPogled('nastavitve');
   };
 
   /* ── shranjevanje: telo je HTML iz urejevalnika; ponovni klik posodobi isti zapis ── */
-  const shrani = () => {
+  const shrani = async () => {
     if (samoOgled) {
       /* obvestilo se izrise na vrhu strani — brez skoka na vrh ga uporabnica na
          dnu dokumenta sploh ne vidi in izgleda, kot da gumb ne dela */
@@ -335,19 +362,32 @@ export default function ContractWorkspace({ base }: { base: string }) {
     }
     const telo = izvozniTelo();
     const obstojeca = contracts.find(c => c.id === shranjenaId);
+    const id = obstojeca?.id || crypto.randomUUID();
+    /* priponka: ce je izbrana nova (se ne naložena) datoteka, jo poskusi naložiti zdaj — ce ne uspe
+       (npr. brez oblaka), pogodba obdrzi ime priponke, samo brez povezave (kot pri stroskih) */
+    let fileName = priponkaIme || undefined;
+    let filePath = priponkaPot || undefined;
+    if (priponkaFile) {
+      try { filePath = await uploadBusinessDocument(priponkaFile, 'contracts', id); fileName = priponkaFile.name; }
+      catch { fileName = priponkaFile.name; filePath = undefined; }
+    }
     const zapis: FlowContract = {
-      id: obstojeca?.id || crypto.randomUUID(),
+      id,
       title: `Pogodba · ${vir === 'ponudba' && selectedOffer ? selectedOffer.title : (rocniNarocnik.trim() || 'brez naslova')}`,
       client: narocnikIme(),
       date: datum,
       status: obstojeca?.status || 'draft',
       sourceOfferId: vir === 'ponudba' ? selectedOffer?.id : undefined,
       body: telo,
+      fileName, filePath,
     };
     const next = obstojeca ? contracts.map(c => c.id === zapis.id ? { ...c, ...zapis } : c) : [zapis, ...contracts];
     setContracts(next);
     saveFlowCollection('contracts', next);
     setShranjenaId(zapis.id);
+    setPriponkaFile(null);
+    setPriponkaIme(fileName || '');
+    setPriponkaPot(filePath || '');
     setNotice('Pogodba je shranjena in povezana s projektom.');
     /* po shranjevanju nazaj na prvo stran — nova pogodba je takoj vidna v arhivu
        (Tina: "naj se shrani in vrnem se na prvo stran") */
@@ -584,6 +624,20 @@ export default function ContractWorkspace({ base }: { base: string }) {
               <button type="button" className="pg-barvica pg-barvica-mavrica" aria-label="Barva besedila (poljubna)" title="Barva besedila — poljubna" onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
               <input ref={barvaRef} type="color" hidden onChange={e => oblikuj('foreColor', e.target.value)} />
               <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('hiliteColor', '#FCE38A'); }} onDoubleClick={e => { e.preventDefault(); oblikuj('hiliteColor', 'transparent'); }} title="Označi besedilo — dvojni klik odstrani" aria-label="Označi besedilo"><span className="pg-hl">T</span></button>
+              <span className="pg-tool-locnica" aria-hidden />
+              {/* priponka — dodatna priloga k pogodbi (npr. PDF specifikacije, slika, dodatek); ni del besedila pogodbe */}
+              <button type="button" className={'pg-tool-krog' + (priponkaIme ? ' on' : '')} onClick={() => priponkaRef.current?.click()} title={priponkaIme ? 'Zamenjaj priponko' : 'Dodaj priponko'} aria-label={priponkaIme ? 'Zamenjaj priponko' : 'Dodaj priponko'}><Paperclip size={17} weight="bold" /></button>
+              {priponkaIme && (
+                <span className="pg-priponka-cip">
+                  {priponkaPot ? (
+                    <button type="button" className="pg-priponka-ime" onClick={odpriPriponko} title="Odpri priponko">{priponkaIme}</button>
+                  ) : (
+                    <span className="pg-priponka-ime">{priponkaIme}</span>
+                  )}
+                  <button type="button" onClick={odstraniPriponko} aria-label="Odstrani priponko" title="Odstrani priponko"><X size={11} weight="bold" /></button>
+                </span>
+              )}
+              <input ref={priponkaRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx" hidden onChange={naloziPriponko} />
             </>;
             if (!jeMobilni) return <div className="pg-orodjarna" aria-label="Oblikovanje besedila">{orodjaKontrole}</div>;
             return typeof document !== 'undefined' ? createPortal(
@@ -756,10 +810,17 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-oznaci-namig{position:absolute;top:-2.5rem;left:1rem;background:var(--ink);color:var(--paper);font-size:.8rem;font-weight:600;padding:.4rem .85rem;border-radius:999px;white-space:nowrap;box-shadow:0 8px 22px rgba(17,17,17,.22);z-index:6;pointer-events:none}
       .pg-tool-krog{width:2.6rem;height:2.6rem;border-radius:50%;border:none;background:rgba(17,17,17,.06);color:var(--ink);font-family:inherit;font-weight:700;font-size:.82rem;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:background .15s,color .15s}
       .pg-tool-krog:hover{background:var(--ink);color:var(--paper)}
+      .pg-tool-krog.on{background:var(--ink);color:var(--paper)}
       .pg-tool-vel2{display:inline-flex;align-items:center;gap:.3rem}
       .pg-tool-vel2 .pg-tv-aa{font-weight:700;font-size:.9rem}
       .pg-tool-locnica{width:1px;height:1.7rem;background:rgba(17,17,17,.16);margin:0 .2rem}
       .pg-hl{font-weight:800;font-size:.9rem;line-height:1;background:#FCE38A;border-radius:2px;padding:0 .18em}
+      /* priponka: ime + gumb za odstranitev, ob gumbu za dodajanje priponke v orodjarni */
+      .pg-priponka-cip{display:inline-flex;align-items:center;gap:.35rem;max-width:11rem;padding:.3rem .3rem .3rem .65rem;border-radius:999px;background:rgba(17,17,17,.06);font-size:.78rem}
+      .pg-priponka-cip .pg-priponka-ime{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:8rem;border:none;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer;text-align:left}
+      .pg-priponka-cip button.pg-priponka-ime{text-decoration:underline;text-underline-offset:.18em}
+      .pg-priponka-cip>button:last-child{display:inline-flex;align-items:center;justify-content:center;width:1.3rem;height:1.3rem;border:none;border-radius:50%;background:rgba(17,17,17,.08);color:rgba(17,17,17,.6);cursor:pointer;flex:none;padding:0}
+      .pg-priponka-cip>button:last-child:hover{background:var(--ink);color:var(--paper)}
       .pg-pisava-select{min-height:2.25rem;border:1px solid rgba(17,17,17,.22);background-color:rgba(255,255,255,.32);color:var(--ink);border-radius:999px;padding:0 1.7rem 0 .9rem;font-family:inherit;font-weight:600;font-size:.78rem;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .7rem center}
       .pg-barvica{width:1.35rem;height:1.35rem;border-radius:999px;border:1px solid rgba(17,17,17,.22);cursor:pointer;padding:0}
       .pg-barvica-mavrica{background:conic-gradient(from 0deg,#FA4892,#F8E71C,#50E3C2,#7C3AED,#FA4892);border-color:rgba(17,17,17,.25)}
