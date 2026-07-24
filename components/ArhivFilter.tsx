@@ -77,11 +77,27 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
   /* autofocus ob razsiritvi — sele po animaciji sirine se input ne premika pod prstom */
   useEffect(() => { if (iskanjeOdprto) inputRef.current?.focus(); }, [iskanjeOdprto]);
 
+  /* native date input pokaze format BRSKALNIKA (Safari = MM/DD/YYYY) -> za SLO
+     zbega. Zato prikazemo SLOVENSKI zapis (24.7.2026), native polje pa skrijemo
+     in ga uporabimo samo za koledar (showPicker). */
+  const formatSl = (iso: string) => { const d = iso ? iso.split('-') : []; return d.length === 3 ? `${Number(d[2])}.${Number(d[1])}.${d[0]}` : ''; };
+  const odpriPolje = (e: React.MouseEvent | React.KeyboardEvent) => {
+    const i = (e.currentTarget as HTMLElement).querySelector('input') as (HTMLInputElement & { showPicker?: () => void }) | null;
+    if (!i) return;
+    if (typeof i.showPicker === 'function') i.showPicker(); else i.focus();
+  };
+  const datumPolje = (vrednost: string, onChange: (v: string) => void, aria: string, prazno: string) => (
+    <span className="af-datum-polje" role="button" tabIndex={0} aria-label={aria}
+      onClick={odpriPolje} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); odpriPolje(e); } }}>
+      <span className="af-datum-tekst">{formatSl(vrednost) || prazno}</span>
+      <input className="af-datum-nativni" type="date" value={vrednost} onChange={event => onChange(event.target.value)} tabIndex={-1} aria-hidden="true" />
+    </span>
+  );
   const datumPolja = (
     <>
-      <label className="af-datum-polje"><span>Od</span><input type="date" value={datumOd} onChange={event => onDatumOd(event.target.value)} aria-label="Datum od" /></label>
+      {datumPolje(datumOd, onDatumOd, 'Datum od', 'Od')}
       <span className="af-datum-crtica" aria-hidden>–</span>
-      <label className="af-datum-polje"><span>Do</span><input type="date" value={datumDo} onChange={event => onDatumDo(event.target.value)} aria-label="Datum do" /></label>
+      {datumPolje(datumDo, onDatumDo, 'Datum do', 'Do')}
     </>
   );
 
@@ -178,12 +194,11 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
         /* datum: samo ikona + dve ozki date polji + crtica; besed Od/Do NI */
         .af-datum{flex:0 0 auto;min-width:0;display:inline-flex;align-items:center;gap:.28rem;color:color-mix(in oklch,var(--ink,#111) 45%,transparent)}
         .af-datum > svg{flex:none}
-        .af-datum-polje{display:inline-flex;align-items:center;min-width:0}
-        .af-datum .af-datum-polje > span{display:none}
+        /* cip s SLOVENSKIM zapisom (24.7.2026); native polje je skrito znotraj */
+        .af-datum-polje{position:relative;display:inline-flex;align-items:center;min-width:0;padding:.38rem .7rem;border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);color:var(--ink,#111);font-weight:600;cursor:pointer;white-space:nowrap}
+        .af-datum-polje:hover{border-color:var(--ink,#111)}
+        .af-datum-tekst{font-size:.85rem;color:var(--ink,#111)}
         .af-datum-crtica{color:color-mix(in oklch,var(--ink,#111) 40%,transparent);font-weight:700}
-        /* kompakten date input: ozji, manjsi font, minimalen padding — visja
-           specificnost + !important, da premaga .shell (font 16px, padding) */
-        .af .af-namizje .af-datum input[type='date']{width:auto;min-width:0;font-size:.85rem !important;padding:.3rem .5rem !important}
         .af-akcija{margin-left:auto;display:inline-flex;flex:0 0 auto;min-width:0}
         /* status dropdown kompakten na namizju (premaga .shell font 16px) */
         .af .af-namizje .af-select{font-size:.85rem !important;padding:.4rem 1.9rem .4rem .8rem !important;background-position:right .6rem center !important;background-size:.95rem !important}
