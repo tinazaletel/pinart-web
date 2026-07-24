@@ -65,6 +65,14 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
   const [iskanjeOdprto, setIskanjeOdprto] = useState(false);
   const [sheet, setSheet] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const datumRef = useRef<HTMLDivElement | null>(null);
+  /* klik na koledarček odpre native izbirnik prvega (Od) date polja */
+  const odpriKoledar = () => {
+    const polje = datumRef.current?.querySelector('input[type="date"]') as (HTMLInputElement & { showPicker?: () => void }) | null;
+    if (!polje) return;
+    if (typeof polje.showPicker === 'function') polje.showPicker();
+    else polje.focus();
+  };
 
   /* autofocus ob razsiritvi — sele po animaciji sirine se input ne premika pod prstom */
   useEffect(() => { if (iskanjeOdprto) inputRef.current?.focus(); }, [iskanjeOdprto]);
@@ -106,8 +114,12 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
           <MagnifyingGlass size={16} aria-hidden />
           <input type="search" value={iskanje} onChange={event => onIskanje(event.target.value)} placeholder={placeholder} aria-label={placeholder} />
         </span>
-        <div className="af-datum">
-          <CalendarBlank size={16} aria-hidden />
+        <div className="af-datum" ref={datumRef}>
+          {/* klik na ikono odpre native koledar (showPicker) prve (Od) date polja —
+              da vidiš dneve v tednu, ko se spomniš "bilo je v sredo" */}
+          <button type="button" className="af-kolgumb" aria-label="Odpri koledar" onClick={odpriKoledar}>
+            <CalendarBlank size={16} />
+          </button>
           {datumPolja}
         </div>
         {statusOpcije && <div className="af-status">
@@ -180,6 +192,8 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
       /* ── DATE INPUT (namizje IN sheet): pilula z zaobljenimi robovi; barva
          besedila iz tokena — popravek Safarijeve privzete rjave; background-COLOR
          (ne shorthand), da native ikona koledarja ostane ── */
+      .af-kolgumb{display:inline-flex;align-items:center;justify-content:center;flex:none;padding:0;border:none;background:none;color:color-mix(in oklch,var(--ink,#111) 60%,transparent);cursor:pointer}
+      .af-kolgumb:hover{color:var(--ink,#111)}
       .af-datum input[type='date'],.af-sheet-datum input[type='date']{min-width:0;max-width:100%;box-sizing:border-box;font:inherit;font-weight:600;color:var(--ink,#111);background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;padding:.4rem .7rem}
       .af-datum input[type='date']:focus,.af-sheet-datum input[type='date']:focus{outline:none;border-color:var(--ink,#111)}
       .af-datum input::-webkit-datetime-edit,.af-sheet-datum input::-webkit-datetime-edit,
