@@ -21,6 +21,16 @@ export type FlowInvoiceItem = {
   ddv?: number;
 };
 
+/* Podpis na racunu — isti vzorec kot pri pogodbah (rocno narisana ali nalozena
+   slika, shranjena kot data URL); morebitno ime/kraj/datum podpisnika so
+   neobvezni in se izpisejo pod crto skupaj s sliko. */
+export type FlowInvoiceSignature = {
+  image: string;
+  name?: string;
+  place?: string;
+  date?: string;
+};
+
 export type FlowInvoice = {
   id: string;
   number?: string;
@@ -40,6 +50,8 @@ export type FlowInvoice = {
   vatPayer?: boolean;
   net?: number;
   vatAmount?: number;
+  /* neobvezen podpis — stari zapisi ga nimajo in se delujejo (dokument ga preprosto ne izrise) */
+  signature?: FlowInvoiceSignature;
 };
 
 export type FlowExpense = {

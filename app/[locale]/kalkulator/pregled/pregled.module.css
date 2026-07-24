@@ -668,6 +668,27 @@
 .docPika[data-tone='waiting'] { --pika: oklch(72% .16 75); }
 .docPika[data-tone='danger'] { --pika: oklch(58% .19 25); }
 .clientDocuments p { color: var(--muted); font-size: .6rem; }
+/* Dokumentacija / povezave na profilu stranke — enak UX kot "05 · DOKUMENTACIJA"
+   na projektu (ProjectsWorkspace), a berljiva besedila (>=.8rem), ker je bila
+   ta zahteva izrecno dana za ta razdelek. Zložene vrstice, ne čipi. */
+.clientLinki { margin-top: 1rem; padding: .9rem; border: 1px solid var(--line); border-radius: .85rem; }
+.clientLinkGlava { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.clientLinkGlava h3 { margin: 0; font: 600 1rem var(--font-serif), Georgia, serif; }
+.clientLinkGumb { flex: none; padding: .45rem .8rem; border: 1px solid var(--line); border-radius: 999px; background: transparent; font: 700 .68rem var(--font-sans), sans-serif; color: var(--ink); cursor: pointer; }
+.clientLinkGumb:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.clientLinkSeznam { display: flex; flex-direction: column; gap: .45rem; margin-top: .7rem; }
+.clientLinkVrstica { display: flex; align-items: center; gap: .6rem; padding: .6rem .75rem; border: 1px solid var(--line); border-radius: .7rem; background: oklch(95% .018 87); }
+.clientLinkVrstica a { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); font-weight: 700; font-size: .82rem; text-decoration: none; }
+.clientLinkVrstica a:hover { text-decoration: underline; }
+.clientLinkBrisi { flex: none; display: grid; place-items: center; width: 1.7rem; height: 1.7rem; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--muted); font-size: 1rem; line-height: 1; cursor: pointer; }
+.clientLinkBrisi:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.clientLinkPrazno { margin: .7rem 0 0; color: var(--muted); font-size: .82rem; }
+.clientLinkObrazec { display: grid; grid-template-columns: 1fr 1fr auto; gap: .5rem; margin-top: .7rem; }
+.clientLinkObrazec input { min-width: 0; height: 2.6rem; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .6rem; background: oklch(100% 0 0 / .82); font: 500 .8rem var(--font-sans), sans-serif; color: var(--ink); }
+.clientLinkDodaj { flex: none; padding: 0 1rem; border: 1px solid var(--ink); border-radius: .6rem; background: var(--ink); color: var(--paper); font: 700 .72rem var(--font-sans), sans-serif; cursor: pointer; }
+.clientLinkDodaj:disabled { opacity: .5; cursor: not-allowed; }
+.clientLinkNamig { margin-top: .55rem; padding: .5rem .65rem; border: 1px solid oklch(85% .07 65); border-radius: .5rem; background: oklch(96% .04 70); color: oklch(48% .12 55); font-size: .78rem; line-height: 1.4; font-style: italic; }
+@media (max-width: 640px) { .clientLinkObrazec { grid-template-columns: 1fr; } }
 .deleteClient { margin-top: 1rem; padding: .6rem 0; border: 0; border-bottom: 1px solid currentColor; background: none; color: oklch(52% .16 25); font: 750 .57rem var(--font-sans), sans-serif; cursor: pointer; }
 .clientProfileEmpty { min-height: 29rem; display: grid; place-items: center; align-content: center; text-align: center; }
 .clientProfileEmpty span { display: grid; place-items: center; width: 3rem; aspect-ratio: 1; border-radius: 50%; background: oklch(93% .05 295); }

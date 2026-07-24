@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { MagnifyingGlass } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
-import { loadFlowData, saveFlowCollection, type FlowClient } from '@/lib/pinartFlowStore';
+import { loadFlowData, saveFlowCollection, type FlowClient, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 
 /* Ikone poenotene na Phosphor. Inline fill/stroke preglasi stare stroke-based
@@ -28,6 +28,25 @@ type Contract = { id: string; title: string; client: string; status: string; sou
 const key = (value: string) => value.trim().toLocaleLowerCase('sl-SI');
 const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFractionDigits: 2 })} €`;
 
+/* Povezave do zunanjih datotek/orodij ZA STRANKO ("Dokumentacija / povezave" na
+   profilu stranke) — enak UX kot "05 · DOKUMENTACIJA" na projektu (glej
+   ProjectsWorkspace + lib/pinartFlowStore loadProjectLinks/saveProjectLinks),
+   a ločena, lahka shramba po ID-ju stranke (ne posegamo v pinartFlowStore.ts). */
+const CLIENT_LINKS_KEY = 'pinart-flow-stranka-linki';
+const loadClientLinks = (clientId: string): FlowProjectLink[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const all = JSON.parse(localStorage.getItem(CLIENT_LINKS_KEY) || '{}') as Record<string, FlowProjectLink[]>;
+    return all[clientId] || [];
+  } catch { return []; }
+};
+const saveClientLinks = (clientId: string, links: FlowProjectLink[]) => {
+  if (typeof window === 'undefined') return;
+  let all: Record<string, FlowProjectLink[]> = {};
+  try { all = JSON.parse(localStorage.getItem(CLIENT_LINKS_KEY) || '{}'); } catch { all = {}; }
+  localStorage.setItem(CLIENT_LINKS_KEY, JSON.stringify({ ...all, [clientId]: links }));
+};
+
 export default function ClientWorkspace() {
   const [clients, setClients] = useState<Client[]>([]);
   /* Demo/Prazno velja za VSE strani (lib/predogled.ts). V teh nacinih je
@@ -44,6 +63,13 @@ export default function ClientWorkspace() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
+  /* Dokumentacija / povezave — glej razlago pri CLIENT_LINKS_KEY zgoraj.
+     V predogledu (demo/prazno) prikažemo primere, dodajanje je onemogočeno. */
+  const [links, setLinks] = useState<FlowProjectLink[]>([]);
+  const [linkOznaka, setLinkOznaka] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [dodajOdprt, setDodajOdprt] = useState(false);
+
   useEffect(() => {
     const calculator = JSON.parse(localStorage.getItem('pinart-kalkulator-narocniki') || '[]') as Array<CalculatorClient | string>;
     const flow = podatkiZaPredogled(nacin, loadFlowData());
@@ -55,6 +81,32 @@ export default function ClientWorkspace() {
     const archive = JSON.parse(localStorage.getItem('pinart-kalkulator-arhiv') || '{}') as Record<string, Offer>; setOffers(Object.entries(archive).map(([id, item]) => ({ id, ...item })));
     setInvoices(flow.invoices); setExpenses(flow.expenses); setContracts(flow.contracts);
   }, [nacin]);
+
+  /* povezave sledijo izbrani stranki; v predogledu prikažemo primere, da se vidi
+     poln videz razdelka, v pravem računu preberemo dejansko shranjene povezave */
+  useEffect(() => {
+    const demo: FlowProjectLink[] = [
+      { oznaka: 'Figma · Dizajn', url: 'https://figma.com' },
+      { oznaka: 'Drive · Pogodbe', url: 'https://drive.google.com' },
+      { oznaka: 'Splet · Živa stran', url: 'https://pinart.si' },
+    ];
+    setLinks(samoOgled ? demo : (selected ? loadClientLinks(selected.id) : []));
+    setLinkOznaka(''); setLinkUrl(''); setDodajOdprt(false);
+  }, [selected?.id, samoOgled]);
+
+  const addClientLink = () => {
+    if (samoOgled || !selected) return;
+    const oznaka = linkOznaka.trim(); const url = linkUrl.trim();
+    if (!oznaka || !url) return;
+    const next = [...links, { oznaka, url }];
+    setLinks(next); saveClientLinks(selected.id, next);
+    setLinkOznaka(''); setLinkUrl('');
+  };
+  const removeClientLink = (index: number) => {
+    if (samoOgled || !selected) return;
+    const next = links.filter((_, i) => i !== index);
+    setLinks(next); saveClientLinks(selected.id, next);
+  };
 
   const persist = (next: Client[]) => {
     if (samoOgled) return;
@@ -75,6 +127,6 @@ export default function ClientWorkspace() {
     <section className={styles.clientToolbar}><label><MagnifyingGlass className={styles.searchIcon} size={20} weight="regular" aria-hidden="true" style={IKONA_SLOG} /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Poišči stranko, kontakt ali e-pošto …" /></label><button onClick={() => { setEditing(null); setOpen(true); }}>+ Nova stranka</button></section>
     {open && <section className={styles.clientEditor}><div><p className={styles.eyebrow}>{editing ? 'UREDI PROFIL' : 'NOVA STRANKA'}</p><h2>Podatki, ki jih potrebuješ.</h2></div><form onSubmit={save}><label>Podjetje ali ime<input required name="name" defaultValue={editing?.name} /></label><label>Kontaktna oseba<input name="contact" defaultValue={editing?.contact} /></label><label>E-pošta<input name="email" type="email" defaultValue={editing?.email} /></label><label>Telefon<input name="phone" defaultValue={editing?.phone} /></label><label>Naslov<input name="address" defaultValue={editing?.address} /></label><label>Davčna številka<input name="tax" defaultValue={editing?.tax} /></label><div className={styles.clientEditorActions}><button type="button" onClick={() => setOpen(false)}>Prekliči</button><button>Shrani profil</button></div></form></section>}
     <div className={styles.clientLayout}><section className={styles.clientDirectory}><header><div><p className={styles.eyebrow}>IMENIK</p><h2>{visible.length} strank</h2></div></header>{visible.length ? visible.map(client => { const result = stats.find(item => item.id === client.id); return <button key={client.id} className={selected?.id === client.id ? styles.clientActive : ''} onClick={() => setSelected(client)}><span className={styles.clientInitials}>{client.name.split(/\s+/).map(word => word[0]).join('').slice(0, 2).toUpperCase()}</span><span><strong>{client.name}</strong><small>{client.contact || client.email || 'Brez kontakta'}</small></span><span><strong>{money(result?.revenue || 0)}</strong><small>plačano</small></span><i>›</i></button>; }) : <p className={styles.clientEmpty}>Ni najdenih strank.</p>}</section>
-      <section className={styles.clientProfile}>{selected ? <><header><span className={styles.clientProfileAvatar}>{selected.name.split(/\s+/).map(word => word[0]).join('').slice(0, 2).toUpperCase()}</span><div><p className={styles.eyebrow}>PROFIL STRANKE</p><h2>{selected.name}</h2><span>{selected.contact || 'Brez kontaktne osebe'}</span></div><button onClick={() => { setEditing(selected); setOpen(true); }}>Uredi</button></header><div className={styles.clientContacts}><span><small>E-pošta</small><strong>{selected.email || '—'}</strong></span><span><small>Telefon</small><strong>{selected.phone || '—'}</strong></span><span><small>Davčna št.</small><strong>{selected.tax || '—'}</strong></span><span><small>Naslov</small><strong>{selected.address || '—'}</strong></span></div><div className={styles.clientFinance}><span><small>Plačano</small><strong>{money(selectedInvoices.filter(item => item.paid).reduce((sum, item) => sum + item.amount, 0))}</strong></span><span><small>Odprti računi</small><strong>{money(selectedInvoices.filter(item => !item.paid).reduce((sum, item) => sum + item.amount, 0))}</strong></span><span><small>Stroški</small><strong>{money(selectedExpenses.reduce((sum, item) => sum + item.amount, 0))}</strong></span></div><div className={styles.clientDocuments}><h3>Dokumenti in projekti</h3>{selectedOffers.map(item => <span key={item.id}><b>Ponudba</b><span className={styles.docDetajl}><span className={styles.clientDocIme}>{item.nazivPonudbe || item.id}</span></span><span className={styles.docZnesek} /></span>)}{selectedContracts.map(item => <span key={item.id}><b>Pogodba</b><span className={styles.docDetajl}><span className={styles.clientDocIme}>{item.title}</span><i className={styles.docPika} data-tone={docTone(item.status)}>{item.status}</i></span><span className={styles.docZnesek} /></span>)}{selectedInvoices.map(item => <span key={item.id}><b>Račun</b><span className={styles.docDetajl}><i className={styles.docPika} data-tone={item.paid ? 'success' : 'waiting'}>{item.paid ? 'Plačan' : 'Odprt'}</i></span><strong className={styles.docZnesek}>{money(item.amount)}</strong></span>)}{!selectedOffers.length && !selectedContracts.length && !selectedInvoices.length && <p>Stranka še nima povezanih dokumentov.</p>}</div><button className={styles.deleteClient} onClick={() => remove(selected)}>Izbriši profil stranke</button></> : <div className={styles.clientProfileEmpty}><span>↗</span><strong>Izberi stranko.</strong><p>Na enem mestu boš videla vse njene dogovore in rezultate.</p></div>}</section></div>
+      <section className={styles.clientProfile}>{selected ? <><header><span className={styles.clientProfileAvatar}>{selected.name.split(/\s+/).map(word => word[0]).join('').slice(0, 2).toUpperCase()}</span><div><p className={styles.eyebrow}>PROFIL STRANKE</p><h2>{selected.name}</h2><span>{selected.contact || 'Brez kontaktne osebe'}</span></div><button onClick={() => { setEditing(selected); setOpen(true); }}>Uredi</button></header><div className={styles.clientContacts}><span><small>E-pošta</small><strong>{selected.email || '—'}</strong></span><span><small>Telefon</small><strong>{selected.phone || '—'}</strong></span><span><small>Davčna št.</small><strong>{selected.tax || '—'}</strong></span><span><small>Naslov</small><strong>{selected.address || '—'}</strong></span></div><div className={styles.clientFinance}><span><small>Plačano</small><strong>{money(selectedInvoices.filter(item => item.paid).reduce((sum, item) => sum + item.amount, 0))}</strong></span><span><small>Odprti računi</small><strong>{money(selectedInvoices.filter(item => !item.paid).reduce((sum, item) => sum + item.amount, 0))}</strong></span><span><small>Stroški</small><strong>{money(selectedExpenses.reduce((sum, item) => sum + item.amount, 0))}</strong></span></div><div className={styles.clientDocuments}><h3>Dokumenti in projekti</h3>{selectedOffers.map(item => <span key={item.id}><b>Ponudba</b><span className={styles.docDetajl}><span className={styles.clientDocIme}>{item.nazivPonudbe || item.id}</span></span><span className={styles.docZnesek} /></span>)}{selectedContracts.map(item => <span key={item.id}><b>Pogodba</b><span className={styles.docDetajl}><span className={styles.clientDocIme}>{item.title}</span><i className={styles.docPika} data-tone={docTone(item.status)}>{item.status}</i></span><span className={styles.docZnesek} /></span>)}{selectedInvoices.map(item => <span key={item.id}><b>Račun</b><span className={styles.docDetajl}><i className={styles.docPika} data-tone={item.paid ? 'success' : 'waiting'}>{item.paid ? 'Plačan' : 'Odprt'}</i></span><strong className={styles.docZnesek}>{money(item.amount)}</strong></span>)}{!selectedOffers.length && !selectedContracts.length && !selectedInvoices.length && <p>Stranka še nima povezanih dokumentov.</p>}</div><div className={styles.clientLinki}><div className={styles.clientLinkGlava}><h3>Dokumentacija / povezave</h3><button type="button" className={styles.clientLinkGumb} onClick={() => setDodajOdprt(prej => !prej)}>{dodajOdprt ? 'Prekliči' : '+ Dodaj povezavo'}</button></div>{links.length ? <div className={styles.clientLinkSeznam}>{links.map((link, index) => <div key={`${link.url}-${index}`} className={styles.clientLinkVrstica}><a href={link.url} target="_blank" rel="noopener noreferrer">{link.oznaka}</a>{!samoOgled && <button type="button" className={styles.clientLinkBrisi} onClick={() => removeClientLink(index)} aria-label={`Izbriši povezavo ${link.oznaka}`}>×</button>}</div>)}</div> : <p className={styles.clientLinkPrazno}>Še ni dodanih povezav.</p>}{!samoOgled && dodajOdprt && <div className={styles.clientLinkObrazec}><input type="text" value={linkOznaka} onChange={event => setLinkOznaka(event.target.value)} placeholder="npr. Figma" aria-label="Oznaka povezave" /><input type="url" value={linkUrl} onChange={event => setLinkUrl(event.target.value)} placeholder="https://…" aria-label="Naslov povezave (Figma, Drive, spletna stran …)" /><button type="button" className={styles.clientLinkDodaj} onClick={addClientLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>Shrani povezavo</button></div>}{samoOgled && dodajOdprt && <p className={styles.clientLinkNamig}>Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.</p>}</div><button className={styles.deleteClient} onClick={() => remove(selected)}>Izbriši profil stranke</button></> : <div className={styles.clientProfileEmpty}><span>↗</span><strong>Izberi stranko.</strong><p>Na enem mestu boš videla vse njene dogovore in rezultate.</p></div>}</section></div>
   </div>;
 }

@@ -10,7 +10,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CaretDown } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
-import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, type FlowInvoiceItem } from '@/lib/pinartFlowStore';
+import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, type FlowInvoiceItem, type FlowInvoiceSignature } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
 
@@ -83,6 +83,17 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const [pdfId, setPdfId] = useState('');
   const [napaka, setNapaka] = useState('');
 
+  /* ── podpis na racunu — isti vzorec kot ContractWorkspace (canvas risanje ali
+     nalozena slika, shranjena kot data URL); ime/kraj/datum so neobvezni. ── */
+  const [podpisIme, setPodpisIme] = useState('');
+  const [podpisKraj, setPodpisKraj] = useState('');
+  const [podpisDatum, setPodpisDatum] = useState(danesISO());
+  const [podpisSlika, setPodpisSlika] = useState('');
+  const [narisanPodpis, setNarisanPodpis] = useState(false);
+  const podpisPlatnoRef = useRef<HTMLCanvasElement | null>(null);
+  const podpisDatotekaRef = useRef<HTMLInputElement | null>(null);
+  const risanjeRef = useRef(false);
+
   useEffect(() => {
     const data = podatkiZaPredogled(nacin, loadFlowData());
     setOffers(data.offers.map(({ id, title, client, number, scope, agreedAmount }) => ({ id, title, client, number, scope, agreedAmount })));
@@ -137,6 +148,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     if (vir === 'rocno') { setOfferId(''); setStranka(''); setVrstice([novaVrstica()]); }
     setDatumStoritve(datumIzdaje || danesISO()); setRokDni(String(PRIVZETI_ROK_DNI));
     setPlacano(false); setNapaka('');
+    /* podpis je vezan na en, konkreten racun — nov racun zacne brez njega */
+    setPodpisIme(''); setPodpisKraj(''); setPodpisDatum(datumIzdaje || danesISO()); setPodpisSlika(''); pocistiPlatno();
     setPogled('obrazec');
   };
 
@@ -159,18 +172,95 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   });
   const izberiVSheet = (id: string) => { izberiPonudbo(id); setPonSheet(false); };
 
-  /* iz ponudbe: predizpolni stranko + prvo postavko (naslov/obseg/znesek) */
+  /* razdeli skupni znesek na n postavk (2 decimalki, zadnja dobi zaokrozitveni ostanek — vsota se ujema do centa) */
+  const razdeliZnesek = (total: number, n: number): number[] => {
+    if (n <= 0) return [];
+    const cena = Math.round((total / n) * 100) / 100;
+    const zneski = Array<number>(n).fill(cena);
+    const ostanek = Math.round((total - cena * n) * 100) / 100;
+    zneski[n - 1] = Math.round((zneski[n - 1] + ostanek) * 100) / 100;
+    return zneski;
+  };
+
+  /* prednapolnitev postavk iz ponudbe: ce ima ponudba vec vrstic obsega, vsaka
+     postane svoja postavka (znesek enakomerno razdeljen); sicer ena postavka
+     z nazivom ponudbe in celotnim zneskom (ponudba brez strukturiranih postavk) */
+  const vrsticeIzPonudbe = (offer: Offer): Vrstica[] => {
+    const ddv = privzetiDdv();
+    if (offer.scope.length > 1) {
+      const zneski = razdeliZnesek(offer.agreedAmount || 0, offer.scope.length);
+      return offer.scope.map((opis, i) => ({ opis, kolicina: '1', cena: zneski[i] ? String(zneski[i]) : '', popust: '', ddv }));
+    }
+    const opis = offer.title + (offer.scope.length ? ` — ${offer.scope[0]}` : '');
+    return [{ opis, kolicina: '1', cena: offer.agreedAmount ? String(offer.agreedAmount) : '', popust: '', ddv }];
+  };
+
+  /* iz ponudbe: predizpolni stranko + postavke (naslov/obseg/znesek) */
   const izberiPonudbo = (id: string) => {
     setOfferId(id);
     const offer = offers.find(o => o.id === id);
     if (!offer) return;
     setStranka(offer.client);
-    const opis = offer.title + (offer.scope.length ? ` — ${offer.scope.join(', ')}` : '');
-    setVrstice([{ opis, kolicina: '1', cena: offer.agreedAmount ? String(offer.agreedAmount) : '', popust: '', ddv: privzetiDdv() }]);
+    setVrstice(vrsticeIzPonudbe(offer));
+  };
+
+  /* "Ponastavi na privzeto": povrne narocnika + postavke na izhodisce izbrane
+     ponudbe — NE izbrise rocnih sprememb v drugih poljih (stevilka, datumi …) */
+  const ponastaviNaPrivzeto = () => {
+    const offer = offers.find(o => o.id === offerId);
+    if (!offer) return;
+    setStranka(offer.client);
+    setVrstice(vrsticeIzPonudbe(offer));
   };
 
   const popraviVrstico = (index: number, polje: keyof Vrstica, vrednost: string) =>
     setVrstice(v => v.map((row, i) => i === index ? { ...row, [polje]: vrednost } : row));
+
+  /* ── podpis: canvas za risanje (prst/miska) ali nalozena slika — KOPIJA vzorca iz ContractWorkspace ── */
+  const pripraviPlatno = (c: HTMLCanvasElement | null) => {
+    podpisPlatnoRef.current = c;
+    if (!c) return;
+    const r = c.getBoundingClientRect();
+    if (r.width > 0 && c.width !== Math.round(r.width * 2)) {
+      c.width = Math.round(r.width * 2); c.height = Math.round(r.height * 2);
+      const ctx = c.getContext('2d');
+      if (ctx) { ctx.scale(2, 2); ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1a1622'; }
+    }
+  };
+  const podpisTocka = (e: React.PointerEvent<HTMLCanvasElement>) => { const r = e.currentTarget.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  const zacniRis = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const ctx = podpisPlatnoRef.current?.getContext('2d'); if (!ctx) return;
+    risanjeRef.current = true;
+    const p = podpisTocka(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const risiPodpis = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!risanjeRef.current) return;
+    const ctx = podpisPlatnoRef.current?.getContext('2d'); if (!ctx) return;
+    const p = podpisTocka(e); ctx.lineTo(p.x, p.y); ctx.stroke();
+    if (!narisanPodpis) setNarisanPodpis(true);
+  };
+  const koncajRis = () => { risanjeRef.current = false; };
+  const pocistiPlatno = () => {
+    const c = podpisPlatnoRef.current; const ctx = c?.getContext('2d');
+    if (c && ctx) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, c.width, c.height); ctx.restore(); }
+    setNarisanPodpis(false);
+  };
+  /* narisan podpis -> shrani kot data URL v stanje (isto kot pri pogodbi, le da tu ni contentEditable telesa, zato gre v FlowInvoice.signature) */
+  const uporabiNarisanPodpis = () => {
+    const c = podpisPlatnoRef.current; if (!(c && narisanPodpis)) return;
+    setPodpisSlika(c.toDataURL('image/png'));
+    pocistiPlatno();
+  };
+  const naloziPodpisSliko = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { if (typeof r.result === 'string') setPodpisSlika(r.result); };
+    r.readAsDataURL(f);
+    e.target.value = '';
+  };
+  const odstraniPodpis = () => setPodpisSlika('');
 
   const save = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -193,6 +283,12 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       vatPayer: ddvZavezanec,
       net: Math.round(izracun.osnova * 100) / 100,
       vatAmount: Math.round(izracun.ddvSkupaj * 100) / 100,
+      signature: podpisSlika ? {
+        image: podpisSlika,
+        name: podpisIme.trim() || undefined,
+        place: podpisKraj.trim() || undefined,
+        date: podpisDatum || undefined,
+      } : undefined,
     };
     const next = [invoice, ...invoices];
     setInvoices(next); saveFlowCollection('invoices', next);
@@ -224,7 +320,12 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     .rac-placilo{margin:20px 0 0;font-size:10pt;color:#222;background:#f8f5ee;border:1px solid #eadfce;border-radius:9px;padding:13px 16px;line-height:1.7}
     .rac-opomba{font-size:9pt;color:#666;margin:10px 0 0}
     .rac-noga-txt{font-size:8.2pt;color:#9a9088;margin-top:22px}
-    .rac-placano{display:inline-block;margin:18px 0 0;border:3px solid #2e7d5b;color:#2e7d5b;font-weight:700;letter-spacing:.22em;padding:6px 18px;border-radius:8px;transform:rotate(-5deg);font-size:16pt}`;
+    .rac-placano{display:inline-block;margin:18px 0 0;border:3px solid #2e7d5b;color:#2e7d5b;font-weight:700;letter-spacing:.22em;padding:6px 18px;border-radius:8px;transform:rotate(-5deg);font-size:16pt}
+    .rac-podpis{margin-top:26px;max-width:260px;break-inside:avoid}
+    .rac-podpis-crta{border-bottom:1px solid #111;min-height:34px;display:flex;align-items:flex-end;padding-bottom:4px}
+    .podpis-img{display:block;max-height:40px;max-width:200px}
+    .rac-podpis-ime{margin-top:5px;font-size:9.5pt;color:#222}
+    .rac-podpis-meta{font-size:8.5pt;color:#8a8177}`;
   const doc = (body: string) => `<!doctype html><html lang="sl"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}</body></html>`;
 
   /* postavke za dokument: novi racuni jih imajo shranjene; za STARE izpeljemo eno
@@ -287,6 +388,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       ${!zavezanec ? '<p class="rac-opomba">DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1 (izdajatelj ni zavezanec za DDV).</p>' : ''}
       <div class="rac-placilo">${placiloVrstice}</div>
       ${inv.paid ? '<div class="rac-placano">PLAČANO</div>' : ''}
+      ${inv.signature ? `<div class="rac-podpis"><div class="rac-podpis-crta"><img class="podpis-img" src="${inv.signature.image}" alt="Podpis"></div><div class="rac-podpis-ime">${esc(inv.signature.name || ponudnik.ime.trim() || '')}</div>${(inv.signature.place || inv.signature.date) ? `<div class="rac-podpis-meta">${esc([inv.signature.place, inv.signature.date ? datStr(new Date(inv.signature.date)) : ''].filter(Boolean).join(' · '))}</div>` : ''}</div>` : ''}
       <p class="rac-noga-txt">Račun je izdan v skladu z veljavno zakonodajo. Ob zamudi plačila zaračunamo zakonske zamudne obresti.</p>`;
   };
 
@@ -409,7 +511,14 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         )}
 
         <div className="rc-postavke">
-          <div className="rc-post-glava"><p className={styles.eyebrow}>POSTAVKE RAČUNA</p><button type="button" className="rc-dodaj" onClick={() => setVrstice(v => [...v, novaVrstica()])}>+ Dodaj postavko</button></div>
+          <div className="rc-post-glava">
+            <p className={styles.eyebrow}>POSTAVKE RAČUNA</p>
+            <div className="rc-post-gumbi">
+              {/* samo ce racun izhaja iz ponudbe — povrne narocnika+postavke na izhodisce ponudbe (rocnih sprememb v ostalih poljih ne izbrise) */}
+              {offerId && <button type="button" className="rc-ponastavi" onClick={ponastaviNaPrivzeto}>↺ Ponastavi na privzeto</button>}
+              <button type="button" className="rc-dodaj" onClick={() => setVrstice(v => [...v, novaVrstica()])}>+ Dodaj postavko</button>
+            </div>
+          </div>
           {vrstice.map((v, i) => <div key={i} className={'rc-vrstica' + (ddvZavezanec ? '' : ' rc-brez-ddv')}>
             <label className="rc-opis">Opis<input required={i === 0} value={v.opis} onChange={event => popraviVrstico(i, 'opis', event.target.value)} placeholder="Opravljena storitev, obseg ali obdobje …" /></label>
             <label>Kol.<input required min="0" step="0.5" type="number" inputMode="numeric" placeholder="1" value={v.kolicina} onChange={event => popraviVrstico(i, 'kolicina', event.target.value)} /></label>
@@ -430,6 +539,33 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           {!ddvZavezanec && <p className="rc-klavzula">DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1 — klavzula se izpiše na računu. Zavezanost za DDV nastaviš v Moje podjetje (kalkulator).</p>}
         </div>
 
+        {/* podpis (neobvezen) — isti vzorec kot pri pogodbah: rocno narisan ali nalozen; izrise se na dnu racuna in v izvozu */}
+        <div className="rc-podpis">
+          <div className="rc-post-glava"><p className={styles.eyebrow}>PODPIS RAČUNA (NEOBVEZNO)</p>{podpisSlika && <button type="button" className="rc-povezava" onClick={odstraniPodpis}>Odstrani podpis</button>}</div>
+          <div className="rc-podpis-polja">
+            <label className="rc-polje">Ime podpisnika<input value={podpisIme} onChange={event => setPodpisIme(event.target.value)} placeholder={ponudnik.ime || 'Ime in priimek'} /></label>
+            <label className="rc-polje">Kraj<input value={podpisKraj} onChange={event => setPodpisKraj(event.target.value)} placeholder="npr. Ljubljana" /></label>
+            <label className="rc-polje">Datum podpisa<input type="date" value={podpisDatum} onChange={event => setPodpisDatum(event.target.value)} /></label>
+          </div>
+          {podpisSlika ? (
+            <div className="rc-podpis-prikaz">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={podpisSlika} alt="Podpis" />
+            </div>
+          ) : (
+            <>
+              <canvas ref={pripraviPlatno} className="rc-podpis-platno" onPointerDown={zacniRis} onPointerMove={risiPodpis} onPointerUp={koncajRis} onPointerCancel={koncajRis} />
+              <div className="rc-podpis-akcije">
+                <button type="button" className="rc-cip" onClick={pocistiPlatno}>Počisti</button>
+                <button type="button" className="rc-cip" disabled={!narisanPodpis} onClick={uporabiNarisanPodpis}>Uporabi narisan podpis</button>
+                <span className="rc-podpis-ali">ali</span>
+                <button type="button" className="rc-cip" onClick={() => podpisDatotekaRef.current?.click()}>Naloži sliko podpisa …</button>
+                <input ref={podpisDatotekaRef} type="file" accept="image/*" hidden onChange={naloziPodpisSliko} />
+              </div>
+            </>
+          )}
+        </div>
+
         <div className={styles.invoiceSubmit}><label className={styles.invoiceCheck}><input type="checkbox" checked={placano} onChange={event => setPlacano(event.target.checked)} /> Račun je že plačan</label><button>Shrani račun</button></div>
         {napaka && <p className="rc-napaka">{napaka}</p>}
       </form>
@@ -441,8 +577,24 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-postavke{min-width:0;padding:1rem;border:1px solid var(--line);border-radius:.9rem;background:linear-gradient(135deg,oklch(98% .018 87),oklch(96% .025 62))}
       .rc .rc-postavke *{box-sizing:border-box;min-width:0}
       .rc .rc-post-glava{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap}
+      .rc .rc-post-gumbi{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
       .rc .rc-dodaj{padding:.45rem .9rem;border:1px dashed color-mix(in oklch,var(--ink) 35%,transparent);border-radius:999px;background:transparent;color:var(--ink);font:700 .6rem var(--font-sans),sans-serif;cursor:pointer;transition:border-color .15s ease,background .15s ease}
       .rc .rc-dodaj:hover{border-color:var(--ink);background:oklch(100% 0 0/.5)}
+      .rc .rc-ponastavi{padding:.45rem .9rem;border:none;border-radius:999px;background:transparent;color:var(--muted);font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.02em;cursor:pointer;text-decoration:underline;text-underline-offset:.22em}
+      .rc .rc-ponastavi:hover{color:var(--ink)}
+
+      /* podpis na racunu (neobvezno) — kot pg-podpis-* v ContractWorkspace, tu inline (brez sheeta) */
+      .rc .rc-podpis{min-width:0;margin-top:1.1rem;padding:1rem;border:1px solid var(--line);border-radius:.9rem;background:oklch(100% 0 0/.55)}
+      .rc .rc-podpis-polja{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.9rem;margin:.9rem 0 0}
+      .rc .rc-podpis-platno{display:block;width:100%;height:150px;margin-top:.9rem;border:1px dashed rgba(17,17,17,.3);border-radius:12px;background:#fff;touch-action:none;cursor:crosshair}
+      .rc .rc-podpis-akcije{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.7rem}
+      .rc .rc-podpis-ali{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+      .rc .rc-podpis-prikaz{margin-top:.9rem;padding:.8rem 1rem;border:1px solid rgba(17,17,17,.14);border-radius:12px;background:#fff}
+      .rc .rc-podpis-prikaz img{display:block;max-height:60px;max-width:220px}
+      .rc .rc-cip{padding:.42rem .8rem;border:1px solid rgba(17,17,17,.2);border-radius:999px;background:rgba(255,255,255,.5);cursor:pointer;font:inherit;font-size:.8rem;color:var(--ink);transition:border-color .15s,background .15s}
+      .rc .rc-cip:hover:not(:disabled){border-color:var(--ink)}
+      .rc .rc-cip:disabled{opacity:.45;cursor:default}
+      @media (max-width:640px){.rc .rc-podpis-polja{grid-template-columns:1fr}}
       .rc .rc-vrstica{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(3.6rem,.5fr) minmax(6rem,.9fr) minmax(4.6rem,.65fr) minmax(5.8rem,.8fr) minmax(5.6rem,.8fr) 2rem;gap:.55rem;align-items:end;margin-top:.7rem}
       .rc .rc-vrstica.rc-brez-ddv{grid-template-columns:minmax(0,2.5fr) minmax(3.6rem,.5fr) minmax(6rem,.9fr) minmax(4.6rem,.65fr) minmax(5.6rem,.9fr) 2rem}
       .rc .rc-vrstica input,.rc .rc-vrstica select{width:100%}
