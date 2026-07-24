@@ -133,7 +133,7 @@ const pwStyles = `
 .pw-racun-l{display:grid;gap:.12rem;min-width:0}
 .pw-racun-l small{color:var(--muted);font-size:.5rem;text-transform:capitalize}
 .pw-racun-d{display:flex;align-items:center;gap:.5rem;justify-self:end;text-align:right}
-.pw-racun-d .pw-status{font-size:.54rem;padding:.24rem .5rem}
+.pw-racun-d .pw-status{padding:0;border:0;background:none;font-size:.54rem;color:var(--muted)}
 .pw-racun-d strong{font-size:.72rem;font-variant-numeric:tabular-nums;white-space:nowrap}
 /* gumb "Prikaži več (N)" pod skrajšanim seznamom v karticah detajla */
 .pw-vec{margin:.2rem 0 0;padding:.15rem 0;border:0;background:none;color:var(--muted);font:700 .58rem var(--font-sans),sans-serif;text-align:left;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
