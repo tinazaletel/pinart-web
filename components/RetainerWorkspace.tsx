@@ -6,8 +6,8 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
-import { User, TextAa, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp, TextB, TextItalic, PenNib } from '@phosphor-icons/react';
-import { saveRetainerDraft } from '@/lib/pinartFlowCloud';
+import { User, TextAa, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp, TextB, TextItalic, PenNib, Paperclip, X } from '@phosphor-icons/react';
+import { getBusinessDocumentUrl, saveRetainerDraft, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { OrbSfera, ORB_BARVE, ikonaZa, ORB0_CSS, osvetli } from './Orb0';
 import VidezDokumentov from './VidezDokumentov';
 import AmbientBubbles from '@/components/AmbientBubbles';
@@ -145,6 +145,15 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   const [stevilka, setStevilka] = useState('');
   const [pdfNalaganje, setPdfNalaganje] = useState(false);
   const [napaka, setNapaka] = useState('');
+  /* priponka (dodatna priloga k retainerju — npr. PDF specifikacije, slika, dodatek).
+     priponkaFile = izbrana, a se ne naložena datoteka (naloži se šele ob prenosu PDF-ja
+     v prenesi(), ko je znan externalId zapisa); priponkaIme/priponkaPot = zadnje shranjeno
+     stanje (ime za prikaz, pot za povezavo). Retainer nima ločenega "Shrani" koraka —
+     edini trenutek, ko se zapis sploh shrani, je prenos PDF-ja (saveRetainerDraft). */
+  const [priponkaFile, setPriponkaFile] = useState<File | null>(null);
+  const [priponkaIme, setPriponkaIme] = useState('');
+  const [priponkaPot, setPriponkaPot] = useState('');
+  const priponkaRef = useRef<HTMLInputElement | null>(null);
   const [predType, setPredType] = useState<'pogodba' | 'ponudba'>('pogodba');
   const [predStrani, setPredStrani] = useState<string[]>([]);
   const [predNal, setPredNal] = useState(false);
@@ -379,6 +388,24 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   };
   const izvozniTelo = () => { const e = editorRef.current?.innerHTML?.trim(); if (e) return e; if (teloHtml.trim()) return teloHtml; return trenutnoTelo(); };
 
+  /* ── priponka (npr. PDF specifikacije, slika, dodatek) — samo izbere datoteko,
+     dejansko nalaganje v oblak zgodi v prenesi(), ko je znan externalId zapisa ── */
+  const naloziPriponko = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; if (!f) return;
+    setPriponkaFile(f);
+    setPriponkaIme(f.name);
+    setPriponkaPot('');
+    e.target.value = '';
+  };
+  const odstraniPriponko = () => { setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot(''); };
+  /* odpre naloženo priponko v novem zavihku — pot v shrambi je zasebna, zato
+     tik pred odpiranjem zahtevamo kratkotrajno podpisano povezavo (kot pri pogodbah) */
+  const odpriPriponko = async () => {
+    if (!priponkaPot) return;
+    try { window.open(await getBusinessDocumentUrl(priponkaPot, 300), '_blank', 'noopener,noreferrer'); }
+    catch { /* povezava trenutno ni na voljo */ }
+  };
+
   const shraniStevilko = () => { try { const leto = new Date().getFullYear(); const c = JSON.parse(localStorage.getItem(K_STEVEC_RET) || '{}'); c[leto] = (Number(c[leto]) || 0) + 1; localStorage.setItem(K_STEVEC_RET, JSON.stringify(c)); } catch { /* prazno */ } };
   const prenesi = async (kaj: 'ponudba' | 'pogodba') => {
     setNapaka('');
@@ -394,8 +421,17 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       if (!blob.size) throw new Error('prazen');
       if (!nar.ime.trim()) throw new Error('stranka');
       const file = new File([blob], `${ime}.pdf`, { type: 'application/pdf' });
+      const externalId = `retainer-${stevilka || slug || crypto.randomUUID()}`;
+      /* priponka: ce je izbrana nova (se ne nalozena) datoteka, jo poskusi naloziti zdaj —
+         ce ne uspe (npr. brez oblaka), obdrzi ime priponke, samo brez povezave (kot pri
+         pogodbah/stroskih); prenos PDF-ja se zaradi tega ne prekine */
+      if (priponkaFile) {
+        try { setPriponkaPot(await uploadBusinessDocument(priponkaFile, 'retainers', externalId)); setPriponkaIme(priponkaFile.name); }
+        catch { setPriponkaIme(priponkaFile.name); setPriponkaPot(''); }
+        setPriponkaFile(null);
+      }
       void saveRetainerDraft({
-        externalId: `retainer-${stevilka || slug || crypto.randomUUID()}`,
+        externalId,
         number: stevilka || undefined,
         client: { id: `retainer-client-${slug || crypto.randomUUID()}`, name: nar.ime.trim(), email: nar.email, contact: nar.oseba, address: nar.naslov, tax: nar.davcna },
         scope: vsiScope.map(imeScope), pricingModel: model === 'ure' ? 'hours' : model === 'paket' ? 'package' : 'combined',
@@ -479,6 +515,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
     setScope([]); setLastna([]); setScopeVnos(''); setDodajOdprt(false);
     setNar({ ime: '', email: '', oseba: '', naslov: '', davcna: '' }); setDodatniNar(false);
     setTeloHtml(''); setRocnoTelo(false); setPredType('pogodba'); setNapaka('');
+    setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot('');
     setKorak(0); setPogled('vprasanja');
   };
 
@@ -724,6 +761,20 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
                   <button type="button" className="rw-barvica rw-barvica-mavrica" aria-label="Barva besedila (poljubna)" title="Barva besedila — poljubna" onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
                   <input ref={barvaRef} type="color" hidden onChange={e => oblikuj('foreColor', e.target.value)} />
                   <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('hiliteColor', '#FCE38A'); }} onDoubleClick={e => { e.preventDefault(); oblikuj('hiliteColor', 'transparent'); }} title="Označi besedilo — dvojni klik odstrani" aria-label="Označi besedilo"><span className="rw-hl">T</span></button>
+                  <span className="rw-tool-locnica" aria-hidden />
+                  {/* priponka — dodatna priloga k retainerju (npr. PDF specifikacije, slika, dodatek); ni del besedila dokumenta */}
+                  <button type="button" className={'rw-tool-krog' + (priponkaIme ? ' on' : '')} onClick={() => priponkaRef.current?.click()} title={priponkaIme ? 'Zamenjaj priponko' : 'Dodaj priponko'} aria-label={priponkaIme ? 'Zamenjaj priponko' : 'Dodaj priponko'}><Paperclip size={17} weight="bold" /></button>
+                  {priponkaIme && (
+                    <span className="rw-priponka-cip">
+                      {priponkaPot ? (
+                        <button type="button" className="rw-priponka-ime" onClick={odpriPriponko} title="Odpri priponko">{priponkaIme}</button>
+                      ) : (
+                        <span className="rw-priponka-ime">{priponkaIme}</span>
+                      )}
+                      <button type="button" onClick={odstraniPriponko} aria-label="Odstrani priponko" title="Odstrani priponko"><X size={11} weight="bold" /></button>
+                    </span>
+                  )}
+                  <input ref={priponkaRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx" hidden onChange={naloziPriponko} />
                 </>;
                 if (!jeMobilni) return <div className="rw-orodjarna" aria-label="Oblikovanje besedila">{orodjaKontrole}</div>;
                 return typeof document !== 'undefined' ? createPortal(
@@ -1047,7 +1098,9 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-segpills-sek button{font-weight:600;color:rgba(17,17,17,.6)}
         .rw-segpills-sek button.on{background:rgba(17,17,17,.09);color:var(--ink)}
         .rw-segpills-pogled button{display:inline-flex;align-items:center;gap:.35rem}
-        .rw-orodjarna{position:relative;display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin:1rem 0 .8rem}
+        /* ena vrstica (ne ovija) — vodoravni drs, ce orodij ni malo (npr. z odprto priponko) */
+        .rw-orodjarna{position:relative;display:flex;flex-wrap:nowrap;overflow-x:auto;gap:.45rem;align-items:center;margin:1rem 0 .8rem;-webkit-overflow-scrolling:touch}
+        .rw-orodjarna > *{flex:none}
         /* ── Mobilni predal za oblikovanje (enak jezik kot kalkulatorjev pon-sheet) ── */
         .rw-sheet-trig{display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;padding:0;border:1px solid rgba(17,17,17,.22);border-radius:999px;background:var(--paper);color:var(--ink);cursor:pointer}
         .rw-sheet-back{position:fixed;inset:0;background:rgba(30,18,35,.34);z-index:78}
@@ -1075,13 +1128,20 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-oznaci-namig{position:absolute;top:-2.5rem;left:1rem;background:var(--ink);color:var(--paper);font-size:.8rem;font-weight:600;padding:.4rem .85rem;border-radius:999px;white-space:nowrap;box-shadow:0 8px 22px rgba(17,17,17,.22);z-index:6;pointer-events:none}
         .rw-tool-krog{width:2.6rem;height:2.6rem;border-radius:50%;border:none;background:rgba(17,17,17,.06);color:var(--ink);font-family:inherit;font-weight:700;font-size:.82rem;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:background .15s,color .15s}
         .rw-tool-krog:hover{background:var(--ink);color:var(--paper)}
+        .rw-tool-krog.on{background:var(--ink);color:var(--paper)}
         .rw-tool-vel2{display:inline-flex;align-items:center;gap:.3rem}
         .rw-tool-vel2 .rw-tv-aa{font-weight:700;font-size:.9rem}
         .rw-tool-t.on{background:var(--ink);color:var(--paper)}
         .rw-tool-t .rw-ti{font-weight:800;font-size:.92rem;line-height:1}
         .rw-tool-t .rw-ti-box{border:2px solid currentColor;border-radius:3px;padding:0 .1em}
-        .rw-tool-locnica{width:1px;height:1.7rem;background:rgba(17,17,17,.16);margin:0 .2rem}
+        .rw-tool-locnica{width:1px;height:1.7rem;background:rgba(17,17,17,.16);margin:0 .2rem;flex:none}
         .rw-hl{font-weight:800;font-size:.9rem;line-height:1;background:#FCE38A;border-radius:2px;padding:0 .18em}
+        /* priponka: ime + gumb za odstranitev, ob gumbu za dodajanje priponke v orodjarni */
+        .rw-priponka-cip{display:inline-flex;align-items:center;gap:.35rem;max-width:11rem;padding:.3rem .3rem .3rem .65rem;border-radius:999px;background:rgba(17,17,17,.06);font-size:.78rem}
+        .rw-priponka-cip .rw-priponka-ime{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:8rem;border:none;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer;text-align:left}
+        .rw-priponka-cip button.rw-priponka-ime{text-decoration:underline;text-underline-offset:.18em}
+        .rw-priponka-cip>button:last-child{display:inline-flex;align-items:center;justify-content:center;width:1.3rem;height:1.3rem;border:none;border-radius:50%;background:rgba(17,17,17,.08);color:rgba(17,17,17,.6);cursor:pointer;flex:none;padding:0}
+        .rw-priponka-cip>button:last-child:hover{background:var(--ink);color:var(--paper)}
         .rw-pisava-select{min-height:2.25rem;border:1px solid rgba(17,17,17,.22);background-color:rgba(255,255,255,.32);color:var(--ink);border-radius:999px;padding:0 1.7rem 0 .9rem;font-family:inherit;font-weight:600;font-size:.78rem;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .7rem center}
         .rw-barvica{width:1.35rem;height:1.35rem;border-radius:999px;border:1px solid rgba(17,17,17,.22);cursor:pointer;padding:0}
         .rw-barvica-mavrica{background:conic-gradient(from 0deg,#FA4892,#F8E71C,#50E3C2,#7C3AED,#FA4892);border-color:rgba(17,17,17,.25)}

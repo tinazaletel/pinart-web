@@ -43,6 +43,38 @@ const opombaInfo = (notes?: string) => {
   return { alert, besedilo: alert ? n.replace(/^ALERT:\s*/i, '') : n };
 };
 
+/* NALOGA #44: detajl ponudbe naj izgleda kot PRAVI DOKUMENT, ne le povzetek+link.
+   Shramba kalkulatorja ("pinart-kalkulator-arhiv") je LOCENA od Flow arhiva, ki ga
+   ArhivWorkspace sicer bere (podatkiZaPredogled/loadFlowData); ce je uporabnica to
+   ponudbo shranila v kalkulatorju, ima zapis besediloHtml (ali morebitni prihodnji
+   "body") = pravi HTML dokument. Ce zapisa ni ali je telo prazno, detajl pade na
+   predogled sestavljen iz polj FlowOffer (obseg + znesek) — to je pricakovano tudi
+   v DEMO nacinu, kjer kalkulatorjeve shrambe sploh ni. */
+type ArhivKalkulatorZapis = {
+  nazivPonudbe?: string;
+  stevilkaPonudbe?: string;
+  veljavnostDni?: string;
+  besediloHtml?: string;
+  body?: string;
+};
+const K_KALKULATOR_ARHIV = 'pinart-kalkulator-arhiv';
+
+/* poisce zapis v arhivu kalkulatorja, ki ustreza tej ponudbi (najprej po stevilki,
+   sicer po nazivu) in vrne njeno HTML telo + veljavnost, ce obstajata */
+function najdiTeloPonudbe(offer: FlowOffer): { telo: string; veljavnostDni?: string } {
+  if (typeof window === 'undefined') return { telo: '' };
+  try {
+    const arhiv = JSON.parse(localStorage.getItem(K_KALKULATOR_ARHIV) || '{}') as Record<string, ArhivKalkulatorZapis>;
+    const naslovOffer = offer.title.trim().toLocaleLowerCase('sl-SI');
+    const zapis = Object.values(arhiv).find(z =>
+      (offer.number && z.stevilkaPonudbe && z.stevilkaPonudbe === offer.number)
+      || (z.nazivPonudbe && z.nazivPonudbe.trim().toLocaleLowerCase('sl-SI') === naslovOffer)
+    );
+    const telo = zapis?.body || zapis?.besediloHtml || '';
+    return { telo: telo.trim() ? telo : '', veljavnostDni: zapis?.veljavnostDni };
+  } catch { return { telo: '' }; }
+}
+
 /* status pikica — ISTE barve/logika kot nadzorna plošča (statusTone/status_*):
    success=zelena, waiting=jantar, danger=rdeča, neutral=siva */
 type Odtenek = 'success' | 'waiting' | 'danger' | 'neutral';
@@ -99,6 +131,14 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
   const [detajl, setDetajl] = useState<Detajl | null>(null);
   const [detObsegOdprt, setDetObsegOdprt] = useState(false);
+
+  /* PRAVI dokument ponudbe, ce obstaja shranjen HTML v arhivu kalkulatorja
+     (glej najdiTeloPonudbe zgoraj) — prazno telo pomeni: izrisi predogled iz
+     polj ponudbe namesto injeciranega HTML-ja */
+  const ponudbaDok = useMemo(
+    () => (detajl?.vrsta === 'ponudba' ? najdiTeloPonudbe(detajl.zapis) : { telo: '' }),
+    [detajl]
+  );
 
   /* menjava zavihka: pocisti vsa iskanja/filtre, da se ne prenesejo napacno */
   const menjajZavihek = (z: Zavihek) => {
@@ -424,19 +464,40 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               return <>
                 <p className={styles.eyebrow}>PONUDBA · {offerLabels[o.status]}</p>
                 <h2 id="arh-detajl-naslov">{o.title}</h2>
-                <div className="arh-det-meta">
-                  <span><small>Stranka</small><strong>{o.client}</strong></span>
-                  <span><small>Datum</small><strong>{datStr(o.date)}</strong></span>
-                  <span><small>Številka</small><strong>{o.number || '—'}</strong></span>
-                  <span><small>Znesek</small><strong>{dokZnesek(o.agreedAmount)}</strong></span>
+
+                {/* ponudba kot DOKUMENT (mini letterhead: kremni list, senca, Bodoni
+                    naslov) — ce imamo shranjen pravi HTML iz kalkulatorja (ponudbaDok.telo),
+                    ga izrisemo; sicer predogled sestavimo iz polj ponudbe (obseg + znesek) */}
+                <div className="arh-ponudba-dok">
+                  <div className="arh-ponudba-dok-glava">
+                    <p className="arh-ponudba-dok-kick">PONUDBA{o.number ? ` · ${o.number}` : ''}</p>
+                    <h3 className="arh-ponudba-dok-naslov">{o.title}</h3>
+                    <div className="arh-ponudba-dok-meta">
+                      <span><small>Stranka</small><strong>{o.client}</strong></span>
+                      <span><small>Datum</small><strong>{datStr(o.date)}</strong></span>
+                      {ponudbaDok.veljavnostDni && <span><small>Veljavnost</small><strong>{ponudbaDok.veljavnostDni} dni</strong></span>}
+                    </div>
+                  </div>
+
+                  {ponudbaDok.telo ? (
+                    <div className="arh-doktelo" dangerouslySetInnerHTML={{ __html: ponudbaDok.telo }} />
+                  ) : (
+                    <div className="arh-ponudba-dok-telo">
+                      <div className="arh-ponudba-dok-obseg">
+                        <span className="arh-filter-oznaka">Obseg</span>
+                        {o.scope.length
+                          ? <ul>{o.scope.map((s, i) => <li key={`${s}-${i}`}>{s}</li>)}</ul>
+                          : <p className="arh-mini">Ponudba nima vpisanega obsega.</p>}
+                      </div>
+                      <div className="arh-ponudba-dok-znesek">
+                        <span>Dogovorjena vrednost</span>
+                        <strong>{dokZnesek(o.agreedAmount)}</strong>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="arh-det-obseg">
-                  <span className="arh-filter-oznaka">Obseg</span>
-                  {o.scope.length
-                    ? <ul>{o.scope.map((s, i) => <li key={`${s}-${i}`}>{s}</li>)}</ul>
-                    : <p className="arh-mini">Ponudba nima vpisanega obsega.</p>}
-                </div>
-                <a className="arh-povezava" href={`${base}/kalkulator/orodje`}>Odpri v kalkulatorju ↗</a>
+
+                <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/orodje`}>Odpri v kalkulatorju ↗</a>
               </>;
             })()}
 
@@ -622,6 +683,30 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-det-obseg li{margin:.2rem 0;font-size:.9rem}
         .arh-mini{color:rgba(17,17,17,.6);font-size:.85rem;line-height:1.5}
         .arh-povezava{display:inline-flex;align-items:center;gap:.35rem;margin-top:.9rem;font-size:.88rem;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:.28em;text-decoration-thickness:1px}
+        /* sekundarna razlicica (ponudba kot dokument zdaj nosi glavno pozornost,
+           povezava v kalkulator je samo se pot do urejanja) */
+        .arh-povezava-sekundarna{font-size:.8rem;font-weight:500;color:rgba(17,17,17,.62)}
+
+        /* ── ponudba kot DOKUMENT (NALOGA #44): kremni list + senca + Bodoni naslov,
+           mini letterhead videz namesto golih kartic ── */
+        .arh-ponudba-dok{margin-top:.9rem;border:1px solid rgba(17,17,17,.14);border-radius:10px;background:#fff;box-shadow:0 10px 28px rgba(17,17,17,.08);overflow:hidden}
+        .arh-ponudba-dok-glava{padding:1.5rem 1.6rem 1.2rem;border-bottom:1px solid rgba(17,17,17,.1);background:linear-gradient(180deg, oklch(98% .01 87), #fff)}
+        .arh-ponudba-dok-kick{margin:0 0 .5rem;font-size:.66rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--accent,#B25476)}
+        .arh-ponudba-dok-naslov{margin:0 0 1rem;font-family:var(--font-serif),Didot,serif;font-weight:600;font-size:clamp(1.3rem,2.6vw,1.7rem);line-height:1.1;color:var(--ink)}
+        .arh-ponudba-dok-meta{display:flex;flex-wrap:wrap;gap:1.4rem}
+        .arh-ponudba-dok-meta span{display:grid;gap:.15rem;min-width:0}
+        .arh-ponudba-dok-meta small{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(17,17,17,.5)}
+        .arh-ponudba-dok-meta strong{font-size:.86rem;overflow-wrap:anywhere}
+        .arh-ponudba-dok-telo{padding:1.4rem 1.6rem 1.6rem}
+        .arh-ponudba-dok-obseg{margin-bottom:1.1rem}
+        .arh-ponudba-dok-obseg ul{margin:.4rem 0 0;padding-left:1.15rem}
+        .arh-ponudba-dok-obseg li{margin:.25rem 0;font-size:.9rem;line-height:1.5}
+        .arh-ponudba-dok-znesek{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding-top:1rem;border-top:1px dashed rgba(17,17,17,.16)}
+        .arh-ponudba-dok-znesek span{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(17,17,17,.55)}
+        .arh-ponudba-dok-znesek strong{font-family:var(--font-serif),Georgia,serif;font-weight:600;font-size:1.5rem;color:var(--ink)}
+        /* injecirani HTML dokument (arh-doktelo) znotraj arh-ponudba-dok: odstrani
+           lasten okvir/senco/rob (parent jih ze da), obdrzi samo tipografijo */
+        .arh-ponudba-dok .arh-doktelo{margin-top:0;border:none;border-radius:0;background:transparent;padding:1.4rem 1.6rem 1.6rem}
         .arh-det-ponudba{margin:.2rem 0 .6rem;border:1px solid rgba(17,17,17,.12);border-radius:.7rem;background:rgba(255,255,255,.72);overflow:hidden;min-width:0}
         .arh-det-ponudba-vrstica{display:flex;align-items:center;gap:.7rem;width:100%;padding:.65rem .8rem;border:none;background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer;min-width:0}
         .arh-det-ponudba-ime{flex:1;min-width:0;font-size:.88rem;font-weight:700;overflow-wrap:anywhere}

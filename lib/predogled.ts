@@ -77,6 +77,15 @@ function datum(mesecevNazaj: number, dan: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+/* fiksen datum (NE relativen na "danes") — za dolgoročni demo projekt, ki mora
+   ostati na istih koledarskih letih (2022-2026) ne glede na to, kdaj se demo odpre.
+   `zamikDni` prišteje dneve datumu 15.1.<letoOsnova>. */
+function datumFiksni(letoOsnova: number, zamikDni: number): string {
+  const d = new Date(Date.UTC(letoOsnova, 0, 15));
+  d.setUTCDate(d.getUTCDate() + zamikDni);
+  return d.toISOString().slice(0, 10);
+}
+
 const NASLOVI = ['Nova identiteta', 'Spletna stran', 'Letno poročilo', 'Kampanja', 'Embalaža', 'Ilustracije'];
 
 export function demoPodatki(): FlowData {
@@ -150,6 +159,57 @@ export function demoPodatki(): FlowData {
     };
   });
 
+  /* ── Dolgorocni projekt za preizkus obsega ("Prikazi vec", Arhiv z veliko racuni) ──
+     En petletni retainer z ~66 racuni, vsi vezani na isti offer prek sourceOfferId. */
+  const demoPortalOffer: FlowOffer = {
+    id: 'demo-portal',
+    title: 'Prenova portala',
+    client: 'Rokus Klett',
+    date: new Date('2022-01-10T00:00:00').toISOString(),
+    number: '2022-100',
+    scope: ['Analiza obstoječega portala', 'UX prenova', 'Oblikovanje predlog', 'Petletni retainer vzdrževanja'],
+    status: 'accepted',
+    agreedAmount: 60000,
+  };
+
+  /* 66 racunov, priblizno vsake 4 tedne od 15.1.2022 naprej — pokrije obdobje 2022-2026 */
+  const demoPortalInvoices: FlowInvoice[] = Array.from({ length: 66 }, (_, i) => {
+    const dat = datumFiksni(2022, i * 27);
+    const leto = Number(dat.slice(0, 4));
+    return {
+      id: `demo-portal-i-${i}`,
+      number: `R-${leto}-${String(100 + i).padStart(3, '0')}`,
+      title: 'Prenova portala',
+      client: 'Rokus Klett',
+      amount: 700 + (i % 12) * 100,
+      paid: i % 9 !== 0,
+      date: dat,
+      dueDays: 15,
+      sourceOfferId: 'demo-portal',
+    };
+  });
+
+  const demoPortalContract: FlowContract = {
+    id: 'demo-portal-p-0',
+    title: 'Pogodba · Prenova portala',
+    client: 'Rokus Klett',
+    date: '2022-01-10',
+    status: 'active',
+    sourceOfferId: 'demo-portal',
+    body: teloPogodbe('Prenova portala', 'Rokus Klett', '2022-01-10'),
+    notes: 'Petletni retainer, mesečno obračunavanje po dogovorjenem obsegu.',
+  };
+
+  const demoPortalExpense: FlowExpense = {
+    id: 'demo-portal-e-0',
+    title: 'Zunanji sodelavec',
+    client: 'Rokus Klett',
+    amount: 480,
+    date: datumFiksni(2023, 220),
+    category: 'Projekt',
+    sourceOfferId: 'demo-portal',
+  };
+
   const clients: FlowClient[] = STRANKE.map((ime, i) => ({
     id: `demo-s-${i}`,
     name: ime,
@@ -160,7 +220,14 @@ export function demoPodatki(): FlowData {
     tax: `SI${10000000 + i * 137}`,
   }));
 
-  return { version: 1, offers, invoices, expenses, contracts, clients };
+  return {
+    version: 1,
+    offers: [...offers, demoPortalOffer],
+    invoices: [...invoices, ...demoPortalInvoices],
+    expenses: [...expenses, demoPortalExpense],
+    contracts: [...contracts, demoPortalContract],
+    clients,
+  };
 }
 
 /**
