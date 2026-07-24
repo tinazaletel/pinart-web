@@ -21,7 +21,6 @@ import ArhivFilter from './ArhivFilter';
 import AmbientBubbles from '@/components/AmbientBubbles';
 
 type Zavihek = 'projekti' | 'ponudbe' | 'pogodbe' | 'racuni';
-type Obdobje = 'vse' | 'letos' | '30' | 'obdobje';
 
 const eur = (n: number) => Math.round(n).toLocaleString('sl-SI') + ' €';
 const datStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('sl-SI'); };
@@ -42,16 +41,15 @@ const opombaInfo = (notes?: string) => {
   return { alert, besedilo: alert ? n.replace(/^ALERT:\s*/i, '') : n };
 };
 
-/* datumski filter — skupni za vse zavihke (vzorec iz ContractWorkspace) */
-function vObdobju(dateStr: string, obdobje: Obdobje, od: string, doD: string): boolean {
+/* datumski filter — skupni za vse zavihke: samo od–do (native koledar).
+   Prazno od/do ne omejuje; zapis brez veljavnega datuma se skrije le, ce je
+   filter aktiven. */
+function vObdobju(dateStr: string, od: string, doD: string): boolean {
+  if (!od && !doD) return true;
   const t = new Date(dateStr).getTime();
-  if (isNaN(t)) return obdobje === 'vse';
-  if (obdobje === 'letos' && new Date(dateStr).getFullYear() !== new Date().getFullYear()) return false;
-  if (obdobje === '30' && t < Date.now() - 30 * 864e5) return false;
-  if (obdobje === 'obdobje') {
-    if (od && t < new Date(od + 'T00:00:00').getTime()) return false;
-    if (doD && t > new Date(doD + 'T23:59:59').getTime()) return false;
-  }
+  if (isNaN(t)) return false;
+  if (od && t < new Date(od + 'T00:00:00').getTime()) return false;
+  if (doD && t > new Date(doD + 'T23:59:59').getTime()) return false;
   return true;
 }
 
@@ -72,7 +70,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   /* iskanje + filtri (skupno stanje; ob menjavi zavihka jih pocistimo, ker so
      razlicni za vsak tip) */
   const [iskanje, setIskanje] = useState('');
-  const [obdobje, setObdobje] = useState<Obdobje>('vse');
   const [obdobjeOd, setObdobjeOd] = useState('');
   const [obdobjeDo, setObdobjeDo] = useState('');
   const [statusPonudba, setStatusPonudba] = useState<'vse' | FlowOfferStatus>('vse');
@@ -85,7 +82,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   /* menjava zavihka: pocisti vsa iskanja/filtre, da se ne prenesejo napacno */
   const menjajZavihek = (z: Zavihek) => {
     setZavihek(z);
-    setIskanje(''); setObdobje('vse'); setObdobjeOd(''); setObdobjeDo('');
+    setIskanje(''); setObdobjeOd(''); setObdobjeDo('');
     setStatusPonudba('vse'); setStatusPogodba('vse'); setPlacano('vse');
     setDetajl(null); setDetObsegOdprt(false);
   };
@@ -96,46 +93,29 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   const ponudbePrikaz = useMemo(() => offers.filter(o => {
     if (isk && !`${o.title} ${o.client} ${o.number || ''}`.toLocaleLowerCase('sl-SI').includes(isk)) return false;
     if (statusPonudba !== 'vse' && o.status !== statusPonudba) return false;
-    return vObdobju(o.date, obdobje, obdobjeOd, obdobjeDo);
-  }), [offers, isk, statusPonudba, obdobje, obdobjeOd, obdobjeDo]);
+    return vObdobju(o.date, obdobjeOd, obdobjeDo);
+  }), [offers, isk, statusPonudba, obdobjeOd, obdobjeDo]);
 
   const pogodbePrikaz = useMemo(() => contracts.filter(c => {
     if (isk && !`${c.title} ${c.client}`.toLocaleLowerCase('sl-SI').includes(isk)) return false;
     if (statusPogodba !== 'vse' && c.status !== statusPogodba) return false;
-    return vObdobju(c.date, obdobje, obdobjeOd, obdobjeDo);
-  }), [contracts, isk, statusPogodba, obdobje, obdobjeOd, obdobjeDo]);
+    return vObdobju(c.date, obdobjeOd, obdobjeDo);
+  }), [contracts, isk, statusPogodba, obdobjeOd, obdobjeDo]);
 
   const racuniPrikaz = useMemo(() => invoices.filter(r => {
     if (isk && !`${r.title || ''} ${r.number || ''} ${r.client}`.toLocaleLowerCase('sl-SI').includes(isk)) return false;
     if (placano === 'placano' && !r.paid) return false;
     if (placano === 'odprto' && r.paid) return false;
-    return vObdobju(r.date, obdobje, obdobjeOd, obdobjeDo);
-  }), [invoices, isk, placano, obdobje, obdobjeOd, obdobjeDo]);
+    return vObdobju(r.date, obdobjeOd, obdobjeDo);
+  }), [invoices, isk, placano, obdobjeOd, obdobjeDo]);
 
-  /* stevilo aktivnih filtrov (za pikico na gumbu Filtri v ArhivFilter) */
-  const stFiltrov = (obdobje !== 'vse' ? 1 : 0)
+  /* stevilo aktivnih filtrov (za stevec na gumbu Filtri v ArhivFilter) */
+  const datumAktiven = obdobjeOd !== '' || obdobjeDo !== '';
+  const stFiltrov = (datumAktiven ? 1 : 0)
     + (zavihek === 'ponudbe' && statusPonudba !== 'vse' ? 1 : 0)
     + (zavihek === 'pogodbe' && statusPogodba !== 'vse' ? 1 : 0)
     + (zavihek === 'racuni' && placano !== 'vse' ? 1 : 0);
-  const pocistiFiltre = () => { setObdobje('vse'); setObdobjeOd(''); setObdobjeDo(''); setStatusPonudba('vse'); setStatusPogodba('vse'); setPlacano('vse'); };
-
-  /* skupni blok datumskih pilul v sheetu filtrov */
-  const obdobjePilule = (
-    <div className="arh-filter-skupina">
-      <span className="arh-filter-oznaka">Obdobje</span>
-      <div className="arh-pilule" role="group" aria-label="Obdobje">
-        {(([['vse', 'Vse'], ['letos', 'Letos'], ['30', 'Zadnjih 30 dni'], ['obdobje', 'Po meri']]) as Array<[Obdobje, string]>).map(([v, n]) => (
-          <button key={v} type="button" className={obdobje === v ? 'on' : ''} onClick={() => setObdobje(v)}>{n}</button>
-        ))}
-      </div>
-      {obdobje === 'obdobje' && (
-        <div className="arh-obdobje-vnos">
-          <label>Od<input type="date" value={obdobjeOd} onChange={e => setObdobjeOd(e.target.value)} /></label>
-          <label>Do<input type="date" value={obdobjeDo} onChange={e => setObdobjeDo(e.target.value)} /></label>
-        </div>
-      )}
-    </div>
-  );
+  const pocistiFiltre = () => { setObdobjeOd(''); setObdobjeDo(''); setStatusPonudba('vse'); setStatusPogodba('vse'); setPlacano('vse'); };
 
   const zapriDetajl = () => { setDetajl(null); setDetObsegOdprt(false); };
 
@@ -173,20 +153,17 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               iskanje={iskanje}
               onIskanje={setIskanje}
               placeholder="Poišči ponudbo, stranko ali številko …"
+              datumOd={obdobjeOd}
+              datumDo={obdobjeDo}
+              onDatumOd={setObdobjeOd}
+              onDatumDo={setObdobjeDo}
+              statusOznaka="Status ponudbe"
+              statusVrednost={statusPonudba}
+              onStatus={v => setStatusPonudba(v as 'vse' | FlowOfferStatus)}
+              statusOpcije={[{ vrednost: 'vse', oznaka: 'Vse' }, ...(Object.entries(offerLabels) as Array<[FlowOfferStatus, string]>).map(([v, n]) => ({ vrednost: v, oznaka: n }))]}
               aktivnihFiltrov={stFiltrov}
               onPocisti={pocistiFiltre}
-            >
-              <div className="arh-filter-skupina">
-                <span className="arh-filter-oznaka">Status</span>
-                <div className="arh-pilule" role="group" aria-label="Status ponudbe">
-                  <button type="button" className={statusPonudba === 'vse' ? 'on' : ''} onClick={() => setStatusPonudba('vse')}>Vse</button>
-                  {(Object.entries(offerLabels) as Array<[FlowOfferStatus, string]>).map(([v, n]) => (
-                    <button key={v} type="button" className={statusPonudba === v ? 'on' : ''} onClick={() => setStatusPonudba(v)}>{n}</button>
-                  ))}
-                </div>
-              </div>
-              {obdobjePilule}
-            </ArhivFilter>
+            />
 
             {!offers.length ? (
               <p className="arh-prazno">Prva shranjena ponudba se bo prikazala tukaj.</p>
@@ -219,20 +196,17 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               iskanje={iskanje}
               onIskanje={setIskanje}
               placeholder="Poišči pogodbo ali stranko …"
+              datumOd={obdobjeOd}
+              datumDo={obdobjeDo}
+              onDatumOd={setObdobjeOd}
+              onDatumDo={setObdobjeDo}
+              statusOznaka="Status pogodbe"
+              statusVrednost={statusPogodba}
+              onStatus={v => setStatusPogodba(v as 'vse' | FlowContractStatus)}
+              statusOpcije={[{ vrednost: 'vse', oznaka: 'Vse' }, ...(Object.entries(contractLabels) as Array<[FlowContractStatus, string]>).map(([v, n]) => ({ vrednost: v, oznaka: n }))]}
               aktivnihFiltrov={stFiltrov}
               onPocisti={pocistiFiltre}
-            >
-              <div className="arh-filter-skupina">
-                <span className="arh-filter-oznaka">Status</span>
-                <div className="arh-pilule" role="group" aria-label="Status pogodbe">
-                  <button type="button" className={statusPogodba === 'vse' ? 'on' : ''} onClick={() => setStatusPogodba('vse')}>Vse</button>
-                  {(Object.entries(contractLabels) as Array<[FlowContractStatus, string]>).map(([v, n]) => (
-                    <button key={v} type="button" className={statusPogodba === v ? 'on' : ''} onClick={() => setStatusPogodba(v)}>{n}</button>
-                  ))}
-                </div>
-              </div>
-              {obdobjePilule}
-            </ArhivFilter>
+            />
 
             {!contracts.length ? (
               <p className="arh-prazno">Prva shranjena pogodba se bo prikazala tukaj.</p>
@@ -268,19 +242,17 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               iskanje={iskanje}
               onIskanje={setIskanje}
               placeholder="Poišči račun, stranko ali številko …"
+              datumOd={obdobjeOd}
+              datumDo={obdobjeDo}
+              onDatumOd={setObdobjeOd}
+              onDatumDo={setObdobjeDo}
+              statusOznaka="Plačilo"
+              statusVrednost={placano}
+              onStatus={v => setPlacano(v as 'vse' | 'placano' | 'odprto')}
+              statusOpcije={[{ vrednost: 'vse', oznaka: 'Vsi' }, { vrednost: 'placano', oznaka: 'Plačani' }, { vrednost: 'odprto', oznaka: 'Odprti' }]}
               aktivnihFiltrov={stFiltrov}
               onPocisti={pocistiFiltre}
-            >
-              <div className="arh-filter-skupina">
-                <span className="arh-filter-oznaka">Plačilo</span>
-                <div className="arh-pilule" role="group" aria-label="Plačilo">
-                  {(([['vse', 'Vsi'], ['placano', 'Plačani'], ['odprto', 'Odprti']]) as Array<['vse' | 'placano' | 'odprto', string]>).map(([v, n]) => (
-                    <button key={v} type="button" className={placano === v ? 'on' : ''} onClick={() => setPlacano(v)}>{n}</button>
-                  ))}
-                </div>
-              </div>
-              {obdobjePilule}
-            </ArhivFilter>
+            />
 
             {!invoices.length ? (
               <p className="arh-prazno">Prvi shranjeni račun se bo prikazal tukaj.</p>
@@ -427,17 +399,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         /* projekti: obstojeci ProjectsWorkspace ima svoj razmik — le malo zraka nad njim */
         .arh-projekti{margin-top:.4rem}
 
-        /* filtri v sheetu (ArhivFilter poda children) */
-        .arh-filter-skupina{display:grid;gap:.55rem;min-width:0}
+        /* oznaka skupine — se uporablja v detajl panelu (Obseg); filtri jih ne kazejo vec */
         .arh-filter-oznaka{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(17,17,17,.55)}
-        .arh-pilule{display:flex;flex-wrap:wrap;gap:.4rem}
-        .arh-pilule button{padding:.42rem .8rem;border:1px solid rgba(17,17,17,.2);border-radius:999px;background:rgba(255,255,255,.5);cursor:pointer;font:inherit;font-size:.82rem;color:var(--ink);transition:border-color .15s,background .15s,color .15s}
-        .arh-pilule button:hover{border-color:var(--ink)}
-        .arh-pilule button.on{border-color:var(--accent);background:var(--accent);color:#fff;font-weight:600}
-        .arh-obdobje-vnos{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:.2rem}
-        .arh-obdobje-vnos label{display:flex;flex-direction:column;gap:.25rem;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(17,17,17,.55)}
-        .arh-obdobje-vnos input{font:inherit;font-size:.9rem;font-weight:600;color:var(--ink);background:#FCFBF7;border:1px solid rgba(17,17,17,.16);border-radius:9px;padding:.45rem .6rem}
-        .arh-obdobje-vnos input:focus{outline:none;border-color:var(--ink)}
 
         /* razmik med filtrom in tabelo */
         .arh-panel > .af{margin:0 0 1rem}

@@ -75,9 +75,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   /* mobilni sheet za izbiro ponudbe (native select ne skalira s 50+ ponudbami) */
   const [ponSheet, setPonSheet] = useState(false);
   const [ponIskanje, setPonIskanje] = useState('');
-  /* arhiv: iskanje + datumsko obdobje (vzorec iz arhiva pogodb) */
+  /* arhiv: iskanje + datum od–do (native koledar; prazno ne omejuje) */
   const [iskanje, setIskanje] = useState('');
-  const [obdobje, setObdobje] = useState<'vse' | 'letos' | '30' | 'obdobje'>('vse');
   const [obdobjeOd, setObdobjeOd] = useState('');
   const [obdobjeDo, setObdobjeDo] = useState('');
 
@@ -121,10 +120,9 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     if (filter !== 'all' && (filter === 'paid' ? !invoice.paid : invoice.paid)) return false;
     const besedilo = `${invoice.title || ''} ${invoice.number || ''} ${invoice.client}`.toLocaleLowerCase('sl-SI');
     if (iskanje.trim() && !besedilo.includes(iskanje.trim().toLocaleLowerCase('sl-SI'))) return false;
-    const t = new Date(invoice.date).getTime();
-    if (obdobje === 'letos' && new Date(invoice.date).getFullYear() !== new Date().getFullYear()) return false;
-    if (obdobje === '30' && t < Date.now() - 30 * 864e5) return false;
-    if (obdobje === 'obdobje') {
+    if (obdobjeOd || obdobjeDo) {
+      const t = new Date(invoice.date).getTime();
+      if (isNaN(t)) return false;
       if (obdobjeOd && t < new Date(obdobjeOd + 'T00:00:00').getTime()) return false;
       if (obdobjeDo && t > new Date(obdobjeDo + 'T23:59:59').getTime()) return false;
     }
@@ -437,27 +435,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       <section className={styles.invoiceArchive}>
         <header><div><p className={styles.eyebrow}>PREGLED RAČUNOV</p><h2>Vse številke na enem mestu.</h2></div></header>
         {invoices.length > 0 && <div className="rc-filter-vrstica">
-          {/* skupni vzorec: [lupa -> razsirjen input] [Filtri -> sheet s pilulami] */}
-          <ArhivFilter iskanje={iskanje} onIskanje={setIskanje} placeholder="Poišči račun ali stranko …" aktivnihFiltrov={(filter !== 'all' ? 1 : 0) + (obdobje !== 'vse' ? 1 : 0)} onPocisti={() => { setFilter('all'); setObdobje('vse'); setObdobjeOd(''); setObdobjeDo(''); }}>
-            <div className="rc-f-skupina">
-              <p className="rc-f-naslov">Status</p>
-              <div className="rc-f-pilule" role="group" aria-label="Status">
-                {(['all', 'open', 'paid'] as const).map(value => <button key={value} type="button" aria-label={value === 'all' ? 'Vsi' : value === 'open' ? 'Odprti' : 'Plačani'} className={filter === value ? 'on' : ''} onClick={() => setFilter(value)}>{value === 'all' ? 'Vsi' : value === 'open' ? 'Odprti' : 'Plačani'}</button>)}
-              </div>
-            </div>
-            <div className="rc-f-skupina">
-              <p className="rc-f-naslov">Obdobje</p>
-              <div className="rc-f-pilule" role="group" aria-label="Obdobje">
-                {([['vse', 'Vse'], ['letos', 'Letos'], ['30', 'Zadnjih 30 dni'], ['obdobje', 'Po meri']] as const).map(([vrednost, napis]) => (
-                  <button key={vrednost} type="button" aria-label={napis} className={obdobje === vrednost ? 'on' : ''} onClick={() => setObdobje(vrednost)}>{napis}</button>
-                ))}
-              </div>
-              {obdobje === 'obdobje' && <div className="rc-f-obdobje">
-                <label className="rc-f-polje">Od<input type="date" value={obdobjeOd} onChange={event => setObdobjeOd(event.target.value)} /></label>
-                <label className="rc-f-polje">Do<input type="date" value={obdobjeDo} onChange={event => setObdobjeDo(event.target.value)} /></label>
-              </div>}
-            </div>
-          </ArhivFilter>
+          {/* skupna orodna vrstica: iskalnik → datum od–do → status pilule */}
+          <ArhivFilter iskanje={iskanje} onIskanje={setIskanje} placeholder="Poišči račun ali stranko …" datumOd={obdobjeOd} datumDo={obdobjeDo} onDatumOd={setObdobjeOd} onDatumDo={setObdobjeDo} statusOznaka="Status" statusVrednost={filter} onStatus={v => setFilter(v as 'all' | 'open' | 'paid')} statusOpcije={[{ vrednost: 'all', oznaka: 'Vsi' }, { vrednost: 'open', oznaka: 'Odprti' }, { vrednost: 'paid', oznaka: 'Plačani' }]} aktivnihFiltrov={(filter !== 'all' ? 1 : 0) + (obdobjeOd || obdobjeDo ? 1 : 0)} onPocisti={() => { setFilter('all'); setObdobjeOd(''); setObdobjeDo(''); }} />
         </div>}
         {visible.length ? <div className={styles.invoiceList}>{visible.map(invoice => {
           const offer = offers.find(item => item.id === invoice.sourceOfferId);

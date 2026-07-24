@@ -8,8 +8,9 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, CaretUp, Eye, FileText, MagnifyingGlass, PencilSimple, PenNib, TextAa, TextB, TextItalic, Warning } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, Eye, FileText, PencilSimple, PenNib, TextAa, TextB, TextItalic, Warning } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
+import ArhivFilter from '@/components/ArhivFilter';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract, type FlowContractStatus } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
@@ -70,9 +71,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const [narEmail, setNarEmail] = useState('');
   const [kartaOdprta, setKartaOdprta] = useState(false);
 
-  /* arhiv: iskanje po naslovu/stranki + filter po datumih (preseti + po meri) */
+  /* arhiv: iskanje po naslovu/stranki + datum od–do (native koledar; prazno ne omejuje) */
   const [iskanje, setIskanje] = useState('');
-  const [obdobje, setObdobje] = useState<'vse' | 'letos' | '30' | 'obdobje'>('vse');
   const [obdobjeOd, setObdobjeOd] = useState('');
   const [obdobjeDo, setObdobjeDo] = useState('');
   /* detajl: razprt povzetek povezane ponudbe */
@@ -413,10 +413,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const prikazane = contracts.filter(contract => {
     const besedilo = `${contract.title} ${contract.client}`.toLocaleLowerCase('sl-SI');
     if (iskanje.trim() && !besedilo.includes(iskanje.trim().toLocaleLowerCase('sl-SI'))) return false;
-    const t = new Date(contract.date).getTime();
-    if (obdobje === 'letos' && new Date(contract.date).getFullYear() !== new Date().getFullYear()) return false;
-    if (obdobje === '30' && t < Date.now() - 30 * 864e5) return false;
-    if (obdobje === 'obdobje') {
+    if (obdobjeOd || obdobjeDo) {
+      const t = new Date(contract.date).getTime();
+      if (isNaN(t)) return false;
       if (obdobjeOd && t < new Date(obdobjeOd + 'T00:00:00').getTime()) return false;
       if (obdobjeDo && t > new Date(obdobjeDo + 'T23:59:59').getTime()) return false;
     }
@@ -572,20 +571,18 @@ export default function ContractWorkspace({ base }: { base: string }) {
       <section className={styles.contractArchive}>
         <div><p className={styles.eyebrow}>SHRANJENE POGODBE</p><h2>Od osnutka do podpisa.</h2></div>
         {contracts.length > 0 && <div className="pg-arhiv-filtri">
-          {/* lupa spredaj — kot iskalnik na Projektih */}
-          <span className="pg-iskalnik-ovoj">
-            <MagnifyingGlass size={16} aria-hidden />
-            <input className="pg-iskalnik" type="search" value={iskanje} onChange={event => setIskanje(event.target.value)} placeholder="Poišči pogodbo ali stranko …" aria-label="Poišči pogodbo ali stranko" />
-          </span>
-          <div className="pg-segpills pg-segpills-obdobje" role="group" aria-label="Obdobje">
-            {([['vse', 'Vse'], ['letos', 'Letos'], ['30', 'Zadnjih 30 dni'], ['obdobje', 'Po meri']] as const).map(([vrednost, napis]) => (
-              <button key={vrednost} type="button" aria-label={napis} className={obdobje === vrednost ? 'on' : ''} onClick={() => setObdobje(vrednost)}>{napis}</button>
-            ))}
-          </div>
-          {obdobje === 'obdobje' && <div className="pg-obdobje-vnos">
-            <label className="pg-polje">Od<input type="date" value={obdobjeOd} onChange={event => setObdobjeOd(event.target.value)} /></label>
-            <label className="pg-polje">Do<input type="date" value={obdobjeDo} onChange={event => setObdobjeDo(event.target.value)} /></label>
-          </div>}
+          {/* skupna orodna vrstica: iskalnik → datum od–do */}
+          <ArhivFilter
+            iskanje={iskanje}
+            onIskanje={setIskanje}
+            placeholder="Poišči pogodbo ali stranko …"
+            datumOd={obdobjeOd}
+            datumDo={obdobjeDo}
+            onDatumOd={setObdobjeOd}
+            onDatumDo={setObdobjeDo}
+            aktivnihFiltrov={obdobjeOd || obdobjeDo ? 1 : 0}
+            onPocisti={() => { setObdobjeOd(''); setObdobjeDo(''); }}
+          />
         </div>}
         {contracts.length && !prikazane.length ? <p className={styles.contractArchiveEmpty}>Ni pogodb za ta filter.</p> : null}
         {prikazane.length ? <div className={styles.contractArchiveTable}>
