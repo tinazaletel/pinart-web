@@ -408,7 +408,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         @media (prefers-reduced-motion:reduce){.arh-blob{animation:none}}
 
         /* sredinski stolpec — sirsi od retainerja (1000px), ker imamo tabele */
-        .arh-vsebina{position:relative;z-index:1;width:min(1000px,94vw);margin:0 auto;padding:clamp(1.6rem,4vw,2.6rem) 0 6rem;min-width:0}
+        /* Arhiv je PREGLEDNA (admin) stran → polna širina kot nadzorna plošča/stranke,
+           NE ozek stolpec (ta velja samo za vprašalnike/urejanje dokumentov). */
+        .arh-vsebina{position:relative;z-index:1;width:100%;max-width:100%;margin:0;padding:clamp(1.6rem,4vw,2.6rem) 0 6rem;min-width:0}
         .arh-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 .3rem}
         .arh-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(2.4rem,6vw,4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
         .arh-uvod{font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72);margin:0 0 2rem;max-width:38rem}
