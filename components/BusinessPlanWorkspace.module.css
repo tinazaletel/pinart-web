@@ -309,9 +309,9 @@
 .prisotnostVrstica { position: relative; }
 .prisotnostVrstica input { width: 100%; min-width: 0; padding-right: 5.8rem; }
 .prisotnostVrstica .rocniGumb { position: absolute; right: .45rem; top: 50%; transform: translateY(-50%); padding: .34rem .75rem; font-size: .72rem; background: oklch(96% .01 87); }
-/* ure prihoda/odhoda v NEVTRALNO sivo (var(--muted) je topel/rjavkast — ni po CGP) */
-.prisotnostVrstica input[type="time"] { color: oklch(60% .004 260); }
-.prisotnostVrstica input[type="time"]::-webkit-datetime-edit { color: oklch(60% .004 260); }
+/* ure prihoda/odhoda v NEVTRALNO sivo, WCAG AA (>=4.5:1 na belem) — ne topla/rjavkasta */
+.prisotnostVrstica input[type="time"] { color: oklch(49% .006 260); }
+.prisotnostVrstica input[type="time"]::-webkit-datetime-edit { color: oklch(49% .006 260); }
 .prisotnostIzpis {
   grid-column: 1 / -1; margin: 0; padding: .95rem 1.05rem;
   border-radius: 1rem; background: oklch(95% .04 295);
