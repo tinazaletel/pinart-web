@@ -1566,7 +1566,10 @@
    ker so imele fiksne minimalne sirine. min-width:0 je NUJEN — mrezni in
    prozni otroci imajo privzeto min-width:auto in se NE skrcijo pod vsebino. */
 @media (max-width: 820px) {
-  .shell, .workspace { max-width: 100%; overflow-x: hidden; }
+  /* clip, NE hidden: overflow-x:hidden na predniku POKVARI position:sticky
+     (glava je odplavala s stranjo namesto da bi se prilepila). clip enako
+     prepreci vodoravno uhajanje, a ne ustvari drsnega konteksta. */
+  .shell, .workspace { max-width: 100%; overflow-x: clip; }
   .workspace > * { min-width: 0; }
   .flowTopBar { gap: .45rem; overflow-x: auto; scrollbar-width: none; }
   .flowTopBar::-webkit-scrollbar { display: none; }
@@ -1712,13 +1715,9 @@
 .pomocPisi a { justify-self: start; margin-top: .5rem; font-weight: 700; color: var(--ink); }
 @media (prefers-reduced-motion: reduce) { .pomocKartica:hover { transform: none; } }
 
-/* ── Drsenje: vrstica se umakne navzdol, vrne se takoj ob drsenju navzgor ── */
+/* ── Drsenje: glava se NE skriva več — Tina (24. 7.): sticky vrstica mora biti
+   VEDNO vidna, na vseh mobilnih straneh enako (levo back+logo, desno meni). ── */
 .flowTopBar { transition: transform .26s cubic-bezier(.22, 1, .36, 1); }
-/* Umik glave SAMO na telefonu: tam je vsak piksel visine dragocen. Na namizju
-   ni razloga, umik pa je pustil prazen pas levo in desno od vsebine. */
-@media (max-width: 980px) {
-  :global(body[data-drsenje='dol']) .flowTopBar { transform: translateY(-100%); }
-}
 
 /* Hamburger ostane viden vedno: ko stran ni na vrhu, dobi mlecno steklo,
    sicer bi crna crta izginila v svetli vsebini pod njo. */
@@ -1791,18 +1790,7 @@
   .meniOdjava { width: 100%; border: 0; background: none; text-align: left; cursor: pointer; color: oklch(52% .16 25); }
 }
 
-/* Hamburger se ob drsenju navzdol umakne z vrstico vred, ob drsenju navzgor
-   se vrne. Premika se SAMO gumb, ne cela stranska vrstica — ta je prednik
-   predala s position:fixed, in transform na predniku bi predal premaknil z njo. */
-@media (max-width: 980px) {
-  .mobileMenu > summary { transition: transform .26s cubic-bezier(.22,1,.36,1), opacity .2s ease-out; }
-  :global(body[data-drsenje='dol']) .mobileMenu:not([open]) > summary {
-    transform: translateY(-160%); opacity: 0; pointer-events: none;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .mobileMenu > summary { transition: none; }
-}
+/* Hamburger se ob drsenju NE skriva več — glava je vedno vidna (Tina, 24. 7.). */
 
 /* Zadnja skupina na telefonu brez razpiralnika: Zgodovina, Nastavitve in Pomoč
    so en dotik stran, ne dva. */

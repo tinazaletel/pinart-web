@@ -5392,7 +5392,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .pozdrav-mehur { white-space: nowrap; }
         /* v pozdravu je <b> INLINE (drugje v mehurckih je block za naslov vprasanja),
            da sta "Hej Tina," in podjetje v ISTI vrstici */
-        .cw .chat-bot .pozdrav-mehur b { display: inline; }
+        .cw .chat-bot .pozdrav-mehur b { display: inline; vertical-align: middle; }
         .cw .pozdrav-select { border: none; background-color: transparent; font-family: inherit; font-weight: 700; font-size: .95rem; color: var(--ink); padding: 0 1.05rem 0 .3rem; margin-left: .1rem; appearance: none; -webkit-appearance: none; cursor: pointer; vertical-align: baseline; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .05rem center; }
         /* izvzem iz .shell select bloat: kompakten select v pozdravnem oblacku -> oblacek hug-a vsebino IN je poravnan z besedilom v isti liniji */
         .cw .pozdrav-select { min-height: 0 !important; font-size: .95rem !important; padding-right: 1.05rem !important; background-position: right .05rem center !important; }
