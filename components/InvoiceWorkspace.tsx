@@ -330,9 +330,9 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   return <div className={`${styles.invoicePage} rc`}>
     {/* ── POGLED: PREGLED (VSTOP za nov racun — kot ContractWorkspace vstop) ── */}
     {pogled === 'pregled' && <section className="rc-kartica rc-sek">
-      <p className={styles.eyebrow}>NOV RAČUN</p>
-      <h2 className="rc-naslov">Iz česa nastane račun?</h2>
-      <p className="rc-uvod">Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita v obrazcu. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje.</p>
+      <div className="rc-chat">
+        <span className="rc-mehur"><b>Iz česa nastane račun?</b><small>Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita v obrazcu. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje.</small></span>
+      </div>
       <div className="rc-segpills" role="group" aria-label="Vir računa">
         <button type="button" aria-label="Iz ponudbe" className={vir === 'ponudba' ? 'on' : ''} onClick={() => setVir('ponudba')}>Iz ponudbe</button>
         <button type="button" aria-label="Samostojen račun" className={vir === 'rocno' ? 'on' : ''} onClick={() => setVir('rocno')}>Samostojen račun</button>
@@ -475,6 +475,13 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-kartica{background:#FCFBF7;border:1px solid rgba(17,17,17,.08);border-radius:20px;padding:1.6rem 1.7rem 1.7rem;box-shadow:0 4px 18px rgba(17,17,17,.04)}
       .rc .rc-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,2.6vw,2.4rem)/1.05 var(--font-serif),Georgia,serif;color:var(--ink);overflow-wrap:anywhere}
       .rc .rc-uvod{margin:0 0 1.4rem;font-size:.92rem;line-height:1.55;color:rgba(17,17,17,.72);max-width:34rem}
+
+      /* chat mehurcek vstopnega vprasanja — isti videz kot RetainerWorkspace .rw-chat/.rw-mehur */
+      .rc .rc-chat{display:flex;align-items:flex-start;gap:.55rem;max-width:90%;margin:0 0 1.2rem}
+      .rc .rc-mehur{position:relative;background:#F7F2FF;border:1px solid rgba(185,160,230,.2);border-radius:18px;border-bottom-left-radius:5px;padding:.85rem 1.25rem .85rem 2.75rem;box-shadow:0 2px 10px rgba(40,25,40,.05)}
+      .rc .rc-mehur::before{content:"";position:absolute;left:.9rem;top:.95rem;width:1.3rem;height:1.3rem;border-radius:50%;background:radial-gradient(58% 48% at 30% 24%,rgba(255,255,255,.92),rgba(255,255,255,0) 62%),conic-gradient(from 210deg,#7C3AED,#EC4899,#F59E0B,#38BDF8,#7C3AED);box-shadow:0 2px 6px rgba(124,58,237,.28)}
+      .rc .rc-mehur b{display:block;color:var(--ink);font-weight:600;font-size:1.02rem}
+      .rc .rc-mehur small{display:block;margin-top:.1rem;color:rgba(17,17,17,.64);font-size:.82rem}
       .rc .rc-polja{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem 1.5rem;margin:0 0 1.3rem;min-width:0}
       .rc .rc-polja>*{min-width:0}
       .rc .rc-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.62)}
@@ -538,6 +545,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         .rc .rc-vsote{width:100%}
       }
       @media (max-width:640px){
+        .rc .rc-chat{max-width:100%}
         .rc .rc-kartica{padding:1.2rem 1rem 1.3rem}
         .rc .rc-polja{grid-template-columns:1fr;gap:1rem}
       }

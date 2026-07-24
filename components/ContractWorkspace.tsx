@@ -443,8 +443,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
       {/* naslov strani samo tu — v pogledu dokumenta/zakljucka ga ni (kot retainer) */}
       <header className={styles.topbar}><div><p className={styles.eyebrow}>POGODBE</p><h1>Dogovor, brez ugibanja.</h1></div></header>
       <section className="pg-sek pg-kartica">
-        <p className={styles.eyebrow}>NOVA POGODBA</p>
-        <h2 className="pg-naslov">Iz česa nastane pogodba?</h2>
+        <div className="pg-chat">
+          <span className="pg-mehur"><b>Iz česa nastane pogodba?</b><small>Izberi vir spodaj — iz ponudbe, brez nje ali naložena od stranke.</small></span>
+        </div>
         <div className="pg-segpills" role="group" aria-label="Vir pogodbe">
           <button type="button" aria-label="Iz ponudbe" className={vir === 'ponudba' ? 'on' : ''} onClick={() => { setVir('ponudba'); setRocnoTelo(false); }}>Iz ponudbe</button>
           <button type="button" aria-label="Brez ponudbe" className={vir === 'rocno' ? 'on' : ''} onClick={() => { setVir('rocno'); setRocnoTelo(false); }}>Brez ponudbe</button>
@@ -682,6 +683,13 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-kartica{background:#FCFBF7;border:1px solid rgba(17,17,17,.08);border-radius:20px;padding:1.6rem 1.7rem 1.7rem;box-shadow:0 4px 18px rgba(17,17,17,.04)}
       .pg-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,2.6vw,2.4rem)/1.05 var(--font-serif),Georgia,serif;color:var(--ink);overflow-wrap:anywhere}
       .pg-uvod{margin:0 0 1.4rem;font-size:.92rem;line-height:1.55;color:rgba(17,17,17,.72);max-width:34rem}
+
+      /* chat mehurcek vstopnega vprasanja — isti videz kot RetainerWorkspace .rw-chat/.rw-mehur */
+      .pg-chat{display:flex;align-items:flex-start;gap:.55rem;max-width:90%;margin:0 0 1.2rem}
+      .pg-mehur{position:relative;background:#F7F2FF;border:1px solid rgba(185,160,230,.2);border-radius:18px;border-bottom-left-radius:5px;padding:.85rem 1.25rem .85rem 2.75rem;box-shadow:0 2px 10px rgba(40,25,40,.05)}
+      .pg-mehur::before{content:"";position:absolute;left:.9rem;top:.95rem;width:1.3rem;height:1.3rem;border-radius:50%;background:radial-gradient(58% 48% at 30% 24%,rgba(255,255,255,.92),rgba(255,255,255,0) 62%),conic-gradient(from 210deg,#7C3AED,#EC4899,#F59E0B,#38BDF8,#7C3AED);box-shadow:0 2px 6px rgba(124,58,237,.28)}
+      .pg-mehur b{display:block;color:var(--ink);font-weight:600;font-size:1.02rem}
+      .pg-mehur small{display:block;margin-top:.1rem;color:rgba(17,17,17,.64);font-size:.82rem}
       .pg-zakljucek{background:#FCFBF7;border:1px solid rgba(17,17,17,.08);border-radius:20px;padding:1.6rem 1.7rem 1.9rem;box-shadow:0 4px 18px rgba(17,17,17,.04)}
 
       .pg-segpills{display:inline-flex;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:999px;padding:.25rem;gap:.15rem;margin:0 0 1.1rem}
@@ -790,6 +798,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
       /* ── mobil: NIC ne sme cez desni rob pri 390px (kot retainer) ── */
       @media (max-width:640px){
+        .pg-chat{max-width:100%}
         .pg-polja{grid-template-columns:1fr;gap:1rem}
         .pg-kartica,.pg-zakljucek{padding:1.2rem 1rem 1.3rem}
         .pg-editor,.pg-editor h1,.pg-editor h2,.pg-editor p,.pg-editor li,.pg-doktelo,.pg-doktelo h1,.pg-doktelo h2,.pg-doktelo p,.pg-doktelo li{overflow-wrap:anywhere}
