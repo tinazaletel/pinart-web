@@ -20,6 +20,23 @@ const duration = (minutes: number) => `${Math.floor(minutes / 60)} h ${minutes %
 const vnosiSklon = (n: number) => { const d = n % 100; return d === 1 ? 'vnos' : d === 2 ? 'vnosa' : d === 3 || d === 4 ? 'vnosi' : 'vnosov'; };
 
 /**
+ * Prisotnost — alternativa štoparici. Namesto merjenja enega projekta se
+ * zabeleži cel delovnik (prihod/odhod/odmor); locena shramba (samo
+ * localStorage), ker se ne veze na posamezen projekt kot stoparica.
+ */
+type Prisotnost = { id: string; datum: string; prihod: string; odhod: string; odmorMin?: number };
+
+/* "6 h 30 min", ali ce ur ni "15 min" — brez odvecne "0 h" pri kratkih razlikah. */
+function izpisMinut(minute: number): string {
+  const m = Math.abs(Math.round(minute));
+  const h = Math.floor(m / 60);
+  const preostanek = m % 60;
+  if (h && preostanek) return `${h} h ${preostanek} min`;
+  if (h) return `${h} h`;
+  return `${preostanek} min`;
+}
+
+/**
  * Isti projekt na isti dan = ena vrstica, a SAMO v prikazu. Vsako merjenje
  * ostane svoj zapis, sicer bi izgubili posamezne case "od – do", ki jih
  * hoces videti pod skupno uro.
@@ -172,6 +189,32 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   const [rocniOdprt, setRocniOdprt] = useState(false);
   const [timerSkrit, setTimerSkrit] = useState(false);
 
+  /* ── Prisotnost: preklop + locena shramba (samo localStorage, brez oblaka) ── */
+  const [nacinCasa, setNacinCasa] = useState<'stoparica' | 'prisotnost'>('stoparica');
+  const [delovnikUre, setDelovnikUre] = useState(8);
+  const [prisotnosti, setPrisotnosti] = useState<Prisotnost[]>([]);
+  const [prihodCas, setPrihodCas] = useState('');
+  const [odhodCas, setOdhodCas] = useState('');
+  const [odmorCas, setOdmorCas] = useState('');
+
+  useEffect(() => {
+    const shranjeneUre = Number(localStorage.getItem('pinart-flow-delovnik-ure'));
+    if (shranjeneUre > 0) setDelovnikUre(shranjeneUre);
+    try {
+      const shranjeno = JSON.parse(localStorage.getItem('pinart-flow-prisotnost') || '[]');
+      if (Array.isArray(shranjeno)) {
+        setPrisotnosti(shranjeno);
+        /* ce je za danes ze vnos, ga takoj ponudimo v poljih (nadaljevanje popravka) */
+        const danes = new Date().toISOString().slice(0, 10);
+        const danasnji = shranjeno.find((x: Prisotnost) => x.datum === danes);
+        if (danasnji) {
+          setPrihodCas(danasnji.prihod); setOdhodCas(danasnji.odhod);
+          setOdmorCas(danasnji.odmorMin ? String(danasnji.odmorMin) : '');
+        }
+      }
+    } catch { /* poskodovana shramba — panel ostane prazen */ }
+  }, []);
+
   /* Ko med merjenjem odscrollaš do dnevnika, štoparica izgine z zaslona.
      Zato jo takrat pokažemo kot plavajoč pas na dnu — čas mora biti ves čas viden. */
   const timerRef2 = useRef<HTMLElement | null>(null);
@@ -312,6 +355,44 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     if (!jeUra(od) || !jeUra(doU)) return 0;
     const [a, b] = [od, doU].map(v => Number(v.slice(0, 2)) * 60 + Number(v.slice(3, 5)));
     return b > a ? b - a : b + 24 * 60 - a;
+  };
+
+  /* ── Prisotnost: izracun in shranjevanje ─────────────────────────────────
+     Isto merjenje "od – do" kot pri stoparici (minuteMed), le da tu meri cel
+     delovnik, ne enega projekta. */
+  const prisotnostOdmor = Number(odmorCas) || 0;
+  const prisotnostMinute = minuteMed(prihodCas, odhodCas);
+  const prisotnostOpravljeno = prisotnostMinute ? Math.max(0, prisotnostMinute - prisotnostOdmor) : 0;
+  const prisotnostOstane = delovnikUre * 60 - prisotnostOpravljeno;
+
+  const zdajHHMM = () => {
+    const zdaj = new Date();
+    return `${String(zdaj.getHours()).padStart(2, '0')}:${String(zdaj.getMinutes()).padStart(2, '0')}`;
+  };
+
+  const shraniDelovnik = (ure: number) => {
+    const varno = ure > 0 ? ure : 8;
+    setDelovnikUre(varno);
+    localStorage.setItem('pinart-flow-delovnik-ure', String(varno));
+  };
+
+  /* Isti dan prepise obstojeci vnos (id ostane), sicer nov zapis na vrh dnevnika. */
+  const shraniPrisotnost = () => {
+    if (!prihodCas || !odhodCas) { setNotice('Vpiši prihod in odhod pred shranjevanjem.'); return; }
+    const danes = danesISO();
+    const obstojeci = prisotnosti.find(x => x.datum === danes);
+    const zapis: Prisotnost = {
+      id: obstojeci?.id || crypto.randomUUID(), datum: danes,
+      prihod: prihodCas, odhod: odhodCas, odmorMin: prisotnostOdmor || undefined,
+    };
+    const next = obstojeci ? prisotnosti.map(x => (x.id === zapis.id ? zapis : x)) : [zapis, ...prisotnosti];
+    setPrisotnosti(next); localStorage.setItem('pinart-flow-prisotnost', JSON.stringify(next));
+    setNotice('Prisotnost je shranjena v dnevnik.');
+  };
+
+  const izbrisiPrisotnost = (id: string) => {
+    const next = prisotnosti.filter(x => x.id !== id);
+    setPrisotnosti(next); localStorage.setItem('pinart-flow-prisotnost', JSON.stringify(next));
   };
 
   const dodajRocno = (event: FormEvent<HTMLFormElement>) => {
@@ -474,7 +555,17 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       </form>}
 
       <section className={styles.timer} id="timer" ref={timerRef2}>
-        <header><p>{view === 'time' ? '01' : '02'} · CENA & ČAS</p><h2>Ali se ti je delo po tej ceni splačalo?</h2><span>Timer je zaseben. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.</span></header>
+        <header><p>{view === 'time' ? '01' : '02'} · ČAS</p><h2>Ali se ti je delo po tej ceni splačalo?</h2><span>Timer je zaseben. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.</span></header>
+
+        {/* Stoparica meri en projekt, Prisotnost meri cel delovnik (prihod–odhod).
+            Ce ravno teces stoparico, ostane vidna tudi tu — glej vejo "running" spodaj. */}
+        <div className={styles.nacinCasaZavihek}>
+          <div className={styles.preklop} role="group" aria-label="Način beleženja časa">
+            <button type="button" data-izbran={nacinCasa === 'stoparica'} onClick={() => setNacinCasa('stoparica')}>Štoparica</button>
+            <button type="button" data-izbran={nacinCasa === 'prisotnost'} onClick={() => setNacinCasa('prisotnost')}>Prisotnost</button>
+          </div>
+        </div>
+
         {pending ? <form className={styles.timerForm} onSubmit={confirmTime}>
           <div className={styles.reviewTitle}><strong>Preglej zaključeni vnos</strong><span>{pending.projectName} · {pending.serviceName || 'brez oznake storitve'}</span></div>
           <label><span>Ure</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
@@ -519,7 +610,39 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
                 : <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><rect x="7" y="5.5" width="3.6" height="13" rx="1.1" /><rect x="13.4" y="5.5" width="3.6" height="13" rx="1.1" /></svg>}
             </button>
           </div>
-        </div> : <form className={styles.timerForm} onSubmit={start}>
+        </div> : nacinCasa === 'prisotnost' ? (
+          <div className={styles.prisotnost}>
+            <label className={styles.prisotnostCilj}>
+              <span>Cilj delovnika (ur)</span>
+              <input type="number" min="1" max="24" step="0.5" value={delovnikUre}
+                onChange={e => shraniDelovnik(Number(e.target.value))} />
+            </label>
+            <div className={styles.reviewTitle}><strong>Danes</strong><span>Prihod, odhod in odmor — preostanek do cilja se izračuna sam.</span></div>
+            <label>
+              <span>Prihod</span>
+              <div className={styles.prisotnostVrstica}>
+                <input type="time" step="60" value={prihodCas} onChange={e => setPrihodCas(e.target.value)} />
+                <button type="button" className={styles.rocniGumb} onClick={() => setPrihodCas(zdajHHMM())}>Prišel/-a</button>
+              </div>
+            </label>
+            <label>
+              <span>Odhod</span>
+              <div className={styles.prisotnostVrstica}>
+                <input type="time" step="60" value={odhodCas} onChange={e => setOdhodCas(e.target.value)} />
+                <button type="button" className={styles.rocniGumb} onClick={() => setOdhodCas(zdajHHMM())}>Odšel/-a</button>
+              </div>
+            </label>
+            <label><span>Odmor (min) <small>ni obvezno</small></span><input type="number" min="0" step="5" placeholder="0" value={odmorCas} onChange={e => setOdmorCas(e.target.value)} /></label>
+            <p className={styles.prisotnostIzpis}>
+              {!prihodCas || !odhodCas
+                ? <span>Vpiši prihod in odhod, pa ti povem, koliko ur ostane do cilja.</span>
+                : <>Opravljeno <strong>{izpisMinut(prisotnostOpravljeno)}</strong> · {prisotnostOstane >= 0
+                    ? <>ostane <strong>{izpisMinut(prisotnostOstane)}</strong></>
+                    : <>+{izpisMinut(-prisotnostOstane)} viška</>}</>}
+            </p>
+            <button type="button" onClick={shraniPrisotnost}>Shrani v dnevnik</button>
+          </div>
+        ) : <form className={styles.timerForm} onSubmit={start}>
           <label><span>Projekt ali stranka</span><input name="project" required placeholder="npr. Nova identiteta" /></label>
           <label><span>Storitev</span><input name="service" placeholder="npr. oblikovanje logotipa" /></label>
           <label><span>Vrednost tega dela</span><input name="amount" type="number" min="0" step="10" placeholder="Določiš lahko tudi ob zaključku" /></label>
@@ -534,6 +657,29 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             </button>
           </div>
         </form>}
+
+        {nacinCasa === 'prisotnost' && !!prisotnosti.length && (
+          <div className={styles.prisotnostDnevnik}>
+            <div className={styles.reviewTitle}><strong>Dnevnik prisotnosti</strong><span>Vsi vpisani dnevi, najnovejši zgoraj.</span></div>
+            {[...prisotnosti].sort((a, b) => b.datum.localeCompare(a.datum)).map(p => {
+              const minute = minuteMed(p.prihod, p.odhod);
+              const opravljeno = minute ? Math.max(0, minute - (p.odmorMin || 0)) : 0;
+              const ostane = delovnikUre * 60 - opravljeno;
+              return (
+                <div key={p.id} className={styles.prisotnostVnos}>
+                  <span>{kratkiDatum(obDnevu(p.datum))}</span>
+                  <span>{p.prihod} – {p.odhod}</span>
+                  <span>{p.odmorMin ? `odmor ${p.odmorMin} min` : '—'}</span>
+                  <b>{izpisMinut(opravljeno)}</b>
+                  <em>{ostane >= 0 ? `ostane ${izpisMinut(ostane)}` : `+${izpisMinut(-ostane)} viška`}</em>
+                  <button type="button"
+                    onClick={() => { if (confirm(`Izbrišem vnos prisotnosti za ${kratkiDatum(obDnevu(p.datum))}?`)) izbrisiPrisotnost(p.id); }}
+                    aria-label={`Izbriši vnos prisotnosti za ${p.datum}`}>×</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {rocniOdprt && !running && !pending && (
           <form className={styles.timerForm} onSubmit={dodajRocno}>

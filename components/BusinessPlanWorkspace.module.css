@@ -32,11 +32,11 @@
 .plan h2, .timer h2, .history h2 { margin: 0; font: 500 1.85rem/1.05 var(--font-serif), Georgia, serif; }
 .plan header span, .timer header span { display: block; margin-top: .55rem; color: var(--muted); }
 .fields { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
-.fields label, .notes, .timerForm label { position: relative; display: grid; gap: .4rem; font-weight: 700; font-size: .84rem; }
-.fields input, .notes textarea, .timerForm input, .timerForm select { width: 100%; min-height: 3.2rem; padding: .75rem .9rem; border: 1px solid var(--line); border-radius: .85rem; background: white; color: var(--ink); font: inherit; font-size: 1rem; box-sizing: border-box; }
+.fields label, .notes, .timerForm label, .prisotnost label { position: relative; display: grid; gap: .4rem; font-weight: 700; font-size: .84rem; }
+.fields input, .notes textarea, .timerForm input, .timerForm select, .prisotnost input { width: 100%; min-height: 3.2rem; padding: .75rem .9rem; border: 1px solid var(--line); border-radius: .85rem; background: white; color: var(--ink); font: inherit; font-size: 1rem; box-sizing: border-box; }
 .fields label small { position: absolute; right: .9rem; bottom: 1rem; }
 .notes textarea { min-height: 7rem; resize: vertical; }
-.plan > button, .timerForm > button, .running > button, .glavnaVrsta > button:first-child { min-height: 3.25rem; border: 0; border-radius: .9rem; background: var(--ink); color: white; font: inherit; font-size: 1rem; cursor: pointer; }
+.plan > button, .timerForm > button, .running > button, .glavnaVrsta > button:first-child, .prisotnost > button { min-height: 3.25rem; border: 0; border-radius: .9rem; background: var(--ink); color: white; font: inherit; font-size: 1rem; cursor: pointer; }
 .timerForm { display: grid; gap: .8rem; }
 .reviewTitle { display: grid; gap: .25rem; padding: .9rem 1rem; border-radius: .9rem; background: oklch(95% .04 295); }
 .reviewTitle span { color: var(--muted); font-size: .84rem; }
@@ -189,7 +189,12 @@
 .projektUre small { color: var(--muted); font-size: .8rem; }
 .empty { padding: 2rem 0; border-top: 1px solid var(--line); color: var(--muted); }
 @media (max-width: 1100px) { .summary { grid-template-columns: 1fr 1fr; } .layout { grid-template-columns: 1fr; } }
-@media (max-width: 700px) { .page { min-width: 0; }.summary { display: none; }.fields { grid-template-columns: 1fr; }.plan, .timer, .history { min-width: 0; padding: 1rem; }.history header { align-items: flex-start; flex-direction: column; gap: .4rem; }.history article { grid-template-columns: minmax(0, 1fr) auto; gap: .65rem; }.history article > div { min-width: 0; }.history article > div span { overflow-wrap: anywhere; }.history article > b, .history article > em { justify-self: start; }.history article > b { grid-column: 1; }.history article > em { grid-column: 1; }.history article > .akcije { grid-column: 1 / -1; justify-self: start; gap: .5rem; padding-top: .2rem; }.history article > .akcije .izbrisi { min-width: 2.75rem; min-height: 2.75rem; }.running button { min-height: 3rem; } }
+@media (max-width: 700px) { .page { min-width: 0; }.summary { display: none; }.fields { grid-template-columns: 1fr; }.plan, .timer, .history { min-width: 0; padding: 1rem; }.history header { align-items: flex-start; flex-direction: column; gap: .4rem; }.history article { grid-template-columns: minmax(0, 1fr) auto; gap: .65rem; }.history article > div { min-width: 0; }.history article > div span { overflow-wrap: anywhere; }.history article > b, .history article > em { justify-self: start; }.history article > b { grid-column: 1; }.history article > em { grid-column: 1; }.history article > .akcije { grid-column: 1 / -1; justify-self: start; gap: .5rem; padding-top: .2rem; }.history article > .akcije .izbrisi { min-width: 2.75rem; min-height: 2.75rem; }.running button { min-height: 3rem; }
+  /* Prisotnost na telefonu: en stolpec, vrstica dnevnika se prelomi namesto da rezi rob */
+  .prisotnostCilj { max-width: none; }
+  .prisotnostVnos { display: flex; flex-wrap: wrap; row-gap: .2rem; column-gap: .7rem; }
+  .prisotnostVnos > button { margin-left: auto; }
+}
 
 /* ── Dnevnik po dnevih + ročni vnos / urejanje ────────────────────────────── */
 .dan { display: contents; }
@@ -286,6 +291,36 @@
   font: 650 .78rem var(--font-sans), sans-serif; white-space: nowrap; cursor: pointer;
 }
 .rocniGumb:hover { border-color: var(--ink); }
+
+/* ── Preklop Štoparica / Prisotnost — nad merjenjem, ista pilula kot .preklop ── */
+.nacinCasaZavihek { display: flex; margin-bottom: .2rem; }
+
+/* ── Prisotnost: cilj delovnika, prihod/odhod/odmor, živ izpis, dnevnik ──── */
+.prisotnost { display: grid; gap: .8rem; }
+.prisotnostCilj { max-width: 11rem; }
+.prisotnostCilj input { text-align: center; }
+.prisotnostVrstica { display: flex; gap: .5rem; align-items: center; }
+.prisotnostVrstica input { flex: 1; min-width: 0; }
+.prisotnostIzpis {
+  grid-column: 1 / -1; margin: 0; padding: .95rem 1.05rem;
+  border-radius: 1rem; background: oklch(95% .04 295);
+  color: var(--muted); font-size: .9rem; line-height: 1.5;
+}
+.prisotnostIzpis strong { font: 500 1.3rem var(--font-serif), Georgia, serif; color: var(--ink); }
+.prisotnostDnevnik { display: grid; gap: .1rem; margin-top: .3rem; }
+.prisotnostVnos {
+  display: grid; grid-template-columns: 5.2rem 7.5rem 6rem auto auto 1.6rem;
+  align-items: center; gap: .6rem;
+  padding: .55rem .2rem; border-top: 1px solid var(--line);
+  color: var(--muted); font-size: .84rem;
+}
+.prisotnostVnos b { color: var(--ink); font-weight: 650; font-variant-numeric: tabular-nums; }
+.prisotnostVnos em { color: var(--ink); font-size: .82rem; font-style: normal; }
+.prisotnostVnos > button {
+  justify-self: end; padding: .2rem .5rem; border: 0; background: none;
+  color: var(--muted); font-size: 1.05rem; line-height: 1; cursor: pointer;
+}
+.prisotnostVnos > button:hover { color: var(--ink); }
 
 /* Nadaljuj / Uredi v vrstici dnevnika */
 /* prej skoraj neviden: obrobo je pobralo splosno .history article button pravilo,
