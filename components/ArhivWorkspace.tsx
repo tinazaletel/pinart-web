@@ -437,7 +437,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-detajl{width:min(42rem,94vw);display:flex;flex-direction:column;gap:.2rem}
         .arh-detajl h2{margin:.4rem 0 1.2rem;font-family:var(--font-serif),Didot,serif;font-weight:600;font-size:clamp(1.8rem,3vw,2.6rem);line-height:1.05;color:var(--ink)}
         /* lepljivi X ostane v kotu med drsenjem (kopija .pg-det-x) */
-        .arh-det-x{position:sticky;top:0;z-index:6;align-self:flex-end;flex:0 0 auto;display:grid;place-items:center;width:2.2rem;height:2.2rem;margin:0 0 -2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
+        .arh-det-x{position:sticky;top:.4rem;z-index:6;align-self:flex-end;flex:0 0 auto;display:grid;place-items:center;width:2.2rem;height:2.2rem;margin:0 0 -2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
         .arh-det-x:hover{background:var(--ink);color:var(--paper)}
         .arh-det-meta{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;min-width:0;margin-bottom:.6rem}
         .arh-det-meta span{display:grid;gap:.25rem;padding:.7rem;border-radius:.7rem;background:oklch(94% .025 87);min-width:0}

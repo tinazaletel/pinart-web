@@ -86,20 +86,17 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
     if (!i) return;
     if (typeof i.showPicker === 'function') i.showPicker(); else i.focus();
   };
-  const datumPolje = (vrednost: string, onChange: (v: string) => void, aria: string, prazno: string) => (
+  const datumChip = (vrednost: string, onChange: (v: string) => void, aria: string, prazno: string) => (
     <span className="af-datum-polje" role="button" tabIndex={0} aria-label={aria}
       onClick={odpriPolje} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); odpriPolje(e); } }}>
-      <span className="af-datum-tekst">{formatSl(vrednost) || prazno}</span>
+      <span className={'af-datum-tekst' + (vrednost ? '' : ' af-prazno')}>{formatSl(vrednost) || prazno}</span>
       <input className="af-datum-nativni" type="date" value={vrednost} onChange={event => onChange(event.target.value)} tabIndex={-1} aria-hidden="true" />
     </span>
   );
-  const datumPolja = (
-    <>
-      {datumPolje(datumOd, onDatumOd, 'Datum od', 'Od')}
-      <span className="af-datum-crtica" aria-hidden>–</span>
-      {datumPolje(datumDo, onDatumDo, 'Datum do', 'Do')}
-    </>
-  );
+  /* brez besed Od/Do in brez okvirjev; ko je prazno -> "Vsi datumi" */
+  const datumPolja = (!datumOd && !datumDo)
+    ? datumChip(datumOd, onDatumOd, 'Datum', 'Vsi datumi')
+    : <>{datumChip(datumOd, onDatumOd, 'Datum od', '…')}<span className="af-datum-crtica" aria-hidden>–</span>{datumChip(datumDo, onDatumDo, 'Datum do', '…')}</>;
 
   return <div className="af">
     <div className="af-vrstica">
@@ -194,10 +191,12 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
         /* datum: samo ikona + dve ozki date polji + crtica; besed Od/Do NI */
         .af-datum{flex:0 0 auto;min-width:0;display:inline-flex;align-items:center;gap:.28rem;color:color-mix(in oklch,var(--ink,#111) 45%,transparent)}
         .af-datum > svg{flex:none}
-        /* cip s SLOVENSKIM zapisom (24.7.2026); native polje je skrito znotraj */
-        .af-datum-polje{position:relative;display:inline-flex;align-items:center;min-width:0;padding:.38rem .7rem;border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);color:var(--ink,#111);font-weight:600;cursor:pointer;white-space:nowrap}
-        .af-datum-polje:hover{border-color:var(--ink,#111)}
+        /* BREZ okvirja — samo slovenski zapis (24.7.2026), native polje skrito znotraj.
+           Krogec koledarja levo je edini "gumb"; datum je čist besedilni klik. */
+        .af-datum-polje{position:relative;display:inline-flex;align-items:center;min-width:0;padding:.2rem .1rem;border:none;background:none;color:var(--ink,#111);font-weight:600;cursor:pointer;white-space:nowrap}
+        .af-datum-polje:hover .af-datum-tekst{text-decoration:underline;text-underline-offset:.18em}
         .af-datum-tekst{font-size:.85rem;color:var(--ink,#111)}
+        .af-datum-tekst.af-prazno{color:color-mix(in oklch,var(--ink,#111) 48%,transparent);font-weight:500}
         .af-datum-crtica{color:color-mix(in oklch,var(--ink,#111) 40%,transparent);font-weight:700}
         .af-akcija{margin-left:auto;display:inline-flex;flex:0 0 auto;min-width:0}
         /* status dropdown kompakten na namizju (premaga .shell font 16px) */
