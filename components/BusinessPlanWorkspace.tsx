@@ -783,12 +783,6 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       <header><p>PRISOTNOST</p><h2>Mesečna evidenca delovnega časa</h2><span>Prihod, odhod, malica in vrsta dneva — mesečni pregled in napredek proti cilju se izračunata sama.</span></header>
 
       <div className={styles.prisotnost}>
-        <label className={styles.prisotnostCilj}>
-          <span>Cilj delovnika (ur)</span>
-          <input type="number" min="1" max="24" step="0.5" value={delovnikUre}
-            onChange={e => shraniDelovnik(Number(e.target.value))} />
-        </label>
-
         <label className={styles.danPolje}>
           <span>Dan vnosa</span>
           <span className={styles.danVrstica}>
@@ -798,6 +792,12 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             <input type="date" value={prisotnostDan} onChange={e => odpriPrisotnostDan(e.target.value)} />
           </span>
           <small>{new Date(`${prisotnostDan}T12:00:00`).toLocaleDateString('sl-SI', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</small>
+        </label>
+
+        <label className={styles.prisotnostCilj}>
+          <span>Cilj delovnika (ur)</span>
+          <input type="number" min="1" max="24" step="0.5" value={delovnikUre}
+            onChange={e => shraniDelovnik(Number(e.target.value))} />
         </label>
 
         <label>

@@ -301,8 +301,10 @@
 .prisotnost > .komentarPolje, .prisotnost > .prisotnostIzpis, .prisotnost > button { grid-column: 1 / -1; }
 .prisotnostCilj { max-width: 11rem; }
 .prisotnostCilj input { text-align: center; }
-.prisotnostVrstica { display: flex; gap: .5rem; align-items: center; }
-.prisotnostVrstica input { flex: 1; min-width: 0; }
+/* gumb Prišel/Odšel je ZNOTRAJ inputa, poravnan desno */
+.prisotnostVrstica { position: relative; }
+.prisotnostVrstica input { width: 100%; min-width: 0; padding-right: 5.8rem; }
+.prisotnostVrstica .rocniGumb { position: absolute; right: .45rem; top: 50%; transform: translateY(-50%); padding: .34rem .75rem; font-size: .72rem; background: oklch(96% .01 87); }
 .prisotnostIzpis {
   grid-column: 1 / -1; margin: 0; padding: .95rem 1.05rem;
   border-radius: 1rem; background: oklch(95% .04 295);
