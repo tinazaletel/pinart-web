@@ -897,8 +897,11 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       {/* iskanje + preklop pogleda: "po dnevih" med delom, "po projektih" ko te
           nekdo cez pol leta vpraša, koliko ur je šlo v dolocen projekt */}
       {!omejeno && !!entries.length && <div className={styles.dnevnikVrh}>
-        <input type="search" value={iskanje} onChange={e => setIskanje(e.target.value)}
-          placeholder="Išči projekt ali storitev…" aria-label="Išči po dnevniku" className={styles.isci} />
+        <span className={styles.isciOvoj}>
+          <svg className={styles.isciIkona} viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+          <input type="search" value={iskanje} onChange={e => setIskanje(e.target.value)}
+            placeholder="Išči projekt ali storitev…" aria-label="Išči po dnevniku" className={styles.isci} />
+        </span>
         <div className={styles.preklop} role="group" aria-label="Pogled dnevnika">
           <button type="button" data-izbran={dnevnikPogled === 'dnevi'} onClick={() => setDnevnikPogled('dnevi')}>Po dnevih</button>
           <button type="button" data-izbran={dnevnikPogled === 'projekti'} onClick={() => setDnevnikPogled('projekti')}>Po projektih</button>
