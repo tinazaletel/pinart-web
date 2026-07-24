@@ -627,7 +627,7 @@
 .clientDirectory, .clientProfile { min-height: 32rem; padding: 1rem; border: 1px solid var(--line); border-radius: 1.4rem; background: oklch(98% .008 87 / .92); }
 .clientDirectory > header { padding: .4rem .4rem 1rem; }
 .clientDirectory > button { width: 100%; display: grid; grid-template-columns: auto minmax(8rem, 1fr) auto auto; align-items: center; gap: .7rem; min-height: 4.5rem; padding: .65rem .7rem; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
-.clientDirectory > button:hover, .clientDirectory .clientActive { border-radius: .8rem; background: linear-gradient(130deg, oklch(95% .04 295), oklch(94% .035 165)); }
+.clientDirectory > button:hover, .clientDirectory .clientActive { background: linear-gradient(130deg, oklch(95% .04 295), oklch(94% .035 165)); }
 .clientDirectory strong, .clientDirectory small { display: block; }
 .clientDirectory strong { font-size: .68rem; }
 .clientDirectory small { margin-top: .2rem; color: var(--muted); font-size: .53rem; }
@@ -652,8 +652,15 @@
 .clientFinance span:nth-child(3) { background: oklch(94% .04 295); }
 .clientDocuments { margin-top: 1rem; padding: .9rem; border: 1px solid var(--line); border-radius: .85rem; }
 .clientDocuments h3 { margin: 0 0 .5rem; font: 600 1rem var(--font-serif), Georgia, serif; }
-.clientDocuments > span { display: grid; grid-template-columns: 5rem 1fr; gap: .5rem; padding: .55rem 0; border-top: 1px solid var(--line); font-size: .6rem; }
+.clientDocuments > span { display: grid; grid-template-columns: 5rem 1fr auto; align-items: center; gap: .5rem; padding: .55rem 0; border-top: 1px solid var(--line); font-size: .6rem; }
 .clientDocuments b { font-size: .53rem; letter-spacing: .06em; text-transform: uppercase; }
+.clientDocIme { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* status = pilula s piko, enak jezik kot povsod; brez ozadja (tih) */
+.docPika { display: inline-flex; align-items: center; gap: .3rem; justify-self: end; font-style: normal; font-size: .55rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.docPika::before { content: ''; width: .4rem; height: .4rem; border-radius: 50%; background: var(--pika, oklch(62% .02 70)); flex: none; }
+.docPika[data-tone='success'] { --pika: oklch(62% .15 150); }
+.docPika[data-tone='waiting'] { --pika: oklch(72% .16 75); }
+.docPika[data-tone='danger'] { --pika: oklch(58% .19 25); }
 .clientDocuments p { color: var(--muted); font-size: .6rem; }
 .deleteClient { margin-top: 1rem; padding: .6rem 0; border: 0; border-bottom: 1px solid currentColor; background: none; color: oklch(52% .16 25); font: 750 .57rem var(--font-sans), sans-serif; cursor: pointer; }
 .clientProfileEmpty { min-height: 29rem; display: grid; place-items: center; align-content: center; text-align: center; }
