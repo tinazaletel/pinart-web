@@ -8,7 +8,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, CaretUp, Eye, FileText, PencilSimple, PenNib, TextAa, TextB, TextItalic, Warning } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, Eye, FileText, MagnifyingGlass, PencilSimple, PenNib, TextAa, TextB, TextItalic, Warning } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract, type FlowContractStatus } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
@@ -572,7 +572,11 @@ export default function ContractWorkspace({ base }: { base: string }) {
       <section className={styles.contractArchive}>
         <div><p className={styles.eyebrow}>SHRANJENE POGODBE</p><h2>Od osnutka do podpisa.</h2></div>
         {contracts.length > 0 && <div className="pg-arhiv-filtri">
-          <input className="pg-iskalnik" type="search" value={iskanje} onChange={event => setIskanje(event.target.value)} placeholder="Poišči pogodbo ali stranko …" aria-label="Poišči pogodbo ali stranko" />
+          {/* lupa spredaj — kot iskalnik na Projektih */}
+          <span className="pg-iskalnik-ovoj">
+            <MagnifyingGlass size={16} aria-hidden />
+            <input className="pg-iskalnik" type="search" value={iskanje} onChange={event => setIskanje(event.target.value)} placeholder="Poišči pogodbo ali stranko …" aria-label="Poišči pogodbo ali stranko" />
+          </span>
           <div className="pg-segpills pg-segpills-obdobje" role="group" aria-label="Obdobje">
             {([['vse', 'Vse'], ['letos', 'Letos'], ['30', 'Zadnjih 30 dni'], ['obdobje', 'Po meri']] as const).map(([vrednost, napis]) => (
               <button key={vrednost} type="button" aria-label={napis} className={obdobje === vrednost ? 'on' : ''} onClick={() => setObdobje(vrednost)}>{napis}</button>
@@ -931,8 +935,17 @@ export default function ContractWorkspace({ base }: { base: string }) {
       /* arhiv: iskalnik + datumski filtri (mobilno prijazno: nic cez desni rob) */
       .pg-arhiv-filtri{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem .8rem;margin:0 0 1rem;min-width:0}
       .pg-arhiv-filtri>*{min-width:0}
-      .pg-iskalnik{flex:1 1 15rem;width:100%;max-width:24rem;min-width:0;box-sizing:border-box;font:inherit;font-size:.92rem;font-weight:500;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:999px;padding:.55rem 1rem}
-      .pg-iskalnik:focus{outline:none;border-color:var(--ink)}
+      /* ovoj z lupo: ikona sedi v pilulo, input brez svojega roba */
+      .pg-iskalnik-ovoj{flex:1 1 15rem;max-width:24rem;min-width:0;display:flex;align-items:center;gap:.45rem;box-sizing:border-box;background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:999px;padding:0 .5rem 0 .9rem;color:rgba(17,17,17,.55)}
+      .pg-iskalnik-ovoj:focus-within{border-color:var(--ink)}
+      .pg-iskalnik{flex:1;width:100%;min-width:0;box-sizing:border-box;font:inherit;font-size:.92rem;font-weight:500;color:var(--ink);background:none;border:none;padding:.55rem .5rem .55rem 0}
+      .pg-iskalnik:focus{outline:none}
+      /* pilule obdobja: na ozkem vodoravni drs (kot pilule na landingu), da "Po meri" ne strli ven */
+      @media (max-width:640px){
+        .pg-segpills-obdobje{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;max-width:100%;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+        .pg-segpills-obdobje::-webkit-scrollbar{display:none}
+        .pg-segpills-obdobje button{white-space:nowrap;flex:none}
+      }
       .pg-segpills-obdobje{margin:0}
       .pg-obdobje-vnos{display:flex;flex-wrap:wrap;gap:.6rem 1rem;width:100%;min-width:0}
       .pg-obdobje-vnos .pg-polje{flex:1 1 9rem;max-width:12rem}
