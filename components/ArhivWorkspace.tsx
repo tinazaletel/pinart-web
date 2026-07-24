@@ -12,6 +12,7 @@
    vzorec iz ContractWorkspace (styles.detailBackdrop/detailPanel + .pg-det-x). */
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { CaretDown, CaretUp, FileText, Receipt, Scroll, Warning } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, type FlowContract, type FlowContractStatus, type FlowInvoice, type FlowOffer, type FlowOfferStatus } from '@/lib/pinartFlowStore';
@@ -19,6 +20,7 @@ import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import ProjectsWorkspace from './ProjectsWorkspace';
 import ArhivFilter from './ArhivFilter';
 import AmbientBubbles from '@/components/AmbientBubbles';
+import MetricIcon from '@/components/MetricIcon';
 
 type Zavihek = 'projekti' | 'ponudbe' | 'pogodbe' | 'racuni';
 
@@ -109,6 +111,14 @@ export default function ArhivWorkspace({ base }: { base: string }) {
     return vObdobju(r.date, obdobjeOd, obdobjeDo);
   }), [invoices, isk, placano, obdobjeOd, obdobjeDo]);
 
+  /* povzetek zavihka Racuni (preseljeno iz InvoiceWorkspace, ki zdaj SAMO
+     ustvarja nove racune) — vedno iz CELOTNEGA flow.invoices, ne od filtra */
+  const racuniMetrike = useMemo(() => ({
+    izdano: invoices.reduce((sum, item) => sum + item.amount, 0),
+    placano: invoices.filter(item => item.paid).reduce((sum, item) => sum + item.amount, 0),
+    odprto: invoices.filter(item => !item.paid).reduce((sum, item) => sum + item.amount, 0),
+  }), [invoices]);
+
   /* stevilo aktivnih filtrov (za stevec na gumbu Filtri v ArhivFilter) */
   const datumAktiven = obdobjeOd !== '' || obdobjeDo !== '';
   const stFiltrov = (datumAktiven ? 1 : 0)
@@ -163,6 +173,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               statusOpcije={[{ vrednost: 'vse', oznaka: 'Vse' }, ...(Object.entries(offerLabels) as Array<[FlowOfferStatus, string]>).map(([v, n]) => ({ vrednost: v, oznaka: n }))]}
               aktivnihFiltrov={stFiltrov}
               onPocisti={pocistiFiltre}
+              akcija={<Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>+ Nova ponudba</Link>}
             />
 
             {!offers.length ? (
@@ -192,6 +203,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         {/* ── POGODBE ── */}
         {zavihek === 'pogodbe' && (
           <section className="arh-panel">
+            {/* štetje statusov odstranjeno — status je že v dropdown filtru */}
             <ArhivFilter
               iskanje={iskanje}
               onIskanje={setIskanje}
@@ -206,6 +218,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               statusOpcije={[{ vrednost: 'vse', oznaka: 'Vse' }, ...(Object.entries(contractLabels) as Array<[FlowContractStatus, string]>).map(([v, n]) => ({ vrednost: v, oznaka: n }))]}
               aktivnihFiltrov={stFiltrov}
               onPocisti={pocistiFiltre}
+              akcija={<Link className="af-akcija-gumb" href={`${base}/kalkulator/pogodbe`}>+ Nova pogodba</Link>}
             />
 
             {!contracts.length ? (
@@ -238,6 +251,20 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         {/* ── RACUNI ── */}
         {zavihek === 'racuni' && (
           <section className="arh-panel">
+            {invoices.length > 0 && <div className="arh-metrike">
+              <article className="arh-metrika arh-metrika-izdano">
+                <small>Izdano</small><strong>{eur(racuniMetrike.izdano)}</strong><span>{invoices.length} računov</span>
+                <b className="arh-metrika-ikona"><MetricIcon type="document" /></b>
+              </article>
+              <article className="arh-metrika arh-metrika-placano">
+                <small>Plačano</small><strong>{eur(racuniMetrike.placano)}</strong><span>potrjena plačila</span>
+                <b className="arh-metrika-ikona"><MetricIcon type="paid" /></b>
+              </article>
+              <article className="arh-metrika arh-metrika-odprto">
+                <small>Odprto</small><strong>{eur(racuniMetrike.odprto)}</strong><span>še čaka plačilo</span>
+                <b className="arh-metrika-ikona"><MetricIcon type="profit" /></b>
+              </article>
+            </div>}
             <ArhivFilter
               iskanje={iskanje}
               onIskanje={setIskanje}
@@ -252,6 +279,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               statusOpcije={[{ vrednost: 'vse', oznaka: 'Vsi' }, { vrednost: 'placano', oznaka: 'Plačani' }, { vrednost: 'odprto', oznaka: 'Odprti' }]}
               aktivnihFiltrov={stFiltrov}
               onPocisti={pocistiFiltre}
+              akcija={<Link className="af-akcija-gumb" href={`${base}/kalkulator/racuni`}>+ Nov račun</Link>}
             />
 
             {!invoices.length ? (
@@ -404,6 +432,25 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
         /* razmik med filtrom in tabelo */
         .arh-panel > .af{margin:0 0 1rem}
+
+        /* povzetek Racuni (preseljeno iz InvoiceWorkspace — vzorec MetricIcon,
+           v videzu Arhiva: mehke papirnate kartice namesto belih dashboard kartic) */
+        .arh-metrike{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:0 0 1.2rem}
+        .arh-metrika{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;min-height:7.4rem;padding:1rem 1.1rem;border:1px solid rgba(17,17,17,.1);border-radius:14px}
+        .arh-metrika small{position:relative;z-index:1;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(17,17,17,.55)}
+        .arh-metrika strong{position:relative;z-index:1;margin-top:auto;font:500 1.7rem var(--font-serif),Georgia,serif;color:var(--ink)}
+        .arh-metrika span{position:relative;z-index:1;margin-top:.2rem;color:rgba(17,17,17,.55);font-size:.78rem}
+        .arh-metrika-izdano{background:linear-gradient(140deg,oklch(95% .035 295),oklch(90% .065 297))}
+        .arh-metrika-placano{background:linear-gradient(140deg,oklch(96% .035 160),oklch(87% .08 163))}
+        .arh-metrika-odprto{background:linear-gradient(140deg,oklch(97% .03 65),oklch(90% .07 60))}
+        .arh-metrika-ikona{position:absolute;right:-1rem;bottom:-1.6rem;display:grid;place-items:center;width:6.6rem;aspect-ratio:1;border-radius:1.6rem;background:oklch(100% 0 0/.24);color:color-mix(in oklch,currentColor 54%,transparent);transform:rotate(-9deg)}
+        @media (max-width:760px){.arh-metrike{grid-template-columns:1fr 1fr}}
+        @media (max-width:480px){.arh-metrike{grid-template-columns:1fr}}
+
+        /* povzetek Pogodbe: kratek stevec po statusu (pilule) */
+        .arh-pog-povzetek{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1rem}
+        .arh-pog-pil{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .85rem;border:1px solid rgba(17,17,17,.12);border-radius:999px;background:rgba(255,255,255,.55);font-size:.78rem;color:rgba(17,17,17,.72)}
+        .arh-pog-pil b{font:700 .92rem var(--font-sans),sans-serif;color:var(--ink)}
 
         /* prazni seznam / prazen filter */
         .arh-prazno{margin:1.4rem 0;padding:1.4rem;border:1px dashed rgba(17,17,17,.18);border-radius:14px;background:rgba(255,255,255,.4);color:rgba(17,17,17,.7);font-size:.94rem;text-align:center}

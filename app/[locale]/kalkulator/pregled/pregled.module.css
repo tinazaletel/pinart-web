@@ -676,6 +676,12 @@
 .projectMoney > *:nth-child(3) { background: linear-gradient(140deg, oklch(97% .025 87), oklch(91% .045 87)); }
 .projectMoney > *:nth-child(4) { background: linear-gradient(140deg, oklch(97% .03 65), oklch(89% .075 60)); }
 .projectMoney > * > * { position: relative; z-index: 1; }
+/* Ikona povzetka (MetricIcon, kot invoiceSummary): .subpageMetricIcon je absolutno
+   pozicionirana odeja v kotu, splošno pravilo zgoraj bi jo prisililo nazaj v
+   position:relative — višja specifičnost (2 razreda) to povozi. Kartice so tu
+   nižje (5.7rem) kot pri računih/stroških (8rem), zato je ikona pomanjšana. */
+.projectMoney > * > .subpageMetricIcon { position: absolute; z-index: 0; width: 4.4rem; right: -.7rem; bottom: -1rem; }
+.projectMoney > * > .subpageMetricIcon svg { width: 1.7rem; }
 .projectMoney small { color: var(--muted); font-size: .52rem; }
 .projectMoney strong { font: 500 1.25rem var(--font-serif), Georgia, serif; }
 .projectMoney label span { display: flex; align-items: center; gap: .25rem; }
@@ -697,7 +703,8 @@
 .projectNarrative article > span b { font-size: .58rem; }
 .projectNarrative article > span small { color: var(--muted); font-size: .5rem; }
 .projectNarrative article > a { position: absolute !important; z-index: 3 !important; top: .85rem; right: .85rem; display: grid; place-items: center; width: 2.2rem; min-height: 2.2rem; margin: 0; padding: 0; border: 1px solid oklch(100% 0 0 / .4); border-radius: 50%; background: oklch(100% 0 0 / .2); color: inherit; font-size: 0 !important; text-decoration: none; }
-.projectNarrative article > a::before { content: '↗'; font: 500 1.2rem/1 var(--font-sans), sans-serif; }
+/* Drugi (manjši, "odpri") gumb pri Računih — kompaktna puščica levo od "+". */
+.projectNarrative article > a.projectOpenLink { right: 3.35rem; width: 1.85rem; min-height: 1.85rem; background: oklch(100% 0 0 / .12); }
 .projectStoryEmpty { min-height: 30rem; display: grid; place-items: center; align-content: center; text-align: center; }
 .projectStoryEmpty span { display: grid; place-items: center; width: 3rem; aspect-ratio: 1; border-radius: 50%; background: oklch(93% .05 295); }
 .projectStoryEmpty strong { margin-top: .7rem; font: 600 1.2rem var(--font-serif), Georgia, serif; }

@@ -5,17 +5,20 @@
      iskalnik → datum (od–do) → status → akcijski gumb.
 
    NAMIZJE (>=641px): vse v ENI vrsti, brez velikih oznak STATUS/OBDOBJE.
-     [🔍 iskalnik (flex:1)] [📅 <date> – <date>] [status <select>] [akcija]
+     [🔍 iskalnik (flex:1)] [📅 24.7.2026 – 24.7.2026] [status <select>] [akcija]
      flex-wrap poskrbi za lep prelom pri ozkem namizju; min-width:0 povsod.
-     Datum je diskreten: samo koledarcek + dve ozki date polji (brez Od/Do
-     besed), da iskalnik in status dobita prostor.
+     Datum je diskreten sprozilec (ikona + slovensko besedilo); klik odpre
+     PRAVI KOLEDAR RAZPONA (KoledarRazpon) kot popover pod gumbom.
    MOBILNO (<=640px): strnjeno — [🔍][filtri] … [akcija]; lupa razsiri input
-     cez vrstico, gumb Filtri odpre spodnji sheet (portal na body) z datumom
-     (od–do, tam z oznakama) in status dropdownom.
+     cez vrstico, gumb Filtri odpre spodnji sheet (portal na body) z
+     obdobjem (koledar razpona INLINE, ne popover) in status dropdownom.
 
-   Datum = SAMO native koledar od–do (dva <input type="date">). Native koledar
-   ze omogoca sprehod po mesecih/letih; presetov ne uporabljamo. Filtriranje:
-   prazno od/do ne omejuje.
+   Datum = KoledarRazpon (od–do v enem koledarju: prvi klik = od, drugi
+   klik = do). Vec NI native <input type="date"> — brskalnikov format
+   (Safari = MM/DD/YYYY) je zbegal, zato je bil ze prej prekrit s slovenskim
+   zapisom; zdaj je cel koledar nas, tako da je vedenje (teden od ponedeljka,
+   skok po mesecih/letih, oznaceni razpon) enotno v vseh brskalnikih.
+   Filtriranje: prazno od/do ne omejuje.
 
    Status = PODATKOVNI prop (statusOpcije/statusVrednost/onStatus), NE gotov
    element. ArhivFilter sam izrise: na NAMIZJU kompakten <select> (chevron),
@@ -34,7 +37,8 @@
 
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarBlank, FunnelSimple, MagnifyingGlass } from '@phosphor-icons/react';
+import { CalendarPlus, FunnelSimple, MagnifyingGlass } from '@phosphor-icons/react';
+import KoledarRazpon from '@/components/KoledarRazpon';
 
 type StatusOpcija = { vrednost: string; oznaka: string };
 
@@ -43,7 +47,7 @@ type Props = {
   onIskanje: (vrednost: string) => void;
   placeholder?: string;
   /* DATUM lasti vrstica, da sta vrstni red in videz povsod enaka. Samo od–do
-     (native koledar); prazno od/do ne omejuje. */
+     (koledar razpona); prazno od/do ne omejuje. */
   datumOd: string;
   datumDo: string;
   onDatumOd: (vrednost: string) => void;
@@ -64,39 +68,35 @@ type Props = {
 export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišči …', datumOd, datumDo, onDatumOd, onDatumDo, statusOpcije, statusVrednost, onStatus, statusOznaka = 'Status', aktivnihFiltrov = 0, onPocisti, akcija }: Props) {
   const [iskanjeOdprto, setIskanjeOdprto] = useState(false);
   const [sheet, setSheet] = useState(false);
+  const [koledarOdprt, setKoledarOdprt] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const datumRef = useRef<HTMLDivElement | null>(null);
-  /* klik na koledarček odpre native izbirnik prvega (Od) date polja */
-  const odpriKoledar = () => {
-    const polje = datumRef.current?.querySelector('input[type="date"]') as (HTMLInputElement & { showPicker?: () => void }) | null;
-    if (!polje) return;
-    if (typeof polje.showPicker === 'function') polje.showPicker();
-    else polje.focus();
-  };
 
   /* autofocus ob razsiritvi — sele po animaciji sirine se input ne premika pod prstom */
   useEffect(() => { if (iskanjeOdprto) inputRef.current?.focus(); }, [iskanjeOdprto]);
 
-  /* native date input pokaze format BRSKALNIKA (Safari = MM/DD/YYYY) -> za SLO
-     zbega. Zato prikazemo SLOVENSKI zapis (24.7.2026), native polje pa skrijemo
-     in ga uporabimo samo za koledar (showPicker). */
+  /* namizni popover koledarja: klik zunaj ali Escape zapre (isti vzorec kot IzbirnikDrzave) */
+  useEffect(() => {
+    if (!koledarOdprt) return;
+    const klik = (e: MouseEvent) => { if (datumRef.current && !datumRef.current.contains(e.target as Node)) setKoledarOdprt(false); };
+    const tipka = (e: KeyboardEvent) => { if (e.key === 'Escape') setKoledarOdprt(false); };
+    document.addEventListener('mousedown', klik);
+    document.addEventListener('keydown', tipka);
+    return () => { document.removeEventListener('mousedown', klik); document.removeEventListener('keydown', tipka); };
+  }, [koledarOdprt]);
+
+  /* slovenski zapis brez vodilnih nicel/presledkov: "24.7.2026" */
   const formatSl = (iso: string) => { const d = iso ? iso.split('-') : []; return d.length === 3 ? `${Number(d[2])}.${Number(d[1])}.${d[0]}` : ''; };
-  const odpriPolje = (e: React.MouseEvent | React.KeyboardEvent) => {
-    const i = (e.currentTarget as HTMLElement).querySelector('input') as (HTMLInputElement & { showPicker?: () => void }) | null;
-    if (!i) return;
-    if (typeof i.showPicker === 'function') i.showPicker(); else i.focus();
+  /* prikazno besedilo sprozilca: prazno -> "Vsi datumi"; sicer slovenski razpon
+     (ce manjka "do" -> "…" namesto drugega datuma, in obratno); besedilo je
+     v obeh primerih enak mehak siv ton (glej .af-datum-tekst) */
+  const datumBesedilo = (): string => {
+    if (!datumOd && !datumDo) return 'Vsi datumi';
+    if (datumOd && datumDo) return `${formatSl(datumOd)} – ${formatSl(datumDo)}`;
+    if (datumOd) return `${formatSl(datumOd)} – …`;
+    return `… – ${formatSl(datumDo)}`;
   };
-  const datumChip = (vrednost: string, onChange: (v: string) => void, aria: string, prazno: string) => (
-    <span className="af-datum-polje" role="button" tabIndex={0} aria-label={aria}
-      onClick={odpriPolje} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); odpriPolje(e); } }}>
-      <span className={'af-datum-tekst' + (vrednost ? '' : ' af-prazno')}>{formatSl(vrednost) || prazno}</span>
-      <input className="af-datum-nativni" type="date" value={vrednost} onChange={event => onChange(event.target.value)} tabIndex={-1} aria-hidden="true" />
-    </span>
-  );
-  /* brez besed Od/Do in brez okvirjev; ko je prazno -> "Vsi datumi" */
-  const datumPolja = (!datumOd && !datumDo)
-    ? datumChip(datumOd, onDatumOd, 'Datum', 'Vsi datumi')
-    : <>{datumChip(datumOd, onDatumOd, 'Datum od', '…')}<span className="af-datum-crtica" aria-hidden>–</span>{datumChip(datumDo, onDatumDo, 'Datum do', '…')}</>;
+  const datumTekst = datumBesedilo();
 
   return <div className="af">
     <div className="af-vrstica">
@@ -128,14 +128,18 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
           <input type="search" value={iskanje} onChange={event => onIskanje(event.target.value)} placeholder={placeholder} aria-label={placeholder} />
         </span>
         <div className="af-datum" ref={datumRef}>
-          {/* klik na ikono odpre native koledar (showPicker) prve (Od) date polja —
-              da vidiš dneve v tednu, ko se spomniš "bilo je v sredo" */}
-          <button type="button" className="af-kolgumb" aria-label="Odpri koledar" onClick={odpriKoledar}>
-            <CalendarBlank size={16} />
+          <button type="button" className="af-datum-sprozilec" aria-haspopup="dialog" aria-expanded={koledarOdprt} aria-label="Izberi obdobje" onClick={() => setKoledarOdprt(v => !v)}>
+            <span className="af-kolgumb" aria-hidden><CalendarPlus size={16} /></span>
+            <span className="af-datum-tekst">{datumTekst}</span>
           </button>
-          {datumPolja}
+          {koledarOdprt && (
+            <div className="af-datum-popover" role="dialog" aria-label="Izbira obdobja">
+              <KoledarRazpon od={datumOd} do={datumDo} onOd={onDatumOd} onDo={onDatumDo} onZapri={() => setKoledarOdprt(false)} />
+            </div>
+          )}
         </div>
         {statusOpcije && <div className="af-status">
+          <FunnelSimple size={15} aria-hidden className="af-status-ikona" />
           <select className="af-select" aria-label={statusOznaka} value={statusVrednost} onChange={event => onStatus?.(event.target.value)}>
             {statusOpcije.map(o => <option key={o.vrednost} value={o.vrednost}>{o.oznaka}</option>)}
           </select>
@@ -152,7 +156,10 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
           <div className="af-vsebina">
             <div className="af-sk">
               <span className="af-sk-oznaka">Obdobje</span>
-              <div className="af-sheet-datum">{datumPolja}</div>
+              {/* mobilno: koledar razpona INLINE (namesto native polj); "Koncano" zapre cel sheet */}
+              <div className="af-sheet-datum">
+                <KoledarRazpon od={datumOd} do={datumDo} onOd={onDatumOd} onDo={onDatumDo} onZapri={() => setSheet(false)} />
+              </div>
             </div>
             {statusOpcije && <div className="af-sk">
               <span className="af-sk-oznaka">{statusOznaka}</span>
@@ -182,49 +189,45 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
       @media (min-width:641px){
         .af-mob{display:none}
         .af-namizje{display:flex;flex:1 1 auto;flex-wrap:wrap;align-items:center;gap:.5rem .7rem;min-width:0}
+        /* POENOTENA VIŠINA vseh elementov vrstice (iskalnik/datum/status/akcija),
+           da niso različno visoki; box-sizing, da padding ne razbije višine */
+        .af-poln,.af-datum-sprozilec,.af-status,.af-akcija > *{height:2.75rem;box-sizing:border-box;display:inline-flex;align-items:center}
+        .af-akcija > *{white-space:nowrap}
         .af-sheet,.af-zastor{display:none !important}
         .af-poln{flex:1 1 15rem;min-width:0;display:flex;align-items:center;gap:.45rem;box-sizing:border-box;background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;padding:0 .95rem;color:color-mix(in oklch,var(--ink,#111) 50%,transparent)}
         .af-poln:focus-within{border-color:var(--ink,#111)}
         .af-poln input{flex:1;min-width:0;border:none;background:none;font:inherit;font-weight:500;color:var(--ink,#111);padding:.62rem .25rem}
         .af-poln input:focus{outline:none}
         .af-poln input::placeholder{color:color-mix(in oklch,var(--ink,#111) 45%,transparent)}
-        /* datum: samo ikona + dve ozki date polji + crtica; besed Od/Do NI */
-        .af-datum{flex:0 0 auto;min-width:0;display:inline-flex;align-items:center;gap:.28rem;color:color-mix(in oklch,var(--ink,#111) 45%,transparent)}
-        .af-datum > svg{flex:none}
-        /* BREZ okvirja — samo slovenski zapis (24.7.2026), native polje skrito znotraj.
-           Krogec koledarja levo je edini "gumb"; datum je čist besedilni klik. */
-        .af-datum-polje{position:relative;display:inline-flex;align-items:center;min-width:0;padding:.2rem .1rem;border:none;background:none;color:var(--ink,#111);font-weight:600;cursor:pointer;white-space:nowrap}
-        .af-datum-polje:hover .af-datum-tekst{text-decoration:underline;text-underline-offset:.18em}
-        .af-datum-tekst{font-size:.85rem;color:var(--ink,#111)}
-        .af-datum-tekst.af-prazno{color:color-mix(in oklch,var(--ink,#111) 48%,transparent);font-weight:500}
-        .af-datum-crtica{color:color-mix(in oklch,var(--ink,#111) 40%,transparent);font-weight:700}
+        /* datum: sprozilec (ikona + slovensko besedilo) + koledar kot popover pod njim */
+        .af-datum{position:relative;flex:0 0 auto;min-width:0;display:inline-flex}
         .af-akcija{margin-left:auto;display:inline-flex;flex:0 0 auto;min-width:0}
         /* status dropdown kompakten na namizju (premaga .shell font 16px) */
-        .af .af-namizje .af-select{font-size:.85rem !important;padding:.4rem 1.9rem .4rem .8rem !important;background-position:right .6rem center !important;background-size:.95rem !important}
+        .af .af-namizje .af-select{font-size:.85rem !important;padding:.5rem 1.5rem .5rem .1rem !important;background-position:right 0 center !important;background-size:.95rem !important}
       }
 
-      /* ── DATE INPUT (namizje IN sheet): pilula z zaobljenimi robovi; barva
-         besedila iz tokena — popravek Safarijeve privzete rjave; background-COLOR
-         (ne shorthand), da native ikona koledarja ostane ── */
-      /* koledarček v krogcu — enak jezik kot ostali ikonski gumbi vrstice */
-      .af-kolgumb{display:inline-flex;align-items:center;justify-content:center;flex:none;width:2.2rem;height:2.2rem;padding:0;border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:50%;background:color-mix(in oklch,var(--paper,#fff) 85%,transparent);color:color-mix(in oklch,var(--ink,#111) 62%,transparent);cursor:pointer;transition:background .15s,color .15s}
-      .af-kolgumb:hover{background:var(--ink,#111);color:var(--paper,#fff)}
-      .af-datum input[type='date'],.af-sheet-datum input[type='date']{min-width:0;max-width:100%;box-sizing:border-box;font:inherit;font-weight:600;color:var(--ink,#111);background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;padding:.4rem .7rem}
-      .af-datum input[type='date']:focus,.af-sheet-datum input[type='date']:focus{outline:none;border-color:var(--ink,#111)}
-      .af-datum input::-webkit-datetime-edit,.af-sheet-datum input::-webkit-datetime-edit,
-      .af-datum input::-webkit-datetime-edit-month-field,.af-sheet-datum input::-webkit-datetime-edit-month-field,
-      .af-datum input::-webkit-datetime-edit-day-field,.af-sheet-datum input::-webkit-datetime-edit-day-field,
-      .af-datum input::-webkit-datetime-edit-year-field,.af-sheet-datum input::-webkit-datetime-edit-year-field{color:var(--ink,#111)}
-      .af-datum input::-webkit-datetime-edit-text,.af-sheet-datum input::-webkit-datetime-edit-text{color:color-mix(in oklch,var(--ink,#111) 45%,transparent)}
-      /* prazno stanje (placeholder polja) naj bo bledo ink, ne rjavo */
-      .af-datum input[type='date']:not(:focus)::-webkit-datetime-edit,.af-sheet-datum input[type='date']:not(:focus)::-webkit-datetime-edit{color:color-mix(in oklch,var(--ink,#111) 55%,transparent)}
+      /* ── DATUM SPROZILEC (namizje): cela pilula je gumb — enak jezik kot
+         iskalnik/status (rob+ozadje+radius), afordanca pride iz roba/hoverja
+         pilule, NE iz kroga okrog ikone (ikona ostane mirna/svetla). Klik
+         odpre koledar kot popover pod njim ── */
+      .af-datum-sprozilec{display:inline-flex;align-items:center;gap:.5rem;min-width:0;box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);border-radius:999px;padding:.55rem .95rem;font:inherit;color:inherit;cursor:pointer;transition:border-color .15s,background-color .15s}
+      .af-datum-sprozilec:hover{border-color:var(--ink,#111);background-color:color-mix(in oklch,var(--paper,#fff) 70%,transparent)}
+      .af-kolgumb{display:inline-flex;align-items:center;justify-content:center;flex:none;color:color-mix(in oklch,var(--ink,#111) 55%,transparent);transition:color .15s}
+      .af-datum-sprozilec:hover .af-kolgumb{color:var(--ink,#111)}
+      .af-datum-tekst{font-size:.85rem;font-weight:500;color:color-mix(in oklch,var(--ink,#111) 45%,transparent);white-space:nowrap}
+      .af-datum-popover{position:absolute;top:calc(100% + .5rem);left:0;z-index:40;border-radius:16px;border:1px solid color-mix(in oklch,var(--ink,#111) 14%,transparent);box-shadow:0 18px 44px color-mix(in oklch,var(--ink,#111) 20%,transparent);overflow:hidden}
+      /* mobilni sheet: koledar razpona inline v lastnem zaobljenem okvirju (namesto native polj) */
+      .af-sheet-datum{display:flex;justify-content:center;margin-top:.15rem;border:1px solid color-mix(in oklch,var(--ink,#111) 14%,transparent);border-radius:16px;overflow:hidden}
+      .af-sheet-datum .kol{width:100%;padding-left:.5rem;padding-right:.5rem}
 
-      /* ── STATUS DROPDOWN (skupno; enojni razred -> deluje tudi v portalnem sheetu).
-         appearance:none + lasten chevron; background-COLOR + background-image, da
-         se puscica ne izgubi (past .shell select). ── */
-      .af-select{min-width:0;max-width:100%;box-sizing:border-box;font:inherit;font-weight:600;color:var(--ink,#111);border:1px solid color-mix(in oklch,var(--ink,#111) 20%,transparent);border-radius:999px;padding:.42rem 2rem .42rem .9rem;background-color:color-mix(in oklch,var(--paper,#fff) 78%,transparent);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='m5 7.5 5 5 5-5' fill='none' stroke='%231c1815' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .7rem center;background-size:1rem;-webkit-appearance:none;appearance:none;cursor:pointer}
-      .af-select:focus{outline:none;border-color:var(--ink,#111)}
-      .af-status{display:inline-flex;align-items:center;flex:0 1 auto;min-width:0}
+      /* ── STATUS: zaobljena pilula (kot iskalnik/datum) — [funnel ikona] [select] [chevron].
+         Select sam nima vec lastnega roba/ozadja (tega da pilula), appearance:none +
+         lasten chevron kot background-image, da se puscica ne izgubi (past .shell select). ── */
+      .af-status{display:inline-flex;align-items:center;gap:.4rem;flex:0 1 auto;min-width:0;box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);border-radius:999px;padding:0 .5rem 0 .85rem;transition:border-color .15s}
+      .af-status:focus-within{border-color:var(--ink,#111)}
+      .af-status-ikona{flex:none;margin-right:.35rem;color:color-mix(in oklch,var(--ink,#111) 55%,transparent)}
+      .af-select{min-width:0;max-width:100%;box-sizing:border-box;font:inherit;font-weight:600;color:var(--ink,#111);border:none;border-radius:999px;padding:.55rem 1.6rem .55rem .15rem;background-color:transparent;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='m5 7.5 5 5 5-5' fill='none' stroke='%231c1815' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0 center;background-size:1rem;-webkit-appearance:none;appearance:none;cursor:pointer}
+      .af-select:focus{outline:none}
       /* mobilni sheet: status kot tappable seznam pilul (namesto native selecta) */
       .af-status-list{display:flex;flex-wrap:wrap;gap:.4rem}
       .af-p{padding:.5rem .85rem;border:1px solid color-mix(in oklch,var(--ink,#111) 20%,transparent);border-radius:999px;background-color:color-mix(in oklch,var(--paper,#fff) 55%,transparent);cursor:pointer;font:inherit;font-size:.86rem;color:var(--ink,#111);transition:border-color .15s,background-color .15s,color .15s}
@@ -262,10 +265,6 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
       /* v sheetu SMEJO biti drobni podnaslovi (na namizju jih ni) */
       .af-sk{display:grid;gap:.55rem;min-width:0}
       .af-sk-oznaka{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in oklch,var(--ink,#111) 55%,transparent)}
-      .af-sheet-datum{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .8rem;margin-top:.15rem}
-      .af-sheet-datum .af-datum-polje{display:inline-flex;align-items:center;gap:.35rem}
-      .af-sheet-datum .af-datum-polje > span{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in oklch,var(--ink,#111) 55%,transparent)}
-      .af-sheet-datum .af-datum-crtica{display:none}
       .af-noga{display:flex;justify-content:flex-start;padding:.4rem 0 .2rem;border-top:1px solid color-mix(in oklch,var(--ink,#111) 8%,transparent);margin-top:.4rem}
       .af-pocisti{margin-top:.6rem;padding:.5rem 1rem;border:1px solid color-mix(in oklch,var(--ink,#111) 20%,transparent);border-radius:999px;background-color:color-mix(in oklch,var(--paper,#fff) 50%,transparent);font:inherit;font-size:.86rem;color:var(--ink,#111);cursor:pointer;transition:border-color .15s,background-color .15s,color .15s}
       .af-pocisti:hover{border-color:var(--ink,#111)}

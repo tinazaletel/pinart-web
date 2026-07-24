@@ -8,11 +8,10 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, CaretUp, Eye, FileText, PencilSimple, PenNib, TextAa, TextB, TextItalic, Warning } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, Eye, PencilSimple, PenNib, TextAa, TextB, TextItalic } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
-import ArhivFilter from '@/components/ArhivFilter';
-import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract, type FlowContractStatus } from '@/lib/pinartFlowStore';
-import { getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
+import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } from '@/lib/pinartFlowStore';
+import { uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
 
@@ -21,21 +20,9 @@ const K_NAST = 'pinart-kalkulator-v2';
 type Offer = { id: string; title: string; client: string; scope: string[]; number?: string; status: string; agreedAmount: number };
 type Ponudnik = { ime: string; davcna: string; email: string; telefon: string; naslov: string; trr: string };
 
-const labels: Record<FlowContractStatus, string> = { draft: 'Osnutek', received: 'Prejeta', review: 'V pregledu', active: 'Aktivna', signed: 'Podpisana' };
-
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
 const eur = (n: number) => Math.round(n).toLocaleString('sl-SI') + ' €';
 const datStr = (d: Date) => `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}`;
-/* stara telesa so golo besedilo; nova so HTML iz urejevalnika — heuristika za zdruzljivost nazaj */
-const jeHtmlTelo = (b?: string) => !!b && (b.includes('<h1') || b.includes('<div'));
-/* opomba z predpono "ALERT:" = opozorilo (rdece) — izpeljano iz obstojecega polja
-   notes, BREZ spremembe podatkovne sheme; predpona se na zaslonu ne prikaze */
-const opombaInfo = (notes?: string) => {
-  const n = notes?.trim();
-  if (!n) return null;
-  const alert = /^ALERT:/i.test(n);
-  return { alert, besedilo: alert ? n.replace(/^ALERT:\s*/i, '') : n };
-};
 
 export default function ContractWorkspace({ base }: { base: string }) {
   /* pod 640px orodjarna postane slide-up predal (kot retainer) */
@@ -71,17 +58,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const [narEmail, setNarEmail] = useState('');
   const [kartaOdprta, setKartaOdprta] = useState(false);
 
-  /* arhiv: iskanje po naslovu/stranki + datum od–do (native koledar; prazno ne omejuje) */
-  const [iskanje, setIskanje] = useState('');
-  const [obdobjeOd, setObdobjeOd] = useState('');
-  const [obdobjeDo, setObdobjeDo] = useState('');
-  /* detajl: razprt povzetek povezane ponudbe */
-  const [detPonOdprta, setDetPonOdprta] = useState(false);
-
   const [notice, setNotice] = useState('');
   const [napaka, setNapaka] = useState('');
   const [pdfNalaganje, setPdfNalaganje] = useState(false);
-  const [selectedContract, setSelectedContract] = useState<FlowContract | null>(null);
   /* id zadnje shranjene pogodbe — ponovni "Shrani" posodobi zapis, ne podvoji */
   const [shranjenaId, setShranjenaId] = useState('');
 
@@ -409,19 +388,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
     event.currentTarget.reset();
   };
 
-  /* arhiv po filtrih: besedilo (naslov + stranka) in datumsko obdobje */
-  const prikazane = contracts.filter(contract => {
-    const besedilo = `${contract.title} ${contract.client}`.toLocaleLowerCase('sl-SI');
-    if (iskanje.trim() && !besedilo.includes(iskanje.trim().toLocaleLowerCase('sl-SI'))) return false;
-    if (obdobjeOd || obdobjeDo) {
-      const t = new Date(contract.date).getTime();
-      if (isNaN(t)) return false;
-      if (obdobjeOd && t < new Date(obdobjeOd + 'T00:00:00').getTime()) return false;
-      if (obdobjeDo && t > new Date(obdobjeDo + 'T23:59:59').getTime()) return false;
-    }
-    return true;
-  });
-
   /* ── posiljanje (mailto vzorec iz kalkulatorja: kratek povzetek, PDF prilozi rocno) ── */
   const posljiMailto = (zPonudbo: boolean) => {
     const nar = narocnikIme();
@@ -444,19 +410,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
     if (podpis) v.push(podpis);
     const zadeva = zPonudbo ? `Ponudba in pogodba${naslov ? ': ' + naslov : ''}` : `Pogodba${naslov ? ': ' + naslov : nar ? ': ' + nar : ''}`;
     window.location.href = `mailto:${narEmail.trim()}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(v.join('\n'))}`;
-  };
-
-  const changeStatus = (id: string, status: FlowContractStatus) => { const next = contracts.map(item => item.id === id ? { ...item, status } : item); setContracts(next); saveFlowCollection('contracts', next); };
-  /* stare, od stranke nalozene pogodbe (datoteka v oblaku ali IndexedDB) se vedno odpremo */
-  const openStoredFile = async (contract: FlowContract) => {
-    if (contract.filePath) { try { window.open(await getBusinessDocumentUrl(contract.filePath), '_blank', 'noopener,noreferrer'); return; } catch { setNotice('Dokumenta v oblaku ni bilo mogoče odpreti.'); } }
-    const request = indexedDB.open('pinart-flow-files', 1);
-    request.onsuccess = () => {
-      const transaction = request.result.transaction('contracts', 'readonly');
-      const get = transaction.objectStore('contracts').get(contract.id);
-      get.onsuccess = () => { if (!(get.result instanceof Blob)) return; const url = URL.createObjectURL(get.result); window.open(url, '_blank', 'noopener,noreferrer'); window.setTimeout(() => URL.revokeObjectURL(url), 60_000); };
-      transaction.oncomplete = () => request.result.close();
-    };
   };
 
   /* klikabilna kartica ponudbe: klik razpre povzetek obsega INLINE (brez navigacije) */
@@ -484,7 +437,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
   return <div className={`${styles.contractPage} pg`}>
     {notice && <div className={styles.contractNotice}>{notice}<button onClick={() => setNotice('')}>×</button></div>}
 
-    {/* ── POGLED 1: NASTAVITVE (vstop + arhiv) ── */}
+    {/* ── POGLED 1: NASTAVITVE (SAMO vstop za novo pogodbo — pregled/arhiv
+        shranjenih pogodb je preseljen v Arhiv, ArhivWorkspace) ── */}
     {pogled === 'nastavitve' && <>
       {/* naslov strani samo tu — v pogledu dokumenta/zakljucka ga ni (kot retainer) */}
       <header className={styles.topbar}><div><p className={styles.eyebrow}>POGODBE</p><h1>Dogovor, brez ugibanja.</h1></div></header>
@@ -566,56 +520,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
         {vir !== 'stranka' && <div className="pg-gumbi">
           <button type="button" className="pg-gumb" aria-label="Pripravi pogodbo" disabled={vir === 'ponudba' && !offerId} onClick={pripraviPogodbo}>Pripravi pogodbo →</button>
         </div>}
-      </section>
-
-      <section className={styles.contractArchive}>
-        <div><p className={styles.eyebrow}>SHRANJENE POGODBE</p><h2>Od osnutka do podpisa.</h2></div>
-        {contracts.length > 0 && <div className="pg-arhiv-filtri">
-          {/* skupna orodna vrstica: iskalnik → datum od–do */}
-          <ArhivFilter
-            iskanje={iskanje}
-            onIskanje={setIskanje}
-            placeholder="Poišči pogodbo ali stranko …"
-            datumOd={obdobjeOd}
-            datumDo={obdobjeDo}
-            onDatumOd={setObdobjeOd}
-            onDatumDo={setObdobjeDo}
-            aktivnihFiltrov={obdobjeOd || obdobjeDo ? 1 : 0}
-            onPocisti={() => { setObdobjeOd(''); setObdobjeDo(''); }}
-          />
-        </div>}
-        {contracts.length && !prikazane.length ? <p className={styles.contractArchiveEmpty}>Ni pogodb za ta filter.</p> : null}
-        {prikazane.length ? <div className={styles.contractArchiveTable}>
-          <header><span>Pogodba</span><span className="pg-op-glava">Opomba</span><span>Status</span><span>Ponudba</span><span /></header>
-          {prikazane.map(contract => {
-            const offer = offers.find(item => item.id === contract.sourceOfferId);
-            return <article key={contract.id}>
-              <button className={styles.contractOpen} type="button" onClick={() => { setDetPonOdprta(false); setSelectedContract(contract); }}>
-                {/* prava ikona pogodbe (prej necitljiv znak ⌁) */}
-                <span className={styles.contractArchiveIcon}><FileText size={18} weight="regular" /></span>
-                <span>
-                  <strong>{contract.title}</strong>
-                  <small>{contract.client} · {new Date(contract.date).toLocaleDateString('sl-SI')}</small>
-                  {(() => {
-                    const op = opombaInfo(contract.notes);
-                    if (!op) return null;
-                    /* pod naslovom SAMO na mobilnem — na namizju ima opomba svojo kolono */
-                    return <small className={'pg-opomba pg-op-mob' + (op.alert ? ' pg-opomba-alert' : '')}>{op.alert && <span className="pg-opomba-pika" aria-hidden />}{op.besedilo}</small>;
-                  })()}
-                </span>
-              </button>
-              {(() => {
-                const op = opombaInfo(contract.notes);
-                return <span className="pg-op-cel">{op ? <small className={'pg-opomba' + (op.alert ? ' pg-opomba-alert' : '')}>{op.alert && <span className="pg-opomba-pika" aria-hidden />}{op.besedilo}</small> : null}</span>;
-              })()}
-              <select aria-label={`Status pogodbe ${contract.title}`} value={contract.status} onChange={event => changeStatus(contract.id, event.target.value as FlowContractStatus)}>
-                {Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-              </select>
-              <span>{offer?.number || '—'}</span>
-              <button className={styles.contractArrow} type="button" onClick={() => { setDetPonOdprta(false); setSelectedContract(contract); }} aria-label={`Odpri ${contract.title}`}>›</button>
-            </article>;
-          })}
-        </div> : !contracts.length ? <p className={styles.contractArchiveEmpty}>Prva shranjena pogodba se bo prikazala tukaj.</p> : null}
       </section>
     </>}
 
@@ -756,56 +660,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
       </div>
     </section>}
 
-    {/* ── detajl shranjene pogodbe (arhiv) ── */}
-    {selectedContract && <div className={styles.detailBackdrop} role="presentation" onMouseDown={() => setSelectedContract(null)}>
-      <aside className={`${styles.detailPanel} ${styles.contractDetail}`} role="dialog" aria-modal="true" aria-labelledby="contract-detail-title" onMouseDown={event => event.stopPropagation()}>
-        {/* sticky: X ostane v zgornjem desnem kotu tudi med drsenjem po pogodbi
-            (absolute je odplaval z vsebino in ga ni bilo vec) */}
-        <button className="pg-det-x" onClick={() => setSelectedContract(null)} aria-label="Zapri">✕</button>
-        <p className={styles.eyebrow}>POGODBA · {labels[selectedContract.status]}</p>
-        <h2 id="contract-detail-title">{selectedContract.title}</h2>
-        <div className="pg-det-meta">
-          <span><small>Stranka</small><strong>{selectedContract.client}</strong></span>
-          <span><small>Datum</small><strong>{new Date(selectedContract.date).toLocaleDateString('sl-SI')}</strong></span>
-        </div>
-        {/* ena klikabilna vrstica namesto dveh mrtvih kartic (Povezava + Št. ponudbe);
-            ce pogodba ni vezana na ponudbo, vrstice sploh ni */}
-        {(() => {
-          const offer = offers.find(item => item.id === selectedContract.sourceOfferId);
-          if (!offer) return null;
-          return <div className="pg-det-ponudba">
-            <button type="button" className="pg-det-ponudba-vrstica" aria-expanded={detPonOdprta} aria-label={`Ponudba ${offer.number || offer.title} — prikaži povzetek`} onClick={() => setDetPonOdprta(v => !v)}>
-              <span className="pg-kp-ikona" aria-hidden>⌁</span>
-              <span className="pg-det-ponudba-ime">Ponudba {offer.number || offer.title}</span>
-              {/* ikona namesto znaka — znak ⌄/› ni bil opticno na sredini krogca */}
-              <span className="pg-det-ponudba-kazalec" aria-hidden>{detPonOdprta ? <CaretUp size={13} weight="bold" /> : <CaretDown size={13} weight="bold" />}</span>
-            </button>
-            {detPonOdprta && <div className="pg-kp-vec">
-              <p className="pg-det-ponudba-naslov"><b>{offer.title}</b>{offer.agreedAmount > 0 ? ' · ' + eur(offer.agreedAmount) : ''}</p>
-              {offer.scope.length
-                ? <ul>{offer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul>
-                : <p className="pg-mini">Ponudba nima vpisanega obsega.</p>}
-              <a className="pg-povezava" href={`${base}/kalkulator/projekti`}>Odpri v projektih ↗</a>
-            </div>}
-          </div>;
-        })()}
-        {/* nova telesa so HTML iz urejevalnika (s podpisi) -> izris kot dokument;
-            stara so golo besedilo -> pre-wrap kot doslej (zdruzljivost nazaj) */}
-        {selectedContract.body && (jeHtmlTelo(selectedContract.body)
-          ? <div className="pg-doktelo" dangerouslySetInnerHTML={{ __html: selectedContract.body }} />
-          : <pre className={styles.contractDetailBody}>{selectedContract.body}</pre>)}
-        {selectedContract.fileName && <button className={styles.openContractFile} type="button" onClick={() => openStoredFile(selectedContract)}>Odpri dokument · {selectedContract.fileName}</button>}
-        {(() => {
-          const op = opombaInfo(selectedContract.notes);
-          if (!op) return null;
-          /* alert opomba mora v detajlu izstopati (rdeca kartica z opozorilno ikono) */
-          return op.alert
-            ? <div className="pg-opomba-kartica" role="alert"><Warning size={20} weight="bold" aria-hidden /><div><strong>Opozorilo</strong><p>{op.besedilo}</p></div></div>
-            : <div className={styles.contractNotes}><strong>Opombe za pregled</strong><p>{op.besedilo}</p></div>;
-        })()}
-      </aside>
-    </div>}
-
     {/* stili kot retainer: navaden <style> (globalno), zato pg- predpona povsod */}
     <style>{`
       .pg{min-width:0}
@@ -928,55 +782,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
       /* letterhead se v telesu ne pojavi (doda ga PDF), a ce je v starem HTML zapisu, naj bo urejen */
       .pg-doktelo .lg{display:flex;justify-content:space-between;gap:1.4rem;padding-bottom:.7rem;border-bottom:1.5px solid #B25476;margin-bottom:1.1rem}
       .pg-doktelo{flex:1 1 auto;min-height:0;margin:1rem 0 0;font-size:.86rem}
-
-      /* arhiv: iskalnik + datumski filtri (mobilno prijazno: nic cez desni rob) */
-      .pg-arhiv-filtri{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem .8rem;margin:0 0 1rem;min-width:0}
-      .pg-arhiv-filtri>*{min-width:0}
-      /* ovoj z lupo: ikona sedi v pilulo, input brez svojega roba */
-      .pg-iskalnik-ovoj{flex:1 1 15rem;max-width:24rem;min-width:0;display:flex;align-items:center;gap:.45rem;box-sizing:border-box;background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:999px;padding:0 .5rem 0 .9rem;color:rgba(17,17,17,.55)}
-      .pg-iskalnik-ovoj:focus-within{border-color:var(--ink)}
-      .pg-iskalnik{flex:1;width:100%;min-width:0;box-sizing:border-box;font:inherit;font-size:.92rem;font-weight:500;color:var(--ink);background:none;border:none;padding:.55rem .5rem .55rem 0}
-      .pg-iskalnik:focus{outline:none}
-      /* pilule obdobja: na ozkem vodoravni drs (kot pilule na landingu), da "Po meri" ne strli ven */
-      @media (max-width:640px){
-        .pg-segpills-obdobje{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;max-width:100%;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
-        .pg-segpills-obdobje::-webkit-scrollbar{display:none}
-        .pg-segpills-obdobje button{white-space:nowrap;flex:none}
-      }
-      .pg-segpills-obdobje{margin:0}
-      .pg-obdobje-vnos{display:flex;flex-wrap:wrap;gap:.6rem 1rem;width:100%;min-width:0}
-      .pg-obdobje-vnos .pg-polje{flex:1 1 9rem;max-width:12rem}
-
-      /* opombe v arhivu: navadne nevtralno sive, ALERT rdece s piko (predpona se skrije) */
-      .pg .pg-opomba{display:block;margin-top:.15rem;font-size:.72rem;font-weight:500;color:rgba(17,17,17,.55);overflow-wrap:anywhere}
-      /* opomba: namizje = svoja kolona (pg-op-cel), telefon = pod naslovom (pg-op-mob) */
-      .pg .pg-op-cel{min-width:0}
-      .pg .pg-op-cel .pg-opomba{margin-top:0}
-      @media (min-width:981px){.pg .pg-op-mob{display:none}}
-      @media (max-width:980px){.pg .pg-op-cel,.pg .pg-op-glava{display:none}}
-      .pg .pg-opomba.pg-opomba-alert{color:#a92222;font-weight:600}
-      .pg-opomba-pika{display:inline-block;width:.5rem;height:.5rem;border-radius:50%;background:#c22525;margin-right:.35rem;vertical-align:middle;flex:none}
-      /* alert opomba v detajlu: rdeca kartica z opozorilno ikono */
-      .pg-opomba-kartica{display:flex;align-items:flex-start;gap:.6rem;margin-top:1rem;padding:.9rem;border-radius:.75rem;border:1px solid oklch(62% .17 25 / .45);background:oklch(95.5% .035 25);color:#8f1d1d}
-      .pg-opomba-kartica svg{flex:none;margin-top:.1rem}
-      .pg-opomba-kartica strong{display:block;font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
-      .pg-opomba-kartica p{margin:.3rem 0 0;font-size:.85rem;line-height:1.5;color:#7a1f1f;overflow-wrap:anywhere}
-
-      /* detajl: meta kartici + ena klikabilna vrstica ponudbe */
-      .pg .pg-det-x{position:sticky;top:0;z-index:6;align-self:flex-end;flex:0 0 auto;display:grid;place-items:center;width:2.2rem;height:2.2rem;margin:0 0 -2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
-      .pg .pg-det-x:hover{background:var(--ink);color:var(--paper)}
-      .pg-det-meta{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;min-width:0}
-      .pg-det-meta span{display:grid;gap:.25rem;padding:.7rem;border-radius:.7rem;background:oklch(94% .025 87);min-width:0}
-      .pg-det-meta small{color:rgba(17,17,17,.55);font-size:.72rem}
-      .pg-det-meta strong{font-size:.85rem;line-height:1.35;overflow-wrap:anywhere}
-      .pg-det-ponudba{margin-top:.45rem;border:1px solid rgba(17,17,17,.12);border-radius:.7rem;background:rgba(255,255,255,.72);overflow:hidden;min-width:0}
-      .pg-det-ponudba-vrstica{display:flex;align-items:center;gap:.7rem;width:100%;padding:.65rem .8rem;border:none;background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer;min-width:0}
-      .pg-det-ponudba-vrstica:hover .pg-det-ponudba-ime{text-decoration:underline;text-underline-offset:.2rem}
-      .pg-det-ponudba-ime{flex:1;min-width:0;font-size:.88rem;font-weight:700;overflow-wrap:anywhere}
-      .pg-det-ponudba-kazalec{display:grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:50%;background:rgba(17,17,17,.06);color:var(--ink);font-size:1.05rem;line-height:1;flex:none}
-      .pg-det-ponudba .pg-kp-vec{padding:.15rem .8rem .9rem}
-      .pg-det-ponudba-naslov{margin:.6rem 0 .2rem;font-size:.85rem}
-      @media (max-width:640px){.pg-det-meta{grid-template-columns:1fr}}
 
       .pg-predogled{position:relative;width:100%;margin-top:1rem;background:#e9e6e0;border:1px solid rgba(17,17,17,.12);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:18px;box-shadow:inset 0 1px 6px rgba(20,20,20,.06)}
       .pg-pred-stran{width:100%;max-width:794px;height:auto;display:block;box-shadow:0 6px 22px rgba(20,20,20,.14);border-radius:2px}
