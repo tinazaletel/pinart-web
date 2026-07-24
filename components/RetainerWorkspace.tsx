@@ -5,6 +5,7 @@
    shrambe. Naredi retainer PONUDBO in POGODBO (PDF prek /api/ponudba-pdf). */
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
 import { User, TextAa, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp, TextB, TextItalic } from '@phosphor-icons/react';
 import { saveRetainerDraft } from '@/lib/pinartFlowCloud';
 import { OrbSfera, ORB_BARVE, ikonaZa, ORB0_CSS, osvetli } from './Orb0';
@@ -428,7 +429,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   const avatarVsebina = avatarIme ? avatarIme.charAt(0).toUpperCase() : <User size={19} weight="regular" />;
 
   return (
-    <div className="rw">
+    <div className={'rw' + (vLupini ? ' rw-lupina' : '')}>
       {!vLupini && <header className="rw-glava">
         <span className="rw-glava-levo">
           {/* puscica PRED logotipom — enako kot na podstraneh nadzorne plosce */}
@@ -636,34 +637,48 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             </div>
           ) : (
             <>
-              {/* Na mobilu ista orodjarna postane slide-up predal (razred "odprt"), da ne
-                  zaseda stirih vrstic nad dokumentom. Vsebina ostane ena sama -> refi se ne podvojijo. */}
-              {jeMobilni && ponSheet && <div className="rw-sheet-back" onClick={() => setPonSheet(null)} aria-hidden />}
-              <div className={'rw-orodjarna' + (jeMobilni ? ' rw-orodjarna-sheet' : '') + (ponSheet ? ' odprt' : '')} aria-label="Oblikovanje besedila" aria-hidden={jeMobilni && !ponSheet}>
-                {jeMobilni && <div className="rw-sheet-glava"><b>Oblikovanje</b><button type="button" className="rw-sheet-x" onClick={() => setPonSheet(null)} aria-label="Zapri">✕</button></div>}
-                {oznaciNamig && <div className="rw-oznaci-namig" role="status">Najprej označi besedilo</div>}
-                <div className="rw-tool-vel2" role="group" aria-label="Velikost besedila">
-                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); velikost(-1); }} title="Manjše" aria-label="Pomanjšaj"><CaretDown size={14} weight="bold" /></button>
-                  <span className="rw-tv-aa" aria-hidden>Aa</span>
-                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); velikost(1); }} title="Večje" aria-label="Povečaj"><CaretUp size={14} weight="bold" /></button>
-                </div>
-                <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko" aria-label="Krepko"><TextB size={17} weight="bold" /></button>
-                <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title="Ležeče" aria-label="Ležeče"><TextItalic size={17} /></button>
-                <select className="rw-pisava-select" aria-label="Pisava besedila" defaultValue="" onMouseDown={() => editorRef.current?.focus()} onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
-                  <option value="" disabled>Pisava</option>
-                  <option value="Bodoni Moda">Elegantna</option>
-                  <option value="Montserrat">Montserrat</option>
-                  <option value="Georgia">Georgia</option>
-                  <option value="Arial">Arial</option>
-                </select>
-                <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h1'); }} title="Naslov" aria-label="Naslov H1">H1</button>
-                <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title="Podnaslov" aria-label="Podnaslov H2">H2</button>
-                <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title="Navadno besedilo" aria-label="Navadno besedilo P">P</button>
-                <span className="rw-tool-locnica" aria-hidden />
-                <button type="button" className="rw-barvica rw-barvica-mavrica" aria-label="Barva besedila (poljubna)" title="Barva besedila — poljubna" onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
-                <input ref={barvaRef} type="color" hidden onChange={e => oblikuj('foreColor', e.target.value)} />
-                <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('hiliteColor', '#FCE38A'); }} onDoubleClick={e => { e.preventDefault(); oblikuj('hiliteColor', 'transparent'); }} title="Označi besedilo — dvojni klik odstrani" aria-label="Označi besedilo"><span className="rw-hl">T</span></button>
-              </div>
+              {/* Orodjarna: kontrole so izvlecene v en fragment; na namizju inline,
+                  na mobilu slide-up predal V PORTALU na <body> — ENAKO kot kalkulator:
+                  position:fixed neha meriti na zaslon, ce ima katerikoli prednik
+                  transform/filter (tu animirana .rw-sek), zato se predal prej ni
+                  prilepil na dno. */}
+              {(() => {
+                const orodjaKontrole = <>
+                  {oznaciNamig && <div className="rw-oznaci-namig" role="status">Najprej označi besedilo</div>}
+                  <div className="rw-tool-vel2" role="group" aria-label="Velikost besedila">
+                    <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); velikost(-1); }} title="Manjše" aria-label="Pomanjšaj"><CaretDown size={14} weight="bold" /></button>
+                    <span className="rw-tv-aa" aria-hidden>Aa</span>
+                    <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); velikost(1); }} title="Večje" aria-label="Povečaj"><CaretUp size={14} weight="bold" /></button>
+                  </div>
+                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko" aria-label="Krepko"><TextB size={17} weight="bold" /></button>
+                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title="Ležeče" aria-label="Ležeče"><TextItalic size={17} /></button>
+                  <select className="rw-pisava-select" aria-label="Pisava besedila" defaultValue="" onMouseDown={() => editorRef.current?.focus()} onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
+                    <option value="" disabled>Pisava</option>
+                    <option value="Bodoni Moda">Elegantna</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Arial">Arial</option>
+                  </select>
+                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h1'); }} title="Naslov" aria-label="Naslov H1">H1</button>
+                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title="Podnaslov" aria-label="Podnaslov H2">H2</button>
+                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title="Navadno besedilo" aria-label="Navadno besedilo P">P</button>
+                  <span className="rw-tool-locnica" aria-hidden />
+                  <button type="button" className="rw-barvica rw-barvica-mavrica" aria-label="Barva besedila (poljubna)" title="Barva besedila — poljubna" onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
+                  <input ref={barvaRef} type="color" hidden onChange={e => oblikuj('foreColor', e.target.value)} />
+                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('hiliteColor', '#FCE38A'); }} onDoubleClick={e => { e.preventDefault(); oblikuj('hiliteColor', 'transparent'); }} title="Označi besedilo — dvojni klik odstrani" aria-label="Označi besedilo"><span className="rw-hl">T</span></button>
+                </>;
+                if (!jeMobilni) return <div className="rw-orodjarna" aria-label="Oblikovanje besedila">{orodjaKontrole}</div>;
+                return typeof document !== 'undefined' ? createPortal(
+                  <>
+                    {ponSheet && <div className="rw-sheet-back" onClick={() => setPonSheet(null)} aria-hidden />}
+                    <div className={'rw-orodjarna rw-orodjarna-sheet' + (ponSheet ? ' odprt' : '')} aria-label="Oblikovanje besedila" aria-hidden={!ponSheet}>
+                      <div className="rw-sheet-glava"><b>Oblikovanje</b><button type="button" className="rw-sheet-x" onClick={() => setPonSheet(null)} aria-label="Zapri">✕</button></div>
+                      {orodjaKontrole}
+                    </div>
+                  </>,
+                  document.body,
+                ) : null;
+              })()}
               <div ref={napolniEditor} className="rw-editor" contentEditable suppressContentEditableWarning onInput={() => setRocnoTelo(true)} onBlur={sinhronizirajEditor} />
               {rocnoTelo && (
                 <p className="rw-mini" style={{ marginTop: '.5rem' }}>Besedilo je ročno urejeno in se ob spremembi vhodov ne posodablja več samodejno. <button type="button" className="rw-povezava" onClick={ponastaviTelo}>Povrni samodejno besedilo</button></p>
@@ -805,16 +820,22 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         @media (prefers-reduced-motion:reduce){.rw-blob{animation:none}}
 
         .rw-vsebina{position:relative;z-index:1;width:min(700px,92vw);margin:0 auto;padding:calc(clamp(1.6rem,4vw,2.6rem) + 3.4rem) 0 7.5rem}
+        /* v Flow lupini NI samostojne .rw-glava, zato rezerva +3.4rem zanjo
+           naredi prevelik prazen pas na vrhu — vsebina se zacne takoj */
+        .rw.rw-lupina .rw-vsebina{padding-top:.6rem}
         .rw-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 .3rem}
         .rw-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(2.4rem,6vw,4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
         .rw-uvod{font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72);margin:0 0 2.4rem;max-width:34rem}
         .rw-sek{margin:0 0 2.6rem;scroll-margin-top:5.5rem}
         .rw-sek.rw-vstop{animation:rwSek .5s cubic-bezier(.16,1,.3,1) both}
-        @keyframes rwSek{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        /* KONEC animacije mora biti transform:NONE (ne translateY(0)): vsak
+           transform != none na sekciji naredi, da se position:fixed otrok
+           (spodnji sheet Oblikovanje) sidra na sekcijo namesto na zaslon. */
+        @keyframes rwSek{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
         @media (prefers-reduced-motion:reduce){.rw-sek.rw-vstop{animation:none}}
         /* izrazit slide-up (nova stran) za pogled 'ponudba'/'zakljucek' — visja specificnost (.rw-sek.rw-stran), da povozi rwSek */
         .rw-sek.rw-stran{animation:rwStran .5s cubic-bezier(.16,1,.3,1) both}
-        @keyframes rwStran{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes rwStran{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
         @media (prefers-reduced-motion:reduce){.rw-sek.rw-stran{animation:none}}
         /* fiksna noga z gumbi — ENAKO kot kalkulator (okrogel Nazaj s puscico + Naprej pilula) */
         .rw-noga{position:fixed;bottom:0;left:17.5rem;right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,var(--paper) 70%,transparent);z-index:40}
