@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
-import { User, TextAa, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp, TextB, TextItalic } from '@phosphor-icons/react';
+import { User, TextAa, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp, TextB, TextItalic, PenNib } from '@phosphor-icons/react';
 import { saveRetainerDraft } from '@/lib/pinartFlowCloud';
 import { OrbSfera, ORB_BARVE, ikonaZa, ORB0_CSS, osvetli } from './Orb0';
 import VidezDokumentov from './VidezDokumentov';
@@ -151,7 +151,13 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   /* urejevalnik telesa dokumenta (kot kalkulator: contentEditable + orodjarna) */
   const [predogledMode, setPredogledMode] = useState(false);
   /* mobilni slide-up predal za oblikovanje — enako kot v kalkulatorju */
-  const [ponSheet, setPonSheet] = useState<null | 'oblika'>(null);
+  const [ponSheet, setPonSheet] = useState<null | 'oblika' | 'podpis'>(null);
+  /* podpis: nariši (canvas) ali naloži sliko; vstavi se nad podpisno črto */
+  const [podpisCilj, setPodpisCilj] = useState<'izvajalec' | 'narocnik'>('izvajalec');
+  const [narisano, setNarisano] = useState(false);
+  const podpisPlatnoRef = useRef<HTMLCanvasElement | null>(null);
+  const podpisDatotekaRef = useRef<HTMLInputElement | null>(null);
+  const risanjeRef = useRef(false);
   const [oznaciNamig, setOznaciNamig] = useState(false);
   const [velikostBesedila, setVelikostBesedila] = useState(3);
   const [rocnoTelo, setRocnoTelo] = useState(false);
@@ -248,7 +254,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
     const kontakt = [ponudnik.davcna.trim() && 'Davčna št.: ' + ponudnik.davcna.trim(), ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(), ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(), ponudnik.email.trim()].filter(Boolean).join(' · ');
     return `<div class="lg"><div><b>${esc(ponudnik.ime.trim() || '[Tvoje podjetje]')}</b>${ponudnik.naslov.trim() ? '<br>' + esc(ponudnik.naslov.trim()) : ''}${kontakt ? '<br><span class="mut">' + esc(kontakt) + '</span>' : ''}</div><div class="rt">Pinart</div></div>`;
   };
-  const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:600;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.big{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:16pt;color:#111;font-weight:600}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}`;
+  const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:600;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.big{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:16pt;color:#111;font-weight:600}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}.podpis-img{display:block;max-height:40px;max-width:180px;margin:0 0 -6px}`;
   const doc = (body: string) => `<!doctype html><html lang="sl"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}</body></html>`;
 
   const modelOpis = model === 'ure' ? `${ure} ur na mesec` : model === 'paket' ? 'dogovorjeni mesečni paket storitev' : `${ure} ur na mesec + dogovorjeni paket storitev`;
@@ -319,6 +325,58 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   const velikost = (smer: number) => { const nv = Math.min(7, Math.max(1, velikostBesedila + smer)); setVelikostBesedila(nv); oblikuj('fontSize', String(nv)); };
   const uporabiPisavo = (font: string) => oblikuj('fontName', font);
   const ponastaviTelo = () => { setRocnoTelo(false); const html = trenutnoTelo(); setTeloHtml(html); if (editorRef.current) editorRef.current.innerHTML = html; };
+
+  /* ── podpis: canvas za risanje (prst/miska) ali nalozena slika ──────────── */
+  const pripraviPlatno = (c: HTMLCanvasElement | null) => {
+    podpisPlatnoRef.current = c;
+    if (!c) return;
+    const r = c.getBoundingClientRect();
+    if (r.width > 0 && c.width !== Math.round(r.width * 2)) {
+      c.width = Math.round(r.width * 2); c.height = Math.round(r.height * 2);
+      const ctx = c.getContext('2d');
+      if (ctx) { ctx.scale(2, 2); ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1a1622'; }
+    }
+  };
+  const podpisTocka = (e: React.PointerEvent<HTMLCanvasElement>) => { const r = e.currentTarget.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  const zacniRis = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const ctx = podpisPlatnoRef.current?.getContext('2d'); if (!ctx) return;
+    risanjeRef.current = true;
+    const p = podpisTocka(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const risiPodpis = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!risanjeRef.current) return;
+    const ctx = podpisPlatnoRef.current?.getContext('2d'); if (!ctx) return;
+    const p = podpisTocka(e); ctx.lineTo(p.x, p.y); ctx.stroke();
+    if (!narisano) setNarisano(true);
+  };
+  const koncajRis = () => { risanjeRef.current = false; };
+  const pocistiPodpis = () => {
+    const c = podpisPlatnoRef.current; const ctx = c?.getContext('2d');
+    if (c && ctx) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, c.width, c.height); ctx.restore(); }
+    setNarisano(false);
+  };
+  /* vstavi <img> nad podpisno crto izbrane strani; gre tudi v PDF (data URL) */
+  const vstaviPodpisImg = (dataUrl: string) => {
+    const el = editorRef.current; if (!el) return;
+    const stolpca = el.querySelectorAll('.sig > div');
+    const cilj = stolpca[podpisCilj === 'izvajalec' ? 0 : 1] as HTMLElement | undefined;
+    if (!cilj) return;
+    cilj.querySelector('img.podpis-img')?.remove();
+    const img = document.createElement('img');
+    img.src = dataUrl; img.className = 'podpis-img'; img.alt = 'Podpis';
+    cilj.insertBefore(img, cilj.querySelector('.lin'));
+    setRocnoTelo(true); sinhronizirajEditor(); setPonSheet(null);
+  };
+  const vstaviNarisanPodpis = () => { const c = podpisPlatnoRef.current; if (c && narisano) vstaviPodpisImg(c.toDataURL('image/png')); };
+  const naloziPodpisSliko = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { if (typeof r.result === 'string') vstaviPodpisImg(r.result); };
+    r.readAsDataURL(f);
+    e.target.value = '';
+  };
   const izvozniTelo = () => { const e = editorRef.current?.innerHTML?.trim(); if (e) return e; if (teloHtml.trim()) return teloHtml; return trenutnoTelo(); };
 
   const shraniStevilko = () => { try { const leto = new Date().getFullYear(); const c = JSON.parse(localStorage.getItem(K_STEVEC_RET) || '{}'); c[leto] = (Number(c[leto]) || 0) + 1; localStorage.setItem(K_STEVEC_RET, JSON.stringify(c)); } catch { /* prazno */ } };
@@ -679,7 +737,33 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
                   document.body,
                 ) : null;
               })()}
-              <div ref={napolniEditor} className="rw-editor" contentEditable suppressContentEditableWarning onInput={() => setRocnoTelo(true)} onBlur={sinhronizirajEditor} />
+              <div className="rw-editor-ovoj">
+                <div ref={napolniEditor} className="rw-editor" contentEditable suppressContentEditableWarning onInput={() => setRocnoTelo(true)} onBlur={sinhronizirajEditor} />
+                {/* ikonica za podpis — desno spodaj, ob podpisnih crtah */}
+                <button type="button" className="rw-podpis-trig" onClick={() => setPonSheet(v => v === 'podpis' ? null : 'podpis')} aria-label="Dodaj podpis" title="Dodaj podpis"><PenNib size={18} /></button>
+              </div>
+              {/* sheet Podpis: portal na <body> (fixed sidro), namizje + mobil */}
+              {typeof document !== 'undefined' && createPortal(
+                <>
+                  {ponSheet === 'podpis' && <div className="rw-sheet-back" onClick={() => setPonSheet(null)} aria-hidden />}
+                  <div className={'rw-podpis-sheet' + (ponSheet === 'podpis' ? ' odprt' : '')} role="dialog" aria-label="Podpis" aria-hidden={ponSheet !== 'podpis'}>
+                    <div className="rw-sheet-glava"><b>Podpis</b><button type="button" className="rw-sheet-x" onClick={() => setPonSheet(null)} aria-label="Zapri">✕</button></div>
+                    <div className="rw-podpis-vrsta" role="group" aria-label="Kam gre podpis">
+                      <button type="button" className={'rw-cip' + (podpisCilj === 'izvajalec' ? ' on' : '')} onClick={() => setPodpisCilj('izvajalec')}>Izvajalec</button>
+                      <button type="button" className={'rw-cip' + (podpisCilj === 'narocnik' ? ' on' : '')} onClick={() => setPodpisCilj('narocnik')}>Naročnik</button>
+                    </div>
+                    <canvas ref={pripraviPlatno} className="rw-podpis-platno" onPointerDown={zacniRis} onPointerMove={risiPodpis} onPointerUp={koncajRis} onPointerCancel={koncajRis} />
+                    <div className="rw-podpis-akcije">
+                      <button type="button" className="rw-cip" onClick={pocistiPodpis}>Počisti</button>
+                      <button type="button" className="rw-gumb" disabled={!narisano} onClick={vstaviNarisanPodpis}>Vstavi podpis</button>
+                    </div>
+                    <div className="rw-podpis-ali">ali</div>
+                    <button type="button" className="rw-cip" onClick={() => podpisDatotekaRef.current?.click()}>Naloži sliko podpisa …</button>
+                    <input ref={podpisDatotekaRef} type="file" accept="image/*" hidden onChange={naloziPodpisSliko} />
+                  </div>
+                </>,
+                document.body,
+              )}
               {rocnoTelo && (
                 <p className="rw-mini" style={{ marginTop: '.5rem' }}>Besedilo je ročno urejeno in se ob spremembi vhodov ne posodablja več samodejno. <button type="button" className="rw-povezava" onClick={ponastaviTelo}>Povrni samodejno besedilo</button></p>
               )}
@@ -971,6 +1055,18 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-sheet-glava::before{content:'';position:absolute;top:.5rem;left:50%;transform:translateX(-50%);width:2.4rem;height:.3rem;border-radius:999px;background:rgba(17,17,17,.18)}
         .rw-sheet-glava b{font-size:1.05rem;font-weight:700}
         .rw-sheet-x{width:2.1rem;height:2.1rem;display:inline-flex;align-items:center;justify-content:center;border:none;background:rgba(17,17,17,.06);border-radius:50%;font-size:1.1rem;line-height:1;color:var(--ink);cursor:pointer}
+        /* ── Podpis: ikonica ob dokumentu + slide-up sheet (namizje in mobil) ── */
+        .rw-editor-ovoj{position:relative}
+        .rw-podpis-trig{position:absolute;right:.65rem;bottom:.65rem;width:2.5rem;height:2.5rem;border-radius:50%;border:1px solid rgba(17,17,17,.22);background:var(--paper);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(17,17,17,.14);z-index:2;transition:background .15s,color .15s}
+        .rw-podpis-trig:hover{background:var(--ink);color:var(--paper)}
+        .rw-podpis-sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,102%);width:min(480px,100vw);z-index:80;background:var(--paper);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px rgba(40,25,40,.22);transition:transform .32s cubic-bezier(.2,.8,.3,1);max-height:82dvh;overflow-y:auto;padding:0 1.2rem calc(1.4rem + env(safe-area-inset-bottom,0px))}
+        .rw-podpis-sheet.odprt{transform:translate(-50%,0)}
+        @media (prefers-reduced-motion:reduce){.rw-podpis-sheet{transition:none}}
+        .rw-podpis-vrsta{display:flex;gap:.5rem;margin:1rem 0 .7rem}
+        .rw-podpis-platno{display:block;width:100%;height:170px;border:1px dashed rgba(17,17,17,.3);border-radius:12px;background:#fff;touch-action:none;cursor:crosshair}
+        .rw-podpis-akcije{display:flex;gap:.6rem;margin-top:.8rem;flex-wrap:wrap;align-items:center}
+        .rw-podpis-ali{margin:1rem 0 .6rem;font-size:.72rem;color:rgba(17,17,17,.5);text-transform:uppercase;letter-spacing:.14em;font-weight:700}
+        .rw-editor .podpis-img{display:block;max-height:52px;max-width:200px;margin:0 0 -8px}
         @media (max-width:640px){
           .rw-orodjarna.rw-orodjarna-sheet{position:fixed;left:0;right:0;bottom:0;z-index:80;margin:0;max-height:76dvh;overflow-y:auto;padding:0 1.2rem calc(1.5rem + env(safe-area-inset-bottom,0px));background:var(--paper);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px rgba(40,25,40,.22);transform:translateY(102%);transition:transform .32s cubic-bezier(.2,.8,.3,1)}
           .rw-orodjarna.rw-orodjarna-sheet.odprt{transform:translateY(0)}

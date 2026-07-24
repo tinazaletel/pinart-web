@@ -375,7 +375,14 @@ export default function BusinessOverview({ base }: { base: string }) {
         </div>
       </section>
       </div>
-      {selectedDocument && <div className={styles.detailBackdrop} role="presentation" onMouseDown={() => setSelectedDocument(null)}><aside className={styles.detailPanel} role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={e => e.stopPropagation()}><button className={styles.detailClose} type="button" onClick={() => setSelectedDocument(null)} aria-label="Zapri">×</button><p className={styles.eyebrow}>{selectedDocument.type}</p><h2 id="detail-title">{selectedDocument.title}</h2><dl><div><dt>Stranka</dt><dd>{selectedDocument.client}</dd></div><div><dt>Datum</dt><dd>{new Date(selectedDocument.date).toLocaleDateString('sl-SI')}</dd></div><div><dt>Status</dt><dd>{selectedDocument.status}</dd></div></dl>{selectedDocument.type === 'Pogodba' && (() => { const contract = contracts.find(item => item.id === selectedDocument.id); return contract?.fileName ? <button type="button" onClick={() => openContractFile(contract.id)}>Odpri {contract.fileName}</button> : contract?.body ? <pre className={styles.contractPreview}>{contract.body}</pre> : null; })()}{selectedDocument.sourceOfferId && (() => {
+      {selectedDocument && <div className={styles.detailBackdrop} role="presentation" onMouseDown={() => setSelectedDocument(null)}><aside className={styles.detailPanel} role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={e => e.stopPropagation()}><button className={styles.detailClose} type="button" onClick={() => setSelectedDocument(null)} aria-label="Zapri">×</button><p className={styles.eyebrow}>{selectedDocument.type}</p><h2 id="detail-title">{selectedDocument.title}</h2><dl><div><dt>Stranka</dt><dd>{selectedDocument.client}</dd></div><div><dt>Datum</dt><dd>{new Date(selectedDocument.date).toLocaleDateString('sl-SI')}</dd></div><div><dt>Status</dt><dd>{selectedDocument.status}</dd></div></dl>{selectedDocument.type === 'Pogodba' && (() => { const contract = contracts.find(item => item.id === selectedDocument.id); if (contract?.fileName) return <button type="button" onClick={() => openContractFile(contract.id)}>Odpri {contract.fileName}</button>;
+        if (!contract?.body) return null;
+        /* novo telo je HTML (predloga s cleni in podpisi) — izrisi ga kot dokument;
+           stara plain-text telesa ostanejo v <pre>, da se ne polomijo */
+        const jeHtml = contract.body.includes('<h1') || contract.body.includes('<div');
+        return jeHtml
+          ? <div className={styles.contractPreview} dangerouslySetInnerHTML={{ __html: contract.body }} />
+          : <pre className={styles.contractPreview}>{contract.body}</pre>; })()}{selectedDocument.sourceOfferId && (() => {
         const offer = offers.find(item => item.id === selectedDocument.sourceOfferId);
         const linkedContracts = contracts.filter(item => item.sourceOfferId === selectedDocument.sourceOfferId);
         const linkedInvoices = invoices.filter(item => item.sourceOfferId === selectedDocument.sourceOfferId);

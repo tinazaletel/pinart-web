@@ -12,6 +12,15 @@ export type FlowOffer = {
   agreedAmount: number;
 };
 
+/* Postavka racuna (ZDDV-1): cena je NA ENOTO in BREZ DDV; popust v %, ddv = stopnja v %. */
+export type FlowInvoiceItem = {
+  opis: string;
+  kolicina: number;
+  cena: number;
+  popust?: number;
+  ddv?: number;
+};
+
 export type FlowInvoice = {
   id: string;
   number?: string;
@@ -25,6 +34,12 @@ export type FlowInvoice = {
   source?: string;
   fileName?: string;
   filePath?: string;
+  /* neobvezna polja za racun po ZDDV-1 — stari zapisi jih nimajo in se delujejo */
+  items?: FlowInvoiceItem[];
+  serviceDate?: string;
+  vatPayer?: boolean;
+  net?: number;
+  vatAmount?: number;
 };
 
 export type FlowExpense = {

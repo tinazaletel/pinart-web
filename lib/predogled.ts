@@ -113,15 +113,37 @@ export function demoPodatki(): FlowData {
     sourceOfferId: i % 4 === 1 ? undefined : `demo-o-${i % 12}`,
   }));
 
-  const contracts: FlowContract[] = Array.from({ length: 8 }, (_, i) => ({
-    id: `demo-p-${i}`,
-    title: `Pogodba · ${NASLOVI[i % NASLOVI.length]}`,
-    client: STRANKE[i % STRANKE.length],
-    date: datum(i % 8, 10 + (i % 15)),
-    status: (['signed', 'active', 'review', 'received', 'draft'] as const)[i % 5],
-    sourceOfferId: `demo-o-${i}`,
-    notes: i % 3 === 0 ? 'Avtorske pravice prenesene za tisk in splet, 3 leta.' : undefined,
-  }));
+  /* demo pogodbe imajo tudi TELO (HTML v obliki predloge iz retainerja/pogodb),
+     da detajl pokaze celoten dokument s cleni in podpisnim blokom — prej so bile
+     samo metapodatki in detajl je izgledal prazen/pokvarjen */
+  const teloPogodbe = (naslov: string, stranka: string, dat: string) => `
+    <div class="kick">Pogodba o sodelovanju</div>
+    <h1>${naslov}</h1>
+    <p class="meta">Datum: ${new Date(dat + 'T00:00:00').toLocaleDateString('sl-SI')}</p>
+    <div class="parties"><p>sklenjena med:</p><p><b>Izvajalec:</b> Pinart studio</p><p>in</p><p><b>Naročnik:</b> ${stranka}</p></div>
+    <div class="pog-clen"><h2>1. člen — Predmet</h2><p>Izvajalec za naročnika opravi storitve iz ponudbe: ${naslov.toLowerCase()}. Obseg in vsebina sledita potrjeni ponudbi.</p></div>
+    <div class="pog-clen"><h2>2. člen — Roki</h2><p>Deli se oddajajo po dogovorjenem terminskem načrtu. Zamude zaradi manjkajočih gradiv naročnika podaljšajo roke za enak čas.</p></div>
+    <div class="pog-clen"><h2>3. člen — Cena in plačilo</h2><p>Cena po potrjeni ponudbi. Plačilo v 15 dneh od izdaje računa na TRR izvajalca.</p></div>
+    <div class="pog-clen"><h2>4. člen — Avtorske pravice</h2><p>Materialne avtorske pravice se prenesejo za dogovorjene medije in obdobje po specifikaciji v ponudbi; moralne pravice ostanejo avtorju.</p></div>
+    <div class="pog-clen"><h2>5. člen — Končne določbe</h2><p>Za spore je pristojno sodišče po sedežu izvajalca. Pogodba je sklenjena v dveh enakih izvodih.</p></div>
+    <div class="sig"><div><span>Izvajalec</span><span class="lin"></span>Pinart studio</div><div><span>Naročnik</span><span class="lin"></span>${stranka}</div></div>`;
+  const contracts: FlowContract[] = Array.from({ length: 8 }, (_, i) => {
+    const naslov = NASLOVI[i % NASLOVI.length];
+    const stranka = STRANKE[i % STRANKE.length];
+    const dat = datum(i % 8, 10 + (i % 15));
+    return {
+      id: `demo-p-${i}`,
+      title: `Pogodba · ${naslov}`,
+      client: stranka,
+      date: dat,
+      status: (['signed', 'active', 'review', 'received', 'draft'] as const)[i % 5],
+      sourceOfferId: `demo-o-${i}`,
+      body: teloPogodbe(naslov, stranka, dat),
+      /* predpona "ALERT:" oznaci opozorilo (rdece v arhivu/detajlu) — npr. potekla licenca */
+      notes: i % 4 === 1 ? 'ALERT: Potekle avtorske pravice — licenca za tisk je potekla 1. 6. 2026.'
+        : i % 3 === 0 ? 'Avtorske pravice prenesene za tisk in splet, 3 leta.' : undefined,
+    };
+  });
 
   const clients: FlowClient[] = STRANKE.map((ime, i) => ({
     id: `demo-s-${i}`,
