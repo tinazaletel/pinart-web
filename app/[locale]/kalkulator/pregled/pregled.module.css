@@ -76,6 +76,10 @@
 /* aktivna postavka: brez crte in BREZ ozadja. Loci jo samo polni ink napis.
    Ozadje se pokaze le ob hoverju, enako kot pri ostalih. */
 .active { color: var(--ink); background: transparent; }
+/* aktivna stran mora biti jasno vidna (prej prozorna = nisi vedela, kje si) */
+.navItem.active { color: var(--ink); background: oklch(92% .05 300); font-weight: 800; }
+.navItem.active span { opacity: .85; }
+.navItem.active:hover { background: oklch(90% .06 300); }
 .toolsMenu { display: grid; }
 .toolsMenu summary { display: grid; grid-template-columns: auto 1fr auto; gap: .8rem; align-items: center; padding: .75rem .8rem; border-radius: .7rem; color: color-mix(in oklch, var(--ink) 65%, transparent); cursor: pointer; list-style: none; }
 .toolsMenu summary::-webkit-details-marker { display: none; }
