@@ -1199,6 +1199,37 @@
 .priceEditorEmpty > span { display: grid; place-items: center; width: 3rem; aspect-ratio: 1; border-radius: 50%; background: oklch(92% .05 295); font-size: 1.5rem; }
 .priceEditorEmpty p { margin: .3rem 0 0; color: var(--muted); }
 
+/* Preklop Storitve/Produkti — segmentne pilule, aktivna = temna (var(--ink)),
+   isti jezik kot .previewSwitch, a vecji/berljivejsi ker je stalno vidna
+   navigacija znotraj strani, ne majhno orodje v vogalu. */
+.priceViewSwitch { display: inline-flex; width: fit-content; gap: .25rem; padding: .3rem; border-radius: 999px; background: oklch(94.5% .012 87); }
+.priceViewSwitch button { min-height: 2.2rem; padding: 0 1.1rem; border: 0; border-radius: 999px; background: transparent; color: color-mix(in oklch, var(--ink) 65%, transparent); font: 750 .85rem var(--font-sans), sans-serif; cursor: pointer; }
+.priceViewSwitch .priceViewActive { background: var(--ink); color: var(--paper); }
+
+/* Produkti — preprost webshop-style vnos (locen od cenika storitev zgoraj).
+   Sifra/zaloga sta globalni (lib/produkti.ts), ne per-cenik. */
+.produktEditor { padding: 1.2rem; border: 1px solid var(--line); border-radius: 1.4rem; background: oklch(98% .008 87 / .94); }
+.produktList { display: grid; gap: .7rem; margin-top: .8rem; }
+.produktCard { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 1.2rem; padding: 1.1rem 1.3rem; border: 1px solid var(--line); border-radius: 1rem; background: oklch(100% 0 0 / .6); }
+.produktInfo { display: grid; gap: .3rem; min-width: 0; }
+.produktInfo strong { font-size: 1.05rem; font-weight: 750; }
+.produktInfo small { color: var(--muted); font-size: .85rem; font-weight: 650; }
+.produktInfo p { margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.4; }
+.produktMeta { display: grid; gap: .3rem; justify-items: end; text-align: right; white-space: nowrap; }
+.produktMeta strong { font-size: 1rem; font-weight: 750; }
+.produktMeta span { color: var(--muted); font-size: .9rem; }
+.produktGumbi { display: flex; gap: .5rem; }
+.produktGumbi button { min-height: 2.5rem; padding: 0 .9rem; border: 1px solid var(--line); border-radius: 999px; background: transparent; font-size: .85rem; font-weight: 650; cursor: pointer; }
+.produktForm { display: flex; flex-wrap: wrap; align-items: end; gap: .6rem; padding: 1rem 1.3rem; border: 1px solid var(--line); border-radius: 1rem; background: linear-gradient(125deg, oklch(96% .035 295), oklch(94% .04 165)); }
+.produktForm input, .produktForm select { min-height: 2.75rem; min-width: 0; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .65rem; background: oklch(100% 0 0 / .8); font-size: .9rem; }
+.produktFormNaziv { flex: 1 1 12rem; }
+.produktFormSifra { flex: 1 1 9rem; }
+.produktFormOpis { flex: 1 1 100%; }
+.produktFormCena { display: flex; align-items: center; gap: .35rem; flex: 0 1 13rem; font-size: .9rem; }
+.produktFormCena input { width: 5.5rem; }
+.produktFormZaloga { flex: 0 1 8rem; }
+.produktForm > button { flex: 0 0 auto; min-height: 2.75rem; padding: 0 1.1rem; border: 0; border-radius: .65rem; background: var(--ink); color: var(--paper); font-size: .85rem; font-weight: 750; cursor: pointer; }
+
 @media (max-width: 1100px) {
   .goalOverview { grid-template-columns: 1fr auto; }
   .goalOverviewStats { grid-column: 1; grid-row: 2; }
@@ -1228,6 +1259,12 @@
   .priceEditor > header > div:last-child { justify-content: flex-start; }
   .priceRows > label { grid-template-columns: 1fr; }
   .addPriceService { grid-template-columns: 1fr; }
+  .priceViewSwitch { width: 100%; }
+  .priceViewSwitch button { flex: 1; }
+  .produktCard { grid-template-columns: 1fr; justify-items: start; gap: .6rem; }
+  .produktMeta { justify-items: start; text-align: left; }
+  .produktGumbi { width: 100%; }
+  .produktGumbi button { flex: 1; }
 }
 
 /* Accessible product typography: secondary copy stays compact, never illegible. */
