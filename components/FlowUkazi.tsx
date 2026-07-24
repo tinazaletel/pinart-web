@@ -23,7 +23,7 @@ const CILJI: Array<{ pot: string; ime: string; skupina: string }> = [
   { pot: '/kalkulator/ceniki', ime: 'Moji ceniki', skupina: 'Podatki' },
   { pot: '/kalkulator/stroski', ime: 'Stroški', skupina: 'Podatki' },
   { pot: '/kalkulator/cilji', ime: 'Cilji', skupina: 'Načrt' },
-  { pot: '/kalkulator/cas', ime: 'Cena & čas', skupina: 'Načrt' },
+  { pot: '/kalkulator/cas', ime: 'Čas', skupina: 'Načrt' },
   { pot: '/kalkulator/poslovni-nacrt', ime: 'Poslovni okvir', skupina: 'Načrt' },
   { pot: '/kalkulator/projekti', ime: 'Projekti', skupina: 'Drugo' },
   { pot: '/kalkulator/racunovodstvo', ime: 'Računovodstvo', skupina: 'Drugo' },

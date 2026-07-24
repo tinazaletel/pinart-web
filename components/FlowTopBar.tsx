@@ -32,7 +32,7 @@ const IMENA: Record<string, string> = {
   ceniki: 'Moji ceniki',
   stroski: 'Stroški',
   cilji: 'Cilji',
-  cas: 'Cena & čas',
+  cas: 'Čas',
   'poslovni-nacrt': 'Poslovni okvir',
   projekti: 'Projekti',
   racunovodstvo: 'Računovodstvo',

@@ -5,7 +5,7 @@ import Zaklenjeno from '@/components/Zaklenjeno';
 import { smePorabiti } from '@/lib/pravice';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
-export const metadata: Metadata = { title: 'Cena in čas | Pinart Flow', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: 'Čas | Pinart Flow', robots: { index: false, follow: false } };
 
 export default async function TimePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params; const base = locale === 'sl' ? '' : `/${locale}`;
@@ -15,5 +15,5 @@ export default async function TimePage({ params }: { params: Promise<{ locale: s
      pripeljal na cenik — slepa ulica. */
   const sme = await smePorabiti('businessInsights');
 
-  return <main className={styles.shell}><DashboardSidebar base={base} active="time" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>CENA &amp; ČAS</p><h1>Čas naj izboljša ceno.</h1></div></header><BusinessPlanWorkspace view="time" omejeno={!sme} />{!sme && <Zaklenjeno funkcija="businessInsights" base={base} />}</section></main>;
+  return <main className={styles.shell}><DashboardSidebar base={base} active="time" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>ČAS</p><h1>Čas naj izboljša ceno.</h1></div></header><BusinessPlanWorkspace view="time" omejeno={!sme} />{!sme && <Zaklenjeno funkcija="businessInsights" base={base} />}</section></main>;
 }

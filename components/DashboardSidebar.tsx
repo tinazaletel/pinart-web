@@ -60,7 +60,7 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
     </MeniSkupina>
     <MeniSkupina naslov="Načrt" aktivna={active === 'goals' || active === 'time' || active === 'plan'}>
       {item('goals', `${base}/kalkulator/cilji`, '01', 'Cilji', 'cilji', 'businessInsights')}
-      {item('time', `${base}/kalkulator/cas`, '02', 'Cena & čas', 'cas', 'businessInsights')}
+      {item('time', `${base}/kalkulator/cas`, '02', 'Čas', 'cas', 'businessInsights')}
       {item('plan', `${base}/kalkulator/poslovni-nacrt`, '03', 'Poslovni okvir', 'okvir', 'businessInsights')}
     </MeniSkupina>
     <MeniSkupina naslov="Drugo" vednoVidna aktivna={active === 'settings'}>
