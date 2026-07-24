@@ -569,6 +569,23 @@
 .expenseList .expenseDelete { border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent); background: oklch(98% .008 87 / .9); color: oklch(52% .16 25); }
 .expenseList .expenseDelete:hover { border-color: oklch(52% .16 25); background: oklch(95% .04 25); }
 .expenseCoin { display: grid; place-items: center; width: 2rem; aspect-ratio: 1; border-radius: 50%; background: var(--ink); color: var(--paper); font: 700 .7rem var(--font-sans), sans-serif; }
+/* ── Znacke stroska: urejevalnik (izbrane + prosti vnos + predlogi) ── */
+.expenseTagsLabel { grid-column: 1 / -1; }
+.expenseTagsBox { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; min-height: 2.65rem; padding: .35rem .5rem; border: 1px solid var(--line); border-radius: .65rem; background: oklch(100% 0 0 / .8); }
+/* visja specificnost (razred+razred+element) je nujna, da povozi ".expenseEditor input" (razred+element) — glej feedback_css_splosna_pravila */
+.expenseEditor .expenseTagsBox input { flex: 1 1 8rem; min-width: 6rem; height: 1.8rem; padding: 0 .3rem; border: 0; border-radius: 0; background: transparent; font: 500 .66rem var(--font-sans), sans-serif; }
+.expenseEditor .expenseTagsBox input:focus { outline: none; }
+.expenseTagChip { display: inline-flex; align-items: center; gap: .3rem; padding: .3rem .6rem; border: 1px solid var(--line); border-radius: 999px; background: oklch(95% .01 87); color: var(--ink); font-size: .58rem; font-weight: 700; white-space: nowrap; }
+.expenseTagChip button { display: grid; place-items: center; width: 1rem; height: 1rem; padding: 0; border: 0; background: none; color: color-mix(in oklch, var(--ink) 55%, transparent); font-size: .7rem; line-height: 1; cursor: pointer; }
+.expenseTagChip button:hover { color: var(--ink); }
+.expenseTagSuggestions { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .4rem; }
+.expenseTagSuggestions button { padding: .28rem .6rem; border: 1px dashed var(--line); border-radius: 999px; background: transparent; color: color-mix(in oklch, var(--ink) 62%, transparent); font: 700 .56rem var(--font-sans), sans-serif; cursor: pointer; }
+.expenseTagSuggestions button:hover { border-style: solid; color: var(--ink); background: oklch(95% .01 87); }
+/* ── Znacke stroska: majhni cipi pod opisom v seznamu ── */
+.expenseItemTags { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .3rem; }
+.expenseItemTag { display: inline-flex; align-items: center; padding: .2rem .5rem; border: 1px solid var(--line); border-radius: 999px; background: oklch(96% .008 87); color: color-mix(in oklch, var(--ink) 72%, transparent); font-size: .52rem; font-weight: 700; white-space: nowrap; }
+/* ── Filter po znacki: enak jezik kot .invoiceFilters, a lomi v vec vrstic ── */
+.tagFilterRow { flex-wrap: wrap; row-gap: .3rem; margin-top: .6rem; width: 100%; }
 /* levi stolpec dovolj sirok, da se naslov ne lomi; desni omejen, sicer se
    ena vrstica stroska raztegne cez 1000 px praznine */
 .recurringCosts { display: grid; grid-template-columns: minmax(19rem, .4fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }

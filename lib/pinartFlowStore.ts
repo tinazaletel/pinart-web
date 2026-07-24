@@ -53,6 +53,8 @@ export type FlowExpense = {
   category?: string;
   fileName?: string;
   filePath?: string;
+  /* neobvezno: znacke za locevanje/filtriranje stroskov (npr. "mesecni", "najem") */
+  tags?: string[];
 };
 
 export type FlowContract = {

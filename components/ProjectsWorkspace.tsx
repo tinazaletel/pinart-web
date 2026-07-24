@@ -111,9 +111,9 @@ const pwStyles = `
 .pw-karta{position:relative;overflow:hidden;padding:1rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:1rem;background:oklch(99% .006 87 / .85)}
 .pw-dokumentacija{background:linear-gradient(135deg,oklch(97% .022 250),oklch(97% .022 200))}
 .pw-dokumentacija h3{margin:0;font:600 1.15rem var(--font-serif),Georgia,serif}
-.pw-linki{display:flex;flex-wrap:wrap;gap:.4rem;margin:.7rem 0 0}
-.pw-link-vrstica{display:inline-flex;align-items:center;gap:.5rem;max-width:100%;padding:.5rem .65rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0 / .55)}
-.pw-link-vrstica a{min-width:0;max-width:14rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-weight:700;font-size:.72rem;text-decoration:none}
+.pw-linki{display:flex;flex-direction:column;gap:.4rem;margin:.7rem 0 0}
+.pw-link-vrstica{display:flex;align-items:center;gap:.5rem;padding:.5rem .65rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0 / .55)}
+.pw-link-vrstica a{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-weight:700;font-size:.72rem;text-decoration:none}
 .pw-link-vrstica a:hover{text-decoration:underline}
 .pw-link-brisi{flex:none;display:grid;place-items:center;width:1.5rem;height:1.5rem;padding:0;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--muted);font-size:.85rem;line-height:1;cursor:pointer}
 .pw-link-brisi:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}

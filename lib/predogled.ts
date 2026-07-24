@@ -111,6 +111,11 @@ export function demoPodatki(): FlowData {
     date: datum(i % 10, 6 + (i % 18)),
     category: i % 4 === 1 ? 'Podjetje' : 'Projekt',
     sourceOfferId: i % 4 === 1 ? undefined : `demo-o-${i % 12}`,
+    /* demo znacke: nekaj primerov za predogled polnega videza (poln nabor + brez znack) */
+    tags: i % 4 === 1 ? ['mesečni', 'obratovalni stroški']
+      : i % 4 === 2 ? ['letni', 'najem']
+      : i % 4 === 3 ? ['naročnine']
+      : undefined,
   }));
 
   /* demo pogodbe imajo tudi TELO (HTML v obliki predloge iz retainerja/pogodb),
