@@ -271,6 +271,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             ) : (
               <div className="arh-tabela-ovoj">
                 <div className="arh-tabela arh-tabela-ponudbe">
+                  <div className="arh-tabela-naslov"><span className="arh-tabela-oznaka">Ponudbe</span><strong>{ponudbePrikaz.length}</strong></div>
                   <header><span>Ponudba</span><span>Stranka</span><span>Datum</span><span>Status</span><span>Št.</span><span className="arh-desno">Znesek</span><span /></header>
                   {ponudbePrikaz.map(o => (
                     <button key={o.id} type="button" className="arh-vrstica" onClick={() => { setDetObsegOdprt(false); setDetajl({ vrsta: 'ponudba', zapis: o }); }}>
@@ -300,6 +301,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             ) : (
               <div className="arh-tabela-ovoj">
                 <div className="arh-tabela arh-tabela-pogodbe">
+                  <div className="arh-tabela-naslov"><span className="arh-tabela-oznaka">Pogodbe</span><strong>{pogodbePrikaz.length}</strong></div>
                   <header><span>Pogodba</span><span>Stranka</span><span>Datum</span><span>Status</span><span>Opomba</span><span /></header>
                   {pogodbePrikaz.map(c => {
                     const op = opombaInfo(c.notes);
@@ -345,6 +347,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             ) : (
               <div className="arh-tabela-ovoj">
                 <div className="arh-tabela arh-tabela-racuni">
+                  <div className="arh-tabela-naslov"><span className="arh-tabela-oznaka">Računi</span><strong>{racuniPrikaz.length}</strong></div>
                   <header><span>Račun</span><span>Št.</span><span>Stranka</span><span>Datum</span><span>Status</span><span className="arh-desno">Znesek</span><span /></header>
                   {racuniPrikaz.map(r => (
                     <button key={r.id} type="button" className="arh-vrstica" onClick={() => setDetajl({ vrsta: 'racun', zapis: r })}>
@@ -522,6 +525,10 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-tabela-pogodbe{grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr) 1.6rem}
         .arh-tabela-racuni{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,.9fr) minmax(0,1fr) 1.6rem}
         /* gap tudi na header (prej ga ni imel -> "ZNESEKDATUM" se je dotikal) + vecji razmik */
+        /* naslovna vrstica tabele (oznaka + stevec) = DEL tabele, vijola podlaga */
+        .arh-tabela-naslov{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem 1rem .85rem;background:oklch(95% .035 300);border-bottom:1px solid rgba(17,17,17,.08)}
+        .arh-tabela-oznaka{font-size:.66rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:oklch(45% .12 300)}
+        .arh-tabela-naslov strong{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:1.6rem;line-height:1;color:var(--ink)}
         .arh-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.7rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.5);border-bottom:1px solid rgba(17,17,17,.1)}
         .arh-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:none;border-bottom:1px solid rgba(17,17,17,.07);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
         .arh-vrstica:last-child{border-bottom:none}

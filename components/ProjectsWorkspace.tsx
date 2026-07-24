@@ -63,6 +63,9 @@ const pwStyles = `
 .pw-seznam-glava strong{font:500 1.5rem var(--font-serif),Georgia,serif;color:var(--ink)}
 .pw-tabela-ovoj{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:1.4rem}
 .pw-tabela{min-width:640px;display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr) 1.6rem;background:oklch(98% .008 87 / .92);border:1px solid var(--line);border-radius:1.4rem;overflow:hidden}
+.pw-tabela-naslov{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem 1rem .85rem;background:oklch(95% .035 300);border-bottom:1px solid rgba(17,17,17,.08)}
+.pw-tabela-naslov .${styles.eyebrow}{color:oklch(45% .12 300)}
+.pw-tabela-naslov strong{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:1.6rem;line-height:1;color:var(--ink)}
 .pw-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.75rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
 .pw-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:0;border-top:1px solid var(--line);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
 .pw-tabela > button.pw-vrstica:first-of-type{border-top:0}
@@ -173,10 +176,11 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         <div className={styles.projectStoryEmpty}><span>↗</span><strong>Najprej ustvari ponudbo.</strong><p>Ta bo postala osnova projekta in povezala vse nadaljnje dokumente.</p></div>
       ) : (
         <div className="pw-seznam">
-          <header className="pw-seznam-glava"><p className={styles.eyebrow}>PROJEKTI</p><strong>{visible.length}</strong></header>
           {visible.length ? (
             <div className="pw-tabela-ovoj">
               <div className="pw-tabela">
+                {/* naslov + stevec sta DEL tabele (znotraj okvirja), ne lebdita nad njo */}
+                <div className="pw-tabela-naslov"><p className={styles.eyebrow}>PROJEKTI</p><strong>{visible.length}</strong></div>
                 <header><span>Projekt</span><span>Stranka</span><span>Datum</span><span>Status</span><span className="pw-desno">Vrednost</span><span /></header>
                 {visible.map(project => { const info = projectStatusInfo(project.offer.status); return (
                   <button key={project.offer.id} type="button" className="pw-vrstica" onClick={() => selectProject(project.offer.id)}>
