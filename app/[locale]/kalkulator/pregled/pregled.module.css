@@ -654,9 +654,11 @@
 .clientDocuments h3 { margin: 0 0 .5rem; font: 600 1rem var(--font-serif), Georgia, serif; }
 .clientDocuments > span { display: grid; grid-template-columns: 5rem 1fr auto; align-items: center; gap: .5rem; padding: .55rem 0; border-top: 1px solid var(--line); font-size: .6rem; }
 .clientDocuments b { font-size: .53rem; letter-spacing: .06em; text-transform: uppercase; }
+.docDetajl { display: flex; align-items: center; gap: .5rem; min-width: 0; }
 .clientDocIme { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.docZnesek { justify-self: end; font-size: .62rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 /* status = pilula s piko, enak jezik kot povsod; brez ozadja (tih) */
-.docPika { display: inline-flex; align-items: center; gap: .3rem; justify-self: end; font-style: normal; font-size: .55rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.docPika { display: inline-flex; align-items: center; gap: .3rem; flex: none; font-style: normal; font-size: .55rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
 .docPika::before { content: ''; width: .4rem; height: .4rem; border-radius: 50%; background: var(--pika, oklch(62% .02 70)); flex: none; }
 .docPika[data-tone='success'] { --pika: oklch(62% .15 150); }
 .docPika[data-tone='waiting'] { --pika: oklch(72% .16 75); }
