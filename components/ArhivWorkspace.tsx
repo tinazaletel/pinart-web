@@ -546,7 +546,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-metrike{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:0 0 1.2rem}
         .arh-metrika{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;min-height:7.4rem;padding:1rem 1.1rem;border:1px solid rgba(17,17,17,.1);border-radius:14px}
         .arh-metrika small{position:relative;z-index:1;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(17,17,17,.55)}
-        .arh-metrika strong{position:relative;z-index:1;margin-top:auto;font:500 1.7rem var(--font-serif),Georgia,serif;color:var(--ink)}
+        .arh-metrika strong{position:relative;z-index:1;margin-top:auto;font:500 1.7rem var(--font-serif),Georgia,serif;color:var(--ink);-webkit-text-stroke:.35px var(--ink);text-shadow:0 1px 2px oklch(100% 0 0 / .35)}
         .arh-metrika span{position:relative;z-index:1;margin-top:.2rem;color:rgba(17,17,17,.55);font-size:.78rem}
         .arh-metrika-izdano{background:linear-gradient(140deg,oklch(95% .035 295),oklch(90% .065 297))}
         .arh-metrika-placano{background:linear-gradient(140deg,oklch(96% .035 160),oklch(87% .08 163))}

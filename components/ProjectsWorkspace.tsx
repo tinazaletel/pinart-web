@@ -90,7 +90,7 @@ const pwStyles = `
 .pw-metrike{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:0 0 1rem}
 .pw-metrika{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;min-height:7.4rem;padding:1rem 1.1rem;border:1px solid var(--line);border-radius:14px}
 .pw-metrika small{position:relative;z-index:1;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.pw-metrika strong{position:relative;z-index:1;margin-top:auto;font:500 1.7rem var(--font-serif),Georgia,serif;color:var(--ink)}
+.pw-metrika strong{position:relative;z-index:1;margin-top:auto;font:500 1.7rem var(--font-serif),Georgia,serif;color:var(--ink);-webkit-text-stroke:.35px var(--ink);text-shadow:0 1px 2px oklch(100% 0 0 / .35)}
 .pw-metrika span{position:relative;z-index:1;margin-top:.2rem;color:var(--muted);font-size:.78rem}
 .pw-metrika-vrednost{background:linear-gradient(140deg,oklch(95% .035 295),oklch(90% .065 297))}
 .pw-metrika-zaracunano{background:linear-gradient(140deg,oklch(96% .035 160),oklch(87% .08 163))}
@@ -208,7 +208,17 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [links, setLinks] = useState<FlowProjectLink[]>([]);
   const [linkOznaka, setLinkOznaka] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
-  useEffect(() => { setLinks(selectedId ? loadProjectLinks(selectedId) : []); setLinkOznaka(''); setLinkUrl(''); }, [selectedId]);
+  /* V predogledu (demo) pokažemo primere povezav, da se vidi poln videz razdelka;
+     v pravem računu beremo dejansko shranjene povezave. */
+  useEffect(() => {
+    const demo: FlowProjectLink[] = [
+      { oznaka: 'Figma · Dizajn', url: 'https://figma.com' },
+      { oznaka: 'Miro · Moodboard', url: 'https://miro.com' },
+      { oznaka: 'Drive · Gradiva', url: 'https://drive.google.com' },
+    ];
+    setLinks(samoOgled ? demo : (selectedId ? loadProjectLinks(selectedId) : []));
+    setLinkOznaka(''); setLinkUrl('');
+  }, [selectedId, samoOgled]);
   const addLink = () => {
     if (samoOgled || !selectedId) return;
     const oznaka = linkOznaka.trim(); const url = linkUrl.trim();
