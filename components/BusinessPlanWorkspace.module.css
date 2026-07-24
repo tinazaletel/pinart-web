@@ -208,6 +208,8 @@
   margin: 1.1rem 0 .3rem; padding: 0 .2rem .35rem;
   border-bottom: 1px solid var(--line);
 }
+/* dnevni naslov ima border-bottom; prva vrstica pod njim naj NE dodaja se svojega border-top (sicer dvojna crta) */
+.history .danGlava + article { border-top: 0; }
 .danGlava strong { font-size: .8rem; font-weight: 700; text-transform: capitalize; }
 .danGlava span { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 
