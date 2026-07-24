@@ -688,7 +688,7 @@
 .projectMoney input { width: 6rem; border: 0; border-bottom: 1px solid currentColor; outline: 0; background: transparent; font: 600 .75rem var(--font-sans), sans-serif; }
 .projectMoney .projectNeedsInvoice { background: oklch(88% .11 62); color: oklch(39% .1 45); }
 .projectNarrative { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; margin-top: .55rem; }
-.projectNarrative article { position: relative; overflow: hidden; min-height: 11rem; display: flex; flex-direction: column; padding: 1rem; border: 1px solid color-mix(in oklch, var(--ink) 8%, transparent); border-radius: 1rem; background: oklch(99% .006 87 / .85); }
+.projectNarrative article { position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 1rem; border: 1px solid color-mix(in oklch, var(--ink) 8%, transparent); border-radius: 1rem; background: oklch(99% .006 87 / .85); }
 .projectNarrative article:not(.projectAgreement) > * { position: relative; z-index: 1; }
 .projectNarrative article:nth-child(2) { background: linear-gradient(135deg, oklch(91% .075 155), oklch(76% .14 166), oklch(86% .1 185)); background-size: 180% 180%; }
 .projectNarrative article:nth-child(3) { background: linear-gradient(135deg, oklch(91% .06 295), oklch(74% .16 297), oklch(87% .1 285)); background-size: 180% 180%; }
