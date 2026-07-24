@@ -439,10 +439,12 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
     {/* ── POGLED 1: NASTAVITVE (SAMO vstop za novo pogodbo — pregled/arhiv
         shranjenih pogodb je preseljen v Arhiv, ArhivWorkspace) ── */}
-    {pogled === 'nastavitve' && <>
-      {/* naslov strani samo tu — v pogledu dokumenta/zakljucka ga ni (kot retainer) */}
-      <header className={styles.topbar}><div><p className={styles.eyebrow}>POGODBE</p><h1>Dogovor, brez ugibanja.</h1></div></header>
-      <section className="pg-sek pg-kartica">
+    {pogled === 'nastavitve' && <div className="pg-stolpec">
+      {/* naslov strani samo tu — ozek sredinski stolpec + kicker/h1 (kot retainer rw-kicker/rw-h1),
+          NE vec full-width topbar; vstop je brez bele kartice okoli (kot retainer rw-vsebina) */}
+      <p className="pg-kicker">Pogodbe</p>
+      <h1 className="pg-h1">Dogovor, brez ugibanja.</h1>
+      <section className="pg-sek">
         <div className="pg-chat">
           <span className="pg-mehur"><b>Iz česa nastane pogodba?</b><small>Izberi vir spodaj — iz ponudbe, brez nje ali naložena od stranke.</small></span>
         </div>
@@ -522,7 +524,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
           <button type="button" className="pg-gumb" aria-label="Pripravi pogodbo" disabled={vir === 'ponudba' && !offerId} onClick={pripraviPogodbo}>Pripravi pogodbo →</button>
         </div>}
       </section>
-    </>}
+    </div>}
 
     {/* ── POGLED 2: DOKUMENT (samostojna stran — sredinski ozek stolpec, kot retainer) ── */}
     {pogled === 'dokument' && <section className="pg-sek pg-stran pg-stolpec">
@@ -680,7 +682,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-stolpec{width:100%;max-width:700px;margin-left:auto;margin-right:auto}
       .pg-nazaj-vrh{margin:0 0 1rem}
 
-      .pg-kartica{background:#FCFBF7;border:1px solid rgba(17,17,17,.08);border-radius:20px;padding:1.6rem 1.7rem 1.7rem;box-shadow:0 4px 18px rgba(17,17,17,.04)}
+      /* vstopni kicker+h1 (kot retainer rw-kicker/rw-h1) — naslov strani zdaj v ozkem .pg-stolpec, brez bele kartice */
+      .pg-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);margin:0 0 .3rem}
+      .pg-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(2.4rem,6vw,4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
       .pg-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,2.6vw,2.4rem)/1.05 var(--font-serif),Georgia,serif;color:var(--ink);overflow-wrap:anywhere}
       .pg-uvod{margin:0 0 1.4rem;font-size:.92rem;line-height:1.55;color:rgba(17,17,17,.72);max-width:34rem}
 
@@ -800,7 +804,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       @media (max-width:640px){
         .pg-chat{max-width:100%}
         .pg-polja{grid-template-columns:1fr;gap:1rem}
-        .pg-kartica,.pg-zakljucek{padding:1.2rem 1rem 1.3rem}
+        .pg-zakljucek{padding:1.2rem 1rem 1.3rem}
         .pg-editor,.pg-editor h1,.pg-editor h2,.pg-editor p,.pg-editor li,.pg-doktelo,.pg-doktelo h1,.pg-doktelo h2,.pg-doktelo p,.pg-doktelo li{overflow-wrap:anywhere}
         /* podpisni stolpci se na ozkem zaslonu zlozijo navpicno (kot retainer) */
         .pg-editor .sig,.pg-doktelo .sig{flex-direction:column;gap:1.2rem}

@@ -8,5 +8,6 @@ export const metadata: Metadata = { title: 'Računi | Pinart Flow', robots: { in
 
 export default async function RacuniPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params; setRequestLocale(locale); const base = locale === 'sl' ? '' : `/${locale}`;
-  return <main className={styles.shell}><DashboardSidebar base={base} active="invoices" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>RAČUNI</p><h1>Od dogovora do plačila.</h1></div></header><InvoiceWorkspace base={base} /></section></main>;
+  return <main className={styles.shell}><DashboardSidebar base={base} active="invoices" />{/* naslov izrise InvoiceWorkspace v ozkem stolpcu (kot pogodbe/retainer), ne full-width */}
+    <section className={styles.workspace}><InvoiceWorkspace base={base} /></section></main>;
 }

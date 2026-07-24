@@ -88,6 +88,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   const [statusPonudba, setStatusPonudba] = useState<'vse' | FlowOfferStatus>('vse');
   const [statusPogodba, setStatusPogodba] = useState<'vse' | FlowContractStatus>('vse');
   const [placano, setPlacano] = useState<'vse' | 'placano' | 'odprto'>('vse');
+  /* status projekta — iste vrednosti kot ProjectsWorkspace (vse/aktivni/cakajo/zakljuceni),
+     da krmiljeni prop status= deluje brez pretvorbe */
+  const [statusProjekt, setStatusProjekt] = useState('vse');
 
   const [detajl, setDetajl] = useState<Detajl | null>(null);
   const [detObsegOdprt, setDetObsegOdprt] = useState(false);
@@ -96,7 +99,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   const menjajZavihek = (z: Zavihek) => {
     setZavihek(z);
     setIskanje(''); setObdobjeOd(''); setObdobjeDo('');
-    setStatusPonudba('vse'); setStatusPogodba('vse'); setPlacano('vse');
+    setStatusPonudba('vse'); setStatusPogodba('vse'); setPlacano('vse'); setStatusProjekt('vse');
     setDetajl(null); setDetObsegOdprt(false);
   };
 
@@ -133,16 +136,18 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   /* stevilo aktivnih filtrov (za stevec na gumbu Filtri v ArhivFilter) */
   const datumAktiven = obdobjeOd !== '' || obdobjeDo !== '';
   const stFiltrov = (datumAktiven ? 1 : 0)
+    + (zavihek === 'projekti' && statusProjekt !== 'vse' ? 1 : 0)
     + (zavihek === 'ponudbe' && statusPonudba !== 'vse' ? 1 : 0)
     + (zavihek === 'pogodbe' && statusPogodba !== 'vse' ? 1 : 0)
     + (zavihek === 'racuni' && placano !== 'vse' ? 1 : 0);
-  const pocistiFiltre = () => { setObdobjeOd(''); setObdobjeDo(''); setStatusPonudba('vse'); setStatusPogodba('vse'); setPlacano('vse'); };
+  const pocistiFiltre = () => { setObdobjeOd(''); setObdobjeDo(''); setStatusPonudba('vse'); setStatusPogodba('vse'); setPlacano('vse'); setStatusProjekt('vse'); };
 
   const zapriDetajl = () => { setDetajl(null); setDetObsegOdprt(false); };
 
   /* orodna vrstica (ArhivFilter) — ENA instanca ob zavihkih, izbrana glede na
-     aktivni zavihek. Projekti nima svoje orodne vrstice (ProjectsWorkspace jo
-     ima ze), zato je takrat filterCfg null in se ArhivFilter ne izrise. */
+     aktivni zavihek (vsi stirje, tudi projekti, da je vrstica z zavihki v
+     ENI vrsti). Za projekti ProjectsWorkspace dobi zunanjiFilter=true in NE
+     izrise svoje lastne — uporabi te iste vrednosti/settere. */
   type FilterCfg = {
     placeholder: string;
     statusOznaka: string;
@@ -152,7 +157,14 @@ export default function ArhivWorkspace({ base }: { base: string }) {
     akcija: React.ReactNode;
   };
   const filterCfg: FilterCfg | null =
-    zavihek === 'ponudbe' ? {
+    zavihek === 'projekti' ? {
+      placeholder: 'Poišči projekt, stranko ali številko …',
+      statusOznaka: 'Stanje projekta',
+      statusVrednost: statusProjekt,
+      onStatus: setStatusProjekt,
+      statusOpcije: [{ vrednost: 'vse', oznaka: 'Vsi' }, { vrednost: 'aktivni', oznaka: 'Aktivni' }, { vrednost: 'cakajo', oznaka: 'Čakajo' }, { vrednost: 'zakljuceni', oznaka: 'Zaključeni' }],
+      akcija: <Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>+ Nova ponudba</Link>,
+    } : zavihek === 'ponudbe' ? {
       placeholder: 'Poišči ponudbo, stranko ali številko …',
       statusOznaka: 'Status ponudbe',
       statusVrednost: statusPonudba,
@@ -219,10 +231,22 @@ export default function ArhivWorkspace({ base }: { base: string }) {
           )}
         </div>
 
-        {/* ── PROJEKTI: obstojeci ProjectsWorkspace (logike ne prepisujemo) ── */}
+        {/* ── PROJEKTI: obstojeci ProjectsWorkspace (logike ne prepisujemo), zunanjiFilter=true
+            => orodno vrstico izrise ArhivFilter zgoraj v .arh-glava (ena vrsta z zavihki) ── */}
         {zavihek === 'projekti' && (
           <section className="arh-panel arh-projekti">
-            <ProjectsWorkspace base={base} />
+            <ProjectsWorkspace
+              base={base}
+              zunanjiFilter
+              iskanje={iskanje}
+              onIskanje={setIskanje}
+              status={statusProjekt}
+              onStatus={setStatusProjekt}
+              datumOd={obdobjeOd}
+              datumDo={obdobjeDo}
+              onDatumOd={setObdobjeOd}
+              onDatumDo={setObdobjeDo}
+            />
           </section>
         )}
 

@@ -50,17 +50,48 @@ const overflowFix = `
 }
 `;
 
-export default function ProjectsWorkspace({ base }: { base: string }) {
+/* stanje filtra projektov — iste vrednosti kot ArhivWorkspace (statusProjekt),
+   da zunanji filterCfg (arh-glava) in notranji fallback delujeta z istimi vrednostmi */
+type ProjektStatus = 'vse' | 'aktivni' | 'cakajo' | 'zakljuceni';
+
+type Props = {
+  base: string;
+  /* zunanjiFilter=true => ProjectsWorkspace NE izriše lastne orodne vrstice
+     (ArhivFilter); vrednosti in setterji pridejo od zunaj (ArhivWorkspace),
+     ki takrat izrise SVOJ ArhivFilter v .arh-glava (ena vrsta z zavihki). */
+  zunanjiFilter?: boolean;
+  iskanje?: string;
+  onIskanje?: (vrednost: string) => void;
+  status?: string;
+  onStatus?: (vrednost: string) => void;
+  datumOd?: string;
+  datumDo?: string;
+  onDatumOd?: (vrednost: string) => void;
+  onDatumDo?: (vrednost: string) => void;
+};
+
+export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIskanje, status, onStatus, datumOd: datumOdZunaj, datumDo: datumDoZunaj, onDatumOd, onDatumDo }: Props) {
   const [offers, setOffers] = useState<FlowOffer[]>([]); const [invoices, setInvoices] = useState<FlowInvoice[]>([]); const [expenses, setExpenses] = useState<FlowExpense[]>([]); const [contracts, setContracts] = useState<FlowContract[]>([]); const [amounts, setAmounts] = useState<Record<string, number>>({});
   /* Demo/Prazno velja za vse strani — glej lib/predogled.ts */
   const [nacin] = usePredogled();
   const samoOgled = nacin !== 'mine';
-  const [selectedId, setSelectedId] = useState(''); const [search, setSearch] = useState(''); const [filter, setFilter] = useState<'all' | 'active' | 'waiting' | 'closed'>('all');
-  /* datum od–do (native koledar) — enak filter kot ostali arhivi */
-  const [datumOd, setDatumOd] = useState(''); const [datumDo, setDatumDo] = useState('');
+  const [selectedId, setSelectedId] = useState('');
+  /* samostojna raba (brez zunanjiFilter): lastno stanje orodne vrstice — fallback,
+     ko iskanje/status/datum* niso podani od zunaj */
+  const [notranjeIskanje, setNotranjeIskanje] = useState('');
+  const [notranjiFilter, setNotranjiFilter] = useState<ProjektStatus>('vse');
+  const [notranjiDatumOd, setNotranjiDatumOd] = useState(''); const [notranjiDatumDo, setNotranjiDatumDo] = useState('');
+  const search = iskanje ?? notranjeIskanje;
+  const setSearch = (v: string) => { if (onIskanje) onIskanje(v); else setNotranjeIskanje(v); };
+  const filter = (status as ProjektStatus | undefined) ?? notranjiFilter;
+  const setFilter = (v: ProjektStatus) => { if (onStatus) onStatus(v); else setNotranjiFilter(v); };
+  const datumOd = datumOdZunaj ?? notranjiDatumOd;
+  const setDatumOd = (v: string) => { if (onDatumOd) onDatumOd(v); else setNotranjiDatumOd(v); };
+  const datumDo = datumDoZunaj ?? notranjiDatumDo;
+  const setDatumDo = (v: string) => { if (onDatumDo) onDatumDo(v); else setNotranjiDatumDo(v); };
   useEffect(() => { const data = podatkiZaPredogled(nacin, loadFlowData()); const loaded = [...data.offers].sort((a, b) => b.date.localeCompare(a.date)); setOffers(loaded); setSelectedId(loaded[0]?.id || ''); setInvoices(data.invoices); setExpenses(data.expenses); setContracts(data.contracts); setAmounts(Object.fromEntries(data.offers.map(offer => [offer.id, offer.agreedAmount]))); }, [nacin]);
   const projects = useMemo(() => offers.map(offer => { const projectInvoices = invoices.filter(item => item.sourceOfferId === offer.id); const projectExpenses = expenses.filter(item => item.sourceOfferId === offer.id); const projectContracts = contracts.filter(item => item.sourceOfferId === offer.id); const billed = projectInvoices.reduce((sum, item) => sum + item.amount, 0); const paid = projectInvoices.filter(item => item.paid).reduce((sum, item) => sum + item.amount, 0); const costs = projectExpenses.reduce((sum, item) => sum + item.amount, 0); const agreed = amounts[offer.id] || 0; return { offer, invoices: projectInvoices, expenses: projectExpenses, contracts: projectContracts, billed, paid, costs, agreed, unbilled: agreed ? agreed - billed : 0, profit: paid - costs }; }), [offers, invoices, expenses, contracts, amounts]);
-  const visible = projects.filter(project => { const text = `${project.offer.title} ${project.offer.client} ${project.offer.number || ''}`.toLocaleLowerCase('sl-SI'); const match = text.includes(search.toLocaleLowerCase('sl-SI')); const state = filter === 'all' || (filter === 'active' ? project.offer.status === 'accepted' : filter === 'waiting' ? project.offer.status === 'sent' : ['rejected'].includes(project.offer.status)); return match && state && vObdobju(project.offer.date, datumOd, datumDo); });
+  const visible = projects.filter(project => { const text = `${project.offer.title} ${project.offer.client} ${project.offer.number || ''}`.toLocaleLowerCase('sl-SI'); const match = text.includes(search.toLocaleLowerCase('sl-SI')); const state = filter === 'vse' || (filter === 'aktivni' ? project.offer.status === 'accepted' : filter === 'cakajo' ? project.offer.status === 'sent' : ['rejected'].includes(project.offer.status)); return match && state && vObdobju(project.offer.date, datumOd, datumDo); });
   const selected = projects.find(project => project.offer.id === selectedId) || visible[0];
   const saveAmount = (id: string, amount: number) => { const next = { ...amounts, [id]: amount }; setAmounts(next); saveOfferAmount(id, amount); };
   /* Detajl projekta se izriše v .projectStory panelu. Na mobilnem (≤980px, >640px) je ta panel
@@ -73,7 +104,7 @@ export default function ProjectsWorkspace({ base }: { base: string }) {
   const selectProject = (id: string) => { setSelectedId(id); setMobilniPogled('detajl'); if (typeof window !== 'undefined' && window.matchMedia('(max-width: 980px)').matches) requestAnimationFrame(() => storyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })); };
 
   return <div className={styles.projectsPage}><style dangerouslySetInnerHTML={{ __html: overflowFix }} />
-    <ArhivFilter
+    {!zunanjiFilter && <ArhivFilter
       iskanje={search}
       onIskanje={setSearch}
       placeholder="Poišči projekt, stranko ali številko ponudbe …"
@@ -83,12 +114,12 @@ export default function ProjectsWorkspace({ base }: { base: string }) {
       onDatumDo={setDatumDo}
       statusOznaka="Stanje projekta"
       statusVrednost={filter}
-      onStatus={v => setFilter(v as 'all' | 'active' | 'waiting' | 'closed')}
-      statusOpcije={[{ vrednost: 'all', oznaka: 'Vsi' }, { vrednost: 'active', oznaka: 'Aktivni' }, { vrednost: 'waiting', oznaka: 'Čakajo' }, { vrednost: 'closed', oznaka: 'Zaključeni' }]}
-      aktivnihFiltrov={(filter !== 'all' ? 1 : 0) + (datumOd || datumDo ? 1 : 0)}
-      onPocisti={() => { setFilter('all'); setDatumOd(''); setDatumDo(''); }}
+      onStatus={v => setFilter(v as ProjektStatus)}
+      statusOpcije={[{ vrednost: 'vse', oznaka: 'Vsi' }, { vrednost: 'aktivni', oznaka: 'Aktivni' }, { vrednost: 'cakajo', oznaka: 'Čakajo' }, { vrednost: 'zakljuceni', oznaka: 'Zaključeni' }]}
+      aktivnihFiltrov={(filter !== 'vse' ? 1 : 0) + (datumOd || datumDo ? 1 : 0)}
+      onPocisti={() => { setFilter('vse'); setDatumOd(''); setDatumDo(''); }}
       akcija={<Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>+ Nova ponudba</Link>}
-    />
+    />}
     <div className={styles.projectsLayout} data-pw-pogled={mobilniPogled}><section className={styles.projectIndex}><header><p className={styles.eyebrow}>PROJEKTI</p><strong>{visible.length}</strong></header>{visible.length ? visible.map(project => <button key={project.offer.id} className={selected?.offer.id === project.offer.id ? styles.projectIndexActive : ''} onClick={() => selectProject(project.offer.id)}><span className={styles.projectIndexNumber}>{project.offer.number || '—'}</span><span><strong>{project.offer.title}</strong><small>{project.offer.client}</small></span><span><strong>{project.agreed ? money(project.agreed) : 'Brez vrednosti'}</strong><small>{project.unbilled > 0 ? `${money(project.unbilled)} še ni zaračunano` : `${project.invoices.length} računov`}</small></span><i>›</i></button>) : <p className={styles.projectIndexEmpty}>Ni projektov v tem pogledu.</p>}</section>
       <section ref={storyRef} className={styles.projectStory}>{selected ? <>{/* mobilno (≤640px) samo: nazaj na seznam projektov, glej overflowFix */}<button type="button" className="pw-nazaj" onClick={() => setMobilniPogled('seznam')} aria-label="Nazaj na seznam projektov">← Nazaj</button><header><div><p className={styles.eyebrow}>PROJEKT · {selected.offer.number || 'BREZ ŠTEVILKE'}</p><h2>{selected.offer.title}</h2><span>{selected.offer.client} · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><b>{statusLabel[selected.offer.status]}</b></header><div className={styles.projectMoney}><label><small>Dogovorjena vrednost</small><span><input type="number" min="0" step="0.01" value={selected.agreed || ''} onChange={event => saveAmount(selected.offer.id, Number(event.target.value))} /> €</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></label><span><small>Zaračunano</small><strong>{money(selected.billed)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></span><span className={selected.unbilled > 0 ? styles.projectNeedsInvoice : ''}><small>Še ni zaračunano</small><strong>{selected.agreed ? money(selected.unbilled) : '—'}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="cost" /></b></span><span><small>Ocenjeni rezultat</small><strong>{money(selected.profit)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></span></div><div className={styles.projectNarrative}><article className={styles.projectAgreement}><p className={styles.eyebrow}>01 · DOGOVORJENO</p><h3>Kaj je bilo v ponudbi?</h3>{selected.offer.scope.length ? <ul>{selected.offer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul> : <p>Starejša ponudba nima strukturiranega obsega. Odpri jo v kalkulatorju za celotno besedilo.</p>}</article><article><p className={styles.eyebrow}>02 · POGODBE</p><h3>{selected.contracts.length ? `${selected.contracts.length} povezanih` : 'Brez pogodbe'}</h3>{selected.contracts.map(item => <span key={item.id}><b>{item.title}</b><small>{item.status}</small></span>)}<Link href={`${base}/kalkulator/pogodbe`} aria-label="Dodaj pogodbo za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>03 · RAČUNI</p><h3>{money(selected.billed)}</h3>{selected.invoices.map(item => <span key={item.id}><b>Račun {item.number || ''} · {money(item.amount)}</b><small>{item.paid ? 'Plačan' : 'Odprt'}</small></span>)}<Link href={`${base}/kalkulator/racuni`} className={styles.projectOpenLink} aria-label="Odpri račune projekta"><ArrowUpRight size={16} weight="bold" /></Link><Link href={`${base}/kalkulator/racuni`} aria-label="Dodaj račun za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>04 · STROŠKI</p><h3>{money(selected.costs)}</h3>{selected.expenses.map(item => <span key={item.id}><b>{item.title} · {money(item.amount)}</b><small>{item.category || 'Projektni strošek'}</small></span>)}<Link href={`${base}/kalkulator/stroski`} aria-label="Dodaj strošek za ta projekt"><Plus size={18} weight="bold" /></Link></article></div></> : <div className={styles.projectStoryEmpty}><span>↗</span><strong>Najprej ustvari ponudbo.</strong><p>Ta bo postala osnova projekta in povezala vse nadaljnje dokumente.</p></div>}</section></div>
   </div>;

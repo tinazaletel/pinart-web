@@ -329,7 +329,11 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
 
   return <div className={`${styles.invoicePage} rc`}>
     {/* ── POGLED: PREGLED (VSTOP za nov racun — kot ContractWorkspace vstop) ── */}
-    {pogled === 'pregled' && <section className="rc-kartica rc-sek">
+    {/* vstop brez bele kartice, v ozkem sredinskem stolpcu (kot retainer rw-vsebina) — naslov strani
+        "RAČUNI / Od dogovora do plačila" izrise racuni/page.tsx nad tem workspace-om */}
+    {pogled === 'pregled' && <section className="rc-sek rc-stolpec">
+      <p className="rc-kicker">Računi</p>
+      <h1 className="rc-h1">Od dogovora do plačila.</h1>
       <div className="rc-chat">
         <span className="rc-mehur"><b>Iz česa nastane račun?</b><small>Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita v obrazcu. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje.</small></span>
       </div>
@@ -463,6 +467,9 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       @keyframes rcStran{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
       @media (prefers-reduced-motion:reduce){.rc .rc-sek.rc-stran{animation:none}}
       .rc .rc-stolpec{width:100%;max-width:700px;margin-left:auto;margin-right:auto}
+      /* naslov v ozkem stolpcu (kot retainer rw-kicker/rw-h1) */
+      .rc .rc-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);margin:0 0 .3rem}
+      .rc .rc-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(2.4rem,6vw,4rem);line-height:1;letter-spacing:-.012em;margin:0 0 1.4rem;color:var(--ink)}
       /* na svoji strani je obrazec en stolpec (modul ima 2 koloni za inline vgradnjo) */
       .rc .rc-obrazec{grid-template-columns:1fr}
       .rc .rc-nazaj-vrh{margin:0 0 .2rem;justify-self:start}
@@ -470,9 +477,9 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-povezava:hover{opacity:.6}
       .rc .rc-mini{font-size:.8rem;color:rgba(17,17,17,.55)}
 
-      /* ── vstop (pogled 'pregled', kot ContractWorkspace pg-kartica): SAMO vstop
-         za nov racun — pregled/arhiv obstojecih racunov je preseljen v Arhiv ── */
-      .rc .rc-kartica{background:#FCFBF7;border:1px solid rgba(17,17,17,.08);border-radius:20px;padding:1.6rem 1.7rem 1.7rem;box-shadow:0 4px 18px rgba(17,17,17,.04)}
+      /* ── vstop (pogled 'pregled'): SAMO vstop za nov racun — pregled/arhiv
+         obstojecih racunov je preseljen v Arhiv. Brez bele kartice (kot retainer
+         rw-vsebina) — vsebina sedi neposredno na papirnatem ozadju. ── */
       .rc .rc-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,2.6vw,2.4rem)/1.05 var(--font-serif),Georgia,serif;color:var(--ink);overflow-wrap:anywhere}
       .rc .rc-uvod{margin:0 0 1.4rem;font-size:.92rem;line-height:1.55;color:rgba(17,17,17,.72);max-width:34rem}
 
@@ -546,7 +553,6 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       }
       @media (max-width:640px){
         .rc .rc-chat{max-width:100%}
-        .rc .rc-kartica{padding:1.2rem 1rem 1.3rem}
         .rc .rc-polja{grid-template-columns:1fr;gap:1rem}
       }
     `}</style>
