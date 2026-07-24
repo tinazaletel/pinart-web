@@ -12,7 +12,7 @@ import MeniProfil from './MeniProfil';
 import PaketZnak from './PaketZnak';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
-type Section = 'overview' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'prices' | 'library' | 'accounting' | 'profile' | 'settings';
+type Section = 'overview' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'prices' | 'accounting' | 'profile' | 'settings';
 
 /* Meni je razdeljen po tem, KAJ UPORABNIK POCNE, ne kaj stvar je:
    Delo = ustvarjas dokument za stranko · Podatki = vzdrzujes vnose · Nacrt = racunas/ciljas.
@@ -52,12 +52,11 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
     </MeniSkupina>
     {/* Arhiv (prej "Zgodovina") = kjer NAJDEŠ shranjeno; sodi pod Podatki, ne Drugo.
         Delo = ustvarjaš, Podatki = iščeš. */}
-    <MeniSkupina naslov="Podatki" aktivna={active === 'clients' || active === 'prices' || active === 'expenses' || active === 'library' || active === 'projects'}>
+    <MeniSkupina naslov="Podatki" aktivna={active === 'clients' || active === 'prices' || active === 'expenses' || active === 'projects'}>
       {item('clients', `${base}/kalkulator/stranke`, '01', 'Stranke', 'stranke')}
       {item('prices', `${base}/kalkulator/ceniki`, '02', 'Moji ceniki', 'ceniki')}
       {item('expenses', `${base}/kalkulator/stroski`, '03', 'Stroški', 'stroski', 'expenses')}
-      {item('library', `${base}/kalkulator/knjiznica`, '04', 'Knjižnica', 'knjiznica')}
-      {item('projects', `${base}/kalkulator/projekti`, '05', 'Arhiv', 'zgodovina')}
+      {item('projects', `${base}/kalkulator/projekti`, '04', 'Arhiv', 'zgodovina')}
     </MeniSkupina>
     <MeniSkupina naslov="Načrt" aktivna={active === 'goals' || active === 'time' || active === 'plan'}>
       {item('goals', `${base}/kalkulator/cilji`, '01', 'Cilji', 'cilji', 'businessInsights')}

@@ -12,7 +12,6 @@ import { CaretDown } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, type FlowInvoiceItem, type FlowInvoiceSignature } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
-import { demoKnjiznica, formatCenaEnota, loadKnjiznica, type KnjiznicaPostavka } from '@/lib/knjiznica';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
 
 const K_NAST = 'pinart-kalkulator-v2';
@@ -73,14 +72,6 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const [ponSheet, setPonSheet] = useState(false);
   const [ponIskanje, setPonIskanje] = useState('');
 
-  /* "Iz knjižnice" — majhen izbirnik postavk (lib/knjiznica.ts), ki doda vrstico
-     racuna prednapolnjeno; racun ostane editabilen naprej. Lasten modul, ni v FlowData. */
-  const [knjiznica, setKnjiznica] = useState<KnjiznicaPostavka[]>([]);
-  const [knjOdprto, setKnjOdprto] = useState(false);
-  const [knjIskanje, setKnjIskanje] = useState('');
-  const [knjVrsta, setKnjVrsta] = useState<'all' | 'izdelek' | 'storitev'>('all');
-  const [knjZnacka, setKnjZnacka] = useState<string | null>(null);
-
   /* obrazec (kontrolirano — predizpolnjevanje iz ponudbe) */
   const [stevilka, setStevilka] = useState('');
   const [stranka, setStranka] = useState('');
@@ -108,9 +99,6 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     setOffers(data.offers.map(({ id, title, client, number, scope, agreedAmount }) => ({ id, title, client, number, scope, agreedAmount })));
     setInvoices(data.invoices);
     setClients(data.clients);
-    /* Knjižnica je predogledu podvrzena kot vse ostalo: v demo/prazno/zacetek pokaze
-       demo primere (glej lib/knjiznica.ts), sicer prave shranjene postavke uporabnice. */
-    setKnjiznica(nacin !== 'mine' ? demoKnjiznica() : loadKnjiznica());
   }, [nacin]);
 
   /* podatki podjetja + DDV zavezanost + videz dokumentov — kot RetainerWorkspace */
@@ -227,20 +215,6 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
 
   const popraviVrstico = (index: number, polje: keyof Vrstica, vrednost: string) =>
     setVrstice(v => v.map((row, i) => i === index ? { ...row, [polje]: vrednost } : row));
-
-  /* ── "Iz knjižnice" — iskanje/filter po znacki+vrsti nad shranjenimi postavkami ── */
-  const knjZnacke = useMemo(() => { const seen = new Map<string, string>(); knjiznica.forEach(item => (item.znacke || []).forEach(tag => { const key = tag.trim().toLowerCase(); if (key && !seen.has(key)) seen.set(key, tag.trim()); })); return [...seen.values()].sort((a, b) => a.localeCompare(b, 'sl')); }, [knjiznica]);
-  const knjFiltrirano = useMemo(() => {
-    const q = knjIskanje.trim().toLocaleLowerCase('sl-SI');
-    return knjiznica.filter(item => (knjVrsta === 'all' || item.vrsta === knjVrsta) && (!knjZnacka || (item.znacke || []).some(tag => tag.toLowerCase() === knjZnacka.toLowerCase())) && (!q || `${item.naziv} ${item.opis || ''}`.toLocaleLowerCase('sl-SI').includes(q)));
-  }, [knjiznica, knjVrsta, knjZnacka, knjIskanje]);
-  /* klik na postavko knjiznice DODA novo vrstico (kot "+ Dodaj postavko"), prednapolnjeno
-     — obstojece vrstice ostanejo nedotaknjene in naprej editabilne */
-  const dodajIzKnjiznice = (item: KnjiznicaPostavka) => {
-    const opis = item.naziv + (item.opis ? ' — ' + item.opis : '');
-    setVrstice(v => [...v, { opis, kolicina: '1', cena: item.cena ? String(item.cena) : '', popust: '', ddv: privzetiDdv() }]);
-    setKnjOdprto(false);
-  };
 
   /* ── podpis: canvas za risanje (prst/miska) ali nalozena slika — KOPIJA vzorca iz ContractWorkspace ── */
   const pripraviPlatno = (c: HTMLCanvasElement | null) => {
@@ -542,32 +516,9 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
             <div className="rc-post-gumbi">
               {/* samo ce racun izhaja iz ponudbe — povrne narocnika+postavke na izhodisce ponudbe (rocnih sprememb v ostalih poljih ne izbrise) */}
               {offerId && <button type="button" className="rc-ponastavi" onClick={ponastaviNaPrivzeto}>↺ Ponastavi na privzeto</button>}
-              <button type="button" className="rc-dodaj" aria-expanded={knjOdprto} onClick={() => setKnjOdprto(o => !o)}>{knjOdprto ? '✕ Zapri knjižnico' : 'Iz knjižnice'}</button>
               <button type="button" className="rc-dodaj" onClick={() => setVrstice(v => [...v, novaVrstica()])}>+ Dodaj postavko</button>
             </div>
           </div>
-
-          {/* majhen izbirnik postavk iz Knjižnice (lib/knjiznica.ts) — iskanje + filter po
-              vrsti/znacki; klik DODA vrstico racuna prednapolnjeno, racun ostane editabilen */}
-          {knjOdprto && <div className="rc-knj-panel" role="dialog" aria-label="Izberi postavko iz knjižnice">
-            <div className="rc-knj-vrh">
-              <input type="search" className="rc-knj-iskalnik" placeholder="Išči po nazivu ali opisu …" aria-label="Išči po knjižnici" value={knjIskanje} onChange={event => setKnjIskanje(event.target.value)} />
-              <div className="rc-knj-pilule">{(['all', 'izdelek', 'storitev'] as const).map(value => <button type="button" key={value} className={knjVrsta === value ? 'on' : ''} onClick={() => setKnjVrsta(value)}>{value === 'all' ? 'Vse' : value === 'izdelek' ? 'Izdelki' : 'Storitve'}</button>)}</div>
-            </div>
-            {knjZnacke.length > 0 && <div className="rc-knj-znacke">
-              <button type="button" className={knjZnacka === null ? 'on' : ''} onClick={() => setKnjZnacka(null)}>Vse značke</button>
-              {knjZnacke.map(tag => <button type="button" key={tag} className={knjZnacka && knjZnacka.toLowerCase() === tag.toLowerCase() ? 'on' : ''} onClick={() => setKnjZnacka(current => current && current.toLowerCase() === tag.toLowerCase() ? null : tag)}>{tag}</button>)}
-            </div>}
-            <div className="rc-knj-seznam">
-              {knjFiltrirano.length ? knjFiltrirano.map(item => (
-                <button type="button" key={item.id} className="rc-knj-vrstica" onClick={() => dodajIzKnjiznice(item)}>
-                  <span className="rc-knj-naziv"><strong>{item.naziv}</strong>{item.opis && <small>{item.opis}</small>}</span>
-                  <span className="rc-knj-cena">{formatCenaEnota(item.cena, item.enota)}</span>
-                </button>
-              )) : <p className="rc-mini rc-knj-prazno">{knjiznica.length ? 'Ni postavk za ta filter.' : 'Knjižnica je prazna — dodaj postavke v Knjižnici.'}</p>}
-            </div>
-          </div>}
-
           {vrstice.map((v, i) => <div key={i} className={'rc-vrstica' + (ddvZavezanec ? '' : ' rc-brez-ddv')}>
             <label className="rc-opis">Opis<input required={i === 0} value={v.opis} onChange={event => popraviVrstico(i, 'opis', event.target.value)} placeholder="Opravljena storitev, obseg ali obdobje …" /></label>
             <label>Kol.<input required min="0" step="0.5" type="number" inputMode="numeric" placeholder="1" value={v.kolicina} onChange={event => popraviVrstico(i, 'kolicina', event.target.value)} /></label>
@@ -631,31 +582,6 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-dodaj:hover{border-color:var(--ink);background:oklch(100% 0 0/.5)}
       .rc .rc-ponastavi{padding:.45rem .9rem;border:none;border-radius:999px;background:transparent;color:var(--muted);font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.02em;cursor:pointer;text-decoration:underline;text-underline-offset:.22em}
       .rc .rc-ponastavi:hover{color:var(--ink)}
-
-      /* "Iz knjižnice" — izbirnik postavk (lib/knjiznica.ts); besedilo namenoma >=0.8rem (berljivost) */
-      .rc .rc-knj-panel{min-width:0;margin-top:.7rem;padding:.9rem;border:1px solid var(--line);border-radius:.9rem;background:oklch(100% 0 0 / .7)}
-      .rc .rc-knj-vrh{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem}
-      .rc .rc-knj-iskalnik{flex:1 1 12rem;min-width:0;min-height:2.5rem;box-sizing:border-box;font:inherit;font-size:.85rem;font-weight:500;color:var(--ink);background:oklch(100% 0 0 / .85);border:1px solid var(--line);border-radius:999px;padding:.5rem .9rem}
-      .rc .rc-knj-iskalnik:focus{outline:none;border-color:var(--ink)}
-      .rc .rc-knj-pilule{display:inline-flex;flex-wrap:wrap;background:oklch(94.5% .012 87);border-radius:999px;padding:.2rem;gap:.15rem}
-      .rc .rc-knj-pilule button{border:0;background:none;padding:.4rem .75rem;border-radius:999px;font:700 .8rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
-      .rc .rc-knj-pilule button.on{background:var(--ink);color:var(--paper)}
-      .rc .rc-knj-znacke{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.6rem}
-      .rc .rc-knj-znacke button{padding:.32rem .7rem;border:1px solid var(--line);border-radius:999px;background:oklch(100% 0 0 / .6);font:700 .8rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
-      .rc .rc-knj-znacke button.on{border-color:var(--ink);background:var(--ink);color:var(--paper)}
-      .rc .rc-knj-seznam{display:flex;flex-direction:column;max-height:16rem;overflow-y:auto;margin-top:.6rem}
-      .rc .rc-knj-vrstica{display:flex;align-items:center;justify-content:space-between;gap:.8rem;width:100%;min-height:2.9rem;padding:.55rem .3rem;border:none;border-top:1px solid rgba(17,17,17,.08);background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer}
-      .rc .rc-knj-vrstica:first-child{border-top:none}
-      .rc .rc-knj-vrstica:hover{background:oklch(96% .01 87)}
-      .rc .rc-knj-naziv{flex:1;min-width:0;display:grid;gap:.15rem}
-      .rc .rc-knj-naziv strong{font-size:.9rem;font-weight:700;overflow-wrap:anywhere}
-      .rc .rc-knj-naziv small{font-size:.8rem;color:var(--muted);overflow-wrap:anywhere}
-      .rc .rc-knj-cena{flex:none;font-size:.88rem;font-weight:700;white-space:nowrap}
-      .rc .rc-knj-prazno{padding:.4rem .3rem}
-      @media (max-width:640px){
-        .rc .rc-knj-vrstica{flex-wrap:wrap}
-        .rc .rc-knj-cena{margin-left:auto}
-      }
 
       /* podpis na racunu (neobvezno) — kot pg-podpis-* v ContractWorkspace, tu inline (brez sheeta) */
       .rc .rc-podpis{min-width:0;margin-top:1.1rem;padding:1rem;border:1px solid var(--line);border-radius:.9rem;background:oklch(100% 0 0/.55)}
