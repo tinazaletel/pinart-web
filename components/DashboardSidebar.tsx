@@ -50,20 +50,22 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
       {item('contracts', `${base}/kalkulator/pogodbe`, '03', 'Pogodba', 'pogodba', 'contracts')}
       {item('invoices', `${base}/kalkulator/racuni`, '04', 'Računi', 'racuni')}
     </MeniSkupina>
-    <MeniSkupina naslov="Podatki" aktivna={active === 'clients' || active === 'prices' || active === 'expenses'}>
+    {/* Arhiv (prej "Zgodovina") = kjer NAJDEŠ shranjeno; sodi pod Podatki, ne Drugo.
+        Delo = ustvarjaš, Podatki = iščeš. */}
+    <MeniSkupina naslov="Podatki" aktivna={active === 'clients' || active === 'prices' || active === 'expenses' || active === 'projects'}>
       {item('clients', `${base}/kalkulator/stranke`, '01', 'Stranke', 'stranke')}
       {item('prices', `${base}/kalkulator/ceniki`, '02', 'Moji ceniki', 'ceniki')}
       {item('expenses', `${base}/kalkulator/stroski`, '03', 'Stroški', 'stroski', 'expenses')}
+      {item('projects', `${base}/kalkulator/projekti`, '04', 'Arhiv', 'zgodovina')}
     </MeniSkupina>
     <MeniSkupina naslov="Načrt" aktivna={active === 'goals' || active === 'time' || active === 'plan'}>
       {item('goals', `${base}/kalkulator/cilji`, '01', 'Cilji', 'cilji', 'businessInsights')}
       {item('time', `${base}/kalkulator/cas`, '02', 'Cena & čas', 'cas', 'businessInsights')}
       {item('plan', `${base}/kalkulator/poslovni-nacrt`, '03', 'Poslovni okvir', 'okvir', 'businessInsights')}
     </MeniSkupina>
-    <MeniSkupina naslov="Drugo" vednoVidna aktivna={active === 'projects' || active === 'settings'}>
-      {item('projects', `${base}/kalkulator/projekti`, '01', 'Zgodovina', 'zgodovina')}
-      {item('settings', `${base}/kalkulator/nastavitve`, '02', 'Nastavitve', 'nastavitve')}
-      {povezava(`${base}/kalkulator/pomoc`, '03', 'Pomoč', 'pomoc')}
+    <MeniSkupina naslov="Drugo" vednoVidna aktivna={active === 'settings'}>
+      {item('settings', `${base}/kalkulator/nastavitve`, '01', 'Nastavitve', 'nastavitve')}
+      {povezava(`${base}/kalkulator/pomoc`, '02', 'Pomoč', 'pomoc')}
     </MeniSkupina>
   </>;
   return <><AmbientBubbles /><PaketZnak /><FlowTopBar /><SidebarToggle vrsta="odpri" /><aside className={styles.sidebar} aria-label="Glavna navigacija"><SidebarToggle vrsta="zapri" />
