@@ -654,20 +654,26 @@
 .clientFinance span:nth-child(1) { background: oklch(93% .045 160); }
 .clientFinance span:nth-child(2) { background: oklch(94% .05 65); }
 .clientFinance span:nth-child(3) { background: oklch(94% .04 295); }
-.clientDocuments { margin-top: 1rem; padding: .9rem; border: 1px solid var(--line); border-radius: .85rem; }
-.clientDocuments h3 { margin: 0 0 .5rem; font: 600 1rem var(--font-serif), Georgia, serif; }
-.clientDocuments > span { display: grid; grid-template-columns: 5rem 1fr auto; align-items: center; gap: .5rem; padding: .55rem 0; border-top: 1px solid var(--line); font-size: .6rem; }
-.clientDocuments b { font-size: .53rem; letter-spacing: .06em; text-transform: uppercase; }
-.docDetajl { display: flex; align-items: center; gap: .5rem; min-width: 0; }
-.clientDocIme { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.docZnesek { justify-self: end; font-size: .62rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
-/* status = pilula s piko, enak jezik kot povsod; brez ozadja (tih) */
-.docPika { display: inline-flex; align-items: center; gap: .3rem; flex: none; font-style: normal; font-size: .55rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
-.docPika::before { content: ''; width: .4rem; height: .4rem; border-radius: 50%; background: var(--pika, oklch(62% .02 70)); flex: none; }
-.docPika[data-tone='success'] { --pika: oklch(62% .15 150); }
-.docPika[data-tone='waiting'] { --pika: oklch(72% .16 75); }
-.docPika[data-tone='danger'] { --pika: oklch(58% .19 25); }
-.clientDocuments p { color: var(--muted); font-size: .6rem; }
+/* "Projekti stranke" — stranka je STARŠ (seznam projektov), klik na vrstico
+   odpre otroka (ProjectsWorkspace detajl) prek ${base}/kalkulator/projekti?projekt=<id>.
+   Fonti >=.8rem (Tina: "ne sme bit tok mini font" — prejšnji ploščati seznam je bil .53-.6rem). */
+.clientProjects { margin-top: 1rem; padding: .9rem; border: 1px solid var(--line); border-radius: .85rem; }
+.clientProjects h3 { margin: 0 0 .5rem; font: 600 1rem var(--font-serif), Georgia, serif; }
+.clientProjectList { display: flex; flex-direction: column; gap: .5rem; margin-top: .5rem; }
+.clientProjectRow { display: flex; flex-direction: column; gap: .35rem; padding: .7rem .85rem; border: 1px solid var(--line); border-radius: .75rem; background: oklch(95% .018 87); color: inherit; text-decoration: none; cursor: pointer; transition: background .14s; }
+.clientProjectRow:hover { background: linear-gradient(125deg, oklch(94% .045 295), oklch(93% .04 165)); }
+.clientProjectVrh { display: flex; align-items: baseline; justify-content: space-between; gap: .6rem; }
+.clientProjectVrh strong:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .85rem; }
+.clientProjectZnesek { flex: none; font-size: .85rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.clientProjectDno { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.clientProjectDno small { color: var(--muted); font-size: .8rem; }
+/* status = pilula s piko, enak jezik kot povsod (glej ProjectsWorkspace pw-status) */
+.clientProjectPika { display: inline-flex; align-items: center; gap: .35rem; flex: none; font-style: normal; font-size: .8rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.clientProjectPika::before { content: ''; width: .42rem; height: .42rem; border-radius: 50%; background: var(--pika, oklch(62% .02 70)); flex: none; }
+.clientProjectPika[data-tone='success'] { --pika: oklch(62% .15 150); }
+.clientProjectPika[data-tone='waiting'] { --pika: oklch(72% .16 75); }
+.clientProjectPika[data-tone='danger'] { --pika: oklch(58% .19 25); }
+.clientProjectPrazno { color: var(--muted); font-size: .8rem; }
 /* Dokumentacija / povezave na profilu stranke — enak UX kot "05 · DOKUMENTACIJA"
    na projektu (ProjectsWorkspace), a berljiva besedila (>=.8rem), ker je bila
    ta zahteva izrecno dana za ta razdelek. Zložene vrstice, ne čipi. */
@@ -676,7 +682,7 @@
 .clientLinkGlava h3 { margin: 0; font: 600 1rem var(--font-serif), Georgia, serif; }
 .clientLinkGumb { flex: none; padding: .45rem .8rem; border: 1px solid var(--line); border-radius: 999px; background: transparent; font: 700 .68rem var(--font-sans), sans-serif; color: var(--ink); cursor: pointer; }
 .clientLinkGumb:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-.clientLinkSeznam { display: flex; flex-direction: column; gap: .45rem; margin-top: .7rem; }
+.clientLinkSeznam { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: .7rem; }
 .clientLinkVrstica { display: flex; align-items: center; gap: .6rem; padding: .6rem .75rem; border: 1px solid var(--line); border-radius: .7rem; background: oklch(95% .018 87); }
 .clientLinkVrstica a { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); font-weight: 700; font-size: .82rem; text-decoration: none; }
 .clientLinkVrstica a:hover { text-decoration: underline; }
@@ -688,7 +694,7 @@
 .clientLinkDodaj { flex: none; padding: 0 1rem; border: 1px solid var(--ink); border-radius: .6rem; background: var(--ink); color: var(--paper); font: 700 .72rem var(--font-sans), sans-serif; cursor: pointer; }
 .clientLinkDodaj:disabled { opacity: .5; cursor: not-allowed; }
 .clientLinkNamig { margin-top: .55rem; padding: .5rem .65rem; border: 1px solid oklch(85% .07 65); border-radius: .5rem; background: oklch(96% .04 70); color: oklch(48% .12 55); font-size: .78rem; line-height: 1.4; font-style: italic; }
-@media (max-width: 640px) { .clientLinkObrazec { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .clientLinkObrazec, .clientLinkSeznam { grid-template-columns: 1fr; } }
 .deleteClient { margin-top: 1rem; padding: .6rem 0; border: 0; border-bottom: 1px solid currentColor; background: none; color: oklch(52% .16 25); font: 750 .57rem var(--font-sans), sans-serif; cursor: pointer; }
 .clientProfileEmpty { min-height: 29rem; display: grid; place-items: center; align-content: center; text-align: center; }
 .clientProfileEmpty span { display: grid; place-items: center; width: 3rem; aspect-ratio: 1; border-radius: 50%; background: oklch(93% .05 295); }
@@ -1262,7 +1268,7 @@
 .shell .expenseEditor > div > p:last-child,
 .shell .recurringCosts > div:first-child > p:last-child,
 .shell .clientProfile > header > div > span,
-.shell .clientDocuments,
+.shell .clientProjects,
 .shell .projectStory > header span,
 .shell .projectNarrative article > p:last-of-type,
 .shell .businessIntro > p:last-child,

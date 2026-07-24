@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, ArrowUpRight, FolderOpen } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -216,6 +217,21 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   /* varnostna mreza: ce se komponenta odstrani (npr. menjava zavihka v Arhivu)
      medtem ko je bil detajl odprt, sporoci starsu, naj svojo glavo spet pokaze */
   useEffect(() => () => { onDetajl?.(false); }, [onDetajl]);
+
+  /* Klik na projekt pri stranki (ClientWorkspace) pripelje sem z ?projekt=<id> —
+     ob montiranju odpri ta projekt kot detajl (isti selectProject kot ročni klik
+     na vrstico v tabeli). Guard (ref), da to stori SAMO ENKRAT — sicer bi vsaka
+     menjava stanja (npr. ročen "← Nazaj") spet odprla isti projekt iz URL-ja. */
+  const projektIzUrljaOdprt = useRef(false);
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (projektIzUrljaOdprt.current) return;
+    const id = searchParams.get('projekt');
+    if (!id) return;
+    if (!projects.some(project => project.offer.id === id)) return;
+    projektIzUrljaOdprt.current = true;
+    selectProject(id);
+  }, [searchParams, projects]);
 
   /* 05 · DOKUMENTACIJA — povezave do zunanjih datotek za TA projekt (localStorage,
      glej lib/pinartFlowStore). V predogledu (demo/prazno/začetek) samo prikaz —
