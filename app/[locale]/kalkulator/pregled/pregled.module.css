@@ -1982,6 +1982,11 @@
   }
   /* glava naj pusti prostor hamburgerju na desni */
   .flowTopBar { padding-right: 3.4rem; }
+  /* v mobilni glavi SAMO back + logo + meni: Demo izbirnik, stoparica in
+     orodja se skrijejo (na namizju ostanejo) */
+  .flowTopBar .predogledPreklop,
+  .flowTopBar > .stoparicaBliznjica,
+  .flowTopBar .topDesno { display: none; }
 }
 @media (max-width: 680px) {
   .sidebar { height: 3rem; }
