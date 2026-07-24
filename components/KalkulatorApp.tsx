@@ -354,6 +354,9 @@ const TONI: { id: TonPonudbe; ime: string }[] = [
 ];
 
 type ProjektnoVprasanje = { id: string; label: string; placeholder?: string; izbire?: string[]; vec?: boolean; svoje?: string; vse?: boolean };
+/* EN prevodi vprasanj (label/placeholder/izbire/svoje) po storitvi in id-ju vprasanja;
+   manjkajoc vnos pade nazaj na slovenscino. Lokalizira se v skupineVprasanj. */
+type VprasanjeEn = { label?: string; placeholder?: string; izbire?: string[]; svoje?: string };
 
 const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
   logo: [

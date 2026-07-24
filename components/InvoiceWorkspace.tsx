@@ -8,7 +8,9 @@
 
 import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { Receipt } from '@phosphor-icons/react';
+import { createPortal } from 'react-dom';
+import { CaretDown, CaretUp, Receipt } from '@phosphor-icons/react';
+import ArhivFilter from '@/components/ArhivFilter';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, type FlowInvoiceItem } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
@@ -36,6 +38,15 @@ const danesISO = () => { const d = new Date(); return `${d.getFullYear()}-${Stri
 const vrsticaZnesek = (i: FlowInvoiceItem) => i.kolicina * i.cena * (1 - clamp(i.popust || 0, 0, 100) / 100);
 
 export default function InvoiceWorkspace({ base }: { base: string }) {
+  /* pod 640px izbira ponudbe postane slide-up predal (vzorec jeMobilni iz RetainerWorkspace) */
+  const [jeMobilni, setJeMobilni] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    const upd = () => setJeMobilni(mq.matches);
+    upd(); mq.addEventListener('change', upd);
+    return () => mq.removeEventListener('change', upd);
+  }, []);
+
   const [offers, setOffers] = useState<Offer[]>([]);
   const [invoices, setInvoices] = useState<FlowInvoice[]>([]);
   const [clients, setClients] = useState<FlowClient[]>([]);
@@ -61,6 +72,14 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
      (Odprt/Placan) v odprtem panelu osvezi skupaj s seznamom */
   const [detajlId, setDetajlId] = useState('');
   const [detPonOdprta, setDetPonOdprta] = useState(false);
+  /* mobilni sheet za izbiro ponudbe (native select ne skalira s 50+ ponudbami) */
+  const [ponSheet, setPonSheet] = useState(false);
+  const [ponIskanje, setPonIskanje] = useState('');
+  /* arhiv: iskanje + datumsko obdobje (vzorec iz arhiva pogodb) */
+  const [iskanje, setIskanje] = useState('');
+  const [obdobje, setObdobje] = useState<'vse' | 'letos' | '30' | 'obdobje'>('vse');
+  const [obdobjeOd, setObdobjeOd] = useState('');
+  const [obdobjeDo, setObdobjeDo] = useState('');
 
   /* obrazec (kontrolirano — predizpolnjevanje iz ponudbe) */
   const [stevilka, setStevilka] = useState('');
@@ -97,7 +116,20 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const novaVrstica = (): Vrstica => ({ opis: '', kolicina: '1', cena: '', popust: '', ddv: privzetiDdv() });
 
   const selectedOffer = offers.find(item => item.id === offerId);
-  const visible = invoices.filter(invoice => filter === 'all' || (filter === 'paid' ? invoice.paid : !invoice.paid));
+  /* arhiv po filtrih: status + besedilo (naslov, stevilka, stranka) + obdobje (kot pogodbe) */
+  const visible = invoices.filter(invoice => {
+    if (filter !== 'all' && (filter === 'paid' ? !invoice.paid : invoice.paid)) return false;
+    const besedilo = `${invoice.title || ''} ${invoice.number || ''} ${invoice.client}`.toLocaleLowerCase('sl-SI');
+    if (iskanje.trim() && !besedilo.includes(iskanje.trim().toLocaleLowerCase('sl-SI'))) return false;
+    const t = new Date(invoice.date).getTime();
+    if (obdobje === 'letos' && new Date(invoice.date).getFullYear() !== new Date().getFullYear()) return false;
+    if (obdobje === '30' && t < Date.now() - 30 * 864e5) return false;
+    if (obdobje === 'obdobje') {
+      if (obdobjeOd && t < new Date(obdobjeOd + 'T00:00:00').getTime()) return false;
+      if (obdobjeDo && t > new Date(obdobjeDo + 'T23:59:59').getTime()) return false;
+    }
+    return true;
+  });
   const totals = useMemo(() => ({ issued: invoices.reduce((sum, item) => sum + item.amount, 0), paid: invoices.filter(item => item.paid).reduce((sum, item) => sum + item.amount, 0), open: invoices.filter(item => !item.paid).reduce((sum, item) => sum + item.amount, 0) }), [invoices]);
 
   /* sprotni sestevki: osnova po stopnjah, DDV po stopnjah, skupaj za placilo */
@@ -143,6 +175,13 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   /* detajl: vrstica arhiva odpre panel (kot pogodbe) */
   const detajl = invoices.find(item => item.id === detajlId) || null;
   const odpriDetajl = (id: string) => { setDetPonOdprta(false); setNapaka(''); setDetajlId(id); };
+
+  /* mobilni sheet: sprotni filter po naslovu/stranki/stevilki ponudbe */
+  const ponudbeZaSheet = offers.filter(offer => {
+    const q = ponIskanje.trim().toLocaleLowerCase('sl-SI');
+    return !q || `${offer.title} ${offer.client} ${offer.number || ''}`.toLocaleLowerCase('sl-SI').includes(q);
+  });
+  const izberiVSheet = (id: string) => { izberiPonudbo(id); setPonSheet(false); };
 
   /* iz ponudbe: predizpolni stranko + prvo postavko (naslov/obseg/znesek) */
   const izberiPonudbo = (id: string) => {
@@ -327,21 +366,52 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       </div>
       <form onSubmit={save}>
         <div className={styles.invoiceMetaFields}>
-          <label>Ponudba<select value={offerId} onChange={event => izberiPonudbo(event.target.value)}><option value="">Samostojen račun</option>{offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}</option>)}</select></label>
+          <label>Ponudba{jeMobilni
+            ? <button type="button" className="rc-pon-polje" aria-haspopup="dialog" aria-expanded={ponSheet} aria-label={`Ponudba: ${selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : 'Samostojen račun'} — izberi`} onClick={() => { setPonIskanje(''); setPonSheet(true); }}>
+              <span>{selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : 'Samostojen račun'}</span>
+              <CaretDown size={14} weight="bold" aria-hidden />
+            </button>
+            : <select value={offerId} onChange={event => izberiPonudbo(event.target.value)}><option value="">Samostojen račun</option>{offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}</option>)}</select>}</label>
           <label>Številka<input required value={stevilka} onChange={event => setStevilka(event.target.value)} /></label>
           <label>Stranka<input required value={stranka} onChange={event => setStranka(event.target.value)} placeholder="Ime ali podjetje" /></label>
           <label>Datum izdaje<input required type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} /></label>
           <label>Datum opravljene storitve<input required type="date" value={datumStoritve} onChange={event => setDatumStoritve(event.target.value)} /></label>
-          <label>Rok plačila v dneh<input required min="0" type="number" value={rokDni} onChange={event => setRokDni(event.target.value)} /></label>
+          <label>Rok plačila v dneh<input required min="0" type="number" inputMode="numeric" placeholder={String(PRIVZETI_ROK_DNI)} value={rokDni} onChange={event => setRokDni(event.target.value)} /></label>
         </div>
+
+        {/* sheet MORA biti v portalu na <body>: transform na prednikih (animacija
+            .rc-stran) ukrade sidro position:fixed — ista past kot pri pogodbah */}
+        {jeMobilni && typeof document !== 'undefined' && createPortal(
+          <>
+            {ponSheet && <div className="rc-sheet-back" onClick={() => setPonSheet(false)} aria-hidden />}
+            <div className={'rc-pon-sheet' + (ponSheet ? ' odprt' : '')} role="dialog" aria-label="Izberi ponudbo" aria-hidden={!ponSheet}>
+              <div className="rc-sheet-glava"><b>Izberi ponudbo</b><button type="button" className="rc-sheet-x" onClick={() => setPonSheet(false)} aria-label="Zapri">✕</button></div>
+              {offers.length > 8 && <input className="rc-pon-iskalnik" type="search" placeholder="Poišči ponudbo ali stranko …" aria-label="Poišči ponudbo ali stranko" value={ponIskanje} onChange={event => setPonIskanje(event.target.value)} />}
+              <div className="rc-pon-seznam">
+                <button type="button" className={'rc-pon-vrstica' + (!offerId ? ' on' : '')} aria-label="Samostojen račun — brez povezave s ponudbo" onClick={() => izberiVSheet('')}>
+                  <span className="rc-pon-naziv"><strong>Samostojen račun</strong><small>Brez povezave s ponudbo</small></span>
+                  {!offerId && <span className="rc-pon-kljukica" aria-hidden>✓</span>}
+                </button>
+                {ponudbeZaSheet.map(offer => (
+                  <button key={offer.id} type="button" className={'rc-pon-vrstica' + (offerId === offer.id ? ' on' : '')} aria-label={`Izberi ponudbo ${offer.title} · ${offer.client}`} onClick={() => izberiVSheet(offer.id)}>
+                    <span className="rc-pon-naziv"><strong>{offer.title} · {offer.client}</strong>{offer.number && <small>Št. {offer.number}</small>}</span>
+                    {offerId === offer.id && <span className="rc-pon-kljukica" aria-hidden>✓</span>}
+                  </button>
+                ))}
+                {!ponudbeZaSheet.length && ponIskanje.trim() !== '' && <p className="rc-mini rc-pon-prazno">Ni ponudb za to iskanje.</p>}
+              </div>
+            </div>
+          </>,
+          document.body,
+        )}
 
         <div className="rc-postavke">
           <div className="rc-post-glava"><p className={styles.eyebrow}>POSTAVKE RAČUNA</p><button type="button" className="rc-dodaj" onClick={() => setVrstice(v => [...v, novaVrstica()])}>+ Dodaj postavko</button></div>
           {vrstice.map((v, i) => <div key={i} className={'rc-vrstica' + (ddvZavezanec ? '' : ' rc-brez-ddv')}>
             <label className="rc-opis">Opis<input required={i === 0} value={v.opis} onChange={event => popraviVrstico(i, 'opis', event.target.value)} placeholder="Opravljena storitev, obseg ali obdobje …" /></label>
-            <label>Kol.<input required min="0" step="0.5" type="number" value={v.kolicina} onChange={event => popraviVrstico(i, 'kolicina', event.target.value)} /></label>
-            <label>Cena brez DDV<input required={i === 0} min="0" step="0.01" type="number" value={v.cena} onChange={event => popraviVrstico(i, 'cena', event.target.value)} /></label>
-            <label>Popust %<input min="0" max="100" step="0.5" type="number" value={v.popust} onChange={event => popraviVrstico(i, 'popust', event.target.value)} placeholder="0" /></label>
+            <label>Kol.<input required min="0" step="0.5" type="number" inputMode="numeric" placeholder="1" value={v.kolicina} onChange={event => popraviVrstico(i, 'kolicina', event.target.value)} /></label>
+            <label>Cena brez DDV<input required={i === 0} min="0" step="0.01" type="number" inputMode="decimal" placeholder="0,00" value={v.cena} onChange={event => popraviVrstico(i, 'cena', event.target.value)} /></label>
+            <label>Popust %<input min="0" max="100" step="0.5" type="number" inputMode="decimal" value={v.popust} onChange={event => popraviVrstico(i, 'popust', event.target.value)} placeholder="0" /></label>
             {ddvZavezanec && <label>DDV<select value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)}>{DDV_STOPNJE.map(s => <option key={s} value={s}>{s.replace('.', ',')} %</option>)}</select></label>}
             <span className="rc-znesek"><em>Znesek</em><b>{eur2(vrsticaZnesek(izracun.postavke[i] || { opis: '', kolicina: 0, cena: 0 }))}</b></span>
             <button type="button" className="rc-x" onClick={() => setVrstice(rows => rows.length > 1 ? rows.filter((_, j) => j !== i) : rows)} aria-label={`Odstrani postavko ${i + 1}`} title="Odstrani postavko" disabled={vrstice.length < 2}>×</button>
@@ -365,7 +435,30 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     {/* ── POGLED: PREGLED (arhiv) — vrstica kot pri pogodbah: klik odpre detajl ── */}
     {pogled === 'pregled' && <>
       <section className={styles.invoiceArchive}>
-        <header><div><p className={styles.eyebrow}>PREGLED RAČUNOV</p><h2>Vse številke na enem mestu.</h2></div><div className={styles.invoiceFilters}>{(['all', 'open', 'paid'] as const).map(value => <button key={value} className={filter === value ? styles.invoiceFilterActive : ''} onClick={() => setFilter(value)}>{value === 'all' ? 'Vsi' : value === 'open' ? 'Odprti' : 'Plačani'}</button>)}</div></header>
+        <header><div><p className={styles.eyebrow}>PREGLED RAČUNOV</p><h2>Vse številke na enem mestu.</h2></div></header>
+        {invoices.length > 0 && <div className="rc-filter-vrstica">
+          {/* skupni vzorec: [lupa -> razsirjen input] [Filtri -> sheet s pilulami] */}
+          <ArhivFilter iskanje={iskanje} onIskanje={setIskanje} placeholder="Poišči račun ali stranko …" aktivnihFiltrov={(filter !== 'all' ? 1 : 0) + (obdobje !== 'vse' ? 1 : 0)} onPocisti={() => { setFilter('all'); setObdobje('vse'); setObdobjeOd(''); setObdobjeDo(''); }}>
+            <div className="rc-f-skupina">
+              <p className="rc-f-naslov">Status</p>
+              <div className="rc-f-pilule" role="group" aria-label="Status">
+                {(['all', 'open', 'paid'] as const).map(value => <button key={value} type="button" aria-label={value === 'all' ? 'Vsi' : value === 'open' ? 'Odprti' : 'Plačani'} className={filter === value ? 'on' : ''} onClick={() => setFilter(value)}>{value === 'all' ? 'Vsi' : value === 'open' ? 'Odprti' : 'Plačani'}</button>)}
+              </div>
+            </div>
+            <div className="rc-f-skupina">
+              <p className="rc-f-naslov">Obdobje</p>
+              <div className="rc-f-pilule" role="group" aria-label="Obdobje">
+                {([['vse', 'Vse'], ['letos', 'Letos'], ['30', 'Zadnjih 30 dni'], ['obdobje', 'Po meri']] as const).map(([vrednost, napis]) => (
+                  <button key={vrednost} type="button" aria-label={napis} className={obdobje === vrednost ? 'on' : ''} onClick={() => setObdobje(vrednost)}>{napis}</button>
+                ))}
+              </div>
+              {obdobje === 'obdobje' && <div className="rc-f-obdobje">
+                <label className="rc-f-polje">Od<input type="date" value={obdobjeOd} onChange={event => setObdobjeOd(event.target.value)} /></label>
+                <label className="rc-f-polje">Do<input type="date" value={obdobjeDo} onChange={event => setObdobjeDo(event.target.value)} /></label>
+              </div>}
+            </div>
+          </ArhivFilter>
+        </div>}
         {visible.length ? <div className={styles.invoiceList}>{visible.map(invoice => {
           const offer = offers.find(item => item.id === invoice.sourceOfferId);
           return <article key={invoice.id} className="rc-arh-vrstica">
@@ -381,7 +474,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
             <select aria-label={`Status računa ${invoice.number || invoice.title || ''}`} value={invoice.paid ? 'paid' : 'open'} onChange={event => markPaid(invoice.id, event.target.value === 'paid')}><option value="open">Odprt</option><option value="paid">Plačan</option></select>
             <button className={styles.contractArrow} type="button" onClick={() => odpriDetajl(invoice.id)} aria-label={`Odpri račun ${invoice.number || invoice.title || ''}`}>›</button>
           </article>;
-        })}</div> : <div className={styles.invoiceEmpty}>V tem pogledu še ni računov.</div>}
+        })}</div> : <div className={styles.invoiceEmpty}>{invoices.length ? 'Ni računov za ta filter.' : 'V tem pogledu še ni računov.'}</div>}
       </section>
       <p className={styles.invoiceHint}>Račun, ki ga preneseš ali pošlješ na koncu <Link href={`${base}/kalkulator/orodje`}>kalkulatorja</Link>, se tukaj shrani samodejno.</p>
     </>}
@@ -409,7 +502,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
             <button type="button" className="rc-det-ponudba-vrstica" aria-expanded={detPonOdprta} aria-label={`Ponudba ${offer.number || offer.title} — prikaži povzetek`} onClick={() => setDetPonOdprta(v => !v)}>
               <span className="rc-kp-ikona" aria-hidden>⌁</span>
               <span className="rc-det-ponudba-ime">Ponudba {offer.number || offer.title}</span>
-              <span className="rc-det-ponudba-kazalec" aria-hidden>{detPonOdprta ? '⌄' : '›'}</span>
+              <span className="rc-det-ponudba-kazalec" aria-hidden>{detPonOdprta ? <CaretUp size={13} weight="bold" /> : <CaretDown size={13} weight="bold" />}</span>
             </button>
             {detPonOdprta && <div className="rc-kp-vec">
               <p className="rc-det-ponudba-naslov"><b>{offer.title}</b>{offer.agreedAmount > 0 ? ' · ' + money(offer.agreedAmount) : ''}</p>
@@ -509,8 +602,10 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-kp-vec li{margin:.15rem 0}
       .rc .rc-det-ponudba-naslov{margin:.6rem 0 .2rem;font-size:.85rem}
 
-      /* ── celoten racun kot dokument (beli okvir kot .pg-doktelo; rac-* iz PDF poti) ── */
-      .rc .rc-doktelo{flex:1 1 auto;min-height:0;width:100%;min-width:0;margin:1rem 0 0;border:1px solid rgba(17,17,17,.22);border-radius:6px;background:#fff;padding:1.35rem;color:var(--ink);font-family:var(--font-sans),system-ui,sans-serif;font-size:.86rem;line-height:1.55;overflow:auto}
+      /* ── celoten racun kot dokument (beli okvir kot .pg-doktelo; rac-* iz PDF poti) ──
+         BREZ max-height/overflow: okvir se razsiri po vsi visini, drsi CEL detajl panel
+         (en sam scroll); vodoravno se vsebina prilagodi sirini, ne drsi */
+      .rc .rc-doktelo{flex:0 0 auto;width:100%;min-width:0;margin:1rem 0 0;border:1px solid rgba(17,17,17,.22);border-radius:6px;background:#fff;padding:1.35rem;color:var(--ink);font-family:var(--font-sans),system-ui,sans-serif;font-size:.86rem;line-height:1.55;overflow-wrap:anywhere}
       .rc .rc-doktelo .rac-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1.4rem;margin:0 0 1.2rem;flex-wrap:wrap}
       .rc .rc-doktelo .rac-title{display:flex;flex-direction:column;gap:2px}
       .rc .rc-doktelo .rac-kicker{font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--accent,#B25476);font-weight:700}
@@ -537,6 +632,58 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-gumb:hover{transform:translateY(-2px)}
       .rc .rc-gumb.sek{background:transparent;color:var(--ink);border:1px solid rgba(17,17,17,.28)}
       .rc .rc-gumb:disabled{opacity:.5;cursor:default;transform:none}
+
+      /* ── arhiv: iskalnik + datumski filtri (KOPIJA vzorca iz arhiva pogodb) ── */
+      .rc .rc-arhiv-filtri{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem .8rem;margin:0 0 1rem;min-width:0}
+      .rc .rc-arhiv-filtri>*{min-width:0}
+      /* ovoj z lupo: ikona sedi v pilulo, input brez svojega roba */
+      .rc .rc-iskalnik-ovoj{flex:1 1 15rem;max-width:24rem;min-width:0;display:flex;align-items:center;gap:.45rem;box-sizing:border-box;background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:999px;padding:0 .5rem 0 .9rem;color:rgba(17,17,17,.55)}
+      .rc .rc-iskalnik-ovoj:focus-within{border-color:var(--ink)}
+      .rc .rc-iskalnik{flex:1;width:100%;min-width:0;box-sizing:border-box;font:inherit;font-size:.92rem;font-weight:500;color:var(--ink);background:none;border:none;padding:.55rem .5rem .55rem 0}
+      .rc .rc-iskalnik:focus{outline:none}
+      .rc .rc-segpills{display:inline-flex;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:999px;padding:.25rem;gap:.15rem;margin:0}
+      .rc .rc-segpills button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem .9rem;border-radius:999px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:.35rem;transition:background .18s,color .18s}
+      .rc .rc-segpills button.on{background:var(--ink);color:var(--paper)}
+      /* pilule obdobja: na ozkem vodoravni drs, da "Po meri" ne strli ven */
+      @media (max-width:640px){
+        .rc .rc-segpills-obdobje{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;max-width:100%;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+        .rc .rc-segpills-obdobje::-webkit-scrollbar{display:none}
+        .rc .rc-segpills-obdobje button{white-space:nowrap;flex:none}
+      }
+      .rc .rc-obdobje-vnos{display:flex;flex-wrap:wrap;gap:.6rem 1rem;width:100%;min-width:0}
+      .rc .rc-obdobje-vnos .rc-polje{flex:1 1 9rem;max-width:12rem}
+      .rc .rc-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.62)}
+      .rc .rc-polje input{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:10px;padding:.6rem .75rem}
+      .rc .rc-polje input:focus{outline:none;border-color:var(--ink)}
+
+      /* ── number inputi: brez native spinnerjev, desna poravnava, numericna tipkovnica prek inputMode ── */
+      .rc .rc-obrazec input[type='number']{-moz-appearance:textfield;appearance:textfield;text-align:right}
+      .rc .rc-obrazec input[type='number']::-webkit-inner-spin-button,.rc .rc-obrazec input[type='number']::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+      /* ── mobilna izbira ponudbe: gumb-polje (izgleda kot input) + slide-up sheet ── */
+      .rc .rc-pon-polje{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-width:0;min-height:2.75rem;padding:.6rem .85rem;border:1px solid var(--line);border-radius:.65rem;background:oklch(100% 0 0/.8);font:500 16px var(--font-sans),sans-serif;color:var(--ink);text-align:left;cursor:pointer}
+      .rc .rc-pon-polje>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .rc .rc-pon-polje svg{flex:none}
+      /* sheet zivi v portalu na <body> (izven .rc) — selektorji brez .rc predpone */
+      .rc-sheet-back{position:fixed;inset:0;background:rgba(30,18,35,.34);z-index:95}
+      .rc-pon-sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,102%);width:min(480px,100vw);z-index:96;background:var(--paper);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px rgba(40,25,40,.22);transition:transform .32s cubic-bezier(.2,.8,.3,1);max-height:76dvh;overflow-y:auto;padding:0 1.2rem calc(1.4rem + env(safe-area-inset-bottom,0px))}
+      .rc-pon-sheet.odprt{transform:translate(-50%,0)}
+      @media (prefers-reduced-motion:reduce){.rc-pon-sheet{transition:none}}
+      .rc-sheet-glava{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;padding:1.35rem 0 .65rem;border-bottom:1px solid rgba(17,17,17,.1)}
+      .rc-sheet-glava::before{content:'';position:absolute;top:.5rem;left:50%;transform:translateX(-50%);width:2.4rem;height:.3rem;border-radius:999px;background:rgba(17,17,17,.18)}
+      .rc-sheet-glava b{font-size:1.05rem;font-weight:700}
+      .rc-sheet-x{width:2.1rem;height:2.1rem;display:inline-flex;align-items:center;justify-content:center;border:none;background:rgba(17,17,17,.06);border-radius:50%;font-size:1.1rem;line-height:1;color:var(--ink);cursor:pointer}
+      .rc-pon-iskalnik{margin:.8rem 0 .2rem;width:100%;min-height:2.75rem;box-sizing:border-box;font:inherit;font-size:16px;font-weight:500;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:999px;padding:.55rem 1rem}
+      .rc-pon-iskalnik:focus{outline:none;border-color:var(--ink)}
+      .rc-pon-seznam{display:flex;flex-direction:column;padding:.4rem 0 .2rem}
+      .rc-pon-vrstica{display:flex;align-items:center;gap:.7rem;width:100%;min-height:2.9rem;padding:.55rem .3rem;border:none;border-bottom:1px solid rgba(17,17,17,.08);background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+      .rc-pon-vrstica:last-child{border-bottom:none}
+      .rc-pon-naziv{flex:1;min-width:0}
+      .rc-pon-naziv strong{display:block;font-size:.9rem;font-weight:600;overflow-wrap:anywhere}
+      .rc-pon-vrstica.on .rc-pon-naziv strong{font-weight:800}
+      .rc-pon-naziv small{display:block;margin-top:.1rem;font-size:.74rem;color:rgba(17,17,17,.55)}
+      .rc-pon-kljukica{flex:none;display:grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:50%;background:var(--ink);color:var(--paper);font-size:.85rem}
+      .rc-pon-prazno{padding:.9rem .3rem}
 
       /* mobilno: NIC cez desni rob pri 390px — postavka se zlozi v 2 stolpca */
       @media (max-width: 760px){
