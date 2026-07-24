@@ -33,7 +33,7 @@
 .plan header span, .timer header span { display: block; margin-top: .55rem; color: var(--muted); }
 .fields { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
 .fields label, .notes, .timerForm label, .prisotnost label { position: relative; display: grid; gap: .4rem; font-weight: 700; font-size: .84rem; }
-.fields input, .notes textarea, .timerForm input, .timerForm select, .prisotnost input { width: 100%; min-height: 3.2rem; padding: .75rem .9rem; border: 1px solid var(--line); border-radius: .85rem; background: white; color: var(--ink); font: inherit; font-size: 1rem; box-sizing: border-box; }
+.fields input, .notes textarea, .timerForm input, .timerForm select, .prisotnost input, .prisotnost select { width: 100%; min-height: 3.2rem; padding: .75rem .9rem; border: 1px solid var(--line); border-radius: .85rem; background: white; color: var(--ink); font: inherit; font-size: 1rem; box-sizing: border-box; }
 .fields label small { position: absolute; right: .9rem; bottom: 1rem; }
 .notes textarea { min-height: 7rem; resize: vertical; }
 .plan > button, .timerForm > button, .running > button, .glavnaVrsta > button:first-child, .prisotnost > button { min-height: 3.25rem; border: 0; border-radius: .9rem; background: var(--ink); color: white; font: inherit; font-size: 1rem; cursor: pointer; }
@@ -190,10 +190,12 @@
 .empty { padding: 2rem 0; border-top: 1px solid var(--line); color: var(--muted); }
 @media (max-width: 1100px) { .summary { grid-template-columns: 1fr 1fr; } .layout { grid-template-columns: 1fr; } }
 @media (max-width: 700px) { .page { min-width: 0; }.fields { grid-template-columns: 1fr; }.plan, .timer, .history { min-width: 0; padding: 1rem; }.history header { align-items: flex-start; flex-direction: column; gap: .4rem; }.history article { grid-template-columns: minmax(0, 1fr) auto; gap: .65rem; }.history article > div { min-width: 0; }.history article > div span { overflow-wrap: anywhere; }.history article > b, .history article > em { justify-self: start; }.history article > b { grid-column: 1; }.history article > em { grid-column: 1; }.history article > .akcije { grid-column: 1 / -1; justify-self: start; gap: .5rem; padding-top: .2rem; }.history article > .akcije .izbrisi { min-width: 2.75rem; min-height: 2.75rem; }.running button { min-height: 3rem; }
-  /* Prisotnost na telefonu: en stolpec, vrstica dnevnika se prelomi namesto da rezi rob */
+  /* Prisotnost na telefonu: en stolpec, cilj polje ni vec stisnjeno na levo */
   .prisotnostCilj { max-width: none; }
-  .prisotnostVnos { display: flex; flex-wrap: wrap; row-gap: .2rem; column-gap: .7rem; }
-  .prisotnostVnos > button { margin-left: auto; }
+  /* mesecna tabela drsi vodoravno namesto da stisne stolpce cez rob (390px) */
+  .mesecTabelaOvoj { -webkit-overflow-scrolling: touch; }
+  .mesecNav strong { min-width: 8rem; font-size: 1rem; }
+  .mesecPovzetek strong { font-size: 1.7rem; }
 }
 
 /* ── Dnevnik po dnevih + ročni vnos / urejanje ────────────────────────────── */
@@ -292,7 +294,7 @@
 }
 .rocniGumb:hover { border-color: var(--ink); }
 
-/* ── Prisotnost: cilj delovnika, prihod/odhod/odmor, živ izpis, dnevnik ──── */
+/* ── Prisotnost: cilj delovnika, dnevni vnos (prihod/malica/odhod/vrsta) ── */
 .prisotnost { display: grid; gap: .8rem; }
 .prisotnostCilj { max-width: 11rem; }
 .prisotnostCilj input { text-align: center; }
@@ -304,20 +306,69 @@
   color: var(--muted); font-size: .9rem; line-height: 1.5;
 }
 .prisotnostIzpis strong { font: 500 1.3rem var(--font-serif), Georgia, serif; color: var(--ink); }
-.prisotnostDnevnik { display: grid; gap: .1rem; margin-top: .3rem; }
-.prisotnostVnos {
-  display: grid; grid-template-columns: 5.2rem 7.5rem 6rem auto auto 1.6rem;
-  align-items: center; gap: .6rem;
-  padding: .55rem .2rem; border-top: 1px solid var(--line);
-  color: var(--muted); font-size: .84rem;
+.prisotnost > button:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Mesečna evidenca: navigacija po mesecih ─────────────────────────────── */
+.mesecNav {
+  display: flex; align-items: center; justify-content: center; gap: 1rem;
+  margin-top: .3rem;
 }
-.prisotnostVnos b { color: var(--ink); font-weight: 650; font-variant-numeric: tabular-nums; }
-.prisotnostVnos em { color: var(--ink); font-size: .82rem; font-style: normal; }
-.prisotnostVnos > button {
-  justify-self: end; padding: .2rem .5rem; border: 0; background: none;
+.mesecNav strong { min-width: 11rem; text-align: center; font: 500 1.15rem var(--font-serif), Georgia, serif; }
+.mesecNav button {
+  display: grid; place-items: center; flex: none; width: 2.2rem; height: 2.2rem; padding: 0;
+  border: 1px solid var(--line); border-radius: 50%; background: oklch(100% 0 0 / .7);
+  color: var(--ink); font-size: 1.1rem; line-height: 1; cursor: pointer;
+}
+.mesecNav button:hover { border-color: var(--ink); background: oklch(100% 0 0); }
+
+/* ── Mesečna tabela: overflow-x na ovoju, da tabela na mobilnem drsi vodoravno
+   namesto da stisne stolpce cez rob zaslona (preverjeno pri 390px). ──────── */
+.mesecTabelaOvoj { overflow-x: auto; border: 1px solid var(--line); border-radius: 1rem; }
+.mesecTabela { width: 100%; min-width: 34rem; border-collapse: collapse; font-size: .84rem; }
+.mesecTabela thead th {
+  padding: .6rem .85rem; border-bottom: 1px solid var(--line);
+  background: oklch(95% .035 300); color: oklch(38% .06 300);
+  text-align: left; font-size: .66rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase;
+}
+.mesecTabela thead th:first-child { border-top-left-radius: .95rem; }
+.mesecTabela thead th:last-child { border-top-right-radius: .95rem; width: 2.4rem; }
+.mesecTabela tbody td { padding: .55rem .85rem; border-top: 1px solid var(--line); vertical-align: middle; }
+/* bolniska/dopust/praznik so cel dan brez ur — vrstica je nekoliko zbledela */
+.mesecTabela tbody tr[data-odsoten='true'] { color: var(--muted); background: oklch(97% .006 87 / .6); }
+.mesecTabela tbody td:last-child { text-align: center; }
+.mesecTabela tbody td:last-child button {
+  padding: .2rem .5rem; border: 0; background: none;
   color: var(--muted); font-size: 1.05rem; line-height: 1; cursor: pointer;
 }
-.prisotnostVnos > button:hover { color: var(--ink); }
+.mesecTabela tbody td:last-child button:hover { color: var(--ink); }
+.mesecUre { text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; color: var(--ink); }
+.mesecPrazno { padding: 1.4rem .85rem; color: var(--muted); text-align: center; }
+/* opomba pod dnevom, drobna in tiha — ne postane nov stolpec */
+.mesecOpomba { display: block; margin-top: .15rem; color: var(--muted); font-size: .72rem; font-weight: 400; font-style: italic; overflow-wrap: anywhere; }
+
+/* ── Vrsta dneva: pilula s piko, kot arh-status drugod v projektu ─────────── */
+.vrstaPilula {
+  display: inline-flex; align-items: center; gap: .42rem; width: max-content; max-width: 100%;
+  padding: .32rem .66rem; border: 1px solid oklch(86% .012 87); border-radius: 999px;
+  background: oklch(95% .01 87); color: oklch(40% .02 70);
+  font-size: .68rem; font-weight: 700; white-space: nowrap;
+}
+.vrstaPilula::before { content: ''; width: .48rem; height: .48rem; border-radius: 50%; background: var(--pika, oklch(62% .02 70)); flex: none; }
+.vrstaPilula[data-vrsta='redno'] { --pika: oklch(62% .15 150); }     /* zelena/mint */
+.vrstaPilula[data-vrsta='sluzbena'] { --pika: oklch(72% .16 75); }   /* jantar */
+.vrstaPilula[data-vrsta='bolniska'] { --pika: oklch(62% .02 70); }   /* siva/nevtralna */
+.vrstaPilula[data-vrsta='zasebni'] { --pika: oklch(56% .12 300); }   /* vijola */
+.vrstaPilula[data-vrsta='dopust'] { --pika: oklch(56% .12 300); }    /* vijola */
+.vrstaPilula[data-vrsta='praznik'] { --pika: oklch(62% .02 70); }    /* siva */
+
+/* ── Mesečni povzetek: velik Bodoni števec + napredovalni trak proti cilju ── */
+.mesecPovzetek { display: grid; gap: .55rem; margin-top: .2rem; padding: 1.1rem 1.2rem; border-radius: 1.1rem; background: oklch(95% .025 87); }
+.mesecPovzetekStevec { display: flex; align-items: baseline; gap: .65rem; flex-wrap: wrap; }
+.mesecPovzetekStevec span { color: var(--muted); font-size: .84rem; text-transform: capitalize; }
+.mesecPovzetekStevec strong { font: 500 2.15rem var(--font-serif), Georgia, serif; color: var(--ink); }
+.mesecTrak { position: relative; height: .55rem; border-radius: 999px; background: oklch(90% .015 87); overflow: hidden; }
+.mesecTrakZapolnjeno { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: linear-gradient(90deg, oklch(70% .13 160), oklch(60% .15 150)); transition: width .3s ease-out; }
+.mesecCiljIzpis { color: var(--muted); font-size: .84rem; font-variant-numeric: tabular-nums; }
 
 /* Nadaljuj / Uredi v vrstici dnevnika */
 /* prej skoraj neviden: obrobo je pobralo splosno .history article button pravilo,
@@ -342,18 +393,23 @@
 
 /* Pogled "Cena & čas": merjenje gre PRED kartice s podatki — do stoparice mora biti
    hiter dostop, kartice so pregled in lahko počakajo. .page je grid, zato zadošča order. */
-/* Štoparica levo, dnevnik desno — prej je bil dnevnik pod njo in desno od
-   štoparice je zijala prazna polovica zaslona. Kartice gredo pod oboje. */
+/* Štoparica ozko levo, evidenca (Prisotnost) široko desno, zasebni dnevnik
+   pod evidenco v istem (širokem) stolpcu — prej je bila evidenca stisnjena v
+   ozek levi stolpec skupaj s štoparico. */
 .casPogled { grid-template-columns: minmax(0, 27rem) minmax(0, 1fr); align-items: start; column-gap: 1rem; }
-.casPogled .notice  { grid-column: 1 / -1; order: 0; }
-.casPogled .layout  { grid-column: 1; order: 1; }
-.casPogled .history { grid-column: 2; order: 1; }
-.casPogled .summary { grid-column: 1 / -1; order: 2; }
-/* pod 1100 px ni prostora za dva stolpca -> vse eno pod drugim */
+.casPogled .notice   { grid-column: 1 / -1; order: 0; }
+.casPogled .layout   { grid-column: 1; order: 1; }
+.casPogled .evidenca { grid-column: 2; order: 1; }
+.casPogled .history  { grid-column: 2; order: 2; }
+.casPogled .summary  { grid-column: 1 / -1; order: 3; }
+/* pod 1100 px ni prostora za dva stolpca -> vse eno pod drugim:
+   Štoparica -> Evidenca -> Dnevnik */
 @media (max-width: 1100px) {
   .casPogled { grid-template-columns: minmax(0, 1fr); }
-  .casPogled .layout, .casPogled .history { grid-column: 1; }
-  .casPogled .history { order: 3; }
+  .casPogled .layout, .casPogled .evidenca, .casPogled .history { grid-column: 1; }
+  .casPogled .layout   { order: 1; }
+  .casPogled .evidenca { order: 2; }
+  .casPogled .history  { order: 3; }
 }
 
 /* Glavni gumb in pavza v isti vrstici; pavza je kvadratna, da ne tekmuje z njim. */

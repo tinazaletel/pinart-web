@@ -9,6 +9,7 @@ import {
   saveLocalTimeEntries,
 } from '@/lib/pinartPlanning';
 import { saveBusinessGoal, saveCloudSettings } from '@/lib/pinartFlowCloud';
+import { usePredogled } from '@/lib/predogled';
 import { preklopiPavzo, useTekoceMerjenje, zapisiMerjenje } from '@/lib/tekoceMerjenje';
 import TimerValovi from './TimerValovi';
 import styles from './BusinessPlanWorkspace.module.css';
@@ -20,10 +21,51 @@ const vnosiSklon = (n: number) => { const d = n % 100; return d === 1 ? 'vnos' :
 
 /**
  * Prisotnost — alternativa štoparici. Namesto merjenja enega projekta se
- * zabeleži cel delovnik (prihod/odhod/odmor); locena shramba (samo
+ * zabeleži cel delovnik (prihod/odhod/malica); locena shramba (samo
  * localStorage), ker se ne veze na posamezen projekt kot stoparica.
+ *
+ * Mesečna evidenca: vsak dan ima svojo "vrsto" (redno delo, službena pot,
+ * odsotnost …). Stari zapisi brez `vrsta` se štejejo kot 'redno' (glej
+ * `vrstaZapisa`), zato polje ostane neobvezno in migracija ni potrebna.
  */
-type Prisotnost = { id: string; datum: string; prihod: string; odhod: string; odmorMin?: number };
+type VrstaPrisotnosti = 'redno' | 'sluzbena' | 'bolniska' | 'zasebni' | 'dopust' | 'praznik';
+type Prisotnost = {
+  id: string; datum: string; prihod: string; odhod: string; odmorMin?: number;
+  vrsta?: VrstaPrisotnosti; opomba?: string;
+};
+
+const VRSTA_OZNAKA: Record<VrstaPrisotnosti, string> = {
+  redno: 'Redno', sluzbena: 'Službena pot', bolniska: 'Bolniška',
+  zasebni: 'Zasebni izhod', dopust: 'Dopust', praznik: 'Praznik',
+};
+/* Cel dan brez izracuna ur — v tabeli in mesecnem povzetku se prikaze "—". */
+const brezUrVrsta = (v: VrstaPrisotnosti) => v === 'bolniska' || v === 'dopust' || v === 'praznik';
+/* stari zapisi (pred to razsiritvijo) nimajo polja vrsta -> stejejo se kot redno delo */
+const vrstaZapisa = (p: Prisotnost): VrstaPrisotnosti => p.vrsta || 'redno';
+
+/**
+ * Predogled (demo/prazno/začetek): evidenca prisotnosti se napolni z vnaprej
+ * pripravljenimi primeri za TEKOČI mesec, da je tabela + povzetek videti
+ * polno (kot skica), namesto prazne kartice. Velja SAMO za to kartico —
+ * projektni časovni vnosi (štoparica/dnevnik) se v demo načinu NE ponarejajo,
+ * to je uveljavljena odločitev (glej lib/predogled.ts).
+ */
+function demoPrisotnosti(): Prisotnost[] {
+  const zdaj = new Date();
+  const dan = (n: number) => `${zdaj.getFullYear()}-${String(zdaj.getMonth() + 1).padStart(2, '0')}-${String(n).padStart(2, '0')}`;
+  return [
+    { id: 'demo-p-1', datum: dan(1), prihod: '08:30', odhod: '16:45', odmorMin: 30, vrsta: 'redno' },
+    { id: 'demo-p-2', datum: dan(2), prihod: '09:00', odhod: '17:15', odmorMin: 30, vrsta: 'redno' },
+    { id: 'demo-p-3', datum: dan(3), prihod: '08:00', odhod: '18:00', odmorMin: 30, vrsta: 'sluzbena', opomba: 'Sestanek s stranko v Mariboru' },
+    { id: 'demo-p-4', datum: dan(4), prihod: '08:45', odhod: '16:30', odmorMin: 30, vrsta: 'redno' },
+    { id: 'demo-p-5', datum: dan(5), prihod: '', odhod: '', vrsta: 'bolniska' },
+    { id: 'demo-p-6', datum: dan(8), prihod: '09:00', odhod: '17:00', odmorMin: 30, vrsta: 'redno' },
+    { id: 'demo-p-7', datum: dan(9), prihod: '08:30', odhod: '12:00', odmorMin: 0, vrsta: 'zasebni', opomba: 'Odhod k zdravniku, odobril vodja' },
+    { id: 'demo-p-8', datum: dan(10), prihod: '08:30', odhod: '16:45', odmorMin: 30, vrsta: 'redno' },
+    { id: 'demo-p-9', datum: dan(11), prihod: '09:15', odhod: '17:30', odmorMin: 30, vrsta: 'redno' },
+    { id: 'demo-p-10', datum: dan(12), prihod: '', odhod: '', vrsta: 'dopust' },
+  ];
+}
 
 /* "6 h 30 min", ali ce ur ni "15 min" — brez odvecne "0 h" pri kratkih razlikah. */
 function izpisMinut(minute: number): string {
@@ -81,6 +123,13 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   const [notice, setNotice] = useState('');
   const [ready, setReady] = useState(false);
   const timerRef = useRef<number | null>(null);
+
+  /* Predogled (demo/prazno/začetek): SAMO evidenca prisotnosti spodaj se v tem
+     načinu napolni z izmišljenimi primeri (glej demoPrisotnosti zgoraj). Plan
+     in projektni časovni vnosi (spodaj) ostanejo pravi tudi v demo načinu —
+     ta zastavica nanje ne vpliva. */
+  const [nacinPredogleda] = usePredogled();
+  const samoOgled = nacinPredogleda !== 'mine';
 
   useEffect(() => {
     const localPlan = loadLocalPlan();
@@ -191,25 +240,53 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   const [prisotnosti, setPrisotnosti] = useState<Prisotnost[]>([]);
   const [prihodCas, setPrihodCas] = useState('');
   const [odhodCas, setOdhodCas] = useState('');
-  const [odmorCas, setOdmorCas] = useState('');
+  const [odmorCas, setOdmorCas] = useState('30');
+  const [vrstaVnos, setVrstaVnos] = useState<VrstaPrisotnosti>('redno');
+  const [opombaVnos, setOpombaVnos] = useState('');
+  /* dan, za katerega trenutno vnasamo prisotnost — privzeto danes, a ga je
+     mozno prestaviti (npr. da popravis pretekli dan) */
+  const [prisotnostDan, setPrisotnostDan] = useState(() => new Date().toISOString().slice(0, 10));
+  /* izbran mesec za mesecno tabelo, oblika "YYYY-MM" */
+  const [mesec, setMesec] = useState(() => new Date().toISOString().slice(0, 7));
+
+  /* Odpre vnos za izbran dan: ce dan ze ima zapis, napolni polja z njim
+     (nadaljevanje popravka), sicer jih pocisti na privzete vrednosti
+     (malica 30 min, vrsta redno). Klice se ob zagonu in ob izbiri datuma. */
+  const odpriPrisotnostDan = (dan: string, seznam: Prisotnost[] = prisotnosti) => {
+    setPrisotnostDan(dan);
+    const obstojeci = seznam.find(x => x.datum === dan);
+    if (obstojeci) {
+      setPrihodCas(obstojeci.prihod); setOdhodCas(obstojeci.odhod);
+      setOdmorCas(obstojeci.odmorMin != null ? String(obstojeci.odmorMin) : '30');
+      setVrstaVnos(obstojeci.vrsta || 'redno');
+      setOpombaVnos(obstojeci.opomba || '');
+    } else {
+      setPrihodCas(''); setOdhodCas(''); setOdmorCas('30');
+      setVrstaVnos('redno'); setOpombaVnos('');
+    }
+  };
 
   useEffect(() => {
+    if (samoOgled) {
+      /* Demo/predogled: evidenca je vnaprej napolnjena in se ne bere niti ne
+         zapisuje v shrambo (glej demoPrisotnosti in samoOgled uporabo nizje). */
+      const demo = demoPrisotnosti();
+      setPrisotnosti(demo);
+      setDelovnikUre(8);
+      odpriPrisotnostDan(new Date().toISOString().slice(0, 10), demo);
+      return;
+    }
     const shranjeneUre = Number(localStorage.getItem('pinart-flow-delovnik-ure'));
     if (shranjeneUre > 0) setDelovnikUre(shranjeneUre);
     try {
       const shranjeno = JSON.parse(localStorage.getItem('pinart-flow-prisotnost') || '[]');
       if (Array.isArray(shranjeno)) {
         setPrisotnosti(shranjeno);
-        /* ce je za danes ze vnos, ga takoj ponudimo v poljih (nadaljevanje popravka) */
-        const danes = new Date().toISOString().slice(0, 10);
-        const danasnji = shranjeno.find((x: Prisotnost) => x.datum === danes);
-        if (danasnji) {
-          setPrihodCas(danasnji.prihod); setOdhodCas(danasnji.odhod);
-          setOdmorCas(danasnji.odmorMin ? String(danasnji.odmorMin) : '');
-        }
+        odpriPrisotnostDan(new Date().toISOString().slice(0, 10), shranjeno);
       }
     } catch { /* poskodovana shramba — panel ostane prazen */ }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [samoOgled]);
 
   /* Ko med merjenjem odscrollaš do dnevnika, štoparica izgine z zaslona.
      Zato jo takrat pokažemo kot plavajoč pas na dnu — čas mora biti ves čas viden. */
@@ -369,17 +446,23 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   const shraniDelovnik = (ure: number) => {
     const varno = ure > 0 ? ure : 8;
     setDelovnikUre(varno);
-    localStorage.setItem('pinart-flow-delovnik-ure', String(varno));
+    /* v predogledu (demo) se cilj ne zapise trajno — samo v stanju za ta ogled */
+    if (!samoOgled) localStorage.setItem('pinart-flow-delovnik-ure', String(varno));
   };
 
-  /* Isti dan prepise obstojeci vnos (id ostane), sicer nov zapis na vrh dnevnika. */
+  /* Isti dan prepise obstojeci vnos (id ostane), sicer nov zapis na vrh dnevnika.
+     Bolniska/dopust/praznik so cel dan brez ur, zato prihod/odhod tam nista obvezna. */
   const shraniPrisotnost = () => {
-    if (!prihodCas || !odhodCas) { setNotice('Vpiši prihod in odhod pred shranjevanjem.'); return; }
-    const danes = danesISO();
-    const obstojeci = prisotnosti.find(x => x.datum === danes);
+    if (samoOgled) return; /* predogled je samo za ogled, glej demoPrisotnosti */
+    if (!brezUrVrsta(vrstaVnos) && (!prihodCas || !odhodCas)) {
+      setNotice('Vpiši prihod in odhod pred shranjevanjem.'); return;
+    }
+    const dan = prisotnostDan;
+    const obstojeci = prisotnosti.find(x => x.datum === dan);
     const zapis: Prisotnost = {
-      id: obstojeci?.id || crypto.randomUUID(), datum: danes,
+      id: obstojeci?.id || crypto.randomUUID(), datum: dan,
       prihod: prihodCas, odhod: odhodCas, odmorMin: prisotnostOdmor || undefined,
+      vrsta: vrstaVnos, opomba: opombaVnos.trim() || undefined,
     };
     const next = obstojeci ? prisotnosti.map(x => (x.id === zapis.id ? zapis : x)) : [zapis, ...prisotnosti];
     setPrisotnosti(next); localStorage.setItem('pinart-flow-prisotnost', JSON.stringify(next));
@@ -387,9 +470,62 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   };
 
   const izbrisiPrisotnost = (id: string) => {
+    if (samoOgled) return;
     const next = prisotnosti.filter(x => x.id !== id);
     setPrisotnosti(next); localStorage.setItem('pinart-flow-prisotnost', JSON.stringify(next));
   };
+
+  /* ── Mesečna evidenca: navigacija po mesecih, tabela in povzetek ──────────
+     Cilj meseca = delovnih dni (pon–pet) × cilj delovnika. Natančnejše kot
+     pavšalno "×21", ker se meseci razlikujejo po dolžini/razporeditvi
+     vikendov; praznikov namenoma NE izločimo iz števila delovnih dni — če je
+     nekdo prost, si ta dan vpiše kot "praznik" in cilj ostane fiksen. */
+  const mesecOznaka = (ym: string) => {
+    const [y, m] = ym.split('-').map(Number);
+    const label = new Date(y, m - 1, 1).toLocaleDateString('sl-SI', { month: 'long', year: 'numeric' });
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  };
+  const premikMeseca = (ym: string, delta: number) => {
+    const [y, m] = ym.split('-').map(Number);
+    const d = new Date(y, m - 1 + delta, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  };
+  const delovnihDniMeseca = (ym: string) => {
+    const [y, m] = ym.split('-').map(Number);
+    const steviloDni = new Date(y, m, 0).getDate();
+    let stevilo = 0;
+    for (let d = 1; d <= steviloDni; d++) {
+      const dow = new Date(y, m - 1, d).getDay();
+      if (dow !== 0 && dow !== 6) stevilo++;
+    }
+    return stevilo;
+  };
+  /* "pon 1. 7." — kratek dan v tednu + datum, kot na skici */
+  const kratekDan = (dan: string) => {
+    const d = new Date(`${dan}T12:00:00`);
+    return `${d.toLocaleDateString('sl-SI', { weekday: 'short' }).replace('.', '')} ${d.getDate()}. ${d.getMonth() + 1}.`;
+  };
+  /* ure za eno vrstico tabele; null = "brez ur" (bolniska/dopust/praznik) -> prikaz "—" */
+  const uraZapisa = (p: Prisotnost) => {
+    if (brezUrVrsta(vrstaZapisa(p))) return null;
+    const minute = minuteMed(p.prihod, p.odhod);
+    return minute ? Math.max(0, minute - (p.odmorMin || 0)) : 0;
+  };
+
+  const prisotnostiMeseca = [...prisotnosti]
+    .filter(p => p.datum.slice(0, 7) === mesec)
+    .sort((a, b) => a.datum.localeCompare(b.datum));
+
+  /* v mesecno vsoto stejemo samo delovni cas (redno + sluzbena pot) */
+  const mesecMinute = prisotnostiMeseca.reduce((vsota, p) => {
+    const v = vrstaZapisa(p);
+    if (v !== 'redno' && v !== 'sluzbena') return vsota;
+    const minute = minuteMed(p.prihod, p.odhod);
+    return vsota + (minute ? Math.max(0, minute - (p.odmorMin || 0)) : 0);
+  }, 0);
+  const mesecCiljUre = delovnihDniMeseca(mesec) * delovnikUre;
+  const mesecOstaneMinut = Math.round(mesecCiljUre * 60 - mesecMinute);
+  const mesecNapredek = mesecCiljUre ? Math.min(100, Math.max(0, (mesecMinute / 60 / mesecCiljUre) * 100)) : 0;
 
   const dodajRocno = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -638,66 +774,120 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
         )}
         <div className={styles.ethics}><strong>Čas meri donosnost projekta, ne tvoje vrednosti.</strong><span>Vnosi ostanejo v tvojem računu in se ne delijo s strankami ali vodji.</span></div>
       </section>
+    </div>
 
-      {/* Prisotnost je LOCENA kartica, ne preklop znotraj stoparice — meri cel
-          delovnik (prihod–odhod), stoparica pa en projekt. Obe sta vedno vidni. */}
-      <section className={styles.timer}>
-        <header><p>PRISOTNOST</p><h2>Tvoj dnevni delovnik</h2><span>Prihod, odhod, odmor — preostanek do cilja se izračuna sam.</span></header>
-        <div className={styles.prisotnost}>
-          <label className={styles.prisotnostCilj}>
-            <span>Cilj delovnika (ur)</span>
-            <input type="number" min="1" max="24" step="0.5" value={delovnikUre}
-              onChange={e => shraniDelovnik(Number(e.target.value))} />
-          </label>
-          <label>
-            <span>Prihod</span>
-            <div className={styles.prisotnostVrstica}>
-              <input type="time" step="60" value={prihodCas} onChange={e => setPrihodCas(e.target.value)} />
-              <button type="button" className={styles.rocniGumb} onClick={() => setPrihodCas(zdajHHMM())}>Prišel/-a</button>
-            </div>
-          </label>
-          <label>
-            <span>Odhod</span>
-            <div className={styles.prisotnostVrstica}>
-              <input type="time" step="60" value={odhodCas} onChange={e => setOdhodCas(e.target.value)} />
-              <button type="button" className={styles.rocniGumb} onClick={() => setOdhodCas(zdajHHMM())}>Odšel/-a</button>
-            </div>
-          </label>
-          <label><span>Odmor (min) <small>ni obvezno</small></span><input type="number" min="0" step="5" placeholder="0" value={odmorCas} onChange={e => setOdmorCas(e.target.value)} /></label>
-          <p className={styles.prisotnostIzpis}>
-            {!prihodCas || !odhodCas
+    {/* Prisotnost/evidenca je LOCENA kartica izven ozkega .layout stolpca (glej
+        .casPogled v CSS) — meri cel delovnik po dnevih in ga zbira v mesecno
+        tabelo, stoparica meri en projekt. Obe sta vedno vidni. */}
+    <section className={`${styles.timer} ${styles.evidenca}`}>
+      <header><p>PRISOTNOST</p><h2>Mesečna evidenca delovnega časa</h2><span>Prihod, odhod, malica in vrsta dneva — mesečni pregled in napredek proti cilju se izračunata sama.</span></header>
+
+      <div className={styles.prisotnost}>
+        <label className={styles.prisotnostCilj}>
+          <span>Cilj delovnika (ur)</span>
+          <input type="number" min="1" max="24" step="0.5" value={delovnikUre}
+            onChange={e => shraniDelovnik(Number(e.target.value))} />
+        </label>
+
+        <label className={styles.danPolje}>
+          <span>Dan vnosa</span>
+          <span className={styles.danVrstica}>
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="16" rx="2.5" /><path d="M3 10h18M8 3v4M16 3v4" />
+            </svg>
+            <input type="date" value={prisotnostDan} onChange={e => odpriPrisotnostDan(e.target.value)} />
+          </span>
+          <small>{new Date(`${prisotnostDan}T12:00:00`).toLocaleDateString('sl-SI', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</small>
+        </label>
+
+        <label>
+          <span>Prihod</span>
+          <div className={styles.prisotnostVrstica}>
+            <input type="time" step="60" value={prihodCas} onChange={e => setPrihodCas(e.target.value)} />
+            <button type="button" className={styles.rocniGumb} onClick={() => setPrihodCas(zdajHHMM())}>Prišel/-a</button>
+          </div>
+        </label>
+        <label><span>Malica (min)</span><input type="number" min="0" step="5" placeholder="30" value={odmorCas} onChange={e => setOdmorCas(e.target.value)} /></label>
+        <label>
+          <span>Odhod</span>
+          <div className={styles.prisotnostVrstica}>
+            <input type="time" step="60" value={odhodCas} onChange={e => setOdhodCas(e.target.value)} />
+            <button type="button" className={styles.rocniGumb} onClick={() => setOdhodCas(zdajHHMM())}>Odšel/-a</button>
+          </div>
+        </label>
+        <label>
+          <span>Vrsta</span>
+          <select value={vrstaVnos} onChange={e => setVrstaVnos(e.target.value as VrstaPrisotnosti)}>
+            <option value="redno">Redno</option>
+            <option value="sluzbena">Službena pot</option>
+            <option value="bolniska">Bolniška</option>
+            <option value="zasebni">Zasebni izhod</option>
+            <option value="dopust">Dopust</option>
+            <option value="praznik">Praznik</option>
+          </select>
+        </label>
+        <label><span>Komentar <small>ni obvezno</small></span><input type="text" placeholder="npr. pri zdravniku, sestanek …" value={opombaVnos} onChange={e => setOpombaVnos(e.target.value)} /></label>
+
+        <p className={styles.prisotnostIzpis}>
+          {brezUrVrsta(vrstaVnos)
+            ? <span>{VRSTA_OZNAKA[vrstaVnos]} — cel dan se šteje kot odsotnost, brez izračuna ur.</span>
+            : !prihodCas || !odhodCas
               ? <span>Vpiši prihod in odhod, pa ti povem, koliko ur ostane do cilja.</span>
               : <>Opravljeno <strong>{izpisMinut(prisotnostOpravljeno)}</strong> · {prisotnostOstane >= 0
                   ? <>ostane <strong>{izpisMinut(prisotnostOstane)}</strong></>
                   : <>+{izpisMinut(-prisotnostOstane)} viška</>}</>}
-          </p>
-          <button type="button" onClick={shraniPrisotnost}>Shrani v dnevnik</button>
-        </div>
+        </p>
+        <button type="button" onClick={shraniPrisotnost} disabled={samoOgled}>Shrani v dnevnik</button>
+        {samoOgled && <small className={styles.opomba}>Urejanje ni na voljo v predogledu (demo). Prijavi se v svoj račun.</small>}
+      </div>
 
-        {!!prisotnosti.length && (
-          <div className={styles.prisotnostDnevnik}>
-            <div className={styles.reviewTitle}><strong>Dnevnik prisotnosti</strong><span>Vsi vpisani dnevi, najnovejši zgoraj.</span></div>
-            {[...prisotnosti].sort((a, b) => b.datum.localeCompare(a.datum)).map(p => {
-              const minute = minuteMed(p.prihod, p.odhod);
-              const opravljeno = minute ? Math.max(0, minute - (p.odmorMin || 0)) : 0;
-              const ostane = delovnikUre * 60 - opravljeno;
+      <div className={styles.mesecNav}>
+        <button type="button" onClick={() => setMesec(premikMeseca(mesec, -1))} aria-label="Prejšnji mesec">‹</button>
+        <strong>{mesecOznaka(mesec)}</strong>
+        <button type="button" onClick={() => setMesec(premikMeseca(mesec, 1))} aria-label="Naslednji mesec">›</button>
+      </div>
+
+      <div className={styles.mesecTabelaOvoj}>
+        <table className={styles.mesecTabela}>
+          <thead><tr><th>Dan</th><th>Prihod</th><th>Malica</th><th>Odhod</th><th>Vrsta</th><th>Ure</th><th aria-hidden="true" /></tr></thead>
+          <tbody>
+            {!prisotnostiMeseca.length && <tr><td colSpan={7} className={styles.mesecPrazno}>V tem mesecu še ni vnosov.</td></tr>}
+            {prisotnostiMeseca.map(p => {
+              const v = vrstaZapisa(p);
+              const ure = uraZapisa(p);
               return (
-                <div key={p.id} className={styles.prisotnostVnos}>
-                  <span>{kratkiDatum(obDnevu(p.datum))}</span>
-                  <span>{p.prihod} – {p.odhod}</span>
-                  <span>{p.odmorMin ? `odmor ${p.odmorMin} min` : '—'}</span>
-                  <b>{izpisMinut(opravljeno)}</b>
-                  <em>{ostane >= 0 ? `ostane ${izpisMinut(ostane)}` : `+${izpisMinut(-ostane)} viška`}</em>
-                  <button type="button"
-                    onClick={() => { if (confirm(`Izbrišem vnos prisotnosti za ${kratkiDatum(obDnevu(p.datum))}?`)) izbrisiPrisotnost(p.id); }}
-                    aria-label={`Izbriši vnos prisotnosti za ${p.datum}`}>×</button>
-                </div>
+                <tr key={p.id} data-odsoten={brezUrVrsta(v)}>
+                  <td>{kratekDan(p.datum)}{p.opomba && <small className={styles.mesecOpomba}>{p.opomba}</small>}</td>
+                  <td>{p.prihod || '—'}</td>
+                  <td>{p.odmorMin ? `${p.odmorMin} min` : '—'}</td>
+                  <td>{p.odhod || '—'}</td>
+                  <td><span className={styles.vrstaPilula} data-vrsta={v}>{VRSTA_OZNAKA[v]}</span></td>
+                  <td className={styles.mesecUre}>{ure == null ? '—' : izpisMinut(ure)}</td>
+                  <td>
+                    {!samoOgled && <button type="button"
+                      onClick={() => { if (confirm(`Izbrišem vnos za ${kratekDan(p.datum)}?`)) izbrisiPrisotnost(p.id); }}
+                      aria-label={`Izbriši vnos prisotnosti za ${p.datum}`}>×</button>}
+                  </td>
+                </tr>
               );
             })}
-          </div>
-        )}
-      </section>
-    </div>
+          </tbody>
+        </table>
+      </div>
+
+      <div className={styles.mesecPovzetek}>
+        <div className={styles.mesecPovzetekStevec}>
+          <span>opravljeno v {mesecOznaka(mesec).toLowerCase()}</span>
+          <strong>{izpisMinut(mesecMinute)}</strong>
+        </div>
+        <div className={styles.mesecTrak}><div className={styles.mesecTrakZapolnjeno} style={{ width: `${mesecNapredek}%` }} /></div>
+        <span className={styles.mesecCiljIzpis}>
+          cilj {Math.round(mesecCiljUre)} h · {mesecOstaneMinut >= 0
+            ? `ostane ${izpisMinut(mesecOstaneMinut)}`
+            : `+${izpisMinut(-mesecOstaneMinut)} viška`}
+        </span>
+      </div>
+    </section>
 
     <section className={styles.history}>
       {omejeno
