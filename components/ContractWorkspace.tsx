@@ -758,7 +758,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* ── detajl shranjene pogodbe (arhiv) ── */}
     {selectedContract && <div className={styles.detailBackdrop} role="presentation" onMouseDown={() => setSelectedContract(null)}>
       <aside className={`${styles.detailPanel} ${styles.contractDetail}`} role="dialog" aria-modal="true" aria-labelledby="contract-detail-title" onMouseDown={event => event.stopPropagation()}>
-        <button className={styles.detailClose} onClick={() => setSelectedContract(null)} aria-label="Zapri">×</button>
+        {/* sticky: X ostane v zgornjem desnem kotu tudi med drsenjem po pogodbi
+            (absolute je odplaval z vsebino in ga ni bilo vec) */}
+        <button className="pg-det-x" onClick={() => setSelectedContract(null)} aria-label="Zapri">✕</button>
         <p className={styles.eyebrow}>POGODBA · {labels[selectedContract.status]}</p>
         <h2 id="contract-detail-title">{selectedContract.title}</h2>
         <div className="pg-det-meta">
@@ -950,6 +952,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-opomba-kartica p{margin:.3rem 0 0;font-size:.85rem;line-height:1.5;color:#7a1f1f;overflow-wrap:anywhere}
 
       /* detajl: meta kartici + ena klikabilna vrstica ponudbe */
+      .pg .pg-det-x{position:sticky;top:0;z-index:6;align-self:flex-end;flex:0 0 auto;display:grid;place-items:center;width:2.2rem;height:2.2rem;margin:0 0 -2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
+      .pg .pg-det-x:hover{background:var(--ink);color:var(--paper)}
       .pg-det-meta{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;min-width:0}
       .pg-det-meta span{display:grid;gap:.25rem;padding:.7rem;border-radius:.7rem;background:oklch(94% .025 87);min-width:0}
       .pg-det-meta small{color:rgba(17,17,17,.55);font-size:.72rem}
