@@ -6163,7 +6163,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .tonbar { display: flex; overflow-x: auto; }
           .cw .tonbar button { flex: 1 0 auto; }
         }
-        .cw .orodjarna { position: relative; display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; margin: 1rem 0 .8rem; }
+        .cw .orodjarna { position: relative; display: flex; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; gap: .45rem; align-items: center; margin: 1rem 0 .8rem; padding-bottom: .2rem; }
+        .cw .orodjarna > * { flex: none; }
+        /* mobilni bottom-sheet ima navpičen prostor — tam naj se orodja ovijejo */
+        .cw .orodjarna-sheet { flex-wrap: wrap; overflow-x: visible; }
         .cw .oznaci-namig { position: absolute; top: -2.5rem; left: 1rem; background: var(--ink); color: var(--paper); font-size: .8rem; font-weight: 600; padding: .4rem .85rem; border-radius: 999px; white-space: nowrap; box-shadow: 0 8px 22px rgba(17,17,17,.22); z-index: 6; pointer-events: none; animation: cwFade .16s ease both; }
         .cw .oznaci-namig::after { content: ''; position: absolute; bottom: -5px; left: 1.4rem; border: 5px solid transparent; border-top-color: var(--ink); border-bottom: 0; }
         .cw .tool { min-height: 2.25rem; display: inline-flex; align-items: center; gap: .4rem; border: 1px solid rgba(17,17,17,.22); background: rgba(255,255,255,.32); color: var(--ink); border-radius: 999px; padding: 0 .75rem; font-family: inherit; font-weight: 600; font-size: .78rem; cursor: pointer; }
