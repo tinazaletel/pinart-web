@@ -43,6 +43,17 @@ const opombaInfo = (notes?: string) => {
   return { alert, besedilo: alert ? n.replace(/^ALERT:\s*/i, '') : n };
 };
 
+/* status pikica — ISTE barve/logika kot nadzorna plošča (statusTone/status_*):
+   success=zelena, waiting=jantar, danger=rdeča, neutral=siva */
+type Odtenek = 'success' | 'waiting' | 'danger' | 'neutral';
+const statusOdtenek = (label: string): Odtenek =>
+  ['Sprejeta', 'Podpisana', 'Plačano', 'Aktivna'].includes(label) ? 'success'
+    : label === 'Zavrnjena' ? 'danger'
+      : ['Poslana', 'Prejeta', 'V pregledu', 'Odprto'].includes(label) ? 'waiting'
+        : 'neutral';
+/* enoten prikaz statusa (pilula + pika) — povsod isti dizajn */
+const StatusPika = ({ label }: { label: string }) => <span className="arh-status" data-tone={statusOdtenek(label)}>{label}</span>;
+
 /* datumski filter — skupni za vse zavihke: samo od–do (native koledar).
    Prazno od/do ne omejuje; zapis brez veljavnega datuma se skrije le, ce je
    filter aktiven. */
@@ -183,13 +194,14 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             ) : (
               <div className="arh-tabela-ovoj">
                 <div className="arh-tabela arh-tabela-ponudbe">
-                  <header><span>Ponudba</span><span>Stranka</span><span className="arh-desno">Znesek</span><span>Datum</span><span>Št.</span><span /></header>
+                  <header><span>Ponudba</span><span>Stranka</span><span className="arh-desno">Znesek</span><span>Datum</span><span>Status</span><span>Št.</span><span /></header>
                   {ponudbePrikaz.map(o => (
                     <button key={o.id} type="button" className="arh-vrstica" onClick={() => { setDetObsegOdprt(false); setDetajl({ vrsta: 'ponudba', zapis: o }); }}>
                       <span className="arh-glavna"><span className="arh-ikona" aria-hidden><FileText size={17} /></span><strong>{o.title}</strong></span>
                       <span className="arh-mut">{o.client}</span>
                       <span className="arh-desno">{dokZnesek(o.agreedAmount)}</span>
                       <span className="arh-mut">{datStr(o.date)}</span>
+                      <span><StatusPika label={offerLabels[o.status]} /></span>
                       <span className="arh-mut">{o.number || '—'}</span>
                       <span className="arh-kazalec" aria-hidden>›</span>
                     </button>
@@ -236,7 +248,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                         <span className="arh-glavna"><span className="arh-ikona" aria-hidden><Scroll size={17} /></span><strong>{c.title}</strong></span>
                         <span className="arh-mut">{c.client}</span>
                         <span className="arh-mut">{datStr(c.date)}</span>
-                        <span className="arh-mut">{contractLabels[c.status]}</span>
+                        <span><StatusPika label={contractLabels[c.status]} /></span>
                         <span className="arh-op-cel">{op ? <small className={'arh-opomba' + (op.alert ? ' arh-opomba-alert' : '')}>{op.alert && <span className="arh-opomba-pika" aria-hidden />}{op.besedilo}</small> : '—'}</span>
                         <span className="arh-kazalec" aria-hidden>›</span>
                       </button>
@@ -289,7 +301,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             ) : (
               <div className="arh-tabela-ovoj">
                 <div className="arh-tabela arh-tabela-racuni">
-                  <header><span>Račun</span><span>Št.</span><span>Stranka</span><span className="arh-desno">Znesek</span><span>Datum</span><span>Stanje</span><span /></header>
+                  <header><span>Račun</span><span>Št.</span><span>Stranka</span><span className="arh-desno">Znesek</span><span>Datum</span><span>Status</span><span /></header>
                   {racuniPrikaz.map(r => (
                     <button key={r.id} type="button" className="arh-vrstica" onClick={() => setDetajl({ vrsta: 'racun', zapis: r })}>
                       <span className="arh-glavna"><span className="arh-ikona" aria-hidden><Receipt size={17} /></span><strong>{r.title || `Račun ${r.number || ''}`}</strong></span>
@@ -297,7 +309,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                       <span className="arh-mut">{r.client}</span>
                       <span className="arh-desno">{eur(r.amount)}</span>
                       <span className="arh-mut">{datStr(r.date)}</span>
-                      <span><small className={'arh-znacka ' + (r.paid ? 'arh-znacka-placano' : 'arh-znacka-odprto')}>{r.paid ? 'Plačano' : 'Odprto'}</small></span>
+                      <span><StatusPika label={r.paid ? 'Plačano' : 'Odprto'} /></span>
                       <span className="arh-kazalec" aria-hidden>›</span>
                     </button>
                   ))}
@@ -410,7 +422,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         /* sredinski stolpec — sirsi od retainerja (1000px), ker imamo tabele */
         /* Arhiv je PREGLEDNA (admin) stran → polna širina kot nadzorna plošča/stranke,
            NE ozek stolpec (ta velja samo za vprašalnike/urejanje dokumentov). */
-        .arh-vsebina{position:relative;z-index:1;width:100%;max-width:100%;margin:0;padding:clamp(1.6rem,4vw,2.6rem) 0 6rem;min-width:0}
+        .arh-vsebina{position:relative;z-index:1;width:100%;max-width:100%;margin:0;padding:0 0 6rem;min-width:0}
         .arh-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 .3rem}
         .arh-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(2.4rem,6vw,4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
         .arh-uvod{font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72);margin:0 0 2rem;max-width:38rem}
@@ -458,7 +470,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         /* tabela: vodoravni drs znotraj svojega okvirja (mobilno ne pobegne cez rob) */
         .arh-tabela-ovoj{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:14px}
         .arh-tabela{min-width:640px;display:grid;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:14px;overflow:hidden}
-        .arh-tabela-ponudbe{grid-template-columns:minmax(0,2.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.8fr) 1.6rem}
+        .arh-tabela-ponudbe{grid-template-columns:minmax(0,2.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,.8fr) 1.6rem}
         .arh-tabela-pogodbe{grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr) 1.6rem}
         .arh-tabela-racuni{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.9fr) 1.6rem}
         .arh-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;padding:.7rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.5);border-bottom:1px solid rgba(17,17,17,.1)}
@@ -466,6 +478,13 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-vrstica:last-child{border-bottom:none}
         .arh-vrstica:hover{background:rgba(255,255,255,.6)}
         .arh-vrstica > span{min-width:0;font-size:.86rem;overflow-wrap:anywhere}
+        /* status pilula — ISTE barve kot nadzorna plosca (.statusPill + status_*) */
+        .arh-status{display:inline-flex;align-items:center;gap:.42rem;width:max-content;max-width:100%;padding:.32rem .66rem;border:1px solid oklch(86% .012 87);border-radius:999px;background:oklch(95% .01 87);color:oklch(40% .02 70);font-size:.62rem;font-weight:700;white-space:nowrap}
+        .arh-status::before{content:'';width:.48rem;height:.48rem;border-radius:50%;background:var(--pika,oklch(62% .02 70));flex:none}
+        .arh-status[data-tone='waiting']{--pika:oklch(72% .16 75)}
+        .arh-status[data-tone='success']{--pika:oklch(62% .15 150)}
+        .arh-status[data-tone='danger']{--pika:oklch(58% .19 25)}
+        .arh-status[data-tone='neutral']{--pika:oklch(62% .02 70)}
         .arh-glavna{display:flex;align-items:center;gap:.6rem;min-width:0}
         .arh-glavna strong{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis}
         .arh-ikona{display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:oklch(94% .025 87);color:var(--accent);flex:none}
