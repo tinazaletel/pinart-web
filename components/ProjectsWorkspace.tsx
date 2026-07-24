@@ -6,7 +6,7 @@ import { Plus, ArrowUpRight, FolderOpen } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
-import { loadFlowData, saveOfferAmount, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus } from '@/lib/pinartFlowStore';
+import { loadFlowData, loadProjectLinks, saveOfferAmount, saveProjectLinks, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 
 /* datumski filter (samo od–do; prazno ne omejuje) — enako kot arhiv */
@@ -104,6 +104,34 @@ const pwStyles = `
 @media (max-width:640px){
 .pw-tabela{min-width:560px}
 }
+/* razdelki ZA 04 Stroški na detajlu projekta (05 Dokumentacija + placeholderji
+   06 Komunikacije/07 Zapiski) — svoj pw- razdelek v duhu .projectNarrative
+   kartic (isti border/radius/ozadje odtenek), da se lepo vklopi. */
+.pw-dodatno{display:flex;flex-direction:column;gap:.55rem;margin-top:.55rem}
+.pw-karta{position:relative;overflow:hidden;padding:1rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:1rem;background:oklch(99% .006 87 / .85)}
+.pw-dokumentacija{background:linear-gradient(135deg,oklch(97% .022 250),oklch(97% .022 200))}
+.pw-dokumentacija h3{margin:0;font:600 1.15rem var(--font-serif),Georgia,serif}
+.pw-linki{display:flex;flex-direction:column;gap:.4rem;margin:.7rem 0 0}
+.pw-link-vrstica{display:flex;align-items:center;gap:.5rem;padding:.5rem .65rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0 / .55)}
+.pw-link-vrstica a{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-weight:700;font-size:.72rem;text-decoration:none}
+.pw-link-vrstica a:hover{text-decoration:underline}
+.pw-link-brisi{flex:none;display:grid;place-items:center;width:1.5rem;height:1.5rem;padding:0;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--muted);font-size:.85rem;line-height:1;cursor:pointer}
+.pw-link-brisi:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pw-link-prazno{margin:.7rem 0 0;color:var(--muted);font-size:.68rem}
+.pw-link-obrazec{display:grid;grid-template-columns:1fr 1.6fr auto;gap:.45rem;margin-top:.7rem}
+.pw-link-obrazec input{padding:.5rem .65rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.72rem;color:var(--ink);min-width:0}
+.pw-link-dodaj{flex:none;padding:.5rem .8rem;border:1px solid var(--ink);border-radius:.6rem;background:var(--ink);color:var(--paper);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
+.pw-link-dodaj:disabled{opacity:.5;cursor:not-allowed}
+.pw-namig-demo{margin-top:.5rem;color:var(--muted);font-size:.62rem;font-style:italic}
+.pw-kmalu-red{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
+.pw-kmalu{opacity:.85}
+.pw-kmalu h3{margin:0;font:600 1.05rem var(--font-serif),Georgia,serif}
+.pw-kmalu p{margin:.5rem 0 0;color:var(--muted);font-size:.72rem;line-height:1.4}
+.pw-znacka{display:inline-flex;align-items:center;width:max-content;margin-top:.7rem;padding:.3rem .6rem;border-radius:999px;background:oklch(90% .02 87);color:var(--muted);font-size:.58rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+@media (max-width:640px){
+.pw-link-obrazec{grid-template-columns:1fr}
+.pw-kmalu-red{grid-template-columns:1fr}
+}
 `;
 
 /* stanje filtra projektov — iste vrednosti kot ArhivWorkspace (statusProjekt),
@@ -174,6 +202,27 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
      medtem ko je bil detajl odprt, sporoci starsu, naj svojo glavo spet pokaze */
   useEffect(() => () => { onDetajl?.(false); }, [onDetajl]);
 
+  /* 05 · DOKUMENTACIJA — povezave do zunanjih datotek za TA projekt (localStorage,
+     glej lib/pinartFlowStore). V predogledu (demo/prazno/začetek) samo prikaz —
+     dodajanje/brisanje onemogočeno, da se ne piše v pravo shrambo. */
+  const [links, setLinks] = useState<FlowProjectLink[]>([]);
+  const [linkOznaka, setLinkOznaka] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
+  useEffect(() => { setLinks(selectedId ? loadProjectLinks(selectedId) : []); setLinkOznaka(''); setLinkUrl(''); }, [selectedId]);
+  const addLink = () => {
+    if (samoOgled || !selectedId) return;
+    const oznaka = linkOznaka.trim(); const url = linkUrl.trim();
+    if (!oznaka || !url) return;
+    const next = [...links, { oznaka, url }];
+    setLinks(next); saveProjectLinks(selectedId, next);
+    setLinkOznaka(''); setLinkUrl('');
+  };
+  const removeLink = (index: number) => {
+    if (samoOgled || !selectedId) return;
+    const next = links.filter((_, i) => i !== index);
+    setLinks(next); saveProjectLinks(selectedId, next);
+  };
+
   return <div className={styles.projectsPage}><style dangerouslySetInnerHTML={{ __html: overflowFix + pwStyles }} />
     {!selected && !zunanjiFilter && <ArhivFilter
       iskanje={search}
@@ -239,6 +288,45 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         <header><div><p className={styles.eyebrow}>PROJEKT · {selected.offer.number || 'BREZ ŠTEVILKE'}</p><h2>{selected.offer.title}</h2><span>{selected.offer.client} · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><b>{statusLabel[selected.offer.status]}</b></header>
         <div className={styles.projectMoney}><label><small>Dogovorjena vrednost</small><span><input type="number" min="0" step="0.01" value={selected.agreed || ''} onChange={event => saveAmount(selected.offer.id, Number(event.target.value))} /> €</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></label><span><small>Zaračunano</small><strong>{money(selected.billed)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></span><span className={selected.unbilled > 0 ? styles.projectNeedsInvoice : ''}><small>Še ni zaračunano</small><strong>{selected.agreed ? money(selected.unbilled) : '—'}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="cost" /></b></span><span><small>Ocenjeni rezultat</small><strong>{money(selected.profit)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></span></div>
         <div className={styles.projectNarrative}><article className={styles.projectAgreement}><p className={styles.eyebrow}>01 · DOGOVORJENO</p><h3>Kaj je bilo v ponudbi?</h3>{selected.offer.scope.length ? <ul>{selected.offer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul> : <p>Starejša ponudba nima strukturiranega obsega. Odpri jo v kalkulatorju za celotno besedilo.</p>}</article><article><p className={styles.eyebrow}>02 · POGODBE</p><h3>{selected.contracts.length ? `${selected.contracts.length} povezanih` : 'Brez pogodbe'}</h3>{selected.contracts.map(item => <span key={item.id}><b>{item.title}</b><small>{item.status}</small></span>)}<Link href={`${base}/kalkulator/pogodbe`} aria-label="Dodaj pogodbo za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>03 · RAČUNI</p><h3>{money(selected.billed)}</h3>{selected.invoices.map(item => <span key={item.id}><b>Račun {item.number || ''} · {money(item.amount)}</b><small>{item.paid ? 'Plačan' : 'Odprt'}</small></span>)}<Link href={`${base}/kalkulator/racuni`} className={styles.projectOpenLink} aria-label="Odpri račune projekta"><ArrowUpRight size={16} weight="bold" /></Link><Link href={`${base}/kalkulator/racuni`} aria-label="Dodaj račun za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>04 · STROŠKI</p><h3>{money(selected.costs)}</h3>{selected.expenses.map(item => <span key={item.id}><b>{item.title} · {money(item.amount)}</b><small>{item.category || 'Projektni strošek'}</small></span>)}<Link href={`${base}/kalkulator/stroski`} aria-label="Dodaj strošek za ta projekt"><Plus size={18} weight="bold" /></Link></article></div>
+
+        <div className="pw-dodatno">
+          <article className="pw-karta pw-dokumentacija">
+            <p className={styles.eyebrow}>05 · DOKUMENTACIJA</p>
+            <h3>Povezave do zunanjih datotek</h3>
+            {links.length ? (
+              <div className="pw-linki">
+                {links.map((link, index) => (
+                  <div key={`${link.url}-${index}`} className="pw-link-vrstica">
+                    <a href={link.url} target="_blank" rel="noopener noreferrer">{link.oznaka}</a>
+                    {!samoOgled && <button type="button" className="pw-link-brisi" onClick={() => removeLink(index)} aria-label={`Izbriši povezavo ${link.oznaka}`}>×</button>}
+                  </div>
+                ))}
+              </div>
+            ) : <p className="pw-link-prazno">Še ni dodanih povezav.</p>}
+            {!samoOgled ? (
+              <div className="pw-link-obrazec">
+                <input type="text" value={linkOznaka} onChange={event => setLinkOznaka(event.target.value)} placeholder="npr. Figma" aria-label="Oznaka povezave" />
+                <input type="url" value={linkUrl} onChange={event => setLinkUrl(event.target.value)} placeholder="https://…" aria-label="Naslov povezave (Figma, Miro, IDD, mapa Drive …)" />
+                <button type="button" className="pw-link-dodaj" onClick={addLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>+ Dodaj povezavo</button>
+              </div>
+            ) : <p className="pw-namig-demo">Dodajanje povezav ni na voljo v predogledu (demo).</p>}
+          </article>
+
+          <div className="pw-kmalu-red">
+            <article className="pw-karta pw-kmalu">
+              <p className={styles.eyebrow}>06 · KOMUNIKACIJE</p>
+              <h3>Vse na enem mestu</h3>
+              <p>E-pošta in dogovori tega projekta na enem mestu.</p>
+              <b className="pw-znacka">Kmalu</b>
+            </article>
+            <article className="pw-karta pw-kmalu">
+              <p className={styles.eyebrow}>07 · ZAPISKI</p>
+              <h3>CRM dnevnik</h3>
+              <p>Opombe, klici in dogovori s stranko.</p>
+              <b className="pw-znacka">Kmalu</b>
+            </article>
+          </div>
+        </div>
       </section>
     )}
   </div>;

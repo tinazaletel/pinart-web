@@ -226,3 +226,21 @@ export const saveOfferStatus = (offerId: string, status: FlowOfferStatus) => {
   const offers = data.offers.map(offer => offer.id === offerId ? { ...offer, status } : offer);
   saveOffers(offers);
 };
+
+/* Povezave do zunanjih datotek projekta (Figma/Miro/IDD/mapa Drive ipd.) —
+   "05 · DOKUMENTACIJA" v detajlu projekta. Ločena, lahka shramba (ni del
+   FlowData/cloud sinhronizacije): kljuc offer.id -> seznam povezav. */
+export type FlowProjectLink = { oznaka: string; url: string };
+
+const PROJECT_LINKS_KEY = 'pinart-flow-projekt-linki';
+
+export const loadProjectLinks = (offerId: string): FlowProjectLink[] => {
+  const all = read<Record<string, FlowProjectLink[]>>(PROJECT_LINKS_KEY, {});
+  return all[offerId] || [];
+};
+
+export const saveProjectLinks = (offerId: string, links: FlowProjectLink[]) => {
+  if (typeof window === 'undefined') return;
+  const all = read<Record<string, FlowProjectLink[]>>(PROJECT_LINKS_KEY, {});
+  localStorage.setItem(PROJECT_LINKS_KEY, JSON.stringify({ ...all, [offerId]: links }));
+};
