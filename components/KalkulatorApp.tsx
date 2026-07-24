@@ -6,7 +6,7 @@ import { localePath } from '@/i18n/routing';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import { loadFlowData, saveFlowCollection, type FlowInvoice } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
-import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
+import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne } from '@/lib/dokVidez';
 import { preberiPredogled } from '@/lib/predogled';
 import { nastaviNapredek } from '@/lib/flowNapredek';
 import VidezDokumentov from '@/components/VidezDokumentov';
@@ -2180,6 +2180,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         aktivniCenik: aktivniCenik || undefined,
         dokBarva: dokBarva !== DOK_BARVA_PRIVZETA ? dokBarva : undefined,
         dokFont: dokFont !== DOK_FONT_PRIVZETI ? dokFont : undefined,
+        /* dokPredloge/dokAktivnaPredloga (vec predlog) upravlja VidezDokumentov
+           SAM, neposredno v localStorage — ta ucinek jih le OHRANI (namesto
+           celotnega prepisa K_NAST), sicer bi vsaka sprememba tukaj (cena,
+           storitev ...) izbrisala predloge. */
+        dokPredloge: prejsnji.dokPredloge,
+        dokAktivnaPredloga: prejsnji.dokAktivnaPredloga,
       }));
     } catch { /* ignoriraj */ }
   }, [jeNalozeno, osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, pogledMreza, namigSkrit, uvodKoncan, chatKorak, chatNova, obIzbor, nazivPonudbe, aktivniCenik, dokBarva, dokFont]);
@@ -3350,7 +3356,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     if (!file.type.startsWith('image/')) return;
     if (file.size > 3_000_000) { alert('Logo naj bo manjši od 3 MB.'); return; }
     const reader = new FileReader();
-    reader.onload = () => setLogo(String(reader.result || ''));
+    reader.onload = () => {
+      const url = String(reader.result || '');
+      setLogo(url);
+      nastaviLogoAktivne(url);   /* zapomni tudi na AKTIVNO predlogo (vec predlog) */
+    };
     reader.readAsDataURL(file);
   };
   /* priponka (npr. PDF specifikacije, slika, dodatek) — samo izbere datoteko,
@@ -3416,6 +3426,19 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   };
 
   /* letterhead glava: ime podjetja (serif) + podatki levo, stevilka/naziv/datum desno */
+  /* Glava/noga AKTIVNE predloge (vec predlog) — ADITIVNO: ce nista vpisani na
+     predlogi, se nic ne izrise in obstojeci videz ostane nespremenjen. Glava
+     je kratek napis ob imenu firme v letterheadu; noga je besedilo na dnu
+     dokumenta (kontakt, pravno obvestilo ...). Klicani sproti (ne v render),
+     zato sta vedno usklajena z zadnjo izbiro v profilu. */
+  const dokGlavaTagHtml = (): string => {
+    const g = aktivnaPredloga().glava?.trim();
+    return g ? `<div class="pdf-glava-tag" style="font-size:8pt;letter-spacing:.06em;color:var(--akcent,#B25476);margin-top:3px">${escapeHtml(g)}</div>` : '';
+  };
+  const dokNogaHtml = (): string => {
+    const n = aktivnaPredloga().noga?.trim();
+    return n ? `<div class="dok-noga" style="margin-top:26px;padding-top:12px;border-top:1px solid rgba(17,17,17,.12);font-size:8pt;color:#9a9088;line-height:1.6">${escapeHtml(n).split('\n').join('<br>')}</div>` : '';
+  };
   const ponudbaGlava = () => {
     const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
     const datum = new Date().toLocaleDateString(locale === 'en' ? 'en-GB' : 'sl-SI', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -3428,7 +3451,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     const podatki = [ponudnik.naslov.trim(), kontakt].filter(Boolean).map(escapeHtml).join('<br>');
     /* letterhead (stran 2+): SAMO ime firme + kontakt. Stevilka/datum/velja so na NASLOVNICI (brez podvajanja). */
     const logoHtml = logo ? `<img class="pdf-logo" src="${logo}" alt="" />` : '';
-    return `<div class="pdf-glava"><div class="pdf-brand">${logoHtml}<div class="pdf-brand-txt"><div class="pdf-znamka">${escapeHtml(ponudnik.ime.trim() || 'Ponudba')}</div>${podatki ? `<div class="pdf-podatki">${podatki}</div>` : ''}</div></div></div>`;
+    return `<div class="pdf-glava"><div class="pdf-brand">${logoHtml}<div class="pdf-brand-txt"><div class="pdf-znamka">${escapeHtml(ponudnik.ime.trim() || 'Ponudba')}</div>${dokGlavaTagHtml()}${podatki ? `<div class="pdf-podatki">${podatki}</div>` : ''}</div></div></div>`;
   };
   /* NASLOVNICA (svoja stran): Ponudba + naziv + firma + za narocnika + datum + velja */
   const ponudbaNaslovnica = () => {
@@ -3544,7 +3567,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     const telo = izvozTelo();
     const doc = `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${escapeHtml('Ponudba' + (stevilkaPonudbe ? ' ' + stevilkaPonudbe : ''))}</title>${dokFontLink(dokFont)}<style>${dokCss(OFFER_CSS)}
       body{max-width:820px;margin:40px auto;padding:0 26px 60px}
-      .offer-cover{margin-bottom:90px}</style></head><body style="${dokVars(dokBarva, dokFont)}" class="${predlogaPinart ? 'predloga' : ''}">${ponudbaNaslovnica()}${ponudbaGlava()}${telo}</body></html>`;
+      .offer-cover{margin-bottom:90px}</style></head><body style="${dokVars(dokBarva, dokFont)}" class="${predlogaPinart ? 'predloga' : ''}">${ponudbaNaslovnica()}${ponudbaGlava()}${telo}${dokNogaHtml()}</body></html>`;
     const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -3593,7 +3616,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const ponudbaCoverDoc = (): string => `${pdfGlava('@page{size:A4;margin:0} .offer-cover{margin:0;height:297mm;overflow:hidden} .offer-cover:not(.oc-proposal)>*{max-width:150mm}')}<body style="${dokVars(dokBarva, dokFont)}" class="${predlogaPinart ? 'predloga' : ''}">${ponudbaNaslovnica()}</body></html>`;
   const ponudbaBodyDoc = (): string => {
     const telo = izvozTelo();
-    return `${pdfGlava('@page{size:A4} .pdf-telo{padding:0 16mm}')}<body style="${dokVars(dokBarva, dokFont)}" class="${predlogaPinart ? 'predloga' : ''}"><div class="pdf-telo">${predlogaPinart ? '<div class="pdf-vodni">Let&rsquo;s<br>Work</div>' : ''}${ponudbaGlava()}${telo}</div></body></html>`;
+    return `${pdfGlava('@page{size:A4} .pdf-telo{padding:0 16mm}')}<body style="${dokVars(dokBarva, dokFont)}" class="${predlogaPinart ? 'predloga' : ''}"><div class="pdf-telo">${predlogaPinart ? '<div class="pdf-vodni">Let&rsquo;s<br>Work</div>' : ''}${ponudbaGlava()}${telo}${dokNogaHtml()}</div></body></html>`;
   };
   const ponudbaPdfFooter = (): string => escapeHtml([ponudnik.ime.trim(), 'Ponudba' + (stevilkaPonudbe ? ' ' + stevilkaPonudbe : '')].filter(Boolean).join(' · '));
   const prenesiPdf = async () => {
@@ -3713,7 +3736,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     @page { size: A4; margin: 15mm 15mm 16mm; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     ${dokCss(OFFER_CSS + RACUN_CSS)}
-    </style></head><body style="${dokVars(dokBarva, dokFont)}">${ponudbaGlava()}${racunTelo()}</body></html>`;
+    </style></head><body style="${dokVars(dokBarva, dokFont)}">${ponudbaGlava()}${racunTelo()}${dokNogaHtml()}</body></html>`;
 
   /* POGODBA o dolgorocnem sodelovanju (retainer) — locen dokument, kot racun.
      Predloga (cleni); Tina jo dopolni/uskladi po raziskavi. */
@@ -3764,7 +3787,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     @page { size: A4; margin: 15mm 15mm 16mm; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     ${dokCss(OFFER_CSS + POGODBA_CSS)}
-    </style></head><body style="${dokVars(dokBarva, dokFont)}">${ponudbaGlava()}${pogodbaTelo()}</body></html>`;
+    </style></head><body style="${dokVars(dokBarva, dokFont)}">${ponudbaGlava()}${pogodbaTelo()}${dokNogaHtml()}</body></html>`;
   const prenesiPogodbaPdf = async () => {
     if (!ret) return;
     const doc = pogodbaDoc();
@@ -4973,7 +4996,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         {!logo && <><ImageSquare size={15} weight="bold" /><span>{L('Logo', 'Logo')}</span></>}
       </button>
       {logo && (
-        <button type="button" className="logo-odstrani" onClick={() => setLogo('')} title={L('Odstrani logo', 'Remove logo')} aria-label={L('Odstrani logo', 'Remove logo')}>✕</button>
+        <button type="button" className="logo-odstrani" onClick={() => { setLogo(''); nastaviLogoAktivne(''); }} title={L('Odstrani logo', 'Remove logo')} aria-label={L('Odstrani logo', 'Remove logo')}>✕</button>
       )}
       <input ref={logoRef} type="file" accept="image/*" hidden onChange={e => { naloziLogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
       <input ref={fileRef} type="file" accept=".txt,.html,.htm" hidden
@@ -6812,7 +6835,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             )}
 
             {profilPogled === 'videz' && (
-              <VidezDokumentov barva={dokBarva} font={dokFont} onBarva={setDokBarva} onFont={setDokFont} />
+              <VidezDokumentov barva={dokBarva} font={dokFont} onBarva={setDokBarva} onFont={setDokFont} logo={logo} onLogo={setLogo} />
             )}
 
             {profilPogled === 'moji-podatki' && (
@@ -8663,7 +8686,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   {!logo && <><ImageSquare size={15} weight="bold" /><span>{L('Logo', 'Logo')}</span></>}
                 </button>
                 {logo && (
-                  <button type="button" className="logo-odstrani" onClick={() => setLogo('')} title={L('Odstrani logo', 'Remove logo')} aria-label={L('Odstrani logo', 'Remove logo')}>✕</button>
+                  <button type="button" className="logo-odstrani" onClick={() => { setLogo(''); nastaviLogoAktivne(''); }} title={L('Odstrani logo', 'Remove logo')} aria-label={L('Odstrani logo', 'Remove logo')}>✕</button>
                 )}
                 <input ref={logoRef} type="file" accept="image/*" hidden onChange={e => { naloziLogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
                 <input

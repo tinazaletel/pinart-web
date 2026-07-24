@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import VidezDokumentov from '@/components/VidezDokumentov';
-import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI } from '@/lib/dokVidez';
+import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, nastaviLogoAktivne } from '@/lib/dokVidez';
 import styles from './SettingsWorkspace.module.css';
 
 /* Nastavitve aplikacije. Vsebina je PRENESENA iz profila kalkulatorja (videz
@@ -53,6 +53,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
       setLogo(url);
       try { localStorage.setItem(K_LOGO, url); setSporocilo('Logotip je shranjen.'); }
       catch { setSporocilo('Shramba je polna — logotipa ni bilo mogoče shraniti.'); }
+      nastaviLogoAktivne(url);   /* zapomni tudi na AKTIVNO predlogo (vec predlog) */
     };
     fr.readAsDataURL(f);
   }
@@ -60,6 +61,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
   function odstraniLogo() {
     setLogo('');
     try { localStorage.removeItem(K_LOGO); } catch { /* ignoriraj */ }
+    nastaviLogoAktivne('');
     if (datoteka.current) datoteka.current.value = '';
     setSporocilo('Logotip je odstranjen.');
   }
@@ -115,7 +117,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
 
         {sporocilo && <p className={styles.opomba} role="status">{sporocilo}</p>}
 
-        {nalozeno && <VidezDokumentov barva={barva} font={font} onBarva={setBarva} onFont={setFont} />}
+        {nalozeno && <VidezDokumentov barva={barva} font={font} onBarva={setBarva} onFont={setFont} logo={logo} onLogo={setLogo} />}
       </section>
 
       <section className={styles.card}>

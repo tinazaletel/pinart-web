@@ -43,3 +43,109 @@ export function dokCss(css: string): string {
     .split("'Bodoni Moda',Didot,Georgia,serif").join("var(--dok-font,'Bodoni Moda',Didot,Georgia,serif)")
     .split('#B25476').join('var(--akcent,#B25476)');
 }
+
+/* ── VEC PREDLOG (uporabnica ima vec podjetij) ──────────────────────────────
+   Prej je bil videz (barva/pisava/logo) ENA nastavitev za vso dokumentacijo.
+   Zdaj lahko uporabnica shrani vec "predlog" (npr. eno na podjetje) in izbere,
+   katera je AKTIVNA. Aktivna predloga se ob vsaki spremembi zrcali v STARA
+   plosca polja K_NAST.dokBarva/dokFont (in logo v K_LOGO) — tako obstojeci
+   doc builderji (ponudba/racun/pogodba/retainer) berejo isto kot prej in jih
+   NI TREBA spreminjati za barvo/pisavo/logo. Glava/noga sta nova, neobvezna
+   polja predloge — builderji ju berejo dodatno, prek aktivnaPredloga(). */
+
+export interface DokPredloga {
+  id: string;
+  ime: string;
+  barva: string;
+  font: string;
+  logo?: string;
+  glava?: string;
+  noga?: string;
+}
+
+const K_NAST = 'pinart-kalkulator-v2';
+const K_LOGO = 'pinart-kalkulator-logo';
+
+/* Prebere celoten K_NAST zapis (varno — prazen objekt ob napaki/manjkajocem zapisu). */
+function beriNast(): Record<string, unknown> {
+  try { return JSON.parse(localStorage.getItem(K_NAST) || '{}'); } catch { return {}; }
+}
+
+/* Zdruzi (merge) delni zapis nazaj v K_NAST — NIKOLI ne prepise celotnega
+   zapisa, da ne izgubimo polj, ki jih ta funkcija ne pozna (cene, profili ...). */
+function pisiNastDelno(delno: Record<string, unknown>): void {
+  try {
+    const s = beriNast();
+    localStorage.setItem(K_NAST, JSON.stringify({ ...s, ...delno }));
+  } catch { /* shramba polna ali nedostopna — ignoriramo */ }
+}
+
+export function noviIdPredloge(): string {
+  return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+/* Prebere seznam predlog iz K_NAST. Ce se ne obstajajo (star zapis, pred
+   uvedbo vec predlog), MIGRIRA eno predlogo "Privzeta" iz obstojecih
+   dokBarva/dokFont/logo (K_LOGO), jo shrani nazaj in vrne — tako nihce ne
+   izgubi trenutne nastavitve. Ce aktivna predloga (id) ne obstaja vec
+   (izbrisana), vrne prvo v seznamu. */
+export function nalozitePredloge(): { predloge: DokPredloga[]; aktivnaId: string } {
+  const s = beriNast();
+  let predloge: DokPredloga[] = Array.isArray(s.dokPredloge) ? (s.dokPredloge as DokPredloga[]) : [];
+  let aktivnaId = typeof s.dokAktivnaPredloga === 'string' ? s.dokAktivnaPredloga : '';
+
+  if (predloge.length === 0) {
+    let logo = '';
+    try { logo = localStorage.getItem(K_LOGO) || ''; } catch { /* zasebni nacin ali nedostopno */ }
+    const privzeta: DokPredloga = {
+      id: noviIdPredloge(),
+      ime: 'Privzeta',
+      barva: (typeof s.dokBarva === 'string' && s.dokBarva) || DOK_BARVA_PRIVZETA,
+      font: (typeof s.dokFont === 'string' && s.dokFont) || DOK_FONT_PRIVZETI,
+      logo: logo || undefined,
+    };
+    predloge = [privzeta];
+    aktivnaId = privzeta.id;
+    pisiNastDelno({ dokPredloge: predloge, dokAktivnaPredloga: aktivnaId });
+  } else if (!predloge.some(p => p.id === aktivnaId)) {
+    aktivnaId = predloge[0].id;
+  }
+
+  return { predloge, aktivnaId };
+}
+
+/* Shrani seznam predlog + aktivno izbiro. Aktivno predlogo ZRCALI v stara
+   plosca polja (dokBarva/dokFont v K_NAST, logo v K_LOGO), da obstojeci doc
+   builderji, ki berejo samo ta polja, samodejno dobijo pravi videz. */
+export function shranitePredloge(predloge: DokPredloga[], aktivnaId: string): void {
+  const aktivna = predloge.find(p => p.id === aktivnaId) || predloge[0];
+  pisiNastDelno({
+    dokPredloge: predloge,
+    dokAktivnaPredloga: aktivnaId,
+    dokBarva: aktivna?.barva || DOK_BARVA_PRIVZETA,
+    dokFont: aktivna?.font || DOK_FONT_PRIVZETI,
+  });
+  try {
+    if (aktivna?.logo) localStorage.setItem(K_LOGO, aktivna.logo);
+    else localStorage.removeItem(K_LOGO);
+  } catch { /* ignoriraj */ }
+}
+
+/* Vrne AKTIVNO predlogo (ali privzeto, ce se ni bilo nastavljeno nic). */
+export function aktivnaPredloga(): DokPredloga {
+  const { predloge, aktivnaId } = nalozitePredloge();
+  return predloge.find(p => p.id === aktivnaId) || predloge[0] || {
+    id: noviIdPredloge(), ime: 'Privzeta', barva: DOK_BARVA_PRIVZETA, font: DOK_FONT_PRIVZETI,
+  };
+}
+
+/* Logo se se vedno naloži prek obstojecih mest (SettingsWorkspace, kalkulator
+   profil), ki neposredno pisejo K_LOGO. Ta helper poklicemo poleg tega, da se
+   nalozeni/odstranjeni logo zapise tudi na AKTIVNO predlogo — sicer bi se ob
+   preklopu na drugo predlogo in nazaj "izgubil". */
+export function nastaviLogoAktivne(logoUrl: string): void {
+  const { predloge, aktivnaId } = nalozitePredloge();
+  if (!predloge.length) return;
+  const posodobljene = predloge.map(p => p.id === aktivnaId ? { ...p, logo: logoUrl || undefined } : p);
+  shranitePredloge(posodobljene, aktivnaId);
+}
