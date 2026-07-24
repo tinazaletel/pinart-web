@@ -236,15 +236,15 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             ) : (
               <div className="arh-tabela-ovoj">
                 <div className="arh-tabela arh-tabela-ponudbe">
-                  <header><span>Ponudba</span><span>Stranka</span><span className="arh-desno">Znesek</span><span>Datum</span><span>Status</span><span>Št.</span><span /></header>
+                  <header><span>Ponudba</span><span>Stranka</span><span>Datum</span><span>Status</span><span>Št.</span><span className="arh-desno">Znesek</span><span /></header>
                   {ponudbePrikaz.map(o => (
                     <button key={o.id} type="button" className="arh-vrstica" onClick={() => { setDetObsegOdprt(false); setDetajl({ vrsta: 'ponudba', zapis: o }); }}>
                       <span className="arh-glavna"><span className="arh-ikona" aria-hidden><FileText size={17} /></span><strong>{o.title}</strong></span>
                       <span className="arh-mut">{o.client}</span>
-                      <span className="arh-desno">{dokZnesek(o.agreedAmount)}</span>
                       <span className="arh-mut">{datStr(o.date)}</span>
                       <span><StatusPika label={offerLabels[o.status]} /></span>
                       <span className="arh-mut">{o.number || '—'}</span>
+                      <span className="arh-desno">{dokZnesek(o.agreedAmount)}</span>
                       <span className="arh-kazalec" aria-hidden>›</span>
                     </button>
                   ))}
@@ -310,15 +310,15 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             ) : (
               <div className="arh-tabela-ovoj">
                 <div className="arh-tabela arh-tabela-racuni">
-                  <header><span>Račun</span><span>Št.</span><span>Stranka</span><span className="arh-desno">Znesek</span><span>Datum</span><span>Status</span><span /></header>
+                  <header><span>Račun</span><span>Št.</span><span>Stranka</span><span>Datum</span><span>Status</span><span className="arh-desno">Znesek</span><span /></header>
                   {racuniPrikaz.map(r => (
                     <button key={r.id} type="button" className="arh-vrstica" onClick={() => setDetajl({ vrsta: 'racun', zapis: r })}>
                       <span className="arh-glavna"><span className="arh-ikona" aria-hidden><Receipt size={17} /></span><strong>{r.title || `Račun ${r.number || ''}`}</strong></span>
                       <span className="arh-mut">{r.number || '—'}</span>
                       <span className="arh-mut">{r.client}</span>
-                      <span className="arh-desno">{eur(r.amount)}</span>
                       <span className="arh-mut">{datStr(r.date)}</span>
                       <span><StatusPika label={r.paid ? 'Plačano' : 'Odprto'} /></span>
+                      <span className="arh-desno">{eur(r.amount)}</span>
                       <span className="arh-kazalec" aria-hidden>›</span>
                     </button>
                   ))}
@@ -482,9 +482,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         /* tabela: vodoravni drs znotraj svojega okvirja (mobilno ne pobegne cez rob) */
         .arh-tabela-ovoj{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:14px}
         .arh-tabela{min-width:640px;display:grid;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:14px;overflow:hidden}
-        .arh-tabela-ponudbe{grid-template-columns:minmax(0,2.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,.8fr) 1.6rem}
+        .arh-tabela-ponudbe{grid-template-columns:minmax(0,2.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,.8fr) minmax(0,1fr) 1.6rem}
         .arh-tabela-pogodbe{grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr) 1.6rem}
-        .arh-tabela-racuni{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.9fr) 1.6rem}
+        .arh-tabela-racuni{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,.9fr) minmax(0,1fr) 1.6rem}
         /* gap tudi na header (prej ga ni imel -> "ZNESEKDATUM" se je dotikal) + vecji razmik */
         .arh-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.7rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.5);border-bottom:1px solid rgba(17,17,17,.1)}
         .arh-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:none;border-bottom:1px solid rgba(17,17,17,.07);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
