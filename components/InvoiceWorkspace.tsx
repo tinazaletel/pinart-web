@@ -7,7 +7,8 @@
    nova polja v FlowInvoice so neobvezna, dokument zanje izpelje eno postavko. */
 
 import Link from 'next/link';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { Receipt } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, type FlowInvoiceItem } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
@@ -51,9 +52,15 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const [dokBarva, setDokBarva] = useState(DOK_BARVA_PRIVZETA);
   const [dokFont, setDokFont] = useState(DOK_FONT_PRIVZETI);
 
-  const [creating, setCreating] = useState(false);
+  /* pogled = katera "stran" je prikazana — view-swap kot ContractWorkspace:
+     pregled (povzetek + arhiv) ali obrazec (SAMO nov racun, svoja stran) */
+  const [pogled, setPogled] = useState<'pregled' | 'obrazec'>('pregled');
   const [offerId, setOfferId] = useState('');
   const [filter, setFilter] = useState<'all' | 'open' | 'paid'>('all');
+  /* detajl racuna: shranimo id in zapis izpeljemo iz seznama, da se status
+     (Odprt/Placan) v odprtem panelu osvezi skupaj s seznamom */
+  const [detajlId, setDetajlId] = useState('');
+  const [detPonOdprta, setDetPonOdprta] = useState(false);
 
   /* obrazec (kontrolirano — predizpolnjevanje iz ponudbe) */
   const [stevilka, setStevilka] = useState('');
@@ -115,14 +122,27 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const nextNumber = () => { const year = new Date().getFullYear(); const count = invoices.filter(item => item.number?.startsWith(String(year))).length + 1; return `${year}-${String(count).padStart(4, '0')}`; };
 
   const odpriObrazec = () => {
-    setCreating(value => {
-      if (value) return false;
-      setStevilka(nextNumber()); setStranka(''); setOfferId('');
-      setDatumIzdaje(danesISO()); setDatumStoritve(danesISO()); setRokDni(String(PRIVZETI_ROK_DNI));
-      setPlacano(false); setVrstice([novaVrstica()]); setNapaka('');
-      return true;
-    });
+    setStevilka(nextNumber()); setStranka(''); setOfferId('');
+    setDatumIzdaje(danesISO()); setDatumStoritve(danesISO()); setRokDni(String(PRIVZETI_ROK_DNI));
+    setPlacano(false); setVrstice([novaVrstica()]); setNapaka('');
+    setPogled('obrazec');
   };
+
+  /* ob menjavi pogleda skok na vrh — KOPIJA vzorca iz ContractWorkspace
+     (Lenis, ce obstaja; sicer window). Preskoci zacetni render. */
+  const prviPogled = useRef(true);
+  useEffect(() => {
+    if (prviPogled.current) { prviPogled.current = false; return; }
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const lenis = (window as unknown as { __pinartLenis?: { scrollTo: (t: number, o?: { immediate?: boolean; force?: boolean }) => void; resize?: () => void } }).__pinartLenis;
+    lenis?.resize?.();
+    if (lenis && typeof lenis.scrollTo === 'function') lenis.scrollTo(0, { immediate: reduce, force: true });
+    else window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  }, [pogled]);
+
+  /* detajl: vrstica arhiva odpre panel (kot pogodbe) */
+  const detajl = invoices.find(item => item.id === detajlId) || null;
+  const odpriDetajl = (id: string) => { setDetPonOdprta(false); setNapaka(''); setDetajlId(id); };
 
   /* iz ponudbe: predizpolni stranko + prvo postavko (naslov/obseg/znesek) */
   const izberiPonudbo = (id: string) => {
@@ -161,7 +181,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     };
     const next = [invoice, ...invoices];
     setInvoices(next); saveFlowCollection('invoices', next);
-    setCreating(false); setOfferId('');
+    /* po shranjevanju nazaj na pregled (kot pogodbe) — nov racun je takoj viden v arhivu */
+    setPogled('pregled'); setOfferId('');
   };
 
   const markPaid = (id: string, paid: boolean) => { const next = invoices.map(item => item.id === id ? { ...item, paid } : item); setInvoices(next); saveFlowCollection('invoices', next); };
@@ -294,9 +315,11 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   };
 
   return <div className={`${styles.invoicePage} rc`}>
-    <section className={styles.invoiceSummary}><article><small>Izdano</small><strong>{money(totals.issued)}</strong><span>{invoices.length} računov</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></article><article><small>Plačano</small><strong>{money(totals.paid)}</strong><span>potrjena plačila</span><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></article><article><small>Odprto</small><strong>{money(totals.open)}</strong><span>še čaka plačilo</span><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></article><button onClick={odpriObrazec}><span>+</span><strong>Nov račun</strong><small>Iz ponudbe ali brez nje</small></button></section>
+    {pogled === 'pregled' && <section className={styles.invoiceSummary}><article><small>Izdano</small><strong>{money(totals.issued)}</strong><span>{invoices.length} računov</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></article><article><small>Plačano</small><strong>{money(totals.paid)}</strong><span>potrjena plačila</span><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></article><article><small>Odprto</small><strong>{money(totals.open)}</strong><span>še čaka plačilo</span><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></article><button onClick={odpriObrazec}><span>+</span><strong>Nov račun</strong><small>Iz ponudbe ali brez nje</small></button></section>}
 
-    {creating && <section className={styles.invoiceCreator}>
+    {/* ── POGLED: OBRAZEC (svoja stran, sredinski stolpec — view-swap kot pogodbe) ── */}
+    {pogled === 'obrazec' && <section className={`${styles.invoiceCreator} rc-sek rc-stran rc-stolpec rc-obrazec`}>
+      <button type="button" className="rc-povezava rc-nazaj-vrh" onClick={() => setPogled('pregled')}>← Nazaj</button>
       <div>
         <p className={styles.eyebrow}>NOV RAČUN</p>
         <h2>Vse sestavine po zakonu.</h2>
@@ -335,12 +358,78 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         </div>
 
         <div className={styles.invoiceSubmit}><label className={styles.invoiceCheck}><input type="checkbox" checked={placano} onChange={event => setPlacano(event.target.checked)} /> Račun je že plačan</label><button>Shrani račun</button></div>
-        {napaka && creating && <p className="rc-napaka">{napaka}</p>}
+        {napaka && <p className="rc-napaka">{napaka}</p>}
       </form>
     </section>}
 
-    <section className={styles.invoiceArchive}><header><div><p className={styles.eyebrow}>PREGLED RAČUNOV</p><h2>Vse številke na enem mestu.</h2></div><div className={styles.invoiceFilters}>{(['all', 'open', 'paid'] as const).map(value => <button key={value} className={filter === value ? styles.invoiceFilterActive : ''} onClick={() => setFilter(value)}>{value === 'all' ? 'Vsi' : value === 'open' ? 'Odprti' : 'Plačani'}</button>)}</div></header>{visible.length ? <div className={styles.invoiceList}>{visible.map(invoice => { const offer = offers.find(item => item.id === invoice.sourceOfferId); return <article key={invoice.id}><span className={styles.invoiceDocIcon}>⌑</span><div><strong>Račun {invoice.number || ''}</strong><small>{invoice.title || 'Račun'} · {invoice.client}</small></div><div><strong>{money(invoice.amount)}</strong><small>{new Date(invoice.date).toLocaleDateString('sl-SI')}</small></div><select value={invoice.paid ? 'paid' : 'open'} onChange={event => markPaid(invoice.id, event.target.value === 'paid')}><option value="open">Odprt</option><option value="paid">Plačan</option></select><div className={styles.invoiceSource}>{offer ? <><span>Povezan s ponudbo</span><strong>{offer.title}</strong></> : <><span>Brez ponudbe</span><strong>Samostojen račun</strong></>}</div><div className="rc-akcije"><button type="button" disabled={pdfId === invoice.id} onClick={() => prenesiPdf(invoice)}>{pdfId === invoice.id ? 'Pripravljam …' : 'Poglej / Prenesi PDF'}</button><button type="button" onClick={() => posljiVPlacilo(invoice)}>Pošlji v plačilo</button></div></article>; })}</div> : <div className={styles.invoiceEmpty}>V tem pogledu še ni računov.</div>}{napaka && !creating && <p className="rc-napaka">{napaka}</p>}</section>
-    <p className={styles.invoiceHint}>Račun, ki ga preneseš ali pošlješ na koncu <Link href={`${base}/kalkulator/orodje`}>kalkulatorja</Link>, se tukaj shrani samodejno.</p>
+    {/* ── POGLED: PREGLED (arhiv) — vrstica kot pri pogodbah: klik odpre detajl ── */}
+    {pogled === 'pregled' && <>
+      <section className={styles.invoiceArchive}>
+        <header><div><p className={styles.eyebrow}>PREGLED RAČUNOV</p><h2>Vse številke na enem mestu.</h2></div><div className={styles.invoiceFilters}>{(['all', 'open', 'paid'] as const).map(value => <button key={value} className={filter === value ? styles.invoiceFilterActive : ''} onClick={() => setFilter(value)}>{value === 'all' ? 'Vsi' : value === 'open' ? 'Odprti' : 'Plačani'}</button>)}</div></header>
+        {visible.length ? <div className={styles.invoiceList}>{visible.map(invoice => {
+          const offer = offers.find(item => item.id === invoice.sourceOfferId);
+          return <article key={invoice.id} className="rc-arh-vrstica">
+            <button className={styles.contractOpen} type="button" onClick={() => odpriDetajl(invoice.id)}>
+              <span className={styles.invoiceDocIcon}><Receipt size={18} weight="regular" /></span>
+              <span>
+                <strong>{invoice.title || `Račun ${invoice.number || ''}`}</strong>
+                <small>Račun {invoice.number || '—'} · {invoice.client}</small>
+              </span>
+            </button>
+            <div className="rc-arh-znesek"><strong>{money(invoice.amount)}</strong><small>{new Date(invoice.date).toLocaleDateString('sl-SI')}</small></div>
+            <div className={`${styles.invoiceSource} rc-arh-vir`}>{offer ? <><span>Povezan s ponudbo</span><strong>{offer.title}</strong></> : <><span>Brez ponudbe</span><strong>Samostojen račun</strong></>}</div>
+            <select aria-label={`Status računa ${invoice.number || invoice.title || ''}`} value={invoice.paid ? 'paid' : 'open'} onChange={event => markPaid(invoice.id, event.target.value === 'paid')}><option value="open">Odprt</option><option value="paid">Plačan</option></select>
+            <button className={styles.contractArrow} type="button" onClick={() => odpriDetajl(invoice.id)} aria-label={`Odpri račun ${invoice.number || invoice.title || ''}`}>›</button>
+          </article>;
+        })}</div> : <div className={styles.invoiceEmpty}>V tem pogledu še ni računov.</div>}
+      </section>
+      <p className={styles.invoiceHint}>Račun, ki ga preneseš ali pošlješ na koncu <Link href={`${base}/kalkulator/orodje`}>kalkulatorja</Link>, se tukaj shrani samodejno.</p>
+    </>}
+
+    {/* ── detajl racuna (arhiv) — KOPIJA vzorca iz ContractWorkspace ── */}
+    {detajl && (() => {
+      const offer = offers.find(item => item.id === detajl.sourceOfferId);
+      const izdaja = new Date(detajl.date);
+      const rok = new Date(izdaja.getTime() + (detajl.dueDays ?? PRIVZETI_ROK_DNI) * 864e5);
+      return <div className={styles.detailBackdrop} role="presentation" onMouseDown={() => setDetajlId('')}>
+        <aside className={`${styles.detailPanel} ${styles.contractDetail}`} role="dialog" aria-modal="true" aria-labelledby="invoice-detail-title" onMouseDown={event => event.stopPropagation()}>
+          {/* sticky: X ostane v zgornjem desnem kotu tudi med drsenjem po racunu */}
+          <button className="rc-det-x" onClick={() => setDetajlId('')} aria-label="Zapri">✕</button>
+          <p className={styles.eyebrow}>RAČUN · {detajl.paid ? 'Plačan' : 'Odprt'}</p>
+          <h2 id="invoice-detail-title">Račun {detajl.number || ''}</h2>
+          <div className="rc-det-meta">
+            <span><small>Stranka</small><strong>{detajl.client}</strong></span>
+            <span><small>Datum izdaje</small><strong>{izdaja.toLocaleDateString('sl-SI')}</strong></span>
+            {detajl.serviceDate && <span><small>Datum storitve</small><strong>{new Date(detajl.serviceDate).toLocaleDateString('sl-SI')}</strong></span>}
+            <span><small>Rok plačila</small><strong>{rok.toLocaleDateString('sl-SI')}</strong></span>
+            <span><small>Znesek za plačilo</small><strong>{money(detajl.amount)}</strong></span>
+          </div>
+          {/* ena klikabilna vrstica ponudbe (kot pogodbe); ce racun ni povezan, je ni */}
+          {offer && <div className="rc-det-ponudba">
+            <button type="button" className="rc-det-ponudba-vrstica" aria-expanded={detPonOdprta} aria-label={`Ponudba ${offer.number || offer.title} — prikaži povzetek`} onClick={() => setDetPonOdprta(v => !v)}>
+              <span className="rc-kp-ikona" aria-hidden>⌁</span>
+              <span className="rc-det-ponudba-ime">Ponudba {offer.number || offer.title}</span>
+              <span className="rc-det-ponudba-kazalec" aria-hidden>{detPonOdprta ? '⌄' : '›'}</span>
+            </button>
+            {detPonOdprta && <div className="rc-kp-vec">
+              <p className="rc-det-ponudba-naslov"><b>{offer.title}</b>{offer.agreedAmount > 0 ? ' · ' + money(offer.agreedAmount) : ''}</p>
+              {offer.scope.length
+                ? <ul>{offer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul>
+                : <p className="rc-mini">Ponudba nima vpisanega obsega.</p>}
+              <a className="rc-povezava" href={`${base}/kalkulator/projekti`}>Odpri v projektih ↗</a>
+            </div>}
+          </div>}
+          {/* celoten racun kot dokument: ISTI HTML kot PDF pot (racunTelo), izrisan v belem okvirju */}
+          <div className="rc-doktelo" dangerouslySetInnerHTML={{ __html: racunTelo(detajl) }} />
+          <div className="rc-det-akcije">
+            <button type="button" className="rc-gumb" aria-label="Prenesi PDF" disabled={pdfId === detajl.id} onClick={() => prenesiPdf(detajl)}>{pdfId === detajl.id ? 'Pripravljam …' : 'Prenesi PDF'}</button>
+            <button type="button" className="rc-gumb sek" aria-label="Pošlji v plačilo" onClick={() => posljiVPlacilo(detajl)}>Pošlji v plačilo</button>
+            <label className={styles.invoiceCheck}><input type="checkbox" checked={detajl.paid} onChange={event => markPaid(detajl.id, event.target.checked)} /> Plačan</label>
+          </div>
+          {napaka && <p className="rc-napaka">{napaka}</p>}
+        </aside>
+      </div>;
+    })()}
 
     <style>{`
       /* rc- = novi stili obrazca za racun; pazi na .shell pravila (min-height 2.75rem
@@ -369,11 +458,86 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-vsote .rc-skupaj b{font:500 1.15rem var(--font-serif),Georgia,serif}
       .rc .rc-klavzula{margin:.4rem 0 0;font-size:.56rem;line-height:1.5;color:var(--muted);font-weight:500}
       .rc .rc-napaka{margin:.5rem 0 0;color:oklch(50% .18 25);font-size:.62rem;font-weight:700}
-      /* akcije v arhivu: cez vso sirino vrstice (mrezo definira modul, zato 1/-1) */
-      .rc .rc-akcije{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:.45rem;min-width:0}
-      .rc .rc-akcije button{padding:.5rem .95rem;border:1px solid color-mix(in oklch,var(--ink) 25%,transparent);border-radius:999px;background:oklch(100% 0 0/.6);color:var(--ink);font:700 .57rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease}
-      .rc .rc-akcije button:hover:not(:disabled){background:var(--ink);border-color:var(--ink);color:var(--paper)}
-      .rc .rc-akcije button:disabled{opacity:.55;cursor:default}
+      /* ── view-swap (kot pogodbe): obrazec je svoja stran, sredinski stolpec ── */
+      .rc .rc-sek{min-width:0}
+      .rc .rc-sek.rc-stran{animation:rcStran .5s cubic-bezier(.16,1,.3,1) both}
+      /* KONEC animacije mora biti transform:NONE (ne translateY(0)) — kot pogodbe */
+      @keyframes rcStran{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
+      @media (prefers-reduced-motion:reduce){.rc .rc-sek.rc-stran{animation:none}}
+      .rc .rc-stolpec{width:100%;max-width:700px;margin-left:auto;margin-right:auto}
+      /* na svoji strani je obrazec en stolpec (modul ima 2 koloni za inline vgradnjo) */
+      .rc .rc-obrazec{grid-template-columns:1fr}
+      .rc .rc-nazaj-vrh{margin:0 0 .2rem;justify-self:start}
+      .rc .rc-povezava{font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0;display:inline-flex;align-items:center;gap:.38rem}
+      .rc .rc-povezava:hover{opacity:.6}
+      .rc .rc-mini{font-size:.8rem;color:rgba(17,17,17,.55)}
+
+      /* ── vrstica arhiva (kot pogodbe): ikona+naslov | znesek/datum | ponudba | status | › ── */
+      .rc .rc-arh-vrstica{grid-template-columns:minmax(0,1.6fr) minmax(7rem,auto) minmax(9rem,.7fr) auto 1.8rem}
+      .rc .rc-arh-vrstica strong,.rc .rc-arh-vrstica small{overflow-wrap:anywhere}
+      /* status select mora obdrzati chevron: modulov shorthand background ga povozi,
+         zato background-COLOR + eksplicitna slika puscice (kot .shell select) */
+      .rc .rc-arh-vrstica select{width:10rem;padding:.45rem 3.25rem .45rem 1rem !important;border:1px solid var(--line);border-radius:999px;background-color:oklch(98% .01 87);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='m5 7.5 5 5 5-5' fill='none' stroke='%231c1815' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center !important;appearance:none;font-weight:700}
+      /* enako za selecte v obrazcu (Ponudba, DDV) — modulov background: jim vzame puscico */
+      .rc .rc-obrazec select{background-color:oklch(100% 0 0/.8);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='m5 7.5 5 5 5-5' fill='none' stroke='%231c1815' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center !important;appearance:none}
+      /* selektorji namenoma s .rc-arh-vrstica predpono: modul ima pravila z
+         div:nth-child(3) (specificnost 0,2,2), ki bi sicer povozila postavitev */
+      @media (max-width:980px){
+        .rc .rc-arh-vrstica{grid-template-columns:minmax(0,1fr) auto 1.8rem}
+        .rc .rc-arh-vrstica>button:first-child{grid-column:1;grid-row:1}
+        .rc .rc-arh-vrstica .rc-arh-znesek{grid-column:2;grid-row:1}
+        .rc .rc-arh-vrstica>button:last-child{grid-column:3;grid-row:1}
+        .rc .rc-arh-vrstica select{grid-column:1/-1;grid-row:2;justify-self:start}
+        .rc .rc-arh-vrstica .rc-arh-vir{grid-column:1/-1;grid-row:3;padding:.5rem 0 0;border-left:0;border-top:1px solid var(--line)}
+      }
+
+      /* ── detajl racuna: lepljivi X + meta kartice + vrstica ponudbe (KOPIJA pg- vzorcev) ── */
+      .rc .rc-det-x{position:sticky;top:0;z-index:6;align-self:flex-end;flex:0 0 auto;display:grid;place-items:center;width:2.2rem;height:2.2rem;margin:0 0 -2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
+      .rc .rc-det-x:hover{background:var(--ink);color:var(--paper)}
+      .rc .rc-det-meta{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;min-width:0}
+      .rc .rc-det-meta span{display:grid;gap:.25rem;padding:.7rem;border-radius:.7rem;background:oklch(94% .025 87);min-width:0}
+      .rc .rc-det-meta small{color:rgba(17,17,17,.55);font-size:.72rem}
+      .rc .rc-det-meta strong{font-size:.85rem;line-height:1.35;overflow-wrap:anywhere}
+      .rc .rc-det-ponudba{margin-top:.45rem;border:1px solid rgba(17,17,17,.12);border-radius:.7rem;background:rgba(255,255,255,.72);overflow:hidden;min-width:0;flex:0 0 auto}
+      .rc .rc-det-ponudba-vrstica{display:flex;align-items:center;gap:.7rem;width:100%;padding:.65rem .8rem;border:none;background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer;min-width:0}
+      .rc .rc-det-ponudba-vrstica:hover .rc-det-ponudba-ime{text-decoration:underline;text-underline-offset:.2rem}
+      .rc .rc-det-ponudba-ime{flex:1;min-width:0;font-size:.88rem;font-weight:700;overflow-wrap:anywhere}
+      .rc .rc-det-ponudba-kazalec{display:grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:50%;background:rgba(17,17,17,.06);color:var(--ink);font-size:1.05rem;line-height:1;flex:none}
+      .rc .rc-kp-ikona{display:grid;place-items:center;width:2.1rem;height:2.1rem;border-radius:50%;background:oklch(92% .055 163);color:oklch(48% .14 164);flex:none}
+      .rc .rc-kp-vec{padding:.15rem .8rem .9rem;border-top:1px dashed rgba(17,17,17,.12)}
+      .rc .rc-kp-vec ul{margin:.7rem 0 .8rem;padding-left:1.15rem;font-size:.85rem;line-height:1.55;color:rgba(17,17,17,.8)}
+      .rc .rc-kp-vec li{margin:.15rem 0}
+      .rc .rc-det-ponudba-naslov{margin:.6rem 0 .2rem;font-size:.85rem}
+
+      /* ── celoten racun kot dokument (beli okvir kot .pg-doktelo; rac-* iz PDF poti) ── */
+      .rc .rc-doktelo{flex:1 1 auto;min-height:0;width:100%;min-width:0;margin:1rem 0 0;border:1px solid rgba(17,17,17,.22);border-radius:6px;background:#fff;padding:1.35rem;color:var(--ink);font-family:var(--font-sans),system-ui,sans-serif;font-size:.86rem;line-height:1.55;overflow:auto}
+      .rc .rc-doktelo .rac-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1.4rem;margin:0 0 1.2rem;flex-wrap:wrap}
+      .rc .rc-doktelo .rac-title{display:flex;flex-direction:column;gap:2px}
+      .rc .rc-doktelo .rac-kicker{font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--accent,#B25476);font-weight:700}
+      .rc .rc-doktelo .rac-no{font-family:var(--font-serif),Didot,Georgia,serif;font-size:clamp(1.6rem,3vw,2rem);font-weight:600;color:#111;line-height:1.05;overflow-wrap:anywhere}
+      .rc .rc-doktelo .rac-meta{font-size:.68rem;color:#444;text-align:right;line-height:1.5}
+      .rc .rc-doktelo .rac-meta b{display:block;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent,#B25476);margin-top:.45rem}
+      .rc .rc-doktelo .rac-stranki{margin:0 0 1.1rem;font-size:.8rem;color:#222;line-height:1.6}
+      .rc .rc-doktelo .rac-l{display:block;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:.25rem}
+      .rc .rc-doktelo .rac-tabela{width:100%;border-collapse:collapse;margin:.5rem 0 .9rem;font-size:.74rem;color:#222}
+      .rc .rc-doktelo .rac-tabela th{text-align:left;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:#8a8177;border-bottom:1.5px solid var(--accent,#B25476);padding:0 .5rem .45rem;font-weight:700}
+      .rc .rc-doktelo .rac-tabela td{padding:.55rem .5rem;border-bottom:1px solid #ece3d8;vertical-align:top}
+      .rc .rc-doktelo .rac-tabela th:not(:first-child),.rc .rc-doktelo .rac-tabela td:not(:first-child){text-align:right;white-space:nowrap}
+      .rc .rc-doktelo .rac-vsote{margin-left:auto;width:min(19rem,100%);font-size:.8rem;color:#222}
+      .rc .rc-doktelo .rac-vsote>div{display:flex;justify-content:space-between;gap:.8rem;padding:.3rem .5rem}
+      .rc .rc-doktelo .rac-skupaj{border-top:1.5px solid var(--accent,#B25476);margin-top:.25rem;font-family:var(--font-serif),Didot,Georgia,serif;font-size:.95rem;font-weight:600;color:#111}
+      .rc .rc-doktelo .rac-placilo{margin:1.2rem 0 0;font-size:.76rem;color:#222;background:#f8f5ee;border:1px solid #eadfce;border-radius:9px;padding:.8rem 1rem;line-height:1.7;overflow-wrap:anywhere}
+      .rc .rc-doktelo .rac-opomba{font-size:.68rem;color:#666;margin:.6rem 0 0}
+      .rc .rc-doktelo .rac-noga-txt{font-size:.62rem;color:#9a9088;margin-top:1.3rem}
+      .rc .rc-doktelo .rac-placano{display:inline-block;margin:1.1rem 0 0;border:3px solid #2e7d5b;color:#2e7d5b;font-weight:700;letter-spacing:.22em;padding:.35rem 1rem;border-radius:8px;transform:rotate(-5deg);font-size:1.1rem}
+
+      /* akcije na dnu detajla (gumba kot pg-gumb) */
+      .rc .rc-det-akcije{display:flex;flex-wrap:wrap;align-items:center;gap:.8rem;margin-top:1.2rem;min-width:0}
+      .rc .rc-gumb{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:.5rem;border:none;border-radius:999px;padding:.85rem 1.6rem;font:inherit;font-weight:600;font-size:.95rem;cursor:pointer;background:var(--ink);color:var(--paper);transition:transform .2s,opacity .2s}
+      .rc .rc-gumb:hover{transform:translateY(-2px)}
+      .rc .rc-gumb.sek{background:transparent;color:var(--ink);border:1px solid rgba(17,17,17,.28)}
+      .rc .rc-gumb:disabled{opacity:.5;cursor:default;transform:none}
+
       /* mobilno: NIC cez desni rob pri 390px — postavka se zlozi v 2 stolpca */
       @media (max-width: 760px){
         .rc .rc-vrstica,.rc .rc-vrstica.rc-brez-ddv{grid-template-columns:repeat(2,minmax(0,1fr));align-items:end}
@@ -382,9 +546,11 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         .rc .rc-x{width:100%;height:2.4rem;border:1px dashed color-mix(in oklch,var(--ink) 30%,transparent);grid-column:1/-1}
         .rc .rc-vsote{width:100%}
       }
-      @media (max-width: 480px){
-        .rc .rc-akcije{flex-direction:column;align-items:stretch}
-        .rc .rc-akcije button{width:100%}
+      @media (max-width:640px){
+        .rc .rc-det-meta{grid-template-columns:1fr}
+        .rc .rc-doktelo .rac-head{flex-direction:column;gap:.6rem}
+        .rc .rc-doktelo .rac-meta{text-align:left}
+        .rc .rc-det-akcije .rc-gumb{padding:.8rem 1.25rem}
       }
     `}</style>
   </div>;
