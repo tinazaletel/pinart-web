@@ -192,8 +192,9 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
       /* ── DATE INPUT (namizje IN sheet): pilula z zaobljenimi robovi; barva
          besedila iz tokena — popravek Safarijeve privzete rjave; background-COLOR
          (ne shorthand), da native ikona koledarja ostane ── */
-      .af-kolgumb{display:inline-flex;align-items:center;justify-content:center;flex:none;padding:0;border:none;background:none;color:color-mix(in oklch,var(--ink,#111) 60%,transparent);cursor:pointer}
-      .af-kolgumb:hover{color:var(--ink,#111)}
+      /* koledarček v krogcu — enak jezik kot ostali ikonski gumbi vrstice */
+      .af-kolgumb{display:inline-flex;align-items:center;justify-content:center;flex:none;width:2.2rem;height:2.2rem;padding:0;border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:50%;background:color-mix(in oklch,var(--paper,#fff) 85%,transparent);color:color-mix(in oklch,var(--ink,#111) 62%,transparent);cursor:pointer;transition:background .15s,color .15s}
+      .af-kolgumb:hover{background:var(--ink,#111);color:var(--paper,#fff)}
       .af-datum input[type='date'],.af-sheet-datum input[type='date']{min-width:0;max-width:100%;box-sizing:border-box;font:inherit;font-weight:600;color:var(--ink,#111);background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;padding:.4rem .7rem}
       .af-datum input[type='date']:focus,.af-sheet-datum input[type='date']:focus{outline:none;border-color:var(--ink,#111)}
       .af-datum input::-webkit-datetime-edit,.af-sheet-datum input::-webkit-datetime-edit,
