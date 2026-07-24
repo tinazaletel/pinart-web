@@ -140,6 +140,41 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
   const zapriDetajl = () => { setDetajl(null); setDetObsegOdprt(false); };
 
+  /* orodna vrstica (ArhivFilter) — ENA instanca ob zavihkih, izbrana glede na
+     aktivni zavihek. Projekti nima svoje orodne vrstice (ProjectsWorkspace jo
+     ima ze), zato je takrat filterCfg null in se ArhivFilter ne izrise. */
+  type FilterCfg = {
+    placeholder: string;
+    statusOznaka: string;
+    statusVrednost: string;
+    onStatus: (vrednost: string) => void;
+    statusOpcije: { vrednost: string; oznaka: string }[];
+    akcija: React.ReactNode;
+  };
+  const filterCfg: FilterCfg | null =
+    zavihek === 'ponudbe' ? {
+      placeholder: 'Poišči ponudbo, stranko ali številko …',
+      statusOznaka: 'Status ponudbe',
+      statusVrednost: statusPonudba,
+      onStatus: v => setStatusPonudba(v as 'vse' | FlowOfferStatus),
+      statusOpcije: [{ vrednost: 'vse', oznaka: 'Vse' }, ...(Object.entries(offerLabels) as Array<[FlowOfferStatus, string]>).map(([v, n]) => ({ vrednost: v, oznaka: n }))],
+      akcija: <Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>+ Nova ponudba</Link>,
+    } : zavihek === 'pogodbe' ? {
+      placeholder: 'Poišči pogodbo ali stranko …',
+      statusOznaka: 'Status pogodbe',
+      statusVrednost: statusPogodba,
+      onStatus: v => setStatusPogodba(v as 'vse' | FlowContractStatus),
+      statusOpcije: [{ vrednost: 'vse', oznaka: 'Vse' }, ...(Object.entries(contractLabels) as Array<[FlowContractStatus, string]>).map(([v, n]) => ({ vrednost: v, oznaka: n }))],
+      akcija: <Link className="af-akcija-gumb" href={`${base}/kalkulator/pogodbe`}>+ Nova pogodba</Link>,
+    } : zavihek === 'racuni' ? {
+      placeholder: 'Poišči račun, stranko ali številko …',
+      statusOznaka: 'Plačilo',
+      statusVrednost: placano,
+      onStatus: v => setPlacano(v as 'vse' | 'placano' | 'odprto'),
+      statusOpcije: [{ vrednost: 'vse', oznaka: 'Vsi' }, { vrednost: 'placano', oznaka: 'Plačani' }, { vrednost: 'odprto', oznaka: 'Odprti' }],
+      akcija: <Link className="af-akcija-gumb" href={`${base}/kalkulator/racuni`}>+ Nov račun</Link>,
+    } : null;
+
   return (
     <div className="arh">
       <div className="arh-ozadje" aria-hidden>
@@ -153,11 +188,35 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         <h1 className="arh-h1">Vse na enem mestu.</h1>
         <p className="arh-uvod">Shranjeni projekti, ponudbe, pogodbe in računi — poišči in odpri, kar potrebuješ.</p>
 
-        {/* zavihki (pilule kot rw-segpills) */}
-        <div className="arh-segpills arh-zavihki" role="tablist" aria-label="Arhiv">
-          {(([['projekti', 'Projekti'], ['ponudbe', 'Ponudbe'], ['pogodbe', 'Pogodbe'], ['racuni', 'Računi']]) as Array<[Zavihek, string]>).map(([v, n]) => (
-            <button key={v} type="button" role="tab" aria-selected={zavihek === v} className={zavihek === v ? 'on' : ''} onClick={() => menjajZavihek(v)}>{n}</button>
-          ))}
+        {/* glava: zavihki (levo) + orodna vrstica aktivnega zavihka (desno) v ENI
+            vrsti na namizju; flex-wrap ju na mobilnem prelomi v dve vrsti (locene) */}
+        <div className="arh-glava">
+          <div className="arh-segpills arh-zavihki" role="tablist" aria-label="Arhiv">
+            {(([['projekti', 'Projekti'], ['ponudbe', 'Ponudbe'], ['pogodbe', 'Pogodbe'], ['racuni', 'Računi']]) as Array<[Zavihek, string]>).map(([v, n]) => (
+              <button key={v} type="button" role="tab" aria-selected={zavihek === v} className={zavihek === v ? 'on' : ''} onClick={() => menjajZavihek(v)}>{n}</button>
+            ))}
+          </div>
+
+          {filterCfg && (
+            <div className="arh-glava-filter">
+              <ArhivFilter
+                iskanje={iskanje}
+                onIskanje={setIskanje}
+                placeholder={filterCfg.placeholder}
+                datumOd={obdobjeOd}
+                datumDo={obdobjeDo}
+                onDatumOd={setObdobjeOd}
+                onDatumDo={setObdobjeDo}
+                statusOznaka={filterCfg.statusOznaka}
+                statusVrednost={filterCfg.statusVrednost}
+                onStatus={filterCfg.onStatus}
+                statusOpcije={filterCfg.statusOpcije}
+                aktivnihFiltrov={stFiltrov}
+                onPocisti={pocistiFiltre}
+                akcija={filterCfg.akcija}
+              />
+            </div>
+          )}
         </div>
 
         {/* ── PROJEKTI: obstojeci ProjectsWorkspace (logike ne prepisujemo) ── */}
@@ -170,23 +229,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         {/* ── PONUDBE ── */}
         {zavihek === 'ponudbe' && (
           <section className="arh-panel">
-            <ArhivFilter
-              iskanje={iskanje}
-              onIskanje={setIskanje}
-              placeholder="Poišči ponudbo, stranko ali številko …"
-              datumOd={obdobjeOd}
-              datumDo={obdobjeDo}
-              onDatumOd={setObdobjeOd}
-              onDatumDo={setObdobjeDo}
-              statusOznaka="Status ponudbe"
-              statusVrednost={statusPonudba}
-              onStatus={v => setStatusPonudba(v as 'vse' | FlowOfferStatus)}
-              statusOpcije={[{ vrednost: 'vse', oznaka: 'Vse' }, ...(Object.entries(offerLabels) as Array<[FlowOfferStatus, string]>).map(([v, n]) => ({ vrednost: v, oznaka: n }))]}
-              aktivnihFiltrov={stFiltrov}
-              onPocisti={pocistiFiltre}
-              akcija={<Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>+ Nova ponudba</Link>}
-            />
-
             {!offers.length ? (
               <p className="arh-prazno">Prva shranjena ponudba se bo prikazala tukaj.</p>
             ) : !ponudbePrikaz.length ? (
@@ -215,24 +257,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         {/* ── POGODBE ── */}
         {zavihek === 'pogodbe' && (
           <section className="arh-panel">
-            {/* štetje statusov odstranjeno — status je že v dropdown filtru */}
-            <ArhivFilter
-              iskanje={iskanje}
-              onIskanje={setIskanje}
-              placeholder="Poišči pogodbo ali stranko …"
-              datumOd={obdobjeOd}
-              datumDo={obdobjeDo}
-              onDatumOd={setObdobjeOd}
-              onDatumDo={setObdobjeDo}
-              statusOznaka="Status pogodbe"
-              statusVrednost={statusPogodba}
-              onStatus={v => setStatusPogodba(v as 'vse' | FlowContractStatus)}
-              statusOpcije={[{ vrednost: 'vse', oznaka: 'Vse' }, ...(Object.entries(contractLabels) as Array<[FlowContractStatus, string]>).map(([v, n]) => ({ vrednost: v, oznaka: n }))]}
-              aktivnihFiltrov={stFiltrov}
-              onPocisti={pocistiFiltre}
-              akcija={<Link className="af-akcija-gumb" href={`${base}/kalkulator/pogodbe`}>+ Nova pogodba</Link>}
-            />
-
+            {/* štetje statusov odstranjeno — status je že v dropdown filtru (zdaj v arh-glava) */}
             {!contracts.length ? (
               <p className="arh-prazno">Prva shranjena pogodba se bo prikazala tukaj.</p>
             ) : !pogodbePrikaz.length ? (
@@ -277,22 +302,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                 <b className="arh-metrika-ikona"><MetricIcon type="profit" /></b>
               </article>
             </div>}
-            <ArhivFilter
-              iskanje={iskanje}
-              onIskanje={setIskanje}
-              placeholder="Poišči račun, stranko ali številko …"
-              datumOd={obdobjeOd}
-              datumDo={obdobjeDo}
-              onDatumOd={setObdobjeOd}
-              onDatumDo={setObdobjeDo}
-              statusOznaka="Plačilo"
-              statusVrednost={placano}
-              onStatus={v => setPlacano(v as 'vse' | 'placano' | 'odprto')}
-              statusOpcije={[{ vrednost: 'vse', oznaka: 'Vsi' }, { vrednost: 'placano', oznaka: 'Plačani' }, { vrednost: 'odprto', oznaka: 'Odprti' }]}
-              aktivnihFiltrov={stFiltrov}
-              onPocisti={pocistiFiltre}
-              akcija={<Link className="af-akcija-gumb" href={`${base}/kalkulator/racuni`}>+ Nov račun</Link>}
-            />
 
             {!invoices.length ? (
               <p className="arh-prazno">Prvi shranjeni račun se bo prikazal tukaj.</p>
@@ -427,11 +436,17 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(2.4rem,6vw,4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
         .arh-uvod{font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72);margin:0 0 2rem;max-width:38rem}
 
+        /* glava: zavihki (levo) + ArhivFilter aktivnega zavihka (desno) v ENI vrsti
+           na namizju; flex-wrap na ozkem/mobilnem prelomi ArhivFilter pod zavihke
+           (locene vrstice), ker za skupno vrstico zmanjka prostora */
+        .arh-glava{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem .9rem;margin-bottom:1.1rem}
+        .arh-glava-filter{flex:1 1 22rem;min-width:0}
+
         /* zavihki + segpills (kopija .rw-segpills) */
         .arh-segpills{display:inline-flex;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:999px;padding:.25rem;gap:.15rem;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
         .arh-segpills button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem .9rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
         .arh-segpills button.on{background:var(--ink);color:var(--paper)}
-        .arh-zavihki{margin:0 0 1.6rem}
+        .arh-zavihki{flex:0 0 auto}
 
         .arh-panel{animation:arhSek .45s cubic-bezier(.16,1,.3,1) both;min-width:0}
         @keyframes arhSek{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
@@ -441,9 +456,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
         /* oznaka skupine — se uporablja v detajl panelu (Obseg); filtri jih ne kazejo vec */
         .arh-filter-oznaka{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(17,17,17,.55)}
-
-        /* razmik med filtrom in tabelo */
-        .arh-panel > .af{margin:0 0 1rem}
 
         /* povzetek Racuni (preseljeno iz InvoiceWorkspace — vzorec MetricIcon,
            v videzu Arhiva: mehke papirnate kartice namesto belih dashboard kartic) */
