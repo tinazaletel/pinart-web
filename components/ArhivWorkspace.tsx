@@ -485,8 +485,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-tabela-ponudbe{grid-template-columns:minmax(0,2.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,.8fr) 1.6rem}
         .arh-tabela-pogodbe{grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr) 1.6rem}
         .arh-tabela-racuni{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.9fr) 1.6rem}
-        .arh-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;padding:.7rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.5);border-bottom:1px solid rgba(17,17,17,.1)}
-        .arh-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:.6rem;padding:.85rem .9rem;border:none;border-bottom:1px solid rgba(17,17,17,.07);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
+        /* gap tudi na header (prej ga ni imel -> "ZNESEKDATUM" se je dotikal) + vecji razmik */
+        .arh-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.7rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.5);border-bottom:1px solid rgba(17,17,17,.1)}
+        .arh-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:none;border-bottom:1px solid rgba(17,17,17,.07);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
         .arh-vrstica:last-child{border-bottom:none}
         .arh-vrstica:hover{background:rgba(255,255,255,.6)}
         .arh-vrstica > span{min-width:0;font-size:.86rem;overflow-wrap:anywhere}
