@@ -467,7 +467,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-glava-filter{flex:1 1 22rem;min-width:0}
 
         /* zavihki + segpills (kopija .rw-segpills) */
-        .arh-segpills{display:inline-flex;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:999px;padding:.25rem;gap:.15rem;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+        /* ista visina kot iskalnik/pilule v ArhivFilter (2.75rem), da je vrstica poenotena */
+        .arh-segpills{display:inline-flex;align-items:center;height:2.75rem;box-sizing:border-box;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:999px;padding:.25rem;gap:.15rem;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
         .arh-segpills button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem .9rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
         .arh-segpills button.on{background:var(--ink);color:var(--paper)}
         .arh-zavihki{flex:0 0 auto}
