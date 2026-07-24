@@ -1097,6 +1097,29 @@
 .goalHistory article > strong { font-size: .875rem; }
 .goalHistory article > small { color: var(--muted); text-transform: capitalize; }
 
+/* ── Analizne kartice (preseljene s strani ČAS): Mesečni cilj, Vzdržna urna
+   vrednost, Potrebni projekti, Dejanska urna vrednost. Isti videz kot na
+   Stroških/Računih — velika mehka ikona v kotu, Bodoni števec. Na Ciljih
+   ostanejo vidne tudi na mobilnem (na Času so bile pod 700px skrite). */
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; }
+.summary article { position: relative; overflow: hidden; display: grid; gap: .5rem; min-height: 9.5rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: 1.25rem; background: linear-gradient(135deg, oklch(96% .035 295), oklch(94% .045 170)); }
+.summary article:nth-child(2) { background: linear-gradient(135deg, oklch(95% .055 160), oklch(92% .07 170)); }
+.summary article:nth-child(3) { background: linear-gradient(135deg, oklch(97% .035 85), oklch(94% .055 75)); }
+.summary article:nth-child(4) { background: linear-gradient(135deg, oklch(96% .035 45), oklch(92% .075 55)); }
+.summary small, .summary span { font-size: .82rem; }
+.summary strong { margin-top: auto; font: 500 2.1rem var(--font-serif), Georgia, serif; }
+.summary span { color: var(--muted); }
+.metricIkona {
+  position: absolute; right: -1rem; bottom: -1.6rem;
+  display: grid; place-items: center;
+  width: 6.6rem; aspect-ratio: 1; border-radius: 1.6rem;
+  background: oklch(100% 0 0 / .24);
+  color: color-mix(in oklch, currentColor 54%, transparent);
+  transform: rotate(-9deg);
+}
+.metricIkona svg { width: 2.25rem; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; transform: rotate(9deg) translate(-.35rem, -.35rem); }
+.summary article > :not(.metricIkona) { position: relative; z-index: 1; }
+
 .priceListsPage { display: grid; gap: 1rem; }
 .priceListIntro { display: flex; align-items: end; justify-content: space-between; gap: 2rem; padding: 1.5rem; border: 1px solid var(--line); border-radius: 1.4rem; background: linear-gradient(125deg, oklch(98% .018 87), oklch(95% .028 295), oklch(95% .025 165)); }
 .priceListIntro h2 { margin: 0; font: 500 2rem/1 var(--font-serif), Georgia, serif; }
@@ -1140,6 +1163,7 @@
   .goalOverview { grid-template-columns: 1fr auto; }
   .goalOverviewStats { grid-column: 1; grid-row: 2; }
   .goalLargeDial { grid-column: 2; grid-row: 1 / span 2; }
+  .summary { grid-template-columns: 1fr 1fr; }
   .goalsLayout { grid-template-columns: 1fr; }
   .priceListsLayout { grid-template-columns: 1fr; }
 }
@@ -1148,6 +1172,8 @@
   .goalOverview { grid-template-columns: 1fr; gap: 1.2rem; }
   .goalOverviewStats { grid-column: 1; grid-row: auto; flex-direction: column; gap: .8rem; }
   .goalLargeDial { grid-column: 1; grid-row: auto; }
+  /* na Ciljih ostanejo kartice VIDNE tudi na mobilnem — zložijo se v en stolpec */
+  .summary { grid-template-columns: 1fr; }
   .goalEquation { grid-template-columns: 1fr; }
   .goalEquation > b { display: none; }
   .reserveControl { grid-template-columns: 1fr; }

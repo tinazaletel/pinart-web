@@ -6,6 +6,12 @@ import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, type FlowExpense, type FlowInvoice } from '@/lib/pinartFlowStore';
 import { saveBusinessGoal, saveCloudSettings } from '@/lib/pinartFlowCloud';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
+import {
+  calculatePlan, DEFAULT_BUSINESS_PLAN, loadCloudBusinessPlan, loadCloudTimeEntries,
+  loadLocalPlan, loadLocalTimeEntries, saveLocalPlan, saveLocalTimeEntries,
+  type BusinessPlan, type PrivateTimeEntry,
+} from '@/lib/pinartPlanning';
+import MetricIcon from './MetricIcon';
 
 type GoalSettings = { desiredIncome: number; reservePercent: number };
 type RecurringCost = { ime: string; znesek: string };
@@ -25,6 +31,14 @@ export default function GoalsWorkspace({ base }: { base: string }) {
   const [recurring, setRecurring] = useState<RecurringCost[]>([]);
   const [saved, setSaved] = useState(false);
 
+  /* Poslovni načrt + zasebni časovni vnosi — ista osnova kot na strani ČAS
+     (BusinessPlanWorkspace), da sta »Mesečni cilj«, »Vzdržna urna vrednost«,
+     »Potrebni projekti« in »Dejanska urna vrednost« IDENTIČNI na obeh straneh.
+     Dnevnik ur je zaseben in NE gre skozi podatkiZaPredogled (glej lib/predogled.ts):
+     demo/prazno ne sme izmišljati ur. */
+  const [plan, setPlan] = useState<BusinessPlan>(DEFAULT_BUSINESS_PLAN);
+  const [timeEntries, setTimeEntries] = useState<PrivateTimeEntry[]>([]);
+
   useEffect(() => {
     const flow = podatkiZaPredogled(nacin, loadFlowData());
     const settings = JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}');
@@ -36,6 +50,22 @@ export default function GoalsWorkspace({ base }: { base: string }) {
     setExpenses(flow.expenses);
     setRecurring(Array.isArray(settings.stroski) ? settings.stroski : []);
   }, [nacin]);
+
+  useEffect(() => {
+    const localPlan = loadLocalPlan();
+    const localEntries = loadLocalTimeEntries();
+    setPlan(localPlan); setTimeEntries(localEntries);
+    void Promise.all([loadCloudBusinessPlan(), loadCloudTimeEntries()]).then(([cloudPlan, cloudEntries]) => {
+      if (cloudPlan) { setPlan(cloudPlan); saveLocalPlan(cloudPlan); }
+      if (cloudEntries.length) { setTimeEntries(cloudEntries); saveLocalTimeEntries(cloudEntries); }
+    }).catch(() => undefined);
+  }, []);
+
+  const plannedResult = useMemo(() => calculatePlan(plan), [plan]);
+  const completedTime = timeEntries.filter(item => item.endedAt && item.durationMinutes > 0);
+  const trackedTimeMinutes = completedTime.reduce((sum, item) => sum + item.durationMinutes, 0);
+  const trackedTimeRevenue = completedTime.reduce((sum, item) => sum + item.amount, 0);
+  const effectiveRate = trackedTimeMinutes ? trackedTimeRevenue / (trackedTimeMinutes / 60) : 0;
 
   const now = new Date();
   const currentMonth = (date: string) => { const value = new Date(`${date}T00:00:00`); return value.getMonth() === now.getMonth() && value.getFullYear() === now.getFullYear(); };
@@ -71,6 +101,15 @@ export default function GoalsWorkspace({ base }: { base: string }) {
       <div><p className={styles.eyebrow}>TA MESEC</p><h2>{money(goal)}</h2><p>Cilj temelji na stroških, tvojem želenem dohodku in rezervi.</p></div>
       <div className={styles.goalOverviewStats}><span><small>Potrjena plačila</small><strong>{money(paid)}</strong></span><span><small>Do cilja manjka</small><strong>{money(remaining)}</strong></span></div>
       <div className={styles.goalLargeDial} style={{ '--goal-progress': `${progress}%` } as React.CSSProperties}><div><strong>{progress}%</strong><small>doseženo</small></div></div>
+    </section>
+
+    {/* Iste štiri analizne kartice kot prej na strani ČAS — od tam preseljene,
+        ker so analiza poslovnega načrta in časa, ne merjenje samo. */}
+    <section className={styles.summary}>
+      <article><small>Mesečni cilj</small><strong>{money(plannedResult.monthlyRevenueTarget)}</strong><span>iz poslovnega načrta</span><b className={styles.metricIkona}><MetricIcon type="cilj" /></b></article>
+      <article><small>Vzdržna urna vrednost</small><strong>{money(plannedResult.sustainableHourlyRate)}</strong><span>pri {plan.billableHoursMonthly} obračunskih urah</span><b className={styles.metricIkona}><MetricIcon type="ura" /></b></article>
+      <article><small>Potrebni projekti</small><strong>{plannedResult.projectsNeeded}</strong><span>pri povprečju {money(plan.averageProjectValue)}</span><b className={styles.metricIkona}><MetricIcon type="projekti" /></b></article>
+      <article><small>Dejanska urna vrednost</small><strong>{effectiveRate ? money(effectiveRate) : '—'}</strong><span>iz zaključenih časovnih vnosov</span><b className={styles.metricIkona}><MetricIcon type="graf" /></b></article>
     </section>
 
     <div className={styles.goalsLayout}>
