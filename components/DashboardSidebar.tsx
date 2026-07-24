@@ -43,7 +43,7 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
     {item('overview', `${base}/kalkulator/pregled`, '01', 'Nadzorna plošča', 'pregled')}
     {/* Na telefonu so skupine zaprte: 13 postavk hkrati ne gre v en zaslon,
         ce naj bo vsaka tapna tarca vsaj 44 px. Na namizju so odprte kot prej. */}
-    <MeniSkupina naslov="Delo" aktivna={active === 'contracts' || active === 'invoices'}>
+    <MeniSkupina naslov="Orodja" aktivna={active === 'contracts' || active === 'invoices'}>
       {/* ?od=pregled -> kalkulator in retainer pokazeta puscico nazaj na nadzorno plosco */}
       {povezava(`${base}/kalkulator/orodje?od=pregled`, '01', 'Ponudba', 'ponudba')}
       {povezava(`${base}/kalkulator/dolgorocno?od=pregled`, '02', 'Dolgoročno sodelovanje', 'retainer')}
