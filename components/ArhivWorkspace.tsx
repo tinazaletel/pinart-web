@@ -79,6 +79,11 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   const { offers, contracts, invoices } = flow;
 
   const [zavihek, setZavihek] = useState<Zavihek>('projekti');
+  /* ko ProjectsWorkspace odpre detajl projekta kot samostojno stran (klik na
+     vrstico v tabeli), skrijemo .arh-glava (zavihki + orodna vrstica) — glej
+     onDetajl prop spodaj. Detajl ni vezan na zavihek, zato se ob morebitni
+     menjavi zavihka počisti prek onDetajl(false) v ProjectsWorkspace samem. */
+  const [projektDetajlOdprt, setProjektDetajlOdprt] = useState(false);
 
   /* iskanje + filtri (skupno stanje; ob menjavi zavihka jih pocistimo, ker so
      razlicni za vsak tip) */
@@ -100,7 +105,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
     setZavihek(z);
     setIskanje(''); setObdobjeOd(''); setObdobjeDo('');
     setStatusPonudba('vse'); setStatusPogodba('vse'); setPlacano('vse'); setStatusProjekt('vse');
-    setDetajl(null); setDetObsegOdprt(false);
+    setDetajl(null); setDetObsegOdprt(false); setProjektDetajlOdprt(false);
   };
 
   const isk = iskanje.trim().toLocaleLowerCase('sl-SI');
@@ -196,43 +201,48 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       </div>
 
       <div className="arh-vsebina">
-        <p className="arh-kicker">Arhiv</p>
-        <h1 className="arh-h1">Vse na enem mestu.</h1>
-        <p className="arh-uvod">Shranjeni projekti, ponudbe, pogodbe in računi — poišči in odpri, kar potrebuješ.</p>
+        {/* ko je detajl projekta odprt kot samostojna stran, skrijemo naslov +
+            glavo (zavihki/orodna vrstica) — glej onDetajl na ProjectsWorkspace */}
+        {!projektDetajlOdprt && <>
+          <p className="arh-kicker">Arhiv</p>
+          <h1 className="arh-h1">Vse na enem mestu.</h1>
+          <p className="arh-uvod">Shranjeni projekti, ponudbe, pogodbe in računi — poišči in odpri, kar potrebuješ.</p>
 
-        {/* glava: zavihki (levo) + orodna vrstica aktivnega zavihka (desno) v ENI
-            vrsti na namizju; flex-wrap ju na mobilnem prelomi v dve vrsti (locene) */}
-        <div className="arh-glava">
-          <div className="arh-segpills arh-zavihki" role="tablist" aria-label="Arhiv">
-            {(([['projekti', 'Projekti'], ['ponudbe', 'Ponudbe'], ['pogodbe', 'Pogodbe'], ['racuni', 'Računi']]) as Array<[Zavihek, string]>).map(([v, n]) => (
-              <button key={v} type="button" role="tab" aria-selected={zavihek === v} className={zavihek === v ? 'on' : ''} onClick={() => menjajZavihek(v)}>{n}</button>
-            ))}
-          </div>
-
-          {filterCfg && (
-            <div className="arh-glava-filter">
-              <ArhivFilter
-                iskanje={iskanje}
-                onIskanje={setIskanje}
-                placeholder={filterCfg.placeholder}
-                datumOd={obdobjeOd}
-                datumDo={obdobjeDo}
-                onDatumOd={setObdobjeOd}
-                onDatumDo={setObdobjeDo}
-                statusOznaka={filterCfg.statusOznaka}
-                statusVrednost={filterCfg.statusVrednost}
-                onStatus={filterCfg.onStatus}
-                statusOpcije={filterCfg.statusOpcije}
-                aktivnihFiltrov={stFiltrov}
-                onPocisti={pocistiFiltre}
-                akcija={filterCfg.akcija}
-              />
+          {/* glava: zavihki (levo) + orodna vrstica aktivnega zavihka (desno) v ENI
+              vrsti na namizju; flex-wrap ju na mobilnem prelomi v dve vrsti (locene) */}
+          <div className="arh-glava">
+            <div className="arh-segpills arh-zavihki" role="tablist" aria-label="Arhiv">
+              {(([['projekti', 'Projekti'], ['ponudbe', 'Ponudbe'], ['pogodbe', 'Pogodbe'], ['racuni', 'Računi']]) as Array<[Zavihek, string]>).map(([v, n]) => (
+                <button key={v} type="button" role="tab" aria-selected={zavihek === v} className={zavihek === v ? 'on' : ''} onClick={() => menjajZavihek(v)}>{n}</button>
+              ))}
             </div>
-          )}
-        </div>
+
+            {filterCfg && (
+              <div className="arh-glava-filter">
+                <ArhivFilter
+                  iskanje={iskanje}
+                  onIskanje={setIskanje}
+                  placeholder={filterCfg.placeholder}
+                  datumOd={obdobjeOd}
+                  datumDo={obdobjeDo}
+                  onDatumOd={setObdobjeOd}
+                  onDatumDo={setObdobjeDo}
+                  statusOznaka={filterCfg.statusOznaka}
+                  statusVrednost={filterCfg.statusVrednost}
+                  onStatus={filterCfg.onStatus}
+                  statusOpcije={filterCfg.statusOpcije}
+                  aktivnihFiltrov={stFiltrov}
+                  onPocisti={pocistiFiltre}
+                  akcija={filterCfg.akcija}
+                />
+              </div>
+            )}
+          </div>
+        </>}
 
         {/* ── PROJEKTI: obstojeci ProjectsWorkspace (logike ne prepisujemo), zunanjiFilter=true
-            => orodno vrstico izrise ArhivFilter zgoraj v .arh-glava (ena vrsta z zavihki) ── */}
+            => orodno vrstico izrise ArhivFilter zgoraj v .arh-glava (ena vrsta z zavihki).
+            onDetajl: ko ProjectsWorkspace odpre detajl kot samostojno stran, skrije zgornjo glavo. ── */}
         {zavihek === 'projekti' && (
           <section className="arh-panel arh-projekti">
             <ProjectsWorkspace
@@ -246,6 +256,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               datumDo={obdobjeDo}
               onDatumOd={setObdobjeOd}
               onDatumDo={setObdobjeDo}
+              onDetajl={setProjektDetajlOdprt}
             />
           </section>
         )}

@@ -444,10 +444,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
           NE vec full-width topbar; vstop je brez bele kartice okoli (kot retainer rw-vsebina) */}
       <p className="pg-kicker">Pogodbe</p>
       <h1 className="pg-h1">Dogovor, brez ugibanja.</h1>
-      <section className="pg-sek">
-        <div className="pg-chat">
-          <span className="pg-mehur"><b>Iz česa nastane pogodba?</b><small>Izberi vir spodaj — iz ponudbe, brez nje ali naložena od stranke.</small></span>
-        </div>
+      <div className="pg-chat">
+        <span className="pg-mehur"><b>Iz česa nastane pogodba?</b><small>Izberi vir spodaj — iz ponudbe, brez nje ali naložena od stranke.</small></span>
+      </div>
+      <section className="pg-sek pg-vstop-panel">
         <div className="pg-segpills" role="group" aria-label="Vir pogodbe">
           <button type="button" aria-label="Iz ponudbe" className={vir === 'ponudba' ? 'on' : ''} onClick={() => { setVir('ponudba'); setRocnoTelo(false); }}>Iz ponudbe</button>
           <button type="button" aria-label="Brez ponudbe" className={vir === 'rocno' ? 'on' : ''} onClick={() => { setVir('rocno'); setRocnoTelo(false); }}>Brez ponudbe</button>
@@ -696,6 +696,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-mehur small{display:block;margin-top:.1rem;color:rgba(17,17,17,.64);font-size:.82rem}
       .pg-zakljucek{background:#FCFBF7;border:1px solid rgba(17,17,17,.08);border-radius:20px;padding:1.6rem 1.7rem 1.9rem;box-shadow:0 4px 18px rgba(17,17,17,.04)}
 
+      /* vstopna forma (pilule+polja+gumb) v beli kartici — naslov+chat ostaneta na papirju nad njo */
+      .pg-vstop-panel{background:#fff;border:1px solid rgba(17,17,17,.08);border-radius:20px;padding:1.6rem 1.5rem;box-shadow:0 12px 40px rgba(20,16,26,.05)}
+
       .pg-segpills{display:inline-flex;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:999px;padding:.25rem;gap:.15rem;margin:0 0 1.1rem}
       .pg-segpills button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem .9rem;border-radius:999px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:.35rem;transition:background .18s,color .18s}
       .pg-segpills button.on{background:var(--ink);color:var(--paper)}
@@ -803,6 +806,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       /* ── mobil: NIC ne sme cez desni rob pri 390px (kot retainer) ── */
       @media (max-width:640px){
         .pg-chat{max-width:100%}
+        .pg-vstop-panel{padding:1.2rem 1.1rem;border-radius:16px}
         .pg-polja{grid-template-columns:1fr;gap:1rem}
         .pg-zakljucek{padding:1.2rem 1rem 1.3rem}
         .pg-editor,.pg-editor h1,.pg-editor h2,.pg-editor p,.pg-editor li,.pg-doktelo,.pg-doktelo h1,.pg-doktelo h2,.pg-doktelo p,.pg-doktelo li{overflow-wrap:anywhere}

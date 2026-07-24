@@ -337,30 +337,32 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       <div className="rc-chat">
         <span className="rc-mehur"><b>Iz česa nastane račun?</b><small>Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita v obrazcu. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje.</small></span>
       </div>
-      <div className="rc-segpills" role="group" aria-label="Vir računa">
-        <button type="button" aria-label="Iz ponudbe" className={vir === 'ponudba' ? 'on' : ''} onClick={() => setVir('ponudba')}>Iz ponudbe</button>
-        <button type="button" aria-label="Samostojen račun" className={vir === 'rocno' ? 'on' : ''} onClick={() => setVir('rocno')}>Samostojen račun</button>
-      </div>
-      <div className="rc-polja">
-        {vir === 'ponudba' && <label className="rc-polje">Ponudba
-          <select value={offerId} onChange={event => izberiPonudbo(event.target.value)}>
-            <option value="">Izberi ponudbo …</option>
-            {offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}</option>)}
-          </select>
-        </label>}
-        <label className="rc-polje">Datum izdaje
-          <input type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} />
-        </label>
-      </div>
-      <div className="rc-gumbi">
-        <button type="button" className="rc-gumb" aria-label="Pripravi račun" disabled={vir === 'ponudba' && !offerId} onClick={odpriObrazec}>Pripravi račun →</button>
+      <div className="rc-vstop-panel">
+        <div className="rc-segpills" role="group" aria-label="Vir računa">
+          <button type="button" aria-label="Iz ponudbe" className={vir === 'ponudba' ? 'on' : ''} onClick={() => setVir('ponudba')}>Iz ponudbe</button>
+          <button type="button" aria-label="Samostojen račun" className={vir === 'rocno' ? 'on' : ''} onClick={() => setVir('rocno')}>Samostojen račun</button>
+        </div>
+        <div className="rc-polja">
+          {vir === 'ponudba' && <label className="rc-polje">Ponudba
+            <select value={offerId} onChange={event => izberiPonudbo(event.target.value)}>
+              <option value="">Izberi ponudbo …</option>
+              {offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}</option>)}
+            </select>
+          </label>}
+          <label className="rc-polje">Datum izdaje
+            <input type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} />
+          </label>
+        </div>
+        <div className="rc-gumbi">
+          <button type="button" className="rc-gumb" aria-label="Pripravi račun" disabled={vir === 'ponudba' && !offerId} onClick={odpriObrazec}>Pripravi račun →</button>
+        </div>
       </div>
     </section>}
 
     {/* ── POGLED: OBRAZEC (svoja stran, sredinski stolpec — view-swap kot pogodbe) ── */}
     {pogled === 'obrazec' && <section className={`${styles.invoiceCreator} rc-sek rc-stran rc-stolpec rc-obrazec`}>
       <button type="button" className="rc-povezava rc-nazaj-vrh" onClick={() => setPogled('pregled')}>← Nazaj</button>
-      <div>
+      <div className="rc-obr-uvod">
         <p className={styles.eyebrow}>NOV RAČUN</p>
         <h2>Vse sestavine po zakonu.</h2>
         <p>Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje in se izpišejo v glavi računa.</p>
@@ -472,6 +474,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(2.4rem,6vw,4rem);line-height:1;letter-spacing:-.012em;margin:0 0 1.4rem;color:var(--ink)}
       /* na svoji strani je obrazec en stolpec (modul ima 2 koloni za inline vgradnjo) */
       .rc .rc-obrazec{grid-template-columns:1fr}
+      /* vec zracnosti okoli naslova obrazca */
+      .rc .rc-obr-uvod{margin:1rem 0 2rem}
       .rc .rc-nazaj-vrh{margin:0 0 .2rem;justify-self:start}
       .rc .rc-povezava{font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0;display:inline-flex;align-items:center;gap:.38rem}
       .rc .rc-povezava:hover{opacity:.6}
@@ -489,6 +493,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-mehur::before{content:"";position:absolute;left:.9rem;top:.95rem;width:1.3rem;height:1.3rem;border-radius:50%;background:radial-gradient(58% 48% at 30% 24%,rgba(255,255,255,.92),rgba(255,255,255,0) 62%),conic-gradient(from 210deg,#7C3AED,#EC4899,#F59E0B,#38BDF8,#7C3AED);box-shadow:0 2px 6px rgba(124,58,237,.28)}
       .rc .rc-mehur b{display:block;color:var(--ink);font-weight:600;font-size:1.02rem}
       .rc .rc-mehur small{display:block;margin-top:.1rem;color:rgba(17,17,17,.64);font-size:.82rem}
+      /* vstopna forma (pilule+polja+gumb) v beli kartici — naslov+chat ostaneta na papirju nad njo */
+      .rc .rc-vstop-panel{background:#fff;border:1px solid rgba(17,17,17,.08);border-radius:20px;padding:1.6rem 1.5rem;box-shadow:0 12px 40px rgba(20,16,26,.05)}
       .rc .rc-polja{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem 1.5rem;margin:0 0 1.3rem;min-width:0}
       .rc .rc-polja>*{min-width:0}
       .rc .rc-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.62)}
@@ -553,6 +559,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       }
       @media (max-width:640px){
         .rc .rc-chat{max-width:100%}
+        .rc .rc-vstop-panel{padding:1.2rem 1.1rem;border-radius:16px}
         .rc .rc-polja{grid-template-columns:1fr;gap:1rem}
       }
     `}</style>
