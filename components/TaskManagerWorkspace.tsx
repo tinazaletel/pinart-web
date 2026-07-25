@@ -5,6 +5,7 @@
    Bodoni, ink, akcent). Lasten prefiksiran <style> blok (tm-), da ne trči s .shell. */
 
 import React, { useState, useEffect } from 'react';
+import { Pause, Play } from '@phosphor-icons/react';
 import { Naloga, NalogaStolpec, preberiNaloge, shraniNaloge } from '@/lib/naloge';
 
 const STOLPCI: { id: NalogaStolpec; naziv: string }[] = [
@@ -16,6 +17,8 @@ const STOLPCI: { id: NalogaStolpec; naziv: string }[] = [
 
 const datStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? s : d.toLocaleDateString('sl-SI'); };
 const jeZapadlo = (rok?: string) => { if (!rok) return false; const d = new Date(rok); return !isNaN(d.getTime()) && d < new Date(new Date().toDateString()); };
+/* prikaz ur na eno decimalko, npr. 90 minut -> "1.5" */
+const formatUre = (minute: number) => (minute / 60).toFixed(1);
 
 export default function TaskManagerWorkspace() {
   const [naloge, setNaloge] = useState<Naloga[]>([]);
@@ -23,9 +26,11 @@ export default function TaskManagerWorkspace() {
   const [novOpis, setNovOpis] = useState('');
   const [novRok, setNovRok] = useState('');
   const [novDodeljeno, setNovDodeljeno] = useState('');
+  const [novaOcena, setNovaOcena] = useState('');
   const [aktivniStolpec, setAktivniStolpec] = useState<NalogaStolpec>('todo');
   const [prikaziFormo, setPrikaziFormo] = useState(false);
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
+  const [zdaj, setZdaj] = useState(() => Date.now());
 
   useEffect(() => { setNaloge(preberiNaloge()); }, []);
 
@@ -40,14 +45,57 @@ export default function TaskManagerWorkspace() {
       opis: novOpis.trim() || undefined,
       rok: novRok || undefined,
       dodeljenoOseba: novDodeljeno.trim() || undefined,
+      ocenjeniCasUre: novaOcena.trim() ? parseFloat(novaOcena) : undefined,
       stolpec: aktivniStolpec,
       created: new Date().toISOString(),
     };
     posodobiInShrani([...naloge, nova]);
-    setNovNaslov(''); setNovOpis(''); setNovRok(''); setNovDodeljeno(''); setPrikaziFormo(false);
+    setNovNaslov(''); setNovOpis(''); setNovRok(''); setNovDodeljeno(''); setNovaOcena(''); setPrikaziFormo(false);
   };
 
   const izbrisiNalogo = (id: string) => { posodobiInShrani(naloge.filter((n) => n.id !== id)); };
+
+  /* Porabljeni cas naloge do TRENUTKA "zdaj" — ce stoparica tece, steje se tudi tekoci odsek. */
+  const porabljeneMinute = (n: Naloga): number => {
+    const baza = n.porabljeniCasMinute || 0;
+    if (n.isTimerRunning && n.timerStartTime) {
+      const tekoceMinute = (zdaj - new Date(n.timerStartTime).getTime()) / 60000;
+      return baza + Math.max(0, tekoceMinute);
+    }
+    return baza;
+  };
+
+  /* Naenkrat lahko tece stoparica na SAMO eni nalogi: klik na "play" najprej ustavi
+     morebitno drugo tekoco nalogo in njen odsek prišteje k njenemu porabljenemu casu.
+     Klik na "stop" (na nalogi, kjer stoparica ze tece) samo ustavi in shrani odsek. */
+  const preklopiStoparico = (id: string) => {
+    const zdajIso = new Date().toISOString();
+    const zdajMs = Date.now();
+    const posodobljene = naloge.map((n) => {
+      const jeTaNaloga = n.id === id;
+      if (n.isTimerRunning) {
+        const el = Math.round((zdajMs - new Date(n.timerStartTime || zdajIso).getTime()) / 60000);
+        const ustavljena: Naloga = { ...n, isTimerRunning: false, timerStartTime: undefined, porabljeniCasMinute: (n.porabljeniCasMinute || 0) + Math.max(0, el) };
+        /* ce je to naloga, na kateri smo kliknili stop -> ostane ustavljena; sicer je bila
+           to "druga" tekoca naloga, ki jo je treba samodejno ustaviti pred zagonom nove */
+        return ustavljena;
+      }
+      if (jeTaNaloga) {
+        return { ...n, isTimerRunning: true, timerStartTime: zdajIso };
+      }
+      return n;
+    });
+    posodobiInShrani(posodobljene);
+  };
+
+  /* naloga, na kateri trenutno tece stoparica (ce obstaja) — uporabljeno za ziv prikaz */
+  const tekocaNalogaId = naloge.find((n) => n.isTimerRunning)?.id;
+
+  useEffect(() => {
+    if (!tekocaNalogaId) return;
+    const id = window.setInterval(() => setZdaj(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [tekocaNalogaId]);
 
   const handleDragStart = (e: React.DragEvent, id: string) => { setDraggedCardId(id); e.dataTransfer.setData('text/plain', id); };
   const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); };
@@ -84,6 +132,7 @@ export default function TaskManagerWorkspace() {
           <div className="tm-forma-vrsta">
             <label className="tm-polje"><span>Stolpec</span><select value={aktivniStolpec} onChange={(e) => setAktivniStolpec(e.target.value as NalogaStolpec)}>{STOLPCI.map((s) => <option key={s.id} value={s.id}>{s.naziv}</option>)}</select></label>
             <label className="tm-polje"><span>Rok izvedbe</span><input type="date" value={novRok} onChange={(e) => setNovRok(e.target.value)} /></label>
+            <label className="tm-polje"><span>Ocenjeni čas (ure)</span><input type="number" step={0.5} min={0} value={novaOcena} onChange={(e) => setNovaOcena(e.target.value)} placeholder="npr. 2.5" /></label>
           </div>
           <div className="tm-forma-akcije"><button type="button" className="tm-preklici" onClick={() => setPrikaziFormo(false)}>Prekliči</button><button type="submit" className="tm-shrani" disabled={!novNaslov.trim()}>Shrani nalogo</button></div>
         </form>
@@ -97,18 +146,38 @@ export default function TaskManagerWorkspace() {
               <header className="tm-stolpec-glava"><span className="tm-pika" aria-hidden /><h3>{s.naziv}</h3><span className="tm-st">{nalogeVStolpcu.length}</span></header>
               <div className="tm-kartice">
                 {nalogeVStolpcu.length === 0 && <p className="tm-prazno">Povleci nalogo sem.</p>}
-                {nalogeVStolpcu.map((naloga) => (
-                  <article key={naloga.id} className="tm-kartica" draggable onDragStart={(e) => handleDragStart(e, naloga.id)}>
-                    <div className="tm-kartica-vrh"><strong>{naloga.naslov}</strong><button type="button" className="tm-kartica-x" onClick={() => izbrisiNalogo(naloga.id)} title="Izbriši nalogo" aria-label="Izbriši nalogo">×</button></div>
-                    {naloga.opis && <p className="tm-kartica-opis">{naloga.opis}</p>}
-                    {(naloga.rok || naloga.dodeljenoOseba) && (
-                      <div className="tm-kartica-noga">
-                        {naloga.rok && <span className={`tm-rok${jeZapadlo(naloga.rok) && s.id !== 'done' ? ' tm-rok-zapadlo' : ''}`}>📅 {datStr(naloga.rok)}</span>}
-                        {naloga.dodeljenoOseba && <span className="tm-oseba" title={`Dodeljeno: ${naloga.dodeljenoOseba}`}><span className="tm-oseba-krog" aria-hidden>{naloga.dodeljenoOseba.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>{naloga.dodeljenoOseba}</span>}
+                {nalogeVStolpcu.map((naloga) => {
+                  const porabljene = porabljeneMinute(naloga);
+                  const ocena = naloga.ocenjeniCasUre;
+                  const odstotekSurovi = ocena ? (porabljene / 60 / ocena) * 100 : 0;
+                  const prekoracitev = !!ocena && odstotekSurovi > 100;
+                  const odstotek = Math.min(100, odstotekSurovi);
+                  return (
+                    <article key={naloga.id} className={`tm-kartica${naloga.isTimerRunning ? ' tm-kartica-tece' : ''}`} draggable onDragStart={(e) => handleDragStart(e, naloga.id)}>
+                      <div className="tm-kartica-vrh">
+                        <strong>{naloga.naslov}</strong>
+                        {naloga.isTimerRunning && <span className="tm-tece-znacka" aria-hidden>● teče</span>}
+                        <button type="button" className="tm-kartica-x" onClick={() => izbrisiNalogo(naloga.id)} title="Izbriši nalogo" aria-label="Izbriši nalogo">×</button>
                       </div>
-                    )}
-                  </article>
-                ))}
+                      {naloga.opis && <p className="tm-kartica-opis">{naloga.opis}</p>}
+                      {(naloga.rok || naloga.dodeljenoOseba) && (
+                        <div className="tm-kartica-noga">
+                          {naloga.rok && <span className={`tm-rok${jeZapadlo(naloga.rok) && s.id !== 'done' ? ' tm-rok-zapadlo' : ''}`}>📅 {datStr(naloga.rok)}</span>}
+                          {naloga.dodeljenoOseba && <span className="tm-oseba" title={`Dodeljeno: ${naloga.dodeljenoOseba}`}><span className="tm-oseba-krog" aria-hidden>{naloga.dodeljenoOseba.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>{naloga.dodeljenoOseba}</span>}
+                        </div>
+                      )}
+                      <div className="tm-cas">
+                        <div className="tm-cas-vrsta">
+                          <span className="tm-cas-tekst">{formatUre(porabljene)}h{ocena ? ` / ${ocena}h` : ''}</span>
+                          <button type="button" className={`tm-cas-gumb${naloga.isTimerRunning ? ' tm-cas-gumb-tece' : ''}`} onClick={() => preklopiStoparico(naloga.id)} aria-label={naloga.isTimerRunning ? 'Ustavi štoparico' : 'Zaženi štoparico'} title={naloga.isTimerRunning ? 'Ustavi merjenje' : 'Zaženi merjenje'}>
+                            {naloga.isTimerRunning ? <Pause size={12} weight="fill" /> : <Play size={12} weight="fill" />}
+                          </button>
+                        </div>
+                        {ocena ? <div className="tm-cas-progres"><div className={`tm-cas-zapolnjeno${prekoracitev ? ' tm-cas-prekoracitev' : ''}`} style={{ width: `${odstotek}%` }} /></div> : null}
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             </section>
           );
@@ -174,6 +243,22 @@ export default function TaskManagerWorkspace() {
         .tm-dodeljeno-vrsta input{flex:1;min-width:0}
         .tm-zase{flex:none;padding:.55rem .8rem;border:1px solid var(--line);border-radius:.7rem;background:var(--paper);color:var(--ink);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
         .tm-zase:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+        /* stoparica na kartici naloge */
+        .tm-kartica-tece{border-color:oklch(62% .19 300);box-shadow:0 0 0 2px oklch(62% .19 300/.28);animation:tm-utrip-obroba 1.8s ease-in-out infinite}
+        .tm-tece-znacka{flex:none;padding:.15rem .5rem;border-radius:999px;background:oklch(62% .19 300);color:#fff;font:800 .58rem var(--font-sans),sans-serif;letter-spacing:.04em;text-transform:uppercase;animation:tm-utrip-znacka 1.6s ease-in-out infinite}
+        .tm-cas{margin-top:.6rem;padding-top:.55rem;border-top:1px dashed var(--line)}
+        .tm-cas-vrsta{display:flex;align-items:center;justify-content:space-between;gap:.6rem}
+        .tm-cas-tekst{font:700 .68rem var(--font-sans),sans-serif;color:var(--muted)}
+        .tm-cas-gumb{flex:none;width:1.7rem;height:1.7rem;padding:0;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--paper);color:var(--ink);cursor:pointer;transition:background .15s,color .15s,transform .15s}
+        .tm-cas-gumb:hover{background:var(--ink);color:var(--paper);transform:scale(1.06)}
+        .tm-cas-gumb-tece{background:oklch(62% .19 300);border-color:oklch(62% .19 300);color:#fff}
+        .tm-cas-gumb-tece:hover{background:oklch(56% .19 300);color:#fff}
+        .tm-cas-progres{margin-top:.4rem;height:.3rem;border-radius:999px;background:oklch(93% .01 87);overflow:hidden}
+        .tm-cas-zapolnjeno{height:100%;border-radius:999px;background:oklch(62% .19 300);transition:width .3s ease}
+        .tm-cas-prekoracitev{background:oklch(58% .19 30)}
+        @keyframes tm-utrip-znacka{0%,100%{opacity:1}50%{opacity:.5}}
+        @keyframes tm-utrip-obroba{0%,100%{box-shadow:0 0 0 2px oklch(62% .19 300/.28)}50%{box-shadow:0 0 0 4px oklch(62% .19 300/.12)}}
 
         @media (max-width:860px){
           .tm-deska{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:82vw;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.6rem}

@@ -10,6 +10,11 @@ export interface Naloga {
   dodeljenoOseba?: string;
   rok?: string;
   created: string;
+  /* povezava s stoparico Task Managerja (glej TaskManagerWorkspace) */
+  ocenjeniCasUre?: number;      // predvideni cas (ure)
+  porabljeniCasMinute?: number; // skupni porabljeni cas (minute)
+  isTimerRunning?: boolean;     // ali stoparica trenutno tece za to nalogo
+  timerStartTime?: string;      // ISO timestamp zacetka zadnjega merjenja
 }
 
 const STORAGE_KEY = 'pinflow_naloge_data';
