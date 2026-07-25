@@ -146,8 +146,8 @@ const pwStyles = `
 /* backdrop: panel poravnan DESNO (kot pogodba/dokument) + blur zatemnitev strani zadaj */
 .pw-vsi-backdrop{justify-content:flex-end;background:oklch(22% .02 55 / .5);backdrop-filter:blur(9px) saturate(1.05);-webkit-backdrop-filter:blur(9px) saturate(1.05)}
 /* panel: čist predal z DESNE (kot pogodba — seže do roba), flex-stolpec — glava fiksna, seznam drsi, paginacija lepljiva noga */
-.pw-vsi-panel{width:min(46rem,100vw);height:100%;overflow:hidden;display:flex;flex-direction:column;box-shadow:-1.6rem 0 4rem oklch(20% .03 55 / .2);animation:pwVsiIn .36s cubic-bezier(.22,1,.36,1) both}
-@keyframes pwVsiIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.pw-vsi-panel{width:min(46rem,100vw);height:100%;overflow:hidden;display:flex;flex-direction:column;box-shadow:-1.6rem 0 4rem oklch(20% .03 55 / .2);animation:pwVsiIn .52s cubic-bezier(.16,1,.3,1) both}
+@keyframes pwVsiIn{from{transform:translateX(100%);opacity:.4}to{transform:translateX(0);opacity:1}}
 @media (prefers-reduced-motion:reduce){.pw-vsi-panel{animation:none}}
 .pw-vsi-panel h2{margin:.4rem 0 .2rem;font-family:var(--font-serif),Didot,serif;font-weight:600;font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.05;color:var(--ink)}
 .pw-vsi-projekt{margin:0 0 1.1rem;color:var(--muted);font-size:.72rem}
@@ -163,7 +163,12 @@ const pwStyles = `
 .pw-vsi-iskalnik{display:flex;align-items:center;gap:.5rem;margin:0;flex:0 1 auto}
 .pw-vsi-lupa{flex:none;display:grid;place-items:center;width:2.3rem;height:2.3rem;padding:0;border:1px solid var(--line);border-radius:50%;background:oklch(98% .008 87 / .92);color:var(--ink);cursor:pointer}
 .pw-vsi-lupa:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.pw-vsi-iskalnik input[type='search']{flex:1;min-width:0;padding:.55rem .8rem;border:1px solid var(--line);border-radius:999px;background:oklch(100% 0 0 / .7);font:inherit;font-size:.75rem;color:var(--ink)}
+/* polje se razširi IZ gumba (desni izvor), × je ZNOTRAJ polja desno */
+.pw-vsi-isci-polje{position:relative;display:flex;align-items:center;transform-origin:right center;animation:pwIsciIn .3s cubic-bezier(.16,1,.3,1) both}
+@keyframes pwIsciIn{from{opacity:0;transform:scaleX(.4)}to{opacity:1;transform:scaleX(1)}}
+.pw-vsi-isci-polje input[type='search']{width:min(20rem,62vw);min-width:0;padding:.55rem 2.3rem .55rem .9rem;border:1px solid var(--line);border-radius:999px;background:oklch(100% 0 0 / .8);font:inherit;font-size:.75rem;color:var(--ink)}
+.pw-vsi-isci-x{position:absolute;right:.35rem;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:1.7rem;height:1.7rem;padding:0;border:0;border-radius:50%;background:oklch(94% .008 87);color:var(--ink);font-size:.95rem;line-height:1;cursor:pointer}
+.pw-vsi-isci-x:hover{background:var(--ink);color:var(--paper)}
 /* seznam vrstic v slideu — ista osnova kot .projectNarrative article > span (module CSS),
    tu podvojeno, ker vrstice v slideu NISO neposredni otroci .projectNarrative article */
 /* seznam VEDNO lahko drsi znotraj (flex:1) -> glava (naslov+×) in paginacija ostaneta fiksni in NE izgineta;
@@ -464,7 +469,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
 
           <div className="pw-vsi-iskalnik">
             {vsiIskanjeOdprto ? (
-              <>
+              <div className="pw-vsi-isci-polje">
                 <input
                   type="search"
                   autoFocus
@@ -473,8 +478,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   placeholder="Išči po nazivu, številki, opisu, kategoriji …"
                   aria-label="Išči"
                 />
-                <button type="button" className="pw-vsi-lupa" onClick={() => { setVsiIskanje(''); setVsiStran(1); setVsiIskanjeOdprto(false); }} aria-label="Zapri iskanje">×</button>
-              </>
+                <button type="button" className="pw-vsi-isci-x" onClick={() => { setVsiIskanje(''); setVsiStran(1); setVsiIskanjeOdprto(false); }} aria-label="Zapri iskanje">×</button>
+              </div>
             ) : (
               <button type="button" className="pw-vsi-lupa" onClick={() => setVsiIskanjeOdprto(true)} aria-label="Išči">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
