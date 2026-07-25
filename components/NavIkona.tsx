@@ -2,7 +2,7 @@
 
 import {
   SquaresFour, FileText, Repeat, Handshake, Receipt, Users, Tag, Wallet,
-  Target, Clock, Layout, ClockCounterClockwise, GearSix, LifebuoyIcon,
+  Target, Clock, Layout, ClockCounterClockwise, GearSix, LifebuoyIcon, Kanban,
 } from '@phosphor-icons/react';
 
 /**
@@ -15,7 +15,7 @@ import {
 export type NavIkonaVrsta =
   | 'pregled' | 'ponudba' | 'retainer' | 'pogodba' | 'racuni'
   | 'stranke' | 'ceniki' | 'stroski'
-  | 'cilji' | 'cas' | 'okvir'
+  | 'cilji' | 'cas' | 'okvir' | 'naloge'
   | 'zgodovina' | 'nastavitve' | 'pomoc';
 
 const IKONE = {
@@ -30,6 +30,7 @@ const IKONE = {
   cilji: Target,
   cas: Clock,
   okvir: Layout,
+  naloge: Kanban,
   zgodovina: ClockCounterClockwise,
   nastavitve: GearSix,
   pomoc: LifebuoyIcon,
