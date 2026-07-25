@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, ArrowUpRight, FolderOpen } from '@phosphor-icons/react';
+import { Plus, FolderOpen } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
@@ -138,9 +138,38 @@ const pwStyles = `
 .pw-racun-d{display:flex;align-items:center;gap:.5rem;justify-self:end;text-align:right}
 .pw-racun-d .pw-status{padding:0;border:0;background:none;font-size:.54rem;color:var(--muted)}
 .pw-racun-d strong{font-size:.72rem;font-variant-numeric:tabular-nums;white-space:nowrap}
-/* gumb "Prikaži več (N)" pod skrajšanim seznamom v karticah detajla */
+/* gumb "Prikaži vse (N) →" na dnu kartice (02/03/04) — odpre SLIDE z desne s polnim seznamom */
 .pw-vec{margin:.2rem 0 0;padding:.15rem 0;border:0;background:none;color:var(--muted);font:700 .58rem var(--font-sans),sans-serif;text-align:left;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .pw-vec:hover{color:var(--ink)}
+/* SLIDE "Vsi <tip>" (pogodbe/računi/stroški) — vzorec styles.detailBackdrop/detailPanel +
+   lepljivi X (glej ArhivWorkspace .arh-det-x), tu podvojeno s predpono pw-vsi- */
+.pw-vsi-panel{width:min(34rem,94vw)}
+.pw-vsi-panel h2{margin:.4rem 0 .2rem;font-family:var(--font-serif),Didot,serif;font-weight:600;font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.05;color:var(--ink)}
+.pw-vsi-projekt{margin:0 0 1.1rem;color:var(--muted);font-size:.72rem}
+.pw-vsi-x{position:absolute;top:1rem;right:1rem;z-index:8;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
+.pw-vsi-x:hover{background:var(--ink);color:var(--paper)}
+/* preklop načina prikaza (segmentna pilula): Strani (paginacija) | Drsenje (ves seznam) */
+.pw-vsi-nacin{display:inline-flex;align-items:center;gap:.2rem;width:max-content;margin:0 0 .7rem;padding:.2rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
+.pw-vsi-nacin button{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .8rem;border:0;border-radius:999px;background:none;font:700 .62rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
+.pw-vsi-nacin button.pw-vsi-nacin-aktivna{background:var(--ink);color:var(--paper)}
+/* zložljiv iskalnik: okrogel gumb z lupo -> ob kliku postane input; × zapre nazaj v gumb */
+.pw-vsi-iskalnik{display:flex;align-items:center;gap:.5rem;margin:0 0 1rem}
+.pw-vsi-lupa{flex:none;display:grid;place-items:center;width:2.3rem;height:2.3rem;padding:0;border:1px solid var(--line);border-radius:50%;background:oklch(98% .008 87 / .92);color:var(--ink);cursor:pointer}
+.pw-vsi-lupa:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pw-vsi-iskalnik input[type='search']{flex:1;min-width:0;padding:.55rem .8rem;border:1px solid var(--line);border-radius:999px;background:oklch(100% 0 0 / .7);font:inherit;font-size:.75rem;color:var(--ink)}
+/* seznam vrstic v slideu — ista osnova kot .projectNarrative article > span (module CSS),
+   tu podvojeno, ker vrstice v slideu NISO neposredni otroci .projectNarrative article */
+.pw-vsi-seznam{display:flex;flex-direction:column;margin:0 0 1rem}
+.pw-vsi-seznam > span{display:grid;gap:.2rem;padding:.55rem 0;border-bottom:1px solid var(--line)}
+.pw-vsi-seznam > span:last-child{border-bottom:0}
+.pw-vsi-seznam > span b{font-size:.68rem}
+.pw-vsi-seznam > span small{color:var(--muted);font-size:.58rem}
+.pw-vsi-seznam .pw-racun-v{grid-template-columns:1fr auto;align-items:center}
+.pw-vsi-strani{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.35rem;margin-top:.4rem}
+.pw-vsi-strani button{display:grid;place-items:center;min-width:2rem;height:2rem;padding:0 .5rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(98% .008 87 / .92);font:700 .68rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
+.pw-vsi-strani button:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pw-vsi-strani button:disabled{opacity:.4;cursor:not-allowed}
+.pw-vsi-strani button.pw-vsi-stran-aktivna{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .pw-kmalu-red{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
 .pw-kmalu{opacity:.85}
 .pw-kmalu h3{margin:0;font:600 1.05rem var(--font-serif),Georgia,serif}
@@ -208,6 +237,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     odprto: visible.reduce((sum, project) => sum + Math.max(0, project.agreed - project.billed), 0),
   }), [visible]);
   const selected = projects.find(project => project.offer.id === selectedId);
+  /* sortirano padajoče po datumu — uporabljeno tako na kartici (top 5) kot v slideu (ves seznam) */
+  const pogodbeSort = selected ? [...selected.contracts].sort((a, b) => (b.date || '').localeCompare(a.date || '')) : [];
+  const racuniSort = selected ? [...selected.invoices].sort((a, b) => (b.date || '').localeCompare(a.date || '')) : [];
+  const strosekSort = selected ? [...selected.expenses].sort((a, b) => (b.date || '').localeCompare(a.date || '')) : [];
   const saveAmount = (id: string, amount: number) => { const next = { ...amounts, [id]: amount }; setAmounts(next); saveOfferAmount(id, amount); };
   /* Detajl projekta je zdaj SAMOSTOJNA stran (view-swap na vseh širinah, ne le
      mobilno): ko je selectedId nastavljen, tabela+orodna vrstica se skrijeta in
@@ -242,8 +275,17 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [linkOznaka, setLinkOznaka] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [dodajOdprt, setDodajOdprt] = useState(false);
-  /* dolgi seznami (pogodbe/računi/stroški) na detajlu: pokaži nekaj, ostalo pod "Prikaži več" */
-  const [odprtiSeznami, setOdprtiSeznami] = useState<Record<string, boolean>>({});
+  /* SLIDE "Vsi <tip>" z desne (pogodbe/računi/stroški) — kartica pokaže le povzetek
+     (najnovejših 5), poln seznam z iskalnikom+paginacijo je v slideu. Stanje se
+     resetira ob menjavi projekta (useEffect spodaj) in ob zaprtju (closeVsi). */
+  const [vsiOdprt, setVsiOdprt] = useState<null | 'pogodbe' | 'racuni' | 'stroski'>(null);
+  const [vsiIskanje, setVsiIskanje] = useState('');
+  const [vsiIskanjeOdprto, setVsiIskanjeOdprto] = useState(false);
+  const [vsiStran, setVsiStran] = useState(1);
+  /* preklop načina prikaza v slideu: "strani" = paginacija 20/stran, "drsenje" = ves seznam v enem drsljivem seznamu */
+  const [vsiNacin, setVsiNacin] = useState<'strani' | 'drsenje'>('strani');
+  const openVsi = (tip: 'pogodbe' | 'racuni' | 'stroski') => { setVsiOdprt(tip); setVsiIskanje(''); setVsiIskanjeOdprto(false); setVsiStran(1); setVsiNacin('strani'); };
+  const closeVsi = () => { setVsiOdprt(null); setVsiIskanje(''); setVsiIskanjeOdprto(false); setVsiStran(1); setVsiNacin('strani'); };
   /* V predogledu (demo) pokažemo primere povezav, da se vidi poln videz razdelka;
      v pravem računu beremo dejansko shranjene povezave. */
   useEffect(() => {
@@ -253,11 +295,11 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       { oznaka: 'Drive · Gradiva', url: 'https://drive.google.com' },
     ];
     setLinks(samoOgled ? demo : (selectedId ? loadProjectLinks(selectedId) : []));
-    setLinkOznaka(''); setLinkUrl(''); setOdprtiSeznami({}); setDodajOdprt(false);
+    setLinkOznaka(''); setLinkUrl(''); setDodajOdprt(false); closeVsi();
   }, [selectedId, samoOgled]);
 
-  /* pokaži prvih N vrstic, ostalo pod gumbom — 5-letni projekt ima lahko 60 računov */
-  const LIMIT_VRSTIC = 3;
+  /* na kartici pokažemo najnovejših NAJNOVEJSIH vrstic; ostalo je dostopno prek "Prikaži vse" */
+  const NAJNOVEJSIH = 5;
   const statusTon = (s: string): 'success' | 'waiting' | 'danger' | 'neutral' => {
     const t = (s || '').toLowerCase();
     if (/(podpis|aktiv|plačan|placan|sprejet|zaključ|zakljuc)/.test(t)) return 'success';
@@ -265,12 +307,30 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     if (/(posla|prejet|pregled|odprt|čaka|caka|osnut)/.test(t)) return 'waiting';
     return 'neutral';
   };
-  const zVec = (kljuc: string, vrstice: JSX.Element[]) => {
-    const odprto = odprtiSeznami[kljuc];
-    const skrito = vrstice.length - LIMIT_VRSTIC;
-    const vidne = odprto ? vrstice : vrstice.slice(0, LIMIT_VRSTIC);
-    return <>{vidne}{skrito > 0 && <button type="button" className="pw-vec" onClick={() => setOdprtiSeznami(prej => ({ ...prej, [kljuc]: !odprto }))}>{odprto ? 'Prikaži manj' : `Prikaži več (${skrito})`}</button>}</>;
-  };
+  /* izris ene vrstice — ISTI slog na kartici (top 5) in v slideu (ves seznam) */
+  const pogodbaVrstica = (item: FlowContract) => <span key={item.id}><b>{item.title}</b><i className="pw-status" data-tone={statusTon(item.status)}>{item.status}</i></span>;
+  const racunKaj = (item: FlowInvoice) => item.title || item.items?.[0]?.opis || selected?.offer.title || '';
+  const racunVrstica = (item: FlowInvoice) => { const kaj = racunKaj(item); return <span key={item.id} className="pw-racun-v"><span className="pw-racun-l"><b>Račun {item.number || ''}</b>{kaj && <small>{kaj}</small>}</span><span className="pw-racun-d"><i className="pw-status" data-tone={item.paid ? 'success' : 'waiting'}>{item.paid ? 'Plačan' : 'Odprt'}</i><strong>{money(item.amount)}</strong></span></span>; };
+  const strosekVrstica = (item: FlowExpense) => <span key={item.id} className="pw-racun-v"><span className="pw-racun-l"><b>{item.title}</b><small>{item.category || 'Projektni strošek'}</small></span><span className="pw-racun-d"><strong>{money(item.amount)}</strong></span></span>;
+  /* iskalno besedilo za slide (naziv/številka/opis/kategorija) — malo, da . includes() dela brez razlik velikih/malih črk */
+  const pogodbaTekst = (item: FlowContract) => `${item.title} ${item.status}`.toLocaleLowerCase('sl-SI');
+  const racunTekst = (item: FlowInvoice) => `${item.number || ''} ${racunKaj(item)} ${item.paid ? 'plačan' : 'odprt'}`.toLocaleLowerCase('sl-SI');
+  const strosekTekst = (item: FlowExpense) => `${item.title} ${item.category || ''}`.toLocaleLowerCase('sl-SI');
+  /* podatki za odprti SLIDE: naslov + filtriran+paginiran seznam trenutno izbranega tipa */
+  const NA_STRAN = 20;
+  const vsiEyebrow = vsiOdprt === 'pogodbe' ? 'VSE POGODBE' : vsiOdprt === 'racuni' ? 'VSI RAČUNI' : 'VSI STROŠKI';
+  const vsiNaslov = vsiOdprt === 'pogodbe' ? 'Vse pogodbe' : vsiOdprt === 'racuni' ? 'Vsi računi' : 'Vsi stroški';
+  const vsiVse: { id: string; tekst: string; el: JSX.Element }[] =
+    vsiOdprt === 'pogodbe' ? pogodbeSort.map(item => ({ id: item.id, tekst: pogodbaTekst(item), el: pogodbaVrstica(item) })) :
+    vsiOdprt === 'racuni' ? racuniSort.map(item => ({ id: item.id, tekst: racunTekst(item), el: racunVrstica(item) })) :
+    vsiOdprt === 'stroski' ? strosekSort.map(item => ({ id: item.id, tekst: strosekTekst(item), el: strosekVrstica(item) })) : [];
+  const vsiIskanjeNorm = vsiIskanje.trim().toLocaleLowerCase('sl-SI');
+  const vsiFiltrirano = vsiIskanjeNorm ? vsiVse.filter(v => v.tekst.includes(vsiIskanjeNorm)) : vsiVse;
+  const vsiStrani = Math.max(1, Math.ceil(vsiFiltrirano.length / NA_STRAN));
+  const vsiStranAktivna = Math.min(vsiStran, vsiStrani);
+  const vsiStranVrstice = vsiFiltrirano.slice((vsiStranAktivna - 1) * NA_STRAN, vsiStranAktivna * NA_STRAN).map(v => v.el);
+  /* kar se dejansko izriše — "drsenje" pokaže ves (filtriran) seznam brez kontrol strani */
+  const vsiPrikaz = vsiNacin === 'drsenje' ? vsiFiltrirano.map(v => v.el) : vsiStranVrstice;
   const addLink = () => {
     if (samoOgled || !selectedId) return;
     const oznaka = linkOznaka.trim(); const url = linkUrl.trim();
@@ -349,7 +409,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         <button type="button" className="pw-nazaj" onClick={goBack} aria-label="Nazaj na seznam projektov">← Nazaj</button>
         <header><div><p className={styles.eyebrow}>PROJEKT · {selected.offer.number || 'BREZ ŠTEVILKE'}</p><h2>{selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><b>{statusLabel[selected.offer.status]}</b></header>
         <div className={styles.projectMoney}><label><small>Dogovorjena vrednost</small><span><input type="number" min="0" step="0.01" value={selected.agreed || ''} onChange={event => saveAmount(selected.offer.id, Number(event.target.value))} /> €</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></label><span><small>Zaračunano</small><strong>{money(selected.billed)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></span><span className={selected.unbilled > 0 ? styles.projectNeedsInvoice : ''}><small>Še ni zaračunano</small><strong>{selected.agreed ? money(selected.unbilled) : '—'}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="cost" /></b></span><span><small>Ocenjeni rezultat</small><strong>{money(selected.profit)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></span></div>
-        <div className={styles.projectNarrative}><article className={styles.projectAgreement}><p className={styles.eyebrow}>01 · DOGOVORJENO</p><h3>Kaj je bilo v ponudbi?</h3>{selected.offer.scope.length ? <ul>{selected.offer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul> : <p>Starejša ponudba nima strukturiranega obsega. Odpri jo v kalkulatorju za celotno besedilo.</p>}</article><article><p className={styles.eyebrow}>02 · POGODBE</p><h3>{selected.contracts.length ? `${selected.contracts.length} povezanih` : 'Brez pogodbe'}</h3>{zVec('pogodbe', selected.contracts.map(item => <span key={item.id}><b>{item.title}</b><i className="pw-status" data-tone={statusTon(item.status)}>{item.status}</i></span>))}<Link href={`${base}/kalkulator/pogodbe`} aria-label="Dodaj pogodbo za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>03 · RAČUNI</p><h3>{money(selected.billed)}</h3>{zVec('racuni', [...selected.invoices].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(item => { const kaj = item.title || item.items?.[0]?.opis || selected.offer.title; return <span key={item.id} className="pw-racun-v"><span className="pw-racun-l"><b>Račun {item.number || ''}</b>{kaj && <small>{kaj}</small>}</span><span className="pw-racun-d"><i className="pw-status" data-tone={item.paid ? 'success' : 'waiting'}>{item.paid ? 'Plačan' : 'Odprt'}</i><strong>{money(item.amount)}</strong></span></span>; }))}<Link href={`${base}/kalkulator/racuni`} className={styles.projectOpenLink} aria-label="Odpri račune projekta"><ArrowUpRight size={16} weight="bold" /></Link><Link href={`${base}/kalkulator/racuni`} aria-label="Dodaj račun za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>04 · STROŠKI</p><h3>{money(selected.costs)}</h3>{zVec('stroski', [...selected.expenses].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(item => <span key={item.id} className="pw-racun-v"><span className="pw-racun-l"><b>{item.title}</b><small>{item.category || 'Projektni strošek'}</small></span><span className="pw-racun-d"><strong>{money(item.amount)}</strong></span></span>))}<Link href={`${base}/kalkulator/stroski`} aria-label="Dodaj strošek za ta projekt"><Plus size={18} weight="bold" /></Link></article><article className="pw-karta pw-dokumentacija"><p className={styles.eyebrow}>05 · DOKUMENTACIJA</p><h3>Povezave do zunanjih datotek</h3>{links.length ? (<div className="pw-linki">{links.map((link, index) => (<div key={`${link.url}-${index}`} className="pw-link-vrstica"><a href={link.url} target="_blank" rel="noopener noreferrer">{link.oznaka}</a>{!samoOgled && <button type="button" className="pw-link-brisi" onClick={() => removeLink(index)} aria-label={`Izbriši povezavo ${link.oznaka}`}>×</button>}</div>))}</div>) : <p className="pw-link-prazno">Še ni dodanih povezav.</p>}{!samoOgled && dodajOdprt && (<div className="pw-link-obrazec"><input type="text" value={linkOznaka} onChange={event => setLinkOznaka(event.target.value)} placeholder="npr. Figma" aria-label="Oznaka povezave" /><input type="url" value={linkUrl} onChange={event => setLinkUrl(event.target.value)} placeholder="https://…" aria-label="Naslov povezave (Figma, Miro, IDD, mapa Drive …)" /><button type="button" className="pw-link-dodaj" onClick={addLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>+ Dodaj povezavo</button></div>)}{samoOgled && dodajOdprt && <p className="pw-opozorilo">Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.</p>}<button type="button" className="pw-dok-dodaj" onClick={() => setDodajOdprt(open => !open)} aria-label={dodajOdprt ? 'Zapri dodajanje povezave' : 'Dodaj povezavo'}><Plus size={16} weight="bold" /></button></article></div>
+        <div className={styles.projectNarrative}><article className={styles.projectAgreement}><p className={styles.eyebrow}>01 · DOGOVORJENO</p><h3>Kaj je bilo v ponudbi?</h3>{selected.offer.scope.length ? <ul>{selected.offer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul> : <p>Starejša ponudba nima strukturiranega obsega. Odpri jo v kalkulatorju za celotno besedilo.</p>}</article><article><p className={styles.eyebrow}>02 · POGODBE</p><h3>{selected.contracts.length ? `${selected.contracts.length} povezanih` : 'Brez pogodbe'}</h3>{pogodbeSort.slice(0, NAJNOVEJSIH).map(pogodbaVrstica)}{pogodbeSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('pogodbe')}>Prikaži vse ({pogodbeSort.length}) →</button>}<Link href={`${base}/kalkulator/pogodbe`} aria-label="Dodaj pogodbo za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>03 · RAČUNI</p><h3>{money(selected.billed)}</h3>{racuniSort.slice(0, NAJNOVEJSIH).map(racunVrstica)}{racuniSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('racuni')}>Prikaži vse ({racuniSort.length}) →</button>}<Link href={`${base}/kalkulator/racuni`} aria-label="Dodaj račun za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>04 · STROŠKI</p><h3>{money(selected.costs)}</h3>{strosekSort.slice(0, NAJNOVEJSIH).map(strosekVrstica)}{strosekSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('stroski')}>Prikaži vse ({strosekSort.length}) →</button>}<Link href={`${base}/kalkulator/stroski`} aria-label="Dodaj strošek za ta projekt"><Plus size={18} weight="bold" /></Link></article><article className="pw-karta pw-dokumentacija"><p className={styles.eyebrow}>05 · DOKUMENTACIJA</p><h3>Povezave do zunanjih datotek</h3>{links.length ? (<div className="pw-linki">{links.map((link, index) => (<div key={`${link.url}-${index}`} className="pw-link-vrstica"><a href={link.url} target="_blank" rel="noopener noreferrer">{link.oznaka}</a>{!samoOgled && <button type="button" className="pw-link-brisi" onClick={() => removeLink(index)} aria-label={`Izbriši povezavo ${link.oznaka}`}>×</button>}</div>))}</div>) : <p className="pw-link-prazno">Še ni dodanih povezav.</p>}{!samoOgled && dodajOdprt && (<div className="pw-link-obrazec"><input type="text" value={linkOznaka} onChange={event => setLinkOznaka(event.target.value)} placeholder="npr. Figma" aria-label="Oznaka povezave" /><input type="url" value={linkUrl} onChange={event => setLinkUrl(event.target.value)} placeholder="https://…" aria-label="Naslov povezave (Figma, Miro, IDD, mapa Drive …)" /><button type="button" className="pw-link-dodaj" onClick={addLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>+ Dodaj povezavo</button></div>)}{samoOgled && dodajOdprt && <p className="pw-opozorilo">Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.</p>}<button type="button" className="pw-dok-dodaj" onClick={() => setDodajOdprt(open => !open)} aria-label={dodajOdprt ? 'Zapri dodajanje povezave' : 'Dodaj povezavo'}><Plus size={16} weight="bold" /></button></article></div>
 
         <div className="pw-dodatno">
           <div className="pw-kmalu-red">
@@ -368,6 +428,65 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
           </div>
         </div>
       </section>
+    )}
+
+    {/* SLIDE "Vsi <tip>" z desne — vzorec styles.detailBackdrop/detailPanel + lepljivi X
+        (glej ArhivWorkspace .arh-det-x); poln seznam za pogodbe/računi/stroški TA projekta */}
+    {vsiOdprt && selected && (
+      <div className={styles.detailBackdrop} role="presentation" onMouseDown={closeVsi}>
+        <aside className={`${styles.detailPanel} pw-vsi-panel`} role="dialog" aria-modal="true" aria-labelledby="pw-vsi-naslov" onMouseDown={e => e.stopPropagation()}>
+          <button type="button" className="pw-vsi-x" onClick={closeVsi} aria-label="Zapri">✕</button>
+          <p className={styles.eyebrow}>{vsiEyebrow}</p>
+          <h2 id="pw-vsi-naslov">{vsiNaslov}</h2>
+          <p className="pw-vsi-projekt">{selected.offer.title}</p>
+
+          {/* preklop načina prikaza: Strani (paginacija) | Drsenje (ves seznam) */}
+          <div className="pw-vsi-nacin" role="tablist" aria-label="Način prikaza">
+            <button type="button" role="tab" aria-selected={vsiNacin === 'strani'} className={vsiNacin === 'strani' ? 'pw-vsi-nacin-aktivna' : ''} onClick={() => setVsiNacin('strani')}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="16" rx="1.2" /><rect x="13" y="4" width="7" height="16" rx="1.2" /></svg>
+              Strani
+            </button>
+            <button type="button" role="tab" aria-selected={vsiNacin === 'drsenje'} className={vsiNacin === 'drsenje' ? 'pw-vsi-nacin-aktivna' : ''} onClick={() => setVsiNacin('drsenje')}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="18" rx="5" /><line x1="12" y1="7" x2="12" y2="10" /></svg>
+              Drsenje
+            </button>
+          </div>
+
+          <div className="pw-vsi-iskalnik">
+            {vsiIskanjeOdprto ? (
+              <>
+                <input
+                  type="search"
+                  autoFocus
+                  value={vsiIskanje}
+                  onChange={event => { setVsiIskanje(event.target.value); setVsiStran(1); }}
+                  placeholder="Išči po nazivu, številki, opisu, kategoriji …"
+                  aria-label="Išči"
+                />
+                <button type="button" className="pw-vsi-lupa" onClick={() => { setVsiIskanje(''); setVsiStran(1); setVsiIskanjeOdprto(false); }} aria-label="Zapri iskanje">×</button>
+              </>
+            ) : (
+              <button type="button" className="pw-vsi-lupa" onClick={() => setVsiIskanjeOdprto(true)} aria-label="Išči">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+              </button>
+            )}
+          </div>
+
+          <div className="pw-vsi-seznam">
+            {vsiPrikaz.length ? vsiPrikaz : <p className="pw-prazno">Ni zadetkov.</p>}
+          </div>
+
+          {vsiNacin === 'strani' && vsiStrani > 1 && (
+            <nav className="pw-vsi-strani" aria-label="Strani">
+              <button type="button" onClick={() => setVsiStran(s => Math.max(1, s - 1))} disabled={vsiStranAktivna <= 1} aria-label="Prejšnja stran">‹</button>
+              {Array.from({ length: vsiStrani }, (_, i) => i + 1).map(n => (
+                <button key={n} type="button" className={n === vsiStranAktivna ? 'pw-vsi-stran-aktivna' : ''} onClick={() => setVsiStran(n)} aria-current={n === vsiStranAktivna ? 'page' : undefined}>{n}</button>
+              ))}
+              <button type="button" onClick={() => setVsiStran(s => Math.min(vsiStrani, s + 1))} disabled={vsiStranAktivna >= vsiStrani} aria-label="Naslednja stran">›</button>
+            </nav>
+          )}
+        </aside>
+      </div>
     )}
   </div>;
 }
