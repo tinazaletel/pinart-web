@@ -153,18 +153,22 @@ const pwStyles = `
 .pw-vsi-projekt{margin:0 0 1.1rem;color:var(--muted);font-size:.72rem}
 .pw-vsi-x{position:fixed;top:3.85rem;right:1.4rem;z-index:101;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
 .pw-vsi-x:hover{background:var(--ink);color:var(--paper)}
+/* orodna vrsta slidea: preklop levo, iskalnik desno — v ISTI vrsti */
+.pw-vsi-orodja{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin:0 0 .85rem}
 /* preklop načina prikaza (segmentna pilula): Strani (paginacija) | Drsenje (ves seznam) */
-.pw-vsi-nacin{display:inline-flex;align-items:center;gap:.2rem;width:max-content;margin:0 0 .7rem;padding:.2rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
+.pw-vsi-nacin{display:inline-flex;align-items:center;gap:.2rem;width:max-content;margin:0;padding:.2rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
 .pw-vsi-nacin button{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .8rem;border:0;border-radius:999px;background:none;font:700 .62rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
 .pw-vsi-nacin button.pw-vsi-nacin-aktivna{background:var(--ink);color:var(--paper)}
 /* zložljiv iskalnik: okrogel gumb z lupo -> ob kliku postane input; × zapre nazaj v gumb */
-.pw-vsi-iskalnik{display:flex;align-items:center;gap:.5rem;margin:0 0 1rem}
+.pw-vsi-iskalnik{display:flex;align-items:center;gap:.5rem;margin:0;flex:0 1 auto}
 .pw-vsi-lupa{flex:none;display:grid;place-items:center;width:2.3rem;height:2.3rem;padding:0;border:1px solid var(--line);border-radius:50%;background:oklch(98% .008 87 / .92);color:var(--ink);cursor:pointer}
 .pw-vsi-lupa:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .pw-vsi-iskalnik input[type='search']{flex:1;min-width:0;padding:.55rem .8rem;border:1px solid var(--line);border-radius:999px;background:oklch(100% 0 0 / .7);font:inherit;font-size:.75rem;color:var(--ink)}
 /* seznam vrstic v slideu — ista osnova kot .projectNarrative article > span (module CSS),
    tu podvojeno, ker vrstice v slideu NISO neposredni otroci .projectNarrative article */
 .pw-vsi-seznam{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;margin:0;padding-right:.25rem}
+/* v načinu STRANI je stran omejena (12) in gre v en pogled -> brez notranjega scrolla */
+.pw-vsi-seznam[data-nacin='strani']{overflow:visible;flex:0 1 auto;padding-right:0}
 .pw-vsi-seznam > span{display:grid;gap:.2rem;padding:.55rem 0;border-bottom:1px solid var(--line)}
 .pw-vsi-seznam > span:last-child{border-bottom:0}
 .pw-vsi-seznam > span b{font-size:.68rem}
@@ -322,7 +326,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const racunTekst = (item: FlowInvoice) => `${item.number || ''} ${racunKaj(item)} ${item.paid ? 'plačan' : 'odprt'}`.toLocaleLowerCase('sl-SI');
   const strosekTekst = (item: FlowExpense) => `${item.title} ${item.category || ''}`.toLocaleLowerCase('sl-SI');
   /* podatki za odprti SLIDE: naslov + filtriran+paginiran seznam trenutno izbranega tipa */
-  const NA_STRAN = 20;
+  const NA_STRAN = 12;
   const vsiEyebrow = vsiOdprt === 'pogodbe' ? 'VSE POGODBE' : vsiOdprt === 'racuni' ? 'VSI RAČUNI' : 'VSI STROŠKI';
   const vsiNaslov = vsiOdprt === 'pogodbe' ? 'Vse pogodbe' : vsiOdprt === 'racuni' ? 'Vsi računi' : 'Vsi stroški';
   const vsiVse: { id: string; tekst: string; el: JSX.Element }[] =
@@ -445,7 +449,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
           <h2 id="pw-vsi-naslov">{vsiNaslov}</h2>
           <p className="pw-vsi-projekt">{selected.offer.title}</p>
 
-          {/* preklop načina prikaza: Strani (paginacija) | Drsenje (ves seznam) */}
+          {/* preklop načina prikaza + iskalnik V ISTI VRSTI (Strani/Drsenje levo, lupa desno) */}
+          <div className="pw-vsi-orodja">
           <div className="pw-vsi-nacin" role="tablist" aria-label="Način prikaza">
             <button type="button" role="tab" aria-selected={vsiNacin === 'strani'} className={vsiNacin === 'strani' ? 'pw-vsi-nacin-aktivna' : ''} onClick={() => setVsiNacin('strani')}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="16" rx="1.2" /><rect x="13" y="4" width="7" height="16" rx="1.2" /></svg>
@@ -476,8 +481,9 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               </button>
             )}
           </div>
+          </div>
 
-          <div className="pw-vsi-seznam">
+          <div className="pw-vsi-seznam" data-nacin={vsiNacin}>
             {vsiPrikaz.length ? vsiPrikaz : <p className="pw-prazno">Ni zadetkov.</p>}
           </div>
 

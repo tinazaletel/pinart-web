@@ -541,17 +541,61 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             {detajl.vrsta === 'racun' && (() => {
               const r = detajl.zapis;
               return <>
-                <p className={styles.eyebrow}>RAČUN · {r.paid ? 'PLAČAN' : 'ODPRT'}</p>
-                <h2 id="arh-detajl-naslov">{r.title || `Račun ${r.number || ''}`}</h2>
-                <div className="arh-det-meta">
-                  <span><small>Stranka</small><strong>{r.client}</strong></span>
-                  <span><small>Številka</small><strong>{r.number || '—'}</strong></span>
-                  <span><small>Znesek</small><strong>{eur(r.amount)}</strong></span>
-                  <span><small>Datum</small><strong>{datStr(r.date)}</strong></span>
-                </div>
-                {/* telesa racuna arhiv ne hrani — samo meta + pot v Racune (racuna tu ne generiramo) */}
-                <p className="arh-mini">Celoten račun s postavkami in PDF pripraviš v razdelku Računi.</p>
-                <a className="arh-povezava" href={`${base}/kalkulator/racuni`}>Odpri v Računih ↗</a>
+                {(() => {
+                  const items = r.items || [];
+                  const imaPopust = items.some(i => (i.popust || 0) > 0);
+                  const imaDdv = items.some(i => (i.ddv || 0) > 0);
+                  return <>
+                    <p className={styles.eyebrow}>RAČUN · {r.paid ? 'PLAČAN' : 'ODPRT'}</p>
+                    <h2 id="arh-detajl-naslov">{r.title || `Račun ${r.number || ''}`}</h2>
+
+                    {/* cel račun v panelu (kot pogodba/ponudba): letterhead + postavke + vsote */}
+                    <div className="arh-ponudba-dok">
+                      <div className="arh-ponudba-dok-glava">
+                        <p className="arh-ponudba-dok-kick">RAČUN{r.number ? ` · ${r.number}` : ''}</p>
+                        <h3 className="arh-ponudba-dok-naslov">{r.title || 'Račun'}</h3>
+                        <div className="arh-ponudba-dok-meta">
+                          <span><small>Stranka</small><strong>{r.client}</strong></span>
+                          <span><small>Datum</small><strong>{datStr(r.date)}</strong></span>
+                          {r.serviceDate && <span><small>Opravljeno</small><strong>{datStr(r.serviceDate)}</strong></span>}
+                          {typeof r.dueDays === 'number' && <span><small>Rok plačila</small><strong>{r.dueDays} dni</strong></span>}
+                        </div>
+                      </div>
+
+                      {items.length ? (
+                        <div className="arh-racun-telo">
+                          <div className="arh-racun-tabela-ovoj">
+                            <table className="arh-racun-tabela">
+                              <thead><tr><th>Opis</th><th>Kol.</th><th>Cena</th>{imaPopust && <th>Popust</th>}{imaDdv && <th>DDV</th>}<th>Skupaj</th></tr></thead>
+                              <tbody>
+                                {items.map((it, i) => <tr key={`${it.opis}-${i}`}>
+                                  <td>{it.opis}</td>
+                                  <td>{it.kolicina}</td>
+                                  <td>{eur(it.cena)}</td>
+                                  {imaPopust && <td>{it.popust ? `${it.popust}%` : '—'}</td>}
+                                  {imaDdv && <td>{it.ddv ? `${it.ddv}%` : '—'}</td>}
+                                  <td>{eur(it.kolicina * it.cena * (1 - (it.popust || 0) / 100))}</td>
+                                </tr>)}
+                              </tbody>
+                            </table>
+                          </div>
+                          <div className="arh-racun-vsote">
+                            {typeof r.net === 'number' && <div><span>Neto</span><strong>{eur(r.net)}</strong></div>}
+                            {typeof r.vatAmount === 'number' && r.vatAmount > 0 && <div><span>DDV</span><strong>{eur(r.vatAmount)}</strong></div>}
+                            <div className="arh-racun-skupaj"><span>Za plačilo</span><strong>{eur(r.amount)}</strong></div>
+                          </div>
+                          {r.vatPayer === false && <p className="arh-mini">Nisem zavezanec za DDV — DDV ni obračunan.</p>}
+                        </div>
+                      ) : (
+                        <div className="arh-ponudba-dok-telo">
+                          <div className="arh-ponudba-dok-znesek"><span>Za plačilo</span><strong>{eur(r.amount)}</strong></div>
+                        </div>
+                      )}
+                    </div>
+
+                    <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/racuni`}>Uredi v Računih ↗</a>
+                  </>;
+                })()}
               </>;
             })()}
           </aside>
@@ -687,6 +731,21 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         /* sekundarna razlicica (ponudba kot dokument zdaj nosi glavno pozornost,
            povezava v kalkulator je samo se pot do urejanja) */
         .arh-povezava-sekundarna{font-size:.8rem;font-weight:500;color:rgba(17,17,17,.62)}
+
+        /* ── račun kot DOKUMENT v panelu (postavke + vsote), znotraj arh-ponudba-dok letterheada ── */
+        .arh-racun-telo{padding:.2rem .1rem .1rem}
+        .arh-racun-tabela-ovoj{overflow-x:auto}
+        .arh-racun-tabela{width:100%;border-collapse:collapse;font-size:.82rem}
+        .arh-racun-tabela th{padding:.4rem .5rem;text-align:right;font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(17,17,17,.5);border-bottom:1px solid rgba(17,17,17,.12);white-space:nowrap}
+        .arh-racun-tabela th:first-child{text-align:left}
+        .arh-racun-tabela td{padding:.5rem .5rem;text-align:right;border-bottom:1px solid rgba(17,17,17,.07);font-variant-numeric:tabular-nums;white-space:nowrap}
+        .arh-racun-tabela td:first-child{text-align:left;white-space:normal;font-weight:600}
+        .arh-racun-vsote{margin-top:.7rem;display:grid;gap:.25rem;justify-items:end}
+        .arh-racun-vsote > div{display:flex;gap:1.2rem;align-items:baseline;font-size:.82rem;color:rgba(17,17,17,.62)}
+        .arh-racun-vsote > div strong{min-width:5rem;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+        .arh-racun-skupaj{margin-top:.25rem;padding-top:.45rem;border-top:1px solid rgba(17,17,17,.14)}
+        .arh-racun-skupaj span{font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(17,17,17,.6)}
+        .arh-racun-skupaj strong{font:500 1.4rem var(--font-serif),Georgia,serif}
 
         /* ── ponudba kot DOKUMENT (NALOGA #44): kremni list + senca + Bodoni naslov,
            mini letterhead videz namesto golih kartic ── */
