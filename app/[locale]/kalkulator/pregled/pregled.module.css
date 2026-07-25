@@ -234,6 +234,7 @@
 .flowTools strong { position: relative; z-index: 2; margin-top: auto; font: 500 1.78rem var(--font-serif), Georgia, serif; -webkit-text-stroke: 0.5px currentColor; }
 .flowTools small { position: relative; z-index: 2; margin-top: .32rem; color: color-mix(in oklch, currentColor 72%, transparent); font-size: .59rem; }
 .flowTools i { z-index: 3; position: absolute; top: 1rem; right: 1rem; display: grid; place-items: center; width: 2.2rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .38); border-radius: 50%; background: oklch(100% 0 0 / .18); color: currentColor; font: 500 1.25rem/1 var(--font-sans), sans-serif; font-style: normal; }
+.flowTools i svg { display: block; }
 .toolIcon { position: relative; z-index: 2; width: 1.65rem; height: 1.65rem; margin-top: 1.25rem; fill: none; stroke: var(--ink); stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 .flowTools > *:nth-child(4) .toolIcon { stroke: var(--paper); }
 @keyframes cardFlow {
