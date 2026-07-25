@@ -8,7 +8,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, PaperPlaneTilt, FloppyDisk, FilePdf } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
@@ -89,6 +89,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const [nogaHtml, setNogaHtml] = useState('');
   /* checkbox namesto ločenega gumba: ob »Pošlji pogodbo« naj se priloži tudi ponudba */
   const [priloziPonudbo, setPriloziPonudbo] = useState(false);
+  /* konfeti na Zakljucku (kot pri ponudbi) — povecanje kljuca znova sprozi animacijo */
+  const [konfetiKljuc, setKonfetiKljuc] = useState(0);
+  const proslaviKonfeti = () => setKonfetiKljuc(k => k + 1);
   const editorRef = useRef<HTMLDivElement | null>(null);
   const barvaRef = useRef<HTMLInputElement>(null);
   const [predStrani, setPredStrani] = useState<string[]>([]);
@@ -730,11 +733,30 @@ export default function ContractWorkspace({ base }: { base: string }) {
           <input type="email" placeholder="npr. pisarna@volk-babica.si" value={narEmail} onChange={event => setNarEmail(event.target.value)} />
         </label>
       </div>
+      <div className="pg-konfeti-ovoj">
+        <div className="pg-konfeti" key={konfetiKljuc}>
+          {konfetiKljuc > 0 && Array.from({ length: 22 }).map((_, i) => {
+            const barve = ['#EC4899', '#F1B7B3', '#B1C4FF', '#38BDF8', '#50E3C2', '#B25476', '#F59E0B'];
+            const dx = Math.round(Math.cos(i * 2.39996323) * 240);
+            const dy = 110 + (i % 5) * 46;
+            const rot = (i % 2 ? 1 : -1) * (200 + (i % 4) * 80);
+            const delay = (i % 6) * 0.045;
+            const dur = 1.25 + (i % 4) * 0.2;
+            return <span key={i} className="pg-konf-kos" style={{ background: barve[i % barve.length], animationDelay: `${delay}s`, animationDuration: `${dur}s`, ['--dx' as string]: `${dx}px`, ['--dy' as string]: `${dy}px`, ['--rot' as string]: `${rot}deg` } as React.CSSProperties} />;
+          })}
+        </div>
+      </div>
       <div className="pg-gumbi">
-        <button type="button" className="pg-gumb" aria-label="Prenesi pogodbo PDF" disabled={pdfNalaganje} onClick={prenesi}>{pdfNalaganje ? 'Pripravljam …' : 'Prenesi pogodbo (PDF)'}</button>
-        <button type="button" className="pg-gumb sek" aria-label="Pošlji pogodbo" onClick={() => posljiMailto(vir === 'ponudba' && !!selectedOffer && priloziPonudbo)}>Pošlji pogodbo</button>
+        <button type="button" className="pg-gumb" aria-label="Pošlji pogodbo" onClick={() => { posljiMailto(vir === 'ponudba' && !!selectedOffer && priloziPonudbo); proslaviKonfeti(); }}>
+          <PaperPlaneTilt size={17} weight="bold" /> Pošlji pogodbo
+        </button>
         {vir === 'ponudba' && selectedOffer && <label className="pg-checkbox"><input type="checkbox" checked={priloziPonudbo} onChange={event => setPriloziPonudbo(event.target.checked)} /><span>Priloži tudi ponudbo</span></label>}
-        <button type="button" className="pg-gumb sek" aria-label="Shrani pogodbo" onClick={shrani}>{shranjenaId ? 'Shranjeno ✓ (posodobi)' : 'Shrani pogodbo'}</button>
+        <button type="button" className="pg-gumb sek" aria-label="Shrani pogodbo" onClick={() => { shrani(); proslaviKonfeti(); }}>
+          <FloppyDisk size={17} /> {shranjenaId ? 'Shranjeno ✓' : 'Shrani'}
+        </button>
+        <button type="button" className="pg-gumb sek" aria-label="Prenesi pogodbo PDF" disabled={pdfNalaganje} onClick={() => { prenesi(); proslaviKonfeti(); }}>
+          <FilePdf size={17} /> {pdfNalaganje ? 'Pripravljam …' : 'Prenesi (PDF)'}
+        </button>
       </div>
       {napaka && <p className="pg-napaka">{napaka}</p>}
       <p className="pg-mini" style={{ marginTop: '.7rem' }}>E-pošta odpre tvoj poštni program s pripravljenim sporočilom — PDF pogodbe (in ponudbe) pripni ročno.</p>
@@ -820,6 +842,16 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-gumb:hover{transform:translateY(-2px)}
       .pg-gumb.sek{background:transparent;color:var(--ink);border:1px solid rgba(17,17,17,.28)}
       .pg-gumb:disabled{opacity:.5;cursor:default;transform:none}
+      .pg-konfeti-ovoj{position:relative;height:0}
+      .pg-konfeti{position:absolute;left:0;right:0;top:0;height:0;pointer-events:none;z-index:4}
+      .pg-konf-kos{position:absolute;left:50%;top:0;width:.5rem;height:.78rem;border-radius:1px;opacity:0;will-change:transform,opacity;animation-name:pgKonfPok;animation-timing-function:cubic-bezier(.22,.7,.32,1);animation-fill-mode:forwards}
+      @keyframes pgKonfPok{
+        0%{opacity:0;transform:translate(-50%,0) rotate(0) scale(.5)}
+        12%{opacity:1}
+        38%{transform:translate(calc(-50% + var(--dx) * .55),calc(var(--dy) * -.45)) rotate(calc(var(--rot) * .4)) scale(1)}
+        100%{opacity:0;transform:translate(calc(-50% + var(--dx)),var(--dy)) rotate(var(--rot)) scale(.95)}
+      }
+      @media (prefers-reduced-motion: reduce) { .pg-konfeti{display:none} }
       .pg-povezava{font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0;display:inline-flex;align-items:center;gap:.38rem}
       .pg-povezava:hover{opacity:.6}
       .pg-koncna-nav{display:flex;flex-wrap:wrap;gap:1.4rem;margin-top:1.8rem;padding-top:1.3rem;border-top:1px solid rgba(17,17,17,.1)}
