@@ -773,6 +773,12 @@
 .projectNarrative article > a { position: absolute !important; z-index: 3 !important; top: .85rem; right: .85rem; display: grid; place-items: center; width: 2.2rem; min-height: 2.2rem; margin: 0; padding: 0; border: 1px solid oklch(100% 0 0 / .4); border-radius: 50%; background: oklch(100% 0 0 / .2); color: inherit; font-size: 0 !important; text-decoration: none; }
 /* Drugi (manjši, "odpri") gumb pri Računih — kompaktna puščica levo od "+". */
 .projectNarrative article > a.projectOpenLink { right: 3.35rem; width: 1.85rem; min-height: 1.85rem; background: oklch(100% 0 0 / .12); }
+/* mobilno: gumba ↗ in + morata biti dovolj velika (~44px) in razmaknjena za prst */
+@media (max-width: 640px) {
+  .projectNarrative article > a { width: 2.75rem; min-height: 2.75rem; top: .7rem; right: .7rem; }
+  .projectNarrative article > a.projectOpenLink { right: 4.15rem; width: 2.75rem; min-height: 2.75rem; }
+  .projectNarrative article h3 { padding-right: 6rem; }
+}
 .projectStoryEmpty { min-height: 30rem; display: grid; place-items: center; align-content: center; text-align: center; }
 .projectStoryEmpty span { display: grid; place-items: center; width: 3rem; aspect-ratio: 1; border-radius: 50%; background: oklch(93% .05 295); }
 .projectStoryEmpty strong { margin-top: .7rem; font: 600 1.2rem var(--font-serif), Georgia, serif; }
