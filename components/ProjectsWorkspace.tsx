@@ -166,9 +166,9 @@ const pwStyles = `
 .pw-vsi-iskalnik input[type='search']{flex:1;min-width:0;padding:.55rem .8rem;border:1px solid var(--line);border-radius:999px;background:oklch(100% 0 0 / .7);font:inherit;font-size:.75rem;color:var(--ink)}
 /* seznam vrstic v slideu — ista osnova kot .projectNarrative article > span (module CSS),
    tu podvojeno, ker vrstice v slideu NISO neposredni otroci .projectNarrative article */
+/* seznam VEDNO lahko drsi znotraj (flex:1) -> glava (naslov+×) in paginacija ostaneta fiksni in NE izgineta;
+   z 12/stran gre stran v pogled, zato se drsnik praviloma ne pokaže (fit = brez drsnika) */
 .pw-vsi-seznam{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;margin:0;padding-right:.25rem}
-/* v načinu STRANI je stran omejena (12) in gre v en pogled -> brez notranjega scrolla */
-.pw-vsi-seznam[data-nacin='strani']{overflow:visible;flex:0 1 auto;padding-right:0}
 .pw-vsi-seznam > span{display:grid;gap:.2rem;padding:.55rem 0;border-bottom:1px solid var(--line)}
 .pw-vsi-seznam > span:last-child{border-bottom:0}
 .pw-vsi-seznam > span b{font-size:.68rem}
