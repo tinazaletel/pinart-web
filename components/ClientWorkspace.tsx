@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { MagnifyingGlass, Globe } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowOffer, type FlowProjectLink } from '@/lib/pinartFlowStore';
@@ -90,6 +90,19 @@ export default function ClientWorkspace() {
     setOffers(flow.offers);
     setInvoices(flow.invoices); setExpenses(flow.expenses); setContracts(flow.contracts);
   }, [nacin]);
+
+  /* ?stranka=<ime> (npr. klik na naročnika v projektu) -> samodejno izberi to stranko */
+  const searchParams = useSearchParams();
+  const strankaIzUrla = useRef(false);
+  useEffect(() => {
+    if (strankaIzUrla.current) return;
+    const ime = searchParams.get('stranka');
+    if (!ime) return;
+    const najdena = clients.find(client => key(client.name) === key(ime));
+    if (!najdena) return;
+    strankaIzUrla.current = true;
+    setSelected(najdena);
+  }, [clients, searchParams]);
 
   /* povezave sledijo izbrani stranki; v predogledu prikažemo primere, da se vidi
      poln videz razdelka, v pravem računu preberemo dejansko shranjene povezave */
