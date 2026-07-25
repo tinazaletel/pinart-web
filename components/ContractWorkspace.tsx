@@ -808,7 +808,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
       /* UREDI/PREDOGLED vrh + orodjarna + urejevalnik — KOPIJA retainerja (rw- -> pg-) */
       .pg-pon-vrh{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:.2rem 0 .4rem}
       .pg-pon-vrh .pg-segpills{margin:0}
-      .pg-orodjarna{position:relative;display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin:1rem 0 .8rem}
+      /* ena vrstica (ne ovija) — vodoravni drs, ce orodij ni malo (npr. z odprto priponko) */
+      .pg-orodjarna{position:relative;display:flex;flex-wrap:nowrap;overflow-x:auto;gap:.45rem;align-items:center;margin:1rem 0 .8rem;-webkit-overflow-scrolling:touch}
+      .pg-orodjarna > *{flex:none}
       .pg-sheet-trig{display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;padding:0;border:1px solid rgba(17,17,17,.22);border-radius:999px;background:var(--paper);color:var(--ink);cursor:pointer}
       .pg-sheet-back{position:fixed;inset:0;background:rgba(30,18,35,.34);z-index:95}
       .pg-sheet-glava{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;padding:1.35rem 1.2rem .65rem;border-bottom:1px solid rgba(17,17,17,.1)}
