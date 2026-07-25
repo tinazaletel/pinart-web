@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { Plus, FolderOpen } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
@@ -184,6 +184,32 @@ const pwStyles = `
 .pw-vsi-strani button:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .pw-vsi-strani button:disabled{opacity:.4;cursor:not-allowed}
 .pw-vsi-strani button.pw-vsi-stran-aktivna{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+/* klikabilna vrstica (kartica + slide) -> predogled */
+.pw-vrstica-klik{cursor:pointer;border-radius:.5rem;transition:background .14s}
+.pw-vrstica-klik:hover{background:oklch(100% 0 0 / .28)}
+.pw-vrstica-klik:focus-visible{outline:2px solid var(--akcent,#6E4FA6);outline-offset:2px}
+/* PREDOGLED dokumenta (panel z desne) */
+.pw-det-panel{width:min(42rem,100vw);animation:pwVsiIn .5s cubic-bezier(.16,1,.3,1) both}
+.pw-det-panel h2{margin:.3rem 0 .1rem;font-family:var(--font-serif),Didot,serif;font-weight:600;font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.05;color:var(--ink)}
+.pw-det-meta{display:flex;flex-wrap:wrap;gap:.4rem 1.4rem;margin:1rem 0;padding:.9rem 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.pw-det-meta span{display:flex;flex-direction:column;gap:.15rem}
+.pw-det-meta small{font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pw-det-meta strong{font-size:.82rem;color:var(--ink)}
+.pw-det-tabela-ovoj{overflow-x:auto;margin-top:.4rem}
+.pw-det-tabela{width:100%;border-collapse:collapse;font-size:.78rem}
+.pw-det-tabela th{padding:.4rem .5rem;text-align:right;font-size:.56rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);white-space:nowrap}
+.pw-det-tabela th:first-child{text-align:left}
+.pw-det-tabela td{padding:.5rem .5rem;text-align:right;border-bottom:1px solid oklch(0% 0 0 / .06);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pw-det-tabela td:first-child{text-align:left;white-space:normal;font-weight:600}
+.pw-det-vsote{margin-top:.8rem;display:grid;gap:.25rem;justify-items:end}
+.pw-det-vsote > div{display:flex;gap:1.2rem;align-items:baseline;font-size:.8rem;color:var(--muted)}
+.pw-det-vsote > div strong{min-width:5rem;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.pw-det-skupaj{margin-top:.25rem;padding-top:.45rem;border-top:1px solid var(--line)}
+.pw-det-skupaj span{font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pw-det-skupaj strong{font:500 1.4rem var(--font-serif),Georgia,serif}
+.pw-det-opomba{margin:.6rem 0 0;color:var(--muted);font-size:.74rem;line-height:1.5}
+.pw-det-uredi{display:inline-flex;align-items:center;gap:.35rem;margin-top:1.1rem;font-size:.8rem;font-weight:600;color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+.pw-det-uredi:hover{color:var(--ink)}
 .pw-kmalu-red{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
 .pw-kmalu{opacity:.85}
 .pw-kmalu h3{margin:0;font:600 1.05rem var(--font-serif),Georgia,serif}
@@ -300,6 +326,13 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [vsiNacin, setVsiNacin] = useState<'strani' | 'drsenje'>('strani');
   const openVsi = (tip: 'pogodbe' | 'racuni' | 'stroski') => { setVsiOdprt(tip); setVsiIskanje(''); setVsiIskanjeOdprto(false); setVsiStran(1); setVsiNacin('strani'); };
   const closeVsi = () => { setVsiOdprt(null); setVsiIskanje(''); setVsiIskanjeOdprto(false); setVsiStran(1); setVsiNacin('strani'); };
+  /* klik na vrstico (na kartici ALI v slideu) -> predogled dokumenta v panelu z desne */
+  const [vrsticaDetajl, setVrsticaDetajl] = useState<null | { tip: 'pogodbe' | 'racuni' | 'stroski'; item: FlowContract | FlowInvoice | FlowExpense }>(null);
+  const klik = (tip: 'pogodbe' | 'racuni' | 'stroski', item: FlowContract | FlowInvoice | FlowExpense) => ({
+    role: 'button' as const, tabIndex: 0,
+    onClick: () => setVrsticaDetajl({ tip, item }),
+    onKeyDown: (e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setVrsticaDetajl({ tip, item }); } },
+  });
   /* V predogledu (demo) pokažemo primere povezav, da se vidi poln videz razdelka;
      v pravem računu beremo dejansko shranjene povezave. */
   useEffect(() => {
@@ -309,7 +342,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       { oznaka: 'Drive · Gradiva', url: 'https://drive.google.com' },
     ];
     setLinks(samoOgled ? demo : (selectedId ? loadProjectLinks(selectedId) : []));
-    setLinkOznaka(''); setLinkUrl(''); setDodajOdprt(false); closeVsi();
+    setLinkOznaka(''); setLinkUrl(''); setDodajOdprt(false); closeVsi(); setVrsticaDetajl(null);
   }, [selectedId, samoOgled]);
 
   /* na kartici pokažemo najnovejših NAJNOVEJSIH vrstic; ostalo je dostopno prek "Prikaži vse" */
@@ -322,10 +355,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     return 'neutral';
   };
   /* izris ene vrstice — ISTI slog na kartici (top 5) in v slideu (ves seznam) */
-  const pogodbaVrstica = (item: FlowContract) => <span key={item.id}><b>{item.title}</b><i className="pw-status" data-tone={statusTon(item.status)}>{item.status}</i></span>;
+  const pogodbaVrstica = (item: FlowContract) => <span key={item.id} className="pw-vrstica-klik" {...klik('pogodbe', item)}><b>{item.title}</b><i className="pw-status" data-tone={statusTon(item.status)}>{item.status}</i></span>;
   const racunKaj = (item: FlowInvoice) => item.title || item.items?.[0]?.opis || selected?.offer.title || '';
-  const racunVrstica = (item: FlowInvoice) => { const kaj = racunKaj(item); return <span key={item.id} className="pw-racun-v"><span className="pw-racun-l"><b>Račun {item.number || ''}</b>{kaj && <small>{kaj}</small>}</span><span className="pw-racun-d"><i className="pw-status" data-tone={item.paid ? 'success' : 'waiting'}>{item.paid ? 'Plačan' : 'Odprt'}</i><strong>{money(item.amount)}</strong></span></span>; };
-  const strosekVrstica = (item: FlowExpense) => <span key={item.id} className="pw-racun-v"><span className="pw-racun-l"><b>{item.title}</b><small>{item.category || 'Projektni strošek'}</small></span><span className="pw-racun-d"><strong>{money(item.amount)}</strong></span></span>;
+  const racunVrstica = (item: FlowInvoice) => { const kaj = racunKaj(item); return <span key={item.id} className="pw-racun-v pw-vrstica-klik" {...klik('racuni', item)}><span className="pw-racun-l"><b>Račun {item.number || ''}</b>{kaj && <small>{kaj}</small>}</span><span className="pw-racun-d"><i className="pw-status" data-tone={item.paid ? 'success' : 'waiting'}>{item.paid ? 'Plačan' : 'Odprt'}</i><strong>{money(item.amount)}</strong></span></span>; };
+  const strosekVrstica = (item: FlowExpense) => <span key={item.id} className="pw-racun-v pw-vrstica-klik" {...klik('stroski', item)}><span className="pw-racun-l"><b>{item.title}</b><small>{item.category || 'Projektni strošek'}</small></span><span className="pw-racun-d"><strong>{money(item.amount)}</strong></span></span>;
   /* iskalno besedilo za slide (naziv/številka/opis/kategorija) — malo, da . includes() dela brez razlik velikih/malih črk */
   const pogodbaTekst = (item: FlowContract) => `${item.title} ${item.status}`.toLocaleLowerCase('sl-SI');
   const racunTekst = (item: FlowInvoice) => `${item.number || ''} ${racunKaj(item)} ${item.paid ? 'plačan' : 'odprt'}`.toLocaleLowerCase('sl-SI');
@@ -504,5 +537,69 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         </aside>
       </div>
     )}
+
+    {/* PREDOGLED posameznega dokumenta (klik na vrstico na kartici ali v slideu) */}
+    {vrsticaDetajl && selected && (() => {
+      const { tip, item } = vrsticaDetajl;
+      const zapri = () => setVrsticaDetajl(null);
+      return (
+        <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={zapri}>
+          <aside className={`${styles.detailPanel} pw-det-panel`} role="dialog" aria-modal="true" aria-labelledby="pw-det-naslov" onMouseDown={e => e.stopPropagation()}>
+            <button type="button" className="pw-vsi-x" onClick={zapri} aria-label="Zapri">✕</button>
+            {tip === 'racuni' && (() => {
+              const r = item as FlowInvoice;
+              const its = r.items || [];
+              const imaPopust = its.some(i => (i.popust || 0) > 0);
+              const imaDdv = its.some(i => (i.ddv || 0) > 0);
+              return <>
+                <p className={styles.eyebrow}>RAČUN · {r.paid ? 'PLAČAN' : 'ODPRT'}</p>
+                <h2 id="pw-det-naslov">Račun {r.number || ''}</h2>
+                <p className="pw-vsi-projekt">{selected.offer.title} · {selected.offer.client}</p>
+                <div className="pw-det-meta">
+                  <span><small>Datum</small><strong>{new Date(r.date).toLocaleDateString('sl-SI')}</strong></span>
+                  {typeof r.dueDays === 'number' && <span><small>Rok plačila</small><strong>{r.dueDays} dni</strong></span>}
+                  <span><small>Status</small><strong>{r.paid ? 'Plačan' : 'Odprt'}</strong></span>
+                </div>
+                {its.length ? (<>
+                  <div className="pw-det-tabela-ovoj"><table className="pw-det-tabela">
+                    <thead><tr><th>Opis</th><th>Kol.</th><th>Cena</th>{imaPopust && <th>Popust</th>}{imaDdv && <th>DDV</th>}<th>Skupaj</th></tr></thead>
+                    <tbody>{its.map((it, i) => <tr key={`${it.opis}-${i}`}><td>{it.opis}</td><td>{it.kolicina}</td><td>{money(it.cena)}</td>{imaPopust && <td>{it.popust ? `${it.popust}%` : '—'}</td>}{imaDdv && <td>{it.ddv ? `${it.ddv}%` : '—'}</td>}<td>{money(it.kolicina * it.cena * (1 - (it.popust || 0) / 100))}</td></tr>)}</tbody>
+                  </table></div>
+                  <div className="pw-det-vsote">
+                    {typeof r.net === 'number' && <div><span>Neto</span><strong>{money(r.net)}</strong></div>}
+                    {typeof r.vatAmount === 'number' && r.vatAmount > 0 && <div><span>DDV</span><strong>{money(r.vatAmount)}</strong></div>}
+                    <div className="pw-det-skupaj"><span>Za plačilo</span><strong>{money(r.amount)}</strong></div>
+                  </div>
+                </>) : (
+                  <div className="pw-det-vsote"><div className="pw-det-skupaj"><span>Za plačilo</span><strong>{money(r.amount)}</strong></div></div>
+                )}
+                <Link href={`${base}/kalkulator/racuni`} className="pw-det-uredi">Uredi v Računih ↗</Link>
+              </>;
+            })()}
+            {tip === 'pogodbe' && (() => {
+              const c = item as FlowContract;
+              return <>
+                <p className={styles.eyebrow}>POGODBA · {c.status}</p>
+                <h2 id="pw-det-naslov">{c.title}</h2>
+                <p className="pw-vsi-projekt">{selected.offer.title} · {selected.offer.client}</p>
+                <div className="pw-det-meta"><span><small>Datum</small><strong>{new Date(c.date).toLocaleDateString('sl-SI')}</strong></span><span><small>Status</small><strong>{c.status}</strong></span></div>
+                <p className="pw-det-opomba">Celotno besedilo pogodbe odpri in uredi v razdelku Pogodbe.</p>
+                <Link href={`${base}/kalkulator/pogodbe`} className="pw-det-uredi">Odpri v Pogodbah ↗</Link>
+              </>;
+            })()}
+            {tip === 'stroski' && (() => {
+              const s = item as FlowExpense;
+              return <>
+                <p className={styles.eyebrow}>STROŠEK</p>
+                <h2 id="pw-det-naslov">{s.title}</h2>
+                <p className="pw-vsi-projekt">{selected.offer.title}</p>
+                <div className="pw-det-meta"><span><small>Kategorija</small><strong>{s.category || 'Projektni strošek'}</strong></span><span><small>Znesek</small><strong>{money(s.amount)}</strong></span></div>
+                <Link href={`${base}/kalkulator/stroski`} className="pw-det-uredi">Uredi v Stroških ↗</Link>
+              </>;
+            })()}
+          </aside>
+        </div>
+      );
+    })()}
   </div>;
 }
