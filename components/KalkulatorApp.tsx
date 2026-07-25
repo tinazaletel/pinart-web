@@ -3437,7 +3437,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   };
   const dokNogaHtml = (): string => {
     const n = aktivnaPredloga().noga?.trim();
-    return n ? `<div class="dok-noga" style="margin-top:26px;padding-top:12px;border-top:1px solid rgba(17,17,17,.12);font-size:8pt;color:#9a9088;line-height:1.6">${escapeHtml(n).split('\n').join('<br>')}</div>` : '';
+    /* noga = fiksno 5 mm od SPODNJEGA roba strani (enotno s pogodbo/računom) */
+    return n ? `<div class="dok-noga" style="position:fixed;left:16mm;right:16mm;bottom:5mm;padding-top:8px;border-top:1px solid rgba(17,17,17,.12);font-size:8pt;color:#9a9088;line-height:1.5">${escapeHtml(n).split('\n').join('<br>')}</div>` : '';
   };
   const ponudbaGlava = () => {
     const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
