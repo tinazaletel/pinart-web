@@ -22,6 +22,7 @@ export default function TaskManagerWorkspace() {
   const [novNaslov, setNovNaslov] = useState('');
   const [novOpis, setNovOpis] = useState('');
   const [novRok, setNovRok] = useState('');
+  const [novDodeljeno, setNovDodeljeno] = useState('');
   const [aktivniStolpec, setAktivniStolpec] = useState<NalogaStolpec>('todo');
   const [prikaziFormo, setPrikaziFormo] = useState(false);
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
@@ -38,11 +39,12 @@ export default function TaskManagerWorkspace() {
       naslov: novNaslov.trim(),
       opis: novOpis.trim() || undefined,
       rok: novRok || undefined,
+      dodeljenoOseba: novDodeljeno.trim() || undefined,
       stolpec: aktivniStolpec,
       created: new Date().toISOString(),
     };
     posodobiInShrani([...naloge, nova]);
-    setNovNaslov(''); setNovOpis(''); setNovRok(''); setPrikaziFormo(false);
+    setNovNaslov(''); setNovOpis(''); setNovRok(''); setNovDodeljeno(''); setPrikaziFormo(false);
   };
 
   const izbrisiNalogo = (id: string) => { posodobiInShrani(naloge.filter((n) => n.id !== id)); };
@@ -73,6 +75,12 @@ export default function TaskManagerWorkspace() {
           <div className="tm-forma-glava"><h2>Nova naloga</h2><button type="button" className="tm-x" onClick={() => setPrikaziFormo(false)} aria-label="Zapri">×</button></div>
           <label className="tm-polje"><span>Naslov</span><input value={novNaslov} onChange={(e) => setNovNaslov(e.target.value)} placeholder="Npr. Pripravi poročilo za Rokus …" autoFocus /></label>
           <label className="tm-polje"><span>Opis</span><textarea value={novOpis} onChange={(e) => setNovOpis(e.target.value)} placeholder="Podrobnosti naloge …" rows={3} /></label>
+          <label className="tm-polje"><span>Dodeljeno</span>
+            <div className="tm-dodeljeno-vrsta">
+              <input value={novDodeljeno} onChange={(e) => setNovDodeljeno(e.target.value)} placeholder="Kdo dela nalogo …" />
+              <button type="button" className="tm-zase" onClick={() => setNovDodeljeno('Jaz')}>+ Zase</button>
+            </div>
+          </label>
           <div className="tm-forma-vrsta">
             <label className="tm-polje"><span>Stolpec</span><select value={aktivniStolpec} onChange={(e) => setAktivniStolpec(e.target.value as NalogaStolpec)}>{STOLPCI.map((s) => <option key={s.id} value={s.id}>{s.naziv}</option>)}</select></label>
             <label className="tm-polje"><span>Rok izvedbe</span><input type="date" value={novRok} onChange={(e) => setNovRok(e.target.value)} /></label>
@@ -93,7 +101,12 @@ export default function TaskManagerWorkspace() {
                   <article key={naloga.id} className="tm-kartica" draggable onDragStart={(e) => handleDragStart(e, naloga.id)}>
                     <div className="tm-kartica-vrh"><strong>{naloga.naslov}</strong><button type="button" className="tm-kartica-x" onClick={() => izbrisiNalogo(naloga.id)} title="Izbriši nalogo" aria-label="Izbriši nalogo">×</button></div>
                     {naloga.opis && <p className="tm-kartica-opis">{naloga.opis}</p>}
-                    {naloga.rok && <span className={`tm-rok${jeZapadlo(naloga.rok) && s.id !== 'done' ? ' tm-rok-zapadlo' : ''}`}>📅 {datStr(naloga.rok)}</span>}
+                    {(naloga.rok || naloga.dodeljenoOseba) && (
+                      <div className="tm-kartica-noga">
+                        {naloga.rok && <span className={`tm-rok${jeZapadlo(naloga.rok) && s.id !== 'done' ? ' tm-rok-zapadlo' : ''}`}>📅 {datStr(naloga.rok)}</span>}
+                        {naloga.dodeljenoOseba && <span className="tm-oseba" title={`Dodeljeno: ${naloga.dodeljenoOseba}`}><span className="tm-oseba-krog" aria-hidden>{naloga.dodeljenoOseba.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>{naloga.dodeljenoOseba}</span>}
+                      </div>
+                    )}
                   </article>
                 ))}
               </div>
@@ -151,8 +164,16 @@ export default function TaskManagerWorkspace() {
         .tm-kartica-x{flex:none;width:1.5rem;height:1.5rem;padding:0;border:0;border-radius:50%;background:transparent;color:var(--muted);font-size:.95rem;line-height:1;cursor:pointer}
         .tm-kartica-x:hover{background:var(--ink);color:var(--paper)}
         .tm-kartica-opis{margin:.4rem 0 0;color:var(--muted);font-size:.74rem;line-height:1.45}
-        .tm-rok{display:inline-flex;align-items:center;gap:.3rem;margin-top:.55rem;padding:.2rem .5rem;border-radius:999px;background:oklch(95% .01 87);color:var(--muted);font-size:.66rem;font-weight:700}
+        .tm-rok{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .5rem;border-radius:999px;background:oklch(95% .01 87);color:var(--muted);font-size:.66rem;font-weight:700}
         .tm-rok-zapadlo{background:oklch(93% .06 30);color:oklch(48% .16 30)}
+        .tm-kartica-noga{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-top:.55rem}
+        .tm-oseba{display:inline-flex;align-items:center;gap:.35rem;padding:.15rem .5rem .15rem .15rem;border-radius:999px;background:oklch(94% .03 300);color:oklch(38% .1 300);font-size:.66rem;font-weight:700}
+        .tm-oseba-krog{width:1.15rem;height:1.15rem;display:grid;place-items:center;border-radius:50%;background:oklch(62% .19 300);color:#fff;font-size:.54rem;font-weight:800}
+        /* polje Dodeljeno + gumb Zase */
+        .tm-dodeljeno-vrsta{display:flex;gap:.5rem}
+        .tm-dodeljeno-vrsta input{flex:1;min-width:0}
+        .tm-zase{flex:none;padding:.55rem .8rem;border:1px solid var(--line);border-radius:.7rem;background:var(--paper);color:var(--ink);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
+        .tm-zase:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 
         @media (max-width:860px){
           .tm-deska{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:82vw;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.6rem}

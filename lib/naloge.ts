@@ -7,6 +7,7 @@ export interface Naloga {
   stolpec: NalogaStolpec;
   projectId?: string;
   clientId?: string;
+  dodeljenoOseba?: string;
   rok?: string;
   created: string;
 }
