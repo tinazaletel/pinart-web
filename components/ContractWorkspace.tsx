@@ -13,7 +13,7 @@ import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
-import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga } from '@/lib/dokVidez';
+import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo } from '@/lib/dokVidez';
 
 const K_NAST = 'pinart-kalkulator-v2';
 
@@ -83,6 +83,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const [velikostBesedila, setVelikostBesedila] = useState(3);
   const [rocnoTelo, setRocnoTelo] = useState(false);
   const [teloHtml, setTeloHtml] = useState('');
+  /* letterhead (glava z logotipom) tudi V UREDITELJU — izracunano po mountu (bere localStorage),
+     da ni hidracijske neujemljivosti; osvezi se ob spremembi ponudnika/predloge/naslova/datuma */
+  const [glavaHtml, setGlavaHtml] = useState('');
   const editorRef = useRef<HTMLDivElement | null>(null);
   const barvaRef = useRef<HTMLInputElement>(null);
   const [predStrani, setPredStrani] = useState<string[]>([]);
@@ -123,17 +126,19 @@ export default function ContractWorkspace({ base }: { base: string }) {
     const kontakt = [ponudnik.davcna.trim() && 'Davčna št.: ' + ponudnik.davcna.trim(), ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(), ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(), ponudnik.email.trim()].filter(Boolean).join(' · ');
     const glavaBesedilo = aktivnaPredloga().glava?.trim();
     const glavaLine = glavaBesedilo ? '<br><span class="mut" style="color:var(--akcent,#B25476);font-weight:600">' + esc(glavaBesedilo) + '</span>' : '';
-    /* desni znak = TVOJ shranjeni logo (če obstaja); prej je bil trdo zakodiran »Pinart«, zato se logo ni videl */
-    const logo = aktivnaPredloga().logo?.trim();
+    /* desni znak = TVOJ shranjeni logo (enotni vir: predloga ali K_LOGO); prej je bil trdo zakodiran »Pinart«, zato se logo ni videl */
+    const logo = aktivniLogo();
     const znak = logo ? `<img class="lg-logo" src="${logo}" alt="">` : `<div class="rt">${esc(ponudnik.ime.trim() || '')}</div>`;
     return `<div class="lg"><div><b>${esc(ponudnik.ime.trim() || '[Tvoje podjetje]')}</b>${glavaLine}${ponudnik.naslov.trim() ? '<br>' + esc(ponudnik.naslov.trim()) : ''}${kontakt ? '<br><span class="mut">' + esc(kontakt) + '</span>' : ''}</div>${znak}</div>`;
   };
   const dokNoga = () => {
     const n = aktivnaPredloga().noga?.trim();
-    return n ? `<div class="dok-noga" style="margin-top:24px;padding-top:10px;border-top:1px solid rgba(17,17,17,.12);font-size:8pt;color:#9a9088;line-height:1.6">${esc(n).split('\n').join('<br>')}</div>` : '';
+    /* noga = fiksno 5 mm od SPODNJEGA roba strani (v spodnji rob @page margina); ponovi se na vsaki strani */
+    return n ? `<div class="dok-noga" style="position:fixed;left:16mm;right:16mm;bottom:5mm;padding-top:8px;border-top:1px solid rgba(17,17,17,.12);font-size:8pt;color:#9a9088;line-height:1.5">${esc(n).split('\n').join('<br>')}</div>` : '';
   };
   const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:600;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}.podpis-img{display:block;max-height:40px;max-width:180px;margin:0 0 -6px}`;
   const doc = (body: string) => `<!doctype html><html lang="sl"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
+  useEffect(() => { setGlavaHtml(glava()); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [ponudnik, dokBarva, dokFont, rocniNarocnik, vir, offerId, datum]);
 
   /* besedilo clenov = vsebinsko ista pogodba kot prej (13 clenov), le v HTML
      obliki dokumenta (.pog-clen), da jo urejevalnik in PDF prikazeta kot retainer */
@@ -663,6 +668,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
             ) : null;
           })()}
           <div className="pg-editor-ovoj">
+            {glavaHtml && <div className="pg-editor-glava" aria-hidden dangerouslySetInnerHTML={{ __html: glavaHtml }} />}
             <div ref={napolniEditor} className="pg-editor" contentEditable suppressContentEditableWarning onInput={() => setRocnoTelo(true)} onBlur={sinhronizirajEditor} />
             {/* ikonica za podpis — desno spodaj, ob podpisnih crtah (kot retainer) */}
             <button type="button" className="pg-podpis-trig" onClick={() => setPonSheet(v => v === 'podpis' ? null : 'podpis')} aria-label="Dodaj podpis" title="Dodaj podpis"><PenNib size={18} /></button>
@@ -842,6 +848,13 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-barvica-mavrica{background:conic-gradient(from 0deg,#FA4892,#F8E71C,#50E3C2,#7C3AED,#FA4892);border-color:rgba(17,17,17,.25)}
 
       .pg-editor-ovoj{position:relative;min-width:0}
+      /* letterhead (glava z logotipom) nad urejevalnikom — enak videz kot v izvozu, a v barvah aplikacije */
+      .pg-editor-glava{margin:0 0 1.3rem;padding-bottom:.85rem;border-bottom:1.5px solid var(--accent,#B25476)}
+      .pg-editor-glava .lg{display:flex;justify-content:space-between;align-items:flex-start;gap:1.5rem}
+      .pg-editor-glava .lg b{font-size:1.02rem;font-weight:700}
+      .pg-editor-glava .lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:1.2rem;color:var(--ink)}
+      .pg-editor-glava .lg .lg-logo{max-height:54px;max-width:190px;object-fit:contain;display:block}
+      .pg-editor-glava .mut{color:var(--muted);font-size:.74rem;line-height:1.5}
       .pg-podpis-trig{position:absolute;right:.65rem;bottom:.65rem;width:2.5rem;height:2.5rem;border-radius:50%;border:1px solid rgba(17,17,17,.22);background:var(--paper);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(17,17,17,.14);z-index:2;transition:background .15s,color .15s}
       .pg-podpis-trig:hover{background:var(--ink);color:var(--paper)}
       .pg-podpis-sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,102%);width:min(480px,100vw);z-index:96;background:var(--paper);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px rgba(40,25,40,.22);transition:transform .32s cubic-bezier(.2,.8,.3,1);max-height:82dvh;overflow-y:auto;padding:0 1.2rem calc(1.4rem + env(safe-area-inset-bottom,0px))}

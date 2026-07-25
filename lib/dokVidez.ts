@@ -149,3 +149,14 @@ export function nastaviLogoAktivne(logoUrl: string): void {
   const posodobljene = predloge.map(p => p.id === aktivnaId ? { ...p, logo: logoUrl || undefined } : p);
   shranitePredloge(posodobljene, aktivnaId);
 }
+
+/* Enotni vir logotipa za VSE dokumente (pogodba/racun/ponudba): najprej aktivna
+   predloga, sicer stari flat K_LOGO (kamor logo pise SettingsWorkspace/profil).
+   Prej sta pogodba in racun brala SAMO aktivnaPredloga().logo -> ce je bil logo
+   nalozen le prek K_LOGO (kot pri ponudbi), se pri njiju NI videl. */
+export function aktivniLogo(): string {
+  const p = aktivnaPredloga().logo?.trim();
+  if (p) return p;
+  if (typeof window === 'undefined') return '';
+  try { return localStorage.getItem(K_LOGO) || ''; } catch { return ''; }
+}
