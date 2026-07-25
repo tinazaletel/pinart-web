@@ -86,6 +86,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
   /* letterhead (glava z logotipom) tudi V UREDITELJU — izracunano po mountu (bere localStorage),
      da ni hidracijske neujemljivosti; osvezi se ob spremembi ponudnika/predloge/naslova/datuma */
   const [glavaHtml, setGlavaHtml] = useState('');
+  const [nogaHtml, setNogaHtml] = useState('');
   const editorRef = useRef<HTMLDivElement | null>(null);
   const barvaRef = useRef<HTMLInputElement>(null);
   const [predStrani, setPredStrani] = useState<string[]>([]);
@@ -138,7 +139,12 @@ export default function ContractWorkspace({ base }: { base: string }) {
   };
   const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:600;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}.podpis-img{display:block;max-height:40px;max-width:180px;margin:0 0 -6px}`;
   const doc = (body: string) => `<!doctype html><html lang="sl"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
-  useEffect(() => { setGlavaHtml(glava()); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [ponudnik, dokBarva, dokFont, rocniNarocnik, vir, offerId, datum]);
+  useEffect(() => {
+    setGlavaHtml(glava());
+    const n = aktivnaPredloga().noga?.trim();
+    setNogaHtml(n ? esc(n).split('\n').join('<br>') : '');
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [ponudnik, dokBarva, dokFont, rocniNarocnik, vir, offerId, datum]);
 
   /* besedilo clenov = vsebinsko ista pogodba kot prej (13 clenov), le v HTML
      obliki dokumenta (.pog-clen), da jo urejevalnik in PDF prikazeta kot retainer */
@@ -670,6 +676,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
           <div className="pg-editor-ovoj">
             {glavaHtml && <div className="pg-editor-glava" aria-hidden dangerouslySetInnerHTML={{ __html: glavaHtml }} />}
             <div ref={napolniEditor} className="pg-editor" contentEditable suppressContentEditableWarning onInput={() => setRocnoTelo(true)} onBlur={sinhronizirajEditor} />
+            {nogaHtml && <div className="pg-editor-noga" aria-hidden dangerouslySetInnerHTML={{ __html: nogaHtml }} />}
             {/* ikonica za podpis — desno spodaj, ob podpisnih crtah (kot retainer) */}
             <button type="button" className="pg-podpis-trig" onClick={() => setPonSheet(v => v === 'podpis' ? null : 'podpis')} aria-label="Dodaj podpis" title="Dodaj podpis"><PenNib size={18} /></button>
           </div>
@@ -847,7 +854,12 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-barvica{width:1.35rem;height:1.35rem;border-radius:999px;border:1px solid rgba(17,17,17,.22);cursor:pointer;padding:0}
       .pg-barvica-mavrica{background:conic-gradient(from 0deg,#FA4892,#F8E71C,#50E3C2,#7C3AED,#FA4892);border-color:rgba(17,17,17,.25)}
 
-      .pg-editor-ovoj{position:relative;min-width:0}
+      /* BELO POLJE = ovoj (glava + telo + noga vsi znotraj enega belega lista, kot prava stran) */
+      .pg-editor-ovoj{position:relative;min-width:0;background:#fff;border:1px solid rgba(17,17,17,.22);border-radius:6px;padding:1.6rem 1.6rem 1.4rem}
+      .pg-editor-ovoj .pg-editor{background:transparent;border:0;border-radius:0;padding:0;min-height:280px}
+      .pg-editor-ovoj .pg-editor:focus{border:0}
+      /* noga (besedilo iz Nastavitev) na dnu belega lista */
+      .pg-editor-noga{margin-top:1.5rem;padding-top:.75rem;border-top:1px solid rgba(17,17,17,.14);font-size:.74rem;color:var(--muted);line-height:1.55}
       /* letterhead (glava z logotipom) nad urejevalnikom — enak videz kot v izvozu, a v barvah aplikacije */
       .pg-editor-glava{margin:0 0 1.3rem;padding-bottom:.85rem;border-bottom:1.5px solid var(--accent,#B25476)}
       .pg-editor-glava .lg{display:flex;justify-content:space-between;align-items:flex-start;gap:1.5rem}
