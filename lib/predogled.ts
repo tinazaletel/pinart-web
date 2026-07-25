@@ -219,6 +219,19 @@ export function demoPodatki(): FlowData {
     address: ['Ljubljana', 'Kranj', 'Maribor', 'Koper'][i % 4],
     tax: `SI${10000000 + i * 137}`,
   }));
+  /* Rokus Klett — stranka 5-letnega projekta "Prenova portala" (66 računov). Doda se
+     posebej, da je vidna v imeniku Strank IN se ujema z demoPortalOffer.client, tako da
+     njen profil pokaže projekt "Prenova portala" (Stranke -> Rokus Klett -> projekt -> 66 računov). */
+  clients.push({
+    id: 'demo-s-rokus',
+    name: 'Rokus Klett',
+    email: 'info@rokus-klett.si',
+    contact: 'Maja Horvat',
+    phone: '01 234 56 78',
+    address: 'Ljubljana',
+    tax: 'SI99887766',
+    website: 'https://www.rokus-klett.si',
+  });
 
   return {
     version: 1,
