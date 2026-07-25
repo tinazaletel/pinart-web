@@ -44,7 +44,7 @@ export default async function KalkulatorOrodjePage({
 
   return (
     <main className={styles.shell}>
-      <DashboardSidebar base={base} active="overview" />
+      <DashboardSidebar base={base} active="offer" />
       <section className={styles.workspace}>
         {/* Glavo strani (nadnaslov/naslov/podnaslov) izrise KalkulatorApp:
             samo on ve, ali tece uvodni pogovor, ki ima svoj naslov. */}

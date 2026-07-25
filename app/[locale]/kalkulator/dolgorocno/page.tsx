@@ -28,7 +28,7 @@ export default async function DolgorocnoPage({ params }: { params: Promise<{ loc
 
   return (
     <main className={styles.shell}>
-      <DashboardSidebar base={base} active="overview" />
+      <DashboardSidebar base={base} active="retainer" />
       <section className={styles.workspace}>
         <RetainerWorkspace base={base} vLupini />
       </section>

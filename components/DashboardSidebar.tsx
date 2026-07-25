@@ -12,7 +12,7 @@ import MeniProfil from './MeniProfil';
 import PaketZnak from './PaketZnak';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
-type Section = 'overview' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'prices' | 'accounting' | 'profile' | 'settings';
+type Section = 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'prices' | 'accounting' | 'profile' | 'settings';
 
 /* Meni je razdeljen po tem, KAJ UPORABNIK POCNE, ne kaj stvar je:
    Delo = ustvarjas dokument za stranko · Podatki = vzdrzujes vnose · Nacrt = racunas/ciljas.
@@ -43,10 +43,10 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
     {item('overview', `${base}/kalkulator/pregled`, '01', 'Nadzorna plošča', 'pregled')}
     {/* Na telefonu so skupine zaprte: 13 postavk hkrati ne gre v en zaslon,
         ce naj bo vsaka tapna tarca vsaj 44 px. Na namizju so odprte kot prej. */}
-    <MeniSkupina naslov="Orodja" aktivna={active === 'contracts' || active === 'invoices'}>
+    <MeniSkupina naslov="Orodja" aktivna={active === 'offer' || active === 'retainer' || active === 'contracts' || active === 'invoices'}>
       {/* ?od=pregled -> kalkulator in retainer pokazeta puscico nazaj na nadzorno plosco */}
-      {povezava(`${base}/kalkulator/orodje?od=pregled`, '01', 'Ponudba', 'ponudba')}
-      {povezava(`${base}/kalkulator/dolgorocno?od=pregled`, '02', 'Dolgoročno sodelovanje', 'retainer')}
+      {item('offer', `${base}/kalkulator/orodje?od=pregled`, '01', 'Ponudba', 'ponudba')}
+      {item('retainer', `${base}/kalkulator/dolgorocno?od=pregled`, '02', 'Dolgoročno sodelovanje', 'retainer')}
       {item('contracts', `${base}/kalkulator/pogodbe`, '03', 'Pogodba', 'pogodba', 'contracts')}
       {item('invoices', `${base}/kalkulator/racuni`, '04', 'Računi', 'racuni')}
     </MeniSkupina>
