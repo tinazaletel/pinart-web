@@ -143,7 +143,12 @@ const pwStyles = `
 .pw-vec:hover{color:var(--ink)}
 /* SLIDE "Vsi <tip>" (pogodbe/računi/stroški) — vzorec styles.detailBackdrop/detailPanel +
    lepljivi X (glej ArhivWorkspace .arh-det-x), tu podvojeno s predpono pw-vsi- */
-.pw-vsi-panel{width:min(34rem,94vw)}
+/* backdrop: panel poravnan LEVO + močan blur/zatemnitev, da se stran zadaj ne bere kot drugo okno */
+.pw-vsi-backdrop{justify-content:flex-start;background:oklch(22% .02 55 / .64);backdrop-filter:blur(10px) saturate(1.05);-webkit-backdrop-filter:blur(10px) saturate(1.05)}
+/* panel: poln vstop z LEVE proti desni (kot pogodbe), flex-stolpec — glava fiksna, seznam drsi, paginacija lepljiva noga */
+.pw-vsi-panel{width:min(46rem,100vw);height:100%;overflow:hidden;display:flex;flex-direction:column;box-shadow:1.6rem 0 4rem oklch(20% .03 55 / .2);animation:pwVsiIn .36s cubic-bezier(.22,1,.36,1) both}
+@keyframes pwVsiIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+@media (prefers-reduced-motion:reduce){.pw-vsi-panel{animation:none}}
 .pw-vsi-panel h2{margin:.4rem 0 .2rem;font-family:var(--font-serif),Didot,serif;font-weight:600;font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.05;color:var(--ink)}
 .pw-vsi-projekt{margin:0 0 1.1rem;color:var(--muted);font-size:.72rem}
 .pw-vsi-x{position:absolute;top:1rem;right:1rem;z-index:8;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
@@ -159,13 +164,13 @@ const pwStyles = `
 .pw-vsi-iskalnik input[type='search']{flex:1;min-width:0;padding:.55rem .8rem;border:1px solid var(--line);border-radius:999px;background:oklch(100% 0 0 / .7);font:inherit;font-size:.75rem;color:var(--ink)}
 /* seznam vrstic v slideu — ista osnova kot .projectNarrative article > span (module CSS),
    tu podvojeno, ker vrstice v slideu NISO neposredni otroci .projectNarrative article */
-.pw-vsi-seznam{display:flex;flex-direction:column;margin:0 0 1rem}
+.pw-vsi-seznam{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;margin:0;padding-right:.25rem}
 .pw-vsi-seznam > span{display:grid;gap:.2rem;padding:.55rem 0;border-bottom:1px solid var(--line)}
 .pw-vsi-seznam > span:last-child{border-bottom:0}
 .pw-vsi-seznam > span b{font-size:.68rem}
 .pw-vsi-seznam > span small{color:var(--muted);font-size:.58rem}
 .pw-vsi-seznam .pw-racun-v{grid-template-columns:1fr auto;align-items:center}
-.pw-vsi-strani{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.35rem;margin-top:.4rem}
+.pw-vsi-strani{flex:none;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.35rem;margin:0;padding-top:.85rem;border-top:1px solid var(--line)}
 .pw-vsi-strani button{display:grid;place-items:center;min-width:2rem;height:2rem;padding:0 .5rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(98% .008 87 / .92);font:700 .68rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
 .pw-vsi-strani button:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .pw-vsi-strani button:disabled{opacity:.4;cursor:not-allowed}
@@ -433,7 +438,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     {/* SLIDE "Vsi <tip>" z desne — vzorec styles.detailBackdrop/detailPanel + lepljivi X
         (glej ArhivWorkspace .arh-det-x); poln seznam za pogodbe/računi/stroški TA projekta */}
     {vsiOdprt && selected && (
-      <div className={styles.detailBackdrop} role="presentation" onMouseDown={closeVsi}>
+      <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={closeVsi}>
         <aside className={`${styles.detailPanel} pw-vsi-panel`} role="dialog" aria-modal="true" aria-labelledby="pw-vsi-naslov" onMouseDown={e => e.stopPropagation()}>
           <button type="button" className="pw-vsi-x" onClick={closeVsi} aria-label="Zapri">✕</button>
           <p className={styles.eyebrow}>{vsiEyebrow}</p>
