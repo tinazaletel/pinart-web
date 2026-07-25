@@ -264,7 +264,9 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
 
   const save = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (samoOgled) return;
+    /* prej je v predogledu (demo) TIHO vrnil -> uporabnica je klikala Shrani in se ni zgodilo nič.
+       Zdaj pove razlog: v demu ne pišemo v pravo bazo, treba je preklopiti na »Moji podatki«. */
+    if (samoOgled) { setNapaka('To je predogled (demo) — račun ni shranjen. Za pravo shranjevanje preklopi na »Moji podatki« (preklopnik zgoraj).'); return; }
     const items = izracun.postavke.filter(p => p.opis || p.cena);
     if (!items.length) { setNapaka('Dodaj vsaj eno postavko z opisom in ceno.'); return; }
     const invoice: FlowInvoice = {
