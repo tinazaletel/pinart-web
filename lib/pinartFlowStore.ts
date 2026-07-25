@@ -90,6 +90,7 @@ export type FlowClient = {
   phone?: string;
   address?: string;
   tax?: string;
+  website?: string;
 };
 
 export type FlowData = {

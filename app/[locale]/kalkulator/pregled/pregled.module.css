@@ -651,6 +651,13 @@
 .clientContacts span, .clientFinance span { display: grid; gap: .3rem; padding: .8rem; border-radius: .8rem; background: oklch(95% .018 87); }
 .clientContacts small, .clientFinance small { color: var(--muted); font-size: .54rem; }
 .clientContacts strong { font-size: .64rem; overflow-wrap: anywhere; }
+/* spletna stran izpostavljena: prvo mesto, čez celo širino, akcent link + globus */
+.clientSplet { grid-column: 1 / -1; }
+.clientSplet small { font-size: .68rem; }
+.clientSplet a { display: inline-flex; align-items: center; gap: .4rem; color: oklch(52% .17 300); text-decoration: none; }
+.clientSplet a:hover { text-decoration: underline; }
+.clientSplet a svg { flex: none; }
+.clientSplet a strong { font-size: .82rem; color: inherit; }
 .clientFinance strong { font: 500 1.25rem var(--font-serif), Georgia, serif; }
 .clientFinance span:nth-child(1) { background: oklch(93% .045 160); }
 .clientFinance span:nth-child(2) { background: oklch(94% .05 65); }
