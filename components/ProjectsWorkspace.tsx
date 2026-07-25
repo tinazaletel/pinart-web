@@ -99,7 +99,7 @@ const pwStyles = `
 .pw-metrika-ikona{position:absolute;right:-1rem;bottom:-1.6rem;display:grid;place-items:center;width:6.6rem;aspect-ratio:1;border-radius:1.6rem;background:oklch(100% 0 0/.24);color:color-mix(in oklch,currentColor 54%,transparent);transform:rotate(-9deg)}
 @media (max-width:760px){.pw-metrike{grid-template-columns:1fr 1fr}}
 @media (max-width:480px){.pw-metrike{grid-template-columns:1fr}}
-.pw-stran{padding:1rem}
+.pw-stran{padding:1rem;scroll-margin-top:5.5rem}
 .pw-nazaj{display:inline-flex;align-items:center;gap:.4rem;margin:0 0 .8rem;padding:.55rem .95rem;border:1px solid var(--line);border-radius:999px;background:oklch(98% .008 87 / .92);font:700 .62rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
 .pw-nazaj:hover{background:var(--ink);color:var(--paper)}
 @media (max-width:640px){
