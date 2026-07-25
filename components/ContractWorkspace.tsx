@@ -87,6 +87,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
      da ni hidracijske neujemljivosti; osvezi se ob spremembi ponudnika/predloge/naslova/datuma */
   const [glavaHtml, setGlavaHtml] = useState('');
   const [nogaHtml, setNogaHtml] = useState('');
+  /* checkbox namesto ločenega gumba: ob »Pošlji pogodbo« naj se priloži tudi ponudba */
+  const [priloziPonudbo, setPriloziPonudbo] = useState(false);
   const editorRef = useRef<HTMLDivElement | null>(null);
   const barvaRef = useRef<HTMLInputElement>(null);
   const [predStrani, setPredStrani] = useState<string[]>([]);
@@ -730,8 +732,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
       </div>
       <div className="pg-gumbi">
         <button type="button" className="pg-gumb" aria-label="Prenesi pogodbo PDF" disabled={pdfNalaganje} onClick={prenesi}>{pdfNalaganje ? 'Pripravljam …' : 'Prenesi pogodbo (PDF)'}</button>
-        <button type="button" className="pg-gumb sek" aria-label="Pošlji pogodbo" onClick={() => posljiMailto(false)}>Pošlji pogodbo</button>
-        {vir === 'ponudba' && selectedOffer && <button type="button" className="pg-gumb sek" aria-label="Pošlji ponudbo in pogodbo" onClick={() => posljiMailto(true)}>Pošlji ponudbo + pogodbo</button>}
+        <button type="button" className="pg-gumb sek" aria-label="Pošlji pogodbo" onClick={() => posljiMailto(vir === 'ponudba' && !!selectedOffer && priloziPonudbo)}>Pošlji pogodbo</button>
+        {vir === 'ponudba' && selectedOffer && <label className="pg-checkbox"><input type="checkbox" checked={priloziPonudbo} onChange={event => setPriloziPonudbo(event.target.checked)} /><span>Priloži tudi ponudbo</span></label>}
         <button type="button" className="pg-gumb sek" aria-label="Shrani pogodbo" onClick={shrani}>{shranjenaId ? 'Shranjeno ✓ (posodobi)' : 'Shrani pogodbo'}</button>
       </div>
       {napaka && <p className="pg-napaka">{napaka}</p>}
@@ -811,6 +813,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-kp-strnjena{background:#FCFBF7;box-shadow:0 4px 14px rgba(17,17,17,.05);margin-bottom:1rem}
 
       .pg-gumbi{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.3rem;min-width:0}
+      /* navadno besedilo s kljukico namesto ločenega gumba »+ ponudba« */
+      .pg-checkbox{display:inline-flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--ink);cursor:pointer;user-select:none}
+      .pg-checkbox input{width:1.05rem;height:1.05rem;accent-color:var(--accent,#B25476);cursor:pointer}
       .pg-gumb{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:.5rem;border:none;border-radius:999px;padding:.85rem 1.6rem;font:inherit;font-weight:600;font-size:.95rem;cursor:pointer;background:var(--ink);color:var(--paper);transition:transform .2s,opacity .2s}
       .pg-gumb:hover{transform:translateY(-2px)}
       .pg-gumb.sek{background:transparent;color:var(--ink);border:1px solid rgba(17,17,17,.28)}
