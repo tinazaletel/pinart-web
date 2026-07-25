@@ -100,17 +100,38 @@ export function demoPodatki(): FlowData {
     agreedAmount: 1200 + (i % 7) * 640,
   }));
 
-  const invoices: FlowInvoice[] = Array.from({ length: 30 }, (_, i) => ({
-    id: `demo-i-${i}`,
-    number: `R-2026-${String(i + 1).padStart(3, '0')}`,
-    title: NASLOVI[i % NASLOVI.length],
-    client: STRANKE[i % STRANKE.length],
-    amount: 850 + (i % 6) * 430,
-    paid: i % 7 !== 0,
-    date: datum(i % 10, 4 + (i % 20)),
-    dueDays: 15,
-    sourceOfferId: `demo-o-${i % 12}`,
-  }));
+  /* demo postavke racuna (da predogled pokaze razclembo, ne le vsote): 2 postavki +
+     neto/DDV izpeljani iz zneska (22% DDV), vsota postavk = neto = znesek brez DDV. */
+  const RACUN_OPISI = ['Oblikovanje in postavitev', 'Analiza in izhodišča', 'Produkcija in priprava', 'Svetovanje in usklajevanje'];
+  const racunPostavke = (amount: number, i: number) => {
+    const net = Math.round(amount / 1.22);
+    const a = Math.round(net * 0.6);
+    return {
+      items: [
+        { opis: RACUN_OPISI[i % RACUN_OPISI.length], kolicina: 1, cena: a, ddv: 22 },
+        { opis: RACUN_OPISI[(i + 1) % RACUN_OPISI.length], kolicina: 1, cena: net - a, ddv: 22 },
+      ],
+      net,
+      vatAmount: amount - net,
+      vatPayer: true,
+    };
+  };
+
+  const invoices: FlowInvoice[] = Array.from({ length: 30 }, (_, i) => {
+    const amount = 850 + (i % 6) * 430;
+    return {
+      id: `demo-i-${i}`,
+      number: `R-2026-${String(i + 1).padStart(3, '0')}`,
+      title: NASLOVI[i % NASLOVI.length],
+      client: STRANKE[i % STRANKE.length],
+      amount,
+      paid: i % 7 !== 0,
+      date: datum(i % 10, 4 + (i % 20)),
+      dueDays: 15,
+      sourceOfferId: `demo-o-${i % 12}`,
+      ...racunPostavke(amount, i),
+    };
+  });
 
   const expenses: FlowExpense[] = Array.from({ length: 34 }, (_, i) => ({
     id: `demo-e-${i}`,
@@ -176,16 +197,18 @@ export function demoPodatki(): FlowData {
   const demoPortalInvoices: FlowInvoice[] = Array.from({ length: 66 }, (_, i) => {
     const dat = datumFiksni(2022, i * 27);
     const leto = Number(dat.slice(0, 4));
+    const amount = 700 + (i % 12) * 100;
     return {
       id: `demo-portal-i-${i}`,
       number: `R-${leto}-${String(100 + i).padStart(3, '0')}`,
       title: 'Prenova portala',
       client: 'Rokus Klett',
-      amount: 700 + (i % 12) * 100,
+      amount,
       paid: i % 9 !== 0,
       date: dat,
       dueDays: 15,
       sourceOfferId: 'demo-portal',
+      ...racunPostavke(amount, i),
     };
   });
 
