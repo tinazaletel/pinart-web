@@ -294,6 +294,12 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     };
     const next = [invoice, ...invoices];
     setInvoices(next); saveFlowCollection('invoices', next);
+    /* ce stranka se NI v imeniku, jo USTVARI (racun ne sme ostati brez zapisa stranke) */
+    const strankaIme = (stranka.trim() || invoice.client).trim();
+    if (strankaIme && !clients.some(c => (c.name || '').trim().toLocaleLowerCase('sl-SI') === strankaIme.toLocaleLowerCase('sl-SI'))) {
+      const nc: FlowClient[] = [{ id: crypto.randomUUID(), name: strankaIme }, ...clients];
+      setClients(nc); saveFlowCollection('clients', nc);
+    }
     /* po shranjevanju nazaj na pregled (kot pogodbe) — nov racun je takoj viden v arhivu */
     setPogled('pregled'); setOfferId('');
   };
@@ -492,7 +498,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
             </button>
             : <select value={offerId} onChange={event => izberiPonudbo(event.target.value)}><option value="">Samostojen račun</option>{offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}</option>)}</select>}</label>
           <label>Številka<input required value={stevilka} onChange={event => setStevilka(event.target.value)} /></label>
-          <label>Stranka<input required value={stranka} onChange={event => setStranka(event.target.value)} placeholder="Ime ali podjetje" /></label>
+          <label>Stranka<input required value={stranka} onChange={event => setStranka(event.target.value)} placeholder="Izberi obstoječo ali vpiši novo" list="rc-stranke" autoComplete="off" /><datalist id="rc-stranke">{clients.map(c => <option key={c.id} value={c.name} />)}</datalist></label>
           <label>Datum izdaje<input required type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} /></label>
           <label>Datum opravljene storitve<input required type="date" value={datumStoritve} onChange={event => setDatumStoritve(event.target.value)} /></label>
           <label>Rok plačila v dneh<input required min="0" type="number" inputMode="numeric" placeholder={String(PRIVZETI_ROK_DNI)} value={rokDni} onChange={event => setRokDni(event.target.value)} /></label>
@@ -527,6 +533,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         <div className="rc-postavke">
           <div className="rc-post-glava">
             <p className={styles.eyebrow}>POSTAVKE RAČUNA</p>
+            <label className="rc-ddv-toggle" title="Vklopi, če si zavezanec za DDV — stopnjo (22 % / 9,5 % / 0 %) nato izbereš po vsaki postavki"><input type="checkbox" checked={ddvZavezanec} onChange={event => setDdvZavezanec(event.target.checked)} /> Obračunaj DDV</label>
             <div className="rc-post-gumbi">
               {/* samo ce racun izhaja iz ponudbe — povrne narocnika+postavke na izhodisce ponudbe (rocnih sprememb v ostalih poljih ne izbrise) */}
               {offerId && <button type="button" className="rc-ponastavi" onClick={ponastaviNaPrivzeto}>↺ Ponastavi na privzeto</button>}
@@ -580,7 +587,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           )}
         </div>
 
-        <div className={styles.invoiceSubmit}><label className={styles.invoiceCheck}><input type="checkbox" checked={placano} onChange={event => setPlacano(event.target.checked)} /> Račun je že plačan</label><button>Shrani račun</button></div>
+        <div className={styles.invoiceSubmit}><label className={styles.invoiceCheck}><input type="checkbox" checked={placano} onChange={event => setPlacano(event.target.checked)} /> Račun je že plačan</label><button type="button" className="rc-poslji" onClick={() => posljiVPlacilo({ id: 'draft', number: stevilka.trim(), title: izracun.postavke[0]?.opis || undefined, client: stranka.trim(), amount: Math.round(izracun.zaPlacilo * 100) / 100, paid: placano, date: datumIzdaje, dueDays: clamp(Math.round(stev(rokDni)) || PRIVZETI_ROK_DNI, 0, 365) })}>Pošlji naročniku</button><button>Shrani račun</button></div>
         {napaka && <p className="rc-napaka">{napaka}</p>}
       </form>
     </section>}
@@ -591,6 +598,10 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-postavke{min-width:0;padding:1rem;border:1px solid var(--line);border-radius:.9rem;background:linear-gradient(135deg,oklch(98% .018 87),oklch(96% .025 62))}
       .rc .rc-postavke *{box-sizing:border-box;min-width:0}
       .rc .rc-post-glava{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap}
+      .rc .rc-ddv-toggle{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:650;color:var(--ink);cursor:pointer;white-space:nowrap}
+      .rc .rc-ddv-toggle input{width:1.05rem;height:1.05rem;accent-color:var(--accent,#6E4FA6);cursor:pointer}
+      .rc .rc-poslji{padding:.7rem 1.1rem;border:1px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
+      .rc .rc-poslji:hover{background:var(--ink);color:var(--paper)}
       .rc .rc-post-gumbi{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
       .rc .rc-dodaj{padding:.45rem .9rem;border:1px dashed color-mix(in oklch,var(--ink) 35%,transparent);border-radius:999px;background:transparent;color:var(--ink);font:700 .6rem var(--font-sans),sans-serif;cursor:pointer;transition:border-color .15s ease,background .15s ease}
       .rc .rc-dodaj:hover{border-color:var(--ink);background:oklch(100% 0 0/.5)}
