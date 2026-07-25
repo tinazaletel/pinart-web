@@ -151,7 +151,7 @@ const pwStyles = `
 @media (prefers-reduced-motion:reduce){.pw-vsi-panel{animation:none}}
 .pw-vsi-panel h2{margin:.4rem 0 .2rem;font-family:var(--font-serif),Didot,serif;font-weight:600;font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.05;color:var(--ink)}
 .pw-vsi-projekt{margin:0 0 1.1rem;color:var(--muted);font-size:.72rem}
-.pw-vsi-x{position:absolute;top:1rem;right:1rem;z-index:8;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
+.pw-vsi-x{position:fixed;top:3.85rem;right:1.4rem;z-index:101;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
 .pw-vsi-x:hover{background:var(--ink);color:var(--paper)}
 /* preklop načina prikaza (segmentna pilula): Strani (paginacija) | Drsenje (ves seznam) */
 .pw-vsi-nacin{display:inline-flex;align-items:center;gap:.2rem;width:max-content;margin:0 0 .7rem;padding:.2rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
