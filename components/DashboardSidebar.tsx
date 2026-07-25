@@ -12,7 +12,7 @@ import MeniProfil from './MeniProfil';
 import PaketZnak from './PaketZnak';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
-type Section = 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'naloge' | 'prices' | 'accounting' | 'profile' | 'settings';
+type Section = 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings';
 
 /* Meni je razdeljen po tem, KAJ UPORABNIK POCNE, ne kaj stvar je:
    Delo = ustvarjas dokument za stranko · Podatki = vzdrzujes vnose · Nacrt = racunas/ciljas.
@@ -58,11 +58,12 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
       {item('expenses', `${base}/kalkulator/stroski`, '03', 'Stroški', 'stroski', 'expenses')}
       {item('projects', `${base}/kalkulator/projekti`, '04', 'Arhiv', 'zgodovina')}
     </MeniSkupina>
-    <MeniSkupina naslov="Načrt" aktivna={active === 'goals' || active === 'time' || active === 'plan' || active === 'naloge'}>
+    <MeniSkupina naslov="Načrt" aktivna={active === 'goals' || active === 'time' || active === 'plan' || active === 'naloge' || active === 'koledar'}>
       {item('goals', `${base}/kalkulator/cilji`, '01', 'Cilji', 'cilji', 'businessInsights')}
       {item('time', `${base}/kalkulator/cas`, '02', 'Čas', 'cas', 'businessInsights')}
       {item('plan', `${base}/kalkulator/poslovni-nacrt`, '03', 'Poslovni okvir', 'okvir', 'businessInsights')}
       {item('naloge', `${base}/kalkulator/naloge`, '04', 'Naloge', 'naloge')}
+      {item('koledar', `${base}/kalkulator/koledar`, '05', 'Koledar', 'koledar')}
     </MeniSkupina>
     <MeniSkupina naslov="Drugo" vednoVidna aktivna={active === 'settings'}>
       {item('settings', `${base}/kalkulator/nastavitve`, '01', 'Nastavitve', 'nastavitve')}
