@@ -143,11 +143,11 @@ const pwStyles = `
 .pw-vec:hover{color:var(--ink)}
 /* SLIDE "Vsi <tip>" (pogodbe/računi/stroški) — vzorec styles.detailBackdrop/detailPanel +
    lepljivi X (glej ArhivWorkspace .arh-det-x), tu podvojeno s predpono pw-vsi- */
-/* backdrop: panel poravnan LEVO + močan blur/zatemnitev, da se stran zadaj ne bere kot drugo okno */
-.pw-vsi-backdrop{justify-content:flex-start;background:oklch(22% .02 55 / .64);backdrop-filter:blur(10px) saturate(1.05);-webkit-backdrop-filter:blur(10px) saturate(1.05)}
-/* panel: poln vstop z LEVE proti desni (kot pogodbe), flex-stolpec — glava fiksna, seznam drsi, paginacija lepljiva noga */
-.pw-vsi-panel{width:min(46rem,100vw);height:100%;overflow:hidden;display:flex;flex-direction:column;box-shadow:1.6rem 0 4rem oklch(20% .03 55 / .2);animation:pwVsiIn .36s cubic-bezier(.22,1,.36,1) both}
-@keyframes pwVsiIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+/* backdrop: panel poravnan DESNO (kot pogodba/dokument) + blur zatemnitev strani zadaj */
+.pw-vsi-backdrop{justify-content:flex-end;background:oklch(22% .02 55 / .5);backdrop-filter:blur(9px) saturate(1.05);-webkit-backdrop-filter:blur(9px) saturate(1.05)}
+/* panel: čist predal z DESNE (kot pogodba — seže do roba), flex-stolpec — glava fiksna, seznam drsi, paginacija lepljiva noga */
+.pw-vsi-panel{width:min(46rem,100vw);height:100%;overflow:hidden;display:flex;flex-direction:column;box-shadow:-1.6rem 0 4rem oklch(20% .03 55 / .2);animation:pwVsiIn .36s cubic-bezier(.22,1,.36,1) both}
+@keyframes pwVsiIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
 @media (prefers-reduced-motion:reduce){.pw-vsi-panel{animation:none}}
 .pw-vsi-panel h2{margin:.4rem 0 .2rem;font-family:var(--font-serif),Didot,serif;font-weight:600;font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.05;color:var(--ink)}
 .pw-vsi-projekt{margin:0 0 1.1rem;color:var(--muted);font-size:.72rem}
