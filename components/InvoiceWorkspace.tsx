@@ -303,13 +303,16 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     const kontakt = [ponudnik.davcna.trim() && (ddvZavezanec ? 'ID za DDV: ' : 'Davčna št.: ') + ponudnik.davcna.trim(), ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(), ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(), ponudnik.email.trim()].filter(Boolean).join(' · ');
     const glavaBesedilo = aktivnaPredloga().glava?.trim();
     const glavaLine = glavaBesedilo ? '<br><span class="mut" style="color:var(--akcent,#B25476);font-weight:600">' + esc(glavaBesedilo) + '</span>' : '';
-    return `<div class="lg"><div><b>${esc(ponudnik.ime.trim() || '[Tvoje podjetje]')}</b>${glavaLine}${ponudnik.naslov.trim() ? '<br>' + esc(ponudnik.naslov.trim()) : ''}${kontakt ? '<br><span class="mut">' + esc(kontakt) + '</span>' : ''}</div><div class="rt">Pinart</div></div>`;
+    /* desni znak = TVOJ shranjeni logo (če obstaja); prej trdo zakodiran »Pinart« -> logo se ni videl */
+    const logo = aktivnaPredloga().logo?.trim();
+    const znak = logo ? `<img class="lg-logo" src="${logo}" alt="">` : `<div class="rt">${esc(ponudnik.ime.trim() || '')}</div>`;
+    return `<div class="lg"><div><b>${esc(ponudnik.ime.trim() || '[Tvoje podjetje]')}</b>${glavaLine}${ponudnik.naslov.trim() ? '<br>' + esc(ponudnik.naslov.trim()) : ''}${kontakt ? '<br><span class="mut">' + esc(kontakt) + '</span>' : ''}</div>${znak}</div>`;
   };
   const dokNoga = () => {
     const n = aktivnaPredloga().noga?.trim();
     return n ? `<div class="dok-noga" style="margin-top:24px;padding-top:10px;border-top:1px solid rgba(17,17,17,.12);font-size:8pt;color:#9a9088;line-height:1.6">${esc(n).split('\n').join('<br>')}</div>` : '';
   };
-  const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.mut{color:#8a8177;font-size:9pt}
+  const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}
     .rac-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin:6px 0 22px}
     .rac-title{display:flex;flex-direction:column;gap:2px}
     .rac-kicker{font-size:9pt;letter-spacing:.28em;text-transform:uppercase;color:#B25476}
