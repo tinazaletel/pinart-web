@@ -110,6 +110,19 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   const flow = useMemo(() => podatkiZaPredogled(nacin, loadFlowData()), [nacin]);
   const { offers, contracts, invoices } = flow;
 
+  /* NAKNADNO pošiljanje ob pregledu (arhiv): mailto s prednapolnjeno zadevo/besedilom;
+     prejemnik iz imenika strank po imenu (če ima e-pošto). Do postavitve Resend (mail
+     zaledje) mailto NE pripne PDF-ja — uporabnica ga pripne ročno; z Resend bo priponka
+     samodejna. */
+  const strankaEmail = (ime: string) => {
+    const c = ime.trim().toLocaleLowerCase('sl-SI');
+    return (flow.clients || []).find(x => (x.name || '').trim().toLocaleLowerCase('sl-SI') === c)?.email || '';
+  };
+  const posljiStranki = (ime: string, zadeva: string, telo: string) => {
+    if (typeof window === 'undefined') return;
+    window.location.href = `mailto:${encodeURIComponent(strankaEmail(ime))}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`;
+  };
+
   const [zavihek, setZavihek] = useState<Zavihek>('projekti');
   /* ko ProjectsWorkspace odpre detajl projekta kot samostojno stran (klik na
      vrstico v tabeli), skrijemo .arh-glava (zavihki + orodna vrstica) — glej
@@ -534,7 +547,11 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                 {op && (op.alert
                   ? <div className="arh-opomba-kartica" role="alert"><Warning size={20} weight="bold" aria-hidden /><div><strong>Opozorilo</strong><p>{op.besedilo}</p></div></div>
                   : <div className="arh-opomba-blok"><strong>Opomba</strong><p>{op.besedilo}</p></div>)}
-                <a className="arh-povezava" href={`${base}/kalkulator/pogodbe`}>Odpri v Pogodbah ↗</a>
+                <div className="arh-akcije">
+                  <button type="button" className="arh-poslji" onClick={() => posljiStranki(c.client, `Pogodba — ${c.title}`, `Pozdravljeni,\n\nv prilogi vam pošiljam pogodbo »${c.title}«. Prosim za pregled in podpis.\n\nLep pozdrav`)}>Pošlji stranki ↗</button>
+                  <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/pogodbe`}>Uredi v Pogodbah ↗</a>
+                </div>
+                <p className="arh-mini">Do postavitve pošiljanja s priponko pripni PDF ročno (Prenesi → priloži).</p>
               </>;
             })()}
 
@@ -593,7 +610,11 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                       )}
                     </div>
 
-                    <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/racuni`}>Uredi v Računih ↗</a>
+                    <div className="arh-akcije">
+                      <button type="button" className="arh-poslji" onClick={() => posljiStranki(r.client, `Račun ${r.number || ''}`.trim(), `Pozdravljeni,\n\nv prilogi vam pošiljam račun ${r.number || ''} v znesku ${eur(r.amount)}${typeof r.dueDays === 'number' ? `, z rokom plačila ${r.dueDays} dni` : ''}.\n\nLep pozdrav`)}>Pošlji stranki ↗</button>
+                      <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/racuni`}>Uredi v Računih ↗</a>
+                    </div>
+                    <p className="arh-mini">Do postavitve pošiljanja s priponko pripni PDF ročno (Prenesi → priloži).</p>
                   </>;
                 })()}
               </>;
@@ -731,6 +752,11 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         /* sekundarna razlicica (ponudba kot dokument zdaj nosi glavno pozornost,
            povezava v kalkulator je samo se pot do urejanja) */
         .arh-povezava-sekundarna{font-size:.8rem;font-weight:500;color:rgba(17,17,17,.62)}
+        /* akcije ob pregledu (pošlji stranki + uredi) */
+        .arh-akcije{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1.1rem;margin-top:.9rem}
+        .arh-poslji{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.05rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
+        .arh-poslji:hover{background:transparent;color:var(--ink)}
+        .arh-akcije .arh-povezava{margin-top:0}
 
         /* ── račun kot DOKUMENT v panelu (postavke + vsote), znotraj arh-ponudba-dok letterheada ── */
         .arh-racun-telo{padding:.2rem .1rem .1rem}
