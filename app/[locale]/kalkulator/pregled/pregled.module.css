@@ -1517,7 +1517,7 @@
 .clientEditor h2, .clientDirectory h2, .clientProfile h2, .goalOverview h2, .goalCopy h2,
 .goalBuilder header h2, .goalChecklist h2, .goalHistory h2, .orphanDocuments h2, .projectStory h2,
 .clientDocuments h3, .projectBundle h3, .projectNarrative h3 {
-  -webkit-text-stroke: 0.5px currentColor;
+  -webkit-text-stroke: 0.3px currentColor;
 }
 /* Stevilke / znacke BREZ outline (Tinina zahteva "outline cifram" = brez) */
 .flowTools strong, .kpi strong, .metric strong, .clientResult > strong, .clientFinance strong,
