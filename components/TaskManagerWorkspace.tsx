@@ -5,7 +5,7 @@
    Bodoni, ink, akcent). Lasten prefiksiran <style> blok (tm-), da ne trči s .shell. */
 
 import React, { useState, useEffect } from 'react';
-import { Pause, Play, ChartBar, ChatCircleDots, CaretLeft, CaretRight, Buildings, Circle, CheckCircle, UserPlus } from '@phosphor-icons/react';
+import { Pause, Play, ChartBar, ChatCircleDots, CaretLeft, CaretRight, Buildings, Circle, CheckCircle, UserPlus, Calendar } from '@phosphor-icons/react';
 import {
   Naloga,
   NalogaStolpec,
@@ -315,6 +315,15 @@ export default function TaskManagerWorkspace() {
     const naloga = naloge.find((n) => n.id === id);
     posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, dodeljenoOsebaId: sodelavecId || undefined, dodeljenoOsebaIme: so?.ime } : n)));
     if (naloga) { zabeleziAktivnost(id, trenutni.ime, so ? `Dodelil nalogo »${naloga.naslov}« osebi ${so.ime}` : `Odstranil dodelitev na »${naloga.naslov}«`); setZgodovina(preberiZgodovino()); }
+  };
+
+  /* odpre drsni detajl panel (klik na kartico) in ponastavi vnosna polja */
+  const odpriDetajl = (id: string) => {
+    setOdprtaNalogaId(id);
+    setNovKomentar('');
+    setNovaOznaka('');
+    setNovoPodopraviloBesedilo('');
+    setOdpriDodelitevPodId(null);
   };
 
   const izbrisiNalogo = (id: string) => {
@@ -841,45 +850,34 @@ export default function TaskManagerWorkspace() {
                 {nalogeVStolpcu.map((naloga) => {
                   const porabljene = porabljeneMinute(naloga);
                   const ocena = naloga.ocenjeniCasUre;
-                  const odstotekSurovi = ocena ? (porabljene / 60 / ocena) * 100 : 0;
-                  const prekoracitev = !!ocena && odstotekSurovi > 100;
-                  const odstotek = Math.min(100, odstotekSurovi);
                   const dodeljenoIme = naloga.dodeljenoOsebaIme || naloga.dodeljenoOseba || '';
                   return (
-                    <article key={naloga.id} className={`tm-kartica${naloga.isTimerRunning ? ' tm-kartica-tece' : ''}`} draggable={!samoOgled} onDragStart={(e) => handleDragStart(e, naloga.id)}>
-                      <div className="tm-kartica-vrh">
-                        <strong>{naloga.naslov}</strong>
-                        {naloga.isTimerRunning && <span className="tm-tece-znacka" aria-hidden>● teče</span>}
-                        <button
-                          type="button"
-                          className="tm-kartica-komentarji"
-                          onClick={() => { setOdprtaNalogaId(naloga.id); setNovKomentar(''); setNovaOznaka(''); setNovoPodopraviloBesedilo(''); setOdpriDodelitevPodId(null); }}
-                          aria-label={`Podrobnosti in komentarji (${naloga.komentarji?.length || 0})`}
-                          title="Podrobnosti, stranka, projekt in komentarji"
-                        >
-                          <ChatCircleDots size={13} weight={naloga.komentarji?.length ? 'fill' : 'regular'} />
-                          {!!naloga.komentarji?.length && <span className="tm-kartica-komentarji-st">{naloga.komentarji.length}</span>}
-                        </button>
-                        {jeVodjaAliAdmin && !samoOgled && <button type="button" className="tm-kartica-x" onClick={() => izbrisiNalogo(naloga.id)} title="Izbriši nalogo" aria-label="Izbriši nalogo">×</button>}
-                      </div>
-                      {naloga.opis && <p className="tm-kartica-opis">{naloga.opis}</p>}
-                      {!!naloga.oznake?.length && (
-                        <div className="tm-kartica-oznake">
-                          {naloga.oznake.map((o) => (
-                            <button
-                              key={o}
-                              type="button"
-                              className={`tm-oznaka-cip${filterOznaka === o ? ' tm-oznaka-cip-on' : ''}`}
-                              onClick={() => setFilterOznaka(filterOznaka === o ? '' : o)}
-                              title={`Filtriraj po oznaki »${o}«`}
-                            >
-                              {o}
-                            </button>
-                          ))}
+                    <article
+                      key={naloga.id}
+                      className={`tm-kartica${naloga.isTimerRunning ? ' tm-kartica-tece' : ''}`}
+                      draggable={!samoOgled}
+                      onDragStart={(e) => handleDragStart(e, naloga.id)}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => odpriDetajl(naloga.id)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); odpriDetajl(naloga.id); } }}
+                      aria-label={`Odpri podrobnosti: ${naloga.naslov}`}
+                    >
+                      {(!!naloga.oznake?.length || naloga.isTimerRunning || (jeVodjaAliAdmin && !samoOgled)) && (
+                        <div className="tm-kartica-vrh">
+                          {!!naloga.oznake?.length && (
+                            <span className="tm-kartica-tag" title={naloga.oznake.join(', ')}>
+                              {naloga.oznake[0]}{naloga.oznake.length > 1 ? ` +${naloga.oznake.length - 1}` : ''}
+                            </span>
+                          )}
+                          {naloga.isTimerRunning && <span className="tm-tece-znacka" aria-hidden>● teče</span>}
+                          {jeVodjaAliAdmin && !samoOgled && <button type="button" className="tm-kartica-x" onClick={(e) => { e.stopPropagation(); izbrisiNalogo(naloga.id); }} title="Izbriši nalogo" aria-label="Izbriši nalogo">×</button>}
                         </div>
                       )}
+                      <strong className="tm-kartica-naslov">{naloga.naslov}</strong>
+                      {naloga.opis && <p className="tm-kartica-opis">{naloga.opis}</p>}
                       <div className="tm-kartica-noga">
-                        {naloga.rok && <span className={`tm-rok${jeZapadlo(naloga.rok) && s.id !== 'done' ? ' tm-rok-zapadlo' : ''}`}>📅 {datStr(naloga.rok)}</span>}
+                        {naloga.rok && <span className={`tm-rok${jeZapadlo(naloga.rok) && s.id !== 'done' ? ' tm-rok-zapadlo' : ''}`}><Calendar size={11} weight="bold" /> {datStr(naloga.rok)}</span>}
                         {naloga.clientId && strankaImeMap.get(naloga.clientId) && (
                           <span className="tm-stranka-znacka" title={`Stranka: ${strankaImeMap.get(naloga.clientId)}`}>{strankaImeMap.get(naloga.clientId)}</span>
                         )}
@@ -889,28 +887,21 @@ export default function TaskManagerWorkspace() {
                             {naloga.podopravila.filter((p) => p.done).length}/{naloga.podopravila.length}
                           </span>
                         )}
-                        <select
-                          className={`tm-prioriteta-select tm-prioriteta-select-${naloga.prioriteta || 'brez'}`}
-                          value={naloga.prioriteta || ''}
-                          onChange={(e) => nastaviPrioriteto(naloga.id, e.target.value)}
-                          disabled={samoOgled}
-                          aria-label="Prioriteta"
-                          title={samoOgled ? 'Ni na voljo v predogledu (demo)' : 'Nastavi prioriteto'}
-                        >
-                          <option value="">Prioriteta —</option>
-                          {PRIORITETE.map((p) => <option key={p.id} value={p.id}>{p.naziv}</option>)}
-                        </select>
-                        {dodeljenoIme && <span className="tm-oseba-krog" title={`Dodeljeno: ${dodeljenoIme}`} aria-label={`Dodeljeno: ${dodeljenoIme}`}>{dodeljenoIme.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>}
-                      </div>
-                      <div className="tm-cas">
-                        <div className="tm-cas-vrsta">
-                          <span className="tm-cas-tekst">{formatUre(porabljene)}h{ocena ? ` / ${ocena}h` : ''}</span>
-                          {naloga.isTimerRunning && naloga.timerStartTime && <span className="tm-cas-ziv" aria-label="Tekoči čas">▶ {formatCasSek((zdaj - new Date(naloga.timerStartTime).getTime()) / 1000)}</span>}
-                          <button type="button" className={`tm-cas-gumb${naloga.isTimerRunning ? ' tm-cas-gumb-tece' : ''}`} onClick={() => preklopiStoparico(naloga.id)} disabled={samoOgled} aria-label={naloga.isTimerRunning ? 'Ustavi štoparico' : 'Zaženi štoparico'} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : (naloga.isTimerRunning ? 'Ustavi merjenje' : 'Zaženi merjenje')}>
-                            {naloga.isTimerRunning ? <Pause size={12} weight="fill" /> : <Play size={12} weight="fill" />}
-                          </button>
-                        </div>
-                        {ocena ? <div className="tm-cas-progres"><div className={`tm-cas-zapolnjeno${prekoracitev ? ' tm-cas-prekoracitev' : ''}`} style={{ width: `${odstotek}%` }} /></div> : null}
+                        {(porabljene > 0 || naloga.isTimerRunning) && (
+                          <span className="tm-kartica-cas" title="Porabljen čas">
+                            {naloga.isTimerRunning && naloga.timerStartTime
+                              ? <>▶ {formatCasSek((zdaj - new Date(naloga.timerStartTime).getTime()) / 1000)}</>
+                              : <>{formatUre(porabljene)}h{ocena ? ` / ${ocena}h` : ''}</>}
+                          </span>
+                        )}
+                        <span className="tm-noga-desno">
+                          {naloga.prioriteta && (
+                            <span className={`tm-prioriteta-znacka tm-prioriteta-znacka-${naloga.prioriteta}`}>
+                              {PRIORITETE.find((p) => p.id === naloga.prioriteta)?.naziv || naloga.prioriteta}
+                            </span>
+                          )}
+                          {dodeljenoIme && <span className="tm-oseba-krog" title={`Dodeljeno: ${dodeljenoIme}`} aria-label={`Dodeljeno: ${dodeljenoIme}`}>{dodeljenoIme.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>}
+                        </span>
                       </div>
                     </article>
                   );
@@ -1502,14 +1493,23 @@ export default function TaskManagerWorkspace() {
         .tm-kartice{display:flex;flex-direction:column;gap:.6rem;flex:1;min-height:3rem}
         .tm-prazno{margin:.4rem;padding:1.2rem .6rem;border:1px dashed var(--line);border-radius:.8rem;color:var(--muted);font-size:.72rem;text-align:center}
 
-        .tm-kartica{padding:.75rem .8rem;border:1px solid var(--line);border-radius:.8rem;background:oklch(100% 0 0/.92);box-shadow:0 .4rem 1rem oklch(20% .03 55/.06);cursor:grab}
-        .tm-kartica:active{cursor:grabbing}
-        .tm-kartica:hover{border-color:color-mix(in oklch,var(--ink) 24%,transparent)}
-        .tm-kartica-vrh{display:flex;align-items:flex-start;gap:.5rem}
-        .tm-kartica-vrh strong{flex:1;font-size:.84rem;font-weight:650;line-height:1.35;color:var(--ink)}
-        .tm-kartica-x{flex:none;width:1.5rem;height:1.5rem;padding:0;border:0;border-radius:50%;background:transparent;color:var(--muted);font-size:.95rem;line-height:1;cursor:pointer}
-        .tm-kartica-x:hover{background:var(--ink);color:var(--paper)}
-        .tm-kartica-opis{margin:.4rem 0 0;color:var(--muted);font-size:.74rem;line-height:1.45}
+        .tm-kartica{padding:.8rem .85rem;border:1px solid var(--line);border-radius:.9rem;background:oklch(100% 0 0/.94);box-shadow:0 .3rem .8rem oklch(20% .03 55/.05);cursor:pointer;transition:box-shadow .18s ease,border-color .18s ease,transform .18s ease}
+        .tm-kartica:hover{border-color:color-mix(in oklch,var(--ink) 16%,transparent);box-shadow:0 .6rem 1.4rem oklch(20% .03 55/.09);transform:translateY(-1px)}
+        .tm-kartica:active{cursor:grabbing;transform:none}
+        .tm-kartica:focus-visible{outline:2px solid oklch(62% .19 300);outline-offset:2px}
+        .tm-kartica-vrh{display:flex;align-items:center;gap:.4rem;min-height:1.15rem;margin-bottom:.5rem}
+        .tm-kartica-tag{padding:.16rem .5rem;border-radius:999px;background:oklch(95% .02 300/.7);color:oklch(40% .1 300);font:800 .58rem var(--font-sans),sans-serif;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+        .tm-kartica-x{flex:none;margin-left:auto;width:1.5rem;height:1.5rem;padding:0;border:0;border-radius:50%;background:transparent;color:var(--muted);font-size:.95rem;line-height:1;cursor:pointer;opacity:.55;transition:opacity .15s,background .15s,color .15s}
+        .tm-kartica:hover .tm-kartica-x{opacity:1}
+        .tm-kartica-x:hover{background:var(--ink);color:var(--paper);opacity:1}
+        .tm-kartica-naslov{display:block;font-size:.9rem;font-weight:650;line-height:1.32;color:var(--ink)}
+        .tm-kartica-opis{margin:.35rem 0 0;color:var(--muted);font-size:.76rem;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .tm-noga-desno{display:flex;align-items:center;gap:.4rem;margin-left:auto}
+        .tm-prioriteta-znacka{padding:.16rem .5rem;border-radius:999px;font:800 .6rem var(--font-sans),sans-serif;white-space:nowrap}
+        .tm-prioriteta-znacka-visoka{background:oklch(58% .16 35);color:#fff}
+        .tm-prioriteta-znacka-srednja{background:oklch(89% .015 80);color:var(--ink)}
+        .tm-prioriteta-znacka-nizka{background:oklch(95% .008 87);color:var(--muted)}
+        .tm-kartica-cas{display:inline-flex;align-items:center;gap:.25rem;font:700 .64rem var(--font-sans),sans-serif;color:var(--muted);font-variant-numeric:tabular-nums}
         .tm-rok{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .5rem;border-radius:999px;background:oklch(95% .01 87);color:var(--muted);font-size:.66rem;font-weight:700}
         .tm-rok-zapadlo{background:oklch(93% .06 30);color:oklch(48% .16 30)}
         .tm-kartica-noga{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-top:.55rem}
