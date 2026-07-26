@@ -374,6 +374,13 @@
 .vrstaPilula[data-vrsta='zasebni'] { --pika: oklch(56% .12 300); }   /* vijola */
 .vrstaPilula[data-vrsta='dopust'] { --pika: oklch(56% .12 300); }    /* vijola */
 .vrstaPilula[data-vrsta='praznik'] { --pika: oklch(62% .02 70); }    /* siva */
+.krajPilula {
+  display: inline-flex; align-items: center; margin-left: .4rem;
+  padding: .28rem .58rem; border-radius: 999px; border: 1px solid transparent;
+  font-size: .64rem; font-weight: 700; white-space: nowrap; vertical-align: middle;
+}
+.krajPilula[data-kraj='doma'] { background: oklch(93% .05 260); color: oklch(42% .13 260); }     /* modra = od doma */
+.krajPilula[data-kraj='pisarna'] { background: oklch(95% .008 87); color: oklch(46% .02 70); border-color: oklch(88% .012 87); }  /* nevtralna = na podjetju */
 
 /* ── Mesečni povzetek: velik Bodoni števec + napredovalni trak proti cilju ── */
 .mesecPovzetek { display: grid; gap: .55rem; margin-top: .2rem; padding: 1.1rem 1.2rem; border-radius: 1.1rem; background: oklch(95% .025 87); }

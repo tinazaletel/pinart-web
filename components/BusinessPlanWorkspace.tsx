@@ -29,15 +29,18 @@ const vnosiSklon = (n: number) => { const d = n % 100; return d === 1 ? 'vnos' :
  * `vrstaZapisa`), zato polje ostane neobvezno in migracija ni potrebna.
  */
 type VrstaPrisotnosti = 'redno' | 'sluzbena' | 'bolniska' | 'zasebni' | 'dopust' | 'praznik';
+/* kraj opravljanja dela (za delovne dni) — evidenca dela od doma vs. na podjetju */
+type KrajDela = 'pisarna' | 'doma';
 type Prisotnost = {
   id: string; datum: string; prihod: string; odhod: string; odmorMin?: number;
-  vrsta?: VrstaPrisotnosti; opomba?: string;
+  vrsta?: VrstaPrisotnosti; opomba?: string; kraj?: KrajDela;
 };
 
 const VRSTA_OZNAKA: Record<VrstaPrisotnosti, string> = {
   redno: 'Redno', sluzbena: 'Službena pot', bolniska: 'Bolniška',
   zasebni: 'Zasebni izhod', dopust: 'Dopust', praznik: 'Praznik',
 };
+const KRAJ_OZNAKA: Record<KrajDela, string> = { pisarna: 'Na podjetju', doma: 'Delo od doma' };
 /* Cel dan brez izracuna ur — v tabeli in mesecnem povzetku se prikaze "—". */
 const brezUrVrsta = (v: VrstaPrisotnosti) => v === 'bolniska' || v === 'dopust' || v === 'praznik';
 /* stari zapisi (pred to razsiritvijo) nimajo polja vrsta -> stejejo se kot redno delo */
@@ -54,8 +57,8 @@ function demoPrisotnosti(): Prisotnost[] {
   const zdaj = new Date();
   const dan = (n: number) => `${zdaj.getFullYear()}-${String(zdaj.getMonth() + 1).padStart(2, '0')}-${String(n).padStart(2, '0')}`;
   return [
-    { id: 'demo-p-1', datum: dan(1), prihod: '08:30', odhod: '16:45', odmorMin: 30, vrsta: 'redno' },
-    { id: 'demo-p-2', datum: dan(2), prihod: '09:00', odhod: '17:15', odmorMin: 30, vrsta: 'redno' },
+    { id: 'demo-p-1', datum: dan(1), prihod: '08:30', odhod: '16:45', odmorMin: 30, vrsta: 'redno', kraj: 'pisarna' },
+    { id: 'demo-p-2', datum: dan(2), prihod: '09:00', odhod: '17:15', odmorMin: 30, vrsta: 'redno', kraj: 'doma' },
     { id: 'demo-p-3', datum: dan(3), prihod: '08:00', odhod: '18:00', odmorMin: 30, vrsta: 'sluzbena', opomba: 'Sestanek s stranko v Mariboru' },
     { id: 'demo-p-4', datum: dan(4), prihod: '08:45', odhod: '16:30', odmorMin: 30, vrsta: 'redno' },
     { id: 'demo-p-5', datum: dan(5), prihod: '', odhod: '', vrsta: 'bolniska' },
@@ -242,6 +245,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   const [odhodCas, setOdhodCas] = useState('');
   const [odmorCas, setOdmorCas] = useState('30');
   const [vrstaVnos, setVrstaVnos] = useState<VrstaPrisotnosti>('redno');
+  const [krajVnos, setKrajVnos] = useState<KrajDela>('pisarna');
   const [opombaVnos, setOpombaVnos] = useState('');
   /* dan, za katerega trenutno vnasamo prisotnost — privzeto danes, a ga je
      mozno prestaviti (npr. da popravis pretekli dan) */
@@ -259,10 +263,11 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       setPrihodCas(obstojeci.prihod); setOdhodCas(obstojeci.odhod);
       setOdmorCas(obstojeci.odmorMin != null ? String(obstojeci.odmorMin) : '30');
       setVrstaVnos(obstojeci.vrsta || 'redno');
+      setKrajVnos(obstojeci.kraj || 'pisarna');
       setOpombaVnos(obstojeci.opomba || '');
     } else {
       setPrihodCas(''); setOdhodCas(''); setOdmorCas('30');
-      setVrstaVnos('redno'); setOpombaVnos('');
+      setVrstaVnos('redno'); setKrajVnos('pisarna'); setOpombaVnos('');
     }
   };
 
@@ -462,7 +467,8 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     const zapis: Prisotnost = {
       id: obstojeci?.id || crypto.randomUUID(), datum: dan,
       prihod: prihodCas, odhod: odhodCas, odmorMin: prisotnostOdmor || undefined,
-      vrsta: vrstaVnos, opomba: opombaVnos.trim() || undefined,
+      vrsta: vrstaVnos, kraj: brezUrVrsta(vrstaVnos) ? undefined : krajVnos,
+      opomba: opombaVnos.trim() || undefined,
     };
     const next = obstojeci ? prisotnosti.map(x => (x.id === zapis.id ? zapis : x)) : [zapis, ...prisotnosti];
     setPrisotnosti(next); localStorage.setItem('pinart-flow-prisotnost', JSON.stringify(next));
@@ -826,6 +832,15 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             <option value="praznik">Praznik</option>
           </select>
         </label>
+        {!brezUrVrsta(vrstaVnos) && (
+          <label>
+            <span>Kraj dela</span>
+            <select value={krajVnos} onChange={e => setKrajVnos(e.target.value as KrajDela)}>
+              <option value="pisarna">Na podjetju</option>
+              <option value="doma">Delo od doma</option>
+            </select>
+          </label>
+        )}
         <label className={styles.komentarPolje}><span>Komentar <small>ni obvezno</small></span><input type="text" placeholder="npr. pri zdravniku, sestanek …" value={opombaVnos} onChange={e => setOpombaVnos(e.target.value)} /></label>
 
         <p className={styles.prisotnostIzpis}>
@@ -861,7 +876,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
                   <td>{p.prihod || '—'}</td>
                   <td>{p.odmorMin ? `${p.odmorMin} min` : '—'}</td>
                   <td>{p.odhod || '—'}</td>
-                  <td><span className={styles.vrstaPilula} data-vrsta={v}>{VRSTA_OZNAKA[v]}</span></td>
+                  <td><span className={styles.vrstaPilula} data-vrsta={v}>{VRSTA_OZNAKA[v]}</span>{!brezUrVrsta(v) && p.kraj && <span className={styles.krajPilula} data-kraj={p.kraj} title={KRAJ_OZNAKA[p.kraj]}>{p.kraj === 'doma' ? 'Doma' : 'Podjetje'}</span>}</td>
                   <td className={styles.mesecUre}>{ure == null ? '—' : izpisMinut(ure)}</td>
                   <td>
                     {!samoOgled && <button type="button"
