@@ -503,9 +503,10 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           <label className="rc-polje">Datum izdaje
             <input type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} />
           </label>
+          <label className="rc-polje" style={{ flexDirection: 'row', alignItems: 'center', gap: '.55rem', cursor: 'pointer', fontWeight: 600 }}><input type="checkbox" checked={predracun} onChange={event => setPredracun(event.target.checked)} style={{ width: 'auto', margin: 0 }} />Predračun <span style={{ fontWeight: 400, opacity: .7, fontSize: '.8em' }}>— poziv k plačilu vnaprej</span></label>
         </div>
         <div className="rc-gumbi">
-          <button type="button" className="rc-gumb" aria-label="Pripravi račun" disabled={vir === 'ponudba' && !offerId} onClick={odpriObrazec}>Pripravi račun →</button>
+          <button type="button" className="rc-gumb" aria-label="Pripravi račun" disabled={vir === 'ponudba' && !offerId} onClick={odpriObrazec}>{predracun ? 'Pripravi predračun →' : 'Pripravi račun →'}</button>
         </div>
       </div>
     </section>}
