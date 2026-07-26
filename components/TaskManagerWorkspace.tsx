@@ -776,7 +776,7 @@ export default function TaskManagerWorkspace() {
           ) : (
             <p className="tm-demo-namig">Urejanje ni na voljo v predogledu (demo).</p>
           )}
-          <button type="button" className="tm-seed-gumb" onClick={() => { setPogled('kanban'); setHitroOdprt((o) => !o); }}>Hitro dodaj več</button>
+          <button type="button" className="tm-seed-gumb tm-seed-gumb-ai" onClick={() => { setPogled('kanban'); setHitroOdprt((o) => !o); }} title="Piši prosto, več nalog naenkrat — zasnova za AI pomoč pri dodajanju"><ChatCircleDots size={15} weight="regular" /> Hitro dodaj več</button>
         </div>
       </header>
 
@@ -1407,8 +1407,8 @@ export default function TaskManagerWorkspace() {
       })()}
 
       <style>{`
-        .tm{padding:1.6rem clamp(1rem,3vw,2.2rem) 4rem;min-width:0}
-        .tm-glava{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem;margin-bottom:1.6rem}
+        .tm{padding:.9rem clamp(1rem,3vw,2.2rem) 4rem;min-width:0}
+        .tm-glava{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem;margin-bottom:1rem}
         .tm-eyebrow{margin:0 0 .35rem;font:800 .62rem var(--font-sans),sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
         .tm-naslov{margin:0;font:500 clamp(1.6rem,3vw,2.15rem)/1 var(--font-serif),Georgia,serif;color:var(--ink)}
         .tm-podnaslov{margin:.55rem 0 0;max-width:44ch;color:var(--muted);font-size:.86rem;line-height:1.5}
@@ -1466,7 +1466,7 @@ export default function TaskManagerWorkspace() {
         .tm-filter-oznaka{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding:.42rem 1.8rem .42rem .85rem;border:1px solid var(--line);border-radius:999px;background-color:oklch(97% .006 87/.8);color:var(--ink);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer;background-repeat:no-repeat;background-position:right .6rem center;background-size:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
         .tm-filter-oznaka:focus{outline:none;border-color:var(--ink)}
         /* gumb "Naloži razvojne naloge (Flow)" v glavi + kratko sporocilo ob kliku */
-        .tm-seed-gumb{flex:none;padding:.65rem 1rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--ink);font:750 .7rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+        .tm-seed-gumb{flex:none;display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--ink);font:750 .7rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
         .tm-seed-gumb:hover{background:var(--ink);color:var(--paper);border-style:solid;border-color:var(--ink)}
         .tm-seed-sporocilo{font:600 .68rem var(--font-sans),sans-serif;color:var(--muted)}
         /* oznake (tagi) na kartici naloge — majhni čipi, klik = filter po tem tagu */
@@ -1574,7 +1574,7 @@ export default function TaskManagerWorkspace() {
         .tm-kartica-komentarji-st{font:800 .58rem var(--font-sans),sans-serif;color:inherit}
 
         /* podlaga/panel v Pinart slogu — deljeno med Analitiko, Podrobnosti naloge in Novo dodelitev */
-        .tm-analitika-podlaga,.tm-detajli-podlaga,.tm-dodelitev-podlaga{position:fixed;inset:0;z-index:95;display:flex;justify-content:flex-end;background:oklch(20% .02 55/.32);backdrop-filter:blur(2px)}
+        .tm-analitika-podlaga,.tm-detajli-podlaga,.tm-dodelitev-podlaga{position:fixed;inset:0;z-index:120;display:flex;justify-content:flex-end;background:oklch(20% .02 55/.32);backdrop-filter:blur(2px)}
         .tm-analitika-panel,.tm-detajli-panel,.tm-dodelitev-panel{width:min(26rem,92vw);height:100%;overflow-y:auto;padding:1.4rem 1.5rem 2.4rem;background:var(--paper);border-left:1px solid var(--line);box-shadow:-1.2rem 0 3rem oklch(20% .03 55/.14)}
         /* detajl naloge dobi malo vec prostora za checklist podopravil */
         .tm-detajli-panel{width:min(29rem,94vw)}
@@ -1635,7 +1635,7 @@ export default function TaskManagerWorkspace() {
         .tm-teden-strelica{flex:none;width:2rem;height:2rem;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--paper);color:var(--ink);cursor:pointer;transition:background .15s,color .15s}
         .tm-teden-strelica:hover{background:var(--ink);color:var(--paper)}
         .tm-teden-naslov{display:flex;align-items:center;gap:.6rem}
-        .tm-teden-naslov strong{font:600 1.05rem var(--font-serif),Georgia,serif;color:var(--ink)}
+        .tm-teden-naslov strong{font:600 1rem var(--font-sans),sans-serif;letter-spacing:-.01em;color:var(--ink)}
         .tm-teden-danes{padding:.3rem .7rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);opacity:.65;font:700 .64rem var(--font-sans),sans-serif;cursor:pointer}
         .tm-teden-danes:hover{opacity:1;border-color:var(--ink)}
         .tm-obdobje-preklop{display:inline-flex;gap:.2rem;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}

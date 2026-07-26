@@ -2,12 +2,19 @@ export type NalogaStolpec = 'todo' | 'in_progress' | 'waiting' | 'done';
 
 export type NalogaPrioriteta = 'nizka' | 'srednja' | 'visoka';
 
+/* vloga avtorja opisa/komentarja — da se na nalogi vidi, KDO je nekaj napisal:
+   sef = vodja projekta, sodelavec = clan ekipe, stranka = narocnik (prek portala/maila),
+   jaz = trenutni uporabnik. Uporabljeno za znacko ob opisu in ob vsakem komentarju. */
+export type NalogaAvtorVloga = 'sef' | 'sodelavec' | 'stranka' | 'jaz';
+
 /* En komentar na nalogi — zametek chata/niti pogovora vezanega na konkretno nalogo. */
 export interface NalogaKomentar {
   id: string;
   avtorIme: string;
   besedilo: string;
   cas: string; // ISO datum/cas
+  /* kdo je komentar napisal (sef/sodelavec/stranka/jaz) — za barvno znacko in oblacek na kartici */
+  vloga?: NalogaAvtorVloga;
 }
 
 /* En podopravilo (checklist item) na nalogi — prikazano v detajlnem panelu naloge (klik na
@@ -24,6 +31,9 @@ export interface Naloga {
   id: string;
   naslov: string;
   opis?: string;
+  /* kdo je napisal opis naloge (kaj je treba narediti) — prikazano kot podpis pod opisom */
+  opisAvtorIme?: string;
+  opisAvtorVloga?: NalogaAvtorVloga;
   stolpec: NalogaStolpec;
   /* prost tekstovni naziv projekta (ni loceno shranjen entiteta) — po zelji se ujema
      z imenom v TedenskaDodelitev.projektIme, da se todo naloge navezejo na sefov razpored */
