@@ -1,7 +1,7 @@
 .shell {
   --paper: oklch(97% 0.012 87);
   --ink: oklch(19% 0.014 55);
-  --line: oklch(84% 0.018 80);
+  --line: oklch(89.5% 0.011 80);
   --purple: oklch(66% 0.2 297);
   --mint: oklch(79% 0.13 165);
   --orange: oklch(76% 0.16 52);
@@ -25,7 +25,7 @@
   font-family: var(--font-sans), sans-serif;
   overflow-x: clip;
 }
-:global(body[data-dashboard-theme='dim']) .shell { --paper: oklch(91% .018 82); --ink: oklch(17% .015 55); --line: oklch(75% .022 78); }
+:global(body[data-dashboard-theme='dim']) .shell { --paper: oklch(91% .018 82); --ink: oklch(17% .015 55); --line: oklch(84% .015 78); }
 .shell :is(input, select, textarea) { min-height: 2.75rem; font-size: 16px !important; line-height: 1.35; }
 .shell input::file-selector-button { min-height: 2.25rem; margin-right: .75rem; padding: 0 1.1rem; border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font: 700 14px var(--font-sans), sans-serif; cursor: pointer; transition: transform .18s ease, opacity .18s ease; }
 .shell input::file-selector-button:hover { transform: translateY(-1px); opacity: .9; }
@@ -231,7 +231,7 @@
 .flowTools > *:nth-child(7) { background: linear-gradient(125deg, oklch(95% .045 170), oklch(84% .1 165), oklch(91% .06 295)); background-size: 220% 220%; animation: cardFlow 10s ease-in-out -2s infinite alternate; }
 .flowTools > *:nth-child(8) { background: linear-gradient(125deg, oklch(94% .035 87), oklch(88% .065 60), oklch(91% .055 295)); background-size: 220% 220%; animation: cardFlow 13s ease-in-out -8s infinite alternate; }
 .flowTools span { position: relative; z-index: 2; font-size: .56rem; font-weight: 850; letter-spacing: .1em; }
-.flowTools strong { position: relative; z-index: 2; margin-top: auto; font: 500 1.78rem var(--font-serif), Georgia, serif; -webkit-text-stroke: 0.5px currentColor; }
+.flowTools strong { position: relative; z-index: 2; margin-top: auto; font: 500 1.78rem var(--font-serif), Georgia, serif; -webkit-text-stroke: 0; }
 .flowTools small { position: relative; z-index: 2; margin-top: .32rem; color: color-mix(in oklch, currentColor 72%, transparent); font-size: .59rem; }
 .flowTools i { z-index: 3; position: absolute; top: 1rem; right: 1rem; display: grid; place-items: center; width: 2.2rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .38); border-radius: 50%; background: oklch(100% 0 0 / .18); color: currentColor; font: 500 1.25rem/1 var(--font-sans), sans-serif; font-style: normal; }
 .flowTools i svg { display: block; }
@@ -842,7 +842,7 @@
 .kpi:nth-child(3) { background: linear-gradient(135deg, oklch(96% .025 155), oklch(85% .09 164)); }
 .kpi:nth-child(4) { background: linear-gradient(135deg, oklch(97% .025 68), oklch(88% .085 48)); }
 .kpi > span { font-size: .63rem; font-weight: 750; }
-.kpi strong { margin: 1.4rem 0 .25rem; font: 500 clamp(1.45rem, 2.1vw, 2.3rem) var(--font-serif), Georgia, serif; -webkit-text-stroke: 0.5px currentColor; }
+.kpi strong { margin: 1.4rem 0 .25rem; font: 500 clamp(1.45rem, 2.1vw, 2.3rem) var(--font-serif), Georgia, serif; -webkit-text-stroke: 0; }
 .kpi small { color: color-mix(in oklch, currentColor 58%, transparent); font-size: .56rem; }
 .resultIcon { position: absolute; z-index: 0; right: -.9rem; bottom: -1.25rem; display: grid; place-items: center; width: 6rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .52); border-radius: 1.65rem; background: linear-gradient(145deg, oklch(100% 0 0 / .7), oklch(100% 0 0 / .16)); box-shadow: -.8rem -.8rem 1.8rem oklch(100% 0 0 / .2), 0 1.2rem 2.2rem oklch(25% .05 60 / .12), inset .35rem .35rem .7rem oklch(100% 0 0 / .5); opacity: .36; transform: rotate(-11deg) skewY(2deg); }
 .resultIcon svg { width: 2.8rem; fill: none; stroke: currentColor; stroke-width: 1.45; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 .22rem .18rem oklch(25% .04 60 / .16)); }
@@ -1462,7 +1462,7 @@
 .accountingHistory { border: 1px solid var(--line); border-radius: 1.5rem; background: color-mix(in oklch, var(--paper) 94%, transparent); padding: 1.5rem; }
 .accountingSetup { display: grid; grid-template-columns: minmax(15rem, .8fr) minmax(28rem, 1.2fr); gap: 2rem; align-items: start; }
 .accountingSetup h2,
-.accountingHistory h2 { margin: .35rem 0 .6rem; font-family: var(--font-serif), Georgia, serif; font-size: clamp(1.35rem, 2vw, 2rem); font-weight: 500; -webkit-text-stroke: 0.5px currentColor; }
+.accountingHistory h2 { margin: .35rem 0 .6rem; font-family: var(--font-serif), Georgia, serif; font-size: clamp(1.35rem, 2vw, 2rem); font-weight: 500; -webkit-text-stroke: 0; }
 .accountingSetup p { max-width: 34rem; color: var(--muted); line-height: 1.55; }
 .accountingForm { display: grid; gap: .9rem; padding: 1rem; border: 1px solid var(--line); border-radius: 1.15rem; background: color-mix(in oklch, white 76%, transparent); }
 .accountingForm label { display: grid; gap: .4rem; font-weight: 700; }
@@ -1518,7 +1518,7 @@
 .goalRecommended strong, .priceProfileList > header strong, .pricing strong, .projectIndex > header strong,
 .projectMoney strong, .projectStoryEmpty strong, .orphanDocuments > div:last-child strong, .waitingPanel > strong,
 .clientAvatar, .invoiceStamp, .insight blockquote {
-  -webkit-text-stroke: 0.5px currentColor;
+  -webkit-text-stroke: 0;
 }
 
 /* ── Mobilna glava: popravki po Tininih opombah ─────────────────────────────

@@ -154,7 +154,7 @@ const pwStyles = `
 /* status v predogledu: plačan zelen, odprt jantarni; znesek »za plačilo« z outline (kot Bodoni številke) */
 .pw-det-status.placan{color:oklch(55% .15 150)}
 .pw-det-status.odprt{color:oklch(58% .15 65)}
-.pw-det-skupaj strong{-webkit-text-stroke:.4px var(--ink);text-shadow:0 1px 2px oklch(100% 0 0 / .4)}
+.pw-det-skupaj strong{-webkit-text-stroke:0;text-shadow:0 1px 2px oklch(100% 0 0 / .4)}
 .pw-vsi-x:hover{background:var(--ink);color:var(--paper)}
 /* orodna vrsta slidea: preklop levo, iskalnik desno — v ISTI vrsti */
 .pw-vsi-orodja{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin:0 0 .85rem}

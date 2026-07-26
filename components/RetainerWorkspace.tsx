@@ -1040,7 +1040,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-povz{margin-top:1.2rem;padding:1.7rem 1.6rem 1.8rem;border-radius:20px;background:#FCFBF7;border:1px solid rgba(17,17,17,.08);box-shadow:0 4px 18px rgba(17,17,17,.04)}
         .rw-glavna{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding-bottom:.85rem;border-bottom:1px solid rgba(17,17,17,.1)}
         .rw-glavna span{font-size:.7rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(17,17,17,.55)}
-        .rw-glavna b{font-family:var(--font-serif),Didot,serif;font-weight:700;font-size:clamp(1.55rem,3vw,2.05rem);letter-spacing:-.01em;color:var(--ink);-webkit-text-stroke:.4px currentColor}
+        .rw-glavna b{font-family:var(--font-serif),Didot,serif;font-weight:700;font-size:clamp(1.55rem,3vw,2.05rem);letter-spacing:-.01em;color:var(--ink);-webkit-text-stroke:0}
         .rw-glavna em{font-family:inherit;font-style:normal;font-size:.9rem;font-weight:400;color:rgba(17,17,17,.5);-webkit-text-stroke:0}
         .rw-det{list-style:none;margin:.8rem 0 0;padding:0;display:flex;flex-direction:column;gap:.32rem;font-size:.87rem;color:rgba(17,17,17,.72)}
         .rw-det li::before{content:"· ";color:var(--accent);font-weight:700}
