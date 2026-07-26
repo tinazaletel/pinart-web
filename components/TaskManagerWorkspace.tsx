@@ -30,6 +30,13 @@ const datStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime())
 const jeZapadlo = (rok?: string) => { if (!rok) return false; const d = new Date(rok); return !isNaN(d.getTime()) && d < new Date(new Date().toDateString()); };
 /* prikaz ur na eno decimalko, npr. 90 minut -> "1.5" */
 const formatUre = (minute: number) => (minute / 60).toFixed(1);
+/* živ števec tekočega odseka: MM:SS (ali H:MM:SS nad uro) */
+const formatCasSek = (sekunde: number) => {
+  const s = Math.max(0, Math.floor(sekunde));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  const dd = (x: number) => String(x).padStart(2, '0');
+  return h > 0 ? `${h}:${dd(m)}:${dd(sec)}` : `${dd(m)}:${dd(sec)}`;
+};
 
 export default function TaskManagerWorkspace() {
   const [naloge, setNaloge] = useState<Naloga[]>([]);
@@ -50,6 +57,7 @@ export default function TaskManagerWorkspace() {
   const [prikaziAnalitiko, setPrikaziAnalitiko] = useState(false);
   const [analitikaSodelavecId, setAnalitikaSodelavecId] = useState<string>('');
   const [zgodovina, setZgodovina] = useState<ZgodovinaAktivnosti[]>([]);
+  const [filter, setFilter] = useState<'vse' | 'moje' | 'zamujene'>('vse');
 
   const trenutni = sodelavci.find((s) => s.id === trenutniId) || sodelavci[0];
   const jeVodjaAliAdmin = trenutni.vloga === 'vodja' || trenutni.vloga === 'admin';
@@ -112,14 +120,13 @@ export default function TaskManagerWorkspace() {
   const preklopiStoparico = (id: string) => {
     const zdajIso = new Date().toISOString();
     const zdajMs = Date.now();
+    let ustavljena: { naloga: Naloga; minute: number } | null = null;
     const posodobljene = naloge.map((n) => {
       const jeTaNaloga = n.id === id;
       if (n.isTimerRunning) {
-        const el = Math.round((zdajMs - new Date(n.timerStartTime || zdajIso).getTime()) / 60000);
-        const ustavljena: Naloga = { ...n, isTimerRunning: false, timerStartTime: undefined, porabljeniCasMinute: (n.porabljeniCasMinute || 0) + Math.max(0, el) };
-        /* ce je to naloga, na kateri smo kliknili stop -> ostane ustavljena; sicer je bila
-           to "druga" tekoca naloga, ki jo je treba samodejno ustaviti pred zagonom nove */
-        return ustavljena;
+        const el = Math.max(0, Math.round((zdajMs - new Date(n.timerStartTime || zdajIso).getTime()) / 60000));
+        ustavljena = { naloga: n, minute: el };
+        return { ...n, isTimerRunning: false, timerStartTime: undefined, porabljeniCasMinute: (n.porabljeniCasMinute || 0) + el };
       }
       if (jeTaNaloga) {
         return { ...n, isTimerRunning: true, timerStartTime: zdajIso };
@@ -127,6 +134,12 @@ export default function TaskManagerWorkspace() {
       return n;
     });
     posodobiInShrani(posodobljene);
+    /* ob ustavitvi zabeleži porabljeni odsek v Zgodovino aktivnosti */
+    if (ustavljena) {
+      const u = ustavljena as { naloga: Naloga; minute: number };
+      zabeleziAktivnost(u.naloga.id, trenutni.ime, `Ustavil štoparico (+${u.minute} min) na »${u.naloga.naslov}«`);
+      setZgodovina(preberiZgodovino());
+    }
   };
 
   /* naloga, na kateri trenutno tece stoparica (ce obstaja) — uporabljeno za ziv prikaz */
@@ -156,6 +169,13 @@ export default function TaskManagerWorkspace() {
 
   /* Vidnost po vlogi: clan vidi le sebi dodeljene naloge, vodja/admin vidita vse. */
   const vidneNaloge = trenutni.vloga === 'clan' ? naloge.filter((n) => n.dodeljenoOsebaId === trenutni.id) : naloge;
+  /* Hitri filter nad Kanban tablo: vse / moje / zamujene (rok pred danes in ni končano) */
+  const danesStr = new Date().toISOString().slice(0, 10);
+  const prikazaneNaloge = vidneNaloge.filter((n) => {
+    if (filter === 'moje') return n.dodeljenoOsebaId === trenutni.id || (n.dodeljenoOseba || '') === trenutni.ime;
+    if (filter === 'zamujene') return !!n.rok && n.rok < danesStr && n.stolpec !== 'done';
+    return true;
+  });
 
   /* Podatki za panel "Analitika ekipe" — izbrani sodelavec: st. nalog, koncanih, ur, zgodovina. */
   const analitikaSodelavec = sodelavci.find((s) => s.id === analitikaSodelavecId);
@@ -217,9 +237,15 @@ export default function TaskManagerWorkspace() {
         </form>
       )}
 
+      <div className="tm-filtri" role="tablist" aria-label="Filter nalog">
+        {([['vse', 'Vse naloge'], ['moje', 'Moje naloge'], ['zamujene', 'Zamujene']] as const).map(([k, oznaka]) => (
+          <button key={k} type="button" role="tab" aria-selected={filter === k} className={filter === k ? 'tm-filter-on' : ''} onClick={() => setFilter(k)}>{oznaka}{k === 'zamujene' && vidneNaloge.some((n) => !!n.rok && n.rok < danesStr && n.stolpec !== 'done') ? ' •' : ''}</button>
+        ))}
+      </div>
+
       <div className="tm-deska">
         {STOLPCI.map((s) => {
-          const nalogeVStolpcu = vidneNaloge.filter((n) => n.stolpec === s.id);
+          const nalogeVStolpcu = prikazaneNaloge.filter((n) => n.stolpec === s.id);
           return (
             <section key={s.id} className="tm-stolpec" data-stolpec={s.id} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, s.id)}>
               <header className="tm-stolpec-glava"><span className="tm-pika" aria-hidden /><h3>{s.naziv}</h3><span className="tm-st">{nalogeVStolpcu.length}</span></header>
@@ -249,6 +275,7 @@ export default function TaskManagerWorkspace() {
                       <div className="tm-cas">
                         <div className="tm-cas-vrsta">
                           <span className="tm-cas-tekst">{formatUre(porabljene)}h{ocena ? ` / ${ocena}h` : ''}</span>
+                          {naloga.isTimerRunning && naloga.timerStartTime && <span className="tm-cas-ziv" aria-label="Tekoči čas">▶ {formatCasSek((zdaj - new Date(naloga.timerStartTime).getTime()) / 1000)}</span>}
                           <button type="button" className={`tm-cas-gumb${naloga.isTimerRunning ? ' tm-cas-gumb-tece' : ''}`} onClick={() => preklopiStoparico(naloga.id)} aria-label={naloga.isTimerRunning ? 'Ustavi štoparico' : 'Zaženi štoparico'} title={naloga.isTimerRunning ? 'Ustavi merjenje' : 'Zaženi merjenje'}>
                             {naloga.isTimerRunning ? <Pause size={12} weight="fill" /> : <Play size={12} weight="fill" />}
                           </button>
@@ -344,6 +371,12 @@ export default function TaskManagerWorkspace() {
         .tm-shrani:disabled{opacity:.45;cursor:not-allowed}
 
         /* deska (kanban) */
+        .tm-filtri{display:inline-flex;gap:.2rem;margin:0 0 1.1rem;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
+        .tm-filtri button{padding:.4rem .85rem;border:0;border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
+        .tm-filtri button.tm-filter-on{background:var(--ink);color:var(--paper)}
+        .tm-cas-ziv{font:800 .68rem var(--font-sans),sans-serif;color:oklch(52% .17 300);font-variant-numeric:tabular-nums;animation:tmUtrip 1.4s ease-in-out infinite}
+        @keyframes tmUtrip{0%,100%{opacity:1}50%{opacity:.55}}
+        @media (prefers-reduced-motion:reduce){.tm-cas-ziv{animation:none}}
         .tm-deska{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem;align-items:start}
         .tm-stolpec{display:flex;flex-direction:column;min-height:14rem;padding:.85rem;border:1px solid var(--line);border-radius:1.1rem;background:oklch(97.5% .008 87/.75);transition:background .15s,border-color .15s}
         .tm-stolpec-glava{display:flex;align-items:center;gap:.5rem;padding:.15rem .3rem .7rem}
