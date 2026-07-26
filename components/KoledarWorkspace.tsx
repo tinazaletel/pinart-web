@@ -307,7 +307,6 @@ export default function KoledarWorkspace() {
       <header className="kol-glava">
         <p className="kol-eyebrow">KOLEDAR</p>
         <h1 className="kol-naslov">Sestanki, klici in roki.</h1>
-        <p className="kol-podnaslov">Dnevna urna mreža dogovorjenih terminov, poleg tega zapadlost plačil (in po želji roki nalog) v pasu »Ves dan«. »Dodaj v koledar« prenese .ics za tvoj Apple ali drug koledar.</p>
       </header>
 
       {zapadliRacuni.length > 0 && (
@@ -500,9 +499,10 @@ export default function KoledarWorkspace() {
       )}
 
       <style>{`
-        .kol{padding:1.6rem clamp(1rem,3vw,2.2rem) 4rem;max-width:56rem;min-width:0}
-        .kol-eyebrow{margin:0 0 .35rem;font:800 .62rem var(--font-sans),sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);opacity:.55}
-        .kol-naslov{margin:0;font:500 clamp(1.6rem,3vw,2.15rem)/1 var(--font-serif),Georgia,serif;color:var(--ink)}
+        .kol{padding:.7rem clamp(1rem,3vw,2.2rem) 3rem;max-width:72rem;min-width:0}
+        .kol-glava{margin-bottom:.6rem}
+        .kol-eyebrow{display:none}
+        .kol-naslov{margin:0;font:600 1.1rem var(--font-sans),sans-serif;letter-spacing:-.01em;color:var(--ink)}
         .kol-podnaslov{margin:.55rem 0 1.6rem;max-width:60ch;color:var(--ink);opacity:.65;font-size:.86rem;line-height:1.5}
 
         .kol-zapadlo-trak{display:flex;align-items:center;gap:.5rem;width:100%;margin-bottom:1.2rem;padding:.65rem .9rem;border:1px solid oklch(86% .06 30);border-radius:.9rem;background:oklch(98% .02 40 / .7);color:oklch(48% .16 30);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer;text-align:left}
