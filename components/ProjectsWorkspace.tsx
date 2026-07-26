@@ -223,6 +223,12 @@ const pwStyles = `
 .pw-kmalu{opacity:.85}
 .pw-kmalu h3{margin:0;font:600 1.05rem var(--font-serif),Georgia,serif}
 .pw-kmalu p{margin:.5rem 0 0;color:var(--muted);font-size:.72rem;line-height:1.4}
+/* CRM dnevnik kartica = ŽIVA povezava na stran stranke (ne več »Kmalu« — dnevnik obstaja) */
+.pw-dnevnik-link{text-decoration:none;color:inherit;transition:transform .16s cubic-bezier(.16,1,.3,1),box-shadow .16s}
+.pw-dnevnik-link h3{margin:0;font:600 1.05rem var(--font-serif),Georgia,serif}
+.pw-dnevnik-link p{margin:.5rem 0 0;color:var(--muted);font-size:.72rem;line-height:1.4}
+.pw-dnevnik-link:hover{transform:translateY(-2px);box-shadow:0 .8rem 2rem oklch(22% .04 300/.14)}
+.pw-znacka-live{background:oklch(90% .06 297);color:oklch(42% .16 297)}
 .pw-znacka{display:inline-flex;align-items:center;width:max-content;margin-top:.7rem;padding:.3rem .6rem;border-radius:999px;background:oklch(90% .02 87);color:var(--muted);font-size:.58rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 @media (max-width:640px){
 .pw-link-obrazec{grid-template-columns:1fr}
@@ -478,12 +484,12 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               <p>E-pošta in dogovori tega projekta na enem mestu.</p>
               <b className="pw-znacka">Kmalu</b>
             </article>
-            <article className="pw-karta pw-kmalu">
-              <p className={styles.eyebrow}>07 · ZAPISKI</p>
-              <h3>CRM dnevnik</h3>
-              <p>Opombe, klici in dogovori s stranko.</p>
-              <b className="pw-znacka">Kmalu</b>
-            </article>
+            <Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-karta pw-dnevnik-link">
+              <p className={styles.eyebrow}>07 · CRM DNEVNIK</p>
+              <h3>Klici, sestanki, dogovori</h3>
+              <p>Kronologija odnosa s stranko »{selected.offer.client}« — odpri na strani stranke.</p>
+              <b className="pw-znacka pw-znacka-live">Odpri ↗</b>
+            </Link>
           </div>
         </div>
       </section>
