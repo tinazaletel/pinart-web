@@ -151,7 +151,12 @@ const pwStyles = `
 @media (prefers-reduced-motion:reduce){.pw-vsi-panel{animation:none}}
 .pw-vsi-panel h2{margin:.4rem 0 .2rem;font-family:var(--font-serif),Didot,serif;font-weight:600;font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.05;color:var(--ink)}
 .pw-vsi-projekt{margin:0 0 1.1rem;color:var(--muted);font-size:.72rem}
-.pw-vsi-x{position:fixed;top:3.85rem;right:1.4rem;z-index:101;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
+/* × zapri = na višini nadnaslova (eyebrow), enako v vseh panelih (slide + predogled računa/pogodbe/stroška) */
+.pw-vsi-x{position:absolute;top:1.6rem;right:1.6rem;z-index:8;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
+/* status v predogledu: plačan zelen, odprt jantarni; znesek »za plačilo« z outline (kot Bodoni številke) */
+.pw-det-status.placan{color:oklch(55% .15 150)}
+.pw-det-status.odprt{color:oklch(58% .15 65)}
+.pw-det-skupaj strong{-webkit-text-stroke:.4px var(--ink);text-shadow:0 1px 2px oklch(100% 0 0 / .4)}
 .pw-vsi-x:hover{background:var(--ink);color:var(--paper)}
 /* orodna vrsta slidea: preklop levo, iskalnik desno — v ISTI vrsti */
 .pw-vsi-orodja{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin:0 0 .85rem}
@@ -185,7 +190,7 @@ const pwStyles = `
 .pw-vsi-strani button:disabled{opacity:.4;cursor:not-allowed}
 .pw-vsi-strani button.pw-vsi-stran-aktivna{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 /* klikabilna vrstica (kartica + slide) -> predogled */
-.pw-vrstica-klik{cursor:pointer;border-radius:.5rem;transition:background .14s}
+.pw-vrstica-klik{cursor:pointer;transition:background .14s}
 .pw-vrstica-klik:hover{background:oklch(100% 0 0 / .28)}
 .pw-vrstica-klik:focus-visible{outline:2px solid var(--akcent,#6E4FA6);outline-offset:2px}
 /* PREDOGLED dokumenta (panel z desne) */
@@ -558,7 +563,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 <div className="pw-det-meta">
                   <span><small>Datum</small><strong>{new Date(r.date).toLocaleDateString('sl-SI')}</strong></span>
                   {typeof r.dueDays === 'number' && <span><small>Rok plačila</small><strong>{r.dueDays} dni</strong></span>}
-                  <span><small>Status</small><strong>{r.paid ? 'Plačan' : 'Odprt'}</strong></span>
+                  <span><small>Status</small><strong className={`pw-det-status ${r.paid ? 'placan' : 'odprt'}`}>{r.paid ? 'Plačan' : 'Odprt'}</strong></span>
                 </div>
                 {its.length ? (<>
                   <div className="pw-det-tabela-ovoj"><table className="pw-det-tabela">

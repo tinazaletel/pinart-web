@@ -806,7 +806,8 @@
 .projectNarrative ul { display: flex; flex-wrap: wrap; gap: .4rem; margin: .75rem 0 0; padding: 0; list-style: none; }
 .projectNarrative li { padding: .45rem .65rem; border: 1px solid var(--line); border-radius: 999px; background: oklch(100% 0 0 / .65); font-size: .8125rem; }
 .projectNarrative article > p:last-of-type { color: var(--muted); font-size: .58rem; line-height: 1.45; }
-.projectNarrative article > span { display: grid; gap: .2rem; padding: .55rem 0; border-bottom: 1px solid oklch(100% 0 0 / .4); }
+.projectNarrative article > span { display: grid; gap: .2rem; padding: .6rem 1rem; margin: 0 -1rem; border-bottom: 1px solid oklch(100% 0 0 / .4); transition: background .14s; }
+.projectNarrative article > span:hover { background: oklch(100% 0 0 / .34); }
 .projectNarrative article > span:last-of-type { border-bottom: 0; }
 .projectNarrative article > span b { font-size: .58rem; }
 .projectNarrative article > span small { color: var(--muted); font-size: .5rem; }
