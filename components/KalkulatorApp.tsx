@@ -6134,6 +6134,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ure-preklop em { font-style: normal; font-weight: 400; color: rgba(17,17,17,.62); }
         .cw .pogodba-nasvet { display: block; max-width: 640px; margin: -.4rem 0 1rem; padding: .7rem .9rem; font-size: .82rem; line-height: 1.5; color: rgba(120,78,10,.92); background: rgba(196,138,20,.1); border-left: 3px solid rgba(196,138,20,.55); border-radius: 0 10px 10px 0; }
         .cw .pogodba-nasvet a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+        .cw .pogodba-noga { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; margin: 1rem 0 0; padding: .75rem 0 0; border-top: 1px solid var(--line, rgba(0,0,0,.12)); font-size: .8rem; }
+        .cw .pogodba-noga-check { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; color: var(--ink, #111); }
+        .cw .pogodba-noga-nasvet { color: rgba(120,78,10,.92); }
+        .cw .pogodba-noga-nasvet a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
         .cw .vp small { display: block; margin-bottom: .35rem; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
         .cw .vp label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .4rem 1rem; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; line-height: 1.55; background: var(--paper); border: 1px solid rgba(17,17,17,.15); border-radius: 10px; padding: .9rem 1rem; }
@@ -8674,17 +8678,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <span>{L('Prikaži oceno ur v ponudbi', 'Show the hour estimate in the quote')} <em>{L('(privzeto skrito — cena je po vrednosti; vklopi le, če stranka želi razčlenitev ur)', '(hidden by default — the price is value-based; turn it on only if the client wants an hours breakdown)')}</em></span>
                 </label>
               )}
-              {/* neobvezno: ponudba ob pisni potrditvi velja kot pogodba — takoj ob njej
-                  nasvet, da je prava pogodba varnejsa (Tinina zahteva, 2026-07-26) */}
-              <label className="ure-preklop">
-                <input type="checkbox" checked={veljaKotPogodba}
-                  onChange={e => { setVeljaKotPogodba(e.target.checked); setRocnoBesedilo(false); }} />
-                <span>{L('Ta ponudba ob pisni potrditvi velja kot pogodba', 'On written confirmation, this quote counts as a contract')}</span>
-              </label>
-              <p className="pogodba-nasvet">
-                💡 {L('Priporočamo, da raje generiraš pravo pogodbo — je bolj varna in jasna.', 'We recommend generating an actual contract instead — it is safer and clearer.')}{' '}
-                <a href={localePath(locale, `/kalkulator/pogodbe`)}>{L('Ustvari pogodbo →', 'Create a contract →')}</a>
-              </p>
               {predogledMode ? (
               <div className="predogled-okvir">
                 {predogledStrani.length ? (
@@ -8868,6 +8861,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               )}
             </div>
             {mailStatus && <p className="mail-status" role="status">{mailStatus}</p>}
+            <div className="pogodba-noga">
+              <label className="pogodba-noga-check">
+                <input type="checkbox" checked={veljaKotPogodba} onChange={e => { setVeljaKotPogodba(e.target.checked); setRocnoBesedilo(false); }} />
+                <span>{L('Ob pisni potrditvi velja kot pogodba', 'On written confirmation, counts as a contract')}</span>
+              </label>
+              <span className="pogodba-noga-nasvet">{L('Priporočamo pravo pogodbo (varnejša).', 'We recommend a real contract (safer).')} <a href={localePath(locale, `/kalkulator/pogodbe`)}>{L('Ustvari pogodbo →', 'Create a contract →')}</a></span>
+            </div>
             <div className="rac-panel">
               {!racunOdprt ? (
                 <button type="button" className="povezava rac-toggle" onClick={odpriRacun}>
