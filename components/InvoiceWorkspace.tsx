@@ -80,6 +80,9 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const [datumStoritve, setDatumStoritve] = useState(danesISO());
   const [rokDni, setRokDni] = useState(String(PRIVZETI_ROK_DNI));
   const [placano, setPlacano] = useState(false);
+  /* predracun = poziv k placilu vnaprej (NI knjigovodska listina); privzeto
+     false -> obstojeci racuni delujejo enako kot doslej */
+  const [predracun, setPredracun] = useState(false);
   const [vrstice, setVrstice] = useState<Vrstica[]>([]);
   const [pdfId, setPdfId] = useState('');
   const [napaka, setNapaka] = useState('');
@@ -148,7 +151,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     setStevilka(nextNumber());
     if (vir === 'rocno') { setOfferId(''); setStranka(''); setVrstice([novaVrstica()]); }
     setDatumStoritve(datumIzdaje || danesISO()); setRokDni(String(PRIVZETI_ROK_DNI));
-    setPlacano(false); setNapaka('');
+    setPlacano(false); setPredracun(false); setNapaka('');
     /* podpis je vezan na en, konkreten racun — nov racun zacne brez njega */
     setPodpisIme(''); setPodpisKraj(''); setPodpisDatum(datumIzdaje || danesISO()); setPodpisSlika(''); pocistiPlatno();
     setPogled('obrazec');
@@ -286,6 +289,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       vatPayer: ddvZavezanec,
       net: Math.round(izracun.osnova * 100) / 100,
       vatAmount: Math.round(izracun.ddvSkupaj * 100) / 100,
+      predracun: predracun || undefined,
       signature: podpisSlika ? {
         image: podpisSlika,
         name: podpisIme.trim() || undefined,
@@ -361,6 +365,10 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
 
   const racunTelo = (inv: FlowInvoice): string => {
     const { items, zavezanec } = postavkeZa(inv);
+    /* predracun = poziv k placilu vnaprej, NI knjigovodska listina — oznaka v
+       dokumentu (kicker + stevilka) se glasi PREDRAČUN namesto RAČUN */
+    const jePredracun = Boolean(inv.predracun);
+    const naziv = jePredracun ? 'Predračun' : 'Račun';
     const izdaja = new Date(inv.date);
     const storitev = inv.serviceDate ? new Date(inv.serviceDate) : izdaja;
     const rok = new Date(izdaja.getTime() + (inv.dueDays ?? PRIVZETI_ROK_DNI) * 864e5);
@@ -399,18 +407,19 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     ].filter(Boolean).join('<br>');
     return `
       <div class="rac-head">
-        <div class="rac-title"><span class="rac-kicker">Račun</span><span class="rac-no">${esc(inv.number || '')}</span></div>
+        <div class="rac-title"><span class="rac-kicker">${naziv}</span><span class="rac-no">${esc(inv.number || '')}</span></div>
         <div class="rac-meta"><b>Datum izdaje</b>${datStr(izdaja)}<b>Opravljena storitev</b>${datStr(storitev)}<b>Rok plačila</b>${datStr(rok)}</div>
       </div>
-      <div class="rac-stranki"><span class="rac-l">Prejemnik računa</span>${prejemnik || '[naročnik]'}</div>
+      <div class="rac-stranki"><span class="rac-l">Prejemnik ${jePredracun ? 'predračuna' : 'računa'}</span>${prejemnik || '[naročnik]'}</div>
       <table class="rac-tabela"><thead><tr><th>Postavka</th><th>Kol.</th><th>Cena brez DDV</th>${imaPopust ? '<th>Popust</th>' : ''}${zavezanec ? '<th>DDV</th>' : ''}<th>Znesek</th></tr></thead>
       <tbody>${vrsticeHtml}</tbody></table>
       <div class="rac-vsote">${vsoteHtml}${zavezanec ? `<div><span>DDV skupaj</span><span>${eur2(ddvSkupaj)}</span></div>` : ''}<div class="rac-skupaj"><span>SKUPAJ ZA PLAČILO</span><span>${eur2(zaPlacilo)}</span></div></div>
       ${!zavezanec ? '<p class="rac-opomba">DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1 (izdajatelj ni zavezanec za DDV).</p>' : ''}
+      ${jePredracun ? '<p class="rac-opomba"><b>Predračun ni knjigovodska listina. Račun bo izdan po prejemu plačila.</b></p>' : ''}
       <div class="rac-placilo">${placiloVrstice}</div>
       ${inv.paid ? '<div class="rac-placano">PLAČANO</div>' : ''}
       ${inv.signature ? `<div class="rac-podpis"><div class="rac-podpis-crta"><img class="podpis-img" src="${inv.signature.image}" alt="Podpis"></div><div class="rac-podpis-ime">${esc(inv.signature.name || ponudnik.ime.trim() || '')}</div>${(inv.signature.place || inv.signature.date) ? `<div class="rac-podpis-meta">${esc([inv.signature.place, inv.signature.date ? datStr(new Date(inv.signature.date)) : ''].filter(Boolean).join(' · '))}</div>` : ''}</div>` : ''}
-      <p class="rac-noga-txt">Račun je izdan v skladu z veljavno zakonodajo. Ob zamudi plačila zaračunamo zakonske zamudne obresti.</p>`;
+      <p class="rac-noga-txt">${jePredracun ? 'Predračun je informativen poziv k plačilu in ni davčni/knjigovodski dokument.' : 'Račun je izdan v skladu z veljavno zakonodajo. Ob zamudi plačila zaračunamo zakonske zamudne obresti.'}</p>`;
   };
 
   /* Poglej / Prenesi PDF — prek /api/ponudba-pdf, ENAKO kot retainer prenesi() */
@@ -491,6 +500,12 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         <p>Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje in se izpišejo v glavi računa.</p>
       </div>
       <form onSubmit={save}>
+        {/* vrsta dokumenta: RAČUN (privzeto) ali PREDRAČUN (poziv k placilu vnaprej,
+            NI knjigovodska listina — racun se izda sele po prejemu placila) */}
+        <div className="rc-segpills rc-tip-segpills" role="group" aria-label="Vrsta dokumenta">
+          <button type="button" aria-label="Račun" className={predracun ? '' : 'on'} onClick={() => setPredracun(false)}>Račun</button>
+          <button type="button" aria-label="Predračun" className={predracun ? 'on' : ''} onClick={() => setPredracun(true)}>Predračun</button>
+        </div>
         <div className={styles.invoiceMetaFields}>
           <label>Ponudba{jeMobilni
             ? <button type="button" className="rc-pon-polje" aria-haspopup="dialog" aria-expanded={ponSheet} aria-label={`Ponudba: ${selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : 'Samostojen račun'} — izberi`} onClick={() => { setPonIskanje(''); setPonSheet(true); }}>
@@ -501,7 +516,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           <label>Številka<input required value={stevilka} onChange={event => setStevilka(event.target.value)} /></label>
           <label>Stranka<input required value={stranka} onChange={event => setStranka(event.target.value)} placeholder="Izberi obstoječo ali vpiši novo" list="rc-stranke" autoComplete="off" /><datalist id="rc-stranke">{clients.map(c => <option key={c.id} value={c.name} />)}</datalist></label>
           <label>Datum izdaje<input required type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} /></label>
-          <label>Datum opravljene storitve<input required type="date" value={datumStoritve} onChange={event => setDatumStoritve(event.target.value)} /></label>
+          {/* predracun je poziv PRED izvedbo storitve — datum opravljene storitve zato ni obvezen */}
+          <label>Datum opravljene storitve<input required={!predracun} type="date" value={datumStoritve} onChange={event => setDatumStoritve(event.target.value)} /></label>
           <label>Rok plačila v dneh<input required min="0" type="number" inputMode="numeric" placeholder={String(PRIVZETI_ROK_DNI)} value={rokDni} onChange={event => setRokDni(event.target.value)} /></label>
         </div>
 
@@ -589,7 +605,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           )}
         </div>
 
-        <div className={styles.invoiceSubmit}><label className={styles.invoiceCheck}><input type="checkbox" checked={placano} onChange={event => setPlacano(event.target.checked)} /> Račun je že plačan</label><button type="button" className="rc-poslji" onClick={() => posljiVPlacilo({ id: 'draft', number: stevilka.trim(), title: izracun.postavke[0]?.opis || undefined, client: stranka.trim(), amount: Math.round(izracun.zaPlacilo * 100) / 100, paid: placano, date: datumIzdaje, dueDays: clamp(Math.round(stev(rokDni)) || PRIVZETI_ROK_DNI, 0, 365) })}>Pošlji naročniku</button><button>Shrani račun</button></div>
+        <div className={styles.invoiceSubmit}><label className={styles.invoiceCheck}><input type="checkbox" checked={placano} onChange={event => setPlacano(event.target.checked)} /> {predracun ? 'Predračun je že plačan' : 'Račun je že plačan'}</label><button type="button" className="rc-poslji" onClick={() => posljiVPlacilo({ id: 'draft', number: stevilka.trim(), title: izracun.postavke[0]?.opis || undefined, client: stranka.trim(), amount: Math.round(izracun.zaPlacilo * 100) / 100, paid: placano, date: datumIzdaje, dueDays: clamp(Math.round(stev(rokDni)) || PRIVZETI_ROK_DNI, 0, 365) })}>Pošlji naročniku</button><button>{predracun ? 'Shrani predračun' : 'Shrani račun'}</button></div>
         {napaka && <p className="rc-napaka">{napaka}</p>}
       </form>
     </section>}

@@ -52,6 +52,9 @@ export type FlowInvoice = {
   vatAmount?: number;
   /* neobvezen podpis — stari zapisi ga nimajo in se delujejo (dokument ga preprosto ne izrise) */
   signature?: FlowInvoiceSignature;
+  /* neobvezno: predracun (poziv k placilu vnaprej) namesto pravega racuna —
+     stari zapisi ga nimajo -> false/undefined -> delujejo kot doslej (racun) */
+  predracun?: boolean;
 };
 
 export type FlowExpense = {

@@ -449,7 +449,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   <header><span>Račun</span><span>Št.</span><span>Stranka</span><span>Datum</span><span>Status</span><span className="arh-desno">Znesek</span><span /></header>
                   {racuniPrikaz.map(r => (
                     <button key={r.id} type="button" className="arh-vrstica" onClick={() => setDetajl({ vrsta: 'racun', zapis: r })}>
-                      <span className="arh-glavna"><span className="arh-ikona" aria-hidden><Receipt size={17} /></span><strong>{r.title || `Račun ${r.number || ''}`}</strong></span>
+                      <span className="arh-glavna"><span className="arh-ikona" aria-hidden><Receipt size={17} /></span><strong>{r.title || `${r.predracun ? 'Predračun' : 'Račun'} ${r.number || ''}`}</strong>{r.predracun && <span className="arh-znacka arh-znacka-predracun">Predračun</span>}</span>
                       <span className="arh-mut">{r.number || '—'}</span>
                       <span className="arh-mut">{r.client}</span>
                       <span className="arh-mut">{datStr(r.date)}</span>
@@ -563,14 +563,14 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   const imaPopust = items.some(i => (i.popust || 0) > 0);
                   const imaDdv = items.some(i => (i.ddv || 0) > 0);
                   return <>
-                    <p className={styles.eyebrow}>RAČUN · {r.paid ? 'PLAČAN' : 'ODPRT'}</p>
-                    <h2 id="arh-detajl-naslov">{r.title || `Račun ${r.number || ''}`}</h2>
+                    <p className={styles.eyebrow}>{r.predracun ? 'PREDRAČUN' : 'RAČUN'} · {r.paid ? 'PLAČAN' : 'ODPRT'}</p>
+                    <h2 id="arh-detajl-naslov">{r.title || `${r.predracun ? 'Predračun' : 'Račun'} ${r.number || ''}`}</h2>
 
-                    {/* cel račun v panelu (kot pogodba/ponudba): letterhead + postavke + vsote */}
+                    {/* cel racun/predracun v panelu (kot pogodba/ponudba): letterhead + postavke + vsote */}
                     <div className="arh-ponudba-dok">
                       <div className="arh-ponudba-dok-glava">
-                        <p className="arh-ponudba-dok-kick">RAČUN{r.number ? ` · ${r.number}` : ''}</p>
-                        <h3 className="arh-ponudba-dok-naslov">{r.title || 'Račun'}</h3>
+                        <p className="arh-ponudba-dok-kick">{r.predracun ? 'PREDRAČUN' : 'RAČUN'}{r.number ? ` · ${r.number}` : ''}</p>
+                        <h3 className="arh-ponudba-dok-naslov">{r.title || (r.predracun ? 'Predračun' : 'Račun')}</h3>
                         <div className="arh-ponudba-dok-meta">
                           <span><small>Stranka</small><strong>{r.client}</strong></span>
                           <span><small>Datum</small><strong>{datStr(r.date)}</strong></span>
@@ -729,9 +729,11 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-opomba{font-size:.78rem;color:rgba(17,17,17,.6);line-height:1.35}
         .arh-opomba-alert{color:#B0243B;font-weight:600}
         .arh-opomba-pika{width:.5rem;height:.5rem;border-radius:50%;background:#B0243B;flex:none}
-        .arh-znacka{display:inline-block;padding:.2rem .6rem;border-radius:999px;font-size:.72rem;font-weight:700}
+        .arh-znacka{display:inline-block;padding:.2rem .6rem;border-radius:999px;font-size:.72rem;font-weight:700;flex:none}
         .arh-znacka-placano{background:oklch(88% .09 162);color:oklch(38% .09 162)}
         .arh-znacka-odprto{background:oklch(92% .05 65);color:oklch(45% .1 65)}
+        /* predracun = poziv k placilu vnaprej, NI knjigovodska listina — loci se od pravega racuna v seznamu */
+        .arh-znacka-predracun{background:oklch(92% .05 300);color:oklch(42% .13 300)}
 
         /* ── detajl panel (vzorec ContractWorkspace) ── */
         .arh-detajl{width:min(42rem,94vw);display:flex;flex-direction:column;gap:.2rem}
