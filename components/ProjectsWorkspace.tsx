@@ -9,7 +9,7 @@ import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
 import { loadFlowData, loadProjectLinks, saveOfferAmount, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
-import { naslednjaStevilka, preberiProjekti, shraniProjekt, type Projekt, type ProjektCilj, type ProjektPovezava, type ProjektStatus as ProjektEntitetaStatus, type ProjektVprasanje } from '@/lib/projekti';
+import { fazaProjekta, naslednjaStevilka, preberiProjekti, shraniProjekt, type Projekt, type ProjektCilj, type ProjektFaza, type ProjektPovezava, type ProjektStatus as ProjektEntitetaStatus, type ProjektVprasanje } from '@/lib/projekti';
 import { preberiSodelavci, vlogaOznaka } from '@/lib/sodelavci';
 import type { Sodelavec } from '@/lib/naloge';
 
@@ -333,6 +333,41 @@ select.pw-chat-polje{cursor:pointer}
 .pw-chat-vnos,.pw-chat-izbire{margin-left:0}
 .pw-chat-bot,.pw-chat-jaz{max-width:97%}
 }
+/* PIPELINE POSLOV — kanban pogled na zavihku Projekti (preklop Seznam|Pipeline
+   ziv v ArhivWorkspace, glej pw-pogled-preklop tam). Stolpci = faze (lib/projekti
+   ProjektFaza), kartice = isti seznam projektov kot tabela (offer- ali real-
+   izpeljani). Zracno: leb razmik med stolpci + vodoraven drs na ozkem, kartice
+   NE stlacene, prazen stolpec ostane majhen (ne raztegnjena skatla). */
+.pw-pipeline-namig{margin:0 0 .8rem;color:var(--muted);font-size:.68rem;font-style:italic}
+.pw-pipeline{display:flex;align-items:flex-start;gap:1.3rem;overflow-x:auto;padding:.15rem .15rem 1.2rem;-webkit-overflow-scrolling:touch}
+.pw-pipeline-stolpec{flex:0 0 272px;width:272px;min-width:260px;max-width:300px;display:flex;flex-direction:column;gap:.7rem}
+.pw-pipeline-stolpec.pw-pipeline-izgubljeno{opacity:.68}
+.pw-pipeline-glava{display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;padding:.1rem .25rem}
+.pw-pipeline-glava strong{font:600 .92rem var(--font-serif),Georgia,serif;color:var(--ink);white-space:nowrap}
+.pw-pipeline-info{color:var(--muted);font-size:.66rem;font-weight:600;white-space:nowrap}
+.pw-pipeline-karte{display:flex;flex-direction:column;gap:.65rem;min-height:2.6rem;padding:.2rem;border-radius:18px;transition:background-color .16s}
+.pw-pipeline-karte.pw-pipeline-nad{background-color:oklch(95% .03 295 / .55)}
+.pw-pipeline-prazno{margin:0;padding:.5rem .3rem;color:var(--muted);font-size:.66rem;font-style:italic}
+.pw-posel-kartica{display:flex;flex-direction:column;gap:.4rem;width:100%;box-sizing:border-box;padding:.85rem .95rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:14px;background:oklch(99% .006 87 / .92);text-align:left;cursor:pointer;transition:transform .16s cubic-bezier(.16,1,.3,1),box-shadow .16s,border-color .16s}
+.pw-posel-kartica:hover{transform:translateY(-2px);box-shadow:0 10px 22px oklch(22% .04 300 / .1);border-color:color-mix(in oklch,var(--ink) 18%,transparent)}
+.pw-posel-kartica:focus-visible{outline:2px solid var(--akcent,#6E4FA6);outline-offset:2px}
+.pw-posel-kartica[draggable='true']{cursor:grab}
+.pw-posel-kartica strong{font-size:.8rem;font-weight:700;color:var(--ink);line-height:1.3;overflow-wrap:anywhere}
+.pw-posel-spodaj{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-top:.1rem}
+.pw-posel-vrednost{font-weight:700;font-size:.76rem;color:var(--ink)}
+.pw-posel-pika{width:.5rem;height:.5rem;border-radius:50%;flex:none;background:var(--pika,oklch(62% .02 70))}
+.pw-posel-pika[data-tone='success']{--pika:oklch(62% .15 150)}
+.pw-posel-pika[data-tone='waiting']{--pika:oklch(72% .16 75)}
+.pw-posel-pika[data-tone='danger']{--pika:oklch(58% .19 25)}
+.pw-posel-pika[data-tone='neutral']{--pika:oklch(62% .02 70)}
+/* pilula Seznam|Pipeline za SAMOSTOJNO rabo (glej komentar ob renderju) — v produkciji
+   (znotraj Arhiva) izrise identicno pilulo ArhivWorkspace (.arh-pogled-preklop) */
+.pw-pogled-preklop{display:inline-flex;align-items:center;height:2.75rem;box-sizing:border-box;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:999px;padding:.25rem;gap:.15rem;margin:0 0 1rem;max-width:100%;overflow-x:auto}
+.pw-pogled-preklop button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem .9rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
+.pw-pogled-preklop button.on{background:var(--ink);color:var(--paper)}
+@media (max-width:640px){
+.pw-pipeline-stolpec{flex-basis:78vw;width:78vw}
+}
 `;
 
 /* stanje filtra projektov — iste vrednosti kot ArhivWorkspace (statusProjekt),
@@ -362,9 +397,14 @@ type Props = {
      istem vzorcu kot status/datum* zgoraj — ce ni podano, deluje samostojno. */
   novProjektOdprt?: boolean;
   onNovProjektOdprt?: (odprt: boolean) => void;
+  /* PIPELINE POSLOV — pogled Seznam|Pipeline (glej pw-pipeline spodaj). Isti
+     vzorec kot novProjektOdprt zgoraj: ArhivWorkspace krmili od zunaj (pilula
+     ob zavihkih), ce ni podano deluje samostojno (lastno stanje). */
+  pogled?: 'seznam' | 'pipeline';
+  onPogled?: (pogled: 'seznam' | 'pipeline') => void;
 };
 
-export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIskanje, status, onStatus, datumOd: datumOdZunaj, datumDo: datumDoZunaj, onDatumOd, onDatumDo, onDetajl, novProjektOdprt: novProjektOdprtZunaj, onNovProjektOdprt }: Props) {
+export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIskanje, status, onStatus, datumOd: datumOdZunaj, datumDo: datumDoZunaj, onDatumOd, onDatumDo, onDetajl, novProjektOdprt: novProjektOdprtZunaj, onNovProjektOdprt, pogled: pogledZunaj, onPogled }: Props) {
   const [offers, setOffers] = useState<FlowOffer[]>([]); const [invoices, setInvoices] = useState<FlowInvoice[]>([]); const [expenses, setExpenses] = useState<FlowExpense[]>([]); const [contracts, setContracts] = useState<FlowContract[]>([]); const [amounts, setAmounts] = useState<Record<string, number>>({}); const [clients, setClients] = useState<FlowClient[]>([]);
   /* PRAVI projekti (lib/projekti) — locena shramba od Flow podatkov zgoraj, glej gradiVnos/realProjects spodaj */
   const [realProjekti, setRealProjekti] = useState<Projekt[]>([]);
@@ -421,6 +461,45 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     zaracunano: visible.reduce((sum, project) => sum + project.billed, 0),
     odprto: visible.reduce((sum, project) => sum + Math.max(0, project.agreed - project.billed), 0),
   }), [visible]);
+  /* PIPELINE POSLOV — kanban pogled (glej pw-pipeline v pwStyles). Stolpci po vrsti
+     + locen, umirjen Izgubljeno na koncu (glej ProjektFaza v lib/projekti). */
+  const PIPELINE_STOLPCI: { faza: ProjektFaza; naziv: string }[] = [
+    { faza: 'lead', naziv: 'Lead' },
+    { faza: 'ponudba', naziv: 'Ponudba' },
+    { faza: 'pogodba', naziv: 'Pogodba' },
+    { faza: 'delo', naziv: 'Delo' },
+    { faza: 'racun', naziv: 'Račun' },
+    { faza: 'zakljuceno', naziv: 'Zaključeno' },
+  ];
+  const PIPELINE_IZGUBLJENO: { faza: ProjektFaza; naziv: string } = { faza: 'izgubljeno', naziv: 'Izgubljeno' };
+  /* faza kartice: PRAVI projekt (real) ima svojo faza/status (lib/projekti fazaProjekta);
+     projekt izpeljan SAMO iz ponudbe nima real zapisa, zato fazo priblizamo iz
+     dejanskega stanja te ponudbe (racun/pogodba ze obstajata? sicer status ponudbe) */
+  const pipelineFaza = (project: (typeof visible)[number]): ProjektFaza => {
+    if (project.real) return fazaProjekta(project.real);
+    if (project.invoices.length) return 'racun';
+    if (project.contracts.length) return 'pogodba';
+    if (project.offer.status === 'accepted') return 'delo';
+    if (project.offer.status === 'sent') return 'ponudba';
+    if (project.offer.status === 'rejected') return 'izgubljeno';
+    return 'lead';
+  };
+  const pipelineStolpci = useMemo(() => {
+    const skupine: Record<ProjektFaza, (typeof visible)> = { lead: [], ponudba: [], pogodba: [], delo: [], racun: [], zakljuceno: [], izgubljeno: [] };
+    visible.forEach(project => { skupine[pipelineFaza(project)].push(project); });
+    return skupine;
+  }, [visible]);
+  /* drag&drop: SAMO PRAVI projekti (project.real) so vlecljivi — offer-izpeljani
+     nimajo prave shrambe zase, zato ostanejo v svojem stolpcu le berljivi. */
+  const [pipelineDragId, setPipelineDragId] = useState<string | null>(null);
+  const [pipelineNad, setPipelineNad] = useState<ProjektFaza | null>(null);
+  const premakniFazo = (real: Projekt, novaFaza: ProjektFaza) => {
+    if (samoOgled) return;
+    const posodobljen: Projekt = { ...real, faza: novaFaza };
+    shraniProjekt(posodobljen);
+    setRealProjekti(prev => prev.map(p => (p.id === posodobljen.id ? posodobljen : p)));
+  };
+
   const selected = projects.find(project => project.offer.id === selectedId);
   /* sortirano padajoče po datumu — uporabljeno tako na kartici (top 5) kot v slideu (ves seznam) */
   const pogodbeSort = selected ? [...selected.contracts].sort((a, b) => (b.date || '').localeCompare(a.date || '')) : [];
@@ -459,6 +538,11 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [notranjiNovOdprt, setNotranjiNovOdprt] = useState(false);
   const novOdprt = novProjektOdprtZunaj ?? notranjiNovOdprt;
   const setNovOdprt = (v: boolean) => { if (onNovProjektOdprt) onNovProjektOdprt(v); else setNotranjiNovOdprt(v); };
+  /* PIPELINE POSLOV — pogled Seznam|Pipeline, isti vzorec (zunaj krmili ArhivWorkspace,
+     sicer lastno stanje) kot novOdprt zgoraj */
+  const [notranjiPogled, setNotranjiPogled] = useState<'seznam' | 'pipeline'>('seznam');
+  const pogled = pogledZunaj ?? notranjiPogled;
+  const setPogled = (v: 'seznam' | 'pipeline') => { if (onPogled) onPogled(v); else setNotranjiPogled(v); };
   const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektEntitetaStatus, zelje: '', cilji: [] as ProjektCilj[], dodatnaVprasanja: [] as ProjektVprasanje[], povezave: [] as ProjektPovezava[], dodeljeni: [] as string[] });
   const [obrazec, setObrazec] = useState(prazenObrazec());
   /* onboarding kot CHAT (glej pw-chat-* v pwStyles): novKorak = do kam je uporabnica
@@ -657,6 +741,15 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       </>}
     />}
 
+    {/* preklop Seznam|Pipeline — v produkciji izrise ta pilulo ArhivWorkspace (arh-pogled-preklop);
+        tu samo za samostojno rabo (zunanjiFilter=false), da API pogled/onPogled dela tudi brez Arhiva */}
+    {!selected && !zunanjiFilter && (
+      <div className="pw-pogled-preklop" role="tablist" aria-label="Pogled projektov">
+        <button type="button" role="tab" aria-selected={pogled === 'seznam'} className={pogled === 'seznam' ? 'on' : ''} onClick={() => setPogled('seznam')}>Seznam</button>
+        <button type="button" role="tab" aria-selected={pogled === 'pipeline'} className={pogled === 'pipeline' ? 'on' : ''} onClick={() => setPogled('pipeline')}>Pipeline</button>
+      </div>
+    )}
+
     {!selected ? (
       projects.length === 0 ? (
         <div className={styles.projectStoryEmpty}><span>↗</span><strong>Najprej ustvari ponudbo.</strong><p>Ta bo postala osnova projekta in povezala vse nadaljnje dokumente.</p></div>
@@ -677,7 +770,64 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             </article>
           </div>
 
-          {visible.length ? (
+          {pogled === 'pipeline' ? (
+            <>
+              {samoOgled && <p className="pw-pipeline-namig">Premikanje kartic med fazami je v predogledu (demo) onemogočeno — prijavi se v svoj račun.</p>}
+              <div className="pw-pipeline">
+                {[...PIPELINE_STOLPCI, PIPELINE_IZGUBLJENO].map(({ faza, naziv }) => {
+                  const kartice = pipelineStolpci[faza];
+                  const vrednost = kartice.reduce((sum, project) => sum + project.agreed, 0);
+                  return (
+                    <div key={faza} className={'pw-pipeline-stolpec' + (faza === 'izgubljeno' ? ' pw-pipeline-izgubljeno' : '')}>
+                      <div className="pw-pipeline-glava">
+                        <strong>{naziv}</strong>
+                        <span className="pw-pipeline-info">{kartice.length} · {money(vrednost)}</span>
+                      </div>
+                      <div
+                        className={'pw-pipeline-karte' + (pipelineNad === faza ? ' pw-pipeline-nad' : '')}
+                        onDragOver={event => { if (!pipelineDragId || samoOgled) return; event.preventDefault(); setPipelineNad(faza); }}
+                        onDragLeave={() => setPipelineNad(prev => (prev === faza ? null : prev))}
+                        onDrop={event => {
+                          event.preventDefault();
+                          const id = pipelineDragId;
+                          setPipelineDragId(null); setPipelineNad(null);
+                          if (samoOgled || !id) return;
+                          const project = visible.find(p => p.offer.id === id);
+                          if (project?.real) premakniFazo(project.real, faza);
+                        }}
+                      >
+                        {kartice.length ? kartice.map(project => {
+                          const vlecljiva = !!project.real && !samoOgled;
+                          const info = projectStatusInfo(project.offer.status);
+                          return (
+                            <div
+                              key={project.offer.id}
+                              className="pw-posel-kartica"
+                              draggable={vlecljiva}
+                              onDragStart={vlecljiva ? () => setPipelineDragId(project.offer.id) : undefined}
+                              onDragEnd={() => { setPipelineDragId(null); setPipelineNad(null); }}
+                              onClick={() => selectProject(project.offer.id)}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectProject(project.offer.id); } }}
+                              title={!project.real ? 'Izpeljano iz ponudbe — ni vlečljivo' : (samoOgled ? 'V predogledu premikanje ni na voljo' : undefined)}
+                            >
+                              <strong>{project.offer.title}</strong>
+                              <span className="pw-mut">{project.offer.client || 'Brez stranke'}</span>
+                              <span className="pw-posel-spodaj">
+                                <span className="pw-posel-vrednost">{project.agreed ? money(project.agreed) : '—'}</span>
+                                <i className="pw-posel-pika" data-tone={info.tone} aria-hidden />
+                              </span>
+                            </div>
+                          );
+                        }) : <p className="pw-pipeline-prazno">Prazno.</p>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : visible.length ? (
             <div className="pw-tabela-ovoj">
               <div className="pw-tabela">
                 {/* naslov + stevec sta DEL tabele (znotraj okvirja), ne lebdita nad njo */}

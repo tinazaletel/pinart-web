@@ -16,6 +16,13 @@ export interface ProjektCilj {
 
 export type ProjektStatus = 'aktiven' | 'pavza' | 'koncan';
 
+/* PIPELINE POSLOV (kanban na zavihku Projekti/Pipeline) — faza, skozi katero
+   projekt potuje od prve najave do zaključka (ali izgube posla). Neobvezno
+   polje: ce ga uporabnica se ni rocno nastavila (vlecenje kartice med stolpci),
+   ga fazaProjekta spodaj izpelje iz obstojecega ProjektStatus, da noben star
+   zapis ne "izgine" iz pipelina brez migracije podatkov. */
+export type ProjektFaza = 'lead' | 'ponudba' | 'pogodba' | 'delo' | 'racun' | 'zakljuceno' | 'izgubljeno';
+
 /* dodatno vprasanje, ki ga uporabnica sama doda med onboarding chatom (glej
    ProjectsWorkspace pw-nov-panel) — prosto vprasanje + prost odgovor, brez
    vnaprej dolocene sheme (npr. "Ima stranka ze CGP?" -> "Ne, delamo od nule") */
@@ -60,6 +67,10 @@ export interface Projekt {
   /* dodeljeni sodelavci — seznam Sodelavec.id (lib/sodelavci); lokalni mock,
      pravo deljenje/vidljivost pride z vec-uporabniskim zaledjem kasneje */
   dodeljeni?: string[];
+  /* pipeline faza (glej ProjektFaza zgoraj) — nastavi jo drag&drop na kanbanu
+     (ProjectsWorkspace pw-pipeline); ce se ni nastavljena, jo fazaProjekta
+     spodaj izpelje iz status */
+  faza?: ProjektFaza;
 }
 
 const STORAGE_KEY = 'pinflow_projekti';
@@ -100,6 +111,16 @@ export const izbrisiProjekt = (id: string): Projekt[] => {
 };
 
 export const najdiProjekt = (id: string): Projekt | undefined => preberiProjekti().find(p => p.id === id);
+
+/* pipeline faza projekta — p.faza, ce je bila ze rocno nastavljena (vlecenje
+   kartice na kanbanu), sicer preslikava iz obstojecega ProjektStatus, da stari
+   zapisi (brez faza) takoj pristanejo v smiselnem stolpcu. */
+export const fazaProjekta = (p: Projekt): ProjektFaza => {
+  if (p.faza) return p.faza;
+  if (p.status === 'aktiven') return 'delo';
+  if (p.status === 'koncan') return 'zakljuceno';
+  return 'lead';
+};
 
 /* preprosta leto-zaporedna stevilka (npr. "2026-3") — na voljo za onboarding,
    ni obvezna (Projekt.stevilka je neobvezno polje) */

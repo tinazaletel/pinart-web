@@ -133,6 +133,11 @@ export default function ArhivWorkspace({ base }: { base: string }) {
      panel/obrazec pa v ProjectsWorkspace (glej pw-nov-panel); krmilimo od tu,
      da je gumb del ISTE vrstice kot "+ Nova ponudba". */
   const [novProjektOdprt, setNovProjektOdprt] = useState(false);
+  /* PIPELINE POSLOV — preklop pogleda na zavihku Projekti (Seznam | Pipeline).
+     Stanje zivi tu (isti vzorec kot novProjektOdprt zgoraj), gumb je pilula
+     na .arh-glava (ob zavihkih), ProjectsWorkspace dobi vrednost/setter prek
+     props in izrise ali obstojeco tabelo, ali nov kanban pw-pipeline. */
+  const [pogledProjekti, setPogledProjekti] = useState<'seznam' | 'pipeline'>('seznam');
   /* Postavka "Ustvari projekt" (meni > Orodja) pripelje sem z ?nov=1 in odpre brief takoj. */
   useEffect(() => {
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('nov') === '1') {
@@ -169,7 +174,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
     setZavihek(z);
     setIskanje(''); setObdobjeOd(''); setObdobjeDo('');
     setStatusPonudba('vse'); setStatusPogodba('vse'); setPlacano('vse'); setStatusProjekt('vse');
-    setDetajl(null); setDetObsegOdprt(false); setProjektDetajlOdprt(false);
+    setDetajl(null); setDetObsegOdprt(false); setProjektDetajlOdprt(false); setPogledProjekti('seznam');
   };
 
   const isk = iskanje.trim().toLocaleLowerCase('sl-SI');
@@ -299,6 +304,14 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               ))}
             </div>
 
+            {/* PIPELINE POSLOV — preklop pogleda, samo na zavihku Projekti (glej pogledProjekti zgoraj) */}
+            {zavihek === 'projekti' && (
+              <div className="arh-segpills arh-pogled-preklop" role="tablist" aria-label="Pogled projektov">
+                <button type="button" role="tab" aria-selected={pogledProjekti === 'seznam'} className={pogledProjekti === 'seznam' ? 'on' : ''} onClick={() => setPogledProjekti('seznam')}>Seznam</button>
+                <button type="button" role="tab" aria-selected={pogledProjekti === 'pipeline'} className={pogledProjekti === 'pipeline' ? 'on' : ''} onClick={() => setPogledProjekti('pipeline')}>Pipeline</button>
+              </div>
+            )}
+
             {filterCfg && (
               <div className="arh-glava-filter">
                 <ArhivFilter
@@ -341,6 +354,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               onDetajl={setProjektDetajlOdprt}
               novProjektOdprt={novProjektOdprt}
               onNovProjektOdprt={setNovProjektOdprt}
+              pogled={pogledProjekti}
+              onPogled={setPogledProjekti}
             />
           </section>
         )}
@@ -673,6 +688,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-segpills button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem .9rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
         .arh-segpills button.on{background:var(--ink);color:var(--paper)}
         .arh-zavihki{flex:0 0 auto}
+        .arh-pogled-preklop{flex:0 0 auto}
 
         .arh-panel{animation:arhSek .45s cubic-bezier(.16,1,.3,1) both;min-width:0}
         @keyframes arhSek{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
