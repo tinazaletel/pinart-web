@@ -276,6 +276,11 @@ const NALOGE_FLOW_RAZVOJ: {
     opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'visoka',
   },
   {
+    naslov: 'Plačilni sistem (naročnine — Merchant of Record)', stolpec: 'todo', oznake: ['zaledje'],
+    opis: 'Naročnine za Flow prek Merchant of Record (Paddle ali Lemon Squeezy, ne golo Stripe — MoR ureja globalni DDV/davke). Pride po pravi prijavi (računih uporabnikov).',
+    opisAvtorIme: 'Tina Zaletel', opisAvtorVloga: 'jaz', prioriteta: 'srednja',
+  },
+  {
     naslov: 'Zavihek Inhouse (HR)', stolpec: 'todo', oznake: ['ideja'],
     opis: 'Ideja: zavihek Inhouse za interne HR zadeve ekipe.',
     opisAvtorIme: 'Tina Zaletel', opisAvtorVloga: 'jaz', prioriteta: 'nizka',
