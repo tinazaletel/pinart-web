@@ -4,7 +4,10 @@
    Vnos je lahko neobvezno vezan na projekt (offer.id), da se pozneje pokaže
    tudi na projektu. */
 
-export type DnevnikTip = 'klic' | 'sestanek' | 'email' | 'dogovor' | 'opomba';
+/* 'email' je izvirni tip (rocni vnos v obrazcu spodaj); 'epošta' je dodan za
+   samodejne zapise iz klika na kontakt (glej zabeleziInterakcijo) — locen
+   niz, da ne trkne z obstojecimi shranjenimi vnosi, isti prikazan label. */
+export type DnevnikTip = 'klic' | 'sestanek' | 'email' | 'epošta' | 'dogovor' | 'opomba';
 
 export type DnevnikVnos = {
   id: string;
@@ -14,6 +17,9 @@ export type DnevnikVnos = {
   datum: string;           // YYYY-MM-DD (dan dogodka)
   besedilo: string;
   created: string;         // ISO cas vnosa (za stabilno razvrstitev znotraj istega dne)
+  /* neobvezno: id kontaktne osebe (lib/pinartFlowStore Kontakt), ce je zapis
+     nastal s klikom na "pokliči"/"piši" pri kontaktu — stari zapisi ga nimajo */
+  kontaktId?: string;
 };
 
 export const DNEVNIK_TIPI: { tip: DnevnikTip; label: string }[] = [
@@ -24,7 +30,18 @@ export const DNEVNIK_TIPI: { tip: DnevnikTip; label: string }[] = [
   { tip: 'opomba', label: 'Opomba' },
 ];
 
-export const dnevnikTipLabel = (tip: DnevnikTip) => DNEVNIK_TIPI.find(t => t.tip === tip)?.label || 'Opomba';
+/* polni nabor label-ov (vkljucno z 'epošta', ki ni med izbirnimi gumbi
+   zgoraj — nastane samo samodejno) */
+const DNEVNIK_LABELI: Record<DnevnikTip, string> = {
+  klic: 'Klic',
+  sestanek: 'Sestanek',
+  email: 'E-pošta',
+  epošta: 'E-pošta',
+  dogovor: 'Dogovor',
+  opomba: 'Opomba',
+};
+
+export const dnevnikTipLabel = (tip: DnevnikTip) => DNEVNIK_LABELI[tip] || 'Opomba';
 
 const KLJUC = 'pinart-flow-dnevnik';
 type Shramba = Record<string, DnevnikVnos[]>;
@@ -43,4 +60,25 @@ export const preberiDnevnik = (clientId: string): DnevnikVnos[] => {
 export const shraniDnevnik = (clientId: string, vnosi: DnevnikVnos[]) => {
   if (typeof window === 'undefined') return;
   localStorage.setItem(KLJUC, JSON.stringify({ ...preberiVse(), [clientId]: vnosi }));
+};
+
+/* Samodejni zapis v dnevnik — klice ga npr. klik na "pokliči"/"piši" pri
+   kontaktu (ClientWorkspace) ali koledar (drug agent). Sama poskrbi za
+   id/datum/created, prebere obstojece vnose stranke in doda novega. */
+export const zabeleziInterakcijo = (strankaId: string, vnos: { tip: DnevnikTip; besedilo: string; kontaktId?: string; projektId?: string }) => {
+  if (typeof window === 'undefined') return;
+  const zdaj = new Date().toISOString();
+  const nov: DnevnikVnos = {
+    id: crypto.randomUUID(),
+    clientId: strankaId,
+    projectId: vnos.projektId,
+    tip: vnos.tip,
+    datum: zdaj.slice(0, 10),
+    besedilo: vnos.besedilo,
+    created: zdaj,
+    kontaktId: vnos.kontaktId,
+  };
+  const obstojeci = preberiDnevnik(strankaId);
+  const naslednji = [nov, ...obstojeci].sort((a, b) => (b.datum + b.created).localeCompare(a.datum + a.created));
+  shraniDnevnik(strankaId, naslednji);
 };

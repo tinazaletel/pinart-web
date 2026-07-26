@@ -1,11 +1,24 @@
 export type NalogaStolpec = 'todo' | 'in_progress' | 'waiting' | 'done';
 
+export type NalogaPrioriteta = 'nizka' | 'srednja' | 'visoka';
+
+/* En komentar na nalogi — zametek chata/niti pogovora vezanega na konkretno nalogo. */
+export interface NalogaKomentar {
+  id: string;
+  avtorIme: string;
+  besedilo: string;
+  cas: string; // ISO datum/cas
+}
+
 export interface Naloga {
   id: string;
   naslov: string;
   opis?: string;
   stolpec: NalogaStolpec;
+  /* prost tekstovni naziv projekta (ni loceno shranjen entiteta) — po zelji se ujema
+     z imenom v TedenskaDodelitev.projektIme, da se todo naloge navezejo na sefov razpored */
   projectId?: string;
+  /* povezava s stranko iz lib/pinartFlowStore (FlowClient.id) */
   clientId?: string;
   dodeljenoOseba?: string;
   /* dodeljevanje sodelavcu iz seznama (glej Sodelavec spodaj) */
@@ -18,6 +31,8 @@ export interface Naloga {
   porabljeniCasMinute?: number; // skupni porabljeni cas (minute)
   isTimerRunning?: boolean;     // ali stoparica trenutno tece za to nalogo
   timerStartTime?: string;      // ISO timestamp zacetka zadnjega merjenja
+  prioriteta?: NalogaPrioriteta;
+  komentarji?: NalogaKomentar[];
 }
 
 /* --- Uporabniki / vloge / zgodovina (za vec-uporabniski Task Manager) --- */
@@ -99,5 +114,83 @@ export const shraniNaloge = (naloge: Naloga[]): void => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(naloge));
   } catch (e) {
     console.error('Napaka pri shranjevanju nalog v localStorage:', e);
+  }
+};
+
+/* --- Tedenski plan / "sefov razpored dodelitev" ---
+   Vodja/admin dodeli OSEBO na PROJEKT + PODROCJE za dolocen teden (grobo, tedensko);
+   delavec si pod tem sam vodi svoje TODO naloge (Naloga zgoraj). Locena entiteta od
+   Naloga, ker gre za tedenski "kdo dela kaj" pregled, ne za posamezno opravilo. */
+
+export type DodelitevStatus = 'nacrtovano' | 'opravljeno' | 'delno' | 'preneseno';
+
+export interface TedenskaDodelitev {
+  id: string;
+  osebaId: string;
+  osebaIme: string;
+  /* neobvezna povezava na stranko iz lib/pinartFlowStore (FlowClient.id) */
+  projektId?: string;
+  projektIme: string;
+  podrocje?: string;
+  tedenZacetek: string; // YYYY-MM-DD, ponedeljek tedna/ciklusa, na katerega se dodelitev nanasa
+  opomba?: string;
+  /* ritual "napovem -> pregledam": kaj bo oseba ta teden delala + status ob pregledu */
+  nacrt?: string;
+  status?: DodelitevStatus;
+}
+
+const DODELITVE_KEY = 'pinflow_tedenske_dodelitve';
+
+export const preberiDodelitve = (): TedenskaDodelitev[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const data = localStorage.getItem(DODELITVE_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    console.error('Napaka pri branju tedenskih dodelitev iz localStorage:', e);
+    return [];
+  }
+};
+
+const shraniDodelitveSeznam = (seznam: TedenskaDodelitev[]): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(DODELITVE_KEY, JSON.stringify(seznam));
+  } catch (e) {
+    console.error('Napaka pri shranjevanju tedenskih dodelitev v localStorage:', e);
+  }
+};
+
+/* Doda novo ali (po ujemanju id) posodobi obstojeco tedensko dodelitev. */
+export const shraniDodelitev = (dodelitev: TedenskaDodelitev): void => {
+  const obstojece = preberiDodelitve();
+  const obstaja = obstojece.some((d) => d.id === dodelitev.id);
+  shraniDodelitveSeznam(obstaja ? obstojece.map((d) => (d.id === dodelitev.id ? dodelitev : d)) : [...obstojece, dodelitev]);
+};
+
+export const izbrisiDodelitev = (id: string): void => {
+  shraniDodelitveSeznam(preberiDodelitve().filter((d) => d.id !== id));
+};
+
+/* Dolzina cikla v tednih (1-4) za tedenski plan — privzeto 1 (klasicen teden). */
+const CIKEL_KEY = 'pinflow_cikel_tednov';
+
+export const preberiCikelTednov = (): number => {
+  if (typeof window === 'undefined') return 1;
+  try {
+    const raw = parseInt(localStorage.getItem(CIKEL_KEY) || '1', 10);
+    return Number.isFinite(raw) && raw >= 1 && raw <= 4 ? raw : 1;
+  } catch {
+    return 1;
+  }
+};
+
+export const shraniCikelTednov = (tedni: number): void => {
+  if (typeof window === 'undefined') return;
+  const varno = Math.min(4, Math.max(1, Math.round(tedni) || 1));
+  try {
+    localStorage.setItem(CIKEL_KEY, String(varno));
+  } catch {
+    /* zaseben nacin brskanja — tiho ignoriraj */
   }
 };

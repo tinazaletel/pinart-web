@@ -90,6 +90,18 @@ export type FlowContract = {
   notes?: string;
 };
 
+/* Ena kontaktna oseba pri stranki (npr. Honeywell ima vec ljudi, vsak svoj
+   telefon/mail) — locena od glavnega "contact" polja zgoraj (ki ostaja kot
+   privzeta/edina oseba za stare zapise); kontakti je seznam DODATNIH/vseh
+   oseb, ce jih uporabnica zeli voditi loceno. */
+export type Kontakt = {
+  id: string;
+  ime: string;
+  vloga?: string;
+  telefon?: string;
+  email?: string;
+};
+
 export type FlowClient = {
   id: string;
   name: string;
@@ -99,6 +111,9 @@ export type FlowClient = {
   address?: string;
   tax?: string;
   website?: string;
+  /* neobvezno: vec kontaktnih oseb pri stranki — stari zapisi ga nimajo,
+     privzemi prazen seznam, delujejo kot doslej */
+  kontakti?: Kontakt[];
 };
 
 export type FlowData = {

@@ -5,10 +5,11 @@
    Bodoni, ink, akcent). Lasten prefiksiran <style> blok (tm-), da ne trči s .shell. */
 
 import React, { useState, useEffect } from 'react';
-import { Pause, Play, ChartBar } from '@phosphor-icons/react';
+import { Pause, Play, ChartBar, ChatCircleDots, CaretLeft, CaretRight, ArrowBendUpRight } from '@phosphor-icons/react';
 import {
   Naloga,
   NalogaStolpec,
+  NalogaKomentar,
   preberiNaloge,
   shraniNaloge,
   Sodelavec,
@@ -17,7 +18,15 @@ import {
   ZgodovinaAktivnosti,
   preberiZgodovino,
   zabeleziAktivnost,
+  TedenskaDodelitev,
+  preberiDodelitve,
+  shraniDodelitev,
+  izbrisiDodelitev,
+  preberiCikelTednov,
+  shraniCikelTednov,
 } from '@/lib/naloge';
+import { preberiSodelavci } from '@/lib/sodelavci';
+import { loadFlowData, type FlowClient } from '@/lib/pinartFlowStore';
 
 const STOLPCI: { id: NalogaStolpec; naziv: string }[] = [
   { id: 'todo', naziv: 'Za narediti' },
@@ -25,6 +34,21 @@ const STOLPCI: { id: NalogaStolpec; naziv: string }[] = [
   { id: 'waiting', naziv: 'Čaka' },
   { id: 'done', naziv: 'Končano' },
 ];
+
+const PRIORITETE: { id: NonNullable<Naloga['prioriteta']>; naziv: string }[] = [
+  { id: 'visoka', naziv: 'Visoka' },
+  { id: 'srednja', naziv: 'Srednja' },
+  { id: 'nizka', naziv: 'Nizka' },
+];
+
+const STATUSI_DODELITVE: { id: NonNullable<TedenskaDodelitev['status']>; naziv: string }[] = [
+  { id: 'nacrtovano', naziv: 'Načrtovano' },
+  { id: 'opravljeno', naziv: 'Opravljeno' },
+  { id: 'delno', naziv: 'Delno' },
+  { id: 'preneseno', naziv: 'Preneseno' },
+];
+
+const NAMIGI_PODROCJE = ['desktop', 'mobile', 'CGP', 'styleguide'];
 
 const datStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? s : d.toLocaleDateString('sl-SI'); };
 const jeZapadlo = (rok?: string) => { if (!rok) return false; const d = new Date(rok); return !isNaN(d.getTime()) && d < new Date(new Date().toDateString()); };
@@ -37,6 +61,19 @@ const formatCasSek = (sekunde: number) => {
   const dd = (x: number) => String(x).padStart(2, '0');
   return h > 0 ? `${h}:${dd(m)}:${dd(sec)}` : `${dd(m)}:${dd(sec)}`;
 };
+/* lokalni YYYY-MM-DD (brez UTC zamika) — ujema se z zapisom <input type="date"> in Naloga.rok */
+const toDateStr = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+/* ponedeljek tekočega tedna, opolnoči lokalno */
+const zacetekTedna = (): Date => {
+  const d = new Date();
+  const dan = d.getDay();
+  const diff = dan === 0 ? -6 : 1 - dan;
+  const pon = new Date(d.getFullYear(), d.getMonth(), d.getDate() + diff);
+  pon.setHours(0, 0, 0, 0);
+  return pon;
+};
+const sklonNalog = (n: number) => (n === 1 ? 'naloga' : n >= 2 && n <= 4 ? 'naloge' : 'nalog');
+const sklonKoncanih = (n: number) => (n === 1 ? 'končana' : n >= 2 && n <= 4 ? 'končani' : 'končanih');
 
 export default function TaskManagerWorkspace() {
   const [naloge, setNaloge] = useState<Naloga[]>([]);
@@ -50,8 +87,11 @@ export default function TaskManagerWorkspace() {
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
   const [zdaj, setZdaj] = useState(() => Date.now());
 
-  /* --- vec-uporabniski del: sodelavci, trenutno prijavljen uporabnik, zgodovina, analitika --- */
-  const [sodelavci] = useState<Sodelavec[]>(ZACETNI_SODELAVCI);
+  /* --- vec-uporabniski del: sodelavci, trenutno prijavljen uporabnik, zgodovina, analitika ---
+     sodelavci se berejo iz skupne shrambe (lib/sodelavci → Nastavitve/SodelavciPanel), s
+     ZACETNI_SODELAVCI kot privzetim/zacetnim stanjem — preberiSodelavci() sama pade nazaj
+     nanje, ce nic ni bilo shranjeno, zato je vedenje za neurejeno ekipo nespremenjeno. */
+  const [sodelavci, setSodelavci] = useState<Sodelavec[]>(ZACETNI_SODELAVCI);
   const [trenutniId, setTrenutniId] = useState<string>(ZACETNI_SODELAVCI.find((s) => s.vloga === 'admin')?.id || ZACETNI_SODELAVCI[0].id);
   const [novDodeljenoId, setNovDodeljenoId] = useState<string>('');
   const [prikaziAnalitiko, setPrikaziAnalitiko] = useState(false);
@@ -59,10 +99,35 @@ export default function TaskManagerWorkspace() {
   const [zgodovina, setZgodovina] = useState<ZgodovinaAktivnosti[]>([]);
   const [filter, setFilter] = useState<'vse' | 'moje' | 'zamujene'>('vse');
 
+  /* --- stranke (za povezavo naloga ↔ stranka/projekt) --- */
+  const [stranke, setStranke] = useState<FlowClient[]>([]);
+
+  /* --- podrobnosti/komentarji naloge (odprti panel) --- */
+  const [odprtaNalogaId, setOdprtaNalogaId] = useState<string | null>(null);
+  const [novKomentar, setNovKomentar] = useState('');
+
+  /* --- Tedenski plan / šefov razpored dodelitev --- */
+  const [pogled, setPogled] = useState<'kanban' | 'teden'>('kanban');
+  const [dodelitve, setDodelitve] = useState<TedenskaDodelitev[]>([]);
+  const [cikelTednov, setCikelTednov] = useState(1);
+  const [ciklusOffset, setCiklusOffset] = useState(0);
+  const [novaDodelitevOsebaId, setNovaDodelitevOsebaId] = useState<string | null>(null);
+  const [ndProjektIme, setNdProjektIme] = useState('');
+  const [ndPodrocje, setNdPodrocje] = useState('');
+  const [ndStrankaId, setNdStrankaId] = useState('');
+  const [ndNacrt, setNdNacrt] = useState('');
+
   const trenutni = sodelavci.find((s) => s.id === trenutniId) || sodelavci[0];
   const jeVodjaAliAdmin = trenutni.vloga === 'vodja' || trenutni.vloga === 'admin';
 
-  useEffect(() => { setNaloge(preberiNaloge()); setZgodovina(preberiZgodovino()); }, []);
+  useEffect(() => {
+    setNaloge(preberiNaloge());
+    setZgodovina(preberiZgodovino());
+    setSodelavci(preberiSodelavci());
+    setStranke(loadFlowData().clients);
+    setDodelitve(preberiDodelitve());
+    setCikelTednov(preberiCikelTednov());
+  }, []);
 
   const posodobiInShrani = (noveNaloge: Naloga[]) => { setNaloge(noveNaloge); shraniNaloge(noveNaloge); };
 
@@ -110,6 +175,117 @@ export default function TaskManagerWorkspace() {
       zabeleziAktivnost(id, trenutni.ime, `Izbrisal nalogo »${naloga.naslov}«`);
       setZgodovina(preberiZgodovino());
     }
+  };
+
+  /* naloga ↔ stranka: poveze/odveze clientId + zapise v zgodovino */
+  const dodeliStranko = (id: string, clientId: string) => {
+    const stranka = stranke.find((s) => s.id === clientId);
+    const naloga = naloge.find((n) => n.id === id);
+    posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, clientId: clientId || undefined } : n)));
+    if (naloga) {
+      zabeleziAktivnost(id, trenutni.ime, stranka ? `Povezal nalogo »${naloga.naslov}« s stranko ${stranka.name}` : `Odstranil povezavo s stranko na »${naloga.naslov}«`);
+      setZgodovina(preberiZgodovino());
+    }
+  };
+
+  /* prost naziv projekta na nalogi — po zelji se ujema z imenom v tedenski dodelitvi */
+  const nastaviProjekt = (id: string, projectId: string) => {
+    posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, projectId: projectId.trim() || undefined } : n)));
+  };
+
+  const nastaviPrioriteto = (id: string, prioriteta: string) => {
+    posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, prioriteta: (prioriteta || undefined) as Naloga['prioriteta'] } : n)));
+  };
+
+  const dodajKomentar = (id: string, besedilo: string) => {
+    if (!besedilo.trim()) return;
+    const nov: NalogaKomentar = { id: 'kom_' + Date.now(), avtorIme: trenutni.ime || 'Jaz', besedilo: besedilo.trim(), cas: new Date().toISOString() };
+    posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, komentarji: [...(n.komentarji || []), nov] } : n)));
+  };
+
+  /* --- Tedenski plan / šefov razpored dodelitev --- */
+  const osveziDodelitve = () => setDodelitve(preberiDodelitve());
+
+  const spremeniCikel = (n: number) => { setCikelTednov(n); shraniCikelTednov(n); setCiklusOffset(0); };
+
+  const ciklusZacetek = (() => { const d = new Date(zacetekTedna()); d.setDate(d.getDate() + ciklusOffset * cikelTednov * 7); return d; })();
+  const ciklusZacetekStr = toDateStr(ciklusZacetek);
+  const ciklusKonecEksklStr = (() => { const d = new Date(ciklusZacetek); d.setDate(d.getDate() + cikelTednov * 7); return toDateStr(d); })();
+  const ciklusZadnjiDan = (() => { const d = new Date(ciklusZacetek); d.setDate(d.getDate() + cikelTednov * 7 - 1); return d; })();
+  const ciklusNaslov = `${ciklusZacetek.toLocaleDateString('sl-SI', { day: 'numeric', month: 'short' })} – ${ciklusZadnjiDan.toLocaleDateString('sl-SI', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+
+  const smeUrejatiDodelitev = (d: TedenskaDodelitev) => jeVodjaAliAdmin || d.osebaId === trenutni.id;
+
+  const dodelitveZaOsebo = (osebaId: string) => dodelitve
+    .filter((d) => d.osebaId === osebaId && d.tedenZacetek >= ciklusZacetekStr && d.tedenZacetek < ciklusKonecEksklStr)
+    .sort((a, b) => a.projektIme.localeCompare(b.projektIme));
+
+  /* poveze todo naloge (delavcev pogled) s sefovo dodelitvijo: ujemanje po osebi + projektu
+     (prek clientId/projectId ali po prostem imenu projekta) */
+  const nalogeZaDodelitev = (d: TedenskaDodelitev) => naloge.filter((n) => {
+    const istaOseba = n.dodeljenoOsebaId === d.osebaId || (!!n.dodeljenoOsebaIme && n.dodeljenoOsebaIme === d.osebaIme);
+    if (!istaOseba) return false;
+    const poId = !!d.projektId && (n.projectId === d.projektId || n.clientId === d.projektId);
+    const poImenu = !!n.projectId && n.projectId.trim().toLowerCase() === d.projektIme.trim().toLowerCase();
+    return poId || poImenu;
+  });
+
+  const oznakaNalogDodelitve = (d: TedenskaDodelitev) => {
+    const povezane = nalogeZaDodelitev(d);
+    const koncane = povezane.filter((n) => n.stolpec === 'done').length;
+    return `${povezane.length} ${sklonNalog(povezane.length)} / ${koncane} ${sklonKoncanih(koncane)}`;
+  };
+
+  const ustvariDodelitev = () => {
+    const oseba = sodelavci.find((s) => s.id === novaDodelitevOsebaId);
+    if (!oseba || !ndProjektIme.trim()) return;
+    const nova: TedenskaDodelitev = {
+      id: 'dod_' + Date.now(),
+      osebaId: oseba.id,
+      osebaIme: oseba.ime,
+      projektId: ndStrankaId || undefined,
+      projektIme: ndProjektIme.trim(),
+      podrocje: ndPodrocje.trim() || undefined,
+      tedenZacetek: ciklusZacetekStr,
+      nacrt: ndNacrt.trim() || undefined,
+      status: 'nacrtovano',
+    };
+    shraniDodelitev(nova);
+    osveziDodelitve();
+    setNovaDodelitevOsebaId(null); setNdProjektIme(''); setNdPodrocje(''); setNdStrankaId(''); setNdNacrt('');
+  };
+
+  const nastaviNacrtDodelitve = (id: string, nacrt: string) => {
+    const d = dodelitve.find((x) => x.id === id);
+    if (!d) return;
+    shraniDodelitev({ ...d, nacrt: nacrt || undefined });
+    osveziDodelitve();
+  };
+
+  const nastaviStatusDodelitve = (id: string, status: string) => {
+    const d = dodelitve.find((x) => x.id === id);
+    if (!d) return;
+    shraniDodelitev({ ...d, status: (status || undefined) as TedenskaDodelitev['status'] });
+    osveziDodelitve();
+  };
+
+  const prerazporediDodelitevOsebi = (id: string, osebaId: string) => {
+    const d = dodelitve.find((x) => x.id === id);
+    const oseba = sodelavci.find((s) => s.id === osebaId);
+    if (!d || !oseba) return;
+    shraniDodelitev({ ...d, osebaId: oseba.id, osebaIme: oseba.ime });
+    osveziDodelitve();
+  };
+
+  const odstraniDodelitev = (id: string) => { izbrisiDodelitev(id); osveziDodelitve(); };
+
+  /* "preneseno" = neopravljeno gre naprej — kopija v naslednji ciklus, status nazaj na nacrtovano */
+  const prenesiVNaslednjiCiklus = (d: TedenskaDodelitev) => {
+    const naslednji = new Date(ciklusZacetek);
+    naslednji.setDate(naslednji.getDate() + cikelTednov * 7);
+    const nova: TedenskaDodelitev = { ...d, id: 'dod_' + Date.now(), tedenZacetek: toDateStr(naslednji), status: 'nacrtovano' };
+    shraniDodelitev(nova);
+    osveziDodelitve();
   };
 
   /* Porabljeni cas naloge do TRENUTKA "zdaj" — ce stoparica tece, steje se tudi tekoci odsek. */
@@ -195,6 +371,11 @@ export default function TaskManagerWorkspace() {
     .sort((a, b) => new Date(b.datum).getTime() - new Date(a.datum).getTime())
     .slice(0, 10);
 
+  /* stranka -> ime, za znacko na kartici + urejanje naloge */
+  const strankaImeMap = new Map(stranke.map((s) => [s.id, s.name]));
+  const odprtaNaloga = naloge.find((n) => n.id === odprtaNalogaId) || null;
+  const aktivniSodelavci = sodelavci.filter((s) => s.aktiven);
+
   return (
     <div className="tm">
       <header className="tm-glava">
@@ -215,11 +396,16 @@ export default function TaskManagerWorkspace() {
               <ChartBar size={15} weight="bold" /> Analitika ekipe
             </button>
           )}
-          <button type="button" className="tm-nova" onClick={() => { setAktivniStolpec('todo'); setPrikaziFormo(true); }}>+ Nova naloga</button>
+          <button type="button" className="tm-nova" onClick={() => { setPogled('kanban'); setAktivniStolpec('todo'); setPrikaziFormo(true); }}>+ Nova naloga</button>
         </div>
       </header>
 
-      {prikaziFormo && (
+      <div className="tm-pogled-preklop" role="tablist" aria-label="Pogled">
+        <button type="button" role="tab" aria-selected={pogled === 'kanban'} className={pogled === 'kanban' ? 'tm-pogled-on' : ''} onClick={() => setPogled('kanban')}>Kanban</button>
+        <button type="button" role="tab" aria-selected={pogled === 'teden'} className={pogled === 'teden' ? 'tm-pogled-on' : ''} onClick={() => setPogled('teden')}>Tedenski plan</button>
+      </div>
+
+      {pogled === 'kanban' && prikaziFormo && (
         <form className="tm-forma" onSubmit={dodajNalogo}>
           <div className="tm-forma-glava"><h2>Nova naloga</h2><button type="button" className="tm-x" onClick={() => setPrikaziFormo(false)} aria-label="Zapri">×</button></div>
           <label className="tm-polje"><span>Naslov</span><input value={novNaslov} onChange={(e) => setNovNaslov(e.target.value)} placeholder="Npr. Pripravi poročilo za Rokus …" autoFocus /></label>
@@ -245,12 +431,15 @@ export default function TaskManagerWorkspace() {
         </form>
       )}
 
+      {pogled === 'kanban' && (
       <div className="tm-filtri" role="tablist" aria-label="Filter nalog">
         {([['vse', 'Vse naloge'], ['moje', 'Moje naloge'], ['zamujene', 'Zamujene']] as const).map(([k, oznaka]) => (
           <button key={k} type="button" role="tab" aria-selected={filter === k} className={filter === k ? 'tm-filter-on' : ''} onClick={() => setFilter(k)}>{oznaka}{k === 'zamujene' && vidneNaloge.some((n) => !!n.rok && n.rok < danesStr && n.stolpec !== 'done') ? ' •' : ''}</button>
         ))}
       </div>
+      )}
 
+      {pogled === 'kanban' && (
       <div className="tm-deska">
         {STOLPCI.map((s) => {
           const nalogeVStolpcu = prikazaneNaloge.filter((n) => n.stolpec === s.id);
@@ -270,11 +459,34 @@ export default function TaskManagerWorkspace() {
                       <div className="tm-kartica-vrh">
                         <strong>{naloga.naslov}</strong>
                         {naloga.isTimerRunning && <span className="tm-tece-znacka" aria-hidden>● teče</span>}
+                        <button
+                          type="button"
+                          className="tm-kartica-komentarji"
+                          onClick={() => { setOdprtaNalogaId(naloga.id); setNovKomentar(''); }}
+                          aria-label={`Podrobnosti in komentarji (${naloga.komentarji?.length || 0})`}
+                          title="Podrobnosti, stranka, projekt in komentarji"
+                        >
+                          <ChatCircleDots size={13} weight={naloga.komentarji?.length ? 'fill' : 'regular'} />
+                          {!!naloga.komentarji?.length && <span className="tm-kartica-komentarji-st">{naloga.komentarji.length}</span>}
+                        </button>
                         {jeVodjaAliAdmin && <button type="button" className="tm-kartica-x" onClick={() => izbrisiNalogo(naloga.id)} title="Izbriši nalogo" aria-label="Izbriši nalogo">×</button>}
                       </div>
                       {naloga.opis && <p className="tm-kartica-opis">{naloga.opis}</p>}
                       <div className="tm-kartica-noga">
                         {naloga.rok && <span className={`tm-rok${jeZapadlo(naloga.rok) && s.id !== 'done' ? ' tm-rok-zapadlo' : ''}`}>📅 {datStr(naloga.rok)}</span>}
+                        {naloga.clientId && strankaImeMap.get(naloga.clientId) && (
+                          <span className="tm-stranka-znacka" title={`Stranka: ${strankaImeMap.get(naloga.clientId)}`}>{strankaImeMap.get(naloga.clientId)}</span>
+                        )}
+                        <select
+                          className={`tm-prioriteta-select tm-prioriteta-select-${naloga.prioriteta || 'brez'}`}
+                          value={naloga.prioriteta || ''}
+                          onChange={(e) => nastaviPrioriteto(naloga.id, e.target.value)}
+                          aria-label="Prioriteta"
+                          title="Nastavi prioriteto"
+                        >
+                          <option value="">Prioriteta —</option>
+                          {PRIORITETE.map((p) => <option key={p.id} value={p.id}>{p.naziv}</option>)}
+                        </select>
                         {naloga.dodeljenoOseba
                           ? <span className="tm-oseba" title={`Dodeljeno: ${naloga.dodeljenoOseba}`}><span className="tm-oseba-krog" aria-hidden>{naloga.dodeljenoOseba.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>{naloga.dodeljenoOseba}</span>
                           : <select className="tm-dodeli" value={naloga.dodeljenoOsebaId || ''} onChange={(e) => dodeliNalogi(naloga.id, e.target.value)} aria-label="Dodeli sodelavcu" title="Dodeli ali zamenjaj sodelavca">
@@ -300,6 +512,120 @@ export default function TaskManagerWorkspace() {
           );
         })}
       </div>
+      )}
+
+      {pogled === 'teden' && (
+        <div className="tm-teden">
+          <div className="tm-teden-nav">
+            <button type="button" className="tm-teden-strelica" onClick={() => setCiklusOffset((o) => o - 1)} aria-label="Prejšnji cikel"><CaretLeft size={14} weight="bold" /></button>
+            <div className="tm-teden-naslov">
+              <strong>{ciklusNaslov}</strong>
+              {ciklusOffset !== 0 && <button type="button" className="tm-teden-danes" onClick={() => setCiklusOffset(0)}>Danes</button>}
+            </div>
+            <button type="button" className="tm-teden-strelica" onClick={() => setCiklusOffset((o) => o + 1)} aria-label="Naslednji cikel"><CaretRight size={14} weight="bold" /></button>
+            {jeVodjaAliAdmin && (
+              <label className="tm-teden-cikel">
+                <span>Cikel</span>
+                <select value={cikelTednov} onChange={(e) => spremeniCikel(Number(e.target.value))}>
+                  {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n} {n === 1 ? 'teden' : 'tedne'}</option>)}
+                </select>
+              </label>
+            )}
+          </div>
+
+          {aktivniSodelavci.length === 0 && <p className="tm-prazno">Ni aktivnih sodelavcev.</p>}
+
+          <div className="tm-teden-osebe">
+            {aktivniSodelavci.map((oseba) => {
+              const njeneDodelitve = dodelitveZaOsebo(oseba.id);
+              return (
+                <section key={oseba.id} className="tm-teden-oseba-vrsta">
+                  <header className="tm-teden-oseba-glava">
+                    <span className="tm-oseba-krog" aria-hidden>{oseba.ime.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>
+                    <span className="tm-teden-oseba-ime">{oseba.ime}</span>
+                    {jeVodjaAliAdmin && (
+                      <button type="button" className="tm-teden-dodaj" onClick={() => { setNovaDodelitevOsebaId(oseba.id); setNdProjektIme(''); setNdPodrocje(''); setNdStrankaId(''); setNdNacrt(''); }}>+ dodelitev</button>
+                    )}
+                  </header>
+
+                  {njeneDodelitve.length === 0 && <p className="tm-prazno tm-teden-prazno">Brez dodelitev v tem ciklu.</p>}
+
+                  <div className="tm-teden-cipi">
+                    {njeneDodelitve.map((d) => {
+                      const sme = smeUrejatiDodelitev(d);
+                      return (
+                        <article key={d.id} className="tm-teden-cip">
+                          <div className="tm-teden-cip-vrh">
+                            <strong>{d.projektIme}{d.podrocje ? ` — ${d.podrocje}` : ''}</strong>
+                            {jeVodjaAliAdmin && (
+                              <button type="button" className="tm-kartica-x" onClick={() => odstraniDodelitev(d.id)} title="Izbriši dodelitev" aria-label="Izbriši dodelitev">×</button>
+                            )}
+                          </div>
+                          <span className="tm-teden-cip-znacka">{oznakaNalogDodelitve(d)}</span>
+
+                          <label className="tm-teden-cip-polje">
+                            <span>Kaj bom delal/a ta teden</span>
+                            <textarea value={d.nacrt || ''} onChange={(e) => nastaviNacrtDodelitve(d.id, e.target.value)} placeholder="Načrt za ta cikel …" rows={2} disabled={!sme} />
+                          </label>
+
+                          <div className="tm-teden-cip-noga">
+                            <select className="tm-status-select" value={d.status || 'nacrtovano'} onChange={(e) => nastaviStatusDodelitve(d.id, e.target.value)} disabled={!sme} aria-label="Status dodelitve">
+                              {STATUSI_DODELITVE.map((s) => <option key={s.id} value={s.id}>{s.naziv}</option>)}
+                            </select>
+                            {d.status === 'preneseno' && sme && (
+                              <button type="button" className="tm-teden-prenesi" onClick={() => prenesiVNaslednjiCiklus(d)}>
+                                <ArrowBendUpRight size={12} weight="bold" /> V naslednji cikel
+                              </button>
+                            )}
+                            {jeVodjaAliAdmin && (
+                              <select className="tm-dodeli" value={d.osebaId} onChange={(e) => prerazporediDodelitevOsebi(d.id, e.target.value)} aria-label="Prerazporedi drugi osebi" title="Prerazporedi drugi osebi">
+                                {aktivniSodelavci.map((so) => <option key={so.id} value={so.id}>{so.ime}</option>)}
+                              </select>
+                            )}
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {novaDodelitevOsebaId && (
+        <div className="tm-dodelitev-podlaga" onClick={() => setNovaDodelitevOsebaId(null)}>
+          <aside className="tm-dodelitev-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="tm-forma-glava">
+              <h2>Nova dodelitev — {sodelavci.find((s) => s.id === novaDodelitevOsebaId)?.ime}</h2>
+              <button type="button" className="tm-x" onClick={() => setNovaDodelitevOsebaId(null)} aria-label="Zapri">×</button>
+            </div>
+            <label className="tm-polje"><span>Projekt</span>
+              <input value={ndProjektIme} onChange={(e) => setNdProjektIme(e.target.value)} placeholder="Npr. Battle for Earth …" autoFocus />
+            </label>
+            <label className="tm-polje"><span>Področje</span>
+              <input value={ndPodrocje} onChange={(e) => setNdPodrocje(e.target.value)} placeholder="Npr. mobile, desktop, CGP …" />
+            </label>
+            <div className="tm-namigi">
+              {NAMIGI_PODROCJE.map((n) => <button key={n} type="button" onClick={() => setNdPodrocje(n)}>{n}</button>)}
+            </div>
+            <label className="tm-polje"><span>Poveži s stranko (neobvezno)</span>
+              <select value={ndStrankaId} onChange={(e) => { setNdStrankaId(e.target.value); const s = stranke.find((x) => x.id === e.target.value); if (s && !ndProjektIme.trim()) setNdProjektIme(s.name); }}>
+                <option value="">— brez —</option>
+                {stranke.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </label>
+            <label className="tm-polje"><span>Kaj bo delal/a ta teden</span>
+              <textarea value={ndNacrt} onChange={(e) => setNdNacrt(e.target.value)} placeholder="Načrt, dogovorjen na sestanku …" rows={3} />
+            </label>
+            <div className="tm-forma-akcije">
+              <button type="button" className="tm-preklici" onClick={() => setNovaDodelitevOsebaId(null)}>Prekliči</button>
+              <button type="button" className="tm-shrani" disabled={!ndProjektIme.trim()} onClick={ustvariDodelitev}>Dodaj dodelitev</button>
+            </div>
+          </aside>
+        </div>
+      )}
 
       {prikaziAnalitiko && jeVodjaAliAdmin && (
         <div className="tm-analitika-podlaga" onClick={() => setPrikaziAnalitiko(false)}>
@@ -332,6 +658,48 @@ export default function TaskManagerWorkspace() {
         </div>
       )}
 
+      {odprtaNaloga && (
+        <div className="tm-detajli-podlaga" onClick={() => setOdprtaNalogaId(null)}>
+          <aside className="tm-detajli-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="tm-forma-glava">
+              <h2>{odprtaNaloga.naslov}</h2>
+              <button type="button" className="tm-x" onClick={() => setOdprtaNalogaId(null)} aria-label="Zapri">×</button>
+            </div>
+            {odprtaNaloga.opis && <p className="tm-kartica-opis">{odprtaNaloga.opis}</p>}
+            <label className="tm-polje"><span>Stranka</span>
+              <select value={odprtaNaloga.clientId || ''} onChange={(e) => dodeliStranko(odprtaNaloga.id, e.target.value)}>
+                <option value="">— brez —</option>
+                {stranke.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </label>
+            <label className="tm-polje"><span>Projekt (neobvezno)</span>
+              <input value={odprtaNaloga.projectId || ''} onChange={(e) => nastaviProjekt(odprtaNaloga.id, e.target.value)} placeholder="Naziv projekta, npr. Battle for Earth …" />
+            </label>
+            <label className="tm-polje"><span>Prioriteta</span>
+              <select value={odprtaNaloga.prioriteta || ''} onChange={(e) => nastaviPrioriteto(odprtaNaloga.id, e.target.value)}>
+                <option value="">— brez —</option>
+                {PRIORITETE.map((p) => <option key={p.id} value={p.id}>{p.naziv}</option>)}
+              </select>
+            </label>
+
+            <h3 className="tm-analitika-podnaslov">Komentarji</h3>
+            {(!odprtaNaloga.komentarji || odprtaNaloga.komentarji.length === 0) && <p className="tm-prazno">Še ni komentarjev.</p>}
+            <ul className="tm-komentarji-seznam">
+              {(odprtaNaloga.komentarji || []).map((k) => (
+                <li key={k.id}>
+                  <div className="tm-komentar-glava"><strong>{k.avtorIme}</strong><span>{datStr(k.cas)}</span></div>
+                  <p>{k.besedilo}</p>
+                </li>
+              ))}
+            </ul>
+            <form className="tm-komentar-forma" onSubmit={(e) => { e.preventDefault(); dodajKomentar(odprtaNaloga.id, novKomentar); setNovKomentar(''); }}>
+              <textarea value={novKomentar} onChange={(e) => setNovKomentar(e.target.value)} placeholder="Dodaj komentar …" rows={2} />
+              <button type="submit" className="tm-shrani" disabled={!novKomentar.trim()}>Dodaj komentar</button>
+            </form>
+          </aside>
+        </div>
+      )}
+
       <style>{`
         .tm{padding:1.6rem clamp(1rem,3vw,2.2rem) 4rem;min-width:0}
         .tm-glava{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem;margin-bottom:1.6rem}
@@ -351,8 +719,6 @@ export default function TaskManagerWorkspace() {
         .tm-analitika-gumb:hover{background:var(--ink);color:var(--paper)}
 
         /* panel Analitika ekipe (overlay v Pinart slogu, ne generic modal) */
-        .tm-analitika-podlaga{position:fixed;inset:0;z-index:60;display:flex;justify-content:flex-end;background:oklch(20% .02 55/.32);backdrop-filter:blur(2px)}
-        .tm-analitika-panel{width:min(26rem,92vw);height:100%;overflow-y:auto;padding:1.4rem 1.5rem 2.4rem;background:var(--paper);border-left:1px solid var(--line);box-shadow:-1.2rem 0 3rem oklch(20% .03 55/.14)}
         .tm-analitika-stevci{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.2rem 0 1.2rem}
         .tm-analitika-stevec{display:flex;flex-direction:column;gap:.2rem;padding:.7rem .6rem;border:1px solid var(--line);border-radius:.8rem;background:oklch(97.5% .008 87/.75);text-align:center}
         .tm-analitika-stevec strong{font:600 1.3rem var(--font-serif),Georgia,serif;color:var(--ink)}
@@ -440,9 +806,90 @@ export default function TaskManagerWorkspace() {
         @keyframes tm-utrip-znacka{0%,100%{opacity:1}50%{opacity:.5}}
         @keyframes tm-utrip-obroba{0%,100%{box-shadow:0 0 0 2px oklch(62% .19 300/.28)}50%{box-shadow:0 0 0 4px oklch(62% .19 300/.12)}}
 
+        /* preklop pogleda Kanban | Tedenski plan — isti segmentirani slog kot .tm-filtri */
+        .tm-pogled-preklop{display:inline-flex;gap:.2rem;margin:0 0 1.1rem;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
+        .tm-pogled-preklop button{padding:.42rem .95rem;border:0;border-radius:999px;background:none;font:750 .7rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
+        .tm-pogled-preklop button.tm-pogled-on{background:var(--ink);color:var(--paper)}
+
+        /* znacka stranke na kartici (naloga <-> stranka) */
+        .tm-stranka-znacka{display:inline-flex;align-items:center;padding:.2rem .55rem;border-radius:999px;background:oklch(92% .05 165);color:oklch(34% .09 165);font-size:.66rem;font-weight:700}
+
+        /* prioriteta — select je hkrati barvni pill (isti chevron kot ostali selecti v datoteki) */
+        .tm-prioriteta-select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding:.2rem 1.3rem .2rem .55rem;border:1px solid transparent;border-radius:999px;font:700 .62rem var(--font-sans),sans-serif;cursor:pointer;background-repeat:no-repeat;background-position:right .4rem center;background-size:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
+        .tm-prioriteta-select-brez{background-color:oklch(96% .006 87);color:var(--muted);border-color:var(--line)}
+        .tm-prioriteta-select-visoka{background-color:oklch(58% .16 35);color:#fff}
+        .tm-prioriteta-select-srednja{background-color:oklch(89% .015 80);color:var(--ink)}
+        .tm-prioriteta-select-nizka{background-color:oklch(95% .008 87);color:var(--muted)}
+
+        /* gumb "podrobnosti + komentarji" na kartici */
+        .tm-kartica-komentarji{flex:none;display:inline-flex;align-items:center;gap:.2rem;padding:.15rem .35rem;border:0;border-radius:999px;background:transparent;color:var(--muted);cursor:pointer}
+        .tm-kartica-komentarji:hover{background:oklch(94% .01 87);color:var(--ink)}
+        .tm-kartica-komentarji-st{font:800 .58rem var(--font-sans),sans-serif;color:inherit}
+
+        /* podlaga/panel v Pinart slogu — deljeno med Analitiko, Podrobnosti naloge in Novo dodelitev */
+        .tm-analitika-podlaga,.tm-detajli-podlaga,.tm-dodelitev-podlaga{position:fixed;inset:0;z-index:60;display:flex;justify-content:flex-end;background:oklch(20% .02 55/.32);backdrop-filter:blur(2px)}
+        .tm-analitika-panel,.tm-detajli-panel,.tm-dodelitev-panel{width:min(26rem,92vw);height:100%;overflow-y:auto;padding:1.4rem 1.5rem 2.4rem;background:var(--paper);border-left:1px solid var(--line);box-shadow:-1.2rem 0 3rem oklch(20% .03 55/.14)}
+
+        /* nit komentarjev na nalogi */
+        .tm-komentarji-seznam{list-style:none;margin:.2rem 0 1rem;padding:0;display:flex;flex-direction:column;gap:.5rem}
+        .tm-komentarji-seznam li{padding:.6rem .7rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0/.6)}
+        .tm-komentar-glava{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
+        .tm-komentar-glava strong{font-size:.76rem;color:var(--ink);font-weight:650}
+        .tm-komentar-glava span{font:700 .58rem var(--font-sans),sans-serif;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+        .tm-komentarji-seznam li p{margin:.3rem 0 0;font-size:.8rem;line-height:1.5;color:var(--ink)}
+        .tm-komentar-forma{display:flex;flex-direction:column;gap:.5rem}
+        .tm-komentar-forma textarea{width:100%;padding:.6rem .8rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0/.75);font:inherit;font-size:.84rem;color:var(--ink);resize:vertical;min-height:3rem}
+        .tm-komentar-forma textarea:focus{outline:none;border-color:var(--ink)}
+        .tm-komentar-forma .tm-shrani{align-self:flex-end}
+
+        /* Tedenski plan / sefov razpored dodelitev */
+        .tm-teden-nav{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin-bottom:1.1rem}
+        .tm-teden-strelica{flex:none;width:2rem;height:2rem;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--paper);color:var(--ink);cursor:pointer;transition:background .15s,color .15s}
+        .tm-teden-strelica:hover{background:var(--ink);color:var(--paper)}
+        .tm-teden-naslov{display:flex;align-items:center;gap:.6rem}
+        .tm-teden-naslov strong{font:600 1.05rem var(--font-serif),Georgia,serif;color:var(--ink)}
+        .tm-teden-danes{padding:.3rem .7rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--muted);font:700 .64rem var(--font-sans),sans-serif;cursor:pointer}
+        .tm-teden-danes:hover{color:var(--ink);border-color:var(--ink)}
+        .tm-teden-cikel{margin-left:auto;display:flex;align-items:center;gap:.4rem}
+        .tm-teden-cikel span{font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+        .tm-teden-cikel select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding:.4rem 1.7rem .4rem .65rem;border:1px solid var(--line);border-radius:.7rem;background-color:oklch(100% 0 0/.75);font:inherit;font-size:.78rem;color:var(--ink);background-repeat:no-repeat;background-position:right .55rem center;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
+
+        .tm-teden-osebe{display:flex;flex-direction:column;gap:1rem}
+        .tm-teden-oseba-vrsta{padding:.9rem 1rem 1rem;border:1px solid var(--line);border-radius:1.1rem;background:oklch(97.5% .008 87/.6)}
+        .tm-teden-oseba-glava{display:flex;align-items:center;gap:.55rem;margin-bottom:.7rem}
+        .tm-teden-oseba-ime{flex:1;font:650 .86rem var(--font-sans),sans-serif;color:var(--ink)}
+        .tm-teden-dodaj{flex:none;padding:.35rem .75rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--muted);font:700 .66rem var(--font-sans),sans-serif;cursor:pointer}
+        .tm-teden-dodaj:hover{border-style:solid;border-color:var(--ink);color:var(--ink)}
+        .tm-teden-prazno{margin:0;padding:.7rem .6rem}
+
+        .tm-teden-cipi{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.7rem}
+        .tm-teden-cip{display:flex;flex-direction:column;gap:.5rem;padding:.7rem .8rem;border:1px solid var(--line);border-radius:.85rem;background:oklch(100% 0 0/.9);box-shadow:0 .4rem 1rem oklch(20% .03 55/.05)}
+        .tm-teden-cip-vrh{display:flex;align-items:flex-start;gap:.4rem}
+        .tm-teden-cip-vrh strong{flex:1;font-size:.8rem;font-weight:650;line-height:1.35;color:var(--ink)}
+        .tm-teden-cip-znacka{align-self:flex-start;padding:.15rem .5rem;border-radius:999px;background:oklch(94% .03 300);color:oklch(38% .1 300);font:700 .62rem var(--font-sans),sans-serif}
+        .tm-teden-cip-polje{display:flex;flex-direction:column;gap:.25rem}
+        .tm-teden-cip-polje span{font:700 .58rem var(--font-sans),sans-serif;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+        .tm-teden-cip-polje textarea{width:100%;padding:.4rem .55rem;border:1px solid var(--line);border-radius:.55rem;background:oklch(100% 0 0/.7);font:inherit;font-size:.76rem;color:var(--ink);resize:vertical;min-height:2.2rem}
+        .tm-teden-cip-polje textarea:focus{outline:none;border-color:var(--ink)}
+        .tm-teden-cip-polje textarea:disabled{opacity:.6;cursor:not-allowed}
+        .tm-teden-cip-noga{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+
+        /* status dodelitve — samostojen pill-select, isti chevron kot ostali selecti */
+        .tm-status-select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding:.2rem 1.3rem .2rem .55rem;border:1px solid var(--line);border-radius:999px;font:700 .62rem var(--font-sans),sans-serif;cursor:pointer;background-color:oklch(96% .006 87);color:var(--ink);background-repeat:no-repeat;background-position:right .4rem center;background-size:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
+        .tm-status-select:disabled{opacity:.6;cursor:not-allowed}
+        .tm-teden-prenesi{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .6rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font:700 .62rem var(--font-sans),sans-serif;cursor:pointer}
+        .tm-teden-prenesi:hover{background:var(--ink);color:var(--paper)}
+
+        /* namigi za podrocje v formi nove dodelitve */
+        .tm-namigi{display:flex;flex-wrap:wrap;gap:.4rem;margin:-.4rem 0 .8rem}
+        .tm-namigi button{padding:.28rem .65rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--muted);font:700 .64rem var(--font-sans),sans-serif;cursor:pointer}
+        .tm-namigi button:hover{border-style:solid;border-color:var(--ink);color:var(--ink)}
+
         @media (max-width:860px){
           .tm-deska{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:82vw;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.6rem}
           .tm-stolpec{scroll-snap-align:start}
+          .tm-teden-cipi{grid-template-columns:1fr}
+          .tm-teden-cikel{margin-left:0}
         }
       `}</style>
     </div>
