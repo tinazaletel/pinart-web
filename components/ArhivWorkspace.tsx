@@ -11,7 +11,7 @@
    je prenesen iz RetainerWorkspace (rw-). Detajl panel z desne + lepljivi X so
    vzorec iz ContractWorkspace (styles.detailBackdrop/detailPanel + .pg-det-x). */
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CaretDown, CaretUp, FileText, Receipt, Scroll, Warning } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -133,6 +133,13 @@ export default function ArhivWorkspace({ base }: { base: string }) {
      panel/obrazec pa v ProjectsWorkspace (glej pw-nov-panel); krmilimo od tu,
      da je gumb del ISTE vrstice kot "+ Nova ponudba". */
   const [novProjektOdprt, setNovProjektOdprt] = useState(false);
+  /* Postavka "Ustvari projekt" (meni > Orodja) pripelje sem z ?nov=1 in odpre brief takoj. */
+  useEffect(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('nov') === '1') {
+      setZavihek('projekti');
+      setNovProjektOdprt(true);
+    }
+  }, []);
 
   /* iskanje + filtri (skupno stanje; ob menjavi zavihka jih pocistimo, ker so
      razlicni za vsak tip) */

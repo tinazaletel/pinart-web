@@ -49,6 +49,8 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
       {item('retainer', `${base}/kalkulator/dolgorocno?od=pregled`, '02', 'Dolgoročno sodelovanje', 'retainer')}
       {item('contracts', `${base}/kalkulator/pogodbe`, '03', 'Pogodba', 'pogodba', 'contracts')}
       {item('invoices', `${base}/kalkulator/racuni`, '04', 'Računi', 'racuni')}
+      {/* Ustvari projekt = vodi te cez brief (?nov=1 odpre onboarding na Projekti). */}
+      {povezava(`${base}/kalkulator/projekti?nov=1`, '05', 'Ustvari projekt', 'projekti')}
     </MeniSkupina>
     {/* Arhiv (prej "Zgodovina") = kjer NAJDEŠ shranjeno; sodi pod Podatki, ne Drugo.
         Delo = ustvarjaš, Podatki = iščeš. */}
