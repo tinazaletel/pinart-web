@@ -675,7 +675,7 @@ export default function TaskManagerWorkspace() {
     const deli: string[] = [];
     if (steviloNovih > 0) deli.push(`Dodanih ${steviloNovih} novih`);
     if (steviloDopolnjenih > 0) deli.push(`dopolnjenih ${steviloDopolnjenih} obstoječih`);
-    setSeedSporocilo(deli.length > 0 ? `${deli.join(', ')}.` : 'Vse razvojne naloge so že naložene in dopolnjene.');
+    setSeedSporocilo(deli.length > 0 ? `${deli.join(', ')}.` : 'Vse naloge so že naložene in dopolnjene.');
     window.setTimeout(() => setSeedSporocilo(''), 3500);
   };
 
@@ -1010,8 +1010,8 @@ export default function TaskManagerWorkspace() {
               <ChartBar size={15} weight="bold" /> Analitika ekipe
             </button>
           )}
-          <button type="button" className="tm-seed-gumb" onClick={nalozirazvojneNaloge} title="Doda razvojne naloge Flow-a v ta task manager (ne prepiše obstoječih)">
-            + Naloži razvojne naloge (Flow)
+          <button type="button" className="tm-seed-gumb" onClick={nalozirazvojneNaloge} title="Doda pripravljene naloge v task manager (ne prepiše obstoječih, obstoječe dopolni)">
+            + Naloži naloge
           </button>
           {seedSporocilo && <span className="tm-seed-sporocilo">{seedSporocilo}</span>}
           {!samoOgled ? (
