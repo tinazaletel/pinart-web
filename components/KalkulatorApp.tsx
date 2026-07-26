@@ -6134,7 +6134,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ure-preklop em { font-style: normal; font-weight: 400; color: rgba(17,17,17,.62); }
         .cw .pogodba-nasvet { display: block; max-width: 640px; margin: -.4rem 0 1rem; padding: .7rem .9rem; font-size: .82rem; line-height: 1.5; color: rgba(120,78,10,.92); background: rgba(196,138,20,.1); border-left: 3px solid rgba(196,138,20,.55); border-radius: 0 10px 10px 0; }
         .cw .pogodba-nasvet a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
-        .cw .pogodba-noga { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; margin: 1rem 0 0; padding: .75rem 0 0; border-top: 1px solid var(--line, rgba(0,0,0,.12)); font-size: .8rem; }
+        .cw .pogodba-noga { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: .3rem .45rem; margin: .8rem 0 0; font-size: .8rem; }
         .cw .pogodba-noga-check { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; color: var(--ink, #111); }
         .cw .pogodba-noga-nasvet { color: rgba(120,78,10,.92); }
         .cw .pogodba-noga-nasvet a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
@@ -8797,6 +8797,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </button>
                 </p>
               )}
+              <div className="pogodba-noga">
+                <label className="pogodba-noga-check">
+                  <input type="checkbox" checked={veljaKotPogodba} onChange={e => { setVeljaKotPogodba(e.target.checked); setRocnoBesedilo(false); }} />
+                  <span>{L('Ob pisni potrditvi velja kot pogodba', 'On written confirmation, counts as a contract')},</span>
+                </label>
+                <span className="pogodba-noga-nasvet">{L('priporočamo pravo pogodbo (varnejša).', 'we recommend a real contract (safer).')} <a href={localePath(locale, `/kalkulator/pogodbe`)}>{L('Ustvari pogodbo →', 'Create a contract →')}</a></span>
+              </div>
               </>
               )}
               </div>
@@ -8861,13 +8868,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               )}
             </div>
             {mailStatus && <p className="mail-status" role="status">{mailStatus}</p>}
-            <div className="pogodba-noga">
-              <label className="pogodba-noga-check">
-                <input type="checkbox" checked={veljaKotPogodba} onChange={e => { setVeljaKotPogodba(e.target.checked); setRocnoBesedilo(false); }} />
-                <span>{L('Ob pisni potrditvi velja kot pogodba', 'On written confirmation, counts as a contract')}</span>
-              </label>
-              <span className="pogodba-noga-nasvet">{L('Priporočamo pravo pogodbo (varnejša).', 'We recommend a real contract (safer).')} <a href={localePath(locale, `/kalkulator/pogodbe`)}>{L('Ustvari pogodbo →', 'Create a contract →')}</a></span>
-            </div>
             <div className="rac-panel">
               {!racunOdprt ? (
                 <button type="button" className="povezava rac-toggle" onClick={odpriRacun}>
