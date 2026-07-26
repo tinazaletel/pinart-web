@@ -274,7 +274,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np{min-width:0}
       .np-stolpec{width:100%;max-width:720px;margin:0 auto}
       .np-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);margin:0 0 .3rem}
-      .np-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(2.4rem,6vw,4rem);line-height:1;letter-spacing:-.012em;margin:0 0 2rem;color:var(--ink)}
+      .np-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 2rem;color:var(--ink)}
 
       .np-chat-tok{display:flex;flex-direction:column;gap:1.1rem}
       @keyframes npChatIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}

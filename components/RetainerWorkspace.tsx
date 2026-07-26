@@ -967,7 +967,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
            naredi prevelik prazen pas na vrhu — vsebina se zacne takoj */
         .rw.rw-lupina .rw-vsebina{padding-top:.6rem}
         .rw-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 .3rem}
-        .rw-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(2.4rem,6vw,4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
+        .rw-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
         .rw-uvod{font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72);margin:0 0 2.4rem;max-width:34rem}
         .rw-sek{margin:0 0 2.6rem;scroll-margin-top:5.5rem}
         .rw-sek.rw-vstop{animation:rwSek .5s cubic-bezier(.16,1,.3,1) both}
@@ -1040,7 +1040,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-povz{margin-top:1.2rem;padding:1.7rem 1.6rem 1.8rem;border-radius:20px;background:#FCFBF7;border:1px solid rgba(17,17,17,.08);box-shadow:0 4px 18px rgba(17,17,17,.04)}
         .rw-glavna{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding-bottom:.85rem;border-bottom:1px solid rgba(17,17,17,.1)}
         .rw-glavna span{font-size:.7rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(17,17,17,.55)}
-        .rw-glavna b{font-family:var(--font-serif),Didot,serif;font-weight:700;font-size:clamp(2rem,4.5vw,2.6rem);letter-spacing:-.01em;color:var(--ink);-webkit-text-stroke:.4px currentColor}
+        .rw-glavna b{font-family:var(--font-serif),Didot,serif;font-weight:700;font-size:clamp(1.55rem,3vw,2.05rem);letter-spacing:-.01em;color:var(--ink);-webkit-text-stroke:.4px currentColor}
         .rw-glavna em{font-family:inherit;font-style:normal;font-size:.9rem;font-weight:400;color:rgba(17,17,17,.5);-webkit-text-stroke:0}
         .rw-det{list-style:none;margin:.8rem 0 0;padding:0;display:flex;flex-direction:column;gap:.32rem;font-size:.87rem;color:rgba(17,17,17,.72)}
         .rw-det li::before{content:"· ";color:var(--accent);font-weight:700}

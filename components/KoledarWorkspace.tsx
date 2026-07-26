@@ -502,7 +502,7 @@ export default function KoledarWorkspace() {
       <style>{`
         .kol{padding:1.6rem clamp(1rem,3vw,2.2rem) 4rem;max-width:56rem;min-width:0}
         .kol-eyebrow{margin:0 0 .35rem;font:800 .62rem var(--font-sans),sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);opacity:.55}
-        .kol-naslov{margin:0;font:500 clamp(2rem,4vw,2.8rem)/1 var(--font-serif),Georgia,serif;color:var(--ink)}
+        .kol-naslov{margin:0;font:500 clamp(1.6rem,3vw,2.15rem)/1 var(--font-serif),Georgia,serif;color:var(--ink)}
         .kol-podnaslov{margin:.55rem 0 1.6rem;max-width:60ch;color:var(--ink);opacity:.65;font-size:.86rem;line-height:1.5}
 
         .kol-zapadlo-trak{display:flex;align-items:center;gap:.5rem;width:100%;margin-bottom:1.2rem;padding:.65rem .9rem;border:1px solid oklch(86% .06 30);border-radius:.9rem;background:oklch(98% .02 40 / .7);color:oklch(48% .16 30);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer;text-align:left}

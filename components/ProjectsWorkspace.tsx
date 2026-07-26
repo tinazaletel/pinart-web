@@ -244,80 +244,18 @@ const pwStyles = `
 .pw-cilji-vprasanja{position:relative;z-index:1;display:flex;flex-direction:column;gap:.4rem;margin:.5rem 0 0}
 .pw-cilji-dodeljeni{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:.4rem;margin:.5rem 0 0}
 .pw-cilji-oseba{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .65rem .3rem .3rem;border-radius:999px;background:oklch(100% 0 0 / .55);border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);font-size:.68rem;font-weight:700;color:var(--ink)}
-/* "+ Nov projekt" — onboarding kot CHAT (posnema videz/tok chata ponudbe v
-   KalkulatorApp.tsx: mehurcek vprasanja levo z violet piko, moj odgovor
-   desno v mint mehurcku, klik nanj znova odpre polje za urejanje, NAPREJ
-   vodi na naslednje vprasanje — vse na EMI navpicni povrsini, brez menjave
-   strani). .pw-nov-mreza/.pw-nov-polje/.pw-nov-cilj/.pw-nov-dodaj-cilj/
-   .pw-nov-preklici ostanejo (uporabljeni znotraj koraka "Cilji" + datuma). */
-.pw-nov-panel{width:min(36rem,100vw)}
-.pw-nov-polje{display:flex;flex-direction:column;gap:.35rem;min-width:0}
-.pw-nov-polje span{font-size:.68rem;font-weight:700;color:var(--muted)}
-.pw-nov-polje input,.pw-nov-polje select,.pw-nov-polje textarea{width:100%;box-sizing:border-box;padding:.6rem .75rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.8rem;color:var(--ink)}
-.pw-nov-polje textarea{resize:vertical;min-height:5rem;font-family:inherit}
-.pw-nov-polje select{cursor:pointer}
-.pw-nov-mreza{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
-.pw-nov-cilj{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;align-items:center;gap:.4rem}
-.pw-nov-cilj input{box-sizing:border-box;padding:.55rem .65rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.74rem;color:var(--ink);min-width:0}
-.pw-nov-dodaj-cilj{align-self:start;margin-top:.1rem;padding:.5rem .85rem;border:1px dashed color-mix(in oklch,var(--ink) 28%,transparent);border-radius:.7rem;background:transparent;font:700 .68rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
-.pw-nov-dodaj-cilj:hover{background:oklch(100% 0 0 / .5)}
-.pw-nov-preklici{padding:.55rem .95rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
-.pw-nov-preklici:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-/* pogovorni tok — glava/naslov panela ostane, tok se zacne pod njim */
-.pw-chat-tok{display:flex;flex-direction:column;gap:1rem;margin:1.2rem 0 0}
-@keyframes pwChatIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.pw-chat-bot,.pw-chat-jaz,.pw-chat-izbire,.pw-chat-vnos{animation:pwChatIn .38s cubic-bezier(.16,1,.3,1) both}
-@media (prefers-reduced-motion:reduce){.pw-chat-bot,.pw-chat-jaz,.pw-chat-izbire,.pw-chat-vnos{animation:none}}
-/* mehurcek bota: violet-mehka pika (isti "Pinart mehurcek" jezik kot ostali chat) + oblacek levo poravnan */
-.pw-chat-bot{display:flex;max-width:94%}
-.pw-chat-bot .pw-chat-mehur{position:relative;padding:.85rem 1.15rem .85rem 2.55rem;border-radius:18px;border-bottom-left-radius:6px;background:oklch(96% .022 300);border:1px solid color-mix(in oklch,var(--ink) 7%,transparent);font-size:.86rem;line-height:1.5}
-.pw-chat-bot .pw-chat-mehur::before{content:'';position:absolute;left:.8rem;top:.98rem;width:1.1rem;height:1.1rem;border-radius:50%;background:radial-gradient(58% 48% at 30% 24%,rgba(255,255,255,.92),rgba(255,255,255,0) 62%),conic-gradient(from 210deg,#7C3AED,#EC4899,#F59E0B,#38BDF8,#7C3AED);box-shadow:0 2px 6px rgba(124,58,237,.28)}
-.pw-chat-bot .pw-chat-mehur b{display:block;font-weight:700;color:var(--ink)}
-.pw-chat-bot .pw-chat-mehur small{display:block;margin-top:.2rem;font-weight:400;font-size:.76rem;color:color-mix(in oklch,var(--ink) 62%,transparent)}
-/* moj odgovor: mint mehurcek, desno poravnan, klikljiv (odpre urejanje v mestu) */
-.pw-chat-jaz{align-self:flex-end;max-width:94%}
-.pw-chat-mehur-ured{display:inline-flex;align-items:center;gap:.55rem;padding:.7rem 1.05rem;border-radius:18px;border-bottom-right-radius:6px;background:oklch(89% .05 165);border:1px solid color-mix(in oklch,var(--ink) 7%,transparent);color:var(--ink);font:inherit;font-size:.82rem;font-weight:600;text-align:left;cursor:pointer;transition:transform .15s,box-shadow .15s}
-.pw-chat-mehur-ured:hover{transform:translateY(-1px);box-shadow:0 7px 18px rgba(40,25,40,.13)}
-.pw-chat-mehur-ured svg{opacity:.4;flex:none;transition:opacity .15s}
-.pw-chat-mehur-ured:hover svg{opacity:.85}
-/* vnosno polje pod vprasanjem bota — zamaknjeno pod mehurcek, "Naprej" pilula z ink ozadjem */
-.pw-chat-vnos{display:flex;flex-direction:column;align-items:flex-start;gap:.6rem;max-width:calc(100% - 1rem);margin:-.2rem 0 0 .3rem}
-.pw-chat-polje{width:100%;box-sizing:border-box;padding:.7rem 1.05rem;border:1px solid rgba(17,17,17,.14);border-radius:999px;background:#fff;font:inherit;font-size:.85rem;font-weight:600;color:var(--ink);box-shadow:0 4px 14px rgba(40,25,40,.05);outline:none}
-textarea.pw-chat-polje{border-radius:1rem;resize:vertical;min-height:4.4rem;font-weight:400;line-height:1.5;font-family:inherit}
-select.pw-chat-polje{cursor:pointer}
-.pw-chat-polje:focus{border-color:color-mix(in oklch,var(--ink) 45%,transparent)}
-.pw-chat-naprej{align-self:flex-start;display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.1rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
-.pw-chat-naprej:disabled{opacity:.45;cursor:not-allowed}
-.pw-chat-naprej:hover:not(:disabled){background:color-mix(in oklch,var(--ink) 82%,transparent)}
-/* izbirne kartice (status) — pod vprasanjem bota, klik takoj potrdi in gre naprej */
-.pw-chat-izbire{display:flex;flex-direction:column;gap:.5rem;margin:-.2rem 0 0 .3rem}
-.pw-chat-opcija{display:flex;align-items:center;gap:.75rem;width:min(360px,100%);padding:.75rem .95rem;border:1px solid var(--line);border-radius:14px;background:oklch(99% .006 87 / .85);font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s}
-.pw-chat-opcija:hover{transform:translateY(-2px);border-color:color-mix(in oklch,var(--ink) 28%,transparent);box-shadow:0 8px 20px rgba(40,25,40,.08)}
-.pw-crk{display:grid;place-items:center;width:1.7rem;height:1.7rem;border-radius:8px;background:oklch(94% .045 295);color:var(--ink);font-weight:800;font-size:.74rem;flex:none}
-/* dodatna vprasanja (moja lastna Q&A) */
+/* dodatna vprasanja + inicialke dodeljenih sodelavcev — se uporabljajo znotraj
+   vozlisca projekta ("00 · CILJI IN ŽELJE" kartica); chat vprasalnik "Ustvari
+   projekt" (nekdanji pw-nov-panel) je zdaj lastna stran, glej
+   components/NovProjektWorkspace.tsx. */
 .pw-vprasanje-vrstica{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding:.6rem .75rem;border:1px solid var(--line);border-radius:.8rem;background:oklch(100% 0 0 / .55)}
 .pw-vprasanje-vrstica div{display:flex;flex-direction:column;gap:.15rem;min-width:0}
 .pw-vprasanje-vrstica b{font-size:.76rem;color:var(--ink);font-weight:700}
 .pw-vprasanje-vrstica span{font-size:.72rem;color:color-mix(in oklch,var(--ink) 62%,transparent)}
-/* dodeljeni sodelavci — klikljivi cipsi (ista logika kot chip-podrocje v kalkulatorju) */
-.pw-chat-sodelavci{display:flex;flex-wrap:wrap;gap:.5rem}
-.pw-chat-sodelavec{display:flex;align-items:center;gap:.55rem;padding:.5rem .85rem .5rem .5rem;border:1px solid var(--line);border-radius:999px;background:oklch(99% .006 87 / .85);font:inherit;color:var(--ink);cursor:pointer;transition:border-color .16s,background .16s}
-.pw-chat-sodelavec b{font-size:.74rem;font-weight:700}
-.pw-chat-sodelavec small{display:block;color:color-mix(in oklch,var(--ink) 55%,transparent);font-size:.6rem}
 .pw-chat-sod-krog{display:grid;place-items:center;width:1.7rem;height:1.7rem;border-radius:50%;background:oklch(90% .045 297);color:oklch(40% .16 297);font-size:.6rem;font-weight:800;flex:none}
-.pw-chat-sodelavec.on{border-color:var(--ink);background:oklch(93% .04 165)}
-.pw-chat-sodelavec.on .pw-chat-sod-krog{background:var(--ink);color:var(--paper)}
-.pw-chat-deli{align-self:flex-start;display:inline-flex;align-items:center;gap:.4rem;margin-top:.2rem;padding:.55rem .9rem;border:1px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);font:700 .7rem var(--font-sans),sans-serif;cursor:pointer}
-.pw-chat-deli:hover:not(:disabled){background:var(--ink);color:var(--paper)}
-.pw-chat-deli:disabled{opacity:.45;cursor:not-allowed}
-.pw-chat-koncno{margin-top:.4rem}
 @media (max-width:640px){
 .pw-link-obrazec{grid-template-columns:1fr}
 .pw-kmalu-red{grid-template-columns:1fr}
-.pw-nov-mreza{grid-template-columns:1fr}
-.pw-nov-cilj{grid-template-columns:1fr;gap:.3rem;padding:.6rem;border:1px solid var(--line);border-radius:.7rem}
-.pw-chat-vnos,.pw-chat-izbire{margin-left:0}
-.pw-chat-bot,.pw-chat-jaz{max-width:97%}
 }
 /* PIPELINE POSLOV — kanban pogled na zavihku Projekti (preklop Seznam|Pipeline
    ziv v ArhivWorkspace, glej pw-pogled-preklop tam). Stolpci = faze (lib/projekti

@@ -690,7 +690,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-stolpec{width:100%;max-width:700px;margin-left:auto;margin-right:auto}
       /* naslov v ozkem stolpcu (kot retainer rw-kicker/rw-h1) */
       .rc .rc-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);margin:0 0 .3rem}
-      .rc .rc-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(2.4rem,6vw,4rem);line-height:1;letter-spacing:-.012em;margin:0 0 1.4rem;color:var(--ink)}
+      .rc .rc-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 1.4rem;color:var(--ink)}
       /* na svoji strani je obrazec en stolpec (modul ima 2 koloni za inline vgradnjo) */
       .rc .rc-obrazec{grid-template-columns:1fr}
       /* vec zracnosti okoli naslova obrazca */
