@@ -887,13 +887,21 @@ export default function TaskManagerWorkspace() {
                             {naloga.podopravila.filter((p) => p.done).length}/{naloga.podopravila.length}
                           </span>
                         )}
-                        {(porabljene > 0 || naloga.isTimerRunning) && (
-                          <span className="tm-kartica-cas" title="Porabljen čas">
+                        <button
+                          type="button"
+                          className={`tm-kartica-stop${naloga.isTimerRunning ? ' tm-kartica-stop-tece' : ''}`}
+                          onClick={(e) => { e.stopPropagation(); preklopiStoparico(naloga.id); }}
+                          disabled={samoOgled}
+                          aria-label={naloga.isTimerRunning ? 'Ustavi štoparico' : 'Zaženi štoparico'}
+                          title={samoOgled ? 'Ni na voljo v predogledu (demo)' : (naloga.isTimerRunning ? 'Ustavi merjenje' : 'Zaženi merjenje')}
+                        >
+                          {naloga.isTimerRunning ? <Pause size={11} weight="fill" /> : <Play size={11} weight="fill" />}
+                          <span className="tm-kartica-stop-cas">
                             {naloga.isTimerRunning && naloga.timerStartTime
-                              ? <>▶ {formatCasSek((zdaj - new Date(naloga.timerStartTime).getTime()) / 1000)}</>
-                              : <>{formatUre(porabljene)}h{ocena ? ` / ${ocena}h` : ''}</>}
+                              ? formatCasSek((zdaj - new Date(naloga.timerStartTime).getTime()) / 1000)
+                              : `${formatUre(porabljene)}h${ocena ? ` / ${ocena}h` : ''}`}
                           </span>
-                        )}
+                        </button>
                         <span className="tm-noga-desno">
                           {naloga.prioriteta && (
                             <span className={`tm-prioriteta-znacka tm-prioriteta-znacka-${naloga.prioriteta}`}>
@@ -1509,7 +1517,12 @@ export default function TaskManagerWorkspace() {
         .tm-prioriteta-znacka-visoka{background:oklch(58% .16 35);color:#fff}
         .tm-prioriteta-znacka-srednja{background:oklch(89% .015 80);color:var(--ink)}
         .tm-prioriteta-znacka-nizka{background:oklch(95% .008 87);color:var(--muted)}
-        .tm-kartica-cas{display:inline-flex;align-items:center;gap:.25rem;font:700 .64rem var(--font-sans),sans-serif;color:var(--muted);font-variant-numeric:tabular-nums}
+        .tm-kartica-stop{display:inline-flex;align-items:center;gap:.28rem;padding:.18rem .55rem .18rem .45rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--muted);font:700 .62rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+        .tm-kartica-stop-cas{font-variant-numeric:tabular-nums}
+        .tm-kartica-stop:hover{border-color:color-mix(in oklch,var(--ink) 24%,transparent);color:var(--ink)}
+        .tm-kartica-stop-tece{background:oklch(62% .19 300);border-color:oklch(62% .19 300);color:#fff}
+        .tm-kartica-stop-tece:hover{background:oklch(56% .19 300);color:#fff}
+        .tm-kartica-stop:disabled{cursor:default;opacity:.55}
         .tm-rok{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .5rem;border-radius:999px;background:oklch(95% .01 87);color:var(--muted);font-size:.66rem;font-weight:700}
         .tm-rok-zapadlo{background:oklch(93% .06 30);color:oklch(48% .16 30)}
         .tm-kartica-noga{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-top:.55rem}
