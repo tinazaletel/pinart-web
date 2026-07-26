@@ -170,7 +170,7 @@
 .topbar { display: flex; justify-content: space-between; gap: 1.5rem; align-items: end; padding-bottom: 2rem; }
 .eyebrow { margin: 0 0 .55rem; font-size: .64rem; line-height: 1; font-weight: 800; letter-spacing: .14em; }
 .topbar h1, .pulse h2, .sectionHeading h2 { margin: 0; font-family: var(--font-serif), Georgia, serif; font-weight: 500; }
-.topbar h1 { font-size: clamp(2.3rem, 4vw, 4.6rem); line-height: .95; }
+.topbar h1 { font-size: clamp(1.55rem, 2.8vw, 2.3rem); line-height: .95; }
 /* stoparica levo, ikone desno: vmesni razmik potisne ikone na rob */
 .headerTools { position: relative; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; align-self: flex-start; gap: .55rem; }
 .headerTools > .stoparicaBliznjica { margin-right: auto; }
@@ -209,7 +209,7 @@
 .sectionNote { display: flex; align-items: center; gap: .8rem; margin-bottom: .7rem; padding: .7rem .9rem; border-radius: .75rem; background: oklch(98% .01 87); color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .59rem; line-height: 1.4; }
 .sectionNote strong { flex: 0 0 auto; color: var(--ink); font-size: .55rem; letter-spacing: .08em; text-transform: uppercase; }
 .bandTitle { display: flex; align-items: end; justify-content: space-between; gap: 2rem; padding: .5rem .4rem 1.15rem; }
-.bandTitle h2 { margin: 0; font: 500 clamp(1.8rem, 3vw, 3.2rem)/1 var(--font-serif), Georgia, serif; }
+.bandTitle h2 { margin: 0; font: 500 clamp(1.5rem, 2.6vw, 2.15rem)/1 var(--font-serif), Georgia, serif; }
 .bandTitle > p:last-child { max-width: 28rem; margin: 0; color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .64rem; line-height: 1.45; }
 .flowTools { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .65rem; }
 .flowTools > * { position: relative; min-height: 9.5rem; display: flex; flex-direction: column; align-items: flex-start; padding: 1rem; border: 0; border-radius: 1rem; background: oklch(98% .01 87); color: inherit; font: inherit; text-align: left; text-decoration: none; cursor: pointer; overflow: hidden; transition: transform 340ms cubic-bezier(.22,1,.36,1), border-radius 340ms cubic-bezier(.22,1,.36,1), box-shadow 340ms cubic-bezier(.22,1,.36,1), filter 340ms ease-out; }
@@ -430,7 +430,7 @@
 .contractNotice button { border: 0; background: none; color: inherit; cursor: pointer; }
 .contractHero, .contractDesk, .contractArchive { border: 1px solid color-mix(in oklch, var(--ink) 9%, transparent); border-radius: 1.4rem; background: oklch(98% .008 87 / .92); box-shadow: 0 1.2rem 3.5rem oklch(20% .02 55 / .05); }
 .contractHero { display: grid; grid-template-columns: 1fr minmax(25rem, .8fr); align-items: end; gap: 2rem; padding: 1.4rem; }
-.contractHero h2, .contractArchive h2 { margin: 0; font: 500 clamp(1.8rem, 3vw, 3rem)/1 var(--font-serif), Georgia, serif; overflow-wrap: anywhere; }
+.contractHero h2, .contractArchive h2 { margin: 0; font: 500 clamp(1.5rem, 2.6vw, 2.15rem)/1 var(--font-serif), Georgia, serif; overflow-wrap: anywhere; }
 .contractHero p:last-child { max-width: 34rem; margin: .7rem 0 0; color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .68rem; line-height: 1.5; }
 .contractDesk { min-height: 30rem; padding: 1rem; }
 .contractDesk form { display: grid; grid-template-columns: minmax(13rem, .35fr) 1fr; gap: 1rem; }
@@ -504,7 +504,7 @@
 .invoiceSummary > button small { margin-top: .25rem; color: oklch(100% 0 0 / .6); }
 .invoiceCreator, .invoiceArchive { padding: 1.25rem; border: 1px solid color-mix(in oklch, var(--ink) 9%, transparent); border-radius: 1.4rem; background: oklch(98% .008 87 / .92); }
 .invoiceCreator { display: grid; grid-template-columns: minmax(14rem, .28fr) 1fr; gap: 1.5rem; }
-.invoiceCreator h2, .invoiceArchive h2 { margin: 0; font: 500 clamp(1.7rem, 2.5vw, 2.6rem)/1 var(--font-serif), Georgia, serif; }
+.invoiceCreator h2, .invoiceArchive h2 { margin: 0; font: 500 clamp(1.45rem, 2.2vw, 2.05rem)/1 var(--font-serif), Georgia, serif; }
 .invoiceCreator > div > p:last-child { color: var(--muted); font-size: .65rem; line-height: 1.5; }
 .invoiceCreator form { display: grid; grid-template-columns: 1fr; gap: .8rem; align-items: end; }
 .invoiceCreator label { display: grid; gap: .35rem; font-size: .58rem; font-weight: 800; }
@@ -554,7 +554,7 @@
 .invoiceSummary article > :not(.subpageMetricIcon), .expenseSummary article > :not(.subpageMetricIcon) { position: relative; z-index: 1; }
 .expenseEditor, .expenseArchive, .recurringCosts { padding: 1.25rem; border: 1px solid color-mix(in oklch, var(--ink) 9%, transparent); border-radius: 1.4rem; background: oklch(98% .008 87 / .92); }
 .expenseEditor { display: grid; grid-template-columns: minmax(14rem, .35fr) 1fr; gap: 1.5rem; }
-.expenseEditor h2, .expenseArchive h2, .recurringCosts h2 { margin: 0; font: 500 clamp(1.7rem, 2.5vw, 2.6rem)/1 var(--font-serif), Georgia, serif; }
+.expenseEditor h2, .expenseArchive h2, .recurringCosts h2 { margin: 0; font: 500 clamp(1.45rem, 2.2vw, 2.05rem)/1 var(--font-serif), Georgia, serif; }
 .expenseEditor > div > p:last-child, .recurringCosts > div:first-child > p:last-child { color: var(--muted); font-size: .65rem; line-height: 1.5; }
 .expenseEditor form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; align-items: end; }
 .expenseEditor label { display: grid; gap: .35rem; font-size: .58rem; font-weight: 800; }
@@ -621,7 +621,7 @@
 .clientToolbar input { width: 100%; border: 0; outline: 0; background: transparent; font: 500 .7rem var(--font-sans), sans-serif; }
 .clientToolbar > button { padding: 0 1.2rem; border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font: 800 .63rem var(--font-sans), sans-serif; cursor: pointer; }
 .clientEditor { display: grid; grid-template-columns: minmax(14rem, .35fr) 1fr; gap: 1.5rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: 1.4rem; background: oklch(98% .008 87 / .94); }
-.clientEditor h2, .clientDirectory h2, .clientProfile h2 { margin: 0; font: 500 clamp(1.7rem, 2.5vw, 2.6rem)/1 var(--font-serif), Georgia, serif; }
+.clientEditor h2, .clientDirectory h2, .clientProfile h2 { margin: 0; font: 500 clamp(1.45rem, 2.2vw, 2.05rem)/1 var(--font-serif), Georgia, serif; }
 .clientEditor form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; }
 .clientEditor label { display: grid; gap: .35rem; font-size: .58rem; font-weight: 800; }
 .clientEditor input { min-width: 0; height: 2.65rem; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .65rem; background: oklch(100% 0 0 / .82); font: 500 .66rem var(--font-sans), sans-serif; }
@@ -773,7 +773,7 @@
 .projectIndexEmpty { padding: 2rem; color: var(--muted); font-size: .62rem; text-align: center; }
 .projectStory { padding: 1rem; }
 .projectStory > header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; padding: .5rem .4rem 1rem; }
-.projectStory h2 { margin: 0; font: 500 clamp(2rem, 3.2vw, 3.5rem)/.95 var(--font-serif), Georgia, serif; }
+.projectStory h2 { margin: 0; font: 500 clamp(1.5rem, 2.8vw, 2.25rem)/.95 var(--font-serif), Georgia, serif; }
 .projectStory > header span { display: block; margin-top: .4rem; color: var(--muted); font-size: .875rem; }
 .projectStory > header > b { padding: .45rem .7rem; border-radius: 999px; background: oklch(92% .055 165); color: oklch(43% .12 155); font-size: .55rem; }
 .projectMoney { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; }
@@ -834,7 +834,7 @@
 
 .businessPulse { display: grid; grid-template-columns: minmax(15rem, 1.5fr) repeat(4, minmax(7.5rem, .72fr)); gap: .7rem; margin-top: .7rem; padding: .7rem; border-radius: 1.8rem; background: oklch(91% .012 80 / .94); box-shadow: 0 1.5rem 4rem oklch(20% .02 55 / .08); }
 .businessPulse > * { min-width: 0; padding: 1.3rem; border-radius: 1.1rem; background: oklch(98% .01 87); }
-.businessIntro h2 { margin: 0; font: 500 clamp(1.8rem, 2.8vw, 3rem)/1 var(--font-serif), Georgia, serif; }
+.businessIntro h2 { margin: 0; font: 500 clamp(1.5rem, 2.5vw, 2.15rem)/1 var(--font-serif), Georgia, serif; }
 .businessIntro > p:last-child { margin: .7rem 0 0; color: color-mix(in oklch, var(--ink) 60%, transparent); font-size: .65rem; line-height: 1.45; }
 .kpi { position: relative; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
 .kpi:nth-child(1) { background: linear-gradient(135deg, oklch(97% .02 300), oklch(89% .075 297)); }
@@ -895,7 +895,7 @@
 .pulse .metric:nth-child(2) { background: oklch(91% .06 297); }
 .pulse .metric:nth-child(3) { background: oklch(91% .06 164); }
 .pulse .goal { background: oklch(91% .055 58); }
-.pulseIntro h2 { font-size: clamp(1.8rem, 2.8vw, 3rem); line-height: 1; }
+.pulseIntro h2 { font-size: clamp(1.5rem, 2.5vw, 2.15rem); line-height: 1; }
 .pulseIntro > p:last-child { max-width: 38rem; margin: .8rem 0 0; color: color-mix(in oklch, var(--ink) 62%, transparent); font-size: .72rem; line-height: 1.55; }
 .metric { display: flex; flex-direction: column; justify-content: space-between; }
 .metric span, .goal span { font-size: .68rem; font-weight: 750; }
@@ -1546,7 +1546,7 @@
      Zato na telefonu orodja v SVOJO vrstico nad naslov, ta pa dobi vso sirino. */
   .topbar { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: .9rem; padding-bottom: 1.25rem; }
   .headerTools { order: -1; align-self: stretch; justify-content: flex-start; margin-top: 0; }
-  .topbar h1 { font-size: clamp(2.1rem, 9vw, 3rem); }
+  .topbar h1 { font-size: clamp(1.5rem, 6vw, 2.1rem); }
   /* V STOLPEC z izrecnim razmikom: prej sem dodal row-gap:1rem, kar je razmik celo
      ZMANJSALO (bazni gap je 1.5rem), poleg tega je bil odvisen od preloma vrstice. */
   /* display:flex je NUJEN — vrstica 850 (isti prelom) postavi .sectionHeader na
@@ -1764,7 +1764,7 @@
   .flowTopBar::-webkit-scrollbar { display: none; }
   .topStran { display: none; }
   .topbar { flex-wrap: wrap; gap: .8rem; }
-  .topbar h1 { font-size: clamp(2rem, 8.5vw, 2.8rem); overflow-wrap: anywhere; }
+  .topbar h1 { font-size: clamp(1.45rem, 6vw, 2rem); overflow-wrap: anywhere; }
   /* kartice in mreze: en stolpec, brez fiksnih minimumov */
   .flowTools, .resultsGrid, .quickActions, .businessPulse, .summary,
   .expenseSummary, .invoiceSummary { grid-template-columns: minmax(0, 1fr) !important; }
@@ -2034,7 +2034,7 @@
   padding: 2rem; border: 1px solid var(--line); border-radius: 1.5rem;
   background: oklch(98% .008 87 / .92);
 }
-.zaklenjeno h2 { margin: 0; font: 500 clamp(1.8rem, 3vw, 2.6rem)/1.05 var(--font-serif), Georgia, serif; }
+.zaklenjeno h2 { margin: 0; font: 500 clamp(1.5rem, 2.5vw, 2.1rem)/1.05 var(--font-serif), Georgia, serif; }
 .zaklenjenoUvod { margin: 0; color: var(--muted); font-size: .95rem; line-height: 1.55; }
 .zaklenjenoSeznam { display: grid; gap: .55rem; margin: .6rem 0 .3rem; padding: 0; list-style: none; }
 .zaklenjenoSeznam li { position: relative; padding-left: 1.5rem; font-size: .9rem; line-height: 1.5; }
