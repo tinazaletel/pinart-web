@@ -95,6 +95,20 @@
 }
 .dodajObrazec select:focus-visible { outline: none; border-color: var(--ink); }
 
+/* --- Prenos ob odhodu (offboarding): prenese naloge na naslednika + deaktivira --- */
+.prenosBlok { margin-top: 1.3rem; padding-top: 1.1rem; border-top: 1px dashed var(--line); }
+.prenosNaslov { margin: 0 0 .35rem; font-size: .92rem; font-weight: 750; color: var(--ink); }
+.prenosVrstica { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-top: .7rem; }
+.prenosVrstica select { flex: 1 1 11rem; min-width: 0; }
+.prenosPuscica { color: color-mix(in oklch, var(--ink) 45%, transparent); font-weight: 700; flex: none; }
+.prenosOpozorilo {
+  margin: .9rem 0 0; padding: .7rem .9rem; border-radius: .7rem;
+  border-left: 3px solid oklch(58% .19 300);
+  background: color-mix(in oklch, oklch(58% .19 300) 8%, var(--paper));
+  color: color-mix(in oklch, var(--ink) 75%, transparent);
+  font-size: .78rem; line-height: 1.5;
+}
+
 @media (max-width: 560px) {
   .logoRow { gap: .8rem; }
   .gumb, .gumbTih, .gumbNevaren { width: 100%; }
@@ -102,4 +116,7 @@
   .ekipaOseba { flex: 1 1 100%; margin-right: 0; }
   .dodajObrazec { flex-direction: column; align-items: stretch; }
   .dodajObrazec input, .dodajObrazec select, .dodajObrazec .gumb { width: 100%; }
+  .prenosVrstica { flex-direction: column; align-items: stretch; }
+  .prenosVrstica select, .prenosVrstica .gumb { width: 100%; }
+  .prenosPuscica { display: none; }
 }

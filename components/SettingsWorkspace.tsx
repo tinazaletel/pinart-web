@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import VidezDokumentov from '@/components/VidezDokumentov';
 import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, nastaviLogoAktivne } from '@/lib/dokVidez';
-import type { Sodelavec } from '@/lib/naloge';
+import type { Naloga, Sodelavec } from '@/lib/naloge';
+import { preberiNaloge, shraniNaloge } from '@/lib/naloge';
 import { preberiSodelavci, shraniSodelavci, VLOGE, vlogaOznaka } from '@/lib/sodelavci';
 import styles from './SettingsWorkspace.module.css';
 
@@ -32,6 +33,12 @@ export default function SettingsWorkspace({ base }: { base: string }) {
   const [novEmail, setNovEmail] = useState('');
   const [novaVloga, setNovaVloga] = useState<Sodelavec['vloga']>('clan');
   const [ekipaSporocilo, setEkipaSporocilo] = useState('');
+
+  /* --- Prenos ob odhodu (offboarding): ko nekdo zapusti ekipo, njegove
+     naloge prenesemo na naslednika in ga deaktiviramo — v enem koraku. --- */
+  const [odhajaId, setOdhajaId] = useState('');
+  const [naslednikId, setNaslednikId] = useState('');
+  const [prenosSporocilo, setPrenosSporocilo] = useState('');
 
   /* Preberi obstojece nastavitve iz istega kljuca kot kalkulator. */
   useEffect(() => {
@@ -75,6 +82,33 @@ export default function SettingsWorkspace({ base }: { base: string }) {
     const nov: Sodelavec = { id: 'sod_' + Date.now(), ime, email, vloga: novaVloga, aktiven: true };
     posodobiEkipo([...sodelavci, nov]);
     setNovoIme(''); setNovEmail(''); setNovaVloga('clan'); setEkipaSporocilo('');
+  }
+
+  /* Prenos ob odhodu: vse naloge odhajajoče osebe (dodeljenoOsebaId) prepišemo
+     na naslednika in odhajajočo osebo deaktiviramo (aktiven:false). NE gre za
+     pravi izbris dostopa (login) — to caka pravo vec-uporabnisko zaledje. */
+  function prenesiObOdhodu() {
+    const odhaja = sodelavci.find((s) => s.id === odhajaId);
+    const naslednik = sodelavci.find((s) => s.id === naslednikId);
+    if (!odhaja || !naslednik) return;
+    if (!window.confirm('Prenesem vse naloge odhajajoče osebe na naslednika in jo deaktiviram?')) return;
+
+    /* Prepiši dodelitev na vseh nalogah, ki so bile dodeljene odhajajoči osebi. */
+    const naloge = preberiNaloge();
+    const steviloPrenesenih = naloge.filter((n: Naloga) => n.dodeljenoOsebaId === odhajaId).length;
+    const posodobljene = naloge.map((n: Naloga) =>
+      n.dodeljenoOsebaId === odhajaId
+        ? { ...n, dodeljenoOsebaId: naslednik.id, dodeljenoOsebaIme: naslednik.ime }
+        : n
+    );
+    shraniNaloge(posodobljene);
+
+    /* Odhajajočo osebo deaktiviraj — login ostane dejaven, glej opombo v UI. */
+    posodobiEkipo(sodelavci.map((s) => (s.id === odhajaId ? { ...s, aktiven: false } : s)));
+
+    setPrenosSporocilo(`Preneseno ${steviloPrenesenih} nalog na ${naslednik.ime}. ${odhaja.ime} deaktivirana.`);
+    setOdhajaId('');
+    setNaslednikId('');
   }
 
   /* Shrani nazaj v K_NAST, ne da bi povozil ostale nastavitve kalkulatorja. */
@@ -243,6 +277,56 @@ export default function SettingsWorkspace({ base }: { base: string }) {
         <p className={styles.opomba}>
           To je lokalni seznam ekipe. Pravo omejevanje dostopa (kdo vidi katere strani) pride s prijavo/zaledjem.
         </p>
+
+        <div className={styles.prenosBlok}>
+          <h3 className={styles.prenosNaslov}>Prenos ob odhodu</h3>
+          <p className={styles.opomba}>
+            Ko nekdo zapusti ekipo, v enem koraku prenesi vse njegove naloge na naslednika in ga deaktiviraj —
+            brez ročnega preklapljanja vsake naloge posebej.
+          </p>
+
+          <div className={styles.prenosVrstica}>
+            <select
+              className={styles.ekipaVloga}
+              value={odhajaId}
+              onChange={(e) => setOdhajaId(e.target.value)}
+              aria-label="Oseba odhaja"
+            >
+              <option value="">Oseba odhaja…</option>
+              {sodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime}</option>)}
+            </select>
+
+            <span className={styles.prenosPuscica} aria-hidden="true">→</span>
+
+            <select
+              className={styles.ekipaVloga}
+              value={naslednikId}
+              onChange={(e) => setNaslednikId(e.target.value)}
+              aria-label="Prevzame (naslednik)"
+            >
+              <option value="">Prevzame (naslednik)…</option>
+              {sodelavci
+                .filter((s) => s.aktiven && s.id !== odhajaId)
+                .map((s) => <option key={s.id} value={s.id}>{s.ime}</option>)}
+            </select>
+
+            <button
+              type="button"
+              className={styles.gumb}
+              onClick={prenesiObOdhodu}
+              disabled={!odhajaId || !naslednikId || odhajaId === naslednikId}
+            >
+              Prenesi in deaktiviraj
+            </button>
+          </div>
+
+          {prenosSporocilo && <p className={styles.opomba} role="status">{prenosSporocilo}</p>}
+
+          <p className={styles.prenosOpozorilo}>
+            Login odhajajoče osebe ostane dejaven, dokler ni pravega večuporabniškega zaledja (prijava na osebo).
+            Zdaj se prenese le delo (naloge) + oseba postane neaktivna.
+          </p>
+        </div>
       </section>
 
       <section className={styles.card}>
