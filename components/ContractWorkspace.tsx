@@ -14,6 +14,7 @@ import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } 
 import { getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo } from '@/lib/dokVidez';
+import PosljiBlok from '@/components/PosljiBlok';
 
 const K_NAST = 'pinart-kalkulator-v2';
 
@@ -124,6 +125,19 @@ export default function ContractWorkspace({ base }: { base: string }) {
   }, [offerId, vir, clients]);
 
   const narocnikIme = () => (vir === 'ponudba' ? selectedOffer?.client || '' : rocniNarocnik).trim();
+  /* Best-effort e-maili kontaktov stranke (glavni + kontaktne osebe) za
+     spustnik »+ kontakt« v bloku pošiljanja. Stranko poiščemo po imenu. */
+  const strankaKontakti = (): string[] => {
+    const ime = narocnikIme().toLowerCase();
+    if (!ime) return [];
+    const stranka = clients.find(c => c.name.trim().toLowerCase() === ime);
+    if (!stranka) return [];
+    const zbrani: string[] = [];
+    if (stranka.email) zbrani.push(stranka.email);
+    (stranka.kontakti || []).forEach(k => { if (k.email) zbrani.push(k.email); });
+    const videni = new Set<string>();
+    return zbrani.filter(e => { const k = e.toLowerCase(); if (videni.has(k)) return false; videni.add(k); return true; });
+  };
   const obsegSeznam = () => vir === 'ponudba'
     ? (selectedOffer?.scope || [])
     : rocniObseg.split('\n').map(v => v.trim()).filter(Boolean);
@@ -806,6 +820,16 @@ export default function ContractWorkspace({ base }: { base: string }) {
       </div>
       {napaka && <p className="pg-napaka">{napaka}</p>}
       <p className="pg-mini" style={{ marginTop: '.7rem' }}>E-pošta odpre tvoj poštni program s pripravljenim sporočilom — PDF pogodbe (in ponudbe) pripni ročno.</p>
+      {/* Pošiljanje pogodbe kar iz aplikacije (Resend) — isti HTML kot prenos/PDF. */}
+      <PosljiBlok
+        subject={(vrstaPog === 'nda' ? 'NDA' : 'Pogodba') + (selectedOffer?.number ? ' št. ' + selectedOffer.number : '') + (narocnikIme() ? ' — ' + narocnikIme() : '')}
+        zgradiHtml={() => doc(izvozniTelo())}
+        privzetiPrejemnik={narEmail}
+        imeStranke={narocnikIme()}
+        replyTo={ponudnik.email.trim() || undefined}
+        samoOgled={samoOgled}
+        kontakti={strankaKontakti()}
+      />
       <div className="pg-koncna-nav">
         <button type="button" className="pg-povezava" onClick={() => setPogled('dokument')}>← Uredi pogodbo</button>
         <button type="button" className="pg-povezava" onClick={novaPogodba}>↺ Nova pogodba</button>
