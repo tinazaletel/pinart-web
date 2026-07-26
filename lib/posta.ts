@@ -3,7 +3,8 @@
    Uporaba: const r = await posljiMail({ to, subject, html }); if (!r.ok) ... */
 
 export interface MailVsebina {
-  to: string;
+  /* en prejemnik ali več (pošiljanje več osebam hkrati) */
+  to: string | string[];
   subject: string;
   html: string;
   /* neobvezen naslov za odgovore (npr. tvoja e-pošta) */

@@ -11,16 +11,24 @@ export async function POST(request: Request) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM || 'Pinart Flow <onboarding@resend.dev>';
 
-  let body: { to?: string; subject?: string; html?: string; replyTo?: string };
+  let body: { to?: string | string[]; subject?: string; html?: string; replyTo?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'Neveljaven zahtevek.' }, { status: 400 });
   }
 
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.to || '');
-  if (!emailValid || !body.subject || !body.html) {
-    return NextResponse.json({ error: 'Manjka prejemnik, zadeva ali vsebina.' }, { status: 400 });
+  /* en prejemnik (niz) ali več (polje) — vsak mora biti veljaven e-mail */
+  const prejemniki = (Array.isArray(body.to) ? body.to : body.to ? [body.to] : [])
+    .map((e) => String(e).trim())
+    .filter(Boolean);
+  const epostaRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const vsiVeljavni = prejemniki.length > 0 && prejemniki.every((e) => epostaRe.test(e));
+  if (!vsiVeljavni || !body.subject || !body.html) {
+    return NextResponse.json({ error: 'Manjka veljaven prejemnik, zadeva ali vsebina.' }, { status: 400 });
+  }
+  if (prejemniki.length > 50) {
+    return NextResponse.json({ error: 'Preveč prejemnikov (največ 50).' }, { status: 400 });
   }
   if (body.subject.length > 300) {
     return NextResponse.json({ error: 'Zadeva je predolga.' }, { status: 400 });
@@ -36,7 +44,7 @@ export async function POST(request: Request) {
   try {
     const { data, error } = await resend.emails.send({
       from,
-      to: body.to!,
+      to: prejemniki,
       subject: body.subject,
       html: body.html,
       ...(body.replyTo ? { replyTo: body.replyTo } : {}),
