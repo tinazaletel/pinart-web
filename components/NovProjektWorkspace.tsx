@@ -43,12 +43,12 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     setRealProjekti(preberiProjekti());
   }, [nacin]);
 
-  const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektStatus, opisStranke: '', ciljnaSkupina: '', dizajnZelje: '', voice: '', konkurenca: '', cilji: [] as ProjektCilj[], dodatnaVprasanja: [] as ProjektVprasanje[], povezave: [] as ProjektPovezava[], dodeljeni: [] as string[] });
+  const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektStatus, opisStranke: '', panoga: '', ciljnaSkupina: '', dizajnZelje: '', voice: '', konkurenca: '', cilji: [] as ProjektCilj[], dodatnaVprasanja: [] as ProjektVprasanje[], povezave: [] as ProjektPovezava[], dodeljeni: [] as string[] });
   const [obrazec, setObrazec] = useState(prazenObrazec());
   /* onboarding kot CHAT (glej np-chat-* spodaj): novKorak = do kam je uporabnica
-     ze prisla (0..10, 10 = vsa osnovna vprasanja odgovorjena -> dodatno+povezave+ekipa+zakljucek);
-     koraki: 0 naslov, 1 stranka, 2 cilji, 3 opis stranke, 4 ciljna skupina, 5 dizajn
-     zelje, 6 voice/ton, 7 konkurenca, 8 zacetek/rok, 9 status.
+     ze prisla (0..11, 11 = vsa osnovna vprasanja odgovorjena -> dodatno+povezave+ekipa+zakljucek);
+     koraki: 0 naslov, 1 stranka, 2 cilji, 3 opis stranke, 4 panoga, 5 ciljna skupina,
+     6 dizajn zelje, 7 voice/ton, 8 konkurenca, 9 zacetek/rok, 10 status.
      urejamKorak = klik na ze odgovorjen mehurcek odpre polje ZNOVA V MESTU */
   const [novKorak, setNovKorak] = useState(0);
   const [urejamKorak, setUrejamKorak] = useState<number | null>(null);
@@ -74,7 +74,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
   const posodobiCilj = (id: string, patch: Partial<ProjektCilj>) => setObrazec(o => ({ ...o, cilji: o.cilji.map(c => c.id === id ? { ...c, ...patch } : c) }));
   /* potrdi trenutni korak vprasanja: naprej=true premakne kazalec (NAPREJ), sicer
      samo zapre "urejanje v mestu" (Shrani na ze odgovorjenem koraku) */
-  const potrdiKorak = (naprej: boolean) => { setUrejamKorak(null); if (naprej) setNovKorak(k => Math.min(10, k + 1)); };
+  const potrdiKorak = (naprej: boolean) => { setUrejamKorak(null); if (naprej) setNovKorak(k => Math.min(11, k + 1)); };
   /* "+ dodaj vprašanje" — lastno vprasanje + odgovor, prosto besedilo, brez sheme */
   const dodajVprasanje = () => {
     const vprasanje = novoVprasanje.vprasanje.trim(); const odgovor = novoVprasanje.odgovor.trim();
@@ -118,6 +118,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       strankaId: stranka?.id,
       strankaIme: stranka?.name,
       opisStranke: obrazec.opisStranke.trim() || undefined,
+      panoga: obrazec.panoga.trim() || undefined,
       ciljnaSkupina: obrazec.ciljnaSkupina.trim() || undefined,
       dizajnZelje: obrazec.dizajnZelje.trim() || undefined,
       voice: obrazec.voice.trim() || undefined,
@@ -209,63 +210,73 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
           </form>
         )}
 
-        {/* 4 · ciljna skupina / persona */}
-        {prikazan(4) && chatBot('Kdo je ciljna skupina oz. persona?', undefined, 4)}
-        {odgovorjen(4) && chatOdgovor(4, obrazec.ciljnaSkupina.trim() || 'Ni določena')}
+        {/* 4 · panoga stranke (širši kontekst, takoj za "Kdo je stranka?") */}
+        {prikazan(4) && chatBot('Iz katere panoge je stranka?', undefined, 4)}
+        {odgovorjen(4) && chatOdgovor(4, obrazec.panoga.trim() || 'Ni določena')}
         {aktiven(4) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 4); }}>
-            <textarea className="np-chat-polje" value={obrazec.ciljnaSkupina} onChange={event => setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value }))} placeholder="Npr. mestni mladi odrasli, 25–40 let, iščejo hitro a kakovostno kosilo …" rows={3} aria-label="Ciljna skupina / persona" />
+            <input className="np-chat-polje" type="text" value={obrazec.panoga} onChange={event => setObrazec(o => ({ ...o, panoga: event.target.value }))} placeholder="Npr. gostinstvo, IT storitve, gradbeništvo …" aria-label="Panoga stranke" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 4 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         )}
 
-        {/* 5 · želje glede dizajna */}
-        {prikazan(5) && chatBot('Kakšne so želje glede dizajna?', 'Barve, stil, reference.', 5)}
-        {odgovorjen(5) && chatOdgovor(5, obrazec.dizajnZelje.trim() || 'Brez posebnih želja')}
+        {/* 5 · ciljna skupina / persona */}
+        {prikazan(5) && chatBot('Kdo je ciljna skupina oz. persona?', undefined, 5)}
+        {odgovorjen(5) && chatOdgovor(5, obrazec.ciljnaSkupina.trim() || 'Ni določena')}
         {aktiven(5) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 5); }}>
-            <textarea className="np-chat-polje" value={obrazec.dizajnZelje} onChange={event => setObrazec(o => ({ ...o, dizajnZelje: event.target.value }))} placeholder="Npr. toplo-nevtralna paleta, minimalizem, reference: …" rows={3} aria-label="Želje glede dizajna" />
+            <textarea className="np-chat-polje" value={obrazec.ciljnaSkupina} onChange={event => setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value }))} placeholder="Npr. mestni mladi odrasli, 25–40 let, iščejo hitro a kakovostno kosilo …" rows={3} aria-label="Ciljna skupina / persona" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 5 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         )}
 
-        {/* 6 · voice / ton komunikacije */}
-        {prikazan(6) && chatBot('Voice / ton komunikacije?', undefined, 6)}
-        {odgovorjen(6) && chatOdgovor(6, obrazec.voice.trim() || 'Ni določen')}
+        {/* 6 · želje glede dizajna */}
+        {prikazan(6) && chatBot('Kakšne so želje glede dizajna?', 'Barve, stil, reference.', 6)}
+        {odgovorjen(6) && chatOdgovor(6, obrazec.dizajnZelje.trim() || 'Brez posebnih želja')}
         {aktiven(6) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 6); }}>
-            <textarea className="np-chat-polje" value={obrazec.voice} onChange={event => setObrazec(o => ({ ...o, voice: event.target.value }))} placeholder="Npr. neposreden, prijazen, brez korporativnega žargona …" rows={3} aria-label="Voice / ton komunikacije" />
+            <textarea className="np-chat-polje" value={obrazec.dizajnZelje} onChange={event => setObrazec(o => ({ ...o, dizajnZelje: event.target.value }))} placeholder="Npr. toplo-nevtralna paleta, minimalizem, reference: …" rows={3} aria-label="Želje glede dizajna" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 6 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         )}
 
-        {/* 7 · konkurenca */}
-        {prikazan(7) && chatBot('Kdo je konkurenca?', 'Kdo so, kaj jim je všeč in kaj ne.', 7)}
-        {odgovorjen(7) && chatOdgovor(7, obrazec.konkurenca.trim() || 'Ni podatka')}
+        {/* 7 · voice / ton komunikacije */}
+        {prikazan(7) && chatBot('Voice / ton komunikacije?', undefined, 7)}
+        {odgovorjen(7) && chatOdgovor(7, obrazec.voice.trim() || 'Ni določen')}
         {aktiven(7) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 7); }}>
-            <textarea className="np-chat-polje" value={obrazec.konkurenca} onChange={event => setObrazec(o => ({ ...o, konkurenca: event.target.value }))} placeholder="Npr. XY d.o.o. — všeč jim je hitrost, ne mara jih cena …" rows={3} aria-label="Konkurenca" />
+            <textarea className="np-chat-polje" value={obrazec.voice} onChange={event => setObrazec(o => ({ ...o, voice: event.target.value }))} placeholder="Npr. neposreden, prijazen, brez korporativnega žargona …" rows={3} aria-label="Voice / ton komunikacije" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 7 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         )}
 
-        {/* 8 · začetek/rok */}
-        {prikazan(8) && chatBot('Kdaj začneš in do kdaj?', undefined, 8)}
-        {odgovorjen(8) && chatOdgovor(8, [obrazec.zacetek && datStr(obrazec.zacetek), obrazec.rok && `do ${datStr(obrazec.rok)}`].filter(Boolean).join(' ') || 'Ni določeno')}
+        {/* 8 · konkurenca */}
+        {prikazan(8) && chatBot('Kdo je konkurenca?', 'Kdo so, kaj jim je všeč in kaj ne.', 8)}
+        {odgovorjen(8) && chatOdgovor(8, obrazec.konkurenca.trim() || 'Ni podatka')}
         {aktiven(8) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 8); }}>
-            <div className="np-nov-mreza">
-              <label className="np-nov-polje"><span>Začetek</span><input type="date" value={obrazec.zacetek} onChange={event => setObrazec(o => ({ ...o, zacetek: event.target.value }))} /></label>
-              <label className="np-nov-polje"><span>Predviden rok</span><input type="date" value={obrazec.rok} onChange={event => setObrazec(o => ({ ...o, rok: event.target.value }))} /></label>
-            </div>
+            <textarea className="np-chat-polje" value={obrazec.konkurenca} onChange={event => setObrazec(o => ({ ...o, konkurenca: event.target.value }))} placeholder="Npr. XY d.o.o. — všeč jim je hitrost, ne mara jih cena …" rows={3} aria-label="Konkurenca" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 8 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         )}
 
-        {/* 9 · status — izbira takoj potrdi in gre naprej (kot binarna izbira v ponudbi) */}
-        {prikazan(9) && chatBot('Kakšen je status projekta?', undefined, 9)}
-        {odgovorjen(9) && chatOdgovor(9, projektStatusOznaka[obrazec.status])}
+        {/* 9 · začetek/rok */}
+        {prikazan(9) && chatBot('Kdaj začneš in do kdaj?', undefined, 9)}
+        {odgovorjen(9) && chatOdgovor(9, [obrazec.zacetek && datStr(obrazec.zacetek), obrazec.rok && `do ${datStr(obrazec.rok)}`].filter(Boolean).join(' ') || 'Ni določeno')}
         {aktiven(9) && (
+          <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 9); }}>
+            <div className="np-nov-mreza">
+              <label className="np-nov-polje"><span>Začetek</span><input type="date" value={obrazec.zacetek} onChange={event => setObrazec(o => ({ ...o, zacetek: event.target.value }))} /></label>
+              <label className="np-nov-polje"><span>Predviden rok</span><input type="date" value={obrazec.rok} onChange={event => setObrazec(o => ({ ...o, rok: event.target.value }))} /></label>
+            </div>
+            <button type="submit" className="np-chat-naprej">{urejamKorak === 9 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
+          </form>
+        )}
+
+        {/* 10 · status — izbira takoj potrdi in gre naprej (kot binarna izbira v ponudbi) */}
+        {prikazan(10) && chatBot('Kakšen je status projekta?', undefined, 10)}
+        {odgovorjen(10) && chatOdgovor(10, projektStatusOznaka[obrazec.status])}
+        {aktiven(10) && (
           <div className="np-chat-izbire">
             {(['aktiven', 'pavza', 'koncan'] as ProjektStatus[]).map((s, i) => (
               <button key={s} type="button" className="np-chat-opcija" onClick={() => { setObrazec(o => ({ ...o, status: s })); potrdiKorak(true); }}>
@@ -277,7 +288,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
 
         {/* po osnovnih vprašanjih: moja lastna vprašanja + povezave + ekipa + zaključek —
             vse na isti neprekinjeni površini, brez nadaljnjega gating-a (izpolniš, kolikor želiš) */}
-        {novKorak >= 10 && (<>
+        {novKorak >= 11 && (<>
           {chatBot('Želiš dodati svoja vprašanja?', 'Npr. »Ima stranka že CGP?« — vprašanje in odgovor si zapišeš sama.')}
           <div className="np-chat-vnos">
             {obrazec.dodatnaVprasanja.map(v => (
@@ -333,6 +344,11 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         </>)}
       </div>
     </div>
+    {/* spodnji "zracni" prostor POD chatom (izven .np-vstop, torej ne vpliva na njeno
+        justify-content:center centriranje prvega/kratkega vprasanja) — brez njega
+        scrollIntoView({block:'center'}) ne more dvigniti ZADNJEGA/najnovejsega
+        vprasanja na sredino, ker pod njim v strani ni prostora za skrolanje navzdol */}
+    <div className="np-chat-prostor" aria-hidden />
 
     {/* stili kot pogodbe/računi: navaden <style> (globalno), zato np- predpona povsod */}
     <style>{`
@@ -344,6 +360,10 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
          (3.25rem) + .workspace padding zgoraj/spodaj (3rem+2rem). */
       .np-stolpec.np-vstop{min-height:calc(100dvh - 8.25rem);display:flex;flex-direction:column;justify-content:center}
       @media (max-width:980px){.np-stolpec.np-vstop{min-height:calc(100dvh - 13rem)}}
+      /* glej opombo ob renderju: prazen prostor POD .np-vstop, da ima zadnje/aktivno
+         vprasanje kam "zrasti" navzgor v sredino vidnega polja (scrollIntoView) */
+      .np-chat-prostor{height:55vh}
+      @media (max-width:640px){.np-chat-prostor{height:45vh}}
       .np-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);margin:0 0 .3rem}
       .np-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 2rem;color:var(--ink)}
 

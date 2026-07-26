@@ -61,6 +61,8 @@ export interface Projekt {
   /* razsirjen brief — locena vprasanja namesto ene "zelje" textarea (dogovor
      2026-07-26): vsako polje je svoj korak v onboarding chatu, vsa neobvezna */
   opisStranke?: string;
+  /* panoga stranke (sirsi kontekst) — takoj za opisStranke v onboarding chatu */
+  panoga?: string;
   ciljnaSkupina?: string;
   dizajnZelje?: string;
   voice?: string;

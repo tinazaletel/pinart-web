@@ -672,11 +672,12 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   </li>
                 ))}
               </ul>
-            ) : (!selected.real.zelje && !(selected.real.opisStranke || selected.real.ciljnaSkupina || selected.real.dizajnZelje || selected.real.voice || selected.real.konkurenca) && <p className="pw-cilji-prazno">Želje in cilji še niso dodani.</p>)}
-            {(selected.real.opisStranke || selected.real.ciljnaSkupina || selected.real.dizajnZelje || selected.real.voice || selected.real.konkurenca) && (<>
+            ) : (!selected.real.zelje && !(selected.real.opisStranke || selected.real.panoga || selected.real.ciljnaSkupina || selected.real.dizajnZelje || selected.real.voice || selected.real.konkurenca) && <p className="pw-cilji-prazno">Želje in cilji še niso dodani.</p>)}
+            {(selected.real.opisStranke || selected.real.panoga || selected.real.ciljnaSkupina || selected.real.dizajnZelje || selected.real.voice || selected.real.konkurenca) && (<>
               <p className="pw-cilji-podnaslov">Brief</p>
               <div className="pw-cilji-vprasanja">
                 {selected.real.opisStranke && <div className="pw-vprasanje-vrstica"><div><b>Stranka</b><span>{selected.real.opisStranke}</span></div></div>}
+                {selected.real.panoga && <div className="pw-vprasanje-vrstica"><div><b>Panoga</b><span>{selected.real.panoga}</span></div></div>}
                 {selected.real.ciljnaSkupina && <div className="pw-vprasanje-vrstica"><div><b>Persona</b><span>{selected.real.ciljnaSkupina}</span></div></div>}
                 {selected.real.dizajnZelje && <div className="pw-vprasanje-vrstica"><div><b>Dizajn</b><span>{selected.real.dizajnZelje}</span></div></div>}
                 {selected.real.voice && <div className="pw-vprasanje-vrstica"><div><b>Voice</b><span>{selected.real.voice}</span></div></div>}
