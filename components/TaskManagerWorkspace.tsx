@@ -182,6 +182,8 @@ export default function TaskManagerWorkspace() {
   const [filterOznaka, setFilterOznaka] = useState<string>('');
   /* prosto besedilo za novo oznako v panelu Podrobnosti naloge */
   const [novaOznaka, setNovaOznaka] = useState('');
+  const [hitroOdprt, setHitroOdprt] = useState(false);
+  const [hitroBesedilo, setHitroBesedilo] = useState('');
   /* kratko sporocilo ob kliku "Nalozi razvojne naloge (Flow)" — koliko jih je bilo dodanih */
   const [seedSporocilo, setSeedSporocilo] = useState('');
 
@@ -257,6 +259,17 @@ export default function TaskManagerWorkspace() {
   }, []);
 
   const posodobiInShrani = (noveNaloge: Naloga[]) => { setNaloge(noveNaloge); shraniNaloge(noveNaloge); };
+
+  /* Hitro dodaj — vec nalog naenkrat: ena vrstica = ena kartica v "todo". */
+  const hitroDodaj = () => {
+    const vrstice = hitroBesedilo.split('\n').map((v) => v.trim()).filter(Boolean);
+    if (!vrstice.length) return;
+    const nove: Naloga[] = vrstice.map((naslov, i): Naloga => ({ id: 'task_' + Date.now() + '_' + i, naslov, stolpec: 'todo', created: new Date().toISOString() }));
+    posodobiInShrani([...naloge, ...nove]);
+    nove.forEach((n) => zabeleziAktivnost(n.id, trenutni.ime, `Ustvaril nalogo »${n.naslov}«`));
+    setHitroBesedilo('');
+    setHitroOdprt(false);
+  };
 
   const dodajNalogo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -712,6 +725,7 @@ export default function TaskManagerWorkspace() {
           ) : (
             <p className="tm-demo-namig">Urejanje ni na voljo v predogledu (demo).</p>
           )}
+          <button type="button" className="tm-seed-gumb" onClick={() => { setPogled('kanban'); setHitroOdprt((o) => !o); }}>Hitro dodaj več</button>
         </div>
       </header>
 
@@ -719,6 +733,16 @@ export default function TaskManagerWorkspace() {
         <button type="button" role="tab" aria-selected={pogled === 'kanban'} className={pogled === 'kanban' ? 'tm-pogled-on' : ''} onClick={() => setPogled('kanban')}>Kanban</button>
         <button type="button" role="tab" aria-selected={pogled === 'teden'} className={pogled === 'teden' ? 'tm-pogled-on' : ''} onClick={() => setPogled('teden')}>Plan</button>
       </div>
+
+      {pogled === 'kanban' && hitroOdprt && (
+        <form className="tm-forma" onSubmit={(e) => { e.preventDefault(); hitroDodaj(); }}>
+          <div className="tm-forma-glava"><h2>Hitro dodaj naloge</h2><button type="button" className="tm-x" onClick={() => setHitroOdprt(false)} aria-label="Zapri">×</button></div>
+          <label className="tm-polje"><span>Ena naloga na vrstico — vsaka postane kartica v »Za narediti«</span>
+            <textarea value={hitroBesedilo} onChange={(e) => setHitroBesedilo(e.target.value)} rows={6} autoFocus placeholder={'Prenova logotipa\nPokliči stranko\nPripravi ponudbo za …'} style={{ resize: 'vertical', minHeight: '7rem', lineHeight: 1.6, width: '100%', boxSizing: 'border-box' }} />
+          </label>
+          <div className="tm-forma-akcije"><button type="button" className="tm-preklici" onClick={() => setHitroOdprt(false)}>Prekliči</button><button type="submit" className="tm-shrani" disabled={!hitroBesedilo.trim()}>Dodaj vse</button></div>
+        </form>
+      )}
 
       {pogled === 'kanban' && prikaziFormo && (
         <form className="tm-forma" onSubmit={dodajNalogo}>
