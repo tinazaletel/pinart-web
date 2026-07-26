@@ -53,8 +53,18 @@ export interface Projekt {
   strankaId?: string;
   strankaIme?: string;
   opis?: string;
-  /* prosto besedilo — brief/zelje stranke ob zacetku projekta */
+  /* prosto besedilo — brief/zelje stranke ob zacetku projekta. STAR enotni
+     povzetek, nadomescen z locenimi polji spodaj (razsirjen brief); polje
+     ostane v tipu zgolj zaradi nazaj-zdruzljivosti s ze shranjenimi projekti,
+     onboarding chat (NovProjektWorkspace) ga vec ne izpolnjuje. */
   zelje?: string;
+  /* razsirjen brief — locena vprasanja namesto ene "zelje" textarea (dogovor
+     2026-07-26): vsako polje je svoj korak v onboarding chatu, vsa neobvezna */
+  opisStranke?: string;
+  ciljnaSkupina?: string;
+  dizajnZelje?: string;
+  voice?: string;
+  konkurenca?: string;
   cilji?: ProjektCilj[];
   zacetek?: string;
   rok?: string;
