@@ -73,7 +73,7 @@ export default function SidebarUserMenu({ base }: { base: string }) {
               stvari o RACUNU, ne podvojena navigacija. "Paket in narocnina" ter
               "Pomoc in podpora" dodamo, ko strani obstajata (sicer mrtva povezava). */}
           <Link href={`${base}/kalkulator/profil`} role="menuitem" onClick={() => setOdprt(false)}>Moj profil</Link>
-          <Link href={`${base}/kalkulator/paket`} role="menuitem" onClick={() => setOdprt(false)}>Upravljaj paket</Link>
+          <Link href={`${base}/kalkulator/paket`} role="menuitem" onClick={() => setOdprt(false)}>Račun in ekipa</Link>
           <Link href={`${base}/kalkulator/pogoji`} role="menuitem" onClick={() => setOdprt(false)}>Pogoji in zasebnost</Link>
           <button type="button" className={styles.userMenuOdjava} role="menuitem" onClick={odjava}>Odjava</button>
         </div>
