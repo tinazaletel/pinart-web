@@ -11,7 +11,7 @@
    je prenesen iz RetainerWorkspace (rw-). Detajl panel z desne + lepljivi X so
    vzorec iz ContractWorkspace (styles.detailBackdrop/detailPanel + .pg-det-x). */
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { CaretDown, CaretUp, FileText, Receipt, Scroll, Warning } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -20,7 +20,6 @@ import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import ProjectsWorkspace from './ProjectsWorkspace';
 import ArhivFilter from './ArhivFilter';
 import AmbientBubbles from '@/components/AmbientBubbles';
-import MetricIcon from '@/components/MetricIcon';
 
 type Zavihek = 'projekti' | 'ponudbe' | 'pogodbe' | 'racuni';
 
@@ -129,22 +128,10 @@ export default function ArhivWorkspace({ base }: { base: string }) {
      onDetajl prop spodaj. Detajl ni vezan na zavihek, zato se ob morebitni
      menjavi zavihka počisti prek onDetajl(false) v ProjectsWorkspace samem. */
   const [projektDetajlOdprt, setProjektDetajlOdprt] = useState(false);
-  /* "+ Nov projekt" — gumb zivi tu (na orodni vrstici, ob "+ Nova ponudba"),
-     panel/obrazec pa v ProjectsWorkspace (glej pw-nov-panel); krmilimo od tu,
-     da je gumb del ISTE vrstice kot "+ Nova ponudba". */
-  const [novProjektOdprt, setNovProjektOdprt] = useState(false);
   /* PIPELINE POSLOV — preklop pogleda na zavihku Projekti (Seznam | Pipeline).
-     Stanje zivi tu (isti vzorec kot novProjektOdprt zgoraj), gumb je pilula
-     na .arh-glava (ob zavihkih), ProjectsWorkspace dobi vrednost/setter prek
-     props in izrise ali obstojeco tabelo, ali nov kanban pw-pipeline. */
+     Stanje zivi tu, gumb je pilula na .arh-glava (ob zavihkih), ProjectsWorkspace
+     dobi vrednost/setter prek props in izrise ali obstojeco tabelo, ali nov kanban pw-pipeline. */
   const [pogledProjekti, setPogledProjekti] = useState<'seznam' | 'pipeline'>('seznam');
-  /* Postavka "Ustvari projekt" (meni > Orodja) pripelje sem z ?nov=1 in odpre brief takoj. */
-  useEffect(() => {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('nov') === '1') {
-      setZavihek('projekti');
-      setNovProjektOdprt(true);
-    }
-  }, []);
 
   /* iskanje + filtri (skupno stanje; ob menjavi zavihka jih pocistimo, ker so
      razlicni za vsak tip) */
@@ -199,29 +186,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
     return vObdobju(r.date, obdobjeOd, obdobjeDo);
   }), [invoices, isk, placano, obdobjeOd, obdobjeDo]);
 
-  /* povzetek zavihka Racuni (preseljeno iz InvoiceWorkspace, ki zdaj SAMO
-     ustvarja nove racune) — vedno iz CELOTNEGA flow.invoices, ne od filtra */
-  const racuniMetrike = useMemo(() => ({
-    izdano: invoices.reduce((sum, item) => sum + item.amount, 0),
-    placano: invoices.filter(item => item.paid).reduce((sum, item) => sum + item.amount, 0),
-    odprto: invoices.filter(item => !item.paid).reduce((sum, item) => sum + item.amount, 0),
-  }), [invoices]);
-
-  /* povzetek zavihka Ponudbe — vedno iz CELOTNEGA flow.offers, ne od filtra
-     (isti vzorec kot racuniMetrike zgoraj) */
-  const ponudbeMetrike = useMemo(() => ({
-    skupaj: offers.reduce((sum, item) => sum + item.agreedAmount, 0),
-    sprejeto: offers.filter(item => item.status === 'accepted').reduce((sum, item) => sum + item.agreedAmount, 0),
-    caka: offers.filter(item => item.status === 'sent').reduce((sum, item) => sum + item.agreedAmount, 0),
-  }), [offers]);
-
-  /* povzetek zavihka Pogodbe — pogodbe nimajo zneska, zato stevilo po statusu */
-  const pogodbeMetrike = useMemo(() => ({
-    podpisane: contracts.filter(item => item.status === 'signed').length,
-    aktivne: contracts.filter(item => item.status === 'active').length,
-    vObravnavi: contracts.filter(item => item.status === 'draft' || item.status === 'received' || item.status === 'review').length,
-  }), [contracts]);
-
   /* stevilo aktivnih filtrov (za stevec na gumbu Filtri v ArhivFilter) */
   const datumAktiven = obdobjeOd !== '' || obdobjeDo !== '';
   const stFiltrov = (datumAktiven ? 1 : 0)
@@ -254,7 +218,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       statusOpcije: [{ vrednost: 'vse', oznaka: 'Vsi' }, { vrednost: 'aktivni', oznaka: 'Aktivni' }, { vrednost: 'cakajo', oznaka: 'Čakajo' }, { vrednost: 'zakljuceni', oznaka: 'Zaključeni' }],
       akcija: <>
         <Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>+ Nova ponudba</Link>
-        <button type="button" className="af-akcija-gumb" onClick={() => setNovProjektOdprt(true)}>+ Nov projekt</button>
+        <Link className="af-akcija-gumb" href={`${base}/kalkulator/nov-projekt`}>+ Nov projekt</Link>
       </>,
     } : zavihek === 'ponudbe' ? {
       placeholder: 'Poišči ponudbo, stranko ali številko …',
@@ -352,8 +316,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               onDatumOd={setObdobjeOd}
               onDatumDo={setObdobjeDo}
               onDetajl={setProjektDetajlOdprt}
-              novProjektOdprt={novProjektOdprt}
-              onNovProjektOdprt={setNovProjektOdprt}
               pogled={pogledProjekti}
               onPogled={setPogledProjekti}
             />
@@ -363,21 +325,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         {/* ── PONUDBE ── */}
         {zavihek === 'ponudbe' && (
           <section className="arh-panel">
-            {offers.length > 0 && <div className="arh-metrike">
-              <article className="arh-metrika arh-metrika-skupaj">
-                <small>Skupaj</small><strong>{eur(ponudbeMetrike.skupaj)}</strong><span>{offers.length} ponudb</span>
-                <b className="arh-metrika-ikona"><MetricIcon type="document" /></b>
-              </article>
-              <article className="arh-metrika arh-metrika-sprejeto">
-                <small>Sprejeto</small><strong>{eur(ponudbeMetrike.sprejeto)}</strong><span>sprejete ponudbe</span>
-                <b className="arh-metrika-ikona"><MetricIcon type="paid" /></b>
-              </article>
-              <article className="arh-metrika arh-metrika-caka">
-                <small>Čaka</small><strong>{eur(ponudbeMetrike.caka)}</strong><span>poslane, čakajo</span>
-                <b className="arh-metrika-ikona"><MetricIcon type="profit" /></b>
-              </article>
-            </div>}
-
             {!offers.length ? (
               <p className="arh-prazno">Prva shranjena ponudba se bo prikazala tukaj.</p>
             ) : !ponudbePrikaz.length ? (
@@ -407,21 +354,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         {/* ── POGODBE ── */}
         {zavihek === 'pogodbe' && (
           <section className="arh-panel">
-            {contracts.length > 0 && <div className="arh-metrike">
-              <article className="arh-metrika arh-metrika-podpisane">
-                <small>Podpisane</small><strong>{pogodbeMetrike.podpisane}</strong><span>sklenjene</span>
-                <b className="arh-metrika-ikona"><MetricIcon type="paid" /></b>
-              </article>
-              <article className="arh-metrika arh-metrika-aktivne">
-                <small>Aktivne</small><strong>{pogodbeMetrike.aktivne}</strong><span>v teku</span>
-                <b className="arh-metrika-ikona"><MetricIcon type="document" /></b>
-              </article>
-              <article className="arh-metrika arh-metrika-obravnavi">
-                <small>V obravnavi</small><strong>{pogodbeMetrike.vObravnavi}</strong><span>osnutki/pregled</span>
-                <b className="arh-metrika-ikona"><MetricIcon type="profit" /></b>
-              </article>
-            </div>}
-
             {/* štetje statusov odstranjeno — status je že v dropdown filtru (zdaj v arh-glava) */}
             {!contracts.length ? (
               <p className="arh-prazno">Prva shranjena pogodba se bo prikazala tukaj.</p>
@@ -454,21 +386,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         {/* ── RACUNI ── */}
         {zavihek === 'racuni' && (
           <section className="arh-panel">
-            {invoices.length > 0 && <div className="arh-metrike">
-              <article className="arh-metrika arh-metrika-izdano">
-                <small>Izdano</small><strong>{eur(racuniMetrike.izdano)}</strong><span>{invoices.length} računov</span>
-                <b className="arh-metrika-ikona"><MetricIcon type="document" /></b>
-              </article>
-              <article className="arh-metrika arh-metrika-placano">
-                <small>Plačano</small><strong>{eur(racuniMetrike.placano)}</strong><span>potrjena plačila</span>
-                <b className="arh-metrika-ikona"><MetricIcon type="paid" /></b>
-              </article>
-              <article className="arh-metrika arh-metrika-odprto">
-                <small>Odprto</small><strong>{eur(racuniMetrike.odprto)}</strong><span>še čaka plačilo</span>
-                <b className="arh-metrika-ikona"><MetricIcon type="profit" /></b>
-              </article>
-            </div>}
-
             {!invoices.length ? (
               <p className="arh-prazno">Prvi shranjeni račun se bo prikazal tukaj.</p>
             ) : !racuniPrikaz.length ? (
@@ -698,27 +615,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
         /* oznaka skupine — se uporablja v detajl panelu (Obseg); filtri jih ne kazejo vec */
         .arh-filter-oznaka{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(17,17,17,.55)}
-
-        /* povzetek Racuni (preseljeno iz InvoiceWorkspace — vzorec MetricIcon,
-           v videzu Arhiva: mehke papirnate kartice namesto belih dashboard kartic) */
-        .arh-metrike{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:0 0 1.2rem}
-        .arh-metrika{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;min-height:7.4rem;padding:1rem 1.1rem;border:1px solid rgba(17,17,17,.1);border-radius:14px}
-        .arh-metrika small{position:relative;z-index:1;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(17,17,17,.55)}
-        .arh-metrika strong{position:relative;z-index:1;margin-top:auto;font:500 1.7rem var(--font-serif),Georgia,serif;color:var(--ink);-webkit-text-stroke:.35px var(--ink);text-shadow:0 1px 2px oklch(100% 0 0 / .35)}
-        .arh-metrika span{position:relative;z-index:1;margin-top:.2rem;color:rgba(17,17,17,.55);font-size:.78rem}
-        .arh-metrika-izdano{background:linear-gradient(140deg,oklch(95% .035 295),oklch(90% .065 297))}
-        .arh-metrika-placano{background:linear-gradient(140deg,oklch(96% .035 160),oklch(87% .08 163))}
-        .arh-metrika-odprto{background:linear-gradient(140deg,oklch(97% .03 65),oklch(90% .07 60))}
-        /* isti trije odtenki (vijola/mint/oranžna), samo poimenovani po novih zavihkih */
-        .arh-metrika-skupaj{background:linear-gradient(140deg,oklch(95% .035 295),oklch(90% .065 297))}
-        .arh-metrika-sprejeto{background:linear-gradient(140deg,oklch(96% .035 160),oklch(87% .08 163))}
-        .arh-metrika-caka{background:linear-gradient(140deg,oklch(97% .03 65),oklch(90% .07 60))}
-        .arh-metrika-podpisane{background:linear-gradient(140deg,oklch(96% .035 160),oklch(87% .08 163))}
-        .arh-metrika-aktivne{background:linear-gradient(140deg,oklch(95% .035 295),oklch(90% .065 297))}
-        .arh-metrika-obravnavi{background:linear-gradient(140deg,oklch(97% .03 65),oklch(90% .07 60))}
-        .arh-metrika-ikona{position:absolute;right:-1rem;bottom:-1.6rem;display:grid;place-items:center;width:6.6rem;aspect-ratio:1;border-radius:1.6rem;background:oklch(100% 0 0/.24);color:color-mix(in oklch,currentColor 54%,transparent);transform:rotate(-9deg)}
-        @media (max-width:760px){.arh-metrike{grid-template-columns:1fr 1fr}}
-        @media (max-width:480px){.arh-metrike{grid-template-columns:1fr}}
 
         /* povzetek Pogodbe: kratek stevec po statusu (pilule) */
         .arh-pog-povzetek{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1rem}

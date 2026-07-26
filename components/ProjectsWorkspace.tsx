@@ -3,14 +3,14 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { Plus, FolderOpen, ArrowRight, PencilSimple } from '@phosphor-icons/react';
+import { Plus, FolderOpen } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
 import { loadFlowData, loadProjectLinks, saveOfferAmount, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
-import { fazaProjekta, naslednjaStevilka, preberiProjekti, shraniProjekt, type Projekt, type ProjektCilj, type ProjektFaza, type ProjektPovezava, type ProjektStatus as ProjektEntitetaStatus, type ProjektVprasanje } from '@/lib/projekti';
-import { preberiSodelavci, vlogaOznaka } from '@/lib/sodelavci';
+import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
+import { preberiSodelavci } from '@/lib/sodelavci';
 import type { Sodelavec } from '@/lib/naloge';
 
 /* datumski filter (samo od–do; prazno ne omejuje) — enako kot arhiv */
@@ -97,20 +97,6 @@ const pwStyles = `
 .pw-status[data-tone='danger']{--pika:oklch(58% .19 25)}
 .pw-status[data-tone='neutral']{--pika:oklch(62% .02 70)}
 .pw-prazno{padding:2rem;color:var(--muted);font-size:.72rem;text-align:center;border:1px solid var(--line);border-radius:1.4rem;background:oklch(98% .008 87 / .92)}
-/* metrike nad tabelo projektov — kopija arh-metrike/arh-metrika (ArhivWorkspace),
-   podvojeno s predpono pw-, ker gre za drugo komponento (SAMO BRANJE videza arh-,
-   ne uvoz iz druge datoteke). Isti veliki stevec (Bodoni serif) kot povsod drugod. */
-.pw-metrike{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:0 0 1rem}
-.pw-metrika{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;min-height:7.4rem;padding:1rem 1.1rem;border:1px solid var(--line);border-radius:14px}
-.pw-metrika small{position:relative;z-index:1;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.pw-metrika strong{position:relative;z-index:1;margin-top:auto;font:500 1.7rem var(--font-serif),Georgia,serif;color:var(--ink);-webkit-text-stroke:.35px var(--ink);text-shadow:0 1px 2px oklch(100% 0 0 / .35)}
-.pw-metrika span{position:relative;z-index:1;margin-top:.2rem;color:var(--muted);font-size:.78rem}
-.pw-metrika-vrednost{background:linear-gradient(140deg,oklch(95% .035 295),oklch(90% .065 297))}
-.pw-metrika-zaracunano{background:linear-gradient(140deg,oklch(96% .035 160),oklch(87% .08 163))}
-.pw-metrika-odprto{background:linear-gradient(140deg,oklch(97% .03 65),oklch(90% .07 60))}
-.pw-metrika-ikona{position:absolute;right:-1rem;bottom:-1.6rem;display:grid;place-items:center;width:6.6rem;aspect-ratio:1;border-radius:1.6rem;background:oklch(100% 0 0/.24);color:color-mix(in oklch,currentColor 54%,transparent);transform:rotate(-9deg)}
-@media (max-width:760px){.pw-metrike{grid-template-columns:1fr 1fr}}
-@media (max-width:480px){.pw-metrike{grid-template-columns:1fr}}
 .pw-stran{padding:1rem;scroll-margin-top:5.5rem}
 .pw-nazaj{display:inline-flex;align-items:center;gap:.4rem;margin:0 0 .8rem;padding:.55rem .95rem;border:1px solid var(--line);border-radius:999px;background:oklch(98% .008 87 / .92);font:700 .62rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
 .pw-nazaj:hover{background:var(--ink);color:var(--paper)}
@@ -392,19 +378,13 @@ type Props = {
      stran — starš takrat skrije svojo glavo (.arh-glava: zavihki + orodna vrstica),
      da je res videti kot svoja stran. */
   onDetajl?: (odprt: boolean) => void;
-  /* "+ Nov projekt" onboarding (glej pw-nov-panel spodaj): ArhivWorkspace ga
-     lahko krmili od zunaj (gumb na orodni vrstici, ob "+ Nova ponudba"), po
-     istem vzorcu kot status/datum* zgoraj — ce ni podano, deluje samostojno. */
-  novProjektOdprt?: boolean;
-  onNovProjektOdprt?: (odprt: boolean) => void;
-  /* PIPELINE POSLOV — pogled Seznam|Pipeline (glej pw-pipeline spodaj). Isti
-     vzorec kot novProjektOdprt zgoraj: ArhivWorkspace krmili od zunaj (pilula
-     ob zavihkih), ce ni podano deluje samostojno (lastno stanje). */
+  /* PIPELINE POSLOV — pogled Seznam|Pipeline (glej pw-pipeline spodaj). ArhivWorkspace
+     krmili od zunaj (pilula ob zavihkih), ce ni podano deluje samostojno (lastno stanje). */
   pogled?: 'seznam' | 'pipeline';
   onPogled?: (pogled: 'seznam' | 'pipeline') => void;
 };
 
-export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIskanje, status, onStatus, datumOd: datumOdZunaj, datumDo: datumDoZunaj, onDatumOd, onDatumDo, onDetajl, novProjektOdprt: novProjektOdprtZunaj, onNovProjektOdprt, pogled: pogledZunaj, onPogled }: Props) {
+export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIskanje, status, onStatus, datumOd: datumOdZunaj, datumDo: datumDoZunaj, onDatumOd, onDatumDo, onDetajl, pogled: pogledZunaj, onPogled }: Props) {
   const [offers, setOffers] = useState<FlowOffer[]>([]); const [invoices, setInvoices] = useState<FlowInvoice[]>([]); const [expenses, setExpenses] = useState<FlowExpense[]>([]); const [contracts, setContracts] = useState<FlowContract[]>([]); const [amounts, setAmounts] = useState<Record<string, number>>({}); const [clients, setClients] = useState<FlowClient[]>([]);
   /* PRAVI projekti (lib/projekti) — locena shramba od Flow podatkov zgoraj, glej gradiVnos/realProjects spodaj */
   const [realProjekti, setRealProjekti] = useState<Projekt[]>([]);
@@ -454,13 +434,6 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   }, [realProjekti, offers, invoices, expenses, contracts, amounts]);
   const projects = useMemo(() => [...offerProjects, ...realProjects].sort((a, b) => (b.offer.date || '').localeCompare(a.offer.date || '')), [offerProjects, realProjects]);
   const visible = projects.filter(project => { const text = `${project.offer.title} ${project.offer.client} ${project.offer.number || ''}`.toLocaleLowerCase('sl-SI'); const match = text.includes(search.toLocaleLowerCase('sl-SI')); const state = filter === 'vse' || (filter === 'aktivni' ? project.offer.status === 'accepted' : filter === 'cakajo' ? project.offer.status === 'sent' : ['rejected'].includes(project.offer.status)); return match && state && vObdobju(project.offer.date, datumOd, datumDo); });
-  /* povzetek nad tabelo (glej pw-metrike zgoraj) — iz trenutno vidnih projektov
-     (upostevajo iskanje/filter/datum), da povzetek sledi temu, kar je v tabeli */
-  const pwMetrike = useMemo(() => ({
-    vrednost: visible.reduce((sum, project) => sum + project.agreed, 0),
-    zaracunano: visible.reduce((sum, project) => sum + project.billed, 0),
-    odprto: visible.reduce((sum, project) => sum + Math.max(0, project.agreed - project.billed), 0),
-  }), [visible]);
   /* PIPELINE POSLOV — kanban pogled (glej pw-pipeline v pwStyles). Stolpci po vrsti
      + locen, umirjen Izgubljeno na koncu (glej ProjektFaza v lib/projekti). */
   const PIPELINE_STOLPCI: { faza: ProjektFaza; naziv: string }[] = [
@@ -532,106 +505,15 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     selectProject(id);
   }, [searchParams, projects]);
 
-  /* "+ Nov projekt" — onboarding (glej pw-nov-panel spodaj). novOdprt sledi ISTEMU
-     vzorcu kot status/datum* na vrhu: ce ga krmili starš (ArhivWorkspace, gumb na
-     orodni vrstici ob "+ Nova ponudba"), uporabi to; sicer lastno stanje. */
-  const [notranjiNovOdprt, setNotranjiNovOdprt] = useState(false);
-  const novOdprt = novProjektOdprtZunaj ?? notranjiNovOdprt;
-  const setNovOdprt = (v: boolean) => { if (onNovProjektOdprt) onNovProjektOdprt(v); else setNotranjiNovOdprt(v); };
-  /* PIPELINE POSLOV — pogled Seznam|Pipeline, isti vzorec (zunaj krmili ArhivWorkspace,
-     sicer lastno stanje) kot novOdprt zgoraj */
+  /* PIPELINE POSLOV — pogled Seznam|Pipeline: ce ga krmili starš (ArhivWorkspace,
+     pilula ob zavihkih), uporabi to; sicer lastno stanje. */
   const [notranjiPogled, setNotranjiPogled] = useState<'seznam' | 'pipeline'>('seznam');
   const pogled = pogledZunaj ?? notranjiPogled;
   const setPogled = (v: 'seznam' | 'pipeline') => { if (onPogled) onPogled(v); else setNotranjiPogled(v); };
-  const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektEntitetaStatus, zelje: '', cilji: [] as ProjektCilj[], dodatnaVprasanja: [] as ProjektVprasanje[], povezave: [] as ProjektPovezava[], dodeljeni: [] as string[] });
-  const [obrazec, setObrazec] = useState(prazenObrazec());
-  /* onboarding kot CHAT (glej pw-chat-* v pwStyles): novKorak = do kam je uporabnica
-     ze prisla (0..6, 6 = vsa osnovna vprasanja odgovorjena -> dodatno+povezave+ekipa+zakljucek);
-     urejamKorak = klik na ze odgovorjen mehurcek odpre polje ZNOVA V MESTU (kot v ponudbi) */
-  const [novKorak, setNovKorak] = useState(0);
-  const [urejamKorak, setUrejamKorak] = useState<number | null>(null);
+  /* sodelavci — se uporabljajo za prikaz "Dodeljeni" na vozliscu projekta (glej
+     spodaj); "Ustvari projekt" (dodeljevanje sodelavcem) je zdaj lastna stran,
+     glej components/NovProjektWorkspace.tsx. */
   const [sodelavci, setSodelavci] = useState<Sodelavec[]>([]);
-  const [novoVprasanje, setNovoVprasanje] = useState({ vprasanje: '', odgovor: '' });
-  const [povezavaNaslov, setPovezavaNaslov] = useState('');
-  const [povezavaUrl, setPovezavaUrl] = useState('');
-  useEffect(() => {
-    if (!novOdprt) return;
-    setObrazec(prazenObrazec());
-    setNovKorak(0);
-    setUrejamKorak(null);
-    setNovoVprasanje({ vprasanje: '', odgovor: '' });
-    setPovezavaNaslov(''); setPovezavaUrl('');
-    setSodelavci(preberiSodelavci());
-  }, [novOdprt]);
-  const dodajCilj = () => setObrazec(o => ({ ...o, cilji: [...o.cilji, { id: crypto.randomUUID(), besedilo: '', metrika: '', tarca: '' }] }));
-  const odstraniCilj = (id: string) => setObrazec(o => ({ ...o, cilji: o.cilji.filter(c => c.id !== id) }));
-  const posodobiCilj = (id: string, patch: Partial<ProjektCilj>) => setObrazec(o => ({ ...o, cilji: o.cilji.map(c => c.id === id ? { ...c, ...patch } : c) }));
-  /* potrdi trenutni korak vprasanja: naprej=true premakne kazalec (NAPREJ), sicer
-     samo zapre "urejanje v mestu" (Shrani na ze odgovorjenem koraku) */
-  const potrdiKorak = (naprej: boolean) => { setUrejamKorak(null); if (naprej) setNovKorak(k => Math.min(6, k + 1)); };
-  /* "+ dodaj vprašanje" — lastno vprasanje + odgovor, prosto besedilo, brez sheme */
-  const dodajVprasanje = () => {
-    const vprasanje = novoVprasanje.vprasanje.trim(); const odgovor = novoVprasanje.odgovor.trim();
-    if (!vprasanje || !odgovor) return;
-    setObrazec(o => ({ ...o, dodatnaVprasanja: [...o.dodatnaVprasanja, { id: crypto.randomUUID(), vprasanje, odgovor }] }));
-    setNovoVprasanje({ vprasanje: '', odgovor: '' });
-  };
-  const odstraniVprasanje = (id: string) => setObrazec(o => ({ ...o, dodatnaVprasanja: o.dodatnaVprasanja.filter(v => v.id !== id) }));
-  /* povezave do zunanjih gradiv, zajete ze tu — ob shranjevanju se zrcalijo tudi
-     v obstojeco shrambo FlowProjectLink (glej shraniNovProjekt), da jih kartica
-     "05 · Dokumentacija" na vozliscu takoj prikaze brez dodatne logike */
-  const dodajPovezavo = () => {
-    const naslov = povezavaNaslov.trim(); const url = povezavaUrl.trim();
-    if (!naslov || !url) return;
-    setObrazec(o => ({ ...o, povezave: [...o.povezave, { id: crypto.randomUUID(), naslov, url }] }));
-    setPovezavaNaslov(''); setPovezavaUrl('');
-  };
-  const odstraniPovezavo = (id: string) => setObrazec(o => ({ ...o, povezave: o.povezave.filter(p => p.id !== id) }));
-  const preklopiDodeljen = (id: string) => setObrazec(o => ({ ...o, dodeljeni: o.dodeljeni.includes(id) ? o.dodeljeni.filter(x => x !== id) : [...o.dodeljeni, id] }));
-  /* "Deli projekt" — za zdaj mailto vabilo dodeljenim (lokalni mock, glej opombo pri
-     Projekt.dodeljeni v lib/projekti.ts); pravo deljenje pride z vec-uporabniskim zaledjem */
-  const deliProjekt = () => {
-    if (typeof window === 'undefined' || !obrazec.dodeljeni.length) return;
-    const prejemniki = sodelavci.filter(s => obrazec.dodeljeni.includes(s.id)).map(s => s.email).filter(Boolean).join(',');
-    const zadeva = `Projekt: ${obrazec.naslov.trim() || 'Nov projekt'}`;
-    const telo = `Pozdravljeni,\n\nvabim vas k sodelovanju na projektu »${obrazec.naslov.trim()}«.\n\nLep pozdrav`;
-    window.location.href = `mailto:${prejemniki}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`;
-  };
-  const shraniNovProjekt = () => {
-    const naslov = obrazec.naslov.trim();
-    if (!naslov || samoOgled) return;
-    const stranka = clients.find(c => c.id === obrazec.strankaId);
-    const projekt: Projekt = {
-      id: crypto.randomUUID(),
-      stevilka: naslednjaStevilka(realProjekti),
-      naslov,
-      strankaId: stranka?.id,
-      strankaIme: stranka?.name,
-      zelje: obrazec.zelje.trim() || undefined,
-      cilji: obrazec.cilji.filter(c => c.besedilo.trim()).map(c => ({ id: c.id, besedilo: c.besedilo.trim(), metrika: c.metrika?.trim() || undefined, tarca: c.tarca?.trim() || undefined })),
-      zacetek: obrazec.zacetek || undefined,
-      rok: obrazec.rok || undefined,
-      status: obrazec.status,
-      created: new Date().toISOString(),
-      dodatnaVprasanja: obrazec.dodatnaVprasanja.length ? obrazec.dodatnaVprasanja : undefined,
-      povezave: obrazec.povezave.length ? obrazec.povezave : undefined,
-      dodeljeni: obrazec.dodeljeni.length ? obrazec.dodeljeni : undefined,
-    };
-    shraniProjekt(projekt);
-    if (obrazec.povezave.length) saveProjectLinks(`real-${projekt.id}`, obrazec.povezave.map(p => ({ oznaka: p.naslov, url: p.url })));
-    setRealProjekti(prev => [projekt, ...prev]);
-    setNovOdprt(false);
-    selectProject(`real-${projekt.id}`);
-  };
-  /* mehurcek bota (vprasanje) + moj odgovor (klikljiv, odpre urejanje v mestu) — isti
-     vzorec kot chat-bot/chat-jaz v KalkulatorApp.tsx, tu s predpono pw- */
-  const chatBot = (naslov: string, opis?: string) => <div className="pw-chat-bot"><span className="pw-chat-mehur"><b>{naslov}</b>{opis && <small>{opis}</small>}</span></div>;
-  const chatOdgovor = (korak: number, vsebina: string) => (
-    <div className="pw-chat-jaz"><button type="button" className="pw-chat-mehur-ured" onClick={() => setUrejamKorak(korak)} title="Klikni za popravek"><span>{vsebina}</span><PencilSimple size={13} weight="bold" aria-hidden /></button></div>
-  );
-  const prikazan = (i: number) => novKorak >= i;
-  const aktiven = (i: number) => novKorak === i || urejamKorak === i;
-  const odgovorjen = (i: number) => novKorak > i && urejamKorak !== i;
 
   /* 05 · DOKUMENTACIJA — povezave do zunanjih datotek za TA projekt (localStorage,
      glej lib/pinartFlowStore). V predogledu (demo/prazno/začetek) samo prikaz —
@@ -737,7 +619,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       onPocisti={() => { setFilter('vse'); setDatumOd(''); setDatumDo(''); }}
       akcija={<>
         <Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>+ Nova ponudba</Link>
-        <button type="button" className="af-akcija-gumb" onClick={() => setNovOdprt(true)}>+ Nov projekt</button>
+        <Link className="af-akcija-gumb" href={`${base}/kalkulator/nov-projekt`}>+ Nov projekt</Link>
       </>}
     />}
 
@@ -755,21 +637,6 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         <div className={styles.projectStoryEmpty}><span>↗</span><strong>Najprej ustvari ponudbo.</strong><p>Ta bo postala osnova projekta in povezala vse nadaljnje dokumente.</p></div>
       ) : (
         <div className="pw-seznam">
-          <div className="pw-metrike">
-            <article className="pw-metrika pw-metrika-vrednost">
-              <small>Vrednost</small><strong>{money(pwMetrike.vrednost)}</strong><span>dogovorjeno skupaj</span>
-              <b className="pw-metrika-ikona"><MetricIcon type="document" /></b>
-            </article>
-            <article className="pw-metrika pw-metrika-zaracunano">
-              <small>Zaračunano</small><strong>{money(pwMetrike.zaracunano)}</strong><span>izdani računi</span>
-              <b className="pw-metrika-ikona"><MetricIcon type="paid" /></b>
-            </article>
-            <article className="pw-metrika pw-metrika-odprto">
-              <small>Odprto</small><strong>{money(pwMetrike.odprto)}</strong><span>še ni zaračunano</span>
-              <b className="pw-metrika-ikona"><MetricIcon type="profit" /></b>
-            </article>
-          </div>
-
           {pogled === 'pipeline' ? (
             <>
               {samoOgled && <p className="pw-pipeline-namig">Premikanje kartic med fazami je v predogledu (demo) onemogočeno — prijavi se v svoj račun.</p>}
@@ -1041,156 +908,5 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       );
     })()}
 
-    {/* "+ Nov projekt" — onboarding kot CHAT VPRAŠALNIK (posnema videz/tok chata
-        ponudbe v KalkulatorApp.tsx: en mehurček vprašanja naenkrat, moj odgovor
-        pretvorjen v klikljiv mehurček, NAPREJ vodi naprej, brez menjave strani).
-        Isti vzorec slide panela kot zgoraj (pw-vsi-panel/pw-det-panel). Po
-        shranjevanju (shraniNovProjekt) se panel zapre in odpre vozlišče projekta. */}
-    {novOdprt && (
-      <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={() => setNovOdprt(false)}>
-        <aside className={`${styles.detailPanel} pw-nov-panel`} role="dialog" aria-modal="true" aria-labelledby="pw-nov-naslov" onMouseDown={e => e.stopPropagation()}>
-          <button type="button" className="pw-vsi-x" onClick={() => setNovOdprt(false)} aria-label="Zapri">✕</button>
-          <p className={styles.eyebrow}>NOV PROJEKT</p>
-          <h2 id="pw-nov-naslov">Začni nov projekt.</h2>
-
-          <div className="pw-chat-tok">
-            {samoOgled && <p className="pw-opozorilo">Predogled (demo): chat lahko preizkusiš; shranjevanje projekta je na voljo po prijavi.</p>}
-              {/* 0 · naslov */}
-              {prikazan(0) && chatBot('Kako se projekt imenuje?')}
-              {odgovorjen(0) && chatOdgovor(0, obrazec.naslov.trim() || '—')}
-              {aktiven(0) && (
-                <form className="pw-chat-vnos" onSubmit={event => { event.preventDefault(); if (obrazec.naslov.trim()) potrdiKorak(urejamKorak !== 0); }}>
-                  <input className="pw-chat-polje" type="text" autoFocus value={obrazec.naslov} onChange={event => setObrazec(o => ({ ...o, naslov: event.target.value }))} placeholder="npr. Prenova celostne podobe" aria-label="Naslov projekta" />
-                  <button type="submit" className="pw-chat-naprej" disabled={!obrazec.naslov.trim()}>{urejamKorak === 0 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
-                </form>
-              )}
-
-              {/* 1 · stranka */}
-              {prikazan(1) && chatBot('Za katero stranko je ta projekt?', clients.length ? 'Izberi iz imenika — ali nadaljuj brez stranke.' : 'V imeniku še ni strank — lahko nadaljuješ brez izbora.')}
-              {odgovorjen(1) && chatOdgovor(1, clients.find(c => c.id === obrazec.strankaId)?.name || 'Brez stranke')}
-              {aktiven(1) && (
-                <form className="pw-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 1); }}>
-                  <select className="pw-chat-polje" value={obrazec.strankaId} onChange={event => setObrazec(o => ({ ...o, strankaId: event.target.value }))} aria-label="Stranka">
-                    <option value="">Brez stranke</option>
-                    {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                  <button type="submit" className="pw-chat-naprej">{urejamKorak === 1 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
-                </form>
-              )}
-
-              {/* 2 · cilji */}
-              {prikazan(2) && chatBot('Kaj so cilji projekta?', 'Dodaj enega ali več — lahko tudi preskočiš.')}
-              {odgovorjen(2) && chatOdgovor(2, obrazec.cilji.filter(c => c.besedilo.trim()).length ? obrazec.cilji.filter(c => c.besedilo.trim()).map(c => c.besedilo.trim()).join(' · ') : 'Brez ciljev')}
-              {aktiven(2) && (
-                <div className="pw-chat-vnos">
-                  {obrazec.cilji.map(cilj => (
-                    <div key={cilj.id} className="pw-nov-cilj">
-                      <input type="text" value={cilj.besedilo} onChange={event => posodobiCilj(cilj.id, { besedilo: event.target.value })} placeholder="Cilj, npr. povečati prepoznavnost znamke" aria-label="Cilj" />
-                      <input type="text" value={cilj.metrika || ''} onChange={event => posodobiCilj(cilj.id, { metrika: event.target.value })} placeholder="Metrika (neobvezno)" aria-label="Metrika cilja" />
-                      <input type="text" value={cilj.tarca || ''} onChange={event => posodobiCilj(cilj.id, { tarca: event.target.value })} placeholder="Tarča (neobvezno)" aria-label="Tarča cilja" />
-                      <button type="button" className="pw-link-brisi" onClick={() => odstraniCilj(cilj.id)} aria-label="Odstrani cilj">×</button>
-                    </div>
-                  ))}
-                  <button type="button" className="pw-nov-dodaj-cilj" onClick={dodajCilj}>+ Dodaj cilj</button>
-                  <button type="button" className="pw-chat-naprej" onClick={() => potrdiKorak(urejamKorak !== 2)}>{urejamKorak === 2 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
-                </div>
-              )}
-
-              {/* 3 · želje stranke */}
-              {prikazan(3) && chatBot('Kakšne so želje stranke?', 'Persona, barve, ton — prosto besedilo.')}
-              {odgovorjen(3) && chatOdgovor(3, obrazec.zelje.trim() || 'Brez posebnih želja')}
-              {aktiven(3) && (
-                <form className="pw-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 3); }}>
-                  <textarea className="pw-chat-polje" value={obrazec.zelje} onChange={event => setObrazec(o => ({ ...o, zelje: event.target.value }))} placeholder="Npr. mlada, drzna persona; toplo-nevtralna paleta; neposreden ton …" rows={4} aria-label="Želje stranke" />
-                  <button type="submit" className="pw-chat-naprej">{urejamKorak === 3 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
-                </form>
-              )}
-
-              {/* 4 · začetek/rok */}
-              {prikazan(4) && chatBot('Kdaj začneš in do kdaj?')}
-              {odgovorjen(4) && chatOdgovor(4, [obrazec.zacetek && datStr(obrazec.zacetek), obrazec.rok && `do ${datStr(obrazec.rok)}`].filter(Boolean).join(' ') || 'Ni določeno')}
-              {aktiven(4) && (
-                <form className="pw-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 4); }}>
-                  <div className="pw-nov-mreza">
-                    <label className="pw-nov-polje"><span>Začetek</span><input type="date" value={obrazec.zacetek} onChange={event => setObrazec(o => ({ ...o, zacetek: event.target.value }))} /></label>
-                    <label className="pw-nov-polje"><span>Predviden rok</span><input type="date" value={obrazec.rok} onChange={event => setObrazec(o => ({ ...o, rok: event.target.value }))} /></label>
-                  </div>
-                  <button type="submit" className="pw-chat-naprej">{urejamKorak === 4 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
-                </form>
-              )}
-
-              {/* 5 · status — izbira takoj potrdi in gre naprej (kot binarna izbira v ponudbi) */}
-              {prikazan(5) && chatBot('Kakšen je status projekta?')}
-              {odgovorjen(5) && chatOdgovor(5, projektStatusOznaka[obrazec.status])}
-              {aktiven(5) && (
-                <div className="pw-chat-izbire">
-                  {(['aktiven', 'pavza', 'koncan'] as ProjektEntitetaStatus[]).map((s, i) => (
-                    <button key={s} type="button" className="pw-chat-opcija" onClick={() => { setObrazec(o => ({ ...o, status: s })); potrdiKorak(true); }}>
-                      <span className="pw-crk">{String.fromCharCode(65 + i)}</span><b>{projektStatusOznaka[s]}</b>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* po osnovnih vprašanjih: moja lastna vprašanja + povezave + ekipa + zaključek —
-                  vse na isti neprekinjeni površini, brez nadaljnjega gating-a (izpolniš, kolikor želiš) */}
-              {novKorak >= 6 && (<>
-                {chatBot('Želiš dodati svoja vprašanja?', 'Npr. »Ima stranka že CGP?« — vprašanje in odgovor si zapišeš sama.')}
-                <div className="pw-chat-vnos">
-                  {obrazec.dodatnaVprasanja.map(v => (
-                    <div key={v.id} className="pw-vprasanje-vrstica">
-                      <div><b>{v.vprasanje}</b><span>{v.odgovor}</span></div>
-                      <button type="button" className="pw-link-brisi" onClick={() => odstraniVprasanje(v.id)} aria-label="Odstrani vprašanje">×</button>
-                    </div>
-                  ))}
-                  <div className="pw-link-obrazec">
-                    <input type="text" value={novoVprasanje.vprasanje} onChange={event => setNovoVprasanje(v => ({ ...v, vprasanje: event.target.value }))} placeholder="Vprašanje, npr. Ima stranka že CGP?" aria-label="Vprašanje" />
-                    <input type="text" value={novoVprasanje.odgovor} onChange={event => setNovoVprasanje(v => ({ ...v, odgovor: event.target.value }))} placeholder="Odgovor" aria-label="Odgovor" />
-                    <button type="button" className="pw-link-dodaj" onClick={dodajVprasanje} disabled={!novoVprasanje.vprasanje.trim() || !novoVprasanje.odgovor.trim()}>+ Dodaj vprašanje</button>
-                  </div>
-                </div>
-
-                {chatBot('Deli povezave do gradiv.', 'Figma, Miro, Drive … naslov + URL.')}
-                <div className="pw-chat-vnos">
-                  {obrazec.povezave.length > 0 && (
-                    <div className="pw-linki">
-                      {obrazec.povezave.map(p => (
-                        <div key={p.id} className="pw-link-vrstica"><a href={p.url} target="_blank" rel="noopener noreferrer">{p.naslov}</a><button type="button" className="pw-link-brisi" onClick={() => odstraniPovezavo(p.id)} aria-label={`Izbriši povezavo ${p.naslov}`}>×</button></div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="pw-link-obrazec">
-                    <input type="text" value={povezavaNaslov} onChange={event => setPovezavaNaslov(event.target.value)} placeholder="npr. Figma" aria-label="Oznaka povezave" />
-                    <input type="url" value={povezavaUrl} onChange={event => setPovezavaUrl(event.target.value)} placeholder="https://…" aria-label="Naslov povezave" />
-                    <button type="button" className="pw-link-dodaj" onClick={dodajPovezavo} disabled={!povezavaNaslov.trim() || !povezavaUrl.trim()}>+ Dodaj povezavo</button>
-                  </div>
-                </div>
-
-                {chatBot('Deli projekt in dodeli sodelavce.', 'Klikni osebo, da jo dodeliš — »Deli projekt« pošlje vabilo dodeljenim.')}
-                <div className="pw-chat-vnos">
-                  <div className="pw-chat-sodelavci">
-                    {sodelavci.map(s => {
-                      const on = obrazec.dodeljeni.includes(s.id);
-                      const initials = s.ime.split(' ').map(d => d[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
-                      return (
-                        <button key={s.id} type="button" className={'pw-chat-sodelavec' + (on ? ' on' : '')} onClick={() => preklopiDodeljen(s.id)}>
-                          <span className="pw-chat-sod-krog" aria-hidden>{initials}</span>
-                          <span><b>{s.ime}</b><small>{vlogaOznaka(s.vloga)}</small></span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <button type="button" className="pw-chat-deli" onClick={deliProjekt} disabled={!obrazec.dodeljeni.length}>Deli projekt ↗</button>
-                </div>
-
-                <div className="pw-det-akcije pw-chat-koncno">
-                  <button type="button" className="pw-det-poslji" onClick={shraniNovProjekt} disabled={!obrazec.naslov.trim() || samoOgled} title={samoOgled ? 'Shranjevanje projekta je na voljo po prijavi' : undefined}>Ustvari projekt</button>
-                  <button type="button" className="pw-nov-preklici" onClick={() => setNovOdprt(false)}>Prekliči</button>
-                </div>
-              </>)}
-            </div>
-        </aside>
-      </div>
-    )}
   </div>;
 }

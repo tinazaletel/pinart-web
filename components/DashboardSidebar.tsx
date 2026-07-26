@@ -12,7 +12,7 @@ import MeniProfil from './MeniProfil';
 import PaketZnak from './PaketZnak';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
-type Section = 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings' | 'ekipa';
+type Section = 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings' | 'ekipa' | 'novprojekt';
 
 /* Meni je razdeljen po tem, KAJ UPORABNIK POCNE, ne kaj stvar je:
    Delo = ustvarjas dokument za stranko · Podatki = vzdrzujes vnose · Nacrt = racunas/ciljas.
@@ -43,14 +43,14 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
     {item('overview', `${base}/kalkulator/pregled`, '01', 'Nadzorna plošča', 'pregled')}
     {/* Na telefonu so skupine zaprte: 13 postavk hkrati ne gre v en zaslon,
         ce naj bo vsaka tapna tarca vsaj 44 px. Na namizju so odprte kot prej. */}
-    <MeniSkupina naslov="Orodja" aktivna={active === 'offer' || active === 'retainer' || active === 'contracts' || active === 'invoices'}>
+    <MeniSkupina naslov="Orodja" aktivna={active === 'offer' || active === 'retainer' || active === 'contracts' || active === 'invoices' || active === 'novprojekt'}>
       {/* ?od=pregled -> kalkulator in retainer pokazeta puscico nazaj na nadzorno plosco */}
       {item('offer', `${base}/kalkulator/orodje?od=pregled`, '01', 'Ponudba', 'ponudba')}
       {item('retainer', `${base}/kalkulator/dolgorocno?od=pregled`, '02', 'Dolgoročno sodelovanje', 'retainer')}
       {item('contracts', `${base}/kalkulator/pogodbe`, '03', 'Pogodba', 'pogodba', 'contracts')}
       {item('invoices', `${base}/kalkulator/racuni`, '04', 'Računi', 'racuni')}
-      {/* Ustvari projekt = vodi te cez brief (?nov=1 odpre onboarding na Projekti). */}
-      {povezava(`${base}/kalkulator/projekti?nov=1`, '05', 'Ustvari projekt', 'projekti')}
+      {/* Ustvari projekt = polnostranski chat vprasalnik (lastna stran, kot pogodbe/racuni). */}
+      {item('novprojekt', `${base}/kalkulator/nov-projekt`, '05', 'Ustvari projekt', 'projekti')}
     </MeniSkupina>
     {/* Arhiv (prej "Zgodovina") = kjer NAJDEŠ shranjeno; sodi pod Podatki, ne Drugo.
         Delo = ustvarjaš, Podatki = iščeš. */}
