@@ -11,6 +11,7 @@ import {
   NalogaStolpec,
   NalogaKomentar,
   NalogaAvtorVloga,
+  NalogaPrioriteta,
   NalogaPodopravilo,
   preberiNaloge,
   shraniNaloge,
@@ -68,39 +69,227 @@ const PREDLAGANE_OZNAKE = ['funkcionalnost', 'dizajn', 'CRM', 'zaledje', 'ideja'
 
 /* Razvojne naloge Flow-a same-po-sebi kot podatki task managerja (dogfooding): gumb v glavi
    jih doda v localStorage (shraniNaloge), brez da bi prepisal ze obstojece (ujemanje po naslovu). */
-const NALOGE_FLOW_RAZVOJ: { naslov: string; stolpec: NalogaStolpec; oznake: string[] }[] = [
-  { naslov: 'Kontakti (več oseb) + klik-za-klic/mail → dnevnik', stolpec: 'done', oznake: ['CRM', 'funkcionalnost'] },
-  { naslov: 'CRM dnevnik (klici/sestanki/dogovori)', stolpec: 'done', oznake: ['CRM'] },
-  { naslov: 'Naloga↔stranka + prioriteta + komentarji', stolpec: 'done', oznake: ['funkcionalnost'] },
-  { naslov: 'Plan = matrika Projekt×Oddelek + oddelki/šef', stolpec: 'done', oznake: ['funkcionalnost'] },
-  { naslov: 'Tedenski razpored + status + prenos v cikel', stolpec: 'done', oznake: ['funkcionalnost'] },
-  { naslov: 'Preklop obdobja Teden/Mesec/Kvartal', stolpec: 'done', oznake: ['funkcionalnost'] },
-  { naslov: 'Področja lastna + »+« iskalnik', stolpec: 'done', oznake: ['funkcionalnost'] },
-  { naslov: 'Koledar urna mreža + sestanki/klici → CRM', stolpec: 'done', oznake: ['funkcionalnost'] },
-  { naslov: 'Nov projekt + vozlišče + chat brief', stolpec: 'done', oznake: ['funkcionalnost'] },
-  { naslov: 'Pipeline poslov (faze) drag&drop', stolpec: 'done', oznake: ['funkcionalnost'] },
-  { naslov: 'Predračun / Avans / NDA', stolpec: 'done', oznake: ['funkcionalnost'] },
-  { naslov: 'Meni: Dizajn→profil, Ustvari projekt pod Orodja', stolpec: 'done', oznake: ['dizajn'] },
-  { naslov: 'Naslovi manjši povsod', stolpec: 'done', oznake: ['dizajn'] },
-  { naslov: 'Komaj opazne obrobe + brez outline številk', stolpec: 'done', oznake: ['dizajn'] },
-  { naslov: 'Cenik: dodaj-postavko na vrh', stolpec: 'done', oznake: ['dizajn'] },
-  { naslov: 'Kontakt kartica poravnava + čitljiv naziv', stolpec: 'done', oznake: ['dizajn'] },
-  { naslov: 'Cilji: Merilo = spustni meni', stolpec: 'done', oznake: ['funkcionalnost'] },
-  { naslov: 'Razširjen brief + panoga + centriranje vprašanja', stolpec: 'in_progress', oznake: ['funkcionalnost'] },
-  { naslov: 'Opomnik »pokliči nazaj«', stolpec: 'todo', oznake: ['CRM'] },
-  { naslov: '»Moj dan« (zapadlo/ta teden)', stolpec: 'todo', oznake: ['funkcionalnost'] },
-  { naslov: 'Gantt časovnica', stolpec: 'todo', oznake: ['funkcionalnost'] },
-  { naslov: 'Redesign projekt-vozlišča + koledarja', stolpec: 'todo', oznake: ['dizajn'] },
-  { naslov: 'Cilji → »Cilji in analitika« + kartice na Nadzorno', stolpec: 'todo', oznake: ['dizajn'] },
-  { naslov: 'Font Bodoni → nevtralen (business)', stolpec: 'todo', oznake: ['dizajn'] },
-  { naslov: 'Knjižnica postavk (inventory na ceniku)', stolpec: 'todo', oznake: ['funkcionalnost'] },
-  { naslov: 'Chat/voice → naloge (fish.audio)', stolpec: 'todo', oznake: ['ideja'] },
-  { naslov: 'Maili — Resend (API ključ)', stolpec: 'waiting', oznake: ['zaledje'] },
-  { naslov: 'Prava prijava / več-uporabnikov', stolpec: 'waiting', oznake: ['zaledje'] },
-  { naslov: 'Analitika baza (migracija + service key)', stolpec: 'waiting', oznake: ['zaledje'] },
-  { naslov: 'Zavihek Inhouse (HR)', stolpec: 'todo', oznake: ['ideja'] },
-  { naslov: 'First-run onboarding (solo vs ekipa)', stolpec: 'todo', oznake: ['ideja'] },
-  { naslov: 'Pregled trženja (light)', stolpec: 'todo', oznake: ['ideja'] },
+const NALOGE_FLOW_RAZVOJ: {
+  naslov: string; stolpec: NalogaStolpec; oznake: string[];
+  opis?: string; opisAvtorIme?: string; opisAvtorVloga?: NalogaAvtorVloga;
+  prioriteta?: NalogaPrioriteta;
+  podopravila?: { besedilo: string; done?: boolean; dodeljenoOsebaIme?: string }[];
+  komentarji?: { avtorIme: string; besedilo: string; vloga: NalogaAvtorVloga }[];
+}[] = [
+  {
+    naslov: 'Kontakti (več oseb) + klik-za-klic/mail → dnevnik', stolpec: 'done', oznake: ['CRM', 'funkcionalnost'],
+    opis: 'Vsaka stranka naj ima več oseb, klik na telefon ali mail pa naj samodejno zapiše vnos v dnevnik.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+    podopravila: [
+      { besedilo: 'Model kontaktnih oseb na stranki', done: true },
+      { besedilo: 'Klik-za-klic in klik-za-mail sprožilca', done: true, dodeljenoOsebaIme: 'Matej Novak' },
+      { besedilo: 'Samodejni vpis interakcije v dnevnik', dodeljenoOsebaIme: 'Maja Zupan' },
+    ],
+    komentarji: [
+      { avtorIme: 'Rok Horvat', besedilo: 'Pri nas so trije kontakti, ločite jih prosim.', vloga: 'stranka' },
+      { avtorIme: 'Maja Zupan', besedilo: 'Dnevnik naj se polni sam, brez ročnega vnosa.', vloga: 'sef' },
+    ],
+  },
+  {
+    naslov: 'CRM dnevnik (klici/sestanki/dogovori)', stolpec: 'done', oznake: ['CRM'],
+    opis: 'Zgradi dnevnik, kamor se beležijo klici, sestanki in dogovori po posamezni stranki.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+  },
+  {
+    naslov: 'Naloga↔stranka + prioriteta + komentarji', stolpec: 'done', oznake: ['funkcionalnost'],
+    opis: 'Nalogo naj bo mogoče povezati s stranko ter ji dodati prioriteto in nit komentarjev.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+  },
+  {
+    naslov: 'Plan = matrika Projekt×Oddelek + oddelki/šef', stolpec: 'done', oznake: ['funkcionalnost'],
+    opis: 'Plan naj prikaže matriko projektov in oddelkov, kjer šef razporeja delo po oddelkih.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+  },
+  {
+    naslov: 'Tedenski razpored + status + prenos v cikel', stolpec: 'done', oznake: ['funkcionalnost'],
+    opis: 'Tedenski razpored s statusi dodelitev in možnostjo prenosa neopravljenega v naslednji cikel.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+  },
+  {
+    naslov: 'Preklop obdobja Teden/Mesec/Kvartal', stolpec: 'done', oznake: ['funkcionalnost'],
+    opis: 'Omogoči preklop pogleda razporeda med tednom, mesecem in kvartalom.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'Področja lastna + »+« iskalnik', stolpec: 'done', oznake: ['funkcionalnost'],
+    opis: 'Uporabnik naj lahko doda lastna področja prek gumba »+« z iskalnikom.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'Koledar urna mreža + sestanki/klici → CRM', stolpec: 'done', oznake: ['funkcionalnost'],
+    opis: 'Koledar z urno mrežo, kjer se sestanki in klici prelijejo v CRM dnevnik.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+  },
+  {
+    naslov: 'Nov projekt + vozlišče + chat brief', stolpec: 'done', oznake: ['funkcionalnost'],
+    opis: 'Ustvarjanje novega projekta z vozliščem in začetnim briefom prek chata.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+    podopravila: [
+      { besedilo: 'Obrazec za nov projekt', done: true },
+      { besedilo: 'Vozlišče projekta z osnovnimi podatki', done: true, dodeljenoOsebaIme: 'Matej Novak' },
+      { besedilo: 'Chat brief ob ustvarjanju', dodeljenoOsebaIme: 'Maja Zupan' },
+    ],
+    komentarji: [
+      { avtorIme: 'Maja Zupan', besedilo: 'Brief naj bo kratek, da stranke ne odvrne.', vloga: 'sef' },
+      { avtorIme: 'Matej Novak', besedilo: 'Vozlišče je pripravljeno, manjka še chat.', vloga: 'sodelavec' },
+    ],
+  },
+  {
+    naslov: 'Pipeline poslov (faze) drag&drop', stolpec: 'done', oznake: ['funkcionalnost'],
+    opis: 'Posle naj bo mogoče premikati med fazami z vlečenjem in spuščanjem.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+  },
+  {
+    naslov: 'Predračun / Avans / NDA', stolpec: 'done', oznake: ['funkcionalnost'],
+    opis: 'Pripravi generiranje predračuna, računa za avans in NDA dokumenta.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+  },
+  {
+    naslov: 'Meni: Dizajn→profil, Ustvari projekt pod Orodja', stolpec: 'done', oznake: ['dizajn'],
+    opis: 'Preuredi meni: Dizajn premakni k profilu, Ustvari projekt pa pod Orodja.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'Naslovi manjši povsod', stolpec: 'done', oznake: ['dizajn'],
+    opis: 'Zmanjšaj velikost naslovov skozi celotno aplikacijo za bolj umirjen videz.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'Komaj opazne obrobe + brez outline številk', stolpec: 'done', oznake: ['dizajn'],
+    opis: 'Obrobe naj bodo komaj opazne, številke pa brez izrazitega obrisa.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'Cenik: dodaj-postavko na vrh', stolpec: 'done', oznake: ['dizajn'],
+    opis: 'Gumb za dodajanje postavke premakni na vrh cenika za lažjo uporabo.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'Kontakt kartica poravnava + čitljiv naziv', stolpec: 'done', oznake: ['dizajn'],
+    opis: 'Popravi poravnavo kontaktne kartice in poskrbi za bolj čitljiv naziv.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'Cilji: Merilo = spustni meni', stolpec: 'done', oznake: ['funkcionalnost'],
+    opis: 'Merilo cilja naj se izbira iz spustnega menija namesto prostega vnosa.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'Razširjen brief + panoga + centriranje vprašanja', stolpec: 'in_progress', oznake: ['funkcionalnost'],
+    opis: 'Razširi brief z izbiro panoge in centriraj trenutno vprašanje na sredino.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+  },
+  {
+    naslov: 'Opomnik »pokliči nazaj«', stolpec: 'todo', oznake: ['CRM'],
+    opis: 'Dodaj opomnik, ki uporabnika spomni, da mora stranko poklicati nazaj.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+    podopravila: [
+      { besedilo: 'Nastavitev datuma in ure opomnika' },
+      { besedilo: 'Povezava opomnika s kontaktom stranke', dodeljenoOsebaIme: 'Matej Novak' },
+      { besedilo: 'Obvestilo ob zapadlosti' },
+    ],
+    komentarji: [
+      { avtorIme: 'Rok Horvat', besedilo: 'Prosim, da me pokličete nazaj do petka.', vloga: 'stranka' },
+      { avtorIme: 'Maja Zupan', besedilo: 'Vezano naj bo na kontakt, ne na projekt.', vloga: 'sef' },
+    ],
+  },
+  {
+    naslov: '»Moj dan« (zapadlo/ta teden)', stolpec: 'todo', oznake: ['funkcionalnost'],
+    opis: 'Pogled »Moj dan«, ki zbere zapadle naloge in tiste za ta teden.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+  },
+  {
+    naslov: 'Gantt časovnica', stolpec: 'todo', oznake: ['funkcionalnost'],
+    opis: 'Dodaj Gantt časovnico za pregled poteka projektov v času.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+    podopravila: [
+      { besedilo: 'Osnovna časovna os projektov' },
+      { besedilo: 'Vlečenje trajanja nalog', dodeljenoOsebaIme: 'Matej Novak' },
+      { besedilo: 'Prikaz odvisnosti med nalogami' },
+    ],
+    komentarji: [
+      { avtorIme: 'Maja Zupan', besedilo: 'Prioriteta za ta teden.', vloga: 'sef' },
+      { avtorIme: 'Matej Novak', besedilo: 'Začnem z osnovno časovno osjo.', vloga: 'sodelavec' },
+    ],
+  },
+  {
+    naslov: 'Redesign projekt-vozlišča + koledarja', stolpec: 'todo', oznake: ['dizajn'],
+    opis: 'Prenovi videz projektnega vozlišča in koledarja za bolj pregleden vtis.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+    podopravila: [
+      { besedilo: 'Skica novega projektnega vozlišča', dodeljenoOsebaIme: 'Tina Zaletel' },
+      { besedilo: 'Redesign koledarske mreže' },
+      { besedilo: 'Uskladitev z ostalimi pogledi', dodeljenoOsebaIme: 'Maja Zupan' },
+    ],
+    komentarji: [
+      { avtorIme: 'Maja Zupan', besedilo: 'Naj bo skladno s koledarjem.', vloga: 'sef' },
+      { avtorIme: 'Matej Novak', besedilo: 'Predlagam manj robov na kartici vozlišča.', vloga: 'sodelavec' },
+    ],
+  },
+  {
+    naslov: 'Cilji → »Cilji in analitika« + kartice na Nadzorno', stolpec: 'todo', oznake: ['dizajn'],
+    opis: 'Preimenuj Cilje v »Cilji in analitika« ter dodaj kartice na Nadzorno ploščo.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'Font Bodoni → nevtralen (business)', stolpec: 'todo', oznake: ['dizajn'],
+    opis: 'Zamenjaj Bodoni z bolj nevtralno pisavo primerno za poslovno rabo.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'Knjižnica postavk (inventory na ceniku)', stolpec: 'todo', oznake: ['funkcionalnost'],
+    opis: 'Zgradi knjižnico postavk, iz katere se hitro dodaja na cenik.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'srednja',
+  },
+  {
+    naslov: 'Chat/voice → naloge (fish.audio)', stolpec: 'todo', oznake: ['ideja'],
+    opis: 'Ideja: iz glasovnega ali chat vnosa samodejno ustvari naloge prek fish.audio.',
+    opisAvtorIme: 'Tina Zaletel', opisAvtorVloga: 'jaz', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'Maili — Resend (API ključ)', stolpec: 'waiting', oznake: ['zaledje'],
+    opis: 'Poveži pošiljanje e-pošte prek Resend in nastavi API ključ v okolju.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'visoka',
+    podopravila: [
+      { besedilo: 'Pridobitev in shramba API ključa' },
+      { besedilo: 'Osnovna predloga maila', dodeljenoOsebaIme: 'Matej Novak' },
+      { besedilo: 'Test pošiljanja na pravi naslov', dodeljenoOsebaIme: 'Tina Zaletel' },
+    ],
+    komentarji: [
+      { avtorIme: 'Maja Zupan', besedilo: 'To je zaledje, ki blokira ostalo. Prioriteta.', vloga: 'sef' },
+      { avtorIme: 'Matej Novak', besedilo: 'Čakam samo še na API ključ.', vloga: 'sodelavec' },
+    ],
+  },
+  {
+    naslov: 'Prava prijava / več-uporabnikov', stolpec: 'waiting', oznake: ['zaledje'],
+    opis: 'Uvedi pravo prijavo in podporo za več uporabnikov z ločeno vidljivostjo.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'visoka',
+  },
+  {
+    naslov: 'Analitika baza (migracija + service key)', stolpec: 'waiting', oznake: ['zaledje'],
+    opis: 'Poženi migracijo analitične baze in dodaj service-role ključ v okolje.',
+    opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'visoka',
+  },
+  {
+    naslov: 'Zavihek Inhouse (HR)', stolpec: 'todo', oznake: ['ideja'],
+    opis: 'Ideja: zavihek Inhouse za interne HR zadeve ekipe.',
+    opisAvtorIme: 'Tina Zaletel', opisAvtorVloga: 'jaz', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'First-run onboarding (solo vs ekipa)', stolpec: 'todo', oznake: ['ideja'],
+    opis: 'Ideja: uvodni onboarding, ki loči poti za samostojnega uporabnika in ekipo.',
+    opisAvtorIme: 'Tina Zaletel', opisAvtorVloga: 'jaz', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'Pregled trženja (light)', stolpec: 'todo', oznake: ['ideja'],
+    opis: 'Ideja: lahek pregled trženjskih aktivnosti brez zapletene analitike.',
+    opisAvtorIme: 'Tina Zaletel', opisAvtorVloga: 'jaz', prioriteta: 'nizka',
+  },
 ];
 
 /* vrstica matrike Plana = en projekt (izpeljan iz dodelitev po projektIme/projektId,
@@ -424,19 +613,69 @@ export default function TaskManagerWorkspace() {
     if (samoOgled) return;
     const obstojece = preberiNaloge();
     const obstojeciNaslovi = new Set(obstojece.map((n) => n.naslov));
+
+    /* preslikava seed podopravil/komentarjev v prave entitete (svez id + cas) */
+    const zgradiPodopravila = (seed: (typeof NALOGE_FLOW_RAZVOJ)[number]): NalogaPodopravilo[] =>
+      (seed.podopravila || []).map((p) => ({
+        id: crypto.randomUUID(),
+        besedilo: p.besedilo,
+        done: !!p.done,
+        dodeljenoOsebaIme: p.dodeljenoOsebaIme,
+      }));
+    const zgradiKomentarje = (seed: (typeof NALOGE_FLOW_RAZVOJ)[number]): NalogaKomentar[] =>
+      (seed.komentarji || []).map((k) => ({
+        id: 'kom_' + crypto.randomUUID(),
+        avtorIme: k.avtorIme,
+        besedilo: k.besedilo,
+        cas: new Date().toISOString(),
+        vloga: k.vloga,
+      }));
+
+    /* NOVE naloge (naslov se ne obstaja) — polna Naloga z vsemi polji iz seed vnosa */
     const nove: Naloga[] = NALOGE_FLOW_RAZVOJ.filter((n) => !obstojeciNaslovi.has(n.naslov)).map((n) => ({
       id: crypto.randomUUID(),
       naslov: n.naslov,
       stolpec: n.stolpec,
       oznake: n.oznake,
       created: new Date().toISOString(),
+      opis: n.opis,
+      opisAvtorIme: n.opisAvtorIme,
+      opisAvtorVloga: n.opisAvtorVloga,
+      prioriteta: n.prioriteta,
+      podopravila: zgradiPodopravila(n),
+      komentarji: zgradiKomentarje(n),
     }));
-    if (nove.length > 0) {
-      posodobiInShrani([...obstojece, ...nove]);
-      zabeleziAktivnost('seed_' + Date.now(), trenutni.ime, `Naložil ${nove.length} razvojnih nalog Flow-a`);
+
+    /* OBSTOJECE naloge — merge-dopolnitev: zapolni SAMO prazna polja iz seed, nikoli ne prepise
+       ze obstojecih ne-praznih vrednosti (ohrani uporabnikove spremembe) */
+    const seedPoNaslovu = new Map(NALOGE_FLOW_RAZVOJ.map((n) => [n.naslov, n]));
+    let steviloDopolnjenih = 0;
+    const dopolnjene: Naloga[] = obstojece.map((n) => {
+      const seed = seedPoNaslovu.get(n.naslov);
+      if (!seed) return n;
+      const posodobljena: Naloga = { ...n };
+      let spremenjena = false;
+      if (!posodobljena.opis && seed.opis) { posodobljena.opis = seed.opis; spremenjena = true; }
+      if (!posodobljena.opisAvtorIme && seed.opisAvtorIme) { posodobljena.opisAvtorIme = seed.opisAvtorIme; spremenjena = true; }
+      if (!posodobljena.opisAvtorVloga && seed.opisAvtorVloga) { posodobljena.opisAvtorVloga = seed.opisAvtorVloga; spremenjena = true; }
+      if (!posodobljena.prioriteta && seed.prioriteta) { posodobljena.prioriteta = seed.prioriteta; spremenjena = true; }
+      if ((!posodobljena.oznake || posodobljena.oznake.length === 0) && seed.oznake.length > 0) { posodobljena.oznake = seed.oznake; spremenjena = true; }
+      if ((!posodobljena.podopravila || posodobljena.podopravila.length === 0) && (seed.podopravila?.length)) { posodobljena.podopravila = zgradiPodopravila(seed); spremenjena = true; }
+      if ((!posodobljena.komentarji || posodobljena.komentarji.length === 0) && (seed.komentarji?.length)) { posodobljena.komentarji = zgradiKomentarje(seed); spremenjena = true; }
+      if (spremenjena) steviloDopolnjenih += 1;
+      return posodobljena;
+    });
+
+    const steviloNovih = nove.length;
+    if (steviloNovih > 0 || steviloDopolnjenih > 0) {
+      posodobiInShrani([...dopolnjene, ...nove]);
+      zabeleziAktivnost('seed_' + Date.now(), trenutni.ime, `Naložil razvojne naloge Flow-a (${steviloNovih} novih, ${steviloDopolnjenih} dopolnjenih)`);
       setZgodovina(preberiZgodovino());
     }
-    setSeedSporocilo(nove.length > 0 ? `Dodanih ${nove.length} novih nalog.` : 'Vse razvojne naloge so že naložene.');
+    const deli: string[] = [];
+    if (steviloNovih > 0) deli.push(`Dodanih ${steviloNovih} novih`);
+    if (steviloDopolnjenih > 0) deli.push(`dopolnjenih ${steviloDopolnjenih} obstoječih`);
+    setSeedSporocilo(deli.length > 0 ? `${deli.join(', ')}.` : 'Vse razvojne naloge so že naložene in dopolnjene.');
     window.setTimeout(() => setSeedSporocilo(''), 3500);
   };
 
