@@ -1916,6 +1916,9 @@
 /* ── Drsenje: glava se NE skriva več — Tina (24. 7.): sticky vrstica mora biti
    VEDNO vidna, na vseh mobilnih straneh enako (levo back+logo, desno meni). ── */
 .flowTopBar { transition: transform .26s cubic-bezier(.22, 1, .36, 1); }
+/* EKSPLICITNO: glava se NIKOLI ne premakne/skrije ob drsenju (Tina: fiksna vedno). */
+:global(body[data-drsenje='dol']) .flowTopBar,
+:global(body[data-drsenje='gor']) .flowTopBar { transform: none !important; }
 
 /* Hamburger ostane viden vedno: ko stran ni na vrhu, dobi mlecno steklo,
    sicer bi crna crta izginila v svetli vsebini pod njo. */
