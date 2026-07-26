@@ -27,6 +27,7 @@ import {
 } from '@/lib/naloge';
 import { preberiSodelavci } from '@/lib/sodelavci';
 import { loadFlowData, type FlowClient } from '@/lib/pinartFlowStore';
+import { Podrocje, preberiPodrocja, dodajPodrocje, izbrisiPodrocje } from '@/lib/podrocja';
 
 const STOLPCI: { id: NalogaStolpec; naziv: string }[] = [
   { id: 'todo', naziv: 'Za narediti' },
@@ -47,8 +48,6 @@ const STATUSI_DODELITVE: { id: NonNullable<TedenskaDodelitev['status']>; naziv: 
   { id: 'delno', naziv: 'Delno' },
   { id: 'preneseno', naziv: 'Preneseno' },
 ];
-
-const NAMIGI_PODROCJE = ['desktop', 'mobile', 'CGP', 'styleguide'];
 
 const datStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? s : d.toLocaleDateString('sl-SI'); };
 const jeZapadlo = (rok?: string) => { if (!rok) return false; const d = new Date(rok); return !isNaN(d.getTime()) && d < new Date(new Date().toDateString()); };
@@ -116,6 +115,8 @@ export default function TaskManagerWorkspace() {
   const [ndPodrocje, setNdPodrocje] = useState('');
   const [ndStrankaId, setNdStrankaId] = useState('');
   const [ndNacrt, setNdNacrt] = useState('');
+  const [podrocja, setPodrocja] = useState<Podrocje[]>([]);
+  const [novoPodrocje, setNovoPodrocje] = useState('');
 
   const trenutni = sodelavci.find((s) => s.id === trenutniId) || sodelavci[0];
   const jeVodjaAliAdmin = trenutni.vloga === 'vodja' || trenutni.vloga === 'admin';
@@ -127,6 +128,7 @@ export default function TaskManagerWorkspace() {
     setStranke(loadFlowData().clients);
     setDodelitve(preberiDodelitve());
     setCikelTednov(preberiCikelTednov());
+    setPodrocja(preberiPodrocja());
   }, []);
 
   const posodobiInShrani = (noveNaloge: Naloga[]) => { setNaloge(noveNaloge); shraniNaloge(noveNaloge); };
@@ -605,10 +607,21 @@ export default function TaskManagerWorkspace() {
               <input value={ndProjektIme} onChange={(e) => setNdProjektIme(e.target.value)} placeholder="Npr. Battle for Earth …" autoFocus />
             </label>
             <label className="tm-polje"><span>Področje</span>
-              <input value={ndPodrocje} onChange={(e) => setNdPodrocje(e.target.value)} placeholder="Npr. mobile, desktop, CGP …" />
+              <input value={ndPodrocje} onChange={(e) => setNdPodrocje(e.target.value)} placeholder="Področje dela …" />
             </label>
-            <div className="tm-namigi">
-              {NAMIGI_PODROCJE.map((n) => <button key={n} type="button" onClick={() => setNdPodrocje(n)}>{n}</button>)}
+            <div className="tm-podrocja">
+              {podrocja.length === 0 && <p className="tm-podrocja-prazno">Ni še področij dela — dodaj svoja spodaj (npr. snemanje, montaža, zvok).</p>}
+              {podrocja.map((p) => (
+                <span key={p.id} className={`tm-podrocje-cip${ndPodrocje === p.ime ? ' tm-izbran' : ''}`}>
+                  <button type="button" onClick={() => setNdPodrocje(p.ime)}>{p.ime}</button>
+                  <button type="button" className="tm-podrocje-brisi" aria-label={`Izbriši področje ${p.ime}`} onClick={() => setPodrocja(izbrisiPodrocje(p.id))}>×</button>
+                </span>
+              ))}
+            </div>
+            <div className="tm-podrocja-dodaj">
+              <input value={novoPodrocje} onChange={(e) => setNovoPodrocje(e.target.value)} placeholder="Novo področje …"
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const t = novoPodrocje.trim(); if (t) { setPodrocja(dodajPodrocje(t)); setNdPodrocje(t); setNovoPodrocje(''); } } }} />
+              <button type="button" onClick={() => { const t = novoPodrocje.trim(); if (t) { setPodrocja(dodajPodrocje(t)); setNdPodrocje(t); setNovoPodrocje(''); } }}>Dodaj</button>
             </div>
             <label className="tm-polje"><span>Poveži s stranko (neobvezno)</span>
               <select value={ndStrankaId} onChange={(e) => { setNdStrankaId(e.target.value); const s = stranke.find((x) => x.id === e.target.value); if (s && !ndProjektIme.trim()) setNdProjektIme(s.name); }}>
@@ -880,10 +893,20 @@ export default function TaskManagerWorkspace() {
         .tm-teden-prenesi{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .6rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font:700 .62rem var(--font-sans),sans-serif;cursor:pointer}
         .tm-teden-prenesi:hover{background:var(--ink);color:var(--paper)}
 
-        /* namigi za podrocje v formi nove dodelitve */
-        .tm-namigi{display:flex;flex-wrap:wrap;gap:.4rem;margin:-.4rem 0 .8rem}
-        .tm-namigi button{padding:.28rem .65rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--muted);font:700 .64rem var(--font-sans),sans-serif;cursor:pointer}
-        .tm-namigi button:hover{border-style:solid;border-color:var(--ink);color:var(--ink)}
+        /* lastna področja dela v formi nove dodelitve (urejljiva, ne trdo zakodirana) */
+        .tm-podrocja{display:flex;flex-wrap:wrap;gap:.4rem;margin:-.4rem 0 .5rem}
+        .tm-podrocja-prazno{font:400 .68rem var(--font-sans),sans-serif;color:var(--ink);opacity:.6;margin:0}
+        .tm-podrocje-cip{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:transparent}
+        .tm-podrocje-cip>button:first-child{padding:.28rem .55rem;border:none;background:transparent;color:var(--ink);font:700 .64rem var(--font-sans),sans-serif;cursor:pointer}
+        .tm-podrocje-cip.tm-izbran{border-color:var(--ink);background:var(--ink)}
+        .tm-podrocje-cip.tm-izbran>button:first-child{color:var(--paper)}
+        .tm-podrocje-brisi{padding:.28rem .45rem .28rem .2rem;border:none;background:transparent;color:var(--ink);opacity:.45;font-size:.9rem;line-height:1;cursor:pointer}
+        .tm-podrocje-brisi:hover{opacity:1}
+        .tm-podrocje-cip.tm-izbran .tm-podrocje-brisi{color:var(--paper);opacity:.7}
+        .tm-podrocja-dodaj{display:flex;gap:.4rem;margin:0 0 .8rem}
+        .tm-podrocja-dodaj input{flex:1;padding:.3rem .55rem;border:1px solid var(--line);border-radius:8px;font:400 .7rem var(--font-sans),sans-serif;background:var(--paper);color:var(--ink)}
+        .tm-podrocja-dodaj button{padding:.3rem .7rem;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:700 .64rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
+        .tm-podrocja-dodaj button:hover{background:var(--ink);color:var(--paper)}
 
         @media (max-width:860px){
           .tm-deska{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:82vw;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.6rem}
