@@ -128,7 +128,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
   const odgovorjen = (i: number) => novKorak > i && urejamKorak !== i;
 
   return <div className="np">
-    <div className="np-stolpec">
+    <div className="np-stolpec np-vstop">
       <p className="np-kicker">Ustvari projekt</p>
       <h1 className="np-h1">Začni nov projekt.</h1>
 
@@ -273,6 +273,12 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     <style>{`
       .np{min-width:0}
       .np-stolpec{width:100%;max-width:720px;margin:0 auto}
+      /* enotno vedenje kot Ponudba (KalkulatorApp .uvod-oder): prvo vprasanje chata
+         je navpicno na sredini vidnega polja, nato ob rasti pogovora (vsak naslednji
+         korak) naravno odteka navzgor in stran se skrola. 8.25rem = FlowTopBar
+         (3.25rem) + .workspace padding zgoraj/spodaj (3rem+2rem). */
+      .np-stolpec.np-vstop{min-height:calc(100dvh - 8.25rem);display:flex;flex-direction:column;justify-content:center}
+      @media (max-width:980px){.np-stolpec.np-vstop{min-height:calc(100dvh - 13rem)}}
       .np-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);margin:0 0 .3rem}
       .np-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 2rem;color:var(--ink)}
 

@@ -547,7 +547,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
     {/* ── POGLED 1: NASTAVITVE (SAMO vstop za novo pogodbo — pregled/arhiv
         shranjenih pogodb je preseljen v Arhiv, ArhivWorkspace) ── */}
-    {pogled === 'nastavitve' && <div className="pg-stolpec">
+    {pogled === 'nastavitve' && <div className="pg-stolpec pg-vstop">
       {/* naslov strani samo tu — ozek sredinski stolpec + kicker/h1 (kot retainer rw-kicker/rw-h1),
           NE vec full-width topbar; vstop je brez bele kartice okoli (kot retainer rw-vsebina) */}
       <p className="pg-kicker">Pogodbe</p>
@@ -829,6 +829,14 @@ export default function ContractWorkspace({ base }: { base: string }) {
       /* sredinski ozek stolpec SAMO za pogled dokumenta/zakljucka (kot retainer);
          landing (vstop + arhiv) ostane cez sirino delovnega prostora */
       .pg-stolpec{width:100%;max-width:700px;margin-left:auto;margin-right:auto}
+      /* enotno vedenje kot Ponudba (KalkulatorApp .uvod-oder): prvo vprasanje/vstopni
+         panel je navpicno na sredini vidnega polja (min-height glede na razpolozljivo
+         visino + justify-content:center), ko se vsebina razsiri (izbira vira ipd.)
+         pa naravno zraste in odteka navzgor + stran se skrola (brez position:fixed/
+         overflow trikov — enaka mehanika kot pri Ponudbi). 8.25rem = FlowTopBar (3.25rem)
+         + .workspace padding zgoraj/spodaj (3rem+2rem). */
+      .pg-stolpec.pg-vstop{min-height:calc(100dvh - 8.25rem);display:flex;flex-direction:column;justify-content:center}
+      @media (max-width:980px){.pg-stolpec.pg-vstop{min-height:calc(100dvh - 13rem)}}
       .pg-nazaj-vrh{margin:0 0 1rem}
 
       /* vstopni kicker+h1 (kot retainer rw-kicker/rw-h1) — naslov strani zdaj v ozkem .pg-stolpec, brez bele kartice */

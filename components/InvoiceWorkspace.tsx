@@ -482,7 +482,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     {/* ── POGLED: PREGLED (VSTOP za nov racun — kot ContractWorkspace vstop) ── */}
     {/* vstop brez bele kartice, v ozkem sredinskem stolpcu (kot retainer rw-vsebina) — naslov strani
         "RAČUNI / Od dogovora do plačila" izrise racuni/page.tsx nad tem workspace-om */}
-    {pogled === 'pregled' && <section className="rc-sek rc-stolpec">
+    {pogled === 'pregled' && <section className="rc-sek rc-stolpec rc-vstop">
       <p className="rc-kicker">Računi</p>
       <h1 className="rc-h1">Od dogovora do plačila.</h1>
       <div className="rc-chat">
@@ -688,6 +688,12 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       @keyframes rcStran{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
       @media (prefers-reduced-motion:reduce){.rc .rc-sek.rc-stran{animation:none}}
       .rc .rc-stolpec{width:100%;max-width:700px;margin-left:auto;margin-right:auto}
+      /* enotno vedenje kot Ponudba (KalkulatorApp .uvod-oder): prvo vprasanje/vstopni
+         panel navpicno na sredini vidnega polja, nato ob rasti vsebine (izbira vira ipd.)
+         naravno odteka navzgor in stran se skrola. 8.25rem = FlowTopBar (3.25rem) +
+         .workspace padding zgoraj/spodaj (3rem+2rem). */
+      .rc .rc-stolpec.rc-vstop{min-height:calc(100dvh - 8.25rem);display:flex;flex-direction:column;justify-content:center}
+      @media (max-width:980px){.rc .rc-stolpec.rc-vstop{min-height:calc(100dvh - 13rem)}}
       /* naslov v ozkem stolpcu (kot retainer rw-kicker/rw-h1) */
       .rc .rc-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);margin:0 0 .3rem}
       .rc .rc-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 1.4rem;color:var(--ink)}
