@@ -343,7 +343,7 @@ select.pw-chat-polje{cursor:pointer}
 .pw-pipeline-stolpec{flex:0 0 272px;width:272px;min-width:260px;max-width:300px;display:flex;flex-direction:column;gap:.7rem}
 .pw-pipeline-stolpec.pw-pipeline-izgubljeno{opacity:.68}
 .pw-pipeline-glava{display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;padding:.1rem .25rem}
-.pw-pipeline-glava strong{font:600 .92rem var(--font-serif),Georgia,serif;color:var(--ink);white-space:nowrap}
+.pw-pipeline-glava strong{font:700 .72rem var(--font-sans),system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);white-space:nowrap}
 .pw-pipeline-info{color:var(--muted);font-size:.66rem;font-weight:600;white-space:nowrap}
 .pw-pipeline-karte{display:flex;flex-direction:column;gap:.65rem;min-height:2.6rem;padding:.2rem;border-radius:18px;transition:background-color .16s}
 .pw-pipeline-karte.pw-pipeline-nad{background-color:oklch(95% .03 295 / .55)}
