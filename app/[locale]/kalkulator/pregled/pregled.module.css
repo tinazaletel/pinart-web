@@ -2061,6 +2061,13 @@
 .userMenuPaket b { font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: color-mix(in oklch, var(--ink) 55%, transparent); }
 .userMenuPaket b[data-pro='true'] { color: oklch(48% .18 350); }
 
+/* Kompaktna kartica "Tvoj paket" na strani Račun in ekipa: samo trenutni paket
+   + bližnjica na cenik, ne cel PaketiSeznam. */
+.paketMini { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.6rem; padding: 1.1rem 1.4rem; border: 1px solid color-mix(in oklch, var(--ink) 10%, transparent); border-radius: 1.2rem; background: oklch(98% .01 87); }
+.paketMiniIme { display: block; margin-top: .2rem; font-family: var(--font-serif), Georgia, serif; font-size: 1.5rem; font-weight: 500; line-height: 1; }
+.paketMiniIme[data-pro='true'] { color: oklch(48% .18 350); }
+.paketMiniLink { font-size: .8rem; font-weight: 700; white-space: nowrap; }
+
 /* ── Paket in naročnina ───────────────────────────────────────────────── */
 .paketiMreza { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; align-items: start; }
 .paketKartica {
