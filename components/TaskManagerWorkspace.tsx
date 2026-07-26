@@ -359,6 +359,11 @@ export default function TaskManagerWorkspace() {
   const [novRok, setNovRok] = useState('');
   const [novDodeljeno, setNovDodeljeno] = useState('');
   const [novaOcena, setNovaOcena] = useState('');
+  /* oznake, izbrane ze pri ustvarjanju naloge (predlagane cipe + prosto besedilo) */
+  const [noveOznake, setNoveOznake] = useState<string[]>([]);
+  const [novaOznakaVnos, setNovaOznakaVnos] = useState('');
+  const preklopiNovoOznako = (o: string) => setNoveOznake((prej) => prej.includes(o) ? prej.filter((x) => x !== o) : [...prej, o]);
+  const dodajNovoOznakoProsto = () => { const t = novaOznakaVnos.trim(); if (t && !noveOznake.includes(t)) setNoveOznake((prej) => [...prej, t]); setNovaOznakaVnos(''); };
   const [aktivniStolpec, setAktivniStolpec] = useState<NalogaStolpec>('todo');
   const [prikaziFormo, setPrikaziFormo] = useState(false);
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
@@ -488,6 +493,7 @@ export default function TaskManagerWorkspace() {
       dodeljenoOsebaId: izbraniSodelavec?.id,
       dodeljenoOsebaIme: izbraniSodelavec?.ime,
       ocenjeniCasUre: novaOcena.trim() ? parseFloat(novaOcena) : undefined,
+      oznake: noveOznake.length ? [...noveOznake] : undefined,
       stolpec: aktivniStolpec,
       created: new Date().toISOString(),
     };
@@ -498,7 +504,7 @@ export default function TaskManagerWorkspace() {
       console.log(`[E-mail Poslan] Naloga "${nova.naslov}" dodeljena ${izbraniSodelavec.ime} (${izbraniSodelavec.email})`);
     }
     setZgodovina(preberiZgodovino());
-    setNovNaslov(''); setNovOpis(''); setNovRok(''); setNovDodeljeno(''); setNovDodeljenoId(''); setNovaOcena(''); setPrikaziFormo(false);
+    setNovNaslov(''); setNovOpis(''); setNovRok(''); setNovDodeljeno(''); setNovDodeljenoId(''); setNovaOcena(''); setNoveOznake([]); setNovaOznakaVnos(''); setPrikaziFormo(false);
   };
 
   /* naknadno dodeljevanje sodelavca na OBSTOJEČO nalogo (spustni meni na kartici) + zapis v zgodovino */
@@ -1060,6 +1066,20 @@ export default function TaskManagerWorkspace() {
           <div className="tm-forma-glava"><h2>Nova naloga</h2><button type="button" className="tm-x" onClick={() => setPrikaziFormo(false)} aria-label="Zapri">×</button></div>
           <label className="tm-polje"><span>Naslov</span><input value={novNaslov} onChange={(e) => setNovNaslov(e.target.value)} placeholder="Npr. Pripravi poročilo za Rokus …" autoFocus /></label>
           <label className="tm-polje"><span>Opis</span><textarea value={novOpis} onChange={(e) => setNovOpis(e.target.value)} placeholder="Podrobnosti naloge …" rows={3} /></label>
+          <div className="tm-polje"><span>Oznake</span>
+            <div className="tm-nova-oznake">
+              {PREDLAGANE_OZNAKE.map((o) => (
+                <button type="button" key={o} className={`tm-oznaka-cip${noveOznake.includes(o) ? ' tm-oznaka-cip-on' : ''}`} onClick={() => preklopiNovoOznako(o)}>{noveOznake.includes(o) ? o : `+ ${o}`}</button>
+              ))}
+              {noveOznake.filter((o) => !PREDLAGANE_OZNAKE.includes(o)).map((o) => (
+                <button type="button" key={o} className="tm-oznaka-cip tm-oznaka-cip-on" onClick={() => preklopiNovoOznako(o)} aria-label={`Odstrani oznako ${o}`}>{o} ×</button>
+              ))}
+            </div>
+            <div className="tm-nova-oznake-vnos">
+              <input value={novaOznakaVnos} onChange={(e) => setNovaOznakaVnos(e.target.value)} placeholder="Nova oznaka (prosto besedilo) …" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); dodajNovoOznakoProsto(); } }} />
+              <button type="button" className="tm-zase" onClick={dodajNovoOznakoProsto} disabled={!novaOznakaVnos.trim()}>+ Dodaj</button>
+            </div>
+          </div>
           <label className="tm-polje"><span>Dodeljeno</span>
             <div className="tm-dodeljeno-vrsta">
               <input value={novDodeljeno} onChange={(e) => setNovDodeljeno(e.target.value)} placeholder="Kdo dela nalogo …" />
@@ -1796,6 +1816,9 @@ export default function TaskManagerWorkspace() {
         .tm-opis-avtor-ime strong{font-weight:650;color:var(--ink)}
         .tm-oseba-krog-sm{width:1.15rem;height:1.15rem;font-size:.5rem;flex:none}
         .tm-komentar-cas{margin-left:auto}
+        .tm-nova-oznake{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.35rem}
+        .tm-nova-oznake-vnos{display:flex;gap:.4rem;margin-top:.45rem}
+        .tm-nova-oznake-vnos input{flex:1}
         .tm-rok{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .5rem;border-radius:999px;background:oklch(95% .01 87);color:var(--muted);font-size:.66rem;font-weight:700}
         .tm-rok-zapadlo{background:oklch(93% .06 30);color:oklch(48% .16 30)}
         .tm-kartica-noga{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-top:.55rem}
