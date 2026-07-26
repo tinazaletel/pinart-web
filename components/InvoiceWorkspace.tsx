@@ -13,6 +13,7 @@ import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, type FlowInvoiceItem, type FlowInvoiceSignature } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo } from '@/lib/dokVidez';
+import { predlagajDdv } from '@/lib/ddvSvet';
 
 const K_NAST = 'pinart-kalkulator-v2';
 
@@ -21,7 +22,7 @@ type Offer = { id: string; title: string; client: string; number?: string; scope
 /* vrstica obrazca — vnosi so nizi (tudi decimalke z vejico), parsamo ob izracunu */
 type Vrstica = { opis: string; kolicina: string; cena: string; popust: string; ddv: string };
 
-const DDV_STOPNJE = ['22', '9.5', '0'];
+const DDV_STOPNJE = ['22', '9.5', '5', '0'];
 const PRIVZETI_ROK_DNI = 15;
 
 const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFractionDigits: 2 })} €`;
@@ -546,6 +547,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
             <label>Cena brez DDV<input required={i === 0} min="0" step="0.01" type="number" inputMode="decimal" placeholder="0,00" value={v.cena} onChange={event => popraviVrstico(i, 'cena', event.target.value)} /></label>
             <label>Popust %<input min="0" max="100" step="0.5" type="number" inputMode="decimal" value={v.popust} onChange={event => popraviVrstico(i, 'popust', event.target.value)} placeholder="0" /></label>
             {ddvZavezanec && <label>DDV<select value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)}>{DDV_STOPNJE.map(s => <option key={s} value={s}>{s.replace('.', ',')} %</option>)}</select></label>}
+            {ddvZavezanec && (() => { const p = predlagajDdv(v.opis, v.ddv); return p ? <button type="button" className="rc-ddv-namig" title={`${p.razlog} (predlog, ne davčni nasvet)`} onClick={() => popraviVrstico(i, 'ddv', p.stopnja)}>💡 {p.stopnja.replace('.', ',')} %?</button> : null; })()}
             <span className="rc-znesek"><em>Znesek</em><b>{eur2(vrsticaZnesek(izracun.postavke[i] || { opis: '', kolicina: 0, cena: 0 }))}</b></span>
             <button type="button" className="rc-x" onClick={() => setVrstice(rows => rows.length > 1 ? rows.filter((_, j) => j !== i) : rows)} aria-label={`Odstrani postavko ${i + 1}`} title="Odstrani postavko" disabled={vrstice.length < 2}>×</button>
           </div>)}
@@ -600,6 +602,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-post-glava{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap}
       .rc .rc-ddv-toggle{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:650;color:var(--ink);cursor:pointer;white-space:nowrap}
       .rc .rc-ddv-toggle input{width:1.05rem;height:1.05rem;accent-color:var(--accent,#6E4FA6);cursor:pointer}
+      .rc .rc-ddv-namig{align-self:center;padding:.25rem .55rem;border:1px solid oklch(80% .09 300);border-radius:999px;background:oklch(96% .03 300);color:oklch(42% .13 300);font:700 .6rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
+      .rc .rc-ddv-namig:hover{background:oklch(42% .13 300);color:#fff;border-color:transparent}
       .rc .rc-poslji{padding:.7rem 1.1rem;border:1px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
       .rc .rc-poslji:hover{background:var(--ink);color:var(--paper)}
       .rc .rc-post-gumbi{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
