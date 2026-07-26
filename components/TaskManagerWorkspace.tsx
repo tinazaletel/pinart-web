@@ -804,6 +804,7 @@ export default function TaskManagerWorkspace() {
                   const odstotekSurovi = ocena ? (porabljene / 60 / ocena) * 100 : 0;
                   const prekoracitev = !!ocena && odstotekSurovi > 100;
                   const odstotek = Math.min(100, odstotekSurovi);
+                  const dodeljenoIme = naloga.dodeljenoOsebaIme || naloga.dodeljenoOseba || '';
                   return (
                     <article key={naloga.id} className={`tm-kartica${naloga.isTimerRunning ? ' tm-kartica-tece' : ''}`} draggable={!samoOgled} onDragStart={(e) => handleDragStart(e, naloga.id)}>
                       <div className="tm-kartica-vrh">
@@ -853,12 +854,7 @@ export default function TaskManagerWorkspace() {
                           <option value="">Prioriteta —</option>
                           {PRIORITETE.map((p) => <option key={p.id} value={p.id}>{p.naziv}</option>)}
                         </select>
-                        {naloga.dodeljenoOseba
-                          ? <span className="tm-oseba" title={`Dodeljeno: ${naloga.dodeljenoOseba}`}><span className="tm-oseba-krog" aria-hidden>{naloga.dodeljenoOseba.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>{naloga.dodeljenoOseba}</span>
-                          : <select className="tm-dodeli" value={naloga.dodeljenoOsebaId || ''} onChange={(e) => dodeliNalogi(naloga.id, e.target.value)} disabled={samoOgled} aria-label="Dodeli sodelavcu" title={samoOgled ? 'Ni na voljo v predogledu (demo)' : 'Dodeli ali zamenjaj sodelavca'}>
-                              <option value="">＋ dodeli</option>
-                              {sodelavci.filter((so) => so.aktiven).map((so) => <option key={so.id} value={so.id}>{so.ime}</option>)}
-                            </select>}
+                        {dodeljenoIme && <span className="tm-oseba-krog" title={`Dodeljeno: ${dodeljenoIme}`} aria-label={`Dodeljeno: ${dodeljenoIme}`}>{dodeljenoIme.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>}
                       </div>
                       <div className="tm-cas">
                         <div className="tm-cas-vrsta">
@@ -1164,6 +1160,12 @@ export default function TaskManagerWorkspace() {
               <button type="button" className="tm-x" onClick={() => setOdprtaNalogaId(null)} aria-label="Zapri">×</button>
             </div>
             {odprtaNaloga.opis && <p className="tm-kartica-opis">{odprtaNaloga.opis}</p>}
+            <label className="tm-polje"><span>Dodeli</span>
+              <select value={odprtaNaloga.dodeljenoOsebaId || ''} onChange={(e) => dodeliNalogi(odprtaNaloga.id, e.target.value)} disabled={samoOgled}>
+                <option value="">— nedodeljeno —</option>
+                {sodelavci.filter((so) => so.aktiven).map((so) => <option key={so.id} value={so.id}>{so.ime}</option>)}
+              </select>
+            </label>
             <label className="tm-polje"><span>Stranka</span>
               <select value={odprtaNaloga.clientId || ''} onChange={(e) => dodeliStranko(odprtaNaloga.id, e.target.value)} disabled={samoOgled}>
                 <option value="">— brez —</option>
