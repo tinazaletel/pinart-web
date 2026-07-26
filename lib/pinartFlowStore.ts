@@ -55,6 +55,11 @@ export type FlowInvoice = {
   /* neobvezno: predracun (poziv k placilu vnaprej) namesto pravega racuna —
      stari zapisi ga nimajo -> false/undefined -> delujejo kot doslej (racun) */
   predracun?: boolean;
+  /* neobvezno: AVANS (delni znesek) — dokument zaracuna samo delez celote.
+     stari zapisi ga nimajo -> undefined pomeni 100 % (cel znesek), delujejo kot doslej */
+  avansPct?: number;
+  /* poln znesek dokumenta (za izracun preostanka / kasnejso pretvorbo v koncni racun) */
+  polnaVrednost?: number;
 };
 
 export type FlowExpense = {
