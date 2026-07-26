@@ -51,6 +51,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
      nastavitve: vir + izbirnik + arhiv; dokument: SAMO oblikovan dokument; zakljucek: prenos + posiljanje. */
   const [pogled, setPogled] = useState<'nastavitve' | 'dokument' | 'zakljucek'>('nastavitve');
   const [vir, setVir] = useState<'ponudba' | 'rocno' | 'stranka'>('ponudba');
+  /* vrsta dokumenta: navadna pogodba o sodelovanju ali NDA (sporazum o varovanju zaupnih podatkov).
+     Privzeto 'sodelovanje' = obstojece obnasanje nespremenjeno. */
+  const [vrstaPog, setVrstaPog] = useState<'sodelovanje' | 'nda'>('sodelovanje');
   const [offerId, setOfferId] = useState('');
   const [datum, setDatum] = useState(() => new Date().toISOString().slice(0, 10));
   const [rocniNarocnik, setRocniNarocnik] = useState('');
@@ -184,11 +187,37 @@ export default function ContractWorkspace({ base }: { base: string }) {
       <div class="sig"><div><span>Naročnik</span><span class="lin"></span>${esc(nar !== '[Naročnik]' ? nar : '')}</div><div><span>Izvajalec</span><span class="lin"></span>${esc(ponudnik.ime.trim() || '')}</div></div>`;
   };
 
+  /* NDA — standarden slovenski (vzajemni) sporazum o varovanju zaupnih podatkov.
+     ISTO ogrodje razredov kot pogodbaHtml (kick/h1/meta/parties/pog-clen/sig), da ga
+     urejevalnik in PDF prikazeta enako. */
+  const ndaHtml = () => {
+    const nar = narocnikIme() || '[Naročnik]';
+    const izv = [ponudnik.ime.trim() || '[Izvajalec]', ponudnik.naslov.trim(), ponudnik.davcna.trim() && ('davčna št. ' + ponudnik.davcna.trim()), ponudnik.trr.trim() && ('TRR ' + ponudnik.trr.trim())].filter(Boolean).join(', ');
+    const d = datum ? new Date(datum + 'T00:00:00') : new Date();
+    return `
+      <div class="kick">Sporazum o varovanju zaupnih podatkov</div>
+      <h1>Sporazum o varovanju zaupnih podatkov (NDA)</h1>
+      <p class="meta">Datum: ${datStr(d)}${nar !== '[Naročnik]' ? ' · z: ' + esc(nar) : ''}</p>
+      <div class="parties" style="margin-top:14px"><p>ki ga skleneta</p><p><b>Naročnik:</b> ${esc(nar)}</p><p>in</p><p><b>Izvajalec:</b> ${esc(izv)}</p><p>(v nadaljevanju: pogodbeni stranki) kot sledi:</p></div>
+      <div class="pog-clen"><h2>1. člen — Predmet sporazuma</h2><p>Pogodbeni stranki si pri vzpostavljanju in izvajanju medsebojnega poslovnega sodelovanja izmenjujeta zaupne podatke ter s tem sporazumom urejata njihovo varovanje. Sporazum je vzajemen in v enaki meri zavezuje vsako stranko kot razkrivatelja in kot prejemnika zaupnih podatkov.</p></div>
+      <div class="pog-clen"><h2>2. člen — Zaupni podatki</h2><p>Za zaupne se štejejo vsi poslovni, tehnični, finančni, organizacijski in osebni podatki, gradiva, dokumentacija, know-how ter druge informacije, ne glede na obliko (pisno, ustno, elektronsko ali kako drugače), ki jih ena stranka posreduje drugi ali do katerih ta pri sodelovanju kako drugače dostopa. Za zaupne se štejejo tudi ustno posredovani podatki, ki so ob razkritju označeni ali po naravi razumljeni kot zaupni.</p></div>
+      <div class="pog-clen"><h2>3. člen — Obveznosti prejemnika</h2><p>Prejemnik zaupne podatke varuje z enako skrbnostjo kot lastne zaupne podatke, jih brez predhodnega pisnega soglasja razkrivatelja ne razkrije tretjim osebam ter jih uporablja izključno za namen medsebojnega sodelovanja. Dostop do zaupnih podatkov omogoči le tistim sodelavcem oziroma podizvajalcem, ki jih nujno potrebujejo za izvedbo sodelovanja in so zavezani k enaki stopnji zaupnosti.</p></div>
+      <div class="pog-clen"><h2>4. člen — Izjeme</h2><p>Obveznost varovanja ne velja za podatke, ki so postali javno znani brez kršitve tega sporazuma, ki jih je prejemnik dokazljivo neodvisno pridobil ali razvil brez uporabe zaupnih podatkov, ali za katere je razkritje zahtevano z zakonom oziroma z odločbo pristojnega organa. V slednjem primeru prejemnik o zahtevanem razkritju, kolikor je to dopustno, predhodno obvesti drugo stranko.</p></div>
+      <div class="pog-clen"><h2>5. člen — Trajanje</h2><p>Sporazum velja od dneva podpisa obeh strank. Obveznost varovanja zaupnih podatkov traja ves čas medsebojnega sodelovanja in še 3 (tri) leta po njegovem prenehanju, za osebne in z zakonom posebej varovane podatke pa toliko časa, kolikor to zahtevajo veljavni predpisi.</p></div>
+      <div class="pog-clen"><h2>6. člen — Odgovornost</h2><p>Stranka, ki krši obveznosti iz tega sporazuma, drugi stranki odškodninsko odgovarja za nastalo škodo po splošnih pravilih obligacijskega prava. Stranki se lahko za primer kršitve dogovorita tudi pogodbeno kazen, ki ne izključuje uveljavljanja odškodnine v presežnem znesku.</p></div>
+      <div class="pog-clen"><h2>7. člen — Končne določbe</h2><p>Spremembe in dopolnitve tega sporazuma so veljavne le v pisni obliki. Morebitne spore bosta stranki reševali sporazumno, sicer je pristojno stvarno pristojno sodišče v kraju izvajalca. Sporazum je sestavljen v dveh enakih izvodih, po enem za vsako stranko, oziroma je podpisan elektronsko, in začne veljati z dnem podpisa obeh pogodbenih strank.</p></div>
+      <p style="margin-top:12px">Kraj in datum: ____________________</p>
+      <div class="sig"><div><span>Naročnik</span><span class="lin"></span>${esc(nar !== '[Naročnik]' ? nar : '')}</div><div><span>Izvajalec</span><span class="lin"></span>${esc(ponudnik.ime.trim() || '')}</div></div>`;
+  };
+
+  /* aktivno telo glede na izbrano vrsto dokumenta — vse spodnje funkcije gradijo telo skoznjo */
+  const aktivnoTelo = () => (vrstaPog === 'nda' ? ndaHtml() : pogodbaHtml());
+
   /* ── urejevalnik telesa (kopija retainerjevega vzorca) ── */
   /* callback-ref: urejevalnik se ustvari prazen -> napolnimo ga (le ce je prazen, da med tipkanjem ne resetiramo kurzorja) */
   const napolniEditor = (el: HTMLDivElement | null) => {
     editorRef.current = el;
-    if (el && !el.innerHTML.trim()) el.innerHTML = teloHtml.trim() ? teloHtml : pogodbaHtml();
+    if (el && !el.innerHTML.trim()) el.innerHTML = teloHtml.trim() ? teloHtml : aktivnoTelo();
   };
   const sinhronizirajEditor = () => {
     const html = editorRef.current?.innerHTML || '';
@@ -206,8 +235,18 @@ export default function ContractWorkspace({ base }: { base: string }) {
   };
   const velikost = (smer: number) => { const nv = Math.min(7, Math.max(1, velikostBesedila + smer)); setVelikostBesedila(nv); oblikuj('fontSize', String(nv)); };
   const uporabiPisavo = (font: string) => oblikuj('fontName', font);
-  const ponastaviTelo = () => { setRocnoTelo(false); const html = pogodbaHtml(); setTeloHtml(html); if (editorRef.current) editorRef.current.innerHTML = html; };
-  const izvozniTelo = () => { const e = editorRef.current?.innerHTML?.trim(); if (e) return e; if (teloHtml.trim()) return teloHtml; return pogodbaHtml(); };
+  const ponastaviTelo = () => { setRocnoTelo(false); const html = aktivnoTelo(); setTeloHtml(html); if (editorRef.current) editorRef.current.innerHTML = html; };
+  const izvozniTelo = () => { const e = editorRef.current?.innerHTML?.trim(); if (e) return e; if (teloHtml.trim()) return teloHtml; return aktivnoTelo(); };
+  /* menjava vrste dokumenta: kot ponastaviTelo — sveze telo (pogodba/NDA) v urejevalnik,
+     da preklop takoj OSVEZI prikaz (tudi ce je bilo prej rocno urejeno). */
+  const menjajVrsto = (v: 'sodelovanje' | 'nda') => {
+    if (v === vrstaPog) return;
+    setVrstaPog(v);
+    setRocnoTelo(false);
+    const html = v === 'nda' ? ndaHtml() : pogodbaHtml();
+    setTeloHtml(html);
+    if (editorRef.current) editorRef.current.innerHTML = html;
+  };
 
   /* ── podpis: canvas za risanje (prst/miska) ali nalozena slika — KOPIJA retainerja ── */
   const pripraviPlatno = (c: HTMLCanvasElement | null) => {
@@ -284,10 +323,11 @@ export default function ContractWorkspace({ base }: { base: string }) {
     setNapaka('');
     const html = doc(izvozniTelo());
     const slug = (narocnikIme() || 'pinart').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    const ime = 'pogodba-' + (slug || 'pinart');
+    const nazivDok = vrstaPog === 'nda' ? 'Sporazum o varovanju zaupnih podatkov (NDA)' : 'Pogodba o poslovnem sodelovanju';
+    const ime = (vrstaPog === 'nda' ? 'nda-' : 'pogodba-') + (slug || 'pinart');
     setPdfNalaganje(true);
     try {
-      const res = await fetch('/api/ponudba-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html, ime, footer: [ponudnik.ime.trim(), 'Pogodba o poslovnem sodelovanju'].filter(Boolean).join(' · ') }) });
+      const res = await fetch('/api/ponudba-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html, ime, footer: [ponudnik.ime.trim(), nazivDok].filter(Boolean).join(' · ') }) });
       if (!res.ok) throw new Error('pdf');
       const blob = await res.blob();
       if (!blob.size) throw new Error('prazen');
@@ -333,11 +373,11 @@ export default function ContractWorkspace({ base }: { base: string }) {
   /* ob spremembi vhodov osvezi telo urejevalnika — LE ce ni rocno urejeno (kot retainer) */
   useEffect(() => {
     if (rocnoTelo) return;
-    const html = pogodbaHtml();
+    const html = aktivnoTelo();
     setTeloHtml(html);
     if (editorRef.current) editorRef.current.innerHTML = html;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vir, offerId, offers, datum, rocniNarocnik, rocniObseg, ponudnik]);
+  }, [vir, offerId, offers, datum, rocniNarocnik, rocniObseg, ponudnik, vrstaPog]);
 
   /* namig "oznaci besedilo" izgine sam */
   useEffect(() => {
@@ -362,7 +402,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
   /* "Pripravi pogodbo": sveze telo iz predloge in preklop na stran dokumenta */
   const pripraviPogodbo = () => {
     setRocnoTelo(false);
-    const html = pogodbaHtml();
+    const html = aktivnoTelo();
     setTeloHtml(html);
     if (editorRef.current) editorRef.current.innerHTML = html;
     setShranjenaId('');
@@ -373,6 +413,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const novaPogodba = () => {
     setOfferId(''); setRocniNarocnik(''); setRocniObseg(''); setNarEmail('');
     setTeloHtml(''); setRocnoTelo(false); setShranjenaId(''); setNapaka('');
+    setVrstaPog('sodelovanje');
     setDatum(new Date().toISOString().slice(0, 10));
     setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot('');
     setPogled('nastavitve');
@@ -400,7 +441,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     }
     const zapis: FlowContract = {
       id,
-      title: `Pogodba · ${vir === 'ponudba' && selectedOffer ? selectedOffer.title : (rocniNarocnik.trim() || 'brez naslova')}`,
+      title: `${vrstaPog === 'nda' ? 'NDA' : 'Pogodba'} · ${vir === 'ponudba' && selectedOffer ? selectedOffer.title : (rocniNarocnik.trim() || 'brez naslova')}`,
       client: narocnikIme(),
       date: datum,
       status: obstojeca?.status || 'draft',
@@ -515,6 +556,11 @@ export default function ContractWorkspace({ base }: { base: string }) {
         <span className="pg-mehur"><b>Iz česa nastane pogodba?</b><small>Izberi vir spodaj — iz ponudbe, brez nje ali naložena od stranke.</small></span>
       </div>
       <section className="pg-sek pg-vstop-panel">
+        {/* vrsta dokumenta: navadna pogodba o sodelovanju ali NDA (velja za ustvarjeno telo) */}
+        <div className="pg-vrstapog" role="group" aria-label="Vrsta dokumenta">
+          <button type="button" aria-label="Pogodba o sodelovanju" aria-pressed={vrstaPog === 'sodelovanje'} className={vrstaPog === 'sodelovanje' ? 'on' : ''} onClick={() => menjajVrsto('sodelovanje')}>Pogodba o sodelovanju</button>
+          <button type="button" aria-label="NDA — sporazum o varovanju zaupnih podatkov" aria-pressed={vrstaPog === 'nda'} className={vrstaPog === 'nda' ? 'on' : ''} onClick={() => menjajVrsto('nda')}>NDA</button>
+        </div>
         <div className="pg-segpills" role="group" aria-label="Vir pogodbe">
           <button type="button" aria-label="Iz ponudbe" className={vir === 'ponudba' ? 'on' : ''} onClick={() => { setVir('ponudba'); setRocnoTelo(false); }}>Iz ponudbe</button>
           <button type="button" aria-label="Brez ponudbe" className={vir === 'rocno' ? 'on' : ''} onClick={() => { setVir('rocno'); setRocnoTelo(false); }}>Brez ponudbe</button>
@@ -724,7 +770,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
     {/* ── POGLED 3: ZAKLJUCEK (prenos + posiljanje + shranjevanje) ── */}
     {pogled === 'zakljucek' && <section className="pg-sek pg-stran pg-stolpec pg-zakljucek">
-      <p className={styles.eyebrow}>POGODBA{vir === 'ponudba' && selectedOffer?.number ? ` · PONUDBA ŠT. ${selectedOffer.number}` : ''}</p>
+      <p className={styles.eyebrow}>{vrstaPog === 'nda' ? 'NDA' : 'POGODBA'}{vir === 'ponudba' && selectedOffer?.number ? ` · PONUDBA ŠT. ${selectedOffer.number}` : ''}</p>
       <h2 className="pg-naslov">Zaključek.</h2>
       <p className="pg-uvod">Prenesi pogodbo{narocnikIme() ? ' za ' + narocnikIme() : ''}, jo shrani ali pošlji naročniku.</p>
       <p className="pg-disc">⚖️ Pripravljeno iz vzorčne predloge kot pripomoček — <b>ni pravni nasvet</b>. Pred podpisom priporočamo pregled pri odvetniku in prilagoditev konkretnemu poslu.</p>
@@ -807,6 +853,12 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-segpills{display:inline-flex;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:999px;padding:.25rem;gap:.15rem;margin:0 0 1.1rem}
       .pg-segpills button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem .9rem;border-radius:999px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:.35rem;transition:background .18s,color .18s}
       .pg-segpills button.on{background:var(--ink);color:var(--paper)}
+
+      /* preklop vrste dokumenta (Pogodba o sodelovanju | NDA) — dve pilули, akcent za aktivno,
+         da se locita od izbire vira (ta uporablja ink) */
+      .pg-vrstapog{display:inline-flex;flex-wrap:wrap;background:rgba(255,255,255,.55);border:1px solid rgba(178,84,118,.28);border-radius:999px;padding:.25rem;gap:.15rem;margin:0 0 1rem}
+      .pg-vrstapog button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem 1rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
+      .pg-vrstapog button.on{background:var(--accent,#B25476);color:#fff}
 
       .pg-polja{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem 1.5rem;margin:0 0 1.1rem;min-width:0}
       .pg-polja>*{min-width:0}
