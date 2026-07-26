@@ -129,6 +129,10 @@ export default function ArhivWorkspace({ base }: { base: string }) {
      onDetajl prop spodaj. Detajl ni vezan na zavihek, zato se ob morebitni
      menjavi zavihka počisti prek onDetajl(false) v ProjectsWorkspace samem. */
   const [projektDetajlOdprt, setProjektDetajlOdprt] = useState(false);
+  /* "+ Nov projekt" — gumb zivi tu (na orodni vrstici, ob "+ Nova ponudba"),
+     panel/obrazec pa v ProjectsWorkspace (glej pw-nov-panel); krmilimo od tu,
+     da je gumb del ISTE vrstice kot "+ Nova ponudba". */
+  const [novProjektOdprt, setNovProjektOdprt] = useState(false);
 
   /* iskanje + filtri (skupno stanje; ob menjavi zavihka jih pocistimo, ker so
      razlicni za vsak tip) */
@@ -236,7 +240,10 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       statusVrednost: statusProjekt,
       onStatus: setStatusProjekt,
       statusOpcije: [{ vrednost: 'vse', oznaka: 'Vsi' }, { vrednost: 'aktivni', oznaka: 'Aktivni' }, { vrednost: 'cakajo', oznaka: 'Čakajo' }, { vrednost: 'zakljuceni', oznaka: 'Zaključeni' }],
-      akcija: <Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>+ Nova ponudba</Link>,
+      akcija: <>
+        <Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>+ Nova ponudba</Link>
+        <button type="button" className="af-akcija-gumb" onClick={() => setNovProjektOdprt(true)}>+ Nov projekt</button>
+      </>,
     } : zavihek === 'ponudbe' ? {
       placeholder: 'Poišči ponudbo, stranko ali številko …',
       statusOznaka: 'Status ponudbe',
@@ -325,6 +332,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               onDatumOd={setObdobjeOd}
               onDatumDo={setObdobjeDo}
               onDetajl={setProjektDetajlOdprt}
+              novProjektOdprt={novProjektOdprt}
+              onNovProjektOdprt={setNovProjektOdprt}
             />
           </section>
         )}

@@ -183,7 +183,7 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
       .af-vrstica{position:relative;display:flex;align-items:center;gap:.6rem;min-height:2.75rem;min-width:0}
       /* privzeto (mobilno) = kompaktni ikoni; namizni blok skrit */
       .af-mob{display:contents}
-      .af-mob-akcija{margin-left:auto;display:inline-flex;min-width:0}
+      .af-mob-akcija{margin-left:auto;display:inline-flex;align-items:center;gap:.4rem;min-width:0}
       .af-namizje{display:none}
       /* NAMIZJE: vse vidno v eni vrsti, iskalnik → datum → status → akcija */
       @media (min-width:641px){
@@ -202,7 +202,7 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
         .af-poln input::placeholder{color:color-mix(in oklch,var(--ink,#111) 45%,transparent)}
         /* datum: sprozilec (ikona + slovensko besedilo) + koledar kot popover pod njim */
         .af-datum{position:relative;flex:0 0 auto;min-width:0;display:inline-flex}
-        .af-akcija{margin-left:auto;display:inline-flex;flex:0 0 auto;min-width:0}
+        .af-akcija{margin-left:auto;display:inline-flex;align-items:center;gap:.5rem;flex:0 0 auto;min-width:0}
         /* status dropdown kompakten na namizju (premaga .shell font 16px) */
         .af .af-namizje .af-select{font-size:.85rem !important;padding:.5rem 1.5rem .5rem .1rem !important;background-position:right 0 center !important;background-size:.95rem !important}
       }

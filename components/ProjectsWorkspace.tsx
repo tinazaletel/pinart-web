@@ -9,6 +9,7 @@ import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
 import { loadFlowData, loadProjectLinks, saveOfferAmount, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
+import { naslednjaStevilka, preberiProjekti, shraniProjekt, type Projekt, type ProjektCilj, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
 
 /* datumski filter (samo od–do; prazno ne omejuje) — enako kot arhiv */
 const vObdobju = (dateStr: string, od: string, doD: string): boolean => {
@@ -36,6 +37,15 @@ const projectStatusInfo = (status: FlowOfferStatus): { label: string; tone: Odte
   if (status === 'rejected') return { label: 'Zaključeni', tone: 'success' };
   return { label: 'Osnutek', tone: 'neutral' };
 };
+
+/* PRAVI projekti (lib/projekti, ustvarjeni prek "+ Nov projekt") nimajo ponudbe
+   za sabo — za prikaz v isti tabeli/detajlu dobijo SINTETIČNO FlowOffer (glej
+   gradiVnos spodaj). Status projekta se preslika na status ponudbe po ISTIH
+   treh vedrih, ki jih ze uporablja filter zgoraj (Aktivni/Čakajo/Zaključeni),
+   da sta tabela in filter brez dodatne logike takoj usklajena. Naslov strani
+   (statusLabel) pa uporablja svoj, bolj natancen jezik za prave projekte. */
+const projektDoOfferStatus: Record<ProjektEntitetaStatus, FlowOfferStatus> = { aktiven: 'accepted', pavza: 'sent', koncan: 'rejected' };
+const projektStatusOznaka: Record<ProjektEntitetaStatus, string> = { aktiven: 'Aktiven', pavza: 'V pavzi', koncan: 'Končan' };
 
 /* Kirurški popravek mobilnega odreza po desni (~390–410px). Deluje samo na tej strani,
    ker cilja zgoščena imena razredov iz CSS modula — CSS modula ne spreminjamo (deljen). */
@@ -230,9 +240,39 @@ const pwStyles = `
 .pw-dnevnik-link:hover{transform:translateY(-2px);box-shadow:0 .8rem 2rem oklch(22% .04 300/.14)}
 .pw-znacka-live{background:oklch(90% .06 297);color:oklch(42% .16 297)}
 .pw-znacka{display:inline-flex;align-items:center;width:max-content;margin-top:.7rem;padding:.3rem .6rem;border-radius:999px;background:oklch(90% .02 87);color:var(--muted);font-size:.58rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+/* "00 · CILJI IN ŽELJE" — samostojna kartica NAD .projectNarrative (ne znotraj njegove
+   4-stolpne mreže, ker so barve 02/03/04 vezane na nth-child; vrivanje bi jih premaknilo
+   in podrlo obstoječe gradiente). Isti mehki violet/mint jezik kot .projectAgreement. */
+.pw-cilji{margin:.55rem 0 0;background:linear-gradient(135deg,oklch(97% .03 300),oklch(97% .03 165))}
+.pw-cilji h3{margin:0;font:600 1.15rem var(--font-serif),Georgia,serif}
+.pw-cilji-zelje{position:relative;z-index:1;margin:.6rem 0 0;color:var(--ink);font-size:.8rem;line-height:1.55}
+.pw-cilji-seznam{position:relative;z-index:1;display:flex;flex-direction:column;gap:.4rem;margin:.75rem 0 0;padding:0;list-style:none}
+.pw-cilji-seznam li{display:flex;flex-wrap:wrap;align-items:baseline;gap:.15rem .6rem;padding:.55rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:.7rem;background:oklch(100% 0 0 / .5)}
+.pw-cilji-seznam li b{font-size:.76rem;font-weight:700;color:var(--ink)}
+.pw-cilji-seznam li small{color:var(--muted);font-size:.62rem}
+.pw-cilji-prazno{position:relative;z-index:1;margin:.6rem 0 0;color:var(--muted);font-size:.7rem}
+/* "+ Nov projekt" — onboarding panel (razdelki: Projekt / Želje stranke / Cilji) */
+.pw-nov-panel{width:min(34rem,100vw)}
+.pw-nov-razdelek{display:flex;flex-direction:column;gap:.65rem;margin-top:1.3rem;padding-top:1.1rem;border-top:1px solid var(--line)}
+.pw-nov-razdelek:first-of-type{margin-top:.8rem;padding-top:0;border-top:0}
+.pw-nov-razdelek-oznaka{margin:0;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pw-nov-polje{display:flex;flex-direction:column;gap:.35rem;min-width:0}
+.pw-nov-polje span{font-size:.68rem;font-weight:700;color:var(--muted)}
+.pw-nov-polje input,.pw-nov-polje select,.pw-nov-polje textarea{width:100%;box-sizing:border-box;padding:.6rem .75rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.8rem;color:var(--ink)}
+.pw-nov-polje textarea{resize:vertical;min-height:5rem;font-family:inherit}
+.pw-nov-polje select{cursor:pointer}
+.pw-nov-mreza{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+.pw-nov-cilj{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;align-items:center;gap:.4rem}
+.pw-nov-cilj input{box-sizing:border-box;padding:.55rem .65rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.74rem;color:var(--ink);min-width:0}
+.pw-nov-dodaj-cilj{align-self:start;margin-top:.1rem;padding:.5rem .85rem;border:1px dashed color-mix(in oklch,var(--ink) 28%,transparent);border-radius:.7rem;background:transparent;font:700 .68rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
+.pw-nov-dodaj-cilj:hover{background:oklch(100% 0 0 / .5)}
+.pw-nov-preklici{padding:.55rem .95rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
+.pw-nov-preklici:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 @media (max-width:640px){
 .pw-link-obrazec{grid-template-columns:1fr}
 .pw-kmalu-red{grid-template-columns:1fr}
+.pw-nov-mreza{grid-template-columns:1fr}
+.pw-nov-cilj{grid-template-columns:1fr;gap:.3rem;padding:.6rem;border:1px solid var(--line);border-radius:.7rem}
 }
 `;
 
@@ -258,10 +298,17 @@ type Props = {
      stran — starš takrat skrije svojo glavo (.arh-glava: zavihki + orodna vrstica),
      da je res videti kot svoja stran. */
   onDetajl?: (odprt: boolean) => void;
+  /* "+ Nov projekt" onboarding (glej pw-nov-panel spodaj): ArhivWorkspace ga
+     lahko krmili od zunaj (gumb na orodni vrstici, ob "+ Nova ponudba"), po
+     istem vzorcu kot status/datum* zgoraj — ce ni podano, deluje samostojno. */
+  novProjektOdprt?: boolean;
+  onNovProjektOdprt?: (odprt: boolean) => void;
 };
 
-export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIskanje, status, onStatus, datumOd: datumOdZunaj, datumDo: datumDoZunaj, onDatumOd, onDatumDo, onDetajl }: Props) {
+export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIskanje, status, onStatus, datumOd: datumOdZunaj, datumDo: datumDoZunaj, onDatumOd, onDatumDo, onDetajl, novProjektOdprt: novProjektOdprtZunaj, onNovProjektOdprt }: Props) {
   const [offers, setOffers] = useState<FlowOffer[]>([]); const [invoices, setInvoices] = useState<FlowInvoice[]>([]); const [expenses, setExpenses] = useState<FlowExpense[]>([]); const [contracts, setContracts] = useState<FlowContract[]>([]); const [amounts, setAmounts] = useState<Record<string, number>>({}); const [clients, setClients] = useState<FlowClient[]>([]);
+  /* PRAVI projekti (lib/projekti) — locena shramba od Flow podatkov zgoraj, glej gradiVnos/realProjects spodaj */
+  const [realProjekti, setRealProjekti] = useState<Projekt[]>([]);
   /* Demo/Prazno velja za vse strani — glej lib/predogled.ts */
   const [nacin] = usePredogled();
   const samoOgled = nacin !== 'mine';
@@ -281,8 +328,32 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const setDatumDo = (v: string) => { if (onDatumDo) onDatumDo(v); else setNotranjiDatumDo(v); };
   /* ob nalaganju/menjavi predogleda ostane seznam (tabela) privzeti pogled —
      detajl se odpre le na eksplicit klik (selectProject spodaj) */
-  useEffect(() => { const data = podatkiZaPredogled(nacin, loadFlowData()); const loaded = [...data.offers].sort((a, b) => b.date.localeCompare(a.date)); setOffers(loaded); setSelectedId(''); setInvoices(data.invoices); setExpenses(data.expenses); setContracts(data.contracts); setClients(data.clients); setAmounts(Object.fromEntries(data.offers.map(offer => [offer.id, offer.agreedAmount]))); }, [nacin]);
-  const projects = useMemo(() => offers.map(offer => { const projectInvoices = invoices.filter(item => item.sourceOfferId === offer.id); const projectExpenses = expenses.filter(item => item.sourceOfferId === offer.id); const projectContracts = contracts.filter(item => item.sourceOfferId === offer.id); const billed = projectInvoices.reduce((sum, item) => sum + item.amount, 0); const paid = projectInvoices.filter(item => item.paid).reduce((sum, item) => sum + item.amount, 0); const costs = projectExpenses.reduce((sum, item) => sum + item.amount, 0); const agreed = amounts[offer.id] || 0; return { offer, invoices: projectInvoices, expenses: projectExpenses, contracts: projectContracts, billed, paid, costs, agreed, unbilled: agreed ? agreed - billed : 0, profit: paid - costs }; }), [offers, invoices, expenses, contracts, amounts]);
+  useEffect(() => { const data = podatkiZaPredogled(nacin, loadFlowData()); const loaded = [...data.offers].sort((a, b) => b.date.localeCompare(a.date)); setOffers(loaded); setSelectedId(''); setInvoices(data.invoices); setExpenses(data.expenses); setContracts(data.contracts); setClients(data.clients); setAmounts(Object.fromEntries(data.offers.map(offer => [offer.id, offer.agreedAmount]))); setRealProjekti(nacin === 'mine' ? preberiProjekti() : []); }, [nacin]);
+  /* gradnja ene vrstice tabele/detajla — enaka za projekte, izpeljane iz ponudbe,
+     IN za prave projekte (real, glej lib/projekti); slednji dobijo sintetično
+     FlowOffer samo za prikaz (title/client/date/status/scope), da lahko
+     obstoječa tabela in vozlišče delujeta brez podvajanja logike. */
+  const gradiVnos = (offer: FlowOffer, real?: Projekt) => {
+    const projectInvoices = invoices.filter(item => item.sourceOfferId === offer.id);
+    const projectExpenses = expenses.filter(item => item.sourceOfferId === offer.id);
+    const projectContracts = contracts.filter(item => item.sourceOfferId === offer.id);
+    const billed = projectInvoices.reduce((sum, item) => sum + item.amount, 0);
+    const paid = projectInvoices.filter(item => item.paid).reduce((sum, item) => sum + item.amount, 0);
+    const costs = projectExpenses.reduce((sum, item) => sum + item.amount, 0);
+    const agreed = amounts[offer.id] || 0;
+    return { offer, real, invoices: projectInvoices, expenses: projectExpenses, contracts: projectContracts, billed, paid, costs, agreed, unbilled: agreed ? agreed - billed : 0, profit: paid - costs };
+  };
+  const offerProjects = useMemo(() => offers.map(offer => gradiVnos(offer)), [offers, invoices, expenses, contracts, amounts]);
+  /* PRAVI projekti — zdruzeni s tistimi, izpeljanimi iz ponudb, BREZ podvajanja:
+     ce ze obstaja ponudba z istim naslovom+stranko, ta ponudba ze predstavlja
+     isti projekt v seznamu, zato se pravi zapis takrat ne podvoji. */
+  const realProjects = useMemo(() => {
+    const kljucPonudb = new Set(offers.map(o => `${o.title.trim().toLocaleLowerCase('sl-SI')}::${(o.client || '').trim().toLocaleLowerCase('sl-SI')}`));
+    return realProjekti
+      .filter(p => !kljucPonudb.has(`${p.naslov.trim().toLocaleLowerCase('sl-SI')}::${(p.strankaIme || '').trim().toLocaleLowerCase('sl-SI')}`))
+      .map(p => gradiVnos({ id: `real-${p.id}`, title: p.naslov, client: p.strankaIme || '', date: p.zacetek || p.created, number: p.stevilka, scope: [], status: projektDoOfferStatus[p.status], agreedAmount: 0 }, p));
+  }, [realProjekti, offers, invoices, expenses, contracts, amounts]);
+  const projects = useMemo(() => [...offerProjects, ...realProjects].sort((a, b) => (b.offer.date || '').localeCompare(a.offer.date || '')), [offerProjects, realProjects]);
   const visible = projects.filter(project => { const text = `${project.offer.title} ${project.offer.client} ${project.offer.number || ''}`.toLocaleLowerCase('sl-SI'); const match = text.includes(search.toLocaleLowerCase('sl-SI')); const state = filter === 'vse' || (filter === 'aktivni' ? project.offer.status === 'accepted' : filter === 'cakajo' ? project.offer.status === 'sent' : ['rejected'].includes(project.offer.status)); return match && state && vObdobju(project.offer.date, datumOd, datumDo); });
   /* povzetek nad tabelo (glej pw-metrike zgoraj) — iz trenutno vidnih projektov
      (upostevajo iskanje/filter/datum), da povzetek sledi temu, kar je v tabeli */
@@ -322,6 +393,41 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     projektIzUrljaOdprt.current = true;
     selectProject(id);
   }, [searchParams, projects]);
+
+  /* "+ Nov projekt" — onboarding (glej pw-nov-panel spodaj). novOdprt sledi ISTEMU
+     vzorcu kot status/datum* na vrhu: ce ga krmili starš (ArhivWorkspace, gumb na
+     orodni vrstici ob "+ Nova ponudba"), uporabi to; sicer lastno stanje. */
+  const [notranjiNovOdprt, setNotranjiNovOdprt] = useState(false);
+  const novOdprt = novProjektOdprtZunaj ?? notranjiNovOdprt;
+  const setNovOdprt = (v: boolean) => { if (onNovProjektOdprt) onNovProjektOdprt(v); else setNotranjiNovOdprt(v); };
+  const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektEntitetaStatus, zelje: '', cilji: [] as ProjektCilj[] });
+  const [obrazec, setObrazec] = useState(prazenObrazec());
+  useEffect(() => { if (novOdprt) setObrazec(prazenObrazec()); }, [novOdprt]);
+  const dodajCilj = () => setObrazec(o => ({ ...o, cilji: [...o.cilji, { id: crypto.randomUUID(), besedilo: '', metrika: '', tarca: '' }] }));
+  const odstraniCilj = (id: string) => setObrazec(o => ({ ...o, cilji: o.cilji.filter(c => c.id !== id) }));
+  const posodobiCilj = (id: string, patch: Partial<ProjektCilj>) => setObrazec(o => ({ ...o, cilji: o.cilji.map(c => c.id === id ? { ...c, ...patch } : c) }));
+  const shraniNovProjekt = () => {
+    const naslov = obrazec.naslov.trim();
+    if (!naslov || samoOgled) return;
+    const stranka = clients.find(c => c.id === obrazec.strankaId);
+    const projekt: Projekt = {
+      id: crypto.randomUUID(),
+      stevilka: naslednjaStevilka(realProjekti),
+      naslov,
+      strankaId: stranka?.id,
+      strankaIme: stranka?.name,
+      zelje: obrazec.zelje.trim() || undefined,
+      cilji: obrazec.cilji.filter(c => c.besedilo.trim()).map(c => ({ id: c.id, besedilo: c.besedilo.trim(), metrika: c.metrika?.trim() || undefined, tarca: c.tarca?.trim() || undefined })),
+      zacetek: obrazec.zacetek || undefined,
+      rok: obrazec.rok || undefined,
+      status: obrazec.status,
+      created: new Date().toISOString(),
+    };
+    shraniProjekt(projekt);
+    setRealProjekti(prev => [projekt, ...prev]);
+    setNovOdprt(false);
+    selectProject(`real-${projekt.id}`);
+  };
 
   /* 05 · DOKUMENTACIJA — povezave do zunanjih datotek za TA projekt (localStorage,
      glej lib/pinartFlowStore). V predogledu (demo/prazno/začetek) samo prikaz —
@@ -425,7 +531,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       statusOpcije={[{ vrednost: 'vse', oznaka: 'Vsi' }, { vrednost: 'aktivni', oznaka: 'Aktivni' }, { vrednost: 'cakajo', oznaka: 'Čakajo' }, { vrednost: 'zakljuceni', oznaka: 'Zaključeni' }]}
       aktivnihFiltrov={(filter !== 'vse' ? 1 : 0) + (datumOd || datumDo ? 1 : 0)}
       onPocisti={() => { setFilter('vse'); setDatumOd(''); setDatumDo(''); }}
-      akcija={<Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>+ Nova ponudba</Link>}
+      akcija={<>
+        <Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>+ Nova ponudba</Link>
+        <button type="button" className="af-akcija-gumb" onClick={() => setNovOdprt(true)}>+ Nov projekt</button>
+      </>}
     />}
 
     {!selected ? (
@@ -472,9 +581,26 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     ) : (
       <section ref={storyRef} className={`${styles.projectStory} pw-stran`}>
         <button type="button" className="pw-nazaj" onClick={goBack} aria-label="Nazaj na seznam projektov">← Nazaj</button>
-        <header><div><p className={styles.eyebrow}>PROJEKT · {selected.offer.number || 'BREZ ŠTEVILKE'}</p><h2>{selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><b>{statusLabel[selected.offer.status]}</b></header>
+        <header><div><p className={styles.eyebrow}>PROJEKT · {selected.offer.number || 'BREZ ŠTEVILKE'}</p><h2>{selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><b>{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}</b></header>
         <div className={styles.projectMoney}><label><small>Dogovorjena vrednost</small><span><input type="number" min="0" step="0.01" value={selected.agreed || ''} onChange={event => saveAmount(selected.offer.id, Number(event.target.value))} /> €</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></label><span><small>Zaračunano</small><strong>{money(selected.billed)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></span><span className={selected.unbilled > 0 ? styles.projectNeedsInvoice : ''}><small>Še ni zaračunano</small><strong>{selected.agreed ? money(selected.unbilled) : '—'}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="cost" /></b></span><span><small>Ocenjeni rezultat</small><strong>{money(selected.profit)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></span></div>
-        <div className={styles.projectNarrative}><article className={styles.projectAgreement}><p className={styles.eyebrow}>01 · DOGOVORJENO</p><h3>Kaj je bilo v ponudbi?</h3>{selected.offer.scope.length ? <ul>{selected.offer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul> : <p>Starejša ponudba nima strukturiranega obsega. Odpri jo v kalkulatorju za celotno besedilo.</p>}</article><article><p className={styles.eyebrow}>02 · POGODBE</p><h3>{selected.contracts.length ? `${selected.contracts.length} povezanih` : 'Brez pogodbe'}</h3>{pogodbeSort.slice(0, NAJNOVEJSIH).map(pogodbaVrstica)}{pogodbeSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('pogodbe')}>Prikaži vse ({pogodbeSort.length}) →</button>}<Link href={`${base}/kalkulator/pogodbe`} aria-label="Dodaj pogodbo za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>03 · RAČUNI</p><h3>{money(selected.billed)}</h3>{racuniSort.slice(0, NAJNOVEJSIH).map(racunVrstica)}{racuniSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('racuni')}>Prikaži vse ({racuniSort.length}) →</button>}<Link href={`${base}/kalkulator/racuni`} aria-label="Dodaj račun za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>04 · STROŠKI</p><h3>{money(selected.costs)}</h3>{strosekSort.slice(0, NAJNOVEJSIH).map(strosekVrstica)}{strosekSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('stroski')}>Prikaži vse ({strosekSort.length}) →</button>}<Link href={`${base}/kalkulator/stroski`} aria-label="Dodaj strošek za ta projekt"><Plus size={18} weight="bold" /></Link></article><article className="pw-karta pw-dokumentacija"><p className={styles.eyebrow}>05 · DOKUMENTACIJA</p><h3>Povezave do zunanjih datotek</h3>{links.length ? (<div className="pw-linki">{links.map((link, index) => (<div key={`${link.url}-${index}`} className="pw-link-vrstica"><a href={link.url} target="_blank" rel="noopener noreferrer">{link.oznaka}</a>{!samoOgled && <button type="button" className="pw-link-brisi" onClick={() => removeLink(index)} aria-label={`Izbriši povezavo ${link.oznaka}`}>×</button>}</div>))}</div>) : <p className="pw-link-prazno">Še ni dodanih povezav.</p>}{!samoOgled && dodajOdprt && (<div className="pw-link-obrazec"><input type="text" value={linkOznaka} onChange={event => setLinkOznaka(event.target.value)} placeholder="npr. Figma" aria-label="Oznaka povezave" /><input type="url" value={linkUrl} onChange={event => setLinkUrl(event.target.value)} placeholder="https://…" aria-label="Naslov povezave (Figma, Miro, IDD, mapa Drive …)" /><button type="button" className="pw-link-dodaj" onClick={addLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>+ Dodaj povezavo</button></div>)}{samoOgled && dodajOdprt && <p className="pw-opozorilo">Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.</p>}<button type="button" className="pw-dok-dodaj" onClick={() => setDodajOdprt(open => !open)} aria-label={dodajOdprt ? 'Zapri dodajanje povezave' : 'Dodaj povezavo'}><Plus size={16} weight="bold" /></button></article></div>
+        {selected.real && (
+          <article className="pw-karta pw-cilji">
+            <p className={styles.eyebrow}>00 · CILJI IN ŽELJE</p>
+            <h3>Kaj si stranka želi doseči?</h3>
+            {selected.real.zelje && <p className="pw-cilji-zelje">{selected.real.zelje}</p>}
+            {selected.real.cilji && selected.real.cilji.length > 0 ? (
+              <ul className="pw-cilji-seznam">
+                {selected.real.cilji.map(cilj => (
+                  <li key={cilj.id}>
+                    <b>{cilj.besedilo}</b>
+                    {(cilj.metrika || cilj.tarca) && <small>{[cilj.metrika, cilj.tarca].filter(Boolean).join(' · ')}</small>}
+                  </li>
+                ))}
+              </ul>
+            ) : (!selected.real.zelje && <p className="pw-cilji-prazno">Želje in cilji še niso dodani.</p>)}
+          </article>
+        )}
+        <div className={styles.projectNarrative}><article className={styles.projectAgreement}><p className={styles.eyebrow}>01 · DOGOVORJENO</p><h3>Kaj je bilo v ponudbi?</h3>{selected.offer.scope.length ? <ul>{selected.offer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul> : selected.real ? <p>Ta projekt še nima ponudbe. Pripravi jo v kalkulatorju, ko bo obseg jasen.</p> : <p>Starejša ponudba nima strukturiranega obsega. Odpri jo v kalkulatorju za celotno besedilo.</p>}</article><article><p className={styles.eyebrow}>02 · POGODBE</p><h3>{selected.contracts.length ? `${selected.contracts.length} povezanih` : 'Brez pogodbe'}</h3>{pogodbeSort.slice(0, NAJNOVEJSIH).map(pogodbaVrstica)}{pogodbeSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('pogodbe')}>Prikaži vse ({pogodbeSort.length}) →</button>}<Link href={`${base}/kalkulator/pogodbe`} aria-label="Dodaj pogodbo za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>03 · RAČUNI</p><h3>{money(selected.billed)}</h3>{racuniSort.slice(0, NAJNOVEJSIH).map(racunVrstica)}{racuniSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('racuni')}>Prikaži vse ({racuniSort.length}) →</button>}<Link href={`${base}/kalkulator/racuni`} aria-label="Dodaj račun za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>04 · STROŠKI</p><h3>{money(selected.costs)}</h3>{strosekSort.slice(0, NAJNOVEJSIH).map(strosekVrstica)}{strosekSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('stroski')}>Prikaži vse ({strosekSort.length}) →</button>}<Link href={`${base}/kalkulator/stroski`} aria-label="Dodaj strošek za ta projekt"><Plus size={18} weight="bold" /></Link></article><article className="pw-karta pw-dokumentacija"><p className={styles.eyebrow}>05 · DOKUMENTACIJA</p><h3>Povezave do zunanjih datotek</h3>{links.length ? (<div className="pw-linki">{links.map((link, index) => (<div key={`${link.url}-${index}`} className="pw-link-vrstica"><a href={link.url} target="_blank" rel="noopener noreferrer">{link.oznaka}</a>{!samoOgled && <button type="button" className="pw-link-brisi" onClick={() => removeLink(index)} aria-label={`Izbriši povezavo ${link.oznaka}`}>×</button>}</div>))}</div>) : <p className="pw-link-prazno">Še ni dodanih povezav.</p>}{!samoOgled && dodajOdprt && (<div className="pw-link-obrazec"><input type="text" value={linkOznaka} onChange={event => setLinkOznaka(event.target.value)} placeholder="npr. Figma" aria-label="Oznaka povezave" /><input type="url" value={linkUrl} onChange={event => setLinkUrl(event.target.value)} placeholder="https://…" aria-label="Naslov povezave (Figma, Miro, IDD, mapa Drive …)" /><button type="button" className="pw-link-dodaj" onClick={addLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>+ Dodaj povezavo</button></div>)}{samoOgled && dodajOdprt && <p className="pw-opozorilo">Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.</p>}<button type="button" className="pw-dok-dodaj" onClick={() => setDodajOdprt(open => !open)} aria-label={dodajOdprt ? 'Zapri dodajanje povezave' : 'Dodaj povezavo'}><Plus size={16} weight="bold" /></button></article></div>
 
         <div className="pw-dodatno">
           <div className="pw-kmalu-red">
@@ -625,5 +751,75 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         </div>
       );
     })()}
+
+    {/* "+ Nov projekt" — onboarding v enem bogatem panelu (razdelki: Projekt / Želje
+        stranke / Cilji), isti vzorec slide panela kot zgoraj (pw-vsi-panel/pw-det-panel).
+        Po shranjevanju (shraniNovProjekt) se panel zapre in odpre vozlišče novega projekta. */}
+    {novOdprt && (
+      <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={() => setNovOdprt(false)}>
+        <aside className={`${styles.detailPanel} pw-nov-panel`} role="dialog" aria-modal="true" aria-labelledby="pw-nov-naslov" onMouseDown={e => e.stopPropagation()}>
+          <button type="button" className="pw-vsi-x" onClick={() => setNovOdprt(false)} aria-label="Zapri">✕</button>
+          <p className={styles.eyebrow}>NOV PROJEKT</p>
+          <h2 id="pw-nov-naslov">Začni nov projekt.</h2>
+
+          {samoOgled ? (
+            <p className="pw-opozorilo">Ustvarjanje projektov ni na voljo v predogledu (demo). Prijavi se v svoj račun.</p>
+          ) : (<>
+            <div className="pw-nov-razdelek">
+              <p className="pw-nov-razdelek-oznaka">Projekt</p>
+              <label className="pw-nov-polje">
+                <span>Naslov projekta</span>
+                <input type="text" autoFocus value={obrazec.naslov} onChange={event => setObrazec(o => ({ ...o, naslov: event.target.value }))} placeholder="npr. Prenova celostne podobe" />
+              </label>
+              <label className="pw-nov-polje">
+                <span>Stranka</span>
+                <select value={obrazec.strankaId} onChange={event => setObrazec(o => ({ ...o, strankaId: event.target.value }))}>
+                  <option value="">Brez stranke</option>
+                  {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </label>
+              <div className="pw-nov-mreza">
+                <label className="pw-nov-polje"><span>Začetek</span><input type="date" value={obrazec.zacetek} onChange={event => setObrazec(o => ({ ...o, zacetek: event.target.value }))} /></label>
+                <label className="pw-nov-polje"><span>Predviden rok</span><input type="date" value={obrazec.rok} onChange={event => setObrazec(o => ({ ...o, rok: event.target.value }))} /></label>
+              </div>
+              <label className="pw-nov-polje">
+                <span>Status</span>
+                <select value={obrazec.status} onChange={event => setObrazec(o => ({ ...o, status: event.target.value as ProjektEntitetaStatus }))}>
+                  <option value="aktiven">Aktiven</option>
+                  <option value="pavza">V pavzi</option>
+                  <option value="koncan">Končan</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="pw-nov-razdelek">
+              <p className="pw-nov-razdelek-oznaka">Želje stranke</p>
+              <label className="pw-nov-polje">
+                <span>Kaj si stranka želi?</span>
+                <textarea value={obrazec.zelje} onChange={event => setObrazec(o => ({ ...o, zelje: event.target.value }))} placeholder="Prosto besedilo — brief, pričakovanja, kontekst …" rows={4} />
+              </label>
+            </div>
+
+            <div className="pw-nov-razdelek">
+              <p className="pw-nov-razdelek-oznaka">Cilji</p>
+              {obrazec.cilji.map(cilj => (
+                <div key={cilj.id} className="pw-nov-cilj">
+                  <input type="text" value={cilj.besedilo} onChange={event => posodobiCilj(cilj.id, { besedilo: event.target.value })} placeholder="Cilj, npr. povečati prepoznavnost znamke" aria-label="Cilj" />
+                  <input type="text" value={cilj.metrika || ''} onChange={event => posodobiCilj(cilj.id, { metrika: event.target.value })} placeholder="Metrika (neobvezno)" aria-label="Metrika cilja" />
+                  <input type="text" value={cilj.tarca || ''} onChange={event => posodobiCilj(cilj.id, { tarca: event.target.value })} placeholder="Tarča (neobvezno)" aria-label="Tarča cilja" />
+                  <button type="button" className="pw-link-brisi" onClick={() => odstraniCilj(cilj.id)} aria-label="Odstrani cilj">×</button>
+                </div>
+              ))}
+              <button type="button" className="pw-nov-dodaj-cilj" onClick={dodajCilj}>+ Dodaj cilj</button>
+            </div>
+
+            <div className="pw-det-akcije">
+              <button type="button" className="pw-det-poslji" onClick={shraniNovProjekt} disabled={!obrazec.naslov.trim()}>Ustvari projekt</button>
+              <button type="button" className="pw-nov-preklici" onClick={() => setNovOdprt(false)}>Prekliči</button>
+            </div>
+          </>)}
+        </aside>
+      </div>
+    )}
   </div>;
 }
