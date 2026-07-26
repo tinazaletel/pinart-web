@@ -52,6 +52,11 @@ export default function ProfileWorkspace({ base }: { base: string }) {
     <section className={styles.card}><header><p>02 · MOJE PODJETJE</p><h2>Podatki na dokumentih.</h2><span>Uporabijo se v ponudbah, pogodbah in računih.</span></header><div className={styles.grid}><label>Ime podjetja<input value={form.company} onChange={e => field('company', e.target.value)} /></label><label>Davčna številka<input value={form.tax} onChange={e => field('tax', e.target.value)} /></label><label>E-pošta<input type="email" value={form.email} onChange={e => field('email', e.target.value)} /></label><label>Telefon<input value={form.phone} onChange={e => field('phone', e.target.value)} /></label><label>Naslov<input value={form.address} onChange={e => field('address', e.target.value)} /></label><label>TRR<input value={form.bankAccount} onChange={e => field('bankAccount', e.target.value)} /></label></div></section>
     <div className={styles.actions}><button type="submit">Shrani profil</button><Link href={`${base}/kalkulator/ceniki`}>Moji ceniki</Link><Link href={`${base}/kalkulator/stroski`}>Moji stroški</Link><button className={styles.logout} type="button" onClick={() => void createClient().auth.signOut().then(() => { window.location.href = `${base}/kalkulator/prijava`; })}>Odjava</button></div>
   </form>
+    {/* Videz dokumentov (prej samostojna postavka "Dizajn" v meniju) je zdaj tu, pod profilom. */}
+    <section className={styles.card}>
+      <header><p>03 · VIDEZ DOKUMENTOV</p><h2>Barva in pisava dokumentov.</h2><span>Skupni videz vseh dokumentov — ponudb, pogodb in računov. Enako lahko urediš tudi ob generiranem dokumentu.</span></header>
+      <div className={styles.actions}><Link href={`${base}/kalkulator/nastavitve`}>Uredi videz dokumentov</Link></div>
+    </section>
     {/* Nevarno obmocje — preneseno iz Nastavitev (Dizajn). Na dnu profila. */}
     <section className={`${styles.card} ${styles.nevarno}`}>
       <h2>Izbriši vse podatke</h2>

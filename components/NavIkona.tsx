@@ -3,7 +3,7 @@
 import {
   SquaresFour, FileText, Repeat, Handshake, Receipt, Users, Tag, Wallet,
   Target, Clock, Layout, ClockCounterClockwise, GearSix, LifebuoyIcon, Kanban, CalendarBlank,
-  PaintBrush,
+  PaintBrush, FolderOpen,
 } from '@phosphor-icons/react';
 
 /**
@@ -14,13 +14,14 @@ import {
  */
 
 export type NavIkonaVrsta =
-  | 'pregled' | 'ponudba' | 'retainer' | 'pogodba' | 'racuni'
+  | 'pregled' | 'projekti' | 'ponudba' | 'retainer' | 'pogodba' | 'racuni'
   | 'stranke' | 'ceniki' | 'stroski'
   | 'cilji' | 'cas' | 'okvir' | 'naloge' | 'koledar'
   | 'zgodovina' | 'nastavitve' | 'dizajn' | 'pomoc';
 
 const IKONE = {
   pregled: SquaresFour,
+  projekti: FolderOpen,
   ponudba: FileText,
   retainer: Repeat,
   pogodba: Handshake,

@@ -65,9 +65,10 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
       {item('naloge', `${base}/kalkulator/naloge`, '04', 'Naloge', 'naloge')}
       {item('koledar', `${base}/kalkulator/koledar`, '05', 'Koledar', 'koledar')}
     </MeniSkupina>
-    <MeniSkupina naslov="Drugo" vednoVidna aktivna={active === 'settings'}>
-      {item('settings', `${base}/kalkulator/nastavitve`, '01', 'Dizajn', 'dizajn')}
-      {povezava(`${base}/kalkulator/pomoc`, '02', 'Pomoč', 'pomoc')}
+    {/* Dizajn (videz dokumentov) je zdaj pod Moj profil — meni zadiha.
+        Dostopen iz profila in iz urejevalnika dokumenta. */}
+    <MeniSkupina naslov="Drugo" vednoVidna aktivna={false}>
+      {povezava(`${base}/kalkulator/pomoc`, '01', 'Pomoč', 'pomoc')}
     </MeniSkupina>
   </>;
   return <><AmbientBubbles /><PaketZnak /><FlowTopBar /><SidebarToggle vrsta="odpri" /><aside className={styles.sidebar} aria-label="Glavna navigacija"><SidebarToggle vrsta="zapri" />
