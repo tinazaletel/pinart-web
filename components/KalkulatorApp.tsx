@@ -1413,7 +1413,7 @@ type ShranjenaP = {
   /* ena koncna cena namesto treh paketov (2026-07-17) */
   enaCena?: boolean;
   dolgorocno?: boolean; retModel?: 'ure' | 'paket' | 'oboje'; retUre?: number; retDoba?: number;
-  stevilkaPonudbe?: string; veljavnostDni?: string;
+  stevilkaPonudbe?: string; veljavnostDni?: string; veljaKotPogodba?: boolean;
   urejenePodrobnosti?: string[];
   /* neobvezna priponka (npr. PDF specifikacije, slika, dodatek) — stari zapisi je nimajo in se delujejo */
   fileName?: string; filePath?: string;
@@ -2046,6 +2046,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      veljavnost v dnevih (privzeto 30) se izpise v pogojih */
   const [stevilkaPonudbe, setStevilkaPonudbe] = useState('');
   const [veljavnostDni, setVeljavnostDni] = useState('30');
+  /* neobvezna kljukica: ob pisni potrditvi ta ponudba velja kot pogodba
+     (namesto locene pogodbe). Privzeto izklopljeno — nic se ne spremeni,
+     dokler uporabnik sam ne obkljuka. */
+  const [veljaKotPogodba, setVeljaKotPogodba] = useState(false);
   /* RACUN (pretvorba ponudbe v racun): panel na Zakljucku. Stevilka locen stevec,
      paket = kateri paket je stranka sprejela, rok placila v dneh, oznaka placano. */
   const [racunOdprt, setRacunOdprt] = useState(false);
@@ -2130,6 +2134,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       else if (s.urnaPostavka) setUrnePostavke([{ ime: 'Dodatna dela', cena: String(s.urnaPostavka) }]);
       if (s.avansPct !== undefined) setAvansPct(String(s.avansPct));
       if (s.nogaZnak === false) setNogaZnak(false);
+      if (s.veljaKotPogodba) setVeljaKotPogodba(true);
       if (Array.isArray(s.stroski)) setStroski(s.stroski);
       if (s.postavke) setPostavke(s.postavke);
       if (s.predklic) setPredklic(s.predklic);
@@ -2163,6 +2168,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         vrstniRed: vrstniRed.length ? vrstniRed : undefined,
         skrite: skrite.length ? skrite : undefined,
         nogaZnak: nogaZnak ? undefined : false,
+        veljaKotPogodba: veljaKotPogodba || undefined,
         stroski: stroski.length ? stroski : undefined,
         valuta: valutaRocna ? valuta : undefined,
         custDrzavaMoj: custDrzavaMoj || undefined,
@@ -2189,7 +2195,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         dokAktivnaPredloga: prejsnji.dokAktivnaPredloga,
       }));
     } catch { /* ignoriraj */ }
-  }, [jeNalozeno, osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, pogledMreza, namigSkrit, uvodKoncan, chatKorak, chatNova, obIzbor, nazivPonudbe, aktivniCenik, dokBarva, dokFont]);
+  }, [jeNalozeno, osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, veljaKotPogodba, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, pogledMreza, namigSkrit, uvodKoncan, chatKorak, chatNova, obIzbor, nazivPonudbe, aktivniCenik, dokBarva, dokFont]);
   useEffect(() => {
     if (!jeNalozeno) return;
     const timeout = window.setTimeout(() => {
@@ -3078,6 +3084,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     }
     v.push('· delo izven dogovorjenega obsega te ponudbe se obravnava kot');
     v.push('  nova, ločena ponudba');
+    if (veljaKotPogodba) {
+      v.push('· s pisno potrditvijo te ponudbe (npr. po e-pošti) ponudba velja kot');
+      v.push('  pogodba med naročnikom in izvajalcem; za obseg, cene in roke veljajo');
+      v.push('  pogoji te ponudbe');
+    }
     v.push('');
     /* PRAVICE — locen naslov za lazje branje pogojev o pravicah */
     v.push('PRAVICE');
@@ -3109,7 +3120,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       v.push(`${imeUporabnika.trim() ? 'Pripravila ' + imeUporabnika.trim() + ' s' : 'Pripravljeno s'} Pinart kalkulatorjem · pinart.si`);
     }
     return v.join('\n');
-  }, [r, ret, dolgorocno, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak, izjemePravice, lastnePravice, imeUporabnika, trgNarocnika, enaCena, stevilkaPonudbe, veljavnostDni]);
+  }, [r, ret, dolgorocno, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak, izjemePravice, lastnePravice, imeUporabnika, trgNarocnika, enaCena, stevilkaPonudbe, veljavnostDni, veljaKotPogodba]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
@@ -4071,6 +4082,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       dolgorocno: dolgorocno || undefined, retModel: dolgorocno ? retModel : undefined, retUre: dolgorocno ? retUre : undefined, retDoba: dolgorocno ? retDoba : undefined,
       stevilkaPonudbe: stevilkaPonudbe || undefined,
       veljavnostDni: veljavnostDni !== '30' ? veljavnostDni : undefined,
+      veljaKotPogodba: veljaKotPogodba || undefined,
       fileName: priponkaFileName, filePath: priponkaFilePath,
     };
     const nov = { ...arhiv, [ime]: zapis };
@@ -4112,6 +4124,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     setDolgorocno(!!p.dolgorocno); if (p.retModel) setRetModel(p.retModel); if (typeof p.retUre === 'number') setRetUre(p.retUre); if (typeof p.retDoba === 'number') setRetDoba(p.retDoba);
     setStevilkaPonudbe(p.stevilkaPonudbe || '');
     setVeljavnostDni(p.veljavnostDni || '30');
+    setVeljaKotPogodba(!!p.veljaKotPogodba);
     setObsegPonudbe(p.obsegPonudbe); setTonPonudbe(p.tonPonudbe); setAvansPct(p.avansPct);
     setKaziUre(p.kaziUre); setNogaZnak(p.nogaZnak);
     setIzkusnje(p.izkusnje); setMojTrg(p.mojTrg); setTrgNarocnika(p.trgNarocnika);
@@ -6085,6 +6098,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ure-preklop { display: flex; align-items: flex-start; gap: .6rem; margin: 0 0 1rem; font-size: .9rem; font-weight: 600; color: var(--ink); cursor: pointer; max-width: 640px; }
         .cw .ure-preklop input { margin-top: .2rem; width: 1.05rem; height: 1.05rem; accent-color: var(--ink); cursor: pointer; }
         .cw .ure-preklop em { font-style: normal; font-weight: 400; color: rgba(17,17,17,.62); }
+        .cw .pogodba-nasvet { display: block; max-width: 640px; margin: -.4rem 0 1rem; padding: .7rem .9rem; font-size: .82rem; line-height: 1.5; color: rgba(120,78,10,.92); background: rgba(196,138,20,.1); border-left: 3px solid rgba(196,138,20,.55); border-radius: 0 10px 10px 0; }
+        .cw .pogodba-nasvet a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
         .cw .vp small { display: block; margin-bottom: .35rem; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
         .cw .vp label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .4rem 1rem; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; line-height: 1.55; background: var(--paper); border: 1px solid rgba(17,17,17,.15); border-radius: 10px; padding: .9rem 1rem; }
@@ -8622,6 +8637,17 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <span>{L('Prikaži oceno ur v ponudbi', 'Show the hour estimate in the quote')} <em>{L('(privzeto skrito — cena je po vrednosti; vklopi le, če stranka želi razčlenitev ur)', '(hidden by default — the price is value-based; turn it on only if the client wants an hours breakdown)')}</em></span>
                 </label>
               )}
+              {/* neobvezno: ponudba ob pisni potrditvi velja kot pogodba — takoj ob njej
+                  nasvet, da je prava pogodba varnejsa (Tinina zahteva, 2026-07-26) */}
+              <label className="ure-preklop">
+                <input type="checkbox" checked={veljaKotPogodba}
+                  onChange={e => { setVeljaKotPogodba(e.target.checked); setRocnoBesedilo(false); }} />
+                <span>{L('Ta ponudba ob pisni potrditvi velja kot pogodba', 'On written confirmation, this quote counts as a contract')}</span>
+              </label>
+              <p className="pogodba-nasvet">
+                💡 {L('Priporočamo, da raje generiraš pravo pogodbo — je bolj varna in jasna.', 'We recommend generating an actual contract instead — it is safer and clearer.')}{' '}
+                <a href={localePath(locale, `/kalkulator/pogodbe`)}>{L('Ustvari pogodbo →', 'Create a contract →')}</a>
+              </p>
               {predogledMode ? (
               <div className="predogled-okvir">
                 {predogledStrani.length ? (
