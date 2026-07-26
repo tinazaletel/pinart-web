@@ -55,6 +55,46 @@ const OBDOBJA: { id: 'teden' | 'mesec' | 'kvartal'; naziv: string }[] = [
   { id: 'kvartal', naziv: 'Kvartal' },
 ];
 
+/* predlagane oznake (tagi) na nalogi — poleg njih prosto besedilo v panelu Podrobnosti */
+const PREDLAGANE_OZNAKE = ['funkcionalnost', 'dizajn', 'CRM', 'zaledje', 'ideja'];
+
+/* Razvojne naloge Flow-a same-po-sebi kot podatki task managerja (dogfooding): gumb v glavi
+   jih doda v localStorage (shraniNaloge), brez da bi prepisal ze obstojece (ujemanje po naslovu). */
+const NALOGE_FLOW_RAZVOJ: { naslov: string; stolpec: NalogaStolpec; oznake: string[] }[] = [
+  { naslov: 'Kontakti (več oseb) + klik-za-klic/mail → dnevnik', stolpec: 'done', oznake: ['CRM', 'funkcionalnost'] },
+  { naslov: 'CRM dnevnik (klici/sestanki/dogovori)', stolpec: 'done', oznake: ['CRM'] },
+  { naslov: 'Naloga↔stranka + prioriteta + komentarji', stolpec: 'done', oznake: ['funkcionalnost'] },
+  { naslov: 'Plan = matrika Projekt×Oddelek + oddelki/šef', stolpec: 'done', oznake: ['funkcionalnost'] },
+  { naslov: 'Tedenski razpored + status + prenos v cikel', stolpec: 'done', oznake: ['funkcionalnost'] },
+  { naslov: 'Preklop obdobja Teden/Mesec/Kvartal', stolpec: 'done', oznake: ['funkcionalnost'] },
+  { naslov: 'Področja lastna + »+« iskalnik', stolpec: 'done', oznake: ['funkcionalnost'] },
+  { naslov: 'Koledar urna mreža + sestanki/klici → CRM', stolpec: 'done', oznake: ['funkcionalnost'] },
+  { naslov: 'Nov projekt + vozlišče + chat brief', stolpec: 'done', oznake: ['funkcionalnost'] },
+  { naslov: 'Pipeline poslov (faze) drag&drop', stolpec: 'done', oznake: ['funkcionalnost'] },
+  { naslov: 'Predračun / Avans / NDA', stolpec: 'done', oznake: ['funkcionalnost'] },
+  { naslov: 'Meni: Dizajn→profil, Ustvari projekt pod Orodja', stolpec: 'done', oznake: ['dizajn'] },
+  { naslov: 'Naslovi manjši povsod', stolpec: 'done', oznake: ['dizajn'] },
+  { naslov: 'Komaj opazne obrobe + brez outline številk', stolpec: 'done', oznake: ['dizajn'] },
+  { naslov: 'Cenik: dodaj-postavko na vrh', stolpec: 'done', oznake: ['dizajn'] },
+  { naslov: 'Kontakt kartica poravnava + čitljiv naziv', stolpec: 'done', oznake: ['dizajn'] },
+  { naslov: 'Cilji: Merilo = spustni meni', stolpec: 'done', oznake: ['funkcionalnost'] },
+  { naslov: 'Razširjen brief + panoga + centriranje vprašanja', stolpec: 'in_progress', oznake: ['funkcionalnost'] },
+  { naslov: 'Opomnik »pokliči nazaj«', stolpec: 'todo', oznake: ['CRM'] },
+  { naslov: '»Moj dan« (zapadlo/ta teden)', stolpec: 'todo', oznake: ['funkcionalnost'] },
+  { naslov: 'Gantt časovnica', stolpec: 'todo', oznake: ['funkcionalnost'] },
+  { naslov: 'Redesign projekt-vozlišča + koledarja', stolpec: 'todo', oznake: ['dizajn'] },
+  { naslov: 'Cilji → »Cilji in analitika« + kartice na Nadzorno', stolpec: 'todo', oznake: ['dizajn'] },
+  { naslov: 'Font Bodoni → nevtralen (business)', stolpec: 'todo', oznake: ['dizajn'] },
+  { naslov: 'Knjižnica postavk (inventory na ceniku)', stolpec: 'todo', oznake: ['funkcionalnost'] },
+  { naslov: 'Chat/voice → naloge (fish.audio)', stolpec: 'todo', oznake: ['ideja'] },
+  { naslov: 'Maili — Resend (API ključ)', stolpec: 'waiting', oznake: ['zaledje'] },
+  { naslov: 'Prava prijava / več-uporabnikov', stolpec: 'waiting', oznake: ['zaledje'] },
+  { naslov: 'Analitika baza (migracija + service key)', stolpec: 'waiting', oznake: ['zaledje'] },
+  { naslov: 'Zavihek Inhouse (HR)', stolpec: 'todo', oznake: ['ideja'] },
+  { naslov: 'First-run onboarding (solo vs ekipa)', stolpec: 'todo', oznake: ['ideja'] },
+  { naslov: 'Pregled trženja (light)', stolpec: 'todo', oznake: ['ideja'] },
+];
+
 /* vrstica matrike Plana = en projekt (izpeljan iz dodelitev po projektIme/projektId,
    ali rocno dodan z "+ projekt" preden ima kakrsnokoli dodelitev) */
 interface ProjektVrstica { kljuc: string; ime: string; projektId?: string }
@@ -138,6 +178,12 @@ export default function TaskManagerWorkspace() {
   const [analitikaSodelavecId, setAnalitikaSodelavecId] = useState<string>('');
   const [zgodovina, setZgodovina] = useState<ZgodovinaAktivnosti[]>([]);
   const [filter, setFilter] = useState<'vse' | 'moje' | 'zamujene'>('vse');
+  /* filter po oznaki (tagu) — klik na cip na kartici ali spustni izbor nad desko */
+  const [filterOznaka, setFilterOznaka] = useState<string>('');
+  /* prosto besedilo za novo oznako v panelu Podrobnosti naloge */
+  const [novaOznaka, setNovaOznaka] = useState('');
+  /* kratko sporocilo ob kliku "Nalozi razvojne naloge (Flow)" — koliko jih je bilo dodanih */
+  const [seedSporocilo, setSeedSporocilo] = useState('');
 
   /* --- stranke (za povezavo naloga ↔ stranka/projekt) --- */
   const [stranke, setStranke] = useState<FlowClient[]>([]);
@@ -188,10 +234,13 @@ export default function TaskManagerWorkspace() {
     setDodajOdprt(false);
   };
 
-  /* --- demo/predogled: 'mine' je edini zapisljiv nacin, vse ostalo (empty/zacetek/demo) je
-     samo za ogled — enak vzorec kot v KoledarWorkspace/ClientWorkspace (lib/predogled). */
-  const [nacin] = usePredogled();
-  const samoOgled = nacin !== 'mine';
+  /* Task Manager je Tinino dogfooding orodje: v NASPROTJU z ostalimi delovnimi prostori (glej
+     KoledarWorkspace/ClientWorkspace) ostane polno interaktiven (drag&drop, dodajanje, tagi,
+     štoparica, seed razvojnih nalog) v VSEH načinih ogleda — tudi v predogledu/demo. localStorage
+     je per-brskalnik, zato pisanje tu ne pokvari nič skupnega. usePredogled() ohranjen zaradi
+     skladnosti klica hooka, njegov rezultat pa namenoma ne vpliva na samoOgled spodaj. */
+  usePredogled();
+  const samoOgled = false;
 
   const trenutni = sodelavci.find((s) => s.id === trenutniId) || sodelavci[0];
   const jeVodjaAliAdmin = trenutni.vloga === 'vodja' || trenutni.vloga === 'admin';
@@ -286,6 +335,41 @@ export default function TaskManagerWorkspace() {
     if (!besedilo.trim()) return;
     const nov: NalogaKomentar = { id: 'kom_' + Date.now(), avtorIme: trenutni.ime || 'Jaz', besedilo: besedilo.trim(), cas: new Date().toISOString() };
     posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, komentarji: [...(n.komentarji || []), nov] } : n)));
+  };
+
+  /* doda oznako (tag) na nalogo — brez podvajanja; sprejme tako predlagane kot prosto besedilo */
+  const dodajOznako = (id: string, oznaka: string) => {
+    if (samoOgled) return;
+    const t = oznaka.trim();
+    if (!t) return;
+    posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, oznake: Array.from(new Set([...(n.oznake || []), t])) } : n)));
+  };
+  const odstraniOznako = (id: string, oznaka: string) => {
+    if (samoOgled) return;
+    posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, oznake: (n.oznake || []).filter((o) => o !== oznaka) } : n)));
+    if (filterOznaka === oznaka) setFilterOznaka('');
+  };
+
+  /* gumb "Naloži razvojne naloge (Flow)" — dogfooding: doda seznam NALOGE_FLOW_RAZVOJ v
+     localStorage, brez da bi prepisal ze obstojece naloge (ujemanje po naslovu). */
+  const nalozirazvojneNaloge = () => {
+    if (samoOgled) return;
+    const obstojece = preberiNaloge();
+    const obstojeciNaslovi = new Set(obstojece.map((n) => n.naslov));
+    const nove: Naloga[] = NALOGE_FLOW_RAZVOJ.filter((n) => !obstojeciNaslovi.has(n.naslov)).map((n) => ({
+      id: crypto.randomUUID(),
+      naslov: n.naslov,
+      stolpec: n.stolpec,
+      oznake: n.oznake,
+      created: new Date().toISOString(),
+    }));
+    if (nove.length > 0) {
+      posodobiInShrani([...obstojece, ...nove]);
+      zabeleziAktivnost('seed_' + Date.now(), trenutni.ime, `Naložil ${nove.length} razvojnih nalog Flow-a`);
+      setZgodovina(preberiZgodovino());
+    }
+    setSeedSporocilo(nove.length > 0 ? `Dodanih ${nove.length} novih nalog.` : 'Vse razvojne naloge so že naložene.');
+    window.setTimeout(() => setSeedSporocilo(''), 3500);
   };
 
   /* --- Plan / šefov razpored dodelitev — obdobje + matrika projekt × oddelek --- */
@@ -573,13 +657,16 @@ export default function TaskManagerWorkspace() {
 
   /* Vidnost po vlogi: clan vidi le sebi dodeljene naloge, vodja/admin vidita vse. */
   const vidneNaloge = trenutni.vloga === 'clan' ? naloge.filter((n) => n.dodeljenoOsebaId === trenutni.id) : naloge;
-  /* Hitri filter nad Kanban tablo: vse / moje / zamujene (rok pred danes in ni končano) */
+  /* Hitri filter nad Kanban tablo: vse / moje / zamujene (rok pred danes in ni končano) + oznaka (tag) */
   const danesStr = new Date().toISOString().slice(0, 10);
   const prikazaneNaloge = vidneNaloge.filter((n) => {
-    if (filter === 'moje') return n.dodeljenoOsebaId === trenutni.id || (n.dodeljenoOseba || '') === trenutni.ime;
-    if (filter === 'zamujene') return !!n.rok && n.rok < danesStr && n.stolpec !== 'done';
+    if (filter === 'moje' && !(n.dodeljenoOsebaId === trenutni.id || (n.dodeljenoOseba || '') === trenutni.ime)) return false;
+    if (filter === 'zamujene' && !(!!n.rok && n.rok < danesStr && n.stolpec !== 'done')) return false;
+    if (filterOznaka && !(n.oznake || []).includes(filterOznaka)) return false;
     return true;
   });
+  /* vse oznake, ki nastopajo na vidnih nalogah — za spustni izbor filtra */
+  const vseOznake = Array.from(new Set(vidneNaloge.flatMap((n) => n.oznake || []))).sort((a, b) => a.localeCompare(b, 'sl'));
 
   /* Podatki za panel "Analitika ekipe" — izbrani sodelavec: st. nalog, koncanih, ur, zgodovina. */
   const analitikaSodelavec = sodelavci.find((s) => s.id === analitikaSodelavecId);
@@ -616,6 +703,10 @@ export default function TaskManagerWorkspace() {
               <ChartBar size={15} weight="bold" /> Analitika ekipe
             </button>
           )}
+          <button type="button" className="tm-seed-gumb" onClick={nalozirazvojneNaloge} title="Doda razvojne naloge Flow-a v ta task manager (ne prepiše obstoječih)">
+            + Naloži razvojne naloge (Flow)
+          </button>
+          {seedSporocilo && <span className="tm-seed-sporocilo">{seedSporocilo}</span>}
           {!samoOgled ? (
             <button type="button" className="tm-nova" onClick={() => { setPogled('kanban'); setAktivniStolpec('todo'); setPrikaziFormo(true); }}>+ Nova naloga</button>
           ) : (
@@ -656,10 +747,18 @@ export default function TaskManagerWorkspace() {
       )}
 
       {pogled === 'kanban' && (
-      <div className="tm-filtri" role="tablist" aria-label="Filter nalog">
-        {([['vse', 'Vse naloge'], ['moje', 'Moje naloge'], ['zamujene', 'Zamujene']] as const).map(([k, oznaka]) => (
-          <button key={k} type="button" role="tab" aria-selected={filter === k} className={filter === k ? 'tm-filter-on' : ''} onClick={() => setFilter(k)}>{oznaka}{k === 'zamujene' && vidneNaloge.some((n) => !!n.rok && n.rok < danesStr && n.stolpec !== 'done') ? ' •' : ''}</button>
-        ))}
+      <div className="tm-filtri-vrsta">
+        <div className="tm-filtri" role="tablist" aria-label="Filter nalog">
+          {([['vse', 'Vse naloge'], ['moje', 'Moje naloge'], ['zamujene', 'Zamujene']] as const).map(([k, oznaka]) => (
+            <button key={k} type="button" role="tab" aria-selected={filter === k} className={filter === k ? 'tm-filter-on' : ''} onClick={() => setFilter(k)}>{oznaka}{k === 'zamujene' && vidneNaloge.some((n) => !!n.rok && n.rok < danesStr && n.stolpec !== 'done') ? ' •' : ''}</button>
+          ))}
+        </div>
+        {vseOznake.length > 0 && (
+          <select className="tm-filter-oznaka" value={filterOznaka} onChange={(e) => setFilterOznaka(e.target.value)} aria-label="Filter po oznaki">
+            <option value="">Vse oznake</option>
+            {vseOznake.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+        )}
       </div>
       )}
 
@@ -686,7 +785,7 @@ export default function TaskManagerWorkspace() {
                         <button
                           type="button"
                           className="tm-kartica-komentarji"
-                          onClick={() => { setOdprtaNalogaId(naloga.id); setNovKomentar(''); }}
+                          onClick={() => { setOdprtaNalogaId(naloga.id); setNovKomentar(''); setNovaOznaka(''); }}
                           aria-label={`Podrobnosti in komentarji (${naloga.komentarji?.length || 0})`}
                           title="Podrobnosti, stranka, projekt in komentarji"
                         >
@@ -696,6 +795,21 @@ export default function TaskManagerWorkspace() {
                         {jeVodjaAliAdmin && !samoOgled && <button type="button" className="tm-kartica-x" onClick={() => izbrisiNalogo(naloga.id)} title="Izbriši nalogo" aria-label="Izbriši nalogo">×</button>}
                       </div>
                       {naloga.opis && <p className="tm-kartica-opis">{naloga.opis}</p>}
+                      {!!naloga.oznake?.length && (
+                        <div className="tm-kartica-oznake">
+                          {naloga.oznake.map((o) => (
+                            <button
+                              key={o}
+                              type="button"
+                              className={`tm-oznaka-cip${filterOznaka === o ? ' tm-oznaka-cip-on' : ''}`}
+                              onClick={() => setFilterOznaka(filterOznaka === o ? '' : o)}
+                              title={`Filtriraj po oznaki »${o}«`}
+                            >
+                              {o}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                       <div className="tm-kartica-noga">
                         {naloga.rok && <span className={`tm-rok${jeZapadlo(naloga.rok) && s.id !== 'done' ? ' tm-rok-zapadlo' : ''}`}>📅 {datStr(naloga.rok)}</span>}
                         {naloga.clientId && strankaImeMap.get(naloga.clientId) && (
@@ -1039,6 +1153,29 @@ export default function TaskManagerWorkspace() {
               </select>
             </label>
 
+            <label className="tm-polje"><span>Oznake</span></label>
+            <div className="tm-oznake-panel">
+              {(odprtaNaloga.oznake || []).map((o) => (
+                <span key={o} className="tm-oznaka-panel-cip">
+                  <span>{o}</span>
+                  <button type="button" className="tm-oznaka-panel-brisi" disabled={samoOgled} aria-label={`Odstrani oznako ${o}`} onClick={() => odstraniOznako(odprtaNaloga.id, o)}>×</button>
+                </span>
+              ))}
+              {PREDLAGANE_OZNAKE.filter((o) => !(odprtaNaloga.oznake || []).includes(o)).map((o) => (
+                <button key={o} type="button" className="tm-oznaka-predlog" disabled={samoOgled} onClick={() => dodajOznako(odprtaNaloga.id, o)}>+ {o}</button>
+              ))}
+            </div>
+            <div className="tm-oznaka-dodaj">
+              <input
+                value={novaOznaka}
+                onChange={(e) => setNovaOznaka(e.target.value)}
+                placeholder="Nova oznaka (prosto besedilo) …"
+                disabled={samoOgled}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); dodajOznako(odprtaNaloga.id, novaOznaka); setNovaOznaka(''); } }}
+              />
+              <button type="button" className="tm-zase" disabled={samoOgled || !novaOznaka.trim()} onClick={() => { dodajOznako(odprtaNaloga.id, novaOznaka); setNovaOznaka(''); }}>+ Dodaj</button>
+            </div>
+
             <h3 className="tm-analitika-podnaslov">Komentarji</h3>
             {(!odprtaNaloga.komentarji || odprtaNaloga.komentarji.length === 0) && <p className="tm-prazno">Še ni komentarjev.</p>}
             <ul className="tm-komentarji-seznam">
@@ -1110,9 +1247,33 @@ export default function TaskManagerWorkspace() {
         .tm-shrani:disabled{opacity:.45;cursor:not-allowed}
 
         /* deska (kanban) */
-        .tm-filtri{display:inline-flex;gap:.2rem;margin:0 0 1.1rem;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
+        .tm-filtri-vrsta{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 1.1rem}
+        .tm-filtri{display:inline-flex;gap:.2rem;margin:0;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
         .tm-filtri button{padding:.4rem .85rem;border:0;border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
         .tm-filtri button.tm-filter-on{background:var(--ink);color:var(--paper)}
+        /* filter po oznaki (tagu) — spustni izbor poleg vse/moje/zamujene */
+        .tm-filter-oznaka{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding:.42rem 1.8rem .42rem .85rem;border:1px solid var(--line);border-radius:999px;background-color:oklch(97% .006 87/.8);color:var(--ink);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer;background-repeat:no-repeat;background-position:right .6rem center;background-size:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
+        .tm-filter-oznaka:focus{outline:none;border-color:var(--ink)}
+        /* gumb "Naloži razvojne naloge (Flow)" v glavi + kratko sporocilo ob kliku */
+        .tm-seed-gumb{flex:none;padding:.65rem 1rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--ink);font:750 .7rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+        .tm-seed-gumb:hover{background:var(--ink);color:var(--paper);border-style:solid;border-color:var(--ink)}
+        .tm-seed-sporocilo{font:600 .68rem var(--font-sans),sans-serif;color:var(--muted)}
+        /* oznake (tagi) na kartici naloge — majhni čipi, klik = filter po tem tagu */
+        .tm-kartica-oznake{display:flex;flex-wrap:wrap;gap:.3rem;margin:.5rem 0 0}
+        .tm-oznaka-cip{padding:.15rem .5rem;border:1px solid var(--line);border-radius:999px;background:oklch(95% .02 300/.6);color:var(--ink);font:700 .6rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+        .tm-oznaka-cip:hover{border-color:var(--ink)}
+        .tm-oznaka-cip-on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+        /* oznake v panelu Podrobnosti naloge — obstoječe (odstranljive) + predlogi + prosto besedilo */
+        .tm-oznake-panel{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin:-.3rem 0 .6rem}
+        .tm-oznaka-panel-cip{display:inline-flex;align-items:center;border:1px solid var(--ink);border-radius:999px;overflow:hidden;background:var(--ink)}
+        .tm-oznaka-panel-cip span{padding:.28rem .3rem .28rem .6rem;color:var(--paper);font:700 .64rem var(--font-sans),sans-serif}
+        .tm-oznaka-panel-brisi{padding:.28rem .55rem .28rem .2rem;border:none;background:transparent;color:var(--paper);opacity:.7;font-size:.9rem;line-height:1;cursor:pointer}
+        .tm-oznaka-panel-brisi:hover{opacity:1}
+        .tm-oznaka-predlog{padding:.28rem .6rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--ink);opacity:.6;font:700 .62rem var(--font-sans),sans-serif;cursor:pointer}
+        .tm-oznaka-predlog:hover{opacity:1;border-style:solid;border-color:var(--ink)}
+        .tm-oznaka-dodaj{display:flex;gap:.5rem;margin:0 0 1.1rem}
+        .tm-oznaka-dodaj input{flex:1;min-width:0;padding:.55rem .7rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0/.75);font:inherit;font-size:.78rem;color:var(--ink)}
+        .tm-oznaka-dodaj input:focus{outline:none;border-color:var(--ink)}
         .tm-cas-ziv{font:800 .68rem var(--font-sans),sans-serif;color:oklch(52% .17 300);font-variant-numeric:tabular-nums;animation:tmUtrip 1.4s ease-in-out infinite}
         @keyframes tmUtrip{0%,100%{opacity:1}50%{opacity:.55}}
         @media (prefers-reduced-motion:reduce){.tm-cas-ziv{animation:none}}

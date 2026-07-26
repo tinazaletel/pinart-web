@@ -33,6 +33,9 @@ export interface Naloga {
   timerStartTime?: string;      // ISO timestamp zacetka zadnjega merjenja
   prioriteta?: NalogaPrioriteta;
   komentarji?: NalogaKomentar[];
+  /* prosti tagi na nalogi (npr. "funkcionalnost", "dizajn", "CRM", "zaledje", "ideja" + prosto
+     besedilo) — za dogfooding: filtriranje razvojnih nalog Flow-a po vrsti dela */
+  oznake?: string[];
 }
 
 /* --- Uporabniki / vloge / zgodovina (za vec-uporabniski Task Manager) --- */
