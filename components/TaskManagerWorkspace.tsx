@@ -10,6 +10,7 @@ import {
   Naloga,
   NalogaStolpec,
   NalogaKomentar,
+  NalogaAvtorVloga,
   NalogaPodopravilo,
   preberiNaloge,
   shraniNaloge,
@@ -29,6 +30,9 @@ import { loadFlowData, type FlowClient } from '@/lib/pinartFlowStore';
 import { Podrocje, preberiPodrocja, dodajPodrocje, izbrisiPodrocje } from '@/lib/podrocja';
 import { Oddelek, preberiOddelki, shraniOddelki, dodajOddelek, izbrisiOddelek } from '@/lib/oddelki';
 import { usePredogled } from '@/lib/predogled';
+
+/* oznaka vloge avtorja opisa/komentarja — za barvno znacko (kdo je nekaj napisal) */
+const VLOGA_LABEL: Record<NalogaAvtorVloga, string> = { sef: 'Šef', sodelavec: 'Sodelavec', stranka: 'Stranka', jaz: 'Ti' };
 
 const STOLPCI: { id: NalogaStolpec; naziv: string }[] = [
   { id: 'todo', naziv: 'Za narediti' },
@@ -363,7 +367,7 @@ export default function TaskManagerWorkspace() {
   const dodajKomentar = (id: string, besedilo: string) => {
     if (samoOgled) return;
     if (!besedilo.trim()) return;
-    const nov: NalogaKomentar = { id: 'kom_' + Date.now(), avtorIme: trenutni.ime || 'Jaz', besedilo: besedilo.trim(), cas: new Date().toISOString() };
+    const nov: NalogaKomentar = { id: 'kom_' + Date.now(), avtorIme: trenutni.ime || 'Jaz', besedilo: besedilo.trim(), cas: new Date().toISOString(), vloga: 'jaz' };
     posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, komentarji: [...(n.komentarji || []), nov] } : n)));
   };
 
@@ -863,7 +867,7 @@ export default function TaskManagerWorkspace() {
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); odpriDetajl(naloga.id); } }}
                       aria-label={`Odpri podrobnosti: ${naloga.naslov}`}
                     >
-                      {(!!naloga.oznake?.length || naloga.isTimerRunning || (jeVodjaAliAdmin && !samoOgled)) && (
+                      {(!!naloga.oznake?.length || naloga.isTimerRunning || !!naloga.komentarji?.length || (jeVodjaAliAdmin && !samoOgled)) && (
                         <div className="tm-kartica-vrh">
                           {!!naloga.oznake?.length && (
                             <span className="tm-kartica-tag" title={naloga.oznake.join(', ')}>
@@ -871,6 +875,14 @@ export default function TaskManagerWorkspace() {
                             </span>
                           )}
                           {naloga.isTimerRunning && <span className="tm-tece-znacka" aria-hidden>● teče</span>}
+                          {!!naloga.komentarji?.length && (() => {
+                            const zadnjiVloga = naloga.komentarji[naloga.komentarji.length - 1].vloga || 'jaz';
+                            return (
+                              <span className={`tm-kartica-oblacek tm-oblacek-${zadnjiVloga}`} title={`${naloga.komentarji.length} komentar(jev) — zadnji: ${VLOGA_LABEL[zadnjiVloga]}`}>
+                                <ChatCircleDots size={12} weight="fill" />{naloga.komentarji.length}
+                              </span>
+                            );
+                          })()}
                           {jeVodjaAliAdmin && !samoOgled && <button type="button" className="tm-kartica-x" onClick={(e) => { e.stopPropagation(); izbrisiNalogo(naloga.id); }} title="Izbriši nalogo" aria-label="Izbriši nalogo">×</button>}
                         </div>
                       )}
@@ -1217,6 +1229,13 @@ export default function TaskManagerWorkspace() {
             <h2 className="tm-detajli-naslov">{odprtaNaloga.naslov}</h2>
 
             <div className="tm-detajli-okvir">
+              {odprtaNaloga.opisAvtorIme && (
+                <div className="tm-opis-avtor">
+                  <span className="tm-oseba-krog tm-oseba-krog-sm" aria-hidden>{initialke(odprtaNaloga.opisAvtorIme)}</span>
+                  <span className="tm-opis-avtor-ime"><strong>{odprtaNaloga.opisAvtorIme}</strong> je opisal(a), kaj naj se naredi</span>
+                  {odprtaNaloga.opisAvtorVloga && <span className={`tm-vloga-znacka tm-vloga-${odprtaNaloga.opisAvtorVloga}`}>{VLOGA_LABEL[odprtaNaloga.opisAvtorVloga]}</span>}
+                </div>
+              )}
               <textarea
                 className="tm-detajli-opis-polje"
                 value={odprtaNaloga.opis || ''}
@@ -1388,7 +1407,7 @@ export default function TaskManagerWorkspace() {
             <ul className="tm-komentarji-seznam">
               {(odprtaNaloga.komentarji || []).map((k) => (
                 <li key={k.id}>
-                  <div className="tm-komentar-glava"><strong>{k.avtorIme}</strong><span>{datStr(k.cas)}</span></div>
+                  <div className="tm-komentar-glava"><strong>{k.avtorIme}</strong>{k.vloga && <span className={`tm-vloga-znacka tm-vloga-${k.vloga}`}>{VLOGA_LABEL[k.vloga]}</span>}<span className="tm-komentar-cas">{datStr(k.cas)}</span></div>
                   <p>{k.besedilo}</p>
                 </li>
               ))}
@@ -1523,6 +1542,21 @@ export default function TaskManagerWorkspace() {
         .tm-kartica-stop-tece{background:oklch(62% .19 300);border-color:oklch(62% .19 300);color:#fff}
         .tm-kartica-stop-tece:hover{background:oklch(56% .19 300);color:#fff}
         .tm-kartica-stop:disabled{cursor:default;opacity:.55}
+        .tm-kartica-oblacek{display:inline-flex;align-items:center;gap:.2rem;margin-left:auto;padding:.12rem .42rem;border-radius:999px;font:800 .58rem var(--font-sans),sans-serif}
+        .tm-oblacek-sef{background:oklch(94% .03 300);color:oklch(38% .1 300)}
+        .tm-oblacek-sodelavec{background:oklch(92% .05 165);color:oklch(34% .09 165)}
+        .tm-oblacek-stranka{background:oklch(93% .06 30);color:oklch(46% .16 30)}
+        .tm-oblacek-jaz{background:oklch(95% .01 87);color:var(--muted)}
+        .tm-vloga-znacka{padding:.1rem .45rem;border-radius:999px;font:800 .56rem var(--font-sans),sans-serif;letter-spacing:.02em;white-space:nowrap}
+        .tm-vloga-sef{background:oklch(94% .03 300);color:oklch(38% .1 300)}
+        .tm-vloga-sodelavec{background:oklch(92% .05 165);color:oklch(34% .09 165)}
+        .tm-vloga-stranka{background:oklch(93% .06 30);color:oklch(46% .16 30)}
+        .tm-vloga-jaz{background:oklch(95% .01 87);color:var(--muted)}
+        .tm-opis-avtor{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem;padding-bottom:.7rem;border-bottom:1px dashed var(--line)}
+        .tm-opis-avtor-ime{font:400 .74rem var(--font-sans),sans-serif;color:var(--muted)}
+        .tm-opis-avtor-ime strong{font-weight:650;color:var(--ink)}
+        .tm-oseba-krog-sm{width:1.15rem;height:1.15rem;font-size:.5rem;flex:none}
+        .tm-komentar-cas{margin-left:auto}
         .tm-rok{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .5rem;border-radius:999px;background:oklch(95% .01 87);color:var(--muted);font-size:.66rem;font-weight:700}
         .tm-rok-zapadlo{background:oklch(93% .06 30);color:oklch(48% .16 30)}
         .tm-kartica-noga{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-top:.55rem}
