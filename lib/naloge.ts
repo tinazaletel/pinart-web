@@ -45,6 +45,8 @@ export interface Sodelavec {
   email: string;
   vloga: UporabniskaVloga;
   aktiven: boolean;
+  /* neobvezna povezava na Oddelek.id (lib/oddelki) — v kateri oddelek spada oseba */
+  oddelekId?: string;
 }
 
 export interface ZgodovinaAktivnosti {
@@ -132,7 +134,10 @@ export interface TedenskaDodelitev {
   projektId?: string;
   projektIme: string;
   podrocje?: string;
-  tedenZacetek: string; // YYYY-MM-DD, ponedeljek tedna/ciklusa, na katerega se dodelitev nanasa
+  /* neobvezna povezava na Oddelek.id (lib/oddelki) — kateri oddelek dela to dodelitev;
+     privzeto oseba.oddelekId, a se lahko override-a (isti clovek dela za vec oddelkov) */
+  oddelekId?: string;
+  tedenZacetek: string; // YYYY-MM-DD, zacetek obdobja (tedna/meseca/kvartala), na katerega se dodelitev nanasa
   opomba?: string;
   /* ritual "napovem -> pregledam": kaj bo oseba ta teden delala + status ob pregledu */
   nacrt?: string;

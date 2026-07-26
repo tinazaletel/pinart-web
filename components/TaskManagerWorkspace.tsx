@@ -5,7 +5,7 @@
    Bodoni, ink, akcent). Lasten prefiksiran <style> blok (tm-), da ne trči s .shell. */
 
 import React, { useState, useEffect } from 'react';
-import { Pause, Play, ChartBar, ChatCircleDots, CaretLeft, CaretRight, ArrowBendUpRight } from '@phosphor-icons/react';
+import { Pause, Play, ChartBar, ChatCircleDots, CaretLeft, CaretRight, Buildings } from '@phosphor-icons/react';
 import {
   Naloga,
   NalogaStolpec,
@@ -22,12 +22,11 @@ import {
   preberiDodelitve,
   shraniDodelitev,
   izbrisiDodelitev,
-  preberiCikelTednov,
-  shraniCikelTednov,
 } from '@/lib/naloge';
-import { preberiSodelavci } from '@/lib/sodelavci';
+import { preberiSodelavci, shraniSodelavci } from '@/lib/sodelavci';
 import { loadFlowData, type FlowClient } from '@/lib/pinartFlowStore';
 import { Podrocje, preberiPodrocja, dodajPodrocje, izbrisiPodrocje } from '@/lib/podrocja';
+import { Oddelek, preberiOddelki, shraniOddelki, dodajOddelek, izbrisiOddelek } from '@/lib/oddelki';
 
 const STOLPCI: { id: NalogaStolpec; naziv: string }[] = [
   { id: 'todo', naziv: 'Za narediti' },
@@ -49,6 +48,38 @@ const STATUSI_DODELITVE: { id: NonNullable<TedenskaDodelitev['status']>; naziv: 
   { id: 'preneseno', naziv: 'Preneseno' },
 ];
 
+const OBDOBJA: { id: 'teden' | 'mesec' | 'kvartal'; naziv: string }[] = [
+  { id: 'teden', naziv: 'Teden' },
+  { id: 'mesec', naziv: 'Mesec' },
+  { id: 'kvartal', naziv: 'Kvartal' },
+];
+
+/* vrstica matrike Plana = en projekt (izpeljan iz dodelitev po projektIme/projektId,
+   ali rocno dodan z "+ projekt" preden ima kakrsnokoli dodelitev) */
+interface ProjektVrstica { kljuc: string; ime: string; projektId?: string }
+
+/* panel Nova/Uredi dodelitev v matriki: "new" = klik na "+ dodeli" v prazni celici
+   (projekt x oddelek ze znana), "edit" = klik na obstojeco dodelitev v celici */
+interface DodelitevPanelStanje { mode: 'new' | 'edit'; projektIme: string; projektId?: string; oddelekId?: string; dodelitevId?: string }
+
+/* rocno dodani prazni projekti (se brez dodelitve) — samo lokalna vrstica v matriki,
+   dokler ne dobi prve dodelitve; loceno od TedenskaDodelitev, ker projekt sam po sebi
+   ni entiteta v lib/naloge.ts */
+const PRAZNI_PROJEKTI_KEY = 'pinflow_plan_prazni_projekti';
+const preberiPrazneProjekte = (): ProjektVrstica[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(PRAZNI_PROJEKTI_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+const shraniPrazneProjekte = (list: ProjektVrstica[]): void => {
+  if (typeof window === 'undefined') return;
+  try { localStorage.setItem(PRAZNI_PROJEKTI_KEY, JSON.stringify(list)); } catch { /* zaseben nacin */ }
+};
+
 const datStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? s : d.toLocaleDateString('sl-SI'); };
 const jeZapadlo = (rok?: string) => { if (!rok) return false; const d = new Date(rok); return !isNaN(d.getTime()) && d < new Date(new Date().toDateString()); };
 /* prikaz ur na eno decimalko, npr. 90 minut -> "1.5" */
@@ -62,17 +93,26 @@ const formatCasSek = (sekunde: number) => {
 };
 /* lokalni YYYY-MM-DD (brez UTC zamika) — ujema se z zapisom <input type="date"> in Naloga.rok */
 const toDateStr = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-/* ponedeljek tekočega tedna, opolnoči lokalno */
-const zacetekTedna = (): Date => {
-  const d = new Date();
+const sklonNalog = (n: number) => (n === 1 ? 'naloga' : n >= 2 && n <= 4 ? 'naloge' : 'nalog');
+const sklonKoncanih = (n: number) => (n === 1 ? 'končana' : n >= 2 && n <= 4 ? 'končani' : 'končanih');
+/* ponedeljek tedna, v katerem lezi dani datum, opolnoci lokalno */
+const ponedeljekOd = (d: Date): Date => {
   const dan = d.getDay();
   const diff = dan === 0 ? -6 : 1 - dan;
   const pon = new Date(d.getFullYear(), d.getMonth(), d.getDate() + diff);
   pon.setHours(0, 0, 0, 0);
   return pon;
 };
-const sklonNalog = (n: number) => (n === 1 ? 'naloga' : n >= 2 && n <= 4 ? 'naloge' : 'nalog');
-const sklonKoncanih = (n: number) => (n === 1 ? 'končana' : n >= 2 && n <= 4 ? 'končani' : 'končanih');
+/* ISO stevilka tedna (1-53) za prikaz naslova "Teden N" v preklopu obdobja */
+const isoTedenStevilka = (d: Date): number => {
+  const datum = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dan = datum.getUTCDay() || 7;
+  datum.setUTCDate(datum.getUTCDate() + 4 - dan);
+  const zacetekLeta = new Date(Date.UTC(datum.getUTCFullYear(), 0, 1));
+  return Math.ceil(((datum.getTime() - zacetekLeta.getTime()) / 86400000 + 1) / 7);
+};
+/* inicialke imena za okrogel avatar-krog (npr. "Matej Novak" -> "MN") */
+const initialke = (ime: string) => ime.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 
 export default function TaskManagerWorkspace() {
   const [naloge, setNaloge] = useState<Naloga[]>([]);
@@ -105,16 +145,35 @@ export default function TaskManagerWorkspace() {
   const [odprtaNalogaId, setOdprtaNalogaId] = useState<string | null>(null);
   const [novKomentar, setNovKomentar] = useState('');
 
-  /* --- Tedenski plan / šefov razpored dodelitev --- */
+  /* --- Plan (prej Tedenski plan) / šefov razpored dodelitev — matrika projekt × oddelek --- */
   const [pogled, setPogled] = useState<'kanban' | 'teden'>('kanban');
   const [dodelitve, setDodelitve] = useState<TedenskaDodelitev[]>([]);
-  const [cikelTednov, setCikelTednov] = useState(1);
-  const [ciklusOffset, setCiklusOffset] = useState(0);
-  const [novaDodelitevOsebaId, setNovaDodelitevOsebaId] = useState<string | null>(null);
+  const [oddelki, setOddelki] = useState<Oddelek[]>([]);
+  const [prazniProjekti, setPrazniProjekti] = useState<ProjektVrstica[]>([]);
+
+  /* preklop obdobja: teden / mesec / kvartal + korak nazaj/naprej */
+  const [obdobjeVrsta, setObdobjeVrsta] = useState<'teden' | 'mesec' | 'kvartal'>('teden');
+  const [obdobjeOffset, setObdobjeOffset] = useState(0);
+
+  /* panel Nova/Uredi dodelitev (odprt iz celice matrike) + njegova polja */
+  const [dodelitevPanel, setDodelitevPanel] = useState<DodelitevPanelStanje | null>(null);
+  const [ndOsebaId, setNdOsebaId] = useState('');
+  const [ndOddelekId, setNdOddelekId] = useState('');
   const [ndProjektIme, setNdProjektIme] = useState('');
   const [ndPodrocje, setNdPodrocje] = useState('');
   const [ndStrankaId, setNdStrankaId] = useState('');
   const [ndNacrt, setNdNacrt] = useState('');
+  const [ndStatus, setNdStatus] = useState<NonNullable<TedenskaDodelitev['status']>>('nacrtovano');
+
+  /* panel "+ projekt" (nova prazna vrstica v matriki) */
+  const [noviProjektOdprt, setNoviProjektOdprt] = useState(false);
+  const [noviProjektIme, setNoviProjektIme] = useState('');
+  const [noviProjektStrankaId, setNoviProjektStrankaId] = useState('');
+
+  /* panel "Uredi oddelke" (vodja/admin: dodaj/izbriši oddelek, šef, dodeli sodelavce) */
+  const [urediOddelkeOdprto, setUrediOddelkeOdprto] = useState(false);
+  const [novOddelekIme, setNovOddelekIme] = useState('');
+
   const [podrocja, setPodrocja] = useState<Podrocje[]>([]);
   const [novoPodrocje, setNovoPodrocje] = useState('');
   const [dodajOdprt, setDodajOdprt] = useState(false);
@@ -136,7 +195,8 @@ export default function TaskManagerWorkspace() {
     setSodelavci(preberiSodelavci());
     setStranke(loadFlowData().clients);
     setDodelitve(preberiDodelitve());
-    setCikelTednov(preberiCikelTednov());
+    setOddelki(preberiOddelki());
+    setPrazniProjekti(preberiPrazneProjekte());
     setPodrocja(preberiPodrocja());
   }, []);
 
@@ -214,22 +274,48 @@ export default function TaskManagerWorkspace() {
     posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, komentarji: [...(n.komentarji || []), nov] } : n)));
   };
 
-  /* --- Tedenski plan / šefov razpored dodelitev --- */
+  /* --- Plan / šefov razpored dodelitev — obdobje + matrika projekt × oddelek --- */
   const osveziDodelitve = () => setDodelitve(preberiDodelitve());
 
-  const spremeniCikel = (n: number) => { setCikelTednov(n); shraniCikelTednov(n); setCiklusOffset(0); };
+  /* okno trenutno izbranega obdobja (teden/mesec/kvartal), premaknjeno za obdobjeOffset korakov od danes */
+  const obdobjeOkno = (() => {
+    const danes = new Date();
+    if (obdobjeVrsta === 'teden') {
+      const zacetek = ponedeljekOd(danes);
+      zacetek.setDate(zacetek.getDate() + obdobjeOffset * 7);
+      const konecEkskl = new Date(zacetek);
+      konecEkskl.setDate(konecEkskl.getDate() + 7);
+      return { zacetek, konecEkskl };
+    }
+    if (obdobjeVrsta === 'mesec') {
+      const zacetek = new Date(danes.getFullYear(), danes.getMonth() + obdobjeOffset, 1);
+      const konecEkskl = new Date(danes.getFullYear(), danes.getMonth() + obdobjeOffset + 1, 1);
+      return { zacetek, konecEkskl };
+    }
+    const trenutniKvartal = Math.floor(danes.getMonth() / 3);
+    const zacetek = new Date(danes.getFullYear(), (trenutniKvartal + obdobjeOffset) * 3, 1);
+    const konecEkskl = new Date(danes.getFullYear(), (trenutniKvartal + obdobjeOffset) * 3 + 3, 1);
+    return { zacetek, konecEkskl };
+  })();
+  const obdobjeZacetekStr = toDateStr(obdobjeOkno.zacetek);
+  const obdobjeKonecEksklStr = toDateStr(obdobjeOkno.konecEkskl);
+  const obdobjeNaslov = (() => {
+    if (obdobjeVrsta === 'teden') {
+      const zadnji = new Date(obdobjeOkno.konecEkskl);
+      zadnji.setDate(zadnji.getDate() - 1);
+      return `Teden ${isoTedenStevilka(obdobjeOkno.zacetek)} · ${obdobjeOkno.zacetek.toLocaleDateString('sl-SI', { day: 'numeric', month: 'short' })} – ${zadnji.toLocaleDateString('sl-SI', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+    }
+    if (obdobjeVrsta === 'mesec') {
+      const naziv = obdobjeOkno.zacetek.toLocaleDateString('sl-SI', { month: 'long', year: 'numeric' });
+      return naziv.charAt(0).toUpperCase() + naziv.slice(1);
+    }
+    return `Q${Math.floor(obdobjeOkno.zacetek.getMonth() / 3) + 1} ${obdobjeOkno.zacetek.getFullYear()}`;
+  })();
 
-  const ciklusZacetek = (() => { const d = new Date(zacetekTedna()); d.setDate(d.getDate() + ciklusOffset * cikelTednov * 7); return d; })();
-  const ciklusZacetekStr = toDateStr(ciklusZacetek);
-  const ciklusKonecEksklStr = (() => { const d = new Date(ciklusZacetek); d.setDate(d.getDate() + cikelTednov * 7); return toDateStr(d); })();
-  const ciklusZadnjiDan = (() => { const d = new Date(ciklusZacetek); d.setDate(d.getDate() + cikelTednov * 7 - 1); return d; })();
-  const ciklusNaslov = `${ciklusZacetek.toLocaleDateString('sl-SI', { day: 'numeric', month: 'short' })} – ${ciklusZadnjiDan.toLocaleDateString('sl-SI', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+  /* dodelitve, katerih tedenZacetek pade v trenutno okno obdobja */
+  const oknoDodelitve = dodelitve.filter((d) => d.tedenZacetek >= obdobjeZacetekStr && d.tedenZacetek < obdobjeKonecEksklStr);
 
   const smeUrejatiDodelitev = (d: TedenskaDodelitev) => jeVodjaAliAdmin || d.osebaId === trenutni.id;
-
-  const dodelitveZaOsebo = (osebaId: string) => dodelitve
-    .filter((d) => d.osebaId === osebaId && d.tedenZacetek >= ciklusZacetekStr && d.tedenZacetek < ciklusKonecEksklStr)
-    .sort((a, b) => a.projektIme.localeCompare(b.projektIme));
 
   /* poveze todo naloge (delavcev pogled) s sefovo dodelitvijo: ujemanje po osebi + projektu
      (prek clientId/projectId ali po prostem imenu projekta) */
@@ -246,57 +332,133 @@ export default function TaskManagerWorkspace() {
     const koncane = povezane.filter((n) => n.stolpec === 'done').length;
     return `${povezane.length} ${sklonNalog(povezane.length)} / ${koncane} ${sklonKoncanih(koncane)}`;
   };
-
-  const ustvariDodelitev = () => {
-    const oseba = sodelavci.find((s) => s.id === novaDodelitevOsebaId);
-    if (!oseba || !ndProjektIme.trim()) return;
-    const nova: TedenskaDodelitev = {
-      id: 'dod_' + Date.now(),
-      osebaId: oseba.id,
-      osebaIme: oseba.ime,
-      projektId: ndStrankaId || undefined,
-      projektIme: ndProjektIme.trim(),
-      podrocje: ndPodrocje.trim() || undefined,
-      tedenZacetek: ciklusZacetekStr,
-      nacrt: ndNacrt.trim() || undefined,
-      status: 'nacrtovano',
-    };
-    shraniDodelitev(nova);
-    osveziDodelitve();
-    setNovaDodelitevOsebaId(null); setNdProjektIme(''); setNdPodrocje(''); setNdStrankaId(''); setNdNacrt('');
+  /* kompaktna razlicica znacke za majhen cip v celici matrike, npr. "1/3" */
+  const oznakaKompaktna = (d: TedenskaDodelitev) => {
+    const povezane = nalogeZaDodelitev(d);
+    const koncane = povezane.filter((n) => n.stolpec === 'done').length;
+    return `${koncane}/${povezane.length}`;
   };
 
-  const nastaviNacrtDodelitve = (id: string, nacrt: string) => {
-    const d = dodelitve.find((x) => x.id === id);
-    if (!d) return;
-    shraniDodelitev({ ...d, nacrt: nacrt || undefined });
-    osveziDodelitve();
-  };
+  /* stolpci matrike = oddelki; ce jih ni, en navidezni stolpec "Vse" (id '') */
+  const stolpciPrikaz: { id: string; ime: string; sefId?: string }[] = oddelki.length
+    ? oddelki
+    : [{ id: '', ime: 'Vse' }];
 
-  const nastaviStatusDodelitve = (id: string, status: string) => {
-    const d = dodelitve.find((x) => x.id === id);
-    if (!d) return;
-    shraniDodelitev({ ...d, status: (status || undefined) as TedenskaDodelitev['status'] });
-    osveziDodelitve();
-  };
+  /* vrstice matrike = unikatni projekti iz dodelitev tega okna + rocno dodani prazni projekti */
+  const vrsticeProjektov: ProjektVrstica[] = (() => {
+    const map = new Map<string, ProjektVrstica>();
+    oknoDodelitve.forEach((d) => {
+      const kljuc = d.projektId || d.projektIme.trim().toLowerCase();
+      if (!map.has(kljuc)) map.set(kljuc, { kljuc, ime: d.projektIme, projektId: d.projektId });
+    });
+    prazniProjekti.forEach((p) => {
+      if (!map.has(p.kljuc)) map.set(p.kljuc, p);
+    });
+    return Array.from(map.values()).sort((a, b) => a.ime.localeCompare(b.ime));
+  })();
 
-  const prerazporediDodelitevOsebi = (id: string, osebaId: string) => {
-    const d = dodelitve.find((x) => x.id === id);
-    const oseba = sodelavci.find((s) => s.id === osebaId);
-    if (!d || !oseba) return;
-    shraniDodelitev({ ...d, osebaId: oseba.id, osebaIme: oseba.ime });
-    osveziDodelitve();
-  };
+  /* dodelitve v eni celici (projekt x oddelek): ujemanje po projektu IN oddelku —
+     oddelek dodelitve, ce ni override-an, pade nazaj na oddelek osebe */
+  const dodelitveVCelici = (vrstica: ProjektVrstica, oddelekId: string) => oknoDodelitve.filter((d) => {
+    const isProjekt = (!!d.projektId && !!vrstica.projektId && d.projektId === vrstica.projektId)
+      || d.projektIme.trim().toLowerCase() === vrstica.ime.trim().toLowerCase();
+    if (!isProjekt) return false;
+    if (oddelki.length === 0) return true;
+    const njenOddelek = d.oddelekId || sodelavci.find((s) => s.id === d.osebaId)?.oddelekId || '';
+    return njenOddelek === oddelekId;
+  });
 
   const odstraniDodelitev = (id: string) => { izbrisiDodelitev(id); osveziDodelitve(); };
 
-  /* "preneseno" = neopravljeno gre naprej — kopija v naslednji ciklus, status nazaj na nacrtovano */
-  const prenesiVNaslednjiCiklus = (d: TedenskaDodelitev) => {
-    const naslednji = new Date(ciklusZacetek);
-    naslednji.setDate(naslednji.getDate() + cikelTednov * 7);
-    const nova: TedenskaDodelitev = { ...d, id: 'dod_' + Date.now(), tedenZacetek: toDateStr(naslednji), status: 'nacrtovano' };
-    shraniDodelitev(nova);
+  /* odpre panel za novo dodelitev v konkretni celici (projekt vrstice x oddelek stolpca) */
+  const odpriNovoDodelitev = (vrstica: ProjektVrstica, oddelekId: string) => {
+    setDodelitevPanel({ mode: 'new', projektIme: vrstica.ime, projektId: vrstica.projektId, oddelekId });
+    setNdOsebaId(''); setNdOddelekId(oddelekId); setNdPodrocje(''); setNdStrankaId(vrstica.projektId || ''); setNdNacrt(''); setNdStatus('nacrtovano');
+  };
+
+  /* odpre panel za urejanje obstojece dodelitve (klik na cip v celici) */
+  const odpriUrediDodelitev = (d: TedenskaDodelitev) => {
+    setDodelitevPanel({ mode: 'edit', projektIme: d.projektIme, projektId: d.projektId, dodelitevId: d.id });
+    setNdOsebaId(d.osebaId); setNdOddelekId(d.oddelekId || ''); setNdPodrocje(d.podrocje || ''); setNdStrankaId(d.projektId || ''); setNdNacrt(d.nacrt || ''); setNdStatus(d.status || 'nacrtovano');
+  };
+
+  const zapriDodelitevPanel = () => setDodelitevPanel(null);
+
+  const shraniDodelitevIzPanela = () => {
+    if (!dodelitevPanel) return;
+    if (dodelitevPanel.mode === 'new') {
+      const oseba = sodelavci.find((s) => s.id === ndOsebaId);
+      if (!oseba) return;
+      const nova: TedenskaDodelitev = {
+        id: 'dod_' + Date.now(),
+        osebaId: oseba.id,
+        osebaIme: oseba.ime,
+        projektId: ndStrankaId || dodelitevPanel.projektId || undefined,
+        projektIme: dodelitevPanel.projektIme,
+        podrocje: ndPodrocje.trim() || undefined,
+        oddelekId: ndOddelekId || undefined,
+        tedenZacetek: obdobjeZacetekStr,
+        nacrt: ndNacrt.trim() || undefined,
+        status: 'nacrtovano',
+      };
+      shraniDodelitev(nova);
+    } else {
+      const obstojeca = dodelitve.find((d) => d.id === dodelitevPanel.dodelitevId);
+      if (!obstojeca) return;
+      let posodobljena: TedenskaDodelitev = { ...obstojeca, nacrt: ndNacrt.trim() || undefined, status: ndStatus };
+      if (jeVodjaAliAdmin) {
+        const oseba = sodelavci.find((s) => s.id === ndOsebaId);
+        posodobljena = {
+          ...posodobljena,
+          osebaId: oseba?.id || obstojeca.osebaId,
+          osebaIme: oseba?.ime || obstojeca.osebaIme,
+          oddelekId: ndOddelekId || undefined,
+          podrocje: ndPodrocje.trim() || undefined,
+        };
+      }
+      shraniDodelitev(posodobljena);
+    }
     osveziDodelitve();
+    zapriDodelitevPanel();
+  };
+
+  const izbrisiIzPanela = () => {
+    if (dodelitevPanel?.mode === 'edit' && dodelitevPanel.dodelitevId) odstraniDodelitev(dodelitevPanel.dodelitevId);
+    zapriDodelitevPanel();
+  };
+
+  /* "+ projekt" — doda prazno vrstico v matriko (se brez dodelitve), po zelji poveze s stranko */
+  const dodajProjektVrstico = () => {
+    const ime = noviProjektIme.trim();
+    if (!ime) return;
+    const stranka = stranke.find((s) => s.id === noviProjektStrankaId);
+    const koncnoIme = stranka ? stranka.name : ime;
+    const kljuc = noviProjektStrankaId || koncnoIme.toLowerCase();
+    if (vrsticeProjektov.some((v) => v.kljuc === kljuc)) { setNoviProjektOdprt(false); setNoviProjektIme(''); setNoviProjektStrankaId(''); return; }
+    const nov: ProjektVrstica = { kljuc, ime: koncnoIme, projektId: noviProjektStrankaId || undefined };
+    const posodobljeni = [...prazniProjekti, nov];
+    setPrazniProjekti(posodobljeni);
+    shraniPrazneProjekte(posodobljeni);
+    setNoviProjektOdprt(false); setNoviProjektIme(''); setNoviProjektStrankaId('');
+  };
+
+  /* --- Uredi oddelke (vodja/admin) --- */
+  const dodajOddelekRocno = () => {
+    const t = novOddelekIme.trim();
+    if (!t) return;
+    setOddelki(dodajOddelek(t));
+    setNovOddelekIme('');
+  };
+  const izbrisiOddelekRocno = (id: string) => setOddelki(izbrisiOddelek(id));
+  const posodobiSefaOddelka = (oddelekId: string, sefId: string) => {
+    const posodobljeni = oddelki.map((o) => (o.id === oddelekId ? { ...o, sefId: sefId || undefined } : o));
+    setOddelki(posodobljeni);
+    shraniOddelki(posodobljeni);
+  };
+  const posodobiSodelavcaOddelek = (sodelavecId: string, oddelekId: string) => {
+    const posodobljeni = sodelavci.map((s) => (s.id === sodelavecId ? { ...s, oddelekId: oddelekId || undefined } : s));
+    setSodelavci(posodobljeni);
+    shraniSodelavci(posodobljeni);
   };
 
   /* Porabljeni cas naloge do TRENUTKA "zdaj" — ce stoparica tece, steje se tudi tekoci odsek. */
@@ -413,7 +575,7 @@ export default function TaskManagerWorkspace() {
 
       <div className="tm-pogled-preklop" role="tablist" aria-label="Pogled">
         <button type="button" role="tab" aria-selected={pogled === 'kanban'} className={pogled === 'kanban' ? 'tm-pogled-on' : ''} onClick={() => setPogled('kanban')}>Kanban</button>
-        <button type="button" role="tab" aria-selected={pogled === 'teden'} className={pogled === 'teden' ? 'tm-pogled-on' : ''} onClick={() => setPogled('teden')}>Tedenski plan</button>
+        <button type="button" role="tab" aria-selected={pogled === 'teden'} className={pogled === 'teden' ? 'tm-pogled-on' : ''} onClick={() => setPogled('teden')}>Plan</button>
       </div>
 
       {pogled === 'kanban' && prikaziFormo && (
@@ -526,133 +688,237 @@ export default function TaskManagerWorkspace() {
       )}
 
       {pogled === 'teden' && (
-        <div className="tm-teden">
+        <div className="tm-plan">
           <div className="tm-teden-nav">
-            <button type="button" className="tm-teden-strelica" onClick={() => setCiklusOffset((o) => o - 1)} aria-label="Prejšnji cikel"><CaretLeft size={14} weight="bold" /></button>
-            <div className="tm-teden-naslov">
-              <strong>{ciklusNaslov}</strong>
-              {ciklusOffset !== 0 && <button type="button" className="tm-teden-danes" onClick={() => setCiklusOffset(0)}>Danes</button>}
+            <div className="tm-obdobje-preklop" role="tablist" aria-label="Obdobje">
+              {OBDOBJA.map((o) => (
+                <button key={o.id} type="button" role="tab" aria-selected={obdobjeVrsta === o.id} className={obdobjeVrsta === o.id ? 'tm-pogled-on' : ''} onClick={() => { setObdobjeVrsta(o.id); setObdobjeOffset(0); }}>{o.naziv}</button>
+              ))}
             </div>
-            <button type="button" className="tm-teden-strelica" onClick={() => setCiklusOffset((o) => o + 1)} aria-label="Naslednji cikel"><CaretRight size={14} weight="bold" /></button>
+            <button type="button" className="tm-teden-strelica" onClick={() => setObdobjeOffset((o) => o - 1)} aria-label="Prejšnje obdobje"><CaretLeft size={14} weight="bold" /></button>
+            <div className="tm-teden-naslov">
+              <strong>{obdobjeNaslov}</strong>
+              {obdobjeOffset !== 0 && <button type="button" className="tm-teden-danes" onClick={() => setObdobjeOffset(0)}>Danes</button>}
+            </div>
+            <button type="button" className="tm-teden-strelica" onClick={() => setObdobjeOffset((o) => o + 1)} aria-label="Naslednje obdobje"><CaretRight size={14} weight="bold" /></button>
             {jeVodjaAliAdmin && (
-              <label className="tm-teden-cikel">
-                <span>Cikel</span>
-                <select value={cikelTednov} onChange={(e) => spremeniCikel(Number(e.target.value))}>
-                  {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n} {n === 1 ? 'teden' : 'tedne'}</option>)}
-                </select>
-              </label>
+              <div className="tm-plan-akcije">
+                <button type="button" className="tm-teden-dodaj" onClick={() => setNoviProjektOdprt((v) => !v)}>+ projekt</button>
+                <button type="button" className="tm-analitika-gumb" onClick={() => setUrediOddelkeOdprto(true)}>
+                  <Buildings size={15} weight="bold" /> Uredi oddelke
+                </button>
+              </div>
             )}
           </div>
 
-          {aktivniSodelavci.length === 0 && <p className="tm-prazno">Ni aktivnih sodelavcev.</p>}
+          {noviProjektOdprt && jeVodjaAliAdmin && (
+            <div className="tm-forma tm-plan-nov-projekt">
+              <div className="tm-forma-glava"><h2>Nov projekt</h2><button type="button" className="tm-x" onClick={() => setNoviProjektOdprt(false)} aria-label="Zapri">×</button></div>
+              <label className="tm-polje"><span>Ime projekta</span>
+                <input value={noviProjektIme} onChange={(e) => setNoviProjektIme(e.target.value)} placeholder="Npr. Battle for Earth …" autoFocus />
+              </label>
+              <label className="tm-polje"><span>Poveži s stranko (neobvezno)</span>
+                <select value={noviProjektStrankaId} onChange={(e) => { setNoviProjektStrankaId(e.target.value); const s = stranke.find((x) => x.id === e.target.value); if (s && !noviProjektIme.trim()) setNoviProjektIme(s.name); }}>
+                  <option value="">— brez —</option>
+                  {stranke.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </label>
+              <div className="tm-forma-akcije">
+                <button type="button" className="tm-preklici" onClick={() => setNoviProjektOdprt(false)}>Prekliči</button>
+                <button type="button" className="tm-shrani" disabled={!noviProjektIme.trim()} onClick={dodajProjektVrstico}>Dodaj projekt</button>
+              </div>
+            </div>
+          )}
 
-          <div className="tm-teden-osebe">
-            {aktivniSodelavci.map((oseba) => {
-              const njeneDodelitve = dodelitveZaOsebo(oseba.id);
-              return (
-                <section key={oseba.id} className="tm-teden-oseba-vrsta">
-                  <header className="tm-teden-oseba-glava">
-                    <span className="tm-oseba-krog" aria-hidden>{oseba.ime.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>
-                    <span className="tm-teden-oseba-ime">{oseba.ime}</span>
-                    {jeVodjaAliAdmin && (
-                      <button type="button" className="tm-teden-dodaj" onClick={() => { setNovaDodelitevOsebaId(oseba.id); setNdProjektIme(''); setNdPodrocje(''); setNdStrankaId(''); setNdNacrt(''); }}>+ dodelitev</button>
-                    )}
-                  </header>
+          {vrsticeProjektov.length === 0 && <p className="tm-prazno">Ni še projektov v tem obdobju{jeVodjaAliAdmin ? ' — dodaj s »+ projekt«.' : '.'}</p>}
 
-                  {njeneDodelitve.length === 0 && <p className="tm-prazno tm-teden-prazno">Brez dodelitev v tem ciklu.</p>}
-
-                  <div className="tm-teden-cipi">
-                    {njeneDodelitve.map((d) => {
-                      const sme = smeUrejatiDodelitev(d);
-                      return (
-                        <article key={d.id} className="tm-teden-cip">
-                          <div className="tm-teden-cip-vrh">
-                            <strong>{d.projektIme}{d.podrocje ? ` — ${d.podrocje}` : ''}</strong>
-                            {jeVodjaAliAdmin && (
-                              <button type="button" className="tm-kartica-x" onClick={() => odstraniDodelitev(d.id)} title="Izbriši dodelitev" aria-label="Izbriši dodelitev">×</button>
-                            )}
-                          </div>
-                          <span className="tm-teden-cip-znacka">{oznakaNalogDodelitve(d)}</span>
-
-                          <label className="tm-teden-cip-polje">
-                            <span>Kaj bom delal/a ta teden</span>
-                            <textarea value={d.nacrt || ''} onChange={(e) => nastaviNacrtDodelitve(d.id, e.target.value)} placeholder="Načrt za ta cikel …" rows={2} disabled={!sme} />
-                          </label>
-
-                          <div className="tm-teden-cip-noga">
-                            <select className="tm-status-select" value={d.status || 'nacrtovano'} onChange={(e) => nastaviStatusDodelitve(d.id, e.target.value)} disabled={!sme} aria-label="Status dodelitve">
-                              {STATUSI_DODELITVE.map((s) => <option key={s.id} value={s.id}>{s.naziv}</option>)}
-                            </select>
-                            {d.status === 'preneseno' && sme && (
-                              <button type="button" className="tm-teden-prenesi" onClick={() => prenesiVNaslednjiCiklus(d)}>
-                                <ArrowBendUpRight size={12} weight="bold" /> V naslednji cikel
-                              </button>
-                            )}
-                            {jeVodjaAliAdmin && (
-                              <select className="tm-dodeli" value={d.osebaId} onChange={(e) => prerazporediDodelitevOsebi(d.id, e.target.value)} aria-label="Prerazporedi drugi osebi" title="Prerazporedi drugi osebi">
-                                {aktivniSodelavci.map((so) => <option key={so.id} value={so.id}>{so.ime}</option>)}
-                              </select>
-                            )}
-                          </div>
-                        </article>
-                      );
-                    })}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
+          {vrsticeProjektov.length > 0 && (
+            <div className="tm-matrika-drs">
+              <table className="tm-matrika">
+                <thead>
+                  <tr>
+                    <th className="tm-matrika-projekt-glava">Projekt</th>
+                    {stolpciPrikaz.map((o) => (
+                      <th key={o.id || 'vse'}>
+                        {o.ime}
+                        {o.sefId && sodelavci.find((s) => s.id === o.sefId) && (
+                          <span className="tm-matrika-sef"> · šef {sodelavci.find((s) => s.id === o.sefId)?.ime}</span>
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {vrsticeProjektov.map((vrstica) => (
+                    <tr key={vrstica.kljuc}>
+                      <th scope="row" className="tm-matrika-projekt">{vrstica.ime}</th>
+                      {stolpciPrikaz.map((o) => {
+                        const celica = dodelitveVCelici(vrstica, o.id);
+                        return (
+                          <td key={o.id || 'vse'}>
+                            <div className="tm-celica">
+                              {celica.map((d) => (
+                                <button key={d.id} type="button" className={`tm-celica-cip tm-status-${d.status || 'nacrtovano'}`} onClick={() => odpriUrediDodelitev(d)} title={oznakaNalogDodelitve(d)}>
+                                  <span className="tm-oseba-krog" aria-hidden>{initialke(d.osebaIme)}</span>
+                                  <span className="tm-celica-cip-tekst">
+                                    <strong>{d.osebaIme}</strong>
+                                    {d.podrocje && <em>{d.podrocje}</em>}
+                                  </span>
+                                  <span className="tm-pika tm-celica-cip-pika" aria-hidden />
+                                  <span className="tm-celica-cip-znacka">{oznakaKompaktna(d)}</span>
+                                </button>
+                              ))}
+                              {jeVodjaAliAdmin && (
+                                <button type="button" className="tm-celica-dodaj" onClick={() => odpriNovoDodelitev(vrstica, o.id)}>+ dodeli</button>
+                              )}
+                              {celica.length === 0 && !jeVodjaAliAdmin && <span className="tm-celica-prazno">—</span>}
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
-      {novaDodelitevOsebaId && (
-        <div className="tm-dodelitev-podlaga" onClick={() => setNovaDodelitevOsebaId(null)}>
-          <aside className="tm-dodelitev-panel" onClick={(e) => e.stopPropagation()}>
-            <div className="tm-forma-glava">
-              <h2>Nova dodelitev — {sodelavci.find((s) => s.id === novaDodelitevOsebaId)?.ime}</h2>
-              <button type="button" className="tm-x" onClick={() => setNovaDodelitevOsebaId(null)} aria-label="Zapri">×</button>
-            </div>
-            <label className="tm-polje"><span>Projekt</span>
-              <input value={ndProjektIme} onChange={(e) => setNdProjektIme(e.target.value)} placeholder="Npr. Battle for Earth …" autoFocus />
-            </label>
-            <label className="tm-polje"><span>Področje</span></label>
-            <div className="tm-podrocja">
-              {podrocja.length === 0 && !dodajOdprt && <p className="tm-podrocja-prazno">Ni še področij — pritisni + za iskanje ali dodajanje.</p>}
-              {podrocja.map((p) => (
-                <span key={p.id} className={`tm-podrocje-cip${ndPodrocje === p.ime ? ' tm-izbran' : ''}`}>
-                  <button type="button" onClick={() => setNdPodrocje(ndPodrocje === p.ime ? '' : p.ime)}>{p.ime}</button>
-                  <button type="button" className="tm-podrocje-brisi" aria-label={`Izbriši področje ${p.ime}`} onClick={() => { setPodrocja(izbrisiPodrocje(p.id)); if (ndPodrocje === p.ime) setNdPodrocje(''); }}>×</button>
-                </span>
-              ))}
-              <button type="button" className="tm-podrocje-plus" aria-label="Poišči ali dodaj področje" onClick={() => setDodajOdprt((v) => !v)}>+</button>
-            </div>
-            {dodajOdprt && (
-              <div className="tm-podrocje-iskalnik">
-                <input autoFocus value={novoPodrocje} onChange={(e) => setNovoPodrocje(e.target.value)} placeholder="Poišči ali dodaj področje …"
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); potrdiPodrocje(); } if (e.key === 'Escape') { setDodajOdprt(false); setNovoPodrocje(''); } }} />
-                <div className="tm-podrocje-zadetki">
-                  {podrocja.filter((p) => p.ime.toLowerCase().includes(novoPodrocje.trim().toLowerCase())).map((p) => (
-                    <button key={p.id} type="button" onClick={() => { setNdPodrocje(p.ime); setDodajOdprt(false); setNovoPodrocje(''); }}>{p.ime}</button>
-                  ))}
-                  {novoPodrocje.trim() && !podrocja.some((p) => p.ime.toLowerCase() === novoPodrocje.trim().toLowerCase()) && (
-                    <button type="button" className="tm-podrocje-nov" onClick={potrdiPodrocje}>+ Dodaj »{novoPodrocje.trim()}«</button>
-                  )}
-                </div>
+      {dodelitevPanel && (() => {
+        const urejena = dodelitevPanel.mode === 'edit' ? dodelitve.find((d) => d.id === dodelitevPanel.dodelitevId) : undefined;
+        /* vodja/admin ureja vsa polja (oseba/oddelek/podrocje); ostali (lastnik dodelitve) le nacrt+status */
+        const smeVse = jeVodjaAliAdmin;
+        const smeLastno = dodelitevPanel.mode === 'new' ? jeVodjaAliAdmin : !!urejena && smeUrejatiDodelitev(urejena);
+        return (
+          <div className="tm-dodelitev-podlaga" onClick={zapriDodelitevPanel}>
+            <aside className="tm-dodelitev-panel" onClick={(e) => e.stopPropagation()}>
+              <div className="tm-forma-glava">
+                <h2>{dodelitevPanel.mode === 'new' ? `Nova dodelitev — ${dodelitevPanel.projektIme}` : `Dodelitev — ${dodelitevPanel.projektIme}`}</h2>
+                <button type="button" className="tm-x" onClick={zapriDodelitevPanel} aria-label="Zapri">×</button>
               </div>
-            )}
-            <label className="tm-polje"><span>Poveži s stranko (neobvezno)</span>
-              <select value={ndStrankaId} onChange={(e) => { setNdStrankaId(e.target.value); const s = stranke.find((x) => x.id === e.target.value); if (s && !ndProjektIme.trim()) setNdProjektIme(s.name); }}>
-                <option value="">— brez —</option>
-                {stranke.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
-            </label>
-            <label className="tm-polje"><span>Kaj bo delal/a ta teden</span>
-              <textarea value={ndNacrt} onChange={(e) => setNdNacrt(e.target.value)} placeholder="Načrt, dogovorjen na sestanku …" rows={3} />
-            </label>
-            <div className="tm-forma-akcije">
-              <button type="button" className="tm-preklici" onClick={() => setNovaDodelitevOsebaId(null)}>Prekliči</button>
-              <button type="button" className="tm-shrani" disabled={!ndProjektIme.trim()} onClick={ustvariDodelitev}>Dodaj dodelitev</button>
+
+              <label className="tm-polje"><span>Oseba</span>
+                <select value={ndOsebaId} onChange={(e) => setNdOsebaId(e.target.value)} disabled={!smeVse} autoFocus={dodelitevPanel.mode === 'new'}>
+                  <option value="">— izberi —</option>
+                  {aktivniSodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime}</option>)}
+                </select>
+              </label>
+              <label className="tm-polje"><span>Oddelek</span>
+                <select value={ndOddelekId} onChange={(e) => setNdOddelekId(e.target.value)} disabled={!smeVse}>
+                  {oddelki.length === 0 && <option value="">Vse</option>}
+                  {oddelki.length > 0 && <option value="">— brez —</option>}
+                  {oddelki.map((o) => <option key={o.id} value={o.id}>{o.ime}</option>)}
+                </select>
+              </label>
+
+              <label className="tm-polje"><span>Področje</span></label>
+              <div className="tm-podrocja">
+                {podrocja.length === 0 && !dodajOdprt && <p className="tm-podrocja-prazno">Ni še področij — pritisni + za iskanje ali dodajanje.</p>}
+                {podrocja.map((p) => (
+                  <span key={p.id} className={`tm-podrocje-cip${ndPodrocje === p.ime ? ' tm-izbran' : ''}`}>
+                    <button type="button" disabled={!smeVse} onClick={() => setNdPodrocje(ndPodrocje === p.ime ? '' : p.ime)}>{p.ime}</button>
+                    <button type="button" className="tm-podrocje-brisi" disabled={!smeVse} aria-label={`Izbriši področje ${p.ime}`} onClick={() => { setPodrocja(izbrisiPodrocje(p.id)); if (ndPodrocje === p.ime) setNdPodrocje(''); }}>×</button>
+                  </span>
+                ))}
+                {smeVse && <button type="button" className="tm-podrocje-plus" aria-label="Poišči ali dodaj področje" onClick={() => setDodajOdprt((v) => !v)}>+</button>}
+              </div>
+              {dodajOdprt && smeVse && (
+                <div className="tm-podrocje-iskalnik">
+                  <input autoFocus value={novoPodrocje} onChange={(e) => setNovoPodrocje(e.target.value)} placeholder="Poišči ali dodaj področje …"
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); potrdiPodrocje(); } if (e.key === 'Escape') { setDodajOdprt(false); setNovoPodrocje(''); } }} />
+                  <div className="tm-podrocje-zadetki">
+                    {podrocja.filter((p) => p.ime.toLowerCase().includes(novoPodrocje.trim().toLowerCase())).map((p) => (
+                      <button key={p.id} type="button" onClick={() => { setNdPodrocje(p.ime); setDodajOdprt(false); setNovoPodrocje(''); }}>{p.ime}</button>
+                    ))}
+                    {novoPodrocje.trim() && !podrocja.some((p) => p.ime.toLowerCase() === novoPodrocje.trim().toLowerCase()) && (
+                      <button type="button" className="tm-podrocje-nov" onClick={potrdiPodrocje}>+ Dodaj »{novoPodrocje.trim()}«</button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {dodelitevPanel.mode === 'new' && (
+                <label className="tm-polje"><span>Poveži s stranko (neobvezno)</span>
+                  <select value={ndStrankaId} onChange={(e) => setNdStrankaId(e.target.value)}>
+                    <option value="">— brez —</option>
+                    {stranke.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </label>
+              )}
+
+              <label className="tm-polje"><span>Kaj bo delal/a</span>
+                <textarea value={ndNacrt} onChange={(e) => setNdNacrt(e.target.value)} placeholder="Načrt za to obdobje …" rows={3} disabled={!smeLastno} />
+              </label>
+
+              {dodelitevPanel.mode === 'edit' && (
+                <label className="tm-polje"><span>Status</span>
+                  <select className="tm-status-select" value={ndStatus} onChange={(e) => setNdStatus(e.target.value as NonNullable<TedenskaDodelitev['status']>)} disabled={!smeLastno}>
+                    {STATUSI_DODELITVE.map((s) => <option key={s.id} value={s.id}>{s.naziv}</option>)}
+                  </select>
+                </label>
+              )}
+
+              <div className="tm-forma-akcije">
+                {dodelitevPanel.mode === 'edit' && jeVodjaAliAdmin && (
+                  <button type="button" className="tm-preklici" onClick={izbrisiIzPanela}>Izbriši</button>
+                )}
+                <button type="button" className="tm-preklici" onClick={zapriDodelitevPanel}>Prekliči</button>
+                {(dodelitevPanel.mode === 'new' ? smeVse : smeLastno) && (
+                  <button type="button" className="tm-shrani" disabled={dodelitevPanel.mode === 'new' && !ndOsebaId} onClick={shraniDodelitevIzPanela}>{dodelitevPanel.mode === 'new' ? 'Dodaj dodelitev' : 'Shrani'}</button>
+                )}
+              </div>
+            </aside>
+          </div>
+        );
+      })()}
+
+      {urediOddelkeOdprto && jeVodjaAliAdmin && (
+        <div className="tm-analitika-podlaga" onClick={() => setUrediOddelkeOdprto(false)}>
+          <aside className="tm-analitika-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="tm-forma-glava">
+              <h2>Uredi oddelke</h2>
+              <button type="button" className="tm-x" onClick={() => setUrediOddelkeOdprto(false)} aria-label="Zapri">×</button>
             </div>
+
+            <label className="tm-polje"><span>Nov oddelek</span>
+              <div className="tm-dodeljeno-vrsta">
+                <input value={novOddelekIme} onChange={(e) => setNovOddelekIme(e.target.value)} placeholder="Npr. Dizajn, Video, Produkcija …"
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); dodajOddelekRocno(); } }} />
+                <button type="button" className="tm-zase" onClick={dodajOddelekRocno}>+ Dodaj</button>
+              </div>
+            </label>
+
+            {oddelki.length === 0 && <p className="tm-prazno">Ni še oddelkov — vsi projekti se prikazujejo v enem stolpcu »Vse«.</p>}
+
+            {oddelki.length > 0 && (
+              <ul className="tm-oddelki-seznam">
+                {oddelki.map((o) => (
+                  <li key={o.id} className="tm-oddelki-vrstica">
+                    <strong>{o.ime}</strong>
+                    <select value={o.sefId || ''} onChange={(e) => posodobiSefaOddelka(o.id, e.target.value)} aria-label={`Šef oddelka ${o.ime}`}>
+                      <option value="">— brez šefa —</option>
+                      {sodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime}</option>)}
+                    </select>
+                    <button type="button" className="tm-kartica-x" onClick={() => izbrisiOddelekRocno(o.id)} title="Izbriši oddelek" aria-label={`Izbriši oddelek ${o.ime}`}>×</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <h3 className="tm-analitika-podnaslov">Dodeli sodelavce oddelkom</h3>
+            <ul className="tm-oddelki-seznam">
+              {sodelavci.map((s) => (
+                <li key={s.id} className="tm-oddelki-vrstica">
+                  <span className="tm-oseba-krog" aria-hidden>{initialke(s.ime)}</span>
+                  <strong>{s.ime}</strong>
+                  <select value={s.oddelekId || ''} onChange={(e) => posodobiSodelavcaOddelek(s.id, e.target.value)} aria-label={`Oddelek za ${s.ime}`}>
+                    <option value="">— brez oddelka —</option>
+                    {oddelki.map((o) => <option key={o.id} value={o.id}>{o.ime}</option>)}
+                  </select>
+                </li>
+              ))}
+            </ul>
           </aside>
         </div>
       )}
@@ -872,43 +1138,57 @@ export default function TaskManagerWorkspace() {
         .tm-komentar-forma textarea:focus{outline:none;border-color:var(--ink)}
         .tm-komentar-forma .tm-shrani{align-self:flex-end}
 
-        /* Tedenski plan / sefov razpored dodelitev */
+        /* Plan / sefov razpored dodelitev — matrika projekt × oddelek */
         .tm-teden-nav{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin-bottom:1.1rem}
         .tm-teden-strelica{flex:none;width:2rem;height:2rem;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--paper);color:var(--ink);cursor:pointer;transition:background .15s,color .15s}
         .tm-teden-strelica:hover{background:var(--ink);color:var(--paper)}
         .tm-teden-naslov{display:flex;align-items:center;gap:.6rem}
         .tm-teden-naslov strong{font:600 1.05rem var(--font-serif),Georgia,serif;color:var(--ink)}
-        .tm-teden-danes{padding:.3rem .7rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--muted);font:700 .64rem var(--font-sans),sans-serif;cursor:pointer}
-        .tm-teden-danes:hover{color:var(--ink);border-color:var(--ink)}
-        .tm-teden-cikel{margin-left:auto;display:flex;align-items:center;gap:.4rem}
-        .tm-teden-cikel span{font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
-        .tm-teden-cikel select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding:.4rem 1.7rem .4rem .65rem;border:1px solid var(--line);border-radius:.7rem;background-color:oklch(100% 0 0/.75);font:inherit;font-size:.78rem;color:var(--ink);background-repeat:no-repeat;background-position:right .55rem center;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
-
-        .tm-teden-osebe{display:flex;flex-direction:column;gap:1rem}
-        .tm-teden-oseba-vrsta{padding:.9rem 1rem 1rem;border:1px solid var(--line);border-radius:1.1rem;background:oklch(97.5% .008 87/.6)}
-        .tm-teden-oseba-glava{display:flex;align-items:center;gap:.55rem;margin-bottom:.7rem}
-        .tm-teden-oseba-ime{flex:1;font:650 .86rem var(--font-sans),sans-serif;color:var(--ink)}
-        .tm-teden-dodaj{flex:none;padding:.35rem .75rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--muted);font:700 .66rem var(--font-sans),sans-serif;cursor:pointer}
-        .tm-teden-dodaj:hover{border-style:solid;border-color:var(--ink);color:var(--ink)}
-        .tm-teden-prazno{margin:0;padding:.7rem .6rem}
-
-        .tm-teden-cipi{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.7rem}
-        .tm-teden-cip{display:flex;flex-direction:column;gap:.5rem;padding:.7rem .8rem;border:1px solid var(--line);border-radius:.85rem;background:oklch(100% 0 0/.9);box-shadow:0 .4rem 1rem oklch(20% .03 55/.05)}
-        .tm-teden-cip-vrh{display:flex;align-items:flex-start;gap:.4rem}
-        .tm-teden-cip-vrh strong{flex:1;font-size:.8rem;font-weight:650;line-height:1.35;color:var(--ink)}
-        .tm-teden-cip-znacka{align-self:flex-start;padding:.15rem .5rem;border-radius:999px;background:oklch(94% .03 300);color:oklch(38% .1 300);font:700 .62rem var(--font-sans),sans-serif}
-        .tm-teden-cip-polje{display:flex;flex-direction:column;gap:.25rem}
-        .tm-teden-cip-polje span{font:700 .58rem var(--font-sans),sans-serif;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
-        .tm-teden-cip-polje textarea{width:100%;padding:.4rem .55rem;border:1px solid var(--line);border-radius:.55rem;background:oklch(100% 0 0/.7);font:inherit;font-size:.76rem;color:var(--ink);resize:vertical;min-height:2.2rem}
-        .tm-teden-cip-polje textarea:focus{outline:none;border-color:var(--ink)}
-        .tm-teden-cip-polje textarea:disabled{opacity:.6;cursor:not-allowed}
-        .tm-teden-cip-noga{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+        .tm-teden-danes{padding:.3rem .7rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);opacity:.65;font:700 .64rem var(--font-sans),sans-serif;cursor:pointer}
+        .tm-teden-danes:hover{opacity:1;border-color:var(--ink)}
+        .tm-obdobje-preklop{display:inline-flex;gap:.2rem;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
+        .tm-obdobje-preklop button{padding:.4rem .85rem;border:0;border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--ink);opacity:.62;cursor:pointer}
+        .tm-obdobje-preklop button.tm-pogled-on{background:var(--ink);color:var(--paper);opacity:1}
+        .tm-plan-akcije{margin-left:auto;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+        .tm-teden-dodaj{flex:none;padding:.35rem .75rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--ink);opacity:.65;font:700 .66rem var(--font-sans),sans-serif;cursor:pointer}
+        .tm-teden-dodaj:hover{border-style:solid;border-color:var(--ink);opacity:1}
+        .tm-plan-nov-projekt{max-width:26rem}
 
         /* status dodelitve — samostojen pill-select, isti chevron kot ostali selecti */
         .tm-status-select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding:.2rem 1.3rem .2rem .55rem;border:1px solid var(--line);border-radius:999px;font:700 .62rem var(--font-sans),sans-serif;cursor:pointer;background-color:oklch(96% .006 87);color:var(--ink);background-repeat:no-repeat;background-position:right .4rem center;background-size:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
         .tm-status-select:disabled{opacity:.6;cursor:not-allowed}
-        .tm-teden-prenesi{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .6rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font:700 .62rem var(--font-sans),sans-serif;cursor:pointer}
-        .tm-teden-prenesi:hover{background:var(--ink);color:var(--paper)}
+
+        /* matrika: vrstice=projekti, stolpci=oddelki */
+        .tm-matrika-drs{overflow-x:auto;border:1px solid var(--line);border-radius:1rem;background:oklch(97.5% .008 87/.5)}
+        .tm-matrika{width:100%;border-collapse:collapse;min-width:38rem}
+        .tm-matrika thead th{position:sticky;top:0;padding:.7rem .9rem;text-align:left;font:800 .64rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);opacity:.6;background:oklch(97.5% .008 87/.95);border-bottom:1px solid var(--line);white-space:nowrap}
+        .tm-matrika-sef{text-transform:none;letter-spacing:0;font-weight:600;opacity:.75}
+        .tm-matrika-projekt-glava{min-width:9rem}
+        .tm-matrika tbody th.tm-matrika-projekt{text-align:left;padding:.7rem .9rem;font:650 .82rem var(--font-serif),Georgia,serif;color:var(--ink);white-space:nowrap;border-bottom:1px solid var(--line);vertical-align:top}
+        .tm-matrika tbody td{padding:.5rem;border-bottom:1px solid var(--line);border-left:1px solid var(--line);vertical-align:top;min-width:11rem}
+        .tm-matrika tbody tr:last-child th,.tm-matrika tbody tr:last-child td{border-bottom:none}
+
+        .tm-celica{display:flex;flex-direction:column;gap:.35rem}
+        .tm-celica-cip{display:flex;align-items:center;gap:.4rem;padding:.35rem .5rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0/.9);cursor:pointer;text-align:left;transition:border-color .15s,box-shadow .15s}
+        .tm-celica-cip:hover{border-color:color-mix(in oklch,var(--ink) 30%,transparent);box-shadow:0 .3rem .8rem oklch(20% .03 55/.06)}
+        .tm-celica-cip-tekst{flex:1;min-width:0;display:flex;flex-direction:column;gap:.05rem}
+        .tm-celica-cip-tekst strong{font-size:.72rem;font-weight:650;line-height:1.2;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .tm-celica-cip-tekst em{font:400 .62rem var(--font-sans),sans-serif;font-style:normal;color:var(--ink);opacity:.55}
+        .tm-celica-cip-pika{width:.45rem;height:.45rem;flex:none}
+        .tm-status-nacrtovano .tm-celica-cip-pika{background:oklch(62% .19 300)}
+        .tm-status-opravljeno .tm-celica-cip-pika{background:oklch(68% .16 150)}
+        .tm-status-delno .tm-celica-cip-pika{background:oklch(74% .15 70)}
+        .tm-status-preneseno .tm-celica-cip-pika{background:oklch(58% .16 30)}
+        .tm-celica-cip-znacka{flex:none;padding:.1rem .4rem;border-radius:999px;background:oklch(95% .01 87);color:var(--ink);opacity:.65;font:700 .58rem var(--font-sans),sans-serif}
+        .tm-celica-dodaj{align-self:flex-start;padding:.3rem .55rem;border:1px dashed var(--line);border-radius:.7rem;background:transparent;color:var(--ink);opacity:.4;font:700 .62rem var(--font-sans),sans-serif;cursor:pointer}
+        .tm-celica-dodaj:hover{opacity:1;border-style:solid;border-color:var(--ink)}
+        .tm-celica-prazno{padding:.35rem 0;color:var(--ink);opacity:.3;font-size:.74rem}
+
+        /* panel Uredi oddelke */
+        .tm-oddelki-seznam{list-style:none;margin:.2rem 0 1.1rem;padding:0;display:flex;flex-direction:column;gap:.5rem}
+        .tm-oddelki-vrstica{display:flex;align-items:center;gap:.5rem;padding:.5rem .6rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0/.6)}
+        .tm-oddelki-vrstica strong{flex:1;min-width:0;font-size:.78rem;font-weight:650;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .tm-oddelki-vrstica select{flex:none;max-width:11rem;padding:.4rem 1.8rem .4rem .55rem;border:1px solid var(--line);border-radius:.6rem;background-color:var(--paper);font:inherit;font-size:.72rem;color:var(--ink)}
 
         /* lastna področja dela — čipi + gumb »+« za iskanje/dodajanje (urejljivo, ne trdo zakodirano) */
         .tm-podrocja{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin:-.4rem 0 .5rem}
@@ -932,8 +1212,8 @@ export default function TaskManagerWorkspace() {
         @media (max-width:860px){
           .tm-deska{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:82vw;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.6rem}
           .tm-stolpec{scroll-snap-align:start}
-          .tm-teden-cipi{grid-template-columns:1fr}
-          .tm-teden-cikel{margin-left:0}
+          .tm-plan-akcije{margin-left:0;width:100%}
+          .tm-matrika tbody td,.tm-matrika-projekt-glava,.tm-matrika tbody th.tm-matrika-projekt{min-width:9rem}
         }
       `}</style>
     </div>
