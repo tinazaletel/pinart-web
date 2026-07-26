@@ -1508,14 +1508,18 @@
   .accountingForm input { width: 100%; min-width: 0; }
 }
 
-/* Bodoni je tanka -> ENOTNA odebelitev prek outline (brez razsirjanja glifov) na VSEH serifnih napisih FLOW */
+/* Bodoni je tanka -> ENOTNA odebelitev prek outline (brez razsirjanja glifov) na SERIFNIH NASLOVIH FLOW.
+   POZOR: velja SAMO za naslove (h1/h2/h3). Stevilke (strong/znacke) so brez outline (locen blok spodaj). */
 .topbar h1, .pulse h2, .sectionHeading h2, .sectionHeader h2, .bandTitle h2, .businessIntro h2,
 .panelHeading h2, .panelHeading > div h2, .detailPanel h2, .donutPanel h2, .formHeading h2,
 .contractHero h2, .contractArchive h2, .invoiceCreator h2, .invoiceArchive h2,
 .expenseEditor h2, .expenseArchive h2, .recurringCosts h2, .priceEditor > header h2, .priceListIntro h2,
 .clientEditor h2, .clientDirectory h2, .clientProfile h2, .goalOverview h2, .goalCopy h2,
 .goalBuilder header h2, .goalChecklist h2, .goalHistory h2, .orphanDocuments h2, .projectStory h2,
-.clientDocuments h3, .projectBundle h3, .projectNarrative h3,
+.clientDocuments h3, .projectBundle h3, .projectNarrative h3 {
+  -webkit-text-stroke: 0.5px currentColor;
+}
+/* Stevilke / znacke BREZ outline (Tinina zahteva "outline cifram" = brez) */
 .flowTools strong, .kpi strong, .metric strong, .clientResult > strong, .clientFinance strong,
 .clientProfileEmpty strong, .documentEmpty strong, .offerContext strong, .invoiceSummary article strong,
 .invoiceSummary > button strong, .expenseSummary article strong, .expenseSummary > button strong,
