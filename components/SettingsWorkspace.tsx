@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import VidezDokumentov from '@/components/VidezDokumentov';
 import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, nastaviLogoAktivne } from '@/lib/dokVidez';
+import type { Sodelavec } from '@/lib/naloge';
+import { preberiSodelavci, shraniSodelavci, VLOGE, vlogaOznaka } from '@/lib/sodelavci';
 import styles from './SettingsWorkspace.module.css';
 
 /* Nastavitve aplikacije. Vsebina je PRENESENA iz profila kalkulatorja (videz
@@ -23,6 +25,14 @@ export default function SettingsWorkspace({ base }: { base: string }) {
   const [sporocilo, setSporocilo] = useState('');
   const datoteka = useRef<HTMLInputElement>(null);
 
+  /* --- Sodelavci / ekipa: lokalna shramba iz lib/sodelavci.ts (glej tudi
+     Task Manager, ki isti seznam uporablja za dodeljevanje nalog). --- */
+  const [sodelavci, setSodelavci] = useState<Sodelavec[]>([]);
+  const [novoIme, setNovoIme] = useState('');
+  const [novEmail, setNovEmail] = useState('');
+  const [novaVloga, setNovaVloga] = useState<Sodelavec['vloga']>('clan');
+  const [ekipaSporocilo, setEkipaSporocilo] = useState('');
+
   /* Preberi obstojece nastavitve iz istega kljuca kot kalkulator. */
   useEffect(() => {
     try {
@@ -32,7 +42,40 @@ export default function SettingsWorkspace({ base }: { base: string }) {
     } catch { /* pokvarjen zapis ignoriramo */ }
     try { setLogo(localStorage.getItem(K_LOGO) || ''); } catch { /* ignoriraj */ }
     setNalozeno(true);
+    setSodelavci(preberiSodelavci());
   }, []);
+
+  /* Vsaka sprememba ekipe (dodaj/uredi vlogo/aktiven/briši) gre skozi to
+     funkcijo — posodobi stanje in takoj shrani, da se Task Manager (bere
+     isti kljuc) vidi usklajen. */
+  function posodobiEkipo(next: Sodelavec[]) {
+    setSodelavci(next);
+    shraniSodelavci(next);
+  }
+
+  function spremeniVlogo(id: string, vloga: Sodelavec['vloga']) {
+    posodobiEkipo(sodelavci.map((s) => (s.id === id ? { ...s, vloga } : s)));
+  }
+
+  function preklopiAktiven(id: string) {
+    posodobiEkipo(sodelavci.map((s) => (s.id === id ? { ...s, aktiven: !s.aktiven } : s)));
+  }
+
+  function izbrisiSodelavca(id: string) {
+    const oseba = sodelavci.find((s) => s.id === id);
+    if (oseba && !window.confirm(`Izbrišem sodelavca ${oseba.ime}?`)) return;
+    posodobiEkipo(sodelavci.filter((s) => s.id !== id));
+  }
+
+  function dodajSodelavca(e: React.FormEvent) {
+    e.preventDefault();
+    const ime = novoIme.trim();
+    const email = novEmail.trim();
+    if (!ime || !email) { setEkipaSporocilo('Vnesi ime in e-pošto sodelavca.'); return; }
+    const nov: Sodelavec = { id: 'sod_' + Date.now(), ime, email, vloga: novaVloga, aktiven: true };
+    posodobiEkipo([...sodelavci, nov]);
+    setNovoIme(''); setNovEmail(''); setNovaVloga('clan'); setEkipaSporocilo('');
+  }
 
   /* Shrani nazaj v K_NAST, ne da bi povozil ostale nastavitve kalkulatorja. */
   useEffect(() => {
@@ -118,6 +161,88 @@ export default function SettingsWorkspace({ base }: { base: string }) {
         {sporocilo && <p className={styles.opomba} role="status">{sporocilo}</p>}
 
         {nalozeno && <VidezDokumentov barva={barva} font={font} onBarva={setBarva} onFont={setFont} logo={logo} onLogo={setLogo} />}
+      </section>
+
+      <section className={styles.card}>
+        <h2>Sodelavci</h2>
+        <p>Ekipa, ki dela s tem orodjem — vloge urejajo, kaj kdo lahko vidi in ureja.</p>
+
+        {sodelavci.length > 0 && (
+          <ul className={styles.ekipaSeznam}>
+            {sodelavci.map((s) => (
+              <li key={s.id} className={styles.ekipaVrstica}>
+                <div className={styles.ekipaOseba}>
+                  <span className={styles.ekipaIme}>{s.ime}</span>
+                  <span className={styles.ekipaEmail}>{s.email}</span>
+                </div>
+
+                <span className={`${styles.znacka} ${styles['znacka_' + s.vloga] || ''}`}>
+                  {vlogaOznaka(s.vloga)}
+                </span>
+
+                <select
+                  className={styles.ekipaVloga}
+                  value={s.vloga}
+                  onChange={(e) => spremeniVlogo(s.id, e.target.value as Sodelavec['vloga'])}
+                  aria-label={`Vloga — ${s.ime}`}
+                >
+                  {VLOGE.map((v) => <option key={v.vloga} value={v.vloga}>{v.oznaka}</option>)}
+                </select>
+
+                <label className={styles.preklop} title={s.aktiven ? 'Aktiven' : 'Neaktiven'}>
+                  <input
+                    type="checkbox"
+                    checked={s.aktiven}
+                    onChange={() => preklopiAktiven(s.id)}
+                    aria-label={`${s.aktiven ? 'Deaktiviraj' : 'Aktiviraj'} ${s.ime}`}
+                  />
+                  <span className={styles.preklopDrsnik} />
+                </label>
+
+                <button
+                  type="button"
+                  className={styles.krogGumb}
+                  onClick={() => izbrisiSodelavca(s.id)}
+                  aria-label={`Izbriši ${s.ime}`}
+                  title="Izbriši"
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <form className={styles.dodajObrazec} onSubmit={dodajSodelavca}>
+          <input
+            type="text"
+            placeholder="Ime in priimek"
+            value={novoIme}
+            onChange={(e) => setNovoIme(e.target.value)}
+            aria-label="Ime novega sodelavca"
+          />
+          <input
+            type="email"
+            placeholder="E-pošta"
+            value={novEmail}
+            onChange={(e) => setNovEmail(e.target.value)}
+            aria-label="E-pošta novega sodelavca"
+          />
+          <select
+            value={novaVloga}
+            onChange={(e) => setNovaVloga(e.target.value as Sodelavec['vloga'])}
+            aria-label="Vloga novega sodelavca"
+          >
+            {VLOGE.map((v) => <option key={v.vloga} value={v.vloga}>{v.oznaka}</option>)}
+          </select>
+          <button type="submit" className={styles.gumb}>Dodaj sodelavca</button>
+        </form>
+
+        {ekipaSporocilo && <p className={styles.opomba} role="status">{ekipaSporocilo}</p>}
+
+        <p className={styles.opomba}>
+          To je lokalni seznam ekipe. Pravo omejevanje dostopa (kdo vidi katere strani) pride s prijavo/zaledjem.
+        </p>
       </section>
 
       <section className={styles.card}>
