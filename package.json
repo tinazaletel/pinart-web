@@ -35,7 +35,8 @@
     "pdfjs-dist": "^6.1.200",
     "puppeteer-core": "^23.11.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "resend": "^6.18.0"
   },
   "devDependencies": {
     "@types/matter-js": "^0.20.2",

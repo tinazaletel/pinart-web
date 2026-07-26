@@ -5,11 +5,12 @@
    Bodoni, ink, akcent). Lasten prefiksiran <style> blok (tm-), da ne trči s .shell. */
 
 import React, { useState, useEffect } from 'react';
-import { Pause, Play, ChartBar, ChatCircleDots, CaretLeft, CaretRight, Buildings } from '@phosphor-icons/react';
+import { Pause, Play, ChartBar, ChatCircleDots, CaretLeft, CaretRight, Buildings, Circle, CheckCircle, UserPlus } from '@phosphor-icons/react';
 import {
   Naloga,
   NalogaStolpec,
   NalogaKomentar,
+  NalogaPodopravilo,
   preberiNaloge,
   shraniNaloge,
   Sodelavec,
@@ -196,6 +197,10 @@ export default function TaskManagerWorkspace() {
   /* --- podrobnosti/komentarji naloge (odprti panel) --- */
   const [odprtaNalogaId, setOdprtaNalogaId] = useState<string | null>(null);
   const [novKomentar, setNovKomentar] = useState('');
+  /* checklist podopravil v detajlnem panelu: besedilo novega vnosa + katero podopravilo
+     ima trenutno odprt spustni izbor za dodelitev osebe (samo eno naenkrat) */
+  const [novoPodopraviloBesedilo, setNovoPodopraviloBesedilo] = useState('');
+  const [odpriDodelitevPodId, setOdpriDodelitevPodId] = useState<string | null>(null);
 
   /* --- Plan (prej Tedenski plan) / šefov razpored dodelitev — matrika projekt × oddelek --- */
   const [pogled, setPogled] = useState<'kanban' | 'teden'>('kanban');
@@ -364,6 +369,40 @@ export default function TaskManagerWorkspace() {
     if (samoOgled) return;
     posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, oznake: (n.oznake || []).filter((o) => o !== oznaka) } : n)));
     if (filterOznaka === oznaka) setFilterOznaka('');
+  };
+
+  /* uredi prost opis naloge (urejljiva textarea v detajlnem panelu) */
+  const urediOpis = (id: string, opis: string) => {
+    if (samoOgled) return;
+    posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, opis: opis || undefined } : n)));
+  };
+
+  /* --- checklist podopravil znotraj naloge (detajlni panel) --- */
+  const dodajPodopravilo = (nalogaId: string, besedilo: string) => {
+    if (samoOgled) return;
+    const t = besedilo.trim();
+    if (!t) return;
+    const novo: NalogaPodopravilo = { id: 'pod_' + Date.now(), besedilo: t, done: false };
+    posodobiInShrani(naloge.map((n) => (n.id === nalogaId ? { ...n, podopravila: [...(n.podopravila || []), novo] } : n)));
+  };
+  const preklopiPodopravilo = (nalogaId: string, podId: string) => {
+    if (samoOgled) return;
+    posodobiInShrani(naloge.map((n) => (n.id === nalogaId ? { ...n, podopravila: (n.podopravila || []).map((p) => (p.id === podId ? { ...p, done: !p.done } : p)) } : n)));
+  };
+  const urediPodopravilo = (nalogaId: string, podId: string, besedilo: string) => {
+    if (samoOgled) return;
+    posodobiInShrani(naloge.map((n) => (n.id === nalogaId ? { ...n, podopravila: (n.podopravila || []).map((p) => (p.id === podId ? { ...p, besedilo } : p)) } : n)));
+  };
+  /* dodeli sodelavca konkretnemu podopravilu (loceno od dodelitve cele naloge) — prazen
+     osebaId odstrani dodelitev na tem podopravilu */
+  const dodeliPodopravilo = (nalogaId: string, podId: string, osebaId: string) => {
+    if (samoOgled) return;
+    const oseba = sodelavci.find((s) => s.id === osebaId);
+    posodobiInShrani(naloge.map((n) => (n.id === nalogaId ? { ...n, podopravila: (n.podopravila || []).map((p) => (p.id === podId ? { ...p, dodeljenoOsebaId: oseba?.id, dodeljenoOsebaIme: oseba?.ime } : p)) } : n)));
+  };
+  const izbrisiPodopravilo = (nalogaId: string, podId: string) => {
+    if (samoOgled) return;
+    posodobiInShrani(naloge.map((n) => (n.id === nalogaId ? { ...n, podopravila: (n.podopravila || []).filter((p) => p.id !== podId) } : n)));
   };
 
   /* gumb "Naloži razvojne naloge (Flow)" — dogfooding: doda seznam NALOGE_FLOW_RAZVOJ v
@@ -732,9 +771,26 @@ export default function TaskManagerWorkspace() {
         </div>
       </header>
 
-      <div className="tm-pogled-preklop" role="tablist" aria-label="Pogled">
-        <button type="button" role="tab" aria-selected={pogled === 'kanban'} className={pogled === 'kanban' ? 'tm-pogled-on' : ''} onClick={() => setPogled('kanban')}>Kanban</button>
-        <button type="button" role="tab" aria-selected={pogled === 'teden'} className={pogled === 'teden' ? 'tm-pogled-on' : ''} onClick={() => setPogled('teden')}>Plan</button>
+      <div className="tm-pogled-filtri-vrsta">
+        <div className="tm-pogled-preklop" role="tablist" aria-label="Pogled">
+          <button type="button" role="tab" aria-selected={pogled === 'kanban'} className={pogled === 'kanban' ? 'tm-pogled-on' : ''} onClick={() => setPogled('kanban')}>Kanban</button>
+          <button type="button" role="tab" aria-selected={pogled === 'teden'} className={pogled === 'teden' ? 'tm-pogled-on' : ''} onClick={() => setPogled('teden')}>Plan</button>
+        </div>
+        {pogled === 'kanban' && (
+          <div className="tm-filtri-vrsta">
+            <div className="tm-filtri" role="tablist" aria-label="Filter nalog">
+              {([['vse', 'Vse naloge'], ['moje', 'Moje naloge'], ['zamujene', 'Zamujene']] as const).map(([k, oznaka]) => (
+                <button key={k} type="button" role="tab" aria-selected={filter === k} className={filter === k ? 'tm-filter-on' : ''} onClick={() => setFilter(k)}>{oznaka}{k === 'zamujene' && vidneNaloge.some((n) => !!n.rok && n.rok < danesStr && n.stolpec !== 'done') ? ' •' : ''}</button>
+              ))}
+            </div>
+            {vseOznake.length > 0 && (
+              <select className="tm-filter-oznaka" value={filterOznaka} onChange={(e) => setFilterOznaka(e.target.value)} aria-label="Filter po oznaki">
+                <option value="">Vse oznake</option>
+                {vseOznake.map((o) => <option key={o} value={o}>{o}</option>)}
+              </select>
+            )}
+          </div>
+        )}
       </div>
 
       {pogled === 'kanban' && hitroOdprt && (
@@ -774,22 +830,6 @@ export default function TaskManagerWorkspace() {
       )}
 
       {pogled === 'kanban' && (
-      <div className="tm-filtri-vrsta">
-        <div className="tm-filtri" role="tablist" aria-label="Filter nalog">
-          {([['vse', 'Vse naloge'], ['moje', 'Moje naloge'], ['zamujene', 'Zamujene']] as const).map(([k, oznaka]) => (
-            <button key={k} type="button" role="tab" aria-selected={filter === k} className={filter === k ? 'tm-filter-on' : ''} onClick={() => setFilter(k)}>{oznaka}{k === 'zamujene' && vidneNaloge.some((n) => !!n.rok && n.rok < danesStr && n.stolpec !== 'done') ? ' •' : ''}</button>
-          ))}
-        </div>
-        {vseOznake.length > 0 && (
-          <select className="tm-filter-oznaka" value={filterOznaka} onChange={(e) => setFilterOznaka(e.target.value)} aria-label="Filter po oznaki">
-            <option value="">Vse oznake</option>
-            {vseOznake.map((o) => <option key={o} value={o}>{o}</option>)}
-          </select>
-        )}
-      </div>
-      )}
-
-      {pogled === 'kanban' && (
       <div className="tm-deska">
         {STOLPCI.map((s) => {
           const nalogeVStolpcu = prikazaneNaloge.filter((n) => n.stolpec === s.id).sort((a, b) => (PRIO_RED[a.prioriteta ?? ''] ?? 3) - (PRIO_RED[b.prioriteta ?? ''] ?? 3));
@@ -813,7 +853,7 @@ export default function TaskManagerWorkspace() {
                         <button
                           type="button"
                           className="tm-kartica-komentarji"
-                          onClick={() => { setOdprtaNalogaId(naloga.id); setNovKomentar(''); setNovaOznaka(''); }}
+                          onClick={() => { setOdprtaNalogaId(naloga.id); setNovKomentar(''); setNovaOznaka(''); setNovoPodopraviloBesedilo(''); setOdpriDodelitevPodId(null); }}
                           aria-label={`Podrobnosti in komentarji (${naloga.komentarji?.length || 0})`}
                           title="Podrobnosti, stranka, projekt in komentarji"
                         >
@@ -842,6 +882,12 @@ export default function TaskManagerWorkspace() {
                         {naloga.rok && <span className={`tm-rok${jeZapadlo(naloga.rok) && s.id !== 'done' ? ' tm-rok-zapadlo' : ''}`}>📅 {datStr(naloga.rok)}</span>}
                         {naloga.clientId && strankaImeMap.get(naloga.clientId) && (
                           <span className="tm-stranka-znacka" title={`Stranka: ${strankaImeMap.get(naloga.clientId)}`}>{strankaImeMap.get(naloga.clientId)}</span>
+                        )}
+                        {!!naloga.podopravila?.length && (
+                          <span className="tm-kartica-podopravila" title="Podopravila">
+                            <CheckCircle size={11} weight="bold" />
+                            {naloga.podopravila.filter((p) => p.done).length}/{naloga.podopravila.length}
+                          </span>
                         )}
                         <select
                           className={`tm-prioriteta-select tm-prioriteta-select-${naloga.prioriteta || 'brez'}`}
@@ -1152,15 +1198,154 @@ export default function TaskManagerWorkspace() {
         </div>
       )}
 
-      {odprtaNaloga && (
+      {odprtaNaloga && (() => {
+        const podopravila = odprtaNaloga.podopravila || [];
+        const podKoncana = podopravila.filter((p) => p.done).length;
+        const dodeljenoImePanel = odprtaNaloga.dodeljenoOsebaIme || odprtaNaloga.dodeljenoOseba || '';
+        const porabljenePanel = porabljeneMinute(odprtaNaloga);
+        const ocenaPanel = odprtaNaloga.ocenjeniCasUre;
+        const oznakePanel = odprtaNaloga.oznake || [];
+        return (
         <div className="tm-detajli-podlaga" onClick={() => setOdprtaNalogaId(null)}>
           <aside className="tm-detajli-panel" onClick={(e) => e.stopPropagation()}>
-            <div className="tm-forma-glava">
-              <h2>{odprtaNaloga.naslov}</h2>
+            <div className="tm-detajli-vrh">
+              {oznakePanel.length > 0 ? (
+                <span className="tm-detajli-tag">{oznakePanel[0]}{oznakePanel.length > 1 ? ` +${oznakePanel.length - 1}` : ''}</span>
+              ) : <span />}
               <button type="button" className="tm-x" onClick={() => setOdprtaNalogaId(null)} aria-label="Zapri">×</button>
             </div>
-            {odprtaNaloga.opis && <p className="tm-kartica-opis">{odprtaNaloga.opis}</p>}
-            <label className="tm-polje"><span>Dodeli</span>
+
+            <h2 className="tm-detajli-naslov">{odprtaNaloga.naslov}</h2>
+
+            <div className="tm-detajli-okvir">
+              <textarea
+                className="tm-detajli-opis-polje"
+                value={odprtaNaloga.opis || ''}
+                onChange={(e) => urediOpis(odprtaNaloga.id, e.target.value)}
+                placeholder="Opiši kar želiš da se naredi…"
+                rows={3}
+                disabled={samoOgled}
+              />
+
+              <div className="tm-podopravila-wrap">
+                {podopravila.length > 0 && (
+                  <ul className="tm-podopravila-seznam">
+                    {podopravila.map((p) => (
+                      <li key={p.id} className="tm-podopravilo">
+                        <button
+                          type="button"
+                          className={`tm-podopravilo-krog${p.done ? ' tm-podopravilo-krog-done' : ''}`}
+                          onClick={() => preklopiPodopravilo(odprtaNaloga.id, p.id)}
+                          disabled={samoOgled}
+                          aria-label={p.done ? 'Označi kot nedokončano' : 'Označi kot dokončano'}
+                        >
+                          {p.done ? <CheckCircle size={17} weight="fill" /> : <Circle size={17} />}
+                        </button>
+                        <input
+                          className={`tm-podopravilo-tekst${p.done ? ' tm-podopravilo-tekst-done' : ''}`}
+                          value={p.besedilo}
+                          onChange={(e) => urediPodopravilo(odprtaNaloga.id, p.id, e.target.value)}
+                          disabled={samoOgled}
+                        />
+                        <div className="tm-podopravilo-dodeli-vrsta">
+                          {p.dodeljenoOsebaIme ? (
+                            <button
+                              type="button"
+                              className="tm-oseba-krog tm-podopravilo-oseba"
+                              title={`Dodeljeno: ${p.dodeljenoOsebaIme}`}
+                              aria-label={`Dodeljeno: ${p.dodeljenoOsebaIme} — spremeni`}
+                              disabled={samoOgled}
+                              onClick={() => setOdpriDodelitevPodId(odpriDodelitevPodId === p.id ? null : p.id)}
+                            >
+                              {initialke(p.dodeljenoOsebaIme)}
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="tm-podopravilo-dodeli-gumb"
+                              title="Dodeli osebo"
+                              aria-label="Dodeli osebo podopravilu"
+                              disabled={samoOgled}
+                              onClick={() => setOdpriDodelitevPodId(odpriDodelitevPodId === p.id ? null : p.id)}
+                            >
+                              <UserPlus size={13} />
+                            </button>
+                          )}
+                          {odpriDodelitevPodId === p.id && (
+                            <select
+                              className="tm-podopravilo-dodeli-select"
+                              autoFocus
+                              value={p.dodeljenoOsebaId || ''}
+                              onChange={(e) => { dodeliPodopravilo(odprtaNaloga.id, p.id, e.target.value); setOdpriDodelitevPodId(null); }}
+                              onBlur={() => setOdpriDodelitevPodId(null)}
+                            >
+                              <option value="">— nedodeljeno —</option>
+                              {aktivniSodelavci.map((so) => <option key={so.id} value={so.id}>{so.ime}</option>)}
+                            </select>
+                          )}
+                        </div>
+                        {!samoOgled && (
+                          <button type="button" className="tm-podopravilo-brisi" aria-label="Izbriši podopravilo" onClick={() => izbrisiPodopravilo(odprtaNaloga.id, p.id)}>×</button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {!samoOgled && (
+                  <div className="tm-podopravilo-dodaj">
+                    <input
+                      value={novoPodopraviloBesedilo}
+                      onChange={(e) => setNovoPodopraviloBesedilo(e.target.value)}
+                      placeholder="+ dodaj podopravilo"
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); dodajPodopravilo(odprtaNaloga.id, novoPodopraviloBesedilo); setNovoPodopraviloBesedilo(''); } }}
+                    />
+                    <button type="button" className="tm-zase" disabled={!novoPodopraviloBesedilo.trim()} onClick={() => { dodajPodopravilo(odprtaNaloga.id, novoPodopraviloBesedilo); setNovoPodopraviloBesedilo(''); }}>+ Dodaj</button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="tm-detajli-noga">
+              {dodeljenoImePanel && <span className="tm-oseba-krog" title={`Dodeljeno: ${dodeljenoImePanel}`}>{initialke(dodeljenoImePanel)}</span>}
+              <select
+                className={`tm-prioriteta-select tm-prioriteta-select-${odprtaNaloga.prioriteta || 'brez'}`}
+                value={odprtaNaloga.prioriteta || ''}
+                onChange={(e) => nastaviPrioriteto(odprtaNaloga.id, e.target.value)}
+                disabled={samoOgled}
+                aria-label="Prioriteta"
+              >
+                <option value="">Prioriteta —</option>
+                {PRIORITETE.map((p) => <option key={p.id} value={p.id}>{p.naziv}</option>)}
+              </select>
+              <div className="tm-detajli-cas">
+                <span className="tm-cas-tekst">{formatUre(porabljenePanel)}h{ocenaPanel ? ` / ${ocenaPanel}h` : ''}</span>
+                {odprtaNaloga.isTimerRunning && odprtaNaloga.timerStartTime && (
+                  <span className="tm-cas-ziv" aria-label="Tekoči čas">▶ {formatCasSek((zdaj - new Date(odprtaNaloga.timerStartTime).getTime()) / 1000)}</span>
+                )}
+                <button
+                  type="button"
+                  className={`tm-cas-gumb${odprtaNaloga.isTimerRunning ? ' tm-cas-gumb-tece' : ''}`}
+                  onClick={() => preklopiStoparico(odprtaNaloga.id)}
+                  disabled={samoOgled}
+                  aria-label={odprtaNaloga.isTimerRunning ? 'Ustavi štoparico' : 'Zaženi štoparico'}
+                  title={odprtaNaloga.isTimerRunning ? 'Ustavi merjenje' : 'Zaženi merjenje'}
+                >
+                  {odprtaNaloga.isTimerRunning ? <Pause size={12} weight="fill" /> : <Play size={12} weight="fill" />}
+                </button>
+              </div>
+              {podopravila.length > 0 && (
+                <span className="tm-detajli-podopravila-znacka" title="Podopravila">
+                  <CheckCircle size={11} weight="bold" /> {podKoncana}/{podopravila.length}
+                </span>
+              )}
+              {!!odprtaNaloga.komentarji?.length && (
+                <span className="tm-detajli-komentarji-znacka" title="Komentarji">
+                  <ChatCircleDots size={12} weight="fill" /> {odprtaNaloga.komentarji.length}
+                </span>
+              )}
+            </div>
+
+            <label className="tm-polje tm-detajli-spodaj"><span>Dodeli</span>
               <select value={odprtaNaloga.dodeljenoOsebaId || ''} onChange={(e) => dodeliNalogi(odprtaNaloga.id, e.target.value)} disabled={samoOgled}>
                 <option value="">— nedodeljeno —</option>
                 {sodelavci.filter((so) => so.aktiven).map((so) => <option key={so.id} value={so.id}>{so.ime}</option>)}
@@ -1174,12 +1359,6 @@ export default function TaskManagerWorkspace() {
             </label>
             <label className="tm-polje"><span>Projekt (neobvezno)</span>
               <input value={odprtaNaloga.projectId || ''} onChange={(e) => nastaviProjekt(odprtaNaloga.id, e.target.value)} placeholder="Naziv projekta, npr. Battle for Earth …" disabled={samoOgled} />
-            </label>
-            <label className="tm-polje"><span>Prioriteta</span>
-              <select value={odprtaNaloga.prioriteta || ''} onChange={(e) => nastaviPrioriteto(odprtaNaloga.id, e.target.value)} disabled={samoOgled}>
-                <option value="">— brez —</option>
-                {PRIORITETE.map((p) => <option key={p.id} value={p.id}>{p.naziv}</option>)}
-              </select>
             </label>
 
             <label className="tm-polje"><span>Oznake</span></label>
@@ -1225,7 +1404,8 @@ export default function TaskManagerWorkspace() {
             )}
           </aside>
         </div>
-      )}
+        );
+      })()}
 
       <style>{`
         .tm{padding:1.6rem clamp(1rem,3vw,2.2rem) 4rem;min-width:0}
@@ -1276,7 +1456,10 @@ export default function TaskManagerWorkspace() {
         .tm-shrani:disabled{opacity:.45;cursor:not-allowed}
 
         /* deska (kanban) */
-        .tm-filtri-vrsta{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 1.1rem}
+        /* preklop Kanban|Plan + filtri (Vse/Moje/Zamujene + oznake) v ENI vrstici na namizju,
+           prelomi na več vrstic na ozkem zaslonu (flex-wrap) */
+        .tm-pogled-filtri-vrsta{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin:0 0 1.1rem}
+        .tm-filtri-vrsta{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0}
         .tm-filtri{display:inline-flex;gap:.2rem;margin:0;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
         .tm-filtri button{padding:.4rem .85rem;border:0;border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
         .tm-filtri button.tm-filter-on{background:var(--ink);color:var(--paper)}
@@ -1358,7 +1541,7 @@ export default function TaskManagerWorkspace() {
         @keyframes tm-utrip-obroba{0%,100%{box-shadow:0 0 0 2px oklch(62% .19 300/.28)}50%{box-shadow:0 0 0 4px oklch(62% .19 300/.12)}}
 
         /* preklop pogleda Kanban | Tedenski plan — isti segmentirani slog kot .tm-filtri */
-        .tm-pogled-preklop{display:inline-flex;gap:.2rem;margin:0 0 1.1rem;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
+        .tm-pogled-preklop{display:inline-flex;flex:none;gap:.2rem;margin:0;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
         .tm-pogled-preklop button{padding:.42rem .95rem;border:0;border-radius:999px;background:none;font:750 .7rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
         .tm-pogled-preklop button.tm-pogled-on{background:var(--ink);color:var(--paper)}
 
@@ -1380,6 +1563,47 @@ export default function TaskManagerWorkspace() {
         /* podlaga/panel v Pinart slogu — deljeno med Analitiko, Podrobnosti naloge in Novo dodelitev */
         .tm-analitika-podlaga,.tm-detajli-podlaga,.tm-dodelitev-podlaga{position:fixed;inset:0;z-index:95;display:flex;justify-content:flex-end;background:oklch(20% .02 55/.32);backdrop-filter:blur(2px)}
         .tm-analitika-panel,.tm-detajli-panel,.tm-dodelitev-panel{width:min(26rem,92vw);height:100%;overflow-y:auto;padding:1.4rem 1.5rem 2.4rem;background:var(--paper);border-left:1px solid var(--line);box-shadow:-1.2rem 0 3rem oklch(20% .03 55/.14)}
+        /* detajl naloge dobi malo vec prostora za checklist podopravil */
+        .tm-detajli-panel{width:min(29rem,94vw)}
+
+        /* --- Detajl naloge po Tininem mockupu: tag+zapri zgoraj, velik naslov (sans, NE serif),
+           zaobljen okvir z opisom+checklistom, spodnja vrstica (oseba/prioriteta/stoparica) --- */
+        .tm-detajli-vrh{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-bottom:.7rem}
+        .tm-detajli-tag{padding:.28rem .7rem;border-radius:999px;background:oklch(94% .03 300);color:oklch(38% .1 300);font:800 .62rem var(--font-sans),sans-serif;letter-spacing:.05em;text-transform:uppercase}
+        .tm-detajli-naslov{margin:0 0 1rem;font:700 clamp(1.15rem,2vw,1.4rem)/1.3 var(--font-sans),sans-serif;color:var(--ink)}
+        .tm-detajli-okvir{margin:0 0 1.1rem;padding:.9rem 1rem 1rem;border:1px solid var(--line);border-radius:1rem;background:oklch(99% .006 87/.7)}
+        .tm-detajli-opis-polje{display:block;width:100%;box-sizing:border-box;padding:0 0 .8rem;border:0;border-bottom:1px dashed var(--line);border-radius:0;background:transparent;resize:vertical;min-height:3.6rem;font:400 .85rem/1.55 var(--font-sans),sans-serif;color:var(--ink)}
+        .tm-detajli-opis-polje::placeholder{color:var(--muted)}
+        .tm-detajli-opis-polje:focus{outline:none;border-color:var(--ink)}
+        .tm-podopravila-wrap{padding-top:.7rem}
+        .tm-podopravila-seznam{list-style:none;margin:0 0 .5rem;padding:0;display:flex;flex-direction:column;gap:.3rem}
+        .tm-podopravilo{display:flex;align-items:center;gap:.5rem}
+        .tm-podopravilo-krog{flex:none;display:grid;place-items:center;width:1.6rem;height:1.6rem;padding:0;border:0;border-radius:50%;background:transparent;color:var(--muted);cursor:pointer}
+        .tm-podopravilo-krog:hover{color:var(--ink)}
+        .tm-podopravilo-krog-done{color:oklch(62% .19 300)}
+        .tm-podopravilo-tekst{flex:1;min-width:0;padding:.25rem 0;border:0;background:transparent;font:400 .82rem var(--font-sans),sans-serif;color:var(--ink)}
+        .tm-podopravilo-tekst:focus{outline:none}
+        .tm-podopravilo-tekst-done{color:var(--muted);text-decoration:line-through}
+        .tm-podopravilo-dodeli-vrsta{position:relative;flex:none}
+        .tm-podopravilo-dodeli-gumb{width:1.5rem;height:1.5rem;display:grid;place-items:center;border:1px dashed var(--line);border-radius:50%;background:transparent;color:var(--muted);cursor:pointer}
+        .tm-podopravilo-dodeli-gumb:hover{border-style:solid;border-color:var(--ink);color:var(--ink)}
+        .tm-podopravilo-oseba{border:0;padding:0;cursor:pointer}
+        .tm-podopravilo-dodeli-select{position:absolute;top:110%;right:0;z-index:5;min-width:9rem;padding:.4rem .6rem;border:1px solid var(--line);border-radius:.6rem;background:var(--paper);color:var(--ink);font:600 .74rem var(--font-sans),sans-serif;box-shadow:0 .5rem 1.4rem oklch(20% .03 55/.14)}
+        .tm-podopravilo-brisi{flex:none;width:1.3rem;height:1.3rem;padding:0;border:0;border-radius:50%;background:transparent;color:var(--muted);opacity:.6;font-size:.85rem;line-height:1;cursor:pointer}
+        .tm-podopravilo-brisi:hover{opacity:1;background:oklch(94% .01 87);color:var(--ink)}
+        .tm-podopravilo-dodaj{display:flex;gap:.5rem;margin-top:.4rem;padding-top:.5rem;border-top:1px dashed var(--line)}
+        .tm-podopravilo-dodaj input{flex:1;min-width:0;padding:.45rem .6rem;border:0;background:transparent;font:400 .8rem var(--font-sans),sans-serif;color:var(--ink)}
+        .tm-podopravilo-dodaj input:focus{outline:none}
+        .tm-podopravilo-dodaj input::placeholder{color:var(--muted)}
+
+        /* spodnja vrstica detajla: dodeljena oseba + prioriteta pill + stoparica + znacke */
+        .tm-detajli-noga{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 1.1rem;padding-bottom:1rem;border-bottom:1px solid var(--line)}
+        .tm-detajli-cas{display:flex;align-items:center;gap:.45rem;margin-left:auto}
+        .tm-detajli-podopravila-znacka,.tm-detajli-komentarji-znacka{display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .5rem;border-radius:999px;background:oklch(95% .01 87);color:var(--muted);font:700 .64rem var(--font-sans),sans-serif}
+        .tm-detajli-spodaj{margin-top:0}
+
+        /* mini napredek podopravil na kartici v kanbanu — nevsiljiv */
+        .tm-kartica-podopravila{display:inline-flex;align-items:center;gap:.22rem;padding:.15rem .45rem;border-radius:999px;background:oklch(95% .01 87);color:var(--muted);font:700 .62rem var(--font-sans),sans-serif}
 
         /* nit komentarjev na nalogi */
         .tm-komentarji-seznam{list-style:none;margin:.2rem 0 1rem;padding:0;display:flex;flex-direction:column;gap:.5rem}

@@ -10,6 +10,16 @@ export interface NalogaKomentar {
   cas: string; // ISO datum/cas
 }
 
+/* En podopravilo (checklist item) na nalogi — prikazano v detajlnem panelu naloge (klik na
+   ikono komentarjev na kartici). Loceno dodeljevanje od cele naloge (dodeljenoOsebaId zgoraj). */
+export interface NalogaPodopravilo {
+  id: string;
+  besedilo: string;
+  done: boolean;
+  dodeljenoOsebaId?: string;
+  dodeljenoOsebaIme?: string;
+}
+
 export interface Naloga {
   id: string;
   naslov: string;
@@ -36,6 +46,9 @@ export interface Naloga {
   /* prosti tagi na nalogi (npr. "funkcionalnost", "dizajn", "CRM", "zaledje", "ideja" + prosto
      besedilo) — za dogfooding: filtriranje razvojnih nalog Flow-a po vrsti dela */
   oznake?: string[];
+  /* checklist podopravil znotraj naloge (detajlni panel) — vsako z lastnim done statusom
+     in neobvezno dodeljeno osebo, loceno od dodeljenoOsebaId cele naloge */
+  podopravila?: NalogaPodopravilo[];
 }
 
 /* --- Uporabniki / vloge / zgodovina (za vec-uporabniski Task Manager) --- */
