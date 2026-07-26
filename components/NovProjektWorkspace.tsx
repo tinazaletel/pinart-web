@@ -164,8 +164,8 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
             {obrazec.cilji.map(cilj => (
               <div key={cilj.id} className="np-nov-cilj">
                 <input type="text" value={cilj.besedilo} onChange={event => posodobiCilj(cilj.id, { besedilo: event.target.value })} placeholder="Cilj, npr. povečati prepoznavnost znamke" aria-label="Cilj" />
-                <input type="text" value={cilj.metrika || ''} onChange={event => posodobiCilj(cilj.id, { metrika: event.target.value })} placeholder="Metrika (neobvezno)" aria-label="Metrika cilja" />
-                <input type="text" value={cilj.tarca || ''} onChange={event => posodobiCilj(cilj.id, { tarca: event.target.value })} placeholder="Tarča (neobvezno)" aria-label="Tarča cilja" />
+                <input type="text" value={cilj.metrika || ''} onChange={event => posodobiCilj(cilj.id, { metrika: event.target.value })} placeholder="Merilo — npr. prihodek, ure" aria-label="Merilo cilja (kaj meriš)" />
+                <input type="text" value={cilj.tarca || ''} onChange={event => posodobiCilj(cilj.id, { tarca: event.target.value })} placeholder="Tarča — npr. 3000 €" aria-label="Tarča cilja (številka, ki jo ciljaš)" />
                 <button type="button" className="np-link-brisi" onClick={() => odstraniCilj(cilj.id)} aria-label="Odstrani cilj">×</button>
               </div>
             ))}
