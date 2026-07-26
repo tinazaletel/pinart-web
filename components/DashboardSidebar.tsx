@@ -66,7 +66,7 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
       {item('koledar', `${base}/kalkulator/koledar`, '05', 'Koledar', 'koledar')}
     </MeniSkupina>
     <MeniSkupina naslov="Drugo" vednoVidna aktivna={active === 'settings'}>
-      {item('settings', `${base}/kalkulator/nastavitve`, '01', 'Nastavitve', 'nastavitve')}
+      {item('settings', `${base}/kalkulator/nastavitve`, '01', 'Dizajn', 'dizajn')}
       {povezava(`${base}/kalkulator/pomoc`, '02', 'Pomoč', 'pomoc')}
     </MeniSkupina>
   </>;

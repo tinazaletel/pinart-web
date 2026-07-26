@@ -5,15 +5,12 @@ import VidezDokumentov from '@/components/VidezDokumentov';
 import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, nastaviLogoAktivne } from '@/lib/dokVidez';
 import styles from './SettingsWorkspace.module.css';
 
-/* Nastavitve aplikacije. Vsebina je PRENESENA iz profila kalkulatorja (videz
-   dokumentov, logotip, izbris podatkov), da ni na dveh mestih razlicno.
-   Vse zivi v localStorage — istih kljucih kot kalkulator, zato velja povsod. */
+/* Nastavitve videza (stran "Dizajn"). Vsebina je PRENESENA iz profila
+   kalkulatorja (videz dokumentov, logotip), da ni na dveh mestih razlicno.
+   Vse zivi v localStorage — istih kljucih kot kalkulator, zato velja povsod.
+   Izbris vseh podatkov je bil premaknjen v "Moj profil". */
 const K_NAST = 'pinart-kalkulator-v2';
 const K_LOGO = 'pinart-kalkulator-logo';
-const K_PROFILI = 'pinart-kalkulator-profili';
-const K_ARHIV = 'pinart-kalkulator-arhiv';
-const K_PODJETJA = 'pinart-kalkulator-podjetja';
-const K_LEAD = 'pinart-kalkulator-kontakt';
 
 export default function SettingsWorkspace({ base }: { base: string }) {
   const [barva, setBarva] = useState(DOK_BARVA_PRIVZETA);
@@ -83,15 +80,6 @@ export default function SettingsWorkspace({ base }: { base: string }) {
     window.location.href = `${base}/kalkulator/orodje?uvod=1`;
   }
 
-  /* Enak izbris kot v kalkulatorju (ponastaviVse), da se vedeta enako. */
-  function izbrisiVse() {
-    if (!window.confirm('Izbrišem vse podatke tega orodja (cene, podjetja, zgodovino ponudb, profile)? Tega ni mogoče razveljaviti.')) return;
-    try {
-      [K_NAST, K_PROFILI, K_ARHIV, K_PODJETJA, K_LEAD, K_LOGO, 'pinart-kalk-pogoji-ok'].forEach(k => localStorage.removeItem(k));
-    } catch { /* ignoriraj */ }
-    window.location.reload();
-  }
-
   return (
     <div className={styles.wrap}>
       <section className={styles.card}>
@@ -130,15 +118,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
 
       {/* "Pomoč in kontakt" odstranjen: Pomoč je zdaj svoja stran v meniju,
           tukaj je bila podvojena. */}
-
-      <section className={`${styles.card} ${styles.nevarno}`}>
-        <h2>Izbriši vse podatke</h2>
-        <p>
-          Odstrani cene, podjetja, stranke, zgodovino ponudb in profile iz tega brskalnika.
-          Tvoj račun ostane — izbrišejo se samo podatki orodja. Tega ni mogoče razveljaviti.
-        </p>
-        <button type="button" className={styles.gumbNevaren} onClick={izbrisiVse}>Izbriši vse podatke</button>
-      </section>
+      {/* "Izbriši vse podatke" je premaknjen v "Moj profil" (ProfileWorkspace). */}
     </div>
   );
 }

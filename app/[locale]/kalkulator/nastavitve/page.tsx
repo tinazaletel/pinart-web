@@ -5,8 +5,8 @@ import SettingsWorkspace from '@/components/SettingsWorkspace';
 import styles from '../pregled/pregled.module.css';
 
 export const metadata: Metadata = {
-  title: 'Nastavitve | Pinart Flow',
-  description: 'Videz dokumentov, logotip in podatki orodja.',
+  title: 'Dizajn | Pinart Flow',
+  description: 'Videz dokumentov in logotip.',
   robots: { index: false, follow: false },
 };
 
@@ -22,8 +22,8 @@ export default async function NastavitvePage({ params }: { params: Promise<{ loc
       <section className={styles.workspace}>
         <header className={styles.topbar}>
           <div>
-            <p className={styles.eyebrow}>NASTAVITVE</p>
-            <h1>Enkrat nastaviš. Povsod velja.</h1>
+            <p className={styles.eyebrow}>DIZAJN</p>
+            <h1>Videz tvojih dokumentov.</h1>
           </div></header>
 
         <SettingsWorkspace base={base} />

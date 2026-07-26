@@ -17,15 +17,11 @@
 
 .gumb { display: inline-grid; place-items: center; min-height: 2.75rem; padding: .6rem 1.1rem; border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font: 700 .85rem var(--font-sans), sans-serif; text-decoration: none; cursor: pointer; }
 .gumbTih { min-height: 2.75rem; padding: .6rem 1.1rem; border: 1px solid var(--line); border-radius: 999px; background: none; color: var(--ink); font: 600 .85rem var(--font-sans), sans-serif; cursor: pointer; }
-.gumb:focus-visible, .gumbTih:focus-visible, .gumbNevaren:focus-visible { outline: 3px solid oklch(60% .2 270); outline-offset: 3px; }
+.gumb:focus-visible, .gumbTih:focus-visible { outline: 3px solid oklch(60% .2 270); outline-offset: 3px; }
 
 .opomba { margin: .8rem 0 0; color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .8rem; }
 
-.nevarno { border-color: oklch(78% .12 25); background: oklch(98% .02 25); }
-.gumbNevaren { min-height: 2.75rem; padding: .6rem 1.1rem; border: 0; border-radius: 999px; background: oklch(50% .17 25); color: oklch(98% .01 25); font: 700 .85rem var(--font-sans), sans-serif; cursor: pointer; }
-.gumbNevaren:hover { background: oklch(44% .18 25); }
-
 @media (max-width: 560px) {
   .logoRow { gap: .8rem; }
-  .gumb, .gumbTih, .gumbNevaren { width: 100%; }
+  .gumb, .gumbTih { width: 100%; }
 }
