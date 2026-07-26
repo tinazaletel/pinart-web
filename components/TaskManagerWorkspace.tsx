@@ -94,6 +94,14 @@ export default function TaskManagerWorkspace() {
     setNovNaslov(''); setNovOpis(''); setNovRok(''); setNovDodeljeno(''); setNovDodeljenoId(''); setNovaOcena(''); setPrikaziFormo(false);
   };
 
+  /* naknadno dodeljevanje sodelavca na OBSTOJEČO nalogo (spustni meni na kartici) + zapis v zgodovino */
+  const dodeliNalogi = (id: string, sodelavecId: string) => {
+    const so = sodelavci.find((x) => x.id === sodelavecId);
+    const naloga = naloge.find((n) => n.id === id);
+    posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, dodeljenoOsebaId: sodelavecId || undefined, dodeljenoOsebaIme: so?.ime } : n)));
+    if (naloga) { zabeleziAktivnost(id, trenutni.ime, so ? `Dodelil nalogo »${naloga.naslov}« osebi ${so.ime}` : `Odstranil dodelitev na »${naloga.naslov}«`); setZgodovina(preberiZgodovino()); }
+  };
+
   const izbrisiNalogo = (id: string) => {
     if (!jeVodjaAliAdmin) return; // brisanje dovoljeno le vodji/adminu
     const naloga = naloge.find((n) => n.id === id);
@@ -265,13 +273,15 @@ export default function TaskManagerWorkspace() {
                         {jeVodjaAliAdmin && <button type="button" className="tm-kartica-x" onClick={() => izbrisiNalogo(naloga.id)} title="Izbriši nalogo" aria-label="Izbriši nalogo">×</button>}
                       </div>
                       {naloga.opis && <p className="tm-kartica-opis">{naloga.opis}</p>}
-                      {(naloga.rok || naloga.dodeljenoOseba || naloga.dodeljenoOsebaIme) && (
-                        <div className="tm-kartica-noga">
-                          {naloga.rok && <span className={`tm-rok${jeZapadlo(naloga.rok) && s.id !== 'done' ? ' tm-rok-zapadlo' : ''}`}>📅 {datStr(naloga.rok)}</span>}
-                          {naloga.dodeljenoOseba && <span className="tm-oseba" title={`Dodeljeno: ${naloga.dodeljenoOseba}`}><span className="tm-oseba-krog" aria-hidden>{naloga.dodeljenoOseba.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>{naloga.dodeljenoOseba}</span>}
-                          {!naloga.dodeljenoOseba && naloga.dodeljenoOsebaIme && <span className="tm-oseba" title={`Dodeljeno sodelavcu: ${naloga.dodeljenoOsebaIme}`}><span className="tm-oseba-krog" aria-hidden>{naloga.dodeljenoOsebaIme.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>{naloga.dodeljenoOsebaIme}</span>}
-                        </div>
-                      )}
+                      <div className="tm-kartica-noga">
+                        {naloga.rok && <span className={`tm-rok${jeZapadlo(naloga.rok) && s.id !== 'done' ? ' tm-rok-zapadlo' : ''}`}>📅 {datStr(naloga.rok)}</span>}
+                        {naloga.dodeljenoOseba
+                          ? <span className="tm-oseba" title={`Dodeljeno: ${naloga.dodeljenoOseba}`}><span className="tm-oseba-krog" aria-hidden>{naloga.dodeljenoOseba.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>{naloga.dodeljenoOseba}</span>
+                          : <select className="tm-dodeli" value={naloga.dodeljenoOsebaId || ''} onChange={(e) => dodeliNalogi(naloga.id, e.target.value)} aria-label="Dodeli sodelavcu" title="Dodeli ali zamenjaj sodelavca">
+                              <option value="">＋ dodeli</option>
+                              {sodelavci.filter((so) => so.aktiven).map((so) => <option key={so.id} value={so.id}>{so.ime}</option>)}
+                            </select>}
+                      </div>
                       <div className="tm-cas">
                         <div className="tm-cas-vrsta">
                           <span className="tm-cas-tekst">{formatUre(porabljene)}h{ocena ? ` / ${ocena}h` : ''}</span>
@@ -362,6 +372,8 @@ export default function TaskManagerWorkspace() {
         .tm-polje span{font:700 .64rem var(--font-sans),sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
         .tm-polje input,.tm-polje textarea,.tm-polje select{width:100%;padding:.6rem .8rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0/.75);font:inherit;font-size:.86rem;color:var(--ink)}
         .tm-polje input:focus,.tm-polje textarea:focus,.tm-polje select:focus{outline:none;border-color:var(--ink)}
+        /* manjkajoča spustna (chevron) ikona na selectih — appearance:none + caret v akcentu */
+        .tm-uporabnik select,.tm-polje select,.tm-analitika-panel select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding-right:2rem;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .65rem center}
         .tm-polje textarea{resize:vertical;min-height:3.4rem}
         .tm-forma-vrsta{display:flex;gap:.8rem;flex-wrap:wrap}
         .tm-forma-vrsta .tm-polje{flex:1;min-width:9rem}
@@ -403,6 +415,9 @@ export default function TaskManagerWorkspace() {
         .tm-kartica-noga{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-top:.55rem}
         .tm-oseba{display:inline-flex;align-items:center;gap:.35rem;padding:.15rem .5rem .15rem .15rem;border-radius:999px;background:oklch(94% .03 300);color:oklch(38% .1 300);font-size:.66rem;font-weight:700}
         .tm-oseba-krog{width:1.15rem;height:1.15rem;display:grid;place-items:center;border-radius:50%;background:oklch(62% .19 300);color:#fff;font-size:.54rem;font-weight:800}
+        /* naknadna dodelitev na kartici (spustni meni, ne drag-drop -> uporabno na mobilcu) */
+        .tm-dodeli{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding:.22rem 1.35rem .22rem .55rem;border:1px dashed var(--line);border-radius:999px;background-color:oklch(100% 0 0/.5);color:var(--muted);font:700 .64rem var(--font-sans),sans-serif;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .45rem center}
+        .tm-dodeli:hover{border-style:solid;border-color:var(--ink);color:var(--ink)}
         /* polje Dodeljeno + gumb Zase */
         .tm-dodeljeno-vrsta{display:flex;gap:.5rem}
         .tm-dodeljeno-vrsta input{flex:1;min-width:0}
