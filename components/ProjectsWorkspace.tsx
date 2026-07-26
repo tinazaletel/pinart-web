@@ -3,13 +3,15 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { Plus, FolderOpen } from '@phosphor-icons/react';
+import { Plus, FolderOpen, ArrowRight, PencilSimple } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
 import { loadFlowData, loadProjectLinks, saveOfferAmount, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
-import { naslednjaStevilka, preberiProjekti, shraniProjekt, type Projekt, type ProjektCilj, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
+import { naslednjaStevilka, preberiProjekti, shraniProjekt, type Projekt, type ProjektCilj, type ProjektPovezava, type ProjektStatus as ProjektEntitetaStatus, type ProjektVprasanje } from '@/lib/projekti';
+import { preberiSodelavci, vlogaOznaka } from '@/lib/sodelavci';
+import type { Sodelavec } from '@/lib/naloge';
 
 /* datumski filter (samo od–do; prazno ne omejuje) — enako kot arhiv */
 const vObdobju = (dateStr: string, od: string, doD: string): boolean => {
@@ -251,11 +253,18 @@ const pwStyles = `
 .pw-cilji-seznam li b{font-size:.76rem;font-weight:700;color:var(--ink)}
 .pw-cilji-seznam li small{color:var(--muted);font-size:.62rem}
 .pw-cilji-prazno{position:relative;z-index:1;margin:.6rem 0 0;color:var(--muted);font-size:.7rem}
-/* "+ Nov projekt" — onboarding panel (razdelki: Projekt / Želje stranke / Cilji) */
-.pw-nov-panel{width:min(34rem,100vw)}
-.pw-nov-razdelek{display:flex;flex-direction:column;gap:.65rem;margin-top:1.3rem;padding-top:1.1rem;border-top:1px solid var(--line)}
-.pw-nov-razdelek:first-of-type{margin-top:.8rem;padding-top:0;border-top:0}
-.pw-nov-razdelek-oznaka{margin:0;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+/* dodatna vprasanja + dodeljeni na vozliscu (znotraj iste "00" kartice, zajeti med onboarding chatom) */
+.pw-cilji-podnaslov{position:relative;z-index:1;margin:.9rem 0 0;font-size:.6rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pw-cilji-vprasanja{position:relative;z-index:1;display:flex;flex-direction:column;gap:.4rem;margin:.5rem 0 0}
+.pw-cilji-dodeljeni{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:.4rem;margin:.5rem 0 0}
+.pw-cilji-oseba{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .65rem .3rem .3rem;border-radius:999px;background:oklch(100% 0 0 / .55);border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);font-size:.68rem;font-weight:700;color:var(--ink)}
+/* "+ Nov projekt" — onboarding kot CHAT (posnema videz/tok chata ponudbe v
+   KalkulatorApp.tsx: mehurcek vprasanja levo z violet piko, moj odgovor
+   desno v mint mehurcku, klik nanj znova odpre polje za urejanje, NAPREJ
+   vodi na naslednje vprasanje — vse na EMI navpicni povrsini, brez menjave
+   strani). .pw-nov-mreza/.pw-nov-polje/.pw-nov-cilj/.pw-nov-dodaj-cilj/
+   .pw-nov-preklici ostanejo (uporabljeni znotraj koraka "Cilji" + datuma). */
+.pw-nov-panel{width:min(36rem,100vw)}
 .pw-nov-polje{display:flex;flex-direction:column;gap:.35rem;min-width:0}
 .pw-nov-polje span{font-size:.68rem;font-weight:700;color:var(--muted)}
 .pw-nov-polje input,.pw-nov-polje select,.pw-nov-polje textarea{width:100%;box-sizing:border-box;padding:.6rem .75rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.8rem;color:var(--ink)}
@@ -268,11 +277,61 @@ const pwStyles = `
 .pw-nov-dodaj-cilj:hover{background:oklch(100% 0 0 / .5)}
 .pw-nov-preklici{padding:.55rem .95rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-nov-preklici:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+/* pogovorni tok — glava/naslov panela ostane, tok se zacne pod njim */
+.pw-chat-tok{display:flex;flex-direction:column;gap:1rem;margin:1.2rem 0 0}
+@keyframes pwChatIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.pw-chat-bot,.pw-chat-jaz,.pw-chat-izbire,.pw-chat-vnos{animation:pwChatIn .38s cubic-bezier(.16,1,.3,1) both}
+@media (prefers-reduced-motion:reduce){.pw-chat-bot,.pw-chat-jaz,.pw-chat-izbire,.pw-chat-vnos{animation:none}}
+/* mehurcek bota: violet-mehka pika (isti "Pinart mehurcek" jezik kot ostali chat) + oblacek levo poravnan */
+.pw-chat-bot{display:flex;max-width:94%}
+.pw-chat-bot .pw-chat-mehur{position:relative;padding:.85rem 1.15rem .85rem 2.55rem;border-radius:18px;border-bottom-left-radius:6px;background:oklch(96% .022 300);border:1px solid color-mix(in oklch,var(--ink) 7%,transparent);font-size:.86rem;line-height:1.5}
+.pw-chat-bot .pw-chat-mehur::before{content:'';position:absolute;left:.8rem;top:.98rem;width:1.1rem;height:1.1rem;border-radius:50%;background:radial-gradient(58% 48% at 30% 24%,rgba(255,255,255,.92),rgba(255,255,255,0) 62%),conic-gradient(from 210deg,#7C3AED,#EC4899,#F59E0B,#38BDF8,#7C3AED);box-shadow:0 2px 6px rgba(124,58,237,.28)}
+.pw-chat-bot .pw-chat-mehur b{display:block;font-weight:700;color:var(--ink)}
+.pw-chat-bot .pw-chat-mehur small{display:block;margin-top:.2rem;font-weight:400;font-size:.76rem;color:color-mix(in oklch,var(--ink) 62%,transparent)}
+/* moj odgovor: mint mehurcek, desno poravnan, klikljiv (odpre urejanje v mestu) */
+.pw-chat-jaz{align-self:flex-end;max-width:94%}
+.pw-chat-mehur-ured{display:inline-flex;align-items:center;gap:.55rem;padding:.7rem 1.05rem;border-radius:18px;border-bottom-right-radius:6px;background:oklch(89% .05 165);border:1px solid color-mix(in oklch,var(--ink) 7%,transparent);color:var(--ink);font:inherit;font-size:.82rem;font-weight:600;text-align:left;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.pw-chat-mehur-ured:hover{transform:translateY(-1px);box-shadow:0 7px 18px rgba(40,25,40,.13)}
+.pw-chat-mehur-ured svg{opacity:.4;flex:none;transition:opacity .15s}
+.pw-chat-mehur-ured:hover svg{opacity:.85}
+/* vnosno polje pod vprasanjem bota — zamaknjeno pod mehurcek, "Naprej" pilula z ink ozadjem */
+.pw-chat-vnos{display:flex;flex-direction:column;align-items:flex-start;gap:.6rem;max-width:calc(100% - 1rem);margin:-.2rem 0 0 .3rem}
+.pw-chat-polje{width:100%;box-sizing:border-box;padding:.7rem 1.05rem;border:1px solid rgba(17,17,17,.14);border-radius:999px;background:#fff;font:inherit;font-size:.85rem;font-weight:600;color:var(--ink);box-shadow:0 4px 14px rgba(40,25,40,.05);outline:none}
+textarea.pw-chat-polje{border-radius:1rem;resize:vertical;min-height:4.4rem;font-weight:400;line-height:1.5;font-family:inherit}
+select.pw-chat-polje{cursor:pointer}
+.pw-chat-polje:focus{border-color:color-mix(in oklch,var(--ink) 45%,transparent)}
+.pw-chat-naprej{align-self:flex-start;display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.1rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
+.pw-chat-naprej:disabled{opacity:.45;cursor:not-allowed}
+.pw-chat-naprej:hover:not(:disabled){background:color-mix(in oklch,var(--ink) 82%,transparent)}
+/* izbirne kartice (status) — pod vprasanjem bota, klik takoj potrdi in gre naprej */
+.pw-chat-izbire{display:flex;flex-direction:column;gap:.5rem;margin:-.2rem 0 0 .3rem}
+.pw-chat-opcija{display:flex;align-items:center;gap:.75rem;width:min(360px,100%);padding:.75rem .95rem;border:1px solid var(--line);border-radius:14px;background:oklch(99% .006 87 / .85);font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s}
+.pw-chat-opcija:hover{transform:translateY(-2px);border-color:color-mix(in oklch,var(--ink) 28%,transparent);box-shadow:0 8px 20px rgba(40,25,40,.08)}
+.pw-crk{display:grid;place-items:center;width:1.7rem;height:1.7rem;border-radius:8px;background:oklch(94% .045 295);color:var(--ink);font-weight:800;font-size:.74rem;flex:none}
+/* dodatna vprasanja (moja lastna Q&A) */
+.pw-vprasanje-vrstica{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding:.6rem .75rem;border:1px solid var(--line);border-radius:.8rem;background:oklch(100% 0 0 / .55)}
+.pw-vprasanje-vrstica div{display:flex;flex-direction:column;gap:.15rem;min-width:0}
+.pw-vprasanje-vrstica b{font-size:.76rem;color:var(--ink);font-weight:700}
+.pw-vprasanje-vrstica span{font-size:.72rem;color:color-mix(in oklch,var(--ink) 62%,transparent)}
+/* dodeljeni sodelavci — klikljivi cipsi (ista logika kot chip-podrocje v kalkulatorju) */
+.pw-chat-sodelavci{display:flex;flex-wrap:wrap;gap:.5rem}
+.pw-chat-sodelavec{display:flex;align-items:center;gap:.55rem;padding:.5rem .85rem .5rem .5rem;border:1px solid var(--line);border-radius:999px;background:oklch(99% .006 87 / .85);font:inherit;color:var(--ink);cursor:pointer;transition:border-color .16s,background .16s}
+.pw-chat-sodelavec b{font-size:.74rem;font-weight:700}
+.pw-chat-sodelavec small{display:block;color:color-mix(in oklch,var(--ink) 55%,transparent);font-size:.6rem}
+.pw-chat-sod-krog{display:grid;place-items:center;width:1.7rem;height:1.7rem;border-radius:50%;background:oklch(90% .045 297);color:oklch(40% .16 297);font-size:.6rem;font-weight:800;flex:none}
+.pw-chat-sodelavec.on{border-color:var(--ink);background:oklch(93% .04 165)}
+.pw-chat-sodelavec.on .pw-chat-sod-krog{background:var(--ink);color:var(--paper)}
+.pw-chat-deli{align-self:flex-start;display:inline-flex;align-items:center;gap:.4rem;margin-top:.2rem;padding:.55rem .9rem;border:1px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);font:700 .7rem var(--font-sans),sans-serif;cursor:pointer}
+.pw-chat-deli:hover:not(:disabled){background:var(--ink);color:var(--paper)}
+.pw-chat-deli:disabled{opacity:.45;cursor:not-allowed}
+.pw-chat-koncno{margin-top:.4rem}
 @media (max-width:640px){
 .pw-link-obrazec{grid-template-columns:1fr}
 .pw-kmalu-red{grid-template-columns:1fr}
 .pw-nov-mreza{grid-template-columns:1fr}
 .pw-nov-cilj{grid-template-columns:1fr;gap:.3rem;padding:.6rem;border:1px solid var(--line);border-radius:.7rem}
+.pw-chat-vnos,.pw-chat-izbire{margin-left:0}
+.pw-chat-bot,.pw-chat-jaz{max-width:97%}
 }
 `;
 
@@ -328,7 +387,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const setDatumDo = (v: string) => { if (onDatumDo) onDatumDo(v); else setNotranjiDatumDo(v); };
   /* ob nalaganju/menjavi predogleda ostane seznam (tabela) privzeti pogled —
      detajl se odpre le na eksplicit klik (selectProject spodaj) */
-  useEffect(() => { const data = podatkiZaPredogled(nacin, loadFlowData()); const loaded = [...data.offers].sort((a, b) => b.date.localeCompare(a.date)); setOffers(loaded); setSelectedId(''); setInvoices(data.invoices); setExpenses(data.expenses); setContracts(data.contracts); setClients(data.clients); setAmounts(Object.fromEntries(data.offers.map(offer => [offer.id, offer.agreedAmount]))); setRealProjekti(nacin === 'mine' ? preberiProjekti() : []); }, [nacin]);
+  useEffect(() => { const data = podatkiZaPredogled(nacin, loadFlowData()); const loaded = [...data.offers].sort((a, b) => b.date.localeCompare(a.date)); setOffers(loaded); setSelectedId(''); setInvoices(data.invoices); setExpenses(data.expenses); setContracts(data.contracts); setClients(data.clients); setAmounts(Object.fromEntries(data.offers.map(offer => [offer.id, offer.agreedAmount]))); setRealProjekti(nacin === 'mine' ? preberiProjekti() : []); setSodelavci(nacin === 'mine' ? preberiSodelavci() : []); }, [nacin]);
   /* gradnja ene vrstice tabele/detajla — enaka za projekte, izpeljane iz ponudbe,
      IN za prave projekte (real, glej lib/projekti); slednji dobijo sintetično
      FlowOffer samo za prikaz (title/client/date/status/scope), da lahko
@@ -400,12 +459,60 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [notranjiNovOdprt, setNotranjiNovOdprt] = useState(false);
   const novOdprt = novProjektOdprtZunaj ?? notranjiNovOdprt;
   const setNovOdprt = (v: boolean) => { if (onNovProjektOdprt) onNovProjektOdprt(v); else setNotranjiNovOdprt(v); };
-  const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektEntitetaStatus, zelje: '', cilji: [] as ProjektCilj[] });
+  const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektEntitetaStatus, zelje: '', cilji: [] as ProjektCilj[], dodatnaVprasanja: [] as ProjektVprasanje[], povezave: [] as ProjektPovezava[], dodeljeni: [] as string[] });
   const [obrazec, setObrazec] = useState(prazenObrazec());
-  useEffect(() => { if (novOdprt) setObrazec(prazenObrazec()); }, [novOdprt]);
+  /* onboarding kot CHAT (glej pw-chat-* v pwStyles): novKorak = do kam je uporabnica
+     ze prisla (0..6, 6 = vsa osnovna vprasanja odgovorjena -> dodatno+povezave+ekipa+zakljucek);
+     urejamKorak = klik na ze odgovorjen mehurcek odpre polje ZNOVA V MESTU (kot v ponudbi) */
+  const [novKorak, setNovKorak] = useState(0);
+  const [urejamKorak, setUrejamKorak] = useState<number | null>(null);
+  const [sodelavci, setSodelavci] = useState<Sodelavec[]>([]);
+  const [novoVprasanje, setNovoVprasanje] = useState({ vprasanje: '', odgovor: '' });
+  const [povezavaNaslov, setPovezavaNaslov] = useState('');
+  const [povezavaUrl, setPovezavaUrl] = useState('');
+  useEffect(() => {
+    if (!novOdprt) return;
+    setObrazec(prazenObrazec());
+    setNovKorak(0);
+    setUrejamKorak(null);
+    setNovoVprasanje({ vprasanje: '', odgovor: '' });
+    setPovezavaNaslov(''); setPovezavaUrl('');
+    setSodelavci(preberiSodelavci());
+  }, [novOdprt]);
   const dodajCilj = () => setObrazec(o => ({ ...o, cilji: [...o.cilji, { id: crypto.randomUUID(), besedilo: '', metrika: '', tarca: '' }] }));
   const odstraniCilj = (id: string) => setObrazec(o => ({ ...o, cilji: o.cilji.filter(c => c.id !== id) }));
   const posodobiCilj = (id: string, patch: Partial<ProjektCilj>) => setObrazec(o => ({ ...o, cilji: o.cilji.map(c => c.id === id ? { ...c, ...patch } : c) }));
+  /* potrdi trenutni korak vprasanja: naprej=true premakne kazalec (NAPREJ), sicer
+     samo zapre "urejanje v mestu" (Shrani na ze odgovorjenem koraku) */
+  const potrdiKorak = (naprej: boolean) => { setUrejamKorak(null); if (naprej) setNovKorak(k => Math.min(6, k + 1)); };
+  /* "+ dodaj vprašanje" — lastno vprasanje + odgovor, prosto besedilo, brez sheme */
+  const dodajVprasanje = () => {
+    const vprasanje = novoVprasanje.vprasanje.trim(); const odgovor = novoVprasanje.odgovor.trim();
+    if (!vprasanje || !odgovor) return;
+    setObrazec(o => ({ ...o, dodatnaVprasanja: [...o.dodatnaVprasanja, { id: crypto.randomUUID(), vprasanje, odgovor }] }));
+    setNovoVprasanje({ vprasanje: '', odgovor: '' });
+  };
+  const odstraniVprasanje = (id: string) => setObrazec(o => ({ ...o, dodatnaVprasanja: o.dodatnaVprasanja.filter(v => v.id !== id) }));
+  /* povezave do zunanjih gradiv, zajete ze tu — ob shranjevanju se zrcalijo tudi
+     v obstojeco shrambo FlowProjectLink (glej shraniNovProjekt), da jih kartica
+     "05 · Dokumentacija" na vozliscu takoj prikaze brez dodatne logike */
+  const dodajPovezavo = () => {
+    const naslov = povezavaNaslov.trim(); const url = povezavaUrl.trim();
+    if (!naslov || !url) return;
+    setObrazec(o => ({ ...o, povezave: [...o.povezave, { id: crypto.randomUUID(), naslov, url }] }));
+    setPovezavaNaslov(''); setPovezavaUrl('');
+  };
+  const odstraniPovezavo = (id: string) => setObrazec(o => ({ ...o, povezave: o.povezave.filter(p => p.id !== id) }));
+  const preklopiDodeljen = (id: string) => setObrazec(o => ({ ...o, dodeljeni: o.dodeljeni.includes(id) ? o.dodeljeni.filter(x => x !== id) : [...o.dodeljeni, id] }));
+  /* "Deli projekt" — za zdaj mailto vabilo dodeljenim (lokalni mock, glej opombo pri
+     Projekt.dodeljeni v lib/projekti.ts); pravo deljenje pride z vec-uporabniskim zaledjem */
+  const deliProjekt = () => {
+    if (typeof window === 'undefined' || !obrazec.dodeljeni.length) return;
+    const prejemniki = sodelavci.filter(s => obrazec.dodeljeni.includes(s.id)).map(s => s.email).filter(Boolean).join(',');
+    const zadeva = `Projekt: ${obrazec.naslov.trim() || 'Nov projekt'}`;
+    const telo = `Pozdravljeni,\n\nvabim vas k sodelovanju na projektu »${obrazec.naslov.trim()}«.\n\nLep pozdrav`;
+    window.location.href = `mailto:${prejemniki}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`;
+  };
   const shraniNovProjekt = () => {
     const naslov = obrazec.naslov.trim();
     if (!naslov || samoOgled) return;
@@ -422,12 +529,25 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       rok: obrazec.rok || undefined,
       status: obrazec.status,
       created: new Date().toISOString(),
+      dodatnaVprasanja: obrazec.dodatnaVprasanja.length ? obrazec.dodatnaVprasanja : undefined,
+      povezave: obrazec.povezave.length ? obrazec.povezave : undefined,
+      dodeljeni: obrazec.dodeljeni.length ? obrazec.dodeljeni : undefined,
     };
     shraniProjekt(projekt);
+    if (obrazec.povezave.length) saveProjectLinks(`real-${projekt.id}`, obrazec.povezave.map(p => ({ oznaka: p.naslov, url: p.url })));
     setRealProjekti(prev => [projekt, ...prev]);
     setNovOdprt(false);
     selectProject(`real-${projekt.id}`);
   };
+  /* mehurcek bota (vprasanje) + moj odgovor (klikljiv, odpre urejanje v mestu) — isti
+     vzorec kot chat-bot/chat-jaz v KalkulatorApp.tsx, tu s predpono pw- */
+  const chatBot = (naslov: string, opis?: string) => <div className="pw-chat-bot"><span className="pw-chat-mehur"><b>{naslov}</b>{opis && <small>{opis}</small>}</span></div>;
+  const chatOdgovor = (korak: number, vsebina: string) => (
+    <div className="pw-chat-jaz"><button type="button" className="pw-chat-mehur-ured" onClick={() => setUrejamKorak(korak)} title="Klikni za popravek"><span>{vsebina}</span><PencilSimple size={13} weight="bold" aria-hidden /></button></div>
+  );
+  const prikazan = (i: number) => novKorak >= i;
+  const aktiven = (i: number) => novKorak === i || urejamKorak === i;
+  const odgovorjen = (i: number) => novKorak > i && urejamKorak !== i;
 
   /* 05 · DOKUMENTACIJA — povezave do zunanjih datotek za TA projekt (localStorage,
      glej lib/pinartFlowStore). V predogledu (demo/prazno/začetek) samo prikaz —
@@ -598,6 +718,25 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 ))}
               </ul>
             ) : (!selected.real.zelje && <p className="pw-cilji-prazno">Želje in cilji še niso dodani.</p>)}
+            {selected.real.dodatnaVprasanja && selected.real.dodatnaVprasanja.length > 0 && (<>
+              <p className="pw-cilji-podnaslov">Dodatna vprašanja</p>
+              <div className="pw-cilji-vprasanja">
+                {selected.real.dodatnaVprasanja.map(v => (
+                  <div key={v.id} className="pw-vprasanje-vrstica"><div><b>{v.vprasanje}</b><span>{v.odgovor}</span></div></div>
+                ))}
+              </div>
+            </>)}
+            {selected.real.dodeljeni && selected.real.dodeljeni.length > 0 && (<>
+              <p className="pw-cilji-podnaslov">Dodeljeni</p>
+              <div className="pw-cilji-dodeljeni">
+                {selected.real.dodeljeni.map(id => {
+                  const oseba = sodelavci.find(s => s.id === id);
+                  if (!oseba) return null;
+                  const initials = oseba.ime.split(' ').map(d => d[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+                  return <span key={id} className="pw-cilji-oseba"><span className="pw-chat-sod-krog" aria-hidden>{initials}</span>{oseba.ime}</span>;
+                })}
+              </div>
+            </>)}
           </article>
         )}
         <div className={styles.projectNarrative}><article className={styles.projectAgreement}><p className={styles.eyebrow}>01 · DOGOVORJENO</p><h3>Kaj je bilo v ponudbi?</h3>{selected.offer.scope.length ? <ul>{selected.offer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul> : selected.real ? <p>Ta projekt še nima ponudbe. Pripravi jo v kalkulatorju, ko bo obseg jasen.</p> : <p>Starejša ponudba nima strukturiranega obsega. Odpri jo v kalkulatorju za celotno besedilo.</p>}</article><article><p className={styles.eyebrow}>02 · POGODBE</p><h3>{selected.contracts.length ? `${selected.contracts.length} povezanih` : 'Brez pogodbe'}</h3>{pogodbeSort.slice(0, NAJNOVEJSIH).map(pogodbaVrstica)}{pogodbeSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('pogodbe')}>Prikaži vse ({pogodbeSort.length}) →</button>}<Link href={`${base}/kalkulator/pogodbe`} aria-label="Dodaj pogodbo za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>03 · RAČUNI</p><h3>{money(selected.billed)}</h3>{racuniSort.slice(0, NAJNOVEJSIH).map(racunVrstica)}{racuniSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('racuni')}>Prikaži vse ({racuniSort.length}) →</button>}<Link href={`${base}/kalkulator/racuni`} aria-label="Dodaj račun za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>04 · STROŠKI</p><h3>{money(selected.costs)}</h3>{strosekSort.slice(0, NAJNOVEJSIH).map(strosekVrstica)}{strosekSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('stroski')}>Prikaži vse ({strosekSort.length}) →</button>}<Link href={`${base}/kalkulator/stroski`} aria-label="Dodaj strošek za ta projekt"><Plus size={18} weight="bold" /></Link></article><article className="pw-karta pw-dokumentacija"><p className={styles.eyebrow}>05 · DOKUMENTACIJA</p><h3>Povezave do zunanjih datotek</h3>{links.length ? (<div className="pw-linki">{links.map((link, index) => (<div key={`${link.url}-${index}`} className="pw-link-vrstica"><a href={link.url} target="_blank" rel="noopener noreferrer">{link.oznaka}</a>{!samoOgled && <button type="button" className="pw-link-brisi" onClick={() => removeLink(index)} aria-label={`Izbriši povezavo ${link.oznaka}`}>×</button>}</div>))}</div>) : <p className="pw-link-prazno">Še ni dodanih povezav.</p>}{!samoOgled && dodajOdprt && (<div className="pw-link-obrazec"><input type="text" value={linkOznaka} onChange={event => setLinkOznaka(event.target.value)} placeholder="npr. Figma" aria-label="Oznaka povezave" /><input type="url" value={linkUrl} onChange={event => setLinkUrl(event.target.value)} placeholder="https://…" aria-label="Naslov povezave (Figma, Miro, IDD, mapa Drive …)" /><button type="button" className="pw-link-dodaj" onClick={addLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>+ Dodaj povezavo</button></div>)}{samoOgled && dodajOdprt && <p className="pw-opozorilo">Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.</p>}<button type="button" className="pw-dok-dodaj" onClick={() => setDodajOdprt(open => !open)} aria-label={dodajOdprt ? 'Zapri dodajanje povezave' : 'Dodaj povezavo'}><Plus size={16} weight="bold" /></button></article></div>
@@ -752,9 +891,11 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       );
     })()}
 
-    {/* "+ Nov projekt" — onboarding v enem bogatem panelu (razdelki: Projekt / Želje
-        stranke / Cilji), isti vzorec slide panela kot zgoraj (pw-vsi-panel/pw-det-panel).
-        Po shranjevanju (shraniNovProjekt) se panel zapre in odpre vozlišče novega projekta. */}
+    {/* "+ Nov projekt" — onboarding kot CHAT VPRAŠALNIK (posnema videz/tok chata
+        ponudbe v KalkulatorApp.tsx: en mehurček vprašanja naenkrat, moj odgovor
+        pretvorjen v klikljiv mehurček, NAPREJ vodi naprej, brez menjave strani).
+        Isti vzorec slide panela kot zgoraj (pw-vsi-panel/pw-det-panel). Po
+        shranjevanju (shraniNovProjekt) se panel zapre in odpre vozlišče projekta. */}
     {novOdprt && (
       <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={() => setNovOdprt(false)}>
         <aside className={`${styles.detailPanel} pw-nov-panel`} role="dialog" aria-modal="true" aria-labelledby="pw-nov-naslov" onMouseDown={e => e.stopPropagation()}>
@@ -764,60 +905,143 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
 
           {samoOgled ? (
             <p className="pw-opozorilo">Ustvarjanje projektov ni na voljo v predogledu (demo). Prijavi se v svoj račun.</p>
-          ) : (<>
-            <div className="pw-nov-razdelek">
-              <p className="pw-nov-razdelek-oznaka">Projekt</p>
-              <label className="pw-nov-polje">
-                <span>Naslov projekta</span>
-                <input type="text" autoFocus value={obrazec.naslov} onChange={event => setObrazec(o => ({ ...o, naslov: event.target.value }))} placeholder="npr. Prenova celostne podobe" />
-              </label>
-              <label className="pw-nov-polje">
-                <span>Stranka</span>
-                <select value={obrazec.strankaId} onChange={event => setObrazec(o => ({ ...o, strankaId: event.target.value }))}>
-                  <option value="">Brez stranke</option>
-                  {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-              </label>
-              <div className="pw-nov-mreza">
-                <label className="pw-nov-polje"><span>Začetek</span><input type="date" value={obrazec.zacetek} onChange={event => setObrazec(o => ({ ...o, zacetek: event.target.value }))} /></label>
-                <label className="pw-nov-polje"><span>Predviden rok</span><input type="date" value={obrazec.rok} onChange={event => setObrazec(o => ({ ...o, rok: event.target.value }))} /></label>
-              </div>
-              <label className="pw-nov-polje">
-                <span>Status</span>
-                <select value={obrazec.status} onChange={event => setObrazec(o => ({ ...o, status: event.target.value as ProjektEntitetaStatus }))}>
-                  <option value="aktiven">Aktiven</option>
-                  <option value="pavza">V pavzi</option>
-                  <option value="koncan">Končan</option>
-                </select>
-              </label>
-            </div>
+          ) : (
+            <div className="pw-chat-tok">
+              {/* 0 · naslov */}
+              {prikazan(0) && chatBot('Kako se projekt imenuje?')}
+              {odgovorjen(0) && chatOdgovor(0, obrazec.naslov.trim() || '—')}
+              {aktiven(0) && (
+                <form className="pw-chat-vnos" onSubmit={event => { event.preventDefault(); if (obrazec.naslov.trim()) potrdiKorak(urejamKorak !== 0); }}>
+                  <input className="pw-chat-polje" type="text" autoFocus value={obrazec.naslov} onChange={event => setObrazec(o => ({ ...o, naslov: event.target.value }))} placeholder="npr. Prenova celostne podobe" aria-label="Naslov projekta" />
+                  <button type="submit" className="pw-chat-naprej" disabled={!obrazec.naslov.trim()}>{urejamKorak === 0 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
+                </form>
+              )}
 
-            <div className="pw-nov-razdelek">
-              <p className="pw-nov-razdelek-oznaka">Želje stranke</p>
-              <label className="pw-nov-polje">
-                <span>Kaj si stranka želi?</span>
-                <textarea value={obrazec.zelje} onChange={event => setObrazec(o => ({ ...o, zelje: event.target.value }))} placeholder="Prosto besedilo — brief, pričakovanja, kontekst …" rows={4} />
-              </label>
-            </div>
+              {/* 1 · stranka */}
+              {prikazan(1) && chatBot('Za katero stranko je ta projekt?', clients.length ? 'Izberi iz imenika — ali nadaljuj brez stranke.' : 'V imeniku še ni strank — lahko nadaljuješ brez izbora.')}
+              {odgovorjen(1) && chatOdgovor(1, clients.find(c => c.id === obrazec.strankaId)?.name || 'Brez stranke')}
+              {aktiven(1) && (
+                <form className="pw-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 1); }}>
+                  <select className="pw-chat-polje" value={obrazec.strankaId} onChange={event => setObrazec(o => ({ ...o, strankaId: event.target.value }))} aria-label="Stranka">
+                    <option value="">Brez stranke</option>
+                    {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                  <button type="submit" className="pw-chat-naprej">{urejamKorak === 1 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
+                </form>
+              )}
 
-            <div className="pw-nov-razdelek">
-              <p className="pw-nov-razdelek-oznaka">Cilji</p>
-              {obrazec.cilji.map(cilj => (
-                <div key={cilj.id} className="pw-nov-cilj">
-                  <input type="text" value={cilj.besedilo} onChange={event => posodobiCilj(cilj.id, { besedilo: event.target.value })} placeholder="Cilj, npr. povečati prepoznavnost znamke" aria-label="Cilj" />
-                  <input type="text" value={cilj.metrika || ''} onChange={event => posodobiCilj(cilj.id, { metrika: event.target.value })} placeholder="Metrika (neobvezno)" aria-label="Metrika cilja" />
-                  <input type="text" value={cilj.tarca || ''} onChange={event => posodobiCilj(cilj.id, { tarca: event.target.value })} placeholder="Tarča (neobvezno)" aria-label="Tarča cilja" />
-                  <button type="button" className="pw-link-brisi" onClick={() => odstraniCilj(cilj.id)} aria-label="Odstrani cilj">×</button>
+              {/* 2 · cilji */}
+              {prikazan(2) && chatBot('Kaj so cilji projekta?', 'Dodaj enega ali več — lahko tudi preskočiš.')}
+              {odgovorjen(2) && chatOdgovor(2, obrazec.cilji.filter(c => c.besedilo.trim()).length ? obrazec.cilji.filter(c => c.besedilo.trim()).map(c => c.besedilo.trim()).join(' · ') : 'Brez ciljev')}
+              {aktiven(2) && (
+                <div className="pw-chat-vnos">
+                  {obrazec.cilji.map(cilj => (
+                    <div key={cilj.id} className="pw-nov-cilj">
+                      <input type="text" value={cilj.besedilo} onChange={event => posodobiCilj(cilj.id, { besedilo: event.target.value })} placeholder="Cilj, npr. povečati prepoznavnost znamke" aria-label="Cilj" />
+                      <input type="text" value={cilj.metrika || ''} onChange={event => posodobiCilj(cilj.id, { metrika: event.target.value })} placeholder="Metrika (neobvezno)" aria-label="Metrika cilja" />
+                      <input type="text" value={cilj.tarca || ''} onChange={event => posodobiCilj(cilj.id, { tarca: event.target.value })} placeholder="Tarča (neobvezno)" aria-label="Tarča cilja" />
+                      <button type="button" className="pw-link-brisi" onClick={() => odstraniCilj(cilj.id)} aria-label="Odstrani cilj">×</button>
+                    </div>
+                  ))}
+                  <button type="button" className="pw-nov-dodaj-cilj" onClick={dodajCilj}>+ Dodaj cilj</button>
+                  <button type="button" className="pw-chat-naprej" onClick={() => potrdiKorak(urejamKorak !== 2)}>{urejamKorak === 2 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
                 </div>
-              ))}
-              <button type="button" className="pw-nov-dodaj-cilj" onClick={dodajCilj}>+ Dodaj cilj</button>
-            </div>
+              )}
 
-            <div className="pw-det-akcije">
-              <button type="button" className="pw-det-poslji" onClick={shraniNovProjekt} disabled={!obrazec.naslov.trim()}>Ustvari projekt</button>
-              <button type="button" className="pw-nov-preklici" onClick={() => setNovOdprt(false)}>Prekliči</button>
+              {/* 3 · želje stranke */}
+              {prikazan(3) && chatBot('Kakšne so želje stranke?', 'Persona, barve, ton — prosto besedilo.')}
+              {odgovorjen(3) && chatOdgovor(3, obrazec.zelje.trim() || 'Brez posebnih želja')}
+              {aktiven(3) && (
+                <form className="pw-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 3); }}>
+                  <textarea className="pw-chat-polje" value={obrazec.zelje} onChange={event => setObrazec(o => ({ ...o, zelje: event.target.value }))} placeholder="Npr. mlada, drzna persona; toplo-nevtralna paleta; neposreden ton …" rows={4} aria-label="Želje stranke" />
+                  <button type="submit" className="pw-chat-naprej">{urejamKorak === 3 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
+                </form>
+              )}
+
+              {/* 4 · začetek/rok */}
+              {prikazan(4) && chatBot('Kdaj začneš in do kdaj?')}
+              {odgovorjen(4) && chatOdgovor(4, [obrazec.zacetek && datStr(obrazec.zacetek), obrazec.rok && `do ${datStr(obrazec.rok)}`].filter(Boolean).join(' ') || 'Ni določeno')}
+              {aktiven(4) && (
+                <form className="pw-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 4); }}>
+                  <div className="pw-nov-mreza">
+                    <label className="pw-nov-polje"><span>Začetek</span><input type="date" value={obrazec.zacetek} onChange={event => setObrazec(o => ({ ...o, zacetek: event.target.value }))} /></label>
+                    <label className="pw-nov-polje"><span>Predviden rok</span><input type="date" value={obrazec.rok} onChange={event => setObrazec(o => ({ ...o, rok: event.target.value }))} /></label>
+                  </div>
+                  <button type="submit" className="pw-chat-naprej">{urejamKorak === 4 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
+                </form>
+              )}
+
+              {/* 5 · status — izbira takoj potrdi in gre naprej (kot binarna izbira v ponudbi) */}
+              {prikazan(5) && chatBot('Kakšen je status projekta?')}
+              {odgovorjen(5) && chatOdgovor(5, projektStatusOznaka[obrazec.status])}
+              {aktiven(5) && (
+                <div className="pw-chat-izbire">
+                  {(['aktiven', 'pavza', 'koncan'] as ProjektEntitetaStatus[]).map((s, i) => (
+                    <button key={s} type="button" className="pw-chat-opcija" onClick={() => { setObrazec(o => ({ ...o, status: s })); potrdiKorak(true); }}>
+                      <span className="pw-crk">{String.fromCharCode(65 + i)}</span><b>{projektStatusOznaka[s]}</b>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* po osnovnih vprašanjih: moja lastna vprašanja + povezave + ekipa + zaključek —
+                  vse na isti neprekinjeni površini, brez nadaljnjega gating-a (izpolniš, kolikor želiš) */}
+              {novKorak >= 6 && (<>
+                {chatBot('Želiš dodati svoja vprašanja?', 'Npr. »Ima stranka že CGP?« — vprašanje in odgovor si zapišeš sama.')}
+                <div className="pw-chat-vnos">
+                  {obrazec.dodatnaVprasanja.map(v => (
+                    <div key={v.id} className="pw-vprasanje-vrstica">
+                      <div><b>{v.vprasanje}</b><span>{v.odgovor}</span></div>
+                      <button type="button" className="pw-link-brisi" onClick={() => odstraniVprasanje(v.id)} aria-label="Odstrani vprašanje">×</button>
+                    </div>
+                  ))}
+                  <div className="pw-link-obrazec">
+                    <input type="text" value={novoVprasanje.vprasanje} onChange={event => setNovoVprasanje(v => ({ ...v, vprasanje: event.target.value }))} placeholder="Vprašanje, npr. Ima stranka že CGP?" aria-label="Vprašanje" />
+                    <input type="text" value={novoVprasanje.odgovor} onChange={event => setNovoVprasanje(v => ({ ...v, odgovor: event.target.value }))} placeholder="Odgovor" aria-label="Odgovor" />
+                    <button type="button" className="pw-link-dodaj" onClick={dodajVprasanje} disabled={!novoVprasanje.vprasanje.trim() || !novoVprasanje.odgovor.trim()}>+ Dodaj vprašanje</button>
+                  </div>
+                </div>
+
+                {chatBot('Deli povezave do gradiv.', 'Figma, Miro, Drive … naslov + URL.')}
+                <div className="pw-chat-vnos">
+                  {obrazec.povezave.length > 0 && (
+                    <div className="pw-linki">
+                      {obrazec.povezave.map(p => (
+                        <div key={p.id} className="pw-link-vrstica"><a href={p.url} target="_blank" rel="noopener noreferrer">{p.naslov}</a><button type="button" className="pw-link-brisi" onClick={() => odstraniPovezavo(p.id)} aria-label={`Izbriši povezavo ${p.naslov}`}>×</button></div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="pw-link-obrazec">
+                    <input type="text" value={povezavaNaslov} onChange={event => setPovezavaNaslov(event.target.value)} placeholder="npr. Figma" aria-label="Oznaka povezave" />
+                    <input type="url" value={povezavaUrl} onChange={event => setPovezavaUrl(event.target.value)} placeholder="https://…" aria-label="Naslov povezave" />
+                    <button type="button" className="pw-link-dodaj" onClick={dodajPovezavo} disabled={!povezavaNaslov.trim() || !povezavaUrl.trim()}>+ Dodaj povezavo</button>
+                  </div>
+                </div>
+
+                {chatBot('Deli projekt in dodeli sodelavce.', 'Klikni osebo, da jo dodeliš — »Deli projekt« pošlje vabilo dodeljenim.')}
+                <div className="pw-chat-vnos">
+                  <div className="pw-chat-sodelavci">
+                    {sodelavci.map(s => {
+                      const on = obrazec.dodeljeni.includes(s.id);
+                      const initials = s.ime.split(' ').map(d => d[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+                      return (
+                        <button key={s.id} type="button" className={'pw-chat-sodelavec' + (on ? ' on' : '')} onClick={() => preklopiDodeljen(s.id)}>
+                          <span className="pw-chat-sod-krog" aria-hidden>{initials}</span>
+                          <span><b>{s.ime}</b><small>{vlogaOznaka(s.vloga)}</small></span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button type="button" className="pw-chat-deli" onClick={deliProjekt} disabled={!obrazec.dodeljeni.length}>Deli projekt ↗</button>
+                </div>
+
+                <div className="pw-det-akcije pw-chat-koncno">
+                  <button type="button" className="pw-det-poslji" onClick={shraniNovProjekt} disabled={!obrazec.naslov.trim()}>Ustvari projekt</button>
+                  <button type="button" className="pw-nov-preklici" onClick={() => setNovOdprt(false)}>Prekliči</button>
+                </div>
+              </>)}
             </div>
-          </>)}
+          )}
         </aside>
       </div>
     )}

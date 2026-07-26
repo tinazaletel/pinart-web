@@ -16,6 +16,26 @@ export interface ProjektCilj {
 
 export type ProjektStatus = 'aktiven' | 'pavza' | 'koncan';
 
+/* dodatno vprasanje, ki ga uporabnica sama doda med onboarding chatom (glej
+   ProjectsWorkspace pw-nov-panel) — prosto vprasanje + prost odgovor, brez
+   vnaprej dolocene sheme (npr. "Ima stranka ze CGP?" -> "Ne, delamo od nule") */
+export interface ProjektVprasanje {
+  id: string;
+  vprasanje: string;
+  odgovor: string;
+}
+
+/* zunanja povezava (Figma/Miro/Drive ipd.), zajeta ze med onboarding chatom —
+   ob ustvarjanju projekta se zrcali tudi v lib/pinartFlowStore (loadProjectLinks/
+   saveProjectLinks, kljuc "real-<id>"), da jo obstojeca kartica "05 · Dokumentacija"
+   na vozliscu prikaze brez dodatne logike. Ta polja ostanejo na Projektu kot
+   izvorni zapis (uporabno tudi zunaj te kartice, npr. bodoc CRM). */
+export interface ProjektPovezava {
+  id: string;
+  naslov: string;
+  url: string;
+}
+
 export interface Projekt {
   id: string;
   stevilka?: string;
@@ -33,6 +53,13 @@ export interface Projekt {
   rok?: string;
   status: ProjektStatus;
   created: string;
+  /* lastna vprasanja, dodana med onboarding chatom (glej ProjectsWorkspace) */
+  dodatnaVprasanja?: ProjektVprasanje[];
+  /* zunanje povezave, dodane med onboarding chatom */
+  povezave?: ProjektPovezava[];
+  /* dodeljeni sodelavci — seznam Sodelavec.id (lib/sodelavci); lokalni mock,
+     pravo deljenje/vidljivost pride z vec-uporabniskim zaledjem kasneje */
+  dodeljeni?: string[];
 }
 
 const STORAGE_KEY = 'pinflow_projekti';
