@@ -252,22 +252,22 @@ const NALOGE_FLOW_RAZVOJ: {
     opisAvtorIme: 'Tina Zaletel', opisAvtorVloga: 'jaz', prioriteta: 'nizka',
   },
   {
-    naslov: 'Maili — Resend (API ključ)', stolpec: 'waiting', oznake: ['zaledje'],
+    naslov: 'Maili — Resend (API ključ)', stolpec: 'done', oznake: ['zaledje'],
     opis: 'Poveži pošiljanje e-pošte prek Resend in nastavi API ključ v okolju.',
     opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'visoka',
     podopravila: [
-      { besedilo: 'Pridobitev in shramba API ključa' },
-      { besedilo: 'Osnovna predloga maila', dodeljenoOsebaIme: 'Matej Novak' },
-      { besedilo: 'Test pošiljanja na pravi naslov', dodeljenoOsebaIme: 'Tina Zaletel' },
+      { besedilo: 'Pridobitev in shramba API ključa', done: true, dodeljenoOsebaIme: 'Tina Zaletel' },
+      { besedilo: 'Osnovna predloga maila', done: true, dodeljenoOsebaIme: 'Matej Novak' },
+      { besedilo: 'Test pošiljanja na pravi naslov', done: true, dodeljenoOsebaIme: 'Tina Zaletel' },
     ],
     komentarji: [
       { avtorIme: 'Maja Zupan', besedilo: 'To je zaledje, ki blokira ostalo. Prioriteta.', vloga: 'sef' },
-      { avtorIme: 'Matej Novak', besedilo: 'Čakam samo še na API ključ.', vloga: 'sodelavec' },
+      { avtorIme: 'Tina Zaletel', besedilo: 'Ključ vpisan, test prišel — deluje.', vloga: 'jaz' },
     ],
   },
   {
-    naslov: 'Prava prijava / več-uporabnikov', stolpec: 'waiting', oznake: ['zaledje'],
-    opis: 'Uvedi pravo prijavo in podporo za več uporabnikov z ločeno vidljivostjo.',
+    naslov: 'Prava prijava / več-uporabnikov (Supabase env)', stolpec: 'waiting', oznake: ['zaledje'],
+    opis: 'Uvedi pravo prijavo in podporo za več uporabnikov z ločeno vidljivostjo (Supabase okoljske spremenljivke).',
     opisAvtorIme: 'Maja Zupan', opisAvtorVloga: 'sef', prioriteta: 'visoka',
   },
   {
@@ -288,6 +288,16 @@ const NALOGE_FLOW_RAZVOJ: {
   {
     naslov: 'Pregled trženja (light)', stolpec: 'todo', oznake: ['ideja'],
     opis: 'Ideja: lahek pregled trženjskih aktivnosti brez zapletene analitike.',
+    opisAvtorIme: 'Tina Zaletel', opisAvtorVloga: 'jaz', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'Marketing (kampanje + e-mail marketing)', stolpec: 'todo', oznake: ['ideja'],
+    opis: 'Ideja (kot Bitrix): modul za trženjske kampanje in e-mail marketing — segmenti, predloge, pošiljanje, odzivi.',
+    opisAvtorIme: 'Tina Zaletel', opisAvtorVloga: 'jaz', prioriteta: 'nizka',
+  },
+  {
+    naslov: 'Povezave s socialnimi / viralnimi omrežji', stolpec: 'todo', oznake: ['ideja'],
+    opis: 'Ideja (kot Bitrix): povezava s socialnimi omrežji — objave, sledenje odzivom, viralni doseg iz enega mesta.',
     opisAvtorIme: 'Tina Zaletel', opisAvtorVloga: 'jaz', prioriteta: 'nizka',
   },
 ];
