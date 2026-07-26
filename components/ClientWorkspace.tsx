@@ -94,6 +94,7 @@ export default function ClientWorkspace() {
   const kontaktiDemo: Kontakt[] = [
     { id: 'k1', ime: 'Ana Novak', vloga: 'Vodja nabave', telefon: '+386 40 111 222', email: 'ana.novak@primer.si' },
     { id: 'k2', ime: 'Bine Kranjc', vloga: 'IT kontakt', telefon: '+386 41 333 444', email: 'bine.kranjc@primer.si' },
+    { id: 'k3', ime: 'Nina Kralj', vloga: 'Direktorica marketinga', telefon: '+386 31 555 666', email: 'nina.kralj@primer.si' },
   ];
   const kontakti = samoOgled ? kontaktiDemo : (selected?.kontakti || []);
 
