@@ -615,6 +615,11 @@
 }
 .clientPage { display: grid; gap: 1rem; }
 .clientToolbar { display: flex; gap: .7rem; }
+.predogledBanner { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; margin-top: .9rem; padding: .7rem 1rem; border: 1px dashed color-mix(in oklch, var(--ink) 20%, transparent); border-radius: .9rem; background: oklch(97% .02 90 / .6); }
+.predogledBanner span { flex: 1 1 16rem; font: 500 .74rem/1.45 var(--font-sans), sans-serif; color: var(--muted); }
+.predogledBanner span strong { color: var(--ink); font-weight: 700; }
+.predogledBanner button { flex: none; padding: .5rem 1rem; border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font: 700 .68rem var(--font-sans), sans-serif; cursor: pointer; }
+.predogledBanner button:hover { background: color-mix(in oklch, var(--ink) 86%, var(--paper)); }
 .clientToolbar label { flex: 0 1 34rem; display: flex; align-items: center; gap: .75rem; min-height: 3rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 999px; background: oklch(98% .008 87 / .92); }
 .clientToolbar label > span { font-size: 1.25rem; line-height: 1; }
 .searchIcon { flex: 0 0 auto; width: 1.35rem; height: 1.35rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
