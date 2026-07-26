@@ -27,6 +27,7 @@ import { preberiSodelavci, shraniSodelavci } from '@/lib/sodelavci';
 import { loadFlowData, type FlowClient } from '@/lib/pinartFlowStore';
 import { Podrocje, preberiPodrocja, dodajPodrocje, izbrisiPodrocje } from '@/lib/podrocja';
 import { Oddelek, preberiOddelki, shraniOddelki, dodajOddelek, izbrisiOddelek } from '@/lib/oddelki';
+import { usePredogled } from '@/lib/predogled';
 
 const STOLPCI: { id: NalogaStolpec; naziv: string }[] = [
   { id: 'todo', naziv: 'Za narediti' },
@@ -178,6 +179,7 @@ export default function TaskManagerWorkspace() {
   const [novoPodrocje, setNovoPodrocje] = useState('');
   const [dodajOdprt, setDodajOdprt] = useState(false);
   const potrdiPodrocje = () => {
+    if (samoOgled) return;
     const t = novoPodrocje.trim();
     if (!t) return;
     setPodrocja(dodajPodrocje(t));
@@ -185,6 +187,11 @@ export default function TaskManagerWorkspace() {
     setNovoPodrocje('');
     setDodajOdprt(false);
   };
+
+  /* --- demo/predogled: 'mine' je edini zapisljiv nacin, vse ostalo (empty/zacetek/demo) je
+     samo za ogled — enak vzorec kot v KoledarWorkspace/ClientWorkspace (lib/predogled). */
+  const [nacin] = usePredogled();
+  const samoOgled = nacin !== 'mine';
 
   const trenutni = sodelavci.find((s) => s.id === trenutniId) || sodelavci[0];
   const jeVodjaAliAdmin = trenutni.vloga === 'vodja' || trenutni.vloga === 'admin';
@@ -204,6 +211,7 @@ export default function TaskManagerWorkspace() {
 
   const dodajNalogo = (e: React.FormEvent) => {
     e.preventDefault();
+    if (samoOgled) return;
     if (!novNaslov.trim()) return;
     const izbraniSodelavec = sodelavci.find((s) => s.id === novDodeljenoId);
     const nova: Naloga = {
@@ -232,6 +240,7 @@ export default function TaskManagerWorkspace() {
 
   /* naknadno dodeljevanje sodelavca na OBSTOJEČO nalogo (spustni meni na kartici) + zapis v zgodovino */
   const dodeliNalogi = (id: string, sodelavecId: string) => {
+    if (samoOgled) return;
     const so = sodelavci.find((x) => x.id === sodelavecId);
     const naloga = naloge.find((n) => n.id === id);
     posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, dodeljenoOsebaId: sodelavecId || undefined, dodeljenoOsebaIme: so?.ime } : n)));
@@ -239,6 +248,7 @@ export default function TaskManagerWorkspace() {
   };
 
   const izbrisiNalogo = (id: string) => {
+    if (samoOgled) return;
     if (!jeVodjaAliAdmin) return; // brisanje dovoljeno le vodji/adminu
     const naloga = naloge.find((n) => n.id === id);
     posodobiInShrani(naloge.filter((n) => n.id !== id));
@@ -250,6 +260,7 @@ export default function TaskManagerWorkspace() {
 
   /* naloga ↔ stranka: poveze/odveze clientId + zapise v zgodovino */
   const dodeliStranko = (id: string, clientId: string) => {
+    if (samoOgled) return;
     const stranka = stranke.find((s) => s.id === clientId);
     const naloga = naloge.find((n) => n.id === id);
     posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, clientId: clientId || undefined } : n)));
@@ -261,14 +272,17 @@ export default function TaskManagerWorkspace() {
 
   /* prost naziv projekta na nalogi — po zelji se ujema z imenom v tedenski dodelitvi */
   const nastaviProjekt = (id: string, projectId: string) => {
+    if (samoOgled) return;
     posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, projectId: projectId.trim() || undefined } : n)));
   };
 
   const nastaviPrioriteto = (id: string, prioriteta: string) => {
+    if (samoOgled) return;
     posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, prioriteta: (prioriteta || undefined) as Naloga['prioriteta'] } : n)));
   };
 
   const dodajKomentar = (id: string, besedilo: string) => {
+    if (samoOgled) return;
     if (!besedilo.trim()) return;
     const nov: NalogaKomentar = { id: 'kom_' + Date.now(), avtorIme: trenutni.ime || 'Jaz', besedilo: besedilo.trim(), cas: new Date().toISOString() };
     posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, komentarji: [...(n.komentarji || []), nov] } : n)));
@@ -315,7 +329,7 @@ export default function TaskManagerWorkspace() {
   /* dodelitve, katerih tedenZacetek pade v trenutno okno obdobja */
   const oknoDodelitve = dodelitve.filter((d) => d.tedenZacetek >= obdobjeZacetekStr && d.tedenZacetek < obdobjeKonecEksklStr);
 
-  const smeUrejatiDodelitev = (d: TedenskaDodelitev) => jeVodjaAliAdmin || d.osebaId === trenutni.id;
+  const smeUrejatiDodelitev = (d: TedenskaDodelitev) => !samoOgled && (jeVodjaAliAdmin || d.osebaId === trenutni.id);
 
   /* poveze todo naloge (delavcev pogled) s sefovo dodelitvijo: ujemanje po osebi + projektu
      (prek clientId/projectId ali po prostem imenu projekta) */
@@ -368,7 +382,29 @@ export default function TaskManagerWorkspace() {
     return njenOddelek === oddelekId;
   });
 
-  const odstraniDodelitev = (id: string) => { izbrisiDodelitev(id); osveziDodelitve(); };
+  const odstraniDodelitev = (id: string) => { if (samoOgled) return; izbrisiDodelitev(id); osveziDodelitve(); };
+
+  /* premakne PRENESENO dodelitev naprej: ustvari kopijo v naslednjem obdobju (glede na
+     trenutni preklop teden/mesec/kvartal), z novim id in statusom 'nacrtovano'; izvirna
+     dodelitev ostane nespremenjena (zgodovinski zapis, da je bila "prenesena"). */
+  const naslednjeObdobjeZacetek = (datumStr: string, vrsta: 'teden' | 'mesec' | 'kvartal'): string => {
+    const d = new Date(datumStr + 'T00:00:00');
+    if (vrsta === 'teden') d.setDate(d.getDate() + 7);
+    else if (vrsta === 'mesec') d.setMonth(d.getMonth() + 1);
+    else d.setMonth(d.getMonth() + 3);
+    return toDateStr(d);
+  };
+  const prenesiVNaslednjiCikel = (d: TedenskaDodelitev) => {
+    if (samoOgled) return;
+    const nova: TedenskaDodelitev = {
+      ...d,
+      id: 'dod_' + Date.now(),
+      tedenZacetek: naslednjeObdobjeZacetek(d.tedenZacetek, obdobjeVrsta),
+      status: 'nacrtovano',
+    };
+    shraniDodelitev(nova);
+    osveziDodelitve();
+  };
 
   /* odpre panel za novo dodelitev v konkretni celici (projekt vrstice x oddelek stolpca) */
   const odpriNovoDodelitev = (vrstica: ProjektVrstica, oddelekId: string) => {
@@ -385,6 +421,7 @@ export default function TaskManagerWorkspace() {
   const zapriDodelitevPanel = () => setDodelitevPanel(null);
 
   const shraniDodelitevIzPanela = () => {
+    if (samoOgled) return;
     if (!dodelitevPanel) return;
     if (dodelitevPanel.mode === 'new') {
       const oseba = sodelavci.find((s) => s.id === ndOsebaId);
@@ -423,12 +460,14 @@ export default function TaskManagerWorkspace() {
   };
 
   const izbrisiIzPanela = () => {
+    if (samoOgled) return;
     if (dodelitevPanel?.mode === 'edit' && dodelitevPanel.dodelitevId) odstraniDodelitev(dodelitevPanel.dodelitevId);
     zapriDodelitevPanel();
   };
 
   /* "+ projekt" — doda prazno vrstico v matriko (se brez dodelitve), po zelji poveze s stranko */
   const dodajProjektVrstico = () => {
+    if (samoOgled) return;
     const ime = noviProjektIme.trim();
     if (!ime) return;
     const stranka = stranke.find((s) => s.id === noviProjektStrankaId);
@@ -444,18 +483,21 @@ export default function TaskManagerWorkspace() {
 
   /* --- Uredi oddelke (vodja/admin) --- */
   const dodajOddelekRocno = () => {
+    if (samoOgled) return;
     const t = novOddelekIme.trim();
     if (!t) return;
     setOddelki(dodajOddelek(t));
     setNovOddelekIme('');
   };
-  const izbrisiOddelekRocno = (id: string) => setOddelki(izbrisiOddelek(id));
+  const izbrisiOddelekRocno = (id: string) => { if (samoOgled) return; setOddelki(izbrisiOddelek(id)); };
   const posodobiSefaOddelka = (oddelekId: string, sefId: string) => {
+    if (samoOgled) return;
     const posodobljeni = oddelki.map((o) => (o.id === oddelekId ? { ...o, sefId: sefId || undefined } : o));
     setOddelki(posodobljeni);
     shraniOddelki(posodobljeni);
   };
   const posodobiSodelavcaOddelek = (sodelavecId: string, oddelekId: string) => {
+    if (samoOgled) return;
     const posodobljeni = sodelavci.map((s) => (s.id === sodelavecId ? { ...s, oddelekId: oddelekId || undefined } : s));
     setSodelavci(posodobljeni);
     shraniSodelavci(posodobljeni);
@@ -475,6 +517,7 @@ export default function TaskManagerWorkspace() {
      morebitno drugo tekoco nalogo in njen odsek prišteje k njenemu porabljenemu casu.
      Klik na "stop" (na nalogi, kjer stoparica ze tece) samo ustavi in shrani odsek. */
   const preklopiStoparico = (id: string) => {
+    if (samoOgled) return;
     const zdajIso = new Date().toISOString();
     const zdajMs = Date.now();
     let ustavljena: { naloga: Naloga; minute: number } | null = null;
@@ -508,10 +551,14 @@ export default function TaskManagerWorkspace() {
     return () => window.clearInterval(id);
   }, [tekocaNalogaId]);
 
-  const handleDragStart = (e: React.DragEvent, id: string) => { setDraggedCardId(id); e.dataTransfer.setData('text/plain', id); };
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    if (samoOgled) return;
+    setDraggedCardId(id); e.dataTransfer.setData('text/plain', id);
+  };
   const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); };
   const handleDrop = (e: React.DragEvent, ciljniStolpec: NalogaStolpec) => {
     e.preventDefault();
+    if (samoOgled) return;
     const id = e.dataTransfer.getData('text/plain') || draggedCardId;
     if (!id) return;
     const naloga = naloge.find((n) => n.id === id);
@@ -569,7 +616,11 @@ export default function TaskManagerWorkspace() {
               <ChartBar size={15} weight="bold" /> Analitika ekipe
             </button>
           )}
-          <button type="button" className="tm-nova" onClick={() => { setPogled('kanban'); setAktivniStolpec('todo'); setPrikaziFormo(true); }}>+ Nova naloga</button>
+          {!samoOgled ? (
+            <button type="button" className="tm-nova" onClick={() => { setPogled('kanban'); setAktivniStolpec('todo'); setPrikaziFormo(true); }}>+ Nova naloga</button>
+          ) : (
+            <p className="tm-demo-namig">Urejanje ni na voljo v predogledu (demo).</p>
+          )}
         </div>
       </header>
 
@@ -628,7 +679,7 @@ export default function TaskManagerWorkspace() {
                   const prekoracitev = !!ocena && odstotekSurovi > 100;
                   const odstotek = Math.min(100, odstotekSurovi);
                   return (
-                    <article key={naloga.id} className={`tm-kartica${naloga.isTimerRunning ? ' tm-kartica-tece' : ''}`} draggable onDragStart={(e) => handleDragStart(e, naloga.id)}>
+                    <article key={naloga.id} className={`tm-kartica${naloga.isTimerRunning ? ' tm-kartica-tece' : ''}`} draggable={!samoOgled} onDragStart={(e) => handleDragStart(e, naloga.id)}>
                       <div className="tm-kartica-vrh">
                         <strong>{naloga.naslov}</strong>
                         {naloga.isTimerRunning && <span className="tm-tece-znacka" aria-hidden>● teče</span>}
@@ -642,7 +693,7 @@ export default function TaskManagerWorkspace() {
                           <ChatCircleDots size={13} weight={naloga.komentarji?.length ? 'fill' : 'regular'} />
                           {!!naloga.komentarji?.length && <span className="tm-kartica-komentarji-st">{naloga.komentarji.length}</span>}
                         </button>
-                        {jeVodjaAliAdmin && <button type="button" className="tm-kartica-x" onClick={() => izbrisiNalogo(naloga.id)} title="Izbriši nalogo" aria-label="Izbriši nalogo">×</button>}
+                        {jeVodjaAliAdmin && !samoOgled && <button type="button" className="tm-kartica-x" onClick={() => izbrisiNalogo(naloga.id)} title="Izbriši nalogo" aria-label="Izbriši nalogo">×</button>}
                       </div>
                       {naloga.opis && <p className="tm-kartica-opis">{naloga.opis}</p>}
                       <div className="tm-kartica-noga">
@@ -654,15 +705,16 @@ export default function TaskManagerWorkspace() {
                           className={`tm-prioriteta-select tm-prioriteta-select-${naloga.prioriteta || 'brez'}`}
                           value={naloga.prioriteta || ''}
                           onChange={(e) => nastaviPrioriteto(naloga.id, e.target.value)}
+                          disabled={samoOgled}
                           aria-label="Prioriteta"
-                          title="Nastavi prioriteto"
+                          title={samoOgled ? 'Ni na voljo v predogledu (demo)' : 'Nastavi prioriteto'}
                         >
                           <option value="">Prioriteta —</option>
                           {PRIORITETE.map((p) => <option key={p.id} value={p.id}>{p.naziv}</option>)}
                         </select>
                         {naloga.dodeljenoOseba
                           ? <span className="tm-oseba" title={`Dodeljeno: ${naloga.dodeljenoOseba}`}><span className="tm-oseba-krog" aria-hidden>{naloga.dodeljenoOseba.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>{naloga.dodeljenoOseba}</span>
-                          : <select className="tm-dodeli" value={naloga.dodeljenoOsebaId || ''} onChange={(e) => dodeliNalogi(naloga.id, e.target.value)} aria-label="Dodeli sodelavcu" title="Dodeli ali zamenjaj sodelavca">
+                          : <select className="tm-dodeli" value={naloga.dodeljenoOsebaId || ''} onChange={(e) => dodeliNalogi(naloga.id, e.target.value)} disabled={samoOgled} aria-label="Dodeli sodelavcu" title={samoOgled ? 'Ni na voljo v predogledu (demo)' : 'Dodeli ali zamenjaj sodelavca'}>
                               <option value="">＋ dodeli</option>
                               {sodelavci.filter((so) => so.aktiven).map((so) => <option key={so.id} value={so.id}>{so.ime}</option>)}
                             </select>}
@@ -671,7 +723,7 @@ export default function TaskManagerWorkspace() {
                         <div className="tm-cas-vrsta">
                           <span className="tm-cas-tekst">{formatUre(porabljene)}h{ocena ? ` / ${ocena}h` : ''}</span>
                           {naloga.isTimerRunning && naloga.timerStartTime && <span className="tm-cas-ziv" aria-label="Tekoči čas">▶ {formatCasSek((zdaj - new Date(naloga.timerStartTime).getTime()) / 1000)}</span>}
-                          <button type="button" className={`tm-cas-gumb${naloga.isTimerRunning ? ' tm-cas-gumb-tece' : ''}`} onClick={() => preklopiStoparico(naloga.id)} aria-label={naloga.isTimerRunning ? 'Ustavi štoparico' : 'Zaženi štoparico'} title={naloga.isTimerRunning ? 'Ustavi merjenje' : 'Zaženi merjenje'}>
+                          <button type="button" className={`tm-cas-gumb${naloga.isTimerRunning ? ' tm-cas-gumb-tece' : ''}`} onClick={() => preklopiStoparico(naloga.id)} disabled={samoOgled} aria-label={naloga.isTimerRunning ? 'Ustavi štoparico' : 'Zaženi štoparico'} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : (naloga.isTimerRunning ? 'Ustavi merjenje' : 'Zaženi merjenje')}>
                             {naloga.isTimerRunning ? <Pause size={12} weight="fill" /> : <Play size={12} weight="fill" />}
                           </button>
                         </div>
@@ -701,7 +753,7 @@ export default function TaskManagerWorkspace() {
               {obdobjeOffset !== 0 && <button type="button" className="tm-teden-danes" onClick={() => setObdobjeOffset(0)}>Danes</button>}
             </div>
             <button type="button" className="tm-teden-strelica" onClick={() => setObdobjeOffset((o) => o + 1)} aria-label="Naslednje obdobje"><CaretRight size={14} weight="bold" /></button>
-            {jeVodjaAliAdmin && (
+            {jeVodjaAliAdmin && !samoOgled && (
               <div className="tm-plan-akcije">
                 <button type="button" className="tm-teden-dodaj" onClick={() => setNoviProjektOdprt((v) => !v)}>+ projekt</button>
                 <button type="button" className="tm-analitika-gumb" onClick={() => setUrediOddelkeOdprto(true)}>
@@ -709,9 +761,12 @@ export default function TaskManagerWorkspace() {
                 </button>
               </div>
             )}
+            {jeVodjaAliAdmin && samoOgled && (
+              <p className="tm-demo-namig" style={{ marginLeft: 'auto' }}>Urejanje ni na voljo v predogledu (demo).</p>
+            )}
           </div>
 
-          {noviProjektOdprt && jeVodjaAliAdmin && (
+          {noviProjektOdprt && jeVodjaAliAdmin && !samoOgled && (
             <div className="tm-forma tm-plan-nov-projekt">
               <div className="tm-forma-glava"><h2>Nov projekt</h2><button type="button" className="tm-x" onClick={() => setNoviProjektOdprt(false)} aria-label="Zapri">×</button></div>
               <label className="tm-polje"><span>Ime projekta</span>
@@ -768,10 +823,10 @@ export default function TaskManagerWorkspace() {
                                   <span className="tm-celica-cip-znacka">{oznakaKompaktna(d)}</span>
                                 </button>
                               ))}
-                              {jeVodjaAliAdmin && (
+                              {jeVodjaAliAdmin && !samoOgled && (
                                 <button type="button" className="tm-celica-dodaj" onClick={() => odpriNovoDodelitev(vrstica, o.id)}>+ dodeli</button>
                               )}
-                              {celica.length === 0 && !jeVodjaAliAdmin && <span className="tm-celica-prazno">—</span>}
+                              {celica.length === 0 && !(jeVodjaAliAdmin && !samoOgled) && <span className="tm-celica-prazno">—</span>}
                             </div>
                           </td>
                         );
@@ -788,8 +843,8 @@ export default function TaskManagerWorkspace() {
       {dodelitevPanel && (() => {
         const urejena = dodelitevPanel.mode === 'edit' ? dodelitve.find((d) => d.id === dodelitevPanel.dodelitevId) : undefined;
         /* vodja/admin ureja vsa polja (oseba/oddelek/podrocje); ostali (lastnik dodelitve) le nacrt+status */
-        const smeVse = jeVodjaAliAdmin;
-        const smeLastno = dodelitevPanel.mode === 'new' ? jeVodjaAliAdmin : !!urejena && smeUrejatiDodelitev(urejena);
+        const smeVse = jeVodjaAliAdmin && !samoOgled;
+        const smeLastno = dodelitevPanel.mode === 'new' ? smeVse : !!urejena && smeUrejatiDodelitev(urejena);
         return (
           <div className="tm-dodelitev-podlaga" onClick={zapriDodelitevPanel}>
             <aside className="tm-dodelitev-panel" onClick={(e) => e.stopPropagation()}>
@@ -859,8 +914,14 @@ export default function TaskManagerWorkspace() {
                 </label>
               )}
 
+              {dodelitevPanel.mode === 'edit' && urejena && urejena.status === 'preneseno' && smeLastno && (
+                <button type="button" className="tm-prenesi-cikel" onClick={() => { prenesiVNaslednjiCikel(urejena); zapriDodelitevPanel(); }}>
+                  <CaretRight size={13} weight="bold" /> Prenesi v naslednji cikel
+                </button>
+              )}
+
               <div className="tm-forma-akcije">
-                {dodelitevPanel.mode === 'edit' && jeVodjaAliAdmin && (
+                {dodelitevPanel.mode === 'edit' && jeVodjaAliAdmin && !samoOgled && (
                   <button type="button" className="tm-preklici" onClick={izbrisiIzPanela}>Izbriši</button>
                 )}
                 <button type="button" className="tm-preklici" onClick={zapriDodelitevPanel}>Prekliči</button>
@@ -963,16 +1024,16 @@ export default function TaskManagerWorkspace() {
             </div>
             {odprtaNaloga.opis && <p className="tm-kartica-opis">{odprtaNaloga.opis}</p>}
             <label className="tm-polje"><span>Stranka</span>
-              <select value={odprtaNaloga.clientId || ''} onChange={(e) => dodeliStranko(odprtaNaloga.id, e.target.value)}>
+              <select value={odprtaNaloga.clientId || ''} onChange={(e) => dodeliStranko(odprtaNaloga.id, e.target.value)} disabled={samoOgled}>
                 <option value="">— brez —</option>
                 {stranke.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </label>
             <label className="tm-polje"><span>Projekt (neobvezno)</span>
-              <input value={odprtaNaloga.projectId || ''} onChange={(e) => nastaviProjekt(odprtaNaloga.id, e.target.value)} placeholder="Naziv projekta, npr. Battle for Earth …" />
+              <input value={odprtaNaloga.projectId || ''} onChange={(e) => nastaviProjekt(odprtaNaloga.id, e.target.value)} placeholder="Naziv projekta, npr. Battle for Earth …" disabled={samoOgled} />
             </label>
             <label className="tm-polje"><span>Prioriteta</span>
-              <select value={odprtaNaloga.prioriteta || ''} onChange={(e) => nastaviPrioriteto(odprtaNaloga.id, e.target.value)}>
+              <select value={odprtaNaloga.prioriteta || ''} onChange={(e) => nastaviPrioriteto(odprtaNaloga.id, e.target.value)} disabled={samoOgled}>
                 <option value="">— brez —</option>
                 {PRIORITETE.map((p) => <option key={p.id} value={p.id}>{p.naziv}</option>)}
               </select>
@@ -988,10 +1049,14 @@ export default function TaskManagerWorkspace() {
                 </li>
               ))}
             </ul>
-            <form className="tm-komentar-forma" onSubmit={(e) => { e.preventDefault(); dodajKomentar(odprtaNaloga.id, novKomentar); setNovKomentar(''); }}>
-              <textarea value={novKomentar} onChange={(e) => setNovKomentar(e.target.value)} placeholder="Dodaj komentar …" rows={2} />
-              <button type="submit" className="tm-shrani" disabled={!novKomentar.trim()}>Dodaj komentar</button>
-            </form>
+            {!samoOgled ? (
+              <form className="tm-komentar-forma" onSubmit={(e) => { e.preventDefault(); dodajKomentar(odprtaNaloga.id, novKomentar); setNovKomentar(''); }}>
+                <textarea value={novKomentar} onChange={(e) => setNovKomentar(e.target.value)} placeholder="Dodaj komentar …" rows={2} />
+                <button type="submit" className="tm-shrani" disabled={!novKomentar.trim()}>Dodaj komentar</button>
+              </form>
+            ) : (
+              <p className="tm-demo-namig">Dodajanje komentarjev ni na voljo v predogledu (demo).</p>
+            )}
           </aside>
         </div>
       )}
@@ -1157,6 +1222,13 @@ export default function TaskManagerWorkspace() {
         /* status dodelitve — samostojen pill-select, isti chevron kot ostali selecti */
         .tm-status-select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding:.2rem 1.3rem .2rem .55rem;border:1px solid var(--line);border-radius:999px;font:700 .62rem var(--font-sans),sans-serif;cursor:pointer;background-color:oklch(96% .006 87);color:var(--ink);background-repeat:no-repeat;background-position:right .4rem center;background-size:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
         .tm-status-select:disabled{opacity:.6;cursor:not-allowed}
+
+        /* gumb "Prenesi v naslednji cikel" — ustvari kopijo PRENESENE dodelitve v naslednjem obdobju */
+        .tm-prenesi-cikel{display:inline-flex;align-items:center;gap:.35rem;align-self:flex-start;margin:-.2rem 0 .8rem;padding:.5rem .8rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--ink);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+        .tm-prenesi-cikel:hover{background:var(--ink);color:var(--paper);border-style:solid;border-color:var(--ink)}
+
+        /* namig, da pisanje v predogledu (demo) ni na voljo — enak vzorec kot ostali prazni/opozorilni namigi */
+        .tm-demo-namig{margin:0;font:400 .74rem var(--font-sans),sans-serif;color:var(--ink);opacity:.6}
 
         /* matrika: vrstice=projekti, stolpci=oddelki */
         .tm-matrika-drs{overflow-x:auto;border:1px solid var(--line);border-radius:1rem;background:oklch(97.5% .008 87/.5)}
