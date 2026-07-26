@@ -8,7 +8,8 @@ import { loadFlowData, saveFlowCollection, type FlowInvoice } from '@/lib/pinart
 import { getBusinessDocumentUrl, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
-import { preberiPredogled } from '@/lib/predogled';
+import { preberiPredogled, usePredogled } from '@/lib/predogled';
+import { posljiMail } from '@/lib/posta';
 import { nastaviNapredek } from '@/lib/flowNapredek';
 import VidezDokumentov from '@/components/VidezDokumentov';
 import IzbirnikDrzave from '@/components/IzbirnikDrzave';
@@ -1973,6 +1974,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [narocnikPonudbe, setNarocnikPonudbe] = useState('');
   const [nedavniNarocniki, setNedavniNarocniki] = useState<NarocnikZapis[]>([]);
   const [narocnikEmail, setNarocnikEmail] = useState('');
+  const [posiljamMail, setPosiljamMail] = useState(false);
+  const [mailStatus, setMailStatus] = useState('');
+  const [predogledNacin] = usePredogled();
+  const samoOgled = predogledNacin === 'demo';
   const [narocnikOseba, setNarocnikOseba] = useState('');
   const [narocnikNaslov, setNarocnikNaslov] = useState('');
   const [narocnikDavcna, setNarocnikDavcna] = useState('');
@@ -3575,12 +3580,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     const t = ocistiTelo(izvozniHtml());
     return predlogaPinart ? dodajIkonoCeni(t) : t;
   };
-  const prenesi = () => {
-    const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
+  /* Sestavi cel samostojni HTML dokument ponudbe (isti niz uporabita prenos in mail). */
+  const zgradiPonudbaDoc = (): string => {
     const telo = izvozTelo();
-    const doc = `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${escapeHtml('Ponudba' + (stevilkaPonudbe ? ' ' + stevilkaPonudbe : ''))}</title>${dokFontLink(dokFont)}<style>${dokCss(OFFER_CSS)}
+    return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${escapeHtml('Ponudba' + (stevilkaPonudbe ? ' ' + stevilkaPonudbe : ''))}</title>${dokFontLink(dokFont)}<style>${dokCss(OFFER_CSS)}
       body{max-width:820px;margin:40px auto;padding:0 26px 60px}
       .offer-cover{margin-bottom:90px}</style></head><body style="${dokVars(dokBarva, dokFont)}" class="${predlogaPinart ? 'predloga' : ''}">${ponudbaNaslovnica()}${ponudbaGlava()}${telo}${dokNogaHtml()}</body></html>`;
+  };
+  const prenesi = () => {
+    const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
+    const doc = zgradiPonudbaDoc();
     const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -3966,6 +3975,31 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       .trim();
     zabeleziNarocnika(narocnikPonudbe);
     window.location.href = `mailto:${narocnikEmail.trim()}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`;
+  };
+
+  /* Pravo posiljanje: cela HTML ponudba (isti dokument kot prenos) gre narocniku
+     prek streznika (Resend) — helper posljiMail, brez neposrednega klica Resend. */
+  const posljiPonudbo = async () => {
+    if (samoOgled) { setMailStatus('Pošiljanje ni na voljo v predogledu.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(narocnikEmail.trim())) {
+      setMailStatus('Vpiši veljaven e-mail naročnika.');
+      return;
+    }
+    const doc = zgradiPonudbaDoc();
+    const subject = 'Ponudba' + (stevilkaPonudbe ? ' ' + stevilkaPonudbe : '') + (nazivPonudbe ? ' — ' + nazivPonudbe : '');
+    setPosiljamMail(true);
+    setMailStatus('Pošiljam …');
+    try {
+      const rez = await posljiMail({ to: narocnikEmail.trim(), subject, html: doc, replyTo: ponudnik?.email || undefined });
+      if (rez.ok) {
+        zabeleziNarocnika(narocnikPonudbe);
+        setMailStatus('Poslano naročniku.');
+      } else {
+        setMailStatus('Napaka: ' + (rez.napaka || 'pošiljanje ni uspelo.'));
+      }
+    } finally {
+      setPosiljamMail(false);
+    }
   };
 
   /* CSV za uvoz v racunovodski program (postavka, kolicina, cena, znesek).
@@ -6384,6 +6418,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .editor .offer-package ul { margin: .45rem 0 0; padding-left: 1.05rem; }
         .cw .editor .offer-package li { margin: .22rem 0; color: var(--ink); }
         .cw .btnvrsta { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-top: 1.2rem; align-items: center; }
+        .cw .btnvrsta .mail-vnos { flex: 0 1 15rem; min-width: 11rem; padding: .55rem .8rem; border: 1px solid rgba(17,17,17,.18); border-radius: 10px; background: var(--paper, #f7f5ef); color: var(--ink, #111); font: inherit; font-size: .92rem; }
+        .cw .btnvrsta .mail-vnos::placeholder { color: rgba(17,17,17,.45); }
+        .cw .mail-status { margin: .6rem 0 0; font-size: .85rem; color: var(--ink, #111); }
         .cw .zakljucek-ikona { display: flex; justify-content: center; color: var(--accent); margin: .2rem 0 1.1rem; }
         .cw .zakljucek-sredina .zakljucek-ikona { justify-content: center; }
         /* Zakljucek: vse centrirano (ilustracija + naslov + podnaslov + gumbi) */
@@ -8802,6 +8839,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 onClick={() => { posljiMailto(); proslaviKonfeti(); }}>
                 <EnvelopeSimple size={17} /> {L('Pošlji ponudbo', 'Send quote')}
               </button>
+              <input type="email" className="mail-vnos" value={narocnikEmail}
+                onChange={e => setNarocnikEmail(e.target.value)}
+                placeholder={L('E-mail naročnika …', 'Client e-mail …')}
+                aria-label={L('E-mail naročnika', 'Client e-mail')} />
+              <button type="button" className="gumb" disabled={posiljamMail || samoOgled}
+                title={samoOgled ? L('V predogledu pošiljanje ni na voljo', 'Sending is unavailable in preview') : L('Pošlje celo ponudbo naročniku po e-pošti', 'Emails the full quote to the client')}
+                onClick={() => { posljiPonudbo(); }}>
+                <PaperPlaneTilt size={17} /> {posiljamMail ? L('Pošiljam …', 'Sending …') : L('Pošlji naročniku', 'Send to client')}
+              </button>
               <button type="button" className="povezava" disabled={pdfNalaganje} onClick={() => { prenesiPdf(); proslaviKonfeti(); }} title={L('Prenese ponudbo kot PDF datoteko', 'Downloads the quote as a PDF file')}>
                 <FilePdf size={17} /> {pdfNalaganje ? 'Pripravljam PDF…' : 'Prenesi PDF'}
               </button>
@@ -8821,6 +8867,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 </button>
               )}
             </div>
+            {mailStatus && <p className="mail-status" role="status">{mailStatus}</p>}
             <div className="rac-panel">
               {!racunOdprt ? (
                 <button type="button" className="povezava rac-toggle" onClick={odpriRacun}>
