@@ -1053,10 +1053,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
           <p className={styles.eyebrow}>NOV PROJEKT</p>
           <h2 id="pw-nov-naslov">Začni nov projekt.</h2>
 
-          {samoOgled ? (
-            <p className="pw-opozorilo">Ustvarjanje projektov ni na voljo v predogledu (demo). Prijavi se v svoj račun.</p>
-          ) : (
-            <div className="pw-chat-tok">
+          <div className="pw-chat-tok">
+            {samoOgled && <p className="pw-opozorilo">Predogled (demo): chat lahko preizkusiš; shranjevanje projekta je na voljo po prijavi.</p>}
               {/* 0 · naslov */}
               {prikazan(0) && chatBot('Kako se projekt imenuje?')}
               {odgovorjen(0) && chatOdgovor(0, obrazec.naslov.trim() || '—')}
@@ -1186,12 +1184,11 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 </div>
 
                 <div className="pw-det-akcije pw-chat-koncno">
-                  <button type="button" className="pw-det-poslji" onClick={shraniNovProjekt} disabled={!obrazec.naslov.trim()}>Ustvari projekt</button>
+                  <button type="button" className="pw-det-poslji" onClick={shraniNovProjekt} disabled={!obrazec.naslov.trim() || samoOgled} title={samoOgled ? 'Shranjevanje projekta je na voljo po prijavi' : undefined}>Ustvari projekt</button>
                   <button type="button" className="pw-nov-preklici" onClick={() => setNovOdprt(false)}>Prekliči</button>
                 </div>
               </>)}
             </div>
-          )}
         </aside>
       </div>
     )}
