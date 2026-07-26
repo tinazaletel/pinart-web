@@ -5,8 +5,19 @@
    Bodoni, ink, akcent). Lasten prefiksiran <style> blok (tm-), da ne trči s .shell. */
 
 import React, { useState, useEffect } from 'react';
-import { Pause, Play } from '@phosphor-icons/react';
-import { Naloga, NalogaStolpec, preberiNaloge, shraniNaloge } from '@/lib/naloge';
+import { Pause, Play, ChartBar } from '@phosphor-icons/react';
+import {
+  Naloga,
+  NalogaStolpec,
+  preberiNaloge,
+  shraniNaloge,
+  Sodelavec,
+  UporabniskaVloga,
+  ZACETNI_SODELAVCI,
+  ZgodovinaAktivnosti,
+  preberiZgodovino,
+  zabeleziAktivnost,
+} from '@/lib/naloge';
 
 const STOLPCI: { id: NalogaStolpec; naziv: string }[] = [
   { id: 'todo', naziv: 'Za narediti' },
@@ -32,28 +43,58 @@ export default function TaskManagerWorkspace() {
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
   const [zdaj, setZdaj] = useState(() => Date.now());
 
-  useEffect(() => { setNaloge(preberiNaloge()); }, []);
+  /* --- vec-uporabniski del: sodelavci, trenutno prijavljen uporabnik, zgodovina, analitika --- */
+  const [sodelavci] = useState<Sodelavec[]>(ZACETNI_SODELAVCI);
+  const [trenutniId, setTrenutniId] = useState<string>(ZACETNI_SODELAVCI.find((s) => s.vloga === 'admin')?.id || ZACETNI_SODELAVCI[0].id);
+  const [novDodeljenoId, setNovDodeljenoId] = useState<string>('');
+  const [prikaziAnalitiko, setPrikaziAnalitiko] = useState(false);
+  const [analitikaSodelavecId, setAnalitikaSodelavecId] = useState<string>('');
+  const [zgodovina, setZgodovina] = useState<ZgodovinaAktivnosti[]>([]);
+
+  const trenutni = sodelavci.find((s) => s.id === trenutniId) || sodelavci[0];
+  const jeVodjaAliAdmin = trenutni.vloga === 'vodja' || trenutni.vloga === 'admin';
+
+  useEffect(() => { setNaloge(preberiNaloge()); setZgodovina(preberiZgodovino()); }, []);
 
   const posodobiInShrani = (noveNaloge: Naloga[]) => { setNaloge(noveNaloge); shraniNaloge(noveNaloge); };
 
   const dodajNalogo = (e: React.FormEvent) => {
     e.preventDefault();
     if (!novNaslov.trim()) return;
+    const izbraniSodelavec = sodelavci.find((s) => s.id === novDodeljenoId);
     const nova: Naloga = {
       id: 'task_' + Date.now(),
       naslov: novNaslov.trim(),
       opis: novOpis.trim() || undefined,
       rok: novRok || undefined,
+      /* obstojece prosto polje "Dodeljeno" (besedilo / "Zase") ostane, poleg njega
+         se lahko doda se sodelavec iz spustnega seznama (dodeljenoOsebaId/-Ime) */
       dodeljenoOseba: novDodeljeno.trim() || undefined,
+      dodeljenoOsebaId: izbraniSodelavec?.id,
+      dodeljenoOsebaIme: izbraniSodelavec?.ime,
       ocenjeniCasUre: novaOcena.trim() ? parseFloat(novaOcena) : undefined,
       stolpec: aktivniStolpec,
       created: new Date().toISOString(),
     };
     posodobiInShrani([...naloge, nova]);
-    setNovNaslov(''); setNovOpis(''); setNovRok(''); setNovDodeljeno(''); setNovaOcena(''); setPrikaziFormo(false);
+    zabeleziAktivnost(nova.id, trenutni.ime, `Ustvaril nalogo »${nova.naslov}«`);
+    if (izbraniSodelavec) {
+      /* mock obvestilo o dodelitvi (pravega maila se ne posilja) */
+      console.log(`[E-mail Poslan] Naloga "${nova.naslov}" dodeljena ${izbraniSodelavec.ime} (${izbraniSodelavec.email})`);
+    }
+    setZgodovina(preberiZgodovino());
+    setNovNaslov(''); setNovOpis(''); setNovRok(''); setNovDodeljeno(''); setNovDodeljenoId(''); setNovaOcena(''); setPrikaziFormo(false);
   };
 
-  const izbrisiNalogo = (id: string) => { posodobiInShrani(naloge.filter((n) => n.id !== id)); };
+  const izbrisiNalogo = (id: string) => {
+    if (!jeVodjaAliAdmin) return; // brisanje dovoljeno le vodji/adminu
+    const naloga = naloge.find((n) => n.id === id);
+    posodobiInShrani(naloge.filter((n) => n.id !== id));
+    if (naloga) {
+      zabeleziAktivnost(id, trenutni.ime, `Izbrisal nalogo »${naloga.naslov}«`);
+      setZgodovina(preberiZgodovino());
+    }
+  };
 
   /* Porabljeni cas naloge do TRENUTKA "zdaj" — ce stoparica tece, steje se tudi tekoci odsek. */
   const porabljeneMinute = (n: Naloga): number => {
@@ -103,9 +144,28 @@ export default function TaskManagerWorkspace() {
     e.preventDefault();
     const id = e.dataTransfer.getData('text/plain') || draggedCardId;
     if (!id) return;
+    const naloga = naloge.find((n) => n.id === id);
     posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, stolpec: ciljniStolpec } : n)));
+    if (naloga && naloga.stolpec !== ciljniStolpec) {
+      const cilj = STOLPCI.find((s) => s.id === ciljniStolpec)?.naziv || ciljniStolpec;
+      zabeleziAktivnost(id, trenutni.ime, `Premaknil nalogo »${naloga.naslov}« v »${cilj}«`);
+      setZgodovina(preberiZgodovino());
+    }
     setDraggedCardId(null);
   };
+
+  /* Vidnost po vlogi: clan vidi le sebi dodeljene naloge, vodja/admin vidita vse. */
+  const vidneNaloge = trenutni.vloga === 'clan' ? naloge.filter((n) => n.dodeljenoOsebaId === trenutni.id) : naloge;
+
+  /* Podatki za panel "Analitika ekipe" — izbrani sodelavec: st. nalog, koncanih, ur, zgodovina. */
+  const analitikaSodelavec = sodelavci.find((s) => s.id === analitikaSodelavecId);
+  const analitikaNaloge = analitikaSodelavec ? naloge.filter((n) => n.dodeljenoOsebaId === analitikaSodelavec.id) : [];
+  const analitikaKoncane = analitikaNaloge.filter((n) => n.stolpec === 'done').length;
+  const analitikaUre = analitikaNaloge.reduce((vsota, n) => vsota + porabljeneMinute(n) / 60, 0);
+  const analitikaZgodovina = zgodovina
+    .filter((z) => analitikaNaloge.some((n) => n.id === z.nalogaId))
+    .sort((a, b) => new Date(b.datum).getTime() - new Date(a.datum).getTime())
+    .slice(0, 10);
 
   return (
     <div className="tm">
@@ -115,7 +175,20 @@ export default function TaskManagerWorkspace() {
           <h1 className="tm-naslov">Naloge.</h1>
           <p className="tm-podnaslov">Organiziraj projekte in opravila na enem mestu — povleci kartico med stolpci.</p>
         </div>
-        <button type="button" className="tm-nova" onClick={() => { setAktivniStolpec('todo'); setPrikaziFormo(true); }}>+ Nova naloga</button>
+        <div className="tm-glava-akcije">
+          <label className="tm-uporabnik">
+            <span>Prijavljen</span>
+            <select value={trenutniId} onChange={(e) => setTrenutniId(e.target.value)}>
+              {sodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime} ({s.vloga.toUpperCase()})</option>)}
+            </select>
+          </label>
+          {jeVodjaAliAdmin && (
+            <button type="button" className="tm-analitika-gumb" onClick={() => { setAnalitikaSodelavecId(sodelavci[0]?.id || ''); setPrikaziAnalitiko(true); }}>
+              <ChartBar size={15} weight="bold" /> Analitika ekipe
+            </button>
+          )}
+          <button type="button" className="tm-nova" onClick={() => { setAktivniStolpec('todo'); setPrikaziFormo(true); }}>+ Nova naloga</button>
+        </div>
       </header>
 
       {prikaziFormo && (
@@ -126,8 +199,14 @@ export default function TaskManagerWorkspace() {
           <label className="tm-polje"><span>Dodeljeno</span>
             <div className="tm-dodeljeno-vrsta">
               <input value={novDodeljeno} onChange={(e) => setNovDodeljeno(e.target.value)} placeholder="Kdo dela nalogo …" />
-              <button type="button" className="tm-zase" onClick={() => setNovDodeljeno('Jaz')}>+ Zase</button>
+              <button type="button" className="tm-zase" onClick={() => { setNovDodeljeno('Jaz'); setNovDodeljenoId(trenutni.id); }}>+ Zase</button>
             </div>
+          </label>
+          <label className="tm-polje"><span>Sodelavec (dodelitev + e-pošta)</span>
+            <select value={novDodeljenoId} onChange={(e) => setNovDodeljenoId(e.target.value)}>
+              <option value="">— brez —</option>
+              {sodelavci.filter((s) => s.aktiven).map((s) => <option key={s.id} value={s.id}>{s.ime} — {s.email}</option>)}
+            </select>
           </label>
           <div className="tm-forma-vrsta">
             <label className="tm-polje"><span>Stolpec</span><select value={aktivniStolpec} onChange={(e) => setAktivniStolpec(e.target.value as NalogaStolpec)}>{STOLPCI.map((s) => <option key={s.id} value={s.id}>{s.naziv}</option>)}</select></label>
@@ -140,7 +219,7 @@ export default function TaskManagerWorkspace() {
 
       <div className="tm-deska">
         {STOLPCI.map((s) => {
-          const nalogeVStolpcu = naloge.filter((n) => n.stolpec === s.id);
+          const nalogeVStolpcu = vidneNaloge.filter((n) => n.stolpec === s.id);
           return (
             <section key={s.id} className="tm-stolpec" data-stolpec={s.id} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, s.id)}>
               <header className="tm-stolpec-glava"><span className="tm-pika" aria-hidden /><h3>{s.naziv}</h3><span className="tm-st">{nalogeVStolpcu.length}</span></header>
@@ -157,13 +236,14 @@ export default function TaskManagerWorkspace() {
                       <div className="tm-kartica-vrh">
                         <strong>{naloga.naslov}</strong>
                         {naloga.isTimerRunning && <span className="tm-tece-znacka" aria-hidden>● teče</span>}
-                        <button type="button" className="tm-kartica-x" onClick={() => izbrisiNalogo(naloga.id)} title="Izbriši nalogo" aria-label="Izbriši nalogo">×</button>
+                        {jeVodjaAliAdmin && <button type="button" className="tm-kartica-x" onClick={() => izbrisiNalogo(naloga.id)} title="Izbriši nalogo" aria-label="Izbriši nalogo">×</button>}
                       </div>
                       {naloga.opis && <p className="tm-kartica-opis">{naloga.opis}</p>}
-                      {(naloga.rok || naloga.dodeljenoOseba) && (
+                      {(naloga.rok || naloga.dodeljenoOseba || naloga.dodeljenoOsebaIme) && (
                         <div className="tm-kartica-noga">
                           {naloga.rok && <span className={`tm-rok${jeZapadlo(naloga.rok) && s.id !== 'done' ? ' tm-rok-zapadlo' : ''}`}>📅 {datStr(naloga.rok)}</span>}
                           {naloga.dodeljenoOseba && <span className="tm-oseba" title={`Dodeljeno: ${naloga.dodeljenoOseba}`}><span className="tm-oseba-krog" aria-hidden>{naloga.dodeljenoOseba.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>{naloga.dodeljenoOseba}</span>}
+                          {!naloga.dodeljenoOseba && naloga.dodeljenoOsebaIme && <span className="tm-oseba" title={`Dodeljeno sodelavcu: ${naloga.dodeljenoOsebaIme}`}><span className="tm-oseba-krog" aria-hidden>{naloga.dodeljenoOsebaIme.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>{naloga.dodeljenoOsebaIme}</span>}
                         </div>
                       )}
                       <div className="tm-cas">
@@ -184,6 +264,37 @@ export default function TaskManagerWorkspace() {
         })}
       </div>
 
+      {prikaziAnalitiko && jeVodjaAliAdmin && (
+        <div className="tm-analitika-podlaga" onClick={() => setPrikaziAnalitiko(false)}>
+          <aside className="tm-analitika-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="tm-forma-glava">
+              <h2>Analitika ekipe</h2>
+              <button type="button" className="tm-x" onClick={() => setPrikaziAnalitiko(false)} aria-label="Zapri">×</button>
+            </div>
+            <label className="tm-polje"><span>Sodelavec</span>
+              <select value={analitikaSodelavecId} onChange={(e) => setAnalitikaSodelavecId(e.target.value)}>
+                {sodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime} ({s.vloga.toUpperCase()})</option>)}
+              </select>
+            </label>
+            <div className="tm-analitika-stevci">
+              <div className="tm-analitika-stevec"><strong>{analitikaNaloge.length}</strong><span>nalog skupaj</span></div>
+              <div className="tm-analitika-stevec"><strong>{analitikaKoncane}</strong><span>končanih</span></div>
+              <div className="tm-analitika-stevec"><strong>{analitikaUre.toFixed(1)}h</strong><span>porabljenega časa</span></div>
+            </div>
+            <h3 className="tm-analitika-podnaslov">Zadnjih 10 vnosov zgodovine</h3>
+            {analitikaZgodovina.length === 0 && <p className="tm-prazno">Za tega sodelavca še ni zabeleženih aktivnosti.</p>}
+            <ul className="tm-analitika-zgodovina">
+              {analitikaZgodovina.map((z) => (
+                <li key={z.id}>
+                  <span className="tm-analitika-datum">{datStr(z.datum)}</span>
+                  <span>{z.opis}</span>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        </div>
+      )}
+
       <style>{`
         .tm{padding:1.6rem clamp(1rem,3vw,2.2rem) 4rem;min-width:0}
         .tm-glava{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem;margin-bottom:1.6rem}
@@ -192,6 +303,27 @@ export default function TaskManagerWorkspace() {
         .tm-podnaslov{margin:.55rem 0 0;max-width:44ch;color:var(--muted);font-size:.86rem;line-height:1.5}
         .tm-nova{flex:none;padding:.7rem 1.15rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:750 .74rem var(--font-sans),sans-serif;cursor:pointer;transition:transform .18s cubic-bezier(.16,1,.3,1),box-shadow .18s}
         .tm-nova:hover{transform:translateY(-2px);box-shadow:0 .8rem 2rem oklch(22% .04 300/.22)}
+
+        /* glava: preklop uporabnika + gumb za analitiko ekipe */
+        .tm-glava-akcije{display:flex;align-items:flex-end;gap:.7rem;flex-wrap:wrap}
+        .tm-uporabnik{display:flex;flex-direction:column;gap:.3rem}
+        .tm-uporabnik span{font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+        .tm-uporabnik select{padding:.55rem .7rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0/.75);font:inherit;font-size:.78rem;color:var(--ink)}
+        .tm-uporabnik select:focus{outline:none;border-color:var(--ink)}
+        .tm-analitika-gumb{flex:none;display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font:750 .72rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s,color .15s}
+        .tm-analitika-gumb:hover{background:var(--ink);color:var(--paper)}
+
+        /* panel Analitika ekipe (overlay v Pinart slogu, ne generic modal) */
+        .tm-analitika-podlaga{position:fixed;inset:0;z-index:60;display:flex;justify-content:flex-end;background:oklch(20% .02 55/.32);backdrop-filter:blur(2px)}
+        .tm-analitika-panel{width:min(26rem,92vw);height:100%;overflow-y:auto;padding:1.4rem 1.5rem 2.4rem;background:var(--paper);border-left:1px solid var(--line);box-shadow:-1.2rem 0 3rem oklch(20% .03 55/.14)}
+        .tm-analitika-stevci{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.2rem 0 1.2rem}
+        .tm-analitika-stevec{display:flex;flex-direction:column;gap:.2rem;padding:.7rem .6rem;border:1px solid var(--line);border-radius:.8rem;background:oklch(97.5% .008 87/.75);text-align:center}
+        .tm-analitika-stevec strong{font:600 1.3rem var(--font-serif),Georgia,serif;color:var(--ink)}
+        .tm-analitika-stevec span{font:700 .58rem var(--font-sans),sans-serif;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+        .tm-analitika-podnaslov{margin:1.1rem 0 .6rem;font:700 .66rem var(--font-sans),sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+        .tm-analitika-zgodovina{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.5rem}
+        .tm-analitika-zgodovina li{display:flex;flex-direction:column;gap:.15rem;padding:.6rem .7rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0/.6);font-size:.78rem;color:var(--ink)}
+        .tm-analitika-datum{font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
 
         /* obrazec */
         .tm-forma{margin:0 0 1.6rem;max-width:34rem;padding:1.2rem 1.3rem 1.35rem;border:1px solid var(--line);border-radius:1.1rem;background:oklch(99% .006 87/.9);box-shadow:0 1rem 2.6rem oklch(20% .03 55/.08)}
