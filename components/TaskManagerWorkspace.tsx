@@ -42,6 +42,9 @@ const PRIORITETE: { id: NonNullable<Naloga['prioriteta']>; naziv: string }[] = [
   { id: 'nizka', naziv: 'Nizka' },
 ];
 
+/* vrstni red za razvrscanje kartic v stolpcu: visoka prioriteta na vrh */
+const PRIO_RED: Record<string, number> = { visoka: 0, srednja: 1, nizka: 2 };
+
 const STATUSI_DODELITVE: { id: NonNullable<TedenskaDodelitev['status']>; naziv: string }[] = [
   { id: 'nacrtovano', naziv: 'Načrtovano' },
   { id: 'opravljeno', naziv: 'Opravljeno' },
@@ -789,7 +792,7 @@ export default function TaskManagerWorkspace() {
       {pogled === 'kanban' && (
       <div className="tm-deska">
         {STOLPCI.map((s) => {
-          const nalogeVStolpcu = prikazaneNaloge.filter((n) => n.stolpec === s.id);
+          const nalogeVStolpcu = prikazaneNaloge.filter((n) => n.stolpec === s.id).sort((a, b) => (PRIO_RED[a.prioriteta ?? ''] ?? 3) - (PRIO_RED[b.prioriteta ?? ''] ?? 3));
           return (
             <section key={s.id} className="tm-stolpec" data-stolpec={s.id} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, s.id)}>
               <header className="tm-stolpec-glava"><span className="tm-pika" aria-hidden /><h3>{s.naziv}</h3><span className="tm-st">{nalogeVStolpcu.length}</span></header>
