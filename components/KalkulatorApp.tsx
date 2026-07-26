@@ -1976,6 +1976,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [narocnikEmail, setNarocnikEmail] = useState('');
   const [posiljamMail, setPosiljamMail] = useState(false);
   const [mailStatus, setMailStatus] = useState('');
+  /* Prejemniki ponudbe (VEC naslovnikov): cipi + prosto tipkanje. Privzeto se
+     seedno napolni z narocnikovim mailom, uporabnica lahko doda se kontakte. */
+  const [prejemniki, setPrejemniki] = useState<string[]>([]);
+  const [prejemnikVnos, setPrejemnikVnos] = useState('');
+  const [kontaktiOdprt, setKontaktiOdprt] = useState(false);
+  /* Varovalka pred enoklik-nesreco: klik »Pošlji« najprej odpre inline
+     potrditev s seznamom prejemnikov; sele drugi klik dejansko poslje. */
+  const [potrdiPosiljanje, setPotrdiPosiljanje] = useState(false);
+  /* Kratek uspesni utrip gumba (»Poslano!«) po uspesnem posiljanju. */
+  const [posljiUspeh, setPosljiUspeh] = useState(false);
   const [predogledNacin] = usePredogled();
   const samoOgled = predogledNacin === 'demo';
   const [narocnikOseba, setNarocnikOseba] = useState('');
@@ -3958,31 +3968,73 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [predogledMode, besedilo, besediloHtml, predlogaPinart, podlogaCover, logo, nazivPonudbe, narocnikPonudbe, obsegPonudbe, tonPonudbe, stevilkaPonudbe]);
 
-  /* Hitro posiljanje: odpre uporabnicin mail program s KRATKIM spremnim
-     sporocilom (pozdrav + povzetek paketov + veljavnost + podpis). mailto zna
-     samo golo besedilo (brez bold/velikosti), zato je namesto cele stene
-     ponudbe berljiv povzetek; podrobna ponudba gre kot PDF v prilogo. */
-  const posljiMailto = () => {
-    if (!narocnikEmail.trim()) return;
-    const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
-    const zadeva = naziv ? `Ponudba: ${naziv}` : 'Ponudba';
-    /* CELO besedilo ponudbe (kot v urejevalniku/predogledu) — ne skrajsan povzetek.
-       Odstranimo le HTML-markerja "PONUDBA:" (naslov je v zadevi) in crte iz razdelilnika. */
-    const telo = izvozniText()
-      .replace(/^PONUDBA:\s*/gm, '')
-      .replace(/^[─—-]{6,}\s*$/gm, '')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
-    zabeleziNarocnika(narocnikPonudbe);
-    window.location.href = `mailto:${narocnikEmail.trim()}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`;
+  /* Preveri veljaven e-mail. */
+  const jeVeljavenEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
+
+  /* Ob veljavnem narocnikovem mailu ga (enkrat) seedaj kot prvega prejemnika.
+     NE prepise, ce je uporabnica ze kaj dodala/odstranila — efekt tece samo
+     ob spremembi narocnikEmail, ne ob spremembi seznama prejemnikov. */
+  useEffect(() => {
+    const e = narocnikEmail.trim();
+    if (jeVeljavenEmail(e)) {
+      setPrejemniki(prev => (prev.length === 0 ? [e] : prev));
+    }
+  }, [narocnikEmail]);
+
+  /* E-maili iz shranjene stranke (glavni + kontaktne osebe) za spustnik
+     »+ kontakt«. Ujemanje: narocnikEmail == client.email ALI == katerikoli
+     client.kontakti[].email, sicer po imenu narocnikPonudbe == client.name.
+     Ce ni ujemanja ali ni mailov, vrne prazno (spustnik se skrije). */
+  const strankaEmaili = useMemo(() => {
+    if (typeof window === 'undefined') return [] as { email: string; ime?: string }[];
+    let data;
+    try { data = loadFlowData(); } catch { return [] as { email: string; ime?: string }[]; }
+    const e = narocnikEmail.trim().toLowerCase();
+    const ime = narocnikPonudbe.trim().toLowerCase();
+    const stranka = (data.clients || []).find(c => {
+      if (e) {
+        if ((c.email || '').toLowerCase() === e) return true;
+        if ((c.kontakti || []).some(k => (k.email || '').toLowerCase() === e)) return true;
+      }
+      return !!ime && (c.name || '').toLowerCase() === ime;
+    });
+    if (!stranka) return [] as { email: string; ime?: string }[];
+    const zbrani: { email: string; ime?: string }[] = [];
+    if (stranka.email) zbrani.push({ email: stranka.email, ime: stranka.contact || stranka.name });
+    (stranka.kontakti || []).forEach(k => { if (k.email) zbrani.push({ email: k.email, ime: k.ime }); });
+    const videni = new Set<string>();
+    return zbrani.filter(x => {
+      const kljuc = x.email.toLowerCase();
+      if (videni.has(kljuc)) return false;
+      videni.add(kljuc);
+      return true;
+    });
+  }, [narocnikEmail, narocnikPonudbe]);
+
+  /* Kontakti, ki jih se NI med prejemniki — samo te ponudi spustnik. */
+  const kontaktiNaVoljo = useMemo(
+    () => strankaEmaili.filter(k => !prejemniki.some(p => p.toLowerCase() === k.email.toLowerCase())),
+    [strankaEmaili, prejemniki],
+  );
+
+  const dodajPrejemnika = (raw: string) => {
+    const e = raw.trim().replace(/,+$/, '').trim();
+    if (!jeVeljavenEmail(e)) return false;
+    setPrejemniki(prev => (prev.some(x => x.toLowerCase() === e.toLowerCase()) ? prev : [...prev, e]));
+    return true;
+  };
+  const odstraniPrejemnika = (e: string) => {
+    setPrejemniki(prev => prev.filter(x => x !== e));
+    setPotrdiPosiljanje(false);
   };
 
-  /* Pravo posiljanje: cela HTML ponudba (isti dokument kot prenos) gre narocniku
-     prek streznika (Resend) — helper posljiMail, brez neposrednega klica Resend. */
+  /* Pravo posiljanje: cela HTML ponudba (isti dokument kot prenos) gre
+     prejemnikom prek streznika (Resend) — helper posljiMail, brez
+     neposrednega klica Resend. */
   const posljiPonudbo = async () => {
     if (samoOgled) { setMailStatus('Pošiljanje ni na voljo v predogledu.'); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(narocnikEmail.trim())) {
-      setMailStatus('Vpiši veljaven e-mail naročnika.');
+    if (prejemniki.length === 0) {
+      setMailStatus('Vpiši vsaj enega prejemnika.');
       return;
     }
     const doc = zgradiPonudbaDoc();
@@ -3990,10 +4042,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     setPosiljamMail(true);
     setMailStatus('Pošiljam …');
     try {
-      const rez = await posljiMail({ to: narocnikEmail.trim(), subject, html: doc, replyTo: ponudnik?.email || undefined });
+      const rez = await posljiMail({ to: prejemniki, subject, html: doc, replyTo: ponudnik?.email || undefined });
       if (rez.ok) {
         zabeleziNarocnika(narocnikPonudbe);
         setMailStatus('Poslano naročniku.');
+        /* kratek uspesni utrip gumba (»Poslano!«), nato zapri potrditev in
+           se vrni na »Pošlji« z ikono */
+        setPosljiUspeh(true);
+        window.setTimeout(() => { setPosljiUspeh(false); setPotrdiPosiljanje(false); }, 1600);
       } else {
         setMailStatus('Napaka: ' + (rez.napaka || 'pošiljanje ni uspelo.'));
       }
@@ -6425,6 +6481,75 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .btnvrsta .mail-vnos { flex: 0 1 15rem; min-width: 11rem; padding: .55rem .8rem; border: 1px solid rgba(17,17,17,.18); border-radius: 10px; background: var(--paper, #f7f5ef); color: var(--ink, #111); font: inherit; font-size: .92rem; }
         .cw .btnvrsta .mail-vnos::placeholder { color: rgba(17,17,17,.45); }
         .cw .mail-status { margin: .6rem 0 0; font-size: .85rem; color: var(--ink, #111); }
+        /* PRIMARNI blok pošiljanja (komu + en gumb Pošlji). Umirjena kartica,
+           ena akcentna barva samo za gumb; stavčna pisava. */
+        .cw .posl-blok { text-align: left; max-width: 560px; margin: 1.4rem auto 0; border: 1px solid rgba(17,17,17,.14); border-radius: 16px; background: rgba(255,255,255,.6); padding: 1.25rem 1.4rem 1.35rem; }
+        .cw .posl-glava-vrsta { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .85rem; }
+        .cw .posl-glava { font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.5); }
+        .cw .posl-za { display: flex; align-items: center; gap: .6rem; }
+        .cw .posl-za-l { flex: 0 0 auto; font-size: .9rem; color: rgba(17,17,17,.6); }
+        .cw .posl-cipi { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; min-height: 2.7rem; padding: .38rem .5rem; border: 1px solid rgba(17,17,17,.2); border-radius: 12px; background: #fff; }
+        .cw .posl-cipi:focus-within { border-color: var(--accent); }
+        .cw .posl-cip { display: inline-flex; align-items: center; gap: .35rem; padding: .26rem .32rem .26rem .62rem; border-radius: 999px; font-size: .85rem; color: var(--ink); background: var(--paper, #f4f1ea); border: 1px solid rgba(17,17,17,.12); }
+        .cw .posl-cip-mail { line-height: 1.2; }
+        .cw .posl-cip-x { display: inline-flex; align-items: center; justify-content: center; width: 1.15rem; height: 1.15rem; padding: 0; border: 0; border-radius: 999px; cursor: pointer; color: rgba(17,17,17,.55); background: rgba(17,17,17,.08); }
+        .cw .posl-cip-x:hover { color: var(--ink); background: rgba(17,17,17,.16); }
+        /* Čip STRANKE: nevtralen kot ostali, le majhna tiha oznaka »stranka«. */
+        .cw .posl-cip-oznaka { font-size: .6rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: .1rem .32rem; border-radius: 999px; background: rgba(17,17,17,.08); color: rgba(17,17,17,.55); }
+        .cw .posl-vnos { flex: 1 1 8rem; min-width: 8rem; border: 0; outline: none; background: transparent; font: inherit; font-size: .9rem; color: var(--ink); padding: .32rem .2rem; }
+        .cw .posl-vnos::placeholder { color: rgba(17,17,17,.4); }
+        .cw .posl-kontakti { position: relative; flex: 0 0 auto; }
+        .cw .posl-kontakti > .povezava { white-space: nowrap; }
+        .cw .posl-kontakti-list { position: absolute; right: 0; z-index: 6; margin-top: .35rem; min-width: 15rem; max-width: 24rem; padding: .3rem; border: 1px solid rgba(17,17,17,.16); border-radius: 12px; background: #fff; box-shadow: 0 12px 28px rgba(35,18,45,.16); display: flex; flex-direction: column; }
+        .cw .posl-kontakt-opt { display: flex; flex-direction: column; gap: .1rem; text-align: left; padding: .5rem .6rem; border: 0; border-radius: 8px; background: none; font: inherit; font-size: .86rem; color: var(--ink); cursor: pointer; }
+        .cw .posl-kontakt-opt b { font-weight: 700; }
+        .cw .posl-kontakt-opt span { color: rgba(17,17,17,.6); }
+        .cw .posl-kontakt-opt:hover { background: var(--paper, #f4f1ea); }
+        /* Primarni gumb: NAŠ črni pill (kot ostali črni gumbi aplikacije),
+           z oživljenimi besedilnimi stanji. Vodoravno centriran. */
+        .cw .posl-gumb-vrsta { display: flex; justify-content: center; margin-top: 1.05rem; }
+        .cw .posl-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-width: 11rem; font-family: inherit; font-size: .92rem; font-weight: 600; letter-spacing: .01em; cursor: pointer; border-radius: 999px; padding: .8rem 2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease, background .3s ease, border-color .3s ease; }
+        .cw .posl-gumb:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(35,18,45,.2); }
+        .cw .posl-gumb:active:not(:disabled) { transform: translateY(0) scale(.98); }
+        .cw .posl-gumb:disabled { cursor: default; opacity: .4; }
+        .cw .posl-gumb.je-poslano { opacity: .9; }
+        /* uspešni utrip: kratek zelenkast preblesk + nežen poskok, nato nazaj */
+        .cw .posl-gumb.je-uspeh { opacity: 1; background: #1f7a4d; border-color: #1f7a4d; color: #fff; animation: poslUspeh .5s cubic-bezier(.2,1.4,.4,1); }
+        @keyframes poslUspeh { 0% { transform: scale(.92); } 55% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        /* IKONA LETALA: ob pošiljanju odleti (desno-gor + rotacija + fade),
+           njen prostor se sočasno skrči, da se besedilo lepo recentrira. */
+        .cw .posl-poslji-nalag { display: inline-flex; align-items: center; }
+        .cw .posl-letalo-ovoj { display: inline-flex; align-items: center; overflow: visible; animation: poslLetOvoj .6s ease-out forwards; }
+        .cw .posl-letalo-ovoj svg { animation: poslLet .6s ease-out forwards; }
+        @keyframes poslLet { 0% { transform: translate(0,0) rotate(0); opacity: 1; } 100% { transform: translate(1.5rem,-1.15rem) rotate(22deg); opacity: 0; } }
+        @keyframes poslLetOvoj { 0% { max-width: 1.6rem; margin-right: .45rem; } 100% { max-width: 0; margin-right: 0; } }
+        /* ob vrnitvi na »Pošlji« ikona nežno prileti nazaj */
+        .cw .posl-letalo-mir { animation: poslPrilet .42s ease-out; }
+        @keyframes poslPrilet { 0% { transform: translate(.5rem,-.4rem) rotate(14deg); opacity: 0; } 100% { transform: translate(0,0) rotate(0); opacity: 1; } }
+        /* animirane pike med pošiljanjem (»Pošiljam …«) */
+        .cw .posl-pike { display: inline-flex; margin-left: .12rem; }
+        .cw .posl-pike span { opacity: .25; animation: poslPika 1.4s infinite; }
+        .cw .posl-pike span:nth-child(2) { animation-delay: .2s; }
+        .cw .posl-pike span:nth-child(3) { animation-delay: .4s; }
+        @keyframes poslPika { 0%, 60%, 100% { opacity: .25; } 30% { opacity: 1; } }
+        .cw .posl-potrdi { margin-top: 1.05rem; display: flex; flex-direction: column; align-items: center; gap: .7rem; text-align: center; }
+        .cw .posl-potrdi-txt { font-size: .88rem; color: var(--ink); line-height: 1.5; }
+        .cw .posl-potrdi-txt b { font-weight: 700; word-break: break-word; }
+        .cw .posl-potrdi-gumbi { display: flex; align-items: center; justify-content: center; gap: 1.1rem; flex-wrap: wrap; }
+        .cw .posl-sekundarne { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 1.4rem; max-width: 560px; margin: 1.1rem auto 0; }
+        @media (prefers-reduced-motion: reduce) {
+          .cw .posl-gumb, .cw .posl-gumb.je-uspeh { animation: none; transition: none; }
+          .cw .posl-pike span { animation: none; opacity: 1; }
+          .cw .posl-letalo-ovoj, .cw .posl-letalo-ovoj svg, .cw .posl-letalo-mir { animation: none; }
+          .cw .posl-letalo-ovoj { margin-right: .45rem; }
+        }
+        @media (max-width: 640px) {
+          .cw .posl-za { flex-direction: column; gap: .35rem; }
+          .cw .posl-za-l { padding-top: 0; }
+          .cw .posl-gumb { width: 100%; }
+          .cw .posl-sekundarne { column-gap: .35rem; row-gap: .35rem; }
+          .cw .posl-sekundarne .povezava { min-height: 44px; padding: .55rem .35rem; justify-content: center; }
+        }
         .cw .zakljucek-ikona { display: flex; justify-content: center; color: var(--accent); margin: .2rem 0 1.1rem; }
         .cw .zakljucek-sredina .zakljucek-ikona { justify-content: center; }
         /* Zakljucek: vse centrirano (ilustracija + naslov + podnaslov + gumbi) */
@@ -8830,44 +8955,124 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
           {korak === zakljucekStep && (
             <>
-            <div className="btnvrsta">
-              <button type="button" className="gumb" onClick={() => { kopiraj(); proslaviKonfeti(); }}>
-                <CopySimple size={17} /> {kopirano ? 'Skopirano ✓' : 'Kopiraj ponudbo'}
-              </button>
-              <button type="button" className="gumb" disabled={!narocnikEmail.trim()}
-                title={narocnikEmail.trim() ? undefined : L('Vpiši email naročnika na koraku Kdo je stranka', 'Enter the client email in the Who is the client step')}
-                onClick={() => { posljiMailto(); proslaviKonfeti(); }}>
-                <EnvelopeSimple size={17} /> {L('Pošlji ponudbo', 'Send quote')}
-              </button>
-              <input type="email" className="mail-vnos" value={narocnikEmail}
-                onChange={e => setNarocnikEmail(e.target.value)}
-                placeholder={L('E-mail naročnika …', 'Client e-mail …')}
-                aria-label={L('E-mail naročnika', 'Client e-mail')} />
-              <button type="button" className="gumb" disabled={posiljamMail || samoOgled}
-                title={samoOgled ? L('V predogledu pošiljanje ni na voljo', 'Sending is unavailable in preview') : L('Pošlje celo ponudbo naročniku po e-pošti', 'Emails the full quote to the client')}
-                onClick={() => { posljiPonudbo(); }}>
-                <PaperPlaneTilt size={17} /> {posiljamMail ? L('Pošiljam …', 'Sending …') : L('Pošlji naročniku', 'Send to client')}
+            {/* PRIMARNI blok: komu + en sam gumb Pošlji (s potrditvijo). */}
+            <div className="posl-blok">
+              <div className="posl-glava-vrsta">
+                <span className="posl-glava">{L('Pošiljanje ponudbe', 'Sending the quote')}</span>
+                {kontaktiNaVoljo.length > 0 && (
+                  <div className="posl-kontakti">
+                    <button type="button" className="povezava" onClick={() => setKontaktiOdprt(o => !o)}>
+                      <Plus size={15} /> {L('kontakt', 'contact')}
+                    </button>
+                    {kontaktiOdprt && (
+                      <div className="posl-kontakti-list">
+                        {kontaktiNaVoljo.map(k => (
+                          <button key={k.email} type="button" className="posl-kontakt-opt"
+                            onClick={() => { dodajPrejemnika(k.email); setKontaktiOdprt(false); }}>
+                            {k.ime && <b>{k.ime}</b>}<span>{k.email}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="posl-za">
+                <span className="posl-za-l">{L('Za', 'To')}</span>
+                <div className="posl-cipi">
+                  {prejemniki.map(e => {
+                    const jeStranka = jeVeljavenEmail(narocnikEmail) && e.toLowerCase() === narocnikEmail.trim().toLowerCase();
+                    return (
+                      <span key={e} className={'posl-cip' + (jeStranka ? ' posl-cip-stranka' : '')}>
+                        {jeStranka && <span className="posl-cip-oznaka">{L('stranka', 'client')}</span>}
+                        <span className="posl-cip-mail">{e}</span>
+                        <button type="button" className="posl-cip-x" onClick={() => odstraniPrejemnika(e)} aria-label={L('Odstrani', 'Remove') + ' ' + e}>
+                          <X size={11} weight="bold" />
+                        </button>
+                      </span>
+                    );
+                  })}
+                  <input type="email" className="posl-vnos" value={prejemnikVnos}
+                    onChange={e => { setPrejemnikVnos(e.target.value); setPotrdiPosiljanje(false); }}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === ',') {
+                        e.preventDefault();
+                        if (dodajPrejemnika(prejemnikVnos)) setPrejemnikVnos('');
+                      } else if (e.key === 'Backspace' && !prejemnikVnos && prejemniki.length) {
+                        odstraniPrejemnika(prejemniki[prejemniki.length - 1]);
+                      }
+                    }}
+                    onBlur={() => { if (dodajPrejemnika(prejemnikVnos)) setPrejemnikVnos(''); }}
+                    placeholder={L('dodaj email', 'add email')}
+                    aria-label={L('Dodaj prejemnika', 'Add recipient')} />
+                </div>
+              </div>
+              {!potrdiPosiljanje ? (
+                <div className="posl-gumb-vrsta">
+                  <button type="button" className="posl-gumb" disabled={posiljamMail || samoOgled || prejemniki.length === 0}
+                    title={samoOgled ? L('V predogledu pošiljanje ni na voljo', 'Sending is unavailable in preview') : undefined}
+                    onClick={() => { setMailStatus(''); setPotrdiPosiljanje(true); }}>
+                    <PaperPlaneTilt size={17} /> {L('Pošlji', 'Send')}
+                  </button>
+                </div>
+              ) : (
+                <div className="posl-potrdi">
+                  <span className="posl-potrdi-txt">
+                    {L('Pošiljam ' + prejemniki.length + (prejemniki.length === 1 ? ' prejemniku:' : ' prejemnikom:'),
+                       'Sending to ' + prejemniki.length + (prejemniki.length === 1 ? ' recipient:' : ' recipients:'))}{' '}
+                    <b>{prejemniki.join(', ')}</b>
+                  </span>
+                  <div className="posl-potrdi-gumbi">
+                    <button type="button"
+                      className={'posl-gumb' + (posiljamMail ? ' je-poslano' : '') + (posljiUspeh ? ' je-uspeh' : '')}
+                      disabled={posiljamMail || posljiUspeh}
+                      onClick={() => { posljiPonudbo(); proslaviKonfeti(); }}>
+                      {posljiUspeh ? (
+                        <><Check size={17} weight="bold" /> {L('Poslano!', 'Sent!')}</>
+                      ) : posiljamMail ? (
+                        <span className="posl-poslji-nalag">
+                          <span className="posl-letalo-ovoj"><PaperPlaneTilt size={17} /></span>
+                          <span>{L('Pošiljam', 'Sending')}</span>
+                          <span className="posl-pike" aria-hidden><span>.</span><span>.</span><span>.</span></span>
+                        </span>
+                      ) : (
+                        <><PaperPlaneTilt size={17} className="posl-letalo-mir" /> {L('Pošlji', 'Send')}</>
+                      )}
+                    </button>
+                    {!posiljamMail && !posljiUspeh && (
+                      <button type="button" className="povezava" onClick={() => setPotrdiPosiljanje(false)}>
+                        {L('Prekliči', 'Cancel')}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+              {mailStatus && <p className="mail-status" role="status">{mailStatus}</p>}
+            </div>
+            {/* SEKUNDARNE akcije: tiho, brez ponovnega pošiljanja. */}
+            <div className="posl-sekundarne">
+              <button type="button" className="povezava" onClick={() => { kopiraj(); proslaviKonfeti(); }}>
+                <CopySimple size={16} /> {kopirano ? 'Skopirano ✓' : 'Kopiraj ponudbo'}
               </button>
               <button type="button" className="povezava" disabled={pdfNalaganje} onClick={() => { prenesiPdf(); proslaviKonfeti(); }} title={L('Prenese ponudbo kot PDF datoteko', 'Downloads the quote as a PDF file')}>
-                <FilePdf size={17} /> {pdfNalaganje ? 'Pripravljam PDF…' : 'Prenesi PDF'}
+                <FilePdf size={16} /> {pdfNalaganje ? 'Pripravljam PDF…' : 'Prenesi PDF'}
               </button>
               <button type="button" className="povezava" onClick={() => { prenesi(); proslaviKonfeti(); }}>
-                <DownloadSimple size={17} /> {L('Prenesi besedilo', 'Download text')}
+                <DownloadSimple size={16} /> {L('Prenesi besedilo', 'Download text')}
               </button>
               <button type="button" className="povezava" onClick={() => { prenesiCsv(); proslaviKonfeti(); }}>
-                <FileText size={17} /> {L('Izvozi postavke (CSV za račune)', 'Export items (CSV for invoices)')}
+                <FileText size={16} /> {L('Izvozi postavke (CSV)', 'Export items (CSV)')}
               </button>
               <button type="button" className="povezava" onClick={() => { shraniVArhiv(); proslaviKonfeti(); }}>
-                <FloppyDisk size={17} /> {L('Shrani ponudbo v arhiv', 'Save quote to archive')}
+                <FloppyDisk size={16} /> {L('Shrani v arhiv', 'Save to archive')}
               </button>
               {dolgorocno && ret && (
                 <button type="button" className="povezava" disabled={pdfNalaganje} title={L('Prenese pogodbo o dolgoročnem sodelovanju kot PDF', 'Downloads the long-term collaboration contract as a PDF')}
                   onClick={() => { prenesiPogodbaPdf(); }}>
-                  <FileText size={17} /> {L('Ustvari pogodbo (PDF)', 'Create contract (PDF)')}
+                  <FileText size={16} /> {L('Ustvari pogodbo (PDF)', 'Create contract (PDF)')}
                 </button>
               )}
             </div>
-            {mailStatus && <p className="mail-status" role="status">{mailStatus}</p>}
             <div className="rac-panel">
               {!racunOdprt ? (
                 <button type="button" className="povezava rac-toggle" onClick={odpriRacun}>
