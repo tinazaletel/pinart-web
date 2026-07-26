@@ -11,9 +11,7 @@
    klicev (lib/sestanki), zapis v CRM dnevnik (lib/dnevnik), izvoz .ics
    (lib/ics) ter predogled/demo (lib/predogled). Edge-to-edge (brez robov). */
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   CalendarPlus,
   Receipt,
@@ -110,6 +108,30 @@ const naslovTedna = (iso: string) => {
   return `${a.getDate()}. ${a.toLocaleDateString('sl-SI', { month: 'short' })} – ${b.getDate()}. ${b.toLocaleDateString('sl-SI', { month: 'short' })} ${leto}`;
 };
 
+/* Demo sestanki/klici — SAMO za prikaz v predogledu (nacin 'demo'); se NE
+   berejo/pišejo v localStorage. Datumi relativni na danes (nekaj ta teden,
+   nekaj drugod v mesecu), da koledar v polnem poslovanju izgleda živ. Klienti
+   se ujemajo z demo strankami (demo-s-*) iz lib/predogled, da se imena izpišejo. */
+function demoSestanki(): Sestanek[] {
+  const zac = zacetekTedna(danesISO()); // ponedeljek tega tedna
+  const dan = (offset: number) => dodajDni(zac, offset);
+  const vMesecu = (stDan: number) => {
+    const t = new Date();
+    return new Date(Date.UTC(t.getFullYear(), t.getMonth(), Math.min(stDan, 28))).toISOString().slice(0, 10);
+  };
+  return [
+    { id: 'demo-se-1', tip: 'sestanek', naslov: 'Uvodni sestanek — Modra hiša', datum: dan(0), ura: '09:30', trajanjeMin: 60, strankaId: 'demo-s-0', lokacija: 'Pisarna stranke' },
+    { id: 'demo-se-2', tip: 'klic', naslov: 'Klic: uskladitev ponudbe', datum: dan(0), ura: '14:00', trajanjeMin: 30, strankaId: 'demo-s-1' },
+    { id: 'demo-se-3', tip: 'sestanek', naslov: 'Predstavitev osnutka', datum: dan(1), ura: '11:00', trajanjeMin: 90, strankaId: 'demo-s-2', lokacija: 'Studio Pinart' },
+    { id: 'demo-se-4', tip: 'klic', naslov: 'Klic z dobaviteljem tiska', datum: dan(2), ura: '10:15', trajanjeMin: 20, strankaId: 'demo-s-3' },
+    { id: 'demo-se-5', tip: 'sestanek', naslov: 'Tedenski pregled projektov', datum: dan(2), ura: '15:30', trajanjeMin: 45, opomba: 'Interni pregled tekočih projektov' },
+    { id: 'demo-se-6', tip: 'sestanek', naslov: 'Delavnica identitete — Nordika', datum: dan(3), ura: '09:00', trajanjeMin: 120, strankaId: 'demo-s-4', lokacija: 'Pisarna stranke' },
+    { id: 'demo-se-7', tip: 'klic', naslov: 'Klic: potrditev barvne palete', datum: dan(4), ura: '13:00', trajanjeMin: 25, strankaId: 'demo-s-5' },
+    { id: 'demo-se-8', tip: 'sestanek', naslov: 'Primopredaja gradiv', datum: vMesecu(22), ura: '12:00', trajanjeMin: 60, strankaId: 'demo-s-6' },
+    { id: 'demo-se-9', tip: 'klic', naslov: 'Klic: nova kampanja', datum: vMesecu(26), ura: '16:00', trajanjeMin: 30, strankaId: 'demo-s-rokus' },
+  ];
+}
+
 const parseUra = (ura: string): number => {
   const [h, m] = ura.split(':').map((x) => parseInt(x, 10));
   if (Number.isNaN(h) || Number.isNaN(m)) return 0;
@@ -169,8 +191,6 @@ const PRAZEN_OBRAZEC = {
 export default function KoledarWorkspace() {
   const [nacin] = usePredogled();
   const samoOgled = nacin !== 'mine';
-  const pathname = usePathname();
-  const base = pathname?.startsWith('/en/') ? '/en' : '';
 
   const [izbranDan, setIzbranDan] = useState(danesISO());
   const [pogled, setPogled] = useState<Pogled>('mesec');
@@ -187,12 +207,22 @@ export default function KoledarWorkspace() {
   const [obrazecTip, setObrazecTip] = useState<SestanekTip>('sestanek');
   const [obrazec, setObrazec] = useState(PRAZEN_OBRAZEC);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   const osveziSestanke = () => setSestanki(preberiSestanki());
   const osveziNaloge = () => setNaloge(preberiNaloge());
 
-  useEffect(() => { osveziSestanke(); osveziNaloge(); }, []);
+  useEffect(() => { osveziNaloge(); }, []);
+
+  /* V demo (polno poslovanje) napolni koledar z vzorčnimi dogodki — samo za prikaz,
+     brez pisanja v localStorage — in privzeto vklopi roke nalog; sicer prava shramba. */
+  useEffect(() => {
+    if (nacin === 'demo') {
+      setSestanki(demoSestanki());
+      setPokaziNaloge(true);
+    } else {
+      setSestanki(preberiSestanki());
+      setPokaziNaloge(false);
+    }
+  }, [nacin]);
 
   // Na ozkem zaslonu (mobilno) privzeto Dan — tedenska urna mreža je pretesna.
   useEffect(() => {
@@ -213,10 +243,6 @@ export default function KoledarWorkspace() {
       .filter((r) => r.datum);
     setRokiRacunov(izRacunov);
   }, [nacin]);
-
-  useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = DEFAULT_SCROLL_HOUR * HOUR_HEIGHT;
-  }, [izbranDan, pogled]);
 
   const danes = danesISO();
   const zdaj = new Date();
@@ -475,12 +501,15 @@ export default function KoledarWorkspace() {
   const renderDan = () => (
     <div className="kol-dt">
       {renderVsedanPas(izbranDan)}
-      <div className="kol-dt-scroll" ref={scrollRef} style={{ maxHeight: VISIBLE_HOURS * HOUR_HEIGHT }}>
+      <div className="kol-dt-telo">
         <div className="kol-dt-red">
           {renderUre()}
           {renderDanStolpec(izbranDan, false)}
         </div>
       </div>
+      {terminiZaDan(izbranDan).length === 0 && (
+        <div className="kol-prazno-plast" aria-hidden>Ta dan je prost — klikni v mrežo ali dodaj z »+ Ustvari«.</div>
+      )}
     </div>
   );
 
@@ -511,7 +540,7 @@ export default function KoledarWorkspace() {
               ))}
             </div>
           )}
-          <div className="kol-teden-telo" ref={scrollRef} style={{ maxHeight: VISIBLE_HOURS * HOUR_HEIGHT }}>
+          <div className="kol-teden-telo">
             <div className="kol-teden-telo-red">
               {renderUre()}
               <div className="kol-teden-dnevi">
@@ -574,51 +603,37 @@ export default function KoledarWorkspace() {
 
   return (
     <div className="kol">
-      {samoOgled && (
-        <div className="kol-demo-vrsta">
-          Dodajanje ni na voljo v predogledu (demo). <Link href={`${base}/kalkulator/prijava`} className="kol-demo-link">Prijavi se v svoj račun</Link>.
-        </div>
-      )}
-
-      <div className="kol-vrsta1">
-        <span className="kol-brand">Koledar</span>
-        {!samoOgled && (
-          <button type="button" className="kol-ustvari" onClick={() => odpriNov('sestanek')}><Plus size={14} weight="bold" /> Ustvari</button>
-        )}
-        <div className="kol-isci">
-          <MagnifyingGlass size={15} weight="bold" aria-hidden />
-          <input value={iskanje} onChange={(e) => setIskanje(e.target.value)} placeholder="Filter in iskanje" aria-label="Filter in iskanje" />
-        </div>
-        {zapadliRacuni.length > 0 && (
-          <button type="button" className="kol-zapadlo-cip" onClick={() => odpriDan(zapadliRacuni[0].datum)} title={`${zapadliRacuni.length} ${zapadliRacuni.length === 1 ? 'zapadel rok plačila' : 'zapadlih rokov plačil'} — pojdi na najzgodnejšega`} aria-label="Zapadli roki plačil">
-            <Receipt size={13} weight="bold" />
-            <span>{zapadliRacuni.length} zapadlo</span>
-          </button>
-        )}
-      </div>
-
-      <div className="kol-vrsta2">
-        <div className="kol-seg" role="group" aria-label="Pogled koledarja">
-          <button type="button" data-aktiven={pogled === 'dan'} onClick={() => setPogled('dan')}>Dan</button>
-          <button type="button" data-aktiven={pogled === 'teden'} onClick={() => setPogled('teden')}>Teden</button>
-          <button type="button" data-aktiven={pogled === 'mesec'} onClick={() => setPogled('mesec')}>Mesec</button>
-        </div>
-        <div className="kol-obseg-nav">
-          <strong className="kol-obseg">{obseg}</strong>
+      <div className="kol-orodna">
+        <div className="kol-nav-gruca">
           <button type="button" className="kol-nav-gumb" onClick={() => premakni(-1)} aria-label="Nazaj"><CaretLeft size={15} weight="bold" /></button>
           <button type="button" className="kol-danes" onClick={() => setIzbranDan(danes)}>Danes</button>
           <button type="button" className="kol-nav-gumb" onClick={() => premakni(1)} aria-label="Naprej"><CaretRight size={15} weight="bold" /></button>
+          <strong className="kol-obseg">{obseg}</strong>
+          <div className="kol-seg" role="group" aria-label="Pogled koledarja">
+            <button type="button" data-aktiven={pogled === 'dan'} onClick={() => setPogled('dan')}>Dan</button>
+            <button type="button" data-aktiven={pogled === 'teden'} onClick={() => setPogled('teden')}>Teden</button>
+            <button type="button" data-aktiven={pogled === 'mesec'} onClick={() => setPogled('mesec')}>Mesec</button>
+          </div>
         </div>
-      </div>
 
-      <div className="kol-podvrstica">
-        <label className="kol-naloge-stikalo">
-          <input type="checkbox" checked={pokaziNaloge} onChange={(e) => setPokaziNaloge(e.target.checked)} />
-          Pokaži naloge
-        </label>
-        {pogled === 'dan' && terminiZaDan(izbranDan).length === 0 && (
-          <span className="kol-prazno-namig">Ta dan je prost — klikni v mrežo ali dodaj z »+ Ustvari«.</span>
-        )}
+        <div className="kol-akcije">
+          {!samoOgled && (
+            <button type="button" className="kol-ustvari" onClick={() => odpriNov('sestanek')}><Plus size={14} weight="bold" /> Ustvari</button>
+          )}
+          <button type="button" className="kol-naloge-cip" data-aktiven={pokaziNaloge} aria-pressed={pokaziNaloge} onClick={() => setPokaziNaloge((v) => !v)} title="Pokaži roke nalog v koledarju">
+            <Kanban size={13} weight="bold" /> Naloge
+          </button>
+          {zapadliRacuni.length > 0 && (
+            <button type="button" className="kol-zapadlo-cip" onClick={() => odpriDan(zapadliRacuni[0].datum)} title={`${zapadliRacuni.length} ${zapadliRacuni.length === 1 ? 'zapadel rok plačila' : 'zapadlih rokov plačil'} — pojdi na najzgodnejšega`} aria-label="Zapadli roki plačil">
+              <Receipt size={13} weight="bold" />
+              <span>{zapadliRacuni.length} zapadlo</span>
+            </button>
+          )}
+          <div className="kol-isci">
+            <MagnifyingGlass size={16} weight="bold" aria-hidden />
+            <input value={iskanje} onChange={(e) => setIskanje(e.target.value)} placeholder="Iskanje" aria-label="Filter in iskanje" />
+          </div>
+        </div>
       </div>
 
       {pogled === 'mesec' ? renderMesec() : pogled === 'teden' ? renderTeden() : renderDan()}
@@ -668,50 +683,50 @@ export default function KoledarWorkspace() {
       )}
 
       <style>{`
-        .kol{width:100%;min-width:0;padding:.5rem 0 2.4rem;
+        .kol{width:100%;min-width:0;padding:.5rem 0 1.5rem;
           --kol-accent:oklch(58% .12 245);
           --kol-accent-soft:oklch(96% .028 245);
           --kol-zdaj:oklch(58% .19 25);
-          --kol-ura-sirina:3.1rem}
+          --kol-crta:oklch(93.5% .005 90);
+          --kol-podlaga:var(--paper);
+          --kol-ura-sirina:3.5rem}
         .kol *{box-sizing:border-box}
         .kol-rob{padding-left:clamp(.6rem,2vw,1.1rem);padding-right:clamp(.6rem,2vw,1.1rem)}
 
-        /* --- glava: dve tanki vrstici --- */
-        .kol-vrsta1{display:flex;align-items:center;gap:.55rem;margin-bottom:.5rem;padding-left:clamp(.6rem,2vw,1.1rem);padding-right:clamp(.6rem,2vw,1.1rem)}
-        .kol-brand{flex:none;font:700 .98rem var(--font-sans),sans-serif;letter-spacing:-.01em;color:var(--ink)}
-        .kol-ustvari{flex:none;display:inline-flex;align-items:center;gap:.3rem;padding:.42rem .85rem;border:none;border-radius:.55rem;background:var(--kol-accent);color:#fff;font:650 .78rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
+        /* --- ena orodna vrstica: leva gruča (navigacija) + desna gruča (akcije) --- */
+        .kol-orodna{display:flex;align-items:center;gap:.6rem 1rem;flex-wrap:wrap;margin-bottom:.6rem;padding:0 clamp(.6rem,2vw,1.1rem) .55rem;border-bottom:1px solid var(--line)}
+        .kol-nav-gruca{display:inline-flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+        .kol-akcije{display:inline-flex;align-items:center;gap:.45rem;margin-left:auto;flex-wrap:wrap}
+
+        /* primarno: navigacija + zavihki (bolj poudarjeno) */
+        .kol-nav-gumb{flex:none;width:1.95rem;height:1.95rem;display:grid;place-items:center;border:1px solid var(--line);border-radius:.5rem;background:var(--paper);color:var(--ink);cursor:pointer}
+        .kol-nav-gumb:hover{background:var(--kol-accent-soft);border-color:var(--kol-accent);color:var(--kol-accent)}
+        .kol-danes{border:1px solid var(--line);border-radius:.5rem;background:var(--paper);color:var(--ink);font:600 .74rem var(--font-sans),sans-serif;padding:.4rem .75rem;cursor:pointer}
+        .kol-danes:hover{background:var(--kol-accent-soft);border-color:var(--kol-accent);color:var(--kol-accent)}
+        .kol-obseg{margin:0 .35rem 0 .5rem;font:650 .96rem var(--font-sans),sans-serif;letter-spacing:-.01em;color:var(--ink);white-space:nowrap}
+        .kol-seg{display:inline-flex;gap:.05rem}
+        .kol-seg button{border:none;background:transparent;padding:.42rem .8rem;font:650 .82rem var(--font-sans),sans-serif;color:var(--ink);opacity:.55;cursor:pointer;border-bottom:2px solid transparent}
+        .kol-seg button:hover{opacity:.85}
+        .kol-seg button[data-aktiven='true']{opacity:1;color:var(--kol-accent);border-bottom-color:var(--kol-accent)}
+
+        /* sekundarno: akcije (vizualno tišje, manjše) */
+        .kol-ustvari{flex:none;display:inline-flex;align-items:center;gap:.3rem;padding:.4rem .8rem;border:none;border-radius:999px;background:var(--kol-accent);color:#fff;font:650 .74rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
         .kol-ustvari:hover{filter:brightness(1.06)}
-        .kol-isci{flex:1;min-width:0;max-width:24rem;display:flex;align-items:center;gap:.4rem;padding:.36rem .65rem;border:1px solid var(--line);border-radius:.55rem;background:var(--paper);color:var(--ink)}
-        .kol-isci svg{flex:none;opacity:.45}
-        .kol-isci input{flex:1;min-width:0;border:none;background:transparent;outline:none;font:500 .82rem var(--font-sans),sans-serif;color:var(--ink)}
-        .kol-naloge-stikalo{flex:none;display:inline-flex;align-items:center;gap:.35rem;font:600 .74rem var(--font-sans),sans-serif;color:var(--ink);opacity:.75;cursor:pointer;white-space:nowrap}
-        .kol-naloge-stikalo input{width:.95rem;height:.95rem;accent-color:var(--kol-accent)}
+        .kol-isci{flex:1 1 12rem;min-width:7rem;display:flex;align-items:center;gap:.5rem;min-height:2.5rem;padding:0 .9rem;border:1px solid var(--line);border-radius:999px;background:oklch(98% .008 87 / .92);color:var(--ink)}
+        .kol-isci svg{flex:none;opacity:.5}
+        .kol-isci input{width:100%;min-width:0;border:none;background:transparent;outline:none;font:500 .78rem var(--font-sans),sans-serif;color:var(--ink)}
+        /* toggle-čip z OČITNIM vklop/izklop stanjem: izklop = tih outline, vklop = poln akcent */
+        .kol-naloge-cip{flex:none;display:inline-flex;align-items:center;gap:.3rem;padding:.4rem .7rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);opacity:.6;font:600 .72rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
+        .kol-naloge-cip:hover{opacity:.9;border-color:var(--kol-accent)}
+        .kol-naloge-cip[data-aktiven='true']{background:var(--kol-accent);border-color:var(--kol-accent);color:#fff;opacity:1;box-shadow:0 1px 3px oklch(58% .12 245 / .35)}
 
-        /* --- tanka demo vrstica na vrhu (samo predogled) --- */
-        .kol-demo-vrsta{width:100%;margin-bottom:.5rem;padding:.4rem clamp(.6rem,2vw,1.1rem);background:var(--kol-accent-soft);border-bottom:1px solid var(--line);font:500 .74rem var(--font-sans),sans-serif;color:var(--ink)}
-        .kol-demo-link{color:var(--kol-accent);font-weight:650;text-decoration:underline;text-underline-offset:2px}
-        .kol-demo-link:hover{filter:brightness(1.08)}
-
-        /* --- kompaktna značka zapadlih rokov (zgoraj desno) --- */
+        /* --- kompaktna značka zapadlih rokov --- */
         .kol-zapadlo-cip{flex:none;display:inline-flex;align-items:center;gap:.3rem;padding:.34rem .6rem;border:1px solid oklch(86% .07 32);border-radius:999px;background:oklch(96% .04 35);color:oklch(48% .16 30);font:650 .7rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap;animation:kolSlideIn .35s ease}
         .kol-zapadlo-cip:hover{background:oklch(93% .06 35);border-color:oklch(70% .13 30)}
         @keyframes kolSlideIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:translateX(0)}}
 
-        /* --- skupna vrstica: stikalo nalog levo + namig praznega dne desno --- */
-        .kol-podvrstica{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin:0 clamp(.6rem,2vw,1.1rem) .55rem}
-        .kol-prazno-namig{margin:0;font:500 .76rem var(--font-sans),sans-serif;color:var(--ink);opacity:.55;text-align:right}
-
-        .kol-vrsta2{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-bottom:.55rem;padding:0 clamp(.6rem,2vw,1.1rem) .5rem;border-bottom:1px solid var(--line)}
-        .kol-seg{display:inline-flex;gap:.05rem}
-        .kol-seg button{border:none;background:transparent;padding:.4rem .8rem;font:600 .8rem var(--font-sans),sans-serif;color:var(--ink);opacity:.55;cursor:pointer;border-bottom:2px solid transparent}
-        .kol-seg button:hover{opacity:.85}
-        .kol-seg button[data-aktiven='true']{opacity:1;color:var(--kol-accent);border-bottom-color:var(--kol-accent)}
-        .kol-obseg-nav{display:inline-flex;align-items:center;gap:.3rem}
-        .kol-obseg{margin-right:.25rem;font:600 .84rem var(--font-sans),sans-serif;color:var(--ink);white-space:nowrap}
-        .kol-nav-gumb{flex:none;width:1.9rem;height:1.9rem;display:grid;place-items:center;border:1px solid var(--line);border-radius:.5rem;background:var(--paper);color:var(--ink);cursor:pointer}
-        .kol-nav-gumb:hover{background:var(--kol-accent-soft);border-color:var(--kol-accent);color:var(--kol-accent)}
-        .kol-danes{border:1px solid var(--line);border-radius:.5rem;background:var(--paper);color:var(--ink);font:600 .74rem var(--font-sans),sans-serif;padding:.36rem .7rem;cursor:pointer}
-        .kol-danes:hover{background:var(--kol-accent-soft);border-color:var(--kol-accent);color:var(--kol-accent)}
+        /* --- namig praznega dne kot lebdeča ploščica nad mrežo (ne svoja vrstica) --- */
+        .kol-prazno-plast{position:absolute;top:3.4rem;left:50%;transform:translateX(-50%);z-index:2;pointer-events:none;font:500 .76rem var(--font-sans),sans-serif;color:var(--ink);opacity:.7;background:var(--paper);padding:.35rem .75rem;border:1px solid var(--line);border-radius:999px;box-shadow:0 2px 8px oklch(20% 0 0 / .07);text-align:center;max-width:calc(100% - 2rem)}
 
         /* --- pas Ves dan (dnevni pogled) --- */
         .kol-vsedan{display:flex;align-items:flex-start;gap:.7rem;margin:.4rem clamp(.6rem,2vw,1.1rem) .5rem;padding:.5rem .65rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(99% .004 90)}
@@ -733,17 +748,18 @@ export default function KoledarWorkspace() {
         .kol-pilula-ikona[data-tip]{background:transparent;color:inherit}
         .kol-pilula[data-tip] .kol-pilula-besedilo strong{color:inherit}
 
-        /* --- dnevni / tedenski urna mreža --- */
-        .kol-dt,.kol-teden{position:relative;border-top:1px solid var(--line)}
+        /* --- dnevni / tedenski urna mreža (polna naravna višina, brez notranjega
+           navpičnega scrolla — skrola samo stran; neprosojna podlaga) --- */
+        .kol-dt,.kol-teden{position:relative;background:var(--kol-podlaga)}
         .kol-teden{overflow-x:auto;overflow-y:hidden}
-        .kol-teden-notri{min-width:100%}
-        .kol-dt-scroll,.kol-teden-telo{overflow-y:auto;overflow-x:hidden}
+        .kol-teden-notri{min-width:100%;background:var(--kol-podlaga)}
+        .kol-dt-telo,.kol-teden-telo{background:var(--kol-podlaga)}
         .kol-dt-red,.kol-teden-telo-red{display:flex;align-items:stretch}
         .kol-teden-dnevi{flex:1;min-width:0;display:flex}
 
-        .kol-teden-glave{display:flex;position:sticky;top:0;z-index:4;background:var(--paper);border-bottom:1px solid var(--line)}
-        .kol-teden-ura-kot{flex:none;width:var(--kol-ura-sirina)}
-        .kol-dan-glava{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.4rem .2rem;border:none;border-left:1px solid var(--line);background:transparent;cursor:pointer}
+        .kol-teden-glave{display:flex;background:var(--kol-podlaga)}
+        .kol-teden-ura-kot{flex:none;width:var(--kol-ura-sirina);border:none}
+        .kol-dan-glava{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.4rem .2rem;border:none;border-bottom:1px solid var(--kol-crta);background:transparent;cursor:pointer}
         .kol-dan-ime{font:700 .58rem var(--font-sans),sans-serif;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);opacity:.5}
         .kol-dan-num{width:1.7rem;height:1.7rem;display:grid;place-items:center;border-radius:999px;font:600 .88rem var(--font-sans),sans-serif;color:var(--ink)}
         .kol-dan-glava[data-danes='true'] .kol-dan-num{background:var(--kol-accent);color:#fff}
@@ -751,17 +767,18 @@ export default function KoledarWorkspace() {
         .kol-dan-glava:hover .kol-dan-num{background:var(--kol-accent-soft)}
         .kol-dan-glava[data-danes='true']:hover .kol-dan-num{background:var(--kol-accent)}
 
-        .kol-vsedan-red{display:flex;border-bottom:1px solid var(--line);background:oklch(99% .004 90)}
+        .kol-vsedan-red{display:flex;border-bottom:1px solid var(--kol-crta);background:oklch(99% .004 90)}
         .kol-vsedan-kot{flex:none;width:var(--kol-ura-sirina);display:flex;align-items:center;justify-content:flex-end;padding-right:.35rem;font:800 .5rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);opacity:.45}
-        .kol-vsedan-celica{flex:1;min-width:0;border-left:1px solid var(--line);padding:.2rem;display:flex;flex-direction:column;gap:.12rem}
+        .kol-vsedan-celica{flex:1;min-width:0;padding:.2rem;display:flex;flex-direction:column;gap:.12rem}
         .kol-vsedan-cip{border:none;border-left:2px solid;text-align:left;padding:.1rem .3rem;border-radius:.28rem;font:600 .6rem var(--font-sans),sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
 
-        .kol-mreza-ure{flex:none;width:var(--kol-ura-sirina);position:relative;background:oklch(99.3% .003 90)}
-        .kol-ura-nalepka{position:relative;text-align:right;padding-right:.4rem}
+        .kol-mreza-ure{flex:none;width:var(--kol-ura-sirina);position:relative;border:none;background:var(--kol-podlaga)}
+        .kol-ura-nalepka{position:relative;text-align:right;padding:.1rem .6rem 0 .4rem}
         .kol-ura-nalepka span{position:relative;top:-.6em;display:inline-block;font:700 .58rem var(--font-sans),sans-serif;color:var(--ink);opacity:.4}
-        .kol-dan-stolpec{position:relative;flex:1;min-width:0;border-left:1px solid var(--line)}
-        .kol-dt-red .kol-dan-stolpec{border-left:1px solid var(--line)}
-        .kol-ura-cona{position:absolute;left:0;right:0;border-top:1px solid var(--line);z-index:1}
+        .kol-dan-stolpec{position:relative;flex:1;min-width:0;border-left:1px solid var(--kol-crta);background:var(--kol-podlaga)}
+        .kol-teden-dnevi .kol-dan-stolpec:first-child{border-left:none}
+        .kol-dt-red .kol-dan-stolpec{border-left:none}
+        .kol-ura-cona{position:absolute;left:0;right:0;border-top:1px solid var(--kol-crta);z-index:1}
         .kol-ura-cona[data-klikljivo='true']{cursor:pointer}
         .kol-ura-cona[data-klikljivo='true']:hover{background:oklch(98% .012 245)}
 
@@ -781,12 +798,12 @@ export default function KoledarWorkspace() {
         .kol-blok-akcija{width:1.2rem;height:1.2rem;display:grid;place-items:center;border-radius:999px;border:1px solid currentColor;background:transparent;color:inherit;opacity:.7;cursor:pointer;text-decoration:none}
         .kol-blok-akcija:hover{opacity:1}
 
-        /* --- mesečni pogled --- */
-        .kol-mesec{border-top:1px solid var(--line)}
-        .kol-mesec-glave{display:grid;grid-template-columns:repeat(7,1fr)}
+        /* --- mesečni pogled (komaj opazne črte, neprosojna podlaga, zapolni višino) --- */
+        .kol-mesec{margin-top:.1rem;display:flex;flex-direction:column;min-height:calc(100dvh - 12rem);background:var(--kol-podlaga)}
+        .kol-mesec-glave{display:grid;grid-template-columns:repeat(7,1fr);background:var(--kol-podlaga)}
         .kol-mesec-glave span{padding:.4rem .5rem;font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);opacity:.5}
-        .kol-mesec-mreza{display:grid;grid-template-columns:repeat(7,1fr)}
-        .kol-mesec-celica{position:relative;min-height:6.4rem;border-top:1px solid var(--line);border-left:1px solid var(--line);padding:.25rem .3rem .35rem;display:flex;flex-direction:column;gap:.15rem;background:var(--paper);text-align:left;cursor:pointer;font:inherit}
+        .kol-mesec-mreza{flex:1;display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;background:var(--kol-podlaga)}
+        .kol-mesec-celica{position:relative;min-height:6.4rem;border-top:1px solid var(--kol-crta);border-left:1px solid var(--kol-crta);padding:.25rem .3rem .35rem;display:flex;flex-direction:column;gap:.15rem;background:var(--kol-podlaga);text-align:left;cursor:pointer;font:inherit}
         .kol-mesec-celica:nth-child(7n+1){border-left:none}
         .kol-mesec-celica[data-izven='true']{background:oklch(98.6% .003 90)}
         .kol-mesec-celica[data-izven='true'] .kol-mesec-num{opacity:.4}
@@ -826,10 +843,11 @@ export default function KoledarWorkspace() {
 
         @media (min-width:640px){.kol-modal-ozadje{align-items:center}.kol-modal{border-radius:1.2rem}}
         @media (max-width:700px){
-          .kol-vrsta1{flex-wrap:wrap}
-          .kol-isci{max-width:none;flex-basis:100%;order:5}
+          .kol-orodna{gap:.5rem .7rem}
+          .kol-akcije{width:100%;margin-left:0}
+          .kol-isci{flex-basis:100%}
           .kol-teden-notri{min-width:46rem}
-          .kol-obseg{font-size:.78rem}
+          .kol-obseg{font-size:.86rem;margin-left:.25rem}
           .kol-mesec-celica{min-height:4.6rem;padding:.2rem}
           .kol-mesec-cip{font-size:.56rem;gap:.2rem}
           .kol-mesec-num{min-width:1.25rem;height:1.25rem;font-size:.68rem}
