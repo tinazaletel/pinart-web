@@ -7,6 +7,7 @@ import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import { loadFlowData, saveFlowCollection, type FlowInvoice } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne } from '@/lib/dokVidez';
+import { predlagajDdv } from '@/lib/ddvSvet';
 import { preberiPredogled } from '@/lib/predogled';
 import { nastaviNapredek } from '@/lib/flowNapredek';
 import VidezDokumentov from '@/components/VidezDokumentov';
@@ -4801,6 +4802,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <label htmlFor="cw-ddvst">{L('Stopnja DDV (%)', 'VAT rate (%)')}</label>
               <input id="cw-ddvst" type="number" min={0} max={30} step={0.5}
                 value={ddvStopnja} onChange={e => setDdvStopnja(e.target.value)} />
+              {(() => { const p = predlagajDdv(nazivPonudbe, ddvStopnja); return p ? (
+                <button type="button" onClick={() => setDdvStopnja(p.stopnja)} title={`${p.razlog} (predlog, ne davčni nasvet)`}
+                  style={{ marginTop: '.45rem', padding: '.35rem .7rem', border: '1px solid var(--akcent, #6E4FA6)', borderRadius: 999, background: 'transparent', color: 'var(--akcent, #6E4FA6)', font: '700 .68rem inherit', cursor: 'pointer', width: 'max-content' }}>
+                  💡 {L('Predlog', 'Suggest')}: {p.stopnja.replace('.', ',')} %
+                </button>
+              ) : null; })()}
             </div>
           )}
         </div>
