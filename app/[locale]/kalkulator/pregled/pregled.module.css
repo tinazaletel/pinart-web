@@ -348,7 +348,13 @@
 .document_contract { background: oklch(93% .055 163); color: oklch(55% .15 164); }
 .document_invoice { background: oklch(94% .055 62); color: oklch(62% .18 48); }
 .document_expense { background: oklch(91% .012 55); color: var(--ink); }
-.statusPill { display: inline-flex; align-items: center; gap: .42rem; width: max-content; padding: .38rem .72rem; border: 1px solid var(--pill-line, oklch(86% .012 87)); border-radius: 999px; background: var(--pill-bg, oklch(95% .01 87)); color: var(--pill-ink, oklch(40% .02 70)); font-size: .55rem; font-weight: 700; white-space: nowrap; }
+.statusPill { position: relative; display: inline-flex; align-items: center; gap: .42rem; width: max-content; padding: .38rem .72rem; border: 1px solid var(--pill-line, oklch(86% .012 87)); border-radius: 999px; background: var(--pill-bg, oklch(95% .01 87)); color: var(--pill-ink, oklch(40% .02 70)); font-size: .55rem; font-weight: 700; white-space: nowrap; }
+/* status kot pilula, ki objame besedilo; prosojni <select> lezi cez (Safari-varno). */
+.statusField { position: relative; display: inline-flex; vertical-align: middle; }
+.statusField[data-editable] .statusPill { cursor: pointer; padding-right: 1.15rem; }
+.statusField[data-editable] .statusPill::after { content: ''; position: absolute; right: .5rem; top: 50%; width: .32rem; height: .32rem; border-right: 1.4px solid currentColor; border-bottom: 1.4px solid currentColor; transform: translateY(-72%) rotate(45deg); opacity: .5; }
+.historyTable .statusSelect { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; border-radius: 999px; background: transparent; appearance: none; -webkit-appearance: none; opacity: 0; font: inherit; cursor: pointer; box-sizing: border-box; }
+.historyTable .statusSelect:disabled { cursor: default; }
 .statusPill::before { content: ''; width: .48rem; height: .48rem; border-radius: 50%; background: var(--dot, oklch(62% .02 70)); flex: none; }
 /* statusni toni v mehkem CGP — obarvano ozadje + tekst, kot KPI kartice */
 .status_waiting { --dot: oklch(70% .16 75); --pill-bg: oklch(95.5% .05 82); --pill-ink: oklch(50% .12 68); --pill-line: oklch(89% .06 82); }
