@@ -263,6 +263,14 @@
 .flowTools > *:nth-child(even) .cardBubbles { transform: scaleX(-1); }
 .flowTools > *:nth-child(3n) .cardBubbles { transform: rotate(9deg) scale(1.03); }
 @keyframes bubbleFloat { from { transform: translate(-4px, 5px); } to { transform: translate(11px, -13px); } }
+/* razlicno stevilo mehurckov po karticah (4/3/2/3/4/2/3/4) */
+.flowTools > *:nth-child(2) .cardBubbles u:nth-child(4),
+.flowTools > *:nth-child(4) .cardBubbles u:nth-child(2),
+.flowTools > *:nth-child(7) .cardBubbles u:nth-child(3),
+.flowTools > *:nth-child(3) .cardBubbles u:nth-child(3),
+.flowTools > *:nth-child(3) .cardBubbles u:nth-child(4),
+.flowTools > *:nth-child(6) .cardBubbles u:nth-child(1),
+.flowTools > *:nth-child(6) .cardBubbles u:nth-child(4) { display: none; }
 @media (prefers-reduced-motion: reduce) { .cardBubbles u { animation: none; } }
 .flowTools > *:nth-child(1n)::after {
   right: -1.5rem; bottom: -1.7rem; top: auto; left: auto;
