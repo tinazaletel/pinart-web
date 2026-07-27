@@ -198,7 +198,7 @@ export default function BusinessOverview({ base }: { base: string }) {
     ...activeInvoices.map(i => ({ id: i.id, type: 'Račun', title: `Račun ${money(i.amount)}`, client: i.client, date: i.date, status: i.paid ? 'Plačan' : 'Odprt', sourceOfferId: i.sourceOfferId })),
     ...activeExpenses.map(e => ({ id: e.id, type: 'Strošek', title: e.title, client: e.client || '—', date: e.date, status: money(e.amount) })),
   ].sort((a, b) => b.date.localeCompare(a.date));
-  const historyItems = showAll ? allHistoryItems : allHistoryItems.slice(0, 8);
+  const historyItems = showAll ? allHistoryItems : allHistoryItems.slice(0, 4);
   const statusTone = (status: string) => status === 'Čaka' || status === 'Odprt' || status === 'V pregledu' ? 'waiting' : status === 'Sprejeta' || status === 'Podpisana' || status === 'Plačan' || status === 'Aktivna' ? 'success' : status === 'Zavrnjena' ? 'danger' : 'neutral';
   const statusOptions = (type: string) => type === 'Ponudba' ? ['Osnutek', 'Čaka', 'Sprejeta', 'Zavrnjena'] : type === 'Pogodba' ? ['Prejeta', 'V pregledu', 'Osnutek', 'Aktivna', 'Podpisana'] : type === 'Račun' ? ['Odprt', 'Plačan'] : [];
   const updateDocumentStatus = (type: string, id: string, label: string) => {
@@ -345,13 +345,11 @@ export default function BusinessOverview({ base }: { base: string }) {
       <div className={styles.overviewColumns}>
       <section className={styles.historyBand} id="accounting">
         <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>02 · ZGODOVINA</p><h2>Zadnji dokumenti</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}>Za računovodstvo</Link></div>
-        <div className={styles.sectionNote}><strong>Na enem mestu</strong><span>Spremljaj ponudbe, pogodbe in račune ter vedno veš, kateri dokument potrebuje tvojo pozornost.</span></div>
-        {historyItems.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>Dokument</th><th>Stranka</th><th>Datum</th><th>Status</th></tr></thead><tbody>{historyItems.map(item => <tr key={`${item.type}-${item.id}`} role="button" tabIndex={0} aria-label={`Odpri ${item.title}`} onClick={() => setSelectedDocument(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedDocument(item); } }}><td><div className={styles.documentCell}><span className={`${styles.documentIcon} ${styles[`document_${item.type === 'Ponudba' ? 'offer' : item.type === 'Pogodba' ? 'contract' : item.type === 'Račun' ? 'invoice' : 'expense'}`]}`}><HistoryIcon type={item.type} /></span><span><strong>{item.title}</strong><small>{item.type}</small></span></div></td><td>{item.client}</td><td>{new Date(item.date).toLocaleDateString('sl-SI')}</td><td>{statusOptions(item.type).length ? <span className={`${styles.statusField} ${styles[`status_${statusTone(item.status)}`]}`} data-editable={preview === 'mine' ? '' : undefined}><span className={styles.statusPill}>{item.status}</span><select aria-label={`Status: ${item.title}`} className={styles.statusSelect} value={item.status} disabled={preview !== 'mine'} title={preview !== 'mine' ? 'To so demo podatki — statusa ni mogoče spreminjati. Preklopi na »Moji podatki«.' : undefined} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={e => updateDocumentStatus(item.type, item.id, e.target.value)}>{statusOptions(item.type).map(option => <option key={option}>{option}</option>)}</select></span> : <span className={`${styles.statusPill} ${styles.status_neutral}`}>{item.status}</span>}</td></tr>)}</tbody></table>{allHistoryItems.length > 8 && <button className={styles.openAll} type="button" onClick={() => setShowAll(value => !value)}>{showAll ? 'Prikaži manj' : 'Odpri vse dokumente'} <span>{showAll ? '↑' : '→'}</span></button>}</div> : <div className={styles.emptyState}><span>+</span><div><strong>Še nimaš dokumentov.</strong><p>Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj.</p></div></div>}
+        {historyItems.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>Dokument</th><th>Stranka</th><th>Datum</th><th>Status</th></tr></thead><tbody>{historyItems.map(item => <tr key={`${item.type}-${item.id}`} role="button" tabIndex={0} aria-label={`Odpri ${item.title}`} onClick={() => setSelectedDocument(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedDocument(item); } }}><td><div className={styles.documentCell}><span className={`${styles.documentIcon} ${styles[`document_${item.type === 'Ponudba' ? 'offer' : item.type === 'Pogodba' ? 'contract' : item.type === 'Račun' ? 'invoice' : 'expense'}`]}`}><HistoryIcon type={item.type} /></span><span><strong>{item.title}</strong><small>{item.type}</small></span></div></td><td>{item.client}</td><td>{new Date(item.date).toLocaleDateString('sl-SI')}</td><td>{statusOptions(item.type).length ? <span className={`${styles.statusField} ${styles[`status_${statusTone(item.status)}`]}`} data-editable={preview === 'mine' ? '' : undefined}><span className={styles.statusPill}>{item.status}</span><select aria-label={`Status: ${item.title}`} className={styles.statusSelect} value={item.status} disabled={preview !== 'mine'} title={preview !== 'mine' ? 'To so demo podatki — statusa ni mogoče spreminjati. Preklopi na »Moji podatki«.' : undefined} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={e => updateDocumentStatus(item.type, item.id, e.target.value)}>{statusOptions(item.type).map(option => <option key={option}>{option}</option>)}</select></span> : <span className={`${styles.statusPill} ${styles.status_neutral}`}>{item.status}</span>}</td></tr>)}</tbody></table>{allHistoryItems.length > 4 && <button className={styles.openAll} type="button" onClick={() => setShowAll(value => !value)}>{showAll ? 'Prikaži manj' : 'Odpri vse dokumente'} <span>{showAll ? '↑' : '→'}</span></button>}</div> : <div className={styles.emptyState}><span>+</span><div><strong>Še nimaš dokumentov.</strong><p>Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj.</p></div></div>}
       </section>
 
       <section className={styles.resultsBand} id="clients" aria-labelledby="business-title">
         <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>03 · POSLOVNI REZULTATI</p><h2 id="business-title">Kako ti gre?</h2></div><div className={styles.periodSwitch} aria-label="Obdobje prikaza">{([['month', 'Mesec'], ['quarter', 'Četrtletje'], ['year', 'Leto']] as [Period, string][]).map(([value, label]) => <button type="button" key={value} className={period === value ? styles.periodActive : ''} onClick={() => setPeriod(value)}>{label}</button>)}</div></div>
-        <div className={styles.sectionNote}><strong>Dobro je vedeti</strong><span>Plačano ni isto kot izdano. Rezultat temelji na potrjenih plačilih in vnesenih stroških.</span></div>
         <div className={styles.kpiGrid}>
           <div className={styles.kpi}><span>Izdano</span><strong>{money(issued)}</strong><small>{periodInvoices.length} računov</small><b className={styles.resultIcon}><ResultIcon type="issued" /></b></div>
           <div className={styles.kpi}><span>Plačano</span><strong>{money(paid)}</strong><small>{periodInvoices.filter(i => i.paid).length} potrjenih plačil</small><b className={styles.resultIcon}><ResultIcon type="paid" /></b></div>
@@ -375,24 +373,30 @@ export default function BusinessOverview({ base }: { base: string }) {
       </section>
       </div>
 
-      <section className={styles.detailsBand} aria-label="Podrobnosti rezultatov">
-        <div className={styles.detailsGrid}>
-          <article className={styles.donutPanel}>
-            <div><p className={styles.eyebrow}>RAZMERJE REZULTATA</p><h2>Kam gre tvoj denar?</h2><div className={styles.chartLegend}><span><i className={styles.legendProfit} /> Dobiček {profitShare}%</span><span><i className={styles.legendCost} /> Stroški {costShare}%</span></div></div>
-            <div className={`${styles.donut} ${resultTotal === 0 ? styles.donutEmpty : ''}`} style={{ '--cost-share': `${costShare}%` } as React.CSSProperties}><div><strong>{resultTotal ? `${profitShare}%` : '0%'}</strong><small>dobička</small></div></div>
-          </article>
-          <article className={styles.goalPanel} id="goals">
-            <div className={styles.goalCopy}><div className={styles.goalTitleRow}><p className={styles.eyebrow}>{period === 'year' ? 'LETNI CILJ' : period === 'quarter' ? 'ČETRTLETNI CILJ' : 'MESEČNI CILJ'}</p><Link className={styles.goalEdit} href={`${base}/kalkulator/cilji`} aria-label="Uredi cilj" title="Uredi cilj"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.4-1 9.9-9.9a2.1 2.1 0 0 0-3-3L5.4 16 4 20Z"/><path d="m13.8 7.6 3 3"/></svg></Link></div><h2>{money(periodGoal)}</h2><p>{money(paid)} potrjenih plačil</p></div>
-            <div className={styles.goalDial} style={{ '--goal-progress': `${progress}%` } as React.CSSProperties}><div><strong>{progress}%</strong><small>doseženo</small></div></div>
-          </article>
-          <article className={styles.waitingPanel}><p className={styles.eyebrow}>PONUDBE</p><svg className={styles.chatIcon} viewBox="0 0 32 32" aria-hidden="true"><path d="M5 15a11 11 0 1 1 5 9.2L4 27l1.8-6A10.8 10.8 0 0 1 5 15Z"/><path d="M11 15h.1M16 15h.1M21 15h.1"/></svg><strong>{waiting.length}</strong><span>čaka odgovor</span><small>{activeOffers.length} ponudb skupaj</small></article>
-          <article className={styles.clientResult}>
-            <p className={styles.eyebrow}>STRANKE</p>
-            {najboljsaStranka ? <><strong>{imeNajboljse}</strong><span>najdonosnejša stranka</span><small>{money(najboljsaStranka.profit)} ocenjenega dobička</small><b className={styles.clientAvatar}>{imeNajboljse.split(/\s+/).map(word => word[0] ?? '').join('').slice(0, 2).toUpperCase()}</b></> : <><strong>{clientRecords.length ? clientRecords[0].name : '—'}</strong><span>{clientRecords.length ? `${clientRecords.length} shranjenih strank` : 'Donosnost strank'}</span><small>{clientRecords.length ? clientRecords[0].email : 'Poveži račune in stroške s stranko.'}</small></>}
-            <button className={styles.addClient} type="button" onClick={() => setForm('client')}>+ Dodaj stranko</button>
-          </article>
-        </div>
-      </section>
+      <div className={styles.detailRow}>
+        <section className={styles.historyBand} aria-labelledby="proj-title">
+          <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>05 · PROJEKTI</p><h2 id="proj-title">Zadnji projekti</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/projekti`}>Vsi projekti</Link></div>
+          {activeOffers.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>Projekt</th><th>Status</th><th>Rok</th><th>Prihodki</th></tr></thead><tbody>{activeOffers.slice(0, 5).map(o => {
+            const map: Record<string, [string, string]> = { draft: ['Osnutek', 'neutral'], sent: ['V teku', 'info'], accepted: ['Zaključeno', 'success'], rejected: ['Zavrnjeno', 'danger'] };
+            const [label, tone] = map[o.status] || ['—', 'neutral'];
+            return <tr key={o.id}><td><div className={styles.documentCell}><span><strong>{o.title}</strong><small>{o.client || '—'}</small></span></div></td><td><span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{label}</span></td><td>{new Date(o.date).toLocaleDateString('sl-SI')}</td><td><strong>{offerAmounts[o.id] ? money(offerAmounts[o.id]) : '—'}</strong></td></tr>;
+          })}</tbody></table></div> : <div className={styles.emptyState}><span>+</span><div><strong>Še ni projektov.</strong><p>Projekti se prikažejo tukaj, ko ustvariš ponudbo.</p></div></div>}
+          <Link className={styles.panelMore} href={`${base}/kalkulator/projekti`}>Pojdi na projekte <span aria-hidden>→</span></Link>
+        </section>
+
+        <section className={styles.eventsBand} aria-labelledby="rev-title">
+          <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>06 · PRIHODKI</p><h2 id="rev-title">Prihodki po mesecih</h2></div></div>
+          {(() => {
+            const base0 = new Date(); base0.setDate(1);
+            const months = Array.from({ length: 6 }, (_, i) => { const d = new Date(base0); d.setMonth(d.getMonth() - (5 - i)); return d; });
+            const paidInv = activeInvoices.filter(i => i.paid);
+            const vals = months.map(m => paidInv.filter(i => { const d = new Date(i.date); return d.getFullYear() === m.getFullYear() && d.getMonth() === m.getMonth(); }).reduce((s, i) => s + i.amount, 0));
+            const max = Math.max(1, ...vals);
+            return <div className={styles.barChart}>{months.map((m, i) => <div key={i} className={styles.bar}><span className={styles.barVal}>{vals[i] ? money(vals[i]) : ''}</span><b style={{ height: `${Math.max(2, Math.round((vals[i] / max) * 100))}%` } as React.CSSProperties} /><small>{m.toLocaleDateString('sl-SI', { month: 'short' }).replace('.', '')}</small></div>)}</div>;
+          })()}
+          <Link className={styles.panelMore} href={`${base}/kalkulator/racunovodstvo`}>Pojdi na poročila <span aria-hidden>→</span></Link>
+        </section>
+      </div>
 
       <section className={styles.tipBar}>
         <div className={styles.tipMain}>

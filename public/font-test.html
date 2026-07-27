@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pinart Flow — izbira pisave naslovov</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..600,100,1&family=Gloock&family=Instrument+Serif:ital@0;1&family=DM+Serif+Display:ital@0;1&family=Yeseva+One&family=Playfair+Display:wght@400..700&family=Newsreader:opsz,wght@6..72,400..600&family=Spectral:wght@400;500;600&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Unbounded:wght@400..700&family=Cormorant+Garamond:ital,wght@0,400..600;1,400..500&family=EB+Garamond:ital,wght@0,400..600;1,400..500&family=Libre+Baskerville:ital@0;1&family=Lora:ital,wght@0,400..600;1,400..500&family=Merriweather:wght@400;700&family=PT+Serif:ital@0;1&family=Crimson+Pro:ital,wght@0,400..600;1,400..500&family=Domine:wght@400..600&family=Marcellus&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..600;1,8..60,400..500&family=Archivo:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --paper:#f4f1e8; --ink:#1a1622; --accent:#7c5cff; }
+  * { margin:0; box-sizing:border-box; }
+  body { background:var(--paper); color:var(--ink); font-family:'Archivo',system-ui,sans-serif; padding:48px clamp(20px,5vw,80px) 120px; }
+  .intro { max-width:60ch; margin:0 auto 48px; }
+  .intro h1 { font-family:'Archivo'; font-size:1.4rem; font-weight:600; margin-bottom:.4rem; }
+  .intro p { color:#5b5560; line-height:1.5; }
+  .grid { display:grid; gap:20px; max-width:1100px; margin:0 auto; }
+  .card { background:#fbfaf5; border:1px solid rgba(26,22,34,.09); border-radius:16px; padding:26px 30px; }
+  .tag { display:inline-block; font-family:'Archivo'; font-size:.7rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); background:rgba(124,92,255,.1); padding:4px 10px; border-radius:999px; margin-bottom:14px; }
+  .big { font-size:clamp(2rem,5vw,3.4rem); line-height:1.05; font-weight:500; letter-spacing:-.01em; }
+  .big em { color:var(--accent); font-style:italic; }
+  .sub { font-size:clamp(1.2rem,2.4vw,1.7rem); font-weight:500; margin-top:.5rem; color:#3a3540; }
+  .f-fraunces .big,.f-fraunces .sub{font-family:'Fraunces';}
+  .f-frauncesw .big,.f-frauncesw .sub{font-family:'Fraunces';font-variation-settings:'SOFT' 100,'WONK' 1;}
+  .f-gloock .big,.f-gloock .sub{font-family:'Gloock';}
+  .f-instrument .big,.f-instrument .sub{font-family:'Instrument Serif';}
+  .f-dmserif .big,.f-dmserif .sub{font-family:'DM Serif Display';}
+  .f-yeseva .big,.f-yeseva .sub{font-family:'Yeseva One';}
+  .f-playfair .big,.f-playfair .sub{font-family:'Playfair Display';}
+  .f-newsreader .big,.f-newsreader .sub{font-family:'Newsreader';}
+  .f-spectral .big,.f-spectral .sub{font-family:'Spectral';}
+  .f-bricolage .big,.f-bricolage .sub{font-family:'Bricolage Grotesque';}
+  .f-unbounded .big,.f-unbounded .sub{font-family:'Unbounded';font-weight:600;}
+</style>
+</head>
+<body>
+  <div class="intro">
+    <h1>Izberi pisavo naslovov</h1>
+    <p>Isti naslov v razlicnih kandidatih. Povej mi ime tiste, ki ti je najbolj vsec (ali dve za ozji izbor), pa jo vgradim povsod. Vse so brezplacne (Google Fonts).</p>
+  </div>
+  <div class="grid">
+    <div class="card f-fraunces"><span class="tag">Fraunces</span><div class="big">Ves, koliko je vredno <em>tvoje delo?</em></div><div class="sub">Kaj bos danes uredila?</div></div>
+    <div class="card f-frauncesw"><span class="tag">Fraunces (WONK — bolj igrivo)</span><div class="big">Ves, koliko je vredno <em>tvoje delo?</em></div><div class="sub">Kaj bos danes uredila?</div></div>
+    <div class="card f-gloock"><span class="tag">Gloock</span><div class="big">Ves, koliko je vredno <em>tvoje delo?</em></div><div class="sub">Kaj bos danes uredila?</div></div>
+    <div class="card f-instrument"><span class="tag">Instrument Serif</span><div class="big">Ves, koliko je vredno <em>tvoje delo?</em></div><div class="sub">Kaj bos danes uredila?</div></div>
+    <div class="card f-dmserif"><span class="tag">DM Serif Display</span><div class="big">Ves, koliko je vredno <em>tvoje delo?</em></div><div class="sub">Kaj bos danes uredila?</div></div>
+    <div class="card f-yeseva"><span class="tag">Yeseva One</span><div class="big">Ves, koliko je vredno <em>tvoje delo?</em></div><div class="sub">Kaj bos danes uredila?</div></div>
+    <div class="card f-playfair"><span class="tag">Playfair Display</span><div class="big">Ves, koliko je vredno <em>tvoje delo?</em></div><div class="sub">Kaj bos danes uredila?</div></div>
+    <div class="card f-newsreader"><span class="tag">Newsreader</span><div class="big">Ves, koliko je vredno <em>tvoje delo?</em></div><div class="sub">Kaj bos danes uredila?</div></div>
+    <div class="card f-spectral"><span class="tag">Spectral</span><div class="big">Ves, koliko je vredno <em>tvoje delo?</em></div><div class="sub">Kaj bos danes uredila?</div></div>
+    <div class="card f-bricolage"><span class="tag">Bricolage Grotesque (grotesk, igriv)</span><div class="big">Ves, koliko je vredno <em>tvoje delo?</em></div><div class="sub">Kaj bos danes uredila?</div></div>
+    <div class="card f-unbounded"><span class="tag">Unbounded (zaobljen, igriv)</span><div class="big">Ves, koliko je vredno <em>tvoje delo?</em></div><div class="sub">Kaj bos danes uredila?</div></div>
+  </div>
+</body>
+</html>
