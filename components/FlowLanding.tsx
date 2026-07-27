@@ -670,6 +670,13 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* Mobilni korak: element je sirsi od zaslona, zato % ELEMENTA (figura vstopi z leve, gre cez, izstopi desno) */
         @keyframes pupaHojaM { 0% { transform: translateX(-65%); } 100% { transform: translateX(150%); } }
         @media (prefers-reduced-motion: reduce) { .fl-pupa { display: none; } }
+        /* glinasta rekvizita scene (koš + rastlina) — stojita na tleh pasu, nezno dihata */
+        .fl-prop { position: absolute; bottom: 9%; height: auto; z-index: 0; will-change: transform; filter: drop-shadow(0 18px 26px rgba(40,25,60,.16)); }
+        .fl-prop-kos { left: 7%; width: clamp(5rem, 8vw, 8.5rem); animation: flPropBob 6.5s ease-in-out infinite; }
+        .fl-prop-plant { right: 7%; width: clamp(7rem, 11.5vw, 12rem); animation: flPropBob 7.5s ease-in-out infinite; animation-delay: -2.4s; }
+        @keyframes flPropBob { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-9px) rotate(-1deg); } }
+        @media (max-width: 720px) { .fl-prop-kos { left: 3%; width: 4.4rem; } .fl-prop-plant { right: 3%; width: 6.4rem; } }
+        @media (prefers-reduced-motion: reduce) { .fl-prop { animation: none; } }
 
         .fl-footer { margin: 10.05rem calc(50% - 50vw) calc(-1 * clamp(5rem, 8vw, 8rem)); background: oklch(20% .016 285); color: oklch(93% .01 285); border-radius: 0; padding: clamp(2.8rem, 5vw, 4rem) calc(max(0px, (100vw - 1480px) / 2) + clamp(1.5rem, 5vw, 5.5rem)) clamp(2rem, 4vw, 2.6rem); }
         .fl-footer-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(2rem, 5vw, 4rem); }
@@ -982,6 +989,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             </div>
           </div>
           <div className="fl-pupa-pas" aria-hidden ref={pasRef}>
+            {/* glinasti rekvizit scene: koš (stara utrujenost / zmečkane ponudbe) levo,
+                rastlina (kar je zraslo iz nje) desno — pupa hodi mimo obeh. */}
+            <img src="/flow/kos3d.png" className="fl-prop fl-prop-kos" alt="" loading="lazy" />
+            <img src="/flow/plant3d.png" className="fl-prop fl-prop-plant" alt="" loading="lazy" />
             {/* PROSOJEN video (alfa) — src nastavi useEffect glede na brskalnik (Safari=mov, Chrome=webm) */}
             <video ref={pupaRef} className={`fl-pupa${pupaHodi ? ' hodi' : ''}`} muted loop playsInline preload="auto" />
           </div>
