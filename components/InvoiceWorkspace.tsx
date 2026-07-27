@@ -19,7 +19,7 @@ import PosljiBlok from '@/components/PosljiBlok';
 const K_NAST = 'pinart-kalkulator-v2';
 
 type Ponudnik = { ime: string; davcna: string; email: string; telefon: string; naslov: string; trr: string };
-type Offer = { id: string; title: string; client: string; number?: string; scope: string[]; agreedAmount: number };
+type Offer = { id: string; title: string; client: string; date: string; number?: string; scope: string[]; agreedAmount: number };
 /* vrstica obrazca — vnosi so nizi (tudi decimalke z vejico), parsamo ob izracunu */
 type Vrstica = { opis: string; kolicina: string; cena: string; popust: string; ddv: string };
 
@@ -67,10 +67,16 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
      stran). Pregled/arhiv obstojecih racunov je preseljen v Arhiv
      (ArhivWorkspace) — to orodje SAMO ustvarja nove racune. */
   const [pogled, setPogled] = useState<'pregled' | 'obrazec'>('pregled');
-  /* vir racuna na vstopu — kot ContractWorkspace (Iz ponudbe / Brez ponudbe) */
-  const [vir, setVir] = useState<'ponudba' | 'rocno'>('ponudba');
+  /* vir racuna se IZPELJE iz izbire ponudbe: izbrana ponudba (offerId) => iz
+     ponudbe, "Brez ponudbe" (prazen offerId) => samostojen racun. Ni vec locene
+     pilule Iz ponudbe / Samostojen racun. */
   const [offerId, setOfferId] = useState('');
-  /* mobilni sheet za izbiro ponudbe (native select ne skalira s 50+ ponudbami) */
+  /* iskalen spustnik (combobox) za izbiro ponudbe na VSTOPU — privzeto "Brez
+     ponudbe" + zadnjih 10 ponudb, ob tipkanju filtrira VSE ponudbe */
+  const [vstopOdprt, setVstopOdprt] = useState(false);
+  const [vstopIskanje, setVstopIskanje] = useState('');
+  const vstopComboRef = useRef<HTMLDivElement | null>(null);
+  /* mobilni sheet za izbiro ponudbe v obrazcu (native select ne skalira s 50+ ponudbami) */
   const [ponSheet, setPonSheet] = useState(false);
   const [ponIskanje, setPonIskanje] = useState('');
 
@@ -104,7 +110,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
 
   useEffect(() => {
     const data = podatkiZaPredogled(nacin, loadFlowData());
-    setOffers(data.offers.map(({ id, title, client, number, scope, agreedAmount }) => ({ id, title, client, number, scope, agreedAmount })));
+    setOffers(data.offers.map(({ id, title, client, date, number, scope, agreedAmount }) => ({ id, title, client, date, number, scope, agreedAmount })));
     setInvoices(data.invoices);
     setClients(data.clients);
   }, [nacin]);
@@ -153,12 +159,13 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
 
   const nextNumber = () => { const year = new Date().getFullYear(); const count = invoices.filter(item => item.number?.startsWith(String(year))).length + 1; return `${year}-${String(count).padStart(4, '0')}`; };
 
-  /* "Pripravi racun →": ce je vir rocno (samostojen racun), pocisti morebitno
-     prejsnjo izbiro ponudbe/stranke; ce je iz ponudbe, sta stranka in prva
-     postavka ze predizpolnjeni prek izberiPonudbo (klican ob izbiri na vstopu). */
+  /* "Pripravi racun →": ce ni izbrane ponudbe (samostojen racun), pocisti
+     morebitno prejsnjo izbiro stranke/postavk; ce je izbrana ponudba, sta
+     stranka in prva postavka ze predizpolnjeni prek izberiPonudbo (klican ob
+     izbiri na vstopu). */
   const odpriObrazec = () => {
     setStevilka(nextNumber());
-    if (vir === 'rocno') { setOfferId(''); setStranka(''); setVrstice([novaVrstica()]); }
+    if (!offerId) { setStranka(''); setVrstice([novaVrstica()]); }
     setDatumStoritve(datumIzdaje || danesISO()); setRokDni(String(PRIVZETI_ROK_DNI));
     setPlacano(false); setPredracun(false); setAvansPct('100'); setNapaka('');
     /* podpis je vezan na en, konkreten racun — nov racun zacne brez njega */
@@ -184,6 +191,28 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     return !q || `${offer.title} ${offer.client} ${offer.number || ''}`.toLocaleLowerCase('sl-SI').includes(q);
   });
   const izberiVSheet = (id: string) => { izberiPonudbo(id); setPonSheet(false); };
+
+  /* ── vstopni combobox: ponudbe po datumu (najnovejse zgoraj); brez iskanja
+     prikaze zadnjih 10, ob tipkanju filtrira VSE po naslovu/stranki/stevilki ── */
+  const ponudbePoDatumu = useMemo(
+    () => [...offers].sort((a, b) => (b.date || '').localeCompare(a.date || '')),
+    [offers],
+  );
+  const vstopSeznam = (() => {
+    const q = vstopIskanje.trim().toLocaleLowerCase('sl-SI');
+    if (!q) return ponudbePoDatumu.slice(0, 10);
+    return ponudbePoDatumu.filter(offer => `${offer.title} ${offer.client} ${offer.number || ''}`.toLocaleLowerCase('sl-SI').includes(q));
+  })();
+  const izberiVVstopu = (id: string) => { izberiPonudbo(id); setVstopOdprt(false); setVstopIskanje(''); };
+  /* klik izven odprtega comboboxa ga zapre (portal ni potreben — vstop nima transform prednika) */
+  useEffect(() => {
+    if (!vstopOdprt) return;
+    const zapri = (event: MouseEvent) => {
+      if (vstopComboRef.current && !vstopComboRef.current.contains(event.target as Node)) { setVstopOdprt(false); setVstopIskanje(''); }
+    };
+    document.addEventListener('mousedown', zapri);
+    return () => document.removeEventListener('mousedown', zapri);
+  }, [vstopOdprt]);
 
   /* razdeli skupni znesek na n postavk (2 decimalki, zadnja dobi zaokrozitveni ostanek — vsota se ujema do centa) */
   const razdeliZnesek = (total: number, n: number): number[] => {
@@ -528,10 +557,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         <span className="rc-mehur"><b>Iz česa nastane račun?</b><small>Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita v obrazcu. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje.</small></span>
       </div>
       <div className="rc-vstop-panel">
-        <div className="rc-segpills" role="group" aria-label="Vir računa">
-          <button type="button" aria-label="Iz ponudbe" className={vir === 'ponudba' ? 'on' : ''} onClick={() => setVir('ponudba')}>Iz ponudbe</button>
-          <button type="button" aria-label="Samostojen račun" className={vir === 'rocno' ? 'on' : ''} onClick={() => setVir('rocno')}>Samostojen račun</button>
-        </div>
+        {/* 1) VRSTA — prva izbira (Račun / Predračun) */}
         <div className="rc-vstop-vrsta">
           <span className="rc-vrsta-oznaka">Vrsta</span>
           <div className="rc-segpills rc-tip-segpills" role="group" aria-label="Vrsta dokumenta">
@@ -540,19 +566,41 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           </div>
           <small className="rc-vrsta-namig">poziv k plačilu vnaprej</small>
         </div>
+        {/* 2) PONUDBA (iskalen combobox) + DATUM IZDAJE. Izbrana ponudba => vir iz
+            ponudbe (predizpolni podatke); "Brez ponudbe" => samostojen račun. */}
         <div className="rc-polja">
-          {vir === 'ponudba' && <label className="rc-polje">Ponudba
-            <select value={offerId} onChange={event => izberiPonudbo(event.target.value)}>
-              <option value="">Izberi ponudbo …</option>
-              {offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}</option>)}
-            </select>
-          </label>}
+          <div className="rc-polje rc-combo-polje">
+            <span className="rc-combo-oznaka" id="rc-combo-oznaka">Ponudba</span>
+            <div className="rc-combo" ref={vstopComboRef}>
+              <button type="button" className="rc-combo-sprozilec" aria-haspopup="listbox" aria-expanded={vstopOdprt} aria-labelledby="rc-combo-oznaka" onClick={() => { setVstopOdprt(open => !open); setVstopIskanje(''); }}>
+                <span>{selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : 'Brez ponudbe'}</span>
+                <CaretDown size={14} weight="bold" aria-hidden />
+              </button>
+              {vstopOdprt && <div className="rc-combo-panel" onKeyDown={event => { if (event.key === 'Escape') { setVstopOdprt(false); setVstopIskanje(''); } }}>
+                <input className="rc-combo-iskalnik" type="search" autoFocus placeholder="Poišči ponudbo, stranko ali številko …" aria-label="Poišči ponudbo, stranko ali številko" value={vstopIskanje} onChange={event => setVstopIskanje(event.target.value)} />
+                <div className="rc-combo-seznam" role="listbox" aria-label="Ponudbe">
+                  <button type="button" role="option" aria-selected={!offerId} className={'rc-combo-opcija' + (!offerId ? ' on' : '')} onClick={() => izberiVVstopu('')}>
+                    <span className="rc-combo-naziv"><strong>Brez ponudbe</strong><small>Samostojen račun</small></span>
+                    {!offerId && <span className="rc-combo-kljukica" aria-hidden>✓</span>}
+                  </button>
+                  {vstopSeznam.map(offer => (
+                    <button key={offer.id} type="button" role="option" aria-selected={offerId === offer.id} className={'rc-combo-opcija' + (offerId === offer.id ? ' on' : '')} onClick={() => izberiVVstopu(offer.id)}>
+                      <span className="rc-combo-naziv"><strong>{offer.title} · {offer.client}</strong>{offer.number && <small>Št. {offer.number}</small>}</span>
+                      {offerId === offer.id && <span className="rc-combo-kljukica" aria-hidden>✓</span>}
+                    </button>
+                  ))}
+                  {!vstopSeznam.length && <p className="rc-mini rc-combo-prazno">Ni ponudb za to iskanje.</p>}
+                </div>
+                {!vstopIskanje.trim() && ponudbePoDatumu.length > 10 && <p className="rc-combo-namig">Prikazanih zadnjih 10 — išči za vse.</p>}
+              </div>}
+            </div>
+          </div>
           <label className="rc-polje">Datum izdaje
             <input type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} />
           </label>
         </div>
         <div className="rc-gumbi">
-          <button type="button" className="rc-gumb" aria-label="Pripravi račun" disabled={vir === 'ponudba' && !offerId} onClick={odpriObrazec}>{predracun ? 'Pripravi predračun →' : 'Pripravi račun →'}</button>
+          <button type="button" className="rc-gumb" aria-label="Pripravi račun" onClick={odpriObrazec}>{predracun ? 'Pripravi predračun →' : 'Pripravi račun →'}</button>
         </div>
       </div>
     </section>}
@@ -797,6 +845,28 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-vstop-vrsta .rc-segpills{margin:0}
       .rc .rc-vrsta-oznaka{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.62);margin:0 0 .4rem}
       .rc .rc-vrsta-namig{margin:.35rem 0 0;text-align:right;font-size:.72rem;color:var(--muted)}
+
+      /* ── vstopni iskalen combobox (izbira ponudbe): sprozilec izgleda kot polje,
+         panel z iskalnikom + seznam opcij se odpre pod njim ── */
+      .rc .rc-combo{position:relative}
+      .rc .rc-combo-sprozilec{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:10px;padding:.6rem .75rem;text-align:left;cursor:pointer}
+      .rc .rc-combo-sprozilec:focus{outline:none;border-color:var(--ink)}
+      .rc .rc-combo-sprozilec>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .rc .rc-combo-sprozilec svg{flex:none}
+      .rc .rc-combo-panel{position:absolute;top:calc(100% + .35rem);left:0;right:0;z-index:40;background:#fff;border:1px solid rgba(17,17,17,.12);border-radius:14px;box-shadow:0 16px 44px rgba(20,16,26,.16);padding:.55rem;text-transform:none;letter-spacing:0}
+      .rc .rc-combo-iskalnik{width:100%;box-sizing:border-box;font:inherit;font-size:16px;font-weight:500;color:var(--ink);background:rgba(255,255,255,.9);border:1px solid rgba(17,17,17,.16);border-radius:999px;padding:.5rem .9rem;margin:0 0 .35rem}
+      .rc .rc-combo-iskalnik:focus{outline:none;border-color:var(--ink)}
+      .rc .rc-combo-seznam{display:flex;flex-direction:column;max-height:15rem;overflow-y:auto}
+      .rc .rc-combo-opcija{display:flex;align-items:center;gap:.7rem;width:100%;min-height:2.7rem;padding:.5rem .5rem;border:none;border-bottom:1px solid rgba(17,17,17,.07);background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer;border-radius:8px}
+      .rc .rc-combo-opcija:last-child{border-bottom:none}
+      .rc .rc-combo-opcija:hover{background:rgba(17,17,17,.04)}
+      .rc .rc-combo-naziv{flex:1;min-width:0}
+      .rc .rc-combo-naziv strong{display:block;font-size:.9rem;font-weight:600;overflow-wrap:anywhere}
+      .rc .rc-combo-opcija.on .rc-combo-naziv strong{font-weight:800}
+      .rc .rc-combo-naziv small{display:block;margin-top:.1rem;font-size:.74rem;color:rgba(17,17,17,.55)}
+      .rc .rc-combo-kljukica{flex:none;display:grid;place-items:center;width:1.5rem;height:1.5rem;border-radius:50%;background:var(--ink);color:var(--paper);font-size:.8rem}
+      .rc .rc-combo-prazno{padding:.8rem .5rem}
+      .rc .rc-combo-namig{margin:.5rem .3rem .1rem;font-size:.72rem;color:var(--muted)}
 
       /* enako za selecte v obrazcu (Ponudba, DDV) — modulov background: jim vzame puscico */
       .rc .rc-obrazec select{background-color:oklch(100% 0 0/.8);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='m5 7.5 5 5 5-5' fill='none' stroke='%231c1815' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center !important;appearance:none}
