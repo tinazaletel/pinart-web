@@ -8,7 +8,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, PaperPlaneTilt, FloppyDisk, FilePdf } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
@@ -91,8 +91,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
      da ni hidracijske neujemljivosti; osvezi se ob spremembi ponudnika/predloge/naslova/datuma */
   const [glavaHtml, setGlavaHtml] = useState('');
   const [nogaHtml, setNogaHtml] = useState('');
-  /* checkbox namesto ločenega gumba: ob »Pošlji pogodbo« naj se priloži tudi ponudba */
-  const [priloziPonudbo, setPriloziPonudbo] = useState(false);
   /* konfeti na Zakljucku (kot pri ponudbi) — povecanje kljuca znova sprozi animacijo */
   const [konfetiKljuc, setKonfetiKljuc] = useState(0);
   const proslaviKonfeti = () => setKonfetiKljuc(k => k + 1);
@@ -510,30 +508,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
     event.currentTarget.reset();
   };
 
-  /* ── posiljanje (mailto vzorec iz kalkulatorja: kratek povzetek, PDF prilozi rocno) ── */
-  const posljiMailto = (zPonudbo: boolean) => {
-    const nar = narocnikIme();
-    const naslov = vir === 'ponudba' ? selectedOffer?.title || '' : '';
-    const podpis = [ponudnik.ime.trim(), [ponudnik.email.trim(), ponudnik.telefon.trim() && (predklic + ' ' + ponudnik.telefon.trim())].filter(Boolean).join(' · ')].filter(Boolean).join('\n');
-    const v: string[] = ['Pozdravljeni,', ''];
-    if (zPonudbo && selectedOffer) {
-      /* povzetek ponudbe zraven — stranka mora vedeti, na kaj se pogodba nanasa */
-      v.push(`pošiljam ponudbo${selectedOffer.number ? ' št. ' + selectedOffer.number : ''} in pripadajočo pogodbo o sodelovanju za projekt »${selectedOffer.title}«.`, '');
-      v.push('Povzetek ponudbe:');
-      v.push(`- Projekt: ${selectedOffer.title}`);
-      if (selectedOffer.scope.length) selectedOffer.scope.forEach(s => v.push(`- ${s}`));
-      if (selectedOffer.agreedAmount > 0) v.push(`- Vrednost: ${eur(selectedOffer.agreedAmount)}`);
-      v.push('', 'Pogodba se nanaša na zgornjo ponudbo; oba dokumenta prilagam v PDF.');
-    } else {
-      v.push(`pošiljam pogodbo o poslovnem sodelovanju${naslov ? ` za projekt »${naslov}«` : nar ? ` (${nar})` : ''}.`, '');
-      v.push('Pogodbo prilagam v PDF. Prosim, da jo pregledate; za podpis ali morebitne pripombe sem na voljo.');
-    }
-    v.push('', 'Lep pozdrav,');
-    if (podpis) v.push(podpis);
-    const zadeva = zPonudbo ? `Ponudba in pogodba${naslov ? ': ' + naslov : ''}` : `Pogodba${naslov ? ': ' + naslov : nar ? ': ' + nar : ''}`;
-    window.location.href = `mailto:${narEmail.trim()}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(v.join('\n'))}`;
-  };
-
   /* klikabilna kartica ponudbe: klik razpre povzetek obsega INLINE (brez navigacije) */
   const karticaPonudbe = (strnjena = false) => selectedOffer ? (
     <div className={'pg-kponudba' + (strnjena ? ' pg-kp-strnjena' : '')}>
@@ -807,10 +781,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
         </div>
       </div>
       <div className="pg-gumbi">
-        <button type="button" className="pg-gumb" aria-label="Pošlji pogodbo" onClick={() => { posljiMailto(vir === 'ponudba' && !!selectedOffer && priloziPonudbo); proslaviKonfeti(); }}>
-          <PaperPlaneTilt size={17} weight="bold" /> Pošlji pogodbo
-        </button>
-        {vir === 'ponudba' && selectedOffer && <label className="pg-checkbox"><input type="checkbox" checked={priloziPonudbo} onChange={event => setPriloziPonudbo(event.target.checked)} /><span>Priloži tudi ponudbo</span></label>}
         <button type="button" className="pg-gumb sek" aria-label="Shrani pogodbo" onClick={() => { shrani(); proslaviKonfeti(); }}>
           <FloppyDisk size={17} /> {shranjenaId ? 'Shranjeno ✓' : 'Shrani'}
         </button>
@@ -819,7 +789,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
         </button>
       </div>
       {napaka && <p className="pg-napaka">{napaka}</p>}
-      <p className="pg-mini" style={{ marginTop: '.7rem' }}>E-pošta odpre tvoj poštni program s pripravljenim sporočilom — PDF pogodbe (in ponudbe) pripni ročno.</p>
       {/* Pošiljanje pogodbe kar iz aplikacije (Resend) — isti HTML kot prenos/PDF. */}
       <PosljiBlok
         subject={(vrstaPog === 'nda' ? 'NDA' : 'Pogodba') + (selectedOffer?.number ? ' št. ' + selectedOffer.number : '') + (narocnikIme() ? ' — ' + narocnikIme() : '')}

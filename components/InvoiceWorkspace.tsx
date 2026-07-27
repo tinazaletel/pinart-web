@@ -14,6 +14,7 @@ import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, ty
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
+import PosljiBlok from '@/components/PosljiBlok';
 
 const K_NAST = 'pinart-kalkulator-v2';
 
@@ -478,6 +479,44 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     window.location.href = `mailto:${email}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(v.join('\n'))}`;
   };
 
+  /* trenutni racun kot FlowInvoice (iz obrazca) — za HTML dokument v posiljanju;
+     zrcali objekt iz save() BREZ shranjevanja (isti telo kot prenos/tisk) */
+  const trenutniRacun = (): FlowInvoice => ({
+    id: 'draft',
+    number: stevilka.trim(),
+    title: izracun.postavke.find(p => p.opis)?.opis?.slice(0, 90) || selectedOffer?.title,
+    client: stranka.trim() || selectedOffer?.client || 'Brez stranke',
+    amount: Math.round((avansJeDelni ? zaPlaciloAvans : izracun.zaPlacilo) * 100) / 100,
+    paid: placano,
+    date: datumIzdaje,
+    dueDays: clamp(Math.round(stev(rokDni)) || PRIVZETI_ROK_DNI, 0, 365),
+    sourceOfferId: offerId || undefined,
+    source: offerId ? 'offer' : 'manual',
+    items: izracun.postavke.filter(p => p.opis || p.cena),
+    serviceDate: datumStoritve || undefined,
+    vatPayer: ddvZavezanec,
+    net: Math.round(izracun.osnova * 100) / 100,
+    vatAmount: Math.round(izracun.ddvSkupaj * 100) / 100,
+    predracun: predracun || undefined,
+    avansPct: avansJeDelni ? avansOdstotek : undefined,
+    polnaVrednost: avansJeDelni ? Math.round(izracun.zaPlacilo * 100) / 100 : undefined,
+    signature: podpisSlika ? { image: podpisSlika, name: podpisIme.trim() || undefined, place: podpisKraj.trim() || undefined, date: podpisDatum || undefined } : undefined,
+  });
+  /* e-posta stranke iz imenika (po imenu) — privzeti prejemnik posiljanja */
+  const strankaEmail = (): string => clients.find(c => c.name.trim().toLowerCase() === stranka.trim().toLowerCase())?.email?.trim() || '';
+  /* best-effort e-maili kontaktov stranke (glavni + kontaktne osebe) za spustnik »+ kontakt« */
+  const strankaKontakti = (): string[] => {
+    const ime = stranka.trim().toLowerCase();
+    if (!ime) return [];
+    const c = clients.find(x => x.name.trim().toLowerCase() === ime);
+    if (!c) return [];
+    const zbrani: string[] = [];
+    if (c.email) zbrani.push(c.email);
+    (c.kontakti || []).forEach(k => { if (k.email) zbrani.push(k.email); });
+    const videni = new Set<string>();
+    return zbrani.filter(e => { const k = e.toLowerCase(); if (videni.has(k)) return false; videni.add(k); return true; });
+  };
+
   return <div className={`${styles.invoicePage} rc`}>
     {/* ── POGLED: PREGLED (VSTOP za nov racun — kot ContractWorkspace vstop) ── */}
     {/* vstop brez bele kartice, v ozkem sredinskem stolpcu (kot retainer rw-vsebina) — naslov strani
@@ -493,6 +532,14 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           <button type="button" aria-label="Iz ponudbe" className={vir === 'ponudba' ? 'on' : ''} onClick={() => setVir('ponudba')}>Iz ponudbe</button>
           <button type="button" aria-label="Samostojen račun" className={vir === 'rocno' ? 'on' : ''} onClick={() => setVir('rocno')}>Samostojen račun</button>
         </div>
+        <div className="rc-vstop-vrsta">
+          <span className="rc-vrsta-oznaka">Vrsta</span>
+          <div className="rc-segpills rc-tip-segpills" role="group" aria-label="Vrsta dokumenta">
+            <button type="button" aria-label="Račun" className={predracun ? '' : 'on'} onClick={() => setPredracun(false)}>Račun</button>
+            <button type="button" aria-label="Predračun" className={predracun ? 'on' : ''} onClick={() => setPredracun(true)}>Predračun</button>
+          </div>
+          <small className="rc-vrsta-namig">poziv k plačilu vnaprej</small>
+        </div>
         <div className="rc-polja">
           {vir === 'ponudba' && <label className="rc-polje">Ponudba
             <select value={offerId} onChange={event => izberiPonudbo(event.target.value)}>
@@ -503,7 +550,6 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           <label className="rc-polje">Datum izdaje
             <input type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} />
           </label>
-          <label className="rc-polje" style={{ flexDirection: 'row', alignItems: 'center', gap: '.55rem', cursor: 'pointer', fontWeight: 600 }}><input type="checkbox" checked={predracun} onChange={event => setPredracun(event.target.checked)} style={{ width: 'auto', margin: 0 }} />Predračun <span style={{ fontWeight: 400, opacity: .7, fontSize: '.8em' }}>— poziv k plačilu vnaprej</span></label>
         </div>
         <div className="rc-gumbi">
           <button type="button" className="rc-gumb" aria-label="Pripravi račun" disabled={vir === 'ponudba' && !offerId} onClick={odpriObrazec}>{predracun ? 'Pripravi predračun →' : 'Pripravi račun →'}</button>
@@ -630,6 +676,16 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
 
         <div className={styles.invoiceSubmit}><label className={styles.invoiceCheck}><input type="checkbox" checked={placano} onChange={event => setPlacano(event.target.checked)} /> {predracun ? 'Predračun je že plačan' : 'Račun je že plačan'}</label><button type="button" className="rc-poslji" onClick={() => posljiVPlacilo({ id: 'draft', number: stevilka.trim(), title: izracun.postavke[0]?.opis || undefined, client: stranka.trim(), amount: Math.round((avansJeDelni ? zaPlaciloAvans : izracun.zaPlacilo) * 100) / 100, paid: placano, date: datumIzdaje, dueDays: clamp(Math.round(stev(rokDni)) || PRIVZETI_ROK_DNI, 0, 365), avansPct: avansJeDelni ? avansOdstotek : undefined, polnaVrednost: avansJeDelni ? Math.round(izracun.zaPlacilo * 100) / 100 : undefined })}>Pošlji naročniku</button><button>{predracun ? 'Shrani predračun' : 'Shrani račun'}</button></div>
         {napaka && <p className="rc-napaka">{napaka}</p>}
+        {/* Posiljanje racuna kar iz aplikacije (Resend) — isti HTML kot prenos/tisk. */}
+        <PosljiBlok
+          subject={(predracun ? 'Predračun' : 'Račun') + (stevilka.trim() ? ' ' + stevilka.trim() : '') + (stranka.trim() ? ' — ' + stranka.trim() : '')}
+          zgradiHtml={() => doc(racunTelo(trenutniRacun()))}
+          privzetiPrejemnik={strankaEmail()}
+          imeStranke={stranka.trim()}
+          replyTo={ponudnik.email.trim() || undefined}
+          samoOgled={samoOgled}
+          kontakti={strankaKontakti()}
+        />
       </form>
     </section>}
 
@@ -736,6 +792,11 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-segpills{display:inline-flex;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:999px;padding:.25rem;gap:.15rem;margin:0 0 1.1rem}
       .rc .rc-segpills button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem .9rem;border-radius:999px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:.35rem;transition:background .18s,color .18s}
       .rc .rc-segpills button.on{background:var(--ink);color:var(--paper)}
+      /* Vrsta (Račun | Predračun) na vstopu — pilule + drobni namig pod Predračunom */
+      .rc .rc-vstop-vrsta{display:inline-flex;flex-direction:column;align-items:stretch;margin:0 0 1.1rem}
+      .rc .rc-vstop-vrsta .rc-segpills{margin:0}
+      .rc .rc-vrsta-oznaka{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.62);margin:0 0 .4rem}
+      .rc .rc-vrsta-namig{margin:.35rem 0 0;text-align:right;font-size:.72rem;color:var(--muted)}
 
       /* enako za selecte v obrazcu (Ponudba, DDV) — modulov background: jim vzame puscico */
       .rc .rc-obrazec select{background-color:oklch(100% 0 0/.8);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='m5 7.5 5 5 5-5' fill='none' stroke='%231c1815' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center !important;appearance:none}

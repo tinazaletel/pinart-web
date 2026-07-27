@@ -8,6 +8,8 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom';
 import { User, TextAa, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp, TextB, TextItalic, PenNib, Paperclip, X } from '@phosphor-icons/react';
 import { getBusinessDocumentUrl, saveRetainerDraft, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
+import { loadFlowData } from '@/lib/pinartFlowStore';
+import PosljiBlok from '@/components/PosljiBlok';
 import { OrbSfera, ORB_BARVE, ikonaZa, ORB0_CSS, osvetli } from './Orb0';
 import VidezDokumentov from './VidezDokumentov';
 import AmbientBubbles from '@/components/AmbientBubbles';
@@ -527,6 +529,22 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
     setKorak(0); setPogled('vprasanja');
   };
 
+  /* best-effort e-maili kontaktov stranke (glavni + kontaktne osebe) za spustnik
+     »+ kontakt« v bloku posiljanja; stranko poiscemo po imenu v Flow imeniku. */
+  const strankaKontakti = (): string[] => {
+    const zbrani: string[] = [];
+    if (nar.email?.trim()) zbrani.push(nar.email.trim());
+    const ime = nar.ime.trim().toLowerCase();
+    if (ime) {
+      try {
+        const c = loadFlowData().clients.find(x => x.name.trim().toLowerCase() === ime);
+        if (c) { if (c.email) zbrani.push(c.email); (c.kontakti || []).forEach(k => { if (k.email) zbrani.push(k.email); }); }
+      } catch { /* prazno */ }
+    }
+    const videni = new Set<string>();
+    return zbrani.filter(e => { const k = e.toLowerCase(); if (videni.has(k)) return false; videni.add(k); return true; });
+  };
+
   const avatarIme = imeUporabnika.trim() || ponudnik.ime.trim();
   /* User (doprsje), NE PersonSimple — ta je enaka ikoni za dostopnost. */
   const avatarVsebina = avatarIme ? avatarIme.charAt(0).toUpperCase() : <User size={19} weight="regular" />;
@@ -847,6 +865,15 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             <button type="button" className="rw-gumb sek" disabled={pdfNalaganje} onClick={() => prenesi('ponudba')}>Retainer ponudba (PDF)</button>
           </div>
           {napaka && <p className="rw-napaka">{napaka}</p>}
+          {/* Posiljanje kar iz aplikacije (Resend) — isti HTML kot prenos/PDF (trenutno prikazan dokument). */}
+          <PosljiBlok
+            subject={'Retainer' + (nar.ime.trim() ? ' — ' + nar.ime.trim() : '')}
+            zgradiHtml={() => doc(izvozniTelo())}
+            privzetiPrejemnik={nar.email}
+            imeStranke={nar.ime.trim()}
+            replyTo={ponudnik.email.trim() || undefined}
+            kontakti={strankaKontakti()}
+          />
           <div className="rw-koncna-nav">
             <button type="button" className="rw-povezava" onClick={urediOdZacetka}>← Uredi od začetka</button>
             <button type="button" className="rw-povezava" onClick={novaPonudba}>↺ Nova ponudba</button>
