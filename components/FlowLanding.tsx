@@ -86,7 +86,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       const docH = document.documentElement.scrollHeight;
       const frac = Math.min(1, Math.max(0, y / (docH - vh)));
       // trajektorija: kepa pade z mize (hero) -> zraste -> plava po desni -> pade v kos
-      const deskX = vw * 0.74, deskY = vh * 0.6;
+      const deskX = vw * 0.74 + 40, deskY = vh * 0.6 - 40;
       const bandX = vw * 0.82, bandY = vh * 0.42;
       const fallEnd = vh * 0.95;   // padec z mize se zgodi v prvem zaslonu (v pikslih, ne % strani)
       let x: number, ty: number, scale: number, op = 1;
@@ -107,10 +107,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       else if (frac >= 0.6) shape = 2;     // ladjica
       else if (frac >= 0.38) shape = 1;    // ptic
       let oBall = shape === 0 ? 1 : 0, oBird = shape === 1 ? 1 : 0, oBoat = shape === 2 ? 1 : 0;
-      for (const b of [0.38, 0.6, 0.78]) {
-        const dist = Math.abs(frac - b);
-        if (dist < 0.04) scale *= 0.35 + (dist / 0.04) * 0.65;   // skrci blizu menjave oblike
-      }
+      // brez skrcenja med liki — ptic in ladjica sta iste velikosti kot kepa; zmanjsa se sele ob padcu v kos
       const kos = kosRef.current;
       if (kos) {
         const r = kos.getBoundingClientRect();
