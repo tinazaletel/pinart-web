@@ -330,12 +330,37 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
         /* Vmesna sekcija z vrtečim laptopom */
         .fl-laptop { margin: 9.85rem 0 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
-        @media (max-width: 860px) { .fl-laptop { grid-template-columns: 1fr; gap: 1.5rem; } }
+        @media (max-width: 860px) { .fl-laptop { grid-template-columns: 1fr; gap: 1.5rem; } .fl-laptop-vizual { order: 0; } }
         .fl-laptop-txt .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
         .fl-laptop-txt h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 4.4vw, 3rem); line-height: 1.08; letter-spacing: -.01em; margin: .6rem 0 1rem; max-width: 18ch; }
         .fl-laptop-txt h2 em { font-style: italic; color: var(--accent); }
         .fl-laptop-txt p { font-size: 1.02rem; line-height: 1.6; color: rgba(17,17,17,.76); max-width: 42ch; margin: 0; }
-        .fl-laptop-vizual { display: flex; justify-content: center; }
+        .fl-laptop-vizual { display: flex; justify-content: center; align-items: center; order: -1; }
+        .fl-lap { position: relative; width: min(100%, 560px); }
+        .fl-lap-img { display: block; width: 100%; height: auto; }
+        /* Zaslon laptopa (celni pogled) — usklajeno s sliko laptop-a.png. */
+        .fl-lap-screen { position: absolute; top: 31%; left: 30%; width: 41%; height: 26%; overflow: hidden; border-radius: 5px; background: #fbfaff; }
+        .fl-lap-ui { position: absolute; inset: 0; background: #fbfaff; padding: 7% 8%; display: flex; flex-direction: column; gap: 7%; opacity: 0; animation: lapCycle 12s infinite; }
+        .fl-lap-ui.u1 { animation-delay: 0s; }
+        .fl-lap-ui.u2 { animation-delay: 4s; }
+        .fl-lap-ui.u3 { animation-delay: 8s; }
+        @keyframes lapCycle { 0% { opacity: 0; } 3% { opacity: 1; } 30% { opacity: 1; } 33% { opacity: 0; } 100% { opacity: 0; } }
+        .fl-lap-bar { display: flex; gap: 5%; }
+        .fl-lap-bar i { height: 7px; border-radius: 3px; background: oklch(88% .03 297); flex: 1; }
+        .fl-lap-bar i:first-child { flex: 2; background: oklch(66% .18 297); }
+        .fl-lap-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5%; flex: 1; }
+        .fl-lap-cards span { border-radius: 5px; background: linear-gradient(135deg, oklch(93% .05 297), oklch(93% .05 165)); }
+        .fl-lap-cards span:nth-child(2) { background: linear-gradient(135deg, oklch(93% .05 330), oklch(93% .05 90)); }
+        .fl-lap-chart { height: 28%; border-radius: 5px; background: repeating-linear-gradient(90deg, oklch(66% .18 297) 0 7%, transparent 7% 15%); opacity: .75; }
+        .fl-lap-doc { display: flex; flex-direction: column; gap: 8%; height: 100%; justify-content: center; }
+        .fl-lap-doc b { height: 7px; border-radius: 3px; background: oklch(86% .03 297); }
+        .fl-lap-doc b:nth-child(2) { width: 80%; }
+        .fl-lap-doc b:nth-child(3) { width: 55%; }
+        .fl-lap-doc em { margin-top: 6%; font-style: normal; font-weight: 800; font-size: .58rem; color: #fff; background: oklch(24% .016 285); border-radius: 999px; padding: 2px 7px; align-self: flex-start; }
+        .fl-lap-cal { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6%; height: 100%; }
+        .fl-lap-cal i { border-radius: 3px; background: oklch(92% .02 297); }
+        .fl-lap-cal i.on { background: oklch(66% .18 297); }
+        @media (prefers-reduced-motion: reduce) { .fl-lap-ui { animation: none; } .fl-lap-ui.u1 { opacity: 1; } }
         .fl-rl { width: 100%; max-width: 560px; aspect-ratio: 4 / 3; }
         @media (max-width: 860px) { .fl-rl { max-width: 440px; } }
 
@@ -720,7 +745,22 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             </p>
           </div>
           <div className="fl-laptop-vizual" aria-hidden>
-            <RotatingLaptop className="fl-rl" />
+            <div className="fl-lap">
+              <img className="fl-lap-img" src="/flow/laptop-a.png?v=2" alt="" />
+              <div className="fl-lap-screen">
+                <div className="fl-lap-ui u1">
+                  <div className="fl-lap-bar"><i /><i /><i /></div>
+                  <div className="fl-lap-cards"><span /><span /><span /></div>
+                  <div className="fl-lap-chart" />
+                </div>
+                <div className="fl-lap-ui u2">
+                  <div className="fl-lap-doc"><b /><b /><b /><em>1.850 €</em></div>
+                </div>
+                <div className="fl-lap-ui u3">
+                  <div className="fl-lap-cal"><i /><i /><i /><i className="on" /><i /><i /><i /><i /><i /><i /><i /><i /></div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
