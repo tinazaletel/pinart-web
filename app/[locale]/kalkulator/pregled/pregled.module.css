@@ -348,19 +348,20 @@
 .document_contract { background: oklch(93% .055 163); color: oklch(55% .15 164); }
 .document_invoice { background: oklch(94% .055 62); color: oklch(62% .18 48); }
 .document_expense { background: oklch(91% .012 55); color: var(--ink); }
-.statusPill { display: inline-flex; align-items: center; gap: .42rem; width: max-content; padding: .38rem .72rem; border: 1px solid oklch(86% .012 87); border-radius: 999px; background: oklch(95% .01 87); color: oklch(40% .02 70); font-size: .55rem; font-weight: 700; white-space: nowrap; }
+.statusPill { display: inline-flex; align-items: center; gap: .42rem; width: max-content; padding: .38rem .72rem; border: 1px solid var(--pill-line, oklch(86% .012 87)); border-radius: 999px; background: var(--pill-bg, oklch(95% .01 87)); color: var(--pill-ink, oklch(40% .02 70)); font-size: .55rem; font-weight: 700; white-space: nowrap; }
 .statusPill::before { content: ''; width: .48rem; height: .48rem; border-radius: 50%; background: var(--dot, oklch(62% .02 70)); flex: none; }
-.status_waiting { --dot: oklch(72% .16 75); }
-.status_success { --dot: oklch(62% .15 150); }
-.status_danger { --dot: oklch(58% .19 25); }
-.status_neutral { --dot: oklch(62% .02 70); }
+/* statusni toni v mehkem CGP — obarvano ozadje + tekst, kot KPI kartice */
+.status_waiting { --dot: oklch(70% .16 75); --pill-bg: oklch(95.5% .05 82); --pill-ink: oklch(50% .12 68); --pill-line: oklch(89% .06 82); }
+.status_success { --dot: oklch(60% .15 152); --pill-bg: oklch(95% .05 158); --pill-ink: oklch(47% .11 158); --pill-line: oklch(88% .07 158); }
+.status_danger { --dot: oklch(57% .19 25); --pill-bg: oklch(95.5% .045 28); --pill-ink: oklch(52% .15 27); --pill-line: oklch(89% .06 28); }
+.status_neutral { --dot: oklch(62% .02 70); --pill-bg: oklch(95% .01 87); --pill-ink: oklch(44% .02 70); --pill-line: oklch(88% .012 87); }
 /* !important pri padding IN background-position je nujen: .shell select (vrstica 35) ima
    padding-right:3rem !important in background-position:right 1rem center !important, kar je
    (a) piko potisnilo na DESNO cez puscico in (b) odrezalo napis ("Placano" -> "Plac"). */
-.historyTable select.statusPill { width: max-content; min-width: 0; max-width: 100%; padding: .38rem 1.65rem .38rem 1.38rem !important; border: 1px solid oklch(86% .012 87); appearance: none; background-color: oklch(95% .01 87); color: oklch(40% .02 70); background-image: radial-gradient(circle, var(--dot, oklch(62% .02 70)) 42%, transparent 46%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%235b554d' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: left .62rem center, right .55rem center !important; background-size: .5rem .5rem, 12px 12px; background-repeat: no-repeat, no-repeat; font: 700 .55rem var(--font-sans), sans-serif; cursor: pointer; }
+.historyTable select.statusPill { width: max-content; min-width: 0; max-width: 100%; padding: .38rem 1.3rem .38rem 1.2rem !important; border: 1px solid var(--pill-line, oklch(86% .012 87)); appearance: none; background-color: var(--pill-bg, oklch(95% .01 87)); color: var(--pill-ink, oklch(40% .02 70)); background-image: radial-gradient(circle, var(--dot, oklch(62% .02 70)) 42%, transparent 46%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%235b554d' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: left .55rem center, right .45rem center !important; background-size: .5rem .5rem, 11px 11px; background-repeat: no-repeat, no-repeat; font: 700 .55rem var(--font-sans), sans-serif; cursor: pointer; }
 /* Onemogocena (demo predogled) mora biti VIDNO drugacna — prej je imela opacity:1 in je
    izgledala enako kot delujoca, zato je bilo videti, kot da izbira ne dela. */
-.historyTable select.statusPill:disabled { cursor: not-allowed; opacity: .55; background-image: radial-gradient(circle, var(--dot, oklch(62% .02 70)) 42%, transparent 46%) !important; padding-right: .9rem !important; }
+.historyTable select.statusPill:disabled { cursor: not-allowed; opacity: .7; background-image: radial-gradient(circle, var(--dot, oklch(62% .02 70)) 42%, transparent 46%) !important; padding-right: .75rem !important; }
 .rowArrow { display: grid; place-items: center; width: 1.8rem; aspect-ratio: 1; border: 0; border-radius: 50%; background: transparent; color: color-mix(in oklch, var(--ink) 52%, transparent); font-size: 1.45rem; cursor: pointer; transition: background 160ms ease, transform 160ms ease; }
 .rowArrow:hover { background: oklch(92% .025 87); transform: translateX(2px); }
 .openAll { width: 100%; display: flex; align-items: center; gap: .55rem; padding: .9rem 1rem; border: 0; border-top: 1px solid color-mix(in oklch, var(--ink) 10%, transparent); background: oklch(98% .008 87); color: var(--ink); font: 750 .62rem var(--font-sans), sans-serif; cursor: pointer; }
@@ -950,7 +951,7 @@
 .historyTable select.status_waiting,
 .historyTable select.status_success,
 .historyTable select.status_danger,
-.historyTable select.status_neutral { border-color: oklch(86% .012 87); background-color: oklch(95% .01 87); color: oklch(40% .02 70); }
+.historyTable select.status_neutral { border-color: var(--pill-line); background-color: var(--pill-bg); color: var(--pill-ink); }
 
 .pulse { display: grid; grid-template-columns: minmax(15rem, 1.55fr) repeat(2, minmax(8rem, .7fr)) minmax(12rem, 1fr); gap: .7rem; margin-top: 2rem; padding: .7rem; border: 1px solid color-mix(in oklch, var(--ink) 6%, transparent); border-radius: 1.8rem; background: oklch(92% .012 80 / .92); box-shadow: 0 1.5rem 4rem oklch(20% .02 55 / .08); }
 .pulse > * { min-width: 0; padding: 1.4rem; border-radius: 1.15rem; background: oklch(98% .01 87); }
