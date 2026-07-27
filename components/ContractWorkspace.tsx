@@ -25,6 +25,31 @@ const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;
 const eur = (n: number) => Math.round(n).toLocaleString('sl-SI') + ' €';
 const datStr = (d: Date) => `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}`;
 
+/* vrste pogodb (skupina A): navadna pogodba o sodelovanju + 5 dodatnih.
+   naziv = naslov v dokumentu (h1), slug = predpona imena datoteke, kick = eyebrow (velike crke). */
+type VrstaPog = 'sodelovanje' | 'podjemna' | 'avtorska' | 'licencna' | 'nda' | 'dpa';
+const VRSTE_POG: { id: VrstaPog; label: string; naziv: string; slug: string; kick: string }[] = [
+  { id: 'sodelovanje', label: 'Sodelovanje', naziv: 'Pogodba o poslovnem sodelovanju', slug: 'pogodba', kick: 'POGODBA' },
+  { id: 'podjemna', label: 'Podjemna', naziv: 'Podjemna pogodba', slug: 'podjemna', kick: 'PODJEMNA POGODBA' },
+  { id: 'avtorska', label: 'Avtorska', naziv: 'Avtorska pogodba', slug: 'avtorska', kick: 'AVTORSKA POGODBA' },
+  { id: 'licencna', label: 'Licenčna', naziv: 'Licenčna pogodba', slug: 'licencna', kick: 'LICENČNA POGODBA' },
+  { id: 'nda', label: 'NDA', naziv: 'Sporazum o varovanju zaupnih podatkov (NDA)', slug: 'nda', kick: 'NDA' },
+  { id: 'dpa', label: 'DPA', naziv: 'Pogodba o obdelavi osebnih podatkov (DPA)', slug: 'dpa', kick: 'DPA' },
+];
+
+/* posamezen clen dokumenta; opcijski cleni se dajo vklopiti/izklopiti, stevilcenje se prilagodi samo */
+type Clen = { id: string; naslov: string; telo: string; opcijski?: boolean };
+/* opcijski cleni, ki so ob preklopu na vrsto PRIVZETO IZKLOPLJENI */
+const PRIVZETO_IZKLOP: Record<VrstaPog, string[]> = {
+  sodelovanje: ['sod-konkurenca', 'sod-kazen'],
+  podjemna: ['pod-kazen'],
+  avtorska: ['avt-tantieme'],
+  licencna: ['lic-podlicence', 'lic-porocanje'],
+  nda: [],
+  dpa: ['dpa-prenos'],
+};
+const privzetoIzklop = (v: VrstaPog) => new Set<string>(PRIVZETO_IZKLOP[v]);
+
 export default function ContractWorkspace({ base }: { base: string }) {
   /* pod 640px orodjarna postane slide-up predal (kot retainer) */
   const [jeMobilni, setJeMobilni] = useState(false);
@@ -53,7 +78,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const [pogled, setPogled] = useState<'nastavitve' | 'dokument' | 'zakljucek'>('nastavitve');
   /* vrsta dokumenta: navadna pogodba o sodelovanju ali NDA (sporazum o varovanju zaupnih podatkov).
      Privzeto 'sodelovanje' = obstojece obnasanje nespremenjeno. */
-  const [vrstaPog, setVrstaPog] = useState<'sodelovanje' | 'nda'>('sodelovanje');
+  const [vrstaPog, setVrstaPog] = useState<VrstaPog>('sodelovanje');
+  /* izklopljeni opcijski cleni (po id) za trenutno vrsto; ob menjavi vrste se ponastavi na privzeto */
+  const [izklKlavzule, setIzklKlavzule] = useState<Set<string>>(() => privzetoIzklop('sodelovanje'));
   const [offerId, setOfferId] = useState('');
   /* pot "Od stranke" (naloz. dokument) je locena od ustvarjanja — vklopi se s povezavo, ne s pilulo */
   const [odStranke, setOdStranke] = useState(false);
@@ -195,64 +222,136 @@ export default function ContractWorkspace({ base }: { base: string }) {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [ponudnik, dokBarva, dokFont, rocniNarocnik, vir, offerId, datum]);
 
-  /* besedilo clenov = vsebinsko ista pogodba kot prej (13 clenov), le v HTML
-     obliki dokumenta (.pog-clen), da jo urejevalnik in PDF prikazeta kot retainer */
-  const pogodbaHtml = () => {
-    const nar = narocnikIme() || '[Naročnik]';
-    const izv = [ponudnik.ime.trim() || '[Izvajalec]', ponudnik.naslov.trim(), ponudnik.davcna.trim() && ('davčna št. ' + ponudnik.davcna.trim()), ponudnik.trr.trim() && ('TRR ' + ponudnik.trr.trim())].filter(Boolean).join(', ');
+  /* ── model clenov po vrstah: vsak clen je Clen objekt (naslov + HTML telo);
+     opcijski cleni se dajo vklopiti/izklopiti, stevilcenje se prilagodi samo.
+     Za 'sodelovanje' in 'nda' je besedilo DOBESEDNO enako prejsnjim generatorjem. ── */
+  const cleniZaVrsto = (v: VrstaPog): Clen[] => {
     const st = vir === 'ponudba' ? selectedOffer?.number || '' : '';
     const naslovProj = vir === 'ponudba' ? selectedOffer?.title || '' : '';
     const obseg = obsegSeznam();
     const obsegHtml = obseg.length ? `<ul>${obseg.map(s => `<li>${esc(s)}</li>`).join('')}</ul>` : '<ul><li>skladno s potrjeno ponudbo</li></ul>';
     const znesek = vir === 'ponudba' && selectedOffer && selectedOffer.agreedAmount > 0 ? ` Dogovorjena vrednost po ponudbi znaša ${eur(selectedOffer.agreedAmount)}.` : '';
-    const d = datum ? new Date(datum + 'T00:00:00') : new Date();
-    return `
-      <div class="kick">Pogodba o poslovnem sodelovanju${st ? ' · ponudba št. ' + esc(st) : ''}</div>
-      <h1>Pogodba o poslovnem sodelovanju</h1>
-      <p class="meta">Datum: ${datStr(d)}${nar !== '[Naročnik]' ? ' · z: ' + esc(nar) : ''}</p>
-      <div class="parties" style="margin-top:14px"><p>ki jo skleneta</p><p><b>Naročnik:</b> ${esc(nar)}</p><p>in</p><p><b>Izvajalec:</b> ${esc(izv)}</p><p>kot sledi:</p></div>
-      <div class="pog-clen"><h2>1. člen — Uvodna določba</h2><p>Pogodbeni stranki ugotavljata, da ima izvajalec znanje in izkušnje za izvedbo dogovorjenih storitev ter da želita s pogodbo urediti medsebojne pravice in obveznosti. Izvajalec delo opravlja samostojno in ni v delovnem razmerju z naročnikom.</p></div>
-      <div class="pog-clen"><h2>2. člen — Predmet pogodbe</h2><p>Predmet pogodbe je ${naslovProj ? 'izvedba projekta »' + esc(naslovProj) + '« in ' : ''}izvedba naslednjih storitev:</p>${obsegHtml}<p>${st ? `Potrjena ponudba št. ${esc(st)} je sestavni del pogodbe. ` : ''}Dela zunaj navedenega obsega se pred izvedbo dodatno ovrednotijo in pisno potrdijo.</p></div>
-      <div class="pog-clen"><h2>3. člen — Način in kakovost dela</h2><p>Izvajalec se zavezuje delo opraviti strokovno, skrbno in v interesu kakovostne izvedbe. Naročnik pravočasno zagotovi informacije, materiale, dostope in potrditve. Izvajalec lahko vključi ustrezno usposobljene podizvajalce in odgovarja za njihovo delo.</p></div>
-      <div class="pog-clen"><h2>4. člen — Roki izvedbe</h2><p>Roki veljajo, kot so določeni v ponudbi oziroma naknadno pisno dogovorjeni. Zamude naročnika pri posredovanju gradiv ali potrditvah ustrezno podaljšajo rok izvedbe.</p></div>
-      <div class="pog-clen"><h2>5. člen — Cena storitev in način plačila</h2><p>Cena, način obračuna, predplačilo in plačilni roki veljajo skladno s potrjeno ponudbo.${znesek} Dodatne storitve in potrjeni dodatni stroški se obračunajo posebej. Ob zamudi lahko izvajalec obračuna zakonske zamudne obresti.</p></div>
-      <div class="pog-clen"><h2>6. člen — Obveznosti naročnika</h2><p>Naročnik zagotovi potrebna gradiva in povratne informacije, potrjuje posamezne faze ter poravna račune v dogovorjenih rokih.</p></div>
-      <div class="pog-clen"><h2>7. člen — Obveznosti izvajalca</h2><p>Izvajalec pogodbena dela izvede strokovno, naročnika obvešča o okoliščinah, ki vplivajo na izvedbo, ter omogoči pregled dogovorjenih faz projekta.</p></div>
-      <div class="pog-clen"><h2>8. člen — Varovanje podatkov</h2><p>Pogodbeni stranki varujeta poslovne, osebne in druge zaupne podatke, s katerimi se seznanita pri sodelovanju, tudi po prenehanju pogodbe.</p></div>
-      <div class="pog-clen"><h2>9. člen — Avtorske pravice</h2><p>Obseg prenosa oziroma licence avtorskih pravic velja, kot je določen v potrjeni ponudbi. Dogovorjene pravice se na naročnika prenesejo po celotnem plačilu. Delovne datoteke, neizbrane rešitve in sredstva tretjih oseb niso vključeni, če ni pisno dogovorjeno drugače.</p></div>
-      <div class="pog-clen"><h2>10. člen — Trajanje in prenehanje pogodbe</h2><p>Pogodba velja od podpisa obeh strank do izpolnitve vseh dogovorjenih obveznosti. Vsaka stranka lahko odstopi ob bistveni kršitvi, če druga stranka kršitve ne odpravi v primernem pisno določenem roku.</p></div>
-      <div class="pog-clen"><h2>11. člen — Spremembe pogodbe</h2><p>Spremembe in dopolnitve so veljavne le v pisni obliki. Potrditve po elektronski pošti se štejejo kot pisni dogovor, kadar jasno določajo spremembo obsega, roka ali cene.</p></div>
-      <div class="pog-clen"><h2>12. člen — Reševanje sporov</h2><p>Stranki bosta morebitne spore reševali sporazumno. Če to ne bo mogoče, je pristojno stvarno pristojno sodišče v kraju izvajalca, če prisilni predpisi ne določajo drugače.</p></div>
-      <div class="pog-clen"><h2>13. člen — Končne določbe</h2><p>Pogodba je sestavljena v dveh enakih izvodih oziroma podpisana elektronsko. Sklenjena je z dnem podpisa obeh pogodbenih strank.</p></div>
-      <p style="margin-top:12px">Kraj in datum: ____________________</p>
-      <div class="sig"><div><span>Naročnik</span><span class="lin"></span>${esc(nar !== '[Naročnik]' ? nar : '')}</div><div><span>Izvajalec</span><span class="lin"></span>${esc(ponudnik.ime.trim() || '')}</div></div>`;
+    const ponudbaDel = st ? `Potrjena ponudba št. ${esc(st)} je sestavni del pogodbe. ` : '';
+    const sporiTelo = '<p>Stranki bosta morebitne spore reševali sporazumno. Če to ne bo mogoče, je pristojno stvarno pristojno sodišče v kraju izvajalca, če prisilni predpisi ne določajo drugače.</p>';
+    const koncneTelo = '<p>Spremembe in dopolnitve so veljavne le v pisni obliki. Pogodba je sestavljena v dveh enakih izvodih oziroma podpisana elektronsko in začne veljati z dnem podpisa obeh strank.</p>';
+
+    switch (v) {
+      case 'sodelovanje':
+        return [
+          { id: 'sod-uvod', naslov: 'Uvodna določba', telo: '<p>Pogodbeni stranki ugotavljata, da ima izvajalec znanje in izkušnje za izvedbo dogovorjenih storitev ter da želita s pogodbo urediti medsebojne pravice in obveznosti. Izvajalec delo opravlja samostojno in ni v delovnem razmerju z naročnikom.</p>' },
+          { id: 'sod-predmet', naslov: 'Predmet pogodbe', telo: `<p>Predmet pogodbe je ${naslovProj ? 'izvedba projekta »' + esc(naslovProj) + '« in ' : ''}izvedba naslednjih storitev:</p>${obsegHtml}<p>${ponudbaDel}Dela zunaj navedenega obsega se pred izvedbo dodatno ovrednotijo in pisno potrdijo.</p>` },
+          { id: 'sod-kakovost', naslov: 'Način in kakovost dela', telo: '<p>Izvajalec se zavezuje delo opraviti strokovno, skrbno in v interesu kakovostne izvedbe. Naročnik pravočasno zagotovi informacije, materiale, dostope in potrditve. Izvajalec lahko vključi ustrezno usposobljene podizvajalce in odgovarja za njihovo delo.</p>' },
+          { id: 'sod-roki', naslov: 'Roki izvedbe', telo: '<p>Roki veljajo, kot so določeni v ponudbi oziroma naknadno pisno dogovorjeni. Zamude naročnika pri posredovanju gradiv ali potrditvah ustrezno podaljšajo rok izvedbe.</p>' },
+          { id: 'sod-cena', naslov: 'Cena storitev in način plačila', telo: `<p>Cena, način obračuna, predplačilo in plačilni roki veljajo skladno s potrjeno ponudbo.${znesek} Dodatne storitve in potrjeni dodatni stroški se obračunajo posebej. Ob zamudi lahko izvajalec obračuna zakonske zamudne obresti.</p>` },
+          { id: 'sod-obvez-nar', naslov: 'Obveznosti naročnika', telo: '<p>Naročnik zagotovi potrebna gradiva in povratne informacije, potrjuje posamezne faze ter poravna račune v dogovorjenih rokih.</p>' },
+          { id: 'sod-obvez-izv', naslov: 'Obveznosti izvajalca', telo: '<p>Izvajalec pogodbena dela izvede strokovno, naročnika obvešča o okoliščinah, ki vplivajo na izvedbo, ter omogoči pregled dogovorjenih faz projekta.</p>' },
+          { id: 'sod-varovanje', naslov: 'Varovanje podatkov', opcijski: true, telo: '<p>Pogodbeni stranki varujeta poslovne, osebne in druge zaupne podatke, s katerimi se seznanita pri sodelovanju, tudi po prenehanju pogodbe.</p>' },
+          { id: 'sod-avtorske', naslov: 'Avtorske pravice', opcijski: true, telo: '<p>Obseg prenosa oziroma licence avtorskih pravic velja, kot je določen v potrjeni ponudbi. Dogovorjene pravice se na naročnika prenesejo po celotnem plačilu. Delovne datoteke, neizbrane rešitve in sredstva tretjih oseb niso vključeni, če ni pisno dogovorjeno drugače.</p>' },
+          { id: 'sod-trajanje', naslov: 'Trajanje in prenehanje pogodbe', telo: '<p>Pogodba velja od podpisa obeh strank do izpolnitve vseh dogovorjenih obveznosti. Vsaka stranka lahko odstopi ob bistveni kršitvi, če druga stranka kršitve ne odpravi v primernem pisno določenem roku.</p>' },
+          { id: 'sod-spremembe', naslov: 'Spremembe pogodbe', telo: '<p>Spremembe in dopolnitve so veljavne le v pisni obliki. Potrditve po elektronski pošti se štejejo kot pisni dogovor, kadar jasno določajo spremembo obsega, roka ali cene.</p>' },
+          { id: 'sod-konkurenca', naslov: 'Konkurenčna prepoved', opcijski: true, telo: '<p>Izvajalec v času sodelovanja in 12 mesecev po njegovem prenehanju brez pisnega soglasja naročnika ne bo opravljal enakih storitev za neposredne konkurente naročnika na način, ki bi izkoriščal zaupne podatke ali gradiva, pridobljena pri tem sodelovanju. Ta določba ne omejuje izvajalčeve splošne poklicne dejavnosti.</p>' },
+          { id: 'sod-kazen', naslov: 'Pogodbena kazen', opcijski: true, telo: '<p>Če izvajalec po svoji krivdi zamudi z izvedbo dogovorjenih del, lahko naročnik zaračuna pogodbeno kazen v višini 0,5 % vrednosti zamujenih del za vsak dan zamude, skupno največ 10 % pogodbene vrednosti. Uveljavljanje pogodbene kazni ne izključuje pravice do povrnitve škode v presežnem znesku.</p>' },
+          { id: 'sod-spori', naslov: 'Reševanje sporov', telo: sporiTelo },
+          { id: 'sod-koncne', naslov: 'Končne določbe', telo: '<p>Pogodba je sestavljena v dveh enakih izvodih oziroma podpisana elektronsko. Sklenjena je z dnem podpisa obeh pogodbenih strank.</p>' },
+        ];
+      case 'podjemna':
+        return [
+          { id: 'pod-uvod', naslov: 'Uvodna določba', telo: '<p>Pogodbeni stranki ugotavljata, da naročnik naroča, izvajalec pa prevzema izvedbo posameznega, po obsegu in vsebini določenega dela (podjema). Izvajalec delo opravlja samostojno, po pravilih stroke ter v svojem imenu in za svoj račun in ni v delovnem razmerju z naročnikom.</p>' },
+          { id: 'pod-predmet', naslov: 'Predmet in obseg del', telo: `<p>Predmet pogodbe je ${naslovProj ? 'izvedba projekta »' + esc(naslovProj) + '« oziroma ' : ''}izvedba naslednjih del:</p>${obsegHtml}<p>${ponudbaDel}Dela, ki presegajo dogovorjeni obseg, se pred izvedbo posebej ovrednotijo in pisno potrdijo.</p>` },
+          { id: 'pod-roki', naslov: 'Roki', telo: '<p>Izvajalec dela dokonča v rokih, določenih v ponudbi oziroma naknadno pisno dogovorjenih. Če naročnik zamuja z izročitvijo gradiv, potrditvami ali plačili, se roki ustrezno podaljšajo.</p>' },
+          { id: 'pod-cena', naslov: 'Cena in plačilo', telo: `<p>Za opravljeno delo pripada izvajalcu plačilo (podjemnina), kot je določeno v potrjeni ponudbi.${znesek} Plačilo zapade v dogovorjenem roku po izstavitvi računa. Ob zamudi lahko izvajalec zaračuna zakonske zamudne obresti.</p>` },
+          { id: 'pod-prevzem', naslov: 'Prevzem in reklamacije', telo: '<p>Naročnik po dokončanju delo pregleda in o morebitnih očitnih napakah izvajalca pisno obvesti brez nepotrebnega odlašanja, sicer se šteje, da je delo prevzeto brez pripomb. Izvajalec za stvarne napake jamči po pravilih obligacijskega prava in jih v primernem roku brezplačno odpravi.</p>' },
+          { id: 'pod-obvez', naslov: 'Obveznosti naročnika', telo: '<p>Naročnik izvajalcu pravočasno zagotovi vsa potrebna gradiva, informacije, dostope in soglasja, sproti potrjuje posamezne faze ter poravna račune v dogovorjenih rokih.</p>' },
+          { id: 'pod-avtorske', naslov: 'Avtorske pravice', opcijski: true, telo: '<p>Materialne avtorske pravice na avtorskih delih, nastalih pri izvedbi, se v dogovorjenem obsegu prenesejo na naročnika po celotnem plačilu podjemnine. Delovne datoteke, neizbrane rešitve in gradiva tretjih oseb v prenos niso vključeni, če ni pisno dogovorjeno drugače.</p>' },
+          { id: 'pod-varovanje', naslov: 'Varovanje podatkov', opcijski: true, telo: '<p>Pogodbeni stranki varujeta poslovne, osebne in druge zaupne podatke, s katerimi se seznanita pri izvedbi del, ter jih ne razkrivata tretjim osebam, tudi po prenehanju pogodbe.</p>' },
+          { id: 'pod-odstop', naslov: 'Odstop od pogodbe', telo: '<p>Vsaka stranka lahko odstopi od pogodbe ob bistveni kršitvi druge stranke, če ta kršitve ne odpravi v primernem, pisno določenem roku. Ob odstopu izvajalcu pripada plačilo za že opravljena in prevzeta dela.</p>' },
+          { id: 'pod-kazen', naslov: 'Pogodbena kazen', opcijski: true, telo: '<p>Če izvajalec po svoji krivdi zamudi z dokončanjem del, lahko naročnik zaračuna pogodbeno kazen v višini 0,5 % vrednosti zamujenih del za vsak dan zamude, skupno največ 10 % pogodbene vrednosti. Uveljavljanje pogodbene kazni ne izključuje pravice do povrnitve škode v presežnem znesku.</p>' },
+          { id: 'pod-spori', naslov: 'Reševanje sporov', telo: sporiTelo },
+          { id: 'pod-koncne', naslov: 'Končne določbe', telo: '<p>Spremembe in dopolnitve so veljavne le v pisni obliki. Pogodba je sestavljena v dveh enakih izvodih oziroma podpisana elektronsko in začne veljati z dnem podpisa obeh strank.</p>' },
+        ];
+      case 'avtorska':
+        return [
+          { id: 'avt-uvod', naslov: 'Uvodna določba', telo: '<p>Pogodbeni stranki ugotavljata, da je izvajalec (v nadaljevanju: avtor) avtor spodaj opredeljenega avtorskega dela in da želita s to pogodbo urediti prenos avtorskih pravic ter medsebojne pravice in obveznosti.</p>' },
+          { id: 'avt-predmet', naslov: 'Predmet — avtorsko delo', telo: `<p>Predmet pogodbe je avtorsko delo${naslovProj ? ' »' + esc(naslovProj) + '«' : ''}, ki obsega:</p>${obsegHtml}<p>${ponudbaDel}Delo mora biti izvirna intelektualna stvaritev avtorja.</p>` },
+          { id: 'avt-prenos', naslov: 'Prenos materialnih avtorskih pravic', telo: '<p>Avtor na naročnika prenese materialne avtorske pravice za uporabo dela v dogovorjenem obsegu (zlasti pravico reproduciranja, distribuiranja in dajanja na voljo javnosti). Če ni pisno dogovorjeno drugače, je prenos neizključen, pravice pa preidejo na naročnika šele po celotnem plačilu honorarja. Prenos ne zajema delovnih datotek, neizbranih rešitev in gradiv tretjih oseb.</p>' },
+          { id: 'avt-moralne', naslov: 'Moralne pravice avtorja', telo: '<p>Moralne avtorske pravice so neprenosljive in ostanejo avtorju. Naročnik dela ne sme skaziti ali ga uporabiti na način, ki bi žalil avtorjevo čast ali ugled.</p>' },
+          { id: 'avt-honorar', naslov: 'Honorar in nadomestilo', telo: `<p>Za ustvarjeno delo in prenos pravic pripada avtorju honorar, kot je določen v potrjeni ponudbi.${znesek} Honorar zapade v plačilo v dogovorjenem roku po izstavitvi računa.</p>` },
+          { id: 'avt-atribucija', naslov: 'Navedba avtorstva', opcijski: true, telo: '<p>Naročnik pri javni uporabi dela na običajen in primeren način navede avtorstvo (ime oziroma oznako avtorja), razen kadar to zaradi narave uporabe ni mogoče.</p>' },
+          { id: 'avt-portfelj', naslov: 'Uporaba v portfelju avtorja', opcijski: true, telo: '<p>Avtor sme delo ali njegove dele uporabiti kot referenco v svojem portfelju in pri predstavitvi svojega dela, pri čemer upošteva morebitne zaupne podatke naročnika.</p>' },
+          { id: 'avt-tantieme', naslov: 'Tantieme in dodatno nadomestilo', opcijski: true, telo: '<p>Če naročnik delo uporablja v obsegu, ki bistveno presega dogovorjeni namen ali doseg, avtorju pripada dodatno nadomestilo (tantieme), katerega višino stranki določita sporazumno glede na dejanski obseg uporabe.</p>' },
+          { id: 'avt-trajanje', naslov: 'Trajanje in teritorij prenosa', telo: '<p>Če ni pisno dogovorjeno drugače, prenos pravic velja za ozemlje Republike Slovenije in za celoten čas trajanja avtorske pravice. Morebitni širši teritorialni ali časovni obseg mora biti izrecno pisno dogovorjen.</p>' },
+          { id: 'avt-spori', naslov: 'Reševanje sporov', telo: sporiTelo },
+          { id: 'avt-koncne', naslov: 'Končne določbe', telo: koncneTelo },
+        ];
+      case 'licencna':
+        return [
+          { id: 'lic-uvod', naslov: 'Uvodna določba', telo: '<p>Pogodbeni stranki ugotavljata, da je izvajalec (v nadaljevanju: dajalec licence) imetnik pravic na spodaj opredeljenem delu in da naročnik (v nadaljevanju: pridobitelj) želi pridobiti pravico do njegove uporabe pod pogoji te pogodbe.</p>' },
+          { id: 'lic-predmet', naslov: 'Predmet licence', telo: `<p>Predmet licence je uporaba dela${naslovProj ? ' »' + esc(naslovProj) + '«' : ''}, ki obsega:</p>${obsegHtml}<p>${ponudbaDel}Dajalec licence jamči, da je upravičen podeliti licenco v dogovorjenem obsegu.</p>` },
+          { id: 'lic-obseg', naslov: 'Obseg licence', telo: '<p>Pridobitelj sme delo uporabljati izključno na dogovorjene načine in za dogovorjeni namen. Vsaka uporaba zunaj podeljenega obsega zahteva predhodno pisno soglasje dajalca licence in lahko pomeni dodatno nadomestilo.</p>' },
+          { id: 'lic-trajanje', naslov: 'Trajanje licence', telo: '<p>Licenca se podeli za dogovorjeno obdobje. Če trajanje ni izrecno določeno, velja licenca za nedoločen čas, dokler je katera od strank ne odpove ob upoštevanju primernega odpovednega roka.</p>' },
+          { id: 'lic-teritorij', naslov: 'Teritorij', opcijski: true, telo: '<p>Licenca velja za dogovorjeno ozemlje. Če teritorij ni izrecno določen, velja za ozemlje Republike Slovenije.</p>' },
+          { id: 'lic-ekskl', naslov: 'Ekskluzivnost', opcijski: true, telo: '<p>Če ni pisno dogovorjeno drugače, je licenca neizključna in dajalcu licence ne preprečuje, da delo uporablja sam ali podeljuje enake pravice tretjim osebam.</p>' },
+          { id: 'lic-podlicence', naslov: 'Pravica do podlicenc', opcijski: true, telo: '<p>Pridobitelj sme podeljene pravice v celoti ali deloma prenesti na tretje osebe oziroma podeljevati podlicence le s predhodnim pisnim soglasjem dajalca licence.</p>' },
+          { id: 'lic-licencnina', naslov: 'Licenčnina', telo: `<p>Za podeljeno licenco pridobitelj plača licenčnino, kot je določena v potrjeni ponudbi.${znesek} Licenčnina zapade v plačilo v dogovorjenem roku po izstavitvi računa.</p>` },
+          { id: 'lic-porocanje', naslov: 'Poročanje o rabi', opcijski: true, telo: '<p>Kadar je licenčnina vezana na obseg uporabe, pridobitelj dajalcu licence v dogovorjenih obdobjih poroča o obsegu rabe in na tej podlagi obračuna dodatno nadomestilo (tantieme).</p>' },
+          { id: 'lic-prenehanje', naslov: 'Prenehanje licence', telo: '<p>Licenca preneha s potekom dogovorjenega obdobja ali z odpovedjo skladno s to pogodbo. Ob bistveni kršitvi lahko dajalec licence licenco prekliče, če pridobitelj kršitve ne odpravi v primernem, pisno določenem roku; po prenehanju pridobitelj uporabo dela preneha.</p>' },
+          { id: 'lic-spori', naslov: 'Reševanje sporov', telo: sporiTelo },
+          { id: 'lic-koncne', naslov: 'Končne določbe', telo: koncneTelo },
+        ];
+      case 'nda':
+        return [
+          { id: 'nda-predmet', naslov: 'Predmet sporazuma', telo: '<p>Pogodbeni stranki si pri vzpostavljanju in izvajanju medsebojnega poslovnega sodelovanja izmenjujeta zaupne podatke ter s tem sporazumom urejata njihovo varovanje. Sporazum je vzajemen in v enaki meri zavezuje vsako stranko kot razkrivatelja in kot prejemnika zaupnih podatkov.</p>' },
+          { id: 'nda-zaupni', naslov: 'Zaupni podatki', telo: '<p>Za zaupne se štejejo vsi poslovni, tehnični, finančni, organizacijski in osebni podatki, gradiva, dokumentacija, know-how ter druge informacije, ne glede na obliko (pisno, ustno, elektronsko ali kako drugače), ki jih ena stranka posreduje drugi ali do katerih ta pri sodelovanju kako drugače dostopa. Za zaupne se štejejo tudi ustno posredovani podatki, ki so ob razkritju označeni ali po naravi razumljeni kot zaupni.</p>' },
+          { id: 'nda-obveznosti', naslov: 'Obveznosti prejemnika', telo: '<p>Prejemnik zaupne podatke varuje z enako skrbnostjo kot lastne zaupne podatke, jih brez predhodnega pisnega soglasja razkrivatelja ne razkrije tretjim osebam ter jih uporablja izključno za namen medsebojnega sodelovanja. Dostop do zaupnih podatkov omogoči le tistim sodelavcem oziroma podizvajalcem, ki jih nujno potrebujejo za izvedbo sodelovanja in so zavezani k enaki stopnji zaupnosti.</p>' },
+          { id: 'nda-izjeme', naslov: 'Izjeme', telo: '<p>Obveznost varovanja ne velja za podatke, ki so postali javno znani brez kršitve tega sporazuma, ki jih je prejemnik dokazljivo neodvisno pridobil ali razvil brez uporabe zaupnih podatkov, ali za katere je razkritje zahtevano z zakonom oziroma z odločbo pristojnega organa. V slednjem primeru prejemnik o zahtevanem razkritju, kolikor je to dopustno, predhodno obvesti drugo stranko.</p>' },
+          { id: 'nda-trajanje', naslov: 'Trajanje', telo: '<p>Sporazum velja od dneva podpisa obeh strank. Obveznost varovanja zaupnih podatkov traja ves čas medsebojnega sodelovanja in še 3 (tri) leta po njegovem prenehanju, za osebne in z zakonom posebej varovane podatke pa toliko časa, kolikor to zahtevajo veljavni predpisi.</p>' },
+          { id: 'nda-odgovornost', naslov: 'Odgovornost', opcijski: true, telo: '<p>Stranka, ki krši obveznosti iz tega sporazuma, drugi stranki odškodninsko odgovarja za nastalo škodo po splošnih pravilih obligacijskega prava. Stranki se lahko za primer kršitve dogovorita tudi pogodbeno kazen, ki ne izključuje uveljavljanja odškodnine v presežnem znesku.</p>' },
+          { id: 'nda-koncne', naslov: 'Končne določbe', telo: '<p>Spremembe in dopolnitve tega sporazuma so veljavne le v pisni obliki. Morebitne spore bosta stranki reševali sporazumno, sicer je pristojno stvarno pristojno sodišče v kraju izvajalca. Sporazum je sestavljen v dveh enakih izvodih, po enem za vsako stranko, oziroma je podpisan elektronsko, in začne veljati z dnem podpisa obeh pogodbenih strank.</p>' },
+        ];
+      case 'dpa':
+        return [
+          { id: 'dpa-predmet', naslov: 'Predmet in trajanje obdelave', telo: '<p>S to pogodbo pogodbeni stranki urejata obdelavo osebnih podatkov, ki jo obdelovalec (izvajalec) izvaja v imenu in za račun upravljavca (naročnika) pri izvajanju medsebojnega sodelovanja. Obdelava traja ves čas trajanja sodelovanja oziroma dokler je potrebna za dogovorjeni namen.</p>' },
+          { id: 'dpa-vrste', naslov: 'Vrste podatkov in kategorije posameznikov', telo: '<p>Obdelava zajema osebne podatke, potrebne za izvedbo sodelovanja (npr. kontaktne in identifikacijske podatke), ki se nanašajo na kategorije posameznikov, kot so naročnikove stranke, zaposleni in poslovni partnerji. Natančen obseg podatkov izhaja iz narave naročenih storitev.</p>' },
+          { id: 'dpa-navodila', naslov: 'Vloge in navodila', telo: '<p>Obdelovalec osebne podatke obdeluje izključno po dokumentiranih navodilih upravljavca in le za namene, potrebne za izvedbo sodelovanja. Če meni, da je navodilo v nasprotju s predpisi o varstvu osebnih podatkov, o tem nemudoma obvesti upravljavca.</p>' },
+          { id: 'dpa-zaupnost', naslov: 'Zaupnost osebja', telo: '<p>Obdelovalec zagotovi, da so osebe, pooblaščene za obdelavo osebnih podatkov, zavezane k zaupnosti oziroma da zanje velja ustrezna zakonska obveznost varovanja zaupnosti.</p>' },
+          { id: 'dpa-varnost', naslov: 'Varnostni ukrepi', telo: '<p>Obdelovalec ob upoštevanju stanja tehnike in tveganj izvede ustrezne tehnične in organizacijske ukrepe za zagotovitev ravni varnosti, primerne tveganju (zlasti nadzor dostopa, varovanje in po potrebi šifriranje podatkov, zagotavljanje zaupnosti, celovitosti in razpoložljivosti ter redno preverjanje učinkovitosti ukrepov).</p>' },
+          { id: 'dpa-podobdelovalci', naslov: 'Podobdelovalci', opcijski: true, telo: '<p>Obdelovalec drugega obdelovalca (podobdelovalca) vključi le s predhodnim splošnim ali posebnim pisnim soglasjem upravljavca ter mu naloži enake obveznosti varstva podatkov, kot veljajo po tej pogodbi. Za ravnanje podobdelovalca odgovarja upravljavcu obdelovalec.</p>' },
+          { id: 'dpa-prenos', naslov: 'Prenos v tretje države', opcijski: true, telo: '<p>Obdelovalec osebnih podatkov ne prenaša v tretje države ali mednarodne organizacije brez predhodnega soglasja upravljavca in le ob zagotovljenih ustreznih zaščitnih ukrepih v skladu z veljavnimi predpisi o varstvu osebnih podatkov.</p>' },
+          { id: 'dpa-pomoc', naslov: 'Pomoč upravljavcu', telo: '<p>Obdelovalec upravljavcu v okviru zmožnosti pomaga pri izpolnjevanju obveznosti do posameznikov (uveljavljanje njihovih pravic) ter pri zagotavljanju varnosti, oceni učinka in predhodnem posvetovanju z nadzornim organom.</p>' },
+          { id: 'dpa-krsitve', naslov: 'Obveščanje o kršitvah varnosti', telo: '<p>Obdelovalec upravljavca brez nepotrebnega odlašanja po seznanitvi obvesti o vsaki kršitvi varnosti osebnih podatkov ter mu posreduje informacije, potrebne za izpolnitev njegovih obveznosti obveščanja.</p>' },
+          { id: 'dpa-izbris', naslov: 'Izbris ali vrnitev podatkov', telo: '<p>Po prenehanju obdelave obdelovalec po izbiri upravljavca vse osebne podatke izbriše ali vrne in izbriše obstoječe kopije, razen če predpisi zahtevajo njihovo nadaljnjo hrambo.</p>' },
+          { id: 'dpa-revizija', naslov: 'Revizija in dokazila', telo: '<p>Obdelovalec upravljavcu na zahtevo da na voljo vse informacije, potrebne za dokazovanje izpolnjevanja obveznosti iz te pogodbe, ter omogoči in prispeva k revizijam oziroma pregledom, ki jih izvede upravljavec ali pooblaščeni revizor.</p>' },
+          { id: 'dpa-koncne', naslov: 'Končne določbe', telo: '<p>Ta pogodba je sklenjena kot dodatek k medsebojni pogodbi o sodelovanju in velja ves čas obdelave osebnih podatkov. Spremembe in dopolnitve so veljavne le v pisni obliki, sicer se smiselno uporabljajo določbe veljavnih predpisov o varstvu osebnih podatkov.</p>' },
+        ];
+    }
   };
 
-  /* NDA — standarden slovenski (vzajemni) sporazum o varovanju zaupnih podatkov.
-     ISTO ogrodje razredov kot pogodbaHtml (kick/h1/meta/parties/pog-clen/sig), da ga
-     urejevalnik in PDF prikazeta enako. */
-  const ndaHtml = () => {
+  /* sestavi telo dokumenta: ovoj/glava (kick/h1/meta/parties) + oštevilčeni cleni (brez izklopljenih) + podpis.
+     Za 'sodelovanje' in 'nda' je izpis vsebinsko enak prejsnjima generatorjema. */
+  const sestaviTelo = (v: VrstaPog, izkl: Set<string> = izklKlavzule) => {
+    const meta = VRSTE_POG.find(x => x.id === v)!;
     const nar = narocnikIme() || '[Naročnik]';
     const izv = [ponudnik.ime.trim() || '[Izvajalec]', ponudnik.naslov.trim(), ponudnik.davcna.trim() && ('davčna št. ' + ponudnik.davcna.trim()), ponudnik.trr.trim() && ('TRR ' + ponudnik.trr.trim())].filter(Boolean).join(', ');
+    const st = vir === 'ponudba' ? selectedOffer?.number || '' : '';
     const d = datum ? new Date(datum + 'T00:00:00') : new Date();
+    /* kick v dokumentu = naziv brez oklepajnega dodatka; ponudbena št. le pri pogodbenih vrstah (ne NDA/DPA) */
+    const dokKick = meta.naziv.replace(/\s*\(.*\)\s*$/, '') + ((v !== 'nda' && v !== 'dpa' && st) ? ' · ponudba št. ' + esc(st) : '');
+    const zaimek = v === 'nda' ? 'ga' : 'jo'; /* sporazum (m) → ga, pogodba (ž) → jo */
+    const partiesSklep = v === 'nda' ? '(v nadaljevanju: pogodbeni stranki) kot sledi:' : 'kot sledi:';
+    const cleni = cleniZaVrsto(v).filter(c => !(c.opcijski && izkl.has(c.id)));
+    const cleniHtml = cleni.map((c, i) => `<div class="pog-clen"><h2>${i + 1}. člen — ${c.naslov}</h2>${c.telo}</div>`).join('');
     return `
-      <div class="kick">Sporazum o varovanju zaupnih podatkov</div>
-      <h1>Sporazum o varovanju zaupnih podatkov (NDA)</h1>
+      <div class="kick">${dokKick}</div>
+      <h1>${meta.naziv}</h1>
       <p class="meta">Datum: ${datStr(d)}${nar !== '[Naročnik]' ? ' · z: ' + esc(nar) : ''}</p>
-      <div class="parties" style="margin-top:14px"><p>ki ga skleneta</p><p><b>Naročnik:</b> ${esc(nar)}</p><p>in</p><p><b>Izvajalec:</b> ${esc(izv)}</p><p>(v nadaljevanju: pogodbeni stranki) kot sledi:</p></div>
-      <div class="pog-clen"><h2>1. člen — Predmet sporazuma</h2><p>Pogodbeni stranki si pri vzpostavljanju in izvajanju medsebojnega poslovnega sodelovanja izmenjujeta zaupne podatke ter s tem sporazumom urejata njihovo varovanje. Sporazum je vzajemen in v enaki meri zavezuje vsako stranko kot razkrivatelja in kot prejemnika zaupnih podatkov.</p></div>
-      <div class="pog-clen"><h2>2. člen — Zaupni podatki</h2><p>Za zaupne se štejejo vsi poslovni, tehnični, finančni, organizacijski in osebni podatki, gradiva, dokumentacija, know-how ter druge informacije, ne glede na obliko (pisno, ustno, elektronsko ali kako drugače), ki jih ena stranka posreduje drugi ali do katerih ta pri sodelovanju kako drugače dostopa. Za zaupne se štejejo tudi ustno posredovani podatki, ki so ob razkritju označeni ali po naravi razumljeni kot zaupni.</p></div>
-      <div class="pog-clen"><h2>3. člen — Obveznosti prejemnika</h2><p>Prejemnik zaupne podatke varuje z enako skrbnostjo kot lastne zaupne podatke, jih brez predhodnega pisnega soglasja razkrivatelja ne razkrije tretjim osebam ter jih uporablja izključno za namen medsebojnega sodelovanja. Dostop do zaupnih podatkov omogoči le tistim sodelavcem oziroma podizvajalcem, ki jih nujno potrebujejo za izvedbo sodelovanja in so zavezani k enaki stopnji zaupnosti.</p></div>
-      <div class="pog-clen"><h2>4. člen — Izjeme</h2><p>Obveznost varovanja ne velja za podatke, ki so postali javno znani brez kršitve tega sporazuma, ki jih je prejemnik dokazljivo neodvisno pridobil ali razvil brez uporabe zaupnih podatkov, ali za katere je razkritje zahtevano z zakonom oziroma z odločbo pristojnega organa. V slednjem primeru prejemnik o zahtevanem razkritju, kolikor je to dopustno, predhodno obvesti drugo stranko.</p></div>
-      <div class="pog-clen"><h2>5. člen — Trajanje</h2><p>Sporazum velja od dneva podpisa obeh strank. Obveznost varovanja zaupnih podatkov traja ves čas medsebojnega sodelovanja in še 3 (tri) leta po njegovem prenehanju, za osebne in z zakonom posebej varovane podatke pa toliko časa, kolikor to zahtevajo veljavni predpisi.</p></div>
-      <div class="pog-clen"><h2>6. člen — Odgovornost</h2><p>Stranka, ki krši obveznosti iz tega sporazuma, drugi stranki odškodninsko odgovarja za nastalo škodo po splošnih pravilih obligacijskega prava. Stranki se lahko za primer kršitve dogovorita tudi pogodbeno kazen, ki ne izključuje uveljavljanja odškodnine v presežnem znesku.</p></div>
-      <div class="pog-clen"><h2>7. člen — Končne določbe</h2><p>Spremembe in dopolnitve tega sporazuma so veljavne le v pisni obliki. Morebitne spore bosta stranki reševali sporazumno, sicer je pristojno stvarno pristojno sodišče v kraju izvajalca. Sporazum je sestavljen v dveh enakih izvodih, po enem za vsako stranko, oziroma je podpisan elektronsko, in začne veljati z dnem podpisa obeh pogodbenih strank.</p></div>
+      <div class="parties" style="margin-top:14px"><p>ki ${zaimek} skleneta</p><p><b>Naročnik:</b> ${esc(nar)}</p><p>in</p><p><b>Izvajalec:</b> ${esc(izv)}</p><p>${partiesSklep}</p></div>
+      ${cleniHtml}
       <p style="margin-top:12px">Kraj in datum: ____________________</p>
       <div class="sig"><div><span>Naročnik</span><span class="lin"></span>${esc(nar !== '[Naročnik]' ? nar : '')}</div><div><span>Izvajalec</span><span class="lin"></span>${esc(ponudnik.ime.trim() || '')}</div></div>`;
   };
 
   /* aktivno telo glede na izbrano vrsto dokumenta — vse spodnje funkcije gradijo telo skoznjo */
-  const aktivnoTelo = () => (vrstaPog === 'nda' ? ndaHtml() : pogodbaHtml());
+  const aktivnoTelo = () => sestaviTelo(vrstaPog);
 
   /* ── urejevalnik telesa (kopija retainerjevega vzorca) ── */
   /* callback-ref: urejevalnik se ustvari prazen -> napolnimo ga (le ce je prazen, da med tipkanjem ne resetiramo kurzorja) */
@@ -278,13 +377,27 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const uporabiPisavo = (font: string) => oblikuj('fontName', font);
   const ponastaviTelo = () => { setRocnoTelo(false); const html = aktivnoTelo(); setTeloHtml(html); if (editorRef.current) editorRef.current.innerHTML = html; };
   const izvozniTelo = () => { const e = editorRef.current?.innerHTML?.trim(); if (e) return e; if (teloHtml.trim()) return teloHtml; return aktivnoTelo(); };
-  /* menjava vrste dokumenta: kot ponastaviTelo — sveze telo (pogodba/NDA) v urejevalnik,
-     da preklop takoj OSVEZI prikaz (tudi ce je bilo prej rocno urejeno). */
-  const menjajVrsto = (v: 'sodelovanje' | 'nda') => {
+  /* menjava vrste dokumenta: kot ponastaviTelo — sveze telo v urejevalnik,
+     da preklop takoj OSVEZI prikaz (tudi ce je bilo prej rocno urejeno).
+     Opcijski cleni se ponastavijo na privzeto stanje za novo vrsto. */
+  const menjajVrsto = (v: VrstaPog) => {
     if (v === vrstaPog) return;
+    const izkl = privzetoIzklop(v);
     setVrstaPog(v);
+    setIzklKlavzule(izkl);
     setRocnoTelo(false);
-    const html = v === 'nda' ? ndaHtml() : pogodbaHtml();
+    const html = sestaviTelo(v, izkl);
+    setTeloHtml(html);
+    if (editorRef.current) editorRef.current.innerHTML = html;
+  };
+  /* preklop opcijskega clena (vklop/izklop): kot menjajVrsto ponovno sestavi telo
+     in napolni urejevalnik (tudi ce je bilo rocno urejeno). */
+  const prekloviKlavzulo = (id: string) => {
+    const izkl = new Set(izklKlavzule);
+    if (izkl.has(id)) izkl.delete(id); else izkl.add(id);
+    setIzklKlavzule(izkl);
+    setRocnoTelo(false);
+    const html = sestaviTelo(vrstaPog, izkl);
     setTeloHtml(html);
     if (editorRef.current) editorRef.current.innerHTML = html;
   };
@@ -364,8 +477,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
     setNapaka('');
     const html = doc(izvozniTelo());
     const slug = (narocnikIme() || 'pinart').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    const nazivDok = vrstaPog === 'nda' ? 'Sporazum o varovanju zaupnih podatkov (NDA)' : 'Pogodba o poslovnem sodelovanju';
-    const ime = (vrstaPog === 'nda' ? 'nda-' : 'pogodba-') + (slug || 'pinart');
+    const metaVrsta = VRSTE_POG.find(v => v.id === vrstaPog)!;
+    const nazivDok = metaVrsta.naziv;
+    const ime = metaVrsta.slug + '-' + (slug || 'pinart');
     setPdfNalaganje(true);
     try {
       const res = await fetch('/api/ponudba-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html, ime, footer: [ponudnik.ime.trim(), nazivDok].filter(Boolean).join(' · ') }) });
@@ -454,7 +568,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const novaPogodba = () => {
     setOfferId(''); setRocniNarocnik(''); setRocniObseg(''); setNarEmail('');
     setTeloHtml(''); setRocnoTelo(false); setShranjenaId(''); setNapaka('');
-    setVrstaPog('sodelovanje'); setOdStranke(false); setVstopOdprt(false); setVstopIskanje('');
+    setVrstaPog('sodelovanje'); setIzklKlavzule(privzetoIzklop('sodelovanje')); setOdStranke(false); setVstopOdprt(false); setVstopIskanje('');
     setDatum(new Date().toISOString().slice(0, 10));
     setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot('');
     setPogled('nastavitve');
@@ -482,7 +596,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     }
     const zapis: FlowContract = {
       id,
-      title: `${vrstaPog === 'nda' ? 'NDA' : 'Pogodba'} · ${vir === 'ponudba' && selectedOffer ? selectedOffer.title : (rocniNarocnik.trim() || 'brez naslova')}`,
+      title: `${VRSTE_POG.find(v => v.id === vrstaPog)!.label} · ${vir === 'ponudba' && selectedOffer ? selectedOffer.title : (rocniNarocnik.trim() || 'brez naslova')}`,
       client: narocnikIme(),
       date: datum,
       status: obstojeca?.status || 'draft',
@@ -573,11 +687,28 @@ export default function ContractWorkspace({ base }: { base: string }) {
         <span className="pg-mehur"><b>Iz česa nastane pogodba?</b><small>Če obstaja ponudba, jo izberi — naročnik in obseg se predizpolnita. Sicer pusti »Brez ponudbe« za samostojno pogodbo.</small></span>
       </div>
       <section className="pg-sek pg-vstop-panel">
-        {/* vrsta dokumenta: navadna pogodba o sodelovanju ali NDA (velja za ustvarjeno telo) */}
+        {/* vrsta dokumenta: 6 vrst pogodb (velja za ustvarjeno telo) */}
         <div className="pg-vrstapog" role="group" aria-label="Vrsta dokumenta">
-          <button type="button" aria-label="Pogodba o sodelovanju" aria-pressed={vrstaPog === 'sodelovanje'} className={vrstaPog === 'sodelovanje' ? 'on' : ''} onClick={() => menjajVrsto('sodelovanje')}>Pogodba o sodelovanju</button>
-          <button type="button" aria-label="NDA — sporazum o varovanju zaupnih podatkov" aria-pressed={vrstaPog === 'nda'} className={vrstaPog === 'nda' ? 'on' : ''} onClick={() => menjajVrsto('nda')}>NDA</button>
+          {VRSTE_POG.map(v => (
+            <button key={v.id} type="button" aria-label={v.naziv} aria-pressed={vrstaPog === v.id} className={vrstaPog === v.id ? 'on' : ''} onClick={() => menjajVrsto(v.id)}>{v.label}</button>
+          ))}
         </div>
+        {/* opcijski cleni trenutne vrste: klik vklopi/izklopi člen (številčenje se prilagodi samo) */}
+        {!odStranke && (() => {
+          const opcijski = cleniZaVrsto(vrstaPog).filter(c => c.opcijski);
+          if (!opcijski.length) return null;
+          return (
+            <div className="pg-klavzule">
+              <span className="pg-klavzule-label">Vključi člene:</span>
+              <div className="pg-klavzule-pilule" role="group" aria-label="Opcijski členi">
+                {opcijski.map(c => {
+                  const vkljucen = !izklKlavzule.has(c.id);
+                  return <button key={c.id} type="button" aria-pressed={vkljucen} className={'pg-segpills-mini' + (vkljucen ? ' on' : '')} onClick={() => prekloviKlavzulo(c.id)}>{c.naslov}</button>;
+                })}
+              </div>
+            </div>
+          );
+        })()}
         {!odStranke ? (
           <>
             {/* PONUDBA (iskalen combobox) + DATUM. Izbrana ponudba => vir 'ponudba'
@@ -806,10 +937,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
     {/* ── POGLED 3: ZAKLJUCEK (prenos + posiljanje + shranjevanje) ── */}
     {pogled === 'zakljucek' && <section className="pg-sek pg-stran pg-stolpec pg-zakljucek">
-      <p className={styles.eyebrow}>{vrstaPog === 'nda' ? 'NDA' : 'POGODBA'}{vir === 'ponudba' && selectedOffer?.number ? ` · PONUDBA ŠT. ${selectedOffer.number}` : ''}</p>
+      <p className={styles.eyebrow}>{VRSTE_POG.find(v => v.id === vrstaPog)!.kick}{vir === 'ponudba' && selectedOffer?.number ? ` · PONUDBA ŠT. ${selectedOffer.number}` : ''}</p>
       <h2 className="pg-naslov">Zaključek.</h2>
       <p className="pg-uvod">Prenesi pogodbo{narocnikIme() ? ' za ' + narocnikIme() : ''}, jo shrani ali pošlji naročniku.</p>
-      <p className="pg-disc">⚖️ Pripravljeno iz vzorčne predloge kot pripomoček — <b>ni pravni nasvet</b>. Pred podpisom priporočamo pregled pri odvetniku in prilagoditev konkretnemu poslu.</p>
+      <p className="pg-disc">Pripravljeno iz vzorčne predloge kot pripomoček — <b>ni pravni nasvet</b>. Pred podpisom priporočamo pregled pri odvetniku in prilagoditev konkretnemu poslu.</p>
       <div className="pg-polja pg-polja-email">
         <label className="pg-polje">E-pošta naročnika
           <input type="email" placeholder="npr. pisarna@volk-babica.si" value={narEmail} onChange={event => setNarEmail(event.target.value)} />
@@ -839,7 +970,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       {napaka && <p className="pg-napaka">{napaka}</p>}
       {/* Pošiljanje pogodbe kar iz aplikacije (Resend) — isti HTML kot prenos/PDF. */}
       <PosljiBlok
-        subject={(vrstaPog === 'nda' ? 'NDA' : 'Pogodba') + (selectedOffer?.number ? ' št. ' + selectedOffer.number : '') + (narocnikIme() ? ' — ' + narocnikIme() : '')}
+        subject={VRSTE_POG.find(v => v.id === vrstaPog)!.label + (selectedOffer?.number ? ' št. ' + selectedOffer.number : '') + (narocnikIme() ? ' — ' + narocnikIme() : '')}
         zgradiHtml={() => doc(izvozniTelo())}
         privzetiPrejemnik={narEmail}
         imeStranke={narocnikIme()}
@@ -908,6 +1039,14 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-vrstapog{display:inline-flex;flex-wrap:wrap;background:rgba(255,255,255,.55);border:1px solid rgba(178,84,118,.28);border-radius:999px;padding:.3rem;gap:.45rem;margin:0 0 1rem}
       .pg-vrstapog button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem 1rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
       .pg-vrstapog button.on{background:var(--accent,#B25476);color:#fff}
+
+      /* vklop/izklop opcijskih clenov — majhne pilule-stikala v istem jeziku kot .pg-segpills */
+      .pg-klavzule{margin:0 0 1rem}
+      .pg-klavzule-label{display:block;font-size:.66rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(17,17,17,.5);margin:0 0 .5rem}
+      .pg-klavzule-pilule{display:flex;flex-wrap:wrap;gap:.4rem}
+      .pg-segpills-mini{border:1px solid rgba(17,17,17,.18);background:rgba(255,255,255,.5);color:var(--ink);font-family:inherit;font-weight:600;font-size:.72rem;letter-spacing:.01em;padding:.34rem .72rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .16s,color .16s,border-color .16s}
+      .pg-segpills-mini:hover{border-color:var(--ink)}
+      .pg-segpills-mini.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 
       .pg-polja{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem 1.5rem;margin:0 0 1.1rem;min-width:0}
       .pg-polja>*{min-width:0}
