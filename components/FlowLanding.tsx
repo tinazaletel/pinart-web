@@ -44,6 +44,27 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     io.observe(pas);
     return () => io.disconnect();
   }, []);
+
+  /* Mehki reveal sekcij ob drsanju — vsebina nezno priplava. Progresivno:
+     skrijemo (fl-reveal) sele v JS, tako da ob morebitni napaki vse ostane vidno.
+     Spostuje reduce-motion (takrat ne skrijemo nicesar). */
+  const flRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = flRef.current;
+    if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const sel = '.fl-potek h2, .fl-koraki > .fl-korak, .fl-laptop-txt, .fl-laptop-vizual, .fl-orodja-nadzor, .fl-showcase-glava, .fl-bento-glava, .fl-bento-mreza > *, .fl-konec > *, .fl-funkcije-glava, .fl-funkcije-mreza > *, .fl-cenik-mreza > *, .fl-faq-glava, .fl-faq-lista > *, .fl-zgodba-glava, .fl-zgodba-tekst > p';
+    const targets = Array.from(root.querySelectorAll<HTMLElement>(sel));
+    if (!targets.length) return;
+    targets.forEach(el => el.classList.add('fl-reveal'));
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) { entry.target.classList.add('fl-in'); io.unobserve(entry.target); }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -7% 0px' });
+    targets.forEach(el => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
   const vrstaRef = useRef<HTMLDivElement>(null);
 
   const VPRASANJA = [
@@ -266,7 +287,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   ];
 
   return (
-    <div className="fl">
+    <div className="fl" ref={flRef}>
       <style dangerouslySetInnerHTML={{ __html: `
         .fl { position: relative; z-index: 1; color: var(--ink); font-weight: 300; overflow-x: clip; }
 
@@ -677,6 +698,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @keyframes flPropBob { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-9px) rotate(-1deg); } }
         @media (max-width: 720px) { .fl-prop-kos { left: 3%; width: 4.4rem; } .fl-prop-plant { right: 3%; width: 6.4rem; } }
         @media (prefers-reduced-motion: reduce) { .fl-prop { animation: none; } }
+        /* mehki reveal sekcij ob drsanju (razred doda JS; reduce-motion = brez) */
+        .fl-reveal { opacity: 0; transform: translateY(26px); transition: opacity .85s cubic-bezier(.22,1,.36,1), transform .85s cubic-bezier(.22,1,.36,1); }
+        .fl-reveal.fl-in { opacity: 1; transform: none; }
+        .fl-koraki > .fl-reveal:nth-child(2) { transition-delay: .08s; }
+        .fl-koraki > .fl-reveal:nth-child(3) { transition-delay: .16s; }
+        .fl-bento-mreza > .fl-reveal:nth-child(2), .fl-funkcije-mreza > .fl-reveal:nth-child(2), .fl-cenik-mreza > .fl-reveal:nth-child(2) { transition-delay: .08s; }
+        .fl-bento-mreza > .fl-reveal:nth-child(3), .fl-funkcije-mreza > .fl-reveal:nth-child(3), .fl-cenik-mreza > .fl-reveal:nth-child(3) { transition-delay: .16s; }
+        .fl-bento-mreza > .fl-reveal:nth-child(4), .fl-funkcije-mreza > .fl-reveal:nth-child(4) { transition-delay: .24s; }
 
         .fl-footer { margin: 10.05rem calc(50% - 50vw) calc(-1 * clamp(5rem, 8vw, 8rem)); background: oklch(20% .016 285); color: oklch(93% .01 285); border-radius: 0; padding: clamp(2.8rem, 5vw, 4rem) calc(max(0px, (100vw - 1480px) / 2) + clamp(1.5rem, 5vw, 5.5rem)) clamp(2rem, 4vw, 2.6rem); }
         .fl-footer-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(2rem, 5vw, 4rem); }
