@@ -1,11 +1,12 @@
-import { Bodoni_Moda, Archivo, Archivo_Narrow, Caveat } from 'next/font/google';
+import { DM_Serif_Display, Archivo, Archivo_Narrow, Caveat } from 'next/font/google';
 
-/* Bodoni Moda — IZBRANA pisava naslovov (--font-serif). Ker je tanka, je
-   rahlo odebeljena prek -webkit-text-stroke v globals.css. */
-export const bodoni = Bodoni_Moda({
+/* DM Serif Display — eleganten display serif za naslove (--font-serif),
+   klasicne stevke (za app z veliko zneski). Preizkus proti Bricolage.
+   Ker ni tanek, -webkit-text-stroke odebelitev iz Bodoni casov ni vec potrebna. */
+export const bodoni = DM_Serif_Display({
   subsets: ['latin', 'latin-ext'],
   variable: '--font-serif',
-  axes: ['opsz'],
+  weight: '400',
   style: ['normal', 'italic'],
   display: 'swap'
 });
