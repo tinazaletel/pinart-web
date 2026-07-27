@@ -65,6 +65,51 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     return () => io.disconnect();
   }, []);
 
+  /* Leteci 3D papir (ponudba) — potuje ob drsanju po strani in na koncu pade v kos (O nas).
+     Cist scroll-driven izracun (brez GSAP plugina), Safari-varno; hidden na mobilnem in reduce-motion. */
+  const flyRef = useRef<HTMLImageElement>(null);
+  const kosRef = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    const fly = flyRef.current;
+    if (!fly) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { fly.style.display = 'none'; return; }
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const vw = window.innerWidth, vh = window.innerHeight, y = window.scrollY;
+      if (vw < 720) { fly.style.opacity = '0'; return; }
+      const start = vh * 0.55;
+      if (y < start) { fly.style.opacity = '0'; return; }
+      const travel = y - start;
+      const weave = Math.sin(travel / 240);
+      let x = vw * (0.85 + weave * 0.07);   // desni jarek, rahlo vijuga
+      let ty = vh * 0.4;
+      let rot = travel * 0.11;
+      let scale = 1, op = 1;
+      const kos = kosRef.current;
+      if (kos) {
+        const r = kos.getBoundingClientRect();
+        const mouthX = r.left + r.width * 0.5;
+        const mouthY = r.top + r.height * 0.16;
+        const d = Math.min(1, Math.max(0, (vh * 0.92 - r.top) / (vh * 0.72)));  // priblizevanje kosu
+        if (d > 0) {
+          x += (mouthX - x) * d;
+          ty += (mouthY - ty) * d;
+          scale = 1 - d * 0.55;
+          rot += d * 220;
+          op = d > 0.82 ? Math.max(0, 1 - (d - 0.82) / 0.18) : 1;   // izgine, ko pade v kos
+        }
+      }
+      fly.style.opacity = String(op);
+      fly.style.transform = `translate(${x}px, ${ty}px) translate(-50%, -50%) rotate(${rot}deg) scale(${scale})`;
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, []);
+
   const vrstaRef = useRef<HTMLDivElement>(null);
 
   const VPRASANJA = [
@@ -692,12 +737,17 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @keyframes pupaHojaM { 0% { transform: translateX(-65%); } 100% { transform: translateX(150%); } }
         @media (prefers-reduced-motion: reduce) { .fl-pupa { display: none; } }
         /* glinasta rekvizita scene (koš + rastlina) — stojita na tleh pasu, nezno dihata */
-        .fl-prop { position: absolute; bottom: 0; height: auto; z-index: 2; will-change: transform; filter: drop-shadow(0 18px 26px rgba(40,25,60,.16)); }
+        .fl-footer { position: relative; }
+        /* rekvizit zasidran na zgornji rob footerja (base sedi na temnem robu) */
+        .fl-prop { position: absolute; bottom: calc(100% - 1.2rem); height: auto; z-index: 3; will-change: transform; filter: drop-shadow(0 18px 26px rgba(40,25,60,.16)); }
         .fl-prop-kos { left: 6%; width: clamp(7rem, 11vw, 12rem); animation: flPropBob 6.5s ease-in-out infinite; }
         .fl-prop-plant { right: 6%; width: clamp(10rem, 16vw, 17rem); animation: flPropBob 7.5s ease-in-out infinite; animation-delay: -2.4s; }
         @keyframes flPropBob { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-7px) rotate(-1deg); } }
         @media (max-width: 720px) { .fl-prop-kos { left: 3%; width: 6rem; } .fl-prop-plant { right: 3%; width: 8.5rem; } }
         @media (prefers-reduced-motion: reduce) { .fl-prop { animation: none; } }
+        /* leteci 3D papir (ponudba) — potuje po strani, pade v kos (pozicija iz JS) */
+        .fl-fly { position: fixed; left: 0; top: 0; width: clamp(3.4rem, 4.6vw, 4.9rem); z-index: 6; pointer-events: none; opacity: 0; will-change: transform, opacity; filter: drop-shadow(0 14px 22px rgba(40,25,60,.22)); }
+        @media (max-width: 720px) { .fl-fly { display: none; } }
         /* mehki reveal sekcij ob drsanju (razred doda JS; reduce-motion = brez) */
         .fl-reveal { opacity: 0; transform: translateY(26px); transition: opacity .85s cubic-bezier(.22,1,.36,1), transform .85s cubic-bezier(.22,1,.36,1); }
         .fl-reveal.fl-in { opacity: 1; transform: none; }
@@ -740,6 +790,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       <AmbientBubbles />
 
       <FlowHeroBg />
+      <img src="/flow/icon-ponudba.png" className="fl-fly" ref={flyRef} alt="" aria-hidden />
 
       <div className="fl-oder">
         <section className="fl-hero">
@@ -1025,13 +1076,12 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             {/* PROSOJEN video (alfa) — src nastavi useEffect glede na brskalnik (Safari=mov, Chrome=webm) */}
             <video ref={pupaRef} className={`fl-pupa${pupaHodi ? ' hodi' : ''}`} muted loop playsInline preload="auto" />
           </div>
-          {/* glinasti rekvizit scene: koš (stara utrujenost) levo, rastlina desno —
-              postavljena na sam rob s temno nogo. */}
-          <img src="/flow/kos3d.png" className="fl-prop fl-prop-kos" alt="" aria-hidden loading="lazy" />
-          <img src="/flow/plant3d.png" className="fl-prop fl-prop-plant" alt="" aria-hidden loading="lazy" />
         </section>
 
         <footer className="fl-footer" data-nav-dark>
+          {/* glinasti rekvizit — stojita na zgornjem robu temne noge */}
+          <img src="/flow/kos3d.png" className="fl-prop fl-prop-kos" alt="" aria-hidden loading="lazy" ref={kosRef} />
+          <img src="/flow/plant3d.png" className="fl-prop fl-prop-plant" alt="" aria-hidden loading="lazy" />
           <div className="fl-footer-top">
             <div className="fl-footer-brand">
               <span className="fl-footer-logo"><i /><strong>Pinart</strong><span>FLOW</span></span>
