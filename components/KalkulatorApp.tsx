@@ -5859,7 +5859,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         @keyframes cwFade { from { opacity: 0; } to { opacity: 1; } }
         @media (prefers-reduced-motion: reduce) { .cw .korak-vsebina { animation: none; } }
 
-        .cw h1 { position: relative; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(2.6rem, 7vw, 4.6rem); line-height: 1; letter-spacing: -.012em; margin: 0 0 .8rem; }
+        /* Delovni naslovi koraka poenoteni s skupnim .topbar h1 (retainer/pogodba/računi). Uvodni hero (.uvod-h, .lg-naslov) ostane večji prek lastnega razreda. */
+        .cw h1 { position: relative; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.55rem, 2.8vw, 2.3rem); line-height: 1.05; letter-spacing: -.012em; margin: 0 0 .8rem; }
         .cw .h1-step { position: absolute; top: .42rem; right: calc(100% + .75rem); font-family: var(--font-sans), system-ui, sans-serif; font-size: .72rem; line-height: 1; font-weight: 800; letter-spacing: .16em; color: rgba(17,17,17,.55); }
         .cw .sub-vrsta { display: flex; justify-content: space-between; align-items: baseline; gap: 2rem; margin: 0 0 2.4rem; flex-wrap: wrap; }
         .cw .sub { font-size: clamp(1rem, 1.6vw, 1.2rem); line-height: 1.6; color: rgba(17,17,17,.72); margin: 0; max-width: 52ch; min-width: 0; }
@@ -6735,7 +6736,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
              6px od roba, da se oznaka poravna na rob kot v samostojni verziji.
              .workspace ima overflow:hidden, zato negativni rob ne povzroči zamika. */
           .cw.cw-lupina { margin-inline: calc(6px - clamp(1.2rem, 3vw, 3.5rem)); }
-          .cw h1 { padding-left: 2.35rem; font-size: clamp(2.15rem, 11vw, 2.85rem); line-height: .98; margin-bottom: .6rem; }
+          .cw h1 { padding-left: 2.35rem; font-size: clamp(1.5rem, 6vw, 2rem); line-height: 1.05; margin-bottom: .6rem; }
           .cw .lg-naslov { padding-left: 0; }
           /* Oder ima na telefonu natanko 8 px roba. Oznaka koraka se poravna
              na ta zunanji rob, namesto da z negativnim zamikom pade z zaslona. */
