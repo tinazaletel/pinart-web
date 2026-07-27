@@ -28,8 +28,8 @@ export default async function PoslovniPregledPage({
         <header className={styles.topbar}>
           <div>
             <p className={styles.eyebrow}>POSLOVNI PREGLED</p>
-            <h1>Dobrodošla nazaj.</h1>
-            <p className={styles.topbarSub}>Hitro ustvari ponudbo, sledi projektom in imej pregled nad vsem, kar je pomembno.</p>
+            <h1>Dobrodošla nazaj, Tina. <span className={styles.wave} aria-hidden>👋</span></h1>
+            <p className={styles.topbarSub}>Tukaj lahko hitro ustvariš ponudbo, slediš projektom in imaš pregled nad vsem, kar je pomembno.</p>
           </div></header>
 
         {/* nad pregledom, ne pod njim: kdor nastavitve ni koncal, vidi
