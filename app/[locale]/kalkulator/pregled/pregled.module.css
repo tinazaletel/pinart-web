@@ -329,7 +329,7 @@
 .historyBand .tableWrap th:nth-child(4) { width: 28%; }
 .historyTable { overflow: hidden; border: 1px solid color-mix(in oklch, var(--ink) 10%, transparent); }
 .historyTable table { margin: 0; }
-.historyTable th { padding: .75rem .9rem; background: oklch(98% .008 87); font-size: .51rem; }
+.historyTable th { padding: .75rem .9rem; background: oklch(92.6% .017 87); font-size: .51rem; }
 .historyTable td { height: 4.25rem; padding: .65rem .9rem; background: oklch(99% .006 87 / .82); }
 .historyTable th:last-child, .historyTable td:last-child { padding-right: .75rem; padding-left: .55rem; }
 .historyTable tbody tr:last-child td { border-bottom: 0; }
