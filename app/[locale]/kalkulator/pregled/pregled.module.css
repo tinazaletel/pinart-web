@@ -230,6 +230,10 @@
 .flowTools > *:nth-child(6) { background: linear-gradient(125deg, oklch(95% .035 295), oklch(87% .08 285), oklch(91% .06 175)); background-size: 220% 220%; animation: cardFlow 12s ease-in-out -5s infinite alternate; }
 .flowTools > *:nth-child(7) { background: linear-gradient(125deg, oklch(95% .045 170), oklch(84% .1 165), oklch(91% .06 295)); background-size: 220% 220%; animation: cardFlow 10s ease-in-out -2s infinite alternate; }
 .flowTools > *:nth-child(8) { background: linear-gradient(125deg, oklch(94% .035 87), oklch(88% .065 60), oklch(91% .055 295)); background-size: 220% 220%; animation: cardFlow 13s ease-in-out -8s infinite alternate; }
+/* Vse kartice enak nezen VECTONSKI preliv (vijola->mint->roza, svetli) z VIDNIM valovanjem; identiteta gre na clay ikone. */
+.flowTools > *:nth-child(1n) { background: linear-gradient(120deg, oklch(95% .065 300), oklch(91% .095 258), oklch(94% .07 168), oklch(92% .095 335)); background-size: 300% 300%; color: var(--ink); border: 1px solid rgba(255,255,255,.6); animation: cardFlow 8s ease-in-out infinite alternate; }
+/* naslov in podnaslov ne smeta cez clay ikono (desno spodaj) */
+.flowTools strong, .flowTools small { padding-right: 4.3rem; }
 .flowTools span { position: relative; z-index: 2; font-size: .56rem; font-weight: 850; letter-spacing: .1em; }
 .flowTools strong { position: relative; z-index: 2; margin-top: auto; font: 600 1.55rem var(--font-sans), system-ui, sans-serif; letter-spacing: -.01em; -webkit-text-stroke: 0; }
 .flowTools small { position: relative; z-index: 2; margin-top: .32rem; color: color-mix(in oklch, currentColor 72%, transparent); font-size: .59rem; }
