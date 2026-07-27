@@ -564,7 +564,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
             <button type="button" aria-label="Račun" className={predracun ? '' : 'on'} onClick={() => setPredracun(false)}>Račun</button>
             <button type="button" aria-label="Predračun" className={predracun ? 'on' : ''} onClick={() => setPredracun(true)}>Predračun</button>
           </div>
-          <small className="rc-vrsta-namig">poziv k plačilu vnaprej</small>
+          <small className="rc-vrsta-namig">predhodni (proforma) račun</small>
         </div>
         {/* 2) PONUDBA (iskalen combobox) + DATUM IZDAJE. Izbrana ponudba => vir iz
             ponudbe (predizpolni podatke); "Brez ponudbe" => samostojen račun. */}

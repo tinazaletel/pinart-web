@@ -214,13 +214,13 @@ export default function PosljiBlok({
         .posl-root .posl-kontakt-opt:hover { background: var(--posl-paper); }
         /* Primarni gumb: črni pill z oživljenimi besedilnimi stanji. Vodoravno centriran. */
         .posl-root .posl-gumb-vrsta { display: flex; justify-content: center; margin-top: 1.05rem; }
-        .posl-root .posl-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-width: 11rem; font-family: inherit; font-size: .92rem; font-weight: 600; letter-spacing: .01em; cursor: pointer; border-radius: 999px; padding: .8rem 2rem; border: 1px solid var(--posl-ink); background: var(--posl-ink); color: var(--posl-paper); transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease, background .3s ease, border-color .3s ease; }
+        .posl-root .posl-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-width: 11rem; font-family: inherit; font-size: .92rem; font-weight: 600; letter-spacing: .01em; cursor: pointer; border-radius: 999px; padding: .8rem 2rem; border: 1px solid var(--posl-ink); background: var(--posl-ink); color: var(--posl-paper); transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s cubic-bezier(.22,1,.36,1), opacity .3s ease, background .55s cubic-bezier(.22,1,.36,1), border-color .55s cubic-bezier(.22,1,.36,1), color .55s cubic-bezier(.22,1,.36,1); }
         .posl-root .posl-gumb:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(35,18,45,.2); }
         .posl-root .posl-gumb:active:not(:disabled) { transform: translateY(0) scale(.98); }
         .posl-root .posl-gumb:disabled { cursor: default; opacity: .4; }
         .posl-root .posl-gumb.je-poslano { opacity: .9; }
-        .posl-root .posl-gumb.je-uspeh { opacity: 1; background: #1f7a4d; border-color: #1f7a4d; color: #fff; animation: poslUspeh .5s cubic-bezier(.2,1.4,.4,1); }
-        @keyframes poslUspeh { 0% { transform: scale(.92); } 55% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .posl-root .posl-gumb.je-uspeh { opacity: 1; background: #1f7a4d; border-color: #1f7a4d; color: #fff; animation: poslUspeh .6s cubic-bezier(.22,1,.36,1); }
+        @keyframes poslUspeh { 0% { transform: scale(.985); } 45% { transform: scale(1.02); } 100% { transform: scale(1); } }
         .posl-root .posl-poslji-nalag { display: inline-flex; align-items: center; }
         .posl-root .posl-letalo-ovoj { display: inline-flex; align-items: center; overflow: visible; animation: poslLetOvoj .6s ease-out forwards; }
         .posl-root .posl-letalo-ovoj svg { animation: poslLet .6s ease-out forwards; }
