@@ -104,6 +104,12 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
             <span className="fl-leca fl-leca-r"><i /></span>
           </div>
         </div>
+        {/* lebdeca UI obvestila okoli pupe (kot da prihajajo iz njenega racunalnika) */}
+        <div className="fl-notif" aria-hidden>
+          <span className="fl-chip fl-chip-1"><b className="ok"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg></b>Ponudba sprejeta</span>
+          <span className="fl-chip fl-chip-2"><b className="msg"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z" /></svg></b>Nova stranka</span>
+          <span className="fl-chip fl-chip-3"><b className="pay">€</b>Plačano · 1.200 €</span>
+        </div>
       </div>
 
       <div className="fl-bubbles">
@@ -155,6 +161,29 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
           animation: lecaOdsev 4.5s linear infinite; }
         @keyframes lecaOdsev { 0% { background-position: 0 0, -70% 0, 0 0; } 100% { background-position: 0 4px, 170% 0, 0 0; } }
         @media (prefers-reduced-motion: reduce) { .fl-leca i { animation: none; } }
+
+        /* lebdeca UI obvestila okoli pupe */
+        .fl-notif { position: absolute; inset: 0; pointer-events: none; }
+        .fl-chip { position: absolute; display: inline-flex; align-items: center; gap: .45rem; padding: .5rem .8rem; border-radius: 999px;
+          background: rgba(255,255,255,.94); box-shadow: 0 .7rem 1.8rem rgba(40,25,60,.16); border: 1px solid rgba(255,255,255,.7);
+          font: 650 .74rem var(--font-sans), sans-serif; color: var(--ink); white-space: nowrap; backdrop-filter: blur(6px);
+          opacity: 0; animation: chipPop 10.5s ease-in-out infinite; }
+        .fl-chip b { display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem; border-radius: 50%; font-size: .68rem; font-weight: 800; }
+        .fl-chip b.ok { background: oklch(90% .09 155); color: oklch(46% .13 155); }
+        .fl-chip b.msg { background: oklch(91% .07 300); color: oklch(48% .14 300); }
+        .fl-chip b.pay { background: oklch(91% .08 250); color: oklch(46% .14 250); }
+        .fl-chip-1 { top: 5%; left: -8%; animation-delay: 0s; }
+        .fl-chip-2 { top: 33%; left: -16%; animation-delay: 3.5s; }
+        .fl-chip-3 { top: 61%; left: -4%; animation-delay: 7s; }
+        @keyframes chipPop {
+          0% { opacity: 0; transform: translateY(12px) scale(.9); }
+          5% { opacity: 1; transform: translateY(0) scale(1); }
+          26% { opacity: 1; transform: translateY(-7px) scale(1); }
+          33% { opacity: 0; transform: translateY(-14px) scale(.96); }
+          100% { opacity: 0; }
+        }
+        @media (max-width: 820px) { .fl-notif { display: none; } }
+        @media (prefers-reduced-motion: reduce) { .fl-chip { animation: none; opacity: 1; } .fl-chip-2 { top: 33%; } }
         .fl-pupa.s1 { animation: pupaFade 12s infinite; animation-delay: 0s; }
         .fl-pupa.s2 { animation: pupaFade 12s infinite; animation-delay: 4s; }
         .fl-pupa.s3 { animation: pupaFade 12s infinite; animation-delay: 8s; }
