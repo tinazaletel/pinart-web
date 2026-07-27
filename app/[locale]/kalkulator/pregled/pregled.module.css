@@ -38,7 +38,7 @@
 .shell input[type='date'] { padding-right: 1rem !important; }
 .shell input[type='date']::-webkit-calendar-picker-indicator { width: 1.25rem; height: 1.25rem; margin-left: .75rem; padding: .15rem; cursor: pointer; opacity: .9; }
 .shell :is(input, textarea)::placeholder { color: color-mix(in oklch, var(--ink) 58%, transparent); opacity: 1; }
-.shell :is(input, select, textarea, button, a):focus-visible { outline: 2.5px solid color-mix(in oklch, var(--purple) 60%, transparent); outline-offset: 3px; }
+.shell :is(input, select, textarea, button, a):focus-visible { outline: 2px solid transparent; box-shadow: 0 0 0 2.5px color-mix(in oklch, var(--purple) 40%, transparent); }
 
 .sidebar {
   grid-column: 1;
