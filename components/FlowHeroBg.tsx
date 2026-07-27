@@ -109,6 +109,9 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
           <span className="fl-chip fl-chip-1"><b className="ok"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg></b>Ponudba sprejeta</span>
           <span className="fl-chip fl-chip-2"><b className="msg"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z" /></svg></b>Nova stranka</span>
           <span className="fl-chip fl-chip-3"><b className="pay">€</b>Plačano · 1.200 €</span>
+          <span className="fl-chip fl-chip-4"><b className="ok"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg></b>Račun poslan</span>
+          <span className="fl-chip fl-chip-5"><b className="star"><svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z" /></svg></b>Nova ocena · 5,0</span>
+          <span className="fl-chip fl-chip-6"><b className="ok"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg></b>Pogodba podpisana</span>
         </div>
       </div>
 
@@ -167,14 +170,18 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         .fl-chip { position: absolute; display: inline-flex; align-items: center; gap: .45rem; padding: .5rem .8rem; border-radius: 999px;
           background: rgba(255,255,255,.94); box-shadow: 0 .7rem 1.8rem rgba(40,25,60,.16); border: 1px solid rgba(255,255,255,.7);
           font: 650 .74rem var(--font-sans), sans-serif; color: var(--ink); white-space: nowrap; backdrop-filter: blur(6px);
-          opacity: 0; animation: chipPop 10.5s ease-in-out infinite; }
+          opacity: 0; animation: chipPop 9s ease-in-out infinite; }
         .fl-chip b { display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem; border-radius: 50%; font-size: .68rem; font-weight: 800; }
         .fl-chip b.ok { background: oklch(90% .09 155); color: oklch(46% .13 155); }
         .fl-chip b.msg { background: oklch(91% .07 300); color: oklch(48% .14 300); }
         .fl-chip b.pay { background: oklch(91% .08 250); color: oklch(46% .14 250); }
+        .fl-chip b.star { background: oklch(93% .09 85); color: oklch(55% .13 70); }
         .fl-chip-1 { top: 6%; left: 24%; animation-delay: 0s; }
-        .fl-chip-2 { top: 34%; left: 15%; animation-delay: 3.5s; }
-        .fl-chip-3 { top: 24%; left: 28%; animation-delay: 7s; }
+        .fl-chip-2 { top: 34%; left: 15%; animation-delay: 1.5s; }
+        .fl-chip-3 { top: 24%; left: calc(28% - 20px); animation-delay: 3s; }
+        .fl-chip-4 { top: 15%; left: 40%; animation-delay: 4.5s; }
+        .fl-chip-5 { top: 44%; left: 26%; animation-delay: 6s; }
+        .fl-chip-6 { top: 12%; left: 45%; animation-delay: 7.5s; }
         @keyframes chipPop {
           0% { opacity: 0; transform: translateY(12px) scale(.9); }
           5% { opacity: 1; transform: translateY(0) scale(1); }
