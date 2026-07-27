@@ -140,10 +140,12 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         .fl-pupa { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; display: block; opacity: 0; }
         .fl-pupa.solo { opacity: 1; transform: scaleX(-1); }
         /* elektronski odsev zaslona v ocalih (mesano "screen") — leve/desna leca; pozicijo po potrebi nastavi */
-        .fl-ocala { position: absolute; inset: 0; pointer-events: none; }
-        .fl-leca { position: absolute; width: 3.8%; aspect-ratio: 1.15; border-radius: 50%; overflow: hidden; opacity: .55; mix-blend-mode: screen; }
-        .fl-leca-l { left: 50.5%; top: 24.5%; }
-        .fl-leca-r { left: 59%; top: 24%; }
+        /* .fl-ocala = kvadrat cez celo sirino, poravnan na DNO in zrcaljen (kot slika, ki je 1:1 contain
+           bottom + scaleX(-1)). Tako so leve/desna leca postavljene po DEJANSKIH koordinatah ocal v sliki. */
+        .fl-ocala { position: absolute; left: 0; right: 0; bottom: 0; aspect-ratio: 1; transform: scaleX(-1); pointer-events: none; }
+        .fl-leca { position: absolute; width: 4.6%; aspect-ratio: 0.9; border-radius: 50%; overflow: hidden; opacity: .5; mix-blend-mode: screen; }
+        .fl-leca-l { left: 37.4%; top: 24.2%; }
+        .fl-leca-r { left: 42.4%; top: 23.9%; }
         .fl-leca i { position: absolute; inset: -30%;
           background:
             repeating-linear-gradient(0deg, rgba(120,210,255,.5) 0 1.5px, transparent 1.5px 5px),
