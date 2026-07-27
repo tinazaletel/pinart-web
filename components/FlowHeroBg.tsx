@@ -145,7 +145,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         .fl-ocala { position: absolute; left: 0; right: 0; bottom: 0; aspect-ratio: 1; transform: scaleX(-1); pointer-events: none; }
         .fl-leca { position: absolute; width: 4.6%; aspect-ratio: 0.9; border-radius: 50%; overflow: hidden; opacity: .5; mix-blend-mode: screen; }
         .fl-leca-l { left: 37.4%; top: 24.2%; }
-        .fl-leca-r { left: 42.4%; top: 23.9%; }
+        .fl-leca-r { left: calc(42.4% + 3px); top: calc(23.9% + 3px); }
         .fl-leca i { position: absolute; inset: -30%;
           background:
             repeating-linear-gradient(0deg, rgba(120,210,255,.5) 0 1.5px, transparent 1.5px 5px),
