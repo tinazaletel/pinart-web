@@ -255,10 +255,10 @@
   box-shadow: inset 0 0 10px rgba(255,255,255,.5), 0 .35rem .9rem oklch(55% .16 300 / .12);
   animation: bubbleFloat var(--bd, 8s) ease-in-out infinite alternate;
 }
-.cardBubbles u:nth-child(1) { width: 3rem; height: 3rem; left: 9%; top: 24%; --bt: oklch(80% .13 300 / .45); --bd: 9s; }
-.cardBubbles u:nth-child(2) { width: 2.05rem; height: 2.05rem; left: 31%; top: 12%; --bt: oklch(82% .12 165 / .42); --bd: 11s; animation-delay: -4s; }
-.cardBubbles u:nth-child(3) { width: 1.45rem; height: 1.45rem; left: 19%; top: 56%; --bt: oklch(82% .12 332 / .42); --bd: 7.5s; animation-delay: -6s; }
-.cardBubbles u:nth-child(4) { width: .95rem; height: .95rem; left: 41%; top: 42%; --bt: oklch(80% .1 258 / .4); --bd: 10s; animation-delay: -2s; }
+.cardBubbles u:nth-child(1) { width: 6.4rem; height: 6.4rem; left: 5%; top: 8%; --bt: oklch(80% .13 300 / .42); --bd: 9s; }
+.cardBubbles u:nth-child(2) { width: 4.6rem; height: 4.6rem; left: 33%; top: 18%; --bt: oklch(82% .12 165 / .4); --bd: 11s; animation-delay: -4s; }
+.cardBubbles u:nth-child(3) { width: 3.3rem; height: 3.3rem; left: 14%; top: 44%; --bt: oklch(82% .12 332 / .4); --bd: 7.5s; animation-delay: -6s; }
+.cardBubbles u:nth-child(4) { width: 2.2rem; height: 2.2rem; left: 49%; top: 34%; --bt: oklch(80% .1 258 / .38); --bd: 10s; animation-delay: -2s; }
 /* mehurcki na razlicnih mestih po karticah */
 .flowTools > *:nth-child(even) .cardBubbles { transform: scaleX(-1); }
 .flowTools > *:nth-child(3n) .cardBubbles { transform: rotate(9deg) scale(1.03); }
