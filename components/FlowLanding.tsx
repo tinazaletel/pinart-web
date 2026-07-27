@@ -65,14 +65,16 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     return () => io.disconnect();
   }, []);
 
-  /* Leteci 3D papir (ponudba) — potuje ob drsanju po strani in na koncu pade v kos (O nas).
-     Cist scroll-driven izracun (brez GSAP plugina), Safari-varno; hidden na mobilnem in reduce-motion. */
-  const flyRef = useRef<HTMLImageElement>(null);
+  /* Leteci papirnati objekt — potuje ob drsanju po strani, se preliva kepa->ptic->ladjica->kepa
+     in na koncu pade v kos (O nas). Cist scroll-driven (brez GSAP), Safari-varno; hidden na mob/reduce-motion. */
+  const flyRef = useRef<HTMLDivElement>(null);
   const kosRef = useRef<HTMLImageElement>(null);
   useEffect(() => {
     const fly = flyRef.current;
     if (!fly) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { fly.style.display = 'none'; return; }
+    const imgs = fly.querySelectorAll('img');
+    const ball = imgs[0] as HTMLElement | undefined, bird = imgs[1] as HTMLElement | undefined, boat = imgs[2] as HTMLElement | undefined;
     let raf = 0;
     const update = () => {
       raf = 0;
@@ -84,8 +86,19 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       const weave = Math.sin(travel / 240);
       let x = vw * (0.85 + weave * 0.07);   // desni jarek, rahlo vijuga
       let ty = vh * 0.4;
-      let rot = travel * 0.11;
+      let rot = travel * 0.09;
       let scale = 1, op = 1;
+      // prelivanje likov glede na polozaj na strani
+      const docH = document.documentElement.scrollHeight;
+      const frac = Math.min(1, Math.max(0, y / (docH - vh)));
+      let oBall = 1, oBird = 0, oBoat = 0;
+      if (frac < 0.32) { oBall = 1; }
+      else if (frac < 0.45) { const t = (frac - 0.32) / 0.13; oBall = 1 - t; oBird = t; }
+      else if (frac < 0.55) { oBird = 1; }
+      else if (frac < 0.66) { const t = (frac - 0.55) / 0.11; oBird = 1 - t; oBoat = t; }
+      else if (frac < 0.72) { oBoat = 1; }
+      else if (frac < 0.83) { const t = (frac - 0.72) / 0.11; oBoat = 1 - t; oBall = t; }
+      else { oBall = 1; }
       const kos = kosRef.current;
       if (kos) {
         const r = kos.getBoundingClientRect();
@@ -96,10 +109,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           x += (mouthX - x) * d;
           ty += (mouthY - ty) * d;
           scale = 1 - d * 0.55;
-          rot += d * 220;
+          rot += d * 200;
           op = d > 0.82 ? Math.max(0, 1 - (d - 0.82) / 0.18) : 1;   // izgine, ko pade v kos
+          oBall = 1; oBird = 0; oBoat = 0;                          // ob padcu je vedno kepa
         }
       }
+      if (ball) ball.style.opacity = String(oBall);
+      if (bird) bird.style.opacity = String(oBird);
+      if (boat) boat.style.opacity = String(oBoat);
       fly.style.opacity = String(op);
       fly.style.transform = `translate(${x}px, ${ty}px) translate(-50%, -50%) rotate(${rot}deg) scale(${scale})`;
     };
@@ -745,8 +762,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @keyframes flPropBob { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-7px) rotate(-1deg); } }
         @media (max-width: 720px) { .fl-prop-kos { left: 3%; width: 6rem; } .fl-prop-plant { right: 3%; width: 8.5rem; } }
         @media (prefers-reduced-motion: reduce) { .fl-prop { animation: none; } }
-        /* leteci 3D papir (ponudba) — potuje po strani, pade v kos (pozicija iz JS) */
-        .fl-fly { position: fixed; left: 0; top: 0; width: clamp(3.4rem, 4.6vw, 4.9rem); z-index: 6; pointer-events: none; opacity: 0; will-change: transform, opacity; filter: drop-shadow(0 14px 22px rgba(40,25,60,.22)); }
+        /* leteci papirnati objekt — potuje po strani, se preliva, pade v kos (pozicija/prelivanje iz JS) */
+        .fl-fly { position: fixed; left: 0; top: 0; width: clamp(3.8rem, 5.2vw, 5.6rem); aspect-ratio: 1; z-index: 6; pointer-events: none; opacity: 0; will-change: transform, opacity; }
+        .fl-fly img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .18s linear; filter: drop-shadow(0 14px 22px rgba(40,25,60,.22)); }
         @media (max-width: 720px) { .fl-fly { display: none; } }
         /* mehki reveal sekcij ob drsanju (razred doda JS; reduce-motion = brez) */
         .fl-reveal { opacity: 0; transform: translateY(26px); transition: opacity .85s cubic-bezier(.22,1,.36,1), transform .85s cubic-bezier(.22,1,.36,1); }
@@ -790,7 +808,11 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       <AmbientBubbles />
 
       <FlowHeroBg />
-      <img src="/flow/icon-ponudba.png" className="fl-fly" ref={flyRef} alt="" aria-hidden />
+      <div className="fl-fly" ref={flyRef} aria-hidden>
+        <img src="/flow/paper-ball.png" alt="" loading="lazy" />
+        <img src="/flow/paper-bird.png" alt="" loading="lazy" />
+        <img src="/flow/paper-boat.png" alt="" loading="lazy" />
+      </div>
 
       <div className="fl-oder">
         <section className="fl-hero">
