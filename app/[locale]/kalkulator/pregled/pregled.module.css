@@ -169,6 +169,13 @@
 @media (prefers-reduced-motion: reduce) { .workspace::before, .workspace::after { animation: none; } }
 .topbar { display: flex; justify-content: space-between; gap: 1.5rem; align-items: end; padding-bottom: 2rem; }
 .topbarSub { margin: .55rem 0 0; font: 400 .95rem/1.5 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 60%, transparent); max-width: 48ch; }
+.tipBar { margin-top: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; padding: 1.05rem 1.35rem; border-radius: 1.45rem; background: oklch(93.7% .016 87); }
+.tipMain { display: flex; align-items: center; gap: 1rem; min-width: 0; }
+.tipIcon { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: oklch(93% .09 90); color: oklch(52% .13 75); flex: none; }
+.tipMain .eyebrow { margin: 0 0 .1rem; }
+.tipText { margin: 0; font: 400 .9rem/1.45 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 66%, transparent); }
+.tipCta { display: inline-flex; align-items: center; gap: .5rem; padding: .75rem 1.3rem; border-radius: 999px; background: var(--ink); color: var(--paper); font: 650 .8rem var(--font-sans), sans-serif; text-decoration: none; white-space: nowrap; }
+.tipCta:hover { filter: brightness(1.12); }
 .eyebrow { margin: 0 0 .55rem; font-size: .64rem; line-height: 1; font-weight: 800; letter-spacing: .14em; color: color-mix(in oklch, var(--ink) 85%, transparent); }
 .topbar .eyebrow { color: oklch(62% .13 300); }
 .topbar h1, .pulse h2, .sectionHeading h2 { margin: 0; font-family: var(--font-serif), Georgia, serif; font-weight: 500; }
@@ -214,7 +221,8 @@
 .bandTitle { display: flex; align-items: end; justify-content: space-between; gap: 2rem; padding: .5rem .4rem 1.15rem; }
 .bandTitle h2 { margin: 0; font: 500 clamp(1.5rem, 2.6vw, 2.15rem)/1 var(--font-serif), Georgia, serif; }
 .bandTitle > p:last-child { max-width: 28rem; margin: 0; color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .64rem; line-height: 1.45; }
-.flowTools { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .65rem; }
+.flowTools { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .65rem; }
+@media (max-width: 1150px) { .flowTools { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .flowTools > * { position: relative; min-height: 9.5rem; display: flex; flex-direction: column; align-items: flex-start; padding: 1rem; border: 0; border-radius: 1rem; background: oklch(98% .01 87); color: inherit; font: inherit; text-align: left; text-decoration: none; cursor: pointer; overflow: hidden; transition: transform 340ms cubic-bezier(.22,1,.36,1), border-radius 340ms cubic-bezier(.22,1,.36,1), box-shadow 340ms cubic-bezier(.22,1,.36,1), filter 340ms ease-out; }
 .flowTools > *::after { content: ''; position: absolute; z-index: 0; right: -1.8rem; top: -4.8rem; width: 14rem; aspect-ratio: 1; border: 2px solid oklch(100% 0 0 / .28); border-radius: 50%; background: radial-gradient(circle at 38% 60%, oklch(100% 0 0 / .35), oklch(100% 0 0 / .08) 42%, transparent 68%); box-shadow: -1.5rem 1rem 3rem oklch(100% 0 0 / .2), inset 1.2rem -1rem 2.8rem oklch(100% 0 0 / .12); }
 .flowTools > *::before { content: ''; position: absolute; z-index: 0; pointer-events: none; }
@@ -236,11 +244,11 @@
 /* Vse kartice enak nezen VECTONSKI preliv (vijola->mint->roza, svetli) z VIDNIM valovanjem; identiteta gre na clay ikone. */
 .flowTools > *:nth-child(1n) { background: oklch(93.7% .016 87); background-size: auto; color: var(--ink); border: 1px solid oklch(100% 0 0 / .6); box-shadow: 0 .7rem 2rem oklch(30% .03 300 / .06); animation: none; }
 /* naslov in podnaslov ne smeta cez clay ikono (desno spodaj) */
-.flowTools strong, .flowTools small { padding-right: 4.3rem; }
+.flowTools strong, .flowTools small { padding-right: 2.6rem; }
 .flowTools span { position: relative; z-index: 2; font-size: .56rem; font-weight: 850; letter-spacing: .1em; }
-.flowTools strong { position: relative; z-index: 2; margin-top: auto; font: 600 1.55rem var(--font-sans), system-ui, sans-serif; letter-spacing: -.01em; -webkit-text-stroke: 0; }
-.flowTools small { position: relative; z-index: 2; margin-top: .32rem; color: color-mix(in oklch, currentColor 72%, transparent); font-size: .59rem; }
-.flowTools i { z-index: 3; position: absolute; top: 1rem; right: 1rem; display: grid; place-items: center; width: 2.2rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .38); border-radius: 50%; background: oklch(100% 0 0 / .18); color: currentColor; font: 500 1.25rem/1 var(--font-sans), sans-serif; font-style: normal; }
+.flowTools strong { position: relative; z-index: 2; margin-top: .1rem; font: 600 1.2rem var(--font-sans), system-ui, sans-serif; letter-spacing: -.01em; -webkit-text-stroke: 0; }
+.flowTools small { position: relative; z-index: 2; margin-top: .3rem; color: color-mix(in oklch, currentColor 72%, transparent); font-size: .62rem; line-height: 1.35; }
+.flowTools i { z-index: 3; position: absolute; top: auto; right: auto; bottom: 1rem; left: 1rem; display: grid; place-items: center; width: 2.1rem; aspect-ratio: 1; border: 1px solid oklch(30% .04 300 / .16); border-radius: 50%; background: oklch(100% 0 0 / .65); color: var(--ink); font: 500 1.25rem/1 var(--font-sans), sans-serif; font-style: normal; }
 .flowTools i svg { display: block; }
 .toolIcon { display: none; }
 .flowTools > *:nth-child(4) .toolIcon { stroke: var(--ink); }
@@ -278,8 +286,8 @@
 .flowTools > *:nth-child(6) .cardBubbles u:nth-child(4) { display: none; }
 @media (prefers-reduced-motion: reduce) { .cardBubbles u { animation: none; } }
 .flowTools > *:nth-child(1n)::after {
-  right: -1.5rem; bottom: -1.7rem; top: auto; left: auto;
-  width: 8.2rem; height: 8.2rem; aspect-ratio: auto;
+  right: -.9rem; bottom: -1.2rem; top: auto; left: auto;
+  width: 6.6rem; height: 6.6rem; aspect-ratio: auto;
   border: 0; box-shadow: none; border-radius: 0;
   background: center / contain no-repeat;
   filter: drop-shadow(0 .5rem .8rem oklch(30% .05 300 / .22));
@@ -290,7 +298,7 @@
 .flowTools > *:nth-child(3)::after { background-image: url('/flow/icon-projekt.png'); animation-delay: -2s; }
 .flowTools > *:nth-child(4)::after { background-image: url('/flow/icon-stranke.png'); animation-delay: -3s; }
 .flowTools > *:nth-child(5)::after { background-image: url('/flow/icon-koledar.png'); animation-delay: -1.5s; }
-.flowTools > *:nth-child(6)::after { background-image: url('/flow/icon-naloge.png'); animation-delay: -2.5s; }
+.flowTools > *:nth-child(6)::after { background-image: url('/flow/icon-dolgorocno.png'); animation-delay: -2.5s; }
 .flowTools > *:nth-child(7)::after { background-image: url('/flow/icon-cas.png'); animation-delay: -.5s; }
 .flowTools > *:nth-child(8)::after { background-image: url('/flow/icon-dolgorocno.png'); animation-delay: -3.5s; }
 @keyframes iconBob { from { transform: translateY(2px); } to { transform: translateY(-7px); } }
