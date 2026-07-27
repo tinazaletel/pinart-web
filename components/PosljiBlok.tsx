@@ -81,9 +81,11 @@ export default function PosljiBlok({
     try {
       const rez = await posljiMail({ to: prejemniki, subject, html: zgradiHtml(), replyTo: replyTo || undefined });
       if (rez.ok) {
-        setMailStatus('Poslano' + (imeStranke ? ' — ' + imeStranke : '') + '.');
-        /* kratek uspešni utrip gumba (»Poslano!«), nato zapri potrditev in
-           se vrni na »Pošlji« z ikono */
+        /* uspeh sporoči GUMB (»Poslano naročniku«); statusne vrstice ob uspehu
+           NE kažemo (njeno pojavljanje/izginjanje je povzročalo skok) */
+        setMailStatus('');
+        /* kratek uspešni utrip gumba (»Poslano naročniku«), nato zapri potrditev
+           in se vrni na »Pošlji« z ikono */
         setPosljiUspeh(true);
         window.setTimeout(() => { setPosljiUspeh(false); setPotrdiPosiljanje(false); }, 1600);
       } else {
@@ -147,27 +149,27 @@ export default function PosljiBlok({
               aria-label="Dodaj prejemnika" />
           </div>
         </div>
-        {!potrdiPosiljanje ? (
-          <div className="posl-gumb-vrsta">
-            <button type="button" className="posl-gumb" disabled={posiljamMail || samoOgled || prejemniki.length === 0}
-              title={samoOgled ? 'V predogledu pošiljanje ni na voljo' : undefined}
-              onClick={() => { setMailStatus(''); setPotrdiPosiljanje(true); }}>
-              <PaperPlaneTilt size={17} /> Pošlji
-            </button>
-          </div>
-        ) : (
-          <div className="posl-potrdi">
-            <span className="posl-potrdi-txt">
-              {'Pošiljam ' + prejemniki.length + (prejemniki.length === 1 ? ' prejemniku:' : ' prejemnikom:')}{' '}
-              <b>{prejemniki.join(', ')}</b>
-            </span>
-            <div className="posl-potrdi-gumbi">
+        <div className="posl-akcija">
+          <span className={'posl-potrdi-txt' + (potrdiPosiljanje ? '' : ' je-skrit')} aria-hidden={!potrdiPosiljanje}>
+            {'Pošiljam ' + prejemniki.length + (prejemniki.length === 1 ? ' prejemniku:' : ' prejemnikom:')}{' '}
+            <b>{prejemniki.join(', ')}</b>
+          </span>
+          {!potrdiPosiljanje ? (
+            <div className="posl-gumb-vrsta">
+              <button type="button" className="posl-gumb" disabled={posiljamMail || samoOgled || prejemniki.length === 0}
+                title={samoOgled ? 'V predogledu pošiljanje ni na voljo' : undefined}
+                onClick={() => { setMailStatus(''); setPotrdiPosiljanje(true); }}>
+                <PaperPlaneTilt size={17} /> Pošlji
+              </button>
+            </div>
+          ) : (
+            <div className="posl-gumb-vrsta posl-potrdi-gumbi">
               <button type="button"
                 className={'posl-gumb' + (posiljamMail ? ' je-poslano' : '') + (posljiUspeh ? ' je-uspeh' : '')}
                 disabled={posiljamMail || posljiUspeh}
                 onClick={() => { posljiDok(); }}>
                 {posljiUspeh ? (
-                  <><Check size={17} weight="bold" /> Poslano!</>
+                  <><Check size={17} weight="bold" /> Poslano naročniku</>
                 ) : posiljamMail ? (
                   <span className="posl-poslji-nalag">
                     <span className="posl-letalo-ovoj"><PaperPlaneTilt size={17} /></span>
@@ -184,8 +186,8 @@ export default function PosljiBlok({
                 </button>
               )}
             </div>
-          </div>
-        )}
+          )}
+        </div>
         {mailStatus && <p className="posl-status" role="status">{mailStatus}</p>}
       </div>
 
@@ -205,6 +207,8 @@ export default function PosljiBlok({
         .posl-root .posl-cip-oznaka { font-size: .6rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: .1rem .32rem; border-radius: 999px; background: rgba(17,17,17,.08); color: rgba(17,17,17,.55); }
         .posl-root .posl-vnos { flex: 1 1 8rem; min-width: 8rem; border: 0; outline: none; background: transparent; font: inherit; font-size: .9rem; color: var(--posl-ink); padding: .32rem .2rem; }
         .posl-root .posl-vnos::placeholder { color: rgba(17,17,17,.4); }
+        /* prepreči rumeno ozadje ob samodejnem izpolnjevanju (Chrome/Safari autofill) */
+        .posl-root .posl-vnos:-webkit-autofill, .posl-root .posl-vnos:-webkit-autofill:hover, .posl-root .posl-vnos:-webkit-autofill:focus { -webkit-box-shadow: 0 0 0 100px #fff inset; -webkit-text-fill-color: var(--posl-ink); caret-color: var(--posl-ink); transition: background-color 9999s ease 0s; }
         .posl-root .posl-kontakti { position: relative; flex: 0 0 auto; }
         .posl-root .posl-kontakti > .povezava { white-space: nowrap; }
         .posl-root .posl-kontakti-list { position: absolute; right: 0; z-index: 6; margin-top: .35rem; min-width: 15rem; max-width: 24rem; padding: .3rem; border: 1px solid rgba(17,17,17,.16); border-radius: 12px; background: #fff; box-shadow: 0 12px 28px rgba(35,18,45,.16); display: flex; flex-direction: column; }
@@ -213,8 +217,9 @@ export default function PosljiBlok({
         .posl-root .posl-kontakt-opt span { color: rgba(17,17,17,.6); }
         .posl-root .posl-kontakt-opt:hover { background: var(--posl-paper); }
         /* Primarni gumb: črni pill z oživljenimi besedilnimi stanji. Vodoravno centriran. */
-        .posl-root .posl-gumb-vrsta { display: flex; justify-content: center; margin-top: 1.05rem; }
-        .posl-root .posl-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-width: 11rem; font-family: inherit; font-size: .92rem; font-weight: 600; letter-spacing: .01em; cursor: pointer; border-radius: 999px; padding: .8rem 2rem; border: 1px solid var(--posl-ink); background: var(--posl-ink); color: var(--posl-paper); transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s cubic-bezier(.22,1,.36,1), opacity .3s ease, background .55s cubic-bezier(.22,1,.36,1), border-color .55s cubic-bezier(.22,1,.36,1), color .55s cubic-bezier(.22,1,.36,1); }
+        .posl-root .posl-akcija { margin-top: 1.05rem; }
+        .posl-root .posl-gumb-vrsta { display: flex; justify-content: center; }
+        .posl-root .posl-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-width: 11rem; min-height: 2.85rem; box-sizing: border-box; font-family: inherit; font-size: .92rem; font-weight: 600; letter-spacing: .01em; cursor: pointer; border-radius: 999px; padding: .8rem 2rem; border: 1px solid var(--posl-ink); background: var(--posl-ink); color: var(--posl-paper); transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s cubic-bezier(.22,1,.36,1), opacity .3s ease, background .55s cubic-bezier(.22,1,.36,1), border-color .55s cubic-bezier(.22,1,.36,1), color .55s cubic-bezier(.22,1,.36,1); }
         .posl-root .posl-gumb:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(35,18,45,.2); }
         .posl-root .posl-gumb:active:not(:disabled) { transform: translateY(0) scale(.98); }
         .posl-root .posl-gumb:disabled { cursor: default; opacity: .4; }
@@ -233,8 +238,10 @@ export default function PosljiBlok({
         .posl-root .posl-pike span:nth-child(2) { animation-delay: .2s; }
         .posl-root .posl-pike span:nth-child(3) { animation-delay: .4s; }
         @keyframes poslPika { 0%, 60%, 100% { opacity: .25; } 30% { opacity: 1; } }
-        .posl-root .posl-potrdi { margin-top: 1.05rem; display: flex; flex-direction: column; align-items: center; gap: .7rem; text-align: center; }
-        .posl-root .posl-potrdi-txt { font-size: .88rem; color: var(--posl-ink); line-height: 1.5; }
+        /* potrditveno besedilo je vedno prisotno (rezervira prostor), ob mirovanju
+           samo nevidno — tako menjava faze ne premakne gumba navpično */
+        .posl-root .posl-potrdi-txt { display: block; text-align: center; font-size: .88rem; color: var(--posl-ink); line-height: 1.5; margin-bottom: .7rem; }
+        .posl-root .posl-potrdi-txt.je-skrit { visibility: hidden; }
         .posl-root .posl-potrdi-txt b { font-weight: 700; word-break: break-word; }
         .posl-root .posl-potrdi-gumbi { display: flex; align-items: center; justify-content: center; gap: 1.1rem; flex-wrap: wrap; }
         .posl-root .posl-status { margin: .6rem 0 0; font-size: .85rem; color: var(--posl-ink); text-align: center; }

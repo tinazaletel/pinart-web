@@ -4045,9 +4045,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       const rez = await posljiMail({ to: prejemniki, subject, html: doc, replyTo: ponudnik?.email || undefined });
       if (rez.ok) {
         zabeleziNarocnika(narocnikPonudbe);
-        setMailStatus('Poslano naročniku.');
-        /* kratek uspesni utrip gumba (»Poslano!«), nato zapri potrditev in
-           se vrni na »Pošlji« z ikono */
+        /* uspeh sporoči GUMB (»Poslano naročniku«); statusne vrstice ob uspehu
+           NE kažemo (njeno pojavljanje/izginjanje je povzročalo skok) */
+        setMailStatus('');
+        /* kratek uspesni utrip gumba (»Poslano naročniku«), nato zapri potrditev
+           in se vrni na »Pošlji« z ikono */
         setPosljiUspeh(true);
         window.setTimeout(() => { setPosljiUspeh(false); setPotrdiPosiljanje(false); }, 1600);
       } else {
@@ -6498,6 +6500,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .posl-cip-oznaka { font-size: .6rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: .1rem .32rem; border-radius: 999px; background: rgba(17,17,17,.08); color: rgba(17,17,17,.55); }
         .cw .posl-vnos { flex: 1 1 8rem; min-width: 8rem; border: 0; outline: none; background: transparent; font: inherit; font-size: .9rem; color: var(--ink); padding: .32rem .2rem; }
         .cw .posl-vnos::placeholder { color: rgba(17,17,17,.4); }
+        /* prepreči rumeno ozadje ob samodejnem izpolnjevanju (Chrome/Safari autofill) */
+        .cw .posl-vnos:-webkit-autofill, .cw .posl-vnos:-webkit-autofill:hover, .cw .posl-vnos:-webkit-autofill:focus { -webkit-box-shadow: 0 0 0 100px #fff inset; -webkit-text-fill-color: var(--ink); caret-color: var(--ink); transition: background-color 9999s ease 0s; }
         .cw .posl-kontakti { position: relative; flex: 0 0 auto; }
         .cw .posl-kontakti > .povezava { white-space: nowrap; }
         .cw .posl-kontakti-list { position: absolute; right: 0; z-index: 6; margin-top: .35rem; min-width: 15rem; max-width: 24rem; padding: .3rem; border: 1px solid rgba(17,17,17,.16); border-radius: 12px; background: #fff; box-shadow: 0 12px 28px rgba(35,18,45,.16); display: flex; flex-direction: column; }
@@ -6507,8 +6511,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .posl-kontakt-opt:hover { background: var(--paper, #f4f1ea); }
         /* Primarni gumb: NAŠ črni pill (kot ostali črni gumbi aplikacije),
            z oživljenimi besedilnimi stanji. Vodoravno centriran. */
-        .cw .posl-gumb-vrsta { display: flex; justify-content: center; margin-top: 1.05rem; }
-        .cw .posl-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-width: 11rem; font-family: inherit; font-size: .92rem; font-weight: 600; letter-spacing: .01em; cursor: pointer; border-radius: 999px; padding: .8rem 2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s cubic-bezier(.22,1,.36,1), opacity .3s ease, background .55s cubic-bezier(.22,1,.36,1), border-color .55s cubic-bezier(.22,1,.36,1), color .55s cubic-bezier(.22,1,.36,1); }
+        /* skupni ovoj področja pošiljanja: stabilna višina, da gumb med fazami
+           (Pošlji → potrditev → Pošiljam → Poslano → nazaj) navpično NE skoči */
+        .cw .posl-akcija { margin-top: 1.05rem; }
+        .cw .posl-gumb-vrsta { display: flex; justify-content: center; }
+        .cw .posl-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-width: 11rem; min-height: 2.85rem; box-sizing: border-box; font-family: inherit; font-size: .92rem; font-weight: 600; letter-spacing: .01em; cursor: pointer; border-radius: 999px; padding: .8rem 2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s cubic-bezier(.22,1,.36,1), opacity .3s ease, background .55s cubic-bezier(.22,1,.36,1), border-color .55s cubic-bezier(.22,1,.36,1), color .55s cubic-bezier(.22,1,.36,1); }
         .cw .posl-gumb:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(35,18,45,.2); }
         .cw .posl-gumb:active:not(:disabled) { transform: translateY(0) scale(.98); }
         .cw .posl-gumb:disabled { cursor: default; opacity: .4; }
@@ -6532,8 +6539,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .posl-pike span:nth-child(2) { animation-delay: .2s; }
         .cw .posl-pike span:nth-child(3) { animation-delay: .4s; }
         @keyframes poslPika { 0%, 60%, 100% { opacity: .25; } 30% { opacity: 1; } }
-        .cw .posl-potrdi { margin-top: 1.05rem; display: flex; flex-direction: column; align-items: center; gap: .7rem; text-align: center; }
-        .cw .posl-potrdi-txt { font-size: .88rem; color: var(--ink); line-height: 1.5; }
+        /* potrditveno besedilo je vedno prisotno (rezervira prostor), ob mirovanju
+           samo nevidno — tako menjava faze ne premakne gumba navpično */
+        .cw .posl-potrdi-txt { display: block; text-align: center; font-size: .88rem; color: var(--ink); line-height: 1.5; margin-bottom: .7rem; }
+        .cw .posl-potrdi-txt.je-skrit { visibility: hidden; }
         .cw .posl-potrdi-txt b { font-weight: 700; word-break: break-word; }
         .cw .posl-potrdi-gumbi { display: flex; align-items: center; justify-content: center; gap: 1.1rem; flex-wrap: wrap; }
         .cw .posl-sekundarne { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 1.4rem; max-width: 560px; margin: 1.1rem auto 0; }
@@ -9007,28 +9016,28 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     aria-label={L('Dodaj prejemnika', 'Add recipient')} />
                 </div>
               </div>
-              {!potrdiPosiljanje ? (
-                <div className="posl-gumb-vrsta">
-                  <button type="button" className="posl-gumb" disabled={posiljamMail || samoOgled || prejemniki.length === 0}
-                    title={samoOgled ? L('V predogledu pošiljanje ni na voljo', 'Sending is unavailable in preview') : undefined}
-                    onClick={() => { setMailStatus(''); setPotrdiPosiljanje(true); }}>
-                    <PaperPlaneTilt size={17} /> {L('Pošlji', 'Send')}
-                  </button>
-                </div>
-              ) : (
-                <div className="posl-potrdi">
-                  <span className="posl-potrdi-txt">
-                    {L('Pošiljam ' + prejemniki.length + (prejemniki.length === 1 ? ' prejemniku:' : ' prejemnikom:'),
-                       'Sending to ' + prejemniki.length + (prejemniki.length === 1 ? ' recipient:' : ' recipients:'))}{' '}
-                    <b>{prejemniki.join(', ')}</b>
-                  </span>
-                  <div className="posl-potrdi-gumbi">
+              <div className="posl-akcija">
+                <span className={'posl-potrdi-txt' + (potrdiPosiljanje ? '' : ' je-skrit')} aria-hidden={!potrdiPosiljanje}>
+                  {L('Pošiljam ' + prejemniki.length + (prejemniki.length === 1 ? ' prejemniku:' : ' prejemnikom:'),
+                     'Sending to ' + prejemniki.length + (prejemniki.length === 1 ? ' recipient:' : ' recipients:'))}{' '}
+                  <b>{prejemniki.join(', ')}</b>
+                </span>
+                {!potrdiPosiljanje ? (
+                  <div className="posl-gumb-vrsta">
+                    <button type="button" className="posl-gumb" disabled={posiljamMail || samoOgled || prejemniki.length === 0}
+                      title={samoOgled ? L('V predogledu pošiljanje ni na voljo', 'Sending is unavailable in preview') : undefined}
+                      onClick={() => { setMailStatus(''); setPotrdiPosiljanje(true); }}>
+                      <PaperPlaneTilt size={17} /> {L('Pošlji', 'Send')}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="posl-gumb-vrsta posl-potrdi-gumbi">
                     <button type="button"
                       className={'posl-gumb' + (posiljamMail ? ' je-poslano' : '') + (posljiUspeh ? ' je-uspeh' : '')}
                       disabled={posiljamMail || posljiUspeh}
                       onClick={() => { posljiPonudbo(); proslaviKonfeti(); }}>
                       {posljiUspeh ? (
-                        <><Check size={17} weight="bold" /> {L('Poslano!', 'Sent!')}</>
+                        <><Check size={17} weight="bold" /> {L('Poslano naročniku', 'Sent to client')}</>
                       ) : posiljamMail ? (
                         <span className="posl-poslji-nalag">
                           <span className="posl-letalo-ovoj"><PaperPlaneTilt size={17} /></span>
@@ -9045,8 +9054,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       </button>
                     )}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
               {mailStatus && <p className="mail-status" role="status">{mailStatus}</p>}
             </div>
             {/* SEKUNDARNE akcije: tiho, brez ponovnega pošiljanja. */}
