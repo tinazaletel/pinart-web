@@ -701,6 +701,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* mehki reveal sekcij ob drsanju (razred doda JS; reduce-motion = brez) */
         .fl-reveal { opacity: 0; transform: translateY(26px); transition: opacity .85s cubic-bezier(.22,1,.36,1), transform .85s cubic-bezier(.22,1,.36,1); }
         .fl-reveal.fl-in { opacity: 1; transform: none; }
+        /* hero naslov — besede se ob nalaganju nezno dvignejo (brez clipa, da ne obreze serifa) */
+        .fl-hero-title .w { display: inline-block; opacity: 0; transform: translateY(.42em); animation: flWordUp .9s cubic-bezier(.22,1,.36,1) both; }
+        @keyframes flWordUp { to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .fl-hero-title .w { opacity: 1; transform: none; animation: none; } }
         .fl-koraki > .fl-reveal:nth-child(2) { transition-delay: .08s; }
         .fl-koraki > .fl-reveal:nth-child(3) { transition-delay: .16s; }
         .fl-bento-mreza > .fl-reveal:nth-child(2), .fl-funkcije-mreza > .fl-reveal:nth-child(2), .fl-cenik-mreza > .fl-reveal:nth-child(2) { transition-delay: .08s; }
@@ -740,7 +744,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       <div className="fl-oder">
         <section className="fl-hero">
           <p className="kicker"><b>Pinart Flow</b> · beta · za samostojne kreativce</p>
-          <h1>Veš, koliko je vredno <em>tvoje delo?</em></h1>
+          <h1 className="fl-hero-title"><span className="w" style={{ animationDelay: '0s' }}>Veš,</span> <span className="w" style={{ animationDelay: '.07s' }}>koliko</span> <span className="w" style={{ animationDelay: '.14s' }}>je</span> <span className="w" style={{ animationDelay: '.21s' }}>vredno</span> <em><span className="w" style={{ animationDelay: '.3s' }}>tvoje</span> <span className="w" style={{ animationDelay: '.38s' }}>delo?</span></em></h1>
           <p className="lead">
             V nekaj klikih do lepo oblikovane ponudbe s pravo ceno in avtorskimi pravicami —
             pa vse do računa in pregleda zaslužka. Nič več ugibanja cen ali skakanja med tremi orodji.
