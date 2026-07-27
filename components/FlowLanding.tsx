@@ -86,20 +86,21 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       const docH = document.documentElement.scrollHeight;
       const frac = Math.min(1, Math.max(0, y / (docH - vh)));
       // trajektorija: kepa pade z mize (hero) -> zraste -> plava po desni -> pade v kos
-      const deskX = vw * 0.70, deskY = vh * 0.58;
-      const bandX = vw * 0.82, bandY = vh * 0.44;
+      const deskX = vw * 0.74, deskY = vh * 0.6;
+      const bandX = vw * 0.82, bandY = vh * 0.42;
+      const fallEnd = vh * 0.95;   // padec z mize se zgodi v prvem zaslonu (v pikslih, ne % strani)
       let x: number, ty: number, scale: number, op = 1;
-      if (frac < 0.14) {
-        const t = frac / 0.14, e = t * t * (3 - 2 * t);   // smoothstep
+      if (y < fallEnd) {
+        const t = y / fallEnd, e = t * t * (3 - 2 * t);   // smoothstep
         x = deskX + (bandX - deskX) * e;
-        ty = deskY + (bandY - deskY) * e + Math.sin(t * Math.PI) * vh * 0.07;  // lok padca
-        scale = 0.42 + 0.58 * e;
+        ty = deskY + (bandY - deskY) * e + Math.sin(t * Math.PI) * vh * 0.06;  // lok padca
+        scale = 0.55 + 0.45 * e;
       } else {
-        x = bandX + Math.sin((frac - 0.14) * 26) * vw * 0.05;   // rahlo vijuga po desni
+        x = bandX + Math.sin((y - fallEnd) / 170) * vw * 0.05;   // rahlo vijuga po desni
         ty = bandY;
         scale = 1;
       }
-      let rot = frac * 900;   // se vrti med potjo
+      let rot = (y / vh) * 200;   // se vrti med potjo (~200 stopinj na zaslon)
       let oBall = 1, oBird = 0, oBoat = 0;
       if (frac < 0.32) { oBall = 1; }
       else if (frac < 0.45) { const t = (frac - 0.32) / 0.13; oBall = 1 - t; oBird = t; }
