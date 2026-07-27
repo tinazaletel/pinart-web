@@ -83,17 +83,23 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       raf = 0;
       const vw = window.innerWidth, vh = window.innerHeight, y = window.scrollY;
       if (vw < 720) { fly.style.opacity = '0'; return; }
-      const start = vh * 0.55;
-      if (y < start) { fly.style.opacity = '0'; return; }
-      const travel = y - start;
-      const weave = Math.sin(travel / 240);
-      let x = vw * (0.85 + weave * 0.07);   // desni jarek, rahlo vijuga
-      let ty = vh * 0.4;
-      let rot = travel * 0.09;
-      let scale = 1, op = 1;
-      // prelivanje likov glede na polozaj na strani
       const docH = document.documentElement.scrollHeight;
       const frac = Math.min(1, Math.max(0, y / (docH - vh)));
+      // trajektorija: kepa pade z mize (hero) -> zraste -> plava po desni -> pade v kos
+      const deskX = vw * 0.70, deskY = vh * 0.58;
+      const bandX = vw * 0.82, bandY = vh * 0.44;
+      let x: number, ty: number, scale: number, op = 1;
+      if (frac < 0.14) {
+        const t = frac / 0.14, e = t * t * (3 - 2 * t);   // smoothstep
+        x = deskX + (bandX - deskX) * e;
+        ty = deskY + (bandY - deskY) * e + Math.sin(t * Math.PI) * vh * 0.07;  // lok padca
+        scale = 0.42 + 0.58 * e;
+      } else {
+        x = bandX + Math.sin((frac - 0.14) * 26) * vw * 0.05;   // rahlo vijuga po desni
+        ty = bandY;
+        scale = 1;
+      }
+      let rot = frac * 900;   // se vrti med potjo
       let oBall = 1, oBird = 0, oBoat = 0;
       if (frac < 0.32) { oBall = 1; }
       else if (frac < 0.45) { const t = (frac - 0.32) / 0.13; oBall = 1 - t; oBird = t; }
@@ -766,7 +772,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 720px) { .fl-prop-kos { left: 3%; width: 6rem; } .fl-prop-plant { right: 3%; width: 8.5rem; } }
         @media (prefers-reduced-motion: reduce) { .fl-prop { animation: none; } }
         /* leteci papirnati objekt — potuje po strani, se preliva, pade v kos (pozicija/prelivanje iz JS) */
-        .fl-fly { position: fixed; left: 0; top: 0; width: clamp(3.8rem, 5.2vw, 5.6rem); aspect-ratio: 1; z-index: 6; pointer-events: none; opacity: 0; will-change: transform, opacity; }
+        .fl-fly { position: fixed; left: 0; top: 0; width: clamp(6rem, 8.5vw, 9.5rem); aspect-ratio: 1; z-index: 20; pointer-events: none; opacity: 0; will-change: transform, opacity; }
         .fl-fly img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .18s linear; filter: drop-shadow(0 14px 22px rgba(40,25,60,.22)); }
         @media (max-width: 720px) { .fl-fly { display: none; } }
         /* mehki reveal sekcij ob drsanju (razred doda JS; reduce-motion = brez) */
