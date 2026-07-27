@@ -130,7 +130,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       if (bird) bird.style.opacity = String(oBird);
       if (boat) boat.style.opacity = String(oBoat);
       fly.style.opacity = String(op);
-      fly.style.transform = `translate(${x}px, ${ty}px) translate(-50%, -50%) rotate(${rot}deg) scale(${scale})`;
+      fly.style.transform = `translate(${x - 10}px, ${ty}px) translate(-50%, -50%) rotate(${rot}deg) scale(${scale})`;
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
     update();
