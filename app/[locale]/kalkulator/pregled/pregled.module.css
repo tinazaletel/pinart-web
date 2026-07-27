@@ -205,13 +205,13 @@
 .flowBand, .historyBand, .resultsBand { margin-top: 1rem; padding: 1rem; border: 0; border-radius: 1.45rem; background: oklch(97% .01 87 / .9); box-shadow: 0 1.2rem 3.5rem oklch(20% .02 55 / .05); }
 .flowBand { margin-top: .35rem; }
 .sectionHeader { display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; padding: .55rem .45rem 1rem; }
-.sectionHeader h2 { margin: 0; font: 600 clamp(1.3rem, 1.9vw, 1.85rem)/1.05 var(--font-sans), sans-serif; letter-spacing: -.01em; }
+.sectionHeader h2 { margin: 0; font: 500 clamp(1.35rem, 2vw, 2rem)/1 var(--font-serif), Georgia, serif; }
 .sectionHeader .eyebrow { margin-bottom: .55rem; }
 .accountingButton { padding: .55rem .75rem; border: 1px solid color-mix(in oklch, var(--ink) 14%, transparent); border-radius: 999px; background: oklch(99% .006 87); color: var(--ink); font: 750 .55rem var(--font-sans), sans-serif; cursor: pointer; }
 .sectionNote { display: flex; align-items: center; gap: .8rem; margin-bottom: .7rem; padding: .7rem .9rem; border-radius: .75rem; background: oklch(98% .01 87); color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .59rem; line-height: 1.4; }
 .sectionNote strong { flex: 0 0 auto; color: var(--ink); font-size: .55rem; letter-spacing: .08em; text-transform: uppercase; }
 .bandTitle { display: flex; align-items: end; justify-content: space-between; gap: 2rem; padding: .5rem .4rem 1.15rem; }
-.bandTitle h2 { margin: 0; font: 600 clamp(1.4rem, 2.4vw, 2rem)/1.05 var(--font-sans), sans-serif; letter-spacing: -.01em; }
+.bandTitle h2 { margin: 0; font: 500 clamp(1.5rem, 2.6vw, 2.15rem)/1 var(--font-serif), Georgia, serif; }
 .bandTitle > p:last-child { max-width: 28rem; margin: 0; color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .64rem; line-height: 1.45; }
 .flowTools { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .65rem; }
 .flowTools > * { position: relative; min-height: 9.5rem; display: flex; flex-direction: column; align-items: flex-start; padding: 1rem; border: 0; border-radius: 1rem; background: oklch(98% .01 87); color: inherit; font: inherit; text-align: left; text-decoration: none; cursor: pointer; overflow: hidden; transition: transform 340ms cubic-bezier(.22,1,.36,1), border-radius 340ms cubic-bezier(.22,1,.36,1), box-shadow 340ms cubic-bezier(.22,1,.36,1), filter 340ms ease-out; }
