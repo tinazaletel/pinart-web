@@ -71,10 +71,8 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
   return (
     <div className="fl-herobg" aria-hidden>
       <div className="fl-video">
-        {/* Navaden neprosojen video s kremnim ozadjem (barva strani) — deluje enako povsod */}
-        <video ref={videoRef} autoPlay muted loop playsInline preload="auto">
-          <source src="/flow/hero.mp4" type="video/mp4" />
-        </video>
+        {/* 3D pupa scena (izrezano ozadje) — predogled */}
+        <img className="fl-pupa solo" src="/flow/pupa3d.png" alt="" />
       </div>
 
       <div className="fl-bubbles">
@@ -105,14 +103,20 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         /* Maska bledi LEVO (stik z besedilom) IN zgoraj+spodaj (da morebiten odrez
            mehko zbledi, ne moti). Presek dveh linearnih gradientov. */
         /* BREZ paper ozadja -> ne prekrije mreze/mehurckov = ni pravokotnega okvirja; belo iz videa odstrani mix-blend multiply */
-        .fl-video { position: absolute; top: 200px; bottom: 0; right: 0; width: 66%; background: transparent; transform: translateY(-100px);
-          -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 30%), linear-gradient(to bottom, transparent 0%, #000 16%, #000 78%, transparent 100%); -webkit-mask-composite: source-in;
-          mask-image: linear-gradient(to right, transparent 0%, #000 30%), linear-gradient(to bottom, transparent 0%, #000 16%, #000 78%, transparent 100%); mask-composite: intersect; }
-        /* video ima ze alfo -> brez mix-blenda; cover = figura napolni prostor (nov posnetek je sirok, z veliko praznine) */
-        .fl-video video { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
-        /* Rahel prehod spodaj v papir */
-        .fl-video::after { content: ''; position: absolute; inset: 0; background:
-          linear-gradient(180deg, transparent 0%, transparent 82%, var(--paper) 100%); }
+        .fl-video { position: absolute; top: 130px; bottom: 100px; right: 3%; width: 41%; background: transparent; animation: pupaFloat 7s ease-in-out infinite; }
+        /* prosojna pupa (izrezano ozadje) -> contain, cel lik viden. 3 scene se prelivajo. */
+        .fl-pupa { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; display: block; opacity: 0; }
+        .fl-pupa.solo { opacity: 1; transform: scaleX(-1); }
+        .fl-pupa.s1 { animation: pupaFade 12s infinite; animation-delay: 0s; }
+        .fl-pupa.s2 { animation: pupaFade 12s infinite; animation-delay: 4s; }
+        .fl-pupa.s3 { animation: pupaFade 12s infinite; animation-delay: 8s; }
+        @keyframes pupaFade { 0% { opacity: 0; } 4% { opacity: 1; } 29% { opacity: 1; } 35% { opacity: 0; } 100% { opacity: 0; } }
+        @keyframes pupaFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        @media (prefers-reduced-motion: reduce) {
+          .fl-video { animation: none; }
+          .fl-pupa { animation: none !important; }
+          .fl-pupa.s3 { opacity: 1; }
+        }
 
         /* Mobile: video NI več prosojno ozadje za tekstom (nečitljivo), ampak poln
            pas SPODAJ (v spodnjem delu heroja, pod besedilom). Vrh pasu zbledi. */

@@ -4,6 +4,7 @@ import {
   FileText, Handshake, Scroll, Receipt, Wallet, Tag, Clock,
   Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, CaretLeft, CaretRight,
   ShieldCheck, Scales, ChatCircle, Sparkle, Plus, ChartLineUp, Robot, Plugs,
+  CalendarBlank, ListChecks,
 } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { localePath } from '@/i18n/routing';
@@ -126,6 +127,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { Ikona: Target, kat: 'stranke', h: 12, ime: 'Cilji', opis: 'Mesečni cilj prihodkov in koliko projektov te loči do njega.', href: localePath(locale, '/kalkulator/cilji') },
     { Ikona: Suitcase, kat: 'finance', h: 205, ime: 'Poslovni okvir', opis: 'Širša slika: rezerva, davki in spodnja meja poštene cene.', href: localePath(locale, '/kalkulator/poslovni-nacrt') },
     { Ikona: SquaresFour, kat: 'stranke', h: 312, ime: 'Pregled', opis: 'Nadzorna plošča: promet, odprte ponudbe in čakajoča plačila.', href: localePath(locale, '/kalkulator/pregled') },
+    { Ikona: CalendarBlank, kat: 'stranke', h: 200, ime: 'Koledar', opis: 'Sestanki, klici in roki projektov na enem koledarju.', href: localePath(locale, '/kalkulator/koledar') },
+    { Ikona: ListChecks, kat: 'stranke', h: 258, ime: 'Naloge', opis: 'Opravila in podnaloge, dodeljene po projektih.', href: localePath(locale, '/kalkulator/naloge') },
   ];
   const vidnaOrodja = ORODJA.filter(o => taRubrika === 'vse' || o.kat === taRubrika);
 
@@ -477,10 +480,35 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bkarta.d { grid-column: 3; grid-row: 2; background: linear-gradient(150deg, oklch(46% .1 190), oklch(31% .06 200)); color: #fff; }
         .fl-bkarta.b > p, .fl-bkarta.c > p, .fl-bkarta.d > p { color: rgba(255,255,255,.74); }
         .fl-bthumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-top: 1.2rem; }
-        .fl-bthumbs span { position: relative; overflow: hidden; aspect-ratio: 1; border-radius: 11px; background: linear-gradient(135deg, oklch(90% .07 297), oklch(90% .07 165)); }
-        .fl-bthumbs span img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .fl-bthumbs span { position: relative; overflow: hidden; aspect-ratio: 1; border-radius: 11px; background: linear-gradient(135deg, oklch(90% .07 297), oklch(90% .07 165)); display: grid; place-items: center; padding: .34rem; }
         .fl-bthumbs span:nth-child(3n+2) { background: linear-gradient(135deg, oklch(90% .07 330), oklch(90% .06 90)); }
         .fl-bthumbs span:nth-child(3n) { background: linear-gradient(135deg, oklch(90% .06 200), oklch(90% .07 297)); }
+        /* mini predogledi orodij (namesto pravih posnetkov — dodava jih kasneje) */
+        .fl-bthumbs span > i { display: grid; }
+        .fl-th-card { width: 82%; background: #fff; border-radius: 6px; padding: .4rem .42rem; gap: .18rem; box-shadow: 0 4px 12px rgba(40,25,60,.16); }
+        .fl-th-card b { display: block; height: .2rem; border-radius: 2px; background: oklch(86% .03 297); }
+        .fl-th-card b:nth-child(2) { width: 78%; }
+        .fl-th-card b:nth-child(3) { width: 55%; }
+        .fl-th-card em { justify-self: start; margin-top: .14rem; font-style: normal; font-size: .48rem; font-weight: 800; color: #fff; background: oklch(24% .016 285); border-radius: 999px; padding: .1rem .3rem; letter-spacing: .01em; }
+        .fl-th-calc { grid-auto-flow: column; gap: .26rem; }
+        .fl-th-calc > i { width: 1.05rem; height: 1.05rem; border-radius: 50%; box-shadow: inset 0 .12rem .18rem rgba(255,255,255,.65), 0 .12rem .3rem rgba(40,25,60,.16); }
+        .fl-th-calc > i.v { background: oklch(70% .13 300); }
+        .fl-th-calc > i.m { background: oklch(78% .1 165); }
+        .fl-th-calc > i.p { background: oklch(80% .1 350); }
+        .fl-th-inv { width: 78%; background: #fff; border-radius: 6px; padding: .38rem; gap: .17rem; box-shadow: 0 4px 12px rgba(40,25,60,.16); }
+        .fl-th-inv > i { display: block; height: .18rem; border-radius: 2px; background: oklch(88% .02 297); }
+        .fl-th-inv > i:nth-child(2) { width: 80%; }
+        .fl-th-inv > i.tot { height: .26rem; width: 42%; justify-self: end; background: oklch(66% .2 297); margin-top: .12rem; }
+        .fl-th-cli { grid-auto-flow: column; }
+        .fl-th-cli > i { width: 1.1rem; height: 1.1rem; border-radius: 50%; border: 2px solid #fff; margin-left: -.32rem; background: oklch(62% .16 300); box-shadow: 0 .1rem .25rem rgba(40,25,60,.14); }
+        .fl-th-cli > i:first-child { margin-left: 0; }
+        .fl-th-cli > i:nth-child(2) { background: oklch(66% .12 200); }
+        .fl-th-cli > i:nth-child(3) { background: oklch(74% .12 350); }
+        .fl-th-donut { width: 2.3rem; height: 2.3rem; border-radius: 50%; background: conic-gradient(oklch(66% .2 297) 0 64%, #fff 64% 100%); box-shadow: 0 .12rem .3rem rgba(40,25,60,.16); }
+        .fl-th-donut::after { content: ""; display: block; margin: 27%; width: 46%; height: 46%; background: #fff; border-radius: 50%; }
+        .fl-th-cal { grid-template-columns: repeat(3, 1fr); gap: .16rem; width: 62%; }
+        .fl-th-cal > i { display: block; aspect-ratio: 1; border-radius: 2px; background: rgba(255,255,255,.72); }
+        .fl-th-cal > i.on { background: oklch(66% .2 297); }
         .fl-bflow { display: flex; align-items: center; gap: .5rem; margin-top: auto; flex-wrap: wrap; }
         .fl-bflow b { font-size: .78rem; font-weight: 600; padding: .42rem .72rem; border-radius: 999px; background: rgba(255,255,255,.12); color: #fff; }
         .fl-bflow i { color: rgba(255,255,255,.5); font-style: normal; }
@@ -786,9 +814,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <div className="fl-bkarta a">
               <h3>Vsako orodje pripravljeno</h3>
               <p>Ponudbe, pogodbe, računi, stroški, ceniki. Odpri, kar potrebuješ — brez postavljanja.</p>
-              <div className="fl-bthumbs" aria-hidden>{[1, 2, 3, 4, 5, 6].map(n => (
-                <span key={n}><img src={`/flow/bento/${n}.jpg`} alt="" loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} /></span>
-              ))}</div>
+              <div className="fl-bthumbs" aria-hidden>
+                <span><i className="fl-th-card"><b /><b /><b /><em>1.850 €</em></i></span>
+                <span><i className="fl-th-calc"><i className="v" /><i className="m" /><i className="p" /></i></span>
+                <span><i className="fl-th-inv"><i /><i /><i /><i className="tot" /></i></span>
+                <span><i className="fl-th-cli"><i /><i /><i /></i></span>
+                <span><i className="fl-th-donut" /></span>
+                <span><i className="fl-th-cal"><i /><i /><i /><i className="on" /><i /><i /><i /><i /><i /></i></span>
+              </div>
             </div>
             <div className="fl-bkarta b">
               <h3>Celoten posel na enem mestu</h3>
