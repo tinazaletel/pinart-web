@@ -86,7 +86,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       const docH = document.documentElement.scrollHeight;
       const frac = Math.min(1, Math.max(0, y / (docH - vh)));
       // trajektorija: kepa pade z mize (hero) -> zraste -> plava po desni -> pade v kos
-      const deskX = vw * 0.74, deskY = vh * 0.6 - 60;
+      const deskX = vw * 0.74, deskY = vh * 0.6 - 80;
       const bandX = vw * 0.82, bandY = vh * 0.42;
       const fallEnd = vh * 0.95;   // padec z mize se zgodi v prvem zaslonu (v pikslih, ne % strani)
       let x: number, ty: number, scale: number, op = 1;
