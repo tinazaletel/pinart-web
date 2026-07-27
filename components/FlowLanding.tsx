@@ -101,14 +101,16 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         scale = 1;
       }
       let rot = (y / vh) * 200;   // se vrti med potjo (~200 stopinj na zaslon)
-      let oBall = 1, oBird = 0, oBoat = 0;
-      if (frac < 0.32) { oBall = 1; }
-      else if (frac < 0.45) { const t = (frac - 0.32) / 0.13; oBall = 1 - t; oBird = t; }
-      else if (frac < 0.55) { oBird = 1; }
-      else if (frac < 0.66) { const t = (frac - 0.55) / 0.11; oBird = 1 - t; oBoat = t; }
-      else if (frac < 0.72) { oBoat = 1; }
-      else if (frac < 0.83) { const t = (frac - 0.72) / 0.11; oBoat = 1 - t; oBall = t; }
-      else { oBall = 1; }
+      // en lik naenkrat; ob meji se papir "scrunch-a" (skrci) in zamenja obliko na najmanjsi tocki -> ni dvojne slike
+      let shape = 0;                       // 0 kepa, 1 ptic, 2 ladjica
+      if (frac >= 0.78) shape = 0;         // nazaj v kepo
+      else if (frac >= 0.6) shape = 2;     // ladjica
+      else if (frac >= 0.38) shape = 1;    // ptic
+      let oBall = shape === 0 ? 1 : 0, oBird = shape === 1 ? 1 : 0, oBoat = shape === 2 ? 1 : 0;
+      for (const b of [0.38, 0.6, 0.78]) {
+        const dist = Math.abs(frac - b);
+        if (dist < 0.04) scale *= 0.35 + (dist / 0.04) * 0.65;   // skrci blizu menjave oblike
+      }
       const kos = kosRef.current;
       if (kos) {
         const r = kos.getBoundingClientRect();
@@ -767,14 +769,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-footer { position: relative; }
         /* rekvizit zasidran na zgornji rob footerja (base sedi na temnem robu) */
         .fl-prop { position: absolute; bottom: calc(100% - 2.7rem + 10px); height: auto; z-index: 3; will-change: transform; filter: drop-shadow(0 18px 26px rgba(40,25,60,.16)); }
-        .fl-prop-kos { right: 21%; bottom: calc(100% - 2.7rem + 34px); width: clamp(7rem, 11vw, 12rem); animation: flPropBob 6.5s ease-in-out infinite; }
+        .fl-prop-kos { right: calc(21% + 40px); bottom: calc(100% - 2.7rem + 49px); width: clamp(7rem, 11vw, 12rem); animation: flPropBob 6.5s ease-in-out infinite; }
         .fl-prop-plant { left: 21%; width: clamp(10rem, 16vw, 17rem); animation: flPropBob 7.5s ease-in-out infinite; animation-delay: -2.4s; }
         @keyframes flPropBob { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-7px) rotate(-1deg); } }
         @media (max-width: 720px) { .fl-prop-kos { right: 3%; width: 6rem; } .fl-prop-plant { left: 3%; width: 8.5rem; } }
         @media (prefers-reduced-motion: reduce) { .fl-prop { animation: none; } }
         /* leteci papirnati objekt — potuje po strani, se preliva, pade v kos (pozicija/prelivanje iz JS) */
-        .fl-fly { position: fixed; left: 0; top: 0; width: clamp(6rem, 8.5vw, 9.5rem); aspect-ratio: 1; z-index: 20; pointer-events: none; opacity: 0; will-change: transform, opacity; }
-        .fl-fly img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .18s linear; filter: drop-shadow(0 14px 22px rgba(40,25,60,.22)); }
+        .fl-fly { position: fixed; left: 0; top: 0; width: clamp(8rem, 11vw, 13rem); aspect-ratio: 1; z-index: 20; pointer-events: none; opacity: 0; will-change: transform, opacity; }
+        .fl-fly img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; filter: drop-shadow(0 14px 22px rgba(40,25,60,.22)); }
         @media (max-width: 720px) { .fl-fly { display: none; } }
         /* mehki reveal sekcij ob drsanju (razred doda JS; reduce-motion = brez) */
         .fl-reveal { opacity: 0; transform: translateY(26px); transition: opacity .85s cubic-bezier(.22,1,.36,1), transform .85s cubic-bezier(.22,1,.36,1); }
