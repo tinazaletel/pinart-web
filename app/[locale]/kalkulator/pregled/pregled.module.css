@@ -232,7 +232,7 @@
 .flowTools > *:nth-child(7) { background: linear-gradient(125deg, oklch(95% .045 170), oklch(84% .1 165), oklch(91% .06 295)); background-size: 220% 220%; animation: cardFlow 10s ease-in-out -2s infinite alternate; }
 .flowTools > *:nth-child(8) { background: linear-gradient(125deg, oklch(94% .035 87), oklch(88% .065 60), oklch(91% .055 295)); background-size: 220% 220%; animation: cardFlow 13s ease-in-out -8s infinite alternate; }
 /* Vse kartice enak nezen VECTONSKI preliv (vijola->mint->roza, svetli) z VIDNIM valovanjem; identiteta gre na clay ikone. */
-.flowTools > *:nth-child(1n) { background: linear-gradient(120deg, oklch(96% .055 300), oklch(95% .06 258), oklch(96% .05 168), oklch(95% .06 335)); background-size: 300% 300%; color: var(--ink); border: 1px solid rgba(255,255,255,.6); animation: cardFlow 8s ease-in-out infinite alternate; }
+.flowTools > *:nth-child(1n) { background: linear-gradient(120deg, oklch(96% .055 300), oklch(95% .06 258), oklch(96% .05 168), oklch(95% .06 335)); background-size: 300% 300%; color: var(--ink); border: 1px solid rgba(255,255,255,.6); }
 /* naslov in podnaslov ne smeta cez clay ikono (desno spodaj) */
 .flowTools strong, .flowTools small { padding-right: 4.3rem; }
 .flowTools span { position: relative; z-index: 2; font-size: .56rem; font-weight: 850; letter-spacing: .1em; }
@@ -247,14 +247,14 @@
 /* Nezni mehurcki v kartici (za ikono) — kot ambient v ozadju strani. */
 .flowTools > *::before {
   content: ''; display: block; position: absolute; inset: 0; z-index: 0; pointer-events: none; border: 0; border-radius: 0; background:
-    radial-gradient(circle at 20% 32%, oklch(92% .07 300 / .6), oklch(92% .05 300 / .12) 42%, transparent 62%),
-    radial-gradient(circle at 58% 72%, oklch(92% .07 165 / .5), transparent 55%),
-    radial-gradient(circle at 78% 22%, oklch(92% .07 330 / .45), transparent 52%);
+    radial-gradient(circle at 34% 42%, oklch(100% 0 0 / .72), oklch(80% .12 300 / .38) 36%, transparent 56%),
+    radial-gradient(circle at 66% 74%, oklch(100% 0 0 / .62), oklch(82% .12 165 / .34) 38%, transparent 58%),
+    radial-gradient(circle at 84% 24%, oklch(100% 0 0 / .55), oklch(82% .12 332 / .32) 40%, transparent 58%);
   background-repeat: no-repeat;
-  background-size: 42% 42%, 30% 30%, 24% 24%;
-  animation: bubbleDrift 13s ease-in-out infinite alternate;
+  background-size: 44% 44%, 32% 32%, 26% 26%;
+  animation: bubbleDrift 9s ease-in-out infinite alternate;
 }
-@keyframes bubbleDrift { from { transform: translate(0, 0); } to { transform: translate(7px, -9px); } }
+@keyframes bubbleDrift { from { transform: translate(-4px, 3px); } to { transform: translate(10px, -12px); } }
 .flowTools > *:nth-child(1n)::after {
   right: -1.5rem; bottom: -1.7rem; top: auto; left: auto;
   width: 8.2rem; height: 8.2rem; aspect-ratio: auto;
