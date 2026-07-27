@@ -61,7 +61,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
     const apply = () => {
       raf = 0;
       cx += (tx - cx) * 0.12; cy += (ty - cy) * 0.12;
-      scene.style.transform = `rotateY(${cx * 7}deg) rotateX(${-cy * 5}deg)`;
+      scene.style.transform = `translate(${cx * 10}px, ${cy * 7}px)`;   // nezen parallax (brez rotacije = brez deformacije)
       if (Math.abs(tx - cx) > 0.004 || Math.abs(ty - cy) > 0.004) raf = requestAnimationFrame(apply);
     };
     const onMove = (e: MouseEvent) => {
