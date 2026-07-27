@@ -248,7 +248,7 @@
 .flowTools span { position: relative; z-index: 2; font-size: .56rem; font-weight: 850; letter-spacing: .1em; }
 .flowTools strong { position: relative; z-index: 2; margin-top: .1rem; font: 600 1.2rem var(--font-sans), system-ui, sans-serif; letter-spacing: -.01em; -webkit-text-stroke: 0; }
 .flowTools small { position: relative; z-index: 2; margin-top: .3rem; color: color-mix(in oklch, currentColor 72%, transparent); font-size: .62rem; line-height: 1.35; }
-.flowTools i { z-index: 3; position: absolute; top: auto; right: auto; bottom: 1rem; left: 1rem; display: grid; place-items: center; width: 2.1rem; aspect-ratio: 1; border: 1px solid oklch(30% .04 300 / .16); border-radius: 50%; background: oklch(100% 0 0 / .65); color: var(--ink); font: 500 1.25rem/1 var(--font-sans), sans-serif; font-style: normal; }
+.flowTools i { z-index: 3; position: absolute; top: 1rem; right: 1rem; bottom: auto; left: auto; display: grid; place-items: center; width: 2.1rem; aspect-ratio: 1; border: 1px solid oklch(30% .04 300 / .16); border-radius: 50%; background: oklch(100% 0 0 / .65); color: var(--ink); font: 500 1.25rem/1 var(--font-sans), sans-serif; font-style: normal; }
 .flowTools i svg { display: block; }
 .toolIcon { display: none; }
 .flowTools > *:nth-child(4) .toolIcon { stroke: var(--ink); }
