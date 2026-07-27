@@ -739,9 +739,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* glinasta rekvizita scene (koš + rastlina) — stojita na tleh pasu, nezno dihata */
         .fl-footer { position: relative; }
         /* rekvizit zasidran na zgornji rob footerja (base sedi na temnem robu) */
-        .fl-prop { position: absolute; bottom: calc(100% - 1.2rem); height: auto; z-index: 3; will-change: transform; filter: drop-shadow(0 18px 26px rgba(40,25,60,.16)); }
-        .fl-prop-kos { left: 6%; width: clamp(7rem, 11vw, 12rem); animation: flPropBob 6.5s ease-in-out infinite; }
-        .fl-prop-plant { right: 6%; width: clamp(10rem, 16vw, 17rem); animation: flPropBob 7.5s ease-in-out infinite; animation-delay: -2.4s; }
+        .fl-prop { position: absolute; bottom: calc(100% - 2.7rem); height: auto; z-index: 3; will-change: transform; filter: drop-shadow(0 18px 26px rgba(40,25,60,.16)); }
+        .fl-prop-kos { left: 12%; width: clamp(7rem, 11vw, 12rem); animation: flPropBob 6.5s ease-in-out infinite; }
+        .fl-prop-plant { right: 12%; width: clamp(10rem, 16vw, 17rem); animation: flPropBob 7.5s ease-in-out infinite; animation-delay: -2.4s; }
         @keyframes flPropBob { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-7px) rotate(-1deg); } }
         @media (max-width: 720px) { .fl-prop-kos { left: 3%; width: 6rem; } .fl-prop-plant { right: 3%; width: 8.5rem; } }
         @media (prefers-reduced-motion: reduce) { .fl-prop { animation: none; } }
