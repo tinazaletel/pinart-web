@@ -172,9 +172,9 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         .fl-chip b.ok { background: oklch(90% .09 155); color: oklch(46% .13 155); }
         .fl-chip b.msg { background: oklch(91% .07 300); color: oklch(48% .14 300); }
         .fl-chip b.pay { background: oklch(91% .08 250); color: oklch(46% .14 250); }
-        .fl-chip-1 { top: 5%; left: 6%; animation-delay: 0s; }
-        .fl-chip-2 { top: 33%; left: -3%; animation-delay: 3.5s; }
-        .fl-chip-3 { top: 61%; left: 8%; animation-delay: 7s; }
+        .fl-chip-1 { top: 6%; left: 24%; animation-delay: 0s; }
+        .fl-chip-2 { top: 34%; left: 15%; animation-delay: 3.5s; }
+        .fl-chip-3 { top: 62%; left: 26%; animation-delay: 7s; }
         @keyframes chipPop {
           0% { opacity: 0; transform: translateY(12px) scale(.9); }
           5% { opacity: 1; transform: translateY(0) scale(1); }
