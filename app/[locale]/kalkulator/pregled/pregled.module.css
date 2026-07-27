@@ -211,10 +211,10 @@
 .previewSwitch .previewActive { background: linear-gradient(135deg, var(--purple), oklch(62% .22 297)); color: oklch(98% .01 300); }
 .feedback { position: fixed; z-index: 80; right: 1.2rem; bottom: 1.2rem; display: flex; align-items: center; gap: 1rem; max-width: 24rem; padding: .8rem 1rem; border-radius: .85rem; background: var(--ink); color: var(--paper); box-shadow: 0 1rem 3rem oklch(20% .03 55 / .2); font-size: .64rem; }
 .feedback button { border: 0; background: none; color: inherit; font-size: 1rem; cursor: pointer; }
-.flowBand, .historyBand, .resultsBand, .eventsBand, .detailsBand { margin-top: 1rem; padding: 1rem; border: 0; border-radius: 1.45rem; background: oklch(97% .01 87 / .9); box-shadow: 0 1.2rem 3.5rem oklch(20% .02 55 / .05); }
+.flowBand, .historyBand, .resultsBand, .eventsBand, .detailsBand { margin-top: 1rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: 1.45rem; background: color-mix(in oklch, oklch(98% .01 87) 94%, transparent); box-shadow: 0 .6rem 1.6rem oklch(20% .02 55 / .04); }
 .flowBand { margin-top: .35rem; }
 .sectionHeader { display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; padding: .55rem .45rem 1rem; }
-.sectionHeader h2 { margin: 0; font: 500 clamp(1.35rem, 2vw, 2rem)/1 var(--font-serif), Georgia, serif; }
+.sectionHeader h2 { margin: 0; font: 500 clamp(1.25rem, 1.55vw, 1.6rem)/1.05 var(--font-serif), Georgia, serif; }
 .sectionHeader .eyebrow { margin-bottom: .55rem; }
 .accountingButton { padding: .55rem .75rem; border: 1px solid color-mix(in oklch, var(--ink) 14%, transparent); border-radius: 999px; background: oklch(99% .006 87); color: var(--ink); font: 750 .55rem var(--font-sans), sans-serif; cursor: pointer; }
 .sectionNote { display: flex; align-items: center; gap: .8rem; margin-bottom: .7rem; padding: .7rem .9rem; border-radius: .75rem; background: oklch(98% .01 87); color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .59rem; line-height: 1.4; }
@@ -339,15 +339,18 @@
 .kpiGrid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
 .kpiGrid .kpi { min-height: 6.8rem; padding: .85rem; border-radius: .9rem; }
 /* "Pojdi na podrobnosti / koledar" povezava na dnu panela */
-.panelMore { display: inline-flex; align-items: center; gap: .4rem; margin-top: .95rem; font: 700 .6rem var(--font-sans), sans-serif; letter-spacing: .04em; text-transform: uppercase; color: oklch(52% .14 300); text-decoration: none; }
-.panelMore:hover { color: oklch(45% .16 300); }
+.panelMore { display: inline-flex; align-items: center; gap: .4rem; margin-top: 1rem; font: 650 .82rem var(--font-sans), sans-serif; letter-spacing: 0; text-transform: none; color: oklch(52% .16 300); text-decoration: none; }
+.panelMore:hover { color: oklch(45% .18 300); }
 /* Dogodki & roki — seznam prihodnjih rokov */
 .eventList { list-style: none; margin: .2rem 0 0; padding: 0; display: flex; flex-direction: column; }
-.eventList li { display: flex; align-items: center; gap: .8rem; padding: .7rem .15rem; border-bottom: 1px solid color-mix(in oklch, var(--ink) 8%, transparent); }
+.eventList li { display: flex; align-items: center; gap: .65rem; padding: .7rem .15rem; border-bottom: 1px solid color-mix(in oklch, var(--ink) 8%, transparent); }
 .eventList li:last-child { border-bottom: 0; }
-.eventDate { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .1rem; width: 2.9rem; height: 2.9rem; border-radius: .85rem; background: oklch(94.6% .014 90); border: 1px solid oklch(100% 0 0 / .6); line-height: 1; }
-.eventDate b { font: 700 1.15rem/1 var(--font-sans), sans-serif; letter-spacing: -.02em; }
-.eventDate small { font-size: .46rem; font-weight: 700; letter-spacing: .09em; color: color-mix(in oklch, var(--ink) 48%, transparent); }
+.eventDate { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .16rem; width: 3.15rem; height: 3.15rem; padding: .35rem; border-radius: .9rem; background: oklch(95.5% .03 300); border: 1px solid oklch(84% .05 300 / .35); line-height: 1; }
+.eventDate b { font: 700 .95rem/1 var(--font-sans), sans-serif; letter-spacing: -.02em; color: oklch(46% .12 300); }
+.eventDate small { font-size: .42rem; font-weight: 700; letter-spacing: .09em; color: oklch(56% .09 300); }
+.eventIco { flex: none; display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: .55rem; background: color-mix(in oklch, var(--et, oklch(60% .12 300)) 15%, transparent); color: var(--et, oklch(52% .13 300)); }
+.eventIco[data-tone='waiting'] { --et: oklch(60% .15 72); }
+.eventIco[data-tone='info'] { --et: oklch(56% .14 285); }
 .eventBody { display: flex; flex-direction: column; gap: .12rem; min-width: 0; }
 .eventBody strong { font: 600 .82rem var(--font-sans), sans-serif; }
 .eventBody small { font-size: .64rem; color: color-mix(in oklch, var(--ink) 58%, transparent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -375,7 +378,7 @@
 .historyBand .tableWrap th:nth-child(4) { width: 28%; }
 .historyTable { overflow: hidden; border: 1px solid color-mix(in oklch, var(--ink) 10%, transparent); }
 .historyTable table { margin: 0; }
-.historyTable th { padding: .75rem .9rem; background: oklch(93.7% .016 87); font-size: .51rem; }
+.historyTable th { padding: .7rem .9rem; background: transparent; border-bottom: 1px solid color-mix(in oklch, var(--ink) 8%, transparent); font-size: .55rem; color: color-mix(in oklch, var(--ink) 50%, transparent); }
 .historyTable td { height: 4.25rem; padding: .65rem .9rem; background: oklch(99% .006 87 / .82); }
 .historyTable th:last-child, .historyTable td:last-child { padding-right: .75rem; padding-left: .55rem; }
 .historyTable tbody tr:last-child td { border-bottom: 0; }
@@ -538,7 +541,7 @@
 .contractNotice button { border: 0; background: none; color: inherit; cursor: pointer; }
 .contractHero, .contractDesk, .contractArchive { border: 1px solid color-mix(in oklch, var(--ink) 9%, transparent); border-radius: 1.4rem; background: oklch(98% .008 87 / .92); box-shadow: 0 1.2rem 3.5rem oklch(20% .02 55 / .05); }
 .contractHero { display: grid; grid-template-columns: 1fr minmax(25rem, .8fr); align-items: end; gap: 2rem; padding: 1.4rem; }
-.contractHero h2, .contractArchive h2 { margin: 0; font: 500 clamp(1.5rem, 2.6vw, 2.15rem)/1 var(--font-serif), Georgia, serif; overflow-wrap: anywhere; }
+.contractHero h2, .contractArchive h2 { margin: 0; font: 500 clamp(1.45rem, 2.2vw, 2.05rem)/1 var(--font-serif), Georgia, serif; overflow-wrap: anywhere; }
 .contractHero p:last-child { max-width: 34rem; margin: .7rem 0 0; color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .68rem; line-height: 1.5; }
 .contractDesk { min-height: 30rem; padding: 1rem; }
 .contractDesk form { display: grid; grid-template-columns: minmax(13rem, .35fr) 1fr; gap: 1rem; }
