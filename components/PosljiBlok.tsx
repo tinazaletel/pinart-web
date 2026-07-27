@@ -8,6 +8,7 @@
 import { useEffect, useState } from 'react';
 import { PaperPlaneTilt, Check, X, Plus } from '@phosphor-icons/react';
 import { posljiMail } from '@/lib/posta';
+import { dodajPosto } from '@/lib/postaDnevnik';
 
 export interface PosljiBlokProps {
   /* zadeva e-pošte */
@@ -24,6 +25,11 @@ export interface PosljiBlokProps {
   replyTo?: string;
   /* v demo/predogledu pošiljanje ni na voljo */
   samoOgled?: boolean;
+  /* neobvezno: če je podan, se ob uspešnem pošiljanju zabeleži v dnevnik pošte
+     (lib/postaDnevnik), da se pokaže na strani projekta */
+  projektId?: string;
+  /* neobvezno: id stranke — zabeleži se skupaj s projektId (ali sam) */
+  clientId?: string;
 }
 
 const jeVeljavenEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
@@ -36,6 +42,8 @@ export default function PosljiBlok({
   kontakti = [],
   replyTo,
   samoOgled = false,
+  projektId,
+  clientId,
 }: PosljiBlokProps) {
   const [prejemniki, setPrejemniki] = useState<string[]>([]);
   const [prejemnikVnos, setPrejemnikVnos] = useState('');
@@ -81,6 +89,14 @@ export default function PosljiBlok({
     try {
       const rez = await posljiMail({ to: prejemniki, subject, html: zgradiHtml(), replyTo: replyTo || undefined });
       if (rez.ok) {
+        /* zabeleži v dnevnik pošte, če je zapis vezan na projekt/stranko —
+           tako se pošta pokaže na strani projekta (ProjectsWorkspace). Ko
+           projektId/clientId nista podana, se obnašanje ne spremeni. */
+        if (projektId || clientId) {
+          try {
+            dodajPosto({ projectId: projektId, clientId, smer: 'poslano', prejemniki, zadeva: subject, povzetek: undefined });
+          } catch { /* zapis v dnevnik ne sme prekiniti uspešnega pošiljanja */ }
+        }
         /* uspeh sporoči GUMB (»Poslano naročniku«); statusne vrstice ob uspehu
            NE kažemo (njeno pojavljanje/izginjanje je povzročalo skok) */
         setMailStatus('');

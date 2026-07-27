@@ -9,6 +9,7 @@ import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
 import { loadFlowData, loadProjectLinks, saveOfferAmount, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
+import { preberiPostoProjekta, type PostaVnos } from '@/lib/postaDnevnik';
 import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
 import { preberiSodelavci } from '@/lib/sodelavci';
 import type { Sodelavec } from '@/lib/naloge';
@@ -228,6 +229,16 @@ const pwStyles = `
 .pw-dnevnik-link:hover{transform:translateY(-2px);box-shadow:0 .8rem 2rem oklch(22% .04 300/.14)}
 .pw-znacka-live{background:oklch(90% .06 297);color:oklch(42% .16 297)}
 .pw-znacka{display:inline-flex;align-items:center;width:max-content;margin-top:.7rem;padding:.3rem .6rem;border-radius:999px;background:oklch(90% .02 87);color:var(--muted);font-size:.58rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+/* 06 · POŠTA — dnevnik poslane pošte projekta (mehki violet/mint jezik kot ostale kartice) */
+.pw-posta{background:linear-gradient(135deg,oklch(97% .03 300),oklch(97% .03 165))}
+.pw-posta h3{margin:0;font:600 1.15rem var(--font-serif),Georgia,serif}
+.pw-posta-seznam{position:relative;z-index:1;list-style:none;display:flex;flex-direction:column;gap:.4rem;margin:.75rem 0 0;padding:0}
+.pw-posta-seznam li{display:grid;gap:.2rem;padding:.55rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:.7rem;background:oklch(100% 0 0 / .55)}
+.pw-posta-vrh{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
+.pw-posta-vrh b{font-size:.76rem;font-weight:700;color:var(--ink);overflow-wrap:anywhere}
+.pw-posta-smer{flex:none;display:inline-flex;align-items:center;padding:.2rem .5rem;border-radius:999px;background:oklch(91% .05 165);color:oklch(40% .1 165);font-size:.52rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
+.pw-posta-meta{color:var(--muted);font-size:.62rem;overflow-wrap:anywhere}
+.pw-posta-prazno{position:relative;z-index:1;margin:.7rem 0 0;color:var(--muted);font-size:.7rem;line-height:1.5}
 /* "00 · CILJI IN ŽELJE" — samostojna kartica NAD .projectNarrative (ne znotraj njegove
    4-stolpne mreže, ker so barve 02/03/04 vezane na nth-child; vrivanje bi jih premaknilo
    in podrlo obstoječe gradiente). Isti mehki violet/mint jezik kot .projectAgreement. */
@@ -457,6 +468,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
      glej lib/pinartFlowStore). V predogledu (demo/prazno/začetek) samo prikaz —
      dodajanje/brisanje onemogočeno, da se ne piše v pravo shrambo. */
   const [links, setLinks] = useState<FlowProjectLink[]>([]);
+  /* 06 · POŠTA — dnevnik poslane pošte za TA projekt (lib/postaDnevnik). V
+     predogledu (demo/prazno/začetek) pokažemo nekaj vzorčnih zapisov, da razdelek
+     ni prazen; sicer beremo dejansko shranjeno pošto projekta. */
+  const [posta, setPosta] = useState<PostaVnos[]>([]);
   const [linkOznaka, setLinkOznaka] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [dodajOdprt, setDodajOdprt] = useState(false);
@@ -490,6 +505,14 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       { oznaka: 'Drive · Gradiva', url: 'https://drive.google.com' },
     ];
     setLinks(samoOgled ? demo : (selectedId ? loadProjectLinks(selectedId) : []));
+    /* vzorčna pošta za predogled — deterministična, datumi nekaj dni nazaj */
+    const preDnevi = (n: number) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString(); };
+    const demoPosta: PostaVnos[] = [
+      { id: 'demo-posta-1', projectId: selectedId, smer: 'poslano', prejemniki: ['info@volkbabica.si'], zadeva: 'Ponudba — Volk & Babica d.o.o.', datum: preDnevi(2) },
+      { id: 'demo-posta-2', projectId: selectedId, smer: 'poslano', prejemniki: ['ana@volkbabica.si', 'racuni@volkbabica.si'], zadeva: 'Pogodba o sodelovanju', datum: preDnevi(6) },
+      { id: 'demo-posta-3', projectId: selectedId, smer: 'poslano', prejemniki: ['info@volkbabica.si'], zadeva: 'Račun R-2026-014', datum: preDnevi(13) },
+    ];
+    setPosta(samoOgled ? demoPosta : (selectedId ? preberiPostoProjekta(selectedId) : []));
     setLinkOznaka(''); setLinkUrl(''); setDodajOdprt(false); closeVsi(); setVrsticaDetajl(null);
   }, [selectedId, samoOgled]);
 
@@ -708,6 +731,25 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         <div className={styles.projectNarrative}><article className={styles.projectAgreement}><p className={styles.eyebrow}>01 · DOGOVORJENO</p><h3>Kaj je bilo v ponudbi?</h3>{selected.offer.scope.length ? <ul>{selected.offer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul> : selected.real ? <p>Ta projekt še nima ponudbe. Pripravi jo v kalkulatorju, ko bo obseg jasen.</p> : <p>Starejša ponudba nima strukturiranega obsega. Odpri jo v kalkulatorju za celotno besedilo.</p>}</article><article><p className={styles.eyebrow}>02 · POGODBE</p><h3>{selected.contracts.length ? `${selected.contracts.length} povezanih` : 'Brez pogodbe'}</h3>{pogodbeSort.slice(0, NAJNOVEJSIH).map(pogodbaVrstica)}{pogodbeSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('pogodbe')}>Prikaži vse ({pogodbeSort.length}) →</button>}<Link href={`${base}/kalkulator/pogodbe`} aria-label="Dodaj pogodbo za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>03 · RAČUNI</p><h3>{money(selected.billed)}</h3>{racuniSort.slice(0, NAJNOVEJSIH).map(racunVrstica)}{racuniSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('racuni')}>Prikaži vse ({racuniSort.length}) →</button>}<Link href={`${base}/kalkulator/racuni`} aria-label="Dodaj račun za ta projekt"><Plus size={18} weight="bold" /></Link></article><article><p className={styles.eyebrow}>04 · STROŠKI</p><h3>{money(selected.costs)}</h3>{strosekSort.slice(0, NAJNOVEJSIH).map(strosekVrstica)}{strosekSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('stroski')}>Prikaži vse ({strosekSort.length}) →</button>}<Link href={`${base}/kalkulator/stroski`} aria-label="Dodaj strošek za ta projekt"><Plus size={18} weight="bold" /></Link></article><article className="pw-karta pw-dokumentacija"><p className={styles.eyebrow}>05 · DOKUMENTACIJA</p><h3>Povezave do zunanjih datotek</h3>{links.length ? (<div className="pw-linki">{links.map((link, index) => (<div key={`${link.url}-${index}`} className="pw-link-vrstica"><a href={link.url} target="_blank" rel="noopener noreferrer">{link.oznaka}</a>{!samoOgled && <button type="button" className="pw-link-brisi" onClick={() => removeLink(index)} aria-label={`Izbriši povezavo ${link.oznaka}`}>×</button>}</div>))}</div>) : <p className="pw-link-prazno">Še ni dodanih povezav.</p>}{!samoOgled && dodajOdprt && (<div className="pw-link-obrazec"><input type="text" value={linkOznaka} onChange={event => setLinkOznaka(event.target.value)} placeholder="npr. Figma" aria-label="Oznaka povezave" /><input type="url" value={linkUrl} onChange={event => setLinkUrl(event.target.value)} placeholder="https://…" aria-label="Naslov povezave (Figma, Miro, IDD, mapa Drive …)" /><button type="button" className="pw-link-dodaj" onClick={addLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>+ Dodaj povezavo</button></div>)}{samoOgled && dodajOdprt && <p className="pw-opozorilo">Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.</p>}<button type="button" className="pw-dok-dodaj" onClick={() => setDodajOdprt(open => !open)} aria-label={dodajOdprt ? 'Zapri dodajanje povezave' : 'Dodaj povezavo'}><Plus size={16} weight="bold" /></button></article></div>
 
         <div className="pw-dodatno">
+          <article className="pw-karta pw-posta">
+            <p className={styles.eyebrow}>POŠTA</p>
+            <h3>Poslana pošta</h3>
+            {posta.length ? (
+              <ul className="pw-posta-seznam">
+                {posta.map(vnos => (
+                  <li key={vnos.id}>
+                    <div className="pw-posta-vrh">
+                      <b>{vnos.zadeva}</b>
+                      <span className="pw-posta-smer">{vnos.smer === 'poslano' ? 'Poslano' : 'Prejeto'}</span>
+                    </div>
+                    <small className="pw-posta-meta">{vnos.prejemniki.join(', ')} · {datStr(vnos.datum)}</small>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="pw-posta-prazno">Še ni poslane pošte. Ko iz projekta pošlješ ponudbo ali pogodbo, se zabeleži tukaj.</p>
+            )}
+          </article>
           <div className="pw-kmalu-red">
             <article className="pw-karta pw-kmalu">
               <p className={styles.eyebrow}>06 · KOMUNIKACIJE</p>

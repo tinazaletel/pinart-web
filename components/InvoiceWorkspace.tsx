@@ -733,6 +733,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           replyTo={ponudnik.email.trim() || undefined}
           samoOgled={samoOgled}
           kontakti={strankaKontakti()}
+          projektId={offerId || undefined}
         />
       </form>
     </section>}

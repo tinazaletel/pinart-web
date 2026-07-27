@@ -15,8 +15,11 @@ import { getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlow
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo } from '@/lib/dokVidez';
 import PosljiBlok from '@/components/PosljiBlok';
+import { posljiMail } from '@/lib/posta';
 
 const K_NAST = 'pinart-kalkulator-v2';
+const K_ODVETNIK = 'pinart-odvetnik-email';
+const jeVeljavenEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 
 type Offer = { id: string; title: string; client: string; scope: string[]; number?: string; status: string; agreedAmount: number; date: string };
 type Ponudnik = { ime: string; davcna: string; email: string; telefon: string; naslov: string; trr: string };
@@ -134,6 +137,11 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const barvaRef = useRef<HTMLInputElement>(null);
   const [predStrani, setPredStrani] = useState<string[]>([]);
   const [predNal, setPredNal] = useState(false);
+  /* shranjen naslov odvetnika (localStorage), stanje pošiljanja odvetniku v pregled/podpis */
+  const [odvetnikEmail, setOdvetnikEmail] = useState('');
+  const [odvStatus, setOdvStatus] = useState<'' | 'poslji' | 'ok' | 'napaka'>('');
+  const [odvPoslano, setOdvPoslano] = useState(false);
+  const [odvNapaka, setOdvNapaka] = useState('');
 
   useEffect(() => {
     const flow = podatkiZaPredogled(nacin, loadFlowData());
@@ -146,6 +154,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
       if (s.predklic) setPredklic(s.predklic);
       if (s.dokBarva) setDokBarva(s.dokBarva);
       if (s.dokFont) setDokFont(s.dokFont);
+    } catch { /* prazno */ }
+    try {
+      const o = localStorage.getItem(K_ODVETNIK);
+      if (o) setOdvetnikEmail(o);
     } catch { /* prazno */ }
   }, [nacin]);
 
@@ -377,6 +389,38 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const uporabiPisavo = (font: string) => oblikuj('fontName', font);
   const ponastaviTelo = () => { setRocnoTelo(false); const html = aktivnoTelo(); setTeloHtml(html); if (editorRef.current) editorRef.current.innerHTML = html; };
   const izvozniTelo = () => { const e = editorRef.current?.innerHTML?.trim(); if (e) return e; if (teloHtml.trim()) return teloHtml; return aktivnoTelo(); };
+
+  /* shrani naslov odvetnika ob spremembi vnosa (localStorage) */
+  const nastaviOdvetnika = (v: string) => {
+    setOdvetnikEmail(v);
+    setOdvStatus('');
+    setOdvNapaka('');
+    try { localStorage.setItem(K_ODVETNIK, v); } catch { /* prazno */ }
+  };
+
+  /* pošlji pogodbo odvetniku v pregled in podpis (isti HTML kot prenos/PDF/naročnik) */
+  const posljiOdvetniku = async () => {
+    if (samoOgled) return;
+    const cilj = odvetnikEmail.trim();
+    if (!jeVeljavenEmail(cilj)) return;
+    const naziv = VRSTE_POG.find(v => v.id === vrstaPog)!.naziv;
+    const subject = 'V pregled in podpis: ' + naziv + (narocnikIme() ? ' — ' + narocnikIme() : '');
+    setOdvStatus('poslji');
+    setOdvNapaka('');
+    try {
+      const rez = await posljiMail({ to: cilj, subject, html: doc(izvozniTelo()), replyTo: ponudnik.email.trim() || undefined });
+      if (rez.ok) {
+        setOdvStatus('ok');
+        setOdvPoslano(true);
+      } else {
+        setOdvStatus('napaka');
+        setOdvNapaka(rez.napaka || 'pošiljanje ni uspelo.');
+      }
+    } catch {
+      setOdvStatus('napaka');
+      setOdvNapaka('pošiljanje ni uspelo.');
+    }
+  };
   /* menjava vrste dokumenta: kot ponastaviTelo — sveze telo v urejevalnik,
      da preklop takoj OSVEZI prikaz (tudi ce je bilo prej rocno urejeno).
      Opcijski cleni se ponastavijo na privzeto stanje za novo vrsto. */
@@ -938,7 +982,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* ── POGLED 3: ZAKLJUCEK (prenos + posiljanje + shranjevanje) ── */}
     {pogled === 'zakljucek' && <section className="pg-sek pg-stran pg-stolpec pg-zakljucek">
       <p className={styles.eyebrow}>{VRSTE_POG.find(v => v.id === vrstaPog)!.kick}{vir === 'ponudba' && selectedOffer?.number ? ` · PONUDBA ŠT. ${selectedOffer.number}` : ''}</p>
-      <h2 className="pg-naslov">Zaključek.</h2>
+      <h2 className="pg-naslov">Zaključek.{odvPoslano && <span className="pg-odvetnik-znak">Pri odvetniku</span>}</h2>
       <p className="pg-uvod">Prenesi pogodbo{narocnikIme() ? ' za ' + narocnikIme() : ''}, jo shrani ali pošlji naročniku.</p>
       <p className="pg-disc">Pripravljeno iz vzorčne predloge kot pripomoček — <b>ni pravni nasvet</b>. Pred podpisom priporočamo pregled pri odvetniku in prilagoditev konkretnemu poslu.</p>
       <div className="pg-polja pg-polja-email">
@@ -977,7 +1021,33 @@ export default function ContractWorkspace({ base }: { base: string }) {
         replyTo={ponudnik.email.trim() || undefined}
         samoOgled={samoOgled}
         kontakti={strankaKontakti()}
+        projektId={vir === 'ponudba' && selectedOffer ? selectedOffer.id : undefined}
       />
+      {/* Odvetnik: pošlji pogodbo v pregled in podpis (isti HTML kot naročniku). */}
+      <div className="pg-odvetnik">
+        <span className="pg-odvetnik-label">Za odvetnika</span>
+        <p className="pg-odvetnik-opis">Pošlji pogodbo odvetniku v pregled in podpis.</p>
+        <input
+          type="email"
+          className="pg-odvetnik-vnos"
+          value={odvetnikEmail}
+          onChange={event => nastaviOdvetnika(event.target.value)}
+          placeholder="odvetnik@pisarna.si"
+          aria-label="E-pošta odvetnika"
+        />
+        <button
+          type="button"
+          className="pg-gumb"
+          disabled={samoOgled || !jeVeljavenEmail(odvetnikEmail) || odvStatus === 'poslji'}
+          onClick={posljiOdvetniku}
+        >
+          Pošlji odvetniku v pregled in podpis
+        </button>
+        {samoOgled && <p className="pg-odvetnik-namig">Na voljo v načinu »Moji podatki«.</p>}
+        {odvStatus === 'poslji' && <p className="pg-odvetnik-status" role="status">Pošiljam …</p>}
+        {odvStatus === 'ok' && <p className="pg-odvetnik-status pg-odvetnik-ok" role="status">Poslano odvetniku ✓</p>}
+        {odvStatus === 'napaka' && <p className="pg-odvetnik-status pg-odvetnik-err" role="status">Napaka: {odvNapaka}</p>}
+      </div>
       <div className="pg-koncna-nav">
         <button type="button" className="pg-povezava" onClick={() => setPogled('dokument')}>← Uredi pogodbo</button>
         <button type="button" className="pg-povezava" onClick={novaPogodba}>↺ Nova pogodba</button>
@@ -1121,6 +1191,18 @@ export default function ContractWorkspace({ base }: { base: string }) {
       @media (prefers-reduced-motion: reduce) { .pg-konfeti{display:none} }
       .pg-povezava{font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0;display:inline-flex;align-items:center;gap:.38rem}
       .pg-povezava:hover{opacity:.6}
+      /* Odvetnik: umirjen blok pod pošiljanjem naročniku — tanek okvir, isti jezik kot .pg-disc/.pg-polje */
+      .pg-odvetnik{max-width:560px;margin:1.1rem auto 0;padding:1.15rem 1.4rem 1.25rem;border:1px solid rgba(17,17,17,.14);border-radius:16px;background:rgba(255,255,255,.5);text-align:left}
+      .pg-odvetnik-label{display:block;font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.5)}
+      .pg-odvetnik-opis{margin:.5rem 0 .85rem;font-size:.86rem;line-height:1.5;color:rgba(17,17,17,.66)}
+      .pg-odvetnik-vnos{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:10px;padding:.6rem .75rem;margin-bottom:.85rem}
+      .pg-odvetnik-vnos:focus{outline:none;border-color:var(--ink)}
+      .pg-odvetnik-vnos::placeholder{color:rgba(17,17,17,.4)}
+      .pg-odvetnik-namig{margin:.55rem 0 0;font-size:.78rem;color:rgba(17,17,17,.5)}
+      .pg-odvetnik-status{margin:.6rem 0 0;font-size:.85rem;color:rgba(17,17,17,.72)}
+      .pg-odvetnik-ok{color:#1f7a4d}
+      .pg-odvetnik-err{color:#b23434}
+      .pg-odvetnik-znak{display:inline-block;vertical-align:middle;margin-left:.7rem;font-family:var(--font-sans),system-ui,sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#1f7a4d;background:oklch(95% .05 155);border:1px solid oklch(82% .1 155);border-radius:999px;padding:.22rem .6rem}
       .pg-koncna-nav{display:flex;flex-wrap:wrap;gap:1.4rem;margin-top:1.8rem;padding-top:1.3rem;border-top:1px solid rgba(17,17,17,.1)}
       .pg-mini{font-size:.8rem;color:rgba(17,17,17,.55)}
       .pg-napaka{color:#b23434;font-size:.86rem;margin:.6rem 0 0}
