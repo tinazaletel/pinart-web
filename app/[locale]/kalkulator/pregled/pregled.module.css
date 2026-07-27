@@ -222,10 +222,10 @@
 .flowTools > *:nth-child(4)::after { right: -3.5rem; top: auto; bottom: -3.5rem; width: 10rem; border: 1px solid oklch(100% 0 0 / .13); background: radial-gradient(circle at 40% 38%, oklch(100% 0 0 / .12), transparent 60%); box-shadow: inset 0 0 2rem oklch(100% 0 0 / .06); }
 .flowTools > *:nth-child(4)::before { right: .8rem; bottom: .7rem; width: 5.5rem; height: 3.8rem; background-image: radial-gradient(circle, oklch(100% 0 0 / .28) 1px, transparent 1.2px); background-size: .55rem .55rem; -webkit-mask-image: linear-gradient(135deg, transparent, #000); mask-image: linear-gradient(135deg, transparent, #000); }
 .flowTools > *:hover { transform: translateY(-4px) scale(1.012); border-radius: .75rem; filter: saturate(1.12) brightness(1.03); box-shadow: 0 1.1rem 2.6rem oklch(22% .04 300 / .16); }
-.flowTools .offerTool { background: radial-gradient(circle at 70% 25%, oklch(90% .08 292 / .72), transparent 30%), linear-gradient(125deg, oklch(70% .19 300), oklch(62% .23 297) 45%, oklch(82% .12 285)); background-size: 145% 145%; color: oklch(98% .01 300); animation: cardFlow 9s ease-in-out infinite alternate; }
-.flowTools > *:nth-child(2) { background: linear-gradient(125deg, oklch(88% .08 155), oklch(73% .16 166), oklch(84% .12 185), oklch(76% .14 145)); background-size: 220% 220%; animation: cardFlow 11s ease-in-out -3s infinite alternate; }
-.flowTools > *:nth-child(3) { background: linear-gradient(125deg, oklch(87% .1 68), oklch(73% .19 46), oklch(82% .15 35), oklch(79% .14 78)); background-size: 220% 220%; animation: cardFlow 10s ease-in-out -6s infinite alternate; }
-.flowTools > *:nth-child(4) { background: linear-gradient(125deg, oklch(17% .012 50), oklch(27% .025 48), oklch(20% .018 315), oklch(14% .01 50)); background-size: 220% 220%; color: var(--paper); animation: cardFlow 12s ease-in-out -4s infinite alternate; }
+.flowTools .offerTool { background: linear-gradient(125deg, oklch(95% .03 300), oklch(88% .08 297), oklch(91% .06 322)); background-size: 220% 220%; color: var(--ink); animation: cardFlow 9s ease-in-out infinite alternate; }
+.flowTools > *:nth-child(2) { background: linear-gradient(125deg, oklch(95% .04 168), oklch(86% .1 165), oklch(91% .06 190)); background-size: 220% 220%; animation: cardFlow 11s ease-in-out -3s infinite alternate; }
+.flowTools > *:nth-child(3) { background: linear-gradient(125deg, oklch(95% .04 75), oklch(88% .085 62), oklch(91% .05 42)); background-size: 220% 220%; animation: cardFlow 10s ease-in-out -6s infinite alternate; }
+.flowTools > *:nth-child(4) { background: linear-gradient(125deg, oklch(95% .03 265), oklch(88% .075 272), oklch(91% .05 300)); background-size: 220% 220%; animation: cardFlow 12s ease-in-out -4s infinite alternate; }
 .flowTools > *:nth-child(5) { background: linear-gradient(125deg, oklch(95% .025 87), oklch(87% .07 295), oklch(84% .08 165)); background-size: 220% 220%; animation: cardFlow 11s ease-in-out -7s infinite alternate; }
 .flowTools > *:nth-child(6) { background: linear-gradient(125deg, oklch(95% .035 295), oklch(87% .08 285), oklch(91% .06 175)); background-size: 220% 220%; animation: cardFlow 12s ease-in-out -5s infinite alternate; }
 .flowTools > *:nth-child(7) { background: linear-gradient(125deg, oklch(95% .045 170), oklch(84% .1 165), oklch(91% .06 295)); background-size: 220% 220%; animation: cardFlow 10s ease-in-out -2s infinite alternate; }
@@ -235,8 +235,28 @@
 .flowTools small { position: relative; z-index: 2; margin-top: .32rem; color: color-mix(in oklch, currentColor 72%, transparent); font-size: .59rem; }
 .flowTools i { z-index: 3; position: absolute; top: 1rem; right: 1rem; display: grid; place-items: center; width: 2.2rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .38); border-radius: 50%; background: oklch(100% 0 0 / .18); color: currentColor; font: 500 1.25rem/1 var(--font-sans), sans-serif; font-style: normal; }
 .flowTools i svg { display: block; }
-.toolIcon { position: relative; z-index: 2; width: 1.65rem; height: 1.65rem; margin-top: 1.25rem; fill: none; stroke: var(--ink); stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
-.flowTools > *:nth-child(4) .toolIcon { stroke: var(--paper); }
+.toolIcon { display: none; }
+.flowTools > *:nth-child(4) .toolIcon { stroke: var(--ink); }
+
+/* 3D clay ikone kukajo iz spodnjega roba VSEH kartic (odrezane prek overflow:hidden). */
+.flowTools > *::before { display: none; }
+.flowTools > *:nth-child(1n)::after {
+  right: -1.5rem; bottom: -1.7rem; top: auto; left: auto;
+  width: 8.2rem; height: 8.2rem; aspect-ratio: auto;
+  border: 0; box-shadow: none; border-radius: 0;
+  background: center / contain no-repeat;
+  filter: drop-shadow(0 .5rem .8rem oklch(30% .05 300 / .22));
+  animation: iconBob 6s ease-in-out infinite alternate;
+}
+.flowTools > *:nth-child(1)::after { background-image: url('/flow/icon-ponudba.png'); }
+.flowTools > *:nth-child(2)::after { background-image: url('/flow/icon-dolgorocno.png'); animation-delay: -1s; }
+.flowTools > *:nth-child(3)::after { background-image: url('/flow/icon-pogodba.png'); animation-delay: -2s; }
+.flowTools > *:nth-child(4)::after { background-image: url('/flow/icon-racun.png'); animation-delay: -3s; }
+.flowTools > *:nth-child(5)::after { background-image: url('/flow/icon-strosek.png'); animation-delay: -1.5s; }
+.flowTools > *:nth-child(6)::after { background-image: url('/flow/icon-ceniki.png'); animation-delay: -2.5s; }
+.flowTools > *:nth-child(7)::after { background-image: url('/flow/icon-cas.png'); animation-delay: -.5s; }
+.flowTools > *:nth-child(8)::after { background-image: url('/flow/icon-poslovni.png'); animation-delay: -3.5s; }
+@keyframes iconBob { from { transform: translateY(2px); } to { transform: translateY(-7px); } }
 @keyframes cardFlow {
   0% { background-position: 0% 10%; }
   50% { background-position: 100% 90%; }
@@ -843,9 +863,9 @@
 .businessIntro > p:last-child { margin: .7rem 0 0; color: color-mix(in oklch, var(--ink) 60%, transparent); font-size: .65rem; line-height: 1.45; }
 .kpi { position: relative; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
 .kpi:nth-child(1) { background: linear-gradient(135deg, oklch(97% .02 300), oklch(89% .075 297)); }
-.kpi:nth-child(2) { background: linear-gradient(135deg, oklch(97% .025 158), oklch(88% .075 162)); }
-.kpi:nth-child(3) { background: linear-gradient(135deg, oklch(96% .025 155), oklch(85% .09 164)); }
-.kpi:nth-child(4) { background: linear-gradient(135deg, oklch(97% .025 68), oklch(88% .085 48)); }
+.kpi:nth-child(2) { background: linear-gradient(135deg, oklch(97% .025 255), oklch(88% .08 260)); }
+.kpi:nth-child(3) { background: linear-gradient(135deg, oklch(97% .03 70), oklch(87% .09 52)); }
+.kpi:nth-child(4) { background: linear-gradient(135deg, oklch(96% .025 158), oklch(87% .085 162)); }
 .kpi > span { font-size: .63rem; font-weight: 750; }
 .kpi strong { margin: 1.4rem 0 .25rem; font: 700 clamp(1.5rem, 2.2vw, 2.35rem) var(--font-sans), system-ui, sans-serif; letter-spacing: -.015em; font-variant-numeric: tabular-nums; -webkit-text-stroke: 0; }
 .kpi small { color: color-mix(in oklch, currentColor 58%, transparent); font-size: .56rem; }
@@ -853,8 +873,9 @@
 .resultIcon svg { width: 2.8rem; fill: none; stroke: currentColor; stroke-width: 1.45; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 .22rem .18rem oklch(25% .04 60 / .16)); }
 .kpi > span, .kpi > strong, .kpi > small { position: relative; z-index: 1; }
 .kpi:nth-child(1) .resultIcon { color: var(--purple); }
-.kpi:nth-child(2) .resultIcon, .kpi:nth-child(3) .resultIcon { color: oklch(58% .15 160); }
-.kpi:nth-child(4) .resultIcon { color: oklch(66% .18 48); }
+.kpi:nth-child(2) .resultIcon { color: oklch(58% .16 255); }
+.kpi:nth-child(3) .resultIcon { color: oklch(66% .18 52); }
+.kpi:nth-child(4) .resultIcon { color: oklch(58% .15 160); }
 .negative strong { color: oklch(78% .13 30); }
 
 .dashboardGrid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(13rem, .45fr); gap: .7rem; margin-top: .7rem; }
