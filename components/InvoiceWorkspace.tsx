@@ -806,6 +806,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-obrazec{grid-template-columns:1fr}
       /* vec zracnosti okoli naslova obrazca */
       .rc .rc-obr-uvod{margin:1rem 0 2rem}
+      .rc .rc-obr-uvod h2{margin:.15rem 0 .6rem}
+      .rc .rc-obr-uvod > p:last-child{margin:0;line-height:1.55}
       .rc .rc-nazaj-vrh{margin:0 0 .2rem;justify-self:start}
       .rc .rc-povezava{font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0;display:inline-flex;align-items:center;gap:.38rem}
       .rc .rc-povezava:hover{opacity:.6}

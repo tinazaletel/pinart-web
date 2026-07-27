@@ -18,7 +18,7 @@ import PosljiBlok from '@/components/PosljiBlok';
 
 const K_NAST = 'pinart-kalkulator-v2';
 
-type Offer = { id: string; title: string; client: string; scope: string[]; number?: string; status: string; agreedAmount: number };
+type Offer = { id: string; title: string; client: string; scope: string[]; number?: string; status: string; agreedAmount: number; date: string };
 type Ponudnik = { ime: string; davcna: string; email: string; telefon: string; naslov: string; trr: string };
 
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
@@ -51,16 +51,25 @@ export default function ContractWorkspace({ base }: { base: string }) {
   /* pogled = katera "stran" je prikazana — ENAKO kot retainer (vprasanja -> ponudba -> zakljucek).
      nastavitve: vir + izbirnik + arhiv; dokument: SAMO oblikovan dokument; zakljucek: prenos + posiljanje. */
   const [pogled, setPogled] = useState<'nastavitve' | 'dokument' | 'zakljucek'>('nastavitve');
-  const [vir, setVir] = useState<'ponudba' | 'rocno' | 'stranka'>('ponudba');
   /* vrsta dokumenta: navadna pogodba o sodelovanju ali NDA (sporazum o varovanju zaupnih podatkov).
      Privzeto 'sodelovanje' = obstojece obnasanje nespremenjeno. */
   const [vrstaPog, setVrstaPog] = useState<'sodelovanje' | 'nda'>('sodelovanje');
   const [offerId, setOfferId] = useState('');
+  /* pot "Od stranke" (naloz. dokument) je locena od ustvarjanja — vklopi se s povezavo, ne s pilulo */
+  const [odStranke, setOdStranke] = useState(false);
   const [datum, setDatum] = useState(() => new Date().toISOString().slice(0, 10));
   const [rocniNarocnik, setRocniNarocnik] = useState('');
   const [rocniObseg, setRocniObseg] = useState('');
   const [narEmail, setNarEmail] = useState('');
   const [kartaOdprta, setKartaOdprta] = useState(false);
+  /* iskalen combobox za izbiro ponudbe na vstopu — enak vzorec kot InvoiceWorkspace:
+     privzeto "Brez ponudbe" + zadnjih 10 ponudb, ob tipkanju filtrira VSE po naslovu/stranki/stevilki */
+  const [vstopOdprt, setVstopOdprt] = useState(false);
+  const [vstopIskanje, setVstopIskanje] = useState('');
+  const vstopComboRef = useRef<HTMLDivElement | null>(null);
+  /* VIR se IZPELJE iz izbire (ni vec locenih pilul): nalozeno od stranke -> 'stranka';
+     sicer izbrana ponudba (offerId) -> 'ponudba', prazno ("Brez ponudbe") -> 'rocno' (samostojna pogodba) */
+  const vir: 'ponudba' | 'rocno' | 'stranka' = odStranke ? 'stranka' : (offerId ? 'ponudba' : 'rocno');
 
   const [notice, setNotice] = useState('');
   const [napaka, setNapaka] = useState('');
@@ -101,7 +110,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
   useEffect(() => {
     const flow = podatkiZaPredogled(nacin, loadFlowData());
-    setOffers(flow.offers.map(({ id, title, client, number, status, scope, agreedAmount }) => ({ id, title, client, number, status, scope, agreedAmount })));
+    setOffers(flow.offers.map(({ id, title, client, number, status, scope, agreedAmount, date }) => ({ id, title, client, number, status, scope, agreedAmount, date })));
     setContracts(flow.contracts);
     setClients(flow.clients);
     try {
@@ -114,6 +123,26 @@ export default function ContractWorkspace({ base }: { base: string }) {
   }, [nacin]);
 
   const selectedOffer = offers.find(item => item.id === offerId);
+
+  /* ── vstopni combobox: ponudbe po datumu (najnovejse zgoraj); brez iskanja
+     prikaze zadnjih 10, ob tipkanju filtrira VSE po naslovu/stranki/stevilki ── */
+  const ponudbePoDatumu = [...offers].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const vstopIsk = vstopIskanje.trim().toLocaleLowerCase('sl-SI');
+  const vstopSeznam = vstopIsk
+    ? ponudbePoDatumu.filter(offer => `${offer.title} ${offer.client} ${offer.number || ''}`.toLocaleLowerCase('sl-SI').includes(vstopIsk))
+    : ponudbePoDatumu.slice(0, 10);
+  /* izbira ponudbe (ali "Brez ponudbe" = prazen id) nastavi offerId -> vir se izpelje sam */
+  const izberiVVstopu = (id: string) => { setOfferId(id); setKartaOdprta(false); setRocnoTelo(false); setVstopOdprt(false); setVstopIskanje(''); };
+  /* klik izven odprtega comboboxa ga zapre (panel je position:absolute znotraj .pg-combo, portal ni potreben) */
+  useEffect(() => {
+    if (!vstopOdprt) return;
+    const zapri = (event: MouseEvent) => {
+      if (vstopComboRef.current && !vstopComboRef.current.contains(event.target as Node)) { setVstopOdprt(false); setVstopIskanje(''); }
+    };
+    document.addEventListener('mousedown', zapri);
+    return () => document.removeEventListener('mousedown', zapri);
+  }, [vstopOdprt]);
+
   /* e-posta narocnika: iz imenika strank (po imenu), da je "Poslji" en klik */
   useEffect(() => {
     if (vir !== 'ponudba' || !selectedOffer) return;
@@ -425,7 +454,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const novaPogodba = () => {
     setOfferId(''); setRocniNarocnik(''); setRocniObseg(''); setNarEmail('');
     setTeloHtml(''); setRocnoTelo(false); setShranjenaId(''); setNapaka('');
-    setVrstaPog('sodelovanje');
+    setVrstaPog('sodelovanje'); setOdStranke(false); setVstopOdprt(false); setVstopIskanje('');
     setDatum(new Date().toISOString().slice(0, 10));
     setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot('');
     setPogled('nastavitve');
@@ -541,7 +570,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       <p className="pg-kicker">Pogodbe</p>
       <h1 className="pg-h1">Dogovor, brez ugibanja.</h1>
       <div className="pg-chat">
-        <span className="pg-mehur"><b>Iz česa nastane pogodba?</b><small>Izberi vir spodaj — iz ponudbe, brez nje ali naložena od stranke.</small></span>
+        <span className="pg-mehur"><b>Iz česa nastane pogodba?</b><small>Če obstaja ponudba, jo izberi — naročnik in obseg se predizpolnita. Sicer pusti »Brez ponudbe« za samostojno pogodbo.</small></span>
       </div>
       <section className="pg-sek pg-vstop-panel">
         {/* vrsta dokumenta: navadna pogodba o sodelovanju ali NDA (velja za ustvarjeno telo) */}
@@ -549,81 +578,100 @@ export default function ContractWorkspace({ base }: { base: string }) {
           <button type="button" aria-label="Pogodba o sodelovanju" aria-pressed={vrstaPog === 'sodelovanje'} className={vrstaPog === 'sodelovanje' ? 'on' : ''} onClick={() => menjajVrsto('sodelovanje')}>Pogodba o sodelovanju</button>
           <button type="button" aria-label="NDA — sporazum o varovanju zaupnih podatkov" aria-pressed={vrstaPog === 'nda'} className={vrstaPog === 'nda' ? 'on' : ''} onClick={() => menjajVrsto('nda')}>NDA</button>
         </div>
-        <div className="pg-segpills" role="group" aria-label="Vir pogodbe">
-          <button type="button" aria-label="Iz ponudbe" className={vir === 'ponudba' ? 'on' : ''} onClick={() => { setVir('ponudba'); setRocnoTelo(false); }}>Iz ponudbe</button>
-          <button type="button" aria-label="Brez ponudbe" className={vir === 'rocno' ? 'on' : ''} onClick={() => { setVir('rocno'); setRocnoTelo(false); }}>Brez ponudbe</button>
-          <button type="button" aria-label="Od stranke" className={vir === 'stranka' ? 'on' : ''} onClick={() => setVir('stranka')}>Od stranke</button>
-        </div>
-
-        {vir === 'ponudba' ? (
+        {!odStranke ? (
           <>
+            {/* PONUDBA (iskalen combobox) + DATUM. Izbrana ponudba => vir 'ponudba'
+                (predizpolni naročnika+obseg); "Brez ponudbe" => samostojna pogodba (rocno). */}
             <div className="pg-polja">
-              <label className="pg-polje">Ponudba
-                <select value={offerId} onChange={event => { setOfferId(event.target.value); setKartaOdprta(false); setRocnoTelo(false); }}>
-                  <option value="">Izberi ponudbo …</option>
-                  {offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}</option>)}
-                </select>
-              </label>
+              <div className="pg-polje pg-combo-polje">
+                <span className="pg-combo-oznaka" id="pg-combo-oznaka">Ponudba</span>
+                <div className="pg-combo" ref={vstopComboRef}>
+                  <button type="button" className="pg-combo-sprozilec" aria-haspopup="listbox" aria-expanded={vstopOdprt} aria-labelledby="pg-combo-oznaka" onClick={() => { setVstopOdprt(open => !open); setVstopIskanje(''); }}>
+                    <span>{selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : 'Brez ponudbe'}</span>
+                    <CaretDown size={14} weight="bold" aria-hidden />
+                  </button>
+                  {vstopOdprt && <div className="pg-combo-panel" onKeyDown={event => { if (event.key === 'Escape') { setVstopOdprt(false); setVstopIskanje(''); } }}>
+                    <input className="pg-combo-iskalnik" type="search" autoFocus placeholder="Poišči ponudbo, stranko ali številko …" aria-label="Poišči ponudbo, stranko ali številko" value={vstopIskanje} onChange={event => setVstopIskanje(event.target.value)} />
+                    <div className="pg-combo-seznam" role="listbox" aria-label="Ponudbe">
+                      <button type="button" role="option" aria-selected={!offerId} className={'pg-combo-opcija' + (!offerId ? ' on' : '')} onClick={() => izberiVVstopu('')}>
+                        <span className="pg-combo-naziv"><strong>Brez ponudbe</strong><small>Samostojna pogodba</small></span>
+                        {!offerId && <span className="pg-combo-kljukica" aria-hidden>✓</span>}
+                      </button>
+                      {vstopSeznam.map(offer => (
+                        <button key={offer.id} type="button" role="option" aria-selected={offerId === offer.id} className={'pg-combo-opcija' + (offerId === offer.id ? ' on' : '')} onClick={() => izberiVVstopu(offer.id)}>
+                          <span className="pg-combo-naziv"><strong>{offer.title} · {offer.client}</strong>{offer.number && <small>Št. {offer.number}</small>}</span>
+                          {offerId === offer.id && <span className="pg-combo-kljukica" aria-hidden>✓</span>}
+                        </button>
+                      ))}
+                      {!vstopSeznam.length && <p className="pg-mini pg-combo-prazno">Ni ponudb za to iskanje.</p>}
+                    </div>
+                    {!vstopIskanje.trim() && ponudbePoDatumu.length > 10 && <p className="pg-combo-namig">Prikazanih zadnjih 10 — išči za vse.</p>}
+                  </div>}
+                </div>
+              </div>
               <label className="pg-polje">Datum pogodbe
                 <input type="date" value={datum} onChange={event => setDatum(event.target.value)} />
               </label>
             </div>
-            {karticaPonudbe()}
-          </>
-        ) : vir === 'stranka' ? (
-          /* pot "Od stranke": nalozi in preglej dokument — shrani takoj v arhiv (status Prejeta) */
-          <form onSubmit={saveUpload}>
-            <div className="pg-polja">
-              <label className="pg-polje">Naziv pogodbe
-                <input required name="title" type="text" placeholder="npr. Pogodba o sodelovanju 2026" />
-              </label>
-              <label className="pg-polje">Stranka
-                <input required name="client" type="text" placeholder="npr. Odvetniška družba Volk & Babica" />
-              </label>
-              <label className="pg-polje">Datum prejema
-                <input required name="date" type="date" defaultValue={new Date().toISOString().slice(0, 10)} />
-              </label>
-              <label className="pg-polje">Projekt ali ponudba
-                <select name="sourceOfferId" defaultValue="">
-                  <option value="">Brez povezave</option>
-                  {offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}</option>)}
-                </select>
-              </label>
-            </div>
-            <label className="pg-polje pg-polje-obseg">PDF ali Word
-              <input required name="file" type="file" accept=".pdf,.doc,.docx" />
-            </label>
-            <label className="pg-polje pg-polje-obseg">Opombe za pregled
-              <textarea name="notes" rows={4} placeholder="Kaj moraš preveriti ali uskladiti?" />
-            </label>
+            {offerId ? (
+              karticaPonudbe()
+            ) : (
+              <>
+                {/* "Brez ponudbe" = samostojna pogodba: naročnika in obseg vpišeš ročno */}
+                <div className="pg-polja">
+                  <label className="pg-polje">Naročnik
+                    <input type="text" placeholder="npr. Odvetniška družba Volk & Babica" value={rocniNarocnik} onChange={event => setRocniNarocnik(event.target.value)} />
+                  </label>
+                  <label className="pg-polje">E-pošta naročnika
+                    <input type="email" placeholder="npr. pisarna@volk-babica.si" value={narEmail} onChange={event => setNarEmail(event.target.value)} />
+                  </label>
+                </div>
+                <label className="pg-polje pg-polje-obseg">Obseg (ena postavka na vrstico)
+                  <textarea rows={4} placeholder={'npr.\nLogotip\nVizitke in dopisni papir'} value={rocniObseg} onChange={event => setRocniObseg(event.target.value)} />
+                </label>
+                <p className="pg-namig">Priporočamo: najprej ustvari <b>ponudbo</b> — obseg, cena in številka se v pogodbo prenesejo sami. <a href={`${base}/kalkulator/orodje`}>Odpri kalkulator →</a></p>
+              </>
+            )}
             <div className="pg-gumbi">
-              <button type="submit" className="pg-gumb" aria-label="Shrani prejeto pogodbo">Shrani prejeto pogodbo</button>
+              <button type="button" className="pg-gumb" aria-label="Pripravi pogodbo" onClick={pripraviPogodbo}>Pripravi pogodbo →</button>
             </div>
-          </form>
+            {/* pot "Od stranke": naloži že podpisano/prejeto pogodbo za pregled (ohranjena funkcija) */}
+            <button type="button" className="pg-povezava pg-odstranke-link" onClick={() => setOdStranke(true)}>Imaš pogodbo od stranke? Naloži jo za pregled →</button>
+          </>
         ) : (
+          /* pot "Od stranke": nalozi in preglej dokument — shrani takoj v arhiv (status Prejeta) */
           <>
-            <div className="pg-polja">
-              <label className="pg-polje">Naročnik
-                <input type="text" placeholder="npr. Odvetniška družba Volk & Babica" value={rocniNarocnik} onChange={event => setRocniNarocnik(event.target.value)} />
+            <button type="button" className="pg-povezava pg-odstranke-nazaj" onClick={() => setOdStranke(false)}>← Nazaj na ustvarjanje pogodbe</button>
+            <form onSubmit={saveUpload}>
+              <div className="pg-polja">
+                <label className="pg-polje">Naziv pogodbe
+                  <input required name="title" type="text" placeholder="npr. Pogodba o sodelovanju 2026" />
+                </label>
+                <label className="pg-polje">Stranka
+                  <input required name="client" type="text" placeholder="npr. Odvetniška družba Volk & Babica" />
+                </label>
+                <label className="pg-polje">Datum prejema
+                  <input required name="date" type="date" defaultValue={new Date().toISOString().slice(0, 10)} />
+                </label>
+                <label className="pg-polje">Projekt ali ponudba
+                  <select name="sourceOfferId" defaultValue="">
+                    <option value="">Brez povezave</option>
+                    {offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}</option>)}
+                  </select>
+                </label>
+              </div>
+              <label className="pg-polje pg-polje-obseg">PDF ali Word
+                <input required name="file" type="file" accept=".pdf,.doc,.docx" />
               </label>
-              <label className="pg-polje">E-pošta naročnika
-                <input type="email" placeholder="npr. pisarna@volk-babica.si" value={narEmail} onChange={event => setNarEmail(event.target.value)} />
+              <label className="pg-polje pg-polje-obseg">Opombe za pregled
+                <textarea name="notes" rows={4} placeholder="Kaj moraš preveriti ali uskladiti?" />
               </label>
-              <label className="pg-polje">Datum pogodbe
-                <input type="date" value={datum} onChange={event => setDatum(event.target.value)} />
-              </label>
-            </div>
-            <label className="pg-polje pg-polje-obseg">Obseg (ena postavka na vrstico)
-              <textarea rows={4} placeholder={'npr.\nLogotip\nVizitke in dopisni papir'} value={rocniObseg} onChange={event => setRocniObseg(event.target.value)} />
-            </label>
-            {/* namig: brez ponudbe pogodba nima cene in obsega iz sistema */}
-            <p className="pg-namig">Priporočamo: najprej ustvari <b>ponudbo</b> — obseg, cena in številka se v pogodbo prenesejo sami. <a href={`${base}/kalkulator/orodje`}>Odpri kalkulator →</a></p>
+              <div className="pg-gumbi">
+                <button type="submit" className="pg-gumb" aria-label="Shrani prejeto pogodbo">Shrani prejeto pogodbo</button>
+              </div>
+            </form>
           </>
         )}
-
-        {vir !== 'stranka' && <div className="pg-gumbi">
-          <button type="button" className="pg-gumb" aria-label="Pripravi pogodbo" disabled={vir === 'ponudba' && !offerId} onClick={pripraviPogodbo}>Pripravi pogodbo →</button>
-        </div>}
       </section>
     </div>}
 
@@ -869,6 +917,33 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-polje input:focus,.pg-polje select:focus,.pg-polje textarea:focus{outline:none;border-color:var(--ink)}
       .pg-polje textarea{resize:vertical;min-height:6.5rem;line-height:1.5;font-weight:500}
       .pg-polje-obseg{margin:0 0 1.1rem}
+
+      /* ── vstopni iskalen combobox (izbira ponudbe) — enak vzorec kot InvoiceWorkspace rc-combo* ──
+         sprozilec izgleda kot polje, panel z iskalnikom + seznam opcij se odpre pod njim (position:absolute) */
+      .pg-combo-polje{min-width:0}
+      .pg-combo{position:relative}
+      .pg-combo-sprozilec{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:10px;padding:.6rem .75rem;text-align:left;cursor:pointer}
+      .pg-combo-sprozilec:focus{outline:none;border-color:var(--ink)}
+      .pg-combo-sprozilec>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .pg-combo-sprozilec svg{flex:none}
+      .pg-combo-panel{position:absolute;top:calc(100% + .35rem);left:0;right:0;z-index:40;background:#fff;border:1px solid rgba(17,17,17,.12);border-radius:14px;box-shadow:0 16px 44px rgba(20,16,26,.16);padding:.55rem;text-transform:none;letter-spacing:0}
+      /* visja specificnost (.pg-combo ...), da premaga .pg-polje input in ostane pilula */
+      .pg-combo .pg-combo-iskalnik{width:100%;box-sizing:border-box;font:inherit;font-size:16px;font-weight:500;color:var(--ink);background:rgba(255,255,255,.9);border:1px solid rgba(17,17,17,.16);border-radius:999px;padding:.5rem .9rem;margin:0 0 .35rem}
+      .pg-combo .pg-combo-iskalnik:focus{outline:none;border-color:var(--ink)}
+      .pg-combo-seznam{display:flex;flex-direction:column;max-height:15rem;overflow-y:auto}
+      .pg-combo-opcija{display:flex;align-items:center;gap:.7rem;width:100%;min-height:2.7rem;padding:.5rem;border:none;border-bottom:1px solid rgba(17,17,17,.07);background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer;border-radius:8px}
+      .pg-combo-opcija:last-child{border-bottom:none}
+      .pg-combo-opcija:hover{background:rgba(17,17,17,.04)}
+      .pg-combo-naziv{flex:1;min-width:0}
+      .pg-combo-naziv strong{display:block;font-size:.9rem;font-weight:600;overflow-wrap:anywhere}
+      .pg-combo-opcija.on .pg-combo-naziv strong{font-weight:800}
+      .pg-combo-naziv small{display:block;margin-top:.1rem;font-size:.74rem;color:rgba(17,17,17,.55)}
+      .pg-combo-kljukica{flex:none;display:grid;place-items:center;width:1.5rem;height:1.5rem;border-radius:50%;background:var(--ink);color:var(--paper);font-size:.8rem}
+      .pg-combo-prazno{padding:.8rem .5rem}
+      .pg-combo-namig{margin:.5rem .3rem .1rem;font-size:.72rem;color:var(--muted)}
+      /* povezava do poti "Od stranke" pod glavnim gumbom + nazaj iz nje */
+      .pg-odstranke-link{margin-top:1rem}
+      .pg-odstranke-nazaj{margin:0 0 1.1rem}
 
       .pg-namig{margin:0 0 1.2rem;padding:.8rem 1rem;border:1px dashed rgba(178,84,118,.45);border-radius:12px;background:rgba(178,84,118,.06);font-size:.85rem;line-height:1.5;color:rgba(17,17,17,.75)}
       .pg-namig a{color:var(--accent,#B25476);font-weight:600;text-decoration:underline;text-underline-offset:.22em;white-space:nowrap}
