@@ -174,7 +174,7 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         .fl-chip b.pay { background: oklch(91% .08 250); color: oklch(46% .14 250); }
         .fl-chip-1 { top: 6%; left: 24%; animation-delay: 0s; }
         .fl-chip-2 { top: 34%; left: 15%; animation-delay: 3.5s; }
-        .fl-chip-3 { top: 62%; left: 26%; animation-delay: 7s; }
+        .fl-chip-3 { top: 47%; left: 30%; animation-delay: 7s; }
         @keyframes chipPop {
           0% { opacity: 0; transform: translateY(12px) scale(.9); }
           5% { opacity: 1; transform: translateY(0) scale(1); }
