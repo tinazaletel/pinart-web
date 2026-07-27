@@ -143,9 +143,9 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         /* .fl-ocala = kvadrat cez celo sirino, poravnan na DNO in zrcaljen (kot slika, ki je 1:1 contain
            bottom + scaleX(-1)). Tako so leve/desna leca postavljene po DEJANSKIH koordinatah ocal v sliki. */
         .fl-ocala { position: absolute; left: 0; right: 0; bottom: 0; aspect-ratio: 1; transform: scaleX(-1); pointer-events: none; }
-        .fl-leca { position: absolute; width: calc(4.6% - 2px); height: calc(5.11% - 2px); border-radius: 50%; overflow: hidden; opacity: .5; mix-blend-mode: screen; }
-        .fl-leca-l { left: 37.4%; top: 24.2%; }
-        .fl-leca-r { left: calc(42.4% + 5px); top: calc(23.9% + 5px); }
+        .fl-leca { position: absolute; width: calc(4.6% - 3px); height: calc(5.11% - 5px); border-radius: 50%; overflow: hidden; opacity: .5; mix-blend-mode: screen; }
+        .fl-leca-l { left: 37.4%; top: calc(24.2% + 1px); }
+        .fl-leca-r { left: calc(42.4% + 5px); top: calc(23.9% + 6px); }
         .fl-leca i { position: absolute; inset: -30%;
           background:
             repeating-linear-gradient(0deg, rgba(120,210,255,.5) 0 1.5px, transparent 1.5px 5px),
