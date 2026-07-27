@@ -7,6 +7,7 @@ import {
   CalendarBlank, ListChecks,
 } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { localePath } from '@/i18n/routing';
 import FlowHeroBg from '@/components/FlowHeroBg';
 import AmbientBubbles from '@/components/AmbientBubbles';
@@ -69,6 +70,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
      in na koncu pade v kos (O nas). Cist scroll-driven (brez GSAP), Safari-varno; hidden na mob/reduce-motion. */
   const flyRef = useRef<HTMLDivElement>(null);
   const kosRef = useRef<HTMLImageElement>(null);
+  const [flyMounted, setFlyMounted] = useState(false);
+  useEffect(() => { setFlyMounted(true); }, []);
   useEffect(() => {
     const fly = flyRef.current;
     if (!fly) return;
@@ -125,7 +128,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); if (raf) cancelAnimationFrame(raf); };
-  }, []);
+  }, [flyMounted]);
 
   const vrstaRef = useRef<HTMLDivElement>(null);
 
@@ -808,11 +811,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       <AmbientBubbles />
 
       <FlowHeroBg />
-      <div className="fl-fly" ref={flyRef} aria-hidden>
-        <img src="/flow/paper-ball.png" alt="" loading="lazy" />
-        <img src="/flow/paper-bird.png" alt="" loading="lazy" />
-        <img src="/flow/paper-boat.png" alt="" loading="lazy" />
-      </div>
+      {flyMounted && createPortal(
+        <div className="fl-fly" ref={flyRef} aria-hidden>
+          <img src="/flow/paper-ball.png" alt="" />
+          <img src="/flow/paper-bird.png" alt="" />
+          <img src="/flow/paper-boat.png" alt="" />
+        </div>,
+        document.body
+      )}
 
       <div className="fl-oder">
         <section className="fl-hero">
