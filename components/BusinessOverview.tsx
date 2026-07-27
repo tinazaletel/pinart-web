@@ -352,11 +352,31 @@ export default function BusinessOverview({ base }: { base: string }) {
       <section className={styles.resultsBand} id="clients" aria-labelledby="business-title">
         <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>03 · POSLOVNI REZULTATI</p><h2 id="business-title">Kako ti gre?</h2></div><div className={styles.periodSwitch} aria-label="Obdobje prikaza">{([['month', 'Mesec'], ['quarter', 'Četrtletje'], ['year', 'Leto']] as [Period, string][]).map(([value, label]) => <button type="button" key={value} className={period === value ? styles.periodActive : ''} onClick={() => setPeriod(value)}>{label}</button>)}</div></div>
         <div className={styles.sectionNote}><strong>Dobro je vedeti</strong><span>Plačano ni isto kot izdano. Rezultat temelji na potrjenih plačilih in vnesenih stroških.</span></div>
-        <div className={styles.resultsGrid}>
+        <div className={styles.kpiGrid}>
           <div className={styles.kpi}><span>Izdano</span><strong>{money(issued)}</strong><small>{periodInvoices.length} računov</small><b className={styles.resultIcon}><ResultIcon type="issued" /></b></div>
           <div className={styles.kpi}><span>Plačano</span><strong>{money(paid)}</strong><small>{periodInvoices.filter(i => i.paid).length} potrjenih plačil</small><b className={styles.resultIcon}><ResultIcon type="paid" /></b></div>
           <div className={styles.kpi}><span>Stroški</span><strong>{money(costs)}</strong><small>{periodExpenses.length} vnosov</small><b className={styles.resultIcon}><ResultIcon type="cost" /></b></div>
           <div className={`${styles.kpi} ${profit < 0 ? styles.negative : ''}`}><span>Ocenjeni dobiček</span><strong>{money(profit)}</strong><small>plačano minus stroški</small><b className={styles.resultIcon}><ResultIcon type="profit" /></b></div>
+        </div>
+        <Link className={styles.panelMore} href={`${base}/kalkulator/racunovodstvo`}>Pojdi na podrobnosti <span aria-hidden>→</span></Link>
+      </section>
+
+      <section className={styles.eventsBand} id="events" aria-labelledby="events-title">
+        <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>04 · PRIHODNJI DOGODKI</p><h2 id="events-title">Dogodki &amp; roki</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/koledar`}>Vsi dogodki</Link></div>
+        {(() => {
+          const addDays = (iso: string, n: number) => { const dt = new Date(iso); dt.setDate(dt.getDate() + n); return dt; };
+          const ev = [
+            ...periodInvoices.filter(i => !i.paid).map(i => ({ id: `inv-${i.id}`, kind: 'Rok plačila', who: i.client || 'Račun', when: addDays(i.date, 15), tone: 'waiting' })),
+            ...waiting.map(o => ({ id: `off-${o.id}`, kind: 'Ponudba čaka odgovor', who: o.client || o.title, when: addDays(o.date, 8), tone: 'info' })),
+          ].sort((a, b) => a.when.getTime() - b.when.getTime()).slice(0, 5);
+          return ev.length ? <ul className={styles.eventList}>{ev.map(e => <li key={e.id}><span className={styles.eventDate}><b>{e.when.getDate()}</b><small>{e.when.toLocaleDateString('sl-SI', { month: 'short' }).replace('.', '').toUpperCase()}</small></span><span className={styles.eventBody}><strong>{e.kind}</strong><small>{e.who}</small></span><i className={styles.eventDot} data-tone={e.tone} aria-hidden /></li>)}</ul> : <div className={styles.emptyState}><span>+</span><div><strong>Ni prihodnjih rokov.</strong><p>Roki plačil in ponudbe, ki čakajo odgovor, se prikažejo tukaj.</p></div></div>;
+        })()}
+        <Link className={styles.panelMore} href={`${base}/kalkulator/koledar`}>Pojdi na koledar <span aria-hidden>→</span></Link>
+      </section>
+      </div>
+
+      <section className={styles.detailsBand} aria-label="Podrobnosti rezultatov">
+        <div className={styles.detailsGrid}>
           <article className={styles.donutPanel}>
             <div><p className={styles.eyebrow}>RAZMERJE REZULTATA</p><h2>Kam gre tvoj denar?</h2><div className={styles.chartLegend}><span><i className={styles.legendProfit} /> Dobiček {profitShare}%</span><span><i className={styles.legendCost} /> Stroški {costShare}%</span></div></div>
             <div className={`${styles.donut} ${resultTotal === 0 ? styles.donutEmpty : ''}`} style={{ '--cost-share': `${costShare}%` } as React.CSSProperties}><div><strong>{resultTotal ? `${profitShare}%` : '0%'}</strong><small>dobička</small></div></div>
@@ -373,7 +393,6 @@ export default function BusinessOverview({ base }: { base: string }) {
           </article>
         </div>
       </section>
-      </div>
 
       <section className={styles.tipBar}>
         <div className={styles.tipMain}>

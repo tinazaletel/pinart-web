@@ -210,7 +210,7 @@
 .previewSwitch .previewActive { background: linear-gradient(135deg, var(--purple), oklch(62% .22 297)); color: oklch(98% .01 300); }
 .feedback { position: fixed; z-index: 80; right: 1.2rem; bottom: 1.2rem; display: flex; align-items: center; gap: 1rem; max-width: 24rem; padding: .8rem 1rem; border-radius: .85rem; background: var(--ink); color: var(--paper); box-shadow: 0 1rem 3rem oklch(20% .03 55 / .2); font-size: .64rem; }
 .feedback button { border: 0; background: none; color: inherit; font-size: 1rem; cursor: pointer; }
-.flowBand, .historyBand, .resultsBand { margin-top: 1rem; padding: 1rem; border: 0; border-radius: 1.45rem; background: oklch(97% .01 87 / .9); box-shadow: 0 1.2rem 3.5rem oklch(20% .02 55 / .05); }
+.flowBand, .historyBand, .resultsBand, .eventsBand, .detailsBand { margin-top: 1rem; padding: 1rem; border: 0; border-radius: 1.45rem; background: oklch(97% .01 87 / .9); box-shadow: 0 1.2rem 3.5rem oklch(20% .02 55 / .05); }
 .flowBand { margin-top: .35rem; }
 .sectionHeader { display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; padding: .55rem .45rem 1rem; }
 .sectionHeader h2 { margin: 0; font: 500 clamp(1.35rem, 2vw, 2rem)/1 var(--font-serif), Georgia, serif; }
@@ -330,8 +330,34 @@
 .flowTools > *:nth-child(4)::before { animation: dotsGlow 6s ease-in-out infinite alternate; }
 .historyBand .tableWrap { margin-top: 0; overflow-x: hidden; border-radius: 1rem; background: oklch(98% .01 87); }
 .historyBand .emptyState { padding: 0 1rem; border-radius: 1rem; background: oklch(98% .01 87); }
-.overviewColumns { display: grid; grid-template-columns: minmax(24rem, .82fr) minmax(37rem, 1.28fr); gap: 1rem; align-items: stretch; }
+.overviewColumns { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; }
 .overviewColumns > section { min-width: 0; }
+@media (max-width: 1200px) { .overviewColumns { grid-template-columns: 1fr; } }
+
+/* KPI 2x2 v srednjem panelu */
+.kpiGrid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+.kpiGrid .kpi { min-height: 6.8rem; padding: .85rem; border-radius: .9rem; }
+/* "Pojdi na podrobnosti / koledar" povezava na dnu panela */
+.panelMore { display: inline-flex; align-items: center; gap: .4rem; margin-top: .95rem; font: 700 .6rem var(--font-sans), sans-serif; letter-spacing: .04em; text-transform: uppercase; color: oklch(52% .14 300); text-decoration: none; }
+.panelMore:hover { color: oklch(45% .16 300); }
+/* Dogodki & roki — seznam prihodnjih rokov */
+.eventList { list-style: none; margin: .2rem 0 0; padding: 0; display: flex; flex-direction: column; }
+.eventList li { display: flex; align-items: center; gap: .8rem; padding: .7rem .15rem; border-bottom: 1px solid color-mix(in oklch, var(--ink) 8%, transparent); }
+.eventList li:last-child { border-bottom: 0; }
+.eventDate { flex: none; display: grid; place-items: center; width: 2.7rem; height: 2.7rem; border-radius: .8rem; background: oklch(93.7% .016 87); line-height: 1; }
+.eventDate b { font: 700 1rem var(--font-sans), sans-serif; }
+.eventDate small { margin-top: .1rem; font-size: .5rem; font-weight: 700; letter-spacing: .06em; color: color-mix(in oklch, var(--ink) 55%, transparent); }
+.eventBody { display: flex; flex-direction: column; gap: .12rem; min-width: 0; }
+.eventBody strong { font: 600 .82rem var(--font-sans), sans-serif; }
+.eventBody small { font-size: .64rem; color: color-mix(in oklch, var(--ink) 58%, transparent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eventDot { flex: none; margin-left: auto; width: .5rem; height: .5rem; border-radius: 50%; background: var(--et, oklch(62% .02 70)); }
+.eventDot[data-tone='waiting'] { --et: oklch(70% .16 75); }
+.eventDot[data-tone='info'] { --et: oklch(66% .13 258); }
+/* Podrobnosti rezultatov (premaknjeno pod tri panele) */
+.detailsGrid { display: grid; grid-template-columns: 1.35fr 1fr 1fr 1fr; gap: .7rem; }
+.detailsGrid > article { grid-column: auto; }
+@media (max-width: 1200px) { .detailsGrid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 620px) { .detailsGrid { grid-template-columns: 1fr; } }
 .historyBand .tableWrap table { min-width: 0; table-layout: fixed; }
 .historyBand .tableWrap th:first-child { width: 40%; }
 .historyBand .tableWrap th:nth-child(2) { width: 17%; }
