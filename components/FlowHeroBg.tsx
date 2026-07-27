@@ -141,9 +141,9 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         .fl-pupa.solo { opacity: 1; transform: scaleX(-1); }
         /* elektronski odsev zaslona v ocalih (mesano "screen") — leve/desna leca; pozicijo po potrebi nastavi */
         .fl-ocala { position: absolute; inset: 0; pointer-events: none; }
-        .fl-leca { position: absolute; width: 5.5%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; opacity: .6; mix-blend-mode: screen; }
-        .fl-leca-l { left: 63%; top: 35%; }
-        .fl-leca-r { left: 70.5%; top: 34%; }
+        .fl-leca { position: absolute; width: 3.8%; aspect-ratio: 1.15; border-radius: 50%; overflow: hidden; opacity: .55; mix-blend-mode: screen; }
+        .fl-leca-l { left: 50.5%; top: 24.5%; }
+        .fl-leca-r { left: 59%; top: 24%; }
         .fl-leca i { position: absolute; inset: -30%;
           background:
             repeating-linear-gradient(0deg, rgba(120,210,255,.5) 0 1.5px, transparent 1.5px 5px),
