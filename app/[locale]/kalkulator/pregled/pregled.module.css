@@ -168,6 +168,7 @@
 @keyframes wsDrift2 { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(26px, -22px); } 66% { transform: translate(-16px, -42px); } }
 @media (prefers-reduced-motion: reduce) { .workspace::before, .workspace::after { animation: none; } }
 .topbar { display: flex; justify-content: space-between; gap: 1.5rem; align-items: end; padding-bottom: 2rem; }
+.topbarSub { margin: .55rem 0 0; font: 400 .95rem/1.5 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 60%, transparent); max-width: 48ch; }
 .eyebrow { margin: 0 0 .55rem; font-size: .64rem; line-height: 1; font-weight: 800; letter-spacing: .14em; color: color-mix(in oklch, var(--ink) 85%, transparent); }
 .topbar .eyebrow { color: oklch(62% .13 300); }
 .topbar h1, .pulse h2, .sectionHeading h2 { margin: 0; font-family: var(--font-serif), Georgia, serif; font-weight: 500; }
