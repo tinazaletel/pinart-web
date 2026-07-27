@@ -112,15 +112,15 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       if (kos) {
         const r = kos.getBoundingClientRect();
         const mouthX = r.left + r.width * 0.5;
-        const mouthY = r.top + r.height * 0.16;
-        const d = Math.min(1, Math.max(0, (vh * 0.92 - r.top) / (vh * 0.72)));  // priblizevanje kosu
+        const mouthY = r.top + r.height * 0.28;   // v usta kosa
+        const d = Math.min(1, Math.max(0, (frac - 0.86) / 0.14));   // padec vezan na konec drsanja
         if (d > 0) {
           x += (mouthX - x) * d;
           ty += (mouthY - ty) * d;
-          scale = 1 - d * 0.55;
+          scale = scale * (1 - d * 0.7);          // se zmanjsa, ko potone v kos
           rot += d * 200;
-          op = d > 0.82 ? Math.max(0, 1 - (d - 0.82) / 0.18) : 1;   // izgine, ko pade v kos
-          oBall = 1; oBird = 0; oBoat = 0;                          // ob padcu je vedno kepa
+          op = d > 0.9 ? Math.max(0, 1 - (d - 0.9) / 0.1) : 1;   // izgine sele, ko pade noter
+          oBall = 1; oBird = 0; oBoat = 0;                        // ob padcu je vedno kepa
         }
       }
       if (ball) ball.style.opacity = String(oBall);
@@ -766,7 +766,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-footer { position: relative; }
         /* rekvizit zasidran na zgornji rob footerja (base sedi na temnem robu) */
         .fl-prop { position: absolute; bottom: calc(100% - 2.7rem + 10px); height: auto; z-index: 3; will-change: transform; filter: drop-shadow(0 18px 26px rgba(40,25,60,.16)); }
-        .fl-prop-kos { right: 21%; width: clamp(7rem, 11vw, 12rem); animation: flPropBob 6.5s ease-in-out infinite; }
+        .fl-prop-kos { right: 21%; bottom: calc(100% - 2.7rem + 34px); width: clamp(7rem, 11vw, 12rem); animation: flPropBob 6.5s ease-in-out infinite; }
         .fl-prop-plant { left: 21%; width: clamp(10rem, 16vw, 17rem); animation: flPropBob 7.5s ease-in-out infinite; animation-delay: -2.4s; }
         @keyframes flPropBob { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-7px) rotate(-1deg); } }
         @media (max-width: 720px) { .fl-prop-kos { right: 3%; width: 6rem; } .fl-prop-plant { left: 3%; width: 8.5rem; } }
