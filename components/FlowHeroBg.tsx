@@ -49,6 +49,29 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
   const timers = useRef<number[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
+
+  /* Pupa se rahlo nagne proti kazalcu (mehak lerp). Samo namizje + brez reduce-motion. */
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(max-width: 820px)').matches) return;
+    let raf = 0, tx = 0, ty = 0, cx = 0, cy = 0;
+    const apply = () => {
+      raf = 0;
+      cx += (tx - cx) * 0.12; cy += (ty - cy) * 0.12;
+      scene.style.transform = `rotateY(${cx * 7}deg) rotateX(${-cy * 5}deg)`;
+      if (Math.abs(tx - cx) > 0.004 || Math.abs(ty - cy) > 0.004) raf = requestAnimationFrame(apply);
+    };
+    const onMove = (e: MouseEvent) => {
+      tx = (e.clientX / window.innerWidth - 0.5) * 2;
+      ty = (e.clientY / window.innerHeight - 0.5) * 2;
+      if (!raf) raf = requestAnimationFrame(apply);
+    };
+    window.addEventListener('mousemove', onMove, { passive: true });
+    return () => { window.removeEventListener('mousemove', onMove); if (raf) cancelAnimationFrame(raf); };
+  }, []);
 
   useEffect(() => {
     setBubbles(SLOTS.map((_, i) => mkBubble(i)));
@@ -71,8 +94,16 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
   return (
     <div className="fl-herobg" aria-hidden>
       <div className="fl-video">
-        {/* 3D pupa scena (izrezano ozadje) — predogled */}
-        <img className="fl-pupa solo" src="/flow/pupa3d.png" alt="" />
+        {/* scena se rahlo nagne proti kazalcu (JS nastavi transform) */}
+        <div className="fl-scene" ref={sceneRef}>
+          {/* 3D pupa scena (izrezano ozadje) — predogled */}
+          <img className="fl-pupa solo" src="/flow/pupa3d.png" alt="" />
+          {/* odsev premikajocega se zaslona v ocalih (mesano "screen") — pozicijo po potrebi nastavi */}
+          <div className="fl-ocala" aria-hidden>
+            <span className="fl-leca fl-leca-l"><i /></span>
+            <span className="fl-leca fl-leca-r"><i /></span>
+          </div>
+        </div>
       </div>
 
       <div className="fl-bubbles">
@@ -103,10 +134,25 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         /* Maska bledi LEVO (stik z besedilom) IN zgoraj+spodaj (da morebiten odrez
            mehko zbledi, ne moti). Presek dveh linearnih gradientov. */
         /* BREZ paper ozadja -> ne prekrije mreze/mehurckov = ni pravokotnega okvirja; belo iz videa odstrani mix-blend multiply */
-        .fl-video { position: absolute; top: 130px; bottom: 100px; right: 3%; width: 41%; background: transparent; animation: pupaFloat 7s ease-in-out infinite; }
+        .fl-video { position: absolute; top: 130px; bottom: 100px; right: 3%; width: 41%; background: transparent; animation: pupaFloat 7s ease-in-out infinite; perspective: 1000px; }
+        .fl-scene { position: absolute; inset: 0; transform-style: preserve-3d; will-change: transform; }
         /* prosojna pupa (izrezano ozadje) -> contain, cel lik viden. 3 scene se prelivajo. */
         .fl-pupa { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; display: block; opacity: 0; }
         .fl-pupa.solo { opacity: 1; transform: scaleX(-1); }
+        /* elektronski odsev zaslona v ocalih (mesano "screen") — leve/desna leca; pozicijo po potrebi nastavi */
+        .fl-ocala { position: absolute; inset: 0; pointer-events: none; }
+        .fl-leca { position: absolute; width: 5.5%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; opacity: .6; mix-blend-mode: screen; }
+        .fl-leca-l { left: 63%; top: 35%; }
+        .fl-leca-r { left: 70.5%; top: 34%; }
+        .fl-leca i { position: absolute; inset: -30%;
+          background:
+            repeating-linear-gradient(0deg, rgba(120,210,255,.5) 0 1.5px, transparent 1.5px 5px),
+            linear-gradient(115deg, transparent 42%, rgba(200,240,255,.95) 50%, transparent 58%),
+            radial-gradient(circle at 35% 30%, rgba(120,255,220,.4), transparent 55%);
+          background-size: 100% 100%, 240% 100%, 100% 100%;
+          animation: lecaOdsev 4.5s linear infinite; }
+        @keyframes lecaOdsev { 0% { background-position: 0 0, -70% 0, 0 0; } 100% { background-position: 0 4px, 170% 0, 0 0; } }
+        @media (prefers-reduced-motion: reduce) { .fl-leca i { animation: none; } }
         .fl-pupa.s1 { animation: pupaFade 12s infinite; animation-delay: 0s; }
         .fl-pupa.s2 { animation: pupaFade 12s infinite; animation-delay: 4s; }
         .fl-pupa.s3 { animation: pupaFade 12s infinite; animation-delay: 8s; }
