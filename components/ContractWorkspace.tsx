@@ -972,8 +972,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
       <div className="pg-gumbi">
         <button type="button" className="pg-gumb" aria-label="Zaključi" onClick={() => setPogled('zakljucek')}>Zaključi →</button>
-        <button type="button" className="pg-gumb sek" aria-label="Prenesi pogodbo PDF" disabled={pdfNalaganje} onClick={prenesi}>{pdfNalaganje ? 'Pripravljam …' : 'Prenesi PDF'}</button>
-        <button type="button" className="pg-gumb sek" aria-label="Shrani pogodbo" onClick={shrani}>Shrani pogodbo</button>
       </div>
       {napaka && <p className="pg-napaka">{napaka}</p>}
       <p className="pg-mini" style={{ marginTop: '.7rem' }}>Besedilo preveri; Pinart ne nadomešča pravnega svetovanja.</p>
@@ -998,11 +996,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
       <h2 className="pg-naslov">Zaključek.{odvPoslano && <span className="pg-odvetnik-znak">Pri odvetniku</span>}</h2>
       <p className="pg-uvod">Prenesi pogodbo{narocnikIme() ? ' za ' + narocnikIme() : ''}, jo shrani ali pošlji naročniku.</p>
       <p className="pg-disc">Pripravljeno iz vzorčne predloge kot pripomoček — <b>ni pravni nasvet</b>. Pred podpisom priporočamo pregled pri odvetniku in prilagoditev konkretnemu poslu.</p>
-      <div className="pg-polja pg-polja-email">
-        <label className="pg-polje">E-pošta naročnika
-          <input type="email" placeholder="npr. pisarna@volk-babica.si" value={narEmail} onChange={event => setNarEmail(event.target.value)} />
-        </label>
-      </div>
       <div className="pg-konfeti-ovoj">
         <div className="pg-konfeti" key={konfetiKljuc}>
           {konfetiKljuc > 0 && Array.from({ length: 22 }).map((_, i) => {
@@ -1100,7 +1093,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,3.4vw,2.4rem)/1 var(--font-serif),Didot,serif;letter-spacing:-.012em;color:var(--ink);overflow-wrap:anywhere}
       .pg-uvod{margin:0 0 1.4rem;font-size:.92rem;line-height:1.55;color:rgba(17,17,17,.72);max-width:34rem}
       .pg-zakljucek-lik{display:flex;justify-content:center;margin:.5rem 0 1.1rem}
-      .pg-zakljucek-lik svg{width:76px;height:auto}
+      .pg-zakljucek-lik svg{width:8.4rem;height:auto}
       .pg-zakljucek .pg-kicker,.pg-zakljucek .pg-naslov,.pg-zakljucek .pg-uvod{text-align:center}
       .pg-zakljucek .pg-uvod{margin-left:auto;margin-right:auto}
       .pg-prenosi{display:flex;flex-wrap:wrap;justify-content:center;gap:.9rem 1.6rem;margin:1.2rem 0 .4rem}
