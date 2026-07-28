@@ -779,7 +779,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     <style>{`
       /* rc- = novi stili obrazca za racun; pazi na .shell pravila (min-height 2.75rem
          na inputih, select padding-right 3rem !important) — mere so temu prilagojene. */
-      .rc .rc-postavke{min-width:0;padding:1rem;border:1px solid var(--line);border-radius:.9rem;background:linear-gradient(135deg,oklch(98% .018 87),oklch(96% .025 62))}
+      .rc .rc-postavke{min-width:0;padding:1rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.9rem;background:linear-gradient(135deg,oklch(98% .018 87),oklch(96% .025 62))}
       .rc .rc-postavke *{box-sizing:border-box;min-width:0}
       .rc .rc-post-glava{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap}
       .rc .rc-ddv-toggle{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:650;color:var(--ink);cursor:pointer;white-space:nowrap}
@@ -795,7 +795,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-ponastavi:hover{color:var(--ink)}
 
       /* podpis na racunu (neobvezno) — kot pg-podpis-* v ContractWorkspace, tu inline (brez sheeta) */
-      .rc .rc-podpis{min-width:0;margin-top:1.1rem;padding:1rem;border:1px solid var(--line);border-radius:.9rem;background:oklch(100% 0 0/.55)}
+      .rc .rc-podpis{min-width:0;margin-top:1.1rem;padding:1rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.9rem;background:oklch(100% 0 0/.55)}
       .rc .rc-podpis-polja{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.9rem;margin:.9rem 0 0}
       .rc .rc-podpis-platno{display:block;width:100%;height:150px;margin-top:.9rem;border:1px dashed rgba(17,17,17,.3);border-radius:12px;background:#fff;touch-action:none;cursor:crosshair}
       .rc .rc-podpis-akcije{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.7rem}
@@ -816,13 +816,13 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-x{width:2rem;height:2.75rem;border:0;border-radius:.65rem;background:transparent;color:color-mix(in oklch,var(--ink) 55%,transparent);font-size:1.1rem;line-height:1;cursor:pointer}
       .rc .rc-x:hover:not(:disabled){color:var(--ink);background:oklch(100% 0 0/.6)}
       .rc .rc-x:disabled{opacity:.3;cursor:default}
-      .rc .rc-vsote{margin-left:auto;width:min(21rem,100%);display:grid;gap:.15rem;padding:.85rem 1rem;border:1px solid var(--line);border-radius:.9rem;background:oklch(100% 0 0/.65)}
+      .rc .rc-vsote{margin-left:auto;width:min(21rem,100%);display:grid;gap:.15rem;padding:.85rem 1rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.9rem;background:oklch(100% 0 0/.65)}
       .rc .rc-vsote>div{display:flex;align-items:baseline;justify-content:space-between;gap:.8rem;font-size:.62rem}
       .rc .rc-vsote>div span{font-weight:700;color:var(--muted)}
       .rc .rc-vsote>div b{font-size:.68rem;white-space:nowrap}
       .rc .rc-skupaj{margin-top:.3rem;padding-top:.45rem;border-top:1.5px solid color-mix(in oklch,var(--ink) 30%,transparent)}
       .rc .rc-vsote .rc-skupaj span{color:var(--ink);text-transform:uppercase;letter-spacing:.08em;font-size:.56rem}
-      .rc .rc-vsote .rc-skupaj b{font:500 1.15rem var(--font-serif),Georgia,serif}
+      .rc .rc-vsote .rc-skupaj b{font:700 1.12rem var(--font-sans),system-ui,sans-serif;letter-spacing:-.01em}
       .rc .rc-klavzula{margin:.4rem 0 0;font-size:.56rem;line-height:1.5;color:var(--muted);font-weight:500}
       .rc .rc-napaka{margin:.5rem 0 0;color:oklch(50% .18 25);font-size:.62rem;font-weight:700;text-align:center}
       /* ── ZAKLJUCEK racuna (enaki elementi kot ponudba/pogodba) ── */
@@ -955,7 +955,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-obrazec input[type='number']::-webkit-inner-spin-button,.rc .rc-obrazec input[type='number']::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 
       /* ── mobilna izbira ponudbe: gumb-polje (izgleda kot input) + slide-up sheet ── */
-      .rc .rc-pon-polje{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-width:0;min-height:2.75rem;padding:.6rem .85rem;border:1px solid var(--line);border-radius:.65rem;background:oklch(100% 0 0/.8);font:500 16px var(--font-sans),sans-serif;color:var(--ink);text-align:left;cursor:pointer}
+      .rc .rc-pon-polje{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-width:0;min-height:2.75rem;padding:.6rem .85rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.65rem;background:oklch(100% 0 0/.8);font:500 16px var(--font-sans),sans-serif;color:var(--ink);text-align:left;cursor:pointer}
       .rc .rc-pon-polje>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .rc .rc-pon-polje svg{flex:none}
       /* sheet zivi v portalu na <body> (izven .rc) — selektorji brez .rc predpone */
