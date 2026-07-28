@@ -217,7 +217,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     const glavaLine = glavaBesedilo ? '<br><span class="mut" style="color:var(--akcent,#B25476);font-weight:600">' + esc(glavaBesedilo) + '</span>' : '';
     /* desni znak = TVOJ shranjeni logo (enotni vir: predloga ali K_LOGO); prej je bil trdo zakodiran »Pinart«, zato se logo ni videl */
     const logo = aktivniLogo();
-    const znak = logo ? `<img class="lg-logo" src="${logo}" alt="">` : '';
+    const znak = logo ? `<img class="lg-logo" src="${logo}" alt="">` : `<div class="rt">${esc(ponudnik.ime.trim() || '')}</div>`;
     return `<div class="lg"><div><b>${esc(ponudnik.ime.trim() || '[Tvoje podjetje]')}</b>${glavaLine}${ponudnik.naslov.trim() ? '<br>' + esc(ponudnik.naslov.trim()) : ''}${kontakt ? '<br><span class="mut">' + esc(kontakt) + '</span>' : ''}</div>${znak}</div>`;
   };
   const dokNoga = () => {
@@ -972,6 +972,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
       <div className="pg-gumbi">
         <button type="button" className="pg-gumb" aria-label="Zaključi" onClick={() => setPogled('zakljucek')}>Zaključi →</button>
+        <button type="button" className="pg-gumb sek" aria-label="Prenesi pogodbo PDF" disabled={pdfNalaganje} onClick={prenesi}>{pdfNalaganje ? 'Pripravljam …' : 'Prenesi PDF'}</button>
+        <button type="button" className="pg-gumb sek" aria-label="Shrani pogodbo" onClick={shrani}>Shrani pogodbo</button>
       </div>
       {napaka && <p className="pg-napaka">{napaka}</p>}
       <p className="pg-mini" style={{ marginTop: '.7rem' }}>Besedilo preveri; Pinart ne nadomešča pravnega svetovanja.</p>
@@ -979,23 +981,15 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
     {/* ── POGLED 3: ZAKLJUCEK (prenos + posiljanje + shranjevanje) ── */}
     {pogled === 'zakljucek' && <section className="pg-sek pg-stran pg-stolpec pg-zakljucek">
-      <div className="pg-zakljucek-lik" aria-hidden>
-        <svg viewBox="0 0 120 140" width="76" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="60" cy="133" rx="30" ry="4.5" fill="rgba(17,17,17,.12)" />
-          <g fill="none" stroke="rgba(17,17,17,.46)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M36 16 h36 l18 18 v66 a6 6 0 0 1 -6 6 H36 a6 6 0 0 1 -6 -6 V22 a6 6 0 0 1 6 -6 z" />
-            <path d="M72 16 v12 a6 6 0 0 0 6 6 h12" />
-            <path d="M40 54 h40" /><path d="M40 66 h40" /><path d="M40 78 h26" />
-          </g>
-          <circle cx="78" cy="83" r="13" fill="#fff" />
-          <circle cx="78" cy="83" r="13" fill="none" stroke="rgba(124,58,237,.7)" strokeWidth="2.6" />
-          <path d="M71 83 l5 5 l9 -10" fill="none" stroke="rgba(124,58,237,.95)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
-      <p className="pg-kicker">{VRSTE_POG.find(v => v.id === vrstaPog)!.kick}{vir === 'ponudba' && selectedOffer?.number ? ` · PONUDBA ŠT. ${selectedOffer.number}` : ''}</p>
+      <p className={styles.eyebrow}>{VRSTE_POG.find(v => v.id === vrstaPog)!.kick}{vir === 'ponudba' && selectedOffer?.number ? ` · PONUDBA ŠT. ${selectedOffer.number}` : ''}</p>
       <h2 className="pg-naslov">Zaključek.{odvPoslano && <span className="pg-odvetnik-znak">Pri odvetniku</span>}</h2>
       <p className="pg-uvod">Prenesi pogodbo{narocnikIme() ? ' za ' + narocnikIme() : ''}, jo shrani ali pošlji naročniku.</p>
       <p className="pg-disc">Pripravljeno iz vzorčne predloge kot pripomoček — <b>ni pravni nasvet</b>. Pred podpisom priporočamo pregled pri odvetniku in prilagoditev konkretnemu poslu.</p>
+      <div className="pg-polja pg-polja-email">
+        <label className="pg-polje">E-pošta naročnika
+          <input type="email" placeholder="npr. pisarna@volk-babica.si" value={narEmail} onChange={event => setNarEmail(event.target.value)} />
+        </label>
+      </div>
       <div className="pg-konfeti-ovoj">
         <div className="pg-konfeti" key={konfetiKljuc}>
           {konfetiKljuc > 0 && Array.from({ length: 22 }).map((_, i) => {
@@ -1009,12 +1003,12 @@ export default function ContractWorkspace({ base }: { base: string }) {
           })}
         </div>
       </div>
-      <div className="pg-prenosi">
-        <button type="button" className="pg-povezava" aria-label="Shrani pogodbo" onClick={() => { shrani(); proslaviKonfeti(); }}>
-          <FloppyDisk size={16} /> {shranjenaId ? 'Shranjeno ✓' : 'Shrani'}
+      <div className="pg-gumbi">
+        <button type="button" className="pg-gumb sek" aria-label="Shrani pogodbo" onClick={() => { shrani(); proslaviKonfeti(); }}>
+          <FloppyDisk size={17} /> {shranjenaId ? 'Shranjeno ✓' : 'Shrani'}
         </button>
-        <button type="button" className="pg-povezava" aria-label="Prenesi pogodbo PDF" disabled={pdfNalaganje} onClick={() => { prenesi(); proslaviKonfeti(); }}>
-          <FilePdf size={16} /> {pdfNalaganje ? 'Pripravljam …' : 'Prenesi (PDF)'}
+        <button type="button" className="pg-gumb sek" aria-label="Prenesi pogodbo PDF" disabled={pdfNalaganje} onClick={() => { prenesi(); proslaviKonfeti(); }}>
+          <FilePdf size={17} /> {pdfNalaganje ? 'Pripravljam …' : 'Prenesi (PDF)'}
         </button>
       </div>
       {napaka && <p className="pg-napaka">{napaka}</p>}
@@ -1043,11 +1037,11 @@ export default function ContractWorkspace({ base }: { base: string }) {
         />
         <button
           type="button"
-          className="pg-gumb pg-odvetnik-gumb"
+          className="pg-gumb"
           disabled={samoOgled || !jeVeljavenEmail(odvetnikEmail) || odvStatus === 'poslji'}
           onClick={posljiOdvetniku}
         >
-          <PenNib size={17} /> Pošlji odvetniku v pregled in podpis
+          Pošlji odvetniku v pregled in podpis
         </button>
         {samoOgled && <p className="pg-odvetnik-namig">Na voljo v načinu »Moji podatki«.</p>}
         {odvStatus === 'poslji' && <p className="pg-odvetnik-status" role="status">Pošiljam …</p>}
@@ -1090,13 +1084,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
       /* vstopni kicker+h1 (kot retainer rw-kicker/rw-h1) — naslov strani zdaj v ozkem .pg-stolpec, brez bele kartice */
       .pg-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);margin:0 0 .3rem}
       .pg-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 1.6rem;color:var(--ink)}
-      .pg-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,3.4vw,2.4rem)/1 var(--font-serif),Didot,serif;letter-spacing:-.012em;color:var(--ink);overflow-wrap:anywhere}
+      .pg-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,2.6vw,2.4rem)/1.05 var(--font-serif),Georgia,serif;color:var(--ink);overflow-wrap:anywhere}
       .pg-uvod{margin:0 0 1.4rem;font-size:.92rem;line-height:1.55;color:rgba(17,17,17,.72);max-width:34rem}
-      .pg-zakljucek-lik{display:flex;justify-content:center;margin:.5rem 0 1.1rem}
-      .pg-zakljucek-lik svg{width:8.4rem;height:auto}
-      .pg-zakljucek .pg-kicker,.pg-zakljucek .pg-naslov,.pg-zakljucek .pg-uvod{text-align:center}
-      .pg-zakljucek .pg-uvod{margin-left:auto;margin-right:auto}
-      .pg-prenosi{display:flex;flex-wrap:wrap;justify-content:center;gap:.9rem 1.6rem;margin:1.2rem 0 .4rem}
       .pg-disc{margin:-.7rem 0 1.4rem;padding:.7rem .85rem;max-width:34rem;font-size:.76rem;line-height:1.5;color:rgba(17,17,17,.66);background:oklch(96% .03 85);border:1px solid oklch(85% .07 78);border-radius:.7rem}
       .pg-disc b{color:rgba(17,17,17,.82)}
 
@@ -1203,14 +1192,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-povezava{font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0;display:inline-flex;align-items:center;gap:.38rem}
       .pg-povezava:hover{opacity:.6}
       /* Odvetnik: umirjen blok pod pošiljanjem naročniku — tanek okvir, isti jezik kot .pg-disc/.pg-polje */
-      /* odvetnik = mali banner na DESNEM robu zaslona, stran od obrazca */
-      .pg-odvetnik{position:fixed;right:1.2rem;top:7rem;width:15rem;max-width:38vw;margin:0;padding:1rem 1.05rem 1.1rem;border:1px solid rgba(17,17,17,.12);border-radius:16px;background:rgba(255,255,255,.72);backdrop-filter:blur(5px);text-align:left;z-index:30;box-shadow:0 .6rem 1.6rem rgba(20,20,20,.08)}
-      @media (max-width:1160px){.pg-odvetnik{position:static;width:auto;max-width:560px;margin:1.4rem auto 0;backdrop-filter:none}}
-      .pg-odvetnik-label{display:block;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
-      .pg-odvetnik .pg-odvetnik-gumb{width:100%;justify-content:center;background:var(--accent);color:#fff;border:0;box-shadow:0 .4rem 1rem oklch(66% .2 297 / .3);font-size:.82rem;letter-spacing:.02em;text-transform:none;padding:.7rem 1rem;margin-top:.2rem}
-      .pg-odvetnik .pg-odvetnik-gumb:hover:not(:disabled){filter:brightness(1.06)}
-      .pg-odvetnik-opis{margin:.4rem 0 .7rem;font-size:.74rem;line-height:1.45;color:rgba(17,17,17,.66)}
-      .pg-odvetnik-vnos{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.82rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:10px;padding:.5rem .65rem;margin-bottom:.65rem}
+      .pg-odvetnik{max-width:560px;margin:1.1rem auto 0;padding:1.15rem 1.4rem 1.25rem;border:1px solid rgba(17,17,17,.14);border-radius:16px;background:rgba(255,255,255,.5);text-align:left}
+      .pg-odvetnik-label{display:block;font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.5)}
+      .pg-odvetnik-opis{margin:.5rem 0 .85rem;font-size:.86rem;line-height:1.5;color:rgba(17,17,17,.66)}
+      .pg-odvetnik-vnos{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:10px;padding:.6rem .75rem;margin-bottom:.85rem}
       .pg-odvetnik-vnos:focus{outline:none;border-color:var(--ink)}
       .pg-odvetnik-vnos::placeholder{color:rgba(17,17,17,.4)}
       .pg-odvetnik-namig{margin:.55rem 0 0;font-size:.78rem;color:rgba(17,17,17,.5)}
