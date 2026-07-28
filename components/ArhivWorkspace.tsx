@@ -670,8 +670,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-vrstica:hover{background:oklch(100% 0 0 / .5)}
         .arh-vrstica > span{min-width:0;font-size:.86rem;overflow-wrap:anywhere}
         /* status pilula — ISTE barve kot nadzorna plosca (.statusPill + status_*) */
-        .arh-status{display:inline-flex;align-items:center;gap:.42rem;width:max-content;max-width:100%;padding:.32rem .66rem;border:1px solid oklch(86% .012 87);border-radius:999px;background:oklch(95% .01 87);color:oklch(40% .02 70);font-size:.62rem;font-weight:700;white-space:nowrap}
-        .arh-status::before{content:'';width:.48rem;height:.48rem;border-radius:50%;background:var(--pika,oklch(62% .02 70));flex:none}
+        .arh-status{display:inline-flex;align-items:center;gap:.46rem;width:max-content;max-width:100%;padding:.4rem .8rem;border:1px solid oklch(86% .012 87);border-radius:999px;background:oklch(95% .01 87);color:oklch(40% .02 70);font-size:.78rem;font-weight:700;white-space:nowrap}
+        .arh-status::before{content:'';width:.52rem;height:.52rem;border-radius:50%;background:var(--pika,oklch(62% .02 70));flex:none}
         .arh-status[data-tone='waiting']{--pika:oklch(72% .16 75)}
         .arh-status[data-tone='success']{--pika:oklch(62% .15 150)}
         .arh-status[data-tone='danger']{--pika:oklch(58% .19 25)}
@@ -699,7 +699,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-znacka-predracun{background:oklch(92% .05 300);color:oklch(42% .13 300)}
 
         /* ── detajl panel (vzorec ContractWorkspace) ── */
-        .arh-detajl{width:min(42rem,94vw);display:flex;flex-direction:column;gap:.2rem}
+        .arh-detajl{width:min(42rem,94vw);display:flex;flex-direction:column;gap:.2rem;padding-bottom:6rem}
         .arh-detajl h2{margin:.4rem 0 .5rem;font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.8rem,3vw,2.6rem);line-height:1.05;color:var(--ink)}
         .arh-det-statusvrsta{margin:0 0 1.1rem}
         /* lepljivi X ostane v kotu med drsenjem (kopija .pg-det-x) */
@@ -721,7 +721,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         /* akcije ob pregledu (pošlji stranki + uredi) */
         .arh-akcije{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1.1rem;margin-top:.9rem}
         .puscica-svg{vertical-align:-2px;flex:none}
-        $1padding:.6rem 1.05rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
+        .arh-poslji{display:inline-flex;align-items:center;gap:.4rem;white-space:nowrap;padding:.6rem 1.05rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
         .arh-poslji:hover{background:transparent;color:var(--ink)}
         .arh-akcije .arh-povezava{margin-top:0}
 

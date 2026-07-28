@@ -96,8 +96,8 @@ const pwStyles = `
 .pw-mut{color:var(--muted)}
 .pw-desno{text-align:right;font-weight:700}
 .pw-kazalec{color:var(--muted);font-size:1.1rem;text-align:center}
-.pw-status{display:inline-flex;align-items:center;gap:.42rem;width:max-content;max-width:100%;padding:.32rem .66rem;border:1px solid oklch(86% .012 87);border-radius:999px;background:oklch(95% .01 87);color:oklch(40% .02 70);font-size:.62rem;font-weight:700;white-space:nowrap}
-.pw-status::before{content:'';width:.48rem;height:.48rem;border-radius:50%;background:var(--pika,oklch(62% .02 70));flex:none}
+.pw-status{display:inline-flex;align-items:center;gap:.46rem;width:max-content;max-width:100%;padding:.4rem .8rem;border:1px solid oklch(86% .012 87);border-radius:999px;background:oklch(95% .01 87);color:oklch(40% .02 70);font-size:.78rem;font-weight:700;white-space:nowrap}
+.pw-status::before{content:'';width:.52rem;height:.52rem;border-radius:50%;background:var(--pika,oklch(62% .02 70));flex:none}
 .pw-status[data-tone='waiting']{--pika:oklch(72% .16 75)}
 .pw-status[data-tone='success']{--pika:oklch(62% .15 150)}
 .pw-status[data-tone='danger']{--pika:oklch(58% .19 25)}
@@ -222,7 +222,7 @@ const pwStyles = `
 .pw-det-akcije{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin-top:1.1rem}
 .pw-det-akcije .pw-det-uredi{margin-top:0}
 .puscica-svg{vertical-align:-2px;flex:none}
-$1padding:.55rem .95rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
+.pw-det-poslji{display:inline-flex;align-items:center;gap:.4rem;white-space:nowrap;padding:.55rem .95rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-det-poslji:hover{background:transparent;color:var(--ink)}
 .pw-kmalu-red{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
 .pw-kmalu{opacity:.85}
