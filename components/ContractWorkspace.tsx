@@ -1203,12 +1203,14 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-povezava{font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0;display:inline-flex;align-items:center;gap:.38rem}
       .pg-povezava:hover{opacity:.6}
       /* Odvetnik: umirjen blok pod pošiljanjem naročniku — tanek okvir, isti jezik kot .pg-disc/.pg-polje */
-      .pg-odvetnik{max-width:560px;margin:1.1rem auto 0;padding:1.15rem 1.4rem 1.25rem;border:1px solid rgba(17,17,17,.14);border-radius:16px;background:rgba(255,255,255,.5);text-align:left}
-      .pg-odvetnik-label{display:block;font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.5)}
-      .pg-odvetnik .pg-odvetnik-gumb{width:100%;justify-content:center;background:var(--akcent,#B25476);color:#fff;border:0;box-shadow:0 .5rem 1.3rem rgba(178,84,118,.32);font-size:1rem;padding:.95rem 1.6rem;margin-top:.3rem}
+      /* odvetnik = mali banner na DESNEM robu zaslona, stran od obrazca */
+      .pg-odvetnik{position:fixed;right:1.2rem;top:7rem;width:15rem;max-width:38vw;margin:0;padding:1rem 1.05rem 1.1rem;border:1px solid rgba(17,17,17,.12);border-radius:16px;background:rgba(255,255,255,.72);backdrop-filter:blur(5px);text-align:left;z-index:30;box-shadow:0 .6rem 1.6rem rgba(20,20,20,.08)}
+      @media (max-width:1160px){.pg-odvetnik{position:static;width:auto;max-width:560px;margin:1.4rem auto 0;backdrop-filter:none}}
+      .pg-odvetnik-label{display:block;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+      .pg-odvetnik .pg-odvetnik-gumb{width:100%;justify-content:center;background:var(--accent);color:#fff;border:0;box-shadow:0 .4rem 1rem oklch(66% .2 297 / .3);font-size:.82rem;letter-spacing:.02em;text-transform:none;padding:.7rem 1rem;margin-top:.2rem}
       .pg-odvetnik .pg-odvetnik-gumb:hover:not(:disabled){filter:brightness(1.06)}
-      .pg-odvetnik-opis{margin:.5rem 0 .85rem;font-size:.86rem;line-height:1.5;color:rgba(17,17,17,.66)}
-      .pg-odvetnik-vnos{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:10px;padding:.6rem .75rem;margin-bottom:.85rem}
+      .pg-odvetnik-opis{margin:.4rem 0 .7rem;font-size:.74rem;line-height:1.45;color:rgba(17,17,17,.66)}
+      .pg-odvetnik-vnos{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.82rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:10px;padding:.5rem .65rem;margin-bottom:.65rem}
       .pg-odvetnik-vnos:focus{outline:none;border-color:var(--ink)}
       .pg-odvetnik-vnos::placeholder{color:rgba(17,17,17,.4)}
       .pg-odvetnik-namig{margin:.55rem 0 0;font-size:.78rem;color:rgba(17,17,17,.5)}
