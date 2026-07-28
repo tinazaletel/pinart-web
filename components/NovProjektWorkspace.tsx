@@ -392,7 +392,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       textarea.np-chat-polje{border-radius:1rem;resize:vertical;min-height:5rem;font-weight:400;line-height:1.5;font-family:inherit}
       select.np-chat-polje{cursor:pointer}
       .np-chat-polje:focus{border-color:color-mix(in oklch,var(--ink) 45%,transparent)}
-      .np-chat-naprej{align-self:flex-start;display:inline-flex;align-items:center;gap:.45rem;padding:.95rem 2.2rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:600 .82rem var(--font-sans),sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
+      .np-chat-naprej{align-self:flex-start;display:inline-flex;align-items:center;gap:.45rem;padding:.95rem 2.2rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:600 .82rem var(--font-sans),sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
       .np-chat-naprej:disabled{opacity:.45;cursor:not-allowed}
       .np-chat-naprej:hover:not(:disabled){background:color-mix(in oklch,var(--ink) 82%,transparent)}
       /* izbirne kartice (status) — pod vprasanjem bota, klik takoj potrdi in gre naprej */
@@ -431,7 +431,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-chat-sodelavec b{font-size:.78rem;font-weight:700}
       .np-chat-sodelavec small{display:block;color:color-mix(in oklch,var(--ink) 55%,transparent);font-size:.64rem}
       .np-chat-sod-krog{display:grid;place-items:center;width:1.8rem;height:1.8rem;border-radius:50%;background:oklch(90% .045 297);color:oklch(40% .16 297);font-size:.64rem;font-weight:800;flex:none}
-      .np-chat-sodelavec.on{border-color:var(--ink);background:oklch(93% .04 165)}
+      .np-chat-sodelavec.on{border-color:oklch(84% .05 165);background:oklch(93% .04 165)}
       .np-chat-sodelavec.on .np-chat-sod-krog{background:var(--ink);color:var(--paper)}
       .np-chat-deli{align-self:flex-start;display:inline-flex;align-items:center;gap:.4rem;margin-top:.2rem;padding:.6rem .95rem;border:1px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
       .np-chat-deli:hover:not(:disabled){background:var(--ink);color:var(--paper)}
