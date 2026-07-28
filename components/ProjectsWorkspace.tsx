@@ -53,7 +53,7 @@ const projektStatusOznaka: Record<ProjektEntitetaStatus, string> = { aktiven: 'A
 /* pika statusa z INLINE slogom (barva + velikost neposredno na elementu) — neodvisno
    od injeciranega CSS, da se zagotovo izrise povsod (waiting = oranzna ipd.) */
 const pikaBarva: Record<string, string> = { waiting: 'oklch(72% .16 75)', success: 'oklch(62% .15 150)', danger: 'oklch(58% .19 25)', neutral: 'oklch(62% .02 70)' };
-const pikaStil = (tone: string) => ({ width: '.55rem', height: '.55rem', borderRadius: '50%', flex: 'none' as const, display: 'inline-block' as const, background: pikaBarva[tone] || pikaBarva.neutral });
+const pikaStil = (tone: string) => ({ width: '.55rem', height: '.55rem', borderRadius: '50%', flex: 'none' as const, display: 'inline-block' as const, marginRight: '.5rem', background: pikaBarva[tone] || pikaBarva.neutral });
 
 /* Kirurški popravek mobilnega odreza po desni (~390–410px). Deluje samo na tej strani,
    ker cilja zgoščena imena razredov iz CSS modula — CSS modula ne spreminjamo (deljen). */
@@ -101,7 +101,7 @@ const pwStyles = `
 .pw-mut{color:var(--muted)}
 .pw-desno{text-align:right;font-weight:700}
 .pw-kazalec{color:var(--muted);font-size:1.1rem;text-align:center}
-.pw-status{display:inline-flex;align-items:center;gap:.6rem;width:max-content;max-width:100%;padding:.4rem .85rem;border:1px solid oklch(86% .012 87);border-radius:999px;background:oklch(95% .01 87);color:oklch(40% .02 70);font-size:.78rem;font-weight:700;white-space:nowrap}
+.pw-status{display:inline-flex;align-items:center;gap:0;width:max-content;max-width:100%;padding:.4rem .85rem;border:1px solid oklch(86% .012 87);border-radius:999px;background:oklch(95% .01 87);color:oklch(40% .02 70);font-size:.78rem;font-weight:700;white-space:nowrap}
 .pw-status .pw-pika{width:.55rem;height:.55rem;border-radius:50%;background:var(--pika,oklch(62% .02 70));flex:none}
 .pw-status[data-tone='waiting']{--pika:oklch(72% .16 75)}
 .pw-status[data-tone='success']{--pika:oklch(62% .15 150)}
