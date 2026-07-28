@@ -5462,7 +5462,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ponudba0-glava h2 { min-width: 0; overflow-wrap: anywhere; }
         .cw .ponudba0-chip { flex: 0 0 auto; white-space: nowrap; }
         @media (max-width: 640px) { .cw .ponudba0-glava h2 { font-size: 1.35rem; line-height: 1.15; } }
-        .cw .ponudba0-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.65rem; margin: 0; }
+        .cw .ponudba0-glava h2 { font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.5rem; letter-spacing: -.01em; margin: 0; }
         .cw .ponudba0-chip { background: rgba(255,255,255,.85); border: 1px solid rgba(17,17,17,.12); border-radius: 999px; padding: .28rem .7rem; font-size: .74rem; font-weight: 650; color: rgba(17,17,17,.6); white-space: nowrap; }
         .cw .ponudba0-pod { font-size: .85rem; color: var(--accent); font-weight: 500; margin: .1rem 0 1rem; display: flex; align-items: center; gap: .45rem; }
         .cw .ponudba0-pod::before { content: ""; width: .55rem; height: .55rem; border-radius: 50%; background: var(--accent); opacity: .85; flex: none; }
@@ -6278,9 +6278,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .paket.mid .paket-edit { border-color: rgba(245,242,234,.5); color: rgba(245,242,234,.95); background: rgba(245,242,234,.16); }
         .cw .paket.mid .paket-edit:hover { color: var(--paper); border-color: var(--paper); background: rgba(245,242,234,.26); }
         .cw .paket-cena-uredi { display: flex; align-items: baseline; gap: .35rem; margin: .5rem 0 .55rem; }
-        .cw .paket-cena-uredi input { width: 5.5rem; border: none; border-bottom: 2px solid currentColor; background: transparent; font-family: var(--font-serif), Didot, serif; font-size: clamp(1.7rem, 4vw, 2.3rem); font-weight: 700; letter-spacing: -.01em; padding: 0 0 .1rem; color: inherit; border-radius: 0; }
+        .cw .paket-cena-uredi input { width: 5.5rem; border: none; border-bottom: 2px solid currentColor; background: transparent; font-family: var(--font-serif), Didot, serif; font-size: clamp(1.7rem, 4vw, 2.3rem); font-weight: 500; letter-spacing: -.01em; padding: 0 0 .1rem; color: inherit; border-radius: 0; }
         .cw .paket-cena-uredi input:focus { outline: none; }
-        .cw .paket-cena-uredi .pe-znak { font-family: var(--font-serif), serif; font-size: 1.4rem; font-weight: 700; }
+        .cw .paket-cena-uredi .pe-znak { font-family: var(--font-serif), serif; font-size: 1.4rem; font-weight: 500; }
         .cw .paket-rocno { font-size: .6rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; opacity: .7; margin: -.35rem 0 .5rem; }
         .cw .paket-reset { font-size: .75rem; margin: 0 0 .6rem; color: inherit; opacity: .8; }
         .cw .paket.mid .paket-reset { color: var(--paper); }
@@ -6290,7 +6290,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .paket.mid + .paket { border-color: rgba(245,242,234,.4); }
         .cw .paket h3 { margin: 0; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 600; opacity: .85; }
         .cw .paket .redna { font-family: var(--font-serif), serif; font-size: 1.05rem; text-decoration: line-through; opacity: .62; margin-top: .5rem; margin-bottom: -.4rem; -webkit-text-stroke: 0.3px currentColor; }
-        .cw .paket .znesek { font-family: var(--font-serif), Didot, serif; font-size: clamp(2rem, 4.5vw, 2.6rem); font-weight: 700; margin: .5rem 0 .55rem; letter-spacing: -.01em; -webkit-text-stroke: 0.4px currentColor; }
+        .cw .paket .znesek { font-family: var(--font-serif), Didot, serif; font-size: clamp(2rem, 4.5vw, 2.6rem); font-weight: 500; margin: .5rem 0 .55rem; letter-spacing: -.01em; -webkit-text-stroke: 0; }
         .cw .paket p { margin: 0; font-size: .9rem; line-height: 1.6; opacity: .8; }
         .cw .paket.mid p { opacity: .88; }
         .cw .razlaga { font-size: .98rem; color: rgba(17,17,17,.75); line-height: 1.7; margin: 1.5rem 0 0; max-width: 64ch; }
