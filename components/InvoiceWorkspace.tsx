@@ -8,7 +8,7 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown } from '@phosphor-icons/react';
+import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, type FlowInvoiceItem, type FlowInvoiceSignature } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
@@ -66,7 +66,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
      pregled (VSTOP za nov racun) ali obrazec (obrazec za nov racun, svoja
      stran). Pregled/arhiv obstojecih racunov je preseljen v Arhiv
      (ArhivWorkspace) — to orodje SAMO ustvarja nove racune. */
-  const [pogled, setPogled] = useState<'pregled' | 'obrazec'>('pregled');
+  const [pogled, setPogled] = useState<'pregled' | 'obrazec' | 'zakljucek'>('pregled');
   /* vir racuna se IZPELJE iz izbire ponudbe: izbrana ponudba (offerId) => iz
      ponudbe, "Brez ponudbe" (prazen offerId) => samostojen racun. Ni vec locene
      pilule Iz ponudbe / Samostojen racun. */
@@ -304,8 +304,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   };
   const odstraniPodpis = () => setPodpisSlika('');
 
-  const save = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const save = (event?: FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
     /* prej je v predogledu (demo) TIHO vrnil -> uporabnica je klikala Shrani in se ni zgodilo nič.
        Zdaj pove razlog: v demu ne pišemo v pravo bazo, treba je preklopiti na »Moji podatki«. */
     if (samoOgled) { setNapaka('To je predogled (demo) — račun ni shranjen. Za pravo shranjevanje preklopi na »Moji podatki« (preklopnik zgoraj).'); return; }
@@ -613,7 +613,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         <h2>Vse sestavine po zakonu.</h2>
         <p>Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje in se izpišejo v glavi računa.</p>
       </div>
-      <form onSubmit={save}>
+      <form onSubmit={event => { event.preventDefault(); setPogled('zakljucek'); }}>
         {/* vrsta dokumenta: RAČUN (privzeto) ali PREDRAČUN (poziv k placilu vnaprej,
             NI knjigovodska listina — racun se izda sele po prejemu placila) */}
         <div className="rc-segpills rc-tip-segpills" role="group" aria-label="Vrsta dokumenta">
@@ -722,21 +722,59 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           )}
         </div>
 
-        <div className={styles.invoiceSubmit}><label className={styles.invoiceCheck}><input type="checkbox" checked={placano} onChange={event => setPlacano(event.target.checked)} /> {predracun ? 'Predračun je že plačan' : 'Račun je že plačan'}</label><button type="button" className="rc-poslji" onClick={() => posljiVPlacilo({ id: 'draft', number: stevilka.trim(), title: izracun.postavke[0]?.opis || undefined, client: stranka.trim(), amount: Math.round((avansJeDelni ? zaPlaciloAvans : izracun.zaPlacilo) * 100) / 100, paid: placano, date: datumIzdaje, dueDays: clamp(Math.round(stev(rokDni)) || PRIVZETI_ROK_DNI, 0, 365), avansPct: avansJeDelni ? avansOdstotek : undefined, polnaVrednost: avansJeDelni ? Math.round(izracun.zaPlacilo * 100) / 100 : undefined })}>Pošlji naročniku</button><button>{predracun ? 'Shrani predračun' : 'Shrani račun'}</button></div>
-        {napaka && <p className="rc-napaka">{napaka}</p>}
-        {/* Posiljanje racuna kar iz aplikacije (Resend) — isti HTML kot prenos/tisk. */}
-        <PosljiBlok
-          subject={(predracun ? 'Predračun' : 'Račun') + (stevilka.trim() ? ' ' + stevilka.trim() : '') + (stranka.trim() ? ' — ' + stranka.trim() : '')}
-          zgradiHtml={() => doc(racunTelo(trenutniRacun()))}
-          privzetiPrejemnik={strankaEmail()}
-          imeStranke={stranka.trim()}
-          replyTo={ponudnik.email.trim() || undefined}
-          samoOgled={samoOgled}
-          kontakti={strankaKontakti()}
-          projektId={offerId || undefined}
-        />
+        <div className={styles.invoiceSubmit}><button type="submit" className="rc-zakljuci-gumb">Zaključi →</button></div>
       </form>
     </section>}
+
+    {/* ── ZAKLJUCEK (samostojna stran, enaki elementi kot ponudba/pogodba) ── */}
+    {pogled === 'zakljucek' && <section className="rc-sek rc-stran rc-stolpec rc-zakljucek">
+      <div className="rc-zakljucek-lik" aria-hidden>
+        <svg className="pon-lik" viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse className="pon-senca" cx="60" cy="133" rx="30" ry="4.5" fill="rgba(17,17,17,.12)" />
+          <g className="pon-telo" fill="none" stroke="rgba(17,17,17,.46)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M36 16 h36 l18 18 v66 a6 6 0 0 1 -6 6 H36 a6 6 0 0 1 -6 -6 V22 a6 6 0 0 1 6 -6 z" />
+            <path d="M72 16 v12 a6 6 0 0 0 6 6 h12" />
+            <path d="M40 54 h40" /><path d="M40 66 h40" /><path d="M40 78 h26" />
+            <g className="pon-kljuk-znak">
+              <circle cx="78" cy="83" r="13" fill="#fff" stroke="none" />
+              <circle cx="78" cy="83" r="13" fill="none" stroke="rgba(124,58,237,.7)" strokeWidth="2.6" />
+              <path className="pon-kljuk" d="M71 83 l5 5 l9 -10" fill="none" stroke="rgba(124,58,237,.95)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+            </g>
+          </g>
+        </svg>
+      </div>
+      <p className="rc-kicker rc-kicker-z">{predracun ? 'PREDRAČUN' : 'RAČUN'}{stevilka.trim() ? ' · ŠT. ' + stevilka.trim() : ''}</p>
+      <h1 className="rc-naslov-z">Zaključek.</h1>
+      <p className="rc-uvod-z">Prenesi {predracun ? 'predračun' : 'račun'}{stranka.trim() ? ' za ' + stranka.trim() : ''}, ga shrani ali pošlji naročniku.</p>
+      <label className="rc-placan-z"><input type="checkbox" checked={placano} onChange={event => setPlacano(event.target.checked)} /> {predracun ? 'Predračun je že plačan' : 'Račun je že plačan'}</label>
+      {napaka && <p className="rc-napaka">{napaka}</p>}
+      <PosljiBlok
+        subject={(predracun ? 'Predračun' : 'Račun') + (stevilka.trim() ? ' ' + stevilka.trim() : '') + (stranka.trim() ? ' — ' + stranka.trim() : '')}
+        zgradiHtml={() => doc(racunTelo(trenutniRacun()))}
+        privzetiPrejemnik={strankaEmail()}
+        imeStranke={stranka.trim()}
+        replyTo={ponudnik.email.trim() || undefined}
+        samoOgled={samoOgled}
+        kontakti={strankaKontakti()}
+        projektId={offerId || undefined}
+      />
+      <div className="rc-prenosi">
+        <button type="button" className="rc-povezava-z" onClick={() => save()}>
+          <FloppyDisk size={16} /> {predracun ? 'Shrani predračun' : 'Shrani račun'}
+        </button>
+        <button type="button" className="rc-povezava-z" disabled={!!pdfId} onClick={() => prenesiPdf(trenutniRacun())}>
+          <FilePdf size={16} /> {pdfId ? 'Pripravljam …' : 'Prenesi (PDF)'}
+        </button>
+        <button type="button" className="rc-povezava-z" onClick={() => posljiVPlacilo(trenutniRacun())}>
+          <PaperPlaneTilt size={16} /> Pošlji v plačilo
+        </button>
+      </div>
+    </section>}
+
+    {pogled === 'zakljucek' && <div className="rc-noga"><div className="rc-noga-gumbi">
+      <button type="button" className="rc-noga-pill" onClick={() => setPogled('obrazec')}>← Uredi račun</button>
+      <button type="button" className="rc-noga-pill nova" onClick={() => { setPogled('pregled'); setOfferId(''); }}>↺ Nov račun</button>
+    </div></div>}
 
     <style>{`
       /* rc- = novi stili obrazca za racun; pazi na .shell pravila (min-height 2.75rem
@@ -786,7 +824,39 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-vsote .rc-skupaj span{color:var(--ink);text-transform:uppercase;letter-spacing:.08em;font-size:.56rem}
       .rc .rc-vsote .rc-skupaj b{font:500 1.15rem var(--font-serif),Georgia,serif}
       .rc .rc-klavzula{margin:.4rem 0 0;font-size:.56rem;line-height:1.5;color:var(--muted);font-weight:500}
-      .rc .rc-napaka{margin:.5rem 0 0;color:oklch(50% .18 25);font-size:.62rem;font-weight:700}
+      .rc .rc-napaka{margin:.5rem 0 0;color:oklch(50% .18 25);font-size:.62rem;font-weight:700;text-align:center}
+      /* ── ZAKLJUCEK racuna (enaki elementi kot ponudba/pogodba) ── */
+      .rc .rc-zakljuci-gumb{width:max-content;padding:.85rem 1.9rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:600 .82rem var(--font-sans),sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:transform .2s ease}
+      .rc .rc-zakljuci-gumb:hover{transform:translateY(-2px)}
+      .rc .rc-zakljucek{padding-bottom:6rem}
+      .rc .rc-zakljucek .rc-kicker-z,.rc .rc-zakljucek .rc-naslov-z,.rc .rc-zakljucek .rc-uvod-z{text-align:center}
+      .rc .rc-kicker-z{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 .3rem}
+      .rc .rc-naslov-z{margin:.15rem 0 .5rem;font-family:var(--font-serif),Didot,serif;font-weight:400;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;color:var(--ink)}
+      .rc .rc-uvod-z{margin:0 auto 1.4rem;max-width:34rem;font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72)}
+      .rc .rc-placan-z{display:flex;align-items:center;justify-content:center;gap:.5rem;margin:0 0 1.2rem;font-size:.82rem;color:var(--ink);cursor:pointer}
+      .rc .rc-zakljucek-lik{display:flex;justify-content:center;margin:.5rem 0 1.1rem}
+      .rc .rc-zakljucek-lik .pon-lik{width:8.4rem;height:auto;display:block;overflow:visible}
+      .rc .rc-zakljucek-lik .pon-telo{transform-box:view-box;transform-origin:60px 128px;animation:rcPonFloat 3.4s ease-in-out infinite}
+      .rc .rc-zakljucek-lik .pon-senca{transform-box:view-box;transform-origin:60px 133px;animation:rcPonSenca 3.4s ease-in-out infinite}
+      .rc .rc-zakljucek-lik .pon-kljuk-znak{transform-box:fill-box;transform-origin:center;animation:rcKljukPop .5s cubic-bezier(.2,1.5,.4,1) .45s both}
+      .rc .rc-zakljucek-lik .pon-kljuk{stroke-dasharray:26;stroke-dashoffset:26;animation:rcKljukRis .38s ease-out .8s forwards}
+      @keyframes rcPonFloat{0%,100%{transform:translateY(0) rotate(-1.6deg)}50%{transform:translateY(-8px) rotate(1.6deg)}}
+      @keyframes rcPonSenca{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(.82);opacity:.6}}
+      @keyframes rcKljukPop{0%{transform:scale(0)}62%{transform:scale(1.18)}100%{transform:scale(1)}}
+      @keyframes rcKljukRis{to{stroke-dashoffset:0}}
+      @media (prefers-reduced-motion:reduce){.rc .rc-zakljucek-lik .pon-telo,.rc .rc-zakljucek-lik .pon-senca,.rc .rc-zakljucek-lik .pon-kljuk-znak,.rc .rc-zakljucek-lik .pon-kljuk{animation:none}.rc .rc-zakljucek-lik .pon-kljuk{stroke-dashoffset:0}}
+      .rc .rc-prenosi{display:flex;flex-wrap:wrap;justify-content:center;gap:.9rem 1.6rem;margin:1.4rem auto 0}
+      .rc .rc-povezava-z{display:inline-flex;align-items:center;gap:.4rem;font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0}
+      .rc .rc-povezava-z:hover{opacity:.6}
+      .rc .rc-povezava-z:disabled{opacity:.45;cursor:default}
+      .rc-noga{position:fixed;bottom:0;left:17.5rem;right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,var(--paper) 70%,transparent);z-index:40}
+      :global(body[data-meni='zaprt']) .rc-noga{left:4.4rem}
+      @media (max-width:980px){.rc-noga{left:0}}
+      .rc-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.8rem;flex-wrap:wrap}
+      .rc-noga-pill{font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.78);border:1px solid var(--ink);border-radius:999px;padding:.75rem 1.4rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
+      .rc-noga-pill:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
+      .rc-noga-pill.nova{color:var(--accent);border-color:var(--accent)}
+      .rc-noga-pill.nova:hover{background:var(--accent);color:var(--paper)}
       /* ── view-swap (kot pogodbe): obrazec je svoja stran, sredinski stolpec ── */
       .rc .rc-sek{min-width:0}
       .rc .rc-sek.rc-stran{animation:rcStran .5s cubic-bezier(.16,1,.3,1) both}
