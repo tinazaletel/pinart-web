@@ -134,7 +134,10 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     };
     shraniProjekt(projekt);
     if (obrazec.povezave.length) saveProjectLinks(`real-${projekt.id}`, obrazec.povezave.map(p => ({ oznaka: p.naslov, url: p.url })));
-    router.push(`${base}/kalkulator/projekti?projekt=real-${projekt.id}`);
+    /* Po ustvarjanju na NAVADNI Arhiv (zavihki + iskalnik), NE na ?projekt=<id> detajl:
+       za sveže ustvarjen projekt se detajl ni pravilno odprl (gola tabela brez zavihkov
+       in brez izhoda). Novi projekt je itak na vrhu seznama. */
+    router.push(`${base}/kalkulator/projekti`);
   };
 
   /* mehurcek bota (vprasanje) + moj odgovor (klikljiv, odpre urejanje v mestu) — isti
