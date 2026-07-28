@@ -5502,7 +5502,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .stepper0 b { min-width: 1.3em; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; font-size: .92rem; }
         .cw .vrst0-x { width: 1.55rem; height: 1.55rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.15); background: transparent; color: rgba(17,17,17,.55); cursor: pointer; font-size: .95rem; line-height: 1; display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s; }
         .cw .vrst0-x:hover { border-color: var(--accent); color: var(--accent); }
-        .cw .vrst0-cena { font-family: var(--font-serif), serif; font-size: 1.06rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; -webkit-text-stroke: .4px currentColor; }
+        .cw .vrst0-cena { font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.02rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
         .cw .vrst0-detajl { background: rgba(255,255,255,.85); border: 1px solid rgba(17,17,17,.1); border-radius: 14px; padding: 1rem 1.1rem; margin: .5rem 0 .9rem; animation: detajlDrsni .42s cubic-bezier(.16,1,.3,1) both; }
         @keyframes detajlDrsni { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
@@ -5668,7 +5668,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ponudba0-dodaj { margin-top: 1rem; align-self: flex-start; }
         .cw .ponudba0-vsota { margin-top: 1.1rem; padding-top: .9rem; border-top: 2px solid var(--ink); }
         .cw .ponudba0-vsota-vrsta { display: flex; justify-content: space-between; align-items: baseline; font-size: .92rem; color: rgba(17,17,17,.62); }
-        .cw .ponudba0-vsota-vrsta b { font-family: var(--font-serif), serif; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.15rem; -webkit-text-stroke: .45px currentColor; }
+        .cw .ponudba0-vsota-vrsta b { font-family: var(--font-sans), system-ui, sans-serif; color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; font-size: 1.12rem; }
         .cw .ponudba0-opomba { font-size: .76rem; color: var(--accent); margin-top: .45rem; font-weight: 500; }
         .cw .ponudba0-vsota-vrsta.ponudba0-mini { font-size: .82rem; color: rgba(17,17,17,.55); margin-top: .35rem; }
         .cw .ponudba0-vsota-vrsta.ponudba0-mini + .ponudba0-vsota-vrsta { margin-top: .35rem; }
@@ -6117,7 +6117,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
            pokvarijo puscice; visja specificnost + !important povozi globalno pravilo starsa. */
         .cw .prav-recept { font-size: .9rem !important; min-height: 0 !important; padding: .3rem 1.4rem .3rem .2rem !important; background-size: 12px 8px !important; background-position: right .1rem center !important; }
         .cw .pisava-select { font-size: .78rem !important; min-height: 2.25rem !important; padding: 0 1.7rem 0 .9rem !important; background-size: 12px 8px !important; background-position: right .7rem center !important; }
-        .cw .prav-cena { font-family: var(--font-serif), serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; min-width: 3.6rem; text-align: right; }
+        .cw .prav-cena { font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; min-width: 3.6rem; text-align: right; }
         .cw .prav-cena-gumb { border: none; background: transparent; cursor: pointer; color: var(--ink); padding: 0 0 .1rem; border-bottom: 1px dashed rgba(17,17,17,.45); transition: border-color .15s, color .15s; }
         .cw .prav-cena-gumb:hover { border-bottom-color: var(--ink); }
         .cw .prav-cena-gumb.rocno { border-bottom-style: solid; border-bottom-color: var(--accent); color: var(--accent); }
@@ -6290,7 +6290,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .paket.mid + .paket { border-color: rgba(245,242,234,.4); }
         .cw .paket h3 { margin: 0; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 600; opacity: .85; }
         .cw .paket .redna { font-family: var(--font-serif), serif; font-size: 1.05rem; text-decoration: line-through; opacity: .62; margin-top: .5rem; margin-bottom: -.4rem; -webkit-text-stroke: 0.3px currentColor; }
-        .cw .paket .znesek { font-family: var(--font-serif), Didot, serif; font-size: clamp(2rem, 4.5vw, 2.6rem); font-weight: 500; margin: .5rem 0 .55rem; letter-spacing: -.01em; -webkit-text-stroke: 0; }
+        .cw .paket .znesek { font-family: var(--font-sans), system-ui, sans-serif; font-size: clamp(2rem, 4.5vw, 2.6rem); font-weight: 500; margin: .5rem 0 .55rem; letter-spacing: -.01em; -webkit-text-stroke: 0; }
         .cw .paket p { margin: 0; font-size: .9rem; line-height: 1.6; opacity: .8; }
         .cw .paket.mid p { opacity: .88; }
         .cw .razlaga { font-size: .98rem; color: rgba(17,17,17,.75); line-height: 1.7; margin: 1.5rem 0 0; max-width: 64ch; }
