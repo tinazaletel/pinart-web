@@ -6132,7 +6132,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-brisi:hover { border-color: #b25476; color: #b25476; }
         .cw .prav-lastna-akcije { display: inline-flex; gap: .4rem; align-items: center; justify-content: flex-end; }
         .cw .prav-skupaj { display: flex; justify-content: space-between; align-items: baseline; margin-top: .9rem; padding-top: .8rem; border-top: 2px solid var(--ink); }
-        .cw .prav-skupaj b { font-family: var(--font-serif), serif; font-size: 1.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+        .cw .prav-skupaj b { font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
         @media (max-width: 560px) {
           .cw .prav-vrsta { grid-template-columns: minmax(9.25rem,1fr) auto 2.1rem; grid-template-areas: 'ime ime ime' 'recept cena podr'; gap: .25rem .35rem; align-items: center; }
           .cw .prav-ime { grid-area: ime; white-space: normal; }
