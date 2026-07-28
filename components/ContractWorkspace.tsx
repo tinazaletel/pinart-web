@@ -1009,14 +1009,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
           })}
         </div>
       </div>
-      <div className="pg-prenosi">
-        <button type="button" className="pg-povezava" aria-label="Shrani pogodbo" onClick={() => { shrani(); proslaviKonfeti(); }}>
-          <FloppyDisk size={16} /> {shranjenaId ? 'Shranjeno ✓' : 'Shrani'}
-        </button>
-        <button type="button" className="pg-povezava" aria-label="Prenesi pogodbo PDF" disabled={pdfNalaganje} onClick={() => { prenesi(); proslaviKonfeti(); }}>
-          <FilePdf size={16} /> {pdfNalaganje ? 'Pripravljam …' : 'Prenesi (PDF)'}
-        </button>
-      </div>
       {napaka && <p className="pg-napaka">{napaka}</p>}
       {/* Pošiljanje pogodbe kar iz aplikacije (Resend) — isti HTML kot prenos/PDF. */}
       <PosljiBlok
@@ -1029,6 +1021,15 @@ export default function ContractWorkspace({ base }: { base: string }) {
         kontakti={strankaKontakti()}
         projektId={vir === 'ponudba' && selectedOffer ? selectedOffer.id : undefined}
       />
+      {/* prenos-povezave POD blokom posiljanja (kot pri ponudbi) */}
+      <div className="pg-prenosi">
+        <button type="button" className="pg-povezava" aria-label="Shrani pogodbo" onClick={() => { shrani(); proslaviKonfeti(); }}>
+          <FloppyDisk size={16} /> {shranjenaId ? 'Shranjeno ✓' : 'Shrani'}
+        </button>
+        <button type="button" className="pg-povezava" aria-label="Prenesi pogodbo PDF" disabled={pdfNalaganje} onClick={() => { prenesi(); proslaviKonfeti(); }}>
+          <FilePdf size={16} /> {pdfNalaganje ? 'Pripravljam …' : 'Prenesi (PDF)'}
+        </button>
+      </div>
       <div className="pg-koncna-nav">
         <button type="button" className="pg-povezava" onClick={() => setPogled('dokument')}>← Uredi pogodbo</button>
         <button type="button" className="pg-povezava" onClick={novaPogodba}>↺ Nova pogodba</button>
