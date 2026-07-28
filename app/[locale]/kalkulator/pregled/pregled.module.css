@@ -177,7 +177,7 @@
 .tipText { margin: 0; font: 400 .9rem/1.45 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 66%, transparent); }
 .tipCta { display: inline-flex; align-items: center; gap: .5rem; padding: .75rem 1.3rem; border-radius: 999px; background: var(--ink); color: var(--paper); font: 650 .8rem var(--font-sans), sans-serif; text-decoration: none; white-space: nowrap; }
 .tipCta:hover { filter: brightness(1.12); }
-.eyebrow { margin: 0 0 .55rem; font-size: .64rem; line-height: 1; font-weight: 800; letter-spacing: .14em; color: color-mix(in oklch, var(--ink) 85%, transparent); }
+.eyebrow { margin: 0 0 .55rem; font-size: .64rem; line-height: 1; font-weight: 800; letter-spacing: .14em; color: color-mix(in oklch, var(--ink) 52%, transparent); }
 .topbar .eyebrow { color: oklch(62% .13 300); }
 .topbar h1, .pulse h2, .sectionHeading h2 { margin: 0; font-family: var(--font-serif), Georgia, serif; font-weight: 500; }
 .topbar h1 { font-size: clamp(1.55rem, 2.8vw, 2.3rem); line-height: .95; }
@@ -349,7 +349,7 @@
 /* Dogodki & roki — seznam prihodnjih rokov */
 .eventList { list-style: none; margin: .2rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
 .eventList li { display: flex; align-items: stretch; gap: .55rem; }
-.eventDate { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .2rem; width: 3.4rem; padding: .55rem .3rem; border-radius: .9rem; background: oklch(95.5% .03 300); border: 1px solid oklch(84% .05 300 / .35); line-height: 1; }
+.eventDate { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .05rem; width: 3.4rem; padding: .5rem .3rem; border-radius: .9rem; background: oklch(95.5% .03 300); border: 1px solid oklch(84% .05 300 / .35); line-height: .95; }
 .eventDate b { font: 700 1rem/1 var(--font-sans), sans-serif; letter-spacing: -.02em; color: oklch(46% .12 300); }
 .eventDate small { font-size: .44rem; font-weight: 700; letter-spacing: .09em; color: oklch(56% .09 300); }
 .eventCard { flex: 1; display: flex; align-items: center; gap: .6rem; min-width: 0; padding: .6rem .85rem; border-radius: .8rem; background: oklch(99.7% .0015 90); border: 1px solid color-mix(in oklch, var(--ink) 5%, transparent); }
@@ -390,10 +390,13 @@
 .historyBand .tableWrap th:nth-child(4) { width: 22%; }
 .historyTable { overflow: hidden; border: 1px solid color-mix(in oklch, var(--ink) 10%, transparent); }
 .historyTable table { margin: 0; }
-.historyTable th { padding: .7rem .9rem; background: #f7f1e9; border-bottom: 1px solid color-mix(in oklch, var(--ink) 8%, transparent); font-size: .55rem; color: color-mix(in oklch, var(--ink) 50%, transparent); }
+.historyTable th { padding: .7rem .9rem; background: #f7f1e9; border-bottom: 1px solid color-mix(in oklch, var(--ink) 6%, transparent); font-size: .55rem; color: color-mix(in oklch, var(--ink) 42%, transparent); }
 .historyTable td { height: 5rem; padding: .9rem .9rem; background: transparent; vertical-align: middle; }
 .historyTable td:nth-child(3) { white-space: nowrap; }
+.historyTable th:first-child, .historyTable td:first-child { padding-left: 1.4rem; }
 .historyTable th:last-child, .historyTable td:last-child { padding-right: .45rem; padding-left: .55rem; }
+/* Zadnji projekti (v detailRow): PRIHODKI desno poravnano + vec desnega paddinga */
+.detailRow .historyTable th:last-child, .detailRow .historyTable td:last-child { text-align: right; padding-right: 1.4rem; }
 .historyTable tbody tr:last-child td { border-bottom: 0; }
 .historyTable tbody tr[role='button'] { cursor: pointer; transition: filter 160ms ease; }
 .historyTable tbody tr[role='button']:hover { filter: brightness(.985); }
@@ -409,7 +412,7 @@
 .document_contract { background: oklch(93% .055 163); color: oklch(55% .15 164); }
 .document_invoice { background: oklch(94% .055 62); color: oklch(62% .18 48); }
 .document_expense { background: oklch(91% .012 55); color: var(--ink); }
-.statusPill { position: relative; display: inline-flex; align-items: center; gap: .42rem; width: max-content; padding: .38rem .72rem; border: 1px solid var(--pill-line, oklch(86% .012 87)); border-radius: 999px; background: var(--pill-bg, oklch(95% .01 87)); color: var(--pill-ink, oklch(40% .02 70)); font-size: .55rem; font-weight: 700; white-space: nowrap; }
+.statusPill { position: relative; display: inline-flex; align-items: center; gap: .42rem; width: max-content; padding: .42rem .78rem; border: 0; border-radius: 999px; background: var(--pill-bg, oklch(95% .01 87)); color: var(--pill-ink, oklch(40% .02 70)); font-size: .58rem; font-weight: 700; white-space: nowrap; }
 /* status kot pilula, ki objame besedilo; prosojni <select> lezi cez (Safari-varno). */
 .statusField { position: relative; display: inline-flex; vertical-align: middle; }
 .statusField[data-editable] .statusPill { cursor: pointer; padding-right: 1.15rem; }
@@ -418,10 +421,11 @@
 .historyTable .statusSelect:disabled { cursor: default; }
 .statusPill::before { content: ''; width: .48rem; height: .48rem; border-radius: 50%; background: var(--dot, oklch(62% .02 70)); flex: none; }
 /* statusni toni v mehkem CGP — obarvano ozadje + tekst, kot KPI kartice */
-.status_waiting { --dot: oklch(70% .16 75); --pill-bg: oklch(95.5% .05 82); --pill-ink: oklch(50% .12 68); --pill-line: oklch(89% .06 82); }
-.status_success { --dot: oklch(60% .15 152); --pill-bg: oklch(95% .05 158); --pill-ink: oklch(47% .11 158); --pill-line: oklch(88% .07 158); }
-.status_danger { --dot: oklch(57% .19 25); --pill-bg: oklch(95.5% .045 28); --pill-ink: oklch(52% .15 27); --pill-line: oklch(89% .06 28); }
-.status_neutral { --dot: oklch(62% .02 70); --pill-bg: oklch(95% .01 87); --pill-ink: oklch(44% .02 70); --pill-line: oklch(88% .012 87); }
+.status_waiting { --dot: oklch(70% .14 75); --pill-bg: oklch(96.5% .03 82); --pill-ink: oklch(54% .09 68); }
+.status_success { --dot: oklch(62% .12 152); --pill-bg: oklch(96% .035 158); --pill-ink: oklch(50% .085 158); }
+.status_danger { --dot: oklch(60% .15 25); --pill-bg: oklch(96.5% .03 28); --pill-ink: oklch(55% .11 27); }
+.status_neutral { --dot: oklch(64% .015 70); --pill-bg: oklch(95.5% .008 87); --pill-ink: oklch(48% .015 70); }
+.status_info { --dot: oklch(60% .12 300); --pill-bg: oklch(96% .035 300); --pill-ink: oklch(50% .09 300); }
 /* !important pri padding IN background-position je nujen: .shell select (vrstica 35) ima
    padding-right:3rem !important in background-position:right 1rem center !important, kar je
    (a) piko potisnilo na DESNO cez puscico in (b) odrezalo napis ("Placano" -> "Plac"). */
@@ -1014,7 +1018,7 @@
 .tableWrap { margin-top: 1.2rem; overflow-x: auto; }
 .tableWrap table { width: 100%; min-width: 38rem; border-collapse: collapse; font-size: .69rem; }
 .tableWrap th { padding: .7rem .5rem; border-bottom: 1px solid var(--line); color: color-mix(in oklch, var(--ink) 55%, transparent); font-size: .57rem; letter-spacing: .08em; text-align: left; text-transform: uppercase; }
-.tableWrap td { padding: .8rem .5rem; border-bottom: 1px solid color-mix(in oklch, var(--line) 60%, transparent); }
+.tableWrap td { padding: .8rem .5rem; border-bottom: 1px solid color-mix(in oklch, var(--line) 40%, transparent); }
 .tableWrap select { padding: .45rem .6rem; border: 1px solid var(--line); border-radius: 99px; background: var(--paper); color: inherit; font: 700 .61rem var(--font-sans), sans-serif; }
 .historyTable select.status_waiting,
 .historyTable select.status_success,
