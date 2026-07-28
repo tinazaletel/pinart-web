@@ -872,8 +872,8 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
               <path d="M71 83 l5 5 l9 -10" fill="none" stroke="rgba(124,58,237,.95)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <p className="rw-kicker">Dolgoročno sodelovanje{stevilka ? ' · št. ' + stevilka : ''}</p>
           <h1 className="rw-h1">Zaključek.</h1>
+          <p className="rw-num-pod">Dolgoročno sodelovanje{stevilka ? ' · št. ' + stevilka : ''}</p>
           <p className="rw-uvod">Prenesi pogodbo{nar.ime.trim() ? ' za ' + nar.ime.trim() : ''} in po želji še retainer ponudbo.</p>
           {napaka && <p className="rw-napaka">{napaka}</p>}
           {/* Posiljanje kar iz aplikacije (Resend) — isti HTML kot prenos/PDF (trenutno prikazan dokument). */}
@@ -894,10 +894,6 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M7 11l5 5 5-5M5 21h14" /></svg>
               Prenesi retainer ponudbo (PDF)
             </button>
-          </div>
-          <div className="rw-koncna-nav">
-            <button type="button" className="rw-povezava" onClick={urediOdZacetka}>← Uredi od začetka</button>
-            <button type="button" className="rw-povezava" onClick={novaPonudba}>↺ Nova ponudba</button>
           </div>
         </section>)}
 
@@ -926,6 +922,12 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
               }}>
               {pogled === 'ponudba' ? 'Zaključi' : korak === 3 ? 'Pripravi ponudbo' : 'Naprej'} <ArrowDown size={16} weight="bold" aria-hidden />
             </button>
+          )}
+          {pogled === 'zakljucek' && (
+            <div className="rw-noga-koncna">
+              <button type="button" className="rw-noga-pill" onClick={urediOdZacetka}>← Uredi od začetka</button>
+              <button type="button" className="rw-noga-pill nova" onClick={novaPonudba}>↺ Nova ponudba</button>
+            </div>
           )}
         </div>
       </div>
@@ -1138,13 +1140,19 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-gumb.sek{background:transparent;color:var(--ink);border:1px solid rgba(17,17,17,.28)}
         .rw-gumb:disabled{opacity:.5;cursor:default;transform:none}
         .rw-koncna-nav{display:flex;flex-wrap:wrap;gap:1.4rem;margin-top:2rem;padding-top:1.4rem;border-top:1px solid rgba(17,17,17,.1)}
-        /* Zakljucek = centriran, kot pri ponudbi (ikona + prenos-povezave spodaj) */
-        .rw-zakljucek .rw-kicker,.rw-zakljucek .rw-h1,.rw-zakljucek .rw-uvod{text-align:center}
+        /* Zakljucek = poenoten s ponudbo: ikona 8.4rem, stevilka pod naslovom, prenos-povezave, noga-pilule */
+        .rw-zakljucek{padding-top:1.5rem;padding-bottom:6rem}
+        .rw-zakljucek .rw-h1,.rw-zakljucek .rw-uvod,.rw-zakljucek .rw-num-pod{text-align:center}
         .rw-zakljucek .rw-uvod{margin-left:auto;margin-right:auto}
+        .rw-num-pod{font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--akcent,#B25476);margin:.15rem 0 .7rem}
         .rw-zakljucek-lik{display:flex;justify-content:center;margin:.5rem 0 1.1rem}
-        .rw-zakljucek-lik svg{width:76px;height:auto}
+        .rw-zakljucek-lik svg{width:8.4rem;height:auto}
         .rw-prenosi{display:flex;flex-wrap:wrap;justify-content:center;gap:.9rem 1.6rem;margin:1.4rem auto 0}
-        .rw-zakljucek .rw-koncna-nav{justify-content:center}
+        .rw-noga-koncna{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;justify-content:center}
+        .rw-noga-pill{font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.72);border:1px solid var(--ink);border-radius:999px;padding:.65rem 1.3rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
+        .rw-noga-pill:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
+        .rw-noga-pill.nova{color:var(--akcent,#B25476);border-color:var(--akcent,#B25476)}
+        .rw-noga-pill.nova:hover{background:var(--akcent,#B25476);color:var(--paper)}
         .rw-napaka{color:#b23434;font-size:.86rem;margin:.6rem 0 0}
         /* predogled sirsi od chata (kot mehurcki) — vecje, berljive strani */
         .rw-predogled{position:relative;width:min(880px,94vw);left:50%;transform:translateX(-50%);margin-top:1.4rem;background:#e9e6e0;border:1px solid rgba(17,17,17,.12);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:18px;box-shadow:inset 0 1px 6px rgba(20,20,20,.06)}
