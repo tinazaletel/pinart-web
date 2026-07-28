@@ -981,7 +981,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
     {/* ── POGLED 3: ZAKLJUCEK (prenos + posiljanje + shranjevanje) ── */}
     {pogled === 'zakljucek' && <section className="pg-sek pg-stran pg-stolpec pg-zakljucek">
-      <p className={styles.eyebrow}>{VRSTE_POG.find(v => v.id === vrstaPog)!.kick}{vir === 'ponudba' && selectedOffer?.number ? ` · PONUDBA ŠT. ${selectedOffer.number}` : ''}</p>
+      <p className="pg-kicker">{VRSTE_POG.find(v => v.id === vrstaPog)!.kick}{vir === 'ponudba' && selectedOffer?.number ? ` · PONUDBA ŠT. ${selectedOffer.number}` : ''}</p>
       <h2 className="pg-naslov">Zaključek.{odvPoslano && <span className="pg-odvetnik-znak">Pri odvetniku</span>}</h2>
       <p className="pg-uvod">Prenesi pogodbo{narocnikIme() ? ' za ' + narocnikIme() : ''}, jo shrani ali pošlji naročniku.</p>
       <p className="pg-disc">Pripravljeno iz vzorčne predloge kot pripomoček — <b>ni pravni nasvet</b>. Pred podpisom priporočamo pregled pri odvetniku in prilagoditev konkretnemu poslu.</p>
@@ -1007,7 +1007,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
         <button type="button" className="pg-gumb sek" aria-label="Shrani pogodbo" onClick={() => { shrani(); proslaviKonfeti(); }}>
           <FloppyDisk size={17} /> {shranjenaId ? 'Shranjeno ✓' : 'Shrani'}
         </button>
-        <button type="button" className="pg-gumb sek" aria-label="Prenesi pogodbo PDF" disabled={pdfNalaganje} onClick={() => { prenesi(); proslaviKonfeti(); }}>
+        <button type="button" className="pg-gumb" aria-label="Prenesi pogodbo PDF" disabled={pdfNalaganje} onClick={() => { prenesi(); proslaviKonfeti(); }}>
           <FilePdf size={17} /> {pdfNalaganje ? 'Pripravljam …' : 'Prenesi (PDF)'}
         </button>
       </div>
@@ -1084,7 +1084,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       /* vstopni kicker+h1 (kot retainer rw-kicker/rw-h1) — naslov strani zdaj v ozkem .pg-stolpec, brez bele kartice */
       .pg-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);margin:0 0 .3rem}
       .pg-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 1.6rem;color:var(--ink)}
-      .pg-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,2.6vw,2.4rem)/1.05 var(--font-serif),Georgia,serif;color:var(--ink);overflow-wrap:anywhere}
+      .pg-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,3.4vw,2.4rem)/1 var(--font-serif),Didot,serif;letter-spacing:-.012em;color:var(--ink);overflow-wrap:anywhere}
       .pg-uvod{margin:0 0 1.4rem;font-size:.92rem;line-height:1.55;color:rgba(17,17,17,.72);max-width:34rem}
       .pg-disc{margin:-.7rem 0 1.4rem;padding:.7rem .85rem;max-width:34rem;font-size:.76rem;line-height:1.5;color:rgba(17,17,17,.66);background:oklch(96% .03 85);border:1px solid oklch(85% .07 78);border-radius:.7rem}
       .pg-disc b{color:rgba(17,17,17,.82)}
