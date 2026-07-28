@@ -343,7 +343,7 @@
 @media (max-width: 1200px) { .overviewColumns { grid-template-columns: 1fr; } }
 
 /* KPI 2x2 v srednjem panelu */
-.kpiGrid { flex: 1; margin-top: .45rem; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: .9rem; }
+.kpiGrid { flex: 1; margin-top: .45rem; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: .7rem; }
 .kpiGrid .kpi { min-height: 7.6rem; padding: 1.05rem; border-radius: 1rem; }
 /* "Ta mesec" dropdown (namesto pilul) */
 .shell .periodSelect { height: 2.1rem; min-height: 2.1rem; max-height: 2.1rem; line-height: 1.1; box-sizing: border-box; padding: 0 1.9rem 0 .85rem !important; border: 1px solid color-mix(in oklch, var(--ink) 7%, transparent); border-radius: 999px; font-size: .875rem !important; font-weight: 750; background-color: oklch(99.3% .004 90); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%231c1815' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: right .75rem center; background-repeat: no-repeat; appearance: none; -webkit-appearance: none; color: var(--ink); font: 750 .55rem var(--font-sans), sans-serif; white-space: nowrap; cursor: pointer; }
@@ -986,9 +986,9 @@
 .kpi strong { margin: 1.4rem 0 .25rem; font: 600 clamp(1.5rem, 2.2vw, 2.35rem) var(--font-sans), system-ui, sans-serif; letter-spacing: -.01em; font-variant-numeric: tabular-nums; -webkit-text-stroke: 0; }
 .kpi small { color: color-mix(in oklch, currentColor 58%, transparent); font-size: .56rem; }
 /* KPI ikona = samo ikona (BREZ kvadratnega ozadja), kot mockup */
-/* ikona = bled vodni zig, del ozadja kartice (za tekstom, rahlo zavrten) */
-.resultIcon { position: absolute; z-index: 0; right: .35rem; bottom: .1rem; display: grid; place-items: center; width: 3.9rem; aspect-ratio: 1; border: 0; background: none; box-shadow: none; opacity: .22; transform: rotate(-9deg); pointer-events: none; }
-.resultIcon svg { width: 3.7rem; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+/* ikona = majhna, POKONCNA, ob stevilki (navpicno na sredino zneska), kot v predlogi */
+.resultIcon { position: absolute; z-index: 0; right: 1.1rem; top: 50%; bottom: auto; display: grid; place-items: center; width: 1.7rem; aspect-ratio: 1; border: 0; background: none; box-shadow: none; opacity: .6; transform: translateY(-52%); pointer-events: none; }
+.resultIcon svg { width: 1.6rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .kpi > span, .kpi > strong, .kpi > small { position: relative; z-index: 1; }
 .kpi:nth-child(1) .resultIcon { color: var(--purple); }
 .kpi:nth-child(2) .resultIcon { color: oklch(58% .16 255); }
