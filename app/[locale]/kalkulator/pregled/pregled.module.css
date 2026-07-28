@@ -987,8 +987,8 @@
 .kpi small { color: color-mix(in oklch, currentColor 58%, transparent); font-size: .56rem; }
 /* KPI ikona = samo ikona (BREZ kvadratnega ozadja), kot mockup */
 /* ikona = majhna, POKONCNA, ob stevilki (navpicno na sredino zneska), kot v predlogi */
-.resultIcon { position: absolute; z-index: 0; right: 1.15rem; top: 50%; bottom: auto; display: grid; place-items: center; width: 1.5rem; aspect-ratio: 1; border: 0; background: none; box-shadow: none; opacity: .6; transform: translateY(-52%) rotate(-9deg); pointer-events: none; }
-.resultIcon svg { width: 1.4rem; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.resultIcon { position: absolute; z-index: 0; right: .7rem; top: 50%; bottom: auto; display: grid; place-items: center; width: 3.3rem; aspect-ratio: 1; border: 0; background: none; box-shadow: none; opacity: .38; transform: translateY(-52%) rotate(-9deg); pointer-events: none; }
+.resultIcon svg { width: 3.2rem; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .kpi > span, .kpi > strong, .kpi > small { position: relative; z-index: 1; }
 .kpi:nth-child(1) .resultIcon { color: var(--purple); }
 .kpi:nth-child(2) .resultIcon { color: oklch(58% .16 255); }
