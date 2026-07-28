@@ -338,7 +338,7 @@
 .flowTools > *:nth-child(4)::before { animation: dotsGlow 6s ease-in-out infinite alternate; }
 .historyBand .tableWrap { margin-top: 0; overflow-x: hidden; border-radius: 1rem; background: oklch(98% .01 87); }
 .historyBand .emptyState { padding: 0 1rem; border-radius: 1rem; background: oklch(98% .01 87); }
-.overviewColumns { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; }
+.overviewColumns { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
 .overviewColumns > section { min-width: 0; }
 @media (max-width: 1200px) { .overviewColumns { grid-template-columns: 1fr; } }
 
@@ -375,7 +375,7 @@
 @media (max-width: 1200px) { .detailsGrid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 620px) { .detailsGrid { grid-template-columns: 1fr; } }
 /* Zadnji projekti + Prihodki po mesecih (2 panela) */
-.detailRow { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; }
+.detailRow { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
 @media (max-width: 1000px) { .detailRow { grid-template-columns: 1fr; } }
 /* Prihodki po mesecih — stolpcni graf */
 /* Prihodki po mesecih — graf z Y-osjo (crte + stevilke levo) */
