@@ -980,16 +980,18 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* ── POGLED 3: ZAKLJUCEK (prenos + posiljanje + shranjevanje) ── */}
     {pogled === 'zakljucek' && <section className="pg-sek pg-stran pg-stolpec pg-zakljucek">
       <div className="pg-zakljucek-lik" aria-hidden>
-        <svg viewBox="0 0 120 140" width="76" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="60" cy="133" rx="30" ry="4.5" fill="rgba(17,17,17,.12)" />
-          <g fill="none" stroke="rgba(17,17,17,.46)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+        <svg className="pon-lik" viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse className="pon-senca" cx="60" cy="133" rx="30" ry="4.5" fill="rgba(17,17,17,.12)" />
+          <g className="pon-telo" fill="none" stroke="rgba(17,17,17,.46)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
             <path d="M36 16 h36 l18 18 v66 a6 6 0 0 1 -6 6 H36 a6 6 0 0 1 -6 -6 V22 a6 6 0 0 1 6 -6 z" />
             <path d="M72 16 v12 a6 6 0 0 0 6 6 h12" />
             <path d="M40 54 h40" /><path d="M40 66 h40" /><path d="M40 78 h26" />
+            <g className="pon-kljuk-znak">
+              <circle cx="78" cy="83" r="13" fill="#fff" stroke="none" />
+              <circle cx="78" cy="83" r="13" fill="none" stroke="rgba(124,58,237,.7)" strokeWidth="2.6" />
+              <path className="pon-kljuk" d="M71 83 l5 5 l9 -10" fill="none" stroke="rgba(124,58,237,.95)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+            </g>
           </g>
-          <circle cx="78" cy="83" r="13" fill="#fff" />
-          <circle cx="78" cy="83" r="13" fill="none" stroke="rgba(124,58,237,.7)" strokeWidth="2.6" />
-          <path d="M71 83 l5 5 l9 -10" fill="none" stroke="rgba(124,58,237,.95)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
       <p className="pg-kicker">{VRSTE_POG.find(v => v.id === vrstaPog)!.kick}{vir === 'ponudba' && selectedOffer?.number ? ` · PONUDBA ŠT. ${selectedOffer.number}` : ''}</p>
@@ -1035,7 +1037,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* Noga FIKSNO na dnu strani (kot retainer/ponudba): puscica-krog + pilule.
         Izven animirane sekcije, da je position:fixed vezan na stran. */}
     {pogled === 'zakljucek' && <div className="pg-noga"><div className="pg-noga-gumbi">
-      <button type="button" className="pg-koncna-krog" aria-label="Na vrh" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 19V5M5 12l7-7 7 7" /></svg></button>
       <button type="button" className="pg-noga-pill" onClick={() => setPogled('dokument')}>← Uredi pogodbo</button>
       <button type="button" className="pg-noga-pill nova" onClick={novaPogodba}>↺ Nova pogodba</button>
     </div></div>}
@@ -1086,7 +1087,16 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,3.4vw,2.4rem)/1 var(--font-serif),Didot,serif;letter-spacing:-.012em;color:var(--ink);overflow-wrap:anywhere}
       .pg-uvod{margin:0 0 1.4rem;font-size:.92rem;line-height:1.55;color:rgba(17,17,17,.72);max-width:34rem}
       .pg-zakljucek-lik{display:flex;justify-content:center;margin:.5rem 0 1.1rem}
-      .pg-zakljucek-lik svg{width:8.4rem;height:auto}
+      .pg-zakljucek-lik .pon-lik{width:8.4rem;height:auto;display:block;overflow:visible}
+      .pg-zakljucek-lik .pon-telo{transform-box:view-box;transform-origin:60px 128px;animation:pgPonFloat 3.4s ease-in-out infinite}
+      .pg-zakljucek-lik .pon-senca{transform-box:view-box;transform-origin:60px 133px;animation:pgPonSenca 3.4s ease-in-out infinite}
+      .pg-zakljucek-lik .pon-kljuk-znak{transform-box:fill-box;transform-origin:center;animation:pgKljukPop .5s cubic-bezier(.2,1.5,.4,1) .45s both}
+      .pg-zakljucek-lik .pon-kljuk{stroke-dasharray:26;stroke-dashoffset:26;animation:pgKljukRis .38s ease-out .8s forwards}
+      @keyframes pgPonFloat{0%,100%{transform:translateY(0) rotate(-1.6deg)}50%{transform:translateY(-8px) rotate(1.6deg)}}
+      @keyframes pgPonSenca{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(.82);opacity:.6}}
+      @keyframes pgKljukPop{0%{transform:scale(0)}62%{transform:scale(1.18)}100%{transform:scale(1)}}
+      @keyframes pgKljukRis{to{stroke-dashoffset:0}}
+      @media (prefers-reduced-motion:reduce){.pg-zakljucek-lik .pon-telo,.pg-zakljucek-lik .pon-senca,.pg-zakljucek-lik .pon-kljuk-znak,.pg-zakljucek-lik .pon-kljuk{animation:none}.pg-zakljucek-lik .pon-kljuk{stroke-dashoffset:0}}
       .pg-zakljucek .pg-kicker,.pg-zakljucek .pg-naslov,.pg-zakljucek .pg-uvod{text-align:center}
       .pg-zakljucek .pg-uvod{margin-left:auto;margin-right:auto}
       .pg-prenosi{display:flex;flex-wrap:wrap;justify-content:center;gap:.9rem 1.6rem;margin:1.2rem 0 .4rem}
@@ -1197,7 +1207,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-povezava:hover{opacity:.6}
       /* Odvetnik: umirjen blok pod pošiljanjem naročniku — tanek okvir, isti jezik kot .pg-disc/.pg-polje */
       /* odvetnik = mali banner na DESNEM robu zaslona, stran od obrazca */
-      .pg-odvetnik{position:fixed;right:1.2rem;bottom:1.2rem;top:auto;width:15rem;max-width:38vw;margin:0;padding:1rem 1.05rem 1.1rem;border:1px solid rgba(17,17,17,.12);border-radius:16px;background:rgba(255,255,255,.72);backdrop-filter:blur(5px);text-align:left;z-index:30;box-shadow:0 .6rem 1.6rem rgba(20,20,20,.08)}
+      .pg-odvetnik{position:fixed;right:1.2rem;bottom:6.5rem;top:auto;width:15rem;max-width:38vw;margin:0;padding:1rem 1.05rem 1.1rem;border:1px solid rgba(17,17,17,.12);border-radius:16px;background:rgba(255,255,255,.72);backdrop-filter:blur(5px);text-align:left;z-index:30;box-shadow:0 .6rem 1.6rem rgba(20,20,20,.08)}
       @media (max-width:1160px){.pg-odvetnik{position:static;width:auto;max-width:560px;margin:1.4rem auto 0;backdrop-filter:none}}
       .pg-odvetnik-label{display:block;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
       .pg-odvetnik .pg-odvetnik-gumb{width:100%;justify-content:center;background:var(--accent);color:#fff;border:0;box-shadow:0 .4rem 1rem oklch(66% .2 297 / .3);font-size:.82rem;letter-spacing:.02em;text-transform:none;padding:.7rem 1rem;margin-top:.2rem}
