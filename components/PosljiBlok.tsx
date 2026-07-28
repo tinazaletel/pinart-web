@@ -209,12 +209,12 @@ export default function PosljiBlok({
 
       <style>{`
         .posl-root { --posl-ink: var(--ink, #111); --posl-paper: var(--paper, #f4f1ea); --posl-accent: var(--accent, #B25476); }
-        .posl-root .posl-blok { text-align: left; max-width: 560px; margin: 1.4rem auto 0; border: 1px solid rgba(17,17,17,.14); border-radius: 16px; background: rgba(255,255,255,.6); padding: 1.25rem 1.4rem 1.35rem; }
+        .posl-root .posl-blok { text-align: left; max-width: 560px; margin: 1.4rem auto 0; border: 1px solid oklch(92% .006 82 / .55); border-radius: 16px; background: rgba(255,255,255,.6); padding: 1.25rem 1.4rem 1.35rem; }
         .posl-root .posl-glava-vrsta { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .85rem; }
         .posl-root .posl-glava { font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.5); }
         .posl-root .posl-za { display: flex; align-items: center; gap: .6rem; }
         .posl-root .posl-za-l { flex: 0 0 auto; font-size: .9rem; color: rgba(17,17,17,.6); }
-        .posl-root .posl-cipi { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; min-height: 2.7rem; padding: .38rem .5rem; border: 1px solid rgba(17,17,17,.2); border-radius: 12px; background: #fff; }
+        .posl-root .posl-cipi { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; min-height: 2.7rem; padding: .38rem .5rem; border: 1px solid oklch(92% .006 82 / .7); border-radius: 12px; background: #fff; }
         .posl-root .posl-cipi:focus-within { border-color: var(--posl-accent); }
         .posl-root .posl-cip { display: inline-flex; align-items: center; gap: .35rem; padding: .26rem .32rem .26rem .62rem; border-radius: 999px; font-size: .85rem; color: var(--posl-ink); background: var(--posl-paper); border: 1px solid rgba(17,17,17,.12); }
         .posl-root .posl-cip-mail { line-height: 1.2; }
@@ -223,6 +223,7 @@ export default function PosljiBlok({
         .posl-root .posl-cip-oznaka { font-size: .6rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: .1rem .32rem; border-radius: 999px; background: rgba(17,17,17,.08); color: rgba(17,17,17,.55); }
         .posl-root .posl-vnos { flex: 1 1 8rem; min-width: 8rem; border: 0; outline: none; background: transparent; font: inherit; font-size: .9rem; color: var(--posl-ink); padding: .32rem .2rem; }
         .posl-root .posl-vnos::placeholder { color: rgba(17,17,17,.4); }
+        .posl-root .posl-vnos:focus, .posl-root .posl-vnos:focus-visible { outline: none; box-shadow: none; }
         /* prepreči rumeno ozadje ob samodejnem izpolnjevanju (Chrome/Safari autofill) */
         .posl-root .posl-vnos:-webkit-autofill, .posl-root .posl-vnos:-webkit-autofill:hover, .posl-root .posl-vnos:-webkit-autofill:focus { -webkit-box-shadow: 0 0 0 100px #fff inset; -webkit-text-fill-color: var(--posl-ink); caret-color: var(--posl-ink); transition: background-color 9999s ease 0s; }
         .posl-root .posl-kontakti { position: relative; flex: 0 0 auto; }

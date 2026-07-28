@@ -1031,8 +1031,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
         </button>
       </div>
       <div className="pg-koncna-nav">
-        <button type="button" className="pg-povezava" onClick={() => setPogled('dokument')}>← Uredi pogodbo</button>
-        <button type="button" className="pg-povezava" onClick={novaPogodba}>↺ Nova pogodba</button>
+        <button type="button" className="pg-koncna-krog" aria-label="Na vrh" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 19V5M5 12l7-7 7 7" /></svg></button>
+        <button type="button" className="pg-noga-pill" onClick={() => setPogled('dokument')}>← Uredi pogodbo</button>
+        <button type="button" className="pg-noga-pill nova" onClick={novaPogodba}>↺ Nova pogodba</button>
       </div>
     </section>}
 
@@ -1086,7 +1087,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-zakljucek .pg-kicker,.pg-zakljucek .pg-naslov,.pg-zakljucek .pg-uvod{text-align:center}
       .pg-zakljucek .pg-uvod{margin-left:auto;margin-right:auto}
       .pg-prenosi{display:flex;flex-wrap:wrap;justify-content:center;gap:.9rem 1.6rem;margin:1.2rem 0 .4rem}
-      .pg-disc{margin:-.7rem 0 1.4rem;padding:.7rem .85rem;max-width:34rem;font-size:.76rem;line-height:1.5;color:rgba(17,17,17,.66);background:oklch(96% .03 85);border:1px solid oklch(85% .07 78);border-radius:.7rem}
+      .pg-disc{margin:-.4rem auto 1.4rem;padding:.7rem .95rem;max-width:34rem;text-align:center;font-size:.76rem;line-height:1.5;color:rgba(17,17,17,.66);background:oklch(97% .02 85);border:1px solid oklch(92% .03 82 / .7);border-radius:.7rem}
       .pg-disc b{color:rgba(17,17,17,.82)}
 
       /* chat mehurcek vstopnega vprasanja — isti videz kot RetainerWorkspace .rw-chat/.rw-mehur */
@@ -1207,7 +1208,13 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-odvetnik-ok{color:#1f7a4d}
       .pg-odvetnik-err{color:#b23434}
       .pg-odvetnik-znak{display:inline-block;vertical-align:middle;margin-left:.7rem;font-family:var(--font-sans),system-ui,sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#1f7a4d;background:oklch(95% .05 155);border:1px solid oklch(82% .1 155);border-radius:999px;padding:.22rem .6rem}
-      .pg-koncna-nav{display:flex;flex-wrap:wrap;gap:1.4rem;margin-top:1.8rem;padding-top:1.3rem;border-top:1px solid rgba(17,17,17,.1)}
+      .pg-koncna-nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:.8rem;margin-top:2rem;padding-top:0;border-top:0}
+      .pg-koncna-krog{display:grid;place-items:center;width:2.9rem;height:2.9rem;flex:none;border-radius:50%;border:1px solid var(--ink);background:none;color:var(--ink);cursor:pointer;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
+      .pg-koncna-krog:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
+      .pg-noga-pill{font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.78);border:1px solid var(--ink);border-radius:999px;padding:.75rem 1.4rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
+      .pg-noga-pill:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
+      .pg-noga-pill.nova{color:var(--accent);border-color:var(--accent)}
+      .pg-noga-pill.nova:hover{background:var(--accent);color:var(--paper)}
       .pg-mini{font-size:.8rem;color:rgba(17,17,17,.55)}
       .pg-napaka{color:#b23434;font-size:.86rem;margin:.6rem 0 0}
       .pg-cip{padding:.42rem .8rem;border:1px solid rgba(17,17,17,.2);border-radius:999px;background:rgba(255,255,255,.5);cursor:pointer;font:inherit;font-size:.86rem;color:var(--ink);transition:border-color .15s,background .15s,color .15s}
