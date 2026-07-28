@@ -29,6 +29,20 @@ import type { Sodelavec } from '@/lib/naloge';
 const datStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('sl-SI'); };
 const projektStatusOznaka: Record<ProjektStatus, string> = { aktiven: 'Aktiven', pavza: 'V pavzi', koncan: 'Končan' };
 
+/* Vodena persona (korak 5): podvprašanja, skozi katera vodimo uporabnika (ali preskoči).
+   Odgovori se ob zaključku združijo v en ciljnaSkupina zapis. */
+const PERSONA_VPR = [
+  { k: 'kdo', q: 'Kdo so in koliko so stari?', ph: 'Npr. mestni mladi odrasli, 25–40 let …', oznaka: 'Kdo' },
+  { k: 'upo', q: 'Kaj ponavadi uporabljajo?', ph: 'Navade, orodja, kanali — npr. Instagram, dostavne aplikacije …', oznaka: 'Uporablja' },
+  { k: 'pain', q: 'Kaj so njihovi pain points?', ph: 'Kaj jih ovira, kje se zataknejo …', oznaka: 'Pain points' },
+  { k: 'potrebe', q: 'Kaj potrebujejo?', ph: 'Katere potrebe naj projekt naslovi …', oznaka: 'Potrebe' },
+  { k: 'cilji', q: 'Kaj želijo doseči in kje jih dosežeš?', ph: 'Cilji + kanali, kjer jih najdeš …', oznaka: 'Cilji / kanali' },
+] as const;
+type PersonaKljuc = typeof PERSONA_VPR[number]['k'];
+const zdruziPersono = (p: Record<PersonaKljuc, string>) => PERSONA_VPR
+  .map(v => p[v.k].trim() && `${v.oznaka}: ${p[v.k].trim()}`)
+  .filter(Boolean).join('\n');
+
 export default function NovProjektWorkspace({ base }: { base: string }) {
   const router = useRouter();
   const [nacin, setPredogled] = usePredogled();
@@ -43,7 +57,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     setRealProjekti(preberiProjekti());
   }, [nacin]);
 
-  const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektStatus, opisStranke: '', panoga: '', ciljnaSkupina: '', dizajnZelje: '', voice: '', konkurenca: '', cilji: [] as ProjektCilj[], dodatnaVprasanja: [] as ProjektVprasanje[], povezave: [] as ProjektPovezava[], dodeljeni: [] as string[] });
+  const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektStatus, opisStranke: '', panoga: '', ciljnaSkupina: '', persona: { kdo: '', upo: '', pain: '', potrebe: '', cilji: '' } as Record<PersonaKljuc, string>, dizajnZelje: '', voice: '', konkurenca: '', cilji: [] as ProjektCilj[], dodatnaVprasanja: [] as ProjektVprasanje[], povezave: [] as ProjektPovezava[], dodeljeni: [] as string[] });
   const [obrazec, setObrazec] = useState(prazenObrazec());
   /* onboarding kot CHAT (glej np-chat-* spodaj): novKorak = do kam je uporabnica
      ze prisla (0..11, 11 = vsa osnovna vprasanja odgovorjena -> dodatno+povezave+ekipa+zakljucek);
@@ -75,6 +89,15 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
   /* potrdi trenutni korak vprasanja: naprej=true premakne kazalec (NAPREJ), sicer
      samo zapre "urejanje v mestu" (Shrani na ze odgovorjenem koraku) */
   const potrdiKorak = (naprej: boolean) => { setUrejamKorak(null); if (naprej) setNovKorak(k => Math.min(11, k + 1)); };
+  /* Vodena persona (korak 5): pKorak = kateri podkorak persone je aktiven. */
+  const [pKorak, setPKorak] = useState(0);
+  const setPersona = (k: PersonaKljuc, v: string) => setObrazec(o => ({ ...o, persona: { ...o.persona, [k]: v } }));
+  const naprejPersona = () => {
+    if (pKorak < PERSONA_VPR.length - 1) { setPKorak(k => k + 1); return; }
+    setObrazec(o => ({ ...o, ciljnaSkupina: zdruziPersono(o.persona) }));
+    setPKorak(0); potrdiKorak(true);
+  };
+  const preskociPersono = () => { setObrazec(o => ({ ...o, ciljnaSkupina: zdruziPersono(o.persona) })); setPKorak(0); potrdiKorak(true); };
   /* "+ dodaj vprašanje" — lastno vprasanje + odgovor, prosto besedilo, brez sheme */
   const dodajVprasanje = () => {
     const vprasanje = novoVprasanje.vprasanje.trim(); const odgovor = novoVprasanje.odgovor.trim();
@@ -225,14 +248,33 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         )}
 
         {/* 5 · ciljna skupina / persona */}
-        {prikazan(5) && chatBot('Kdo je ciljna skupina oz. persona?', 'Kdo so in koliko so stari, kaj uporabljajo, kaj jih moti (pain points), kaj želijo doseči in kje jih dosežeš.', 5)}
-        {odgovorjen(5) && chatOdgovor(5, obrazec.ciljnaSkupina.trim() || 'Ni določena')}
-        {aktiven(5) && (
-          <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 5); }}>
-            <textarea className="np-chat-polje" value={obrazec.ciljnaSkupina} onChange={event => setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value }))} placeholder="Npr. mestni mladi odrasli, 25–40 let; naročajo prek aplikacij; nimajo časa kuhati; želijo hitro a kakovostno kosilo; dosežeš jih na Instagramu in prek dostavnih platform …" rows={4} aria-label="Ciljna skupina / persona" />
-            <button type="submit" className="np-chat-naprej">{urejamKorak === 5 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
+        {prikazan(5) && chatBot('Opišimo ciljno skupino (persono).', 'Vodim te skozi nekaj vprašanj — ali preskoči.', 5)}
+        {odgovorjen(5) && chatOdgovor(5, obrazec.ciljnaSkupina.trim() || 'Preskočena')}
+        {aktiven(5) && (urejamKorak === 5 ? (
+          <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(false); }}>
+            <textarea className="np-chat-polje" value={obrazec.ciljnaSkupina} onChange={event => setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value }))} placeholder="Kdo + starost, kaj uporabljajo, pain points, potrebe, cilji in kanali …" rows={5} aria-label="Ciljna skupina / persona" />
+            <button type="submit" className="np-chat-naprej">Shrani <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
-        )}
+        ) : (
+          <div className="np-persona">
+            {PERSONA_VPR.map((pv, i) => i > pKorak ? null : (
+              <div key={pv.k} className="np-persona-vpr">
+                {chatBot(pv.q, i === pKorak ? pv.ph : undefined)}
+                {i < pKorak
+                  ? <div className="np-chat-jaz"><span className="np-chat-mehur-ured"><span>{obrazec.persona[pv.k].trim() || '—'}</span></span></div>
+                  : (
+                    <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); naprejPersona(); }}>
+                      <textarea className="np-chat-polje" value={obrazec.persona[pv.k]} onChange={event => setPersona(pv.k, event.target.value)} placeholder={pv.ph} rows={2} aria-label={pv.q} />
+                      <div className="np-persona-akcije">
+                        {i === 0 && <button type="button" className="np-preskoci" onClick={preskociPersono}>Preskoči persono</button>}
+                        <button type="submit" className="np-chat-naprej">{i === PERSONA_VPR.length - 1 ? 'Zaključi' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
+                      </div>
+                    </form>
+                  )}
+              </div>
+            ))}
+          </div>
+        ))}
 
         {/* 6 · želje glede dizajna */}
         {prikazan(6) && chatBot('Kakšne so želje glede dizajna?', 'Barve, stil, reference.', 6)}
@@ -396,6 +438,11 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-chat-naprej{align-self:flex-start;display:inline-flex;align-items:center;gap:.45rem;padding:.95rem 2.2rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:600 .82rem var(--font-sans),sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
       .np-chat-naprej:disabled{opacity:.45;cursor:not-allowed}
       .np-chat-naprej:hover:not(:disabled){background:color-mix(in oklch,var(--ink) 82%,transparent)}
+      .np-persona{display:flex;flex-direction:column;gap:.9rem}
+      .np-persona-vpr{display:flex;flex-direction:column;gap:.5rem}
+      .np-persona-akcije{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+      .np-preskoci{background:none;border:0;padding:0;color:var(--muted);font:600 .78rem var(--font-sans),sans-serif;text-decoration:underline;text-underline-offset:.2em;cursor:pointer}
+      .np-preskoci:hover{color:var(--ink)}
       /* izbirne kartice (status) — pod vprasanjem bota, klik takoj potrdi in gre naprej */
       .np-chat-izbire{display:flex;flex-direction:column;gap:.55rem;margin:-.2rem 0 0 .3rem}
       .np-chat-opcija{display:flex;align-items:center;gap:.8rem;width:min(380px,100%);padding:.8rem 1rem;border:1px solid var(--line);border-radius:14px;background:oklch(99% .006 87 / .85);font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s}
