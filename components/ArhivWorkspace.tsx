@@ -696,7 +696,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-racun-tabela th:first-child{text-align:left}
         .arh-racun-tabela td{padding:.5rem .5rem;text-align:right;border-bottom:1px solid rgba(17,17,17,.07);font-variant-numeric:tabular-nums;white-space:nowrap}
         .arh-racun-tabela td:first-child{text-align:left;white-space:normal;font-weight:600}
-        .arh-racun-vsote{margin-top:.7rem;display:grid;gap:.25rem;justify-items:end}
+        .arh-racun-vsote{margin-top:.7rem;padding-right:.5rem;display:grid;gap:.25rem;justify-items:end}
         .arh-racun-vsote > div{display:flex;gap:1.2rem;align-items:baseline;font-size:.82rem;color:rgba(17,17,17,.62)}
         .arh-racun-vsote > div strong{min-width:5rem;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
         .arh-racun-skupaj{margin-top:.25rem;padding-top:.45rem;border-top:1px solid rgba(17,17,17,.14)}
