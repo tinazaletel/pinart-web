@@ -74,12 +74,12 @@ const overflowFix = `
    (glej pw-stran/pw-nazaj spodaj + selected/selectedId logika). */
 const pwStyles = `
 .pw-seznam-glava{display:flex;align-items:center;justify-content:space-between;padding:.1rem .2rem .9rem}
-.pw-seznam-glava strong{font:500 1.5rem var(--font-serif),Georgia,serif;color:var(--ink)}
+.pw-seznam-glava strong{font:500 1.5rem var(--font-sans),system-ui,sans-serif;color:var(--ink)}
 .pw-tabela-ovoj{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:1.4rem}
 .pw-tabela{min-width:640px;display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr) 1.6rem;background:oklch(98% .008 87 / .92);border:1px solid var(--line);border-radius:1.4rem;overflow:hidden}
 .pw-tabela-naslov{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem 1rem .85rem;background:oklch(95% .035 300);border-bottom:1px solid rgba(17,17,17,.08)}
 .pw-tabela-naslov .${styles.eyebrow}{color:oklch(45% .12 300)}
-.pw-tabela-naslov strong{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:1.6rem;line-height:1;color:var(--ink)}
+.pw-tabela-naslov strong{font-family:var(--font-sans),system-ui,sans-serif;font-weight:500;font-size:1.6rem;line-height:1;color:var(--ink)}
 .pw-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.75rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
 .pw-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:0;border-top:1px solid var(--line);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
 .pw-tabela > button.pw-vrstica:first-of-type{border-top:0}
@@ -112,7 +112,7 @@ const pwStyles = `
 .pw-dodatno{display:flex;flex-direction:column;gap:.55rem;margin-top:.55rem}
 .pw-karta{position:relative;overflow:hidden;padding:1rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:1rem;background:oklch(99% .006 87 / .85)}
 .pw-dokumentacija{background:linear-gradient(135deg,oklch(97% .022 250),oklch(97% .022 200))}
-.pw-dokumentacija h3{margin:0;font:600 1.15rem var(--font-serif),Georgia,serif}
+.pw-dokumentacija h3{margin:0;font:600 1.15rem var(--font-sans),system-ui,sans-serif}
 .pw-linki{display:flex;flex-direction:column;gap:.4rem;margin:.7rem 0 0}
 .pw-link-vrstica{display:flex;align-items:center;gap:.5rem;padding:.5rem .65rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0 / .55)}
 .pw-link-vrstica a{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-weight:700;font-size:.72rem;text-decoration:none}
@@ -148,7 +148,7 @@ const pwStyles = `
 .pw-vsi-panel{width:min(46rem,100vw);height:100%;overflow:hidden;display:flex;flex-direction:column;box-shadow:-1.6rem 0 4rem oklch(20% .03 55 / .2);animation:pwVsiIn .52s cubic-bezier(.16,1,.3,1) both}
 @keyframes pwVsiIn{from{transform:translateX(100%);opacity:.4}to{transform:translateX(0);opacity:1}}
 @media (prefers-reduced-motion:reduce){.pw-vsi-panel{animation:none}}
-.pw-vsi-panel h2{margin:.4rem 0 .2rem;font-family:var(--font-serif),Didot,serif;font-weight:600;font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.05;color:var(--ink)}
+.pw-vsi-panel h2{margin:.4rem 0 .2rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.05;color:var(--ink)}
 .pw-vsi-projekt{margin:0 0 1.1rem;color:var(--muted);font-size:.72rem}
 /* × zapri = na višini nadnaslova (eyebrow), enako v vseh panelih (slide + predogled računa/pogodbe/stroška) */
 .pw-vsi-x{position:absolute;top:1.6rem;right:1.6rem;z-index:8;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
@@ -194,7 +194,7 @@ const pwStyles = `
 .pw-vrstica-klik:focus-visible{outline:2px solid var(--akcent,#6E4FA6);outline-offset:2px}
 /* PREDOGLED dokumenta (panel z desne) */
 .pw-det-panel{width:min(42rem,100vw);animation:pwVsiIn .5s cubic-bezier(.16,1,.3,1) both}
-.pw-det-panel h2{margin:.3rem 0 .1rem;font-family:var(--font-serif),Didot,serif;font-weight:600;font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.05;color:var(--ink)}
+.pw-det-panel h2{margin:.3rem 0 .1rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.05;color:var(--ink)}
 .pw-det-meta{display:flex;flex-wrap:wrap;gap:.4rem 1.4rem;margin:1rem 0;padding:.9rem 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .pw-det-meta span{display:flex;flex-direction:column;gap:.15rem}
 .pw-det-meta small{font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
@@ -210,7 +210,7 @@ const pwStyles = `
 .pw-det-vsote > div strong{min-width:5rem;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
 .pw-det-skupaj{margin-top:.25rem;padding-top:.45rem;border-top:1px solid var(--line)}
 .pw-det-skupaj span{font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.pw-det-skupaj strong{font:500 1.4rem var(--font-serif),Georgia,serif}
+.pw-det-skupaj strong{font:500 1.4rem var(--font-sans),system-ui,sans-serif}
 .pw-det-opomba{margin:.6rem 0 0;color:var(--muted);font-size:.74rem;line-height:1.5}
 .pw-det-uredi{display:inline-flex;align-items:center;gap:.35rem;margin-top:1.1rem;font-size:.8rem;font-weight:600;color:var(--muted);text-decoration:underline;text-underline-offset:2px}
 .pw-det-uredi:hover{color:var(--ink)}
@@ -220,18 +220,18 @@ const pwStyles = `
 .pw-det-poslji:hover{background:transparent;color:var(--ink)}
 .pw-kmalu-red{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
 .pw-kmalu{opacity:.85}
-.pw-kmalu h3{margin:0;font:600 1.05rem var(--font-serif),Georgia,serif}
+.pw-kmalu h3{margin:0;font:600 1.05rem var(--font-sans),system-ui,sans-serif}
 .pw-kmalu p{margin:.5rem 0 0;color:var(--muted);font-size:.72rem;line-height:1.4}
 /* CRM dnevnik kartica = ŽIVA povezava na stran stranke (ne več »Kmalu« — dnevnik obstaja) */
 .pw-dnevnik-link{text-decoration:none;color:inherit;transition:transform .16s cubic-bezier(.16,1,.3,1),box-shadow .16s}
-.pw-dnevnik-link h3{margin:0;font:600 1.05rem var(--font-serif),Georgia,serif}
+.pw-dnevnik-link h3{margin:0;font:600 1.05rem var(--font-sans),system-ui,sans-serif}
 .pw-dnevnik-link p{margin:.5rem 0 0;color:var(--muted);font-size:.72rem;line-height:1.4}
 .pw-dnevnik-link:hover{transform:translateY(-2px);box-shadow:0 .8rem 2rem oklch(22% .04 300/.14)}
 .pw-znacka-live{background:oklch(90% .06 297);color:oklch(42% .16 297)}
 .pw-znacka{display:inline-flex;align-items:center;width:max-content;margin-top:.7rem;padding:.3rem .6rem;border-radius:999px;background:oklch(90% .02 87);color:var(--muted);font-size:.58rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 /* 06 · POŠTA — dnevnik poslane pošte projekta (mehki violet/mint jezik kot ostale kartice) */
 .pw-posta{background:linear-gradient(135deg,oklch(97% .03 300),oklch(97% .03 165))}
-.pw-posta h3{margin:0;font:600 1.15rem var(--font-serif),Georgia,serif}
+.pw-posta h3{margin:0;font:600 1.15rem var(--font-sans),system-ui,sans-serif}
 .pw-posta-seznam{position:relative;z-index:1;list-style:none;display:flex;flex-direction:column;gap:.4rem;margin:.75rem 0 0;padding:0}
 .pw-posta-seznam li{display:grid;gap:.2rem;padding:.55rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:.7rem;background:oklch(100% 0 0 / .55)}
 .pw-posta-vrh{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
@@ -243,7 +243,7 @@ const pwStyles = `
    4-stolpne mreže, ker so barve 02/03/04 vezane na nth-child; vrivanje bi jih premaknilo
    in podrlo obstoječe gradiente). Isti mehki violet/mint jezik kot .projectAgreement. */
 .pw-cilji{margin:.55rem 0 0;background:linear-gradient(135deg,oklch(97% .03 300),oklch(97% .03 165))}
-.pw-cilji h3{margin:0;font:600 1.15rem var(--font-serif),Georgia,serif}
+.pw-cilji h3{margin:0;font:600 1.15rem var(--font-sans),system-ui,sans-serif}
 .pw-cilji-zelje{position:relative;z-index:1;margin:.6rem 0 0;color:var(--ink);font-size:.8rem;line-height:1.55}
 .pw-cilji-seznam{position:relative;z-index:1;display:flex;flex-direction:column;gap:.4rem;margin:.75rem 0 0;padding:0;list-style:none}
 .pw-cilji-seznam li{display:flex;flex-wrap:wrap;align-items:baseline;gap:.15rem .6rem;padding:.55rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:.7rem;background:oklch(100% 0 0 / .5)}
