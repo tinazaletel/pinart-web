@@ -11,9 +11,9 @@
    je prenesen iz RetainerWorkspace (rw-). Detajl panel z desne + lepljivi X so
    vzorec iz ContractWorkspace (styles.detailBackdrop/detailPanel + .pg-det-x). */
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { CaretDown, CaretUp, FileText, Receipt, Scroll, Warning } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, FileArrowDown, FileText, Receipt, Scroll, Warning } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, saveOfferStatus, type FlowContract, type FlowContractStatus, type FlowInvoice, type FlowOffer, type FlowOfferStatus } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
@@ -134,6 +134,58 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       </select>
     </span>;
   };
+
+  /* IZVOZ: odpre novo okno s kopijo VSEH app stilov + natisne dokument (#arh-izvoz).
+     Uporabnik v tiskalniku izbere »Shrani kot PDF«. Deluje za ponudbo/pogodbo/racun,
+     ker kopiramo dejanske stile (arh-doktelo, arh-racun-tabela, letterhead ...). */
+  const izvoziDokument = (naslov: string) => {
+    if (typeof document === 'undefined') return;
+    const el = document.getElementById('arh-izvoz');
+    if (!el) return;
+    const stili = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]')).map(s => s.outerHTML).join('\n');
+    const w = window.open('', '_blank', 'width=900,height=1200');
+    if (!w) { alert('Za izvoz omogoči pojavna okna (pop-up).'); return; }
+    w.document.write(`<!doctype html><html lang="sl"><head><meta charset="utf-8"><title>${naslov}</title>${stili}<style>@page{margin:14mm}html,body{margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}#arh-izvoz{box-shadow:none!important;border:none!important;margin:0!important;max-width:none!important;width:100%!important}</style></head><body>${el.outerHTML}</body></html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => { try { w.print(); } catch { /* ignore */ } }, 500);
+  };
+
+  /* EXCEL izvoz = CSV z ; ločilom + UTF-8 BOM (Excel SI pravilno prebere šumnike). */
+  const izvoziCsv = (ime: string, vrstice: Array<Array<string | number>>) => {
+    if (typeof document === 'undefined') return;
+    const vsebina = '﻿' + vrstice.map(v => v.map(c => {
+      const s = String(c ?? '');
+      return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }).join(';')).join('\r\n');
+    const blob = new Blob([vsebina], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = ime.replace(/[^\w\-]+/g, '_') + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  /* Kompakten header detajla (kot referenca »Bill #… Paid … Export«): majhna ikona +
+     srednji naslov (TIP + št., BREZ podvojenega imena) + status pilula v vrsti +
+     podnaslov (stranka · datum) + gumb Izvozi desno. Velik H2 je odstranjen. */
+  const izvozGumb = { display: 'inline-flex', alignItems: 'center', gap: '.35rem', padding: '.5rem .8rem', border: '1px solid var(--line)', borderRadius: '999px', background: 'oklch(98% .008 87 / .92)', color: 'var(--ink)', font: '600 .78rem var(--font-sans), sans-serif', cursor: 'pointer', whiteSpace: 'nowrap' } as const;
+  const DetajlGlava = ({ ikona, naslov, podnaslov, status, izvozNaslov, onExcel }: { ikona: ReactNode; naslov: string; podnaslov?: string; status: ReactNode; izvozNaslov: string; onExcel: () => void }) => (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', margin: '0 0 1.4rem', flexWrap: 'wrap' }}>
+      <div style={{ flex: '1 1 12rem', minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap' }}>
+          <span style={{ display: 'grid', placeItems: 'center', width: '2rem', height: '2rem', borderRadius: '.55rem', background: 'oklch(95% .012 300)', color: 'var(--ink)', flex: 'none' }} aria-hidden>{ikona}</span>
+          <span id="arh-detajl-naslov" style={{ font: '600 1.15rem var(--font-sans), system-ui, sans-serif', color: 'var(--ink)' }}>{naslov}</span>
+          {status}
+        </div>
+        {podnaslov && <p style={{ margin: '.4rem 0 0', fontSize: '.82rem', color: 'var(--muted)' }}>{podnaslov}</p>}
+      </div>
+      <div style={{ flex: 'none', display: 'inline-flex', gap: '.5rem' }}>
+        <button type="button" onClick={() => izvoziDokument(izvozNaslov)} title="Natisni / shrani kot PDF" style={izvozGumb}><FileArrowDown size={15} weight="bold" /> PDF</button>
+        <button type="button" onClick={onExcel} title="Izvozi kot Excel (CSV)" style={izvozGumb}><FileArrowDown size={15} weight="bold" /> Excel</button>
+      </div>
+    </div>
+  );
 
   /* NAKNADNO pošiljanje ob pregledu (arhiv): mailto s prednapolnjeno zadevo/besedilom;
      prejemnik iz imenika strank po imenu (če ima e-pošto). Do postavitve Resend (mail
@@ -449,14 +501,23 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             {detajl.vrsta === 'ponudba' && (() => {
               const o = detajl.zapis;
               return <>
-                <p className={styles.eyebrow}>PONUDBA</p>
-                <h2 id="arh-detajl-naslov">{o.title}</h2>
-                <div className="arh-det-statusvrsta"><StatusUredi tip="offer" id={o.id} vrednost={statusVred('offer', o.id, o.status)} opcije={offerOpcije} /></div>
+                <DetajlGlava
+                  ikona={<FileText size={17} weight="regular" />}
+                  naslov={`Ponudba${o.number ? ' ' + o.number : ''}`}
+                  podnaslov={`${o.client}${o.date ? ' · ' + datStr(o.date) : ''}`}
+                  status={<StatusUredi tip="offer" id={o.id} vrednost={statusVred('offer', o.id, o.status)} opcije={offerOpcije} />}
+                  izvozNaslov={`Ponudba ${o.number || o.title}`}
+                  onExcel={() => izvoziCsv(`Ponudba ${o.number || o.title}`, [
+                    ['Ponudba', o.number || ''], ['Naziv', o.title], ['Stranka', o.client], ['Datum', datStr(o.date)], [],
+                    ['Obseg'], ...o.scope.map(s => [s]), [],
+                    ['Dogovorjena vrednost', o.agreedAmount || ''],
+                  ])}
+                />
 
                 {/* ponudba kot DOKUMENT (mini letterhead: kremni list, senca, Bodoni
                     naslov) — ce imamo shranjen pravi HTML iz kalkulatorja (ponudbaDok.telo),
                     ga izrisemo; sicer predogled sestavimo iz polj ponudbe (obseg + znesek) */}
-                <div className="arh-ponudba-dok">
+                <div id="arh-izvoz" className="arh-ponudba-dok">
                   <div className="arh-ponudba-dok-glava">
                     <p className="arh-ponudba-dok-kick">PONUDBA{o.number ? ` · ${o.number}` : ''}</p>
                     <h3 className="arh-ponudba-dok-naslov">{o.title}</h3>
@@ -493,13 +554,17 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               const c = detajl.zapis;
               const op = opombaInfo(c.notes);
               return <>
-                <p className={styles.eyebrow}>POGODBA</p>
-                <h2 id="arh-detajl-naslov">{c.title}</h2>
-                <div className="arh-det-statusvrsta"><StatusUredi tip="contract" id={c.id} vrednost={statusVred('contract', c.id, c.status)} opcije={contractOpcije} /></div>
-                <div className="arh-det-meta">
-                  <span><small>Stranka</small><strong>{c.client}</strong></span>
-                  <span><small>Datum</small><strong>{datStr(c.date)}</strong></span>
-                </div>
+                <DetajlGlava
+                  ikona={<Scroll size={17} weight="regular" />}
+                  naslov="Pogodba"
+                  podnaslov={`${c.client}${c.date ? ' · ' + datStr(c.date) : ''}`}
+                  status={<StatusUredi tip="contract" id={c.id} vrednost={statusVred('contract', c.id, c.status)} opcije={contractOpcije} />}
+                  izvozNaslov={`Pogodba — ${c.title}`}
+                  onExcel={() => izvoziCsv(`Pogodba ${c.title}`, [
+                    ['Pogodba', c.title], ['Stranka', c.client], ['Datum', datStr(c.date)], ['Status', c.status], [],
+                    ['Besedilo'], [(c.body || '').replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim()],
+                  ])}
+                />
                 {/* povezana ponudba (ce obstaja) — klik razpre povzetek obsega */}
                 {(() => {
                   const offer = offers.find(x => x.id === c.sourceOfferId);
@@ -517,8 +582,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                 })()}
                 {/* telo pogodbe: novi HTML zapisi -> izris kot dokument; stari golo besedilo -> pre-wrap */}
                 {c.body && (jeHtmlTelo(c.body)
-                  ? <div className="arh-doktelo" dangerouslySetInnerHTML={{ __html: c.body }} />
-                  : <pre className="arh-doktelo-pre">{c.body}</pre>)}
+                  ? <div id="arh-izvoz" className="arh-doktelo" dangerouslySetInnerHTML={{ __html: c.body }} />
+                  : <pre id="arh-izvoz" className="arh-doktelo-pre">{c.body}</pre>)}
                 {!c.body && c.fileName && <p className="arh-mini">Priložen dokument: {c.fileName}. Odpri ga v razdelku Pogodbe.</p>}
                 {op && (op.alert
                   ? <div className="arh-opomba-kartica" role="alert"><Warning size={20} weight="bold" aria-hidden /><div><strong>Opozorilo</strong><p>{op.besedilo}</p></div></div>
@@ -539,12 +604,26 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   const imaPopust = items.some(i => (i.popust || 0) > 0);
                   const imaDdv = items.some(i => (i.ddv || 0) > 0);
                   return <>
-                    <p className={styles.eyebrow}>{r.predracun ? 'PREDRAČUN' : 'RAČUN'}</p>
-                    <h2 id="arh-detajl-naslov">{r.title || `${r.predracun ? 'Predračun' : 'Račun'} ${r.number || ''}`}</h2>
-                    <div className="arh-det-statusvrsta"><StatusUredi tip="invoice" id={r.id} vrednost={statusVred('invoice', r.id, String(r.paid))} opcije={invoiceOpcije} /></div>
+                    <DetajlGlava
+                      ikona={<Receipt size={17} weight="regular" />}
+                      naslov={`${r.predracun ? 'Predračun' : 'Račun'}${r.number ? ' ' + r.number : ''}`}
+                      podnaslov={`${r.client}${r.date ? ' · ' + datStr(r.date) : ''}`}
+                      status={<StatusUredi tip="invoice" id={r.id} vrednost={statusVred('invoice', r.id, String(r.paid))} opcije={invoiceOpcije} />}
+                      izvozNaslov={`${r.predracun ? 'Predracun' : 'Racun'} ${r.number || ''}`.trim()}
+                      onExcel={() => izvoziCsv(`${r.predracun ? 'Predracun' : 'Racun'} ${r.number || ''}`, [
+                        [r.predracun ? 'Predračun' : 'Račun', r.number || ''],
+                        ['Stranka', r.client], ['Datum', datStr(r.date)], ['Status', r.paid ? 'Plačan' : 'Odprt'], [],
+                        ['Opis', 'Količina', 'Cena', 'Popust %', 'DDV %', 'Skupaj'],
+                        ...items.map(it => [it.opis, it.kolicina, it.cena, it.popust || 0, it.ddv || 0, Math.round(it.kolicina * it.cena * (1 - (it.popust || 0) / 100) * 100) / 100]),
+                        [],
+                        ...(typeof r.net === 'number' ? [['Neto', r.net]] : []),
+                        ...(typeof r.vatAmount === 'number' && r.vatAmount > 0 ? [['DDV', r.vatAmount]] : []),
+                        ['Za plačilo', r.amount],
+                      ])}
+                    />
 
                     {/* cel racun/predracun v panelu (kot pogodba/ponudba): letterhead + postavke + vsote */}
-                    <div className="arh-ponudba-dok">
+                    <div id="arh-izvoz" className="arh-ponudba-dok">
                       <div className="arh-ponudba-dok-glava">
                         <p className="arh-ponudba-dok-kick">{r.predracun ? 'PREDRAČUN' : 'RAČUN'}{r.number ? ` · ${r.number}` : ''}</p>
                         <h3 className="arh-ponudba-dok-naslov">{r.title || (r.predracun ? 'Predračun' : 'Račun')}</h3>
