@@ -1144,15 +1144,15 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-zakljucek{padding-top:1.5rem;padding-bottom:6rem}
         .rw-zakljucek .rw-h1,.rw-zakljucek .rw-uvod,.rw-zakljucek .rw-num-pod{text-align:center}
         .rw-zakljucek .rw-uvod{margin-left:auto;margin-right:auto}
-        .rw-num-pod{font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--akcent,#B25476);margin:.15rem 0 .7rem}
+        .rw-num-pod{font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:.15rem 0 .7rem}
         .rw-zakljucek-lik{display:flex;justify-content:center;margin:.5rem 0 1.1rem}
         .rw-zakljucek-lik svg{width:8.4rem;height:auto}
         .rw-prenosi{display:flex;flex-wrap:wrap;justify-content:center;gap:.9rem 1.6rem;margin:1.4rem auto 0}
         .rw-noga-koncna{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;justify-content:center}
         .rw-noga-pill{font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.72);border:1px solid var(--ink);border-radius:999px;padding:.65rem 1.3rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
         .rw-noga-pill:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
-        .rw-noga-pill.nova{color:var(--akcent,#B25476);border-color:var(--akcent,#B25476)}
-        .rw-noga-pill.nova:hover{background:var(--akcent,#B25476);color:var(--paper)}
+        .rw-noga-pill.nova{color:var(--accent);border-color:var(--accent)}
+        .rw-noga-pill.nova:hover{background:var(--accent);color:var(--paper)}
         .rw-napaka{color:#b23434;font-size:.86rem;margin:.6rem 0 0}
         /* predogled sirsi od chata (kot mehurcki) — vecje, berljive strani */
         .rw-predogled{position:relative;width:min(880px,94vw);left:50%;transform:translateX(-50%);margin-top:1.4rem;background:#e9e6e0;border:1px solid rgba(17,17,17,.12);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:18px;box-shadow:inset 0 1px 6px rgba(20,20,20,.06)}

@@ -31,7 +31,7 @@ const projektStatusOznaka: Record<ProjektStatus, string> = { aktiven: 'Aktiven',
 
 export default function NovProjektWorkspace({ base }: { base: string }) {
   const router = useRouter();
-  const [nacin] = usePredogled();
+  const [nacin, setPredogled] = usePredogled();
   const [clients, setClients] = useState<FlowClient[]>([]);
   const [sodelavci, setSodelavci] = useState<Sodelavec[]>([]);
   const [realProjekti, setRealProjekti] = useState<Projekt[]>([]);
@@ -134,10 +134,11 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     };
     shraniProjekt(projekt);
     if (obrazec.povezave.length) saveProjectLinks(`real-${projekt.id}`, obrazec.povezave.map(p => ({ oznaka: p.naslov, url: p.url })));
-    /* Po ustvarjanju na NAVADNI Arhiv (zavihki + iskalnik), NE na ?projekt=<id> detajl:
-       za sveže ustvarjen projekt se detajl ni pravilno odprl (gola tabela brez zavihkov
-       in brez izhoda). Novi projekt je itak na vrhu seznama. */
-    router.push(`${base}/kalkulator/projekti`);
+    /* Nov projekt = PRAVI (moji) podatek. Preklopi na »moji podatki«, da se pravi
+       projekti sploh naložijo (v demo nacinu jih ProjectsWorkspace ne bere), nato
+       odpri detajl/specifikacijo tega projekta prek ?projekt=real-<id>. */
+    setPredogled('mine');
+    router.push(`${base}/kalkulator/projekti?projekt=real-${projekt.id}`);
   };
 
   /* mehurcek bota (vprasanje) + moj odgovor (klikljiv, odpre urejanje v mestu) — isti
