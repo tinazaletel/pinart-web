@@ -223,7 +223,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const dokNoga = () => {
     const n = aktivnaPredloga().noga?.trim();
     /* noga = fiksno 5 mm od SPODNJEGA roba strani (v spodnji rob @page margina); ponovi se na vsaki strani */
-    return n ? `<div class="dok-noga" style="position:fixed;left:16mm;right:16mm;bottom:5mm;padding-top:8px;border-top:1px solid rgba(17,17,17,.12);font-size:8pt;color:#9a9088;line-height:1.5">${esc(n).split('\n').join('<br>')}</div>` : '';
+    return n ? `<div class="dok-noga" style="position:fixed;left:16mm;right:16mm;bottom:5mm;padding-top:8px;border-top:1px solid oklch(93% .006 82 / .55);font-size:8pt;color:#9a9088;line-height:1.5">${esc(n).split('\n').join('<br>')}</div>` : '';
   };
   const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:400;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}.podpis-img{display:block;max-height:40px;max-width:180px;margin:0 0 -6px}`;
   const doc = (body: string) => `<!doctype html><html lang="sl"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
@@ -1136,7 +1136,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-polja>*{min-width:0}
       .pg-polja-email{grid-template-columns:minmax(0,26rem);margin-top:.4rem}
       .pg-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.62)}
-      .pg-polje input,.pg-polje select,.pg-polje textarea{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:10px;padding:.6rem .75rem}
+      .pg-polje input,.pg-polje select,.pg-polje textarea{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
       .pg-polje input:focus,.pg-polje select:focus,.pg-polje textarea:focus{outline:none;border-color:var(--ink)}
       .pg-polje textarea{resize:vertical;min-height:6.5rem;line-height:1.5;font-weight:500}
       .pg-polje-obseg{margin:0 0 1.1rem}
@@ -1145,13 +1145,13 @@ export default function ContractWorkspace({ base }: { base: string }) {
          sprozilec izgleda kot polje, panel z iskalnikom + seznam opcij se odpre pod njim (position:absolute) */
       .pg-combo-polje{min-width:0}
       .pg-combo{position:relative}
-      .pg-combo-sprozilec{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:10px;padding:.6rem .75rem;text-align:left;cursor:pointer}
+      .pg-combo-sprozilec{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem;text-align:left;cursor:pointer}
       .pg-combo-sprozilec:focus{outline:none;border-color:var(--ink)}
       .pg-combo-sprozilec>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .pg-combo-sprozilec svg{flex:none}
-      .pg-combo-panel{position:absolute;top:calc(100% + .35rem);left:0;right:0;z-index:40;background:#fff;border:1px solid rgba(17,17,17,.12);border-radius:14px;box-shadow:0 16px 44px rgba(20,16,26,.16);padding:.55rem;text-transform:none;letter-spacing:0}
+      .pg-combo-panel{position:absolute;top:calc(100% + .35rem);left:0;right:0;z-index:40;background:#fff;border:1px solid oklch(93% .006 82 / .55);border-radius:14px;box-shadow:0 16px 44px rgba(20,16,26,.16);padding:.55rem;text-transform:none;letter-spacing:0}
       /* visja specificnost (.pg-combo ...), da premaga .pg-polje input in ostane pilula */
-      .pg-combo .pg-combo-iskalnik{width:100%;box-sizing:border-box;font:inherit;font-size:16px;font-weight:500;color:var(--ink);background:rgba(255,255,255,.9);border:1px solid rgba(17,17,17,.16);border-radius:999px;padding:.5rem .9rem;margin:0 0 .35rem}
+      .pg-combo .pg-combo-iskalnik{width:100%;box-sizing:border-box;font:inherit;font-size:16px;font-weight:500;color:var(--ink);background:rgba(255,255,255,.9);border:1px solid oklch(93% .006 82 / .55);border-radius:999px;padding:.5rem .9rem;margin:0 0 .35rem}
       .pg-combo .pg-combo-iskalnik:focus{outline:none;border-color:var(--ink)}
       .pg-combo-seznam{display:flex;flex-direction:column;max-height:15rem;overflow-y:auto}
       .pg-combo-opcija{display:flex;align-items:center;gap:.7rem;width:100%;min-height:2.7rem;padding:.5rem;border:none;border-bottom:1px solid rgba(17,17,17,.07);background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer;border-radius:8px}
@@ -1172,7 +1172,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-namig a{color:var(--accent,#B25476);font-weight:600;text-decoration:underline;text-underline-offset:.22em;white-space:nowrap}
 
       /* klikabilna kartica ponudbe (vir dogovora) */
-      .pg-kponudba{border:1px solid rgba(17,17,17,.12);border-radius:14px;background:rgba(255,255,255,.72);margin:0 0 1.2rem;overflow:hidden;min-width:0}
+      .pg-kponudba{border:1px solid oklch(93% .006 82 / .55);border-radius:14px;background:rgba(255,255,255,.72);margin:0 0 1.2rem;overflow:hidden;min-width:0}
       .pg-kp-glava{display:flex;align-items:center;gap:.75rem;width:100%;padding:.8rem .95rem;border:none;background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer;min-width:0}
       .pg-kp-glava:hover strong{text-decoration:underline;text-underline-offset:.2rem}
       .pg-kp-ikona{display:grid;place-items:center;width:2.1rem;height:2.1rem;border-radius:50%;background:oklch(92% .055 163);color:oklch(48% .14 164);flex:none}
@@ -1207,13 +1207,13 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-povezava:hover{opacity:.6}
       /* Odvetnik: umirjen blok pod pošiljanjem naročniku — tanek okvir, isti jezik kot .pg-disc/.pg-polje */
       /* odvetnik = mali banner na DESNEM robu zaslona, stran od obrazca */
-      .pg-odvetnik{position:fixed;right:1.2rem;bottom:6.5rem;top:auto;width:15rem;max-width:38vw;margin:0;padding:1rem 1.05rem 1.1rem;border:1px solid rgba(17,17,17,.12);border-radius:16px;background:rgba(255,255,255,.72);backdrop-filter:blur(5px);text-align:left;z-index:30;box-shadow:0 .6rem 1.6rem rgba(20,20,20,.08)}
+      .pg-odvetnik{position:fixed;right:1.2rem;bottom:6.5rem;top:auto;width:15rem;max-width:38vw;margin:0;padding:1rem 1.05rem 1.1rem;border:1px solid oklch(93% .006 82 / .55);border-radius:16px;background:rgba(255,255,255,.72);backdrop-filter:blur(5px);text-align:left;z-index:30;box-shadow:0 .6rem 1.6rem rgba(20,20,20,.08)}
       @media (max-width:1160px){.pg-odvetnik{position:static;width:auto;max-width:560px;margin:1.4rem auto 0;backdrop-filter:none}}
       .pg-odvetnik-label{display:block;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
       .pg-odvetnik .pg-odvetnik-gumb{width:100%;justify-content:center;background:var(--accent);color:#fff;border:0;box-shadow:0 .4rem 1rem oklch(66% .2 297 / .3);font-size:.82rem;letter-spacing:.02em;text-transform:none;padding:.7rem 1rem;margin-top:.2rem}
       .pg-odvetnik .pg-odvetnik-gumb:hover:not(:disabled){filter:brightness(1.06)}
       .pg-odvetnik-opis{margin:.4rem 0 .7rem;font-size:.74rem;line-height:1.45;color:rgba(17,17,17,.66)}
-      .pg-odvetnik-vnos{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.82rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:10px;padding:.5rem .65rem;margin-bottom:.65rem}
+      .pg-odvetnik-vnos{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.82rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.5rem .65rem;margin-bottom:.65rem}
       .pg-odvetnik-vnos:focus{outline:none;border-color:var(--ink)}
       .pg-odvetnik-vnos::placeholder{color:rgba(17,17,17,.4)}
       .pg-odvetnik-namig{margin:.55rem 0 0;font-size:.78rem;color:rgba(17,17,17,.5)}
@@ -1272,7 +1272,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-editor-ovoj .pg-editor{background:transparent;border:0;border-radius:0;padding:0;min-height:280px}
       .pg-editor-ovoj .pg-editor:focus{border:0}
       /* noga (besedilo iz Nastavitev) na dnu belega lista */
-      .pg-editor-noga{margin-top:1.5rem;padding-top:.75rem;border-top:1px solid rgba(17,17,17,.14);font-size:.74rem;color:var(--muted);line-height:1.55}
+      .pg-editor-noga{margin-top:1.5rem;padding-top:.75rem;border-top:1px solid oklch(93% .006 82 / .55);font-size:.74rem;color:var(--muted);line-height:1.55}
       /* letterhead (glava z logotipom) nad urejevalnikom — enak videz kot v izvozu, a v barvah aplikacije */
       .pg-editor-glava{margin:0 0 1.3rem;padding-bottom:.85rem;border-bottom:1.5px solid var(--accent,#B25476)}
       .pg-editor-glava .lg{display:flex;justify-content:space-between;align-items:flex-start;gap:1.5rem}
@@ -1313,7 +1313,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-doktelo .lg{display:flex;justify-content:space-between;gap:1.4rem;padding-bottom:.7rem;border-bottom:1.5px solid #B25476;margin-bottom:1.1rem}
       .pg-doktelo{flex:1 1 auto;min-height:0;margin:1rem 0 0;font-size:.86rem}
 
-      .pg-predogled{position:relative;width:100%;margin-top:1rem;background:#e9e6e0;border:1px solid rgba(17,17,17,.12);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:18px;box-shadow:inset 0 1px 6px rgba(20,20,20,.06)}
+      .pg-predogled{position:relative;width:100%;margin-top:1rem;background:#e9e6e0;border:1px solid oklch(93% .006 82 / .55);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:18px;box-shadow:inset 0 1px 6px rgba(20,20,20,.06)}
       .pg-pred-stran{width:100%;max-width:794px;height:auto;display:block;box-shadow:0 6px 22px rgba(20,20,20,.14);border-radius:2px}
       .pg-pred-prazno{color:rgba(17,17,17,.5);font-size:.9rem;padding:2.5rem 0}
       .pg-pred-osvezi{position:absolute;top:10px;right:12px;font-size:.72rem;color:rgba(17,17,17,.55);background:rgba(255,255,255,.72);padding:.2rem .55rem;border-radius:999px}

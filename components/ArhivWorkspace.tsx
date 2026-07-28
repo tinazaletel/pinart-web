@@ -646,7 +646,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
         /* povzetek Pogodbe: kratek stevec po statusu (pilule) */
         .arh-pog-povzetek{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1rem}
-        .arh-pog-pil{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .85rem;border:1px solid rgba(17,17,17,.12);border-radius:999px;background:rgba(255,255,255,.55);font-size:.78rem;color:rgba(17,17,17,.72)}
+        .arh-pog-pil{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .85rem;border:1px solid oklch(93% .006 82 / .55);border-radius:999px;background:rgba(255,255,255,.55);font-size:.78rem;color:rgba(17,17,17,.72)}
         .arh-pog-pil b{font:700 .92rem var(--font-sans),sans-serif;color:var(--ink)}
 
         /* prazni seznam / prazen filter */
@@ -727,20 +727,20 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-racun-telo{padding:.2rem .1rem .1rem}
         .arh-racun-tabela-ovoj{overflow-x:auto}
         .arh-racun-tabela{width:100%;border-collapse:collapse;font-size:.82rem}
-        .arh-racun-tabela th{padding:.4rem .5rem;text-align:right;font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(17,17,17,.5);border-bottom:1px solid rgba(17,17,17,.12);white-space:nowrap}
+        .arh-racun-tabela th{padding:.4rem .5rem;text-align:right;font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(17,17,17,.5);border-bottom:1px solid oklch(93% .006 82 / .55);white-space:nowrap}
         .arh-racun-tabela th:first-child{text-align:left}
         .arh-racun-tabela td{padding:.5rem .5rem;text-align:right;border-bottom:1px solid rgba(17,17,17,.07);font-variant-numeric:tabular-nums;white-space:nowrap}
         .arh-racun-tabela td:first-child{text-align:left;white-space:normal;font-weight:600}
         .arh-racun-vsote{margin-top:.7rem;padding-right:.5rem;display:grid;gap:.25rem;justify-items:end}
         .arh-racun-vsote > div{display:flex;gap:1.2rem;align-items:baseline;font-size:.82rem;color:rgba(17,17,17,.62)}
         .arh-racun-vsote > div strong{min-width:5rem;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
-        .arh-racun-skupaj{margin-top:.25rem;padding-top:.45rem;border-top:1px solid rgba(17,17,17,.14)}
+        .arh-racun-skupaj{margin-top:.25rem;padding-top:.45rem;border-top:1px solid oklch(93% .006 82 / .55)}
         .arh-racun-skupaj span{font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(17,17,17,.6)}
         .arh-racun-skupaj strong{font:700 1.3rem var(--font-sans),system-ui,sans-serif;letter-spacing:-.01em}
 
         /* ── ponudba kot DOKUMENT (NALOGA #44): kremni list + senca + Bodoni naslov,
            mini letterhead videz namesto golih kartic ── */
-        .arh-ponudba-dok{margin-top:.9rem;border:1px solid rgba(17,17,17,.14);border-radius:10px;background:#fff;box-shadow:0 10px 28px rgba(17,17,17,.08);overflow:hidden}
+        .arh-ponudba-dok{margin-top:.9rem;border:1px solid oklch(93% .006 82 / .55);border-radius:10px;background:#fff;box-shadow:0 10px 28px rgba(17,17,17,.08);overflow:hidden}
         .arh-ponudba-dok-glava{padding:1.5rem 1.6rem 1.2rem;border-bottom:1px solid rgba(17,17,17,.1);background:linear-gradient(180deg, oklch(98% .01 87), #fff)}
         .arh-ponudba-dok-kick{margin:0 0 .5rem;font-size:.66rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--accent,#B25476)}
         .arh-ponudba-dok-naslov{margin:0 0 1rem;font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.3rem,2.6vw,1.7rem);line-height:1.1;color:var(--ink)}
@@ -758,7 +758,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         /* injecirani HTML dokument (arh-doktelo) znotraj arh-ponudba-dok: odstrani
            lasten okvir/senco/rob (parent jih ze da), obdrzi samo tipografijo */
         .arh-ponudba-dok .arh-doktelo{margin-top:0;border:none;border-radius:0;background:transparent;padding:1.4rem 1.6rem 1.6rem}
-        .arh-det-ponudba{margin:.2rem 0 .6rem;border:1px solid rgba(17,17,17,.12);border-radius:.7rem;background:rgba(255,255,255,.72);overflow:hidden;min-width:0}
+        .arh-det-ponudba{margin:.2rem 0 .6rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.7rem;background:rgba(255,255,255,.72);overflow:hidden;min-width:0}
         .arh-det-ponudba-vrstica{display:flex;align-items:center;gap:.7rem;width:100%;padding:.65rem .8rem;border:none;background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer;min-width:0}
         .arh-det-ponudba-ime{flex:1;min-width:0;font-size:.88rem;font-weight:700;overflow-wrap:anywhere}
         .arh-det-ponudba-vrstica:hover .arh-det-ponudba-ime{text-decoration:underline;text-underline-offset:.2rem}
@@ -769,7 +769,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-det-ponudba-naslov{margin:.5rem 0 .2rem;font-size:.85rem}
 
         /* telo pogodbe (kopija .pg-doktelo) */
-        .arh-doktelo{width:100%;min-width:0;margin-top:1rem;border:1px solid rgba(17,17,17,.16);background:#fff;padding:1.35rem;color:var(--ink);font-family:var(--font-sans),system-ui,sans-serif;font-size:.9rem;line-height:1.62;overflow:auto;border-radius:8px}
+        .arh-doktelo{width:100%;min-width:0;margin-top:1rem;border:1px solid oklch(93% .006 82 / .55);background:#fff;padding:1.35rem;color:var(--ink);font-family:var(--font-sans),system-ui,sans-serif;font-size:.9rem;line-height:1.62;overflow:auto;border-radius:8px}
         .arh-doktelo h1{margin:0 0 .6rem;font-family:var(--font-serif),Didot,serif;font-size:clamp(1.4rem,3.4vw,1.9rem);line-height:1.05;font-weight:500}
         .arh-doktelo h2{margin:1.2rem 0 .4rem;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent,#B25476)}
         .arh-doktelo p{margin:0 0 .7rem;max-width:70ch}
@@ -786,7 +786,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-doktelo .sig>div{flex:1;font-size:.85rem;color:#444}
         .arh-doktelo .sig .lin{display:block;border-top:1px solid #111;margin:2rem 0 .3rem}
         .arh-doktelo .podpis-img{display:block;max-height:52px;max-width:200px;margin:0 0 -8px}
-        .arh-doktelo-pre{width:100%;min-width:0;margin-top:1rem;padding:1.2rem;border:1px solid rgba(17,17,17,.16);border-radius:8px;background:#fff;white-space:pre-wrap;font:500 .82rem/1.6 var(--font-sans),system-ui,sans-serif;overflow:auto}
+        .arh-doktelo-pre{width:100%;min-width:0;margin-top:1rem;padding:1.2rem;border:1px solid oklch(93% .006 82 / .55);border-radius:8px;background:#fff;white-space:pre-wrap;font:500 .82rem/1.6 var(--font-sans),system-ui,sans-serif;overflow:auto}
 
         /* opomba v detajlu */
         .arh-opomba-kartica{display:flex;gap:.7rem;align-items:flex-start;margin-top:1rem;padding:.9rem 1rem;border-radius:.75rem;background:oklch(92% .06 25);color:#8a1a2c}

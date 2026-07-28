@@ -273,7 +273,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   };
   const dokNoga = () => {
     const n = aktivnaPredloga().noga?.trim();
-    return n ? `<div class="dok-noga" style="margin-top:24px;padding-top:10px;border-top:1px solid rgba(17,17,17,.12);font-size:8pt;color:#9a9088;line-height:1.6">${esc(n).split('\n').join('<br>')}</div>` : '';
+    return n ? `<div class="dok-noga" style="margin-top:24px;padding-top:10px;border-top:1px solid oklch(93% .006 82 / .55);font-size:8pt;color:#9a9088;line-height:1.6">${esc(n).split('\n').join('<br>')}</div>` : '';
   };
   const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:400;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.big{font-family:'Helvetica Neue',Arial,sans-serif;font-size:16pt;color:#111;font-weight:700;letter-spacing:-.01em}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}.podpis-img{display:block;max-height:40px;max-width:180px;margin:0 0 -6px}`;
   const doc = (body: string) => `<!doctype html><html lang="sl"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
@@ -992,13 +992,13 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-profil-polja{display:grid;grid-template-columns:1fr 1fr;gap:.9rem 1rem}
         .rw-pp{display:flex;flex-direction:column;gap:.35rem}
         .rw-pp>span{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8a8177}
-        .rw-pp input{font:inherit;font-size:.98rem;font-weight:600;color:var(--ink);background:#FCFBF7;border:1px solid rgba(17,17,17,.14);border-radius:9px;padding:.6rem .7rem;width:100%}
+        .rw-pp input{font:inherit;font-size:.98rem;font-weight:600;color:var(--ink);background:#FCFBF7;border:1px solid oklch(93% .006 82 / .55);border-radius:9px;padding:.6rem .7rem;width:100%}
         .rw-pp input:focus{outline:none;border-color:var(--ink)}
         .rw-pp-tel{grid-column:1 / -1}
         .rw-pp-tel-vrsta{display:flex;gap:.5rem}
         .rw-pp-predklic{max-width:5rem;text-align:center}
         @media (max-width:520px){.rw-profil-polja{grid-template-columns:1fr}}
-        .rw-profil-admin{display:inline-block;margin-top:.4rem;font-size:.82rem;font-weight:600;color:rgba(17,17,17,.6);text-decoration:none;border:1px solid rgba(17,17,17,.15);border-radius:999px;padding:.5rem 1rem;transition:border-color .15s,color .15s}
+        .rw-profil-admin{display:inline-block;margin-top:.4rem;font-size:.82rem;font-weight:600;color:rgba(17,17,17,.6);text-decoration:none;border:1px solid oklch(93% .006 82 / .55);border-radius:999px;padding:.5rem 1rem;transition:border-color .15s,color .15s}
         .rw-profil-admin:hover{border-color:var(--ink);color:var(--ink)}
         /* POSKUS: mrežno ozadje (kot naslovnica/FLOW), mehurčki ostanejo */
         .rw-ozadje{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background-color:oklch(97% 0.012 87);background-image:linear-gradient(color-mix(in oklch, oklch(19% 0.014 55) 7%, transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in oklch, oklch(19% 0.014 55) 7%, transparent) 1px,transparent 1px);background-size:4.5rem 4.5rem}
@@ -1057,7 +1057,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         /* mehurcki "gledajo cez" — polje je sirse od chata (kot pri kalkulatorju) */
         .rw-platno{position:relative;width:min(960px,96vw);left:50%;transform:translateX(-50%);margin-top:.2rem}
         .rw-obseg-tabela{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.6rem;margin:0 0 .4rem}
-        .rw-ov{display:flex;align-items:center;gap:.75rem;padding:.6rem .85rem;border-radius:12px;border:1px solid rgba(17,17,17,.12);background:#FCFBF7;font:inherit;font-size:.92rem;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;transition:border-color .16s,background .16s,transform .16s}
+        .rw-ov{display:flex;align-items:center;gap:.75rem;padding:.6rem .85rem;border-radius:12px;border:1px solid oklch(93% .006 82 / .55);background:#FCFBF7;font:inherit;font-size:.92rem;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;transition:border-color .16s,background .16s,transform .16s}
         .rw-ov:hover{border-color:rgba(17,17,17,.28);transform:translateY(-1px)}
         .rw-ov.on{border-color:#7C3AED;background:rgba(124,58,237,.07)}
         .rw-ov-ikona{display:grid;place-items:center;width:2.2rem;height:2.2rem;border-radius:50%;flex:none}
@@ -1162,7 +1162,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-noga-pill.nova:hover{background:var(--accent);color:var(--paper)}
         .rw-napaka{color:#b23434;font-size:.86rem;margin:.6rem 0 0;text-align:center}
         /* predogled sirsi od chata (kot mehurcki) — vecje, berljive strani */
-        .rw-predogled{position:relative;width:min(880px,94vw);left:50%;transform:translateX(-50%);margin-top:1.4rem;background:#e9e6e0;border:1px solid rgba(17,17,17,.12);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:18px;box-shadow:inset 0 1px 6px rgba(20,20,20,.06)}
+        .rw-predogled{position:relative;width:min(880px,94vw);left:50%;transform:translateX(-50%);margin-top:1.4rem;background:#e9e6e0;border:1px solid oklch(93% .006 82 / .55);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:18px;box-shadow:inset 0 1px 6px rgba(20,20,20,.06)}
         .rw-pred-stran{width:100%;max-width:794px;height:auto;display:block;box-shadow:0 6px 22px rgba(20,20,20,.14);border-radius:2px}
         .rw-pred-prazno{color:rgba(17,17,17,.5);font-size:.9rem;padding:2.5rem 0}
         .rw-pred-osvezi{position:absolute;top:10px;right:12px;font-size:.72rem;color:rgba(17,17,17,.55);background:rgba(255,255,255,.72);padding:.2rem .55rem;border-radius:999px}

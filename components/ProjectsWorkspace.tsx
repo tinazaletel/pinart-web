@@ -76,12 +76,12 @@ const pwStyles = `
 .pw-seznam-glava{display:flex;align-items:center;justify-content:space-between;padding:.1rem .2rem .9rem}
 .pw-seznam-glava strong{font:500 1.5rem var(--font-sans),system-ui,sans-serif;color:var(--ink)}
 .pw-tabela-ovoj{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:1.4rem}
-.pw-tabela{min-width:640px;display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr) 1.6rem;background:oklch(98% .008 87 / .92);border:1px solid var(--line);border-radius:1.4rem;overflow:hidden}
+.pw-tabela{min-width:640px;display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr) 1.6rem;background:oklch(98% .008 87 / .92);border:1px solid oklch(93% .006 82 / .55);border-radius:1.4rem;overflow:hidden}
 .pw-tabela-naslov{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem 1rem .85rem;background:oklch(95% .035 300);border-bottom:1px solid rgba(17,17,17,.08)}
 .pw-tabela-naslov .${styles.eyebrow}{color:oklch(45% .12 300)}
 .pw-tabela-naslov strong{font-family:var(--font-sans),system-ui,sans-serif;font-weight:500;font-size:1.6rem;line-height:1;color:var(--ink)}
-.pw-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.75rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
-.pw-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:0;border-top:1px solid var(--line);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
+.pw-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.75rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid oklch(93% .006 82 / .55)}
+.pw-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:0;border-top:1px solid oklch(93% .006 82 / .55);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
 .pw-tabela > button.pw-vrstica:first-of-type{border-top:0}
 .pw-vrstica:hover{background:oklch(100% 0 0 / .5)}
 .pw-det-statusured{position:relative;display:inline-flex;align-items:center}
@@ -102,9 +102,9 @@ const pwStyles = `
 .pw-status[data-tone='success']{--pika:oklch(62% .15 150)}
 .pw-status[data-tone='danger']{--pika:oklch(58% .19 25)}
 .pw-status[data-tone='neutral']{--pika:oklch(62% .02 70)}
-.pw-prazno{padding:2rem;color:var(--muted);font-size:.72rem;text-align:center;border:1px solid var(--line);border-radius:1.4rem;background:oklch(98% .008 87 / .92)}
+.pw-prazno{padding:2rem;color:var(--muted);font-size:.72rem;text-align:center;border:1px solid oklch(93% .006 82 / .55);border-radius:1.4rem;background:oklch(98% .008 87 / .92)}
 .pw-stran{padding:1rem;scroll-margin-top:5.5rem}
-.pw-nazaj{display:inline-flex;align-items:center;gap:.4rem;margin:0 0 .8rem;padding:.55rem .95rem;border:1px solid var(--line);border-radius:999px;background:oklch(98% .008 87 / .92);font:700 .62rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
+.pw-nazaj{display:inline-flex;align-items:center;gap:.4rem;margin:0 0 .8rem;padding:.55rem .95rem;border:1px solid oklch(93% .006 82 / .55);border-radius:999px;background:oklch(98% .008 87 / .92);font:700 .62rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
 .pw-nazaj:hover{background:var(--ink);color:var(--paper)}
 .pw-narocnik-link{color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:color-mix(in oklch,var(--ink) 35%,transparent)}
 .pw-narocnik-link:hover{color:oklch(52% .17 300);text-decoration-color:currentColor}
@@ -119,14 +119,14 @@ const pwStyles = `
 .pw-dokumentacija{background:linear-gradient(135deg,oklch(97% .022 250),oklch(97% .022 200))}
 .pw-dokumentacija h3{margin:0;font:600 1.15rem var(--font-sans),system-ui,sans-serif}
 .pw-linki{display:flex;flex-direction:column;gap:.4rem;margin:.7rem 0 0}
-.pw-link-vrstica{display:flex;align-items:center;gap:.5rem;padding:.5rem .65rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0 / .55)}
+.pw-link-vrstica{display:flex;align-items:center;gap:.5rem;padding:.5rem .65rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.7rem;background:oklch(100% 0 0 / .55)}
 .pw-link-vrstica a{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-weight:700;font-size:.72rem;text-decoration:none}
 .pw-link-vrstica a:hover{text-decoration:underline}
-.pw-link-brisi{flex:none;display:grid;place-items:center;width:1.5rem;height:1.5rem;padding:0;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--muted);font-size:.85rem;line-height:1;cursor:pointer}
+.pw-link-brisi{flex:none;display:grid;place-items:center;width:1.5rem;height:1.5rem;padding:0;border:1px solid oklch(93% .006 82 / .55);border-radius:50%;background:transparent;color:var(--muted);font-size:.85rem;line-height:1;cursor:pointer}
 .pw-link-brisi:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .pw-link-prazno{margin:.7rem 0 0;color:var(--muted);font-size:.68rem}
 .pw-link-obrazec{display:grid;grid-template-columns:1fr;gap:.45rem;margin-top:.7rem}
-.pw-link-obrazec input{padding:.5rem .65rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.72rem;color:var(--ink);min-width:0}
+.pw-link-obrazec input{padding:.5rem .65rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.6rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.72rem;color:var(--ink);min-width:0}
 .pw-link-dodaj{flex:none;padding:.5rem .8rem;border:1px solid var(--ink);border-radius:.6rem;background:var(--ink);color:var(--paper);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
 .pw-link-dodaj:disabled{opacity:.5;cursor:not-allowed}
 .pw-namig-demo{margin-top:.5rem;color:var(--muted);font-size:.62rem;font-style:italic}
@@ -165,17 +165,17 @@ const pwStyles = `
 /* orodna vrsta slidea: preklop levo, iskalnik desno — v ISTI vrsti */
 .pw-vsi-orodja{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin:0 0 .85rem}
 /* preklop načina prikaza (segmentna pilula): Strani (paginacija) | Drsenje (ves seznam) */
-.pw-vsi-nacin{display:inline-flex;align-items:center;gap:.2rem;width:max-content;margin:0;padding:.2rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
+.pw-vsi-nacin{display:inline-flex;align-items:center;gap:.2rem;width:max-content;margin:0;padding:.2rem;border:1px solid oklch(93% .006 82 / .55);border-radius:999px;background:oklch(97% .006 87 / .8)}
 .pw-vsi-nacin button{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .8rem;border:0;border-radius:999px;background:none;font:700 .62rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
 .pw-vsi-nacin button.pw-vsi-nacin-aktivna{background:var(--ink);color:var(--paper)}
 /* zložljiv iskalnik: okrogel gumb z lupo -> ob kliku postane input; × zapre nazaj v gumb */
 .pw-vsi-iskalnik{display:flex;align-items:center;gap:.5rem;margin:0;flex:0 1 auto}
-.pw-vsi-lupa{flex:none;display:grid;place-items:center;width:2.3rem;height:2.3rem;padding:0;border:1px solid var(--line);border-radius:50%;background:oklch(98% .008 87 / .92);color:var(--ink);cursor:pointer}
+.pw-vsi-lupa{flex:none;display:grid;place-items:center;width:2.3rem;height:2.3rem;padding:0;border:1px solid oklch(93% .006 82 / .55);border-radius:50%;background:oklch(98% .008 87 / .92);color:var(--ink);cursor:pointer}
 .pw-vsi-lupa:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 /* polje se razširi IZ gumba (desni izvor), × je ZNOTRAJ polja desno */
 .pw-vsi-isci-polje{position:relative;display:flex;align-items:center;transform-origin:right center;animation:pwIsciIn .3s cubic-bezier(.16,1,.3,1) both}
 @keyframes pwIsciIn{from{opacity:0;transform:scaleX(.4)}to{opacity:1;transform:scaleX(1)}}
-.pw-vsi-isci-polje input[type='search']{width:min(20rem,62vw);min-width:0;padding:.55rem 2.3rem .55rem .9rem;border:1px solid var(--line);border-radius:999px;background:oklch(100% 0 0 / .8);font:inherit;font-size:.75rem;color:var(--ink)}
+.pw-vsi-isci-polje input[type='search']{width:min(20rem,62vw);min-width:0;padding:.55rem 2.3rem .55rem .9rem;border:1px solid oklch(93% .006 82 / .55);border-radius:999px;background:oklch(100% 0 0 / .8);font:inherit;font-size:.75rem;color:var(--ink)}
 .pw-vsi-isci-x{position:absolute;right:.35rem;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:1.7rem;height:1.7rem;padding:0;border:0;border-radius:50%;background:oklch(94% .008 87);color:var(--ink);font-size:.95rem;line-height:1;cursor:pointer}
 .pw-vsi-isci-x:hover{background:var(--ink);color:var(--paper)}
 /* seznam vrstic v slideu — ista osnova kot .projectNarrative article > span (module CSS),
@@ -183,13 +183,13 @@ const pwStyles = `
 /* seznam VEDNO lahko drsi znotraj (flex:1) -> glava (naslov+×) in paginacija ostaneta fiksni in NE izgineta;
    z 12/stran gre stran v pogled, zato se drsnik praviloma ne pokaže (fit = brez drsnika) */
 .pw-vsi-seznam{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;margin:0;padding-right:.25rem}
-.pw-vsi-seznam > span{display:grid;gap:.2rem;padding:.55rem 0;border-bottom:1px solid var(--line)}
+.pw-vsi-seznam > span{display:grid;gap:.2rem;padding:.55rem 0;border-bottom:1px solid oklch(93% .006 82 / .55)}
 .pw-vsi-seznam > span:last-child{border-bottom:0}
 .pw-vsi-seznam > span b{font-size:.68rem}
 .pw-vsi-seznam > span small{color:var(--muted);font-size:.58rem}
 .pw-vsi-seznam .pw-racun-v{grid-template-columns:1fr auto;align-items:center}
-.pw-vsi-strani{flex:none;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.35rem;margin:0;padding-top:.85rem;border-top:1px solid var(--line)}
-.pw-vsi-strani button{display:grid;place-items:center;min-width:2rem;height:2rem;padding:0 .5rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(98% .008 87 / .92);font:700 .68rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
+.pw-vsi-strani{flex:none;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.35rem;margin:0;padding-top:.85rem;border-top:1px solid oklch(93% .006 82 / .55)}
+.pw-vsi-strani button{display:grid;place-items:center;min-width:2rem;height:2rem;padding:0 .5rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.6rem;background:oklch(98% .008 87 / .92);font:700 .68rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
 .pw-vsi-strani button:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .pw-vsi-strani button:disabled{opacity:.4;cursor:not-allowed}
 .pw-vsi-strani button.pw-vsi-stran-aktivna{background:var(--ink);color:var(--paper);border-color:var(--ink)}
@@ -200,20 +200,20 @@ const pwStyles = `
 /* PREDOGLED dokumenta (panel z desne) */
 .pw-det-panel{width:min(42rem,100vw);animation:pwVsiIn .5s cubic-bezier(.16,1,.3,1) both}
 .pw-det-panel h2{margin:.3rem 0 .1rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.05;color:var(--ink)}
-.pw-det-meta{display:flex;flex-wrap:wrap;gap:.4rem 1.4rem;margin:1rem 0;padding:.9rem 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.pw-det-meta{display:flex;flex-wrap:wrap;gap:.4rem 1.4rem;margin:1rem 0;padding:.9rem 0;border-top:1px solid oklch(93% .006 82 / .55);border-bottom:1px solid oklch(93% .006 82 / .55)}
 .pw-det-meta span{display:flex;flex-direction:column;gap:.15rem}
 .pw-det-meta small{font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .pw-det-meta strong{font-size:.82rem;color:var(--ink)}
 .pw-det-tabela-ovoj{overflow-x:auto;margin-top:.4rem}
 .pw-det-tabela{width:100%;border-collapse:collapse;font-size:.78rem}
-.pw-det-tabela th{padding:.4rem .5rem;text-align:right;font-size:.56rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);white-space:nowrap}
+.pw-det-tabela th{padding:.4rem .5rem;text-align:right;font-size:.56rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid oklch(93% .006 82 / .55);white-space:nowrap}
 .pw-det-tabela th:first-child{text-align:left}
 .pw-det-tabela td{padding:.5rem .5rem;text-align:right;border-bottom:1px solid oklch(0% 0 0 / .06);font-variant-numeric:tabular-nums;white-space:nowrap}
 .pw-det-tabela td:first-child{text-align:left;white-space:normal;font-weight:600}
 .pw-det-vsote{margin-top:.8rem;display:grid;gap:.25rem;justify-items:end}
 .pw-det-vsote > div{display:flex;gap:1.2rem;align-items:baseline;font-size:.8rem;color:var(--muted)}
 .pw-det-vsote > div strong{min-width:5rem;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
-.pw-det-skupaj{margin-top:.25rem;padding-top:.45rem;border-top:1px solid var(--line)}
+.pw-det-skupaj{margin-top:.25rem;padding-top:.45rem;border-top:1px solid oklch(93% .006 82 / .55)}
 .pw-det-skupaj span{font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .pw-det-skupaj strong{font:500 1.4rem var(--font-sans),system-ui,sans-serif}
 .pw-det-opomba{margin:.6rem 0 0;color:var(--muted);font-size:.74rem;line-height:1.5}
@@ -264,7 +264,7 @@ const pwStyles = `
    vozlisca projekta ("00 · CILJI IN ŽELJE" kartica); chat vprasalnik "Ustvari
    projekt" (nekdanji pw-nov-panel) je zdaj lastna stran, glej
    components/NovProjektWorkspace.tsx. */
-.pw-vprasanje-vrstica{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding:.6rem .75rem;border:1px solid var(--line);border-radius:.8rem;background:oklch(100% 0 0 / .55)}
+.pw-vprasanje-vrstica{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding:.6rem .75rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.8rem;background:oklch(100% 0 0 / .55)}
 .pw-vprasanje-vrstica div{display:flex;flex-direction:column;gap:.15rem;min-width:0}
 .pw-vprasanje-vrstica b{font-size:.76rem;color:var(--ink);font-weight:700}
 .pw-vprasanje-vrstica span{font-size:.72rem;color:color-mix(in oklch,var(--ink) 62%,transparent)}
