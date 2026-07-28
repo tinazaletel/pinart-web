@@ -84,10 +84,10 @@ const pwStyles = `
 .pw-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:0;border-top:1px solid oklch(93% .006 82 / .55);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
 .pw-tabela > button.pw-vrstica:first-of-type{border-top:0}
 .pw-vrstica:hover{background:oklch(100% 0 0 / .5)}
-.pw-det-statusured{position:relative;display:inline-flex;align-items:center}
-.pw-det-statusured[data-editable]{padding-right:1.15rem;cursor:pointer}
-.pw-det-statusured[data-editable]::after{content:'';position:absolute;right:.2rem;top:50%;width:.34rem;height:.34rem;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-72%) rotate(45deg);opacity:.5;pointer-events:none}
-.pw-status-select{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;border:0;cursor:pointer;appearance:none;-webkit-appearance:none;font:inherit}
+.pw-det-statusured,.pw-status-ured{position:relative;display:inline-flex;max-width:100%}
+.pw-det-statusured[data-editable] .pw-status,.pw-status-ured[data-editable] .pw-status{padding-right:1.5rem;cursor:pointer}
+.pw-det-statusured[data-editable]::after,.pw-status-ured[data-editable]::after{content:'';position:absolute;right:.62rem;top:50%;width:.32rem;height:.32rem;border-right:1.4px solid oklch(40% .02 70);border-bottom:1.4px solid oklch(40% .02 70);transform:translateY(-72%) rotate(45deg);opacity:.55;pointer-events:none}
+.pw-status-select{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;border:0;border-radius:999px;background:transparent;cursor:pointer;appearance:none;-webkit-appearance:none;font:inherit}
 .pw-status-select:disabled{cursor:default}
 .pw-vrstica > span{min-width:0;font-size:.72rem;overflow-wrap:anywhere}
 .pw-glavna{display:flex;align-items:center;gap:.6rem;min-width:0}
@@ -683,7 +683,12 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                     <span className="pw-glavna"><span className="pw-ikona" aria-hidden><FolderOpen size={17} /></span><strong>{project.offer.title}</strong></span>
                     <span className="pw-mut">{project.offer.client}</span>
                     <span className="pw-mut">{datStr(project.offer.date)}</span>
-                    <span><span className="pw-status" data-tone={info.tone}>{info.label}</span></span>
+                    <span><span className="pw-status-ured" data-editable="" title="Spremeni status" onClick={e => e.stopPropagation()}>
+                      <span className="pw-status" data-tone={info.tone}>{project.real ? projektStatusOznaka[project.real.status] : statusLabel[project.offer.status]}</span>
+                      {project.real
+                        ? <select className="pw-status-select" aria-label="Spremeni status projekta" value={project.real.status} onChange={e => naStatusProjekt(project.real!, e.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
+                        : <select className="pw-status-select" aria-label="Spremeni status" value={project.offer.status} onChange={e => naStatusOffer(project.offer.id, e.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
+                    </span></span>
                     <span className="pw-desno">{project.agreed ? money(project.agreed) : '—'}</span>
                     <span className="pw-kazalec" aria-hidden>›</span>
                   </button>
