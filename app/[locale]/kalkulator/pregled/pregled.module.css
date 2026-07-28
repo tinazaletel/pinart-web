@@ -294,7 +294,7 @@
 .flowTools > *:nth-child(6) .cardBubbles u:nth-child(4) { display: none; }
 @media (prefers-reduced-motion: reduce) { .cardBubbles u { animation: none; } }
 .flowTools > *:nth-child(1n)::after {
-  right: -.55rem; bottom: -.35rem; top: auto; left: auto;
+  right: -.7rem; bottom: -.8rem; top: auto; left: auto;
   width: 6.6rem; height: 6.6rem; aspect-ratio: auto;
   border: 0; box-shadow: none; border-radius: 0;
   background: center / contain no-repeat;
