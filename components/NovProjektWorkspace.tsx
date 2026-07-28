@@ -225,11 +225,11 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         )}
 
         {/* 5 · ciljna skupina / persona */}
-        {prikazan(5) && chatBot('Kdo je ciljna skupina oz. persona?', undefined, 5)}
+        {prikazan(5) && chatBot('Kdo je ciljna skupina oz. persona?', 'Kdo so in koliko so stari, kaj uporabljajo, kaj jih moti (pain points), kaj želijo doseči in kje jih dosežeš.', 5)}
         {odgovorjen(5) && chatOdgovor(5, obrazec.ciljnaSkupina.trim() || 'Ni določena')}
         {aktiven(5) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 5); }}>
-            <textarea className="np-chat-polje" value={obrazec.ciljnaSkupina} onChange={event => setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value }))} placeholder="Npr. mestni mladi odrasli, 25–40 let, iščejo hitro a kakovostno kosilo …" rows={3} aria-label="Ciljna skupina / persona" />
+            <textarea className="np-chat-polje" value={obrazec.ciljnaSkupina} onChange={event => setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value }))} placeholder="Npr. mestni mladi odrasli, 25–40 let; naročajo prek aplikacij; nimajo časa kuhati; želijo hitro a kakovostno kosilo; dosežeš jih na Instagramu in prek dostavnih platform …" rows={4} aria-label="Ciljna skupina / persona" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 5 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         )}
