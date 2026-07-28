@@ -750,7 +750,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-ponudba-dok-meta span{display:grid;gap:.15rem;min-width:0}
         .arh-ponudba-dok-meta small{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(17,17,17,.5)}
         .arh-ponudba-dok-meta strong{font-size:.86rem;overflow-wrap:anywhere}
-        .arh-ponudba-dok-telo{padding:1.4rem 1.6rem 1.6rem}
+        .arh-ponudba-dok-telo{padding:1.4rem 1.6rem 40px}
         .arh-ponudba-dok-obseg{margin-bottom:1.1rem}
         .arh-ponudba-dok-obseg ul{margin:.4rem 0 0;padding-left:1.15rem}
         .arh-ponudba-dok-obseg li{margin:.25rem 0;font-size:.9rem;line-height:1.5}
@@ -759,7 +759,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-ponudba-dok-znesek strong{font-family:var(--font-sans),system-ui,sans-serif;font-weight:700;font-size:1.4rem;letter-spacing:-.01em;color:var(--ink)}
         /* injecirani HTML dokument (arh-doktelo) znotraj arh-ponudba-dok: odstrani
            lasten okvir/senco/rob (parent jih ze da), obdrzi samo tipografijo */
-        .arh-ponudba-dok .arh-doktelo{margin-top:0;border:none;border-radius:0;background:transparent;padding:1.4rem 1.6rem 1.6rem}
+        .arh-ponudba-dok .arh-doktelo{margin-top:0;border:none;border-radius:0;background:transparent;padding:1.4rem 1.6rem 40px}
         .arh-det-ponudba{margin:.2rem 0 .6rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.7rem;background:rgba(255,255,255,.72);overflow:hidden;min-width:0}
         .arh-det-ponudba-vrstica{display:flex;align-items:center;gap:.7rem;width:100%;padding:.65rem .8rem;border:none;background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer;min-width:0}
         .arh-det-ponudba-ime{flex:1;min-width:0;font-size:.88rem;font-weight:700;overflow-wrap:anywhere}
