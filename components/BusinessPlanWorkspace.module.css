@@ -165,7 +165,7 @@
 
 .izvozGumb {
   display: inline-flex; align-items: center; gap: .45rem; flex: none;
-  padding: .5rem 1rem; border: 1px solid oklch(72% .02 87); border-radius: 999px;
+  padding: .5rem 1rem; border: 1px solid oklch(90% .008 82); border-radius: 999px;
   background: oklch(100% 0 0 / .75); color: var(--ink);
   font: 650 .76rem var(--font-sans), sans-serif; cursor: pointer;
 }
@@ -219,7 +219,7 @@
 .timerForm > .linkGumb, .linkGumb {
   grid-column: 1 / -1; justify-self: start;
   min-height: 0; padding: .55rem 1.15rem;
-  border: 1px solid oklch(72% .02 87); border-radius: 999px;
+  border: 1px solid oklch(90% .008 82); border-radius: 999px;
   background: oklch(100% 0 0 / .75);
   color: var(--ink); font: 600 .82rem var(--font-sans), sans-serif;
   text-decoration: none; cursor: pointer;
@@ -395,7 +395,7 @@
 /* prej skoraj neviden: obrobo je pobralo splosno .history article button pravilo,
    zato je ostalo golo besedilo. Nadaljuj je glavno dejanje -> polnilo. */
 .vrsticaGumb {
-  padding: .45rem .95rem; border: 1px solid oklch(72% .02 87); border-radius: 999px;
+  padding: .45rem .95rem; border: 1px solid oklch(90% .008 82); border-radius: 999px;
   background: oklch(100% 0 0 / .75); color: var(--ink);
   font: 650 .74rem var(--font-sans), sans-serif; white-space: nowrap; cursor: pointer;
 }

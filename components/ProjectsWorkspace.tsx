@@ -91,7 +91,7 @@ const pwStyles = `
 .pw-vrstica:hover{background:oklch(100% 0 0 / .5)}
 .pw-det-statusured,.pw-status-ured{position:relative;display:inline-flex;max-width:100%}
 .pw-det-statusured[data-editable] .pw-status,.pw-status-ured[data-editable] .pw-status{padding-right:1.5rem;cursor:pointer}
-.pw-det-statusured[data-editable]::after,.pw-status-ured[data-editable]::after{content:'';position:absolute;right:.62rem;top:50%;width:.32rem;height:.32rem;border-right:1.4px solid oklch(40% .02 70);border-bottom:1.4px solid oklch(40% .02 70);transform:translateY(-72%) rotate(45deg);opacity:.55;pointer-events:none}
+.pw-det-statusured[data-editable]::after,.pw-status-ured[data-editable]::after{content:'';position:absolute;right:.66rem;top:50%;width:.32rem;height:.32rem;border-right:1.4px solid oklch(40% .02 70);border-bottom:1.4px solid oklch(40% .02 70);transform:translate(0,-60%) rotate(45deg);opacity:.55;pointer-events:none}
 .pw-status-select{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;border:0;border-radius:999px;background:transparent;cursor:pointer;appearance:none;-webkit-appearance:none;font:inherit}
 .pw-status-select:disabled{cursor:default}
 .pw-vrstica > span{min-width:0;font-size:.72rem;overflow-wrap:anywhere}
@@ -101,7 +101,7 @@ const pwStyles = `
 .pw-mut{color:var(--muted)}
 .pw-desno{text-align:right;font-weight:700}
 .pw-kazalec{color:var(--muted);font-size:1.1rem;text-align:center}
-.pw-status{display:inline-flex;align-items:center;gap:.46rem;width:max-content;max-width:100%;padding:.4rem .8rem;border:1px solid oklch(86% .012 87);border-radius:999px;background:oklch(95% .01 87);color:oklch(40% .02 70);font-size:.78rem;font-weight:700;white-space:nowrap}
+.pw-status{display:inline-flex;align-items:center;gap:.6rem;width:max-content;max-width:100%;padding:.4rem .85rem;border:1px solid oklch(86% .012 87);border-radius:999px;background:oklch(95% .01 87);color:oklch(40% .02 70);font-size:.78rem;font-weight:700;white-space:nowrap}
 .pw-status .pw-pika{width:.55rem;height:.55rem;border-radius:50%;background:var(--pika,oklch(62% .02 70));flex:none}
 .pw-status[data-tone='waiting']{--pika:oklch(72% .16 75)}
 .pw-status[data-tone='success']{--pika:oklch(62% .15 150)}

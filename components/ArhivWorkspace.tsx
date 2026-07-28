@@ -670,7 +670,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-vrstica:hover{background:oklch(100% 0 0 / .5)}
         .arh-vrstica > span{min-width:0;font-size:.86rem;overflow-wrap:anywhere}
         /* status pilula — ISTE barve kot nadzorna plosca (.statusPill + status_*) */
-        .arh-status{display:inline-flex;align-items:center;gap:.46rem;width:max-content;max-width:100%;padding:.4rem .8rem;border:1px solid oklch(86% .012 87);border-radius:999px;background:oklch(95% .01 87);color:oklch(40% .02 70);font-size:.78rem;font-weight:700;white-space:nowrap}
+        .arh-status{display:inline-flex;align-items:center;gap:.6rem;width:max-content;max-width:100%;padding:.4rem .85rem;border:1px solid oklch(86% .012 87);border-radius:999px;background:oklch(95% .01 87);color:oklch(40% .02 70);font-size:.78rem;font-weight:700;white-space:nowrap}
         .arh-status::before{content:'';width:.52rem;height:.52rem;border-radius:50%;background:var(--pika,oklch(62% .02 70));flex:none}
         .arh-status[data-tone='waiting']{--pika:oklch(72% .16 75)}
         .arh-status[data-tone='success']{--pika:oklch(62% .15 150)}
@@ -679,7 +679,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         /* urejanje statusa: klik na pilulo -> prekriven select (samo »Moji podatki«) */
         .arh-status-ured{position:relative;display:inline-flex;max-width:100%}
         .arh-status-ured[data-editable] .arh-status{padding-right:1.5rem;cursor:pointer}
-        .arh-status-ured[data-editable]::after{content:'';position:absolute;right:.62rem;top:50%;width:.32rem;height:.32rem;border-right:1.4px solid oklch(40% .02 70);border-bottom:1.4px solid oklch(40% .02 70);transform:translateY(-72%) rotate(45deg);opacity:.55;pointer-events:none}
+        .arh-status-ured[data-editable]::after{content:'';position:absolute;right:.66rem;top:50%;width:.32rem;height:.32rem;border-right:1.4px solid oklch(40% .02 70);border-bottom:1.4px solid oklch(40% .02 70);transform:translate(0,-60%) rotate(45deg);opacity:.55;pointer-events:none}
         .arh-status-select{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;border:0;border-radius:999px;background:transparent;appearance:none;-webkit-appearance:none;cursor:pointer;font:inherit}
         .arh-status-select:disabled{cursor:default}
         .arh-glavna{display:flex;align-items:center;gap:.6rem;min-width:0}
