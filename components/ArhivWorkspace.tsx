@@ -719,7 +719,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
            povezava v kalkulator je samo se pot do urejanja) */
         .arh-povezava-sekundarna{font-size:.8rem;font-weight:500;color:rgba(17,17,17,.62)}
         /* akcije ob pregledu (pošlji stranki + uredi) */
-        .arh-akcije{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1.1rem;margin-top:.9rem}
+        .arh-akcije{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1.1rem;margin-top:2rem}
         .puscica-svg{vertical-align:-2px;flex:none}
         .arh-poslji{display:inline-flex;align-items:center;gap:.4rem;white-space:nowrap;padding:.6rem 1.05rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
         .arh-poslji:hover{background:transparent;color:var(--ink)}
@@ -771,7 +771,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-det-ponudba-naslov{margin:.5rem 0 .2rem;font-size:.85rem}
 
         /* telo pogodbe (kopija .pg-doktelo) */
-        .arh-doktelo{width:100%;min-width:0;margin-top:1rem;border:1px solid oklch(93% .006 82 / .55);background:#fff;padding:1.35rem;color:var(--ink);font-family:var(--font-sans),system-ui,sans-serif;font-size:.9rem;line-height:1.62;overflow:auto;border-radius:8px}
+        .arh-doktelo{width:100%;min-width:0;margin-top:1rem;border:1px solid oklch(93% .006 82 / .55);background:#fff;padding:1.35rem;color:var(--ink);font-family:var(--font-sans),system-ui,sans-serif;font-size:.9rem;line-height:1.62;overflow:visible;flex:none;border-radius:8px}
         .arh-doktelo h1{margin:0 0 .6rem;font-family:var(--font-serif),Didot,serif;font-size:clamp(1.4rem,3.4vw,1.9rem);line-height:1.05;font-weight:500}
         .arh-doktelo h2{margin:1.2rem 0 .4rem;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent,#B25476)}
         .arh-doktelo p{margin:0 0 .7rem;max-width:70ch}

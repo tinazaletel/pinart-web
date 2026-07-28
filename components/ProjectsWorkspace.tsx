@@ -50,6 +50,11 @@ const projectStatusInfo = (status: FlowOfferStatus): { label: string; tone: Odte
 const projektDoOfferStatus: Record<ProjektEntitetaStatus, FlowOfferStatus> = { aktiven: 'accepted', pavza: 'sent', koncan: 'rejected' };
 const projektStatusOznaka: Record<ProjektEntitetaStatus, string> = { aktiven: 'Aktiven', pavza: 'V pavzi', koncan: 'Končan' };
 
+/* pika statusa z INLINE slogom (barva + velikost neposredno na elementu) — neodvisno
+   od injeciranega CSS, da se zagotovo izrise povsod (waiting = oranzna ipd.) */
+const pikaBarva: Record<string, string> = { waiting: 'oklch(72% .16 75)', success: 'oklch(62% .15 150)', danger: 'oklch(58% .19 25)', neutral: 'oklch(62% .02 70)' };
+const pikaStil = (tone: string) => ({ width: '.55rem', height: '.55rem', borderRadius: '50%', flex: 'none' as const, display: 'inline-block' as const, background: pikaBarva[tone] || pikaBarva.neutral });
+
 /* Kirurški popravek mobilnega odreza po desni (~390–410px). Deluje samo na tej strani,
    ker cilja zgoščena imena razredov iz CSS modula — CSS modula ne spreminjamo (deljen). */
 const overflowFix = `
@@ -543,9 +548,9 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     return 'neutral';
   };
   /* izris ene vrstice — ISTI slog na kartici (top 5) in v slideu (ves seznam) */
-  const pogodbaVrstica = (item: FlowContract) => <span key={item.id} className="pw-vrstica-klik" {...klik('pogodbe', item)}><b>{item.title}</b><i className="pw-status" data-tone={statusTon(item.status)}><i className="pw-pika" aria-hidden />{item.status}</i></span>;
+  const pogodbaVrstica = (item: FlowContract) => <span key={item.id} className="pw-vrstica-klik" {...klik('pogodbe', item)}><b>{item.title}</b><i className="pw-status" data-tone={statusTon(item.status)}><i aria-hidden style={pikaStil(statusTon(item.status))} />{item.status}</i></span>;
   const racunKaj = (item: FlowInvoice) => item.title || item.items?.[0]?.opis || selected?.offer.title || '';
-  const racunVrstica = (item: FlowInvoice) => { const kaj = racunKaj(item); return <span key={item.id} className="pw-racun-v pw-vrstica-klik" {...klik('racuni', item)}><span className="pw-racun-l"><b>Račun {item.number || ''}</b>{kaj && <small>{kaj}</small>}</span><span className="pw-racun-d"><i className="pw-status" data-tone={item.paid ? 'success' : 'waiting'}><i className="pw-pika" aria-hidden />{item.paid ? 'Plačan' : 'Odprt'}</i><strong>{money(item.amount)}</strong></span></span>; };
+  const racunVrstica = (item: FlowInvoice) => { const kaj = racunKaj(item); return <span key={item.id} className="pw-racun-v pw-vrstica-klik" {...klik('racuni', item)}><span className="pw-racun-l"><b>Račun {item.number || ''}</b>{kaj && <small>{kaj}</small>}</span><span className="pw-racun-d"><i className="pw-status" data-tone={item.paid ? 'success' : 'waiting'}><i aria-hidden style={pikaStil(item.paid ? 'success' : 'waiting')} />{item.paid ? 'Plačan' : 'Odprt'}</i><strong>{money(item.amount)}</strong></span></span>; };
   const strosekVrstica = (item: FlowExpense) => <span key={item.id} className="pw-racun-v pw-vrstica-klik" {...klik('stroski', item)}><span className="pw-racun-l"><b>{item.title}</b><small>{item.category || 'Projektni strošek'}</small></span><span className="pw-racun-d"><strong>{money(item.amount)}</strong></span></span>;
   /* iskalno besedilo za slide (naziv/številka/opis/kategorija) — malo, da . includes() dela brez razlik velikih/malih črk */
   const pogodbaTekst = (item: FlowContract) => `${item.title} ${item.status}`.toLocaleLowerCase('sl-SI');
@@ -684,7 +689,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                     <span className="pw-mut">{project.offer.client}</span>
                     <span className="pw-mut">{datStr(project.offer.date)}</span>
                     <span><span className="pw-status-ured" data-editable="" title="Spremeni status" onClick={e => e.stopPropagation()}>
-                      <span className="pw-status" data-tone={info.tone}><i className="pw-pika" aria-hidden />{project.real ? projektStatusOznaka[project.real.status] : statusLabel[project.offer.status]}</span>
+                      <span className="pw-status" data-tone={info.tone}><i aria-hidden style={pikaStil(info.tone)} />{project.real ? projektStatusOznaka[project.real.status] : statusLabel[project.offer.status]}</span>
                       {project.real
                         ? <select className="pw-status-select" aria-label="Spremeni status projekta" value={project.real.status} onChange={e => naStatusProjekt(project.real!, e.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
                         : <select className="pw-status-select" aria-label="Spremeni status" value={project.offer.status} onChange={e => naStatusOffer(project.offer.id, e.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
@@ -702,7 +707,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       <section ref={storyRef} className={`${styles.projectStory} pw-stran`}>
         <button type="button" className="pw-nazaj" onClick={goBack} aria-label="Nazaj na seznam projektov"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M19 12H5M11 18l-6-6 6-6" /></svg> Nazaj</button>
         <header><div><p className={styles.eyebrow}>PROJEKT · {selected.offer.number || 'BREZ ŠTEVILKE'}</p><h2>{selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><span className="pw-det-statusured" data-editable="" title="Spremeni status">
-          <span className="pw-status" data-tone={projectStatusInfo(selected.offer.status).tone}><i className="pw-pika" aria-hidden />{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}</span>
+          <span className="pw-status" data-tone={projectStatusInfo(selected.offer.status).tone}><i aria-hidden style={pikaStil(projectStatusInfo(selected.offer.status).tone)} />{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}</span>
           {selected.real
             ? <select className="pw-status-select" aria-label="Spremeni status projekta" value={selected.real.status} onChange={event => naStatusProjekt(selected.real!, event.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
             : <select className="pw-status-select" aria-label="Spremeni status" value={selected.offer.status} onChange={event => naStatusOffer(selected.offer.id, event.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
