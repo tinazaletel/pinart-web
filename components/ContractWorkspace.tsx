@@ -1083,8 +1083,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
       /* vstopni kicker+h1 (kot retainer rw-kicker/rw-h1) — naslov strani zdaj v ozkem .pg-stolpec, brez bele kartice */
       .pg-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);margin:0 0 .3rem}
-      .pg-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 1.6rem;color:var(--ink)}
-      .pg-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,3.4vw,2.4rem)/1 var(--font-serif),Didot,serif;letter-spacing:-.012em;color:var(--ink);overflow-wrap:anywhere}
+      .pg-h1{font-family:var(--font-sans),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 1.6rem;color:var(--ink)}
+      .pg-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,3.4vw,2.4rem)/1 var(--font-sans),Didot,serif;letter-spacing:-.012em;color:var(--ink);overflow-wrap:anywhere}
       .pg-uvod{margin:0 0 1.4rem;font-size:.92rem;line-height:1.55;color:rgba(17,17,17,.72);max-width:34rem}
       .pg-zakljucek-lik{display:flex;justify-content:center;margin:.5rem 0 1.1rem}
       .pg-zakljucek-lik .pon-lik{width:8.4rem;height:auto;display:block;overflow:visible}
@@ -1293,7 +1293,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-editor,.pg-doktelo{width:100%;min-width:0;border:1px solid rgba(17,17,17,.22);background:#fff;padding:1.35rem;color:var(--ink);font-family:var(--font-sans),system-ui,sans-serif;font-size:.94rem;line-height:1.62;overflow:auto;border-radius:6px}
       .pg-editor{min-height:340px}
       .pg-editor:focus{outline:none;border-color:var(--ink)}
-      .pg-editor h1,.pg-doktelo h1{margin:0 0 .6rem;font-family:var(--font-serif),Didot,serif;font-size:clamp(1.5rem,3.4vw,2.1rem);line-height:1.05;font-weight:400}
+      .pg-editor h1,.pg-doktelo h1{margin:0 0 .6rem;font-family:var(--font-sans),Didot,serif;font-size:clamp(1.5rem,3.4vw,2.1rem);line-height:1.05;font-weight:400}
       .pg-editor h2,.pg-doktelo h2{margin:1.2rem 0 .4rem;font-size:.74rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent,#B25476)}
       .pg-editor p,.pg-doktelo p{margin:0 0 .7rem;max-width:70ch}
       .pg-editor b,.pg-editor strong,.pg-doktelo b,.pg-doktelo strong{font-weight:800}

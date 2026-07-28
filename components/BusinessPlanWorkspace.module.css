@@ -8,7 +8,7 @@
 .summary article:nth-child(3) { background: linear-gradient(135deg, oklch(97% .035 85), oklch(94% .055 75)); }
 .summary article:nth-child(4) { background: linear-gradient(135deg, oklch(96% .035 45), oklch(92% .075 55)); }
 .summary small, .summary span { font-size: .82rem; }
-.summary strong { margin-top: auto; font: 500 2.1rem var(--font-serif), Georgia, serif; }
+.summary strong { margin-top: auto; font: 500 2.1rem var(--font-sans), Georgia, serif; }
 .summary span { color: var(--muted); }
 /* Ikona v kotu — isti slog kot na Stroških in Računih: velika, mehka, zavrtena.
    Vsebina dobi z-index, sicer bi ikona legla čez številko. */
@@ -29,7 +29,7 @@
 .plan, .timer, .history { padding: 1.4rem; border: 1px solid var(--line); border-radius: 1.35rem; background: oklch(98% .008 87 / .94); }
 .plan, .timer { display: grid; align-content: start; gap: 1.25rem; }
 .plan header p, .timer header p, .history header p { margin: 0 0 .5rem; font-size: .72rem; font-weight: 800; letter-spacing: .15em; }
-.plan h2, .timer h2, .history h2 { margin: 0; font: 500 1.85rem/1.05 var(--font-serif), Georgia, serif; }
+.plan h2, .timer h2, .history h2 { margin: 0; font: 500 1.85rem/1.05 var(--font-sans), Georgia, serif; }
 .plan header span, .timer header span { display: block; margin-top: .55rem; color: var(--muted); }
 .fields { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
 .fields label, .notes, .timerForm label, .prisotnost label { position: relative; display: grid; gap: .4rem; font-weight: 700; font-size: .84rem; }
@@ -80,7 +80,7 @@
 .uraVrstica b {
   min-width: 0;
   /* 8 znakov "00:00:00" mora skupaj z gumbom v sirino kartice */
-  font: 500 clamp(2.6rem, 21cqw, 5.4rem)/1 var(--font-serif), Georgia, serif;
+  font: 500 clamp(2.6rem, 21cqw, 5.4rem)/1 var(--font-sans), Georgia, serif;
   font-variant-numeric: tabular-nums; letter-spacing: -.015em; white-space: nowrap;
 }
 .skrijGumb {
@@ -317,7 +317,7 @@
   border-radius: 1rem; background: oklch(95% .04 295);
   color: var(--muted); font-size: .9rem; line-height: 1.5;
 }
-.prisotnostIzpis strong { font: 500 1.3rem var(--font-serif), Georgia, serif; color: var(--ink); -webkit-text-stroke: .3px var(--ink); text-shadow: 0 1px 2px oklch(100% 0 0 / .35); }
+.prisotnostIzpis strong { font: 500 1.3rem var(--font-sans), Georgia, serif; color: var(--ink); -webkit-text-stroke: .3px var(--ink); text-shadow: 0 1px 2px oklch(100% 0 0 / .35); }
 .prisotnost > button:disabled { opacity: .5; cursor: not-allowed; }
 
 /* ── Mesečna evidenca: navigacija po mesecih ─────────────────────────────── */
@@ -325,7 +325,7 @@
   display: flex; align-items: center; justify-content: center; gap: 1rem;
   margin-top: .3rem;
 }
-.mesecNav strong { min-width: 11rem; text-align: center; font: 500 1.15rem var(--font-serif), Georgia, serif; -webkit-text-stroke: .3px var(--ink); text-shadow: 0 1px 2px oklch(100% 0 0 / .35); }
+.mesecNav strong { min-width: 11rem; text-align: center; font: 500 1.15rem var(--font-sans), Georgia, serif; -webkit-text-stroke: .3px var(--ink); text-shadow: 0 1px 2px oklch(100% 0 0 / .35); }
 .mesecNav button {
   display: grid; place-items: center; flex: none; width: 2.2rem; height: 2.2rem; padding: 0;
   border: 1px solid var(--line); border-radius: 50%; background: oklch(100% 0 0 / .7);
@@ -386,7 +386,7 @@
 .mesecPovzetek { display: grid; gap: .55rem; margin-top: .2rem; padding: 1.1rem 1.2rem; border-radius: 1.1rem; background: oklch(95% .025 87); }
 .mesecPovzetekStevec { display: flex; align-items: baseline; gap: .65rem; flex-wrap: wrap; }
 .mesecPovzetekStevec span { color: var(--muted); font-size: .84rem; text-transform: capitalize; }
-.mesecPovzetekStevec strong { font: 500 2.15rem var(--font-serif), Georgia, serif; color: var(--ink); -webkit-text-stroke: .4px var(--ink); text-shadow: 0 1px 2px oklch(100% 0 0 / .35); }
+.mesecPovzetekStevec strong { font: 500 2.15rem var(--font-sans), Georgia, serif; color: var(--ink); -webkit-text-stroke: .4px var(--ink); text-shadow: 0 1px 2px oklch(100% 0 0 / .35); }
 .mesecTrak { position: relative; height: .55rem; border-radius: 999px; background: oklch(90% .015 87); overflow: hidden; }
 .mesecTrakZapolnjeno { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: linear-gradient(90deg, oklch(70% .13 160), oklch(60% .15 150)); transition: width .3s ease-out; }
 .mesecCiljIzpis { color: var(--muted); font-size: .84rem; font-variant-numeric: tabular-nums; }

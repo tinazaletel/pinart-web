@@ -1703,7 +1703,7 @@ export default function TaskManagerWorkspace() {
         .tm{padding:.9rem clamp(1rem,3vw,2.2rem) 4rem;min-width:0}
         .tm-glava{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem;margin-bottom:1rem}
         .tm-eyebrow{margin:0 0 .35rem;font:800 .62rem var(--font-sans),sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
-        .tm-naslov{margin:0;font:500 clamp(1.6rem,3vw,2.15rem)/1 var(--font-serif),Georgia,serif;color:var(--ink)}
+        .tm-naslov{margin:0;font:500 clamp(1.6rem,3vw,2.15rem)/1 var(--font-sans),Georgia,serif;color:var(--ink)}
         .tm-podnaslov{margin:.55rem 0 0;max-width:44ch;color:var(--muted);font-size:.86rem;line-height:1.5}
         .tm-nova{flex:none;padding:.7rem 1.15rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:750 .74rem var(--font-sans),sans-serif;cursor:pointer;transition:transform .18s cubic-bezier(.16,1,.3,1),box-shadow .18s}
         .tm-nova:hover{transform:translateY(-2px);box-shadow:0 .8rem 2rem oklch(22% .04 300/.22)}
@@ -1720,7 +1720,7 @@ export default function TaskManagerWorkspace() {
         /* panel Analitika ekipe (overlay v Pinart slogu, ne generic modal) */
         .tm-analitika-stevci{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.2rem 0 1.2rem}
         .tm-analitika-stevec{display:flex;flex-direction:column;gap:.2rem;padding:.7rem .6rem;border:1px solid var(--line);border-radius:.8rem;background:oklch(97.5% .008 87/.75);text-align:center}
-        .tm-analitika-stevec strong{font:600 1.3rem var(--font-serif),Georgia,serif;color:var(--ink)}
+        .tm-analitika-stevec strong{font:600 1.3rem var(--font-sans),Georgia,serif;color:var(--ink)}
         .tm-analitika-stevec span{font:700 .58rem var(--font-sans),sans-serif;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
         .tm-analitika-podnaslov{margin:1.1rem 0 .6rem;font:700 .66rem var(--font-sans),sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
         .tm-analitika-zgodovina{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.5rem}
@@ -1730,7 +1730,7 @@ export default function TaskManagerWorkspace() {
         /* obrazec */
         .tm-forma{margin:0 0 1.6rem;max-width:34rem;padding:1.2rem 1.3rem 1.35rem;border:1px solid var(--line);border-radius:1.1rem;background:oklch(99% .006 87/.9);box-shadow:0 1rem 2.6rem oklch(20% .03 55/.08)}
         .tm-forma-glava{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem}
-        .tm-forma-glava h2{margin:0;font:600 1.2rem var(--font-serif),Georgia,serif;color:var(--ink)}
+        .tm-forma-glava h2{margin:0;font:600 1.2rem var(--font-sans),Georgia,serif;color:var(--ink)}
         .tm-x{width:2rem;height:2rem;border:1px solid var(--line);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer}
         .tm-x:hover{background:var(--ink);color:var(--paper)}
         .tm-polje{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.8rem}
@@ -1974,7 +1974,7 @@ export default function TaskManagerWorkspace() {
         .tm-matrika thead th{position:sticky;top:0;padding:.7rem .9rem;text-align:left;font:800 .64rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);opacity:.6;background:oklch(97.5% .008 87/.95);border-bottom:1px solid var(--line);white-space:nowrap}
         .tm-matrika-sef{text-transform:none;letter-spacing:0;font-weight:600;opacity:.75}
         .tm-matrika-projekt-glava{min-width:9rem}
-        .tm-matrika tbody th.tm-matrika-projekt{text-align:left;padding:.7rem .9rem;font:650 .82rem var(--font-serif),Georgia,serif;color:var(--ink);white-space:nowrap;border-bottom:1px solid var(--line);vertical-align:top}
+        .tm-matrika tbody th.tm-matrika-projekt{text-align:left;padding:.7rem .9rem;font:650 .82rem var(--font-sans),Georgia,serif;color:var(--ink);white-space:nowrap;border-bottom:1px solid var(--line);vertical-align:top}
         .tm-matrika tbody td{padding:.5rem;border-bottom:1px solid var(--line);border-left:1px solid var(--line);vertical-align:top;min-width:11rem}
         .tm-matrika tbody tr:last-child th,.tm-matrika tbody tr:last-child td{border-bottom:none}
 

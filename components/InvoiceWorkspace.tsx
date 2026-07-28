@@ -831,7 +831,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-zakljucek{padding-bottom:6rem}
       .rc .rc-zakljucek .rc-kicker-z,.rc .rc-zakljucek .rc-naslov-z,.rc .rc-zakljucek .rc-uvod-z{text-align:center}
       .rc .rc-kicker-z{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 .3rem}
-      .rc .rc-naslov-z{margin:.15rem 0 .5rem;font-family:var(--font-serif),Didot,serif;font-weight:400;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;color:var(--ink)}
+      .rc .rc-naslov-z{margin:.15rem 0 .5rem;font-family:var(--font-sans),Didot,serif;font-weight:400;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;color:var(--ink)}
       .rc .rc-uvod-z{margin:0 auto 1.4rem;max-width:34rem;font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72)}
       .rc .rc-placan-z{display:flex;align-items:center;justify-content:center;gap:.5rem;margin:0 0 1.2rem;font-size:.82rem;color:var(--ink);cursor:pointer}
       .rc .rc-zakljucek-lik{display:flex;justify-content:center;margin:.5rem 0 1.1rem}
@@ -872,7 +872,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       @media (max-width:980px){.rc .rc-stolpec.rc-vstop{min-height:calc(100dvh - 13rem)}}
       /* naslov v ozkem stolpcu (kot retainer rw-kicker/rw-h1) */
       .rc .rc-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);margin:0 0 .3rem}
-      .rc .rc-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 1.4rem;color:var(--ink)}
+      .rc .rc-h1{font-family:var(--font-sans),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 1.4rem;color:var(--ink)}
       /* na svoji strani je obrazec en stolpec (modul ima 2 koloni za inline vgradnjo) */
       .rc .rc-obrazec{grid-template-columns:1fr}
       /* vec zracnosti okoli naslova obrazca */
@@ -887,7 +887,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       /* ── vstop (pogled 'pregled'): SAMO vstop za nov racun — pregled/arhiv
          obstojecih racunov je preseljen v Arhiv. Brez bele kartice (kot retainer
          rw-vsebina) — vsebina sedi neposredno na papirnatem ozadju. ── */
-      .rc .rc-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,2.6vw,2.4rem)/1.05 var(--font-serif),Georgia,serif;color:var(--ink);overflow-wrap:anywhere}
+      .rc .rc-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,2.6vw,2.4rem)/1.05 var(--font-sans),Georgia,serif;color:var(--ink);overflow-wrap:anywhere}
       .rc .rc-uvod{margin:0 0 1.4rem;font-size:.92rem;line-height:1.55;color:rgba(17,17,17,.72);max-width:34rem}
 
       /* chat mehurcek vstopnega vprasanja — isti videz kot RetainerWorkspace .rw-chat/.rw-mehur */

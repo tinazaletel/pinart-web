@@ -983,7 +983,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         @keyframes rwPanel{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
         @media (prefers-reduced-motion:reduce){.rw-profil-panel{animation:none}}
         .rw-profil-glava{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.6rem}
-        .rw-profil-glava h2{margin:0;font-family:var(--font-serif),Didot,serif;font-size:1.9rem;font-weight:500;color:var(--ink)}
+        .rw-profil-glava h2{margin:0;font-family:var(--font-sans),Didot,serif;font-size:1.9rem;font-weight:500;color:var(--ink)}
         .rw-profil-x{font:inherit;font-size:.74rem;font-weight:600;color:rgba(17,17,17,.6);background:none;border:none;cursor:pointer;padding:.4rem}
         .rw-profil-x:hover{color:var(--ink)}
         .rw-profil-sek{margin-bottom:2.2rem}
@@ -1015,7 +1015,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
            naredi prevelik prazen pas na vrhu — vsebina se zacne takoj */
         .rw.rw-lupina .rw-vsebina{padding-top:.6rem}
         .rw-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 .3rem}
-        .rw-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
+        .rw-h1{font-family:var(--font-sans),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
         .rw-uvod{font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72);margin:0 0 2.4rem;max-width:34rem}
         .rw-sek{margin:0 0 2.6rem;scroll-margin-top:5.5rem}
         .rw-sek.rw-vstop{animation:rwSek .5s cubic-bezier(.16,1,.3,1) both}
@@ -1088,7 +1088,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-povz{margin-top:1.2rem;padding:1.7rem 1.6rem 1.8rem;border-radius:20px;background:#FCFBF7;border:1px solid rgba(17,17,17,.08);box-shadow:0 4px 18px rgba(17,17,17,.04)}
         .rw-glavna{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding-bottom:.85rem;border-bottom:1px solid rgba(17,17,17,.1)}
         .rw-glavna span{font-size:.7rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(17,17,17,.55)}
-        .rw-glavna b{font-family:var(--font-serif),Didot,serif;font-weight:700;font-size:clamp(1.55rem,3vw,2.05rem);letter-spacing:-.01em;color:var(--ink);-webkit-text-stroke:0}
+        .rw-glavna b{font-family:var(--font-sans),Didot,serif;font-weight:700;font-size:clamp(1.55rem,3vw,2.05rem);letter-spacing:-.01em;color:var(--ink);-webkit-text-stroke:0}
         .rw-glavna em{font-family:inherit;font-style:normal;font-size:.9rem;font-weight:400;color:rgba(17,17,17,.5);-webkit-text-stroke:0}
         .rw-det{list-style:none;margin:.8rem 0 0;padding:0;display:flex;flex-direction:column;gap:.32rem;font-size:.87rem;color:rgba(17,17,17,.72)}
         .rw-det li::before{content:"· ";color:var(--accent);font-weight:700}
@@ -1225,7 +1225,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-barvica-mavrica{background:conic-gradient(from 0deg,#FA4892,#F8E71C,#50E3C2,#7C3AED,#FA4892);border-color:rgba(17,17,17,.25)}
         .rw-editor{width:100%;min-height:340px;border:1px solid rgba(17,17,17,.25);background:rgba(255,255,255,.72);padding:1.35rem;color:var(--ink);font-family:var(--font-sans),system-ui,sans-serif;font-size:.94rem;line-height:1.62;overflow:auto}
         .rw-editor:focus{outline:none;border-color:var(--ink)}
-        .rw-editor h1{margin:0 0 .6rem;font-family:var(--font-serif),Didot,serif;font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.05;font-weight:400}
+        .rw-editor h1{margin:0 0 .6rem;font-family:var(--font-sans),Didot,serif;font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.05;font-weight:400}
         .rw-editor h2{margin:1.4rem 0 .5rem;font-size:.74rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
         .rw-editor p{margin:0 0 .7rem;max-width:70ch}
         .rw-editor b,.rw-editor strong{font-weight:800}

@@ -2,7 +2,7 @@
 .notice { padding: 1rem 1.2rem; border-radius: 1rem; background: oklch(92% .06 155); }
 .card { display: grid; gap: 1.4rem; padding: 1.5rem; border: 1px solid var(--line); border-radius: 1.35rem; background: oklch(98% .008 87 / .94); }
 .card header p { margin: 0 0 .55rem; font-size: .72rem; font-weight: 800; letter-spacing: .15em; }
-.card h2 { margin: 0; font: 500 2rem/1 var(--font-serif), Georgia, serif; }
+.card h2 { margin: 0; font: 500 2rem/1 var(--font-sans), Georgia, serif; }
 .card header span { display: block; margin-top: .55rem; color: var(--muted); }
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .9rem; }
 .grid label { display: grid; gap: .45rem; font-size: .84rem; font-weight: 700; }
@@ -17,7 +17,7 @@
 .actions .logout { margin-left: auto; }
 /* Nevarno obmocje — izbris vseh podatkov (preneseno iz Nastavitev/Dizajn). */
 .nevarno { gap: .8rem; border-color: oklch(78% .12 25); background: oklch(98% .02 25); }
-.nevarno h2 { font: 500 1.6rem/1 var(--font-serif), Georgia, serif; }
+.nevarno h2 { font: 500 1.6rem/1 var(--font-sans), Georgia, serif; }
 .nevarnoOpis { margin: 0; max-width: 52ch; color: var(--muted); font-size: .9rem; line-height: 1.5; }
 .gumbNevaren { justify-self: start; min-height: 2.75rem; padding: .6rem 1.1rem; border: 0; border-radius: 999px; background: oklch(50% .17 25); color: oklch(98% .01 25); font: 700 .9rem var(--font-sans), sans-serif; cursor: pointer; }
 .gumbNevaren:hover { background: oklch(44% .18 25); }
