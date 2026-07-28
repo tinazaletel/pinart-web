@@ -828,7 +828,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       /* ── ZAKLJUCEK racuna (enaki elementi kot ponudba/pogodba) ── */
       .rc .rc-zakljuci-gumb{width:max-content;padding:.85rem 1.9rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:600 .82rem var(--font-sans),sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:transform .2s ease}
       .rc .rc-zakljuci-gumb:hover{transform:translateY(-2px)}
-      .rc .rc-zakljucek{padding-bottom:6rem}
+      .rc .rc-zakljucek{padding-bottom:10rem}
       .rc .rc-zakljucek .rc-kicker-z,.rc .rc-zakljucek .rc-naslov-z,.rc .rc-zakljucek .rc-uvod-z{text-align:center}
       .rc .rc-kicker-z{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 .3rem}
       .rc .rc-naslov-z{margin:.15rem 0 .5rem;font-family:var(--font-serif),Didot,serif;font-weight:400;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;color:var(--ink)}

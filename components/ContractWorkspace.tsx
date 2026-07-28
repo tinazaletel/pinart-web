@@ -1173,7 +1173,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
       /* klikabilna kartica ponudbe (vir dogovora) */
       .pg-kponudba{border:1px solid oklch(93% .006 82 / .55);border-radius:14px;background:rgba(255,255,255,.72);margin:0 0 1.2rem;overflow:hidden;min-width:0}
-      .pg-kp-glava{display:flex;align-items:center;gap:.75rem;width:100%;padding:.8rem .95rem;border:none;background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer;min-width:0}
+      .pg-kp-glava{display:flex;align-items:center;gap:.75rem;width:100%;padding:1.1rem 1.15rem;border:none;background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer;min-width:0}
       .pg-kp-glava:hover strong{text-decoration:underline;text-underline-offset:.2rem}
       .pg-kp-ikona{display:grid;place-items:center;width:2.1rem;height:2.1rem;border-radius:50%;background:oklch(92% .055 163);color:oklch(48% .14 164);flex:none}
       .pg-kp-info{flex:1;min-width:0}
@@ -1269,7 +1269,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
       /* BELO POLJE = ovoj (glava + telo + noga vsi znotraj enega belega lista, kot prava stran) */
       .pg-editor-ovoj{position:relative;min-width:0;background:#fff;border:1px solid rgba(17,17,17,.22);border-radius:6px;padding:1.6rem 1.6rem 1.4rem}
-      .pg-editor-ovoj .pg-editor{background:transparent;border:0;border-radius:0;padding:0;min-height:280px}
+      .pg-editor-ovoj .pg-editor{background:transparent;border:0;border-radius:0;padding:0;min-height:480px}
       .pg-editor-ovoj .pg-editor:focus{border:0}
       /* noga (besedilo iz Nastavitev) na dnu belega lista */
       .pg-editor-noga{margin-top:1.5rem;padding-top:.75rem;border-top:1px solid oklch(93% .006 82 / .55);font-size:.74rem;color:var(--muted);line-height:1.55}
