@@ -306,7 +306,7 @@
 .flowTools > *:nth-child(1)::after { background-image: url('/flow/icon-ponudba.png'); }
 .flowTools > *:nth-child(2)::after { background-image: url('/flow/icon-racun.png'); animation-delay: -1s; }
 .flowTools > *:nth-child(3)::after { background-image: url('/flow/icon-projekt.png'); animation-delay: -2s; }
-.flowTools > *:nth-child(4)::after { background-image: url('/flow/icon-stranke.png'); animation-delay: -3s; width: 7.9rem; height: 7.9rem; right: -1.2rem; bottom: -1.2rem; }
+.flowTools > *:nth-child(4)::after { background-image: url('/flow/icon-stranke.png'); animation-delay: -3s; width: 8.5rem; height: 8.5rem; right: -1.4rem; bottom: -1.5rem; }
 .flowTools > *:nth-child(5)::after { background-image: url('/flow/icon-koledar.png'); animation-delay: -1.5s; }
 .flowTools > *:nth-child(6)::after { background-image: url('/flow/icon-dolgorocno.png'); animation-delay: -2.5s; }
 .flowTools > *:nth-child(7)::after { background-image: url('/flow/icon-cas.png'); animation-delay: -.5s; }
