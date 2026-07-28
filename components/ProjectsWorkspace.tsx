@@ -221,7 +221,8 @@ const pwStyles = `
 .pw-det-uredi:hover{color:var(--ink)}
 .pw-det-akcije{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin-top:1.1rem}
 .pw-det-akcije .pw-det-uredi{margin-top:0}
-.pw-det-poslji{display:inline-flex;align-items:center;gap:.35rem;padding:.55rem .95rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
+.puscica-svg{vertical-align:-2px;flex:none}
+$1padding:.55rem .95rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-det-poslji:hover{background:transparent;color:var(--ink)}
 .pw-kmalu-red{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
 .pw-kmalu{opacity:.85}
@@ -611,7 +612,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
 
     {!selected ? (
       projects.length === 0 ? (
-        <div className={styles.projectStoryEmpty}><span>↗</span><strong>Najprej ustvari ponudbo.</strong><p>Ta bo postala osnova projekta in povezala vse nadaljnje dokumente.</p></div>
+        <div className={styles.projectStoryEmpty}><span><svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></span><strong>Najprej ustvari ponudbo.</strong><p>Ta bo postala osnova projekta in povezala vse nadaljnje dokumente.</p></div>
       ) : (
         <div className="pw-seznam">
           {pogled === 'pipeline' ? (
@@ -782,7 +783,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               <p className={styles.eyebrow}>07 · CRM DNEVNIK</p>
               <h3>Klici, sestanki, dogovori</h3>
               <p>Kronologija odnosa s stranko »{selected.offer.client}« — odpri na strani stranke.</p>
-              <b className="pw-znacka pw-znacka-live">Odpri ↗</b>
+              <b className="pw-znacka pw-znacka-live">Odpri <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></b>
             </Link>
           </div>
         </div>
@@ -886,8 +887,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   <div className="pw-det-vsote"><div className="pw-det-skupaj"><span>Za plačilo</span><strong>{money(r.amount)}</strong></div></div>
                 )}
                 <div className="pw-det-akcije">
-                  <button type="button" className="pw-det-poslji" onClick={() => posljiDokument(selected.offer.client, `Račun ${r.number || ''}`.trim(), `Pozdravljeni,\n\nv prilogi vam pošiljam račun ${r.number || ''} v znesku ${money(r.amount)}.\n\nLep pozdrav`)}>Pošlji naročniku ↗</button>
-                  <Link href={`${base}/kalkulator/racuni`} className="pw-det-uredi">Uredi v Računih ↗</Link>
+                  <button type="button" className="pw-det-poslji" onClick={() => posljiDokument(selected.offer.client, `Račun ${r.number || ''}`.trim(), `Pozdravljeni,\n\nv prilogi vam pošiljam račun ${r.number || ''} v znesku ${money(r.amount)}.\n\nLep pozdrav`)}>Pošlji naročniku <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
+                  <Link href={`${base}/kalkulator/racuni`} className="pw-det-uredi">Uredi v Računih <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link>
                 </div>
               </>;
             })()}
@@ -900,8 +901,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 <div className="pw-det-meta"><span><small>Datum</small><strong>{new Date(c.date).toLocaleDateString('sl-SI')}</strong></span><span><small>Status</small><strong>{c.status}</strong></span></div>
                 <p className="pw-det-opomba">Celotno besedilo pogodbe odpri in uredi v razdelku Pogodbe.</p>
                 <div className="pw-det-akcije">
-                  <button type="button" className="pw-det-poslji" onClick={() => posljiDokument(selected.offer.client, `Pogodba — ${c.title}`, `Pozdravljeni,\n\nv prilogi vam pošiljam pogodbo »${c.title}«. Prosim za pregled in podpis.\n\nLep pozdrav`)}>Pošlji naročniku ↗</button>
-                  <Link href={`${base}/kalkulator/pogodbe`} className="pw-det-uredi">Odpri v Pogodbah ↗</Link>
+                  <button type="button" className="pw-det-poslji" onClick={() => posljiDokument(selected.offer.client, `Pogodba — ${c.title}`, `Pozdravljeni,\n\nv prilogi vam pošiljam pogodbo »${c.title}«. Prosim za pregled in podpis.\n\nLep pozdrav`)}>Pošlji naročniku <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
+                  <Link href={`${base}/kalkulator/pogodbe`} className="pw-det-uredi">Odpri v Pogodbah <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link>
                 </div>
               </>;
             })()}
@@ -912,7 +913,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 <h2 id="pw-det-naslov">{s.title}</h2>
                 <p className="pw-vsi-projekt">{selected.offer.title}</p>
                 <div className="pw-det-meta"><span><small>Kategorija</small><strong>{s.category || 'Projektni strošek'}</strong></span><span><small>Znesek</small><strong>{money(s.amount)}</strong></span></div>
-                <Link href={`${base}/kalkulator/stroski`} className="pw-det-uredi">Uredi v Stroških ↗</Link>
+                <Link href={`${base}/kalkulator/stroski`} className="pw-det-uredi">Uredi v Stroških <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link>
               </>;
             })()}
           </aside>

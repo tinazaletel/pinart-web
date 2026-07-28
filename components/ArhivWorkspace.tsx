@@ -129,7 +129,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
     const oznaka = opcije.find(o => o.v === vrednost)?.label || vrednost;
     return <span className="arh-status-ured" data-editable="">
       <StatusPika label={oznaka} />
-      <select className="arh-status-select" aria-label="Spremeni status" value={vrednost} disabled={!mineMode} title={mineMode ? undefined : 'Statusa v demu ni mogoče spreminjati — preklopi na »Moji podatki«.'} onClick={e => e.stopPropagation()} onChange={e => naStatus(tip, id, e.target.value)}>
+      <select className="arh-status-select" aria-label="Spremeni status" value={vrednost} title="Spremeni status" onClick={e => e.stopPropagation()} onChange={e => naStatus(tip, id, e.target.value)}>
         {opcije.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
       </select>
     </span>;
@@ -485,7 +485,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   )}
                 </div>
 
-                <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/orodje`}>Odpri v kalkulatorju ↗</a>
+                <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/orodje`}>Odpri v kalkulatorju <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></a>
               </>;
             })()}
 
@@ -524,8 +524,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   ? <div className="arh-opomba-kartica" role="alert"><Warning size={20} weight="bold" aria-hidden /><div><strong>Opozorilo</strong><p>{op.besedilo}</p></div></div>
                   : <div className="arh-opomba-blok"><strong>Opomba</strong><p>{op.besedilo}</p></div>)}
                 <div className="arh-akcije">
-                  <button type="button" className="arh-poslji" onClick={() => posljiStranki(c.client, `Pogodba — ${c.title}`, `Pozdravljeni,\n\nv prilogi vam pošiljam pogodbo »${c.title}«. Prosim za pregled in podpis.\n\nLep pozdrav`)}>Pošlji stranki ↗</button>
-                  <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/pogodbe`}>Uredi v Pogodbah ↗</a>
+                  <button type="button" className="arh-poslji" onClick={() => posljiStranki(c.client, `Pogodba — ${c.title}`, `Pozdravljeni,\n\nv prilogi vam pošiljam pogodbo »${c.title}«. Prosim za pregled in podpis.\n\nLep pozdrav`)}>Pošlji stranki <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
+                  <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/pogodbe`}>Uredi v Pogodbah <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></a>
                 </div>
                 <p className="arh-mini">Do postavitve pošiljanja s priponko pripni PDF ročno (Prenesi → priloži).</p>
               </>;
@@ -588,8 +588,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                     </div>
 
                     <div className="arh-akcije">
-                      <button type="button" className="arh-poslji" onClick={() => posljiStranki(r.client, `Račun ${r.number || ''}`.trim(), `Pozdravljeni,\n\nv prilogi vam pošiljam račun ${r.number || ''} v znesku ${eur(r.amount)}${typeof r.dueDays === 'number' ? `, z rokom plačila ${r.dueDays} dni` : ''}.\n\nLep pozdrav`)}>Pošlji stranki ↗</button>
-                      <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/racuni`}>Uredi v Računih ↗</a>
+                      <button type="button" className="arh-poslji" onClick={() => posljiStranki(r.client, `Račun ${r.number || ''}`.trim(), `Pozdravljeni,\n\nv prilogi vam pošiljam račun ${r.number || ''} v znesku ${eur(r.amount)}${typeof r.dueDays === 'number' ? `, z rokom plačila ${r.dueDays} dni` : ''}.\n\nLep pozdrav`)}>Pošlji stranki <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
+                      <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/racuni`}>Uredi v Računih <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></a>
                     </div>
                     <p className="arh-mini">Do postavitve pošiljanja s priponko pripni PDF ročno (Prenesi → priloži).</p>
                   </>;
@@ -713,14 +713,15 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-det-obseg{margin:.4rem 0 .8rem;display:grid;gap:.4rem}
         .arh-det-obseg ul{margin:0;padding-left:1.15rem}
         .arh-det-obseg li{margin:.2rem 0;font-size:.9rem}
-        .arh-mini{color:rgba(17,17,17,.6);font-size:.85rem;line-height:1.5}
+        .arh-mini{color:rgba(17,17,17,.6);font-size:.85rem;line-height:1.5;margin:.2rem 0 1.1rem}
         .arh-povezava{display:inline-flex;align-items:center;gap:.35rem;margin-top:.9rem;font-size:.88rem;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:.28em;text-decoration-thickness:1px}
         /* sekundarna razlicica (ponudba kot dokument zdaj nosi glavno pozornost,
            povezava v kalkulator je samo se pot do urejanja) */
         .arh-povezava-sekundarna{font-size:.8rem;font-weight:500;color:rgba(17,17,17,.62)}
         /* akcije ob pregledu (pošlji stranki + uredi) */
         .arh-akcije{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1.1rem;margin-top:.9rem}
-        .arh-poslji{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.05rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
+        .puscica-svg{vertical-align:-2px;flex:none}
+        $1padding:.6rem 1.05rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
         .arh-poslji:hover{background:transparent;color:var(--ink)}
         .arh-akcije .arh-povezava{margin-top:0}
 
