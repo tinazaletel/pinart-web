@@ -211,7 +211,7 @@
 .previewSwitch .previewActive { background: linear-gradient(135deg, var(--purple), oklch(62% .22 297)); color: oklch(98% .01 300); }
 .feedback { position: fixed; z-index: 80; right: 1.2rem; bottom: 1.2rem; display: flex; align-items: center; gap: 1rem; max-width: 24rem; padding: .8rem 1rem; border-radius: .85rem; background: var(--ink); color: var(--paper); box-shadow: 0 1rem 3rem oklch(20% .03 55 / .2); font-size: .64rem; }
 .feedback button { border: 0; background: none; color: inherit; font-size: 1rem; cursor: pointer; }
-.flowBand, .historyBand, .resultsBand, .eventsBand, .detailsBand { margin-top: 1rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: 1.45rem; background: color-mix(in oklch, oklch(98% .01 87) 94%, transparent); box-shadow: 0 .6rem 1.6rem oklch(20% .02 55 / .04); }
+.flowBand, .historyBand, .resultsBand, .eventsBand, .detailsBand { margin-top: 1rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: 1.45rem; background: linear-gradient(145deg, #f6f0ea, #f8f3ed); box-shadow: 0 .6rem 1.6rem oklch(20% .02 55 / .04); }
 .flowBand { margin-top: .35rem; }
 .sectionHeader { display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; padding: .55rem .45rem 1rem; }
 .sectionHeader h2 { margin: 0; font: 500 clamp(1.25rem, 1.55vw, 1.6rem)/1.05 var(--font-serif), Georgia, serif; }
