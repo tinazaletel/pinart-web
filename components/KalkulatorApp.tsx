@@ -1224,7 +1224,7 @@ const OFFER_CSS = `
       .offer-head-meta{text-align:left;font-size:8.5pt;color:#666;line-height:1.6;white-space:normal;padding:0}
       .offer-cover{box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:250mm;break-after:page;page-break-after:always;padding:18mm 12mm}
       .oc-kicker{font-size:9pt;letter-spacing:.3em;text-transform:uppercase;color:#B25476;font-weight:700;margin-bottom:20px}
-      .oc-naslov{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:600;font-size:32pt;line-height:1.1;letter-spacing:-.01em;color:#111;max-width:15em;margin:0}
+      .oc-naslov{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:500;font-size:32pt;line-height:1.1;letter-spacing:-.01em;color:#111;max-width:15em;margin:0}
       .oc-crta{width:56px;height:2px;background:#B25476;margin:24px 0}
       .oc-firma{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;font-weight:600;color:#111}
       .oc-za{font-size:10.5pt;color:#555;margin-top:6px}
@@ -3748,7 +3748,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     .rac-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin:6px 0 22px}
     .rac-title{display:flex;flex-direction:column;gap:2px}
     .rac-kicker{font-size:9pt;letter-spacing:.28em;text-transform:uppercase;color:#B25476}
-    .rac-no{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:26pt;font-weight:600;color:#111;line-height:1.05}
+    .rac-no{font-family:'Helvetica Neue',Arial,sans-serif;font-size:24pt;font-weight:700;letter-spacing:-.01em;color:#111;line-height:1.05}
     .rac-meta{font-size:9pt;color:#444;text-align:right;line-height:1.5}
     .rac-meta b{display:block;font-size:7.5pt;letter-spacing:.12em;text-transform:uppercase;color:#B25476;margin-top:7px}
     .rac-stranki{margin:0 0 18px;font-size:10.5pt;color:#222;line-height:1.6}
@@ -3759,7 +3759,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     .rac-tabela th:not(:first-child),.rac-tabela td:not(:first-child){text-align:right;white-space:nowrap}
     .rac-vsote{margin-left:auto;width:290px;font-size:10.5pt;color:#222}
     .rac-vsote>div{display:flex;justify-content:space-between;padding:5px 8px}
-    .rac-skupaj{border-top:1.5px solid #B25476;margin-top:4px;font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:13pt;font-weight:600;color:#111}
+    .rac-skupaj{border-top:1.5px solid #B25476;margin-top:4px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13pt;font-weight:700;letter-spacing:-.01em;color:#111}
     .rac-placilo{margin:20px 0 0;font-size:10pt;color:#222;background:#f8f5ee;border:1px solid #eadfce;border-radius:9px;padding:13px 16px;line-height:1.7}
     .rac-opomba{font-size:9pt;color:#666;margin:10px 0 0}
     .rac-noga-txt{font-size:8.2pt;color:#9a9088;margin-top:22px}
@@ -3773,7 +3773,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* POGODBA o dolgorocnem sodelovanju (retainer) — locen dokument, kot racun.
      Predloga (cleni); Tina jo dopolni/uskladi po raziskavi. */
   const POGODBA_CSS = `
-    .pog-naslov{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:19pt;font-weight:600;color:#111;text-align:center;margin:4px 0}
+    .pog-naslov{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:19pt;font-weight:500;color:#111;text-align:center;margin:4px 0}
     .pog-stranki{font-size:10.5pt;color:#222;line-height:1.6;margin:14px 0 6px}
     .pog-stranki p{margin:.15rem 0}
     .pog-clen{margin:11px 0;break-inside:avoid;page-break-inside:avoid}
@@ -6122,9 +6122,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-cena-gumb:hover { border-bottom-color: var(--ink); }
         .cw .prav-cena-gumb.rocno { border-bottom-style: solid; border-bottom-color: var(--accent); color: var(--accent); }
         .cw .prav-cena-uredi { display: inline-flex; align-items: baseline; justify-content: flex-end; gap: .15rem; }
-        .cw .prav-cena-uredi input { width: 4.2rem; border: none; border-bottom: 2px solid var(--ink); background: transparent; font-family: var(--font-serif), serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; text-align: right; padding: 0 0 .06rem; color: var(--ink); border-radius: 0; }
+        .cw .prav-cena-uredi input { width: 4.2rem; border: none; border-bottom: 2px solid var(--ink); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 1.05rem; text-align: right; padding: 0 0 .06rem; color: var(--ink); border-radius: 0; }
         .cw .prav-cena-uredi input:focus { outline: none; }
-        .cw .prav-cena-uredi .pe-znak { font-family: var(--font-serif), serif; font-weight: 600; font-size: .95rem; }
+        .cw .prav-cena-uredi .pe-znak { font-family: var(--font-sans), system-ui, sans-serif; font-weight: 700; font-size: .95rem; }
         .cw .prav-lastna-ime { border: none; border-bottom: 1px solid rgba(17,17,17,.35); background: transparent; font-family: inherit; font-size: .95rem; font-weight: 650; color: var(--ink); padding: .15rem 0; min-width: 0; width: 100%; }
         .cw .prav-lastna-ime:focus { outline: none; border-color: var(--ink); }
         .cw .prav-lastna-ime::placeholder { color: rgba(17,17,17,.4); font-weight: 500; }

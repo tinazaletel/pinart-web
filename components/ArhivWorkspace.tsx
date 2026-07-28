@@ -736,14 +736,14 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-racun-vsote > div strong{min-width:5rem;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
         .arh-racun-skupaj{margin-top:.25rem;padding-top:.45rem;border-top:1px solid rgba(17,17,17,.14)}
         .arh-racun-skupaj span{font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(17,17,17,.6)}
-        .arh-racun-skupaj strong{font:500 1.4rem var(--font-serif),Georgia,serif}
+        .arh-racun-skupaj strong{font:700 1.3rem var(--font-sans),system-ui,sans-serif;letter-spacing:-.01em}
 
         /* ── ponudba kot DOKUMENT (NALOGA #44): kremni list + senca + Bodoni naslov,
            mini letterhead videz namesto golih kartic ── */
         .arh-ponudba-dok{margin-top:.9rem;border:1px solid rgba(17,17,17,.14);border-radius:10px;background:#fff;box-shadow:0 10px 28px rgba(17,17,17,.08);overflow:hidden}
         .arh-ponudba-dok-glava{padding:1.5rem 1.6rem 1.2rem;border-bottom:1px solid rgba(17,17,17,.1);background:linear-gradient(180deg, oklch(98% .01 87), #fff)}
         .arh-ponudba-dok-kick{margin:0 0 .5rem;font-size:.66rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--accent,#B25476)}
-        .arh-ponudba-dok-naslov{margin:0 0 1rem;font-family:var(--font-serif),Didot,serif;font-weight:600;font-size:clamp(1.3rem,2.6vw,1.7rem);line-height:1.1;color:var(--ink)}
+        .arh-ponudba-dok-naslov{margin:0 0 1rem;font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.3rem,2.6vw,1.7rem);line-height:1.1;color:var(--ink)}
         .arh-ponudba-dok-meta{display:flex;flex-wrap:wrap;gap:1.4rem}
         .arh-ponudba-dok-meta span{display:grid;gap:.15rem;min-width:0}
         .arh-ponudba-dok-meta small{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(17,17,17,.5)}
@@ -754,7 +754,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-ponudba-dok-obseg li{margin:.25rem 0;font-size:.9rem;line-height:1.5}
         .arh-ponudba-dok-znesek{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding-top:1rem;border-top:1px dashed rgba(17,17,17,.16)}
         .arh-ponudba-dok-znesek span{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(17,17,17,.55)}
-        .arh-ponudba-dok-znesek strong{font-family:var(--font-serif),Georgia,serif;font-weight:600;font-size:1.5rem;color:var(--ink)}
+        .arh-ponudba-dok-znesek strong{font-family:var(--font-sans),system-ui,sans-serif;font-weight:700;font-size:1.4rem;letter-spacing:-.01em;color:var(--ink)}
         /* injecirani HTML dokument (arh-doktelo) znotraj arh-ponudba-dok: odstrani
            lasten okvir/senco/rob (parent jih ze da), obdrzi samo tipografijo */
         .arh-ponudba-dok .arh-doktelo{margin-top:0;border:none;border-radius:0;background:transparent;padding:1.4rem 1.6rem 1.6rem}
@@ -770,7 +770,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
         /* telo pogodbe (kopija .pg-doktelo) */
         .arh-doktelo{width:100%;min-width:0;margin-top:1rem;border:1px solid rgba(17,17,17,.16);background:#fff;padding:1.35rem;color:var(--ink);font-family:var(--font-sans),system-ui,sans-serif;font-size:.9rem;line-height:1.62;overflow:auto;border-radius:8px}
-        .arh-doktelo h1{margin:0 0 .6rem;font-family:var(--font-serif),Didot,serif;font-size:clamp(1.4rem,3.4vw,1.9rem);line-height:1.05;font-weight:600}
+        .arh-doktelo h1{margin:0 0 .6rem;font-family:var(--font-serif),Didot,serif;font-size:clamp(1.4rem,3.4vw,1.9rem);line-height:1.05;font-weight:500}
         .arh-doktelo h2{margin:1.2rem 0 .4rem;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent,#B25476)}
         .arh-doktelo p{margin:0 0 .7rem;max-width:70ch}
         .arh-doktelo b,.arh-doktelo strong{font-weight:800}

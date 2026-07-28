@@ -372,7 +372,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     .rac-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin:6px 0 22px}
     .rac-title{display:flex;flex-direction:column;gap:2px}
     .rac-kicker{font-size:9pt;letter-spacing:.28em;text-transform:uppercase;color:#B25476}
-    .rac-no{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:26pt;font-weight:600;color:#111;line-height:1.05}
+    .rac-no{font-family:'Helvetica Neue',Arial,sans-serif;font-size:24pt;font-weight:700;letter-spacing:-.01em;color:#111;line-height:1.05}
     .rac-meta{font-size:9pt;color:#444;text-align:right;line-height:1.5}
     .rac-meta b{display:block;font-size:7.5pt;letter-spacing:.12em;text-transform:uppercase;color:#B25476;margin-top:7px}
     .rac-stranki{margin:0 0 18px;font-size:10.5pt;color:#222;line-height:1.6}
@@ -383,7 +383,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     .rac-tabela th:not(:first-child),.rac-tabela td:not(:first-child){text-align:right;white-space:nowrap}
     .rac-vsote{margin-left:auto;width:300px;font-size:10.5pt;color:#222}
     .rac-vsote>div{display:flex;justify-content:space-between;gap:12px;padding:5px 8px}
-    .rac-skupaj{border-top:1.5px solid #B25476;margin-top:4px;font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:13pt;font-weight:600;color:#111}
+    .rac-skupaj{border-top:1.5px solid #B25476;margin-top:4px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13pt;font-weight:700;letter-spacing:-.01em;color:#111}
     .rac-placilo{margin:20px 0 0;font-size:10pt;color:#222;background:#f8f5ee;border:1px solid #eadfce;border-radius:9px;padding:13px 16px;line-height:1.7}
     .rac-opomba{font-size:9pt;color:#666;margin:10px 0 0}
     .rac-noga-txt{font-size:8.2pt;color:#9a9088;margin-top:22px}

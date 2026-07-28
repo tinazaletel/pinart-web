@@ -983,7 +983,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         @keyframes rwPanel{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
         @media (prefers-reduced-motion:reduce){.rw-profil-panel{animation:none}}
         .rw-profil-glava{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.6rem}
-        .rw-profil-glava h2{margin:0;font-family:var(--font-serif),Didot,serif;font-size:1.9rem;font-weight:600;color:var(--ink)}
+        .rw-profil-glava h2{margin:0;font-family:var(--font-serif),Didot,serif;font-size:1.9rem;font-weight:500;color:var(--ink)}
         .rw-profil-x{font:inherit;font-size:.74rem;font-weight:600;color:rgba(17,17,17,.6);background:none;border:none;cursor:pointer;padding:.4rem}
         .rw-profil-x:hover{color:var(--ink)}
         .rw-profil-sek{margin-bottom:2.2rem}
