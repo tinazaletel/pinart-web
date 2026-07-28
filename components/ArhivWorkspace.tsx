@@ -557,7 +557,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                       </div>
 
                       {items.length ? (
-                        <div className="arh-racun-telo">
+                        <div className="arh-racun-telo" style={{ paddingBottom: '40px' }}>
                           <div className="arh-racun-tabela-ovoj">
                             <table className="arh-racun-tabela">
                               <thead><tr><th>Opis</th><th>Kol.</th><th>Cena</th>{imaPopust && <th>Popust</th>}{imaDdv && <th>DDV</th>}<th>Skupaj</th></tr></thead>
