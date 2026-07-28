@@ -211,7 +211,7 @@
 .previewSwitch .previewActive { background: linear-gradient(135deg, var(--purple), oklch(62% .22 297)); color: oklch(98% .01 300); }
 .feedback { position: fixed; z-index: 80; right: 1.2rem; bottom: 1.2rem; display: flex; align-items: center; gap: 1rem; max-width: 24rem; padding: .8rem 1rem; border-radius: .85rem; background: var(--ink); color: var(--paper); box-shadow: 0 1rem 3rem oklch(20% .03 55 / .2); font-size: .64rem; }
 .feedback button { border: 0; background: none; color: inherit; font-size: 1rem; cursor: pointer; }
-.flowBand, .historyBand, .resultsBand, .eventsBand, .detailsBand { margin-top: 1rem; padding: 1.5rem; border: 1px solid var(--line); border-radius: 1.45rem; background: linear-gradient(145deg, #f6f0ea, #f8f3ed); box-shadow: 0 .6rem 1.6rem oklch(20% .02 55 / .04); }
+.flowBand, .historyBand, .resultsBand, .eventsBand, .detailsBand { margin-top: 1rem; padding: 1.5rem; border: 1px solid oklch(93% .007 82 / .55); border-radius: 1.45rem; background: radial-gradient(125% 80% at 50% -8%, oklch(99.4% .006 88 / .5), transparent 60%), radial-gradient(90% 60% at 88% 8%, oklch(99% .01 300 / .28), transparent 55%), linear-gradient(to bottom, #f9f4ef, #f6f0ea); box-shadow: 0 .4rem 1.2rem oklch(20% .02 55 / .025); }
 /* paneli = flex stolpci, da so povezave "Pojdi na X" poravnane na dnu in vsebina zapolni prostor */
 .historyBand, .resultsBand, .eventsBand { display: flex; flex-direction: column; }
 .flowBand { margin-top: .35rem; }
@@ -344,9 +344,9 @@
 .kpiGrid { flex: 1; margin-top: .45rem; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: .9rem; }
 .kpiGrid .kpi { min-height: 7.6rem; padding: 1.05rem; border-radius: 1rem; }
 /* "Ta mesec" dropdown (namesto pilul) */
-.periodSelect { height: 2.1rem; box-sizing: border-box; padding: 0 1.9rem 0 .85rem; border: 1px solid color-mix(in oklch, var(--ink) 7%, transparent); border-radius: 999px; background-color: oklch(99.3% .004 90); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%231c1815' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: right .75rem center; background-repeat: no-repeat; appearance: none; -webkit-appearance: none; color: var(--ink); font: 750 .55rem var(--font-sans), sans-serif; white-space: nowrap; cursor: pointer; }
+.periodSelect { height: 2.1rem; min-height: 2.1rem; max-height: 2.1rem; line-height: 1; box-sizing: border-box; padding: 0 1.9rem 0 .85rem !important; border: 1px solid color-mix(in oklch, var(--ink) 7%, transparent); border-radius: 999px; background-color: oklch(99.3% .004 90); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%231c1815' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: right .75rem center; background-repeat: no-repeat; appearance: none; -webkit-appearance: none; color: var(--ink); font: 750 .55rem var(--font-sans), sans-serif; white-space: nowrap; cursor: pointer; }
 /* "Pojdi na podrobnosti / koledar" povezava na dnu panela */
-.panelMore { display: inline-flex; align-items: center; gap: .4rem; margin-top: auto; padding-top: 1rem; font: 650 .82rem var(--font-sans), sans-serif; letter-spacing: 0; text-transform: none; color: oklch(52% .16 300); text-decoration: none; }
+.panelMore { display: inline-flex; align-items: center; gap: .4rem; margin-top: 1.3rem; padding-top: 0; font: 650 .82rem var(--font-sans), sans-serif; letter-spacing: 0; text-transform: none; color: oklch(52% .16 300); text-decoration: none; }
 .panelMore:hover { color: oklch(45% .18 300); }
 /* Dogodki & roki — seznam prihodnjih rokov */
 .eventList { flex: 1; list-style: none; margin: .3rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .75rem; }
@@ -392,11 +392,11 @@
 .historyBand .tableWrap th:nth-child(2) { width: 22%; }
 .historyBand .tableWrap th:nth-child(3) { width: 21%; }
 .historyBand .tableWrap th:nth-child(4) { width: 22%; }
-.historyTable { overflow: hidden; border: 1px solid color-mix(in oklch, var(--ink) 10%, transparent); }
+.historyTable { overflow: hidden; border: 1px solid oklch(93% .007 82 / .55); }
 .historyBand .historyTable, .detailRow .historyTable { flex: 1; margin-top: .45rem; }
 .historyBand .historyTable > table, .detailRow .historyTable > table { height: 100%; }
 .historyTable table { margin: 0; }
-.historyTable th { padding: .7rem .9rem; background: #f7f1e9; border-bottom: 1px solid color-mix(in oklch, var(--ink) 6%, transparent); font-size: .55rem; color: color-mix(in oklch, var(--ink) 42%, transparent); }
+.historyTable th { padding: .7rem .9rem; background: #f7f1e9; border-bottom: 1px solid oklch(93% .007 82 / .5); font-size: .55rem; color: color-mix(in oklch, var(--ink) 42%, transparent); }
 .historyTable td { height: 5rem; padding: .9rem .9rem; background: transparent; vertical-align: middle; }
 .historyTable td:nth-child(3) { white-space: nowrap; }
 .historyTable th:first-child, .historyTable td:first-child { padding-left: 1.4rem; }
@@ -1024,7 +1024,7 @@
 .tableWrap { margin-top: 1.2rem; overflow-x: auto; }
 .tableWrap table { width: 100%; min-width: 38rem; border-collapse: collapse; font-size: .69rem; }
 .tableWrap th { padding: .7rem .5rem; border-bottom: 1px solid var(--line); color: color-mix(in oklch, var(--ink) 55%, transparent); font-size: .57rem; letter-spacing: .08em; text-align: left; text-transform: uppercase; }
-.tableWrap td { padding: .8rem .5rem; border-bottom: 1px solid color-mix(in oklch, var(--line) 40%, transparent); }
+.tableWrap td { padding: .8rem .5rem; border-bottom: 1px solid color-mix(in oklch, var(--line) 26%, transparent); }
 .tableWrap select { padding: .45rem .6rem; border: 1px solid var(--line); border-radius: 99px; background: var(--paper); color: inherit; font: 700 .61rem var(--font-sans), sans-serif; }
 .historyTable select.status_waiting,
 .historyTable select.status_success,
