@@ -981,6 +981,19 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
     {/* ── POGLED 3: ZAKLJUCEK (prenos + posiljanje + shranjevanje) ── */}
     {pogled === 'zakljucek' && <section className="pg-sek pg-stran pg-stolpec pg-zakljucek">
+      <div className="pg-zakljucek-lik" aria-hidden>
+        <svg viewBox="0 0 120 140" width="76" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="60" cy="133" rx="30" ry="4.5" fill="rgba(17,17,17,.12)" />
+          <g fill="none" stroke="rgba(17,17,17,.46)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M36 16 h36 l18 18 v66 a6 6 0 0 1 -6 6 H36 a6 6 0 0 1 -6 -6 V22 a6 6 0 0 1 6 -6 z" />
+            <path d="M72 16 v12 a6 6 0 0 0 6 6 h12" />
+            <path d="M40 54 h40" /><path d="M40 66 h40" /><path d="M40 78 h26" />
+          </g>
+          <circle cx="78" cy="83" r="13" fill="#fff" />
+          <circle cx="78" cy="83" r="13" fill="none" stroke="rgba(124,58,237,.7)" strokeWidth="2.6" />
+          <path d="M71 83 l5 5 l9 -10" fill="none" stroke="rgba(124,58,237,.95)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
       <p className="pg-kicker">{VRSTE_POG.find(v => v.id === vrstaPog)!.kick}{vir === 'ponudba' && selectedOffer?.number ? ` · PONUDBA ŠT. ${selectedOffer.number}` : ''}</p>
       <h2 className="pg-naslov">Zaključek.{odvPoslano && <span className="pg-odvetnik-znak">Pri odvetniku</span>}</h2>
       <p className="pg-uvod">Prenesi pogodbo{narocnikIme() ? ' za ' + narocnikIme() : ''}, jo shrani ali pošlji naročniku.</p>
@@ -1086,6 +1099,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 1.6rem;color:var(--ink)}
       .pg-naslov{margin:.35rem 0 1.1rem;font:500 clamp(1.7rem,3.4vw,2.4rem)/1 var(--font-serif),Didot,serif;letter-spacing:-.012em;color:var(--ink);overflow-wrap:anywhere}
       .pg-uvod{margin:0 0 1.4rem;font-size:.92rem;line-height:1.55;color:rgba(17,17,17,.72);max-width:34rem}
+      .pg-zakljucek-lik{display:flex;justify-content:center;margin:.5rem 0 1.1rem}
+      .pg-zakljucek-lik svg{width:76px;height:auto}
+      .pg-zakljucek .pg-kicker,.pg-zakljucek .pg-naslov,.pg-zakljucek .pg-uvod{text-align:center}
+      .pg-zakljucek .pg-uvod{margin-left:auto;margin-right:auto}
       .pg-disc{margin:-.7rem 0 1.4rem;padding:.7rem .85rem;max-width:34rem;font-size:.76rem;line-height:1.5;color:rgba(17,17,17,.66);background:oklch(96% .03 85);border:1px solid oklch(85% .07 78);border-radius:.7rem}
       .pg-disc b{color:rgba(17,17,17,.82)}
 
