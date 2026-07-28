@@ -619,7 +619,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
            NE ozek stolpec (ta velja samo za vprašalnike/urejanje dokumentov). */
         .arh-vsebina{position:relative;z-index:1;width:100%;max-width:100%;margin:0;padding:0 0 6rem;min-width:0}
         .arh-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 .3rem}
-        .arh-h1{font-family:var(--font-sans),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
+        .arh-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
         .arh-uvod{font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72);margin:0 0 2rem;max-width:38rem}
 
         /* glava: zavihki (levo) + ArhivFilter aktivnega zavihka (desno) v ENI vrsti
@@ -663,7 +663,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         /* naslovna vrstica tabele (oznaka + stevec) = DEL tabele, vijola podlaga */
         .arh-tabela-naslov{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem 1rem .85rem;background:oklch(95% .035 300);border-bottom:1px solid rgba(17,17,17,.08)}
         .arh-tabela-oznaka{font-size:.66rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:oklch(45% .12 300)}
-        .arh-tabela-naslov strong{font-family:var(--font-sans),Didot,serif;font-weight:500;font-size:1.6rem;line-height:1;color:var(--ink)}
+        .arh-tabela-naslov strong{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:1.6rem;line-height:1;color:var(--ink)}
         .arh-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.7rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.5);border-bottom:1px solid rgba(17,17,17,.1)}
         .arh-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:none;border-bottom:1px solid rgba(17,17,17,.07);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
         .arh-vrstica:last-child{border-bottom:none}
@@ -700,7 +700,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
         /* ── detajl panel (vzorec ContractWorkspace) ── */
         .arh-detajl{width:min(42rem,94vw);display:flex;flex-direction:column;gap:.2rem}
-        .arh-detajl h2{margin:.4rem 0 .5rem;font-family:var(--font-sans),Didot,serif;font-weight:500;font-size:clamp(1.8rem,3vw,2.6rem);line-height:1.05;color:var(--ink)}
+        .arh-detajl h2{margin:.4rem 0 .5rem;font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.8rem,3vw,2.6rem);line-height:1.05;color:var(--ink)}
         .arh-det-statusvrsta{margin:0 0 1.1rem}
         /* lepljivi X ostane v kotu med drsenjem (kopija .pg-det-x) */
         /* × FIKSEN v desnem kotu panela, POD topbarom (fixed z-100) in NAD njim po z-indexu — vedno viden, ne odscrolla (panel je overflow-y:auto, absoluten × bi odscrollal) */
@@ -745,7 +745,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-ponudba-dok{margin-top:.9rem;border:1px solid oklch(93% .006 82 / .55);border-radius:10px;background:#fff;box-shadow:0 10px 28px rgba(17,17,17,.08);overflow:hidden}
         .arh-ponudba-dok-glava{padding:1.5rem 1.6rem 1.2rem;border-bottom:1px solid rgba(17,17,17,.1);background:linear-gradient(180deg, oklch(98% .01 87), #fff)}
         .arh-ponudba-dok-kick{margin:0 0 .5rem;font-size:.66rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--accent,#B25476)}
-        .arh-ponudba-dok-naslov{margin:0 0 1rem;font-family:var(--font-sans),Didot,serif;font-weight:500;font-size:clamp(1.3rem,2.6vw,1.7rem);line-height:1.1;color:var(--ink)}
+        .arh-ponudba-dok-naslov{margin:0 0 1rem;font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.3rem,2.6vw,1.7rem);line-height:1.1;color:var(--ink)}
         .arh-ponudba-dok-meta{display:flex;flex-wrap:wrap;gap:1.4rem}
         .arh-ponudba-dok-meta span{display:grid;gap:.15rem;min-width:0}
         .arh-ponudba-dok-meta small{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(17,17,17,.5)}
@@ -772,7 +772,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
         /* telo pogodbe (kopija .pg-doktelo) */
         .arh-doktelo{width:100%;min-width:0;margin-top:1rem;border:1px solid oklch(93% .006 82 / .55);background:#fff;padding:1.35rem;color:var(--ink);font-family:var(--font-sans),system-ui,sans-serif;font-size:.9rem;line-height:1.62;overflow:auto;border-radius:8px}
-        .arh-doktelo h1{margin:0 0 .6rem;font-family:var(--font-sans),Didot,serif;font-size:clamp(1.4rem,3.4vw,1.9rem);line-height:1.05;font-weight:500}
+        .arh-doktelo h1{margin:0 0 .6rem;font-family:var(--font-serif),Didot,serif;font-size:clamp(1.4rem,3.4vw,1.9rem);line-height:1.05;font-weight:500}
         .arh-doktelo h2{margin:1.2rem 0 .4rem;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent,#B25476)}
         .arh-doktelo p{margin:0 0 .7rem;max-width:70ch}
         .arh-doktelo b,.arh-doktelo strong{font-weight:800}

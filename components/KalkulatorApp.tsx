@@ -5166,7 +5166,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         @keyframes sgOdhod { from { opacity: 1; } to { opacity: 0; transform: translateY(-6px); } }
         @media (prefers-reduced-motion: reduce) { .cw .soglasje-odhaja { animation: none; opacity: 0; } }
         .cw .soglasje-kartica { max-width: 540px; max-height: calc(100dvh - 2.5rem); overflow-y: auto; background: var(--paper); border: 1px solid rgba(17,17,17,.25); border-radius: 16px; padding: clamp(1.6rem, 4vw, 2.6rem); box-shadow: 0 24px 80px rgba(17,17,17,.12); }
-        .cw .soglasje-kartica h2 { font-family: var(--font-sans), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 4.5vw, 2.4rem); line-height: 1.05; margin: 0 0 1.1rem; }
+        .cw .soglasje-kartica h2 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 4.5vw, 2.4rem); line-height: 1.05; margin: 0 0 1.1rem; }
         .cw .soglasje-kartica ul { margin: 0 0 1.8rem; padding-left: 0; list-style: none; }
         .cw .soglasje-kartica li { font-size: 1.02rem; font-weight: 400; line-height: 1.65; color: var(--ink); margin-bottom: .8rem; }
         .cw .soglasje-tocke { margin: 0; }
@@ -5185,7 +5185,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .sg-motiv p b { font-weight: 700; }
         .cw .profil-glava { display: flex; flex-direction: column; margin-bottom: 1.1rem; }
         .cw .profil-glava-zapri { display: flex; justify-content: flex-end; margin-bottom: .9rem; }
-        .cw .profil-glava-naslov { display: flex; align-items: center; gap: .6rem; margin: 0; font-family: var(--font-sans), Didot, serif; font-weight: 500; font-size: clamp(1.5rem, 4vw, 2.1rem); }
+        .cw .profil-glava-naslov { display: flex; align-items: center; gap: .6rem; margin: 0; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.5rem, 4vw, 2.1rem); }
         .cw .profil-nazaj { flex: none; width: 2.1rem; height: 2.1rem; border-radius: 999px; border: 1px solid var(--ink); background: transparent; color: var(--ink); font-size: 1rem; font-family: inherit; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .18s ease, color .18s ease; }
         .cw .profil-nazaj:hover { background: var(--ink); color: var(--paper); }
         .cw .profil-meni { display: flex; flex-direction: column; gap: .6rem; }
@@ -5268,7 +5268,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .priprava-overlay { position: fixed; top: 0; right: 0; bottom: 0; width: min(1040px, 96vw); z-index: 60; background: var(--paper); box-shadow: -30px 0 80px rgba(40,25,40,.25); overflow-y: auto; padding: 1.8rem clamp(1.4rem, 4vw, 3rem) 6.5rem; border-radius: 26px 0 0 26px; animation: pripravaVstop .42s cubic-bezier(.2,.8,.3,1) both; }
         @keyframes pripravaVstop { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .cw .priprava-glava { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
-        .cw .priprava-glava .priprava-h { font-family: var(--font-sans), serif; font-weight: 500; font-size: clamp(1.9rem, 3.6vw, 2.6rem); margin: .1rem 0 .35rem; }
+        .cw .priprava-glava .priprava-h { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 3.6vw, 2.6rem); margin: .1rem 0 .35rem; }
         .cw .priprava-glava .sub { margin: 0; max-width: 46ch; }
         @media (prefers-reduced-motion: reduce) { .cw .priprava-overlay, .cw .priprava-backdrop { animation: none; } }
         @media (max-width: 560px) { .cw .priprava-overlay { border-radius: 0; width: 100vw; } }
@@ -5841,7 +5841,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* glava strani v lupini — ista mera kot pri retainerju */
         .cw .lupina-glava { width: min(1240px, 100%); margin: 0 auto; padding: clamp(1.6rem, 4vw, 2.6rem) clamp(1.2rem, 4vw, 3rem) 0; position: relative; z-index: 2; }
         .cw .lg-kicker { margin: 0 0 .3rem; font-size: .78rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
-        .cw .lg-naslov { margin: 0 0 .6rem; font-family: var(--font-sans), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 3.4vw, 2.4rem); line-height: 1; letter-spacing: -.012em; color: var(--ink); }
+        .cw .lg-naslov { margin: 0 0 .6rem; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 3.4vw, 2.4rem); line-height: 1; letter-spacing: -.012em; color: var(--ink); }
         .cw .lg-uvod { margin: 0; max-width: 34rem; font-size: 1rem; line-height: 1.55; color: rgba(17,17,17,.72); }
         /* napredek je zdaj crta V headerju (FlowTopBar), da se premika z njim */
         .cw.cw-lupina .oder { padding-top: 1.5rem; position: relative; z-index: 1; }
@@ -5860,7 +5860,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         @media (prefers-reduced-motion: reduce) { .cw .korak-vsebina { animation: none; } }
 
         /* Delovni naslovi koraka poenoteni s skupnim .topbar h1 (retainer/pogodba/računi). Uvodni hero (.uvod-h, .lg-naslov) ostane večji prek lastnega razreda. */
-        .cw h1 { position: relative; font-family: var(--font-sans), Didot, serif; font-weight: 500; font-size: clamp(1.55rem, 2.8vw, 2.3rem); line-height: 1.05; letter-spacing: -.012em; margin: 0 0 .8rem; }
+        .cw h1 { position: relative; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.55rem, 2.8vw, 2.3rem); line-height: 1.05; letter-spacing: -.012em; margin: 0 0 .8rem; }
         .cw .h1-step { position: absolute; top: .42rem; right: calc(100% + .75rem); font-family: var(--font-sans), system-ui, sans-serif; font-size: .72rem; line-height: 1; font-weight: 800; letter-spacing: .16em; color: rgba(17,17,17,.55); }
         .cw .sub-vrsta { display: flex; justify-content: space-between; align-items: baseline; gap: 2rem; margin: 0 0 2.4rem; flex-wrap: wrap; }
         .cw .sub { font-size: clamp(1rem, 1.6vw, 1.2rem); line-height: 1.6; color: rgba(17,17,17,.72); margin: 0; max-width: 52ch; min-width: 0; }
@@ -5901,7 +5901,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .kartica .izbira { max-width: none; }
         .cw .kartica .opts { margin-top: 0; }
         .cw .izbira button { text-align: left; border: 1px solid rgba(17,17,17,.25); background: transparent; border-radius: 14px; padding: 1.4rem 1.5rem; cursor: pointer; font-family: inherit; color: var(--ink); transition: border-color .18s ease, background .18s ease, color .18s ease; }
-        .cw .izbira button h3 { margin: 0 0 .3rem; font-family: var(--font-sans), serif; font-weight: 500; font-size: 1.3rem; }
+        .cw .izbira button h3 { margin: 0 0 .3rem; font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.3rem; }
         .cw .izbira button p { margin: 0; font-size: .85rem; line-height: 1.55; color: rgba(17,17,17,.68); font-weight: 300; }
         .cw .izbira button.on { background: var(--accent); border-color: var(--accent); color: var(--paper); }
         .cw .izbira button.on p { color: rgba(245,242,234,.82); }
@@ -6261,7 +6261,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ret-povzetek { margin-top: .9rem; padding: 1.1rem 1.2rem; border-radius: 16px; background: #FCFBF7; border: 1px solid rgba(17,17,17,.1); }
         .cw .ret-glavna { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding-bottom: .7rem; border-bottom: 1px solid rgba(17,17,17,.1); }
         .cw .ret-glavna span { font-size: .82rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: rgba(17,17,17,.55); }
-        .cw .ret-glavna b { font-family: var(--font-sans), serif; font-weight: 500; font-size: 1.5rem; color: var(--ink); }
+        .cw .ret-glavna b { font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.5rem; color: var(--ink); }
         .cw .ret-detajli { list-style: none; margin: .7rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .32rem; }
         .cw .ret-detajli li { font-size: .86rem; color: rgba(17,17,17,.7); padding-left: 1rem; position: relative; }
         .cw .ret-detajli li::before { content: "·"; position: absolute; left: .2rem; color: var(--accent); font-weight: 700; }
@@ -6278,9 +6278,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .paket.mid .paket-edit { border-color: rgba(245,242,234,.5); color: rgba(245,242,234,.95); background: rgba(245,242,234,.16); }
         .cw .paket.mid .paket-edit:hover { color: var(--paper); border-color: var(--paper); background: rgba(245,242,234,.26); }
         .cw .paket-cena-uredi { display: flex; align-items: baseline; gap: .35rem; margin: .5rem 0 .55rem; }
-        .cw .paket-cena-uredi input { width: 5.5rem; border: none; border-bottom: 2px solid currentColor; background: transparent; font-family: var(--font-sans), Didot, serif; font-size: clamp(1.7rem, 4vw, 2.3rem); font-weight: 500; letter-spacing: -.01em; padding: 0 0 .1rem; color: inherit; border-radius: 0; }
+        .cw .paket-cena-uredi input { width: 5.5rem; border: none; border-bottom: 2px solid currentColor; background: transparent; font-family: var(--font-serif), Didot, serif; font-size: clamp(1.7rem, 4vw, 2.3rem); font-weight: 500; letter-spacing: -.01em; padding: 0 0 .1rem; color: inherit; border-radius: 0; }
         .cw .paket-cena-uredi input:focus { outline: none; }
-        .cw .paket-cena-uredi .pe-znak { font-family: var(--font-sans), serif; font-size: 1.4rem; font-weight: 500; }
+        .cw .paket-cena-uredi .pe-znak { font-family: var(--font-serif), serif; font-size: 1.4rem; font-weight: 500; }
         .cw .paket-rocno { font-size: .6rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; opacity: .7; margin: -.35rem 0 .5rem; }
         .cw .paket-reset { font-size: .75rem; margin: 0 0 .6rem; color: inherit; opacity: .8; }
         .cw .paket.mid .paket-reset { color: var(--paper); }
@@ -6289,7 +6289,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .paket.mid { background: var(--accent); color: var(--paper); }
         .cw .paket.mid + .paket { border-color: rgba(245,242,234,.4); }
         .cw .paket h3 { margin: 0; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 600; opacity: .85; }
-        .cw .paket .redna { font-family: var(--font-sans), serif; font-size: 1.05rem; text-decoration: line-through; opacity: .62; margin-top: .5rem; margin-bottom: -.4rem; -webkit-text-stroke: 0.3px currentColor; }
+        .cw .paket .redna { font-family: var(--font-serif), serif; font-size: 1.05rem; text-decoration: line-through; opacity: .62; margin-top: .5rem; margin-bottom: -.4rem; -webkit-text-stroke: 0.3px currentColor; }
         .cw .paket .znesek { font-family: var(--font-sans), system-ui, sans-serif; font-size: clamp(2rem, 4.5vw, 2.6rem); font-weight: 500; margin: .5rem 0 .55rem; letter-spacing: -.01em; -webkit-text-stroke: 0; }
         .cw .paket p { margin: 0; font-size: .9rem; line-height: 1.6; opacity: .8; }
         .cw .paket.mid p { opacity: .88; }
@@ -6449,7 +6449,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .predogled-osvezi { position: absolute; top: .6rem; right: .6rem; background: rgba(17,17,17,.72); color: #fff; font-size: .72rem; padding: .3rem .6rem; border-radius: 999px; pointer-events: none; z-index: 2; }
         .cw .editor b, .cw .editor strong { font-weight: 900; color: var(--ink); }
         .cw .editor h1 b, .cw .editor h1 strong { font-weight: 900; }
-        .cw .editor h1 { margin: 0 0 1.1rem; font-family: var(--font-sans), Didot, serif; font-size: clamp(2rem, 5vw, 3.4rem); line-height: .98; font-weight: 500; letter-spacing: -.01em; }
+        .cw .editor h1 { margin: 0 0 1.1rem; font-family: var(--font-serif), Didot, serif; font-size: clamp(2rem, 5vw, 3.4rem); line-height: .98; font-weight: 500; letter-spacing: -.01em; }
         /* meta (Št./Datum/Velja) NAD naslovom (majhna, a berljiva); naslov cez celo sirino */
         .cw .editor .offer-head { display: flex; flex-direction: column-reverse; align-items: stretch; gap: .55rem; margin: 0 0 1.4rem; }
         .cw .editor .offer-head-t { min-width: 0; width: 100%; }
@@ -6463,7 +6463,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .editor .offer-kicker { margin: 1.2rem 0 .4rem; font-size: .78rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--ink); }
         .cw .editor h2 { margin: 3rem 0 1rem; font-size: .76rem; line-height: 1.2; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; border-top: 1px solid rgba(17,17,17,.18); padding-top: 1.4rem; }
         .cw .editor h2:first-child { margin-top: 0; }
-        .cw .editor h3 { margin: 0 0 .45rem; font-family: var(--font-sans), Didot, serif; font-size: clamp(1.25rem, 3vw, 1.75rem); line-height: 1.1; font-weight: 500; }
+        .cw .editor h3 { margin: 0 0 .45rem; font-family: var(--font-serif), Didot, serif; font-size: clamp(1.25rem, 3vw, 1.75rem); line-height: 1.1; font-weight: 500; }
         .cw .editor p { margin: 0 0 1.1rem; max-width: 72ch; }
         .cw .editor ul { margin: 0 0 1.5rem; padding-left: 1.25rem; list-style: disc; }
         .cw .editor li { margin: .25rem 0; }
@@ -6473,7 +6473,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .editor .offer-package { border: 1px solid rgba(17,17,17,.18); background: rgba(236,230,213,.34); padding: .95rem 1rem; margin: .65rem 0; }
         .cw .editor .offer-package-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .35rem; }
         .cw .editor .offer-package h3 { margin: 0; font-family: var(--font-sans), system-ui, sans-serif; font-size: .78rem; line-height: 1.2; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
-        .cw .editor .offer-package strong { font-family: var(--font-sans), Didot, serif; font-size: 1.35rem; line-height: 1; font-weight: 500; white-space: nowrap; }
+        .cw .editor .offer-package strong { font-family: var(--font-serif), Didot, serif; font-size: 1.35rem; line-height: 1; font-weight: 500; white-space: nowrap; }
         .cw .editor .offer-podnaslov { font-weight: 700; margin: .9rem 0 .4rem; }
         .cw .editor .offer-vrstica { display: flex; justify-content: space-between; align-items: baseline; gap: 1.5rem; }
         .cw .editor .offer-cena { white-space: nowrap; font-weight: 700; }
