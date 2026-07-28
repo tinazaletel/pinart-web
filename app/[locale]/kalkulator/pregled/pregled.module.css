@@ -211,7 +211,9 @@
 .previewSwitch .previewActive { background: linear-gradient(135deg, var(--purple), oklch(62% .22 297)); color: oklch(98% .01 300); }
 .feedback { position: fixed; z-index: 80; right: 1.2rem; bottom: 1.2rem; display: flex; align-items: center; gap: 1rem; max-width: 24rem; padding: .8rem 1rem; border-radius: .85rem; background: var(--ink); color: var(--paper); box-shadow: 0 1rem 3rem oklch(20% .03 55 / .2); font-size: .64rem; }
 .feedback button { border: 0; background: none; color: inherit; font-size: 1rem; cursor: pointer; }
-.flowBand, .historyBand, .resultsBand, .eventsBand, .detailsBand { margin-top: 1rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: 1.45rem; background: linear-gradient(145deg, #f6f0ea, #f8f3ed); box-shadow: 0 .6rem 1.6rem oklch(20% .02 55 / .04); }
+.flowBand, .historyBand, .resultsBand, .eventsBand, .detailsBand { margin-top: 1rem; padding: 1.5rem; border: 1px solid var(--line); border-radius: 1.45rem; background: linear-gradient(145deg, #f6f0ea, #f8f3ed); box-shadow: 0 .6rem 1.6rem oklch(20% .02 55 / .04); }
+/* paneli = flex stolpci, da so povezave "Pojdi na X" poravnane na dnu in vsebina zapolni prostor */
+.historyBand, .resultsBand, .eventsBand { display: flex; flex-direction: column; }
 .flowBand { margin-top: .35rem; }
 .sectionHeader { display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; padding: .55rem .45rem 1rem; }
 .sectionHeader h2 { margin: 0; font: 500 clamp(1.25rem, 1.55vw, 1.6rem)/1.05 var(--font-serif), Georgia, serif; }
@@ -339,19 +341,21 @@
 @media (max-width: 1200px) { .overviewColumns { grid-template-columns: 1fr; } }
 
 /* KPI 2x2 v srednjem panelu */
-.kpiGrid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+.kpiGrid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
 .kpiGrid .kpi { min-height: 7.6rem; padding: 1.05rem; border-radius: 1rem; }
 /* "Ta mesec" dropdown (namesto pilul) */
 .periodSelect { padding: .55rem 2rem .55rem .9rem; border: 1px solid color-mix(in oklch, var(--ink) 14%, transparent); border-radius: 999px; background-color: oklch(99% .006 87); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%231c1815' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: right .8rem center; background-repeat: no-repeat; appearance: none; -webkit-appearance: none; color: var(--ink); font: 650 .68rem var(--font-sans), sans-serif; cursor: pointer; }
 /* "Pojdi na podrobnosti / koledar" povezava na dnu panela */
-.panelMore { display: inline-flex; align-items: center; gap: .4rem; margin-top: 1rem; font: 650 .82rem var(--font-sans), sans-serif; letter-spacing: 0; text-transform: none; color: oklch(52% .16 300); text-decoration: none; }
+.panelMore { display: inline-flex; align-items: center; gap: .4rem; margin-top: auto; padding-top: 1rem; font: 650 .82rem var(--font-sans), sans-serif; letter-spacing: 0; text-transform: none; color: oklch(52% .16 300); text-decoration: none; }
 .panelMore:hover { color: oklch(45% .18 300); }
 /* Dogodki & roki — seznam prihodnjih rokov */
-.eventList { list-style: none; margin: .2rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
-.eventList li { display: flex; align-items: stretch; gap: .55rem; }
-.eventDate { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .05rem; width: 3.4rem; padding: .5rem .3rem; border-radius: .9rem; background: oklch(95.5% .03 300); border: 1px solid oklch(84% .05 300 / .35); line-height: .95; }
-.eventDate b { font: 700 1rem/1 var(--font-sans), sans-serif; letter-spacing: -.02em; color: oklch(46% .12 300); }
-.eventDate small { font-size: .44rem; font-weight: 700; letter-spacing: .09em; color: oklch(56% .09 300); }
+.eventList { flex: 1; list-style: none; margin: .3rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .75rem; }
+.eventList li { flex: 1; display: flex; align-items: center; gap: .7rem; }
+.eventDate { --ed: oklch(58% .13 300); flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .05rem; width: 3.4rem; aspect-ratio: 1; padding: .3rem; border-radius: .95rem; background: color-mix(in oklch, var(--ed) 13%, oklch(99% 0 0)); line-height: .95; }
+.eventDate b { font: 700 1rem/1 var(--font-sans), sans-serif; letter-spacing: -.02em; color: var(--ed); }
+.eventDate small { font-size: .44rem; font-weight: 700; letter-spacing: .09em; color: color-mix(in oklch, var(--ed) 78%, transparent); }
+.eventDate[data-tone='waiting'] { --ed: oklch(60% .15 72); }
+.eventDate[data-tone='info'] { --ed: oklch(58% .14 285); }
 .eventCard { flex: 1; display: flex; align-items: center; gap: .6rem; min-width: 0; padding: .6rem .85rem; border-radius: .8rem; background: oklch(99.7% .0015 90); border: 1px solid color-mix(in oklch, var(--ink) 5%, transparent); }
 .eventIco { flex: none; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; background: none; color: var(--et, oklch(52% .13 300)); }
 .eventIco[data-tone='waiting'] { --et: oklch(60% .15 72); }
@@ -373,11 +377,11 @@
 @media (max-width: 1000px) { .detailRow { grid-template-columns: 1fr; } }
 /* Prihodki po mesecih — stolpcni graf */
 /* Prihodki po mesecih — graf z Y-osjo (crte + stevilke levo) */
-.chartWrap { display: flex; gap: .55rem; margin: .6rem 0 1.5rem; }
-.chartAxis { display: flex; flex-direction: column; justify-content: space-between; height: 9.5rem; font: 600 .5rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 45%, transparent); text-align: right; }
+.chartWrap { flex: 1; display: flex; gap: .55rem; margin: .6rem 0 1.5rem; min-height: 9.5rem; }
+.chartAxis { display: flex; flex-direction: column; justify-content: space-between; height: 100%; font: 600 .5rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 45%, transparent); text-align: right; }
 .chartAxis span { transform: translateY(-.35em); }
 .chartAxis span:last-child { transform: none; }
-.barChart { position: relative; flex: 1; height: 9.5rem; display: flex; align-items: flex-end; gap: .7rem; }
+.barChart { position: relative; flex: 1; height: 100%; display: flex; align-items: flex-end; gap: .7rem; }
 .chartGrid { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
 .chartGrid i { display: block; height: 1px; background: color-mix(in oklch, var(--ink) 8%, transparent); }
 .barChart .bar { position: relative; z-index: 1; flex: 1; display: flex; align-items: flex-end; justify-content: center; height: 100%; }
@@ -389,6 +393,8 @@
 .historyBand .tableWrap th:nth-child(3) { width: 21%; }
 .historyBand .tableWrap th:nth-child(4) { width: 22%; }
 .historyTable { overflow: hidden; border: 1px solid color-mix(in oklch, var(--ink) 10%, transparent); }
+.historyBand .historyTable, .detailRow .historyTable { flex: 1; }
+.historyBand .historyTable > table, .detailRow .historyTable > table { height: 100%; }
 .historyTable table { margin: 0; }
 .historyTable th { padding: .7rem .9rem; background: #f7f1e9; border-bottom: 1px solid color-mix(in oklch, var(--ink) 6%, transparent); font-size: .55rem; color: color-mix(in oklch, var(--ink) 42%, transparent); }
 .historyTable td { height: 5rem; padding: .9rem .9rem; background: transparent; vertical-align: middle; }
@@ -970,16 +976,16 @@
 .businessIntro h2 { margin: 0; font: 500 clamp(1.5rem, 2.5vw, 2.15rem)/1 var(--font-serif), Georgia, serif; }
 .businessIntro > p:last-child { margin: .7rem 0 0; color: color-mix(in oklch, var(--ink) 60%, transparent); font-size: .65rem; line-height: 1.45; }
 .kpi { position: relative; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
-.kpi:nth-child(1) { background: linear-gradient(135deg, oklch(97% .02 300), oklch(89% .075 297)); }
-.kpi:nth-child(2) { background: linear-gradient(135deg, oklch(97% .025 255), oklch(88% .08 260)); }
-.kpi:nth-child(3) { background: linear-gradient(135deg, oklch(97% .03 70), oklch(87% .09 52)); }
-.kpi:nth-child(4) { background: linear-gradient(135deg, oklch(96% .025 158), oklch(87% .085 162)); }
+.kpi:nth-child(1) { background: #ebe0fa; }
+.kpi:nth-child(2) { background: #d1e4fc; }
+.kpi:nth-child(3) { background: #fde4d2; }
+.kpi:nth-child(4) { background: #e2f3e5; }
 .kpi > span { font-size: .63rem; font-weight: 750; }
 .kpi strong { margin: 1.4rem 0 .25rem; font: 600 clamp(1.5rem, 2.2vw, 2.35rem) var(--font-sans), system-ui, sans-serif; letter-spacing: -.01em; font-variant-numeric: tabular-nums; -webkit-text-stroke: 0; }
 .kpi small { color: color-mix(in oklch, currentColor 58%, transparent); font-size: .56rem; }
 /* KPI ikona = samo ikona (BREZ kvadratnega ozadja), kot mockup */
-.resultIcon { position: absolute; z-index: 0; right: 1rem; bottom: .9rem; display: grid; place-items: center; width: 3rem; aspect-ratio: 1; border: 0; border-radius: 0; background: none; box-shadow: none; opacity: .55; transform: none; }
-.resultIcon svg { width: 2.7rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.resultIcon { position: absolute; z-index: 0; right: 1.1rem; bottom: 1rem; display: grid; place-items: center; width: 3.6rem; aspect-ratio: 1; border: 0; border-radius: 0; background: none; box-shadow: none; opacity: .55; transform: none; }
+.resultIcon svg { width: 3.4rem; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .kpi > span, .kpi > strong, .kpi > small { position: relative; z-index: 1; }
 .kpi:nth-child(1) .resultIcon { color: var(--purple); }
 .kpi:nth-child(2) .resultIcon { color: oklch(58% .16 255); }
