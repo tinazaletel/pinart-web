@@ -5543,7 +5543,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .uvod-oder { position: relative; z-index: 1; width: min(680px, 92vw); margin: 0 auto; padding: 2rem 0 3rem; flex: 1; display: flex; flex-direction: column; justify-content: center; }
         .cw .uvod-oder .ob-kicker { text-align: center; }
         /* naslovi onboarding hero = ISTA mera kot retainer (.rw-h1/.rw-kicker/.rw-uvod) */
-        .cw .uvod-h { text-align: center; font-size: clamp(2.4rem, 6vw, 4rem); }
+        .cw .uvod-h { text-align: center; font-size: clamp(1.7rem, 3.4vw, 2.4rem); }
         .cw .uvod-uvodnik .ob-kicker { font-size: .78rem; letter-spacing: .2em; }
         .cw .uvod-sub { text-align: center; max-width: 42ch; margin: .4rem auto 0; font-size: 1rem; line-height: 1.55; }
         /* pomiritev "vprasamo enkrat" — berljivo (ink, ne siva): Tina slabo vidi */
@@ -5841,7 +5841,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* glava strani v lupini — ista mera kot pri retainerju */
         .cw .lupina-glava { width: min(1240px, 100%); margin: 0 auto; padding: clamp(1.6rem, 4vw, 2.6rem) clamp(1.2rem, 4vw, 3rem) 0; position: relative; z-index: 2; }
         .cw .lg-kicker { margin: 0 0 .3rem; font-size: .78rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
-        .cw .lg-naslov { margin: 0 0 .6rem; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(2.4rem, 6vw, 4rem); line-height: 1; letter-spacing: -.012em; color: var(--ink); }
+        .cw .lg-naslov { margin: 0 0 .6rem; font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 3.4vw, 2.4rem); line-height: 1; letter-spacing: -.012em; color: var(--ink); }
         .cw .lg-uvod { margin: 0; max-width: 34rem; font-size: 1rem; line-height: 1.55; color: rgba(17,17,17,.72); }
         /* napredek je zdaj crta V headerju (FlowTopBar), da se premika z njim */
         .cw.cw-lupina .oder { padding-top: 1.5rem; position: relative; z-index: 1; }
