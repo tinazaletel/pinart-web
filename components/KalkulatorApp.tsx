@@ -3460,7 +3460,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      zato sta vedno usklajena z zadnjo izbiro v profilu. */
   const dokGlavaTagHtml = (): string => {
     const g = aktivnaPredloga().glava?.trim();
-    return g ? `<div class="pdf-glava-tag" style="font-size:8pt;letter-spacing:.06em;color:var(--akcent,#B25476);margin-top:3px">${escapeHtml(g)}</div>` : '';
+    return g ? `<div class="pdf-glava-tag" style="font-size:8pt;letter-spacing:.06em;color:#111;margin-top:3px">${escapeHtml(g)}</div>` : '';
   };
   const dokNogaHtml = (): string => {
     const n = aktivnaPredloga().noga?.trim();

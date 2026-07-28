@@ -214,7 +214,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const glava = () => {
     const kontakt = [ponudnik.davcna.trim() && 'Davčna št.: ' + ponudnik.davcna.trim(), ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(), ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(), ponudnik.email.trim()].filter(Boolean).join(' · ');
     const glavaBesedilo = aktivnaPredloga().glava?.trim();
-    const glavaLine = glavaBesedilo ? '<br><span class="mut" style="color:var(--akcent,#B25476);font-weight:600">' + esc(glavaBesedilo) + '</span>' : '';
+    const glavaLine = glavaBesedilo ? '<br><span class="mut" style="color:#111;font-weight:600">' + esc(glavaBesedilo) + '</span>' : '';
     /* desni znak = TVOJ shranjeni logo (enotni vir: predloga ali K_LOGO); prej je bil trdo zakodiran »Pinart«, zato se logo ni videl */
     const logo = aktivniLogo();
     const znak = logo ? `<img class="lg-logo" src="${logo}" alt="">` : '';
@@ -1204,7 +1204,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-povezava:hover{opacity:.6}
       /* Odvetnik: umirjen blok pod pošiljanjem naročniku — tanek okvir, isti jezik kot .pg-disc/.pg-polje */
       /* odvetnik = mali banner na DESNEM robu zaslona, stran od obrazca */
-      .pg-odvetnik{position:fixed;right:1.2rem;top:7rem;width:15rem;max-width:38vw;margin:0;padding:1rem 1.05rem 1.1rem;border:1px solid rgba(17,17,17,.12);border-radius:16px;background:rgba(255,255,255,.72);backdrop-filter:blur(5px);text-align:left;z-index:30;box-shadow:0 .6rem 1.6rem rgba(20,20,20,.08)}
+      .pg-odvetnik{position:fixed;right:1.2rem;bottom:1.2rem;top:auto;width:15rem;max-width:38vw;margin:0;padding:1rem 1.05rem 1.1rem;border:1px solid rgba(17,17,17,.12);border-radius:16px;background:rgba(255,255,255,.72);backdrop-filter:blur(5px);text-align:left;z-index:30;box-shadow:0 .6rem 1.6rem rgba(20,20,20,.08)}
       @media (max-width:1160px){.pg-odvetnik{position:static;width:auto;max-width:560px;margin:1.4rem auto 0;backdrop-filter:none}}
       .pg-odvetnik-label{display:block;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
       .pg-odvetnik .pg-odvetnik-gumb{width:100%;justify-content:center;background:var(--accent);color:#fff;border:0;box-shadow:0 .4rem 1rem oklch(66% .2 297 / .3);font-size:.82rem;letter-spacing:.02em;text-transform:none;padding:.7rem 1rem;margin-top:.2rem}

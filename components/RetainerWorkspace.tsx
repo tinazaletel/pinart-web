@@ -266,7 +266,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   const glava = () => {
     const kontakt = [ponudnik.davcna.trim() && 'Davčna št.: ' + ponudnik.davcna.trim(), ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(), ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(), ponudnik.email.trim()].filter(Boolean).join(' · ');
     const glavaBesedilo = aktivnaPredloga().glava?.trim();
-    const glavaLine = glavaBesedilo ? '<br><span class="mut" style="color:var(--akcent,#B25476);font-weight:600">' + esc(glavaBesedilo) + '</span>' : '';
+    const glavaLine = glavaBesedilo ? '<br><span class="mut" style="color:#111;font-weight:600">' + esc(glavaBesedilo) + '</span>' : '';
     const logo = aktivniLogo();
     const znak = logo ? `<img class="lg-logo" src="${logo}" alt="">` : '';
     return `<div class="lg"><div><b>${esc(ponudnik.ime.trim() || '[Tvoje podjetje]')}</b>${glavaLine}${ponudnik.naslov.trim() ? '<br>' + esc(ponudnik.naslov.trim()) : ''}${kontakt ? '<br><span class="mut">' + esc(kontakt) + '</span>' : ''}</div>${znak}</div>`;

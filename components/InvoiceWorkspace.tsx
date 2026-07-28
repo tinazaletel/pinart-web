@@ -357,7 +357,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const glava = () => {
     const kontakt = [ponudnik.davcna.trim() && (ddvZavezanec ? 'ID za DDV: ' : 'Davčna št.: ') + ponudnik.davcna.trim(), ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(), ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(), ponudnik.email.trim()].filter(Boolean).join(' · ');
     const glavaBesedilo = aktivnaPredloga().glava?.trim();
-    const glavaLine = glavaBesedilo ? '<br><span class="mut" style="color:var(--akcent,#B25476);font-weight:600">' + esc(glavaBesedilo) + '</span>' : '';
+    const glavaLine = glavaBesedilo ? '<br><span class="mut" style="color:#111;font-weight:600">' + esc(glavaBesedilo) + '</span>' : '';
     /* desni znak = TVOJ shranjeni logo (enotni vir: predloga ali K_LOGO); prej trdo zakodiran »Pinart« -> logo se ni videl */
     const logo = aktivniLogo();
     const znak = logo ? `<img class="lg-logo" src="${logo}" alt="">` : '';
