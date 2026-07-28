@@ -205,11 +205,11 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         )}
 
         {/* 3 · kdo je stranka (razširjen brief — locen korak namesto ene "zelje" textarea) */}
-        {prikazan(3) && chatBot('Kdo je stranka?', 'Kaj počne, kakšen je njen kontekst — prosto besedilo.', 3)}
+        {prikazan(3) && chatBot('Kaj počne stranka?', 'Njena dejavnost in kontekst — prosto besedilo.', 3)}
         {odgovorjen(3) && chatOdgovor(3, obrazec.opisStranke.trim() || 'Brez opisa')}
         {aktiven(3) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 3); }}>
-            <textarea className="np-chat-polje" value={obrazec.opisStranke} onChange={event => setObrazec(o => ({ ...o, opisStranke: event.target.value }))} placeholder="Npr. lokalna kavarna, širi ponudbo na zajtrke …" rows={3} aria-label="Kdo je stranka" />
+            <textarea className="np-chat-polje" value={obrazec.opisStranke} onChange={event => setObrazec(o => ({ ...o, opisStranke: event.target.value }))} placeholder="Npr. lokalna kavarna, širi ponudbo na zajtrke …" rows={3} aria-label="Kaj počne stranka" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 3 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         )}
