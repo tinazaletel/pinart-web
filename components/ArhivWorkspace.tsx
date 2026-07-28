@@ -15,7 +15,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { CaretDown, CaretUp, FileText, Receipt, Scroll, Warning } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
-import { loadFlowData, type FlowContract, type FlowContractStatus, type FlowInvoice, type FlowOffer, type FlowOfferStatus } from '@/lib/pinartFlowStore';
+import { loadFlowData, saveFlowCollection, saveOfferStatus, type FlowContract, type FlowContractStatus, type FlowInvoice, type FlowOffer, type FlowOfferStatus } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import ProjectsWorkspace from './ProjectsWorkspace';
 import ArhivFilter from './ArhivFilter';
@@ -108,6 +108,31 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   /* podatki iz skupne shrambe (upostevajo predogled: prazno/zacetek/moji/demo) */
   const flow = useMemo(() => podatkiZaPredogled(nacin, loadFlowData()), [nacin]);
   const { offers, contracts, invoices } = flow;
+
+  /* Urejanje statusa (klik na pilulo -> spustni seznam). Samo v nacinu »Moji podatki«.
+     Override daje takojsen UI odziv; sprememba se shrani v pravo shrambo. */
+  const mineMode = nacin === 'mine';
+  const [statusOverride, setStatusOverride] = useState<Record<string, string>>({});
+  const naStatus = (tip: 'offer' | 'contract' | 'invoice', id: string, v: string) => {
+    const data = loadFlowData();
+    if (tip === 'offer') saveOfferStatus(id, v as FlowOfferStatus);
+    else if (tip === 'contract') saveFlowCollection('contracts', data.contracts.map(c => c.id === id ? { ...c, status: v as FlowContractStatus } : c));
+    else saveFlowCollection('invoices', data.invoices.map(r => r.id === id ? { ...r, paid: v === 'true' } : r));
+    setStatusOverride(prev => ({ ...prev, [`${tip}:${id}`]: v }));
+  };
+  const statusVred = (tip: string, id: string, fallback: string) => statusOverride[`${tip}:${id}`] ?? fallback;
+  const offerOpcije = (Object.entries(offerLabels) as Array<[FlowOfferStatus, string]>).map(([v, label]) => ({ v, label }));
+  const contractOpcije = (Object.entries(contractLabels) as Array<[FlowContractStatus, string]>).map(([v, label]) => ({ v, label }));
+  const invoiceOpcije = [{ v: 'false', label: 'Odprto' }, { v: 'true', label: 'Plačano' }];
+  const StatusUredi = ({ tip, id, vrednost, opcije }: { tip: 'offer' | 'contract' | 'invoice'; id: string; vrednost: string; opcije: Array<{ v: string; label: string }> }) => {
+    const oznaka = opcije.find(o => o.v === vrednost)?.label || vrednost;
+    return <span className="arh-status-ured" data-editable={mineMode ? '' : undefined}>
+      <StatusPika label={oznaka} />
+      <select className="arh-status-select" aria-label="Spremeni status" value={vrednost} disabled={!mineMode} title={mineMode ? undefined : 'Statusa v demu ni mogoče spreminjati — preklopi na »Moji podatki«.'} onClick={e => e.stopPropagation()} onChange={e => naStatus(tip, id, e.target.value)}>
+        {opcije.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
+      </select>
+    </span>;
+  };
 
   /* NAKNADNO pošiljanje ob pregledu (arhiv): mailto s prednapolnjeno zadevo/besedilom;
      prejemnik iz imenika strank po imenu (če ima e-pošto). Do postavitve Resend (mail
@@ -339,7 +364,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                       <span className="arh-glavna"><span className="arh-ikona" aria-hidden><FileText size={17} /></span><strong>{o.title}</strong></span>
                       <span className="arh-mut">{o.client}</span>
                       <span className="arh-mut">{datStr(o.date)}</span>
-                      <span><StatusPika label={offerLabels[o.status]} /></span>
+                      <span><StatusUredi tip="offer" id={o.id} vrednost={statusVred('offer', o.id, o.status)} opcije={offerOpcije} /></span>
                       <span className="arh-mut">{o.number || '—'}</span>
                       <span className="arh-desno">{dokZnesek(o.agreedAmount)}</span>
                       <span className="arh-kazalec" aria-hidden>›</span>
@@ -371,7 +396,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                         <span className="arh-glavna"><span className="arh-ikona" aria-hidden><Scroll size={17} /></span><strong>{c.title}</strong></span>
                         <span className="arh-mut">{c.client}</span>
                         <span className="arh-mut">{datStr(c.date)}</span>
-                        <span><StatusPika label={contractLabels[c.status]} /></span>
+                        <span><StatusUredi tip="contract" id={c.id} vrednost={statusVred('contract', c.id, c.status)} opcije={contractOpcije} /></span>
                         <span className="arh-op-cel">{op ? <small className={'arh-opomba' + (op.alert ? ' arh-opomba-alert' : '')}>{op.alert && <span className="arh-opomba-pika" aria-hidden />}{op.besedilo}</small> : '—'}</span>
                         <span className="arh-kazalec" aria-hidden>›</span>
                       </button>
@@ -401,7 +426,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                       <span className="arh-mut">{r.number || '—'}</span>
                       <span className="arh-mut">{r.client}</span>
                       <span className="arh-mut">{datStr(r.date)}</span>
-                      <span><StatusPika label={r.paid ? 'Plačano' : 'Odprto'} /></span>
+                      <span><StatusUredi tip="invoice" id={r.id} vrednost={statusVred('invoice', r.id, String(r.paid))} opcije={invoiceOpcije} /></span>
                       <span className="arh-desno">{eur(r.amount)}</span>
                       <span className="arh-kazalec" aria-hidden>›</span>
                     </button>
@@ -647,6 +672,12 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-status[data-tone='success']{--pika:oklch(62% .15 150)}
         .arh-status[data-tone='danger']{--pika:oklch(58% .19 25)}
         .arh-status[data-tone='neutral']{--pika:oklch(62% .02 70)}
+        /* urejanje statusa: klik na pilulo -> prekriven select (samo »Moji podatki«) */
+        .arh-status-ured{position:relative;display:inline-flex;max-width:100%}
+        .arh-status-ured[data-editable] .arh-status{padding-right:1.5rem;cursor:pointer}
+        .arh-status-ured[data-editable]::after{content:'';position:absolute;right:.62rem;top:50%;width:.32rem;height:.32rem;border-right:1.4px solid oklch(40% .02 70);border-bottom:1.4px solid oklch(40% .02 70);transform:translateY(-72%) rotate(45deg);opacity:.55;pointer-events:none}
+        .arh-status-select{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;border:0;border-radius:999px;background:transparent;appearance:none;-webkit-appearance:none;cursor:pointer;font:inherit}
+        .arh-status-select:disabled{cursor:default}
         .arh-glavna{display:flex;align-items:center;gap:.6rem;min-width:0}
         .arh-glavna strong{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis}
         .arh-ikona{display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:oklch(94% .025 87);color:var(--accent);flex:none}
