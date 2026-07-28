@@ -255,7 +255,7 @@
 .flowTools span { position: relative; z-index: 2; font-size: .56rem; font-weight: 850; letter-spacing: .1em; }
 .flowTools strong { position: relative; z-index: 2; margin-top: .1rem; font: 600 1.2rem var(--font-sans), system-ui, sans-serif; letter-spacing: -.01em; -webkit-text-stroke: 0; }
 .flowTools small { position: relative; z-index: 2; margin-top: .3rem; color: color-mix(in oklch, currentColor 72%, transparent); font-size: .62rem; line-height: 1.35; }
-.flowTools i { z-index: 3; position: absolute; top: 1.2rem; right: 1.2rem; bottom: auto; left: auto; display: grid; place-items: center; width: 2.5rem; aspect-ratio: 1; border: 1px solid oklch(30% .04 300 / .16); border-radius: 50%; background: oklch(100% 0 0 / .65); color: var(--ink); font: 500 1.25rem/1 var(--font-sans), sans-serif; font-style: normal; }
+.flowTools i { z-index: 3; position: absolute; top: 1.2rem; right: 1.2rem; bottom: auto; left: auto; display: grid; place-items: center; width: 2.5rem; aspect-ratio: 1; border: 1px solid oklch(55% .03 300 / .12); border-radius: 50%; background: transparent; color: var(--ink); font: 500 1.25rem/1 var(--font-sans), sans-serif; font-style: normal; }
 .flowTools i svg { width: 18px; height: 18px; }
 .flowTools i svg { display: block; }
 .toolIcon { display: none; }
@@ -336,7 +336,7 @@
 .flowTools > *:nth-child(3)::after { animation: arcDrift 8s ease-in-out -4s infinite alternate; }
 .flowTools > *:nth-child(4)::after { animation: orbDrift 10s ease-in-out -1s infinite alternate; }
 .flowTools > *:nth-child(4)::before { animation: dotsGlow 6s ease-in-out infinite alternate; }
-.historyBand .tableWrap { margin-top: 0; overflow-x: hidden; border-radius: 1rem; background: oklch(98% .01 87); }
+.historyBand .tableWrap { margin-top: 0; overflow-x: hidden; border-radius: 1rem; background: transparent; }
 .historyBand .emptyState { padding: 0 1rem; border-radius: 1rem; background: oklch(98% .01 87); }
 .overviewColumns { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; }
 .overviewColumns > section { min-width: 0; }
@@ -398,7 +398,7 @@
 .historyBand .historyTable, .detailRow .historyTable { flex: 1; margin-top: .45rem; }
 .historyBand .historyTable > table, .detailRow .historyTable > table { height: 100%; }
 .historyTable table { margin: 0; }
-.historyTable th { padding: .7rem .9rem; background: #f7f1e9; border-bottom: 1px solid oklch(94% .006 82 / .42); font-size: .55rem; color: color-mix(in oklch, var(--ink) 42%, transparent); }
+.historyTable th { padding: .7rem .9rem; background: transparent; border-bottom: 1px solid oklch(94% .006 82 / .42); font-size: .55rem; color: color-mix(in oklch, var(--ink) 42%, transparent); }
 .historyTable td { height: 5rem; padding: .9rem .9rem; background: transparent; vertical-align: middle; }
 .historyTable td:nth-child(3) { white-space: nowrap; }
 .historyTable th:first-child, .historyTable td:first-child { padding-left: 1.4rem; }
