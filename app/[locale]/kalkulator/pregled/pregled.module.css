@@ -689,8 +689,11 @@
 .expenseSummary > button span { display: grid; place-items: center; width: 2.35rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .3); border-radius: 50%; font-size: 1.35rem; font-weight: 400; line-height: 1; }
 .expenseSummary > button strong { margin-top: auto; font: 500 1.4rem var(--font-sans), Georgia, serif; }
 .expenseSummary > button small { margin-top: .25rem; color: oklch(100% 0 0 / .6); }
-.subpageMetricIcon { position: absolute; right: -1rem; bottom: -1.6rem; display: grid; place-items: center; width: 6.6rem; aspect-ratio: 1; border-radius: 1.6rem; background: oklch(100% 0 0 / .24); color: color-mix(in oklch, currentColor 54%, transparent); transform: rotate(-9deg); }
-.subpageMetricIcon svg { width: 2.25rem; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; transform: rotate(9deg) translate(-.35rem, -.35rem); }
+.subpageMetricIcon { position: absolute; z-index: 0; right: .8rem; bottom: .75rem; top: auto; display: grid; place-items: center; width: 5.3rem; aspect-ratio: 1; border: 0; border-radius: 0; background: none; box-shadow: none; opacity: .18; transform: rotate(-9deg); pointer-events: none; }
+.subpageMetricIcon svg { width: 5.1rem !important; height: 4.8rem !important; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transform: none; }
+.expenseSummary article:nth-child(1) .subpageMetricIcon { color: oklch(66% .18 52); }
+.expenseSummary article:nth-child(2) .subpageMetricIcon { color: oklch(58% .15 160); }
+.expenseSummary article:nth-child(3) .subpageMetricIcon { color: var(--purple); }
 .invoiceSummary article > :not(.subpageMetricIcon), .expenseSummary article > :not(.subpageMetricIcon) { position: relative; z-index: 1; }
 .expenseEditor, .expenseArchive, .recurringCosts { padding: 1.25rem; border: 1px solid color-mix(in oklch, var(--ink) 9%, transparent); border-radius: 1.4rem; background: oklch(98% .008 87 / .92); }
 .expenseEditor { display: grid; grid-template-columns: minmax(14rem, .35fr) 1fr; gap: 1.5rem; }
@@ -933,8 +936,8 @@
    pozicionirana odeja v kotu, splošno pravilo zgoraj bi jo prisililo nazaj v
    position:relative — višja specifičnost (2 razreda) to povozi. Kartice so tu
    nižje (5.7rem) kot pri računih/stroških (8rem), zato je ikona pomanjšana. */
-.projectMoney > * > .subpageMetricIcon { position: absolute; z-index: 0; width: 4.4rem; right: -.7rem; bottom: -1rem; }
-.projectMoney > * > .subpageMetricIcon svg { width: 1.7rem; }
+.projectMoney > * > .subpageMetricIcon { position: absolute; z-index: 0; width: 3.6rem; right: .55rem; bottom: .5rem; }
+.projectMoney > * > .subpageMetricIcon svg { width: 3.3rem !important; height: 3.1rem !important; }
 .projectMoney small { color: var(--muted); font-size: .52rem; }
 .projectMoney strong { font: 600 1.25rem var(--font-sans), system-ui, sans-serif; }
 .projectMoney label span { display: flex; align-items: center; gap: .25rem; }
@@ -1347,22 +1350,25 @@
    Stroških/Računih — velika mehka ikona v kotu, Bodoni števec. Na Ciljih
    ostanejo vidne tudi na mobilnem (na Času so bile pod 700px skrite). */
 .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; }
-.summary article { position: relative; overflow: hidden; display: grid; gap: .5rem; min-height: 9.5rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: 1.25rem; background: linear-gradient(135deg, oklch(96% .035 295), oklch(94% .045 170)); }
-.summary article:nth-child(2) { background: linear-gradient(135deg, oklch(95% .055 160), oklch(92% .07 170)); }
-.summary article:nth-child(3) { background: linear-gradient(135deg, oklch(97% .035 85), oklch(94% .055 75)); }
-.summary article:nth-child(4) { background: linear-gradient(135deg, oklch(96% .035 45), oklch(92% .075 55)); }
+.summary article { position: relative; overflow: hidden; display: grid; gap: .5rem; min-height: 9.5rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: 1.25rem; background: linear-gradient(140deg, oklch(96% .035 295), oklch(88% .075 297)); }
+.summary article:nth-child(2) { background: linear-gradient(140deg, oklch(96% .035 160), oklch(88% .075 163)); }
+.summary article:nth-child(3) { background: linear-gradient(140deg, oklch(97% .03 65), oklch(89% .075 55)); }
+.summary article:nth-child(4) { background: linear-gradient(140deg, oklch(96% .03 250), oklch(87% .08 255)); }
 .summary small, .summary span { font-size: .82rem; }
 .summary strong { margin-top: auto; font: 500 2.1rem var(--font-sans), Georgia, serif; }
 .summary span { color: var(--muted); }
 .metricIkona {
-  position: absolute; right: -1rem; bottom: -1.6rem;
+  position: absolute; z-index: 0; right: .8rem; bottom: .75rem; top: auto;
   display: grid; place-items: center;
-  width: 6.6rem; aspect-ratio: 1; border-radius: 1.6rem;
-  background: oklch(100% 0 0 / .24);
-  color: color-mix(in oklch, currentColor 54%, transparent);
-  transform: rotate(-9deg);
+  width: 5.3rem; aspect-ratio: 1; border: 0; border-radius: 0;
+  background: none; box-shadow: none;
+  opacity: .18; transform: rotate(-9deg); pointer-events: none;
 }
-.metricIkona svg { width: 2.25rem; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; transform: rotate(9deg) translate(-.35rem, -.35rem); }
+.metricIkona svg { width: 5.1rem !important; height: 4.8rem !important; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transform: none; }
+.summary article:nth-child(1) .metricIkona { color: var(--purple); }
+.summary article:nth-child(2) .metricIkona { color: oklch(58% .15 160); }
+.summary article:nth-child(3) .metricIkona { color: oklch(66% .18 52); }
+.summary article:nth-child(4) .metricIkona { color: oklch(58% .16 255); }
 .summary article > :not(.metricIkona) { position: relative; z-index: 1; }
 
 .priceListsPage { display: grid; gap: 1rem; }
