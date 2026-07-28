@@ -4,7 +4,7 @@ import {
   FileText, Handshake, Scroll, Receipt, Wallet, Tag, Clock,
   Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, CaretLeft, CaretRight,
   ShieldCheck, Scales, ChatCircle, Sparkle, Plus, ChartLineUp, Robot, Plugs,
-  CalendarBlank, ListChecks,
+  CalendarBlank, ListChecks, FolderOpen,
 } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -214,6 +214,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { Ikona: Receipt, kat: 'finance', h: 28, ime: 'Računi', opis: 'Iz ponudbe v račun z enim klikom. Številčenje, rok in status plačila.', href: localePath(locale, '/kalkulator/racuni') },
     { Ikona: Wallet, kat: 'finance', h: 330, ime: 'Stroški', opis: 'Odhodki in ponavljajoči se stroški, zbrani na enem mestu.', href: localePath(locale, '/kalkulator/stroski') },
     { Ikona: Tag, kat: 'ponudbe', h: 135, ime: 'Ceniki', opis: 'Tvoji cenovni profili: shraniš, urediš in znova uporabiš.', href: localePath(locale, '/kalkulator/ceniki') },
+    { Ikona: FolderOpen, kat: 'stranke', h: 285, ime: 'Projekti & arhiv', opis: 'Vsi projekti na enem mestu — ponudbe, pogodbe, računi, roki, prihodki in stroški po projektu.', href: localePath(locale, '/kalkulator/projekti') },
     { Ikona: Clock, kat: 'ponudbe', h: 85, ime: 'Čas', opis: 'Koliko je vredna tvoja ura glede na cilje in obseg dela.', href: localePath(locale, '/kalkulator/cas') },
     { Ikona: Users, kat: 'stranke', h: 265, ime: 'Stranke', opis: 'Kartoteka naročnikov s podatki, dokumenti in zgodovino sodelovanja.', href: localePath(locale, '/kalkulator/stranke') },
     { Ikona: Target, kat: 'stranke', h: 12, ime: 'Cilji', opis: 'Mesečni cilj prihodkov in koliko projektov te loči do njega.', href: localePath(locale, '/kalkulator/cilji') },
