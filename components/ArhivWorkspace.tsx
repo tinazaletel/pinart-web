@@ -448,8 +448,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             {detajl.vrsta === 'ponudba' && (() => {
               const o = detajl.zapis;
               return <>
-                <p className={styles.eyebrow}>PONUDBA · {offerLabels[o.status]}</p>
+                <p className={styles.eyebrow}>PONUDBA</p>
                 <h2 id="arh-detajl-naslov">{o.title}</h2>
+                <div className="arh-det-statusvrsta"><StatusUredi tip="offer" id={o.id} vrednost={statusVred('offer', o.id, o.status)} opcije={offerOpcije} /></div>
 
                 {/* ponudba kot DOKUMENT (mini letterhead: kremni list, senca, Bodoni
                     naslov) — ce imamo shranjen pravi HTML iz kalkulatorja (ponudbaDok.telo),
@@ -491,8 +492,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               const c = detajl.zapis;
               const op = opombaInfo(c.notes);
               return <>
-                <p className={styles.eyebrow}>POGODBA · {contractLabels[c.status]}</p>
+                <p className={styles.eyebrow}>POGODBA</p>
                 <h2 id="arh-detajl-naslov">{c.title}</h2>
+                <div className="arh-det-statusvrsta"><StatusUredi tip="contract" id={c.id} vrednost={statusVred('contract', c.id, c.status)} opcije={contractOpcije} /></div>
                 <div className="arh-det-meta">
                   <span><small>Stranka</small><strong>{c.client}</strong></span>
                   <span><small>Datum</small><strong>{datStr(c.date)}</strong></span>
@@ -536,8 +538,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   const imaPopust = items.some(i => (i.popust || 0) > 0);
                   const imaDdv = items.some(i => (i.ddv || 0) > 0);
                   return <>
-                    <p className={styles.eyebrow}>{r.predracun ? 'PREDRAČUN' : 'RAČUN'} · {r.paid ? 'PLAČAN' : 'ODPRT'}</p>
+                    <p className={styles.eyebrow}>{r.predracun ? 'PREDRAČUN' : 'RAČUN'}</p>
                     <h2 id="arh-detajl-naslov">{r.title || `${r.predracun ? 'Predračun' : 'Račun'} ${r.number || ''}`}</h2>
+                    <div className="arh-det-statusvrsta"><StatusUredi tip="invoice" id={r.id} vrednost={statusVred('invoice', r.id, String(r.paid))} opcije={invoiceOpcije} /></div>
 
                     {/* cel racun/predracun v panelu (kot pogodba/ponudba): letterhead + postavke + vsote */}
                     <div className="arh-ponudba-dok">
@@ -696,7 +699,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
         /* ── detajl panel (vzorec ContractWorkspace) ── */
         .arh-detajl{width:min(42rem,94vw);display:flex;flex-direction:column;gap:.2rem}
-        .arh-detajl h2{margin:.4rem 0 1.2rem;font-family:var(--font-serif),Didot,serif;font-weight:600;font-size:clamp(1.8rem,3vw,2.6rem);line-height:1.05;color:var(--ink)}
+        .arh-detajl h2{margin:.4rem 0 .5rem;font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.8rem,3vw,2.6rem);line-height:1.05;color:var(--ink)}
+        .arh-det-statusvrsta{margin:0 0 1.1rem}
         /* lepljivi X ostane v kotu med drsenjem (kopija .pg-det-x) */
         /* × FIKSEN v desnem kotu panela, POD topbarom (fixed z-100) in NAD njim po z-indexu — vedno viden, ne odscrolla (panel je overflow-y:auto, absoluten × bi odscrollal) */
         .arh-det-x{position:fixed;top:3.85rem;right:1.4rem;z-index:101;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
