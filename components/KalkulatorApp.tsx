@@ -1216,7 +1216,7 @@ const OFFER_CSS = `
       .pdf-meta b{display:block;font-size:7pt;letter-spacing:.22em;text-transform:uppercase;color:#B25476;margin-bottom:3px;font-weight:700}
       .pdf-meta .naziv{max-width:220px;margin:0 0 2px auto}
       .offer-kicker{font-size:7.5pt;letter-spacing:.22em;text-transform:uppercase;color:#9a8a90;margin:0 0 4px}
-      h1{font-family:'Bodoni Moda',Didot,'Bodoni MT',Georgia,serif;font-weight:500;font-size:23pt;line-height:1.08;letter-spacing:-.01em;margin:2px 0 14px;color:#111}
+      h1{font-family:'Bodoni Moda',Didot,'Bodoni MT',Georgia,serif;font-weight:400;font-size:23pt;line-height:1.08;letter-spacing:-.01em;margin:2px 0 14px;color:#111}
       .offer-head{display:flex;flex-direction:column-reverse;align-items:stretch;gap:6px;margin:0 0 12px}
       .offer-head-t{min-width:0;width:100%}.offer-head h1{margin:0}
       /* naslov ponudbe poravnan LEVO, enako kot preostalo besedilo (ne podeduj centriranja) */

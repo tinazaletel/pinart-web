@@ -275,7 +275,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
     const n = aktivnaPredloga().noga?.trim();
     return n ? `<div class="dok-noga" style="margin-top:24px;padding-top:10px;border-top:1px solid rgba(17,17,17,.12);font-size:8pt;color:#9a9088;line-height:1.6">${esc(n).split('\n').join('<br>')}</div>` : '';
   };
-  const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:500;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.big{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:16pt;color:#111;font-weight:600}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}.podpis-img{display:block;max-height:40px;max-width:180px;margin:0 0 -6px}`;
+  const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:400;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.big{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:16pt;color:#111;font-weight:600}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}.podpis-img{display:block;max-height:40px;max-width:180px;margin:0 0 -6px}`;
   const doc = (body: string) => `<!doctype html><html lang="sl"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
 
   const modelOpis = model === 'ure' ? `${ure} ur na mesec` : model === 'paket' ? 'dogovorjeni mesečni paket storitev' : `${ure} ur na mesec + dogovorjeni paket storitev`;
@@ -860,16 +860,18 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         {/* ── POGLED: ZAKLJUCEK (locena stran) — ENAKO kot kalkulatorjev zakljucekStep ── */}
         {pogled === 'zakljucek' && (<section className="rw-sek rw-vstop rw-stran rw-zakljucek">
           <div className="rw-zakljucek-lik" aria-hidden>
-            <svg viewBox="0 0 120 140" width="76" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <ellipse cx="60" cy="133" rx="30" ry="4.5" fill="rgba(17,17,17,.12)" />
-              <g fill="none" stroke="rgba(17,17,17,.46)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <svg className="pon-lik" viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse className="pon-senca" cx="60" cy="133" rx="30" ry="4.5" fill="rgba(17,17,17,.12)" />
+              <g className="pon-telo" fill="none" stroke="rgba(17,17,17,.46)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M36 16 h36 l18 18 v66 a6 6 0 0 1 -6 6 H36 a6 6 0 0 1 -6 -6 V22 a6 6 0 0 1 6 -6 z" />
                 <path d="M72 16 v12 a6 6 0 0 0 6 6 h12" />
                 <path d="M40 54 h40" /><path d="M40 66 h40" /><path d="M40 78 h26" />
+                <g className="pon-kljuk-znak">
+                  <circle cx="78" cy="83" r="13" fill="#fff" stroke="none" />
+                  <circle cx="78" cy="83" r="13" fill="none" stroke="rgba(124,58,237,.7)" strokeWidth="2.6" />
+                  <path className="pon-kljuk" d="M71 83 l5 5 l9 -10" fill="none" stroke="rgba(124,58,237,.95)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+                </g>
               </g>
-              <circle cx="78" cy="83" r="13" fill="#fff" />
-              <circle cx="78" cy="83" r="13" fill="none" stroke="rgba(124,58,237,.7)" strokeWidth="2.6" />
-              <path d="M71 83 l5 5 l9 -10" fill="none" stroke="rgba(124,58,237,.95)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
           <h1 className="rw-h1">Zaključek.</h1>
@@ -1146,7 +1148,16 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-zakljucek .rw-uvod{margin-left:auto;margin-right:auto}
         .rw-num-pod{font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:.15rem 0 .7rem}
         .rw-zakljucek-lik{display:flex;justify-content:center;margin:.5rem 0 1.1rem}
-        .rw-zakljucek-lik svg{width:8.4rem;height:auto}
+        .rw-zakljucek-lik .pon-lik{width:8.4rem;height:auto;display:block;overflow:visible}
+        .rw-zakljucek-lik .pon-telo{transform-box:view-box;transform-origin:60px 128px;animation:rwPonFloat 3.4s ease-in-out infinite}
+        .rw-zakljucek-lik .pon-senca{transform-box:view-box;transform-origin:60px 133px;animation:rwPonSenca 3.4s ease-in-out infinite}
+        .rw-zakljucek-lik .pon-kljuk-znak{transform-box:fill-box;transform-origin:center;animation:rwKljukPop .5s cubic-bezier(.2,1.5,.4,1) .45s both}
+        .rw-zakljucek-lik .pon-kljuk{stroke-dasharray:26;stroke-dashoffset:26;animation:rwKljukRis .38s ease-out .8s forwards}
+        @keyframes rwPonFloat{0%,100%{transform:translateY(0) rotate(-1.6deg)}50%{transform:translateY(-8px) rotate(1.6deg)}}
+        @keyframes rwPonSenca{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(.82);opacity:.6}}
+        @keyframes rwKljukPop{0%{transform:scale(0)}62%{transform:scale(1.18)}100%{transform:scale(1)}}
+        @keyframes rwKljukRis{to{stroke-dashoffset:0}}
+        @media (prefers-reduced-motion:reduce){.rw-zakljucek-lik .pon-telo,.rw-zakljucek-lik .pon-senca,.rw-zakljucek-lik .pon-kljuk-znak,.rw-zakljucek-lik .pon-kljuk{animation:none}.rw-zakljucek-lik .pon-kljuk{stroke-dashoffset:0}}
         .rw-prenosi{display:flex;flex-wrap:wrap;justify-content:center;gap:.9rem 1.6rem;margin:1.4rem auto 0}
         .rw-noga-koncna{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;justify-content:center}
         .rw-noga-pill{font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.72);border:1px solid var(--ink);border-radius:999px;padding:.65rem 1.3rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
