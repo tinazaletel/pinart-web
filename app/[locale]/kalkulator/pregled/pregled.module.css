@@ -211,7 +211,7 @@
 .previewSwitch .previewActive { background: linear-gradient(135deg, var(--purple), oklch(62% .22 297)); color: oklch(98% .01 300); }
 .feedback { position: fixed; z-index: 80; right: 1.2rem; bottom: 1.2rem; display: flex; align-items: center; gap: 1rem; max-width: 24rem; padding: .8rem 1rem; border-radius: .85rem; background: var(--ink); color: var(--paper); box-shadow: 0 1rem 3rem oklch(20% .03 55 / .2); font-size: .64rem; }
 .feedback button { border: 0; background: none; color: inherit; font-size: 1rem; cursor: pointer; }
-.flowBand, .historyBand, .resultsBand, .eventsBand, .detailsBand { margin-top: 1rem; padding: 1.5rem; border: 1px solid oklch(93% .007 82 / .55); border-radius: 1.45rem; background: radial-gradient(125% 80% at 50% -8%, oklch(99.4% .006 88 / .5), transparent 60%), radial-gradient(90% 60% at 88% 8%, oklch(99% .01 300 / .28), transparent 55%), linear-gradient(to bottom, #f9f4ef, #f6f0ea); box-shadow: 0 .4rem 1.2rem oklch(20% .02 55 / .025); }
+.flowBand, .historyBand, .resultsBand, .eventsBand, .detailsBand { margin-top: 1rem; padding: 1.5rem; border: 1px solid oklch(94% .006 82 / .5); border-radius: 1.45rem; background: radial-gradient(120% 75% at 50% -6%, oklch(99.6% .006 88 / .55), transparent 58%), radial-gradient(85% 55% at 88% 6%, oklch(99% .012 300 / .25), transparent 55%), linear-gradient(to bottom, #f4eee5, #fbf7f2); box-shadow: 0 .4rem 1.2rem oklch(20% .02 55 / .022); }
 /* paneli = flex stolpci, da so povezave "Pojdi na X" poravnane na dnu in vsebina zapolni prostor */
 .historyBand, .resultsBand, .eventsBand { display: flex; flex-direction: column; }
 .flowBand { margin-top: .35rem; }
@@ -222,7 +222,8 @@
 .sectionHeader { gap: .8rem; flex-wrap: wrap; }
 .abArrow { font-size: .85rem; font-weight: 500; line-height: 1; }
 @media (max-width: 820px) { .accountingButton { padding: .55rem; } .accountingButton .abTxt { display: none; } }
-.sectionNote { display: flex; align-items: center; gap: .8rem; margin-bottom: .7rem; padding: .7rem .9rem; border-radius: .75rem; background: oklch(98% .01 87); color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .59rem; line-height: 1.4; }
+.sectionNote { flex: 0 1 auto; display: flex; align-items: center; gap: .55rem; margin-bottom: 0; padding: .5rem .85rem; border-radius: 999px; background: oklch(98.5% .008 87 / .8); border: 1px solid oklch(94% .006 82 / .45); color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .55rem; line-height: 1.3; white-space: nowrap; }
+.sectionNote span { overflow: hidden; text-overflow: ellipsis; }
 .sectionNote strong { flex: 0 0 auto; color: var(--ink); font-size: .55rem; letter-spacing: .08em; text-transform: uppercase; }
 .bandTitle { display: flex; align-items: end; justify-content: space-between; gap: 2rem; padding: .5rem .4rem 1.15rem; }
 .bandTitle h2 { margin: 0; font: 500 clamp(1.5rem, 2.6vw, 2.15rem)/1 var(--font-serif), Georgia, serif; }
@@ -248,13 +249,14 @@
 .flowTools > *:nth-child(7) { background: linear-gradient(125deg, oklch(95% .045 170), oklch(84% .1 165), oklch(91% .06 295)); background-size: 220% 220%; animation: cardFlow 10s ease-in-out -2s infinite alternate; }
 .flowTools > *:nth-child(8) { background: linear-gradient(125deg, oklch(94% .035 87), oklch(88% .065 60), oklch(91% .055 295)); background-size: 220% 220%; animation: cardFlow 13s ease-in-out -8s infinite alternate; }
 /* Vse kartice enak nezen VECTONSKI preliv (vijola->mint->roza, svetli) z VIDNIM valovanjem; identiteta gre na clay ikone. */
-.flowTools > *:nth-child(1n) { background: oklch(93.7% .016 87); background-size: auto; color: var(--ink); border: 1px solid oklch(100% 0 0 / .6); box-shadow: 0 .7rem 2rem oklch(30% .03 300 / .06); animation: none; }
-/* naslov in podnaslov ne smeta cez clay ikono (desno spodaj) */
-.flowTools strong, .flowTools small { padding-right: 2.6rem; }
+.flowTools > *:nth-child(1n) { background: oklch(93.7% .016 87); background-size: auto; color: var(--ink); border: 1px solid oklch(100% 0 0 / .3); box-shadow: 0 .7rem 2rem oklch(30% .03 300 / .06); animation: none; }
+/* naslov in podnaslov ne smeta cez ikono (desno zgoraj) */
+.flowTools strong, .flowTools small { padding-right: 3.1rem; }
 .flowTools span { position: relative; z-index: 2; font-size: .56rem; font-weight: 850; letter-spacing: .1em; }
 .flowTools strong { position: relative; z-index: 2; margin-top: .1rem; font: 600 1.2rem var(--font-sans), system-ui, sans-serif; letter-spacing: -.01em; -webkit-text-stroke: 0; }
 .flowTools small { position: relative; z-index: 2; margin-top: .3rem; color: color-mix(in oklch, currentColor 72%, transparent); font-size: .62rem; line-height: 1.35; }
-.flowTools i { z-index: 3; position: absolute; top: 1rem; right: 1rem; bottom: auto; left: auto; display: grid; place-items: center; width: 2.1rem; aspect-ratio: 1; border: 1px solid oklch(30% .04 300 / .16); border-radius: 50%; background: oklch(100% 0 0 / .65); color: var(--ink); font: 500 1.25rem/1 var(--font-sans), sans-serif; font-style: normal; }
+.flowTools i { z-index: 3; position: absolute; top: 1.2rem; right: 1.2rem; bottom: auto; left: auto; display: grid; place-items: center; width: 2.5rem; aspect-ratio: 1; border: 1px solid oklch(30% .04 300 / .16); border-radius: 50%; background: oklch(100% 0 0 / .65); color: var(--ink); font: 500 1.25rem/1 var(--font-sans), sans-serif; font-style: normal; }
+.flowTools i svg { width: 18px; height: 18px; }
 .flowTools i svg { display: block; }
 .toolIcon { display: none; }
 .flowTools > *:nth-child(4) .toolIcon { stroke: var(--ink); }
@@ -346,7 +348,7 @@
 /* "Ta mesec" dropdown (namesto pilul) */
 .periodSelect { height: 2.1rem; min-height: 2.1rem; max-height: 2.1rem; line-height: 1; box-sizing: border-box; padding: 0 1.9rem 0 .85rem !important; border: 1px solid color-mix(in oklch, var(--ink) 7%, transparent); border-radius: 999px; background-color: oklch(99.3% .004 90); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%231c1815' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: right .75rem center; background-repeat: no-repeat; appearance: none; -webkit-appearance: none; color: var(--ink); font: 750 .55rem var(--font-sans), sans-serif; white-space: nowrap; cursor: pointer; }
 /* "Pojdi na podrobnosti / koledar" povezava na dnu panela */
-.panelMore { display: inline-flex; align-items: center; gap: .4rem; margin-top: 1.3rem; padding-top: 0; font: 650 .82rem var(--font-sans), sans-serif; letter-spacing: 0; text-transform: none; color: oklch(52% .16 300); text-decoration: none; }
+.panelMore { align-self: flex-start; margin-top: auto; padding-top: 1.3rem; display: inline-flex; align-items: center; gap: .4rem; font: 650 .82rem var(--font-sans), sans-serif; letter-spacing: 0; text-transform: none; color: oklch(52% .16 300); text-decoration: none; }
 .panelMore:hover { color: oklch(45% .18 300); }
 /* Dogodki & roki — seznam prihodnjih rokov */
 .eventList { flex: 1; list-style: none; margin: .3rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .75rem; }
@@ -377,7 +379,7 @@
 @media (max-width: 1000px) { .detailRow { grid-template-columns: 1fr; } }
 /* Prihodki po mesecih — stolpcni graf */
 /* Prihodki po mesecih — graf z Y-osjo (crte + stevilke levo) */
-.chartWrap { flex: 1; display: flex; gap: .55rem; margin: .6rem 0 1.5rem; min-height: 9.5rem; }
+.chartWrap { flex: 1; display: flex; gap: .55rem; margin: .6rem 0 .2rem; min-height: 9.5rem; }
 .chartAxis { display: flex; flex-direction: column; justify-content: space-between; height: 100%; font: 600 .5rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 45%, transparent); text-align: right; }
 .chartAxis span { transform: translateY(-.35em); }
 .chartAxis span:last-child { transform: none; }
@@ -392,11 +394,11 @@
 .historyBand .tableWrap th:nth-child(2) { width: 22%; }
 .historyBand .tableWrap th:nth-child(3) { width: 21%; }
 .historyBand .tableWrap th:nth-child(4) { width: 22%; }
-.historyTable { overflow: hidden; border: 1px solid oklch(93% .007 82 / .55); }
+.historyTable { overflow: hidden; border: 1px solid oklch(94% .006 82 / .45); }
 .historyBand .historyTable, .detailRow .historyTable { flex: 1; margin-top: .45rem; }
 .historyBand .historyTable > table, .detailRow .historyTable > table { height: 100%; }
 .historyTable table { margin: 0; }
-.historyTable th { padding: .7rem .9rem; background: #f7f1e9; border-bottom: 1px solid oklch(93% .007 82 / .5); font-size: .55rem; color: color-mix(in oklch, var(--ink) 42%, transparent); }
+.historyTable th { padding: .7rem .9rem; background: #f7f1e9; border-bottom: 1px solid oklch(94% .006 82 / .42); font-size: .55rem; color: color-mix(in oklch, var(--ink) 42%, transparent); }
 .historyTable td { height: 5rem; padding: .9rem .9rem; background: transparent; vertical-align: middle; }
 .historyTable td:nth-child(3) { white-space: nowrap; }
 .historyTable th:first-child, .historyTable td:first-child { padding-left: 1.4rem; }
@@ -984,8 +986,8 @@
 .kpi strong { margin: 1.4rem 0 .25rem; font: 600 clamp(1.5rem, 2.2vw, 2.35rem) var(--font-sans), system-ui, sans-serif; letter-spacing: -.01em; font-variant-numeric: tabular-nums; -webkit-text-stroke: 0; }
 .kpi small { color: color-mix(in oklch, currentColor 58%, transparent); font-size: .56rem; }
 /* KPI ikona = samo ikona (BREZ kvadratnega ozadja), kot mockup */
-.resultIcon { position: absolute; z-index: 0; right: 1.15rem; bottom: 1.1rem; display: grid; place-items: center; width: 4.3rem; aspect-ratio: 1; border: 0; border-radius: 0; background: none; box-shadow: none; opacity: .5; transform: none; }
-.resultIcon svg { width: 4.1rem; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.resultIcon { position: absolute; z-index: 0; right: 1.15rem; bottom: 1.1rem; display: grid; place-items: center; width: 5.1rem; aspect-ratio: 1; border: 0; border-radius: 0; background: none; box-shadow: none; opacity: .5; transform: none; }
+.resultIcon svg { width: 4.9rem; fill: none; stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
 .kpi > span, .kpi > strong, .kpi > small { position: relative; z-index: 1; }
 .kpi:nth-child(1) .resultIcon { color: var(--purple); }
 .kpi:nth-child(2) .resultIcon { color: oklch(58% .16 255); }
@@ -1024,7 +1026,7 @@
 .tableWrap { margin-top: 1.2rem; overflow-x: auto; }
 .tableWrap table { width: 100%; min-width: 38rem; border-collapse: collapse; font-size: .69rem; }
 .tableWrap th { padding: .7rem .5rem; border-bottom: 1px solid var(--line); color: color-mix(in oklch, var(--ink) 55%, transparent); font-size: .57rem; letter-spacing: .08em; text-align: left; text-transform: uppercase; }
-.tableWrap td { padding: .8rem .5rem; border-bottom: 1px solid color-mix(in oklch, var(--line) 26%, transparent); }
+.tableWrap td { padding: .8rem .5rem; border-bottom: 1px solid color-mix(in oklch, var(--line) 20%, transparent); }
 .tableWrap select { padding: .45rem .6rem; border: 1px solid var(--line); border-radius: 99px; background: var(--paper); color: inherit; font: 700 .61rem var(--font-sans), sans-serif; }
 .historyTable select.status_waiting,
 .historyTable select.status_success,

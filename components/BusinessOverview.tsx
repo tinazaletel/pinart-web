@@ -279,8 +279,7 @@ export default function BusinessOverview({ base }: { base: string }) {
           preozek — stiri gumbi v 12.7rem so se prekrivali in besedila ni bilo brati. */}
       {feedback && <div className={styles.feedback} role="status"><span>{feedback}</span><button type="button" onClick={() => setFeedback('')} aria-label="Zapri obvestilo">×</button></div>}
       <section className={styles.flowBand} id="tools" aria-labelledby="tools-title">
-        <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>01 · ORODJA</p><h2 id="tools-title">Kaj boš danes uredila?</h2></div></div>
-        <div className={styles.sectionNote}><strong>Smart pricing</strong><span>Ko v ponudbo dodaš storitev, Pinart predlaga ceno glede na tvoje izkušnje, trg in naročnika. Vedno jo lahko popraviš.</span></div>
+        <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>01 · ORODJA</p><h2 id="tools-title">Kaj boš danes uredila?</h2></div><div className={styles.sectionNote}><strong>Smart pricing</strong><span>Cena po tvojih izkušnjah, trgu in naročniku.</span></div></div>
         <div className={styles.flowTools}>
           <Link className={styles.offerTool} href={`${base}/kalkulator/orodje`}>
             <b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b>
