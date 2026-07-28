@@ -344,13 +344,13 @@ export default function BusinessOverview({ base }: { base: string }) {
 
       <div className={styles.overviewColumns}>
       <section className={styles.historyBand} id="accounting">
-        <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>02 · ZGODOVINA</p><h2>Zadnji dokumenti</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}>Vsi dokumenti</Link></div>
+        <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>02 · ZGODOVINA</p><h2>Zadnji dokumenti</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>Vsi dokumenti</span> <span className={styles.abArrow} aria-hidden>→</span></Link></div>
         {historyItems.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>Dokument</th><th>Stranka</th><th>Datum</th><th>Status</th></tr></thead><tbody>{historyItems.map(item => <tr key={`${item.type}-${item.id}`} role="button" tabIndex={0} aria-label={`Odpri ${item.title}`} onClick={() => setSelectedDocument(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedDocument(item); } }}><td><div className={styles.documentCell}><span className={`${styles.documentIcon} ${styles[`document_${item.type === 'Ponudba' ? 'offer' : item.type === 'Pogodba' ? 'contract' : item.type === 'Račun' ? 'invoice' : 'expense'}`]}`}><HistoryIcon type={item.type} /></span><span><strong>{item.title}</strong><small>{item.type}</small></span></div></td><td>{item.client}</td><td>{new Date(item.date).toLocaleDateString('sl-SI')}</td><td>{statusOptions(item.type).length ? <span className={`${styles.statusField} ${styles[`status_${statusTone(item.status)}`]}`} data-editable={preview === 'mine' ? '' : undefined}><span className={styles.statusPill}>{item.status}</span><select aria-label={`Status: ${item.title}`} className={styles.statusSelect} value={item.status} disabled={preview !== 'mine'} title={preview !== 'mine' ? 'To so demo podatki — statusa ni mogoče spreminjati. Preklopi na »Moji podatki«.' : undefined} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={e => updateDocumentStatus(item.type, item.id, e.target.value)}>{statusOptions(item.type).map(option => <option key={option}>{option}</option>)}</select></span> : <span className={`${styles.statusPill} ${styles.status_neutral}`}>{item.status}</span>}</td></tr>)}</tbody></table></div> : <div className={styles.emptyState}><span>+</span><div><strong>Še nimaš dokumentov.</strong><p>Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj.</p></div></div>}
         <Link className={styles.panelMore} href={`${base}/kalkulator/projekti`}>Pojdi na arhiv <span aria-hidden>→</span></Link>
       </section>
 
       <section className={styles.resultsBand} id="clients" aria-labelledby="business-title">
-        <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>03 · POSLOVNI REZULTATI</p><h2 id="business-title">Kako ti gre?</h2></div><div className={styles.periodSwitch} aria-label="Obdobje prikaza">{([['month', 'Mesec'], ['quarter', 'Četrtletje'], ['year', 'Leto']] as [Period, string][]).map(([value, label]) => <button type="button" key={value} className={period === value ? styles.periodActive : ''} onClick={() => setPeriod(value)}>{label}</button>)}</div></div>
+        <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>03 · POSLOVNI REZULTATI</p><h2 id="business-title">Kako ti gre?</h2></div><select className={styles.periodSelect} value={period} onChange={e => setPeriod(e.target.value as Period)} aria-label="Obdobje prikaza"><option value="month">Ta mesec</option><option value="quarter">To četrtletje</option><option value="year">Letos</option></select></div>
         <div className={styles.kpiGrid}>
           <div className={styles.kpi}><span>Izdano</span><strong>{money(issued)}</strong><small>{periodInvoices.length} računov</small><b className={styles.resultIcon}><ResultIcon type="issued" /></b></div>
           <div className={styles.kpi}><span>Plačano</span><strong>{money(paid)}</strong><small>{periodInvoices.filter(i => i.paid).length} potrjenih plačil</small><b className={styles.resultIcon}><ResultIcon type="paid" /></b></div>
@@ -361,7 +361,7 @@ export default function BusinessOverview({ base }: { base: string }) {
       </section>
 
       <section className={styles.eventsBand} id="events" aria-labelledby="events-title">
-        <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>04 · PRIHODNJI DOGODKI</p><h2 id="events-title">Dogodki &amp; roki</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/koledar`}>Vsi dogodki</Link></div>
+        <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>04 · PRIHODNJI DOGODKI</p><h2 id="events-title">Dogodki &amp; roki</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/koledar`}><span className={styles.abTxt}>Vsi dogodki</span> <span className={styles.abArrow} aria-hidden>→</span></Link></div>
         {(() => {
           const addDays = (iso: string, n: number) => { const dt = new Date(iso); dt.setDate(dt.getDate() + n); return dt; };
           const ev = [
@@ -376,7 +376,7 @@ export default function BusinessOverview({ base }: { base: string }) {
 
       <div className={styles.detailRow}>
         <section className={styles.historyBand} aria-labelledby="proj-title">
-          <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>05 · PROJEKTI</p><h2 id="proj-title">Zadnji projekti</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/projekti`}>Vsi projekti</Link></div>
+          <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>05 · PROJEKTI</p><h2 id="proj-title">Zadnji projekti</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/projekti`}><span className={styles.abTxt}>Vsi projekti</span> <span className={styles.abArrow} aria-hidden>→</span></Link></div>
           {activeOffers.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>Projekt</th><th>Status</th><th>Rok</th><th>Prihodki</th></tr></thead><tbody>{activeOffers.slice(0, 5).map(o => {
             const map: Record<string, [string, string]> = { draft: ['Osnutek', 'neutral'], sent: ['V teku', 'info'], accepted: ['Zaključeno', 'success'], rejected: ['Zavrnjeno', 'danger'] };
             const [label, tone] = map[o.status] || ['—', 'neutral'];
