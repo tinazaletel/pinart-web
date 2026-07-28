@@ -1029,36 +1029,24 @@ export default function ContractWorkspace({ base }: { base: string }) {
         kontakti={strankaKontakti()}
         projektId={vir === 'ponudba' && selectedOffer ? selectedOffer.id : undefined}
       />
-      {/* Odvetnik: pošlji pogodbo v pregled in podpis (isti HTML kot naročniku). */}
-      <div className="pg-odvetnik">
-        <span className="pg-odvetnik-label">Za odvetnika</span>
-        <p className="pg-odvetnik-opis">Pošlji pogodbo odvetniku v pregled in podpis.</p>
-        <input
-          type="email"
-          className="pg-odvetnik-vnos"
-          value={odvetnikEmail}
-          onChange={event => nastaviOdvetnika(event.target.value)}
-          placeholder="odvetnik@pisarna.si"
-          aria-label="E-pošta odvetnika"
-        />
-        <button
-          type="button"
-          className="pg-gumb pg-odvetnik-gumb"
-          disabled={samoOgled || !jeVeljavenEmail(odvetnikEmail) || odvStatus === 'poslji'}
-          onClick={posljiOdvetniku}
-        >
-          <PenNib size={17} /> Pošlji odvetniku v pregled in podpis
-        </button>
-        {samoOgled && <p className="pg-odvetnik-namig">Na voljo v načinu »Moji podatki«.</p>}
-        {odvStatus === 'poslji' && <p className="pg-odvetnik-status" role="status">Pošiljam …</p>}
-        {odvStatus === 'ok' && <p className="pg-odvetnik-status pg-odvetnik-ok" role="status">Poslano odvetniku ✓</p>}
-        {odvStatus === 'napaka' && <p className="pg-odvetnik-status pg-odvetnik-err" role="status">Napaka: {odvNapaka}</p>}
-      </div>
       <div className="pg-koncna-nav">
         <button type="button" className="pg-povezava" onClick={() => setPogled('dokument')}>← Uredi pogodbo</button>
         <button type="button" className="pg-povezava" onClick={novaPogodba}>↺ Nova pogodba</button>
       </div>
     </section>}
+
+    {/* Odvetnik: mali banner v SPODNJEM DESNEM kotu strani (izven animirane sekcije,
+        da je position:fixed vezan na stran/mrežo, ne na .pg-sek). */}
+    {pogled === 'zakljucek' && <div className="pg-odvetnik">
+      <span className="pg-odvetnik-label">Za odvetnika</span>
+      <p className="pg-odvetnik-opis">Pošlji pogodbo odvetniku v pregled in podpis.</p>
+      <input type="email" className="pg-odvetnik-vnos" value={odvetnikEmail} onChange={event => nastaviOdvetnika(event.target.value)} placeholder="odvetnik@pisarna.si" aria-label="E-pošta odvetnika" />
+      <button type="button" className="pg-gumb pg-odvetnik-gumb" disabled={samoOgled || !jeVeljavenEmail(odvetnikEmail) || odvStatus === 'poslji'} onClick={posljiOdvetniku}><PenNib size={17} /> Pošlji odvetniku v pregled in podpis</button>
+      {samoOgled && <p className="pg-odvetnik-namig">Na voljo v načinu »Moji podatki«.</p>}
+      {odvStatus === 'poslji' && <p className="pg-odvetnik-status" role="status">Pošiljam …</p>}
+      {odvStatus === 'ok' && <p className="pg-odvetnik-status pg-odvetnik-ok" role="status">Poslano odvetniku ✓</p>}
+      {odvStatus === 'napaka' && <p className="pg-odvetnik-status pg-odvetnik-err" role="status">Napaka: {odvNapaka}</p>}
+    </div>}
 
     {/* stili kot retainer: navaden <style> (globalno), zato pg- predpona povsod */}
     <style>{`
