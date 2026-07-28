@@ -428,16 +428,14 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   };
   /* status projekta (aktiven/pavza/koncan) — klik na pilulo v tabeli -> spustni seznam */
   const naStatusProjekt = (real: Projekt, v: ProjektEntitetaStatus) => {
-    if (samoOgled) return;
     const posodobljen: Projekt = { ...real, status: v };
-    shraniProjekt(posodobljen);
     setRealProjekti(prev => prev.map(p => (p.id === posodobljen.id ? posodobljen : p)));
+    if (!samoOgled) shraniProjekt(posodobljen);  /* v demu samo lokalno (ne pisemo v pravo bazo) */
   };
   /* projekt izpeljan iz ponudbe (ni pravega zapisa) -> status je status ponudbe */
   const naStatusOffer = (id: string, v: FlowOfferStatus) => {
-    if (samoOgled) return;
-    saveOfferStatus(id, v);
     setOffers(prev => prev.map(o => (o.id === id ? { ...o, status: v } : o)));
+    if (!samoOgled) saveOfferStatus(id, v);
   };
 
   const selected = projects.find(project => project.offer.id === selectedId);
@@ -697,11 +695,11 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     ) : (
       <section ref={storyRef} className={`${styles.projectStory} pw-stran`}>
         <button type="button" className="pw-nazaj" onClick={goBack} aria-label="Nazaj na seznam projektov"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M19 12H5M11 18l-6-6 6-6" /></svg> Nazaj</button>
-        <header><div><p className={styles.eyebrow}>PROJEKT · {selected.offer.number || 'BREZ ŠTEVILKE'}</p><h2>{selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><span className="pw-det-statusured" data-editable={!samoOgled ? '' : undefined} title={samoOgled ? 'Statusa v demu ni mogoče spreminjati — preklopi na »Moji podatki«.' : 'Spremeni status'}>
-          <b>{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}</b>
+        <header><div><p className={styles.eyebrow}>PROJEKT · {selected.offer.number || 'BREZ ŠTEVILKE'}</p><h2>{selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><span className="pw-det-statusured" data-editable="" title="Spremeni status">
+          <span className="pw-status" data-tone={projectStatusInfo(selected.offer.status).tone}>{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}</span>
           {selected.real
-            ? <select className="pw-status-select" aria-label="Spremeni status projekta" value={selected.real.status} disabled={samoOgled} onChange={event => naStatusProjekt(selected.real!, event.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
-            : <select className="pw-status-select" aria-label="Spremeni status" value={selected.offer.status} disabled={samoOgled} onChange={event => naStatusOffer(selected.offer.id, event.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
+            ? <select className="pw-status-select" aria-label="Spremeni status projekta" value={selected.real.status} onChange={event => naStatusProjekt(selected.real!, event.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
+            : <select className="pw-status-select" aria-label="Spremeni status" value={selected.offer.status} onChange={event => naStatusOffer(selected.offer.id, event.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
         </span></header>
         <div className={styles.projectMoney}><label><small>Dogovorjena vrednost</small><span><input type="number" min="0" step="0.01" value={selected.agreed || ''} onChange={event => saveAmount(selected.offer.id, Number(event.target.value))} /> €</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></label><span><small>Zaračunano</small><strong>{money(selected.billed)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></span><span className={selected.unbilled > 0 ? styles.projectNeedsInvoice : ''}><small>Še ni zaračunano</small><strong>{selected.agreed ? money(selected.unbilled) : '—'}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="cost" /></b></span><span><small>Ocenjeni rezultat</small><strong>{money(selected.profit)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></span></div>
         {selected.real && (

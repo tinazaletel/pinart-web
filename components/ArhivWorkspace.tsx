@@ -114,11 +114,12 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   const mineMode = nacin === 'mine';
   const [statusOverride, setStatusOverride] = useState<Record<string, string>>({});
   const naStatus = (tip: 'offer' | 'contract' | 'invoice', id: string, v: string) => {
+    setStatusOverride(prev => ({ ...prev, [`${tip}:${id}`]: v }));   /* takojsen UI (velja tudi v demu) */
+    if (!mineMode) return;   /* v demu ne pisemo v pravo bazo */
     const data = loadFlowData();
     if (tip === 'offer') saveOfferStatus(id, v as FlowOfferStatus);
     else if (tip === 'contract') saveFlowCollection('contracts', data.contracts.map(c => c.id === id ? { ...c, status: v as FlowContractStatus } : c));
     else saveFlowCollection('invoices', data.invoices.map(r => r.id === id ? { ...r, paid: v === 'true' } : r));
-    setStatusOverride(prev => ({ ...prev, [`${tip}:${id}`]: v }));
   };
   const statusVred = (tip: string, id: string, fallback: string) => statusOverride[`${tip}:${id}`] ?? fallback;
   const offerOpcije = (Object.entries(offerLabels) as Array<[FlowOfferStatus, string]>).map(([v, label]) => ({ v, label }));
@@ -126,7 +127,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   const invoiceOpcije = [{ v: 'false', label: 'Odprto' }, { v: 'true', label: 'Plačano' }];
   const StatusUredi = ({ tip, id, vrednost, opcije }: { tip: 'offer' | 'contract' | 'invoice'; id: string; vrednost: string; opcije: Array<{ v: string; label: string }> }) => {
     const oznaka = opcije.find(o => o.v === vrednost)?.label || vrednost;
-    return <span className="arh-status-ured" data-editable={mineMode ? '' : undefined}>
+    return <span className="arh-status-ured" data-editable="">
       <StatusPika label={oznaka} />
       <select className="arh-status-select" aria-label="Spremeni status" value={vrednost} disabled={!mineMode} title={mineMode ? undefined : 'Statusa v demu ni mogoče spreminjati — preklopi na »Moji podatki«.'} onClick={e => e.stopPropagation()} onChange={e => naStatus(tip, id, e.target.value)}>
         {opcije.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
