@@ -982,10 +982,10 @@
 .businessIntro h2 { margin: 0; font: 500 clamp(1.5rem, 2.5vw, 2.15rem)/1 var(--font-serif), Georgia, serif; }
 .businessIntro > p:last-child { margin: .7rem 0 0; color: color-mix(in oklch, var(--ink) 60%, transparent); font-size: .65rem; line-height: 1.45; }
 .kpi { position: relative; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
-.kpi:nth-child(1) { background: #ebe0fa; }
-.kpi:nth-child(2) { background: #d1e4fc; }
-.kpi:nth-child(3) { background: #fde4d2; }
-.kpi:nth-child(4) { background: #e2f3e5; }
+.kpi:nth-child(1) { background: linear-gradient(140deg, oklch(96% .035 295), oklch(88% .075 297)); }
+.kpi:nth-child(2) { background: linear-gradient(140deg, oklch(96% .03 250), oklch(87% .08 255)); }
+.kpi:nth-child(3) { background: linear-gradient(140deg, oklch(97% .03 65), oklch(89% .075 55)); }
+.kpi:nth-child(4) { background: linear-gradient(140deg, oklch(96% .035 160), oklch(88% .075 163)); }
 .kpi > span { font-size: .63rem; font-weight: 750; }
 .kpi strong { margin: 1.4rem 0 .25rem; font: 600 clamp(1.5rem, 2.2vw, 2.35rem) var(--font-sans), system-ui, sans-serif; letter-spacing: -.01em; font-variant-numeric: tabular-nums; -webkit-text-stroke: 0; }
 .kpi small { color: color-mix(in oklch, currentColor 58%, transparent); font-size: .56rem; }
