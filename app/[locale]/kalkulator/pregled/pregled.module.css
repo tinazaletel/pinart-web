@@ -410,8 +410,8 @@
 .detailRow .historyTable th:last-child, .detailRow .historyTable td:last-child { text-align: right; padding-right: 1.4rem; }
 .historyTable tbody tr:last-child td { border-bottom: 0; }
 .historyTable tbody tr[role='button'] { cursor: pointer; transition: filter 160ms ease; }
-.historyTable tbody tr[role='button'] td { transition: background .16s ease; }
-.historyTable tbody tr[role='button']:hover td { background: oklch(100% 0 0 / .5); }
+.historyTable tbody tr td { transition: background .16s ease; }
+.historyTable tbody tr:hover td { background: oklch(100% 0 0 / .5); }
 .historyTable tbody tr[role='button']:focus-visible { outline: 3px solid color-mix(in oklch, var(--purple) 50%, transparent); outline-offset: -3px; }
 .documentCell { display: flex; align-items: center; gap: .7rem; min-width: 0; }
 .documentCell > span:last-child { min-width: 0; flex: 1; }
