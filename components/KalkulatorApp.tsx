@@ -1266,7 +1266,7 @@ const OFFER_CSS = `
       p{break-inside:avoid;page-break-inside:avoid}
       .offer-package-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.2rem 1rem;margin-bottom:.5rem;padding-bottom:.5rem;border-bottom:1px solid #e7ddd0}
       .offer-package-head h3{margin:0;font-family:'Helvetica Neue',Arial,sans-serif;font-size:8.5pt;letter-spacing:.16em;text-transform:uppercase;color:#555;font-weight:700}
-      .offer-package-head strong{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:17pt;font-weight:600;color:#111;display:inline-flex;align-items:center;gap:.38rem;margin-left:auto;max-width:100%}
+      .offer-package-head strong{font-family:'Helvetica Neue',Arial,sans-serif;font-size:17pt;font-weight:700;letter-spacing:-.01em;color:#111;display:inline-flex;align-items:center;gap:.38rem;margin-left:auto;max-width:100%}
       .cena-ikona{width:1.02em;height:.97em;flex:none;color:#B25476;position:relative;top:.02em}
       .offer-package ul{margin:.2rem 0 .6rem}
       .offer-package .offer-podnaslov:first-of-type{margin-top:0}
