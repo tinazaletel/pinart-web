@@ -684,8 +684,8 @@ export default function KoledarWorkspace() {
 
       <style>{`
         .kol{width:100%;min-width:0;padding:.5rem 0 1.5rem;
-          --kol-accent:oklch(58% .12 245);
-          --kol-accent-soft:oklch(96% .028 245);
+          --kol-accent:oklch(58% .16 297);
+          --kol-accent-soft:oklch(96% .03 297);
           --kol-zdaj:oklch(58% .19 25);
           --kol-crta:oklch(93.5% .005 90);
           --kol-podlaga:var(--paper);
@@ -718,7 +718,7 @@ export default function KoledarWorkspace() {
         /* toggle-čip z OČITNIM vklop/izklop stanjem: izklop = tih outline, vklop = poln akcent */
         .kol-naloge-cip{flex:none;display:inline-flex;align-items:center;gap:.3rem;padding:.4rem .7rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);opacity:.6;font:600 .72rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
         .kol-naloge-cip:hover{opacity:.9;border-color:var(--kol-accent)}
-        .kol-naloge-cip[data-aktiven='true']{background:var(--kol-accent);border-color:var(--kol-accent);color:#fff;opacity:1;box-shadow:0 1px 3px oklch(58% .12 245 / .35)}
+        .kol-naloge-cip[data-aktiven='true']{background:var(--kol-accent);border-color:var(--kol-accent);color:#fff;opacity:1;box-shadow:0 1px 3px oklch(58% .16 297 / .35)}
 
         /* --- kompaktna značka zapadlih rokov --- */
         .kol-zapadlo-cip{flex:none;display:inline-flex;align-items:center;gap:.3rem;padding:.34rem .6rem;border:1px solid oklch(86% .07 32);border-radius:999px;background:oklch(96% .04 35);color:oklch(48% .16 30);font:650 .7rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap;animation:kolSlideIn .35s ease}
@@ -780,7 +780,7 @@ export default function KoledarWorkspace() {
         .kol-dt-red .kol-dan-stolpec{border-left:none}
         .kol-ura-cona{position:absolute;left:0;right:0;border-top:1px solid var(--kol-crta);z-index:1}
         .kol-ura-cona[data-klikljivo='true']{cursor:pointer}
-        .kol-ura-cona[data-klikljivo='true']:hover{background:oklch(98% .012 245)}
+        .kol-ura-cona[data-klikljivo='true']:hover{background:oklch(98% .014 297)}
 
         .kol-zdaj-crta{position:absolute;left:0;right:0;height:0;border-top:2px solid var(--kol-zdaj);z-index:3;pointer-events:none}
         .kol-zdaj-pika{position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:999px;background:var(--kol-zdaj)}
@@ -808,7 +808,7 @@ export default function KoledarWorkspace() {
         .kol-mesec-celica[data-izven='true']{background:oklch(98.6% .003 90)}
         .kol-mesec-celica[data-izven='true'] .kol-mesec-num{opacity:.4}
         .kol-mesec-celica[data-danes-celica='true']{background:var(--kol-accent-soft)}
-        .kol-mesec-celica:hover{background:oklch(98% .012 245)}
+        .kol-mesec-celica:hover{background:oklch(98% .014 297)}
         .kol-mesec-vrh{display:flex;align-items:center;justify-content:flex-end;gap:.25rem;min-height:1.4rem}
         .kol-mesec-mesec-kr{font:700 .56rem var(--font-sans),sans-serif;letter-spacing:.03em;text-transform:uppercase;color:var(--ink);opacity:.5}
         .kol-mesec-num{min-width:1.4rem;height:1.4rem;padding:0 .28rem;display:inline-grid;place-items:center;border-radius:999px;font:600 .74rem var(--font-sans),sans-serif;color:var(--ink)}
