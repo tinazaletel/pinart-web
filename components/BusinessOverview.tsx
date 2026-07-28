@@ -344,7 +344,7 @@ export default function BusinessOverview({ base }: { base: string }) {
 
       <div className={styles.overviewColumns}>
       <section className={styles.historyBand} id="accounting">
-        <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>02 · ZGODOVINA</p><h2>Zadnji dokumenti</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>Vsi dokumenti</span> <span className={styles.abArrow} aria-hidden>→</span></Link></div>
+        <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>02 · ZGODOVINA</p><h2>Zadnji dokumenti</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>Vsi dokumenti</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
         {historyItems.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>Dokument</th><th>Stranka</th><th>Datum</th><th>Status</th></tr></thead><tbody>{historyItems.map(item => <tr key={`${item.type}-${item.id}`} role="button" tabIndex={0} aria-label={`Odpri ${item.title}`} onClick={() => setSelectedDocument(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedDocument(item); } }}><td><div className={styles.documentCell}><span className={`${styles.documentIcon} ${styles[`document_${item.type === 'Ponudba' ? 'offer' : item.type === 'Pogodba' ? 'contract' : item.type === 'Račun' ? 'invoice' : 'expense'}`]}`}><HistoryIcon type={item.type} /></span><span><strong>{item.title}</strong><small>{item.type}</small></span></div></td><td>{item.client}</td><td>{new Date(item.date).toLocaleDateString('sl-SI')}</td><td>{statusOptions(item.type).length ? <span className={`${styles.statusField} ${styles[`status_${statusTone(item.status)}`]}`} data-editable={preview === 'mine' ? '' : undefined}><span className={styles.statusPill}>{item.status}</span><select aria-label={`Status: ${item.title}`} className={styles.statusSelect} value={item.status} disabled={preview !== 'mine'} title={preview !== 'mine' ? 'To so demo podatki — statusa ni mogoče spreminjati. Preklopi na »Moji podatki«.' : undefined} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={e => updateDocumentStatus(item.type, item.id, e.target.value)}>{statusOptions(item.type).map(option => <option key={option}>{option}</option>)}</select></span> : <span className={`${styles.statusPill} ${styles.status_neutral}`}>{item.status}</span>}</td></tr>)}</tbody></table></div> : <div className={styles.emptyState}><span>+</span><div><strong>Še nimaš dokumentov.</strong><p>Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj.</p></div></div>}
         <Link className={styles.panelMore} href={`${base}/kalkulator/projekti`}>Pojdi na arhiv <span aria-hidden>→</span></Link>
       </section>
@@ -361,14 +361,14 @@ export default function BusinessOverview({ base }: { base: string }) {
       </section>
 
       <section className={styles.eventsBand} id="events" aria-labelledby="events-title">
-        <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>04 · PRIHODNJI DOGODKI</p><h2 id="events-title">Dogodki &amp; roki</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/koledar`}><span className={styles.abTxt}>Vsi dogodki</span> <span className={styles.abArrow} aria-hidden>→</span></Link></div>
+        <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>04 · PRIHODNJI DOGODKI</p><h2 id="events-title">Dogodki &amp; roki</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/koledar`}><span className={styles.abTxt}>Vsi dogodki</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
         {(() => {
           const addDays = (iso: string, n: number) => { const dt = new Date(iso); dt.setDate(dt.getDate() + n); return dt; };
           const ev = [
             ...periodInvoices.filter(i => !i.paid).map(i => ({ id: `inv-${i.id}`, kind: 'Rok plačila', who: i.client || 'Račun', when: addDays(i.date, 15), tone: 'waiting' })),
             ...waiting.map(o => ({ id: `off-${o.id}`, kind: 'Ponudba čaka odgovor', who: o.client || o.title, when: addDays(o.date, 8), tone: 'info' })),
           ].sort((a, b) => a.when.getTime() - b.when.getTime()).slice(0, 5);
-          return ev.length ? <ul className={styles.eventList}>{ev.map(e => <li key={e.id}><span className={styles.eventDate}><b>{e.when.getDate()}</b><small>{e.when.toLocaleDateString('sl-SI', { month: 'short' }).replace('.', '').toUpperCase()}</small></span><span className={styles.eventIco} data-tone={e.tone} aria-hidden>{e.tone === 'waiting' ? <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg> : <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /></svg>}</span><span className={styles.eventBody}><strong>{e.kind}</strong><small>{e.who}</small></span><i className={styles.eventDot} data-tone={e.tone} aria-hidden /></li>)}</ul> : <div className={styles.emptyState}><span>+</span><div><strong>Ni prihodnjih rokov.</strong><p>Roki plačil in ponudbe, ki čakajo odgovor, se prikažejo tukaj.</p></div></div>;
+          return ev.length ? <ul className={styles.eventList}>{ev.map(e => <li key={e.id}><span className={styles.eventDate}><b>{e.when.getDate()}</b><small>{e.when.toLocaleDateString('sl-SI', { month: 'short' }).replace('.', '').toUpperCase()}</small></span><span className={styles.eventCard}><span className={styles.eventIco} data-tone={e.tone} aria-hidden>{e.tone === 'waiting' ? <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg> : <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /></svg>}</span><span className={styles.eventBody}><strong>{e.kind}</strong><small>{e.who}</small></span><i className={styles.eventDot} data-tone={e.tone} aria-hidden /></span></li>)}</ul> : <div className={styles.emptyState}><span>+</span><div><strong>Ni prihodnjih rokov.</strong><p>Roki plačil in ponudbe, ki čakajo odgovor, se prikažejo tukaj.</p></div></div>;
         })()}
         <Link className={styles.panelMore} href={`${base}/kalkulator/koledar`}>Pojdi na koledar <span aria-hidden>→</span></Link>
       </section>
@@ -376,7 +376,7 @@ export default function BusinessOverview({ base }: { base: string }) {
 
       <div className={styles.detailRow}>
         <section className={styles.historyBand} aria-labelledby="proj-title">
-          <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>05 · PROJEKTI</p><h2 id="proj-title">Zadnji projekti</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/projekti`}><span className={styles.abTxt}>Vsi projekti</span> <span className={styles.abArrow} aria-hidden>→</span></Link></div>
+          <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>05 · PROJEKTI</p><h2 id="proj-title">Zadnji projekti</h2></div><Link className={styles.accountingButton} href={`${base}/kalkulator/projekti`}><span className={styles.abTxt}>Vsi projekti</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           {activeOffers.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>Projekt</th><th>Status</th><th>Rok</th><th>Prihodki</th></tr></thead><tbody>{activeOffers.slice(0, 5).map(o => {
             const map: Record<string, [string, string]> = { draft: ['Osnutek', 'neutral'], sent: ['V teku', 'info'], accepted: ['Zaključeno', 'success'], rejected: ['Zavrnjeno', 'danger'] };
             const [label, tone] = map[o.status] || ['—', 'neutral'];
@@ -392,8 +392,19 @@ export default function BusinessOverview({ base }: { base: string }) {
             const months = Array.from({ length: 6 }, (_, i) => { const d = new Date(base0); d.setMonth(d.getMonth() - (5 - i)); return d; });
             const paidInv = activeInvoices.filter(i => i.paid);
             const vals = months.map(m => paidInv.filter(i => { const d = new Date(i.date); return d.getFullYear() === m.getFullYear() && d.getMonth() === m.getMonth(); }).reduce((s, i) => s + i.amount, 0));
-            const max = Math.max(1, ...vals);
-            return <div className={styles.barChart}>{months.map((m, i) => <div key={i} className={styles.bar}><span className={styles.barVal}>{vals[i] ? money(vals[i]) : ''}</span><b style={{ height: `${Math.max(2, Math.round((vals[i] / max) * 100))}%` } as React.CSSProperties} /><small>{m.toLocaleDateString('sl-SI', { month: 'short' }).replace('.', '')}</small></div>)}</div>;
+            const rawMax = Math.max(0, ...vals);
+            const niceStep = (x: number) => { if (x <= 0) return 1000; const p = Math.pow(10, Math.floor(Math.log10(x))); const f = x / p; const n = f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10; return n * p; };
+            const step = niceStep(rawMax / 3);
+            const niceMax = step * 3;
+            const fmtK = (v: number) => v >= 1000 ? `${Math.round(v / 100) / 10}`.replace(/\.0$/, '') + 'k' : `${Math.round(v)}`;
+            const ticks = [3, 2, 1, 0].map(t => step * t);
+            return <div className={styles.chartWrap}>
+              <div className={styles.chartAxis}>{ticks.map(t => <span key={t}>{fmtK(t)}</span>)}</div>
+              <div className={styles.barChart}>
+                <div className={styles.chartGrid} aria-hidden>{ticks.map(t => <i key={t} />)}</div>
+                {months.map((m, i) => <div key={i} className={styles.bar}><b style={{ height: `${Math.max(1, Math.round((vals[i] / niceMax) * 100))}%` } as React.CSSProperties} title={money(vals[i])} /><small>{m.toLocaleDateString('sl-SI', { month: 'short' }).replace('.', '')}</small></div>)}
+              </div>
+            </div>;
           })()}
           <Link className={styles.panelMore} href={`${base}/kalkulator/racunovodstvo`}>Pojdi na poročila <span aria-hidden>→</span></Link>
         </section>
