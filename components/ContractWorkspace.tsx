@@ -1094,7 +1094,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-mehur::before{content:"";position:absolute;left:.9rem;top:.95rem;width:1.3rem;height:1.3rem;border-radius:50%;background:radial-gradient(58% 48% at 30% 24%,rgba(255,255,255,.92),rgba(255,255,255,0) 62%),conic-gradient(from 210deg,#7C3AED,#EC4899,#F59E0B,#38BDF8,#7C3AED);box-shadow:0 2px 6px rgba(124,58,237,.28)}
       .pg-mehur b{display:block;color:var(--ink);font-weight:600;font-size:1.02rem}
       .pg-mehur small{display:block;margin-top:.1rem;color:rgba(17,17,17,.64);font-size:.82rem}
-      .pg-zakljucek{background:#FCFBF7;border:1px solid rgba(17,17,17,.08);border-radius:20px;padding:1.6rem 1.7rem 1.9rem;box-shadow:0 4px 18px rgba(17,17,17,.04)}
+      .pg-zakljucek{background:transparent;border:0;border-radius:0;padding:1.6rem 1.7rem 1.9rem;box-shadow:none}
 
       /* vstopna forma (pilule+polja+gumb) v beli kartici — naslov+chat ostaneta na papirju nad njo */
       .pg-vstop-panel{background:#fff;border:1px solid rgba(17,17,17,.08);border-radius:20px;padding:1.6rem 1.5rem;box-shadow:0 12px 40px rgba(20,16,26,.05)}
