@@ -857,13 +857,22 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
 
         {/* ── POGLED: ZAKLJUCEK (locena stran) — ENAKO kot kalkulatorjev zakljucekStep ── */}
         {pogled === 'zakljucek' && (<section className="rw-sek rw-vstop rw-stran rw-zakljucek">
+          <div className="rw-zakljucek-lik" aria-hidden>
+            <svg viewBox="0 0 120 140" width="76" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="60" cy="133" rx="30" ry="4.5" fill="rgba(17,17,17,.12)" />
+              <g fill="none" stroke="rgba(17,17,17,.46)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M36 16 h36 l18 18 v66 a6 6 0 0 1 -6 6 H36 a6 6 0 0 1 -6 -6 V22 a6 6 0 0 1 6 -6 z" />
+                <path d="M72 16 v12 a6 6 0 0 0 6 6 h12" />
+                <path d="M40 54 h40" /><path d="M40 66 h40" /><path d="M40 78 h26" />
+              </g>
+              <circle cx="78" cy="83" r="13" fill="#fff" />
+              <circle cx="78" cy="83" r="13" fill="none" stroke="rgba(124,58,237,.7)" strokeWidth="2.6" />
+              <path d="M71 83 l5 5 l9 -10" fill="none" stroke="rgba(124,58,237,.95)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
           <p className="rw-kicker">Dolgoročno sodelovanje{stevilka ? ' · št. ' + stevilka : ''}</p>
           <h1 className="rw-h1">Zaključek.</h1>
           <p className="rw-uvod">Prenesi pogodbo{nar.ime.trim() ? ' za ' + nar.ime.trim() : ''} in po želji še retainer ponudbo.</p>
-          <div className="rw-gumbi">
-            <button type="button" className="rw-gumb" disabled={pdfNalaganje} onClick={() => prenesi('pogodba')}>{pdfNalaganje ? 'Pripravljam …' : 'Prenesi pogodbo (PDF)'}</button>
-            <button type="button" className="rw-gumb sek" disabled={pdfNalaganje} onClick={() => prenesi('ponudba')}>Retainer ponudba (PDF)</button>
-          </div>
           {napaka && <p className="rw-napaka">{napaka}</p>}
           {/* Posiljanje kar iz aplikacije (Resend) — isti HTML kot prenos/PDF (trenutno prikazan dokument). */}
           <PosljiBlok
@@ -874,6 +883,16 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             replyTo={ponudnik.email.trim() || undefined}
             kontakti={strankaKontakti()}
           />
+          <div className="rw-prenosi">
+            <button type="button" className="rw-povezava" disabled={pdfNalaganje} onClick={() => prenesi('pogodba')}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M7 11l5 5 5-5M5 21h14" /></svg>
+              {pdfNalaganje ? 'Pripravljam …' : 'Prenesi pogodbo (PDF)'}
+            </button>
+            <button type="button" className="rw-povezava" disabled={pdfNalaganje} onClick={() => prenesi('ponudba')}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M7 11l5 5 5-5M5 21h14" /></svg>
+              Prenesi retainer ponudbo (PDF)
+            </button>
+          </div>
           <div className="rw-koncna-nav">
             <button type="button" className="rw-povezava" onClick={urediOdZacetka}>← Uredi od začetka</button>
             <button type="button" className="rw-povezava" onClick={novaPonudba}>↺ Nova ponudba</button>
@@ -1117,6 +1136,13 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-gumb.sek{background:transparent;color:var(--ink);border:1px solid rgba(17,17,17,.28)}
         .rw-gumb:disabled{opacity:.5;cursor:default;transform:none}
         .rw-koncna-nav{display:flex;flex-wrap:wrap;gap:1.4rem;margin-top:2rem;padding-top:1.4rem;border-top:1px solid rgba(17,17,17,.1)}
+        /* Zakljucek = centriran, kot pri ponudbi (ikona + prenos-povezave spodaj) */
+        .rw-zakljucek .rw-kicker,.rw-zakljucek .rw-h1,.rw-zakljucek .rw-uvod{text-align:center}
+        .rw-zakljucek .rw-uvod{margin-left:auto;margin-right:auto}
+        .rw-zakljucek-lik{display:flex;justify-content:center;margin:.5rem 0 1.1rem}
+        .rw-zakljucek-lik svg{width:76px;height:auto}
+        .rw-prenosi{display:flex;flex-wrap:wrap;justify-content:center;gap:.9rem 1.6rem;margin:1.4rem auto 0}
+        .rw-zakljucek .rw-koncna-nav{justify-content:center}
         .rw-napaka{color:#b23434;font-size:.86rem;margin:.6rem 0 0}
         /* predogled sirsi od chata (kot mehurcki) — vecje, berljive strani */
         .rw-predogled{position:relative;width:min(880px,94vw);left:50%;transform:translateX(-50%);margin-top:1.4rem;background:#e9e6e0;border:1px solid rgba(17,17,17,.12);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:18px;box-shadow:inset 0 1px 6px rgba(20,20,20,.06)}
