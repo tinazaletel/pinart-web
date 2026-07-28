@@ -663,7 +663,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.7rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.5);border-bottom:1px solid rgba(17,17,17,.1)}
         .arh-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:none;border-bottom:1px solid rgba(17,17,17,.07);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
         .arh-vrstica:last-child{border-bottom:none}
-        .arh-vrstica:hover{background:rgba(255,255,255,.6)}
+        .arh-vrstica:hover{background:oklch(100% 0 0 / .5)}
         .arh-vrstica > span{min-width:0;font-size:.86rem;overflow-wrap:anywhere}
         /* status pilula — ISTE barve kot nadzorna plosca (.statusPill + status_*) */
         .arh-status{display:inline-flex;align-items:center;gap:.42rem;width:max-content;max-width:100%;padding:.32rem .66rem;border:1px solid oklch(86% .012 87);border-radius:999px;background:oklch(95% .01 87);color:oklch(40% .02 70);font-size:.62rem;font-weight:700;white-space:nowrap}

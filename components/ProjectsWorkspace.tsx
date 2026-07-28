@@ -83,7 +83,12 @@ const pwStyles = `
 .pw-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.75rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
 .pw-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:0;border-top:1px solid var(--line);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
 .pw-tabela > button.pw-vrstica:first-of-type{border-top:0}
-.pw-vrstica:hover{background:linear-gradient(125deg, oklch(94% .045 295), oklch(93% .04 165))}
+.pw-vrstica:hover{background:oklch(100% 0 0 / .5)}
+.pw-det-statusured{position:relative;display:inline-flex;align-items:center}
+.pw-det-statusured[data-editable]{padding-right:1.15rem;cursor:pointer}
+.pw-det-statusured[data-editable]::after{content:'';position:absolute;right:.2rem;top:50%;width:.34rem;height:.34rem;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-72%) rotate(45deg);opacity:.5;pointer-events:none}
+.pw-status-select{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;border:0;cursor:pointer;appearance:none;-webkit-appearance:none;font:inherit}
+.pw-status-select:disabled{cursor:default}
 .pw-vrstica > span{min-width:0;font-size:.72rem;overflow-wrap:anywhere}
 .pw-glavna{display:flex;align-items:center;gap:.6rem;min-width:0}
 .pw-glavna strong{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.72rem}
@@ -421,6 +426,13 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     shraniProjekt(posodobljen);
     setRealProjekti(prev => prev.map(p => (p.id === posodobljen.id ? posodobljen : p)));
   };
+  /* status projekta (aktiven/pavza/koncan) — klik na pilulo v tabeli -> spustni seznam */
+  const naStatusProjekt = (real: Projekt, v: ProjektEntitetaStatus) => {
+    if (samoOgled) return;
+    const posodobljen: Projekt = { ...real, status: v };
+    shraniProjekt(posodobljen);
+    setRealProjekti(prev => prev.map(p => (p.id === posodobljen.id ? posodobljen : p)));
+  };
 
   const selected = projects.find(project => project.offer.id === selectedId);
   /* sortirano padajoče po datumu — uporabljeno tako na kartici (top 5) kot v slideu (ves seznam) */
@@ -679,7 +691,14 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     ) : (
       <section ref={storyRef} className={`${styles.projectStory} pw-stran`}>
         <button type="button" className="pw-nazaj" onClick={goBack} aria-label="Nazaj na seznam projektov"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M19 12H5M11 18l-6-6 6-6" /></svg> Nazaj</button>
-        <header><div><p className={styles.eyebrow}>PROJEKT · {selected.offer.number || 'BREZ ŠTEVILKE'}</p><h2>{selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><b>{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}</b></header>
+        <header><div><p className={styles.eyebrow}>PROJEKT · {selected.offer.number || 'BREZ ŠTEVILKE'}</p><h2>{selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div>{selected.real ? (
+          <span className="pw-det-statusured" data-editable={!samoOgled ? '' : undefined} title={samoOgled ? 'Statusa v demu ni mogoče spreminjati — preklopi na »Moji podatki«.' : 'Spremeni status projekta'}>
+            <b>{projektStatusOznaka[selected.real.status]}</b>
+            <select className="pw-status-select" aria-label="Spremeni status projekta" value={selected.real.status} disabled={samoOgled} onChange={event => naStatusProjekt(selected.real!, event.target.value as ProjektEntitetaStatus)}>
+              {(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}
+            </select>
+          </span>
+        ) : <b>{statusLabel[selected.offer.status]}</b>}</header>
         <div className={styles.projectMoney}><label><small>Dogovorjena vrednost</small><span><input type="number" min="0" step="0.01" value={selected.agreed || ''} onChange={event => saveAmount(selected.offer.id, Number(event.target.value))} /> €</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></label><span><small>Zaračunano</small><strong>{money(selected.billed)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></span><span className={selected.unbilled > 0 ? styles.projectNeedsInvoice : ''}><small>Še ni zaračunano</small><strong>{selected.agreed ? money(selected.unbilled) : '—'}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="cost" /></b></span><span><small>Ocenjeni rezultat</small><strong>{money(selected.profit)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></span></div>
         {selected.real && (
           <article className="pw-karta pw-cilji">
