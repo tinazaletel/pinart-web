@@ -1016,12 +1016,12 @@ export default function ContractWorkspace({ base }: { base: string }) {
           })}
         </div>
       </div>
-      <div className="pg-gumbi">
-        <button type="button" className="pg-gumb sek" aria-label="Shrani pogodbo" onClick={() => { shrani(); proslaviKonfeti(); }}>
-          <FloppyDisk size={17} /> {shranjenaId ? 'Shranjeno ✓' : 'Shrani'}
+      <div className="pg-prenosi">
+        <button type="button" className="pg-povezava" aria-label="Shrani pogodbo" onClick={() => { shrani(); proslaviKonfeti(); }}>
+          <FloppyDisk size={16} /> {shranjenaId ? 'Shranjeno ✓' : 'Shrani'}
         </button>
-        <button type="button" className="pg-gumb" aria-label="Prenesi pogodbo PDF" disabled={pdfNalaganje} onClick={() => { prenesi(); proslaviKonfeti(); }}>
-          <FilePdf size={17} /> {pdfNalaganje ? 'Pripravljam …' : 'Prenesi (PDF)'}
+        <button type="button" className="pg-povezava" aria-label="Prenesi pogodbo PDF" disabled={pdfNalaganje} onClick={() => { prenesi(); proslaviKonfeti(); }}>
+          <FilePdf size={16} /> {pdfNalaganje ? 'Pripravljam …' : 'Prenesi (PDF)'}
         </button>
       </div>
       {napaka && <p className="pg-napaka">{napaka}</p>}
@@ -1050,11 +1050,11 @@ export default function ContractWorkspace({ base }: { base: string }) {
         />
         <button
           type="button"
-          className="pg-gumb"
+          className="pg-gumb pg-odvetnik-gumb"
           disabled={samoOgled || !jeVeljavenEmail(odvetnikEmail) || odvStatus === 'poslji'}
           onClick={posljiOdvetniku}
         >
-          Pošlji odvetniku v pregled in podpis
+          <PenNib size={17} /> Pošlji odvetniku v pregled in podpis
         </button>
         {samoOgled && <p className="pg-odvetnik-namig">Na voljo v načinu »Moji podatki«.</p>}
         {odvStatus === 'poslji' && <p className="pg-odvetnik-status" role="status">Pošiljam …</p>}
@@ -1103,6 +1103,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-zakljucek-lik svg{width:76px;height:auto}
       .pg-zakljucek .pg-kicker,.pg-zakljucek .pg-naslov,.pg-zakljucek .pg-uvod{text-align:center}
       .pg-zakljucek .pg-uvod{margin-left:auto;margin-right:auto}
+      .pg-prenosi{display:flex;flex-wrap:wrap;justify-content:center;gap:.9rem 1.6rem;margin:1.2rem 0 .4rem}
       .pg-disc{margin:-.7rem 0 1.4rem;padding:.7rem .85rem;max-width:34rem;font-size:.76rem;line-height:1.5;color:rgba(17,17,17,.66);background:oklch(96% .03 85);border:1px solid oklch(85% .07 78);border-radius:.7rem}
       .pg-disc b{color:rgba(17,17,17,.82)}
 
@@ -1211,6 +1212,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
       /* Odvetnik: umirjen blok pod pošiljanjem naročniku — tanek okvir, isti jezik kot .pg-disc/.pg-polje */
       .pg-odvetnik{max-width:560px;margin:1.1rem auto 0;padding:1.15rem 1.4rem 1.25rem;border:1px solid rgba(17,17,17,.14);border-radius:16px;background:rgba(255,255,255,.5);text-align:left}
       .pg-odvetnik-label{display:block;font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.5)}
+      .pg-odvetnik .pg-odvetnik-gumb{width:100%;justify-content:center;background:var(--akcent,#B25476);color:#fff;border:0;box-shadow:0 .5rem 1.3rem rgba(178,84,118,.32);font-size:1rem;padding:.95rem 1.6rem;margin-top:.3rem}
+      .pg-odvetnik .pg-odvetnik-gumb:hover:not(:disabled){filter:brightness(1.06)}
       .pg-odvetnik-opis{margin:.5rem 0 .85rem;font-size:.86rem;line-height:1.5;color:rgba(17,17,17,.66)}
       .pg-odvetnik-vnos{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(17,17,17,.16);border-radius:10px;padding:.6rem .75rem;margin-bottom:.85rem}
       .pg-odvetnik-vnos:focus{outline:none;border-color:var(--ink)}
