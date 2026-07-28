@@ -392,7 +392,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       textarea.np-chat-polje{border-radius:1rem;resize:vertical;min-height:5rem;font-weight:400;line-height:1.5;font-family:inherit}
       select.np-chat-polje{cursor:pointer}
       .np-chat-polje:focus{border-color:color-mix(in oklch,var(--ink) 45%,transparent)}
-      .np-chat-naprej{align-self:flex-start;display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1.2rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
+      .np-chat-naprej{align-self:flex-start;display:inline-flex;align-items:center;gap:.45rem;padding:.95rem 2.2rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:600 .82rem var(--font-sans),sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
       .np-chat-naprej:disabled{opacity:.45;cursor:not-allowed}
       .np-chat-naprej:hover:not(:disabled){background:color-mix(in oklch,var(--ink) 82%,transparent)}
       /* izbirne kartice (status) — pod vprasanjem bota, klik takoj potrdi in gre naprej */
