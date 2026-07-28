@@ -267,7 +267,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
                       <textarea className="np-chat-polje" value={obrazec.persona[pv.k]} onChange={event => setPersona(pv.k, event.target.value)} placeholder={pv.ph} rows={2} aria-label={pv.q} />
                       <div className="np-persona-akcije">
                         {i === 0 && <button type="button" className="np-preskoci" onClick={preskociPersono}>Preskoči persono</button>}
-                        <button type="submit" className="np-chat-naprej">{i === PERSONA_VPR.length - 1 ? 'Zaključi' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
+                        <button type="submit" className="np-chat-naprej">Naprej <ArrowRight size={15} weight="bold" aria-hidden /></button>
                       </div>
                     </form>
                   )}
