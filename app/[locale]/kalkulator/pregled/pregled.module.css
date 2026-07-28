@@ -351,7 +351,7 @@
 /* Dogodki & roki — seznam prihodnjih rokov */
 .eventList { flex: 1; list-style: none; margin: .3rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .75rem; }
 .eventList li { flex: 1; display: flex; align-items: center; gap: .7rem; }
-.eventDate { --ed: oklch(58% .13 300); flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .05rem; width: 3.4rem; aspect-ratio: 1; padding: .3rem; border-radius: .95rem; background: color-mix(in oklch, var(--ed) 13%, oklch(99% 0 0)); line-height: .95; }
+.eventDate { --ed: oklch(60% .16 300); flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .05rem; width: 3.4rem; aspect-ratio: 1; padding: .3rem; border-radius: .95rem; background: color-mix(in oklch, var(--ed) 22%, oklch(99% 0 0)); line-height: .95; }
 .eventDate b { font: 700 .88rem/1 var(--font-sans), sans-serif; letter-spacing: -.02em; color: var(--ink); }
 .eventDate small { font-size: .4rem; font-weight: 700; letter-spacing: .09em; color: var(--ink); }
 .eventDate[data-tone='waiting'] { --ed: oklch(60% .15 72); }
