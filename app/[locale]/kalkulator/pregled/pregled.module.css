@@ -936,7 +936,7 @@
 .projectMoney > * > .subpageMetricIcon { position: absolute; z-index: 0; width: 4.4rem; right: -.7rem; bottom: -1rem; }
 .projectMoney > * > .subpageMetricIcon svg { width: 1.7rem; }
 .projectMoney small { color: var(--muted); font-size: .52rem; }
-.projectMoney strong { font: 500 1.25rem var(--font-serif), Georgia, serif; }
+.projectMoney strong { font: 600 1.25rem var(--font-sans), system-ui, sans-serif; }
 .projectMoney label span { display: flex; align-items: center; gap: .25rem; }
 .projectMoney input { width: 6rem; border: 0; border-bottom: 1px solid currentColor; outline: 0; background: transparent; font: 600 .75rem var(--font-sans), sans-serif; }
 .projectMoney .projectNeedsInvoice { background: oklch(88% .11 62); color: oklch(39% .1 45); }
@@ -947,7 +947,7 @@
 .projectNarrative article:nth-child(3) { background: linear-gradient(135deg, oklch(91% .06 295), oklch(74% .16 297), oklch(87% .1 285)); background-size: 180% 180%; }
 .projectNarrative article:nth-child(4) { background: linear-gradient(135deg, oklch(93% .07 68), oklch(78% .15 48), oklch(88% .1 78)); background-size: 180% 180%; }
 .projectNarrative .projectAgreement { grid-column: 1 / -1; min-height: auto; background: linear-gradient(135deg, oklch(97% .025 295), oklch(97% .025 165)); }
-.projectNarrative h3 { margin: 0; font: 600 1.15rem var(--font-serif), Georgia, serif; }
+.projectNarrative h3 { margin: 0; font: 600 1.15rem var(--font-sans), system-ui, sans-serif; -webkit-text-stroke: 0; }
 .projectNarrative ul { display: flex; flex-wrap: wrap; gap: .4rem; margin: .75rem 0 0; padding: 0; list-style: none; }
 .projectNarrative li { padding: .45rem .65rem; border: 1px solid var(--line); border-radius: 999px; background: oklch(100% 0 0 / .65); font-size: .8125rem; }
 .projectNarrative article > p:last-of-type { color: var(--muted); font-size: .58rem; line-height: 1.45; }
@@ -1659,7 +1659,7 @@
 .expenseEditor h2, .expenseArchive h2, .recurringCosts h2, .priceEditor > header h2, .priceListIntro h2,
 .clientEditor h2, .clientDirectory h2, .clientProfile h2, .goalOverview h2,
 .goalBuilder header h2, .goalChecklist h2, .goalHistory h2, .orphanDocuments h2, .projectStory h2,
-.clientDocuments h3, .projectBundle h3, .projectNarrative h3 {
+.clientDocuments h3, .projectBundle h3 {
   -webkit-text-stroke: 0.3px currentColor;
 }
 /* Stevilke / znacke BREZ outline (Tinina zahteva "outline cifram" = brez) */
