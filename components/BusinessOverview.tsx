@@ -351,10 +351,10 @@ export default function BusinessOverview({ base }: { base: string }) {
       <section className={styles.resultsBand} id="clients" aria-labelledby="business-title">
         <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>03 · POSLOVNI REZULTATI</p><h2 id="business-title">Kako ti gre?</h2></div><select className={styles.periodSelect} value={period} onChange={e => setPeriod(e.target.value as Period)} aria-label="Obdobje prikaza"><option value="month">Ta mesec</option><option value="quarter">To četrtletje</option><option value="year">Letos</option></select></div>
         <div className={styles.kpiGrid}>
-          <div className={styles.kpi}><span>Izdano</span><strong>{money(issued)}</strong><small>{periodInvoices.length} računov</small><b className={styles.resultIcon}><ResultIcon type="issued" /></b></div>
-          <div className={styles.kpi}><span>Plačano</span><strong>{money(paid)}</strong><small>{periodInvoices.filter(i => i.paid).length} potrjenih plačil</small><b className={styles.resultIcon}><ResultIcon type="paid" /></b></div>
-          <div className={styles.kpi}><span>Stroški</span><strong>{money(costs)}</strong><small>{periodExpenses.length} vnosov</small><b className={styles.resultIcon}><ResultIcon type="cost" /></b></div>
-          <div className={`${styles.kpi} ${profit < 0 ? styles.negative : ''}`}><span>Ocenjeni dobiček</span><strong>{money(profit)}</strong><small>plačano minus stroški</small><b className={styles.resultIcon}><ResultIcon type="profit" /></b></div>
+          <div className={styles.kpi}><span>Izdano</span><div className={styles.kpiRow}><strong>{money(issued)}</strong><b className={styles.resultIcon}><ResultIcon type="issued" /></b></div><small>{periodInvoices.length} računov</small></div>
+          <div className={styles.kpi}><span>Plačano</span><div className={styles.kpiRow}><strong>{money(paid)}</strong><b className={styles.resultIcon}><ResultIcon type="paid" /></b></div><small>{periodInvoices.filter(i => i.paid).length} potrjenih plačil</small></div>
+          <div className={styles.kpi}><span>Stroški</span><div className={styles.kpiRow}><strong>{money(costs)}</strong><b className={styles.resultIcon}><ResultIcon type="cost" /></b></div><small>{periodExpenses.length} vnosov</small></div>
+          <div className={`${styles.kpi} ${profit < 0 ? styles.negative : ''}`}><span>Ocenjeni dobiček</span><div className={styles.kpiRow}><strong>{money(profit)}</strong><b className={styles.resultIcon}><ResultIcon type="profit" /></b></div><small>plačano minus stroški</small></div>
         </div>
         <Link className={styles.panelMore} href={`${base}/kalkulator/racunovodstvo`}>Pojdi na podrobnosti <span aria-hidden>→</span></Link>
       </section>
