@@ -90,8 +90,8 @@ const pwStyles = `
 .pw-tabela > button.pw-vrstica:first-of-type{border-top:0}
 .pw-vrstica:hover{background:oklch(100% 0 0 / .5)}
 .pw-det-statusured,.pw-status-ured{position:relative;display:inline-flex;max-width:100%}
-.pw-det-statusured[data-editable] .pw-status,.pw-status-ured[data-editable] .pw-status{padding-right:1.5rem;cursor:pointer}
-.pw-det-statusured[data-editable]::after,.pw-status-ured[data-editable]::after{content:'';position:absolute;right:.66rem;top:50%;width:.32rem;height:.32rem;border-right:1.4px solid oklch(40% .02 70);border-bottom:1.4px solid oklch(40% .02 70);transform:translate(0,-60%) rotate(45deg);opacity:.55;pointer-events:none}
+.pw-det-statusured[data-editable] .pw-status,.pw-status-ured[data-editable] .pw-status{cursor:pointer}
+.pw-det-statusured[data-editable]::after,.pw-status-ured[data-editable]::after{content:none}
 .pw-status-select{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;border:0;border-radius:999px;background:transparent;cursor:pointer;appearance:none;-webkit-appearance:none;font:inherit}
 .pw-status-select:disabled{cursor:default}
 .pw-vrstica > span{min-width:0;font-size:.72rem;overflow-wrap:anywhere}
@@ -689,7 +689,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                     <span className="pw-mut">{project.offer.client}</span>
                     <span className="pw-mut">{datStr(project.offer.date)}</span>
                     <span><span className="pw-status-ured" data-editable="" title="Spremeni status" onClick={e => e.stopPropagation()}>
-                      <span className="pw-status" data-tone={info.tone}><i aria-hidden style={pikaStil(info.tone)} />{project.real ? projektStatusOznaka[project.real.status] : statusLabel[project.offer.status]}</span>
+                      <span className="pw-status" data-tone={info.tone}><i aria-hidden style={pikaStil(info.tone)} />{project.real ? projektStatusOznaka[project.real.status] : statusLabel[project.offer.status]}<svg width="9" height="9" viewBox="0 0 12 8" fill="none" aria-hidden style={{ marginLeft: '.45rem', flex: 'none', opacity: .55 }}><path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
                       {project.real
                         ? <select className="pw-status-select" aria-label="Spremeni status projekta" value={project.real.status} onChange={e => naStatusProjekt(project.real!, e.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
                         : <select className="pw-status-select" aria-label="Spremeni status" value={project.offer.status} onChange={e => naStatusOffer(project.offer.id, e.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
@@ -707,7 +707,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       <section ref={storyRef} className={`${styles.projectStory} pw-stran`}>
         <button type="button" className="pw-nazaj" onClick={goBack} aria-label="Nazaj na seznam projektov"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M19 12H5M11 18l-6-6 6-6" /></svg> Nazaj</button>
         <header><div><p className={styles.eyebrow}>PROJEKT · {selected.offer.number || 'BREZ ŠTEVILKE'}</p><h2>{selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><span className="pw-det-statusured" data-editable="" title="Spremeni status">
-          <span className="pw-status" data-tone={projectStatusInfo(selected.offer.status).tone}><i aria-hidden style={pikaStil(projectStatusInfo(selected.offer.status).tone)} />{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}</span>
+          <span className="pw-status" data-tone={projectStatusInfo(selected.offer.status).tone}><i aria-hidden style={pikaStil(projectStatusInfo(selected.offer.status).tone)} />{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}<svg width="9" height="9" viewBox="0 0 12 8" fill="none" aria-hidden style={{ marginLeft: '.45rem', flex: 'none', opacity: .55 }}><path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
           {selected.real
             ? <select className="pw-status-select" aria-label="Spremeni status projekta" value={selected.real.status} onChange={event => naStatusProjekt(selected.real!, event.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
             : <select className="pw-status-select" aria-label="Spremeni status" value={selected.offer.status} onChange={event => naStatusOffer(selected.offer.id, event.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
