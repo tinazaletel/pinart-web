@@ -1037,6 +1037,25 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
         </section>
 
+        <section className="fl-persone" id="zveni-znano" style={{ maxWidth: '72rem', margin: '0 auto', padding: 'clamp(3rem,7vw,6rem) clamp(1.2rem,5vw,3rem)' }}>
+          <div className="k">Zveni znano?</div>
+          <h2>Mogoče se prepoznaš.</h2>
+          <p className="uvod">Prave zgodbe zbiramo — do takrat pa najpogostejše bolečine samostojnih kreativcev, ki jih Flow reši.</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(15.5rem, 1fr))', gap: '1.2rem', marginTop: '2.2rem' }}>
+            {[
+              { ini: 'A', ime: 'Ana', vloga: 'Ilustratorka', barva: 'linear-gradient(140deg, oklch(78% .12 300), oklch(66% .16 300))', bolecina: 'Ob vsakem povpraševanju sem strmela v prazen mail — koliko naj rečem? Premalo in delaš skoraj zastonj, preveč in te ni nazaj. Avtorskih pravic sploh nisem zaračunavala.' },
+              { ini: 'M', ime: 'Maj', vloga: 'Grafični oblikovalec', barva: 'linear-gradient(140deg, oklch(80% .1 200), oklch(66% .14 205))', bolecina: 'Ponudba v Wordu, pogodba nekje v mailu, račun v tretjem programu. Ko je stranka vprašala »kaj sva se dogovorila«, sem pol ure brskal po Gmailu.' },
+              { ini: 'N', ime: 'Nina', vloga: 'Fotografinja', barva: 'linear-gradient(140deg, oklch(82% .1 60), oklch(70% .14 55))', bolecina: 'Delala sem cele mesece, konec leta pa nisem vedela, ali sem sploh kaj zaslužila. Nobenega pregleda — samo občutek, da tečem na mestu.' },
+            ].map(p => (
+              <figure key={p.ime} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', margin: 0, padding: '1.5rem', border: '1px solid oklch(93% .006 82 / .8)', borderRadius: '1.2rem', background: 'oklch(99.5% .004 87 / .75)' }}>
+                <span aria-hidden style={{ display: 'grid', placeItems: 'center', width: '3rem', height: '3rem', borderRadius: '50%', background: p.barva, color: '#fff', font: '600 1.05rem var(--font-sans, system-ui), sans-serif', flex: 'none' }}>{p.ini}</span>
+                <blockquote style={{ margin: 0, fontSize: '.95rem', lineHeight: 1.55, color: 'var(--ink, #1a1622)' }}>»{p.bolecina}«</blockquote>
+                <figcaption style={{ marginTop: 'auto' }}><strong style={{ fontSize: '.9rem' }}>{p.ime}</strong><span style={{ display: 'block', fontSize: '.78rem', color: 'var(--muted, #8a8177)' }}>{p.vloga}</span></figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+
         <section className="fl-cenik" id="cenik">
           <div className="k">Cenik</div>
           <h2>Enostavno, pošteno, brez presenečenj.</h2>
