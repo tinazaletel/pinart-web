@@ -8016,7 +8016,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           <div className="uredi-dodaj">
                             <input type="text" placeholder={L('Ime storitve (npr. montaža videa)', 'Service name (e.g. video editing)')} value={novaIme} onChange={e => setNovaIme(e.target.value)} />
                             <input type="number" min={0} step={50} placeholder={L('cena €', 'price €')} value={novaCena} onChange={e => setNovaCena(e.target.value)} />
-                            <button type="button" className="gumb" disabled={!novaIme.trim() || !(Number(novaCena) > 0)} onClick={dodajStoritev}>{L('Dodaj', 'Add')}</button>
+                            <button type="button" className="gumb" disabled={!novaIme.trim() || !(Number(novaCena) > 0)} onClick={dodajStoritev} style={{ padding: '.5rem 1rem', fontSize: '.82rem', minWidth: 0, flex: 'none' }}>{L('+ Dodaj', '+ Add')}</button>
                           </div>
                           {skrite.length > 0 && (
                             <>
@@ -8031,7 +8031,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             </>
                           )}
                         </div>
-                        <button type="button" className="povezava povezava-roza" style={{ display: 'block' }} onClick={() => { setKazemUredi(false); setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>{L('↳ Cene, razpored in ceniki', '↳ Prices, ordering and price lists')}</button>
+                        <button type="button" className="gumb" onClick={() => { setKazemUredi(false); setNovaIme(''); setNovaCena(''); }} style={{ display: 'block', width: '100%', marginTop: '1.4rem', padding: '.95rem', fontSize: '1rem', fontWeight: 700, background: 'var(--accent, #7C3AED)', color: '#fff', border: 'none', borderRadius: '999px', cursor: 'pointer' }}>{L('Shrani', 'Save')}</button>
+                        <button type="button" className="povezava povezava-roza" style={{ display: 'block', marginTop: '.9rem' }} onClick={() => { setKazemUredi(false); setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>{L('↳ Cene, razpored in ceniki', '↳ Prices, ordering and price lists')}</button>
                       </div>
                     </div>
                   </div>
