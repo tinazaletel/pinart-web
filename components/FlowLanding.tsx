@@ -341,7 +341,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     {
       ime: 'Brezplačno', za: 'Za začetek in enkratne projekte', cena: '0', enota: '€ za vedno',
       cta: 'Odpri kalkulator', href: kalkulator, izpost: false, znacka: '', kmalu: false,
-      vkljuceno: ['Kalkulator poštenih cen', 'Tri različice ponudbe za stranko', 'Izračun avtorskih pravic in licence', 'Oblikovana in urejljiva ponudba', 'Izvoz v e-pošto / PDF', 'Shranjene ponudbe v oblaku', 'Oštevilčenje ponudb'],
+      vkljuceno: ['Kalkulator poštenih cen', 'Ponudba v treh paketih (osnovni · srednji · premium)', 'Izračun avtorskih pravic in licence', 'Oblikovana in urejljiva ponudba', 'Izvoz v e-pošto / PDF', 'Neomejene shranjene ponudbe v oblaku', 'Oštevilčenje ponudb'],
     },
     {
       /* Ustanovna cena: prvih 50 placa 5 € za vedno. Namen ni popust, ampak
@@ -349,7 +349,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       ime: 'Premium', za: 'Za redno delo s strankami', cena: '5', enota: '€ / mesec', redna: '9',
       ustanovna: 'Ustanovna cena za prvih 50 — za vedno',
       cta: 'Začni s Premium', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Najbolj priljubljeno', kmalu: false,
-      vkljuceno: ['Vse iz Brezplačno', 'Shranjene ponudbe, pogodbe, računi', 'Dolgoročni retainerji', 'Kartoteka strank', 'Stroški in cilji', 'Časovnik in donosnost dela', 'Nadzorna plošča'],
+      vkljuceno: ['Vse iz Brezplačno', 'Ponudbe, pogodbe in računi (shranjeni, oštevilčeni)', 'Dolgoročni retainerji', 'Projekti & arhiv — vse na enem projektu', 'Kartoteka strank', 'Ceniki (cenovni profili)', 'Stroški in cilji', 'Koledar in naloge', 'Časovnik in donosnost dela', 'Nadzorna plošča'],
     },
     {
       ime: 'Pro', za: 'Za polno poslovanje', cena: '19', enota: '€ / mesec',
