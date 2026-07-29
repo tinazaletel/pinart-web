@@ -24,7 +24,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
   }, [open]);
 
   const flow = localePath(locale, '/flow');
-  const kalk = localePath(locale, '/kalkulator');
+  const kalk = localePath(locale, '/kalkulator/orodje');
   const prijava = localePath(locale, '/kalkulator/prijava');
 
   const LINKS = [
