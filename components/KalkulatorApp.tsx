@@ -1600,7 +1600,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     /* Uvodni pogovor zazenemo TU, v istem kliku, ne sele v useEffect: sicer se
        med sprejemom in ucinkom za en okvir izrise korak 0 (mehurcki) in slika
        utripne, kot da je napaka. React posodobitve v istem dogodku zdruzi. */
-    if (uvodKoncan === false) {
+    const pn0 = preberiPredogled();
+    if (uvodKoncan === false && pn0 !== 'demo' && pn0 !== 'zacetek') {
       if (klasicnaOblika) { setObIzbor(new Set()); setOnboardingOdprt(true); }
       else { setUvodChat(true); setChatKorak(0); }
     }
@@ -2276,7 +2277,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
        Takrat NE odpiramo uvoda (pristanes na "Super! Izberi storitve") — tudi ce
        uvodKoncan se ni true. Uvod od zacetka le pri praznem formularju (prvic /
        ponastavitev) ali eksplicitno prek ?uvod=1 (kartica "Dokoncaj nastavitev"). */
-    const uvodIzpolnjen = imeUporabnika.trim() !== '' && obIzbor.size > 0;
+    const pn = preberiPredogled();
+    const uvodIzpolnjen = pn === 'demo' || pn === 'zacetek'
+      || (imeUporabnika.trim() !== '' && obIzbor.size > 0);
     if (pogojiOk === true && ((uvodKoncan === false && !uvodIzpolnjen) || (zahtevanUvod && uvodKoncan !== null)) && !uvodChat && !onboardingOdprt) {
       if (klasicnaOblika) { setObIzbor(new Set()); setOnboardingOdprt(true); }
       /* ob vrnitvi s kartice nadaljuj, kjer si ostala (chatKorak je shranjen);
