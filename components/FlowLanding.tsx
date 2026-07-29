@@ -1057,6 +1057,26 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
         </section>
 
+        <section className="fl-zaupanje" id="zaupanje" style={{ maxWidth: '72rem', margin: '0 auto', padding: 'clamp(3rem,7vw,6rem) clamp(1.2rem,5vw,3rem)' }}>
+          <div className="k" style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(17,17,17,.72)' }}>Zakaj zaupati</div>
+          <h2 style={{ fontFamily: 'var(--font-serif), serif', fontWeight: 500, fontSize: 'clamp(1.9rem, 5vw, 2.9rem)', lineHeight: 1.05, margin: '.55rem 0 .5rem', maxWidth: '20ch' }}>Pošteno, varno, tvoje.</h2>
+          <p className="uvod" style={{ fontSize: '1rem', lineHeight: 1.6, color: 'rgba(17,17,17,.76)', maxWidth: '50ch', margin: '0 0 2.4rem' }}>Nova beta brez referenc — a zaupanje si prisluživa odkrito, ne z izmišljenimi ocenami.</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(15.5rem, 1fr))', gap: '1.2rem' }}>
+            {[
+              { Ik: ShieldCheck, ime: 'Tvoji podatki so tvoji', opis: 'Varno v oblaku (EU), dostop imaš samo ti. Ne prodamo in ne delimo — cene se združijo anonimno, nikoli ime.' },
+              { Ik: ChatCircle, ime: 'Pravi človek, ne oddelek', opis: 'Za Flow stoji Tina, ne anonimno podjetje. Pišeš ji neposredno in dobiš odgovor.' },
+              { Ik: Sparkle, ime: 'Brez pasti', opis: 'Kalkulator je brezplačen za vedno, brez kartice. Podatke lahko kadarkoli izvoziš in odideš.' },
+              { Ik: CheckCircle, ime: 'Odkrito grajeno', opis: 'Narejeno v Sloveniji, za kreativce. Odkrito povemo, kaj že dela in kaj šele prihaja (beta).' },
+            ].map(t => (
+              <div key={t.ime} style={{ display: 'flex', flexDirection: 'column', gap: '.7rem', padding: '1.5rem', border: '1px solid oklch(93% .006 82 / .8)', borderRadius: '1.2rem', background: 'oklch(99.5% .004 87 / .75)' }}>
+                <span aria-hidden style={{ display: 'grid', placeItems: 'center', width: '2.6rem', height: '2.6rem', borderRadius: '.7rem', background: 'oklch(95% .012 300)', color: 'var(--accent, #7c3aed)', flex: 'none' }}><t.Ik size={20} weight="regular" /></span>
+                <strong style={{ fontSize: '.98rem' }}>{t.ime}</strong>
+                <p style={{ margin: 0, fontSize: '.88rem', lineHeight: 1.5, color: 'var(--muted, #6b6b6b)' }}>{t.opis}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <section className="fl-cenik" id="cenik">
           <div className="k">Cenik</div>
           <h2>Enostavno, pošteno, brez presenečenj.</h2>
