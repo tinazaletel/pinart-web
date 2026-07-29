@@ -832,8 +832,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           <p className="kicker"><b>Pinart Flow</b> · beta · za samostojne kreativce</p>
           <h1 className="fl-hero-title"><span className="w" style={{ animationDelay: '0s' }}>Veš,</span> <span className="w" style={{ animationDelay: '.07s' }}>koliko</span> <span className="w" style={{ animationDelay: '.14s' }}>je</span> <span className="w" style={{ animationDelay: '.21s' }}>vredno</span> <em><span className="w" style={{ animationDelay: '.3s' }}>tvoje</span> <span className="w" style={{ animationDelay: '.38s' }}>delo?</span></em></h1>
           <p className="lead">
-            V nekaj klikih do lepo oblikovane ponudbe s pravo ceno in avtorskimi pravicami —
-            pa vse do računa in pregleda zaslužka. Nič več ugibanja cen ali skakanja med tremi orodji.
+            Prvo orodje za kreativce, ki ti <b>pove pošteno ceno</b> — z vračunanimi avtorskimi pravicami
+            in primerjavo s trgom — nato pa ves projekt vodi do plačanega računa. Ne ugibaš cene in ne skačeš med tremi programi.
           </p>
           <div className="cta-vrsta">
             <a className="cta" href={prijava}>Vstopi v Flow <ArrowRight size={17} weight="bold" /></a>
@@ -862,12 +862,12 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
         <section className="fl-laptop">
           <div className="fl-laptop-txt">
-            <div className="k">Tvoja mirna pisarna</div>
-            <h2>Ti ustvarjaš vrednost. <em>Flow poskrbi za vse ostalo.</em></h2>
+            <div className="k">Novost</div>
+            <h2>Edino orodje, ki ti pove, <em>koliko je vredno tvoje delo.</em></h2>
             <p>
-              Namesto Excela, map in razmetanih dokumentov imaš eno mirno delovno okolje.
-              Ponudbe, pogodbe, računi in stranke ostanejo skupaj, urejeni in tvoji, ti pa
-              se lahko posvetiš temu, kar znaš najbolje.
+              ChatGPT ugiba, Excel samo shranjuje. Flow razbije ceno na izvedbo, avtorske pravice
+              in licenco ter jo primerja z <b>anonimnim tržnim pregledom</b> — takoj vidiš, ali se
+              podcenjuješ. Cena tako ni več ugibanje, ampak utemeljena številka.
             </p>
           </div>
           <div className="fl-laptop-vizual" aria-hidden>
@@ -971,15 +971,15 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         <section className="fl-bento" id="zgodba">
           <div className="fl-bento-glava">
             <div>
-              <h2>Začni preprosto. Rasti, ko si pripravljena.</h2>
-              <p>Od enega orodja do celotnega poteka — v svojem tempu.</p>
+              <h2>Kaj dela Flow drugače?</h2>
+              <p>Ne le še eno orodje — orodje, ki ceni tvoje delo in poveže ves projekt. Tega chatbot, Excel ali asistent ne zmorejo.</p>
             </div>
             <a className="cta" href={kalkulator}>Začni brezplačno <ArrowRight size={16} weight="bold" /></a>
           </div>
           <div className="fl-bento-mreza">
             <div className="fl-bkarta a">
-              <h3>Vsako orodje pripravljeno</h3>
-              <p>Ponudbe, pogodbe, računi, stroški, ceniki. Odpri, kar potrebuješ — brez postavljanja.</p>
+              <h3>En program namesto treh</h3>
+              <p>Ponudbe, pogodbe, računi, stroški, ceniki — vse tukaj. Nič več skakanja med Excelom, Canvo in Gmailom.</p>
               <div className="fl-bthumbs" aria-hidden>
                 <span><i className="fl-th-card"><b /><b /><b /><em>1.850 €</em></i></span>
                 <span><i className="fl-th-calc"><i className="v" /><i className="m" /><i className="p" /></i></span>
@@ -990,18 +990,18 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               </div>
             </div>
             <div className="fl-bkarta b">
-              <h3>Celoten posel na enem mestu</h3>
-              <p>Od poštene cene do plačanega računa. Vse teče iz istih podatkov, brez podvajanja.</p>
+              <h3>Vse teče iz istih podatkov</h3>
+              <p>Ponudba postane pogodba postane račun — brez prepisovanja. Chatbot to vsakič pozabi, Flow si zapomni.</p>
               <div className="fl-bflow" aria-hidden><b>Ponudba</b><i>→</i><b>Pogodba</b><i>→</i><b>Račun</b><i>→</i><b>Pregled</b></div>
             </div>
             <div className="fl-bkarta c">
-              <h3>Ena baza, vse stranke</h3>
-              <p>Kartoteka strank z dokumenti in zgodovino sodelovanja.</p>
+              <h3>Vsaka stranka na enem mestu</h3>
+              <p>Projekti, dokumenti in kmalu maili — povezani s stranko. Ne razmetano po Gmailu.</p>
               <div className="fl-bavatars" aria-hidden><span>MA</span><span>RK</span><span>LJ</span><span>+</span></div>
             </div>
             <div className="fl-bkarta d">
-              <h3>Pošteno ceno v enem kliku</h3>
-              <p>Kalkulator predlaga ceno glede na trg in tvoje izkušnje.</p>
+              <h3>Pošteno ceno, ki je drugi nimajo</h3>
+              <p>Anonimni tržni pregled ti pokaže, kje si — in raste z vsakim kreativcem. Tvoj pošteni benchmark.</p>
               <div className="fl-bprice" aria-hidden><strong>1.850 €</strong><span>predlog</span></div>
             </div>
           </div>
@@ -1022,7 +1022,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         <section className="fl-funkcije">
           <div className="fl-funkcije-glava">
             <h2>Zgrajeno za mirno poslovanje samostojnega kreativca.</h2>
-            <p>Poštene cene, tvoji podatki in vse na enem mestu — brez skritih pasti.</p>
+            <p>Poštene cene, vračunane avtorske pravice in tvoji podatki — brez skritih pasti.</p>
           </div>
           <div className="fl-funkcije-mreza">
             {FUNKCIJE.map(f => {
