@@ -5436,6 +5436,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .uredi-dodaj { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
         .cw .uredi-dodaj input[type=text] { flex: 1; min-width: 150px; border: none; border-bottom: 1px solid rgba(17,17,17,.35); background: transparent; padding: .4rem .2rem; font-family: inherit; font-size: .95rem; color: var(--ink); }
         .cw .uredi-dodaj input[type=number] { width: 84px; border: none; border-bottom: 1px solid rgba(17,17,17,.35); background: transparent; padding: .4rem .2rem; font-family: inherit; font-size: .95rem; text-align: right; color: var(--ink); }
+        .cw .uredi-dodaj input { caret-color: var(--accent, #7C3AED); }
+        .cw .uredi-dodaj input:focus { outline: none; box-shadow: none; border-bottom: 1.5px solid var(--accent, #7C3AED); }
         /* select "pop" obroc ob kliku (kot na zacetku) */
         .cw .obroc0 { position: absolute; z-index: 2; border-radius: 50%; border: 3px solid rgba(178,84,118,.55); pointer-events: none; animation: obroc0 .6s ease-out forwards; }
         @keyframes obroc0 { 0% { transform: scale(.62); opacity: .75; } 100% { transform: scale(1.7); opacity: 0; } }
