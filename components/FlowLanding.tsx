@@ -138,7 +138,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const vrstaRef = useRef<HTMLDivElement>(null);
 
   const VPRASANJA = [
-    { v: 'Je Pinart Flow res brezplačen?', o: 'Med beto je celoten Pinart Flow brezplačen. Kalkulator poštenih cen ostane brezplačen za vedno; ko potrebuješ napredna orodja, izbereš paket, ki ti ustreza.' },
+    { v: 'Je Pinart Flow res brezplačen?', o: 'Kalkulator poštenih cen je in ostane brezplačen za vedno, brez prijave. Celo platformo (dokumenti, stranke, projekti) preizkusiš mesec dni brezplačno in brez kartice; nato izbereš paket, ki ti ustreza.' },
     { v: 'Ali potrebujem račun za kalkulator?', o: 'Ne. Kalkulator deluje brez prijave: izračunaš pošteno ceno, sestaviš ponudbo in jo preneseš. Račun potrebuješ šele, ko želiš dokumente shraniti in imeti na enem mestu.' },
     { v: 'Komu pripadajo moji podatki in dokumenti?', o: 'Tvoje ponudbe, stranke in dokumenti ostanejo tvoji in zasebni — ne prodajamo jih in ne razkrivamo nikomur. Cene storitev, ki jih vpišeš, pa anonimno in združeno pomagajo graditi pregled poštenih tržnih cen, da ti Flow lahko pokaže, kje je tvoja cena glede na trg. Nikoli ne razkrijemo, kdo je vnesel katero ceno.' },
     { v: 'Kako mi Flow pomaga postaviti pravo ceno?', o: 'Kalkulator razbije ceno na izvedbo, avtorske pravice in licenco, nato pa jo primerja z anonimnim tržnim pregledom vpisanih cen — vidiš, ali si bližje dnu ali vrhu in za koliko se morda podcenjuješ. Cena tako ni več ugibanje.' },
@@ -323,7 +323,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { Ikona: Receipt, ime: 'Od ponudbe do računa', opis: 'Ponudba, pogodba, račun in stroški tečejo iz istih podatkov, brez podvajanja.' },
     { Ikona: SquaresFour, ime: 'Brez Excela in map', opis: 'Eno mirno mesto namesto dokumentov, razmetanih po računalniku.' },
     { Ikona: ChatCircle, ime: 'Osebna podpora', opis: 'Pišeš neposredno Tini. Pravi človek, ne oddelek.' },
-    { Ikona: Sparkle, ime: 'Med beto brezplačno', opis: 'Vsi paketi so med beto na voljo brezplačno. Brez kartice.' },
+    { Ikona: Sparkle, ime: 'Prvi mesec brezplačno', opis: 'Celo platformo preizkusiš mesec dni brez kartice. Kalkulator poštenih cen ostane brezplačen za vedno.' },
   ];
 
   const KORAKI = [
@@ -345,15 +345,16 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       vkljuceno: ['Kalkulator poštenih cen', 'Ponudba v treh paketih (osnovni · srednji · premium)', 'Izračun avtorskih pravic in licence', 'Oblikovana in urejljiva ponudba', 'Izvoz v e-pošto / PDF', 'Neomejene shranjene ponudbe v oblaku', 'Oštevilčenje ponudb'],
     },
     {
-      /* Ustanovna cena: prvih 50 placa 5 € za vedno. Namen ni popust, ampak
-         dokaz pripravljenosti placati — brezplacni vpisi investitorju ne povedo nic. */
-      ime: 'Premium', za: 'Za redno delo s strankami', cena: '5', enota: '€ / mesec', redna: '9',
-      ustanovna: 'Ustanovna cena za prvih 50 — za vedno',
-      cta: 'Začni s Premium', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Najbolj priljubljeno', kmalu: false,
+      /* Cena sidrana na orodja, ki jih kreativci ze placujejo (Figma ~12-15 €).
+         Ustanovna 9 € za prvih 50 je ČASOVNO omejena (ne "za vedno") — nujnost +
+         dokaz pripravljenosti placati. Prvi mesec brezplacno = trial namesto free-forever platforme. */
+      ime: 'Premium', za: 'Za redno delo s strankami · obračunano letno', cena: '15', enota: '€ / mesec',
+      ustanovna: 'Ustanovna 9 €/mesec za prvih 50 (časovno) · prvi mesec brezplačno',
+      cta: 'Začni brezplačno', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Najbolj priljubljeno', kmalu: false,
       vkljuceno: ['Vse iz Brezplačno', 'Ponudbe, pogodbe in računi (shranjeni, oštevilčeni)', 'Dolgoročni retainerji', 'Projekti & arhiv — vse na enem projektu', 'Kartoteka strank', 'Ceniki (cenovni profili)', 'Stroški in cilji', 'Koledar in naloge', 'Časovnik in donosnost dela', 'Nadzorna plošča'],
     },
     {
-      ime: 'Pro', za: 'Za polno poslovanje', cena: '19', enota: '€ / mesec',
+      ime: 'Pro', za: 'Za mali studio in sodelavce · obračunano letno', cena: '29', enota: '€ / mesec',
       cta: 'Kmalu', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Kmalu', kmalu: true,
       vkljuceno: ['Vse iz Premium', 'Primerjava s trgom — koliko za to zaračunajo drugi', 'Celoten analitični pregled — prihodki in dobiček po strankah', 'Sinhronizacija med vsemi orodji', 'Poslovni okvir in davki', 'Posredovanje računovodstvu (izvoz)', 'AI agent (beta)', 'Sodelavci z dostopom samo do izbranih projektov', 'MCP & API dostop (kmalu)', 'Prednostna podpora'],
     },
@@ -1082,7 +1083,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         <section className="fl-cenik" id="cenik">
           <div className="k">Cenik</div>
           <h2>Enostavno, pošteno, brez presenečenj.</h2>
-          <p className="uvod">Kalkulator je za vedno brezplačen. Ko potrebuješ več, izbereš paket, ki ti ustreza.</p>
+          <p className="uvod">Kalkulator poštenih cen je za vedno brezplačen. Celo platformo preizkusiš mesec dni brez kartice — nato manj kot ena tvoja delovna ura na mesec.</p>
           <div className="fl-cenik-mreza">
             {CENIKI.map(c => (
               <div className={`fl-plan${c.izpost ? ' izpost' : ''}${c.kmalu ? ' kmalu' : ''}`} key={c.ime}>
