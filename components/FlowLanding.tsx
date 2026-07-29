@@ -328,9 +328,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   ];
 
   const KORAKI = [
-    { n: '01', naslov: 'Lepa ponudba v nekaj klikih', opis: 'Flow napiše IN oblikuje reprezentativno ponudbo — brez ChatGPT-ja in InDesigna.' },
-    { n: '02', naslov: 'Prava cena, brez ugibanja', opis: 'Poštena cena z avtorskimi pravicami in tržni pregled, kje si. Nič več ur iskanja cen.' },
-    { n: '03', naslov: 'Veš, ali si zaslužil', opis: 'Račun z enim klikom, pregled stroškov in dejanskega zaslužka — pripravljeno za računovodstvo.' },
+    { n: '01', naslov: 'Poštena cena, brez ugibanja', opis: 'Kalkulator ti pove, koliko zaračunati — z avtorskimi pravicami in tržnim pregledom, kje si.' },
+    { n: '02', naslov: 'Ponudba → pogodba → račun', opis: 'Lepo oblikovano in povezano — vse teče iz istih podatkov, brez prepisovanja in brez treh programov.' },
+    { n: '03', naslov: 'Vse pod enim projektom', opis: 'Dokumenti, roki, stranka in stroški povezani. Povabiš stranko na projekt, kmalu tudi maili.' },
+    { n: '04', naslov: 'Veš, koliko si zaslužil', opis: 'Pregled prihodkov, stroškov in dobička — pripravljeno za računovodstvo.' },
   ];
 
   /* Predlog cenika (cene so okvirne — potrdi/prilagodi). */
@@ -415,8 +416,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-potek { margin: calc(-11.6875rem - 80px) 0 0; position: relative; z-index: 2; }
         .fl-potek .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .fl-potek h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.05; margin: .55rem 0 2.2rem; max-width: 20ch; }
-        .fl-koraki { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6rem; }
-        @media (max-width: 720px) { .fl-koraki { grid-template-columns: 1fr; gap: 1.4rem; } }
+        .fl-koraki { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.3rem; }
+        @media (max-width: 980px) { .fl-koraki { grid-template-columns: repeat(2, 1fr); gap: 1.4rem; } }
+        @media (max-width: 560px) { .fl-koraki { grid-template-columns: 1fr; } }
         .fl-korak { position: relative; padding: 1.5rem 1.4rem; border-radius: 18px; background: linear-gradient(140deg, oklch(97% .022 297 / .9), oklch(96% .03 165 / .85)); border: 1px solid rgba(255,255,255,.6); box-shadow: 0 12px 34px rgba(40,25,60,.07); }
         .fl-korak .n { font-family: var(--font-serif), serif; font-size: 1.5rem; color: var(--accent); }
         .fl-korak h3 { font-size: 1.02rem; font-weight: 650; margin: .5rem 0 .4rem; }
@@ -786,6 +788,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (prefers-reduced-motion: reduce) { .fl-hero-title .w { opacity: 1; transform: none; animation: none; } }
         .fl-koraki > .fl-reveal:nth-child(2) { transition-delay: .08s; }
         .fl-koraki > .fl-reveal:nth-child(3) { transition-delay: .16s; }
+        .fl-koraki > .fl-reveal:nth-child(4) { transition-delay: .24s; }
         .fl-bento-mreza > .fl-reveal:nth-child(2), .fl-funkcije-mreza > .fl-reveal:nth-child(2), .fl-cenik-mreza > .fl-reveal:nth-child(2) { transition-delay: .08s; }
         .fl-bento-mreza > .fl-reveal:nth-child(3), .fl-funkcije-mreza > .fl-reveal:nth-child(3), .fl-cenik-mreza > .fl-reveal:nth-child(3) { transition-delay: .16s; }
         .fl-bento-mreza > .fl-reveal:nth-child(4), .fl-funkcije-mreza > .fl-reveal:nth-child(4) { transition-delay: .24s; }
