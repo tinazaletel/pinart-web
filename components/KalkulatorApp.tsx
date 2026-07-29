@@ -2272,7 +2272,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
        kartica slepa ulica, ki te pripelje v kalkulator brez vprasanj. */
     const zahtevanUvod = typeof window !== 'undefined'
       && new URLSearchParams(window.location.search).get('uvod') === '1';
-    if (pogojiOk === true && (uvodKoncan === false || (zahtevanUvod && uvodKoncan !== null)) && !uvodChat && !onboardingOdprt) {
+    /* Formular je ze izpolnjen, ce je vpisano ime IN izbrano vsaj eno podrocje.
+       Takrat NE odpiramo uvoda (pristanes na "Super! Izberi storitve") — tudi ce
+       uvodKoncan se ni true. Uvod od zacetka le pri praznem formularju (prvic /
+       ponastavitev) ali eksplicitno prek ?uvod=1 (kartica "Dokoncaj nastavitev"). */
+    const uvodIzpolnjen = imeUporabnika.trim() !== '' && obIzbor.size > 0;
+    if (pogojiOk === true && ((uvodKoncan === false && !uvodIzpolnjen) || (zahtevanUvod && uvodKoncan !== null)) && !uvodChat && !onboardingOdprt) {
       if (klasicnaOblika) { setObIzbor(new Set()); setOnboardingOdprt(true); }
       /* ob vrnitvi s kartice nadaljuj, kjer si ostala (chatKorak je shranjen);
          na zacetek postavi samo pravi prvi obisk */
@@ -5549,7 +5554,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* pomiritev "vprasamo enkrat" — berljivo (ink, ne siva): Tina slabo vidi */
         .cw .uvod-enkrat { text-align: center; max-width: 42ch; margin: .8rem auto 0; font-size: .95rem; line-height: 1.5; color: rgba(17,17,17,.75); }
         /* razmik med podnaslovom in chatom (na .chat, ker .sub sili margin:0) — ~80px manj */
-        .cw .uvod-oder .chat { display: flex; flex-direction: column; gap: 1rem; margin-top: clamp(1.5rem, 4vh, 2.5rem); }
+        .cw .uvod-oder .chat { display: flex; flex-direction: column; gap: .6rem; margin-top: clamp(1rem, 3vh, 1.8rem); }
         .cw .chat-bot, .cw .chat-jaz, .cw .chat-izbire { animation: chatVzid .5s cubic-bezier(.16,1,.3,1) both; }
         @keyframes chatVzid { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
         @media (prefers-reduced-motion: reduce) { .cw .chat-bot, .cw .chat-jaz, .cw .chat-izbire { animation: none; } }
