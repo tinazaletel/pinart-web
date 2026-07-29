@@ -319,7 +319,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const FUNKCIJE = [
     { Ikona: ChartLineUp, ime: 'Veš, koliko si vreden', opis: 'Anonimen tržni pregled ti pokaže, kje je tvoja cena — bližje dnu ali vrhu — da se ne podcenjuješ.' },
     { Ikona: Scales, ime: 'Avtorske pravice vračunane', opis: 'Cena vsakič razbije izvedbo, pravice in licenco — da dela ne prodaš pod ceno.' },
-    { Ikona: ShieldCheck, ime: 'Tvoji podatki, tvoja last', opis: 'Tvoji dokumenti in stranke ostanejo zasebni. Osebnih podatkov nikoli ne prodamo.' },
+    { Ikona: ShieldCheck, ime: 'Varno in zasebno', opis: 'Podatki varno v oblaku (EU) — dostop imaš samo ti. Dokumentov in strank ne prodamo in ne delimo; cene se združijo anonimno, nikoli ime.' },
+    { Ikona: Handshake, ime: 'Deli s stranko', opis: 'Stranko ali sodelavca povabiš na projekt — z dostopom samo do tega, kar potrebuje. Konec pošiljanja priponk sem in tja.' },
     { Ikona: Receipt, ime: 'Od ponudbe do računa', opis: 'Ponudba, pogodba, račun in stroški tečejo iz istih podatkov, brez podvajanja.' },
     { Ikona: SquaresFour, ime: 'Brez Excela in map', opis: 'Eno mirno mesto namesto dokumentov, razmetanih po računalniku.' },
     { Ikona: ChatCircle, ime: 'Osebna podpora', opis: 'Pišeš neposredno Tini. Pravi človek, ne oddelek.' },
