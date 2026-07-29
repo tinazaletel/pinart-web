@@ -1038,9 +1038,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         </section>
 
         <section className="fl-persone" id="zveni-znano" style={{ maxWidth: '72rem', margin: '0 auto', padding: 'clamp(3rem,7vw,6rem) clamp(1.2rem,5vw,3rem)' }}>
-          <div className="k">Zveni znano?</div>
-          <h2>Mogoče se prepoznaš.</h2>
-          <p className="uvod">Prave zgodbe zbiramo — do takrat pa najpogostejše bolečine samostojnih kreativcev, ki jih Flow reši.</p>
+          <div className="k" style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(17,17,17,.72)' }}>Zveni znano?</div>
+          <h2 style={{ fontFamily: 'var(--font-serif), serif', fontWeight: 500, fontSize: 'clamp(1.9rem, 5vw, 2.9rem)', lineHeight: 1.05, margin: '.55rem 0 .5rem', maxWidth: '20ch' }}>Mogoče se prepoznaš.</h2>
+          <p className="uvod" style={{ fontSize: '1rem', lineHeight: 1.6, color: 'rgba(17,17,17,.76)', maxWidth: '50ch', margin: '0 0 2.4rem' }}>Prave zgodbe zbiramo — do takrat pa najpogostejše bolečine samostojnih kreativcev, ki jih Flow reši.</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(15.5rem, 1fr))', gap: '1.2rem', marginTop: '2.2rem' }}>
             {[
               { ini: 'A', ime: 'Ana', vloga: 'Ilustratorka', barva: 'linear-gradient(140deg, oklch(78% .12 300), oklch(66% .16 300))', bolecina: 'Ob vsakem povpraševanju sem strmela v prazen mail — koliko naj rečem? Premalo in delaš skoraj zastonj, preveč in te ni nazaj. Avtorskih pravic sploh nisem zaračunavala.' },
