@@ -1,20 +1,10 @@
-import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
-import FlowNav from '@/components/FlowNav';
-import KalkulatorLanding from '@/components/KalkulatorLanding';
+import { localePath } from '@/i18n/routing';
 
-export const metadata: Metadata = {
-  title: 'Pinart kalkulator: poštene cene za kreativce',
-  description:
-    'Brezplačen kalkulator poštenih cen za oblikovalce in kreativce: izvedba, avtorske pravice, licenca in trije paketi ponudbe, prilagojeno velikosti naročnika.',
-  manifest: '/kalkulator-manifest.json',
-  appleWebApp: {
-    capable: true,
-    title: 'Kalkulator',
-    statusBarStyle: 'default',
-  },
-};
-
+/* Za zdaj imamo EN landing (/flow). Ločeni kalkulator-landing (KalkulatorLanding)
+   je dan na stran — komponenta ostane za kasnejšo marketinško/SEO uporabo. Bare
+   /kalkulator preusmerimo na /flow; samo orodje ostane na /kalkulator/orodje. */
 export default async function KalkulatorPage({
   params,
 }: {
@@ -22,11 +12,5 @@ export default async function KalkulatorPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-
-  return (
-    <main style={{ minHeight: '100dvh' }}>
-      <FlowNav locale={locale} />
-      <KalkulatorLanding locale={locale} />
-    </main>
-  );
+  redirect(localePath(locale, '/flow'));
 }

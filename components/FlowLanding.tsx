@@ -22,7 +22,6 @@ import RotatingLaptop from '@/components/RotatingLaptop';
 export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const prijava = localePath(locale, '/kalkulator/prijava');
   const kalkulator = localePath(locale, '/kalkulator/orodje') + '?od=flow';
-  const kalkulatorLanding = localePath(locale, '/kalkulator');
 
   const [taRubrika, setTaRubrika] = useState('vse');
   const [taZavihek, setTaZavihek] = useState('kalkulator');
@@ -1169,7 +1168,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <div>
                 <strong>Produkt</strong>
                 <a href="#orodja">Pinart Flow</a>
-                <a href={kalkulatorLanding}>Kalkulator</a>
+                <a href={kalkulator}>Kalkulator</a>
                 <a href="#cenik">Cenik</a>
               </div>
               <div>
