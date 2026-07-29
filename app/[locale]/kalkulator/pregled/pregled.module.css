@@ -792,7 +792,8 @@
 .clientProfile > header { display: flex; align-items: center; gap: 1rem; padding: .4rem; }
 .clientProfile > header > div { flex: 1; }
 .clientProfile > header > div > span { color: var(--muted); font-size: .6rem; }
-.clientProfile > header > button { padding: .5rem .75rem; border: 1px solid var(--line); border-radius: 999px; background: transparent; font: 750 .57rem var(--font-sans), sans-serif; cursor: pointer; }
+.clientProfile > header > button { flex: none; padding: .45rem .8rem; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink); font: 700 .68rem var(--font-sans), sans-serif; cursor: pointer; }
+.clientProfile > header > button:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .clientContacts, .clientFinance { display: grid; gap: .5rem; margin-top: 1rem; }
 .clientContacts { grid-template-columns: repeat(2, 1fr); }
 .clientFinance { grid-template-columns: repeat(3, 1fr); }
@@ -849,7 +850,7 @@
 .clientLinkPrazno { margin: .7rem 0 0; color: var(--muted); font-size: .82rem; }
 .clientLinkObrazec { display: grid; grid-template-columns: 1fr 1fr auto; gap: .5rem; margin-top: .7rem; }
 .clientLinkObrazec input { min-width: 0; height: 2.6rem; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .6rem; background: oklch(100% 0 0 / .82); font: 500 .8rem var(--font-sans), sans-serif; color: var(--ink); }
-.clientLinkDodaj { flex: none; padding: 0 1rem; border: 1px solid var(--ink); border-radius: .6rem; background: var(--ink); color: var(--paper); font: 700 .72rem var(--font-sans), sans-serif; cursor: pointer; }
+.clientLinkDodaj { flex: none; justify-self: start; align-self: start; padding: .45rem .9rem; border: 1px solid var(--ink); border-radius: 999px; background: var(--ink); color: var(--paper); font: 700 .68rem var(--font-sans), sans-serif; cursor: pointer; }
 .clientLinkDodaj:disabled { opacity: .5; cursor: not-allowed; }
 .clientLinkNamig { margin-top: .55rem; padding: .5rem .65rem; border: 1px solid oklch(85% .07 65); border-radius: .5rem; background: oklch(96% .04 70); color: oklch(48% .12 55); font-size: .78rem; line-height: 1.4; font-style: italic; }
 @media (max-width: 640px) { .clientLinkObrazec, .clientLinkSeznam { grid-template-columns: 1fr; } }
