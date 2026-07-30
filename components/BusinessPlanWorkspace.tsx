@@ -3,12 +3,12 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  calculatePlan, DEFAULT_BUSINESS_PLAN, deleteCloudTimeEntry, loadCloudBusinessPlan,
-  loadCloudTimeEntries, loadLocalPlan, loadLocalTimeEntries, type BusinessPlan,
-  type PrivateTimeEntry, saveCloudBusinessPlan, saveCloudTimeEntry, saveLocalPlan,
+  calculatePlan, DEFAULT_BUSINESS_PLAN, deleteCloudPresence, deleteCloudTimeEntry, loadCloudBusinessPlan,
+  loadCloudPresence, loadCloudTimeEntries, loadLocalPlan, loadLocalTimeEntries, type BusinessPlan,
+  type PrivateTimeEntry, saveCloudBusinessPlan, saveCloudPresence, saveCloudTimeEntry, saveLocalPlan,
   saveLocalTimeEntries,
 } from '@/lib/pinartPlanning';
-import { saveBusinessGoal, saveCloudSettings } from '@/lib/pinartFlowCloud';
+import { loadCloudSettings, saveBusinessGoal, saveCloudSettings } from '@/lib/pinartFlowCloud';
 import { usePredogled } from '@/lib/predogled';
 import { preklopiPavzo, useTekoceMerjenje, zapisiMerjenje } from '@/lib/tekoceMerjenje';
 import TimerValovi from './TimerValovi';
@@ -290,6 +290,30 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
         odpriPrisotnostDan(new Date().toISOString().slice(0, 10), shranjeno);
       }
     } catch { /* poskodovana shramba — panel ostane prazen */ }
+    /* Oblak: ce je uporabnik prijavljen, potegni evidenco + cilj delovnika,
+       zdruzi z lokalnim (isti id = lokalni zapis prevlada) in shrani nazaj.
+       Brez prijave/tabele funkcije tiho vrnejo prazno -> ostane samo localStorage. */
+    void (async () => {
+      try {
+        const [oblak, oblakNastavitve] = await Promise.all([loadCloudPresence(), loadCloudSettings()]);
+        const lokalno: Prisotnost[] = (() => {
+          try { const v = JSON.parse(localStorage.getItem('pinart-flow-prisotnost') || '[]'); return Array.isArray(v) ? v : []; }
+          catch { return []; }
+        })();
+        if (oblak.length || lokalno.length) {
+          const zdruzeno = new Map<string, Prisotnost>(oblak.map(x => [x.id, x as Prisotnost]));
+          lokalno.forEach(x => zdruzeno.set(x.id, x));
+          const seznam = [...zdruzeno.values()];
+          setPrisotnosti(seznam);
+          localStorage.setItem('pinart-flow-prisotnost', JSON.stringify(seznam));
+          odpriPrisotnostDan(new Date().toISOString().slice(0, 10), seznam);
+          /* nalozi v oblak lokalne zapise, ki jih tam se ni (prva prijava na tej napravi) */
+          const vOblaku = new Set(oblak.map(x => x.id));
+          lokalno.filter(x => !vOblaku.has(x.id)).forEach(x => void saveCloudPresence(x).catch(() => undefined));
+        }
+        if (oblakNastavitve?.workdayHours) setDelovnikUre(oblakNastavitve.workdayHours);
+      } catch { /* brez prijave / brez tabele — ostane lokalno */ }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [samoOgled]);
 
@@ -452,7 +476,10 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     const varno = ure > 0 ? ure : 8;
     setDelovnikUre(varno);
     /* v predogledu (demo) se cilj ne zapise trajno — samo v stanju za ta ogled */
-    if (!samoOgled) localStorage.setItem('pinart-flow-delovnik-ure', String(varno));
+    if (!samoOgled) {
+      localStorage.setItem('pinart-flow-delovnik-ure', String(varno));
+      void saveCloudSettings({ workdayHours: varno }).catch(() => undefined);
+    }
   };
 
   /* Isti dan prepise obstojeci vnos (id ostane), sicer nov zapis na vrh dnevnika.
@@ -472,6 +499,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     };
     const next = obstojeci ? prisotnosti.map(x => (x.id === zapis.id ? zapis : x)) : [zapis, ...prisotnosti];
     setPrisotnosti(next); localStorage.setItem('pinart-flow-prisotnost', JSON.stringify(next));
+    void saveCloudPresence(zapis).catch(() => undefined);
     setNotice('Prisotnost je shranjena v dnevnik.');
   };
 
@@ -479,6 +507,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     if (samoOgled) return;
     const next = prisotnosti.filter(x => x.id !== id);
     setPrisotnosti(next); localStorage.setItem('pinart-flow-prisotnost', JSON.stringify(next));
+    void deleteCloudPresence(id).catch(() => undefined);
   };
 
   /* ── Mesečna evidenca: navigacija po mesecih, tabela in povzetek ──────────

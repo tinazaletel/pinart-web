@@ -125,3 +125,46 @@ export async function deleteCloudTimeEntry(id: string): Promise<void> {
   const { error } = await createClient().from('private_time_entries').delete().eq('id', id).eq('user_id', context.userId);
   if (error) throw error;
 }
+
+/* ── Prisotnost / evidenca (prihod-odhod-malica po dnevih) ──────────────────
+   Locena od stoparice: meri cel delovnik, ne enega projekta. Osebni dnevnik z
+   istim RLS (user_id = auth.uid()). Polja so slovenska, da se ujemajo s tipom
+   Prisotnost v BusinessPlanWorkspace — mapiranje na stolpce je tu spodaj. */
+export type PresenceEntry = {
+  id: string; datum: string; prihod: string; odhod: string;
+  odmorMin?: number; vrsta?: string; kraj?: string; opomba?: string;
+};
+
+const presenceFromRow = (row: Record<string, unknown>): PresenceEntry => ({
+  id: String(row.id), datum: String(row.entry_date), prihod: String(row.arrival || ''), odhod: String(row.departure || ''),
+  odmorMin: row.break_minutes != null ? Number(row.break_minutes) : undefined,
+  vrsta: row.kind ? String(row.kind) : undefined, kraj: row.location ? String(row.location) : undefined,
+  opomba: row.note ? String(row.note) : undefined,
+});
+
+export async function loadCloudPresence(): Promise<PresenceEntry[]> {
+  const context = await getOrganizationContext();
+  if (!context) return [];
+  const { data, error } = await createClient().from('presence_entries').select('*').eq('user_id', context.userId).order('entry_date', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(row => presenceFromRow(row));
+}
+
+export async function saveCloudPresence(entry: PresenceEntry): Promise<void> {
+  const context = await getOrganizationContext();
+  if (!context) return;
+  const { error } = await createClient().from('presence_entries').upsert({
+    id: entry.id, organization_id: context.organizationId, user_id: context.userId,
+    entry_date: entry.datum, arrival: entry.prihod || null, departure: entry.odhod || null,
+    break_minutes: entry.odmorMin ?? null, kind: entry.vrsta || 'redno', location: entry.kraj || null,
+    note: entry.opomba || null, updated_at: new Date().toISOString(),
+  });
+  if (error) throw error;
+}
+
+export async function deleteCloudPresence(id: string): Promise<void> {
+  const context = await getOrganizationContext();
+  if (!context) return;
+  const { error } = await createClient().from('presence_entries').delete().eq('id', id).eq('user_id', context.userId);
+  if (error) throw error;
+}

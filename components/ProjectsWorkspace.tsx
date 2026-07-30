@@ -10,6 +10,7 @@ import MetricIcon from '@/components/MetricIcon';
 import { loadFlowData, loadProjectLinks, saveOfferAmount, saveOfferStatus, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { preberiPostoProjekta, type PostaVnos } from '@/lib/postaDnevnik';
+import { pullProjectMail } from '@/lib/pinartMailCloud';
 import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
 import { preberiSodelavci } from '@/lib/sodelavci';
 import type { Sodelavec } from '@/lib/naloge';
@@ -535,6 +536,33 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       { id: 'demo-posta-3', projectId: selectedId, smer: 'poslano', prejemniki: ['info@volkbabica.si'], zadeva: 'Račun R-2026-014', datum: preDnevi(13) },
     ];
     setPosta(samoOgled ? demoPosta : (selectedId ? preberiPostoProjekta(selectedId) : []));
+    /* oblak: potegni projektno pošto in združi z lokalno (dedup po logičnem
+       ključu smer|zadeva|dan|prejemniki — ista poslana pošta obstaja v obeh
+       shrambah z različnim id-jem; lokalni zapis prevlada). Brez prijave/tabele
+       pullProjectMail tiho vrne [] → ostane lokalno. */
+    if (!samoOgled && selectedId) {
+      void pullProjectMail(selectedId).then(oblak => {
+        if (!oblak.length) return;
+        const lokalno = preberiPostoProjekta(selectedId);
+        const kljuc = (v: PostaVnos) => `${v.smer}|${(v.zadeva || '').trim()}|${(v.datum || '').slice(0, 10)}|${[...v.prejemniki].sort().join(',')}`;
+        const zdruzeno = new Map<string, PostaVnos>();
+        oblak.forEach(m => {
+          const v: PostaVnos = {
+            id: m.id || crypto.randomUUID(),
+            projectId: m.projectExternalId,
+            clientId: m.clientId,
+            smer: m.direction === 'in' ? 'prejeto' : 'poslano',
+            prejemniki: m.toEmails,
+            zadeva: m.subject || '',
+            povzetek: m.summary,
+            datum: m.occurredAt || new Date().toISOString(),
+          };
+          zdruzeno.set(kljuc(v), v);
+        });
+        lokalno.forEach(v => zdruzeno.set(kljuc(v), v));
+        setPosta([...zdruzeno.values()].sort((a, b) => b.datum.localeCompare(a.datum)));
+      }).catch(() => undefined);
+    }
     setLinkOznaka(''); setLinkUrl(''); setDodajOdprt(false); closeVsi(); setVrsticaDetajl(null);
   }, [selectedId, samoOgled]);
 

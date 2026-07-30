@@ -15,6 +15,7 @@ type CloudSettings = {
   accountingEmail?: string;
   accountingFrequency: 'monthly' | 'quarterly';
   legacyMigrationCompletedAt?: string;
+  workdayHours?: number;
 };
 
 const dateOnly = (value?: string) => (value || new Date().toISOString()).slice(0, 10);
@@ -311,6 +312,7 @@ export async function saveCloudSettings(settings: Partial<CloudSettings>): Promi
   if (settings.accountingEmail !== undefined) payload.accounting_email = settings.accountingEmail;
   if (settings.accountingFrequency !== undefined) payload.accounting_frequency = settings.accountingFrequency;
   if (settings.legacyMigrationCompletedAt !== undefined) payload.legacy_migration_completed_at = settings.legacyMigrationCompletedAt;
+  if (settings.workdayHours !== undefined) payload.workday_hours = settings.workdayHours;
   const { error } = await createClient().from('organization_settings').upsert(payload, { onConflict: 'organization_id' });
   if (error) throw error;
 }
@@ -328,6 +330,7 @@ export async function loadCloudSettings(): Promise<CloudSettings | null> {
     activePriceProfile: data.active_price_profile || undefined, accountingEmail: data.accounting_email || undefined,
     accountingFrequency: data.accounting_frequency === 'monthly' ? 'monthly' : 'quarterly',
     legacyMigrationCompletedAt: data.legacy_migration_completed_at || undefined,
+    workdayHours: Number(data.workday_hours) || 8,
   };
 }
 

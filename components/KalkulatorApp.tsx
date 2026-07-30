@@ -2137,6 +2137,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       if (s.aktivniCenik) setAktivniCenik(s.aktivniCenik);
       if (s.klasicnaOblika) setKlasicnaOblika(true);
       if (s.pogledMreza) setPogledMreza(true);
+      if (s.orbTabela) setOrbTabela(true);
       if (s.namigSkrit) setNamigSkrit(true);
       if (Array.isArray(s.vrstniRed)) setVrstniRed(s.vrstniRed);
       if (Array.isArray(s.skrite)) setSkrite(s.skrite);
@@ -2191,6 +2192,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         imeUporabnika: imeUporabnika || undefined,
         klasicnaOblika: klasicnaOblika || undefined,
         pogledMreza: pogledMreza || undefined,
+        orbTabela: orbTabela || undefined,
         namigSkrit: namigSkrit || undefined,
         /* v predogledu "Prazno" je uvodKoncan namenoma false; brez tega bi
            ogled zbrisal pravi zapis in bi se uvod cez cas pokazal tudi v "Moji" */
@@ -2211,7 +2213,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         dokAktivnaPredloga: prejsnji.dokAktivnaPredloga,
       }));
     } catch { /* ignoriraj */ }
-  }, [jeNalozeno, osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, veljaKotPogodba, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, pogledMreza, namigSkrit, uvodKoncan, chatKorak, chatNova, obIzbor, nazivPonudbe, aktivniCenik, dokBarva, dokFont]);
+  }, [jeNalozeno, osnove, izkusnje, mojTrg, mojeStoritve, valuta, valutaRocna, ponudnik, postavke, ddvZavezanec, ddvStopnja, predklic, urnePostavke, avansPct, mojSet, vrstniRed, skrite, nogaZnak, veljaKotPogodba, stroski, custDrzavaMoj, imeUporabnika, klasicnaOblika, pogledMreza, orbTabela, namigSkrit, uvodKoncan, chatKorak, chatNova, obIzbor, nazivPonudbe, aktivniCenik, dokBarva, dokFont]);
   useEffect(() => {
     if (!jeNalozeno) return;
     const timeout = window.setTimeout(() => {
@@ -2291,6 +2293,32 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pogojiOk, uvodKoncan, klasicnaOblika]);
+
+  /* VAROVALO (popravek "vrže me na uvod"): resume ucinek zgoraj lahko zaradi
+     zastarelega closure-a (ime/obIzbor se prazna v tistem renderju) pomotoma
+     odpre uvodni pogovor, ceprav so podatki ze vpisani. Ta ucinek stece ENKRAT
+     PO nalaganju (jeNalozeno=true -> sveze, nalozene vrednosti) in: ce je formular
+     ze izpolnjen (ime ALI storitve ALI naziv ALI uvodKoncan) in NI izrecnega
+     ?uvod=1, uvod ZAPRE + oznaci onboarding kot koncan (uvodKoncan=true, kar
+     resume ucinku prepreci ponovno odpiranje). Pri PRAVEM prvem obisku ob
+     nalaganju ni podatkov -> nic ne stori, teka pa vec ne (ref), zato ne moti
+     zivega uvodnega pogovora. */
+  const uvodKorekcijaOpravljena = useRef(false);
+  useEffect(() => {
+    if (!jeNalozeno || uvodKorekcijaOpravljena.current) return;
+    uvodKorekcijaOpravljena.current = true;
+    const zahtevanUvod = typeof window !== 'undefined'
+      && new URLSearchParams(window.location.search).get('uvod') === '1';
+    if (zahtevanUvod) return;
+    const izpolnjeno = imeUporabnika.trim() !== '' || obIzbor.size > 0
+      || nazivPonudbe.trim() !== '' || uvodKoncan === true;
+    if (izpolnjeno) {
+      setUvodChat(false);
+      setOnboardingOdprt(false);
+      if (uvodKoncan !== true) setUvodKoncan(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jeNalozeno]);
 
   /* Izkusnje v chatu — 4 stopnje.
      Prej so bile tri in je manjkala 'strokovnjak' (1,45x): skok je sel z 1x
