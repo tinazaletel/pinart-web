@@ -773,6 +773,7 @@
 .clientEditor form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; }
 .clientEditor label { display: grid; gap: .35rem; font-size: .58rem; font-weight: 800; }
 .clientEditor input { min-width: 0; height: 2.65rem; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .65rem; background: oklch(100% 0 0 / .82); font: 500 .66rem var(--font-sans), sans-serif; }
+.clientEditor select { min-width: 0; height: 2.65rem; padding: 0 .45rem 0 .7rem; border: 1px solid var(--line); border-radius: .65rem; background-color: oklch(100% 0 0 / .82); font: 500 .66rem var(--font-sans), sans-serif; color: var(--ink); }
 .clientEditorActions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: .5rem; }
 .clientEditorActions button { min-height: 2.6rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: .65rem; background: transparent; font: 800 .61rem var(--font-sans), sans-serif; cursor: pointer; }
 .clientEditorActions button:last-child { background: var(--ink); color: var(--paper); }
@@ -871,7 +872,7 @@
 .clientDnevnikTipOn, .clientDnevnikTipOn:hover { background: var(--ink) !important; color: var(--paper) !important; border-color: var(--ink) !important; }
 
 .clientDnevnikVrsta { display: flex; flex-wrap: wrap; gap: .5rem; }
-.clientDnevnikObrazec input[type='date'] { height: 2.6rem; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .6rem; background: oklch(100% 0 0 / .82); font: 500 .8rem var(--font-sans), sans-serif; color: var(--ink); }
+.clientDnevnikObrazec input[type='date'], .clientDnevnikObrazec input[type='time'] { height: 2.6rem; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .6rem; background: oklch(100% 0 0 / .82); font: 500 .8rem var(--font-sans), sans-serif; color: var(--ink); }
 .clientDnevnikObrazec select { flex: 1 1 12rem; min-width: 10rem; height: 2.6rem; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .6rem; background-color: oklch(100% 0 0 / .82); font: 500 .8rem var(--font-sans), sans-serif; color: var(--ink); }
 .clientDnevnikObrazec textarea { width: 100%; padding: .6rem .7rem; border: 1px solid var(--line); border-radius: .6rem; background: oklch(100% 0 0 / .82); font: 500 .82rem var(--font-sans), sans-serif; color: var(--ink); resize: vertical; }
 
