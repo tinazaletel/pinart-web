@@ -245,7 +245,7 @@ const pwStyles = `
 /* 06 · POŠTA — dnevnik poslane pošte projekta (mehki violet/mint jezik kot ostale kartice) */
 .pw-posta{background:linear-gradient(135deg,oklch(97% .03 300),oklch(97% .03 165))}
 .pw-posta h3{margin:0;font:600 1.15rem var(--font-sans),system-ui,sans-serif}
-.pw-posta-seznam{position:relative;z-index:1;list-style:none;display:flex;flex-direction:column;gap:.4rem;margin:.75rem 0 0;padding:0}
+.pw-posta-seznam{position:relative;z-index:1;list-style:none;display:flex;flex-direction:column;gap:.4rem;margin:.75rem 0 0;padding:0;max-height:19rem;overflow-y:auto}
 .pw-posta-seznam li{display:grid;gap:.2rem;padding:.55rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:.7rem;background:oklch(100% 0 0 / .55)}
 .pw-posta-vrh{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
 .pw-posta-vrh b{font-size:.76rem;font-weight:700;color:var(--ink);overflow-wrap:anywhere}
@@ -866,7 +866,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         <div className="pw-dodatno">
           <article className="pw-karta pw-posta">
             <div className="pw-posta-glava">
-              <div><p className={styles.eyebrow}>POŠTA</p><h3>Pošta projekta</h3></div>
+              <div><p className={styles.eyebrow}>06 · KOMUNIKACIJE</p><h3>Vse na enem mestu</h3></div>
               <button type="button" className="pw-posta-nova" disabled={samoOgled} title={samoOgled ? 'Na voljo v načinu »Moji podatki« — zdaj gledaš predogled' : 'Napiši sporočilo stranki'} onClick={odpriPisanje}>✎ Nova pošta</button>
             </div>
             {pisiOdprt && !samoOgled && (
@@ -903,20 +903,12 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               <p className="pw-posta-prazno">Še ni pošte. Klikni <b>Nova pošta</b> in piši stranki, ali pošlji ponudbo/pogodbo — vse se zabeleži tukaj.</p>
             )}
           </article>
-          <div className="pw-kmalu-red">
-            <article className="pw-karta pw-kmalu">
-              <p className={styles.eyebrow}>06 · KOMUNIKACIJE</p>
-              <h3>Vse na enem mestu</h3>
-              <p>E-pošta in dogovori tega projekta na enem mestu.</p>
-              <b className="pw-znacka">Kmalu</b>
-            </article>
-            <Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-karta pw-dnevnik-link">
-              <p className={styles.eyebrow}>07 · CRM DNEVNIK</p>
-              <h3>Klici, sestanki, dogovori</h3>
-              <p>Kronologija odnosa s stranko »{selected.offer.client}« — odpri na strani stranke.</p>
-              <b className="pw-znacka pw-znacka-live">Odpri <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></b>
-            </Link>
-          </div>
+          <Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-karta pw-dnevnik-link">
+            <p className={styles.eyebrow}>07 · CRM DNEVNIK</p>
+            <h3>Klici, sestanki, dogovori</h3>
+            <p>Kronologija odnosa s stranko »{selected.offer.client}« — odpri na strani stranke.</p>
+            <b className="pw-znacka pw-znacka-live">Odpri <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></b>
+          </Link>
         </div>
       </section>
     )}
