@@ -65,8 +65,10 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
       {item('time', `${base}/kalkulator/cas`, '02', 'Čas', 'cas', 'businessInsights')}
       {item('plan', `${base}/kalkulator/poslovni-nacrt`, '03', 'Poslovni okvir', 'okvir', 'businessInsights')}
       {item('naloge', `${base}/kalkulator/naloge`, '04', 'Naloge', 'naloge')}
-      {item('ideje', `${base}/kalkulator/ideje`, '05', 'Moje ideje', 'naloge')}
-      {item('koledar', `${base}/kalkulator/koledar`, '06', 'Koledar', 'koledar')}
+      <Link className={`${styles.navItem} ${active === 'ideje' ? styles.active : ''}`} href={`${base}/kalkulator/ideje`} title="Moje ideje — drugačen prikaz nalog" style={{ paddingLeft: '3rem', opacity: active === 'ideje' ? 1 : .85 }}>
+        <span className={styles.navNapis} style={{ fontSize: '.92em' }}>↳ Moje ideje</span>
+      </Link>
+      {item('koledar', `${base}/kalkulator/koledar`, '05', 'Koledar', 'koledar')}
     </MeniSkupina>
     {/* Dizajn (videz dokumentov) je zdaj pod Moj profil — meni zadiha.
         Dostopen iz profila in iz urejevalnika dokumenta. */}
