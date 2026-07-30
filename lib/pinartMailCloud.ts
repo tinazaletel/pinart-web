@@ -19,6 +19,8 @@ export type ProjectMail = {
   messageId?: string;
   inReplyTo?: string;
   occurredAt?: string;
+  isDraft?: boolean;
+  deletedAt?: string;
 };
 
 const fromRow = (row: Record<string, unknown>): ProjectMail => ({
@@ -35,6 +37,8 @@ const fromRow = (row: Record<string, unknown>): ProjectMail => ({
   messageId: row.message_id ? String(row.message_id) : undefined,
   inReplyTo: row.in_reply_to ? String(row.in_reply_to) : undefined,
   occurredAt: row.occurred_at ? String(row.occurred_at) : undefined,
+  isDraft: row.is_draft === true,
+  deletedAt: row.deleted_at ? String(row.deleted_at) : undefined,
 });
 
 /* Vsa posta enega projekta, najnovejsa prva. [] brez prijave/tabele. */
@@ -95,4 +99,50 @@ export async function ensureProjectInboxToken(projectExternalId: string): Promis
   });
   if (insertError) throw insertError;
   return token;
+}
+
+/* Osnutek: shrani/posodobi (is_draft=true). id je odjemalčev uuid, da ga posodabljamo. */
+export async function saveDraft(entry: ProjectMail & { id: string }): Promise<void> {
+  const context = await getOrganizationContext();
+  if (!context) return;
+  const { error } = await createClient().from('project_mail').upsert({
+    id: entry.id,
+    organization_id: context.organizationId,
+    project_external_id: entry.projectExternalId,
+    client_id: entry.clientId || null,
+    direction: 'out',
+    is_draft: true,
+    deleted_at: null,
+    from_email: entry.fromEmail || null,
+    to_emails: entry.toEmails,
+    subject: entry.subject || null,
+    body_html: entry.bodyHtml || null,
+    body_text: entry.bodyText || null,
+    occurred_at: entry.occurredAt || new Date().toISOString(),
+  });
+  if (error) throw error;
+}
+
+/* Premakni v koš (soft-delete). */
+export async function trashProjectMail(id: string): Promise<void> {
+  const context = await getOrganizationContext();
+  if (!context) return;
+  const { error } = await createClient().from('project_mail').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('organization_id', context.organizationId);
+  if (error) throw error;
+}
+
+/* Obnovi iz koša. */
+export async function restoreProjectMail(id: string): Promise<void> {
+  const context = await getOrganizationContext();
+  if (!context) return;
+  const { error } = await createClient().from('project_mail').update({ deleted_at: null }).eq('id', id).eq('organization_id', context.organizationId);
+  if (error) throw error;
+}
+
+/* Trajno izbriši. */
+export async function deleteProjectMailPermanent(id: string): Promise<void> {
+  const context = await getOrganizationContext();
+  if (!context) return;
+  const { error } = await createClient().from('project_mail').delete().eq('id', id).eq('organization_id', context.organizationId);
+  if (error) throw error;
 }
