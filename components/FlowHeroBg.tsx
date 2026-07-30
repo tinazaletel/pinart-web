@@ -143,7 +143,11 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         /* Maska bledi LEVO (stik z besedilom) IN zgoraj+spodaj (da morebiten odrez
            mehko zbledi, ne moti). Presek dveh linearnih gradientov. */
         /* BREZ paper ozadja -> ne prekrije mreze/mehurckov = ni pravokotnega okvirja; belo iz videa odstrani mix-blend multiply */
-        .fl-video { position: absolute; top: 130px; bottom: 100px; right: 3%; width: 41%; background: transparent; animation: pupaFloat 7s ease-in-out infinite; perspective: 1000px; }
+        /* KVADRAT (aspect-ratio 1) = ujema se s 1536×1536 sliko → object-fit:contain
+           NIKOLI ne letterboxa, zato odsev očal (.fl-ocala) in ostale pripete
+           dekoracije ostanejo na svojem mestu pri VSAKI širini/višini. Širina se
+           izpelje iz višine (top+bottom), da ilustracija ostane ~enako velika. */
+        .fl-video { position: absolute; top: 130px; bottom: 100px; right: 3%; width: auto; aspect-ratio: 1; background: transparent; animation: pupaFloat 7s ease-in-out infinite; perspective: 1000px; }
         .fl-scene { position: absolute; inset: 0; transform-style: preserve-3d; will-change: transform; }
         /* prosojna pupa (izrezano ozadje) -> contain, cel lik viden. 3 scene se prelivajo. */
         .fl-pupa { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; display: block; opacity: 0; }

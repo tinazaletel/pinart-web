@@ -35,7 +35,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const [heroIdx, setHeroIdx] = useState(0);
   useEffect(() => {
     if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const t = window.setInterval(() => setHeroIdx(i => (i + 1) % HERO_NASLOVI.length), 4200);
+    const t = window.setInterval(() => setHeroIdx(i => (i + 1) % HERO_NASLOVI.length), 7000);
     return () => window.clearInterval(t);
   }, []);
   const [taZavihek, setTaZavihek] = useState('kalkulator');
@@ -99,7 +99,13 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       const docH = document.documentElement.scrollHeight;
       const frac = Math.min(1, Math.max(0, y / (docH - vh)));
       // trajektorija: kepa pade z mize (hero) -> zraste -> plava po desni -> pade v kos
-      const deskX = vw * 0.74, deskY = vh * 0.6 - 80;
+      /* Izhodišče (miza) VEZANO na dejanski okvir ilustracije (.fl-video = zaklenjen
+         kvadrat 1:1), ne na % zaslona — sicer papir ob spremembi velikosti ne izhaja
+         več z mize. Delež okvira = ista točka na mizi pri vsaki širini/višini.
+         Deleža (0.50/0.47) sta ocena mesta papirja na mizi ob laptopu — po potrebi nastavi. */
+      let deskX = vw * 0.74, deskY = vh * 0.6 - 80;   // rezerva, če okvira (še) ni
+      const ilu = document.querySelector('.fl-video') as HTMLElement | null;
+      if (ilu) { const r = ilu.getBoundingClientRect(); deskX = r.left + r.width * 0.50; deskY = r.top + r.height * 0.47; }
       const bandX = vw * 0.82, bandY = vh * 0.42;
       const fallEnd = vh * 0.95;   // padec z mize se zgodi v prvem zaslonu (v pikslih, ne % strani)
       let x: number, ty: number, scale: number, op = 1;
@@ -797,7 +803,12 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-reveal { opacity: 0; transform: translateY(26px); transition: opacity .85s cubic-bezier(.22,1,.36,1), transform .85s cubic-bezier(.22,1,.36,1); }
         .fl-reveal.fl-in { opacity: 1; transform: none; }
         /* hero naslov — besede se ob nalaganju nezno dvignejo (brez clipa, da ne obreze serifa) */
-        .fl-hero-title .w { display: inline-block; opacity: 0; transform: translateY(.42em); animation: flWordUp .9s cubic-bezier(.22,1,.36,1) both; }
+        /* rezervirana višina naslova (≈3 vrstice) — daljši/krajši naslov NE premika
+           podnaslova in gumbov (Tina: besedilo se lahko premika, gumbi ostanejo). */
+        .fl-hero-title { min-height: 2.95em; }
+        /* presledek med besedami: {' '} je znotraj inline-block spana in ga rob poje,
+           zato razmik naredimo z margin-right (drugače so besede zlepljene). */
+        .fl-hero-title .w { display: inline-block; margin-right: .27em; opacity: 0; transform: translateY(.42em); animation: flWordUp .9s cubic-bezier(.22,1,.36,1) both; }
         @keyframes flWordUp { to { opacity: 1; transform: none; } }
         @media (prefers-reduced-motion: reduce) { .fl-hero-title .w { opacity: 1; transform: none; animation: none; } }
         .fl-koraki > .fl-reveal:nth-child(2) { transition-delay: .08s; }
