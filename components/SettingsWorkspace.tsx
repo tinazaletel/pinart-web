@@ -19,6 +19,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
   const [nalozeno, setNalozeno] = useState(false);
   const [sporocilo, setSporocilo] = useState('');
   const datoteka = useRef<HTMLInputElement>(null);
+  const [podpis, setPodpis] = useState('');
 
   /* Preberi obstojece nastavitve iz istega kljuca kot kalkulator. */
   useEffect(() => {
@@ -26,6 +27,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
       const s = JSON.parse(localStorage.getItem(K_NAST) || '{}');
       if (s.dokBarva) setBarva(String(s.dokBarva));
       if (s.dokFont) setFont(String(s.dokFont));
+      if (typeof s.podpisMaila === 'string') setPodpis(s.podpisMaila);
     } catch { /* pokvarjen zapis ignoriramo */ }
     try { setLogo(localStorage.getItem(K_LOGO) || ''); } catch { /* ignoriraj */ }
     setNalozeno(true);
@@ -36,9 +38,9 @@ export default function SettingsWorkspace({ base }: { base: string }) {
     if (!nalozeno) return;
     try {
       const s = JSON.parse(localStorage.getItem(K_NAST) || '{}');
-      localStorage.setItem(K_NAST, JSON.stringify({ ...s, dokBarva: barva, dokFont: font }));
+      localStorage.setItem(K_NAST, JSON.stringify({ ...s, dokBarva: barva, dokFont: font, podpisMaila: podpis }));
     } catch { /* ignoriraj */ }
-  }, [barva, font, nalozeno]);
+  }, [barva, font, podpis, nalozeno]);
 
   function naloziLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -106,6 +108,12 @@ export default function SettingsWorkspace({ base }: { base: string }) {
         {sporocilo && <p className={styles.opomba} role="status">{sporocilo}</p>}
 
         {nalozeno && <VidezDokumentov barva={barva} font={font} onBarva={setBarva} onFont={setFont} logo={logo} onLogo={setLogo} />}
+      </section>
+
+      <section className={styles.card}>
+        <h2>Podpis pošte</h2>
+        <p>Samodejno se doda na dno vsakega novega sporočila iz projekta. E-naslov lahko vključiš — vstavi se kot <b>navadno besedilo (ni klikabilen)</b>, da stranke raje kliknejo »Odgovori« kot pišejo na napačen naslov.</p>
+        <textarea value={podpis} onChange={e => setPodpis(e.target.value)} rows={6} placeholder={'Tina Zaletel\nPinart · oblikovanje\n+386 40 123 456\ntina@pinart.si\npinart.si\n\nProsim, odgovorite na to sporočilo.'} style={{ width: '100%', padding: '.7rem .8rem', fontFamily: 'inherit', fontSize: '.9rem', lineHeight: 1.5, resize: 'vertical', borderRadius: '.6rem', border: '1px solid rgba(17,17,17,.15)', background: '#fff' }} />
       </section>
 
       <section className={styles.card}>

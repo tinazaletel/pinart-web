@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { GearSix } from '@phosphor-icons/react';
 import { createClient } from '@/utils/supabase/client';
 import { getAccessTier, type AccessTier } from '@/lib/pinartFlowEntitlements';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -73,6 +74,7 @@ export default function SidebarUserMenu({ base }: { base: string }) {
               stvari o RACUNU, ne podvojena navigacija. "Paket in narocnina" ter
               "Pomoc in podpora" dodamo, ko strani obstajata (sicer mrtva povezava). */}
           <Link href={`${base}/kalkulator/profil`} role="menuitem" onClick={() => setOdprt(false)}>Moj profil</Link>
+          <Link href={`${base}/kalkulator/nastavitve`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><GearSix size={15} weight="bold" /> Nastavitve</Link>
           <Link href={`${base}/kalkulator/ekipa`} role="menuitem" onClick={() => setOdprt(false)}>Račun in ekipa</Link>
           <Link href={`${base}/kalkulator/pogoji`} role="menuitem" onClick={() => setOdprt(false)}>Pogoji in zasebnost</Link>
           <button type="button" className={styles.userMenuOdjava} role="menuitem" onClick={odjava}>Odjava</button>
