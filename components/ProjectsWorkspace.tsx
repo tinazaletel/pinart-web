@@ -3,14 +3,15 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { Plus, FolderOpen } from '@phosphor-icons/react';
+import { Plus, FolderOpen, TextB, TextItalic, ListBullets, LinkSimple } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
 import { loadFlowData, loadProjectLinks, saveOfferAmount, saveOfferStatus, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
-import { preberiPostoProjekta, type PostaVnos } from '@/lib/postaDnevnik';
-import { pullProjectMail } from '@/lib/pinartMailCloud';
+import { preberiPostoProjekta, dodajPosto, type PostaVnos } from '@/lib/postaDnevnik';
+import { pullProjectMail, pushProjectMail } from '@/lib/pinartMailCloud';
+import { posljiMail } from '@/lib/posta';
 import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
 import { preberiSodelavci } from '@/lib/sodelavci';
 import type { Sodelavec } from '@/lib/naloge';
@@ -251,6 +252,27 @@ const pwStyles = `
 .pw-posta-smer{flex:none;display:inline-flex;align-items:center;padding:.2rem .5rem;border-radius:999px;background:oklch(91% .05 165);color:oklch(40% .1 165);font-size:.52rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
 .pw-posta-meta{color:var(--muted);font-size:.62rem;overflow-wrap:anywhere}
 .pw-posta-prazno{position:relative;z-index:1;margin:.7rem 0 0;color:var(--muted);font-size:.7rem;line-height:1.5}
+/* »Nova pošta« — gumb + sestavljalnik */
+.pw-posta-glava{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem}
+.pw-posta-nova{flex:none;display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .8rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 .66rem var(--font-sans),sans-serif;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+.pw-posta-nova:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 16px rgba(40,25,60,.18)}
+.pw-posta-nova:disabled{opacity:.45;cursor:not-allowed}
+.pw-pisi{position:relative;z-index:1;display:flex;flex-direction:column;gap:.5rem;margin:.75rem 0 .2rem;padding:.75rem;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:.85rem;background:oklch(100% 0 0 / .72)}
+.pw-pisi-v{display:grid;grid-template-columns:3.2rem 1fr;align-items:center;gap:.5rem}
+.pw-pisi-v span{font:700 .58rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pw-pisi-v input{width:100%;padding:.45rem .6rem;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:.55rem;background:#fff;font:inherit;font-size:.78rem;color:var(--ink)}
+.pw-pisi-v input:focus{outline:none;border-color:oklch(58% .2 297)}
+.pw-pisi-orodja{display:flex;gap:.25rem}
+.pw-pisi-orodja button{display:grid;place-items:center;width:1.9rem;height:1.9rem;padding:0;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:.45rem;background:#fff;color:var(--ink);font-size:.8rem;line-height:1;cursor:pointer}
+.pw-pisi-orodja button:hover{background:var(--ink);color:var(--paper)}
+.pw-pisi-telo{min-height:5.5rem;max-height:14rem;overflow-y:auto;padding:.6rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:.55rem;background:#fff;font:inherit;font-size:.82rem;line-height:1.55;color:var(--ink)}
+.pw-pisi-telo:focus{outline:none;border-color:oklch(58% .2 297)}
+.pw-pisi-telo:empty:before{content:attr(data-placeholder);color:var(--muted)}
+.pw-pisi-status{margin:0;font-size:.68rem;color:var(--muted)}
+.pw-pisi-akcije{display:flex;justify-content:flex-end;gap:.5rem}
+.pw-pisi-preklic{padding:.45rem .9rem;border:1px solid color-mix(in oklch,var(--ink) 18%,transparent);border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
+.pw-pisi-poslji{padding:.45rem 1.1rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer}
+.pw-pisi-poslji:disabled{opacity:.5;cursor:not-allowed}
 /* "00 · CILJI IN ŽELJE" — samostojna kartica NAD .projectNarrative (ne znotraj njegove
    4-stolpne mreže, ker so barve 02/03/04 vezane na nth-child; vrivanje bi jih premaknilo
    in podrlo obstoječe gradiente). Isti mehki violet/mint jezik kot .projectAgreement. */
@@ -495,6 +517,14 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
      predogledu (demo/prazno/začetek) pokažemo nekaj vzorčnih zapisov, da razdelek
      ni prazen; sicer beremo dejansko shranjeno pošto projekta. */
   const [posta, setPosta] = useState<PostaVnos[]>([]);
+  /* »Nova pošta« — sestavljalnik neposredno v projektu (brez dokumenta). Pošlje
+     prek Resend, zabeleži lokalno (postaDnevnik) + v oblak (pushProjectMail). */
+  const [pisiOdprt, setPisiOdprt] = useState(false);
+  const [pisiZa, setPisiZa] = useState('');
+  const [pisiZadeva, setPisiZadeva] = useState('');
+  const [pisiStatus, setPisiStatus] = useState('');
+  const [pisiPosiljam, setPisiPosiljam] = useState(false);
+  const pisiTeloRef = useRef<HTMLDivElement>(null);
   const [linkOznaka, setLinkOznaka] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [dodajOdprt, setDodajOdprt] = useState(false);
@@ -519,6 +549,49 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   /* pošlji dokument iz predogleda (mailto; prejemnik iz imenika po imenu stranke) — do Resend brez priponke */
   const strankaEmail = (ime: string) => { const c = (ime || '').trim().toLocaleLowerCase('sl-SI'); return clients.find(x => (x.name || '').trim().toLocaleLowerCase('sl-SI') === c)?.email || ''; };
   const posljiDokument = (ime: string, zadeva: string, telo: string) => { if (typeof window === 'undefined') return; window.location.href = `mailto:${encodeURIComponent(strankaEmail(ime))}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`; };
+  /* ── »Nova pošta«: odpri sestavljalnik (prednapolni prejemnika iz stranke) ── */
+  const odpriPisanje = () => {
+    setPisiZa(strankaEmail(selected?.offer.client || ''));
+    setPisiZadeva(selected ? `${selected.offer.title} — ` : '');
+    setPisiStatus('');
+    setPisiOdprt(true);
+  };
+  const oblikuj = (ukaz: string) => { document.execCommand(ukaz); pisiTeloRef.current?.focus(); };
+  const vstaviPovezavo = () => { const url = window.prompt('Naslov povezave (https://…)'); if (url) document.execCommand('createLink', false, url); };
+  const posljiPisanje = async () => {
+    if (samoOgled || !selected) return;
+    const za = pisiZa.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(za)) { setPisiStatus('Vpiši veljaven e-naslov prejemnika.'); return; }
+    if (!pisiZadeva.trim()) { setPisiStatus('Vpiši zadevo.'); return; }
+    const telo = (pisiTeloRef.current?.innerHTML || '').trim();
+    if (!telo) { setPisiStatus('Vpiši sporočilo.'); return; }
+    setPisiPosiljam(true); setPisiStatus('Pošiljam …');
+    const html = `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${telo}</div>`;
+    const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html });
+    setPisiPosiljam(false);
+    if (rez.ok) {
+      const vnos = dodajPosto({ projectId: selectedId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim() });
+      void pushProjectMail({ projectExternalId: selectedId, direction: 'out', toEmails: [za], subject: pisiZadeva.trim(), occurredAt: new Date().toISOString() }).catch(() => undefined);
+      setPosta(p => [vnos, ...p]);
+      setPisiOdprt(false); setPisiZadeva(''); if (pisiTeloRef.current) pisiTeloRef.current.innerHTML = '';
+    } else {
+      setPisiStatus('Napaka: ' + (rez.napaka || 'pošiljanje ni uspelo.'));
+    }
+  };
+  /* ob odprtju sestavljalnika prednapolni telo s podpisom (iz profila, localStorage).
+     Vstavi se kot NAVADNO besedilo — email v podpisu NI klikabilen (ne ovijemo v
+     mailto), da stranke raje kliknejo »Odgovori«. Kurzor postavimo na vrh. */
+  useEffect(() => {
+    if (!pisiOdprt) return;
+    const el = pisiTeloRef.current;
+    if (!el) return;
+    let podpis = '';
+    try { podpis = String(JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}').podpisMaila || ''); } catch { /* brez podpisa */ }
+    const varno = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    el.innerHTML = podpis.trim() ? `<div><br></div><div style="color:#777">${varno(podpis).replace(/\n/g, '<br>')}</div>` : '';
+    el.focus();
+    try { const sel = window.getSelection(); const range = document.createRange(); range.setStart(el, 0); range.collapse(true); sel?.removeAllRanges(); sel?.addRange(range); } catch { /* fokus ni ključen */ }
+  }, [pisiOdprt]);
   /* V predogledu (demo) pokažemo primere povezav, da se vidi poln videz razdelka;
      v pravem računu beremo dejansko shranjene povezave. */
   useEffect(() => {
@@ -792,8 +865,28 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
 
         <div className="pw-dodatno">
           <article className="pw-karta pw-posta">
-            <p className={styles.eyebrow}>POŠTA</p>
-            <h3>Poslana pošta</h3>
+            <div className="pw-posta-glava">
+              <div><p className={styles.eyebrow}>POŠTA</p><h3>Pošta projekta</h3></div>
+              <button type="button" className="pw-posta-nova" disabled={samoOgled} title={samoOgled ? 'Na voljo v načinu »Moji podatki« — zdaj gledaš predogled' : 'Napiši sporočilo stranki'} onClick={odpriPisanje}>✎ Nova pošta</button>
+            </div>
+            {pisiOdprt && !samoOgled && (
+              <div className="pw-pisi">
+                <label className="pw-pisi-v"><span>Za</span><input type="email" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="stranka@email.si" /></label>
+                <label className="pw-pisi-v"><span>Zadeva</span><input type="text" value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} placeholder="Zadeva sporočila" /></label>
+                <div className="pw-pisi-orodja">
+                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko" aria-label="Krepko"><TextB size={15} weight="bold" /></button>
+                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title="Ležeče" aria-label="Ležeče"><TextItalic size={15} weight="bold" /></button>
+                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('insertUnorderedList'); }} title="Označen seznam" aria-label="Označen seznam"><ListBullets size={15} weight="bold" /></button>
+                  <button type="button" onMouseDown={e => { e.preventDefault(); vstaviPovezavo(); }} title="Povezava" aria-label="Povezava"><LinkSimple size={15} weight="bold" /></button>
+                </div>
+                <div className="pw-pisi-telo" ref={pisiTeloRef} contentEditable suppressContentEditableWarning role="textbox" aria-label="Besedilo sporočila" data-placeholder="Napiši sporočilo …" />
+                {pisiStatus && <p className="pw-pisi-status">{pisiStatus}</p>}
+                <div className="pw-pisi-akcije">
+                  <button type="button" className="pw-pisi-preklic" onClick={() => setPisiOdprt(false)}>Prekliči</button>
+                  <button type="button" className="pw-pisi-poslji" disabled={pisiPosiljam} onClick={posljiPisanje}>{pisiPosiljam ? 'Pošiljam …' : 'Pošlji'}</button>
+                </div>
+              </div>
+            )}
             {posta.length ? (
               <ul className="pw-posta-seznam">
                 {posta.map(vnos => (
@@ -807,7 +900,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 ))}
               </ul>
             ) : (
-              <p className="pw-posta-prazno">Še ni poslane pošte. Ko iz projekta pošlješ ponudbo ali pogodbo, se zabeleži tukaj.</p>
+              <p className="pw-posta-prazno">Še ni pošte. Klikni <b>Nova pošta</b> in piši stranki, ali pošlji ponudbo/pogodbo — vse se zabeleži tukaj.</p>
             )}
           </article>
           <div className="pw-kmalu-red">
