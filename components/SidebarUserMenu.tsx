@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { GearSix } from '@phosphor-icons/react';
+import { GearSix, Package, UserCircle, UsersThree, ShieldCheck, SignOut } from '@phosphor-icons/react';
 import { createClient } from '@/utils/supabase/client';
 import { getAccessTier, type AccessTier } from '@/lib/pinartFlowEntitlements';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -67,17 +67,17 @@ export default function SidebarUserMenu({ base }: { base: string }) {
               razen po tem, katere postavke so zaklenjene. */}
           <Link href={`${base}/kalkulator/paket`} role="menuitem" className={styles.userMenuPaket}
             onClick={() => setOdprt(false)}>
-            <span>Paket</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><Package size={15} weight="bold" /> Paket</span>
             <b data-pro={paket === 'pro'}>{paket === 'pro' ? 'Pro' : 'Brezplačno'}</b>
           </Link>
           {/* Ceniki in stroski sta ze v stranski navigaciji zgoraj — tukaj sodijo samo
               stvari o RACUNU, ne podvojena navigacija. "Paket in narocnina" ter
               "Pomoc in podpora" dodamo, ko strani obstajata (sicer mrtva povezava). */}
-          <Link href={`${base}/kalkulator/profil`} role="menuitem" onClick={() => setOdprt(false)}>Moj profil</Link>
+          <Link href={`${base}/kalkulator/profil`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><UserCircle size={15} weight="bold" /> Moj profil</Link>
           <Link href={`${base}/kalkulator/nastavitve`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><GearSix size={15} weight="bold" /> Nastavitve</Link>
-          <Link href={`${base}/kalkulator/ekipa`} role="menuitem" onClick={() => setOdprt(false)}>Račun in ekipa</Link>
-          <Link href={`${base}/kalkulator/pogoji`} role="menuitem" onClick={() => setOdprt(false)}>Pogoji in zasebnost</Link>
-          <button type="button" className={styles.userMenuOdjava} role="menuitem" onClick={odjava}>Odjava</button>
+          <Link href={`${base}/kalkulator/ekipa`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><UsersThree size={15} weight="bold" /> Račun in ekipa</Link>
+          <Link href={`${base}/kalkulator/pogoji`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><ShieldCheck size={15} weight="bold" /> Pogoji in zasebnost</Link>
+          <button type="button" className={styles.userMenuOdjava} role="menuitem" onClick={odjava} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><SignOut size={15} weight="bold" /> Odjava</button>
         </div>
       )}
     </div>
