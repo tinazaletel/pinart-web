@@ -567,7 +567,11 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     if (!telo) { setPisiStatus('Vpiši sporočilo.'); return; }
     setPisiPosiljam(true); setPisiStatus('Pošiljam …');
     const html = `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${telo}</div>`;
-    const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html });
+    /* »Odgovori-na« = tvoj pravi e-naslov (iz profila), da odgovori strank padejo
+       tja (npr. tvoj Gmail), ne na pošiljno domeno pinartflow.com, kjer pošte ni. */
+    let replyTo = '';
+    try { replyTo = String(JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}').ponudnik?.email || ''); } catch { /* brez profila */ }
+    const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, replyTo: replyTo || undefined });
     setPisiPosiljam(false);
     if (rez.ok) {
       const vnos = dodajPosto({ projectId: selectedId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim() });
