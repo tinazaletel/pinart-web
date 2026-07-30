@@ -19,11 +19,25 @@ import RotatingLaptop from '@/components/RotatingLaptop';
    ali v brezplacni kalkulator (funnel). Dizajn = naslovnica ponudbe:
    Bodoni, mreza, vijola/zelena blobi, pastelne gradientne kartice, lesk. */
 
+/* Hero naslov se vrti med 3 sporocili (ljudje ne skrolajo — naslov naj pove vec).
+   Vsaka razlicica ohrani per-word "flWordUp" animacijo ob menjavi (key={heroIdx}). */
+const HERO_NASLOVI: { pre: string[]; em: string[] }[] = [
+  { pre: ['Veš,', 'koliko', 'je', 'vredno'], em: ['tvoje', 'delo?'] },
+  { pre: ['Poštena', 'cena,', 'vračunane'], em: ['avtorske', 'pravice.'] },
+  { pre: ['Od', 'ponudbe', 'do', 'plačanega'], em: ['računa.'] },
+];
+
 export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const prijava = localePath(locale, '/kalkulator/prijava');
   const kalkulator = localePath(locale, '/kalkulator/orodje') + '?od=flow';
 
   const [taRubrika, setTaRubrika] = useState('vse');
+  const [heroIdx, setHeroIdx] = useState(0);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const t = window.setInterval(() => setHeroIdx(i => (i + 1) % HERO_NASLOVI.length), 4200);
+    return () => window.clearInterval(t);
+  }, []);
   const [taZavihek, setTaZavihek] = useState('kalkulator');
   const [odprtoVpr, setOdprtoVpr] = useState<number | null>(0);
   /* Pupa = PROSOJEN video (alfa): Safari -> HEVC-alfa mov, Chrome/FF -> VP9-alfa webm.
@@ -834,7 +848,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       <div className="fl-oder">
         <section className="fl-hero">
           <p className="kicker"><b>Pinart Flow</b> · beta · za samostojne kreativce in male studie</p>
-          <h1 className="fl-hero-title"><span className="w" style={{ animationDelay: '0s' }}>Veš,</span> <span className="w" style={{ animationDelay: '.07s' }}>koliko</span> <span className="w" style={{ animationDelay: '.14s' }}>je</span> <span className="w" style={{ animationDelay: '.21s' }}>vredno</span> <em><span className="w" style={{ animationDelay: '.3s' }}>tvoje</span> <span className="w" style={{ animationDelay: '.38s' }}>delo?</span></em></h1>
+          <h1 className="fl-hero-title" key={heroIdx}>
+            {HERO_NASLOVI[heroIdx].pre.map((w, i) => <span key={i} className="w" style={{ animationDelay: `${i * 0.07}s` }}>{w}{' '}</span>)}
+            <em>{HERO_NASLOVI[heroIdx].em.map((w, i) => <span key={i} className="w" style={{ animationDelay: `${(HERO_NASLOVI[heroIdx].pre.length + i) * 0.07}s` }}>{w}{' '}</span>)}</em>
+          </h1>
           <p className="lead">
             Prvo orodje za kreativce, ki ti <b>pove pošteno ceno</b> — z vračunanimi avtorskimi pravicami
             in primerjavo s trgom — nato pa ves projekt vodi do plačanega računa. Ne ugibaš cene in ne skačeš med tremi programi.
