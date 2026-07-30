@@ -2278,8 +2278,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
        uvodKoncan se ni true. Uvod od zacetka le pri praznem formularju (prvic /
        ponastavitev) ali eksplicitno prek ?uvod=1 (kartica "Dokoncaj nastavitev"). */
     const pn = preberiPredogled();
+    /* "izpolnjeno" = KATERIKOLI signal, da si ze bila tu (ime ALI podrocja ALI naziv
+       ponudbe ALI uvodKoncan). Prej je bil pogoj ime IN podrocja — a obIzbor ob zagonu
+       efekta se ni nujno nalozen, zato je padel in te je vrglo na zacetek. */
     const uvodIzpolnjen = pn === 'demo' || pn === 'zacetek'
-      || (imeUporabnika.trim() !== '' && obIzbor.size > 0);
+      || imeUporabnika.trim() !== '' || obIzbor.size > 0 || nazivPonudbe.trim() !== '' || uvodKoncan === true;
     if (pogojiOk === true && ((uvodKoncan === false && !uvodIzpolnjen) || (zahtevanUvod && uvodKoncan !== null)) && !uvodChat && !onboardingOdprt) {
       if (klasicnaOblika) { setObIzbor(new Set()); setOnboardingOdprt(true); }
       /* ob vrnitvi s kartice nadaljuj, kjer si ostala (chatKorak je shranjen);
