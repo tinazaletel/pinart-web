@@ -2,7 +2,7 @@
 
 import {
   SquaresFour, FileText, Repeat, Handshake, Receipt, Users, Tag, Wallet,
-  Target, Clock, Layout, ClockCounterClockwise, GearSix, LifebuoyIcon, Kanban, CalendarBlank,
+  Target, Clock, Layout, Folders, GearSix, LifebuoyIcon, Kanban, CalendarBlank,
   PaintBrush, FolderOpen,
 } from '@phosphor-icons/react';
 
@@ -34,7 +34,7 @@ const IKONE = {
   okvir: Layout,
   naloge: Kanban,
   koledar: CalendarBlank,
-  zgodovina: ClockCounterClockwise,
+  zgodovina: Folders,
   nastavitve: GearSix,
   dizajn: PaintBrush,
   pomoc: LifebuoyIcon,
