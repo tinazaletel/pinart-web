@@ -428,7 +428,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 820px) {
           .fl-hero { min-height: auto; }
           /* 3D pupa slika (ista kot desktop .fl-pupa) — centrirana, zrcaljena kot na desktopu (scaleX -1) */
-          .fl-hero-vid-mob { display: block; margin: 1.6rem auto 0; width: 100%; max-width: 26rem; }
+          .fl-hero-vid-mob { display: block; margin: 1.6rem auto 0; width: 100%; max-width: 36rem; }
           .fl-hero-vid-mob img { display: block; width: 100%; height: auto; transform: scaleX(-1); }
           /* visja specificnost (.fl .fl-potek), da premaga bazni negativni margin nize v datoteki
              (sicer kartice zlezejo GOR cez hero video) */
