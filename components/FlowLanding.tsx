@@ -95,10 +95,48 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     const update = () => {
       raf = 0;
       const vw = window.innerWidth, vh = window.innerHeight, y = window.scrollY;
-      /* kepa je vezana na desktop ilustracijo .fl-video, ki se skrije pri <=820px
-         (hero preide v mobilno postavitev); pod tem pragom skrijemo tudi kepo,
-         sicer lebdi brez mize (rect .fl-video = 0). Prag USKLAJEN z .fl-video. */
-      if (vw <= 820) { fly.style.opacity = '0'; return; }
+      /* MOBILNO / pokončno (<=820px): desktop ilustracija .fl-video je skrita, zato
+         leteči papir vežemo na MOBILNO pupo (pupa3d slika v .fl-hero-vid-mob). Papir
+         leži na laptopu -> ob scrollu spremeni obliko (kepa->ptič->ladjica) -> pade
+         v koš. Vrednosti (položaj 0.48/0.50, velikost, pot) so PRVA ocena — fino
+         nastavljivo. Če pupe (še) ni, papir skrijemo. */
+      if (vw <= 820) {
+        const pupaM = document.querySelector('.fl-hero-vid-mob img') as HTMLElement | null;
+        const rm = pupaM?.getBoundingClientRect();
+        if (!rm || rm.width === 0) { fly.style.opacity = '0'; return; }
+        const docHm = document.documentElement.scrollHeight;
+        const fracM = Math.min(1, Math.max(0, y / (docHm - vh)));
+        const startX = rm.left + rm.width * 0.48;   // laptop na pupi (x)
+        const startY = rm.top + rm.height * 0.50;   // laptop na pupi (y)
+        const baseScale = Math.max(0.4, rm.width / 620);   // velikost žogice glede na pupo
+        let shapeM = 0;
+        if (fracM >= 0.75) shapeM = 0; else if (fracM >= 0.55) shapeM = 2; else if (fracM >= 0.32) shapeM = 1;
+        let oBallM = shapeM === 0 ? 1 : 0, oBirdM = shapeM === 1 ? 1 : 0, oBoatM = shapeM === 2 ? 1 : 0;
+        const leave = Math.min(1, Math.max(0, (fracM - 0.12) / 0.25));   // zapusti laptop pri ~12 %
+        let xM = startX + Math.sin(fracM * 7) * vw * 0.10 * leave;
+        let tyM = startY + leave * vh * 0.30;
+        let scaleM = baseScale * (1 + leave * 0.3);
+        let rotM = fracM * 300, opM = 1;
+        const kosM = kosRef.current;
+        if (kosM) {
+          const kr = kosM.getBoundingClientRect();
+          const d = Math.min(1, Math.max(0, (fracM - 0.75) / 0.15));
+          if (d > 0) {
+            xM += (kr.left + kr.width * 0.5 - xM) * d;
+            tyM += (kr.top + kr.height * 0.28 - tyM) * d;
+            scaleM = scaleM * (1 - d * 0.65);
+            rotM += d * 200;
+            opM = d > 0.9 ? Math.max(0, 1 - (d - 0.9) / 0.1) : 1;
+            oBallM = 1; oBirdM = 0; oBoatM = 0;
+          }
+        }
+        if (ball) ball.style.opacity = String(oBallM);
+        if (bird) bird.style.opacity = String(oBirdM);
+        if (boat) boat.style.opacity = String(oBoatM);
+        fly.style.opacity = String(opM);
+        fly.style.transform = `translate(${xM - 10}px, ${tyM}px) translate(-50%, -50%) rotate(${rotM}deg) scale(${scaleM})`;
+        return;
+      }
       const docH = document.documentElement.scrollHeight;
       const frac = Math.min(1, Math.max(0, y / (docH - vh)));
       // trajektorija: kepa pade z mize (hero) -> zraste -> plava po desni -> pade v kos
@@ -801,7 +839,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* leteci papirnati objekt — potuje po strani, se preliva, pade v kos (pozicija/prelivanje iz JS) */
         .fl-fly { position: fixed; left: 0; top: 0; width: clamp(8rem, 11vw, 13rem); aspect-ratio: 1; z-index: 20; pointer-events: none; opacity: 0; will-change: transform, opacity; }
         .fl-fly img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; filter: drop-shadow(0 14px 22px rgba(40,25,60,.22)); }
-        @media (max-width: 820px) { .fl-fly { display: none; } }
+        /* leteči papir je zdaj viden tudi na mobilnem/pokončno — vezan na mobilno pupo (krmili JS) */
         /* mehki reveal sekcij ob drsanju (razred doda JS; reduce-motion = brez) */
         .fl-reveal { opacity: 0; transform: translateY(26px); transition: opacity .85s cubic-bezier(.22,1,.36,1), transform .85s cubic-bezier(.22,1,.36,1); }
         .fl-reveal.fl-in { opacity: 1; transform: none; }
