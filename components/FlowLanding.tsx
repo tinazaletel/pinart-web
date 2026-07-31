@@ -83,7 +83,6 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
      in na koncu pade v kos (O nas). Cist scroll-driven (brez GSAP), Safari-varno; hidden na mob/reduce-motion. */
   const flyRef = useRef<HTMLDivElement>(null);
   const kosRef = useRef<HTMLImageElement>(null);
-  const heroVidMobRef = useRef<HTMLVideoElement>(null);
   const [flyMounted, setFlyMounted] = useState(false);
   useEffect(() => { setFlyMounted(true); }, []);
   useEffect(() => {
@@ -157,22 +156,6 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); if (raf) cancelAnimationFrame(raf); };
-  }, [flyMounted]);
-
-  /* Mobilni hero video (.fl-hero-vid-mob) se pri Safariju NE zažene sam: je pod
-     pregibom, iOS pa muted-autoplay dovoli šele, ko je v vidnem polju. Zato ga
-     predvajamo prek IntersectionObserverja (in ustavimo, ko odide — baterija). */
-  useEffect(() => {
-    const v = heroVidMobRef.current;
-    if (!v) return;
-    const io = new IntersectionObserver(entries => {
-      for (const e of entries) {
-        if (e.isIntersecting) { void v.play().catch(() => undefined); }
-        else v.pause();
-      }
-    }, { threshold: 0.15 });
-    io.observe(v);
-    return () => io.disconnect();
   }, [flyMounted]);
 
   const vrstaRef = useRef<HTMLDivElement>(null);
@@ -444,9 +427,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-hero-vid-mob { display: none; }
         @media (max-width: 820px) {
           .fl-hero { min-height: auto; }
-          .fl-hero-vid-mob { display: block; margin: 2.8rem calc(50% - 50vw) 0; width: 100vw; overflow: hidden; }
-          /* hero.mp4 je kremni (barva strani) -> brez mix-blenda/filtra; maska mehko zbledi zgoraj/spodaj v stran */
-          .fl-hero-vid-mob video { display: block; width: 100%; height: 40svh; object-fit: cover; object-position: center 40%; -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26%, #000 74%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 26%, #000 74%, transparent 100%); }
+          /* 3D pupa slika (ista kot desktop .fl-pupa) — centrirana, zrcaljena kot na desktopu (scaleX -1) */
+          .fl-hero-vid-mob { display: block; margin: 1.6rem auto 0; width: 100%; max-width: 26rem; }
+          .fl-hero-vid-mob img { display: block; width: 100%; height: auto; transform: scaleX(-1); }
           /* visja specificnost (.fl .fl-potek), da premaga bazni negativni margin nize v datoteki
              (sicer kartice zlezejo GOR cez hero video) */
           .fl .fl-potek { margin: 3.2rem 0 0 !important; }
@@ -894,9 +877,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
           {/* Mobile: hero video kot cist blok POD gumbi (na desktopu skrit — tam je bg) */}
           <div className="fl-hero-vid-mob" aria-hidden>
-            <video ref={heroVidMobRef} autoPlay muted loop playsInline preload="auto">
-              <source src="/flow/hero.mp4" type="video/mp4" />
-            </video>
+            {/* 3D pupa (ista kot desktop) — Tina: TA mora biti na mobilnem, ne star hero.mp4 */}
+            <img src="/flow/pupa3d.png" alt="" />
           </div>
         </section>
 
