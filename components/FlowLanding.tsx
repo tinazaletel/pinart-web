@@ -236,11 +236,16 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     el.addEventListener('pointerenter', enter);
     el.addEventListener('pointerleave', leave);
     el.addEventListener('pointerdown', down);
+    /* auto-drs teče ŠELE ko je vrsta v vidnem polju -> ko uporabnik pride do nje,
+       je na PRVI kartici (scrollLeft 0), šele nato začne počasi drseti. */
+    let inView = false;
+    const io = new IntersectionObserver(([e]) => { inView = e.isIntersecting; }, { threshold: 0.2 });
+    io.observe(el);
     let raf = 0;
     let last = performance.now();
     const tick = (t: number) => {
       const dt = Math.min(t - last, 50); last = t;
-      if (!hover && t >= pauseUntil.current && el.scrollWidth > el.clientWidth + 1) {
+      if (inView && !hover && t >= pauseUntil.current && el.scrollWidth > el.clientWidth + 1) {
         if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 1) {
           pauseUntil.current = t + 1300;
           el.scrollTo({ left: 0, behavior: 'smooth' });
@@ -253,6 +258,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     raf = requestAnimationFrame(tick);
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect();
       el.removeEventListener('pointerenter', enter);
       el.removeEventListener('pointerleave', leave);
       el.removeEventListener('pointerdown', down);
