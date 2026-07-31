@@ -280,68 +280,68 @@ const TRGI = [
 
 /* Država naročnika -> privzet trg (razred cene). Uporabnik ga lahko ročno spremeni.
    Za globalna podjetja ali izjeme je trg dropdown vedno na voljo. */
-const DRZAVE: { ime: string; trg: string }[] = [
-  { ime: 'Slovenija', trg: 'si' },
-  { ime: 'Avstrija', trg: 'west' },
-  { ime: 'Nemčija', trg: 'west' },
-  { ime: 'Italija', trg: 'west' },
-  { ime: 'Madžarska', trg: 'si' },
-  { ime: 'Češka', trg: 'si' },
-  { ime: 'Slovaška', trg: 'si' },
-  { ime: 'Poljska', trg: 'si' },
-  { ime: 'Švica', trg: 'us' },
-  { ime: 'Liechtenstein', trg: 'us' },
-  { ime: 'Francija', trg: 'west' },
-  { ime: 'Belgija', trg: 'west' },
-  { ime: 'Nizozemska', trg: 'west' },
-  { ime: 'Luksemburg', trg: 'us' },
-  { ime: 'Irska', trg: 'west' },
-  { ime: 'Španija', trg: 'west' },
-  { ime: 'Portugalska', trg: 'west' },
-  { ime: 'Velika Britanija', trg: 'us' },
-  { ime: 'ZDA', trg: 'us' },
-  { ime: 'Kanada', trg: 'us' },
-  { ime: 'Švedska', trg: 'us' },
-  { ime: 'Norveška', trg: 'us' },
-  { ime: 'Danska', trg: 'us' },
-  { ime: 'Finska', trg: 'us' },
-  { ime: 'Islandija', trg: 'us' },
-  { ime: 'Avstralija', trg: 'us' },
-  { ime: 'Nova Zelandija', trg: 'us' },
-  { ime: 'Hrvaška', trg: 'east' },
-  { ime: 'Srbija', trg: 'east' },
-  { ime: 'Bosna in Hercegovina', trg: 'east' },
-  { ime: 'Črna gora', trg: 'east' },
-  { ime: 'Severna Makedonija', trg: 'east' },
-  { ime: 'Kosovo', trg: 'east' },
-  { ime: 'Albanija', trg: 'east' },
-  { ime: 'Bolgarija', trg: 'east' },
-  { ime: 'Romunija', trg: 'east' },
-  { ime: 'Grčija', trg: 'east' },
-  { ime: 'Ukrajina', trg: 'east' },
-  { ime: 'Litva', trg: 'east' },
-  { ime: 'Latvija', trg: 'east' },
-  { ime: 'Estonija', trg: 'east' },
-  { ime: 'Turčija', trg: 'east' },
-  { ime: 'ZAE', trg: 'mena' },
-  { ime: 'Savdska Arabija', trg: 'mena' },
-  { ime: 'Katar', trg: 'mena' },
-  { ime: 'Egipt', trg: 'asia' },
-  { ime: 'Maroko', trg: 'asia' },
-  { ime: 'Južna Afrika', trg: 'asia' },
-  { ime: 'Izrael', trg: 'us' },
-  { ime: 'Japonska', trg: 'us' },
-  { ime: 'Singapur', trg: 'us' },
-  { ime: 'Kitajska', trg: 'asia' },
-  { ime: 'Indija', trg: 'asia' },
-  { ime: 'Brazilija', trg: 'asia' },
-  { ime: 'Argentina', trg: 'asia' },
-  { ime: 'Mehika', trg: 'asia' },
+const DRZAVE: { ime: string; imeEn: string; trg: string }[] = [
+  { ime: 'Slovenija', imeEn: 'Slovenia', trg: 'si' },
+  { ime: 'Avstrija', imeEn: 'Austria', trg: 'west' },
+  { ime: 'Nemčija', imeEn: 'Germany', trg: 'west' },
+  { ime: 'Italija', imeEn: 'Italy', trg: 'west' },
+  { ime: 'Madžarska', imeEn: 'Hungary', trg: 'si' },
+  { ime: 'Češka', imeEn: 'Czechia', trg: 'si' },
+  { ime: 'Slovaška', imeEn: 'Slovakia', trg: 'si' },
+  { ime: 'Poljska', imeEn: 'Poland', trg: 'si' },
+  { ime: 'Švica', imeEn: 'Switzerland', trg: 'us' },
+  { ime: 'Liechtenstein', imeEn: 'Liechtenstein', trg: 'us' },
+  { ime: 'Francija', imeEn: 'France', trg: 'west' },
+  { ime: 'Belgija', imeEn: 'Belgium', trg: 'west' },
+  { ime: 'Nizozemska', imeEn: 'Netherlands', trg: 'west' },
+  { ime: 'Luksemburg', imeEn: 'Luxembourg', trg: 'us' },
+  { ime: 'Irska', imeEn: 'Ireland', trg: 'west' },
+  { ime: 'Španija', imeEn: 'Spain', trg: 'west' },
+  { ime: 'Portugalska', imeEn: 'Portugal', trg: 'west' },
+  { ime: 'Velika Britanija', imeEn: 'United Kingdom', trg: 'us' },
+  { ime: 'ZDA', imeEn: 'United States', trg: 'us' },
+  { ime: 'Kanada', imeEn: 'Canada', trg: 'us' },
+  { ime: 'Švedska', imeEn: 'Sweden', trg: 'us' },
+  { ime: 'Norveška', imeEn: 'Norway', trg: 'us' },
+  { ime: 'Danska', imeEn: 'Denmark', trg: 'us' },
+  { ime: 'Finska', imeEn: 'Finland', trg: 'us' },
+  { ime: 'Islandija', imeEn: 'Iceland', trg: 'us' },
+  { ime: 'Avstralija', imeEn: 'Australia', trg: 'us' },
+  { ime: 'Nova Zelandija', imeEn: 'New Zealand', trg: 'us' },
+  { ime: 'Hrvaška', imeEn: 'Croatia', trg: 'east' },
+  { ime: 'Srbija', imeEn: 'Serbia', trg: 'east' },
+  { ime: 'Bosna in Hercegovina', imeEn: 'Bosnia and Herzegovina', trg: 'east' },
+  { ime: 'Črna gora', imeEn: 'Montenegro', trg: 'east' },
+  { ime: 'Severna Makedonija', imeEn: 'North Macedonia', trg: 'east' },
+  { ime: 'Kosovo', imeEn: 'Kosovo', trg: 'east' },
+  { ime: 'Albanija', imeEn: 'Albania', trg: 'east' },
+  { ime: 'Bolgarija', imeEn: 'Bulgaria', trg: 'east' },
+  { ime: 'Romunija', imeEn: 'Romania', trg: 'east' },
+  { ime: 'Grčija', imeEn: 'Greece', trg: 'east' },
+  { ime: 'Ukrajina', imeEn: 'Ukraine', trg: 'east' },
+  { ime: 'Litva', imeEn: 'Lithuania', trg: 'east' },
+  { ime: 'Latvija', imeEn: 'Latvia', trg: 'east' },
+  { ime: 'Estonija', imeEn: 'Estonia', trg: 'east' },
+  { ime: 'Turčija', imeEn: 'Turkey', trg: 'east' },
+  { ime: 'ZAE', imeEn: 'United Arab Emirates', trg: 'mena' },
+  { ime: 'Savdska Arabija', imeEn: 'Saudi Arabia', trg: 'mena' },
+  { ime: 'Katar', imeEn: 'Qatar', trg: 'mena' },
+  { ime: 'Egipt', imeEn: 'Egypt', trg: 'asia' },
+  { ime: 'Maroko', imeEn: 'Morocco', trg: 'asia' },
+  { ime: 'Južna Afrika', imeEn: 'South Africa', trg: 'asia' },
+  { ime: 'Izrael', imeEn: 'Israel', trg: 'us' },
+  { ime: 'Japonska', imeEn: 'Japan', trg: 'us' },
+  { ime: 'Singapur', imeEn: 'Singapore', trg: 'us' },
+  { ime: 'Kitajska', imeEn: 'China', trg: 'asia' },
+  { ime: 'Indija', imeEn: 'India', trg: 'asia' },
+  { ime: 'Brazilija', imeEn: 'Brazil', trg: 'asia' },
+  { ime: 'Argentina', imeEn: 'Argentina', trg: 'asia' },
+  { ime: 'Mehika', imeEn: 'Mexico', trg: 'asia' },
 ];
 const trgIzDrzave = (ime: string): string | null => {
   const n = ime.trim().toLowerCase();
   if (!n) return null;
-  return DRZAVE.find(d => d.ime.toLowerCase() === n)?.trg ?? null;
+  return DRZAVE.find(d => d.ime.toLowerCase() === n || d.imeEn.toLowerCase() === n)?.trg ?? null;
 };
 
 const DODATKI = [
@@ -2693,7 +2693,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <input autoFocus type="text" value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })}
                 placeholder={L('Ime podjetja ali tvoje ime', 'Company name or your name')} onKeyDown={e => { if (e.key === 'Enter') zapri(); }} />
               <IzbirnikDrzave id="cw-moja-drzava" ariaLabel="Država" placeholder={L('Država (npr. Slovenija)', 'Country (e.g. Slovenia)')}
-                moznosti={DRZAVE.map(d => d.ime)}
+                moznosti={DRZAVE.map(d => locale === 'en' ? d.imeEn : d.ime)}
                 value={custDrzavaMoj}
                 onChange={v => { setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) { setMojTrg(t); setTrgNarocnika(t); } }} />
               <button type="button" className="gumb" onClick={zapri}>{L('Shrani', 'Save')}</button>
@@ -7357,7 +7357,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <div className="polje">
                     <label htmlFor="mp-drzava">{L('Država', 'Country')} <span className="vec">{L('določi privzet trg / raven cen', 'sets the default market / price level')}</span></label>
                     <IzbirnikDrzave id="mp-drzava" placeholder={L('npr. Slovenija', 'e.g. Slovenia')}
-                      moznosti={DRZAVE.map(d => d.ime)}
+                      moznosti={DRZAVE.map(d => locale === 'en' ? d.imeEn : d.ime)}
                       value={custDrzavaMoj}
                       onChange={v => { setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }} />
                   </div>
@@ -7734,7 +7734,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <div className="uv-polje uv-polje-siroko">
                     <label htmlFor="uv-pdrzava">{L('Država', 'Country')} <span className="uv-neobvezno">{L('določi privzet trg / raven cen', 'sets the default market / price level')}</span></label>
                     <IzbirnikDrzave id="uv-pdrzava" placeholder={L('npr. Slovenija', 'e.g. Slovenia')}
-                      moznosti={DRZAVE.map(d => d.ime)}
+                      moznosti={DRZAVE.map(d => locale === 'en' ? d.imeEn : d.ime)}
                       value={custDrzavaMoj}
                       onChange={v => { setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }} />
                   </div>
@@ -8421,7 +8421,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <div className="polje">
                   <label htmlFor="cw-narocnik-drzava">{L('Država', 'Country')} <span className="vec">{L('določi trg za ceno', 'sets the market for pricing')}</span></label>
                   <IzbirnikDrzave id="cw-narocnik-drzava" placeholder={L('npr. Slovenija', 'e.g. Slovenia')}
-                    moznosti={DRZAVE.map(d => d.ime)}
+                    moznosti={DRZAVE.map(d => locale === 'en' ? d.imeEn : d.ime)}
                     value={custDrzavaNarocnik}
                     onChange={v => {
                       setCustDrzavaNarocnik(v);
