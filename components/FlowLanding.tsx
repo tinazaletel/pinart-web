@@ -95,7 +95,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     const update = () => {
       raf = 0;
       const vw = window.innerWidth, vh = window.innerHeight, y = window.scrollY;
-      if (vw < 720) { fly.style.opacity = '0'; return; }
+      /* kepa je vezana na desktop ilustracijo .fl-video, ki se skrije pri <=820px
+         (hero preide v mobilno postavitev); pod tem pragom skrijemo tudi kepo,
+         sicer lebdi brez mize (rect .fl-video = 0). Prag USKLAJEN z .fl-video. */
+      if (vw <= 820) { fly.style.opacity = '0'; return; }
       const docH = document.documentElement.scrollHeight;
       const frac = Math.min(1, Math.max(0, y / (docH - vh)));
       // trajektorija: kepa pade z mize (hero) -> zraste -> plava po desni -> pade v kos
@@ -798,7 +801,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* leteci papirnati objekt — potuje po strani, se preliva, pade v kos (pozicija/prelivanje iz JS) */
         .fl-fly { position: fixed; left: 0; top: 0; width: clamp(8rem, 11vw, 13rem); aspect-ratio: 1; z-index: 20; pointer-events: none; opacity: 0; will-change: transform, opacity; }
         .fl-fly img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; filter: drop-shadow(0 14px 22px rgba(40,25,60,.22)); }
-        @media (max-width: 720px) { .fl-fly { display: none; } }
+        @media (max-width: 820px) { .fl-fly { display: none; } }
         /* mehki reveal sekcij ob drsanju (razred doda JS; reduce-motion = brez) */
         .fl-reveal { opacity: 0; transform: translateY(26px); transition: opacity .85s cubic-bezier(.22,1,.36,1), transform .85s cubic-bezier(.22,1,.36,1); }
         .fl-reveal.fl-in { opacity: 1; transform: none; }
