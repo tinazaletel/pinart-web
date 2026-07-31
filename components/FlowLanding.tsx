@@ -83,6 +83,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
      in na koncu pade v kos (O nas). Cist scroll-driven (brez GSAP), Safari-varno; hidden na mob/reduce-motion. */
   const flyRef = useRef<HTMLDivElement>(null);
   const kosRef = useRef<HTMLImageElement>(null);
+  const heroVidMobRef = useRef<HTMLVideoElement>(null);
   const [flyMounted, setFlyMounted] = useState(false);
   useEffect(() => { setFlyMounted(true); }, []);
   useEffect(() => {
@@ -108,7 +109,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
          Deleža (0.50/0.47) sta ocena mesta papirja na mizi ob laptopu — po potrebi nastavi. */
       let deskX = vw * 0.74, deskY = vh * 0.6 - 80;   // rezerva, če okvira (še) ni
       const ilu = document.querySelector('.fl-video') as HTMLElement | null;
-      if (ilu) { const r = ilu.getBoundingClientRect(); deskX = r.left + r.width * 0.50; deskY = r.top + r.height * 0.47; }
+      if (ilu) { const r = ilu.getBoundingClientRect(); deskX = r.left + r.width * 0.50; deskY = r.top + r.height * 0.47 + 10; }  /* +10px: kepa naj LEŽI na mizi, ne lebdi nad njo */
       const bandX = vw * 0.82, bandY = vh * 0.42;
       const fallEnd = vh * 0.95;   // padec z mize se zgodi v prvem zaslonu (v pikslih, ne % strani)
       let x: number, ty: number, scale: number, op = 1;
@@ -156,6 +157,22 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, [flyMounted]);
+
+  /* Mobilni hero video (.fl-hero-vid-mob) se pri Safariju NE zažene sam: je pod
+     pregibom, iOS pa muted-autoplay dovoli šele, ko je v vidnem polju. Zato ga
+     predvajamo prek IntersectionObserverja (in ustavimo, ko odide — baterija). */
+  useEffect(() => {
+    const v = heroVidMobRef.current;
+    if (!v) return;
+    const io = new IntersectionObserver(entries => {
+      for (const e of entries) {
+        if (e.isIntersecting) { void v.play().catch(() => undefined); }
+        else v.pause();
+      }
+    }, { threshold: 0.15 });
+    io.observe(v);
+    return () => io.disconnect();
   }, [flyMounted]);
 
   const vrstaRef = useRef<HTMLDivElement>(null);
@@ -877,7 +894,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
           {/* Mobile: hero video kot cist blok POD gumbi (na desktopu skrit — tam je bg) */}
           <div className="fl-hero-vid-mob" aria-hidden>
-            <video autoPlay muted loop playsInline preload="metadata">
+            <video ref={heroVidMobRef} autoPlay muted loop playsInline preload="auto">
               <source src="/flow/hero.mp4" type="video/mp4" />
             </video>
           </div>
