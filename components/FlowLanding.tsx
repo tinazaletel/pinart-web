@@ -22,7 +22,7 @@ import RotatingLaptop from '@/components/RotatingLaptop';
 /* Hero naslov se vrti med 3 sporocili (ljudje ne skrolajo — naslov naj pove vec).
    Vsaka razlicica ohrani per-word "flWordUp" animacijo ob menjavi (key={heroIdx}). */
 const HERO_NASLOVI: { pre: string[]; em: string[] }[] = [
-  { pre: ['Od', 'ponudbe', 'do', 'plačanega', 'računa'], em: ['–', 'z', 'AI', 'asistentko.'] },
+  { pre: ['Od', 'ponudbe', 'do', 'računa'], em: ['–', 'z', 'AI', 'asistentko.'] },
   { pre: ['Vse', 'tvoje', 'poslovanje'], em: ['na', 'enem', 'mestu.'] },
   { pre: ['AI,', 'ki', 'pozna', 'trg', 'in'], em: ['ceno', 'tvojega', 'dela.'] },
 ];
@@ -389,7 +389,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { Ikona: SquaresFour, ime: 'En program namesto štirih', opis: 'Vse-v-enem SaaS: ponudbe, pogodbe, računi, CRM, projekti in naloge na enem mestu. Konec skakanja med štirimi programi.' },
     { Ikona: FolderOpen, ime: 'Cel projekt na enem mestu', opis: 'Vsak projekt z dokumenti, roki in vso komunikacijo — pregledno, veliko bolje kot razmetani Gmail.' },
     { Ikona: ListChecks, ime: 'Naloge, ki se uredijo same', opis: 'Task manager drži projekt v teku. Poveš Pupi želje, ona jih razdeli v naloge.' },
-    { Ikona: Receipt, ime: 'Od ponudbe do plačila', opis: 'Ponudba, pogodba, račun in stroški tečejo iz istih podatkov — brez podvajanja in prepisovanja.' },
+    { Ikona: Receipt, ime: 'Od ponudbe do računa', opis: 'Ponudba, pogodba, račun in stroški tečejo iz istih podatkov — brez podvajanja in prepisovanja.' },
     { Ikona: Megaphone, ime: 'Tudi marketing', opis: 'Objave in kampanje načrtuješ ob projektih — marketing je del istega mesta.' },
     { Ikona: ShieldCheck, ime: 'Varno oblačno shranjevanje', opis: 'Podatki v oblaku (EU) — dostop imaš samo ti. Ne prodamo in ne delimo; cene se združijo anonimno, nikoli ime.' },
     { Ikona: Handshake, ime: 'Raste s tabo', opis: 'Začneš sam(a); ko studio zraste, povabiš sodelavca ali stranko na projekt — z dostopom samo do potrebnega.' },
