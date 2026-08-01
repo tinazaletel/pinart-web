@@ -907,22 +907,24 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 </div>
               </div>
             )}
-            <div className="pw-posta-mape" style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '.35rem', flexWrap: 'wrap', margin: '.75rem 0 0' }}>
+            <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '1rem', alignItems: 'flex-start', margin: '.75rem 0 0' }}>
+              <div className="pw-posta-mape" style={{ flex: 'none', width: 138, display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
               {([{ id: 'prejeto', ime: 'Prejeto', Ikona: Tray }, { id: 'poslano', ime: 'Poslano', Ikona: PaperPlaneTilt }, { id: 'osnutki', ime: 'Osnutki', Ikona: NotePencil }, { id: 'kos', ime: 'Koš', Ikona: Trash }] as const).map(({ id, ime, Ikona }) => {
                 const st = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === id).length;
                 const on = mapa === id;
-                return <button key={id} type="button" onClick={() => { setMapa(id); setBeriMail(null); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', border: `1px solid ${on ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: on ? 'var(--ink)' : 'transparent', color: on ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer' }}><Ikona size={13} weight="bold" />{ime}{st ? ` · ${st}` : ''}</button>;
+                return <button key={id} type="button" onClick={() => { setMapa(id); setBeriMail(null); }} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', width: '100%', textAlign: 'left', border: 'none', background: on ? 'color-mix(in oklch, var(--ink) 9%, transparent)' : 'transparent', color: 'var(--ink)', borderRadius: '.6rem', padding: '.5rem .7rem', font: `${on ? 700 : 500} .78rem var(--font-sans), sans-serif`, cursor: 'pointer' }}><Ikona size={16} weight={on ? 'fill' : 'regular'} /><span style={{ flex: 1 }}>{ime}</span>{st ? <span style={{ fontWeight: 700, opacity: .55 }}>{st}</span> : null}</button>;
               })}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
               {(() => {
                 const osebe = Array.from(new Set(posta.flatMap(v => v.prejemniki).filter(Boolean)));
                 return osebe.length > 1 ? (
-                  <select value={postaOseba} onChange={e => setPostaOseba(e.target.value)} aria-label="Filter po prejemniku" style={{ marginLeft: 'auto', border: `1px solid ${postaOseba ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: postaOseba ? 'var(--ink)' : 'transparent', color: postaOseba ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer', maxWidth: '55%' }}>
+                  <select value={postaOseba} onChange={e => setPostaOseba(e.target.value)} aria-label="Filter po prejemniku" style={{ display: 'block', margin: '0 0 .5rem auto', border: `1px solid ${postaOseba ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: postaOseba ? 'var(--ink)' : 'transparent', color: postaOseba ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer', maxWidth: '70%' }}>
                     <option value="" style={{ color: 'var(--ink)', background: 'var(--paper)' }}>Vsi prejemniki</option>
                     {osebe.map(o => <option key={o} value={o} style={{ color: 'var(--ink)', background: 'var(--paper)' }}>{o}</option>)}
                   </select>
                 ) : null;
               })()}
-            </div>
             {!beriMail && posta.length > 0 && (
               <div style={{ position: 'relative', zIndex: 1, margin: '.55rem 0 0' }}>
                 <MagnifyingGlass size={15} weight="bold" style={{ position: 'absolute', left: '.65rem', top: '50%', transform: 'translateY(-50%)', color: 'color-mix(in oklch, var(--ink) 45%, transparent)', pointerEvents: 'none' }} />
@@ -967,6 +969,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 <p className="pw-posta-prazno">{mapa === 'prejeto' ? 'Še ni prejete pošte — prižge se, ko aktiviramo dohodno pošto.' : mapa === 'osnutki' ? 'Ni osnutkov.' : mapa === 'kos' ? 'Koš je prazen.' : 'Še ni poslane pošte. Klikni Nova pošta in piši stranki.'}</p>
               );
             })()}
+              </div>
+            </div>
           </article>
           <Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-karta pw-dnevnik-link">
             <p className={styles.eyebrow}>07 · CRM DNEVNIK</p>
