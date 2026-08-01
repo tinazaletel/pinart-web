@@ -309,11 +309,11 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       p: 'Anonimen tržni pregled pokaže, kje je tvoja cena — bližje dnu ali vrhu. Nadzorna plošča spremlja promet, plačila in dobiček.',
       tocke: ['Tržni benchmark iz vpisanih cen', 'Promet, plačila in ocenjeni dobiček', 'Cilji in donosnost strank'],
       cta: 'Odpri pregled', href: localePath(locale, '/kalkulator/pregled') },
-    { id: 'agent', Ikona: Robot, label: 'Agent', znacka: 'Beta', zvrst: 'beta',
-      h: 'Tvoj pomočnik za ponudbe',
-      p: 'Agent pomaga sestaviti ponudbo, predlaga pošteno ceno in pojasni avtorske pravice — zadnjo besedo imaš vedno ti.',
-      tocke: ['Predlaga ceno in obseg dela', 'Pojasni pravice po jurisdikciji', 'Ti potrdiš, agent pripravi'],
-      cta: 'Kmalu v beti', href: 'mailto:tina@pinart.si?subject=Flow%20Agent%20beta' },
+    { id: 'agent', Ikona: Robot, label: 'Pupa', znacka: 'Novo', zvrst: 'beta',
+      h: 'AI asistentka, ki pozna trg in ceno',
+      p: 'Pupa je tvoja AI asistentka: pozna trg in avtorske pravice, pove ti pošteno ceno, ubesedi ponudbo in odgovori na tvoja vprašanja — pisno ali glasovno.',
+      tocke: ['Pove pošteno ceno in te opozori na podcenjevanje', 'Pozna avtorske pravice in licence', 'Klepet in glasovno upravljanje'],
+      cta: 'Spoznaj Pupo', href: prijava },
     { id: 'mcpapi', Ikona: Plugs, label: 'MCP & API', znacka: 'Kmalu', zvrst: 'soon',
       h: 'Poveži Flow s svojimi orodji',
       p: 'Prek MCP in API bo Flow dostopen iz tvojega AI pomočnika, urejevalnika ali računovodstva. V pripravi.',
@@ -1057,8 +1057,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
           <div className="fl-bento-mreza">
             <div className="fl-bkarta a">
-              <h3>En program namesto treh</h3>
-              <p>Ponudbe, pogodbe, računi, stroški, ceniki — vse tukaj. Nič več skakanja med Excelom, Canvo in Gmailom.</p>
+              <h3>En program namesto štirih</h3>
+              <p>Ponudbe, pogodbe, računi, stroški, ceniki in naloge — vse tukaj. Nič več skakanja med Excelom, Canvo, Gmailom in koledarjem.</p>
               <div className="fl-bthumbs" aria-hidden>
                 <span><i className="fl-th-card"><b /><b /><b /><em>1.850 €</em></i></span>
                 <span><i className="fl-th-calc"><i className="v" /><i className="m" /><i className="p" /></i></span>
@@ -1075,7 +1075,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             </div>
             <div className="fl-bkarta c">
               <h3>Vsaka stranka na enem mestu</h3>
-              <p>Projekti, dokumenti in kmalu maili — povezani s stranko. Ne razmetano po Gmailu.</p>
+              <p>Projekti, dokumenti in vsa komunikacija — povezani s stranko. Ne razmetano po Gmailu.</p>
               <div className="fl-bavatars" aria-hidden><span>MA</span><span>RK</span><span>LJ</span><span>+</span></div>
             </div>
             <div className="fl-bkarta d">
