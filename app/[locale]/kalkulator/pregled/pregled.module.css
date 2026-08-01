@@ -71,7 +71,7 @@
 /* nav zavzame preostalo višino in DRSI (kot Vercel) -> profil na dnu ostane pribit,
    meni pa lahko raste brez "popačenja". min-height:0 je nujen, da flex otrok sme
    skrčiti pod vsebino in sprožiti drsenje. Tanek, nevpadljiv drsnik. */
-.nav { display: grid; gap: .1rem; margin-top: 1.1rem; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.nav { display: grid; gap: .1rem; margin-top: .4rem; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
 .nav::-webkit-scrollbar { width: 6px; }
 .nav::-webkit-scrollbar-thumb { background: color-mix(in oklch, var(--ink) 14%, transparent); border-radius: 999px; }
 .nav::-webkit-scrollbar-track { background: transparent; }
@@ -98,7 +98,7 @@
 .toolsMenuList > a { display: grid; grid-template-columns: 1.8rem 1fr; gap: 0; align-items: center; min-height: 2.5rem; box-sizing: border-box; padding: .55rem .6rem !important; border-radius: .6rem; color: color-mix(in oklch, var(--ink) 67%, transparent); font-size: .8125rem; font-weight: 650; line-height: 1.25; text-decoration: none; }
 .toolsMenuList > a:hover, .toolsMenuList > .active { color: var(--ink); background: oklch(93% .028 87); }
 .toolsMenuList > a span { font-size: .6875rem; opacity: .55; }
-.subnav { display: grid; gap: .2rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.subnav { display: grid; gap: .2rem; margin-top: .75rem; padding-top: .7rem; border-top: 1px solid var(--line); }
 .subnav > p { margin: 0 0 .35rem .8rem; color: color-mix(in oklch, var(--ink) 85%, transparent); font-size: .48rem; font-weight: 850; letter-spacing: .14em; }
 .subnav .navItem { padding-block: .58rem; font-size: .69rem; }
 .subnav .navItem span { font-size: .52rem; }
