@@ -76,7 +76,7 @@
 .nav::-webkit-scrollbar-thumb { background: color-mix(in oklch, var(--ink) 14%, transparent); border-radius: 999px; }
 .nav::-webkit-scrollbar-track { background: transparent; }
 /* 85% ink = 5.0:1 na paper -> prestane WCAG AA (4.5:1). 65% je dalo 2.58:1. */
-.navItem { display: flex; gap: .7rem; align-items: center; padding: .5rem .8rem; border-radius: .7rem; color: color-mix(in oklch, var(--ink) 85%, transparent); font-size: .82rem; font-weight: 700; text-decoration: none; transition: color 180ms ease, background 180ms ease; }
+.navItem { display: flex; gap: .7rem; align-items: center; padding: .38rem .8rem; border-radius: .7rem; color: color-mix(in oklch, var(--ink) 85%, transparent); font-size: .82rem; font-weight: 700; text-decoration: none; transition: color 180ms ease, background 180ms ease; }
 .navItem span { font-size: .62rem; letter-spacing: .08em; opacity: .6; }
 .navItem:hover { color: var(--ink); background: oklch(93% .028 87); }
 /* aktivna postavka: brez crte in BREZ ozadja. Loci jo samo polni ink napis.
@@ -148,8 +148,8 @@
 /* Naslov skupine v meniju (Delo / Podatki / Nacrt / Drugo) */
 /* 85% ink (5:1) — 45% je dalo 1.73:1, pade pod WCAG. Hierarhijo ohranijo manjsa
    crka, uppercase in razmik crk, ne vec svetlejsa barva. */
-.navGroup { margin: .75rem 0 .2rem; padding-left: .1rem; color: color-mix(in oklch, var(--ink) 85%, transparent); font-size: .58rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
-.navGroup:first-child { margin-top: .5rem; }
+.navGroup { margin: .5rem 0 .15rem; padding-left: .1rem; color: color-mix(in oklch, var(--ink) 85%, transparent); font-size: .58rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.navGroup:first-child { margin-top: .35rem; }
 
 /* Uporabniski meni na dnu stranske vrstice (cip = gumb, meni se odpre NAVZGOR) */
 .userMenuWrap { position: relative; margin-top: auto; }
