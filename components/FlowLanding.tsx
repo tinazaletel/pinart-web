@@ -1174,8 +1174,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                   <strong>{letno ? c.cena : ((c as { cenaMes?: string }).cenaMes ?? c.cena)}</strong><span>{c.enota}</span>
                   {'redna' in c && <s className="fl-plan-redna">{(c as { redna?: string }).redna} €</s>}
                 </div>
-                {'cenaMes' in c && <p style={{ margin: '.15rem 0 0', fontSize: '.72rem', color: 'rgba(17,17,17,.55)' }}>{letno ? 'obračunano letno' : 'mesečno, odpoveš kadarkoli'}</p>}
-                {'ustanovna' in c && <p className="fl-plan-ustanovna">{(c as { ustanovna?: string }).ustanovna}</p>}
+                {'cenaMes' in c && <p style={{ margin: '.1rem 0 .5rem', fontSize: '.72rem', color: 'rgba(17,17,17,.55)' }}>{letno ? 'obračunano letno' : 'mesečno, odpoveš kadarkoli'}</p>}
+                {'ustanovna' in c && <p className="fl-plan-ustanovna" style={{ marginTop: 0 }}>{(c as { ustanovna?: string }).ustanovna}</p>}
                 {c.kmalu
                   ? <span className="fl-plan-cta cakalna" aria-disabled="true">{c.cta}</span>
                   : <a className={`fl-plan-cta${c.izpost ? ' polni' : ''}`} href={c.href}>{c.cta}</a>}
