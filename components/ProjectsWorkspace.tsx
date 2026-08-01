@@ -518,6 +518,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
      ni prazen; sicer beremo dejansko shranjeno pošto projekta. */
   const [posta, setPosta] = useState<PostaVnos[]>([]);
   const [mapa, setMapa] = useState<'prejeto' | 'poslano' | 'osnutki' | 'kos'>('poslano');
+  const [beriMail, setBeriMail] = useState<PostaVnos | null>(null);
   /* »Nova pošta« — sestavljalnik neposredno v projektu (brez dokumenta). Pošlje
      prek Resend, zabeleži lokalno (postaDnevnik) + v oblak (pushProjectMail). */
   const [pisiOdprt, setPisiOdprt] = useState(false);
@@ -897,28 +898,38 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             )}
             <div className="pw-posta-mape" style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '.35rem', flexWrap: 'wrap', margin: '.75rem 0 0' }}>
               {([{ id: 'prejeto', ime: 'Prejeto', Ikona: Tray }, { id: 'poslano', ime: 'Poslano', Ikona: PaperPlaneTilt }, { id: 'osnutki', ime: 'Osnutki', Ikona: NotePencil }, { id: 'kos', ime: 'Koš', Ikona: Trash }] as const).map(({ id, ime, Ikona }) => {
-                const st = posta.filter(v => id === 'poslano' ? v.smer === 'poslano' : id === 'prejeto' ? v.smer === 'prejeto' : false).length;
+                const st = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === id).length;
                 const on = mapa === id;
-                return <button key={id} type="button" onClick={() => setMapa(id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', border: `1px solid ${on ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: on ? 'var(--ink)' : 'transparent', color: on ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer' }}><Ikona size={13} weight="bold" />{ime}{st ? ` · ${st}` : ''}</button>;
+                return <button key={id} type="button" onClick={() => { setMapa(id); setBeriMail(null); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', border: `1px solid ${on ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: on ? 'var(--ink)' : 'transparent', color: on ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer' }}><Ikona size={13} weight="bold" />{ime}{st ? ` · ${st}` : ''}</button>;
               })}
             </div>
-            {(() => {
-              if (mapa === 'osnutki' || mapa === 'kos') return <p className="pw-posta-prazno">{mapa === 'osnutki' ? 'Osnutki' : 'Koš'} se poveže z oblačno pošto — naslednji korak.</p>;
-              const seznam = posta.filter(v => mapa === 'poslano' ? v.smer === 'poslano' : v.smer === 'prejeto');
+            {beriMail ? (
+              <div style={{ position: 'relative', zIndex: 1, margin: '.75rem 0 0', padding: '.9rem', border: '1px solid color-mix(in oklch, var(--ink) 10%, transparent)', borderRadius: '.85rem', background: 'oklch(100% 0 0 / .72)' }}>
+                <button type="button" onClick={() => setBeriMail(null)} style={{ border: 0, background: 'none', color: 'var(--ink)', font: '700 .7rem var(--font-sans), sans-serif', cursor: 'pointer', padding: 0, marginBottom: '.5rem' }}>← Nazaj na seznam</button>
+                <b style={{ display: 'block', fontSize: '.92rem' }}>{beriMail.zadeva || '(brez zadeve)'}</b>
+                <small style={{ display: 'block', color: 'var(--muted)', margin: '.15rem 0 .7rem' }}>{beriMail.prejemniki.join(', ')} · {datStr(beriMail.datum)}</small>
+                {beriMail.telo
+                  ? (beriMail.smer === 'prejeto'
+                      ? <div style={{ whiteSpace: 'pre-wrap', fontSize: '.85rem', lineHeight: 1.55 }}>{beriMail.telo.replace(/<[^>]+>/g, ' ')}</div>
+                      : <div style={{ fontSize: '.85rem', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: beriMail.telo }} />)
+                  : <p style={{ color: 'var(--muted)', fontSize: '.82rem' }}>To sporočilo nima shranjenega besedila (starejši/lokalni zapis).</p>}
+              </div>
+            ) : (() => {
+              const seznam = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa);
               return seznam.length ? (
                 <ul className="pw-posta-seznam">
                   {seznam.map(vnos => (
-                    <li key={vnos.id}>
+                    <li key={vnos.id} onClick={() => setBeriMail(vnos)} style={{ cursor: 'pointer' }}>
                       <div className="pw-posta-vrh">
                         <b>{vnos.zadeva}</b>
-                        <span className="pw-posta-smer">{vnos.smer === 'poslano' ? 'Poslano' : 'Prejeto'}</span>
+                        <span className="pw-posta-smer">{vnos.izbrisano ? 'Koš' : vnos.osnutek ? 'Osnutek' : vnos.smer === 'poslano' ? 'Poslano' : 'Prejeto'}</span>
                       </div>
                       <small className="pw-posta-meta">{vnos.prejemniki.join(', ')} · {datStr(vnos.datum)}</small>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="pw-posta-prazno">{mapa === 'prejeto' ? 'Še ni prejete pošte — Prejeto se prižge, ko aktiviramo dohodno pošto.' : 'Še ni poslane pošte. Klikni Nova pošta in piši stranki.'}</p>
+                <p className="pw-posta-prazno">{mapa === 'prejeto' ? 'Še ni prejete pošte — prižge se, ko aktiviramo dohodno pošto.' : mapa === 'osnutki' ? 'Ni osnutkov.' : mapa === 'kos' ? 'Koš je prazen.' : 'Še ni poslane pošte. Klikni Nova pošta in piši stranki.'}</p>
               );
             })()}
           </article>
