@@ -22,7 +22,7 @@ import RotatingLaptop from '@/components/RotatingLaptop';
 /* Hero naslov se vrti med 3 sporocili (ljudje ne skrolajo — naslov naj pove vec).
    Vsaka razlicica ohrani per-word "flWordUp" animacijo ob menjavi (key={heroIdx}). */
 const HERO_NASLOVI: { pre: string[]; em: string[] }[] = [
-  { pre: ['Od', 'ponudbe', 'do', 'plačanega', 'računa —'], em: ['z', 'AI', 'asistentko.'] },
+  { pre: ['Od', 'ponudbe', 'do', 'plačanega', 'računa'], em: ['–', 'z', 'AI', 'asistentko.'] },
   { pre: ['Vse', 'tvoje', 'poslovanje'], em: ['na', 'enem', 'mestu.'] },
   { pre: ['AI,', 'ki', 'pozna', 'trg', 'in'], em: ['ceno', 'tvojega', 'dela.'] },
 ];
