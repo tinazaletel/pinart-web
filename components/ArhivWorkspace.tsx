@@ -318,7 +318,10 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       statusVrednost: placano,
       onStatus: v => setPlacano(v as 'vse' | 'placano' | 'odprto'),
       statusOpcije: [{ vrednost: 'vse', oznaka: 'Vsi' }, { vrednost: 'placano', oznaka: 'Plačani' }, { vrednost: 'odprto', oznaka: 'Odprti' }],
-      akcija: <Link className="af-akcija-gumb" href={`${base}/kalkulator/racuni`}>+ Nov račun</Link>,
+      akcija: <>
+        <Link className="af-akcija-gumb" href={`${base}/kalkulator/racunovodstvo`}>Izvoz za računovodstvo</Link>
+        <Link className="af-akcija-gumb" href={`${base}/kalkulator/racuni`}>+ Nov račun</Link>
+      </>,
     } : null;
 
   return (
