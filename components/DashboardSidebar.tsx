@@ -54,11 +54,12 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
     </MeniSkupina>
     {/* Arhiv (prej "Zgodovina") = kjer NAJDEŠ shranjeno; sodi pod Podatki, ne Drugo.
         Delo = ustvarjaš, Podatki = iščeš. */}
-    <MeniSkupina naslov="Podatki" aktivna={active === 'clients' || active === 'prices' || active === 'expenses' || active === 'projects'}>
+    <MeniSkupina naslov="Podatki" aktivna={active === 'clients' || active === 'prices' || active === 'expenses' || active === 'projects' || active === 'accounting'}>
       {item('clients', `${base}/kalkulator/stranke`, '01', 'Stranke', 'stranke')}
       {item('prices', `${base}/kalkulator/ceniki`, '02', 'Moji ceniki', 'ceniki')}
       {item('expenses', `${base}/kalkulator/stroski`, '03', 'Stroški', 'stroski', 'expenses')}
       {item('projects', `${base}/kalkulator/projekti`, '04', 'Projekti & arhiv', 'zgodovina')}
+      {item('accounting', `${base}/kalkulator/racunovodstvo`, '05', 'Računovodstvo', 'racunovodstvo')}
     </MeniSkupina>
     <MeniSkupina naslov="Načrt" aktivna={active === 'goals' || active === 'time' || active === 'plan' || active === 'naloge' || active === 'ideje' || active === 'koledar'}>
       {item('goals', `${base}/kalkulator/cilji`, '01', 'Cilji', 'cilji', 'businessInsights')}
