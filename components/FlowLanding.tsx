@@ -4,7 +4,7 @@ import {
   FileText, Handshake, Scroll, Receipt, Wallet, Tag, Clock,
   Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, CaretLeft, CaretRight,
   ShieldCheck, Scales, ChatCircle, Sparkle, Plus, ChartLineUp, Robot, Plugs,
-  CalendarBlank, ListChecks, FolderOpen,
+  CalendarBlank, ListChecks, FolderOpen, Megaphone,
 } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -383,13 +383,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   };
 
   const FUNKCIJE = [
-    { Ikona: ChartLineUp, ime: 'Veš, koliko si vreden', opis: 'Anonimen tržni pregled ti pokaže, kje je tvoja cena — bližje dnu ali vrhu — da se ne podcenjuješ.' },
-    { Ikona: Scales, ime: 'Avtorske pravice vračunane', opis: 'Cena vsakič razbije izvedbo, pravice in licenco — da dela ne prodaš pod ceno.' },
-    { Ikona: ShieldCheck, ime: 'Varno in zasebno', opis: 'Podatki varno v oblaku (EU) — dostop imaš samo ti. Dokumentov in strank ne prodamo in ne delimo; cene se združijo anonimno, nikoli ime.' },
-    { Ikona: Handshake, ime: 'Raste s tabo', opis: 'Začneš sam(a); ko studio zraste, povabiš sodelavca ali stranko na projekt — z dostopom samo do tega, kar potrebuje.' },
-    { Ikona: Receipt, ime: 'Od ponudbe do računa', opis: 'Ponudba, pogodba, račun in stroški tečejo iz istih podatkov, brez podvajanja.' },
-    { Ikona: SquaresFour, ime: 'Brez Excela in map', opis: 'Eno mirno mesto namesto dokumentov, razmetanih po računalniku.' },
-    { Ikona: ChatCircle, ime: 'Osebna podpora', opis: 'Pišeš neposredno Tini. Pravi človek, ne oddelek.' },
+    { Ikona: Robot, ime: 'AI, ki pozna trg in ceno', opis: 'AI asistentka Pupa pozna trg in avtorske pravice: pove ti pošteno ceno in te opozori, če se podcenjuješ.' },
+    { Ikona: SquaresFour, ime: 'En program namesto štirih', opis: 'Ponudbe, pogodbe, računi, projekti in naloge — vse na enem mestu. Konec skakanja med štirimi programi.' },
+    { Ikona: FolderOpen, ime: 'Cel projekt na enem mestu', opis: 'Vsak projekt z dokumenti, roki in vso komunikacijo — pregledno, veliko bolje kot razmetani Gmail.' },
+    { Ikona: ListChecks, ime: 'Naloge, ki se uredijo same', opis: 'Task manager drži projekt v teku. Poveš Pupi želje, ona jih razdeli v naloge.' },
+    { Ikona: Receipt, ime: 'Od ponudbe do plačila', opis: 'Ponudba, pogodba, račun in stroški tečejo iz istih podatkov — brez podvajanja in prepisovanja.' },
+    { Ikona: Megaphone, ime: 'Tudi marketing', opis: 'Objave in kampanje načrtuješ ob projektih — marketing je del istega mesta.' },
+    { Ikona: ShieldCheck, ime: 'Varno in zasebno', opis: 'Podatki varno v oblaku (EU) — dostop imaš samo ti. Ne prodamo in ne delimo; cene se združijo anonimno, nikoli ime.' },
+    { Ikona: Handshake, ime: 'Raste s tabo', opis: 'Začneš sam(a); ko studio zraste, povabiš sodelavca ali stranko na projekt — z dostopom samo do potrebnega.' },
     { Ikona: Sparkle, ime: 'Prvi mesec brezplačno', opis: 'Celo platformo preizkusiš mesec dni brez kartice. Kalkulator poštenih cen ostane brezplačen za vedno.' },
   ];
 
