@@ -34,7 +34,8 @@ const PRAZEN = {
   naslov: '',
   vrsta: 'email' as MarketingVrsta,
   status: 'osnutek' as MarketingStatus,
-  datum: '',
+  datumOd: '',
+  datumDo: '',
   opis: '',
 };
 
@@ -50,6 +51,16 @@ const oznakeStatusa: Record<MarketingStatus, string> = {
   aktivno: 'Aktivno',
   zakljuceno: 'Zaključeno',
 };
+
+function formatirajRazpon(kampanja: MarketingKampanja) {
+  const od = kampanja.datumOd || kampanja.datum;
+  const doDatuma = kampanja.datumDo || kampanja.datum;
+  const formatiraj = (datum: string) => new Date(`${datum}T12:00:00`).toLocaleDateString('sl-SI');
+
+  if (!od && !doDatuma) return 'Brez obdobja';
+  if (od && doDatuma && od !== doDatuma) return `${formatiraj(od)}–${formatiraj(doDatuma)}`;
+  return formatiraj(od || doDatuma!);
+}
 
 function IkonaVrste({ vrsta, size = 20 }: { vrsta: MarketingVrsta; size?: number }) {
   if (vrsta === 'email') return <EnvelopeSimple size={size} aria-hidden="true" />;
@@ -96,7 +107,8 @@ export default function MarketingWorkspace({ base }: { base: string }) {
       naslov: kampanja.naslov,
       vrsta: kampanja.vrsta,
       status: kampanja.status,
-      datum: kampanja.datum || '',
+      datumOd: kampanja.datumOd || kampanja.datum || '',
+      datumDo: kampanja.datumDo || kampanja.datum || '',
       opis: kampanja.opis || '',
     });
     setObrazecOdprt(true);
@@ -145,7 +157,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
                 <strong>{kampanja.naslov}</strong>
                 <small>{oznakeVrste[kampanja.vrsta]}{kampanja.opis ? ` · ${kampanja.opis}` : ''}</small>
               </span>
-              <time className={styles.campaignDate} dateTime={kampanja.datum}>{kampanja.datum ? new Date(`${kampanja.datum}T12:00:00`).toLocaleDateString('sl-SI') : 'Brez datuma'}</time>
+              <span className={styles.campaignDate}>{formatirajRazpon(kampanja)}</span>
               <span className={styles.status} data-status={kampanja.status}>{oznakeStatusa[kampanja.status]}</span>
               <span className={styles.rowActions}>
                 <button className={styles.iconButton} type="button" onClick={() => uredi(kampanja)} aria-label={`Uredi ${kampanja.naslov}`}><PencilSimple size={19} /></button>
@@ -235,7 +247,8 @@ export default function MarketingWorkspace({ base }: { base: string }) {
               <label>Ime kampanje<input required value={obrazec.naslov} onChange={(e) => setObrazec({ ...obrazec, naslov: e.target.value })} placeholder="Npr. Jesenska predstavitev storitve" autoFocus /></label>
               <label>Vrsta<select value={obrazec.vrsta} onChange={(e) => setObrazec({ ...obrazec, vrsta: e.target.value as MarketingVrsta })}><option value="email">E-pošta</option><option value="vprasalnik">Spletni vprašalnik</option><option value="social">Družbena omrežja</option></select></label>
               <label>Status<select value={obrazec.status} onChange={(e) => setObrazec({ ...obrazec, status: e.target.value as MarketingStatus })}><option value="osnutek">Osnutek</option><option value="nacrtovano">Načrtovano</option><option value="aktivno">Aktivno</option><option value="zakljuceno">Zaključeno</option></select></label>
-              <label>Datum<input type="date" value={obrazec.datum} onChange={(e) => setObrazec({ ...obrazec, datum: e.target.value })} /></label>
+              <label>Začetek<input type="date" value={obrazec.datumOd} max={obrazec.datumDo || undefined} onChange={(e) => setObrazec({ ...obrazec, datumOd: e.target.value })} /></label>
+              <label>Konec<input type="date" value={obrazec.datumDo} min={obrazec.datumOd || undefined} onChange={(e) => setObrazec({ ...obrazec, datumDo: e.target.value })} /></label>
               <label>Kratek opis<textarea value={obrazec.opis} onChange={(e) => setObrazec({ ...obrazec, opis: e.target.value })} placeholder="Kaj želiš doseči in komu govoriš?" /></label>
               <div className={styles.formActions}><button className={styles.quietButton} type="button" onClick={() => setObrazecOdprt(false)}>Prekliči</button><button className={styles.primary} type="submit">Shrani kampanjo</button></div>
             </form>

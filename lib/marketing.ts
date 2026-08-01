@@ -6,6 +6,9 @@ export type MarketingKampanja = {
   naslov: string;
   vrsta: MarketingVrsta;
   status: MarketingStatus;
+  datumOd?: string;
+  datumDo?: string;
+  /** Stare kampanje pred uvedbo datumskega razpona. */
   datum?: string;
   opis?: string;
   ustvarjeno: string;
@@ -61,7 +64,7 @@ export function shraniMarketingKampanje(kampanje: MarketingKampanja[]) {
 }
 
 export function novaMarketingKampanja(
-  vrednosti: Pick<MarketingKampanja, 'naslov' | 'vrsta' | 'status' | 'datum' | 'opis'>,
+  vrednosti: Pick<MarketingKampanja, 'naslov' | 'vrsta' | 'status' | 'datumOd' | 'datumDo' | 'opis'>,
 ): MarketingKampanja {
   return {
     ...vrednosti,

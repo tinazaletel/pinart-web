@@ -57,7 +57,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ napaka: 'AI zaledje ni odgovorilo.', podrobnost: t.slice(0, 300) }, { status: 502 });
     }
     const data = await r.json();
-    const odgovor = (data?.content?.[0]?.text || '').trim() || 'Hmm, tokrat nimam pravega odgovora. Poskusi drugače vprašati.';
+    const besedilo = Array.isArray(data?.content)
+      ? data.content.filter((b: { type?: string; text?: string }) => b?.type === 'text' && typeof b.text === 'string').map((b: { text?: string }) => b.text).join('\n').trim()
+      : '';
+    if (!besedilo) console.error('PUPA prazen odgovor, raw:', JSON.stringify(data).slice(0, 900));
+    const odgovor = besedilo || 'Hmm, tokrat nimam pravega odgovora. Poskusi drugače vprašati.';
     return NextResponse.json({ odgovor });
   } catch {
     return NextResponse.json({ napaka: 'Napaka pri klicu AI zaledja.' }, { status: 500 });
