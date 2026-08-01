@@ -299,6 +299,14 @@ export async function getBusinessDocumentUrl(path: string, expiresIn = 60): Prom
   return data.signedUrl;
 }
 
+export async function deleteBusinessDocument(path: string): Promise<void> {
+  const context = await getOrganizationContext();
+  if (!context) throw new Error('Prijava je potekla.');
+  if (!path.startsWith(`${context.organizationId}/`)) throw new Error('Datoteka ne pripada aktivni organizaciji.');
+  const { error } = await createClient().storage.from('business-documents').remove([path]);
+  if (error) throw error;
+}
+
 export async function saveCloudSettings(settings: Partial<CloudSettings>): Promise<void> {
   const context = await getOrganizationContext();
   if (!context) return;

@@ -11,7 +11,7 @@ import { createPortal } from 'react-dom';
 import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } from '@/lib/pinartFlowStore';
-import { getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
+import { deleteBusinessDocument, getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo } from '@/lib/dokVidez';
 import PosljiBlok from '@/components/PosljiBlok';
@@ -112,6 +112,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const [priponkaFile, setPriponkaFile] = useState<File | null>(null);
   const [priponkaIme, setPriponkaIme] = useState('');
   const [priponkaPot, setPriponkaPot] = useState('');
+  const [priponkaZaBrisanje, setPriponkaZaBrisanje] = useState('');
   const priponkaRef = useRef<HTMLInputElement | null>(null);
 
   /* urejevalnik telesa dokumenta (kopija retainerjevega vzorca) */
@@ -502,12 +503,16 @@ export default function ContractWorkspace({ base }: { base: string }) {
      dejansko nalaganje v oblak zgodi ob shrani(), ko je znan id zapisa ── */
   const naloziPriponko = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]; if (!f) return;
+    if (priponkaPot) setPriponkaZaBrisanje(priponkaPot);
     setPriponkaFile(f);
     setPriponkaIme(f.name);
     setPriponkaPot('');
     e.target.value = '';
   };
-  const odstraniPriponko = () => { setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot(''); };
+  const odstraniPriponko = () => {
+    if (priponkaPot) setPriponkaZaBrisanje(priponkaPot);
+    setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot('');
+  };
   /* odpre naloženo priponko v novem zavihku — pot v shrambi je zasebna, zato
      tik pred odpiranjem zahtevamo kratkotrajno podpisano povezavo (kot AccountingWorkspace) */
   const odpriPriponko = async () => {
@@ -606,7 +611,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     if (editorRef.current) editorRef.current.innerHTML = html;
     setShranjenaId('');
     setKartaOdprta(false);
-    setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot('');
+    setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot(''); setPriponkaZaBrisanje('');
     setPogled('dokument');
   };
   const novaPogodba = () => {
@@ -614,7 +619,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     setTeloHtml(''); setRocnoTelo(false); setShranjenaId(''); setNapaka('');
     setVrstaPog('sodelovanje'); setIzklKlavzule(privzetoIzklop('sodelovanje')); setOdStranke(false); setVstopOdprt(false); setVstopIskanje('');
     setDatum(new Date().toISOString().slice(0, 10));
-    setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot('');
+    setPriponkaFile(null); setPriponkaIme(''); setPriponkaPot(''); setPriponkaZaBrisanje('');
     setPogled('nastavitve');
   };
 
@@ -651,10 +656,15 @@ export default function ContractWorkspace({ base }: { base: string }) {
     const next = obstojeca ? contracts.map(c => c.id === zapis.id ? { ...c, ...zapis } : c) : [zapis, ...contracts];
     setContracts(next);
     saveFlowCollection('contracts', next);
+    if (priponkaZaBrisanje && priponkaZaBrisanje !== filePath) {
+      try { await deleteBusinessDocument(priponkaZaBrisanje); }
+      catch { /* zapis je že pravilen; osirotelo datoteko lahko kasneje počisti oblak */ }
+    }
     setShranjenaId(zapis.id);
     setPriponkaFile(null);
     setPriponkaIme(fileName || '');
     setPriponkaPot(filePath || '');
+    setPriponkaZaBrisanje('');
     setNotice('Pogodba je shranjena in povezana s projektom.');
     /* po shranjevanju nazaj na prvo stran — nova pogodba je takoj vidna v arhivu
        (Tina: "naj se shrani in vrnem se na prvo stran") */
