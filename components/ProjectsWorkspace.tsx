@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { Plus, FolderOpen, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash } from '@phosphor-icons/react';
+import { Plus, FolderOpen, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash, MagnifyingGlass } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
@@ -912,21 +912,22 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 const on = mapa === id;
                 return <button key={id} type="button" onClick={() => { setMapa(id); setBeriMail(null); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', border: `1px solid ${on ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: on ? 'var(--ink)' : 'transparent', color: on ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer' }}><Ikona size={13} weight="bold" />{ime}{st ? ` · ${st}` : ''}</button>;
               })}
+              {(() => {
+                const osebe = Array.from(new Set(posta.flatMap(v => v.prejemniki).filter(Boolean)));
+                return osebe.length > 1 ? (
+                  <select value={postaOseba} onChange={e => setPostaOseba(e.target.value)} aria-label="Filter po prejemniku" style={{ marginLeft: 'auto', border: `1px solid ${postaOseba ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: postaOseba ? 'var(--ink)' : 'transparent', color: postaOseba ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer', maxWidth: '55%' }}>
+                    <option value="" style={{ color: 'var(--ink)', background: 'var(--paper)' }}>Vsi prejemniki</option>
+                    {osebe.map(o => <option key={o} value={o} style={{ color: 'var(--ink)', background: 'var(--paper)' }}>{o}</option>)}
+                  </select>
+                ) : null;
+              })()}
             </div>
-            {!beriMail && posta.length > 0 && (() => {
-              const osebe = Array.from(new Set(posta.flatMap(v => v.prejemniki).filter(Boolean)));
-              return (
-                <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '.4rem', margin: '.55rem 0 0', flexWrap: 'wrap' }}>
-                  <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder="Išči po zadevi ali naslovu …" style={{ flex: '1 1 160px', boxSizing: 'border-box', padding: '.42rem .7rem', border: '1px solid color-mix(in oklch, var(--ink) 12%, transparent)', borderRadius: '.6rem', background: 'oklch(100% 0 0 / .55)', font: '500 .8rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />
-                  {osebe.length > 1 && (
-                    <select value={postaOseba} onChange={e => setPostaOseba(e.target.value)} aria-label="Filter po prejemniku" style={{ flex: '0 1 auto', maxWidth: '55%', padding: '.42rem .7rem', border: '1px solid color-mix(in oklch, var(--ink) 12%, transparent)', borderRadius: '.6rem', background: 'oklch(100% 0 0 / .55)', font: '500 .8rem var(--font-sans), sans-serif', color: 'var(--ink)', cursor: 'pointer' }}>
-                      <option value="">Vsi prejemniki</option>
-                      {osebe.map(o => <option key={o} value={o}>{o}</option>)}
-                    </select>
-                  )}
-                </div>
-              );
-            })()}
+            {!beriMail && posta.length > 0 && (
+              <div style={{ position: 'relative', zIndex: 1, margin: '.55rem 0 0' }}>
+                <MagnifyingGlass size={15} weight="bold" style={{ position: 'absolute', left: '.65rem', top: '50%', transform: 'translateY(-50%)', color: 'color-mix(in oklch, var(--ink) 45%, transparent)', pointerEvents: 'none' }} />
+                <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder="Išči po zadevi ali naslovu …" style={{ width: '100%', boxSizing: 'border-box', padding: '.42rem .7rem .42rem 2rem', border: '1px solid color-mix(in oklch, var(--ink) 12%, transparent)', borderRadius: '.6rem', background: 'oklch(100% 0 0 / .55)', font: '500 .8rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />
+              </div>
+            )}
             {beriMail ? (
               <div style={{ position: 'relative', zIndex: 1, margin: '.75rem 0 0', padding: '.9rem', border: '1px solid color-mix(in oklch, var(--ink) 10%, transparent)', borderRadius: '.85rem', background: 'oklch(100% 0 0 / .72)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.55rem' }}>
