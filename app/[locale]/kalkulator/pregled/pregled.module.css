@@ -956,12 +956,11 @@
 .projectNarrative article:not(.projectAgreement) > * { position: relative; z-index: 1; }
 /* barve kartic 02/03/04 so INLINE (v ProjectsWorkspace), ker CILJI (00) je pogojen -> pozicija (nth-child) ni zanesljiva */
 .projectNarrative .projectAgreement { grid-column: 1 / -1; min-height: auto; background: linear-gradient(135deg, oklch(97% .025 295), oklch(97% .025 165)); }
-/* CILJI (00) in DOGOVORJENO (01) delita prvo vrstico, ko sta oba prisotna */
-.projectNarrative :global(.pw-cilji) { grid-column: 1 / 3; align-self: stretch; }
-.projectNarrative :global(.pw-cilji) ~ .projectAgreement { grid-column: 3 / -1; align-self: stretch; }
-@media (max-width: 700px) {
-  .projectNarrative :global(.pw-cilji), .projectNarrative :global(.pw-cilji) ~ .projectAgreement { grid-column: 1 / -1; }
-}
+/* CILJI (00) + DOGOVORJENO (01) sta v flex vrstici (enaka visina); 01 je zunaj
+   .projectNarrative grida, zato notranji slog podvojimo tukaj */
+.projectAgreement h3 { margin: 0; font: 600 1.15rem var(--font-sans), system-ui, sans-serif; -webkit-text-stroke: 0; }
+.projectAgreement ul { display: flex; flex-wrap: wrap; gap: .35rem; margin: .55rem 0 0; padding: 0; list-style: none; }
+.projectAgreement li { padding: .45rem .65rem; border: 1px solid var(--line); border-radius: 999px; background: oklch(100% 0 0 / .65); font-size: .8125rem; }
 .projectNarrative h3 { margin: 0; font: 600 1.15rem var(--font-sans), system-ui, sans-serif; -webkit-text-stroke: 0; }
 .projectNarrative ul { display: flex; flex-wrap: wrap; gap: .4rem; margin: .75rem 0 0; padding: 0; list-style: none; }
 .projectNarrative li { padding: .45rem .65rem; border: 1px solid var(--line); border-radius: 999px; background: oklch(100% 0 0 / .65); font-size: .8125rem; }
