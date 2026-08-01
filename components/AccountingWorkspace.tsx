@@ -64,10 +64,13 @@ export default function AccountingWorkspace() {
 
   const racSel = invoices.filter(i => izbraniRac.has(i.id));
   const strSel = expenses.filter(e => izbraniStr.has(e.id));
-  const nicIzbrano = racSel.length === 0 && strSel.length === 0;
+  const obdobjeVeljavno = Boolean(period.start && period.end && period.start <= period.end);
+  const nicIzbrano = racSel.length === 0 && strSel.length === 0 && statements.length === 0;
 
   /* nacin: 'prenos' = prenesi ZIP; 'poslji' = pošlji računovodkinji (rabi e-pošto) */
   async function pripravi(nacin: 'prenos' | 'poslji') {
+    if (!obdobjeVeljavno) { setNotice('Datum »Od« mora biti pred datumom »Do«.'); return; }
+    if (nicIzbrano) { setNotice('Izberi vsaj en račun, strošek ali bančni izpisek.'); return; }
     setWorking(true); setNotice('');
     try {
       await saveCloudSettings({ accountingEmail: email, accountingFrequency: frequency });
@@ -91,15 +94,17 @@ export default function AccountingWorkspace() {
           if (response.ok) files[`02-stroskovni-racuni/${safeName(expense.fileName || `strosek-${expense.id}`)}`] = new Uint8Array(await response.arrayBuffer());
         } catch { /* CSV še vedno vsebuje strošek */ }
       }
-      for (const file of statements) files[`03-bancni-izpiski/${file.name}`] = new Uint8Array(await file.arrayBuffer());
+      for (const file of statements) files[`03-bancni-izpiski/${safeName(file.name)}`] = new Uint8Array(await file.arrayBuffer());
       const archive = new File([zipSync(files, { level: 6 })], `pinart-racunovodstvo-${period.start}-${period.end}.zip`, { type: 'application/zip' });
       let archivePath: string | undefined;
-      try { archivePath = await uploadBusinessDocument(archive, 'accounting', `${period.start}-${period.end}`); } catch { /* prenos še vedno deluje */ }
+      try { archivePath = await uploadBusinessDocument(archive, 'accounting', `${period.start}-${period.end}`); }
+      catch { if (nacin === 'poslji') throw new Error('Paketa ni bilo mogoče varno naložiti za pošiljanje.'); }
       let sent = false;
       if (nacin === 'poslji' && email && archivePath) {
         const downloadUrl = await getBusinessDocumentUrl(archivePath, 60 * 60 * 24 * 7);
         const response = await fetch('/api/racunovodstvo/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recipient: email, downloadUrl, periodStart: period.start, periodEnd: period.end }) });
-        sent = response.ok;
+        if (!response.ok) throw new Error('Pošiljanje ni uspelo.');
+        sent = true;
       }
       if (!sent) {
         const url = URL.createObjectURL(archive); const link = document.createElement('a'); link.href = url; link.download = archive.name; link.click(); URL.revokeObjectURL(url);
@@ -125,7 +130,8 @@ export default function AccountingWorkspace() {
       <div><p className={styles.eyebrow}>OBDOBJE</p><h2>Za računovodkinjo.</h2><p>Izberi obdobje — Flow sam pobere račune, stroške in priloge. Vidiš, kaj pošiljaš, in odkljukaš, kar nočeš. Vsak paket ostane v evidenci spodaj.</p></div>
       <div className={styles.accountingForm}>
         <div className={styles.periodSwitch}><button className={frequency === 'monthly' ? styles.periodActive : ''} onClick={() => changeFrequency('monthly')}>Vsak mesec</button><button className={frequency === 'quarterly' ? styles.periodActive : ''} onClick={() => changeFrequency('quarterly')}>Na 3 mesece</button></div>
-        <div className={styles.accountingDates}><label>Od<input type="date" value={period.start} onChange={event => setPeriod(value => ({ ...value, start: event.target.value }))} /></label><label>Do<input type="date" value={period.end} onChange={event => setPeriod(value => ({ ...value, end: event.target.value }))} /></label></div>
+        <div className={styles.accountingDates}><label>Od<input type="date" max={period.end || undefined} value={period.start} onChange={event => setPeriod(value => ({ ...value, start: event.target.value }))} /></label><label>Do<input type="date" min={period.start || undefined} value={period.end} onChange={event => setPeriod(value => ({ ...value, end: event.target.value }))} /></label></div>
+        {!obdobjeVeljavno && <small role="alert" style={{ color: '#a12323' }}>Datum »Od« mora biti pred datumom »Do«.</small>}
         <label>E-pošta računovodstva<input type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="racunovodstvo@…" /></label>
         <label>Bančni izpiski (neobvezno)<input type="file" multiple accept=".pdf,.csv,.xml,.xlsx" onChange={event => setStatements(Array.from(event.target.files || []))} /></label>
       </div>
@@ -157,8 +163,8 @@ export default function AccountingWorkspace() {
       </div>
       {/* akciji: prenesi ali pošlji */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.7rem', alignItems: 'center', marginTop: '.2rem' }}>
-        <button className={styles.primaryAction} type="button" disabled={working || nicIzbrano || !email} onClick={() => pripravi('poslji')}>{working ? 'Pripravljam …' : 'Pošlji računovodkinji'}</button>
-        <button type="button" disabled={working || nicIzbrano} onClick={() => pripravi('prenos')} style={{ border: '1px solid var(--ink)', background: 'none', color: 'var(--ink)', borderRadius: '999px', padding: '.55rem 1.1rem', font: '700 .8rem var(--font-sans), sans-serif', cursor: 'pointer' }}>Prenesi ZIP</button>
+        <button className={styles.primaryAction} type="button" disabled={working || nicIzbrano || !email || !obdobjeVeljavno} onClick={() => pripravi('poslji')}>{working ? 'Pripravljam …' : 'Pošlji računovodkinji'}</button>
+        <button type="button" disabled={working || nicIzbrano || !obdobjeVeljavno} onClick={() => pripravi('prenos')} style={{ border: '1px solid var(--ink)', background: 'none', color: 'var(--ink)', borderRadius: '999px', padding: '.55rem 1.1rem', font: '700 .8rem var(--font-sans), sans-serif', cursor: 'pointer' }}>Prenesi ZIP</button>
         {!email && <small style={{ color: 'var(--muted)' }}>Za pošiljanje dodaj e-pošto računovodstva zgoraj.</small>}
       </div>
     </section>
