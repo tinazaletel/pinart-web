@@ -519,6 +519,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [posta, setPosta] = useState<PostaVnos[]>([]);
   const [mapa, setMapa] = useState<'prejeto' | 'poslano' | 'osnutki' | 'kos'>('poslano');
   const [beriMail, setBeriMail] = useState<PostaVnos | null>(null);
+  const [postaIsk, setPostaIsk] = useState('');
   /* »Nova pošta« — sestavljalnik neposredno v projektu (brez dokumenta). Pošlje
      prek Resend, zabeleži lokalno (postaDnevnik) + v oblak (pushProjectMail). */
   const [pisiOdprt, setPisiOdprt] = useState(false);
@@ -911,6 +912,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 return <button key={id} type="button" onClick={() => { setMapa(id); setBeriMail(null); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', border: `1px solid ${on ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: on ? 'var(--ink)' : 'transparent', color: on ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer' }}><Ikona size={13} weight="bold" />{ime}{st ? ` · ${st}` : ''}</button>;
               })}
             </div>
+            {!beriMail && posta.length > 0 && <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder="Išči po zadevi ali naslovu …" style={{ position: 'relative', zIndex: 1, width: '100%', boxSizing: 'border-box', margin: '.55rem 0 0', padding: '.42rem .7rem', border: '1px solid color-mix(in oklch, var(--ink) 12%, transparent)', borderRadius: '.6rem', background: 'oklch(100% 0 0 / .55)', font: '500 .8rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />}
             {beriMail ? (
               <div style={{ position: 'relative', zIndex: 1, margin: '.75rem 0 0', padding: '.9rem', border: '1px solid color-mix(in oklch, var(--ink) 10%, transparent)', borderRadius: '.85rem', background: 'oklch(100% 0 0 / .72)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.55rem' }}>
@@ -931,7 +933,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   : <p style={{ color: 'var(--muted)', fontSize: '.82rem' }}>To sporočilo nima shranjenega besedila (starejši/lokalni zapis).</p>}
               </div>
             ) : (() => {
-              const seznam = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa);
+              const q = postaIsk.trim().toLowerCase();
+              const seznam = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa).filter(v => !q || `${v.zadeva} ${v.prejemniki.join(' ')}`.toLowerCase().includes(q));
               return seznam.length ? (
                 <ul className="pw-posta-seznam">
                   {seznam.map(vnos => (
