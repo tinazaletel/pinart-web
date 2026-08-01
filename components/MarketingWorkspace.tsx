@@ -9,6 +9,7 @@ import {
   Code,
   EnvelopeSimple,
   Megaphone,
+  PaintBrushBroad,
   PencilSimple,
   Plus,
   ShareNetwork,
@@ -248,6 +249,21 @@ export default function MarketingWorkspace({ base }: { base: string }) {
           <button className={styles.quickCard} type="button" onClick={() => odpriNovo('email')}><EnvelopeSimple aria-hidden="true" /><h2>E-pošta</h2><p>Dobrodošlice, novosti in premišljena sporočila ob pravem času.</p><span className={styles.cardLink}>Ustvari sporočilo →</span></button>
           <button className={styles.quickCard} type="button" onClick={() => odpriNovo('vprasalnik')}><Code aria-hidden="true" /><h2>Vprašalnik</h2><p>Zberi kakovostna povpraševanja z obrazcem za svojo spletno stran.</p><span className={styles.cardLink}>Pripravi obrazec →</span></button>
           <button className={styles.quickCard} type="button" onClick={() => odpriNovo('social')}><ShareNetwork aria-hidden="true" /><h2>Družbena omrežja</h2><p>Objave spremeni v jasen načrt z roki in opravili.</p><span className={styles.cardLink}>Načrtuj objavo →</span></button>
+        </section>
+        <section className={styles.designBanner} aria-labelledby="grafika-naslov">
+          <span className={styles.designIcon} aria-hidden="true"><PaintBrushBroad size={30} weight="light" /></span>
+          <div className={styles.designCopy}>
+            <p className={styles.sectionLabel}>PINART STUDIO</p>
+            <h2 id="grafika-naslov">Potrebuješ tudi grafična dela?</h2>
+            <p>Če vizualov ne pripravljaš sama, ti Pinart oblikuje oglase, objave, tiskovine ali celotno kampanjsko podobo.</p>
+            <ul className={styles.designTags} aria-label="Grafične storitve">
+              <li>Oglasi</li><li>Objave</li><li>Tiskovine</li><li>Kampanjska podoba</li>
+            </ul>
+          </div>
+          <div className={styles.designActions}>
+            <Link className={styles.secondary} href={`${base}/services/graphic`}>Poglej storitve <ArrowRight size={18} /></Link>
+            <Link className={styles.primary} href={`${base}/kalkulator/orodje`}>Pripravi ponudbo <ArrowRight size={18} /></Link>
+          </div>
         </section>
         <section className={styles.flowCard}>
           <div><p className={styles.sectionLabel}>POVEZANO S FLOWOM</p><h2>Kampanja ni osamljen seznam.</h2><p>Roke vodiš v koledarju, pripravo vsebin pa med nalogami. Tako vidiš, kaj sledi in kdo mora kaj dokončati.</p></div>

@@ -911,7 +911,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <em>{HERO_NASLOVI[heroIdx].em.map((w, i) => <span key={i} className="w" style={{ animationDelay: `${(HERO_NASLOVI[heroIdx].pre.length + i) * 0.07}s` }}>{w}{' '}</span>)}</em>
           </h1>
           <p className="lead">
-            Flow vodi tvoj posel <b>od prve ponudbe do plačila</b> — cene, pogodbe, računi, stranke in denar na enem mestu.
+            <b>En program namesto štirih:</b> ponudbe, pogodbe, računi, projekti in naloge — z vso komunikacijo pregledno na enem mestu.
             Ob strani ti stoji <b>AI asistentka Pupa</b>, ki pozna trg in ti pove, koliko je vredno tvoje delo.
           </p>
           <div className="cta-vrsta">

@@ -10,6 +10,7 @@
 
 .hero,
 .quickCard,
+.designBanner,
 .flowCard,
 .campaigns,
 .templates,
@@ -163,6 +164,49 @@
 .quickCard p { max-width: 28rem; margin: 0; color: color-mix(in oklch, var(--ink) 68%, transparent); line-height: 1.45; }
 .cardLink { position: absolute; left: 1.2rem; bottom: 1.1rem; font-weight: 750; font-size: .82rem; }
 
+.designBanner {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.35rem;
+  border-radius: 1.35rem;
+  background:
+    radial-gradient(circle at 87% 5%, oklch(86% .12 300 / .72), transparent 25%),
+    radial-gradient(circle at 65% 120%, oklch(88% .11 165 / .7), transparent 34%),
+    color-mix(in oklch, var(--paper) 84%, transparent);
+}
+.designBanner::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  right: clamp(8rem, 24vw, 24rem);
+  bottom: -5rem;
+  width: 11rem;
+  aspect-ratio: 1;
+  border: 1px solid oklch(100% 0 0 / .65);
+  border-radius: 50%;
+}
+.designIcon {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  aspect-ratio: 1;
+  border: 1px solid oklch(100% 0 0 / .72);
+  border-radius: 50%;
+  background: oklch(100% 0 0 / .45);
+  box-shadow: 0 12px 30px oklch(47% .08 300 / .12);
+}
+.designCopy h2 { margin: 0 0 .35rem; font: 500 1.75rem var(--font-serif), Georgia, serif; }
+.designCopy > p:last-of-type { max-width: 48rem; margin: 0; color: color-mix(in oklch, var(--ink) 70%, transparent); line-height: 1.5; }
+.designTags { display: flex; flex-wrap: wrap; gap: .4rem; margin: .75rem 0 0; padding: 0; list-style: none; }
+.designTags li { padding: .32rem .58rem; border: 1px solid oklch(35% .03 80 / .14); border-radius: 999px; background: oklch(100% 0 0 / .45); font-size: .75rem; font-weight: 700; }
+.designActions { display: grid; grid-template-columns: 1fr; gap: .55rem; min-width: 12.5rem; }
+.designActions a { white-space: nowrap; }
+
 .flowCard {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) auto;
@@ -254,6 +298,8 @@
   .overviewGrid { grid-template-columns: 1fr 1fr; }
   .quickGrid, .templateGrid, .integrationGrid { grid-template-columns: 1fr 1fr; }
   .flowCard { grid-template-columns: 1fr; }
+  .designBanner { grid-template-columns: auto minmax(0, 1fr); }
+  .designActions { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
   .campaignRow { grid-template-columns: 2.2rem minmax(0, 1fr) auto; }
   .campaignDate { grid-column: 2; }
   .campaignRow > .status { grid-column: 3; grid-row: 1; }
@@ -273,6 +319,9 @@
   .quickGrid, .templateGrid, .integrationGrid { grid-template-columns: 1fr; }
   .quickCard { min-height: 11.5rem; }
   .flowActions { display: grid; grid-template-columns: 1fr 1fr; }
+  .designBanner { grid-template-columns: 1fr; padding: 1.1rem; }
+  .designIcon { width: 3.5rem; }
+  .designActions { grid-column: 1; grid-template-columns: 1fr; min-width: 0; }
   .campaigns, .templates { padding: .9rem; border-radius: 1.1rem; }
   .sectionHeader { align-items: start; flex-direction: column; }
   .campaignRow { grid-template-columns: 2.2rem minmax(0, 1fr) auto; gap: .65rem; }
