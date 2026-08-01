@@ -3,7 +3,7 @@
 import {
   SquaresFour, FileText, Repeat, Handshake, Receipt, Users, Tag, Wallet,
   Target, Clock, Layout, Folders, GearSix, LifebuoyIcon, Kanban, CalendarBlank,
-  PaintBrush, FolderOpen, Calculator,
+  PaintBrush, FolderOpen, Calculator, ChatsCircle,
 } from '@phosphor-icons/react';
 
 /**
@@ -17,7 +17,7 @@ export type NavIkonaVrsta =
   | 'pregled' | 'projekti' | 'ponudba' | 'retainer' | 'pogodba' | 'racuni'
   | 'stranke' | 'ceniki' | 'stroski'
   | 'cilji' | 'cas' | 'okvir' | 'naloge' | 'koledar'
-  | 'zgodovina' | 'nastavitve' | 'dizajn' | 'pomoc' | 'racunovodstvo';
+  | 'zgodovina' | 'nastavitve' | 'dizajn' | 'pomoc' | 'racunovodstvo' | 'komunikacije';
 
 const IKONE = {
   pregled: SquaresFour,
@@ -37,6 +37,7 @@ const IKONE = {
   zgodovina: Folders,
   nastavitve: GearSix,
   racunovodstvo: Calculator,
+  komunikacije: ChatsCircle,
   dizajn: PaintBrush,
   pomoc: LifebuoyIcon,
 } as const;
