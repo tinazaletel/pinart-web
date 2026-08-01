@@ -39,6 +39,10 @@ const danesISO = () => { const d = new Date(); return `${d.getFullYear()}-${Stri
 const vrsticaZnesek = (i: FlowInvoiceItem) => i.kolicina * i.cena * (1 - clamp(i.popust || 0, 0, 100) / 100);
 
 export default function InvoiceWorkspace({ base }: { base: string }) {
+  const jeEn = base === '/en';
+  const docLocale = jeEn ? 'en-GB' : 'sl-SI';
+  const docDate = (d: Date) => d.toLocaleDateString(docLocale, { day: 'numeric', month: 'numeric', year: 'numeric' });
+  const docMoney = (value: number) => `${value.toLocaleString(docLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
   /* pod 640px izbira ponudbe postane slide-up predal (vzorec jeMobilni iz RetainerWorkspace) */
   const [jeMobilni, setJeMobilni] = useState(false);
   useEffect(() => {
@@ -393,13 +397,13 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   /* Glava/noga AKTIVNE predloge (vec predlog) — ADITIVNO, glej lib/dokVidez.ts.
      Ce nista vpisani, se nic ne izrise in obstojeci videz ostane enak. */
   const glava = () => {
-    const kontakt = [ponudnik.davcna.trim() && (ddvZavezanec ? 'ID za DDV: ' : 'Davčna št.: ') + ponudnik.davcna.trim(), ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(), ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(), ponudnik.email.trim()].filter(Boolean).join(' · ');
+    const kontakt = [ponudnik.davcna.trim() && (jeEn ? (ddvZavezanec ? 'VAT ID: ' : 'Tax no.: ') : (ddvZavezanec ? 'ID za DDV: ' : 'Davčna št.: ')) + ponudnik.davcna.trim(), ponudnik.trr.trim() && (jeEn ? 'IBAN: ' : 'TRR: ') + ponudnik.trr.trim(), ponudnik.telefon.trim() && (jeEn ? 'Phone: ' : 'Tel.: ') + predklic + ' ' + ponudnik.telefon.trim(), ponudnik.email.trim()].filter(Boolean).join(' · ');
     const glavaBesedilo = aktivnaPredloga().glava?.trim();
     const glavaLine = glavaBesedilo ? '<br><span class="mut" style="color:#111;font-weight:600">' + esc(glavaBesedilo) + '</span>' : '';
     /* desni znak = TVOJ shranjeni logo (enotni vir: predloga ali K_LOGO); prej trdo zakodiran »Pinart« -> logo se ni videl */
     const logo = aktivniLogo();
     const znak = logo ? `<img class="lg-logo" src="${logo}" alt="">` : '';
-    return `<div class="lg"><div><b>${esc(ponudnik.ime.trim() || '[Tvoje podjetje]')}</b>${glavaLine}${ponudnik.naslov.trim() ? '<br>' + esc(ponudnik.naslov.trim()) : ''}${kontakt ? '<br><span class="mut">' + esc(kontakt) + '</span>' : ''}</div>${znak}</div>`;
+    return `<div class="lg"><div><b>${esc(ponudnik.ime.trim() || (jeEn ? '[Your company]' : '[Tvoje podjetje]'))}</b>${glavaLine}${ponudnik.naslov.trim() ? '<br>' + esc(ponudnik.naslov.trim()) : ''}${kontakt ? '<br><span class="mut">' + esc(kontakt) + '</span>' : ''}</div>${znak}</div>`;
   };
   const dokNoga = () => {
     const n = aktivnaPredloga().noga?.trim();
@@ -431,7 +435,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     .podpis-img{display:block;max-height:40px;max-width:200px}
     .rac-podpis-ime{margin-top:5px;font-size:9.5pt;color:#222}
     .rac-podpis-meta{font-size:8.5pt;color:#8a8177}`;
-  const doc = (body: string) => `<!doctype html><html lang="sl"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
+  const doc = (body: string) => `<!doctype html><html lang="${jeEn ? 'en' : 'sl'}"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
 
   /* postavke za dokument: novi racuni jih imajo shranjene; za STARE izpeljemo eno
      vrstico iz zneska (ce je bil izdajatelj zavezanec, je stari amount vseboval DDV) */
@@ -440,7 +444,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     if (inv.items?.length) return { items: inv.items, zavezanec };
     const rate = clamp(ddvStopnja, 0, 30);
     const cena = zavezanec ? inv.amount / (1 + rate / 100) : inv.amount;
-    return { items: [{ opis: inv.title || 'Opravljene storitve', kolicina: 1, cena, popust: 0, ddv: rate }], zavezanec };
+    return { items: [{ opis: inv.title || (jeEn ? 'Services provided' : 'Opravljene storitve'), kolicina: 1, cena, popust: 0, ddv: rate }], zavezanec };
   };
 
   const racunTelo = (inv: FlowInvoice): string => {
@@ -448,7 +452,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     /* predracun = poziv k placilu vnaprej, NI knjigovodska listina — oznaka v
        dokumentu (kicker + stevilka) se glasi PREDRAČUN namesto RAČUN */
     const jePredracun = Boolean(inv.predracun);
-    const naziv = jePredracun ? 'Predračun' : 'Račun';
+    const naziv = jeEn ? (jePredracun ? 'Pro forma invoice' : 'Invoice') : (jePredracun ? 'Predračun' : 'Račun');
     const izdaja = new Date(inv.date);
     const storitev = inv.serviceDate ? new Date(inv.serviceDate) : izdaja;
     const rok = new Date(izdaja.getTime() + (inv.dueDays ?? PRIVZETI_ROK_DNI) * 864e5);
@@ -473,40 +477,40 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     const jeAvans = Boolean(inv.avansPct && inv.avansPct < 100);
     const polnZnesek = inv.polnaVrednost ?? zaPlacilo;
     const zaPlaciloGlavno = jeAvans ? inv.amount : zaPlacilo;
-    const vrsticeHtml = items.map(i => `<tr><td>${esc(i.opis || 'Storitev')}</td><td>${i.kolicina.toLocaleString('sl-SI')}</td><td>${eur2(i.cena)}</td>${imaPopust ? `<td>${(i.popust || 0).toLocaleString('sl-SI')} %</td>` : ''}${zavezanec ? `<td>${(i.ddv || 0).toLocaleString('sl-SI')} %</td>` : ''}<td>${eur2(vrsticaZnesek(i))}</td></tr>`).join('');
+    const vrsticeHtml = items.map(i => `<tr><td>${esc(i.opis || (jeEn ? 'Service' : 'Storitev'))}</td><td>${i.kolicina.toLocaleString(docLocale)}</td><td>${docMoney(i.cena)}</td>${imaPopust ? `<td>${(i.popust || 0).toLocaleString(docLocale)} %</td>` : ''}${zavezanec ? `<td>${(i.ddv || 0).toLocaleString(docLocale)} %</td>` : ''}<td>${docMoney(vrsticaZnesek(i))}</td></tr>`).join('');
     const vsoteHtml = zavezanec
-      ? [...stopnje.entries()].sort((a, b) => b[0] - a[0]).map(([rate, s]) => `<div><span>Osnova${vecStopenj ? ` (DDV ${rate.toLocaleString('sl-SI')} %)` : ''}</span><span>${eur2(s.osnova)}</span></div><div><span>DDV (${rate.toLocaleString('sl-SI')} %)</span><span>${eur2(s.ddv)}</span></div>`).join('')
-      : `<div><span>Osnova</span><span>${eur2(osnova)}</span></div>`;
+      ? [...stopnje.entries()].sort((a, b) => b[0] - a[0]).map(([rate, s]) => `<div><span>${jeEn ? 'Subtotal' : 'Osnova'}${vecStopenj ? ` (${jeEn ? 'VAT' : 'DDV'} ${rate.toLocaleString(docLocale)} %)` : ''}</span><span>${docMoney(s.osnova)}</span></div><div><span>${jeEn ? 'VAT' : 'DDV'} (${rate.toLocaleString(docLocale)} %)</span><span>${docMoney(s.ddv)}</span></div>`).join('')
+      : `<div><span>${jeEn ? 'Subtotal' : 'Osnova'}</span><span>${docMoney(osnova)}</span></div>`;
     const klient = clients.find(c => c.name.trim().toLowerCase() === inv.client.trim().toLowerCase());
     const prejemnik = [
       `<b>${esc(inv.client)}</b>`,
       klient?.contact?.trim() && esc(klient.contact.trim()),
       klient?.address?.trim() && esc(klient.address.trim()),
-      klient?.tax?.trim() && ('Davčna št.: ' + esc(klient.tax.trim())),
+      klient?.tax?.trim() && ((jeEn ? 'Tax no.: ' : 'Davčna št.: ') + esc(klient.tax.trim())),
       klient?.email?.trim() && esc(klient.email.trim()),
     ].filter(Boolean).join('<br>');
     const sklicDigits = (inv.number || '').replace(/\D/g, '');
     const placiloVrstice = [
-      ponudnik.trr.trim() && ('TRR: ' + esc(ponudnik.trr.trim())),
-      sklicDigits && ('Sklic: SI00 ' + sklicDigits),
-      'Rok plačila: ' + datStr(rok),
+      ponudnik.trr.trim() && ((jeEn ? 'IBAN: ' : 'TRR: ') + esc(ponudnik.trr.trim())),
+      sklicDigits && ((jeEn ? 'Payment reference: SI00 ' : 'Sklic: SI00 ') + sklicDigits),
+      (jeEn ? 'Payment due: ' : 'Rok plačila: ') + docDate(rok),
     ].filter(Boolean).join('<br>');
     return `
       <div class="rac-head">
         <div class="rac-title"><span class="rac-kicker">${naziv}</span><span class="rac-no">${esc(inv.number || '')}</span></div>
-        <div class="rac-meta"><b>Datum izdaje</b>${datStr(izdaja)}<b>Opravljena storitev</b>${datStr(storitev)}<b>Rok plačila</b>${datStr(rok)}</div>
+        <div class="rac-meta"><b>${jeEn ? 'Issue date' : 'Datum izdaje'}</b>${docDate(izdaja)}<b>${jeEn ? 'Service date' : 'Opravljena storitev'}</b>${docDate(storitev)}<b>${jeEn ? 'Payment due' : 'Rok plačila'}</b>${docDate(rok)}</div>
       </div>
-      <div class="rac-stranki"><span class="rac-l">Prejemnik ${jePredracun ? 'predračuna' : 'računa'}</span>${prejemnik || '[naročnik]'}</div>
-      <table class="rac-tabela"><thead><tr><th>Postavka</th><th>Kol.</th><th>Cena brez DDV</th>${imaPopust ? '<th>Popust</th>' : ''}${zavezanec ? '<th>DDV</th>' : ''}<th>Znesek</th></tr></thead>
+      <div class="rac-stranki"><span class="rac-l">${jeEn ? (jePredracun ? 'Pro forma invoice recipient' : 'Invoice recipient') : `Prejemnik ${jePredracun ? 'predračuna' : 'računa'}`}</span>${prejemnik || (jeEn ? '[customer]' : '[naročnik]')}</div>
+      <table class="rac-tabela"><thead><tr><th>${jeEn ? 'Item' : 'Postavka'}</th><th>${jeEn ? 'Qty.' : 'Kol.'}</th><th>${jeEn ? 'Unit price excl. VAT' : 'Cena brez DDV'}</th>${imaPopust ? `<th>${jeEn ? 'Discount' : 'Popust'}</th>` : ''}${zavezanec ? `<th>${jeEn ? 'VAT' : 'DDV'}</th>` : ''}<th>${jeEn ? 'Amount' : 'Znesek'}</th></tr></thead>
       <tbody>${vrsticeHtml}</tbody></table>
-      <div class="rac-vsote">${vsoteHtml}${zavezanec ? `<div><span>DDV skupaj</span><span>${eur2(ddvSkupaj)}</span></div>` : ''}${jeAvans ? `<div><span>Poln znesek</span><span>${eur2(polnZnesek)}</span></div>` : ''}<div class="rac-skupaj"><span>${jeAvans ? `ZA PLAČILO (avans ${(inv.avansPct || 0).toLocaleString('sl-SI')} %)` : 'SKUPAJ ZA PLAČILO'}</span><span>${eur2(zaPlaciloGlavno)}</span></div></div>
-      ${jeAvans ? `<p class="rac-opomba">Preostanek ${eur2(Math.max(polnZnesek - inv.amount, 0))} se zaračuna na končnem računu po izvedbi/dobavi.</p>` : ''}
-      ${!zavezanec ? '<p class="rac-opomba">DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1 (izdajatelj ni zavezanec za DDV).</p>' : ''}
-      ${jePredracun ? '<p class="rac-opomba"><b>Predračun ni knjigovodska listina. Račun bo izdan po prejemu plačila.</b></p>' : ''}
+      <div class="rac-vsote">${vsoteHtml}${zavezanec ? `<div><span>${jeEn ? 'Total VAT' : 'DDV skupaj'}</span><span>${docMoney(ddvSkupaj)}</span></div>` : ''}${jeAvans ? `<div><span>${jeEn ? 'Full amount' : 'Poln znesek'}</span><span>${docMoney(polnZnesek)}</span></div>` : ''}<div class="rac-skupaj"><span>${jeAvans ? `${jeEn ? 'AMOUNT DUE (advance' : 'ZA PLAČILO (avans'} ${(inv.avansPct || 0).toLocaleString(docLocale)} %)` : (jeEn ? 'TOTAL AMOUNT DUE' : 'SKUPAJ ZA PLAČILO')}</span><span>${docMoney(zaPlaciloGlavno)}</span></div></div>
+      ${jeAvans ? `<p class="rac-opomba">${jeEn ? `The remaining ${docMoney(Math.max(polnZnesek - inv.amount, 0))} will be invoiced on the final invoice after completion/delivery.` : `Preostanek ${docMoney(Math.max(polnZnesek - inv.amount, 0))} se zaračuna na končnem računu po izvedbi/dobavi.`}</p>` : ''}
+      ${!zavezanec ? `<p class="rac-opomba">${jeEn ? 'VAT is not charged pursuant to Article 94(1) of ZDDV-1 (the supplier is not registered for VAT).' : 'DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1 (izdajatelj ni zavezanec za DDV).'}</p>` : ''}
+      ${jePredracun ? `<p class="rac-opomba"><b>${jeEn ? 'This pro forma invoice is not an accounting document. An invoice will be issued upon receipt of payment.' : 'Predračun ni knjigovodska listina. Račun bo izdan po prejemu plačila.'}</b></p>` : ''}
       <div class="rac-placilo">${placiloVrstice}</div>
-      ${inv.paid ? '<div class="rac-placano">PLAČANO</div>' : ''}
-      ${inv.signature ? `<div class="rac-podpis"><div class="rac-podpis-crta"><img class="podpis-img" src="${inv.signature.image}" alt="Podpis"></div><div class="rac-podpis-ime">${esc(inv.signature.name || ponudnik.ime.trim() || '')}</div>${(inv.signature.place || inv.signature.date) ? `<div class="rac-podpis-meta">${esc([inv.signature.place, inv.signature.date ? datStr(new Date(inv.signature.date)) : ''].filter(Boolean).join(' · '))}</div>` : ''}</div>` : ''}
-      <p class="rac-noga-txt">${jePredracun ? 'Predračun je informativen poziv k plačilu in ni davčni/knjigovodski dokument.' : 'Račun je izdan v skladu z veljavno zakonodajo. Ob zamudi plačila zaračunamo zakonske zamudne obresti.'}</p>`;
+      ${inv.paid ? `<div class="rac-placano">${jeEn ? 'PAID' : 'PLAČANO'}</div>` : ''}
+      ${inv.signature ? `<div class="rac-podpis"><div class="rac-podpis-crta"><img class="podpis-img" src="${inv.signature.image}" alt="${jeEn ? 'Signature' : 'Podpis'}"></div><div class="rac-podpis-ime">${esc(inv.signature.name || ponudnik.ime.trim() || '')}</div>${(inv.signature.place || inv.signature.date) ? `<div class="rac-podpis-meta">${esc([inv.signature.place, inv.signature.date ? docDate(new Date(inv.signature.date)) : ''].filter(Boolean).join(' · '))}</div>` : ''}</div>` : ''}
+      <p class="rac-noga-txt">${jeEn ? (jePredracun ? 'This pro forma invoice is an informational request for payment and is not a tax or accounting document.' : 'This invoice is issued in accordance with applicable law. Statutory default interest will be charged on late payments.') : (jePredracun ? 'Predračun je informativen poziv k plačilu in ni davčni/knjigovodski dokument.' : 'Račun je izdan v skladu z veljavno zakonodajo. Ob zamudi plačila zaračunamo zakonske zamudne obresti.')}</p>`;
   };
 
   /* Poglej / Prenesi PDF — prek /api/ponudba-pdf, ENAKO kot retainer prenesi() */
@@ -515,7 +519,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     try {
       const html = doc(racunTelo(inv));
       const ime = 'racun-' + (inv.number || 'pinart').replace(/[^\w-]+/g, '');
-      const footer = esc([ponudnik.ime.trim(), 'Račun' + (inv.number ? ' ' + inv.number : '')].filter(Boolean).join(' · '));
+      const footer = esc([ponudnik.ime.trim(), (jeEn ? 'Invoice' : 'Račun') + (inv.number ? ' ' + inv.number : '')].filter(Boolean).join(' · '));
       const res = await fetch('/api/ponudba-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html, ime, footer }) });
       if (!res.ok) throw new Error('pdf');
       const blob = await res.blob();
