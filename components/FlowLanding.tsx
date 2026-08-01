@@ -38,6 +38,15 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     const t = window.setInterval(() => setHeroIdx(i => (i + 1) % HERO_NASLOVI.length), 7000);
     return () => window.clearInterval(t);
   }, []);
+
+  /* Kartica »Vse teče iz istih podatkov«: zaslon menja med 3 screeni. */
+  const B_SCREENI = ['/flow/ponudba-chat.jpg', '/flow/racuni.jpg', '/flow/pregled.jpg'];
+  const [bIdx, setBIdx] = useState(0);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const t = window.setInterval(() => setBIdx(i => (i + 1) % 3), 2600);
+    return () => window.clearInterval(t);
+  }, []);
   const [taZavihek, setTaZavihek] = useState('kalkulator');
   const [odprtoVpr, setOdprtoVpr] = useState<number | null>(0);
   const [letno, setLetno] = useState(true);   /* cenik: letno (ceneje) vs mesecno (drazje) */
@@ -670,9 +679,35 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bkarta.c { grid-column: 2; grid-row: 2; background: linear-gradient(150deg, oklch(44% .17 300), oklch(30% .1 300)); color: #fff; }
         .fl-bkarta.d { grid-column: 3; grid-row: 2; background: linear-gradient(150deg, oklch(46% .1 190), oklch(31% .06 200)); color: #fff; }
         .fl-bkarta.b > p, .fl-bkarta.c > p, .fl-bkarta.d > p { color: rgba(255,255,255,.74); }
-        .fl-bthumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-top: 1.2rem; }
-        .fl-bthumbs span { position: relative; overflow: hidden; aspect-ratio: 1; border-radius: 11px; background: linear-gradient(135deg, oklch(90% .07 297), oklch(90% .07 165)); display: grid; place-items: center; }
+        .fl-bthumbs { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: .55rem; margin-top: 1.1rem; flex: 1; min-height: 13rem; }
+        .fl-bthumbs span { position: relative; overflow: hidden; min-height: 0; border-radius: 11px; background: linear-gradient(135deg, oklch(90% .07 297), oklch(90% .07 165)); display: grid; place-items: center; }
         .fl-bthumbs span img { width: 100%; height: 100%; object-fit: cover; object-position: top left; display: block; }
+        .fl-bshot { flex: 1; min-height: 8rem; margin-top: 1.1rem; border-radius: 13px; overflow: hidden; border: 1px solid rgba(255,255,255,.16); box-shadow: 0 10px 26px rgba(40,25,60,.16); }
+        .fl-bkarta.a .fl-bshot { border-color: rgba(42,32,53,.10); }
+        .fl-bshot img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+        .fl-bkarta.c .fl-bshot { border-color: rgba(255,255,255,.22); }
+        /* a) Pupa jedro + ikone orodij, ki krožijo okoli */
+        .fl-bhub { position: relative; flex: 1; min-height: 15.5rem; margin-top: .4rem; display: grid; place-items: center; }
+        .fl-bhub-core { position: relative; z-index: 2; width: 84px; height: 84px; border-radius: 50%; background: conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a); box-shadow: 0 10px 26px rgba(42,32,53,.24); }
+        .fl-bhub-ring { position: absolute; inset: 0; animation: flOrbit 36s linear infinite; }
+        .fl-bhub-ic { position: absolute; top: 50%; left: 50%; width: 46px; height: 46px; margin: -23px; border-radius: 50%; background: #fff; box-shadow: 0 6px 16px rgba(42,32,53,.14); display: grid; place-items: center; color: #6a4bd6; transform: rotate(var(--a)) translate(var(--r)) rotate(calc(-1 * var(--a))); }
+        .fl-bhub-ic > i { display: grid; animation: flOrbitRev 36s linear infinite; }
+        @keyframes flOrbit { to { transform: rotate(360deg); } }
+        @keyframes flOrbitRev { to { transform: rotate(-360deg); } }
+        /* b) zaslon, ki menja 3 screene */
+        .fl-bscreen { position: relative; flex: 1; min-height: 9rem; margin-top: 1.1rem; border-radius: 13px; overflow: hidden; background: #0d0b12; border: 1px solid rgba(255,255,255,.14); box-shadow: 0 14px 30px rgba(0,0,0,.28); }
+        .fl-bscreen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; opacity: 0; transition: opacity .8s ease; }
+        .fl-bscreen img.on { opacity: 1; }
+        .fl-bscreen-dots { position: absolute; left: 0; right: 0; bottom: .55rem; display: flex; justify-content: center; gap: .35rem; z-index: 2; }
+        .fl-bscreen-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.35); transition: background .3s, width .3s; }
+        .fl-bscreen-dots i.on { width: 16px; border-radius: 3px; background: #fff; }
+        /* d) globalno zbiranje podatkov + AI */
+        .fl-bglobe { position: relative; flex: 1; min-height: 9rem; margin-top: 1.1rem; display: grid; place-items: center; }
+        .fl-bglobe svg { width: 100%; max-width: 250px; height: auto; overflow: visible; }
+        .fl-bglobe .dot { transform-box: fill-box; transform-origin: center; animation: flPulse 2.6s ease-in-out infinite; }
+        @keyframes flPulse { 0%,100% { opacity: .35; transform: scale(.7); } 50% { opacity: 1; transform: scale(1.15); } }
+        .fl-bglobe-ai { position: absolute; top: .2rem; right: .6rem; display: inline-flex; align-items: center; gap: .28rem; padding: .2rem .5rem; border-radius: 999px; background: rgba(255,255,255,.14); color: #fff; font-size: .68rem; font-weight: 700; letter-spacing: .04em; backdrop-filter: blur(4px); }
+        @media (prefers-reduced-motion: reduce) { .fl-bhub-ring, .fl-bhub-ic > i, .fl-bglobe .dot { animation: none; } }
         .fl-bthumbs span:nth-child(3n+2) { background: linear-gradient(135deg, oklch(90% .07 330), oklch(90% .06 90)); }
         .fl-bthumbs span:nth-child(3n) { background: linear-gradient(135deg, oklch(90% .06 200), oklch(90% .07 297)); }
         /* mini predogledi orodij (namesto pravih posnetkov — dodava jih kasneje) */
@@ -1062,29 +1097,64 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <div className="fl-bkarta a">
               <h3>En program namesto štirih</h3>
               <p>Ponudbe, pogodbe, računi, stroški, ceniki in naloge — vse tukaj. Nič več skakanja med Excelom, Canvo, Gmailom in koledarjem.</p>
-              <div className="fl-bthumbs">
-                <span><img src="/flow/ponudba-chat.jpg" alt="Ponudba v Flow" loading="lazy" /></span>
-                <span><img src="/flow/mehurcki.jpg" alt="Kalkulator poštene cene" loading="lazy" /></span>
-                <span><img src="/flow/racuni.jpg" alt="Računi v Flow" loading="lazy" /></span>
-                <span><img src="/flow/stranke.jpg" alt="Stranke in CRM" loading="lazy" /></span>
-                <span><img src="/flow/pregled.jpg" alt="Pregled in analitika" loading="lazy" /></span>
-                <span><img src="/flow/naloge.jpg" alt="Naloge" loading="lazy" /></span>
+              <div className="fl-bhub" aria-hidden>
+                <span className="fl-bhub-core">
+                  <svg viewBox="0 0 40 40" width="84" height="84" style={{ position: 'absolute', inset: 0 }}>
+                    <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                    <path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                    <path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                    <circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.55)" />
+                    <circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.55)" />
+                  </svg>
+                </span>
+                <div className="fl-bhub-ring">
+                  {[
+                    { Ic: FileText, a: 0 }, { Ic: Scroll, a: 60 }, { Ic: Receipt, a: 120 },
+                    { Ic: Users, a: 180 }, { Ic: ListChecks, a: 240 }, { Ic: CalendarBlank, a: 300 },
+                  ].map(({ Ic, a }) => (
+                    <span key={a} className="fl-bhub-ic" style={{ '--a': `${a}deg`, '--r': '94px' } as React.CSSProperties}><i><Ic size={20} weight="regular" /></i></span>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="fl-bkarta b">
               <h3>Vse teče iz istih podatkov</h3>
               <p>Ponudba postane pogodba postane račun — brez prepisovanja. Chatbot to vsakič pozabi, Flow si zapomni.</p>
-              <div className="fl-bflow" aria-hidden><b>Ponudba</b><i>→</i><b>Pogodba</b><i>→</i><b>Račun</b><i>→</i><b>Pregled</b></div>
+              <div className="fl-bscreen" aria-hidden>
+                {B_SCREENI.map((src, i) => <img key={src} src={src} className={i === bIdx ? 'on' : ''} alt="" loading="lazy" />)}
+                <div className="fl-bscreen-dots">{B_SCREENI.map((_, i) => <i key={i} className={i === bIdx ? 'on' : ''} />)}</div>
+              </div>
             </div>
             <div className="fl-bkarta c">
               <h3>Vsaka stranka na enem mestu</h3>
               <p>Projekti, dokumenti in vsa komunikacija — povezani s stranko. Ne razmetano po Gmailu.</p>
-              <div className="fl-bavatars" aria-hidden><span>MA</span><span>RK</span><span>LJ</span><span>+</span></div>
+              <div className="fl-bshot" aria-hidden><img src="/flow/stranke.jpg" alt="" loading="lazy" /></div>
             </div>
             <div className="fl-bkarta d">
               <h3>Pošteno ceno, ki je drugi nimajo</h3>
               <p>Anonimni tržni pregled ti pokaže, kje si — in raste z vsakim kreativcem. Tvoj pošteni benchmark.</p>
-              <div className="fl-bprice" aria-hidden><strong>1.850 €</strong><span>predlog</span></div>
+              <div className="fl-bglobe" aria-hidden>
+                <span className="fl-bglobe-ai"><Sparkle size={12} weight="fill" /> AI</span>
+                <svg viewBox="0 0 200 120">
+                  <g stroke="rgba(255,255,255,.32)" fill="none" strokeWidth="1">
+                    <circle cx="100" cy="60" r="44" />
+                    <ellipse cx="100" cy="60" rx="18" ry="44" />
+                    <ellipse cx="100" cy="60" rx="44" ry="16" />
+                    <line x1="56" y1="60" x2="144" y2="60" />
+                  </g>
+                  <g stroke="rgba(255,255,255,.5)" strokeWidth="1" fill="none" strokeDasharray="2 3">
+                    <path d="M72 42 L100 60" /><path d="M128 50 L100 60" /><path d="M88 80 L100 60" /><path d="M118 82 L100 60" /><path d="M100 32 L100 60" />
+                  </g>
+                  <g fill="#fff">
+                    <circle className="dot" cx="72" cy="42" r="2.6" style={{ animationDelay: '0s' }} />
+                    <circle className="dot" cx="128" cy="50" r="2.6" style={{ animationDelay: '.5s' }} />
+                    <circle className="dot" cx="88" cy="80" r="2.6" style={{ animationDelay: '1s' }} />
+                    <circle className="dot" cx="118" cy="82" r="2.6" style={{ animationDelay: '1.5s' }} />
+                    <circle className="dot" cx="100" cy="32" r="2.6" style={{ animationDelay: '2s' }} />
+                  </g>
+                  <circle cx="100" cy="60" r="4.5" fill="#ffd54a" />
+                </svg>
+              </div>
             </div>
           </div>
         </section>
