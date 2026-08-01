@@ -36,3 +36,10 @@ next-env.d.ts
 # Local agent skills (not part of the site)
 .claude/skills/
 skills-lock.json
+
+# Playwright (veliki artefakti — ne v git)
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/tests/screenshots/

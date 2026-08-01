@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:landing": "playwright test",
+    "test:report": "playwright show-report"
   },
   "browserslist": [
     "last 2 Chrome versions",
@@ -39,6 +41,7 @@
     "resend": "^6.18.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@types/matter-js": "^0.20.2",
     "@types/node": "^20.16.5",
     "@types/react": "^18.3.5",
