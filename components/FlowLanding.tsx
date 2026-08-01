@@ -695,7 +695,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @keyframes flOrbit { to { transform: rotate(360deg); } }
         @keyframes flOrbitRev { to { transform: rotate(-360deg); } }
         /* b) zaslon, ki menja 3 screene */
-        .fl-bscreen { position: relative; flex: 1; min-height: 9rem; margin-top: 1.1rem; border-radius: 13px; overflow: hidden; background: #0d0b12; border: 1px solid rgba(255,255,255,.14); box-shadow: 0 14px 30px rgba(0,0,0,.28); }
+        .fl-bkarta.b { flex-direction: row; align-items: center; gap: 1.4rem; }
+        .fl-btekst { flex: 1 1 44%; min-width: 0; }
+        .fl-btekst > p { font-size: .88rem; line-height: 1.5; margin: 0; max-width: 32ch; color: rgba(255,255,255,.74); }
+        .fl-bscreen { position: relative; flex: 1 1 56%; align-self: center; height: 78%; min-height: 7.5rem; border-radius: 12px; overflow: hidden; background: #0d0b12; border: 1px solid rgba(255,255,255,.16); box-shadow: 0 16px 34px rgba(0,0,0,.36); transform: perspective(1100px) rotateY(-13deg) rotate(-1deg); transform-origin: left center; }
         .fl-bscreen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; opacity: 0; transition: opacity .8s ease; }
         .fl-bscreen img.on { opacity: 1; }
         .fl-bscreen-dots { position: absolute; left: 0; right: 0; bottom: .55rem; display: flex; justify-content: center; gap: .35rem; z-index: 2; }
@@ -748,9 +751,11 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 900px) {
           .fl-bento-mreza { grid-template-columns: 1fr 1fr; grid-auto-rows: 13rem; }
           .fl-bkarta.a { grid-column: 1; grid-row: 1 / span 2; }
-          .fl-bkarta.b { grid-column: 2; grid-row: 1; }
+          .fl-bkarta.b { grid-column: 2; grid-row: 1; flex-direction: column; align-items: stretch; gap: 0; }
           .fl-bkarta.c { grid-column: 2; grid-row: 2; }
           .fl-bkarta.d { grid-column: 1 / span 2; grid-row: 3; }
+          .fl-btekst { flex: none; }
+          .fl-bscreen { flex: none; width: auto; height: auto; min-height: 7rem; margin-top: 1rem; transform: none; aspect-ratio: 16 / 10; }
         }
         @media (max-width: 620px) {
           .fl-bento-mreza { grid-template-columns: 1fr; grid-auto-rows: auto; }
@@ -1118,8 +1123,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               </div>
             </div>
             <div className="fl-bkarta b">
-              <h3>Vse teče iz istih podatkov</h3>
-              <p>Ponudba postane pogodba postane račun — brez prepisovanja. Chatbot to vsakič pozabi, Flow si zapomni.</p>
+              <div className="fl-btekst">
+                <h3>Vse teče iz istih podatkov</h3>
+                <p>Ponudba postane pogodba postane račun — brez prepisovanja. Chatbot to vsakič pozabi, Flow si zapomni.</p>
+              </div>
               <div className="fl-bscreen" aria-hidden>
                 {B_SCREENI.map((src, i) => <img key={src} src={src} className={i === bIdx ? 'on' : ''} alt="" loading="lazy" />)}
                 <div className="fl-bscreen-dots">{B_SCREENI.map((_, i) => <i key={i} className={i === bIdx ? 'on' : ''} />)}</div>
