@@ -419,12 +419,12 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       ime: 'Premium', za: 'Za redno delo s strankami · obračunano letno', cena: '15', enota: '€ / mesec',
       ustanovna: 'Ustanovna 9 €/mesec za prvih 50 (časovno) · prvi mesec brezplačno',
       cta: 'Začni brezplačno', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Najbolj priljubljeno', kmalu: false,
-      vkljuceno: ['Vse iz Brezplačno', 'Ponudbe, pogodbe in računi (shranjeni, oštevilčeni)', 'Dolgoročni retainerji', 'Projekti & arhiv — vse na enem projektu', 'Kartoteka strank', 'Ceniki (cenovni profili)', 'Stroški in cilji', 'Koledar in naloge', 'Časovnik in donosnost dela', 'Nadzorna plošča'],
+      vkljuceno: ['Vse iz Brezplačno', 'AI asistentka Pupa — pozna trg in ceno, klepet in glas', 'Ponudbe, pogodbe in računi (shranjeni, oštevilčeni)', 'Dolgoročni retainerji', 'Projekti & arhiv — vse na enem projektu', 'Kartoteka strank (CRM)', 'Ceniki (cenovni profili)', 'Stroški in cilji', 'Koledar in naloge', 'Časovnik in donosnost dela', 'Nadzorna plošča'],
     },
     {
       ime: 'Pro', za: 'Za mali studio in sodelavce · obračunano letno', cena: '29', enota: '€ / mesec',
       cta: 'Kmalu', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Kmalu', kmalu: true,
-      vkljuceno: ['Vse iz Premium', 'Primerjava s trgom — koliko za to zaračunajo drugi', 'Celoten analitični pregled — prihodki in dobiček po strankah', 'Sinhronizacija med vsemi orodji', 'Poslovni okvir in davki', 'Posredovanje računovodstvu (izvoz)', 'AI agent (beta)', 'Sodelavci z dostopom samo do izbranih projektov', 'MCP & API dostop (kmalu)', 'Prednostna podpora'],
+      vkljuceno: ['Vse iz Premium', 'Primerjava s trgom — koliko za to zaračunajo drugi', 'Celoten analitični pregled — prihodki in dobiček po strankah', 'Napredna Pupa: sama razdeli naloge iz tvojih želja', 'Sinhronizacija med vsemi orodji', 'Poslovni okvir in davki', 'Posredovanje računovodstvu (izvoz)', 'Sodelavci z dostopom samo do izbranih projektov', 'MCP & API dostop (kmalu)', 'Prednostna podpora'],
     },
   ];
 
