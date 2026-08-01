@@ -1,0 +1,247 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import {
+  ArrowRight,
+  CalendarBlank,
+  CheckSquare,
+  Code,
+  EnvelopeSimple,
+  Megaphone,
+  PencilSimple,
+  Plus,
+  ShareNetwork,
+  Sparkle,
+  Trash,
+  X,
+} from '@phosphor-icons/react';
+import {
+  MARKETING_PREDLOGE,
+  novaMarketingKampanja,
+  preberiMarketingKampanje,
+  shraniMarketingKampanje,
+  type MarketingKampanja,
+  type MarketingPredloga,
+  type MarketingStatus,
+  type MarketingVrsta,
+} from '@/lib/marketing';
+import styles from './MarketingWorkspace.module.css';
+
+type Zavihek = 'pregled' | 'kampanje' | 'predloge' | 'povezave';
+
+const PRAZEN = {
+  naslov: '',
+  vrsta: 'email' as MarketingVrsta,
+  status: 'osnutek' as MarketingStatus,
+  datum: '',
+  opis: '',
+};
+
+const oznakeVrste: Record<MarketingVrsta, string> = {
+  email: 'E-pošta',
+  vprasalnik: 'Vprašalnik',
+  social: 'Družbena omrežja',
+};
+
+const oznakeStatusa: Record<MarketingStatus, string> = {
+  osnutek: 'Osnutek',
+  nacrtovano: 'Načrtovano',
+  aktivno: 'Aktivno',
+  zakljuceno: 'Zaključeno',
+};
+
+function IkonaVrste({ vrsta, size = 20 }: { vrsta: MarketingVrsta; size?: number }) {
+  if (vrsta === 'email') return <EnvelopeSimple size={size} aria-hidden="true" />;
+  if (vrsta === 'vprasalnik') return <Code size={size} aria-hidden="true" />;
+  return <ShareNetwork size={size} aria-hidden="true" />;
+}
+
+export default function MarketingWorkspace({ base }: { base: string }) {
+  const [zavihek, setZavihek] = useState<Zavihek>('pregled');
+  const [kampanje, setKampanje] = useState<MarketingKampanja[]>([]);
+  const [obrazecOdprt, setObrazecOdprt] = useState(false);
+  const [urejamId, setUrejamId] = useState<string | null>(null);
+  const [obrazec, setObrazec] = useState(PRAZEN);
+
+  useEffect(() => setKampanje(preberiMarketingKampanje()), []);
+
+  useEffect(() => {
+    if (!obrazecOdprt) return;
+    const zapri = (dogodek: KeyboardEvent) => dogodek.key === 'Escape' && setObrazecOdprt(false);
+    document.addEventListener('keydown', zapri);
+    return () => document.removeEventListener('keydown', zapri);
+  }, [obrazecOdprt]);
+
+  const aktivne = useMemo(
+    () => kampanje.filter((kampanja) => kampanja.status === 'aktivno' || kampanja.status === 'nacrtovano').length,
+    [kampanje],
+  );
+
+  const odpriNovo = (vrsta: MarketingVrsta = 'email') => {
+    setUrejamId(null);
+    setObrazec({ ...PRAZEN, vrsta });
+    setObrazecOdprt(true);
+  };
+
+  const uporabiPredlogo = (predloga: MarketingPredloga) => {
+    setUrejamId(null);
+    setObrazec({ ...PRAZEN, naslov: predloga.naslov, opis: predloga.opis, vrsta: predloga.vrsta });
+    setObrazecOdprt(true);
+  };
+
+  const uredi = (kampanja: MarketingKampanja) => {
+    setUrejamId(kampanja.id);
+    setObrazec({
+      naslov: kampanja.naslov,
+      vrsta: kampanja.vrsta,
+      status: kampanja.status,
+      datum: kampanja.datum || '',
+      opis: kampanja.opis || '',
+    });
+    setObrazecOdprt(true);
+  };
+
+  const shrani = (dogodek: FormEvent) => {
+    dogodek.preventDefault();
+    const naslednje = urejamId
+      ? kampanje.map((kampanja) => kampanja.id === urejamId ? { ...kampanja, ...obrazec } : kampanja)
+      : [novaMarketingKampanja(obrazec), ...kampanje];
+    setKampanje(naslednje);
+    shraniMarketingKampanje(naslednje);
+    setObrazecOdprt(false);
+    setZavihek('kampanje');
+  };
+
+  const izbrisi = (id: string) => {
+    const naslednje = kampanje.filter((kampanja) => kampanja.id !== id);
+    setKampanje(naslednje);
+    shraniMarketingKampanje(naslednje);
+  };
+
+  const Kampanje = () => (
+    <section className={styles.campaigns} aria-labelledby="kampanje-naslov">
+      <header className={styles.sectionHeader}>
+        <div>
+          <p className={styles.sectionLabel}>KAMPANJE</p>
+          <h2 id="kampanje-naslov">Od zamisli do objave.</h2>
+          <p>{kampanje.length === 0 ? 'Prva kampanja se začne z enim jasnim ciljem.' : `${aktivne} aktivnih ali načrtovanih · ${kampanje.length} skupaj`}</p>
+        </div>
+        <button className={styles.secondary} type="button" onClick={() => odpriNovo()}><Plus size={18} /> Nova kampanja</button>
+      </header>
+      {kampanje.length === 0 ? (
+        <div className={styles.empty}>
+          <Megaphone size={34} aria-hidden="true" />
+          <strong>Tu bodo tvoje kampanje.</strong>
+          <p>Izberi predlogo ali začni prazno. Osnutek se shrani v tvojem brskalniku.</p>
+          <button className={styles.primary} type="button" onClick={() => setZavihek('predloge')}>Poglej predloge <ArrowRight size={18} /></button>
+        </div>
+      ) : (
+        <div className={styles.campaignList}>
+          {kampanje.map((kampanja) => (
+            <article className={styles.campaignRow} key={kampanja.id}>
+              <span className={styles.campaignIcon}><IkonaVrste vrsta={kampanja.vrsta} /></span>
+              <span className={styles.campaignTitle}>
+                <strong>{kampanja.naslov}</strong>
+                <small>{oznakeVrste[kampanja.vrsta]}{kampanja.opis ? ` · ${kampanja.opis}` : ''}</small>
+              </span>
+              <time className={styles.campaignDate} dateTime={kampanja.datum}>{kampanja.datum ? new Date(`${kampanja.datum}T12:00:00`).toLocaleDateString('sl-SI') : 'Brez datuma'}</time>
+              <span className={styles.status} data-status={kampanja.status}>{oznakeStatusa[kampanja.status]}</span>
+              <span className={styles.rowActions}>
+                <button className={styles.iconButton} type="button" onClick={() => uredi(kampanja)} aria-label={`Uredi ${kampanja.naslov}`}><PencilSimple size={19} /></button>
+                <button className={styles.iconButton} type="button" onClick={() => izbrisi(kampanja.id)} aria-label={`Izbriši ${kampanja.naslov}`}><Trash size={19} /></button>
+              </span>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+
+  const Predloge = () => (
+    <section className={styles.templates} aria-labelledby="predloge-naslov">
+      <header className={styles.sectionHeader}>
+        <div><p className={styles.sectionLabel}>PREDLOGE</p><h2 id="predloge-naslov">Začni z dobro osnovo.</h2></div>
+      </header>
+      <div className={styles.templateGrid}>
+        {MARKETING_PREDLOGE.map((predloga) => (
+          <article className={styles.templateCard} key={predloga.id}>
+            <IkonaVrste vrsta={predloga.vrsta} size={25} />
+            {predloga.oznaka && <span className={styles.badge}>{predloga.oznaka}</span>}
+            <h3>{predloga.naslov}</h3>
+            <p>{predloga.opis}</p>
+            <button className={styles.templateButton} type="button" onClick={() => uporabiPredlogo(predloga)}>Uporabi predlogo <ArrowRight size={17} /></button>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+
+  const Povezave = () => (
+    <section className={styles.templates} aria-labelledby="povezave-naslov">
+      <header className={styles.sectionHeader}>
+        <div><p className={styles.sectionLabel}>POVEZAVE</p><h2 id="povezave-naslov">Vse ostane v tvojem toku.</h2><p>Marketing se poveže z orodji, ki jih že uporabljaš v Flowu.</p></div>
+      </header>
+      <div className={styles.integrationGrid}>
+        <article className={styles.integrationCard}><div className={styles.integrationHead}><CalendarBlank size={25} /><span className={styles.connectionState} data-ready="true">Vključeno</span></div><h3>Flow Koledar</h3><p>Načrtovani datumi kampanj so pripravljeni za pregled ob drugih rokih.</p><Link className={styles.secondary} href={`${base}/kalkulator/koledar`}>Odpri koledar</Link></article>
+        <article className={styles.integrationCard}><div className={styles.integrationHead}><CheckSquare size={25} /><span className={styles.connectionState} data-ready="true">Vključeno</span></div><h3>Flow Naloge</h3><p>Pripravo besedil, vizualov in objav vodiš kot opravila.</p><Link className={styles.secondary} href={`${base}/kalkulator/naloge`}>Odpri naloge</Link></article>
+        <article className={styles.integrationCard}><div className={styles.integrationHead}><EnvelopeSimple size={25} /><span className={styles.connectionState}>Kmalu</span></div><h3>Pošiljanje e-pošte</h3><p>Pred dejanskim pošiljanjem bomo dodali privolitev, odjavo in zanesljivo dostavo.</p></article>
+      </div>
+    </section>
+  );
+
+  return (
+    <div className={styles.page}>
+      <section className={styles.hero}>
+        <div className={styles.heroText}>
+          <p className={styles.eyebrow}>MARKETING</p>
+          <h1>Naj te opazijo pravi ljudje.</h1>
+          <p>Načrtuj kampanje, pripravi vsebine in poveži roke z nalogami — brez še enega nepovezanega orodja.</p>
+        </div>
+        <button className={styles.primary} type="button" onClick={() => odpriNovo()}><Plus size={19} /> Nova kampanja</button>
+      </section>
+
+      <nav className={styles.tabs} aria-label="Marketing pogledi">
+        {([['pregled', 'Pregled'], ['kampanje', 'Kampanje'], ['predloge', 'Predloge'], ['povezave', 'Povezave']] as const).map(([id, napis]) => (
+          <button key={id} className={styles.tab} type="button" data-active={zavihek === id} onClick={() => setZavihek(id)}>{napis}</button>
+        ))}
+      </nav>
+
+      {zavihek === 'pregled' && <>
+        <section className={styles.quickGrid} aria-label="Hitri začetki">
+          <button className={styles.quickCard} type="button" onClick={() => odpriNovo('email')}><EnvelopeSimple aria-hidden="true" /><h2>E-pošta</h2><p>Dobrodošlice, novosti in premišljena sporočila ob pravem času.</p><span className={styles.cardLink}>Ustvari sporočilo →</span></button>
+          <button className={styles.quickCard} type="button" onClick={() => odpriNovo('vprasalnik')}><Code aria-hidden="true" /><h2>Vprašalnik</h2><p>Zberi kakovostna povpraševanja z obrazcem za svojo spletno stran.</p><span className={styles.cardLink}>Pripravi obrazec →</span></button>
+          <button className={styles.quickCard} type="button" onClick={() => odpriNovo('social')}><ShareNetwork aria-hidden="true" /><h2>Družbena omrežja</h2><p>Objave spremeni v jasen načrt z roki in opravili.</p><span className={styles.cardLink}>Načrtuj objavo →</span></button>
+        </section>
+        <section className={styles.flowCard}>
+          <div><p className={styles.sectionLabel}>POVEZANO S FLOWOM</p><h2>Kampanja ni osamljen seznam.</h2><p>Roke vodiš v koledarju, pripravo vsebin pa med nalogami. Tako vidiš, kaj sledi in kdo mora kaj dokončati.</p></div>
+          <div className={styles.flowActions}><Link className={styles.secondary} href={`${base}/kalkulator/naloge`}><CheckSquare size={18} /> Naloge</Link><Link className={styles.secondary} href={`${base}/kalkulator/koledar`}><CalendarBlank size={18} /> Koledar</Link></div>
+        </section>
+        <Kampanje />
+        <Predloge />
+      </>}
+      {zavihek === 'kampanje' && <Kampanje />}
+      {zavihek === 'predloge' && <Predloge />}
+      {zavihek === 'povezave' && <Povezave />}
+
+      {obrazecOdprt && (
+        <div className={styles.dialogBackdrop} role="presentation" onMouseDown={(e) => e.target === e.currentTarget && setObrazecOdprt(false)}>
+          <section className={styles.formPanel} role="dialog" aria-modal="true" aria-labelledby="marketing-obrazec-naslov">
+            <button className={styles.close} type="button" onClick={() => setObrazecOdprt(false)} aria-label="Zapri"><X size={20} /></button>
+            <Sparkle size={25} aria-hidden="true" />
+            <h2 id="marketing-obrazec-naslov">{urejamId ? 'Uredi kampanjo.' : 'Nova kampanja.'}</h2>
+            <p>Najprej zapiši namen in rok. Vsebino lahko razviješ kasneje.</p>
+            <form className={styles.form} onSubmit={shrani}>
+              <label>Ime kampanje<input required value={obrazec.naslov} onChange={(e) => setObrazec({ ...obrazec, naslov: e.target.value })} placeholder="Npr. Jesenska predstavitev storitve" autoFocus /></label>
+              <label>Vrsta<select value={obrazec.vrsta} onChange={(e) => setObrazec({ ...obrazec, vrsta: e.target.value as MarketingVrsta })}><option value="email">E-pošta</option><option value="vprasalnik">Spletni vprašalnik</option><option value="social">Družbena omrežja</option></select></label>
+              <label>Status<select value={obrazec.status} onChange={(e) => setObrazec({ ...obrazec, status: e.target.value as MarketingStatus })}><option value="osnutek">Osnutek</option><option value="nacrtovano">Načrtovano</option><option value="aktivno">Aktivno</option><option value="zakljuceno">Zaključeno</option></select></label>
+              <label>Datum<input type="date" value={obrazec.datum} onChange={(e) => setObrazec({ ...obrazec, datum: e.target.value })} /></label>
+              <label>Kratek opis<textarea value={obrazec.opis} onChange={(e) => setObrazec({ ...obrazec, opis: e.target.value })} placeholder="Kaj želiš doseči in komu govoriš?" /></label>
+              <div className={styles.formActions}><button className={styles.quietButton} type="button" onClick={() => setObrazecOdprt(false)}>Prekliči</button><button className={styles.primary} type="submit">Shrani kampanjo</button></div>
+            </form>
+          </section>
+        </div>
+      )}
+    </div>
+  );
+}

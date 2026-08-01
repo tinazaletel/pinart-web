@@ -9,7 +9,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname } from 'next/navigation';
-import { Microphone, SpeakerHigh, SpeakerSlash } from '@phosphor-icons/react';
+import { Microphone, SpeakerHigh, SpeakerSlash, Sparkle } from '@phosphor-icons/react';
 import { preberiPupaKontekst, type PupaKontekst } from '@/lib/pupaBridge';
 
 const OBRAZ = (px: number) => (
@@ -114,8 +114,10 @@ export default function Pupa() {
             <circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
             <circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
           </svg>
+          <Sparkle size={17} weight="fill" color="#ffd54a" style={{ position: 'absolute', top: -5, right: -3, filter: 'drop-shadow(0 1px 2px rgba(42,32,53,.25))' }} aria-hidden />
+          <Sparkle size={10} weight="fill" color="#ffcf3f" style={{ position: 'absolute', top: 5, right: -9, filter: 'drop-shadow(0 1px 2px rgba(42,32,53,.2))' }} aria-hidden />
           {nasveti.length > 0 && (
-            <span aria-hidden style={{ position: 'absolute', top: -2, right: -2, minWidth: 20, height: 20, padding: '0 5px', borderRadius: 10, background: '#e0567a', color: '#fff', fontSize: '.72rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff' }}>{nasveti.length}</span>
+            <span aria-hidden style={{ position: 'absolute', bottom: -2, right: -2, minWidth: 18, height: 18, padding: '0 4px', borderRadius: 9, background: '#e0567a', color: '#fff', fontSize: '.66rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff' }}>{nasveti.length}</span>
           )}
         </button>
       )}
