@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   ArrowRight,
   CalendarBlank,
+  Check,
   CheckSquare,
   Code,
   EnvelopeSimple,
@@ -29,7 +30,21 @@ import {
 } from '@/lib/marketing';
 import styles from './MarketingWorkspace.module.css';
 
-type Zavihek = 'pregled' | 'kampanje' | 'predloge' | 'povezave';
+type Zavihek = 'pregled' | 'objave' | 'kampanje' | 'predloge' | 'povezave';
+type SocialKanal = 'instagram' | 'facebook' | 'linkedin';
+type NacrtovanaObjava = { id: string; kanal: SocialKanal; besedilo: string; datum: string; ustvarjeno: string };
+
+const OBJAVE_KLJUC = 'pinart-flow-marketing-objave-v1';
+const SOCIAL_LINKI: Record<SocialKanal, string> = {
+  instagram: 'https://www.instagram.com/',
+  facebook: 'https://www.facebook.com/',
+  linkedin: 'https://www.linkedin.com/feed/',
+};
+const SOCIAL_OZNAKE: Record<SocialKanal, string> = {
+  instagram: 'Instagram',
+  facebook: 'Facebook',
+  linkedin: 'LinkedIn',
+};
 
 const PRAZEN = {
   naslov: '',
@@ -75,8 +90,17 @@ export default function MarketingWorkspace({ base }: { base: string }) {
   const [obrazecOdprt, setObrazecOdprt] = useState(false);
   const [urejamId, setUrejamId] = useState<string | null>(null);
   const [obrazec, setObrazec] = useState(PRAZEN);
+  const [objave, setObjave] = useState<NacrtovanaObjava[]>([]);
+  const [objava, setObjava] = useState<{ kanal: SocialKanal; besedilo: string; datum: string }>({ kanal: 'instagram', besedilo: '', datum: '' });
+  const [kopiranoId, setKopiranoId] = useState<string | null>(null);
 
-  useEffect(() => setKampanje(preberiMarketingKampanje()), []);
+  useEffect(() => {
+    setKampanje(preberiMarketingKampanje());
+    try {
+      const shranjene = window.localStorage.getItem(OBJAVE_KLJUC);
+      setObjave(shranjene ? JSON.parse(shranjene) : []);
+    } catch { setObjave([]); }
+  }, []);
 
   useEffect(() => {
     if (!obrazecOdprt) return;
@@ -143,6 +167,62 @@ export default function MarketingWorkspace({ base }: { base: string }) {
     setKampanje(naslednje);
     shraniMarketingKampanje(naslednje);
   };
+
+  const shraniObjavo = (dogodek: FormEvent) => {
+    dogodek.preventDefault();
+    const nova: NacrtovanaObjava = {
+      ...objava,
+      id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `objava-${Date.now()}`,
+      ustvarjeno: new Date().toISOString(),
+    };
+    const naslednje = [nova, ...objave];
+    setObjave(naslednje);
+    window.localStorage.setItem(OBJAVE_KLJUC, JSON.stringify(naslednje));
+    setObjava({ kanal: objava.kanal, besedilo: '', datum: '' });
+  };
+
+  const izbrisiObjavo = (id: string) => {
+    const naslednje = objave.filter((vnos) => vnos.id !== id);
+    setObjave(naslednje);
+    window.localStorage.setItem(OBJAVE_KLJUC, JSON.stringify(naslednje));
+  };
+
+  const kopirajObjavo = async (vnos: NacrtovanaObjava) => {
+    await navigator.clipboard.writeText(vnos.besedilo);
+    setKopiranoId(vnos.id);
+    window.setTimeout(() => setKopiranoId((trenutni) => trenutni === vnos.id ? null : trenutni), 1800);
+  };
+
+  const Objave = () => (
+    <section className={styles.postPlanner} aria-labelledby="objave-naslov">
+      <header className={styles.sectionHeader}>
+        <div><p className={styles.sectionLabel}>NAČRTOVALEC OBJAV</p><h2 id="objave-naslov">Pripravi. Kopiraj. Objavi.</h2><p>Flow pripravi načrt; objavo na omrežju vedno potrdiš in objaviš sama.</p></div>
+        <span className={styles.betaNote}>AI predlogi · kmalu (beta)</span>
+      </header>
+      <div className={styles.plannerGrid}>
+        <form className={styles.postForm} onSubmit={shraniObjavo}>
+          <label>Kanal<select value={objava.kanal} onChange={(e) => setObjava({ ...objava, kanal: e.target.value as SocialKanal })}><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="linkedin">LinkedIn</option></select></label>
+          <label>Datum objave<input required type="date" value={objava.datum} onChange={(e) => setObjava({ ...objava, datum: e.target.value })} /></label>
+          <label className={styles.captionField}>Besedilo objave<textarea required value={objava.besedilo} onChange={(e) => setObjava({ ...objava, besedilo: e.target.value })} placeholder="Napiši uvod, glavno sporočilo in jasen naslednji korak …" /></label>
+          <p className={styles.manualNote}>Flow vsebine ne objavi samodejno. Po shranjevanju jo kopiraš in odpreš izbrano omrežje.</p>
+          <button className={styles.primary} type="submit">Shrani načrtovano objavo</button>
+        </form>
+        <div className={styles.postList} aria-live="polite">
+          {objave.length === 0 ? <div className={styles.postEmpty}><ShareNetwork size={30} /><strong>Še nimaš načrtovanih objav.</strong><p>Prva se bo po shranjevanju prikazala tukaj.</p></div> : objave.map((vnos) => (
+            <article className={styles.postCard} key={vnos.id}>
+              <header><span>{SOCIAL_OZNAKE[vnos.kanal]}</span><time dateTime={vnos.datum}>{new Date(`${vnos.datum}T12:00:00`).toLocaleDateString('sl-SI')}</time></header>
+              <p>{vnos.besedilo}</p>
+              <div className={styles.postActions}>
+                <button className={styles.secondary} type="button" onClick={() => kopirajObjavo(vnos)}>{kopiranoId === vnos.id ? <Check size={18} /> : <Code size={18} />}{kopiranoId === vnos.id ? 'Kopirano' : 'Kopiraj besedilo'}</button>
+                <a className={styles.primary} href={SOCIAL_LINKI[vnos.kanal]} target="_blank" rel="noreferrer">Odpri {SOCIAL_OZNAKE[vnos.kanal]} <ArrowRight size={18} /></a>
+                <button className={styles.iconButton} type="button" onClick={() => izbrisiObjavo(vnos.id)} aria-label="Izbriši načrtovano objavo"><Trash size={19} /></button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 
   const Kampanje = () => (
     <section className={styles.campaigns} aria-labelledby="kampanje-naslov">
@@ -211,7 +291,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
         <article className={styles.integrationCard}><div className={styles.integrationHead}><CalendarBlank size={25} /><span className={styles.connectionState} data-ready="true">Vključeno</span></div><h3>Flow Koledar</h3><p>Načrtovani datumi kampanj so pripravljeni za pregled ob drugih rokih.</p><Link className={styles.secondary} href={`${base}/kalkulator/koledar`}>Odpri koledar</Link></article>
         <article className={styles.integrationCard}><div className={styles.integrationHead}><CheckSquare size={25} /><span className={styles.connectionState} data-ready="true">Vključeno</span></div><h3>Flow Naloge</h3><p>Pripravo besedil, vizualov in objav vodiš kot opravila.</p><Link className={styles.secondary} href={`${base}/kalkulator/naloge`}>Odpri naloge</Link></article>
         <article className={styles.integrationCard}><div className={styles.integrationHead}><EnvelopeSimple size={25} /><span className={styles.connectionState}>Kmalu</span></div><h3>Pošiljanje e-pošte</h3><p>Pred dejanskim pošiljanjem bomo dodali privolitev, odjavo in zanesljivo dostavo.</p></article>
-        <article className={styles.integrationCard}><div className={styles.integrationHead}><ShareNetwork size={25} /><span className={styles.connectionState}>Načrtovano</span></div><h3>Družbena omrežja</h3><p>Objave za zdaj načrtuješ v Flowu. Neposredno objavljanje bo zahtevalo varno povezavo posameznega računa.</p></article>
+        <article className={styles.integrationCard}><div className={styles.integrationHead}><ShareNetwork size={25} /><span className={styles.connectionState}>Kmalu (beta)</span></div><h3>Družbena omrežja</h3><p>Objave načrtuješ v Flowu, nato besedilo kopiraš in jih ročno objaviš. Samodejna objava še ni na voljo.</p><button className={styles.secondary} type="button" onClick={() => setZavihek('objave')}>Odpri načrtovalec</button></article>
         <article className={styles.integrationCard}><div className={styles.integrationHead}><Megaphone size={25} /><span className={styles.connectionState}>Načrtovano</span></div><h3>Merjenje obiska</h3><p>Ko povežeš analitiko, bo kampanja pokazala tudi obisk, povpraševanja in dejanski rezultat.</p></article>
       </div>
     </section>
@@ -229,7 +309,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
       </section>
 
       <nav className={styles.tabs} aria-label="Marketing pogledi">
-        {([['pregled', 'Pregled'], ['kampanje', 'Kampanje'], ['predloge', 'Predloge'], ['povezave', 'Povezave']] as const).map(([id, napis]) => (
+        {([['pregled', 'Pregled'], ['objave', 'Objave'], ['kampanje', 'Kampanje'], ['predloge', 'Predloge'], ['povezave', 'Povezave']] as const).map(([id, napis]) => (
           <button key={id} className={styles.tab} type="button" data-active={zavihek === id} onClick={() => setZavihek(id)}>{napis}</button>
         ))}
       </nav>
@@ -273,6 +353,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
         <Predloge />
       </>}
       {zavihek === 'kampanje' && <Kampanje />}
+      {zavihek === 'objave' && <Objave />}
       {zavihek === 'predloge' && <Predloge />}
       {zavihek === 'povezave' && <Povezave />}
 

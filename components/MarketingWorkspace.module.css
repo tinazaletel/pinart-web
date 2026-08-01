@@ -227,6 +227,23 @@
 
 .campaigns,
 .templates { padding: 1.25rem; border-radius: 1.35rem; }
+.postPlanner { padding: 1.25rem; border: 1px solid var(--line); border-radius: 1.35rem; background: color-mix(in oklch, var(--paper) 91%, transparent); backdrop-filter: blur(16px); }
+.betaNote { align-self: start; padding: .42rem .7rem; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: .75rem; font-weight: 750; }
+.plannerGrid { display: grid; grid-template-columns: minmax(18rem, .8fr) minmax(22rem, 1.2fr); gap: 1rem; }
+.postForm { display: grid; grid-template-columns: 1fr 1fr; align-content: start; gap: .8rem; padding: 1rem; border: 1px solid var(--line); border-radius: 1.1rem; background: linear-gradient(145deg, oklch(97% .025 165), oklch(95% .035 300)); }
+.postForm label { display: grid; gap: .4rem; font-size: .84rem; font-weight: 750; }
+.postForm select, .postForm input, .postForm textarea { width: 100%; min-height: 3rem; box-sizing: border-box; padding: .72rem .82rem; border: 1px solid var(--line); border-radius: .75rem; background: oklch(100% 0 0 / .72); color: var(--ink); font: 400 1rem var(--font-sans), sans-serif; }
+.postForm textarea { min-height: 11rem; resize: vertical; line-height: 1.5; }
+.captionField, .manualNote, .postForm > .primary { grid-column: 1 / -1; }
+.manualNote { margin: 0; color: var(--muted); font-size: .8rem; line-height: 1.45; }
+.postList { display: grid; align-content: start; gap: .7rem; }
+.postEmpty { display: grid; place-items: center; min-height: 15rem; padding: 1.5rem; border: 1px dashed var(--line); border-radius: 1.1rem; text-align: center; }
+.postEmpty p { margin: .35rem 0 0; color: var(--muted); }
+.postCard { padding: 1rem; border: 1px solid var(--line); border-radius: 1.1rem; background: color-mix(in oklch, var(--paper) 80%, transparent); }
+.postCard header { display: flex; justify-content: space-between; gap: 1rem; color: var(--muted); font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.postCard > p { margin: .9rem 0 1rem; line-height: 1.55; white-space: pre-wrap; }
+.postActions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
+.postActions .iconButton { margin-left: auto; }
 .sectionHeader { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
 .sectionHeader h2 { margin: 0; font: 500 2rem var(--font-serif), Georgia, serif; }
 .sectionHeader p { margin: .35rem 0 0; color: var(--muted); }
@@ -304,6 +321,7 @@
   .designBanner { grid-template-columns: auto minmax(0, 1fr); }
   .designActions { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
   .campaignRow { grid-template-columns: 2.2rem minmax(0, 1fr) auto; }
+  .plannerGrid { grid-template-columns: 1fr; }
   .campaignDate { grid-column: 2; }
   .campaignRow > .status { grid-column: 3; grid-row: 1; }
   .rowActions { grid-column: 3; grid-row: 2; }
@@ -325,7 +343,11 @@
   .designBanner { grid-template-columns: 1fr; padding: 1.1rem; }
   .designIcon { width: 3.5rem; }
   .designActions { grid-column: 1; grid-template-columns: 1fr; min-width: 0; }
-  .campaigns, .templates { padding: .9rem; border-radius: 1.1rem; }
+  .campaigns, .templates, .postPlanner { padding: .9rem; border-radius: 1.1rem; }
+  .postForm { grid-template-columns: 1fr; }
+  .captionField, .manualNote, .postForm > .primary { grid-column: 1; }
+  .postActions { display: grid; grid-template-columns: 1fr; }
+  .postActions .iconButton { margin-left: 0; }
   .sectionHeader { align-items: start; flex-direction: column; }
   .campaignRow { grid-template-columns: 2.2rem minmax(0, 1fr) auto; gap: .65rem; }
   .form { grid-template-columns: 1fr; }
