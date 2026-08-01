@@ -19,6 +19,9 @@ export type PostaVnos = {
   zadeva: string;
   povzetek?: string;
   datum: string;           // ISO cas zapisa
+  telo?: string;           // neobvezno: celo besedilo sporocila (HTML ali plain) — za branje
+  osnutek?: boolean;       // neobvezno: je osnutek (Osnutki)
+  izbrisano?: string;      // neobvezno: ISO cas izbrisa (Kos)
 };
 
 const KLJUC = 'pinart-posta-dnevnik';

@@ -634,6 +634,9 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             zadeva: m.subject || '',
             povzetek: m.summary,
             datum: m.occurredAt || new Date().toISOString(),
+            telo: m.bodyHtml || m.bodyText,
+            osnutek: m.isDraft,
+            izbrisano: m.deletedAt,
           };
           zdruzeno.set(kljuc(v), v);
         });
