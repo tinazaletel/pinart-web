@@ -9,7 +9,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname } from 'next/navigation';
-import { Microphone, SpeakerHigh, SpeakerSlash, Sparkle } from '@phosphor-icons/react';
+import { Microphone, Sparkle } from '@phosphor-icons/react';
 import { preberiPupaKontekst, type PupaKontekst } from '@/lib/pupaBridge';
 
 const OBRAZ = (px: number) => (
@@ -39,13 +39,19 @@ export default function Pupa() {
   const [caka, setCaka] = useState(false);
   const [poslusa, setPoslusa] = useState(false);
   const [zvok, setZvok] = useState(false);
+  const [nacin, setNacin] = useState<'chat' | 'glas'>('chat');
+  const [govoreca, setGovoreca] = useState(false);
   const sporRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
     setCtx(preberiPupaKontekst());
     const onCtx = () => setCtx(preberiPupaKontekst());
-    const onOpen = () => setOdprt(true);
+    const onOpen = (e: Event) => {
+      const d = (e as CustomEvent).detail as { nacin?: 'chat' | 'glas' } | undefined;
+      if (d?.nacin) { setNacin(d.nacin); if (d.nacin === 'glas') setZvok(true); }
+      setOdprt(true);
+    };
     window.addEventListener('pupa:kontekst', onCtx);
     window.addEventListener('pupa:odpri', onOpen);
     return () => { window.removeEventListener('pupa:kontekst', onCtx); window.removeEventListener('pupa:odpri', onOpen); };
@@ -59,12 +65,17 @@ export default function Pupa() {
 
   const nasveti = ctx.nasveti;
   const imaPonudbo = !!ctx.kontekst;
+  const zadnjiU = [...spor].reverse().find(m => m.role === 'user');
+  const zadnjiA = [...spor].reverse().find(m => m.role === 'assistant');
 
   const govori = (t: string) => {
     if (typeof window === 'undefined' || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(t);
     u.lang = locale === 'en' ? 'en-US' : 'sl-SI';
+    u.onstart = () => setGovoreca(true);
+    u.onend = () => setGovoreca(false);
+    u.onerror = () => setGovoreca(false);
     window.speechSynthesis.speak(u);
   };
 
@@ -83,7 +94,7 @@ export default function Pupa() {
       const data = await res.json();
       const odg = data.odgovor || data.napaka || 'Hmm, nekaj je zaškripalo.';
       setSpor(s => [...s, { role: 'assistant', content: odg }]);
-      if (zvok) govori(odg);
+      if (zvok || nacin === 'glas') govori(odg);
     } catch {
       setSpor(s => [...s, { role: 'assistant', content: L('Ne morem do zaledja. Poskusi znova.', 'Cannot reach the backend. Try again.') }]);
     } finally {
@@ -131,19 +142,40 @@ export default function Pupa() {
 
       {odprt && (
         <div role="dialog" aria-label="Pupa" style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(400px, 94vw)', zIndex: 95, background: '#fff', borderLeft: '1px solid rgba(42,32,53,.12)', boxShadow: '-16px 0 50px rgba(42,32,53,.18)', display: 'flex', flexDirection: 'column', color: '#2A2035' }}>
+          <style>{'@keyframes pupaRing{0%{box-shadow:0 0 0 0 rgba(224,86,122,.40)}100%{box-shadow:0 0 0 32px rgba(224,86,122,0)}}@keyframes pupaBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}'}</style>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '1rem 1.1rem', borderBottom: '1px solid rgba(42,32,53,.08)' }}>
             {OBRAZ(34)}
             <div style={{ flex: 1, lineHeight: 1.2 }}>
               <b style={{ fontSize: '1rem' }}>Pupa</b>
               <div style={{ fontSize: '.74rem', opacity: .6 }}>{L('pomočnica za cene in pravice', 'your pricing & rights helper')}</div>
             </div>
-            <button type="button" onClick={() => { const n = !zvok; setZvok(n); if (!n && typeof window !== 'undefined') window.speechSynthesis?.cancel(); }} aria-label={zvok ? L('Izklopi glas', 'Mute voice') : L('Vklopi glas', 'Enable voice')} title={zvok ? L('Glasovni odgovori: vklopljeni', 'Voice replies: on') : L('Glasovni odgovori: izklopljeni', 'Voice replies: off')} style={{ border: 'none', background: 'none', cursor: 'pointer', color: zvok ? '#a78bfa' : 'rgba(42,32,53,.45)', padding: 2, display: 'inline-flex' }}>
-              {zvok ? <SpeakerHigh size={19} weight="fill" /> : <SpeakerSlash size={19} />}
-            </button>
-            <button type="button" onClick={() => setOdprt(false)} aria-label={L('Zapri', 'Close')} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 24, lineHeight: 1, color: 'rgba(42,32,53,.5)', padding: 2 }}>×</button>
+            <div role="group" aria-label={L('Način', 'Mode')} style={{ display: 'inline-flex', gap: 2, padding: 2, borderRadius: 999, background: 'rgba(42,32,53,.06)' }}>
+              <button type="button" onClick={() => setNacin('chat')} aria-pressed={nacin === 'chat'} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.3rem .6rem', fontSize: '.73rem', fontWeight: 700, fontFamily: 'inherit', background: nacin === 'chat' ? '#2A2035' : 'transparent', color: nacin === 'chat' ? '#fff' : 'rgba(42,32,53,.6)' }}>{L('Klepet', 'Chat')}</button>
+              <button type="button" onClick={() => { setNacin('glas'); setZvok(true); }} aria-pressed={nacin === 'glas'} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.3rem .6rem', fontSize: '.73rem', fontWeight: 700, fontFamily: 'inherit', background: nacin === 'glas' ? '#2A2035' : 'transparent', color: nacin === 'glas' ? '#fff' : 'rgba(42,32,53,.6)' }}>{L('Glas', 'Voice')}</button>
+            </div>
+            <button type="button" onClick={() => { if (typeof window !== 'undefined') window.speechSynthesis?.cancel(); setOdprt(false); }} aria-label={L('Zapri', 'Close')} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 24, lineHeight: 1, color: 'rgba(42,32,53,.5)', padding: 2 }}>×</button>
           </div>
 
-          <div ref={sporRef} style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+          {nacin === 'glas' ? (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.25rem', padding: '1.5rem 1.4rem', textAlign: 'center' }}>
+              {zadnjiA && <p style={{ margin: 0, maxWidth: '30ch', fontSize: '.94rem', lineHeight: 1.5, opacity: caka ? .35 : 1 }}>{zadnjiA.content}</p>}
+              <button type="button" onClick={() => { if (!poslusa && !caka) glas(); }} aria-label={L('Tapni in govori', 'Tap to talk')}
+                style={{ position: 'relative', width: 148, height: 148, flex: 'none', borderRadius: '50%', border: 'none', padding: 0, cursor: poslusa || caka ? 'default' : 'pointer', background: 'conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)', animation: poslusa ? 'pupaRing 1.4s ease-out infinite' : govoreca ? 'pupaBreathe 1.8s ease-in-out infinite' : 'none' }}>
+                <svg viewBox="0 0 40 40" width="148" height="148" style={{ position: 'absolute', inset: 0 }}>
+                  <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                  <path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                  <path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                  <circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
+                  <circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
+                </svg>
+              </button>
+              <div style={{ minHeight: '1.4em', fontSize: '.92rem', fontWeight: 600, color: poslusa ? '#e0567a' : 'rgba(42,32,53,.72)' }}>
+                {poslusa ? L('Poslušam…', 'Listening…') : caka ? L('Pupa razmišlja…', 'Pupa is thinking…') : govoreca ? L('Pupa govori…', 'Pupa is speaking…') : L('Tapni krog in govori', 'Tap the circle and talk')}
+              </div>
+              {zadnjiU && <p style={{ margin: 0, fontSize: '.78rem', opacity: .5, maxWidth: '30ch' }}>{L('Ti:', 'You:')} {zadnjiU.content}</p>}
+            </div>
+          ) : (
+          <><div ref={sporRef} style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
             <div style={{ alignSelf: 'flex-start', maxWidth: '92%', padding: '.65rem .8rem', borderRadius: 16, background: 'rgba(167,139,250,.12)', display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
               <p style={{ margin: 0, fontSize: '.88rem', lineHeight: 1.45 }}>
                 {imaPonudbo
@@ -180,6 +212,8 @@ export default function Pupa() {
             <button type="submit" disabled={caka || !vnos.trim()}
               style={{ flex: 'none', border: 'none', borderRadius: 12, padding: '.55rem .9rem', background: '#2A2035', color: '#fff', cursor: caka || !vnos.trim() ? 'default' : 'pointer', fontWeight: 600, opacity: caka || !vnos.trim() ? .5 : 1 }}>{L('Pošlji', 'Send')}</button>
           </form>
+          </>
+          )}
         </div>
       )}
     </>,
