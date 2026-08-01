@@ -879,6 +879,12 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
           <article className="pw-karta pw-posta">
             <div className="pw-posta-glava">
               <div><p className={styles.eyebrow}>06 · KOMUNIKACIJE</p><h3>Vse na enem mestu</h3></div>
+              {!beriMail && posta.length > 0 && (
+                <div style={{ position: 'relative', flex: '1 1 auto', maxWidth: 360, margin: '0 .8rem' }}>
+                  <MagnifyingGlass size={15} weight="bold" style={{ position: 'absolute', left: '.65rem', top: '50%', transform: 'translateY(-50%)', color: 'color-mix(in oklch, var(--ink) 45%, transparent)', pointerEvents: 'none' }} />
+                  <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder="Išči po zadevi ali naslovu …" style={{ width: '100%', boxSizing: 'border-box', padding: '.42rem .7rem .42rem 2rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.6rem', background: 'oklch(100% 0 0 / .55)', font: '500 .8rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />
+                </div>
+              )}
               <button type="button" className="pw-posta-nova" disabled={samoOgled} title={samoOgled ? 'Na voljo v načinu »Moji podatki« — zdaj gledaš predogled' : 'Napiši sporočilo stranki'} onClick={odpriPisanje}>✎ Nova pošta</button>
             </div>
             {pisiOdprt && !samoOgled && (
@@ -925,12 +931,6 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   </select>
                 ) : null;
               })()}
-            {!beriMail && posta.length > 0 && (
-              <div style={{ position: 'relative', zIndex: 1, margin: '.55rem 0 0' }}>
-                <MagnifyingGlass size={15} weight="bold" style={{ position: 'absolute', left: '.65rem', top: '50%', transform: 'translateY(-50%)', color: 'color-mix(in oklch, var(--ink) 45%, transparent)', pointerEvents: 'none' }} />
-                <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder="Išči po zadevi ali naslovu …" style={{ width: '100%', boxSizing: 'border-box', padding: '.42rem .7rem .42rem 2rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.6rem', background: 'oklch(100% 0 0 / .55)', font: '500 .8rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />
-              </div>
-            )}
             {beriMail ? (
               <div style={{ position: 'relative', zIndex: 1, margin: '.75rem 0 0', padding: '.9rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.85rem', background: 'oklch(100% 0 0 / .72)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.55rem' }}>
