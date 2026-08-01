@@ -669,7 +669,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bento-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.03; margin: 0; max-width: 16ch; }
         .fl-bento-glava p { font-size: 1rem; line-height: 1.55; color: rgba(17,17,17,.72); margin: .5rem 0 0; max-width: 34ch; }
         .fl-bento-glava .cta { flex: none; }
-        .fl-bento-mreza { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-auto-rows: 15rem; gap: 1rem; }
+        .fl-bento-mreza { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-auto-rows: 17.5rem; gap: 1rem; }
         .fl-bkarta { position: relative; overflow: hidden; border-radius: 22px; padding: 1.6rem 1.5rem; display: flex; flex-direction: column; }
         .fl-bkarta h3 { font-size: 1.15rem; font-weight: 650; margin: 0 0 .45rem; line-height: 1.2; }
         .fl-bkarta > p { font-size: .88rem; line-height: 1.5; margin: 0; max-width: 30ch; }
@@ -698,7 +698,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bkarta.b { flex-direction: row; align-items: center; gap: 1.4rem; }
         .fl-btekst { flex: 1 1 44%; min-width: 0; }
         .fl-btekst > p { font-size: .88rem; line-height: 1.5; margin: 0; max-width: 32ch; color: rgba(255,255,255,.74); }
-        .fl-bscreen { position: relative; flex: 1 1 56%; align-self: center; height: 78%; min-height: 7.5rem; border-radius: 12px; overflow: hidden; background: #0d0b12; border: 1px solid rgba(255,255,255,.16); box-shadow: 0 16px 34px rgba(0,0,0,.36); transform: perspective(1100px) rotateY(-13deg) rotate(-1deg); transform-origin: left center; }
+        .fl-bscreen { position: relative; flex: 1 1 54%; align-self: stretch; margin: -1.6rem -1.5rem -1.6rem 0; min-height: 8rem; border-radius: 12px 0 0 12px; overflow: hidden; background: #0d0b12; }
         .fl-bscreen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; opacity: 0; transition: opacity .8s ease; }
         .fl-bscreen img.on { opacity: 1; }
         .fl-bscreen-dots { position: absolute; left: 0; right: 0; bottom: .55rem; display: flex; justify-content: center; gap: .35rem; z-index: 2; }
