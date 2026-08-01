@@ -74,6 +74,17 @@ export default async function KalkulatorPogojiPage({
         </section>
 
         <section style={S}>
+          <h2 style={H}>2a. Naročnina in spremembe cen</h2>
+          <p style={P}>
+            Kalkulator poštenih cen je in ostane brezplačen. Za plačljive pakete (Premium, Pro)
+            veljajo cene, objavljene na strani ob naročilu. <strong>Cene naročnine lahko kadarkoli
+            spremenimo, tudi zvišamo.</strong> Spremembo objavimo vnaprej; začne veljati ob naslednjem
+            obračunskem obdobju. Že plačano obdobje ostane po ceni ob nakupu. Naročnino lahko kadarkoli
+            odpoveš in velja do konca plačanega obdobja.
+          </p>
+        </section>
+
+        <section style={S}>
           <h2 style={H}>3. Brez jamstev</h2>
           <p style={P}>
             Orodje je na voljo »takšno, kot je«. Ponudnik ne jamči za točnost,
