@@ -395,9 +395,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   ];
 
   const KORAKI = [
-    { n: '01', naslov: 'Poštena cena, brez ugibanja', opis: 'Kalkulator ti pove, koliko zaračunati — z avtorskimi pravicami in tržnim pregledom, kje si.' },
+    { n: '01', naslov: 'Poštena cena, brez ugibanja', opis: 'Kalkulator in AI asistentka Pupa ti povesta, koliko zaračunati — s tržnim pregledom in vračunanimi pravicami.' },
     { n: '02', naslov: 'Ponudba → pogodba → račun', opis: 'Lepo oblikovano in povezano — vse teče iz istih podatkov, brez prepisovanja in brez treh programov.' },
-    { n: '03', naslov: 'Vse pod enim projektom', opis: 'Dokumenti, roki, stranka in stroški povezani. Povabiš stranko na projekt, kmalu tudi maili.' },
+    { n: '03', naslov: 'Vse pod enim projektom', opis: 'Dokumenti, roki, stranka, stroški in vsa komunikacija povezani. Naloge pa urejaš kar s Pupo.' },
     { n: '04', naslov: 'Veš, koliko si zaslužil', opis: 'Pregled prihodkov, stroškov in dobička — pripravljeno za računovodstvo.' },
   ];
 
