@@ -4,7 +4,10 @@
   --mk-orange: oklch(78% .14 55);
   display: grid;
   gap: 1rem;
+  width: min(100%, 92rem);
+  margin-inline: auto;
   padding-bottom: 2rem;
+  box-sizing: border-box;
   color: var(--ink);
 }
 
