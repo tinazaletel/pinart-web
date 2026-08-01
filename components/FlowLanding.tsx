@@ -671,7 +671,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bkarta.d { grid-column: 3; grid-row: 2; background: linear-gradient(150deg, oklch(46% .1 190), oklch(31% .06 200)); color: #fff; }
         .fl-bkarta.b > p, .fl-bkarta.c > p, .fl-bkarta.d > p { color: rgba(255,255,255,.74); }
         .fl-bthumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-top: 1.2rem; }
-        .fl-bthumbs span { position: relative; overflow: hidden; aspect-ratio: 1; border-radius: 11px; background: linear-gradient(135deg, oklch(90% .07 297), oklch(90% .07 165)); display: grid; place-items: center; padding: .34rem; }
+        .fl-bthumbs span { position: relative; overflow: hidden; aspect-ratio: 1; border-radius: 11px; background: linear-gradient(135deg, oklch(90% .07 297), oklch(90% .07 165)); display: grid; place-items: center; }
+        .fl-bthumbs span img { width: 100%; height: 100%; object-fit: cover; object-position: top left; display: block; }
         .fl-bthumbs span:nth-child(3n+2) { background: linear-gradient(135deg, oklch(90% .07 330), oklch(90% .06 90)); }
         .fl-bthumbs span:nth-child(3n) { background: linear-gradient(135deg, oklch(90% .06 200), oklch(90% .07 297)); }
         /* mini predogledi orodij (namesto pravih posnetkov — dodava jih kasneje) */
@@ -1061,13 +1062,13 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <div className="fl-bkarta a">
               <h3>En program namesto štirih</h3>
               <p>Ponudbe, pogodbe, računi, stroški, ceniki in naloge — vse tukaj. Nič več skakanja med Excelom, Canvo, Gmailom in koledarjem.</p>
-              <div className="fl-bthumbs" aria-hidden>
-                <span><i className="fl-th-card"><b /><b /><b /><em>1.850 €</em></i></span>
-                <span><i className="fl-th-calc"><i className="v" /><i className="m" /><i className="p" /></i></span>
-                <span><i className="fl-th-inv"><i /><i /><i /><i className="tot" /></i></span>
-                <span><i className="fl-th-cli"><i /><i /><i /></i></span>
-                <span><i className="fl-th-donut" /></span>
-                <span><i className="fl-th-cal"><i /><i /><i /><i className="on" /><i /><i /><i /><i /><i /></i></span>
+              <div className="fl-bthumbs">
+                <span><img src="/flow/ponudba-chat.jpg" alt="Ponudba v Flow" loading="lazy" /></span>
+                <span><img src="/flow/mehurcki.jpg" alt="Kalkulator poštene cene" loading="lazy" /></span>
+                <span><img src="/flow/racuni.jpg" alt="Računi v Flow" loading="lazy" /></span>
+                <span><img src="/flow/stranke.jpg" alt="Stranke in CRM" loading="lazy" /></span>
+                <span><img src="/flow/pregled.jpg" alt="Pregled in analitika" loading="lazy" /></span>
+                <span><img src="/flow/naloge.jpg" alt="Naloge" loading="lazy" /></span>
               </div>
             </div>
             <div className="fl-bkarta b">
