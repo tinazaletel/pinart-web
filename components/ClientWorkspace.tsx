@@ -264,8 +264,36 @@ export default function ClientWorkspace() {
   const visible = clients.filter(client => [client.name, client.email, client.contact].some(value => value?.toLocaleLowerCase('sl-SI').includes(search.toLocaleLowerCase('sl-SI'))));
   const stats = useMemo(() => clients.map(client => { const name = key(client.name); const clientInvoices = invoices.filter(item => key(item.client) === name); const clientExpenses = expenses.filter(item => item.client && key(item.client) === name); return { id: client.id, revenue: clientInvoices.filter(item => item.paid).reduce((sum, item) => sum + item.amount, 0), open: clientInvoices.filter(item => !item.paid).reduce((sum, item) => sum + item.amount, 0), profit: clientInvoices.filter(item => item.paid).reduce((sum, item) => sum + item.amount, 0) - clientExpenses.reduce((sum, item) => sum + item.amount, 0) }; }), [clients, invoices, expenses]);
   const selectedProjects = selected ? offers.filter(item => key(item.client) === key(selected.name)) : [];
+  const selectedContracts = selected ? contracts.filter(item => key(item.client) === key(selected.name)) : [];
   const selectedInvoices = selected ? invoices.filter(item => key(item.client) === key(selected.name)) : [];
   const selectedExpenses = selected ? expenses.filter(item => item.client && key(item.client) === key(selected.name)) : [];
+
+  const povezaniDokumenti = selected ? (
+    <div className={styles.clientProjects}>
+      <h3>Povezano s stranko</h3>
+      <div className={styles.clientProjectList}>
+        {selectedProjects.map(offer => (
+          <Link key={`offer-${offer.id}`} href={`${base}/kalkulator/projekti?projekt=${offer.id}`} className={styles.clientProjectRow}>
+            <span className={styles.clientProjectVrh}><strong>Ponudba · {offer.title}</strong><strong className={styles.clientProjectZnesek}>{offer.agreedAmount ? money(offer.agreedAmount) : '—'}</strong></span>
+            <span className={styles.clientProjectDno}><small>{offer.number ? `Št. ${offer.number} · ` : ''}{datStr(offer.date)}</small><i className={styles.clientProjectPika} data-tone={projectStatusInfo(offer.status).tone}>{projectStatusInfo(offer.status).label}</i></span>
+          </Link>
+        ))}
+        {selectedContracts.map(contract => (
+          <Link key={`contract-${contract.id}`} href={contract.sourceOfferId ? `${base}/kalkulator/projekti?projekt=${contract.sourceOfferId}` : `${base}/kalkulator/pogodbe`} className={styles.clientProjectRow}>
+            <span className={styles.clientProjectVrh}><strong>Pogodba · {contract.title}</strong></span>
+            <span className={styles.clientProjectDno}><small>{contract.status}</small><i className={styles.clientProjectPika} data-tone="neutral">Pogodba</i></span>
+          </Link>
+        ))}
+        {selectedInvoices.map(invoice => (
+          <Link key={`invoice-${invoice.id}`} href={invoice.sourceOfferId ? `${base}/kalkulator/projekti?projekt=${invoice.sourceOfferId}` : `${base}/kalkulator/racuni`} className={styles.clientProjectRow}>
+            <span className={styles.clientProjectVrh}><strong>Račun</strong><strong className={styles.clientProjectZnesek}>{money(invoice.amount)}</strong></span>
+            <span className={styles.clientProjectDno}><small>{datStr(invoice.date)}</small><i className={styles.clientProjectPika} data-tone={invoice.paid ? 'success' : 'waiting'}>{invoice.paid ? 'Plačan' : 'Odprt'}</i></span>
+          </Link>
+        ))}
+      </div>
+      {!selectedProjects.length && !selectedContracts.length && !selectedInvoices.length && <p className={styles.clientProjectPrazno}>Ta stranka še nima ponudb, pogodb ali računov.</p>}
+    </div>
+  ) : null;
 
   return <div className={styles.clientPage}>
     <section className={styles.clientToolbar}><label><MagnifyingGlass className={styles.searchIcon} size={20} weight="regular" aria-hidden="true" style={IKONA_SLOG} /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Poišči stranko, kontakt ali e-pošto …" /></label><button onClick={() => { setEditing(null); setOpen(true); }}>+ Nova stranka</button></section>

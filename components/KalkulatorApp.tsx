@@ -11,6 +11,7 @@ import { predlagajDdv } from '@/lib/ddvSvet';
 import { preberiPredogled, usePredogled } from '@/lib/predogled';
 import { posljiMail } from '@/lib/posta';
 import { nastaviNapredek } from '@/lib/flowNapredek';
+import { pregledCopilot, type Nasvet } from '@/lib/copilot';
 import VidezDokumentov from '@/components/VidezDokumentov';
 import IzbirnikDrzave from '@/components/IzbirnikDrzave';
 import AmbientBubbles from '@/components/AmbientBubbles';
@@ -3040,6 +3041,34 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     };
   }, [vrstice, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, rocnePraviceStoritvi, lastnePravice, valuta, pravicePoStoritvi, rocniPaketi]);
 
+  /* Pupa copilot — svetovalni pregled ponudbe (lib/copilot). Vhod izluscimo iz
+     `r` + state: referenca = postena AUTO cena priporocenega paketa (redna, brez
+     popusta); izbraniSkupaj = rocni prepis ce obstaja, sicer redna — tako
+     "pod-trgom" opozarja na ROCNO prenizko ceno, popust pa lovi svoje pravilo. */
+  const copilotNasveti = useMemo<Nasvet[]>(() => {
+    if (!r) return [];
+    const pr = r.paketi.find(p => p.id === 'priporoceni') || r.paketi[0];
+    if (!pr) return [];
+    return pregledCopilot({
+      izbraniSkupaj: pr.rocna ? pr.skupaj : pr.redna,
+      referencaDelo: pr.redna,
+      delo: r.delo,
+      pravice: r.pravice,
+      licenca: r.licenca,
+      prenos: r.prenos,
+      raba: r.raba,
+      popustPct: r.popustPct,
+      trgMult: r.trgMult,
+      ddvZavezanec,
+      izbraniPaketId: 'priporoceni',
+      trgNarocnikaIme: TRGI.find(t => t.id === trgNarocnika)?.ime || 'tvojem trgu',
+      glavnaStoritevIme: r.sez?.[0]?.ime || 'to delo',
+      praviceVrstice: r.praviceVrstice.map(pv => ({
+        sid: pv.sid, ime: pv.ime, prenos: pv.prenos, tantiema: pv.tantiema, obsegMult: pv.obsegMult,
+      })),
+    });
+  }, [r, ddvZavezanec, trgNarocnika]);
+
   /* Retainer izracun (dolgorocno sodelovanje) — LOCEN od projektnega r, da ga ne ogrozi.
      mesecni bruto = ure×urna (model ure) + vrednost izbranih storitev/mesec (model paket);
      zavezni popust po dobi; skupaj za dobo + letna vrednost; overage za ure nad blokom. */
@@ -5346,11 +5375,37 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       <div className="pon-vrh-desno">
         <button type="button" className={'ai-gumb ponastavi-gumb' + (rocnoBesedilo ? ' aktiv' : '')} title={L('Ponastavi na samodejno besedilo', 'Reset to automatic text')} aria-label={L('Ponastavi na samodejno besedilo', 'Reset to automatic text')}
           onClick={ponastaviBesedilo}><ArrowCounterClockwise size={18} weight="bold" /></button>
-        <button type="button" className="ai-gumb" title={L('AI pomočnik', 'AI assistant')} aria-label={L('AI pomočnik', 'AI assistant')}
+        <button type="button" className={'ai-gumb' + (aiKmalu ? ' aktiv' : '')} title={L('Pupa: pregled ponudbe', 'Pupa: quote review')} aria-label={L('Pupa: pregled ponudbe', 'Pupa: quote review')}
           onClick={() => setAiKmalu(v => !v)}><MagicWand size={19} /></button>
       </div>
       {aiKmalu && (
-        <p className="hint ai-namig">{L('AI pomočnik (predlaga in izboljša besedilo ponudbe) pride kot naslednja nadgradnja — potrebuje zaledje. Zaenkrat besedilo urejaš ročno z orodji spodaj.', 'The AI assistant (suggests and improves the quote text) is coming as the next upgrade — it needs a backend. For now you edit the text manually with the tools below.')}</p>
+        <div className="copilot-panel" role="status" style={{ margin: '.6rem 0 .2rem', padding: '.75rem .85rem', border: '1px solid var(--line, rgba(42,32,53,.14))', borderRadius: 14, background: 'rgba(167,139,250,.06)', display: 'flex', flexDirection: 'column', gap: '.55rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+            <span aria-hidden style={{ position: 'relative', width: 32, height: 32, flex: 'none', borderRadius: '50%', background: 'conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)', display: 'inline-flex' }}>
+              <svg viewBox="0 0 40 40" width="32" height="32" style={{ position: 'absolute', inset: 0 }}>
+                <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                <path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                <path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                <circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
+                <circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
+              </svg>
+            </span>
+            <b style={{ fontSize: '.92rem' }}>{L('Pupa je pogledala ponudbo', 'Pupa reviewed your quote')}</b>
+          </div>
+          {copilotNasveti.length === 0 ? (
+            <p className="hint" style={{ margin: 0 }}>{L('Cena, pravice in pogoji so videti uravnoteženi. Lepo delo! ✨', 'Price, rights and terms look balanced. Nice work! ✨')}</p>
+          ) : (
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+              {copilotNasveti.map(n => (
+                <li key={n.id} style={{ display: 'flex', gap: '.5rem', alignItems: 'flex-start', fontSize: '.86rem', lineHeight: 1.42 }}>
+                  <span aria-hidden style={{ flex: 'none', width: 18, height: 18, marginTop: 2, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '.72rem', fontWeight: 700, color: '#fff', background: n.resnost === 'opozorilo' ? '#e0567a' : '#a78bfa' }}>{n.resnost === 'opozorilo' ? '!' : '·'}</span>
+                  <span>{n.besedilo}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="hint" style={{ margin: 0, opacity: .68, fontSize: '.76rem' }}>{L('Nasveti izhajajo iz Flow znanja o cenah in avtorskih pravicah. Zadnja beseda je vedno tvoja.', 'Advice comes from Flow knowledge on pricing and copyright. The final call is always yours.')}</p>
+        </div>
       )}
     </>
   );
