@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { Plus, FolderOpen, TextB, TextItalic, ListBullets, LinkSimple } from '@phosphor-icons/react';
+import { Plus, FolderOpen, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
@@ -893,10 +893,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               </div>
             )}
             <div className="pw-posta-mape" style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '.35rem', flexWrap: 'wrap', margin: '.75rem 0 0' }}>
-              {([['prejeto', 'Prejeto'], ['poslano', 'Poslano'], ['osnutki', 'Osnutki'], ['kos', 'Koš']] as const).map(([id, ime]) => {
+              {([{ id: 'prejeto', ime: 'Prejeto', Ikona: Tray }, { id: 'poslano', ime: 'Poslano', Ikona: PaperPlaneTilt }, { id: 'osnutki', ime: 'Osnutki', Ikona: NotePencil }, { id: 'kos', ime: 'Koš', Ikona: Trash }] as const).map(({ id, ime, Ikona }) => {
                 const st = posta.filter(v => id === 'poslano' ? v.smer === 'poslano' : id === 'prejeto' ? v.smer === 'prejeto' : false).length;
                 const on = mapa === id;
-                return <button key={id} type="button" onClick={() => setMapa(id)} style={{ border: `1px solid ${on ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: on ? 'var(--ink)' : 'transparent', color: on ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer' }}>{ime}{st ? ` · ${st}` : ''}</button>;
+                return <button key={id} type="button" onClick={() => setMapa(id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', border: `1px solid ${on ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: on ? 'var(--ink)' : 'transparent', color: on ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer' }}><Ikona size={13} weight="bold" />{ime}{st ? ` · ${st}` : ''}</button>;
               })}
             </div>
             {(() => {
