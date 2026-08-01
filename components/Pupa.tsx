@@ -121,8 +121,8 @@ export default function Pupa() {
             <circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
             <circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
           </svg>
-          <Sparkle size={17} weight="fill" color="#a78bfa" style={{ position: 'absolute', top: -10, right: -3, filter: 'drop-shadow(0 1px 2px rgba(42,32,53,.22))' }} aria-hidden />
-          <Sparkle size={10} weight="fill" color="#8b5cf6" style={{ position: 'absolute', top: -3, right: -9, filter: 'drop-shadow(0 1px 2px rgba(42,32,53,.18))' }} aria-hidden />
+          <Sparkle size={19} weight="fill" color="#ffcb1f" style={{ position: 'absolute', top: -10, right: -4, filter: 'drop-shadow(0 1px 2px rgba(42,32,53,.28))' }} aria-hidden />
+          <Sparkle size={11} weight="fill" color="#ffd54a" style={{ position: 'absolute', top: -3, right: -10, filter: 'drop-shadow(0 1px 2px rgba(42,32,53,.22))' }} aria-hidden />
           {nasveti.length > 0 && (
             <span aria-hidden style={{ position: 'absolute', bottom: -2, right: -2, minWidth: 18, height: 18, padding: '0 4px', borderRadius: 9, background: '#e0567a', color: '#fff', fontSize: '.66rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff' }}>{nasveti.length}</span>
           )}
