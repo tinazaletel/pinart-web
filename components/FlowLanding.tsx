@@ -278,9 +278,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { Ikona: FolderOpen, kat: 'stranke', h: 285, ime: 'Projekti & arhiv', opis: 'Vsak projekt na enem mestu — ponudbe, pogodbe, računi, roki in vsa komunikacija, pregledno.', href: localePath(locale, '/kalkulator/projekti') },
     { Ikona: Scroll, kat: 'dogovori', h: 245, ime: 'Pogodbe', opis: 'Pogodbe o sodelovanju in prenosu pravic, pripravljene za podpis.', href: localePath(locale, '/kalkulator/pogodbe') },
     { Ikona: Receipt, kat: 'finance', h: 265, ime: 'Računi', opis: 'Iz ponudbe v račun z enim klikom. Številčenje, rok in status plačila.', href: localePath(locale, '/kalkulator/racuni') },
-    { Ikona: Users, kat: 'stranke', h: 205, ime: 'Stranke', opis: 'Kartoteka naročnikov s podatki, dokumenti in zgodovino sodelovanja.', href: localePath(locale, '/kalkulator/stranke') },
+    { Ikona: Users, kat: 'stranke', h: 205, ime: 'Stranke & CRM', opis: 'CRM kartoteka naročnikov: podatki, dokumenti in zgodovina sodelovanja.', href: localePath(locale, '/kalkulator/stranke') },
     { Ikona: ListChecks, kat: 'stranke', h: 258, ime: 'Naloge', opis: 'Task manager po projektih — poveš Pupi želje, ona jih razdeli v naloge.', href: localePath(locale, '/kalkulator/naloge') },
-    { Ikona: SquaresFour, kat: 'stranke', h: 200, ime: 'Pregled', opis: 'Nadzorna plošča: promet, odprte ponudbe in čakajoča plačila.', href: localePath(locale, '/kalkulator/pregled') },
+    { Ikona: SquaresFour, kat: 'stranke', h: 200, ime: 'Pregled in analitika', opis: 'Nadzorna plošča z analitiko poslovanja: promet, odprte ponudbe in čakajoča plačila.', href: localePath(locale, '/kalkulator/pregled') },
     { Ikona: Handshake, kat: 'dogovori', h: 162, ime: 'Dolgoročno sodelovanje', opis: 'Retainer z mesečnim obsegom, urami in dobo. Jasni pogoji dolgoročnega dogovora.', href: localePath(locale, '/kalkulator/dolgorocno') },
     { Ikona: Target, kat: 'stranke', h: 135, ime: 'Cilji', opis: 'Mesečni cilj prihodkov in koliko projektov te loči do njega.', href: localePath(locale, '/kalkulator/cilji') },
     { Ikona: Tag, kat: 'ponudbe', h: 135, ime: 'Ceniki', opis: 'Tvoji cenovni profili: shraniš, urediš in znova uporabiš.', href: localePath(locale, '/kalkulator/ceniki') },
@@ -384,7 +384,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
   const FUNKCIJE = [
     { Ikona: Robot, ime: 'AI, ki pozna trg in ceno', opis: 'AI asistentka Pupa pozna trg in avtorske pravice: pove ti pošteno ceno in te opozori, če se podcenjuješ.' },
-    { Ikona: SquaresFour, ime: 'En program namesto štirih', opis: 'Ponudbe, pogodbe, računi, projekti in naloge — vse na enem mestu. Konec skakanja med štirimi programi.' },
+    { Ikona: SquaresFour, ime: 'En program namesto štirih', opis: 'Vse-v-enem SaaS: ponudbe, pogodbe, računi, CRM, projekti in naloge na enem mestu. Konec skakanja med štirimi programi.' },
     { Ikona: FolderOpen, ime: 'Cel projekt na enem mestu', opis: 'Vsak projekt z dokumenti, roki in vso komunikacijo — pregledno, veliko bolje kot razmetani Gmail.' },
     { Ikona: ListChecks, ime: 'Naloge, ki se uredijo same', opis: 'Task manager drži projekt v teku. Poveš Pupi želje, ona jih razdeli v naloge.' },
     { Ikona: Receipt, ime: 'Od ponudbe do plačila', opis: 'Ponudba, pogodba, račun in stroški tečejo iz istih podatkov — brez podvajanja in prepisovanja.' },
