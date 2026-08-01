@@ -101,6 +101,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const [rocniObseg, setRocniObseg] = useState('');
   const [narEmail, setNarEmail] = useState('');
   const [kartaOdprta, setKartaOdprta] = useState(false);
+  const [ponudbaPredogled, setPonudbaPredogled] = useState(false);
   /* iskalen combobox za izbiro ponudbe na vstopu — enak vzorec kot InvoiceWorkspace:
      privzeto "Brez ponudbe" + zadnjih 10 ponudb, ob tipkanju filtrira VSE po naslovu/stranki/stevilki */
   const [vstopOdprt, setVstopOdprt] = useState(false);
@@ -172,6 +173,15 @@ export default function ContractWorkspace({ base }: { base: string }) {
   }, [nacin]);
 
   const selectedOffer = offers.find(item => item.id === offerId);
+
+  useEffect(() => {
+    if (!ponudbaPredogled) return;
+    const zapri = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setPonudbaPredogled(false);
+    };
+    window.addEventListener('keydown', zapri);
+    return () => window.removeEventListener('keydown', zapri);
+  }, [ponudbaPredogled]);
 
   /* ── vstopni combobox: ponudbe po datumu (najnovejse zgoraj); brez iskanja
      prikaze zadnjih 10, ob tipkanju filtrira VSE po naslovu/stranki/stevilki ── */
@@ -836,7 +846,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
           {selectedOffer.scope.length
             ? <ul>{selectedOffer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul>
             : <p className="pg-mini">Ponudba nima vpisanega obsega.</p>}
-          <a className="pg-povezava" href={`${base}/kalkulator/projekti`}>Odpri v projektih ↗</a>
+          <button type="button" className="pg-povezava" onClick={() => setPonudbaPredogled(true)}>
+            <Eye size={17} aria-hidden /> {jeEn ? 'Open offer' : 'Odpri ponudbo'}
+          </button>
         </div>
       )}
     </div>
@@ -844,6 +856,39 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
   return <div className={`${styles.contractPage} pg`}>
     {notice && <div className={styles.contractNotice}>{notice}<button onClick={() => setNotice('')}>×</button></div>}
+
+    {ponudbaPredogled && selectedOffer && typeof document !== 'undefined' && createPortal(
+      <div className="pg-op-back" role="presentation" onMouseDown={event => {
+        if (event.target === event.currentTarget) setPonudbaPredogled(false);
+      }}>
+        <section className="pg-op-sheet" role="dialog" aria-modal="true" aria-labelledby="pg-op-naslov">
+          <header className="pg-op-glava">
+            <div>
+              <p>{jeEn ? 'Linked offer' : 'Povezana ponudba'}</p>
+              <h2 id="pg-op-naslov">{selectedOffer.title}</h2>
+            </div>
+            <button type="button" className="pg-op-zapri" aria-label={jeEn ? 'Close offer preview' : 'Zapri predogled ponudbe'} onClick={() => setPonudbaPredogled(false)}>
+              <X size={22} aria-hidden />
+            </button>
+          </header>
+          <div className="pg-op-vsebina">
+            <dl className="pg-op-meta">
+              <div><dt>{jeEn ? 'Client' : 'Stranka'}</dt><dd>{selectedOffer.client || '—'}</dd></div>
+              <div><dt>{jeEn ? 'Offer no.' : 'Št. ponudbe'}</dt><dd>{selectedOffer.number || '—'}</dd></div>
+              <div><dt>{jeEn ? 'Date' : 'Datum'}</dt><dd>{selectedOffer.date ? datStr(new Date(`${selectedOffer.date}T12:00:00`)) : '—'}</dd></div>
+              <div><dt>{jeEn ? 'Value' : 'Vrednost'}</dt><dd>{selectedOffer.agreedAmount > 0 ? eur(selectedOffer.agreedAmount) : '—'}</dd></div>
+            </dl>
+            <div className="pg-op-obseg">
+              <h3>{jeEn ? 'Agreed scope' : 'Dogovorjeni obseg'}</h3>
+              {selectedOffer.scope.length
+                ? <ul>{selectedOffer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul>
+                : <p>{jeEn ? 'No scope has been entered for this offer.' : 'Ponudba nima vpisanega obsega.'}</p>}
+            </div>
+          </div>
+        </section>
+      </div>,
+      document.body,
+    )}
 
     {/* ── POGLED 1: NASTAVITVE (SAMO vstop za novo pogodbo — pregled/arhiv
         shranjenih pogodb je preseljen v Arhiv, ArhivWorkspace) ── */}
@@ -1330,6 +1375,27 @@ export default function ContractWorkspace({ base }: { base: string }) {
       @media (prefers-reduced-motion: reduce) { .pg-konfeti{display:none} }
       .pg-povezava{font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0;display:inline-flex;align-items:center;gap:.38rem}
       .pg-povezava:hover{opacity:.6}
+      /* predogled povezane ponudbe: dokument ostane v kontekstu pogodbe, brez skoka v Projekte */
+      .pg-op-back{position:fixed;inset:0;z-index:90;background:rgba(28,21,24,.24);backdrop-filter:blur(5px);display:flex;justify-content:flex-end;animation:pgOpBack .22s ease both}
+      .pg-op-sheet{width:min(34rem,92vw);height:100%;background:var(--paper,#faf8f2);border-left:1px solid rgba(17,17,17,.12);box-shadow:-18px 0 56px rgba(30,22,25,.16);overflow:auto;animation:pgOpSheet .36s cubic-bezier(.16,1,.3,1) both}
+      .pg-op-glava{position:sticky;top:0;z-index:2;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:2rem 2rem 1.35rem;background:rgba(250,248,242,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(17,17,17,.1)}
+      .pg-op-glava p{margin:0 0 .35rem;font-size:.68rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--accent,#B25476)}
+      .pg-op-glava h2{margin:0;font:500 clamp(1.8rem,4vw,2.7rem)/1.04 var(--font-serif),Didot,serif;color:var(--ink);overflow-wrap:anywhere}
+      .pg-op-zapri{display:grid;place-items:center;flex:none;width:2.75rem;height:2.75rem;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:transparent;color:var(--ink);cursor:pointer}
+      .pg-op-zapri:hover{background:var(--ink);color:var(--paper)}
+      .pg-op-vsebina{padding:1.6rem 2rem 3rem}
+      .pg-op-meta{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:0 0 1.7rem}
+      .pg-op-meta div{padding:1rem;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid rgba(17,17,17,.08)}
+      .pg-op-meta dt{font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.5)}
+      .pg-op-meta dd{margin:.35rem 0 0;font-size:.98rem;font-weight:650;color:var(--ink);overflow-wrap:anywhere}
+      .pg-op-obseg{padding:1.3rem 1.35rem;border:1px solid rgba(17,17,17,.1);border-radius:16px;background:rgba(255,255,255,.5)}
+      .pg-op-obseg h3{margin:0 0 .8rem;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase}
+      .pg-op-obseg ul{margin:0;padding-left:1.2rem;line-height:1.65}
+      .pg-op-obseg p{margin:0;color:rgba(17,17,17,.62)}
+      @keyframes pgOpBack{from{opacity:0}to{opacity:1}}
+      @keyframes pgOpSheet{from{transform:translateX(100%)}to{transform:translateX(0)}}
+      @media (max-width:640px){.pg-op-sheet{width:100%}.pg-op-glava{padding:1.25rem 1rem 1rem}.pg-op-vsebina{padding:1rem}.pg-op-meta{grid-template-columns:1fr}.pg-op-back{backdrop-filter:none}}
+      @media (prefers-reduced-motion:reduce){.pg-op-back,.pg-op-sheet{animation:none}}
       /* Odvetnik: umirjen blok pod pošiljanjem naročniku — tanek okvir, isti jezik kot .pg-disc/.pg-polje */
       /* odvetnik = mali banner na DESNEM robu zaslona, stran od obrazca */
       .pg-odvetnik{position:fixed;right:1.2rem;bottom:6.5rem;top:auto;width:15rem;max-width:38vw;margin:0;padding:1rem 1.05rem 1.1rem;border:1px solid oklch(93% .006 82 / .55);border-radius:16px;background:rgba(255,255,255,.72);backdrop-filter:blur(5px);text-align:left;z-index:30;box-shadow:0 .6rem 1.6rem rgba(20,20,20,.08)}
