@@ -612,7 +612,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-mock { border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid rgba(17,17,17,.1); box-shadow: 0 24px 60px rgba(40,25,60,.18); }
         .fl-mock-bar { display: flex; align-items: center; gap: .4rem; padding: .5rem .75rem; background: oklch(96% .008 87); border-bottom: 1px solid rgba(17,17,17,.07); }
         .fl-mock-bar i { width: .55rem; height: .55rem; border-radius: 50%; background: rgba(17,17,17,.18); }
-        .fl-mock-bar small { margin-left: .5rem; font-size: .62rem; letter-spacing: .04em; color: rgba(17,17,17,.5); }
+        .fl-mock-bar small { margin-left: .5rem; font-size: .62rem; letter-spacing: .04em; color: rgba(17,17,17,.68); }
         .fl-mock-body { padding: 1.15rem; display: grid; gap: .65rem; min-height: 15.5rem; align-content: start; }
         .fl-msg { display: inline-flex; align-items: center; gap: .5rem; max-width: 82%; padding: .55rem .8rem; border-radius: 14px; font-size: .8rem; font-weight: 600; line-height: 1.3; }
         .fl-msg.bot { background: oklch(96% .012 297); color: var(--ink); border-top-left-radius: 4px; justify-self: start; }
@@ -847,8 +847,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-fly img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; filter: drop-shadow(0 14px 22px rgba(40,25,60,.22)); }
         /* leteči papir je zdaj viden tudi na mobilnem/pokončno — vezan na mobilno pupo (krmili JS) */
         /* mehki reveal sekcij ob drsanju (razred doda JS; reduce-motion = brez) */
-        .fl-reveal { opacity: 0; transform: translateY(26px); transition: opacity .85s cubic-bezier(.22,1,.36,1), transform .85s cubic-bezier(.22,1,.36,1); }
-        .fl-reveal.fl-in { opacity: 1; transform: none; }
+        .fl-reveal { transform: translateY(26px); transition: transform .85s cubic-bezier(.22,1,.36,1); }
+        .fl-reveal.fl-in { transform: none; }
         /* hero naslov — besede se ob nalaganju nezno dvignejo (brez clipa, da ne obreze serifa) */
         /* rezervirana višina naslova (≈3 vrstice) — daljši/krajši naslov NE premika
            podnaslova in gumbov (Tina: besedilo se lahko premika, gumbi ostanejo). */
@@ -879,7 +879,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-footer-cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
         @media (max-width: 620px) { .fl-footer-cols { grid-template-columns: 1fr 1fr; gap: 1.6rem; } }
         .fl-footer-cols > div { display: grid; gap: .55rem; align-content: start; }
-        .fl-footer-cols strong { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.45); margin-bottom: .2rem; }
+        .fl-footer-cols strong { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.62); margin-bottom: .2rem; }
         .fl-footer-cols a { font-size: .9rem; color: rgba(255,255,255,.74); text-decoration: none; transition: color .15s; }
         .fl-footer-cols a:hover { color: #fff; }
         .fl-footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-top: 2.6rem; padding: 1.4rem 0 0; border-top: 1px solid rgba(255,255,255,.12); font-size: .8rem; color: rgba(255,255,255,.5); }
