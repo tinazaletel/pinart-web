@@ -951,7 +951,7 @@
 .projectMoney label span { display: flex; align-items: center; gap: .25rem; }
 .projectMoney input { width: 6rem; border: 0; border-bottom: 1px solid currentColor; outline: 0; background: transparent; font: 600 .75rem var(--font-sans), sans-serif; }
 .projectMoney .projectNeedsInvoice { background: oklch(88% .11 62); color: oklch(39% .1 45); }
-.projectNarrative { display: grid; grid-template-columns: repeat(4, 1fr); gap: .55rem; margin-top: .55rem; }
+.projectNarrative { display: grid; grid-template-columns: repeat(4, 1fr); gap: .55rem; margin-top: .55rem; align-items: stretch; }
 .projectNarrative article { position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 1rem; border: 1px solid color-mix(in oklch, var(--ink) 4%, transparent); border-radius: 1rem; background: oklch(99% .006 87 / .85); }
 .projectNarrative article:not(.projectAgreement) > * { position: relative; z-index: 1; }
 /* barve kartic 02/03/04 so INLINE (v ProjectsWorkspace), ker CILJI (00) je pogojen -> pozicija (nth-child) ni zanesljiva */
