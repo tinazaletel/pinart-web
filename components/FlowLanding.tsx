@@ -40,6 +40,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   }, []);
   const [taZavihek, setTaZavihek] = useState('kalkulator');
   const [odprtoVpr, setOdprtoVpr] = useState<number | null>(0);
+  const [letno, setLetno] = useState(true);   /* cenik: letno (ceneje) vs mesecno (drazje) */
   /* Pupa = PROSOJEN video (alfa): Safari -> HEVC-alfa mov, Chrome/FF -> VP9-alfa webm.
      Predvaja se + hodi sele ko steza pride v viewport (opazujemo stabilno stezo, ne videa). */
   const pupaRef = useRef<HTMLVideoElement>(null);
@@ -285,7 +286,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { Ikona: Target, kat: 'stranke', h: 135, ime: 'Cilji', opis: 'Mesečni cilj prihodkov in koliko projektov te loči do njega.', href: localePath(locale, '/kalkulator/cilji') },
     { Ikona: Tag, kat: 'ponudbe', h: 135, ime: 'Ceniki', opis: 'Tvoji cenovni profili: shraniš, urediš in znova uporabiš.', href: localePath(locale, '/kalkulator/ceniki') },
     { Ikona: Wallet, kat: 'finance', h: 205, ime: 'Stroški', opis: 'Odhodki in ponavljajoči se stroški, zbrani na enem mestu.', href: localePath(locale, '/kalkulator/stroski') },
-    { Ikona: Clock, kat: 'finance', h: 85, ime: 'Čas', opis: 'Štoparica dela po projektu — izmeriš porabljen čas in vidiš, ali se ti je delo pri tej ceni splačalo.', href: localePath(locale, '/kalkulator/cas') },
+    { Ikona: Clock, kat: 'finance', h: 85, ime: 'Merjenje časa', opis: 'Štoparica po projektu: izmeriš porabljen čas in vidiš, ali se ti je delo pri tej ceni res splačalo.', href: localePath(locale, '/kalkulator/cas') },
     { Ikona: Suitcase, kat: 'finance', h: 200, ime: 'Poslovni okvir', opis: 'Širša slika: rezerva, davki in spodnja meja poštene cene.', href: localePath(locale, '/kalkulator/poslovni-nacrt') },
     { Ikona: CalendarBlank, kat: 'stranke', h: 200, ime: 'Koledar', opis: 'Sestanki, klici in roki projektov na enem koledarju.', href: localePath(locale, '/kalkulator/koledar') },
   ];
@@ -416,13 +417,13 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       /* Cena sidrana na orodja, ki jih kreativci ze placujejo (Figma ~12-15 €).
          Ustanovna 9 € za prvih 50 je ČASOVNO omejena (ne "za vedno") — nujnost +
          dokaz pripravljenosti placati. Prvi mesec brezplacno = trial namesto free-forever platforme. */
-      ime: 'Premium', za: 'Za redno delo s strankami · obračunano letno', cena: '15', enota: '€ / mesec',
+      ime: 'Premium', za: 'Za redno delo s strankami', cena: '15', cenaMes: '18', enota: '€ / mesec',
       ustanovna: 'Ustanovna 9 €/mesec za prvih 50 (časovno) · prvi mesec brezplačno',
       cta: 'Začni brezplačno', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Najbolj priljubljeno', kmalu: false,
-      vkljuceno: ['Vse iz Brezplačno', 'AI asistentka Pupa — pozna trg in ceno, klepet in glas', 'Ponudbe, pogodbe in računi (shranjeni, oštevilčeni)', 'Dolgoročni retainerji', 'Projekti & arhiv — vse na enem projektu', 'Kartoteka strank (CRM)', 'Ceniki (cenovni profili)', 'Stroški in cilji', 'Koledar in naloge', 'Časovnik in donosnost dela', 'Nadzorna plošča'],
+      vkljuceno: ['Vse iz Brezplačno', 'AI asistentka Pupa — pozna trg in ceno, klepet in glas', 'Ponudbe, pogodbe in računi (shranjeni, oštevilčeni)', 'Dolgoročni retainerji', 'Projekti & arhiv — vse na enem projektu', 'Kartoteka strank (CRM)', 'Ceniki (cenovni profili)', 'Stroški in cilji', 'Task manager: naloge in podnaloge', 'Koledar', 'Merjenje časa — ali se ti je delo splačalo', 'Nadzorna plošča'],
     },
     {
-      ime: 'Pro', za: 'Za mali studio in sodelavce · obračunano letno', cena: '29', enota: '€ / mesec',
+      ime: 'Pro', za: 'Za mali studio in sodelavce', cena: '29', cenaMes: '35', enota: '€ / mesec',
       cta: 'Kmalu', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Kmalu', kmalu: true,
       vkljuceno: ['Vse iz Premium', 'Primerjava s trgom — koliko za to zaračunajo drugi', 'Celoten analitični pregled — prihodki in dobiček po strankah', 'Napredna Pupa: sama razdeli naloge iz tvojih želja', 'Sinhronizacija med vsemi orodji', 'Poslovni okvir in davki', 'Posredovanje računovodstvu (izvoz)', 'Sodelavci z dostopom samo do izbranih projektov', 'MCP & API dostop (kmalu)', 'Prednostna podpora'],
     },
@@ -1159,6 +1160,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           <div className="k">Cenik</div>
           <h2>Enostavno, pošteno, brez presenečenj.</h2>
           <p className="uvod">Kalkulator poštenih cen je za vedno brezplačen. Celo platformo preizkusiš mesec dni brez kartice — nato manj kot ena tvoja delovna ura na mesec.</p>
+          <div role="group" aria-label="Obračun" style={{ display: 'inline-flex', gap: '.3rem', padding: '.28rem', margin: '0 auto 2.2rem', borderRadius: 999, background: 'rgba(17,17,17,.06)' }}>
+            <button type="button" onClick={() => setLetno(false)} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.42rem 1rem', font: '700 .82rem var(--font-sans), sans-serif', background: !letno ? 'var(--ink)' : 'transparent', color: !letno ? 'var(--paper)' : 'var(--ink)' }}>Mesečno</button>
+            <button type="button" onClick={() => setLetno(true)} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.42rem 1rem', font: '700 .82rem var(--font-sans), sans-serif', background: letno ? 'var(--ink)' : 'transparent', color: letno ? 'var(--paper)' : 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>Letno <span style={{ fontSize: '.64rem', fontWeight: 800, letterSpacing: '.03em', color: letno ? '#8be6a8' : 'oklch(58% .13 160)' }}>CENEJE</span></button>
+          </div>
           <div className="fl-cenik-mreza">
             {CENIKI.map(c => (
               <div className={`fl-plan${c.izpost ? ' izpost' : ''}${c.kmalu ? ' kmalu' : ''}`} key={c.ime}>
@@ -1166,9 +1171,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                 <h3>{c.ime}</h3>
                 <p className="fl-plan-za">{c.za}</p>
                 <div className="fl-plan-cena">
-                  <strong>{c.cena}</strong><span>{c.enota}</span>
+                  <strong>{letno ? c.cena : ((c as { cenaMes?: string }).cenaMes ?? c.cena)}</strong><span>{c.enota}</span>
                   {'redna' in c && <s className="fl-plan-redna">{(c as { redna?: string }).redna} €</s>}
                 </div>
+                {'cenaMes' in c && <p style={{ margin: '.15rem 0 0', fontSize: '.72rem', color: 'rgba(17,17,17,.55)' }}>{letno ? 'obračunano letno' : 'mesečno, odpoveš kadarkoli'}</p>}
                 {'ustanovna' in c && <p className="fl-plan-ustanovna">{(c as { ustanovna?: string }).ustanovna}</p>}
                 {c.kmalu
                   ? <span className="fl-plan-cta cakalna" aria-disabled="true">{c.cta}</span>
