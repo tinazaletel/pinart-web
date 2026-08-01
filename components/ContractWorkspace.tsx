@@ -39,6 +39,14 @@ const VRSTE_POG: { id: VrstaPog; label: string; naziv: string; slug: string; kic
   { id: 'nda', label: 'NDA', naziv: 'Sporazum o varovanju zaupnih podatkov (NDA)', slug: 'nda', kick: 'NDA' },
   { id: 'dpa', label: 'DPA', naziv: 'Pogodba o obdelavi osebnih podatkov (DPA)', slug: 'dpa', kick: 'DPA' },
 ];
+const VRSTE_POG_EN: Record<VrstaPog, { naziv: string; kick: string }> = {
+  sodelovanje: { naziv: 'Business Cooperation Agreement', kick: 'AGREEMENT' },
+  podjemna: { naziv: 'Services Agreement', kick: 'SERVICES AGREEMENT' },
+  avtorska: { naziv: 'Copyright Agreement', kick: 'COPYRIGHT AGREEMENT' },
+  licencna: { naziv: 'Licence Agreement', kick: 'LICENCE AGREEMENT' },
+  nda: { naziv: 'Non-Disclosure Agreement (NDA)', kick: 'NDA' },
+  dpa: { naziv: 'Data Processing Agreement (DPA)', kick: 'DPA' },
+};
 
 /* posamezen clen dokumenta; opcijski cleni se dajo vklopiti/izklopiti, stevilcenje se prilagodi samo */
 type Clen = { id: string; naslov: string; telo: string; opcijski?: boolean };
@@ -54,6 +62,7 @@ const PRIVZETO_IZKLOP: Record<VrstaPog, string[]> = {
 const privzetoIzklop = (v: VrstaPog) => new Set<string>(PRIVZETO_IZKLOP[v]);
 
 export default function ContractWorkspace({ base }: { base: string }) {
+  const jeEn = base === '/en';
   /* pod 640px orodjarna postane slide-up predal (kot retainer) */
   const [jeMobilni, setJeMobilni] = useState(false);
   useEffect(() => {
@@ -227,7 +236,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     return n ? `<div class="dok-noga" style="position:fixed;left:16mm;right:16mm;bottom:5mm;padding-top:8px;border-top:1px solid oklch(93% .006 82 / .55);font-size:8pt;color:#9a9088;line-height:1.5">${esc(n).split('\n').join('<br>')}</div>` : '';
   };
   const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:400;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}.podpis-img{display:block;max-height:40px;max-width:180px;margin:0 0 -6px}`;
-  const doc = (body: string) => `<!doctype html><html lang="sl"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
+  const doc = (body: string) => `<!doctype html><html lang="${jeEn ? 'en' : 'sl'}"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
   useEffect(() => {
     setGlavaHtml(glava());
     const n = aktivnaPredloga().noga?.trim();
@@ -247,6 +256,103 @@ export default function ContractWorkspace({ base }: { base: string }) {
     const ponudbaDel = st ? `Potrjena ponudba št. ${esc(st)} je sestavni del pogodbe. ` : '';
     const sporiTelo = '<p>Stranki bosta morebitne spore reševali sporazumno. Če to ne bo mogoče, je pristojno stvarno pristojno sodišče v kraju izvajalca, če prisilni predpisi ne določajo drugače.</p>';
     const koncneTelo = '<p>Spremembe in dopolnitve so veljavne le v pisni obliki. Pogodba je sestavljena v dveh enakih izvodih oziroma podpisana elektronsko in začne veljati z dnem podpisa obeh strank.</p>';
+
+    if (jeEn) {
+      const scopeHtml = obseg.length ? `<ul>${obseg.map(s => `<li>${esc(s)}</li>`).join('')}</ul>` : '<ul><li>as set out in the accepted offer</li></ul>';
+      const amount = vir === 'ponudba' && selectedOffer && selectedOffer.agreedAmount > 0 ? ` The agreed fee is ${Math.round(selectedOffer.agreedAmount).toLocaleString('en-GB')} EUR.` : '';
+      const offerPart = st ? `Accepted offer no. ${esc(st)} forms an integral part of this agreement. ` : '';
+      const disputes = '<p>The parties shall seek to resolve disputes amicably. Failing settlement, the court with subject-matter jurisdiction at the Contractor’s registered office shall have jurisdiction, unless mandatory law provides otherwise.</p>';
+      const final = '<p>Amendments are valid only in writing. This agreement is executed in two counterparts or signed electronically and enters into force when signed by both parties.</p>';
+      const common = {
+        scope: (lead: string) => `<p>${lead}${naslovProj ? ` for the project “${esc(naslovProj)}”` : ''}:</p>${scopeHtml}<p>${offerPart}Work outside this scope requires a separate written approval and fee.</p>`,
+        confidentiality: '<p>Each party shall protect all business, personal and other confidential information obtained during the engagement and shall continue to do so after termination.</p>',
+        clientDuties: '<p>The Client shall provide the required materials, information, access and feedback on time, approve agreed project stages and pay invoices by their due dates.</p>',
+        copyright: '<p>The scope of any assignment or licence of copyright is governed by the accepted offer. Agreed rights pass to the Client only after full payment. Working files, rejected concepts and third-party assets are excluded unless agreed otherwise in writing.</p>',
+      };
+      switch (v) {
+        case 'sodelovanje': return [
+          { id: 'sod-uvod', naslov: 'Background', telo: '<p>The Contractor has the expertise required to perform the agreed services. The parties wish to define their mutual rights and obligations. The Contractor acts independently and is not an employee of the Client.</p>' },
+          { id: 'sod-predmet', naslov: 'Subject matter', telo: common.scope('The Contractor shall provide the following services') },
+          { id: 'sod-kakovost', naslov: 'Performance and quality', telo: '<p>The Contractor shall perform the services professionally, diligently and to an appropriate standard. The Client shall provide timely information, materials, access and approvals. The Contractor may engage qualified subcontractors and remains responsible for their work.</p>' },
+          { id: 'sod-roki', naslov: 'Schedule', telo: '<p>The schedule is set out in the offer or subsequently agreed in writing. Delays caused by late materials, feedback or approvals from the Client extend the delivery dates accordingly.</p>' },
+          { id: 'sod-cena', naslov: 'Fees and payment', telo: `<p>Fees, billing, advance payment and payment terms are governed by the accepted offer.${amount} Approved additional services and expenses are billed separately. Statutory default interest may be charged on overdue amounts.</p>` },
+          { id: 'sod-obvez-nar', naslov: 'Client obligations', telo: common.clientDuties },
+          { id: 'sod-obvez-izv', naslov: 'Contractor obligations', telo: '<p>The Contractor shall perform the services professionally, notify the Client of circumstances affecting delivery and allow review of the agreed project stages.</p>' },
+          { id: 'sod-varovanje', naslov: 'Confidentiality', opcijski: true, telo: common.confidentiality },
+          { id: 'sod-avtorske', naslov: 'Intellectual property', opcijski: true, telo: common.copyright },
+          { id: 'sod-trajanje', naslov: 'Term and termination', telo: '<p>This agreement remains in force from signature until all agreed obligations are fulfilled. Either party may terminate for a material breach that is not remedied within a reasonable period specified in writing.</p>' },
+          { id: 'sod-spremembe', naslov: 'Changes', telo: '<p>Changes are valid only in writing. Email approvals qualify as written agreement where they clearly define a change to scope, schedule or price.</p>' },
+          { id: 'sod-konkurenca', naslov: 'Non-compete', opcijski: true, telo: '<p>During the engagement and for 12 months afterwards, the Contractor shall not use the Client’s confidential information or materials to provide equivalent services to a direct competitor without the Client’s written consent. This does not restrict the Contractor’s general professional activity.</p>' },
+          { id: 'sod-kazen', naslov: 'Contractual penalty', opcijski: true, telo: '<p>For delay attributable to the Contractor, the Client may charge 0.5% of the value of the delayed work per day, capped at 10% of the contract value. This does not exclude recovery of proven loss exceeding the penalty.</p>' },
+          { id: 'sod-spori', naslov: 'Dispute resolution', telo: disputes },
+          { id: 'sod-koncne', naslov: 'Final provisions', telo: final },
+        ];
+        case 'podjemna': return [
+          { id: 'pod-uvod', naslov: 'Background', telo: '<p>The Client commissions and the Contractor independently undertakes a defined piece of work in accordance with professional standards. Nothing in this agreement creates an employment relationship.</p>' },
+          { id: 'pod-predmet', naslov: 'Work and scope', telo: common.scope('The Contractor shall carry out the following work') },
+          { id: 'pod-roki', naslov: 'Schedule', telo: '<p>The work shall be completed within the time stated in the offer or later agreed in writing. Client delays in supplying materials, approvals or payments extend the schedule accordingly.</p>' },
+          { id: 'pod-cena', naslov: 'Fee and payment', telo: `<p>The Contractor is entitled to the fee stated in the accepted offer.${amount} Payment is due within the agreed period after invoicing. Statutory default interest may be charged on overdue amounts.</p>` },
+          { id: 'pod-prevzem', naslov: 'Acceptance and defects', telo: '<p>The Client shall inspect the completed work and promptly report apparent defects in writing. Otherwise, the work is deemed accepted. The Contractor shall remedy substantiated defects within a reasonable time.</p>' },
+          { id: 'pod-obvez', naslov: 'Client obligations', telo: common.clientDuties },
+          { id: 'pod-avtorske', naslov: 'Intellectual property', opcijski: true, telo: common.copyright },
+          { id: 'pod-varovanje', naslov: 'Confidentiality', opcijski: true, telo: common.confidentiality },
+          { id: 'pod-odstop', naslov: 'Termination', telo: '<p>Either party may terminate for a material breach not remedied within a reasonable written cure period. The Contractor remains entitled to payment for work completed and accepted before termination.</p>' },
+          { id: 'pod-kazen', naslov: 'Contractual penalty', opcijski: true, telo: '<p>For delay attributable to the Contractor, the Client may charge 0.5% of the delayed work’s value per day, capped at 10% of the contract value, without prejudice to proven excess loss.</p>' },
+          { id: 'pod-spori', naslov: 'Dispute resolution', telo: disputes },
+          { id: 'pod-koncne', naslov: 'Final provisions', telo: final },
+        ];
+        case 'avtorska': return [
+          { id: 'avt-uvod', naslov: 'Background', telo: '<p>The Contractor (the Author) is the author of the work described below. The parties wish to regulate the creation of the work, copyright and their mutual obligations.</p>' },
+          { id: 'avt-predmet', naslov: 'Commissioned work', telo: common.scope('The commissioned copyright work comprises') },
+          { id: 'avt-prenos', naslov: 'Economic rights', telo: '<p>The Author grants the Client the economic rights required for the agreed use, including reproduction, distribution and making available to the public. Unless agreed otherwise, the grant is non-exclusive and takes effect after full payment. Working files, rejected concepts and third-party materials are excluded.</p>' },
+          { id: 'avt-moralne', naslov: 'Moral rights', telo: '<p>Moral rights remain with the Author and cannot be assigned. The Client shall not distort the work or use it in a way prejudicial to the Author’s honour or reputation.</p>' },
+          { id: 'avt-honorar', naslov: 'Author’s fee', telo: `<p>The Author is entitled to the fee stated in the accepted offer for creating the work and granting the rights.${amount} The fee is due within the agreed period after invoicing.</p>` },
+          { id: 'avt-atribucija', naslov: 'Attribution', opcijski: true, telo: '<p>Where customary and reasonably possible, the Client shall credit the Author by name or agreed designation when the work is used publicly.</p>' },
+          { id: 'avt-portfelj', naslov: 'Portfolio use', opcijski: true, telo: '<p>The Author may display the work as a reference in a portfolio and professional presentation, subject to the Client’s confidential information.</p>' },
+          { id: 'avt-tantieme', naslov: 'Royalties and additional use', opcijski: true, telo: '<p>If use materially exceeds the agreed purpose or reach, the Author is entitled to an additional fee agreed in proportion to the actual use.</p>' },
+          { id: 'avt-trajanje', naslov: 'Term and territory', telo: '<p>Unless agreed otherwise in writing, the grant applies in Slovenia for the full term of copyright. Any wider territory or term must be expressly agreed in writing.</p>' },
+          { id: 'avt-spori', naslov: 'Dispute resolution', telo: disputes },
+          { id: 'avt-koncne', naslov: 'Final provisions', telo: final },
+        ];
+        case 'licencna': return [
+          { id: 'lic-uvod', naslov: 'Background', telo: '<p>The Contractor (Licensor) owns the rights in the work described below, and the Client (Licensee) wishes to obtain a right to use it under this agreement.</p>' },
+          { id: 'lic-predmet', naslov: 'Licensed work', telo: common.scope('The licence covers the following work') },
+          { id: 'lic-obseg', naslov: 'Scope of licence', telo: '<p>The Licensee may use the work only in the agreed manner and for the agreed purpose. Any use outside that scope requires the Licensor’s prior written consent and may incur an additional fee.</p>' },
+          { id: 'lic-trajanje', naslov: 'Term', telo: '<p>The licence is granted for the agreed period. If no term is stated, it continues until terminated by either party on reasonable notice.</p>' },
+          { id: 'lic-teritorij', naslov: 'Territory', opcijski: true, telo: '<p>The licence applies in the agreed territory. If none is specified, it applies in Slovenia.</p>' },
+          { id: 'lic-ekskl', naslov: 'Exclusivity', opcijski: true, telo: '<p>Unless expressly agreed otherwise, the licence is non-exclusive and the Licensor may use the work and license it to others.</p>' },
+          { id: 'lic-podlicence', naslov: 'Sublicensing', opcijski: true, telo: '<p>The Licensee may assign the licensed rights or grant sublicences only with the Licensor’s prior written consent.</p>' },
+          { id: 'lic-licencnina', naslov: 'Licence fee', telo: `<p>The Licensee shall pay the licence fee stated in the accepted offer.${amount} It is due within the agreed period after invoicing.</p>` },
+          { id: 'lic-porocanje', naslov: 'Usage reporting', opcijski: true, telo: '<p>Where the fee depends on use, the Licensee shall report usage at the agreed intervals and pay the resulting additional royalties.</p>' },
+          { id: 'lic-prenehanje', naslov: 'Termination', telo: '<p>The licence ends when its term expires or on termination under this agreement. For a material breach not remedied within a reasonable written cure period, the Licensor may revoke the licence, after which all use must cease.</p>' },
+          { id: 'lic-spori', naslov: 'Dispute resolution', telo: disputes },
+          { id: 'lic-koncne', naslov: 'Final provisions', telo: final },
+        ];
+        case 'nda': return [
+          { id: 'nda-predmet', naslov: 'Purpose', telo: '<p>The parties may exchange confidential information while exploring or performing their business relationship. This mutual agreement binds each party equally as a disclosing and receiving party.</p>' },
+          { id: 'nda-zaupni', naslov: 'Confidential information', telo: '<p>Confidential information includes all business, technical, financial, organisational and personal data, documents, know-how and other information disclosed in any form or otherwise accessed during the relationship, where marked confidential or reasonably understood to be confidential.</p>' },
+          { id: 'nda-obveznosti', naslov: 'Recipient obligations', telo: '<p>The recipient shall protect confidential information with at least the care used for its own confidential information, use it solely for the relationship and disclose it only to personnel or subcontractors who need it and are bound by equivalent confidentiality duties.</p>' },
+          { id: 'nda-izjeme', naslov: 'Exclusions', telo: '<p>These duties do not apply to information that becomes public without breach, was independently obtained or developed without use of the confidential information, or must be disclosed by law or competent authority. Where permitted, the recipient shall give prior notice of compelled disclosure.</p>' },
+          { id: 'nda-trajanje', naslov: 'Term', telo: '<p>This agreement starts on signature. Confidentiality continues throughout the relationship and for three years afterwards, or for as long as applicable law requires for personal or specially protected data.</p>' },
+          { id: 'nda-odgovornost', naslov: 'Liability', opcijski: true, telo: '<p>A breaching party is liable for proven loss under applicable law. The parties may also agree a contractual penalty without excluding recovery of proven excess loss.</p>' },
+          { id: 'nda-koncne', naslov: 'Final provisions', telo: final },
+        ];
+        case 'dpa': return [
+          { id: 'dpa-predmet', naslov: 'Subject and duration', telo: '<p>This agreement governs processing of personal data by the Processor (Contractor) on behalf of the Controller (Client). Processing continues for the duration of the services or as long as required for the agreed purpose.</p>' },
+          { id: 'dpa-vrste', naslov: 'Data and data subjects', telo: '<p>Processing covers personal data needed for the services, including contact and identification data, relating to the Client’s customers, employees and business partners. The precise scope follows from the commissioned services.</p>' },
+          { id: 'dpa-navodila', naslov: 'Instructions', telo: '<p>The Processor shall process personal data only on documented instructions from the Controller and for the services. It shall promptly notify the Controller if an instruction appears to breach data-protection law.</p>' },
+          { id: 'dpa-zaupnost', naslov: 'Personnel confidentiality', telo: '<p>The Processor shall ensure that authorised personnel are bound by confidentiality or an appropriate statutory duty.</p>' },
+          { id: 'dpa-varnost', naslov: 'Security measures', telo: '<p>Taking account of the state of the art and risk, the Processor shall implement appropriate technical and organisational measures, including access controls, appropriate encryption, resilience and regular testing.</p>' },
+          { id: 'dpa-podobdelovalci', naslov: 'Sub-processors', opcijski: true, telo: '<p>The Processor may appoint a sub-processor only with the Controller’s prior general or specific written authorisation and shall impose equivalent data-protection obligations. The Processor remains responsible for the sub-processor.</p>' },
+          { id: 'dpa-prenos', naslov: 'International transfers', opcijski: true, telo: '<p>The Processor shall not transfer personal data outside the EEA or to an international organisation without the Controller’s prior consent and appropriate safeguards under applicable law.</p>' },
+          { id: 'dpa-pomoc', naslov: 'Assistance', telo: '<p>The Processor shall reasonably assist the Controller with data-subject rights, security, impact assessments and prior consultation with supervisory authorities.</p>' },
+          { id: 'dpa-krsitve', naslov: 'Personal data breaches', telo: '<p>The Processor shall notify the Controller without undue delay after becoming aware of a personal data breach and provide information reasonably required for the Controller’s reporting duties.</p>' },
+          { id: 'dpa-izbris', naslov: 'Return or deletion', telo: '<p>At the end of processing, the Processor shall, at the Controller’s choice, return or delete all personal data and copies unless retention is required by law.</p>' },
+          { id: 'dpa-revizija', naslov: 'Audit and evidence', telo: '<p>The Processor shall provide information reasonably required to demonstrate compliance and permit audits by the Controller or its authorised auditor.</p>' },
+          { id: 'dpa-koncne', naslov: 'Final provisions', telo: '<p>This agreement supplements the parties’ services agreement and applies throughout processing. Amendments must be in writing; otherwise applicable data-protection law governs.</p>' },
+        ];
+      }
+    }
 
     switch (v) {
       case 'sodelovanje':
@@ -342,25 +448,34 @@ export default function ContractWorkspace({ base }: { base: string }) {
   /* sestavi telo dokumenta: ovoj/glava (kick/h1/meta/parties) + oštevilčeni cleni (brez izklopljenih) + podpis.
      Za 'sodelovanje' in 'nda' je izpis vsebinsko enak prejsnjima generatorjema. */
   const sestaviTelo = (v: VrstaPog, izkl: Set<string> = izklKlavzule) => {
-    const meta = VRSTE_POG.find(x => x.id === v)!;
-    const nar = narocnikIme() || '[Naročnik]';
-    const izv = [ponudnik.ime.trim() || '[Izvajalec]', ponudnik.naslov.trim(), ponudnik.davcna.trim() && ('davčna št. ' + ponudnik.davcna.trim()), ponudnik.trr.trim() && ('TRR ' + ponudnik.trr.trim())].filter(Boolean).join(', ');
+    const slMeta = VRSTE_POG.find(x => x.id === v)!;
+    const meta = jeEn ? { ...slMeta, ...VRSTE_POG_EN[v] } : slMeta;
+    const narPlaceholder = jeEn ? '[Client]' : '[Naročnik]';
+    const nar = narocnikIme() || narPlaceholder;
+    const izv = [ponudnik.ime.trim() || (jeEn ? '[Contractor]' : '[Izvajalec]'), ponudnik.naslov.trim(), ponudnik.davcna.trim() && ((jeEn ? 'tax no. ' : 'davčna št. ') + ponudnik.davcna.trim()), ponudnik.trr.trim() && ('IBAN ' + ponudnik.trr.trim())].filter(Boolean).join(', ');
     const st = vir === 'ponudba' ? selectedOffer?.number || '' : '';
     const d = datum ? new Date(datum + 'T00:00:00') : new Date();
     /* kick v dokumentu = naziv brez oklepajnega dodatka; ponudbena št. le pri pogodbenih vrstah (ne NDA/DPA) */
-    const dokKick = meta.naziv.replace(/\s*\(.*\)\s*$/, '') + ((v !== 'nda' && v !== 'dpa' && st) ? ' · ponudba št. ' + esc(st) : '');
+    const dokKick = meta.naziv.replace(/\s*\(.*\)\s*$/, '') + ((v !== 'nda' && v !== 'dpa' && st) ? (jeEn ? ' · offer no. ' : ' · ponudba št. ') + esc(st) : '');
     const zaimek = v === 'nda' ? 'ga' : 'jo'; /* sporazum (m) → ga, pogodba (ž) → jo */
     const partiesSklep = v === 'nda' ? '(v nadaljevanju: pogodbeni stranki) kot sledi:' : 'kot sledi:';
     const cleni = cleniZaVrsto(v).filter(c => !(c.opcijski && izkl.has(c.id)));
-    const cleniHtml = cleni.map((c, i) => `<div class="pog-clen"><h2>${i + 1}. člen — ${c.naslov}</h2>${c.telo}</div>`).join('');
+    const cleniHtml = cleni.map((c, i) => `<div class="pog-clen"><h2>${i + 1}. ${jeEn ? 'Clause' : 'člen'} — ${c.naslov}</h2>${c.telo}</div>`).join('');
+    const datumBeseda = jeEn ? 'Date' : 'Datum';
+    const narLabel = jeEn ? 'Client' : 'Naročnik';
+    const izvLabel = jeEn ? 'Contractor' : 'Izvajalec';
+    const skleneta = jeEn ? 'entered into by' : `ki ${zaimek} skleneta`;
+    const inBeseda = jeEn ? 'and' : 'in';
+    const sklep = jeEn ? (v === 'nda' ? '(together, the “Parties”) as follows:' : 'as follows:') : partiesSklep;
+    const krajDatum = jeEn ? 'Place and date' : 'Kraj in datum';
     return `
       <div class="kick">${dokKick}</div>
       <h1>${meta.naziv}</h1>
-      <p class="meta">Datum: ${datStr(d)}${nar !== '[Naročnik]' ? ' · z: ' + esc(nar) : ''}</p>
-      <div class="parties" style="margin-top:14px"><p>ki ${zaimek} skleneta</p><p><b>Naročnik:</b> ${esc(nar)}</p><p>in</p><p><b>Izvajalec:</b> ${esc(izv)}</p><p>${partiesSklep}</p></div>
+      <p class="meta">${datumBeseda}: ${jeEn ? d.toLocaleDateString('en-GB') : datStr(d)}${nar !== narPlaceholder ? (jeEn ? ' · with: ' : ' · z: ') + esc(nar) : ''}</p>
+      <div class="parties" style="margin-top:14px"><p>${skleneta}</p><p><b>${narLabel}:</b> ${esc(nar)}</p><p>${inBeseda}</p><p><b>${izvLabel}:</b> ${esc(izv)}</p><p>${sklep}</p></div>
       ${cleniHtml}
-      <p style="margin-top:12px">Kraj in datum: ____________________</p>
-      <div class="sig"><div><span>Naročnik</span><span class="lin"></span>${esc(nar !== '[Naročnik]' ? nar : '')}</div><div><span>Izvajalec</span><span class="lin"></span>${esc(ponudnik.ime.trim() || '')}</div></div>`;
+      <p style="margin-top:12px">${krajDatum}: ____________________</p>
+      <div class="sig"><div><span>${narLabel}</span><span class="lin"></span>${esc(nar !== narPlaceholder ? nar : '')}</div><div><span>${izvLabel}</span><span class="lin"></span>${esc(ponudnik.ime.trim() || '')}</div></div>`;
   };
 
   /* aktivno telo glede na izbrano vrsto dokumenta — vse spodnje funkcije gradijo telo skoznjo */
