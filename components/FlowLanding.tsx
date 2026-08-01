@@ -22,9 +22,9 @@ import RotatingLaptop from '@/components/RotatingLaptop';
 /* Hero naslov se vrti med 3 sporocili (ljudje ne skrolajo — naslov naj pove vec).
    Vsaka razlicica ohrani per-word "flWordUp" animacijo ob menjavi (key={heroIdx}). */
 const HERO_NASLOVI: { pre: string[]; em: string[] }[] = [
-  { pre: ['Tvoja', 'poslovna', 'AI', 'asistentka'], em: ['in', 'dobiš', 'tudi', 'mene.'] },
-  { pre: ['Poštena', 'cena,', 'vračunane'], em: ['avtorske', 'pravice.'] },
-  { pre: ['Od', 'ponudbe', 'do', 'plačanega'], em: ['računa.'] },
+  { pre: ['Od', 'ponudbe', 'do', 'plačanega', 'računa —'], em: ['z', 'AI', 'asistentko.'] },
+  { pre: ['Vse', 'tvoje', 'poslovanje'], em: ['na', 'enem', 'mestu.'] },
+  { pre: ['AI,', 'ki', 'pozna', 'trg', 'in'], em: ['ceno', 'tvojega', 'dela.'] },
 ];
 
 export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
@@ -911,8 +911,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <em>{HERO_NASLOVI[heroIdx].em.map((w, i) => <span key={i} className="w" style={{ animationDelay: `${(HERO_NASLOVI[heroIdx].pre.length + i) * 0.07}s` }}>{w}{' '}</span>)}</em>
           </h1>
           <p className="lead">
-            Prvo orodje za kreativce, ki ti <b>pove pošteno ceno</b> — z vračunanimi avtorskimi pravicami
-            in primerjavo s trgom — nato pa ves projekt vodi do plačanega računa. Ne ugibaš cene in ne skačeš med tremi programi.
+            Flow vodi tvoj posel <b>od prve ponudbe do plačila</b> — cene, pogodbe, računi, stranke in denar na enem mestu.
+            Ob strani ti stoji <b>AI asistentka Pupa</b>, ki pozna trg in ti pove, koliko je vredno tvoje delo.
           </p>
           <div className="cta-vrsta">
             <a className="cta" href={prijava}>Vstopi v Flow <ArrowRight size={17} weight="bold" /></a>
