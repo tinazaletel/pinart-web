@@ -25,7 +25,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, User, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, PaperPlaneTilt, DotsThree, Paperclip, X, Microphone,
+  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, PaperPlaneTilt, DotsThree, Paperclip, X, Microphone, SpeakerHigh, SpeakerSlash,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -2273,6 +2273,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [pupaVnos, setPupaVnos] = useState('');
   const [pupaCaka, setPupaCaka] = useState(false);
   const [pupaPosluam, setPupaPosluam] = useState(false);   /* glasovni vnos aktiven */
+  const [pupaZvok, setPupaZvok] = useState(false);   /* Pupa bere odgovore na glas */
   const barvaRef = useRef<HTMLInputElement>(null);  /* custom (mavricna) barva */
   const [kaziUre, setKaziUre] = useState(false);
   const [prenosPravic, setPrenosPravic] = useState<'izkljucni' | 'neizkljucni' | 'licenca'>('izkljucni');
@@ -3116,7 +3117,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         body: JSON.stringify({ vprasanje: q, kontekst: pupaKontekst, zgodovina }),
       });
       const data = await res.json();
-      setPupaSpor(s => [...s, { role: 'assistant', content: data.odgovor || data.napaka || 'Hmm, nekaj je zaskripalo.' }]);
+      const odg = data.odgovor || data.napaka || 'Hmm, nekaj je zaskripalo.';
+      setPupaSpor(s => [...s, { role: 'assistant', content: odg }]);
+      if (pupaZvok) pupaGovori(odg);
     } catch {
       setPupaSpor(s => [...s, { role: 'assistant', content: L('Ne morem do zaledja. Poskusi znova.', 'Cannot reach the backend. Try again.') }]);
     } finally {
@@ -3139,6 +3142,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     rec.onerror = () => setPupaPosluam(false);
     rec.onend = () => setPupaPosluam(false);
     rec.start();
+  };
+
+  /* Pupa prebere besedilo na glas (Web Speech; deluje brez zaledja). */
+  const pupaGovori = (besedilo: string) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(besedilo);
+    u.lang = locale === 'en' ? 'en-US' : 'sl-SI';
+    window.speechSynthesis.speak(u);
   };
 
   /* Retainer izracun (dolgorocno sodelovanje) — LOCEN od projektnega r, da ga ne ogrozi.
@@ -9620,6 +9632,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <b style={{ fontSize: '1rem' }}>Pupa</b>
                   <div style={{ fontSize: '.74rem', opacity: .6 }}>{L('pomočnica za cene in pravice', 'your pricing & rights helper')}</div>
                 </div>
+                <button type="button" onClick={() => { const n = !pupaZvok; setPupaZvok(n); if (!n && typeof window !== 'undefined') window.speechSynthesis?.cancel(); }} aria-label={pupaZvok ? L('Izklopi glas', 'Mute voice') : L('Vklopi glas', 'Enable voice')} title={pupaZvok ? L('Glasovni odgovori: vklopljeni', 'Voice replies: on') : L('Glasovni odgovori: izklopljeni', 'Voice replies: off')} style={{ border: 'none', background: 'none', cursor: 'pointer', color: pupaZvok ? '#a78bfa' : 'rgba(42,32,53,.45)', padding: 2, display: 'inline-flex' }}>
+                  {pupaZvok ? <SpeakerHigh size={19} weight="fill" /> : <SpeakerSlash size={19} />}
+                </button>
                 <button type="button" onClick={() => setAiKmalu(false)} aria-label={L('Zapri', 'Close')} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 24, lineHeight: 1, color: 'rgba(42,32,53,.5)', padding: 2 }}>×</button>
               </div>
 
