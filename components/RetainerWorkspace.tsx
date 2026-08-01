@@ -113,6 +113,16 @@ function scatter(n: number, jeMobilni = false) {
 /* vLupini = retainer tece znotraj Flow ogrodja (vpisan uporabnik); takrat svoje
    glave ne rise, ker jo prispeva ogrodje. */
 export default function RetainerWorkspace({ base, vLupini = false }: { base: string; vLupini?: boolean }) {
+  const jeEn = base === '/en';
+  const docLocale = jeEn ? 'en-GB' : 'sl-SI';
+  const docDate = (d: Date) => d.toLocaleDateString(docLocale, { day: 'numeric', month: 'numeric', year: 'numeric' });
+  const docEur = (n: number) => Math.round(n).toLocaleString(docLocale) + ' €';
+  const scopeEn: Record<string, string> = {
+    cgp: 'Brand identity', logo: 'Logo design', web: 'Website', social: 'Social media', copy: 'Copywriting',
+    ilustracija: 'Illustration', fotografija: 'Photography', motion: 'Video / motion', aplikacija: 'Application',
+    seo: 'SEO', oglasi: 'Advertising / campaigns', direkcija: 'Creative direction',
+  };
+  const docScope = (id: string) => jeEn ? (scopeEn[id] ?? id) : imeScope(id);
   /* enako kot kalkulator: pod 640px 3 mehurcki v vrsti in manjsi premer */
   const [jeMobilni, setJeMobilni] = useState(false);
   useEffect(() => {
@@ -143,7 +153,9 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   const [doba, setDoba] = useState(12);
   const [nar, setNar] = useState<Narocnik>({ ime: '', email: '', oseba: '', naslov: '', davcna: '' });
   const [dodatniNar, setDodatniNar] = useState(false);
-  const [pravice, setPravice] = useState('Licenca za rabo za čas trajanja pogodbe; ob prenehanju pravice, ki niso odkupljene, revertirajo avtorju. Moralne avtorske pravice ostanejo avtorju.');
+  const [pravice, setPravice] = useState(jeEn
+    ? 'A licence to use the work is granted for the term of the agreement. Upon termination, rights that have not been purchased revert to the author. Moral rights remain with the author.'
+    : 'Licenca za rabo za čas trajanja pogodbe; ob prenehanju pravice, ki niso odkupljene, revertirajo avtorju. Moralne avtorske pravice ostanejo avtorju.');
   const [stevilka, setStevilka] = useState('');
   const [pdfNalaganje, setPdfNalaganje] = useState(false);
   const [napaka, setNapaka] = useState('');
@@ -264,24 +276,44 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   /* Glava/noga AKTIVNE predloge (vec predlog) — ADITIVNO, glej lib/dokVidez.ts.
      Ce nista vpisani, se nic ne izrise in obstojeci videz ostane enak. */
   const glava = () => {
-    const kontakt = [ponudnik.davcna.trim() && 'Davčna št.: ' + ponudnik.davcna.trim(), ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(), ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(), ponudnik.email.trim()].filter(Boolean).join(' · ');
+    const kontakt = [ponudnik.davcna.trim() && (jeEn ? 'Tax no.: ' : 'Davčna št.: ') + ponudnik.davcna.trim(), ponudnik.trr.trim() && (jeEn ? 'IBAN: ' : 'TRR: ') + ponudnik.trr.trim(), ponudnik.telefon.trim() && (jeEn ? 'Phone: ' : 'Tel.: ') + predklic + ' ' + ponudnik.telefon.trim(), ponudnik.email.trim()].filter(Boolean).join(' · ');
     const glavaBesedilo = aktivnaPredloga().glava?.trim();
     const glavaLine = glavaBesedilo ? '<br><span class="mut" style="color:#111;font-weight:600">' + esc(glavaBesedilo) + '</span>' : '';
     const logo = aktivniLogo();
     const znak = logo ? `<img class="lg-logo" src="${logo}" alt="">` : '';
-    return `<div class="lg"><div><b>${esc(ponudnik.ime.trim() || '[Tvoje podjetje]')}</b>${glavaLine}${ponudnik.naslov.trim() ? '<br>' + esc(ponudnik.naslov.trim()) : ''}${kontakt ? '<br><span class="mut">' + esc(kontakt) + '</span>' : ''}</div>${znak}</div>`;
+    return `<div class="lg"><div><b>${esc(ponudnik.ime.trim() || (jeEn ? '[Your company]' : '[Tvoje podjetje]'))}</b>${glavaLine}${ponudnik.naslov.trim() ? '<br>' + esc(ponudnik.naslov.trim()) : ''}${kontakt ? '<br><span class="mut">' + esc(kontakt) + '</span>' : ''}</div>${znak}</div>`;
   };
   const dokNoga = () => {
     const n = aktivnaPredloga().noga?.trim();
     return n ? `<div class="dok-noga" style="margin-top:24px;padding-top:10px;border-top:1px solid oklch(93% .006 82 / .55);font-size:8pt;color:#9a9088;line-height:1.6">${esc(n).split('\n').join('<br>')}</div>` : '';
   };
   const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:400;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.big{font-family:'Helvetica Neue',Arial,sans-serif;font-size:16pt;color:#111;font-weight:700;letter-spacing:-.01em}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}.podpis-img{display:block;max-height:40px;max-width:180px;margin:0 0 -6px}`;
-  const doc = (body: string) => `<!doctype html><html lang="sl"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
+  const doc = (body: string) => `<!doctype html><html lang="${jeEn ? 'en' : 'sl'}"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
 
-  const modelOpis = model === 'ure' ? `${ure} ur na mesec` : model === 'paket' ? 'dogovorjeni mesečni paket storitev' : `${ure} ur na mesec + dogovorjeni paket storitev`;
-  const obsegHtml = vsiScope.length ? `<ul>${vsiScope.map(s => `<li>${esc(imeScope(s))}</li>`).join('')}</ul>` : '<p class="mut">[dopolni obseg]</p>';
+  const modelOpis = jeEn
+    ? (model === 'ure' ? `${ure} hours per month` : model === 'paket' ? 'agreed monthly service package' : `${ure} hours per month plus an agreed service package`)
+    : (model === 'ure' ? `${ure} ur na mesec` : model === 'paket' ? 'dogovorjeni mesečni paket storitev' : `${ure} ur na mesec + dogovorjeni paket storitev`);
+  const obsegHtml = vsiScope.length ? `<ul>${vsiScope.map(s => `<li>${esc(docScope(s))}</li>`).join('')}</ul>` : `<p class="mut">${jeEn ? '[complete the scope]' : '[dopolni obseg]'}</p>`;
 
-  const ponudbaHtml = () => `
+  const ponudbaHtml = () => jeEn ? `
+    <div class="kick">Proposal — ongoing collaboration${stevilka ? ' · no. ' + esc(stevilka) : ''}</div>
+    <h1>Monthly collaboration</h1>
+    <p class="meta">Date: ${docDate(new Date())}${nar.ime.trim() ? ' · prepared for: ' + esc(nar.ime.trim()) : ''}</p>
+    <h2>Scope (included each month)</h2>${obsegHtml}
+    <h2>Monthly fee</h2>
+    <p class="big">${docEur(ret.mesNeto)}${ddvZavezanec ? ` <span class="mut" style="font-size:10pt">(incl. VAT ${docEur(zDdv(ret.mesNeto))})</span>` : ''} / month</p>
+    <ul>
+      <li>Included: ${esc(modelOpis)}</li>
+      ${ret.ureBaza > 0 ? `<li>Hours included: ${ure} h / month (hourly rate ${docEur(urna)})</li>` : ''}
+      ${ret.paketBaza > 0 ? `<li>Monthly package: ${docEur(ret.paketBaza)} / month</li>` : ''}
+      <li>Term: ${doba} months${ret.popust > 0 ? ` — commitment discount −${Math.round(ret.popust * 100)}% (standard fee ${docEur(ret.mesBruto)} / month)` : ''}</li>
+      <li>Additional hours beyond the included block: ${docEur(ret.overage)} / hour</li>
+      <li>Notice period: ${ODPOVED_DNI} days</li>
+      <li>Total for the term (${doba} months): ${docEur(ret.skupajDoba)} · annual value: ${docEur(ret.letno)}</li>
+    </ul>
+    <h2>Payment</h2>
+    <p>The monthly fee is invoiced in advance at the beginning of each month of collaboration. Unused hours generally do not carry over to the following month. Work beyond the agreed block is charged at the hourly rate stated above.</p>
+    <h2>Intellectual property rights</h2><p>${esc(pravice)}</p>` : `
     <div class="kick">Ponudba — dolgoročno sodelovanje${stevilka ? ' · št. ' + esc(stevilka) : ''}</div>
     <h1>Mesečno sodelovanje</h1>
     <p class="meta">Datum: ${datStr(new Date())}${nar.ime.trim() ? ' · za: ' + esc(nar.ime.trim()) : ''}</p>
@@ -302,10 +334,23 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
     <h2>Avtorske pravice</h2><p>${esc(pravice)}</p>`;
 
   const pogodbaHtml = () => {
-    const izvajalec = [ponudnik.ime.trim() || '[Izvajalec]', ponudnik.naslov.trim(), ponudnik.davcna.trim() && ('davčna št. ' + ponudnik.davcna.trim()), ponudnik.trr.trim() && ('TRR ' + ponudnik.trr.trim())].filter(Boolean).join(', ');
-    const narStr = [nar.ime.trim() || '[Naročnik]', nar.oseba?.trim(), nar.naslov?.trim(), nar.davcna?.trim() && ('davčna št. ' + nar.davcna.trim())].filter(Boolean).join(', ');
-    const ddvStr = ddvZavezanec ? ' (+ DDV)' : ' (izvajalec ni zavezanec za DDV — 1. odst. 94. člena ZDDV-1)';
-    return `
+    const izvajalec = [ponudnik.ime.trim() || (jeEn ? '[Service provider]' : '[Izvajalec]'), ponudnik.naslov.trim(), ponudnik.davcna.trim() && ((jeEn ? 'tax no. ' : 'davčna št. ') + ponudnik.davcna.trim()), ponudnik.trr.trim() && ((jeEn ? 'IBAN ' : 'TRR ') + ponudnik.trr.trim())].filter(Boolean).join(', ');
+    const narStr = [nar.ime.trim() || (jeEn ? '[Client]' : '[Naročnik]'), nar.oseba?.trim(), nar.naslov?.trim(), nar.davcna?.trim() && ((jeEn ? 'tax no. ' : 'davčna št. ') + nar.davcna.trim())].filter(Boolean).join(', ');
+    const ddvStr = ddvZavezanec ? (jeEn ? ' (+ VAT)' : ' (+ DDV)') : (jeEn ? ' (the service provider is not registered for VAT pursuant to Article 94(1) of ZDDV-1)' : ' (izvajalec ni zavezanec za DDV — 1. odst. 94. člena ZDDV-1)');
+    return jeEn ? `
+      <div class="kick">Agreement — ongoing collaboration${stevilka ? ' · no. ' + esc(stevilka) : ''}</div>
+      <h1>Ongoing Collaboration Agreement</h1>
+      <p class="meta">Date: ${docDate(new Date())}${nar.ime.trim() ? ' · with: ' + esc(nar.ime.trim()) : ''}</p>
+      <div class="parties" style="margin-top:14px"><p>entered into by and between:</p><p><b>Service provider:</b> ${esc(izvajalec)}</p><p>and</p><p><b>Client:</b> ${esc(narStr)}</p></div>
+      <div class="pog-clen"><h2>Clause 1 — Subject matter</h2><p>The service provider will provide creative services to the client as an ongoing monthly collaboration. Included areas: ${vsiScope.length ? esc(vsiScope.map(docScope).join(', ')) : 'as set out in the agreed scope'}.</p></div>
+      <div class="pog-clen"><h2>Clause 2 — Scope</h2><p>Monthly scope: <b>${esc(modelOpis)}</b>.${ret.ureBaza > 0 ? ` The included block is ${ure} hours per month.` : ''} Unused hours generally do not carry over to the following month unless agreed in writing. Work beyond the agreed scope is charged at ${docEur(ret.overage)} per hour.</p></div>
+      <div class="pog-clen"><h2>Clause 3 — Term</h2><p>This agreement is concluded for <b>${doba} months</b> and takes effect on the date of signature (expected ${docDate(new Date())}). It may be extended upon the written consent of both parties.</p></div>
+      <div class="pog-clen"><h2>Clause 4 — Fees and payment</h2><p>The monthly fee is <b>${docEur(ret.mesNeto)}${ddvStr}</b>. It is invoiced in advance at the beginning of each month and is payable within 8 days. The total for the full ${doba}-month term is ${docEur(ret.skupajDoba)}${ddvZavezanec ? ' + VAT' : ''}.</p></div>
+      <div class="pog-clen"><h2>Clause 5 — Intellectual property rights</h2><p>${esc(pravice)}</p></div>
+      <div class="pog-clen"><h2>Clause 6 — Termination</h2><p>Either party may terminate this agreement by written notice subject to a <b>${ODPOVED_DNI}-day</b> notice period. Work already performed and the current month are payable in full.</p></div>
+      <div class="pog-clen"><h2>Clause 7 — Confidentiality</h2><p>Each party will protect the other party's confidential information and will not disclose it to third parties without consent, including after the collaboration ends.</p></div>
+      <div class="pog-clen"><h2>Clause 8 — Final provisions</h2><p>Matters not governed by this agreement are subject to the laws of the Republic of Slovenia. The parties will seek to resolve disputes amicably; otherwise, the competent court at the service provider's registered office will have jurisdiction. This agreement is executed in two identical counterparts.</p></div>
+      <div class="sig"><div><span>Service provider</span><span class="lin"></span>${esc(ponudnik.ime.trim() || '')}</div><div><span>Client</span><span class="lin"></span>${esc(nar.ime.trim() || '')}</div></div>` : `
       <div class="kick">Pogodba — dolgoročno sodelovanje${stevilka ? ' · št. ' + esc(stevilka) : ''}</div>
       <h1>Pogodba o dolgoročnem sodelovanju</h1>
       <p class="meta">Datum: ${datStr(new Date())}${nar.ime.trim() ? ' · z: ' + esc(nar.ime.trim()) : ''}</p>
@@ -386,7 +431,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
     if (!cilj) return;
     cilj.querySelector('img.podpis-img')?.remove();
     const img = document.createElement('img');
-    img.src = dataUrl; img.className = 'podpis-img'; img.alt = 'Podpis';
+    img.src = dataUrl; img.className = 'podpis-img'; img.alt = jeEn ? 'Signature' : 'Podpis';
     cilj.insertBefore(img, cilj.querySelector('.lin'));
     setRocnoTelo(true); sinhronizirajEditor(); setPonSheet(null);
   };
@@ -427,7 +472,10 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
     const ime = (kaj === 'ponudba' ? 'retainer-ponudba-' : 'pogodba-dolgorocno-') + (slug || 'pinart');
     setPdfNalaganje(true);
     try {
-      const res = await fetch('/api/ponudba-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html, ime, footer: [ponudnik.ime.trim(), kaj === 'ponudba' ? 'Retainer ponudba' : 'Pogodba o dolgoročnem sodelovanju'].filter(Boolean).join(' · ') }) });
+      const footerNaziv = jeEn
+        ? (kaj === 'ponudba' ? 'Ongoing collaboration proposal' : 'Ongoing Collaboration Agreement')
+        : (kaj === 'ponudba' ? 'Retainer ponudba' : 'Pogodba o dolgoročnem sodelovanju');
+      const res = await fetch('/api/ponudba-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html, ime, footer: [ponudnik.ime.trim(), footerNaziv].filter(Boolean).join(' · ') }) });
       if (!res.ok) throw new Error('pdf');
       const blob = await res.blob();
       if (!blob.size) throw new Error('prazen');
