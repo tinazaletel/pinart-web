@@ -29,6 +29,7 @@ const vObdobju = (dateStr: string, od: string, doD: string): boolean => {
 const statusLabel: Record<FlowOfferStatus, string> = { draft: 'Osnutek', sent: 'Čaka', accepted: 'Sprejeta', rejected: 'Zavrnjena' };
 const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFractionDigits: 2 })} €`;
 const datStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('sl-SI'); };
+const casStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' }); };
 
 /* status projekta (tabela) — izpeljano iz offer.status po ISTI logiki kot filter
    spodaj (aktivni=accepted, cakajo=sent, zakljuceni=rejected); tone usklajen s
@@ -957,11 +958,14 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 <ul className="pw-posta-seznam">
                   {seznam.map(vnos => (
                     <li key={vnos.id} onClick={() => setBeriMail(vnos)} style={{ cursor: 'pointer', border: '1px solid color-mix(in oklch, var(--ink) 4%, transparent)' }}>
-                      <div className="pw-posta-vrh">
-                        <b>{vnos.zadeva}</b>
-                        <span className="pw-posta-smer">{vnos.izbrisano ? 'Koš' : vnos.osnutek ? 'Osnutek' : vnos.smer === 'poslano' ? 'Poslano' : 'Prejeto'}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '.6rem', alignItems: 'baseline' }}>
+                        <b style={{ fontSize: '.82rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vnos.prejemniki.join(', ') || '—'}</b>
+                        <small style={{ flex: 'none', color: 'var(--muted)', fontSize: '.66rem' }}>{datStr(vnos.datum)}{casStr(vnos.datum) ? ` · ${casStr(vnos.datum)}` : ''}</small>
                       </div>
-                      <small className="pw-posta-meta">{vnos.prejemniki.join(', ')} · {datStr(vnos.datum)}</small>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '.5rem', alignItems: 'baseline' }}>
+                        <span style={{ fontSize: '.8rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vnos.zadeva || '(brez zadeve)'}</span>
+                        <span style={{ flex: 'none', fontSize: '.5rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>{vnos.izbrisano ? 'Koš' : vnos.osnutek ? 'Osnutek' : vnos.smer === 'poslano' ? 'Poslano' : 'Prejeto'}</span>
+                      </div>
                     </li>
                   ))}
                 </ul>
