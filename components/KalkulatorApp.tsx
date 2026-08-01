@@ -3093,6 +3093,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     if (!r) return '';
     const pr = r.paketi.find(p => p.id === 'priporoceni') || r.paketi[0];
     const vrs = [
+      ...(narocnikPonudbe.trim() ? [`Narocnik (stranka): ${narocnikPonudbe.trim()}${narocnikOseba.trim() ? ` (kontakt: ${narocnikOseba.trim()})` : ''}`] : []),
+      ...(nazivPonudbe.trim() ? [`Naziv ponudbe/projekta: ${nazivPonudbe.trim()}`] : []),
       `Glavna storitev: ${r.sez?.[0]?.ime || '-'}`,
       `Izvedba (delo): ${r.delo} EUR`,
       `Avtorske pravice (odkup): ${r.pravice} EUR; letna licenca: ${r.licenca} EUR; model prenosa: ${r.prenos}`,
@@ -3102,7 +3104,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     ];
     const nas = copilotNasveti.map(n => `- ${n.besedilo}`).join('\n');
     return vrs.join('\n') + (nas ? `\n\nOpozorila Flow copilota:\n${nas}` : '');
-  }, [r, copilotNasveti, trgNarocnika]);
+  }, [r, copilotNasveti, trgNarocnika, narocnikPonudbe, nazivPonudbe, narocnikOseba]);
 
   /* Objavi kontekst globalni Pupi (components/Pupa.tsx v layoutu). Ob odhodu s
      kalkulatorja kontekst počisti, da je Pupa na drugih orodjih generična. */
