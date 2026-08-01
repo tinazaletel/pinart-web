@@ -7,6 +7,7 @@ import { defineConfig, devices } from '@playwright/test';
              npx playwright show-report   (odpre HTML poročilo) */
 export default defineConfig({
   testDir: './tests',
+  testMatch: '**/*.spec.ts',   /* samo Playwright *.spec.ts; Vitest *.test.ts pusti pri miru */
   fullyParallel: true,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
