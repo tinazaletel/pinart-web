@@ -275,19 +275,19 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
   const ORODJA = [
     { Ikona: FileText, kat: 'ponudbe', h: 297, ime: 'Kalkulator ponudb', opis: 'Poštena cena projekta: izvedba, avtorske pravice in licenca. Trije paketi in urejljivo besedilo.', href: kalkulator, brezplacno: true },
-    { Ikona: FolderOpen, kat: 'stranke', h: 285, ime: 'Projekti & arhiv', opis: 'Vsi projekti na enem mestu — ponudbe, pogodbe, računi, roki, prihodki in stroški po projektu.', href: localePath(locale, '/kalkulator/projekti') },
+    { Ikona: FolderOpen, kat: 'stranke', h: 285, ime: 'Projekti & arhiv', opis: 'Vsak projekt na enem mestu — ponudbe, pogodbe, računi, roki in vsa komunikacija, pregledno.', href: localePath(locale, '/kalkulator/projekti') },
     { Ikona: Scroll, kat: 'dogovori', h: 245, ime: 'Pogodbe', opis: 'Pogodbe o sodelovanju in prenosu pravic, pripravljene za podpis.', href: localePath(locale, '/kalkulator/pogodbe') },
-    { Ikona: Receipt, kat: 'finance', h: 28, ime: 'Računi', opis: 'Iz ponudbe v račun z enim klikom. Številčenje, rok in status plačila.', href: localePath(locale, '/kalkulator/racuni') },
-    { Ikona: Target, kat: 'stranke', h: 12, ime: 'Cilji', opis: 'Mesečni cilj prihodkov in koliko projektov te loči do njega.', href: localePath(locale, '/kalkulator/cilji') },
-    { Ikona: SquaresFour, kat: 'stranke', h: 312, ime: 'Pregled', opis: 'Nadzorna plošča: promet, odprte ponudbe in čakajoča plačila.', href: localePath(locale, '/kalkulator/pregled') },
-    { Ikona: Users, kat: 'stranke', h: 265, ime: 'Stranke', opis: 'Kartoteka naročnikov s podatki, dokumenti in zgodovino sodelovanja.', href: localePath(locale, '/kalkulator/stranke') },
+    { Ikona: Receipt, kat: 'finance', h: 265, ime: 'Računi', opis: 'Iz ponudbe v račun z enim klikom. Številčenje, rok in status plačila.', href: localePath(locale, '/kalkulator/racuni') },
+    { Ikona: Users, kat: 'stranke', h: 205, ime: 'Stranke', opis: 'Kartoteka naročnikov s podatki, dokumenti in zgodovino sodelovanja.', href: localePath(locale, '/kalkulator/stranke') },
+    { Ikona: ListChecks, kat: 'stranke', h: 258, ime: 'Naloge', opis: 'Task manager po projektih — poveš Pupi želje, ona jih razdeli v naloge.', href: localePath(locale, '/kalkulator/naloge') },
+    { Ikona: SquaresFour, kat: 'stranke', h: 200, ime: 'Pregled', opis: 'Nadzorna plošča: promet, odprte ponudbe in čakajoča plačila.', href: localePath(locale, '/kalkulator/pregled') },
     { Ikona: Handshake, kat: 'dogovori', h: 162, ime: 'Dolgoročno sodelovanje', opis: 'Retainer z mesečnim obsegom, urami in dobo. Jasni pogoji dolgoročnega dogovora.', href: localePath(locale, '/kalkulator/dolgorocno') },
+    { Ikona: Target, kat: 'stranke', h: 135, ime: 'Cilji', opis: 'Mesečni cilj prihodkov in koliko projektov te loči do njega.', href: localePath(locale, '/kalkulator/cilji') },
     { Ikona: Tag, kat: 'ponudbe', h: 135, ime: 'Ceniki', opis: 'Tvoji cenovni profili: shraniš, urediš in znova uporabiš.', href: localePath(locale, '/kalkulator/ceniki') },
-    { Ikona: Wallet, kat: 'finance', h: 330, ime: 'Stroški', opis: 'Odhodki in ponavljajoči se stroški, zbrani na enem mestu.', href: localePath(locale, '/kalkulator/stroski') },
+    { Ikona: Wallet, kat: 'finance', h: 205, ime: 'Stroški', opis: 'Odhodki in ponavljajoči se stroški, zbrani na enem mestu.', href: localePath(locale, '/kalkulator/stroski') },
     { Ikona: Clock, kat: 'finance', h: 85, ime: 'Čas', opis: 'Štoparica dela po projektu — izmeriš porabljen čas in vidiš, ali se ti je delo pri tej ceni splačalo.', href: localePath(locale, '/kalkulator/cas') },
-    { Ikona: Suitcase, kat: 'finance', h: 205, ime: 'Poslovni okvir', opis: 'Širša slika: rezerva, davki in spodnja meja poštene cene.', href: localePath(locale, '/kalkulator/poslovni-nacrt') },
+    { Ikona: Suitcase, kat: 'finance', h: 200, ime: 'Poslovni okvir', opis: 'Širša slika: rezerva, davki in spodnja meja poštene cene.', href: localePath(locale, '/kalkulator/poslovni-nacrt') },
     { Ikona: CalendarBlank, kat: 'stranke', h: 200, ime: 'Koledar', opis: 'Sestanki, klici in roki projektov na enem koledarju.', href: localePath(locale, '/kalkulator/koledar') },
-    { Ikona: ListChecks, kat: 'stranke', h: 258, ime: 'Naloge', opis: 'Opravila in podnaloge, dodeljene po projektih.', href: localePath(locale, '/kalkulator/naloge') },
   ];
   const vidnaOrodja = ORODJA.filter(o => taRubrika === 'vse' || o.kat === taRubrika);
 
