@@ -22,7 +22,7 @@ import RotatingLaptop from '@/components/RotatingLaptop';
 /* Hero naslov se vrti med 3 sporocili (ljudje ne skrolajo — naslov naj pove vec).
    Vsaka razlicica ohrani per-word "flWordUp" animacijo ob menjavi (key={heroIdx}). */
 const HERO_NASLOVI: { pre: string[]; em: string[] }[] = [
-  { pre: ['Veš,', 'koliko', 'je', 'vredno'], em: ['tvoje', 'delo?'] },
+  { pre: ['Tvoja', 'poslovna', 'AI', 'asistentka'], em: ['in', 'dobiš', 'tudi', 'mene.'] },
   { pre: ['Poštena', 'cena,', 'vračunane'], em: ['avtorske', 'pravice.'] },
   { pre: ['Od', 'ponudbe', 'do', 'plačanega'], em: ['računa.'] },
 ];
@@ -852,7 +852,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* hero naslov — besede se ob nalaganju nezno dvignejo (brez clipa, da ne obreze serifa) */
         /* rezervirana višina naslova (≈3 vrstice) — daljši/krajši naslov NE premika
            podnaslova in gumbov (Tina: besedilo se lahko premika, gumbi ostanejo). */
-        .fl-hero-title { min-height: 2.95em; }
+        .fl-hero-title { min-height: 3.9em; }
         /* presledek med besedami: {' '} je znotraj inline-block spana in ga rob poje,
            zato razmik naredimo z margin-right (drugače so besede zlepljene). */
         .fl-hero-title .w { display: inline-block; margin-right: .27em; opacity: 0; transform: translateY(.42em); animation: flWordUp .9s cubic-bezier(.22,1,.36,1) both; }

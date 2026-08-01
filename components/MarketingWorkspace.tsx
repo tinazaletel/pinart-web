@@ -89,6 +89,18 @@ export default function MarketingWorkspace({ base }: { base: string }) {
     [kampanje],
   );
 
+  const povzetek = useMemo(() => {
+    const stevci = kampanje.reduce<Record<MarketingStatus, number>>(
+      (rezultat, kampanja) => ({ ...rezultat, [kampanja.status]: rezultat[kampanja.status] + 1 }),
+      { osnutek: 0, nacrtovano: 0, aktivno: 0, zakljuceno: 0 },
+    );
+    const danes = new Date().toISOString().slice(0, 10);
+    const naslednja = [...kampanje]
+      .filter((kampanja) => (kampanja.datumOd || kampanja.datum || '') >= danes)
+      .sort((a, b) => (a.datumOd || a.datum || '').localeCompare(b.datumOd || b.datum || ''))[0];
+    return { stevci, naslednja };
+  }, [kampanje]);
+
   const odpriNovo = (vrsta: MarketingVrsta = 'email') => {
     setUrejamId(null);
     setObrazec({ ...PRAZEN, vrsta });
@@ -198,6 +210,8 @@ export default function MarketingWorkspace({ base }: { base: string }) {
         <article className={styles.integrationCard}><div className={styles.integrationHead}><CalendarBlank size={25} /><span className={styles.connectionState} data-ready="true">Vključeno</span></div><h3>Flow Koledar</h3><p>Načrtovani datumi kampanj so pripravljeni za pregled ob drugih rokih.</p><Link className={styles.secondary} href={`${base}/kalkulator/koledar`}>Odpri koledar</Link></article>
         <article className={styles.integrationCard}><div className={styles.integrationHead}><CheckSquare size={25} /><span className={styles.connectionState} data-ready="true">Vključeno</span></div><h3>Flow Naloge</h3><p>Pripravo besedil, vizualov in objav vodiš kot opravila.</p><Link className={styles.secondary} href={`${base}/kalkulator/naloge`}>Odpri naloge</Link></article>
         <article className={styles.integrationCard}><div className={styles.integrationHead}><EnvelopeSimple size={25} /><span className={styles.connectionState}>Kmalu</span></div><h3>Pošiljanje e-pošte</h3><p>Pred dejanskim pošiljanjem bomo dodali privolitev, odjavo in zanesljivo dostavo.</p></article>
+        <article className={styles.integrationCard}><div className={styles.integrationHead}><ShareNetwork size={25} /><span className={styles.connectionState}>Načrtovano</span></div><h3>Družbena omrežja</h3><p>Objave za zdaj načrtuješ v Flowu. Neposredno objavljanje bo zahtevalo varno povezavo posameznega računa.</p></article>
+        <article className={styles.integrationCard}><div className={styles.integrationHead}><Megaphone size={25} /><span className={styles.connectionState}>Načrtovano</span></div><h3>Merjenje obiska</h3><p>Ko povežeš analitiko, bo kampanja pokazala tudi obisk, povpraševanja in dejanski rezultat.</p></article>
       </div>
     </section>
   );
@@ -207,7 +221,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
       <section className={styles.hero}>
         <div className={styles.heroText}>
           <p className={styles.eyebrow}>MARKETING</p>
-          <h1>Naj te opazijo pravi ljudje.</h1>
+          <h2>Naj te opazijo pravi ljudje.</h2>
           <p>Načrtuj kampanje, pripravi vsebine in poveži roke z nalogami — brez še enega nepovezanega orodja.</p>
         </div>
         <button className={styles.primary} type="button" onClick={() => odpriNovo()}><Plus size={19} /> Nova kampanja</button>
@@ -220,6 +234,16 @@ export default function MarketingWorkspace({ base }: { base: string }) {
       </nav>
 
       {zavihek === 'pregled' && <>
+        <section className={styles.overviewGrid} aria-label="Povzetek kampanj">
+          <article><span>Aktivno</span><strong>{povzetek.stevci.aktivno}</strong><small>kampanj v teku</small></article>
+          <article><span>Načrtovano</span><strong>{povzetek.stevci.nacrtovano}</strong><small>pripravljenih kampanj</small></article>
+          <article><span>Osnutki</span><strong>{povzetek.stevci.osnutek}</strong><small>idej za dokončanje</small></article>
+          <article className={styles.nextCampaign}>
+            <span>Naslednji rok</span>
+            <strong>{povzetek.naslednja ? formatirajRazpon(povzetek.naslednja) : '—'}</strong>
+            <small>{povzetek.naslednja?.naslov || 'Ko določiš datum, ga vidiš tukaj.'}</small>
+          </article>
+        </section>
         <section className={styles.quickGrid} aria-label="Hitri začetki">
           <button className={styles.quickCard} type="button" onClick={() => odpriNovo('email')}><EnvelopeSimple aria-hidden="true" /><h2>E-pošta</h2><p>Dobrodošlice, novosti in premišljena sporočila ob pravem času.</p><span className={styles.cardLink}>Ustvari sporočilo →</span></button>
           <button className={styles.quickCard} type="button" onClick={() => odpriNovo('vprasalnik')}><Code aria-hidden="true" /><h2>Vprašalnik</h2><p>Zberi kakovostna povpraševanja z obrazcem za svojo spletno stran.</p><span className={styles.cardLink}>Pripravi obrazec →</span></button>
