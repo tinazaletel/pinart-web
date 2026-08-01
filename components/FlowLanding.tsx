@@ -200,7 +200,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const vrstaRef = useRef<HTMLDivElement>(null);
 
   const VPRASANJA = [
-    { v: 'Je Flow res brezplačen?', o: 'Kalkulator poštenih cen je in ostane brezplačen za vedno, brez prijave. Celo platformo (dokumenti, stranke, projekti) preizkusiš mesec dni brezplačno in brez kartice; nato izbereš paket, ki ti ustreza.' },
+    { v: 'Je Flow res brezplačen?', o: 'Kalkulator poštenih cen je in ostane brezplačen za vedno, brez prijave. Za celotno platformo (dokumenti, stranke, projekti, AI asistentka Pupa) izbereš paket, ki ti ustreza — Premium ali Pro.' },
     { v: 'Kaj zna AI asistentka Pupa?', o: 'Pupa je tvoja AI asistentka: pozna trg in avtorske pravice, pove ti pošteno ceno, opozori te, če se podcenjuješ, in ti pomaga ubesediti ponudbo. Z njo klepetaš ali jo upravljaš z glasom. Svetuje iz konteksta tvoje ponudbe — ni splošni chatbot. Na voljo je v plačljivih paketih.' },
     { v: 'Ali potrebujem račun za kalkulator?', o: 'Ne. Kalkulator deluje brez prijave: izračunaš pošteno ceno, sestaviš ponudbo in jo preneseš. Račun potrebuješ šele, ko želiš dokumente shraniti in imeti na enem mestu.' },
     { v: 'Komu pripadajo moji podatki in dokumenti?', o: 'Tvoje ponudbe, stranke in dokumenti ostanejo tvoji in zasebni — ne prodajamo jih in ne razkrivamo nikomur. Cene storitev, ki jih vpišeš, pa anonimno in združeno pomagajo graditi pregled poštenih tržnih cen, da ti Flow lahko pokaže, kje je tvoja cena glede na trg. Nikoli ne razkrijemo, kdo je vnesel katero ceno.' },
@@ -393,7 +393,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { Ikona: Megaphone, ime: 'Tudi marketing', opis: 'Objave in kampanje načrtuješ ob projektih — marketing je del istega mesta.' },
     { Ikona: ShieldCheck, ime: 'Varno oblačno shranjevanje', opis: 'Podatki v oblaku (EU) — dostop imaš samo ti. Ne prodamo in ne delimo; cene se združijo anonimno, nikoli ime.' },
     { Ikona: Handshake, ime: 'Raste s tabo', opis: 'Začneš sam(a); ko studio zraste, povabiš sodelavca ali stranko na projekt — z dostopom samo do potrebnega.' },
-    { Ikona: Sparkle, ime: 'Prvi mesec brezplačno', opis: 'Celo platformo preizkusiš mesec dni brez kartice. Kalkulator poštenih cen ostane brezplačen za vedno.' },
+    { Ikona: Sparkle, ime: 'Kalkulator za vedno brezplačen', opis: 'Pošteno ceno izračunaš in ponudbo sestaviš brez prijave in brez plačila. Za dokumente, stranke in projekte izbereš paket.' },
   ];
 
   const KORAKI = [
@@ -1160,7 +1160,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         <section className="fl-cenik" id="cenik">
           <div className="k">Cenik</div>
           <h2>Enostavno, pošteno, brez presenečenj.</h2>
-          <p className="uvod">Kalkulator poštenih cen je za vedno brezplačen. Celo platformo preizkusiš mesec dni brez kartice — nato manj kot ena tvoja delovna ura na mesec.</p>
+          <p className="uvod">Kalkulator poštenih cen je za vedno brezplačen. Za celo platformo izbereš paket — manj kot ena tvoja delovna ura na mesec.</p>
           <div role="group" aria-label="Obračun" style={{ display: 'inline-flex', gap: '.3rem', padding: '.28rem', margin: '0 auto 2.2rem', borderRadius: 999, background: 'rgba(17,17,17,.06)' }}>
             <button type="button" onClick={() => setLetno(false)} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.42rem 1rem', font: '700 .82rem var(--font-sans), sans-serif', background: !letno ? 'var(--ink)' : 'transparent', color: !letno ? 'var(--paper)' : 'var(--ink)' }}>Mesečno</button>
             <button type="button" onClick={() => setLetno(true)} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.42rem 1rem', font: '700 .82rem var(--font-sans), sans-serif', background: letno ? 'var(--ink)' : 'transparent', color: letno ? 'var(--paper)' : 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>Letno <span style={{ fontSize: '.64rem', fontWeight: 800, letterSpacing: '.03em', color: letno ? '#8be6a8' : 'oklch(58% .13 160)' }}>CENEJE</span></button>
