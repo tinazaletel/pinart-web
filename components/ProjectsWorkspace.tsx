@@ -517,6 +517,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
      predogledu (demo/prazno/začetek) pokažemo nekaj vzorčnih zapisov, da razdelek
      ni prazen; sicer beremo dejansko shranjeno pošto projekta. */
   const [posta, setPosta] = useState<PostaVnos[]>([]);
+  const [mapa, setMapa] = useState<'prejeto' | 'poslano' | 'osnutki' | 'kos'>('poslano');
   /* »Nova pošta« — sestavljalnik neposredno v projektu (brez dokumenta). Pošlje
      prek Resend, zabeleži lokalno (postaDnevnik) + v oblak (pushProjectMail). */
   const [pisiOdprt, setPisiOdprt] = useState(false);
@@ -891,21 +892,32 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 </div>
               </div>
             )}
-            {posta.length ? (
-              <ul className="pw-posta-seznam">
-                {posta.map(vnos => (
-                  <li key={vnos.id}>
-                    <div className="pw-posta-vrh">
-                      <b>{vnos.zadeva}</b>
-                      <span className="pw-posta-smer">{vnos.smer === 'poslano' ? 'Poslano' : 'Prejeto'}</span>
-                    </div>
-                    <small className="pw-posta-meta">{vnos.prejemniki.join(', ')} · {datStr(vnos.datum)}</small>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="pw-posta-prazno">Še ni pošte. Klikni <b>Nova pošta</b> in piši stranki, ali pošlji ponudbo/pogodbo — vse se zabeleži tukaj.</p>
-            )}
+            <div className="pw-posta-mape" style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '.35rem', flexWrap: 'wrap', margin: '.75rem 0 0' }}>
+              {([['prejeto', 'Prejeto'], ['poslano', 'Poslano'], ['osnutki', 'Osnutki'], ['kos', 'Koš']] as const).map(([id, ime]) => {
+                const st = posta.filter(v => id === 'poslano' ? v.smer === 'poslano' : id === 'prejeto' ? v.smer === 'prejeto' : false).length;
+                const on = mapa === id;
+                return <button key={id} type="button" onClick={() => setMapa(id)} style={{ border: `1px solid ${on ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: on ? 'var(--ink)' : 'transparent', color: on ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer' }}>{ime}{st ? ` · ${st}` : ''}</button>;
+              })}
+            </div>
+            {(() => {
+              if (mapa === 'osnutki' || mapa === 'kos') return <p className="pw-posta-prazno">{mapa === 'osnutki' ? 'Osnutki' : 'Koš'} se poveže z oblačno pošto — naslednji korak.</p>;
+              const seznam = posta.filter(v => mapa === 'poslano' ? v.smer === 'poslano' : v.smer === 'prejeto');
+              return seznam.length ? (
+                <ul className="pw-posta-seznam">
+                  {seznam.map(vnos => (
+                    <li key={vnos.id}>
+                      <div className="pw-posta-vrh">
+                        <b>{vnos.zadeva}</b>
+                        <span className="pw-posta-smer">{vnos.smer === 'poslano' ? 'Poslano' : 'Prejeto'}</span>
+                      </div>
+                      <small className="pw-posta-meta">{vnos.prejemniki.join(', ')} · {datStr(vnos.datum)}</small>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="pw-posta-prazno">{mapa === 'prejeto' ? 'Še ni prejete pošte — Prejeto se prižge, ko aktiviramo dohodno pošto.' : 'Še ni poslane pošte. Klikni Nova pošta in piši stranki.'}</p>
+              );
+            })()}
           </article>
           <Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-karta pw-dnevnik-link">
             <p className={styles.eyebrow}>07 · CRM DNEVNIK</p>
