@@ -970,7 +970,7 @@
 .projectNarrative article > span:last-of-type { border-bottom: 0; }
 .projectNarrative article > span b { font-size: .58rem; }
 .projectNarrative article > span small { color: var(--muted); font-size: .5rem; }
-.projectNarrative article > a { position: absolute !important; z-index: 3 !important; top: .85rem; right: .85rem; display: grid; place-items: center; width: 2.2rem; min-height: 2.2rem; margin: 0; padding: 0; border: 1px solid oklch(100% 0 0 / .4); border-radius: 50%; background: oklch(100% 0 0 / .2); color: inherit; font-size: 0 !important; text-decoration: none; }
+.projectNarrative article > a, .projectAgreement > a { position: absolute !important; z-index: 3 !important; top: .85rem; right: .85rem; display: grid; place-items: center; width: 2.2rem; min-height: 2.2rem; margin: 0; padding: 0; border: 1px solid oklch(100% 0 0 / .4); border-radius: 50%; background: oklch(100% 0 0 / .2); color: inherit; font-size: 0 !important; text-decoration: none; }
 /* Drugi (manjši, "odpri") gumb pri Računih — kompaktna puščica levo od "+". */
 .projectNarrative article > a.projectOpenLink { right: 3.35rem; width: 1.85rem; min-height: 1.85rem; background: oklch(100% 0 0 / .12); }
 /* mobilno: gumba ↗ in + morata biti dovolj velika (~44px) in razmaknjena za prst */

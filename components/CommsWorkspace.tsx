@@ -68,24 +68,26 @@ export default function CommsWorkspace() {
           </div>
         ))}
       </nav>
+      <nav aria-label="Mape" style={{ flex: 'none', width: 150, display: 'flex', flexDirection: 'column', gap: '.25rem', position: 'sticky', top: '1rem' }}>
+        {MAPE.map(({ id, ime, Ikona }) => {
+          const on = mapa === id;
+          const st = stevci[id];
+          return (
+            <button key={id} type="button" onClick={() => { setMapa(id); setBeri(null); }}
+              style={{ display: 'flex', alignItems: 'center', gap: '.5rem', width: '100%', textAlign: 'left', border: 'none', background: on ? 'color-mix(in oklch, var(--ink) 9%, transparent)' : 'transparent', color: 'var(--ink)', borderRadius: '999px', padding: '.5rem .8rem', font: `${on ? 700 : 500} .82rem var(--font-sans), sans-serif`, cursor: 'pointer' }}>
+              <Ikona size={17} weight={on ? 'fill' : 'regular'} />
+              <span style={{ flex: 1 }}>{ime}</span>
+              {st ? <span style={{ font: '700 .72rem var(--font-sans), sans-serif', opacity: .6 }}>{st}</span> : null}
+            </button>
+          );
+        })}
+      </nav>
       <article style={{ flex: 1, minWidth: 0, padding: '1.2rem 1.3rem', border: '1px solid color-mix(in oklch, var(--ink) 10%, transparent)', borderRadius: '1rem', background: 'oklch(100% 0 0 / .5)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem', flexWrap: 'wrap', margin: '0 0 1rem', padding: '.7rem .85rem', borderRadius: '.75rem', background: 'color-mix(in oklch, var(--ink) 5%, transparent)' }}>
         <p style={{ margin: 0, flex: 1, minWidth: 220, fontSize: '.82rem', lineHeight: 1.45, color: 'var(--ink)' }}>
           <b>Kmalu:</b> poveži Gmail ali katerikoli email (IMAP) in Flow bo za-projekt-relevantne niti razvrstil k pravim projektom. Flow ni drugi predal — je poslovni zapis komunikacije.
         </p>
         <button type="button" disabled title="Pride kmalu" style={{ flex: 'none', border: '1px solid color-mix(in oklch, var(--ink) 20%, transparent)', background: 'transparent', color: 'var(--muted)', borderRadius: 999, padding: '.4rem .85rem', font: '700 .72rem var(--font-sans), sans-serif', cursor: 'not-allowed' }}>Poveži email (kmalu)</button>
-      </div>
-      <div style={{ display: 'flex', gap: '.35rem', flexWrap: 'wrap' }}>
-        {MAPE.map(({ id, ime, Ikona }) => {
-          const on = mapa === id;
-          const st = stevci[id];
-          return (
-            <button key={id} type="button" onClick={() => { setMapa(id); setBeri(null); }}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', border: `1px solid ${on ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: on ? 'var(--ink)' : 'transparent', color: on ? 'var(--paper)' : 'var(--ink)', borderRadius: 999, padding: '.32rem .78rem', font: '700 .7rem var(--font-sans), sans-serif', cursor: 'pointer' }}>
-              <Ikona size={14} weight="bold" />{ime}{st ? ` · ${st}` : ''}
-            </button>
-          );
-        })}
       </div>
 
       {!beri && posta.length > 0 && (
