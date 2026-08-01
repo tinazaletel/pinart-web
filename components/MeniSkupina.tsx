@@ -4,52 +4,36 @@ import { useEffect, useState, type ReactNode } from 'react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
 /**
- * Skupina postavk v meniju.
+ * Skupina postavk v meniju kot RAZPIRALNIK (accordion) — na vseh velikostih.
+ * Aktivna skupina (s trenutno stranjo) je odprta, ostale zaprte, da meni ostane
+ * kratek tudi ko raste (brez scrolla — Tinina zahteva, po vzoru Cloudflare/Vercel).
  *
- * Na namizju je vedno odprta in izgleda kot doslej — samo naslov in pod njim
- * postavke. Na telefonu je zaprta, ker mora biti tapna tarča vsaj 44 px:
- * pri trinajstih postavkah hkrati to ne gre v en zaslon, pri štirih skupinah pa
- * z lahkoto. Skupina s trenutno stranjo se odpre sama.
+ * Vsebina je VEDNO izrisana (skrije jo CSS prek data-odprta), da v icon-rail
+ * načinu (body[data-meni='zaprt']) postavke ostanejo vidne kot ikone.
  *
- * Namenoma NI <details>: v Safariju se je ta ze lomil, ko smo mu spreminjali
- * prikaz summaryja, zato raje lastno stanje.
+ * Namenoma NI <details>: Safari se je z njim lomil ob spreminjanju summaryja.
  */
 export default function MeniSkupina(
   { naslov, aktivna = false, vednoVidna = false, children }:
   { naslov: string; aktivna?: boolean; vednoVidna?: boolean; children: ReactNode },
 ) {
-  const [siroko, setSiroko] = useState(true);
-  const [odprta, setOdprta] = useState(true);
+  const [odprta, setOdprta] = useState(aktivna);
+  /* ob navigaciji: aktivna skupina se odpre, prej aktivna zapre (accordion). */
+  useEffect(() => { setOdprta(aktivna); }, [aktivna]);
 
-  useEffect(() => {
-    const m = window.matchMedia('(min-width: 981px)');
-    const uporabi = () => { setSiroko(m.matches); setOdprta(m.matches || aktivna); };
-    uporabi();
-    m.addEventListener('change', uporabi);
-    return () => m.removeEventListener('change', uporabi);
-  }, [aktivna]);
-
-  if (siroko) {
-    return <>
-      <p className={styles.navGroup}>{naslov}</p>
-      {children}
-    </>;
-  }
-
-  /* Nekatere postavke (Nastavitve, Pomoc) ne smejo biti skrite za razpiralnikom
-     — do njih mora biti en dotik. Na telefonu jih zato pokazemo neposredno. */
+  /* Nekatere postavke (Pomoc) ne smejo biti za razpiralnikom — vedno vidne. */
   if (vednoVidna) {
     return <div className={styles.meniSkupinaOdprta}>{children}</div>;
   }
 
   return (
-    <div className={styles.meniSkupina}>
+    <div className={styles.meniSkupina} data-odprta={odprta}>
       <button type="button" className={styles.meniSkupinaGlava} aria-expanded={odprta}
         onClick={() => setOdprta(v => !v)}>
         <span>{naslov}</span>
         <span className={styles.meniSkupinaPuscica} data-odprta={odprta} aria-hidden="true">›</span>
       </button>
-      {odprta && <div className={styles.meniSkupinaVsebina}>{children}</div>}
+      <div className={styles.meniSkupinaVsebina}>{children}</div>
     </div>
   );
 }

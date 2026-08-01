@@ -145,6 +145,29 @@
 .navGroup { margin: .75rem 0 .2rem; padding-left: .1rem; color: color-mix(in oklch, var(--ink) 85%, transparent); font-size: .58rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
 .navGroup:first-child { margin-top: .5rem; }
 
+/* ── Skupine kot razpiralniki (accordion) — na VSEH velikostih ──────────────
+   Aktivna skupina odprta, ostale zaprte -> meni ostane kratek, ko raste (brez
+   scrolla). Vsebina je vedno v DOM-u; skrije jo data-odprta, da v icon-rail
+   načinu (body[data-meni='zaprt']) postavke ostanejo vidne kot ikone. */
+.meniSkupinaGlava {
+  display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+  width: 100%; margin: .5rem 0 .1rem; padding: .28rem .1rem;
+  border: 0; background: none; cursor: pointer;
+  color: color-mix(in oklch, var(--ink) 85%, transparent);
+  font: 700 .58rem var(--font-sans), sans-serif; letter-spacing: .14em; text-transform: uppercase;
+}
+.meniSkupinaGlava:hover { color: var(--ink); }
+.meniSkupinaPuscica { font-size: .9rem; line-height: 1; color: var(--muted); transition: transform .18s ease-out; }
+.meniSkupinaPuscica[data-odprta='true'] { transform: rotate(90deg); }
+.meniSkupinaVsebina { display: grid; gap: .1rem; }
+.meniSkupina[data-odprta='false'] .meniSkupinaVsebina { display: none; }
+.meniSkupinaOdprta { display: grid; gap: .1rem; }
+@media (prefers-reduced-motion: reduce) { .meniSkupinaPuscica { transition: none; } }
+/* icon-rail (zožen meni): naslovi skupin -> črta, postavke vedno vidne kot ikone */
+:global(body[data-meni='zaprt']) .meniSkupinaGlava { height: 1px; margin: .9rem .4rem; padding: 0; overflow: hidden; background: var(--line); color: transparent; pointer-events: none; }
+:global(body[data-meni='zaprt']) .meniSkupinaPuscica { display: none; }
+:global(body[data-meni='zaprt']) .meniSkupina[data-odprta='false'] .meniSkupinaVsebina { display: grid; }
+
 /* Uporabniski meni na dnu stranske vrstice (cip = gumb, meni se odpre NAVZGOR) */
 .userMenuWrap { position: relative; margin-top: auto; }
 .userMenuWrap .profile { width: 100%; margin-top: 0; border-left: 0; border-right: 0; border-bottom: 0; background: none; font: inherit; text-align: left; cursor: pointer; }
