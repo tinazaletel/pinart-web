@@ -46,7 +46,7 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
     <MeniSkupina naslov="Orodja" aktivna={active === 'offer' || active === 'retainer' || active === 'contracts' || active === 'invoices' || active === 'novprojekt'}>
       {/* ?od=pregled -> kalkulator in retainer pokazeta puscico nazaj na nadzorno plosco */}
       {item('offer', `${base}/kalkulator/orodje?od=pregled`, '01', 'Ponudba', 'ponudba')}
-      {item('retainer', `${base}/kalkulator/dolgorocno?od=pregled`, '02', 'Dolgoročno sodelovanje', 'retainer')}
+      {item('retainer', `${base}/kalkulator/dolgorocno?od=pregled`, '02', 'Dolgoročno', 'retainer')}
       {item('contracts', `${base}/kalkulator/pogodbe`, '03', 'Pogodba', 'pogodba', 'contracts')}
       {item('invoices', `${base}/kalkulator/racuni`, '04', 'Računi', 'racuni')}
       {/* Ustvari projekt = polnostranski chat vprasalnik (lastna stran, kot pogodbe/racuni). */}

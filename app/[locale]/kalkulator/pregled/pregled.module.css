@@ -71,7 +71,8 @@
 /* nav zavzame preostalo višino in DRSI (kot Vercel) -> profil na dnu ostane pribit,
    meni pa lahko raste brez "popačenja". min-height:0 je nujen, da flex otrok sme
    skrčiti pod vsebino in sprožiti drsenje. Tanek, nevpadljiv drsnik. */
-.nav { display: grid; gap: .1rem; margin-top: 1.1rem; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.nav { display: grid; gap: .1rem; margin-top: 1.1rem; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; -ms-overflow-style: none; }
+.nav::-webkit-scrollbar { width: 0; height: 0; display: none; }
 .nav::-webkit-scrollbar { width: 6px; }
 .nav::-webkit-scrollbar-thumb { background: color-mix(in oklch, var(--ink) 14%, transparent); border-radius: 999px; }
 .nav::-webkit-scrollbar-track { background: transparent; }
