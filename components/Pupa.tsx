@@ -6,7 +6,7 @@
    konteksta je generična pomočnica. Vsi stili inline (injeciran CSS se ne
    osvežuje zanesljivo). */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname } from 'next/navigation';
 import { Microphone, SpeakerHigh, SpeakerSlash, Sparkle } from '@phosphor-icons/react';
@@ -39,6 +39,7 @@ export default function Pupa() {
   const [caka, setCaka] = useState(false);
   const [poslusa, setPoslusa] = useState(false);
   const [zvok, setZvok] = useState(false);
+  const sporRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -49,6 +50,12 @@ export default function Pupa() {
     window.addEventListener('pupa:odpri', onOpen);
     return () => { window.removeEventListener('pupa:kontekst', onCtx); window.removeEventListener('pupa:odpri', onOpen); };
   }, []);
+
+  /* Samodejni pomik na dno ob novem sporočilu / med čakanjem / ob odprtju. */
+  useEffect(() => {
+    const el = sporRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [spor, caka, odprt]);
 
   const nasveti = ctx.nasveti;
   const imaPonudbo = !!ctx.kontekst;
@@ -136,7 +143,7 @@ export default function Pupa() {
             <button type="button" onClick={() => setOdprt(false)} aria-label={L('Zapri', 'Close')} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 24, lineHeight: 1, color: 'rgba(42,32,53,.5)', padding: 2 }}>×</button>
           </div>
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+          <div ref={sporRef} style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
             <div style={{ alignSelf: 'flex-start', maxWidth: '92%', padding: '.65rem .8rem', borderRadius: 16, background: 'rgba(167,139,250,.12)', display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
               <p style={{ margin: 0, fontSize: '.88rem', lineHeight: 1.45 }}>
                 {imaPonudbo
