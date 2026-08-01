@@ -25,7 +25,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, User, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, PaperPlaneTilt, DotsThree, Paperclip, X,
+  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, PaperPlaneTilt, DotsThree, Paperclip, X, Microphone,
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -2268,7 +2268,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [velikostBesedila, setVelikostBesedila] = useState(3);
   const [barvaCilj, setBarvaCilj] = useState<'crke' | 'podlaga'>('crke');
   const [oznaciNamig, setOznaciNamig] = useState(false);   /* namig "označi besedilo" ob ukazu brez izbora */
-  const [aiKmalu, setAiKmalu] = useState(false);   /* AI pomocnik = zaleden, zaenkrat stub */
+  const [aiKmalu, setAiKmalu] = useState(false);   /* Pupa klepet panel odprt/zaprt */
+  const [pupaSpor, setPupaSpor] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
+  const [pupaVnos, setPupaVnos] = useState('');
+  const [pupaCaka, setPupaCaka] = useState(false);
+  const [pupaPosluam, setPupaPosluam] = useState(false);   /* glasovni vnos aktiven */
   const barvaRef = useRef<HTMLInputElement>(null);  /* custom (mavricna) barva */
   const [kaziUre, setKaziUre] = useState(false);
   const [prenosPravic, setPrenosPravic] = useState<'izkljucni' | 'neizkljucni' | 'licenca'>('izkljucni');
@@ -3068,6 +3072,74 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       })),
     });
   }, [r, ddvZavezanec, trgNarocnika]);
+
+  /* Pupin obraz (barvna krogla + veseli obraz) v poljubni velikosti. */
+  const pupaObraz = (px: number) => (
+    <span aria-hidden style={{ position: 'relative', width: px, height: px, flex: 'none', borderRadius: '50%', background: 'conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)', display: 'inline-flex' }}>
+      <svg viewBox="0 0 40 40" width={px} height={px} style={{ position: 'absolute', inset: 0 }}>
+        <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+        <path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+        <path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+        <circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
+        <circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
+      </svg>
+    </span>
+  );
+
+  /* Kontekst ponudbe za Pupo (kratek povzetek, ki gre modelu skupaj z vprasanjem). */
+  const pupaKontekst = useMemo(() => {
+    if (!r) return '';
+    const pr = r.paketi.find(p => p.id === 'priporoceni') || r.paketi[0];
+    const vrs = [
+      `Glavna storitev: ${r.sez?.[0]?.ime || '-'}`,
+      `Izvedba (delo): ${r.delo} EUR`,
+      `Avtorske pravice (odkup): ${r.pravice} EUR; letna licenca: ${r.licenca} EUR; model prenosa: ${r.prenos}`,
+      `Raba: ${r.raba}; popust: ${r.popustPct}%`,
+      `Priporocena cena paketa: ${pr ? pr.skupaj : '-'} EUR`,
+      `Trg narocnika: ${TRGI.find(t => t.id === trgNarocnika)?.ime || '-'}`,
+    ];
+    const nas = copilotNasveti.map(n => `- ${n.besedilo}`).join('\n');
+    return vrs.join('\n') + (nas ? `\n\nOpozorila Flow copilota:\n${nas}` : '');
+  }, [r, copilotNasveti, trgNarocnika]);
+
+  /* Poslji vprasanje Pupi (klice /api/pupa; zaledje potrebuje ANTHROPIC_API_KEY). */
+  const posljiPupi = async (besedilo?: string) => {
+    const q = (besedilo ?? pupaVnos).trim();
+    if (!q || pupaCaka) return;
+    const zgodovina = pupaSpor.slice(-8);
+    setPupaSpor(s => [...s, { role: 'user', content: q }]);
+    setPupaVnos('');
+    setPupaCaka(true);
+    try {
+      const res = await fetch('/api/pupa', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ vprasanje: q, kontekst: pupaKontekst, zgodovina }),
+      });
+      const data = await res.json();
+      setPupaSpor(s => [...s, { role: 'assistant', content: data.odgovor || data.napaka || 'Hmm, nekaj je zaskripalo.' }]);
+    } catch {
+      setPupaSpor(s => [...s, { role: 'assistant', content: L('Ne morem do zaledja. Poskusi znova.', 'Cannot reach the backend. Try again.') }]);
+    } finally {
+      setPupaCaka(false);
+    }
+  };
+
+  /* Glasovni vnos prek Web Speech API (deluje v Chrome/Safari; brez zaledja). */
+  const pupaGlas = () => {
+    if (typeof window === 'undefined') return;
+    const SR = (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition
+      || (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition;
+    if (!SR) { alert(L('Glasovni vnos ta brskalnik ne podpira (poskusi Chrome ali Safari).', 'This browser does not support voice input (try Chrome or Safari).')); return; }
+    const rec = new (SR as new () => any)();
+    rec.lang = locale === 'en' ? 'en-US' : 'sl-SI';
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    setPupaPosluam(true);
+    rec.onresult = (e: any) => { const t = e.results?.[0]?.[0]?.transcript || ''; if (t) posljiPupi(t); };
+    rec.onerror = () => setPupaPosluam(false);
+    rec.onend = () => setPupaPosluam(false);
+    rec.start();
+  };
 
   /* Retainer izracun (dolgorocno sodelovanje) — LOCEN od projektnega r, da ga ne ogrozi.
      mesecni bruto = ure×urna (model ure) + vrednost izbranih storitev/mesec (model paket);
@@ -9521,51 +9593,75 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         </div>
       </div>
       {typeof document !== 'undefined' && r && r.delo > 0 && createPortal(
-        <div style={{ position: 'fixed', right: '1.4rem', bottom: '1.4rem', zIndex: 90, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.7rem' }}>
-          {aiKmalu && (
-            <div role="dialog" aria-label="Pupa" style={{ width: 'min(360px, 90vw)', maxHeight: '62vh', overflowY: 'auto', padding: '.9rem 1rem', borderRadius: 18, background: '#fff', border: '1px solid rgba(42,32,53,.12)', boxShadow: '0 22px 60px rgba(42,32,53,.24)', display: 'flex', flexDirection: 'column', gap: '.6rem', color: '#2A2035' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '.55rem' }}>
-                <span aria-hidden style={{ position: 'relative', width: 30, height: 30, flex: 'none', borderRadius: '50%', background: 'conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)', display: 'inline-flex' }}>
-                  <svg viewBox="0 0 40 40" width="30" height="30" style={{ position: 'absolute', inset: 0 }}>
-                    <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
-                    <path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
-                    <path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
-                    <circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
-                    <circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
-                  </svg>
-                </span>
-                <b style={{ fontSize: '.95rem', flex: 1 }}>{L('Pupa je pogledala ponudbo', 'Pupa reviewed your quote')}</b>
-                <button type="button" onClick={() => setAiKmalu(false)} aria-label={L('Zapri', 'Close')} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, lineHeight: 1, color: 'rgba(42,32,53,.5)', padding: 2 }}>×</button>
-              </div>
-              {copilotNasveti.length === 0 ? (
-                <p style={{ margin: 0, fontSize: '.86rem', lineHeight: 1.45 }}>{L('Cena, pravice in pogoji so videti uravnoteženi. Lepo delo! ✨', 'Price, rights and terms look balanced. Nice work! ✨')}</p>
-              ) : (
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '.55rem' }}>
-                  {copilotNasveti.map(n => (
-                    <li key={n.id} style={{ display: 'flex', gap: '.5rem', alignItems: 'flex-start', fontSize: '.86rem', lineHeight: 1.45 }}>
-                      <span aria-hidden style={{ flex: 'none', width: 18, height: 18, marginTop: 2, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '.72rem', fontWeight: 700, color: '#fff', background: n.resnost === 'opozorilo' ? '#e0567a' : '#a78bfa' }}>{n.resnost === 'opozorilo' ? '!' : '·'}</span>
-                      <span>{n.besedilo}</span>
-                    </li>
-                  ))}
-                </ul>
+        <>
+          {/* Plavajoc gumbek (Pupa) — odpre klepet. Skrit, ko je panel odprt. */}
+          {!aiKmalu && (
+            <button type="button" onClick={() => setAiKmalu(true)} aria-label={L('Odpri Pupo', 'Open Pupa')} title={L('Pupa: pomočnica', 'Pupa: assistant')}
+              style={{ position: 'fixed', right: '1.4rem', bottom: '1.4rem', zIndex: 90, width: 58, height: 58, flex: 'none', borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0, background: 'conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)', boxShadow: '0 12px 30px rgba(42,32,53,.30)' }}>
+              <svg viewBox="0 0 40 40" width="58" height="58" style={{ position: 'absolute', inset: 0 }}>
+                <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                <path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                <path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+                <circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
+                <circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
+              </svg>
+              {copilotNasveti.length > 0 && (
+                <span aria-hidden style={{ position: 'absolute', top: -2, right: -2, minWidth: 20, height: 20, padding: '0 5px', borderRadius: 10, background: '#e0567a', color: '#fff', fontSize: '.72rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff' }}>{copilotNasveti.length}</span>
               )}
-              <p style={{ margin: 0, opacity: .6, fontSize: '.75rem', lineHeight: 1.4 }}>{L('Nasveti izhajajo iz Flow znanja o cenah in avtorskih pravicah. Zadnja beseda je vedno tvoja.', 'Advice comes from Flow knowledge on pricing and copyright. The final call is always yours.')}</p>
+            </button>
+          )}
+
+          {/* Desni klepetalni panel */}
+          {aiKmalu && (
+            <div role="dialog" aria-label="Pupa" style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(400px, 94vw)', zIndex: 95, background: '#fff', borderLeft: '1px solid rgba(42,32,53,.12)', boxShadow: '-16px 0 50px rgba(42,32,53,.18)', display: 'flex', flexDirection: 'column', color: '#2A2035' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '1rem 1.1rem', borderBottom: '1px solid rgba(42,32,53,.08)' }}>
+                {pupaObraz(34)}
+                <div style={{ flex: 1, lineHeight: 1.2 }}>
+                  <b style={{ fontSize: '1rem' }}>Pupa</b>
+                  <div style={{ fontSize: '.74rem', opacity: .6 }}>{L('pomočnica za cene in pravice', 'your pricing & rights helper')}</div>
+                </div>
+                <button type="button" onClick={() => setAiKmalu(false)} aria-label={L('Zapri', 'Close')} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 24, lineHeight: 1, color: 'rgba(42,32,53,.5)', padding: 2 }}>×</button>
+              </div>
+
+              <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+                {/* Uvodno sporocilo = pozdrav + pregled ponudbe */}
+                <div style={{ alignSelf: 'flex-start', maxWidth: '92%', padding: '.65rem .8rem', borderRadius: 16, background: 'rgba(167,139,250,.12)', display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+                  <p style={{ margin: 0, fontSize: '.88rem', lineHeight: 1.45 }}>{L('Zdravo! Pogledala sem tvojo ponudbo. Karkoli te zanima, kar vprašaj — pomagam s ceno, pravicami in besedilom.', 'Hi! I reviewed your quote. Ask me anything — I help with pricing, rights and wording.')}</p>
+                  {copilotNasveti.length === 0 ? (
+                    <p style={{ margin: 0, fontSize: '.86rem', lineHeight: 1.45 }}>{L('Cena, pravice in pogoji so videti uravnoteženi. Lepo delo! ✨', 'Price, rights and terms look balanced. Nice work! ✨')}</p>
+                  ) : (
+                    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+                      {copilotNasveti.map(n => (
+                        <li key={n.id} style={{ display: 'flex', gap: '.5rem', alignItems: 'flex-start', fontSize: '.86rem', lineHeight: 1.45 }}>
+                          <span aria-hidden style={{ flex: 'none', width: 18, height: 18, marginTop: 2, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '.72rem', fontWeight: 700, color: '#fff', background: n.resnost === 'opozorilo' ? '#e0567a' : '#a78bfa' }}>{n.resnost === 'opozorilo' ? '!' : '·'}</span>
+                          <span>{n.besedilo}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                {pupaSpor.map((m, i) => (
+                  <div key={i} style={{ alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '88%', padding: '.6rem .8rem', borderRadius: 16, background: m.role === 'user' ? '#2A2035' : 'rgba(167,139,250,.12)', color: m.role === 'user' ? '#fff' : '#2A2035', fontSize: '.88rem', lineHeight: 1.45, whiteSpace: 'pre-wrap' }}>{m.content}</div>
+                ))}
+                {pupaCaka && (
+                  <div style={{ alignSelf: 'flex-start', padding: '.6rem .8rem', borderRadius: 16, background: 'rgba(167,139,250,.12)', fontSize: '.86rem', opacity: .7 }}>{L('Pupa razmišlja…', 'Pupa is thinking…')}</div>
+                )}
+              </div>
+
+              <form onSubmit={e => { e.preventDefault(); posljiPupi(); }} style={{ padding: '.75rem .9rem', borderTop: '1px solid rgba(42,32,53,.08)', display: 'flex', gap: '.5rem', alignItems: 'center' }}>
+                <button type="button" onClick={pupaGlas} aria-label={L('Govori', 'Speak')} title={L('Govori', 'Speak')}
+                  style={{ flex: 'none', width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(42,32,53,.18)', cursor: 'pointer', background: pupaPosluam ? '#e0567a' : '#fff', color: pupaPosluam ? '#fff' : '#2A2035', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Microphone size={19} weight={pupaPosluam ? 'fill' : 'regular'} />
+                </button>
+                <input value={pupaVnos} onChange={e => setPupaVnos(e.target.value)} placeholder={pupaPosluam ? L('Poslušam…', 'Listening…') : L('Vprašaj Pupo…', 'Ask Pupa…')}
+                  style={{ flex: 1, border: '1px solid rgba(42,32,53,.18)', borderRadius: 12, padding: '.55rem .75rem', fontSize: '.9rem', fontFamily: 'inherit', outline: 'none' }} />
+                <button type="submit" disabled={pupaCaka || !pupaVnos.trim()}
+                  style={{ flex: 'none', border: 'none', borderRadius: 12, padding: '.55rem .9rem', background: '#2A2035', color: '#fff', cursor: pupaCaka || !pupaVnos.trim() ? 'default' : 'pointer', fontWeight: 600, opacity: pupaCaka || !pupaVnos.trim() ? .5 : 1 }}>{L('Pošlji', 'Send')}</button>
+              </form>
             </div>
           )}
-          <button type="button" onClick={() => setAiKmalu(v => !v)} aria-label={L('Pupa: pregled ponudbe', 'Pupa: quote review')} title={L('Pupa: pregled ponudbe', 'Pupa: quote review')}
-            style={{ position: 'relative', width: 58, height: 58, flex: 'none', borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0, background: 'conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)', boxShadow: '0 12px 30px rgba(42,32,53,.30)' }}>
-            <svg viewBox="0 0 40 40" width="58" height="58" style={{ position: 'absolute', inset: 0 }}>
-              <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
-              <path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
-              <path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
-              <circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
-              <circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
-            </svg>
-            {copilotNasveti.length > 0 && !aiKmalu && (
-              <span aria-hidden style={{ position: 'absolute', top: -2, right: -2, minWidth: 20, height: 20, padding: '0 5px', borderRadius: 10, background: '#e0567a', color: '#fff', fontSize: '.72rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff' }}>{copilotNasveti.length}</span>
-            )}
-          </button>
-        </div>,
+        </>,
         document.body,
       )}
     </div>

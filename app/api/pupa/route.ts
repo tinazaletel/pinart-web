@@ -1,0 +1,63 @@
+/* Pupa klepet — zaledje. Dobi vprasanje + kratek kontekst ponudbe + zgodovino,
+   in klice Anthropic model (ANTHROPIC_API_KEY iz okolja). Kljuc NIKOLI ne pride
+   na klienta. Ce kljuca ni, vrne prijazno sporocilo (klepet zaenkrat ne dela).
+   Model je nastavljiv prek PUPA_MODEL (privzeto claude-sonnet-5). */
+
+import { NextResponse } from 'next/server';
+
+export const runtime = 'nodejs';
+
+type Sporocilo = { role: 'user' | 'assistant'; content: string };
+
+const PERSONA = `Si Pupa, topla in prijazna AI pomocnica v aplikaciji Flow za samostojne oblikovalce in kreativce. Govoris slovensko (razen ce uporabnik pise anglesko), kratko in cloveesko, tikas (ne vikas). Pomagas pri cenah, avtorskih pravicah in besedilu ponudb. Svetujes na podlagi danega KONTEKSTA PONUDBE in Flow znanja; ce cesa ne ves ali podatka ni v kontekstu, to iskreno poves in si ne izmisljas stevilk. Ne dajes pravno zavezujocih nasvetov — koncna odlocitev je vedno uporabnikova. Bodi konkretna in prakticna.`;
+
+export async function POST(req: Request) {
+  let body: { vprasanje?: string; kontekst?: string; zgodovina?: Sporocilo[] };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ napaka: 'Neveljaven zahtevek.' }, { status: 400 });
+  }
+
+  const vprasanje = (body.vprasanje || '').trim();
+  if (!vprasanje) return NextResponse.json({ napaka: 'Prazno vprašanje.' }, { status: 400 });
+
+  const kljuc = process.env.ANTHROPIC_API_KEY;
+  if (!kljuc) {
+    return NextResponse.json({
+      odgovor: 'Za pravi pogovor potrebujem AI zaledje. V datoteko .env.local dodaj ANTHROPIC_API_KEY, pa se lahko pogovarjava. Do takrat ti pomagam prek opozoril ob ponudbi.',
+      brezKljuca: true,
+    });
+  }
+
+  const model = process.env.PUPA_MODEL || 'claude-sonnet-5';
+  const sistem = `${PERSONA}\n\nKONTEKST PONUDBE:\n${body.kontekst || '(ni podatkov o ponudbi)'}`;
+  const zgodovina = Array.isArray(body.zgodovina) ? body.zgodovina.slice(-8) : [];
+  const messages = [
+    ...zgodovina
+      .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+      .map(m => ({ role: m.role, content: m.content })),
+    { role: 'user' as const, content: vprasanje },
+  ];
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': kljuc,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({ model, max_tokens: 700, system: sistem, messages }),
+    });
+    if (!r.ok) {
+      const t = await r.text();
+      return NextResponse.json({ napaka: 'AI zaledje ni odgovorilo.', podrobnost: t.slice(0, 300) }, { status: 502 });
+    }
+    const data = await r.json();
+    const odgovor = (data?.content?.[0]?.text || '').trim() || 'Hmm, tokrat nimam pravega odgovora. Poskusi drugače vprašati.';
+    return NextResponse.json({ odgovor });
+  } catch {
+    return NextResponse.json({ napaka: 'Napaka pri klicu AI zaledja.' }, { status: 500 });
+  }
+}
