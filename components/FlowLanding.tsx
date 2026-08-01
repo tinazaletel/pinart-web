@@ -855,7 +855,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* hero naslov — besede se ob nalaganju nezno dvignejo (brez clipa, da ne obreze serifa) */
         /* rezervirana višina naslova (≈3 vrstice) — daljši/krajši naslov NE premika
            podnaslova in gumbov (Tina: besedilo se lahko premika, gumbi ostanejo). */
-        .fl-hero-title { min-height: 3.9em; }
+        .fl-hero-title { min-height: 3em; }
         /* presledek med besedami: {' '} je znotraj inline-block spana in ga rob poje,
            zato razmik naredimo z margin-right (drugače so besede zlepljene). */
         .fl-hero-title .w { display: inline-block; margin-right: .27em; opacity: 0; transform: translateY(.42em); animation: flWordUp .9s cubic-bezier(.22,1,.36,1) both; }
