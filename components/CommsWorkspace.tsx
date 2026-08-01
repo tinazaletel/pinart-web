@@ -57,9 +57,9 @@ export default function CommsWorkspace() {
     <article style={{ maxWidth: 760, margin: '0 auto', padding: '1.2rem 1.3rem', border: '1px solid color-mix(in oklch, var(--ink) 10%, transparent)', borderRadius: '1rem', background: 'oklch(100% 0 0 / .5)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem', flexWrap: 'wrap', margin: '0 0 1rem', padding: '.7rem .85rem', borderRadius: '.75rem', background: 'color-mix(in oklch, var(--ink) 5%, transparent)' }}>
         <p style={{ margin: 0, flex: 1, minWidth: 220, fontSize: '.82rem', lineHeight: 1.45, color: 'var(--ink)' }}>
-          <b>Kmalu:</b> poveži Gmail in Flow bo za-projekt-relevantne niti razvrstil k pravim projektom. Flow ni drugi predal — je poslovni zapis komunikacije.
+          <b>Kmalu:</b> poveži Gmail ali katerikoli email (IMAP) in Flow bo za-projekt-relevantne niti razvrstil k pravim projektom. Flow ni drugi predal — je poslovni zapis komunikacije.
         </p>
-        <button type="button" disabled title="Pride kmalu" style={{ flex: 'none', border: '1px solid color-mix(in oklch, var(--ink) 20%, transparent)', background: 'transparent', color: 'var(--muted)', borderRadius: 999, padding: '.4rem .85rem', font: '700 .72rem var(--font-sans), sans-serif', cursor: 'not-allowed' }}>Poveži Gmail (kmalu)</button>
+        <button type="button" disabled title="Pride kmalu" style={{ flex: 'none', border: '1px solid color-mix(in oklch, var(--ink) 20%, transparent)', background: 'transparent', color: 'var(--muted)', borderRadius: 999, padding: '.4rem .85rem', font: '700 .72rem var(--font-sans), sans-serif', cursor: 'not-allowed' }}>Poveži email (kmalu)</button>
       </div>
       <div style={{ display: 'flex', gap: '.35rem', flexWrap: 'wrap' }}>
         {MAPE.map(({ id, ime, Ikona }) => {
