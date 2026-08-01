@@ -16,6 +16,11 @@ import styles from './BusinessPlanWorkspace.module.css';
 
 const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFractionDigits: 0 })} €`;
 const duration = (minutes: number) => `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
+const localDateKey = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+const localDateTimeValue = (date: Date) =>
+  `${localDateKey(date)}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+const POZABLJEN_CASOVNIK_PRAG_MS = 10 * 60 * 60 * 1000;
 /* slovenska dvojina: 1 vnos, 2 vnosa, 3-4 vnosi, 5+ vnosov (velja tudi za 101, 102 ...) */
 const vnosiSklon = (n: number) => { const d = n % 100; return d === 1 ? 'vnos' : d === 2 ? 'vnosa' : d === 3 || d === 4 ? 'vnosi' : 'vnosov'; };
 
@@ -122,6 +127,8 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   const [entries, setEntries] = useState<PrivateTimeEntry[]>([]);
   const [running, setRunning] = useState<PrivateTimeEntry | null>(null);
   const [pending, setPending] = useState<PrivateTimeEntry | null>(null);
+  const [pozabljeno, setPozabljeno] = useState<PrivateTimeEntry | null>(null);
+  const [predlaganKonec, setPredlaganKonec] = useState('');
   const [elapsed, setElapsed] = useState(0);
   const [notice, setNotice] = useState('');
   const [ready, setReady] = useState(false);
@@ -154,15 +161,52 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
      je treba vnos se potrditi. */
   const obnovljeno = useRef(false);
   useEffect(() => {
-    if (!merjenje || running || pending || obnovljeno.current) return;
+    if (!merjenje || running || pending || pozabljeno || obnovljeno.current) return;
     obnovljeno.current = true;
-    setRunning({
+    const obnovljeniVnos: PrivateTimeEntry = {
       id: crypto.randomUUID(), projectName: merjenje.projectName,
       serviceName: merjenje.serviceName || '',
       startedAt: merjenje.zacetekPrvic || merjenje.startedAt,
       durationMinutes: 0, amount: 0, scopeStatus: 'included',
-    });
-  }, [merjenje, running, pending]);
+    };
+    const zacetek = new Date(obnovljeniVnos.startedAt);
+    const zdaj = new Date();
+    const predolgo = zdaj.getTime() - zacetek.getTime() > POZABLJEN_CASOVNIK_PRAG_MS;
+    const cezPolnoc = localDateKey(zacetek) !== localDateKey(zdaj);
+    if (predolgo || cezPolnoc) {
+      const osemUrPozneje = new Date(zacetek.getTime() + 8 * 60 * 60 * 1000);
+      setPredlaganKonec(localDateTimeValue(osemUrPozneje > zdaj ? zdaj : osemUrPozneje));
+      setPozabljeno(obnovljeniVnos);
+      return;
+    }
+    setRunning(obnovljeniVnos);
+  }, [merjenje, running, pending, pozabljeno]);
+
+  const potrdiPozabljenKonec = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!pozabljeno) return;
+    const data = new FormData(event.currentTarget);
+    const konec = new Date(String(data.get('actualEnd') || ''));
+    const zacetek = new Date(pozabljeno.startedAt);
+    if (!Number.isFinite(konec.getTime()) || konec <= zacetek || konec > new Date()) {
+      setNotice('Konec mora biti po začetku merjenja in ne sme biti v prihodnosti.');
+      return;
+    }
+    const minute = Math.max(1, Math.round((konec.getTime() - zacetek.getTime()) / 60_000));
+    const finished = { ...pozabljeno, endedAt: konec.toISOString(), durationMinutes: minute };
+    pripraviVnos(finished.startedAt.slice(0, 10), Math.floor(minute / 60), minute % 60, finished.amount);
+    zapisiMerjenje(null);
+    setPozabljeno(null);
+    setPending(finished);
+    setNotice('Preveri popravljeno trajanje, preden ga shraniš.');
+  };
+
+  const nadaljujPozabljenoMerjenje = () => {
+    if (!pozabljeno) return;
+    setRunning(pozabljeno);
+    setPozabljeno(null);
+    setNotice('Merjenje se nadaljuje.');
+  };
 
   const result = useMemo(() => calculatePlan(plan), [plan]);
   const completed = entries.filter(item => item.endedAt && item.durationMinutes > 0);
@@ -715,7 +759,20 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       <section className={styles.timer} id="timer" ref={timerRef2}>
         <header><p>{view === 'time' ? '01' : '02'} · ČAS</p><h2>Ali se ti je delo po tej ceni splačalo?</h2><span>Timer je zaseben. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.</span></header>
 
-        {pending ? <form className={styles.timerForm} onSubmit={confirmTime}>
+        {pozabljeno ? <form className={styles.timerForm} onSubmit={potrdiPozabljenKonec}>
+          <div className={styles.reviewTitle} role="alert">
+            <strong>Je časovnik ostal prižgan?</strong>
+            <span>Merjenje za »{pozabljeno.projectName}« teče več kot 10 ur ali čez polnoč. Konca ne bomo ugibali.</span>
+          </div>
+          <label>
+            <span>Dejanski konec dela</span>
+            <input name="actualEnd" type="datetime-local" required max={localDateTimeValue(new Date())}
+              value={predlaganKonec} onChange={e => setPredlaganKonec(e.target.value)} />
+            <small>Predlagali smo največ 8 ur po začetku. Po potrebi čas popravi.</small>
+          </label>
+          <button type="submit">Preračunaj trajanje</button>
+          <button type="button" className={styles.linkGumb} onClick={nadaljujPozabljenoMerjenje}>Merjenje še vedno teče</button>
+        </form> : pending ? <form className={styles.timerForm} onSubmit={confirmTime}>
           <div className={styles.reviewTitle}><strong>Preglej zaključeni vnos</strong><span>{pending.projectName} · {pending.serviceName || 'brez oznake storitve'}</span></div>
           <label><span>Ure</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
           <label><span>Minute</span><input name="min" type="number" min="0" max="59" step="1" value={minVnos} onChange={e => setMinVnos(e.target.value)} /></label>
