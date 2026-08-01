@@ -200,7 +200,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const vrstaRef = useRef<HTMLDivElement>(null);
 
   const VPRASANJA = [
-    { v: 'Je Pinart Flow res brezplačen?', o: 'Kalkulator poštenih cen je in ostane brezplačen za vedno, brez prijave. Celo platformo (dokumenti, stranke, projekti) preizkusiš mesec dni brezplačno in brez kartice; nato izbereš paket, ki ti ustreza.' },
+    { v: 'Je Flow res brezplačen?', o: 'Kalkulator poštenih cen je in ostane brezplačen za vedno, brez prijave. Celo platformo (dokumenti, stranke, projekti) preizkusiš mesec dni brezplačno in brez kartice; nato izbereš paket, ki ti ustreza.' },
+    { v: 'Kaj zna AI asistentka Pupa?', o: 'Pupa je tvoja AI asistentka: pozna trg in avtorske pravice, pove ti pošteno ceno, opozori te, če se podcenjuješ, in ti pomaga ubesediti ponudbo. Z njo klepetaš ali jo upravljaš z glasom. Svetuje iz konteksta tvoje ponudbe — ni splošni chatbot. Na voljo je v plačljivih paketih.' },
     { v: 'Ali potrebujem račun za kalkulator?', o: 'Ne. Kalkulator deluje brez prijave: izračunaš pošteno ceno, sestaviš ponudbo in jo preneseš. Račun potrebuješ šele, ko želiš dokumente shraniti in imeti na enem mestu.' },
     { v: 'Komu pripadajo moji podatki in dokumenti?', o: 'Tvoje ponudbe, stranke in dokumenti ostanejo tvoji in zasebni — ne prodajamo jih in ne razkrivamo nikomur. Cene storitev, ki jih vpišeš, pa anonimno in združeno pomagajo graditi pregled poštenih tržnih cen, da ti Flow lahko pokaže, kje je tvoja cena glede na trg. Nikoli ne razkrijemo, kdo je vnesel katero ceno.' },
     { v: 'Kako mi Flow pomaga postaviti pravo ceno?', o: 'Kalkulator razbije ceno na izvedbo, avtorske pravice in licenco, nato pa jo primerja z anonimnim tržnim pregledom vpisanih cen — vidiš, ali si bližje dnu ali vrhu in za koliko se morda podcenjuješ. Cena tako ni več ugibanje.' },
