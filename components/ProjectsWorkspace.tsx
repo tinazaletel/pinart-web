@@ -10,7 +10,7 @@ import MetricIcon from '@/components/MetricIcon';
 import { loadFlowData, loadProjectLinks, saveOfferAmount, saveOfferStatus, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { preberiPostoProjekta, dodajPosto, type PostaVnos } from '@/lib/postaDnevnik';
-import { pullProjectMail, pushProjectMail } from '@/lib/pinartMailCloud';
+import { pullProjectMail, pushProjectMail, saveDraft, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent } from '@/lib/pinartMailCloud';
 import { posljiMail } from '@/lib/posta';
 import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
 import { preberiSodelavci } from '@/lib/sodelavci';
@@ -892,6 +892,14 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 {pisiStatus && <p className="pw-pisi-status">{pisiStatus}</p>}
                 <div className="pw-pisi-akcije">
                   <button type="button" className="pw-pisi-preklic" onClick={() => setPisiOdprt(false)}>Prekliči</button>
+                  <button type="button" className="pw-pisi-preklic" onClick={() => {
+                    const za = pisiZa.trim(); const zadeva = pisiZadeva.trim(); const telo = pisiTeloRef.current?.innerHTML || '';
+                    if (!selectedId || (!za && !zadeva && !telo.replace(/<[^>]+>/g, '').trim())) { setPisiOdprt(false); return; }
+                    const id = crypto.randomUUID(); const now = new Date().toISOString();
+                    setPosta(p => [{ id, projectId: selectedId, smer: 'poslano', prejemniki: za ? [za] : [], zadeva, datum: now, telo, osnutek: true } as PostaVnos, ...p]);
+                    void saveDraft({ id, projectExternalId: selectedId, direction: 'out', toEmails: za ? [za] : [], subject: zadeva, bodyHtml: telo, isDraft: true, occurredAt: now }).catch(() => undefined);
+                    setPisiOdprt(false); setMapa('osnutki'); setBeriMail(null);
+                  }}>Shrani osnutek</button>
                   <button type="button" className="pw-pisi-poslji" disabled={pisiPosiljam} onClick={posljiPisanje}>{pisiPosiljam ? 'Pošiljam …' : 'Pošlji'}</button>
                 </div>
               </div>
@@ -905,7 +913,15 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             </div>
             {beriMail ? (
               <div style={{ position: 'relative', zIndex: 1, margin: '.75rem 0 0', padding: '.9rem', border: '1px solid color-mix(in oklch, var(--ink) 10%, transparent)', borderRadius: '.85rem', background: 'oklch(100% 0 0 / .72)' }}>
-                <button type="button" onClick={() => setBeriMail(null)} style={{ border: 0, background: 'none', color: 'var(--ink)', font: '700 .7rem var(--font-sans), sans-serif', cursor: 'pointer', padding: 0, marginBottom: '.5rem' }}>← Nazaj na seznam</button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.55rem' }}>
+                  <button type="button" onClick={() => setBeriMail(null)} style={{ border: 0, background: 'none', color: 'var(--ink)', font: '700 .7rem var(--font-sans), sans-serif', cursor: 'pointer', padding: 0 }}>← Nazaj na seznam</button>
+                  {!samoOgled && <div style={{ display: 'flex', gap: '.45rem' }}>
+                    {beriMail.izbrisano ? <>
+                      <button type="button" onClick={() => { const id = beriMail.id; void restoreProjectMail(id).catch(() => undefined); setPosta(p => p.map(v => v.id === id ? { ...v, izbrisano: undefined } : v)); setBeriMail(null); }} style={{ border: '1px solid var(--ink)', background: 'none', color: 'var(--ink)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}>Obnovi</button>
+                      <button type="button" onClick={() => { const id = beriMail.id; void deleteProjectMailPermanent(id).catch(() => undefined); setPosta(p => p.filter(v => v.id !== id)); setBeriMail(null); }} style={{ border: '1px solid oklch(58% .18 25)', background: 'none', color: 'oklch(52% .18 25)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}>Zbriši dokončno</button>
+                    </> : <button type="button" onClick={() => { const id = beriMail.id; void trashProjectMail(id).catch(() => undefined); setPosta(p => p.map(v => v.id === id ? { ...v, izbrisano: new Date().toISOString() } : v)); setBeriMail(null); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', border: '1px solid color-mix(in oklch, var(--ink) 20%, transparent)', background: 'none', color: 'var(--ink)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}><Trash size={13} weight="bold" /> V koš</button>}
+                  </div>}
+                </div>
                 <b style={{ display: 'block', fontSize: '.92rem' }}>{beriMail.zadeva || '(brez zadeve)'}</b>
                 <small style={{ display: 'block', color: 'var(--muted)', margin: '.15rem 0 .7rem' }}>{beriMail.prejemniki.join(', ')} · {datStr(beriMail.datum)}</small>
                 {beriMail.telo
