@@ -47,6 +47,10 @@ const VRSTE_POG_EN: Record<VrstaPog, { naziv: string; kick: string }> = {
   nda: { naziv: 'Non-Disclosure Agreement (NDA)', kick: 'NDA' },
   dpa: { naziv: 'Data Processing Agreement (DPA)', kick: 'DPA' },
 };
+/* kratke oznake pilul (tabov) za angleski prikaz — samo UI chrome, NE vpliva na shranjen naslov (ostane SL label) */
+const VRSTE_LABEL_EN: Record<VrstaPog, string> = {
+  sodelovanje: 'Cooperation', podjemna: 'Services', avtorska: 'Copyright', licencna: 'Licence', nda: 'NDA', dpa: 'DPA',
+};
 
 /* posamezen clen dokumenta; opcijski cleni se dajo vklopiti/izklopiti, stevilcenje se prilagodi samo */
 type Clen = { id: string; naslov: string; telo: string; opcijski?: boolean };
@@ -63,6 +67,8 @@ const privzetoIzklop = (v: VrstaPog) => new Set<string>(PRIVZETO_IZKLOP[v]);
 
 export default function ContractWorkspace({ base }: { base: string }) {
   const jeEn = base === '/en';
+  /* UI chrome prevod (sl privzeto): vsebina pogodbe ostane locena (jeEn veje spodaj) */
+  const L = (sl: string, en: string) => (jeEn ? en : sl);
   /* pod 640px orodjarna postane slide-up predal (kot retainer) */
   const [jeMobilni, setJeMobilni] = useState(false);
   useEffect(() => {
@@ -529,8 +535,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
     if (samoOgled) return;
     const cilj = odvetnikEmail.trim();
     if (!jeVeljavenEmail(cilj)) return;
-    const naziv = VRSTE_POG.find(v => v.id === vrstaPog)!.naziv;
-    const subject = 'V pregled in podpis: ' + naziv + (narocnikIme() ? ' — ' + narocnikIme() : '');
+    const naziv = jeEn ? VRSTE_POG_EN[vrstaPog].naziv : VRSTE_POG.find(v => v.id === vrstaPog)!.naziv;
+    const subject = L('V pregled in podpis: ', 'For review and signature: ') + naziv + (narocnikIme() ? ' — ' + narocnikIme() : '');
     setOdvStatus('poslji');
     setOdvNapaka('');
     try {
@@ -540,11 +546,11 @@ export default function ContractWorkspace({ base }: { base: string }) {
         setOdvPoslano(true);
       } else {
         setOdvStatus('napaka');
-        setOdvNapaka(rez.napaka || 'pošiljanje ni uspelo.');
+        setOdvNapaka(rez.napaka || L('pošiljanje ni uspelo.', 'sending failed.'));
       }
     } catch {
       setOdvStatus('napaka');
-      setOdvNapaka('pošiljanje ni uspelo.');
+      setOdvNapaka(L('pošiljanje ni uspelo.', 'sending failed.'));
     }
   };
   /* menjava vrste dokumenta: kot ponastaviTelo — sveze telo v urejevalnik,
@@ -662,7 +668,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       if (!blob.size) throw new Error('prazen');
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = ime + '.pdf'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    } catch { setNapaka('PDF-ja ni bilo mogoče pripraviti. Poskusi znova.'); } finally { setPdfNalaganje(false); }
+    } catch { setNapaka(L('PDF-ja ni bilo mogoče pripraviti. Poskusi znova.', 'The PDF could not be prepared. Please try again.')); } finally { setPdfNalaganje(false); }
   };
 
   /* PREDOGLED (kot retainer): dejanski PDF, izrisan po straneh kot slike (pdf.js).
@@ -753,7 +759,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     if (samoOgled) {
       /* obvestilo se izrise na vrhu strani — brez skoka na vrh ga uporabnica na
          dnu dokumenta sploh ne vidi in izgleda, kot da gumb ne dela */
-      setNotice('To so demo podatki — shranjevanje ni mogoče. Zgoraj v vrstici preklopi na »Moji podatki«.');
+      setNotice(L('To so demo podatki — shranjevanje ni mogoče. Zgoraj v vrstici preklopi na »Moji podatki«.', 'This is demo data — saving is not possible. Switch to “My data” in the bar above.'));
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -790,7 +796,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     setPriponkaIme(fileName || '');
     setPriponkaPot(filePath || '');
     setPriponkaZaBrisanje('');
-    setNotice('Pogodba je shranjena in povezana s projektom.');
+    setNotice(L('Pogodba je shranjena in povezana s projektom.', 'The contract is saved and linked to the project.'));
     /* po shranjevanju nazaj na prvo stran — nova pogodba je takoj vidna v arhivu
        (Tina: "naj se shrani in vrnem se na prvo stran") */
     setPogled('nastavitve');
@@ -812,7 +818,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     if (samoOgled) {
       /* obvestilo se izrise na vrhu strani — brez skoka na vrh ga uporabnica na
          dnu dokumenta sploh ne vidi in izgleda, kot da gumb ne dela */
-      setNotice('To so demo podatki — shranjevanje ni mogoče. Zgoraj v vrstici preklopi na »Moji podatki«.');
+      setNotice(L('To so demo podatki — shranjevanje ni mogoče. Zgoraj v vrstici preklopi na »Moji podatki«.', 'This is demo data — saving is not possible. Switch to “My data” in the bar above.'));
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -826,18 +832,18 @@ export default function ContractWorkspace({ base }: { base: string }) {
     const next = [zapis, ...contracts];
     setContracts(next);
     saveFlowCollection('contracts', next);
-    setNotice('Prejeta pogodba je shranjena in čaka na pregled.');
+    setNotice(L('Prejeta pogodba je shranjena in čaka na pregled.', 'The received contract is saved and awaiting review.'));
     event.currentTarget.reset();
   };
 
   /* klikabilna kartica ponudbe: klik razpre povzetek obsega INLINE (brez navigacije) */
   const karticaPonudbe = (strnjena = false) => selectedOffer ? (
     <div className={'pg-kponudba' + (strnjena ? ' pg-kp-strnjena' : '')}>
-      <button type="button" className="pg-kp-glava" aria-expanded={kartaOdprta} aria-label={`Ponudba ${selectedOffer.title} — prikaži povzetek obsega`} onClick={() => setKartaOdprta(v => !v)}>
+      <button type="button" className="pg-kp-glava" aria-expanded={kartaOdprta} aria-label={L(`Ponudba ${selectedOffer.title} — prikaži povzetek obsega`, `Offer ${selectedOffer.title} — show scope summary`)} onClick={() => setKartaOdprta(v => !v)}>
         <span className="pg-kp-ikona" aria-hidden>⌁</span>
         <span className="pg-kp-info">
           <strong>{selectedOffer.title}</strong>
-          <small>{selectedOffer.client}{selectedOffer.number ? ' · št. ' + selectedOffer.number : ''}{selectedOffer.agreedAmount > 0 ? ' · ' + eur(selectedOffer.agreedAmount) : ''}</small>
+          <small>{selectedOffer.client}{selectedOffer.number ? L(' · št. ', ' · no. ') + selectedOffer.number : ''}{selectedOffer.agreedAmount > 0 ? ' · ' + eur(selectedOffer.agreedAmount) : ''}</small>
         </span>
         <span className="pg-kp-kazalec" aria-hidden>{kartaOdprta ? <CaretUp size={15} weight="bold" /> : <CaretDown size={15} weight="bold" />}</span>
       </button>
@@ -845,7 +851,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
         <div className="pg-kp-vec">
           {selectedOffer.scope.length
             ? <ul>{selectedOffer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul>
-            : <p className="pg-mini">Ponudba nima vpisanega obsega.</p>}
+            : <p className="pg-mini">{L('Ponudba nima vpisanega obsega.', 'No scope has been entered for this offer.')}</p>}
           <button type="button" className="pg-povezava" onClick={() => setPonudbaPredogled(true)}>
             <Eye size={17} aria-hidden /> {jeEn ? 'Open offer' : 'Odpri ponudbo'}
           </button>
@@ -875,7 +881,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
             <dl className="pg-op-meta">
               <div><dt>{jeEn ? 'Client' : 'Stranka'}</dt><dd>{selectedOffer.client || '—'}</dd></div>
               <div><dt>{jeEn ? 'Offer no.' : 'Št. ponudbe'}</dt><dd>{selectedOffer.number || '—'}</dd></div>
-              <div><dt>{jeEn ? 'Date' : 'Datum'}</dt><dd>{selectedOffer.date ? datStr(new Date(`${selectedOffer.date}T12:00:00`)) : '—'}</dd></div>
+              <div><dt>{jeEn ? 'Date' : 'Datum'}</dt><dd>{selectedOffer.date ? (jeEn ? new Date(`${selectedOffer.date}T12:00:00`).toLocaleDateString('en-GB') : datStr(new Date(`${selectedOffer.date}T12:00:00`))) : '—'}</dd></div>
               <div><dt>{jeEn ? 'Value' : 'Vrednost'}</dt><dd>{selectedOffer.agreedAmount > 0 ? eur(selectedOffer.agreedAmount) : '—'}</dd></div>
             </dl>
             <div className="pg-op-obseg">
@@ -895,16 +901,16 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {pogled === 'nastavitve' && <div className="pg-stolpec pg-vstop">
       {/* naslov strani samo tu — ozek sredinski stolpec + kicker/h1 (kot retainer rw-kicker/rw-h1),
           NE vec full-width topbar; vstop je brez bele kartice okoli (kot retainer rw-vsebina) */}
-      <p className="pg-kicker">Pogodbe</p>
-      <h1 className="pg-h1">Dogovor, brez ugibanja.</h1>
+      <p className="pg-kicker">{L('Pogodbe', 'Contracts')}</p>
+      <h1 className="pg-h1">{L('Dogovor, brez ugibanja.', 'An agreement, without guesswork.')}</h1>
       <div className="pg-chat">
-        <span className="pg-mehur"><b>Iz česa nastane pogodba?</b><small>Če obstaja ponudba, jo izberi — naročnik in obseg se predizpolnita. Sicer pusti »Brez ponudbe« za samostojno pogodbo.</small></span>
+        <span className="pg-mehur"><b>{L('Iz česa nastane pogodba?', 'What is the contract built from?')}</b><small>{L('Če obstaja ponudba, jo izberi — naročnik in obseg se predizpolnita. Sicer pusti »Brez ponudbe« za samostojno pogodbo.', 'If an offer exists, pick it — the client and scope are pre-filled. Otherwise leave “No offer” for a standalone contract.')}</small></span>
       </div>
       <section className="pg-sek pg-vstop-panel">
         {/* vrsta dokumenta: 6 vrst pogodb (velja za ustvarjeno telo) */}
-        <div className="pg-vrstapog" role="group" aria-label="Vrsta dokumenta">
+        <div className="pg-vrstapog" role="group" aria-label={L('Vrsta dokumenta', 'Document type')}>
           {VRSTE_POG.map(v => (
-            <button key={v.id} type="button" aria-label={v.naziv} aria-pressed={vrstaPog === v.id} className={vrstaPog === v.id ? 'on' : ''} onClick={() => menjajVrsto(v.id)}>{v.label}</button>
+            <button key={v.id} type="button" aria-label={jeEn ? VRSTE_POG_EN[v.id].naziv : v.naziv} aria-pressed={vrstaPog === v.id} className={vrstaPog === v.id ? 'on' : ''} onClick={() => menjajVrsto(v.id)}>{jeEn ? VRSTE_LABEL_EN[v.id] : v.label}</button>
           ))}
         </div>
         {/* opcijski cleni trenutne vrste: klik vklopi/izklopi člen (številčenje se prilagodi samo) */}
@@ -913,8 +919,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
           if (!opcijski.length) return null;
           return (
             <div className="pg-klavzule">
-              <span className="pg-klavzule-label">Vključi člene:</span>
-              <div className="pg-klavzule-pilule" role="group" aria-label="Opcijski členi">
+              <span className="pg-klavzule-label">{L('Vključi člene:', 'Include clauses:')}</span>
+              <div className="pg-klavzule-pilule" role="group" aria-label={L('Opcijski členi', 'Optional clauses')}>
                 {opcijski.map(c => {
                   const vkljucen = !izklKlavzule.has(c.id);
                   return <button key={c.id} type="button" aria-pressed={vkljucen} className={'pg-segpills-mini' + (vkljucen ? ' on' : '')} onClick={() => prekloviKlavzulo(c.id)}>{c.naslov}</button>;
@@ -929,32 +935,32 @@ export default function ContractWorkspace({ base }: { base: string }) {
                 (predizpolni naročnika+obseg); "Brez ponudbe" => samostojna pogodba (rocno). */}
             <div className="pg-polja">
               <div className="pg-polje pg-combo-polje">
-                <span className="pg-combo-oznaka" id="pg-combo-oznaka">Ponudba</span>
+                <span className="pg-combo-oznaka" id="pg-combo-oznaka">{L('Ponudba', 'Offer')}</span>
                 <div className="pg-combo" ref={vstopComboRef}>
                   <button type="button" className="pg-combo-sprozilec" aria-haspopup="listbox" aria-expanded={vstopOdprt} aria-labelledby="pg-combo-oznaka" onClick={() => { setVstopOdprt(open => !open); setVstopIskanje(''); }}>
-                    <span>{selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : 'Brez ponudbe'}</span>
+                    <span>{selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : L('Brez ponudbe', 'No offer')}</span>
                     <CaretDown size={14} weight="bold" aria-hidden />
                   </button>
                   {vstopOdprt && <div className="pg-combo-panel" onKeyDown={event => { if (event.key === 'Escape') { setVstopOdprt(false); setVstopIskanje(''); } }}>
-                    <input className="pg-combo-iskalnik" type="search" autoFocus placeholder="Poišči ponudbo, stranko ali številko …" aria-label="Poišči ponudbo, stranko ali številko" value={vstopIskanje} onChange={event => setVstopIskanje(event.target.value)} />
-                    <div className="pg-combo-seznam" role="listbox" aria-label="Ponudbe">
+                    <input className="pg-combo-iskalnik" type="search" autoFocus placeholder={L('Poišči ponudbo, stranko ali številko …', 'Search offer, client or number …')} aria-label={L('Poišči ponudbo, stranko ali številko', 'Search offer, client or number')} value={vstopIskanje} onChange={event => setVstopIskanje(event.target.value)} />
+                    <div className="pg-combo-seznam" role="listbox" aria-label={L('Ponudbe', 'Offers')}>
                       <button type="button" role="option" aria-selected={!offerId} className={'pg-combo-opcija' + (!offerId ? ' on' : '')} onClick={() => izberiVVstopu('')}>
-                        <span className="pg-combo-naziv"><strong>Brez ponudbe</strong><small>Samostojna pogodba</small></span>
+                        <span className="pg-combo-naziv"><strong>{L('Brez ponudbe', 'No offer')}</strong><small>{L('Samostojna pogodba', 'Standalone contract')}</small></span>
                         {!offerId && <span className="pg-combo-kljukica" aria-hidden>✓</span>}
                       </button>
                       {vstopSeznam.map(offer => (
                         <button key={offer.id} type="button" role="option" aria-selected={offerId === offer.id} className={'pg-combo-opcija' + (offerId === offer.id ? ' on' : '')} onClick={() => izberiVVstopu(offer.id)}>
-                          <span className="pg-combo-naziv"><strong>{offer.title} · {offer.client}</strong>{offer.number && <small>Št. {offer.number}</small>}</span>
+                          <span className="pg-combo-naziv"><strong>{offer.title} · {offer.client}</strong>{offer.number && <small>{L('Št. ', 'No. ')}{offer.number}</small>}</span>
                           {offerId === offer.id && <span className="pg-combo-kljukica" aria-hidden>✓</span>}
                         </button>
                       ))}
-                      {!vstopSeznam.length && <p className="pg-mini pg-combo-prazno">Ni ponudb za to iskanje.</p>}
+                      {!vstopSeznam.length && <p className="pg-mini pg-combo-prazno">{L('Ni ponudb za to iskanje.', 'No offers match this search.')}</p>}
                     </div>
-                    {!vstopIskanje.trim() && ponudbePoDatumu.length > 10 && <p className="pg-combo-namig">Prikazanih zadnjih 10 — išči za vse.</p>}
+                    {!vstopIskanje.trim() && ponudbePoDatumu.length > 10 && <p className="pg-combo-namig">{L('Prikazanih zadnjih 10 — išči za vse.', 'Showing the last 10 — search to see all.')}</p>}
                   </div>}
                 </div>
               </div>
-              <label className="pg-polje">Datum pogodbe
+              <label className="pg-polje">{L('Datum pogodbe', 'Contract date')}
                 <input type="date" value={datum} onChange={event => setDatum(event.target.value)} />
               </label>
             </div>
@@ -964,55 +970,55 @@ export default function ContractWorkspace({ base }: { base: string }) {
               <>
                 {/* "Brez ponudbe" = samostojna pogodba: naročnika in obseg vpišeš ročno */}
                 <div className="pg-polja">
-                  <label className="pg-polje">Naročnik
-                    <input type="text" placeholder="npr. Odvetniška družba Volk & Babica" value={rocniNarocnik} onChange={event => setRocniNarocnik(event.target.value)} />
+                  <label className="pg-polje">{L('Naročnik', 'Client')}
+                    <input type="text" placeholder={L('npr. Odvetniška družba Volk & Babica', 'e.g. Volk & Babica Law Firm')} value={rocniNarocnik} onChange={event => setRocniNarocnik(event.target.value)} />
                   </label>
-                  <label className="pg-polje">E-pošta naročnika
-                    <input type="email" placeholder="npr. pisarna@volk-babica.si" value={narEmail} onChange={event => setNarEmail(event.target.value)} />
+                  <label className="pg-polje">{L('E-pošta naročnika', 'Client email')}
+                    <input type="email" placeholder={L('npr. pisarna@volk-babica.si', 'e.g. office@volk-babica.si')} value={narEmail} onChange={event => setNarEmail(event.target.value)} />
                   </label>
                 </div>
-                <label className="pg-polje pg-polje-obseg">Obseg (ena postavka na vrstico)
-                  <textarea rows={4} placeholder={'npr.\nLogotip\nVizitke in dopisni papir'} value={rocniObseg} onChange={event => setRocniObseg(event.target.value)} />
+                <label className="pg-polje pg-polje-obseg">{L('Obseg (ena postavka na vrstico)', 'Scope (one item per line)')}
+                  <textarea rows={4} placeholder={L('npr.\nLogotip\nVizitke in dopisni papir', 'e.g.\nLogo\nBusiness cards and letterhead')} value={rocniObseg} onChange={event => setRocniObseg(event.target.value)} />
                 </label>
-                <p className="pg-namig">Priporočamo: najprej ustvari <b>ponudbo</b> — obseg, cena in številka se v pogodbo prenesejo sami. <a href={`${base}/kalkulator/orodje`}>Odpri kalkulator →</a></p>
+                <p className="pg-namig">{L('Priporočamo: najprej ustvari ', 'We recommend: first create an ')}<b>{L('ponudbo', 'offer')}</b>{L(' — obseg, cena in številka se v pogodbo prenesejo sami. ', ' — the scope, price and number carry over into the contract automatically. ')}<a href={`${base}/kalkulator/orodje`}>{L('Odpri kalkulator →', 'Open calculator →')}</a></p>
               </>
             )}
             <div className="pg-gumbi">
-              <button type="button" className="pg-gumb" aria-label="Pripravi pogodbo" onClick={pripraviPogodbo}>Pripravi pogodbo →</button>
+              <button type="button" className="pg-gumb" aria-label={L('Pripravi pogodbo', 'Prepare contract')} onClick={pripraviPogodbo}>{L('Pripravi pogodbo →', 'Prepare contract →')}</button>
             </div>
             {/* pot "Od stranke": naloži že podpisano/prejeto pogodbo za pregled (ohranjena funkcija) */}
-            <button type="button" className="pg-povezava pg-odstranke-link" onClick={() => setOdStranke(true)}>Imaš pogodbo od stranke? Naloži jo za pregled →</button>
+            <button type="button" className="pg-povezava pg-odstranke-link" onClick={() => setOdStranke(true)}>{L('Imaš pogodbo od stranke? Naloži jo za pregled →', 'Have a contract from the client? Upload it for review →')}</button>
           </>
         ) : (
           /* pot "Od stranke": nalozi in preglej dokument — shrani takoj v arhiv (status Prejeta) */
           <>
-            <button type="button" className="pg-povezava pg-odstranke-nazaj" onClick={() => setOdStranke(false)}>← Nazaj na ustvarjanje pogodbe</button>
+            <button type="button" className="pg-povezava pg-odstranke-nazaj" onClick={() => setOdStranke(false)}>{L('← Nazaj na ustvarjanje pogodbe', '← Back to creating a contract')}</button>
             <form onSubmit={saveUpload}>
               <div className="pg-polja">
-                <label className="pg-polje">Naziv pogodbe
-                  <input required name="title" type="text" placeholder="npr. Pogodba o sodelovanju 2026" />
+                <label className="pg-polje">{L('Naziv pogodbe', 'Contract title')}
+                  <input required name="title" type="text" placeholder={L('npr. Pogodba o sodelovanju 2026', 'e.g. Cooperation Agreement 2026')} />
                 </label>
-                <label className="pg-polje">Stranka
-                  <input required name="client" type="text" placeholder="npr. Odvetniška družba Volk & Babica" />
+                <label className="pg-polje">{L('Stranka', 'Client')}
+                  <input required name="client" type="text" placeholder={L('npr. Odvetniška družba Volk & Babica', 'e.g. Volk & Babica Law Firm')} />
                 </label>
-                <label className="pg-polje">Datum prejema
+                <label className="pg-polje">{L('Datum prejema', 'Date received')}
                   <input required name="date" type="date" defaultValue={new Date().toISOString().slice(0, 10)} />
                 </label>
-                <label className="pg-polje">Projekt ali ponudba
+                <label className="pg-polje">{L('Projekt ali ponudba', 'Project or offer')}
                   <select name="sourceOfferId" defaultValue="">
-                    <option value="">Brez povezave</option>
+                    <option value="">{L('Brez povezave', 'No link')}</option>
                     {offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}</option>)}
                   </select>
                 </label>
               </div>
-              <label className="pg-polje pg-polje-obseg">PDF ali Word
+              <label className="pg-polje pg-polje-obseg">{L('PDF ali Word', 'PDF or Word')}
                 <input required name="file" type="file" accept=".pdf,.doc,.docx" />
               </label>
-              <label className="pg-polje pg-polje-obseg">Opombe za pregled
-                <textarea name="notes" rows={4} placeholder="Kaj moraš preveriti ali uskladiti?" />
+              <label className="pg-polje pg-polje-obseg">{L('Opombe za pregled', 'Notes for review')}
+                <textarea name="notes" rows={4} placeholder={L('Kaj moraš preveriti ali uskladiti?', 'What do you need to check or align?')} />
               </label>
               <div className="pg-gumbi">
-                <button type="submit" className="pg-gumb" aria-label="Shrani prejeto pogodbo">Shrani prejeto pogodbo</button>
+                <button type="submit" className="pg-gumb" aria-label={L('Shrani prejeto pogodbo', 'Save received contract')}>{L('Shrani prejeto pogodbo', 'Save received contract')}</button>
               </div>
             </form>
           </>
@@ -1023,16 +1029,16 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* ── POGLED 2: DOKUMENT (samostojna stran — sredinski ozek stolpec, kot retainer) ── */}
     {pogled === 'dokument' && <section className="pg-sek pg-stran pg-stolpec">
       {/* jasna pot nazaj na vstopni korak — na vrhu, pred dokumentom */}
-      <button type="button" className="pg-povezava pg-nazaj-vrh" onClick={() => setPogled('nastavitve')}>← Nazaj</button>
+      <button type="button" className="pg-povezava pg-nazaj-vrh" onClick={() => setPogled('nastavitve')}>{L('← Nazaj', '← Back')}</button>
       {vir === 'ponudba' && karticaPonudbe(true)}
       <div className="pg-pon-vrh">
-        <div className="pg-segpills" role="group" aria-label="Pogled">
-          <button type="button" aria-label="Uredi" className={!predogledMode ? 'on' : ''} onClick={() => setPredogledMode(false)}><PencilSimple size={15} weight="bold" /> Uredi</button>
-          <button type="button" aria-label="Predogled" className={predogledMode ? 'on' : ''} onClick={() => setPredogledMode(true)}><Eye size={16} /> Predogled</button>
+        <div className="pg-segpills" role="group" aria-label={L('Pogled', 'View')}>
+          <button type="button" aria-label={L('Uredi', 'Edit')} className={!predogledMode ? 'on' : ''} onClick={() => setPredogledMode(false)}><PencilSimple size={15} weight="bold" /> {L('Uredi', 'Edit')}</button>
+          <button type="button" aria-label={L('Predogled', 'Preview')} className={predogledMode ? 'on' : ''} onClick={() => setPredogledMode(true)}><Eye size={16} /> {L('Predogled', 'Preview')}</button>
         </div>
         {/* samo ikona, da gre vse v eno vrstico (enako kot retainer) */}
         {jeMobilni && !predogledMode && (
-          <button type="button" className="pg-sheet-trig" onClick={() => setPonSheet(v => (v ? null : 'oblika'))} aria-label="Oblikovanje" title="Oblikovanje">
+          <button type="button" className="pg-sheet-trig" onClick={() => setPonSheet(v => (v ? null : 'oblika'))} aria-label={L('Oblikovanje', 'Formatting')} title={L('Oblikovanje', 'Formatting')}>
             <TextAa size={18} weight="bold" />
           </button>
         )}
@@ -1043,10 +1049,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
           {predStrani.length
             ? predStrani.map((u, i) => (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img key={i} className="pg-pred-stran" src={u} alt={`Stran ${i + 1}`} />
+              <img key={i} className="pg-pred-stran" src={u} alt={L(`Stran ${i + 1}`, `Page ${i + 1}`)} />
             ))
-            : <div className="pg-pred-prazno">{predNal ? 'Pripravljam predogled …' : 'Predogled ni na voljo'}</div>}
-          {predNal && predStrani.length > 0 && <div className="pg-pred-osvezi" role="status">Osvežujem …</div>}
+            : <div className="pg-pred-prazno">{predNal ? L('Pripravljam predogled …', 'Preparing preview …') : L('Predogled ni na voljo', 'Preview not available')}</div>}
+          {predNal && predStrani.length > 0 && <div className="pg-pred-osvezi" role="status">{L('Osvežujem …', 'Refreshing …')}</div>}
         </div>
       ) : (
         <>
@@ -1056,49 +1062,49 @@ export default function ContractWorkspace({ base }: { base: string }) {
               (tu animirana .pg-sek), zato sheet NE sme biti znotraj sekcije. */}
           {(() => {
             const orodjaKontrole = <>
-              {oznaciNamig && <div className="pg-oznaci-namig" role="status">Najprej označi besedilo</div>}
-              <div className="pg-tool-vel2" role="group" aria-label="Velikost besedila">
-                <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); velikost(-1); }} title="Manjše" aria-label="Pomanjšaj"><CaretDown size={14} weight="bold" /></button>
+              {oznaciNamig && <div className="pg-oznaci-namig" role="status">{L('Najprej označi besedilo', 'Select text first')}</div>}
+              <div className="pg-tool-vel2" role="group" aria-label={L('Velikost besedila', 'Text size')}>
+                <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); velikost(-1); }} title={L('Manjše', 'Smaller')} aria-label={L('Pomanjšaj', 'Decrease')}><CaretDown size={14} weight="bold" /></button>
                 <span className="pg-tv-aa" aria-hidden>Aa</span>
-                <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); velikost(1); }} title="Večje" aria-label="Povečaj"><CaretUp size={14} weight="bold" /></button>
+                <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); velikost(1); }} title={L('Večje', 'Larger')} aria-label={L('Povečaj', 'Increase')}><CaretUp size={14} weight="bold" /></button>
               </div>
-              <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko" aria-label="Krepko"><TextB size={17} weight="bold" /></button>
-              <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title="Ležeče" aria-label="Ležeče"><TextItalic size={17} /></button>
-              <select className="pg-pisava-select" aria-label="Pisava besedila" defaultValue="" onMouseDown={() => editorRef.current?.focus()} onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
-                <option value="" disabled>Pisava</option>
-                <option value="Bodoni Moda">Elegantna</option>
+              <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title={L('Krepko', 'Bold')} aria-label={L('Krepko', 'Bold')}><TextB size={17} weight="bold" /></button>
+              <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title={L('Ležeče', 'Italic')} aria-label={L('Ležeče', 'Italic')}><TextItalic size={17} /></button>
+              <select className="pg-pisava-select" aria-label={L('Pisava besedila', 'Text font')} defaultValue="" onMouseDown={() => editorRef.current?.focus()} onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
+                <option value="" disabled>{L('Pisava', 'Font')}</option>
+                <option value="Bodoni Moda">{L('Elegantna', 'Elegant')}</option>
                 <option value="Montserrat">Montserrat</option>
                 <option value="Georgia">Georgia</option>
                 <option value="Arial">Arial</option>
               </select>
-              <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h1'); }} title="Naslov" aria-label="Naslov H1">H1</button>
-              <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title="Podnaslov" aria-label="Podnaslov H2">H2</button>
-              <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title="Navadno besedilo" aria-label="Navadno besedilo P">P</button>
+              <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h1'); }} title={L('Naslov', 'Heading')} aria-label={L('Naslov H1', 'Heading H1')}>H1</button>
+              <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title={L('Podnaslov', 'Subheading')} aria-label={L('Podnaslov H2', 'Subheading H2')}>H2</button>
+              <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title={L('Navadno besedilo', 'Body text')} aria-label={L('Navadno besedilo P', 'Body text P')}>P</button>
               <span className="pg-tool-locnica" aria-hidden />
-              <button type="button" className="pg-barvica pg-barvica-mavrica" aria-label="Barva besedila (poljubna)" title="Barva besedila — poljubna" onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
+              <button type="button" className="pg-barvica pg-barvica-mavrica" aria-label={L('Barva besedila (poljubna)', 'Text colour (custom)')} title={L('Barva besedila — poljubna', 'Text colour — custom')} onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
               <input ref={barvaRef} type="color" hidden onChange={e => oblikuj('foreColor', e.target.value)} />
-              <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('hiliteColor', '#FCE38A'); }} onDoubleClick={e => { e.preventDefault(); oblikuj('hiliteColor', 'transparent'); }} title="Označi besedilo — dvojni klik odstrani" aria-label="Označi besedilo"><span className="pg-hl">T</span></button>
+              <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('hiliteColor', '#FCE38A'); }} onDoubleClick={e => { e.preventDefault(); oblikuj('hiliteColor', 'transparent'); }} title={L('Označi besedilo — dvojni klik odstrani', 'Highlight text — double-click to remove')} aria-label={L('Označi besedilo', 'Highlight text')}><span className="pg-hl">T</span></button>
               <span className="pg-tool-locnica" aria-hidden />
               {/* priponka — dodatna priloga k pogodbi (npr. PDF specifikacije, slika, dodatek); ni del besedila pogodbe */}
-              <button type="button" className={'pg-tool-krog' + (priponkaIme ? ' on' : '')} onClick={() => priponkaRef.current?.click()} title={priponkaIme ? 'Zamenjaj priponko' : 'Dodaj priponko'} aria-label={priponkaIme ? 'Zamenjaj priponko' : 'Dodaj priponko'}><Paperclip size={17} weight="bold" /></button>
+              <button type="button" className={'pg-tool-krog' + (priponkaIme ? ' on' : '')} onClick={() => priponkaRef.current?.click()} title={priponkaIme ? L('Zamenjaj priponko', 'Replace attachment') : L('Dodaj priponko', 'Add attachment')} aria-label={priponkaIme ? L('Zamenjaj priponko', 'Replace attachment') : L('Dodaj priponko', 'Add attachment')}><Paperclip size={17} weight="bold" /></button>
               {priponkaIme && (
                 <span className="pg-priponka-cip">
                   {priponkaPot ? (
-                    <button type="button" className="pg-priponka-ime" onClick={odpriPriponko} title="Odpri priponko">{priponkaIme}</button>
+                    <button type="button" className="pg-priponka-ime" onClick={odpriPriponko} title={L('Odpri priponko', 'Open attachment')}>{priponkaIme}</button>
                   ) : (
                     <span className="pg-priponka-ime">{priponkaIme}</span>
                   )}
-                  <button type="button" onClick={odstraniPriponko} aria-label="Odstrani priponko" title="Odstrani priponko"><X size={11} weight="bold" /></button>
+                  <button type="button" onClick={odstraniPriponko} aria-label={L('Odstrani priponko', 'Remove attachment')} title={L('Odstrani priponko', 'Remove attachment')}><X size={11} weight="bold" /></button>
                 </span>
               )}
               <input ref={priponkaRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx" hidden onChange={naloziPriponko} />
             </>;
-            if (!jeMobilni) return <div className="pg-orodjarna" aria-label="Oblikovanje besedila">{orodjaKontrole}</div>;
+            if (!jeMobilni) return <div className="pg-orodjarna" aria-label={L('Oblikovanje besedila', 'Text formatting')}>{orodjaKontrole}</div>;
             return typeof document !== 'undefined' ? createPortal(
               <>
                 {ponSheet && <div className="pg-sheet-back" onClick={() => setPonSheet(null)} aria-hidden />}
-                <div className={'pg-orodjarna pg-orodjarna-sheet' + (ponSheet ? ' odprt' : '')} aria-label="Oblikovanje besedila" aria-hidden={!ponSheet}>
-                  <div className="pg-sheet-glava"><b>Oblikovanje</b><button type="button" className="pg-sheet-x" onClick={() => setPonSheet(null)} aria-label="Zapri">✕</button></div>
+                <div className={'pg-orodjarna pg-orodjarna-sheet' + (ponSheet ? ' odprt' : '')} aria-label={L('Oblikovanje besedila', 'Text formatting')} aria-hidden={!ponSheet}>
+                  <div className="pg-sheet-glava"><b>{L('Oblikovanje', 'Formatting')}</b><button type="button" className="pg-sheet-x" onClick={() => setPonSheet(null)} aria-label={L('Zapri', 'Close')}>✕</button></div>
                   {orodjaKontrole}
                 </div>
               </>,
@@ -1110,41 +1116,41 @@ export default function ContractWorkspace({ base }: { base: string }) {
             <div ref={napolniEditor} className="pg-editor" contentEditable suppressContentEditableWarning onInput={() => setRocnoTelo(true)} onBlur={sinhronizirajEditor} />
             {nogaHtml && <div className="pg-editor-noga" aria-hidden dangerouslySetInnerHTML={{ __html: nogaHtml }} />}
             {/* ikonica za podpis — desno spodaj, ob podpisnih crtah (kot retainer) */}
-            <button type="button" className="pg-podpis-trig" onClick={() => setPonSheet(v => v === 'podpis' ? null : 'podpis')} aria-label="Dodaj podpis" title="Dodaj podpis"><PenNib size={18} /></button>
+            <button type="button" className="pg-podpis-trig" onClick={() => setPonSheet(v => v === 'podpis' ? null : 'podpis')} aria-label={L('Dodaj podpis', 'Add signature')} title={L('Dodaj podpis', 'Add signature')}><PenNib size={18} /></button>
           </div>
           {/* sheet Podpis: portal na <body> (fixed sidro), namizje + mobil — kot retainer */}
           {typeof document !== 'undefined' && createPortal(
             <>
               {ponSheet === 'podpis' && <div className="pg-sheet-back" onClick={() => setPonSheet(null)} aria-hidden />}
-              <div className={'pg-podpis-sheet' + (ponSheet === 'podpis' ? ' odprt' : '')} role="dialog" aria-label="Podpis" aria-hidden={ponSheet !== 'podpis'}>
-                <div className="pg-sheet-glava"><b>Podpis</b><button type="button" className="pg-sheet-x" onClick={() => setPonSheet(null)} aria-label="Zapri">✕</button></div>
-                <div className="pg-podpis-vrsta" role="group" aria-label="Kam gre podpis">
-                  <button type="button" aria-label="Podpis izvajalca" className={'pg-cip' + (podpisCilj === 'izvajalec' ? ' on' : '')} onClick={() => setPodpisCilj('izvajalec')}>Izvajalec</button>
-                  <button type="button" aria-label="Podpis naročnika" className={'pg-cip' + (podpisCilj === 'narocnik' ? ' on' : '')} onClick={() => setPodpisCilj('narocnik')}>Naročnik</button>
+              <div className={'pg-podpis-sheet' + (ponSheet === 'podpis' ? ' odprt' : '')} role="dialog" aria-label={L('Podpis', 'Signature')} aria-hidden={ponSheet !== 'podpis'}>
+                <div className="pg-sheet-glava"><b>{L('Podpis', 'Signature')}</b><button type="button" className="pg-sheet-x" onClick={() => setPonSheet(null)} aria-label={L('Zapri', 'Close')}>✕</button></div>
+                <div className="pg-podpis-vrsta" role="group" aria-label={L('Kam gre podpis', 'Where the signature goes')}>
+                  <button type="button" aria-label={L('Podpis izvajalca', 'Contractor signature')} className={'pg-cip' + (podpisCilj === 'izvajalec' ? ' on' : '')} onClick={() => setPodpisCilj('izvajalec')}>{L('Izvajalec', 'Contractor')}</button>
+                  <button type="button" aria-label={L('Podpis naročnika', 'Client signature')} className={'pg-cip' + (podpisCilj === 'narocnik' ? ' on' : '')} onClick={() => setPodpisCilj('narocnik')}>{L('Naročnik', 'Client')}</button>
                 </div>
                 <canvas ref={pripraviPlatno} className="pg-podpis-platno" onPointerDown={zacniRis} onPointerMove={risiPodpis} onPointerUp={koncajRis} onPointerCancel={koncajRis} />
                 <div className="pg-podpis-akcije">
-                  <button type="button" aria-label="Počisti podpis" className="pg-cip" onClick={pocistiPodpis}>Počisti</button>
-                  <button type="button" aria-label="Vstavi podpis" className="pg-gumb" disabled={!narisano} onClick={vstaviNarisanPodpis}>Vstavi podpis</button>
+                  <button type="button" aria-label={L('Počisti podpis', 'Clear signature')} className="pg-cip" onClick={pocistiPodpis}>{L('Počisti', 'Clear')}</button>
+                  <button type="button" aria-label={L('Vstavi podpis', 'Insert signature')} className="pg-gumb" disabled={!narisano} onClick={vstaviNarisanPodpis}>{L('Vstavi podpis', 'Insert signature')}</button>
                 </div>
-                <div className="pg-podpis-ali">ali</div>
-                <button type="button" aria-label="Naloži sliko podpisa" className="pg-cip" onClick={() => podpisDatotekaRef.current?.click()}>Naloži sliko podpisa …</button>
+                <div className="pg-podpis-ali">{L('ali', 'or')}</div>
+                <button type="button" aria-label={L('Naloži sliko podpisa', 'Upload signature image')} className="pg-cip" onClick={() => podpisDatotekaRef.current?.click()}>{L('Naloži sliko podpisa …', 'Upload signature image …')}</button>
                 <input ref={podpisDatotekaRef} type="file" accept="image/*" hidden onChange={naloziPodpisSliko} />
               </div>
             </>,
             document.body,
           )}
           {rocnoTelo && (
-            <p className="pg-mini" style={{ marginTop: '.5rem' }}>Besedilo je ročno urejeno in se ob spremembi vhodov ne posodablja več samodejno. <button type="button" className="pg-povezava" onClick={ponastaviTelo}>Povrni samodejno besedilo</button></p>
+            <p className="pg-mini" style={{ marginTop: '.5rem' }}>{L('Besedilo je ročno urejeno in se ob spremembi vhodov ne posodablja več samodejno. ', 'The text has been edited manually and no longer updates automatically when inputs change. ')}<button type="button" className="pg-povezava" onClick={ponastaviTelo}>{L('Povrni samodejno besedilo', 'Restore automatic text')}</button></p>
           )}
         </>
       )}
 
       <div className="pg-gumbi">
-        <button type="button" className="pg-gumb" aria-label="Zaključi" onClick={() => setPogled('zakljucek')}>Zaključi →</button>
+        <button type="button" className="pg-gumb" aria-label={L('Zaključi', 'Finish')} onClick={() => setPogled('zakljucek')}>{L('Zaključi →', 'Finish →')}</button>
       </div>
       {napaka && <p className="pg-napaka">{napaka}</p>}
-      <p className="pg-mini" style={{ marginTop: '.7rem' }}>Besedilo preveri; Pinart ne nadomešča pravnega svetovanja.</p>
+      <p className="pg-mini" style={{ marginTop: '.7rem' }}>{L('Besedilo preveri; Pinart ne nadomešča pravnega svetovanja.', 'Please review the text; Pinart does not replace legal advice.')}</p>
     </section>}
 
     {/* ── POGLED 3: ZAKLJUCEK (prenos + posiljanje + shranjevanje) ── */}
@@ -1164,10 +1170,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
           </g>
         </svg>
       </div>
-      <p className="pg-kicker">{VRSTE_POG.find(v => v.id === vrstaPog)!.kick}{vir === 'ponudba' && selectedOffer?.number ? ` · PONUDBA ŠT. ${selectedOffer.number}` : ''}</p>
-      <h2 className="pg-naslov">Zaključek.{odvPoslano && <span className="pg-odvetnik-znak">Pri odvetniku</span>}</h2>
-      <p className="pg-uvod">Prenesi pogodbo{narocnikIme() ? ' za ' + narocnikIme() : ''}, jo shrani ali pošlji naročniku.</p>
-      <p className="pg-disc">Pripravljeno iz vzorčne predloge kot pripomoček — <b>ni pravni nasvet</b>. Pred podpisom priporočamo pregled pri odvetniku in prilagoditev konkretnemu poslu.</p>
+      <p className="pg-kicker">{jeEn ? VRSTE_POG_EN[vrstaPog].kick : VRSTE_POG.find(v => v.id === vrstaPog)!.kick}{vir === 'ponudba' && selectedOffer?.number ? L(` · PONUDBA ŠT. ${selectedOffer.number}`, ` · OFFER NO. ${selectedOffer.number}`) : ''}</p>
+      <h2 className="pg-naslov">{L('Zaključek.', 'Finish.')}{odvPoslano && <span className="pg-odvetnik-znak">{L('Pri odvetniku', 'With the lawyer')}</span>}</h2>
+      <p className="pg-uvod">{L('Prenesi pogodbo', 'Download the contract')}{narocnikIme() ? L(' za ', ' for ') + narocnikIme() : ''}{L(', jo shrani ali pošlji naročniku.', ', save it or send it to the client.')}</p>
+      <p className="pg-disc">{L('Pripravljeno iz vzorčne predloge kot pripomoček — ', 'Prepared from a sample template as an aid — ')}<b>{L('ni pravni nasvet', 'not legal advice')}</b>{L('. Pred podpisom priporočamo pregled pri odvetniku in prilagoditev konkretnemu poslu.', '. Before signing, we recommend a review by a lawyer and adaptation to the specific deal.')}</p>
       <div className="pg-konfeti-ovoj">
         <div className="pg-konfeti" key={konfetiKljuc}>
           {konfetiKljuc > 0 && Array.from({ length: 22 }).map((_, i) => {
@@ -1184,7 +1190,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       {napaka && <p className="pg-napaka">{napaka}</p>}
       {/* Pošiljanje pogodbe kar iz aplikacije (Resend) — isti HTML kot prenos/PDF. */}
       <PosljiBlok
-        subject={VRSTE_POG.find(v => v.id === vrstaPog)!.label + (selectedOffer?.number ? ' št. ' + selectedOffer.number : '') + (narocnikIme() ? ' — ' + narocnikIme() : '')}
+        subject={(jeEn ? VRSTE_LABEL_EN[vrstaPog] : VRSTE_POG.find(v => v.id === vrstaPog)!.label) + (selectedOffer?.number ? L(' št. ', ' no. ') + selectedOffer.number : '') + (narocnikIme() ? ' — ' + narocnikIme() : '')}
         zgradiHtml={() => doc(izvozniTelo())}
         privzetiPrejemnik={narEmail}
         imeStranke={narocnikIme()}
@@ -1195,11 +1201,11 @@ export default function ContractWorkspace({ base }: { base: string }) {
       />
       {/* prenos-povezave POD blokom posiljanja (kot pri ponudbi) */}
       <div className="pg-prenosi">
-        <button type="button" className="pg-povezava" aria-label="Shrani pogodbo" onClick={() => { shrani(); proslaviKonfeti(); }}>
-          <FloppyDisk size={16} /> {shranjenaId ? 'Shranjeno ✓' : 'Shrani'}
+        <button type="button" className="pg-povezava" aria-label={L('Shrani pogodbo', 'Save contract')} onClick={() => { shrani(); proslaviKonfeti(); }}>
+          <FloppyDisk size={16} /> {shranjenaId ? L('Shranjeno ✓', 'Saved ✓') : L('Shrani', 'Save')}
         </button>
-        <button type="button" className="pg-povezava" aria-label="Prenesi pogodbo PDF" disabled={pdfNalaganje} onClick={() => { prenesi(); proslaviKonfeti(); }}>
-          <FilePdf size={16} /> {pdfNalaganje ? 'Pripravljam …' : 'Prenesi (PDF)'}
+        <button type="button" className="pg-povezava" aria-label={L('Prenesi pogodbo PDF', 'Download contract PDF')} disabled={pdfNalaganje} onClick={() => { prenesi(); proslaviKonfeti(); }}>
+          <FilePdf size={16} /> {pdfNalaganje ? L('Pripravljam …', 'Preparing …') : L('Prenesi (PDF)', 'Download (PDF)')}
         </button>
       </div>
     </section>}
@@ -1207,21 +1213,21 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* Noga FIKSNO na dnu strani (kot retainer/ponudba): puscica-krog + pilule.
         Izven animirane sekcije, da je position:fixed vezan na stran. */}
     {pogled === 'zakljucek' && <div className="pg-noga"><div className="pg-noga-gumbi">
-      <button type="button" className="pg-noga-pill" onClick={() => setPogled('dokument')}>← Uredi pogodbo</button>
-      <button type="button" className="pg-noga-pill nova" onClick={novaPogodba}>↺ Nova pogodba</button>
+      <button type="button" className="pg-noga-pill" onClick={() => setPogled('dokument')}>{L('← Uredi pogodbo', '← Edit contract')}</button>
+      <button type="button" className="pg-noga-pill nova" onClick={novaPogodba}>{L('↺ Nova pogodba', '↺ New contract')}</button>
     </div></div>}
 
     {/* Odvetnik: mali banner v SPODNJEM DESNEM kotu strani (izven animirane sekcije,
         da je position:fixed vezan na stran/mrežo, ne na .pg-sek). */}
     {pogled === 'zakljucek' && <div className="pg-odvetnik">
-      <span className="pg-odvetnik-label">Za odvetnika</span>
-      <p className="pg-odvetnik-opis">Pošlji pogodbo odvetniku v pregled in podpis.</p>
-      <input type="email" className="pg-odvetnik-vnos" value={odvetnikEmail} onChange={event => nastaviOdvetnika(event.target.value)} placeholder="odvetnik@pisarna.si" aria-label="E-pošta odvetnika" />
-      <button type="button" className="pg-gumb pg-odvetnik-gumb" disabled={samoOgled || !jeVeljavenEmail(odvetnikEmail) || odvStatus === 'poslji'} onClick={posljiOdvetniku}><PenNib size={17} /> Pošlji odvetniku v pregled in podpis</button>
-      {samoOgled && <p className="pg-odvetnik-namig">Na voljo v načinu »Moji podatki«.</p>}
-      {odvStatus === 'poslji' && <p className="pg-odvetnik-status" role="status">Pošiljam …</p>}
-      {odvStatus === 'ok' && <p className="pg-odvetnik-status pg-odvetnik-ok" role="status">Poslano odvetniku ✓</p>}
-      {odvStatus === 'napaka' && <p className="pg-odvetnik-status pg-odvetnik-err" role="status">Napaka: {odvNapaka}</p>}
+      <span className="pg-odvetnik-label">{L('Za odvetnika', 'For the lawyer')}</span>
+      <p className="pg-odvetnik-opis">{L('Pošlji pogodbo odvetniku v pregled in podpis.', 'Send the contract to a lawyer for review and signature.')}</p>
+      <input type="email" className="pg-odvetnik-vnos" value={odvetnikEmail} onChange={event => nastaviOdvetnika(event.target.value)} placeholder={L('odvetnik@pisarna.si', 'lawyer@firm.com')} aria-label={L('E-pošta odvetnika', 'Lawyer email')} />
+      <button type="button" className="pg-gumb pg-odvetnik-gumb" disabled={samoOgled || !jeVeljavenEmail(odvetnikEmail) || odvStatus === 'poslji'} onClick={posljiOdvetniku}><PenNib size={17} /> {L('Pošlji odvetniku v pregled in podpis', 'Send to lawyer for review and signature')}</button>
+      {samoOgled && <p className="pg-odvetnik-namig">{L('Na voljo v načinu »Moji podatki«.', 'Available in “My data” mode.')}</p>}
+      {odvStatus === 'poslji' && <p className="pg-odvetnik-status" role="status">{L('Pošiljam …', 'Sending …')}</p>}
+      {odvStatus === 'ok' && <p className="pg-odvetnik-status pg-odvetnik-ok" role="status">{L('Poslano odvetniku ✓', 'Sent to the lawyer ✓')}</p>}
+      {odvStatus === 'napaka' && <p className="pg-odvetnik-status pg-odvetnik-err" role="status">{L('Napaka: ', 'Error: ')}{odvNapaka}</p>}
     </div>}
 
     {/* stili kot retainer: navaden <style> (globalno), zato pg- predpona povsod */}
