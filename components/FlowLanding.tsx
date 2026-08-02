@@ -358,7 +358,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         <div className="fl-mock-body">
           <span className="fl-msg me">Pripravi ponudbo za spletno trgovino.</span>
           <span className="fl-msg bot"><span className="fl-ava" />Predlagam pošteno ceno in obseg …</span>
-          <div className="fl-agent-note"><span className="fl-agent-dot"><Robot size={17} weight="regular" /></span><div><b>Ponudba pripravljena</b><br /><small>1.850 € · pravice vračunane</small></div></div>
+          <div className="fl-agent-note"><span className="fl-agent-dot"><svg viewBox="0 0 40 40" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}><path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" /><path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" /><path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" /><circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.55)" /><circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.55)" /></svg></span><div><b>Ponudba pripravljena</b><br /><small>1.850 € · pravice vračunane</small></div></div>
         </div>
       </div>
     );
@@ -645,7 +645,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-agent-note { margin-top: .3rem; display: flex; gap: .65rem; align-items: center; padding: .7rem .85rem; border-radius: 12px; background: oklch(95% .04 297); border: 1px solid oklch(88% .05 297); }
         .fl-agent-note b { font-size: .8rem; }
         .fl-agent-note small { font-size: .7rem; color: rgba(17,17,17,.6); }
-        .fl-agent-dot { width: 1.9rem; height: 1.9rem; border-radius: 50%; flex: none; display: grid; place-items: center; background: var(--ink); color: #fff; }
+        .fl-agent-dot { position: relative; width: 1.9rem; height: 1.9rem; border-radius: 50%; flex: none; overflow: hidden; background: conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a); }
         .fl-code { position: relative; padding: 1.3rem 1.35rem; min-height: 15.5rem; background: oklch(22% .016 285); display: grid; gap: .55rem; align-content: start; }
         .fl-code-line { height: .5rem; border-radius: 999px; background: oklch(40% .03 285); }
         .fl-code-line.a { width: 68%; background: oklch(62% .13 297); }
@@ -1177,10 +1177,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <p>Anonimni tržni pregled ti pokaže, kje si in raste z vsakim kreativcem. Tvoj pošteni benchmark.</p>
               <div className="fl-bglobe" aria-hidden>
                 <span className="fl-bglobe-ai"><Sparkle size={12} weight="fill" /> AI</span>
-                <div className="fl-bench" style={{ left: '20%', top: '14%', animationDelay: '0s' }}><small>Logotip</small><b style={{ background: '#d5776f' }}>650 €</b></div>
-                <div className="fl-bench" style={{ left: '17%', top: '48%', animationDelay: '1.3s' }}><small>CGP</small><b style={{ background: '#8b7be8' }}>1.350 €</b></div>
-                <div className="fl-bench" style={{ right: '6%', top: '18%', animationDelay: '2.6s' }}><small>Splet</small><b style={{ background: '#5bb89a' }}>1.400 €</b></div>
-                <div className="fl-bench" style={{ right: '9%', top: '48%', animationDelay: '3.9s' }}><small>Ilustracija</small><b style={{ background: '#c9926b' }}>480 €</b></div>
+                <div className="fl-bench" style={{ left: '10%', top: '8%', animationDelay: '0s' }}><small>Logotip</small><b style={{ background: '#d5776f' }}>650 €</b></div>
+                <div className="fl-bench" style={{ left: '40%', top: '8%', animationDelay: '1.3s' }}><small>Ilustracija</small><b style={{ background: '#c9926b' }}>480 €</b></div>
+                <div className="fl-bench" style={{ left: '10%', top: '32%', animationDelay: '2.6s' }}><small>CGP</small><b style={{ background: '#8b7be8' }}>1.350 €</b></div>
+                <div className="fl-bench" style={{ right: '6%', top: '32%', animationDelay: '3.9s' }}><small>Splet</small><b style={{ background: '#5bb89a' }}>1.400 €</b></div>
                 <svg viewBox="0 0 200 120">
                   <g stroke="rgba(255,255,255,.32)" fill="none" strokeWidth="1">
                     <circle cx="100" cy="60" r="44" />
