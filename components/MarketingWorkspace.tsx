@@ -342,7 +342,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
           </div>
           <div className={styles.designActions}>
             <Link className={styles.secondary} href={`${base}/services/graphic`}>Poglej storitve <ArrowRight size={18} /></Link>
-            <Link className={styles.primary} href={`${base}/kalkulator/orodje`}>Pripravi ponudbo <ArrowRight size={18} /></Link>
+            <Link className={styles.primary} href={`${base}/kalkulator/orodje`}>Oddaj povpraševanje <ArrowRight size={18} /></Link>
           </div>
         </section>
         <section className={styles.flowCard}>
