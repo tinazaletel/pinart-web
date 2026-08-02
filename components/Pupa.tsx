@@ -137,35 +137,13 @@ export default function Pupa() {
     }
   };
 
-  const glas = async () => {
+  const glas = () => {
     if (typeof window === 'undefined') return;
-    /* Safari/Chrome zahtevata uporabniško gesto za PRVI TTS — odklenemo ga tu (tap na krog),
-       da Pupa lahko kasneje (asinhrono, po odgovoru) res prebere na glas. */
+    /* odkleni TTS znotraj uporabniške geste (Safari zahteva gesto za prvi govor) */
     try { window.speechSynthesis?.resume(); const odklep = new SpeechSynthesisUtterance(' '); odklep.volume = 0; window.speechSynthesis?.speak(odklep); } catch { /* ignore */ }
     const SR = (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition
       || (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition;
-    if (!SR) { alert(L('Glasovni vnos ta brskalnik ne podpira (poskusi Chrome ali Safari).', 'This browser does not support voice input (try Chrome or Safari).')); return; }
-    /* Najprej EKSPLICITNO zaprosimo za mikrofon prek getUserMedia — to zanesljivo pokaže
-       prošnjo »Dovoli/Blokiraj«. (SpeechRecognition sam prošnje pogosto ne sproži.) */
-    const md = (navigator as Navigator & { mediaDevices?: MediaDevices }).mediaDevices;
-    if (!md?.getUserMedia) {
-      alert(L('Ta brskalnik/okno ne dovoli mikrofona. Odpri stran v Chromu ali Safariju (ne v vgrajenem oknu).', 'This browser/window blocks the microphone. Open the page in Chrome or Safari (not an embedded window).'));
-      return;
-    }
-    try {
-      const stream = await md.getUserMedia({ audio: true });
-      stream.getTracks().forEach(t => t.stop());
-    } catch (e) {
-      const ime = e instanceof DOMException ? e.name : '';
-      if (ime === 'NotAllowedError' || ime === 'SecurityError') {
-        alert(L('Mikrofon je blokiran. Klikni ključavnico/ikono ob naslovu → Mikrofon → Dovoli, nato osveži stran.', 'Microphone is blocked. Click the padlock/site icon by the address bar → Microphone → Allow, then refresh.'));
-      } else if (ime === 'NotFoundError') {
-        alert(L('Mikrofona ni bilo mogoče najti.', 'No microphone found.'));
-      } else {
-        alert(L('Do mikrofona ni bilo mogoče dostopati. Preizkusi v Chromu/Safariju (ne v vgrajenem oknu).', 'Could not access the microphone. Try Chrome/Safari (not an embedded window).'));
-      }
-      return;
-    }
+    if (!SR) { alert(L('Glasovni vnos najbolje deluje v Chromu (Firefox ga ne podpira).', 'Voice input works best in Chrome (Firefox does not support it).')); return; }
     let rec: any;
     try { rec = new (SR as new () => any)(); } catch { alert(L('Glasovnega vnosa ni bilo mogoče zagnati.', 'Could not start voice input.')); return; }
     rec.lang = locale === 'en' ? 'en-US' : 'sl-SI';
@@ -173,7 +151,12 @@ export default function Pupa() {
     rec.maxAlternatives = 1;
     rec.onstart = () => setPoslusa(true);
     rec.onresult = (e: any) => { const t = e.results?.[0]?.[0]?.transcript || ''; if (t) posljiPupi(t); };
-    rec.onerror = () => setPoslusa(false);
+    rec.onerror = (e: any) => {
+      setPoslusa(false);
+      if (e?.error === 'not-allowed' || e?.error === 'service-not-allowed') {
+        alert(L('Dovoli mikrofon: Safari → Nastavitve → Spletišča → Mikrofon → Dovoli (ali ikona ob naslovu), nato osveži.', 'Allow the microphone: Safari → Settings → Websites → Microphone → Allow (or the address-bar icon), then refresh.'));
+      }
+    };
     rec.onend = () => setPoslusa(false);
     try { rec.start(); } catch { setPoslusa(false); }
   };
