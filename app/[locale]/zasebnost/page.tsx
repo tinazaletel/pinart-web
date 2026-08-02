@@ -45,7 +45,19 @@ const sl = {
       text: `Spletna stran uporablja funkcionalne piškotke za delovanje in analitične piškotke (Google Analytics). Ob prvem obisku imate možnost upravljanja s piškotki.`,
     },
     {
-      heading: '9. Spremembe politike',
+      heading: '9. Umetna inteligenca (Pupa) in varnost podatkov',
+      text: `OSNUTEK — pravno mora potrditi odvetnik.
+
+Pupa je izbirna pomočnica, ki deluje prek Anthropic Claude API. Obdelava poteka strežniško, zato API ključ ni izpostavljen v uporabnikovem brskalniku. Anthropic prejme vsebino, ki jo uporabnik vnese v Pupo, in omejen kontekst odprtega orodja ali ponudbe, potreben za odgovor. Anthropic nima neposrednega dostopa do baze Pinart Flow.
+
+V Pupo ne vnašajte zaupnih podatkov, poslovnih skrivnosti ali osebnih podatkov strank. Če Pupe ne uporabljate, se podatki ne pošiljajo družbi Anthropic ali drugemu zunanjemu ponudniku AI; osnovna orodja Pinart Flow delujejo brez AI.
+
+Anthropic je predviden kot podobdelovalec. Po njegovih aktualnih pogojih se vhodi in izhodi komercialnega API privzeto ne uporabljajo za učenje modelov. Obdobje hrambe velja po aktualnih pogojih Anthropic. Ker se podatki lahko obdelujejo v ZDA, mora biti prenos urejen z DPA in ustreznimi standardnimi pogodbenimi klavzulami (SCC).
+
+Pravno podlago (privolitev ali zakoniti interes) mora pred objavo potrditi odvetnik. Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si. Več: https://privacy.anthropic.com/en/collections/10663361-commercial-customers.`,
+    },
+    {
+      heading: '10. Spremembe politike',
       text: `Politiko zasebnosti lahko kadar koli posodobimo. Datum zadnje posodobitve je naveden na vrhu te strani.`,
     },
   ],
@@ -88,7 +100,19 @@ const en = {
       text: `This website uses functional cookies for operation and analytical cookies (Google Analytics). On your first visit you may manage your cookie preferences.`,
     },
     {
-      heading: '9. Changes to This Policy',
+      heading: '9. Artificial Intelligence (Pupa) and Data Security',
+      text: `DRAFT — must be legally reviewed and approved by a lawyer.
+
+Pupa is an optional assistant powered by the Anthropic Claude API. Processing takes place server-side, so the API key is not exposed in the user's browser. Anthropic receives the content entered into Pupa and the limited open-tool or offer context required to provide a response. Anthropic has no direct access to the Pinart Flow database.
+
+Do not enter confidential information, trade secrets, or clients' personal data into Pupa. If you do not use Pupa, data is not sent to Anthropic or another external AI provider; the core Pinart Flow tools operate without AI.
+
+Anthropic is intended to act as a subprocessor. Under its current terms, commercial API inputs and outputs are not used for model training by default. Retention follows Anthropic's then-current terms. Because data may be processed in the United States, transfers must be governed by a DPA and appropriate Standard Contractual Clauses (SCCs).
+
+A lawyer must confirm the legal basis (consent or legitimate interest) before publication. The current list of subprocessors is available on request at tina@pinart.si. More: https://privacy.anthropic.com/en/collections/10663361-commercial-customers.`,
+    },
+    {
+      heading: '10. Changes to This Policy',
       text: `We may update this Privacy Policy at any time. The date of the last update is shown at the top of this page.`,
     },
   ],
