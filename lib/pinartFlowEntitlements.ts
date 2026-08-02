@@ -1,4 +1,6 @@
 import { createClient } from '@/utils/supabase/client';
+import { jeTester } from '@/lib/testerji';
+import { aktivnaDodelitev, dodelitevOdklene } from '@/lib/dostop';
 
 export type AccessTier = 'anonymous' | 'free' | 'pro';
 
@@ -39,6 +41,14 @@ export async function getAccessTier(): Promise<AccessTier> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return 'anonymous';
+
+  /* Zaprta beta / dodelitve: povabljeni testerji in nagrajenci (znotraj obdobja)
+     dobijo poln (pro) paket zastonj, ne glede na placilo. Env seznam je varovalka
+     (Tina), baza (RPC) pa je samopostrezni vir, ki ga upravljas v adminu. */
+  if (jeTester(user.email)) return 'pro';
+  try {
+    if (dodelitevOdklene(await aktivnaDodelitev(supabase, user.email))) return 'pro';
+  } catch { /* ce RPC pade, nadaljujemo z obicajnim entitlementom */ }
 
   const { data, error } = await supabase.rpc('current_organization_entitlements');
   if (error || !Array.isArray(data) || !data[0]) return 'free';

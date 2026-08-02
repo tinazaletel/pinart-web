@@ -2,6 +2,8 @@ import createMiddleware from 'next-intl/middleware';
 import { NextResponse, type NextRequest } from 'next/server';
 import { routing } from './i18n/routing';
 import { updateSession } from './utils/supabase/middleware';
+import { jeTester } from './lib/testerji';
+import { aktivnaDodelitev, dodelitevOdklene } from './lib/dostop';
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -29,11 +31,13 @@ export default async function middleware(request: NextRequest) {
      celo admin javno dostopni, ce Supabase ni odgovoril. */
   let sessionResponse = response;
   let user: Awaited<ReturnType<typeof updateSession>>['user'] = null;
+  let supabase: Awaited<ReturnType<typeof updateSession>>['supabase'] | null = null;
   let sejaPreverjena = false;
   try {
     const r = await updateSession(request, response);
     sessionResponse = r.response;
     user = r.user;
+    supabase = r.supabase;
     sejaPreverjena = true;
   } catch {
     sejaPreverjena = false;
@@ -56,6 +60,30 @@ export default async function middleware(request: NextRequest) {
     const redirect = NextResponse.redirect(loginUrl);
     sessionResponse.cookies.getAll().forEach(cookie => redirect.cookies.set(cookie));
     return redirect;
+  }
+
+  /* Zaprta beta: uporabnik JE prijavljen, a nima dostopa (ni na env seznamu IN
+     nima aktivne dodelitve v bazi) -> preusmerimo na razlagalno stran (dostop
+     po vabilu). Landing, kalkulator in prijava ostanejo javni. Env seznam je
+     varovalka (Tina), da zaklep deluje tudi ce baza pade. */
+  if (protectedFlowRoute && sejaPreverjena && user) {
+    let dovoljen = jeTester(user.email);
+    if (!dovoljen && supabase) {
+      try {
+        dovoljen = dodelitevOdklene(await aktivnaDodelitev(supabase, user.email));
+      } catch {
+        dovoljen = false;
+      }
+    }
+    if (!dovoljen) {
+      const localePrefix = request.nextUrl.pathname.startsWith('/en/') ? '/en' : '';
+      const betaUrl = request.nextUrl.clone();
+      betaUrl.pathname = `${localePrefix}/kalkulator/beta`;
+      betaUrl.search = '';
+      const redirect = NextResponse.redirect(betaUrl);
+      sessionResponse.cookies.getAll().forEach(cookie => redirect.cookies.set(cookie));
+      return redirect;
+    }
   }
 
   return sessionResponse;
