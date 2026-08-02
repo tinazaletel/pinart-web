@@ -11,16 +11,8 @@
   /* prva vrstica = zgornja vrstica cez vso sirino (FlowTopBar) */
   grid-template-rows: auto minmax(0, 1fr);
   isolation: isolate;              /* stacking kontekst → ambientni mehurcki (z-index:-1) so nad ozadjem, pod vsebino */
+  /* čist app pass: umaknjeno ozadje (blobi + mreža) → mirna ploskev, vsebina diha */
   background-color: var(--paper);
-  /* POSKUS ozadja: 2 mehka topla orb preliva ZA mrežo (kot naslovnica) — za primerjavo smeri */
-  background-image:
-    radial-gradient(circle at 13% 26%, oklch(72% .17 300 / .17), transparent 26%),
-    radial-gradient(circle at 90% 66%, oklch(80% .13 165 / .15), transparent 24%),
-    linear-gradient(color-mix(in oklch, var(--ink) 7%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in oklch, var(--ink) 7%, transparent) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 4.5rem 4.5rem, 4.5rem 4.5rem;
-  background-repeat: no-repeat, no-repeat, repeat, repeat;
-  background-attachment: fixed, fixed, scroll, scroll;
   color: var(--ink);
   font-family: var(--font-sans), sans-serif;
   overflow-x: clip;
