@@ -169,7 +169,7 @@
 .topbar { display: flex; justify-content: space-between; gap: 1.5rem; align-items: end; padding-bottom: 2rem; }
 .topbarSub { margin: .55rem 0 0; font: 400 .95rem/1.5 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 60%, transparent); max-width: none; }
 .wave { font-style: normal; }
-.tipBar { margin-top: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; padding: 1.05rem 1.35rem; border-radius: 1.45rem; background: oklch(93.7% .016 87); }
+.tipBar { margin-top: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; padding: 1.05rem 1.35rem; border-radius: 1.2rem; background: #fff; border: 1px solid oklch(22% .015 60 / .05); box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .045); }
 .tipMain { display: flex; align-items: center; gap: 1rem; min-width: 0; }
 .tipIcon { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: oklch(93% .09 90); color: oklch(52% .13 75); flex: none; }
 .tipMain .eyebrow { margin: 0 0 .1rem; }
