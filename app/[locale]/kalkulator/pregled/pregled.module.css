@@ -906,7 +906,8 @@
 .clientDnevnikVnos > .clientLinkBrisi { flex: none; }
 @media (max-width: 640px) { .clientDnevnikVrsta { flex-direction: column; align-items: stretch; } }
 
-.deleteClient { margin-top: 1rem; padding: .6rem 0; border: 0; border-bottom: 1px solid currentColor; background: none; color: oklch(52% .16 25); font: 750 .57rem var(--font-sans), sans-serif; cursor: pointer; }
+.deleteClient { display: inline-flex; align-items: center; gap: .45rem; margin-top: 1rem; padding: .6rem 0; border: 0; border-bottom: 1px solid currentColor; background: none; color: oklch(52% .16 25); font: 750 .57rem var(--font-sans), sans-serif; cursor: pointer; }
+.deleteClient::before { content: ''; width: 1rem; height: 1rem; flex: 0 0 auto; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='16' d='M216 56H40M104 104v64m48-64v64m48-112-8 152a8 8 0 0 1-8 8H72a8 8 0 0 1-8-8L56 56m40 0V32h64v24'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='16' d='M216 56H40M104 104v64m48-64v64m48-112-8 152a8 8 0 0 1-8 8H72a8 8 0 0 1-8-8L56 56m40 0V32h64v24'/%3E%3C/svg%3E") center / contain no-repeat; }
 .clientProfileEmpty { min-height: 29rem; display: grid; place-items: center; align-content: center; text-align: center; }
 .clientProfileEmpty span { display: grid; place-items: center; width: 3rem; aspect-ratio: 1; border-radius: 50%; background: oklch(93% .05 295); }
 .clientProfileEmpty strong { margin-top: .75rem; font: 600 1.3rem var(--font-sans), Georgia, serif; }
