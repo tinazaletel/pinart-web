@@ -681,7 +681,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* a) Pupa jedro + ikone orodij, ki krožijo okoli */
         .fl-bhub { position: relative; flex: 1; min-height: 15.5rem; margin-top: .4rem; display: grid; place-items: center; }
         .fl-bhub-core { position: relative; z-index: 2; width: 84px; height: 84px; border-radius: 50%; background: conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a); box-shadow: 0 10px 26px rgba(42,32,53,.24); }
-        .fl-bhub-ring { position: absolute; inset: 0; animation: flOrbit 36s linear infinite; }
+        .fl-bhub-ring { position: absolute; inset: 0; z-index: 1; animation: flOrbit 36s linear infinite; }
+        .fl-bhub-bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; overflow: visible; }
         .fl-bhub-ic { position: absolute; top: 50%; left: 50%; width: 46px; height: 46px; margin: -23px; border-radius: 50%; background: #fff; box-shadow: 0 6px 16px rgba(42,32,53,.14); display: grid; place-items: center; color: #6a4bd6; transform: rotate(var(--a)) translate(var(--r)) rotate(calc(-1 * var(--a))); }
         .fl-bhub-ic > i { display: grid; animation: flOrbitRev 36s linear infinite; }
         @keyframes flOrbit { to { transform: rotate(360deg); } }
@@ -706,7 +707,16 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bglobe .dot { transform-box: fill-box; transform-origin: center; animation: flPulse 2.6s ease-in-out infinite; }
         @keyframes flPulse { 0%,100% { opacity: .35; transform: scale(.7); } 50% { opacity: 1; transform: scale(1.15); } }
         .fl-bglobe-ai { position: absolute; top: .2rem; right: .6rem; display: inline-flex; align-items: center; gap: .28rem; padding: .2rem .5rem; border-radius: 999px; background: rgba(255,255,255,.14); color: #fff; font-size: .68rem; font-weight: 700; letter-spacing: .04em; backdrop-filter: blur(4px); }
-        @media (prefers-reduced-motion: reduce) { .fl-bhub-ring, .fl-bhub-ic > i, .fl-bglobe .dot { animation: none; } }
+        .fl-bench { position: absolute; z-index: 3; display: flex; flex-direction: column; align-items: flex-start; gap: .16rem; animation: flFloat 3.6s ease-in-out infinite; }
+        @keyframes flFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        .fl-bench small { font-size: .56rem; color: rgba(255,255,255,.55); }
+        .fl-bench b { font-size: .72rem; font-weight: 700; color: #fff; padding: .14rem .48rem; border-radius: 8px; box-shadow: 0 6px 14px rgba(0,0,0,.3); }
+        /* c) bela lista strankinih zapisov (peek poleg avatarjev) */
+        .fl-clist { position: absolute; right: -1.3rem; bottom: -1.5rem; width: 56%; background: #fff; border-radius: 14px 0 0 0; padding: .9rem 1rem; box-shadow: -14px -12px 32px rgba(40,25,60,.3); }
+        .fl-clist .r { display: flex; align-items: center; gap: .55rem; padding: .32rem 0; }
+        .fl-clist .r span { width: 15px; height: 15px; border-radius: 50%; background: #ddd6e6; flex: none; }
+        .fl-clist .r i { flex: 1; height: 8px; border-radius: 5px; background: #e7e1ee; }
+        @media (prefers-reduced-motion: reduce) { .fl-bhub-ring, .fl-bhub-ic > i, .fl-bglobe .dot, .fl-bench { animation: none; } }
         .fl-bthumbs span:nth-child(3n+2) { background: linear-gradient(135deg, oklch(90% .07 330), oklch(90% .06 90)); }
         .fl-bthumbs span:nth-child(3n) { background: linear-gradient(135deg, oklch(90% .06 200), oklch(90% .07 297)); }
         /* mini predogledi orodij (namesto pravih posnetkov — dodava jih kasneje) */
@@ -1097,8 +1107,17 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           <div className="fl-bento-mreza">
             <div className="fl-bkarta a">
               <h3>En program namesto štirih</h3>
-              <p>Ponudbe, pogodbe, računi, stroški, ceniki in naloge — vse tukaj. Nič več skakanja med Excelom, Canvo, Gmailom in koledarjem.</p>
+              <p>Ponudbe, pogodbe, računi, stroški, ceniki in naloge. Vse na enem mestu, nič več skakanja med Excelom, Canvo in Gmailom.</p>
               <div className="fl-bhub" aria-hidden>
+                <svg className="fl-bhub-bg" viewBox="0 0 300 300" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="flHubLine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#a78bfa" /><stop offset="1" stopColor="#7be0a0" /></linearGradient>
+                  </defs>
+                  <g fill="none" stroke="url(#flHubLine)" strokeWidth="2.4" strokeLinecap="round" opacity=".5">
+                    <path d="M12 118 C 110 52 196 250 292 176" />
+                    <path d="M24 214 C 122 258 182 54 276 96" />
+                  </g>
+                </svg>
                 <span className="fl-bhub-core">
                   <svg viewBox="0 0 40 40" width="84" height="84" style={{ position: 'absolute', inset: 0 }}>
                     <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
@@ -1120,7 +1139,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             </div>
             <div className="fl-bkarta b">
               <h3>Vse teče iz istih podatkov</h3>
-              <p>Ponudba postane pogodba postane račun — brez prepisovanja. Chatbot to vsakič pozabi, Flow si zapomni.</p>
+              <p>Ponudba postane pogodba postane račun, brez prepisovanja. Chatbot to vsakič pozabi, Flow si zapomni.</p>
               <div className="fl-bnodes" aria-hidden>
                 <svg viewBox="0 0 300 200" preserveAspectRatio="none">
                   <defs>
@@ -1137,22 +1156,32 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                 <div className="fl-fold" style={{ left: '44%', top: '37%', width: '33%', height: '42%', background: '#e9e08d' }} />
                 <div className="fl-fold" style={{ left: '85%', top: '85%', width: '42%', height: '42%', background: '#e6c8f6' }} />
                 <div className="fl-fold" style={{ left: '19%', top: '93%', width: '34%', height: '36%', background: '#cfe7f4' }} />
-                <div className="fl-badge" style={{ left: '15%', top: '40%' }}><ChatCircle size={16} weight="fill" /></div>
-                <div className="fl-badge" style={{ left: '59%', top: '75%' }}><PenNib size={16} weight="fill" /></div>
+                <div className="fl-badge" style={{ left: '15%', top: '40%' }}><ChatCircle size={18} weight="fill" /></div>
+                <div className="fl-badge" style={{ left: '59%', top: '75%' }}><PenNib size={18} weight="fill" /></div>
                 <div className="fl-npill" style={{ left: '13%', top: '66%', background: '#8b7be8' }}>Ponudba</div>
                 <div className="fl-npill" style={{ left: '89%', top: '45%', background: '#d5776f' }}>Račun</div>
               </div>
             </div>
             <div className="fl-bkarta c">
               <h3>Vsaka stranka na enem mestu</h3>
-              <p>Projekti, dokumenti in vsa komunikacija — povezani s stranko. Ne razmetano po Gmailu.</p>
+              <p>Projekti, dokumenti in vsa komunikacija, povezani s stranko. Nič več razmetano po Gmailu.</p>
               <div className="fl-bavatars" aria-hidden><span>MA</span><span>RK</span><span>LJ</span><span>+</span></div>
+              <div className="fl-clist" aria-hidden>
+                <div className="r"><span /><i /></div>
+                <div className="r"><span /><i /></div>
+                <div className="r"><span /><i /></div>
+                <div className="r"><span /><i /></div>
+              </div>
             </div>
             <div className="fl-bkarta d">
               <h3>Pošteno ceno, ki je drugi nimajo</h3>
-              <p>Anonimni tržni pregled ti pokaže, kje si — in raste z vsakim kreativcem. Tvoj pošteni benchmark.</p>
+              <p>Anonimni tržni pregled ti pokaže, kje si in raste z vsakim kreativcem. Tvoj pošteni benchmark.</p>
               <div className="fl-bglobe" aria-hidden>
                 <span className="fl-bglobe-ai"><Sparkle size={12} weight="fill" /> AI</span>
+                <div className="fl-bench" style={{ left: '-2%', top: '16%', animationDelay: '0s' }}><small>Logotip</small><b style={{ background: '#d5776f' }}>650 €</b></div>
+                <div className="fl-bench" style={{ left: '3%', top: '55%', animationDelay: '.9s' }}><small>CGP</small><b style={{ background: '#8b7be8' }}>1.350 €</b></div>
+                <div className="fl-bench" style={{ right: '0%', top: '40%', animationDelay: '1.5s' }}><small>Splet</small><b style={{ background: '#5bb89a' }}>1.400 €</b></div>
+                <div className="fl-bench" style={{ right: '7%', top: '73%', animationDelay: '2.1s' }}><small>Ilustracija</small><b style={{ background: '#c9926b' }}>480 €</b></div>
                 <svg viewBox="0 0 200 120">
                   <g stroke="rgba(255,255,255,.32)" fill="none" strokeWidth="1">
                     <circle cx="100" cy="60" r="44" />
