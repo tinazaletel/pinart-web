@@ -379,7 +379,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           <span className="fl-msg me">Tina</span>
           <span className="fl-msg bot"><span className="fl-ava" />Kakšne izkušnje imaš?</span>
           <span className="fl-msg me">Šele začenjam</span>
-          <span className="fl-chip"><FileText size={14} weight="regular" />Ponudba · od 0 €</span>
+          <span className="fl-mockchip"><FileText size={14} weight="regular" />Ponudba · od 0 €</span>
         </div>
       </div>
     );
@@ -622,7 +622,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-msg.bot { background: oklch(96% .012 297); color: var(--ink); border-top-left-radius: 4px; justify-self: start; }
         .fl-msg.me { background: oklch(90% .055 190); color: var(--ink); border-top-right-radius: 4px; justify-self: end; }
         .fl-ava { width: 1.4rem; height: 1.4rem; border-radius: 50%; flex: none; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.9), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); }
-        .fl-chip { position: absolute; right: 1.15rem; bottom: 1.15rem; display: inline-flex; align-items: center; gap: .4rem; padding: .5rem .72rem; border-radius: 12px; background: var(--ink); color: var(--paper); font-size: .74rem; font-weight: 700; box-shadow: 0 8px 20px rgba(40,25,60,.22); }
+        .fl-mockchip { position: absolute; right: 1.15rem; bottom: 1.15rem; display: inline-flex; align-items: center; gap: .4rem; padding: .5rem .72rem; border-radius: 12px; background: var(--ink); color: var(--paper); font-size: .74rem; font-weight: 700; box-shadow: 0 8px 20px rgba(40,25,60,.22); }
         .fl-doc { padding: 1.3rem 1.25rem; display: grid; gap: .45rem; align-content: start; min-height: 15.5rem; }
         .fl-doc-lp { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid rgba(17,17,17,.1); padding-bottom: .55rem; margin-bottom: .35rem; }
         .fl-doc-lp strong { font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.15rem; }
