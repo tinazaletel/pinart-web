@@ -7,13 +7,80 @@ import { aktivnaDodelitev, dodelitevOdklene } from './lib/dostop';
 
 const intlMiddleware = createMiddleware(routing);
 
+/* Pred-launch: pinartflow.com je javno ZAPRT z geslom (Basic Auth). Dokler
+   geslo (SITE_GESLO) ni nastavljeno, se pokaze "Kmalu" stran. pinart.si
+   (portfolio), Vercel preview in localhost NISO prizadeti. */
+const KMALU_HTML = `<!doctype html>
+<html lang="sl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Pinart Flow — kmalu</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{min-height:100svh;display:grid;place-items:center;padding:2rem;
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#26211f;
+    background:radial-gradient(120% 90% at 50% -10%, #efe9fb, #f6f4ef 62%)}
+  .w{max-width:34rem;text-align:center}
+  .ey{display:inline-flex;align-items:center;gap:.55rem;font-size:.76rem;font-weight:800;
+    letter-spacing:.24em;text-transform:uppercase;color:#7c3aed;margin-bottom:1.6rem}
+  .dot{width:8px;height:8px;border-radius:50%;background:#7c3aed;box-shadow:0 0 0 6px rgba(124,58,237,.14)}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:clamp(2.6rem,9vw,4.4rem);
+    line-height:1.03;letter-spacing:-.01em;margin-bottom:1.1rem}
+  h1 em{font-style:italic}
+  p{font-size:1.02rem;line-height:1.6;color:#5c5650;max-width:27rem;margin:0 auto 2rem}
+  a{display:inline-flex;align-items:center;gap:.45rem;font-weight:700;color:#26211f;text-decoration:none;
+    border:1px solid rgba(38,33,31,.16);border-radius:999px;padding:.72rem 1.35rem;font-size:.92rem}
+  a:hover{background:rgba(255,255,255,.65)}
+</style></head><body>
+<div class="w">
+  <div class="ey"><span class="dot"></span>Pinart Flow</div>
+  <h1>Nekaj lepega <em>nastaja.</em></h1>
+  <p>Orodje za samostojne kreativce — poštene cene, ponudbe, projekti in AI asistentka Pupa. Kmalu na voljo.</p>
+  <a href="mailto:tina@pinart.si">Piši nam &rarr;</a>
+</div>
+</body></html>`;
+
+function gesloVeljavno(auth: string, geslo: string): boolean {
+  if (!auth.startsWith('Basic ')) return false;
+  try {
+    const dekodirano = atob(auth.slice(6));
+    return dekodirano.slice(dekodirano.indexOf(':') + 1) === geslo;
+  } catch {
+    return false;
+  }
+}
+
 export default async function middleware(request: NextRequest) {
+  const host = request.headers.get('host') || '';
+  const jePinartflow = /(^|\.)pinartflow\.com$/i.test(host);
+
+  /* Geslo-zid samo za pinartflow.com. */
+  if (jePinartflow) {
+    const geslo = process.env.SITE_GESLO;
+    if (!geslo) {
+      return new NextResponse(KMALU_HTML, {
+        status: 200,
+        headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store, max-age=0' },
+      });
+    }
+    if (!gesloVeljavno(request.headers.get('authorization') || '', geslo)) {
+      return new NextResponse('Zaprto — potrebno geslo.', {
+        status: 401,
+        headers: {
+          'WWW-Authenticate': 'Basic realm="Pinart Flow (zaprta beta)"',
+          'content-type': 'text/plain; charset=utf-8',
+          'cache-control': 'no-store, max-age=0',
+        },
+      });
+    }
+    /* geslo pravilno -> pade skozi na obicajno logiko */
+  }
+
   /* pinartflow.com/ = Flow landing (ne studijski portfolio).
      REWRITE, ne redirect: stran se postrezi s korena, naslov ostane
      "www.pinartflow.com" brez "/flow". Preusmeritev je pisala ime izdelka
      dvakrat in dodala odboj pred nalaganjem. pinart.si ostane portfolio. */
-  const host = request.headers.get('host') || '';
-  if (/(^|\.)pinartflow\.com$/i.test(host) && request.nextUrl.pathname === '/') {
+  if (jePinartflow && request.nextUrl.pathname === '/') {
     const url = request.nextUrl.clone();
     /* MORA biti "/sl/flow", ne "/flow": pot je app/[locale]/flow. Privzeti jezik
        je sicer brez predpone, a ta rewrite obide next-intl, zato bi "flow"
