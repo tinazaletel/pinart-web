@@ -158,6 +158,8 @@
 .profile small { margin-top: .15rem; color: color-mix(in oklch, var(--ink) 52%, transparent); font-size: .61rem; }
 
 .workspace { grid-column: 2; grid-row: 2; position: relative; isolation: isolate; min-width: 0; padding: 3rem clamp(1.2rem, 3vw, 3.5rem) 2rem; overflow: hidden; }
+/* Console-slog: vsebina centrirana z max-sirino, ne razpotegnjena cez cel zaslon (Tina: ne mara full-width). Vsi podatki ostanejo. */
+.workspace > *:not(.detailBackdrop) { max-width: 1280px; margin-inline: auto; }
 .workspace::before, .workspace::after { content: none; }
 /* Mehki plavajoci mehurcki — poenoteni s Flow landing stranjo (bel highlight,
    nezen odtenek, mehka senca; brez trdih nasicenih gradientov in mocnega sija). */
