@@ -1,6 +1,6 @@
 .page, .page > form { display: grid; gap: 1rem; }
 .notice { padding: 1rem 1.2rem; border-radius: 1rem; background: oklch(92% .06 155); }
-.card { display: grid; gap: 1.4rem; padding: 1.5rem; border: 1px solid var(--line); border-radius: 1.35rem; background: oklch(98% .008 87 / .94); }
+.card { display: grid; gap: 1.4rem; padding: 1.5rem; border: 1px solid oklch(22% .015 60 / .05); border-radius: 1.35rem; background: #fff; box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .045); }
 .card header p { margin: 0 0 .55rem; font-size: .72rem; font-weight: 800; letter-spacing: .15em; }
 .card h2 { margin: 0; font: 500 2rem/1 var(--font-serif), Georgia, serif; }
 .card header span { display: block; margin-top: .55rem; color: var(--muted); }
