@@ -144,7 +144,7 @@ export default function AccountingWorkspace() {
           <p className={styles.eyebrow} style={{ margin: 0 }}>IZDANI RAČUNI · {racSel.length}/{invoices.length}</p>
           {invoices.length > 0 && <button type="button" style={izberiGumb} onClick={() => preklopiVse(invoices, izbraniRac, setIzbraniRac)}>{vsiOznaceni(invoices, izbraniRac) ? 'Odznači vse' : 'Izberi vse'}</button>}
         </div>
-        {invoices.length ? <ul style={seznamStil}>{invoices.map(r => <li key={r.id} style={vrstica}>
+        {invoices.length ? <ul className="accounting-scroll-list" style={seznamStil}>{invoices.map(r => <li key={r.id} style={vrstica}>
           <input type="checkbox" checked={izbraniRac.has(r.id)} onChange={() => preklopi(izbraniRac, setIzbraniRac, r.id)} aria-label={`Vključi račun ${r.number || ''}`} />
           <span style={{ flex: 1, minWidth: 0 }}><b style={{ fontSize: '.8rem' }}>{r.number || 'Račun'}</b> <small style={{ color: 'var(--muted)' }}>· {r.client} · {datSlo(r.date)}</small></span>
           <b style={{ fontSize: '.82rem', flex: 'none' }}>{evr(r.amount)}</b>
@@ -155,7 +155,7 @@ export default function AccountingWorkspace() {
           <p className={styles.eyebrow} style={{ margin: 0 }}>STROŠKI · {strSel.length}/{expenses.length}</p>
           {expenses.length > 0 && <button type="button" style={izberiGumb} onClick={() => preklopiVse(expenses, izbraniStr, setIzbraniStr)}>{vsiOznaceni(expenses, izbraniStr) ? 'Odznači vse' : 'Izberi vse'}</button>}
         </div>
-        {expenses.length ? <ul style={seznamStil}>{expenses.map(e => <li key={e.id} style={vrstica}>
+        {expenses.length ? <ul className="accounting-scroll-list" style={seznamStil}>{expenses.map(e => <li key={e.id} style={vrstica}>
           <input type="checkbox" checked={izbraniStr.has(e.id)} onChange={() => preklopi(izbraniStr, setIzbraniStr, e.id)} aria-label={`Vključi strošek ${e.title || ''}`} />
           <span style={{ flex: 1, minWidth: 0 }}><b style={{ fontSize: '.8rem' }}>{e.title || 'Strošek'}</b> <small style={{ color: 'var(--muted)' }}>· {e.company || e.client || ''} · {datSlo(e.date)}</small></span>
           <b style={{ fontSize: '.82rem', flex: 'none' }}>{evr(e.amount)}</b>
@@ -170,5 +170,16 @@ export default function AccountingWorkspace() {
     </section>
 
     <section className={styles.accountingHistory}><header><div><p className={styles.eyebrow}>EVIDENCA</p><h2>Kaj je bilo poslano in kdaj.</h2></div></header>{history.length ? history.map(item => <article key={item.id}><div><strong>{new Date(item.periodStart).toLocaleDateString('sl-SI')}–{new Date(item.periodEnd).toLocaleDateString('sl-SI')}</strong><small>{item.recipientEmail || 'Prenos (brez pošiljanja)'}</small></div><span>{item.invoiceCount} računov</span><span>{item.expenseCount} stroškov</span><span>{item.bankStatementCount} izpiskov</span><b>{item.sentAt ? `Poslano ${new Date(item.sentAt).toLocaleDateString('sl-SI')}` : `Pripravljeno ${new Date(item.createdAt).toLocaleDateString('sl-SI')}`}</b></article>) : <p>Prvi paket se bo prikazal tukaj.</p>}</section>
+    <style jsx>{`
+      .accounting-scroll-list {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .accounting-scroll-list::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+      }
+    `}</style>
   </div>;
 }
