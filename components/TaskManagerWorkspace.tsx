@@ -1020,13 +1020,13 @@ export default function TaskManagerWorkspace() {
             <h1 className="tm-naslov">Naloge.</h1>
             <p className="tm-podnaslov">Organiziraj projekte in opravila na enem mestu — povleci kartico med stolpci.</p>
           </div>
-          <label className="tm-uporabnik">
-            <span>Prijavljen</span>
-            <select value={trenutniId} onChange={(e) => setTrenutniId(e.target.value)}>
-              {sodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime} ({s.vloga.toUpperCase()})</option>)}
-            </select>
-          </label>
         </div>
+        <label className="tm-uporabnik">
+          <span>Prijavljen</span>
+          <select value={trenutniId} onChange={(e) => setTrenutniId(e.target.value)}>
+            {sodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime} ({s.vloga.toUpperCase()})</option>)}
+          </select>
+        </label>
       </header>
 
       <div className="tm-pogled-filtri-vrsta">
