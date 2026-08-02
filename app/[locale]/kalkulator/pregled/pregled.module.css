@@ -157,7 +157,7 @@
 .profile strong { font-size: .73rem; }
 .profile small { margin-top: .15rem; color: color-mix(in oklch, var(--ink) 52%, transparent); font-size: .61rem; }
 
-.workspace { grid-column: 2; grid-row: 2; position: relative; isolation: isolate; min-width: 0; padding: 3rem clamp(1rem, 2vw, 2rem) 2rem; overflow: hidden; }
+.workspace { grid-column: 2; grid-row: 2; position: relative; isolation: isolate; min-width: 0; padding: 3rem clamp(.8rem, 1.2vw, 1.3rem) 2rem; overflow: hidden; }
 /* Console-slog: vsebina centrirana z max-sirino, ne razpotegnjena cez cel zaslon (Tina: ne mara full-width). Vsi podatki ostanejo. */
 .workspace > *:not(.detailBackdrop) { max-width: 1280px; margin-inline: auto; }
 .workspace::before, .workspace::after { content: none; }
@@ -433,7 +433,7 @@
 .document_contract { background: oklch(93% .055 163); color: oklch(55% .15 164); }
 .document_invoice { background: oklch(94% .055 62); color: oklch(62% .18 48); }
 .document_expense { background: oklch(91% .012 55); color: var(--ink); }
-.statusPill { position: relative; display: inline-flex; align-items: center; gap: .42rem; width: max-content; padding: .42rem .78rem; border: 0; border-radius: 999px; background: var(--pill-bg, oklch(95% .01 87)); color: var(--pill-ink, oklch(40% .02 70)); font-size: .58rem; font-weight: 700; white-space: nowrap; }
+.statusPill { position: relative; display: inline-flex; align-items: center; gap: .34rem; width: max-content; padding: .3rem .6rem; border: 0; border-radius: 999px; background: var(--pill-bg, oklch(95% .01 87)); color: var(--pill-ink, oklch(40% .02 70)); font-size: .5rem; font-weight: 700; white-space: nowrap; }
 /* status kot pilula, ki objame besedilo; prosojni <select> lezi cez (Safari-varno). */
 .statusField { position: relative; display: inline-flex; vertical-align: middle; }
 .statusField[data-editable] .statusPill { cursor: pointer; padding-right: 1.15rem; }
@@ -450,7 +450,7 @@
 /* !important pri padding IN background-position je nujen: .shell select (vrstica 35) ima
    padding-right:3rem !important in background-position:right 1rem center !important, kar je
    (a) piko potisnilo na DESNO cez puscico in (b) odrezalo napis ("Placano" -> "Plac"). */
-.historyTable select.statusPill { width: max-content; min-width: 0; max-width: 100%; padding: .38rem 1.3rem .38rem 1.2rem !important; border: 1px solid var(--pill-line, oklch(86% .012 87)); appearance: none; background-color: var(--pill-bg, oklch(95% .01 87)); color: var(--pill-ink, oklch(40% .02 70)); background-image: radial-gradient(circle, var(--dot, oklch(62% .02 70)) 42%, transparent 46%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%235b554d' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: left .55rem center, right .45rem center !important; background-size: .5rem .5rem, 11px 11px; background-repeat: no-repeat, no-repeat; font: 700 .55rem var(--font-sans), sans-serif; cursor: pointer; }
+.historyTable select.statusPill { width: max-content; min-width: 0; max-width: 100%; padding: .3rem 1.05rem .3rem 1rem !important; font-size: .5rem !important; border: 1px solid var(--pill-line, oklch(86% .012 87)); appearance: none; background-color: var(--pill-bg, oklch(95% .01 87)); color: var(--pill-ink, oklch(40% .02 70)); background-image: radial-gradient(circle, var(--dot, oklch(62% .02 70)) 42%, transparent 46%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%235b554d' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: left .55rem center, right .45rem center !important; background-size: .5rem .5rem, 11px 11px; background-repeat: no-repeat, no-repeat; font: 700 .55rem var(--font-sans), sans-serif; cursor: pointer; }
 /* Onemogocena (demo predogled) mora biti VIDNO drugacna — prej je imela opacity:1 in je
    izgledala enako kot delujoca, zato je bilo videti, kot da izbira ne dela. */
 .historyTable select.statusPill:disabled { cursor: not-allowed; opacity: .7; background-image: radial-gradient(circle, var(--dot, oklch(62% .02 70)) 42%, transparent 46%) !important; padding-right: .75rem !important; }

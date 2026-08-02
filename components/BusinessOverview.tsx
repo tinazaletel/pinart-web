@@ -398,7 +398,7 @@ export default function BusinessOverview({ base }: { base: string }) {
         </section>
 
         <section className={styles.eventsBand} aria-labelledby="rev-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>06 · PRIHODKI</p></div>
+          <div className={styles.bandTop}><p className={styles.eyebrow}>06 · PRIHODKI</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>Vsa poročila</span><span className={styles.abShort}>Več</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
           <h2 id="rev-title" className={styles.bandTitle}>Prihodki po mesecih</h2>
           {(() => {
@@ -420,7 +420,6 @@ export default function BusinessOverview({ base }: { base: string }) {
               </div>
             </div>;
           })()}
-          <Link className={styles.panelMore} href={`${base}/kalkulator/racunovodstvo`}>Pojdi na poročila <span aria-hidden>→</span></Link>
           </div>
         </section>
       </div>
