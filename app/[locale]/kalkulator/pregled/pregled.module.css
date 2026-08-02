@@ -213,11 +213,10 @@
 .flowBand, .historyBand, .resultsBand, .eventsBand, .detailsBand { margin-top: 1rem; padding: 1.5rem; border: 1px solid oklch(22% .015 60 / .05); border-radius: 1.2rem; background: #fff; box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .045); }
 /* mockup-slog panela: bež pasica (title bar) na vrhu → belo telo */
 .flowBand { padding: 0; overflow: hidden; }
-.bandTop { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .46rem 1.5rem; background: #fff; border-bottom: 1px solid oklch(22% .015 60 / .06); }
+.bandTop { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .55rem 1.5rem; background: #fff; border-bottom: 1px solid oklch(22% .015 60 / .06); }
 .bandTop .eyebrow { margin: 0; }
-.bandBody { padding: 1.1rem 1.5rem 1.4rem; }
-.bandTitleRow { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; margin-bottom: .95rem; }
-.bandTitle { margin: 0; font: 500 clamp(1.25rem, 1.55vw, 1.6rem)/1.05 var(--font-serif), Georgia, serif; }
+.bandBody { padding: 1rem 1.5rem 1.4rem; }
+.bandTitle { margin: 0 0 .9rem; font: 500 clamp(1.25rem, 1.55vw, 1.6rem)/1.05 var(--font-serif), Georgia, serif; }
 /* paneli = flex stolpci, da so povezave "Pojdi na X" poravnane na dnu in vsebina zapolni prostor */
 .historyBand, .resultsBand, .eventsBand { display: flex; flex-direction: column; }
 .flowBand { margin-top: .35rem; }

@@ -279,12 +279,9 @@ export default function BusinessOverview({ base }: { base: string }) {
           preozek — stiri gumbi v 12.7rem so se prekrivali in besedila ni bilo brati. */}
       {feedback && <div className={styles.feedback} role="status"><span>{feedback}</span><button type="button" onClick={() => setFeedback('')} aria-label="Zapri obvestilo">×</button></div>}
       <section className={styles.flowBand} id="tools" aria-labelledby="tools-title">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>01 · ORODJA</p></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>01 · ORODJA</p><div className={styles.sectionNote}><strong>Smart pricing</strong><span>Cena po tvojih izkušnjah, trgu in naročniku.</span></div></div>
         <div className={styles.bandBody}>
-        <div className={styles.bandTitleRow}>
         <h2 id="tools-title" className={styles.bandTitle}>Kaj boš danes uredila?</h2>
-        <div className={styles.sectionNote}><strong>Smart pricing</strong><span>Cena po tvojih izkušnjah, trgu in naročniku.</span></div>
-        </div>
         <div className={styles.flowTools}>
           <Link className={styles.offerTool} href={`${base}/kalkulator/orodje`}>
             <b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b>
