@@ -689,13 +689,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* b) zaslon, ki menja 3 screene */
         .fl-btekst > p { font-size: .88rem; line-height: 1.5; margin: 0; max-width: 26ch; color: rgba(255,255,255,.74); }
         .fl-bscreen { position: absolute; right: -1.5rem; bottom: -1.6rem; width: 60%; height: 64%; border-top-left-radius: 16px; overflow: hidden; background: #0d0b12; box-shadow: -18px -16px 42px rgba(0,0,0,.34); }
-        /* b) node-canvas: kvadratne mapice, povezane z ukrivljenimi črtami (ista nit podatkov) */
-        .fl-bkarta.b h3, .fl-bkarta.b > p { max-width: 17rem; }
-        .fl-bnodes { position: absolute; right: -.3rem; top: .2rem; bottom: .2rem; width: 60%; }
+        /* b) node-canvas: barvne mapice + debele svetleče krivulje + ikonice na povezavah */
+        .fl-bkarta.b h3, .fl-bkarta.b > p { max-width: 15.5rem; }
+        .fl-bnodes { position: absolute; right: -.9rem; top: -.5rem; bottom: -.9rem; width: 64%; }
         .fl-bnodes svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-        .fl-bnode { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: .34rem; }
-        .fl-bnode > span { width: 48px; height: 48px; border-radius: 13px; background: #17141f; border: 1px solid rgba(255,255,255,.2); display: grid; place-items: center; color: #fff; box-shadow: 0 6px 16px rgba(0,0,0,.4); }
-        .fl-bnode small { font-size: .62rem; font-weight: 600; color: #fff; background: rgba(255,255,255,.12); padding: .1rem .42rem; border-radius: 999px; white-space: nowrap; }
+        .fl-fold { position: absolute; z-index: 2; transform: translate(-50%, -50%); border-radius: 5px 11px 11px 11px; box-shadow: 0 12px 26px rgba(0,0,0,.45); }
+        .fl-fold::before { content: ""; position: absolute; top: -8px; left: 0; width: 48%; height: 11px; border-radius: 5px 7px 0 0; background: inherit; }
+        .fl-badge { position: absolute; z-index: 3; transform: translate(-50%, -50%); width: 38px; height: 38px; border-radius: 50%; background: #4a3d6b; border: 2px solid rgba(255,255,255,.14); display: grid; place-items: center; color: #fff; box-shadow: 0 6px 14px rgba(0,0,0,.45); }
+        .fl-npill { position: absolute; z-index: 3; transform: translate(-50%, -50%); font-size: .7rem; font-weight: 700; color: #fff; padding: .2rem .58rem; border-radius: 8px; box-shadow: 0 6px 14px rgba(0,0,0,.35); white-space: nowrap; }
         .fl-bscreen-dots { position: absolute; left: 0; right: 0; bottom: .55rem; display: flex; justify-content: center; gap: .35rem; z-index: 2; }
         .fl-bscreen-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.35); transition: background .3s, width .3s; }
         .fl-bscreen-dots i.on { width: 16px; border-radius: 3px; background: #fff; }
@@ -1123,22 +1124,23 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <div className="fl-bnodes" aria-hidden>
                 <svg viewBox="0 0 300 200" preserveAspectRatio="none">
                   <defs>
-                    <linearGradient id="flNodeLine" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0" stopColor="#63c7e8" /><stop offset="1" stopColor="#a78bfa" />
-                    </linearGradient>
-                    <filter id="flNodeGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.6" /></filter>
+                    <linearGradient id="flNodeLine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#63c7e8" /><stop offset="1" stopColor="#a78bfa" /></linearGradient>
+                    <filter id="flNodeGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.4" /></filter>
                   </defs>
                   <g fill="none" stroke="url(#flNodeLine)" strokeLinecap="round">
-                    <path d="M39 44 C 92 44 92 120 141 120" strokeWidth="3.4" opacity=".5" filter="url(#flNodeGlow)" />
-                    <path d="M39 44 C 92 44 92 120 141 120" strokeWidth="2.4" />
-                    <path d="M141 120 C 192 120 192 60 231 60" strokeWidth="3.4" opacity=".5" filter="url(#flNodeGlow)" />
-                    <path d="M141 120 C 192 120 192 60 231 60" strokeWidth="2.4" />
+                    <path d="M44 80 C 112 80 96 150 176 150" strokeWidth="9" opacity=".4" filter="url(#flNodeGlow)" />
+                    <path d="M44 80 C 112 80 96 150 176 150" strokeWidth="5" />
+                    <path d="M150 58 C 214 58 214 96 268 96" strokeWidth="9" opacity=".4" filter="url(#flNodeGlow)" />
+                    <path d="M150 58 C 214 58 214 96 268 96" strokeWidth="5" />
                   </g>
-                  <g fill="#a78bfa"><circle cx="39" cy="44" r="3.6" /><circle cx="141" cy="120" r="3.6" /><circle cx="231" cy="60" r="3.6" /></g>
                 </svg>
-                <div className="fl-bnode" style={{ left: '13%', top: '22%' }}><span><FolderOpen size={22} weight="regular" /></span><small>Ponudba</small></div>
-                <div className="fl-bnode" style={{ left: '47%', top: '60%' }}><span><FolderOpen size={22} weight="regular" /></span><small>Pogodba</small></div>
-                <div className="fl-bnode" style={{ left: '77%', top: '30%' }}><span><FolderOpen size={22} weight="regular" /></span><small>Račun</small></div>
+                <div className="fl-fold" style={{ left: '47%', top: '37%', width: '46%', height: '44%', background: '#e9e08d' }} />
+                <div className="fl-fold" style={{ left: '85%', top: '85%', width: '42%', height: '42%', background: '#e6c8f6' }} />
+                <div className="fl-fold" style={{ left: '19%', top: '93%', width: '34%', height: '36%', background: '#cfe7f4' }} />
+                <div className="fl-badge" style={{ left: '15%', top: '40%' }}><ChatCircle size={18} weight="fill" /></div>
+                <div className="fl-badge" style={{ left: '59%', top: '75%' }}><PenNib size={17} weight="fill" /></div>
+                <div className="fl-npill" style={{ left: '13%', top: '66%', background: '#8b7be8' }}>Ponudba</div>
+                <div className="fl-npill" style={{ left: '89%', top: '45%', background: '#d5776f' }}>Račun</div>
               </div>
             </div>
             <div className="fl-bkarta c">
