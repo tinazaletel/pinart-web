@@ -279,7 +279,9 @@ export default function BusinessOverview({ base }: { base: string }) {
           preozek — stiri gumbi v 12.7rem so se prekrivali in besedila ni bilo brati. */}
       {feedback && <div className={styles.feedback} role="status"><span>{feedback}</span><button type="button" onClick={() => setFeedback('')} aria-label="Zapri obvestilo">×</button></div>}
       <section className={styles.flowBand} id="tools" aria-labelledby="tools-title">
-        <div className={styles.sectionHeader}><div><p className={styles.eyebrow}>01 · ORODJA</p><h2 id="tools-title">Kaj boš danes uredila?</h2></div><div className={styles.sectionNote}><strong>Smart pricing</strong><span>Cena po tvojih izkušnjah, trgu in naročniku.</span></div></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>01 · ORODJA</p><div className={styles.sectionNote}><strong>Smart pricing</strong><span>Cena po tvojih izkušnjah, trgu in naročniku.</span></div></div>
+        <div className={styles.bandBody}>
+        <h2 id="tools-title" className={styles.bandTitle}>Kaj boš danes uredila?</h2>
         <div className={styles.flowTools}>
           <Link className={styles.offerTool} href={`${base}/kalkulator/orodje`}>
             <b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b>
@@ -290,6 +292,7 @@ export default function BusinessOverview({ base }: { base: string }) {
           <Link href={`${base}/kalkulator/stranke`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>Stranke</strong><small>Kartoteka in zgodovina sodelovanja</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
           <Link href={`${base}/kalkulator/koledar`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>Koledar</strong><small>Sestanki, klici in roki projektov</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
           <Link href={`${base}/kalkulator/pogodbe`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>Pogodba</strong><small>Iz ponudbe ali dokument stranke</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
+        </div>
         </div>
       </section>
 
