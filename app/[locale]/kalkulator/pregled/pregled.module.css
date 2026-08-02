@@ -411,8 +411,8 @@
 .historyTable th { padding: .7rem .9rem; background: transparent; border-bottom: 1px solid oklch(94% .006 82 / .42); font-size: .55rem; color: color-mix(in oklch, var(--ink) 42%, transparent); }
 .historyTable td { height: 4.05rem; padding: .7rem .9rem; background: transparent; vertical-align: middle; }
 .historyTable td:nth-child(3) { white-space: nowrap; }
-.historyTable th:first-child, .historyTable td:first-child { padding-left: 1.4rem; }
-.historyTable th:last-child, .historyTable td:last-child { padding-right: 1.4rem; padding-left: .55rem; }
+.historyTable th:first-child, .historyTable td:first-child { padding-left: 1.1rem; }
+.historyTable th:last-child, .historyTable td:last-child { padding-right: 1.1rem; padding-left: .55rem; }
 /* Zadnji projekti (v detailRow): PRIHODKI desno poravnano + vec desnega paddinga */
 .detailRow .historyTable th:last-child, .detailRow .historyTable td:last-child { text-align: right; padding-right: 1.4rem; }
 .historyTable tbody tr:last-child td { border-bottom: 0; }
