@@ -35,7 +35,7 @@
   justify-content: space-between;
   gap: 2rem;
   min-height: 12rem;
-  padding: clamp(1.3rem, 3vw, 2.4rem);
+  padding: 1.1rem;
   border-radius: 1.6rem;
 }
 
@@ -62,8 +62,7 @@
 .hero h2 {
   max-width: 14ch;
   margin: 0;
-  font: 500 clamp(2.65rem, 6vw, 5.2rem)/.92 var(--font-serif), Georgia, serif;
-  letter-spacing: -.035em;
+  font: 500 clamp(1.25rem, 1.55vw, 1.6rem)/1.05 var(--font-serif), Georgia, serif;
 }
 .hero p:last-child {
   max-width: 42rem;
@@ -331,8 +330,7 @@
 
 @media (max-width: 650px) {
   .page { gap: .75rem; padding-inline: .5rem; }
-  .hero { display: grid; align-items: start; min-height: 0; padding: 1.2rem; border-radius: 1.2rem; }
-  .hero h2 { font-size: clamp(2.6rem, 14vw, 4rem); }
+  .hero { display: grid; align-items: start; min-height: 0; padding: 1.1rem; border-radius: 1.2rem; }
   .hero .primary { width: 100%; }
   .tabs { width: 100%; }
   .tab { flex: 1; }
