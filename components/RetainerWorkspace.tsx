@@ -1049,11 +1049,11 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-profil-admin{display:inline-block;margin-top:.4rem;font-size:.82rem;font-weight:600;color:rgba(17,17,17,.6);text-decoration:none;border:1px solid oklch(93% .006 82 / .55);border-radius:999px;padding:.5rem 1rem;transition:border-color .15s,color .15s}
         .rw-profil-admin:hover{border-color:var(--ink);color:var(--ink)}
         /* POSKUS: mrežno ozadje (kot naslovnica/FLOW), mehurčki ostanejo */
-        .rw-ozadje{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background-color:oklch(97% 0.012 87);background-image:linear-gradient(color-mix(in oklch, oklch(19% 0.014 55) 7%, transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in oklch, oklch(19% 0.014 55) 7%, transparent) 1px,transparent 1px);background-size:4.5rem 4.5rem}
+        .rw-ozadje{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background-color:#fff}
         /* nežna bloba (vijola + zelena) v ozadju, nad mrežo, komaj opazna */
         .rw-ozadje .rw-blob{position:absolute;width:min(60vw,760px);aspect-ratio:1;border-radius:50%;filter:blur(70px)}
-        .rw-blob-roza{top:-16vh;left:-12vw;background:radial-gradient(circle, oklch(74% .18 300 / .55), transparent 68%);opacity:.5;animation:rwRoza 22s ease-in-out infinite}
-        .rw-blob-modra{bottom:-22vh;right:-14vw;background:radial-gradient(circle, oklch(82% .15 162 / .55), transparent 68%);opacity:.45;animation:rwModra 25s ease-in-out infinite}
+        .rw-blob-roza{top:-16vh;left:-12vw;background:radial-gradient(circle, oklch(74% .18 300 / .55), transparent 68%);opacity:.12;animation:rwRoza 22s ease-in-out infinite}
+        .rw-blob-modra{bottom:-22vh;right:-14vw;background:radial-gradient(circle, oklch(82% .15 162 / .55), transparent 68%);opacity:.1;animation:rwModra 25s ease-in-out infinite}
         @keyframes rwRoza{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(32vw,24vh) scale(1.15)}50%{transform:translate(16vw,46vh) scale(.92)}75%{transform:translate(38vw,12vh) scale(1.08)}}
         @keyframes rwModra{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(-28vw,-22vh) scale(1.12)}50%{transform:translate(-44vw,-10vh) scale(.9)}75%{transform:translate(-16vw,-32vh) scale(1.06)}}
         @media (prefers-reduced-motion:reduce){.rw-blob{animation:none}}
