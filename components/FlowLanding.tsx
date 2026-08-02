@@ -692,7 +692,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* b) node-canvas: barvne mapice + debele svetleče krivulje + ikonice na povezavah */
         .fl-bkarta.b h3, .fl-bkarta.b > p { max-width: 15.5rem; }
         .fl-bnodes { position: absolute; right: -.9rem; top: -.5rem; bottom: -.9rem; width: 64%; }
-        .fl-bnodes svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+        .fl-bnodes > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
         .fl-fold { position: absolute; z-index: 2; transform: translate(-50%, -50%); border-radius: 5px 11px 11px 11px; box-shadow: 0 12px 26px rgba(0,0,0,.45); }
         .fl-fold::before { content: ""; position: absolute; top: -8px; left: 0; width: 48%; height: 11px; border-radius: 5px 7px 0 0; background: inherit; }
         .fl-badge { position: absolute; z-index: 3; transform: translate(-50%, -50%); width: 42px; height: 42px; border-radius: 50%; background: #4a3d6b; border: 2px solid rgba(255,255,255,.14); display: grid; place-items: center; color: #fff; box-shadow: 0 6px 14px rgba(0,0,0,.45); }
@@ -1137,8 +1137,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                 <div className="fl-fold" style={{ left: '44%', top: '37%', width: '33%', height: '42%', background: '#e9e08d' }} />
                 <div className="fl-fold" style={{ left: '85%', top: '85%', width: '42%', height: '42%', background: '#e6c8f6' }} />
                 <div className="fl-fold" style={{ left: '19%', top: '93%', width: '34%', height: '36%', background: '#cfe7f4' }} />
-                <div className="fl-badge" style={{ left: '15%', top: '40%' }}><ChatCircle size={13} weight="fill" /></div>
-                <div className="fl-badge" style={{ left: '59%', top: '75%' }}><PenNib size={12} weight="fill" /></div>
+                <div className="fl-badge" style={{ left: '15%', top: '40%' }}><ChatCircle size={16} weight="fill" /></div>
+                <div className="fl-badge" style={{ left: '59%', top: '75%' }}><PenNib size={16} weight="fill" /></div>
                 <div className="fl-npill" style={{ left: '13%', top: '66%', background: '#8b7be8' }}>Ponudba</div>
                 <div className="fl-npill" style={{ left: '89%', top: '45%', background: '#d5776f' }}>Račun</div>
               </div>
