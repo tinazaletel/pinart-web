@@ -707,16 +707,16 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bglobe .dot { transform-box: fill-box; transform-origin: center; animation: flPulse 2.6s ease-in-out infinite; }
         @keyframes flPulse { 0%,100% { opacity: .35; transform: scale(.7); } 50% { opacity: 1; transform: scale(1.15); } }
         .fl-bglobe-ai { position: absolute; top: .2rem; right: .6rem; display: inline-flex; align-items: center; gap: .28rem; padding: .2rem .5rem; border-radius: 999px; background: rgba(255,255,255,.14); color: #fff; font-size: .68rem; font-weight: 700; letter-spacing: .04em; backdrop-filter: blur(4px); }
-        .fl-bench { position: absolute; z-index: 3; display: flex; flex-direction: column; align-items: flex-start; gap: .16rem; opacity: 0; animation: flBlink 5.2s ease-in-out infinite; }
+        .fl-btag { position: absolute; z-index: 3; display: flex; flex-direction: column; align-items: flex-start; gap: .16rem; opacity: 0; animation: flBlink 5.2s ease-in-out infinite; }
         @keyframes flBlink { 0%, 48%, 100% { opacity: 0; transform: scale(.8); } 8%, 34% { opacity: 1; transform: scale(1); } }
-        .fl-bench small { font-size: .56rem; color: rgba(255,255,255,.55); }
-        .fl-bench b { font-size: .72rem; font-weight: 700; color: #fff; padding: .18rem .62rem; border-radius: 999px; box-shadow: 0 6px 14px rgba(0,0,0,.3); }
+        .fl-btag small { font-size: .56rem; color: rgba(255,255,255,.55); }
+        .fl-btag b { font-size: .72rem; font-weight: 700; color: #fff; padding: .18rem .62rem; border-radius: 999px; box-shadow: 0 6px 14px rgba(0,0,0,.3); }
         /* c) bela lista strankinih zapisov (peek poleg avatarjev) */
         .fl-clist { position: absolute; right: -1.3rem; bottom: -1.5rem; width: 56%; background: #fff; border-radius: 14px 0 0 0; padding: .9rem 1rem; box-shadow: -14px -12px 32px rgba(40,25,60,.3); }
         .fl-clist .r { display: flex; align-items: center; gap: .55rem; padding: .32rem 0; }
         .fl-clist .r span { width: 15px; height: 15px; border-radius: 50%; background: #ddd6e6; flex: none; }
         .fl-clist .r i { flex: 1; height: 8px; border-radius: 5px; background: #e7e1ee; }
-        @media (prefers-reduced-motion: reduce) { .fl-bhub-ring, .fl-bhub-ic > i, .fl-bglobe .dot, .fl-bench { animation: none; } }
+        @media (prefers-reduced-motion: reduce) { .fl-bhub-ring, .fl-bhub-ic > i, .fl-bglobe .dot, .fl-btag { animation: none; } }
         .fl-bthumbs span:nth-child(3n+2) { background: linear-gradient(135deg, oklch(90% .07 330), oklch(90% .06 90)); }
         .fl-bthumbs span:nth-child(3n) { background: linear-gradient(135deg, oklch(90% .06 200), oklch(90% .07 297)); }
         /* mini predogledi orodij (namesto pravih posnetkov — dodava jih kasneje) */
@@ -1177,10 +1177,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <p>Anonimni tržni pregled ti pokaže, kje si in raste z vsakim kreativcem. Tvoj pošteni benchmark.</p>
               <div className="fl-bglobe" aria-hidden>
                 <span className="fl-bglobe-ai"><Sparkle size={12} weight="fill" /> AI</span>
-                <div className="fl-bench" style={{ left: '17%', top: '8%', animationDelay: '0s' }}><small>Logotip</small><b style={{ background: '#d5776f' }}>650 €</b></div>
-                <div className="fl-bench" style={{ left: '66%', top: '8%', animationDelay: '1.3s' }}><small>Ilustracija</small><b style={{ background: '#c9926b' }}>480 €</b></div>
-                <div className="fl-bench" style={{ left: '10%', top: '32%', animationDelay: '2.6s' }}><small>CGP</small><b style={{ background: '#8b7be8' }}>1.350 €</b></div>
-                <div className="fl-bench" style={{ right: '9%', top: '32%', animationDelay: '3.9s' }}><small>Splet</small><b style={{ background: '#5bb89a' }}>1.400 €</b></div>
+                <div className="fl-btag" style={{ left: '17%', top: '8%', animationDelay: '0s' }}><small>Logotip</small><b style={{ background: '#d5776f' }}>650 €</b></div>
+                <div className="fl-btag" style={{ left: '66%', top: '8%', animationDelay: '1.3s' }}><small>Ilustracija</small><b style={{ background: '#c9926b' }}>480 €</b></div>
+                <div className="fl-btag" style={{ left: '10%', top: '32%', animationDelay: '2.6s' }}><small>CGP</small><b style={{ background: '#8b7be8' }}>1.350 €</b></div>
+                <div className="fl-btag" style={{ right: '9%', top: '32%', animationDelay: '3.9s' }}><small>Splet</small><b style={{ background: '#5bb89a' }}>1.400 €</b></div>
                 <svg viewBox="0 0 200 120">
                   <g stroke="rgba(255,255,255,.32)" fill="none" strokeWidth="1">
                     <circle cx="100" cy="60" r="44" />
