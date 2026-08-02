@@ -695,7 +695,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bnodes svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
         .fl-fold { position: absolute; z-index: 2; transform: translate(-50%, -50%); border-radius: 5px 11px 11px 11px; box-shadow: 0 12px 26px rgba(0,0,0,.45); }
         .fl-fold::before { content: ""; position: absolute; top: -8px; left: 0; width: 48%; height: 11px; border-radius: 5px 7px 0 0; background: inherit; }
-        .fl-badge { position: absolute; z-index: 3; transform: translate(-50%, -50%); width: 38px; height: 38px; border-radius: 50%; background: #4a3d6b; border: 2px solid rgba(255,255,255,.14); display: grid; place-items: center; color: #fff; box-shadow: 0 6px 14px rgba(0,0,0,.45); }
+        .fl-badge { position: absolute; z-index: 3; transform: translate(-50%, -50%); width: 32px; height: 32px; border-radius: 50%; background: #4a3d6b; border: 2px solid rgba(255,255,255,.14); display: grid; place-items: center; color: #fff; box-shadow: 0 6px 14px rgba(0,0,0,.45); }
         .fl-npill { position: absolute; z-index: 3; transform: translate(-50%, -50%); font-size: .7rem; font-weight: 700; color: #fff; padding: .2rem .58rem; border-radius: 8px; box-shadow: 0 6px 14px rgba(0,0,0,.35); white-space: nowrap; }
         .fl-bscreen-dots { position: absolute; left: 0; right: 0; bottom: .55rem; display: flex; justify-content: center; gap: .35rem; z-index: 2; }
         .fl-bscreen-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.35); transition: background .3s, width .3s; }
@@ -1137,8 +1137,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                 <div className="fl-fold" style={{ left: '44%', top: '37%', width: '33%', height: '42%', background: '#e9e08d' }} />
                 <div className="fl-fold" style={{ left: '85%', top: '85%', width: '42%', height: '42%', background: '#e6c8f6' }} />
                 <div className="fl-fold" style={{ left: '19%', top: '93%', width: '34%', height: '36%', background: '#cfe7f4' }} />
-                <div className="fl-badge" style={{ left: '15%', top: '40%' }}><ChatCircle size={15} weight="fill" /></div>
-                <div className="fl-badge" style={{ left: '59%', top: '75%' }}><PenNib size={14} weight="fill" /></div>
+                <div className="fl-badge" style={{ left: '15%', top: '40%' }}><ChatCircle size={13} weight="fill" /></div>
+                <div className="fl-badge" style={{ left: '59%', top: '75%' }}><PenNib size={12} weight="fill" /></div>
                 <div className="fl-npill" style={{ left: '13%', top: '66%', background: '#8b7be8' }}>Ponudba</div>
                 <div className="fl-npill" style={{ left: '89%', top: '45%', background: '#d5776f' }}>Račun</div>
               </div>
