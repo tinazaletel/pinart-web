@@ -153,13 +153,19 @@ export default function Pupa() {
     rec.onresult = (e: any) => { const t = e.results?.[0]?.[0]?.transcript || ''; if (t) posljiPupi(t); };
     rec.onerror = (e: any) => {
       setPoslusa(false);
-      if (e?.error === 'not-allowed' || e?.error === 'service-not-allowed') {
-        alert(L('Dovoli mikrofon: Safari → Nastavitve → Spletišča → Mikrofon → Dovoli (ali ikona ob naslovu), nato osveži.', 'Allow the microphone: Safari → Settings → Websites → Microphone → Allow (or the address-bar icon), then refresh.'));
+      const err = e?.error;
+      if (err === 'not-allowed') {
+        alert(L('Dovoli mikrofon (ikona ob naslovu / Safari → Nastavitve → Spletišča → Mikrofon), nato osveži.', 'Allow the microphone (address-bar icon / Safari → Settings → Websites → Microphone), then refresh.'));
+      } else if (err === 'service-not-allowed' || err === 'language-not-supported') {
+        alert(L('Slovenski glasovni vnos v tem brskalniku ni na voljo (Safari nima slovenskega narekovanja). Uporabi Chrome.', 'Slovenian voice input is not available in this browser (Safari lacks Slovenian dictation). Use Chrome.'));
       }
     };
     rec.onend = () => setPoslusa(false);
     try { rec.start(); } catch { setPoslusa(false); }
   };
+
+  /* Safari (in ne Chrome/Firefox) — Apple nima slovenskega narekovanja, zato glasovni VNOS tam ne dela */
+  const jeSafari = mounted && typeof navigator !== 'undefined' && /^((?!chrome|android|crios|edg|opr|fxios).)*safari/i.test(navigator.userAgent);
 
   if (!mounted) return null;
 
@@ -222,6 +228,11 @@ export default function Pupa() {
                 {poslusa ? L('Poslušam…', 'Listening…') : caka ? L('Pupa razmišlja…', 'Pupa is thinking…') : govoreca ? L('Pupa govori…', 'Pupa is speaking…') : L('Tapni krog in govori', 'Tap the circle and talk')}
               </div>
               {zadnjiU && <p style={{ margin: 0, fontSize: '.78rem', opacity: .5, maxWidth: '30ch' }}>{L('Ti:', 'You:')} {zadnjiU.content}</p>}
+              {jeSafari && (
+                <p style={{ margin: '.4rem 0 0', padding: '.55rem .8rem', borderRadius: 12, background: 'rgba(178,84,118,.09)', color: '#b25476', fontSize: '.74rem', lineHeight: 1.45, maxWidth: '32ch' }}>
+                  {L('Safari (Apple) ne podpira slovenskega glasovnega vnosa. Za pogovor s Pupo na glas uporabi Chrome. (Branje odgovorov na glas deluje.)', 'Safari (Apple) does not support Slovenian voice input. Use Chrome to talk to Pupa. (Reading answers aloud still works.)')}
+                </p>
+              )}
             </div>
           ) : (
           <><div ref={sporRef} style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
