@@ -5892,6 +5892,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* vijola tudi na krepkem delu — sicer ga povozi pravilo ".ponudba0-prazno b" */
         .cw .ponudba0-prazno .vprasanja-vijola, .cw .ponudba0-prazno .vprasanja-vijola b { color: oklch(46% .19 297); }
         .cw .ponudba0-prazno p { margin: 0; }
+        /* Ocena tržnega razpona cene (formula ±20 %, dokler ni podatkovne baze) */
+        .cw .ponudba0-razpon { margin: .55rem 0 .1rem; padding: .55rem 0 0; border-top: 1px dashed rgba(17,17,17,.12); }
+        .cw .ponudba0-razpon-glava { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .5rem; font-size: .72rem; font-weight: 700; color: rgba(17,17,17,.55); }
+        .cw .ponudba0-razpon-znak { flex: none; font-size: .56rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: oklch(50% .13 300); background: oklch(95% .04 300); border-radius: 999px; padding: 1px 7px; }
+        .cw .ponudba0-razpon-crta { position: relative; height: 6px; border-radius: 999px; background: linear-gradient(90deg, oklch(88% .1 40), oklch(91% .08 92), oklch(84% .12 150)); }
+        .cw .ponudba0-razpon-crta u { position: absolute; top: 50%; width: 13px; height: 13px; border-radius: 50%; background: oklch(30% .02 285); border: 2.5px solid #fff; transform: translate(-50%, -50%); box-shadow: 0 1px 5px rgba(17,17,17,.32); }
+        .cw .ponudba0-razpon-konca { display: flex; align-items: center; justify-content: space-between; gap: .4rem; margin-top: .42rem; font-size: .66rem; font-weight: 700; color: rgba(17,17,17,.5); }
+        .cw .ponudba0-razpon-konca span:nth-child(2) { color: oklch(42% .13 150); font-weight: 800; text-align: center; }
         /* empty-state: mapa z enim obrazom (odebeljene linije, slog chatbot ikonce), animirana */
         .cw .prazno-mapa { width: min(200px, 58%); margin: 0 auto .5rem; }
         .cw .prazno-mapa svg { width: 100%; height: auto; display: block; overflow: visible; }
@@ -8314,6 +8322,18 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       <div className="ponudba0-vsota-vrsta">
                         <span>Priporočena cena{ddvZavezanec ? ' (brez DDV)' : ''}</span>
                         <b>{val(r.paketi[1].skupaj)}</b>
+                      </div>
+                      <div className="ponudba0-razpon" role="group" aria-label={L('Ocena tržnega razpona cene', 'Estimated market price range')}>
+                        <div className="ponudba0-razpon-glava">
+                          <span>{L('Ocena tržnega razpona', 'Estimated market range')}</span>
+                          <span className="ponudba0-razpon-znak">{L('ocena', 'estimate')}</span>
+                        </div>
+                        <div className="ponudba0-razpon-crta"><u style={{ left: '50%' }} /></div>
+                        <div className="ponudba0-razpon-konca">
+                          <span>{val(Math.round(r.paketi[1].skupaj * 0.8))}</span>
+                          <span>{L('tvoja poštena cena', 'your fair price')}</span>
+                          <span>{val(Math.round(r.paketi[1].skupaj * 1.2))}</span>
+                        </div>
                       </div>
                       {ddvZavezanec && (
                         <>
