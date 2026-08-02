@@ -682,7 +682,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bhub { position: relative; flex: 1; min-height: 15.5rem; margin-top: .4rem; display: grid; place-items: center; }
         .fl-bhub-core { position: relative; z-index: 2; width: 84px; height: 84px; border-radius: 50%; background: conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a); box-shadow: 0 10px 26px rgba(42,32,53,.24); }
         .fl-bhub-ring { position: absolute; inset: 0; z-index: 1; animation: flOrbit 36s linear infinite; }
-        .fl-bhub-bg { position: absolute; top: -1.6rem; left: -1.5rem; right: -1.5rem; bottom: -1.6rem; z-index: 0; overflow: visible; }
+        .fl-bhub-bg { position: absolute; top: -1.6rem; left: -1.5rem; width: calc(100% + 3rem); height: calc(100% + 3.2rem); z-index: 0; overflow: visible; }
         .fl-bhub-ic { position: absolute; top: 50%; left: 50%; width: 46px; height: 46px; margin: -23px; border-radius: 50%; background: #fff; box-shadow: 0 6px 16px rgba(42,32,53,.14); display: grid; place-items: center; color: #6a4bd6; transform: rotate(var(--a)) translate(var(--r)) rotate(calc(-1 * var(--a))); }
         .fl-bhub-ic > i { display: grid; animation: flOrbitRev 36s linear infinite; }
         @keyframes flOrbit { to { transform: rotate(360deg); } }
@@ -710,7 +710,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bench { position: absolute; z-index: 3; display: flex; flex-direction: column; align-items: flex-start; gap: .16rem; opacity: 0; animation: flBlink 5.2s ease-in-out infinite; }
         @keyframes flBlink { 0%, 48%, 100% { opacity: 0; transform: scale(.8); } 8%, 34% { opacity: 1; transform: scale(1); } }
         .fl-bench small { font-size: .56rem; color: rgba(255,255,255,.55); }
-        .fl-bench b { font-size: .72rem; font-weight: 700; color: #fff; padding: .14rem .48rem; border-radius: 8px; box-shadow: 0 6px 14px rgba(0,0,0,.3); }
+        .fl-bench b { font-size: .72rem; font-weight: 700; color: #fff; padding: .18rem .62rem; border-radius: 999px; box-shadow: 0 6px 14px rgba(0,0,0,.3); }
         /* c) bela lista strankinih zapisov (peek poleg avatarjev) */
         .fl-clist { position: absolute; right: -1.3rem; bottom: -1.5rem; width: 56%; background: #fff; border-radius: 14px 0 0 0; padding: .9rem 1rem; box-shadow: -14px -12px 32px rgba(40,25,60,.3); }
         .fl-clist .r { display: flex; align-items: center; gap: .55rem; padding: .32rem 0; }
@@ -1115,10 +1115,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                     <filter id="flHubGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.4" /></filter>
                   </defs>
                   <g fill="none" stroke="url(#flHubLine)" strokeLinecap="round">
-                    <path d="M-12 116 C 110 44 196 252 312 168" strokeWidth="9" opacity=".3" filter="url(#flHubGlow)" />
-                    <path d="M-12 116 C 110 44 196 252 312 168" strokeWidth="5" opacity=".85" />
-                    <path d="M-12 214 C 122 262 182 44 312 92" strokeWidth="9" opacity=".3" filter="url(#flHubGlow)" />
-                    <path d="M-12 214 C 122 262 182 44 312 92" strokeWidth="5" opacity=".85" />
+                    <path d="M-14 122 C 90 46 210 46 314 122" strokeWidth="9" opacity=".3" filter="url(#flHubGlow)" />
+                    <path d="M-14 122 C 90 46 210 46 314 122" strokeWidth="5" opacity=".85" />
+                    <path d="M-14 178 C 90 254 210 254 314 178" strokeWidth="9" opacity=".3" filter="url(#flHubGlow)" />
+                    <path d="M-14 178 C 90 254 210 254 314 178" strokeWidth="5" opacity=".85" />
                   </g>
                 </svg>
                 <span className="fl-bhub-core">
@@ -1181,10 +1181,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <p>Anonimni tržni pregled ti pokaže, kje si in raste z vsakim kreativcem. Tvoj pošteni benchmark.</p>
               <div className="fl-bglobe" aria-hidden>
                 <span className="fl-bglobe-ai"><Sparkle size={12} weight="fill" /> AI</span>
-                <div className="fl-bench" style={{ left: '8%', top: '26%', animationDelay: '0s' }}><small>Logotip</small><b style={{ background: '#d5776f' }}>650 €</b></div>
-                <div className="fl-bench" style={{ left: '20%', top: '52%', animationDelay: '1.3s' }}><small>CGP</small><b style={{ background: '#8b7be8' }}>1.350 €</b></div>
-                <div className="fl-bench" style={{ right: '6%', top: '32%', animationDelay: '2.6s' }}><small>Splet</small><b style={{ background: '#5bb89a' }}>1.400 €</b></div>
-                <div className="fl-bench" style={{ right: '16%', top: '54%', animationDelay: '3.9s' }}><small>Ilustracija</small><b style={{ background: '#c9926b' }}>480 €</b></div>
+                <div className="fl-bench" style={{ left: '3%', top: '6%', animationDelay: '0s' }}><small>Logotip</small><b style={{ background: '#d5776f' }}>650 €</b></div>
+                <div className="fl-bench" style={{ left: '13%', top: '34%', animationDelay: '1.3s' }}><small>CGP</small><b style={{ background: '#8b7be8' }}>1.350 €</b></div>
+                <div className="fl-bench" style={{ left: '58%', top: '32%', animationDelay: '2.6s' }}><small>Splet</small><b style={{ background: '#5bb89a' }}>1.400 €</b></div>
+                <div className="fl-bench" style={{ left: '50%', top: '6%', animationDelay: '3.9s' }}><small>Ilustracija</small><b style={{ background: '#c9926b' }}>480 €</b></div>
                 <svg viewBox="0 0 200 120">
                   <g stroke="rgba(255,255,255,.32)" fill="none" strokeWidth="1">
                     <circle cx="100" cy="60" r="44" />
