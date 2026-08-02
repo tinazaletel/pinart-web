@@ -108,9 +108,10 @@
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: color-mix(in oklch, var(--paper) 78%, transparent);
+  background: #fff;
 }
-.tab { padding: .55rem 1rem; border: 0; border-radius: 999px; background: transparent; color: var(--muted); white-space: nowrap; }
+.tab { padding: .55rem 1rem; border: 0; border-radius: 999px; background: transparent; color: var(--ink); white-space: nowrap; }
+.tab:not([data-active='true']):hover { background: oklch(96.5% .018 87); }
 .tab[data-active='true'] { background: var(--ink); color: var(--paper); }
 
 .overviewGrid {
