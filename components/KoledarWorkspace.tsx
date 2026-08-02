@@ -11,6 +11,7 @@
    klicev (lib/sestanki), zapis v CRM dnevnik (lib/dnevnik), izvoz .ics
    (lib/ics) ter predogled/demo (lib/predogled). Edge-to-edge (brez robov). */
 
+import { useLocale } from 'next-intl';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   CalendarPlus,
@@ -59,6 +60,7 @@ const DEFAULT_SCROLL_HOUR = 7;
 const MIN_BLOK_PX = 30;
 
 const KRATKA_IMENA = ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'];
+const KRATKA_IMENA_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const money = (v: number) => `${Math.round(v).toLocaleString('sl-SI')} €`;
 const dodajDni = (iso: string, dni: number) => { const d = new Date(iso); if (isNaN(d.getTime())) return iso; d.setDate(d.getDate() + dni); return d.toISOString().slice(0, 10); };
@@ -94,18 +96,18 @@ const mesecMreza = (iso: string): string[] => {
 };
 
 const stDneva = (iso: string) => { const d = new Date(iso); return isNaN(d.getTime()) ? '' : String(d.getDate()); };
-const mesecKr = (iso: string) => { const d = new Date(iso); return isNaN(d.getTime()) ? '' : d.toLocaleDateString('sl-SI', { month: 'short' }); };
-const kratkiDan = (iso: string) => { const d = new Date(iso); return isNaN(d.getTime()) ? iso : veliko(d.toLocaleDateString('sl-SI', { weekday: 'short' })); };
-const naslovDnevaKratek = (iso: string) => { const d = new Date(iso); return isNaN(d.getTime()) ? iso : veliko(d.toLocaleDateString('sl-SI', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })); };
-const naslovMeseca = (iso: string) => { const d = new Date(iso); return isNaN(d.getTime()) ? iso : veliko(d.toLocaleDateString('sl-SI', { month: 'long', year: 'numeric' })); };
-const naslovTedna = (iso: string) => {
+const mesecKr = (iso: string, loc = 'sl-SI') => { const d = new Date(iso); return isNaN(d.getTime()) ? '' : d.toLocaleDateString(loc, { month: 'short' }); };
+const kratkiDan = (iso: string, loc = 'sl-SI') => { const d = new Date(iso); return isNaN(d.getTime()) ? iso : veliko(d.toLocaleDateString(loc, { weekday: 'short' })); };
+const naslovDnevaKratek = (iso: string, loc = 'sl-SI') => { const d = new Date(iso); return isNaN(d.getTime()) ? iso : veliko(d.toLocaleDateString(loc, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })); };
+const naslovMeseca = (iso: string, loc = 'sl-SI') => { const d = new Date(iso); return isNaN(d.getTime()) ? iso : veliko(d.toLocaleDateString(loc, { month: 'long', year: 'numeric' })); };
+const naslovTedna = (iso: string, loc = 'sl-SI') => {
   const dnevi = dneviTedna(iso);
   const a = new Date(dnevi[0]);
   const b = new Date(dnevi[6]);
   if (isNaN(a.getTime()) || isNaN(b.getTime())) return iso;
   const leto = b.getFullYear();
-  if (a.getMonth() === b.getMonth()) return `${a.getDate()}.–${b.getDate()}. ${b.toLocaleDateString('sl-SI', { month: 'short' })} ${leto}`;
-  return `${a.getDate()}. ${a.toLocaleDateString('sl-SI', { month: 'short' })} – ${b.getDate()}. ${b.toLocaleDateString('sl-SI', { month: 'short' })} ${leto}`;
+  if (a.getMonth() === b.getMonth()) return `${a.getDate()}.–${b.getDate()}. ${b.toLocaleDateString(loc, { month: 'short' })} ${leto}`;
+  return `${a.getDate()}. ${a.toLocaleDateString(loc, { month: 'short' })} – ${b.getDate()}. ${b.toLocaleDateString(loc, { month: 'short' })} ${leto}`;
 };
 
 /* Demo sestanki/klici — SAMO za prikaz v predogledu (nacin 'demo'); se NE
@@ -189,6 +191,9 @@ const PRAZEN_OBRAZEC = {
 };
 
 export default function KoledarWorkspace() {
+  const locale = useLocale();
+  const L = (sl: string, en: string) => (locale === 'en' ? en : sl);
+  const dl = locale === 'en' ? 'en-GB' : 'sl-SI';
   const [nacin] = usePredogled();
   const samoOgled = nacin !== 'mine';
 
@@ -239,7 +244,7 @@ export default function KoledarWorkspace() {
     setStranke(flow.clients || []);
     const izRacunov: RacunRok[] = (flow.invoices || [])
       .filter((r) => !r.paid)
-      .map((r) => ({ datum: dodajDni(r.date, typeof r.dueDays === 'number' ? r.dueDays : 15), naslov: `Plačilo · Račun ${r.number || ''}`.trim(), pod: `${r.client || ''}${r.amount ? ' · ' + money(r.amount) : ''}` }))
+      .map((r) => ({ datum: dodajDni(r.date, typeof r.dueDays === 'number' ? r.dueDays : 15), naslov: `${L('Plačilo · Račun', 'Payment · Invoice')} ${r.number || ''}`.trim(), pod: `${r.client || ''}${r.amount ? ' · ' + money(r.amount) : ''}` }))
       .filter((r) => r.datum);
     setRokiRacunov(izRacunov);
   }, [nacin]);
@@ -260,7 +265,7 @@ export default function KoledarWorkspace() {
     if (stranka) deli.push(stranka.name);
     if (s.kontaktId) deli.push(s.kontaktId);
     if (s.lokacija) deli.push(s.lokacija);
-    if (s.videoUrl) deli.push('video klic');
+    if (s.videoUrl) deli.push(L('video klic', 'video call'));
     return deli.join(' · ');
   };
 
@@ -310,7 +315,7 @@ export default function KoledarWorkspace() {
     const dnevneNaloge: Postavka[] = pokaziNaloge
       ? naloge
         .filter((n) => n.rok === dan && n.stolpec !== 'done')
-        .map((n) => ({ id: `naloga-${n.id}-${dan}`, tip: 'naloga' as const, naslov: n.naslov, pod: n.dodeljenoOsebaIme || n.dodeljenoOseba ? 'Dodeljeno: ' + (n.dodeljenoOsebaIme || n.dodeljenoOseba) : undefined, icsOpis: n.opis, datum: dan }))
+        .map((n) => ({ id: `naloga-${n.id}-${dan}`, tip: 'naloga' as const, naslov: n.naslov, pod: n.dodeljenoOsebaIme || n.dodeljenoOseba ? L('Dodeljeno: ', 'Assigned: ') + (n.dodeljenoOsebaIme || n.dodeljenoOseba) : undefined, icsOpis: n.opis, datum: dan }))
         .filter((p) => ujemaIskanje(p.naslov, p.pod))
       : [];
     return [...racuni, ...dnevneNaloge];
@@ -381,7 +386,7 @@ export default function KoledarWorkspace() {
   };
 
   const izbrisi = (id: string) => {
-    if (!window.confirm('Izbrišem ta termin?')) return;
+    if (!window.confirm(L('Izbrišem ta termin?', 'Delete this appointment?'))) return;
     izbrisiSestanek(id);
     osveziSestanke();
   };
@@ -405,7 +410,7 @@ export default function KoledarWorkspace() {
     return <Kanban size={13} weight="fill" />;
   };
 
-  const obseg = pogled === 'mesec' ? naslovMeseca(izbranDan) : pogled === 'teden' ? naslovTedna(izbranDan) : naslovDnevaKratek(izbranDan);
+  const obseg = pogled === 'mesec' ? naslovMeseca(izbranDan, dl) : pogled === 'teden' ? naslovTedna(izbranDan, dl) : naslovDnevaKratek(izbranDan, dl);
 
   /* --- delni render pomočniki --- */
 
@@ -444,15 +449,15 @@ export default function KoledarWorkspace() {
         {!kompakt && jeVelik && (
           <span className="kol-blok-akcije">
             {p.videoUrl && (
-              <a className="kol-blok-akcija" href={p.videoUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} title="Pridruži se video klicu" aria-label="Pridruži se video klicu">
+              <a className="kol-blok-akcija" href={p.videoUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} title={L('Pridruži se video klicu', 'Join video call')} aria-label={L('Pridruži se video klicu', 'Join video call')}>
                 <VideoCamera size={12} weight="bold" />
               </a>
             )}
-            <button type="button" className="kol-blok-akcija" onClick={(e) => { e.stopPropagation(); dodajVKoledar(p); }} title="Prenesi .ics" aria-label="Prenesi .ics">
+            <button type="button" className="kol-blok-akcija" onClick={(e) => { e.stopPropagation(); dodajVKoledar(p); }} title={L('Prenesi .ics', 'Download .ics')} aria-label={L('Prenesi .ics', 'Download .ics')}>
               <CalendarPlus size={12} weight="bold" />
             </button>
             {!samoOgled && (
-              <button type="button" className="kol-blok-akcija" onClick={(e) => { e.stopPropagation(); izbrisi(p.id); }} title="Izbriši" aria-label="Izbriši">
+              <button type="button" className="kol-blok-akcija" onClick={(e) => { e.stopPropagation(); izbrisi(p.id); }} title={L('Izbriši', 'Delete')} aria-label={L('Izbriši', 'Delete')}>
                 <Trash size={12} weight="bold" />
               </button>
             )}
@@ -480,8 +485,8 @@ export default function KoledarWorkspace() {
     const roki = rokiZaDan(dan);
     if (roki.length === 0) return null;
     return (
-      <section className="kol-vsedan" aria-label="Roki tega dne">
-        <span className="kol-vsedan-oznaka">Ves dan</span>
+      <section className="kol-vsedan" aria-label={L('Roki tega dne', 'Deadlines for this day')}>
+        <span className="kol-vsedan-oznaka">{L('Ves dan', 'All day')}</span>
         <div className="kol-vsedan-pilule">
           {roki.map((p) => (
             <div key={p.id} className="kol-pilula" data-tip={p.tip}>
@@ -490,7 +495,7 @@ export default function KoledarWorkspace() {
                 <strong>{p.naslov}</strong>
                 {p.pod && <small>{p.pod}</small>}
               </span>
-              <button type="button" className="kol-pilula-ics" onClick={() => dodajVKoledar(p)} title="Prenesi .ics in dodaj v koledar" aria-label="Dodaj v koledar"><CalendarPlus size={13} weight="bold" /></button>
+              <button type="button" className="kol-pilula-ics" onClick={() => dodajVKoledar(p)} title={L('Prenesi .ics in dodaj v koledar', 'Download .ics and add to calendar')} aria-label={L('Dodaj v koledar', 'Add to calendar')}><CalendarPlus size={13} weight="bold" /></button>
             </div>
           ))}
         </div>
@@ -508,7 +513,7 @@ export default function KoledarWorkspace() {
         </div>
       </div>
       {terminiZaDan(izbranDan).length === 0 && rokiZaDan(izbranDan).length === 0 && (
-        <div className="kol-prazno-plast" aria-hidden>Ta dan je prost — klikni v mrežo ali dodaj z »+ Ustvari«.</div>
+        <div className="kol-prazno-plast" aria-hidden>{L('Ta dan je prost — klikni v mrežo ali dodaj z »+ Ustvari«.', 'This day is free — click the grid or add with »+ Create«.')}</div>
       )}
     </div>
   );
@@ -523,14 +528,14 @@ export default function KoledarWorkspace() {
             <div className="kol-teden-ura-kot" />
             {dnevi.map((d) => (
               <button key={d} type="button" className="kol-dan-glava" data-danes={d === danes} onClick={() => odpriDan(d)}>
-                <span className="kol-dan-ime">{kratkiDan(d)}</span>
+                <span className="kol-dan-ime">{kratkiDan(d, dl)}</span>
                 <span className="kol-dan-num">{stDneva(d)}</span>
               </button>
             ))}
           </div>
           {imaRoke && (
             <div className="kol-vsedan-red">
-              <div className="kol-vsedan-kot">Ves dan</div>
+              <div className="kol-vsedan-kot">{L('Ves dan', 'All day')}</div>
               {dnevi.map((d) => (
                 <div key={d} className="kol-vsedan-celica">
                   {rokiZaDan(d).map((p) => (
@@ -559,7 +564,7 @@ export default function KoledarWorkspace() {
     return (
       <div className="kol-mesec">
         <div className="kol-mesec-glave">
-          {KRATKA_IMENA.map((ime) => <span key={ime}>{ime}</span>)}
+          {(locale === 'en' ? KRATKA_IMENA_EN : KRATKA_IMENA).map((ime) => <span key={ime}>{ime}</span>)}
         </div>
         <div className="kol-mesec-mreza">
           {dnevi.map((d) => {
@@ -572,7 +577,7 @@ export default function KoledarWorkspace() {
             return (
               <button key={d} type="button" className="kol-mesec-celica" data-izven={izven} data-danes-celica={jeDanes} onClick={() => odpriDan(d)}>
                 <span className="kol-mesec-vrh">
-                  {jePrvi && <span className="kol-mesec-mesec-kr">{mesecKr(d)}</span>}
+                  {jePrvi && <span className="kol-mesec-mesec-kr">{mesecKr(d, dl)}</span>}
                   <span className="kol-mesec-num" data-danes={jeDanes}>{stDneva(d)}</span>
                 </span>
                 <span className="kol-mesec-dogodki">
@@ -591,7 +596,7 @@ export default function KoledarWorkspace() {
                       <span>{ev.naslov}</span>
                     </span>
                   ))}
-                  {vec > 0 && <span className="kol-mesec-vec">+{vec} več</span>}
+                  {vec > 0 && <span className="kol-mesec-vec">+{vec} {L('več', 'more')}</span>}
                 </span>
               </button>
             );
@@ -605,33 +610,33 @@ export default function KoledarWorkspace() {
     <div className="kol">
       <div className="kol-orodna">
         <div className="kol-nav-gruca">
-          <button type="button" className="kol-nav-gumb" onClick={() => premakni(-1)} aria-label="Nazaj"><CaretLeft size={15} weight="bold" /></button>
-          <button type="button" className="kol-danes" onClick={() => setIzbranDan(danes)}>Danes</button>
-          <button type="button" className="kol-nav-gumb" onClick={() => premakni(1)} aria-label="Naprej"><CaretRight size={15} weight="bold" /></button>
+          <button type="button" className="kol-nav-gumb" onClick={() => premakni(-1)} aria-label={L('Nazaj', 'Back')}><CaretLeft size={15} weight="bold" /></button>
+          <button type="button" className="kol-danes" onClick={() => setIzbranDan(danes)}>{L('Danes', 'Today')}</button>
+          <button type="button" className="kol-nav-gumb" onClick={() => premakni(1)} aria-label={L('Naprej', 'Next')}><CaretRight size={15} weight="bold" /></button>
           <strong className="kol-obseg">{obseg}</strong>
-          <div className="kol-seg" role="group" aria-label="Pogled koledarja">
-            <button type="button" data-aktiven={pogled === 'dan'} onClick={() => setPogled('dan')}>Dan</button>
-            <button type="button" data-aktiven={pogled === 'teden'} onClick={() => setPogled('teden')}>Teden</button>
-            <button type="button" data-aktiven={pogled === 'mesec'} onClick={() => setPogled('mesec')}>Mesec</button>
+          <div className="kol-seg" role="group" aria-label={L('Pogled koledarja', 'Calendar view')}>
+            <button type="button" data-aktiven={pogled === 'dan'} onClick={() => setPogled('dan')}>{L('Dan', 'Day')}</button>
+            <button type="button" data-aktiven={pogled === 'teden'} onClick={() => setPogled('teden')}>{L('Teden', 'Week')}</button>
+            <button type="button" data-aktiven={pogled === 'mesec'} onClick={() => setPogled('mesec')}>{L('Mesec', 'Month')}</button>
           </div>
         </div>
 
         <div className="kol-akcije">
           {!samoOgled && (
-            <button type="button" className="kol-ustvari" onClick={() => odpriNov('sestanek')}><Plus size={14} weight="bold" /> Ustvari</button>
+            <button type="button" className="kol-ustvari" onClick={() => odpriNov('sestanek')}><Plus size={14} weight="bold" /> {L('Ustvari', 'Create')}</button>
           )}
-          <button type="button" className="kol-naloge-cip" data-aktiven={pokaziNaloge} aria-pressed={pokaziNaloge} onClick={() => setPokaziNaloge((v) => !v)} title="Pokaži roke nalog v koledarju">
-            <Kanban size={13} weight="bold" /> Naloge
+          <button type="button" className="kol-naloge-cip" data-aktiven={pokaziNaloge} aria-pressed={pokaziNaloge} onClick={() => setPokaziNaloge((v) => !v)} title={L('Pokaži roke nalog v koledarju', 'Show task deadlines in the calendar')}>
+            <Kanban size={13} weight="bold" /> {L('Naloge', 'Tasks')}
           </button>
           {zapadliRacuni.length > 0 && (
-            <button type="button" className="kol-zapadlo-cip" onClick={() => odpriDan(zapadliRacuni[0].datum)} title={`${zapadliRacuni.length} ${zapadliRacuni.length === 1 ? 'zapadel rok plačila' : 'zapadlih rokov plačil'} — pojdi na najzgodnejšega`} aria-label="Zapadli roki plačil">
+            <button type="button" className="kol-zapadlo-cip" onClick={() => odpriDan(zapadliRacuni[0].datum)} title={L(`${zapadliRacuni.length} ${zapadliRacuni.length === 1 ? 'zapadel rok plačila' : 'zapadlih rokov plačil'} — pojdi na najzgodnejšega`, `${zapadliRacuni.length} ${zapadliRacuni.length === 1 ? 'overdue payment' : 'overdue payments'} — go to the earliest`)} aria-label={L('Zapadli roki plačil', 'Overdue payments')}>
               <Receipt size={13} weight="bold" />
-              <span>{zapadliRacuni.length} zapadlo</span>
+              <span>{zapadliRacuni.length} {L('zapadlo', 'overdue')}</span>
             </button>
           )}
           <div className="kol-isci">
             <MagnifyingGlass size={16} weight="bold" aria-hidden />
-            <input value={iskanje} onChange={(e) => setIskanje(e.target.value)} placeholder="Iskanje" aria-label="Filter in iskanje" />
+            <input value={iskanje} onChange={(e) => setIskanje(e.target.value)} placeholder={L('Iskanje', 'Search')} aria-label={L('Filter in iskanje', 'Filter and search')} />
           </div>
         </div>
       </div>
@@ -642,40 +647,40 @@ export default function KoledarWorkspace() {
         <div className="kol-modal-ozadje" onClick={zapriObrazec}>
           <form className="kol-modal" onClick={(e) => e.stopPropagation()} onSubmit={shrani}>
             <div className="kol-modal-glava">
-              <h2>{urejamId ? 'Uredi termin' : 'Nov termin'}</h2>
-              <button type="button" className="kol-ikona-gumb" onClick={zapriObrazec} aria-label="Zapri"><X size={16} weight="bold" /></button>
+              <h2>{urejamId ? L('Uredi termin', 'Edit appointment') : L('Nov termin', 'New appointment')}</h2>
+              <button type="button" className="kol-ikona-gumb" onClick={zapriObrazec} aria-label={L('Zapri', 'Close')}><X size={16} weight="bold" /></button>
             </div>
 
-            <div className="kol-modal-tip" role="group" aria-label="Vrsta termina">
-              <button type="button" data-aktiven={obrazecTip === 'sestanek'} onClick={() => setObrazecTip('sestanek')}><UsersThree size={14} weight="bold" /> Sestanek</button>
-              <button type="button" data-aktiven={obrazecTip === 'klic'} onClick={() => setObrazecTip('klic')}><Phone size={14} weight="bold" /> Klic</button>
+            <div className="kol-modal-tip" role="group" aria-label={L('Vrsta termina', 'Appointment type')}>
+              <button type="button" data-aktiven={obrazecTip === 'sestanek'} onClick={() => setObrazecTip('sestanek')}><UsersThree size={14} weight="bold" /> {L('Sestanek', 'Meeting')}</button>
+              <button type="button" data-aktiven={obrazecTip === 'klic'} onClick={() => setObrazecTip('klic')}><Phone size={14} weight="bold" /> {L('Klic', 'Call')}</button>
             </div>
 
-            <label>Naslov<input required value={obrazec.naslov} onChange={(e) => setObrazec({ ...obrazec, naslov: e.target.value })} placeholder="npr. Uskladitev ponudbe" /></label>
+            <label>{L('Naslov', 'Title')}<input required value={obrazec.naslov} onChange={(e) => setObrazec({ ...obrazec, naslov: e.target.value })} placeholder={L('npr. Uskladitev ponudbe', 'e.g. Align on the offer')} /></label>
 
             <div className="kol-modal-vrsta">
-              <label>Datum<input required type="date" value={obrazec.datum} onChange={(e) => setObrazec({ ...obrazec, datum: e.target.value })} /></label>
-              <label>Ura<input required type="time" value={obrazec.ura} onChange={(e) => setObrazec({ ...obrazec, ura: e.target.value })} /></label>
-              <label>Trajanje (min)<input type="number" min={0} step={5} value={obrazec.trajanjeMin} onChange={(e) => setObrazec({ ...obrazec, trajanjeMin: e.target.value })} placeholder="npr. 30" /></label>
-            </div>
-
-            <div className="kol-modal-vrsta">
-              <label>Stranka<select value={obrazec.strankaId} onChange={(e) => setObrazec({ ...obrazec, strankaId: e.target.value })}><option value="">Brez stranke</option>{stranke.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
-              <label>Kontaktna oseba<input value={obrazec.kontaktId} onChange={(e) => setObrazec({ ...obrazec, kontaktId: e.target.value })} placeholder={najdiStranko(obrazec.strankaId)?.contact || 'neobvezno'} /></label>
+              <label>{L('Datum', 'Date')}<input required type="date" value={obrazec.datum} onChange={(e) => setObrazec({ ...obrazec, datum: e.target.value })} /></label>
+              <label>{L('Ura', 'Time')}<input required type="time" value={obrazec.ura} onChange={(e) => setObrazec({ ...obrazec, ura: e.target.value })} /></label>
+              <label>{L('Trajanje (min)', 'Duration (min)')}<input type="number" min={0} step={5} value={obrazec.trajanjeMin} onChange={(e) => setObrazec({ ...obrazec, trajanjeMin: e.target.value })} placeholder={L('npr. 30', 'e.g. 30')} /></label>
             </div>
 
             <div className="kol-modal-vrsta">
-              <label>Lokacija<input value={obrazec.lokacija} onChange={(e) => setObrazec({ ...obrazec, lokacija: e.target.value })} placeholder="npr. Pisarna stranke" /></label>
-              <label>Video povezava<input type="url" value={obrazec.videoUrl} onChange={(e) => setObrazec({ ...obrazec, videoUrl: e.target.value })} placeholder="https://teams.microsoft.com/…" /></label>
+              <label>{L('Stranka', 'Client')}<select value={obrazec.strankaId} onChange={(e) => setObrazec({ ...obrazec, strankaId: e.target.value })}><option value="">{L('Brez stranke', 'No client')}</option>{stranke.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
+              <label>{L('Kontaktna oseba', 'Contact person')}<input value={obrazec.kontaktId} onChange={(e) => setObrazec({ ...obrazec, kontaktId: e.target.value })} placeholder={najdiStranko(obrazec.strankaId)?.contact || L('neobvezno', 'optional')} /></label>
             </div>
 
-            <label>Opomba<textarea rows={3} value={obrazec.opomba} onChange={(e) => setObrazec({ ...obrazec, opomba: e.target.value })} placeholder="O čem tečejo pogovori?" /></label>
+            <div className="kol-modal-vrsta">
+              <label>{L('Lokacija', 'Location')}<input value={obrazec.lokacija} onChange={(e) => setObrazec({ ...obrazec, lokacija: e.target.value })} placeholder={L('npr. Pisarna stranke', 'e.g. Client office')} /></label>
+              <label>{L('Video povezava', 'Video link')}<input type="url" value={obrazec.videoUrl} onChange={(e) => setObrazec({ ...obrazec, videoUrl: e.target.value })} placeholder="https://teams.microsoft.com/…" /></label>
+            </div>
+
+            <label>{L('Opomba', 'Note')}<textarea rows={3} value={obrazec.opomba} onChange={(e) => setObrazec({ ...obrazec, opomba: e.target.value })} placeholder={L('O čem tečejo pogovori?', 'What is the conversation about?')} /></label>
 
             <div className="kol-modal-akcije">
-              {urejamId && <button type="button" className="kol-modal-izbrisi" onClick={() => { izbrisi(urejamId); zapriObrazec(); }}><Trash size={14} weight="bold" /> Izbriši</button>}
+              {urejamId && <button type="button" className="kol-modal-izbrisi" onClick={() => { izbrisi(urejamId); zapriObrazec(); }}><Trash size={14} weight="bold" /> {L('Izbriši', 'Delete')}</button>}
               <div className="kol-modal-akcije-desno">
-                <button type="button" onClick={zapriObrazec}>Prekliči</button>
-                <button type="submit" className="kol-modal-shrani">Shrani termin</button>
+                <button type="button" onClick={zapriObrazec}>{L('Prekliči', 'Cancel')}</button>
+                <button type="submit" className="kol-modal-shrani">{L('Shrani termin', 'Save appointment')}</button>
               </div>
             </div>
           </form>
