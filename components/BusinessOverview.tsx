@@ -346,11 +346,10 @@ export default function BusinessOverview({ base }: { base: string }) {
 
       <div className={styles.overviewColumns}>
       <section className={styles.historyBand} id="accounting">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>02 · ZGODOVINA</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>Vsi dokumenti</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>02 · ZGODOVINA</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>Vsi dokumenti</span><span className={styles.abShort}>Več</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
         <div className={styles.bandBody}>
         <h2 className={styles.bandTitle}>Zadnji dokumenti</h2>
         {historyItems.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>Dokument</th><th>Stranka</th><th>Datum</th><th>Status</th></tr></thead><tbody>{historyItems.map(item => <tr key={`${item.type}-${item.id}`} role="button" tabIndex={0} aria-label={`Odpri ${item.title}`} onClick={() => setSelectedDocument(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedDocument(item); } }}><td><div className={styles.documentCell}><span className={`${styles.documentIcon} ${styles[`document_${item.type === 'Ponudba' ? 'offer' : item.type === 'Pogodba' ? 'contract' : item.type === 'Račun' ? 'invoice' : 'expense'}`]}`}><HistoryIcon type={item.type} /></span><span><strong>{item.title}</strong><small>{item.subtitle ?? item.type}</small></span></div></td><td>{item.client}</td><td>{new Date(item.date).toLocaleDateString('sl-SI')}</td><td>{statusOptions(item.type).length ? <span className={`${styles.statusField} ${styles[`status_${statusTone(item.status)}`]}`} data-editable={preview === 'mine' ? '' : undefined}><span className={styles.statusPill}>{item.status}</span><select aria-label={`Status: ${item.title}`} className={styles.statusSelect} value={item.status} disabled={preview !== 'mine'} title={preview !== 'mine' ? 'To so demo podatki — statusa ni mogoče spreminjati. Preklopi na »Moji podatki«.' : undefined} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={e => updateDocumentStatus(item.type, item.id, e.target.value)}>{statusOptions(item.type).map(option => <option key={option}>{option}</option>)}</select></span> : <span className={`${styles.statusPill} ${styles.status_neutral}`}>{item.status}</span>}</td></tr>)}</tbody></table></div> : <div className={styles.emptyState}><span>+</span><div><strong>Še nimaš dokumentov.</strong><p>Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj.</p></div></div>}
-        <Link className={styles.panelMore} href={`${base}/kalkulator/projekti`}>Pojdi na arhiv <span aria-hidden>→</span></Link>
         </div>
       </section>
 
@@ -369,7 +368,7 @@ export default function BusinessOverview({ base }: { base: string }) {
       </section>
 
       <section className={styles.eventsBand} id="events" aria-labelledby="events-title">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>04 · PRIHODNJI DOGODKI</p><Link className={styles.accountingButton} href={`${base}/kalkulator/koledar`}><span className={styles.abTxt}>Vsi dogodki</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>04 · PRIHODNJI DOGODKI</p><Link className={styles.accountingButton} href={`${base}/kalkulator/koledar`}><span className={styles.abTxt}>Vsi dogodki</span><span className={styles.abShort}>Več</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
         <div className={styles.bandBody}>
         <h2 id="events-title" className={styles.bandTitle}>Dogodki &amp; roki</h2>
         {(() => {
@@ -381,14 +380,13 @@ export default function BusinessOverview({ base }: { base: string }) {
           ].sort((a, b) => a.when.getTime() - b.when.getTime()).slice(0, 5);
           return ev.length ? <ul className={styles.eventList}>{ev.map(e => <li key={e.id}><span className={styles.eventDate} data-tone={e.tone}><b>{e.when.getDate()}</b><small>{e.when.toLocaleDateString('sl-SI', { month: 'short' }).replace('.', '').toUpperCase()}</small></span><span className={styles.eventCard}><span className={styles.eventIco} data-tone={e.tone} aria-hidden>{e.tone === 'waiting' ? <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg> : <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /></svg>}</span><span className={styles.eventBody}><strong>{e.kind}</strong><small>{e.who}</small></span><i className={styles.eventDot} data-tone={e.tone} aria-hidden /></span></li>)}</ul> : <div className={styles.emptyState}><span>+</span><div><strong>Ni prihodnjih rokov.</strong><p>Roki plačil in ponudbe, ki čakajo odgovor, se prikažejo tukaj.</p></div></div>;
         })()}
-        <Link className={styles.panelMore} href={`${base}/kalkulator/koledar`}>Pojdi na koledar <span aria-hidden>→</span></Link>
         </div>
       </section>
       </div>
 
       <div className={styles.detailRow}>
         <section className={styles.historyBand} aria-labelledby="proj-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>05 · PROJEKTI</p><Link className={styles.accountingButton} href={`${base}/kalkulator/projekti`}><span className={styles.abTxt}>Vsi projekti</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+          <div className={styles.bandTop}><p className={styles.eyebrow}>05 · PROJEKTI</p><Link className={styles.accountingButton} href={`${base}/kalkulator/projekti`}><span className={styles.abTxt}>Vsi projekti</span><span className={styles.abShort}>Več</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
           <h2 id="proj-title" className={styles.bandTitle}>Zadnji projekti</h2>
           {activeOffers.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>Projekt</th><th>Status</th><th>Rok</th><th>Prihodki</th></tr></thead><tbody>{activeOffers.slice(0, 5).map(o => {
@@ -396,7 +394,6 @@ export default function BusinessOverview({ base }: { base: string }) {
             const [label, tone] = map[o.status] || ['—', 'neutral'];
             return <tr key={o.id}><td><div className={styles.documentCell}><span><strong>{o.title}</strong><small>{o.client || '—'}</small></span></div></td><td><span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{label}</span></td><td>{new Date(o.date).toLocaleDateString('sl-SI')}</td><td><strong>{offerAmounts[o.id] ? money(offerAmounts[o.id]) : '—'}</strong></td></tr>;
           })}</tbody></table></div> : <div className={styles.emptyState}><span>+</span><div><strong>Še ni projektov.</strong><p>Projekti se prikažejo tukaj, ko ustvariš ponudbo.</p></div></div>}
-          <Link className={styles.panelMore} href={`${base}/kalkulator/projekti`}>Pojdi na projekte <span aria-hidden>→</span></Link>
           </div>
         </section>
 
