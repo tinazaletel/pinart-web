@@ -834,6 +834,14 @@
   outline: 2px solid var(--purple);
   outline-offset: 2px;
 }
+.clientProfile > header > button:disabled,
+.clientLinkGumb:disabled {
+  opacity: 1 !important;
+  border-color: color-mix(in oklch, var(--ink) 14%, transparent);
+  background: oklch(97% .009 87);
+  color: color-mix(in oklch, var(--ink) 82%, var(--paper));
+  cursor: not-allowed;
+}
 .clientContacts, .clientFinance { display: grid; gap: .5rem; margin-top: 1rem; }
 .clientContacts { grid-template-columns: repeat(2, 1fr); }
 .clientFinance { grid-template-columns: repeat(3, 1fr); }
@@ -888,6 +896,14 @@
 .clientLinkVrstica:hover { background: oklch(96.5% .018 87); }
 .clientLinkVrstica a { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); font-weight: 700; font-size: .82rem; text-decoration: none; }
 .clientLinkVrstica a:hover { text-decoration: underline; }
+.clientLinkVrstica .clientDnevnikProj {
+  background: #fff;
+  transition: background-color .16s ease;
+}
+.clientLinkVrstica .clientDnevnikProj:hover {
+  background: oklch(96.5% .018 87);
+  text-decoration: none;
+}
 .clientLinkBrisi { flex: none; display: grid; place-items: center; width: 1.7rem; height: 1.7rem; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--muted); font-size: 1rem; line-height: 1; cursor: pointer; }
 .clientLinkBrisi:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .clientLinkPrazno { margin: .7rem 0 0; color: var(--muted); font-size: .82rem; }
