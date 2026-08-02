@@ -26,7 +26,7 @@
 /* Na strani "Cena & čas" je bil obrazec raztegnjen cez cel zaslon: polja so bila
    1500 px siroka za stiri besede. Omejimo ga na berljivo sirino. */
 .timeOnly { grid-template-columns: minmax(0, 1fr); }
-.plan, .timer, .history { padding: 1.4rem; border: 1px solid var(--line); border-radius: 1.35rem; background: oklch(98% .008 87 / .94); }
+.plan, .timer, .history { padding: 1.4rem; border: 1px solid oklch(22% .015 60 / .05); border-radius: 1.35rem; background: #fff; box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .045); }
 .plan, .timer { display: grid; align-content: start; gap: 1.25rem; }
 .plan header p, .timer header p, .history header p { margin: 0 0 .5rem; font-size: .72rem; font-weight: 800; letter-spacing: .15em; }
 .plan h2, .timer h2, .history h2 { margin: 0; font: 500 1.85rem/1.05 var(--font-serif), Georgia, serif; }
