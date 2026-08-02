@@ -101,8 +101,11 @@
 
 .tabs {
   display: flex;
+  align-items: center;
   gap: .25rem;
   width: fit-content;
+  height: 2.75rem;
+  box-sizing: border-box;
   max-width: 100%;
   padding: .25rem;
   overflow-x: auto;
@@ -110,7 +113,19 @@
   border-radius: 999px;
   background: #fff;
 }
-.tab { padding: .55rem 1rem; border: 0; border-radius: 999px; background: transparent; color: var(--ink); white-space: nowrap; }
+.tab {
+  min-height: auto;
+  padding: .46rem .9rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
 .tab:not([data-active='true']):hover { background: oklch(96.5% .018 87); }
 .tab[data-active='true'] { background: var(--ink); color: var(--paper); }
 
