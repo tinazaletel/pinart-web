@@ -281,7 +281,7 @@ export default function BusinessOverview({ base }: { base: string }) {
       <section className={styles.flowBand} id="tools" aria-labelledby="tools-title">
         <div className={styles.bandTop}><p className={styles.eyebrow}>01 · ORODJA</p><div className={styles.sectionNote}><strong>Smart pricing</strong><span>Cena po tvojih izkušnjah, trgu in naročniku.</span></div></div>
         <div className={styles.bandBody}>
-        <h2 id="tools-title" className={styles.bandTitle}>Kaj boš danes uredila?</h2>
+        <h2 id="tools-title" className={styles.bandNaslov}>Kaj boš danes uredila?</h2>
         <div className={styles.flowTools}>
           <Link className={styles.offerTool} href={`${base}/kalkulator/orodje`}>
             <b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b>
@@ -348,7 +348,7 @@ export default function BusinessOverview({ base }: { base: string }) {
       <section className={styles.historyBand} id="accounting">
         <div className={styles.bandTop}><p className={styles.eyebrow}>02 · ZGODOVINA</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>Vsi dokumenti</span><span className={styles.abShort}>Več</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
         <div className={styles.bandBody}>
-        <h2 className={styles.bandTitle}>Zadnji dokumenti</h2>
+        <h2 className={styles.bandNaslov}>Zadnji dokumenti</h2>
         {historyItems.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>Dokument</th><th>Stranka</th><th>Datum</th><th>Status</th></tr></thead><tbody>{historyItems.map(item => <tr key={`${item.type}-${item.id}`} role="button" tabIndex={0} aria-label={`Odpri ${item.title}`} onClick={() => setSelectedDocument(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedDocument(item); } }}><td><div className={styles.documentCell}><span className={`${styles.documentIcon} ${styles[`document_${item.type === 'Ponudba' ? 'offer' : item.type === 'Pogodba' ? 'contract' : item.type === 'Račun' ? 'invoice' : 'expense'}`]}`}><HistoryIcon type={item.type} /></span><span><strong>{item.title}</strong><small>{item.subtitle ?? item.type}</small></span></div></td><td>{item.client}</td><td>{new Date(item.date).toLocaleDateString('sl-SI')}</td><td>{statusOptions(item.type).length ? <span className={`${styles.statusField} ${styles[`status_${statusTone(item.status)}`]}`} data-editable={preview === 'mine' ? '' : undefined}><span className={styles.statusPill}>{item.status}</span><select aria-label={`Status: ${item.title}`} className={styles.statusSelect} value={item.status} disabled={preview !== 'mine'} title={preview !== 'mine' ? 'To so demo podatki — statusa ni mogoče spreminjati. Preklopi na »Moji podatki«.' : undefined} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={e => updateDocumentStatus(item.type, item.id, e.target.value)}>{statusOptions(item.type).map(option => <option key={option}>{option}</option>)}</select></span> : <span className={`${styles.statusPill} ${styles.status_neutral}`}>{item.status}</span>}</td></tr>)}</tbody></table></div> : <div className={styles.emptyState}><span>+</span><div><strong>Še nimaš dokumentov.</strong><p>Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj.</p></div></div>}
         </div>
       </section>
@@ -356,7 +356,7 @@ export default function BusinessOverview({ base }: { base: string }) {
       <section className={styles.resultsBand} id="clients" aria-labelledby="business-title">
         <div className={styles.bandTop}><p className={styles.eyebrow}>03 · POSLOVNI REZULTATI</p><select className={styles.periodSelect} value={period} onChange={e => setPeriod(e.target.value as Period)} aria-label="Obdobje prikaza"><option value="month">Ta mesec</option><option value="quarter">To četrtletje</option><option value="year">Letos</option></select></div>
         <div className={styles.bandBody}>
-        <h2 id="business-title" className={styles.bandTitle}>Kako ti gre?</h2>
+        <h2 id="business-title" className={styles.bandNaslov}>Kako ti gre?</h2>
         <div className={styles.kpiGrid}>
           <div className={styles.kpi}><span>Izdano</span><strong>{money(issued)}</strong><small>{periodInvoices.length} računov</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="issued" /></b></div>
           <div className={styles.kpi}><span>Plačano</span><strong>{money(paid)}</strong><small>{periodInvoices.filter(i => i.paid).length} potrjenih plačil</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="paid" /></b></div>
@@ -370,7 +370,7 @@ export default function BusinessOverview({ base }: { base: string }) {
       <section className={styles.eventsBand} id="events" aria-labelledby="events-title">
         <div className={styles.bandTop}><p className={styles.eyebrow}>04 · PRIHODNJI DOGODKI</p><Link className={styles.accountingButton} href={`${base}/kalkulator/koledar`}><span className={styles.abTxt}>Vsi dogodki</span><span className={styles.abShort}>Več</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
         <div className={styles.bandBody}>
-        <h2 id="events-title" className={styles.bandTitle}>Dogodki &amp; roki</h2>
+        <h2 id="events-title" className={styles.bandNaslov}>Dogodki &amp; roki</h2>
         {(() => {
           const addDays = (iso: string, n: number) => { const dt = new Date(iso); dt.setDate(dt.getDate() + n); return dt; };
           const ev = [
@@ -388,7 +388,7 @@ export default function BusinessOverview({ base }: { base: string }) {
         <section className={styles.historyBand} aria-labelledby="proj-title">
           <div className={styles.bandTop}><p className={styles.eyebrow}>05 · PROJEKTI</p><Link className={styles.accountingButton} href={`${base}/kalkulator/projekti`}><span className={styles.abTxt}>Vsi projekti</span><span className={styles.abShort}>Več</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
-          <h2 id="proj-title" className={styles.bandTitle}>Zadnji projekti</h2>
+          <h2 id="proj-title" className={styles.bandNaslov}>Zadnji projekti</h2>
           {activeOffers.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>Projekt</th><th>Status</th><th>Rok</th><th>Prihodki</th></tr></thead><tbody>{activeOffers.slice(0, 5).map(o => {
             const map: Record<string, [string, string]> = { draft: ['Osnutek', 'neutral'], sent: ['V teku', 'info'], accepted: ['Zaključeno', 'success'], rejected: ['Zavrnjeno', 'danger'] };
             const [label, tone] = map[o.status] || ['—', 'neutral'];
@@ -400,7 +400,7 @@ export default function BusinessOverview({ base }: { base: string }) {
         <section className={styles.eventsBand} aria-labelledby="rev-title">
           <div className={styles.bandTop}><p className={styles.eyebrow}>06 · PRIHODKI</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>Vsa poročila</span><span className={styles.abShort}>Več</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
-          <h2 id="rev-title" className={styles.bandTitle}>Prihodki po mesecih</h2>
+          <h2 id="rev-title" className={styles.bandNaslov}>Prihodki po mesecih</h2>
           {(() => {
             const base0 = new Date(); base0.setDate(1);
             const months = Array.from({ length: 6 }, (_, i) => { const d = new Date(base0); d.setMonth(d.getMonth() - (5 - i)); return d; });
