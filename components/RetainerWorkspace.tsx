@@ -114,6 +114,7 @@ function scatter(n: number, jeMobilni = false) {
    glave ne rise, ker jo prispeva ogrodje. */
 export default function RetainerWorkspace({ base, vLupini = false }: { base: string; vLupini?: boolean }) {
   const jeEn = base === '/en';
+  const tr = (sl: string, en: string) => (jeEn ? en : sl);
   const docLocale = jeEn ? 'en-GB' : 'sl-SI';
   const docDate = (d: Date) => d.toLocaleDateString(docLocale, { day: 'numeric', month: 'numeric', year: 'numeric' });
   const docEur = (n: number) => Math.round(n).toLocaleString(docLocale) + ' €';
@@ -502,7 +503,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = ime + '.pdf'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
       shraniStevilko();
-    } catch { setNapaka('PDF-ja ni bilo mogoče pripraviti. Poskusi znova.'); } finally { setPdfNalaganje(false); }
+    } catch { setNapaka(tr('PDF-ja ni bilo mogoče pripraviti. Poskusi znova.', 'The PDF could not be prepared. Please try again.')); } finally { setPdfNalaganje(false); }
   };
 
   /* PREDOGLED (kot kalkulator): dejanski PDF, izrisan po straneh kot slike (pdf.js).
@@ -604,15 +605,15 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       {!vLupini && <header className="rw-glava">
         <span className="rw-glava-levo">
           {/* puscica PRED logotipom — enako kot na podstraneh nadzorne plosce */}
-          <a className="rw-nazaj" href={`${base}/kalkulator/pregled`} aria-label="Nazaj na nadzorno ploščo" title="Nazaj na nadzorno ploščo">
+          <a className="rw-nazaj" href={`${base}/kalkulator/pregled`} aria-label={tr('Nazaj na nadzorno ploščo', 'Back to dashboard')} title={tr('Nazaj na nadzorno ploščo', 'Back to dashboard')}>
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </a>
           <span className="rw-brand">
-            <b className="rw-pinart">Pinart</b><span className="rw-glava-ime">Dolgoročno</span><span className="rw-beta">BETA</span>
+            <b className="rw-pinart">Pinart</b><span className="rw-glava-ime">{tr('Dolgoročno', 'Ongoing')}</span><span className="rw-beta">BETA</span>
           </span>
           {/* "zapri" odstranjen: retainer je vedno del admina, zato puscica nazaj zadostuje */}
         </span>
-        <button type="button" className="rw-avatar" aria-label="Profil" title="Profil" onClick={() => setProfilOdprt(true)}>
+        <button type="button" className="rw-avatar" aria-label={tr('Profil', 'Profile')} title={tr('Profil', 'Profile')} onClick={() => setProfilOdprt(true)}>
           {avatarVsebina}
         </button>
       </header>}
@@ -624,15 +625,17 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
 
       <div className="rw-vsebina">
         {pogled === 'vprasanja' && (<>
-        <p className="rw-kicker">Dolgoročno sodelovanje</p>
-        <h1 className="rw-h1">Mesečni retainer.</h1>
-        <p className="rw-uvod">Za obseg mesečnega dela; naredi <b>ponudbo</b> in <b>pogodbo</b>. Podatki podjetja in urna postavka se berejo iz Moje podjetje.</p>
+        <p className="rw-kicker">{tr('Dolgoročno sodelovanje', 'Ongoing collaboration')}</p>
+        <h1 className="rw-h1">{tr('Mesečni retainer.', 'Monthly retainer.')}</h1>
+        <p className="rw-uvod">{jeEn
+          ? <>For the scope of monthly work; create a <b>proposal</b> and an <b>agreement</b>. Company details and the hourly rate are read from My company.</>
+          : <>Za obseg mesečnega dela; naredi <b>ponudbo</b> in <b>pogodbo</b>. Podatki podjetja in urna postavka se berejo iz Moje podjetje.</>}</p>
 
         <section className="rw-sek rw-vstop" id="rw-korak-0">
-          <Vpr naslov="Kaj pokrivaš vsak mesec?" opis="Klikni področja, ki jih retainer vključuje." />
-          <div className="rw-segpills rw-segpills-pogled" role="group" aria-label="Prikaz obsega" style={{ margin: '0 0 1rem' }}>
-            <button type="button" className={!obsegTabela ? 'on' : ''} onClick={() => setObsegTabela(false)}>Mehurčki</button>
-            <button type="button" className={obsegTabela ? 'on' : ''} onClick={() => setObsegTabela(true)}>Tabela</button>
+          <Vpr naslov={tr('Kaj pokrivaš vsak mesec?', 'What do you cover each month?')} opis={tr('Klikni področja, ki jih retainer vključuje.', 'Click the areas the retainer includes.')} />
+          <div className="rw-segpills rw-segpills-pogled" role="group" aria-label={tr('Prikaz obsega', 'Scope view')} style={{ margin: '0 0 1rem' }}>
+            <button type="button" className={!obsegTabela ? 'on' : ''} onClick={() => setObsegTabela(false)}>{tr('Mehurčki', 'Bubbles')}</button>
+            <button type="button" className={obsegTabela ? 'on' : ''} onClick={() => setObsegTabela(true)}>{tr('Tabela', 'Table')}</button>
           </div>
           {obsegTabela ? (
             <div className="rw-obseg-tabela">
@@ -674,93 +677,93 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             })()}
           </div>
           )}
-          {lastna.length > 0 && <div className="rw-lastne">{lastna.map(l => <span key={l} className="rw-lastna">{l}<button type="button" onClick={() => setLastna(x => x.filter(y => y !== l))} aria-label={'Odstrani ' + l}>×</button></span>)}</div>}
+          {lastna.length > 0 && <div className="rw-lastne">{lastna.map(l => <span key={l} className="rw-lastna">{l}<button type="button" onClick={() => setLastna(x => x.filter(y => y !== l))} aria-label={tr('Odstrani ', 'Remove ') + l}>×</button></span>)}</div>}
           {dodajOdprt && (
             <div className="rw-dodaj">
-              <input className="rw-vnos" autoFocus placeholder="dodaj svoje področje …" value={scopeVnos}
+              <input className="rw-vnos" autoFocus placeholder={tr('dodaj svoje področje …', 'add your own area …')} value={scopeVnos}
                 onChange={e => setScopeVnos(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); dodajLastno(); } }} />
-              <button type="button" className="rw-cip" onClick={dodajLastno}>+ dodaj</button>
+              <button type="button" className="rw-cip" onClick={dodajLastno}>{tr('+ dodaj', '+ add')}</button>
             </div>
           )}
         </section>
 
         {korak >= 1 && (<section className="rw-sek rw-vstop" id="rw-korak-1">
-          <Vpr naslov="Kako računaš mesečno?" opis="Model, ure in doba — spodaj se izriše mesečni znesek." />
+          <Vpr naslov={tr('Kako računaš mesečno?', 'How do you charge monthly?')} opis={tr('Model, ure in doba — spodaj se izriše mesečni znesek.', 'Model, hours and term — the monthly amount is shown below.')} />
           <div className="rw-kartica rw-kartica-model">
             <div className="rw-pills">
-              {(['ure', 'paket', 'oboje'] as const).map(m => <button key={m} type="button" className={'rw-pill' + (model === m ? ' on' : '')} onClick={() => setModel(m)}>{m === 'ure' ? 'Po urah' : m === 'paket' ? 'Paket / mesec' : 'Oboje'}</button>)}
+              {(['ure', 'paket', 'oboje'] as const).map(m => <button key={m} type="button" className={'rw-pill' + (model === m ? ' on' : '')} onClick={() => setModel(m)}>{m === 'ure' ? tr('Po urah', 'By hours') : m === 'paket' ? tr('Paket / mesec', 'Package / month') : tr('Oboje', 'Both')}</button>)}
             </div>
             {model !== 'paket' && (
-              <div className="rw-vrsta"><span className="rw-oznaka">Ure / mesec</span>
+              <div className="rw-vrsta"><span className="rw-oznaka">{tr('Ure / mesec', 'Hours / month')}</span>
                 <div className="rw-cipi">
                   {URE_MOZNOSTI.map(u => <button key={u} type="button" className={'rw-cip' + (ure === u ? ' on' : '')} onClick={() => setUre(u)}>{u} h</button>)}
                   <input className="rw-num" type="number" min={1} step={1} value={ure} onChange={e => setUre(Math.max(1, Math.round(Number(e.target.value) || 1)))} />
-                  <span className="rw-mini">urna postavka {eur(urna)}</span>
+                  <span className="rw-mini">{tr('urna postavka', 'hourly rate')} {eur(urna)}</span>
                 </div>
               </div>
             )}
             {model !== 'ure' && (
-              <div className="rw-vrsta"><span className="rw-oznaka">Paket / mesec</span>
-                <div className="rw-cipi"><input className="rw-num" style={{ width: '7rem' }} type="number" min={0} step={10} value={paketMes} onChange={e => setPaketMes(Math.max(0, Math.round(Number(e.target.value) || 0)))} /><span className="rw-mini">€ fiksno na mesec za obseg</span></div>
+              <div className="rw-vrsta"><span className="rw-oznaka">{tr('Paket / mesec', 'Package / month')}</span>
+                <div className="rw-cipi"><input className="rw-num" style={{ width: '7rem' }} type="number" min={0} step={10} value={paketMes} onChange={e => setPaketMes(Math.max(0, Math.round(Number(e.target.value) || 0)))} /><span className="rw-mini">{tr('€ fiksno na mesec za obseg', '€ fixed per month for the scope')}</span></div>
               </div>
             )}
-            <div className="rw-vrsta"><span className="rw-oznaka">Doba</span>
-              <div className="rw-cipi">{DOBE.map(m => <button key={m} type="button" className={'rw-cip' + (doba === m ? ' on' : '')} onClick={() => setDoba(m)}>{m} mes{POPUST[m] ? ` · −${Math.round(POPUST[m] * 100)} %` : ''}</button>)}</div>
+            <div className="rw-vrsta"><span className="rw-oznaka">{tr('Doba', 'Term')}</span>
+              <div className="rw-cipi">{DOBE.map(m => <button key={m} type="button" className={'rw-cip' + (doba === m ? ' on' : '')} onClick={() => setDoba(m)}>{m} {tr('mes', 'mo')}{POPUST[m] ? ` · −${Math.round(POPUST[m] * 100)} %` : ''}</button>)}</div>
             </div>
           </div>
           <div className="rw-povz">
-            <div className="rw-glavna"><span>Mesečni znesek</span><b>{eur(ret.mesNeto)}{ddvZavezanec ? ` (z DDV ${eur(zDdv(ret.mesNeto))})` : ''} <em>/ mes</em></b></div>
+            <div className="rw-glavna"><span>{tr('Mesečni znesek', 'Monthly amount')}</span><b>{eur(ret.mesNeto)}{ddvZavezanec ? ` (${tr('z DDV', 'incl. VAT')} ${eur(zDdv(ret.mesNeto))})` : ''} <em>/ {tr('mes', 'mo')}</em></b></div>
             <ul className="rw-det">
-              {ret.ureBaza > 0 && <li>{ure} ur/mesec po {eur(urna)}/uro</li>}
-              {ret.paketBaza > 0 && <li>paket: {eur(ret.paketBaza)}/mesec</li>}
-              {ret.popust > 0 && <li>zavezni popust ({doba} mes): −{Math.round(ret.popust * 100)} % (redno {eur(ret.mesBruto)}/mes)</li>}
-              <li>dodatne ure nad blokom: {eur(ret.overage)}/uro · odpovedni rok: {ODPOVED_DNI} dni</li>
-              <li>za dobo ({doba} mes): <b>{eur(ret.skupajDoba)}</b> · letno: <b>{eur(ret.letno)}</b></li>
+              {ret.ureBaza > 0 && <li>{ure} {tr('ur/mesec po', 'h/month at')} {eur(urna)}/{tr('uro', 'h')}</li>}
+              {ret.paketBaza > 0 && <li>{tr('paket', 'package')}: {eur(ret.paketBaza)}/{tr('mesec', 'month')}</li>}
+              {ret.popust > 0 && <li>{tr('zavezni popust', 'commitment discount')} ({doba} {tr('mes', 'mo')}): −{Math.round(ret.popust * 100)} % ({tr('redno', 'standard')} {eur(ret.mesBruto)}/{tr('mes', 'mo')})</li>}
+              <li>{tr('dodatne ure nad blokom', 'additional hours beyond the block')}: {eur(ret.overage)}/{tr('uro', 'h')} · {tr('odpovedni rok', 'notice period')}: {ODPOVED_DNI} {tr('dni', 'days')}</li>
+              <li>{tr('za dobo', 'for the term')} ({doba} {tr('mes', 'mo')}): <b>{eur(ret.skupajDoba)}</b> · {tr('letno', 'annual')}: <b>{eur(ret.letno)}</b></li>
             </ul>
           </div>
         </section>)}
 
         {korak >= 2 && (<section className="rw-sek rw-vstop" id="rw-korak-2">
-          <Vpr naslov="Za koga pripravljaš?" opis="Ime zadošča; naslov in davčno dodaš za pogodbo." />
+          <Vpr naslov={tr('Za koga pripravljaš?', 'Who is this for?')} opis={tr('Ime zadošča; naslov in davčno dodaš za pogodbo.', 'A name is enough; add address and tax no. for the agreement.')} />
           <div className="rw-kartica">
-            <div className="rw-knaslov">Naročnik <span className="rw-vec">za pogodbo in pošiljanje</span></div>
+            <div className="rw-knaslov">{tr('Naročnik', 'Client')} <span className="rw-vec">{tr('za pogodbo in pošiljanje', 'for the agreement and sending')}</span></div>
             <div className="rw-numgrid">
               <div className="rw-polje">
-                <label htmlFor="rw-nar-ime">Ime podjetja</label>
-                <input id="rw-nar-ime" type="text" placeholder="npr. Odvetniška družba Volk &amp; Babica" value={nar.ime} onChange={e => setNar({ ...nar, ime: e.target.value })} />
+                <label htmlFor="rw-nar-ime">{tr('Ime podjetja', 'Company name')}</label>
+                <input id="rw-nar-ime" type="text" placeholder={tr('npr. Odvetniška družba Volk &amp; Babica', 'e.g. Wolf & Granny Law Firm')} value={nar.ime} onChange={e => setNar({ ...nar, ime: e.target.value })} />
               </div>
               <div className="rw-polje">
-                <label htmlFor="rw-nar-email">Email naročnika</label>
-                <input id="rw-nar-email" type="email" placeholder="npr. pisarna@volk-babica.si" value={nar.email} onChange={e => setNar({ ...nar, email: e.target.value })} />
+                <label htmlFor="rw-nar-email">{tr('Email naročnika', 'Client email')}</label>
+                <input id="rw-nar-email" type="email" placeholder={tr('npr. pisarna@volk-babica.si', 'e.g. office@wolf-granny.com')} value={nar.email} onChange={e => setNar({ ...nar, email: e.target.value })} />
               </div>
             </div>
             {dodatniNar && (
               <>
                 <div className="rw-numgrid">
                   <div className="rw-polje">
-                    <label htmlFor="rw-nar-naslov">Naslov (ulica, kraj)</label>
-                    <input id="rw-nar-naslov" type="text" placeholder="npr. Dunajska cesta 1, 1000 Ljubljana" value={nar.naslov} onChange={e => setNar({ ...nar, naslov: e.target.value })} />
+                    <label htmlFor="rw-nar-naslov">{tr('Naslov (ulica, kraj)', 'Address (street, city)')}</label>
+                    <input id="rw-nar-naslov" type="text" placeholder={tr('npr. Dunajska cesta 1, 1000 Ljubljana', 'e.g. Dunajska cesta 1, 1000 Ljubljana')} value={nar.naslov} onChange={e => setNar({ ...nar, naslov: e.target.value })} />
                   </div>
                   <div className="rw-polje">
-                    <label htmlFor="rw-nar-davcna">Davčna številka</label>
-                    <input id="rw-nar-davcna" type="text" placeholder="npr. SI12345678" value={nar.davcna} onChange={e => setNar({ ...nar, davcna: e.target.value })} />
+                    <label htmlFor="rw-nar-davcna">{tr('Davčna številka', 'Tax number')}</label>
+                    <input id="rw-nar-davcna" type="text" placeholder={tr('npr. SI12345678', 'e.g. SI12345678')} value={nar.davcna} onChange={e => setNar({ ...nar, davcna: e.target.value })} />
                   </div>
                 </div>
                 <div className="rw-numgrid">
                   <div className="rw-polje">
-                    <label htmlFor="rw-nar-oseba">Kontaktna oseba</label>
-                    <input id="rw-nar-oseba" type="text" placeholder="npr. Sivko Volk" value={nar.oseba} onChange={e => setNar({ ...nar, oseba: e.target.value })} />
+                    <label htmlFor="rw-nar-oseba">{tr('Kontaktna oseba', 'Contact person')}</label>
+                    <input id="rw-nar-oseba" type="text" placeholder={tr('npr. Sivko Volk', 'e.g. John Wolf')} value={nar.oseba} onChange={e => setNar({ ...nar, oseba: e.target.value })} />
                   </div>
                   <div className="rw-polje" aria-hidden />
                 </div>
               </>
             )}
             {!dodatniNar
-              ? <button type="button" className="rw-dodaj-gumb" style={{ marginTop: '1.1rem' }} onClick={() => setDodatniNar(true)}>+ Dodaj davčno št. in kontaktno osebo</button>
-              : <button type="button" className="rw-povezava" style={{ marginTop: '1.1rem' }} onClick={() => { setDodatniNar(false); setNar({ ...nar, naslov: '', davcna: '', oseba: '' }); }}>Skrij (počisti naslov, davčno in kontaktno osebo)</button>}
+              ? <button type="button" className="rw-dodaj-gumb" style={{ marginTop: '1.1rem' }} onClick={() => setDodatniNar(true)}>{tr('+ Dodaj davčno št. in kontaktno osebo', '+ Add tax no. and contact person')}</button>
+              : <button type="button" className="rw-povezava" style={{ marginTop: '1.1rem' }} onClick={() => { setDodatniNar(false); setNar({ ...nar, naslov: '', davcna: '', oseba: '' }); }}>{tr('Skrij (počisti naslov, davčno in kontaktno osebo)', 'Hide (clear address, tax no. and contact person)')}</button>}
             {nedavni.length > 0 && (
               <div className="rw-nar-nedavni">
-                <span className="rw-vec">nedavni:</span>
+                <span className="rw-vec">{tr('nedavni:', 'recent:')}</span>
                 {nedavni.slice(0, 8).map(n => <button key={n.ime} type="button" className="rw-nar-chip" onClick={() => uporabiNar(n)}>{n.ime}</button>)}
               </div>
             )}
@@ -768,31 +771,31 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         </section>)}
 
         {korak >= 3 && (<section className="rw-sek rw-vstop" id="rw-korak-3">
-          <Vpr naslov="Še pravice — pa greva na dokumente." opis="Prenesi pogodbo (in po želji retainer ponudbo)." />
+          <Vpr naslov={tr('Še pravice — pa greva na dokumente.', 'One more — the rights, then on to the documents.')} opis={tr('Prenesi pogodbo (in po želji retainer ponudbo).', 'Download the agreement (and optionally the retainer proposal).')} />
           <div className="rw-mreza rw-mreza-prav">
-            <label>Avtorske pravice (za čas sodelovanja)<textarea className="rw-txt" value={pravice} onChange={e => setPravice(e.target.value)} /></label>
-            <label>Številka<input className="rw-vnos" value={stevilka} onChange={e => setStevilka(e.target.value)} /></label>
+            <label>{tr('Avtorske pravice (za čas sodelovanja)', 'Intellectual property rights (for the term)')}<textarea className="rw-txt" value={pravice} onChange={e => setPravice(e.target.value)} /></label>
+            <label>{tr('Številka', 'Number')}<input className="rw-vnos" value={stevilka} onChange={e => setStevilka(e.target.value)} /></label>
           </div>
         </section>)}
         </>)}
 
         {/* ── POGLED: PONUDBA (locena stran — vprasanja skrita, samo dokument) — ENAKO kot kalkulatorjev ponudbaStep ── */}
         {pogled === 'ponudba' && (<section className="rw-sek rw-vstop rw-stran" id="rw-dokument">
-          <Vpr naslov="Dokument je pripravljen." opis="Uredi besedilo, preklapljaj med Pogodbo in Ponudbo, nato prenesi." />
+          <Vpr naslov={tr('Dokument je pripravljen.', 'The document is ready.')} opis={tr('Uredi besedilo, preklapljaj med Pogodbo in Ponudbo, nato prenesi.', 'Edit the text, switch between Agreement and Proposal, then download.')} />
           <div className="rw-pon-vrh" style={{ marginTop: '1.2rem' }}>
-            <div className="rw-segpills rw-segpills-pogled" role="group" aria-label="Pogled">
-              <button type="button" className={!predogledMode ? 'on' : ''} onClick={() => setPredogledMode(false)}><PencilSimple size={15} weight="bold" /> Uredi</button>
-              <button type="button" className={predogledMode ? 'on' : ''} onClick={() => setPredogledMode(true)}><Eye size={16} /> Predogled</button>
+            <div className="rw-segpills rw-segpills-pogled" role="group" aria-label={tr('Pogled', 'View')}>
+              <button type="button" className={!predogledMode ? 'on' : ''} onClick={() => setPredogledMode(false)}><PencilSimple size={15} weight="bold" /> {tr('Uredi', 'Edit')}</button>
+              <button type="button" className={predogledMode ? 'on' : ''} onClick={() => setPredogledMode(true)}><Eye size={16} /> {tr('Predogled', 'Preview')}</button>
             </div>
             {/* samo ikona, da gre vse v eno vrstico (enako kot kalkulator) */}
             {jeMobilni && !predogledMode && (
-              <button type="button" className="rw-sheet-trig" onClick={() => setPonSheet(v => (v ? null : 'oblika'))} aria-label="Oblikovanje" title="Oblikovanje">
+              <button type="button" className="rw-sheet-trig" onClick={() => setPonSheet(v => (v ? null : 'oblika'))} aria-label={tr('Oblikovanje', 'Formatting')} title={tr('Oblikovanje', 'Formatting')}>
                 <TextAa size={18} weight="bold" />
               </button>
             )}
-            <div className="rw-segpills rw-segpills-sek" role="group" aria-label="Dokument">
-              <button type="button" className={predType === 'pogodba' ? 'on' : ''} onClick={() => { setPredType('pogodba'); setRocnoTelo(false); }}>Pogodba</button>
-              <button type="button" className={predType === 'ponudba' ? 'on' : ''} onClick={() => { setPredType('ponudba'); setRocnoTelo(false); }}>Retainer ponudba</button>
+            <div className="rw-segpills rw-segpills-sek" role="group" aria-label={tr('Dokument', 'Document')}>
+              <button type="button" className={predType === 'pogodba' ? 'on' : ''} onClick={() => { setPredType('pogodba'); setRocnoTelo(false); }}>{tr('Pogodba', 'Agreement')}</button>
+              <button type="button" className={predType === 'ponudba' ? 'on' : ''} onClick={() => { setPredType('ponudba'); setRocnoTelo(false); }}>{tr('Retainer ponudba', 'Retainer proposal')}</button>
             </div>
           </div>
 
@@ -801,10 +804,10 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
               {predStrani.length
                 ? predStrani.map((u, i) => (
                   /* eslint-disable-next-line @next/next/no-img-element */
-                  <img key={i} className="rw-pred-stran" src={u} alt={`Stran ${i + 1}`} />
+                  <img key={i} className="rw-pred-stran" src={u} alt={`${tr('Stran', 'Page')} ${i + 1}`} />
                 ))
-                : <div className="rw-pred-prazno">{predNal ? 'Pripravljam predogled …' : 'Predogled ni na voljo'}</div>}
-              {predNal && predStrani.length > 0 && <div className="rw-pred-osvezi" role="status">Osvežujem …</div>}
+                : <div className="rw-pred-prazno">{predNal ? tr('Pripravljam predogled …', 'Preparing preview …') : tr('Predogled ni na voljo', 'Preview unavailable')}</div>}
+              {predNal && predStrani.length > 0 && <div className="rw-pred-osvezi" role="status">{tr('Osvežujem …', 'Refreshing …')}</div>}
             </div>
           ) : (
             <>
@@ -815,39 +818,39 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
                   prilepil na dno. */}
               {(() => {
                 const orodjaKontrole = <>
-                  {oznaciNamig && <div className="rw-oznaci-namig" role="status">Najprej označi besedilo</div>}
-                  <div className="rw-tool-vel2" role="group" aria-label="Velikost besedila">
-                    <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); velikost(-1); }} title="Manjše" aria-label="Pomanjšaj"><CaretDown size={14} weight="bold" /></button>
+                  {oznaciNamig && <div className="rw-oznaci-namig" role="status">{tr('Najprej označi besedilo', 'Select text first')}</div>}
+                  <div className="rw-tool-vel2" role="group" aria-label={tr('Velikost besedila', 'Text size')}>
+                    <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); velikost(-1); }} title={tr('Manjše', 'Smaller')} aria-label={tr('Pomanjšaj', 'Decrease')}><CaretDown size={14} weight="bold" /></button>
                     <span className="rw-tv-aa" aria-hidden>Aa</span>
-                    <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); velikost(1); }} title="Večje" aria-label="Povečaj"><CaretUp size={14} weight="bold" /></button>
+                    <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); velikost(1); }} title={tr('Večje', 'Larger')} aria-label={tr('Povečaj', 'Increase')}><CaretUp size={14} weight="bold" /></button>
                   </div>
-                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko" aria-label="Krepko"><TextB size={17} weight="bold" /></button>
-                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title="Ležeče" aria-label="Ležeče"><TextItalic size={17} /></button>
-                  <select className="rw-pisava-select" aria-label="Pisava besedila" defaultValue="" onMouseDown={() => editorRef.current?.focus()} onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
-                    <option value="" disabled>Pisava</option>
-                    <option value="Bodoni Moda">Elegantna</option>
+                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title={tr('Krepko', 'Bold')} aria-label={tr('Krepko', 'Bold')}><TextB size={17} weight="bold" /></button>
+                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title={tr('Ležeče', 'Italic')} aria-label={tr('Ležeče', 'Italic')}><TextItalic size={17} /></button>
+                  <select className="rw-pisava-select" aria-label={tr('Pisava besedila', 'Text font')} defaultValue="" onMouseDown={() => editorRef.current?.focus()} onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
+                    <option value="" disabled>{tr('Pisava', 'Font')}</option>
+                    <option value="Bodoni Moda">{tr('Elegantna', 'Elegant')}</option>
                     <option value="Montserrat">Montserrat</option>
                     <option value="Georgia">Georgia</option>
                     <option value="Arial">Arial</option>
                   </select>
-                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h1'); }} title="Naslov" aria-label="Naslov H1">H1</button>
-                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title="Podnaslov" aria-label="Podnaslov H2">H2</button>
-                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title="Navadno besedilo" aria-label="Navadno besedilo P">P</button>
+                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h1'); }} title={tr('Naslov', 'Heading')} aria-label={tr('Naslov H1', 'Heading H1')}>H1</button>
+                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'h2'); }} title={tr('Podnaslov', 'Subheading')} aria-label={tr('Podnaslov H2', 'Subheading H2')}>H2</button>
+                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('formatBlock', 'p'); }} title={tr('Navadno besedilo', 'Body text')} aria-label={tr('Navadno besedilo P', 'Body text P')}>P</button>
                   <span className="rw-tool-locnica" aria-hidden />
-                  <button type="button" className="rw-barvica rw-barvica-mavrica" aria-label="Barva besedila (poljubna)" title="Barva besedila — poljubna" onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
+                  <button type="button" className="rw-barvica rw-barvica-mavrica" aria-label={tr('Barva besedila (poljubna)', 'Text color (custom)')} title={tr('Barva besedila — poljubna', 'Text color — custom')} onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
                   <input ref={barvaRef} type="color" hidden onChange={e => oblikuj('foreColor', e.target.value)} />
-                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('hiliteColor', '#FCE38A'); }} onDoubleClick={e => { e.preventDefault(); oblikuj('hiliteColor', 'transparent'); }} title="Označi besedilo — dvojni klik odstrani" aria-label="Označi besedilo"><span className="rw-hl">T</span></button>
+                  <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('hiliteColor', '#FCE38A'); }} onDoubleClick={e => { e.preventDefault(); oblikuj('hiliteColor', 'transparent'); }} title={tr('Označi besedilo — dvojni klik odstrani', 'Highlight text — double-click to remove')} aria-label={tr('Označi besedilo', 'Highlight text')}><span className="rw-hl">T</span></button>
                   <span className="rw-tool-locnica" aria-hidden />
                   {/* priponka — dodatna priloga k retainerju (npr. PDF specifikacije, slika, dodatek); ni del besedila dokumenta */}
-                  <button type="button" className={'rw-tool-krog' + (priponkaIme ? ' on' : '')} onClick={() => priponkaRef.current?.click()} title={priponkaIme ? 'Zamenjaj priponko' : 'Dodaj priponko'} aria-label={priponkaIme ? 'Zamenjaj priponko' : 'Dodaj priponko'}><Paperclip size={17} weight="bold" /></button>
+                  <button type="button" className={'rw-tool-krog' + (priponkaIme ? ' on' : '')} onClick={() => priponkaRef.current?.click()} title={priponkaIme ? tr('Zamenjaj priponko', 'Replace attachment') : tr('Dodaj priponko', 'Add attachment')} aria-label={priponkaIme ? tr('Zamenjaj priponko', 'Replace attachment') : tr('Dodaj priponko', 'Add attachment')}><Paperclip size={17} weight="bold" /></button>
                   {priponkaIme && (
                     <span className="rw-priponka-cip">
                       {priponkaPot ? (
-                        <button type="button" className="rw-priponka-ime" onClick={odpriPriponko} title="Odpri priponko">{priponkaIme}</button>
+                        <button type="button" className="rw-priponka-ime" onClick={odpriPriponko} title={tr('Odpri priponko', 'Open attachment')}>{priponkaIme}</button>
                       ) : (
                         <span className="rw-priponka-ime">{priponkaIme}</span>
                       )}
-                      <button type="button" onClick={odstraniPriponko} aria-label="Odstrani priponko" title="Odstrani priponko"><X size={11} weight="bold" /></button>
+                      <button type="button" onClick={odstraniPriponko} aria-label={tr('Odstrani priponko', 'Remove attachment')} title={tr('Odstrani priponko', 'Remove attachment')}><X size={11} weight="bold" /></button>
                     </span>
                   )}
                   <input ref={priponkaRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx" hidden onChange={naloziPriponko} />
@@ -856,8 +859,8 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
                 return typeof document !== 'undefined' ? createPortal(
                   <>
                     {ponSheet && <div className="rw-sheet-back" onClick={() => setPonSheet(null)} aria-hidden />}
-                    <div className={'rw-orodjarna rw-orodjarna-sheet' + (ponSheet ? ' odprt' : '')} aria-label="Oblikovanje besedila" aria-hidden={!ponSheet}>
-                      <div className="rw-sheet-glava"><b>Oblikovanje</b><button type="button" className="rw-sheet-x" onClick={() => setPonSheet(null)} aria-label="Zapri">✕</button></div>
+                    <div className={'rw-orodjarna rw-orodjarna-sheet' + (ponSheet ? ' odprt' : '')} aria-label={tr('Oblikovanje besedila', 'Text formatting')} aria-hidden={!ponSheet}>
+                      <div className="rw-sheet-glava"><b>{tr('Oblikovanje', 'Formatting')}</b><button type="button" className="rw-sheet-x" onClick={() => setPonSheet(null)} aria-label={tr('Zapri', 'Close')}>✕</button></div>
                       {orodjaKontrole}
                     </div>
                   </>,
@@ -867,38 +870,38 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
               <div className="rw-editor-ovoj">
                 <div ref={napolniEditor} className="rw-editor" contentEditable suppressContentEditableWarning onInput={() => setRocnoTelo(true)} onBlur={sinhronizirajEditor} />
                 {/* ikonica za podpis — desno spodaj, ob podpisnih crtah */}
-                <button type="button" className="rw-podpis-trig" onClick={() => setPonSheet(v => v === 'podpis' ? null : 'podpis')} aria-label="Dodaj podpis" title="Dodaj podpis"><PenNib size={18} /></button>
+                <button type="button" className="rw-podpis-trig" onClick={() => setPonSheet(v => v === 'podpis' ? null : 'podpis')} aria-label={tr('Dodaj podpis', 'Add signature')} title={tr('Dodaj podpis', 'Add signature')}><PenNib size={18} /></button>
               </div>
               {/* sheet Podpis: portal na <body> (fixed sidro), namizje + mobil */}
               {typeof document !== 'undefined' && createPortal(
                 <>
                   {ponSheet === 'podpis' && <div className="rw-sheet-back" onClick={() => setPonSheet(null)} aria-hidden />}
-                  <div className={'rw-podpis-sheet' + (ponSheet === 'podpis' ? ' odprt' : '')} role="dialog" aria-label="Podpis" aria-hidden={ponSheet !== 'podpis'}>
-                    <div className="rw-sheet-glava"><b>Podpis</b><button type="button" className="rw-sheet-x" onClick={() => setPonSheet(null)} aria-label="Zapri">✕</button></div>
-                    <div className="rw-podpis-vrsta" role="group" aria-label="Kam gre podpis">
-                      <button type="button" className={'rw-cip' + (podpisCilj === 'izvajalec' ? ' on' : '')} onClick={() => setPodpisCilj('izvajalec')}>Izvajalec</button>
-                      <button type="button" className={'rw-cip' + (podpisCilj === 'narocnik' ? ' on' : '')} onClick={() => setPodpisCilj('narocnik')}>Naročnik</button>
+                  <div className={'rw-podpis-sheet' + (ponSheet === 'podpis' ? ' odprt' : '')} role="dialog" aria-label={tr('Podpis', 'Signature')} aria-hidden={ponSheet !== 'podpis'}>
+                    <div className="rw-sheet-glava"><b>{tr('Podpis', 'Signature')}</b><button type="button" className="rw-sheet-x" onClick={() => setPonSheet(null)} aria-label={tr('Zapri', 'Close')}>✕</button></div>
+                    <div className="rw-podpis-vrsta" role="group" aria-label={tr('Kam gre podpis', 'Where the signature goes')}>
+                      <button type="button" className={'rw-cip' + (podpisCilj === 'izvajalec' ? ' on' : '')} onClick={() => setPodpisCilj('izvajalec')}>{tr('Izvajalec', 'Service provider')}</button>
+                      <button type="button" className={'rw-cip' + (podpisCilj === 'narocnik' ? ' on' : '')} onClick={() => setPodpisCilj('narocnik')}>{tr('Naročnik', 'Client')}</button>
                     </div>
                     <canvas ref={pripraviPlatno} className="rw-podpis-platno" onPointerDown={zacniRis} onPointerMove={risiPodpis} onPointerUp={koncajRis} onPointerCancel={koncajRis} />
                     <div className="rw-podpis-akcije">
-                      <button type="button" className="rw-cip" onClick={pocistiPodpis}>Počisti</button>
-                      <button type="button" className="rw-gumb" disabled={!narisano} onClick={vstaviNarisanPodpis}>Vstavi podpis</button>
+                      <button type="button" className="rw-cip" onClick={pocistiPodpis}>{tr('Počisti', 'Clear')}</button>
+                      <button type="button" className="rw-gumb" disabled={!narisano} onClick={vstaviNarisanPodpis}>{tr('Vstavi podpis', 'Insert signature')}</button>
                     </div>
-                    <div className="rw-podpis-ali">ali</div>
-                    <button type="button" className="rw-cip" onClick={() => podpisDatotekaRef.current?.click()}>Naloži sliko podpisa …</button>
+                    <div className="rw-podpis-ali">{tr('ali', 'or')}</div>
+                    <button type="button" className="rw-cip" onClick={() => podpisDatotekaRef.current?.click()}>{tr('Naloži sliko podpisa …', 'Upload signature image …')}</button>
                     <input ref={podpisDatotekaRef} type="file" accept="image/*" hidden onChange={naloziPodpisSliko} />
                   </div>
                 </>,
                 document.body,
               )}
               {rocnoTelo && (
-                <p className="rw-mini" style={{ marginTop: '.5rem' }}>Besedilo je ročno urejeno in se ob spremembi vhodov ne posodablja več samodejno. <button type="button" className="rw-povezava" onClick={ponastaviTelo}>Povrni samodejno besedilo</button></p>
+                <p className="rw-mini" style={{ marginTop: '.5rem' }}>{tr('Besedilo je ročno urejeno in se ob spremembi vhodov ne posodablja več samodejno.', 'The text has been edited manually and no longer updates automatically when inputs change.')} <button type="button" className="rw-povezava" onClick={ponastaviTelo}>{tr('Povrni samodejno besedilo', 'Restore automatic text')}</button></p>
               )}
             </>
           )}
 
           {napaka && <p className="rw-napaka">{napaka}</p>}
-          <p className="rw-mini" style={{ marginTop: '.7rem' }}>Prenos (PDF) je na zaključni strani — klikni »Zaključi« spodaj.</p>
+          <p className="rw-mini" style={{ marginTop: '.7rem' }}>{tr('Prenos (PDF) je na zaključni strani — klikni »Zaključi« spodaj.', 'The PDF download is on the final page — click "Finish" below.')}</p>
         </section>)}
 
         {/* ── POGLED: ZAKLJUCEK (locena stran) — ENAKO kot kalkulatorjev zakljucekStep ── */}
@@ -918,9 +921,11 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
               </g>
             </svg>
           </div>
-          <h1 className="rw-h1">Zaključek.</h1>
-          <p className="rw-num-pod">Dolgoročno sodelovanje{stevilka ? ' · št. ' + stevilka : ''}</p>
-          <p className="rw-uvod">Prenesi pogodbo{nar.ime.trim() ? ' za ' + nar.ime.trim() : ''} in po želji še retainer ponudbo.</p>
+          <h1 className="rw-h1">{tr('Zaključek.', 'Done.')}</h1>
+          <p className="rw-num-pod">{tr('Dolgoročno sodelovanje', 'Ongoing collaboration')}{stevilka ? (jeEn ? ' · no. ' : ' · št. ') + stevilka : ''}</p>
+          <p className="rw-uvod">{jeEn
+            ? <>Download the agreement{nar.ime.trim() ? ' for ' + nar.ime.trim() : ''} and, if you like, the retainer proposal too.</>
+            : <>Prenesi pogodbo{nar.ime.trim() ? ' za ' + nar.ime.trim() : ''} in po želji še retainer ponudbo.</>}</p>
           {napaka && <p className="rw-napaka">{napaka}</p>}
           {/* Posiljanje kar iz aplikacije (Resend) — isti HTML kot prenos/PDF (trenutno prikazan dokument). */}
           <PosljiBlok
@@ -934,11 +939,11 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
           <div className="rw-prenosi">
             <button type="button" className="rw-povezava" disabled={pdfNalaganje} onClick={() => prenesi('pogodba')}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M7 11l5 5 5-5M5 21h14" /></svg>
-              {pdfNalaganje ? 'Pripravljam …' : 'Prenesi pogodbo (PDF)'}
+              {pdfNalaganje ? tr('Pripravljam …', 'Preparing …') : tr('Prenesi pogodbo (PDF)', 'Download agreement (PDF)')}
             </button>
             <button type="button" className="rw-povezava" disabled={pdfNalaganje} onClick={() => prenesi('ponudba')}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M7 11l5 5 5-5M5 21h14" /></svg>
-              Prenesi retainer ponudbo (PDF)
+              {tr('Prenesi retainer ponudbo (PDF)', 'Download retainer proposal (PDF)')}
             </button>
           </div>
         </section>)}
@@ -949,7 +954,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         <div className="rw-noga-gumbi">
           {/* NAZAJ — okrogel gumb; navigira nazaj skozi poglede/korake (kot kalkulator) */}
           {(pogled !== 'vprasanja' || korak > 0) && (
-            <button type="button" className={'rw-gumb-nazaj' + (pogled === 'vprasanja' ? ' rw-gumb-nazaj-abs' : '')} aria-label="Nazaj"
+            <button type="button" className={'rw-gumb-nazaj' + (pogled === 'vprasanja' ? ' rw-gumb-nazaj-abs' : '')} aria-label={tr('Nazaj', 'Back')}
               onClick={() => {
                 if (pogled === 'zakljucek') setPogled('ponudba');
                 else if (pogled === 'ponudba') setPogled('vprasanja');
@@ -966,13 +971,13 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
                 else if (korak < 3) setKorak(k => k + 1);
                 else setPogled('ponudba');
               }}>
-              {pogled === 'ponudba' ? 'Zaključi' : korak === 3 ? 'Pripravi ponudbo' : 'Naprej'} <ArrowDown size={16} weight="bold" aria-hidden />
+              {pogled === 'ponudba' ? tr('Zaključi', 'Finish') : korak === 3 ? tr('Pripravi ponudbo', 'Prepare proposal') : tr('Naprej', 'Next')} <ArrowDown size={16} weight="bold" aria-hidden />
             </button>
           )}
           {pogled === 'zakljucek' && (
             <div className="rw-noga-koncna">
-              <button type="button" className="rw-noga-pill" onClick={urediOdZacetka}>← Uredi od začetka</button>
-              <button type="button" className="rw-noga-pill nova" onClick={novaPonudba}>↺ Nova ponudba</button>
+              <button type="button" className="rw-noga-pill" onClick={urediOdZacetka}>← {tr('Uredi od začetka', 'Edit from start')}</button>
+              <button type="button" className="rw-noga-pill nova" onClick={novaPonudba}>↺ {tr('Nova ponudba', 'New proposal')}</button>
             </div>
           )}
         </div>
@@ -980,31 +985,31 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
 
       {profilOdprt && (
         <div className="rw-profil-zastor" onClick={() => setProfilOdprt(false)}>
-          <div className="rw-profil-panel" role="dialog" aria-label="Profil" onClick={e => e.stopPropagation()}>
+          <div className="rw-profil-panel" role="dialog" aria-label={tr('Profil', 'Profile')} onClick={e => e.stopPropagation()}>
             <div className="rw-profil-glava">
-              <h2>Profil</h2>
-              <button type="button" className="rw-profil-x" onClick={() => setProfilOdprt(false)}>✕ Zapri</button>
+              <h2>{tr('Profil', 'Profile')}</h2>
+              <button type="button" className="rw-profil-x" onClick={() => setProfilOdprt(false)}>✕ {tr('Zapri', 'Close')}</button>
             </div>
 
             <section className="rw-profil-sek">
-              <span className="rw-profil-oznaka">Tvoji podatki</span>
-              <p className="rw-profil-opis">Isti podatki kot v kalkulatorju — shranijo se samodejno in se izpišejo v glavi dokumentov.</p>
+              <span className="rw-profil-oznaka">{tr('Tvoji podatki', 'Your details')}</span>
+              <p className="rw-profil-opis">{tr('Isti podatki kot v kalkulatorju — shranijo se samodejno in se izpišejo v glavi dokumentov.', 'The same details as in the calculator — saved automatically and printed in the document header.')}</p>
               <div className="rw-profil-polja">
-                <label className="rw-pp"><span>Ime / podjetje</span><input type="text" value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })} placeholder="npr. Pinart, Tina Novak s.p." /></label>
-                <label className="rw-pp"><span>Naslov</span><input type="text" value={ponudnik.naslov} onChange={e => setPonudnik({ ...ponudnik, naslov: e.target.value })} placeholder="Ulica 1, 1000 Ljubljana" /></label>
-                <label className="rw-pp"><span>Davčna št.</span><input type="text" value={ponudnik.davcna} onChange={e => setPonudnik({ ...ponudnik, davcna: e.target.value })} placeholder="SI12345678" /></label>
-                <label className="rw-pp"><span>TRR</span><input type="text" value={ponudnik.trr} onChange={e => setPonudnik({ ...ponudnik, trr: e.target.value })} placeholder="SI56 0000 0000 0000 000" /></label>
-                <label className="rw-pp rw-pp-tel"><span>Telefon</span><span className="rw-pp-tel-vrsta"><input type="text" className="rw-pp-predklic" value={predklic} onChange={e => setPredklic(e.target.value)} /><input type="tel" value={ponudnik.telefon} onChange={e => setPonudnik({ ...ponudnik, telefon: e.target.value })} placeholder="40 123 456" /></span></label>
-                <label className="rw-pp"><span>E-pošta</span><input type="email" value={ponudnik.email} onChange={e => setPonudnik({ ...ponudnik, email: e.target.value })} placeholder="tina@pinart.si" /></label>
+                <label className="rw-pp"><span>{tr('Ime / podjetje', 'Name / company')}</span><input type="text" value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })} placeholder={tr('npr. Pinart, Tina Novak s.p.', 'e.g. Pinart, Tina Novak s.p.')} /></label>
+                <label className="rw-pp"><span>{tr('Naslov', 'Address')}</span><input type="text" value={ponudnik.naslov} onChange={e => setPonudnik({ ...ponudnik, naslov: e.target.value })} placeholder={tr('Ulica 1, 1000 Ljubljana', 'Main St 1, 1000 Ljubljana')} /></label>
+                <label className="rw-pp"><span>{tr('Davčna št.', 'Tax no.')}</span><input type="text" value={ponudnik.davcna} onChange={e => setPonudnik({ ...ponudnik, davcna: e.target.value })} placeholder="SI12345678" /></label>
+                <label className="rw-pp"><span>{tr('TRR', 'IBAN')}</span><input type="text" value={ponudnik.trr} onChange={e => setPonudnik({ ...ponudnik, trr: e.target.value })} placeholder="SI56 0000 0000 0000 000" /></label>
+                <label className="rw-pp rw-pp-tel"><span>{tr('Telefon', 'Phone')}</span><span className="rw-pp-tel-vrsta"><input type="text" className="rw-pp-predklic" value={predklic} onChange={e => setPredklic(e.target.value)} /><input type="tel" value={ponudnik.telefon} onChange={e => setPonudnik({ ...ponudnik, telefon: e.target.value })} placeholder="40 123 456" /></span></label>
+                <label className="rw-pp"><span>{tr('E-pošta', 'Email')}</span><input type="email" value={ponudnik.email} onChange={e => setPonudnik({ ...ponudnik, email: e.target.value })} placeholder="tina@pinart.si" /></label>
               </div>
             </section>
 
             <section className="rw-profil-sek">
-              <span className="rw-profil-oznaka">Videz dokumentov</span>
+              <span className="rw-profil-oznaka">{tr('Videz dokumentov', 'Document appearance')}</span>
               <VidezDokumentov barva={dokBarva} font={dokFont} onBarva={setDokBarva} onFont={setDokFont} />
             </section>
 
-            <a className="rw-profil-admin" href={`${base}/kalkulator/admin`}>Pregled poslovanja (admin) ↗</a>
+            <a className="rw-profil-admin" href={`${base}/kalkulator/admin`}>{tr('Pregled poslovanja (admin) ↗', 'Business overview (admin) ↗')}</a>
           </div>
         </div>
       )}
