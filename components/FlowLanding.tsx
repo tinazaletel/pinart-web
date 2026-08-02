@@ -695,7 +695,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bnodes svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
         .fl-fold { position: absolute; z-index: 2; transform: translate(-50%, -50%); border-radius: 5px 11px 11px 11px; box-shadow: 0 12px 26px rgba(0,0,0,.45); }
         .fl-fold::before { content: ""; position: absolute; top: -8px; left: 0; width: 48%; height: 11px; border-radius: 5px 7px 0 0; background: inherit; }
-        .fl-badge { position: absolute; z-index: 3; transform: translate(-50%, -50%); width: 32px; height: 32px; border-radius: 50%; background: #4a3d6b; border: 2px solid rgba(255,255,255,.14); display: grid; place-items: center; color: #fff; box-shadow: 0 6px 14px rgba(0,0,0,.45); }
+        .fl-badge { position: absolute; z-index: 3; transform: translate(-50%, -50%); width: 42px; height: 42px; border-radius: 50%; background: #4a3d6b; border: 2px solid rgba(255,255,255,.14); display: grid; place-items: center; color: #fff; box-shadow: 0 6px 14px rgba(0,0,0,.45); }
         .fl-npill { position: absolute; z-index: 3; transform: translate(-50%, -50%); font-size: .7rem; font-weight: 700; color: #fff; padding: .2rem .58rem; border-radius: 8px; box-shadow: 0 6px 14px rgba(0,0,0,.35); white-space: nowrap; }
         .fl-bscreen-dots { position: absolute; left: 0; right: 0; bottom: .55rem; display: flex; justify-content: center; gap: .35rem; z-index: 2; }
         .fl-bscreen-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.35); transition: background .3s, width .3s; }
