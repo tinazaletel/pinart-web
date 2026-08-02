@@ -48,11 +48,11 @@ const sl = {
       heading: '9. Umetna inteligenca (Pupa) in varnost podatkov',
       text: `OSNUTEK — pravno mora potrditi odvetnik.
 
-Pupa je izbirna pomočnica, ki deluje prek Anthropic Claude API. Obdelava poteka strežniško, zato API ključ ni izpostavljen v uporabnikovem brskalniku. Anthropic prejme vsebino, ki jo uporabnik vnese v Pupo, in omejen kontekst odprtega orodja ali ponudbe, potreben za odgovor. Anthropic nima neposrednega dostopa do baze Pinart Flow.
+Pupa je izbirna pomočnica, ki deluje prek Anthropic Claude API. Obdelava poteka strežniško, zato API ključ ni izpostavljen v uporabnikovem brskalniku. Anthropic prejme samo vsebino, ki jo uporabnik vnese v Pupo, in minimalen kontekst odprtega orodja ali ponudbe, potreben za odgovor; nič drugega. Anthropic nima dostopa do baze Pinart Flow — vidi le besedilo posamezne zahteve in baze ne more brati ali izvoziti.
 
-V Pupo ne vnašajte zaupnih podatkov, poslovnih skrivnosti ali osebnih podatkov strank. Če Pupe ne uporabljate, se podatki ne pošiljajo družbi Anthropic ali drugemu zunanjemu ponudniku AI; osnovna orodja Pinart Flow delujejo brez AI.
+V Pupo ne vnašajte zaupnih podatkov, poslovnih skrivnosti ali osebnih podatkov strank. Če Pupe ne uporabljate, se podatki ne pošiljajo družbi Anthropic ali kateremu koli drugemu zunanjemu ponudniku AI. Orodja Pinart Flow delujejo brez AI, cene pa se izračunajo s formulami in pravili lokalno oziroma na zaledju Pinart Flow.
 
-Anthropic je predviden kot podobdelovalec. Po njegovih aktualnih pogojih se vhodi in izhodi komercialnega API privzeto ne uporabljajo za učenje modelov. Obdobje hrambe velja po aktualnih pogojih Anthropic. Ker se podatki lahko obdelujejo v ZDA, mora biti prenos urejen z DPA in ustreznimi standardnimi pogodbenimi klavzulami (SCC).
+Anthropic je predviden kot podobdelovalec. Po njegovih aktualnih pogojih se vhodi in izhodi komercialnega API privzeto ne uporabljajo za učenje modelov. Obdobje hrambe velja po aktualnih pogojih Anthropic. Ker se podatki lahko obdelujejo v ZDA, mora biti prenos urejen z DPA z družbo Anthropic in ustreznimi standardnimi pogodbenimi klavzulami (SCC).
 
 Pravno podlago (privolitev ali zakoniti interes) mora pred objavo potrditi odvetnik. Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si. Več: https://privacy.anthropic.com/en/collections/10663361-commercial-customers.`,
     },
