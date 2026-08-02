@@ -1752,7 +1752,7 @@ export default function TaskManagerWorkspace() {
            prelomi na več vrstic na ozkem zaslonu (flex-wrap) */
         .tm-pogled-filtri-vrsta{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin:0 0 1.1rem}
         .tm-filtri-vrsta{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0}
-        .tm-filtri{display:inline-flex;gap:.2rem;margin:0;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
+        .tm-filtri{display:inline-flex;gap:.2rem;margin:0;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:#fff}
         .tm-filtri button{padding:.4rem .85rem;border:0;border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
         .tm-filtri button.tm-filter-on{background:var(--ink);color:var(--paper)}
         /* filter po oznaki (tagu) — spustni izbor poleg vse/moje/zamujene */
@@ -1865,7 +1865,7 @@ export default function TaskManagerWorkspace() {
         @keyframes tm-utrip-obroba{0%,100%{box-shadow:0 0 0 2px oklch(62% .19 300/.28)}50%{box-shadow:0 0 0 4px oklch(62% .19 300/.12)}}
 
         /* preklop pogleda Kanban | Tedenski plan — isti segmentirani slog kot .tm-filtri */
-        .tm-pogled-preklop{display:inline-flex;flex:none;gap:.2rem;margin:0;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
+        .tm-pogled-preklop{display:inline-flex;flex:none;gap:.2rem;margin:0;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:#fff}
         .tm-pogled-preklop button{padding:.42rem .95rem;border:0;border-radius:999px;background:none;font:750 .7rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
         .tm-pogled-preklop button.tm-pogled-on{background:var(--ink);color:var(--paper)}
 
@@ -1949,7 +1949,7 @@ export default function TaskManagerWorkspace() {
         .tm-teden-naslov strong{font:600 1rem var(--font-sans),sans-serif;letter-spacing:-.01em;color:var(--ink)}
         .tm-teden-danes{padding:.3rem .7rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);opacity:.65;font:700 .64rem var(--font-sans),sans-serif;cursor:pointer}
         .tm-teden-danes:hover{opacity:1;border-color:var(--ink)}
-        .tm-obdobje-preklop{display:inline-flex;gap:.2rem;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:oklch(97% .006 87 / .8)}
+        .tm-obdobje-preklop{display:inline-flex;gap:.2rem;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:#fff}
         .tm-obdobje-preklop button{padding:.4rem .85rem;border:0;border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--ink);opacity:.62;cursor:pointer}
         .tm-obdobje-preklop button.tm-pogled-on{background:var(--ink);color:var(--paper);opacity:1}
         .tm-plan-akcije{margin-left:auto;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}

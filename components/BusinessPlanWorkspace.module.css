@@ -166,7 +166,7 @@
   font: 400 .86rem var(--font-sans), sans-serif; color: var(--ink);
 }
 .isci::placeholder { color: var(--muted); }
-.preklop { display: flex; gap: .25rem; padding: .22rem; border: 1px solid var(--line); border-radius: 999px; }
+.preklop { display: flex; gap: .25rem; padding: .22rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; }
 .preklop button {
   padding: .42rem .9rem; border: 0; border-radius: 999px; background: none;
   color: var(--muted); font: 650 .76rem var(--font-sans), sans-serif; white-space: nowrap; cursor: pointer;
