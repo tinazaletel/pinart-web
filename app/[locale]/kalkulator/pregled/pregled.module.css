@@ -704,7 +704,7 @@
 .expenseSummary article:nth-child(2) .subpageMetricIcon { color: oklch(58% .15 160); }
 .expenseSummary article:nth-child(3) .subpageMetricIcon { color: var(--purple); }
 .invoiceSummary article > :not(.subpageMetricIcon), .expenseSummary article > :not(.subpageMetricIcon) { position: relative; z-index: 1; }
-.expenseEditor, .expenseArchive, .recurringCosts { padding: 1.25rem; border: 1px solid color-mix(in oklch, var(--ink) 9%, transparent); border-radius: 1.4rem; background: oklch(98% .008 87 / .92); }
+.expenseEditor, .expenseArchive, .recurringCosts { padding: 1.25rem; border: 1px solid color-mix(in oklch, var(--ink) 9%, transparent); border-radius: 1.4rem; background: #fff; }
 .expenseEditor { display: grid; grid-template-columns: minmax(14rem, .35fr) 1fr; gap: 1.5rem; }
 .expenseEditor h2, .expenseArchive h2, .recurringCosts h2 { margin: 0; font: 500 clamp(1.45rem, 2.2vw, 2.05rem)/1 var(--font-serif), Georgia, serif; }
 .expenseEditor > div > p:last-child, .recurringCosts > div:first-child > p:last-child { color: var(--muted); font-size: .65rem; line-height: 1.5; }
@@ -715,7 +715,8 @@
 .expenseEditorActions button { min-height: 2.6rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: .65rem; background: transparent; font: 800 .61rem var(--font-sans), sans-serif; cursor: pointer; }
 .expenseEditorActions button:last-child { border-color: var(--ink); background: var(--ink); color: var(--paper); }
 .expenseArchive > header { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
-.expenseList article { position: relative; display: grid; grid-template-columns: auto minmax(12rem, 1fr) minmax(10rem, .7fr) auto; align-items: center; gap: .8rem; min-height: 4.5rem; padding: .65rem .8rem; border-top: 1px solid var(--line); }
+.expenseList article { position: relative; display: grid; grid-template-columns: auto minmax(12rem, 1fr) minmax(10rem, .7fr) auto; align-items: center; gap: .8rem; min-height: 4.5rem; padding: .65rem .8rem; border-top: 1px solid var(--line); background: #fff; transition: background-color .18s ease; }
+.expenseList article:hover { background: oklch(96.5% .018 87); }
 .expenseList strong, .expenseList small { display: block; }
 .expenseList strong { font-size: .7rem; }
 .expenseList small { margin-top: .2rem; color: var(--muted); font-size: .54rem; }
@@ -723,9 +724,9 @@
    skupaj v zadnjem stolpcu kartice. */
 .expenseList .expenseActions { display: inline-flex; align-items: center; gap: .4rem; }
 .expenseList .expenseEdit, .expenseList .expenseDelete { display: inline-flex; align-items: center; justify-content: center; width: 1.85rem; height: 1.85rem; aspect-ratio: 1; padding: 0; border-radius: 50%; line-height: 1; cursor: pointer; }
-.expenseList .expenseEdit { border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent); background: oklch(98% .008 87 / .9); color: var(--ink); }
+.expenseList .expenseEdit { border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent); background: #fff; color: var(--ink); }
 .expenseList .expenseEdit:hover { border-color: var(--ink); background: oklch(95% .01 87); }
-.expenseList .expenseDelete { border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent); background: oklch(98% .008 87 / .9); color: oklch(52% .16 25); }
+.expenseList .expenseDelete { border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent); background: #fff; color: oklch(52% .16 25); }
 .expenseList .expenseDelete:hover { border-color: oklch(52% .16 25); background: oklch(95% .04 25); }
 .expenseCoin { display: grid; place-items: center; width: 2rem; aspect-ratio: 1; border-radius: 50%; background: var(--ink); color: var(--paper); font: 700 .7rem var(--font-sans), sans-serif; }
 /* ── Znacke stroska: urejevalnik (izbrane + prosti vnos + predlogi) ── */
