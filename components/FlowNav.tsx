@@ -7,6 +7,7 @@ import { localePath } from '@/i18n/routing';
    Logo + Produkt/Kalkulator/Cenik/O nas/Kontakt + Prijava/Ustvari racun. */
 
 export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
+  const isEn = locale === 'en';
   const [open, setOpen] = useState(false);
   const [prodOpen, setProdOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -26,12 +27,13 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
   const flow = localePath(locale, '/flow');
   const kalk = localePath(locale, '/kalkulator/orodje');
   const prijava = localePath(locale, '/kalkulator/prijava');
+  const languageHref = localePath(isEn ? 'sl' : 'en', '/flow');
 
   const LINKS = [
-    { label: 'Cenik', href: `${flow}#cenik` },
-    { label: 'Vprašanja', href: `${flow}#faq` },
-    { label: 'O nas', href: `${flow}#onas` },
-    { label: 'Kontakt', href: 'mailto:tina@pinart.si' },
+    { label: isEn ? 'Pricing' : 'Cenik', href: `${flow}#cenik` },
+    { label: isEn ? 'FAQ' : 'Vprašanja', href: `${flow}#faq` },
+    { label: isEn ? 'About' : 'O nas', href: `${flow}#onas` },
+    { label: isEn ? 'Contact' : 'Kontakt', href: 'mailto:tina@pinart.si' },
   ];
 
   const close = () => { setOpen(false); setProdOpen(false); };
@@ -43,36 +45,40 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
         <strong className="flnav-pinart">Pinart</strong><span className="flnav-ff">FLOW</span><small>BETA</small>
       </a>
 
-      <nav className="flnav-links" aria-label="Glavna navigacija">
+      <nav className="flnav-links" aria-label={isEn ? 'Main navigation' : 'Glavna navigacija'}>
         <div className={`flnav-prod${prodOpen ? ' odprt' : ''}`}>
           <button type="button" onClick={() => setProdOpen(v => !v)} aria-expanded={prodOpen}>
-            Produkt
+            {isEn ? 'Product' : 'Produkt'}
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 7.5 4.5 4.5 4.5-4.5" /></svg>
           </button>
           <div className="flnav-menu">
-            <a href={`${flow}#orodja`} onClick={close}><strong>Pinart Flow</strong><span>Vsa orodja za poslovanje kreativca</span></a>
-            <a href={kalk} onClick={close}><strong>Brezplačni kalkulator</strong><span>Poštena cena projekta, brez prijave</span></a>
+            <a href={`${flow}#orodja`} onClick={close}><strong>Pinart Flow</strong><span>{isEn ? 'Every tool a creative business needs' : 'Vsa orodja za poslovanje kreativca'}</span></a>
+            <a href={kalk} onClick={close}><strong>{isEn ? 'Free calculator' : 'Brezplačni kalkulator'}</strong><span>{isEn ? 'A fair project price, no account required' : 'Poštena cena projekta, brez prijave'}</span></a>
           </div>
         </div>
         {LINKS.map(l => <a key={l.label} href={l.href} onClick={close}>{l.label}</a>)}
       </nav>
 
       <div className="flnav-actions">
-        <a className="flnav-login" href={prijava} onClick={close}>Prijava</a>
-        <a className="flnav-signup" href={prijava} onClick={close}>Ustvari račun</a>
+        <a className="flnav-lang" href={languageHref} hrefLang={isEn ? 'sl' : 'en'} aria-label={isEn ? 'Preklopi na slovenščino' : 'Switch to English'}>
+          <span aria-hidden>{isEn ? '🇸🇮' : '🇬🇧'}</span>{isEn ? 'SL' : 'EN'}
+        </a>
+        <a className="flnav-login" href={prijava} onClick={close}>{isEn ? 'Log in' : 'Prijava'}</a>
+        <a className="flnav-signup" href={prijava} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
       </div>
 
-      <button className="flnav-burger" type="button" onClick={() => setOpen(v => !v)} aria-label={open ? 'Zapri meni' : 'Meni'} aria-expanded={open}>
+      <button className="flnav-burger" type="button" onClick={() => setOpen(v => !v)} aria-label={open ? (isEn ? 'Close menu' : 'Zapri meni') : (isEn ? 'Menu' : 'Meni')} aria-expanded={open}>
         <span /><span /><span />
       </button>
 
       {open && (
         <div className="flnav-drawer">
           <a href={`${flow}#orodja`} onClick={close}>Pinart Flow</a>
-          <a href={kalk} onClick={close}>Brezplačni kalkulator</a>
+          <a href={kalk} onClick={close}>{isEn ? 'Free calculator' : 'Brezplačni kalkulator'}</a>
           {LINKS.map(l => <a key={l.label} href={l.href} onClick={close}>{l.label}</a>)}
-          <a className="flnav-login" href={prijava} onClick={close}>Prijava</a>
-          <a className="flnav-signup" href={prijava} onClick={close}>Ustvari račun</a>
+          <a className="flnav-lang" href={languageHref} hrefLang={isEn ? 'sl' : 'en'}><span aria-hidden>{isEn ? '🇸🇮' : '🇬🇧'}</span>{isEn ? 'Slovenščina' : 'English'}</a>
+          <a className="flnav-login" href={prijava} onClick={close}>{isEn ? 'Log in' : 'Prijava'}</a>
+          <a className="flnav-signup" href={prijava} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
         </div>
       )}
 
@@ -104,6 +110,9 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
         .flnav-menu span { font-size: .74rem; color: rgba(17,17,17,.6); }
 
         .flnav-actions { display: flex; align-items: center; gap: .6rem; }
+        .flnav-lang { display: inline-flex; align-items: center; gap: .34rem; min-height: 2.35rem; padding: .42rem .5rem; border: 0; border-radius: 999px; color: rgba(17,17,17,.58); font: 600 .75rem/1 var(--font-sans), system-ui, sans-serif; text-decoration: none; background: transparent; transition: color .15s, background .15s; }
+        .flnav-lang:hover { color: var(--ink); background: rgba(17,17,17,.05); }
+        .flnav-lang span { font-size: 1rem; line-height: 1; }
         .flnav-login { position: relative; overflow: hidden; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; font-weight: 600; color: var(--ink); text-decoration: none; padding: .55rem .95rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.2); transition: border-color .16s, background .16s; }
         .flnav-login:hover { border-color: var(--ink); background: rgba(17,17,17,.04); }
         .flnav-signup { position: relative; overflow: hidden; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; font-weight: 700; color: var(--paper); text-decoration: none; padding: .58rem 1.1rem; border-radius: 999px; background: var(--ink); transition: transform .16s, box-shadow .16s; }

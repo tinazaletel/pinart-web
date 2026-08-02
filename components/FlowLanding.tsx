@@ -29,8 +29,16 @@ const HERO_NASLOVI: { pre: string[]; em: string[] }[] = [
   { pre: ['Vse', 'tvoje', 'poslovanje'], em: ['na', 'enem', 'mestu.'] },
   { pre: ['AI,', 'ki', 'pozna', 'trg', 'in'], em: ['ceno', 'tvojega', 'dela.'] },
 ];
+const HERO_TITLES_EN: { pre: string[]; em: string[] }[] = [
+  { pre: ['From', 'proposal', 'to', 'invoice'], em: ['—', 'with', 'an', 'AI', 'assistant.'] },
+  { pre: ['Your', 'whole', 'creative', 'business'], em: ['in', 'one', 'place.'] },
+  { pre: ['AI', 'that', 'understands', 'the', 'market'], em: ['and', 'the', 'value', 'of', 'your', 'work.'] },
+];
 
 export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
+  const isEn = locale === 'en';
+  const t = (sl: string, en: string) => isEn ? en : sl;
+  const heroTitles = isEn ? HERO_TITLES_EN : HERO_NASLOVI;
   const prijava = localePath(locale, '/kalkulator/prijava');
   const kalkulator = localePath(locale, '/kalkulator/orodje') + '?od=flow';
 
@@ -38,9 +46,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const [heroIdx, setHeroIdx] = useState(0);
   useEffect(() => {
     if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const t = window.setInterval(() => setHeroIdx(i => (i + 1) % HERO_NASLOVI.length), 7000);
-    return () => window.clearInterval(t);
-  }, []);
+    const timer = window.setInterval(() => setHeroIdx(i => (i + 1) % heroTitles.length), 7000);
+    return () => window.clearInterval(timer);
+  }, [heroTitles.length]);
 
   const [taZavihek, setTaZavihek] = useState('kalkulator');
   const [odprtoVpr, setOdprtoVpr] = useState<number | null>(0);
@@ -203,7 +211,16 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
   const vrstaRef = useRef<HTMLDivElement>(null);
 
-  const VPRASANJA = [
+  const VPRASANJA = isEn ? [
+    { v: 'Is Flow really free?', o: 'The fair-pricing calculator is free forever and works without an account. Choose Premium or Pro when you need saved documents, clients, projects and the Pupa AI assistant.' },
+    { v: 'What can the Pupa AI assistant do?', o: 'Pupa understands creative pricing, licensing and usage rights. She helps you set a fair price, spot underpricing and write a clear proposal using the context of your work.' },
+    { v: 'Do I need an account for the calculator?', o: 'No. You can calculate a fair price, build a proposal and download it without signing up. Create an account only when you want to save and connect your business data.' },
+    { v: 'Who owns my data and documents?', o: 'You do. Your proposals, clients and documents remain private. We do not sell them. Anonymous, aggregated price data may improve the market benchmark, but we never reveal who entered a price.' },
+    { v: 'How does Flow help me set the right price?', o: 'It separates production, usage rights and licensing, then places your price within an anonymous market range. You can see whether you are near the bottom or top instead of guessing.' },
+    { v: 'Does Flow include copyright and usage rights?', o: 'Yes. Flow separates production from licensing and adjusts the calculation to usage, duration, territory and the client’s jurisdiction.' },
+    { v: 'How does a proposal become an invoice?', o: 'In one click. Flow carries over the client and line items, then adds numbering, a due date and payment status without retyping the same information.' },
+    { v: 'Can I use Flow with international clients?', o: 'Yes. Flow is designed for global work, with multilingual document templates and rules that adapt to the client’s jurisdiction.' },
+  ] : [
     { v: 'Je Flow res brezplačen?', o: 'Kalkulator poštenih cen je in ostane brezplačen za vedno, brez prijave. Za celotno platformo (dokumenti, stranke, projekti, AI asistentka Pupa) izbereš paket, ki ti ustreza — Premium ali Pro.' },
     { v: 'Kaj zna AI asistentka Pupa?', o: 'Pupa je tvoja AI asistentka: pozna trg in avtorske pravice, pove ti pošteno ceno, opozori te, če se podcenjuješ, in ti pomaga ubesediti ponudbo. Z njo klepetaš ali jo upravljaš z glasom. Svetuje iz konteksta tvoje ponudbe — ni splošni chatbot. Na voljo je v plačljivih paketih.' },
     { v: 'Ali potrebujem račun za kalkulator?', o: 'Ne. Kalkulator deluje brez prijave: izračunaš pošteno ceno, sestaviš ponudbo in jo preneseš. Račun potrebuješ šele, ko želiš dokumente shraniti in imeti na enem mestu.' },
@@ -272,34 +289,40 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   }, [taRubrika]);
 
   const RUBRIKE = [
-    { id: 'vse', label: 'Vse' },
-    { id: 'ponudbe', label: 'Ponudbe & cene' },
-    { id: 'dogovori', label: 'Dogovori' },
-    { id: 'finance', label: 'Finance' },
-    { id: 'stranke', label: 'Stranke & cilji' },
+    { id: 'vse', label: t('Vse', 'All') },
+    { id: 'ponudbe', label: t('Ponudbe & cene', 'Proposals & pricing') },
+    { id: 'dogovori', label: t('Dogovori', 'Agreements') },
+    { id: 'finance', label: t('Finance', 'Finance') },
+    { id: 'stranke', label: t('Stranke & cilji', 'Clients & goals') },
   ];
 
   const ORODJA = [
-    { Ikona: FileText, kat: 'ponudbe', h: 297, ime: 'Kalkulator ponudb', opis: 'Poštena cena projekta: izvedba, avtorske pravice in licenca. Trije paketi in urejljivo besedilo.', href: kalkulator, brezplacno: true },
-    { Ikona: FolderOpen, kat: 'stranke', h: 285, ime: 'Projekti & arhiv', opis: 'Vsak projekt na enem mestu — ponudbe, pogodbe, računi, roki in vsa komunikacija, pregledno.', href: localePath(locale, '/kalkulator/projekti') },
-    { Ikona: Scroll, kat: 'dogovori', h: 245, ime: 'Pogodbe', opis: 'Pogodbe o sodelovanju in prenosu pravic, pripravljene za podpis.', href: localePath(locale, '/kalkulator/pogodbe') },
-    { Ikona: Receipt, kat: 'finance', h: 265, ime: 'Računi', opis: 'Iz ponudbe v račun z enim klikom. Številčenje, rok in status plačila.', href: localePath(locale, '/kalkulator/racuni') },
-    { Ikona: Users, kat: 'stranke', h: 205, ime: 'Stranke & CRM', opis: 'CRM kartoteka naročnikov: podatki, dokumenti in zgodovina sodelovanja.', href: localePath(locale, '/kalkulator/stranke') },
-    { Ikona: ListChecks, kat: 'stranke', h: 258, ime: 'Naloge', opis: 'Task manager po projektih — poveš Pupi želje, ona jih razdeli v naloge.', href: localePath(locale, '/kalkulator/naloge') },
-    { Ikona: SquaresFour, kat: 'stranke', h: 200, ime: 'Pregled in analitika', opis: 'Nadzorna plošča z analitiko poslovanja: promet, odprte ponudbe in čakajoča plačila.', href: localePath(locale, '/kalkulator/pregled') },
-    { Ikona: Handshake, kat: 'dogovori', h: 162, ime: 'Dolgoročno sodelovanje', opis: 'Retainer z mesečnim obsegom, urami in dobo. Jasni pogoji dolgoročnega dogovora.', href: localePath(locale, '/kalkulator/dolgorocno') },
-    { Ikona: Target, kat: 'stranke', h: 135, ime: 'Cilji', opis: 'Mesečni cilj prihodkov in koliko projektov te loči do njega.', href: localePath(locale, '/kalkulator/cilji') },
-    { Ikona: Tag, kat: 'ponudbe', h: 135, ime: 'Ceniki', opis: 'Tvoji cenovni profili: shraniš, urediš in znova uporabiš.', href: localePath(locale, '/kalkulator/ceniki') },
-    { Ikona: Wallet, kat: 'finance', h: 205, ime: 'Stroški', opis: 'Odhodki in ponavljajoči se stroški, zbrani na enem mestu.', href: localePath(locale, '/kalkulator/stroski') },
-    { Ikona: Clock, kat: 'finance', h: 85, ime: 'Merjenje časa', opis: 'Štoparica po projektu: izmeriš porabljen čas in vidiš, ali se ti je delo pri tej ceni res splačalo.', href: localePath(locale, '/kalkulator/cas') },
-    { Ikona: Suitcase, kat: 'finance', h: 200, ime: 'Poslovni okvir', opis: 'Širša slika: rezerva, davki in spodnja meja poštene cene.', href: localePath(locale, '/kalkulator/poslovni-nacrt') },
-    { Ikona: CalendarBlank, kat: 'stranke', h: 200, ime: 'Koledar', opis: 'Sestanki, klici in roki projektov na enem koledarju.', href: localePath(locale, '/kalkulator/koledar') },
+    { Ikona: FileText, kat: 'ponudbe', h: 297, ime: t('Kalkulator ponudb', 'Proposal calculator'), opis: t('Poštena cena projekta: izvedba, avtorske pravice in licenca. Trije paketi in urejljivo besedilo.', 'A fair project price: production, usage rights and licensing. Three packages with editable copy.'), href: kalkulator, brezplacno: true },
+    { Ikona: FolderOpen, kat: 'stranke', h: 285, ime: t('Projekti & arhiv', 'Projects & archive'), opis: t('Vsak projekt na enem mestu — ponudbe, pogodbe, računi, roki in vsa komunikacija, pregledno.', 'Keep proposals, contracts, invoices, deadlines and communication together for every project.'), href: localePath(locale, '/kalkulator/projekti') },
+    { Ikona: Scroll, kat: 'dogovori', h: 245, ime: t('Pogodbe', 'Contracts'), opis: t('Pogodbe o sodelovanju in prenosu pravic, pripravljene za podpis.', 'Collaboration and rights-transfer agreements, ready to sign.'), href: localePath(locale, '/kalkulator/pogodbe') },
+    { Ikona: Receipt, kat: 'finance', h: 265, ime: t('Računi', 'Invoices'), opis: t('Iz ponudbe v račun z enim klikom. Številčenje, rok in status plačila.', 'Turn a proposal into an invoice in one click, with numbering, due dates and payment status.'), href: localePath(locale, '/kalkulator/racuni') },
+    { Ikona: Users, kat: 'stranke', h: 205, ime: t('Stranke & CRM', 'Clients & CRM'), opis: t('CRM kartoteka naročnikov: podatki, dokumenti in zgodovina sodelovanja.', 'Client details, documents and collaboration history in one CRM record.'), href: localePath(locale, '/kalkulator/stranke') },
+    { Ikona: ListChecks, kat: 'stranke', h: 258, ime: t('Naloge', 'Tasks'), opis: t('Task manager po projektih — poveš Pupi želje, ona jih razdeli v naloge.', 'A project task manager that turns your brief into clear next steps.'), href: localePath(locale, '/kalkulator/naloge') },
+    { Ikona: SquaresFour, kat: 'stranke', h: 200, ime: t('Pregled in analitika', 'Dashboard & analytics'), opis: t('Nadzorna plošča z analitiko poslovanja: promet, odprte ponudbe in čakajoča plačila.', 'Track revenue, open proposals and pending payments at a glance.'), href: localePath(locale, '/kalkulator/pregled') },
+    { Ikona: Handshake, kat: 'dogovori', h: 162, ime: t('Dolgoročno sodelovanje', 'Retainers'), opis: t('Retainer z mesečnim obsegom, urami in dobo. Jasni pogoji dolgoročnega dogovora.', 'Define monthly scope, hours and duration for a clear long-term agreement.'), href: localePath(locale, '/kalkulator/dolgorocno') },
+    { Ikona: Target, kat: 'stranke', h: 135, ime: t('Cilji', 'Goals'), opis: t('Mesečni cilj prihodkov in koliko projektov te loči do njega.', 'Set a monthly revenue goal and see how many projects remain.'), href: localePath(locale, '/kalkulator/cilji') },
+    { Ikona: Tag, kat: 'ponudbe', h: 135, ime: t('Ceniki', 'Price lists'), opis: t('Tvoji cenovni profili: shraniš, urediš in znova uporabiš.', 'Save, edit and reuse your own pricing profiles.'), href: localePath(locale, '/kalkulator/ceniki') },
+    { Ikona: Wallet, kat: 'finance', h: 205, ime: t('Stroški', 'Expenses'), opis: t('Odhodki in ponavljajoči se stroški, zbrani na enem mestu.', 'Keep one-off and recurring business expenses in one place.'), href: localePath(locale, '/kalkulator/stroski') },
+    { Ikona: Clock, kat: 'finance', h: 85, ime: t('Merjenje časa', 'Time tracking'), opis: t('Štoparica po projektu: izmeriš porabljen čas in vidiš, ali se ti je delo pri tej ceni res splačalo.', 'Track time by project and see whether the agreed price was profitable.'), href: localePath(locale, '/kalkulator/cas') },
+    { Ikona: Suitcase, kat: 'finance', h: 200, ime: t('Poslovni okvir', 'Business framework'), opis: t('Širša slika: rezerva, davki in spodnja meja poštene cene.', 'Understand reserves, taxes and the minimum sustainable price.'), href: localePath(locale, '/kalkulator/poslovni-nacrt') },
+    { Ikona: CalendarBlank, kat: 'stranke', h: 200, ime: t('Koledar', 'Calendar'), opis: t('Sestanki, klici in roki projektov na enem koledarju.', 'Meetings, calls and project deadlines in one calendar.'), href: localePath(locale, '/kalkulator/koledar') },
   ];
   const vidnaOrodja = ORODJA.filter(o => taRubrika === 'vse' || o.kat === taRubrika);
 
   /* Interaktivni prikaz (Magnific slog): pill-i zgoraj, spodaj velik predogled ki
      se menja ob kliku. Prihodnji zmožnosti nosijo značko (Agent = Beta, MCP & API = Kmalu). */
-  const ZAVIHKI: { id: string; Ikona: React.ElementType; label: string; znacka?: string; zvrst?: 'free' | 'beta' | 'soon'; h: string; p: string; tocke: string[]; cta: string; href: string }[] = [
+  const ZAVIHKI: { id: string; Ikona: React.ElementType; label: string; znacka?: string; zvrst?: 'free' | 'beta' | 'soon'; h: string; p: string; tocke: string[]; cta: string; href: string }[] = isEn ? [
+    { id: 'kalkulator', Ikona: FileText, label: 'Calculator', znacka: 'Free', zvrst: 'free', h: 'A fair price in a few clicks', p: 'Break the price into production, usage rights and licensing, then get a clear number without guessing or signing up.', tocke: ['Three packages with editable copy', 'Usage rights and licensing included', 'Download a PDF or turn it into an invoice'], cta: 'Open calculator', href: kalkulator },
+    { id: 'dokumenti', Ikona: Receipt, label: 'Documents', h: 'From proposal to invoice, without duplicate work', p: 'Proposals, contracts, invoices and expenses share the same data. Turn an approved proposal into an invoice in one click.', tocke: ['Numbering, due dates and payment status', 'Collaboration and rights-transfer agreements', 'A consistent look across documents'], cta: 'Explore tools', href: '#orodja' },
+    { id: 'pregled', Ikona: ChartLineUp, label: 'Insights', h: 'Know what your work is worth', p: 'An anonymous market benchmark shows where your price sits, while the dashboard tracks revenue, payments and profit.', tocke: ['Market benchmark from anonymous prices', 'Revenue, payments and estimated profit', 'Goals and client profitability'], cta: 'Open dashboard', href: localePath(locale, '/kalkulator/pregled') },
+    { id: 'agent', Ikona: Robot, label: 'Pupa', znacka: 'New', zvrst: 'beta', h: 'An AI assistant who understands creative pricing', p: 'Pupa understands the market and usage rights, helps you price fairly, writes clear proposal copy and answers questions by text or voice.', tocke: ['Flags underpricing', 'Understands usage rights and licensing', 'Text and voice interaction'], cta: 'Meet Pupa', href: prijava },
+    { id: 'mcpapi', Ikona: Plugs, label: 'MCP & API', znacka: 'Soon', zvrst: 'soon', h: 'Connect Flow to your tools', p: 'MCP and API access will connect Flow with your AI assistant, editor or accounting workflow.', tocke: ['MCP access from AI tools', 'API for proposals, invoices and clients', 'Included with your plan, no hidden fees'], cta: 'Notify me', href: 'mailto:tina@pinart.si?subject=Flow%20MCP%20%26%20API' },
+  ] : [
     { id: 'kalkulator', Ikona: FileText, label: 'Kalkulator', znacka: 'Brezplačno', zvrst: 'free',
       h: 'Poštena cena v nekaj klikih',
       p: 'Kalkulator razbije ceno na izvedbo, avtorske pravice in licenco ter pokaže pošteno številko — brez ugibanja in brez prijave.',
@@ -388,7 +411,17 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     );
   };
 
-  const FUNKCIJE = [
+  const FUNKCIJE = isEn ? [
+    { Ikona: Robot, ime: 'AI that understands the market', opis: 'Pupa helps you set a fair price, understands usage rights and warns you when you are underpricing.' },
+    { Ikona: SquaresFour, ime: 'One workspace instead of four', opis: 'Proposals, contracts, invoices, CRM, projects and tasks in one place.' },
+    { Ikona: FolderOpen, ime: 'A whole project in one place', opis: 'Keep documents, deadlines and communication together instead of scattered across email.' },
+    { Ikona: ListChecks, ime: 'Tasks that stay organised', opis: 'Turn project wishes into clear tasks and keep every project moving.' },
+    { Ikona: Receipt, ime: 'From proposal to invoice', opis: 'The same data flows through proposals, contracts, invoices and expenses without retyping.' },
+    { Ikona: Megaphone, ime: 'Marketing included', opis: 'Plan posts and campaigns alongside your projects in the same workspace.' },
+    { Ikona: ShieldCheck, ime: 'Secure cloud storage', opis: 'Your data is stored in the EU and remains yours. Prices are only aggregated anonymously.' },
+    { Ikona: Handshake, ime: 'Grows with you', opis: 'Start solo, then invite collaborators or clients only to the projects they need.' },
+    { Ikona: Sparkle, ime: 'The calculator stays free', opis: 'Calculate a fair price and build a proposal without an account or payment.' },
+  ] : [
     { Ikona: Robot, ime: 'AI, ki pozna trg in ceno', opis: 'AI asistentka Pupa pozna trg in avtorske pravice: pove ti pošteno ceno in te opozori, če se podcenjuješ.' },
     { Ikona: SquaresFour, ime: 'En program namesto štirih', opis: 'Vse-v-enem SaaS: ponudbe, pogodbe, računi, CRM, projekti in naloge na enem mestu. Konec skakanja med štirimi programi.' },
     { Ikona: FolderOpen, ime: 'Cel projekt na enem mestu', opis: 'Vsak projekt z dokumenti, roki in vso komunikacijo — pregledno, veliko bolje kot razmetani Gmail.' },
@@ -400,7 +433,12 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { Ikona: Sparkle, ime: 'Kalkulator za vedno brezplačen', opis: 'Pošteno ceno izračunaš in ponudbo sestaviš brez prijave in brez plačila. Za dokumente, stranke in projekte izbereš paket.' },
   ];
 
-  const KORAKI = [
+  const KORAKI = isEn ? [
+    { n: '01', naslov: 'A fair price, without guessing', opis: 'The calculator and Pupa help you price the work with market context and usage rights included.' },
+    { n: '02', naslov: 'Proposal → contract → invoice', opis: 'Clear, connected documents built from the same data, without copying between tools.' },
+    { n: '03', naslov: 'Everything under one project', opis: 'Connect documents, deadlines, clients, expenses, communication and tasks.' },
+    { n: '04', naslov: 'Know what you earned', opis: 'Track revenue, expenses and profit, ready for your accountant.' },
+  ] : [
     { n: '01', naslov: 'Poštena cena, brez ugibanja', opis: 'Kalkulator in AI asistentka Pupa ti povesta, koliko zaračunati — s tržnim pregledom in vračunanimi pravicami.' },
     { n: '02', naslov: 'Ponudba → pogodba → račun', opis: 'Lepo oblikovano in povezano — vse teče iz istih podatkov, brez prepisovanja in brez treh programov.' },
     { n: '03', naslov: 'Vse pod enim projektom', opis: 'Dokumenti, roki, stranka, stroški in vsa komunikacija povezani. Naloge pa urejaš kar s Pupo.' },
@@ -412,7 +450,11 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
      vseh osem stvari iz Pro) in bralec iz enega krizca sklepa, da je razlika ena
      sama. Lestvico nosita "Vse iz Brezplacno" in "Vse iz Premium", vsak paket pa
      pokaze, kaj DODA. */
-  const CENIKI = [
+  const CENIKI = isEn ? [
+    { ime: 'Free', za: 'For getting started and one-off projects', cena: '0', enota: '€ forever', cta: 'Open calculator', href: kalkulator, izpost: false, znacka: '', kmalu: false, vkljuceno: ['Fair-pricing calculator', 'Proposal in three packages', 'Usage-rights and licence calculation', 'Editable proposal document', 'Email and PDF export', 'Unlimited cloud proposals', 'Proposal numbering'] },
+    { ime: 'Premium', za: 'For regular client work', cena: '15', cenaMes: '18', enota: '€ / month', ustanovna: 'Founding price: €9/month for the first 50 users (limited time) · first month free', cta: 'Start free', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Most popular', kmalu: false, vkljuceno: ['Everything in Free', 'Pupa AI assistant — text and voice', 'Saved proposals, contracts and invoices', 'Retainers', 'Projects and archive', 'Client CRM and price lists', 'Expenses and goals', 'Tasks, calendar and time tracking', 'Business dashboard'] },
+    { ime: 'Pro', za: 'For small studios and collaborators', cena: '29', cenaMes: '35', enota: '€ / month', cta: 'Coming soon', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Soon', kmalu: true, vkljuceno: ['Everything in Premium', 'Anonymous market comparison', 'Revenue and profit analytics by client', 'Advanced Pupa task planning', 'Business framework and taxes', 'Accounting export', 'Project-level collaborator access', 'MCP & API access (coming soon)', 'Priority support'] },
+  ] : [
     {
       ime: 'Brezplačno', za: 'Za začetek in enkratne projekte', cena: '0', enota: '€ za vedno',
       cta: 'Odpri kalkulator', href: kalkulator, izpost: false, znacka: '', kmalu: false,
@@ -978,19 +1020,18 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
       <div className="fl-oder">
         <section className="fl-hero">
-          <p className="kicker"><b>Pinart Flow</b> · beta · za samostojne kreativce in male studie</p>
+          <p className="kicker"><b>Pinart Flow</b> · beta · {t('za samostojne kreativce in male studie', 'for independent creatives and small studios')}</p>
           <h1 className="fl-hero-title" key={heroIdx}>
-            {HERO_NASLOVI[heroIdx].pre.map((w, i) => <span key={i} className="w" style={{ animationDelay: `${i * 0.07}s` }}>{w}{' '}</span>)}
-            <em>{HERO_NASLOVI[heroIdx].em.map((w, i) => <span key={i} className="w" style={{ animationDelay: `${(HERO_NASLOVI[heroIdx].pre.length + i) * 0.07}s` }}>{w}{' '}</span>)}</em>
+            {heroTitles[heroIdx].pre.map((w, i) => <span key={i} className="w" style={{ animationDelay: `${i * 0.07}s` }}>{w}{' '}</span>)}
+            <em>{heroTitles[heroIdx].em.map((w, i) => <span key={i} className="w" style={{ animationDelay: `${(heroTitles[heroIdx].pre.length + i) * 0.07}s` }}>{w}{' '}</span>)}</em>
           </h1>
           <p className="lead">
-            <b>En program namesto štirih:</b> ponudbe, pogodbe, računi, projekti in naloge — z vso komunikacijo pregledno na enem mestu.
-            Ob strani ti stoji <b>AI asistentka Pupa</b>, ki pozna trg in ti pove, koliko je vredno tvoje delo.
+            {isEn ? <><b>One workspace instead of four:</b> proposals, contracts, invoices, projects, tasks and communication in one clear flow. <b>Pupa, your AI assistant,</b> understands the creative market and helps you value your work.</> : <><b>En program namesto štirih:</b> ponudbe, pogodbe, računi, projekti in naloge — z vso komunikacijo pregledno na enem mestu. Ob strani ti stoji <b>AI asistentka Pupa</b>, ki pozna trg in ti pove, koliko je vredno tvoje delo.</>}
           </p>
           <div className="cta-vrsta">
-            <a className="cta" href={prijava}>Vstopi v Flow <ArrowRight size={17} weight="bold" /></a>
-            <a className="cta duh" href={kalkulator}>Preizkusi kalkulator</a>
-            <span className="cta-note">Kalkulator je brezplačen, brez prijave.</span>
+            <a className="cta" href={prijava}>{t('Vstopi v Flow', 'Enter Flow')} <ArrowRight size={17} weight="bold" /></a>
+            <a className="cta duh" href={kalkulator}>{t('Preizkusi kalkulator', 'Try the calculator')}</a>
+            <span className="cta-note">{t('Kalkulator je brezplačen, brez prijave.', 'The calculator is free. No account required.')}</span>
           </div>
           {/* Mobile: hero video kot cist blok POD gumbi (na desktopu skrit — tam je bg) */}
           <div className="fl-hero-vid-mob" aria-hidden>
@@ -1027,7 +1068,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <div className="fl-lap-screen">
                 <div className="fl-lap-ui lu1">
                   <div className="fl-lap-doc2">
-                    <div className="fl-lap-doc2-top"><b /><span className="fl-lap-ai">AI · poštena cena</span></div>
+                    <div className="fl-lap-doc2-top"><b /><span className="fl-lap-ai">{isEn ? 'AI · fair price' : 'AI · poštena cena'}</span></div>
                     <div className="fl-lap-row"><i /><em>650 €</em></div>
                     <div className="fl-lap-row"><i className="w2" /><em>1.200 €</em></div>
                     <div className="fl-lap-sum"><b /><strong>1.850 €</strong></div>
@@ -1035,15 +1076,15 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                 </div>
                 <div className="fl-lap-ui lu2">
                   <div className="fl-lap-list">
-                    <span className="fl-lap-tag t-proj">Projekti · statusi</span>
-                    <div className="fl-lap-lrow"><i className="fl-dot g" /><b /><em className="ok">Sprejeta</em></div>
-                    <div className="fl-lap-lrow"><i className="fl-dot o" /><b className="w2" /><em className="wa">Čaka</em></div>
-                    <div className="fl-lap-lrow"><i className="fl-dot g" /><b className="w3" /><em className="ok">Sprejeta</em></div>
+                    <span className="fl-lap-tag t-proj">{isEn ? 'Projects · statuses' : 'Projekti · statusi'}</span>
+                    <div className="fl-lap-lrow"><i className="fl-dot g" /><b /><em className="ok">{isEn ? 'Accepted' : 'Sprejeta'}</em></div>
+                    <div className="fl-lap-lrow"><i className="fl-dot o" /><b className="w2" /><em className="wa">{isEn ? 'Pending' : 'Čaka'}</em></div>
+                    <div className="fl-lap-lrow"><i className="fl-dot g" /><b className="w3" /><em className="ok">{isEn ? 'Accepted' : 'Sprejeta'}</em></div>
                   </div>
                 </div>
                 <div className="fl-lap-ui lu3">
                   <div className="fl-lap-cal2">
-                    <span className="fl-lap-tag t-cal">Roki · koledar</span>
+                    <span className="fl-lap-tag t-cal">{isEn ? 'Deadlines · calendar' : 'Roki · koledar'}</span>
                     <div className="fl-lap-week"><i /><i /><i className="on" /><i /><i /><i /><i /></div>
                     <div className="fl-lap-ev"><span className="e1" /><span className="e2" /></div>
                   </div>
@@ -1054,9 +1095,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         </section>
 
         <section className="fl-orodja" id="orodja">
-          <div className="k">Naša orodja</div>
-          <h2>Izbrana orodja za lažje kreativne začetke.</h2>
-          <p className="uvod">Tudi ti raje oblikuješ, kot pripravljaš ponudbe, pogodbe in račune? Naša izbrana zbirka orodij prevzame administracijo, da se lahko posvetiš ustvarjanju. Poglej, kaj te čaka.</p>
+          <div className="k">{t('Naša orodja', 'Our tools')}</div>
+          <h2>{t('Izbrana orodja za lažje kreativne začetke.', 'Everything you need to run a creative business.')}</h2>
+          <p className="uvod">{t('Tudi ti raje oblikuješ, kot pripravljaš ponudbe, pogodbe in račune? Naša izbrana zbirka orodij prevzame administracijo, da se lahko posvetiš ustvarjanju. Poglej, kaj te čaka.', 'Would you rather create than prepare proposals, contracts and invoices? Flow handles the admin so you can focus on the work you love.')}</p>
           <div className="fl-orodja-nadzor">
             <div className="fl-rubrike">
               {RUBRIKE.map(r => (
@@ -1064,8 +1105,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               ))}
             </div>
             <div className="fl-puscice">
-              <button type="button" onClick={() => drsni(-1)} aria-label="Nazaj"><CaretLeft size={18} weight="bold" /></button>
-              <button type="button" onClick={() => drsni(1)} aria-label="Naprej"><CaretRight size={18} weight="bold" /></button>
+              <button type="button" onClick={() => drsni(-1)} aria-label={t('Nazaj', 'Previous')}><CaretLeft size={18} weight="bold" /></button>
+              <button type="button" onClick={() => drsni(1)} aria-label={t('Naprej', 'Next')}><CaretRight size={18} weight="bold" /></button>
             </div>
           </div>
           <div className="fl-orodja-bleed">
@@ -1075,7 +1116,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               return (
                 <a className="fl-tkarta" href={o.href} key={o.ime}>
                   <span className="fl-tkarta-ikona" style={{ ['--h' as string]: o.h } as React.CSSProperties}><Ikona size={22} weight="regular" /></span>
-                  <h3>{o.ime} {o.brezplacno && <span className="fl-znacka">Brezplačno</span>}</h3>
+                  <h3>{o.ime} {o.brezplacno && <span className="fl-znacka">{t('Brezplačno', 'Free')}</span>}</h3>
                   <p>{o.opis}</p>
                 </a>
               );
@@ -1086,11 +1127,11 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
         <section className="fl-showcase" id="showcase">
           <div className="fl-showcase-glava">
-            <div className="k">Eno mesto</div>
-            <h2>Vse tvoje poslovanje na enem mestu</h2>
-            <p>Izberi, kje začneš. Vsako orodje teče iz istih podatkov — od poštene cene do računa.</p>
+            <div className="k">{t('Eno mesto', 'One place')}</div>
+            <h2>{t('Vse tvoje poslovanje na enem mestu', 'Your whole creative business in one place')}</h2>
+            <p>{t('Izberi, kje začneš. Vsako orodje teče iz istih podatkov — od poštene cene do računa.', 'Start anywhere. Every tool works from the same data, from a fair price to the final invoice.')}</p>
           </div>
-          <div className="fl-sc-pills" role="tablist" aria-label="Orodja Pinart Flow">
+          <div className="fl-sc-pills" role="tablist" aria-label={t('Orodja Pinart Flow', 'Pinart Flow tools')}>
             {ZAVIHKI.map(z => {
               const Ik = z.Ikona;
               return (
@@ -1134,15 +1175,15 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         <section className="fl-bento" id="zgodba">
           <div className="fl-bento-glava">
             <div>
-              <h2>Kaj dela Flow drugače?</h2>
-              <p>Ne le še eno orodje — orodje, ki ceni tvoje delo in poveže ves projekt. Tega chatbot, Excel ali asistent ne zmorejo.</p>
+              <h2>{t('Kaj dela Flow drugače?', 'What makes Flow different?')}</h2>
+              <p>{t('Ne le še eno orodje — orodje, ki ceni tvoje delo in poveže ves projekt. Tega chatbot, Excel ali asistent ne zmorejo.', 'More than another admin tool: Flow values your work and connects the whole project in one continuous workflow.')}</p>
             </div>
-            <a className="cta" href={kalkulator}>Začni brezplačno <ArrowRight size={16} weight="bold" /></a>
+            <a className="cta" href={kalkulator}>{t('Začni brezplačno', 'Start for free')} <ArrowRight size={16} weight="bold" /></a>
           </div>
           <div className="fl-bento-mreza">
             <div className="fl-bkarta a">
-              <h3>En program namesto štirih</h3>
-              <p>Ponudbe, pogodbe, računi, stroški, ceniki in naloge. Vse na enem mestu, nič več skakanja med Excelom, Canvo in Gmailom.</p>
+              <h3>{t('En program namesto štirih', 'One workspace instead of four')}</h3>
+              <p>{t('Ponudbe, pogodbe, računi, stroški, ceniki in naloge. Vse na enem mestu, nič več skakanja med Excelom, Canvo in Gmailom.', 'Proposals, contracts, invoices, expenses, price lists and tasks in one place — no more jumping between spreadsheets, design tools and email.')}</p>
               <div className="fl-bhub" aria-hidden>
                 <svg className="fl-bhub-bg" viewBox="0 0 220 220">
                   <defs>
@@ -1172,8 +1213,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               </div>
             </div>
             <div className="fl-bkarta b">
-              <h3>Vse teče iz istih podatkov</h3>
-              <p>Ponudba postane pogodba postane račun, brez prepisovanja. Chatbot to vsakič pozabi, Flow si zapomni.</p>
+              <h3>{t('Vse teče iz istih podatkov', 'The same data flows through every step')}</h3>
+              <p>{t('Ponudba postane pogodba postane račun, brez prepisovanja. Chatbot to vsakič pozabi, Flow si zapomni.', 'A proposal becomes a contract and then an invoice without retyping. Flow keeps the context for you.')}</p>
               <div className="fl-bnodes" aria-hidden>
                 <svg viewBox="0 0 300 200" preserveAspectRatio="none">
                   <defs>
@@ -1192,13 +1233,13 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                 <div className="fl-fold" style={{ left: '19%', top: '93%', width: '34%', height: '36%', background: '#cfe7f4' }} />
                 <div className="fl-badge" style={{ left: '15%', top: '40%' }}><ChatCircle size={18} weight="fill" /></div>
                 <div className="fl-badge" style={{ left: '59%', top: '75%' }}><PenNib size={18} weight="fill" /></div>
-                <div className="fl-npill" style={{ left: '13%', top: '66%', background: '#8b7be8' }}>Ponudba</div>
-                <div className="fl-npill" style={{ left: '89%', top: '45%', background: '#d5776f' }}>Račun</div>
+                <div className="fl-npill" style={{ left: '13%', top: '66%', background: '#8b7be8' }}>{t('Ponudba', 'Proposal')}</div>
+                <div className="fl-npill" style={{ left: '89%', top: '45%', background: '#d5776f' }}>{t('Račun', 'Invoice')}</div>
               </div>
             </div>
             <div className="fl-bkarta c">
-              <h3>Vsaka stranka na enem mestu</h3>
-              <p>Projekti, dokumenti in vsa komunikacija, povezani s stranko. Nič več razmetano po Gmailu.</p>
+              <h3>{t('Vsaka stranka na enem mestu', 'Every client in one place')}</h3>
+              <p>{t('Projekti, dokumenti in vsa komunikacija, povezani s stranko. Nič več razmetano po Gmailu.', 'Keep projects, documents and communication connected to the client instead of scattered across your inbox.')}</p>
               <div className="fl-bavatars" aria-hidden><span>MA</span><span>RK</span><span>LJ</span><span>+</span></div>
               <div className="fl-clist" aria-hidden>
                 <div className="r"><span /><i /></div>
@@ -1208,8 +1249,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               </div>
             </div>
             <div className="fl-bkarta d">
-              <h3>Pošteno ceno, ki je drugi nimajo</h3>
-              <p>Anonimni tržni pregled ti pokaže, kje si in raste z vsakim kreativcem. Tvoj pošteni benchmark.</p>
+              <h3>{t('Pošteno ceno, ki je drugi nimajo', 'A fair-price benchmark others do not have')}</h3>
+              <p>{t('Anonimni tržni pregled ti pokaže, kje si in raste z vsakim kreativcem. Tvoj pošteni benchmark.', 'An anonymous market view shows where your price sits and improves as the creative community grows.')}</p>
               <div className="fl-bglobe" aria-hidden>
                 <span className="fl-bglobe-ai"><Sparkle size={12} weight="fill" /> AI</span>
                 <div className="fl-btag" style={{ left: '17%', top: '8%', animationDelay: '0s' }}><small>Logotip</small><b style={{ background: '#d5776f' }}>650 €</b></div>
@@ -1241,14 +1282,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         </section>
 
         <section className="fl-konec">
-          <h2>Pripravljena na bolj mirno poslovanje?</h2>
+          <h2>{t('Pripravljena na bolj mirno poslovanje?', 'Ready for a calmer way to run your business?')}</h2>
           <div className="cta-vrsta">
-            <a className="cta" href={prijava}>Vstopi v Flow <ArrowRight size={17} weight="bold" /></a>
+            <a className="cta" href={prijava}>{t('Vstopi v Flow', 'Enter Flow')} <ArrowRight size={17} weight="bold" /></a>
           </div>
           <div className="zakljucki">
-            <span><CheckCircle size={20} weight="fill" /> Brez kartice za začetek</span>
-            <span><CheckCircle size={20} weight="fill" /> Kalkulator ostane brezplačen</span>
-            <span><CheckCircle size={20} weight="fill" /> Podatki so tvoji</span>
+            <span><CheckCircle size={20} weight="fill" /> {t('Brez kartice za začetek', 'No card required to start')}</span>
+            <span><CheckCircle size={20} weight="fill" /> {t('Kalkulator ostane brezplačen', 'The calculator stays free')}</span>
+            <span><CheckCircle size={20} weight="fill" /> {t('Podatki so tvoji', 'Your data stays yours')}</span>
           </div>
         </section>
 
@@ -1257,8 +1298,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <Aurora colorStops={["#7C3AED", "#38BDF8", "#A78BFA"]} amplitude={1.15} blend={0.55} speed={1.4} />
           </div>
           <div className="fl-funkcije-glava">
-            <h2>Zgrajeno za mirno poslovanje samostojnega kreativca.</h2>
-            <p>Poštene cene, vračunane avtorske pravice in tvoji podatki — brez skritih pasti.</p>
+            <h2>{t('Zgrajeno za mirno poslovanje samostojnega kreativca.', 'Built for a calmer independent creative business.')}</h2>
+            <p>{t('Poštene cene, vračunane avtorske pravice in tvoji podatki — brez skritih pasti.', 'Fair prices, usage rights included and full ownership of your data — with no hidden catches.')}</p>
           </div>
           <div className="fl-funkcije-mreza">
             {FUNKCIJE.map(f => {
@@ -1274,15 +1315,19 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         </section>
 
         <section className="fl-persone" id="zveni-znano" style={{ maxWidth: '72rem', margin: '0 auto', padding: 'clamp(3rem,7vw,6rem) clamp(1.2rem,5vw,3rem)' }}>
-          <div className="k" style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(17,17,17,.72)' }}>Zveni znano?</div>
-          <h2 style={{ fontFamily: 'var(--font-serif), serif', fontWeight: 500, fontSize: 'clamp(1.9rem, 5vw, 2.9rem)', lineHeight: 1.05, margin: '.55rem 0 .5rem', maxWidth: '20ch' }}>Mogoče se prepoznaš.</h2>
-          <p className="uvod" style={{ fontSize: '1rem', lineHeight: 1.6, color: 'rgba(17,17,17,.76)', maxWidth: '50ch', margin: '0 0 2.4rem' }}>Prave zgodbe zbiramo — do takrat pa najpogostejše bolečine samostojnih kreativcev, ki jih Flow reši.</p>
+          <div className="k" style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(17,17,17,.72)' }}>{t('Zveni znano?', 'Sound familiar?')}</div>
+          <h2 style={{ fontFamily: 'var(--font-serif), serif', fontWeight: 500, fontSize: 'clamp(1.9rem, 5vw, 2.9rem)', lineHeight: 1.05, margin: '.55rem 0 .5rem', maxWidth: '20ch' }}>{t('Mogoče se prepoznaš.', 'You may recognise yourself.')}</h2>
+          <p className="uvod" style={{ fontSize: '1rem', lineHeight: 1.6, color: 'rgba(17,17,17,.76)', maxWidth: '50ch', margin: '0 0 2.4rem' }}>{t('Prave zgodbe zbiramo — do takrat pa najpogostejše bolečine samostojnih kreativcev, ki jih Flow reši.', 'We are collecting real stories. Until then, these are the recurring problems Flow is designed to solve.')}</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(15.5rem, 1fr))', gap: '1.2rem', marginTop: '2.2rem' }}>
-            {[
+            {(isEn ? [
+              { ini: 'A', ime: 'Anna', vloga: 'Illustrator', barva: 'linear-gradient(140deg, oklch(78% .12 300), oklch(66% .16 300))', bolecina: 'Every enquiry left me staring at a blank email. Quote too little and I worked almost for free; quote too much and the client disappeared. I was not charging for usage rights at all.' },
+              { ini: 'M', ime: 'Max', vloga: 'Graphic designer', barva: 'linear-gradient(140deg, oklch(80% .1 200), oklch(66% .14 205))', bolecina: 'The proposal was in one document, the contract somewhere in my inbox and the invoice in a third app. Finding what we agreed took half an hour.' },
+              { ini: 'N', ime: 'Nina', vloga: 'Photographer', barva: 'linear-gradient(140deg, oklch(82% .1 60), oklch(70% .14 55))', bolecina: 'I worked for months, yet by year-end I still did not know what I had actually earned. No overview — just the feeling that I was running in place.' },
+            ] : [
               { ini: 'A', ime: 'Ana', vloga: 'Ilustratorka', barva: 'linear-gradient(140deg, oklch(78% .12 300), oklch(66% .16 300))', bolecina: 'Ob vsakem povpraševanju sem strmela v prazen mail — koliko naj rečem? Premalo in delaš skoraj zastonj, preveč in te ni nazaj. Avtorskih pravic sploh nisem zaračunavala.' },
               { ini: 'M', ime: 'Maj', vloga: 'Grafični oblikovalec', barva: 'linear-gradient(140deg, oklch(80% .1 200), oklch(66% .14 205))', bolecina: 'Ponudba v Wordu, pogodba nekje v mailu, račun v tretjem programu. Ko je stranka vprašala »kaj sva se dogovorila«, sem pol ure brskal po Gmailu.' },
               { ini: 'N', ime: 'Nina', vloga: 'Fotografinja', barva: 'linear-gradient(140deg, oklch(82% .1 60), oklch(70% .14 55))', bolecina: 'Delala sem cele mesece, konec leta pa nisem vedela, ali sem sploh kaj zaslužila. Nobenega pregleda — samo občutek, da tečem na mestu.' },
-            ].map(p => (
+            ]).map(p => (
               <figure key={p.ime} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', margin: 0, padding: '1.5rem', border: '1px solid oklch(93% .006 82 / .8)', borderRadius: '1.2rem', background: 'oklch(99.5% .004 87 / .75)' }}>
                 <span aria-hidden style={{ display: 'grid', placeItems: 'center', width: '3rem', height: '3rem', borderRadius: '50%', background: p.barva, color: '#fff', font: '600 1.05rem var(--font-sans, system-ui), sans-serif', flex: 'none' }}>{p.ini}</span>
                 <blockquote style={{ margin: 0, fontSize: '.95rem', lineHeight: 1.55, color: 'var(--ink, #1a1622)' }}>»{p.bolecina}«</blockquote>
@@ -1293,16 +1338,21 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         </section>
 
         <section className="fl-zaupanje" id="zaupanje" style={{ maxWidth: '72rem', margin: '0 auto', padding: 'clamp(3rem,7vw,6rem) clamp(1.2rem,5vw,3rem)' }}>
-          <div className="k" style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(17,17,17,.72)' }}>Zakaj zaupati</div>
-          <h2 style={{ fontFamily: 'var(--font-serif), serif', fontWeight: 500, fontSize: 'clamp(1.9rem, 5vw, 2.9rem)', lineHeight: 1.05, margin: '.55rem 0 .5rem', maxWidth: '20ch' }}>Pošteno, varno, tvoje.</h2>
-          <p className="uvod" style={{ fontSize: '1rem', lineHeight: 1.6, color: 'rgba(17,17,17,.76)', maxWidth: '50ch', margin: '0 0 2.4rem' }}>Nova beta brez referenc — a zaupanje si prisluživa odkrito, ne z izmišljenimi ocenami.</p>
+          <div className="k" style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(17,17,17,.72)' }}>{t('Zakaj zaupati', 'Why trust Flow')}</div>
+          <h2 style={{ fontFamily: 'var(--font-serif), serif', fontWeight: 500, fontSize: 'clamp(1.9rem, 5vw, 2.9rem)', lineHeight: 1.05, margin: '.55rem 0 .5rem', maxWidth: '20ch' }}>{t('Pošteno, varno, tvoje.', 'Fair, secure and yours.')}</h2>
+          <p className="uvod" style={{ fontSize: '1rem', lineHeight: 1.6, color: 'rgba(17,17,17,.76)', maxWidth: '50ch', margin: '0 0 2.4rem' }}>{t('Nova beta brez referenc — a zaupanje si prisluživa odkrito, ne z izmišljenimi ocenami.', 'Flow is a new beta. We earn trust through transparency, not invented testimonials.')}</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(15.5rem, 1fr))', gap: '1.2rem' }}>
-            {[
+            {(isEn ? [
+              { Ik: ShieldCheck, ime: 'Your data stays yours', opis: 'Stored securely in the EU and accessible only to you. We never sell it; pricing insights use anonymous, aggregated data only.' },
+              { Ik: ChatCircle, ime: 'A real person, not a department', opis: 'Flow is built by Tina, not an anonymous corporation. You can write to her directly and receive a real answer.' },
+              { Ik: Sparkle, ime: 'No hidden catches', opis: 'The calculator stays free with no card required. You can export your data and leave at any time.' },
+              { Ik: CheckCircle, ime: 'Built in the open', opis: 'Made in Slovenia for creatives, with a clear distinction between what works now and what is still coming.' },
+            ] : [
               { Ik: ShieldCheck, ime: 'Tvoji podatki so tvoji', opis: 'Varno v oblaku (EU), dostop imaš samo ti. Ne prodamo in ne delimo — cene se združijo anonimno, nikoli ime.' },
               { Ik: ChatCircle, ime: 'Pravi človek, ne oddelek', opis: 'Za Flow stoji Tina, ne anonimno podjetje. Pišeš ji neposredno in dobiš odgovor.' },
               { Ik: Sparkle, ime: 'Brez pasti', opis: 'Kalkulator je brezplačen za vedno, brez kartice. Podatke lahko kadarkoli izvoziš in odideš.' },
               { Ik: CheckCircle, ime: 'Odkrito grajeno', opis: 'Narejeno v Sloveniji, za kreativce. Odkrito povemo, kaj že dela in kaj šele prihaja (beta).' },
-            ].map(t => (
+            ]).map(t => (
               <div key={t.ime} style={{ display: 'flex', flexDirection: 'column', gap: '.7rem', padding: '1.5rem', border: '1px solid oklch(93% .006 82 / .8)', borderRadius: '1.2rem', background: 'oklch(99.5% .004 87 / .75)' }}>
                 <span aria-hidden style={{ display: 'grid', placeItems: 'center', width: '2.6rem', height: '2.6rem', borderRadius: '.7rem', background: 'oklch(95% .012 300)', color: 'var(--accent, #7c3aed)', flex: 'none' }}><t.Ik size={20} weight="regular" /></span>
                 <strong style={{ fontSize: '.98rem' }}>{t.ime}</strong>
@@ -1313,12 +1363,12 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         </section>
 
         <section className="fl-cenik" id="cenik">
-          <div className="k">Cenik</div>
-          <h2>Enostavno, pošteno, brez presenečenj.</h2>
-          <p className="uvod">Kalkulator poštenih cen je za vedno brezplačen. Za celo platformo izbereš paket — manj kot ena tvoja delovna ura na mesec.</p>
-          <div role="group" aria-label="Obračun" style={{ display: 'inline-flex', gap: '.3rem', padding: '.28rem', margin: '0 auto 2.2rem', borderRadius: 999, background: 'rgba(17,17,17,.06)' }}>
-            <button type="button" onClick={() => setLetno(false)} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.42rem 1rem', font: '700 .82rem var(--font-sans), sans-serif', background: !letno ? 'var(--ink)' : 'transparent', color: !letno ? 'var(--paper)' : 'var(--ink)' }}>Mesečno</button>
-            <button type="button" onClick={() => setLetno(true)} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.42rem 1rem', font: '700 .82rem var(--font-sans), sans-serif', background: letno ? 'var(--ink)' : 'transparent', color: letno ? 'var(--paper)' : 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>Letno <span style={{ fontSize: '.64rem', fontWeight: 800, letterSpacing: '.03em', color: letno ? '#8be6a8' : 'oklch(58% .13 160)' }}>CENEJE</span></button>
+          <div className="k">{t('Cenik', 'Pricing')}</div>
+          <h2>{t('Enostavno, pošteno, brez presenečenj.', 'Simple, fair and predictable.')}</h2>
+          <p className="uvod">{t('Kalkulator poštenih cen je za vedno brezplačen. Za celo platformo izbereš paket — manj kot ena tvoja delovna ura na mesec.', 'The fair-pricing calculator stays free. Choose a plan for the full workspace for less than the value of one working hour a month.')}</p>
+          <div role="group" aria-label={t('Obračun', 'Billing period')} style={{ display: 'inline-flex', gap: '.3rem', padding: '.28rem', margin: '0 auto 2.2rem', borderRadius: 999, background: 'rgba(17,17,17,.06)' }}>
+            <button type="button" onClick={() => setLetno(false)} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.42rem 1rem', font: '700 .82rem var(--font-sans), sans-serif', background: !letno ? 'var(--ink)' : 'transparent', color: !letno ? 'var(--paper)' : 'var(--ink)' }}>{t('Mesečno', 'Monthly')}</button>
+            <button type="button" onClick={() => setLetno(true)} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.42rem 1rem', font: '700 .82rem var(--font-sans), sans-serif', background: letno ? 'var(--ink)' : 'transparent', color: letno ? 'var(--paper)' : 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>{t('Letno', 'Yearly')} <span style={{ fontSize: '.64rem', fontWeight: 800, letterSpacing: '.03em', color: letno ? '#8be6a8' : 'oklch(58% .13 160)' }}>{t('CENEJE', 'SAVE')}</span></button>
           </div>
           <div className="fl-cenik-mreza">
             {CENIKI.map(c => (
@@ -1330,7 +1380,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                   <strong>{letno ? c.cena : ((c as { cenaMes?: string }).cenaMes ?? c.cena)}</strong><span>{c.enota}</span>
                   {'redna' in c && <s className="fl-plan-redna">{(c as { redna?: string }).redna} €</s>}
                 </div>
-                {'cenaMes' in c && <p style={{ margin: '.1rem 0 .5rem', fontSize: '.72rem', color: 'rgba(17,17,17,.55)' }}>{letno ? 'obračunano letno' : 'mesečno, odpoveš kadarkoli'}</p>}
+                {'cenaMes' in c && <p style={{ margin: '.1rem 0 .5rem', fontSize: '.72rem', color: 'rgba(17,17,17,.55)' }}>{letno ? t('obračunano letno', 'billed annually') : t('mesečno, odpoveš kadarkoli', 'monthly, cancel anytime')}</p>}
                 {'ustanovna' in c && <p className="fl-plan-ustanovna" style={{ marginTop: 0 }}>{(c as { ustanovna?: string }).ustanovna}</p>}
                 {c.kmalu
                   ? <span className="fl-plan-cta cakalna" aria-disabled="true">{c.cta}</span>
@@ -1341,7 +1391,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               </div>
             ))}
           </div>
-          <p className="fl-cenik-opomba">Cene ne vključujejo DDV. Paket lahko kadarkoli zamenjaš ali odpoveš.</p>
+          <p className="fl-cenik-opomba">{t('Cene ne vključujejo DDV. Paket lahko kadarkoli zamenjaš ali odpoveš.', 'Prices exclude VAT. You can change or cancel your plan at any time.')}</p>
           {/* Osebne primerjave cen ("nazadnje si zaracunala …") NE sodijo sem:
               obiskovalec landinga se nima svojih podatkov. Sodijo v kalkulator ob
               rezultat in na nadzorno plosco — glej docs/CENA-ARGUMENT.md */}
@@ -1349,9 +1399,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
         <section className="fl-faq" id="faq">
           <div className="fl-faq-glava">
-            <div className="k">Pogosta vprašanja</div>
-            <h2>Odgovori na najpogostejša vprašanja.</h2>
-            <a className="fl-faq-podpora" href="mailto:tina@pinart.si">Kontaktiraj podporo</a>
+            <div className="k">{t('Pogosta vprašanja', 'Frequently asked questions')}</div>
+            <h2>{t('Odgovori na najpogostejša vprašanja.', 'Answers to the questions creatives ask most.')}</h2>
+            <a className="fl-faq-podpora" href="mailto:tina@pinart.si">{t('Kontaktiraj podporo', 'Contact support')}</a>
           </div>
           <div className="fl-faq-lista">
             {VPRASANJA.map((q, i) => (
@@ -1368,8 +1418,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
         <section className="fl-zgodba" id="onas">
           <div className="fl-zgodba-glava">
-            <div className="k">Moja zgodba</div>
-            <h2>Zgradila sem Flow, kakršnega sem sama pogrešala.</h2>
+            <div className="k">{t('Moja zgodba', 'My story')}</div>
+            <h2>{t('Zgradila sem Flow, kakršnega sem sama pogrešala.', 'I built the Flow workspace I wished I had.')}</h2>
           </div>
           <div className="fl-zgodba-telo">
             <div className="fl-zgodba-portret">
@@ -1379,11 +1429,19 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <CircularText text="PINART*FLOW*OD*KREATIVKE*ZA*KREATIVCE*" spinDuration={24} onHover="speedUp" />
             </div>
             <div className="fl-zgodba-tekst">
-              <p>Sem Tina, oblikovalka in načrtovalka produktov. Oblikovanje je moje veselje — ponudbe in računi pa muka, ki požre ure. Ugibala sem, ali sem dovolj zaračunala, pozabljala na avtorske pravice in skakala med tremi orodji.</p>
-              <p>Verjetno poznaš tudi ti: ure pripravljaš ponudbo, potem pa ti stranka pokaže z AI generiran logotip. Pojasniš, da nima pravega tona za njeno panogo — pa dobiš, da se o okusu ne razpravlja. Umetno inteligenco imam rada in mi je v pomoč; a prav zato, ker je tempo z njo hitrejši kot kdaj prej, je naš občutek za pravo rešitev vreden več, ne manj.</p>
-              <p>Oblikovalci, kuharji, kritiki, slikarji, modni kreatorji — vsi gojimo občutek, ki zori leta. In prav ta okus podjetjem ustoliči vizualni glas in ton, jim vdihne življenje, drži konsistenco čez vse njihove znamke in skrbi, da se njihova zgodba razvija.</p>
-              <p>Flow je nastal iz te utrujenosti. Da kreativci postanemo narekovalci okusa in glasu, ne zgolj izvajalci — da vemo, koliko je vredno naše delo, in ga ne prodamo pod ceno.</p>
-              <p>Ker sem na isti strani kot ti, je Flow mišljen kot opora: da imaš več časa za svoj okus in izraz, več drznosti in mirno zavest o svojih pravicah. Ne gradimo le okusa — gradimo glas, ton in zgodbo, po katerih znamke zaživijo.</p>
+              {isEn ? <>
+                <p>I am Tina, a designer and product strategist. Design is the part I love; proposals and invoices were the admin that consumed hours. I kept guessing whether I had charged enough, forgot usage rights and jumped between several tools.</p>
+                <p>You may know the feeling: you spend hours preparing a proposal and the client replies with an AI-generated logo. AI is a valuable tool, but because it makes production faster than ever, our judgement and ability to find the right solution are worth more, not less.</p>
+                <p>Designers, chefs, critics, painters and fashion creators all develop a point of view over years. That judgement gives a company its visual voice, keeps the brand consistent and helps its story evolve.</p>
+                <p>Flow grew from that frustration. It helps creatives become authors of taste and voice, not merely executors — and understand the real value of their work.</p>
+                <p>I built Flow as support from one creative to another: more time for your craft, more confidence in your choices and a clear understanding of your rights.</p>
+              </> : <>
+                <p>Sem Tina, oblikovalka in načrtovalka produktov. Oblikovanje je moje veselje — ponudbe in računi pa muka, ki požre ure. Ugibala sem, ali sem dovolj zaračunala, pozabljala na avtorske pravice in skakala med tremi orodji.</p>
+                <p>Verjetno poznaš tudi ti: ure pripravljaš ponudbo, potem pa ti stranka pokaže z AI generiran logotip. Pojasniš, da nima pravega tona za njeno panogo — pa dobiš, da se o okusu ne razpravlja. Umetno inteligenco imam rada in mi je v pomoč; a prav zato, ker je tempo z njo hitrejši kot kdaj prej, je naš občutek za pravo rešitev vreden več, ne manj.</p>
+                <p>Oblikovalci, kuharji, kritiki, slikarji, modni kreatorji — vsi gojimo občutek, ki zori leta. In prav ta okus podjetjem ustoliči vizualni glas in ton, jim vdihne življenje, drži konsistenco čez vse njihove znamke in skrbi, da se njihova zgodba razvija.</p>
+                <p>Flow je nastal iz te utrujenosti. Da kreativci postanemo narekovalci okusa in glasu, ne zgolj izvajalci — da vemo, koliko je vredno naše delo, in ga ne prodamo pod ceno.</p>
+                <p>Ker sem na isti strani kot ti, je Flow mišljen kot opora: da imaš več časa za svoj okus in izraz, več drznosti in mirno zavest o svojih pravicah. Ne gradimo le okusa — gradimo glas, ton in zgodbo, po katerih znamke zaživijo.</p>
+              </>}
               <p className="fl-zgodba-podpis">— Tina, Pinart</p>
             </div>
           </div>
@@ -1400,41 +1458,41 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           <div className="fl-footer-top">
             <div className="fl-footer-brand">
               <span className="fl-footer-logo"><i /><strong>Pinart</strong><span>FLOW</span></span>
-              <p>Vse tvoje poslovanje, na enem mestu. Orodje pripravlja Tina, kreativna direktorica studia <a href={localePath(locale, '')}>Pinart</a>.</p>
+              <p>{t('Vse tvoje poslovanje, na enem mestu. Orodje pripravlja Tina, kreativna direktorica studia', 'Your whole creative business in one place. Built by Tina, creative director at')} <a href={localePath(locale, '')}>Pinart</a>.</p>
             </div>
             <nav className="fl-footer-cols">
               <div>
-                <strong>Produkt</strong>
+                <strong>{t('Produkt', 'Product')}</strong>
                 <a href="#orodja">Pinart Flow</a>
-                <a href={kalkulator}>Kalkulator</a>
-                <a href="#cenik">Cenik</a>
+                <a href={kalkulator}>{t('Kalkulator', 'Calculator')}</a>
+                <a href="#cenik">{t('Cenik', 'Pricing')}</a>
               </div>
               <div>
-                <strong>Začni</strong>
-                <a href={prijava}>Prijava</a>
-                <a href={prijava}>Ustvari račun</a>
-                <a href={kalkulator}>Odpri kalkulator</a>
+                <strong>{t('Začni', 'Get started')}</strong>
+                <a href={prijava}>{t('Prijava', 'Log in')}</a>
+                <a href={prijava}>{t('Ustvari račun', 'Create account')}</a>
+                <a href={kalkulator}>{t('Odpri kalkulator', 'Open calculator')}</a>
               </div>
               <div>
-                <strong>Podjetje</strong>
-                <a href="#onas">O nas</a>
+                <strong>{t('Podjetje', 'Company')}</strong>
+                <a href="#onas">{t('O nas', 'About')}</a>
                 <a href={localePath(locale, '')}>Studio Pinart</a>
-                <a href="#faq">Pogosta vprašanja</a>
+                <a href="#faq">{t('Pogosta vprašanja', 'FAQ')}</a>
               </div>
               <div>
-                <strong>Kontakt</strong>
+                <strong>{t('Kontakt', 'Contact')}</strong>
                 <a href="mailto:tina@pinart.si">tina@pinart.si</a>
                 <a href="mailto:tina@pinart.si">Let&rsquo;s talk</a>
-                <a href="#cenik">Načini plačila</a>
+                <a href="#cenik">{t('Načini plačila', 'Payment options')}</a>
               </div>
             </nav>
           </div>
           <div className="fl-footer-bottom">
-            <span>© 2026 Pinart · Vse pravice pridržane</span>
+            <span>© 2026 Pinart · {t('Vse pravice pridržane', 'All rights reserved')}</span>
             <span className="fl-footer-legal">
-              <a href={localePath(locale, '/zasebnost')}>Zasebnost</a>
-              <a href={localePath(locale, '/kalkulator/pogoji')}>Pogoji</a>
-              <a href="#cenik">Načini plačila</a>
+              <a href={localePath(locale, '/zasebnost')}>{t('Zasebnost', 'Privacy')}</a>
+              <a href={localePath(locale, '/kalkulator/pogoji')}>{t('Pogoji', 'Terms')}</a>
+              <a href="#cenik">{t('Načini plačila', 'Payment options')}</a>
             </span>
           </div>
         </footer>
