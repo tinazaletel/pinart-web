@@ -237,7 +237,7 @@
 .bandTitle { display: flex; align-items: end; justify-content: space-between; gap: 2rem; padding: .5rem .4rem 1.15rem; }
 .bandTitle h2 { margin: 0; font: 500 clamp(1.5rem, 2.6vw, 2.15rem)/1 var(--font-serif), Georgia, serif; }
 .bandTitle > p:last-child { max-width: 28rem; margin: 0; color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .64rem; line-height: 1.45; }
-.flowTools { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .65rem; }
+.flowTools { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .65rem; margin-top: .45rem; }
 @media (max-width: 1150px) { .flowTools { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .flowTools > * { position: relative; min-height: 9.5rem; display: flex; flex-direction: column; align-items: flex-start; padding: 1rem; border: 0; border-radius: 1rem; background: oklch(98% .01 87); color: inherit; font: inherit; text-align: left; text-decoration: none; cursor: pointer; overflow: hidden; transition: transform 340ms cubic-bezier(.22,1,.36,1), border-radius 340ms cubic-bezier(.22,1,.36,1), box-shadow 340ms cubic-bezier(.22,1,.36,1), filter 340ms ease-out; }
 .flowTools > *::after { content: ''; position: absolute; z-index: 0; right: -1.8rem; top: -4.8rem; width: 14rem; aspect-ratio: 1; border: 2px solid oklch(100% 0 0 / .28); border-radius: 50%; background: radial-gradient(circle at 38% 60%, oklch(100% 0 0 / .35), oklch(100% 0 0 / .08) 42%, transparent 68%); box-shadow: -1.5rem 1rem 3rem oklch(100% 0 0 / .2), inset 1.2rem -1rem 2.8rem oklch(100% 0 0 / .12); }
@@ -405,7 +405,7 @@
 .historyBand .tableWrap th:nth-child(2) { width: 22%; }
 .historyBand .tableWrap th:nth-child(3) { width: 21%; }
 .historyBand .tableWrap th:nth-child(4) { width: 22%; }
-.historyTable { overflow: hidden; border: 1px solid oklch(94% .006 82 / .45); }
+.historyTable { overflow: hidden; border: 0; }
 .historyBand .historyTable, .detailRow .historyTable { flex: 1; margin-top: .45rem; }
 .historyBand .historyTable > table, .detailRow .historyTable > table { height: 100%; }
 .historyTable table { margin: 0; }
