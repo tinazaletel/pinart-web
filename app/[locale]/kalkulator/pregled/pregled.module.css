@@ -346,7 +346,7 @@
 .flowTools > *:nth-child(3)::after { animation: arcDrift 8s ease-in-out -4s infinite alternate; }
 .flowTools > *:nth-child(4)::after { animation: orbDrift 10s ease-in-out -1s infinite alternate; }
 .flowTools > *:nth-child(4)::before { animation: dotsGlow 6s ease-in-out infinite alternate; }
-.historyBand .tableWrap { margin-top: 0; margin-inline: -1.05rem; overflow-x: hidden; background: transparent; }
+.historyBand .tableWrap { margin-top: 0; margin-inline: -.7rem; overflow-x: hidden; background: transparent; }
 .historyBand .emptyState { padding: 0 1rem; border-radius: 1rem; background: oklch(98% .01 87); }
 .overviewColumns { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; }
 .overviewColumns > section { min-width: 0; }
