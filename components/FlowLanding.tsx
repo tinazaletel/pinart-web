@@ -4,7 +4,7 @@ import {
   FileText, Handshake, Scroll, Receipt, Wallet, Tag, Clock,
   Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, CaretLeft, CaretRight,
   ShieldCheck, Scales, ChatCircle, Sparkle, Plus, ChartLineUp, Robot, Plugs,
-  CalendarBlank, ListChecks, FolderOpen, Megaphone,
+  CalendarBlank, ListChecks, FolderOpen, Megaphone, PenNib,
 } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -39,14 +39,6 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     return () => window.clearInterval(t);
   }, []);
 
-  /* Kartica »Vse teče iz istih podatkov«: zaslon menja med 3 screeni. */
-  const B_SCREENI = ['/flow/ponudba-chat.jpg', '/flow/racuni.jpg', '/flow/pregled.jpg'];
-  const [bIdx, setBIdx] = useState(0);
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const t = window.setInterval(() => setBIdx(i => (i + 1) % 3), 2600);
-    return () => window.clearInterval(t);
-  }, []);
   const [taZavihek, setTaZavihek] = useState('kalkulator');
   const [odprtoVpr, setOdprtoVpr] = useState<number | null>(0);
   const [letno, setLetno] = useState(true);   /* cenik: letno (ceneje) vs mesecno (drazje) */
@@ -669,7 +661,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bento-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.03; margin: 0; max-width: 16ch; }
         .fl-bento-glava p { font-size: 1rem; line-height: 1.55; color: rgba(17,17,17,.72); margin: .5rem 0 0; max-width: 34ch; }
         .fl-bento-glava .cta { flex: none; }
-        .fl-bento-mreza { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-auto-rows: 17.5rem; gap: 1rem; }
+        .fl-bento-mreza { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-auto-rows: 15.5rem; gap: 1rem; }
         .fl-bkarta { position: relative; overflow: hidden; border-radius: 22px; padding: 1.6rem 1.5rem; display: flex; flex-direction: column; }
         .fl-bkarta h3 { font-size: 1.15rem; font-weight: 650; margin: 0 0 .45rem; line-height: 1.2; }
         .fl-bkarta > p { font-size: .88rem; line-height: 1.5; margin: 0; max-width: 30ch; }
@@ -695,12 +687,15 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @keyframes flOrbit { to { transform: rotate(360deg); } }
         @keyframes flOrbitRev { to { transform: rotate(-360deg); } }
         /* b) zaslon, ki menja 3 screene */
-        .fl-bkarta.b { flex-direction: row; align-items: center; gap: 1.4rem; }
-        .fl-btekst { flex: 1 1 44%; min-width: 0; }
-        .fl-btekst > p { font-size: .88rem; line-height: 1.5; margin: 0; max-width: 32ch; color: rgba(255,255,255,.74); }
-        .fl-bscreen { position: relative; flex: 1 1 54%; align-self: stretch; margin: -1.6rem -1.5rem -1.6rem 0; min-height: 8rem; border-radius: 12px 0 0 12px; overflow: hidden; background: #0d0b12; }
-        .fl-bscreen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; opacity: 0; transition: opacity .8s ease; }
-        .fl-bscreen img.on { opacity: 1; }
+        .fl-btekst > p { font-size: .88rem; line-height: 1.5; margin: 0; max-width: 26ch; color: rgba(255,255,255,.74); }
+        .fl-bscreen { position: absolute; right: -1.5rem; bottom: -1.6rem; width: 60%; height: 64%; border-top-left-radius: 16px; overflow: hidden; background: #0d0b12; box-shadow: -18px -16px 42px rgba(0,0,0,.34); }
+        /* b) node-canvas: kvadratne mapice, povezane z ukrivljenimi črtami (ista nit podatkov) */
+        .fl-bkarta.b h3, .fl-bkarta.b > p { max-width: 17rem; }
+        .fl-bnodes { position: absolute; right: -.3rem; top: .2rem; bottom: .2rem; width: 60%; }
+        .fl-bnodes svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+        .fl-bnode { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: .34rem; }
+        .fl-bnode > span { width: 48px; height: 48px; border-radius: 13px; background: #17141f; border: 1px solid rgba(255,255,255,.2); display: grid; place-items: center; color: #fff; box-shadow: 0 6px 16px rgba(0,0,0,.4); }
+        .fl-bnode small { font-size: .62rem; font-weight: 600; color: #fff; background: rgba(255,255,255,.12); padding: .1rem .42rem; border-radius: 999px; white-space: nowrap; }
         .fl-bscreen-dots { position: absolute; left: 0; right: 0; bottom: .55rem; display: flex; justify-content: center; gap: .35rem; z-index: 2; }
         .fl-bscreen-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.35); transition: background .3s, width .3s; }
         .fl-bscreen-dots i.on { width: 16px; border-radius: 3px; background: #fff; }
@@ -1114,8 +1109,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                 </span>
                 <div className="fl-bhub-ring">
                   {[
-                    { Ic: FileText, a: 0 }, { Ic: Scroll, a: 60 }, { Ic: Receipt, a: 120 },
-                    { Ic: Users, a: 180 }, { Ic: ListChecks, a: 240 }, { Ic: CalendarBlank, a: 300 },
+                    { Ic: PenNib, a: 0 }, { Ic: FileText, a: 60 }, { Ic: Scroll, a: 120 },
+                    { Ic: Receipt, a: 180 }, { Ic: Users, a: 240 }, { Ic: ListChecks, a: 300 },
                   ].map(({ Ic, a }) => (
                     <span key={a} className="fl-bhub-ic" style={{ '--a': `${a}deg`, '--r': '94px' } as React.CSSProperties}><i><Ic size={20} weight="regular" /></i></span>
                   ))}
@@ -1123,19 +1118,33 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               </div>
             </div>
             <div className="fl-bkarta b">
-              <div className="fl-btekst">
-                <h3>Vse teče iz istih podatkov</h3>
-                <p>Ponudba postane pogodba postane račun — brez prepisovanja. Chatbot to vsakič pozabi, Flow si zapomni.</p>
-              </div>
-              <div className="fl-bscreen" aria-hidden>
-                {B_SCREENI.map((src, i) => <img key={src} src={src} className={i === bIdx ? 'on' : ''} alt="" loading="lazy" />)}
-                <div className="fl-bscreen-dots">{B_SCREENI.map((_, i) => <i key={i} className={i === bIdx ? 'on' : ''} />)}</div>
+              <h3>Vse teče iz istih podatkov</h3>
+              <p>Ponudba postane pogodba postane račun — brez prepisovanja. Chatbot to vsakič pozabi, Flow si zapomni.</p>
+              <div className="fl-bnodes" aria-hidden>
+                <svg viewBox="0 0 300 200" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="flNodeLine" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stopColor="#63c7e8" /><stop offset="1" stopColor="#a78bfa" />
+                    </linearGradient>
+                    <filter id="flNodeGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.6" /></filter>
+                  </defs>
+                  <g fill="none" stroke="url(#flNodeLine)" strokeLinecap="round">
+                    <path d="M39 44 C 92 44 92 120 141 120" strokeWidth="3.4" opacity=".5" filter="url(#flNodeGlow)" />
+                    <path d="M39 44 C 92 44 92 120 141 120" strokeWidth="2.4" />
+                    <path d="M141 120 C 192 120 192 60 231 60" strokeWidth="3.4" opacity=".5" filter="url(#flNodeGlow)" />
+                    <path d="M141 120 C 192 120 192 60 231 60" strokeWidth="2.4" />
+                  </g>
+                  <g fill="#a78bfa"><circle cx="39" cy="44" r="3.6" /><circle cx="141" cy="120" r="3.6" /><circle cx="231" cy="60" r="3.6" /></g>
+                </svg>
+                <div className="fl-bnode" style={{ left: '13%', top: '22%' }}><span><FolderOpen size={22} weight="regular" /></span><small>Ponudba</small></div>
+                <div className="fl-bnode" style={{ left: '47%', top: '60%' }}><span><FolderOpen size={22} weight="regular" /></span><small>Pogodba</small></div>
+                <div className="fl-bnode" style={{ left: '77%', top: '30%' }}><span><FolderOpen size={22} weight="regular" /></span><small>Račun</small></div>
               </div>
             </div>
             <div className="fl-bkarta c">
               <h3>Vsaka stranka na enem mestu</h3>
               <p>Projekti, dokumenti in vsa komunikacija — povezani s stranko. Ne razmetano po Gmailu.</p>
-              <div className="fl-bshot" aria-hidden><img src="/flow/stranke.jpg" alt="" loading="lazy" /></div>
+              <div className="fl-bavatars" aria-hidden><span>MA</span><span>RK</span><span>LJ</span><span>+</span></div>
             </div>
             <div className="fl-bkarta d">
               <h3>Pošteno ceno, ki je drugi nimajo</h3>
