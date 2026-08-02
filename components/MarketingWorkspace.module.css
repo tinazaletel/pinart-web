@@ -19,8 +19,9 @@
 .templates,
 .integrationCard,
 .formPanel {
-  border: 1px solid var(--line);
-  background: color-mix(in oklch, var(--paper) 91%, transparent);
+  border: 1px solid oklch(22% .015 60 / .05);
+  background: #fff;
+  box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .045);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -123,9 +124,10 @@
   align-content: space-between;
   min-height: 8.5rem;
   padding: 1rem;
-  border: 1px solid var(--line);
+  border: 1px solid oklch(22% .015 60 / .05);
   border-radius: 1.15rem;
-  background: color-mix(in oklch, var(--paper) 85%, transparent);
+  background: #fff;
+  box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .045);
 }
 .overviewGrid article:nth-child(1) { background: linear-gradient(145deg, oklch(97% .025 165), oklch(92% .055 165)); }
 .overviewGrid article:nth-child(2) { background: linear-gradient(145deg, oklch(98% .025 65), oklch(94% .055 65)); }
@@ -133,8 +135,8 @@
 .overviewGrid span { font-size: .76rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .overviewGrid strong { font: 500 2rem/1 var(--font-serif), Georgia, serif; }
 .overviewGrid small { color: var(--muted); line-height: 1.35; }
-.overviewGrid .nextCampaign { background: linear-gradient(120deg, oklch(24% .02 65), oklch(20% .04 310)); color: white; }
-.overviewGrid .nextCampaign small { color: oklch(84% .015 85); }
+.overviewGrid .nextCampaign { background: #fff; color: var(--ink); }
+.overviewGrid .nextCampaign small { color: var(--muted); }
 
 .quickGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; }
 .quickCard {
@@ -217,17 +219,17 @@
   gap: 2rem;
   padding: 1.4rem;
   border-radius: 1.35rem;
-  background: linear-gradient(110deg, oklch(24% .02 65), oklch(18% .025 310));
-  color: oklch(98% .008 85);
+  background: #fff;
+  color: var(--ink);
 }
 .flowCard h2 { margin: 0 0 .4rem; font: 500 1.75rem var(--font-serif), Georgia, serif; }
-.flowCard p { max-width: 47rem; margin: 0; color: oklch(82% .015 85); line-height: 1.5; }
+.flowCard p { max-width: 47rem; margin: 0; color: var(--muted); line-height: 1.5; }
 .flowActions { display: flex; gap: .6rem; flex-wrap: wrap; }
-.flowActions a { border-color: oklch(100% 0 0 / .25); background: oklch(100% 0 0 / .08); color: white; }
+.flowActions a { border-color: oklch(22% .015 60 / .09); background: #fff; color: var(--ink); }
 
 .campaigns,
 .templates { padding: 1.25rem; border-radius: 1.35rem; }
-.postPlanner { padding: 1.25rem; border: 1px solid var(--line); border-radius: 1.35rem; background: color-mix(in oklch, var(--paper) 91%, transparent); backdrop-filter: blur(16px); }
+.postPlanner { padding: 1.25rem; border: 1px solid oklch(22% .015 60 / .05); border-radius: 1.35rem; background: #fff; box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .045); }
 .betaNote { align-self: start; padding: .42rem .7rem; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: .75rem; font-weight: 750; }
 .plannerGrid { display: grid; grid-template-columns: minmax(18rem, .8fr) minmax(22rem, 1.2fr); gap: 1rem; }
 .postForm { display: grid; grid-template-columns: 1fr 1fr; align-content: start; gap: .8rem; padding: 1rem; border: 1px solid var(--line); border-radius: 1.1rem; background: linear-gradient(145deg, oklch(97% .025 165), oklch(95% .035 300)); }
@@ -239,7 +241,7 @@
 .postList { display: grid; align-content: start; gap: .7rem; }
 .postEmpty { display: grid; place-items: center; min-height: 15rem; padding: 1.5rem; border: 1px dashed var(--line); border-radius: 1.1rem; text-align: center; }
 .postEmpty p { margin: .35rem 0 0; color: var(--muted); }
-.postCard { padding: 1rem; border: 1px solid var(--line); border-radius: 1.1rem; background: color-mix(in oklch, var(--paper) 80%, transparent); }
+.postCard { padding: 1rem; border: 1px solid oklch(22% .015 60 / .05); border-radius: 1.1rem; background: #fff; box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .045); }
 .postCard header { display: flex; justify-content: space-between; gap: 1rem; color: var(--muted); font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
 .postCard > p { margin: .9rem 0 1rem; line-height: 1.55; white-space: pre-wrap; }
 .postActions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
