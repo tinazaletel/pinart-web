@@ -86,20 +86,32 @@ export default function Pupa() {
     if (typeof window === 'undefined' || !window.speechSynthesis) return;
     const besedilo = ocistiZaGovor(t);
     if (!besedilo) return;
-    window.speechSynthesis.cancel();
+    const sinteza = window.speechSynthesis;
+    sinteza.cancel();
     const jezik = locale === 'en' ? 'en-US' : 'sl-SI';
-    const u = new SpeechSynthesisUtterance(besedilo);
-    u.lang = jezik;
-    u.rate = 1; u.pitch = 1;
-    /* izberi glas, ki se ujema z jezikom (sl -> sl-SI); sicer sistemski privzeti */
     const pref = jezik.slice(0, 2).toLowerCase();
-    const glasovi = window.speechSynthesis.getVoices();
-    const glas = glasovi.find(v => v.lang?.toLowerCase().startsWith(pref));
-    if (glas) u.voice = glas;
-    u.onstart = () => setGovoreca(true);
-    u.onend = () => setGovoreca(false);
-    u.onerror = () => setGovoreca(false);
-    window.speechSynthesis.speak(u);
+    let spregovoril = false;
+    const izgovori = () => {
+      if (spregovoril) return; spregovoril = true;
+      const glasovi = sinteza.getVoices();
+      const u = new SpeechSynthesisUtterance(besedilo);
+      u.rate = 1; u.pitch = 1;
+      /* VEDNO izberi konkreten glas (sl -> privzeti -> prvi) — sicer Safari brez
+         ujemajocega glasu za lang ostane popolnoma tih. */
+      const glas = glasovi.find(v => v.lang?.toLowerCase().startsWith(pref)) || glasovi.find(v => v.default) || glasovi[0];
+      if (glas) { u.voice = glas; u.lang = glas.lang; } else { u.lang = jezik; }
+      u.onstart = () => setGovoreca(true);
+      u.onend = () => setGovoreca(false);
+      u.onerror = () => setGovoreca(false);
+      sinteza.resume();
+      sinteza.speak(u);
+    };
+    if (sinteza.getVoices().length) izgovori();
+    else {
+      sinteza.addEventListener('voiceschanged', izgovori, { once: true });
+      sinteza.getVoices();
+      window.setTimeout(izgovori, 300);
+    }
   };
 
   const posljiPupi = async (besedilo?: string) => {
@@ -127,6 +139,9 @@ export default function Pupa() {
 
   const glas = async () => {
     if (typeof window === 'undefined') return;
+    /* Safari/Chrome zahtevata uporabniško gesto za PRVI TTS — odklenemo ga tu (tap na krog),
+       da Pupa lahko kasneje (asinhrono, po odgovoru) res prebere na glas. */
+    try { window.speechSynthesis?.resume(); const odklep = new SpeechSynthesisUtterance(' '); odklep.volume = 0; window.speechSynthesis?.speak(odklep); } catch { /* ignore */ }
     const SR = (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition
       || (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition;
     if (!SR) { alert(L('Glasovni vnos ta brskalnik ne podpira (poskusi Chrome ali Safari).', 'This browser does not support voice input (try Chrome or Safari).')); return; }
@@ -187,7 +202,7 @@ export default function Pupa() {
 
       {odprt && (
         <div role="dialog" aria-label="Pupa" style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(400px, 94vw)', zIndex: 95, background: '#fff', borderLeft: '1px solid rgba(42,32,53,.12)', boxShadow: '-16px 0 50px rgba(42,32,53,.18)', display: 'flex', flexDirection: 'column', color: '#2A2035' }}>
-          <style>{'@keyframes pupaRing{0%{box-shadow:0 0 0 0 rgba(224,86,122,.40)}100%{box-shadow:0 0 0 32px rgba(224,86,122,0)}}@keyframes pupaBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}'}</style>
+          <style>{'@keyframes pupaRing{0%{box-shadow:0 0 0 0 rgba(224,86,122,.40)}100%{box-shadow:0 0 0 32px rgba(224,86,122,0)}}@keyframes pupaBreathe{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(124,58,237,.42)}50%{transform:scale(1.06);box-shadow:0 0 0 18px rgba(124,58,237,0)}}'}</style>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '1rem 1.1rem', borderBottom: '1px solid rgba(42,32,53,.08)' }}>
             {OBRAZ(34)}
             <div style={{ flex: 1, lineHeight: 1.2 }}>
@@ -198,7 +213,7 @@ export default function Pupa() {
               <button type="button" onClick={() => setNacin('chat')} aria-pressed={nacin === 'chat'} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.3rem .6rem', fontSize: '.73rem', fontWeight: 700, fontFamily: 'inherit', background: nacin === 'chat' ? '#2A2035' : 'transparent', color: nacin === 'chat' ? '#fff' : 'rgba(42,32,53,.6)' }}>{L('Klepet', 'Chat')}</button>
               <button type="button" onClick={() => { setNacin('glas'); setZvok(true); }} aria-pressed={nacin === 'glas'} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.3rem .6rem', fontSize: '.73rem', fontWeight: 700, fontFamily: 'inherit', background: nacin === 'glas' ? '#2A2035' : 'transparent', color: nacin === 'glas' ? '#fff' : 'rgba(42,32,53,.6)' }}>{L('Glas', 'Voice')}</button>
             </div>
-            <button type="button" onClick={() => { if (zvok && typeof window !== 'undefined') window.speechSynthesis?.cancel(); setZvok(z => !z); }} aria-pressed={zvok} aria-label={zvok ? L('Utišaj Pupo', 'Mute Pupa') : L('Vklopi glas Pupe', 'Unmute Pupa')} title={zvok ? L('Pupa bere odgovore na glas — klikni za utišanje', 'Pupa reads answers aloud — click to mute') : L('Vklopi, da Pupa bere odgovore na glas', 'Turn on so Pupa reads answers aloud')} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, color: zvok ? '#2A2035' : 'rgba(42,32,53,.4)', display: 'inline-flex' }}>
+            <button type="button" onClick={() => { if (typeof window !== 'undefined') { if (zvok) { window.speechSynthesis?.cancel(); } else { try { window.speechSynthesis?.resume(); const o = new SpeechSynthesisUtterance(' '); o.volume = 0; window.speechSynthesis?.speak(o); } catch { /* ignore */ } } } setZvok(z => !z); }} aria-pressed={zvok} aria-label={zvok ? L('Utišaj Pupo', 'Mute Pupa') : L('Vklopi glas Pupe', 'Unmute Pupa')} title={zvok ? L('Pupa bere odgovore na glas — klikni za utišanje', 'Pupa reads answers aloud — click to mute') : L('Vklopi, da Pupa bere odgovore na glas', 'Turn on so Pupa reads answers aloud')} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, color: zvok ? '#2A2035' : 'rgba(42,32,53,.4)', display: 'inline-flex' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <path d="M11 5 6 9H2v6h4l5 4z" />
                 {zvok ? <><path d="M15.5 8.5a5 5 0 0 1 0 7" /><path d="M18.5 5.5a9 9 0 0 1 0 13" /></> : <path d="M22 9l-6 6M16 9l6 6" />}
@@ -211,7 +226,7 @@ export default function Pupa() {
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.25rem', padding: '1.5rem 1.4rem', textAlign: 'center' }}>
               {zadnjiA && <p style={{ margin: 0, maxWidth: '30ch', fontSize: '.94rem', lineHeight: 1.5, opacity: caka ? .35 : 1 }}>{zadnjiA.content}</p>}
               <button type="button" onClick={() => { if (!poslusa && !caka) glas(); }} aria-label={L('Tapni in govori', 'Tap to talk')}
-                style={{ position: 'relative', width: 148, height: 148, flex: 'none', borderRadius: '50%', border: 'none', padding: 0, cursor: poslusa || caka ? 'default' : 'pointer', background: 'conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)', animation: poslusa ? 'pupaRing 1.4s ease-out infinite' : govoreca ? 'pupaBreathe 1.8s ease-in-out infinite' : 'none' }}>
+                style={{ position: 'relative', width: 148, height: 148, flex: 'none', borderRadius: '50%', border: 'none', padding: 0, cursor: poslusa || caka ? 'default' : 'pointer', background: 'conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)', animation: poslusa ? 'pupaRing 1.4s ease-out infinite' : govoreca ? 'pupaBreathe 0.85s ease-in-out infinite' : 'none' }}>
                 <svg viewBox="0 0 40 40" width="148" height="148" style={{ position: 'absolute', inset: 0 }}>
                   <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
                   <path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
