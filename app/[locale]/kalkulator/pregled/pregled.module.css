@@ -838,7 +838,7 @@
 .clientLinkGumb:disabled {
   opacity: 1 !important;
   border-color: color-mix(in oklch, var(--ink) 14%, transparent);
-  background: oklch(97% .009 87);
+  background: #fff;
   color: color-mix(in oklch, var(--ink) 82%, var(--paper));
   cursor: not-allowed;
 }
