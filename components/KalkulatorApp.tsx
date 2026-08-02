@@ -5571,10 +5571,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* paper kapa cez vrh (notch/safe-area + morebiten pas nad glavo) da nic ne pogleda izpod */
         .cw::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: var(--paper); z-index: 31; pointer-events: none; }
         /* animirano ozadje: dva Tinina soft-gradient blob-a krozita in se krizata (fixed, z-index 0 — NIKOLI -1, Safari past) */
-        .cw-ozadje { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background-color: var(--paper); background-image: linear-gradient(rgba(17,17,17,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(17,17,17,.055) 1px, transparent 1px); background-size: 4.5rem 4.5rem; }
+        .cw-ozadje { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background-color: #fff; }
         .cw-ozadje .blob { position: absolute; width: min(60vw, 760px); aspect-ratio: 1; border-radius: 50%; will-change: transform; filter: blur(70px); }
-        .cw-ozadje .blob-roza { top: -16vh; left: -12vw; background: radial-gradient(circle, oklch(74% .18 300 / .55), transparent 68%); opacity: .5; animation: blobRoza 22s ease-in-out infinite; }
-        .cw-ozadje .blob-modra { bottom: -22vh; right: -14vw; background: radial-gradient(circle, oklch(82% .15 162 / .55), transparent 68%); opacity: .45; animation: blobModra 25s ease-in-out infinite; }
+        .cw-ozadje .blob-roza { top: -16vh; left: -12vw; background: radial-gradient(circle, oklch(74% .18 300 / .55), transparent 68%); opacity: .12; animation: blobRoza 22s ease-in-out infinite; }
+        .cw-ozadje .blob-modra { bottom: -22vh; right: -14vw; background: radial-gradient(circle, oklch(82% .15 162 / .55), transparent 68%); opacity: .1; animation: blobModra 25s ease-in-out infinite; }
         @keyframes blobRoza { 0%,100% { transform: translate(0,0) scale(1); } 25% { transform: translate(32vw,24vh) scale(1.15); } 50% { transform: translate(16vw,46vh) scale(.92); } 75% { transform: translate(38vw,12vh) scale(1.08); } }
         @keyframes blobModra { 0%,100% { transform: translate(0,0) scale(1); } 25% { transform: translate(-28vw,-22vh) scale(1.12); } 50% { transform: translate(-44vw,-10vh) scale(.9); } 75% { transform: translate(-16vw,-32vh) scale(1.06); } }
         @media (prefers-reduced-motion: reduce) { .cw-ozadje .blob { animation: none; } }
@@ -7069,7 +7069,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .povezava:hover { opacity: .6; }
 
 
-        .cw .noga { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; padding: 1rem clamp(1.2rem, 4vw, 3rem) 1.1rem; background: linear-gradient(to top, var(--paper) 70%, transparent); z-index: 62; }
+        .cw .noga { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; padding: 1rem clamp(1.2rem, 4vw, 3rem) 1.1rem; background: linear-gradient(to top, #fff 70%, transparent); z-index: 62; }
         /* V lupini je levo stranska vrstica (17.5rem, zlozena 4.4rem). Noga je
            position:fixed left:0, zato brez tega zamika NAPREJ centrira v celo
            sirino in izpade LEVO. Zamaknemo za sirino menija. */
