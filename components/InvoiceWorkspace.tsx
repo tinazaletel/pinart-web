@@ -40,6 +40,7 @@ const vrsticaZnesek = (i: FlowInvoiceItem) => i.kolicina * i.cena * (1 - clamp(i
 
 export default function InvoiceWorkspace({ base }: { base: string }) {
   const jeEn = base === '/en';
+  const L = (sl: string, en: string) => (jeEn ? en : sl);
   const docLocale = jeEn ? 'en-GB' : 'sl-SI';
   const docDate = (d: Date) => d.toLocaleDateString(docLocale, { day: 'numeric', month: 'numeric', year: 'numeric' });
   const docMoney = (value: number) => `${value.toLocaleString(docLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
@@ -350,14 +351,14 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     event?.preventDefault();
     /* prej je v predogledu (demo) TIHO vrnil -> uporabnica je klikala Shrani in se ni zgodilo nič.
        Zdaj pove razlog: v demu ne pišemo v pravo bazo, treba je preklopiti na »Moji podatki«. */
-    if (samoOgled) { setNapaka('To je predogled (demo) — račun ni shranjen. Za pravo shranjevanje preklopi na »Moji podatki« (preklopnik zgoraj).'); return; }
+    if (samoOgled) { setNapaka(L('To je predogled (demo) — račun ni shranjen. Za pravo shranjevanje preklopi na »Moji podatki« (preklopnik zgoraj).', 'This is a preview (demo) — the invoice is not saved. To really save, switch to »My data« (toggle above).')); return; }
     const items = izracun.postavke.filter(p => p.opis || p.cena);
-    if (!items.length) { setNapaka('Dodaj vsaj eno postavko z opisom in ceno.'); return; }
+    if (!items.length) { setNapaka(L('Dodaj vsaj eno postavko z opisom in ceno.', 'Add at least one item with a description and price.')); return; }
     const invoice: FlowInvoice = {
       id: crypto.randomUUID(),
       number: stevilka.trim(),
       title: items[0].opis.slice(0, 90) || selectedOffer?.title,
-      client: stranka.trim() || selectedOffer?.client || 'Brez stranke',
+      client: stranka.trim() || selectedOffer?.client || L('Brez stranke', 'No client'),
       amount: Math.round((avansJeDelni ? zaPlaciloAvans : izracun.zaPlacilo) * 100) / 100,
       paid: placano,
       date: datumIzdaje,
@@ -526,7 +527,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       if (!blob.size) throw new Error('prazen');
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = ime + '.pdf'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    } catch { setNapaka('PDF-ja ni bilo mogoče pripraviti. Poskusi znova.'); } finally { setPdfId(''); }
+    } catch { setNapaka(L('PDF-ja ni bilo mogoče pripraviti. Poskusi znova.', 'The PDF could not be prepared. Please try again.')); } finally { setPdfId(''); }
   };
 
   /* Poslji v placilo — mailto vzorec iz KalkulatorApp ("posljem racun st. ...") */
@@ -536,17 +537,17 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     const rok = new Date(izdaja.getTime() + (inv.dueDays ?? PRIVZETI_ROK_DNI) * 864e5);
     const sklicDigits = (inv.number || '').replace(/\D/g, '');
     const podpis = [ponudnik.ime.trim(), [ponudnik.email.trim(), ponudnik.telefon.trim() && (predklic + ' ' + ponudnik.telefon.trim())].filter(Boolean).join(' · ')].filter(Boolean).join('\n');
-    const v: string[] = ['Pozdravljeni,', '', `pošiljam račun št. ${inv.number || ''}${inv.title ? ' za: ' + inv.title : ''}.`, ''];
-    v.push(`Datum izdaje: ${datStr(izdaja)}`);
-    v.push(`Rok plačila: ${datStr(rok)}`);
-    v.push(`Za plačilo: ${eur2(inv.amount)}`);
+    const v: string[] = [L('Pozdravljeni,', 'Hello,'), '', L(`pošiljam račun št. ${inv.number || ''}${inv.title ? ' za: ' + inv.title : ''}.`, `I am sending invoice no. ${inv.number || ''}${inv.title ? ' for: ' + inv.title : ''}.`), ''];
+    v.push(L(`Datum izdaje: ${datStr(izdaja)}`, `Issue date: ${datStr(izdaja)}`));
+    v.push(L(`Rok plačila: ${datStr(rok)}`, `Payment due: ${datStr(rok)}`));
+    v.push(L(`Za plačilo: ${eur2(inv.amount)}`, `Amount due: ${eur2(inv.amount)}`));
     v.push('');
-    if (ponudnik.trr.trim()) v.push(`TRR: ${ponudnik.trr.trim()}`);
-    if (sklicDigits) v.push(`Sklic: SI00 ${sklicDigits}`);
-    if (inv.paid) v.push('', 'Račun je poravnan. Hvala!');
-    v.push('', 'Podroben račun prilagam v PDF.', '', 'Lep pozdrav,');
+    if (ponudnik.trr.trim()) v.push(L(`TRR: ${ponudnik.trr.trim()}`, `IBAN: ${ponudnik.trr.trim()}`));
+    if (sklicDigits) v.push(L(`Sklic: SI00 ${sklicDigits}`, `Payment reference: SI00 ${sklicDigits}`));
+    if (inv.paid) v.push('', L('Račun je poravnan. Hvala!', 'The invoice is paid. Thank you!'));
+    v.push('', L('Podroben račun prilagam v PDF.', 'A detailed invoice is attached as a PDF.'), '', L('Lep pozdrav,', 'Best regards,'));
     if (podpis) v.push(podpis);
-    const zadeva = `Račun ${inv.number || ''}`.trim();
+    const zadeva = L(`Račun ${inv.number || ''}`, `Invoice ${inv.number || ''}`).trim();
     window.location.href = `mailto:${email}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(v.join('\n'))}`;
   };
 
@@ -556,7 +557,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     id: 'draft',
     number: stevilka.trim(),
     title: izracun.postavke.find(p => p.opis)?.opis?.slice(0, 90) || selectedOffer?.title,
-    client: stranka.trim() || selectedOffer?.client || 'Brez stranke',
+    client: stranka.trim() || selectedOffer?.client || L('Brez stranke', 'No client'),
     amount: Math.round((avansJeDelni ? zaPlaciloAvans : izracun.zaPlacilo) * 100) / 100,
     paid: placano,
     date: datumIzdaje,
@@ -593,90 +594,90 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     {/* vstop brez bele kartice, v ozkem sredinskem stolpcu (kot retainer rw-vsebina) — naslov strani
         "RAČUNI / Od dogovora do plačila" izrise racuni/page.tsx nad tem workspace-om */}
     {pogled === 'pregled' && <section className="rc-sek rc-stolpec rc-vstop">
-      <p className="rc-kicker">Računi</p>
-      <h1 className="rc-h1">Od dogovora do plačila.</h1>
+      <p className="rc-kicker">{L('Računi', 'Invoices')}</p>
+      <h1 className="rc-h1">{L('Od dogovora do plačila.', 'From agreement to payment.')}</h1>
       <div className="rc-chat">
-        <span className="rc-mehur"><b>Iz česa nastane račun?</b><small>Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita v obrazcu. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje.</small></span>
+        <span className="rc-mehur"><b>{L('Iz česa nastane račun?', 'What does an invoice come from?')}</b><small>{L('Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita v obrazcu. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje.', 'If an offer exists, select it — the client and item are pre-filled in the form. The issuer details (name, address, tax number, IBAN) are read from the My company settings.')}</small></span>
       </div>
       <div className="rc-vstop-panel">
         {/* 1) VRSTA — prva izbira (Račun / Predračun) */}
         <div className="rc-vstop-vrsta">
-          <span className="rc-vrsta-oznaka">Vrsta</span>
-          <div className="rc-segpills rc-tip-segpills" role="group" aria-label="Vrsta dokumenta">
-            <button type="button" aria-label="Račun" className={predracun ? '' : 'on'} onClick={() => setPredracun(false)}>Račun</button>
-            <button type="button" aria-label="Predračun" className={predracun ? 'on' : ''} onClick={() => setPredracun(true)}>Predračun</button>
+          <span className="rc-vrsta-oznaka">{L('Vrsta', 'Type')}</span>
+          <div className="rc-segpills rc-tip-segpills" role="group" aria-label={L('Vrsta dokumenta', 'Document type')}>
+            <button type="button" aria-label={L('Račun', 'Invoice')} className={predracun ? '' : 'on'} onClick={() => setPredracun(false)}>{L('Račun', 'Invoice')}</button>
+            <button type="button" aria-label={L('Predračun', 'Pro forma')} className={predracun ? 'on' : ''} onClick={() => setPredracun(true)}>{L('Predračun', 'Pro forma')}</button>
           </div>
-          <small className="rc-vrsta-namig">predhodni (proforma) račun</small>
+          <small className="rc-vrsta-namig">{L('predhodni (proforma) račun', 'preliminary (pro forma) invoice')}</small>
         </div>
         {/* 2) PONUDBA (iskalen combobox) + DATUM IZDAJE. Izbrana ponudba => vir iz
             ponudbe (predizpolni podatke); "Brez ponudbe" => samostojen račun. */}
         <div className="rc-polja">
           <div className="rc-polje rc-combo-polje">
-            <span className="rc-combo-oznaka" id="rc-combo-oznaka">Ponudba</span>
+            <span className="rc-combo-oznaka" id="rc-combo-oznaka">{L('Ponudba', 'Offer')}</span>
             <div className="rc-combo" ref={vstopComboRef}>
               <button type="button" className="rc-combo-sprozilec" aria-haspopup="listbox" aria-expanded={vstopOdprt} aria-labelledby="rc-combo-oznaka" onClick={() => { setVstopOdprt(open => !open); setVstopIskanje(''); }}>
-                <span>{selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : 'Brez ponudbe'}</span>
+                <span>{selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : L('Brez ponudbe', 'No offer')}</span>
                 <CaretDown size={14} weight="bold" aria-hidden />
               </button>
               {vstopOdprt && <div className="rc-combo-panel" onKeyDown={event => { if (event.key === 'Escape') { setVstopOdprt(false); setVstopIskanje(''); } }}>
-                <input className="rc-combo-iskalnik" type="search" autoFocus placeholder="Poišči ponudbo, stranko ali številko …" aria-label="Poišči ponudbo, stranko ali številko" value={vstopIskanje} onChange={event => setVstopIskanje(event.target.value)} />
-                <div className="rc-combo-seznam" role="listbox" aria-label="Ponudbe">
+                <input className="rc-combo-iskalnik" type="search" autoFocus placeholder={L('Poišči ponudbo, stranko ali številko …', 'Search offer, client or number …')} aria-label={L('Poišči ponudbo, stranko ali številko', 'Search offer, client or number')} value={vstopIskanje} onChange={event => setVstopIskanje(event.target.value)} />
+                <div className="rc-combo-seznam" role="listbox" aria-label={L('Ponudbe', 'Offers')}>
                   <button type="button" role="option" aria-selected={!offerId} className={'rc-combo-opcija' + (!offerId ? ' on' : '')} onClick={() => izberiVVstopu('')}>
-                    <span className="rc-combo-naziv"><strong>Brez ponudbe</strong><small>Samostojen račun</small></span>
+                    <span className="rc-combo-naziv"><strong>{L('Brez ponudbe', 'No offer')}</strong><small>{L('Samostojen račun', 'Standalone invoice')}</small></span>
                     {!offerId && <span className="rc-combo-kljukica" aria-hidden>✓</span>}
                   </button>
                   {vstopSeznam.map(offer => (
                     <button key={offer.id} type="button" role="option" aria-selected={offerId === offer.id} className={'rc-combo-opcija' + (offerId === offer.id ? ' on' : '')} onClick={() => izberiVVstopu(offer.id)}>
-                      <span className="rc-combo-naziv"><strong>{offer.title} · {offer.client}</strong>{offer.number && <small>Št. {offer.number}</small>}</span>
+                      <span className="rc-combo-naziv"><strong>{offer.title} · {offer.client}</strong>{offer.number && <small>{L('Št.', 'No.')} {offer.number}</small>}</span>
                       {offerId === offer.id && <span className="rc-combo-kljukica" aria-hidden>✓</span>}
                     </button>
                   ))}
-                  {!vstopSeznam.length && <p className="rc-mini rc-combo-prazno">Ni ponudb za to iskanje.</p>}
+                  {!vstopSeznam.length && <p className="rc-mini rc-combo-prazno">{L('Ni ponudb za to iskanje.', 'No offers for this search.')}</p>}
                 </div>
-                {!vstopIskanje.trim() && ponudbePoDatumu.length > 10 && <p className="rc-combo-namig">Prikazanih zadnjih 10 — išči za vse.</p>}
+                {!vstopIskanje.trim() && ponudbePoDatumu.length > 10 && <p className="rc-combo-namig">{L('Prikazanih zadnjih 10 — išči za vse.', 'Showing the last 10 — search for all.')}</p>}
               </div>}
             </div>
           </div>
-          <label className="rc-polje">Datum izdaje
+          <label className="rc-polje">{L('Datum izdaje', 'Issue date')}
             <input type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} />
           </label>
         </div>
         <div className="rc-gumbi">
-          <button type="button" className="rc-gumb" aria-label="Pripravi račun" onClick={odpriObrazec}>{predracun ? 'Pripravi predračun →' : 'Pripravi račun →'}</button>
+          <button type="button" className="rc-gumb" aria-label={L('Pripravi račun', 'Prepare invoice')} onClick={odpriObrazec}>{predracun ? L('Pripravi predračun →', 'Prepare pro forma →') : L('Pripravi račun →', 'Prepare invoice →')}</button>
         </div>
       </div>
     </section>}
 
     {/* ── POGLED: OBRAZEC (svoja stran, sredinski stolpec — view-swap kot pogodbe) ── */}
     {pogled === 'obrazec' && <section className={`${styles.invoiceCreator} rc-sek rc-stran rc-stolpec rc-obrazec`}>
-      <button type="button" className="rc-povezava rc-nazaj-vrh" onClick={() => setPogled('pregled')}>← Nazaj</button>
+      <button type="button" className="rc-povezava rc-nazaj-vrh" onClick={() => setPogled('pregled')}>{L('← Nazaj', '← Back')}</button>
       <div className="rc-obr-uvod">
-        <p className={styles.eyebrow}>NOV RAČUN</p>
-        <h2>Vse sestavine po zakonu.</h2>
-        <p>Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje in se izpišejo v glavi računa.</p>
+        <p className={styles.eyebrow}>{L('NOV RAČUN', 'NEW INVOICE')}</p>
+        <h2>{L('Vse sestavine po zakonu.', 'Every legally required part.')}</h2>
+        <p>{L('Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje in se izpišejo v glavi računa.', 'If an offer exists, select it — the client and item are pre-filled. The issuer details (name, address, tax number, IBAN) are read from the My company settings and printed in the invoice header.')}</p>
       </div>
       <form onSubmit={event => { event.preventDefault(); setPogled('zakljucek'); }}>
         {/* vrsta dokumenta: RAČUN (privzeto) ali PREDRAČUN (poziv k placilu vnaprej,
             NI knjigovodska listina — racun se izda sele po prejemu placila) */}
-        <div className="rc-segpills rc-tip-segpills" role="group" aria-label="Vrsta dokumenta">
-          <button type="button" aria-label="Račun" className={predracun ? '' : 'on'} onClick={() => setPredracun(false)}>Račun</button>
-          <button type="button" aria-label="Predračun" className={predracun ? 'on' : ''} onClick={() => { setPredracun(true); /* prvic izbran predracun -> predlagaj 50 % avansa (ce uporabnica ni ze sama spremenila) */ setAvansPct(current => current === '100' ? '50' : current); }}>Predračun</button>
+        <div className="rc-segpills rc-tip-segpills" role="group" aria-label={L('Vrsta dokumenta', 'Document type')}>
+          <button type="button" aria-label={L('Račun', 'Invoice')} className={predracun ? '' : 'on'} onClick={() => setPredracun(false)}>{L('Račun', 'Invoice')}</button>
+          <button type="button" aria-label={L('Predračun', 'Pro forma')} className={predracun ? 'on' : ''} onClick={() => { setPredracun(true); /* prvic izbran predracun -> predlagaj 50 % avansa (ce uporabnica ni ze sama spremenila) */ setAvansPct(current => current === '100' ? '50' : current); }}>{L('Predračun', 'Pro forma')}</button>
         </div>
         <div className={styles.invoiceMetaFields}>
-          <label>Ponudba{jeMobilni
-            ? <button type="button" className="rc-pon-polje" aria-haspopup="dialog" aria-expanded={ponSheet} aria-label={`Ponudba: ${selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : 'Samostojen račun'} — izberi`} onClick={() => { setPonIskanje(''); setPonSheet(true); }}>
-              <span>{selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : 'Samostojen račun'}</span>
+          <label>{L('Ponudba', 'Offer')}{jeMobilni
+            ? <button type="button" className="rc-pon-polje" aria-haspopup="dialog" aria-expanded={ponSheet} aria-label={`${L('Ponudba', 'Offer')}: ${selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : L('Samostojen račun', 'Standalone invoice')} — ${L('izberi', 'select')}`} onClick={() => { setPonIskanje(''); setPonSheet(true); }}>
+              <span>{selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : L('Samostojen račun', 'Standalone invoice')}</span>
               <CaretDown size={14} weight="bold" aria-hidden />
             </button>
-            : <select value={offerId} onChange={event => izberiPonudbo(event.target.value)}><option value="">Samostojen račun</option>{offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}</option>)}</select>}</label>
-          <label>Številka<input required value={stevilka} onChange={event => setStevilka(event.target.value)} /></label>
-          <label>Stranka<input required value={stranka} onChange={event => setStranka(event.target.value)} placeholder="Izberi obstoječo ali vpiši novo" list="rc-stranke" autoComplete="off" /><datalist id="rc-stranke">{clients.map(c => <option key={c.id} value={c.name} />)}</datalist></label>
-          <label>Datum izdaje<input required type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} /></label>
+            : <select value={offerId} onChange={event => izberiPonudbo(event.target.value)}><option value="">{L('Samostojen račun', 'Standalone invoice')}</option>{offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}</option>)}</select>}</label>
+          <label>{L('Številka', 'Number')}<input required value={stevilka} onChange={event => setStevilka(event.target.value)} /></label>
+          <label>{L('Stranka', 'Client')}<input required value={stranka} onChange={event => setStranka(event.target.value)} placeholder={L('Izberi obstoječo ali vpiši novo', 'Choose existing or type a new one')} list="rc-stranke" autoComplete="off" /><datalist id="rc-stranke">{clients.map(c => <option key={c.id} value={c.name} />)}</datalist></label>
+          <label>{L('Datum izdaje', 'Issue date')}<input required type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} /></label>
           {/* predracun je poziv PRED izvedbo storitve — datum opravljene storitve zato ni obvezen */}
-          <label>Datum opravljene storitve<input required={!predracun} type="date" value={datumStoritve} onChange={event => setDatumStoritve(event.target.value)} /></label>
-          <label>Rok plačila v dneh<input required min="0" type="number" inputMode="numeric" placeholder={String(PRIVZETI_ROK_DNI)} value={rokDni} onChange={event => setRokDni(event.target.value)} /></label>
+          <label>{L('Datum opravljene storitve', 'Service date')}<input required={!predracun} type="date" value={datumStoritve} onChange={event => setDatumStoritve(event.target.value)} /></label>
+          <label>{L('Rok plačila v dneh', 'Payment term in days')}<input required min="0" type="number" inputMode="numeric" placeholder={String(PRIVZETI_ROK_DNI)} value={rokDni} onChange={event => setRokDni(event.target.value)} /></label>
           {/* AVANS / delni znesek — koliko od celote se zaracuna s TEM dokumentom; brez vnosa 100 % (cel znesek) */}
-          <label>Avans / delni znesek (%)<input min="0" max="100" step="5" type="number" inputMode="numeric" placeholder="100" value={avansPct} onChange={event => setAvansPct(event.target.value)} /></label>
+          <label>{L('Avans / delni znesek (%)', 'Advance / partial amount (%)')}<input min="0" max="100" step="5" type="number" inputMode="numeric" placeholder="100" value={avansPct} onChange={event => setAvansPct(event.target.value)} /></label>
         </div>
 
         {/* sheet MORA biti v portalu na <body>: transform na prednikih (animacija
@@ -684,21 +685,21 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         {jeMobilni && typeof document !== 'undefined' && createPortal(
           <>
             {ponSheet && <div className="rc-sheet-back" onClick={() => setPonSheet(false)} aria-hidden />}
-            <div className={'rc-pon-sheet' + (ponSheet ? ' odprt' : '')} role="dialog" aria-label="Izberi ponudbo" aria-hidden={!ponSheet}>
-              <div className="rc-sheet-glava"><b>Izberi ponudbo</b><button type="button" className="rc-sheet-x" onClick={() => setPonSheet(false)} aria-label="Zapri">✕</button></div>
-              {offers.length > 8 && <input className="rc-pon-iskalnik" type="search" placeholder="Poišči ponudbo ali stranko …" aria-label="Poišči ponudbo ali stranko" value={ponIskanje} onChange={event => setPonIskanje(event.target.value)} />}
+            <div className={'rc-pon-sheet' + (ponSheet ? ' odprt' : '')} role="dialog" aria-label={L('Izberi ponudbo', 'Choose an offer')} aria-hidden={!ponSheet}>
+              <div className="rc-sheet-glava"><b>{L('Izberi ponudbo', 'Choose an offer')}</b><button type="button" className="rc-sheet-x" onClick={() => setPonSheet(false)} aria-label={L('Zapri', 'Close')}>✕</button></div>
+              {offers.length > 8 && <input className="rc-pon-iskalnik" type="search" placeholder={L('Poišči ponudbo ali stranko …', 'Search offer or client …')} aria-label={L('Poišči ponudbo ali stranko', 'Search offer or client')} value={ponIskanje} onChange={event => setPonIskanje(event.target.value)} />}
               <div className="rc-pon-seznam">
-                <button type="button" className={'rc-pon-vrstica' + (!offerId ? ' on' : '')} aria-label="Samostojen račun — brez povezave s ponudbo" onClick={() => izberiVSheet('')}>
-                  <span className="rc-pon-naziv"><strong>Samostojen račun</strong><small>Brez povezave s ponudbo</small></span>
+                <button type="button" className={'rc-pon-vrstica' + (!offerId ? ' on' : '')} aria-label={L('Samostojen račun — brez povezave s ponudbo', 'Standalone invoice — not linked to an offer')} onClick={() => izberiVSheet('')}>
+                  <span className="rc-pon-naziv"><strong>{L('Samostojen račun', 'Standalone invoice')}</strong><small>{L('Brez povezave s ponudbo', 'Not linked to an offer')}</small></span>
                   {!offerId && <span className="rc-pon-kljukica" aria-hidden>✓</span>}
                 </button>
                 {ponudbeZaSheet.map(offer => (
-                  <button key={offer.id} type="button" className={'rc-pon-vrstica' + (offerId === offer.id ? ' on' : '')} aria-label={`Izberi ponudbo ${offer.title} · ${offer.client}`} onClick={() => izberiVSheet(offer.id)}>
-                    <span className="rc-pon-naziv"><strong>{offer.title} · {offer.client}</strong>{offer.number && <small>Št. {offer.number}</small>}</span>
+                  <button key={offer.id} type="button" className={'rc-pon-vrstica' + (offerId === offer.id ? ' on' : '')} aria-label={`${L('Izberi ponudbo', 'Choose offer')} ${offer.title} · ${offer.client}`} onClick={() => izberiVSheet(offer.id)}>
+                    <span className="rc-pon-naziv"><strong>{offer.title} · {offer.client}</strong>{offer.number && <small>{L('Št.', 'No.')} {offer.number}</small>}</span>
                     {offerId === offer.id && <span className="rc-pon-kljukica" aria-hidden>✓</span>}
                   </button>
                 ))}
-                {!ponudbeZaSheet.length && ponIskanje.trim() !== '' && <p className="rc-mini rc-pon-prazno">Ni ponudb za to iskanje.</p>}
+                {!ponudbeZaSheet.length && ponIskanje.trim() !== '' && <p className="rc-mini rc-pon-prazno">{L('Ni ponudb za to iskanje.', 'No offers for this search.')}</p>}
               </div>
             </div>
           </>,
@@ -709,19 +710,19 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           <div className="rc-knjiznica-back" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setKnjiznicaOdprta(false); }}>
             <section className="rc-knjiznica" role="dialog" aria-modal="true" aria-labelledby="rc-knjiznica-naslov">
               <header className="rc-knjiznica-glava">
-                <div><p className="rc-knjiznica-kicker">KNJIŽNICA POSTAVK</p><h2 id="rc-knjiznica-naslov">Izberi iz knjižnice</h2></div>
-                <button type="button" className="rc-knjiznica-x" onClick={() => setKnjiznicaOdprta(false)} aria-label="Zapri knjižnico">×</button>
+                <div><p className="rc-knjiznica-kicker">{L('KNJIŽNICA POSTAVK', 'ITEM LIBRARY')}</p><h2 id="rc-knjiznica-naslov">{L('Izberi iz knjižnice', 'Choose from the library')}</h2></div>
+                <button type="button" className="rc-knjiznica-x" onClick={() => setKnjiznicaOdprta(false)} aria-label={L('Zapri knjižnico', 'Close library')}>×</button>
               </header>
-              <input className="rc-knjiznica-iskanje" type="search" value={knjiznicaIskanje} onChange={event => setKnjiznicaIskanje(event.target.value)} placeholder="Poišči izdelek ali storitev …" aria-label="Poišči izdelek ali storitev" autoFocus />
+              <input className="rc-knjiznica-iskanje" type="search" value={knjiznicaIskanje} onChange={event => setKnjiznicaIskanje(event.target.value)} placeholder={L('Poišči izdelek ali storitev …', 'Search product or service …')} aria-label={L('Poišči izdelek ali storitev', 'Search product or service')} autoFocus />
               <div className="rc-knjiznica-seznam">
                 {filtriranePostavke.map(item => <article className="rc-knjiznica-item" key={item.id}>
                   <button type="button" className="rc-knjiznica-izberi" onClick={() => uporabiPostavko(item)}>
                     <span><strong>{item.ime}</strong><small>{item.opis}</small></span>
                     <b>{eur2(item.cena)} / {item.enota}</b>
                   </button>
-                  <button type="button" className="rc-knjiznica-brisi" onClick={() => setKnjiznica(izbrisiPostavko(item.id))} aria-label={`Izbriši ${item.ime}`} disabled={samoOgled}>×</button>
+                  <button type="button" className="rc-knjiznica-brisi" onClick={() => setKnjiznica(izbrisiPostavko(item.id))} aria-label={`${L('Izbriši', 'Delete')} ${item.ime}`} disabled={samoOgled}>×</button>
                 </article>)}
-                {!filtriranePostavke.length && <p className="rc-knjiznica-prazno">{knjiznica.length ? 'Ni zadetkov.' : 'Knjižnica je še prazna. Izpolnjeno vrstico računa lahko shraniš spodaj.'}</p>}
+                {!filtriranePostavke.length && <p className="rc-knjiznica-prazno">{knjiznica.length ? L('Ni zadetkov.', 'No matches.') : L('Knjižnica je še prazna. Izpolnjeno vrstico računa lahko shraniš spodaj.', 'The library is still empty. You can save a filled invoice row below.')}</p>}
               </div>
             </section>
           </div>,
@@ -730,73 +731,73 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
 
         <div className="rc-postavke">
           <div className="rc-post-glava">
-            <p className={styles.eyebrow}>POSTAVKE RAČUNA</p>
-            <label className="rc-ddv-toggle" title="Vklopi, če si zavezanec za DDV — stopnjo (22 % / 9,5 % / 0 %) nato izbereš po vsaki postavki"><input type="checkbox" checked={ddvZavezanec} onChange={event => setDdvZavezanec(event.target.checked)} /> Obračunaj DDV</label>
+            <p className={styles.eyebrow}>{L('POSTAVKE RAČUNA', 'INVOICE ITEMS')}</p>
+            <label className="rc-ddv-toggle" title={L('Vklopi, če si zavezanec za DDV — stopnjo (22 % / 9,5 % / 0 %) nato izbereš po vsaki postavki', 'Turn on if you are VAT-registered — you then choose the rate (22% / 9.5% / 0%) per item')}><input type="checkbox" checked={ddvZavezanec} onChange={event => setDdvZavezanec(event.target.checked)} /> {L('Obračunaj DDV', 'Charge VAT')}</label>
             <div className="rc-post-gumbi">
               {/* samo ce racun izhaja iz ponudbe — povrne narocnika+postavke na izhodisce ponudbe (rocnih sprememb v ostalih poljih ne izbrise) */}
-              {offerId && <button type="button" className="rc-ponastavi" onClick={ponastaviNaPrivzeto}>↺ Ponastavi na privzeto</button>}
-              <button type="button" className="rc-knjiznica-gumb" onClick={() => setKnjiznicaOdprta(true)}>Izberi iz knjižnice</button>
-              <button type="button" className="rc-dodaj" onClick={() => setVrstice(v => [...v, novaVrstica()])}>+ Dodaj postavko</button>
+              {offerId && <button type="button" className="rc-ponastavi" onClick={ponastaviNaPrivzeto}>{L('↺ Ponastavi na privzeto', '↺ Reset to default')}</button>}
+              <button type="button" className="rc-knjiznica-gumb" onClick={() => setKnjiznicaOdprta(true)}>{L('Izberi iz knjižnice', 'Choose from library')}</button>
+              <button type="button" className="rc-dodaj" onClick={() => setVrstice(v => [...v, novaVrstica()])}>{L('+ Dodaj postavko', '+ Add item')}</button>
             </div>
           </div>
           {vrstice.map((v, i) => <Fragment key={i}>
             <div className={'rc-vrstica' + (ddvZavezanec ? '' : ' rc-brez-ddv')}>
-              <label className="rc-opis">Opis<input required={i === 0} value={v.opis} onChange={event => popraviVrstico(i, 'opis', event.target.value)} placeholder="Opravljena storitev, obseg ali obdobje …" /></label>
-              <label>Kol.<input required min="0" step="0.5" type="number" inputMode="numeric" placeholder="1" value={v.kolicina} onChange={event => popraviVrstico(i, 'kolicina', event.target.value)} /></label>
-              <label>Cena brez DDV<input required={i === 0} min="0" step="0.01" type="number" inputMode="decimal" placeholder="0,00" value={v.cena} onChange={event => popraviVrstico(i, 'cena', event.target.value)} /></label>
-              <label>Popust %<input min="0" max="100" step="0.5" type="number" inputMode="decimal" value={v.popust} onChange={event => popraviVrstico(i, 'popust', event.target.value)} placeholder="0" /></label>
-              {ddvZavezanec && <label>DDV<select value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)}>{DDV_STOPNJE.map(s => <option key={s} value={s}>{s.replace('.', ',')} %</option>)}</select></label>}
-              {ddvZavezanec && (() => { const p = predlagajDdv(v.opis, v.ddv); return p ? <button type="button" className="rc-ddv-namig" title={`${p.razlog} (predlog, ne davčni nasvet)`} onClick={() => popraviVrstico(i, 'ddv', p.stopnja)}>💡 {p.stopnja.replace('.', ',')} %?</button> : null; })()}
-              <span className="rc-znesek"><em>Znesek</em><b>{eur2(vrsticaZnesek(izracun.postavke[i] || { opis: '', kolicina: 0, cena: 0 }))}</b></span>
-              <button type="button" className="rc-x" onClick={() => setVrstice(rows => rows.length > 1 ? rows.filter((_, j) => j !== i) : rows)} aria-label={`Odstrani postavko ${i + 1}`} title="Odstrani postavko" disabled={vrstice.length < 2}>×</button>
+              <label className="rc-opis">{L('Opis', 'Description')}<input required={i === 0} value={v.opis} onChange={event => popraviVrstico(i, 'opis', event.target.value)} placeholder={L('Opravljena storitev, obseg ali obdobje …', 'Service provided, scope or period …')} /></label>
+              <label>{L('Kol.', 'Qty.')}<input required min="0" step="0.5" type="number" inputMode="numeric" placeholder="1" value={v.kolicina} onChange={event => popraviVrstico(i, 'kolicina', event.target.value)} /></label>
+              <label>{L('Cena brez DDV', 'Price excl. VAT')}<input required={i === 0} min="0" step="0.01" type="number" inputMode="decimal" placeholder="0,00" value={v.cena} onChange={event => popraviVrstico(i, 'cena', event.target.value)} /></label>
+              <label>{L('Popust %', 'Discount %')}<input min="0" max="100" step="0.5" type="number" inputMode="decimal" value={v.popust} onChange={event => popraviVrstico(i, 'popust', event.target.value)} placeholder="0" /></label>
+              {ddvZavezanec && <label>{L('DDV', 'VAT')}<select value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)}>{DDV_STOPNJE.map(s => <option key={s} value={s}>{s.replace('.', ',')} %</option>)}</select></label>}
+              {ddvZavezanec && (() => { const p = predlagajDdv(v.opis, v.ddv); return p ? <button type="button" className="rc-ddv-namig" title={`${p.razlog} ${L('(predlog, ne davčni nasvet)', '(suggestion, not tax advice)')}`} onClick={() => popraviVrstico(i, 'ddv', p.stopnja)}>💡 {p.stopnja.replace('.', ',')} %?</button> : null; })()}
+              <span className="rc-znesek"><em>{L('Znesek', 'Amount')}</em><b>{eur2(vrsticaZnesek(izracun.postavke[i] || { opis: '', kolicina: 0, cena: 0 }))}</b></span>
+              <button type="button" className="rc-x" onClick={() => setVrstice(rows => rows.length > 1 ? rows.filter((_, j) => j !== i) : rows)} aria-label={`${L('Odstrani postavko', 'Remove item')} ${i + 1}`} title={L('Odstrani postavko', 'Remove item')} disabled={vrstice.length < 2}>×</button>
             </div>
             {shraniVrsticoIndex === i ? <div className="rc-shrani-editor">
-              <label>Ime v knjižnici<input value={postavkaIme} onChange={event => setPostavkaIme(event.target.value)} placeholder="Npr. Oblikovanje logotipa" /></label>
-              <label>Enota<select value={postavkaEnota} onChange={event => setPostavkaEnota(event.target.value as PostavkaEnota)}>{ENOTE_POSTAVK.map(enota => <option key={enota} value={enota}>{enota}</option>)}</select></label>
-              <button type="button" className="rc-cip" onClick={shraniVrsticoKotPostavko} disabled={!postavkaIme.trim() || !v.opis.trim() || stev(v.cena) <= 0}>Shrani postavko</button>
-              <button type="button" className="rc-cip" onClick={() => setShraniVrsticoIndex(null)}>Prekliči</button>
-            </div> : <button type="button" className="rc-shrani-postavko" onClick={() => odpriShranjevanjePostavke(i)} disabled={samoOgled || !v.opis.trim() || stev(v.cena) <= 0}>Shrani vrstico kot postavko</button>}
+              <label>{L('Ime v knjižnici', 'Name in library')}<input value={postavkaIme} onChange={event => setPostavkaIme(event.target.value)} placeholder={L('Npr. Oblikovanje logotipa', 'E.g. Logo design')} /></label>
+              <label>{L('Enota', 'Unit')}<select value={postavkaEnota} onChange={event => setPostavkaEnota(event.target.value as PostavkaEnota)}>{ENOTE_POSTAVK.map(enota => <option key={enota} value={enota}>{enota}</option>)}</select></label>
+              <button type="button" className="rc-cip" onClick={shraniVrsticoKotPostavko} disabled={!postavkaIme.trim() || !v.opis.trim() || stev(v.cena) <= 0}>{L('Shrani postavko', 'Save item')}</button>
+              <button type="button" className="rc-cip" onClick={() => setShraniVrsticoIndex(null)}>{L('Prekliči', 'Cancel')}</button>
+            </div> : <button type="button" className="rc-shrani-postavko" onClick={() => odpriShranjevanjePostavke(i)} disabled={samoOgled || !v.opis.trim() || stev(v.cena) <= 0}>{L('Shrani vrstico kot postavko', 'Save row as item')}</button>}
           </Fragment>)}
         </div>
 
         <div className="rc-vsote">
           {ddvZavezanec ? <>
-            {izracun.stopnje.map(([rate, s]) => <div key={rate}><span>Osnova{izracun.stopnje.length > 1 ? ` (DDV ${String(rate).replace('.', ',')} %)` : ''}</span><b>{eur2(s.osnova)}</b></div>)}
-            {izracun.stopnje.map(([rate, s]) => <div key={'d' + rate}><span>DDV ({String(rate).replace('.', ',')} %)</span><b>{eur2(s.ddv)}</b></div>)}
-          </> : <div><span>Osnova</span><b>{eur2(izracun.osnova)}</b></div>}
-          <div className="rc-skupaj"><span>{avansJeDelni ? `Za plačilo (avans ${avansOdstotek.toLocaleString('sl-SI')} %)` : 'Skupaj za plačilo'}</span><b>{eur2(avansJeDelni ? zaPlaciloAvans : izracun.zaPlacilo)}</b></div>
-          {avansJeDelni && <p className="rc-klavzula">Poln znesek: {eur2(izracun.zaPlacilo)} · preostanek: {eur2(izracun.zaPlacilo - zaPlaciloAvans)}</p>}
-          {!ddvZavezanec && <p className="rc-klavzula">DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1 — klavzula se izpiše na računu. Zavezanost za DDV nastaviš v Moje podjetje (kalkulator).</p>}
+            {izracun.stopnje.map(([rate, s]) => <div key={rate}><span>{L('Osnova', 'Subtotal')}{izracun.stopnje.length > 1 ? ` (${L('DDV', 'VAT')} ${String(rate).replace('.', ',')} %)` : ''}</span><b>{eur2(s.osnova)}</b></div>)}
+            {izracun.stopnje.map(([rate, s]) => <div key={'d' + rate}><span>{L('DDV', 'VAT')} ({String(rate).replace('.', ',')} %)</span><b>{eur2(s.ddv)}</b></div>)}
+          </> : <div><span>{L('Osnova', 'Subtotal')}</span><b>{eur2(izracun.osnova)}</b></div>}
+          <div className="rc-skupaj"><span>{avansJeDelni ? L(`Za plačilo (avans ${avansOdstotek.toLocaleString('sl-SI')} %)`, `Amount due (advance ${avansOdstotek.toLocaleString('en-GB')} %)`) : L('Skupaj za plačilo', 'Total amount due')}</span><b>{eur2(avansJeDelni ? zaPlaciloAvans : izracun.zaPlacilo)}</b></div>
+          {avansJeDelni && <p className="rc-klavzula">{L('Poln znesek', 'Full amount')}: {eur2(izracun.zaPlacilo)} · {L('preostanek', 'remaining')}: {eur2(izracun.zaPlacilo - zaPlaciloAvans)}</p>}
+          {!ddvZavezanec && <p className="rc-klavzula">{L('DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1 — klavzula se izpiše na računu. Zavezanost za DDV nastaviš v Moje podjetje (kalkulator).', 'VAT is not charged pursuant to Article 94(1) of ZDDV-1 — the clause is printed on the invoice. Set your VAT status in My company (calculator).')}</p>}
         </div>
 
         {/* podpis (neobvezen) — isti vzorec kot pri pogodbah: rocno narisan ali nalozen; izrise se na dnu racuna in v izvozu */}
         <div className="rc-podpis">
-          <div className="rc-post-glava"><p className={styles.eyebrow}>PODPIS RAČUNA (NEOBVEZNO)</p>{podpisSlika && <button type="button" className="rc-povezava" onClick={odstraniPodpis}>Odstrani podpis</button>}</div>
+          <div className="rc-post-glava"><p className={styles.eyebrow}>{L('PODPIS RAČUNA (NEOBVEZNO)', 'INVOICE SIGNATURE (OPTIONAL)')}</p>{podpisSlika && <button type="button" className="rc-povezava" onClick={odstraniPodpis}>{L('Odstrani podpis', 'Remove signature')}</button>}</div>
           <div className="rc-podpis-polja">
-            <label className="rc-polje">Ime podpisnika<input value={podpisIme} onChange={event => setPodpisIme(event.target.value)} placeholder={ponudnik.ime || 'Ime in priimek'} /></label>
-            <label className="rc-polje">Kraj<input value={podpisKraj} onChange={event => setPodpisKraj(event.target.value)} placeholder="npr. Ljubljana" /></label>
-            <label className="rc-polje">Datum podpisa<input type="date" value={podpisDatum} onChange={event => setPodpisDatum(event.target.value)} /></label>
+            <label className="rc-polje">{L('Ime podpisnika', 'Signer name')}<input value={podpisIme} onChange={event => setPodpisIme(event.target.value)} placeholder={ponudnik.ime || L('Ime in priimek', 'Full name')} /></label>
+            <label className="rc-polje">{L('Kraj', 'Place')}<input value={podpisKraj} onChange={event => setPodpisKraj(event.target.value)} placeholder={L('npr. Ljubljana', 'e.g. Ljubljana')} /></label>
+            <label className="rc-polje">{L('Datum podpisa', 'Signature date')}<input type="date" value={podpisDatum} onChange={event => setPodpisDatum(event.target.value)} /></label>
           </div>
           {podpisSlika ? (
             <div className="rc-podpis-prikaz">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={podpisSlika} alt="Podpis" />
+              <img src={podpisSlika} alt={L('Podpis', 'Signature')} />
             </div>
           ) : (
             <>
               <canvas ref={pripraviPlatno} className="rc-podpis-platno" onPointerDown={zacniRis} onPointerMove={risiPodpis} onPointerUp={koncajRis} onPointerCancel={koncajRis} />
               <div className="rc-podpis-akcije">
-                <button type="button" className="rc-cip" onClick={pocistiPlatno}>Počisti</button>
-                <button type="button" className="rc-cip" disabled={!narisanPodpis} onClick={uporabiNarisanPodpis}>Uporabi narisan podpis</button>
-                <span className="rc-podpis-ali">ali</span>
-                <button type="button" className="rc-cip" onClick={() => podpisDatotekaRef.current?.click()}>Naloži sliko podpisa …</button>
+                <button type="button" className="rc-cip" onClick={pocistiPlatno}>{L('Počisti', 'Clear')}</button>
+                <button type="button" className="rc-cip" disabled={!narisanPodpis} onClick={uporabiNarisanPodpis}>{L('Uporabi narisan podpis', 'Use drawn signature')}</button>
+                <span className="rc-podpis-ali">{L('ali', 'or')}</span>
+                <button type="button" className="rc-cip" onClick={() => podpisDatotekaRef.current?.click()}>{L('Naloži sliko podpisa …', 'Upload signature image …')}</button>
                 <input ref={podpisDatotekaRef} type="file" accept="image/*" hidden onChange={naloziPodpisSliko} />
               </div>
             </>
           )}
         </div>
 
-        <div className={styles.invoiceSubmit}><button type="submit" className="rc-zakljuci-gumb">Zaključi →</button></div>
+        <div className={styles.invoiceSubmit}><button type="submit" className="rc-zakljuci-gumb">{L('Zaključi →', 'Finish →')}</button></div>
       </form>
     </section>}
 
@@ -817,10 +818,10 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           </g>
         </svg>
       </div>
-      <p className="rc-kicker rc-kicker-z">{predracun ? 'PREDRAČUN' : 'RAČUN'}{stevilka.trim() ? ' · ŠT. ' + stevilka.trim() : ''}</p>
-      <h1 className="rc-naslov-z">Zaključek.</h1>
-      <p className="rc-uvod-z">Prenesi {predracun ? 'predračun' : 'račun'}{stranka.trim() ? ' za ' + stranka.trim() : ''}, ga shrani ali pošlji naročniku.</p>
-      <label className="rc-placan-z"><input type="checkbox" checked={placano} onChange={event => setPlacano(event.target.checked)} /> {predracun ? 'Predračun je že plačan' : 'Račun je že plačan'}</label>
+      <p className="rc-kicker rc-kicker-z">{predracun ? L('PREDRAČUN', 'PRO FORMA') : L('RAČUN', 'INVOICE')}{stevilka.trim() ? (jeEn ? ' · NO. ' : ' · ŠT. ') + stevilka.trim() : ''}</p>
+      <h1 className="rc-naslov-z">{L('Zaključek.', 'Finish.')}</h1>
+      <p className="rc-uvod-z">{L(`Prenesi ${predracun ? 'predračun' : 'račun'}${stranka.trim() ? ' za ' + stranka.trim() : ''}, ga shrani ali pošlji naročniku.`, `Download the ${predracun ? 'pro forma' : 'invoice'}${stranka.trim() ? ' for ' + stranka.trim() : ''}, save it or send it to the client.`)}</p>
+      <label className="rc-placan-z"><input type="checkbox" checked={placano} onChange={event => setPlacano(event.target.checked)} /> {predracun ? L('Predračun je že plačan', 'Pro forma is already paid') : L('Račun je že plačan', 'Invoice is already paid')}</label>
       {napaka && <p className="rc-napaka">{napaka}</p>}
       <PosljiBlok
         subject={(predracun ? 'Predračun' : 'Račun') + (stevilka.trim() ? ' ' + stevilka.trim() : '') + (stranka.trim() ? ' — ' + stranka.trim() : '')}
@@ -834,20 +835,20 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       />
       <div className="rc-prenosi">
         <button type="button" className="rc-povezava-z" onClick={() => save()}>
-          <FloppyDisk size={16} /> {predracun ? 'Shrani predračun' : 'Shrani račun'}
+          <FloppyDisk size={16} /> {predracun ? L('Shrani predračun', 'Save pro forma') : L('Shrani račun', 'Save invoice')}
         </button>
         <button type="button" className="rc-povezava-z" disabled={!!pdfId} onClick={() => prenesiPdf(trenutniRacun())}>
-          <FilePdf size={16} /> {pdfId ? 'Pripravljam …' : 'Prenesi (PDF)'}
+          <FilePdf size={16} /> {pdfId ? L('Pripravljam …', 'Preparing …') : L('Prenesi (PDF)', 'Download (PDF)')}
         </button>
         <button type="button" className="rc-povezava-z" onClick={() => posljiVPlacilo(trenutniRacun())}>
-          <PaperPlaneTilt size={16} /> Pošlji v plačilo
+          <PaperPlaneTilt size={16} /> {L('Pošlji v plačilo', 'Send for payment')}
         </button>
       </div>
     </section>}
 
     {pogled === 'zakljucek' && <div className="rc-noga"><div className="rc-noga-gumbi">
-      <button type="button" className="rc-noga-pill" onClick={() => setPogled('obrazec')}>← Uredi račun</button>
-      <button type="button" className="rc-noga-pill nova" onClick={() => { setPogled('pregled'); setOfferId(''); }}>↺ Nov račun</button>
+      <button type="button" className="rc-noga-pill" onClick={() => setPogled('obrazec')}>{L('← Uredi račun', '← Edit invoice')}</button>
+      <button type="button" className="rc-noga-pill nova" onClick={() => { setPogled('pregled'); setOfferId(''); }}>{L('↺ Nov račun', '↺ New invoice')}</button>
     </div></div>}
 
     <style>{`
