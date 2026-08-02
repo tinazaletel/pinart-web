@@ -98,7 +98,7 @@ export default function GoalsWorkspace({ base }: { base: string }) {
   return <div className={styles.goalsPage}>
     {saved && <div className={styles.goalSaved} role="status">Cilj je shranjen.</div>}
     <section className={styles.goalOverview}>
-      <div><p className={styles.eyebrow}>TA MESEC</p><h2>{money(goal)}</h2><p>Cilj temelji na stroških, tvojem želenem dohodku in rezervi.</p></div>
+      <div><p className={styles.eyebrow}>TA MESEC</p><h2>{money(goal)}</h2><p>Cilj temelji na stroških, tvojem želenem dohodku in rezervi — znesek je <strong>bruto promet</strong>, ki ga zaračunaš.</p></div>
       <div className={styles.goalOverviewStats}><span><small>Potrjena plačila</small><strong>{money(paid)}</strong></span><span><small>Do cilja manjka</small><strong>{money(remaining)}</strong></span></div>
       <div className={styles.goalLargeDial} style={{ '--goal-progress': `${progress}%` } as React.CSSProperties}><div><strong>{progress}%</strong><small>doseženo</small></div></div>
     </section>

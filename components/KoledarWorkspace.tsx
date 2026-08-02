@@ -507,7 +507,7 @@ export default function KoledarWorkspace() {
           {renderDanStolpec(izbranDan, false)}
         </div>
       </div>
-      {terminiZaDan(izbranDan).length === 0 && (
+      {terminiZaDan(izbranDan).length === 0 && rokiZaDan(izbranDan).length === 0 && (
         <div className="kol-prazno-plast" aria-hidden>Ta dan je prost — klikni v mrežo ali dodaj z »+ Ustvari«.</div>
       )}
     </div>
@@ -785,7 +785,8 @@ export default function KoledarWorkspace() {
         .kol-zdaj-crta{position:absolute;left:0;right:0;height:0;border-top:2px solid var(--kol-zdaj);z-index:3;pointer-events:none}
         .kol-zdaj-pika{position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:999px;background:var(--kol-zdaj)}
 
-        .kol-blok{position:absolute;z-index:2;display:flex;flex-direction:column;gap:.12rem;padding:.28rem .45rem;border-radius:.4rem;border-left:3px solid;cursor:pointer;overflow:hidden;text-align:left}
+        .kol-blok{position:absolute;z-index:2;display:flex;flex-direction:column;gap:.12rem;padding:.28rem .45rem;border-radius:.4rem;border-left:3px solid;cursor:pointer;overflow:hidden;text-align:left;min-height:2.35rem}
+        .kol-blok:hover{z-index:5;box-shadow:0 .4rem 1rem oklch(30% .04 285 / .18)}
         .kol-blok:hover{filter:brightness(.98)}
         .kol-blok:focus-visible{outline:2px solid var(--kol-accent);outline-offset:1px}
         .kol-blok[data-kompakt='true']{padding:.2rem .35rem;gap:.05rem}

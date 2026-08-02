@@ -627,6 +627,33 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   const mesecOstaneMinut = Math.round(mesecCiljUre * 60 - mesecMinute);
   const mesecNapredek = mesecCiljUre ? Math.min(100, Math.max(0, (mesecMinute / 60 / mesecCiljUre) * 100)) : 0;
 
+  /* IZVOZ ZA HR: mesečna evidenca kot CSV (; + UTF-8 BOM za SI Excel; ure decimalno). */
+  const izvoziHrCsv = () => {
+    if (typeof document === 'undefined') return;
+    const decUr = (min: number | null) => (min == null ? '' : (min / 60).toFixed(2).replace('.', ','));
+    const vrstice: (string | number)[][] = [['Datum', 'Dan', 'Prihod', 'Odhod', 'Malica (min)', 'Ur (opravljeno)', 'Vrsta', 'Kraj', 'Opomba']];
+    prisotnostiMeseca.forEach(p => {
+      vrstice.push([
+        p.datum,
+        new Date(`${p.datum}T12:00:00`).toLocaleDateString('sl-SI', { weekday: 'long' }),
+        p.prihod || '', p.odhod || '',
+        typeof p.odmorMin === 'number' ? p.odmorMin : '',
+        decUr(uraZapisa(p)),
+        VRSTA_OZNAKA[vrstaZapisa(p)],
+        p.kraj ? KRAJ_OZNAKA[p.kraj] : '',
+        p.opomba || '',
+      ]);
+    });
+    vrstice.push([]);
+    vrstice.push(['Skupaj opravljeno (ur)', '', '', '', '', (mesecMinute / 60).toFixed(2).replace('.', ','), '', '', '']);
+    vrstice.push(['Mesečni cilj (ur)', '', '', '', '', String(mesecCiljUre).replace('.', ','), '', '', '']);
+    const vsebina = '﻿' + vrstice.map(r => r.map(c => { const s = String(c ?? ''); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(';')).join('\r\n');
+    const blob = new Blob([vsebina], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `Evidenca_delovnega_casa_${mesec}.csv`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
   const dodajRocno = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const d = new FormData(event.currentTarget);
@@ -969,6 +996,17 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
         <strong>{mesecOznaka(mesec)}</strong>
         <button type="button" onClick={() => setMesec(premikMeseca(mesec, 1))} aria-label="Naslednji mesec">›</button>
       </div>
+
+      {prisotnostiMeseca.length > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '-.2rem 0 .55rem' }}>
+          <button type="button" onClick={izvoziHrCsv}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', border: '1px solid oklch(86% .012 87)', background: '#fff', borderRadius: 999, padding: '.4rem .9rem', fontSize: '.76rem', fontWeight: 700, color: 'var(--ink)', cursor: 'pointer' }}
+            title="Prenesi mesečno evidenco kot CSV za kadrovsko / plače">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M8 11l4 4 4-4M5 21h14" /></svg>
+            Izvozi za HR (CSV)
+          </button>
+        </div>
+      )}
 
       <div className={styles.mesecTabelaOvoj}>
         <table className={styles.mesecTabela}>

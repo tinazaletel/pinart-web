@@ -10,6 +10,9 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { localePath } from '@/i18n/routing';
 import FlowHeroBg from '@/components/FlowHeroBg';
+import dynamic from 'next/dynamic';
+
+const Aurora = dynamic(() => import('@/components/Aurora'), { ssr: false });
 import AmbientBubbles from '@/components/AmbientBubbles';
 import CircularText from '@/components/CircularText';
 import RotatingLaptop from '@/components/RotatingLaptop';
@@ -496,38 +499,56 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-korak p { font-size: .9rem; line-height: 1.6; color: rgba(17,17,17,.74); margin: 0; }
 
         /* Vmesna sekcija z vrtečim laptopom */
-        .fl-laptop { margin: 9.85rem 0 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+        .fl-laptop { margin: 9.85rem 0 0; display: grid; grid-template-columns: minmax(0, .88fr) minmax(0, 1.28fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
         @media (max-width: 860px) { .fl-laptop { grid-template-columns: 1fr; gap: 1.5rem; } .fl-laptop-vizual { order: 0; } }
         .fl-laptop-txt .k { font-size: .72rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
         .fl-laptop-txt h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.9rem, 4.4vw, 3rem); line-height: 1.08; letter-spacing: -.01em; margin: .6rem 0 1rem; max-width: 18ch; }
         .fl-laptop-txt h2 em { font-style: italic; color: var(--accent); }
         .fl-laptop-txt p { font-size: 1.02rem; line-height: 1.6; color: rgba(17,17,17,.76); max-width: 42ch; margin: 0; }
         .fl-laptop-vizual { display: flex; justify-content: center; align-items: center; order: -1; }
-        .fl-lap { position: relative; width: min(100%, 560px); }
+        /* 3D laptop (slika) + cist zaslon: mini ponudba z AI posteno ceno */
+        .fl-lap { position: relative; width: min(100%, 680px); }
         .fl-lap-img { display: block; width: 100%; height: auto; }
-        /* Zaslon laptopa (celni pogled) — usklajeno s sliko laptop-a.png. */
         .fl-lap-screen { position: absolute; top: 31%; left: 30%; width: 41%; height: 26%; overflow: hidden; border-radius: 5px; background: #fbfaff; }
-        .fl-lap-ui { position: absolute; inset: 0; background: #fbfaff; padding: 7% 8%; display: flex; flex-direction: column; gap: 7%; opacity: 0; animation: lapCycle 12s infinite; }
-        .fl-lap-ui.u1 { animation-delay: 0s; }
-        .fl-lap-ui.u2 { animation-delay: 4s; }
-        .fl-lap-ui.u3 { animation-delay: 8s; }
-        @keyframes lapCycle { 0% { opacity: 0; } 3% { opacity: 1; } 30% { opacity: 1; } 33% { opacity: 0; } 100% { opacity: 0; } }
-        .fl-lap-bar { display: flex; gap: 5%; }
-        .fl-lap-bar i { height: 7px; border-radius: 3px; background: oklch(88% .03 297); flex: 1; }
-        .fl-lap-bar i:first-child { flex: 2; background: oklch(66% .18 297); }
-        .fl-lap-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5%; flex: 1; }
-        .fl-lap-cards span { border-radius: 5px; background: linear-gradient(135deg, oklch(93% .05 297), oklch(93% .05 165)); }
-        .fl-lap-cards span:nth-child(2) { background: linear-gradient(135deg, oklch(93% .05 330), oklch(93% .05 90)); }
-        .fl-lap-chart { height: 28%; border-radius: 5px; background: repeating-linear-gradient(90deg, oklch(66% .18 297) 0 7%, transparent 7% 15%); opacity: .75; }
-        .fl-lap-doc { display: flex; flex-direction: column; gap: 8%; height: 100%; justify-content: center; }
-        .fl-lap-doc b { height: 7px; border-radius: 3px; background: oklch(86% .03 297); }
-        .fl-lap-doc b:nth-child(2) { width: 80%; }
-        .fl-lap-doc b:nth-child(3) { width: 55%; }
-        .fl-lap-doc em { margin-top: 6%; font-style: normal; font-weight: 800; font-size: .58rem; color: #fff; background: oklch(24% .016 285); border-radius: 999px; padding: 2px 7px; align-self: flex-start; }
-        .fl-lap-cal { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6%; height: 100%; }
-        .fl-lap-cal i { border-radius: 3px; background: oklch(92% .02 297); }
-        .fl-lap-cal i.on { background: oklch(66% .18 297); }
-        @media (prefers-reduced-motion: reduce) { .fl-lap-ui { animation: none; } .fl-lap-ui.u1 { opacity: 1; } }
+        .fl-lap-doc2 { box-sizing: border-box; height: 100%; padding: 8% 9%; display: flex; flex-direction: column; gap: 8%; justify-content: center; }
+        .fl-lap-doc2-top { display: flex; align-items: center; justify-content: space-between; gap: 6%; }
+        .fl-lap-doc2-top b { height: 6px; width: 34%; border-radius: 3px; background: oklch(70% .13 297); }
+        .fl-lap-ai { font-size: .5rem; font-weight: 800; letter-spacing: .01em; color: oklch(50% .16 300); background: oklch(95% .045 300); border-radius: 999px; padding: 2px 7px; white-space: nowrap; }
+        .fl-lap-row { display: flex; align-items: center; gap: 7%; }
+        .fl-lap-row i { height: 6px; flex: 1; border-radius: 3px; background: oklch(88% .03 297); }
+        .fl-lap-row i.w2 { flex: .68; }
+        .fl-lap-row em { font-style: normal; font-size: .58rem; font-weight: 800; color: oklch(42% .02 285); white-space: nowrap; }
+        .fl-lap-sum { display: flex; align-items: center; justify-content: space-between; margin-top: 2%; padding-top: 7%; border-top: 1px solid oklch(90% .012 297); }
+        .fl-lap-sum b { height: 6px; width: 28%; border-radius: 3px; background: oklch(84% .03 297); }
+        .fl-lap-sum strong { font-size: .72rem; font-weight: 800; color: #fff; background: oklch(24% .016 285); border-radius: 999px; padding: 2px 9px; }
+        .fl-lap-ui { position: absolute; inset: 0; opacity: 0; animation: lapCyc 15s infinite; }
+        .fl-lap-ui.lu1 { animation-delay: 0s; }
+        .fl-lap-ui.lu2 { animation-delay: 5s; }
+        .fl-lap-ui.lu3 { animation-delay: 10s; }
+        @keyframes lapCyc { 0% { opacity: 0; } 2% { opacity: 1; } 31% { opacity: 1; } 33% { opacity: 0; } 100% { opacity: 0; } }
+        .fl-lap-tag { align-self: flex-start; font-size: .5rem; font-weight: 800; letter-spacing: .01em; border-radius: 999px; padding: 2px 7px; white-space: nowrap; }
+        .fl-lap-tag.t-proj { color: oklch(48% .14 300); background: oklch(95% .04 300); }
+        .fl-lap-tag.t-cal { color: oklch(45% .12 165); background: oklch(94% .05 165); }
+        .fl-lap-list { box-sizing: border-box; height: 100%; padding: 9%; display: flex; flex-direction: column; gap: 9%; justify-content: center; }
+        .fl-lap-lrow { display: flex; align-items: center; gap: 6%; }
+        .fl-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+        .fl-dot.g { background: oklch(62% .15 150); }
+        .fl-dot.o { background: oklch(72% .16 75); }
+        .fl-lap-lrow b { height: 6px; flex: 1; border-radius: 3px; background: oklch(88% .03 297); }
+        .fl-lap-lrow b.w2 { flex: .72; }
+        .fl-lap-lrow b.w3 { flex: .58; }
+        .fl-lap-lrow em { font-style: normal; font-size: .44rem; font-weight: 800; border-radius: 999px; padding: 1px 6px; white-space: nowrap; }
+        .fl-lap-lrow em.ok { color: oklch(46% .1 155); background: oklch(94% .04 155); }
+        .fl-lap-lrow em.wa { color: oklch(52% .11 70); background: oklch(95% .04 80); }
+        .fl-lap-cal2 { box-sizing: border-box; height: 100%; padding: 10% 9%; display: flex; flex-direction: column; gap: 13%; justify-content: center; }
+        .fl-lap-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5%; }
+        .fl-lap-week i { height: 12px; border-radius: 3px; background: oklch(93% .02 297); }
+        .fl-lap-week i.on { background: oklch(66% .16 300); }
+        .fl-lap-ev { display: flex; flex-direction: column; gap: 20%; }
+        .fl-lap-ev span { height: 6px; border-radius: 3px; }
+        .fl-lap-ev .e1 { width: 70%; background: oklch(84% .09 165); }
+        .fl-lap-ev .e2 { width: 50%; margin-left: 12%; background: oklch(86% .08 75); }
+        @media (prefers-reduced-motion: reduce) { .fl-lap-ui { animation: none; } .fl-lap-ui.lu1 { opacity: 1; } }
         .fl-rl { width: 100%; max-width: 560px; aspect-ratio: 4 / 3; }
         @media (max-width: 860px) { .fl-rl { max-width: 440px; } }
 
@@ -789,6 +810,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @keyframes fnFlow { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(2.5%, -2%) scale(1.09); } }
         @media (prefers-reduced-motion: reduce) { .fl-funkcije::before { animation: none; } }
         .fl-funkcije > * { position: relative; z-index: 1; }
+        .fl-funkcije > .fl-aurora { position: absolute; inset: 0; z-index: 0; opacity: .5; pointer-events: none; }
+        @media (prefers-reduced-motion: reduce) { .fl-funkcije > .fl-aurora { display: none; } }
         .fl-funkcije-glava { max-width: 46ch; }
         .fl-funkcije-glava h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.7rem, 4vw, 2.6rem); line-height: 1.08; margin: 0 0 .6rem; color: #fff; -webkit-text-stroke: 0; }
         .fl-funkcije-glava p { font-size: 1rem; line-height: 1.55; color: oklch(72% .02 285); margin: 0; }
@@ -1002,16 +1025,28 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <div className="fl-lap">
               <img className="fl-lap-img" src="/flow/laptop-a.png?v=2" alt="" />
               <div className="fl-lap-screen">
-                <div className="fl-lap-ui u1">
-                  <div className="fl-lap-bar"><i /><i /><i /></div>
-                  <div className="fl-lap-cards"><span /><span /><span /></div>
-                  <div className="fl-lap-chart" />
+                <div className="fl-lap-ui lu1">
+                  <div className="fl-lap-doc2">
+                    <div className="fl-lap-doc2-top"><b /><span className="fl-lap-ai">AI · poštena cena</span></div>
+                    <div className="fl-lap-row"><i /><em>650 €</em></div>
+                    <div className="fl-lap-row"><i className="w2" /><em>1.200 €</em></div>
+                    <div className="fl-lap-sum"><b /><strong>1.850 €</strong></div>
+                  </div>
                 </div>
-                <div className="fl-lap-ui u2">
-                  <div className="fl-lap-doc"><b /><b /><b /><em>1.850 €</em></div>
+                <div className="fl-lap-ui lu2">
+                  <div className="fl-lap-list">
+                    <span className="fl-lap-tag t-proj">Projekti · statusi</span>
+                    <div className="fl-lap-lrow"><i className="fl-dot g" /><b /><em className="ok">Sprejeta</em></div>
+                    <div className="fl-lap-lrow"><i className="fl-dot o" /><b className="w2" /><em className="wa">Čaka</em></div>
+                    <div className="fl-lap-lrow"><i className="fl-dot g" /><b className="w3" /><em className="ok">Sprejeta</em></div>
+                  </div>
                 </div>
-                <div className="fl-lap-ui u3">
-                  <div className="fl-lap-cal"><i /><i /><i /><i className="on" /><i /><i /><i /><i /><i /><i /><i /><i /></div>
+                <div className="fl-lap-ui lu3">
+                  <div className="fl-lap-cal2">
+                    <span className="fl-lap-tag t-cal">Roki · koledar</span>
+                    <div className="fl-lap-week"><i /><i /><i className="on" /><i /><i /><i /><i /></div>
+                    <div className="fl-lap-ev"><span className="e1" /><span className="e2" /></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1218,6 +1253,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         </section>
 
         <section className="fl-funkcije">
+          <div className="fl-aurora" aria-hidden>
+            <Aurora colorStops={["#7C3AED", "#38BDF8", "#A78BFA"]} amplitude={1.15} blend={0.55} speed={1.4} />
+          </div>
           <div className="fl-funkcije-glava">
             <h2>Zgrajeno za mirno poslovanje samostojnega kreativca.</h2>
             <p>Poštene cene, vračunane avtorske pravice in tvoji podatki — brez skritih pasti.</p>
