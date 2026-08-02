@@ -337,7 +337,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
             <h2 id="grafika-naslov">Potrebuješ tudi grafična dela?</h2>
             <p>Če vizualov ne pripravljaš sama, ti Pinart oblikuje oglase, objave, tiskovine ali celotno kampanjsko podobo.</p>
             <ul className={styles.designTags} aria-label="Grafične storitve">
-              <li>Oglasi</li><li>Objave</li><li>Tiskovine</li><li>Kampanjska podoba</li>
+              <li>Oglasi</li><li>Objave</li><li>Tiskovine</li><li>Kampanjska podoba</li><li>Spletna stran</li>
             </ul>
           </div>
           <div className={styles.designActions}>
