@@ -1178,7 +1178,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <div className="fl-bglobe" aria-hidden>
                 <span className="fl-bglobe-ai"><Sparkle size={12} weight="fill" /> AI</span>
                 <div className="fl-bench" style={{ left: '17%', top: '8%', animationDelay: '0s' }}><small>Logotip</small><b style={{ background: '#d5776f' }}>650 €</b></div>
-                <div className="fl-bench" style={{ left: '65%', top: '8%', animationDelay: '1.3s' }}><small>Ilustracija</small><b style={{ background: '#c9926b' }}>480 €</b></div>
+                <div className="fl-bench" style={{ left: '66%', top: '8%', animationDelay: '1.3s' }}><small>Ilustracija</small><b style={{ background: '#c9926b' }}>480 €</b></div>
                 <div className="fl-bench" style={{ left: '10%', top: '32%', animationDelay: '2.6s' }}><small>CGP</small><b style={{ background: '#8b7be8' }}>1.350 €</b></div>
                 <div className="fl-bench" style={{ right: '9%', top: '32%', animationDelay: '3.9s' }}><small>Splet</small><b style={{ background: '#5bb89a' }}>1.400 €</b></div>
                 <svg viewBox="0 0 200 120">
