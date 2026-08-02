@@ -8,6 +8,7 @@ import { Plus, FolderOpen, TextB, TextItalic, ListBullets, LinkSimple, Tray, Pap
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
+import SwapText from '@/components/SwapText';
 import { loadFlowData, loadProjectLinks, saveOfferAmount, saveOfferStatus, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { preberiPostoProjekta, dodajPosto, type PostaVnos } from '@/lib/postaDnevnik';
@@ -95,7 +96,10 @@ const pwStyles = `
 @keyframes pwLetevIn{from{opacity:0;transform:translate(-50%,1rem)}to{opacity:1;transform:translate(-50%,0)}}
 .pw-izbor-st{font-size:.8rem;font-weight:700;white-space:nowrap}
 .pw-izbor-gumb{border:0;border-radius:999px;padding:.45rem .95rem;background:#fff;color:oklch(30% .03 300);font:700 .78rem var(--font-sans),system-ui,sans-serif;cursor:pointer;white-space:nowrap}
-.pw-izbor-gumb:hover{background:oklch(96% .02 300)}
+.pw-izbor-gumb:hover:not(:disabled){background:oklch(96% .02 300)}
+.pw-izbor-gumb2{background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px oklch(100% 0 0 / .38)}
+.pw-izbor-gumb2:hover:not(:disabled){background:oklch(100% 0 0 / .12)}
+.pw-izbor-gumb:disabled,.pw-izbor-prekl:disabled{opacity:.6;cursor:default}
 .pw-izbor-prekl{border:0;background:transparent;color:oklch(88% .02 300);font:600 .76rem var(--font-sans),system-ui,sans-serif;cursor:pointer;padding:.45rem .5rem}
 .pw-izbor-prekl:hover{color:#fff}
 .pw-tabela-naslov{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem 1rem .85rem;background:oklch(95% .035 300);border-bottom:1px solid rgba(17,17,17,.08)}
@@ -375,13 +379,16 @@ type Props = {
      stran — starš takrat skrije svojo glavo (.arh-glava: zavihki + orodna vrstica),
      da je res videti kot svoja stran. */
   onDetajl?: (odprt: boolean) => void;
+  /* izvoz izbranih projektov kot »Package« ZIP (dokumenti PDF + CSV) — implementira
+     ArhivWorkspace (ima render dokumentov); brez tega prop-a ostane samo CSV. */
+  onPaket?: (projekti: { ime: string; offer: FlowOffer; contracts: FlowContract[]; invoices: FlowInvoice[] }[]) => Promise<void>;
   /* PIPELINE POSLOV — pogled Seznam|Pipeline (glej pw-pipeline spodaj). ArhivWorkspace
      krmili od zunaj (pilula ob zavihkih), ce ni podano deluje samostojno (lastno stanje). */
   pogled?: 'seznam' | 'pipeline';
   onPogled?: (pogled: 'seznam' | 'pipeline') => void;
 };
 
-export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIskanje, status, onStatus, datumOd: datumOdZunaj, datumDo: datumDoZunaj, onDatumOd, onDatumDo, onDetajl, pogled: pogledZunaj, onPogled }: Props) {
+export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIskanje, status, onStatus, datumOd: datumOdZunaj, datumDo: datumDoZunaj, onDatumOd, onDatumDo, onDetajl, onPaket, pogled: pogledZunaj, onPogled }: Props) {
   const [offers, setOffers] = useState<FlowOffer[]>([]); const [invoices, setInvoices] = useState<FlowInvoice[]>([]); const [expenses, setExpenses] = useState<FlowExpense[]>([]); const [contracts, setContracts] = useState<FlowContract[]>([]); const [amounts, setAmounts] = useState<Record<string, number>>({}); const [clients, setClients] = useState<FlowClient[]>([]);
   /* PRAVI projekti (lib/projekti) — locena shramba od Flow podatkov zgoraj, glej gradiVnos/realProjects spodaj */
   const [realProjekti, setRealProjekti] = useState<Projekt[]>([]);
@@ -393,6 +400,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [izbrani, setIzbrani] = useState<Set<string>>(() => new Set());
   const [portalPripravljen, setPortalPripravljen] = useState(false);
   useEffect(() => { setPortalPripravljen(true); }, []);
+  const [izvazamPaket, setIzvazamPaket] = useState(false);
   const preklopiIzbor = (id: string) => setIzbrani(prev => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   /* samostojna raba (brez zunanjiFilter): lastno stanje orodne vrstice — fallback,
      ko iskanje/status/datum* niso podani od zunaj */
@@ -461,6 +469,13 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = 'Projekti_izvoz.csv';
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  const naPaket = async () => {
+    if (!onPaket || izvazamPaket) return;
+    const sel = visible.filter(p => izbrani.has(p.offer.id)).map(p => ({ ime: p.offer.title || p.offer.client || 'projekt', offer: p.offer, contracts: p.contracts, invoices: p.invoices }));
+    if (!sel.length) return;
+    setIzvazamPaket(true);
+    try { await onPaket(sel); } finally { setIzvazamPaket(false); }
   };
   /* PIPELINE POSLOV — kanban pogled (glej pw-pipeline v pwStyles). Stolpci po vrsti
      + locen, umirjen Izgubljeno na koncu (glej ProjektFaza v lib/projekti). */
@@ -746,8 +761,9 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     {portalPripravljen && !selected && izbrani.size > 0 && createPortal(
       <div className="pw-izbor-letev" role="region" aria-label="Izbrani projekti">
         <span className="pw-izbor-st">{izbrani.size} izbranih</span>
-        <button type="button" className="pw-izbor-gumb" onClick={izvoziIzbrane}>Izvozi CSV</button>
-        <button type="button" className="pw-izbor-prekl" onClick={() => setIzbrani(new Set())}>Prekliči</button>
+        {onPaket && <button type="button" className="pw-izbor-gumb" disabled={izvazamPaket} onClick={naPaket}><SwapText text={izvazamPaket ? 'Pripravljam…' : 'Package (ZIP)'} /></button>}
+        <button type="button" className={'pw-izbor-gumb' + (onPaket ? ' pw-izbor-gumb2' : '')} disabled={izvazamPaket} onClick={izvoziIzbrane}>CSV</button>
+        <button type="button" className="pw-izbor-prekl" disabled={izvazamPaket} onClick={() => setIzbrani(new Set())}>Prekliči</button>
       </div>,
       document.body,
     )}

@@ -21,6 +21,7 @@ import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import ProjectsWorkspace from './ProjectsWorkspace';
 import ArhivFilter from './ArhivFilter';
 import AmbientBubbles from '@/components/AmbientBubbles';
+import SwapText from '@/components/SwapText';
 
 type Zavihek = 'projekti' | 'ponudbe' | 'pogodbe' | 'racuni';
 
@@ -354,6 +355,36 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   /* ločeni PDF-ji izbranih dokumentov v ZIP — vsak dokument zaporedno odpremo v
      detajlu, zajamemo #arh-izvoz (html2canvas-pro zaradi oklch) -> jsPDF -> JSZip */
   const varnoIme = (s: string) => (s.replace(/[^\w\- À-ɏ]+/g, '').trim().replace(/\s+/g, '_').slice(0, 60) || 'dokument');
+  const csvIzVrstic = (vrstice: (string | number)[][]) => '﻿' + vrstice.map(v => v.map(c => { const s = String(c ?? ''); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(';')).join('\r\n');
+  const prenesiBlob = (blob: Blob, ime: string) => {
+    if (typeof document === 'undefined') return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = ime;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  /* zajem enega dokumenta v PDF blob: odpre detajl (offscreen med izvozom) in ga izriše */
+  const pdfIzDokumenta = async (
+    html2canvas: (typeof import('html2canvas-pro'))['default'],
+    JsPDF: (typeof import('jspdf'))['jsPDF'],
+    vrsta: 'ponudba' | 'pogodba' | 'racun',
+    zapis: FlowOffer | FlowContract | FlowInvoice,
+  ): Promise<Blob | null> => {
+    flushSync(() => { setDetObsegOdprt(false); setDetajl({ vrsta, zapis } as Detajl); });
+    await new Promise<void>(res => requestAnimationFrame(() => requestAnimationFrame(() => res())));
+    try { await (document as Document & { fonts?: { ready?: Promise<unknown> } }).fonts?.ready; } catch { /* ignore */ }
+    const el = document.getElementById('arh-izvoz');
+    if (!el) return null;
+    const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+    const img = canvas.toDataURL('image/jpeg', 0.92);
+    const pdf = new JsPDF({ unit: 'mm', format: 'a4' });
+    const pw = pdf.internal.pageSize.getWidth();
+    const ph = pdf.internal.pageSize.getHeight();
+    const imgH = canvas.height * pw / canvas.width;
+    pdf.addImage(img, 'JPEG', 0, 0, pw, imgH);
+    let ostane = imgH - ph; let odmik = 0;
+    while (ostane > 0) { odmik += ph; pdf.addPage(); pdf.addImage(img, 'JPEG', 0, -odmik, pw, imgH); ostane -= ph; }
+    return pdf.output('blob');
+  };
   const izvoziPdfZip = async () => {
     if (izvazamPdf) return;
     const seznam: { vrsta: 'ponudba' | 'pogodba' | 'racun'; zapis: FlowOffer | FlowContract | FlowInvoice; ime: string }[] = [
@@ -365,38 +396,51 @@ export default function ArhivWorkspace({ base }: { base: string }) {
     setIzvazamPdf(true);
     const prejsnji = detajl;
     try {
-      const [{ default: JSZip }, { jsPDF }, { default: html2canvas }] = await Promise.all([
-        import('jszip'), import('jspdf'), import('html2canvas-pro'),
-      ]);
+      const [{ default: JSZip }, { jsPDF }, { default: html2canvas }] = await Promise.all([import('jszip'), import('jspdf'), import('html2canvas-pro')]);
       const zip = new JSZip();
-      const cakaj = () => new Promise<void>(res => requestAnimationFrame(() => requestAnimationFrame(() => res())));
       for (const it of seznam) {
-        flushSync(() => { setDetObsegOdprt(false); setDetajl({ vrsta: it.vrsta, zapis: it.zapis } as Detajl); });
-        await cakaj();
-        try { await (document as Document & { fonts?: { ready?: Promise<unknown> } }).fonts?.ready; } catch { /* ignore */ }
-        const el = document.getElementById('arh-izvoz');
-        if (!el) continue;
-        const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
-        const img = canvas.toDataURL('image/jpeg', 0.92);
-        const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
-        const pw = pdf.internal.pageSize.getWidth();
-        const ph = pdf.internal.pageSize.getHeight();
-        const imgH = canvas.height * pw / canvas.width;
-        pdf.addImage(img, 'JPEG', 0, 0, pw, imgH);
-        let ostane = imgH - ph; let odmik = 0;
-        while (ostane > 0) { odmik += ph; pdf.addPage(); pdf.addImage(img, 'JPEG', 0, -odmik, pw, imgH); ostane -= ph; }
-        zip.file(varnoIme(it.ime) + '.pdf', pdf.output('blob'));
+        const blob = await pdfIzDokumenta(html2canvas, jsPDF, it.vrsta, it.zapis);
+        if (blob) zip.file(varnoIme(it.ime) + '.pdf', blob);
       }
-      const out = await zip.generateAsync({ type: 'blob' });
-      if (typeof document !== 'undefined') {
-        const url = URL.createObjectURL(out);
-        const a = document.createElement('a'); a.href = url; a.download = 'Arhiv_izvoz.zip';
-        document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-      }
+      prenesiBlob(await zip.generateAsync({ type: 'blob' }), 'Arhiv_izvoz.zip');
     } catch (e) {
       console.error('PDF izvoz spodletel', e);
-      const sporocilo = e instanceof Error ? e.message : String(e);
-      if (typeof window !== 'undefined') window.alert('Izvoz PDF ni uspel:\n' + sporocilo);
+      if (typeof window !== 'undefined') window.alert('Izvoz PDF ni uspel:\n' + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      flushSync(() => setDetajl(prejsnji));
+      setIzvazamPdf(false);
+    }
+  };
+  /* PROJEKTNI »Package« ZIP: za vsak projekt mapa z dokumenti (PDF) + povzetek.csv,
+     na vrhu projekti.csv. Kliče ga ProjectsWorkspace prek prop-a onPaket. */
+  const izvoziPaketProjektov = async (projekti: { ime: string; offer: FlowOffer; contracts: FlowContract[]; invoices: FlowInvoice[] }[]) => {
+    if (izvazamPdf || !projekti.length) return;
+    setIzvazamPdf(true);
+    const prejsnji = detajl;
+    try {
+      const [{ default: JSZip }, { jsPDF }, { default: html2canvas }] = await Promise.all([import('jszip'), import('jspdf'), import('html2canvas-pro')]);
+      const zip = new JSZip();
+      const vrh: (string | number)[][] = [['Projekt', 'Stranka', 'Datum', 'Znesek']];
+      for (const p of projekti) {
+        const mapa = varnoIme(p.ime);
+        const oBlob = await pdfIzDokumenta(html2canvas, jsPDF, 'ponudba', p.offer);
+        if (oBlob) zip.file(`${mapa}/Ponudba_${varnoIme(p.offer.number || p.offer.title || '')}.pdf`, oBlob);
+        for (const c of p.contracts) { const b = await pdfIzDokumenta(html2canvas, jsPDF, 'pogodba', c); if (b) zip.file(`${mapa}/Pogodba_${varnoIme(c.title || c.id)}.pdf`, b); }
+        for (const r of p.invoices) { const b = await pdfIzDokumenta(html2canvas, jsPDF, 'racun', r); if (b) zip.file(`${mapa}/Racun_${varnoIme(r.number || r.id)}.pdf`, b); }
+        const povz: (string | number)[][] = [
+          ['Tip', 'Naziv', 'Datum', 'Status', 'Znesek'],
+          ['Ponudba', p.offer.title || '', datStr(p.offer.date), offerLabels[p.offer.status] || p.offer.status, typeof p.offer.agreedAmount === 'number' ? p.offer.agreedAmount : ''],
+          ...p.contracts.map(c => ['Pogodba', c.title || '', datStr(c.date), contractLabels[c.status] || c.status, ''] as (string | number)[]),
+          ...p.invoices.map(r => ['Račun', r.title || r.number || '', datStr(r.date), r.paid ? 'Plačan' : 'Odprt', typeof r.amount === 'number' ? r.amount : ''] as (string | number)[]),
+        ];
+        zip.file(`${mapa}/povzetek.csv`, csvIzVrstic(povz));
+        vrh.push([p.offer.title || p.ime, p.offer.client || '', datStr(p.offer.date), typeof p.offer.agreedAmount === 'number' ? p.offer.agreedAmount : '']);
+      }
+      zip.file('projekti.csv', csvIzVrstic(vrh));
+      prenesiBlob(await zip.generateAsync({ type: 'blob' }), 'Projekti_paket.zip');
+    } catch (e) {
+      console.error('Package izvoz spodletel', e);
+      if (typeof window !== 'undefined') window.alert('Izvoz projektov ni uspel:\n' + (e instanceof Error ? e.message : String(e)));
     } finally {
       flushSync(() => setDetajl(prejsnji));
       setIzvazamPdf(false);
@@ -417,7 +461,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       {portalPripravljen && izbrani.size > 0 && zavihek !== 'projekti' && createPortal(
         <div className="arh-izbor-letev" role="region" aria-label="Izbrane vrstice">
           <span className="arh-izbor-st">{izbrani.size} izbranih</span>
-          <button type="button" className="arh-izbor-gumb" onClick={izvoziPdfZip} disabled={izvazamPdf}>{izvazamPdf ? 'Pripravljam…' : 'PDF (ZIP)'}</button>
+          <button type="button" className="arh-izbor-gumb" onClick={izvoziPdfZip} disabled={izvazamPdf}><SwapText text={izvazamPdf ? 'Pripravljam…' : 'PDF (ZIP)'} /></button>
           <button type="button" className="arh-izbor-gumb arh-izbor-gumb2" onClick={izvoziIzbrane} disabled={izvazamPdf}>CSV</button>
           <button type="button" className="arh-izbor-prekl" onClick={() => setIzbrani(new Set())} disabled={izvazamPdf}>Prekliči</button>
         </div>,
@@ -494,6 +538,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               onDatumOd={setObdobjeOd}
               onDatumDo={setObdobjeDo}
               onDetajl={setProjektDetajlOdprt}
+              onPaket={izvoziPaketProjektov}
               pogled={pogledProjekti}
               onPogled={setPogledProjekti}
             />

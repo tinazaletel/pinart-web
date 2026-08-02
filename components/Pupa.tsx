@@ -107,15 +107,22 @@ export default function Pupa() {
     const SR = (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition
       || (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition;
     if (!SR) { alert(L('Glasovni vnos ta brskalnik ne podpira (poskusi Chrome ali Safari).', 'This browser does not support voice input (try Chrome or Safari).')); return; }
-    const rec = new (SR as new () => any)();
+    let rec: any;
+    try { rec = new (SR as new () => any)(); } catch { alert(L('Glasovnega vnosa ni bilo mogoče zagnati.', 'Could not start voice input.')); return; }
     rec.lang = locale === 'en' ? 'en-US' : 'sl-SI';
     rec.interimResults = false;
     rec.maxAlternatives = 1;
-    setPoslusa(true);
+    /* poslusa nastavimo SELE ob dejanskem startu — sicer lahko obtiči na true, če start vrže */
+    rec.onstart = () => setPoslusa(true);
     rec.onresult = (e: any) => { const t = e.results?.[0]?.[0]?.transcript || ''; if (t) posljiPupi(t); };
-    rec.onerror = () => setPoslusa(false);
+    rec.onerror = (e: any) => {
+      setPoslusa(false);
+      if (e?.error === 'not-allowed' || e?.error === 'service-not-allowed') {
+        alert(L('Za glasovni vnos dovoli mikrofon v brskalniku (ikona ob naslovu).', 'Allow microphone access in your browser for voice input.'));
+      }
+    };
     rec.onend = () => setPoslusa(false);
-    rec.start();
+    try { rec.start(); } catch { setPoslusa(false); }
   };
 
   if (!mounted) return null;
