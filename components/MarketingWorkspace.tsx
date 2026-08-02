@@ -133,9 +133,16 @@ export default function MarketingWorkspace({ base }: { base: string }) {
   };
 
   const uporabiPredlogo = (predloga: MarketingPredloga) => {
+    /* predloga vodi v PRAVO orodje glede na vrsto — ne vse v isti generični obrazec */
+    if (predloga.vrsta === 'social') {
+      setObjava((o) => ({ ...o, besedilo: predloga.opis }));
+      setZavihek('objave');
+      return;
+    }
     setUrejamId(null);
     setObrazec({ ...PRAZEN, naslov: predloga.naslov, opis: predloga.opis, vrsta: predloga.vrsta });
     setObrazecOdprt(true);
+    setZavihek('kampanje');
   };
 
   const uredi = (kampanja: MarketingKampanja) => {

@@ -160,6 +160,12 @@ export default function Pupa() {
               <button type="button" onClick={() => setNacin('chat')} aria-pressed={nacin === 'chat'} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.3rem .6rem', fontSize: '.73rem', fontWeight: 700, fontFamily: 'inherit', background: nacin === 'chat' ? '#2A2035' : 'transparent', color: nacin === 'chat' ? '#fff' : 'rgba(42,32,53,.6)' }}>{L('Klepet', 'Chat')}</button>
               <button type="button" onClick={() => { setNacin('glas'); setZvok(true); }} aria-pressed={nacin === 'glas'} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.3rem .6rem', fontSize: '.73rem', fontWeight: 700, fontFamily: 'inherit', background: nacin === 'glas' ? '#2A2035' : 'transparent', color: nacin === 'glas' ? '#fff' : 'rgba(42,32,53,.6)' }}>{L('Glas', 'Voice')}</button>
             </div>
+            <button type="button" onClick={() => { if (zvok && typeof window !== 'undefined') window.speechSynthesis?.cancel(); setZvok(z => !z); }} aria-pressed={zvok} aria-label={zvok ? L('Utišaj Pupo', 'Mute Pupa') : L('Vklopi glas Pupe', 'Unmute Pupa')} title={zvok ? L('Pupa bere odgovore na glas — klikni za utišanje', 'Pupa reads answers aloud — click to mute') : L('Vklopi, da Pupa bere odgovore na glas', 'Turn on so Pupa reads answers aloud')} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, color: zvok ? '#2A2035' : 'rgba(42,32,53,.4)', display: 'inline-flex' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M11 5 6 9H2v6h4l5 4z" />
+                {zvok ? <><path d="M15.5 8.5a5 5 0 0 1 0 7" /><path d="M18.5 5.5a9 9 0 0 1 0 13" /></> : <path d="M22 9l-6 6M16 9l6 6" />}
+              </svg>
+            </button>
             <button type="button" onClick={() => { if (typeof window !== 'undefined') window.speechSynthesis?.cancel(); setOdprt(false); }} aria-label={L('Zapri', 'Close')} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 24, lineHeight: 1, color: 'rgba(42,32,53,.5)', padding: 2 }}>×</button>
           </div>
 

@@ -106,7 +106,7 @@ export default function GoalsWorkspace({ base }: { base: string }) {
     {/* Iste štiri analizne kartice kot prej na strani ČAS — od tam preseljene,
         ker so analiza poslovnega načrta in časa, ne merjenje samo. */}
     <section className={styles.summary}>
-      <article><small>Mesečni cilj</small><strong>{money(plannedResult.monthlyRevenueTarget)}</strong><span>iz poslovnega načrta</span><b className={styles.metricIkona}><MetricIcon type="cilj" /></b></article>
+      <article><small>Priporočeni cilj</small><strong>{money(recommended)}</strong><span>iz tvojega načrta spodaj</span><b className={styles.metricIkona}><MetricIcon type="cilj" /></b></article>
       <article><small>Vzdržna urna vrednost</small><strong>{money(plannedResult.sustainableHourlyRate)}</strong><span>pri {plan.billableHoursMonthly} obračunskih urah</span><b className={styles.metricIkona}><MetricIcon type="ura" /></b></article>
       <article><small>Potrebni projekti</small><strong>{plannedResult.projectsNeeded}</strong><span>pri povprečju {money(plan.averageProjectValue)}</span><b className={styles.metricIkona}><MetricIcon type="projekti" /></b></article>
       <article><small>Dejanska urna vrednost</small><strong>{effectiveRate ? money(effectiveRate) : '—'}</strong><span>iz zaključenih časovnih vnosov</span><b className={styles.metricIkona}><MetricIcon type="graf" /></b></article>
