@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale } from 'next-intl';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
@@ -124,6 +125,13 @@ function zdruziPoProjektu(dnevni: PrivateTimeEntry[]) {
  */
 export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   { view?: 'all' | 'time'; omejeno?: boolean }) {
+  const locale = useLocale();
+  const L = (sl: string, en: string) => (locale === 'en' ? en : sl);
+  const dl = locale === 'en' ? 'en-GB' : 'sl-SI';
+  /* Prikazna oznaka vrste/kraja za UI (angleščina); enum ključi in CSV-izvoz za HR ostanejo slovenski. */
+  const vrstaLabel = (v: VrstaPrisotnosti) => L(VRSTA_OZNAKA[v],
+    ({ redno: 'Regular', sluzbena: 'Business trip', bolniska: 'Sick leave', zasebni: 'Personal leave', dopust: 'Vacation', praznik: 'Holiday' } as Record<VrstaPrisotnosti, string>)[v]);
+  const krajLabel = (k: KrajDela) => L(KRAJ_OZNAKA[k], k === 'pisarna' ? 'At the office' : 'Working from home');
   const [plan, setPlan] = useState<BusinessPlan>(DEFAULT_BUSINESS_PLAN);
   const [entries, setEntries] = useState<PrivateTimeEntry[]>([]);
   const [running, setRunning] = useState<PrivateTimeEntry | null>(null);
@@ -190,7 +198,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     const konec = new Date(String(data.get('actualEnd') || ''));
     const zacetek = new Date(pozabljeno.startedAt);
     if (!Number.isFinite(konec.getTime()) || konec <= zacetek || konec > new Date()) {
-      setNotice('Konec mora biti po začetku merjenja in ne sme biti v prihodnosti.');
+      setNotice(L('Konec mora biti po začetku merjenja in ne sme biti v prihodnosti.', 'The end must be after the start and cannot be in the future.'));
       return;
     }
     const minute = Math.max(1, Math.round((konec.getTime() - zacetek.getTime()) / 60_000));
@@ -199,14 +207,14 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     zapisiMerjenje(null);
     setPozabljeno(null);
     setPending(finished);
-    setNotice('Preveri popravljeno trajanje, preden ga shraniš.');
+    setNotice(L('Preveri popravljeno trajanje, preden ga shraniš.', 'Check the corrected duration before saving it.'));
   };
 
   const nadaljujPozabljenoMerjenje = () => {
     if (!pozabljeno) return;
     setRunning(pozabljeno);
     setPozabljeno(null);
-    setNotice('Merjenje se nadaljuje.');
+    setNotice(L('Merjenje se nadaljuje.', 'Timing resumed.'));
   };
 
   const zavrziPozabljenoMerjenje = () => {
@@ -214,7 +222,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     setPozabljeno(null);
     setRunning(null);
     setElapsed(0);
-    setNotice('Seja ni bila shranjena.');
+    setNotice(L('Seja ni bila shranjena.', 'The session was not saved.'));
   };
 
   const result = useMemo(() => calculatePlan(plan), [plan]);
@@ -234,7 +242,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       saveCloudSettings({ monthlyGoal: result.monthlyRevenueTarget, desiredIncome: plan.desiredMonthlyIncome, reservePercent: plan.taxReservePercent + plan.safetyReservePercent }),
       saveBusinessGoal(result.monthlyRevenueTarget, 'Cilj iz poslovnega načrta'),
     ]).catch(() => undefined);
-    setNotice('Poslovni načrt in mesečni cilj sta shranjena.');
+    setNotice(L('Poslovni načrt in mesečni cilj sta shranjena.', 'Business plan and monthly goal saved.'));
   };
 
   const start = (event: FormEvent<HTMLFormElement>) => {
@@ -289,7 +297,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
        novo merjenje prepisalo. */
     if (nadaljujeId) { finished.id = crypto.randomUUID(); setNadaljujeId(null); }
     const next = [finished, ...entries]; setEntries(next); saveLocalTimeEntries(next); void saveCloudTimeEntry(finished).catch(() => undefined);
-    setPending(null); setNotice('Časovni vnos je shranjen samo v tvojem računu.');
+    setPending(null); setNotice(L('Časovni vnos je shranjen samo v tvojem računu.', 'The time entry is saved only in your account.'));
   };
 
   const remove = (id: string) => {
@@ -433,7 +441,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
      poljem pove, kateri dan si res izbrala. */
   const poljeDan = (ime: string, privzeto: string) => (
     <label className={styles.danPolje}>
-      <span>Dan</span>
+      <span>{L('Dan', 'Day')}</span>
       <span className={styles.danVrstica}>
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
           <rect x="3" y="5" width="18" height="16" rx="2.5" /><path d="M3 10h18M8 3v4M16 3v4" />
@@ -441,7 +449,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
         <input name={ime} type="date" max={new Date().toISOString().slice(0, 10)}
           value={danVnos || privzeto} onChange={e => setDanVnos(e.target.value)} />
       </span>
-      <small>{new Date(`${danVnos || privzeto}T12:00:00`).toLocaleDateString('sl-SI', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</small>
+      <small>{new Date(`${danVnos || privzeto}T12:00:00`).toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</small>
     </label>
   );
 
@@ -462,12 +470,12 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     const minute = minuteMed(odVnos, doVnos);
     const cezPolnoc = minute > 0 && doVnos.slice(0, 5) <= odVnos.slice(0, 5);
     return <>
-      <label><span>Od</span><input name="od" type="time" step="300" value={odVnos} onChange={e => setOdVnos(e.target.value)} /></label>
-      <label><span>Do</span><input name="do" type="time" step="300" value={doVnos} onChange={e => setDoVnos(e.target.value)} /></label>
+      <label><span>{L('Od', 'From')}</span><input name="od" type="time" step="300" value={odVnos} onChange={e => setOdVnos(e.target.value)} /></label>
+      <label><span>{L('Do', 'To')}</span><input name="do" type="time" step="300" value={doVnos} onChange={e => setDoVnos(e.target.value)} /></label>
       <p className={styles.trajanje}>
         {minute
-          ? <><strong>{duration(minute)}</strong>{cezPolnoc && <span> · konec je naslednji dan</span>}</>
-          : <span>Vpiši uro od in do, pa ti trajanje izračunam. Če ne veš ur, ju pusti prazni in vpiši trajanje spodaj.</span>}
+          ? <><strong>{duration(minute)}</strong>{cezPolnoc && <span> · {L('konec je naslednji dan', 'ends the next day')}</span>}</>
+          : <span>{L('Vpiši uro od in do, pa ti trajanje izračunam. Če ne veš ur, ju pusti prazni in vpiši trajanje spodaj.', 'Enter the from and to times and I will work out the duration. If you do not know the times, leave them empty and enter the duration below.')}</span>}
       </p>
     </>;
   };
@@ -475,13 +483,13 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   /* Vrednost dela: predlagana iz ur x tvoje urne vrednosti, a jo lahko povoziš. */
   const poljeZnesek = () => (
     <label>
-      <span>Vrednost tega dela</span>
+      <span>{L('Vrednost tega dela', 'Value of this work')}</span>
       <input name="amount" type="number" min="0" step="10" placeholder="0"
         value={znesekVnos} onChange={e => { setZnesekRocno(true); setZnesekVnos(e.target.value); }} />
       <small>
         {znesekRocno
-          ? <button type="button" className={styles.linkGumb} onClick={() => setZnesekRocno(false)}>Izračunaj po {money(urnaVrednost)}/h</button>
-          : `izračunano po tvoji urni vrednosti ${money(urnaVrednost)}/h`}
+          ? <button type="button" className={styles.linkGumb} onClick={() => setZnesekRocno(false)}>{L(`Izračunaj po ${money(urnaVrednost)}/h`, `Calculate at ${money(urnaVrednost)}/h`)}</button>
+          : L(`izračunano po tvoji urni vrednosti ${money(urnaVrednost)}/h`, `calculated from your hourly value ${money(urnaVrednost)}/h`)}
       </small>
     </label>
   );
@@ -552,7 +560,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   const shraniPrisotnost = () => {
     if (samoOgled) return; /* predogled je samo za ogled, glej demoPrisotnosti */
     if (!brezUrVrsta(vrstaVnos) && (!prihodCas || !odhodCas)) {
-      setNotice('Vpiši prihod in odhod pred shranjevanjem.'); return;
+      setNotice(L('Vpiši prihod in odhod pred shranjevanjem.', 'Enter arrival and departure before saving.')); return;
     }
     const dan = prisotnostDan;
     const obstojeci = prisotnosti.find(x => x.datum === dan);
@@ -565,7 +573,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     const next = obstojeci ? prisotnosti.map(x => (x.id === zapis.id ? zapis : x)) : [zapis, ...prisotnosti];
     setPrisotnosti(next); localStorage.setItem('pinart-flow-prisotnost', JSON.stringify(next));
     void saveCloudPresence(zapis).catch(() => undefined);
-    setNotice('Prisotnost je shranjena v dnevnik.');
+    setNotice(L('Prisotnost je shranjena v dnevnik.', 'Attendance saved to the log.'));
   };
 
   const izbrisiPrisotnost = (id: string) => {
@@ -582,7 +590,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
      nekdo prost, si ta dan vpiše kot "praznik" in cilj ostane fiksen. */
   const mesecOznaka = (ym: string) => {
     const [y, m] = ym.split('-').map(Number);
-    const label = new Date(y, m - 1, 1).toLocaleDateString('sl-SI', { month: 'long', year: 'numeric' });
+    const label = new Date(y, m - 1, 1).toLocaleDateString(dl, { month: 'long', year: 'numeric' });
     return label.charAt(0).toUpperCase() + label.slice(1);
   };
   const premikMeseca = (ym: string, delta: number) => {
@@ -603,7 +611,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   /* "pon 1. 7." — kratek dan v tednu + datum, kot na skici */
   const kratekDan = (dan: string) => {
     const d = new Date(`${dan}T12:00:00`);
-    return `${d.toLocaleDateString('sl-SI', { weekday: 'short' }).replace('.', '')} ${d.getDate()}. ${d.getMonth() + 1}.`;
+    return `${d.toLocaleDateString(dl, { weekday: 'short' }).replace('.', '')} ${d.getDate()}. ${d.getMonth() + 1}.`;
   };
   /* ure za eno vrstico tabele; null = "brez ur" (bolniska/dopust/praznik) -> prikaz "—" */
   const uraZapisa = (p: Prisotnost) => {
@@ -672,7 +680,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     };
     const next = [zapis, ...entries]; setEntries(next); saveLocalTimeEntries(next);
     void saveCloudTimeEntry(zapis).catch(() => undefined);
-    setRocniOdprt(false); setNotice('Ure so dodane v dnevnik.');
+    setRocniOdprt(false); setNotice(L('Ure so dodane v dnevnik.', 'Hours added to the log.'));
   };
 
   const shraniUrejanje = (event: FormEvent<HTMLFormElement>) => {
@@ -697,7 +705,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     const next = entries.map(x => (x.id === posodobljen.id ? posodobljen : x));
     setEntries(next); saveLocalTimeEntries(next);
     void saveCloudTimeEntry(posodobljen).catch(() => undefined);
-    setUrejam(null); setNotice('Vnos je posodobljen.');
+    setUrejam(null); setNotice(L('Vnos je posodobljen.', 'Entry updated.'));
   };
 
   /* ── Dnevnik: dva pogleda ────────────────────────────────────────────────
@@ -754,8 +762,8 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     }).sort((a, b) => b.minute - a.minute);
   })();
 
-  const kratkiDatum = (iso: string) => new Date(iso).toLocaleDateString('sl-SI', { day: 'numeric', month: 'numeric', year: '2-digit' });
-  const ura = (iso: string) => new Date(iso).toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' });
+  const kratkiDatum = (iso: string) => new Date(iso).toLocaleDateString(dl, { day: 'numeric', month: 'numeric', year: '2-digit' });
+  const ura = (iso: string) => new Date(iso).toLocaleTimeString(dl, { hour: '2-digit', minute: '2-digit' });
   /* "03:00 – 04:30". Ce si stetje nadaljevala, ostane zacetek prvega in konec
      zadnjega merjenja. Rocni vnos brez ure ima zacetek == konec -> ne pisemo nic. */
   const razpon = (x: PrivateTimeEntry) => (x.endedAt && x.endedAt !== x.startedAt ? `${ura(x.startedAt)} – ${ura(x.endedAt)}` : '');
@@ -784,68 +792,68 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     URL.revokeObjectURL(url);
   };
 
-  if (!ready) return <p className={styles.loading}>Pripravljam poslovni načrt …</p>;
+  if (!ready) return <p className={styles.loading}>{L('Pripravljam poslovni načrt …', 'Preparing your business plan …')}</p>;
 
   return <div className={`${styles.page} ${view === 'time' ? styles.casPogled : ''}`}>
-    {notice && <div className={styles.notice} role="status">{notice}<button onClick={() => setNotice('')} aria-label="Zapri">×</button></div>}
+    {notice && <div className={styles.notice} role="status">{notice}<button onClick={() => setNotice('')} aria-label={L('Zapri', 'Close')}>×</button></div>}
 
     <div className={`${styles.layout} ${view === 'time' ? styles.timeOnly : ''}`}>
       {view === 'all' && <form className={styles.plan} onSubmit={savePlan}>
-        <header><p>01 · POSLOVNI NAČRT</p><h2>Najprej določi, kaj mora podjetje omogočiti.</h2><span>Načrt postane osnova za mesečne in letne cilje.</span></header>
+        <header><p>{L('01 · POSLOVNI NAČRT', '01 · BUSINESS PLAN')}</p><h2>{L('Najprej določi, kaj mora podjetje omogočiti.', 'First define what the business has to make possible.')}</h2><span>{L('Načrt postane osnova za mesečne in letne cilje.', 'The plan becomes the basis for monthly and yearly goals.')}</span></header>
         <div className={styles.fields}>
-          <label><span>Želeni mesečni dohodek</span><input type="number" min="0" step="100" value={plan.desiredMonthlyIncome} onChange={e => update('desiredMonthlyIncome', e.target.value)} /></label>
-          <label><span>Fiksni mesečni stroški</span><input type="number" min="0" step="50" value={plan.fixedMonthlyCosts} onChange={e => update('fixedMonthlyCosts', e.target.value)} /></label>
-          <label><span>Rezerva za davke</span><input type="number" min="0" max="70" value={plan.taxReservePercent} onChange={e => update('taxReservePercent', e.target.value)} /><small>%</small></label>
-          <label><span>Varnostna rezerva</span><input type="number" min="0" max="40" value={plan.safetyReservePercent} onChange={e => update('safetyReservePercent', e.target.value)} /><small>%</small></label>
-          <label><span>Obračunske ure na mesec</span><input type="number" min="1" max="250" value={plan.billableHoursMonthly} onChange={e => update('billableHoursMonthly', e.target.value)} /></label>
-          <label><span>Povprečna vrednost projekta</span><input type="number" min="0" step="100" value={plan.averageProjectValue} onChange={e => update('averageProjectValue', e.target.value)} /></label>
+          <label><span>{L('Želeni mesečni dohodek', 'Desired monthly income')}</span><input type="number" min="0" step="100" value={plan.desiredMonthlyIncome} onChange={e => update('desiredMonthlyIncome', e.target.value)} /></label>
+          <label><span>{L('Fiksni mesečni stroški', 'Fixed monthly costs')}</span><input type="number" min="0" step="50" value={plan.fixedMonthlyCosts} onChange={e => update('fixedMonthlyCosts', e.target.value)} /></label>
+          <label><span>{L('Rezerva za davke', 'Tax reserve')}</span><input type="number" min="0" max="70" value={plan.taxReservePercent} onChange={e => update('taxReservePercent', e.target.value)} /><small>%</small></label>
+          <label><span>{L('Varnostna rezerva', 'Safety reserve')}</span><input type="number" min="0" max="40" value={plan.safetyReservePercent} onChange={e => update('safetyReservePercent', e.target.value)} /><small>%</small></label>
+          <label><span>{L('Obračunske ure na mesec', 'Billable hours per month')}</span><input type="number" min="1" max="250" value={plan.billableHoursMonthly} onChange={e => update('billableHoursMonthly', e.target.value)} /></label>
+          <label><span>{L('Povprečna vrednost projekta', 'Average project value')}</span><input type="number" min="0" step="100" value={plan.averageProjectValue} onChange={e => update('averageProjectValue', e.target.value)} /></label>
         </div>
-        <label className={styles.notes}><span>Opombe in poslovne omejitve</span><textarea value={plan.notes} onChange={e => update('notes', e.target.value)} placeholder="Kaj želiš delati, česa ne sprejemaš, koliko časa želiš imeti zase …" /></label>
-        <button type="submit">Shrani načrt in posodobi cilje</button>
+        <label className={styles.notes}><span>{L('Opombe in poslovne omejitve', 'Notes and business limits')}</span><textarea value={plan.notes} onChange={e => update('notes', e.target.value)} placeholder={L('Kaj želiš delati, česa ne sprejemaš, koliko časa želiš imeti zase …', 'What you want to do, what you will not take on, how much time you want for yourself …')} /></label>
+        <button type="submit">{L('Shrani načrt in posodobi cilje', 'Save plan and update goals')}</button>
       </form>}
 
       <section className={styles.timer} id="timer" ref={timerRef2}>
-        <header><p>{view === 'time' ? '01' : '02'} · ČAS</p><h2>Ali se ti je delo po tej ceni splačalo?</h2><span>Timer je zaseben. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.</span></header>
+        <header><p>{view === 'time' ? '01' : '02'} · {L('ČAS', 'TIME')}</p><h2>{L('Ali se ti je delo po tej ceni splačalo?', 'Was the work worth it at this price?')}</h2><span>{L('Timer je zaseben. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.', 'The timer is private. It does not track your screen, activity, apps or location.')}</span></header>
 
         {pozabljeno ? <form className={styles.timerForm} onSubmit={potrdiPozabljenKonec}>
           <div className={styles.reviewTitle} role="alert">
-            <strong>Je časovnik ostal prižgan?</strong>
-            <span>Časovnik je tekel {izpisMinut(Math.max(1, Math.round(sekundeShrambe / 60)))}. Popravi konec?</span>
+            <strong>{L('Je časovnik ostal prižgan?', 'Did the timer stay running?')}</strong>
+            <span>{L(`Časovnik je tekel ${izpisMinut(Math.max(1, Math.round(sekundeShrambe / 60)))}. Popravi konec?`, `The timer ran for ${izpisMinut(Math.max(1, Math.round(sekundeShrambe / 60)))}. Fix the end time?`)}</span>
           </div>
           <label>
-            <span>Dejanski konec dela</span>
+            <span>{L('Dejanski konec dela', 'Actual end of work')}</span>
             <input name="actualEnd" type="datetime-local" required max={localDateTimeValue(new Date())}
               value={predlaganKonec} onChange={e => setPredlaganKonec(e.target.value)} />
-            <small>Predlagali smo največ 8 ur po začetku. Po potrebi čas popravi.</small>
+            <small>{L('Predlagali smo največ 8 ur po začetku. Po potrebi čas popravi.', 'We suggested at most 8 hours after the start. Adjust the time if needed.')}</small>
           </label>
-          <button type="submit">Shrani</button>
-          <button type="button" className={styles.linkGumb} onClick={zavrziPozabljenoMerjenje}>Zavrzi sejo</button>
-          <button type="button" className={styles.linkGumb} onClick={nadaljujPozabljenoMerjenje}>Merjenje še vedno teče</button>
+          <button type="submit">{L('Shrani', 'Save')}</button>
+          <button type="button" className={styles.linkGumb} onClick={zavrziPozabljenoMerjenje}>{L('Zavrzi sejo', 'Discard session')}</button>
+          <button type="button" className={styles.linkGumb} onClick={nadaljujPozabljenoMerjenje}>{L('Merjenje še vedno teče', 'Timing is still running')}</button>
         </form> : pending ? <form className={styles.timerForm} onSubmit={confirmTime}>
-          <div className={styles.reviewTitle}><strong>Preglej zaključeni vnos</strong><span>{pending.projectName} · {pending.serviceName || 'brez oznake storitve'}</span></div>
-          <label><span>Ure</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
-          <label><span>Minute</span><input name="min" type="number" min="0" max="59" step="1" value={minVnos} onChange={e => setMinVnos(e.target.value)} /></label>
+          <div className={styles.reviewTitle}><strong>{L('Preglej zaključeni vnos', 'Review the completed entry')}</strong><span>{pending.projectName} · {pending.serviceName || L('brez oznake storitve', 'no service label')}</span></div>
+          <label><span>{L('Ure', 'Hours')}</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
+          <label><span>{L('Minute', 'Minutes')}</span><input name="min" type="number" min="0" max="59" step="1" value={minVnos} onChange={e => setMinVnos(e.target.value)} /></label>
           {poljeZnesek()}
-          <label><span>Obseg</span><select name="scope" defaultValue={pending.scopeStatus}><option value="included">Vključeno v dogovor</option><option value="extra">Dodatno delo</option></select></label>
-          <label><span>Zakaj je delo odstopalo od načrta?</span><select name="reason"><option value="">Ni odstopanja</option><option>Zahtevnejše od pričakovanega</option><option>Preveč popravkov</option><option>Nejasen brief</option><option>Dodatne zahteve</option><option>Veliko komunikacije</option><option>Administracija</option><option>Novo področje ali učenje</option><option>Ta vrsta dela mi ne ustreza</option></select></label>
-          <label><span>Zasebna opomba</span><input name="note" placeholder="Kaj boš naslednjič spremenila pri ceni ali obsegu?" /></label>
-          <button type="submit">Potrdi zasebni vnos</button>
+          <label><span>{L('Obseg', 'Scope')}</span><select name="scope" defaultValue={pending.scopeStatus}><option value="included">{L('Vključeno v dogovor', 'Included in the agreement')}</option><option value="extra">{L('Dodatno delo', 'Extra work')}</option></select></label>
+          <label><span>{L('Zakaj je delo odstopalo od načrta?', 'Why did the work differ from the plan?')}</span><select name="reason"><option value="">Ni odstopanja</option><option>Zahtevnejše od pričakovanega</option><option>Preveč popravkov</option><option>Nejasen brief</option><option>Dodatne zahteve</option><option>Veliko komunikacije</option><option>Administracija</option><option>Novo področje ali učenje</option><option>Ta vrsta dela mi ne ustreza</option></select></label>
+          <label><span>{L('Zasebna opomba', 'Private note')}</span><input name="note" placeholder={L('Kaj boš naslednjič spremenila pri ceni ali obsegu?', 'What will you change next time in price or scope?')} /></label>
+          <button type="submit">{L('Potrdi zasebni vnos', 'Confirm private entry')}</button>
         </form> : running && timerSkrit ? <div className={styles.tecePas}>
           {/* skrito: merjenje NE stoji, samo ne zavzema pol zaslona */}
           <span className={styles.tecePika} aria-hidden="true" />
           <strong>{running.projectName}</strong>
           <b>{String(Math.floor(elapsed / 3600)).padStart(2, '0')}:{String(Math.floor(elapsed / 60) % 60).padStart(2, '0')}:{String(elapsed % 60).padStart(2, '0')}</b>
-          <button type="button" className={styles.skrijGumb} onClick={() => setTimerSkrit(false)}>Pokaži</button>
-          <button type="button" className={styles.skrijGumb} data-glavni onClick={stop}>Ustavi</button>
+          <button type="button" className={styles.skrijGumb} onClick={() => setTimerSkrit(false)}>{L('Pokaži', 'Show')}</button>
+          <button type="button" className={styles.skrijGumb} data-glavni onClick={stop}>{L('Ustavi', 'Stop')}</button>
         </div> : running ? <div className={styles.running}>
           <TimerValovi className={styles.valovi} />
-          <span><small>TEČE ZDAJ</small><strong>{running.projectName}</strong><em>{running.serviceName || 'Brez oznake storitve'}</em></span>
+          <span><small>{L('TEČE ZDAJ', 'RUNNING NOW')}</small><strong>{running.projectName}</strong><em>{running.serviceName || L('Brez oznake storitve', 'No service label')}</em></span>
           {/* ura + "skrij" v isti vrstici: ko delaš, ti velika števka pred očmi moti */}
           <div className={styles.uraVrstica}>
             <b>{String(Math.floor(elapsed / 3600)).padStart(2, '0')}:{String(Math.floor(elapsed / 60) % 60).padStart(2, '0')}:{String(elapsed % 60).padStart(2, '0')}</b>
             {/* samo oko — merjenje tece naprej, skrije se le prikaz */}
             <button type="button" className={styles.okoGumb} onClick={() => setTimerSkrit(true)}
-              aria-label="Skrij štoparico" title="Skrij prikaz — merjenje teče naprej">
+              aria-label={L('Skrij štoparico', 'Hide timer')} title={L('Skrij prikaz — merjenje teče naprej', 'Hide the display — timing keeps running')}>
               <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6Z" /><circle cx="12" cy="12" r="2.6" /><path d="m4 20 16-16" />
               </svg>
@@ -855,65 +863,65 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
           <div className={styles.glavnaVrsta}>
             <button type="button" onClick={stop}>
               <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2.4" /></svg>
-              Ustavi in shrani
+              {L('Ustavi in shrani', 'Stop and save')}
             </button>
             <button type="button" className={styles.pavzaGumb} onClick={preklopiPavzo}
-              aria-label={merjenje?.pavza ? 'Nadaljuj merjenje' : 'Pavza'}
-              title={merjenje?.pavza ? 'Nadaljuj' : 'Pavza'}>
+              aria-label={merjenje?.pavza ? L('Nadaljuj merjenje', 'Resume timing') : L('Pavza', 'Pause')}
+              title={merjenje?.pavza ? L('Nadaljuj', 'Resume') : L('Pavza', 'Pause')}>
               {merjenje?.pavza
                 ? <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>
                 : <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><rect x="7" y="5.5" width="3.6" height="13" rx="1.1" /><rect x="13.4" y="5.5" width="3.6" height="13" rx="1.1" /></svg>}
             </button>
           </div>
         </div> : <form className={styles.timerForm} onSubmit={start}>
-          <label><span>Projekt ali stranka</span><input name="project" required placeholder="npr. Nova identiteta" /></label>
-          <label><span>Storitev</span><input name="service" placeholder="npr. oblikovanje logotipa" /></label>
-          <label><span>Vrednost tega dela</span><input name="amount" type="number" min="0" step="10" placeholder="Določiš lahko tudi ob zaključku" /></label>
-          <label><span>Obseg</span><select name="scope"><option value="included">Vključeno v dogovor</option><option value="extra">Dodatno delo</option></select></label>
-          <button type="submit">Začni meriti</button>
+          <label><span>{L('Projekt ali stranka', 'Project or client')}</span><input name="project" required placeholder={L('npr. Nova identiteta', 'e.g. New identity')} /></label>
+          <label><span>{L('Storitev', 'Service')}</span><input name="service" placeholder={L('npr. oblikovanje logotipa', 'e.g. logo design')} /></label>
+          <label><span>{L('Vrednost tega dela', 'Value of this work')}</span><input name="amount" type="number" min="0" step="10" placeholder={L('Določiš lahko tudi ob zaključku', 'You can also set this when you finish')} /></label>
+          <label><span>{L('Obseg', 'Scope')}</span><select name="scope"><option value="included">{L('Vključeno v dogovor', 'Included in the agreement')}</option><option value="extra">{L('Dodatno delo', 'Extra work')}</option></select></label>
+          <button type="submit">{L('Začni meriti', 'Start timing')}</button>
           {/* ure, ki si jih zapisala drugam — dodaj jih na poljuben (tudi pretekli) dan.
               Naslov je besedilo, gumb ostane kratek (prej je bil cel stavek na gumbu). */}
           <div className={styles.rocniVrstica}>
-            <span>Nisi merila?</span>
+            <span>{L('Nisi merila?', 'Did not track it?')}</span>
             <button type="button" className={styles.rocniGumb} onClick={() => { setRocniOdprt(v => !v); pripraviVnos(danesISO(), 1, 0, 0); }}>
-              {rocniOdprt ? 'Prekliči' : 'Vpiši ročno'}
+              {rocniOdprt ? L('Prekliči', 'Cancel') : L('Vpiši ročno', 'Enter manually')}
             </button>
           </div>
         </form>}
 
         {rocniOdprt && !running && !pending && (
           <form className={styles.timerForm} onSubmit={dodajRocno}>
-            <div className={styles.reviewTitle}><strong>Vpiši ure za nazaj</strong><span>Za dan, ko si delala, a nisi merila.</span></div>
+            <div className={styles.reviewTitle}><strong>{L('Vpiši ure za nazaj', 'Add hours after the fact')}</strong><span>{L('Za dan, ko si delala, a nisi merila.', 'For a day you worked but did not track.')}</span></div>
             {poljeDan('dan', danesISO())}
             {poljeOdDo()}
-            <label><span>Projekt ali stranka</span><input name="project" required placeholder="npr. Nova identiteta" /></label>
-            <label><span>Storitev</span><input name="service" placeholder="npr. oblikovanje logotipa" /></label>
-            <label><span>Ure</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
-            <label><span>Minute</span><input name="min" type="number" min="0" max="59" step="5" value={minVnos} onChange={e => setMinVnos(e.target.value)} /></label>
+            <label><span>{L('Projekt ali stranka', 'Project or client')}</span><input name="project" required placeholder={L('npr. Nova identiteta', 'e.g. New identity')} /></label>
+            <label><span>{L('Storitev', 'Service')}</span><input name="service" placeholder={L('npr. oblikovanje logotipa', 'e.g. logo design')} /></label>
+            <label><span>{L('Ure', 'Hours')}</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
+            <label><span>{L('Minute', 'Minutes')}</span><input name="min" type="number" min="0" max="59" step="5" value={minVnos} onChange={e => setMinVnos(e.target.value)} /></label>
             {poljeZnesek()}
-            <label><span>Obseg</span><select name="scope"><option value="included">Vključeno v dogovor</option><option value="extra">Dodatno delo</option></select></label>
-            <label className={styles.notes}><span>Kaj si delala? <small>ni obvezno</small></span><textarea name="note" rows={2} placeholder="npr. tri različice logotipa, sestanek s stranko …" /></label>
-            <button type="submit">Dodaj v dnevnik</button>
+            <label><span>{L('Obseg', 'Scope')}</span><select name="scope"><option value="included">{L('Vključeno v dogovor', 'Included in the agreement')}</option><option value="extra">{L('Dodatno delo', 'Extra work')}</option></select></label>
+            <label className={styles.notes}><span>{L('Kaj si delala?', 'What did you work on?')} <small>{L('ni obvezno', 'optional')}</small></span><textarea name="note" rows={2} placeholder={L('npr. tri različice logotipa, sestanek s stranko …', 'e.g. three logo variants, client meeting …')} /></label>
+            <button type="submit">{L('Dodaj v dnevnik', 'Add to log')}</button>
           </form>
         )}
 
         {urejam && (
           <form className={styles.timerForm} onSubmit={shraniUrejanje}>
-            <div className={styles.reviewTitle}><strong>Uredi vnos</strong><span>{urejam.projectName}</span></div>
+            <div className={styles.reviewTitle}><strong>{L('Uredi vnos', 'Edit entry')}</strong><span>{urejam.projectName}</span></div>
             {poljeDan('dan', urejam.startedAt.slice(0, 10))}
             {poljeOdDo()}
-            <label><span>Projekt ali stranka</span><input name="project" defaultValue={urejam.projectName} /></label>
-            <label><span>Storitev</span><input name="service" defaultValue={urejam.serviceName} /></label>
-            <label><span>Ure</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
-            <label><span>Minute</span><input name="min" type="number" min="0" max="59" step="1" value={minVnos} onChange={e => setMinVnos(e.target.value)} /></label>
+            <label><span>{L('Projekt ali stranka', 'Project or client')}</span><input name="project" defaultValue={urejam.projectName} /></label>
+            <label><span>{L('Storitev', 'Service')}</span><input name="service" defaultValue={urejam.serviceName} /></label>
+            <label><span>{L('Ure', 'Hours')}</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
+            <label><span>{L('Minute', 'Minutes')}</span><input name="min" type="number" min="0" max="59" step="1" value={minVnos} onChange={e => setMinVnos(e.target.value)} /></label>
             {poljeZnesek()}
-            <label><span>Obseg</span><select name="scope" defaultValue={urejam.scopeStatus}><option value="included">Vključeno v dogovor</option><option value="extra">Dodatno delo</option></select></label>
-            <label className={styles.notes}><span>Kaj si delala? <small>ni obvezno</small></span><textarea name="note" rows={2} defaultValue={urejam.note || ''} placeholder="npr. tri različice logotipa, sestanek s stranko …" /></label>
-            <button type="submit">Shrani spremembe</button>
-            <button type="button" className={styles.linkGumb} onClick={() => setUrejam(null)}>Prekliči</button>
+            <label><span>{L('Obseg', 'Scope')}</span><select name="scope" defaultValue={urejam.scopeStatus}><option value="included">{L('Vključeno v dogovor', 'Included in the agreement')}</option><option value="extra">{L('Dodatno delo', 'Extra work')}</option></select></label>
+            <label className={styles.notes}><span>{L('Kaj si delala?', 'What did you work on?')} <small>{L('ni obvezno', 'optional')}</small></span><textarea name="note" rows={2} defaultValue={urejam.note || ''} placeholder={L('npr. tri različice logotipa, sestanek s stranko …', 'e.g. three logo variants, client meeting …')} /></label>
+            <button type="submit">{L('Shrani spremembe', 'Save changes')}</button>
+            <button type="button" className={styles.linkGumb} onClick={() => setUrejam(null)}>{L('Prekliči', 'Cancel')}</button>
           </form>
         )}
-        <div className={styles.ethics}><strong>Čas meri donosnost projekta, ne tvoje vrednosti.</strong><span>Vnosi ostanejo v tvojem računu in se ne delijo s strankami ali vodji.</span></div>
+        <div className={styles.ethics}><strong>{L('Čas meri donosnost projekta, ne tvoje vrednosti.', 'Time measures a project’s profitability, not your worth.')}</strong><span>{L('Vnosi ostanejo v tvojem računu in se ne delijo s strankami ali vodji.', 'Entries stay in your account and are not shared with clients or managers.')}</span></div>
       </section>
     </div>
 
@@ -921,98 +929,98 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
         .casPogled v CSS) — meri cel delovnik po dnevih in ga zbira v mesecno
         tabelo, stoparica meri en projekt. Obe sta vedno vidni. */}
     <section className={`${styles.timer} ${styles.evidenca}`}>
-      <header><p>PRISOTNOST</p><h2>Mesečna evidenca delovnega časa</h2><span>Prihod, odhod, malica in vrsta dneva — mesečni pregled in napredek proti cilju se izračunata sama.</span></header>
+      <header><p>{L('PRISOTNOST', 'ATTENDANCE')}</p><h2>{L('Mesečna evidenca delovnega časa', 'Monthly work-time record')}</h2><span>{L('Prihod, odhod, malica in vrsta dneva — mesečni pregled in napredek proti cilju se izračunata sama.', 'Arrival, departure, break and day type — the monthly overview and progress toward the goal are calculated for you.')}</span></header>
 
       <div className={styles.prisotnost}>
         <label className={styles.danPolje}>
-          <span>Dan vnosa</span>
+          <span>{L('Dan vnosa', 'Entry day')}</span>
           <span className={styles.danVrstica}>
             <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
               <rect x="3" y="5" width="18" height="16" rx="2.5" /><path d="M3 10h18M8 3v4M16 3v4" />
             </svg>
             <input type="date" value={prisotnostDan} onChange={e => odpriPrisotnostDan(e.target.value)} />
           </span>
-          <small>{new Date(`${prisotnostDan}T12:00:00`).toLocaleDateString('sl-SI', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</small>
+          <small>{new Date(`${prisotnostDan}T12:00:00`).toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</small>
         </label>
 
         <label className={styles.prisotnostCilj}>
-          <span>Cilj delovnika (ur)</span>
+          <span>{L('Cilj delovnika (ur)', 'Workday goal (hours)')}</span>
           <input type="number" min="1" max="24" step="0.5" value={delovnikUre}
             onChange={e => shraniDelovnik(Number(e.target.value))} />
         </label>
 
         <label>
-          <span>Prihod</span>
+          <span>{L('Prihod', 'Arrival')}</span>
           <div className={styles.prisotnostVrstica}>
             <input type="time" step="60" value={prihodCas} onChange={e => setPrihodCas(e.target.value)} />
-            <button type="button" className={styles.rocniGumb} onClick={() => setPrihodCas(zdajHHMM())}>Prišel/-a</button>
+            <button type="button" className={styles.rocniGumb} onClick={() => setPrihodCas(zdajHHMM())}>{L('Prišel/-a', 'Arrived')}</button>
           </div>
         </label>
-        <label><span>Malica (min)</span><input type="number" min="0" step="5" placeholder="30" value={odmorCas} onChange={e => setOdmorCas(e.target.value)} /></label>
+        <label><span>{L('Malica (min)', 'Break (min)')}</span><input type="number" min="0" step="5" placeholder="30" value={odmorCas} onChange={e => setOdmorCas(e.target.value)} /></label>
         <label>
-          <span>Odhod</span>
+          <span>{L('Odhod', 'Departure')}</span>
           <div className={styles.prisotnostVrstica}>
             <input type="time" step="60" value={odhodCas} onChange={e => setOdhodCas(e.target.value)} />
-            <button type="button" className={styles.rocniGumb} onClick={() => setOdhodCas(zdajHHMM())}>Odšel/-a</button>
+            <button type="button" className={styles.rocniGumb} onClick={() => setOdhodCas(zdajHHMM())}>{L('Odšel/-a', 'Left')}</button>
           </div>
         </label>
         <label>
-          <span>Vrsta</span>
+          <span>{L('Vrsta', 'Type')}</span>
           <select value={vrstaVnos} onChange={e => setVrstaVnos(e.target.value as VrstaPrisotnosti)}>
-            <option value="redno">Redno</option>
-            <option value="sluzbena">Službena pot</option>
-            <option value="bolniska">Bolniška</option>
-            <option value="zasebni">Zasebni izhod</option>
-            <option value="dopust">Dopust</option>
-            <option value="praznik">Praznik</option>
+            <option value="redno">{L('Redno', 'Regular')}</option>
+            <option value="sluzbena">{L('Službena pot', 'Business trip')}</option>
+            <option value="bolniska">{L('Bolniška', 'Sick leave')}</option>
+            <option value="zasebni">{L('Zasebni izhod', 'Personal leave')}</option>
+            <option value="dopust">{L('Dopust', 'Vacation')}</option>
+            <option value="praznik">{L('Praznik', 'Holiday')}</option>
           </select>
         </label>
         {!brezUrVrsta(vrstaVnos) && (
           <label>
-            <span>Kraj dela</span>
+            <span>{L('Kraj dela', 'Work location')}</span>
             <select value={krajVnos} onChange={e => setKrajVnos(e.target.value as KrajDela)}>
-              <option value="pisarna">Na podjetju</option>
-              <option value="doma">Delo od doma</option>
+              <option value="pisarna">{L('Na podjetju', 'At the office')}</option>
+              <option value="doma">{L('Delo od doma', 'Working from home')}</option>
             </select>
           </label>
         )}
-        <label className={styles.komentarPolje}><span>Komentar <small>ni obvezno</small></span><input type="text" placeholder="npr. pri zdravniku, sestanek …" value={opombaVnos} onChange={e => setOpombaVnos(e.target.value)} /></label>
+        <label className={styles.komentarPolje}><span>{L('Komentar', 'Comment')} <small>{L('ni obvezno', 'optional')}</small></span><input type="text" placeholder={L('npr. pri zdravniku, sestanek …', 'e.g. at the doctor, meeting …')} value={opombaVnos} onChange={e => setOpombaVnos(e.target.value)} /></label>
 
         <p className={styles.prisotnostIzpis}>
           {brezUrVrsta(vrstaVnos)
-            ? <span>{VRSTA_OZNAKA[vrstaVnos]} — cel dan se šteje kot odsotnost, brez izračuna ur.</span>
+            ? <span>{vrstaLabel(vrstaVnos)} — {L('cel dan se šteje kot odsotnost, brez izračuna ur.', 'the whole day counts as absence, with no hours calculated.')}</span>
             : !prihodCas || !odhodCas
-              ? <span>Vpiši prihod in odhod, pa ti povem, koliko ur ostane do cilja.</span>
-              : <>Opravljeno <strong>{izpisMinut(prisotnostOpravljeno)}</strong> · {prisotnostOstane >= 0
-                  ? <>ostane <strong>{izpisMinut(prisotnostOstane)}</strong></>
-                  : <>+{izpisMinut(-prisotnostOstane)} viška</>}</>}
+              ? <span>{L('Vpiši prihod in odhod, pa ti povem, koliko ur ostane do cilja.', 'Enter arrival and departure and I will tell you how many hours are left to the goal.')}</span>
+              : <>{L('Opravljeno', 'Done')} <strong>{izpisMinut(prisotnostOpravljeno)}</strong> · {prisotnostOstane >= 0
+                  ? <>{L('ostane', 'remaining')} <strong>{izpisMinut(prisotnostOstane)}</strong></>
+                  : <>+{izpisMinut(-prisotnostOstane)} {L('viška', 'over')}</>}</>}
         </p>
-        <button type="button" onClick={shraniPrisotnost} disabled={samoOgled}>Shrani v dnevnik</button>
-        {samoOgled && <small className={styles.opomba}>Urejanje ni na voljo v predogledu (demo). Prijavi se v svoj račun.</small>}
+        <button type="button" onClick={shraniPrisotnost} disabled={samoOgled}>{L('Shrani v dnevnik', 'Save to log')}</button>
+        {samoOgled && <small className={styles.opomba}>{L('Urejanje ni na voljo v predogledu (demo). Prijavi se v svoj račun.', 'Editing is not available in the preview (demo). Sign in to your account.')}</small>}
       </div>
 
       <div className={styles.mesecNav}>
-        <button type="button" onClick={() => setMesec(premikMeseca(mesec, -1))} aria-label="Prejšnji mesec">‹</button>
+        <button type="button" onClick={() => setMesec(premikMeseca(mesec, -1))} aria-label={L('Prejšnji mesec', 'Previous month')}>‹</button>
         <strong>{mesecOznaka(mesec)}</strong>
-        <button type="button" onClick={() => setMesec(premikMeseca(mesec, 1))} aria-label="Naslednji mesec">›</button>
+        <button type="button" onClick={() => setMesec(premikMeseca(mesec, 1))} aria-label={L('Naslednji mesec', 'Next month')}>›</button>
       </div>
 
       {prisotnostiMeseca.length > 0 && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '-.2rem 0 .55rem' }}>
           <button type="button" onClick={izvoziHrCsv}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', border: '1px solid oklch(86% .012 87)', background: '#fff', borderRadius: 999, padding: '.4rem .9rem', fontSize: '.76rem', fontWeight: 700, color: 'var(--ink)', cursor: 'pointer' }}
-            title="Prenesi mesečno evidenco kot CSV za kadrovsko / plače">
+            title={L('Prenesi mesečno evidenco kot CSV za kadrovsko / plače', 'Download the monthly record as CSV for HR / payroll')}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M8 11l4 4 4-4M5 21h14" /></svg>
-            Izvozi za HR (CSV)
+            {L('Izvozi za HR (CSV)', 'Export for HR (CSV)')}
           </button>
         </div>
       )}
 
       <div className={styles.mesecTabelaOvoj}>
         <table className={styles.mesecTabela}>
-          <thead><tr><th>Dan</th><th>Prihod</th><th>Malica</th><th>Odhod</th><th>Vrsta</th><th>Ure</th><th aria-hidden="true" /></tr></thead>
+          <thead><tr><th>{L('Dan', 'Day')}</th><th>{L('Prihod', 'Arrival')}</th><th>{L('Malica', 'Break')}</th><th>{L('Odhod', 'Departure')}</th><th>{L('Vrsta', 'Type')}</th><th>{L('Ure', 'Hours')}</th><th aria-hidden="true" /></tr></thead>
           <tbody>
-            {!prisotnostiMeseca.length && <tr><td colSpan={7} className={styles.mesecPrazno}>V tem mesecu še ni vnosov.</td></tr>}
+            {!prisotnostiMeseca.length && <tr><td colSpan={7} className={styles.mesecPrazno}>{L('V tem mesecu še ni vnosov.', 'No entries this month yet.')}</td></tr>}
             {prisotnostiMeseca.map(p => {
               const v = vrstaZapisa(p);
               const ure = uraZapisa(p);
@@ -1022,12 +1030,12 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
                   <td>{p.prihod || '—'}</td>
                   <td>{p.odmorMin ? `${p.odmorMin} min` : '—'}</td>
                   <td>{p.odhod || '—'}</td>
-                  <td><span className={styles.vrstaPilula} data-vrsta={v}>{VRSTA_OZNAKA[v]}</span>{!brezUrVrsta(v) && p.kraj && <span className={styles.krajPilula} data-kraj={p.kraj} title={KRAJ_OZNAKA[p.kraj]}>{p.kraj === 'doma' ? 'Doma' : 'Podjetje'}</span>}</td>
+                  <td><span className={styles.vrstaPilula} data-vrsta={v}>{vrstaLabel(v)}</span>{!brezUrVrsta(v) && p.kraj && <span className={styles.krajPilula} data-kraj={p.kraj} title={krajLabel(p.kraj)}>{p.kraj === 'doma' ? L('Doma', 'Home') : L('Podjetje', 'Office')}</span>}</td>
                   <td className={styles.mesecUre}>{ure == null ? '—' : izpisMinut(ure)}</td>
                   <td>
                     {!samoOgled && <button type="button"
-                      onClick={() => { if (confirm(`Izbrišem vnos za ${kratekDan(p.datum)}?`)) izbrisiPrisotnost(p.id); }}
-                      aria-label={`Izbriši vnos prisotnosti za ${p.datum}`}>×</button>}
+                      onClick={() => { if (confirm(L(`Izbrišem vnos za ${kratekDan(p.datum)}?`, `Delete the entry for ${kratekDan(p.datum)}?`))) izbrisiPrisotnost(p.id); }}
+                      aria-label={L(`Izbriši vnos prisotnosti za ${p.datum}`, `Delete attendance entry for ${p.datum}`)}>×</button>}
                   </td>
                 </tr>
               );
@@ -1038,22 +1046,22 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
 
       <div className={styles.mesecPovzetek}>
         <div className={styles.mesecPovzetekStevec}>
-          <span>opravljeno v {mesecOznaka(mesec).toLowerCase()}</span>
+          <span>{L(`opravljeno v ${mesecOznaka(mesec).toLowerCase()}`, `done in ${mesecOznaka(mesec).toLowerCase()}`)}</span>
           <strong>{izpisMinut(mesecMinute)}</strong>
         </div>
         <div className={styles.mesecTrak}><div className={styles.mesecTrakZapolnjeno} style={{ width: `${mesecNapredek}%` }} /></div>
         <span className={styles.mesecCiljIzpis}>
-          cilj {Math.round(mesecCiljUre)} h · {mesecOstaneMinut >= 0
-            ? `ostane ${izpisMinut(mesecOstaneMinut)}`
-            : `+${izpisMinut(-mesecOstaneMinut)} viška`}
+          {L('cilj', 'goal')} {Math.round(mesecCiljUre)} h · {mesecOstaneMinut >= 0
+            ? L(`ostane ${izpisMinut(mesecOstaneMinut)}`, `${izpisMinut(mesecOstaneMinut)} remaining`)
+            : L(`+${izpisMinut(-mesecOstaneMinut)} viška`, `+${izpisMinut(-mesecOstaneMinut)} over`)}
         </span>
       </div>
     </section>
 
     <section className={styles.history}>
       {omejeno
-        ? <header><div><p>03 · DANES</p><h2>Kaj si danes izmerila.</h2></div><span>{duration(dnevnaVsota)} danes</span></header>
-        : <header><div><p>03 · ZASEBNI DNEVNIK</p><h2>Izkušnje, ki izboljšajo naslednjo ceno.</h2></div><span>{duration(trackedMinutes)} skupaj</span></header>}
+        ? <header><div><p>{L('03 · DANES', '03 · TODAY')}</p><h2>{L('Kaj si danes izmerila.', 'What you tracked today.')}</h2></div><span>{duration(dnevnaVsota)} {L('danes', 'today')}</span></header>
+        : <header><div><p>{L('03 · ZASEBNI DNEVNIK', '03 · PRIVATE LOG')}</p><h2>{L('Izkušnje, ki izboljšajo naslednjo ceno.', 'Lessons that improve your next price.')}</h2></div><span>{duration(trackedMinutes)} {L('skupaj', 'total')}</span></header>}
 
       {/* iskanje + preklop pogleda: "po dnevih" med delom, "po projektih" ko te
           nekdo cez pol leta vpraša, koliko ur je šlo v dolocen projekt */}
@@ -1061,22 +1069,22 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
         <span className={styles.isciOvoj}>
           <svg className={styles.isciIkona} viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
           <input type="search" value={iskanje} onChange={e => setIskanje(e.target.value)}
-            placeholder="Išči projekt ali storitev…" aria-label="Išči po dnevniku" className={styles.isci} />
+            placeholder={L('Išči projekt ali storitev…', 'Search project or service…')} aria-label={L('Išči po dnevniku', 'Search the log')} className={styles.isci} />
         </span>
-        <div className={styles.preklop} role="group" aria-label="Pogled dnevnika">
-          <button type="button" data-izbran={dnevnikPogled === 'dnevi'} onClick={() => setDnevnikPogled('dnevi')}>Po dnevih</button>
-          <button type="button" data-izbran={dnevnikPogled === 'projekti'} onClick={() => setDnevnikPogled('projekti')}>Po projektih</button>
+        <div className={styles.preklop} role="group" aria-label={L('Pogled dnevnika', 'Log view')}>
+          <button type="button" data-izbran={dnevnikPogled === 'dnevi'} onClick={() => setDnevnikPogled('dnevi')}>{L('Po dnevih', 'By day')}</button>
+          <button type="button" data-izbran={dnevnikPogled === 'projekti'} onClick={() => setDnevnikPogled('projekti')}>{L('Po projektih', 'By project')}</button>
         </div>
         {/* na telefonu samo ikona — besedilo bi vrstico prelomilo */}
-        <button type="button" className={styles.izvozGumb} onClick={izvozi} aria-label="Izvozi dnevnik" title="Prenesi kot CSV za Excel ali Numbers">
+        <button type="button" className={styles.izvozGumb} onClick={izvozi} aria-label={L('Izvozi dnevnik', 'Export log')} title={L('Prenesi kot CSV za Excel ali Numbers', 'Download as CSV for Excel or Numbers')}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M12 3v12M8 11l4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
           </svg>
-          <span>Izvozi</span>
+          <span>{L('Izvozi', 'Export')}</span>
         </button>
       </div>}
 
-      {!!entries.length && !najdeni.length && <div className={styles.empty}>Za »{iskanje}« ni vnosov.</div>}
+      {!!entries.length && !najdeni.length && <div className={styles.empty}>{L(`Za »${iskanje}« ni vnosov.`, `No entries for “${iskanje}”.`)}</div>}
 
       {!omejeno && dnevnikPogled === 'projekti' && poProjektih.map(p => {
         const odprt = razprti.includes(p.k);
@@ -1087,12 +1095,12 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
               <span className={styles.puscica} data-odprt={odprt} aria-hidden="true">›</span>
               <span>
                 <strong>{p.ime}</strong>
-                <small>{p.storitve.join(', ') || 'brez storitve'} · {p.vnosi.length} {vnosiSklon(p.vnosi.length)} ·{kratkiDatum(p.od)}{p.od.slice(0, 10) !== p.do.slice(0, 10) ? ` – ${kratkiDatum(p.do)}` : ''}</small>
+                <small>{p.storitve.join(', ') || L('brez storitve', 'no service')} · {p.vnosi.length} {L(vnosiSklon(p.vnosi.length), p.vnosi.length === 1 ? 'entry' : 'entries')} ·{kratkiDatum(p.od)}{p.od.slice(0, 10) !== p.do.slice(0, 10) ? ` – ${kratkiDatum(p.do)}` : ''}</small>
               </span>
             </button>
             <span className={styles.projektUre}>
               <strong>{duration(p.minute)}</strong>
-              <small>{p.urna ? `${money(p.urna)}/h` : 'brez vrednosti'}</small>
+              <small>{p.urna ? `${money(p.urna)}/h` : L('brez vrednosti', 'no value')}</small>
             </span>
           </div>
           {/* razprto: po dnevih, vsak dan s svojo vsoto, znotraj posamezna merjenja */}
@@ -1101,16 +1109,16 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
               .sort((a, b) => a.startedAt.localeCompare(b.startedAt));
             return <div key={dan} className={styles.projektDan}>
               <div className={styles.projektDanGlava}>
-                <span>{new Date(`${dan}T12:00:00`).toLocaleDateString('sl-SI', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                <span>{new Date(`${dan}T12:00:00`).toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
                 <b>{duration(dnevni.reduce((s, x) => s + x.durationMinutes, 0))}</b>
               </div>
               <ul className={styles.merjenja}>
                 {dnevni.map(x => (
                   <li key={x.id}>
-                    <span>{razpon(x) || 'brez ure'}</span>
+                    <span>{razpon(x) || L('brez ure', 'no time')}</span>
                     <b>{duration(x.durationMinutes)}</b>
-                    <button type="button" onClick={() => odpriUrejanje(x)}>Uredi</button>
-                    <button type="button" onClick={() => { if (confirm(`Izbrišem merjenje ${razpon(x) || duration(x.durationMinutes)}?`)) remove(x.id); }} aria-label="Izbriši merjenje">×</button>
+                    <button type="button" onClick={() => odpriUrejanje(x)}>{L('Uredi', 'Edit')}</button>
+                    <button type="button" onClick={() => { if (confirm(L(`Izbrišem merjenje ${razpon(x) || duration(x.durationMinutes)}?`, `Delete the entry ${razpon(x) || duration(x.durationMinutes)}?`))) remove(x.id); }} aria-label={L('Izbriši merjenje', 'Delete entry')}>×</button>
                   </li>
                 ))}
               </ul>
@@ -1119,11 +1127,11 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
         </div>;
       })}
 
-      {(omejeno || dnevnikPogled === 'dnevi') && (!poDnevihPrikaz.length ? <div className={styles.empty}>{omejeno ? 'Danes še ni vnosov. Zaženi štoparico ali vpiši ure ročno.' : 'Po prvem zaključenem merjenju boš tukaj videla dejansko urno vrednost projekta.'}</div> : poDnevihPrikaz.map(([dan, dnevni]) => (
+      {(omejeno || dnevnikPogled === 'dnevi') && (!poDnevihPrikaz.length ? <div className={styles.empty}>{omejeno ? L('Danes še ni vnosov. Zaženi štoparico ali vpiši ure ročno.', 'No entries today yet. Start the timer or enter hours manually.') : L('Po prvem zaključenem merjenju boš tukaj videla dejansko urno vrednost projekta.', 'After your first completed entry you will see the project’s actual hourly value here.')}</div> : poDnevihPrikaz.map(([dan, dnevni]) => (
         <div key={dan} className={styles.dan}>
           {/* dnevni naslov s sestevkom — pregled po dnevih */}
           <div className={styles.danGlava}>
-            <strong>{new Date(`${dan}T12:00:00`).toLocaleDateString('sl-SI', { weekday: 'long', day: 'numeric', month: 'long' })}</strong>
+            <strong>{new Date(`${dan}T12:00:00`).toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long' })}</strong>
             <span>{duration(dnevni.reduce((s, x) => s + x.durationMinutes, 0))}</span>
           </div>
           {zdruziPoProjektu(dnevni).map(g => {
@@ -1135,28 +1143,28 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             return <article key={g.kljuc}>
               <div>
                 <strong>{g.zadnji.projectName}</strong>
-                <span>{g.storitve.join(', ') || 'Brez storitve'}{dnevniRazpon && ` · ${dnevniRazpon}`}</span>
+                <span>{g.storitve.join(', ') || L('Brez storitve', 'No service')}{dnevniRazpon && ` · ${dnevniRazpon}`}</span>
                 {/* vsako merjenje posebej — ce si ta dan merila veckrat */}
                 {g.zaporedje.length > 1 && <ul className={styles.merjenja}>
                   {g.zaporedje.map(x => (
                     <li key={x.id}>
-                      <span>{razpon(x) || 'brez ure'}</span>
+                      <span>{razpon(x) || L('brez ure', 'no time')}</span>
                       <b>{duration(x.durationMinutes)}</b>
-                      <button type="button" onClick={() => odpriUrejanje(x)}>Uredi</button>
-                      <button type="button" onClick={() => { if (confirm(`Izbrišem merjenje ${razpon(x) || duration(x.durationMinutes)}?`)) remove(x.id); }} aria-label="Izbriši merjenje">×</button>
+                      <button type="button" onClick={() => odpriUrejanje(x)}>{L('Uredi', 'Edit')}</button>
+                      <button type="button" onClick={() => { if (confirm(L(`Izbrišem merjenje ${razpon(x) || duration(x.durationMinutes)}?`, `Delete the entry ${razpon(x) || duration(x.durationMinutes)}?`))) remove(x.id); }} aria-label={L('Izbriši merjenje', 'Delete entry')}>×</button>
                     </li>
                   ))}
                 </ul>}
                 {g.zaporedje.map(x => x.note).filter(Boolean).map((n, i) => <small key={i} className={styles.opomba}>{n}</small>)}
               </div>
               <b>{duration(g.minute)}</b>
-              <b>{urna ? `${money(urna)}/h` : 'brez vrednosti'}</b>
-              <em data-extra={g.dodatno}>{g.dodatno ? 'Dodatno delo' : 'Vključeno'}</em>
+              <b>{urna ? `${money(urna)}/h` : L('brez vrednosti', 'no value')}</b>
+              <em data-extra={g.dodatno}>{g.dodatno ? L('Dodatno delo', 'Extra work') : L('Vključeno', 'Included')}</em>
               <div className={styles.akcije}>
-                <button type="button" className={styles.vrsticaGumb} data-glavni onClick={() => nadaljuj(g.zadnji)} disabled={!!running || !!pending} title={running || pending ? 'Najprej zaključi tekoče merjenje' : 'Začni novo merjenje na tem projektu'}>Nadaljuj</button>
+                <button type="button" className={styles.vrsticaGumb} data-glavni onClick={() => nadaljuj(g.zadnji)} disabled={!!running || !!pending} title={running || pending ? L('Najprej zaključi tekoče merjenje', 'Finish the current entry first') : L('Začni novo merjenje na tem projektu', 'Start a new entry on this project')}>{L('Nadaljuj', 'Continue')}</button>
                 {g.zaporedje.length === 1 && <>
-                  <button type="button" className={styles.vrsticaGumb} onClick={() => odpriUrejanje(g.zadnji)}>Uredi</button>
-                  <button type="button" className={styles.izbrisi} onClick={() => { if (confirm(`Izbrišem vnos »${g.zadnji.projectName}«?`)) remove(g.zadnji.id); }} aria-label={`Izbriši ${g.zadnji.projectName}`} title="Izbriši vnos"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M10 4h4M9 7v12M15 7v12M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" /></svg></button>
+                  <button type="button" className={styles.vrsticaGumb} onClick={() => odpriUrejanje(g.zadnji)}>{L('Uredi', 'Edit')}</button>
+                  <button type="button" className={styles.izbrisi} onClick={() => { if (confirm(L(`Izbrišem vnos »${g.zadnji.projectName}«?`, `Delete the entry “${g.zadnji.projectName}”?`))) remove(g.zadnji.id); }} aria-label={L(`Izbriši ${g.zadnji.projectName}`, `Delete ${g.zadnji.projectName}`)} title={L('Izbriši vnos', 'Delete entry')}><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M10 4h4M9 7v12M15 7v12M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" /></svg></button>
                 </>}
               </div>
             </article>;
@@ -1172,8 +1180,8 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
         <span className={styles.tecePika} aria-hidden="true" />
         <strong>{running.projectName}</strong>
         <b>{String(Math.floor(elapsed / 3600)).padStart(2, '0')}:{String(Math.floor(elapsed / 60) % 60).padStart(2, '0')}:{String(elapsed % 60).padStart(2, '0')}</b>
-        <button type="button" className={styles.skrijGumb} onClick={() => document.getElementById('timer')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>Na vrh</button>
-        <button type="button" className={styles.skrijGumb} data-glavni onClick={stop}>Ustavi</button>
+        <button type="button" className={styles.skrijGumb} onClick={() => document.getElementById('timer')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>{L('Na vrh', 'To top')}</button>
+        <button type="button" className={styles.skrijGumb} data-glavni onClick={stop}>{L('Ustavi', 'Stop')}</button>
       </div>,
       document.body,
     )}
