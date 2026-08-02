@@ -1077,7 +1077,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         @keyframes rwStran{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
         @media (prefers-reduced-motion:reduce){.rw-sek.rw-stran{animation:none}}
         /* fiksna noga z gumbi — ENAKO kot kalkulator (okrogel Nazaj s puscico + Naprej pilula) */
-        .rw-noga{position:fixed;bottom:0;left:17.5rem;right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,var(--paper) 70%,transparent);z-index:40}
+        .rw-noga{position:fixed;bottom:0;left:17.5rem;right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,#fff 70%,transparent);z-index:40}
         :global(body[data-meni='zaprt']) .rw-noga{left:4.4rem}
         @media (max-width:980px){.rw-noga{left:0}}
         .rw-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.8rem;position:relative}
