@@ -5,11 +5,18 @@ import FlowLanding from '@/components/FlowLanding';
 
 /* Predstavitev celotnega paketa Pinart Flow. Namenjeno domeni
    pinartflow.com/ (glej opombo o preusmeritvi ob deployu). */
-export const metadata: Metadata = {
-  title: 'Pinart Flow — vse tvoje poslovanje na enem mestu',
-  description:
-    'Pinart Flow poveže kalkulator poštenih cen, ponudbe, pogodbe, retainerje, račune, stroške, stranke in cilje v eno delovno okolje za samostojne kreativce. Kalkulator je brezplačen.',
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  return locale === 'en'
+    ? {
+        title: 'Pinart Flow — your whole creative business in one place',
+        description: 'Fair pricing, proposals, contracts, invoices, projects, clients and goals in one workspace for independent creatives. The calculator is free.',
+      }
+    : {
+        title: 'Pinart Flow — vse tvoje poslovanje na enem mestu',
+        description: 'Pinart Flow poveže kalkulator poštenih cen, ponudbe, pogodbe, retainerje, račune, stroške, stranke in cilje v eno delovno okolje za samostojne kreativce. Kalkulator je brezplačen.',
+      };
+}
 
 export default async function FlowPage({
   params,
