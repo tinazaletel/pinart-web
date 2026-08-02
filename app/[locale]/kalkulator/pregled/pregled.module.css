@@ -865,6 +865,17 @@
 .clientFinance + .clientLinki .clientLinkGlava:has(+ .clientEditor) .clientLinkGumb::after {
   content: 'Zapri';
 }
+.shell .clientProfile > header > button,
+.shell .clientProfile .clientLinkGumb,
+.shell .clientProfile .clientLinkBrisi {
+  background: #fff !important;
+}
+.shell .clientProfile > header > button:hover,
+.shell .clientProfile .clientLinkGumb:hover,
+.shell .clientProfile .clientLinkBrisi:hover {
+  background: oklch(96.5% .018 87) !important;
+  color: var(--ink);
+}
 .clientContacts, .clientFinance { display: grid; gap: .5rem; margin-top: 1rem; }
 .clientContacts { grid-template-columns: repeat(2, 1fr); }
 .clientFinance { grid-template-columns: repeat(3, 1fr); }
