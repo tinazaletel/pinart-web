@@ -1,10 +1,27 @@
 /**
- * Root-level not-found — catches URLs outside the [locale] segment.
- * Mirrors the custom Pinart 404 design (same as [locale]/not-found).
+ * Root-level not-found — catches URLs outside the [locale] segment (in Next tudi
+ * vse nepoznane poti). Domena odloči znamko: pinart.si = portfolio 404,
+ * povsod drugod (pinartflow.com, preview, localhost) = Flow 404 (kužek + kabel).
  */
+import { headers } from 'next/headers';
 import Link from 'next/link';
+import Flow404View from '@/components/Flow404View';
 
-export default function RootNotFound() {
+export default async function RootNotFound() {
+  const h = await headers();
+  const host = (h.get('host') || '').toLowerCase();
+  const jePortfolio = /(^|\.)pinart\.si$/.test(host);
+
+  if (!jePortfolio) {
+    return (
+      <html lang="sl">
+        <body style={{ margin: 0, padding: 0 }}>
+          <Flow404View locale="sl" />
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="sl">
       <body style={{ margin: 0, padding: 0, background: '#fcf9f6', color: '#1a1a1a', fontFamily: 'Inter, system-ui, -apple-system, sans-serif' }}>
