@@ -787,10 +787,12 @@
 .clientEditorActions button { min-height: 2.6rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: .65rem; background: transparent; font: 800 .61rem var(--font-sans), sans-serif; cursor: pointer; }
 .clientEditorActions button:last-child { background: var(--ink); color: var(--paper); }
 .clientLayout { display: grid; grid-template-columns: minmax(20rem, .7fr) minmax(28rem, 1.3fr); gap: 1rem; }
-.clientDirectory, .clientProfile { min-height: 32rem; padding: 1rem; border: 1px solid var(--line); border-radius: 1.4rem; background: oklch(98% .008 87 / .92); }
+.clientDirectory, .clientProfile { min-height: 32rem; padding: 1rem; border: 1px solid var(--line); border-radius: 1.4rem; background: #fff; }
 .clientDirectory > header { padding: .4rem .4rem 1rem; }
 .clientDirectory > button { width: 100%; display: grid; grid-template-columns: auto minmax(8rem, 1fr) auto auto; align-items: center; gap: .7rem; min-height: 4.5rem; padding: .65rem .7rem; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
-.clientDirectory > button:hover, .clientDirectory .clientActive { background: linear-gradient(130deg, oklch(95% .04 295), oklch(94% .035 165)); }
+.clientDirectory > button { transition: background-color .16s ease; }
+.clientDirectory > button:hover { background: oklch(98% .008 87); }
+.clientDirectory .clientActive { background: oklch(96.5% .012 87); }
 .clientDirectory strong, .clientDirectory small { display: block; }
 .clientDirectory strong { font-size: .68rem; }
 .clientDirectory small { margin-top: .2rem; color: var(--muted); font-size: .53rem; }
