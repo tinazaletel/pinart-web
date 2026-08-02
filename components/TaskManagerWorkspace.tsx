@@ -5,7 +5,7 @@
    Bodoni, ink, akcent). Lasten prefiksiran <style> blok (tm-), da ne trči s .shell. */
 
 import React, { useState, useEffect } from 'react';
-import { Pause, Play, ChartBar, ChatCircleDots, CaretLeft, CaretRight, Buildings, Circle, CheckCircle, UserPlus, Calendar } from '@phosphor-icons/react';
+import { Pause, Play, ChartBar, ChatCircleDots, Sparkle, UploadSimple, CaretLeft, CaretRight, Buildings, Circle, CheckCircle, UserPlus, Calendar } from '@phosphor-icons/react';
 import {
   Naloga,
   NalogaStolpec,
@@ -1014,33 +1014,18 @@ export default function TaskManagerWorkspace() {
   return (
     <div className="tm">
       <header className="tm-glava">
-        <div>
-          <p className="tm-eyebrow">TASK MANAGER</p>
-          <h1 className="tm-naslov">Naloge.</h1>
-          <p className="tm-podnaslov">Organiziraj projekte in opravila na enem mestu — povleci kartico med stolpci.</p>
-        </div>
-        <div className="tm-glava-akcije">
+        <div className="tm-glava-uvod">
+          <div>
+            <p className="tm-eyebrow">TASK MANAGER</p>
+            <h1 className="tm-naslov">Naloge.</h1>
+            <p className="tm-podnaslov">Organiziraj projekte in opravila na enem mestu — povleci kartico med stolpci.</p>
+          </div>
           <label className="tm-uporabnik">
             <span>Prijavljen</span>
             <select value={trenutniId} onChange={(e) => setTrenutniId(e.target.value)}>
               {sodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime} ({s.vloga.toUpperCase()})</option>)}
             </select>
           </label>
-          {jeVodjaAliAdmin && (
-            <button type="button" className="tm-analitika-gumb" onClick={() => { setAnalitikaSodelavecId(sodelavci[0]?.id || ''); setPrikaziAnalitiko(true); }}>
-              <ChartBar size={15} weight="bold" /> Analitika ekipe
-            </button>
-          )}
-          <button type="button" className="tm-seed-gumb" onClick={nalozirazvojneNaloge} title="Doda pripravljene naloge v task manager (ne prepiše obstoječih, obstoječe dopolni)">
-            + Naloži naloge
-          </button>
-          {seedSporocilo && <span className="tm-seed-sporocilo">{seedSporocilo}</span>}
-          {!samoOgled ? (
-            <button type="button" className="tm-nova" onClick={() => { setPogled('kanban'); setAktivniStolpec('todo'); setPrikaziFormo(true); }}>+ Nova naloga</button>
-          ) : (
-            <p className="tm-demo-namig">Urejanje ni na voljo v predogledu (demo).</p>
-          )}
-          <button type="button" className="tm-seed-gumb tm-seed-gumb-ai" onClick={() => { setPogled('kanban'); setHitroOdprt((o) => !o); }} title="Piši prosto, več nalog naenkrat — zasnova za AI pomoč pri dodajanju"><ChatCircleDots size={15} weight="regular" /> Hitro dodaj več</button>
         </div>
       </header>
 
@@ -1064,6 +1049,23 @@ export default function TaskManagerWorkspace() {
             )}
           </div>
         )}
+        <div className="tm-glava-akcije">
+          {jeVodjaAliAdmin && (
+            <button type="button" className="tm-analitika-gumb" onClick={() => { setAnalitikaSodelavecId(sodelavci[0]?.id || ''); setPrikaziAnalitiko(true); }}>
+              <ChartBar size={16} weight="bold" /> Analitika
+            </button>
+          )}
+          <button type="button" className="tm-seed-gumb tm-orodje-ikona" onClick={nalozirazvojneNaloge} aria-label="Naloži pripravljene naloge" title="Naloži pripravljene naloge (obstoječih ne prepiše)">
+            <UploadSimple size={18} weight="bold" />
+          </button>
+          {seedSporocilo && <span className="tm-seed-sporocilo">{seedSporocilo}</span>}
+          {!samoOgled ? (
+            <button type="button" className="tm-nova" onClick={() => { setPogled('kanban'); setAktivniStolpec('todo'); setPrikaziFormo(true); }}>+ Nova naloga</button>
+          ) : (
+            <p className="tm-demo-namig">Urejanje ni na voljo v predogledu (demo).</p>
+          )}
+          <button type="button" className="tm-seed-gumb tm-seed-gumb-ai" onClick={() => { setPogled('kanban'); setHitroOdprt((o) => !o); }} title="Piši prosto, več nalog naenkrat — AI pomoč pri dodajanju"><Sparkle size={16} weight="fill" /> AI dodaj več</button>
+        </div>
       </div>
 
       {pogled === 'kanban' && hitroOdprt && (
@@ -1701,20 +1703,21 @@ export default function TaskManagerWorkspace() {
 
       <style>{`
         .tm{padding:.9rem clamp(1rem,3vw,2.2rem) 4rem;min-width:0}
-        .tm-glava{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+        .tm-glava{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem 1.5rem;margin-bottom:.85rem}
+        .tm-glava-uvod{display:flex;align-items:flex-end;gap:1.25rem;min-width:0}
         .tm-eyebrow{margin:0 0 .35rem;font:800 .62rem var(--font-sans),sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
         .tm-naslov{margin:0;font:500 clamp(1.6rem,3vw,2.15rem)/1 var(--font-serif),Georgia,serif;color:var(--ink)}
         .tm-podnaslov{margin:.55rem 0 0;max-width:44ch;color:var(--muted);font-size:.86rem;line-height:1.5}
-        .tm-nova{flex:none;padding:.7rem 1.15rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:750 .74rem var(--font-sans),sans-serif;cursor:pointer;transition:transform .18s cubic-bezier(.16,1,.3,1),box-shadow .18s}
+        .tm-nova{flex:none;display:inline-flex;align-items:center;min-height:2.75rem;padding:0 1.15rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:750 .74rem var(--font-sans),sans-serif;cursor:pointer;transition:transform .18s cubic-bezier(.16,1,.3,1),box-shadow .18s}
         .tm-nova:hover{transform:translateY(-2px);box-shadow:0 .8rem 2rem oklch(22% .04 300/.22)}
 
         /* glava: preklop uporabnika + gumb za analitiko ekipe */
-        .tm-glava-akcije{display:flex;align-items:flex-end;gap:.7rem;flex-wrap:wrap}
-        .tm-uporabnik{display:flex;flex-direction:column;gap:.3rem}
-        .tm-uporabnik span{font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-        .tm-uporabnik select{padding:.55rem .7rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0/.75);font:inherit;font-size:.78rem;color:var(--ink)}
+        .tm-glava-akcije{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin-left:auto}
+        .tm-uporabnik{display:flex;align-items:center;min-height:2.75rem;border:1px solid var(--line);border-radius:.8rem;background:#fff;overflow:hidden}
+        .tm-uporabnik span{padding:0 .7rem;font:750 .58rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+        .tm-uporabnik select{align-self:stretch;min-width:13rem;padding:.55rem 2rem .55rem .75rem;border:0;border-left:1px solid var(--line);border-radius:0;background-color:#fff;font:inherit;font-size:.78rem;color:var(--ink)}
         .tm-uporabnik select:focus{outline:none;border-color:var(--ink)}
-        .tm-analitika-gumb{flex:none;display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font:750 .72rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s,color .15s}
+        .tm-analitika-gumb{flex:none;display:inline-flex;align-items:center;gap:.4rem;min-height:2.75rem;padding:0 1rem;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font:750 .72rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s,color .15s}
         .tm-analitika-gumb:hover{background:var(--ink);color:var(--paper)}
 
         /* panel Analitika ekipe (overlay v Pinart slogu, ne generic modal) */
@@ -1750,16 +1753,17 @@ export default function TaskManagerWorkspace() {
         /* deska (kanban) */
         /* preklop Kanban|Plan + filtri (Vse/Moje/Zamujene + oznake) v ENI vrstici na namizju,
            prelomi na več vrstic na ozkem zaslonu (flex-wrap) */
-        .tm-pogled-filtri-vrsta{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin:0 0 1.1rem}
+        .tm-pogled-filtri-vrsta{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 1.1rem}
         .tm-filtri-vrsta{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0}
-        .tm-filtri{display:inline-flex;gap:.2rem;margin:0;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:#fff}
-        .tm-filtri button{padding:.4rem .85rem;border:0;border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
+        .tm-filtri{display:inline-flex;align-items:center;min-height:2.75rem;gap:.2rem;margin:0;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:#fff}
+        .tm-filtri button{align-self:stretch;padding:0 .85rem;border:0;border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
         .tm-filtri button.tm-filter-on{background:var(--ink);color:var(--paper)}
         /* filter po oznaki (tagu) — spustni izbor poleg vse/moje/zamujene */
-        .tm-filter-oznaka{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding:.42rem 1.8rem .42rem .85rem;border:1px solid var(--line);border-radius:999px;background-color:oklch(97% .006 87/.8);color:var(--ink);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer;background-repeat:no-repeat;background-position:right .6rem center;background-size:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
+        .tm-filter-oznaka{appearance:none;-webkit-appearance:none;-moz-appearance:none;min-height:2.75rem;padding:0 1.8rem 0 .85rem;border:1px solid var(--line);border-radius:999px;background-color:#fff;color:var(--ink);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer;background-repeat:no-repeat;background-position:right .6rem center;background-size:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
         .tm-filter-oznaka:focus{outline:none;border-color:var(--ink)}
         /* gumb "Naloži razvojne naloge (Flow)" v glavi + kratko sporocilo ob kliku */
-        .tm-seed-gumb{flex:none;display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--ink);font:750 .7rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+        .tm-seed-gumb{flex:none;display:inline-flex;align-items:center;gap:.4rem;min-height:2.75rem;padding:0 1rem;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font:750 .7rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+        .tm-orodje-ikona{width:2.75rem;padding:0;justify-content:center}
         .tm-seed-gumb:hover{background:var(--ink);color:var(--paper);border-style:solid;border-color:var(--ink)}
         .tm-seed-sporocilo{font:600 .68rem var(--font-sans),sans-serif;color:var(--muted)}
         /* oznake (tagi) na kartici naloge — majhni čipi, klik = filter po tem tagu */
@@ -1865,8 +1869,8 @@ export default function TaskManagerWorkspace() {
         @keyframes tm-utrip-obroba{0%,100%{box-shadow:0 0 0 2px oklch(62% .19 300/.28)}50%{box-shadow:0 0 0 4px oklch(62% .19 300/.12)}}
 
         /* preklop pogleda Kanban | Tedenski plan — isti segmentirani slog kot .tm-filtri */
-        .tm-pogled-preklop{display:inline-flex;flex:none;gap:.2rem;margin:0;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:#fff}
-        .tm-pogled-preklop button{padding:.42rem .95rem;border:0;border-radius:999px;background:none;font:750 .7rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
+        .tm-pogled-preklop{display:inline-flex;align-items:center;flex:none;min-height:2.75rem;gap:.2rem;margin:0;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:#fff}
+        .tm-pogled-preklop button{align-self:stretch;padding:0 .95rem;border:0;border-radius:999px;background:none;font:750 .7rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
         .tm-pogled-preklop button.tm-pogled-on{background:var(--ink);color:var(--paper)}
 
         /* znacka stranke na kartici (naloga <-> stranka) */
@@ -2020,6 +2024,11 @@ export default function TaskManagerWorkspace() {
         .tm-podrocje-nov{border-style:dashed !important}
 
         @media (max-width:860px){
+          .tm-glava,.tm-glava-uvod{align-items:flex-start}
+          .tm-glava-uvod{flex-direction:column;width:100%;gap:.8rem}
+          .tm-glava-akcije{width:100%}
+          .tm-uporabnik{width:100%}
+          .tm-uporabnik select{flex:1;min-width:0}
           .tm-deska{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:82vw;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.6rem}
           .tm-stolpec{scroll-snap-align:start}
           .tm-plan-akcije{margin-left:0;width:100%}
