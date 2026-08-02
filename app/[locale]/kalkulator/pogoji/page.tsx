@@ -127,7 +127,34 @@ export default async function KalkulatorPogojiPage({
         </section>
 
         <section style={S}>
-          <h2 style={H}>7. Intelektualna lastnina</h2>
+          <h2 style={H}>7. Umetna inteligenca (Pupa) in varnost podatkov</h2>
+          <p style={{ ...P, padding: '.8rem 1rem', border: '1px solid rgba(178,84,118,.4)', borderRadius: '.75rem', fontWeight: 600 }}>
+            OSNUTEK — pravno mora potrditi odvetnik.
+          </p>
+          <p style={P}>
+            Pupa je izbirna pomočnica, ki deluje prek Anthropic Claude API. Anthropic
+            prejme vsebino, ki jo vneseš v Pupo, in omejen kontekst odprtega orodja
+            ali ponudbe, potreben za odgovor. API ključ ostane na strežniku, Anthropic
+            pa nima neposrednega dostopa do baze Pinart Flow.
+          </p>
+          <p style={P}>
+            <strong>V Pupo ne vnašaj zaupnih podatkov, poslovnih skrivnosti ali osebnih
+            podatkov svojih strank.</strong> Če Pupe ne uporabljaš, se podatki ne
+            pošiljajo družbi Anthropic ali drugemu zunanjemu ponudniku AI; osnovna
+            orodja Pinart Flow delujejo brez AI.
+          </p>
+          <p style={P}>
+            Anthropic je predviden kot podobdelovalec. Po njegovih aktualnih pogojih
+            se vhodi in izhodi komercialnega API privzeto ne uporabljajo za učenje
+            modelov, hramba pa sledi njegovim aktualnim pogojem. Morebitni prenos v ZDA
+            mora biti urejen z DPA in ustreznimi standardnimi pogodbenimi klavzulami
+            (SCC). Pravno podlago obdelave mora pred objavo potrditi odvetnik. Seznam
+            podobdelovalcev je na voljo na zahtevo na tina@pinart.si.
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>8. Intelektualna lastnina</h2>
           <p style={P}>
             Orodje, njegova zasnova in vsebine so last ponudnika. Besedila ponudb,
             ki jih ustvariš z orodjem, lahko prosto uporabljaš za svoje poslovanje.
@@ -135,7 +162,7 @@ export default async function KalkulatorPogojiPage({
         </section>
 
         <section style={S}>
-          <h2 style={H}>8. Spremembe</h2>
+          <h2 style={H}>9. Spremembe</h2>
           <p style={P}>
             Ponudnik lahko orodje in te pogoje kadarkoli spremeni, omeji ali ukine.
             Velja različica pogojev, objavljena na tej strani.
