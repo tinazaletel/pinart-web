@@ -1137,8 +1137,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                 <div className="fl-fold" style={{ left: '44%', top: '37%', width: '33%', height: '42%', background: '#e9e08d' }} />
                 <div className="fl-fold" style={{ left: '85%', top: '85%', width: '42%', height: '42%', background: '#e6c8f6' }} />
                 <div className="fl-fold" style={{ left: '19%', top: '93%', width: '34%', height: '36%', background: '#cfe7f4' }} />
-                <div className="fl-badge" style={{ left: '15%', top: '40%' }}><ChatCircle size={18} weight="fill" /></div>
-                <div className="fl-badge" style={{ left: '59%', top: '75%' }}><PenNib size={17} weight="fill" /></div>
+                <div className="fl-badge" style={{ left: '15%', top: '40%' }}><ChatCircle size={15} weight="fill" /></div>
+                <div className="fl-badge" style={{ left: '59%', top: '75%' }}><PenNib size={14} weight="fill" /></div>
                 <div className="fl-npill" style={{ left: '13%', top: '66%', background: '#8b7be8' }}>Ponudba</div>
                 <div className="fl-npill" style={{ left: '89%', top: '45%', background: '#d5776f' }}>Račun</div>
               </div>
