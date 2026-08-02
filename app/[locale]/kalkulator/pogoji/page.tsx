@@ -132,24 +132,27 @@ export default async function KalkulatorPogojiPage({
             OSNUTEK — pravno mora potrditi odvetnik.
           </p>
           <p style={P}>
-            Pupa je izbirna pomočnica, ki deluje prek Anthropic Claude API. Anthropic
-            prejme vsebino, ki jo vneseš v Pupo, in omejen kontekst odprtega orodja
-            ali ponudbe, potreben za odgovor. API ključ ostane na strežniku, Anthropic
-            pa nima neposrednega dostopa do baze Pinart Flow.
+            Pupa je izbirna pomočnica, ki deluje strežniško prek Anthropic Claude API,
+            zato API ključ ni izpostavljen v brskalniku. Anthropic prejme samo vsebino,
+            ki jo vneseš v Pupo, in minimalen kontekst odprtega orodja ali ponudbe,
+            potreben za odgovor; nič drugega. Anthropic nima dostopa do baze Pinart
+            Flow — vidi le besedilo posamezne zahteve in baze ne more brati ali izvoziti.
           </p>
           <p style={P}>
             <strong>V Pupo ne vnašaj zaupnih podatkov, poslovnih skrivnosti ali osebnih
             podatkov svojih strank.</strong> Če Pupe ne uporabljaš, se podatki ne
-            pošiljajo družbi Anthropic ali drugemu zunanjemu ponudniku AI; osnovna
-            orodja Pinart Flow delujejo brez AI.
+            pošiljajo družbi Anthropic ali kateremu koli drugemu zunanjemu ponudniku
+            AI. Orodja Pinart Flow delujejo brez AI, cene pa se izračunajo s formulami
+            in pravili lokalno oziroma na zaledju Pinart Flow.
           </p>
           <p style={P}>
             Anthropic je predviden kot podobdelovalec. Po njegovih aktualnih pogojih
             se vhodi in izhodi komercialnega API privzeto ne uporabljajo za učenje
             modelov, hramba pa sledi njegovim aktualnim pogojem. Morebitni prenos v ZDA
-            mora biti urejen z DPA in ustreznimi standardnimi pogodbenimi klavzulami
-            (SCC). Pravno podlago obdelave mora pred objavo potrditi odvetnik. Seznam
-            podobdelovalcev je na voljo na zahtevo na tina@pinart.si.
+            mora biti urejen z DPA z družbo Anthropic in ustreznimi standardnimi
+            pogodbenimi klavzulami (SCC). Pravno podlago (privolitev ali zakoniti
+            interes) mora pred objavo določiti odvetnik. Seznam podobdelovalcev je na
+            voljo na zahtevo na tina@pinart.si.
           </p>
         </section>
 
