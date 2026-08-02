@@ -28,7 +28,6 @@ const vObdobju = (dateStr: string, od: string, doD: string): boolean => {
   return true;
 };
 
-const statusLabel: Record<FlowOfferStatus, string> = { draft: 'Osnutek', sent: 'Čaka', accepted: 'Sprejeta', rejected: 'Zavrnjena' };
 const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFractionDigits: 2 })} €`;
 const datStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('sl-SI'); };
 const casStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' }); };
@@ -53,7 +52,6 @@ const projectStatusInfo = (status: FlowOfferStatus): { label: string; tone: Odte
    da sta tabela in filter brez dodatne logike takoj usklajena. Naslov strani
    (statusLabel) pa uporablja svoj, bolj natancen jezik za prave projekte. */
 const projektDoOfferStatus: Record<ProjektEntitetaStatus, FlowOfferStatus> = { aktiven: 'accepted', pavza: 'sent', koncan: 'rejected' };
-const projektStatusOznaka: Record<ProjektEntitetaStatus, string> = { aktiven: 'Aktiven', pavza: 'V pavzi', koncan: 'Končan' };
 
 /* pika statusa z INLINE slogom (barva + velikost neposredno na elementu) — neodvisno
    od injeciranega CSS, da se zagotovo izrise povsod (waiting = oranzna ipd.) */
@@ -389,6 +387,13 @@ type Props = {
 };
 
 export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIskanje, status, onStatus, datumOd: datumOdZunaj, datumDo: datumDoZunaj, onDatumOd, onDatumDo, onDetajl, onPaket, pogled: pogledZunaj, onPogled }: Props) {
+  const jeEn = base === '/en';
+  const L = (sl: string, en: string) => (jeEn ? en : sl);
+  /* status ponudbe / projekta — samo PRIKAZNE oznake so prevedene; ključi ostanejo
+     enum vrednosti (FlowOfferStatus / ProjektEntitetaStatus), ki se uporabljajo v
+     <option value>, CSV in filtru, zato jih NE prevajamo. */
+  const statusLabel: Record<FlowOfferStatus, string> = { draft: L('Osnutek', 'Draft'), sent: L('Čaka', 'Pending'), accepted: L('Sprejeta', 'Accepted'), rejected: L('Zavrnjena', 'Rejected') };
+  const projektStatusOznaka: Record<ProjektEntitetaStatus, string> = { aktiven: L('Aktiven', 'Active'), pavza: L('V pavzi', 'On hold'), koncan: L('Končan', 'Completed') };
   const [offers, setOffers] = useState<FlowOffer[]>([]); const [invoices, setInvoices] = useState<FlowInvoice[]>([]); const [expenses, setExpenses] = useState<FlowExpense[]>([]); const [contracts, setContracts] = useState<FlowContract[]>([]); const [amounts, setAmounts] = useState<Record<string, number>>({}); const [clients, setClients] = useState<FlowClient[]>([]);
   /* PRAVI projekti (lib/projekti) — locena shramba od Flow podatkov zgoraj, glej gradiVnos/realProjects spodaj */
   const [realProjekti, setRealProjekti] = useState<Projekt[]>([]);
@@ -454,11 +459,11 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     return <span className="pw-chk-cel"><span role="checkbox" aria-checked={on} tabIndex={0}
       className={'pw-chk' + (on ? ' on' : '')} onClick={dej}
       onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); dej(e); } }}
-      aria-label={vse ? 'Označi vse' : 'Izberi projekt'} /></span>;
+      aria-label={vse ? L('Označi vse', 'Select all') : L('Izberi projekt', 'Select project')} /></span>;
   };
   const izvoziIzbrane = () => {
     if (typeof document === 'undefined') return;
-    const vrst: (string | number)[][] = [['Projekt', 'Stranka', 'Datum', 'Status', 'Vrednost']];
+    const vrst: (string | number)[][] = [[L('Projekt', 'Project'), L('Stranka', 'Client'), L('Datum', 'Date'), L('Status', 'Status'), L('Vrednost', 'Value')]];
     visible.forEach(p => {
       if (!izbrani.has(p.offer.id)) return;
       const status = p.real ? projektStatusOznaka[p.real.status] : statusLabel[p.offer.status];
@@ -480,14 +485,14 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   /* PIPELINE POSLOV — kanban pogled (glej pw-pipeline v pwStyles). Stolpci po vrsti
      + locen, umirjen Izgubljeno na koncu (glej ProjektFaza v lib/projekti). */
   const PIPELINE_STOLPCI: { faza: ProjektFaza; naziv: string }[] = [
-    { faza: 'lead', naziv: 'Lead' },
-    { faza: 'ponudba', naziv: 'Ponudba' },
-    { faza: 'pogodba', naziv: 'Pogodba' },
-    { faza: 'delo', naziv: 'Delo' },
-    { faza: 'racun', naziv: 'Račun' },
-    { faza: 'zakljuceno', naziv: 'Zaključeno' },
+    { faza: 'lead', naziv: L('Lead', 'Lead') },
+    { faza: 'ponudba', naziv: L('Ponudba', 'Offer') },
+    { faza: 'pogodba', naziv: L('Pogodba', 'Contract') },
+    { faza: 'delo', naziv: L('Delo', 'Work') },
+    { faza: 'racun', naziv: L('Račun', 'Invoice') },
+    { faza: 'zakljuceno', naziv: L('Zaključeno', 'Completed') },
   ];
-  const PIPELINE_IZGUBLJENO: { faza: ProjektFaza; naziv: string } = { faza: 'izgubljeno', naziv: 'Izgubljeno' };
+  const PIPELINE_IZGUBLJENO: { faza: ProjektFaza; naziv: string } = { faza: 'izgubljeno', naziv: L('Izgubljeno', 'Lost') };
   /* faza kartice: PRAVI projekt (real) ima svojo faza/status (lib/projekti fazaProjekta);
      projekt izpeljan SAMO iz ponudbe nima real zapisa, zato fazo priblizamo iz
      dejanskega stanja te ponudbe (racun/pogodba ze obstajata? sicer status ponudbe) */
@@ -621,15 +626,15 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     setPisiOdprt(true);
   };
   const oblikuj = (ukaz: string) => { document.execCommand(ukaz); pisiTeloRef.current?.focus(); };
-  const vstaviPovezavo = () => { const url = window.prompt('Naslov povezave (https://…)'); if (url) document.execCommand('createLink', false, url); };
+  const vstaviPovezavo = () => { const url = window.prompt(L('Naslov povezave (https://…)', 'Link address (https://…)')); if (url) document.execCommand('createLink', false, url); };
   const posljiPisanje = async () => {
     if (samoOgled || !selected) return;
     const za = pisiZa.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(za)) { setPisiStatus('Vpiši veljaven e-naslov prejemnika.'); return; }
-    if (!pisiZadeva.trim()) { setPisiStatus('Vpiši zadevo.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(za)) { setPisiStatus(L('Vpiši veljaven e-naslov prejemnika.', 'Enter a valid recipient email.')); return; }
+    if (!pisiZadeva.trim()) { setPisiStatus(L('Vpiši zadevo.', 'Enter a subject.')); return; }
     const telo = (pisiTeloRef.current?.innerHTML || '').trim();
-    if (!telo) { setPisiStatus('Vpiši sporočilo.'); return; }
-    setPisiPosiljam(true); setPisiStatus('Pošiljam …');
+    if (!telo) { setPisiStatus(L('Vpiši sporočilo.', 'Enter a message.')); return; }
+    setPisiPosiljam(true); setPisiStatus(L('Pošiljam …', 'Sending …'));
     const html = `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${telo}</div>`;
     /* »Odgovori-na« = tvoj pravi e-naslov (iz profila), da odgovori strank padejo
        tja (npr. tvoj Gmail), ne na pošiljno domeno pinartflow.com, kjer pošte ni. */
@@ -643,7 +648,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       setPosta(p => [vnos, ...p]);
       setPisiOdprt(false); setPisiZadeva(''); if (pisiTeloRef.current) pisiTeloRef.current.innerHTML = '';
     } else {
-      setPisiStatus('Napaka: ' + (rez.napaka || 'pošiljanje ni uspelo.'));
+      setPisiStatus(L('Napaka: ', 'Error: ') + (rez.napaka || L('pošiljanje ni uspelo.', 'sending failed.')));
     }
   };
   /* ob odprtju sestavljalnika prednapolni telo s podpisom (iz profila, localStorage).
@@ -722,16 +727,16 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   /* izris ene vrstice — ISTI slog na kartici (top 5) in v slideu (ves seznam) */
   const pogodbaVrstica = (item: FlowContract) => <span key={item.id} className="pw-vrstica-klik" {...klik('pogodbe', item)}><b>{item.title}</b><i className="pw-status" data-tone={statusTon(item.status)}><i aria-hidden style={pikaStil(statusTon(item.status))} />{item.status}</i></span>;
   const racunKaj = (item: FlowInvoice) => item.title || item.items?.[0]?.opis || selected?.offer.title || '';
-  const racunVrstica = (item: FlowInvoice) => { const kaj = racunKaj(item); return <span key={item.id} className="pw-racun-v pw-vrstica-klik" {...klik('racuni', item)}><span className="pw-racun-l"><b>Račun {item.number || ''}</b>{kaj && <small>{kaj}</small>}</span><span className="pw-racun-d"><i className="pw-status" data-tone={item.paid ? 'success' : 'waiting'}><i aria-hidden style={pikaStil(item.paid ? 'success' : 'waiting')} />{item.paid ? 'Plačan' : 'Odprt'}</i><strong>{money(item.amount)}</strong></span></span>; };
-  const strosekVrstica = (item: FlowExpense) => <span key={item.id} className="pw-racun-v pw-vrstica-klik" {...klik('stroski', item)}><span className="pw-racun-l"><b>{item.title}</b><small>{item.category || 'Projektni strošek'}</small></span><span className="pw-racun-d"><strong>{money(item.amount)}</strong></span></span>;
+  const racunVrstica = (item: FlowInvoice) => { const kaj = racunKaj(item); return <span key={item.id} className="pw-racun-v pw-vrstica-klik" {...klik('racuni', item)}><span className="pw-racun-l"><b>{L('Račun', 'Invoice')} {item.number || ''}</b>{kaj && <small>{kaj}</small>}</span><span className="pw-racun-d"><i className="pw-status" data-tone={item.paid ? 'success' : 'waiting'}><i aria-hidden style={pikaStil(item.paid ? 'success' : 'waiting')} />{item.paid ? L('Plačan', 'Paid') : L('Odprt', 'Open')}</i><strong>{money(item.amount)}</strong></span></span>; };
+  const strosekVrstica = (item: FlowExpense) => <span key={item.id} className="pw-racun-v pw-vrstica-klik" {...klik('stroski', item)}><span className="pw-racun-l"><b>{item.title}</b><small>{item.category || L('Projektni strošek', 'Project expense')}</small></span><span className="pw-racun-d"><strong>{money(item.amount)}</strong></span></span>;
   /* iskalno besedilo za slide (naziv/številka/opis/kategorija) — malo, da . includes() dela brez razlik velikih/malih črk */
   const pogodbaTekst = (item: FlowContract) => `${item.title} ${item.status}`.toLocaleLowerCase('sl-SI');
   const racunTekst = (item: FlowInvoice) => `${item.number || ''} ${racunKaj(item)} ${item.paid ? 'plačan' : 'odprt'}`.toLocaleLowerCase('sl-SI');
   const strosekTekst = (item: FlowExpense) => `${item.title} ${item.category || ''}`.toLocaleLowerCase('sl-SI');
   /* podatki za odprti SLIDE: naslov + filtriran+paginiran seznam trenutno izbranega tipa */
   const NA_STRAN = 12;
-  const vsiEyebrow = vsiOdprt === 'pogodbe' ? 'VSE POGODBE' : vsiOdprt === 'racuni' ? 'VSI RAČUNI' : 'VSI STROŠKI';
-  const vsiNaslov = vsiOdprt === 'pogodbe' ? 'Vse pogodbe' : vsiOdprt === 'racuni' ? 'Vsi računi' : 'Vsi stroški';
+  const vsiEyebrow = vsiOdprt === 'pogodbe' ? L('VSE POGODBE', 'ALL CONTRACTS') : vsiOdprt === 'racuni' ? L('VSI RAČUNI', 'ALL INVOICES') : L('VSI STROŠKI', 'ALL EXPENSES');
+  const vsiNaslov = vsiOdprt === 'pogodbe' ? L('Vse pogodbe', 'All contracts') : vsiOdprt === 'racuni' ? L('Vsi računi', 'All invoices') : L('Vsi stroški', 'All expenses');
   const vsiVse: { id: string; tekst: string; el: JSX.Element }[] =
     vsiOdprt === 'pogodbe' ? pogodbeSort.map(item => ({ id: item.id, tekst: pogodbaTekst(item), el: pogodbaVrstica(item) })) :
     vsiOdprt === 'racuni' ? racuniSort.map(item => ({ id: item.id, tekst: racunTekst(item), el: racunVrstica(item) })) :
@@ -759,48 +764,48 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
 
   return <div className={styles.projectsPage}><style dangerouslySetInnerHTML={{ __html: overflowFix + pwStyles }} />
     {portalPripravljen && !selected && izbrani.size > 0 && createPortal(
-      <div className="pw-izbor-letev" role="region" aria-label="Izbrani projekti">
-        <span className="pw-izbor-st">{izbrani.size} izbranih</span>
-        {onPaket && <button type="button" className="pw-izbor-gumb" disabled={izvazamPaket} onClick={naPaket}><SwapText text={izvazamPaket ? 'Pripravljam…' : 'Package (ZIP)'} /></button>}
+      <div className="pw-izbor-letev" role="region" aria-label={L('Izbrani projekti', 'Selected projects')}>
+        <span className="pw-izbor-st">{izbrani.size} {L('izbranih', 'selected')}</span>
+        {onPaket && <button type="button" className="pw-izbor-gumb" disabled={izvazamPaket} onClick={naPaket}><SwapText text={izvazamPaket ? L('Pripravljam…', 'Preparing…') : 'Package (ZIP)'} /></button>}
         <button type="button" className={'pw-izbor-gumb' + (onPaket ? ' pw-izbor-gumb2' : '')} disabled={izvazamPaket} onClick={izvoziIzbrane}>CSV</button>
-        <button type="button" className="pw-izbor-prekl" disabled={izvazamPaket} onClick={() => setIzbrani(new Set())}>Prekliči</button>
+        <button type="button" className="pw-izbor-prekl" disabled={izvazamPaket} onClick={() => setIzbrani(new Set())}>{L('Prekliči', 'Cancel')}</button>
       </div>,
       document.body,
     )}
     {!selected && !zunanjiFilter && <ArhivFilter
       iskanje={search}
       onIskanje={setSearch}
-      placeholder="Poišči projekt, stranko ali številko ponudbe …"
+      placeholder={L('Poišči projekt, stranko ali številko ponudbe …', 'Search project, client or offer number …')}
       datumOd={datumOd}
       datumDo={datumDo}
       onDatumOd={setDatumOd}
       onDatumDo={setDatumDo}
-      statusOznaka="Stanje projekta"
+      statusOznaka={L('Stanje projekta', 'Project status')}
       statusVrednost={filter}
       onStatus={v => setFilter(v as ProjektStatus)}
-      statusOpcije={[{ vrednost: 'vse', oznaka: 'Vsi' }, { vrednost: 'aktivni', oznaka: 'Aktivni' }, { vrednost: 'cakajo', oznaka: 'Čakajo' }, { vrednost: 'zakljuceni', oznaka: 'Zaključeni' }]}
+      statusOpcije={[{ vrednost: 'vse', oznaka: L('Vsi', 'All') }, { vrednost: 'aktivni', oznaka: L('Aktivni', 'Active') }, { vrednost: 'cakajo', oznaka: L('Čakajo', 'Pending') }, { vrednost: 'zakljuceni', oznaka: L('Zaključeni', 'Completed') }]}
       aktivnihFiltrov={(filter !== 'vse' ? 1 : 0) + (datumOd || datumDo ? 1 : 0)}
       onPocisti={() => { setFilter('vse'); setDatumOd(''); setDatumDo(''); }}
-      akcija={<Link className="af-akcija-gumb" href={`${base}/kalkulator/nov-projekt`}>+ Nov projekt</Link>}
+      akcija={<Link className="af-akcija-gumb" href={`${base}/kalkulator/nov-projekt`}>{L('+ Nov projekt', '+ New project')}</Link>}
     />}
 
     {/* preklop Seznam|Pipeline — v produkciji izrise ta pilulo ArhivWorkspace (arh-pogled-preklop);
         tu samo za samostojno rabo (zunanjiFilter=false), da API pogled/onPogled dela tudi brez Arhiva */}
     {!selected && !zunanjiFilter && (
-      <div className="pw-pogled-preklop" role="tablist" aria-label="Pogled projektov">
-        <button type="button" role="tab" aria-selected={pogled === 'seznam'} className={pogled === 'seznam' ? 'on' : ''} onClick={() => setPogled('seznam')}>Seznam</button>
+      <div className="pw-pogled-preklop" role="tablist" aria-label={L('Pogled projektov', 'Projects view')}>
+        <button type="button" role="tab" aria-selected={pogled === 'seznam'} className={pogled === 'seznam' ? 'on' : ''} onClick={() => setPogled('seznam')}>{L('Seznam', 'List')}</button>
         <button type="button" role="tab" aria-selected={pogled === 'pipeline'} className={pogled === 'pipeline' ? 'on' : ''} onClick={() => setPogled('pipeline')}>Pipeline</button>
       </div>
     )}
 
     {!selected ? (
       projects.length === 0 ? (
-        <div className={styles.projectStoryEmpty}><span><svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></span><strong>Najprej ustvari ponudbo.</strong><p>Ta bo postala osnova projekta in povezala vse nadaljnje dokumente.</p></div>
+        <div className={styles.projectStoryEmpty}><span><svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></span><strong>{L('Najprej ustvari ponudbo.', 'Create an offer first.')}</strong><p>{L('Ta bo postala osnova projekta in povezala vse nadaljnje dokumente.', 'It becomes the basis of the project and links all further documents.')}</p></div>
       ) : (
         <div className="pw-seznam">
           {pogled === 'pipeline' ? (
             <>
-              {samoOgled && <p className="pw-pipeline-namig">Premikanje kartic med fazami je v predogledu (demo) onemogočeno — prijavi se v svoj račun.</p>}
+              {samoOgled && <p className="pw-pipeline-namig">{L('Premikanje kartic med fazami je v predogledu (demo) onemogočeno — prijavi se v svoj račun.', 'Moving cards between stages is disabled in the demo preview — sign in to your account.')}</p>}
               <div className="pw-pipeline">
                 {[...PIPELINE_STOLPCI, PIPELINE_IZGUBLJENO].map(({ faza, naziv }) => {
                   const kartice = pipelineStolpci[faza];
@@ -838,17 +843,17 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                               role="button"
                               tabIndex={0}
                               onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectProject(project.offer.id); } }}
-                              title={!project.real ? 'Izpeljano iz ponudbe — ni vlečljivo' : (samoOgled ? 'V predogledu premikanje ni na voljo' : undefined)}
+                              title={!project.real ? L('Izpeljano iz ponudbe — ni vlečljivo', 'Derived from an offer — not draggable') : (samoOgled ? L('V predogledu premikanje ni na voljo', 'Moving is not available in preview') : undefined)}
                             >
                               <strong>{project.offer.title}</strong>
-                              <span className="pw-mut">{project.offer.client || 'Brez stranke'}</span>
+                              <span className="pw-mut">{project.offer.client || L('Brez stranke', 'No client')}</span>
                               <span className="pw-posel-spodaj">
                                 <span className="pw-posel-vrednost">{project.agreed ? money(project.agreed) : '—'}</span>
                                 <i className="pw-posel-pika" data-tone={info.tone} aria-hidden />
                               </span>
                             </div>
                           );
-                        }) : <p className="pw-pipeline-prazno">Prazno.</p>}
+                        }) : <p className="pw-pipeline-prazno">{L('Prazno.', 'Empty.')}</p>}
                       </div>
                     </div>
                   );
@@ -859,18 +864,18 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             <div className="pw-tabela-ovoj">
               <div className="pw-tabela">
                 {/* naslov + stevec + filter so v pw-glava-pas nad tabelo */}
-                <header>{kljuk(null)}<span>Projekt: {visible.length}</span><span>Stranka</span><span>Datum</span><span>Status</span><span className="pw-desno">Vrednost</span><span /></header>
+                <header>{kljuk(null)}<span>{L('Projekt', 'Project')}: {visible.length}</span><span>{L('Stranka', 'Client')}</span><span>{L('Datum', 'Date')}</span><span>{L('Status', 'Status')}</span><span className="pw-desno">{L('Vrednost', 'Value')}</span><span /></header>
                 {visible.map(project => { const info = projectStatusInfo(project.offer.status); return (
                   <button key={project.offer.id} type="button" className="pw-vrstica" onClick={() => selectProject(project.offer.id)}>
                     {kljuk(project.offer.id)}
                     <span className="pw-glavna"><span className="pw-ikona" aria-hidden><FolderOpen size={17} /></span><strong>{project.offer.title}</strong></span>
                     <span className="pw-mut">{project.offer.client}</span>
                     <span className="pw-mut">{datStr(project.offer.date)}</span>
-                    <span><span className="pw-status-ured" data-editable="" title="Spremeni status" onClick={e => e.stopPropagation()}>
+                    <span><span className="pw-status-ured" data-editable="" title={L('Spremeni status', 'Change status')} onClick={e => e.stopPropagation()}>
                       <span className="pw-status" data-tone={info.tone} style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}><i aria-hidden style={pikaStil(info.tone)} />{project.real ? projektStatusOznaka[project.real.status] : statusLabel[project.offer.status]}<svg width="9" height="9" viewBox="0 0 12 8" fill="none" aria-hidden style={{ marginLeft: '.45rem', flex: 'none', opacity: .55 }}><path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
                       {project.real
-                        ? <select className="pw-status-select" aria-label="Spremeni status projekta" value={project.real.status} onChange={e => naStatusProjekt(project.real!, e.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
-                        : <select className="pw-status-select" aria-label="Spremeni status" value={project.offer.status} onChange={e => naStatusOffer(project.offer.id, e.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
+                        ? <select className="pw-status-select" aria-label={L('Spremeni status projekta', 'Change project status')} value={project.real.status} onChange={e => naStatusProjekt(project.real!, e.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
+                        : <select className="pw-status-select" aria-label={L('Spremeni status', 'Change status')} value={project.offer.status} onChange={e => naStatusOffer(project.offer.id, e.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
                     </span></span>
                     <span className="pw-desno">{project.agreed ? money(project.agreed) : '—'}</span>
                     <span className="pw-kazalec" aria-hidden>›</span>
@@ -878,24 +883,24 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 ); })}
               </div>
             </div>
-          ) : <p className="pw-prazno">Ni projektov v tem pogledu.</p>}
+          ) : <p className="pw-prazno">{L('Ni projektov v tem pogledu.', 'No projects in this view.')}</p>}
         </div>
       )
     ) : (
       <section ref={storyRef} className={`${styles.projectStory} pw-stran`}>
-        <button type="button" className="pw-nazaj" onClick={goBack} aria-label="Nazaj na seznam projektov"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M19 12H5M11 18l-6-6 6-6" /></svg> Nazaj</button>
-        <header><div><p className={styles.eyebrow}>PROJEKT · {selected.offer.number || 'BREZ ŠTEVILKE'}</p><h2>{selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><span className="pw-det-statusured" data-editable="" title="Spremeni status">
+        <button type="button" className="pw-nazaj" onClick={goBack} aria-label={L('Nazaj na seznam projektov', 'Back to projects list')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M19 12H5M11 18l-6-6 6-6" /></svg> {L('Nazaj', 'Back')}</button>
+        <header><div><p className={styles.eyebrow}>{L('PROJEKT', 'PROJECT')} · {selected.offer.number || L('BREZ ŠTEVILKE', 'NO NUMBER')}</p><h2>{selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><span className="pw-det-statusured" data-editable="" title={L('Spremeni status', 'Change status')}>
           <span className="pw-status" data-tone={projectStatusInfo(selected.offer.status).tone} style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}><i aria-hidden style={pikaStil(projectStatusInfo(selected.offer.status).tone)} />{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}<svg width="9" height="9" viewBox="0 0 12 8" fill="none" aria-hidden style={{ marginLeft: '.45rem', flex: 'none', opacity: .55 }}><path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
           {selected.real
-            ? <select className="pw-status-select" aria-label="Spremeni status projekta" value={selected.real.status} onChange={event => naStatusProjekt(selected.real!, event.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
-            : <select className="pw-status-select" aria-label="Spremeni status" value={selected.offer.status} onChange={event => naStatusOffer(selected.offer.id, event.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
+            ? <select className="pw-status-select" aria-label={L('Spremeni status projekta', 'Change project status')} value={selected.real.status} onChange={event => naStatusProjekt(selected.real!, event.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
+            : <select className="pw-status-select" aria-label={L('Spremeni status', 'Change status')} value={selected.offer.status} onChange={event => naStatusOffer(selected.offer.id, event.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
         </span></header>
-        <div className={styles.projectMoney}><label><small>Dogovorjena vrednost</small><span><input type="number" min="0" step="0.01" value={selected.agreed || ''} onChange={event => saveAmount(selected.offer.id, Number(event.target.value))} /> €</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></label><span><small>Zaračunano</small><strong>{money(selected.billed)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></span><span className={selected.unbilled > 0 ? styles.projectNeedsInvoice : ''}><small>Še ni zaračunano</small><strong>{selected.agreed ? money(selected.unbilled) : '—'}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="cost" /></b></span><span><small>Ocenjeni rezultat</small><strong>{money(selected.profit)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></span></div>
+        <div className={styles.projectMoney}><label><small>{L('Dogovorjena vrednost', 'Agreed value')}</small><span><input type="number" min="0" step="0.01" value={selected.agreed || ''} onChange={event => saveAmount(selected.offer.id, Number(event.target.value))} /> €</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></label><span><small>{L('Zaračunano', 'Billed')}</small><strong>{money(selected.billed)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></span><span className={selected.unbilled > 0 ? styles.projectNeedsInvoice : ''}><small>{L('Še ni zaračunano', 'Not yet billed')}</small><strong>{selected.agreed ? money(selected.unbilled) : '—'}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="cost" /></b></span><span><small>{L('Ocenjeni rezultat', 'Estimated result')}</small><strong>{money(selected.profit)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></span></div>
         <div style={{ display: 'flex', gap: '.55rem', alignItems: 'stretch', flexWrap: 'wrap', margin: '.55rem 0 0' }}>
         {selected.real && (
           <article className="pw-karta pw-cilji" style={{ flex: '1 1 300px', minWidth: 0, margin: 0 }}>
-            <p className={styles.eyebrow}>00 · CILJI IN ŽELJE</p>
-            <h3>Kaj si stranka želi doseči?</h3>
+            <p className={styles.eyebrow}>{L('00 · CILJI IN ŽELJE', '00 · GOALS & WISHES')}</p>
+            <h3>{L('Kaj si stranka želi doseči?', 'What does the client want to achieve?')}</h3>
             {selected.real.zelje && <p className="pw-cilji-zelje">{selected.real.zelje}</p>}
             {selected.real.cilji && selected.real.cilji.length > 0 ? (
               <ul className="pw-cilji-seznam">
@@ -906,20 +911,20 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   </li>
                 ))}
               </ul>
-            ) : (!selected.real.zelje && !(selected.real.opisStranke || selected.real.panoga || selected.real.ciljnaSkupina || selected.real.dizajnZelje || selected.real.voice || selected.real.konkurenca) && <p className="pw-cilji-prazno">Želje in cilji še niso dodani.</p>)}
+            ) : (!selected.real.zelje && !(selected.real.opisStranke || selected.real.panoga || selected.real.ciljnaSkupina || selected.real.dizajnZelje || selected.real.voice || selected.real.konkurenca) && <p className="pw-cilji-prazno">{L('Želje in cilji še niso dodani.', 'Wishes and goals have not been added yet.')}</p>)}
             {(selected.real.opisStranke || selected.real.panoga || selected.real.ciljnaSkupina || selected.real.dizajnZelje || selected.real.voice || selected.real.konkurenca) && (<>
               <p className="pw-cilji-podnaslov">Brief</p>
               <div className="pw-cilji-vprasanja">
-                {selected.real.opisStranke && <div className="pw-vprasanje-vrstica"><div><b>Stranka</b><span>{selected.real.opisStranke}</span></div></div>}
-                {selected.real.panoga && <div className="pw-vprasanje-vrstica"><div><b>Panoga</b><span>{selected.real.panoga}</span></div></div>}
+                {selected.real.opisStranke && <div className="pw-vprasanje-vrstica"><div><b>{L('Stranka', 'Client')}</b><span>{selected.real.opisStranke}</span></div></div>}
+                {selected.real.panoga && <div className="pw-vprasanje-vrstica"><div><b>{L('Panoga', 'Industry')}</b><span>{selected.real.panoga}</span></div></div>}
                 {selected.real.ciljnaSkupina && <div className="pw-vprasanje-vrstica"><div><b>Persona</b><span>{selected.real.ciljnaSkupina}</span></div></div>}
-                {selected.real.dizajnZelje && <div className="pw-vprasanje-vrstica"><div><b>Dizajn</b><span>{selected.real.dizajnZelje}</span></div></div>}
+                {selected.real.dizajnZelje && <div className="pw-vprasanje-vrstica"><div><b>{L('Dizajn', 'Design')}</b><span>{selected.real.dizajnZelje}</span></div></div>}
                 {selected.real.voice && <div className="pw-vprasanje-vrstica"><div><b>Voice</b><span>{selected.real.voice}</span></div></div>}
-                {selected.real.konkurenca && <div className="pw-vprasanje-vrstica"><div><b>Konkurenca</b><span>{selected.real.konkurenca}</span></div></div>}
+                {selected.real.konkurenca && <div className="pw-vprasanje-vrstica"><div><b>{L('Konkurenca', 'Competition')}</b><span>{selected.real.konkurenca}</span></div></div>}
               </div>
             </>)}
             {selected.real.dodatnaVprasanja && selected.real.dodatnaVprasanja.length > 0 && (<>
-              <p className="pw-cilji-podnaslov">Dodatna vprašanja</p>
+              <p className="pw-cilji-podnaslov">{L('Dodatna vprašanja', 'Additional questions')}</p>
               <div className="pw-cilji-vprasanja">
                 {selected.real.dodatnaVprasanja.map(v => (
                   <div key={v.id} className="pw-vprasanje-vrstica"><div><b>{v.vprasanje}</b><span>{v.odgovor}</span></div></div>
@@ -927,7 +932,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               </div>
             </>)}
             {selected.real.dodeljeni && selected.real.dodeljeni.length > 0 && (<>
-              <p className="pw-cilji-podnaslov">Dodeljeni</p>
+              <p className="pw-cilji-podnaslov">{L('Dodeljeni', 'Assigned')}</p>
               <div className="pw-cilji-dodeljeni">
                 {selected.real.dodeljeni.map(id => {
                   const oseba = sodelavci.find(s => s.id === id);
@@ -939,34 +944,34 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             </>)}
           </article>
         )}
-        <article className={styles.projectAgreement} style={{ position: 'relative', flex: '1 1 300px', minWidth: 0, display: 'flex', flexDirection: 'column', padding: '1rem', border: '1px solid color-mix(in oklch, var(--ink) 4%, transparent)', borderRadius: '1rem', background: 'linear-gradient(135deg, oklch(97% .025 295), oklch(97% .025 165))', overflow: 'hidden' }}><p className={styles.eyebrow}>01 · DOGOVORJENO</p><h3>Kaj je bilo v ponudbi?</h3>{selected.offer.scope.length ? <ul>{selected.offer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul> : selected.real ? <p>Ta projekt še nima ponudbe. Pripravi jo v kalkulatorju, ko bo obseg jasen.</p> : <p>Starejša ponudba nima strukturiranega obsega. Odpri jo v kalkulatorju za celotno besedilo.</p>}<Link href={`${base}/kalkulator/orodje?od=pregled`} aria-label="Ustvari ponudbo za ta projekt" title="Ustvari ponudbo"><Plus size={18} weight="bold" /></Link></article></div><div className={styles.projectNarrative}><article style={{ background: 'linear-gradient(140deg, oklch(96% .035 160), oklch(88% .075 163))' }}><p className={styles.eyebrow}>02 · POGODBE</p><h3>{selected.contracts.length ? `${selected.contracts.length} povezanih` : 'Brez pogodbe'}</h3>{pogodbeSort.slice(0, NAJNOVEJSIH).map(pogodbaVrstica)}{pogodbeSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('pogodbe')}>Prikaži vse ({pogodbeSort.length}) →</button>}<Link href={`${base}/kalkulator/pogodbe`} aria-label="Dodaj pogodbo za ta projekt"><Plus size={18} weight="bold" /></Link></article><article style={{ background: 'linear-gradient(140deg, oklch(96% .035 295), oklch(88% .075 297))' }}><p className={styles.eyebrow}>03 · RAČUNI</p><h3>{money(selected.billed)}</h3>{racuniSort.slice(0, NAJNOVEJSIH).map(racunVrstica)}{racuniSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('racuni')}>Prikaži vse ({racuniSort.length}) →</button>}<Link href={`${base}/kalkulator/racuni`} aria-label="Dodaj račun za ta projekt"><Plus size={18} weight="bold" /></Link></article><article style={{ background: 'linear-gradient(140deg, oklch(97% .03 65), oklch(89% .075 60))' }}><p className={styles.eyebrow}>04 · STROŠKI</p><h3>{money(selected.costs)}</h3>{strosekSort.slice(0, NAJNOVEJSIH).map(strosekVrstica)}{strosekSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('stroski')}>Prikaži vse ({strosekSort.length}) →</button>}<Link href={`${base}/kalkulator/stroski`} aria-label="Dodaj strošek za ta projekt"><Plus size={18} weight="bold" /></Link></article><article className="pw-karta pw-dokumentacija"><p className={styles.eyebrow}>05 · DOKUMENTACIJA</p><h3>Povezave do zunanjih datotek</h3>{links.length ? (<div className="pw-linki">{links.map((link, index) => (<div key={`${link.url}-${index}`} className="pw-link-vrstica"><a href={link.url} target="_blank" rel="noopener noreferrer">{link.oznaka}</a>{!samoOgled && <button type="button" className="pw-link-brisi" onClick={() => removeLink(index)} aria-label={`Izbriši povezavo ${link.oznaka}`}>×</button>}</div>))}</div>) : <p className="pw-link-prazno">Še ni dodanih povezav.</p>}{!samoOgled && dodajOdprt && (<div className="pw-link-obrazec"><input type="text" value={linkOznaka} onChange={event => setLinkOznaka(event.target.value)} placeholder="npr. Figma" aria-label="Oznaka povezave" /><input type="url" value={linkUrl} onChange={event => setLinkUrl(event.target.value)} placeholder="https://…" aria-label="Naslov povezave (Figma, Miro, IDD, mapa Drive …)" /><button type="button" className="pw-link-dodaj" onClick={addLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>+ Dodaj povezavo</button></div>)}{samoOgled && dodajOdprt && <p className="pw-opozorilo">Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.</p>}<button type="button" className="pw-dok-dodaj" onClick={() => setDodajOdprt(open => !open)} aria-label={dodajOdprt ? 'Zapri dodajanje povezave' : 'Dodaj povezavo'}><Plus size={16} weight="bold" /></button></article></div>
+        <article className={styles.projectAgreement} style={{ position: 'relative', flex: '1 1 300px', minWidth: 0, display: 'flex', flexDirection: 'column', padding: '1rem', border: '1px solid color-mix(in oklch, var(--ink) 4%, transparent)', borderRadius: '1rem', background: 'linear-gradient(135deg, oklch(97% .025 295), oklch(97% .025 165))', overflow: 'hidden' }}><p className={styles.eyebrow}>{L('01 · DOGOVORJENO', '01 · AGREED')}</p><h3>{L('Kaj je bilo v ponudbi?', 'What was in the offer?')}</h3>{selected.offer.scope.length ? <ul>{selected.offer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul> : selected.real ? <p>{L('Ta projekt še nima ponudbe. Pripravi jo v kalkulatorju, ko bo obseg jasen.', 'This project has no offer yet. Prepare one in the calculator once the scope is clear.')}</p> : <p>{L('Starejša ponudba nima strukturiranega obsega. Odpri jo v kalkulatorju za celotno besedilo.', 'This older offer has no structured scope. Open it in the calculator for the full text.')}</p>}<Link href={`${base}/kalkulator/orodje?od=pregled`} aria-label={L('Ustvari ponudbo za ta projekt', 'Create an offer for this project')} title={L('Ustvari ponudbo', 'Create offer')}><Plus size={18} weight="bold" /></Link></article></div><div className={styles.projectNarrative}><article style={{ background: 'linear-gradient(140deg, oklch(96% .035 160), oklch(88% .075 163))' }}><p className={styles.eyebrow}>{L('02 · POGODBE', '02 · CONTRACTS')}</p><h3>{selected.contracts.length ? (jeEn ? `${selected.contracts.length} linked` : `${selected.contracts.length} povezanih`) : L('Brez pogodbe', 'No contract')}</h3>{pogodbeSort.slice(0, NAJNOVEJSIH).map(pogodbaVrstica)}{pogodbeSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('pogodbe')}>{L('Prikaži vse', 'Show all')} ({pogodbeSort.length}) →</button>}<Link href={`${base}/kalkulator/pogodbe`} aria-label={L('Dodaj pogodbo za ta projekt', 'Add a contract for this project')}><Plus size={18} weight="bold" /></Link></article><article style={{ background: 'linear-gradient(140deg, oklch(96% .035 295), oklch(88% .075 297))' }}><p className={styles.eyebrow}>{L('03 · RAČUNI', '03 · INVOICES')}</p><h3>{money(selected.billed)}</h3>{racuniSort.slice(0, NAJNOVEJSIH).map(racunVrstica)}{racuniSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('racuni')}>{L('Prikaži vse', 'Show all')} ({racuniSort.length}) →</button>}<Link href={`${base}/kalkulator/racuni`} aria-label={L('Dodaj račun za ta projekt', 'Add an invoice for this project')}><Plus size={18} weight="bold" /></Link></article><article style={{ background: 'linear-gradient(140deg, oklch(97% .03 65), oklch(89% .075 60))' }}><p className={styles.eyebrow}>{L('04 · STROŠKI', '04 · EXPENSES')}</p><h3>{money(selected.costs)}</h3>{strosekSort.slice(0, NAJNOVEJSIH).map(strosekVrstica)}{strosekSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('stroski')}>{L('Prikaži vse', 'Show all')} ({strosekSort.length}) →</button>}<Link href={`${base}/kalkulator/stroski`} aria-label={L('Dodaj strošek za ta projekt', 'Add an expense for this project')}><Plus size={18} weight="bold" /></Link></article><article className="pw-karta pw-dokumentacija"><p className={styles.eyebrow}>{L('05 · DOKUMENTACIJA', '05 · DOCUMENTATION')}</p><h3>{L('Povezave do zunanjih datotek', 'Links to external files')}</h3>{links.length ? (<div className="pw-linki">{links.map((link, index) => (<div key={`${link.url}-${index}`} className="pw-link-vrstica"><a href={link.url} target="_blank" rel="noopener noreferrer">{link.oznaka}</a>{!samoOgled && <button type="button" className="pw-link-brisi" onClick={() => removeLink(index)} aria-label={`${L('Izbriši povezavo', 'Delete link')} ${link.oznaka}`}>×</button>}</div>))}</div>) : <p className="pw-link-prazno">{L('Še ni dodanih povezav.', 'No links added yet.')}</p>}{!samoOgled && dodajOdprt && (<div className="pw-link-obrazec"><input type="text" value={linkOznaka} onChange={event => setLinkOznaka(event.target.value)} placeholder={L('npr. Figma', 'e.g. Figma')} aria-label={L('Oznaka povezave', 'Link label')} /><input type="url" value={linkUrl} onChange={event => setLinkUrl(event.target.value)} placeholder="https://…" aria-label={L('Naslov povezave (Figma, Miro, IDD, mapa Drive …)', 'Link address (Figma, Miro, IDD, Drive folder …)')} /><button type="button" className="pw-link-dodaj" onClick={addLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>{L('+ Dodaj povezavo', '+ Add link')}</button></div>)}{samoOgled && dodajOdprt && <p className="pw-opozorilo">{L('Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.', 'Adding links is not available in the demo preview. Sign in to your account.')}</p>}<button type="button" className="pw-dok-dodaj" onClick={() => setDodajOdprt(open => !open)} aria-label={dodajOdprt ? L('Zapri dodajanje povezave', 'Close add link') : L('Dodaj povezavo', 'Add link')}><Plus size={16} weight="bold" /></button></article></div>
 
         <div className="pw-dodatno">
           <article className="pw-karta pw-posta">
             <div className="pw-posta-glava">
-              <div><p className={styles.eyebrow}>06 · KOMUNIKACIJE</p><h3>Vse na enem mestu</h3></div>
+              <div><p className={styles.eyebrow}>{L('06 · KOMUNIKACIJE', '06 · COMMUNICATIONS')}</p><h3>{L('Vse na enem mestu', 'All in one place')}</h3></div>
               {!beriMail && posta.length > 0 && (
                 <div style={{ position: 'relative', flex: '0 1 320px', margin: '0 auto 0 1rem' }}>
                   <MagnifyingGlass size={15} weight="bold" style={{ position: 'absolute', left: '.65rem', top: '50%', transform: 'translateY(-50%)', color: 'color-mix(in oklch, var(--ink) 45%, transparent)', pointerEvents: 'none' }} />
-                  <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder="Išči po zadevi ali naslovu …" style={{ width: '100%', boxSizing: 'border-box', padding: '.42rem .7rem .42rem 2rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.6rem', background: 'oklch(100% 0 0 / .55)', font: '500 .8rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />
+                  <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder={L('Išči po zadevi ali naslovu …', 'Search by subject or address …')} style={{ width: '100%', boxSizing: 'border-box', padding: '.42rem .7rem .42rem 2rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.6rem', background: 'oklch(100% 0 0 / .55)', font: '500 .8rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />
                 </div>
               )}
-              <button type="button" className="pw-posta-nova" disabled={samoOgled} title={samoOgled ? 'Na voljo v načinu »Moji podatki« — zdaj gledaš predogled' : 'Napiši sporočilo stranki'} onClick={odpriPisanje}>✎ Nova pošta</button>
+              <button type="button" className="pw-posta-nova" disabled={samoOgled} title={samoOgled ? L('Na voljo v načinu »Moji podatki« — zdaj gledaš predogled', 'Available in “My data” mode — you are viewing a preview') : L('Napiši sporočilo stranki', 'Write a message to the client')} onClick={odpriPisanje}>{L('✎ Nova pošta', '✎ New mail')}</button>
             </div>
             {pisiOdprt && !samoOgled && (
               <div className="pw-pisi">
-                <label className="pw-pisi-v"><span>Za</span><input type="email" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="stranka@email.si" /></label>
-                <label className="pw-pisi-v"><span>Zadeva</span><input type="text" value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} placeholder="Zadeva sporočila" /></label>
+                <label className="pw-pisi-v"><span>{L('Za', 'To')}</span><input type="email" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder={L('stranka@email.si', 'client@email.com')} /></label>
+                <label className="pw-pisi-v"><span>{L('Zadeva', 'Subject')}</span><input type="text" value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} placeholder={L('Zadeva sporočila', 'Message subject')} /></label>
                 <div className="pw-pisi-orodja">
-                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title="Krepko" aria-label="Krepko"><TextB size={15} weight="bold" /></button>
-                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title="Ležeče" aria-label="Ležeče"><TextItalic size={15} weight="bold" /></button>
-                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('insertUnorderedList'); }} title="Označen seznam" aria-label="Označen seznam"><ListBullets size={15} weight="bold" /></button>
-                  <button type="button" onMouseDown={e => { e.preventDefault(); vstaviPovezavo(); }} title="Povezava" aria-label="Povezava"><LinkSimple size={15} weight="bold" /></button>
+                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title={L('Krepko', 'Bold')} aria-label={L('Krepko', 'Bold')}><TextB size={15} weight="bold" /></button>
+                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title={L('Ležeče', 'Italic')} aria-label={L('Ležeče', 'Italic')}><TextItalic size={15} weight="bold" /></button>
+                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('insertUnorderedList'); }} title={L('Označen seznam', 'Bulleted list')} aria-label={L('Označen seznam', 'Bulleted list')}><ListBullets size={15} weight="bold" /></button>
+                  <button type="button" onMouseDown={e => { e.preventDefault(); vstaviPovezavo(); }} title={L('Povezava', 'Link')} aria-label={L('Povezava', 'Link')}><LinkSimple size={15} weight="bold" /></button>
                 </div>
-                <div className="pw-pisi-telo" ref={pisiTeloRef} contentEditable suppressContentEditableWarning role="textbox" aria-label="Besedilo sporočila" data-placeholder="Napiši sporočilo …" />
+                <div className="pw-pisi-telo" ref={pisiTeloRef} contentEditable suppressContentEditableWarning role="textbox" aria-label={L('Besedilo sporočila', 'Message body')} data-placeholder={L('Napiši sporočilo …', 'Write a message …')} />
                 {pisiStatus && <p className="pw-pisi-status">{pisiStatus}</p>}
                 <div className="pw-pisi-akcije">
-                  <button type="button" className="pw-pisi-preklic" onClick={() => setPisiOdprt(false)}>Prekliči</button>
+                  <button type="button" className="pw-pisi-preklic" onClick={() => setPisiOdprt(false)}>{L('Prekliči', 'Cancel')}</button>
                   <button type="button" className="pw-pisi-preklic" onClick={() => {
                     const za = pisiZa.trim(); const zadeva = pisiZadeva.trim(); const telo = pisiTeloRef.current?.innerHTML || '';
                     if (!selectedId || (!za && !zadeva && !telo.replace(/<[^>]+>/g, '').trim())) { setPisiOdprt(false); return; }
@@ -974,14 +979,14 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                     setPosta(p => [{ id, projectId: selectedId, smer: 'poslano', prejemniki: za ? [za] : [], zadeva, datum: now, telo, osnutek: true } as PostaVnos, ...p]);
                     void saveDraft({ id, projectExternalId: selectedId, direction: 'out', toEmails: za ? [za] : [], subject: zadeva, bodyHtml: telo, isDraft: true, occurredAt: now }).catch(() => undefined);
                     setPisiOdprt(false); setMapa('osnutki'); setBeriMail(null);
-                  }}>Shrani osnutek</button>
-                  <button type="button" className="pw-pisi-poslji" disabled={pisiPosiljam} onClick={posljiPisanje}>{pisiPosiljam ? 'Pošiljam …' : 'Pošlji'}</button>
+                  }}>{L('Shrani osnutek', 'Save draft')}</button>
+                  <button type="button" className="pw-pisi-poslji" disabled={pisiPosiljam} onClick={posljiPisanje}>{pisiPosiljam ? L('Pošiljam …', 'Sending …') : L('Pošlji', 'Send')}</button>
                 </div>
               </div>
             )}
             <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '1rem', alignItems: 'flex-start', margin: '.75rem 0 0' }}>
               <div className="pw-posta-mape" style={{ flex: 'none', width: 138, display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
-              {([{ id: 'prejeto', ime: 'Prejeto', Ikona: Tray }, { id: 'poslano', ime: 'Poslano', Ikona: PaperPlaneTilt }, { id: 'osnutki', ime: 'Osnutki', Ikona: NotePencil }, { id: 'kos', ime: 'Koš', Ikona: Trash }] as const).map(({ id, ime, Ikona }) => {
+              {([{ id: 'prejeto', ime: L('Prejeto', 'Inbox'), Ikona: Tray }, { id: 'poslano', ime: L('Poslano', 'Sent'), Ikona: PaperPlaneTilt }, { id: 'osnutki', ime: L('Osnutki', 'Drafts'), Ikona: NotePencil }, { id: 'kos', ime: L('Koš', 'Trash'), Ikona: Trash }] as const).map(({ id, ime, Ikona }) => {
                 const st = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === id).length;
                 const on = mapa === id;
                 return <button key={id} type="button" onClick={() => { setMapa(id); setBeriMail(null); }} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', width: '100%', textAlign: 'left', border: 'none', background: on ? 'color-mix(in oklch, var(--ink) 9%, transparent)' : 'transparent', color: 'var(--ink)', borderRadius: '.6rem', padding: '.5rem .7rem', font: `${on ? 700 : 500} .78rem var(--font-sans), sans-serif`, cursor: 'pointer' }}><Ikona size={16} weight={on ? 'fill' : 'regular'} /><span style={{ flex: 1 }}>{ime}</span>{st ? <span style={{ fontWeight: 700, opacity: .55 }}>{st}</span> : null}</button>;
@@ -991,8 +996,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               {(() => {
                 const osebe = Array.from(new Set(posta.flatMap(v => v.prejemniki).filter(Boolean)));
                 return osebe.length > 1 ? (
-                  <select value={postaOseba} onChange={e => setPostaOseba(e.target.value)} aria-label="Filter po prejemniku" style={{ display: 'block', margin: '0 0 .5rem auto', border: `1px solid ${postaOseba ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: postaOseba ? 'var(--ink)' : 'transparent', color: postaOseba ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer', maxWidth: '70%' }}>
-                    <option value="" style={{ color: 'var(--ink)', background: 'var(--paper)' }}>Vsi prejemniki</option>
+                  <select value={postaOseba} onChange={e => setPostaOseba(e.target.value)} aria-label={L('Filter po prejemniku', 'Filter by recipient')} style={{ display: 'block', margin: '0 0 .5rem auto', border: `1px solid ${postaOseba ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: postaOseba ? 'var(--ink)' : 'transparent', color: postaOseba ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer', maxWidth: '70%' }}>
+                    <option value="" style={{ color: 'var(--ink)', background: 'var(--paper)' }}>{L('Vsi prejemniki', 'All recipients')}</option>
                     {osebe.map(o => <option key={o} value={o} style={{ color: 'var(--ink)', background: 'var(--paper)' }}>{o}</option>)}
                   </select>
                 ) : null;
@@ -1000,21 +1005,21 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             {beriMail ? (
               <div style={{ position: 'relative', zIndex: 1, margin: '.75rem 0 0', padding: '.9rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.85rem', background: 'oklch(100% 0 0 / .72)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.55rem' }}>
-                  <button type="button" onClick={() => setBeriMail(null)} style={{ border: 0, background: 'none', color: 'var(--ink)', font: '700 .7rem var(--font-sans), sans-serif', cursor: 'pointer', padding: 0 }}>← Nazaj na seznam</button>
+                  <button type="button" onClick={() => setBeriMail(null)} style={{ border: 0, background: 'none', color: 'var(--ink)', font: '700 .7rem var(--font-sans), sans-serif', cursor: 'pointer', padding: 0 }}>{L('← Nazaj na seznam', '← Back to list')}</button>
                   {!samoOgled && <div style={{ display: 'flex', gap: '.45rem' }}>
                     {beriMail.izbrisano ? <>
-                      <button type="button" onClick={() => { const id = beriMail.id; void restoreProjectMail(id).catch(() => undefined); setPosta(p => p.map(v => v.id === id ? { ...v, izbrisano: undefined } : v)); setBeriMail(null); }} style={{ border: '1px solid var(--ink)', background: 'none', color: 'var(--ink)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}>Obnovi</button>
-                      <button type="button" onClick={() => { const id = beriMail.id; void deleteProjectMailPermanent(id).catch(() => undefined); setPosta(p => p.filter(v => v.id !== id)); setBeriMail(null); }} style={{ border: '1px solid oklch(58% .18 25)', background: 'none', color: 'oklch(52% .18 25)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}>Zbriši dokončno</button>
-                    </> : <button type="button" onClick={() => { const id = beriMail.id; void trashProjectMail(id).catch(() => undefined); setPosta(p => p.map(v => v.id === id ? { ...v, izbrisano: new Date().toISOString() } : v)); setBeriMail(null); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', border: '1px solid color-mix(in oklch, var(--ink) 20%, transparent)', background: 'none', color: 'var(--ink)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}><Trash size={13} weight="bold" /> V koš</button>}
+                      <button type="button" onClick={() => { const id = beriMail.id; void restoreProjectMail(id).catch(() => undefined); setPosta(p => p.map(v => v.id === id ? { ...v, izbrisano: undefined } : v)); setBeriMail(null); }} style={{ border: '1px solid var(--ink)', background: 'none', color: 'var(--ink)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}>{L('Obnovi', 'Restore')}</button>
+                      <button type="button" onClick={() => { const id = beriMail.id; void deleteProjectMailPermanent(id).catch(() => undefined); setPosta(p => p.filter(v => v.id !== id)); setBeriMail(null); }} style={{ border: '1px solid oklch(58% .18 25)', background: 'none', color: 'oklch(52% .18 25)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}>{L('Zbriši dokončno', 'Delete permanently')}</button>
+                    </> : <button type="button" onClick={() => { const id = beriMail.id; void trashProjectMail(id).catch(() => undefined); setPosta(p => p.map(v => v.id === id ? { ...v, izbrisano: new Date().toISOString() } : v)); setBeriMail(null); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', border: '1px solid color-mix(in oklch, var(--ink) 20%, transparent)', background: 'none', color: 'var(--ink)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}><Trash size={13} weight="bold" /> {L('V koš', 'To trash')}</button>}
                   </div>}
                 </div>
-                <b style={{ display: 'block', fontSize: '.92rem' }}>{beriMail.zadeva || '(brez zadeve)'}</b>
+                <b style={{ display: 'block', fontSize: '.92rem' }}>{beriMail.zadeva || L('(brez zadeve)', '(no subject)')}</b>
                 <small style={{ display: 'block', color: 'var(--muted)', margin: '.15rem 0 .7rem' }}>{beriMail.prejemniki.join(', ')} · {datStr(beriMail.datum)}</small>
                 {beriMail.telo
                   ? (beriMail.smer === 'prejeto'
                       ? <div style={{ whiteSpace: 'pre-wrap', fontSize: '.85rem', lineHeight: 1.55 }}>{beriMail.telo.replace(/<[^>]+>/g, ' ')}</div>
                       : <div style={{ fontSize: '.85rem', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: beriMail.telo }} />)
-                  : <p style={{ color: 'var(--muted)', fontSize: '.82rem' }}>To sporočilo nima shranjenega besedila (starejši/lokalni zapis).</p>}
+                  : <p style={{ color: 'var(--muted)', fontSize: '.82rem' }}>{L('To sporočilo nima shranjenega besedila (starejši/lokalni zapis).', 'This message has no stored text (older/local record).')}</p>}
               </div>
             ) : (() => {
               const q = postaIsk.trim().toLowerCase();
@@ -1028,24 +1033,24 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                         <small style={{ flex: 'none', color: 'var(--muted)', fontSize: '.66rem' }}>{datStr(vnos.datum)}{casStr(vnos.datum) ? ` · ${casStr(vnos.datum)}` : ''}</small>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '.5rem', alignItems: 'baseline' }}>
-                        <span style={{ fontSize: '.8rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vnos.zadeva || '(brez zadeve)'}</span>
-                        <span style={{ flex: 'none', fontSize: '.5rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>{vnos.izbrisano ? 'Koš' : vnos.osnutek ? 'Osnutek' : vnos.smer === 'poslano' ? 'Poslano' : 'Prejeto'}</span>
+                        <span style={{ fontSize: '.8rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vnos.zadeva || L('(brez zadeve)', '(no subject)')}</span>
+                        <span style={{ flex: 'none', fontSize: '.5rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>{vnos.izbrisano ? L('Koš', 'Trash') : vnos.osnutek ? L('Osnutek', 'Draft') : vnos.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span>
                       </div>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="pw-posta-prazno">{mapa === 'prejeto' ? 'Še ni prejete pošte — prižge se, ko aktiviramo dohodno pošto.' : mapa === 'osnutki' ? 'Ni osnutkov.' : mapa === 'kos' ? 'Koš je prazen.' : 'Še ni poslane pošte. Klikni Nova pošta in piši stranki.'}</p>
+                <p className="pw-posta-prazno">{mapa === 'prejeto' ? L('Še ni prejete pošte — prižge se, ko aktiviramo dohodno pošto.', 'No received mail yet — it turns on once we enable inbound mail.') : mapa === 'osnutki' ? L('Ni osnutkov.', 'No drafts.') : mapa === 'kos' ? L('Koš je prazen.', 'Trash is empty.') : L('Še ni poslane pošte. Klikni Nova pošta in piši stranki.', 'No sent mail yet. Click New mail and write to the client.')}</p>
               );
             })()}
               </div>
             </div>
           </article>
           <Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-karta pw-dnevnik-link">
-            <p className={styles.eyebrow}>07 · CRM DNEVNIK</p>
-            <h3>Klici, sestanki, dogovori</h3>
-            <p>Kronologija odnosa s stranko »{selected.offer.client}« — odpri na strani stranke.</p>
-            <b className="pw-znacka pw-znacka-live">Odpri <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></b>
+            <p className={styles.eyebrow}>{L('07 · CRM DNEVNIK', '07 · CRM DIARY')}</p>
+            <h3>{L('Klici, sestanki, dogovori', 'Calls, meetings, agreements')}</h3>
+            <p>{jeEn ? `Timeline of the relationship with “${selected.offer.client}” — open on the client page.` : `Kronologija odnosa s stranko »${selected.offer.client}« — odpri na strani stranke.`}</p>
+            <b className="pw-znacka pw-znacka-live">{L('Odpri', 'Open')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></b>
           </Link>
         </div>
       </section>
@@ -1056,21 +1061,21 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     {vsiOdprt && selected && (
       <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={closeVsi}>
         <aside className={`${styles.detailPanel} pw-vsi-panel`} role="dialog" aria-modal="true" aria-labelledby="pw-vsi-naslov" onMouseDown={e => e.stopPropagation()}>
-          <button type="button" className="pw-vsi-x" onClick={closeVsi} aria-label="Zapri">✕</button>
+          <button type="button" className="pw-vsi-x" onClick={closeVsi} aria-label={L('Zapri', 'Close')}>✕</button>
           <p className={styles.eyebrow}>{vsiEyebrow}</p>
           <h2 id="pw-vsi-naslov">{vsiNaslov}</h2>
           <p className="pw-vsi-projekt">{selected.offer.title}</p>
 
           {/* preklop načina prikaza + iskalnik V ISTI VRSTI (Strani/Drsenje levo, lupa desno) */}
           <div className="pw-vsi-orodja">
-          <div className="pw-vsi-nacin" role="tablist" aria-label="Način prikaza">
+          <div className="pw-vsi-nacin" role="tablist" aria-label={L('Način prikaza', 'Display mode')}>
             <button type="button" role="tab" aria-selected={vsiNacin === 'strani'} className={vsiNacin === 'strani' ? 'pw-vsi-nacin-aktivna' : ''} onClick={() => setVsiNacin('strani')}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="16" rx="1.2" /><rect x="13" y="4" width="7" height="16" rx="1.2" /></svg>
-              Strani
+              {L('Strani', 'Pages')}
             </button>
             <button type="button" role="tab" aria-selected={vsiNacin === 'drsenje'} className={vsiNacin === 'drsenje' ? 'pw-vsi-nacin-aktivna' : ''} onClick={() => setVsiNacin('drsenje')}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="18" rx="5" /><line x1="12" y1="7" x2="12" y2="10" /></svg>
-              Drsenje
+              {L('Drsenje', 'Scroll')}
             </button>
           </div>
 
@@ -1082,13 +1087,13 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   autoFocus
                   value={vsiIskanje}
                   onChange={event => { setVsiIskanje(event.target.value); setVsiStran(1); }}
-                  placeholder="Išči po nazivu, številki, opisu, kategoriji …"
-                  aria-label="Išči"
+                  placeholder={L('Išči po nazivu, številki, opisu, kategoriji …', 'Search by name, number, description, category …')}
+                  aria-label={L('Išči', 'Search')}
                 />
-                <button type="button" className="pw-vsi-isci-x" onClick={() => { setVsiIskanje(''); setVsiStran(1); setVsiIskanjeOdprto(false); }} aria-label="Zapri iskanje">×</button>
+                <button type="button" className="pw-vsi-isci-x" onClick={() => { setVsiIskanje(''); setVsiStran(1); setVsiIskanjeOdprto(false); }} aria-label={L('Zapri iskanje', 'Close search')}>×</button>
               </div>
             ) : (
-              <button type="button" className="pw-vsi-lupa" onClick={() => setVsiIskanjeOdprto(true)} aria-label="Išči">
+              <button type="button" className="pw-vsi-lupa" onClick={() => setVsiIskanjeOdprto(true)} aria-label={L('Išči', 'Search')}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
               </button>
             )}
@@ -1096,16 +1101,16 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
           </div>
 
           <div className="pw-vsi-seznam" data-nacin={vsiNacin}>
-            {vsiPrikaz.length ? vsiPrikaz : <p className="pw-prazno">Ni zadetkov.</p>}
+            {vsiPrikaz.length ? vsiPrikaz : <p className="pw-prazno">{L('Ni zadetkov.', 'No results.')}</p>}
           </div>
 
           {vsiNacin === 'strani' && vsiStrani > 1 && (
-            <nav className="pw-vsi-strani" aria-label="Strani">
-              <button type="button" onClick={() => setVsiStran(s => Math.max(1, s - 1))} disabled={vsiStranAktivna <= 1} aria-label="Prejšnja stran">‹</button>
+            <nav className="pw-vsi-strani" aria-label={L('Strani', 'Pages')}>
+              <button type="button" onClick={() => setVsiStran(s => Math.max(1, s - 1))} disabled={vsiStranAktivna <= 1} aria-label={L('Prejšnja stran', 'Previous page')}>‹</button>
               {Array.from({ length: vsiStrani }, (_, i) => i + 1).map(n => (
                 <button key={n} type="button" className={n === vsiStranAktivna ? 'pw-vsi-stran-aktivna' : ''} onClick={() => setVsiStran(n)} aria-current={n === vsiStranAktivna ? 'page' : undefined}>{n}</button>
               ))}
-              <button type="button" onClick={() => setVsiStran(s => Math.min(vsiStrani, s + 1))} disabled={vsiStranAktivna >= vsiStrani} aria-label="Naslednja stran">›</button>
+              <button type="button" onClick={() => setVsiStran(s => Math.min(vsiStrani, s + 1))} disabled={vsiStranAktivna >= vsiStrani} aria-label={L('Naslednja stran', 'Next page')}>›</button>
             </nav>
           )}
         </aside>
@@ -1119,62 +1124,62 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       return (
         <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={zapri}>
           <aside className={`${styles.detailPanel} pw-det-panel`} role="dialog" aria-modal="true" aria-labelledby="pw-det-naslov" onMouseDown={e => e.stopPropagation()}>
-            <button type="button" className="pw-vsi-x" onClick={zapri} aria-label="Zapri">✕</button>
+            <button type="button" className="pw-vsi-x" onClick={zapri} aria-label={L('Zapri', 'Close')}>✕</button>
             {tip === 'racuni' && (() => {
               const r = item as FlowInvoice;
               const its = r.items || [];
               const imaPopust = its.some(i => (i.popust || 0) > 0);
               const imaDdv = its.some(i => (i.ddv || 0) > 0);
               return <>
-                <p className={styles.eyebrow}>RAČUN · {r.paid ? 'PLAČAN' : 'ODPRT'}</p>
-                <h2 id="pw-det-naslov">Račun {r.number || ''}</h2>
+                <p className={styles.eyebrow}>{L('RAČUN', 'INVOICE')} · {r.paid ? L('PLAČAN', 'PAID') : L('ODPRT', 'OPEN')}</p>
+                <h2 id="pw-det-naslov">{L('Račun', 'Invoice')} {r.number || ''}</h2>
                 <p className="pw-vsi-projekt">{selected.offer.title} · {selected.offer.client}</p>
                 <div className="pw-det-meta">
-                  <span><small>Datum</small><strong>{new Date(r.date).toLocaleDateString('sl-SI')}</strong></span>
-                  {typeof r.dueDays === 'number' && <span><small>Rok plačila</small><strong>{r.dueDays} dni</strong></span>}
-                  <span><small>Status</small><strong className={`pw-det-status ${r.paid ? 'placan' : 'odprt'}`}>{r.paid ? 'Plačan' : 'Odprt'}</strong></span>
+                  <span><small>{L('Datum', 'Date')}</small><strong>{new Date(r.date).toLocaleDateString('sl-SI')}</strong></span>
+                  {typeof r.dueDays === 'number' && <span><small>{L('Rok plačila', 'Payment due')}</small><strong>{r.dueDays} {L('dni', 'days')}</strong></span>}
+                  <span><small>{L('Status', 'Status')}</small><strong className={`pw-det-status ${r.paid ? 'placan' : 'odprt'}`}>{r.paid ? L('Plačan', 'Paid') : L('Odprt', 'Open')}</strong></span>
                 </div>
                 {its.length ? (<>
                   <div className="pw-det-tabela-ovoj"><table className="pw-det-tabela">
-                    <thead><tr><th>Opis</th><th>Kol.</th><th>Cena</th>{imaPopust && <th>Popust</th>}{imaDdv && <th>DDV</th>}<th>Skupaj</th></tr></thead>
+                    <thead><tr><th>{L('Opis', 'Description')}</th><th>{L('Kol.', 'Qty')}</th><th>{L('Cena', 'Price')}</th>{imaPopust && <th>{L('Popust', 'Discount')}</th>}{imaDdv && <th>{L('DDV', 'VAT')}</th>}<th>{L('Skupaj', 'Total')}</th></tr></thead>
                     <tbody>{its.map((it, i) => <tr key={`${it.opis}-${i}`}><td>{it.opis}</td><td>{it.kolicina}</td><td>{money(it.cena)}</td>{imaPopust && <td>{it.popust ? `${it.popust}%` : '—'}</td>}{imaDdv && <td>{it.ddv ? `${it.ddv}%` : '—'}</td>}<td>{money(it.kolicina * it.cena * (1 - (it.popust || 0) / 100))}</td></tr>)}</tbody>
                   </table></div>
                   <div className="pw-det-vsote">
-                    {typeof r.net === 'number' && <div><span>Neto</span><strong>{money(r.net)}</strong></div>}
-                    {typeof r.vatAmount === 'number' && r.vatAmount > 0 && <div><span>DDV</span><strong>{money(r.vatAmount)}</strong></div>}
-                    <div className="pw-det-skupaj"><span>Za plačilo</span><strong>{money(r.amount)}</strong></div>
+                    {typeof r.net === 'number' && <div><span>{L('Neto', 'Net')}</span><strong>{money(r.net)}</strong></div>}
+                    {typeof r.vatAmount === 'number' && r.vatAmount > 0 && <div><span>{L('DDV', 'VAT')}</span><strong>{money(r.vatAmount)}</strong></div>}
+                    <div className="pw-det-skupaj"><span>{L('Za plačilo', 'Total due')}</span><strong>{money(r.amount)}</strong></div>
                   </div>
                 </>) : (
-                  <div className="pw-det-vsote"><div className="pw-det-skupaj"><span>Za plačilo</span><strong>{money(r.amount)}</strong></div></div>
+                  <div className="pw-det-vsote"><div className="pw-det-skupaj"><span>{L('Za plačilo', 'Total due')}</span><strong>{money(r.amount)}</strong></div></div>
                 )}
                 <div className="pw-det-akcije">
-                  <button type="button" className="pw-det-poslji" onClick={() => posljiDokument(selected.offer.client, `Račun ${r.number || ''}`.trim(), `Pozdravljeni,\n\nv prilogi vam pošiljam račun ${r.number || ''} v znesku ${money(r.amount)}.\n\nLep pozdrav`)}>Pošlji naročniku <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
-                  <Link href={`${base}/kalkulator/racuni`} className="pw-det-uredi">Uredi v Računih <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link>
+                  <button type="button" className="pw-det-poslji" onClick={() => posljiDokument(selected.offer.client, (jeEn ? `Invoice ${r.number || ''}` : `Račun ${r.number || ''}`).trim(), jeEn ? `Hello,\n\nplease find attached invoice ${r.number || ''} for the amount of ${money(r.amount)}.\n\nKind regards` : `Pozdravljeni,\n\nv prilogi vam pošiljam račun ${r.number || ''} v znesku ${money(r.amount)}.\n\nLep pozdrav`)}>{L('Pošlji naročniku', 'Send to client')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
+                  <Link href={`${base}/kalkulator/racuni`} className="pw-det-uredi">{L('Uredi v Računih', 'Edit in Invoices')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link>
                 </div>
               </>;
             })()}
             {tip === 'pogodbe' && (() => {
               const c = item as FlowContract;
               return <>
-                <p className={styles.eyebrow}>POGODBA · {c.status}</p>
+                <p className={styles.eyebrow}>{L('POGODBA', 'CONTRACT')} · {c.status}</p>
                 <h2 id="pw-det-naslov">{c.title}</h2>
                 <p className="pw-vsi-projekt">{selected.offer.title} · {selected.offer.client}</p>
-                <div className="pw-det-meta"><span><small>Datum</small><strong>{new Date(c.date).toLocaleDateString('sl-SI')}</strong></span><span><small>Status</small><strong>{c.status}</strong></span></div>
-                <p className="pw-det-opomba">Celotno besedilo pogodbe odpri in uredi v razdelku Pogodbe.</p>
+                <div className="pw-det-meta"><span><small>{L('Datum', 'Date')}</small><strong>{new Date(c.date).toLocaleDateString('sl-SI')}</strong></span><span><small>{L('Status', 'Status')}</small><strong>{c.status}</strong></span></div>
+                <p className="pw-det-opomba">{L('Celotno besedilo pogodbe odpri in uredi v razdelku Pogodbe.', 'Open and edit the full contract text in the Contracts section.')}</p>
                 <div className="pw-det-akcije">
-                  <button type="button" className="pw-det-poslji" onClick={() => posljiDokument(selected.offer.client, `Pogodba — ${c.title}`, `Pozdravljeni,\n\nv prilogi vam pošiljam pogodbo »${c.title}«. Prosim za pregled in podpis.\n\nLep pozdrav`)}>Pošlji naročniku <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
-                  <Link href={`${base}/kalkulator/pogodbe`} className="pw-det-uredi">Odpri v Pogodbah <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link>
+                  <button type="button" className="pw-det-poslji" onClick={() => posljiDokument(selected.offer.client, jeEn ? `Contract — ${c.title}` : `Pogodba — ${c.title}`, jeEn ? `Hello,\n\nplease find attached the contract “${c.title}”. Please review and sign.\n\nKind regards` : `Pozdravljeni,\n\nv prilogi vam pošiljam pogodbo »${c.title}«. Prosim za pregled in podpis.\n\nLep pozdrav`)}>{L('Pošlji naročniku', 'Send to client')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
+                  <Link href={`${base}/kalkulator/pogodbe`} className="pw-det-uredi">{L('Odpri v Pogodbah', 'Open in Contracts')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link>
                 </div>
               </>;
             })()}
             {tip === 'stroski' && (() => {
               const s = item as FlowExpense;
               return <>
-                <p className={styles.eyebrow}>STROŠEK</p>
+                <p className={styles.eyebrow}>{L('STROŠEK', 'EXPENSE')}</p>
                 <h2 id="pw-det-naslov">{s.title}</h2>
                 <p className="pw-vsi-projekt">{selected.offer.title}</p>
-                <div className="pw-det-meta"><span><small>Kategorija</small><strong>{s.category || 'Projektni strošek'}</strong></span><span><small>Znesek</small><strong>{money(s.amount)}</strong></span></div>
-                <Link href={`${base}/kalkulator/stroski`} className="pw-det-uredi">Uredi v Stroških <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link>
+                <div className="pw-det-meta"><span><small>{L('Kategorija', 'Category')}</small><strong>{s.category || L('Projektni strošek', 'Project expense')}</strong></span><span><small>{L('Znesek', 'Amount')}</small><strong>{money(s.amount)}</strong></span></div>
+                <Link href={`${base}/kalkulator/stroski`} className="pw-det-uredi">{L('Uredi v Stroških', 'Edit in Expenses')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link>
               </>;
             })()}
           </aside>
