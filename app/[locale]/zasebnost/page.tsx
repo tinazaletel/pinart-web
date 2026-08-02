@@ -10,7 +10,7 @@ export function generateStaticParams() {
 
 const sl = {
   title: 'Politika zasebnosti',
-  updated: 'Zadnja posodobitev: junij 2025',
+  updated: 'Zadnja posodobitev: avgust 2026',
   sections: [
     {
       heading: '1. Upravljavec osebnih podatkov',
@@ -53,7 +53,7 @@ const sl = {
 
 const en = {
   title: 'Privacy Policy',
-  updated: 'Last updated: June 2025',
+  updated: 'Last updated: August 2026',
   sections: [
     {
       heading: '1. Data Controller',
