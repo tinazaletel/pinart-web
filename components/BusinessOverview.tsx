@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Handshake, Receipt, Wallet, Tag, Clock, FileText, CheckCircle, TrendUp, Stack, Scroll, Suitcase } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -43,6 +44,9 @@ function HistoryIcon({ type }: { type: string }) {
 }
 
 export default function BusinessOverview({ base }: { base: string }) {
+  const locale = useLocale();
+  const L = (sl: string, en: string) => (locale === 'en' ? en : sl);
+  const dl = locale === 'en' ? 'en-GB' : 'sl-SI';
   const [ready, setReady] = useState(false);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -189,7 +193,7 @@ export default function BusinessOverview({ base }: { base: string }) {
       : { id, title: String(data.get('title')), client: String(data.get('client')), date: String(data.get('date')), status: 'received', fileName: file instanceof File ? file.name : undefined, notes: String(data.get('notes')) };
     const next = [contract, ...contracts];
     setContracts(next); saveFlowCollection('contracts', next); setPreview('mine'); setForm(null); setContractBody('');
-    setFeedback(contractMode === 'offer' ? 'Osnutek pogodbe je shranjen. Pred podpisom ga preglej.' : 'Pogodba stranke je varno shranjena v tem brskalniku.');
+    setFeedback(contractMode === 'offer' ? L('Osnutek pogodbe je shranjen. Pred podpisom ga preglej.', 'The contract draft is saved. Review it before signing.') : L('Pogodba stranke je varno shranjena v tem brskalniku.', 'The client contract is safely saved in this browser.'));
   };
 
   const allHistoryItems: HistoryItem[] = [
@@ -219,7 +223,7 @@ export default function BusinessOverview({ base }: { base: string }) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const next = [{ id: crypto.randomUUID(), name: String(data.get('name')), email: String(data.get('email')), phone: String(data.get('phone')), tax: String(data.get('tax')) }, ...clientRecords];
-    setClientRecords(next); saveFlowCollection('clients', next); setForm(null); setFeedback('Stranka je shranjena.');
+    setClientRecords(next); saveFlowCollection('clients', next); setForm(null); setFeedback(L('Stranka je shranjena.', 'Client saved.'));
   };
 
   const setOfferAmount = (id: string, amount: number) => {
@@ -240,14 +244,14 @@ export default function BusinessOverview({ base }: { base: string }) {
         await navigator.share({ title: 'Pinart Flow · Računovodstvo', text: 'Izdani računi in stroški', files: [file] });
         const dates = [...invoices.map(item => item.date), ...expenses.map(item => item.date)].sort();
         await recordAccountingExport({ periodStart: dates[0] || new Date().toISOString().slice(0, 10), periodEnd: dates.at(-1) || new Date().toISOString().slice(0, 10), invoiceCount: invoices.length, expenseCount: expenses.length, sent: true });
-        setFeedback('Datoteka je pripravljena za deljenje.');
+        setFeedback(L('Datoteka je pripravljena za deljenje.', 'The file is ready to share.'));
       } else {
         const url = URL.createObjectURL(file); const link = document.createElement('a'); link.href = url; link.download = file.name; link.click(); URL.revokeObjectURL(url);
         const dates = [...invoices.map(item => item.date), ...expenses.map(item => item.date)].sort();
         await recordAccountingExport({ periodStart: dates[0] || new Date().toISOString().slice(0, 10), periodEnd: dates.at(-1) || new Date().toISOString().slice(0, 10), invoiceCount: invoices.length, expenseCount: expenses.length });
-        setFeedback('CSV je prenesen. Pošlji ga svojemu računovodstvu.');
+        setFeedback(L('CSV je prenesen. Pošlji ga svojemu računovodstvu.', 'The CSV is downloaded. Send it to your accountant.'));
       }
-    } catch { setFeedback('Deljenje je bilo preklicano.'); }
+    } catch { setFeedback(L('Deljenje je bilo preklicano.', 'Sharing was cancelled.')); }
   };
 
   const openContractFile = (id: string) => {
@@ -265,120 +269,120 @@ export default function BusinessOverview({ base }: { base: string }) {
     };
   };
 
-  if (!ready) return <div className={styles.loading}>Pripravljam tvoj poslovni pregled …</div>;
+  if (!ready) return <div className={styles.loading}>{L('Pripravljam tvoj poslovni pregled …', 'Preparing your business overview …')}</div>;
 
   /* v spremenljivko: ponovljen clients[0] v JSX prevajalniku ne dokaze, da
      element obstaja, tudi ce je pogoj clients[0] */
   const najboljsaStranka = clients[0];
   /* ime je lahko prazno: strosek sme biti brez stranke */
-  const imeNajboljse = najboljsaStranka?.client || 'Brez stranke';
+  const imeNajboljse = najboljsaStranka?.client || L('Brez stranke', 'No client');
 
   return (
     <>
       {/* Preklop stanj je zdaj v zgornji vrstici (samo na razvoju). Tu je bil
           preozek — stiri gumbi v 12.7rem so se prekrivali in besedila ni bilo brati. */}
-      {feedback && <div className={styles.feedback} role="status"><span>{feedback}</span><button type="button" onClick={() => setFeedback('')} aria-label="Zapri obvestilo">×</button></div>}
+      {feedback && <div className={styles.feedback} role="status"><span>{feedback}</span><button type="button" onClick={() => setFeedback('')} aria-label={L('Zapri obvestilo', 'Close notification')}>×</button></div>}
       <section className={styles.flowBand} id="tools" aria-labelledby="tools-title">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>01 · ORODJA</p><div className={styles.sectionNote}><strong>Smart pricing</strong><span>Cena po tvojih izkušnjah, trgu in naročniku.</span></div></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('01 · ORODJA', '01 · TOOLS')}</p><div className={styles.sectionNote}><strong>Smart pricing</strong><span>{L('Cena po tvojih izkušnjah, trgu in naročniku.', 'Pricing based on your experience, the market and the client.')}</span></div></div>
         <div className={styles.bandBody}>
-        <h2 id="tools-title" className={styles.bandNaslov}>Kaj boš danes uredila?</h2>
+        <h2 id="tools-title" className={styles.bandNaslov}>{L('Kaj boš danes uredila?', 'What will you take care of today?')}</h2>
         <div className={styles.flowTools}>
           <Link className={styles.offerTool} href={`${base}/kalkulator/orodje`}>
             <b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b>
-            <strong>Ponudba</strong><small>Pametna cena je vključena</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i>
+            <strong>{L('Ponudba', 'Offer')}</strong><small>{L('Pametna cena je vključena', 'Smart pricing included')}</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i>
           </Link>
-          <Link href={`${base}/kalkulator/racuni`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>Račun</strong><small>Iz ponudbe ali na novo</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
-          <Link href={`${base}/kalkulator/nov-projekt`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>Ustvari projekt</strong><small>Nov projekt za stranko</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
-          <Link href={`${base}/kalkulator/stranke`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>Stranke</strong><small>Kartoteka in zgodovina sodelovanja</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
-          <Link href={`${base}/kalkulator/koledar`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>Koledar</strong><small>Sestanki, klici in roki projektov</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
-          <Link href={`${base}/kalkulator/pogodbe`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>Pogodba</strong><small>Iz ponudbe ali dokument stranke</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
+          <Link href={`${base}/kalkulator/racuni`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>{L('Račun', 'Invoice')}</strong><small>{L('Iz ponudbe ali na novo', 'From an offer or from scratch')}</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
+          <Link href={`${base}/kalkulator/nov-projekt`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>{L('Ustvari projekt', 'Create project')}</strong><small>{L('Nov projekt za stranko', 'A new project for a client')}</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
+          <Link href={`${base}/kalkulator/stranke`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>{L('Stranke', 'Clients')}</strong><small>{L('Kartoteka in zgodovina sodelovanja', 'Records and collaboration history')}</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
+          <Link href={`${base}/kalkulator/koledar`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>{L('Koledar', 'Calendar')}</strong><small>{L('Sestanki, klici in roki projektov', 'Meetings, calls and project deadlines')}</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
+          <Link href={`${base}/kalkulator/pogodbe`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>{L('Pogodba', 'Contract')}</strong><small>{L('Iz ponudbe ali dokument stranke', 'From an offer or a client document')}</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
         </div>
         </div>
       </section>
 
-      {form && <section className={`${styles.inlineForm} ${form === 'contract' ? styles.contractBuilder : ''}`} aria-label="Vnos podatkov">
-        <div className={styles.formHeading}><h2>{form === 'expense' ? 'Nov strošek' : form === 'invoice' ? 'Nov račun' : form === 'contract' ? 'Nova pogodba' : form === 'client' ? 'Nova stranka' : 'Mesečni cilj'}</h2><button onClick={() => setForm(null)} aria-label="Zapri">×</button></div>
+      {form && <section className={`${styles.inlineForm} ${form === 'contract' ? styles.contractBuilder : ''}`} aria-label={L('Vnos podatkov', 'Data entry')}>
+        <div className={styles.formHeading}><h2>{form === 'expense' ? L('Nov strošek', 'New cost') : form === 'invoice' ? L('Nov račun', 'New invoice') : form === 'contract' ? L('Nova pogodba', 'New contract') : form === 'client' ? L('Nova stranka', 'New client') : L('Mesečni cilj', 'Monthly goal')}</h2><button onClick={() => setForm(null)} aria-label={L('Zapri', 'Close')}>×</button></div>
         {form === 'client' && <form onSubmit={saveClient}>
-          <label>Ime ali podjetje<input required name="name" /></label><label>E-pošta<input name="email" type="email" /></label><label>Telefon<input name="phone" /></label><label>Davčna številka<input name="tax" /></label><button type="submit">Shrani stranko</button>
+          <label>{L('Ime ali podjetje', 'Name or company')}<input required name="name" /></label><label>{L('E-pošta', 'Email')}<input name="email" type="email" /></label><label>{L('Telefon', 'Phone')}<input name="phone" /></label><label>{L('Davčna številka', 'Tax number')}<input name="tax" /></label><button type="submit">{L('Shrani stranko', 'Save client')}</button>
         </form>}
         {form === 'contract' && <>
-          <p className={styles.contractIntro}>Pogodba je navadno nadaljevanje potrjene ponudbe. Če pogodbo pošlje stranka, jo naloži in shrani ob projektu.</p>
-          <div className={styles.contractModes} role="tablist" aria-label="Način priprave pogodbe">
-            <button type="button" className={contractMode === 'offer' ? styles.contractModeActive : ''} onClick={() => setContractMode('offer')}><strong>Iz ponudbe</strong><span>Ustvari besedilo iz dogovorjenega obsega</span></button>
-            <button type="button" className={contractMode === 'upload' ? styles.contractModeActive : ''} onClick={() => setContractMode('upload')}><strong>Pogodba stranke</strong><span>Naloži, preglej in shrani dokument</span></button>
+          <p className={styles.contractIntro}>{L('Pogodba je navadno nadaljevanje potrjene ponudbe. Če pogodbo pošlje stranka, jo naloži in shrani ob projektu.', 'A contract is usually a continuation of an accepted offer. If the client sends the contract, upload it and store it with the project.')}</p>
+          <div className={styles.contractModes} role="tablist" aria-label={L('Način priprave pogodbe', 'Contract creation mode')}>
+            <button type="button" className={contractMode === 'offer' ? styles.contractModeActive : ''} onClick={() => setContractMode('offer')}><strong>{L('Iz ponudbe', 'From an offer')}</strong><span>{L('Ustvari besedilo iz dogovorjenega obsega', 'Generate the text from the agreed scope')}</span></button>
+            <button type="button" className={contractMode === 'upload' ? styles.contractModeActive : ''} onClick={() => setContractMode('upload')}><strong>{L('Pogodba stranke', 'Client contract')}</strong><span>{L('Naloži, preglej in shrani dokument', 'Upload, review and save the document')}</span></button>
           </div>
           {contractMode === 'offer' ? <form className={styles.contractForm} onSubmit={saveContract}>
-            <label className={styles.contractWide}>Potrjena ponudba<select required value={contractOfferId} onChange={event => { setContractOfferId(event.target.value); setContractBody(''); }}><option value="">Izberi ponudbo …</option>{offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}{offer.status === 'accepted' ? ' · sprejeta' : ''}</option>)}</select></label>
-            <label>Datum pogodbe<input required name="date" type="date" defaultValue={new Date().toISOString().slice(0, 10)} /></label>
-            <button className={styles.generateButton} type="button" disabled={!contractOfferId} onClick={generateContract}>Pripravi osnutek</button>
-            {contractBody && <label className={styles.contractEditor}>Besedilo pogodbe<textarea required name="body" rows={16} value={contractBody} onChange={event => setContractBody(event.target.value)} /></label>}
-            {contractBody && <div className={styles.contractActions}><small>Osnutek lahko popraviš. Po potrditvi stranke spremeni status v »Podpisana«.</small><button type="submit">Shrani osnutek</button></div>}
+            <label className={styles.contractWide}>{L('Potrjena ponudba', 'Accepted offer')}<select required value={contractOfferId} onChange={event => { setContractOfferId(event.target.value); setContractBody(''); }}><option value="">{L('Izberi ponudbo …', 'Choose an offer …')}</option>{offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}{offer.status === 'accepted' ? L(' · sprejeta', ' · accepted') : ''}</option>)}</select></label>
+            <label>{L('Datum pogodbe', 'Contract date')}<input required name="date" type="date" defaultValue={new Date().toISOString().slice(0, 10)} /></label>
+            <button className={styles.generateButton} type="button" disabled={!contractOfferId} onClick={generateContract}>{L('Pripravi osnutek', 'Generate draft')}</button>
+            {contractBody && <label className={styles.contractEditor}>{L('Besedilo pogodbe', 'Contract text')}<textarea required name="body" rows={16} value={contractBody} onChange={event => setContractBody(event.target.value)} /></label>}
+            {contractBody && <div className={styles.contractActions}><small>{L('Osnutek lahko popraviš. Po potrditvi stranke spremeni status v »Podpisana«.', 'You can edit the draft. Once the client confirms, change the status to »Signed«.')}</small><button type="submit">{L('Shrani osnutek', 'Save draft')}</button></div>}
           </form> : <form className={styles.contractForm} onSubmit={saveContract}>
-            <label>Naziv pogodbe<input required name="title" placeholder="npr. Pogodba za novo identiteto" /></label>
-            <label>Stranka<input required name="client" /></label>
-            <label>Datum prejema<input required name="date" type="date" defaultValue={new Date().toISOString().slice(0, 10)} /></label>
-            <label className={styles.fileField}>Dokument PDF ali Word<input required name="file" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" /></label>
-            <label className={styles.contractEditor}>Opombe za pregled<textarea name="notes" rows={5} placeholder="Kaj moraš preveriti, popraviti ali potrditi?" /></label>
-            <div className={styles.contractActions}><small>Dokument bo shranjen pri pogodbi in označen kot »Prejeta«.</small><button type="submit">Shrani pogodbo</button></div>
+            <label>{L('Naziv pogodbe', 'Contract title')}<input required name="title" placeholder={L('npr. Pogodba za novo identiteto', 'e.g. Contract for a new identity')} /></label>
+            <label>{L('Stranka', 'Client')}<input required name="client" /></label>
+            <label>{L('Datum prejema', 'Date received')}<input required name="date" type="date" defaultValue={new Date().toISOString().slice(0, 10)} /></label>
+            <label className={styles.fileField}>{L('Dokument PDF ali Word', 'PDF or Word document')}<input required name="file" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" /></label>
+            <label className={styles.contractEditor}>{L('Opombe za pregled', 'Review notes')}<textarea name="notes" rows={5} placeholder={L('Kaj moraš preveriti, popraviti ali potrditi?', 'What do you need to check, fix or confirm?')} /></label>
+            <div className={styles.contractActions}><small>{L('Dokument bo shranjen pri pogodbi in označen kot »Prejeta«.', 'The document will be saved with the contract and marked as »Received«.')}</small><button type="submit">{L('Shrani pogodbo', 'Save contract')}</button></div>
           </form>}
         </>}
         {form === 'expense' && <form onSubmit={saveExpense}>
-          <label>Opis<input required name="title" placeholder="npr. Adobe naročnina" /></label>
-          <label>Stranka ali projekt<input name="client" placeholder="neobvezno" /></label>
-          <label>Znesek<input required min="0" step="0.01" name="amount" type="number" /></label>
-          <button type="submit">Shrani strošek</button>
+          <label>{L('Opis', 'Description')}<input required name="title" placeholder={L('npr. Adobe naročnina', 'e.g. Adobe subscription')} /></label>
+          <label>{L('Stranka ali projekt', 'Client or project')}<input name="client" placeholder={L('neobvezno', 'optional')} /></label>
+          <label>{L('Znesek', 'Amount')}<input required min="0" step="0.01" name="amount" type="number" /></label>
+          <button type="submit">{L('Shrani strošek', 'Save cost')}</button>
         </form>}
         {form === 'invoice' && <form onSubmit={saveInvoice}>
-          <label>Poveži s ponudbo<select name="sourceOfferId" value={invoiceOfferId} onChange={event => setInvoiceOfferId(event.target.value)}><option value="">Račun brez ponudbe</option>{offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}</option>)}</select></label>
-          <label>Stranka<input name="client" placeholder="samodejno iz ponudbe" /></label>
-          <label>Znesek<input required min="0" step="0.01" name="amount" type="number" /></label>
-          <label>Datum izdaje<input required name="date" type="date" defaultValue={new Date().toISOString().slice(0, 10)} /></label>
-          <label className={styles.check}><input name="paid" type="checkbox" /> Račun je plačan</label>
-          <button type="submit">Shrani račun</button>
+          <label>{L('Poveži s ponudbo', 'Link to an offer')}<select name="sourceOfferId" value={invoiceOfferId} onChange={event => setInvoiceOfferId(event.target.value)}><option value="">{L('Račun brez ponudbe', 'Invoice without an offer')}</option>{offers.map(offer => <option key={offer.id} value={offer.id}>{offer.title} · {offer.client}</option>)}</select></label>
+          <label>{L('Stranka', 'Client')}<input name="client" placeholder={L('samodejno iz ponudbe', 'auto-filled from the offer')} /></label>
+          <label>{L('Znesek', 'Amount')}<input required min="0" step="0.01" name="amount" type="number" /></label>
+          <label>{L('Datum izdaje', 'Issue date')}<input required name="date" type="date" defaultValue={new Date().toISOString().slice(0, 10)} /></label>
+          <label className={styles.check}><input name="paid" type="checkbox" /> {L('Račun je plačan', 'Invoice is paid')}</label>
+          <button type="submit">{L('Shrani račun', 'Save invoice')}</button>
         </form>}
         {form === 'goal' && <form className={styles.goalPlanner} onSubmit={saveGoal}>
-          <div className={styles.goalCostSummary}><p className={styles.eyebrow}>TVOJA OSNOVA</p><div><span><small>Redni stroški</small><strong>{money(recurringTotal)}</strong></span><span><small>Vneseni ta mesec</small><strong>{money(currentMonthExpenses)}</strong></span><span><small>Skupaj stroški</small><strong>{money(goalCostBase)}</strong></span></div><Link href={`${base}/kalkulator/stroski`}>Preglej ali dodaj stroške →</Link></div>
-          <div className={styles.costSuggestions}><strong>Preveri, ali si vključila:</strong><span>Prispevke za socialno varnost</span><span>Obvezno zdravstveno zavarovanje</span><span>Davke in druge dajatve</span><span>Najemnino in obratovalne stroške</span><span>Računovodstvo, programsko opremo in opremo</span><small>Natančne zneske preveri pri računovodstvu, saj so odvisni od oblike podjetja in tvojega statusa.</small></div>
-          <div className={styles.goalInputs}><label>Želeni osebni dohodek<input min="0" step="100" type="number" value={desiredIncome} onChange={event => setDesiredIncome(Number(event.target.value))} /></label><label>Rezerva za davke in nepredvideno<input min="0" max="90" step="1" type="number" value={reservePercent} onChange={event => setReservePercent(Number(event.target.value))} /></label></div>
-          <div className={styles.goalRecommendation}><span>Priporočeni mesečni cilj</span><strong>{money(recommendedGoal)}</strong><small>stroški + želeni dohodek + {reservePercent}% rezerve</small><input name="goal" type="hidden" value={recommendedGoal} /><button type="submit">Uporabi ta cilj</button></div>
+          <div className={styles.goalCostSummary}><p className={styles.eyebrow}>{L('TVOJA OSNOVA', 'YOUR BASE')}</p><div><span><small>{L('Redni stroški', 'Recurring costs')}</small><strong>{money(recurringTotal)}</strong></span><span><small>{L('Vneseni ta mesec', 'Entered this month')}</small><strong>{money(currentMonthExpenses)}</strong></span><span><small>{L('Skupaj stroški', 'Total costs')}</small><strong>{money(goalCostBase)}</strong></span></div><Link href={`${base}/kalkulator/stroski`}>{L('Preglej ali dodaj stroške →', 'Review or add costs →')}</Link></div>
+          <div className={styles.costSuggestions}><strong>{L('Preveri, ali si vključila:', 'Check that you included:')}</strong><span>{L('Prispevke za socialno varnost', 'Social security contributions')}</span><span>{L('Obvezno zdravstveno zavarovanje', 'Mandatory health insurance')}</span><span>{L('Davke in druge dajatve', 'Taxes and other levies')}</span><span>{L('Najemnino in obratovalne stroške', 'Rent and operating costs')}</span><span>{L('Računovodstvo, programsko opremo in opremo', 'Accounting, software and equipment')}</span><small>{L('Natančne zneske preveri pri računovodstvu, saj so odvisni od oblike podjetja in tvojega statusa.', 'Check the exact amounts with your accountant, as they depend on your company form and status.')}</small></div>
+          <div className={styles.goalInputs}><label>{L('Želeni osebni dohodek', 'Desired personal income')}<input min="0" step="100" type="number" value={desiredIncome} onChange={event => setDesiredIncome(Number(event.target.value))} /></label><label>{L('Rezerva za davke in nepredvideno', 'Reserve for taxes and surprises')}<input min="0" max="90" step="1" type="number" value={reservePercent} onChange={event => setReservePercent(Number(event.target.value))} /></label></div>
+          <div className={styles.goalRecommendation}><span>{L('Priporočeni mesečni cilj', 'Recommended monthly goal')}</span><strong>{money(recommendedGoal)}</strong><small>{L(`stroški + želeni dohodek + ${reservePercent}% rezerve`, `costs + desired income + ${reservePercent}% reserve`)}</small><input name="goal" type="hidden" value={recommendedGoal} /><button type="submit">{L('Uporabi ta cilj', 'Use this goal')}</button></div>
         </form>}
       </section>}
 
       <div className={styles.overviewColumns}>
       <section className={styles.historyBand} id="accounting">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>02 · ZGODOVINA</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>Vsi dokumenti</span><span className={styles.abShort}>Več</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('02 · ZGODOVINA', '02 · HISTORY')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsi dokumenti', 'All documents')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
         <div className={styles.bandBody}>
-        <h2 className={styles.bandNaslov}>Zadnji dokumenti</h2>
-        {historyItems.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>Dokument</th><th>Stranka</th><th>Datum</th><th>Status</th></tr></thead><tbody>{historyItems.map(item => <tr key={`${item.type}-${item.id}`} role="button" tabIndex={0} aria-label={`Odpri ${item.title}`} onClick={() => setSelectedDocument(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedDocument(item); } }}><td><div className={styles.documentCell}><span className={`${styles.documentIcon} ${styles[`document_${item.type === 'Ponudba' ? 'offer' : item.type === 'Pogodba' ? 'contract' : item.type === 'Račun' ? 'invoice' : 'expense'}`]}`}><HistoryIcon type={item.type} /></span><span><strong>{item.title}</strong><small>{item.subtitle ?? item.type}</small></span></div></td><td>{item.client}</td><td>{new Date(item.date).toLocaleDateString('sl-SI')}</td><td>{statusOptions(item.type).length ? <span className={`${styles.statusField} ${styles[`status_${statusTone(item.status)}`]}`} data-editable={preview === 'mine' ? '' : undefined}><span className={styles.statusPill}>{item.status}</span><select aria-label={`Status: ${item.title}`} className={styles.statusSelect} value={item.status} disabled={preview !== 'mine'} title={preview !== 'mine' ? 'To so demo podatki — statusa ni mogoče spreminjati. Preklopi na »Moji podatki«.' : undefined} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={e => updateDocumentStatus(item.type, item.id, e.target.value)}>{statusOptions(item.type).map(option => <option key={option}>{option}</option>)}</select></span> : <span className={`${styles.statusPill} ${styles.status_neutral}`}>{item.status}</span>}</td></tr>)}</tbody></table></div> : <div className={styles.emptyState}><span>+</span><div><strong>Še nimaš dokumentov.</strong><p>Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj.</p></div></div>}
+        <h2 className={styles.bandNaslov}>{L('Zadnji dokumenti', 'Recent documents')}</h2>
+        {historyItems.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>{L('Dokument', 'Document')}</th><th>{L('Stranka', 'Client')}</th><th>{L('Datum', 'Date')}</th><th>Status</th></tr></thead><tbody>{historyItems.map(item => <tr key={`${item.type}-${item.id}`} role="button" tabIndex={0} aria-label={L(`Odpri ${item.title}`, `Open ${item.title}`)} onClick={() => setSelectedDocument(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedDocument(item); } }}><td><div className={styles.documentCell}><span className={`${styles.documentIcon} ${styles[`document_${item.type === 'Ponudba' ? 'offer' : item.type === 'Pogodba' ? 'contract' : item.type === 'Račun' ? 'invoice' : 'expense'}`]}`}><HistoryIcon type={item.type} /></span><span><strong>{item.title}</strong><small>{item.subtitle ?? item.type}</small></span></div></td><td>{item.client}</td><td>{new Date(item.date).toLocaleDateString(dl)}</td><td>{statusOptions(item.type).length ? <span className={`${styles.statusField} ${styles[`status_${statusTone(item.status)}`]}`} data-editable={preview === 'mine' ? '' : undefined}><span className={styles.statusPill}>{item.status}</span><select aria-label={`Status: ${item.title}`} className={styles.statusSelect} value={item.status} disabled={preview !== 'mine'} title={preview !== 'mine' ? L('To so demo podatki — statusa ni mogoče spreminjati. Preklopi na »Moji podatki«.', 'This is demo data — the status cannot be changed. Switch to »My data«.') : undefined} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={e => updateDocumentStatus(item.type, item.id, e.target.value)}>{statusOptions(item.type).map(option => <option key={option}>{option}</option>)}</select></span> : <span className={`${styles.statusPill} ${styles.status_neutral}`}>{item.status}</span>}</td></tr>)}</tbody></table></div> : <div className={styles.emptyState}><span>+</span><div><strong>{L('Še nimaš dokumentov.', 'You have no documents yet.')}</strong><p>{L('Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj.', 'Offers, contracts, invoices and costs will appear here.')}</p></div></div>}
         </div>
       </section>
 
       <section className={styles.resultsBand} id="clients" aria-labelledby="business-title">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>03 · POSLOVNI REZULTATI</p><select className={styles.periodSelect} value={period} onChange={e => setPeriod(e.target.value as Period)} aria-label="Obdobje prikaza"><option value="month">Ta mesec</option><option value="quarter">To četrtletje</option><option value="year">Letos</option></select></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('03 · POSLOVNI REZULTATI', '03 · BUSINESS RESULTS')}</p><select className={styles.periodSelect} value={period} onChange={e => setPeriod(e.target.value as Period)} aria-label={L('Obdobje prikaza', 'Display period')}><option value="month">{L('Ta mesec', 'This month')}</option><option value="quarter">{L('To četrtletje', 'This quarter')}</option><option value="year">{L('Letos', 'This year')}</option></select></div>
         <div className={styles.bandBody}>
-        <h2 id="business-title" className={styles.bandNaslov}>Kako ti gre?</h2>
+        <h2 id="business-title" className={styles.bandNaslov}>{L('Kako ti gre?', 'How are you doing?')}</h2>
         <div className={styles.kpiGrid}>
-          <div className={styles.kpi}><span>Izdano</span><strong>{money(issued)}</strong><small>{periodInvoices.length} računov</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="issued" /></b></div>
-          <div className={styles.kpi}><span>Plačano</span><strong>{money(paid)}</strong><small>{periodInvoices.filter(i => i.paid).length} potrjenih plačil</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="paid" /></b></div>
-          <div className={styles.kpi}><span>Stroški</span><strong>{money(costs)}</strong><small>{periodExpenses.length} vnosov</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="cost" /></b></div>
-          <div className={`${styles.kpi} ${profit < 0 ? styles.negative : ''}`}><span>Ocenjeni dobiček</span><strong>{money(profit)}</strong><small>plačano minus stroški</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="profit" /></b></div>
+          <div className={styles.kpi}><span>{L('Izdano', 'Issued')}</span><strong>{money(issued)}</strong><small>{L(`${periodInvoices.length} računov`, `${periodInvoices.length} invoices`)}</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="issued" /></b></div>
+          <div className={styles.kpi}><span>{L('Plačano', 'Paid')}</span><strong>{money(paid)}</strong><small>{L(`${periodInvoices.filter(i => i.paid).length} potrjenih plačil`, `${periodInvoices.filter(i => i.paid).length} confirmed payments`)}</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="paid" /></b></div>
+          <div className={styles.kpi}><span>{L('Stroški', 'Costs')}</span><strong>{money(costs)}</strong><small>{L(`${periodExpenses.length} vnosov`, `${periodExpenses.length} entries`)}</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="cost" /></b></div>
+          <div className={`${styles.kpi} ${profit < 0 ? styles.negative : ''}`}><span>{L('Ocenjeni dobiček', 'Estimated profit')}</span><strong>{money(profit)}</strong><small>{L('plačano minus stroški', 'paid minus costs')}</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="profit" /></b></div>
         </div>
-        <Link className={styles.panelMore} href={`${base}/kalkulator/racunovodstvo`}>Pojdi na podrobnosti <span aria-hidden>→</span></Link>
+        <Link className={styles.panelMore} href={`${base}/kalkulator/racunovodstvo`}>{L('Pojdi na podrobnosti', 'Go to details')} <span aria-hidden>→</span></Link>
         </div>
       </section>
 
       <section className={styles.eventsBand} id="events" aria-labelledby="events-title">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>04 · PRIHODNJI DOGODKI</p><Link className={styles.accountingButton} href={`${base}/kalkulator/koledar`}><span className={styles.abTxt}>Vsi dogodki</span><span className={styles.abShort}>Več</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('04 · PRIHODNJI DOGODKI', '04 · UPCOMING EVENTS')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/koledar`}><span className={styles.abTxt}>{L('Vsi dogodki', 'All events')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
         <div className={styles.bandBody}>
-        <h2 id="events-title" className={styles.bandNaslov}>Dogodki &amp; roki</h2>
+        <h2 id="events-title" className={styles.bandNaslov}>{L('Dogodki & roki', 'Events & deadlines')}</h2>
         {(() => {
           const addDays = (iso: string, n: number) => { const dt = new Date(iso); dt.setDate(dt.getDate() + n); return dt; };
           const ev = [
-            ...periodInvoices.filter(i => !i.paid).map(i => ({ id: `inv-${i.id}`, kind: 'Rok plačila', who: i.client || 'Račun', when: addDays(i.date, 15), tone: 'waiting' })),
-            ...waiting.map(o => ({ id: `off-${o.id}`, kind: 'Ponudba čaka odgovor', who: o.client || o.title, when: addDays(o.date, 8), tone: 'info' })),
-            ...activeOffers.filter(o => o.status === 'accepted').map(o => ({ id: `acc-${o.id}`, kind: 'Rok izvedbe', who: o.client || o.title, when: addDays(o.date, 20), tone: 'waiting' })),
+            ...periodInvoices.filter(i => !i.paid).map(i => ({ id: `inv-${i.id}`, kind: L('Rok plačila', 'Payment due'), who: i.client || L('Račun', 'Invoice'), when: addDays(i.date, 15), tone: 'waiting' })),
+            ...waiting.map(o => ({ id: `off-${o.id}`, kind: L('Ponudba čaka odgovor', 'Offer awaiting reply'), who: o.client || o.title, when: addDays(o.date, 8), tone: 'info' })),
+            ...activeOffers.filter(o => o.status === 'accepted').map(o => ({ id: `acc-${o.id}`, kind: L('Rok izvedbe', 'Delivery deadline'), who: o.client || o.title, when: addDays(o.date, 20), tone: 'waiting' })),
           ].sort((a, b) => a.when.getTime() - b.when.getTime()).slice(0, 5);
-          return ev.length ? <ul className={styles.eventList}>{ev.map(e => <li key={e.id}><span className={styles.eventDate} data-tone={e.tone}><b>{e.when.getDate()}</b><small>{e.when.toLocaleDateString('sl-SI', { month: 'short' }).replace('.', '').toUpperCase()}</small></span><span className={styles.eventCard}><span className={styles.eventIco} data-tone={e.tone} aria-hidden>{e.tone === 'waiting' ? <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg> : <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /></svg>}</span><span className={styles.eventBody}><strong>{e.kind}</strong><small>{e.who}</small></span><i className={styles.eventDot} data-tone={e.tone} aria-hidden /></span></li>)}</ul> : <div className={styles.emptyState}><span>+</span><div><strong>Ni prihodnjih rokov.</strong><p>Roki plačil in ponudbe, ki čakajo odgovor, se prikažejo tukaj.</p></div></div>;
+          return ev.length ? <ul className={styles.eventList}>{ev.map(e => <li key={e.id}><span className={styles.eventDate} data-tone={e.tone}><b>{e.when.getDate()}</b><small>{e.when.toLocaleDateString(dl, { month: 'short' }).replace('.', '').toUpperCase()}</small></span><span className={styles.eventCard}><span className={styles.eventIco} data-tone={e.tone} aria-hidden>{e.tone === 'waiting' ? <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg> : <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /></svg>}</span><span className={styles.eventBody}><strong>{e.kind}</strong><small>{e.who}</small></span><i className={styles.eventDot} data-tone={e.tone} aria-hidden /></span></li>)}</ul> : <div className={styles.emptyState}><span>+</span><div><strong>{L('Ni prihodnjih rokov.', 'No upcoming deadlines.')}</strong><p>{L('Roki plačil in ponudbe, ki čakajo odgovor, se prikažejo tukaj.', 'Payment due dates and offers awaiting a reply will appear here.')}</p></div></div>;
         })()}
         </div>
       </section>
@@ -386,21 +390,21 @@ export default function BusinessOverview({ base }: { base: string }) {
 
       <div className={styles.detailRow}>
         <section className={styles.historyBand} aria-labelledby="proj-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>05 · PROJEKTI</p><Link className={styles.accountingButton} href={`${base}/kalkulator/projekti`}><span className={styles.abTxt}>Vsi projekti</span><span className={styles.abShort}>Več</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('05 · PROJEKTI', '05 · PROJECTS')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/projekti`}><span className={styles.abTxt}>{L('Vsi projekti', 'All projects')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
-          <h2 id="proj-title" className={styles.bandNaslov}>Zadnji projekti</h2>
-          {activeOffers.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>Projekt</th><th>Status</th><th>Rok</th><th>Prihodki</th></tr></thead><tbody>{activeOffers.slice(0, 5).map(o => {
-            const map: Record<string, [string, string]> = { draft: ['Osnutek', 'neutral'], sent: ['V teku', 'info'], accepted: ['Zaključeno', 'success'], rejected: ['Zavrnjeno', 'danger'] };
+          <h2 id="proj-title" className={styles.bandNaslov}>{L('Zadnji projekti', 'Recent projects')}</h2>
+          {activeOffers.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>{L('Projekt', 'Project')}</th><th>Status</th><th>{L('Rok', 'Deadline')}</th><th>{L('Prihodki', 'Revenue')}</th></tr></thead><tbody>{activeOffers.slice(0, 5).map(o => {
+            const map: Record<string, [string, string]> = { draft: [L('Osnutek', 'Draft'), 'neutral'], sent: [L('V teku', 'In progress'), 'info'], accepted: [L('Zaključeno', 'Completed'), 'success'], rejected: [L('Zavrnjeno', 'Rejected'), 'danger'] };
             const [label, tone] = map[o.status] || ['—', 'neutral'];
-            return <tr key={o.id}><td><div className={styles.documentCell}><span><strong>{o.title}</strong><small>{o.client || '—'}</small></span></div></td><td><span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{label}</span></td><td>{new Date(o.date).toLocaleDateString('sl-SI')}</td><td><strong>{offerAmounts[o.id] ? money(offerAmounts[o.id]) : '—'}</strong></td></tr>;
-          })}</tbody></table></div> : <div className={styles.emptyState}><span>+</span><div><strong>Še ni projektov.</strong><p>Projekti se prikažejo tukaj, ko ustvariš ponudbo.</p></div></div>}
+            return <tr key={o.id}><td><div className={styles.documentCell}><span><strong>{o.title}</strong><small>{o.client || '—'}</small></span></div></td><td><span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{label}</span></td><td>{new Date(o.date).toLocaleDateString(dl)}</td><td><strong>{offerAmounts[o.id] ? money(offerAmounts[o.id]) : '—'}</strong></td></tr>;
+          })}</tbody></table></div> : <div className={styles.emptyState}><span>+</span><div><strong>{L('Še ni projektov.', 'No projects yet.')}</strong><p>{L('Projekti se prikažejo tukaj, ko ustvariš ponudbo.', 'Projects will appear here once you create an offer.')}</p></div></div>}
           </div>
         </section>
 
         <section className={styles.eventsBand} aria-labelledby="rev-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>06 · PRIHODKI</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>Vsa poročila</span><span className={styles.abShort}>Več</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('06 · PRIHODKI', '06 · REVENUE')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsa poročila', 'All reports')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
-          <h2 id="rev-title" className={styles.bandNaslov}>Prihodki po mesecih</h2>
+          <h2 id="rev-title" className={styles.bandNaslov}>{L('Prihodki po mesecih', 'Revenue by month')}</h2>
           {(() => {
             const base0 = new Date(); base0.setDate(1);
             const months = Array.from({ length: 6 }, (_, i) => { const d = new Date(base0); d.setMonth(d.getMonth() - (5 - i)); return d; });
@@ -416,7 +420,7 @@ export default function BusinessOverview({ base }: { base: string }) {
               <div className={styles.chartAxis}>{ticks.map(t => <span key={t}>{fmtK(t)}</span>)}</div>
               <div className={styles.barChart}>
                 <div className={styles.chartGrid} aria-hidden>{ticks.map(t => <i key={t} />)}</div>
-                {months.map((m, i) => <div key={i} className={styles.bar}><b style={{ height: `${Math.max(1, Math.round((vals[i] / niceMax) * 100))}%` } as React.CSSProperties} title={money(vals[i])} /><small>{m.toLocaleDateString('sl-SI', { month: 'short' }).replace('.', '')}</small></div>)}
+                {months.map((m, i) => <div key={i} className={styles.bar}><b style={{ height: `${Math.max(1, Math.round((vals[i] / niceMax) * 100))}%` } as React.CSSProperties} title={money(vals[i])} /><small>{m.toLocaleDateString(dl, { month: 'short' }).replace('.', '')}</small></div>)}
               </div>
             </div>;
           })()}
@@ -427,12 +431,12 @@ export default function BusinessOverview({ base }: { base: string }) {
       <section className={styles.tipBar}>
         <div className={styles.tipMain}>
           <span className={styles.tipIcon}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2h6c0-.8.4-1.5 1-2A7 7 0 0 0 12 2Z" /></svg></span>
-          <div><p className={styles.eyebrow}>Nasvet dneva</p><p className={styles.tipText}>Uporabi predloge in kalkulator, da prihraniš čas pri pripravi ponudb.</p></div>
+          <div><p className={styles.eyebrow}>{L('Nasvet dneva', 'Tip of the day')}</p><p className={styles.tipText}>{L('Uporabi predloge in kalkulator, da prihraniš čas pri pripravi ponudb.', 'Use templates and the calculator to save time preparing offers.')}</p></div>
         </div>
-        <Link className={styles.tipCta} href={`${base}/kalkulator/orodje`}>Odpri kalkulator <span aria-hidden>→</span></Link>
+        <Link className={styles.tipCta} href={`${base}/kalkulator/orodje`}>{L('Odpri kalkulator', 'Open calculator')} <span aria-hidden>→</span></Link>
       </section>
 
-      {selectedDocument && <div className={styles.detailBackdrop} role="presentation" onMouseDown={() => setSelectedDocument(null)}><aside className={styles.detailPanel} role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={e => e.stopPropagation()}><button className={styles.detailClose} type="button" onClick={() => setSelectedDocument(null)} aria-label="Zapri">×</button><p className={styles.eyebrow}>{selectedDocument.type}</p><h2 id="detail-title">{selectedDocument.title}</h2><dl><div><dt>Stranka</dt><dd>{selectedDocument.client}</dd></div><div><dt>Datum</dt><dd>{new Date(selectedDocument.date).toLocaleDateString('sl-SI')}</dd></div><div><dt>Status</dt><dd>{selectedDocument.status}</dd></div></dl>{selectedDocument.type === 'Pogodba' && (() => { const contract = contracts.find(item => item.id === selectedDocument.id); if (contract?.fileName) return <button type="button" onClick={() => openContractFile(contract.id)}>Odpri {contract.fileName}</button>;
+      {selectedDocument && <div className={styles.detailBackdrop} role="presentation" onMouseDown={() => setSelectedDocument(null)}><aside className={styles.detailPanel} role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={e => e.stopPropagation()}><button className={styles.detailClose} type="button" onClick={() => setSelectedDocument(null)} aria-label={L('Zapri', 'Close')}>×</button><p className={styles.eyebrow}>{selectedDocument.type}</p><h2 id="detail-title">{selectedDocument.title}</h2><dl><div><dt>{L('Stranka', 'Client')}</dt><dd>{selectedDocument.client}</dd></div><div><dt>{L('Datum', 'Date')}</dt><dd>{new Date(selectedDocument.date).toLocaleDateString(dl)}</dd></div><div><dt>Status</dt><dd>{selectedDocument.status}</dd></div></dl>{selectedDocument.type === 'Pogodba' && (() => { const contract = contracts.find(item => item.id === selectedDocument.id); if (contract?.fileName) return <button type="button" onClick={() => openContractFile(contract.id)}>{L('Odpri', 'Open')} {contract.fileName}</button>;
         if (!contract?.body) return null;
         /* novo telo je HTML (predloga s cleni in podpisi) — izrisi ga kot dokument;
            stara plain-text telesa ostanejo v <pre>, da se ne polomijo */
@@ -445,8 +449,8 @@ export default function BusinessOverview({ base }: { base: string }) {
         const linkedInvoices = invoices.filter(item => item.sourceOfferId === selectedDocument.sourceOfferId);
         const billed = linkedInvoices.reduce((sum, invoice) => sum + invoice.amount, 0);
         const agreed = offer ? offerAmounts[offer.id] || 0 : 0;
-        return offer ? <section className={styles.projectBundle}><p className={styles.eyebrow}>POVEZAN PROJEKT</p><h3>{offer.title}</h3>{offer.offerNumber && <small>Ponudba {offer.offerNumber}</small>}<label className={styles.agreedAmount}>Dogovorjena vrednost ponudbe<span><input type="number" min="0" step="0.01" value={agreed || ''} onChange={event => setOfferAmount(offer.id, Number(event.target.value))} /> €</span></label><div className={styles.projectScope}><strong>Dogovorjeno v ponudbi</strong>{offer.scope?.length ? <ul>{offer.scope.map((line, index) => <li key={`${line}-${index}`}>{line}</li>)}</ul> : <p>Odpri ponudbo za podroben obseg storitev.</p>}</div><div className={styles.projectTotals}><span><small>Dogovorjeno</small><strong>{agreed ? money(agreed) : '—'}</strong></span><span><small>Zaračunano</small><strong>{money(billed)}</strong></span><span className={agreed && agreed - billed > 0 ? styles.unbilled : ''}><small>Še ni zaračunano</small><strong>{agreed ? money(agreed - billed) : '—'}</strong></span></div><div className={styles.linkedDocuments}>{linkedContracts.map(contract => <span key={contract.id}>Pogodba · {contract.title}</span>)}{linkedInvoices.map(invoice => <span key={invoice.id}>Račun · {money(invoice.amount)} · {invoice.paid ? 'plačan' : 'odprt'}</span>)}</div><button type="button" onClick={() => { setInvoiceOfferId(offer.id); setSelectedDocument(null); setForm('invoice'); }}>+ Dodaj povezan račun</button></section> : null;
-      })()}<button type="button" onClick={() => setSelectedDocument(null)}>Končano</button></aside></div>}
+        return offer ? <section className={styles.projectBundle}><p className={styles.eyebrow}>{L('POVEZAN PROJEKT', 'LINKED PROJECT')}</p><h3>{offer.title}</h3>{offer.offerNumber && <small>{L('Ponudba', 'Offer')} {offer.offerNumber}</small>}<label className={styles.agreedAmount}>{L('Dogovorjena vrednost ponudbe', 'Agreed offer value')}<span><input type="number" min="0" step="0.01" value={agreed || ''} onChange={event => setOfferAmount(offer.id, Number(event.target.value))} /> €</span></label><div className={styles.projectScope}><strong>{L('Dogovorjeno v ponudbi', 'Agreed in the offer')}</strong>{offer.scope?.length ? <ul>{offer.scope.map((line, index) => <li key={`${line}-${index}`}>{line}</li>)}</ul> : <p>{L('Odpri ponudbo za podroben obseg storitev.', 'Open the offer for the detailed scope of services.')}</p>}</div><div className={styles.projectTotals}><span><small>{L('Dogovorjeno', 'Agreed')}</small><strong>{agreed ? money(agreed) : '—'}</strong></span><span><small>{L('Zaračunano', 'Invoiced')}</small><strong>{money(billed)}</strong></span><span className={agreed && agreed - billed > 0 ? styles.unbilled : ''}><small>{L('Še ni zaračunano', 'Not yet invoiced')}</small><strong>{agreed ? money(agreed - billed) : '—'}</strong></span></div><div className={styles.linkedDocuments}>{linkedContracts.map(contract => <span key={contract.id}>{L('Pogodba', 'Contract')} · {contract.title}</span>)}{linkedInvoices.map(invoice => <span key={invoice.id}>{L('Račun', 'Invoice')} · {money(invoice.amount)} · {invoice.paid ? L('plačan', 'paid') : L('odprt', 'open')}</span>)}</div><button type="button" onClick={() => { setInvoiceOfferId(offer.id); setSelectedDocument(null); setForm('invoice'); }}>{L('+ Dodaj povezan račun', '+ Add a linked invoice')}</button></section> : null;
+      })()}<button type="button" onClick={() => setSelectedDocument(null)}>{L('Končano', 'Done')}</button></aside></div>}
     </>
   );
 }
