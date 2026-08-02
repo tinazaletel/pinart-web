@@ -688,10 +688,10 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh{position:relative;min-height:100dvh;color:var(--ink);font-weight:400;overflow-x:clip}
 
         /* ozadje: papir + gradientna mreza + mehki blobi (kopija .rw-ozadje) */
-        .arh-ozadje{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background-color:oklch(97% 0.012 87);background-image:linear-gradient(color-mix(in oklch, oklch(19% 0.014 55) 7%, transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in oklch, oklch(19% 0.014 55) 7%, transparent) 1px,transparent 1px);background-size:4.5rem 4.5rem}
+        .arh-ozadje{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background-color:#fff}
         .arh-ozadje .arh-blob{position:absolute;width:min(60vw,760px);aspect-ratio:1;border-radius:50%;filter:blur(70px)}
-        .arh-blob-roza{top:-16vh;left:-12vw;background:radial-gradient(circle, oklch(74% .18 300 / .55), transparent 68%);opacity:.5;animation:arhRoza 22s ease-in-out infinite}
-        .arh-blob-modra{bottom:-22vh;right:-14vw;background:radial-gradient(circle, oklch(82% .15 162 / .55), transparent 68%);opacity:.45;animation:arhModra 25s ease-in-out infinite}
+        .arh-blob-roza{top:-16vh;left:-12vw;background:radial-gradient(circle, oklch(74% .18 300 / .55), transparent 68%);opacity:.12;animation:arhRoza 22s ease-in-out infinite}
+        .arh-blob-modra{bottom:-22vh;right:-14vw;background:radial-gradient(circle, oklch(82% .15 162 / .55), transparent 68%);opacity:.1;animation:arhModra 25s ease-in-out infinite}
         @keyframes arhRoza{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(32vw,24vh) scale(1.15)}50%{transform:translate(16vw,46vh) scale(.92)}75%{transform:translate(38vw,12vh) scale(1.08)}}
         @keyframes arhModra{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(-28vw,-22vh) scale(1.12)}50%{transform:translate(-44vw,-10vh) scale(.9)}75%{transform:translate(-16vw,-32vh) scale(1.06)}}
         @media (prefers-reduced-motion:reduce){.arh-blob{animation:none}}
