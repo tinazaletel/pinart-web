@@ -20,7 +20,8 @@ const localDateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 const localDateTimeValue = (date: Date) =>
   `${localDateKey(date)}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-const POZABLJEN_CASOVNIK_PRAG_MS = 10 * 60 * 60 * 1000;
+const DOLGA_SEJA_H = 10;
+const POZABLJEN_CASOVNIK_PRAG_MS = DOLGA_SEJA_H * 60 * 60 * 1000;
 /* slovenska dvojina: 1 vnos, 2 vnosa, 3-4 vnosi, 5+ vnosov (velja tudi za 101, 102 ...) */
 const vnosiSklon = (n: number) => { const d = n % 100; return d === 1 ? 'vnos' : d === 2 ? 'vnosa' : d === 3 || d === 4 ? 'vnosi' : 'vnosov'; };
 
@@ -208,6 +209,14 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     setNotice('Merjenje se nadaljuje.');
   };
 
+  const zavrziPozabljenoMerjenje = () => {
+    zapisiMerjenje(null);
+    setPozabljeno(null);
+    setRunning(null);
+    setElapsed(0);
+    setNotice('Seja ni bila shranjena.');
+  };
+
   const result = useMemo(() => calculatePlan(plan), [plan]);
   const completed = entries.filter(item => item.endedAt && item.durationMinutes > 0);
   const trackedMinutes = completed.reduce((sum, item) => sum + item.durationMinutes, 0);
@@ -246,6 +255,18 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
 
   const stop = () => {
     if (!running) return;
+    const zacetekCelote = merjenje?.zacetekPrvic || running.startedAt;
+    const zacetek = new Date(zacetekCelote);
+    const zdaj = new Date();
+    const predolgo = zdaj.getTime() - zacetek.getTime() > POZABLJEN_CASOVNIK_PRAG_MS;
+    const cezPolnoc = localDateKey(zacetek) !== localDateKey(zdaj);
+    if (predolgo || cezPolnoc) {
+      const osemUrPozneje = new Date(zacetek.getTime() + 8 * 60 * 60 * 1000);
+      setPredlaganKonec(localDateTimeValue(osemUrPozneje > zdaj ? zdaj : osemUrPozneje));
+      setPozabljeno({ ...running, startedAt: zacetekCelote });
+      setRunning(null);
+      return;
+    }
     const minute = Math.max(1, Math.round(elapsed / 60));
     const finished = { ...running, endedAt: new Date().toISOString(), durationMinutes: minute };
     /* vrednost dela naj bo ze predlagana, ko se odpre potrditev */
@@ -762,7 +783,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
         {pozabljeno ? <form className={styles.timerForm} onSubmit={potrdiPozabljenKonec}>
           <div className={styles.reviewTitle} role="alert">
             <strong>Je časovnik ostal prižgan?</strong>
-            <span>Merjenje za »{pozabljeno.projectName}« teče več kot 10 ur ali čez polnoč. Konca ne bomo ugibali.</span>
+            <span>Časovnik je tekel {izpisMinut(Math.max(1, Math.round(sekundeShrambe / 60)))}. Popravi konec?</span>
           </div>
           <label>
             <span>Dejanski konec dela</span>
@@ -770,7 +791,8 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
               value={predlaganKonec} onChange={e => setPredlaganKonec(e.target.value)} />
             <small>Predlagali smo največ 8 ur po začetku. Po potrebi čas popravi.</small>
           </label>
-          <button type="submit">Preračunaj trajanje</button>
+          <button type="submit">Shrani</button>
+          <button type="button" className={styles.linkGumb} onClick={zavrziPozabljenoMerjenje}>Zavrzi sejo</button>
           <button type="button" className={styles.linkGumb} onClick={nadaljujPozabljenoMerjenje}>Merjenje še vedno teče</button>
         </form> : pending ? <form className={styles.timerForm} onSubmit={confirmTime}>
           <div className={styles.reviewTitle}><strong>Preglej zaključeni vnos</strong><span>{pending.projectName} · {pending.serviceName || 'brez oznake storitve'}</span></div>
