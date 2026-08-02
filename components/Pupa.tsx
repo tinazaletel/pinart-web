@@ -68,11 +68,34 @@ export default function Pupa() {
   const zadnjiU = [...spor].reverse().find(m => m.role === 'user');
   const zadnjiA = [...spor].reverse().find(m => m.role === 'assistant');
 
+  /* TTS bere dobesedno — počistimo markdown/simbole, da ne bere »zvezdica«, »lojtra« ipd. */
+  const ocistiZaGovor = (t: string) => t
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/_([^_]+)_/g, '$1')
+    .replace(/^#{1,6}\s*/gm, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/^\s*[-•*]\s+/gm, '')
+    .replace(/€/g, locale === 'en' ? ' euros' : ' evrov')
+    .replace(/\s+/g, ' ')
+    .trim();
+
   const govori = (t: string) => {
     if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    const besedilo = ocistiZaGovor(t);
+    if (!besedilo) return;
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(t);
-    u.lang = locale === 'en' ? 'en-US' : 'sl-SI';
+    const jezik = locale === 'en' ? 'en-US' : 'sl-SI';
+    const u = new SpeechSynthesisUtterance(besedilo);
+    u.lang = jezik;
+    u.rate = 1; u.pitch = 1;
+    /* izberi glas, ki se ujema z jezikom (sl -> sl-SI); sicer sistemski privzeti */
+    const pref = jezik.slice(0, 2).toLowerCase();
+    const glasovi = window.speechSynthesis.getVoices();
+    const glas = glasovi.find(v => v.lang?.toLowerCase().startsWith(pref));
+    if (glas) u.voice = glas;
     u.onstart = () => setGovoreca(true);
     u.onend = () => setGovoreca(false);
     u.onerror = () => setGovoreca(false);
@@ -102,25 +125,40 @@ export default function Pupa() {
     }
   };
 
-  const glas = () => {
+  const glas = async () => {
     if (typeof window === 'undefined') return;
     const SR = (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition
       || (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition;
     if (!SR) { alert(L('Glasovni vnos ta brskalnik ne podpira (poskusi Chrome ali Safari).', 'This browser does not support voice input (try Chrome or Safari).')); return; }
+    /* Najprej EKSPLICITNO zaprosimo za mikrofon prek getUserMedia — to zanesljivo pokaže
+       prošnjo »Dovoli/Blokiraj«. (SpeechRecognition sam prošnje pogosto ne sproži.) */
+    const md = (navigator as Navigator & { mediaDevices?: MediaDevices }).mediaDevices;
+    if (!md?.getUserMedia) {
+      alert(L('Ta brskalnik/okno ne dovoli mikrofona. Odpri stran v Chromu ali Safariju (ne v vgrajenem oknu).', 'This browser/window blocks the microphone. Open the page in Chrome or Safari (not an embedded window).'));
+      return;
+    }
+    try {
+      const stream = await md.getUserMedia({ audio: true });
+      stream.getTracks().forEach(t => t.stop());
+    } catch (e) {
+      const ime = e instanceof DOMException ? e.name : '';
+      if (ime === 'NotAllowedError' || ime === 'SecurityError') {
+        alert(L('Mikrofon je blokiran. Klikni ključavnico/ikono ob naslovu → Mikrofon → Dovoli, nato osveži stran.', 'Microphone is blocked. Click the padlock/site icon by the address bar → Microphone → Allow, then refresh.'));
+      } else if (ime === 'NotFoundError') {
+        alert(L('Mikrofona ni bilo mogoče najti.', 'No microphone found.'));
+      } else {
+        alert(L('Do mikrofona ni bilo mogoče dostopati. Preizkusi v Chromu/Safariju (ne v vgrajenem oknu).', 'Could not access the microphone. Try Chrome/Safari (not an embedded window).'));
+      }
+      return;
+    }
     let rec: any;
     try { rec = new (SR as new () => any)(); } catch { alert(L('Glasovnega vnosa ni bilo mogoče zagnati.', 'Could not start voice input.')); return; }
     rec.lang = locale === 'en' ? 'en-US' : 'sl-SI';
     rec.interimResults = false;
     rec.maxAlternatives = 1;
-    /* poslusa nastavimo SELE ob dejanskem startu — sicer lahko obtiči na true, če start vrže */
     rec.onstart = () => setPoslusa(true);
     rec.onresult = (e: any) => { const t = e.results?.[0]?.[0]?.transcript || ''; if (t) posljiPupi(t); };
-    rec.onerror = (e: any) => {
-      setPoslusa(false);
-      if (e?.error === 'not-allowed' || e?.error === 'service-not-allowed') {
-        alert(L('Za glasovni vnos dovoli mikrofon v brskalniku (ikona ob naslovu).', 'Allow microphone access in your browser for voice input.'));
-      }
-    };
+    rec.onerror = () => setPoslusa(false);
     rec.onend = () => setPoslusa(false);
     try { rec.start(); } catch { setPoslusa(false); }
   };
