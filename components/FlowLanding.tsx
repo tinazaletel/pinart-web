@@ -682,7 +682,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bhub { position: relative; flex: 1; min-height: 15.5rem; margin-top: .4rem; display: grid; place-items: center; }
         .fl-bhub-core { position: relative; z-index: 2; width: 84px; height: 84px; border-radius: 50%; background: conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a); box-shadow: 0 10px 26px rgba(42,32,53,.24); }
         .fl-bhub-ring { position: absolute; inset: 0; z-index: 1; animation: flOrbit 36s linear infinite; }
-        .fl-bhub-bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; overflow: visible; }
+        .fl-bhub-bg { position: absolute; top: -1.6rem; left: -1.5rem; right: -1.5rem; bottom: -1.6rem; z-index: 0; overflow: visible; }
         .fl-bhub-ic { position: absolute; top: 50%; left: 50%; width: 46px; height: 46px; margin: -23px; border-radius: 50%; background: #fff; box-shadow: 0 6px 16px rgba(42,32,53,.14); display: grid; place-items: center; color: #6a4bd6; transform: rotate(var(--a)) translate(var(--r)) rotate(calc(-1 * var(--a))); }
         .fl-bhub-ic > i { display: grid; animation: flOrbitRev 36s linear infinite; }
         @keyframes flOrbit { to { transform: rotate(360deg); } }
@@ -1112,10 +1112,13 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                 <svg className="fl-bhub-bg" viewBox="0 0 300 300" preserveAspectRatio="none">
                   <defs>
                     <linearGradient id="flHubLine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#a78bfa" /><stop offset="1" stopColor="#7be0a0" /></linearGradient>
+                    <filter id="flHubGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.4" /></filter>
                   </defs>
-                  <g fill="none" stroke="url(#flHubLine)" strokeWidth="2.4" strokeLinecap="round" opacity=".5">
-                    <path d="M12 118 C 110 52 196 250 292 176" />
-                    <path d="M24 214 C 122 258 182 54 276 96" />
+                  <g fill="none" stroke="url(#flHubLine)" strokeLinecap="round">
+                    <path d="M-12 116 C 110 44 196 252 312 168" strokeWidth="9" opacity=".3" filter="url(#flHubGlow)" />
+                    <path d="M-12 116 C 110 44 196 252 312 168" strokeWidth="5" opacity=".85" />
+                    <path d="M-12 214 C 122 262 182 44 312 92" strokeWidth="9" opacity=".3" filter="url(#flHubGlow)" />
+                    <path d="M-12 214 C 122 262 182 44 312 92" strokeWidth="5" opacity=".85" />
                   </g>
                 </svg>
                 <span className="fl-bhub-core">
@@ -1178,10 +1181,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <p>Anonimni tržni pregled ti pokaže, kje si in raste z vsakim kreativcem. Tvoj pošteni benchmark.</p>
               <div className="fl-bglobe" aria-hidden>
                 <span className="fl-bglobe-ai"><Sparkle size={12} weight="fill" /> AI</span>
-                <div className="fl-bench" style={{ left: '8%', top: '42%', animationDelay: '0s' }}><small>Logotip</small><b style={{ background: '#d5776f' }}>650 €</b></div>
-                <div className="fl-bench" style={{ left: '20%', top: '70%', animationDelay: '1.3s' }}><small>CGP</small><b style={{ background: '#8b7be8' }}>1.350 €</b></div>
-                <div className="fl-bench" style={{ right: '6%', top: '48%', animationDelay: '2.6s' }}><small>Splet</small><b style={{ background: '#5bb89a' }}>1.400 €</b></div>
-                <div className="fl-bench" style={{ right: '16%', top: '72%', animationDelay: '3.9s' }}><small>Ilustracija</small><b style={{ background: '#c9926b' }}>480 €</b></div>
+                <div className="fl-bench" style={{ left: '8%', top: '26%', animationDelay: '0s' }}><small>Logotip</small><b style={{ background: '#d5776f' }}>650 €</b></div>
+                <div className="fl-bench" style={{ left: '20%', top: '52%', animationDelay: '1.3s' }}><small>CGP</small><b style={{ background: '#8b7be8' }}>1.350 €</b></div>
+                <div className="fl-bench" style={{ right: '6%', top: '32%', animationDelay: '2.6s' }}><small>Splet</small><b style={{ background: '#5bb89a' }}>1.400 €</b></div>
+                <div className="fl-bench" style={{ right: '16%', top: '54%', animationDelay: '3.9s' }}><small>Ilustracija</small><b style={{ background: '#c9926b' }}>480 €</b></div>
                 <svg viewBox="0 0 200 120">
                   <g stroke="rgba(255,255,255,.32)" fill="none" strokeWidth="1">
                     <circle cx="100" cy="60" r="44" />
