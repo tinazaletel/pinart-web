@@ -35,6 +35,7 @@
    zato so namizni popravki visje specificni + kjer je treba !important. Stili
    so samostojni (prefiks af-), brez odvisnosti od pregled.module.css. */
 
+import { useLocale } from 'next-intl';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CalendarPlus, FunnelSimple, MagnifyingGlass } from '@phosphor-icons/react';
@@ -65,7 +66,10 @@ type Props = {
   akcija?: ReactNode;
 };
 
-export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišči …', datumOd, datumDo, onDatumOd, onDatumDo, statusOpcije, statusVrednost, onStatus, statusOznaka = 'Status', aktivnihFiltrov = 0, onPocisti, akcija }: Props) {
+export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, datumDo, onDatumOd, onDatumDo, statusOpcije, statusVrednost, onStatus, statusOznaka = 'Status', aktivnihFiltrov = 0, onPocisti, akcija }: Props) {
+  const locale = useLocale();
+  const L = (sl: string, en: string) => (locale === 'en' ? en : sl);
+  const ph = placeholder ?? L('Poišči …', 'Search …');
   const [iskanjeOdprto, setIskanjeOdprto] = useState(false);
   const [sheet, setSheet] = useState(false);
   const [koledarOdprt, setKoledarOdprt] = useState(false);
@@ -91,7 +95,7 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
      (ce manjka "do" -> "…" namesto drugega datuma, in obratno); besedilo je
      v obeh primerih enak mehak siv ton (glej .af-datum-tekst) */
   const datumBesedilo = (): string => {
-    if (!datumOd && !datumDo) return 'Vsi datumi';
+    if (!datumOd && !datumDo) return L('Vsi datumi', 'All dates');
     if (datumOd && datumDo) return `${formatSl(datumOd)} – ${formatSl(datumDo)}`;
     if (datumOd) return `${formatSl(datumOd)} – …`;
     return `… – ${formatSl(datumDo)}`;
@@ -104,19 +108,19 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
           display:contents -> otroci ostanejo v af-vrstici (af-iskanje absolute
           se sidra na af-vrstico), na namizju cel blok skrijemo. */}
       <div className="af-mob">
-        <button type="button" className="af-krog" aria-label="Išči" aria-expanded={iskanjeOdprto} onClick={() => setIskanjeOdprto(true)}>
+        <button type="button" className="af-krog" aria-label={L('Išči', 'Search')} aria-expanded={iskanjeOdprto} onClick={() => setIskanjeOdprto(true)}>
           <MagnifyingGlass size={17} />
           {iskanje.trim() !== '' && <span className="af-stevec" aria-hidden>1</span>}
         </button>
-        <button type="button" className="af-krog" aria-label="Filtri" aria-haspopup="dialog" aria-expanded={sheet} onClick={() => setSheet(true)}>
+        <button type="button" className="af-krog" aria-label={L('Filtri', 'Filters')} aria-haspopup="dialog" aria-expanded={sheet} onClick={() => setSheet(true)}>
           <FunnelSimple size={17} />
           {aktivnihFiltrov > 0 && <span className="af-stevec" aria-hidden>{aktivnihFiltrov}</span>}
         </button>
         {akcija && <span className="af-mob-akcija">{akcija}</span>}
         <div className={'af-iskanje' + (iskanjeOdprto ? ' odprt' : '')} aria-hidden={!iskanjeOdprto}>
           <MagnifyingGlass size={16} aria-hidden />
-          <input ref={inputRef} type="search" value={iskanje} onChange={event => onIskanje(event.target.value)} placeholder={placeholder} aria-label={placeholder} tabIndex={iskanjeOdprto ? 0 : -1} />
-          <button type="button" className="af-iskanje-x" aria-label="Zapri iskanje" tabIndex={iskanjeOdprto ? 0 : -1} onClick={() => { onIskanje(''); setIskanjeOdprto(false); }}>✕</button>
+          <input ref={inputRef} type="search" value={iskanje} onChange={event => onIskanje(event.target.value)} placeholder={ph} aria-label={ph} tabIndex={iskanjeOdprto ? 0 : -1} />
+          <button type="button" className="af-iskanje-x" aria-label={L('Zapri iskanje', 'Close search')} tabIndex={iskanjeOdprto ? 0 : -1} onClick={() => { onIskanje(''); setIskanjeOdprto(false); }}>✕</button>
         </div>
       </div>
 
@@ -125,15 +129,15 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
       <div className="af-namizje">
         <span className="af-poln">
           <MagnifyingGlass size={16} aria-hidden />
-          <input type="search" value={iskanje} onChange={event => onIskanje(event.target.value)} placeholder={placeholder} aria-label={placeholder} />
+          <input type="search" value={iskanje} onChange={event => onIskanje(event.target.value)} placeholder={ph} aria-label={ph} />
         </span>
         <div className="af-datum" ref={datumRef}>
-          <button type="button" className="af-datum-sprozilec" aria-haspopup="dialog" aria-expanded={koledarOdprt} aria-label="Izberi obdobje" onClick={() => setKoledarOdprt(v => !v)}>
+          <button type="button" className="af-datum-sprozilec" aria-haspopup="dialog" aria-expanded={koledarOdprt} aria-label={L('Izberi obdobje', 'Select period')} onClick={() => setKoledarOdprt(v => !v)}>
             <span className="af-kolgumb" aria-hidden><CalendarPlus size={16} /></span>
             <span className="af-datum-tekst">{datumTekst}</span>
           </button>
           {koledarOdprt && (
-            <div className="af-datum-popover" role="dialog" aria-label="Izbira obdobja">
+            <div className="af-datum-popover" role="dialog" aria-label={L('Izbira obdobja', 'Period selection')}>
               <KoledarRazpon od={datumOd} do={datumDo} onOd={onDatumOd} onDo={onDatumDo} onZapri={() => setKoledarOdprt(false)} />
             </div>
           )}
@@ -151,11 +155,11 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
     {typeof document !== 'undefined' && createPortal(
       <>
         {sheet && <div className="af-zastor" onClick={() => setSheet(false)} aria-hidden />}
-        <div className={'af-sheet' + (sheet ? ' odprt' : '')} role="dialog" aria-label="Filtri" aria-hidden={!sheet}>
-          <div className="af-glava"><b>Filtri</b><button type="button" className="af-sheet-x" onClick={() => setSheet(false)} aria-label="Zapri">✕</button></div>
+        <div className={'af-sheet' + (sheet ? ' odprt' : '')} role="dialog" aria-label={L('Filtri', 'Filters')} aria-hidden={!sheet}>
+          <div className="af-glava"><b>{L('Filtri', 'Filters')}</b><button type="button" className="af-sheet-x" onClick={() => setSheet(false)} aria-label={L('Zapri', 'Close')}>✕</button></div>
           <div className="af-vsebina">
             <div className="af-sk">
-              <span className="af-sk-oznaka">Obdobje</span>
+              <span className="af-sk-oznaka">{L('Obdobje', 'Period')}</span>
               {/* mobilno: koledar razpona INLINE (namesto native polj); "Koncano" zapre cel sheet */}
               <div className="af-sheet-datum">
                 <KoledarRazpon od={datumOd} do={datumDo} onOd={onDatumOd} onDo={onDatumDo} onZapri={() => setSheet(false)} />
@@ -171,7 +175,7 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
             </div>}
           </div>
           {onPocisti && <div className="af-noga">
-            <button type="button" className="af-pocisti" aria-label="Počisti filtre" onClick={onPocisti}>Počisti filtre</button>
+            <button type="button" className="af-pocisti" aria-label={L('Počisti filtre', 'Clear filters')} onClick={onPocisti}>{L('Počisti filtre', 'Clear filters')}</button>
           </div>}
         </div>
       </>,
