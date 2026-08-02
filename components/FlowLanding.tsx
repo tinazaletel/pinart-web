@@ -707,8 +707,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bglobe .dot { transform-box: fill-box; transform-origin: center; animation: flPulse 2.6s ease-in-out infinite; }
         @keyframes flPulse { 0%,100% { opacity: .35; transform: scale(.7); } 50% { opacity: 1; transform: scale(1.15); } }
         .fl-bglobe-ai { position: absolute; top: .2rem; right: .6rem; display: inline-flex; align-items: center; gap: .28rem; padding: .2rem .5rem; border-radius: 999px; background: rgba(255,255,255,.14); color: #fff; font-size: .68rem; font-weight: 700; letter-spacing: .04em; backdrop-filter: blur(4px); }
-        .fl-bench { position: absolute; z-index: 3; display: flex; flex-direction: column; align-items: flex-start; gap: .16rem; animation: flFloat 3.6s ease-in-out infinite; }
-        @keyframes flFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        .fl-bench { position: absolute; z-index: 3; display: flex; flex-direction: column; align-items: flex-start; gap: .16rem; opacity: 0; animation: flBlink 5.2s ease-in-out infinite; }
+        @keyframes flBlink { 0%, 48%, 100% { opacity: 0; transform: scale(.8); } 8%, 34% { opacity: 1; transform: scale(1); } }
         .fl-bench small { font-size: .56rem; color: rgba(255,255,255,.55); }
         .fl-bench b { font-size: .72rem; font-weight: 700; color: #fff; padding: .14rem .48rem; border-radius: 8px; box-shadow: 0 6px 14px rgba(0,0,0,.3); }
         /* c) bela lista strankinih zapisov (peek poleg avatarjev) */
@@ -1178,10 +1178,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <p>Anonimni tržni pregled ti pokaže, kje si in raste z vsakim kreativcem. Tvoj pošteni benchmark.</p>
               <div className="fl-bglobe" aria-hidden>
                 <span className="fl-bglobe-ai"><Sparkle size={12} weight="fill" /> AI</span>
-                <div className="fl-bench" style={{ left: '-2%', top: '16%', animationDelay: '0s' }}><small>Logotip</small><b style={{ background: '#d5776f' }}>650 €</b></div>
-                <div className="fl-bench" style={{ left: '3%', top: '55%', animationDelay: '.9s' }}><small>CGP</small><b style={{ background: '#8b7be8' }}>1.350 €</b></div>
-                <div className="fl-bench" style={{ right: '0%', top: '40%', animationDelay: '1.5s' }}><small>Splet</small><b style={{ background: '#5bb89a' }}>1.400 €</b></div>
-                <div className="fl-bench" style={{ right: '7%', top: '73%', animationDelay: '2.1s' }}><small>Ilustracija</small><b style={{ background: '#c9926b' }}>480 €</b></div>
+                <div className="fl-bench" style={{ left: '8%', top: '42%', animationDelay: '0s' }}><small>Logotip</small><b style={{ background: '#d5776f' }}>650 €</b></div>
+                <div className="fl-bench" style={{ left: '20%', top: '70%', animationDelay: '1.3s' }}><small>CGP</small><b style={{ background: '#8b7be8' }}>1.350 €</b></div>
+                <div className="fl-bench" style={{ right: '6%', top: '48%', animationDelay: '2.6s' }}><small>Splet</small><b style={{ background: '#5bb89a' }}>1.400 €</b></div>
+                <div className="fl-bench" style={{ right: '16%', top: '72%', animationDelay: '3.9s' }}><small>Ilustracija</small><b style={{ background: '#c9926b' }}>480 €</b></div>
                 <svg viewBox="0 0 200 120">
                   <g stroke="rgba(255,255,255,.32)" fill="none" strokeWidth="1">
                     <circle cx="100" cy="60" r="44" />
