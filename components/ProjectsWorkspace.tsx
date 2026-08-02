@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { Plus, FolderOpen, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash, MagnifyingGlass } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
@@ -84,7 +85,19 @@ const pwStyles = `
 .pw-seznam-glava{display:flex;align-items:center;justify-content:space-between;padding:.1rem .2rem .9rem}
 .pw-seznam-glava strong{font:500 1.5rem var(--font-sans),system-ui,sans-serif;color:var(--ink)}
 .pw-tabela-ovoj{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:1.4rem}
-.pw-tabela{min-width:640px;display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr) 1.6rem;background:#fff;border:1px solid oklch(93% .006 82 / .55);border-radius:1.4rem;overflow:hidden}
+.pw-tabela{min-width:640px;display:grid;grid-template-columns:1.7rem minmax(0,2.1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr) 1.6rem;background:#fff;border:1px solid oklch(93% .006 82 / .55);border-radius:1.4rem;overflow:hidden}
+.pw-chk-cel{display:flex;align-items:center;justify-content:center}
+.pw-chk{width:1.05rem;height:1.05rem;border-radius:.34rem;border:1.5px solid oklch(78% .02 80);background:#fff;cursor:pointer;flex:none;display:grid;place-items:center;transition:background .12s,border-color .12s}
+.pw-chk::after{content:"";width:.5rem;height:.28rem;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translate(0,-1px);opacity:0;transition:opacity .12s}
+.pw-chk.on{background:oklch(52% .13 300);border-color:oklch(52% .13 300)}
+.pw-chk.on::after{opacity:1}
+.pw-izbor-letev{position:fixed;left:50%;bottom:1.4rem;transform:translateX(-50%);z-index:1200;width:max-content;max-width:calc(100vw - 2rem);display:flex;align-items:center;gap:.9rem;padding:.6rem .7rem .6rem 1.1rem;border-radius:999px;background:oklch(28% .02 300);color:#fff;box-shadow:0 .8rem 2.4rem oklch(22% .04 300 / .32);animation:pwLetevIn .3s cubic-bezier(.16,1,.3,1) both}
+@keyframes pwLetevIn{from{opacity:0;transform:translate(-50%,1rem)}to{opacity:1;transform:translate(-50%,0)}}
+.pw-izbor-st{font-size:.8rem;font-weight:700;white-space:nowrap}
+.pw-izbor-gumb{border:0;border-radius:999px;padding:.45rem .95rem;background:#fff;color:oklch(30% .03 300);font:700 .78rem var(--font-sans),system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+.pw-izbor-gumb:hover{background:oklch(96% .02 300)}
+.pw-izbor-prekl{border:0;background:transparent;color:oklch(88% .02 300);font:600 .76rem var(--font-sans),system-ui,sans-serif;cursor:pointer;padding:.45rem .5rem}
+.pw-izbor-prekl:hover{color:#fff}
 .pw-tabela-naslov{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem 1rem .85rem;background:oklch(95% .035 300);border-bottom:1px solid rgba(17,17,17,.08)}
 .pw-tabela-naslov .${styles.eyebrow}{color:oklch(45% .12 300)}
 .pw-tabela-naslov strong{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:1.6rem;line-height:1;color:var(--ink)}
@@ -376,6 +389,11 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [nacin] = usePredogled();
   const samoOgled = nacin !== 'mine';
   const [selectedId, setSelectedId] = useState('');
+  /* izbor vrstic za izvoz (kljuc = offer.id) + portal za spodnjo letev (Lenis) */
+  const [izbrani, setIzbrani] = useState<Set<string>>(() => new Set());
+  const [portalPripravljen, setPortalPripravljen] = useState(false);
+  useEffect(() => { setPortalPripravljen(true); }, []);
+  const preklopiIzbor = (id: string) => setIzbrani(prev => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   /* samostojna raba (brez zunanjiFilter): lastno stanje orodne vrstice — fallback,
      ko iskanje/status/datum* niso podani od zunaj */
   const [notranjeIskanje, setNotranjeIskanje] = useState('');
@@ -418,6 +436,32 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   }, [realProjekti, offers, invoices, expenses, contracts, amounts]);
   const projects = useMemo(() => [...offerProjects, ...realProjects].sort((a, b) => (b.offer.date || '').localeCompare(a.offer.date || '')), [offerProjects, realProjects]);
   const visible = projects.filter(project => { const text = `${project.offer.title} ${project.offer.client} ${project.offer.number || ''}`.toLocaleLowerCase('sl-SI'); const match = text.includes(search.toLocaleLowerCase('sl-SI')); const state = filter === 'vse' || (filter === 'aktivni' ? project.offer.status === 'accepted' : filter === 'cakajo' ? project.offer.status === 'sent' : ['rejected'].includes(project.offer.status)); return match && state && vObdobju(project.offer.date, datumOd, datumDo); });
+  /* označi vse (vidne) + CSV izvoz izbranih projektov */
+  const vsiIzbrani = visible.length > 0 && visible.every(p => izbrani.has(p.offer.id));
+  const preklopiVse = () => setIzbrani(prev => { const n = new Set(prev); if (vsiIzbrani) visible.forEach(p => n.delete(p.offer.id)); else visible.forEach(p => n.add(p.offer.id)); return n; });
+  const kljuk = (id: string | null) => {
+    const vse = id === null;
+    const on = vse ? vsiIzbrani : izbrani.has(id);
+    const dej = (e: React.SyntheticEvent) => { e.stopPropagation(); if (vse) preklopiVse(); else preklopiIzbor(id); };
+    return <span className="pw-chk-cel"><span role="checkbox" aria-checked={on} tabIndex={0}
+      className={'pw-chk' + (on ? ' on' : '')} onClick={dej}
+      onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); dej(e); } }}
+      aria-label={vse ? 'Označi vse' : 'Izberi projekt'} /></span>;
+  };
+  const izvoziIzbrane = () => {
+    if (typeof document === 'undefined') return;
+    const vrst: (string | number)[][] = [['Projekt', 'Stranka', 'Datum', 'Status', 'Vrednost']];
+    visible.forEach(p => {
+      if (!izbrani.has(p.offer.id)) return;
+      const status = p.real ? projektStatusOznaka[p.real.status] : statusLabel[p.offer.status];
+      vrst.push([p.offer.title || '', p.offer.client || '', datStr(p.offer.date), status, typeof p.agreed === 'number' && p.agreed ? p.agreed : '']);
+    });
+    const vsebina = '﻿' + vrst.map(v => v.map(c => { const s = String(c ?? ''); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(';')).join('\r\n');
+    const blob = new Blob([vsebina], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'Projekti_izvoz.csv';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
   /* PIPELINE POSLOV — kanban pogled (glej pw-pipeline v pwStyles). Stolpci po vrsti
      + locen, umirjen Izgubljeno na koncu (glej ProjektFaza v lib/projekti). */
   const PIPELINE_STOLPCI: { faza: ProjektFaza; naziv: string }[] = [
@@ -699,6 +743,14 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   };
 
   return <div className={styles.projectsPage}><style dangerouslySetInnerHTML={{ __html: overflowFix + pwStyles }} />
+    {portalPripravljen && !selected && izbrani.size > 0 && createPortal(
+      <div className="pw-izbor-letev" role="region" aria-label="Izbrani projekti">
+        <span className="pw-izbor-st">{izbrani.size} izbranih</span>
+        <button type="button" className="pw-izbor-gumb" onClick={izvoziIzbrane}>Izvozi CSV</button>
+        <button type="button" className="pw-izbor-prekl" onClick={() => setIzbrani(new Set())}>Prekliči</button>
+      </div>,
+      document.body,
+    )}
     {!selected && !zunanjiFilter && <ArhivFilter
       iskanje={search}
       onIskanje={setSearch}
@@ -791,9 +843,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             <div className="pw-tabela-ovoj">
               <div className="pw-tabela">
                 {/* naslov + stevec + filter so v pw-glava-pas nad tabelo */}
-                <header><span>Projekt: {visible.length}</span><span>Stranka</span><span>Datum</span><span>Status</span><span className="pw-desno">Vrednost</span><span /></header>
+                <header>{kljuk(null)}<span>Projekt: {visible.length}</span><span>Stranka</span><span>Datum</span><span>Status</span><span className="pw-desno">Vrednost</span><span /></header>
                 {visible.map(project => { const info = projectStatusInfo(project.offer.status); return (
                   <button key={project.offer.id} type="button" className="pw-vrstica" onClick={() => selectProject(project.offer.id)}>
+                    {kljuk(project.offer.id)}
                     <span className="pw-glavna"><span className="pw-ikona" aria-hidden><FolderOpen size={17} /></span><strong>{project.offer.title}</strong></span>
                     <span className="pw-mut">{project.offer.client}</span>
                     <span className="pw-mut">{datStr(project.offer.date)}</span>

@@ -11,7 +11,8 @@
    je prenesen iz RetainerWorkspace (rw-). Detajl panel z desne + lepljivi X so
    vzorec iz ContractWorkspace (styles.detailBackdrop/detailPanel + .pg-det-x). */
 
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createPortal, flushSync } from 'react-dom';
 import Link from 'next/link';
 import { CaretDown, CaretUp, FileArrowDown, FileText, Receipt, Scroll, Warning } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -226,6 +227,14 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   const [detajl, setDetajl] = useState<Detajl | null>(null);
   const [detObsegOdprt, setDetObsegOdprt] = useState(false);
 
+  /* izbor vrstic za izvoz — kljuc: `${vrsta}:${id}` (razlicni tipi imajo lahko enak id) */
+  const [izbrani, setIzbrani] = useState<Set<string>>(() => new Set());
+  const [portalPripravljen, setPortalPripravljen] = useState(false);
+  useEffect(() => { setPortalPripravljen(true); }, []);
+  const [izvazamPdf, setIzvazamPdf] = useState(false);
+  const izKljuc = (vrsta: string, id: string) => `${vrsta}:${id}`;
+  const preklopiIzbor = (k: string) => setIzbrani(prev => { const n = new Set(prev); if (n.has(k)) n.delete(k); else n.add(k); return n; });
+
   /* PRAVI dokument ponudbe, ce obstaja shranjen HTML v arhivu kalkulatorja
      (glej najdiTeloPonudbe zgoraj) — prazno telo pomeni: izrisi predogled iz
      polj ponudbe namesto injeciranega HTML-ja */
@@ -240,6 +249,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
     setIskanje(''); setObdobjeOd(''); setObdobjeDo('');
     setStatusPonudba('vse'); setStatusPogodba('vse'); setPlacano('vse'); setStatusProjekt('vse');
     setDetajl(null); setDetObsegOdprt(false); setProjektDetajlOdprt(false); setPogledProjekti('seznam');
+    setIzbrani(new Set());
   };
 
   const isk = iskanje.trim().toLocaleLowerCase('sl-SI');
@@ -321,8 +331,98 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       </>,
     } : null;
 
+  /* označi vse (za trenutni zavihek) + CSV izvoz izbranih */
+  const trenutneVrstice: string[] =
+    zavihek === 'ponudbe' ? ponudbePrikaz.map(o => izKljuc('ponudba', o.id))
+    : zavihek === 'pogodbe' ? pogodbePrikaz.map(c => izKljuc('pogodba', c.id))
+    : zavihek === 'racuni' ? racuniPrikaz.map(r => izKljuc('racun', r.id))
+    : [];
+  const vsiIzbrani = trenutneVrstice.length > 0 && trenutneVrstice.every(k => izbrani.has(k));
+  const preklopiVse = () => setIzbrani(prev => {
+    const n = new Set(prev);
+    if (vsiIzbrani) trenutneVrstice.forEach(k => n.delete(k));
+    else trenutneVrstice.forEach(k => n.add(k));
+    return n;
+  });
+  const izvoziIzbrane = () => {
+    const vrst: (string | number)[][] = [['Tip', 'Naziv', 'Stranka', 'Datum', 'Status', 'Znesek']];
+    offers.forEach(o => { if (izbrani.has(izKljuc('ponudba', o.id))) vrst.push(['Ponudba', o.title || '', o.client || '', datStr(o.date), offerLabels[o.status] || o.status, typeof o.agreedAmount === 'number' ? o.agreedAmount : '']); });
+    contracts.forEach(c => { if (izbrani.has(izKljuc('pogodba', c.id))) vrst.push(['Pogodba', c.title || '', c.client || '', datStr(c.date), contractLabels[c.status] || c.status, '']); });
+    invoices.forEach(r => { if (izbrani.has(izKljuc('racun', r.id))) vrst.push(['Račun', r.title || r.number || '', r.client || '', datStr(r.date), r.paid ? 'Plačan' : 'Odprt', typeof r.amount === 'number' ? r.amount : '']); });
+    izvoziCsv('Arhiv izvoz', vrst);
+  };
+  /* ločeni PDF-ji izbranih dokumentov v ZIP — vsak dokument zaporedno odpremo v
+     detajlu, zajamemo #arh-izvoz (html2canvas-pro zaradi oklch) -> jsPDF -> JSZip */
+  const varnoIme = (s: string) => (s.replace(/[^\w\- À-ɏ]+/g, '').trim().replace(/\s+/g, '_').slice(0, 60) || 'dokument');
+  const izvoziPdfZip = async () => {
+    if (izvazamPdf) return;
+    const seznam: { vrsta: 'ponudba' | 'pogodba' | 'racun'; zapis: FlowOffer | FlowContract | FlowInvoice; ime: string }[] = [
+      ...offers.filter(o => izbrani.has(izKljuc('ponudba', o.id))).map(o => ({ vrsta: 'ponudba' as const, zapis: o, ime: `Ponudba ${o.number || o.title || ''}` })),
+      ...contracts.filter(c => izbrani.has(izKljuc('pogodba', c.id))).map(c => ({ vrsta: 'pogodba' as const, zapis: c, ime: `Pogodba ${c.title || ''}` })),
+      ...invoices.filter(r => izbrani.has(izKljuc('racun', r.id))).map(r => ({ vrsta: 'racun' as const, zapis: r, ime: `${r.predracun ? 'Predracun' : 'Racun'} ${r.number || r.title || ''}` })),
+    ];
+    if (!seznam.length) return;
+    setIzvazamPdf(true);
+    const prejsnji = detajl;
+    try {
+      const [{ default: JSZip }, { jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jszip'), import('jspdf'), import('html2canvas-pro'),
+      ]);
+      const zip = new JSZip();
+      const cakaj = () => new Promise<void>(res => requestAnimationFrame(() => requestAnimationFrame(() => res())));
+      for (const it of seznam) {
+        flushSync(() => { setDetObsegOdprt(false); setDetajl({ vrsta: it.vrsta, zapis: it.zapis } as Detajl); });
+        await cakaj();
+        try { await (document as Document & { fonts?: { ready?: Promise<unknown> } }).fonts?.ready; } catch { /* ignore */ }
+        const el = document.getElementById('arh-izvoz');
+        if (!el) continue;
+        const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+        const img = canvas.toDataURL('image/jpeg', 0.92);
+        const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+        const pw = pdf.internal.pageSize.getWidth();
+        const ph = pdf.internal.pageSize.getHeight();
+        const imgH = canvas.height * pw / canvas.width;
+        pdf.addImage(img, 'JPEG', 0, 0, pw, imgH);
+        let ostane = imgH - ph; let odmik = 0;
+        while (ostane > 0) { odmik += ph; pdf.addPage(); pdf.addImage(img, 'JPEG', 0, -odmik, pw, imgH); ostane -= ph; }
+        zip.file(varnoIme(it.ime) + '.pdf', pdf.output('blob'));
+      }
+      const out = await zip.generateAsync({ type: 'blob' });
+      if (typeof document !== 'undefined') {
+        const url = URL.createObjectURL(out);
+        const a = document.createElement('a'); a.href = url; a.download = 'Arhiv_izvoz.zip';
+        document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+    } catch (e) {
+      console.error('PDF izvoz spodletel', e);
+      const sporocilo = e instanceof Error ? e.message : String(e);
+      if (typeof window !== 'undefined') window.alert('Izvoz PDF ni uspel:\n' + sporocilo);
+    } finally {
+      flushSync(() => setDetajl(prejsnji));
+      setIzvazamPdf(false);
+    }
+  };
+  const kljuk = (k: string | null) => {
+    const vse = k === null;
+    const on = vse ? vsiIzbrani : izbrani.has(k);
+    const dej = (e: React.SyntheticEvent) => { e.stopPropagation(); if (vse) preklopiVse(); else preklopiIzbor(k); };
+    return <span className="arh-chk-cel"><span role="checkbox" aria-checked={on} tabIndex={0}
+      className={'arh-chk' + (on ? ' on' : '')} onClick={dej}
+      onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); dej(e); } }}
+      aria-label={vse ? 'Označi vse' : 'Izberi vrstico'} /></span>;
+  };
+
   return (
     <div className="arh">
+      {portalPripravljen && izbrani.size > 0 && zavihek !== 'projekti' && createPortal(
+        <div className="arh-izbor-letev" role="region" aria-label="Izbrane vrstice">
+          <span className="arh-izbor-st">{izbrani.size} izbranih</span>
+          <button type="button" className="arh-izbor-gumb" onClick={izvoziPdfZip} disabled={izvazamPdf}>{izvazamPdf ? 'Pripravljam…' : 'PDF (ZIP)'}</button>
+          <button type="button" className="arh-izbor-gumb arh-izbor-gumb2" onClick={izvoziIzbrane} disabled={izvazamPdf}>CSV</button>
+          <button type="button" className="arh-izbor-prekl" onClick={() => setIzbrani(new Set())} disabled={izvazamPdf}>Prekliči</button>
+        </div>,
+        document.body,
+      )}
       <div className="arh-ozadje" aria-hidden>
         <span className="arh-blob arh-blob-roza" />
         <span className="arh-blob arh-blob-modra" />
@@ -410,9 +510,10 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             ) : (
               <div className="arh-tabela-ovoj">
                 <div className="arh-tabela arh-tabela-ponudbe">
-                  <header><span>Ponudba: {ponudbePrikaz.length}</span><span>Stranka</span><span>Datum</span><span>Status</span><span>Št.</span><span className="arh-desno">Znesek</span><span /></header>
+                  <header>{kljuk(null)}<span>Ponudba: {ponudbePrikaz.length}</span><span>Stranka</span><span>Datum</span><span>Status</span><span>Št.</span><span className="arh-desno">Znesek</span><span /></header>
                   {ponudbePrikaz.map(o => (
                     <button key={o.id} type="button" className="arh-vrstica" onClick={() => { setDetObsegOdprt(false); setDetajl({ vrsta: 'ponudba', zapis: o }); }}>
+                      {kljuk(izKljuc('ponudba', o.id))}
                       <span className="arh-glavna"><span className="arh-ikona" aria-hidden><FileText size={17} /></span><strong>{o.title}</strong></span>
                       <span className="arh-mut">{o.client}</span>
                       <span className="arh-mut">{datStr(o.date)}</span>
@@ -439,11 +540,12 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             ) : (
               <div className="arh-tabela-ovoj">
                 <div className="arh-tabela arh-tabela-pogodbe">
-                  <header><span>Pogodba: {pogodbePrikaz.length}</span><span>Stranka</span><span>Datum</span><span>Status</span><span>Opomba</span><span /></header>
+                  <header>{kljuk(null)}<span>Pogodba: {pogodbePrikaz.length}</span><span>Stranka</span><span>Datum</span><span>Status</span><span>Opomba</span><span /></header>
                   {pogodbePrikaz.map(c => {
                     const op = opombaInfo(c.notes);
                     return (
                       <button key={c.id} type="button" className="arh-vrstica" onClick={() => { setDetObsegOdprt(false); setDetajl({ vrsta: 'pogodba', zapis: c }); }}>
+                        {kljuk(izKljuc('pogodba', c.id))}
                         <span className="arh-glavna"><span className="arh-ikona" aria-hidden><Scroll size={17} /></span><strong>{c.title}</strong></span>
                         <span className="arh-mut">{c.client}</span>
                         <span className="arh-mut">{datStr(c.date)}</span>
@@ -469,9 +571,10 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             ) : (
               <div className="arh-tabela-ovoj">
                 <div className="arh-tabela arh-tabela-racuni">
-                  <header><span>Račun: {racuniPrikaz.length}</span><span>Št.</span><span>Stranka</span><span>Datum</span><span>Status</span><span className="arh-desno">Znesek</span><span /></header>
+                  <header>{kljuk(null)}<span>Račun: {racuniPrikaz.length}</span><span>Št.</span><span>Stranka</span><span>Datum</span><span>Status</span><span className="arh-desno">Znesek</span><span /></header>
                   {racuniPrikaz.map(r => (
                     <button key={r.id} type="button" className="arh-vrstica" onClick={() => setDetajl({ vrsta: 'racun', zapis: r })}>
+                      {kljuk(izKljuc('racun', r.id))}
                       <span className="arh-glavna"><span className="arh-ikona" aria-hidden><Receipt size={17} /></span><strong>{r.title || `${r.predracun ? 'Predračun' : 'Račun'} ${r.number || ''}`}</strong>{r.predracun && <span className="arh-znacka arh-znacka-predracun">Predračun</span>}</span>
                       <span className="arh-mut">{r.number || '—'}</span>
                       <span className="arh-mut">{r.client}</span>
@@ -490,7 +593,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
       {/* ── DETAJL PANEL Z DESNE (vzorec ContractWorkspace: detailBackdrop + detailPanel + lepljivi X) ── */}
       {detajl && (
-        <div className={styles.detailBackdrop} role="presentation" onMouseDown={zapriDetajl}>
+        <div className={styles.detailBackdrop + (izvazamPdf ? ' arh-zajem' : '')} role="presentation" onMouseDown={zapriDetajl}>
           <aside className={`${styles.detailPanel} arh-detajl`} role="dialog" aria-modal="true" aria-labelledby="arh-detajl-naslov" onMouseDown={e => e.stopPropagation()}>
             {/* lepljivi X ostane v kotu tudi med drsenjem (vzorec .pg-det-x) */}
             <button className="arh-det-x" onClick={zapriDetajl} aria-label="Zapri">✕</button>
@@ -732,9 +835,27 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         /* tabela: vodoravni drs znotraj svojega okvirja (mobilno ne pobegne cez rob) */
         .arh-tabela-ovoj{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:14px}
         .arh-tabela{min-width:640px;display:grid;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:14px;overflow:hidden}
-        .arh-tabela-ponudbe{grid-template-columns:minmax(0,2.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,.8fr) minmax(0,1fr) 1.6rem}
-        .arh-tabela-pogodbe{grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr) 1.6rem}
-        .arh-tabela-racuni{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,.9fr) minmax(0,1fr) 1.6rem}
+        .arh-tabela-ponudbe{grid-template-columns:1.7rem minmax(0,2.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,.8fr) minmax(0,1fr) 1.6rem}
+        .arh-tabela-pogodbe{grid-template-columns:1.7rem minmax(0,2fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr) 1.6rem}
+        .arh-tabela-racuni{grid-template-columns:1.7rem minmax(0,1.9fr) minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,.9fr) minmax(0,1fr) 1.6rem}
+        .arh-chk-cel{display:flex;align-items:center;justify-content:center}
+        .arh-chk{width:1.05rem;height:1.05rem;border-radius:.34rem;border:1.5px solid oklch(78% .02 80);background:#fff;cursor:pointer;flex:none;display:grid;place-items:center;transition:background .12s,border-color .12s}
+        .arh-chk::after{content:"";width:.5rem;height:.28rem;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translate(0,-1px);opacity:0;transition:opacity .12s}
+        .arh-chk.on{background:oklch(52% .13 300);border-color:oklch(52% .13 300)}
+        .arh-chk.on::after{opacity:1}
+        .arh-izbor-letev{position:fixed;left:50%;bottom:1.4rem;transform:translateX(-50%);z-index:1200;width:max-content;max-width:calc(100vw - 2rem);display:flex;align-items:center;gap:.9rem;padding:.6rem .7rem .6rem 1.1rem;border-radius:999px;background:oklch(28% .02 300);color:#fff;box-shadow:0 .8rem 2.4rem oklch(22% .04 300 / .32);animation:arhLetevIn .3s cubic-bezier(.16,1,.3,1) both}
+        @keyframes arhLetevIn{from{opacity:0;transform:translate(-50%,1rem)}to{opacity:1;transform:translate(-50%,0)}}
+        .arh-izbor-st{font-size:.8rem;font-weight:700;white-space:nowrap}
+        .arh-izbor-gumb{border:0;border-radius:999px;padding:.45rem .95rem;background:#fff;color:oklch(30% .03 300);font:700 .78rem var(--font-sans),system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+        .arh-izbor-gumb:hover:not(:disabled){background:oklch(96% .02 300)}
+        .arh-izbor-gumb2{background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px oklch(100% 0 0 / .38)}
+        .arh-izbor-gumb2:hover:not(:disabled){background:oklch(100% 0 0 / .12)}
+        .arh-izbor-gumb:disabled,.arh-izbor-prekl:disabled{opacity:.6;cursor:default}
+        /* med PDF zajemom detajl premaknemo izven zaslona (v DOM ostane za html2canvas) — brez utripanja */
+        .arh-zajem{position:fixed!important;left:-250vw!important;top:0!important;right:auto!important;bottom:auto!important;width:auto!important;height:auto!important;padding:0!important;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;animation:none!important;transition:none!important;z-index:-1!important;pointer-events:none!important;overflow:visible!important}
+        .arh-zajem .arh-detajl{animation:none!important;transition:none!important;transform:none!important;box-shadow:none!important;max-height:none!important;height:auto!important;overflow:visible!important}
+        .arh-izbor-prekl{border:0;background:transparent;color:oklch(88% .02 300);font:600 .76rem var(--font-sans),system-ui,sans-serif;cursor:pointer;padding:.45rem .5rem}
+        .arh-izbor-prekl:hover{color:#fff}
         /* gap tudi na header (prej ga ni imel -> "ZNESEKDATUM" se je dotikal) + vecji razmik */
         /* naslovna vrstica tabele (oznaka + stevec) = DEL tabele, vijola podlaga */
         .arh-tabela-naslov{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem 1rem .85rem;background:oklch(95% .035 300);border-bottom:1px solid rgba(17,17,17,.08)}
