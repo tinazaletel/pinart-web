@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, type FlowExpense, type FlowInvoice } from '@/lib/pinartFlowStore';
@@ -18,6 +19,8 @@ type RecurringCost = { ime: string; znesek: string };
 const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFractionDigits: 0 })} €`;
 
 export default function GoalsWorkspace({ base }: { base: string }) {
+  const locale = useLocale();
+  const L = (sl: string, en: string) => (locale === 'en' ? en : sl);
   const [goal, setGoal] = useState(5000);
   const [desiredIncome, setDesiredIncome] = useState(2000);
   const [reservePercent, setReservePercent] = useState(20);
@@ -96,41 +99,41 @@ export default function GoalsWorkspace({ base }: { base: string }) {
   };
 
   return <div className={styles.goalsPage}>
-    {saved && <div className={styles.goalSaved} role="status">Cilj je shranjen.</div>}
+    {saved && <div className={styles.goalSaved} role="status">{L('Cilj je shranjen.', 'Goal saved.')}</div>}
     <section className={styles.goalOverview}>
-      <div><p className={styles.eyebrow}>TA MESEC</p><h2>{money(goal)}</h2><p>Cilj temelji na stroških, tvojem želenem dohodku in rezervi — znesek je <strong>bruto promet</strong>, ki ga zaračunaš.</p></div>
-      <div className={styles.goalOverviewStats}><span><small>Potrjena plačila</small><strong>{money(paid)}</strong></span><span><small>Do cilja manjka</small><strong>{money(remaining)}</strong></span></div>
-      <div className={styles.goalLargeDial} style={{ '--goal-progress': `${progress}%` } as React.CSSProperties}><div><strong>{progress}%</strong><small>doseženo</small></div></div>
+      <div><p className={styles.eyebrow}>{L('TA MESEC', 'THIS MONTH')}</p><h2>{money(goal)}</h2><p>{L('Cilj temelji na stroških, tvojem želenem dohodku in rezervi — znesek je ', 'The goal is based on costs, your desired income and reserve — the amount is ')}<strong>{L('bruto promet', 'gross revenue')}</strong>{L(', ki ga zaračunaš.', ' you invoice.')}</p></div>
+      <div className={styles.goalOverviewStats}><span><small>{L('Potrjena plačila', 'Confirmed payments')}</small><strong>{money(paid)}</strong></span><span><small>{L('Do cilja manjka', 'Left to goal')}</small><strong>{money(remaining)}</strong></span></div>
+      <div className={styles.goalLargeDial} style={{ '--goal-progress': `${progress}%` } as React.CSSProperties}><div><strong>{progress}%</strong><small>{L('doseženo', 'reached')}</small></div></div>
     </section>
 
     {/* Iste štiri analizne kartice kot prej na strani ČAS — od tam preseljene,
         ker so analiza poslovnega načrta in časa, ne merjenje samo. */}
     <section className={styles.summary}>
-      <article><small>Priporočeni cilj</small><strong>{money(recommended)}</strong><span>iz tvojega načrta spodaj</span><b className={styles.metricIkona}><MetricIcon type="cilj" /></b></article>
-      <article><small>Vzdržna urna vrednost</small><strong>{money(plannedResult.sustainableHourlyRate)}</strong><span>pri {plan.billableHoursMonthly} obračunskih urah</span><b className={styles.metricIkona}><MetricIcon type="ura" /></b></article>
-      <article><small>Potrebni projekti</small><strong>{plannedResult.projectsNeeded}</strong><span>pri povprečju {money(plan.averageProjectValue)}</span><b className={styles.metricIkona}><MetricIcon type="projekti" /></b></article>
-      <article><small>Dejanska urna vrednost</small><strong>{effectiveRate ? money(effectiveRate) : '—'}</strong><span>iz zaključenih časovnih vnosov</span><b className={styles.metricIkona}><MetricIcon type="graf" /></b></article>
+      <article><small>{L('Priporočeni cilj', 'Recommended goal')}</small><strong>{money(recommended)}</strong><span>{L('iz tvojega načrta spodaj', 'from your plan below')}</span><b className={styles.metricIkona}><MetricIcon type="cilj" /></b></article>
+      <article><small>{L('Vzdržna urna vrednost', 'Sustainable hourly rate')}</small><strong>{money(plannedResult.sustainableHourlyRate)}</strong><span>{L(`pri ${plan.billableHoursMonthly} obračunskih urah`, `at ${plan.billableHoursMonthly} billable hours`)}</span><b className={styles.metricIkona}><MetricIcon type="ura" /></b></article>
+      <article><small>{L('Potrebni projekti', 'Projects needed')}</small><strong>{plannedResult.projectsNeeded}</strong><span>{L(`pri povprečju ${money(plan.averageProjectValue)}`, `at an average of ${money(plan.averageProjectValue)}`)}</span><b className={styles.metricIkona}><MetricIcon type="projekti" /></b></article>
+      <article><small>{L('Dejanska urna vrednost', 'Actual hourly rate')}</small><strong>{effectiveRate ? money(effectiveRate) : '—'}</strong><span>{L('iz zaključenih časovnih vnosov', 'from completed time entries')}</span><b className={styles.metricIkona}><MetricIcon type="graf" /></b></article>
     </section>
 
     <div className={styles.goalsLayout}>
       <form className={styles.goalBuilder} onSubmit={save}>
-        <header><p className={styles.eyebrow}>NAČRT CILJA</p><h2>Koliko mora podjetje ustvariti?</h2><p>Najprej pokrij stroške, nato želeni dohodek in varnostno rezervo.</p></header>
+        <header><p className={styles.eyebrow}>{L('NAČRT CILJA', 'GOAL PLAN')}</p><h2>{L('Koliko mora podjetje ustvariti?', 'How much does the business need to earn?')}</h2><p>{L('Najprej pokrij stroške, nato želeni dohodek in varnostno rezervo.', 'First cover costs, then your desired income and a safety reserve.')}</p></header>
         <div className={styles.goalEquation}>
-          <span><small>Redni stroški</small><strong>{money(recurringCosts)}</strong></span><b>+</b><span><small>Drugi stroški ta mesec</small><strong>{money(enteredCosts)}</strong></span><b>+</b><label><small>Želeni osebni dohodek</small><input min="0" step="100" type="number" value={desiredIncome} onChange={event => setDesiredIncome(Number(event.target.value))} /></label>
+          <span><small>{L('Redni stroški', 'Recurring costs')}</small><strong>{money(recurringCosts)}</strong></span><b>+</b><span><small>{L('Drugi stroški ta mesec', 'Other costs this month')}</small><strong>{money(enteredCosts)}</strong></span><b>+</b><label><small>{L('Želeni osebni dohodek', 'Desired personal income')}</small><input min="0" step="100" type="number" value={desiredIncome} onChange={event => setDesiredIncome(Number(event.target.value))} /></label>
         </div>
-        <label className={styles.reserveControl}><span><strong>Rezerva</strong><small>Za davke in nepredvidene stroške</small></span><span><input min="0" max="90" type="range" value={reservePercent} onChange={event => setReservePercent(Number(event.target.value))} style={{ ['--val' as string]: `${(reservePercent / 90) * 100}%` }} /><b>{reservePercent}%</b></span></label>
-        <div className={styles.goalRecommended}><span><small>Priporočeni mesečni cilj</small><strong>{money(recommended)}</strong></span><button type="submit">Uporabi ta cilj</button></div>
+        <label className={styles.reserveControl}><span><strong>{L('Rezerva', 'Reserve')}</strong><small>{L('Za davke in nepredvidene stroške', 'For taxes and unexpected costs')}</small></span><span><input min="0" max="90" type="range" value={reservePercent} onChange={event => setReservePercent(Number(event.target.value))} style={{ ['--val' as string]: `${(reservePercent / 90) * 100}%` }} /><b>{reservePercent}%</b></span></label>
+        <div className={styles.goalRecommended}><span><small>{L('Priporočeni mesečni cilj', 'Recommended monthly goal')}</small><strong>{money(recommended)}</strong></span><button type="submit">{L('Uporabi ta cilj', 'Use this goal')}</button></div>
       </form>
 
       <aside className={styles.goalChecklist}>
-        <div><p className={styles.eyebrow}>POSLOVNI NAČRT</p><h2>Je osnova popolna?</h2><p>Cilj je uporaben šele, ko temelji na tvojem dohodku, stroških, rezervi in realnem številu obračunskih ur.</p></div>
-        <ul><li>Prispevki za socialno varnost</li><li>Obvezno zdravstveno zavarovanje</li><li>Davki in druge dajatve</li><li>Najemnina in obratovalni stroški</li><li>Računovodstvo in programska oprema</li></ul>
-        <Link href={`${base}/kalkulator/poslovni-nacrt`}>Odpri poslovni načrt →</Link>
-        <Link href={`${base}/kalkulator/stroski`}>Preglej stroške →</Link>
-        <small>Zneske dajatev preveri pri računovodstvu, saj so odvisni od oblike podjetja in statusa.</small>
+        <div><p className={styles.eyebrow}>{L('POSLOVNI NAČRT', 'BUSINESS PLAN')}</p><h2>{L('Je osnova popolna?', 'Is the foundation complete?')}</h2><p>{L('Cilj je uporaben šele, ko temelji na tvojem dohodku, stroških, rezervi in realnem številu obračunskih ur.', 'A goal is only useful once it is based on your income, costs, reserve and a realistic number of billable hours.')}</p></div>
+        <ul><li>{L('Prispevki za socialno varnost', 'Social security contributions')}</li><li>{L('Obvezno zdravstveno zavarovanje', 'Mandatory health insurance')}</li><li>{L('Davki in druge dajatve', 'Taxes and other levies')}</li><li>{L('Najemnina in obratovalni stroški', 'Rent and operating costs')}</li><li>{L('Računovodstvo in programska oprema', 'Accounting and software')}</li></ul>
+        <Link href={`${base}/kalkulator/poslovni-nacrt`}>{L('Odpri poslovni načrt →', 'Open business plan →')}</Link>
+        <Link href={`${base}/kalkulator/stroski`}>{L('Preglej stroške →', 'Review costs →')}</Link>
+        <small>{L('Zneske dajatev preveri pri računovodstvu, saj so odvisni od oblike podjetja in statusa.', 'Check levy amounts with your accountant, as they depend on your company form and status.')}</small>
       </aside>
     </div>
 
-    <section className={styles.goalHistory}><header><div><p className={styles.eyebrow}>ZADNJIH 6 MESECEV</p><h2>Napredek skozi čas</h2></div><span>Črta predstavlja trenutni cilj {money(goal)}</span></header><div>{months.map(item => <article key={item.label}><div><i style={{ height: `${Math.max(3, item.value / chartMax * 100)}%` }} /><b style={{ bottom: `${goal / chartMax * 100}%` }} /></div><strong>{item.value ? money(item.value) : '0 €'}</strong><small>{item.label}</small></article>)}</div></section>
+    <section className={styles.goalHistory}><header><div><p className={styles.eyebrow}>{L('ZADNJIH 6 MESECEV', 'LAST 6 MONTHS')}</p><h2>{L('Napredek skozi čas', 'Progress over time')}</h2></div><span>{L(`Črta predstavlja trenutni cilj ${money(goal)}`, `The line marks the current goal ${money(goal)}`)}</span></header><div>{months.map(item => <article key={item.label}><div><i style={{ height: `${Math.max(3, item.value / chartMax * 100)}%` }} /><b style={{ bottom: `${goal / chartMax * 100}%` }} /></div><strong>{item.value ? money(item.value) : '0 €'}</strong><small>{item.label}</small></article>)}</div></section>
   </div>;
 }
