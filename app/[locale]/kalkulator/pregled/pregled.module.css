@@ -485,9 +485,10 @@
 .projectBundle > button { width: 100%; padding: .7rem; border: 0; border-radius: .7rem; background: var(--ink); color: var(--paper); font: 750 .63rem var(--font-sans), sans-serif; cursor: pointer; }
 .detailClose { position: absolute; top: 1rem; right: 1rem; display: grid; place-items: center; width: 2rem; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 50%; background: none; color: inherit; font-size: 1.2rem; cursor: pointer; }
 .resultsBand > .bandTitle { align-items: end; }
-.periodSwitch { display: flex; gap: .25rem; padding: .25rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; }
+.periodSwitch { display: flex; gap: .25rem; padding: .25rem; border: 1px solid var(--line); border-radius: 999px; background: #fff !important; }
 .periodSwitch button { padding: .5rem .8rem; border: 0; border-radius: 999px; background: transparent; color: color-mix(in oklch, var(--ink) 58%, transparent); font: 750 .59rem var(--font-sans), sans-serif; cursor: pointer; transition: color 160ms ease, background 160ms ease; }
 .periodSwitch button:hover { color: var(--ink); }
+.periodSwitch button:not(.periodActive):hover { background: oklch(96.5% .018 87); }
 .periodSwitch .periodActive { background: var(--ink); color: var(--paper); }
 .resultsGrid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: .65rem; }
 .resultsGrid .kpi { grid-column: span 3; min-height: 7rem; padding: .85rem; border-radius: .9rem; }
@@ -670,8 +671,9 @@
 .invoiceCheck { display: flex !important; align-items: center; flex-direction: row; }
 .invoiceCheck input { width: 1rem; height: 1rem; }
 .invoiceArchive > header { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
-.invoiceFilters { display: flex; gap: .2rem; padding: .2rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; }
+.invoiceFilters { display: flex; gap: .2rem; padding: .2rem; border: 1px solid var(--line); border-radius: 999px; background: #fff !important; }
 .invoiceFilters button { padding: .45rem .75rem; border: 0; border-radius: 999px; background: none; font: 700 .58rem var(--font-sans), sans-serif; cursor: pointer; }
+.invoiceFilters button:not(.invoiceFilterActive):hover { background: oklch(96.5% .018 87); }
 .invoiceFilters .invoiceFilterActive { background: var(--ink); color: var(--paper); }
 .invoiceList article { display: grid; grid-template-columns: auto minmax(12rem, 1fr) minmax(7rem, auto) auto minmax(9rem, .6fr); align-items: center; gap: .8rem; min-height: 4.7rem; padding: .65rem .8rem; border-top: 1px solid var(--line); }
 .invoiceList strong, .invoiceList small, .invoiceSource span { display: block; }
@@ -1509,15 +1511,17 @@
 /* Preklop Storitve/Produkti — segmentne pilule, aktivna = temna (var(--ink)),
    isti jezik kot .previewSwitch, a vecji/berljivejsi ker je stalno vidna
    navigacija znotraj strani, ne majhno orodje v vogalu. */
-.priceViewSwitch { display: inline-flex; width: fit-content; gap: .25rem; padding: .3rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; }
+.priceViewSwitch { display: inline-flex; width: fit-content; gap: .25rem; padding: .3rem; border: 1px solid var(--line); border-radius: 999px; background: #fff !important; }
 .priceViewSwitch button { min-height: 2.2rem; padding: 0 1.1rem; border: 0; border-radius: 999px; background: transparent; color: color-mix(in oklch, var(--ink) 65%, transparent); font: 750 .85rem var(--font-sans), sans-serif; cursor: pointer; }
+.priceViewSwitch button:not(.priceViewActive):hover { background: oklch(96.5% .018 87); color: var(--ink); }
 .priceViewSwitch .priceViewActive { background: var(--ink); color: var(--paper); }
 
 /* Produkti — preprost webshop-style vnos (locen od cenika storitev zgoraj).
    Sifra/zaloga sta globalni (lib/produkti.ts), ne per-cenik. */
-.produktEditor { padding: 1.2rem; border: 1px solid var(--line); border-radius: 1.4rem; background: oklch(98% .008 87 / .94); }
+.produktEditor { padding: 1.2rem; border: 1px solid var(--line); border-radius: 1.4rem; background: #fff; }
 .produktList { display: grid; gap: .7rem; margin-top: .8rem; }
-.produktCard { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 1.2rem; padding: 1.1rem 1.3rem; border: 1px solid var(--line); border-radius: 1rem; background: oklch(100% 0 0 / .6); }
+.produktCard { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 1.2rem; padding: 1.1rem 1.3rem; border: 1px solid var(--line); border-radius: 1rem; background: #fff; transition: background-color .18s ease; }
+.produktCard:hover { background: oklch(96.5% .018 87); }
 .produktInfo { display: grid; gap: .3rem; min-width: 0; }
 .produktInfo strong { font-size: 1.05rem; font-weight: 750; }
 .produktInfo small { color: var(--muted); font-size: .85rem; font-weight: 650; }
