@@ -40,7 +40,7 @@ type Odtenek = 'success' | 'waiting' | 'danger' | 'neutral';
 const projectStatusInfo = (status: FlowOfferStatus): { label: string; tone: Odtenek } => {
   if (status === 'accepted') return { label: 'Aktivni', tone: 'success' };
   if (status === 'sent') return { label: 'Čakajo', tone: 'waiting' };
-  if (status === 'rejected') return { label: 'Zaključeni', tone: 'success' };
+  if (status === 'rejected') return { label: 'Zaključeni', tone: 'danger' };
   return { label: 'Osnutek', tone: 'neutral' };
 };
 
@@ -84,14 +84,14 @@ const pwStyles = `
 .pw-seznam-glava{display:flex;align-items:center;justify-content:space-between;padding:.1rem .2rem .9rem}
 .pw-seznam-glava strong{font:500 1.5rem var(--font-sans),system-ui,sans-serif;color:var(--ink)}
 .pw-tabela-ovoj{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:1.4rem}
-.pw-tabela{min-width:640px;display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr) 1.6rem;background:oklch(98% .008 87 / .92);border:1px solid oklch(93% .006 82 / .55);border-radius:1.4rem;overflow:hidden}
+.pw-tabela{min-width:640px;display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr) 1.6rem;background:#fff;border:1px solid oklch(93% .006 82 / .55);border-radius:1.4rem;overflow:hidden}
 .pw-tabela-naslov{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem 1rem .85rem;background:oklch(95% .035 300);border-bottom:1px solid rgba(17,17,17,.08)}
 .pw-tabela-naslov .${styles.eyebrow}{color:oklch(45% .12 300)}
-.pw-tabela-naslov strong{font-family:var(--font-sans),system-ui,sans-serif;font-weight:500;font-size:1.6rem;line-height:1;color:var(--ink)}
+.pw-tabela-naslov strong{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:1.6rem;line-height:1;color:var(--ink)}
 .pw-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.75rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid oklch(93% .006 82 / .55)}
 .pw-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:0;border-top:1px solid oklch(93% .006 82 / .55);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
 .pw-tabela > button.pw-vrstica:first-of-type{border-top:0}
-.pw-vrstica:hover{background:oklch(100% 0 0 / .5)}
+.pw-vrstica:hover{background:oklch(97.4% .011 84)}
 .pw-det-statusured,.pw-status-ured{position:relative;display:inline-flex;max-width:100%}
 .pw-det-statusured[data-editable] .pw-status,.pw-status-ured[data-editable] .pw-status{cursor:pointer}
 .pw-det-statusured[data-editable]::after,.pw-status-ured[data-editable]::after{content:none}
@@ -104,12 +104,12 @@ const pwStyles = `
 .pw-mut{color:var(--muted)}
 .pw-desno{text-align:right;font-weight:700}
 .pw-kazalec{color:var(--muted);font-size:1.1rem;text-align:center}
-.pw-status{display:inline-flex;align-items:center;gap:0;width:max-content;max-width:100%;padding:.4rem .85rem;border:1px solid oklch(86% .012 87);border-radius:999px;background:oklch(95% .01 87);color:oklch(40% .02 70);font-size:.78rem;font-weight:700;white-space:nowrap}
+.pw-status{display:inline-flex;align-items:center;gap:0;width:max-content;max-width:100%;padding:.4rem .85rem;border:1px solid color-mix(in oklch, var(--pill-ink, oklch(48% .015 70)) 14%, transparent);border-radius:999px;background:var(--pill-bg, oklch(95.5% .008 87));color:var(--pill-ink, oklch(48% .015 70));font-size:.78rem;font-weight:700;white-space:nowrap}
 .pw-status .pw-pika{width:.55rem;height:.55rem;border-radius:50%;background:var(--pika,oklch(62% .02 70));flex:none}
-.pw-status[data-tone='waiting']{--pika:oklch(72% .16 75)}
-.pw-status[data-tone='success']{--pika:oklch(62% .15 150)}
-.pw-status[data-tone='danger']{--pika:oklch(58% .19 25)}
-.pw-status[data-tone='neutral']{--pika:oklch(62% .02 70)}
+.pw-status[data-tone='waiting']{--pika:oklch(72% .16 75);--pill-bg:oklch(96.5% .03 82);--pill-ink:oklch(54% .09 68)}
+.pw-status[data-tone='success']{--pika:oklch(62% .15 150);--pill-bg:oklch(96% .035 158);--pill-ink:oklch(50% .085 158)}
+.pw-status[data-tone='danger']{--pika:oklch(58% .19 25);--pill-bg:oklch(96.5% .03 28);--pill-ink:oklch(55% .11 27)}
+.pw-status[data-tone='neutral']{--pika:oklch(62% .02 70);--pill-bg:oklch(95.5% .008 87);--pill-ink:oklch(48% .015 70)}
 .pw-prazno{padding:2rem;color:var(--muted);font-size:.72rem;text-align:center;border:1px solid oklch(93% .006 82 / .55);border-radius:1.4rem;background:oklch(98% .008 87 / .92)}
 .pw-stran{padding:1rem;scroll-margin-top:5.5rem}
 .pw-nazaj{display:inline-flex;align-items:center;gap:.4rem;margin:0 0 .8rem;padding:.55rem .95rem;border:1px solid oklch(93% .006 82 / .55);border-radius:999px;background:oklch(98% .008 87 / .92);font:700 .62rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
@@ -203,7 +203,7 @@ const pwStyles = `
 .pw-vsi-strani button.pw-vsi-stran-aktivna{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 /* klikabilna vrstica (kartica + slide) -> predogled */
 .pw-vrstica-klik{cursor:pointer;transition:background .14s}
-.pw-vrstica-klik:hover{background:oklch(100% 0 0 / .28)}
+.pw-vrstica-klik:hover{background:oklch(97.4% .011 84)}
 .pw-vrstica-klik:focus-visible{outline:2px solid var(--akcent,#6E4FA6);outline-offset:2px}
 /* PREDOGLED dokumenta (panel z desne) */
 .pw-det-panel{width:min(42rem,100vw);animation:pwVsiIn .5s cubic-bezier(.16,1,.3,1) both}
@@ -309,8 +309,8 @@ const pwStyles = `
    izpeljani). Zracno: leb razmik med stolpci + vodoraven drs na ozkem, kartice
    NE stlacene, prazen stolpec ostane majhen (ne raztegnjena skatla). */
 .pw-pipeline-namig{margin:0 0 .8rem;color:var(--muted);font-size:.68rem;font-style:italic}
-.pw-pipeline{display:flex;align-items:flex-start;gap:1.3rem;overflow-x:auto;padding:.15rem .15rem 1.2rem;-webkit-overflow-scrolling:touch}
-.pw-pipeline-stolpec{flex:0 0 272px;width:272px;min-width:260px;max-width:300px;display:flex;flex-direction:column;gap:.7rem}
+.pw-pipeline{display:flex;align-items:flex-start;gap:.85rem;overflow-x:auto;padding:.15rem .15rem 1.2rem;-webkit-overflow-scrolling:touch}
+.pw-pipeline-stolpec{flex:1 1 0;min-width:148px;display:flex;flex-direction:column;gap:.7rem}
 .pw-pipeline-stolpec.pw-pipeline-izgubljeno{opacity:.68}
 .pw-pipeline-glava{display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;padding:.1rem .25rem}
 .pw-pipeline-glava strong{font:700 .72rem var(--font-sans),system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);white-space:nowrap}
@@ -713,10 +713,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       statusOpcije={[{ vrednost: 'vse', oznaka: 'Vsi' }, { vrednost: 'aktivni', oznaka: 'Aktivni' }, { vrednost: 'cakajo', oznaka: 'Čakajo' }, { vrednost: 'zakljuceni', oznaka: 'Zaključeni' }]}
       aktivnihFiltrov={(filter !== 'vse' ? 1 : 0) + (datumOd || datumDo ? 1 : 0)}
       onPocisti={() => { setFilter('vse'); setDatumOd(''); setDatumDo(''); }}
-      akcija={<>
-        <Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>+ Nova ponudba</Link>
-        <Link className="af-akcija-gumb" href={`${base}/kalkulator/nov-projekt`}>+ Nov projekt</Link>
-      </>}
+      akcija={<Link className="af-akcija-gumb" href={`${base}/kalkulator/nov-projekt`}>+ Nov projekt</Link>}
     />}
 
     {/* preklop Seznam|Pipeline — v produkciji izrise ta pilulo ArhivWorkspace (arh-pogled-preklop);
@@ -793,9 +790,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
           ) : visible.length ? (
             <div className="pw-tabela-ovoj">
               <div className="pw-tabela">
-                {/* naslov + stevec sta DEL tabele (znotraj okvirja), ne lebdita nad njo */}
-                <div className="pw-tabela-naslov"><p className={styles.eyebrow}>PROJEKTI</p><strong>{visible.length}</strong></div>
-                <header><span>Projekt</span><span>Stranka</span><span>Datum</span><span>Status</span><span className="pw-desno">Vrednost</span><span /></header>
+                {/* naslov + stevec + filter so v pw-glava-pas nad tabelo */}
+                <header><span>Projekt: {visible.length}</span><span>Stranka</span><span>Datum</span><span>Status</span><span className="pw-desno">Vrednost</span><span /></header>
                 {visible.map(project => { const info = projectStatusInfo(project.offer.status); return (
                   <button key={project.offer.id} type="button" className="pw-vrstica" onClick={() => selectProject(project.offer.id)}>
                     <span className="pw-glavna"><span className="pw-ikona" aria-hidden><FolderOpen size={17} /></span><strong>{project.offer.title}</strong></span>

@@ -5660,7 +5660,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .h1-iskre path:nth-child(3) { animation-delay: 1.1s; }
         @keyframes iskra { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
 
-        .cw .oder0 { display: grid; grid-template-columns: 1.55fr 1fr; gap: clamp(1rem, 2.5vw, 2rem); align-items: stretch; width: min(1240px, 100%); margin-top: clamp(2rem, 5vw, 3.4rem); }
+        .cw .oder0 { display: grid; grid-template-columns: 1.55fr 1fr; gap: clamp(1rem, 2.5vw, 2rem); align-items: stretch; width: min(1240px, 100%); margin-top: clamp(.7rem, 1.8vw, 1.25rem); }
         /* korak 0 = nadaljevanje chatbota: mehurcki-transkript zgoraj, orbi spodaj */
         .cw .chat-izbira { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1rem; width: min(620px, 92%); margin: 0 auto 1.8rem; }
         /* med onboardingom: vsebina centrirana (kot prej), ozja; ko pride ponudba -> siroka miza */
@@ -6766,14 +6766,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
            ker tega uporablja ze Uredi/Predogled in bi mu vsilil tristolpcno mrezo. */
         /* Majhne, po meri besedila — kot v mesecnem retainerju. Prej so bile raztegnjene
            cez vso sirino in so se dotikale mehurckov. Spodnji odmik je odmik OD mehurckov. */
-        .cw .segpills-orbpogled { display: inline-flex; width: auto; max-width: none; margin: 0 0 1.6rem; }
+        .cw .segpills-orbpogled { display: inline-flex; width: auto; max-width: none; margin: 0 0 .3rem; }
         /* text-indent izravna rep, ki ga letter-spacing doda ZA zadnjo crko in besedilo
            optično potisne v levo, čeprav je poravnava na sredino. */
         /* brez svojega padding-inline — tako je notranji odmik natanko enak retainerju */
         .cw .segpills-orbpogled button { display: flex; align-items: center; justify-content: center; text-align: center; text-indent: .03em; }
         /* ovoj poskrbi za sredinjenje, ker je pilula zdaj ozja od vrstice */
         /* levo poravnani s klepetnim oblackom, ne sredinjeni — enaka velikost kot v retainerju */
-        .cw .orbpogled-vrsta { display: flex; justify-content: flex-start; margin-bottom: 1.4rem; }
+        .cw .orbpogled-vrsta { display: flex; justify-content: flex-start; margin-bottom: .5rem; }
         /* Temen izbrani odsek — Tinina izbira; svetla razlicica je bila moj popravek
            na podlagi napacno razumljenega "kot Figma" (mislila je model paketov). */
         .cw .segpills-orbpogled button { font-size: .66rem; padding: .38rem .7rem; }

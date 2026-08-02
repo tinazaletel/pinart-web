@@ -195,7 +195,7 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder = 'Poišč
         .af-akcija > *{white-space:nowrap}
         .af-sheet,.af-zastor{display:none !important}
         /* iskalnik ne raste greedy cez cel prostor -> max-width, da vrstica ni predolga/zbita */
-        .af-poln{flex:1 1 13rem;max-width:24rem;min-width:0;display:flex;align-items:center;gap:.45rem;box-sizing:border-box;background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;padding:0 .95rem;color:color-mix(in oklch,var(--ink,#111) 50%,transparent)}
+        .af-poln{flex:1 1 11rem;max-width:17rem;min-width:0;display:flex;align-items:center;gap:.45rem;box-sizing:border-box;background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;padding:0 .95rem;color:color-mix(in oklch,var(--ink,#111) 50%,transparent)}
         .af-poln:focus-within{border-color:var(--ink,#111)}
         .af-poln input{flex:1;min-width:0;border:none;background:none;font:inherit;font-weight:500;color:var(--ink,#111);padding:.62rem .25rem}
         .af-poln input:focus{outline:none}

@@ -294,10 +294,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       statusVrednost: statusProjekt,
       onStatus: setStatusProjekt,
       statusOpcije: [{ vrednost: 'vse', oznaka: 'Vsi' }, { vrednost: 'aktivni', oznaka: 'Aktivni' }, { vrednost: 'cakajo', oznaka: 'Čakajo' }, { vrednost: 'zakljuceni', oznaka: 'Zaključeni' }],
-      akcija: <>
-        <Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>+ Nova ponudba</Link>
-        <Link className="af-akcija-gumb" href={`${base}/kalkulator/nov-projekt`}>+ Nov projekt</Link>
-      </>,
+      akcija: <Link className="af-akcija-gumb" href={`${base}/kalkulator/nov-projekt`}>+ Nov projekt</Link>,
     } : zavihek === 'ponudbe' ? {
       placeholder: 'Poišči ponudbo, stranko ali številko …',
       statusOznaka: 'Status ponudbe',
@@ -413,8 +410,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             ) : (
               <div className="arh-tabela-ovoj">
                 <div className="arh-tabela arh-tabela-ponudbe">
-                  <div className="arh-tabela-naslov"><span className="arh-tabela-oznaka">Ponudbe</span><strong>{ponudbePrikaz.length}</strong></div>
-                  <header><span>Ponudba</span><span>Stranka</span><span>Datum</span><span>Status</span><span>Št.</span><span className="arh-desno">Znesek</span><span /></header>
+                  <header><span>Ponudba: {ponudbePrikaz.length}</span><span>Stranka</span><span>Datum</span><span>Status</span><span>Št.</span><span className="arh-desno">Znesek</span><span /></header>
                   {ponudbePrikaz.map(o => (
                     <button key={o.id} type="button" className="arh-vrstica" onClick={() => { setDetObsegOdprt(false); setDetajl({ vrsta: 'ponudba', zapis: o }); }}>
                       <span className="arh-glavna"><span className="arh-ikona" aria-hidden><FileText size={17} /></span><strong>{o.title}</strong></span>
@@ -443,8 +439,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             ) : (
               <div className="arh-tabela-ovoj">
                 <div className="arh-tabela arh-tabela-pogodbe">
-                  <div className="arh-tabela-naslov"><span className="arh-tabela-oznaka">Pogodbe</span><strong>{pogodbePrikaz.length}</strong></div>
-                  <header><span>Pogodba</span><span>Stranka</span><span>Datum</span><span>Status</span><span>Opomba</span><span /></header>
+                  <header><span>Pogodba: {pogodbePrikaz.length}</span><span>Stranka</span><span>Datum</span><span>Status</span><span>Opomba</span><span /></header>
                   {pogodbePrikaz.map(c => {
                     const op = opombaInfo(c.notes);
                     return (
@@ -474,8 +469,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             ) : (
               <div className="arh-tabela-ovoj">
                 <div className="arh-tabela arh-tabela-racuni">
-                  <div className="arh-tabela-naslov"><span className="arh-tabela-oznaka">Računi</span><strong>{racuniPrikaz.length}</strong></div>
-                  <header><span>Račun</span><span>Št.</span><span>Stranka</span><span>Datum</span><span>Status</span><span className="arh-desno">Znesek</span><span /></header>
+                  <header><span>Račun: {racuniPrikaz.length}</span><span>Št.</span><span>Stranka</span><span>Datum</span><span>Status</span><span className="arh-desno">Znesek</span><span /></header>
                   {racuniPrikaz.map(r => (
                     <button key={r.id} type="button" className="arh-vrstica" onClick={() => setDetajl({ vrsta: 'racun', zapis: r })}>
                       <span className="arh-glavna"><span className="arh-ikona" aria-hidden><Receipt size={17} /></span><strong>{r.title || `${r.predracun ? 'Predračun' : 'Račun'} ${r.number || ''}`}</strong>{r.predracun && <span className="arh-znacka arh-znacka-predracun">Predračun</span>}</span>
@@ -752,12 +746,12 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-vrstica:hover{background:oklch(100% 0 0 / .5)}
         .arh-vrstica > span{min-width:0;font-size:.86rem;overflow-wrap:anywhere}
         /* status pilula — ISTE barve kot nadzorna plosca (.statusPill + status_*) */
-        .arh-status{display:inline-flex;align-items:center;gap:.6rem;width:max-content;max-width:100%;padding:.4rem .85rem;border:1px solid oklch(86% .012 87);border-radius:999px;background:oklch(95% .01 87);color:oklch(40% .02 70);font-size:.78rem;font-weight:700;white-space:nowrap}
+        .arh-status{display:inline-flex;align-items:center;gap:.6rem;width:max-content;max-width:100%;padding:.4rem .85rem;border:1px solid color-mix(in oklch, var(--pill-ink, oklch(48% .015 70)) 14%, transparent);border-radius:999px;background:var(--pill-bg, oklch(95.5% .008 87));color:var(--pill-ink, oklch(48% .015 70));font-size:.78rem;font-weight:700;white-space:nowrap}
         .arh-status::before{content:'';width:.52rem;height:.52rem;border-radius:50%;background:var(--pika,oklch(62% .02 70));flex:none}
-        .arh-status[data-tone='waiting']{--pika:oklch(72% .16 75)}
-        .arh-status[data-tone='success']{--pika:oklch(62% .15 150)}
-        .arh-status[data-tone='danger']{--pika:oklch(58% .19 25)}
-        .arh-status[data-tone='neutral']{--pika:oklch(62% .02 70)}
+        .arh-status[data-tone='waiting']{--pika:oklch(72% .16 75);--pill-bg:oklch(96.5% .03 82);--pill-ink:oklch(54% .09 68)}
+        .arh-status[data-tone='success']{--pika:oklch(62% .15 150);--pill-bg:oklch(96% .035 158);--pill-ink:oklch(50% .085 158)}
+        .arh-status[data-tone='danger']{--pika:oklch(58% .19 25);--pill-bg:oklch(96.5% .03 28);--pill-ink:oklch(55% .11 27)}
+        .arh-status[data-tone='neutral']{--pika:oklch(62% .02 70);--pill-bg:oklch(95.5% .008 87);--pill-ink:oklch(48% .015 70)}
         /* urejanje statusa: klik na pilulo -> prekriven select (samo »Moji podatki«) */
         .arh-status-ured{position:relative;display:inline-flex;max-width:100%}
         .arh-status-ured[data-editable] .arh-status{padding-right:1.5rem;cursor:pointer}

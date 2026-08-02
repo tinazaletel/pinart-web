@@ -159,7 +159,7 @@
 
 .workspace { grid-column: 2; grid-row: 2; position: relative; isolation: isolate; min-width: 0; padding: 3rem clamp(.8rem, 1.2vw, 1.3rem) 2rem; overflow: hidden; }
 /* Console-slog: vsebina centrirana z max-sirino, ne razpotegnjena cez cel zaslon (Tina: ne mara full-width). Vsi podatki ostanejo. */
-.workspace > *:not(.detailBackdrop) { max-width: 1280px; margin-inline: auto; }
+.workspace > *:not(.detailBackdrop):not(:global(.cw)) { max-width: 1280px; margin-inline: auto; }
 .workspace::before, .workspace::after { content: none; }
 /* Mehki plavajoci mehurcki — poenoteni s Flow landing stranjo (bel highlight,
    nezen odtenek, mehka senca; brez trdih nasicenih gradientov in mocnega sija). */
@@ -364,11 +364,11 @@
 /* Dogodki & roki — seznam prihodnjih rokov */
 .eventList { flex: 1; list-style: none; margin: .3rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .75rem; }
 .eventList li { flex: 1; display: flex; align-items: center; gap: .7rem; }
-.eventDate { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .05rem; width: 3.4rem; aspect-ratio: 1; padding: .3rem; border-radius: .95rem; background: var(--edbg, #ebe0fa); line-height: .95; }
+.eventDate { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .05rem; width: 3.4rem; aspect-ratio: 1; padding: .3rem; border-radius: .95rem; background: var(--edbg, #fff); border: 1px solid oklch(22% .015 60 / .1); line-height: .95; }
 .eventDate b { font: 700 .88rem/1 var(--font-sans), sans-serif; letter-spacing: -.02em; color: var(--ink); }
 .eventDate small { font-size: .4rem; font-weight: 700; letter-spacing: .09em; color: var(--ink); }
-.eventDate[data-tone='waiting'] { --edbg: #fde4d2; }
-.eventDate[data-tone='info'] { --edbg: #d1e4fc; }
+.eventDate[data-tone='waiting'] { --edbg: #fff; }
+.eventDate[data-tone='info'] { --edbg: #fff; }
 .eventCard { flex: 1; display: flex; align-items: center; gap: .6rem; min-width: 0; padding: .6rem .85rem; border-radius: .8rem; background: transparent; border: 1px solid color-mix(in oklch, var(--ink) 6%, transparent); }
 .eventIco { flex: none; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; background: none; color: var(--et, oklch(52% .13 300)); }
 .eventIco[data-tone='waiting'] { --et: oklch(60% .15 72); }
@@ -420,7 +420,7 @@
 .historyTable tbody tr:last-child td { border-bottom: 0; }
 .historyTable tbody tr[role='button'] { cursor: pointer; transition: filter 160ms ease; }
 .historyTable tbody tr td { transition: background .16s ease; }
-.historyTable tbody tr:hover td { background: oklch(100% 0 0 / .5); }
+.historyTable tbody tr:hover td { background: oklch(97.4% .011 84); }
 .historyTable tbody tr[role='button']:focus-visible { outline: 3px solid color-mix(in oklch, var(--purple) 50%, transparent); outline-offset: -3px; }
 .documentCell { display: flex; align-items: center; gap: .7rem; min-width: 0; }
 .documentCell > span:last-child { min-width: 0; flex: 1; }
@@ -835,11 +835,12 @@
 .clientProjectDno { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
 .clientProjectDno small { color: var(--muted); font-size: .8rem; }
 /* status = pilula s piko, enak jezik kot povsod (glej ProjectsWorkspace pw-status) */
-.clientProjectPika { display: inline-flex; align-items: center; gap: .35rem; flex: none; font-style: normal; font-size: .8rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.clientProjectPika { display: inline-flex; align-items: center; gap: .3rem; flex: none; font-style: normal; font-size: .7rem; font-weight: 700; padding: .3rem .7rem; border-radius: 999px; border: 1px solid color-mix(in oklch, var(--pill-ink, oklch(48% .015 70)) 14%, transparent); background: var(--pill-bg, oklch(95.5% .008 87)); color: var(--pill-ink, oklch(48% .015 70)); white-space: nowrap; }
 .clientProjectPika::before { content: ''; width: .42rem; height: .42rem; border-radius: 50%; background: var(--pika, oklch(62% .02 70)); flex: none; }
-.clientProjectPika[data-tone='success'] { --pika: oklch(62% .15 150); }
-.clientProjectPika[data-tone='waiting'] { --pika: oklch(72% .16 75); }
-.clientProjectPika[data-tone='danger'] { --pika: oklch(58% .19 25); }
+.clientProjectPika[data-tone='success'] { --pika: oklch(62% .15 150); --pill-bg: oklch(96% .035 158); --pill-ink: oklch(50% .085 158); }
+.clientProjectPika[data-tone='waiting'] { --pika: oklch(72% .16 75); --pill-bg: oklch(96.5% .03 82); --pill-ink: oklch(54% .09 68); }
+.clientProjectPika[data-tone='danger'] { --pika: oklch(58% .19 25); --pill-bg: oklch(96.5% .03 28); --pill-ink: oklch(55% .11 27); }
+.clientProjectPika[data-tone='neutral'] { --pika: oklch(62% .02 70); --pill-bg: oklch(95.5% .008 87); --pill-ink: oklch(48% .015 70); }
 .clientProjectPrazno { color: var(--muted); font-size: .8rem; }
 /* Dokumentacija / povezave na profilu stranke — enak UX kot "05 · DOKUMENTACIJA"
    na projektu (ProjectsWorkspace), a berljiva besedila (>=.8rem), ker je bila
