@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useLocale } from 'next-intl';
 
 /* Interaktivno hero ozadje za Flow landing:
    - zamegljen svetel video (privzeto placeholder oseba z laptopom; zamenjaj z
@@ -44,6 +45,7 @@ function mkBubble(slot: number): Bubble {
 }
 
 export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { video?: string }) {
+  const jeEn = useLocale() === 'en';
   /* Prazno na SSR → mehurčke ustvarimo šele na klientu (Math.random ne sme
      teči med hidracijo). */
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
@@ -106,12 +108,12 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         </div>
         {/* lebdeca UI obvestila okoli pupe (kot da prihajajo iz njenega racunalnika) */}
         <div className="fl-notif" aria-hidden>
-          <span className="fl-chip fl-chip-1"><b className="ok"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg></b>Ponudba sprejeta</span>
-          <span className="fl-chip fl-chip-2"><b className="msg"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z" /></svg></b>Nova stranka</span>
-          <span className="fl-chip fl-chip-3"><b className="pay">€</b>Plačano · 1.200 €</span>
-          <span className="fl-chip fl-chip-4"><b className="ok"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg></b>Račun poslan</span>
-          <span className="fl-chip fl-chip-5"><b className="star"><svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z" /></svg></b>Nova ocena · 5,0</span>
-          <span className="fl-chip fl-chip-6"><b className="ok"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg></b>Pogodba podpisana</span>
+          <span className="fl-chip fl-chip-1"><b className="ok"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg></b>{jeEn ? 'Offer accepted' : 'Ponudba sprejeta'}</span>
+          <span className="fl-chip fl-chip-2"><b className="msg"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z" /></svg></b>{jeEn ? 'New client' : 'Nova stranka'}</span>
+          <span className="fl-chip fl-chip-3"><b className="pay">€</b>{jeEn ? 'Paid · €1,200' : 'Plačano · 1.200 €'}</span>
+          <span className="fl-chip fl-chip-4"><b className="ok"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg></b>{jeEn ? 'Invoice sent' : 'Račun poslan'}</span>
+          <span className="fl-chip fl-chip-5"><b className="star"><svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z" /></svg></b>{jeEn ? 'New review · 5.0' : 'Nova ocena · 5,0'}</span>
+          <span className="fl-chip fl-chip-6"><b className="ok"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg></b>{jeEn ? 'Contract signed' : 'Pogodba podpisana'}</span>
         </div>
       </div>
 
