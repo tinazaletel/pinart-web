@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { GearSix, Package, UserCircle, UsersThree, ShieldCheck, SignOut } from '@phosphor-icons/react';
 import { createClient } from '@/utils/supabase/client';
 import { getAccessTier, type AccessTier } from '@/lib/pinartFlowEntitlements';
+import JezikPreklop from '@/components/JezikPreklop';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
 /* Uporabniski meni na dnu stranske vrstice. Prej je bil ta cip navadna povezava na
@@ -79,6 +80,7 @@ export default function SidebarUserMenu({ base }: { base: string }) {
           <Link href={`${base}/kalkulator/nastavitve`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><GearSix size={15} weight="bold" /> {L('Nastavitve', 'Settings')}</Link>
           <Link href={`${base}/kalkulator/ekipa`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><UsersThree size={15} weight="bold" /> {L('Račun in ekipa', 'Account & team')}</Link>
           <Link href={`${base}/kalkulator/pogoji`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><ShieldCheck size={15} weight="bold" /> {L('Pogoji in zasebnost', 'Terms & privacy')}</Link>
+          <JezikPreklop base={base} role="menuitem" style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }} />
           <button type="button" className={styles.userMenuOdjava} role="menuitem" onClick={odjava} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><SignOut size={15} weight="bold" /> {L('Odjava', 'Log out')}</button>
         </div>
       )}

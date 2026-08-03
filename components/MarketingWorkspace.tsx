@@ -32,7 +32,7 @@ import {
 import styles from './MarketingWorkspace.module.css';
 
 type Zavihek = 'pregled' | 'objave' | 'kampanje' | 'predloge' | 'povezave';
-type SocialKanal = 'instagram' | 'facebook' | 'linkedin';
+type SocialKanal = 'instagram' | 'facebook' | 'linkedin' | 'tiktok' | 'youtube' | 'x' | 'threads' | 'pinterest';
 type NacrtovanaObjava = { id: string; kanal: SocialKanal; besedilo: string; datum: string; ustvarjeno: string };
 
 const OBJAVE_KLJUC = 'pinart-flow-marketing-objave-v1';
@@ -40,11 +40,21 @@ const SOCIAL_LINKI: Record<SocialKanal, string> = {
   instagram: 'https://www.instagram.com/',
   facebook: 'https://www.facebook.com/',
   linkedin: 'https://www.linkedin.com/feed/',
+  tiktok: 'https://www.tiktok.com/',
+  youtube: 'https://studio.youtube.com/',
+  x: 'https://x.com/',
+  threads: 'https://www.threads.net/',
+  pinterest: 'https://www.pinterest.com/',
 };
 const SOCIAL_OZNAKE: Record<SocialKanal, string> = {
   instagram: 'Instagram',
   facebook: 'Facebook',
   linkedin: 'LinkedIn',
+  tiktok: 'TikTok',
+  youtube: 'YouTube',
+  x: 'X (Twitter)',
+  threads: 'Threads',
+  pinterest: 'Pinterest',
 };
 
 const PRAZEN = {
@@ -216,7 +226,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
       </header>
       <div className={styles.plannerGrid}>
         <form className={styles.postForm} onSubmit={shraniObjavo}>
-          <label>{L('Kanal', 'Channel')}<select value={objava.kanal} onChange={(e) => setObjava({ ...objava, kanal: e.target.value as SocialKanal })}><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="linkedin">LinkedIn</option></select></label>
+          <label>{L('Kanal', 'Channel')}<select value={objava.kanal} onChange={(e) => setObjava({ ...objava, kanal: e.target.value as SocialKanal })}>{(Object.keys(SOCIAL_OZNAKE) as SocialKanal[]).map((k) => <option key={k} value={k}>{SOCIAL_OZNAKE[k]}</option>)}</select></label>
           <label>{L('Datum objave', 'Post date')}<input required type="date" value={objava.datum} onChange={(e) => setObjava({ ...objava, datum: e.target.value })} />{objava.datum && <small style={{ display: 'block', marginTop: '.3rem', fontSize: '.72rem', color: 'rgba(17,17,17,.6)' }}>{new Date(objava.datum + 'T00:00:00').toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</small>}</label>
           <label className={styles.captionField}>{L('Besedilo objave', 'Post text')}<textarea required value={objava.besedilo} onChange={(e) => setObjava({ ...objava, besedilo: e.target.value })} placeholder={L('Napiši uvod, glavno sporočilo in jasen naslednji korak …', 'Write an intro, the main message and a clear next step …')} /></label>
           <p className={styles.manualNote}>{L('Flow vsebine ne objavi samodejno. Po shranjevanju jo kopiraš in odpreš izbrano omrežje.', 'Flow does not post content automatically. After saving, you copy it and open the chosen network.')}</p>

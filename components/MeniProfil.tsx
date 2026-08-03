@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import JezikPreklop from '@/components/JezikPreklop';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
 /**
@@ -61,6 +62,7 @@ export default function MeniProfil({ base }: { base: string }) {
         <Link className={styles.navItem} href={`${base}/kalkulator/pogoji`}>
           <span className={styles.navNapis}>{L('Pogoji in zasebnost', 'Terms & privacy')}</span>
         </Link>
+        <JezikPreklop base={base} className={styles.navItem} napisClassName={styles.navNapis} />
         <button type="button" className={`${styles.navItem} ${styles.meniOdjava}`} onClick={odjava}>
           <span className={styles.navNapis}>{L('Odjava', 'Log out')}</span>
         </button>
