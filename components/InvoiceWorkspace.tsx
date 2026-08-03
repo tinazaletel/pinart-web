@@ -14,6 +14,7 @@ import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, ty
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
+import { VALUTE_RACUN } from '@/lib/valute';
 import PosljiBlok from '@/components/PosljiBlok';
 import { dodajPostavko, izbrisiPostavko, preberiPostavke, type Postavka, type PostavkaEnota } from '@/lib/postavke';
 
@@ -28,9 +29,7 @@ const DDV_STOPNJE = ['22', '9.5', '5', '0'];
 const PRIVZETI_ROK_DNI = 15;
 const ENOTE_POSTAVK: PostavkaEnota[] = ['kos', 'ura', 'projekt', 'pavšal', 'mesec'];
 
-const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFractionDigits: 2 })} €`;
-const eur2 = (value: number) => `${value.toLocaleString('sl-SI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
-const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
+const esc =(s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
 const stev = (s: string) => { const n = Number(String(s).replace(',', '.')); return Number.isFinite(n) ? n : 0; };
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 const datStr = (d: Date) => `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}`;
@@ -43,7 +42,6 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const docLocale = jeEn ? 'en-GB' : 'sl-SI';
   const docDate = (d: Date) => d.toLocaleDateString(docLocale, { day: 'numeric', month: 'numeric', year: 'numeric' });
-  const docMoney = (value: number) => `${value.toLocaleString(docLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
   /* pod 640px izbira ponudbe postane slide-up predal (vzorec jeMobilni iz RetainerWorkspace) */
   const [jeMobilni, setJeMobilni] = useState(false);
   useEffect(() => {
@@ -68,6 +66,17 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const [ddvStopnja, setDdvStopnja] = useState(22);
   const [dokBarva, setDokBarva] = useState(DOK_BARVA_PRIVZETA);
   const [dokFont, setDokFont] = useState(DOK_FONT_PRIVZETI);
+  /* Valuta + poljubna oznaka davka — Slovenija ostane privzeto EUR/DDV, ostali
+     svet izbere valuto in vpise svojo davcno oznako (VAT/GST/Sales tax). */
+  const [valuta, setValuta] = useState('eur');
+  const [davekOznaka, setDavekOznaka] = useState('');
+  const valZnak = VALUTE_RACUN.find(v => v.id === valuta)?.znak ?? '€';
+  const davOzn = davekOznaka.trim() || (jeEn ? 'VAT' : 'DDV');
+  /* enotno oblikovanje zneskov v izbrani valuti (nadomesti prejsnja docMoney/eur2) */
+  const docMoney = (value: number) => `${value.toLocaleString(docLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${valZnak}`;
+  const eur2 = docMoney;
+  /* zapis dodatnih nastavitev v K_NAST brez povozitve ostalega */
+  const shraniNast = (patch: Record<string, unknown>) => { try { const s = JSON.parse(localStorage.getItem(K_NAST) || '{}'); localStorage.setItem(K_NAST, JSON.stringify({ ...s, ...patch })); } catch { /* prazno */ } };
 
   /* pogled = katera "stran" je prikazana — view-swap kot ContractWorkspace:
      pregled (VSTOP za nov racun) ali obrazec (obrazec za nov racun, svoja
@@ -138,6 +147,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       if (s.predklic) setPredklic(s.predklic);
       if (s.ddvZavezanec) setDdvZavezanec(true);
       if (s.ddvStopnja) setDdvStopnja(Number(s.ddvStopnja) || 22);
+      if (s.valutaRacun) setValuta(s.valutaRacun);
+      if (s.davekOznaka) setDavekOznaka(s.davekOznaka);
       if (s.dokBarva) setDokBarva(s.dokBarva);
       if (s.dokFont) setDokFont(s.dokFont);
     } catch { /* prazno */ }
@@ -480,7 +491,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     const zaPlaciloGlavno = jeAvans ? inv.amount : zaPlacilo;
     const vrsticeHtml = items.map(i => `<tr><td>${esc(i.opis || (jeEn ? 'Service' : 'Storitev'))}</td><td>${i.kolicina.toLocaleString(docLocale)}</td><td>${docMoney(i.cena)}</td>${imaPopust ? `<td>${(i.popust || 0).toLocaleString(docLocale)} %</td>` : ''}${zavezanec ? `<td>${(i.ddv || 0).toLocaleString(docLocale)} %</td>` : ''}<td>${docMoney(vrsticaZnesek(i))}</td></tr>`).join('');
     const vsoteHtml = zavezanec
-      ? [...stopnje.entries()].sort((a, b) => b[0] - a[0]).map(([rate, s]) => `<div><span>${jeEn ? 'Subtotal' : 'Osnova'}${vecStopenj ? ` (${jeEn ? 'VAT' : 'DDV'} ${rate.toLocaleString(docLocale)} %)` : ''}</span><span>${docMoney(s.osnova)}</span></div><div><span>${jeEn ? 'VAT' : 'DDV'} (${rate.toLocaleString(docLocale)} %)</span><span>${docMoney(s.ddv)}</span></div>`).join('')
+      ? [...stopnje.entries()].sort((a, b) => b[0] - a[0]).map(([rate, s]) => `<div><span>${jeEn ? 'Subtotal' : 'Osnova'}${vecStopenj ? ` (${davOzn} ${rate.toLocaleString(docLocale)} %)` : ''}</span><span>${docMoney(s.osnova)}</span></div><div><span>${davOzn} (${rate.toLocaleString(docLocale)} %)</span><span>${docMoney(s.ddv)}</span></div>`).join('')
       : `<div><span>${jeEn ? 'Subtotal' : 'Osnova'}</span><span>${docMoney(osnova)}</span></div>`;
     const klient = clients.find(c => c.name.trim().toLowerCase() === inv.client.trim().toLowerCase());
     const prejemnik = [
@@ -502,11 +513,11 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         <div class="rac-meta"><b>${jeEn ? 'Issue date' : 'Datum izdaje'}</b>${docDate(izdaja)}<b>${jeEn ? 'Service date' : 'Opravljena storitev'}</b>${docDate(storitev)}<b>${jeEn ? 'Payment due' : 'Rok plačila'}</b>${docDate(rok)}</div>
       </div>
       <div class="rac-stranki"><span class="rac-l">${jeEn ? (jePredracun ? 'Pro forma invoice recipient' : 'Invoice recipient') : `Prejemnik ${jePredracun ? 'predračuna' : 'računa'}`}</span>${prejemnik || (jeEn ? '[customer]' : '[naročnik]')}</div>
-      <table class="rac-tabela"><thead><tr><th>${jeEn ? 'Item' : 'Postavka'}</th><th>${jeEn ? 'Qty.' : 'Kol.'}</th><th>${jeEn ? 'Unit price excl. VAT' : 'Cena brez DDV'}</th>${imaPopust ? `<th>${jeEn ? 'Discount' : 'Popust'}</th>` : ''}${zavezanec ? `<th>${jeEn ? 'VAT' : 'DDV'}</th>` : ''}<th>${jeEn ? 'Amount' : 'Znesek'}</th></tr></thead>
+      <table class="rac-tabela"><thead><tr><th>${jeEn ? 'Item' : 'Postavka'}</th><th>${jeEn ? 'Qty.' : 'Kol.'}</th><th>${jeEn ? `Unit price excl. ${davOzn}` : `Cena brez ${davOzn}`}</th>${imaPopust ? `<th>${jeEn ? 'Discount' : 'Popust'}</th>` : ''}${zavezanec ? `<th>${davOzn}</th>` : ''}<th>${jeEn ? 'Amount' : 'Znesek'}</th></tr></thead>
       <tbody>${vrsticeHtml}</tbody></table>
-      <div class="rac-vsote">${vsoteHtml}${zavezanec ? `<div><span>${jeEn ? 'Total VAT' : 'DDV skupaj'}</span><span>${docMoney(ddvSkupaj)}</span></div>` : ''}${jeAvans ? `<div><span>${jeEn ? 'Full amount' : 'Poln znesek'}</span><span>${docMoney(polnZnesek)}</span></div>` : ''}<div class="rac-skupaj"><span>${jeAvans ? `${jeEn ? 'AMOUNT DUE (advance' : 'ZA PLAČILO (avans'} ${(inv.avansPct || 0).toLocaleString(docLocale)} %)` : (jeEn ? 'TOTAL AMOUNT DUE' : 'SKUPAJ ZA PLAČILO')}</span><span>${docMoney(zaPlaciloGlavno)}</span></div></div>
+      <div class="rac-vsote">${vsoteHtml}${zavezanec ? `<div><span>${jeEn ? `Total ${davOzn}` : `${davOzn} skupaj`}</span><span>${docMoney(ddvSkupaj)}</span></div>` : ''}${jeAvans ? `<div><span>${jeEn ? 'Full amount' : 'Poln znesek'}</span><span>${docMoney(polnZnesek)}</span></div>` : ''}<div class="rac-skupaj"><span>${jeAvans ? `${jeEn ? 'AMOUNT DUE (advance' : 'ZA PLAČILO (avans'} ${(inv.avansPct || 0).toLocaleString(docLocale)} %)` : (jeEn ? 'TOTAL AMOUNT DUE' : 'SKUPAJ ZA PLAČILO')}</span><span>${docMoney(zaPlaciloGlavno)}</span></div></div>
       ${jeAvans ? `<p class="rac-opomba">${jeEn ? `The remaining ${docMoney(Math.max(polnZnesek - inv.amount, 0))} will be invoiced on the final invoice after completion/delivery.` : `Preostanek ${docMoney(Math.max(polnZnesek - inv.amount, 0))} se zaračuna na končnem računu po izvedbi/dobavi.`}</p>` : ''}
-      ${!zavezanec ? `<p class="rac-opomba">${jeEn ? 'VAT is not charged pursuant to Article 94(1) of ZDDV-1 (the supplier is not registered for VAT).' : 'DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1 (izdajatelj ni zavezanec za DDV).'}</p>` : ''}
+      ${!zavezanec && valuta === 'eur' ? `<p class="rac-opomba">${jeEn ? 'VAT is not charged pursuant to Article 94(1) of ZDDV-1 (the supplier is not registered for VAT).' : 'DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1 (izdajatelj ni zavezanec za DDV).'}</p>` : ''}
       ${jePredracun ? `<p class="rac-opomba"><b>${jeEn ? 'This pro forma invoice is not an accounting document. An invoice will be issued upon receipt of payment.' : 'Predračun ni knjigovodska listina. Račun bo izdan po prejemu plačila.'}</b></p>` : ''}
       <div class="rac-placilo">${placiloVrstice}</div>
       ${inv.paid ? `<div class="rac-placano">${jeEn ? 'PAID' : 'PLAČANO'}</div>` : ''}
@@ -732,7 +743,9 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         <div className="rc-postavke">
           <div className="rc-post-glava">
             <p className={styles.eyebrow}>{L('POSTAVKE RAČUNA', 'INVOICE ITEMS')}</p>
-            <label className="rc-ddv-toggle" title={L('Vklopi, če si zavezanec za DDV — stopnjo (22 % / 9,5 % / 0 %) nato izbereš po vsaki postavki', 'Turn on if you are VAT-registered — you then choose the rate (22% / 9.5% / 0%) per item')}><input type="checkbox" checked={ddvZavezanec} onChange={event => setDdvZavezanec(event.target.checked)} /> {L('Obračunaj DDV', 'Charge VAT')}</label>
+            <label className="rc-valuta" title={L('Valuta računa — znesek vpišeš neposredno v tej valuti', 'Invoice currency — amounts are entered directly in this currency')}>{L('Valuta', 'Currency')}<select value={valuta} onChange={event => { setValuta(event.target.value); shraniNast({ valutaRacun: event.target.value }); }}>{VALUTE_RACUN.map(v => <option key={v.id} value={v.id}>{v.ime}</option>)}</select></label>
+            <label className="rc-ddv-toggle" title={valuta === 'eur' ? L('Vklopi, če si zavezanec za DDV — stopnjo (22 % / 9,5 % / 0 %) nato izbereš po vsaki postavki', 'Turn on if you are VAT-registered — you then choose the rate (22% / 9.5% / 0%) per item') : L('Vklopi, če na račun obračunaš davek (npr. Sales tax / GST) — stopnjo vpišeš po postavki', 'Turn on if you charge tax (e.g. Sales tax / GST) — you enter the rate per item')}><input type="checkbox" checked={ddvZavezanec} onChange={event => setDdvZavezanec(event.target.checked)} /> {L(`Obračunaj ${davOzn}`, `Charge ${davOzn}`)}</label>
+            {ddvZavezanec && valuta !== 'eur' && <label className="rc-valuta" title={L('Kako se davek imenuje na tvojem trgu (VAT, GST, Sales tax …)', 'What the tax is called in your market (VAT, GST, Sales tax …)')}>{L('Oznaka davka', 'Tax label')}<input value={davekOznaka} onChange={event => { setDavekOznaka(event.target.value); shraniNast({ davekOznaka: event.target.value }); }} placeholder={jeEn ? 'e.g. Sales tax' : 'npr. Sales tax'} style={{ width: '9rem' }} /></label>}
             <div className="rc-post-gumbi">
               {/* samo ce racun izhaja iz ponudbe — povrne narocnika+postavke na izhodisce ponudbe (rocnih sprememb v ostalih poljih ne izbrise) */}
               {offerId && <button type="button" className="rc-ponastavi" onClick={ponastaviNaPrivzeto}>{L('↺ Ponastavi na privzeto', '↺ Reset to default')}</button>}
@@ -744,10 +757,12 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
             <div className={'rc-vrstica' + (ddvZavezanec ? '' : ' rc-brez-ddv')}>
               <label className="rc-opis">{L('Opis', 'Description')}<input required={i === 0} value={v.opis} onChange={event => popraviVrstico(i, 'opis', event.target.value)} placeholder={L('Opravljena storitev, obseg ali obdobje …', 'Service provided, scope or period …')} /></label>
               <label>{L('Kol.', 'Qty.')}<input required min="0" step="0.5" type="number" inputMode="numeric" placeholder="1" value={v.kolicina} onChange={event => popraviVrstico(i, 'kolicina', event.target.value)} /></label>
-              <label>{L('Cena brez DDV', 'Price excl. VAT')}<input required={i === 0} min="0" step="0.01" type="number" inputMode="decimal" placeholder="0,00" value={v.cena} onChange={event => popraviVrstico(i, 'cena', event.target.value)} /></label>
+              <label>{L(`Cena brez ${davOzn}`, `Price excl. ${davOzn}`)}<input required={i === 0} min="0" step="0.01" type="number" inputMode="decimal" placeholder="0,00" value={v.cena} onChange={event => popraviVrstico(i, 'cena', event.target.value)} /></label>
               <label>{L('Popust %', 'Discount %')}<input min="0" max="100" step="0.5" type="number" inputMode="decimal" value={v.popust} onChange={event => popraviVrstico(i, 'popust', event.target.value)} placeholder="0" /></label>
-              {ddvZavezanec && <label>{L('DDV', 'VAT')}<select value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)}>{DDV_STOPNJE.map(s => <option key={s} value={s}>{s.replace('.', ',')} %</option>)}</select></label>}
-              {ddvZavezanec && (() => { const p = predlagajDdv(v.opis, v.ddv); return p ? <button type="button" className="rc-ddv-namig" title={`${p.razlog} ${L('(predlog, ne davčni nasvet)', '(suggestion, not tax advice)')}`} onClick={() => popraviVrstico(i, 'ddv', p.stopnja)}>💡 {p.stopnja.replace('.', ',')} %?</button> : null; })()}
+              {ddvZavezanec && (valuta === 'eur'
+                ? <label>{davOzn}<select value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)}>{DDV_STOPNJE.map(s => <option key={s} value={s}>{s.replace('.', ',')} %</option>)}</select></label>
+                : <label>{L(`${davOzn} %`, `${davOzn} %`)}<input min="0" max="30" step="0.1" type="number" inputMode="decimal" placeholder="0" value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)} /></label>)}
+              {ddvZavezanec && valuta === 'eur' && (() => { const p = predlagajDdv(v.opis, v.ddv); return p ? <button type="button" className="rc-ddv-namig" title={`${p.razlog} ${L('(predlog, ne davčni nasvet)', '(suggestion, not tax advice)')}`} onClick={() => popraviVrstico(i, 'ddv', p.stopnja)}>💡 {p.stopnja.replace('.', ',')} %?</button> : null; })()}
               <span className="rc-znesek"><em>{L('Znesek', 'Amount')}</em><b>{eur2(vrsticaZnesek(izracun.postavke[i] || { opis: '', kolicina: 0, cena: 0 }))}</b></span>
               <button type="button" className="rc-x" onClick={() => setVrstice(rows => rows.length > 1 ? rows.filter((_, j) => j !== i) : rows)} aria-label={`${L('Odstrani postavko', 'Remove item')} ${i + 1}`} title={L('Odstrani postavko', 'Remove item')} disabled={vrstice.length < 2}>×</button>
             </div>
@@ -762,12 +777,13 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
 
         <div className="rc-vsote">
           {ddvZavezanec ? <>
-            {izracun.stopnje.map(([rate, s]) => <div key={rate}><span>{L('Osnova', 'Subtotal')}{izracun.stopnje.length > 1 ? ` (${L('DDV', 'VAT')} ${String(rate).replace('.', ',')} %)` : ''}</span><b>{eur2(s.osnova)}</b></div>)}
-            {izracun.stopnje.map(([rate, s]) => <div key={'d' + rate}><span>{L('DDV', 'VAT')} ({String(rate).replace('.', ',')} %)</span><b>{eur2(s.ddv)}</b></div>)}
+            {izracun.stopnje.map(([rate, s]) => <div key={rate}><span>{L('Osnova', 'Subtotal')}{izracun.stopnje.length > 1 ? ` (${davOzn} ${String(rate).replace('.', ',')} %)` : ''}</span><b>{eur2(s.osnova)}</b></div>)}
+            {izracun.stopnje.map(([rate, s]) => <div key={'d' + rate}><span>{davOzn} ({String(rate).replace('.', ',')} %)</span><b>{eur2(s.ddv)}</b></div>)}
           </> : <div><span>{L('Osnova', 'Subtotal')}</span><b>{eur2(izracun.osnova)}</b></div>}
           <div className="rc-skupaj"><span>{avansJeDelni ? L(`Za plačilo (avans ${avansOdstotek.toLocaleString('sl-SI')} %)`, `Amount due (advance ${avansOdstotek.toLocaleString('en-GB')} %)`) : L('Skupaj za plačilo', 'Total amount due')}</span><b>{eur2(avansJeDelni ? zaPlaciloAvans : izracun.zaPlacilo)}</b></div>
           {avansJeDelni && <p className="rc-klavzula">{L('Poln znesek', 'Full amount')}: {eur2(izracun.zaPlacilo)} · {L('preostanek', 'remaining')}: {eur2(izracun.zaPlacilo - zaPlaciloAvans)}</p>}
-          {!ddvZavezanec && <p className="rc-klavzula">{L('DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1 — klavzula se izpiše na računu. Zavezanost za DDV nastaviš v Moje podjetje (kalkulator).', 'VAT is not charged pursuant to Article 94(1) of ZDDV-1 — the clause is printed on the invoice. Set your VAT status in My company (calculator).')}</p>}
+          {!ddvZavezanec && valuta === 'eur' && <p className="rc-klavzula">{L('DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1 — klavzula se izpiše na računu. Zavezanost za DDV nastaviš v Moje podjetje (kalkulator).', 'VAT is not charged pursuant to Article 94(1) of ZDDV-1 — the clause is printed on the invoice. Set your VAT status in My company (calculator).')}</p>}
+          {!ddvZavezanec && valuta !== 'eur' && <p className="rc-klavzula">{L('Davek ni obračunan. Če na svojem trgu obračunavaš davek, vklopi »Obračunaj …« zgoraj.', 'No tax charged. If you charge tax in your market, turn on “Charge …” above.')}</p>}
         </div>
 
         {/* podpis (neobvezen) — isti vzorec kot pri pogodbah: rocno narisan ali nalozen; izrise se na dnu racuna in v izvozu */}
@@ -858,6 +874,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-postavke *{box-sizing:border-box;min-width:0}
       .rc .rc-post-glava{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap}
       .rc .rc-ddv-toggle{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:650;color:var(--ink);cursor:pointer;white-space:nowrap}
+      .rc .rc-valuta{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:650;color:var(--ink);white-space:nowrap}
+      .rc .rc-valuta select,.rc .rc-valuta input{padding:.32rem .5rem;border:1px solid var(--line,oklch(88% .01 300));border-radius:.5rem;background:#fff;font:600 .8rem var(--font-sans),sans-serif;color:var(--ink)}
       .rc .rc-ddv-toggle input{width:1.05rem;height:1.05rem;accent-color:var(--accent,#6E4FA6);cursor:pointer}
       .rc .rc-ddv-namig{align-self:center;padding:.25rem .55rem;border:1px solid oklch(80% .09 300);border-radius:999px;background:oklch(96% .03 300);color:oklch(42% .13 300);font:700 .6rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
       .rc .rc-ddv-namig:hover{background:oklch(42% .13 300);color:#fff;border-color:transparent}

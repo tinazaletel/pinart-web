@@ -3500,9 +3500,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     }
     if (izjemePravice.trim()) v.push('Opomba: ' + izjemePravice.trim());
     v.push('');
-    v.push(ddvZavezanec
+    if (valuta === 'eur') v.push(ddvZavezanec
       ? `DDV: cene so brez DDV; ob izstavitvi računa se obračuna ${st} % DDV.`
       : 'DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1.');
+    else if (ddvZavezanec) v.push('Davek: cene so brez davka; ob izstavitvi računa se obračuna veljavni davek.');
     v.push('');
     v.push('POGOJI');
     const avans = clamp(Math.round(Number(avansPct)) || 50, 10, 100);
@@ -4161,7 +4162,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       <table class="rac-tabela"><thead><tr><th>Postavka</th><th>Kol.</th><th>Cena</th>${ddvZavezanec ? '<th>DDV</th>' : ''}<th>Znesek</th></tr></thead>
       <tbody><tr><td>Kreativne storitve — ${escapeHtml(naziv)}${paketOpis}</td><td>1</td><td>${net}</td>${ddvZavezanec ? `<td>${st} %</td>` : ''}<td>${net}</td></tr></tbody></table>
       <div class="rac-vsote"><div><span>Osnova</span><span>${net}</span></div>${ddvZavezanec ? `<div><span>DDV (${st} %)</span><span>${ddvStr}</span></div>` : ''}<div class="rac-skupaj"><span>Za plačilo</span><span>${gross}</span></div></div>
-      ${!ddvZavezanec ? '<p class="rac-opomba">DDV ni obračunan skladno s 1. odstavkom 94. člena ZDDV-1 (nismo zavezanci za DDV).</p>' : ''}
+      ${!ddvZavezanec && valuta === 'eur' ? '<p class="rac-opomba">DDV ni obračunan skladno s 1. odstavkom 94. člena ZDDV-1 (nismo zavezanci za DDV).</p>' : ''}
       <div class="rac-placilo">${placiloVrstice}</div>
       ${racunPlacano ? `<div class="rac-placano">PLAČANO</div>` : ''}
       <p class="rac-noga-txt">Račun je izdan v skladu z veljavno zakonodajo. Ob zamudi plačila zaračunamo zakonske zamudne obresti.</p>`;
@@ -4215,7 +4216,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     const narocnikStr = [narocnikPonudbe.trim() || '[Naročnik]', narocnikOseba.trim(), narocnikNaslov.trim(), narocnikDavcna.trim() && ('davčna št. ' + narocnikDavcna.trim())].filter(Boolean).join(', ');
     const modelOpis = ret.model === 'ure' ? `${ret.ure} ur mesečno` : ret.model === 'paket' ? 'dogovorjeni mesečni paket storitev' : `${ret.ure} ur mesečno ter dogovorjeni paket storitev`;
     const storitve = r ? r.sez.map(s => s.ime.toLowerCase()).join(', ') : 'dogovorjene kreativne storitve';
-    const ddvStr = ddvZavezanec ? ' (+ DDV)' : ' (izvajalec ni zavezanec za DDV — 1. odst. 94. člena ZDDV-1)';
+    const ddvStr = ddvZavezanec ? ' (+ DDV)' : (valuta === 'eur' ? ' (izvajalec ni zavezanec za DDV — 1. odst. 94. člena ZDDV-1)' : '');
     return `
       <div class="pog-naslov">POGODBA O DOLGOROČNEM SODELOVANJU</div>
       <div class="pog-stranki">

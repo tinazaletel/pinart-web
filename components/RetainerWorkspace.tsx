@@ -14,6 +14,7 @@ import { OrbSfera, ORB_BARVE, ikonaZa, ORB0_CSS, osvetli } from './Orb0';
 import VidezDokumentov from './VidezDokumentov';
 import AmbientBubbles from '@/components/AmbientBubbles';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo } from '@/lib/dokVidez';
+import { VALUTE_RACUN, valutaZnak } from '@/lib/valute';
 
 const K_NAST = 'pinart-kalkulator-v2';
 const K_NAROCNIKI = 'pinart-kalkulator-narocniki';
@@ -50,7 +51,6 @@ type Ponudnik = { ime: string; davcna: string; email: string; telefon: string; n
 type Narocnik = { ime: string; email?: string; oseba?: string; naslov?: string; davcna?: string };
 
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
-const eur = (n: number) => Math.round(n).toLocaleString('sl-SI') + ' €';
 const datStr = (d: Date) => `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}`;
 const imeScope = (id: string) => SCOPE.find(s => s.id === id)?.ime ?? id;
 
@@ -117,7 +117,6 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   const tr = (sl: string, en: string) => (jeEn ? en : sl);
   const docLocale = jeEn ? 'en-GB' : 'sl-SI';
   const docDate = (d: Date) => d.toLocaleDateString(docLocale, { day: 'numeric', month: 'numeric', year: 'numeric' });
-  const docEur = (n: number) => Math.round(n).toLocaleString(docLocale) + ' €';
   const scopeEn: Record<string, string> = {
     cgp: 'Brand identity', logo: 'Logo design', web: 'Website', social: 'Social media', copy: 'Copywriting',
     ilustracija: 'Illustration', fotografija: 'Photography', motion: 'Video / motion', aplikacija: 'Application',
@@ -137,6 +136,14 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   const [urna, setUrna] = useState(PRIVZETA_URNA);
   const [ddvZavezanec, setDdvZavezanec] = useState(false);
   const [ddvStopnja, setDdvStopnja] = useState(22);
+  /* Valuta + poljubna oznaka davka — Slovenija ostane privzeto EUR/DDV, ostali
+     svet izbere valuto in vpiše svojo davčno oznako (VAT/GST/Sales tax). */
+  const [valuta, setValuta] = useState('eur');
+  const [davekOznaka, setDavekOznaka] = useState('');
+  const valZnak = valutaZnak(valuta);
+  const davOzn = davekOznaka.trim() || (jeEn ? 'VAT' : 'DDV');
+  const eur = (n: number) => Math.round(n).toLocaleString('sl-SI') + ' ' + valZnak;
+  const docEur = (n: number) => Math.round(n).toLocaleString(docLocale) + ' ' + valZnak;
   const [nedavni, setNedavni] = useState<Narocnik[]>([]);
 
   const [scope, setScope] = useState<string[]>([]);
@@ -203,6 +210,8 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       if (u) setUrna(u);
       if (s.ddvZavezanec) setDdvZavezanec(true);
       if (s.ddvStopnja) setDdvStopnja(Number(s.ddvStopnja) || 22);
+      if (s.valutaRacun) setValuta(s.valutaRacun);
+      if (s.davekOznaka) setDavekOznaka(s.davekOznaka);
       if (s.dokBarva) setDokBarva(s.dokBarva);
       if (s.dokFont) setDokFont(s.dokFont);
       if (s.imeUporabnika) setImeUporabnika(String(s.imeUporabnika));
@@ -229,11 +238,13 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       s.predklic = predklic;
       if (ddvZavezanec) s.ddvZavezanec = true; else delete s.ddvZavezanec;
       s.ddvStopnja = ddvStopnja;
+      if (valuta !== 'eur') s.valutaRacun = valuta; else delete s.valutaRacun;
+      if (davekOznaka.trim()) s.davekOznaka = davekOznaka.trim(); else delete s.davekOznaka;
       if (dokBarva !== DOK_BARVA_PRIVZETA) s.dokBarva = dokBarva; else delete s.dokBarva;
       if (dokFont !== DOK_FONT_PRIVZETI) s.dokFont = dokFont; else delete s.dokFont;
       localStorage.setItem(K_NAST, JSON.stringify(s));
     } catch { /* prazno */ }
-  }, [nalozeno, ponudnik, predklic, ddvZavezanec, ddvStopnja, dokBarva, dokFont]);
+  }, [nalozeno, ponudnik, predklic, ddvZavezanec, ddvStopnja, valuta, davekOznaka, dokBarva, dokFont]);
 
   /* ob spremembi koraka (Naprej/Nazaj) zaslajdaj vprasanje tega koraka v vidno polje —
      ENAKO kot kalkulator: prek Lenis (window.__pinartLenis), z resize + fallback na window.
@@ -302,7 +313,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
     <p class="meta">Date: ${docDate(new Date())}${nar.ime.trim() ? ' · prepared for: ' + esc(nar.ime.trim()) : ''}</p>
     <h2>Scope (included each month)</h2>${obsegHtml}
     <h2>Monthly fee</h2>
-    <p class="big">${docEur(ret.mesNeto)}${ddvZavezanec ? ` <span class="mut" style="font-size:10pt">(incl. VAT ${docEur(zDdv(ret.mesNeto))})</span>` : ''} / month</p>
+    <p class="big">${docEur(ret.mesNeto)}${ddvZavezanec ? ` <span class="mut" style="font-size:10pt">(incl. ${davOzn} ${docEur(zDdv(ret.mesNeto))})</span>` : ''} / month</p>
     <ul>
       <li>Included: ${esc(modelOpis)}</li>
       ${ret.ureBaza > 0 ? `<li>Hours included: ${ure} h / month (hourly rate ${docEur(urna)})</li>` : ''}
@@ -320,7 +331,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
     <p class="meta">Datum: ${datStr(new Date())}${nar.ime.trim() ? ' · za: ' + esc(nar.ime.trim()) : ''}</p>
     <h2>Obseg (kaj vključuje mesečno)</h2>${obsegHtml}
     <h2>Mesečni znesek</h2>
-    <p class="big">${eur(ret.mesNeto)}${ddvZavezanec ? ` <span class="mut" style="font-size:10pt">(z DDV ${eur(zDdv(ret.mesNeto))})</span>` : ''} / mesec</p>
+    <p class="big">${eur(ret.mesNeto)}${ddvZavezanec ? ` <span class="mut" style="font-size:10pt">(z ${davOzn} ${eur(zDdv(ret.mesNeto))})</span>` : ''} / mesec</p>
     <ul>
       <li>Vključeno: ${esc(modelOpis)}</li>
       ${ret.ureBaza > 0 ? `<li>Blok ur: ${ure} h / mesec (urna postavka ${eur(urna)})</li>` : ''}
@@ -337,7 +348,11 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   const pogodbaHtml = () => {
     const izvajalec = [ponudnik.ime.trim() || (jeEn ? '[Service provider]' : '[Izvajalec]'), ponudnik.naslov.trim(), ponudnik.davcna.trim() && ((jeEn ? 'tax no. ' : 'davčna št. ') + ponudnik.davcna.trim()), ponudnik.trr.trim() && ((jeEn ? 'IBAN ' : 'TRR ') + ponudnik.trr.trim())].filter(Boolean).join(', ');
     const narStr = [nar.ime.trim() || (jeEn ? '[Client]' : '[Naročnik]'), nar.oseba?.trim(), nar.naslov?.trim(), nar.davcna?.trim() && ((jeEn ? 'tax no. ' : 'davčna št. ') + nar.davcna.trim())].filter(Boolean).join(', ');
-    const ddvStr = ddvZavezanec ? (jeEn ? ' (+ VAT)' : ' (+ DDV)') : (jeEn ? ' (the service provider is not registered for VAT pursuant to Article 94(1) of ZDDV-1)' : ' (izvajalec ni zavezanec za DDV — 1. odst. 94. člena ZDDV-1)');
+    const ddvStr = ddvZavezanec
+      ? ` (+ ${davOzn})`
+      : (valuta === 'eur'
+          ? (jeEn ? ' (the service provider is not registered for VAT pursuant to Article 94(1) of ZDDV-1)' : ' (izvajalec ni zavezanec za DDV — 1. odst. 94. člena ZDDV-1)')
+          : '');
     return jeEn ? `
       <div class="kick">Agreement — ongoing collaboration${stevilka ? ' · no. ' + esc(stevilka) : ''}</div>
       <h1>Ongoing Collaboration Agreement</h1>
@@ -346,7 +361,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       <div class="pog-clen"><h2>Clause 1 — Subject matter</h2><p>The service provider will provide creative services to the client as an ongoing monthly collaboration. Included areas: ${vsiScope.length ? esc(vsiScope.map(docScope).join(', ')) : 'as set out in the agreed scope'}.</p></div>
       <div class="pog-clen"><h2>Clause 2 — Scope</h2><p>Monthly scope: <b>${esc(modelOpis)}</b>.${ret.ureBaza > 0 ? ` The included block is ${ure} hours per month.` : ''} Unused hours generally do not carry over to the following month unless agreed in writing. Work beyond the agreed scope is charged at ${docEur(ret.overage)} per hour.</p></div>
       <div class="pog-clen"><h2>Clause 3 — Term</h2><p>This agreement is concluded for <b>${doba} months</b> and takes effect on the date of signature (expected ${docDate(new Date())}). It may be extended upon the written consent of both parties.</p></div>
-      <div class="pog-clen"><h2>Clause 4 — Fees and payment</h2><p>The monthly fee is <b>${docEur(ret.mesNeto)}${ddvStr}</b>. It is invoiced in advance at the beginning of each month and is payable within 8 days. The total for the full ${doba}-month term is ${docEur(ret.skupajDoba)}${ddvZavezanec ? ' + VAT' : ''}.</p></div>
+      <div class="pog-clen"><h2>Clause 4 — Fees and payment</h2><p>The monthly fee is <b>${docEur(ret.mesNeto)}${ddvStr}</b>. It is invoiced in advance at the beginning of each month and is payable within 8 days. The total for the full ${doba}-month term is ${docEur(ret.skupajDoba)}${ddvZavezanec ? ` + ${davOzn}` : ''}.</p></div>
       <div class="pog-clen"><h2>Clause 5 — Intellectual property rights</h2><p>${esc(pravice)}</p></div>
       <div class="pog-clen"><h2>Clause 6 — Termination</h2><p>Either party may terminate this agreement by written notice subject to a <b>${ODPOVED_DNI}-day</b> notice period. Work already performed and the current month are payable in full.</p></div>
       <div class="pog-clen"><h2>Clause 7 — Confidentiality</h2><p>Each party will protect the other party's confidential information and will not disclose it to third parties without consent, including after the collaboration ends.</p></div>
@@ -359,7 +374,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       <div class="pog-clen"><h2>1. člen — Predmet</h2><p>Izvajalec za naročnika opravlja kreativne storitve v obliki dolgoročnega mesečnega sodelovanja. Vključena področja: ${vsiScope.length ? esc(vsiScope.map(imeScope).join(', ')) : 'skladno z dogovorjenim obsegom'}.</p></div>
       <div class="pog-clen"><h2>2. člen — Obseg</h2><p>Mesečni obseg: <b>${esc(modelOpis)}</b>.${ret.ureBaza > 0 ? ` Blok ur znaša ${ure} h na mesec.` : ''} Neporabljene ure se praviloma ne prenašajo v naslednji mesec, razen po pisnem dogovoru. Delo nad dogovorjenim obsegom se obračuna po urni postavki ${eur(ret.overage)} / uro.</p></div>
       <div class="pog-clen"><h2>3. člen — Trajanje</h2><p>Pogodba se sklene za dobo <b>${doba} mesecev</b>, z veljavnostjo od dneva podpisa (predvidoma ${datStr(new Date())}). Po izteku se lahko podaljša s pisnim soglasjem obeh strank.</p></div>
-      <div class="pog-clen"><h2>4. člen — Cena in plačilo</h2><p>Mesečno nadomestilo znaša <b>${eur(ret.mesNeto)}${ddvStr}</b>. Znesek se zaračuna vnaprej, ob začetku vsakega meseca, z rokom plačila 8 dni. Za celotno dobo (${doba} mesecev) skupaj ${eur(ret.skupajDoba)}${ddvZavezanec ? ' + DDV' : ''}.</p></div>
+      <div class="pog-clen"><h2>4. člen — Cena in plačilo</h2><p>Mesečno nadomestilo znaša <b>${eur(ret.mesNeto)}${ddvStr}</b>. Znesek se zaračuna vnaprej, ob začetku vsakega meseca, z rokom plačila 8 dni. Za celotno dobo (${doba} mesecev) skupaj ${eur(ret.skupajDoba)}${ddvZavezanec ? ` + ${davOzn}` : ''}.</p></div>
       <div class="pog-clen"><h2>5. člen — Avtorske pravice</h2><p>${esc(pravice)}</p></div>
       <div class="pog-clen"><h2>6. člen — Odpoved</h2><p>Vsaka stranka lahko pogodbo odpove s pisno izjavo, z <b>${ODPOVED_DNI}-dnevnim</b> odpovednim rokom. Že opravljeno delo in tekoči mesec se poravnata v celoti.</p></div>
       <div class="pog-clen"><h2>7. člen — Zaupnost</h2><p>Stranki varujeta zaupne podatke druge stranke in jih ne razkrivata tretjim osebam brez soglasja, tudi po prenehanju sodelovanja.</p></div>
@@ -704,7 +719,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             )}
             {model !== 'ure' && (
               <div className="rw-vrsta"><span className="rw-oznaka">{tr('Paket / mesec', 'Package / month')}</span>
-                <div className="rw-cipi"><input className="rw-num" style={{ width: '7rem' }} type="number" min={0} step={10} value={paketMes} onChange={e => setPaketMes(Math.max(0, Math.round(Number(e.target.value) || 0)))} /><span className="rw-mini">{tr('€ fiksno na mesec za obseg', '€ fixed per month for the scope')}</span></div>
+                <div className="rw-cipi"><input className="rw-num" style={{ width: '7rem' }} type="number" min={0} step={10} value={paketMes} onChange={e => setPaketMes(Math.max(0, Math.round(Number(e.target.value) || 0)))} /><span className="rw-mini">{tr(`${valZnak} fiksno na mesec za obseg`, `${valZnak} fixed per month for the scope`)}</span></div>
               </div>
             )}
             <div className="rw-vrsta"><span className="rw-oznaka">{tr('Doba', 'Term')}</span>
@@ -712,7 +727,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             </div>
           </div>
           <div className="rw-povz">
-            <div className="rw-glavna"><span>{tr('Mesečni znesek', 'Monthly amount')}</span><b>{eur(ret.mesNeto)}{ddvZavezanec ? ` (${tr('z DDV', 'incl. VAT')} ${eur(zDdv(ret.mesNeto))})` : ''} <em>/ {tr('mes', 'mo')}</em></b></div>
+            <div className="rw-glavna"><span>{tr('Mesečni znesek', 'Monthly amount')}</span><b>{eur(ret.mesNeto)}{ddvZavezanec ? ` (${tr('z', 'incl.')} ${davOzn} ${eur(zDdv(ret.mesNeto))})` : ''} <em>/ {tr('mes', 'mo')}</em></b></div>
             <ul className="rw-det">
               {ret.ureBaza > 0 && <li>{ure} {tr('ur/mesec po', 'h/month at')} {eur(urna)}/{tr('uro', 'h')}</li>}
               {ret.paketBaza > 0 && <li>{tr('paket', 'package')}: {eur(ret.paketBaza)}/{tr('mesec', 'month')}</li>}
@@ -1005,6 +1020,15 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             </section>
 
             <section className="rw-profil-sek">
+              <span className="rw-profil-oznaka">{tr('Valuta in davek', 'Currency and tax')}</span>
+              <p className="rw-profil-opis">{tr('Privzeto EUR in DDV (Slovenija). Za drug trg izberi valuto in vpiši svojo davčno oznako — velja za ponudbe, retainerje in račune.', 'Defaults to EUR and VAT (Slovenia). For another market pick a currency and enter your own tax label — applies to proposals, retainers and invoices.')}</p>
+              <div className="rw-profil-polja">
+                <label className="rw-pp"><span>{tr('Valuta', 'Currency')}</span><select value={valuta} onChange={e => setValuta(e.target.value)}>{VALUTE_RACUN.map(v => <option key={v.id} value={v.id}>{v.ime}</option>)}</select></label>
+                {valuta !== 'eur' && <label className="rw-pp"><span>{tr('Oznaka davka', 'Tax label')}</span><input type="text" value={davekOznaka} onChange={e => setDavekOznaka(e.target.value)} placeholder={jeEn ? 'e.g. Sales tax' : 'npr. Sales tax'} /></label>}
+              </div>
+            </section>
+
+            <section className="rw-profil-sek">
               <span className="rw-profil-oznaka">{tr('Videz dokumentov', 'Document appearance')}</span>
               <VidezDokumentov barva={dokBarva} font={dokFont} onBarva={setDokBarva} onFont={setDokFont} />
             </section>
@@ -1045,8 +1069,8 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-profil-polja{display:grid;grid-template-columns:1fr 1fr;gap:.9rem 1rem}
         .rw-pp{display:flex;flex-direction:column;gap:.35rem}
         .rw-pp>span{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8a8177}
-        .rw-pp input{font:inherit;font-size:.98rem;font-weight:600;color:var(--ink);background:#FCFBF7;border:1px solid oklch(93% .006 82 / .55);border-radius:9px;padding:.6rem .7rem;width:100%}
-        .rw-pp input:focus{outline:none;border-color:var(--ink)}
+        .rw-pp input,.rw-pp select{font:inherit;font-size:.98rem;font-weight:600;color:var(--ink);background:#FCFBF7;border:1px solid oklch(93% .006 82 / .55);border-radius:9px;padding:.6rem .7rem;width:100%}
+        .rw-pp input:focus,.rw-pp select:focus{outline:none;border-color:var(--ink)}
         .rw-pp-tel{grid-column:1 / -1}
         .rw-pp-tel-vrsta{display:flex;gap:.5rem}
         .rw-pp-predklic{max-width:5rem;text-align:center}
