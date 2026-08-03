@@ -353,26 +353,26 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const predoglediMock = (id: string) => {
     if (id === 'dokumenti') return (
       <div className="fl-mock">
-        <div className="fl-mock-bar"><i /><i /><i /><small>ponudba · PNR-2026-014</small></div>
+        <div className="fl-mock-bar"><i /><i /><i /><small>{t('ponudba', 'proposal')} · PNR-2026-014</small></div>
         <div className="fl-doc">
-          <div className="fl-doc-lp"><strong>Ponudba</strong><span>PNR-2026-014</span></div>
-          <div className="fl-doc-row"><b>Oblikovanje logotipa</b><span>480 €</span></div>
-          <div className="fl-doc-row"><b>Prenos avtorskih pravic</b><span>240 €</span></div>
-          <div className="fl-doc-row"><b>Licenca (2 leti, EU)</b><span>180 €</span></div>
-          <div className="fl-doc-total"><b>Skupaj</b><span>900 €</span></div>
+          <div className="fl-doc-lp"><strong>{t('Ponudba', 'Proposal')}</strong><span>PNR-2026-014</span></div>
+          <div className="fl-doc-row"><b>{t('Oblikovanje logotipa', 'Logo design')}</b><span>480 €</span></div>
+          <div className="fl-doc-row"><b>{t('Prenos avtorskih pravic', 'Copyright transfer')}</b><span>240 €</span></div>
+          <div className="fl-doc-row"><b>{t('Licenca (2 leti, EU)', 'Licence (2 years, EU)')}</b><span>180 €</span></div>
+          <div className="fl-doc-total"><b>{t('Skupaj', 'Total')}</b><span>900 €</span></div>
         </div>
       </div>
     );
     if (id === 'pregled') return (
       <div className="fl-mock">
-        <div className="fl-mock-bar"><i /><i /><i /><small>poslovni pregled</small></div>
+        <div className="fl-mock-bar"><i /><i /><i /><small>{t('poslovni pregled', 'business overview')}</small></div>
         <div className="fl-dash">
           <div className="fl-dash-top">
             <div className="fl-donut"><i>62%</i></div>
-            <div className="fl-dash-kpi"><span>Ocenjeni dobiček</span><strong>1.240 €</strong></div>
+            <div className="fl-dash-kpi"><span>{t('Ocenjeni dobiček', 'Estimated profit')}</span><strong>1.240 €</strong></div>
           </div>
           <div className="fl-bench">
-            <div className="fl-bench-label"><span>Tržni razpon cene</span><span className="fl-bench-you">tvoja cena</span></div>
+            <div className="fl-bench-label"><span>{t('Tržni razpon cene', 'Market price range')}</span><span className="fl-bench-you">{t('tvoja cena', 'your price')}</span></div>
             <div className="fl-bench-bar"><span className="fl-bench-mark" /></div>
           </div>
         </div>
@@ -382,9 +382,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       <div className="fl-mock">
         <div className="fl-mock-bar"><i /><i /><i /><small>Flow agent · beta</small></div>
         <div className="fl-mock-body">
-          <span className="fl-msg me">Pripravi ponudbo za spletno trgovino.</span>
-          <span className="fl-msg bot"><span className="fl-ava" />Predlagam pošteno ceno in obseg …</span>
-          <div className="fl-agent-note"><span className="fl-agent-dot"><svg viewBox="0 0 40 40" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}><path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" /><path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" /><path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" /><circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.55)" /><circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.55)" /></svg></span><div><b>Ponudba pripravljena</b><br /><small>1.850 € · pravice vračunane</small></div></div>
+          <span className="fl-msg me">{t('Pripravi ponudbo za spletno trgovino.', 'Prepare a proposal for an online store.')}</span>
+          <span className="fl-msg bot"><span className="fl-ava" />{t('Predlagam pošteno ceno in obseg …', 'I suggest a fair price and scope …')}</span>
+          <div className="fl-agent-note"><span className="fl-agent-dot"><svg viewBox="0 0 40 40" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}><path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" /><path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" /><path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" /><circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.55)" /><circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.55)" /></svg></span><div><b>{t('Ponudba pripravljena', 'Proposal ready')}</b><br /><small>{t('1.850 € · pravice vračunane', '€1,850 · rights included')}</small></div></div>
         </div>
       </div>
     );
@@ -393,19 +393,19 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         <div className="fl-mock-bar"><i /><i /><i /><small>flow API</small></div>
         <div className="fl-code">
           <span className="fl-code-line a" /><span className="fl-code-line b" /><span className="fl-code-line c" /><span className="fl-code-line d" /><span className="fl-code-line b" />
-          <div className="fl-soon"><span>Kmalu</span></div>
+          <div className="fl-soon"><span>{t('Kmalu', 'Soon')}</span></div>
         </div>
       </div>
     );
     return (
       <div className="fl-mock">
-        <div className="fl-mock-bar"><i /><i /><i /><small>pinart kalkulator</small></div>
+        <div className="fl-mock-bar"><i /><i /><i /><small>{t('pinart kalkulator', 'pinart calculator')}</small></div>
         <div className="fl-mock-body">
-          <span className="fl-msg bot"><span className="fl-ava" />Živjo! Kako ti je ime?</span>
+          <span className="fl-msg bot"><span className="fl-ava" />{t('Živjo! Kako ti je ime?', 'Hi! What is your name?')}</span>
           <span className="fl-msg me">Tina</span>
-          <span className="fl-msg bot"><span className="fl-ava" />Kakšne izkušnje imaš?</span>
-          <span className="fl-msg me">Šele začenjam</span>
-          <span className="fl-mockchip"><FileText size={14} weight="regular" />Ponudba · od 0 €</span>
+          <span className="fl-msg bot"><span className="fl-ava" />{t('Kakšne izkušnje imaš?', 'How much experience do you have?')}</span>
+          <span className="fl-msg me">{t('Šele začenjam', 'Just starting out')}</span>
+          <span className="fl-mockchip"><FileText size={14} weight="regular" />{t('Ponudba · od 0 €', 'Proposal · from €0')}</span>
         </div>
       </div>
     );
@@ -1253,10 +1253,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               <p>{t('Anonimni tržni pregled ti pokaže, kje si in raste z vsakim kreativcem. Tvoj pošteni benchmark.', 'An anonymous market view shows where your price sits and improves as the creative community grows.')}</p>
               <div className="fl-bglobe" aria-hidden>
                 <span className="fl-bglobe-ai"><Sparkle size={12} weight="fill" /> AI</span>
-                <div className="fl-btag" style={{ left: '17%', top: '8%', animationDelay: '0s' }}><small>Logotip</small><b style={{ background: '#d5776f' }}>650 €</b></div>
-                <div className="fl-btag" style={{ left: '66%', top: '8%', animationDelay: '1.3s' }}><small>Ilustracija</small><b style={{ background: '#c9926b' }}>480 €</b></div>
-                <div className="fl-btag" style={{ left: '10%', top: '32%', animationDelay: '2.6s' }}><small>CGP</small><b style={{ background: '#8b7be8' }}>1.350 €</b></div>
-                <div className="fl-btag" style={{ right: '9%', top: '32%', animationDelay: '3.9s' }}><small>Splet</small><b style={{ background: '#5bb89a' }}>1.400 €</b></div>
+                <div className="fl-btag" style={{ left: '17%', top: '8%', animationDelay: '0s' }}><small>{t('Logotip', 'Logo')}</small><b style={{ background: '#d5776f' }}>650 €</b></div>
+                <div className="fl-btag" style={{ left: '66%', top: '8%', animationDelay: '1.3s' }}><small>{t('Ilustracija', 'Illustration')}</small><b style={{ background: '#c9926b' }}>480 €</b></div>
+                <div className="fl-btag" style={{ left: '10%', top: '32%', animationDelay: '2.6s' }}><small>{t('CGP', 'Branding')}</small><b style={{ background: '#8b7be8' }}>1.350 €</b></div>
+                <div className="fl-btag" style={{ right: '9%', top: '32%', animationDelay: '3.9s' }}><small>{t('Splet', 'Website')}</small><b style={{ background: '#5bb89a' }}>1.400 €</b></div>
                 <svg viewBox="0 0 200 120">
                   <g stroke="rgba(255,255,255,.32)" fill="none" strokeWidth="1">
                     <circle cx="100" cy="60" r="44" />

@@ -364,13 +364,13 @@ export default function MarketingWorkspace({ base }: { base: string }) {
           <div><p className={styles.sectionLabel}>{L('POVEZANO S FLOWOM', 'CONNECTED TO FLOW')}</p><h2>{L('Kampanja ni osamljen seznam.', 'A campaign is not an isolated list.')}</h2><p>{L('Roke vodiš v koledarju, pripravo vsebin pa med nalogami. Tako vidiš, kaj sledi in kdo mora kaj dokončati.', 'You track deadlines in the calendar and content prep among your tasks. That way you see what is next and who needs to finish what.')}</p></div>
           <div className={styles.flowActions}><Link className={styles.secondary} href={`${base}/kalkulator/naloge`}><CheckSquare size={18} /> {L('Naloge', 'Tasks')}</Link><Link className={styles.secondary} href={`${base}/kalkulator/koledar`}><CalendarBlank size={18} /> {L('Koledar', 'Calendar')}</Link></div>
         </section>
-        <Kampanje />
-        <Predloge />
+        {Kampanje()}
+        {Predloge()}
       </>}
-      {zavihek === 'kampanje' && <Kampanje />}
-      {zavihek === 'objave' && <Objave />}
-      {zavihek === 'predloge' && <Predloge />}
-      {zavihek === 'povezave' && <Povezave />}
+      {zavihek === 'kampanje' && Kampanje()}
+      {zavihek === 'objave' && Objave()}
+      {zavihek === 'predloge' && Predloge()}
+      {zavihek === 'povezave' && Povezave()}
 
       {obrazecOdprt && (
         <div className={styles.dialogBackdrop} role="presentation" onMouseDown={(e) => e.target === e.currentTarget && setObrazecOdprt(false)}>
