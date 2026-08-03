@@ -19,6 +19,8 @@ type Section = 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'i
    Prej je bil en sam predal "Orodja", zaradi cesar so bili ceniki hkrati orodje IN
    samostojna postavka (podvojena povezava), meja med orodjem in podatkom pa nejasna. */
 export default function DashboardSidebar({ base, active }: { base: string; active: Section }) {
+  const jeEn = base === '/en';
+  const L = (sl: string, en: string) => (jeEn ? en : sl);
   const item = (section: Section, href: string, number: string, label: string, ikona: NavIkonaVrsta, zaklenjeno?: string) =>
     <Link className={`${styles.navItem} ${active === section ? styles.active : ''}`} href={href} title={label}
       data-zaklenjeno={zaklenjeno}>
@@ -40,42 +42,42 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
       </span>
     </Link>;
   const menuVsebina = () => <>
-    {item('overview', `${base}/kalkulator/pregled`, '01', 'Nadzorna plošča', 'pregled')}
+    {item('overview', `${base}/kalkulator/pregled`, '01', L('Nadzorna plošča', 'Dashboard'), 'pregled')}
     {/* Na telefonu so skupine zaprte: 13 postavk hkrati ne gre v en zaslon,
         ce naj bo vsaka tapna tarca vsaj 44 px. Na namizju so odprte kot prej. */}
-    <MeniSkupina naslov="Orodja" aktivna={active === 'offer' || active === 'retainer' || active === 'contracts' || active === 'invoices' || active === 'novprojekt'}>
+    <MeniSkupina naslov={L('Orodja', 'Tools')} aktivna={active === 'offer' || active === 'retainer' || active === 'contracts' || active === 'invoices' || active === 'novprojekt'}>
       {/* ?od=pregled -> kalkulator in retainer pokazeta puscico nazaj na nadzorno plosco */}
-      {item('offer', `${base}/kalkulator/orodje?od=pregled`, '01', 'Ponudba', 'ponudba')}
-      {item('retainer', `${base}/kalkulator/dolgorocno?od=pregled`, '02', 'Dolgoročno', 'retainer')}
-      {item('contracts', `${base}/kalkulator/pogodbe`, '03', 'Pogodba', 'pogodba', 'contracts')}
-      {item('invoices', `${base}/kalkulator/racuni`, '04', 'Računi', 'racuni')}
+      {item('offer', `${base}/kalkulator/orodje?od=pregled`, '01', L('Ponudba', 'Proposal'), 'ponudba')}
+      {item('retainer', `${base}/kalkulator/dolgorocno?od=pregled`, '02', L('Dolgoročno', 'Retainer'), 'retainer')}
+      {item('contracts', `${base}/kalkulator/pogodbe`, '03', L('Pogodba', 'Contract'), 'pogodba', 'contracts')}
+      {item('invoices', `${base}/kalkulator/racuni`, '04', L('Računi', 'Invoices'), 'racuni')}
       {/* Ustvari projekt = polnostranski chat vprasalnik (lastna stran, kot pogodbe/racuni). */}
-      {item('novprojekt', `${base}/kalkulator/nov-projekt`, '05', 'Ustvari projekt', 'projekti')}
+      {item('novprojekt', `${base}/kalkulator/nov-projekt`, '05', L('Ustvari projekt', 'New project'), 'projekti')}
     </MeniSkupina>
     {/* Arhiv (prej "Zgodovina") = kjer NAJDEŠ shranjeno; sodi pod Podatki, ne Drugo.
         Delo = ustvarjaš, Podatki = iščeš. */}
-    <MeniSkupina naslov="Podatki" aktivna={active === 'clients' || active === 'prices' || active === 'expenses' || active === 'projects' || active === 'accounting'}>
-      {item('projects', `${base}/kalkulator/projekti`, '01', 'Projekti & arhiv', 'zgodovina')}
-      {item('clients', `${base}/kalkulator/stranke`, '02', 'Stranke', 'stranke')}
-      {item('prices', `${base}/kalkulator/ceniki`, '03', 'Moji ceniki', 'ceniki')}
-      {item('expenses', `${base}/kalkulator/stroski`, '04', 'Stroški', 'stroski', 'expenses')}
-      {item('accounting', `${base}/kalkulator/racunovodstvo`, '05', 'Računovodstvo', 'racunovodstvo')}
+    <MeniSkupina naslov={L('Podatki', 'Data')} aktivna={active === 'clients' || active === 'prices' || active === 'expenses' || active === 'projects' || active === 'accounting'}>
+      {item('projects', `${base}/kalkulator/projekti`, '01', L('Projekti & arhiv', 'Projects & archive'), 'zgodovina')}
+      {item('clients', `${base}/kalkulator/stranke`, '02', L('Stranke', 'Clients'), 'stranke')}
+      {item('prices', `${base}/kalkulator/ceniki`, '03', L('Moji ceniki', 'Price lists'), 'ceniki')}
+      {item('expenses', `${base}/kalkulator/stroski`, '04', L('Stroški', 'Expenses'), 'stroski', 'expenses')}
+      {item('accounting', `${base}/kalkulator/racunovodstvo`, '05', L('Računovodstvo', 'Accounting'), 'racunovodstvo')}
     </MeniSkupina>
-    <MeniSkupina naslov="Načrt" aktivna={active === 'goals' || active === 'time' || active === 'plan' || active === 'naloge' || active === 'ideje' || active === 'koledar' || active === 'marketing'}>
-      {item('goals', `${base}/kalkulator/cilji`, '01', 'Cilji', 'cilji', 'businessInsights')}
-      {item('time', `${base}/kalkulator/cas`, '02', 'Čas', 'cas', 'businessInsights')}
-      {item('plan', `${base}/kalkulator/poslovni-nacrt`, '03', 'Poslovni okvir', 'okvir', 'businessInsights')}
-      {item('naloge', `${base}/kalkulator/naloge`, '04', 'Naloge', 'naloge')}
-      {item('koledar', `${base}/kalkulator/koledar`, '05', 'Koledar', 'koledar')}
+    <MeniSkupina naslov={L('Načrt', 'Plan')} aktivna={active === 'goals' || active === 'time' || active === 'plan' || active === 'naloge' || active === 'ideje' || active === 'koledar' || active === 'marketing'}>
+      {item('goals', `${base}/kalkulator/cilji`, '01', L('Cilji', 'Goals'), 'cilji', 'businessInsights')}
+      {item('time', `${base}/kalkulator/cas`, '02', L('Čas', 'Time'), 'cas', 'businessInsights')}
+      {item('plan', `${base}/kalkulator/poslovni-nacrt`, '03', L('Poslovni okvir', 'Business framework'), 'okvir', 'businessInsights')}
+      {item('naloge', `${base}/kalkulator/naloge`, '04', L('Naloge', 'Tasks'), 'naloge')}
+      {item('koledar', `${base}/kalkulator/koledar`, '05', L('Koledar', 'Calendar'), 'koledar')}
       {item('marketing', `${base}/kalkulator/marketing`, '06', 'Marketing', 'marketing')}
     </MeniSkupina>
     {/* Dizajn (videz dokumentov) je zdaj pod Moj profil — meni zadiha.
         Dostopen iz profila in iz urejevalnika dokumenta. */}
-    <MeniSkupina naslov="Drugo" vednoVidna aktivna={false}>
-      {povezava(`${base}/kalkulator/pomoc`, '01', 'Pomoč', 'pomoc')}
+    <MeniSkupina naslov={L('Drugo', 'More')} vednoVidna aktivna={false}>
+      {povezava(`${base}/kalkulator/pomoc`, '01', L('Pomoč', 'Help'), 'pomoc')}
     </MeniSkupina>
   </>;
-  return <><AmbientBubbles /><PaketZnak /><FlowTopBar /><SidebarToggle vrsta="odpri" /><aside className={styles.sidebar} aria-label="Glavna navigacija"><SidebarToggle vrsta="zapri" />
+  return <><AmbientBubbles /><PaketZnak /><FlowTopBar /><SidebarToggle vrsta="odpri" /><aside className={styles.sidebar} aria-label={L('Glavna navigacija', 'Main navigation')}><SidebarToggle vrsta="zapri" />
     <FlowCloudBridge />
     {/* logo in "zapri" sta zdaj v zgornji vrstici (FlowTopBar) — tu sta bila dvakrat */}
     <SidebarToggle vrsta="zapri" />
@@ -83,7 +85,7 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
     <details className={styles.mobileMenu}>
       {/* NE postavljaj display:flex/grid na <summary> — Safari s tem zlomi odpiranje <details>.
           Obliko nosi notranji <span>, summary ostane privzet. */}
-      <summary aria-label="Meni" title="Meni">
+      <summary aria-label={L('Meni', 'Menu')} title={L('Meni', 'Menu')}>
         <span className={styles.meniIkona}>
           <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
             {/* tri locene crte, da se ob odprtju zavrtijo v X */}
@@ -101,7 +103,7 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
           <DeliAplikacijo />
         </div>
         {/* pot nazaj na Flow landing — v zgornji vrstici je na telefonu skrita */}
-        <Link className={styles.meniZapriFlow} href={`${base}/flow`}>× Zapri Flow</Link>
+        <Link className={styles.meniZapriFlow} href={`${base}/flow`}>{L('× Zapri Flow', '× Close Flow')}</Link>
       </div>
     </details>
     <nav className={styles.nav}>{menuVsebina()}</nav>
