@@ -26,7 +26,7 @@ export default function JezikPreklop({
   const pathname = usePathname() || '/';
   const brezPredpone = pathname.replace(/^\/en(?=\/|$)/, '') || '/';
   const cilj = jeEn ? brezPredpone : `/en${brezPredpone}`;
-  const napis = `🌐 ${jeEn ? 'Slovenščina' : 'English'}`;
+  const napis = jeEn ? '🇸🇮 Slovenščina' : '🇬🇧 English';
 
   const klik = () => {
     try {

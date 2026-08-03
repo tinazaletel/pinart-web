@@ -10,20 +10,23 @@ type Mode = 'signin' | 'signup' | 'reset';
 /* Supabase vraca angleske napake. Prevedemo znane, NEZNANE pa pokazemo dobesedno —
    prej je vse padlo v "E-posta ali geslo ni pravilno", zato je bila npr. nepotrjena
    registracija videti kot napacno geslo in se ni dalo ugotoviti, kaj je narobe. */
-function prevediNapako(sporocilo: string): string {
+function prevediNapako(sporocilo: string, jeEn = false): string {
+  const L = (sl: string, en: string) => (jeEn ? en : sl);
   const m = sporocilo.toLowerCase();
-  if (m.includes('email not confirmed')) return 'Račun še ni potrjen. Preveri e-pošto (tudi vsiljeno pošto) ali si spodaj pošlji novo potrditveno povezavo.';
-  if (m.includes('invalid login credentials')) return 'E-pošta ali geslo ni pravilno.';
-  if (m.includes('user already registered') || m.includes('already been registered')) return 'Ta e-pošta je že registrirana. Prijavi se ali si ponastavi geslo.';
-  if (m.includes('password should be') || m.includes('password is too short')) return 'Geslo mora imeti vsaj 8 znakov.';
-  if (m.includes('rate limit') || m.includes('too many requests') || m.includes('email rate')) return 'Preveč poskusov zapored. Počakaj minuto in poskusi znova.';
-  if (m.includes('signups not allowed') || m.includes('signup is disabled')) return 'Registracija je trenutno izključena.';
-  if (m.includes('redirect') && m.includes('not allowed')) return 'Naslov za preusmeritev ni dovoljen v nastavitvah Supabase (Authentication → URL Configuration).';
-  if (m.includes('provider is not enabled')) return 'Ta način prijave ni vključen v Supabase.';
+  if (m.includes('email not confirmed')) return L('Račun še ni potrjen. Preveri e-pošto (tudi vsiljeno pošto) ali si spodaj pošlji novo potrditveno povezavo.', 'Your account is not confirmed yet. Check your email (including spam) or send yourself a new confirmation link below.');
+  if (m.includes('invalid login credentials')) return L('E-pošta ali geslo ni pravilno.', 'Incorrect email or password.');
+  if (m.includes('user already registered') || m.includes('already been registered')) return L('Ta e-pošta je že registrirana. Prijavi se ali si ponastavi geslo.', 'This email is already registered. Sign in or reset your password.');
+  if (m.includes('password should be') || m.includes('password is too short')) return L('Geslo mora imeti vsaj 8 znakov.', 'The password must be at least 8 characters.');
+  if (m.includes('rate limit') || m.includes('too many requests') || m.includes('email rate')) return L('Preveč poskusov zapored. Počakaj minuto in poskusi znova.', 'Too many attempts in a row. Wait a minute and try again.');
+  if (m.includes('signups not allowed') || m.includes('signup is disabled')) return L('Registracija je trenutno izključena.', 'Sign-ups are currently disabled.');
+  if (m.includes('redirect') && m.includes('not allowed')) return L('Naslov za preusmeritev ni dovoljen v nastavitvah Supabase (Authentication → URL Configuration).', 'The redirect URL is not allowed in Supabase settings (Authentication → URL Configuration).');
+  if (m.includes('provider is not enabled')) return L('Ta način prijave ni vključen v Supabase.', 'This sign-in method is not enabled in Supabase.');
   return sporocilo;
 }
 
 export default function AuthForm({ base }: { base: string }) {
+  const jeEn = base === '/en';
+  const L = (sl: string, en: string) => (jeEn ? en : sl);
   const router = useRouter();
   const passwordInput = useRef<HTMLInputElement>(null);
   const [mode, setMode] = useState<Mode>('signin');
@@ -49,7 +52,7 @@ export default function AuthForm({ base }: { base: string }) {
 
     const napaka = params.get('napaka');
     if (napaka) {
-      setMessage({ type: 'error', text: prevediNapako(napaka) });
+      setMessage({ type: 'error', text: prevediNapako(napaka, jeEn) });
       window.history.replaceState(null, '', window.location.pathname);
     }
   }, [base]);
@@ -83,10 +86,10 @@ export default function AuthForm({ base }: { base: string }) {
       });
       setLoading(false);
       if (error) {
-        setMessage({ type: 'error', text: prevediNapako(error.message) });
+        setMessage({ type: 'error', text: prevediNapako(error.message, jeEn) });
         return;
       }
-      setMessage({ type: 'success', text: 'Če ta e-pošta obstaja, smo poslali povezavo za ponastavitev gesla. Preveri tudi vsiljeno pošto.' });
+      setMessage({ type: 'success', text: L('Če ta e-pošta obstaja, smo poslali povezavo za ponastavitev gesla. Preveri tudi vsiljeno pošto.', 'If this email exists, we have sent a password reset link. Check your spam folder too.') });
       return;
     }
 
@@ -105,7 +108,7 @@ export default function AuthForm({ base }: { base: string }) {
 
       setLoading(false);
       if (error) {
-        setMessage({ type: 'error', text: prevediNapako(error.message) });
+        setMessage({ type: 'error', text: prevediNapako(error.message, jeEn) });
         return;
       }
       /* Ce je seja takoj na voljo, je potrditev izklopljena -> gremo naravnost naprej. */
@@ -115,7 +118,7 @@ export default function AuthForm({ base }: { base: string }) {
         return;
       }
       setNepotrjen(true);
-      setMessage({ type: 'success', text: 'Račun je ustvarjen. Preveri e-pošto in potrdi registracijo, nato se lahko prijaviš.' });
+      setMessage({ type: 'success', text: L('Račun je ustvarjen. Preveri e-pošto in potrdi registracijo, nato se lahko prijaviš.', 'Your account has been created. Check your email and confirm your registration, then you can sign in.') });
       return;
     }
 
@@ -124,7 +127,7 @@ export default function AuthForm({ base }: { base: string }) {
     setLoading(false);
     if (error) {
       if (error.message.toLowerCase().includes('email not confirmed')) setNepotrjen(true);
-      setMessage({ type: 'error', text: prevediNapako(error.message) });
+      setMessage({ type: 'error', text: prevediNapako(error.message, jeEn) });
       return;
     }
 
@@ -145,8 +148,8 @@ export default function AuthForm({ base }: { base: string }) {
     setLoading(false);
     setMessage(
       error
-        ? { type: 'error', text: prevediNapako(error.message) }
-        : { type: 'success', text: 'Poslali smo novo potrditveno povezavo na ' + zadnjaEposta + '.' },
+        ? { type: 'error', text: prevediNapako(error.message, jeEn) }
+        : { type: 'success', text: L('Poslali smo novo potrditveno povezavo na ', 'We sent a new confirmation link to ') + zadnjaEposta + '.' },
     );
   }
 
@@ -170,14 +173,14 @@ export default function AuthForm({ base }: { base: string }) {
       });
       if (error) {
         setLoading(false);
-        setMessage({ type: 'error', text: prevediNapako(error.message) });
+        setMessage({ type: 'error', text: prevediNapako(error.message, jeEn) });
       }
       /* ob uspehu brskalnik odide na Google — loading namenoma pustimo vklopljen */
     } catch (e) {
       setLoading(false);
       setMessage({
         type: 'error',
-        text: 'Prijava trenutno ni na voljo: povezava s strežnikom ni nastavljena. ' + (e instanceof Error ? e.message : ''),
+        text: L('Prijava trenutno ni na voljo: povezava s strežnikom ni nastavljena. ', 'Sign-in is currently unavailable: the server connection is not configured. ') + (e instanceof Error ? e.message : ''),
       });
     }
   }
@@ -191,21 +194,21 @@ export default function AuthForm({ base }: { base: string }) {
       passwordInput.current.type = 'text';
       passwordInput.current.focus();
     }
-    setMessage({ type: 'success', text: 'Varno geslo je ustvarjeno. Shrani ga v upravljalnik gesel.' });
+    setMessage({ type: 'success', text: L('Varno geslo je ustvarjeno. Shrani ga v upravljalnik gesel.', 'A secure password has been generated. Save it in your password manager.') });
   }
 
   const naslovi: Record<Mode, { kicker: string; h1: string; pod: string }> = {
-    signin: { kicker: 'DOBRODOŠLA NAZAJ', h1: 'Tvoje poslovanje te čaka.', pod: 'Prijavi se v svoj poslovni pregled.' },
-    signup: { kicker: 'ZAČNI SVOJ FLOW', h1: 'Vse za posel. Na enem mestu.', pod: 'Kalkulator ostane brezplačen. Poslovna orodja so vezana na tvoj račun.' },
-    reset: { kicker: 'POZABLJENO GESLO', h1: 'Ponastavimo tvoje geslo.', pod: 'Vpiši e-pošto računa in poslali ti bomo povezavo za novo geslo.' },
+    signin: { kicker: L('DOBRODOŠLA NAZAJ', 'WELCOME BACK'), h1: L('Tvoje poslovanje te čaka.', 'Your business is waiting.'), pod: L('Prijavi se v svoj poslovni pregled.', 'Sign in to your business overview.') },
+    signup: { kicker: L('ZAČNI SVOJ FLOW', 'START YOUR FLOW'), h1: L('Vse za posel. Na enem mestu.', 'Everything for your business. In one place.'), pod: L('Kalkulator ostane brezplačen. Poslovna orodja so vezana na tvoj račun.', 'The calculator stays free. Business tools are tied to your account.') },
+    reset: { kicker: L('POZABLJENO GESLO', 'FORGOT PASSWORD'), h1: L('Ponastavimo tvoje geslo.', 'Let’s reset your password.'), pod: L('Vpiši e-pošto računa in poslali ti bomo povezavo za novo geslo.', 'Enter your account email and we’ll send you a link to set a new password.') },
   };
   const t = naslovi[mode];
 
   return (
     <div className={styles.authPanel}>
-      <div className={styles.modeSwitch} aria-label="Izberi prijavo ali registracijo">
-        <button type="button" className={mode === 'signin' ? styles.active : ''} onClick={() => changeMode('signin')}>Prijava</button>
-        <button type="button" className={mode === 'signup' ? styles.active : ''} onClick={() => changeMode('signup')}>Nov račun</button>
+      <div className={styles.modeSwitch} aria-label={L('Izberi prijavo ali registracijo', 'Choose sign in or sign up')}>
+        <button type="button" className={mode === 'signin' ? styles.active : ''} onClick={() => changeMode('signin')}>{L('Prijava', 'Sign in')}</button>
+        <button type="button" className={mode === 'signup' ? styles.active : ''} onClick={() => changeMode('signup')}>{L('Nov račun', 'New account')}</button>
       </div>
 
       <div className={styles.formHeading}>
@@ -218,39 +221,39 @@ export default function AuthForm({ base }: { base: string }) {
         <>
           <button className={styles.googleButton} type="button" onClick={signInWithGoogle} disabled={loading}>
             <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.74 2.98-4.31 2.98-7.41Z"/><path fill="#34A853" d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.6 0-4.81-1.76-5.6-4.13H3.05v2.62A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.4 13.93A6 6 0 0 1 6.09 12c0-.67.11-1.33.32-1.93V7.45H3.05A10 10 0 0 0 2 12c0 1.61.39 3.14 1.05 4.55l3.35-2.62Z"/><path fill="#EA4335" d="M12 5.94c1.47 0 2.79.5 3.83 1.5l2.87-2.87A9.64 9.64 0 0 0 12 2a10 10 0 0 0-8.95 5.45l3.36 2.62C7.2 7.7 9.4 5.94 12 5.94Z"/></svg>
-            Nadaljuj z Google
+            {L('Nadaljuj z Google', 'Continue with Google')}
           </button>
 
-          <div className={styles.divider}><span>ali z e-pošto</span></div>
+          <div className={styles.divider}><span>{L('ali z e-pošto', 'or with email')}</span></div>
         </>
       )}
 
       <form onSubmit={submit} className={styles.form}>
         {mode === 'signup' && (
           <div className={styles.twoColumns}>
-            <label>Ime in priimek<input className={styles.authInput} name="fullName" autoComplete="name" required /></label>
-            <label>Ime podjetja<input className={styles.authInput} name="companyName" autoComplete="organization" required /></label>
+            <label>{L('Ime in priimek', 'Full name')}<input className={styles.authInput} name="fullName" autoComplete="name" required /></label>
+            <label>{L('Ime podjetja', 'Company name')}<input className={styles.authInput} name="companyName" autoComplete="organization" required /></label>
           </div>
         )}
-        <label>E-pošta<input className={styles.authInput} name="email" type="email" autoComplete="email" inputMode="email" required /></label>
+        <label>{L('E-pošta', 'Email')}<input className={styles.authInput} name="email" type="email" autoComplete="email" inputMode="email" required /></label>
         {mode !== 'reset' && (
-          <label>Geslo<span className={styles.passwordField} data-signup={mode === 'signup' || undefined}>
+          <label>{L('Geslo', 'Password')}<span className={styles.passwordField} data-signup={mode === 'signup' || undefined}>
             <input className={styles.authInput} ref={passwordInput} name="password"
               type={gesloVidno ? 'text' : 'password'}
               autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
               minLength={8} required />
             <button type="button" className={styles.okoGesla} onClick={() => setGesloVidno(v => !v)}
-              aria-label={gesloVidno ? 'Skrij geslo' : 'Pokaži geslo'} title={gesloVidno ? 'Skrij geslo' : 'Pokaži geslo'}>
+              aria-label={gesloVidno ? L('Skrij geslo', 'Hide password') : L('Pokaži geslo', 'Show password')} title={gesloVidno ? L('Skrij geslo', 'Hide password') : L('Pokaži geslo', 'Show password')}>
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                 strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6Z" /><circle cx="12" cy="12" r="2.6" />
                 {!gesloVidno && <path d="m4 20 16-16" />}
               </svg>
             </button>
-            {mode === 'signup' && <button type="button" onClick={generatePassword}>Ustvari varno geslo</button>}
+            {mode === 'signup' && <button type="button" onClick={generatePassword}>{L('Ustvari varno geslo', 'Generate a secure password')}</button>}
           </span>
           {mode === 'signup' && <small className={styles.gesloNamig}>
-            Vsaj 8 znakov. Najbolj varno je nekaj besed skupaj — <b>modra-pekarna-sonce-42</b> je bolj varno in laže zapomnljivo kot <b>Xk9!q2</b>.
+            {L('Vsaj 8 znakov. Najbolj varno je nekaj besed skupaj — ', 'At least 8 characters. A few words together is safest — ')}<b>{L('modra-pekarna-sonce-42', 'blue-bakery-sun-42')}</b>{L(' je bolj varno in laže zapomnljivo kot ', ' is safer and easier to remember than ')}<b>Xk9!q2</b>.
           </small>}
         </label>
         )}
@@ -259,28 +262,28 @@ export default function AuthForm({ base }: { base: string }) {
 
         {nepotrjen && (
           <button type="button" className={styles.textLink} onClick={posljiPotrditevZnova} disabled={loading}>
-            Pošlji potrditveno povezavo znova
+            {L('Pošlji potrditveno povezavo znova', 'Send the confirmation link again')}
           </button>
         )}
 
         <button className={styles.submit} type="submit" disabled={loading}>
-          {loading ? 'Trenutek …' : mode === 'signin' ? 'Prijavi se' : mode === 'signup' ? 'Ustvari račun' : 'Pošlji povezavo'}
+          {loading ? L('Trenutek …', 'One moment …') : mode === 'signin' ? L('Prijavi se', 'Sign in') : mode === 'signup' ? L('Ustvari račun', 'Create account') : L('Pošlji povezavo', 'Send link')}
         </button>
 
         {mode === 'signin' && (
           <button type="button" className={styles.textLink} onClick={() => changeMode('reset')}>
-            Ste pozabili geslo?
+            {L('Ste pozabili geslo?', 'Forgot your password?')}
           </button>
         )}
         {mode === 'reset' && (
           <button type="button" className={styles.textLink} onClick={() => changeMode('signin')}>
-            ← Nazaj na prijavo
+            {L('← Nazaj na prijavo', '← Back to sign in')}
           </button>
         )}
       </form>
 
-      <p className={styles.freeNote}><strong>Brez prijave?</strong> Še vedno lahko uporabiš brezplačni kalkulator.</p>
-      <a className={styles.calculatorLink} href={`${base}/kalkulator`}>Odpri kalkulator</a>
+      <p className={styles.freeNote}><strong>{L('Brez prijave?', 'No account?')}</strong> {L('Še vedno lahko uporabiš brezplačni kalkulator.', 'You can still use the free calculator.')}</p>
+      <a className={styles.calculatorLink} href={`${base}/kalkulator`}>{L('Odpri kalkulator', 'Open the calculator')}</a>
     </div>
   );
 }
