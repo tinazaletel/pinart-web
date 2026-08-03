@@ -60,11 +60,11 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
       </nav>
 
       <div className="flnav-actions">
+        <a className="flnav-login" href={prijava} onClick={close}>{isEn ? 'Log in' : 'Prijava'}</a>
+        <a className="flnav-signup" href={prijava} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
         <a className="flnav-lang" href={languageHref} hrefLang={isEn ? 'sl' : 'en'} aria-label={isEn ? 'Preklopi na slovenščino' : 'Switch to English'}>
           <span aria-hidden>{isEn ? '🇸🇮' : '🇬🇧'}</span>{isEn ? 'SL' : 'EN'}
         </a>
-        <a className="flnav-login" href={prijava} onClick={close}>{isEn ? 'Log in' : 'Prijava'}</a>
-        <a className="flnav-signup" href={prijava} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
       </div>
 
       <button className="flnav-burger" type="button" onClick={() => setOpen(v => !v)} aria-label={open ? (isEn ? 'Close menu' : 'Zapri meni') : (isEn ? 'Menu' : 'Meni')} aria-expanded={open}>
@@ -85,7 +85,9 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
       <style dangerouslySetInnerHTML={{ __html: `
         .flnav { position: fixed; inset: 0 0 auto 0; z-index: 100; display: flex; align-items: center; gap: 1.4rem;
           padding: clamp(.85rem, 1.6vw, 1.25rem) clamp(1.25rem, 5vw, 5.5rem);
-          background: color-mix(in oklch, var(--paper) 90%, transparent);
+          background: color-mix(in oklch, var(--paper) 94%, transparent);
+          /* frosted: ko hero presije skozi (0-24px skrola), je zabrisan, ne berljiv ghost-tekst */
+          -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
           transition: background .28s ease, box-shadow .28s ease, border-color .28s ease; border-bottom: 1px solid transparent; }
         .flnav.scrolled { background: var(--paper); border-bottom-color: rgba(17,17,17,.08); box-shadow: 0 6px 24px rgba(40,25,60,.05); }
 
