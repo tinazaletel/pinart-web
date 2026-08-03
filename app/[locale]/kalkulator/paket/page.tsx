@@ -27,7 +27,7 @@ export default async function PaketPage({ params }: { params: Promise<{ locale: 
     <DashboardSidebar base={base} active="settings" />
     <section className={styles.workspace}>
       <header className={styles.topbar}>
-        <div><p className={styles.eyebrow}>PAKET</p><h1>Paket in naročnina.</h1></div>
+        <div><p className={styles.eyebrow}>{locale === 'en' ? 'PLAN' : 'PAKET'}</p><h1>{locale === 'en' ? 'Plan and subscription.' : 'Paket in naročnina.'}</h1></div>
       </header>
 
       <PaketiSeznam trenutni={paket === 'pro' ? 'pro' : 'free'} />

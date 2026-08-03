@@ -12,5 +12,6 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Stranke | Pinart Flow', robots: { index: false, follow: false } };
 export default async function StrankePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params; setRequestLocale(locale); const base = locale === 'sl' ? '' : `/${locale}`;
-  return <main className={styles.shell}><DashboardSidebar base={base} active="clients" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>STRANKE</p><h1>Vsi dogovori imajo obraz.</h1></div></header><ClientWorkspace /></section></main>;
+  const jeEn = locale === 'en'; const L = (sl: string, en: string) => (jeEn ? en : sl);
+  return <main className={styles.shell}><DashboardSidebar base={base} active="clients" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>{L('STRANKE', 'CLIENTS')}</p><h1>{L('Vsi dogovori imajo obraz.', 'Every deal has a face.')}</h1></div></header><ClientWorkspace /></section></main>;
 }

@@ -8,5 +8,5 @@ export const metadata: Metadata = { title: 'Računovodstvo | Pinart Flow', robot
 
 export default async function AccountingPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params; setRequestLocale(locale); const base = locale === 'sl' ? '' : `/${locale}`;
-  return <main className={styles.shell}><DashboardSidebar base={base} active="accounting" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>RAČUNOVODSTVO</p><h1>Pripravljeno. Poslano. Zabeleženo.</h1></div></header><AccountingWorkspace /></section></main>;
+  return <main className={styles.shell}><DashboardSidebar base={base} active="accounting" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>{locale === 'en' ? 'ACCOUNTING' : 'RAČUNOVODSTVO'}</p><h1>{locale === 'en' ? 'Prepared. Sent. Recorded.' : 'Pripravljeno. Poslano. Zabeleženo.'}</h1></div></header><AccountingWorkspace /></section></main>;
 }

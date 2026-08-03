@@ -12,5 +12,5 @@ export default async function BusinessPlanPage({ params }: { params: Promise<{ l
   /* Kljucavnica v meniju je videz; prava zascita je tu, na strezniku. */
   const sme = await smePorabiti('businessInsights');
 
-  return <main className={styles.shell}><DashboardSidebar base={base} active="plan" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>BUSINESS CANVAS</p><h1>Posel na eni strani.</h1></div></header>{sme ? <BusinessCanvasWorkspace /> : <Zaklenjeno funkcija="businessInsights" base={base} />}</section></main>;
+  return <main className={styles.shell}><DashboardSidebar base={base} active="plan" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>BUSINESS CANVAS</p><h1>{locale === 'en' ? 'Your business on one page.' : 'Posel na eni strani.'}</h1></div></header>{sme ? <BusinessCanvasWorkspace /> : <Zaklenjeno funkcija="businessInsights" base={base} />}</section></main>;
 }

@@ -11,6 +11,8 @@ import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
    profil, zato je bila odjava skrita dva klika stran. Zdaj odpre majhen meni z
    e-posto prijavljenega racuna, bliznjicami in odjavo. */
 export default function SidebarUserMenu({ base }: { base: string }) {
+  const jeEn = base === '/en';
+  const L = (sl: string, en: string) => (jeEn ? en : sl);
   const [odprt, setOdprt] = useState(false);
   const [eposta, setEposta] = useState('');
   const [ime, setIme] = useState('');
@@ -53,11 +55,11 @@ export default function SidebarUserMenu({ base }: { base: string }) {
         className={styles.profile}
         aria-haspopup="menu"
         aria-expanded={odprt}
-        aria-label="Odpri uporabniški meni"
+        aria-label={L('Odpri uporabniški meni', 'Open user menu')}
         onClick={() => setOdprt(v => !v)}
       >
         <span className={styles.avatar}>{zacetnica}</span>
-        <span><strong>{ime || 'Tvoj studio'}</strong><small>Nastavitve podjetja</small></span>
+        <span><strong>{ime || L('Tvoj studio', 'Your studio')}</strong><small>{L('Nastavitve podjetja', 'Company settings')}</small></span>
       </button>
 
       {odprt && (
@@ -67,17 +69,17 @@ export default function SidebarUserMenu({ base }: { base: string }) {
               razen po tem, katere postavke so zaklenjene. */}
           <Link href={`${base}/kalkulator/paket`} role="menuitem" className={styles.userMenuPaket}
             onClick={() => setOdprt(false)}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><Package size={15} weight="bold" /> Paket</span>
-            <b data-pro={paket === 'pro'}>{paket === 'pro' ? 'Pro' : 'Brezplačno'}</b>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><Package size={15} weight="bold" /> {L('Paket', 'Plan')}</span>
+            <b data-pro={paket === 'pro'}>{paket === 'pro' ? 'Pro' : L('Brezplačno', 'Free')}</b>
           </Link>
           {/* Ceniki in stroski sta ze v stranski navigaciji zgoraj — tukaj sodijo samo
               stvari o RACUNU, ne podvojena navigacija. "Paket in narocnina" ter
               "Pomoc in podpora" dodamo, ko strani obstajata (sicer mrtva povezava). */}
-          <Link href={`${base}/kalkulator/profil`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><UserCircle size={15} weight="bold" /> Moj profil</Link>
-          <Link href={`${base}/kalkulator/nastavitve`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><GearSix size={15} weight="bold" /> Nastavitve</Link>
-          <Link href={`${base}/kalkulator/ekipa`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><UsersThree size={15} weight="bold" /> Račun in ekipa</Link>
-          <Link href={`${base}/kalkulator/pogoji`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><ShieldCheck size={15} weight="bold" /> Pogoji in zasebnost</Link>
-          <button type="button" className={styles.userMenuOdjava} role="menuitem" onClick={odjava} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><SignOut size={15} weight="bold" /> Odjava</button>
+          <Link href={`${base}/kalkulator/profil`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><UserCircle size={15} weight="bold" /> {L('Moj profil', 'My profile')}</Link>
+          <Link href={`${base}/kalkulator/nastavitve`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><GearSix size={15} weight="bold" /> {L('Nastavitve', 'Settings')}</Link>
+          <Link href={`${base}/kalkulator/ekipa`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><UsersThree size={15} weight="bold" /> {L('Račun in ekipa', 'Account & team')}</Link>
+          <Link href={`${base}/kalkulator/pogoji`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><ShieldCheck size={15} weight="bold" /> {L('Pogoji in zasebnost', 'Terms & privacy')}</Link>
+          <button type="button" className={styles.userMenuOdjava} role="menuitem" onClick={odjava} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><SignOut size={15} weight="bold" /> {L('Odjava', 'Log out')}</button>
         </div>
       )}
     </div>

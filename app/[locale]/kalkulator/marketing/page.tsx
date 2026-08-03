@@ -14,13 +14,15 @@ export default async function MarketingPage({ params }: { params: Promise<{ loca
   const { locale } = await params;
   setRequestLocale(locale);
   const base = locale === 'sl' ? '' : `/${locale}`;
+  const jeEn = locale === 'en';
+  const L = (sl: string, en: string) => (jeEn ? en : sl);
 
   return (
     <main className={styles.shell}>
       <DashboardSidebar base={base} active="marketing" />
       <section className={styles.workspace}>
         <header className={styles.topbar}>
-          <div><p className={styles.eyebrow}>MARKETING</p><h1>Od ideje do odziva.</h1></div>
+          <div><p className={styles.eyebrow}>MARKETING</p><h1>{L('Od ideje do odziva.', 'From idea to response.')}</h1></div>
           <PredogledZnak base={base} />
         </header>
         <MarketingWorkspace base={base} />

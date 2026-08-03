@@ -27,8 +27,8 @@ export default async function PoslovniPregledPage({
       <section className={styles.workspace}>
         <header className={styles.topbar}>
           <div>
-            <p className={styles.eyebrow}>POSLOVNI PREGLED</p>
-            <h1>Dobrodošla nazaj, Tina. <span className={styles.wave} aria-hidden>👋</span></h1>
+            <p className={styles.eyebrow}>{locale === 'en' ? 'BUSINESS OVERVIEW' : 'POSLOVNI PREGLED'}</p>
+            <h1>{locale === 'en' ? 'Welcome back, Tina.' : 'Dobrodošla nazaj, Tina.'} <span className={styles.wave} aria-hidden>👋</span></h1>
             <p className={styles.topbarSub}>Tukaj lahko hitro ustvariš ponudbo, slediš projektom in imaš pregled nad vsem, kar je pomembno.</p>
           </div></header>
 

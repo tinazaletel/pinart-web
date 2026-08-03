@@ -25,7 +25,7 @@ export default async function EkipaPage({ params }: { params: Promise<{ locale: 
     <DashboardSidebar base={base} active="ekipa" />
     <section className={styles.workspace}>
       <header className={styles.topbar}>
-        <div><p className={styles.eyebrow}>RAČUN IN EKIPA</p><h1>Ekipa in dostop.</h1></div>
+        <div><p className={styles.eyebrow}>{locale === 'en' ? 'ACCOUNT & TEAM' : 'RAČUN IN EKIPA'}</p><h1>{locale === 'en' ? 'Team and access.' : 'Ekipa in dostop.'}</h1></div>
       </header>
 
       <SodelavciPanel />

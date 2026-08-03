@@ -13,6 +13,8 @@ import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
  * predala in ne more pasti iz vidnega polja.
  */
 export default function MeniProfil({ base }: { base: string }) {
+  const jeEn = base === '/en';
+  const L = (sl: string, en: string) => (jeEn ? en : sl);
   const [odprt, setOdprt] = useState(false);
   const [eposta, setEposta] = useState('');
   const [ime, setIme] = useState('');
@@ -40,27 +42,27 @@ export default function MeniProfil({ base }: { base: string }) {
         onClick={() => setOdprt(v => !v)}>
         <span className={styles.avatar}>{zacetnica}</span>
         <span className={styles.meniProfilIme}>
-          <strong>{ime || 'Tvoj studio'}</strong>
-          <small>{eposta || 'Nastavitve podjetja'}</small>
+          <strong>{ime || L('Tvoj studio', 'Your studio')}</strong>
+          <small>{eposta || L('Nastavitve podjetja', 'Company settings')}</small>
         </span>
         <span className={styles.meniSkupinaPuscica} data-odprta={odprt} aria-hidden="true">›</span>
       </button>
 
       {odprt && <div className={styles.meniSkupinaVsebina}>
         <Link className={styles.navItem} href={`${base}/kalkulator/profil`}>
-          <span className={styles.navNapis}>Moj profil</span>
+          <span className={styles.navNapis}>{L('Moj profil', 'My profile')}</span>
         </Link>
         {/* Podatki podjetja so v "Moj profil" (/profil, sekcija "02 MOJE PODJETJE"),
             zato to NI podvojen vnos za iste podatke: "Nastavitve" vodijo na
             aplikacijske nastavitve (videz dokumentov, račun/varnost, izbris podatkov). */}
         <Link className={styles.navItem} href={`${base}/kalkulator/nastavitve`}>
-          <span className={styles.navNapis}>Nastavitve</span>
+          <span className={styles.navNapis}>{L('Nastavitve', 'Settings')}</span>
         </Link>
         <Link className={styles.navItem} href={`${base}/kalkulator/pogoji`}>
-          <span className={styles.navNapis}>Pogoji in zasebnost</span>
+          <span className={styles.navNapis}>{L('Pogoji in zasebnost', 'Terms & privacy')}</span>
         </Link>
         <button type="button" className={`${styles.navItem} ${styles.meniOdjava}`} onClick={odjava}>
-          <span className={styles.navNapis}>Odjava</span>
+          <span className={styles.navNapis}>{L('Odjava', 'Log out')}</span>
         </button>
       </div>}
     </div>

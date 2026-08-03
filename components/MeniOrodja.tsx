@@ -15,6 +15,8 @@ import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 export default function MeniOrodja() {
   const pathname = usePathname() || '';
   const base = pathname.startsWith('/en/') ? '/en' : '';
+  const jeEn = base === '/en';
+  const L = (sl: string, en: string) => (jeEn ? en : sl);
   const odpriDostopnost = (event: React.MouseEvent<HTMLButtonElement>) => {
     window.dispatchEvent(new CustomEvent('pinart:odpri-dostopnost'));
     event.currentTarget.closest('details')?.removeAttribute('open');
@@ -28,7 +30,7 @@ export default function MeniOrodja() {
       </div>
       <button type="button" className={`${styles.navItem} ${styles.meniDostopnost}`} onClick={odpriDostopnost}>
         <span className={styles.navIkona}><PersonSimple size={20} weight="regular" /></span>
-        <span className={styles.navNapis}>Dostopnost</span>
+        <span className={styles.navNapis}>{L('Dostopnost', 'Accessibility')}</span>
       </button>
     </div>
   );

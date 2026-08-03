@@ -9,6 +9,7 @@ export const metadata: Metadata = { title: 'Čas | Pinart Flow', robots: { index
 
 export default async function TimePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params; const base = locale === 'sl' ? '' : `/${locale}`;
+  const jeEn = locale === 'en'; const L = (sl: string, en: string) => (jeEn ? en : sl);
   /* Kljucavnica v meniju je videz; prava zascita je tu, na strezniku.
      Stran NI vec cela zaklenjena: stoparica in danasnji vnosi so brezplacni,
      zaklenjena je analiza pod njimi. Sicer je merjenje teklo, klik nanj pa je

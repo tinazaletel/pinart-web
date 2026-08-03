@@ -23,8 +23,8 @@ export default async function IdejePage({ params }: { params: Promise<{ locale: 
         <header className={styles.topbar}>
           <div>
             <Link href={`${base}/kalkulator/pregled`} style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.78rem', fontWeight: 600, color: 'rgba(17,17,17,.6)', textDecoration: 'none', marginBottom: '.5rem' }}>← Nazaj na nadzorno ploščo</Link>
-            <p className={styles.eyebrow}>MOJE IDEJE</p>
-            <h1>Vse ideje &amp; status.</h1>
+            <p className={styles.eyebrow}>{locale === 'en' ? 'MY IDEAS' : 'MOJE IDEJE'}</p>
+            <h1>{locale === 'en' ? 'All ideas & status.' : 'Vse ideje & status.'}</h1>
           </div>
         </header>
         <IdejeWorkspace />

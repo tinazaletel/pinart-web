@@ -22,28 +22,30 @@ import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
  * ko uporabnik trči ob mejo brezplačnega paketa.
  */
 
-const IMENA: Record<string, string> = {
-  pregled: 'Nadzorna plošča',
-  orodje: 'Ponudba',
-  dolgorocno: 'Dolgoročno sodelovanje',
-  pogodbe: 'Pogodba',
-  racuni: 'Računi',
-  stranke: 'Stranke',
-  ceniki: 'Moji ceniki',
-  stroski: 'Stroški',
-  cilji: 'Cilji',
-  cas: 'Čas',
-  'poslovni-nacrt': 'Poslovni okvir',
-  projekti: 'Projekti',
-  racunovodstvo: 'Računovodstvo',
-  profil: 'Profil',
-  nastavitve: 'Nastavitve',
-  admin: 'Pregled poslovanja',
+const IMENA: Record<string, [string, string]> = {
+  pregled: ['Nadzorna plošča', 'Dashboard'],
+  orodje: ['Ponudba', 'Offer'],
+  dolgorocno: ['Dolgoročno sodelovanje', 'Retainer'],
+  pogodbe: ['Pogodba', 'Contract'],
+  racuni: ['Računi', 'Invoices'],
+  stranke: ['Stranke', 'Clients'],
+  ceniki: ['Moji ceniki', 'My price lists'],
+  stroski: ['Stroški', 'Expenses'],
+  cilji: ['Cilji', 'Goals'],
+  cas: ['Čas', 'Time'],
+  'poslovni-nacrt': ['Poslovni okvir', 'Business canvas'],
+  projekti: ['Projekti', 'Projects'],
+  racunovodstvo: ['Računovodstvo', 'Accounting'],
+  profil: ['Profil', 'Profile'],
+  nastavitve: ['Nastavitve', 'Settings'],
+  admin: ['Pregled poslovanja', 'Business overview'],
 };
 
 export default function FlowTopBar() {
   const pathname = usePathname() || '';
   const base = pathname.startsWith('/en/') ? '/en' : '';
+  const jeEn = base === '/en';
+  const L = (sl: string, en: string) => (jeEn ? en : sl);
   const [pomocOdprta, setPomocOdprta] = useState(false);
 
   /* Drsenje: navzdol se vrstica umakne, navzgor se takoj vrne — pri branju
@@ -95,7 +97,7 @@ export default function FlowTopBar() {
 
   /* zadnji del poti, ki ga poznamo; podstran (npr. /racuni/nov) pade na starša */
   const kljuc = pathname.split('/').reverse().find(d => d in IMENA);
-  const stran = kljuc ? IMENA[kljuc] : '';
+  const stran = kljuc ? IMENA[kljuc][jeEn ? 1 : 0] : '';
 
   /* napredek objavi delovni prostor (kalkulator/retainer); null = ni ga */
   const napredek = useFlowNapredek();
@@ -119,7 +121,7 @@ export default function FlowTopBar() {
           Zato tudi ni "Nadgradi" ob prehodu miske — nadgrajevati ni cesa. */}
       <span className={styles.paketZnacka} data-beta>BETA</span>
       {/* tik ob BETA, kot prej v meniju — pot nazaj na Flow landing */}
-      <Link className={styles.zapriGumb} href={`${base}/flow`}>× zapri</Link>
+      <Link className={styles.zapriGumb} href={`${base}/flow`}>{L('× zapri', '× close')}</Link>
 
       {stran && <><span className={styles.topLocilo} aria-hidden="true">/</span>
         <span className={styles.topStran}>{stran}</span></>}
@@ -146,12 +148,12 @@ export default function FlowTopBar() {
 
         <div className={styles.pomocOvoj}>
           <button type="button" className={styles.pomocGumb} onClick={() => setPomocOdprta(v => !v)}
-            aria-label="Pomoč" aria-expanded={pomocOdprta} title="Pomoč">?</button>
+            aria-label={L('Pomoč', 'Help')} aria-expanded={pomocOdprta} title={L('Pomoč', 'Help')}>?</button>
           {pomocOdprta && <div className={styles.headerPopover}>
-            <strong>Pomoč</strong>
-            <Link href={`${base}/flow`} onClick={() => setPomocOdprta(false)}>Kako Flow deluje</Link>
-            <Link href={`${base}/kalkulator/pogoji`} onClick={() => setPomocOdprta(false)}>Pogoji in zasebnost</Link>
-            <a href="mailto:tina@pinart.si?subject=Pinart%20Flow%20%E2%80%94%20pomo%C4%8D">Piši nam</a>
+            <strong>{L('Pomoč', 'Help')}</strong>
+            <Link href={`${base}/flow`} onClick={() => setPomocOdprta(false)}>{L('Kako Flow deluje', 'How Flow works')}</Link>
+            <Link href={`${base}/kalkulator/pogoji`} onClick={() => setPomocOdprta(false)}>{L('Pogoji in zasebnost', 'Terms & privacy')}</Link>
+            <a href="mailto:tina@pinart.si?subject=Pinart%20Flow%20%E2%80%94%20pomo%C4%8D">{L('Piši nam', 'Contact us')}</a>
           </div>}
         </div>
 

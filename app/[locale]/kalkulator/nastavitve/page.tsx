@@ -24,8 +24,8 @@ export default async function NastavitvePage({ params }: { params: Promise<{ loc
         <header className={styles.topbar}>
           <div>
             <Link href={`${base}/kalkulator/pregled`} style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.78rem', fontWeight: 600, color: 'rgba(17,17,17,.6)', textDecoration: 'none', marginBottom: '.5rem' }}>← Nazaj na nadzorno ploščo</Link>
-            <p className={styles.eyebrow}>NASTAVITVE</p>
-            <h1>Nastavitve aplikacije.</h1>
+            <p className={styles.eyebrow}>{locale === 'en' ? 'SETTINGS' : 'NASTAVITVE'}</p>
+            <h1>{locale === 'en' ? 'App settings.' : 'Nastavitve aplikacije.'}</h1>
           </div></header>
 
         <SettingsWorkspace base={base} />

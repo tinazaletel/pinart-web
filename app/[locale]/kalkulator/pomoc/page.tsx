@@ -24,7 +24,7 @@ export default async function PomocPage({ params }: { params: Promise<{ locale: 
     <DashboardSidebar base={base} active="settings" />
     <section className={styles.workspace}>
       <header className={styles.topbar}>
-        <div><p className={styles.eyebrow}>POMOČ</p><h1>Kje si obtičala?</h1></div>
+        <div><p className={styles.eyebrow}>{locale === 'en' ? 'HELP' : 'POMOČ'}</p><h1>{locale === 'en' ? 'Where are you stuck?' : 'Kje si obtičala?'}</h1></div>
       </header>
 
       <div className={styles.pomocMreza}>
