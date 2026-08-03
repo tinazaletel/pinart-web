@@ -51,6 +51,8 @@ export default function Flow404View({ locale = 'sl' }: { locale?: string }) {
 
         .f404-koda { display: flex; gap: .01em; line-height: .82; margin: 0 0 1.3rem -.05em;
           font-weight: 900; font-size: clamp(5.5rem, 17vw, 14rem); letter-spacing: -.03em; }
+        /* 3D ekstrudiran napis: svetlejša vijola »lice«, bel obris, temnejša vijola globina navzdol + mehka senca na tla. */
+        /* vijola napis z neon žarom (odsev), ki rahlo utripa — kot luč, ki ji zmanjkuje elektrike. */
         .f404-koda span { color: oklch(56% .23 295);
           text-shadow: 0 0 7px oklch(72% .2 300 / .6), 0 0 24px oklch(66% .22 300 / .5), 0 0 55px oklch(62% .24 300 / .4), 0 0 100px oklch(60% .25 300 / .25);
           animation: f404flicker 5.5s linear infinite; }
@@ -74,11 +76,16 @@ export default function Flow404View({ locale = 'sl' }: { locale?: string }) {
           color: oklch(42% .012 300); }
 
         .f404-cta { display: flex; flex-wrap: wrap; gap: .7rem; }
-        .f404-btn { display: inline-flex; align-items: center; justify-content: center; height: 3rem;
+        .f404-btn { position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; height: 3rem;
           padding: 0 1.4rem; border-radius: 999px; font-size: .95rem; font-weight: 700;
           text-decoration: none; transition: transform .12s ease, background .12s ease; }
         .f404-btn.prim { background: oklch(24% .016 285); color: #fff; }
         .f404-btn.prim:hover { transform: translateY(-1px); background: oklch(30% .03 285); }
+        /* gradient lesk, ki šine čez gumb ob hoverju */
+        .f404-btn.prim::after { content: ''; position: absolute; top: 0; left: -160%; width: 85%; height: 100%;
+          transform: skewX(-18deg); background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.85) 50%, transparent 100%);
+          transition: left .55s cubic-bezier(.19,1,.22,1); pointer-events: none; }
+        .f404-btn.prim:hover::after { left: 175%; }
         .f404-btn.ghost { background: rgba(255,255,255,.7); color: oklch(30% .02 300);
           border: 1px solid oklch(30% .02 300 / .18); }
         .f404-btn.ghost:hover { background: #fff; }
