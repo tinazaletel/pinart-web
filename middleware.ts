@@ -40,6 +40,39 @@ const KMALU_HTML = `<!doctype html>
 </div>
 </body></html>`;
 
+/* Zaklenjena stran (401 telo) — z jorkijem, ista znamka kot Flow 404. Prikaze se
+   za geslo-oknom / ce ga uporabnik preklice. Slika je staticna (.png), zato jo
+   matcher spusti mimo middlewara. */
+const ZAKLENJENO_HTML = `<!doctype html>
+<html lang="sl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Pinart Flow — zaprta beta</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{min-height:100svh;position:relative;overflow:hidden;background:#f4f4f3;color:#26211f;
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+  .slika{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:74% 62%;z-index:0}
+  .scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(100deg,#f4f4f3 26%,rgba(244,244,243,.72) 44%,rgba(244,244,243,0) 62%)}
+  .w{position:relative;z-index:2;max-width:1180px;margin:0 auto;min-height:100svh;display:flex;flex-direction:column;
+    justify-content:center;align-items:flex-start;padding:2.5rem clamp(1.5rem,5vw,5rem)}
+  .ey{display:inline-flex;align-items:center;gap:.55rem;font-size:.76rem;font-weight:800;letter-spacing:.22em;
+    text-transform:uppercase;color:#7c3aed;margin-bottom:1.2rem}
+  .dot{width:8px;height:8px;border-radius:50%;background:#7c3aed;box-shadow:0 0 0 6px rgba(124,58,237,.14)}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:clamp(2.2rem,6.5vw,3.6rem);
+    line-height:1.04;letter-spacing:-.01em;margin-bottom:.85rem}
+  h1 em{font-style:italic;color:#7c3aed}
+  p{font-size:1.02rem;line-height:1.55;color:#5c5650;max-width:32ch}
+</style></head><body>
+<img class="slika" src="/flow/jorki-404.png" alt="" aria-hidden="true">
+<div class="scrim"></div>
+<div class="w">
+  <div class="ey"><span class="dot"></span>Pinart Flow</div>
+  <h1>Zaprta <em>beta.</em></h1>
+  <p>Flow je za zdaj na povabilo. Vpiši geslo v okno brskalnika za vstop — ali nam piši na tina@pinart.si za dostop.</p>
+</div>
+</body></html>`;
+
 function gesloVeljavno(auth: string, geslo: string): boolean {
   if (!auth.startsWith('Basic ')) return false;
   try {
@@ -53,22 +86,29 @@ function gesloVeljavno(auth: string, geslo: string): boolean {
 export default async function middleware(request: NextRequest) {
   const host = request.headers.get('host') || '';
   const jePinartflow = /(^|\.)pinartflow\.com$/i.test(host);
+  const jeFlowPot = /^\/(?:sl\/|en\/)?(?:flow|kalkulator)(?:\/|$)/.test(request.nextUrl.pathname);
 
-  /* Geslo-zid samo za pinartflow.com. */
-  if (jePinartflow) {
+  /* Pred-launch geslo-zid — skrijemo VES Flow do launcha:
+       - pinartflow.com: cela domena;
+       - druge domene (pinart.si ...): SAMO Flow poti (/flow, /kalkulator); portfolio ostane odprt.
+     Brez SITE_GESLO se pinartflow pokaze kot "Kmalu"; Flow poti drugod (dev/localhost brez
+     gesla) pa NE blokiramo, da razvoj tece normalno. */
+  if (jePinartflow || jeFlowPot) {
     const geslo = process.env.SITE_GESLO;
     if (!geslo) {
-      return new NextResponse(KMALU_HTML, {
-        status: 200,
-        headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store, max-age=0' },
-      });
-    }
-    if (!gesloVeljavno(request.headers.get('authorization') || '', geslo)) {
-      return new NextResponse('Zaprto — potrebno geslo.', {
+      if (jePinartflow) {
+        return new NextResponse(KMALU_HTML, {
+          status: 200,
+          headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store, max-age=0' },
+        });
+      }
+      /* Flow pot na drugih domenah brez nastavljenega gesla (npr. localhost) = odprto. */
+    } else if (!gesloVeljavno(request.headers.get('authorization') || '', geslo)) {
+      return new NextResponse(ZAKLENJENO_HTML, {
         status: 401,
         headers: {
           'WWW-Authenticate': 'Basic realm="Pinart Flow (zaprta beta)"',
-          'content-type': 'text/plain; charset=utf-8',
+          'content-type': 'text/html; charset=utf-8',
           'cache-control': 'no-store, max-age=0',
         },
       });
