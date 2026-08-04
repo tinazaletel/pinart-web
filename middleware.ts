@@ -103,17 +103,31 @@ export default async function middleware(request: NextRequest) {
         });
       }
       /* Flow pot na drugih domenah brez nastavljenega gesla (npr. localhost) = odprto. */
-    } else if (!gesloVeljavno(request.headers.get('authorization') || '', geslo)) {
-      return new NextResponse(ZAKLENJENO_HTML, {
-        status: 401,
-        headers: {
-          'WWW-Authenticate': 'Basic realm="Pinart Flow (zaprta beta)"',
-          'content-type': 'text/html; charset=utf-8',
-          'cache-control': 'no-store, max-age=0',
-        },
-      });
+    } else {
+      /* Piskotek 'flow_gate' pomeni, da je ta brskalnik ze vpisal pravilno geslo.
+         Brez njega je bil Basic Auth edini gate — a brskalnikovo geslo-okno se je ob
+         Google OAuth preusmeritvi sprozilo DRUGIC. S piskotkom vprasamo SAMO enkrat. */
+      const cookieOk = request.cookies.get('flow_gate')?.value === geslo;
+      const authOk = gesloVeljavno(request.headers.get('authorization') || '', geslo);
+      if (!cookieOk && !authOk) {
+        return new NextResponse(ZAKLENJENO_HTML, {
+          status: 401,
+          headers: {
+            'WWW-Authenticate': 'Basic realm="Pinart Flow (zaprta beta)"',
+            'content-type': 'text/html; charset=utf-8',
+            'cache-control': 'no-store, max-age=0',
+          },
+        });
+      }
+      if (authOk && !cookieOk) {
+        /* Prvic pravilno geslo prek Basic Auth -> nastavi piskotek in preusmeri na
+           isti URL, da naprej (tudi po Google-preusmeritvi) NE sprasuje vec. */
+        const res = NextResponse.redirect(request.nextUrl.clone());
+        res.cookies.set('flow_gate', geslo, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 30 });
+        return res;
+      }
+      /* cookieOk -> pade skozi brez ponovnega vprasanja */
     }
-    /* geslo pravilno -> pade skozi na obicajno logiko */
   }
 
   /* pinartflow.com/ = Flow landing (ne studijski portfolio).
