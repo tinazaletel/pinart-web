@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { strToU8, zipSync } from 'fflate';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData } from '@/lib/pinartFlowStore';
+import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { getBusinessDocumentUrl, listAccountingExports, loadCloudSettings, recordAccountingExport, saveCloudSettings, uploadBusinessDocument, type AccountingExportRecord } from '@/lib/pinartFlowCloud';
 
 const iso = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -31,8 +32,13 @@ export default function AccountingWorkspace() {
      od navadnega maila: Flow sam pobere prave dokumente, ti pa vidiš, kateri so. */
   const [izbraniRac, setIzbraniRac] = useState<Set<string>>(new Set());
   const [izbraniStr, setIzbraniStr] = useState<Set<string>>(new Set());
+  /* Demo/Prazno velja za VSE strani (lib/predogled.ts) — prej je Računovodstvo
+     BRALO surove prave podatke (mimo predogleda), zato je v demo »polno poslovanje«
+     kazalo le prave podatke uporabnice, obrezane na tekoče obdobje (npr. 2/0). */
+  const [predogledNacin] = usePredogled();
+  const samoOgled = predogledNacin !== 'mine';
 
-  const flow = useMemo(() => loadFlowData(), []);
+  const flow = useMemo(() => podatkiZaPredogled(predogledNacin, loadFlowData()), [predogledNacin]);
   const inPeriod = (date: string) => date.slice(0, 10) >= period.start && date.slice(0, 10) <= period.end;
   const invoices = useMemo(() => flow.invoices.filter(i => i.date.slice(0, 10) >= period.start && i.date.slice(0, 10) <= period.end), [flow, period.start, period.end]);
   const expenses = useMemo(() => flow.expenses.filter(e => e.date.slice(0, 10) >= period.start && e.date.slice(0, 10) <= period.end), [flow, period.start, period.end]);
@@ -69,6 +75,7 @@ export default function AccountingWorkspace() {
 
   /* nacin: 'prenos' = prenesi ZIP; 'poslji' = pošlji računovodkinji (rabi e-pošto) */
   async function pripravi(nacin: 'prenos' | 'poslji') {
+    if (samoOgled) { setNotice('V predogledu (demo) priprava paketa ni na voljo — vklopi »Moji podatki«.'); return; }
     if (!obdobjeVeljavno) { setNotice('Datum »Od« mora biti pred datumom »Do«.'); return; }
     if (nicIzbrano) { setNotice('Izberi vsaj en račun, strošek ali bančni izpisek.'); return; }
     setWorking(true); setNotice('');
