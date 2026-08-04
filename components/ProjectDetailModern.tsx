@@ -9,7 +9,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import type { FlowOffer, FlowInvoice, FlowContract, FlowExpense } from '@/lib/pinartFlowStore';
+import type { FlowOffer, FlowInvoice, FlowContract, FlowExpense, FlowProjectLink } from '@/lib/pinartFlowStore';
 import type { Projekt } from '@/lib/projekti';
 import type { Sodelavec } from '@/lib/naloge';
 import type { PostaVnos } from '@/lib/postaDnevnik';
@@ -38,7 +38,7 @@ export type AgentClan = { id: string; ime: string; stanje: EkipaStanje };
 const zacetnice = (ime: string) => ime.split(/\s+/).filter(Boolean).slice(0, 2).map(d => d[0]?.toUpperCase() || '').join('') || '?';
 
 export default function ProjectDetailModern({
-  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, ekipaStatus, agenti = [],
+  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, ekipaStatus, agenti = [], links = [],
 }: {
   data: ModernProject;
   sodelavci: Sodelavec[];
@@ -51,6 +51,7 @@ export default function ProjectDetailModern({
   onOpenZapis?: () => void;
   ekipaStatus?: Record<string, EkipaStanje>;
   agenti?: AgentClan[];
+  links?: FlowProjectLink[];
 }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const { offer, real } = data;
@@ -80,6 +81,10 @@ export default function ProjectDetailModern({
   const danesMs = Date.parse(new Date().toISOString().slice(0, 10));
   const dniDo = (d: Date) => Math.round((Date.parse(d.toISOString().slice(0, 10)) - danesMs) / 86400000);
   const dodatna = real?.dodatnaVprasanja?.filter(v => v.vprasanje?.trim()) || [];
+  const pogodbeSort = [...data.contracts].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const racuniSort = [...data.invoices].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const strosekSort = [...data.expenses].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const NAJVEC = 4;
   const briefPolja: Array<[string, string | undefined]> = real ? [
     [L('Cilj / želje', 'Goal / wishes'), real.zelje],
     [L('Stranka', 'Client'), real.opisStranke],
@@ -197,20 +202,66 @@ export default function ProjectDetailModern({
         </div>
 
         <div className="pm-col">
-          {/* FINANCE (povzetek) */}
+          {/* POSLOVNI ZAPIS — finance */}
           <section className="pm-card">
-            <header><h3>{L('POSLOVNI ZAPIS', 'BUSINESS RECORD')}</h3>{onOpenZapis && <button type="button" className="pm-act" onClick={onOpenZapis}>{L('Poln zapis', 'Full record')} →</button>}</header>
+            <header><h3>{L('POSLOVNI ZAPIS', 'BUSINESS RECORD')}</h3>{onOpenZapis && <button type="button" className="pm-act" onClick={onOpenZapis}>{L('Uredi', 'Edit')} →</button>}</header>
             <div className="pm-fin">
               <div className="pm-f"><small>{L('Dogovorjeno', 'Agreed')}</small><b>{data.agreed ? money(data.agreed) : '—'}</b></div>
               <div className="pm-f"><small>{L('Zaračunano', 'Billed')}</small><b>{money(data.billed)}</b></div>
               <div className="pm-f"><small>{L('Še ni zaračunano', 'Not yet billed')}</small><b>{data.agreed ? money(data.unbilled) : '—'}</b></div>
               <div className="pm-f"><small>{L('Ocenjeni rezultat', 'Estimated result')}</small><b>{money(data.profit)}</b></div>
             </div>
-            <div className="pm-rec">
-              <div className="pm-rline"><span>{L('Pogodbe', 'Contracts')}</span><b>{data.contracts.length}</b></div>
-              <div className="pm-rline"><span>{L('Računi', 'Invoices')}</span><b>{data.invoices.length}</b></div>
-              <div className="pm-rline"><span>{L('Stroški', 'Expenses')}</span><b>{money(data.costs)}</b></div>
-            </div>
+          </section>
+
+          {/* POGODBE */}
+          <section className="pm-card">
+            <header><h3>{L('POGODBE', 'CONTRACTS')} · {data.contracts.length}</h3><Link className="pm-iconbtn" href={`${base}/kalkulator/pogodbe`} aria-label={L('Dodaj pogodbo', 'Add contract')}>+</Link></header>
+            {pogodbeSort.length ? (<>
+              <ul className="pm-list">
+                {pogodbeSort.slice(0, NAJVEC).map(c => (
+                  <li key={c.id} className="pm-li"><span className="pm-li-n">{c.title}</span><span className="pm-li-s">{c.status}</span><span className="pm-li-d">{datKratko(c.date)}</span></li>
+                ))}
+              </ul>
+              {pogodbeSort.length > NAJVEC && onOpenZapis && <button type="button" className="pm-vec" onClick={onOpenZapis}>{L('Prikaži vse', 'Show all')} ({pogodbeSort.length}) →</button>}
+            </>) : <p className="pm-muted">{L('Brez pogodbe.', 'No contract.')}</p>}
+          </section>
+
+          {/* RAČUNI */}
+          <section className="pm-card">
+            <header><h3>{L('RAČUNI', 'INVOICES')} · {money(data.billed)}</h3><Link className="pm-iconbtn" href={`${base}/kalkulator/racuni`} aria-label={L('Dodaj račun', 'Add invoice')}>+</Link></header>
+            {racuniSort.length ? (<>
+              <ul className="pm-list">
+                {racuniSort.slice(0, NAJVEC).map(r => (
+                  <li key={r.id} className="pm-li"><span className="pm-li-pika" data-paid={r.paid ? 'true' : 'false'} aria-hidden />{r.number || r.title}<span className="pm-li-a">{money(r.amount)}</span></li>
+                ))}
+              </ul>
+              {racuniSort.length > NAJVEC && onOpenZapis && <button type="button" className="pm-vec" onClick={onOpenZapis}>{L('Prikaži vse', 'Show all')} ({racuniSort.length}) →</button>}
+            </>) : <p className="pm-muted">{L('Še ni računov.', 'No invoices yet.')}</p>}
+          </section>
+
+          {/* STROŠKI */}
+          <section className="pm-card">
+            <header><h3>{L('STROŠKI', 'EXPENSES')} · {money(data.costs)}</h3><Link className="pm-iconbtn" href={`${base}/kalkulator/stroski`} aria-label={L('Dodaj strošek', 'Add expense')}>+</Link></header>
+            {strosekSort.length ? (<>
+              <ul className="pm-list">
+                {strosekSort.slice(0, NAJVEC).map(s => (
+                  <li key={s.id} className="pm-li"><span className="pm-li-n">{s.title}</span><span className="pm-li-a">{money(s.amount)}</span></li>
+                ))}
+              </ul>
+              {strosekSort.length > NAJVEC && onOpenZapis && <button type="button" className="pm-vec" onClick={onOpenZapis}>{L('Prikaži vse', 'Show all')} ({strosekSort.length}) →</button>}
+            </>) : <p className="pm-muted">{L('Ni stroškov.', 'No expenses.')}</p>}
+          </section>
+
+          {/* DOKUMENTACIJA (zunanje povezave) */}
+          <section className="pm-card">
+            <header><h3>{L('DOKUMENTACIJA', 'DOCUMENTATION')}</h3>{onOpenZapis && <button type="button" className="pm-iconbtn" onClick={onOpenZapis} aria-label={L('Dodaj povezavo', 'Add link')}>+</button>}</header>
+            {links.length ? (
+              <ul className="pm-linki">
+                {links.map((l, i) => (
+                  <li key={`${l.url}-${i}`}><a href={l.url} target="_blank" rel="noopener noreferrer">{l.oznaka}</a></li>
+                ))}
+              </ul>
+            ) : <p className="pm-muted">{L('Ni povezav. Dodaj Figmo, Drive, Miro …', 'No links. Add Figma, Drive, Miro …')}</p>}
           </section>
         </div>
       </div>
@@ -344,6 +395,20 @@ export default function ProjectDetailModern({
         .pm-qa-cilji b { font-size:.88rem; }
         .pm-qa-cilji small { margin-left:.4rem; color:var(--muted,#9c968a); font-size:.75rem; }
         .pm-modal-edit { display:inline-block; margin-top:1.1rem; text-decoration:none; font-size:.8rem; font-weight:600; color:var(--pm-acc); }
+        /* seznami zapisa (pogodbe/racuni/stroski) */
+        .pm-list { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
+        .pm-li { display:flex; align-items:center; gap:.5rem; padding:.42rem 0; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); font-size:.83rem; color:var(--ink,#111); }
+        .pm-li:first-child { border-top:0; }
+        .pm-li-n { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .pm-li-s { flex:none; font-size:.62rem; font-weight:700; letter-spacing:.02em; text-transform:uppercase; color:var(--muted,#6a6559); background:color-mix(in oklab, var(--pm-line) 40%, transparent); border-radius:999px; padding:.12rem .45rem; }
+        .pm-li-d { flex:none; font-size:.72rem; color:var(--muted,#9c968a); font-variant-numeric:tabular-nums; }
+        .pm-li-a { flex:none; margin-left:auto; font-weight:600; font-variant-numeric:tabular-nums; }
+        .pm-li-pika { flex:none; width:.5rem; height:.5rem; border-radius:50%; background:oklch(80% .03 90); }
+        .pm-li-pika[data-paid="true"] { background:oklch(70% .15 155); }
+        .pm-vec { margin-top:.5rem; border:0; background:none; cursor:pointer; padding:0; color:var(--pm-acc); font-size:.78rem; font-weight:600; }
+        .pm-linki { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+        .pm-linki a { display:block; padding:.4rem .5rem; border-radius:8px; text-decoration:none; color:var(--pm-acc); font-size:.85rem; font-weight:500; }
+        .pm-linki a:hover { background:var(--paper,#F5F2EA); }
       ` }} />
     </div>
   );

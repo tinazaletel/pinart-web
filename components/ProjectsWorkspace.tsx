@@ -932,6 +932,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             onOpenZapis={() => setPogledDetajl('tabelni')}
             ekipaStatus={samoOgled ? { 'demo-sod-luka': 'dela', 'demo-sod-eva': 'review' } : undefined}
             agenti={samoOgled && selected.real ? [{ id: 'agent-copy', ime: jeEn ? 'Copy agent' : 'Copy agent', stanje: 'review' }, { id: 'agent-research', ime: jeEn ? 'Research agent' : 'Razisk. agent', stanje: 'koncal' }] : undefined}
+            links={links}
           />
         ) : (<>
         <div className={styles.projectMoney}><label><small>{L('Dogovorjena vrednost', 'Agreed value')}</small><span><input type="number" min="0" step="0.01" value={selected.agreed || ''} onChange={event => saveAmount(selected.offer.id, Number(event.target.value))} /> €</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></label><span><small>{L('Zaračunano', 'Billed')}</small><strong>{money(selected.billed)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></span><span className={selected.unbilled > 0 ? styles.projectNeedsInvoice : ''}><small>{L('Še ni zaračunano', 'Not yet billed')}</small><strong>{selected.agreed ? money(selected.unbilled) : '—'}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="cost" /></b></span><span><small>{L('Ocenjeni rezultat', 'Estimated result')}</small><strong>{money(selected.profit)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></span></div>
