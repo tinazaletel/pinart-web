@@ -9,6 +9,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import MetricIcon from '@/components/MetricIcon';
 import type { FlowOffer, FlowInvoice, FlowContract, FlowExpense, FlowProjectLink } from '@/lib/pinartFlowStore';
 import type { Projekt } from '@/lib/projekti';
 import type { Sodelavec } from '@/lib/naloge';
@@ -233,10 +234,10 @@ export default function ProjectDetailModern({
           <section className="pm-card">
             <header><h3>{L('POSLOVNI ZAPIS', 'BUSINESS RECORD')}</h3>{onOpenZapis && <button type="button" className="pm-act" onClick={onOpenZapis}>{L('Uredi', 'Edit')} <Puscica /></button>}</header>
             <div className="pm-fin">
-              <div className="pm-f"><small>{L('Dogovorjeno', 'Agreed')}</small><b>{data.agreed ? money(data.agreed) : '—'}</b></div>
-              <div className="pm-f"><small>{L('Zaračunano', 'Billed')}</small><b>{money(data.billed)}</b></div>
-              <div className="pm-f"><small>{L('Še ni zaračunano', 'Not yet billed')}</small><b>{data.agreed ? money(data.unbilled) : '—'}</b></div>
-              <div className="pm-f"><small>{L('Ocenjeni rezultat', 'Estimated result')}</small><b>{money(data.profit)}</b></div>
+              <div className="pm-f"><small>{L('Dogovorjeno', 'Agreed')}</small><b>{data.agreed ? money(data.agreed) : '—'}</b><span className="pm-f-ic"><MetricIcon type="document" /></span></div>
+              <div className="pm-f"><small>{L('Zaračunano', 'Billed')}</small><b>{money(data.billed)}</b><span className="pm-f-ic"><MetricIcon type="paid" /></span></div>
+              <div className="pm-f"><small>{L('Še ni zaračunano', 'Not yet billed')}</small><b>{data.agreed ? money(data.unbilled) : '—'}</b><span className="pm-f-ic"><MetricIcon type="cost" /></span></div>
+              <div className="pm-f"><small>{L('Ocenjeni rezultat', 'Estimated result')}</small><b>{money(data.profit)}</b><span className="pm-f-ic"><MetricIcon type="profit" /></span></div>
             </div>
           </section>
 
@@ -320,7 +321,7 @@ export default function ProjectDetailModern({
       )}
 
       <style dangerouslySetInnerHTML={{ __html: `
-        .pm { --pm-ink: var(--ink, oklch(19% 0.014 55)); --pm-paper: var(--paper, oklch(97% 0.012 87)); --pm-line: var(--line, oklch(93% 0.007 82)); --pm-acc: var(--purple, oklch(66% 0.2 297)); --pm-card: oklch(98% 0.008 87); --pm-muted: color-mix(in oklch, var(--ink) 55%, transparent); --pm-soft: color-mix(in oklch, var(--ink) 42%, transparent); }
+        .pm { --pm-ink: var(--ink, oklch(19% 0.014 55)); --pm-paper: var(--paper, oklch(97% 0.012 87)); --pm-line: var(--line, oklch(93% 0.007 82)); --pm-acc: var(--purple, oklch(66% 0.2 297)); --pm-card: #fff; --pm-muted: color-mix(in oklch, var(--ink) 55%, transparent); --pm-soft: color-mix(in oklch, var(--ink) 42%, transparent); }
         .pm-team { display:flex; align-items:center; gap:.7rem; flex-wrap:wrap; background:var(--pm-paper); border:1px solid var(--pm-line); border-radius:16px; padding:.8rem 1rem; margin-bottom:1.2rem; }
         .pm-team-lbl { font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-member { display:inline-flex; align-items:center; gap:.5rem; padding:.3rem .6rem .3rem .35rem; border-radius:999px; border:1px solid var(--pm-line); background:var(--pm-card); }
@@ -369,6 +370,19 @@ export default function ProjectDetailModern({
         .pm-f { border:1px solid var(--pm-line); border-radius:12px; padding:.7rem .8rem; background:var(--pm-paper); }
         .pm-f small { font-size:.72rem; color:var(--pm-muted); }
         .pm-f b { display:block; font-family:var(--font-serif), Georgia, serif; font-size:1.25rem; margin-top:.15rem; color:var(--pm-ink); }
+        .pm-fin .pm-f { border-color:transparent; position:relative; overflow:hidden; min-height:5.2rem; }
+        .pm-fin .pm-f:nth-child(1) { background:linear-gradient(140deg, oklch(96% .035 295), oklch(88% .075 297)); }
+        .pm-fin .pm-f:nth-child(2) { background:linear-gradient(140deg, oklch(96% .035 160), oklch(86% .08 163)); }
+        .pm-fin .pm-f:nth-child(3) { background:linear-gradient(140deg, oklch(97% .025 87), oklch(91% .045 87)); }
+        .pm-fin .pm-f:nth-child(4) { background:linear-gradient(140deg, oklch(97% .03 65), oklch(89% .075 60)); }
+        .pm-fin .pm-f small, .pm-fin .pm-f b { position:relative; z-index:1; }
+        .pm-fin .pm-f small { color:color-mix(in oklch, var(--pm-ink) 62%, transparent); }
+        .pm-f-ic { position:absolute; z-index:0; right:.5rem; bottom:.4rem; width:3.2rem; display:grid; place-items:center; opacity:.16; transform:rotate(-9deg); pointer-events:none; }
+        .pm-f-ic svg { width:3rem !important; height:3rem !important; }
+        .pm-fin .pm-f:nth-child(1) .pm-f-ic { color:var(--pm-acc); }
+        .pm-fin .pm-f:nth-child(2) .pm-f-ic { color:oklch(58% .15 160); }
+        .pm-fin .pm-f:nth-child(3) .pm-f-ic { color:oklch(60% .06 85); }
+        .pm-fin .pm-f:nth-child(4) .pm-f-ic { color:oklch(66% .18 52); }
         .pm-rec { border-top:1px solid var(--pm-line); padding-top:.6rem; }
         .pm-rline { display:flex; justify-content:space-between; font-size:.85rem; padding:.35rem 0; }
         .pm-rline b { font-variant-numeric:tabular-nums; }
