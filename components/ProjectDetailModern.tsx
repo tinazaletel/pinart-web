@@ -34,6 +34,7 @@ export type ModernProject = {
    ga podamo iz predogleda, da se vidi smer. */
 export type EkipaStanje = 'dela' | 'koncal' | 'review';
 export type AgentClan = { id: string; ime: string; stanje: EkipaStanje };
+export type CrmVnos = { id: string; datum: string; tip: string; opis: string };
 
 const zacetnice = (ime: string) => ime.split(/\s+/).filter(Boolean).slice(0, 2).map(d => d[0]?.toUpperCase() || '').join('') || '?';
 
@@ -43,7 +44,7 @@ const Puscica = () => (
 );
 
 export default function ProjectDetailModern({
-  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, ekipaStatus, agenti = [], links = [],
+  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, ekipaStatus, agenti = [], links = [], crmVnosi = [],
 }: {
   data: ModernProject;
   sodelavci: Sodelavec[];
@@ -57,6 +58,7 @@ export default function ProjectDetailModern({
   ekipaStatus?: Record<string, EkipaStanje>;
   agenti?: AgentClan[];
   links?: FlowProjectLink[];
+  crmVnosi?: CrmVnos[];
 }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const { offer, real } = data;
@@ -72,7 +74,7 @@ export default function ProjectDetailModern({
   const vsiClani = [...clani, ...agentClani];
   const zaPregled = vsiClani.filter(c => c.stanje === 'review').length;
   const komAktivna = [...posta].filter(v => !v.izbrisano).sort((a, b) => b.datum.localeCompare(a.datum));
-  const komZadnje = komAktivna.slice(0, 3);
+  const komZadnje = komAktivna.slice(0, 4);
   const datKratko = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? '' : d.toLocaleDateString(jeEn ? 'en-GB' : 'sl-SI', { day: '2-digit', month: '2-digit' }); };
   const datPolno = (d: Date) => d.toLocaleDateString(jeEn ? 'en-GB' : 'sl-SI', { day: '2-digit', month: '2-digit', year: 'numeric' });
   /* prihajajoci datumi = roki placila odprtih racunov (date + dueDays) */
@@ -159,8 +161,18 @@ export default function ProjectDetailModern({
             )) : offer.scope?.length ? (
               <div className="pm-brow"><span className="pm-bk">{L('Obseg', 'Scope')}</span><span className="pm-bv">{offer.scope.join(' · ')}</span></div>
             ) : <p className="pm-muted">{L('Brief še ni izpolnjen. Dodaš ga ob odprtju projekta (vprašanja).', 'The brief is not filled in yet. Add it when opening the project (questions).')}</p>}
-            {cilji.length > 0 && <div className="pm-cilji">{cilji.map(c => <span key={c.id} className="pm-cilj">◎ {c.besedilo}{c.tarca ? ` · ${c.tarca}` : ''}</span>)}</div>}
           </section>
+
+          {cilji.length > 0 && (
+            <section className="pm-card">
+              <header><h3>{L('CILJI PROJEKTA', 'PROJECT GOALS')}</h3></header>
+              <ul className="pm-goals">
+                {cilji.map(c => (
+                  <li key={c.id}><span className="pm-goal-b">{c.besedilo}</span>{(c.metrika || c.tarca) && <span className="pm-goal-t">{[c.metrika, c.tarca].filter(Boolean).join(' · ')}</span>}</li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {/* PRIHAJAJOČI DATUMI */}
           <section className="pm-card">
@@ -200,10 +212,20 @@ export default function ProjectDetailModern({
           </section>
 
           {/* CRM DNEVNIK */}
-          <Link className="pm-card pm-crm" href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(offer.client)}`}>
-            <div className="pm-crm-h"><h3>{L('CRM DNEVNIK', 'CRM DIARY')}</h3><span className="pm-act">{L('Odpri', 'Open')} <Puscica /></span></div>
-            <p className="pm-muted">{jeEn ? `Timeline of the relationship with “${offer.client}” — calls, meetings, agreements.` : `Kronologija odnosa s stranko »${offer.client}« — klici, sestanki, dogovori.`}</p>
-          </Link>
+          <section className="pm-card">
+            <header><h3>{L('CRM DNEVNIK', 'CRM DIARY')}</h3><Link className="pm-act" href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(offer.client)}`}>{L('Odpri', 'Open')} <Puscica /></Link></header>
+            {crmVnosi.length ? (
+              <ul className="pm-crm-list">
+                {crmVnosi.slice(0, 4).map(v => (
+                  <li key={v.id} className="pm-crm-vnos">
+                    <span className="pm-crm-tip">{v.tip}</span>
+                    <span className="pm-crm-opis">{v.opis}</span>
+                    <span className="pm-crm-dan">{datKratko(v.datum)}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : <p className="pm-muted">{jeEn ? `Timeline of the relationship with “${offer.client}” — calls, meetings, agreements.` : `Kronologija odnosa s stranko »${offer.client}« — klici, sestanki, dogovori.`}</p>}
+          </section>
         </div>
 
         <div className="pm-col">
@@ -298,55 +320,55 @@ export default function ProjectDetailModern({
       )}
 
       <style dangerouslySetInnerHTML={{ __html: `
-        .pm { --pm-line: var(--line, #E2DBC9); --pm-acc: var(--accent, oklch(58% .19 297)); }
-        .pm-team { display:flex; align-items:center; gap:.7rem; flex-wrap:wrap; background:var(--paper,#F5F2EA); border:1px solid var(--pm-line); border-radius:16px; padding:.8rem 1rem; margin-bottom:1.2rem; }
-        .pm-team-lbl { font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted,#6a6559); font-weight:700; }
-        .pm-member { display:inline-flex; align-items:center; gap:.5rem; padding:.3rem .6rem .3rem .35rem; border-radius:999px; border:1px solid var(--pm-line); background:#fff; }
+        .pm { --pm-ink: var(--ink, oklch(19% 0.014 55)); --pm-paper: var(--paper, oklch(97% 0.012 87)); --pm-line: var(--line, oklch(93% 0.007 82)); --pm-acc: var(--purple, oklch(66% 0.2 297)); --pm-card: oklch(98% 0.008 87); --pm-muted: color-mix(in oklch, var(--ink) 55%, transparent); --pm-soft: color-mix(in oklch, var(--ink) 42%, transparent); }
+        .pm-team { display:flex; align-items:center; gap:.7rem; flex-wrap:wrap; background:var(--pm-paper); border:1px solid var(--pm-line); border-radius:16px; padding:.8rem 1rem; margin-bottom:1.2rem; }
+        .pm-team-lbl { font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
+        .pm-member { display:inline-flex; align-items:center; gap:.5rem; padding:.3rem .6rem .3rem .35rem; border-radius:999px; border:1px solid var(--pm-line); background:var(--pm-card); }
         .pm-av { width:1.7rem; height:1.7rem; border-radius:50%; display:grid; place-items:center; font-size:.7rem; font-weight:700; color:#fff; background:linear-gradient(135deg, var(--pm-acc), oklch(70% .16 320)); }
         .pm-mtxt b { font-size:.8rem; font-weight:650; display:block; line-height:1.1; }
-        .pm-mtxt small { font-size:.66rem; color:var(--muted,#9c968a); }
-        .pm-addmember { text-decoration:none; display:inline-flex; align-items:center; gap:.3rem; border:1px dashed var(--pm-line); color:var(--muted,#6a6559); border-radius:999px; padding:.42rem .7rem; font-size:.78rem; font-weight:600; }
+        .pm-mtxt small { font-size:.66rem; color:var(--pm-muted); }
+        .pm-addmember { text-decoration:none; display:inline-flex; align-items:center; gap:.3rem; border:1px dashed var(--pm-line); color:var(--pm-muted); border-radius:999px; padding:.42rem .7rem; font-size:.78rem; font-weight:600; }
         .pm-addmember:hover { border-color:var(--pm-acc); color:var(--pm-acc); }
-        .pm-mx { border:0; background:none; cursor:pointer; color:var(--muted,#9c968a); font-size:1rem; line-height:1; padding:0 .1rem 0 .2rem; border-radius:50%; }
+        .pm-mx { border:0; background:none; cursor:pointer; color:var(--pm-muted); font-size:1rem; line-height:1; padding:0 .1rem 0 .2rem; border-radius:50%; }
         .pm-mx:hover { color:oklch(52% .18 25); }
         .pm-add-wrap { position:relative; display:inline-flex; }
-        .pm-add-menu { position:absolute; top:calc(100% + .4rem); left:0; z-index:20; min-width:14rem; background:#fff; border:1px solid var(--pm-line); border-radius:12px; padding:.35rem; box-shadow:0 12px 30px -12px rgba(17,17,17,.25); display:flex; flex-direction:column; gap:.1rem; }
-        .pm-add-opt { display:flex; align-items:center; gap:.5rem; width:100%; text-align:left; border:0; background:none; cursor:pointer; padding:.4rem .5rem; border-radius:8px; color:var(--ink,#111); }
-        .pm-add-opt:hover { background:var(--paper,#F5F2EA); }
+        .pm-add-menu { position:absolute; top:calc(100% + .4rem); left:0; z-index:20; min-width:14rem; background:var(--pm-card); border:1px solid var(--pm-line); border-radius:12px; padding:.35rem; box-shadow:0 12px 30px -12px rgba(17,17,17,.25); display:flex; flex-direction:column; gap:.1rem; }
+        .pm-add-opt { display:flex; align-items:center; gap:.5rem; width:100%; text-align:left; border:0; background:none; cursor:pointer; padding:.4rem .5rem; border-radius:8px; color:var(--pm-ink); }
+        .pm-add-opt:hover { background:var(--pm-paper); }
         .pm-add-opt b { font-size:.82rem; font-weight:600; }
-        .pm-add-opt small { margin-left:auto; font-size:.68rem; color:var(--muted,#9c968a); }
+        .pm-add-opt small { margin-left:auto; font-size:.68rem; color:var(--pm-muted); }
         .pm-av-sm { width:1.4rem; height:1.4rem; font-size:.6rem; }
-        .pm-add-empty { margin:0; padding:.5rem; font-size:.8rem; color:var(--muted,#6a6559); }
+        .pm-add-empty { margin:0; padding:.5rem; font-size:.8rem; color:var(--pm-muted); }
         .pm-add-manage { display:block; text-decoration:none; margin-top:.15rem; padding:.4rem .5rem; font-size:.74rem; font-weight:600; color:var(--pm-acc); border-top:1px solid var(--pm-line); }
-        .pm-soon { font-size:.7rem; color:var(--muted,#9c968a); font-style:italic; margin-left:auto; }
-        .pm-empty { font-size:.85rem; color:var(--muted,#9c968a); }
+        .pm-soon { font-size:.7rem; color:var(--pm-muted); font-style:italic; margin-left:auto; }
+        .pm-empty { font-size:.85rem; color:var(--pm-muted); }
         .pm-grid { display:grid; grid-template-columns:1fr; gap:1.1rem; }
         @media (min-width:880px){ .pm-grid { grid-template-columns:1.7fr 1fr; align-items:start; } }
         .pm-col { display:flex; flex-direction:column; gap:1.1rem; }
-        .pm-card { background:#fff; border:1px solid var(--pm-line); border-radius:16px; padding:1.1rem 1.2rem; }
+        .pm-card { background:var(--pm-card); border:1px solid var(--pm-line); border-radius:16px; padding:1.1rem 1.2rem; }
         .pm-card > header { display:flex; align-items:center; justify-content:space-between; gap:.6rem; margin-bottom:.5rem; }
-        .pm-card h3 { margin:0; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted,#9c968a); font-weight:700; }
-        .pm-title { font-family:var(--font-serif), Georgia, serif; font-size:1.3rem; margin:0 0 .7rem; color:var(--ink,#111); }
-        .pm-act { text-decoration:none; border:1px solid var(--pm-line); background:var(--paper,#F5F2EA); color:var(--muted,#6a6559); border-radius:8px; padding:.28rem .55rem; font-size:.74rem; font-weight:600; }
+        .pm-card h3 { margin:0; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
+        .pm-title { font-family:var(--font-serif), Georgia, serif; font-size:1.3rem; margin:0 0 .7rem; color:var(--pm-ink); }
+        .pm-act { display:inline-flex; align-items:center; height:1.9rem; box-sizing:border-box; text-decoration:none; border:1px solid var(--pm-line); background:var(--pm-paper); color:var(--pm-muted); border-radius:999px; padding:0 .8rem; font-size:.74rem; font-weight:600; white-space:nowrap; }
         .pm-act:hover { color:var(--pm-acc); border-color:var(--pm-acc); }
-        .pm-brief { background:linear-gradient(165deg, color-mix(in oklab, var(--pm-acc) 8%, #fff), #fff 72%); }
+        .pm-brief { background:linear-gradient(165deg, color-mix(in oklab, var(--pm-acc) 8%, var(--pm-card)), var(--pm-card) 72%); }
         .pm-brow { display:flex; gap:.7rem; padding:.5rem 0; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); }
         .pm-brow:first-of-type { border-top:0; }
-        .pm-bk { flex:0 0 9rem; color:var(--muted,#6a6559); font-size:.8rem; font-weight:600; }
-        .pm-bv { font-size:.88rem; color:var(--ink,#111); }
+        .pm-bk { flex:0 0 9rem; color:var(--pm-muted); font-size:.8rem; font-weight:600; }
+        .pm-bv { font-size:.88rem; color:var(--pm-ink); }
         .pm-cilji { display:flex; flex-direction:column; gap:.35rem; margin-top:.7rem; }
-        .pm-cilj { font-size:.85rem; color:var(--ink,#111); }
-        .pm-muted { color:var(--muted,#6a6559); font-size:.86rem; margin:.2rem 0 0; }
+        .pm-cilj { font-size:.85rem; color:var(--pm-ink); }
+        .pm-muted { color:var(--pm-muted); font-size:.86rem; margin:.2rem 0 0; }
         .pm-mails { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
         .pm-mail { display:flex; align-items:baseline; gap:.6rem; padding:.45rem 0; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); }
         .pm-mail:first-child { border-top:0; }
-        .pm-mail-kdo { flex:0 0 30%; min-width:0; font-size:.8rem; font-weight:600; color:var(--ink,#111); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .pm-mail-zad { flex:1; min-width:0; font-size:.82rem; color:var(--muted,#6a6559); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .pm-mail-dan { flex:none; font-size:.7rem; color:var(--muted,#9c968a); font-variant-numeric:tabular-nums; }
+        .pm-mail-kdo { flex:0 0 30%; min-width:0; font-size:.8rem; font-weight:600; color:var(--pm-ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .pm-mail-zad { flex:1; min-width:0; font-size:.82rem; color:var(--pm-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .pm-mail-dan { flex:none; font-size:.7rem; color:var(--pm-muted); font-variant-numeric:tabular-nums; }
         .pm-fin { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; margin-bottom:.8rem; }
-        .pm-f { border:1px solid var(--pm-line); border-radius:12px; padding:.7rem .8rem; background:var(--paper,#F5F2EA); }
-        .pm-f small { font-size:.72rem; color:var(--muted,#6a6559); }
-        .pm-f b { display:block; font-family:var(--font-serif), Georgia, serif; font-size:1.25rem; margin-top:.15rem; color:var(--ink,#111); }
+        .pm-f { border:1px solid var(--pm-line); border-radius:12px; padding:.7rem .8rem; background:var(--pm-paper); }
+        .pm-f small { font-size:.72rem; color:var(--pm-muted); }
+        .pm-f b { display:block; font-family:var(--font-serif), Georgia, serif; font-size:1.25rem; margin-top:.15rem; color:var(--pm-ink); }
         .pm-rec { border-top:1px solid var(--pm-line); padding-top:.6rem; }
         .pm-rline { display:flex; justify-content:space-between; font-size:.85rem; padding:.35rem 0; }
         .pm-rline b { font-variant-numeric:tabular-nums; }
@@ -363,7 +385,7 @@ export default function ProjectDetailModern({
         .pm-alert::before { content:""; width:.5rem; height:.5rem; border-radius:50%; background:oklch(70% .17 60); }
         /* status clana */
         .pm-st { font-size:.62rem; font-weight:700; letter-spacing:.02em; text-transform:uppercase; border-radius:999px; padding:.12rem .4rem; }
-        .pm-st[data-st="dela"] { color:var(--muted,#6a6559); background:color-mix(in oklab, var(--pm-line) 40%, transparent); }
+        .pm-st[data-st="dela"] { color:var(--pm-muted); background:color-mix(in oklab, var(--pm-line) 40%, transparent); }
         .pm-st[data-st="koncal"] { color:oklch(42% .12 155); background:oklch(93% .06 160); }
         .pm-st[data-st="review"] { color:oklch(48% .14 55); background:oklch(94% .07 75); }
         /* AI agent clan */
@@ -371,7 +393,7 @@ export default function ProjectDetailModern({
         .pm-av-ai { background:linear-gradient(135deg, oklch(62% .16 280), oklch(70% .15 200)); }
         /* header akcije (Vec + gumb) */
         .pm-hact { display:inline-flex; align-items:center; gap:.4rem; }
-        .pm-iconbtn { text-decoration:none; display:inline-grid; place-items:center; width:1.55rem; height:1.55rem; border:1px solid var(--pm-line); border-radius:8px; color:var(--muted,#6a6559); font-size:1.05rem; line-height:1; }
+        .pm-iconbtn { text-decoration:none; display:inline-grid; place-items:center; width:1.9rem; height:1.9rem; box-sizing:border-box; border:1px solid var(--pm-line); border-radius:999px; background:var(--pm-paper); color:var(--pm-muted); font-size:1.05rem; line-height:1; }
         .pm-iconbtn:hover { border-color:var(--pm-acc); color:var(--pm-acc); }
         /* prihajajoci datumi */
         .pm-roki { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
@@ -379,42 +401,55 @@ export default function ProjectDetailModern({
         .pm-rok:first-child { border-top:0; }
         .pm-rok-pika { flex:none; width:.5rem; height:.5rem; border-radius:50%; background:var(--pm-acc); }
         .pm-rok-pika[data-late="true"] { background:oklch(58% .18 25); }
-        .pm-rok-txt { flex:1; min-width:0; font-size:.82rem; color:var(--ink,#111); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .pm-rok-dan { flex:none; font-size:.72rem; color:var(--muted,#6a6559); font-variant-numeric:tabular-nums; }
+        .pm-rok-txt { flex:1; min-width:0; font-size:.82rem; color:var(--pm-ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .pm-rok-dan { flex:none; font-size:.72rem; color:var(--pm-muted); font-variant-numeric:tabular-nums; }
         /* CRM kartica (link) */
         .pm-crm { text-decoration:none; color:inherit; display:block; }
         .pm-crm:hover { border-color:var(--pm-acc); }
         .pm-crm-h { display:flex; align-items:center; justify-content:space-between; gap:.6rem; margin-bottom:.5rem; }
-        .pm-crm-h h3 { margin:0; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted,#9c968a); font-weight:700; }
+        .pm-crm-h h3 { margin:0; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         /* brief modal — cela stran z vsemi vprasanji */
         .pm-modal-back { position:fixed; inset:0; z-index:60; background:rgba(17,17,17,.35); display:flex; justify-content:center; align-items:flex-start; padding:6vh 1rem; overflow-y:auto; }
-        .pm-modal { width:100%; max-width:640px; background:var(--paper,#F5F2EA); border:1px solid var(--pm-line); border-radius:18px; padding:1.4rem 1.5rem 1.5rem; box-shadow:0 30px 70px -30px rgba(17,17,17,.5); }
+        .pm-modal { width:100%; max-width:640px; background:var(--pm-paper); border:1px solid var(--pm-line); border-radius:18px; padding:1.4rem 1.5rem 1.5rem; box-shadow:0 30px 70px -30px rgba(17,17,17,.5); }
         .pm-modal-h { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
-        .pm-modal-kick { margin:0 0 .2rem; font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted,#9c968a); font-weight:700; }
-        .pm-modal-h h2 { margin:0; font-family:var(--font-serif), Georgia, serif; font-size:1.5rem; color:var(--ink,#111); }
-        .pm-modal-x { flex:none; border:1px solid var(--pm-line); background:#fff; border-radius:8px; width:2rem; height:2rem; cursor:pointer; color:var(--ink,#111); }
+        .pm-modal-kick { margin:0 0 .2rem; font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
+        .pm-modal-h h2 { margin:0; font-family:var(--font-serif), Georgia, serif; font-size:1.5rem; color:var(--pm-ink); }
+        .pm-modal-x { flex:none; border:1px solid var(--pm-line); background:var(--pm-card); border-radius:999px; width:2rem; height:2rem; cursor:pointer; color:var(--pm-ink); }
         .pm-modal-body { display:flex; flex-direction:column; gap:.9rem; }
-        .pm-qa-k { display:block; font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted,#6a6559); font-weight:700; margin-bottom:.25rem; }
-        .pm-qa-v { margin:0; font-size:.9rem; color:var(--ink,#111); line-height:1.5; }
+        .pm-qa-k { display:block; font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; margin-bottom:.25rem; }
+        .pm-qa-v { margin:0; font-size:.9rem; color:var(--pm-ink); line-height:1.5; }
         .pm-qa-cilji { margin:.1rem 0 0; padding-left:1.1rem; display:flex; flex-direction:column; gap:.25rem; }
         .pm-qa-cilji b { font-size:.88rem; }
-        .pm-qa-cilji small { margin-left:.4rem; color:var(--muted,#9c968a); font-size:.75rem; }
+        .pm-qa-cilji small { margin-left:.4rem; color:var(--pm-muted); font-size:.75rem; }
         .pm-modal-edit { display:inline-block; margin-top:1.1rem; text-decoration:none; font-size:.8rem; font-weight:600; color:var(--pm-acc); }
         /* seznami zapisa (pogodbe/racuni/stroski) */
         .pm-list { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
-        .pm-li { display:flex; align-items:center; gap:.5rem; padding:.42rem 0; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); font-size:.83rem; color:var(--ink,#111); }
+        .pm-li { display:flex; align-items:center; gap:.5rem; padding:.42rem 0; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); font-size:.83rem; color:var(--pm-ink); }
         .pm-li:first-child { border-top:0; }
         .pm-li-n { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .pm-li-s { flex:none; font-size:.62rem; font-weight:700; letter-spacing:.02em; text-transform:uppercase; color:var(--muted,#6a6559); background:color-mix(in oklab, var(--pm-line) 40%, transparent); border-radius:999px; padding:.12rem .45rem; }
-        .pm-li-d { flex:none; font-size:.72rem; color:var(--muted,#9c968a); font-variant-numeric:tabular-nums; }
+        .pm-li-s { flex:none; font-size:.62rem; font-weight:700; letter-spacing:.02em; text-transform:uppercase; color:var(--pm-muted); background:color-mix(in oklab, var(--pm-line) 40%, transparent); border-radius:999px; padding:.12rem .45rem; }
+        .pm-li-d { flex:none; font-size:.72rem; color:var(--pm-muted); font-variant-numeric:tabular-nums; }
         .pm-li-a { flex:none; margin-left:auto; font-weight:600; font-variant-numeric:tabular-nums; }
         .pm-li-pika { flex:none; width:.5rem; height:.5rem; border-radius:50%; background:oklch(80% .03 90); }
         .pm-li-pika[data-paid="true"] { background:oklch(70% .15 155); }
         .pm-vec { margin-top:.5rem; border:0; background:none; cursor:pointer; padding:0; color:var(--pm-acc); font-size:.78rem; font-weight:600; }
         .pm-linki { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
         .pm-linki a { display:block; padding:.4rem .5rem; border-radius:8px; text-decoration:none; color:var(--pm-acc); font-size:.85rem; font-weight:500; }
-        .pm-linki a:hover { background:var(--paper,#F5F2EA); }
+        .pm-linki a:hover { background:var(--pm-paper); }
         .pm-arr { display:inline-block; margin-left:.3rem; vertical-align:-1px; flex:none; }
+        /* cilji projekta */
+        .pm-goals { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
+        .pm-goals li { display:flex; align-items:baseline; gap:.5rem; padding:.42rem 0; border-top:1px solid color-mix(in oklch, var(--pm-line) 60%, transparent); }
+        .pm-goals li:first-child { border-top:0; }
+        .pm-goal-b { flex:1; min-width:0; font-size:.86rem; color:var(--pm-ink); }
+        .pm-goal-t { flex:none; font-size:.72rem; font-weight:600; color:var(--pm-acc); }
+        /* crm dnevnik */
+        .pm-crm-list { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
+        .pm-crm-vnos { display:flex; align-items:baseline; gap:.55rem; padding:.42rem 0; border-top:1px solid color-mix(in oklch, var(--pm-line) 60%, transparent); }
+        .pm-crm-vnos:first-child { border-top:0; }
+        .pm-crm-tip { flex:none; font-size:.62rem; font-weight:700; letter-spacing:.02em; text-transform:uppercase; color:var(--pm-muted); background:color-mix(in oklch, var(--pm-line) 40%, transparent); border-radius:999px; padding:.12rem .45rem; }
+        .pm-crm-opis { flex:1; min-width:0; font-size:.83rem; color:var(--pm-ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .pm-crm-dan { flex:none; font-size:.72rem; color:var(--pm-muted); font-variant-numeric:tabular-nums; }
       ` }} />
     </div>
   );

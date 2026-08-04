@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, FolderOpen, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash, MagnifyingGlass } from '@phosphor-icons/react';
+import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash, MagnifyingGlass } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
@@ -32,6 +32,15 @@ const vObdobju = (dateStr: string, od: string, doD: string): boolean => {
 const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFractionDigits: 2 })} €`;
 const datStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('sl-SI'); };
 const casStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' }); };
+
+/* demo CRM dnevnik (predogled »polno poslovanje«) — nekaj vnosov, da kartica
+   CRM v Delovnem pogledu ni prazna; pravi dnevnik je na strani stranke */
+const DEMO_CRM = [
+  { id: 'crm-1', datum: '2026-07-28', tip: 'Sestanek', opis: 'Pregled osnutkov — uskladitev tipografije in hierarhije' },
+  { id: 'crm-2', datum: '2026-07-15', tip: 'Klic', opis: 'Uskladitev obsega aneksa 2 (vzdrževanje)' },
+  { id: 'crm-3', datum: '2026-06-30', tip: 'E-pošta', opis: 'Potrditev terminskega načrta za Q3' },
+  { id: 'crm-4', datum: '2026-05-20', tip: 'Dogovor', opis: 'Podaljšanje vzdrževanja 2025/26' },
+];
 
 /* status projekta (tabela) — izpeljano iz offer.status po ISTI logiki kot filter
    spodaj (aktivni=accepted, cakajo=sent, zakljuceni=rejected); tone usklajen s
@@ -684,7 +693,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   useEffect(() => {
     const demo: FlowProjectLink[] = [
       { oznaka: 'Figma · Dizajn', url: 'https://figma.com' },
-      { oznaka: 'Miro · Moodboard', url: 'https://miro.com' },
+      { oznaka: 'Word · Zapisnik sestanka', url: 'https://docs.google.com' },
+      { oznaka: 'Slike · Mapa', url: 'https://drive.google.com' },
       { oznaka: 'Drive · Gradiva', url: 'https://drive.google.com' },
     ];
     setLinks(samoOgled ? demo : (selectedId ? loadProjectLinks(selectedId) : []));
@@ -888,7 +898,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 {visible.map(project => { const info = projectStatusInfo(project.offer.status); return (
                   <button key={project.offer.id} type="button" className="pw-vrstica" onClick={() => selectProject(project.offer.id)}>
                     {kljuk(project.offer.id)}
-                    <span className="pw-glavna"><span className="pw-ikona" aria-hidden><FolderOpen size={17} /></span><strong>{project.offer.title}</strong></span>
+                    <span className="pw-glavna"><i aria-hidden style={{ ...pikaStil(info.tone), width: '.6rem', height: '.6rem', marginRight: '.75rem' }} title={info.label} /><strong>{project.offer.title}</strong></span>
                     <span className="pw-mut">{project.offer.client}</span>
                     <span className="pw-mut">{datStr(project.offer.date)}</span>
                     <span><span className="pw-status-ured" data-editable="" title={L('Spremeni status', 'Change status')} onClick={e => e.stopPropagation()}>
@@ -933,6 +943,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             ekipaStatus={samoOgled ? { 'demo-sod-luka': 'dela', 'demo-sod-eva': 'review' } : undefined}
             agenti={samoOgled && selected.real ? [{ id: 'agent-copy', ime: jeEn ? 'Copy agent' : 'Copy agent', stanje: 'review' }, { id: 'agent-research', ime: jeEn ? 'Research agent' : 'Razisk. agent', stanje: 'koncal' }] : undefined}
             links={links}
+            crmVnosi={samoOgled ? DEMO_CRM : undefined}
           />
         ) : (<>
         <div className={styles.projectMoney}><label><small>{L('Dogovorjena vrednost', 'Agreed value')}</small><span><input type="number" min="0" step="0.01" value={selected.agreed || ''} onChange={event => saveAmount(selected.offer.id, Number(event.target.value))} /> €</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></label><span><small>{L('Zaračunano', 'Billed')}</small><strong>{money(selected.billed)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></span><span className={selected.unbilled > 0 ? styles.projectNeedsInvoice : ''}><small>{L('Še ni zaračunano', 'Not yet billed')}</small><strong>{selected.agreed ? money(selected.unbilled) : '—'}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="cost" /></b></span><span><small>{L('Ocenjeni rezultat', 'Estimated result')}</small><strong>{money(selected.profit)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></span></div>

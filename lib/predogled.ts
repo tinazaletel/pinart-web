@@ -214,26 +214,19 @@ export function demoPodatki(): FlowData {
     };
   });
 
-  const demoPortalContract: FlowContract = {
-    id: 'demo-portal-p-0',
-    title: 'Pogodba · Prenova portala',
-    client: 'Rokus Klett',
-    date: '2022-01-10',
-    status: 'active',
-    sourceOfferId: 'demo-portal',
-    body: teloPogodbe('Prenova portala', 'Rokus Klett', '2022-01-10'),
-    notes: 'Petletni retainer, mesečno obračunavanje po dogovorjenem obsegu.',
-  };
+  const demoPortalContracts: FlowContract[] = [
+    { id: 'demo-portal-p-0', title: 'Pogodba · Prenova portala', client: 'Rokus Klett', date: '2022-01-10', status: 'active', sourceOfferId: 'demo-portal', body: teloPogodbe('Prenova portala', 'Rokus Klett', '2022-01-10'), notes: 'Petletni retainer, mesečno obračunavanje po dogovorjenem obsegu.' },
+    { id: 'demo-portal-p-1', title: 'Aneks 1 · Razširitev obsega', client: 'Rokus Klett', date: '2023-03-15', status: 'signed', sourceOfferId: 'demo-portal', body: teloPogodbe('Aneks 1 — razširitev obsega', 'Rokus Klett', '2023-03-15') },
+    { id: 'demo-portal-p-2', title: 'Pogodba o zaupnosti (NDA)', client: 'Rokus Klett', date: '2022-01-08', status: 'signed', sourceOfferId: 'demo-portal', body: teloPogodbe('Pogodba o zaupnosti', 'Rokus Klett', '2022-01-08') },
+    { id: 'demo-portal-p-3', title: 'Aneks 2 · Vzdrževanje 2025', client: 'Rokus Klett', date: '2025-01-20', status: 'review', sourceOfferId: 'demo-portal', body: teloPogodbe('Aneks 2 — vzdrževanje 2025', 'Rokus Klett', '2025-01-20') },
+  ];
 
-  const demoPortalExpense: FlowExpense = {
-    id: 'demo-portal-e-0',
-    title: 'Zunanji sodelavec',
-    client: 'Rokus Klett',
-    amount: 480,
-    date: datumFiksni(2023, 220),
-    category: 'Projekt',
-    sourceOfferId: 'demo-portal',
-  };
+  const demoPortalExpenses: FlowExpense[] = [
+    { id: 'demo-portal-e-0', title: 'Zunanji sodelavec · frontend', client: 'Rokus Klett', amount: 1480, date: datumFiksni(2023, 220), category: 'Projekt', sourceOfferId: 'demo-portal' },
+    { id: 'demo-portal-e-1', title: 'Stock fotografije', client: 'Rokus Klett', amount: 240, date: datumFiksni(2022, 140), category: 'Projekt', sourceOfferId: 'demo-portal' },
+    { id: 'demo-portal-e-2', title: 'Licenca za pisave', client: 'Rokus Klett', amount: 320, date: datumFiksni(2022, 60), category: 'Projekt', sourceOfferId: 'demo-portal' },
+    { id: 'demo-portal-e-3', title: 'Testiranje dostopnosti (zunanje)', client: 'Rokus Klett', amount: 650, date: datumFiksni(2024, 90), category: 'Projekt', sourceOfferId: 'demo-portal' },
+  ];
 
   const clients: FlowClient[] = STRANKE.map((ime, i) => ({
     id: `demo-s-${i}`,
@@ -262,8 +255,8 @@ export function demoPodatki(): FlowData {
     version: 1,
     offers: [...offers, demoPortalOffer],
     invoices: [...invoices, ...demoPortalInvoices],
-    expenses: [...expenses, demoPortalExpense],
-    contracts: [...contracts, demoPortalContract],
+    expenses: [...expenses, ...demoPortalExpenses],
+    contracts: [...contracts, ...demoPortalContracts],
     clients,
   };
 }
