@@ -37,6 +37,11 @@ export type AgentClan = { id: string; ime: string; stanje: EkipaStanje };
 
 const zacetnice = (ime: string) => ime.split(/\s+/).filter(Boolean).slice(0, 2).map(d => d[0]?.toUpperCase() || '').join('') || '?';
 
+/* CGP puscica (enaka kot .puscica-svg drugod v portalu) — diagonalna NE */
+const Puscica = () => (
+  <svg className="pm-arr" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg>
+);
+
 export default function ProjectDetailModern({
   data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, ekipaStatus, agenti = [], links = [],
 }: {
@@ -121,7 +126,7 @@ export default function ProjectDetailModern({
                     <span className="pm-av pm-av-sm">{zacetnice(s.ime)}</span><b>{s.ime}</b><small>{vlogaOznaka(s.vloga)}</small>
                   </button>
                 )) : <p className="pm-add-empty">{L('Vsi sodelavci so že dodani.', 'All collaborators already added.')}</p>}
-                <Link href={`${base}/kalkulator/ekipa`} className="pm-add-manage">{L('Uredi ekipo', 'Manage team')} →</Link>
+                <Link href={`${base}/kalkulator/ekipa`} className="pm-add-manage">{L('Uredi ekipo', 'Manage team')} <Puscica /></Link>
               </div>
             )}
           </span>
@@ -138,7 +143,7 @@ export default function ProjectDetailModern({
             <header>
               <h3>{L('AKTIVNI TASKI', 'ACTIVE TASKS')}</h3>
               <span className="pm-hact">
-                <Link className="pm-act" href={`${base}/kalkulator/naloge`}>{L('Več', 'More')} →</Link>
+                <Link className="pm-act" href={`${base}/kalkulator/naloge`}>{L('Več', 'More')} <Puscica /></Link>
                 <Link className="pm-iconbtn" href={`${base}/kalkulator/naloge`} aria-label={L('Dodaj nalogo', 'Add task')}>+</Link>
               </span>
             </header>
@@ -147,7 +152,7 @@ export default function ProjectDetailModern({
 
           {/* BRIEF */}
           <section className="pm-card pm-brief">
-            <header><h3>{L('BRIEF · ŽELJE STRANKE', 'BRIEF · CLIENT WISHES')}</h3>{imaBrief && <button type="button" className="pm-act" onClick={() => setBriefOdprt(true)}>{L('Več', 'More')} →</button>}</header>
+            <header><h3>{L('BRIEF · ŽELJE STRANKE', 'BRIEF · CLIENT WISHES')}</h3>{imaBrief && <button type="button" className="pm-act" onClick={() => setBriefOdprt(true)}>{L('Več', 'More')} <Puscica /></button>}</header>
             <div className="pm-title">{L('Kaj gradimo in za koga.', 'What we build and for whom.')}</div>
             {briefPolja.length ? briefPolja.map(([k, v]) => (
               <div key={k} className="pm-brow"><span className="pm-bk">{k}</span><span className="pm-bv">{v}</span></div>
@@ -159,7 +164,7 @@ export default function ProjectDetailModern({
 
           {/* PRIHAJAJOČI DATUMI */}
           <section className="pm-card">
-            <header><h3>{L('PRIHAJAJOČI DATUMI', 'UPCOMING DATES')}</h3><Link className="pm-act" href={`${base}/kalkulator/koledar`}>{L('Koledar', 'Calendar')} →</Link></header>
+            <header><h3>{L('PRIHAJAJOČI DATUMI', 'UPCOMING DATES')}</h3><Link className="pm-act" href={`${base}/kalkulator/koledar`}>{L('Koledar', 'Calendar')} <Puscica /></Link></header>
             {roki.length ? (
               <ul className="pm-roki">
                 {roki.map(r => { const d = dniDo(r.rok); return (
@@ -196,7 +201,7 @@ export default function ProjectDetailModern({
 
           {/* CRM DNEVNIK */}
           <Link className="pm-card pm-crm" href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(offer.client)}`}>
-            <div className="pm-crm-h"><h3>{L('CRM DNEVNIK', 'CRM DIARY')}</h3><span className="pm-act">{L('Odpri', 'Open')} →</span></div>
+            <div className="pm-crm-h"><h3>{L('CRM DNEVNIK', 'CRM DIARY')}</h3><span className="pm-act">{L('Odpri', 'Open')} <Puscica /></span></div>
             <p className="pm-muted">{jeEn ? `Timeline of the relationship with “${offer.client}” — calls, meetings, agreements.` : `Kronologija odnosa s stranko »${offer.client}« — klici, sestanki, dogovori.`}</p>
           </Link>
         </div>
@@ -204,7 +209,7 @@ export default function ProjectDetailModern({
         <div className="pm-col">
           {/* POSLOVNI ZAPIS — finance */}
           <section className="pm-card">
-            <header><h3>{L('POSLOVNI ZAPIS', 'BUSINESS RECORD')}</h3>{onOpenZapis && <button type="button" className="pm-act" onClick={onOpenZapis}>{L('Uredi', 'Edit')} →</button>}</header>
+            <header><h3>{L('POSLOVNI ZAPIS', 'BUSINESS RECORD')}</h3>{onOpenZapis && <button type="button" className="pm-act" onClick={onOpenZapis}>{L('Uredi', 'Edit')} <Puscica /></button>}</header>
             <div className="pm-fin">
               <div className="pm-f"><small>{L('Dogovorjeno', 'Agreed')}</small><b>{data.agreed ? money(data.agreed) : '—'}</b></div>
               <div className="pm-f"><small>{L('Zaračunano', 'Billed')}</small><b>{money(data.billed)}</b></div>
@@ -222,7 +227,7 @@ export default function ProjectDetailModern({
                   <li key={c.id} className="pm-li"><span className="pm-li-n">{c.title}</span><span className="pm-li-s">{c.status}</span><span className="pm-li-d">{datKratko(c.date)}</span></li>
                 ))}
               </ul>
-              {pogodbeSort.length > NAJVEC && onOpenZapis && <button type="button" className="pm-vec" onClick={onOpenZapis}>{L('Prikaži vse', 'Show all')} ({pogodbeSort.length}) →</button>}
+              {pogodbeSort.length > NAJVEC && onOpenZapis && <button type="button" className="pm-vec" onClick={onOpenZapis}>{L('Prikaži vse', 'Show all')} ({pogodbeSort.length}) <Puscica /></button>}
             </>) : <p className="pm-muted">{L('Brez pogodbe.', 'No contract.')}</p>}
           </section>
 
@@ -235,7 +240,7 @@ export default function ProjectDetailModern({
                   <li key={r.id} className="pm-li"><span className="pm-li-pika" data-paid={r.paid ? 'true' : 'false'} aria-hidden />{r.number || r.title}<span className="pm-li-a">{money(r.amount)}</span></li>
                 ))}
               </ul>
-              {racuniSort.length > NAJVEC && onOpenZapis && <button type="button" className="pm-vec" onClick={onOpenZapis}>{L('Prikaži vse', 'Show all')} ({racuniSort.length}) →</button>}
+              {racuniSort.length > NAJVEC && onOpenZapis && <button type="button" className="pm-vec" onClick={onOpenZapis}>{L('Prikaži vse', 'Show all')} ({racuniSort.length}) <Puscica /></button>}
             </>) : <p className="pm-muted">{L('Še ni računov.', 'No invoices yet.')}</p>}
           </section>
 
@@ -248,7 +253,7 @@ export default function ProjectDetailModern({
                   <li key={s.id} className="pm-li"><span className="pm-li-n">{s.title}</span><span className="pm-li-a">{money(s.amount)}</span></li>
                 ))}
               </ul>
-              {strosekSort.length > NAJVEC && onOpenZapis && <button type="button" className="pm-vec" onClick={onOpenZapis}>{L('Prikaži vse', 'Show all')} ({strosekSort.length}) →</button>}
+              {strosekSort.length > NAJVEC && onOpenZapis && <button type="button" className="pm-vec" onClick={onOpenZapis}>{L('Prikaži vse', 'Show all')} ({strosekSort.length}) <Puscica /></button>}
             </>) : <p className="pm-muted">{L('Ni stroškov.', 'No expenses.')}</p>}
           </section>
 
@@ -287,7 +292,7 @@ export default function ProjectDetailModern({
               ))}
               {!imaBrief && <p className="pm-muted">{L('Brief še ni izpolnjen.', 'The brief is not filled in yet.')}</p>}
             </div>
-            {real && <Link href={`${base}/kalkulator/projekti`} className="pm-modal-edit">{L('Uredi v projektih', 'Edit in projects')} →</Link>}
+            {real && <Link href={`${base}/kalkulator/projekti`} className="pm-modal-edit">{L('Uredi v projektih', 'Edit in projects')} <Puscica /></Link>}
           </div>
         </div>
       )}
@@ -409,6 +414,7 @@ export default function ProjectDetailModern({
         .pm-linki { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
         .pm-linki a { display:block; padding:.4rem .5rem; border-radius:8px; text-decoration:none; color:var(--pm-acc); font-size:.85rem; font-weight:500; }
         .pm-linki a:hover { background:var(--paper,#F5F2EA); }
+        .pm-arr { display:inline-block; margin-left:.3rem; vertical-align:-1px; flex:none; }
       ` }} />
     </div>
   );
