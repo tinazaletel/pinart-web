@@ -2023,15 +2023,20 @@ export default function TaskManagerWorkspace() {
         .tm-podrocje-zadetki button:hover{background:var(--ink);color:var(--paper)}
         .tm-podrocje-nov{border-style:dashed !important}
 
+        @media (max-width:1100px) and (min-width:701px){
+          .tm-deska{grid-template-columns:repeat(2,minmax(0,1fr))}
+        }
         @media (max-width:860px){
           .tm-glava,.tm-glava-uvod{align-items:flex-start}
           .tm-glava-uvod{flex-direction:column;width:100%;gap:.8rem}
           .tm-uporabnik{width:100%}
           .tm-uporabnik select{flex:1;min-width:0}
-          .tm-deska{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:82vw;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.6rem}
-          .tm-stolpec{scroll-snap-align:start}
           .tm-plan-akcije{margin-left:0;width:100%}
           .tm-matrika tbody td,.tm-matrika-projekt-glava,.tm-matrika tbody th.tm-matrika-projekt{min-width:9rem}
+        }
+        @media (max-width:700px){
+          .tm-deska{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:min(82vw,22rem);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.6rem}
+          .tm-stolpec{scroll-snap-align:start}
         }
         @media (max-width:600px){
           .tm{padding:.75rem .75rem 4rem}
@@ -2047,6 +2052,7 @@ export default function TaskManagerWorkspace() {
           .tm-orodje-ikona{width:2.75rem}
           .tm-nova,.tm-seed-gumb-ai{grid-column:1/-1;width:100%;justify-content:center}
           .tm-seed-sporocilo,.tm-demo-namig{grid-column:1/-1}
+          .tm-x,.tm-kartica-x,.tm-cas-gumb,.tm-podopravilo-krog,.tm-podopravilo-dodeli-gumb,.tm-podopravilo-brisi,.tm-podrocje-plus{min-width:2.75rem;min-height:2.75rem}
         }
       `}</style>
     </div>
