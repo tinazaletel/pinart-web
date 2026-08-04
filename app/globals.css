@@ -205,6 +205,19 @@ div.is-changing img {
 .logoloop__link { display: inline-flex; align-items: center; text-decoration: none; border-radius: 4px; transition: opacity 0.2s ease; }
 .logoloop__link:hover { opacity: 0.8; }
 .logoloop__link:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+/* Enoten VIJOLA fokus na vseh form kontrolah — prej so nekateri inputi izven
+   .shell dobili privzeti MODRI obroc. box-shadow ne vpliva na postavitev in sledi
+   obstojecemu border-radius. --purple je definiran na :root prek modulov; literal
+   fallback poskrbi za strani brez njih. (Kvadrat->underline za line-inpute je locen,
+   per-komponentni popravek.) */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[contenteditable="true"]:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: 0 0 0 2.5px color-mix(in oklch, var(--purple, oklch(66% 0.2 297)) 42%, transparent);
+}
 .logoloop--fade::before,
 .logoloop--fade::after {
   content: ''; position: absolute; top: 0; bottom: 0;
