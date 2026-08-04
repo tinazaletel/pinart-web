@@ -8,6 +8,7 @@ import { Plus, FolderOpen, TextB, TextItalic, ListBullets, LinkSimple, Tray, Pap
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
+import ProjectDetailModern from '@/components/ProjectDetailModern';
 import SwapText from '@/components/SwapText';
 import { loadFlowData, loadProjectLinks, saveOfferAmount, saveOfferStatus, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
@@ -350,6 +351,9 @@ const pwStyles = `
 .pw-pogled-preklop{display:inline-flex;align-items:center;height:2.75rem;box-sizing:border-box;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:999px;padding:.25rem;gap:.15rem;margin:0 0 1rem;max-width:100%;overflow-x:auto}
 .pw-pogled-preklop button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem .9rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
 .pw-pogled-preklop button.on{background:var(--ink);color:var(--paper)}
+.pw-detajl-preklop{display:inline-flex;align-items:center;box-sizing:border-box;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:999px;padding:.25rem;gap:.15rem;margin:.2rem 0 1rem}
+.pw-detajl-preklop button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem .9rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
+.pw-detajl-preklop button.on{background:var(--ink);color:var(--paper)}
 @media (max-width:640px){
 .pw-pipeline-stolpec{flex-basis:78vw;width:78vw}
 }
@@ -567,6 +571,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   /* PIPELINE POSLOV — pogled Seznam|Pipeline: ce ga krmili starš (ArhivWorkspace,
      pilula ob zavihkih), uporabi to; sicer lastno stanje. */
   const [notranjiPogled, setNotranjiPogled] = useState<'seznam' | 'pipeline'>('seznam');
+  const [pogledDetajl, setPogledDetajl] = useState<'tabelni' | 'moderni'>('tabelni');
   const pogled = pogledZunaj ?? notranjiPogled;
   const setPogled = (v: 'seznam' | 'pipeline') => { if (onPogled) onPogled(v); else setNotranjiPogled(v); };
   /* sodelavci — se uporabljajo za prikaz "Dodeljeni" na vozliscu projekta (glej
@@ -895,6 +900,13 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             ? <select className="pw-status-select" aria-label={L('Spremeni status projekta', 'Change project status')} value={selected.real.status} onChange={event => naStatusProjekt(selected.real!, event.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
             : <select className="pw-status-select" aria-label={L('Spremeni status', 'Change status')} value={selected.offer.status} onChange={event => naStatusOffer(selected.offer.id, event.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
         </span></header>
+        <div className="pw-detajl-preklop" role="tablist" aria-label={L('Pogled projekta', 'Project view')}>
+          <button type="button" role="tab" aria-selected={pogledDetajl === 'tabelni'} className={pogledDetajl === 'tabelni' ? 'on' : ''} onClick={() => setPogledDetajl('tabelni')}>{L('Zapis', 'Record')}</button>
+          <button type="button" role="tab" aria-selected={pogledDetajl === 'moderni'} className={pogledDetajl === 'moderni' ? 'on' : ''} onClick={() => setPogledDetajl('moderni')}>{L('Delovni', 'Work')}</button>
+        </div>
+        {pogledDetajl === 'moderni' ? (
+          <ProjectDetailModern data={selected} sodelavci={sodelavci} jeEn={jeEn} base={base} money={money} />
+        ) : (<>
         <div className={styles.projectMoney}><label><small>{L('Dogovorjena vrednost', 'Agreed value')}</small><span><input type="number" min="0" step="0.01" value={selected.agreed || ''} onChange={event => saveAmount(selected.offer.id, Number(event.target.value))} /> €</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></label><span><small>{L('Zaračunano', 'Billed')}</small><strong>{money(selected.billed)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></span><span className={selected.unbilled > 0 ? styles.projectNeedsInvoice : ''}><small>{L('Še ni zaračunano', 'Not yet billed')}</small><strong>{selected.agreed ? money(selected.unbilled) : '—'}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="cost" /></b></span><span><small>{L('Ocenjeni rezultat', 'Estimated result')}</small><strong>{money(selected.profit)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></span></div>
         <div style={{ display: 'flex', gap: '.55rem', alignItems: 'stretch', flexWrap: 'wrap', margin: '.55rem 0 0' }}>
         {selected.real && (
@@ -1053,6 +1065,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             <b className="pw-znacka pw-znacka-live">{L('Odpri', 'Open')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></b>
           </Link>
         </div>
+        </>)}
       </section>
     )}
 
