@@ -7,6 +7,7 @@
    pravo zaledje pride post-launch. Uporablja app CSS tokene (DM Serif/Archivo,
    --accent/--paper/--ink/--line), da samodejno sledi CGP. */
 
+import { useState } from 'react';
 import Link from 'next/link';
 import type { FlowOffer, FlowInvoice, FlowContract, FlowExpense } from '@/lib/pinartFlowStore';
 import type { Projekt } from '@/lib/projekti';
@@ -30,17 +31,23 @@ export type ModernProject = {
 const zacetnice = (ime: string) => ime.split(/\s+/).filter(Boolean).slice(0, 2).map(d => d[0]?.toUpperCase() || '').join('') || '?';
 
 export default function ProjectDetailModern({
-  data, sodelavci, jeEn, base, money,
+  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember,
 }: {
   data: ModernProject;
   sodelavci: Sodelavec[];
   jeEn: boolean;
   base: string;
   money: (n: number) => string;
+  canEditTeam?: boolean;
+  onToggleMember?: (sodelavecId: string) => void;
 }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const { offer, real } = data;
-  const ekipa = sodelavci.filter(s => s.aktiven);
+  const [dodajOdprt, setDodajOdprt] = useState(false);
+  const dodeljeniIds = real?.dodeljeni || [];
+  const ekipa = dodeljeniIds.map(id => sodelavci.find(s => s.id === id)).filter(Boolean) as Sodelavec[];
+  const naVoljo = sodelavci.filter(s => s.aktiven && !dodeljeniIds.includes(s.id));
+  const urejaEkipo = canEditTeam && !!onToggleMember;
   const briefPolja: Array<[string, string | undefined]> = real ? [
     [L('Cilj / želje', 'Goal / wishes'), real.zelje],
     [L('Stranka', 'Client'), real.opisStranke],
@@ -61,9 +68,26 @@ export default function ProjectDetailModern({
           <span key={s.id} className="pm-member">
             <span className="pm-av">{zacetnice(s.ime)}</span>
             <span className="pm-mtxt"><b>{s.ime}</b><small>{vlogaOznaka(s.vloga)}</small></span>
+            {urejaEkipo && <button type="button" className="pm-mx" onClick={() => onToggleMember!(s.id)} aria-label={`${L('Odstrani', 'Remove')} ${s.ime}`}>×</button>}
           </span>
-        )) : <span className="pm-empty">{L('Še ni sodelavcev.', 'No collaborators yet.')}</span>}
-        <Link href={`${base}/kalkulator/ekipa`} className="pm-addmember">+ {L('Sodelavci', 'Collaborators')}</Link>
+        )) : <span className="pm-empty">{L('Še ni sodelavcev na projektu.', 'No collaborators on this project yet.')}</span>}
+        {urejaEkipo ? (
+          <span className="pm-add-wrap">
+            <button type="button" className="pm-addmember" aria-expanded={dodajOdprt} onClick={() => setDodajOdprt(o => !o)}>+ {L('Dodaj', 'Add')}</button>
+            {dodajOdprt && (
+              <div className="pm-add-menu">
+                {naVoljo.length ? naVoljo.map(s => (
+                  <button key={s.id} type="button" className="pm-add-opt" onClick={() => { onToggleMember!(s.id); setDodajOdprt(false); }}>
+                    <span className="pm-av pm-av-sm">{zacetnice(s.ime)}</span><b>{s.ime}</b><small>{vlogaOznaka(s.vloga)}</small>
+                  </button>
+                )) : <p className="pm-add-empty">{L('Vsi sodelavci so že dodani.', 'All collaborators already added.')}</p>}
+                <Link href={`${base}/kalkulator/ekipa`} className="pm-add-manage">{L('Uredi ekipo', 'Manage team')} →</Link>
+              </div>
+            )}
+          </span>
+        ) : (
+          <Link href={`${base}/kalkulator/ekipa`} className="pm-addmember">+ {L('Sodelavci', 'Collaborators')}</Link>
+        )}
         <span className="pm-soon">{L('Deljenje projekta + AI agenti = kmalu', 'Project sharing + AI agents = soon')}</span>
       </div>
 
@@ -123,6 +147,17 @@ export default function ProjectDetailModern({
         .pm-mtxt small { font-size:.66rem; color:var(--muted,#9c968a); }
         .pm-addmember { text-decoration:none; display:inline-flex; align-items:center; gap:.3rem; border:1px dashed var(--pm-line); color:var(--muted,#6a6559); border-radius:999px; padding:.42rem .7rem; font-size:.78rem; font-weight:600; }
         .pm-addmember:hover { border-color:var(--pm-acc); color:var(--pm-acc); }
+        .pm-mx { border:0; background:none; cursor:pointer; color:var(--muted,#9c968a); font-size:1rem; line-height:1; padding:0 .1rem 0 .2rem; border-radius:50%; }
+        .pm-mx:hover { color:oklch(52% .18 25); }
+        .pm-add-wrap { position:relative; display:inline-flex; }
+        .pm-add-menu { position:absolute; top:calc(100% + .4rem); left:0; z-index:20; min-width:14rem; background:#fff; border:1px solid var(--pm-line); border-radius:12px; padding:.35rem; box-shadow:0 12px 30px -12px rgba(17,17,17,.25); display:flex; flex-direction:column; gap:.1rem; }
+        .pm-add-opt { display:flex; align-items:center; gap:.5rem; width:100%; text-align:left; border:0; background:none; cursor:pointer; padding:.4rem .5rem; border-radius:8px; color:var(--ink,#111); }
+        .pm-add-opt:hover { background:var(--paper,#F5F2EA); }
+        .pm-add-opt b { font-size:.82rem; font-weight:600; }
+        .pm-add-opt small { margin-left:auto; font-size:.68rem; color:var(--muted,#9c968a); }
+        .pm-av-sm { width:1.4rem; height:1.4rem; font-size:.6rem; }
+        .pm-add-empty { margin:0; padding:.5rem; font-size:.8rem; color:var(--muted,#6a6559); }
+        .pm-add-manage { display:block; text-decoration:none; margin-top:.15rem; padding:.4rem .5rem; font-size:.74rem; font-weight:600; color:var(--pm-acc); border-top:1px solid var(--pm-line); }
         .pm-soon { font-size:.7rem; color:var(--muted,#9c968a); font-style:italic; margin-left:auto; }
         .pm-empty { font-size:.85rem; color:var(--muted,#9c968a); }
         .pm-grid { display:grid; grid-template-columns:1fr; gap:1.1rem; }

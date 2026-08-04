@@ -530,6 +530,15 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     setRealProjekti(prev => prev.map(p => (p.id === posodobljen.id ? posodobljen : p)));
     if (!samoOgled) shraniProjekt(posodobljen);  /* v demu samo lokalno (ne pisemo v pravo bazo) */
   };
+  /* dodeljeni sodelavci na projektu (moderni pogled: dodaj/odvzemi) — enak vzorec
+     kot status; SAMO pravi projekt (real) ima polje dodeljeni za shranjevanje */
+  const preklopiDodeljen = (real: Projekt, sodelavecId: string) => {
+    const bili = real.dodeljeni || [];
+    const dodeljeni = bili.includes(sodelavecId) ? bili.filter(id => id !== sodelavecId) : [...bili, sodelavecId];
+    const posodobljen: Projekt = { ...real, dodeljeni };
+    setRealProjekti(prev => prev.map(p => (p.id === posodobljen.id ? posodobljen : p)));
+    if (!samoOgled) shraniProjekt(posodobljen);
+  };
   /* projekt izpeljan iz ponudbe (ni pravega zapisa) -> status je status ponudbe */
   const naStatusOffer = (id: string, v: FlowOfferStatus) => {
     setOffers(prev => prev.map(o => (o.id === id ? { ...o, status: v } : o)));
@@ -905,7 +914,15 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
           <button type="button" role="tab" aria-selected={pogledDetajl === 'moderni'} className={pogledDetajl === 'moderni' ? 'on' : ''} onClick={() => setPogledDetajl('moderni')}>{L('Delovni', 'Work')}</button>
         </div>
         {pogledDetajl === 'moderni' ? (
-          <ProjectDetailModern data={selected} sodelavci={sodelavci} jeEn={jeEn} base={base} money={money} />
+          <ProjectDetailModern
+            data={selected}
+            sodelavci={sodelavci}
+            jeEn={jeEn}
+            base={base}
+            money={money}
+            canEditTeam={!!selected.real && !samoOgled}
+            onToggleMember={selected.real ? (id: string) => preklopiDodeljen(selected.real!, id) : undefined}
+          />
         ) : (<>
         <div className={styles.projectMoney}><label><small>{L('Dogovorjena vrednost', 'Agreed value')}</small><span><input type="number" min="0" step="0.01" value={selected.agreed || ''} onChange={event => saveAmount(selected.offer.id, Number(event.target.value))} /> €</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></label><span><small>{L('Zaračunano', 'Billed')}</small><strong>{money(selected.billed)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></span><span className={selected.unbilled > 0 ? styles.projectNeedsInvoice : ''}><small>{L('Še ni zaračunano', 'Not yet billed')}</small><strong>{selected.agreed ? money(selected.unbilled) : '—'}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="cost" /></b></span><span><small>{L('Ocenjeni rezultat', 'Estimated result')}</small><strong>{money(selected.profit)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></span></div>
         <div style={{ display: 'flex', gap: '.55rem', alignItems: 'stretch', flexWrap: 'wrap', margin: '.55rem 0 0' }}>
