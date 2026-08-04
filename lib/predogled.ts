@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import type { FlowClient, FlowContract, FlowData, FlowExpense, FlowInvoice, FlowOffer } from './pinartFlowStore';
+import type { Projekt } from './projekti';
+import type { Sodelavec } from './naloge';
 
 /**
  * Predogled stanja: "Prazno" / "Moji" / "Demo".
@@ -265,6 +267,83 @@ export function demoPodatki(): FlowData {
     clients,
   };
 }
+
+/* ── Demo sodelavci (ekipa) — samo za predogled »polno poslovanje«. Njihovi id-ji
+   se ujemajo z Projekt.dodeljeni v demoRealZaOffer spodaj, da se v Delovnem pogledu
+   projekta pokaze prava ekipa z imeni. ── */
+export function demoSodelavci(): Sodelavec[] {
+  return [
+    { id: 'demo-sod-tina', ime: 'Tina Zaletel', email: 'tina@pinart.si', vloga: 'admin', aktiven: true },
+    { id: 'demo-sod-luka', ime: 'Luka Beg', email: 'luka@pinart.si', vloga: 'vodja', aktiven: true },
+    { id: 'demo-sod-eva', ime: 'Eva Kralj', email: 'eva@pinart.si', vloga: 'clan', aktiven: true },
+    { id: 'demo-sod-marko', ime: 'Marko Zupan', email: 'marko@freelance.si', vloga: 'clan', aktiven: true },
+  ];
+}
+
+/* ── Demo »real« Projekt (brief/cilji/ekipa) za izbrane demo ponudbe. Vrne bogat
+   zapis za flagship projekt Rokus Klett (offer 'demo-portal'), delna zapisa za se
+   dve ponudbi (da se v predogledu vidi RAZLICNA polnost), in undefined za ostale
+   (prazen brief). Pripne se prek gradiVnos(offer, real) samo v predogledu. ── */
+export function demoRealZaOffer(offerId: string): Projekt | undefined {
+  const D = DEMO_REAL[offerId];
+  return D;
+}
+
+const DEMO_REAL: Record<string, Projekt> = {
+  'demo-portal': {
+    id: 'demo-portal',
+    stevilka: '2022-100',
+    naslov: 'Prenova portala',
+    strankaIme: 'Rokus Klett',
+    zelje: 'Prenoviti zastarel založniški portal v sodoben, hiter in dostopen sistem, ki učiteljem in staršem olajša dostop do e-gradiv.',
+    opisStranke: 'Uveljavljena slovenska založba učbenikov in izobraževalnih gradiv, del skupine Klett.',
+    panoga: 'Založništvo in izobraževanje',
+    ciljnaSkupina: 'Učitelji, šole in starši osnovnošolcev; interni uredniki založbe.',
+    dizajnZelje: 'Čist, zaupanja vreden videz z jasno tipografijo; ohraniti prepoznavno modro znamke, dodati zračnost in boljšo hierarhijo.',
+    voice: 'Strokoven, a topel in dostopen; brez žargona, spodbuden do učiteljev.',
+    konkurenca: 'DZS, Mladinska knjiga, Založba Rokus (obstoječi portali) — cilj je hitrejši in preglednejši od vseh.',
+    cilji: [
+      { id: 'demo-c-1', besedilo: 'Skrajšati čas do e-gradiva', metrika: 'kliki do vsebine', tarca: '≤ 3 kliki' },
+      { id: 'demo-c-2', besedilo: 'Dvigniti hitrost nalaganja', metrika: 'LCP', tarca: '< 2 s' },
+      { id: 'demo-c-3', besedilo: 'Dostopnost po WCAG', metrika: 'raven', tarca: 'AA' },
+      { id: 'demo-c-4', besedilo: 'Povečati zadovoljstvo učiteljev', metrika: 'ocena ankete', tarca: '≥ 4,5 / 5' },
+    ],
+    dodatnaVprasanja: [
+      { id: 'demo-v-1', vprasanje: 'Ima stranka že CGP?', odgovor: 'Da, obstaja knjiga znamke — barvo in logotip ohranimo, tipografijo osvežimo.' },
+      { id: 'demo-v-2', vprasanje: 'Kdo vzdržuje vsebino?', odgovor: 'Interni uredniki založbe prek CMS; potrebujejo enostaven vnos.' },
+    ],
+    zacetek: '2022-01-10',
+    status: 'aktiven',
+    faza: 'delo',
+    created: new Date('2022-01-08T00:00:00').toISOString(),
+    dodeljeni: ['demo-sod-tina', 'demo-sod-luka', 'demo-sod-eva'],
+  },
+  'demo-o-1': {
+    id: 'demo-o-1',
+    naslov: NASLOVI[1 % NASLOVI.length],
+    strankaIme: STRANKE[1 % STRANKE.length],
+    zelje: 'Osvežiti vizualno podobo in pripraviti ključne tiskovine za jesensko kampanjo.',
+    ciljnaSkupina: 'Mladi odrasli 20–35 let, urbani, digitalno aktivni.',
+    cilji: [
+      { id: 'demo-c1-1', besedilo: 'Poenotiti vizualni jezik', tarca: 'vse tiskovine' },
+      { id: 'demo-c1-2', besedilo: 'Pripraviti za tisk pravočasno', metrika: 'rok', tarca: '15. 9.' },
+    ],
+    status: 'aktiven',
+    faza: 'delo',
+    created: new Date('2026-02-01T00:00:00').toISOString(),
+    dodeljeni: ['demo-sod-tina', 'demo-sod-marko'],
+  },
+  'demo-o-3': {
+    id: 'demo-o-3',
+    naslov: NASLOVI[3 % NASLOVI.length],
+    strankaIme: STRANKE[3 % STRANKE.length],
+    zelje: 'Manjši projekt — samo prenova logotipa in osnovne barvne palete.',
+    status: 'pavza',
+    faza: 'ponudba',
+    created: new Date('2026-03-12T00:00:00').toISOString(),
+    dodeljeni: ['demo-sod-tina'],
+  },
+};
 
 /**
  * Kaj naj delovni prostor prikaže glede na predogled.

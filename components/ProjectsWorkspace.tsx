@@ -11,7 +11,7 @@ import MetricIcon from '@/components/MetricIcon';
 import ProjectDetailModern from '@/components/ProjectDetailModern';
 import SwapText from '@/components/SwapText';
 import { loadFlowData, loadProjectLinks, saveOfferAmount, saveOfferStatus, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
-import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
+import { podatkiZaPredogled, usePredogled, demoSodelavci, demoRealZaOffer } from '@/lib/predogled';
 import { preberiPostoProjekta, dodajPosto, type PostaVnos } from '@/lib/postaDnevnik';
 import { pullProjectMail, pushProjectMail, saveDraft, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent } from '@/lib/pinartMailCloud';
 import { posljiMail } from '@/lib/posta';
@@ -426,7 +426,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const setDatumDo = (v: string) => { if (onDatumDo) onDatumDo(v); else setNotranjiDatumDo(v); };
   /* ob nalaganju/menjavi predogleda ostane seznam (tabela) privzeti pogled —
      detajl se odpre le na eksplicit klik (selectProject spodaj) */
-  useEffect(() => { const data = podatkiZaPredogled(nacin, loadFlowData()); const loaded = [...data.offers].sort((a, b) => b.date.localeCompare(a.date)); setOffers(loaded); setSelectedId(''); setInvoices(data.invoices); setExpenses(data.expenses); setContracts(data.contracts); setClients(data.clients); setAmounts(Object.fromEntries(data.offers.map(offer => [offer.id, offer.agreedAmount]))); setRealProjekti(nacin === 'mine' ? preberiProjekti() : []); setSodelavci(nacin === 'mine' ? preberiSodelavci() : []); }, [nacin]);
+  useEffect(() => { const data = podatkiZaPredogled(nacin, loadFlowData()); const loaded = [...data.offers].sort((a, b) => b.date.localeCompare(a.date)); setOffers(loaded); setSelectedId(''); setInvoices(data.invoices); setExpenses(data.expenses); setContracts(data.contracts); setClients(data.clients); setAmounts(Object.fromEntries(data.offers.map(offer => [offer.id, offer.agreedAmount]))); setRealProjekti(nacin === 'mine' ? preberiProjekti() : []); setSodelavci(nacin === 'mine' ? preberiSodelavci() : nacin === 'demo' ? demoSodelavci() : []); }, [nacin]);
   /* gradnja ene vrstice tabele/detajla — enaka za projekte, izpeljane iz ponudbe,
      IN za prave projekte (real, glej lib/projekti); slednji dobijo sintetično
      FlowOffer samo za prikaz (title/client/date/status/scope), da lahko
@@ -441,7 +441,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     const agreed = amounts[offer.id] || 0;
     return { offer, real, invoices: projectInvoices, expenses: projectExpenses, contracts: projectContracts, billed, paid, costs, agreed, unbilled: agreed ? agreed - billed : 0, profit: paid - costs };
   };
-  const offerProjects = useMemo(() => offers.map(offer => gradiVnos(offer)), [offers, invoices, expenses, contracts, amounts]);
+  const offerProjects = useMemo(() => offers.map(offer => gradiVnos(offer, samoOgled ? demoRealZaOffer(offer.id) : undefined)), [offers, invoices, expenses, contracts, amounts, samoOgled]);
   /* PRAVI projekti — zdruzeni s tistimi, izpeljanimi iz ponudb, BREZ podvajanja:
      ce ze obstaja ponudba z istim naslovom+stranko, ta ponudba ze predstavlja
      isti projekt v seznamu, zato se pravi zapis takrat ne podvoji. */
@@ -688,12 +688,18 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       { oznaka: 'Drive · Gradiva', url: 'https://drive.google.com' },
     ];
     setLinks(samoOgled ? demo : (selectedId ? loadProjectLinks(selectedId) : []));
-    /* vzorčna pošta za predogled — deterministična, datumi nekaj dni nazaj */
+    /* vzorčna pošta za predogled — deterministična, skladna z izbrano stranko,
+       mešanica poslano/prejeto, da Komunikacija izgleda polna in resnična */
     const preDnevi = (n: number) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString(); };
+    const stranka = selected?.offer.client || 'Naročnik';
+    const dom = (selected?.offer.client || 'narocnik').toLowerCase().replace(/[^a-z0-9]/g, '') || 'narocnik';
+    const naslovProj = selected?.offer.title || 'Projekt';
     const demoPosta: PostaVnos[] = [
-      { id: 'demo-posta-1', projectId: selectedId, smer: 'poslano', prejemniki: ['info@volkbabica.si'], zadeva: 'Ponudba — Volk & Babica d.o.o.', datum: preDnevi(2) },
-      { id: 'demo-posta-2', projectId: selectedId, smer: 'poslano', prejemniki: ['ana@volkbabica.si', 'racuni@volkbabica.si'], zadeva: 'Pogodba o sodelovanju', datum: preDnevi(6) },
-      { id: 'demo-posta-3', projectId: selectedId, smer: 'poslano', prejemniki: ['info@volkbabica.si'], zadeva: 'Račun R-2026-014', datum: preDnevi(13) },
+      { id: 'demo-posta-1', projectId: selectedId, smer: 'prejeto', prejemniki: [`info@${dom}.si`], zadeva: `Re: ${naslovProj} — potrditev obsega`, datum: preDnevi(1), telo: `Pozdravljeni,\n\nhvala za predlog. Obseg nam ustreza, lahko nadaljujete. Veselimo se sodelovanja.\n\nLep pozdrav,\n${stranka}` },
+      { id: 'demo-posta-2', projectId: selectedId, smer: 'poslano', prejemniki: [`info@${dom}.si`], zadeva: `${naslovProj} — osnutek za pregled`, datum: preDnevi(3), telo: 'Pozdravljeni,\n\nv prilogi je prvi osnutek. Prosim za komentarje do konca tedna.\n\nLep pozdrav' },
+      { id: 'demo-posta-3', projectId: selectedId, smer: 'poslano', prejemniki: [`ana@${dom}.si`, `racuni@${dom}.si`], zadeva: 'Pogodba o sodelovanju', datum: preDnevi(9), telo: 'Pozdravljeni,\n\nv prilogi pošiljam pogodbo v pregled in podpis.\n\nLep pozdrav' },
+      { id: 'demo-posta-4', projectId: selectedId, smer: 'prejeto', prejemniki: [`ana@${dom}.si`], zadeva: 'Gradiva in dostopi', datum: preDnevi(11), telo: 'Pozdravljeni,\n\npošiljam dostope do mape z gradivi in obstoječimi datotekami.\n\nLep pozdrav' },
+      { id: 'demo-posta-5', projectId: selectedId, smer: 'poslano', prejemniki: [`info@${dom}.si`], zadeva: 'Račun R-2026-014', datum: preDnevi(16), telo: 'Pozdravljeni,\n\nv prilogi je račun za opravljeno delo tega meseca.\n\nLep pozdrav' },
     ];
     setPosta(samoOgled ? demoPosta : (selectedId ? preberiPostoProjekta(selectedId) : []));
     /* oblak: potegni projektno pošto in združi z lokalno (dedup po logičnem
@@ -922,6 +928,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             money={money}
             canEditTeam={!!selected.real && !samoOgled}
             onToggleMember={selected.real ? (id: string) => preklopiDodeljen(selected.real!, id) : undefined}
+            posta={posta}
+            onOpenZapis={() => setPogledDetajl('tabelni')}
+            ekipaStatus={samoOgled ? { 'demo-sod-luka': 'dela', 'demo-sod-eva': 'review' } : undefined}
+            agenti={samoOgled && selected.real ? [{ id: 'agent-copy', ime: jeEn ? 'Copy agent' : 'Copy agent', stanje: 'review' }, { id: 'agent-research', ime: jeEn ? 'Research agent' : 'Razisk. agent', stanje: 'koncal' }] : undefined}
           />
         ) : (<>
         <div className={styles.projectMoney}><label><small>{L('Dogovorjena vrednost', 'Agreed value')}</small><span><input type="number" min="0" step="0.01" value={selected.agreed || ''} onChange={event => saveAmount(selected.offer.id, Number(event.target.value))} /> €</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></label><span><small>{L('Zaračunano', 'Billed')}</small><strong>{money(selected.billed)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></span><span className={selected.unbilled > 0 ? styles.projectNeedsInvoice : ''}><small>{L('Še ni zaračunano', 'Not yet billed')}</small><strong>{selected.agreed ? money(selected.unbilled) : '—'}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="cost" /></b></span><span><small>{L('Ocenjeni rezultat', 'Estimated result')}</small><strong>{money(selected.profit)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></span></div>
