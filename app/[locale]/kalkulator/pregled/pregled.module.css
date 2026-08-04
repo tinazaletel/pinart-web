@@ -998,7 +998,9 @@
 .projectsToolbar .projectFilterActive { background: var(--ink); color: var(--paper); }
 .projectsToolbar > a { padding: .82rem 1rem; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: .61rem; font-weight: 800; text-decoration: none; }
 .projectsLayout { display: grid; grid-template-columns: minmax(21rem, .65fr) minmax(34rem, 1.35fr); gap: 1rem; align-items: start; }
-.projectIndex, .projectStory, .orphanDocuments { border: 1px solid var(--line); border-radius: 1.4rem; background: oklch(98% .008 87 / .92); }
+.projectIndex, .orphanDocuments { border: 1px solid var(--line); border-radius: 1.4rem; background: oklch(98% .008 87 / .92); }
+/* projekt-detajl = ploscat/moderni (brez bez skatle); vsebino strukturirajo notranje kartice */
+.projectStory { border: 0; border-radius: 0; background: transparent; }
 .projectIndex { overflow: hidden; }
 .projectIndex > header { display: flex; align-items: center; justify-content: space-between; padding: 1rem; }
 .projectIndex > header strong { font: 500 1.5rem var(--font-sans), Georgia, serif; }
