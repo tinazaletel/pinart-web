@@ -328,6 +328,10 @@ const pwStyles = `
 .pw-mail-orodja .pw-mail-nazaj:hover{background:color-mix(in oklch,var(--ink) 8%,transparent);color:var(--ink)}
 /* back levo, ikone desno */
 .pw-mail-orodja .pw-mail-nazaj + button,.pw-mail-orodja .pw-mail-nazaj + a{margin-left:auto}
+/* hover tooltip nad ikonami (iz aria-label) */
+.pw-mail-orodja [aria-label]{position:relative}
+.pw-mail-orodja [aria-label]:hover::after{content:attr(aria-label);position:absolute;top:calc(100% + .4rem);left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--ink);color:var(--paper);font:600 .62rem var(--font-sans),sans-serif;padding:.3rem .55rem;border-radius:.45rem;z-index:40;pointer-events:none;box-shadow:0 6px 16px rgba(17,17,17,.2)}
+.pw-mail-orodja [aria-label]:hover::before{content:'';position:absolute;top:calc(100% + .15rem);left:50%;transform:translateX(-50%);border:.28rem solid transparent;border-bottom-color:var(--ink);z-index:40;pointer-events:none}
 /* akcije pod besedilom maila (Odgovori/Posreduj/Deli/Klepet) */
 .pw-mail-akcije{display:flex;flex-wrap:wrap;gap:.5rem;margin:.9rem 0 0}
 .pw-mail-akcije>button{display:inline-flex;align-items:center;gap:.4rem;height:2.4rem;box-sizing:border-box;padding:0 1.1rem;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);border-radius:999px;background:#fff;color:var(--ink);font:650 .78rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s}
@@ -928,6 +932,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               <div className="pw-mail-akcije">
                 <button type="button" onClick={() => { const m = beriMail; odpriPisanje(); setPisiZa(m?.prejemniki[0] || ''); setPisiZadeva(`Re: ${(m?.zadeva || '').replace(/^Re:\s*/i, '')}`); setBeriMail(null); }}><ArrowBendUpLeft size={15} weight="bold" /> {L('Odgovori', 'Reply')}</button>
                 <button type="button" onClick={() => { const m = beriMail; odpriPisanje(); setPisiZa(''); setPisiZadeva(`Fwd: ${(m?.zadeva || '').replace(/^Fwd:\s*/i, '')}`); setBeriMail(null); }}><ArrowBendUpRight size={15} weight="bold" /> {L('Posreduj', 'Forward')}</button>
+                <button type="button" onClick={() => { const m = beriMail; odpriPisanje(); setPisiZa(''); setPisiZadeva(`${m?.zadeva || ''}`); setBeriMail(null); }}><ShareNetwork size={15} weight="bold" /> {L('Deli', 'Share')}</button>
+                <button type="button" title={L('Interni klepet o sporočilu — kmalu', 'Internal chat about this message — soon')} onClick={() => undefined}><ChatCircle size={15} weight="bold" /> {L('Klepet', 'Chat')}</button>
               </div>
             </>) : (() => {
               const q = postaIsk.trim().toLowerCase();
