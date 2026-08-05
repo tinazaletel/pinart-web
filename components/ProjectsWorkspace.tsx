@@ -244,6 +244,22 @@ const pwStyles = `
 /* PREDOGLED dokumenta (panel z desne) */
 .pw-det-panel{width:min(42rem,100vw);animation:pwVsiIn .5s cubic-bezier(.16,1,.3,1) both}
 .pw-det-panel h2{margin:.3rem 0 .1rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.05;color:var(--ink)}
+/* paneli = BELO ozadje (ne bez) */
+.pw-vsi-panel,.pw-det-panel{background:#fff !important}
+/* dejanski dokument pogodbe v panelu (PDF videz) */
+.pw-det-doktelo{margin-top:1.3rem;font-family:var(--font-sans),system-ui,sans-serif;color:var(--ink);font-size:.86rem;line-height:1.6}
+.pw-det-doktelo .kick{font-size:.6rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 45%,transparent);margin:0 0 .4rem}
+.pw-det-doktelo h1{font-family:var(--font-serif),Georgia,serif;font-weight:500;font-size:1.6rem;margin:0 0 .5rem;line-height:1.1}
+.pw-det-doktelo .meta{color:color-mix(in oklch,var(--ink) 55%,transparent);font-size:.75rem;margin:0 0 1.2rem}
+.pw-det-doktelo .parties{display:flex;flex-direction:column;gap:.15rem;margin:0 0 1.3rem;padding:.9rem 1rem;border:1px solid var(--line);border-radius:.7rem;font-size:.82rem;background:oklch(98% .006 87)}
+.pw-det-doktelo .parties p{margin:0}
+.pw-det-doktelo .pog-clen{margin:0 0 1.05rem}
+.pw-det-doktelo .pog-clen h2{font-size:.95rem;font-weight:700;margin:0 0 .3rem;font-family:var(--font-sans),system-ui,sans-serif}
+.pw-det-doktelo .pog-clen p{margin:0;color:color-mix(in oklch,var(--ink) 82%,transparent)}
+.pw-det-doktelo .sig{display:flex;gap:1.5rem;margin-top:2rem}
+.pw-det-doktelo .sig>div{flex:1;font-size:.78rem}
+.pw-det-doktelo .sig .lin{display:block;height:1px;background:var(--ink);margin:2rem 0 .4rem;opacity:.45}
+.pw-det-doktelo .sig span:first-child{display:block;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 45%,transparent);margin-bottom:.1rem}
 .pw-det-meta{display:flex;flex-wrap:wrap;gap:.4rem 1.4rem;margin:1rem 0;padding:.9rem 0;border-top:1px solid oklch(93% .006 82 / .55);border-bottom:1px solid oklch(93% .006 82 / .55)}
 .pw-det-meta span{display:flex;flex-direction:column;gap:.15rem}
 .pw-det-meta small{font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
@@ -1246,7 +1262,9 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 <h2 id="pw-det-naslov">{c.title}</h2>
                 <p className="pw-vsi-projekt">{selected.offer.title} · {selected.offer.client}</p>
                 <div className="pw-det-meta"><span><small>{L('Datum', 'Date')}</small><strong>{new Date(c.date).toLocaleDateString('sl-SI')}</strong></span><span><small>{L('Status', 'Status')}</small><strong>{c.status}</strong></span></div>
-                <p className="pw-det-opomba">{L('Celotno besedilo pogodbe odpri in uredi v razdelku Pogodbe.', 'Open and edit the full contract text in the Contracts section.')}</p>
+                {c.body
+                  ? <div className="pw-det-doktelo" dangerouslySetInnerHTML={{ __html: c.body }} />
+                  : <p className="pw-det-opomba">{L('Ta pogodba nima shranjenega besedila. Odpri in uredi jo v razdelku Pogodbe.', 'This contract has no stored text. Open and edit it in the Contracts section.')}</p>}
                 <div className="pw-det-akcije">
                   <button type="button" className="pw-det-poslji" onClick={() => posljiDokument(selected.offer.client, jeEn ? `Contract — ${c.title}` : `Pogodba — ${c.title}`, jeEn ? `Hello,\n\nplease find attached the contract “${c.title}”. Please review and sign.\n\nKind regards` : `Pozdravljeni,\n\nv prilogi vam pošiljam pogodbo »${c.title}«. Prosim za pregled in podpis.\n\nLep pozdrav`)}>{L('Pošlji naročniku', 'Send to client')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
                   <Link href={`${base}/kalkulator/pogodbe`} className="pw-det-uredi">{L('Odpri v Pogodbah', 'Open in Contracts')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link>
