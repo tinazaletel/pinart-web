@@ -23,6 +23,7 @@ export type PostaVnos = {
   osnutek?: boolean;       // neobvezno: je osnutek (Osnutki)
   izbrisano?: string;      // neobvezno: ISO cas izbrisa (Kos)
   zvezda?: boolean;        // neobvezno: oznaceno z zvezdico (pomembno)
+  oznake?: string[];       // neobvezno: labele/oznake na sporocilu
 };
 
 const KLJUC = 'pinart-posta-dnevnik';
@@ -63,4 +64,14 @@ export const dodajPosto = (
   };
   shraniVse([nov, ...preberiVse()]);
   return nov;
+};
+
+/* Premakne zapis na drug projekt (npr. napacno polinkan mail). */
+export const premakniPosto = (id: string, novProjectId: string): void => {
+  shraniVse(preberiVse().map(v => (v.id === id ? { ...v, projectId: novProjectId } : v)));
+};
+
+/* Nastavi oznake (labele) zapisa. */
+export const nastaviOznakePoste = (id: string, oznake: string[]): void => {
+  shraniVse(preberiVse().map(v => (v.id === id ? { ...v, oznake } : v)));
 };

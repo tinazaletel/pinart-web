@@ -12,7 +12,7 @@ import ProjectDetailModern from '@/components/ProjectDetailModern';
 import SwapText from '@/components/SwapText';
 import { loadFlowData, loadProjectLinks, saveOfferAmount, saveOfferStatus, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled, demoSodelavci, demoRealZaOffer } from '@/lib/predogled';
-import { preberiPostoProjekta, dodajPosto, type PostaVnos } from '@/lib/postaDnevnik';
+import { preberiPostoProjekta, dodajPosto, premakniPosto, nastaviOznakePoste, type PostaVnos } from '@/lib/postaDnevnik';
 import { pullProjectMail, pushProjectMail, saveDraft, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent } from '@/lib/pinartMailCloud';
 import { posljiMail } from '@/lib/posta';
 import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
@@ -304,7 +304,7 @@ const pwStyles = `
 /* 06 · POŠTA — dnevnik poslane pošte projekta (mehki violet/mint jezik kot ostale kartice) */
 .pw-posta{background:linear-gradient(135deg,oklch(97% .03 300),oklch(97% .03 165))}
 .pw-posta h3{margin:0;font:600 1.15rem var(--font-sans),system-ui,sans-serif}
-.pw-posta-seznam{position:relative;z-index:1;list-style:none;display:flex;flex-direction:column;gap:.4rem;margin:.75rem 0 0;padding:0;max-height:19rem;overflow-y:auto}
+.pw-posta-seznam{position:relative;z-index:1;list-style:none;display:flex;flex-direction:column;gap:.4rem;margin:.75rem 0 0;padding:0}
 .pw-posta-seznam li{position:relative;display:grid;grid-template-columns:auto 1fr;align-items:start;gap:.6rem;padding:.6rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:.7rem;background:#fff;cursor:pointer}
 .pw-posta-vsebina{display:grid;gap:.2rem;min-width:0}
 .pw-posta-check{width:1.2rem;height:1.2rem;margin-top:.15rem;flex:none;cursor:pointer;accent-color:var(--ink)}
@@ -328,14 +328,32 @@ const pwStyles = `
 .pw-posta-filter{font-size:.78rem !important}
 /* orodna vrstica nad besedilom maila (Premakni/Oznaka/V nalogo/AI/Natisni/★) */
 .pw-mail-orodja{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin:.75rem 0 .3rem}
-.pw-mail-orodja>button,.pw-mail-orodja>a{display:inline-grid;place-items:center;width:2.3rem;height:2.3rem;box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);border-radius:999px;background:#fff;color:color-mix(in oklch,var(--ink) 68%,transparent);text-decoration:none;cursor:pointer;transition:background .15s,color .15s}
-.pw-mail-orodja>button:hover,.pw-mail-orodja>a:hover{background:var(--paper);color:var(--ink)}
+.pw-mail-orodja>button,.pw-mail-orodja>a,.pw-mail-orodja .pw-mail-meni-w>button{display:inline-grid;place-items:center;width:2.3rem;height:2.3rem;box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);border-radius:999px;background:#fff;color:color-mix(in oklch,var(--ink) 68%,transparent);text-decoration:none;cursor:pointer;transition:background .15s,color .15s}
+.pw-mail-orodja>button:hover,.pw-mail-orodja>a:hover,.pw-mail-orodja .pw-mail-meni-w>button:hover{background:var(--paper);color:var(--ink)}
+/* meni Premakni/Oznaka */
+.pw-mail-meni-w{position:relative;display:inline-flex}
+.pw-mail-meni{position:absolute;top:calc(100% + .5rem);left:0;z-index:50;min-width:15rem;background:#fff;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:.7rem;box-shadow:0 14px 34px -14px rgba(17,17,17,.28);padding:.4rem;display:flex;flex-direction:column;gap:.1rem}
+.pw-mail-meni-h{margin:.2rem .35rem .3rem;font:700 .58rem var(--font-sans),sans-serif;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 45%,transparent)}
+.pw-mail-meni>button{text-align:left;border:0;background:none;cursor:pointer;padding:.45rem .5rem;border-radius:.5rem;font:600 .78rem var(--font-sans),sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pw-mail-meni>button:hover{background:var(--paper)}
+.pw-mail-meni-prazno{margin:.3rem .35rem;font-size:.75rem;color:var(--muted)}
+.pw-mail-oznake{display:flex;flex-wrap:wrap;gap:.3rem;padding:.2rem .35rem .4rem}
+.pw-mail-oznaka{font:700 .62rem var(--font-sans),sans-serif;color:var(--purple);background:color-mix(in oklch,var(--purple) 12%,transparent);border-radius:999px;padding:.15rem .5rem}
+.pw-mail-oznaka-obr{display:flex;gap:.3rem;padding:.2rem .35rem}
+.pw-mail-oznaka-obr input{flex:1;min-width:0;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:.5rem;padding:.4rem .5rem;font:500 .78rem var(--font-sans),sans-serif;background:#fff;color:var(--ink)}
+.pw-mail-oznaka-obr button{border:0;background:var(--ink);color:var(--paper);border-radius:.5rem;padding:0 .75rem;font:700 .72rem var(--font-sans),sans-serif;cursor:pointer}
+/* paginacija pošte */
+.pw-posta-strani{display:flex;justify-content:center;align-items:center;gap:.3rem;margin:.7rem 0 .2rem}
+.pw-posta-strani button{min-width:1.9rem;height:1.9rem;padding:0 .5rem;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);border-radius:.5rem;background:#fff;color:var(--ink);font:600 .74rem var(--font-sans),sans-serif;cursor:pointer}
+.pw-posta-strani button:hover:not(:disabled){background:var(--paper)}
+.pw-posta-strani button:disabled{opacity:.4;cursor:default}
+.pw-posta-strani button[aria-current="page"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .pw-mail-orodja .pw-mail-star:hover,.pw-mail-orodja .pw-mail-star[data-on="true"]{color:oklch(72% .16 75)}
 .pw-mail-orodja .pw-mail-brisi:hover{color:oklch(55% .18 25)}
 .pw-mail-orodja .pw-mail-nazaj{width:auto;gap:.4rem;padding:0 1rem;display:inline-flex;align-items:center;background:var(--paper);color:var(--ink);font:700 .74rem var(--font-sans),sans-serif}
 .pw-mail-orodja .pw-mail-nazaj:hover{background:color-mix(in oklch,var(--ink) 8%,transparent);color:var(--ink)}
 /* back levo, ikone desno */
-.pw-mail-orodja .pw-mail-nazaj + button,.pw-mail-orodja .pw-mail-nazaj + a{margin-left:auto}
+.pw-mail-orodja .pw-mail-nazaj + *{margin-left:auto}
 /* hover tooltip nad ikonami (iz aria-label) */
 .pw-mail-orodja [aria-label]{position:relative}
 .pw-mail-orodja [aria-label]:hover::after{content:attr(aria-label);position:absolute;top:calc(100% + .4rem);left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--ink);color:var(--paper);font:600 .62rem var(--font-sans),sans-serif;padding:.3rem .55rem;border-radius:.45rem;z-index:40;pointer-events:none;box-shadow:0 6px 16px rgba(17,17,17,.2)}
@@ -682,6 +700,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [postaIsk, setPostaIsk] = useState('');
   const [postaOseba, setPostaOseba] = useState('');   /* filter po prejemniku (ko vec oseb na projektu) */
   const [izbraniMaili, setIzbraniMaili] = useState<Set<string>>(new Set());   /* izbrani maili (checkbox) za bulk akcije */
+  const [postaStran, setPostaStran] = useState(1);            /* paginacija seznama pošte */
+  const [premakniOdprt, setPremakniOdprt] = useState(false);   /* meni »Premakni na drug projekt« */
+  const [oznakaOdprt, setOznakaOdprt] = useState(false);       /* vnos oznake */
+  const [oznakaVnos, setOznakaVnos] = useState('');
   /* »Nova pošta« — sestavljalnik neposredno v projektu (brez dokumenta). Pošlje
      prek Resend, zabeleži lokalno (postaDnevnik) + v oblak (pushProjectMail). */
   const [pisiOdprt, setPisiOdprt] = useState(false);
@@ -940,8 +962,31 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             {beriMail ? (<>
               <div className="pw-mail-orodja">
                 <button type="button" className="pw-mail-nazaj" title={L('Nazaj na seznam', 'Back to list')} onClick={() => setBeriMail(null)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M19 12H5M11 18l-6-6 6-6" /></svg> {L('Nazaj', 'Back')}</button>
-                <button type="button" title={L('Premakni v mapo', 'Move to')} aria-label={L('Premakni', 'Move to')}><FolderSimplePlus size={16} /></button>
-                <button type="button" title={L('Oznaka', 'Label')} aria-label={L('Oznaka', 'Label')}><Tag size={16} /></button>
+                <span className="pw-mail-meni-w">
+                  <button type="button" title={L('Premakni na drug projekt', 'Move to another project')} aria-label={L('Premakni', 'Move to')} onClick={() => { setPremakniOdprt(o => !o); setOznakaOdprt(false); }}><FolderSimplePlus size={16} /></button>
+                  {premakniOdprt && beriMail && (
+                    <div className="pw-mail-meni">
+                      <p className="pw-mail-meni-h">{L('Premakni na projekt', 'Move to project')}</p>
+                      {projects.filter(p => p.offer.id !== selectedId).slice(0, 8).map(p => (
+                        <button key={p.offer.id} type="button" onClick={() => { const id = beriMail.id; premakniPosto(id, p.offer.id); setPosta(prev => prev.filter(v => v.id !== id)); setBeriMail(null); setPremakniOdprt(false); }}>{p.offer.title} · {p.offer.client}</button>
+                      ))}
+                      {projects.filter(p => p.offer.id !== selectedId).length === 0 && <p className="pw-mail-meni-prazno">{L('Ni drugih projektov.', 'No other projects.')}</p>}
+                    </div>
+                  )}
+                </span>
+                <span className="pw-mail-meni-w">
+                  <button type="button" title={L('Dodaj oznako', 'Add label')} aria-label={L('Oznaka', 'Label')} onClick={() => { setOznakaOdprt(o => !o); setPremakniOdprt(false); }}><Tag size={16} /></button>
+                  {oznakaOdprt && beriMail && (
+                    <div className="pw-mail-meni">
+                      <p className="pw-mail-meni-h">{L('Oznake', 'Labels')}</p>
+                      {(beriMail.oznake || []).length > 0 && <div className="pw-mail-oznake">{(beriMail.oznake || []).map((oz, i) => <span key={i} className="pw-mail-oznaka">{oz}</span>)}</div>}
+                      <form className="pw-mail-oznaka-obr" onSubmit={e => { e.preventDefault(); const t = oznakaVnos.trim(); if (!t) return; const nove = [...(beriMail.oznake || []), t]; nastaviOznakePoste(beriMail.id, nove); const id = beriMail.id; setPosta(prev => prev.map(v => v.id === id ? { ...v, oznake: nove } : v)); setBeriMail(m => m ? { ...m, oznake: nove } : m); setOznakaVnos(''); }}>
+                        <input value={oznakaVnos} onChange={e => setOznakaVnos(e.target.value)} placeholder={L('Nova oznaka …', 'New label …')} aria-label={L('Nova oznaka', 'New label')} />
+                        <button type="submit">{L('Dodaj', 'Add')}</button>
+                      </form>
+                    </div>
+                  )}
+                </span>
                 <button type="button" title={L('Ustvari nalogo iz tega maila', 'Create a task from this mail')} aria-label={L('V nalogo', 'Add to task')} onClick={() => vNalogo(beriMail)}><CheckSquare size={16} /></button>
                 <button type="button" title={L('AI avtomatizacija (Pupa)', 'AI automate (Pupa)')} aria-label="AI"><Sparkle size={16} /></button>
                 <button type="button" title={L('Natisni', 'Print')} aria-label={L('Natisni', 'Print')} onClick={() => { if (typeof window !== 'undefined') window.print(); }}><Printer size={16} /></button>
@@ -969,6 +1014,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               const q = postaIsk.trim().toLowerCase();
               const seznam = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa).filter(v => !q || `${v.zadeva} ${v.prejemniki.join(' ')}`.toLowerCase().includes(q)).filter(v => !postaOseba || v.prejemniki.includes(postaOseba));
               const izbraniVMapi = seznam.filter(v => izbraniMaili.has(v.id));
+              const NA_STRAN = 12;
+              const strani = Math.max(1, Math.ceil(seznam.length / NA_STRAN));
+              const stran = Math.min(Math.max(1, postaStran), strani);
+              const prikaz = seznam.slice((stran - 1) * NA_STRAN, stran * NA_STRAN);
               return seznam.length ? (<>
                 {izbraniVMapi.length > 0 && (
                   <div className="pw-posta-bulk">
@@ -978,7 +1027,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   </div>
                 )}
                 <ul className="pw-posta-seznam">
-                  {seznam.map(vnos => (
+                  {prikaz.map(vnos => (
                     <li key={vnos.id} className={'pw-posta-vrstica' + (izbraniMaili.has(vnos.id) ? ' pw-posta-izbran' : '')} onClick={() => setBeriMail(vnos)}>
                       <input type="checkbox" className="pw-posta-check" checked={izbraniMaili.has(vnos.id)} onClick={e => e.stopPropagation()} onChange={e => { const ch = e.target.checked; setIzbraniMaili(prev => { const n = new Set(prev); if (ch) n.add(vnos.id); else n.delete(vnos.id); return n; }); }} aria-label={L('Izberi sporočilo', 'Select message')} />
                       <div className="pw-posta-vsebina">
@@ -994,6 +1043,15 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                     </li>
                   ))}
                 </ul>
+                {strani > 1 && (
+                  <nav className="pw-posta-strani" aria-label={L('Strani pošte', 'Mail pages')}>
+                    <button type="button" onClick={() => setPostaStran(s => Math.max(1, s - 1))} disabled={stran <= 1} aria-label={L('Prejšnja stran', 'Previous page')}>‹</button>
+                    {Array.from({ length: strani }, (_, i) => i + 1).map(n => (
+                      <button key={n} type="button" onClick={() => setPostaStran(n)} aria-current={n === stran ? 'page' : undefined}>{n}</button>
+                    ))}
+                    <button type="button" onClick={() => setPostaStran(s => Math.min(strani, s + 1))} disabled={stran >= strani} aria-label={L('Naslednja stran', 'Next page')}>›</button>
+                  </nav>
+                )}
               </>) : (
                 <p className="pw-posta-prazno">{mapa === 'prejeto' ? L('Še ni prejete pošte — prižge se, ko aktiviramo dohodno pošto.', 'No received mail yet — it turns on once we enable inbound mail.') : mapa === 'osnutki' ? L('Ni osnutkov.', 'No drafts.') : mapa === 'kos' ? L('Koš je prazen.', 'Trash is empty.') : L('Še ni poslane pošte. Klikni Nova pošta in piši stranki.', 'No sent mail yet. Click New mail and write to the client.')}</p>
               );
