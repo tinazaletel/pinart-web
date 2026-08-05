@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ShareNetwork, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star } from '@phosphor-icons/react';
+import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
@@ -932,8 +932,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               <div className="pw-mail-akcije">
                 <button type="button" onClick={() => { const m = beriMail; odpriPisanje(); setPisiZa(m?.prejemniki[0] || ''); setPisiZadeva(`Re: ${(m?.zadeva || '').replace(/^Re:\s*/i, '')}`); setBeriMail(null); }}><ArrowBendUpLeft size={15} weight="bold" /> {L('Odgovori', 'Reply')}</button>
                 <button type="button" onClick={() => { const m = beriMail; odpriPisanje(); setPisiZa(''); setPisiZadeva(`Fwd: ${(m?.zadeva || '').replace(/^Fwd:\s*/i, '')}`); setBeriMail(null); }}><ArrowBendUpRight size={15} weight="bold" /> {L('Posreduj', 'Forward')}</button>
-                <button type="button" onClick={() => { const m = beriMail; odpriPisanje(); setPisiZa(''); setPisiZadeva(`${m?.zadeva || ''}`); setBeriMail(null); }}><ShareNetwork size={15} weight="bold" /> {L('Deli', 'Share')}</button>
-                <button type="button" title={L('Interni klepet o sporočilu — kmalu', 'Internal chat about this message — soon')} onClick={() => undefined}><ChatCircle size={15} weight="bold" /> {L('Klepet', 'Chat')}</button>
+                <button type="button" title={L('Deli sporočilo v klepet s sodelavci — kmalu', 'Share this message into a chat with collaborators — soon')} onClick={() => undefined}><ChatCircle size={15} weight="bold" /> {L('Klepet', 'Chat')}</button>
               </div>
             </>) : (() => {
               const q = postaIsk.trim().toLowerCase();
