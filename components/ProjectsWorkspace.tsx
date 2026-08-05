@@ -190,7 +190,7 @@ const pwStyles = `
 .pw-rail-back{position:fixed;inset:0;z-index:60;background:oklch(97% .006 87 / .4);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
 .pw-rail{position:fixed;top:0;right:0;bottom:0;max-width:100vw;display:flex;flex-direction:row;align-items:stretch}
 .pw-rail-col{position:relative;height:100%;box-sizing:border-box;display:flex;flex-direction:column;background:#fff;overflow:hidden;animation:pwRailIn .34s cubic-bezier(.16,1,.3,1) both}
-.pw-rail-col + .pw-rail-col{border-left:1px solid var(--line)}
+.pw-rail-col + .pw-rail-col{border-left:1px solid color-mix(in oklch,var(--ink) 9%,transparent)}
 .pw-rail > .pw-rail-col:first-child{box-shadow:-1.4rem 0 3.4rem -1.2rem oklch(20% .03 55 / .2)}
 /* SAMO ta notranji predal se skrola; X plava, ozadje strani je zaklenjeno */
 .pw-rail-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:2.4rem 2rem}

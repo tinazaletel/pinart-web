@@ -52,6 +52,10 @@ export type FlowInvoice = {
   vatAmount?: number;
   /* neobvezen podpis — stari zapisi ga nimajo in se delujejo (dokument ga preprosto ne izrise) */
   signature?: FlowInvoiceSignature;
+  /* neobvezna noga racuna: opomba (npr. »izdan elektronsko, veljaven brez ziga in
+     podpisa«). footerOn=false skrije nogo; stari zapisi (undefined) -> privzeto vklopljeno. */
+  footerOn?: boolean;
+  footerText?: string;
   /* neobvezno: predracun (poziv k placilu vnaprej) namesto pravega racuna —
      stari zapisi ga nimajo -> false/undefined -> delujejo kot doslej (racun) */
   predracun?: boolean;

@@ -128,6 +128,9 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const [podpisDatum, setPodpisDatum] = useState(danesISO());
   const [podpisSlika, setPodpisSlika] = useState('');
   const [narisanPodpis, setNarisanPodpis] = useState(false);
+  const NOGA_PRIVZETA = jeEn ? 'This document is issued electronically and is valid without a stamp or signature.' : 'Dokument je izdan elektronsko in je veljaven brez žiga in podpisa.';
+  const [nogaOn, setNogaOn] = useState(true);           /* neobvezna noga računa (privzeto vklopljena) */
+  const [nogaText, setNogaText] = useState(NOGA_PRIVZETA);
   const podpisPlatnoRef = useRef<HTMLCanvasElement | null>(null);
   const podpisDatotekaRef = useRef<HTMLInputElement | null>(null);
   const risanjeRef = useRef(false);
@@ -394,6 +397,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         place: podpisKraj.trim() || undefined,
         date: podpisDatum || undefined,
       } : undefined,
+      footerOn: nogaOn,
+      footerText: nogaOn ? (nogaText.trim() || undefined) : undefined,
     };
     const next = [invoice, ...invoices];
     setInvoices(next); saveFlowCollection('invoices', next);
@@ -443,6 +448,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     .rac-placilo{margin:20px 0 0;font-size:10pt;color:#222;background:#f8f5ee;border:1px solid #eadfce;border-radius:9px;padding:13px 16px;line-height:1.7}
     .rac-opomba{font-size:9pt;color:#666;margin:10px 0 0}
     .rac-noga-txt{font-size:8.2pt;color:#9a9088;margin-top:22px}
+    .rac-noga-brez{font-size:8.2pt;color:#8a8177;margin-top:14px;padding-top:9px;border-top:1px solid #e7e2d8;line-height:1.5}
     .rac-placano{display:inline-block;margin:18px 0 0;border:3px solid #2e7d5b;color:#2e7d5b;font-weight:700;letter-spacing:.22em;padding:6px 18px;border-radius:8px;transform:rotate(-5deg);font-size:16pt}
     .rac-podpis{margin-top:26px;max-width:260px;break-inside:avoid}
     .rac-podpis-crta{border-bottom:1px solid #111;min-height:34px;display:flex;align-items:flex-end;padding-bottom:4px}
@@ -524,7 +530,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       <div class="rac-placilo">${placiloVrstice}</div>
       ${inv.paid ? `<div class="rac-placano">${jeEn ? 'PAID' : 'PLAČANO'}</div>` : ''}
       ${inv.signature ? `<div class="rac-podpis"><div class="rac-podpis-crta"><img class="podpis-img" src="${inv.signature.image}" alt="${jeEn ? 'Signature' : 'Podpis'}"></div><div class="rac-podpis-ime">${esc(inv.signature.name || ponudnik.ime.trim() || '')}</div>${(inv.signature.place || inv.signature.date) ? `<div class="rac-podpis-meta">${esc([inv.signature.place, inv.signature.date ? docDate(new Date(inv.signature.date)) : ''].filter(Boolean).join(' · '))}</div>` : ''}</div>` : ''}
-      <p class="rac-noga-txt">${jeEn ? (jePredracun ? 'This pro forma invoice is an informational request for payment and is not a tax or accounting document.' : 'This invoice is issued in accordance with applicable law. Statutory default interest will be charged on late payments.') : (jePredracun ? 'Predračun je informativen poziv k plačilu in ni davčni/knjigovodski dokument.' : 'Račun je izdan v skladu z veljavno zakonodajo. Ob zamudi plačila zaračunamo zakonske zamudne obresti.')}</p>`;
+      <p class="rac-noga-txt">${jeEn ? (jePredracun ? 'This pro forma invoice is an informational request for payment and is not a tax or accounting document.' : 'This invoice is issued in accordance with applicable law. Statutory default interest will be charged on late payments.') : (jePredracun ? 'Predračun je informativen poziv k plačilu in ni davčni/knjigovodski dokument.' : 'Račun je izdan v skladu z veljavno zakonodajo. Ob zamudi plačila zaračunamo zakonske zamudne obresti.')}</p>
+      ${(inv.footerOn !== false && (inv.footerText || '').trim()) ? `<div class="rac-noga-brez">${esc(inv.footerText || '').split('\n').join('<br>')}</div>` : ''}`;
   };
 
   /* Poglej / Prenesi PDF — prek /api/ponudba-pdf, ENAKO kot retainer prenesi() */
@@ -586,6 +593,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     avansPct: avansJeDelni ? avansOdstotek : undefined,
     polnaVrednost: avansJeDelni ? Math.round(izracun.zaPlacilo * 100) / 100 : undefined,
     signature: podpisSlika ? { image: podpisSlika, name: podpisIme.trim() || undefined, place: podpisKraj.trim() || undefined, date: podpisDatum || undefined } : undefined,
+    footerOn: nogaOn,
+    footerText: nogaOn ? (nogaText.trim() || undefined) : undefined,
   });
   /* e-posta stranke iz imenika (po imenu) — privzeti prejemnik posiljanja */
   const strankaEmail = (): string => clients.find(c => c.name.trim().toLowerCase() === stranka.trim().toLowerCase())?.email?.trim() || '';
@@ -828,6 +837,15 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           )}
         </div>
 
+        {/* noga računa (neobvezna) — opomba »brez žiga in podpisa«, privzeto vklopljena, urejljiva */}
+        <div className="rc-podpis rc-noga-blok">
+          <div className="rc-post-glava">
+            <p className={styles.eyebrow}>{L('NOGA RAČUNA (NEOBVEZNO)', 'INVOICE FOOTER (OPTIONAL)')}</p>
+            <label className="rc-noga-stikalo"><input type="checkbox" checked={nogaOn} onChange={event => setNogaOn(event.target.checked)} /> {L('Prikaži nogo', 'Show footer')}</label>
+          </div>
+          {nogaOn && <label className="rc-polje rc-noga-polje">{L('Besedilo noge', 'Footer text')}<textarea value={nogaText} onChange={event => setNogaText(event.target.value)} rows={2} placeholder={NOGA_PRIVZETA} /></label>}
+        </div>
+
         <div className={styles.invoiceSubmit}><button type="submit" className="rc-zakljuci-gumb">{L('Zaključi →', 'Finish →')}</button></div>
       </form>
     </section>}
@@ -911,6 +929,10 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
 
       /* podpis na racunu (neobvezno) — kot pg-podpis-* v ContractWorkspace, tu inline (brez sheeta) */
       .rc .rc-podpis{min-width:0;margin-top:1.1rem;padding:1rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.9rem;background:oklch(100% 0 0/.55)}
+      .rc .rc-noga-stikalo{display:inline-flex;align-items:center;gap:.4rem;font-size:.72rem;font-weight:600;letter-spacing:.02em;text-transform:none;color:rgba(17,17,17,.7);cursor:pointer}
+      .rc .rc-noga-stikalo input{width:1rem;height:1rem;accent-color:oklch(66% .2 297);cursor:pointer}
+      .rc .rc-noga-polje textarea{width:100%;box-sizing:border-box;border:1px solid oklch(90% .006 82);border-radius:.6rem;padding:.6rem .7rem;font:500 .85rem var(--font-sans),system-ui,sans-serif;color:var(--ink);background:#fff;resize:vertical;text-transform:none;letter-spacing:normal}
+      .rc .rc-noga-polje textarea:focus{outline:none;border-color:oklch(66% .2 297)}
       .rc .rc-podpis-polja{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.9rem;margin:.9rem 0 0}
       .rc .rc-podpis-platno{display:block;width:100%;height:150px;margin-top:.9rem;border:1px dashed rgba(17,17,17,.3);border-radius:12px;background:#fff;touch-action:none;cursor:crosshair}
       .rc .rc-podpis-akcije{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.7rem}
