@@ -354,6 +354,9 @@ const pwStyles = `
 .pw-pisi-telo:focus{outline:none;border-color:oklch(58% .2 297)}
 .pw-pisi-telo:empty:before{content:attr(data-placeholder);color:var(--muted)}
 .pw-pisi-status{margin:0;font-size:.68rem;color:var(--muted)}
+.pw-pisi-podpis-opomnik{margin:.15rem 0 0}
+.pw-pisi-podpis-opomnik a{display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;color:color-mix(in oklch,var(--ink) 42%,transparent);text-decoration:none;font-weight:600}
+.pw-pisi-podpis-opomnik a:hover{color:var(--purple)}
 .pw-pisi-akcije{display:flex;justify-content:flex-end;gap:.5rem}
 .pw-pisi-preklic{padding:.45rem .9rem;border:1px solid color-mix(in oklch,var(--ink) 18%,transparent);border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
 .pw-pisi-poslji{padding:.45rem 1.1rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer}
@@ -677,6 +680,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [pisiStatus, setPisiStatus] = useState('');
   const [pisiPosiljam, setPisiPosiljam] = useState(false);
   const pisiTeloRef = useRef<HTMLDivElement>(null);
+  const [imaPodpis, setImaPodpis] = useState(true);   /* ali je nastavljen podpis maila (sicer opomnik) */
   const [linkOznaka, setLinkOznaka] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [dodajOdprt, setDodajOdprt] = useState(false);
@@ -743,6 +747,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     if (!el) return;
     let podpis = '';
     try { podpis = String(JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}').podpisMaila || ''); } catch { /* brez podpisa */ }
+    setImaPodpis(!!podpis.trim());
     const varno = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     el.innerHTML = podpis.trim() ? `<div><br></div><div style="color:#777">${varno(podpis).replace(/\n/g, '<br>')}</div>` : '';
     el.focus();
@@ -882,6 +887,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   <button type="button" onMouseDown={e => { e.preventDefault(); vstaviPovezavo(); }} title={L('Povezava', 'Link')} aria-label={L('Povezava', 'Link')}><LinkSimple size={15} weight="bold" /></button>
                 </div>
                 <div className="pw-pisi-telo" ref={pisiTeloRef} contentEditable suppressContentEditableWarning role="textbox" aria-label={L('Besedilo sporočila', 'Message body')} data-placeholder={L('Napiši sporočilo …', 'Write a message …')} />
+                {!imaPodpis && <p className="pw-pisi-podpis-opomnik"><Link href={`${base}/kalkulator/nastavitve`}>{L('Nimaš podpisa — nastavi ga v nastavitvah', 'No signature yet — set it up in settings')} <svg className="puscica-svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link></p>}
                 {pisiStatus && <p className="pw-pisi-status">{pisiStatus}</p>}
                 <div className="pw-pisi-akcije">
                   <button type="button" className="pw-pisi-preklic" onClick={() => setPisiOdprt(false)}>{L('Prekliči', 'Cancel')}</button>
@@ -932,7 +938,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               <div className="pw-mail-akcije">
                 <button type="button" onClick={() => { const m = beriMail; odpriPisanje(); setPisiZa(m?.prejemniki[0] || ''); setPisiZadeva(`Re: ${(m?.zadeva || '').replace(/^Re:\s*/i, '')}`); setBeriMail(null); }}><ArrowBendUpLeft size={15} weight="bold" /> {L('Odgovori', 'Reply')}</button>
                 <button type="button" onClick={() => { const m = beriMail; odpriPisanje(); setPisiZa(''); setPisiZadeva(`Fwd: ${(m?.zadeva || '').replace(/^Fwd:\s*/i, '')}`); setBeriMail(null); }}><ArrowBendUpRight size={15} weight="bold" /> {L('Posreduj', 'Forward')}</button>
-                <button type="button" title={L('Deli sporočilo v klepet s sodelavci — kmalu', 'Share this message into a chat with collaborators — soon')} onClick={() => undefined}><ChatCircle size={15} weight="bold" /> {L('Klepet', 'Chat')}</button>
+                <button type="button" title={L('Deli to sporočilo (ali označen del) v klepet s sodelavcem — kmalu', 'Share this message (or a highlighted part) into a chat with a collaborator — soon')} onClick={() => undefined}><ChatCircle size={15} weight="bold" /> {L('Deli v klepet', 'Share in chat')}</button>
               </div>
             </>) : (() => {
               const q = postaIsk.trim().toLowerCase();
