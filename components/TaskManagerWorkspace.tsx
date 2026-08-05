@@ -4,8 +4,9 @@
    specifikaciji (lib/naloge.ts), JSX + videz rekonstruirana v Pinart slogu (kremno,
    Bodoni, ink, akcent). Lasten prefiksiran <style> blok (tm-), da ne trči s .shell. */
 
-import React, { useState, useEffect } from 'react';
-import { Pause, Play, ChartBar, ChatCircleDots, Sparkle, UploadSimple, CaretLeft, CaretRight, Buildings, Circle, CheckCircle, UserPlus, Calendar } from '@phosphor-icons/react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Pause, Play, ChartBar, ChatCircleDots, Sparkle, UploadSimple, DownloadSimple, CaretLeft, CaretRight, Buildings, Circle, CheckCircle, UserPlus, Calendar } from '@phosphor-icons/react';
+import Toast from '@/components/Toast';
 import {
   Naloga,
   NalogaStolpec,
@@ -481,6 +482,43 @@ export default function TaskManagerWorkspace() {
 
   const posodobiInShrani = (noveNaloge: Naloga[]) => { setNaloge(noveNaloge); shraniNaloge(noveNaloge); };
 
+  /* --- Uvoz / izvoz nalog (prenos med orodji) --- */
+  const [ieOdprt, setIeOdprt] = useState(false);            /* meni Uvoz/Izvoz */
+  const datotekaRef = useRef<HTMLInputElement>(null);
+  const izvoziNaloge = () => {
+    setIeOdprt(false);
+    try {
+      const vsebina = JSON.stringify({ vrsta: 'pinart-naloge', razlicica: 1, izvozeno: new Date().toISOString(), naloge }, null, 2);
+      const blob = new Blob([vsebina], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `naloge-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      setSeedSporocilo(`Izvoženih ${naloge.length} nalog v datoteko.`);
+    } catch { setSeedSporocilo('Izvoz ni uspel.'); }
+  };
+  const uvoziNaloge = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIeOdprt(false);
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    const bralnik = new FileReader();
+    bralnik.onload = () => {
+      try {
+        const p = JSON.parse(String(bralnik.result || '{}'));
+        const seznam: Naloga[] = Array.isArray(p) ? p : Array.isArray(p.naloge) ? p.naloge : [];
+        const veljavne = seznam.filter((n) => n && typeof n.naslov === 'string' && typeof n.stolpec === 'string');
+        if (!veljavne.length) { setSeedSporocilo('V datoteki ni najdenih veljavnih nalog.'); return; }
+        const obstojeci = new Set(naloge.map((n) => n.id));
+        const dodane = veljavne.map((n) => ({ ...n, id: n.id && !obstojeci.has(n.id) ? n.id : crypto.randomUUID(), created: n.created || new Date().toISOString() }));
+        posodobiInShrani([...naloge, ...dodane]);
+        setSeedSporocilo(`Uvoženih ${dodane.length} nalog iz datoteke.`);
+      } catch { setSeedSporocilo('Datoteke ni bilo mogoče prebrati (neveljaven JSON).'); }
+    };
+    bralnik.readAsText(f);
+  };
+
   /* Hitro dodaj — vec nalog naenkrat: ena vrstica = ena kartica v "todo". */
   const hitroDodaj = () => {
     const vrstice = hitroBesedilo.split('\n').map((v) => v.trim()).filter(Boolean);
@@ -696,8 +734,7 @@ export default function TaskManagerWorkspace() {
     const deli: string[] = [];
     if (steviloNovih > 0) deli.push(`Dodanih ${steviloNovih} novih`);
     if (steviloDopolnjenih > 0) deli.push(`dopolnjenih ${steviloDopolnjenih} obstoječih`);
-    setSeedSporocilo(deli.length > 0 ? `${deli.join(', ')}.` : 'Vse naloge so že naložene in dopolnjene.');
-    window.setTimeout(() => setSeedSporocilo(''), 3500);
+    setSeedSporocilo(deli.length > 0 ? `${deli.join(', ')}.` : 'Vse naloge so že naložene.');
   };
 
   /* --- Plan / šefov razpored dodelitev — obdobje + matrika projekt × oddelek --- */
@@ -1013,6 +1050,7 @@ export default function TaskManagerWorkspace() {
 
   return (
     <div className="tm">
+      <Toast sporocilo={seedSporocilo} onClose={() => setSeedSporocilo('')} />
       <header className="tm-glava">
         <div className="tm-glava-uvod">
           <div>
@@ -1055,10 +1093,20 @@ export default function TaskManagerWorkspace() {
               <ChartBar size={16} weight="bold" /> Analitika
             </button>
           )}
-          <button type="button" className="tm-seed-gumb tm-orodje-ikona" onClick={nalozirazvojneNaloge} aria-label="Naloži pripravljene naloge" title="Naloži pripravljene naloge (obstoječih ne prepiše)">
-            <UploadSimple size={18} weight="bold" />
-          </button>
-          {seedSporocilo && <span className="tm-seed-sporocilo">{seedSporocilo}</span>}
+          <span className="tm-ie-w">
+            <button type="button" className="tm-seed-gumb tm-orodje-ikona" onClick={() => setIeOdprt((o) => !o)} aria-label="Uvoz in izvoz nalog" title="Uvozi ali izvozi naloge (prenos med orodji)">
+              <UploadSimple size={18} weight="bold" />
+            </button>
+            {ieOdprt && (
+              <div className="tm-ie-meni">
+                <p className="tm-ie-h">Prenos nalog</p>
+                <button type="button" onClick={izvoziNaloge}><DownloadSimple size={15} weight="bold" /> Izvozi ({naloge.length}) → .json</button>
+                <button type="button" onClick={() => datotekaRef.current?.click()}><UploadSimple size={15} weight="bold" /> Uvozi iz .json</button>
+                {!samoOgled && <button type="button" className="tm-ie-demo" onClick={() => { nalozirazvojneNaloge(); setIeOdprt(false); }}>Naloži primer nalog (demo)</button>}
+              </div>
+            )}
+            <input ref={datotekaRef} type="file" accept="application/json,.json" hidden onChange={uvoziNaloge} />
+          </span>
           {!samoOgled ? (
             <button type="button" className="tm-nova" onClick={() => { setPogled('kanban'); setAktivniStolpec('todo'); setPrikaziFormo(true); }}>+ Nova naloga</button>
           ) : (
@@ -1766,6 +1814,13 @@ export default function TaskManagerWorkspace() {
         .tm-orodje-ikona{width:2.75rem;padding:0;justify-content:center}
         .tm-seed-gumb:hover{background:var(--ink);color:var(--paper);border-style:solid;border-color:var(--ink)}
         .tm-seed-sporocilo{font:600 .68rem var(--font-sans),sans-serif;color:var(--muted)}
+        /* Uvoz/izvoz meni (spusti se pod ikono) */
+        .tm-ie-w{position:relative;flex:none;display:inline-flex}
+        .tm-ie-meni{position:absolute;top:calc(100% + .4rem);right:0;z-index:40;min-width:15rem;background:#fff;border:1px solid var(--line);border-radius:.8rem;box-shadow:0 14px 38px -14px color-mix(in oklch,var(--ink) 40%,transparent);padding:.4rem;display:flex;flex-direction:column;gap:.15rem}
+        .tm-ie-h{margin:.25rem .5rem .35rem;font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 50%,transparent)}
+        .tm-ie-meni button{display:flex;align-items:center;gap:.5rem;width:100%;text-align:left;border:0;background:none;border-radius:.55rem;padding:.55rem .6rem;font:600 .8rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
+        .tm-ie-meni button:hover{background:color-mix(in oklch,var(--purple) 8%,transparent)}
+        .tm-ie-demo{color:color-mix(in oklch,var(--ink) 60%,transparent) !important;border-top:1px solid var(--line) !important;margin-top:.15rem;border-radius:0 0 .55rem .55rem !important}
         /* oznake (tagi) na kartici naloge — majhni čipi, klik = filter po tem tagu */
         .tm-kartica-oznake{display:flex;flex-wrap:wrap;gap:.3rem;margin:.5rem 0 0}
         .tm-oznaka-cip{padding:.15rem .5rem;border:1px solid var(--line);border-radius:999px;background:oklch(95% .02 300/.6);color:var(--ink);font:700 .6rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
