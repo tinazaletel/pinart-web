@@ -808,6 +808,9 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   /* varnostna mreza: ce se komponenta odstrani (npr. menjava zavihka v Arhivu)
      medtem ko je bil detajl odprt, sporoci starsu, naj svojo glavo spet pokaze */
   useEffect(() => () => { onDetajl?.(false); }, [onDetajl]);
+  /* onDetajl VEDNO sledi selectedId: ko ni izbranega projekta (seznam), glava Arhiva
+     (naslov + zavihki) se MORA prikazati; sicer ostane zataknjena skrita. */
+  useEffect(() => { onDetajl?.(!!selectedId); }, [selectedId, onDetajl]);
 
   /* Klik na projekt pri stranki (ClientWorkspace) pripelje sem z ?projekt=<id> —
      ob montiranju odpri ta projekt kot detajl (isti selectProject kot ročni klik
