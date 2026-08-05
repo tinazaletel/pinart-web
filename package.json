@@ -26,6 +26,7 @@
     "@sparticuz/chromium": "^129.0.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.7",
+    "@xyflow/react": "^12.11.2",
     "fflate": "^0.8.3",
     "framer-motion": "^11.5.4",
     "gsap": "^3.12.5",

@@ -36,8 +36,23 @@ export type ModernProject = {
 export type EkipaStanje = 'dela' | 'koncal' | 'review';
 export type AgentClan = { id: string; ime: string; stanje: EkipaStanje };
 export type CrmVnos = { id: string; datum: string; tip: string; opis: string };
+export type NalogaLite = { id: string; naslov: string; status: 'todo' | 'dela' | 'pregled' | 'koncano'; oseba?: string };
 
 const zacetnice = (ime: string) => ime.split(/\s+/).filter(Boolean).slice(0, 2).map(d => d[0]?.toUpperCase() || '').join('') || '?';
+
+/* iniciale + barven krogec iz e-naslova (da poštni seznam ni pust) */
+const mailIniciale = (naslov: string) => {
+  const lokalni = (naslov || '').split('@')[0].replace(/[^a-zA-ZčšžćđČŠŽĆĐ]+/g, ' ').trim();
+  const d = lokalni.split(/\s+/).filter(Boolean);
+  return ((d[0]?.[0] || '?') + (d[1]?.[0] || '')).toUpperCase();
+};
+const hueOd = (s: string) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360; return h; };
+const avatarOzadje = (s: string) => `linear-gradient(135deg, oklch(72% .13 ${hueOd(s)}), oklch(63% .15 ${(hueOd(s) + 45) % 360}))`;
+/* barva pike CRM vnosa po tipu */
+const crmBarva = (tip: string) => {
+  const t = (tip || '').toLowerCase();
+  return t.includes('sestanek') ? 'oklch(66% .2 297)' : t.includes('klic') ? 'oklch(62% .15 150)' : (t.includes('pošt') || t.includes('mail') || t.includes('mejl')) ? 'oklch(68% .14 250)' : t.includes('dogovor') ? 'oklch(72% .15 60)' : 'oklch(62% .02 70)';
+};
 
 /* CGP puscica (enaka kot .puscica-svg drugod v portalu) — diagonalna NE */
 const Puscica = () => (
@@ -45,7 +60,7 @@ const Puscica = () => (
 );
 
 export default function ProjectDetailModern({
-  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, ekipaStatus, agenti = [], links = [], crmVnosi = [],
+  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, ekipaStatus, agenti = [], links = [], crmVnosi = [], onOdpriKomunikacije, onOdpriVse, onOdpriDokument, naloge = [],
 }: {
   data: ModernProject;
   sodelavci: Sodelavec[];
@@ -60,6 +75,10 @@ export default function ProjectDetailModern({
   agenti?: AgentClan[];
   links?: FlowProjectLink[];
   crmVnosi?: CrmVnos[];
+  onOdpriKomunikacije?: () => void;
+  onOdpriVse?: (tip: 'pogodbe' | 'racuni' | 'stroski') => void;
+  onOdpriDokument?: (tip: 'pogodbe' | 'racuni' | 'stroski', item: FlowContract | FlowInvoice | FlowExpense) => void;
+  naloge?: NalogaLite[];
 }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const { offer, real } = data;
@@ -150,7 +169,17 @@ export default function ProjectDetailModern({
                 <Link className="pm-iconbtn" href={`${base}/kalkulator/naloge`} aria-label={L('Dodaj nalogo', 'Add task')}>+</Link>
               </span>
             </header>
-            <p className="pm-muted">{L('Naloge tega projekta vodiš v Task managerju. Povezava naloga↔projekt pride s kolaboracijo.', 'You manage this project’s tasks in the Task manager. Task-to-project linking comes with collaboration.')}</p>
+            {naloge.length ? (
+              <ul className="pm-naloge">
+                {naloge.slice(0, 4).map(n => (
+                  <li key={n.id} className="pm-naloga">
+                    <span className="pm-naloga-dot" data-st={n.status} aria-hidden />
+                    <span className="pm-naloga-t">{n.naslov}</span>
+                    {n.oseba && <span className="pm-naloga-av" style={{ background: avatarOzadje(n.oseba) }} aria-hidden>{zacetnice(n.oseba)}</span>}
+                  </li>
+                ))}
+              </ul>
+            ) : <p className="pm-muted">{L('Naloge tega projekta vodiš v Task managerju. Povezava naloga↔projekt pride s kolaboracijo.', 'You manage this project’s tasks in the Task manager. Task-to-project linking comes with collaboration.')}</p>}
           </section>
 
           {/* BRIEF */}
@@ -166,7 +195,7 @@ export default function ProjectDetailModern({
 
           {cilji.length > 0 && (
             <section className="pm-card">
-              <header><h3>{L('CILJI PROJEKTA', 'PROJECT GOALS')}</h3></header>
+              <header><h3>{L('CILJI PROJEKTA', 'PROJECT GOALS')}</h3>{real && <Link className="pm-act" href={`${base}/kalkulator/projekti`}>{L('Uredi', 'Edit')} <Puscica /></Link>}</header>
               <ul className="pm-goals">
                 {cilji.map(c => (
                   <li key={c.id}><span className="pm-goal-b">{c.besedilo}</span>{(c.metrika || c.tarca) && <span className="pm-goal-t">{[c.metrika, c.tarca].filter(Boolean).join(' · ')}</span>}</li>
@@ -181,10 +210,12 @@ export default function ProjectDetailModern({
             {roki.length ? (
               <ul className="pm-roki">
                 {roki.map(r => { const d = dniDo(r.rok); return (
-                  <li key={r.id} className="pm-rok">
-                    <span className="pm-rok-pika" data-late={d < 0 ? 'true' : 'false'} aria-hidden />
-                    <span className="pm-rok-txt">{L('Rok plačila', 'Payment due')} · {r.oznaka}</span>
-                    <span className="pm-rok-dan">{datPolno(r.rok)}{d < 0 ? ` · ${L('zapadlo', 'overdue')}` : d === 0 ? ` · ${L('danes', 'today')}` : ` · ${jeEn ? `in ${d}d` : `čez ${d} dni`}`}</span>
+                  <li key={r.id}>
+                    <Link href={`${base}/kalkulator/koledar?datum=${r.rok.toISOString().slice(0, 10)}`} className="pm-rok pm-rok-link">
+                      <span className="pm-rok-pika" data-late={d < 0 ? 'true' : 'false'} aria-hidden />
+                      <span className="pm-rok-txt">{L('Rok plačila', 'Payment due')} · {r.oznaka}</span>
+                      <span className="pm-rok-dan">{datPolno(r.rok)}{d < 0 ? ` · ${L('zapadlo', 'overdue')}` : d === 0 ? ` · ${L('danes', 'today')}` : ` · ${jeEn ? `in ${d}d` : `čez ${d} dni`}`}</span>
+                    </Link>
                   </li>
                 ); })}
               </ul>
@@ -195,14 +226,15 @@ export default function ProjectDetailModern({
           <section className="pm-card">
             <header>
               <h3>{L('KOMUNIKACIJA', 'COMMUNICATION')}{komAktivna.length ? ` · ${komAktivna.length}` : ''}</h3>
-              {onOpenZapis
-                ? <button type="button" className="pm-act" onClick={onOpenZapis}>{L('Odpri vse', 'Open all')}</button>
-                : <Link className="pm-act" href={`${base}/kalkulator/projekti`}>{L('Odpri', 'Open')}</Link>}
+              {(onOdpriKomunikacije || onOpenZapis)
+                ? <button type="button" className="pm-act" onClick={onOdpriKomunikacije || onOpenZapis}>{L('Odpri vse', 'Open all')} <Puscica /></button>
+                : <Link className="pm-act" href={`${base}/kalkulator/projekti`}>{L('Odpri', 'Open')} <Puscica /></Link>}
             </header>
             {komZadnje.length ? (
               <ul className="pm-mails">
                 {komZadnje.map(v => (
                   <li key={v.id} className="pm-mail">
+                    <span className="pm-mail-av" style={{ background: avatarOzadje(v.prejemniki[0] || '?') }} aria-hidden>{mailIniciale(v.prejemniki[0] || '?')}</span>
                     <span className="pm-mail-kdo">{v.prejemniki.join(', ') || '—'}</span>
                     <span className="pm-mail-zad">{v.zadeva || L('(brez zadeve)', '(no subject)')}</span>
                     <span className="pm-mail-dan">{datKratko(v.datum)}</span>
@@ -219,6 +251,7 @@ export default function ProjectDetailModern({
               <ul className="pm-crm-list">
                 {crmVnosi.slice(0, 4).map(v => (
                   <li key={v.id} className="pm-crm-vnos">
+                    <span className="pm-crm-pika" style={{ background: crmBarva(v.tip) }} aria-hidden />
                     <span className="pm-crm-tip">{v.tip}</span>
                     <span className="pm-crm-opis">{v.opis}</span>
                     <span className="pm-crm-dan">{datKratko(v.datum)}</span>
@@ -247,10 +280,10 @@ export default function ProjectDetailModern({
             {pogodbeSort.length ? (<>
               <ul className="pm-list">
                 {pogodbeSort.slice(0, NAJVEC).map(c => (
-                  <li key={c.id} className="pm-li"><span className="pm-li-n">{c.title}</span><span className="pm-li-s">{c.status}</span><span className="pm-li-d">{datKratko(c.date)}</span></li>
+                  <li key={c.id}><button type="button" className="pm-li pm-li-btn" onClick={() => onOdpriDokument?.('pogodbe', c)}><span className="pm-li-n">{c.title}</span><span className="pm-li-s">{c.status}</span><span className="pm-li-d">{datKratko(c.date)}</span></button></li>
                 ))}
               </ul>
-              {pogodbeSort.length > NAJVEC && onOpenZapis && <button type="button" className="pm-vec" onClick={onOpenZapis}>{L('Prikaži vse', 'Show all')} ({pogodbeSort.length}) <Puscica /></button>}
+              {pogodbeSort.length > NAJVEC && (onOdpriVse || onOpenZapis) && <button type="button" className="pm-vec" onClick={() => onOdpriVse ? onOdpriVse('pogodbe') : onOpenZapis?.()}>{L('Prikaži vse', 'Show all')} ({pogodbeSort.length}) <Puscica /></button>}
             </>) : <p className="pm-muted">{L('Brez pogodbe.', 'No contract.')}</p>}
           </section>
 
@@ -260,10 +293,10 @@ export default function ProjectDetailModern({
             {racuniSort.length ? (<>
               <ul className="pm-list">
                 {racuniSort.slice(0, NAJVEC).map(r => (
-                  <li key={r.id} className="pm-li"><span className="pm-li-pika" data-paid={r.paid ? 'true' : 'false'} aria-hidden />{r.number || r.title}<span className="pm-li-a">{money(r.amount)}</span></li>
+                  <li key={r.id}><button type="button" className="pm-li pm-li-btn" onClick={() => onOdpriDokument?.('racuni', r)}><span className="pm-li-pika" data-paid={r.paid ? 'true' : 'false'} aria-hidden /><span className="pm-li-n">{r.number || r.title}</span><span className="pm-li-a">{money(r.amount)}</span></button></li>
                 ))}
               </ul>
-              {racuniSort.length > NAJVEC && onOpenZapis && <button type="button" className="pm-vec" onClick={onOpenZapis}>{L('Prikaži vse', 'Show all')} ({racuniSort.length}) <Puscica /></button>}
+              {racuniSort.length > NAJVEC && (onOdpriVse || onOpenZapis) && <button type="button" className="pm-vec" onClick={() => onOdpriVse ? onOdpriVse('racuni') : onOpenZapis?.()}>{L('Prikaži vse', 'Show all')} ({racuniSort.length}) <Puscica /></button>}
             </>) : <p className="pm-muted">{L('Še ni računov.', 'No invoices yet.')}</p>}
           </section>
 
@@ -273,10 +306,10 @@ export default function ProjectDetailModern({
             {strosekSort.length ? (<>
               <ul className="pm-list">
                 {strosekSort.slice(0, NAJVEC).map(s => (
-                  <li key={s.id} className="pm-li"><span className="pm-li-n">{s.title}</span><span className="pm-li-a">{money(s.amount)}</span></li>
+                  <li key={s.id}><button type="button" className="pm-li pm-li-btn" onClick={() => onOdpriDokument?.('stroski', s)}><span className="pm-li-n">{s.title}</span><span className="pm-li-a">{money(s.amount)}</span></button></li>
                 ))}
               </ul>
-              {strosekSort.length > NAJVEC && onOpenZapis && <button type="button" className="pm-vec" onClick={onOpenZapis}>{L('Prikaži vse', 'Show all')} ({strosekSort.length}) <Puscica /></button>}
+              {strosekSort.length > NAJVEC && (onOdpriVse || onOpenZapis) && <button type="button" className="pm-vec" onClick={() => onOdpriVse ? onOdpriVse('stroski') : onOpenZapis?.()}>{L('Prikaži vse', 'Show all')} ({strosekSort.length}) <Puscica /></button>}
             </>) : <p className="pm-muted">{L('Ni stroškov.', 'No expenses.')}</p>}
           </section>
 
@@ -439,7 +472,7 @@ export default function ProjectDetailModern({
         /* seznami zapisa (pogodbe/racuni/stroski) */
         .pm-list { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
         .pm-li { display:flex; align-items:center; gap:.5rem; padding:.42rem 0; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); font-size:.83rem; color:var(--pm-ink); }
-        .pm-li:first-child { border-top:0; }
+        .pm-list li:first-child .pm-li { border-top:0; }
         .pm-li-n { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .pm-li-s { flex:none; font-size:.62rem; font-weight:700; letter-spacing:.02em; text-transform:uppercase; color:var(--pm-muted); background:color-mix(in oklab, var(--pm-line) 40%, transparent); border-radius:999px; padding:.12rem .45rem; }
         .pm-li-d { flex:none; font-size:.72rem; color:var(--pm-muted); font-variant-numeric:tabular-nums; }
@@ -464,6 +497,26 @@ export default function ProjectDetailModern({
         .pm-crm-tip { flex:none; font-size:.62rem; font-weight:700; letter-spacing:.02em; text-transform:uppercase; color:var(--pm-muted); background:color-mix(in oklch, var(--pm-line) 40%, transparent); border-radius:999px; padding:.12rem .45rem; }
         .pm-crm-opis { flex:1; min-width:0; font-size:.83rem; color:var(--pm-ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .pm-crm-dan { flex:none; font-size:.72rem; color:var(--pm-muted); font-variant-numeric:tabular-nums; }
+        /* klikljive vrstice dokumentov (odpre desni panel s predogledom) */
+        .pm-li-btn { width:100%; box-sizing:border-box; border:0; background:none; cursor:pointer; text-align:left; margin:0; font:inherit; }
+        .pm-li-btn:hover { background:var(--pm-paper); }
+        /* klikljiv rok -> koledar */
+        .pm-rok-link { text-decoration:none; color:inherit; }
+        .pm-rok-link:hover { background:var(--pm-paper); }
+        /* poštni avatar */
+        .pm-mail-av { flex:none; width:1.55rem; height:1.55rem; border-radius:50%; display:grid; place-items:center; font-size:.58rem; font-weight:700; color:#fff; }
+        /* crm pika po tipu */
+        .pm-crm-pika { flex:none; width:.5rem; height:.5rem; border-radius:50%; }
+        /* aktivni taski */
+        .pm-naloge { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
+        .pm-naloga { display:flex; align-items:center; gap:.55rem; padding:.42rem 0; border-top:1px solid color-mix(in oklch, var(--pm-line) 60%, transparent); }
+        .pm-naloga:first-child { border-top:0; }
+        .pm-naloga-dot { flex:none; width:.55rem; height:.55rem; border-radius:50%; background:oklch(80% .03 90); }
+        .pm-naloga-dot[data-st="dela"] { background:var(--pm-acc); }
+        .pm-naloga-dot[data-st="pregled"] { background:oklch(70% .17 60); }
+        .pm-naloga-dot[data-st="koncano"] { background:oklch(70% .15 155); }
+        .pm-naloga-t { flex:1; min-width:0; font-size:.84rem; color:var(--pm-ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .pm-naloga-av { flex:none; width:1.5rem; height:1.5rem; border-radius:50%; display:grid; place-items:center; font-size:.56rem; font-weight:700; color:#fff; }
       ` }} />
     </div>
   );

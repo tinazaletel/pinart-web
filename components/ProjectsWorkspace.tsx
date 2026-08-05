@@ -42,6 +42,15 @@ const DEMO_CRM = [
   { id: 'crm-4', datum: '2026-05-20', tip: 'Dogovor', opis: 'Podaljšanje vzdrževanja 2025/26' },
 ];
 
+/* demo aktivni taski (predogled) — da kartica ni prazna; task↔projekt povezava pride s kolaboracijo */
+const DEMO_NALOGE = [
+  { id: 'n1', naslov: 'Wireframe ključnih strani portala', status: 'dela' as const, oseba: 'Luka Beg' },
+  { id: 'n2', naslov: 'Prototip navigacije in iskalnika', status: 'pregled' as const, oseba: 'Eva Kralj' },
+  { id: 'n3', naslov: 'Uskladitev tipografije s CGP', status: 'dela' as const, oseba: 'Tina Zaletel' },
+  { id: 'n4', naslov: 'Testiranje dostopnosti (WCAG AA)', status: 'todo' as const, oseba: 'Marko Zupan' },
+  { id: 'n5', naslov: 'Optimizacija hitrosti nalaganja', status: 'koncano' as const, oseba: 'Luka Beg' },
+];
+
 /* status projekta (tabela) — izpeljano iz offer.status po ISTI logiki kot filter
    spodaj (aktivni=accepted, cakajo=sent, zakljuceni=rejected); tone usklajen s
    tem, kako je isti offer.status prikazan v zavihku Ponudbe (statusOdtenek v
@@ -148,6 +157,8 @@ const pwStyles = `
    06 Komunikacije/07 Zapiski) — svoj pw- razdelek v duhu .projectNarrative
    kartic (isti border/radius/ozadje odtenek), da se lepo vklopi. */
 .pw-dodatno{display:flex;flex-direction:column;gap:.55rem;margin-top:.55rem}
+.pw-kom-panel{width:min(780px,94vw);max-width:min(780px,94vw)}
+.pw-kom-panel .pw-karta.pw-posta{margin:0;box-shadow:none;border:0;background:transparent;padding:0}
 .pw-karta{position:relative;overflow:hidden;padding:1rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:1rem;background:oklch(99% .006 87 / .85)}
 .pw-dokumentacija{background:linear-gradient(135deg,oklch(97% .022 250),oklch(97% .022 200))}
 .pw-dokumentacija h3{margin:0;font:600 1.15rem var(--font-sans),system-ui,sans-serif}
@@ -590,6 +601,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
      pilula ob zavihkih), uporabi to; sicer lastno stanje. */
   const [notranjiPogled, setNotranjiPogled] = useState<'seznam' | 'pipeline'>('seznam');
   const [pogledDetajl, setPogledDetajl] = useState<'tabelni' | 'moderni'>('moderni');
+  const [komOdprt, setKomOdprt] = useState(false);   /* komunikacijski RTL panel (pošta v svojem oknu) */
   const pogled = pogledZunaj ?? notranjiPogled;
   const setPogled = (v: 'seznam' | 'pipeline') => { if (onPogled) onPogled(v); else setNotranjiPogled(v); };
   /* sodelavci — se uporabljajo za prikaz "Dodeljeni" na vozliscu projekta (glej
@@ -792,6 +804,108 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     setLinks(next); saveProjectLinks(selectedId, next);
   };
 
+  /* poštni odjemalec — izlušč iz tabelnega, da ga uporabim tudi v komunikacijskem panelu (Delovni pogled) */
+  const komVsebina = () => (
+    <article className="pw-karta pw-posta">
+            <div className="pw-posta-glava">
+              <div><p className={styles.eyebrow}>{L('06 · KOMUNIKACIJE', '06 · COMMUNICATIONS')}</p><h3>{L('Vse na enem mestu', 'All in one place')}</h3></div>
+              {!beriMail && posta.length > 0 && (
+                <div style={{ position: 'relative', flex: '0 1 320px', margin: '0 auto 0 1rem' }}>
+                  <MagnifyingGlass size={15} weight="bold" style={{ position: 'absolute', left: '.65rem', top: '50%', transform: 'translateY(-50%)', color: 'color-mix(in oklch, var(--ink) 45%, transparent)', pointerEvents: 'none' }} />
+                  <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder={L('Išči po zadevi ali naslovu …', 'Search by subject or address …')} style={{ width: '100%', boxSizing: 'border-box', padding: '.42rem .7rem .42rem 2rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.6rem', background: 'oklch(100% 0 0 / .55)', font: '500 .8rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />
+                </div>
+              )}
+              <button type="button" className="pw-posta-nova" disabled={samoOgled} title={samoOgled ? L('Na voljo v načinu »Moji podatki« — zdaj gledaš predogled', 'Available in “My data” mode — you are viewing a preview') : L('Napiši sporočilo stranki', 'Write a message to the client')} onClick={odpriPisanje}>{L('✎ Nova pošta', '✎ New mail')}</button>
+            </div>
+            {pisiOdprt && !samoOgled && (
+              <div className="pw-pisi">
+                <label className="pw-pisi-v"><span>{L('Za', 'To')}</span><input type="email" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder={L('stranka@email.si', 'client@email.com')} /></label>
+                <label className="pw-pisi-v"><span>{L('Zadeva', 'Subject')}</span><input type="text" value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} placeholder={L('Zadeva sporočila', 'Message subject')} /></label>
+                <div className="pw-pisi-orodja">
+                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title={L('Krepko', 'Bold')} aria-label={L('Krepko', 'Bold')}><TextB size={15} weight="bold" /></button>
+                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title={L('Ležeče', 'Italic')} aria-label={L('Ležeče', 'Italic')}><TextItalic size={15} weight="bold" /></button>
+                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('insertUnorderedList'); }} title={L('Označen seznam', 'Bulleted list')} aria-label={L('Označen seznam', 'Bulleted list')}><ListBullets size={15} weight="bold" /></button>
+                  <button type="button" onMouseDown={e => { e.preventDefault(); vstaviPovezavo(); }} title={L('Povezava', 'Link')} aria-label={L('Povezava', 'Link')}><LinkSimple size={15} weight="bold" /></button>
+                </div>
+                <div className="pw-pisi-telo" ref={pisiTeloRef} contentEditable suppressContentEditableWarning role="textbox" aria-label={L('Besedilo sporočila', 'Message body')} data-placeholder={L('Napiši sporočilo …', 'Write a message …')} />
+                {pisiStatus && <p className="pw-pisi-status">{pisiStatus}</p>}
+                <div className="pw-pisi-akcije">
+                  <button type="button" className="pw-pisi-preklic" onClick={() => setPisiOdprt(false)}>{L('Prekliči', 'Cancel')}</button>
+                  <button type="button" className="pw-pisi-preklic" onClick={() => {
+                    const za = pisiZa.trim(); const zadeva = pisiZadeva.trim(); const telo = pisiTeloRef.current?.innerHTML || '';
+                    if (!selectedId || (!za && !zadeva && !telo.replace(/<[^>]+>/g, '').trim())) { setPisiOdprt(false); return; }
+                    const id = crypto.randomUUID(); const now = new Date().toISOString();
+                    setPosta(p => [{ id, projectId: selectedId, smer: 'poslano', prejemniki: za ? [za] : [], zadeva, datum: now, telo, osnutek: true } as PostaVnos, ...p]);
+                    void saveDraft({ id, projectExternalId: selectedId, direction: 'out', toEmails: za ? [za] : [], subject: zadeva, bodyHtml: telo, isDraft: true, occurredAt: now }).catch(() => undefined);
+                    setPisiOdprt(false); setMapa('osnutki'); setBeriMail(null);
+                  }}>{L('Shrani osnutek', 'Save draft')}</button>
+                  <button type="button" className="pw-pisi-poslji" disabled={pisiPosiljam} onClick={posljiPisanje}>{pisiPosiljam ? L('Pošiljam …', 'Sending …') : L('Pošlji', 'Send')}</button>
+                </div>
+              </div>
+            )}
+            <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '1rem', alignItems: 'flex-start', margin: '.75rem 0 0' }}>
+              <div className="pw-posta-mape" style={{ flex: 'none', width: 138, display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
+              {([{ id: 'prejeto', ime: L('Prejeto', 'Inbox'), Ikona: Tray }, { id: 'poslano', ime: L('Poslano', 'Sent'), Ikona: PaperPlaneTilt }, { id: 'osnutki', ime: L('Osnutki', 'Drafts'), Ikona: NotePencil }, { id: 'kos', ime: L('Koš', 'Trash'), Ikona: Trash }] as const).map(({ id, ime, Ikona }) => {
+                const st = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === id).length;
+                const on = mapa === id;
+                return <button key={id} type="button" onClick={() => { setMapa(id); setBeriMail(null); }} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', width: '100%', textAlign: 'left', border: 'none', background: on ? 'color-mix(in oklch, var(--ink) 9%, transparent)' : 'transparent', color: 'var(--ink)', borderRadius: '.6rem', padding: '.5rem .7rem', font: `${on ? 700 : 500} .78rem var(--font-sans), sans-serif`, cursor: 'pointer' }}><Ikona size={16} weight={on ? 'fill' : 'regular'} /><span style={{ flex: 1 }}>{ime}</span>{st ? <span style={{ fontWeight: 700, opacity: .55 }}>{st}</span> : null}</button>;
+              })}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+              {(() => {
+                const osebe = Array.from(new Set(posta.flatMap(v => v.prejemniki).filter(Boolean)));
+                return osebe.length > 1 ? (
+                  <select value={postaOseba} onChange={e => setPostaOseba(e.target.value)} aria-label={L('Filter po prejemniku', 'Filter by recipient')} style={{ display: 'block', margin: '0 0 .5rem auto', border: `1px solid ${postaOseba ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: postaOseba ? 'var(--ink)' : 'transparent', color: postaOseba ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer', maxWidth: '70%' }}>
+                    <option value="" style={{ color: 'var(--ink)', background: 'var(--paper)' }}>{L('Vsi prejemniki', 'All recipients')}</option>
+                    {osebe.map(o => <option key={o} value={o} style={{ color: 'var(--ink)', background: 'var(--paper)' }}>{o}</option>)}
+                  </select>
+                ) : null;
+              })()}
+            {beriMail ? (
+              <div style={{ position: 'relative', zIndex: 1, margin: '.75rem 0 0', padding: '.9rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.85rem', background: 'oklch(100% 0 0 / .72)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.55rem' }}>
+                  <button type="button" onClick={() => setBeriMail(null)} style={{ border: 0, background: 'none', color: 'var(--ink)', font: '700 .7rem var(--font-sans), sans-serif', cursor: 'pointer', padding: 0 }}>{L('← Nazaj na seznam', '← Back to list')}</button>
+                  {!samoOgled && <div style={{ display: 'flex', gap: '.45rem' }}>
+                    {beriMail.izbrisano ? <>
+                      <button type="button" onClick={() => { const id = beriMail.id; void restoreProjectMail(id).catch(() => undefined); setPosta(p => p.map(v => v.id === id ? { ...v, izbrisano: undefined } : v)); setBeriMail(null); }} style={{ border: '1px solid var(--ink)', background: 'none', color: 'var(--ink)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}>{L('Obnovi', 'Restore')}</button>
+                      <button type="button" onClick={() => { const id = beriMail.id; void deleteProjectMailPermanent(id).catch(() => undefined); setPosta(p => p.filter(v => v.id !== id)); setBeriMail(null); }} style={{ border: '1px solid oklch(58% .18 25)', background: 'none', color: 'oklch(52% .18 25)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}>{L('Zbriši dokončno', 'Delete permanently')}</button>
+                    </> : <button type="button" onClick={() => { const id = beriMail.id; void trashProjectMail(id).catch(() => undefined); setPosta(p => p.map(v => v.id === id ? { ...v, izbrisano: new Date().toISOString() } : v)); setBeriMail(null); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', border: '1px solid color-mix(in oklch, var(--ink) 20%, transparent)', background: 'none', color: 'var(--ink)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}><Trash size={13} weight="bold" /> {L('V koš', 'To trash')}</button>}
+                  </div>}
+                </div>
+                <b style={{ display: 'block', fontSize: '.92rem' }}>{beriMail.zadeva || L('(brez zadeve)', '(no subject)')}</b>
+                <small style={{ display: 'block', color: 'var(--muted)', margin: '.15rem 0 .7rem' }}>{beriMail.prejemniki.join(', ')} · {datStr(beriMail.datum)}</small>
+                {beriMail.telo
+                  ? (beriMail.smer === 'prejeto'
+                      ? <div style={{ whiteSpace: 'pre-wrap', fontSize: '.85rem', lineHeight: 1.55 }}>{beriMail.telo.replace(/<[^>]+>/g, ' ')}</div>
+                      : <div style={{ fontSize: '.85rem', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: beriMail.telo }} />)
+                  : <p style={{ color: 'var(--muted)', fontSize: '.82rem' }}>{L('To sporočilo nima shranjenega besedila (starejši/lokalni zapis).', 'This message has no stored text (older/local record).')}</p>}
+              </div>
+            ) : (() => {
+              const q = postaIsk.trim().toLowerCase();
+              const seznam = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa).filter(v => !q || `${v.zadeva} ${v.prejemniki.join(' ')}`.toLowerCase().includes(q)).filter(v => !postaOseba || v.prejemniki.includes(postaOseba));
+              return seznam.length ? (
+                <ul className="pw-posta-seznam">
+                  {seznam.map(vnos => (
+                    <li key={vnos.id} onClick={() => setBeriMail(vnos)} style={{ cursor: 'pointer', border: '1px solid color-mix(in oklch, var(--ink) 4%, transparent)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '.6rem', alignItems: 'baseline' }}>
+                        <b style={{ fontSize: '.82rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vnos.prejemniki.join(', ') || '—'}</b>
+                        <small style={{ flex: 'none', color: 'var(--muted)', fontSize: '.66rem' }}>{datStr(vnos.datum)}{casStr(vnos.datum) ? ` · ${casStr(vnos.datum)}` : ''}</small>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '.5rem', alignItems: 'baseline' }}>
+                        <span style={{ fontSize: '.8rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vnos.zadeva || L('(brez zadeve)', '(no subject)')}</span>
+                        <span style={{ flex: 'none', fontSize: '.5rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>{vnos.izbrisano ? L('Koš', 'Trash') : vnos.osnutek ? L('Osnutek', 'Draft') : vnos.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="pw-posta-prazno">{mapa === 'prejeto' ? L('Še ni prejete pošte — prižge se, ko aktiviramo dohodno pošto.', 'No received mail yet — it turns on once we enable inbound mail.') : mapa === 'osnutki' ? L('Ni osnutkov.', 'No drafts.') : mapa === 'kos' ? L('Koš je prazen.', 'Trash is empty.') : L('Še ni poslane pošte. Klikni Nova pošta in piši stranki.', 'No sent mail yet. Click New mail and write to the client.')}</p>
+              );
+            })()}
+              </div>
+            </div>
+          </article>
+  );
   return <div className={styles.projectsPage}><style dangerouslySetInnerHTML={{ __html: overflowFix + pwStyles }} />
     {portalPripravljen && !selected && izbrani.size > 0 && createPortal(
       <div className="pw-izbor-letev" role="region" aria-label={L('Izbrani projekti', 'Selected projects')}>
@@ -940,10 +1054,14 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             onToggleMember={selected.real ? (id: string) => preklopiDodeljen(selected.real!, id) : undefined}
             posta={posta}
             onOpenZapis={() => setPogledDetajl('tabelni')}
+            onOdpriKomunikacije={() => setKomOdprt(true)}
+            onOdpriVse={openVsi}
+            onOdpriDokument={(tip, item) => setVrsticaDetajl({ tip, item })}
             ekipaStatus={samoOgled ? { 'demo-sod-luka': 'dela', 'demo-sod-eva': 'review' } : undefined}
             agenti={samoOgled && selected.real ? [{ id: 'agent-copy', ime: jeEn ? 'Copy agent' : 'Copy agent', stanje: 'review' }, { id: 'agent-research', ime: jeEn ? 'Research agent' : 'Razisk. agent', stanje: 'koncal' }] : undefined}
             links={links}
             crmVnosi={samoOgled ? DEMO_CRM : undefined}
+            naloge={samoOgled ? DEMO_NALOGE : undefined}
           />
         ) : (<>
         <div className={styles.projectMoney}><label><small>{L('Dogovorjena vrednost', 'Agreed value')}</small><span><input type="number" min="0" step="0.01" value={selected.agreed || ''} onChange={event => saveAmount(selected.offer.id, Number(event.target.value))} /> €</span><b className={styles.subpageMetricIcon}><MetricIcon type="document" /></b></label><span><small>{L('Zaračunano', 'Billed')}</small><strong>{money(selected.billed)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="paid" /></b></span><span className={selected.unbilled > 0 ? styles.projectNeedsInvoice : ''}><small>{L('Še ni zaračunano', 'Not yet billed')}</small><strong>{selected.agreed ? money(selected.unbilled) : '—'}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="cost" /></b></span><span><small>{L('Ocenjeni rezultat', 'Estimated result')}</small><strong>{money(selected.profit)}</strong><b className={styles.subpageMetricIcon}><MetricIcon type="profit" /></b></span></div>
@@ -998,105 +1116,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         <article className={styles.projectAgreement} style={{ position: 'relative', flex: '1 1 300px', minWidth: 0, display: 'flex', flexDirection: 'column', padding: '1rem', border: '1px solid color-mix(in oklch, var(--ink) 4%, transparent)', borderRadius: '1rem', background: 'linear-gradient(135deg, oklch(97% .025 295), oklch(97% .025 165))', overflow: 'hidden' }}><p className={styles.eyebrow}>{L('01 · DOGOVORJENO', '01 · AGREED')}</p><h3>{L('Kaj je bilo v ponudbi?', 'What was in the offer?')}</h3>{selected.offer.scope.length ? <ul>{selected.offer.scope.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul> : selected.real ? <p>{L('Ta projekt še nima ponudbe. Pripravi jo v kalkulatorju, ko bo obseg jasen.', 'This project has no offer yet. Prepare one in the calculator once the scope is clear.')}</p> : <p>{L('Starejša ponudba nima strukturiranega obsega. Odpri jo v kalkulatorju za celotno besedilo.', 'This older offer has no structured scope. Open it in the calculator for the full text.')}</p>}<Link href={`${base}/kalkulator/orodje?od=pregled`} aria-label={L('Ustvari ponudbo za ta projekt', 'Create an offer for this project')} title={L('Ustvari ponudbo', 'Create offer')}><Plus size={18} weight="bold" /></Link></article></div><div className={styles.projectNarrative}><article style={{ background: 'linear-gradient(140deg, oklch(96% .035 160), oklch(88% .075 163))' }}><p className={styles.eyebrow}>{L('02 · POGODBE', '02 · CONTRACTS')}</p><h3>{selected.contracts.length ? (jeEn ? `${selected.contracts.length} linked` : `${selected.contracts.length} povezanih`) : L('Brez pogodbe', 'No contract')}</h3>{pogodbeSort.slice(0, NAJNOVEJSIH).map(pogodbaVrstica)}{pogodbeSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('pogodbe')}>{L('Prikaži vse', 'Show all')} ({pogodbeSort.length}) →</button>}<Link href={`${base}/kalkulator/pogodbe`} aria-label={L('Dodaj pogodbo za ta projekt', 'Add a contract for this project')}><Plus size={18} weight="bold" /></Link></article><article style={{ background: 'linear-gradient(140deg, oklch(96% .035 295), oklch(88% .075 297))' }}><p className={styles.eyebrow}>{L('03 · RAČUNI', '03 · INVOICES')}</p><h3>{money(selected.billed)}</h3>{racuniSort.slice(0, NAJNOVEJSIH).map(racunVrstica)}{racuniSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('racuni')}>{L('Prikaži vse', 'Show all')} ({racuniSort.length}) →</button>}<Link href={`${base}/kalkulator/racuni`} aria-label={L('Dodaj račun za ta projekt', 'Add an invoice for this project')}><Plus size={18} weight="bold" /></Link></article><article style={{ background: 'linear-gradient(140deg, oklch(97% .03 65), oklch(89% .075 60))' }}><p className={styles.eyebrow}>{L('04 · STROŠKI', '04 · EXPENSES')}</p><h3>{money(selected.costs)}</h3>{strosekSort.slice(0, NAJNOVEJSIH).map(strosekVrstica)}{strosekSort.length > NAJNOVEJSIH && <button type="button" className="pw-vec" onClick={() => openVsi('stroski')}>{L('Prikaži vse', 'Show all')} ({strosekSort.length}) →</button>}<Link href={`${base}/kalkulator/stroski`} aria-label={L('Dodaj strošek za ta projekt', 'Add an expense for this project')}><Plus size={18} weight="bold" /></Link></article><article className="pw-karta pw-dokumentacija"><p className={styles.eyebrow}>{L('05 · DOKUMENTACIJA', '05 · DOCUMENTATION')}</p><h3>{L('Povezave do zunanjih datotek', 'Links to external files')}</h3>{links.length ? (<div className="pw-linki">{links.map((link, index) => (<div key={`${link.url}-${index}`} className="pw-link-vrstica"><a href={link.url} target="_blank" rel="noopener noreferrer">{link.oznaka}</a>{!samoOgled && <button type="button" className="pw-link-brisi" onClick={() => removeLink(index)} aria-label={`${L('Izbriši povezavo', 'Delete link')} ${link.oznaka}`}>×</button>}</div>))}</div>) : <p className="pw-link-prazno">{L('Še ni dodanih povezav.', 'No links added yet.')}</p>}{!samoOgled && dodajOdprt && (<div className="pw-link-obrazec"><input type="text" value={linkOznaka} onChange={event => setLinkOznaka(event.target.value)} placeholder={L('npr. Figma', 'e.g. Figma')} aria-label={L('Oznaka povezave', 'Link label')} /><input type="url" value={linkUrl} onChange={event => setLinkUrl(event.target.value)} placeholder="https://…" aria-label={L('Naslov povezave (Figma, Miro, IDD, mapa Drive …)', 'Link address (Figma, Miro, IDD, Drive folder …)')} /><button type="button" className="pw-link-dodaj" onClick={addLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>{L('+ Dodaj povezavo', '+ Add link')}</button></div>)}{samoOgled && dodajOdprt && <p className="pw-opozorilo">{L('Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.', 'Adding links is not available in the demo preview. Sign in to your account.')}</p>}<button type="button" className="pw-dok-dodaj" onClick={() => setDodajOdprt(open => !open)} aria-label={dodajOdprt ? L('Zapri dodajanje povezave', 'Close add link') : L('Dodaj povezavo', 'Add link')}><Plus size={16} weight="bold" /></button></article></div>
 
         <div className="pw-dodatno">
-          <article className="pw-karta pw-posta">
-            <div className="pw-posta-glava">
-              <div><p className={styles.eyebrow}>{L('06 · KOMUNIKACIJE', '06 · COMMUNICATIONS')}</p><h3>{L('Vse na enem mestu', 'All in one place')}</h3></div>
-              {!beriMail && posta.length > 0 && (
-                <div style={{ position: 'relative', flex: '0 1 320px', margin: '0 auto 0 1rem' }}>
-                  <MagnifyingGlass size={15} weight="bold" style={{ position: 'absolute', left: '.65rem', top: '50%', transform: 'translateY(-50%)', color: 'color-mix(in oklch, var(--ink) 45%, transparent)', pointerEvents: 'none' }} />
-                  <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder={L('Išči po zadevi ali naslovu …', 'Search by subject or address …')} style={{ width: '100%', boxSizing: 'border-box', padding: '.42rem .7rem .42rem 2rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.6rem', background: 'oklch(100% 0 0 / .55)', font: '500 .8rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />
-                </div>
-              )}
-              <button type="button" className="pw-posta-nova" disabled={samoOgled} title={samoOgled ? L('Na voljo v načinu »Moji podatki« — zdaj gledaš predogled', 'Available in “My data” mode — you are viewing a preview') : L('Napiši sporočilo stranki', 'Write a message to the client')} onClick={odpriPisanje}>{L('✎ Nova pošta', '✎ New mail')}</button>
-            </div>
-            {pisiOdprt && !samoOgled && (
-              <div className="pw-pisi">
-                <label className="pw-pisi-v"><span>{L('Za', 'To')}</span><input type="email" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder={L('stranka@email.si', 'client@email.com')} /></label>
-                <label className="pw-pisi-v"><span>{L('Zadeva', 'Subject')}</span><input type="text" value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} placeholder={L('Zadeva sporočila', 'Message subject')} /></label>
-                <div className="pw-pisi-orodja">
-                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('bold'); }} title={L('Krepko', 'Bold')} aria-label={L('Krepko', 'Bold')}><TextB size={15} weight="bold" /></button>
-                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title={L('Ležeče', 'Italic')} aria-label={L('Ležeče', 'Italic')}><TextItalic size={15} weight="bold" /></button>
-                  <button type="button" onMouseDown={e => { e.preventDefault(); oblikuj('insertUnorderedList'); }} title={L('Označen seznam', 'Bulleted list')} aria-label={L('Označen seznam', 'Bulleted list')}><ListBullets size={15} weight="bold" /></button>
-                  <button type="button" onMouseDown={e => { e.preventDefault(); vstaviPovezavo(); }} title={L('Povezava', 'Link')} aria-label={L('Povezava', 'Link')}><LinkSimple size={15} weight="bold" /></button>
-                </div>
-                <div className="pw-pisi-telo" ref={pisiTeloRef} contentEditable suppressContentEditableWarning role="textbox" aria-label={L('Besedilo sporočila', 'Message body')} data-placeholder={L('Napiši sporočilo …', 'Write a message …')} />
-                {pisiStatus && <p className="pw-pisi-status">{pisiStatus}</p>}
-                <div className="pw-pisi-akcije">
-                  <button type="button" className="pw-pisi-preklic" onClick={() => setPisiOdprt(false)}>{L('Prekliči', 'Cancel')}</button>
-                  <button type="button" className="pw-pisi-preklic" onClick={() => {
-                    const za = pisiZa.trim(); const zadeva = pisiZadeva.trim(); const telo = pisiTeloRef.current?.innerHTML || '';
-                    if (!selectedId || (!za && !zadeva && !telo.replace(/<[^>]+>/g, '').trim())) { setPisiOdprt(false); return; }
-                    const id = crypto.randomUUID(); const now = new Date().toISOString();
-                    setPosta(p => [{ id, projectId: selectedId, smer: 'poslano', prejemniki: za ? [za] : [], zadeva, datum: now, telo, osnutek: true } as PostaVnos, ...p]);
-                    void saveDraft({ id, projectExternalId: selectedId, direction: 'out', toEmails: za ? [za] : [], subject: zadeva, bodyHtml: telo, isDraft: true, occurredAt: now }).catch(() => undefined);
-                    setPisiOdprt(false); setMapa('osnutki'); setBeriMail(null);
-                  }}>{L('Shrani osnutek', 'Save draft')}</button>
-                  <button type="button" className="pw-pisi-poslji" disabled={pisiPosiljam} onClick={posljiPisanje}>{pisiPosiljam ? L('Pošiljam …', 'Sending …') : L('Pošlji', 'Send')}</button>
-                </div>
-              </div>
-            )}
-            <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '1rem', alignItems: 'flex-start', margin: '.75rem 0 0' }}>
-              <div className="pw-posta-mape" style={{ flex: 'none', width: 138, display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
-              {([{ id: 'prejeto', ime: L('Prejeto', 'Inbox'), Ikona: Tray }, { id: 'poslano', ime: L('Poslano', 'Sent'), Ikona: PaperPlaneTilt }, { id: 'osnutki', ime: L('Osnutki', 'Drafts'), Ikona: NotePencil }, { id: 'kos', ime: L('Koš', 'Trash'), Ikona: Trash }] as const).map(({ id, ime, Ikona }) => {
-                const st = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === id).length;
-                const on = mapa === id;
-                return <button key={id} type="button" onClick={() => { setMapa(id); setBeriMail(null); }} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', width: '100%', textAlign: 'left', border: 'none', background: on ? 'color-mix(in oklch, var(--ink) 9%, transparent)' : 'transparent', color: 'var(--ink)', borderRadius: '.6rem', padding: '.5rem .7rem', font: `${on ? 700 : 500} .78rem var(--font-sans), sans-serif`, cursor: 'pointer' }}><Ikona size={16} weight={on ? 'fill' : 'regular'} /><span style={{ flex: 1 }}>{ime}</span>{st ? <span style={{ fontWeight: 700, opacity: .55 }}>{st}</span> : null}</button>;
-              })}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-              {(() => {
-                const osebe = Array.from(new Set(posta.flatMap(v => v.prejemniki).filter(Boolean)));
-                return osebe.length > 1 ? (
-                  <select value={postaOseba} onChange={e => setPostaOseba(e.target.value)} aria-label={L('Filter po prejemniku', 'Filter by recipient')} style={{ display: 'block', margin: '0 0 .5rem auto', border: `1px solid ${postaOseba ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: postaOseba ? 'var(--ink)' : 'transparent', color: postaOseba ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer', maxWidth: '70%' }}>
-                    <option value="" style={{ color: 'var(--ink)', background: 'var(--paper)' }}>{L('Vsi prejemniki', 'All recipients')}</option>
-                    {osebe.map(o => <option key={o} value={o} style={{ color: 'var(--ink)', background: 'var(--paper)' }}>{o}</option>)}
-                  </select>
-                ) : null;
-              })()}
-            {beriMail ? (
-              <div style={{ position: 'relative', zIndex: 1, margin: '.75rem 0 0', padding: '.9rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.85rem', background: 'oklch(100% 0 0 / .72)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.55rem' }}>
-                  <button type="button" onClick={() => setBeriMail(null)} style={{ border: 0, background: 'none', color: 'var(--ink)', font: '700 .7rem var(--font-sans), sans-serif', cursor: 'pointer', padding: 0 }}>{L('← Nazaj na seznam', '← Back to list')}</button>
-                  {!samoOgled && <div style={{ display: 'flex', gap: '.45rem' }}>
-                    {beriMail.izbrisano ? <>
-                      <button type="button" onClick={() => { const id = beriMail.id; void restoreProjectMail(id).catch(() => undefined); setPosta(p => p.map(v => v.id === id ? { ...v, izbrisano: undefined } : v)); setBeriMail(null); }} style={{ border: '1px solid var(--ink)', background: 'none', color: 'var(--ink)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}>{L('Obnovi', 'Restore')}</button>
-                      <button type="button" onClick={() => { const id = beriMail.id; void deleteProjectMailPermanent(id).catch(() => undefined); setPosta(p => p.filter(v => v.id !== id)); setBeriMail(null); }} style={{ border: '1px solid oklch(58% .18 25)', background: 'none', color: 'oklch(52% .18 25)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}>{L('Zbriši dokončno', 'Delete permanently')}</button>
-                    </> : <button type="button" onClick={() => { const id = beriMail.id; void trashProjectMail(id).catch(() => undefined); setPosta(p => p.map(v => v.id === id ? { ...v, izbrisano: new Date().toISOString() } : v)); setBeriMail(null); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', border: '1px solid color-mix(in oklch, var(--ink) 20%, transparent)', background: 'none', color: 'var(--ink)', borderRadius: '999px', padding: '.24rem .7rem', font: '700 .64rem var(--font-sans), sans-serif', cursor: 'pointer' }}><Trash size={13} weight="bold" /> {L('V koš', 'To trash')}</button>}
-                  </div>}
-                </div>
-                <b style={{ display: 'block', fontSize: '.92rem' }}>{beriMail.zadeva || L('(brez zadeve)', '(no subject)')}</b>
-                <small style={{ display: 'block', color: 'var(--muted)', margin: '.15rem 0 .7rem' }}>{beriMail.prejemniki.join(', ')} · {datStr(beriMail.datum)}</small>
-                {beriMail.telo
-                  ? (beriMail.smer === 'prejeto'
-                      ? <div style={{ whiteSpace: 'pre-wrap', fontSize: '.85rem', lineHeight: 1.55 }}>{beriMail.telo.replace(/<[^>]+>/g, ' ')}</div>
-                      : <div style={{ fontSize: '.85rem', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: beriMail.telo }} />)
-                  : <p style={{ color: 'var(--muted)', fontSize: '.82rem' }}>{L('To sporočilo nima shranjenega besedila (starejši/lokalni zapis).', 'This message has no stored text (older/local record).')}</p>}
-              </div>
-            ) : (() => {
-              const q = postaIsk.trim().toLowerCase();
-              const seznam = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa).filter(v => !q || `${v.zadeva} ${v.prejemniki.join(' ')}`.toLowerCase().includes(q)).filter(v => !postaOseba || v.prejemniki.includes(postaOseba));
-              return seznam.length ? (
-                <ul className="pw-posta-seznam">
-                  {seznam.map(vnos => (
-                    <li key={vnos.id} onClick={() => setBeriMail(vnos)} style={{ cursor: 'pointer', border: '1px solid color-mix(in oklch, var(--ink) 4%, transparent)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '.6rem', alignItems: 'baseline' }}>
-                        <b style={{ fontSize: '.82rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vnos.prejemniki.join(', ') || '—'}</b>
-                        <small style={{ flex: 'none', color: 'var(--muted)', fontSize: '.66rem' }}>{datStr(vnos.datum)}{casStr(vnos.datum) ? ` · ${casStr(vnos.datum)}` : ''}</small>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '.5rem', alignItems: 'baseline' }}>
-                        <span style={{ fontSize: '.8rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vnos.zadeva || L('(brez zadeve)', '(no subject)')}</span>
-                        <span style={{ flex: 'none', fontSize: '.5rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>{vnos.izbrisano ? L('Koš', 'Trash') : vnos.osnutek ? L('Osnutek', 'Draft') : vnos.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="pw-posta-prazno">{mapa === 'prejeto' ? L('Še ni prejete pošte — prižge se, ko aktiviramo dohodno pošto.', 'No received mail yet — it turns on once we enable inbound mail.') : mapa === 'osnutki' ? L('Ni osnutkov.', 'No drafts.') : mapa === 'kos' ? L('Koš je prazen.', 'Trash is empty.') : L('Še ni poslane pošte. Klikni Nova pošta in piši stranki.', 'No sent mail yet. Click New mail and write to the client.')}</p>
-              );
-            })()}
-              </div>
-            </div>
-          </article>
+          {komVsebina()}
           <Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-karta pw-dnevnik-link">
             <p className={styles.eyebrow}>{L('07 · CRM DNEVNIK', '07 · CRM DIARY')}</p>
             <h3>{L('Klici, sestanki, dogovori', 'Calls, meetings, agreements')}</h3>
@@ -1110,6 +1130,15 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
 
     {/* SLIDE "Vsi <tip>" z desne — vzorec styles.detailBackdrop/detailPanel + lepljivi X
         (glej ArhivWorkspace .arh-det-x); poln seznam za pogodbe/računi/stroški TA projekta */}
+    {komOdprt && selected && (
+      <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={() => setKomOdprt(false)}>
+        <aside className={`${styles.detailPanel} pw-vsi-panel pw-kom-panel`} role="dialog" aria-modal="true" aria-label={L('Komunikacija', 'Communication')} onMouseDown={e => e.stopPropagation()}>
+          <button type="button" className="pw-vsi-x" onClick={() => setKomOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button>
+          {komVsebina()}
+        </aside>
+      </div>
+    )}
+
     {vsiOdprt && selected && (
       <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={closeVsi}>
         <aside className={`${styles.detailPanel} pw-vsi-panel`} role="dialog" aria-modal="true" aria-labelledby="pw-vsi-naslov" onMouseDown={e => e.stopPropagation()}>
