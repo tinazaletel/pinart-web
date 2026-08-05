@@ -12,11 +12,11 @@ import { preberiNaloge } from '@/lib/naloge';
 import { preberiVsePoste, type PostaVnos } from '@/lib/postaDnevnik';
 
 /* Demo za nadzorno ploščo (»polno poslovanje«) — naloge + komunikacija */
-const DASH_DEMO_NALOGE: { naslov: string; stolpec: string }[] = [
-  { naslov: 'Wireframe ključnih strani portala', stolpec: 'in_progress' },
-  { naslov: 'Prototip navigacije in iskalnika', stolpec: 'todo' },
-  { naslov: 'Uskladitev tipografije s CGP', stolpec: 'in_progress' },
-  { naslov: 'Testiranje dostopnosti (WCAG AA)', stolpec: 'waiting' },
+const DASH_DEMO_NALOGE: { naslov: string; stolpec: string; oseba?: string }[] = [
+  { naslov: 'Prototip navigacije in iskalnika', stolpec: 'waiting', oseba: 'Eva Kralj' },
+  { naslov: 'Wireframe ključnih strani portala', stolpec: 'in_progress', oseba: 'Luka Beg' },
+  { naslov: 'Uskladitev tipografije s CGP', stolpec: 'in_progress', oseba: 'Marko Zupan' },
+  { naslov: 'Testiranje dostopnosti (WCAG AA)', stolpec: 'todo', oseba: 'Luka Beg' },
 ];
 const DASH_DEMO_POSTA: { smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string }[] = [
   { smer: 'prejeto', kdo: 'info@rokusklett.si', zadeva: 'Re: Prenova portala — potrditev obsega' },
@@ -76,12 +76,12 @@ export default function BusinessOverview({ base }: { base: string }) {
   const [period, setPeriod] = useState<Period>('month');
   /* prej useState -> preklop je veljal SAMO tu in podstrani so ostale prazne */
   const [preview, setPreview] = usePredogled();
-  const [dashNaloge, setDashNaloge] = useState<{ naslov: string; stolpec: string }[]>([]);
+  const [dashNaloge, setDashNaloge] = useState<{ naslov: string; stolpec: string; oseba?: string }[]>([]);
   const [dashPosta, setDashPosta] = useState<{ smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string }[]>([]);
   useEffect(() => {
     if (preview !== 'mine') { setDashNaloge(DASH_DEMO_NALOGE); setDashPosta(DASH_DEMO_POSTA); return; }
     try {
-      setDashNaloge(preberiNaloge().filter(n => n.stolpec !== 'done').slice(0, 4).map(n => ({ naslov: n.naslov, stolpec: n.stolpec })));
+      setDashNaloge(preberiNaloge().filter(n => n.stolpec !== 'done').sort((a, b) => (a.stolpec === 'waiting' ? -1 : 0) - (b.stolpec === 'waiting' ? -1 : 0)).slice(0, 4).map(n => ({ naslov: n.naslov, stolpec: n.stolpec, oseba: n.dodeljenoOsebaIme })));
       setDashPosta(preberiVsePoste().slice(0, 4).map((v: PostaVnos) => ({ smer: v.smer, kdo: v.prejemniki[0] || '—', zadeva: v.zadeva || '—' })));
     } catch { setDashNaloge([]); setDashPosta([]); }
   }, [preview]);
@@ -458,7 +458,14 @@ export default function BusinessOverview({ base }: { base: string }) {
           <div className={styles.bandBody}>
           <h2 id="task-title" className={styles.bandNaslov}>{L('Aktivne naloge', 'Active tasks')}</h2>
           {dashNaloge.length ? <ul style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
-            {dashNaloge.map((n, i) => <li key={i}><Link className={styles.dashRow} href={`${base}/kalkulator/naloge`}><span aria-hidden style={{ flex: 'none', width: '.5rem', height: '.5rem', borderRadius: '50%', background: n.stolpec === 'in_progress' ? 'var(--accent)' : n.stolpec === 'waiting' ? 'oklch(76% .14 75)' : n.stolpec === 'done' ? 'oklch(70% .15 155)' : 'oklch(80% .03 90)' }} /><span style={{ flex: 1, minWidth: 0, fontSize: '.86rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.naslov}</span><span className={styles.dashRowArrow} aria-hidden>›</span></Link></li>)}
+            {dashNaloge.map((n, i) => { const bg = n.stolpec === 'in_progress' ? 'var(--accent)' : n.stolpec === 'waiting' ? 'oklch(76% .14 75)' : n.stolpec === 'done' ? 'oklch(70% .15 155)' : 'oklch(80% .03 90)'; const lbl = n.stolpec === 'in_progress' ? L('V teku', 'In progress') : n.stolpec === 'waiting' ? L('Za pregled', 'For review') : n.stolpec === 'done' ? L('Končano', 'Done') : L('Za začeti', 'To do'); return (
+              <li key={i}><Link className={styles.dashRow} href={`${base}/kalkulator/naloge`}>
+                <span aria-hidden style={{ flex: 'none', width: '.5rem', height: '.5rem', borderRadius: '50%', background: bg }} />
+                <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}><b style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.naslov}</b>{n.oseba && <small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.oseba}</small>}</span>
+                <span style={{ flex: 'none', fontSize: '.62rem', fontWeight: 700, letterSpacing: '.03em', textTransform: 'uppercase', padding: '.18rem .5rem', borderRadius: '999px', color: n.stolpec === 'waiting' ? 'oklch(48% .13 70)' : 'var(--muted)', background: n.stolpec === 'waiting' ? 'oklch(90% .08 75)' : 'oklch(94% .006 87)' }}>{lbl}</span>
+                <span className={styles.dashRowArrow} aria-hidden>›</span>
+              </Link></li>
+            ); })}
           </ul> : <div className={styles.emptyState}><span>+</span><div><strong>{L('Ni odprtih nalog.', 'No open tasks.')}</strong><p>{L('Naloge se prikažejo tukaj — dodaj jih v Task managerju.', 'Tasks appear here — add them in the Task manager.')}</p></div></div>}
           </div>
         </section>
