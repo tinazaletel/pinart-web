@@ -72,11 +72,8 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
       {item('koledar', `${base}/kalkulator/koledar`, '05', L('Koledar', 'Calendar'), 'koledar')}
       {item('marketing', `${base}/kalkulator/marketing`, '06', 'Marketing', 'marketing')}
     </MeniSkupina>
-    {/* Dizajn (videz dokumentov) je zdaj pod Moj profil — meni zadiha.
-        Dostopen iz profila in iz urejevalnika dokumenta. */}
-    <MeniSkupina naslov={L('Drugo', 'More')} vednoVidna aktivna={false}>
-      {povezava(`${base}/kalkulator/pomoc`, '01', L('Pomoč', 'Help'), 'pomoc')}
-    </MeniSkupina>
+    {/* Pomoč odstranjena iz menija — podvaja se z »?« v headerju in AI asistentko (Pupa).
+        Dizajn (videz dokumentov) je pod Moj profil. */}
   </>;
   return <><AmbientBubbles /><PaketZnak /><FlowTopBar /><SidebarToggle vrsta="odpri" /><aside className={styles.sidebar} aria-label={L('Glavna navigacija', 'Main navigation')}><SidebarToggle vrsta="zapri" />
     <FlowCloudBridge />
