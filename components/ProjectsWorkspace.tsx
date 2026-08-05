@@ -188,6 +188,7 @@ const pwStyles = `
 .pw-ai-opomba{margin:0;font:500 .74rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 45%,transparent);line-height:1.45}
 /* ── PANELNA LETEV: mail + Pupa (+ klepet) so STOLPCI vzporedno; NIKOLI se ne prekrivajo. ── */
 .pw-rail-back{position:fixed;inset:0;z-index:60;background:oklch(97% .006 87 / .4);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-rail{position:fixed;top:0;right:0;bottom:0;max-width:100vw;display:flex;flex-direction:row;align-items:stretch}
 .pw-rail-col{position:relative;height:100%;box-sizing:border-box;display:flex;flex-direction:column;background:#fff;overflow:hidden;animation:pwRailIn .34s cubic-bezier(.16,1,.3,1) both}
 .pw-rail-col + .pw-rail-col{border-left:1px solid color-mix(in oklch,var(--ink) 9%,transparent)}
@@ -209,7 +210,7 @@ const pwStyles = `
 }
 /* KLEPET stolpec (fallback barve, ker je letev portalana na body) */
 .pw-klepet-panel{flex:none;width:400px;--kl-ink:var(--ink,oklch(19% .014 55));--kl-purple:var(--purple,oklch(66% .2 297));--kl-line:var(--line,oklch(93% .007 82))}
-.pw-klepet-glava{flex:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:1.4rem 1.1rem .9rem;border-bottom:1px solid var(--kl-line)}
+.pw-klepet-glava{flex:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:1.4rem 3.9rem .9rem 1.1rem;border-bottom:1px solid var(--kl-line)}
 .pw-klepet-osebe{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;min-width:0}
 .pw-klepet-oseba{display:inline-flex;align-items:center;gap:.35rem}
 .pw-klepet-oseba b{font:700 .82rem var(--font-sans),sans-serif;color:var(--kl-ink)}
@@ -318,7 +319,7 @@ const pwStyles = `
 .pw-vsi-panel h2{margin:.4rem 0 .2rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.05;color:var(--ink)}
 .pw-vsi-projekt{margin:0 0 1.1rem;color:var(--muted);font-size:.72rem}
 /* × zapri = na višini nadnaslova (eyebrow), enako v vseh panelih (slide + predogled računa/pogodbe/stroška) */
-.pw-vsi-x{position:absolute;top:1.6rem;right:1.6rem;z-index:8;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
+.pw-vsi-x{position:absolute;top:1.6rem;right:1.6rem;z-index:8;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper,#faf7f2);color:var(--ink,#2a2620);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
 /* status v predogledu: plačan zelen, odprt jantarni; znesek »za plačilo« z outline (kot Bodoni številke) */
 .pw-det-status.placan{color:oklch(55% .15 150)}
 .pw-det-status.odprt{color:oklch(58% .15 65)}
@@ -869,7 +870,9 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     const odprt = komOdprt || nalogaOdprt || !!vsiOdprt || !!vrsticaDetajl;
     if (odprt) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
-    return () => { document.body.style.overflow = ''; };
+    /* skrij plavajočo Pupo, ko je odprta desna letev (sicer prekrije klepetni vnos) */
+    document.body.classList.toggle('flow-rail-odprt', komOdprt);
+    return () => { document.body.style.overflow = ''; document.body.classList.remove('flow-rail-odprt'); };
   }, [komOdprt, nalogaOdprt, vsiOdprt, vrsticaDetajl]);
   const klik = (tip: 'pogodbe' | 'racuni' | 'stroski', item: FlowContract | FlowInvoice | FlowExpense) => ({
     role: 'button' as const, tabIndex: 0,
