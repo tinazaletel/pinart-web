@@ -185,6 +185,12 @@ const pwStyles = `
   .pw-posta-mape button{width:auto !important;flex:1 1 auto;justify-content:center !important;min-height:2.5rem}
   .pw-kom-panel .pw-posta-glava{padding-right:.3rem}
   .pw-mail-meni{left:auto;right:0}
+  .pw-naloga-panel{padding-top:1.4rem !important;overflow-y:auto}
+  .pw-naloga-l-opis textarea{min-height:8rem}
+  .pw-naloga-akcije{position:sticky;bottom:0;background:#fff;padding-top:.6rem}
+  .pw-naloga-akcije button{flex:1 1 auto}
+  .pw-posta-bulk{padding:.5rem .6rem}
+  .pw-posta-bulk-brisi,.pw-posta-bulk-obnovi{flex:1 1 auto;justify-content:center}
 }
 .pw-kom-panel .pw-karta.pw-posta{margin:0;box-shadow:none;border:0;border-radius:0;overflow:visible;background:transparent;padding:0}
 /* naslov v svoji vrsti (X plava zgoraj desno); iskalnik+filter+Nova pošta v drugi vrsti, poravnani, enake višine; Nova pošta konča desno = pod X */
@@ -344,6 +350,8 @@ const pwStyles = `
 .pw-posta-bulk{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin:.55rem 0 .1rem;padding:.5rem .7rem;border-radius:.7rem;background:oklch(96.5% .018 300)}
 .pw-posta-bulk-st{font:700 .72rem var(--font-sans),sans-serif;color:var(--ink)}
 .pw-posta-bulk-brisi{display:inline-flex;align-items:center;gap:.35rem;height:2.1rem;padding:0 .95rem;border:0;border-radius:999px;background:oklch(55% .18 25);color:#fff;font:700 .72rem var(--font-sans),sans-serif;cursor:pointer}
+.pw-posta-bulk-obnovi{display:inline-flex;align-items:center;gap:.35rem;height:2.1rem;padding:0 .95rem;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:999px;background:#fff;color:var(--ink);font:700 .72rem var(--font-sans),sans-serif;cursor:pointer}
+.pw-posta-bulk-obnovi:hover{border-color:color-mix(in oklch,var(--purple) 45%,transparent);color:var(--purple)}
 .pw-posta-bulk-x{border:0;background:none;color:color-mix(in oklch,var(--ink) 55%,transparent);font:600 .72rem var(--font-sans),sans-serif;cursor:pointer;margin-left:auto}
 @media (max-width:600px){.pw-posta-check{width:1.45rem;height:1.45rem}}
 .pw-posta-vrh{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
@@ -370,7 +378,9 @@ const pwStyles = `
 .pw-mail-meni>button:hover{background:var(--paper)}
 .pw-mail-meni-prazno{margin:.3rem .35rem;font-size:.75rem;color:var(--muted)}
 .pw-mail-oznake{display:flex;flex-wrap:wrap;gap:.3rem;padding:.2rem .35rem .4rem}
-.pw-mail-oznaka{font:700 .62rem var(--font-sans),sans-serif;color:var(--purple);background:color-mix(in oklch,var(--purple) 12%,transparent);border-radius:999px;padding:.15rem .5rem}
+.pw-mail-oznaka{display:inline-flex;align-items:center;gap:.15rem;font:700 .62rem var(--font-sans),sans-serif;color:var(--purple);background:color-mix(in oklch,var(--purple) 12%,transparent);border-radius:999px;padding:.15rem .3rem .15rem .5rem}
+.pw-mail-oznaka-x{border:0;background:none;color:var(--purple);cursor:pointer;font-size:.9rem;line-height:1;padding:0 .1rem;opacity:.65}
+.pw-mail-oznaka-x:hover{opacity:1}
 .pw-mail-oznaka-obr{display:flex;gap:.3rem;padding:.2rem .35rem}
 .pw-mail-oznaka-obr input{flex:1;min-width:0;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:.5rem;padding:.4rem .5rem;font:500 .78rem var(--font-sans),sans-serif;background:#fff;color:var(--ink)}
 .pw-mail-oznaka-obr button{border:0;background:var(--ink);color:var(--paper);border-radius:.5rem;padding:0 .75rem;font:700 .72rem var(--font-sans),sans-serif;cursor:pointer}
@@ -777,7 +787,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const vNalogo = (mail: PostaVnos | null) => {
     if (!mail) return;
     setNalogaNaslov((mail.zadeva || '').trim() || L('Naloga iz e-pošte', 'Task from email'));
-    setNalogaOpis((mail.telo || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+    setNalogaOpis((mail.telo || mail.povzetek || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
     setNalogaOdprt(true);
   };
   /* shrani urejeno nalogo v Task manager, vezano na projekt */
@@ -820,7 +830,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, replyTo: replyTo || undefined });
     setPisiPosiljam(false);
     if (rez.ok) {
-      const vnos = dodajPosto({ projectId: selectedId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim() });
+      const vnos = dodajPosto({ projectId: selectedId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim(), telo, povzetek: telo.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) });
       void pushProjectMail({ projectExternalId: selectedId, direction: 'out', toEmails: [za], subject: pisiZadeva.trim(), occurredAt: new Date().toISOString() }).catch(() => undefined);
       setPosta(p => [vnos, ...p]);
       setPisiOdprt(false); setPisiZadeva(''); if (pisiTeloRef.current) pisiTeloRef.current.innerHTML = '';
@@ -1023,7 +1033,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   {oznakaOdprt && beriMail && (
                     <div className="pw-mail-meni">
                       <p className="pw-mail-meni-h">{L('Oznake', 'Labels')}</p>
-                      {(beriMail.oznake || []).length > 0 && <div className="pw-mail-oznake">{(beriMail.oznake || []).map((oz, i) => <span key={i} className="pw-mail-oznaka">{oz}</span>)}</div>}
+                      {(beriMail.oznake || []).length > 0 && <div className="pw-mail-oznake">{(beriMail.oznake || []).map((oz, i) => <span key={`${oz}-${i}`} className="pw-mail-oznaka">{oz}<button type="button" className="pw-mail-oznaka-x" aria-label={`${L('Odstrani', 'Remove')} ${oz}`} onClick={() => { const nove = (beriMail.oznake || []).filter((_, j) => j !== i); nastaviOznakePoste(beriMail.id, nove); const id = beriMail.id; setPosta(prev => prev.map(v => v.id === id ? { ...v, oznake: nove } : v)); setBeriMail(m => m ? { ...m, oznake: nove } : m); }}>×</button></span>)}</div>}
                       <form className="pw-mail-oznaka-obr" onSubmit={e => { e.preventDefault(); const t = oznakaVnos.trim(); if (!t) return; const nove = [...(beriMail.oznake || []), t]; nastaviOznakePoste(beriMail.id, nove); const id = beriMail.id; setPosta(prev => prev.map(v => v.id === id ? { ...v, oznake: nove } : v)); setBeriMail(m => m ? { ...m, oznake: nove } : m); setOznakaVnos(''); }}>
                         <input value={oznakaVnos} onChange={e => setOznakaVnos(e.target.value)} placeholder={L('Nova oznaka …', 'New label …')} aria-label={L('Nova oznaka', 'New label')} />
                         <button type="submit">{L('Dodaj', 'Add')}</button>
@@ -1066,6 +1076,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 {izbraniVMapi.length > 0 && (
                   <div className="pw-posta-bulk">
                     <span className="pw-posta-bulk-st">{izbraniVMapi.length} {L('izbranih', 'selected')}</span>
+                    {mapa === 'kos' && <button type="button" className="pw-posta-bulk-obnovi" onClick={() => { const ids = new Set(izbraniVMapi.map(v => v.id)); ids.forEach(id => void restoreProjectMail(id).catch(() => undefined)); setPosta(p => p.map(v => ids.has(v.id) ? { ...v, izbrisano: undefined } : v)); setIzbraniMaili(new Set()); }}><ArrowBendUpLeft size={14} weight="bold" /> {L('Obnovi', 'Restore')}</button>}
                     <button type="button" className="pw-posta-bulk-brisi" onClick={() => { const vKos = mapa === 'kos'; const ids = new Set(izbraniVMapi.map(v => v.id)); ids.forEach(id => { if (vKos) void deleteProjectMailPermanent(id).catch(() => undefined); else void trashProjectMail(id).catch(() => undefined); }); setPosta(p => vKos ? p.filter(v => !ids.has(v.id)) : p.map(v => ids.has(v.id) ? { ...v, izbrisano: new Date().toISOString() } : v)); setIzbraniMaili(new Set()); }}><Trash size={14} weight="bold" /> {mapa === 'kos' ? L('Zbriši dokončno', 'Delete permanently') : L('Izbriši', 'Delete')}</button>
                     <button type="button" className="pw-posta-bulk-x" onClick={() => setIzbraniMaili(new Set())}>{L('Prekliči', 'Clear')}</button>
                   </div>
