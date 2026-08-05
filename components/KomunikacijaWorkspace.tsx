@@ -10,6 +10,7 @@ import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, Ma
 import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, type OblacnaNit, type OblacnoSporocilo } from '@/lib/klepetCloud';
 import { usePredogled } from '@/lib/predogled';
 import { preberiVsePoste, type PostaVnos } from '@/lib/postaDnevnik';
+import { loadFlowData } from '@/lib/pinartFlowStore';
 
 /* Demo pošta (»polno poslovanje«) — projektni maili na enem mestu, brez šuma. */
 const DEMO_POSTA: PostaVnos[] = [
@@ -55,9 +56,21 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   const [postaIsk, setPostaIsk] = useState('');
   const [beriMail, setBeriMail] = useState<PostaVnos | null>(null);
   const [postaStran, setPostaStran] = useState(1);
+  const [projMapa, setProjMapa] = useState<Record<string, string>>({});
+  const projIme = (id?: string) => (id && projMapa[id]) || '';
+  /* deterministična barva projekta (da jih v seznamu ločiš) */
+  const projBarva = (id?: string) => { const h = (id ? [...id].reduce((a, c) => a + c.charCodeAt(0), 0) : 0) % 360; return `oklch(62% .17 ${h})`; };
+  const [postaOseba, setPostaOseba] = useState('');   /* filter po prejemniku */
+  const prejemnikiVsi = Array.from(new Set(posta.flatMap(v => v.prejemniki))).sort();
   useEffect(() => {
     const vsi = demo ? DEMO_POSTA : preberiVsePoste();
     setPosta([...vsi].sort((a, b) => b.datum.localeCompare(a.datum)));
+    if (demo) { setProjMapa({ 'demo-portal': 'Prenova portala · Rokus Klett' }); return; }
+    try {
+      const m: Record<string, string> = {};
+      loadFlowData().offers.forEach(o => { m[o.id] = `${o.title || 'Projekt'}${o.client ? ' · ' + o.client : ''}`; });
+      setProjMapa(m);
+    } catch { setProjMapa({}); }
   }, [demo]);
   const odjavaRef = useRef<(() => void) | null>(null);
   const dnoRef = useRef<HTMLDivElement | null>(null);
@@ -124,7 +137,14 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
 
       {zavihek === 'posta' ? (
         <div className="km-posta-ovoj">
-          <div className="km-iskalnik"><MagnifyingGlass size={15} weight="bold" /><input value={postaIsk} onChange={e => { setPostaIsk(e.target.value); setPostaStran(1); }} placeholder={L('Išči po pošti …', 'Search mail …')} aria-label={L('Išči', 'Search')} /></div>
+          <div className="km-posta-vrh">
+            <div className="km-iskalnik"><MagnifyingGlass size={15} weight="bold" /><input value={postaIsk} onChange={e => { setPostaIsk(e.target.value); setPostaStran(1); }} placeholder={L('Išči po pošti …', 'Search mail …')} aria-label={L('Išči', 'Search')} /></div>
+            <select className="km-prejemniki" value={postaOseba} onChange={e => { setPostaOseba(e.target.value); setPostaStran(1); setBeriMail(null); }} aria-label={L('Vsi prejemniki', 'All recipients')}>
+              <option value="">{L('Vsi prejemniki', 'All recipients')}</option>
+              {prejemnikiVsi.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+            <button type="button" className="km-nova" title={L('Nova pošta z huba: najprej izbereš projekt, nato pišeš (pride z enotnim klijentom)', 'New mail from the hub: first pick a project, then compose (comes with the unified client)')}><PaperPlaneRight size={14} weight="fill" /> {L('Nova pošta', 'New mail')}</button>
+          </div>
           <div className="km-posta-body">
             <aside className="km-mape" aria-label={L('Mape', 'Folders')}>
               {([{ id: 'prejeto', ime: L('Prejeto', 'Inbox'), I: Tray }, { id: 'poslano', ime: L('Poslano', 'Sent'), I: PaperPlaneRight }, { id: 'osnutki', ime: L('Osnutki', 'Drafts'), I: NotePencil }, { id: 'kos', ime: L('Koš', 'Trash'), I: Trash }] as const).map(({ id, ime, I }) => {
@@ -142,15 +162,15 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
             </div>
           ) : (() => {
             const q = postaIsk.trim().toLowerCase();
-            const seznam = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa).filter(v => !q || `${v.zadeva} ${v.prejemniki.join(' ')}`.toLowerCase().includes(q));
+            const seznam = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa).filter(v => !postaOseba || v.prejemniki.includes(postaOseba)).filter(v => !q || `${v.zadeva} ${v.prejemniki.join(' ')} ${projIme(v.projectId)}`.toLowerCase().includes(q));
             const NA = 12; const strani = Math.max(1, Math.ceil(seznam.length / NA)); const stran = Math.min(Math.max(1, postaStran), strani); const prikaz = seznam.slice((stran - 1) * NA, stran * NA);
             return seznam.length ? (<>
               <div className="km-posta">
                 {prikaz.map(v => (
                   <button type="button" key={v.id} className="km-mail-vrsta km-mail-btn" onClick={() => setBeriMail(v)}>
-                    <span className="km-av sm" aria-hidden>{iniciala(v.prejemniki[0] || '?')}</span>
-                    <span className="km-mail-info"><b>{v.prejemniki.join(', ') || '—'}</b><span className="km-mail-zad">{v.zadeva || L('(brez zadeve)', '(no subject)')}</span></span>
-                    <span className="km-mail-meta">{datum(v.datum)}<span className="km-mail-kazalec" aria-hidden>›</span></span>
+                    <span className="km-mail-check" aria-hidden />
+                    <span className="km-mail-info"><b>{v.prejemniki.join(', ') || '—'}</b><span className="km-mail-zad">{v.zadeva || L('(brez zadeve)', '(no subject)')}</span>{projIme(v.projectId) && <span className="km-mail-proj" style={{ color: projBarva(v.projectId), background: `color-mix(in oklch, ${projBarva(v.projectId)} 12%, transparent)` }}><i aria-hidden style={{ background: projBarva(v.projectId) }} />{projIme(v.projectId)}</span>}</span>
+                    <span className="km-mail-meta"><span className="km-mail-datum">{datum(v.datum)}</span><span className={`km-mail-smer ${v.smer}`}>{v.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span></span>
                   </button>
                 ))}
               </div>
@@ -229,15 +249,24 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-zavihki button{display:inline-flex;align-items:center;gap:.4rem;border:0;background:none;border-radius:999px;padding:.5rem 1.1rem;font:700 .78rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 60%,transparent);cursor:pointer}
         .km-zavihki button.on{background:var(--k-ink,#2a2620);color:#fff}
         .km-posta{display:flex;flex-direction:column;gap:.4rem;max-width:52rem}
-        .km-mail-vrsta{background:#fff;border:1px solid var(--k-line);border-radius:.85rem;overflow:hidden}
-        .km-mail{display:flex;align-items:center;gap:.7rem;width:100%;text-align:left;border:0;background:none;padding:.75rem .9rem;cursor:pointer}
-        .km-mail:hover{background:color-mix(in oklch,var(--k-purple) 5%,transparent)}
-        .km-mail-info{flex:1;min-width:0;display:flex;flex-direction:column}
+        .km-posta .km-mail-vrsta{display:flex;align-items:center;gap:.75rem;width:100%;text-align:left;background:#fff;border:1px solid var(--k-line);border-radius:.85rem;padding:.7rem .9rem;cursor:pointer}
+        .km-posta .km-mail-vrsta:hover{background:color-mix(in oklch,var(--k-purple) 5%,transparent);border-color:color-mix(in oklch,var(--k-purple) 25%,transparent)}
+        .km-mail-check{flex:none;width:1.15rem;height:1.15rem;border:1.5px solid color-mix(in oklch,var(--k-ink) 22%,transparent);border-radius:.32rem}
+        .km-mail-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:.1rem}
         .km-mail-info b{font:700 .86rem var(--font-sans),sans-serif;color:var(--k-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .km-mail-zad{font:500 .8rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 62%,transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .km-mail-meta{flex:none;display:flex;align-items:center;gap:.55rem;font:600 .72rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 48%,transparent);white-space:nowrap}
-        .km-mail-smer{font:700 .58rem var(--font-sans),sans-serif;letter-spacing:.05em;text-transform:uppercase;padding:.15rem .45rem;border-radius:999px;color:color-mix(in oklch,var(--k-ink) 55%,transparent);background:color-mix(in oklch,var(--k-ink) 7%,transparent)}
-        .km-mail-smer.prejeto{color:oklch(48% .13 160);background:color-mix(in oklch,oklch(62% .16 160) 15%,transparent)}
+        .km-mail-meta{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;white-space:nowrap}
+        .km-mail-datum{font:500 .72rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 48%,transparent);font-variant-numeric:tabular-nums}
+        .km-mail-smer{font:700 .58rem var(--font-sans),sans-serif;letter-spacing:.05em;text-transform:uppercase;color:color-mix(in oklch,var(--k-ink) 45%,transparent)}
+        .km-mail-smer.prejeto{color:oklch(48% .13 160)}
+        .km-mail-proj{display:inline-flex;align-items:center;gap:.3rem;align-self:flex-start;margin-top:.1rem;max-width:100%;font:700 .64rem var(--font-sans),sans-serif;padding:.12rem .5rem .12rem .38rem;border-radius:999px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .km-mail-proj i{flex:none;width:.4rem;height:.4rem;border-radius:50%}
+        .km-posta-vrh{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem}
+        .km-posta-vrh .km-iskalnik,.km-posta-vrh .km-prejemniki,.km-posta-vrh .km-nova{height:2.55rem;box-sizing:border-box;padding-top:0;padding-bottom:0}
+        .km-posta-vrh .km-iskalnik{flex:1 1 15rem;margin-bottom:0}
+        .km-prejemniki{flex:none;border:1px solid var(--k-line);border-radius:999px;padding:.5rem .9rem;font:600 .8rem var(--font-sans),sans-serif;color:var(--k-ink);background:#fff;cursor:pointer}
+        .km-nova{flex:none;display:inline-flex;align-items:center;gap:.4rem;border:0;border-radius:999px;padding:.55rem 1.1rem;font:700 .8rem var(--font-sans),sans-serif;color:#fff;background:color-mix(in oklch,var(--k-ink) 42%,transparent);cursor:pointer}
+        .km-nova:hover{background:color-mix(in oklch,var(--k-ink) 60%,transparent)}
         .km-mail-telo{padding:.2rem 1rem 1rem 3.6rem;font:500 .84rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 80%,transparent);line-height:1.55;white-space:pre-wrap}
         .km-posta-ovoj{max-width:62rem}
         .km-iskalnik{display:flex;align-items:center;gap:.5rem;background:#fff;border:1px solid var(--k-line);border-radius:999px;padding:.38rem .9rem;margin-bottom:1rem;color:color-mix(in oklch,var(--k-ink) 55%,transparent)}
