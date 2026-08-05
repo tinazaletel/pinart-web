@@ -158,6 +158,23 @@ const pwStyles = `
    kartic (isti border/radius/ozadje odtenek), da se lepo vklopi. */
 .pw-dodatno{display:flex;flex-direction:column;gap:.55rem;margin-top:.55rem}
 .pw-kom-panel{width:min(780px,94vw);max-width:min(780px,94vw)}
+/* okno Nova naloga iz maila */
+.pw-naloga-panel{width:min(560px,94vw);padding:2.4rem 2rem}
+.pw-naloga-obr{display:flex;flex-direction:column;gap:.9rem;margin-top:.6rem}
+.pw-naloga-l{display:flex;flex-direction:column;gap:.35rem}
+.pw-naloga-l>span{font:700 .66rem var(--font-sans),sans-serif;letter-spacing:.05em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 55%,transparent)}
+.pw-naloga-l input,.pw-naloga-l textarea{width:100%;box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:.6rem;padding:.6rem .7rem;font:500 .88rem var(--font-sans),sans-serif;color:var(--ink);background:#fff;resize:vertical}
+.pw-naloga-l input:focus,.pw-naloga-l textarea:focus{outline:none;border-color:var(--purple)}
+.pw-naloga-l-opis textarea{min-height:9rem;line-height:1.55}
+.pw-naloga-akcije{display:flex;justify-content:flex-end;gap:.6rem;margin-top:.3rem;flex-wrap:wrap}
+.pw-naloga-preklic{border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);background:#fff;color:var(--ink);border-radius:999px;padding:.55rem 1.1rem;font:600 .78rem var(--font-sans),sans-serif;cursor:pointer}
+.pw-naloga-shrani{border:0;background:var(--ink);color:var(--paper);border-radius:999px;padding:.55rem 1.3rem;font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
+.pw-naloga-shrani:disabled{opacity:.5;cursor:default}
+/* compose glava + X za hitro zapiranje */
+.pw-pisi-glava{display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem}
+.pw-pisi-naslov{font:700 .8rem var(--font-sans),sans-serif;color:var(--ink)}
+.pw-pisi-x{display:grid;place-items:center;width:2rem;height:2rem;flex:none;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:50%;background:#fff;color:var(--ink);font-size:.9rem;line-height:1;cursor:pointer;transition:background .15s,color .15s}
+.pw-pisi-x:hover{background:var(--ink);color:var(--paper)}
 .pw-kom-panel .pw-karta.pw-posta{margin:0;box-shadow:none;border:0;border-radius:0;overflow:visible;background:transparent;padding:0}
 /* naslov v svoji vrsti (X plava zgoraj desno); iskalnik+filter+Nova pošta v drugi vrsti, poravnani, enake višine; Nova pošta konča desno = pod X */
 .pw-kom-panel .pw-posta-glava{position:relative;flex-wrap:wrap;row-gap:.8rem;align-items:center;padding-left:.3rem;padding-right:.3rem}
@@ -305,7 +322,9 @@ const pwStyles = `
 .pw-posta{background:linear-gradient(135deg,oklch(97% .03 300),oklch(97% .03 165))}
 .pw-posta h3{margin:0;font:600 1.15rem var(--font-sans),system-ui,sans-serif}
 .pw-posta-seznam{position:relative;z-index:1;list-style:none;display:flex;flex-direction:column;gap:.4rem;margin:.75rem 0 0;padding:0}
-.pw-posta-seznam li{position:relative;display:grid;grid-template-columns:auto 1fr;align-items:start;gap:.6rem;padding:.6rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:.7rem;background:#fff;cursor:pointer}
+.pw-posta-seznam li{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.6rem;padding:.6rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:.7rem;background:#fff;cursor:pointer}
+.pw-posta-zvezda{background:oklch(97.5% .035 92);border-color:oklch(86% .09 85)}
+.pw-posta-zv-ikona{color:oklch(72% .16 75);flex:none}
 .pw-posta-vsebina{display:grid;gap:.2rem;min-width:0}
 .pw-posta-check{width:1.2rem;height:1.2rem;margin-top:.15rem;flex:none;cursor:pointer;accent-color:var(--ink)}
 .pw-posta-izbran{border-color:var(--ink);background:oklch(96.5% .018 300)}
@@ -704,6 +723,9 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [premakniOdprt, setPremakniOdprt] = useState(false);   /* meni »Premakni na drug projekt« */
   const [oznakaOdprt, setOznakaOdprt] = useState(false);       /* vnos oznake */
   const [oznakaVnos, setOznakaVnos] = useState('');
+  const [nalogaOdprt, setNalogaOdprt] = useState(false);       /* okno »Nova naloga iz maila« */
+  const [nalogaNaslov, setNalogaNaslov] = useState('');
+  const [nalogaOpis, setNalogaOpis] = useState('');
   /* »Nova pošta« — sestavljalnik neposredno v projektu (brez dokumenta). Pošlje
      prek Resend, zabeleži lokalno (postaDnevnik) + v oblak (pushProjectMail). */
   const [pisiOdprt, setPisiOdprt] = useState(false);
@@ -738,19 +760,27 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const strankaEmail = (ime: string) => { const c = (ime || '').trim().toLocaleLowerCase('sl-SI'); return clients.find(x => (x.name || '').trim().toLocaleLowerCase('sl-SI') === c)?.email || ''; };
   const posljiDokument = (ime: string, zadeva: string, telo: string) => { if (typeof window === 'undefined') return; window.location.href = `mailto:${encodeURIComponent(strankaEmail(ime))}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`; };
   /* ── »Nova pošta«: odpri sestavljalnik (prednapolni prejemnika iz stranke) ── */
-  /* iz maila ustvari nalogo v Task managerju, vezano na projekt */
+  /* iz maila: odpre okno za urejanje nove naloge (prednapolnjeno z mailom) */
   const vNalogo = (mail: PostaVnos | null) => {
-    if (!mail || !selected) return;
+    if (!mail) return;
+    setNalogaNaslov((mail.zadeva || '').trim() || L('Naloga iz e-pošte', 'Task from email'));
+    setNalogaOpis((mail.telo || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+    setNalogaOdprt(true);
+  };
+  /* shrani urejeno nalogo v Task manager, vezano na projekt */
+  const shraniNovoNalogo = () => {
+    if (!selected || !nalogaNaslov.trim()) return;
     const nova: Naloga = {
       id: crypto.randomUUID(),
-      naslov: (mail.zadeva || '').trim() || L('Naloga iz e-pošte', 'Task from email'),
-      opis: (mail.telo || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 400),
+      naslov: nalogaNaslov.trim(),
+      opis: nalogaOpis.trim(),
       stolpec: 'todo',
       projectId: selected.real?.id || selected.offer.id,
       created: new Date().toISOString(),
       oznake: [L('pošta', 'email')],
     };
     try { shraniNaloge([nova, ...preberiNaloge()]); } catch { /* localStorage ni na voljo */ }
+    setNalogaOdprt(false);
     router.push(`${base}/kalkulator/naloge`);
   };
   const odpriPisanje = () => {
@@ -925,6 +955,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             </div>
             {pisiOdprt && !samoOgled && (
               <div className="pw-pisi">
+                <div className="pw-pisi-glava"><span className="pw-pisi-naslov">{L('Novo sporočilo', 'New message')}</span><button type="button" className="pw-pisi-x" onClick={() => setPisiOdprt(false)} aria-label={L('Zapri pisanje', 'Close compose')} title={L('Zapri', 'Close')}>✕</button></div>
                 <label className="pw-pisi-v"><span>{L('Za', 'To')}</span><input type="email" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder={L('stranka@email.si', 'client@email.com')} /></label>
                 <label className="pw-pisi-v"><span>{L('Zadeva', 'Subject')}</span><input type="text" value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} placeholder={L('Zadeva sporočila', 'Message subject')} /></label>
                 <div className="pw-pisi-orodja">
@@ -1028,7 +1059,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 )}
                 <ul className="pw-posta-seznam">
                   {prikaz.map(vnos => (
-                    <li key={vnos.id} className={'pw-posta-vrstica' + (izbraniMaili.has(vnos.id) ? ' pw-posta-izbran' : '')} onClick={() => setBeriMail(vnos)}>
+                    <li key={vnos.id} className={'pw-posta-vrstica' + (izbraniMaili.has(vnos.id) ? ' pw-posta-izbran' : '') + (vnos.zvezda ? ' pw-posta-zvezda' : '')} onClick={() => setBeriMail(vnos)}>
                       <input type="checkbox" className="pw-posta-check" checked={izbraniMaili.has(vnos.id)} onClick={e => e.stopPropagation()} onChange={e => { const ch = e.target.checked; setIzbraniMaili(prev => { const n = new Set(prev); if (ch) n.add(vnos.id); else n.delete(vnos.id); return n; }); }} aria-label={L('Izberi sporočilo', 'Select message')} />
                       <div className="pw-posta-vsebina">
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '.6rem', alignItems: 'baseline' }}>
@@ -1040,6 +1071,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                           <span style={{ flex: 'none', fontSize: '.5rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>{vnos.izbrisano ? L('Koš', 'Trash') : vnos.osnutek ? L('Osnutek', 'Draft') : vnos.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span>
                         </div>
                       </div>
+                      {vnos.zvezda && <Star size={16} weight="fill" className="pw-posta-zv-ikona" aria-hidden />}
                     </li>
                   ))}
                 </ul>
@@ -1290,6 +1322,23 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         <aside className={`${styles.detailPanel} pw-vsi-panel pw-kom-panel`} role="dialog" aria-modal="true" aria-label={L('Komunikacija', 'Communication')} onMouseDown={e => e.stopPropagation()}>
           <button type="button" className="pw-vsi-x" onClick={() => setKomOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button>
           {komVsebina()}
+        </aside>
+      </div>
+    , document.body)}
+
+    {portalPripravljen && nalogaOdprt && selected && createPortal(
+      <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={() => setNalogaOdprt(false)}>
+        <aside className={`${styles.detailPanel} pw-vsi-panel pw-naloga-panel`} role="dialog" aria-modal="true" aria-label={L('Nova naloga', 'New task')} onMouseDown={e => e.stopPropagation()}>
+          <button type="button" className="pw-vsi-x" onClick={() => setNalogaOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button>
+          <div className="pw-naloga-obr">
+            <p className={styles.eyebrow}>{L('NOVA NALOGA IZ E-POŠTE', 'NEW TASK FROM EMAIL')}</p>
+            <label className="pw-naloga-l"><span>{L('Naslov naloge', 'Task title')}</span><input type="text" value={nalogaNaslov} onChange={e => setNalogaNaslov(e.target.value)} placeholder={L('Kaj je treba narediti?', 'What needs to be done?')} /></label>
+            <label className="pw-naloga-l pw-naloga-l-opis"><span>{L('Opis (besedilo maila — uredi po potrebi)', 'Description (mail text — edit as needed)')}</span><textarea value={nalogaOpis} onChange={e => setNalogaOpis(e.target.value)} rows={12} /></label>
+            <div className="pw-naloga-akcije">
+              <button type="button" className="pw-naloga-preklic" onClick={() => setNalogaOdprt(false)}>{L('Prekliči', 'Cancel')}</button>
+              <button type="button" className="pw-naloga-shrani" onClick={shraniNovoNalogo} disabled={!nalogaNaslov.trim()}>{L('Shrani kot nalogo', 'Save as task')}</button>
+            </div>
+          </div>
         </aside>
       </div>
     , document.body)}
