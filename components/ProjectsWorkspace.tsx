@@ -185,12 +185,16 @@ const pwStyles = `
 .pw-ai-kopiraj{border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);background:#fff;color:var(--ink);border-radius:999px;padding:.5rem 1rem;font:600 .78rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-ai-uporabi{display:inline-flex;align-items:center;gap:.35rem;border:0;background:var(--purple);color:#fff;border-radius:999px;padding:.5rem 1.15rem;font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-ai-opomba{margin:0;font:500 .74rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 45%,transparent);line-height:1.45}
-/* Desktop: Pupa in mail stojita vzporedno — Pupa desno, mail se umakne levo. Pod 1120px ostane Pupa čez (overlay). */
-@media (min-width:1120px){
+/* Pod 1100px: Pupa gre ČEZ CEL zaslon (prevzem), da se NIKOLI ne prekriva z mailom. */
+@media (max-width:1099px){
+  .pw-ai-panel{width:100vw !important;max-width:100vw !important}
+}
+/* Desktop ≥1100px: Pupa (desno) in mail (umaknjen levo) stojita vzporedno, brez prekrivanja in brez zatemnitve. */
+@media (min-width:1100px){
   .pw-ai-back{background:transparent !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important}
-  .pw-ai-panel{width:440px !important;max-width:440px !important}
+  .pw-ai-panel{width:420px !important;max-width:420px !important}
   .pw-kom-panel{transition:transform .28s cubic-bezier(.16,1,.3,1),width .28s ease}
-  .pw-kom-panel.pw-kom-shift{width:min(640px,58vw) !important;max-width:min(640px,58vw) !important;transform:translateX(-460px)}
+  .pw-kom-panel.pw-kom-shift{width:min(600px,56vw) !important;max-width:min(600px,56vw) !important;transform:translateX(-440px)}
 }
 /* compose glava + X za hitro zapiranje */
 .pw-pisi-glava{display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem}
