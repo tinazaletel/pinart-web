@@ -324,8 +324,10 @@ const pwStyles = `
 .pw-mail-orodja>button:hover,.pw-mail-orodja>a:hover{background:var(--paper);color:var(--ink)}
 .pw-mail-orodja .pw-mail-star:hover{color:oklch(72% .16 75)}
 .pw-mail-orodja .pw-mail-brisi:hover{color:oklch(55% .18 25)}
-.pw-mail-orodja .pw-mail-nazaj{width:auto;gap:.4rem;padding:0 1rem;display:inline-flex;align-items:center;background:var(--ink);color:var(--paper);border-color:var(--ink);font:700 .74rem var(--font-sans),sans-serif;margin-right:.4rem}
-.pw-mail-orodja .pw-mail-nazaj:hover{background:color-mix(in oklch,var(--ink) 88%,transparent);color:var(--paper)}
+.pw-mail-orodja .pw-mail-nazaj{width:auto;gap:.4rem;padding:0 1rem;display:inline-flex;align-items:center;background:var(--paper);color:var(--ink);font:700 .74rem var(--font-sans),sans-serif}
+.pw-mail-orodja .pw-mail-nazaj:hover{background:color-mix(in oklch,var(--ink) 8%,transparent);color:var(--ink)}
+/* back levo, ikone desno */
+.pw-mail-orodja .pw-mail-nazaj + button,.pw-mail-orodja .pw-mail-nazaj + a{margin-left:auto}
 /* akcije pod besedilom maila (Odgovori/Posreduj/Deli/Klepet) */
 .pw-mail-akcije{display:flex;flex-wrap:wrap;gap:.5rem;margin:.9rem 0 0}
 .pw-mail-akcije>button{display:inline-flex;align-items:center;gap:.4rem;height:2.4rem;box-sizing:border-box;padding:0 1.1rem;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);border-radius:999px;background:#fff;color:var(--ink);font:650 .78rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s}
