@@ -443,7 +443,7 @@ export default function ProjectDetailModern({
         .pm-cilj { font-size:.85rem; color:var(--pm-ink); }
         .pm-muted { color:var(--pm-muted); font-size:.86rem; margin:.2rem 0 0; }
         .pm-mails { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
-        .pm-mail { display:flex; align-items:baseline; gap:.6rem; padding:.45rem 0; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); }
+        .pm-mail { display:flex; align-items:baseline; gap:.6rem; padding:.5rem .6rem; margin:0 -.6rem; border-radius:9px; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); }
         .pm-mails li:first-child .pm-mail { border-top:0; }
         .pm-mail-btn { width:100%; box-sizing:border-box; border:0; background:none; cursor:pointer; text-align:left; font:inherit; border-radius:8px; }
         .pm-mail-btn:hover { background:var(--pm-paper); }
@@ -496,7 +496,7 @@ export default function ProjectDetailModern({
         .pm-iconbtn:hover { background:var(--pm-paper); }
         /* prihajajoci datumi */
         .pm-roki { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
-        .pm-rok { display:flex; align-items:center; gap:.55rem; padding:.45rem 0; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); }
+        .pm-rok { display:flex; align-items:center; gap:.55rem; padding:.5rem .6rem; margin:0 -.6rem; border-radius:9px; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); }
         .pm-rok:first-child { border-top:0; }
         .pm-rok-pika { flex:none; width:.5rem; height:.5rem; border-radius:50%; background:var(--pm-acc); }
         .pm-rok-pika[data-late="true"] { background:oklch(58% .18 25); }
