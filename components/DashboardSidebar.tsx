@@ -12,7 +12,7 @@ import MeniProfil from './MeniProfil';
 import PaketZnak from './PaketZnak';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
-type Section = 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings' | 'ekipa' | 'novprojekt' | 'ideje' | 'marketing';
+type Section = 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings' | 'ekipa' | 'novprojekt' | 'ideje' | 'marketing' | 'komunikacija';
 
 /* Meni je razdeljen po tem, KAJ UPORABNIK POCNE, ne kaj stvar je:
    Delo = ustvarjas dokument za stranko · Podatki = vzdrzujes vnose · Nacrt = racunas/ciljas.
@@ -56,12 +56,13 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
     </MeniSkupina>
     {/* Arhiv (prej "Zgodovina") = kjer NAJDEŠ shranjeno; sodi pod Podatki, ne Drugo.
         Delo = ustvarjaš, Podatki = iščeš. */}
-    <MeniSkupina naslov={L('Podatki', 'Data')} aktivna={active === 'clients' || active === 'prices' || active === 'expenses' || active === 'projects' || active === 'accounting'}>
+    <MeniSkupina naslov={L('Podatki', 'Data')} aktivna={active === 'clients' || active === 'prices' || active === 'expenses' || active === 'projects' || active === 'accounting' || active === 'komunikacija'}>
       {item('projects', `${base}/kalkulator/projekti`, '01', L('Projekti & arhiv', 'Projects & archive'), 'zgodovina')}
-      {item('clients', `${base}/kalkulator/stranke`, '02', L('Stranke', 'Clients'), 'stranke')}
-      {item('prices', `${base}/kalkulator/ceniki`, '03', L('Moji ceniki', 'Price lists'), 'ceniki')}
-      {item('expenses', `${base}/kalkulator/stroski`, '04', L('Stroški', 'Expenses'), 'stroski', 'expenses')}
-      {item('accounting', `${base}/kalkulator/racunovodstvo`, '05', L('Računovodstvo', 'Accounting'), 'racunovodstvo')}
+      {item('komunikacija', `${base}/kalkulator/komunikacija`, '02', L('Komunikacija', 'Communication'), 'komunikacije')}
+      {item('clients', `${base}/kalkulator/stranke`, '03', L('Stranke', 'Clients'), 'stranke')}
+      {item('prices', `${base}/kalkulator/ceniki`, '04', L('Moji ceniki', 'Price lists'), 'ceniki')}
+      {item('expenses', `${base}/kalkulator/stroski`, '05', L('Stroški', 'Expenses'), 'stroski', 'expenses')}
+      {item('accounting', `${base}/kalkulator/racunovodstvo`, '06', L('Računovodstvo', 'Accounting'), 'racunovodstvo')}
     </MeniSkupina>
     <MeniSkupina naslov={L('Načrt', 'Plan')} aktivna={active === 'goals' || active === 'time' || active === 'plan' || active === 'naloge' || active === 'ideje' || active === 'koledar' || active === 'marketing'}>
       {item('goals', `${base}/kalkulator/cilji`, '01', L('Cilji', 'Goals'), 'cilji', 'businessInsights')}

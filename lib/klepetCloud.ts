@@ -114,12 +114,25 @@ export function narociSporocila(threadId: string, cb: (m: OblacnoSporocilo) => v
   return () => { void supa.removeChannel(ch); };
 }
 
-/* Vse niti, kjer sem udelezenec (RLS poskrbi za filter) — za vpogled »skupni klepeti«. */
-export async function mojeNiti(): Promise<{ threadId: string; projectId?: string }[]> {
+export type OblacnaNit = { threadId: string; projectId?: string; udelezenci: { email: string; ime?: string }[] };
+
+/* Vse niti, kjer sem udelezenec (RLS poskrbi za filter) — za vpogled »skupni klepeti«.
+   Doda tudi udelezence vsake niti (za prikaz s kom klepetam). */
+export async function mojeNiti(): Promise<OblacnaNit[]> {
   try {
-    const { data, error } = await createClient().from('chat_thread').select('id, project_external_id').order('created_at', { ascending: false });
-    if (error) return [];
-    return (data || []).map(r => ({ threadId: String(r.id), projectId: r.project_external_id ? String(r.project_external_id) : undefined }));
+    const supa = createClient();
+    const { data: niti, error } = await supa.from('chat_thread').select('id, project_external_id').order('created_at', { ascending: false });
+    if (error || !niti?.length) return [];
+    const ids = niti.map(n => String(n.id));
+    const { data: udel } = await supa.from('chat_participant').select('thread_id, email, ime').in('thread_id', ids);
+    const map = new Map<string, { email: string; ime?: string }[]>();
+    (udel || []).forEach(u => {
+      const tid = String(u.thread_id);
+      const arr = map.get(tid) || [];
+      arr.push({ email: norm(String(u.email)), ime: u.ime ? String(u.ime) : undefined });
+      map.set(tid, arr);
+    });
+    return niti.map(n => ({ threadId: String(n.id), projectId: n.project_external_id ? String(n.project_external_id) : undefined, udelezenci: map.get(String(n.id)) || [] }));
   } catch {
     return [];
   }
