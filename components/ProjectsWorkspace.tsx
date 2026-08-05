@@ -13,6 +13,7 @@ import SwapText from '@/components/SwapText';
 import { loadFlowData, loadProjectLinks, saveOfferAmount, saveOfferStatus, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled, demoSodelavci, demoRealZaOffer } from '@/lib/predogled';
 import { preberiPostoProjekta, dodajPosto, premakniPosto, nastaviOznakePoste, type PostaVnos } from '@/lib/postaDnevnik';
+import { preberiKlepet, dodajKlepet, type KlepetSporocilo } from '@/lib/klepet';
 import { pullProjectMail, pushProjectMail, saveDraft, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent } from '@/lib/pinartMailCloud';
 import { posljiMail } from '@/lib/posta';
 import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
@@ -157,7 +158,7 @@ const pwStyles = `
    06 Komunikacije/07 Zapiski) — svoj pw- razdelek v duhu .projectNarrative
    kartic (isti border/radius/ozadje odtenek), da se lepo vklopi. */
 .pw-dodatno{display:flex;flex-direction:column;gap:.55rem;margin-top:.55rem}
-.pw-kom-panel{width:min(780px,94vw);max-width:min(780px,94vw)}
+.pw-kom-panel{flex:0 1 680px;min-width:0;max-width:680px}
 /* okno Nova naloga iz maila */
 .pw-naloga-panel{width:min(560px,94vw);padding:2.4rem 2rem}
 .pw-naloga-obr{display:flex;flex-direction:column;gap:.9rem;margin-top:.6rem}
@@ -170,7 +171,7 @@ const pwStyles = `
 .pw-naloga-preklic{border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);background:#fff;color:var(--ink);border-radius:999px;padding:.55rem 1.1rem;font:600 .78rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-naloga-shrani{border:0;background:var(--ink);color:var(--paper);border-radius:999px;padding:.55rem 1.3rem;font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-naloga-shrani:disabled{opacity:.5;cursor:default}
-.pw-ai-panel{width:min(520px,94vw);padding:2.4rem 2rem;display:flex;flex-direction:column;gap:1rem}
+.pw-ai-panel{flex:none;width:360px}
 .pw-ai-load{display:flex;align-items:center;gap:.5rem;color:color-mix(in oklch,var(--ink) 60%,transparent);font:600 .85rem var(--font-sans),sans-serif;margin-top:.4rem}
 .pw-ai-pika{width:.45rem;height:.45rem;border-radius:999px;background:var(--purple);opacity:.35;animation:pwAiP 1s infinite ease-in-out}
 .pw-ai-pika:nth-child(2){animation-delay:.15s}.pw-ai-pika:nth-child(3){animation-delay:.3s}
@@ -185,17 +186,42 @@ const pwStyles = `
 .pw-ai-kopiraj{border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);background:#fff;color:var(--ink);border-radius:999px;padding:.5rem 1rem;font:600 .78rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-ai-uporabi{display:inline-flex;align-items:center;gap:.35rem;border:0;background:var(--purple);color:#fff;border-radius:999px;padding:.5rem 1.15rem;font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-ai-opomba{margin:0;font:500 .74rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 45%,transparent);line-height:1.45}
-/* Pod 900px: Pupa gre ČEZ CEL zaslon (prevzem), da se NIKOLI ne prekriva z mailom. */
+/* ── PANELNA LETEV: mail + Pupa (+ klepet) so STOLPCI vzporedno; NIKOLI se ne prekrivajo. ── */
+.pw-rail-back{position:fixed;inset:0;z-index:60;background:oklch(97% .006 87 / .4);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+.pw-rail{position:fixed;top:0;right:0;bottom:0;max-width:100vw;display:flex;flex-direction:row;align-items:stretch}
+.pw-rail-col{position:relative;height:100%;box-sizing:border-box;display:flex;flex-direction:column;background:#fff;overflow:hidden;animation:pwRailIn .34s cubic-bezier(.16,1,.3,1) both}
+.pw-rail-col + .pw-rail-col{border-left:1px solid var(--line)}
+.pw-rail > .pw-rail-col:first-child{box-shadow:-1.4rem 0 3.4rem -1.2rem oklch(20% .03 55 / .2)}
+/* SAMO ta notranji predal se skrola; X plava, ozadje strani je zaklenjeno */
+.pw-rail-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:2.4rem 2rem}
+.pw-ai-scroll{display:flex;flex-direction:column;gap:1rem;padding:2.4rem 1.6rem}
+.pw-klepet-scroll{padding:0}
+@keyframes pwRailIn{from{opacity:.35;transform:translateX(26px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.pw-rail-col{animation:none}}
+/* Ozek zaslon (<900px): stolpci se PREKRIJEJO (paneli čez, kot prej) — zadnji odprt je na vrhu. */
 @media (max-width:899px){
-  .pw-ai-panel{width:100vw !important;max-width:100vw !important}
+  .pw-rail{left:0}
+  .pw-rail-col{position:absolute;inset:0;width:100vw !important;max-width:100vw !important}
+  .pw-rail-scroll{padding-left:1.1rem !important;padding-right:1.1rem !important}
+  .pw-kom-panel{z-index:1}
+  .pw-ai-panel{z-index:2}
+  .pw-klepet-panel{z-index:3}
 }
-/* ≥900px: Pupa (desno) porine mail levo — stojita VZPOREDNO na isti ravnini, brez prekrivanja in brez zatemnitve. */
-@media (min-width:900px){
-  .pw-ai-back{background:transparent !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important}
-  .pw-ai-panel{width:360px !important;max-width:360px !important}
-  .pw-kom-panel{transition:transform .28s cubic-bezier(.16,1,.3,1),width .28s ease}
-  .pw-kom-panel.pw-kom-shift{width:min(500px,52vw) !important;max-width:min(500px,52vw) !important;transform:translateX(-380px)}
-}
+/* KLEPET stolpec */
+.pw-klepet-panel{flex:none;width:400px}
+.pw-klepet-glava{flex:none;display:flex;align-items:center;gap:.6rem;padding:1.5rem 1.2rem .9rem;border-bottom:1px solid var(--line)}
+.pw-klepet-av{flex:none;width:2.2rem;height:2.2rem;border-radius:50%;display:grid;place-items:center;background:linear-gradient(140deg,oklch(72% .13 297),oklch(62% .2 297));color:#fff;font:700 .85rem var(--font-sans),sans-serif}
+.pw-klepet-kdo b{display:block;font:700 .9rem var(--font-sans),sans-serif;color:var(--ink)}
+.pw-klepet-kdo small{display:block;font:500 .7rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 50%,transparent)}
+.pw-klepet-tok{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:.45rem;padding:1rem 1.1rem}
+.pw-klepet-b{max-width:82%;align-self:flex-start;padding:.5rem .8rem;border-radius:1.05rem;background:oklch(96% .006 87);color:var(--ink);font:500 .85rem var(--font-sans),sans-serif;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.pw-klepet-b-jaz{align-self:flex-end;background:var(--purple);color:#fff}
+.pw-klepet-prazno{margin:auto;text-align:center;font:500 .8rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 45%,transparent);padding:1rem}
+.pw-klepet-vnos{flex:none;display:flex;align-items:center;gap:.5rem;padding:.75rem .9rem;border-top:1px solid var(--line)}
+.pw-klepet-vnos input{flex:1;min-width:0;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:999px;padding:.6rem .9rem;font:500 .85rem var(--font-sans),sans-serif;color:var(--ink);background:#fff}
+.pw-klepet-vnos input:focus{outline:none;border-color:var(--purple)}
+.pw-klepet-poslji{flex:none;display:grid;place-items:center;width:2.4rem;height:2.4rem;border:0;border-radius:50%;background:var(--purple);color:#fff;cursor:pointer}
+.pw-klepet-poslji:disabled{opacity:.4;cursor:default}
 /* compose glava + X za hitro zapiranje */
 .pw-pisi-glava{display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem}
 .pw-pisi-naslov{font:700 .8rem var(--font-sans),sans-serif;color:var(--ink)}
@@ -774,6 +800,9 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [aiPovzetek, setAiPovzetek] = useState('');
   const [aiOdgovor, setAiOdgovor] = useState('');
   const [aiNapaka, setAiNapaka] = useState('');
+  const [klepetOdprt, setKlepetOdprt] = useState(false);      /* klepetni stolpec (Deli v klepet) */
+  const [klepetSporocila, setKlepetSporocila] = useState<KlepetSporocilo[]>([]);
+  const [klepetVnos, setKlepetVnos] = useState('');
   const [premakniOdprt, setPremakniOdprt] = useState(false);   /* meni »Premakni na drug projekt« */
   const [oznakaOdprt, setOznakaOdprt] = useState(false);       /* vnos oznake */
   const [oznakaVnos, setOznakaVnos] = useState('');
@@ -805,6 +834,15 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const closeVsi = () => { setVsiOdprt(null); setVsiIskanje(''); setVsiIskanjeOdprto(false); setVsiStran(1); setVsiNacin('strani'); };
   /* klik na vrstico (na kartici ALI v slideu) -> predogled dokumenta v panelu z desne */
   const [vrsticaDetajl, setVrsticaDetajl] = useState<null | { tip: 'pogodbe' | 'racuni' | 'stroski'; item: FlowContract | FlowInvoice | FlowExpense }>(null);
+  /* Zaklep ozadja: ko je odprt kateri koli desni panel/letev, se STRAN v ozadju NE skrola
+     (skrola se le vsebina panela). */
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const odprt = komOdprt || nalogaOdprt || !!vsiOdprt || !!vrsticaDetajl;
+    if (odprt) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
+    return () => { document.body.style.overflow = ''; };
+  }, [komOdprt, nalogaOdprt, vsiOdprt, vrsticaDetajl]);
   const klik = (tip: 'pogodbe' | 'racuni' | 'stroski', item: FlowContract | FlowInvoice | FlowExpense) => ({
     role: 'button' as const, tabIndex: 0,
     onClick: () => setVrsticaDetajl({ tip, item }),
@@ -849,6 +887,24 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     setAiOdprt(false); setBeriMail(null);
     /* počakaj, da se sestavljalnik odpre in podpis vstavi, nato prepiši telo z AI osnutkom */
     setTimeout(() => { const el = pisiTeloRef.current; if (el) el.innerHTML = osnutek.replace(/\n/g, '<br>') + '<br><br>' + el.innerHTML; }, 60);
+  };
+  /* Odpre klepetni stolpec; če je podan mail, ga deli kot prvo sporočilo (kontekst). */
+  const odpriKlepet = (mail?: PostaVnos | null) => {
+    if (!selectedId) return;
+    let seznam = preberiKlepet(selectedId);
+    if (mail) {
+      const povzetek = (mail.telo || mail.povzetek || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+      seznam = dodajKlepet({ projectId: selectedId, avtor: 'jaz', besedilo: `📎 ${L('Delim mail', 'Sharing mail')}: »${mail.zadeva || L('(brez zadeve)', '(no subject)')}«${povzetek ? `\n${povzetek}` : ''}`, odMaila: mail.zadeva });
+    }
+    setKlepetSporocila(seznam);
+    setKlepetOdprt(true);
+  };
+  const posljiKlepet = (e: React.FormEvent) => {
+    e.preventDefault();
+    const t = klepetVnos.trim();
+    if (!t || !selectedId) return;
+    setKlepetSporocila(dodajKlepet({ projectId: selectedId, avtor: 'jaz', besedilo: t }));
+    setKlepetVnos('');
   };
   const vNalogo = (mail: PostaVnos | null) => {
     if (!mail) return;
@@ -1142,7 +1198,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               <div className="pw-mail-akcije">
                 <button type="button" onClick={() => { const m = beriMail; odpriPisanje(); setPisiZa(m?.prejemniki[0] || ''); setPisiZadeva(`Re: ${(m?.zadeva || '').replace(/^Re:\s*/i, '')}`); setBeriMail(null); }}><ArrowBendUpLeft size={15} weight="bold" /> {L('Odgovori', 'Reply')}</button>
                 <button type="button" onClick={() => { const m = beriMail; odpriPisanje(); setPisiZa(''); setPisiZadeva(`Fwd: ${(m?.zadeva || '').replace(/^Fwd:\s*/i, '')}`); setBeriMail(null); }}><ArrowBendUpRight size={15} weight="bold" /> {L('Posreduj', 'Forward')}</button>
-                <button type="button" title={L('Deli to sporočilo (ali označen del) v klepet s sodelavcem — kmalu', 'Share this message (or a highlighted part) into a chat with a collaborator — soon')} onClick={() => undefined}><ChatCircle size={15} weight="bold" /> {L('Deli v klepet', 'Share in chat')}</button>
+                <button type="button" title={L('Deli to sporočilo v klepet s sodelavcem', 'Share this message into a chat with a collaborator')} onClick={() => odpriKlepet(beriMail)}><ChatCircle size={15} weight="bold" /> {L('Deli v klepet', 'Share in chat')}</button>
               </div>
             </>) : (() => {
               const q = postaIsk.trim().toLowerCase();
@@ -1423,11 +1479,63 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     {/* SLIDE "Vsi <tip>" z desne — vzorec styles.detailBackdrop/detailPanel + lepljivi X
         (glej ArhivWorkspace .arh-det-x); poln seznam za pogodbe/računi/stroški TA projekta */}
     {portalPripravljen && komOdprt && selected && createPortal(
-      <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={() => setKomOdprt(false)}>
-        <aside className={`${styles.detailPanel} pw-vsi-panel pw-kom-panel${aiOdprt ? ' pw-kom-shift' : ''}`} role="dialog" aria-modal="true" aria-label={L('Komunikacija', 'Communication')} onMouseDown={e => e.stopPropagation()}>
-          <button type="button" className="pw-vsi-x" onClick={() => setKomOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button>
-          {komVsebina()}
-        </aside>
+      <div className="pw-rail-back" role="presentation" onMouseDown={() => { setKomOdprt(false); setAiOdprt(false); setKlepetOdprt(false); }}>
+        <div className="pw-rail" onMouseDown={e => e.stopPropagation()}>
+          {/* STOLPEC 1 · MAIL */}
+          <aside className="pw-rail-col pw-kom-panel" role="dialog" aria-modal="true" aria-label={L('Komunikacija', 'Communication')}>
+            <button type="button" className="pw-vsi-x" onClick={() => { setKomOdprt(false); setAiOdprt(false); setKlepetOdprt(false); }} aria-label={L('Zapri', 'Close')}>✕</button>
+            <div className="pw-rail-scroll">{komVsebina()}</div>
+          </aside>
+          {/* STOLPEC 2 · PUPA */}
+          {aiOdprt && (
+            <aside className="pw-rail-col pw-ai-panel" role="dialog" aria-label="Pupa">
+              <button type="button" className="pw-vsi-x" onClick={() => setAiOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button>
+              <div className="pw-rail-scroll pw-ai-scroll">
+                <p className={styles.eyebrow}><Sparkle size={13} weight="fill" style={{ verticalAlign: '-2px', marginRight: '.3rem' }} />{L('PUPA · POMOČ PRI MAILU', 'PUPA · MAIL HELP')}</p>
+                {aiNalaganje ? (
+                  <div className="pw-ai-load"><span className="pw-ai-pika" /><span className="pw-ai-pika" /><span className="pw-ai-pika" /><span>{L('Pupa bere sporočilo …', 'Pupa is reading the message …')}</span></div>
+                ) : aiNapaka ? (
+                  <div className="pw-ai-napaka">{aiNapaka}</div>
+                ) : (<>
+                  <section className="pw-ai-blok">
+                    <h4>{L('Povzetek', 'Summary')}</h4>
+                    <p className="pw-ai-povzetek">{aiPovzetek || L('(brez povzetka)', '(no summary)')}</p>
+                  </section>
+                  {aiOdgovor && (
+                    <section className="pw-ai-blok">
+                      <h4>{L('Predlog odgovora', 'Suggested reply')}</h4>
+                      <textarea className="pw-ai-odg" value={aiOdgovor} onChange={e => setAiOdgovor(e.target.value)} rows={8} />
+                      <div className="pw-ai-akcije">
+                        <button type="button" className="pw-ai-kopiraj" onClick={() => { if (typeof navigator !== 'undefined' && navigator.clipboard) void navigator.clipboard.writeText(aiOdgovor); }}>{L('Kopiraj', 'Copy')}</button>
+                        {!samoOgled && <button type="button" className="pw-ai-uporabi" onClick={() => uporabiAiOdgovor(beriMail)}><ArrowBendUpLeft size={14} weight="bold" /> {L('Uredi in pošlji', 'Edit & send')}</button>}
+                      </div>
+                    </section>
+                  )}
+                  <p className="pw-ai-opomba">{L('Pupa svetuje — besedilo pred pošiljanjem vedno preglej.', 'Pupa assists — always review the text before sending.')}</p>
+                </>)}
+              </div>
+            </aside>
+          )}
+          {/* STOLPEC 3 · KLEPET */}
+          {klepetOdprt && (
+            <aside className="pw-rail-col pw-klepet-panel" role="dialog" aria-label={L('Klepet', 'Chat')}>
+              <button type="button" className="pw-vsi-x" onClick={() => setKlepetOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button>
+              <div className="pw-klepet-glava">
+                <span className="pw-klepet-av" aria-hidden>{(selected.offer.client || 'K').trim().charAt(0).toUpperCase()}</span>
+                <div className="pw-klepet-kdo"><b>{selected.offer.client || L('Sodelavec', 'Collaborator')}</b><small>{L('Interni klepet', 'Internal chat')} · {selected.offer.title}</small></div>
+              </div>
+              <div className="pw-klepet-tok">
+                {klepetSporocila.length ? klepetSporocila.map(m => (
+                  <div key={m.id} className={`pw-klepet-b${m.avtor === 'jaz' ? ' pw-klepet-b-jaz' : ''}`}>{m.besedilo}</div>
+                )) : <p className="pw-klepet-prazno">{L('Začni pogovor ali deli mail v klepet (gumb »Deli v klepet«).', 'Start a conversation or share a mail (the “Share in chat” button).')}</p>}
+              </div>
+              <form className="pw-klepet-vnos" onSubmit={posljiKlepet}>
+                <input value={klepetVnos} onChange={e => setKlepetVnos(e.target.value)} placeholder={L('Napiši sporočilo …', 'Write a message …')} aria-label={L('Sporočilo', 'Message')} />
+                <button type="submit" className="pw-klepet-poslji" disabled={!klepetVnos.trim()} aria-label={L('Pošlji', 'Send')}><ArrowBendUpRight size={16} weight="bold" /></button>
+              </form>
+            </aside>
+          )}
+        </div>
       </div>
     , document.body)}
 
@@ -1444,36 +1552,6 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               <button type="button" className="pw-naloga-shrani" onClick={shraniNovoNalogo} disabled={!nalogaNaslov.trim()}>{L('Shrani kot nalogo', 'Save as task')}</button>
             </div>
           </div>
-        </aside>
-      </div>
-    , document.body)}
-
-    {portalPripravljen && aiOdprt && createPortal(
-      <div className={`${styles.detailBackdrop} pw-vsi-backdrop pw-ai-back`} role="presentation" onMouseDown={() => setAiOdprt(false)}>
-        <aside className={`${styles.detailPanel} pw-vsi-panel pw-ai-panel`} role="dialog" aria-modal="true" aria-label="Pupa" onMouseDown={e => e.stopPropagation()}>
-          <button type="button" className="pw-vsi-x" onClick={() => setAiOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button>
-          <p className={styles.eyebrow}><Sparkle size={13} weight="fill" style={{ verticalAlign: '-2px', marginRight: '.3rem' }} />{L('PUPA · POMOČ PRI MAILU', 'PUPA · MAIL HELP')}</p>
-          {aiNalaganje ? (
-            <div className="pw-ai-load"><span className="pw-ai-pika" /><span className="pw-ai-pika" /><span className="pw-ai-pika" /><span>{L('Pupa bere sporočilo …', 'Pupa is reading the message …')}</span></div>
-          ) : aiNapaka ? (
-            <div className="pw-ai-napaka">{aiNapaka}</div>
-          ) : (<>
-            <section className="pw-ai-blok">
-              <h4>{L('Povzetek', 'Summary')}</h4>
-              <p className="pw-ai-povzetek">{aiPovzetek || L('(brez povzetka)', '(no summary)')}</p>
-            </section>
-            {aiOdgovor && (
-              <section className="pw-ai-blok">
-                <h4>{L('Predlog odgovora', 'Suggested reply')}</h4>
-                <textarea className="pw-ai-odg" value={aiOdgovor} onChange={e => setAiOdgovor(e.target.value)} rows={8} />
-                <div className="pw-ai-akcije">
-                  <button type="button" className="pw-ai-kopiraj" onClick={() => { if (typeof navigator !== 'undefined' && navigator.clipboard) void navigator.clipboard.writeText(aiOdgovor); }}>{L('Kopiraj', 'Copy')}</button>
-                  {!samoOgled && <button type="button" className="pw-ai-uporabi" onClick={() => uporabiAiOdgovor(beriMail)}><ArrowBendUpLeft size={14} weight="bold" /> {L('Uredi in pošlji', 'Edit & send')}</button>}
-                </div>
-              </section>
-            )}
-            <p className="pw-ai-opomba">{L('Pupa svetuje — besedilo pred pošiljanjem vedno preglej.', 'Pupa assists — always review the text before sending.')}</p>
-          </>)}
         </aside>
       </div>
     , document.body)}
