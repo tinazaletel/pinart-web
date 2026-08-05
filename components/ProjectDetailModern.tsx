@@ -60,7 +60,7 @@ const Puscica = () => (
 );
 
 export default function ProjectDetailModern({
-  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, ekipaStatus, agenti = [], links = [], crmVnosi = [], onOdpriKomunikacije, onOdpriVse, onOdpriDokument, naloge = [],
+  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, ekipaStatus, agenti = [], links = [], crmVnosi = [], onOdpriKomunikacije, onOdpriVse, onOdpriDokument, naloge = [], onOdpriMail,
 }: {
   data: ModernProject;
   sodelavci: Sodelavec[];
@@ -79,6 +79,7 @@ export default function ProjectDetailModern({
   onOdpriVse?: (tip: 'pogodbe' | 'racuni' | 'stroski') => void;
   onOdpriDokument?: (tip: 'pogodbe' | 'racuni' | 'stroski', item: FlowContract | FlowInvoice | FlowExpense) => void;
   naloge?: NalogaLite[];
+  onOdpriMail?: (v: PostaVnos) => void;
 }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const { offer, real } = data;
@@ -172,10 +173,12 @@ export default function ProjectDetailModern({
             {naloge.length ? (
               <ul className="pm-naloge">
                 {naloge.slice(0, 4).map(n => (
-                  <li key={n.id} className="pm-naloga">
-                    <span className="pm-naloga-dot" data-st={n.status} aria-hidden />
-                    <span className="pm-naloga-t">{n.naslov}</span>
-                    {n.oseba && <span className="pm-naloga-av" style={{ background: avatarOzadje(n.oseba) }} aria-hidden>{zacetnice(n.oseba)}</span>}
+                  <li key={n.id}>
+                    <Link href={`${base}/kalkulator/naloge`} className="pm-naloga pm-naloga-link">
+                      <span className="pm-naloga-dot" data-st={n.status} aria-hidden />
+                      <span className="pm-naloga-t">{n.naslov}</span>
+                      {n.oseba && <span className="pm-naloga-av" style={{ background: avatarOzadje(n.oseba) }} aria-hidden>{zacetnice(n.oseba)}</span>}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -233,11 +236,13 @@ export default function ProjectDetailModern({
             {komZadnje.length ? (
               <ul className="pm-mails">
                 {komZadnje.map(v => (
-                  <li key={v.id} className="pm-mail">
-                    <span className="pm-mail-av" style={{ background: avatarOzadje(v.prejemniki[0] || '?') }} aria-hidden>{mailIniciale(v.prejemniki[0] || '?')}</span>
-                    <span className="pm-mail-kdo">{v.prejemniki.join(', ') || '—'}</span>
-                    <span className="pm-mail-zad">{v.zadeva || L('(brez zadeve)', '(no subject)')}</span>
-                    <span className="pm-mail-dan">{datKratko(v.datum)}</span>
+                  <li key={v.id}>
+                    <button type="button" className="pm-mail pm-mail-btn" onClick={() => onOdpriMail?.(v)}>
+                      <span className="pm-mail-av" style={{ background: avatarOzadje(v.prejemniki[0] || '?') }} aria-hidden>{mailIniciale(v.prejemniki[0] || '?')}</span>
+                      <span className="pm-mail-kdo">{v.prejemniki.join(', ') || '—'}</span>
+                      <span className="pm-mail-zad">{v.zadeva || L('(brez zadeve)', '(no subject)')}</span>
+                      <span className="pm-mail-dan">{datKratko(v.datum)}</span>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -408,7 +413,9 @@ export default function ProjectDetailModern({
         .pm-muted { color:var(--pm-muted); font-size:.86rem; margin:.2rem 0 0; }
         .pm-mails { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
         .pm-mail { display:flex; align-items:baseline; gap:.6rem; padding:.45rem 0; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); }
-        .pm-mail:first-child { border-top:0; }
+        .pm-mails li:first-child .pm-mail { border-top:0; }
+        .pm-mail-btn { width:100%; box-sizing:border-box; border:0; background:none; cursor:pointer; text-align:left; font:inherit; border-radius:8px; }
+        .pm-mail-btn:hover { background:var(--pm-paper); }
         .pm-mail-kdo { flex:0 0 30%; min-width:0; font-size:.8rem; font-weight:600; color:var(--pm-ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .pm-mail-zad { flex:1; min-width:0; font-size:.82rem; color:var(--pm-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .pm-mail-dan { flex:none; font-size:.7rem; color:var(--pm-muted); font-variant-numeric:tabular-nums; }
@@ -524,7 +531,9 @@ export default function ProjectDetailModern({
         /* aktivni taski */
         .pm-naloge { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
         .pm-naloga { display:flex; align-items:center; gap:.55rem; padding:.42rem 0; border-top:1px solid color-mix(in oklch, var(--pm-line) 60%, transparent); }
-        .pm-naloga:first-child { border-top:0; }
+        .pm-naloge li:first-child .pm-naloga { border-top:0; }
+        .pm-naloga-link { text-decoration:none; color:inherit; border-radius:8px; }
+        .pm-naloga-link:hover { background:var(--pm-paper); }
         .pm-naloga-dot { flex:none; width:.55rem; height:.55rem; border-radius:50%; background:oklch(80% .03 90); }
         .pm-naloga-dot[data-st="dela"] { background:var(--pm-acc); }
         .pm-naloga-dot[data-st="pregled"] { background:oklch(70% .17 60); }
