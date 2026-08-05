@@ -589,7 +589,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   /* PIPELINE POSLOV — pogled Seznam|Pipeline: ce ga krmili starš (ArhivWorkspace,
      pilula ob zavihkih), uporabi to; sicer lastno stanje. */
   const [notranjiPogled, setNotranjiPogled] = useState<'seznam' | 'pipeline'>('seznam');
-  const [pogledDetajl, setPogledDetajl] = useState<'tabelni' | 'moderni'>('tabelni');
+  const [pogledDetajl, setPogledDetajl] = useState<'tabelni' | 'moderni'>('moderni');
   const pogled = pogledZunaj ?? notranjiPogled;
   const setPogled = (v: 'seznam' | 'pipeline') => { if (onPogled) onPogled(v); else setNotranjiPogled(v); };
   /* sodelavci — se uporabljajo za prikaz "Dodeljeni" na vozliscu projekta (glej
