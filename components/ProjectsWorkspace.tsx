@@ -694,6 +694,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const projects = useMemo(() => [...offerProjects, ...realProjects].sort((a, b) => (b.offer.date || '').localeCompare(a.offer.date || '')), [offerProjects, realProjects]);
   const visible = projects.filter(project => { const text = `${project.offer.title} ${project.offer.client} ${project.offer.number || ''}`.toLocaleLowerCase('sl-SI'); const match = text.includes(search.toLocaleLowerCase('sl-SI')); const state = filter === 'vse' || (filter === 'aktivni' ? project.offer.status === 'accepted' : filter === 'cakajo' ? project.offer.status === 'sent' : ['rejected'].includes(project.offer.status)); return match && state && vObdobju(project.offer.date, datumOd, datumDo); });
   /* paginacija seznama projektov (namesto neskončnega skrolanja) */
+  const [projStran, setProjStran] = useState(1);
   const NA_STRAN_PROJ = 12;
   const projStrani = Math.max(1, Math.ceil(visible.length / NA_STRAN_PROJ));
   const projStranA = Math.min(Math.max(1, projStran), projStrani);
@@ -849,7 +850,6 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [postaOseba, setPostaOseba] = useState('');   /* filter po prejemniku (ko vec oseb na projektu) */
   const [izbraniMaili, setIzbraniMaili] = useState<Set<string>>(new Set());   /* izbrani maili (checkbox) za bulk akcije */
   const [postaStran, setPostaStran] = useState(1);            /* paginacija seznama pošte */
-  const [projStran, setProjStran] = useState(1);             /* paginacija seznama projektov */
   const [aiOdprt, setAiOdprt] = useState(false);              /* Pupa panel na mailu (povzetek + predlog odgovora) */
   const [aiNalaganje, setAiNalaganje] = useState(false);
   const [aiPovzetek, setAiPovzetek] = useState('');

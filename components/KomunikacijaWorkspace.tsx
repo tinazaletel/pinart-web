@@ -6,7 +6,7 @@
    To je vstopna tocka, ki je manjkala, da sodelavec odpre skupno nit s svoje strani. */
 
 import { useEffect, useRef, useState } from 'react';
-import { PaperPlaneRight, ChatsCircle, Paperclip } from '@phosphor-icons/react';
+import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle } from '@phosphor-icons/react';
 import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, type OblacnaNit, type OblacnoSporocilo } from '@/lib/klepetCloud';
 import { usePredogled } from '@/lib/predogled';
 import { preberiVsePoste, type PostaVnos } from '@/lib/postaDnevnik';
@@ -49,7 +49,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   const [sporocila, setSporocila] = useState<OblacnoSporocilo[]>([]);
   const [vnos, setVnos] = useState('');
   const [nalaganje, setNalaganje] = useState(true);
-  const [zavihek, setZavihek] = useState<'klepet' | 'posta'>('klepet');
+  const [zavihek, setZavihek] = useState<'klepet' | 'posta'>('posta');
   const [posta, setPosta] = useState<PostaVnos[]>([]);
   const [odprtMail, setOdprtMail] = useState<string | null>(null);
   useEffect(() => {
@@ -115,8 +115,8 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
       </header>
 
       <div className="km-zavihki" role="tablist">
-        <button type="button" role="tab" aria-selected={zavihek === 'klepet'} className={zavihek === 'klepet' ? 'on' : ''} onClick={() => setZavihek('klepet')}>{L('Klepet', 'Chat')}</button>
-        <button type="button" role="tab" aria-selected={zavihek === 'posta'} className={zavihek === 'posta' ? 'on' : ''} onClick={() => setZavihek('posta')}>{L('Pošta', 'Mail')}{posta.length ? ` · ${posta.length}` : ''}</button>
+        <button type="button" role="tab" aria-selected={zavihek === 'posta'} className={zavihek === 'posta' ? 'on' : ''} onClick={() => setZavihek('posta')}><EnvelopeSimple size={15} weight="bold" /> {L('Pošta', 'Mail')}{posta.length ? ` · ${posta.length}` : ''}</button>
+        <button type="button" role="tab" aria-selected={zavihek === 'klepet'} className={zavihek === 'klepet' ? 'on' : ''} onClick={() => setZavihek('klepet')}><ChatCircle size={15} weight="bold" /> {L('Klepet', 'Chat')}</button>
       </div>
 
       {zavihek === 'posta' ? (
@@ -196,7 +196,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-av{flex:none;width:2.1rem;height:2.1rem;border-radius:50%;display:grid;place-items:center;background:linear-gradient(140deg,oklch(72% .13 297),oklch(62% .2 297));color:#fff;font:700 .82rem var(--font-sans),sans-serif}
         .km-av.sm{width:1.9rem;height:1.9rem;font-size:.76rem}
         .km-zavihki{display:inline-flex;gap:.3rem;margin:0 0 1.1rem;padding:.25rem;background:#fff;border:1px solid var(--k-line);border-radius:999px}
-        .km-zavihki button{border:0;background:none;border-radius:999px;padding:.5rem 1.1rem;font:700 .78rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 60%,transparent);cursor:pointer}
+        .km-zavihki button{display:inline-flex;align-items:center;gap:.4rem;border:0;background:none;border-radius:999px;padding:.5rem 1.1rem;font:700 .78rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 60%,transparent);cursor:pointer}
         .km-zavihki button.on{background:var(--k-ink,#2a2620);color:#fff}
         .km-posta{display:flex;flex-direction:column;gap:.4rem;max-width:52rem}
         .km-mail-vrsta{background:#fff;border:1px solid var(--k-line);border-radius:.85rem;overflow:hidden}

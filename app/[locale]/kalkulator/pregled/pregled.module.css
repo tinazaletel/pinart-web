@@ -348,6 +348,10 @@
 .flowTools > *:nth-child(4)::before { animation: dotsGlow 6s ease-in-out infinite alternate; }
 .historyBand .tableWrap { margin-top: 0; margin-inline: -.7rem; overflow-x: hidden; background: transparent; }
 .historyBand .emptyState { padding: 0 1rem; border-radius: 1rem; background: oklch(98% .01 87); }
+.dashRow { display: flex; align-items: center; gap: .6rem; padding: .5rem .55rem; margin: 0 -.55rem; border-radius: .6rem; text-decoration: none; color: inherit; transition: background .14s; }
+.dashRow:hover { background: oklch(97.4% .011 84); }
+.dashRowArrow { margin-left: auto; flex: none; opacity: .38; font-size: 1rem; }
+.dashRow:hover .dashRowArrow { opacity: .7; }
 .overviewColumns { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; }
 .overviewColumns > section { min-width: 0; }
 @media (max-width: 1200px) { .overviewColumns { grid-template-columns: 1fr; } }
