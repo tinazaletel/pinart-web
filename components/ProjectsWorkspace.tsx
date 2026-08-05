@@ -14,6 +14,7 @@ import { loadFlowData, loadProjectLinks, saveOfferAmount, saveOfferStatus, saveP
 import { podatkiZaPredogled, usePredogled, demoSodelavci, demoRealZaOffer } from '@/lib/predogled';
 import { preberiPostoProjekta, dodajPosto, premakniPosto, nastaviOznakePoste, type PostaVnos } from '@/lib/postaDnevnik';
 import { preberiKlepet, dodajKlepet, nitId, type KlepetSporocilo } from '@/lib/klepet';
+import { zagotoviNit, nalozSporocila, posljiSporocilo, narociSporocila, mojEmail, type OblacnoSporocilo } from '@/lib/klepetCloud';
 import { pullProjectMail, pushProjectMail, saveDraft, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent } from '@/lib/pinartMailCloud';
 import { posljiMail } from '@/lib/posta';
 import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
@@ -852,6 +853,13 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [klepetVnos, setKlepetVnos] = useState('');
   const [klepetIzbrani, setKlepetIzbrani] = useState<string[]>([]);   /* izbrani sodelavci (nit) */
   const [klepetPicker, setKlepetPicker] = useState(false);            /* meni za izbiro sodelavcev */
+  const [klepetThreadId, setKlepetThreadId] = useState<string | null>(null);  /* oblačna nit (če prijavljen) */
+  const [mojKlepetEmail, setMojKlepetEmail] = useState<string | null>(null);
+  const mojEmailRef = useRef<string | null>(null);
+  const klepetOdjavaRef = useRef<(() => void) | null>(null);         /* odjava realtime */
+  useEffect(() => { void mojEmail().then(setMojKlepetEmail); }, []);
+  useEffect(() => { mojEmailRef.current = mojKlepetEmail; }, [mojKlepetEmail]);
+  useEffect(() => () => { klepetOdjavaRef.current?.(); }, []);
   const [premakniOdprt, setPremakniOdprt] = useState(false);   /* meni »Premakni na drug projekt« */
   const [oznakaOdprt, setOznakaOdprt] = useState(false);       /* vnos oznake */
   const [oznakaVnos, setOznakaVnos] = useState('');
@@ -952,32 +960,52 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     const h = [...id].reduce((a, c) => a + c.charCodeAt(0), 0) % 3;
     return h === 0 ? 'online' : h === 1 ? 'idle' : 'offline';
   };
-  const naloziNit = (ids: string[]) => { if (selectedId) setKlepetSporocila(preberiKlepet(selectedId, nitId(ids))); };
+  /* oblačno sporočilo -> prikazni zapis (avtor 'jaz' če je moj email) */
+  const oblakVDisplay = (m: OblacnoSporocilo): KlepetSporocilo => ({
+    id: m.id, projectId: selectedId, nit: '', avtor: m.senderEmail === (mojEmailRef.current || '') ? 'jaz' : (m.senderName || m.senderEmail), besedilo: m.body, datum: m.createdAt, odMaila: m.odMaila,
+  });
+  const udelezenciEmaili = (ids: string[]) => ids.map(id => sodelavci.find(s => s.id === id)).filter((s): s is Sodelavec => !!s && !!s.email).map(s => ({ email: s.email, ime: s.ime }));
+  /* sinhroniziraj oblak za izbrane sodelavce; vrne threadId ali null (=lokalno) */
+  const sinhronizirajKlepet = async (ids: string[]): Promise<string | null> => {
+    if (!selectedId) return null;
+    const tid = await zagotoviNit(selectedId, udelezenciEmaili(ids));
+    klepetOdjavaRef.current?.(); klepetOdjavaRef.current = null;
+    if (!tid) { setKlepetThreadId(null); setKlepetSporocila(preberiKlepet(selectedId, nitId(ids))); return null; }
+    setKlepetThreadId(tid);
+    setKlepetSporocila((await nalozSporocila(tid)).map(oblakVDisplay));
+    klepetOdjavaRef.current = narociSporocila(tid, m => setKlepetSporocila(prev => (prev.some(p => p.id === m.id) ? prev : [...prev, oblakVDisplay(m)])));
+    return tid;
+  };
+  const naloziNit = (ids: string[]) => { void sinhronizirajKlepet(ids); };
   const preklopiSodelavca = (id: string) => {
     const novi = klepetIzbrani.includes(id) ? klepetIzbrani.filter(x => x !== id) : [...klepetIzbrani, id];
     setKlepetIzbrani(novi);
-    naloziNit(novi);
+    void sinhronizirajKlepet(novi);
   };
   /* Odpre klepetni stolpec; če je podan mail, deli OZNAČEN del (ali cel mail) kot priponko. */
   const odpriKlepet = (mail?: PostaVnos | null) => {
     if (!selectedId) return;
     const izbrani = klepetIzbrani.length ? klepetIzbrani : (sodelavci[0] ? [sodelavci[0].id] : []);
     setKlepetIzbrani(izbrani);
-    const nit = nitId(izbrani);
-    const izsek = (typeof window !== 'undefined' ? (window.getSelection()?.toString() || '') : '').trim();
-    if (mail) {
-      const del = izsek || (mail.telo || mail.povzetek || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 240);
-      dodajKlepet({ projectId: selectedId, nit, avtor: 'jaz', besedilo: del, odMaila: mail.zadeva || L('(brez zadeve)', '(no subject)'), izsek: izsek || undefined });
-    }
-    setKlepetSporocila(preberiKlepet(selectedId, nit));
     setKlepetOdprt(true);
+    const izsek = (typeof window !== 'undefined' ? (window.getSelection()?.toString() || '') : '').trim();
+    const del = mail ? (izsek || (mail.telo || mail.povzetek || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 240)) : '';
+    void (async () => {
+      const tid = await sinhronizirajKlepet(izbrani);
+      if (mail && del) {
+        const zad = mail.zadeva || L('(brez zadeve)', '(no subject)');
+        if (tid) await posljiSporocilo(tid, del, zad);
+        else setKlepetSporocila(dodajKlepet({ projectId: selectedId, nit: nitId(izbrani), avtor: 'jaz', besedilo: del, odMaila: zad, izsek: izsek || undefined }));
+      }
+    })();
   };
   const posljiKlepet = (e: React.FormEvent) => {
     e.preventDefault();
     const t = klepetVnos.trim();
     if (!t || !selectedId) return;
-    setKlepetSporocila(dodajKlepet({ projectId: selectedId, nit: nitId(klepetIzbrani), avtor: 'jaz', besedilo: t }));
     setKlepetVnos('');
+    if (klepetThreadId) void posljiSporocilo(klepetThreadId, t);
+    else setKlepetSporocila(dodajKlepet({ projectId: selectedId, nit: nitId(klepetIzbrani), avtor: 'jaz', besedilo: t }));
   };
   const vNalogo = (mail: PostaVnos | null) => {
     if (!mail) return;
