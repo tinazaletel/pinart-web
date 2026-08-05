@@ -159,6 +159,12 @@ const pwStyles = `
 .pw-dodatno{display:flex;flex-direction:column;gap:.55rem;margin-top:.55rem}
 .pw-kom-panel{width:min(780px,94vw);max-width:min(780px,94vw)}
 .pw-kom-panel .pw-karta.pw-posta{margin:0;box-shadow:none;border:0;background:transparent;padding:0}
+/* naslov zgoraj (poravnan z X); iskalnik + Nova pošta v drugo vrstico */
+.pw-kom-panel .pw-posta-glava{flex-wrap:wrap;row-gap:.7rem;padding-right:3rem}
+.pw-kom-panel .pw-posta-glava > div:first-child{flex:1 1 100%}
+.pw-kom-panel .pw-posta-glava > div:first-child + div{margin-left:0 !important}
+/* X gumb vedno nad vso vsebino panela */
+.pw-vsi-x{z-index:40}
 .pw-karta{position:relative;overflow:hidden;padding:1rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:1rem;background:oklch(99% .006 87 / .85)}
 .pw-dokumentacija{background:linear-gradient(135deg,oklch(97% .022 250),oklch(97% .022 200))}
 .pw-dokumentacija h3{margin:0;font:600 1.15rem var(--font-sans),system-ui,sans-serif}
@@ -192,7 +198,7 @@ const pwStyles = `
 /* SLIDE "Vsi <tip>" (pogodbe/računi/stroški) — vzorec styles.detailBackdrop/detailPanel +
    lepljivi X (glej ArhivWorkspace .arh-det-x), tu podvojeno s predpono pw-vsi- */
 /* backdrop: panel poravnan DESNO (kot pogodba/dokument) + blur zatemnitev strani zadaj */
-.pw-vsi-backdrop{justify-content:flex-end;background:oklch(22% .02 55 / .5);backdrop-filter:blur(9px) saturate(1.05);-webkit-backdrop-filter:blur(9px) saturate(1.05)}
+.pw-vsi-backdrop{justify-content:flex-end;background:oklch(97% .006 87 / .4);backdrop-filter:blur(9px) saturate(1.05);-webkit-backdrop-filter:blur(9px) saturate(1.05)}
 /* panel: čist predal z DESNE (kot pogodba — seže do roba), flex-stolpec — glava fiksna, seznam drsi, paginacija lepljiva noga */
 .pw-vsi-panel{width:min(46rem,100vw);height:100%;overflow:hidden;display:flex;flex-direction:column;box-shadow:-1.6rem 0 4rem oklch(20% .03 55 / .2);animation:pwVsiIn .52s cubic-bezier(.16,1,.3,1) both}
 @keyframes pwVsiIn{from{transform:translateX(100%);opacity:.4}to{transform:translateX(0);opacity:1}}
@@ -1146,16 +1152,16 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
 
     {/* SLIDE "Vsi <tip>" z desne — vzorec styles.detailBackdrop/detailPanel + lepljivi X
         (glej ArhivWorkspace .arh-det-x); poln seznam za pogodbe/računi/stroški TA projekta */}
-    {komOdprt && selected && (
+    {portalPripravljen && komOdprt && selected && createPortal(
       <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={() => setKomOdprt(false)}>
         <aside className={`${styles.detailPanel} pw-vsi-panel pw-kom-panel`} role="dialog" aria-modal="true" aria-label={L('Komunikacija', 'Communication')} onMouseDown={e => e.stopPropagation()}>
           <button type="button" className="pw-vsi-x" onClick={() => setKomOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button>
           {komVsebina()}
         </aside>
       </div>
-    )}
+    , document.body)}
 
-    {vsiOdprt && selected && (
+    {portalPripravljen && vsiOdprt && selected && createPortal(
       <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={closeVsi}>
         <aside className={`${styles.detailPanel} pw-vsi-panel`} role="dialog" aria-modal="true" aria-labelledby="pw-vsi-naslov" onMouseDown={e => e.stopPropagation()}>
           <button type="button" className="pw-vsi-x" onClick={closeVsi} aria-label={L('Zapri', 'Close')}>✕</button>
@@ -1212,10 +1218,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
           )}
         </aside>
       </div>
-    )}
+    , document.body)}
 
     {/* PREDOGLED posameznega dokumenta (klik na vrstico na kartici ali v slideu) */}
-    {vrsticaDetajl && selected && (() => {
+    {portalPripravljen && vrsticaDetajl && selected && createPortal((() => {
       const { tip, item } = vrsticaDetajl;
       const zapri = () => setVrsticaDetajl(null);
       return (
@@ -1284,7 +1290,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
           </aside>
         </div>
       );
-    })()}
+    })(), document.body)}
 
   </div>;
 }
