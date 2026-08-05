@@ -171,6 +171,19 @@ const pwStyles = `
 .pw-naloga-preklic{border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);background:#fff;color:var(--ink);border-radius:999px;padding:.55rem 1.1rem;font:600 .78rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-naloga-shrani{border:0;background:var(--ink);color:var(--paper);border-radius:999px;padding:.55rem 1.3rem;font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-naloga-shrani:disabled{opacity:.5;cursor:default}
+/* Dokumentacija slide */
+.pw-dok-uvod{margin:.1rem 0 .4rem;font:500 .85rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 60%,transparent);line-height:1.5}
+.pw-dok-linki{display:flex;flex-direction:column;gap:.5rem;margin:.3rem 0 .2rem}
+.pw-dok-vrstica{display:flex;align-items:center;gap:.6rem;padding:.7rem .85rem;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);border-radius:.7rem;background:#fff}
+.pw-dok-vrstica a{flex:1;min-width:0;display:flex;flex-direction:column;text-decoration:none;color:var(--ink);font:700 .88rem var(--font-sans),sans-serif}
+.pw-dok-vrstica a:hover{color:var(--purple)}
+.pw-dok-url{font:500 .72rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 45%,transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pw-dok-brisi{flex:none;border:0;background:none;color:color-mix(in oklch,var(--ink) 40%,transparent);cursor:pointer;font-size:.9rem;padding:.2rem}
+.pw-dok-brisi:hover{color:oklch(55% .18 25)}
+.pw-dok-prazno-t{margin:.4rem 0;font:500 .85rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 45%,transparent)}
+.pw-dok-obrazec{display:flex;flex-direction:column;gap:.7rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line)}
+.pw-dok-prazno{border:0;background:none;text-align:left;cursor:pointer;font:inherit;color:inherit;padding:0}
+.pw-dok-prazno:hover{color:var(--purple)}
 .pw-ai-panel{flex:none;width:360px}
 .pw-ai-load{display:flex;align-items:center;gap:.5rem;color:color-mix(in oklch,var(--ink) 60%,transparent);font:600 .85rem var(--font-sans),sans-serif;margin-top:.4rem}
 .pw-ai-pika{width:.45rem;height:.45rem;border-radius:999px;background:var(--purple);opacity:.35;animation:pwAiP 1s infinite ease-in-out}
@@ -853,6 +866,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [linkOznaka, setLinkOznaka] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [dodajOdprt, setDodajOdprt] = useState(false);
+  const [dokOdprt, setDokOdprt] = useState(false);   /* Dokumentacija slide (upravljanje povezav) */
   /* SLIDE "Vsi <tip>" z desne (pogodbe/računi/stroški) — kartica pokaže le povzetek
      (najnovejših 5), poln seznam z iskalnikom+paginacijo je v slideu. Stanje se
      resetira ob menjavi projekta (useEffect spodaj) in ob zaprtju (closeVsi). */
@@ -870,13 +884,13 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
      (skrola se le vsebina panela). */
   useEffect(() => {
     if (typeof document === 'undefined') return;
-    const odprt = komOdprt || nalogaOdprt || !!vsiOdprt || !!vrsticaDetajl;
+    const odprt = komOdprt || nalogaOdprt || dokOdprt || !!vsiOdprt || !!vrsticaDetajl;
     if (odprt) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
     /* skrij plavajočo Pupo, ko je odprta desna letev (sicer prekrije klepetni vnos) */
     document.body.classList.toggle('flow-rail-odprt', komOdprt);
     return () => { document.body.style.overflow = ''; document.body.classList.remove('flow-rail-odprt'); };
-  }, [komOdprt, nalogaOdprt, vsiOdprt, vrsticaDetajl]);
+  }, [komOdprt, nalogaOdprt, dokOdprt, vsiOdprt, vrsticaDetajl]);
   /* Esc zapre odprte meni-gumbe (pobeg brez klika na isti gumb) */
   useEffect(() => {
     const onKey = (e: Event) => { if ((e as { key?: string }).key === 'Escape') { setKlepetPicker(false); setPremakniOdprt(false); setOznakaOdprt(false); } };
@@ -1458,6 +1472,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             onOdpriKomunikacije={() => setKomOdprt(true)}
             onOdpriVse={openVsi}
             onOdpriDokument={(tip, item) => setVrsticaDetajl({ tip, item })}
+            onOdpriDokumentacija={() => { setDodajOdprt(true); setDokOdprt(true); }}
             ekipaStatus={samoOgled ? { 'demo-sod-luka': 'dela', 'demo-sod-eva': 'review' } : undefined}
             agenti={samoOgled && selected.real ? [{ id: 'agent-copy', ime: jeEn ? 'Copy agent' : 'Copy agent', stanje: 'review' }, { id: 'agent-research', ime: jeEn ? 'Research agent' : 'Razisk. agent', stanje: 'koncal' }] : undefined}
             links={links}
@@ -1616,6 +1631,38 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             </aside>
           )}
         </div>
+      </div>
+    , document.body)}
+
+    {portalPripravljen && dokOdprt && selected && createPortal(
+      <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={() => setDokOdprt(false)}>
+        <aside className={`${styles.detailPanel} pw-vsi-panel pw-naloga-panel`} role="dialog" aria-modal="true" aria-label={L('Dokumentacija', 'Documentation')} onMouseDown={e => e.stopPropagation()}>
+          <button type="button" className="pw-vsi-x" onClick={() => setDokOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button>
+          <div className="pw-naloga-obr">
+            <p className={styles.eyebrow}>{L('DOKUMENTACIJA · POVEZAVE', 'DOCUMENTATION · LINKS')}</p>
+            <h2 style={{ margin: '.1rem 0 .3rem' }}>{L('Zunanje datoteke projekta', 'Project external files')}</h2>
+            <p className="pw-dok-uvod">{L('Figma, Google Drive, Miro, mapa slik … — vse povezave projekta na enem mestu.', 'Figma, Google Drive, Miro, image folder … — all project links in one place.')}</p>
+            {links.length ? (
+              <div className="pw-dok-linki">
+                {links.map((link, index) => (
+                  <div key={`${link.url}-${index}`} className="pw-dok-vrstica">
+                    <a href={link.url} target="_blank" rel="noopener noreferrer">{link.oznaka}<span className="pw-dok-url">{link.url}</span></a>
+                    {!samoOgled && <button type="button" className="pw-dok-brisi" onClick={() => removeLink(index)} aria-label={`${L('Izbriši', 'Delete')} ${link.oznaka}`}>✕</button>}
+                  </div>
+                ))}
+              </div>
+            ) : <p className="pw-dok-prazno-t">{L('Še ni povezav.', 'No links yet.')}</p>}
+            {!samoOgled ? (
+              <div className="pw-dok-obrazec">
+                <label className="pw-naloga-l"><span>{L('Oznaka', 'Label')}</span><input type="text" value={linkOznaka} onChange={e => setLinkOznaka(e.target.value)} placeholder={L('npr. Figma · Dizajn', 'e.g. Figma · Design')} /></label>
+                <label className="pw-naloga-l"><span>{L('Naslov (URL)', 'Address (URL)')}</span><input type="url" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://…" /></label>
+                <div className="pw-naloga-akcije">
+                  <button type="button" className="pw-naloga-shrani" onClick={addLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>{L('+ Dodaj povezavo', '+ Add link')}</button>
+                </div>
+              </div>
+            ) : <p className="pw-opozorilo">{L('Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.', 'Adding links is not available in the demo preview. Sign in to your account.')}</p>}
+          </div>
+        </aside>
       </div>
     , document.body)}
 

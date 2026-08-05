@@ -61,7 +61,7 @@ const Puscica = () => (
 );
 
 export default function ProjectDetailModern({
-  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, ekipaStatus, agenti = [], links = [], crmVnosi = [], onOdpriKomunikacije, onOdpriVse, onOdpriDokument, naloge = [], onOdpriMail,
+  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, ekipaStatus, agenti = [], links = [], crmVnosi = [], onOdpriKomunikacije, onOdpriVse, onOdpriDokument, naloge = [], onOdpriMail, onOdpriDokumentacija,
 }: {
   data: ModernProject;
   sodelavci: Sodelavec[];
@@ -79,6 +79,7 @@ export default function ProjectDetailModern({
   onOdpriKomunikacije?: () => void;
   onOdpriVse?: (tip: 'pogodbe' | 'racuni' | 'stroski') => void;
   onOdpriDokument?: (tip: 'pogodbe' | 'racuni' | 'stroski', item: FlowContract | FlowInvoice | FlowExpense) => void;
+  onOdpriDokumentacija?: () => void;
   naloge?: NalogaLite[];
   onOdpriMail?: (v: PostaVnos) => void;
 }) {
@@ -336,14 +337,14 @@ export default function ProjectDetailModern({
 
           {/* DOKUMENTACIJA (zunanje povezave) */}
           <section className="pm-card">
-            <header><h3>{L('DOKUMENTACIJA', 'DOCUMENTATION')}</h3>{onOpenZapis && <button type="button" className="pm-iconbtn" onClick={onOpenZapis} aria-label={L('Dodaj povezavo', 'Add link')}>+</button>}</header>
+            <header><h3>{L('DOKUMENTACIJA', 'DOCUMENTATION')}</h3>{(onOdpriDokumentacija || onOpenZapis) && <button type="button" className="pm-iconbtn" onClick={onOdpriDokumentacija || onOpenZapis} aria-label={L('Upravljaj povezave', 'Manage links')}>+</button>}</header>
             {links.length ? (
               <ul className="pm-linki">
                 {links.map((l, i) => (
                   <li key={`${l.url}-${i}`}><a href={l.url} target="_blank" rel="noopener noreferrer">{l.oznaka}</a></li>
                 ))}
               </ul>
-            ) : <p className="pm-muted">{L('Ni povezav. Dodaj Figmo, Drive, Miro …', 'No links. Add Figma, Drive, Miro …')}</p>}
+            ) : <button type="button" className="pm-muted pm-dok-prazno" onClick={onOdpriDokumentacija || onOpenZapis}>{L('Ni povezav. Dodaj Figmo, Drive, Miro …', 'No links. Add Figma, Drive, Miro …')}</button>}
           </section>
         </div>
       </div>
@@ -442,6 +443,8 @@ export default function ProjectDetailModern({
         .pm-cilji { display:flex; flex-direction:column; gap:.35rem; margin-top:.7rem; }
         .pm-cilj { font-size:.85rem; color:var(--pm-ink); }
         .pm-muted { color:var(--pm-muted); font-size:.86rem; margin:.2rem 0 0; }
+        .pm-dok-prazno { display:block; width:100%; border:0; background:none; text-align:left; cursor:pointer; font:inherit; padding:.2rem 0; }
+        .pm-dok-prazno:hover { color:var(--pm-acc); }
         .pm-mails { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
         .pm-mail { display:flex; align-items:baseline; gap:.6rem; padding:.5rem .6rem; margin:0 -.6rem; border-radius:9px; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); }
         .pm-mails li:first-child .pm-mail { border-top:0; }
