@@ -8,9 +8,32 @@
 import { useEffect, useRef, useState } from 'react';
 import { PaperPlaneRight, ChatsCircle, Paperclip } from '@phosphor-icons/react';
 import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, type OblacnaNit, type OblacnoSporocilo } from '@/lib/klepetCloud';
+import { usePredogled } from '@/lib/predogled';
+
+/* Demo klepeti za način »polno poslovanje« (predogled) — da vidiš, kako izgleda polno. */
+const DEMO_EMAIL = 'tina@pinart.si';
+const DEMO_NITI: OblacnaNit[] = [
+  { threadId: 'demo-k-1', projectId: 'demo-portal', udelezenci: [{ email: DEMO_EMAIL, ime: 'Tina' }, { email: 'luka.mancini@gmail.com', ime: 'Luka Beg' }] },
+  { threadId: 'demo-k-2', projectId: 'demo-portal', udelezenci: [{ email: DEMO_EMAIL, ime: 'Tina' }, { email: 'eva.kralj@studio.si', ime: 'Eva Kralj' }, { email: 'marko.zupan@studio.si', ime: 'Marko Zupan' }] },
+];
+const DEMO_SPOROCILA: Record<string, OblacnoSporocilo[]> = {
+  'demo-k-1': [
+    { id: 'd1', threadId: 'demo-k-1', body: 'Živjo Luka, ti delim mail stranke — poglej obseg.', senderEmail: DEMO_EMAIL, senderName: 'Tina', odMaila: 'Re: Prenova portala — potrditev obsega', createdAt: '2026-08-04T09:12:00Z' },
+    { id: 'd2', threadId: 'demo-k-1', body: 'Super, obseg je jasen. Jaz prevzamem wireframe ključnih strani.', senderEmail: 'luka.mancini@gmail.com', senderName: 'Luka Beg', createdAt: '2026-08-04T09:20:00Z' },
+    { id: 'd3', threadId: 'demo-k-1', body: 'Odlično. Do srede rabim prvi osnutek navigacije. 🙌', senderEmail: DEMO_EMAIL, senderName: 'Tina', createdAt: '2026-08-04T09:22:00Z' },
+    { id: 'd4', threadId: 'demo-k-1', body: 'Velja. Bom sproti torku poslal Figmo.', senderEmail: 'luka.mancini@gmail.com', senderName: 'Luka Beg', createdAt: '2026-08-04T09:25:00Z' },
+  ],
+  'demo-k-2': [
+    { id: 'd5', threadId: 'demo-k-2', body: 'Ekipa, dostopi do gradiv so v Drive mapi. Eva, ti prevzameš tipografijo?', senderEmail: DEMO_EMAIL, senderName: 'Tina', createdAt: '2026-08-05T11:02:00Z' },
+    { id: 'd6', threadId: 'demo-k-2', body: 'Ja, začnem danes. Marko, rabim tvoje ikone za sistem.', senderEmail: 'eva.kralj@studio.si', senderName: 'Eva Kralj', createdAt: '2026-08-05T11:10:00Z' },
+    { id: 'd7', threadId: 'demo-k-2', body: 'Pošljem set do jutri zjutraj.', senderEmail: 'marko.zupan@studio.si', senderName: 'Marko Zupan', createdAt: '2026-08-05T11:14:00Z' },
+  ],
+};
 
 export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
+  const [nacin] = usePredogled();
+  const demo = nacin !== 'mine';
   const [email, setEmail] = useState<string | null>(null);
   const [niti, setNiti] = useState<OblacnaNit[]>([]);
   const [izbrana, setIzbrana] = useState<string | null>(null);
@@ -21,6 +44,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   const dnoRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    if (demo) { setEmail(DEMO_EMAIL); setNiti(DEMO_NITI); setIzbrana(DEMO_NITI[0].threadId); setNalaganje(false); return; }
     let ustavljeno = false;
     void (async () => {
       const [e, n] = await Promise.all([mojEmail(), mojeNiti()]);
@@ -31,11 +55,12 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
       setNalaganje(false);
     })();
     return () => { ustavljeno = true; };
-  }, []);
+  }, [demo]);
 
   useEffect(() => {
     odjavaRef.current?.(); odjavaRef.current = null;
     if (!izbrana) { setSporocila([]); return; }
+    if (demo) { setSporocila(DEMO_SPOROCILA[izbrana] || []); return; }
     let ustavljeno = false;
     void (async () => {
       const msgs = await nalozSporocila(izbrana);
@@ -43,7 +68,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
     })();
     odjavaRef.current = narociSporocila(izbrana, m => setSporocila(prev => (prev.some(p => p.id === m.id) ? prev : [...prev, m])));
     return () => { ustavljeno = true; odjavaRef.current?.(); odjavaRef.current = null; };
-  }, [izbrana]);
+  }, [izbrana, demo]);
 
   useEffect(() => { dnoRef.current?.scrollIntoView({ block: 'end' }); }, [sporocila]);
 
@@ -52,6 +77,10 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
     const t = vnos.trim();
     if (!t || !izbrana) return;
     setVnos('');
+    if (demo) {
+      setSporocila(prev => [...prev, { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `d-${prev.length}`), threadId: izbrana, body: t, senderEmail: DEMO_EMAIL, senderName: 'Tina', createdAt: new Date().toISOString() }]);
+      return;
+    }
     await posljiSporocilo(izbrana, t);
   };
 
@@ -63,7 +92,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   return (
     <div className="km">
       <header className="km-glava">
-        <p className="km-eyebrow"><ChatsCircle size={14} weight="fill" style={{ verticalAlign: '-2px', marginRight: '.35rem' }} />{L('KOMUNIKACIJA', 'COMMUNICATION')}</p>
+        <p className="km-eyebrow">{L('Komunikacija', 'Communication')}</p>
         <h1>{L('Klepeti v skupni rabi', 'Shared chats')}</h1>
         <p className="km-uvod">{L('Pogovori, ki jih deliš s sodelavci. Odpri nit in klepetaj v živo.', 'Conversations shared with collaborators. Open a thread and chat live.')}</p>
       </header>
@@ -110,9 +139,9 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
 
       <style dangerouslySetInnerHTML={{ __html: `
         .km{--k-ink:var(--ink,oklch(19% .014 55));--k-line:var(--line,oklch(93% .007 82));--k-purple:var(--purple,oklch(66% .2 297));max-width:1180px;margin:0 auto;padding:1.4rem 1.2rem}
-        .km-eyebrow{margin:0 0 .3rem;font:700 .66rem var(--font-sans),sans-serif;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in oklch,var(--k-ink) 55%,transparent)}
-        .km-glava h1{margin:.1rem 0 .3rem;font:500 clamp(1.6rem,3vw,2.2rem) var(--font-serif),Georgia,serif;color:var(--k-ink)}
-        .km-uvod{margin:0 0 1.2rem;font:500 .9rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 60%,transparent);line-height:1.5}
+        .km-eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,var(--k-purple));margin:0 0 .3rem}
+        .km-glava h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--k-ink)}
+        .km-uvod{font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72);margin:0 0 2rem;max-width:38rem}
         .km-prazno{color:color-mix(in oklch,var(--k-ink) 50%,transparent);font:500 .9rem var(--font-sans),sans-serif}
         .km-prazno-box{display:flex;flex-direction:column;align-items:center;gap:.5rem;text-align:center;padding:3rem 1rem;color:color-mix(in oklch,var(--k-ink) 55%,transparent)}
         .km-prazno-box b{font:700 1.05rem var(--font-sans),sans-serif;color:var(--k-ink)}
