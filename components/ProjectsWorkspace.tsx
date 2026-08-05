@@ -787,7 +787,21 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const vNalogo = (mail: PostaVnos | null) => {
     if (!mail) return;
     setNalogaNaslov((mail.zadeva || '').trim() || L('Naloga iz e-pošte', 'Task from email'));
-    setNalogaOpis((mail.telo || mail.povzetek || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+    const telo = (mail.telo || mail.povzetek || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (telo) {
+      setNalogaOpis(telo);
+    } else {
+      /* star mail brez shranjenega telesa: opis vseeno napolni s kontekstom, da ni prazen */
+      const kdaj = (() => { try { return new Date(mail.datum).toLocaleDateString(jeEn ? 'en-GB' : 'sl-SI'); } catch { return ''; } })();
+      const smer = mail.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received');
+      const vrstice = [
+        `${L('E-pošta', 'Email')}: ${mail.zadeva || ''}`.trim(),
+        [smer, mail.prejemniki.join(', '), kdaj].filter(Boolean).join(' · '),
+        '',
+        L('(Besedilo tega maila ni bilo shranjeno — dopiši, kaj je treba narediti.)', '(This mail’s text was not saved — add what needs to be done.)'),
+      ];
+      setNalogaOpis(vrstice.join('\n'));
+    }
     setNalogaOdprt(true);
   };
   /* shrani urejeno nalogo v Task manager, vezano na projekt */
