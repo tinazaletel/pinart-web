@@ -86,6 +86,7 @@ export default function ProjectDetailModern({
   const { offer, real } = data;
   const [dodajOdprt, setDodajOdprt] = useState(false);
   const [briefOdprt, setBriefOdprt] = useState(false);
+  const [taskOdprt, setTaskOdprt] = useState<NalogaLite | null>(null);
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
   const dodeljeniIds = real?.dodeljeni || [];
@@ -177,11 +178,11 @@ export default function ProjectDetailModern({
               <ul className="pm-naloge">
                 {naloge.slice(0, 4).map(n => (
                   <li key={n.id}>
-                    <Link href={`${base}/kalkulator/naloge`} className="pm-naloga pm-naloga-link">
+                    <button type="button" className="pm-naloga pm-naloga-link" onClick={() => setTaskOdprt(n)}>
                       <span className="pm-naloga-dot" data-st={n.status} aria-hidden />
                       <span className="pm-naloga-t">{n.naslov}</span>
                       {n.oseba && <span className="pm-naloga-av" style={{ background: avatarOzadje(n.oseba) }} aria-hidden>{zacetnice(n.oseba)}</span>}
-                    </Link>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -373,6 +374,34 @@ export default function ProjectDetailModern({
         </div>
       , document.body)}
 
+      {mounted && taskOdprt && createPortal(
+        <div className="pm-modal-back" role="presentation" onMouseDown={() => setTaskOdprt(null)}>
+          <div className="pm-modal pm-task-modal" role="dialog" aria-modal="true" aria-label={L('Naloga', 'Task')} onMouseDown={e => e.stopPropagation()}>
+            <header className="pm-modal-h">
+              <div><p className="pm-modal-kick">{L('NALOGA · TA PROJEKT', 'TASK · THIS PROJECT')}</p><h2>{taskOdprt.naslov}</h2></div>
+              <button type="button" className="pm-modal-x" onClick={() => setTaskOdprt(null)} aria-label={L('Zapri', 'Close')}>✕</button>
+            </header>
+            <div className="pm-modal-body">
+              <div className="pm-task-vrs">
+                <span className="pm-task-lbl">{L('Status', 'Status')}</span>
+                <span className="pm-task-status" data-st={taskOdprt.status}>
+                  <span className="pm-naloga-dot" data-st={taskOdprt.status} aria-hidden />
+                  {taskOdprt.status === 'koncano' ? L('Končano', 'Done') : taskOdprt.status === 'pregled' ? L('V pregledu', 'In review') : taskOdprt.status === 'dela' ? L('V teku', 'In progress') : L('Za začeti', 'To do')}
+                </span>
+              </div>
+              {taskOdprt.oseba && (
+                <div className="pm-task-vrs">
+                  <span className="pm-task-lbl">{L('Nosilec', 'Owner')}</span>
+                  <span className="pm-task-oseba"><span className="pm-naloga-av" style={{ background: avatarOzadje(taskOdprt.oseba) }} aria-hidden>{zacetnice(taskOdprt.oseba)}</span>{taskOdprt.oseba}</span>
+                </div>
+              )}
+              <p className="pm-muted" style={{ marginTop: '.3rem' }}>{L('Celotno nalogo (opis, komentarji, rok) urejaš v Task managerju.', 'You edit the full task (description, comments, due date) in the Task manager.')}</p>
+            </div>
+            <Link href={`${base}/kalkulator/naloge`} className="pm-modal-edit">{L('Odpri v Task managerju', 'Open in Task manager')} <Puscica /></Link>
+          </div>
+        </div>
+      , document.body)}
+
       <style dangerouslySetInnerHTML={{ __html: `
         .pm { --pm-ink: var(--ink, oklch(19% 0.014 55)); --pm-paper: var(--paper, oklch(97% 0.012 87)); --pm-line: var(--line, oklch(93% 0.007 82)); --pm-acc: var(--purple, oklch(66% 0.2 297)); --pm-card: #fff; --pm-muted: color-mix(in oklch, var(--ink) 55%, transparent); --pm-soft: color-mix(in oklch, var(--ink) 42%, transparent); }
         .pm-team { display:flex; align-items:center; gap:.7rem; flex-wrap:wrap; background:var(--pm-card); border:1px solid var(--pm-line); border-radius:16px; padding:.8rem 1rem; margin-bottom:1.2rem; }
@@ -488,6 +517,10 @@ export default function ProjectDetailModern({
         .pm-modal-h h2 { margin:0; font-family:var(--font-serif), Georgia, serif; font-size:1.5rem; color:var(--pm-ink); }
         .pm-modal-x { flex:none; border:1px solid var(--pm-line); background:var(--pm-card); border-radius:999px; width:2rem; height:2rem; cursor:pointer; color:var(--pm-ink); }
         .pm-modal-body { display:flex; flex-direction:column; gap:.9rem; }
+        .pm-task-vrs { display:flex; align-items:center; gap:.8rem; padding:.55rem 0; border-bottom:1px solid color-mix(in oklch, var(--pm-line) 60%, transparent); }
+        .pm-task-lbl { flex:none; width:5rem; font-size:.68rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--pm-muted); }
+        .pm-task-status { display:inline-flex; align-items:center; gap:.4rem; font-size:.85rem; font-weight:600; color:var(--pm-ink); }
+        .pm-task-oseba { display:inline-flex; align-items:center; gap:.5rem; font-size:.9rem; color:var(--pm-ink); }
         .pm-qa-k { display:block; font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; margin-bottom:.25rem; }
         .pm-qa-v { margin:0; font-size:.9rem; color:var(--pm-ink); line-height:1.5; }
         .pm-qa-cilji { margin:.1rem 0 0; padding-left:1.1rem; display:flex; flex-direction:column; gap:.25rem; }
@@ -496,7 +529,7 @@ export default function ProjectDetailModern({
         .pm-modal-edit { display:inline-block; margin-top:1.1rem; text-decoration:none; font-size:.8rem; font-weight:600; color:var(--pm-acc); }
         /* seznami zapisa (pogodbe/racuni/stroski) */
         .pm-list { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
-        .pm-li { display:flex; align-items:center; gap:.5rem; padding:.42rem 0; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); font-size:.83rem; color:var(--pm-ink); }
+        .pm-li { display:flex; align-items:center; gap:.5rem; padding:.44rem .6rem; margin:0 -.6rem; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); border-radius:9px; font-size:.83rem; color:var(--pm-ink); }
         .pm-list li:first-child .pm-li { border-top:0; }
         .pm-li-n { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .pm-li-tip { flex:none; font-size:.56rem; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--pm-muted); background:color-mix(in oklch, var(--pm-line) 45%, transparent); border-radius:999px; padding:.12rem .42rem; }
@@ -536,9 +569,9 @@ export default function ProjectDetailModern({
         .pm-crm-pika { flex:none; width:.5rem; height:.5rem; border-radius:50%; }
         /* aktivni taski */
         .pm-naloge { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
-        .pm-naloga { display:flex; align-items:center; gap:.55rem; padding:.42rem 0; border-top:1px solid color-mix(in oklch, var(--pm-line) 60%, transparent); }
+        .pm-naloga { display:flex; align-items:center; gap:.55rem; padding:.5rem .6rem; margin:0 -.6rem; border-top:1px solid color-mix(in oklch, var(--pm-line) 60%, transparent); border-radius:9px; }
         .pm-naloge li:first-child .pm-naloga { border-top:0; }
-        .pm-naloga-link { text-decoration:none; color:inherit; border-radius:8px; }
+        .pm-naloga-link { text-decoration:none; color:inherit; cursor:pointer; width:100%; box-sizing:border-box; background:none; border:0; text-align:left; font:inherit; }
         .pm-naloga-link:hover { background:var(--pm-paper); }
         .pm-naloga-dot { flex:none; width:.55rem; height:.55rem; border-radius:50%; background:oklch(80% .03 90); }
         .pm-naloga-dot[data-st="dela"] { background:var(--pm-acc); }
