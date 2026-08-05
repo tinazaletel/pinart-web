@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star } from '@phosphor-icons/react';
@@ -17,7 +17,7 @@ import { pullProjectMail, pushProjectMail, saveDraft, trashProjectMail, restoreP
 import { posljiMail } from '@/lib/posta';
 import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
 import { preberiSodelavci } from '@/lib/sodelavci';
-import type { Sodelavec } from '@/lib/naloge';
+import { preberiNaloge, shraniNaloge, type Sodelavec, type Naloga } from '@/lib/naloge';
 
 /* datumski filter (samo od–do; prazno ne omejuje) — enako kot arhiv */
 const vObdobju = (dateStr: string, od: string, doD: string): boolean => {
@@ -305,7 +305,10 @@ const pwStyles = `
 .pw-posta{background:linear-gradient(135deg,oklch(97% .03 300),oklch(97% .03 165))}
 .pw-posta h3{margin:0;font:600 1.15rem var(--font-sans),system-ui,sans-serif}
 .pw-posta-seznam{position:relative;z-index:1;list-style:none;display:flex;flex-direction:column;gap:.4rem;margin:.75rem 0 0;padding:0;max-height:19rem;overflow-y:auto}
-.pw-posta-seznam li{display:grid;gap:.2rem;padding:.55rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:.7rem;background:oklch(100% 0 0 / .55)}
+.pw-posta-seznam li{position:relative;display:grid;gap:.2rem;padding:.55rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:.7rem;background:#fff}
+.pw-posta-brisi{position:absolute;top:.4rem;right:.45rem;opacity:0;display:grid;place-items:center;width:1.7rem;height:1.7rem;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:50%;background:#fff;color:color-mix(in oklch,var(--ink) 55%,transparent);cursor:pointer;transition:opacity .15s,color .15s}
+.pw-posta-seznam li:hover .pw-posta-brisi,.pw-posta-brisi:focus-visible{opacity:1}
+.pw-posta-brisi:hover{color:oklch(55% .18 25);border-color:oklch(55% .18 25)}
 .pw-posta-vrh{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
 .pw-posta-vrh b{font-size:.76rem;font-weight:700;color:var(--ink);overflow-wrap:anywhere}
 .pw-posta-smer{flex:none;display:inline-flex;align-items:center;padding:.2rem .5rem;border-radius:999px;background:oklch(91% .05 165);color:oklch(40% .1 165);font-size:.52rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
@@ -322,7 +325,7 @@ const pwStyles = `
 .pw-mail-orodja{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin:.75rem 0 .3rem}
 .pw-mail-orodja>button,.pw-mail-orodja>a{display:inline-grid;place-items:center;width:2.3rem;height:2.3rem;box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);border-radius:999px;background:#fff;color:color-mix(in oklch,var(--ink) 68%,transparent);text-decoration:none;cursor:pointer;transition:background .15s,color .15s}
 .pw-mail-orodja>button:hover,.pw-mail-orodja>a:hover{background:var(--paper);color:var(--ink)}
-.pw-mail-orodja .pw-mail-star:hover{color:oklch(72% .16 75)}
+.pw-mail-orodja .pw-mail-star:hover,.pw-mail-orodja .pw-mail-star[data-on="true"]{color:oklch(72% .16 75)}
 .pw-mail-orodja .pw-mail-brisi:hover{color:oklch(55% .18 25)}
 .pw-mail-orodja .pw-mail-nazaj{width:auto;gap:.4rem;padding:0 1rem;display:inline-flex;align-items:center;background:var(--paper);color:var(--ink);font:700 .74rem var(--font-sans),sans-serif}
 .pw-mail-orodja .pw-mail-nazaj:hover{background:color-mix(in oklch,var(--ink) 8%,transparent);color:var(--ink)}
@@ -475,6 +478,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   /* Demo/Prazno velja za vse strani — glej lib/predogled.ts */
   const [nacin] = usePredogled();
   const samoOgled = nacin !== 'mine';
+  const router = useRouter();
   const [selectedId, setSelectedId] = useState('');
   /* izbor vrstic za izvoz (kljuc = offer.id) + portal za spodnjo letev (Lenis) */
   const [izbrani, setIzbrani] = useState<Set<string>>(() => new Set());
@@ -706,6 +710,21 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const strankaEmail = (ime: string) => { const c = (ime || '').trim().toLocaleLowerCase('sl-SI'); return clients.find(x => (x.name || '').trim().toLocaleLowerCase('sl-SI') === c)?.email || ''; };
   const posljiDokument = (ime: string, zadeva: string, telo: string) => { if (typeof window === 'undefined') return; window.location.href = `mailto:${encodeURIComponent(strankaEmail(ime))}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`; };
   /* ── »Nova pošta«: odpri sestavljalnik (prednapolni prejemnika iz stranke) ── */
+  /* iz maila ustvari nalogo v Task managerju, vezano na projekt */
+  const vNalogo = (mail: PostaVnos | null) => {
+    if (!mail || !selected) return;
+    const nova: Naloga = {
+      id: crypto.randomUUID(),
+      naslov: (mail.zadeva || '').trim() || L('Naloga iz e-pošte', 'Task from email'),
+      opis: (mail.telo || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 400),
+      stolpec: 'todo',
+      projectId: selected.real?.id || selected.offer.id,
+      created: new Date().toISOString(),
+      oznake: [L('pošta', 'email')],
+    };
+    try { shraniNaloge([nova, ...preberiNaloge()]); } catch { /* localStorage ni na voljo */ }
+    router.push(`${base}/kalkulator/naloge`);
+  };
   const odpriPisanje = () => {
     setPisiZa(strankaEmail(selected?.offer.client || ''));
     setPisiZadeva(selected ? `${selected.offer.title} — ` : '');
@@ -917,10 +936,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 <button type="button" className="pw-mail-nazaj" title={L('Nazaj na seznam', 'Back to list')} onClick={() => setBeriMail(null)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M19 12H5M11 18l-6-6 6-6" /></svg> {L('Nazaj', 'Back')}</button>
                 <button type="button" title={L('Premakni v mapo', 'Move to')} aria-label={L('Premakni', 'Move to')}><FolderSimplePlus size={16} /></button>
                 <button type="button" title={L('Oznaka', 'Label')} aria-label={L('Oznaka', 'Label')}><Tag size={16} /></button>
-                <Link href={`${base}/kalkulator/naloge`} title={L('Dodaj v naloge', 'Add to task')} aria-label={L('V nalogo', 'Add to task')}><CheckSquare size={16} /></Link>
+                <button type="button" title={L('Ustvari nalogo iz tega maila', 'Create a task from this mail')} aria-label={L('V nalogo', 'Add to task')} onClick={() => vNalogo(beriMail)}><CheckSquare size={16} /></button>
                 <button type="button" title={L('AI avtomatizacija (Pupa)', 'AI automate (Pupa)')} aria-label="AI"><Sparkle size={16} /></button>
                 <button type="button" title={L('Natisni', 'Print')} aria-label={L('Natisni', 'Print')} onClick={() => { if (typeof window !== 'undefined') window.print(); }}><Printer size={16} /></button>
-                <button type="button" className="pw-mail-star" title={L('Označi z zvezdico', 'Star')} aria-label={L('Zvezdica', 'Star')}><Star size={16} /></button>
+                <button type="button" className="pw-mail-star" data-on={beriMail.zvezda ? 'true' : 'false'} title={beriMail.zvezda ? L('Odstrani zvezdico', 'Unstar') : L('Označi z zvezdico', 'Star')} aria-label={L('Zvezdica', 'Star')} onClick={() => { const id = beriMail.id; setPosta(p => p.map(v => v.id === id ? { ...v, zvezda: !v.zvezda } : v)); setBeriMail(m => m ? { ...m, zvezda: !m.zvezda } : m); }}><Star size={16} weight={beriMail.zvezda ? 'fill' : 'regular'} /></button>
                 {!samoOgled && (beriMail.izbrisano ? <>
                   <button type="button" title={L('Obnovi', 'Restore')} aria-label={L('Obnovi', 'Restore')} onClick={() => { const id = beriMail.id; void restoreProjectMail(id).catch(() => undefined); setPosta(p => p.map(v => v.id === id ? { ...v, izbrisano: undefined } : v)); setBeriMail(null); }}><ArrowBendUpLeft size={16} /></button>
                   <button type="button" title={L('Zbriši dokončno', 'Delete permanently')} aria-label={L('Zbriši dokončno', 'Delete permanently')} className="pw-mail-brisi" onClick={() => { const id = beriMail.id; void deleteProjectMailPermanent(id).catch(() => undefined); setPosta(p => p.filter(v => v.id !== id)); setBeriMail(null); }}><Trash size={16} weight="bold" /></button>
@@ -955,6 +974,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                         <span style={{ fontSize: '.8rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vnos.zadeva || L('(brez zadeve)', '(no subject)')}</span>
                         <span style={{ flex: 'none', fontSize: '.5rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>{vnos.izbrisano ? L('Koš', 'Trash') : vnos.osnutek ? L('Osnutek', 'Draft') : vnos.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span>
                       </div>
+                      <button type="button" className="pw-posta-brisi" title={vnos.izbrisano ? L('Zbriši dokončno', 'Delete permanently') : L('V koš', 'To trash')} aria-label={L('Izbriši', 'Delete')} onClick={e => { e.stopPropagation(); const id = vnos.id; if (vnos.izbrisano) { void deleteProjectMailPermanent(id).catch(() => undefined); setPosta(p => p.filter(v => v.id !== id)); } else { void trashProjectMail(id).catch(() => undefined); setPosta(p => p.map(v => v.id === id ? { ...v, izbrisano: new Date().toISOString() } : v)); } }}><Trash size={14} weight="bold" /></button>
                     </li>
                   ))}
                 </ul>

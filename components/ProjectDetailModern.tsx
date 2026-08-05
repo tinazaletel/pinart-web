@@ -7,7 +7,8 @@
    pravo zaledje pride post-launch. Uporablja app CSS tokene (DM Serif/Archivo,
    --accent/--paper/--ink/--line), da samodejno sledi CGP. */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import MetricIcon from '@/components/MetricIcon';
 import type { FlowOffer, FlowInvoice, FlowContract, FlowExpense, FlowProjectLink } from '@/lib/pinartFlowStore';
@@ -85,6 +86,8 @@ export default function ProjectDetailModern({
   const { offer, real } = data;
   const [dodajOdprt, setDodajOdprt] = useState(false);
   const [briefOdprt, setBriefOdprt] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const dodeljeniIds = real?.dodeljeni || [];
   const ekipa = dodeljeniIds.map(id => sodelavci.find(s => s.id === id)).filter(Boolean) as Sodelavec[];
   const naVoljo = sodelavci.filter(s => s.aktiven && !dodeljeniIds.includes(s.id));
@@ -344,7 +347,7 @@ export default function ProjectDetailModern({
         </div>
       </div>
 
-      {briefOdprt && (
+      {mounted && briefOdprt && createPortal(
         <div className="pm-modal-back" role="presentation" onMouseDown={() => setBriefOdprt(false)}>
           <div className="pm-modal" role="dialog" aria-modal="true" aria-label={L('Brief projekta', 'Project brief')} onMouseDown={e => e.stopPropagation()}>
             <header className="pm-modal-h">
@@ -368,7 +371,7 @@ export default function ProjectDetailModern({
             {real && <Link href={`${base}/kalkulator/projekti`} className="pm-modal-edit">{L('Uredi v projektih', 'Edit in projects')} <Puscica /></Link>}
           </div>
         </div>
-      )}
+      , document.body)}
 
       <style dangerouslySetInnerHTML={{ __html: `
         .pm { --pm-ink: var(--ink, oklch(19% 0.014 55)); --pm-paper: var(--paper, oklch(97% 0.012 87)); --pm-line: var(--line, oklch(93% 0.007 82)); --pm-acc: var(--purple, oklch(66% 0.2 297)); --pm-card: #fff; --pm-muted: color-mix(in oklch, var(--ink) 55%, transparent); --pm-soft: color-mix(in oklch, var(--ink) 42%, transparent); }
@@ -476,8 +479,10 @@ export default function ProjectDetailModern({
         .pm-crm-h { display:flex; align-items:center; justify-content:space-between; gap:.6rem; margin-bottom:.5rem; }
         .pm-crm-h h3 { margin:0; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         /* brief modal — cela stran z vsemi vprasanji */
-        .pm-modal-back { position:fixed; inset:0; z-index:60; background:rgba(17,17,17,.35); display:flex; justify-content:center; align-items:flex-start; padding:6vh 1rem; overflow-y:auto; }
-        .pm-modal { width:100%; max-width:640px; background:var(--pm-paper); border:1px solid var(--pm-line); border-radius:18px; padding:1.4rem 1.5rem 1.5rem; box-shadow:0 30px 70px -30px rgba(17,17,17,.5); }
+        .pm-modal-back { position:fixed; inset:0; z-index:60; background:oklch(97% .006 87 / .4); backdrop-filter:blur(9px); -webkit-backdrop-filter:blur(9px); display:flex; justify-content:flex-end; }
+        .pm-modal { width:min(640px,94vw); height:100%; overflow-y:auto; background:#fff; border:0; border-radius:0; padding:2.4rem 2rem; box-shadow:-1.6rem 0 4rem oklch(20% .03 55 / .2); animation:pmSlideIn .5s cubic-bezier(.16,1,.3,1) both; }
+        @keyframes pmSlideIn { from { transform:translateX(100%); } to { transform:translateX(0); } }
+        @media (prefers-reduced-motion:reduce){ .pm-modal { animation:none; } }
         .pm-modal-h { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
         .pm-modal-kick { margin:0 0 .2rem; font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-modal-h h2 { margin:0; font-family:var(--font-serif), Georgia, serif; font-size:1.5rem; color:var(--pm-ink); }
