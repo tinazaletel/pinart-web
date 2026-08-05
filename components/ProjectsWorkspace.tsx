@@ -210,7 +210,7 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 }
 /* KLEPET stolpec (fallback barve, ker je letev portalana na body) */
 .pw-klepet-panel{flex:none;width:400px;--kl-ink:var(--ink,oklch(19% .014 55));--kl-purple:var(--purple,oklch(66% .2 297));--kl-line:var(--line,oklch(93% .007 82))}
-.pw-klepet-glava{flex:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:1.4rem 3.9rem .9rem 1.1rem;border-bottom:1px solid var(--kl-line)}
+.pw-klepet-glava{flex:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:1.5rem 4.7rem .9rem 1.1rem;border-bottom:1px solid var(--kl-line)}
 .pw-klepet-osebe{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;min-width:0}
 .pw-klepet-oseba{display:inline-flex;align-items:center;gap:.35rem}
 .pw-klepet-oseba b{font:700 .82rem var(--font-sans),sans-serif;color:var(--kl-ink)}
@@ -223,8 +223,9 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-klepet-kdo b{display:block;font:700 .88rem var(--font-sans),sans-serif;color:var(--kl-ink)}
 .pw-klepet-kdo small{display:block;font:500 .7rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 50%,transparent)}
 .pw-klepet-piker-w{position:relative;flex:none}
-.pw-klepet-dodaj{display:grid;place-items:center;width:2rem;height:2rem;border:1px solid color-mix(in oklch,var(--kl-ink) 12%,transparent);border-radius:50%;background:#fff;color:var(--kl-ink);cursor:pointer}
+.pw-klepet-dodaj{display:grid;place-items:center;width:2.2rem;height:2.2rem;border:1px solid color-mix(in oklch,var(--kl-ink) 16%,transparent);border-radius:50%;background:#fff;color:var(--kl-ink);cursor:pointer;transition:background .16s,color .16s,border-color .16s,transform .22s cubic-bezier(.16,1,.3,1)}
 .pw-klepet-dodaj:hover{border-color:var(--kl-purple);color:var(--kl-purple)}
+.pw-klepet-dodaj[aria-expanded="true"]{background:var(--kl-purple);color:#fff;border-color:transparent;transform:rotate(45deg)}
 .pw-klepet-meni{position:absolute;top:calc(100% + .4rem);right:0;z-index:20;width:15rem;background:#fff;border:1px solid var(--kl-line);border-radius:.8rem;box-shadow:0 14px 38px -14px color-mix(in oklch,var(--kl-ink) 40%,transparent);padding:.35rem}
 .pw-klepet-meni-h{margin:.25rem .5rem .3rem;font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in oklch,var(--kl-ink) 50%,transparent)}
 .pw-klepet-meni-prazno{margin:.4rem .5rem;font:500 .74rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 50%,transparent)}
@@ -449,6 +450,8 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-mail-orodja{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin:.75rem 0 .3rem}
 .pw-mail-orodja>button,.pw-mail-orodja>a,.pw-mail-orodja .pw-mail-meni-w>button{display:inline-grid;place-items:center;width:2.3rem;height:2.3rem;box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);border-radius:999px;background:#fff;color:color-mix(in oklch,var(--ink) 68%,transparent);text-decoration:none;cursor:pointer;transition:background .15s,color .15s}
 .pw-mail-orodja>button:hover,.pw-mail-orodja>a:hover,.pw-mail-orodja .pw-mail-meni-w>button:hover{background:var(--paper);color:var(--ink)}
+/* aktivno/odprto stanje meni-gumba: napolnjen, da je jasno, da isti gumb tudi zapre */
+.pw-mail-orodja .pw-toggle-on,.pw-mail-orodja .pw-mail-meni-w>button.pw-toggle-on{background:var(--ink) !important;color:var(--paper) !important;border-color:var(--ink) !important}
 /* meni Premakni/Oznaka */
 .pw-mail-meni-w{position:relative;display:inline-flex}
 .pw-mail-meni{position:absolute;top:calc(100% + .5rem);left:0;z-index:50;min-width:15rem;background:#fff;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:.7rem;box-shadow:0 14px 34px -14px rgba(17,17,17,.28);padding:.4rem;display:flex;flex-direction:column;gap:.1rem}
@@ -874,6 +877,12 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     document.body.classList.toggle('flow-rail-odprt', komOdprt);
     return () => { document.body.style.overflow = ''; document.body.classList.remove('flow-rail-odprt'); };
   }, [komOdprt, nalogaOdprt, vsiOdprt, vrsticaDetajl]);
+  /* Esc zapre odprte meni-gumbe (pobeg brez klika na isti gumb) */
+  useEffect(() => {
+    const onKey = (e: Event) => { if ((e as { key?: string }).key === 'Escape') { setKlepetPicker(false); setPremakniOdprt(false); setOznakaOdprt(false); } };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
   const klik = (tip: 'pogodbe' | 'racuni' | 'stroski', item: FlowContract | FlowInvoice | FlowExpense) => ({
     role: 'button' as const, tabIndex: 0,
     onClick: () => setVrsticaDetajl({ tip, item }),
@@ -1198,7 +1207,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               <div className="pw-mail-orodja">
                 <button type="button" className="pw-mail-nazaj" title={L('Nazaj na seznam', 'Back to list')} onClick={() => setBeriMail(null)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M19 12H5M11 18l-6-6 6-6" /></svg> {L('Nazaj', 'Back')}</button>
                 <span className="pw-mail-meni-w">
-                  <button type="button" title={L('Premakni na drug projekt', 'Move to another project')} aria-label={L('Premakni', 'Move to')} onClick={() => { setPremakniOdprt(o => !o); setOznakaOdprt(false); }}><FolderSimplePlus size={16} /></button>
+                  <button type="button" className={premakniOdprt ? 'pw-toggle-on' : ''} aria-expanded={premakniOdprt} title={L('Premakni na drug projekt', 'Move to another project')} aria-label={L('Premakni', 'Move to')} onClick={() => { setPremakniOdprt(o => !o); setOznakaOdprt(false); }}><FolderSimplePlus size={16} /></button>
                   {premakniOdprt && beriMail && (
                     <div className="pw-mail-meni">
                       <p className="pw-mail-meni-h">{L('Premakni na projekt', 'Move to project')}</p>
@@ -1210,7 +1219,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   )}
                 </span>
                 <span className="pw-mail-meni-w">
-                  <button type="button" title={L('Dodaj oznako', 'Add label')} aria-label={L('Oznaka', 'Label')} onClick={() => { setOznakaOdprt(o => !o); setPremakniOdprt(false); }}><Tag size={16} /></button>
+                  <button type="button" className={oznakaOdprt ? 'pw-toggle-on' : ''} aria-expanded={oznakaOdprt} title={L('Dodaj oznako', 'Add label')} aria-label={L('Oznaka', 'Label')} onClick={() => { setOznakaOdprt(o => !o); setPremakniOdprt(false); }}><Tag size={16} /></button>
                   {oznakaOdprt && beriMail && (
                     <div className="pw-mail-meni">
                       <p className="pw-mail-meni-h">{L('Oznake', 'Labels')}</p>
@@ -1574,7 +1583,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   }) : <span className="pw-klepet-kdo"><b>{L('Izberi sodelavca', 'Choose a collaborator')}</b><small>{L('klikni +', 'click +')}</small></span>}
                 </div>
                 <div className="pw-klepet-piker-w">
-                  <button type="button" className="pw-klepet-dodaj" onClick={() => setKlepetPicker(o => !o)} aria-label={L('Izberi sodelavce', 'Choose collaborators')}><Plus size={15} weight="bold" /></button>
+                  <button type="button" className="pw-klepet-dodaj" aria-expanded={klepetPicker} onClick={() => setKlepetPicker(o => !o)} aria-label={klepetPicker ? L('Zapri izbiro', 'Close picker') : L('Izberi sodelavce', 'Choose collaborators')}><Plus size={15} weight="bold" /></button>
                   {klepetPicker && (
                     <div className="pw-klepet-meni">
                       <p className="pw-klepet-meni-h">{L('Deli s sodelavci', 'Share with collaborators')}</p>
