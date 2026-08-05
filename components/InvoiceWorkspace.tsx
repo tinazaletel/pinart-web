@@ -12,6 +12,7 @@ import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt } from '@phosphor-icons/
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, type FlowInvoiceItem, type FlowInvoiceSignature } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
+import Toast from '@/components/Toast';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
 import { VALUTE_RACUN } from '@/lib/valute';
@@ -118,6 +119,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const [postavkaEnota, setPostavkaEnota] = useState<PostavkaEnota>('projekt');
   const [pdfId, setPdfId] = useState('');
   const [napaka, setNapaka] = useState('');
+  const [obvestilo, setObvestilo] = useState('');   /* jasno opozorilo (namesto domačega »Fill out this field«) */
 
   /* ── podpis na racunu — isti vzorec kot ContractWorkspace (canvas risanje ali
      nalozena slika, shranjena kot data URL); ime/kraj/datum so neobvezni. ── */
@@ -667,7 +669,20 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         <h2>{L('Vse sestavine po zakonu.', 'Every legally required part.')}</h2>
         <p>{L('Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje in se izpišejo v glavi računa.', 'If an offer exists, select it — the client and item are pre-filled. The issuer details (name, address, tax number, IBAN) are read from the My company settings and printed in the invoice header.')}</p>
       </div>
-      <form onSubmit={event => { event.preventDefault(); setPogled('zakljucek'); }}>
+      <Toast sporocilo={obvestilo} onClose={() => setObvestilo('')} ton="napaka" />
+      <form noValidate onSubmit={event => {
+        event.preventDefault();
+        const obrazec = event.currentTarget;
+        const manjka = obrazec.querySelector<HTMLInputElement>(':invalid');
+        if (manjka) {
+          manjka.focus();
+          manjka.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          const ime = (manjka.closest('label')?.textContent || '').trim().replace(/\s+/g, ' ') || L('polje', 'field');
+          setObvestilo(L(`Izpolni polje: ${ime}`, `Please fill out: ${ime}`));
+          return;
+        }
+        setPogled('zakljucek');
+      }}>
         {/* vrsta dokumenta: RAČUN (privzeto) ali PREDRAČUN (poziv k placilu vnaprej,
             NI knjigovodska listina — racun se izda sele po prejemu placila) */}
         <div className="rc-segpills rc-tip-segpills" role="group" aria-label={L('Vrsta dokumenta', 'Document type')}>
