@@ -313,7 +313,12 @@ const pwStyles = `
 .pw-posta-prazno{position:relative;z-index:1;margin:.7rem 0 0;color:var(--muted);font-size:.7rem;line-height:1.5}
 /* »Nova pošta« — gumb + sestavljalnik */
 .pw-posta-glava{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem}
-.pw-posta-nova{flex:none;display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .8rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 .66rem var(--font-sans),sans-serif;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+.pw-posta-nova{flex:none;display:inline-flex;align-items:center;gap:.35rem;height:2.6rem;box-sizing:border-box;padding:0 1.1rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+/* filter prejemnika = kompakten pill znotraj iskalnika (kot Gmail filter) */
+.pw-posta-filter{position:absolute;right:.4rem;top:50%;transform:translateY(-50%);max-width:8.5rem;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);background:#fff;color:var(--ink);font:700 .62rem var(--font-sans),sans-serif;border-radius:999px;padding:.34rem .7rem;cursor:pointer;text-overflow:ellipsis}
+.pw-posta-filter[data-aktiven='true']{background:var(--ink);color:var(--paper)}
+/* naslov 06 ... ne sme biti odrezan levo */
+.pw-kom-panel .pw-posta-glava{padding-left:.15rem}
 .pw-posta-nova:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 16px rgba(40,25,60,.18)}
 .pw-posta-nova:disabled{opacity:.45;cursor:not-allowed}
 .pw-pisi{position:relative;z-index:1;display:flex;flex-direction:column;gap:.5rem;margin:.75rem 0 .2rem;padding:.75rem;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:.85rem;background:oklch(100% 0 0 / .72)}
@@ -831,10 +836,16 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     <article className="pw-karta pw-posta">
             <div className="pw-posta-glava">
               <div><p className={styles.eyebrow}>{L('06 · KOMUNIKACIJE', '06 · COMMUNICATIONS')}</p><h3>{L('Vse na enem mestu', 'All in one place')}</h3></div>
-              {!beriMail && posta.length > 0 && (
-                <div style={{ position: 'relative', flex: '0 1 320px', margin: '0 auto 0 1rem' }}>
-                  <MagnifyingGlass size={15} weight="bold" style={{ position: 'absolute', left: '.65rem', top: '50%', transform: 'translateY(-50%)', color: 'color-mix(in oklch, var(--ink) 45%, transparent)', pointerEvents: 'none' }} />
-                  <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder={L('Išči po zadevi ali naslovu …', 'Search by subject or address …')} style={{ width: '100%', boxSizing: 'border-box', padding: '.42rem .7rem .42rem 2rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.6rem', background: 'oklch(100% 0 0 / .55)', font: '500 .8rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />
+              {posta.length > 0 && (
+                <div className="pw-posta-search" style={{ position: 'relative', flex: '1 1 240px', minWidth: 0 }}>
+                  <MagnifyingGlass size={16} weight="bold" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'color-mix(in oklch, var(--ink) 45%, transparent)', pointerEvents: 'none' }} />
+                  <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder={L('Išči po pošti …', 'Search mail …')} style={{ width: '100%', boxSizing: 'border-box', height: '2.6rem', padding: '0 3.2rem 0 2.6rem', border: '1px solid color-mix(in oklch, var(--ink) 9%, transparent)', borderRadius: '999px', background: '#fff', font: '500 .85rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />
+                  {(() => { const osebe = Array.from(new Set(posta.flatMap(v => v.prejemniki).filter(Boolean))); return osebe.length > 1 ? (
+                    <select value={postaOseba} onChange={e => setPostaOseba(e.target.value)} aria-label={L('Filter po prejemniku', 'Filter by recipient')} title={L('Filter po prejemniku', 'Filter by recipient')} className="pw-posta-filter" data-aktiven={postaOseba ? 'true' : 'false'}>
+                      <option value="">{L('Vsi prejemniki', 'All recipients')}</option>
+                      {osebe.map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  ) : null; })()}
                 </div>
               )}
               <button type="button" className="pw-posta-nova" disabled={samoOgled} title={samoOgled ? L('Na voljo v načinu »Moji podatki« — zdaj gledaš predogled', 'Available in “My data” mode — you are viewing a preview') : L('Napiši sporočilo stranki', 'Write a message to the client')} onClick={odpriPisanje}>{L('✎ Nova pošta', '✎ New mail')}</button>
@@ -874,15 +885,6 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               })}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-              {(() => {
-                const osebe = Array.from(new Set(posta.flatMap(v => v.prejemniki).filter(Boolean)));
-                return osebe.length > 1 ? (
-                  <select value={postaOseba} onChange={e => setPostaOseba(e.target.value)} aria-label={L('Filter po prejemniku', 'Filter by recipient')} style={{ display: 'block', margin: '0 0 .5rem auto', border: `1px solid ${postaOseba ? 'var(--ink)' : 'color-mix(in oklch, var(--ink) 14%, transparent)'}`, background: postaOseba ? 'var(--ink)' : 'transparent', color: postaOseba ? 'var(--paper)' : 'var(--ink)', borderRadius: '999px', padding: '.28rem .72rem', font: '700 .66rem var(--font-sans), sans-serif', cursor: 'pointer', maxWidth: '70%' }}>
-                    <option value="" style={{ color: 'var(--ink)', background: 'var(--paper)' }}>{L('Vsi prejemniki', 'All recipients')}</option>
-                    {osebe.map(o => <option key={o} value={o} style={{ color: 'var(--ink)', background: 'var(--paper)' }}>{o}</option>)}
-                  </select>
-                ) : null;
-              })()}
             {beriMail ? (
               <div style={{ position: 'relative', zIndex: 1, margin: '.75rem 0 0', padding: '.9rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.85rem', background: 'oklch(100% 0 0 / .72)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.55rem' }}>
