@@ -453,10 +453,10 @@ export default function ProjectDetailModern({
         .pm-arr { display:inline-block; margin-left:.3rem; vertical-align:-1px; flex:none; }
         /* cilji projekta */
         .pm-goals { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
-        .pm-goals li { display:flex; align-items:baseline; gap:.5rem; padding:.42rem 0; border-top:1px solid color-mix(in oklch, var(--pm-line) 60%, transparent); }
+        .pm-goals li { display:flex; align-items:baseline; gap:.5rem; flex-wrap:wrap; padding:.42rem 0; border-top:1px solid color-mix(in oklch, var(--pm-line) 60%, transparent); }
         .pm-goals li:first-child { border-top:0; }
-        .pm-goal-b { flex:1; min-width:0; font-size:.86rem; color:var(--pm-ink); }
-        .pm-goal-t { flex:none; font-size:.72rem; font-weight:600; color:var(--pm-acc); }
+        .pm-goal-b { min-width:0; font-size:.86rem; color:var(--pm-ink); }
+        .pm-goal-t { flex:none; font-size:.66rem; font-weight:700; letter-spacing:.01em; color:var(--pm-acc); background:linear-gradient(135deg, color-mix(in oklch, var(--pm-acc) 16%, transparent), color-mix(in oklch, var(--pm-acc) 7%, transparent)); border-radius:999px; padding:.14rem .55rem; }
         /* crm dnevnik */
         .pm-crm-list { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
         .pm-crm-vnos { display:flex; align-items:baseline; gap:.55rem; padding:.42rem 0; border-top:1px solid color-mix(in oklch, var(--pm-line) 60%, transparent); }

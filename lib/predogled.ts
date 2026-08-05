@@ -296,10 +296,10 @@ const DEMO_REAL: Record<string, Projekt> = {
     voice: 'Strokoven, a topel in dostopen; brez žargona, spodbuden do učiteljev.',
     konkurenca: 'DZS, Mladinska knjiga, Založba Rokus (obstoječi portali) — cilj je hitrejši in preglednejši od vseh.',
     cilji: [
-      { id: 'demo-c-1', besedilo: 'Skrajšati čas do e-gradiva', metrika: 'kliki do vsebine', tarca: '≤ 3 kliki' },
-      { id: 'demo-c-2', besedilo: 'Dvigniti hitrost nalaganja', metrika: 'LCP', tarca: '< 2 s' },
-      { id: 'demo-c-3', besedilo: 'Dostopnost po WCAG', metrika: 'raven', tarca: 'AA' },
-      { id: 'demo-c-4', besedilo: 'Povečati zadovoljstvo učiteljev', metrika: 'ocena ankete', tarca: '≥ 4,5 / 5' },
+      { id: 'demo-c-1', besedilo: 'Skrajšati čas do e-gradiva', tarca: 'do 3 klike' },
+      { id: 'demo-c-2', besedilo: 'Dvigniti hitrost nalaganja', tarca: 'pod 2 sekundi' },
+      { id: 'demo-c-3', besedilo: 'Dostopnost po WCAG', tarca: 'raven AA' },
+      { id: 'demo-c-4', besedilo: 'Povečati zadovoljstvo učiteljev', tarca: 'vsaj 4,5 od 5' },
     ],
     dodatnaVprasanja: [
       { id: 'demo-v-1', vprasanje: 'Ima stranka že CGP?', odgovor: 'Da, obstaja knjiga znamke — barvo in logotip ohranimo, tipografijo osvežimo.' },
