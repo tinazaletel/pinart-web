@@ -185,6 +185,13 @@ const pwStyles = `
 .pw-ai-kopiraj{border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);background:#fff;color:var(--ink);border-radius:999px;padding:.5rem 1rem;font:600 .78rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-ai-uporabi{display:inline-flex;align-items:center;gap:.35rem;border:0;background:var(--purple);color:#fff;border-radius:999px;padding:.5rem 1.15rem;font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-ai-opomba{margin:0;font:500 .74rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 45%,transparent);line-height:1.45}
+/* Desktop: Pupa in mail stojita vzporedno — Pupa desno, mail se umakne levo. Pod 1120px ostane Pupa čez (overlay). */
+@media (min-width:1120px){
+  .pw-ai-back{background:transparent !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important}
+  .pw-ai-panel{width:440px !important;max-width:440px !important}
+  .pw-kom-panel{transition:transform .28s cubic-bezier(.16,1,.3,1),width .28s ease}
+  .pw-kom-panel.pw-kom-shift{width:min(640px,58vw) !important;max-width:min(640px,58vw) !important;transform:translateX(-460px)}
+}
 /* compose glava + X za hitro zapiranje */
 .pw-pisi-glava{display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem}
 .pw-pisi-naslov{font:700 .8rem var(--font-sans),sans-serif;color:var(--ink)}
@@ -1413,7 +1420,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         (glej ArhivWorkspace .arh-det-x); poln seznam za pogodbe/računi/stroški TA projekta */}
     {portalPripravljen && komOdprt && selected && createPortal(
       <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={() => setKomOdprt(false)}>
-        <aside className={`${styles.detailPanel} pw-vsi-panel pw-kom-panel`} role="dialog" aria-modal="true" aria-label={L('Komunikacija', 'Communication')} onMouseDown={e => e.stopPropagation()}>
+        <aside className={`${styles.detailPanel} pw-vsi-panel pw-kom-panel${aiOdprt ? ' pw-kom-shift' : ''}`} role="dialog" aria-modal="true" aria-label={L('Komunikacija', 'Communication')} onMouseDown={e => e.stopPropagation()}>
           <button type="button" className="pw-vsi-x" onClick={() => setKomOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button>
           {komVsebina()}
         </aside>
@@ -1438,7 +1445,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     , document.body)}
 
     {portalPripravljen && aiOdprt && createPortal(
-      <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={() => setAiOdprt(false)}>
+      <div className={`${styles.detailBackdrop} pw-vsi-backdrop pw-ai-back`} role="presentation" onMouseDown={() => setAiOdprt(false)}>
         <aside className={`${styles.detailPanel} pw-vsi-panel pw-ai-panel`} role="dialog" aria-modal="true" aria-label="Pupa" onMouseDown={e => e.stopPropagation()}>
           <button type="button" className="pw-vsi-x" onClick={() => setAiOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button>
           <p className={styles.eyebrow}><Sparkle size={13} weight="fill" style={{ verticalAlign: '-2px', marginRight: '.3rem' }} />{L('PUPA · POMOČ PRI MAILU', 'PUPA · MAIL HELP')}</p>
