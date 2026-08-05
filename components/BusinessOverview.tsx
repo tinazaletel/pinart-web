@@ -8,6 +8,21 @@ import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, saveOfferAmount, saveOfferStatus } from '@/lib/pinartFlowStore';
 import { recordAccountingExport, saveBusinessGoal, saveCloudSettings } from '@/lib/pinartFlowCloud';
 import { demoPodatki, usePredogled } from '@/lib/predogled';
+import { preberiNaloge } from '@/lib/naloge';
+import { preberiVsePoste, type PostaVnos } from '@/lib/postaDnevnik';
+
+/* Demo za nadzorno ploščo (»polno poslovanje«) — naloge + komunikacija */
+const DASH_DEMO_NALOGE: { naslov: string; stolpec: string }[] = [
+  { naslov: 'Wireframe ključnih strani portala', stolpec: 'in_progress' },
+  { naslov: 'Prototip navigacije in iskalnika', stolpec: 'todo' },
+  { naslov: 'Uskladitev tipografije s CGP', stolpec: 'in_progress' },
+  { naslov: 'Testiranje dostopnosti (WCAG AA)', stolpec: 'waiting' },
+];
+const DASH_DEMO_POSTA: { smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string }[] = [
+  { smer: 'prejeto', kdo: 'info@rokusklett.si', zadeva: 'Re: Prenova portala — potrditev obsega' },
+  { smer: 'poslano', kdo: 'info@rokusklett.si', zadeva: 'Prenova portala — osnutek za pregled' },
+  { smer: 'prejeto', kdo: 'ana@rokusklett.si', zadeva: 'Gradiva in dostopi' },
+];
 
 type Offer = { id: string; title: string; client: string; date: string; status: OfferStatus; scope?: string[]; offerNumber?: string };
 type OfferStatus = 'draft' | 'sent' | 'accepted' | 'rejected';
@@ -61,6 +76,15 @@ export default function BusinessOverview({ base }: { base: string }) {
   const [period, setPeriod] = useState<Period>('month');
   /* prej useState -> preklop je veljal SAMO tu in podstrani so ostale prazne */
   const [preview, setPreview] = usePredogled();
+  const [dashNaloge, setDashNaloge] = useState<{ naslov: string; stolpec: string }[]>([]);
+  const [dashPosta, setDashPosta] = useState<{ smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string }[]>([]);
+  useEffect(() => {
+    if (preview !== 'mine') { setDashNaloge(DASH_DEMO_NALOGE); setDashPosta(DASH_DEMO_POSTA); return; }
+    try {
+      setDashNaloge(preberiNaloge().filter(n => n.stolpec !== 'done').slice(0, 4).map(n => ({ naslov: n.naslov, stolpec: n.stolpec })));
+      setDashPosta(preberiVsePoste().slice(0, 4).map((v: PostaVnos) => ({ smer: v.smer, kdo: v.prejemniki[0] || '—', zadeva: v.zadeva || '—' })));
+    } catch { setDashNaloge([]); setDashPosta([]); }
+  }, [preview]);
   const [contractMode, setContractMode] = useState<'offer' | 'upload'>('offer');
   const [contractOfferId, setContractOfferId] = useState('');
   const [contractBody, setContractBody] = useState('');
@@ -424,6 +448,28 @@ export default function BusinessOverview({ base }: { base: string }) {
               </div>
             </div>;
           })()}
+          </div>
+        </section>
+      </div>
+
+      <div className={styles.detailRow}>
+        <section className={styles.historyBand} aria-labelledby="task-title">
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('07 · NALOGE', '07 · TASKS')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/naloge`}><span className={styles.abTxt}>{L('Vse naloge', 'All tasks')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+          <div className={styles.bandBody}>
+          <h2 id="task-title" className={styles.bandNaslov}>{L('Aktivne naloge', 'Active tasks')}</h2>
+          {dashNaloge.length ? <ul style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+            {dashNaloge.map((n, i) => <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}><span aria-hidden style={{ flex: 'none', width: '.5rem', height: '.5rem', borderRadius: '50%', background: n.stolpec === 'in_progress' ? 'var(--accent)' : n.stolpec === 'waiting' ? 'oklch(76% .14 75)' : n.stolpec === 'done' ? 'oklch(70% .15 155)' : 'oklch(80% .03 90)' }} /><span style={{ flex: 1, minWidth: 0, fontSize: '.86rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.naslov}</span></li>)}
+          </ul> : <div className={styles.emptyState}><span>+</span><div><strong>{L('Ni odprtih nalog.', 'No open tasks.')}</strong><p>{L('Naloge se prikažejo tukaj — dodaj jih v Task managerju.', 'Tasks appear here — add them in the Task manager.')}</p></div></div>}
+          </div>
+        </section>
+
+        <section className={styles.historyBand} aria-labelledby="comm-title">
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('08 · KOMUNIKACIJA', '08 · COMMUNICATION')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/komunikacija`}><span className={styles.abTxt}>{L('Odpri komunikacijo', 'Open communication')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+          <div className={styles.bandBody}>
+          <h2 id="comm-title" className={styles.bandNaslov}>{L('Zadnja pošta', 'Recent mail')}</h2>
+          {dashPosta.length ? <ul style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.7rem' }}>
+            {dashPosta.map((v, i) => <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}><span aria-hidden style={{ flex: 'none', width: '.5rem', height: '.5rem', borderRadius: '50%', background: v.smer === 'prejeto' ? 'oklch(62% .16 160)' : 'oklch(66% .2 297)' }} /><span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}><b style={{ fontSize: '.84rem', color: 'var(--ink)', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.zadeva}</b><small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.kdo}</small></span><small style={{ flex: 'none', fontSize: '.66rem', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--muted)' }}>{v.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</small></li>)}
+          </ul> : <div className={styles.emptyState}><span>+</span><div><strong>{L('Ni pošte.', 'No mail.')}</strong><p>{L('Projektni maili se zberejo tukaj — pošlji ali prejmi mail na projektu.', 'Project mail collects here — send or receive mail on a project.')}</p></div></div>}
           </div>
         </section>
       </div>
