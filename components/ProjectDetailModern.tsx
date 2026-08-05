@@ -274,6 +274,19 @@ export default function ProjectDetailModern({
             </div>
           </section>
 
+          {/* PONUDBA (osnova projekta) */}
+          <section className="pm-card">
+            <header><h3>{L('PONUDBA', 'OFFER')}{offer.number ? ` · ${offer.number}` : ''}</h3><Link className="pm-act" href={`${base}/kalkulator/orodje?od=pregled`}>{L('Odpri', 'Open')} <Puscica /></Link></header>
+            {offer.scope?.length ? (
+              <ul className="pm-list">
+                {offer.scope.slice(0, NAJVEC).map((s, i) => (
+                  <li key={i}><span className="pm-li-n">{s}</span></li>
+                ))}
+              </ul>
+            ) : <p className="pm-muted">{L('Ta projekt še nima strukturirane ponudbe. Pripravi jo v orodju.', 'This project has no structured offer yet. Prepare one in the tool.')}</p>}
+            {data.agreed > 0 && <div className="pm-rline pm-rline-top"><span>{L('Dogovorjena vrednost', 'Agreed value')}</span><b>{money(data.agreed)}</b></div>}
+          </section>
+
           {/* POGODBE */}
           <section className="pm-card">
             <header><h3>{L('POGODBE', 'CONTRACTS')} · {data.contracts.length}</h3><Link className="pm-iconbtn" href={`${base}/kalkulator/pogodbe`} aria-label={L('Dodaj pogodbo', 'Add contract')}>+</Link></header>
@@ -418,6 +431,7 @@ export default function ProjectDetailModern({
         .pm-fin .pm-f:nth-child(4) .pm-f-ic { color:oklch(66% .18 52); }
         .pm-rec { border-top:1px solid var(--pm-line); padding-top:.6rem; }
         .pm-rline { display:flex; justify-content:space-between; font-size:.85rem; padding:.35rem 0; }
+        .pm-rline-top { margin-top:.4rem; padding-top:.55rem; border-top:1px solid color-mix(in oklch, var(--pm-line) 60%, transparent); }
         .pm-rline b { font-variant-numeric:tabular-nums; }
 
         /* kompaktnejsa ekipa (ne rabi vec prostora za par imen) */
