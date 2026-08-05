@@ -350,8 +350,8 @@ export default function ProjectDetailModern({
         .pm-card > header { display:flex; align-items:center; justify-content:space-between; gap:.6rem; margin-bottom:.5rem; }
         .pm-card h3 { margin:0; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-title { font-family:var(--font-serif), Georgia, serif; font-size:1.3rem; margin:0 0 .7rem; color:var(--pm-ink); }
-        .pm-act { display:inline-flex; align-items:center; height:1.9rem; box-sizing:border-box; text-decoration:none; border:1px solid var(--pm-line); background:var(--pm-paper); color:var(--pm-muted); border-radius:999px; padding:0 .8rem; font-size:.74rem; font-weight:600; white-space:nowrap; }
-        .pm-act:hover { color:var(--pm-acc); border-color:var(--pm-acc); }
+        .pm-act { display:inline-flex; align-items:center; height:1.9rem; box-sizing:border-box; text-decoration:none; border:1px solid color-mix(in oklch, var(--pm-ink) 7%, transparent); background:transparent; color:var(--pm-ink); border-radius:999px; padding:0 .8rem; font-size:.74rem; font-weight:650; white-space:nowrap; transition:background .16s ease; }
+        .pm-act:hover { background:var(--pm-paper); }
         .pm-brief { background:linear-gradient(165deg, color-mix(in oklab, var(--pm-acc) 8%, var(--pm-card)), var(--pm-card) 72%); }
         .pm-brow { display:flex; gap:.7rem; padding:.5rem 0; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); }
         .pm-brow:first-of-type { border-top:0; }
@@ -369,7 +369,7 @@ export default function ProjectDetailModern({
         .pm-fin { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; margin-bottom:.8rem; }
         .pm-f { border:1px solid var(--pm-line); border-radius:12px; padding:.7rem .8rem; background:var(--pm-paper); }
         .pm-f small { font-size:.72rem; color:var(--pm-muted); }
-        .pm-f b { display:block; font-family:var(--font-serif), Georgia, serif; font-size:1.25rem; margin-top:.15rem; color:var(--pm-ink); }
+        .pm-f b { display:block; font-family:var(--font-sans), system-ui, sans-serif; font-weight:700; font-size:1.25rem; margin-top:.15rem; color:var(--pm-ink); }
         .pm-fin .pm-f { border-color:transparent; position:relative; overflow:hidden; min-height:5.2rem; }
         .pm-fin .pm-f:nth-child(1) { background:linear-gradient(140deg, oklch(96% .035 295), oklch(88% .075 297)); }
         .pm-fin .pm-f:nth-child(2) { background:linear-gradient(140deg, oklch(96% .035 160), oklch(86% .08 163)); }
@@ -407,8 +407,8 @@ export default function ProjectDetailModern({
         .pm-av-ai { background:linear-gradient(135deg, oklch(62% .16 280), oklch(70% .15 200)); }
         /* header akcije (Vec + gumb) */
         .pm-hact { display:inline-flex; align-items:center; gap:.4rem; }
-        .pm-iconbtn { text-decoration:none; display:inline-grid; place-items:center; width:1.9rem; height:1.9rem; box-sizing:border-box; border:1px solid var(--pm-line); border-radius:999px; background:var(--pm-paper); color:var(--pm-muted); font-size:1.05rem; line-height:1; }
-        .pm-iconbtn:hover { border-color:var(--pm-acc); color:var(--pm-acc); }
+        .pm-iconbtn { text-decoration:none; display:inline-grid; place-items:center; width:1.9rem; height:1.9rem; box-sizing:border-box; border:1px solid color-mix(in oklch, var(--pm-ink) 7%, transparent); border-radius:999px; background:transparent; color:var(--pm-ink); font-size:1.05rem; line-height:1; transition:background .16s ease; }
+        .pm-iconbtn:hover { background:var(--pm-paper); }
         /* prihajajoci datumi */
         .pm-roki { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
         .pm-rok { display:flex; align-items:center; gap:.55rem; padding:.45rem 0; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); }

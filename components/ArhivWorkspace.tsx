@@ -126,6 +126,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
     else saveFlowCollection('invoices', data.invoices.map(r => r.id === id ? { ...r, paid: v === 'true' } : r));
   };
   const statusVred = (tip: string, id: string, fallback: string) => statusOverride[`${tip}:${id}`] ?? fallback;
+  /* ton vodilne status-pike v vrstici (nadomesti ponavljajočo ikono) — iz surove
+     vrednosti prek labela do odtenka, isti vir kot pilula desno */
+  const tonZa = (opcije: Array<{ v: string; label: string }>, vrednost: string) => statusOdtenek(opcije.find(o => o.v === vrednost)?.label || vrednost);
   const offerOpcije = (Object.entries(offerLabels) as Array<[FlowOfferStatus, string]>).map(([v, label]) => ({ v, label }));
   const contractOpcije = (Object.entries(contractLabels) as Array<[FlowContractStatus, string]>).map(([v, label]) => ({ v, label }));
   const invoiceOpcije = [{ v: 'false', label: 'Odprto' }, { v: 'true', label: 'Plačano' }];
@@ -561,7 +564,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   {ponudbePrikaz.map(o => (
                     <button key={o.id} type="button" className="arh-vrstica" onClick={() => { setDetObsegOdprt(false); setDetajl({ vrsta: 'ponudba', zapis: o }); }}>
                       {kljuk(izKljuc('ponudba', o.id))}
-                      <span className="arh-glavna"><span className="arh-ikona" aria-hidden><FileText size={17} /></span><strong>{o.title}</strong></span>
+                      <span className="arh-glavna"><i className="arh-rowdot" data-tone={tonZa(offerOpcije, statusVred('offer', o.id, o.status))} aria-hidden /><strong>{o.title}</strong></span>
                       <span className="arh-mut">{o.client}</span>
                       <span className="arh-mut">{datStr(o.date)}</span>
                       <span><StatusUredi tip="offer" id={o.id} vrednost={statusVred('offer', o.id, o.status)} opcije={offerOpcije} /></span>
@@ -593,7 +596,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                     return (
                       <button key={c.id} type="button" className="arh-vrstica" onClick={() => { setDetObsegOdprt(false); setDetajl({ vrsta: 'pogodba', zapis: c }); }}>
                         {kljuk(izKljuc('pogodba', c.id))}
-                        <span className="arh-glavna"><span className="arh-ikona" aria-hidden><Scroll size={17} /></span><strong>{c.title}</strong></span>
+                        <span className="arh-glavna"><i className="arh-rowdot" data-tone={tonZa(contractOpcije, statusVred('contract', c.id, c.status))} aria-hidden /><strong>{c.title}</strong></span>
                         <span className="arh-mut">{c.client}</span>
                         <span className="arh-mut">{datStr(c.date)}</span>
                         <span><StatusUredi tip="contract" id={c.id} vrednost={statusVred('contract', c.id, c.status)} opcije={contractOpcije} /></span>
@@ -622,7 +625,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   {racuniPrikaz.map(r => (
                     <button key={r.id} type="button" className="arh-vrstica" onClick={() => setDetajl({ vrsta: 'racun', zapis: r })}>
                       {kljuk(izKljuc('racun', r.id))}
-                      <span className="arh-glavna"><span className="arh-ikona" aria-hidden><Receipt size={17} /></span><strong>{r.title || `${r.predracun ? L('Predračun', 'Proforma') : L('Račun', 'Invoice')} ${r.number || ''}`}</strong>{r.predracun && <span className="arh-znacka arh-znacka-predracun">{L('Predračun', 'Proforma')}</span>}</span>
+                      <span className="arh-glavna"><i className="arh-rowdot" data-tone={tonZa(invoiceOpcije, statusVred('invoice', r.id, String(r.paid)))} aria-hidden /><strong>{r.title || `${r.predracun ? L('Predračun', 'Proforma') : L('Račun', 'Invoice')} ${r.number || ''}`}</strong>{r.predracun && <span className="arh-znacka arh-znacka-predracun">{L('Predračun', 'Proforma')}</span>}</span>
                       <span className="arh-mut">{r.number || '—'}</span>
                       <span className="arh-mut">{r.client}</span>
                       <span className="arh-mut">{datStr(r.date)}</span>
@@ -929,6 +932,13 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-glavna{display:flex;align-items:center;gap:.6rem;min-width:0}
         .arh-glavna strong{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis}
         .arh-ikona{display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:oklch(94% .025 87);color:var(--accent);flex:none}
+        /* vodilna status-pika v vrstici (nadomesti ponavljajoco ikono); pilulina pika v vrstici skrita, da ni dvojne */
+        .arh-rowdot{width:.62rem;height:.62rem;border-radius:50%;flex:none;background:oklch(62% .02 70)}
+        .arh-rowdot[data-tone='waiting']{background:oklch(72% .16 75)}
+        .arh-rowdot[data-tone='success']{background:oklch(62% .15 150)}
+        .arh-rowdot[data-tone='danger']{background:oklch(58% .19 25)}
+        .arh-rowdot[data-tone='neutral']{background:oklch(62% .02 70)}
+        .arh-vrstica .arh-status::before{display:none}
         .arh-mut{color:rgba(17,17,17,.62)}
         .arh-desno{text-align:right;font-weight:700}
         .arh-kazalec{color:rgba(17,17,17,.4);font-size:1.1rem;text-align:center}
