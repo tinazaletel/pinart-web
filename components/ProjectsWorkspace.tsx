@@ -305,10 +305,15 @@ const pwStyles = `
 .pw-posta{background:linear-gradient(135deg,oklch(97% .03 300),oklch(97% .03 165))}
 .pw-posta h3{margin:0;font:600 1.15rem var(--font-sans),system-ui,sans-serif}
 .pw-posta-seznam{position:relative;z-index:1;list-style:none;display:flex;flex-direction:column;gap:.4rem;margin:.75rem 0 0;padding:0;max-height:19rem;overflow-y:auto}
-.pw-posta-seznam li{position:relative;display:grid;gap:.2rem;padding:.55rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:.7rem;background:#fff}
-.pw-posta-brisi{position:absolute;top:.4rem;right:.45rem;opacity:0;display:grid;place-items:center;width:1.7rem;height:1.7rem;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:50%;background:#fff;color:color-mix(in oklch,var(--ink) 55%,transparent);cursor:pointer;transition:opacity .15s,color .15s}
-.pw-posta-seznam li:hover .pw-posta-brisi,.pw-posta-brisi:focus-visible{opacity:1}
-.pw-posta-brisi:hover{color:oklch(55% .18 25);border-color:oklch(55% .18 25)}
+.pw-posta-seznam li{position:relative;display:grid;grid-template-columns:auto 1fr;align-items:start;gap:.6rem;padding:.6rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:.7rem;background:#fff;cursor:pointer}
+.pw-posta-vsebina{display:grid;gap:.2rem;min-width:0}
+.pw-posta-check{width:1.2rem;height:1.2rem;margin-top:.15rem;flex:none;cursor:pointer;accent-color:var(--ink)}
+.pw-posta-izbran{border-color:var(--ink);background:oklch(96.5% .018 300)}
+.pw-posta-bulk{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin:.55rem 0 .1rem;padding:.5rem .7rem;border-radius:.7rem;background:oklch(96.5% .018 300)}
+.pw-posta-bulk-st{font:700 .72rem var(--font-sans),sans-serif;color:var(--ink)}
+.pw-posta-bulk-brisi{display:inline-flex;align-items:center;gap:.35rem;height:2.1rem;padding:0 .95rem;border:0;border-radius:999px;background:oklch(55% .18 25);color:#fff;font:700 .72rem var(--font-sans),sans-serif;cursor:pointer}
+.pw-posta-bulk-x{border:0;background:none;color:color-mix(in oklch,var(--ink) 55%,transparent);font:600 .72rem var(--font-sans),sans-serif;cursor:pointer;margin-left:auto}
+@media (max-width:600px){.pw-posta-check{width:1.45rem;height:1.45rem}}
 .pw-posta-vrh{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
 .pw-posta-vrh b{font-size:.76rem;font-weight:700;color:var(--ink);overflow-wrap:anywhere}
 .pw-posta-smer{flex:none;display:inline-flex;align-items:center;padding:.2rem .5rem;border-radius:999px;background:oklch(91% .05 165);color:oklch(40% .1 165);font-size:.52rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
@@ -676,6 +681,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [beriMail, setBeriMail] = useState<PostaVnos | null>(null);
   const [postaIsk, setPostaIsk] = useState('');
   const [postaOseba, setPostaOseba] = useState('');   /* filter po prejemniku (ko vec oseb na projektu) */
+  const [izbraniMaili, setIzbraniMaili] = useState<Set<string>>(new Set());   /* izbrani maili (checkbox) za bulk akcije */
   /* »Nova pošta« — sestavljalnik neposredno v projektu (brez dokumenta). Pošlje
      prek Resend, zabeleži lokalno (postaDnevnik) + v oblak (pushProjectMail). */
   const [pisiOdprt, setPisiOdprt] = useState(false);
@@ -962,23 +968,33 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             </>) : (() => {
               const q = postaIsk.trim().toLowerCase();
               const seznam = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa).filter(v => !q || `${v.zadeva} ${v.prejemniki.join(' ')}`.toLowerCase().includes(q)).filter(v => !postaOseba || v.prejemniki.includes(postaOseba));
-              return seznam.length ? (
+              const izbraniVMapi = seznam.filter(v => izbraniMaili.has(v.id));
+              return seznam.length ? (<>
+                {izbraniVMapi.length > 0 && (
+                  <div className="pw-posta-bulk">
+                    <span className="pw-posta-bulk-st">{izbraniVMapi.length} {L('izbranih', 'selected')}</span>
+                    <button type="button" className="pw-posta-bulk-brisi" onClick={() => { const vKos = mapa === 'kos'; const ids = new Set(izbraniVMapi.map(v => v.id)); ids.forEach(id => { if (vKos) void deleteProjectMailPermanent(id).catch(() => undefined); else void trashProjectMail(id).catch(() => undefined); }); setPosta(p => vKos ? p.filter(v => !ids.has(v.id)) : p.map(v => ids.has(v.id) ? { ...v, izbrisano: new Date().toISOString() } : v)); setIzbraniMaili(new Set()); }}><Trash size={14} weight="bold" /> {mapa === 'kos' ? L('Zbriši dokončno', 'Delete permanently') : L('Izbriši', 'Delete')}</button>
+                    <button type="button" className="pw-posta-bulk-x" onClick={() => setIzbraniMaili(new Set())}>{L('Prekliči', 'Clear')}</button>
+                  </div>
+                )}
                 <ul className="pw-posta-seznam">
                   {seznam.map(vnos => (
-                    <li key={vnos.id} onClick={() => setBeriMail(vnos)} style={{ cursor: 'pointer', border: '1px solid color-mix(in oklch, var(--ink) 4%, transparent)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '.6rem', alignItems: 'baseline' }}>
-                        <b style={{ fontSize: '.82rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vnos.prejemniki.join(', ') || '—'}</b>
-                        <small style={{ flex: 'none', color: 'var(--muted)', fontSize: '.66rem' }}>{datStr(vnos.datum)}{casStr(vnos.datum) ? ` · ${casStr(vnos.datum)}` : ''}</small>
+                    <li key={vnos.id} className={'pw-posta-vrstica' + (izbraniMaili.has(vnos.id) ? ' pw-posta-izbran' : '')} onClick={() => setBeriMail(vnos)}>
+                      <input type="checkbox" className="pw-posta-check" checked={izbraniMaili.has(vnos.id)} onClick={e => e.stopPropagation()} onChange={e => { const ch = e.target.checked; setIzbraniMaili(prev => { const n = new Set(prev); if (ch) n.add(vnos.id); else n.delete(vnos.id); return n; }); }} aria-label={L('Izberi sporočilo', 'Select message')} />
+                      <div className="pw-posta-vsebina">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '.6rem', alignItems: 'baseline' }}>
+                          <b style={{ fontSize: '.82rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vnos.prejemniki.join(', ') || '—'}</b>
+                          <small style={{ flex: 'none', color: 'var(--muted)', fontSize: '.66rem' }}>{datStr(vnos.datum)}{casStr(vnos.datum) ? ` · ${casStr(vnos.datum)}` : ''}</small>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '.5rem', alignItems: 'baseline' }}>
+                          <span style={{ fontSize: '.8rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vnos.zadeva || L('(brez zadeve)', '(no subject)')}</span>
+                          <span style={{ flex: 'none', fontSize: '.5rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>{vnos.izbrisano ? L('Koš', 'Trash') : vnos.osnutek ? L('Osnutek', 'Draft') : vnos.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span>
+                        </div>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '.5rem', alignItems: 'baseline' }}>
-                        <span style={{ fontSize: '.8rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vnos.zadeva || L('(brez zadeve)', '(no subject)')}</span>
-                        <span style={{ flex: 'none', fontSize: '.5rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>{vnos.izbrisano ? L('Koš', 'Trash') : vnos.osnutek ? L('Osnutek', 'Draft') : vnos.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span>
-                      </div>
-                      <button type="button" className="pw-posta-brisi" title={vnos.izbrisano ? L('Zbriši dokončno', 'Delete permanently') : L('V koš', 'To trash')} aria-label={L('Izbriši', 'Delete')} onClick={e => { e.stopPropagation(); const id = vnos.id; if (vnos.izbrisano) { void deleteProjectMailPermanent(id).catch(() => undefined); setPosta(p => p.filter(v => v.id !== id)); } else { void trashProjectMail(id).catch(() => undefined); setPosta(p => p.map(v => v.id === id ? { ...v, izbrisano: new Date().toISOString() } : v)); } }}><Trash size={14} weight="bold" /></button>
                     </li>
                   ))}
                 </ul>
-              ) : (
+              </>) : (
                 <p className="pw-posta-prazno">{mapa === 'prejeto' ? L('Še ni prejete pošte — prižge se, ko aktiviramo dohodno pošto.', 'No received mail yet — it turns on once we enable inbound mail.') : mapa === 'osnutki' ? L('Ni osnutkov.', 'No drafts.') : mapa === 'kos' ? L('Koš je prazen.', 'Trash is empty.') : L('Še ni poslane pošte. Klikni Nova pošta in piši stranki.', 'No sent mail yet. Click New mail and write to the client.')}</p>
               );
             })()}
