@@ -175,6 +175,17 @@ const pwStyles = `
 .pw-pisi-naslov{font:700 .8rem var(--font-sans),sans-serif;color:var(--ink)}
 .pw-pisi-x{display:grid;place-items:center;width:2rem;height:2rem;flex:none;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:50%;background:#fff;color:var(--ink);font-size:.9rem;line-height:1;cursor:pointer;transition:background .15s,color .15s}
 .pw-pisi-x:hover{background:var(--ink);color:var(--paper)}
+/* MOBILE-FIRST: komunikacijski panel na telefonu */
+@media (max-width:640px){
+  .pw-vsi-panel,.pw-det-panel,.pw-kom-panel,.pw-naloga-panel{width:100vw !important;max-width:100vw !important}
+  .pw-vsi-panel,.pw-det-panel,.pw-naloga-panel{padding-left:1.1rem !important;padding-right:1.1rem !important}
+  .pw-vsi-backdrop{backdrop-filter:none;-webkit-backdrop-filter:none}
+  .pw-posta-body{flex-direction:column !important}
+  .pw-posta-mape{width:100% !important;flex-direction:row !important;flex-wrap:wrap !important;gap:.35rem !important;margin-bottom:.5rem}
+  .pw-posta-mape button{width:auto !important;flex:1 1 auto;justify-content:center !important;min-height:2.5rem}
+  .pw-kom-panel .pw-posta-glava{padding-right:.3rem}
+  .pw-mail-meni{left:auto;right:0}
+}
 .pw-kom-panel .pw-karta.pw-posta{margin:0;box-shadow:none;border:0;border-radius:0;overflow:visible;background:transparent;padding:0}
 /* naslov v svoji vrsti (X plava zgoraj desno); iskalnik+filter+Nova pošta v drugi vrsti, poravnani, enake višine; Nova pošta konča desno = pod X */
 .pw-kom-panel .pw-posta-glava{position:relative;flex-wrap:wrap;row-gap:.8rem;align-items:center;padding-left:.3rem;padding-right:.3rem}
@@ -325,6 +336,8 @@ const pwStyles = `
 .pw-posta-seznam li{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.6rem;padding:.6rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:.7rem;background:#fff;cursor:pointer}
 .pw-posta-zvezda{background:oklch(97.5% .035 92);border-color:oklch(86% .09 85)}
 .pw-posta-zv-ikona{color:oklch(72% .16 75);flex:none}
+.pw-posta-oznake{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.15rem}
+.pw-posta-oz{font:700 .58rem var(--font-sans),sans-serif;color:var(--purple);background:color-mix(in oklch,var(--purple) 12%,transparent);border-radius:999px;padding:.1rem .45rem}
 .pw-posta-vsebina{display:grid;gap:.2rem;min-width:0}
 .pw-posta-check{width:1.2rem;height:1.2rem;margin-top:.15rem;flex:none;cursor:pointer;accent-color:var(--ink)}
 .pw-posta-izbran{border-color:var(--ink);background:oklch(96.5% .018 300)}
@@ -981,7 +994,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 </div>
               </div>
             )}
-            <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '1rem', alignItems: 'flex-start', margin: '.75rem 0 0' }}>
+            <div className="pw-posta-body" style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '1rem', alignItems: 'flex-start', margin: '.75rem 0 0' }}>
               <div className="pw-posta-mape" style={{ flex: 'none', width: 138, display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
               {([{ id: 'prejeto', ime: L('Prejeto', 'Inbox'), Ikona: Tray }, { id: 'poslano', ime: L('Poslano', 'Sent'), Ikona: PaperPlaneTilt }, { id: 'osnutki', ime: L('Osnutki', 'Drafts'), Ikona: NotePencil }, { id: 'kos', ime: L('Koš', 'Trash'), Ikona: Trash }] as const).map(({ id, ime, Ikona }) => {
                 const st = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === id).length;
@@ -1043,7 +1056,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               </div>
             </>) : (() => {
               const q = postaIsk.trim().toLowerCase();
-              const seznam = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa).filter(v => !q || `${v.zadeva} ${v.prejemniki.join(' ')}`.toLowerCase().includes(q)).filter(v => !postaOseba || v.prejemniki.includes(postaOseba));
+              const seznam = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa).filter(v => !q || `${v.zadeva} ${v.prejemniki.join(' ')} ${(v.oznake || []).join(' ')}`.toLowerCase().includes(q)).filter(v => !postaOseba || v.prejemniki.includes(postaOseba));
               const izbraniVMapi = seznam.filter(v => izbraniMaili.has(v.id));
               const NA_STRAN = 12;
               const strani = Math.max(1, Math.ceil(seznam.length / NA_STRAN));
@@ -1070,6 +1083,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                           <span style={{ fontSize: '.8rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vnos.zadeva || L('(brez zadeve)', '(no subject)')}</span>
                           <span style={{ flex: 'none', fontSize: '.5rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>{vnos.izbrisano ? L('Koš', 'Trash') : vnos.osnutek ? L('Osnutek', 'Draft') : vnos.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span>
                         </div>
+                        {(vnos.oznake || []).length > 0 && <div className="pw-posta-oznake">{(vnos.oznake || []).map((oz, i) => <span key={`${oz}-${i}`} className="pw-posta-oz">{oz}</span>)}</div>}
                       </div>
                       {vnos.zvezda && <Star size={16} weight="fill" className="pw-posta-zv-ikona" aria-hidden />}
                     </li>
