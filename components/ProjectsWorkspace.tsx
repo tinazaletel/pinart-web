@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash, MagnifyingGlass } from '@phosphor-icons/react';
+import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ShareNetwork, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
@@ -158,11 +158,11 @@ const pwStyles = `
    kartic (isti border/radius/ozadje odtenek), da se lepo vklopi. */
 .pw-dodatno{display:flex;flex-direction:column;gap:.55rem;margin-top:.55rem}
 .pw-kom-panel{width:min(780px,94vw);max-width:min(780px,94vw)}
-.pw-kom-panel .pw-karta.pw-posta{margin:0;box-shadow:none;border:0;background:transparent;padding:0}
-/* naslov zgoraj (poravnan z X); iskalnik + Nova pošta v drugo vrstico */
-.pw-kom-panel .pw-posta-glava{flex-wrap:wrap;row-gap:.7rem;padding-right:3rem}
+.pw-kom-panel .pw-karta.pw-posta{margin:0;box-shadow:none;border:0;border-radius:0;overflow:visible;background:transparent;padding:0}
+/* naslov v svoji vrsti (X plava zgoraj desno); iskalnik+filter+Nova pošta v drugi vrsti, poravnani, enake višine; Nova pošta konča desno = pod X */
+.pw-kom-panel .pw-posta-glava{position:relative;flex-wrap:wrap;row-gap:.8rem;align-items:center;padding-left:.3rem;padding-right:.3rem}
 .pw-kom-panel .pw-posta-glava > div:first-child{flex:1 1 100%}
-.pw-kom-panel .pw-posta-glava > div:first-child + div{margin-left:0 !important}
+.pw-kom-panel .pw-posta-filter{position:static;transform:none;height:2.6rem;box-sizing:border-box}
 /* X gumb vedno nad vso vsebino panela */
 .pw-vsi-x{z-index:40}
 .pw-karta{position:relative;overflow:hidden;padding:1rem;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:1rem;background:oklch(99% .006 87 / .85)}
@@ -317,6 +317,19 @@ const pwStyles = `
 /* filter prejemnika = kompakten pill znotraj iskalnika (kot Gmail filter) */
 .pw-posta-filter{position:absolute;right:.4rem;top:50%;transform:translateY(-50%);max-width:8.5rem;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);background:#fff;color:var(--ink);font:700 .62rem var(--font-sans),sans-serif;border-radius:999px;padding:.34rem .7rem;cursor:pointer;text-overflow:ellipsis}
 .pw-posta-filter[data-aktiven='true']{background:var(--ink);color:var(--paper)}
+.pw-posta-filter{font-size:.78rem !important}
+/* orodna vrstica nad besedilom maila (Premakni/Oznaka/V nalogo/AI/Natisni/★) */
+.pw-mail-orodja{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 .85rem;padding-bottom:.75rem;border-bottom:1px solid color-mix(in oklch,var(--ink) 7%,transparent)}
+.pw-mail-orodja>button,.pw-mail-orodja>a{display:inline-flex;align-items:center;gap:.35rem;height:2rem;box-sizing:border-box;padding:0 .7rem;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);border-radius:999px;background:#fff;color:color-mix(in oklch,var(--ink) 78%,transparent);font:600 .68rem var(--font-sans),sans-serif;text-decoration:none;cursor:pointer;white-space:nowrap;transition:background .15s}
+.pw-mail-orodja>button:hover,.pw-mail-orodja>a:hover{background:var(--paper)}
+.pw-mail-orodja .pw-mail-star{padding:0;width:2rem;justify-content:center;color:color-mix(in oklch,var(--ink) 50%,transparent)}
+.pw-mail-orodja .pw-mail-star:hover{color:oklch(72% .16 75)}
+/* akcije pod besedilom maila (Odgovori/Posreduj/Deli/Klepet) */
+.pw-mail-akcije{display:flex;flex-wrap:wrap;gap:.5rem;margin:.9rem 0 0}
+.pw-mail-akcije>button{display:inline-flex;align-items:center;gap:.4rem;height:2.4rem;box-sizing:border-box;padding:0 1.1rem;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);border-radius:999px;background:#fff;color:var(--ink);font:650 .78rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s}
+.pw-mail-akcije>button:first-child{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pw-mail-akcije>button:hover{background:var(--paper)}
+.pw-mail-akcije>button:first-child:hover{background:color-mix(in oklch,var(--ink) 88%,transparent)}
 /* naslov 06 ... ne sme biti odrezan levo */
 .pw-kom-panel .pw-posta-glava{padding-left:.15rem}
 .pw-posta-nova:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 16px rgba(40,25,60,.18)}
@@ -839,15 +852,15 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               {posta.length > 0 && (
                 <div className="pw-posta-search" style={{ position: 'relative', flex: '1 1 240px', minWidth: 0 }}>
                   <MagnifyingGlass size={16} weight="bold" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'color-mix(in oklch, var(--ink) 45%, transparent)', pointerEvents: 'none' }} />
-                  <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder={L('Išči po pošti …', 'Search mail …')} style={{ width: '100%', boxSizing: 'border-box', height: '2.6rem', padding: '0 3.2rem 0 2.6rem', border: '1px solid color-mix(in oklch, var(--ink) 9%, transparent)', borderRadius: '999px', background: '#fff', font: '500 .85rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />
-                  {(() => { const osebe = Array.from(new Set(posta.flatMap(v => v.prejemniki).filter(Boolean))); return osebe.length > 1 ? (
-                    <select value={postaOseba} onChange={e => setPostaOseba(e.target.value)} aria-label={L('Filter po prejemniku', 'Filter by recipient')} title={L('Filter po prejemniku', 'Filter by recipient')} className="pw-posta-filter" data-aktiven={postaOseba ? 'true' : 'false'}>
-                      <option value="">{L('Vsi prejemniki', 'All recipients')}</option>
-                      {osebe.map(o => <option key={o} value={o}>{o}</option>)}
-                    </select>
-                  ) : null; })()}
+                  <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder={L('Išči po pošti …', 'Search mail …')} style={{ width: '100%', boxSizing: 'border-box', height: '2.6rem', padding: '0 1rem 0 2.6rem', border: '1px solid color-mix(in oklch, var(--ink) 9%, transparent)', borderRadius: '999px', background: '#fff', font: '500 .85rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />
                 </div>
               )}
+              {(() => { const osebe = Array.from(new Set(posta.flatMap(v => v.prejemniki).filter(Boolean))); return osebe.length > 1 ? (
+                <select value={postaOseba} onChange={e => setPostaOseba(e.target.value)} aria-label={L('Filter po prejemniku', 'Filter by recipient')} title={L('Filter po prejemniku', 'Filter by recipient')} className="pw-posta-filter" data-aktiven={postaOseba ? 'true' : 'false'}>
+                  <option value="">{L('Vsi prejemniki', 'All recipients')}</option>
+                  {osebe.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              ) : null; })()}
               <button type="button" className="pw-posta-nova" disabled={samoOgled} title={samoOgled ? L('Na voljo v načinu »Moji podatki« — zdaj gledaš predogled', 'Available in “My data” mode — you are viewing a preview') : L('Napiši sporočilo stranki', 'Write a message to the client')} onClick={odpriPisanje}>{L('✎ Nova pošta', '✎ New mail')}</button>
             </div>
             {pisiOdprt && !samoOgled && (
@@ -885,8 +898,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               })}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-            {beriMail ? (
-              <div style={{ position: 'relative', zIndex: 1, margin: '.75rem 0 0', padding: '.9rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.85rem', background: 'oklch(100% 0 0 / .72)' }}>
+            {beriMail ? (<>
+              <div style={{ position: 'relative', zIndex: 1, margin: '.75rem 0 0', padding: '.9rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.85rem', background: '#fff' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.55rem' }}>
                   <button type="button" onClick={() => setBeriMail(null)} style={{ border: 0, background: 'none', color: 'var(--ink)', font: '700 .7rem var(--font-sans), sans-serif', cursor: 'pointer', padding: 0 }}>{L('← Nazaj na seznam', '← Back to list')}</button>
                   {!samoOgled && <div style={{ display: 'flex', gap: '.45rem' }}>
@@ -897,14 +910,28 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   </div>}
                 </div>
                 <b style={{ display: 'block', fontSize: '.92rem' }}>{beriMail.zadeva || L('(brez zadeve)', '(no subject)')}</b>
-                <small style={{ display: 'block', color: 'var(--muted)', margin: '.15rem 0 .7rem' }}>{beriMail.prejemniki.join(', ')} · {datStr(beriMail.datum)}</small>
+                <small style={{ display: 'block', color: 'var(--muted)', margin: '.15rem 0 .6rem' }}>{beriMail.prejemniki.join(', ')} · {datStr(beriMail.datum)}</small>
+                <div className="pw-mail-orodja">
+                  <button type="button" title={L('Premakni v mapo', 'Move to')}><FolderSimplePlus size={15} /> {L('Premakni', 'Move to')}</button>
+                  <button type="button" title={L('Oznaka', 'Label')}><Tag size={15} /> {L('Oznaka', 'Label')}</button>
+                  <Link href={`${base}/kalkulator/naloge`} title={L('Dodaj v naloge', 'Add to task')}><CheckSquare size={15} /> {L('V nalogo', 'Add to task')}</Link>
+                  <button type="button" title={L('AI avtomatizacija (Pupa)', 'AI automate (Pupa)')}><Sparkle size={15} /> {L('AI avtomatiziraj', 'AI automate')}</button>
+                  <button type="button" onClick={() => { if (typeof window !== 'undefined') window.print(); }} title={L('Natisni', 'Print')}><Printer size={15} /> {L('Natisni', 'Print')}</button>
+                  <button type="button" className="pw-mail-star" title={L('Označi z zvezdico', 'Star')} aria-label={L('Zvezdica', 'Star')}><Star size={16} /></button>
+                </div>
                 {beriMail.telo
                   ? (beriMail.smer === 'prejeto'
                       ? <div style={{ whiteSpace: 'pre-wrap', fontSize: '.85rem', lineHeight: 1.55 }}>{beriMail.telo.replace(/<[^>]+>/g, ' ')}</div>
                       : <div style={{ fontSize: '.85rem', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: beriMail.telo }} />)
                   : <p style={{ color: 'var(--muted)', fontSize: '.82rem' }}>{L('To sporočilo nima shranjenega besedila (starejši/lokalni zapis).', 'This message has no stored text (older/local record).')}</p>}
               </div>
-            ) : (() => {
+              <div className="pw-mail-akcije">
+                <button type="button" onClick={() => { const m = beriMail; odpriPisanje(); setPisiZa(m?.prejemniki[0] || ''); setPisiZadeva(`Re: ${(m?.zadeva || '').replace(/^Re:\s*/i, '')}`); setBeriMail(null); }}><ArrowBendUpLeft size={15} weight="bold" /> {L('Odgovori', 'Reply')}</button>
+                <button type="button" onClick={() => { const m = beriMail; odpriPisanje(); setPisiZa(''); setPisiZadeva(`Fwd: ${(m?.zadeva || '').replace(/^Fwd:\s*/i, '')}`); setBeriMail(null); }}><ArrowBendUpRight size={15} weight="bold" /> {L('Posreduj', 'Forward')}</button>
+                <button type="button" onClick={() => { const m = beriMail; odpriPisanje(); setPisiZa(''); setPisiZadeva(`${m?.zadeva || ''}`); setBeriMail(null); }}><ShareNetwork size={15} weight="bold" /> {L('Deli', 'Share')}</button>
+                <button type="button" title={L('Interni klepet o sporočilu — kmalu', 'Internal chat about this message — soon')} onClick={() => undefined}><ChatCircle size={15} weight="bold" /> {L('Klepet', 'Chat')}</button>
+              </div>
+            </>) : (() => {
               const q = postaIsk.trim().toLowerCase();
               const seznam = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa).filter(v => !q || `${v.zadeva} ${v.prejemniki.join(' ')}`.toLowerCase().includes(q)).filter(v => !postaOseba || v.prejemniki.includes(postaOseba));
               return seznam.length ? (
