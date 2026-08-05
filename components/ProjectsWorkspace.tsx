@@ -693,6 +693,12 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   }, [realProjekti, offers, invoices, expenses, contracts, amounts]);
   const projects = useMemo(() => [...offerProjects, ...realProjects].sort((a, b) => (b.offer.date || '').localeCompare(a.offer.date || '')), [offerProjects, realProjects]);
   const visible = projects.filter(project => { const text = `${project.offer.title} ${project.offer.client} ${project.offer.number || ''}`.toLocaleLowerCase('sl-SI'); const match = text.includes(search.toLocaleLowerCase('sl-SI')); const state = filter === 'vse' || (filter === 'aktivni' ? project.offer.status === 'accepted' : filter === 'cakajo' ? project.offer.status === 'sent' : ['rejected'].includes(project.offer.status)); return match && state && vObdobju(project.offer.date, datumOd, datumDo); });
+  /* paginacija seznama projektov (namesto neskončnega skrolanja) */
+  const NA_STRAN_PROJ = 12;
+  const projStrani = Math.max(1, Math.ceil(visible.length / NA_STRAN_PROJ));
+  const projStranA = Math.min(Math.max(1, projStran), projStrani);
+  const projPrikaz = visible.slice((projStranA - 1) * NA_STRAN_PROJ, projStranA * NA_STRAN_PROJ);
+  useEffect(() => { setProjStran(1); }, [search, filter, datumOd, datumDo, nacin]);
   /* označi vse (vidne) + CSV izvoz izbranih projektov */
   const vsiIzbrani = visible.length > 0 && visible.every(p => izbrani.has(p.offer.id));
   const preklopiVse = () => setIzbrani(prev => { const n = new Set(prev); if (vsiIzbrani) visible.forEach(p => n.delete(p.offer.id)); else visible.forEach(p => n.add(p.offer.id)); return n; });
@@ -843,6 +849,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [postaOseba, setPostaOseba] = useState('');   /* filter po prejemniku (ko vec oseb na projektu) */
   const [izbraniMaili, setIzbraniMaili] = useState<Set<string>>(new Set());   /* izbrani maili (checkbox) za bulk akcije */
   const [postaStran, setPostaStran] = useState(1);            /* paginacija seznama pošte */
+  const [projStran, setProjStran] = useState(1);             /* paginacija seznama projektov */
   const [aiOdprt, setAiOdprt] = useState(false);              /* Pupa panel na mailu (povzetek + predlog odgovora) */
   const [aiNalaganje, setAiNalaganje] = useState(false);
   const [aiPovzetek, setAiPovzetek] = useState('');
@@ -1468,7 +1475,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               <div className="pw-tabela">
                 {/* naslov + stevec + filter so v pw-glava-pas nad tabelo */}
                 <header>{kljuk(null)}<span>{L('Projekt', 'Project')}: {visible.length}</span><span>{L('Stranka', 'Client')}</span><span>{L('Datum', 'Date')}</span><span>{L('Status', 'Status')}</span><span className="pw-desno">{L('Vrednost', 'Value')}</span><span /></header>
-                {visible.map(project => { const info = projectStatusInfo(project.offer.status); return (
+                {projPrikaz.map(project => { const info = projectStatusInfo(project.offer.status); return (
                   <button key={project.offer.id} type="button" className="pw-vrstica" onClick={() => selectProject(project.offer.id)}>
                     {kljuk(project.offer.id)}
                     <span className="pw-glavna"><i aria-hidden style={{ ...pikaStil(info.tone), width: '.6rem', height: '.6rem', marginRight: '.75rem' }} title={info.label} /><strong>{project.offer.title}</strong></span>
@@ -1485,6 +1492,15 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   </button>
                 ); })}
               </div>
+              {projStrani > 1 && (
+                <nav className="pw-posta-strani pw-proj-strani" aria-label={L('Strani', 'Pages')}>
+                  <button type="button" disabled={projStranA <= 1} onClick={() => setProjStran(projStranA - 1)} aria-label={L('Prejšnja', 'Previous')}>‹</button>
+                  {Array.from({ length: projStrani }, (_, i) => i + 1).map(s => (
+                    <button type="button" key={s} className={s === projStranA ? 'on' : ''} onClick={() => setProjStran(s)} aria-current={s === projStranA ? 'page' : undefined}>{s}</button>
+                  ))}
+                  <button type="button" disabled={projStranA >= projStrani} onClick={() => setProjStran(projStranA + 1)} aria-label={L('Naslednja', 'Next')}>›</button>
+                </nav>
+              )}
             </div>
           ) : <p className="pw-prazno">{L('Ni projektov v tem pogledu.', 'No projects in this view.')}</p>}
         </div>
