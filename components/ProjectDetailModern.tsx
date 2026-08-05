@@ -322,7 +322,7 @@ export default function ProjectDetailModern({
 
       <style dangerouslySetInnerHTML={{ __html: `
         .pm { --pm-ink: var(--ink, oklch(19% 0.014 55)); --pm-paper: var(--paper, oklch(97% 0.012 87)); --pm-line: var(--line, oklch(93% 0.007 82)); --pm-acc: var(--purple, oklch(66% 0.2 297)); --pm-card: #fff; --pm-muted: color-mix(in oklch, var(--ink) 55%, transparent); --pm-soft: color-mix(in oklch, var(--ink) 42%, transparent); }
-        .pm-team { display:flex; align-items:center; gap:.7rem; flex-wrap:wrap; background:var(--pm-paper); border:1px solid var(--pm-line); border-radius:16px; padding:.8rem 1rem; margin-bottom:1.2rem; }
+        .pm-team { display:flex; align-items:center; gap:.7rem; flex-wrap:wrap; background:var(--pm-card); border:1px solid var(--pm-line); border-radius:16px; padding:.8rem 1rem; margin-bottom:1.2rem; }
         .pm-team-lbl { font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-member { display:inline-flex; align-items:center; gap:.5rem; padding:.3rem .6rem .3rem .35rem; border-radius:999px; border:1px solid var(--pm-line); background:var(--pm-card); }
         .pm-av { width:1.7rem; height:1.7rem; border-radius:50%; display:grid; place-items:center; font-size:.7rem; font-weight:700; color:#fff; background:linear-gradient(135deg, var(--pm-acc), oklch(70% .16 320)); }
