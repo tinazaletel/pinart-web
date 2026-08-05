@@ -279,30 +279,29 @@ export default function ProjectDetailModern({
             </div>
           </section>
 
-          {/* PONUDBA (osnova projekta) */}
+          {/* PONUDBE IN POGODBE (osnova projekta — obicajno 1 ponudba + 1 pogodba +aneks) */}
           <section className="pm-card">
-            <header><h3>{L('PONUDBA', 'OFFER')}{offer.number ? ` · ${offer.number}` : ''}</h3><Link className="pm-act" href={`${base}/kalkulator/orodje?od=pregled`}>{L('Odpri', 'Open')} <Puscica /></Link></header>
-            {offer.scope?.length ? (
-              <ul className="pm-list">
-                {offer.scope.slice(0, NAJVEC).map((s, i) => (
-                  <li key={i}><span className="pm-li-n">{s}</span></li>
-                ))}
-              </ul>
-            ) : <p className="pm-muted">{L('Ta projekt še nima strukturirane ponudbe. Pripravi jo v orodju.', 'This project has no structured offer yet. Prepare one in the tool.')}</p>}
-            {data.agreed > 0 && <div className="pm-rline pm-rline-top"><span>{L('Dogovorjena vrednost', 'Agreed value')}</span><b>{money(data.agreed)}</b></div>}
-          </section>
-
-          {/* POGODBE */}
-          <section className="pm-card">
-            <header><h3>{L('POGODBE', 'CONTRACTS')} · {data.contracts.length}</h3><Link className="pm-iconbtn" href={`${base}/kalkulator/pogodbe`} aria-label={L('Dodaj pogodbo', 'Add contract')}>+</Link></header>
-            {pogodbeSort.length ? (<>
-              <ul className="pm-list">
-                {pogodbeSort.slice(0, NAJVEC).map(c => (
-                  <li key={c.id}><button type="button" className="pm-li pm-li-btn" onClick={() => onOdpriDokument?.('pogodbe', c)}><span className="pm-li-n">{c.title}</span><span className="pm-li-s">{c.status}</span><span className="pm-li-d">{datKratko(c.date)}</span></button></li>
-                ))}
-              </ul>
-              {pogodbeSort.length > NAJVEC && (onOdpriVse || onOpenZapis) && <button type="button" className="pm-vec" onClick={() => onOdpriVse ? onOdpriVse('pogodbe') : onOpenZapis?.()}>{L('Prikaži vse', 'Show all')} ({pogodbeSort.length}) <Puscica /></button>}
-            </>) : <p className="pm-muted">{L('Brez pogodbe.', 'No contract.')}</p>}
+            <header><h3>{L('PONUDBE IN POGODBE', 'OFFERS & CONTRACTS')}</h3><Link className="pm-iconbtn" href={`${base}/kalkulator/pogodbe`} aria-label={L('Dodaj pogodbo', 'Add contract')}>+</Link></header>
+            <ul className="pm-list">
+              <li>
+                <Link className="pm-li pm-li-btn" href={`${base}/kalkulator/orodje?od=pregled`}>
+                  <span className="pm-li-tip" data-tip="ponudba">{L('Ponudba', 'Offer')}</span>
+                  <span className="pm-li-n">{offer.number || offer.title}{offer.scope?.length ? ` · ${offer.scope.length} ${L('postavk', 'items')}` : ''}</span>
+                  <span className="pm-li-a">{data.agreed ? money(data.agreed) : '—'}</span>
+                </Link>
+              </li>
+              {pogodbeSort.slice(0, NAJVEC).map(c => (
+                <li key={c.id}>
+                  <button type="button" className="pm-li pm-li-btn" onClick={() => onOdpriDokument?.('pogodbe', c)}>
+                    <span className="pm-li-tip" data-tip="pogodba">{L('Pogodba', 'Contract')}</span>
+                    <span className="pm-li-n">{c.title}</span>
+                    <span className="pm-li-s">{c.status}</span>
+                    <span className="pm-li-d">{datKratko(c.date)}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {pogodbeSort.length > NAJVEC && (onOdpriVse || onOpenZapis) && <button type="button" className="pm-vec" onClick={() => onOdpriVse ? onOdpriVse('pogodbe') : onOpenZapis?.()}>{L('Prikaži vse pogodbe', 'Show all contracts')} ({pogodbeSort.length}) <Puscica /></button>}
           </section>
 
           {/* RAČUNI */}
@@ -495,6 +494,8 @@ export default function ProjectDetailModern({
         .pm-li { display:flex; align-items:center; gap:.5rem; padding:.42rem 0; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); font-size:.83rem; color:var(--pm-ink); }
         .pm-list li:first-child .pm-li { border-top:0; }
         .pm-li-n { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .pm-li-tip { flex:none; font-size:.56rem; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--pm-muted); background:color-mix(in oklch, var(--pm-line) 45%, transparent); border-radius:999px; padding:.12rem .42rem; }
+        .pm-li-tip[data-tip="ponudba"] { color:var(--pm-acc); background:color-mix(in oklch, var(--pm-acc) 12%, transparent); }
         .pm-li-s { flex:none; font-size:.62rem; font-weight:700; letter-spacing:.02em; text-transform:uppercase; color:var(--pm-muted); background:color-mix(in oklab, var(--pm-line) 40%, transparent); border-radius:999px; padding:.12rem .45rem; }
         .pm-li-d { flex:none; font-size:.72rem; color:var(--pm-muted); font-variant-numeric:tabular-nums; }
         .pm-li-a { flex:none; margin-left:auto; font-weight:600; font-variant-numeric:tabular-nums; }
