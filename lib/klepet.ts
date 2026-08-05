@@ -8,11 +8,17 @@
 export type KlepetSporocilo = {
   id: string;
   projectId: string;
+  nit?: string;         // nit = kombinacija izbranih sodelavcev (nitId); prazno = stara/splošna
   avtor: string;        // 'jaz' = uporabnik; sicer ime/oznaka sodelavca
   besedilo: string;
   datum: string;        // ISO
   odMaila?: string;     // neobvezno: zadeva maila, iz katerega je bilo deljeno
+  izsek?: string;       // neobvezno: označen del maila (deljen v klepet)
 };
+
+/* Nit = deterministična oznaka pogovora iz izbranih sodelavcev (skupinski klepet). */
+export const nitId = (sodelavecIds: string[]): string =>
+  [...sodelavecIds].filter(Boolean).sort().join('|');
 
 const KLJUC = 'pinart-klepet';
 
@@ -31,10 +37,10 @@ const shraniVse = (v: KlepetSporocilo[]) => {
   localStorage.setItem(KLJUC, JSON.stringify(v));
 };
 
-/* sporočila enega projekta, najstarejše prvo (kronološko kot klepet) */
-export const preberiKlepet = (projectId: string): KlepetSporocilo[] =>
+/* sporočila ene niti (projekt + izbrani sodelavci), najstarejše prvo */
+export const preberiKlepet = (projectId: string, nit = ''): KlepetSporocilo[] =>
   preberiVse()
-    .filter(m => m.projectId === projectId)
+    .filter(m => m.projectId === projectId && (m.nit || '') === nit)
     .sort((a, b) => a.datum.localeCompare(b.datum));
 
 /* doda sporočilo in vrne posodobljen seznam projekta */

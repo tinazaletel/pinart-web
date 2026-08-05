@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star } from '@phosphor-icons/react';
+import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, Paperclip } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import MetricIcon from '@/components/MetricIcon';
@@ -13,7 +13,7 @@ import SwapText from '@/components/SwapText';
 import { loadFlowData, loadProjectLinks, saveOfferAmount, saveOfferStatus, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled, demoSodelavci, demoRealZaOffer } from '@/lib/predogled';
 import { preberiPostoProjekta, dodajPosto, premakniPosto, nastaviOznakePoste, type PostaVnos } from '@/lib/postaDnevnik';
-import { preberiKlepet, dodajKlepet, type KlepetSporocilo } from '@/lib/klepet';
+import { preberiKlepet, dodajKlepet, nitId, type KlepetSporocilo } from '@/lib/klepet';
 import { pullProjectMail, pushProjectMail, saveDraft, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent } from '@/lib/pinartMailCloud';
 import { posljiMail } from '@/lib/posta';
 import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
@@ -207,20 +207,46 @@ const pwStyles = `
   .pw-ai-panel{z-index:2}
   .pw-klepet-panel{z-index:3}
 }
-/* KLEPET stolpec */
-.pw-klepet-panel{flex:none;width:400px}
-.pw-klepet-glava{flex:none;display:flex;align-items:center;gap:.6rem;padding:1.5rem 1.2rem .9rem;border-bottom:1px solid var(--line)}
-.pw-klepet-av{flex:none;width:2.2rem;height:2.2rem;border-radius:50%;display:grid;place-items:center;background:linear-gradient(140deg,oklch(72% .13 297),oklch(62% .2 297));color:#fff;font:700 .85rem var(--font-sans),sans-serif}
-.pw-klepet-kdo b{display:block;font:700 .9rem var(--font-sans),sans-serif;color:var(--ink)}
-.pw-klepet-kdo small{display:block;font:500 .7rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 50%,transparent)}
-.pw-klepet-tok{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:.45rem;padding:1rem 1.1rem}
-.pw-klepet-b{max-width:82%;align-self:flex-start;padding:.5rem .8rem;border-radius:1.05rem;background:oklch(96% .006 87);color:var(--ink);font:500 .85rem var(--font-sans),sans-serif;line-height:1.45;white-space:pre-wrap;word-break:break-word}
-.pw-klepet-b-jaz{align-self:flex-end;background:var(--purple);color:#fff}
-.pw-klepet-prazno{margin:auto;text-align:center;font:500 .8rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 45%,transparent);padding:1rem}
-.pw-klepet-vnos{flex:none;display:flex;align-items:center;gap:.5rem;padding:.75rem .9rem;border-top:1px solid var(--line)}
-.pw-klepet-vnos input{flex:1;min-width:0;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:999px;padding:.6rem .9rem;font:500 .85rem var(--font-sans),sans-serif;color:var(--ink);background:#fff}
-.pw-klepet-vnos input:focus{outline:none;border-color:var(--purple)}
-.pw-klepet-poslji{flex:none;display:grid;place-items:center;width:2.4rem;height:2.4rem;border:0;border-radius:50%;background:var(--purple);color:#fff;cursor:pointer}
+/* KLEPET stolpec (fallback barve, ker je letev portalana na body) */
+.pw-klepet-panel{flex:none;width:400px;--kl-ink:var(--ink,oklch(19% .014 55));--kl-purple:var(--purple,oklch(66% .2 297));--kl-line:var(--line,oklch(93% .007 82))}
+.pw-klepet-glava{flex:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:1.4rem 1.1rem .9rem;border-bottom:1px solid var(--kl-line)}
+.pw-klepet-osebe{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;min-width:0}
+.pw-klepet-oseba{display:inline-flex;align-items:center;gap:.35rem}
+.pw-klepet-oseba b{font:700 .82rem var(--font-sans),sans-serif;color:var(--kl-ink)}
+.pw-klepet-av{position:relative;flex:none;width:2.2rem;height:2.2rem;border-radius:50%;display:grid;place-items:center;background:linear-gradient(140deg,oklch(72% .13 297),oklch(62% .2 297));color:#fff;font:700 .85rem var(--font-sans),sans-serif}
+.pw-klepet-av.sm{width:1.9rem;height:1.9rem;font-size:.78rem}
+.pw-klepet-pika{position:absolute;right:-1px;bottom:-1px;width:.62rem;height:.62rem;border-radius:50%;border:2px solid #fff;background:oklch(72% .02 90)}
+.pw-klepet-pika[data-st="online"]{background:oklch(68% .16 150)}
+.pw-klepet-pika[data-st="idle"]{background:oklch(78% .14 75)}
+.pw-klepet-pika[data-st="offline"]{background:oklch(72% .02 90)}
+.pw-klepet-kdo b{display:block;font:700 .88rem var(--font-sans),sans-serif;color:var(--kl-ink)}
+.pw-klepet-kdo small{display:block;font:500 .7rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 50%,transparent)}
+.pw-klepet-piker-w{position:relative;flex:none}
+.pw-klepet-dodaj{display:grid;place-items:center;width:2rem;height:2rem;border:1px solid color-mix(in oklch,var(--kl-ink) 12%,transparent);border-radius:50%;background:#fff;color:var(--kl-ink);cursor:pointer}
+.pw-klepet-dodaj:hover{border-color:var(--kl-purple);color:var(--kl-purple)}
+.pw-klepet-meni{position:absolute;top:calc(100% + .4rem);right:0;z-index:20;width:15rem;background:#fff;border:1px solid var(--kl-line);border-radius:.8rem;box-shadow:0 14px 38px -14px color-mix(in oklch,var(--kl-ink) 40%,transparent);padding:.35rem}
+.pw-klepet-meni-h{margin:.25rem .5rem .3rem;font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in oklch,var(--kl-ink) 50%,transparent)}
+.pw-klepet-meni-prazno{margin:.4rem .5rem;font:500 .74rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 50%,transparent)}
+.pw-klepet-vrsta{display:flex;align-items:center;gap:.55rem;width:100%;text-align:left;border:0;background:none;border-radius:.55rem;padding:.4rem .5rem;cursor:pointer}
+.pw-klepet-vrsta:hover{background:color-mix(in oklch,var(--kl-purple) 8%,transparent)}
+.pw-klepet-vrsta.on{background:color-mix(in oklch,var(--kl-purple) 12%,transparent)}
+.pw-klepet-vrsta-ime{flex:1;min-width:0;font:600 .82rem var(--font-sans),sans-serif;color:var(--kl-ink)}
+.pw-klepet-vrsta-ime small{display:block;font:500 .66rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 48%,transparent)}
+.pw-klepet-kljuk{flex:none;color:var(--kl-purple);font-weight:800}
+.pw-klepet-tok{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;padding:1rem 1.1rem}
+.pw-klepet-b{max-width:82%;align-self:flex-start;padding:.5rem .8rem;border-radius:1.05rem;background:oklch(95% .008 87);color:var(--kl-ink);font:500 .85rem var(--font-sans),sans-serif;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.pw-klepet-b-jaz{align-self:flex-end;background:var(--kl-purple);color:#fff}
+.pw-klepet-pri{align-self:flex-start;max-width:88%;background:#fff;border:1px solid color-mix(in oklch,var(--kl-ink) 12%,transparent);border-left:3px solid var(--kl-purple);border-radius:.7rem;padding:.5rem .7rem}
+.pw-klepet-pri.jaz{align-self:flex-end}
+.pw-klepet-pri-glava{display:inline-flex;align-items:center;gap:.3rem;font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--kl-purple)}
+.pw-klepet-pri-zad{font:700 .82rem var(--font-sans),sans-serif;color:var(--kl-ink);margin:.15rem 0}
+.pw-klepet-pri-telo{font:500 .8rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 78%,transparent);line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.pw-klepet-prazno{margin:auto;text-align:center;font:500 .8rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 45%,transparent);padding:1rem;line-height:1.5}
+.pw-klepet-vnos{flex:none;display:flex;align-items:center;gap:.5rem;padding:.75rem .9rem;border-top:1px solid var(--kl-line)}
+.pw-klepet-vnos input{flex:1;min-width:0;border:1px solid color-mix(in oklch,var(--kl-ink) 10%,transparent);border-radius:999px;padding:.6rem .9rem;font:500 .85rem var(--font-sans),sans-serif;color:var(--kl-ink);background:#fff}
+.pw-klepet-vnos input:focus{outline:none;border-color:var(--kl-purple)}
+.pw-klepet-vnos input:disabled{background:oklch(97% .004 87);cursor:not-allowed}
+.pw-klepet-poslji{flex:none;display:grid;place-items:center;width:2.4rem;height:2.4rem;border:0;border-radius:50%;background:var(--kl-purple);color:#fff;cursor:pointer}
 .pw-klepet-poslji:disabled{opacity:.4;cursor:default}
 /* compose glava + X za hitro zapiranje */
 .pw-pisi-glava{display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem}
@@ -803,6 +829,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [klepetOdprt, setKlepetOdprt] = useState(false);      /* klepetni stolpec (Deli v klepet) */
   const [klepetSporocila, setKlepetSporocila] = useState<KlepetSporocilo[]>([]);
   const [klepetVnos, setKlepetVnos] = useState('');
+  const [klepetIzbrani, setKlepetIzbrani] = useState<string[]>([]);   /* izbrani sodelavci (nit) */
+  const [klepetPicker, setKlepetPicker] = useState(false);            /* meni za izbiro sodelavcev */
   const [premakniOdprt, setPremakniOdprt] = useState(false);   /* meni »Premakni na drug projekt« */
   const [oznakaOdprt, setOznakaOdprt] = useState(false);       /* vnos oznake */
   const [oznakaVnos, setOznakaVnos] = useState('');
@@ -888,22 +916,36 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     /* počakaj, da se sestavljalnik odpre in podpis vstavi, nato prepiši telo z AI osnutkom */
     setTimeout(() => { const el = pisiTeloRef.current; if (el) el.innerHTML = osnutek.replace(/\n/g, '<br>') + '<br><br>' + el.innerHTML; }, 60);
   };
-  /* Odpre klepetni stolpec; če je podan mail, ga deli kot prvo sporočilo (kontekst). */
+  /* demo prisotnost sodelavca (deterministična; živa prisotnost pride z računi sodelavcev) */
+  const prisotnost = (id: string): 'online' | 'idle' | 'offline' => {
+    const h = [...id].reduce((a, c) => a + c.charCodeAt(0), 0) % 3;
+    return h === 0 ? 'online' : h === 1 ? 'idle' : 'offline';
+  };
+  const naloziNit = (ids: string[]) => { if (selectedId) setKlepetSporocila(preberiKlepet(selectedId, nitId(ids))); };
+  const preklopiSodelavca = (id: string) => {
+    const novi = klepetIzbrani.includes(id) ? klepetIzbrani.filter(x => x !== id) : [...klepetIzbrani, id];
+    setKlepetIzbrani(novi);
+    naloziNit(novi);
+  };
+  /* Odpre klepetni stolpec; če je podan mail, deli OZNAČEN del (ali cel mail) kot priponko. */
   const odpriKlepet = (mail?: PostaVnos | null) => {
     if (!selectedId) return;
-    let seznam = preberiKlepet(selectedId);
+    const izbrani = klepetIzbrani.length ? klepetIzbrani : (sodelavci[0] ? [sodelavci[0].id] : []);
+    setKlepetIzbrani(izbrani);
+    const nit = nitId(izbrani);
+    const izsek = (typeof window !== 'undefined' ? (window.getSelection()?.toString() || '') : '').trim();
     if (mail) {
-      const povzetek = (mail.telo || mail.povzetek || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
-      seznam = dodajKlepet({ projectId: selectedId, avtor: 'jaz', besedilo: `📎 ${L('Delim mail', 'Sharing mail')}: »${mail.zadeva || L('(brez zadeve)', '(no subject)')}«${povzetek ? `\n${povzetek}` : ''}`, odMaila: mail.zadeva });
+      const del = izsek || (mail.telo || mail.povzetek || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 240);
+      dodajKlepet({ projectId: selectedId, nit, avtor: 'jaz', besedilo: del, odMaila: mail.zadeva || L('(brez zadeve)', '(no subject)'), izsek: izsek || undefined });
     }
-    setKlepetSporocila(seznam);
+    setKlepetSporocila(preberiKlepet(selectedId, nit));
     setKlepetOdprt(true);
   };
   const posljiKlepet = (e: React.FormEvent) => {
     e.preventDefault();
     const t = klepetVnos.trim();
     if (!t || !selectedId) return;
-    setKlepetSporocila(dodajKlepet({ projectId: selectedId, avtor: 'jaz', besedilo: t }));
+    setKlepetSporocila(dodajKlepet({ projectId: selectedId, nit: nitId(klepetIzbrani), avtor: 'jaz', besedilo: t }));
     setKlepetVnos('');
   };
   const vNalogo = (mail: PostaVnos | null) => {
@@ -1519,19 +1561,45 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
           {/* STOLPEC 3 · KLEPET */}
           {klepetOdprt && (
             <aside className="pw-rail-col pw-klepet-panel" role="dialog" aria-label={L('Klepet', 'Chat')}>
-              <button type="button" className="pw-vsi-x" onClick={() => setKlepetOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button>
+              <button type="button" className="pw-vsi-x" onClick={() => { setKlepetOdprt(false); setKlepetPicker(false); }} aria-label={L('Zapri', 'Close')}>✕</button>
               <div className="pw-klepet-glava">
-                <span className="pw-klepet-av" aria-hidden>{(selected.offer.client || 'K').trim().charAt(0).toUpperCase()}</span>
-                <div className="pw-klepet-kdo"><b>{selected.offer.client || L('Sodelavec', 'Collaborator')}</b><small>{L('Interni klepet', 'Internal chat')} · {selected.offer.title}</small></div>
+                <div className="pw-klepet-osebe">
+                  {klepetIzbrani.length ? klepetIzbrani.map(id => {
+                    const s = sodelavci.find(x => x.id === id);
+                    if (!s) return null;
+                    return <span key={id} className="pw-klepet-oseba"><span className="pw-klepet-av" aria-hidden>{s.ime.trim().charAt(0).toUpperCase()}<i className="pw-klepet-pika" data-st={prisotnost(id)} /></span><b>{s.ime.split(' ')[0]}</b></span>;
+                  }) : <span className="pw-klepet-kdo"><b>{L('Izberi sodelavca', 'Choose a collaborator')}</b><small>{L('klikni +', 'click +')}</small></span>}
+                </div>
+                <div className="pw-klepet-piker-w">
+                  <button type="button" className="pw-klepet-dodaj" onClick={() => setKlepetPicker(o => !o)} aria-label={L('Izberi sodelavce', 'Choose collaborators')}><Plus size={15} weight="bold" /></button>
+                  {klepetPicker && (
+                    <div className="pw-klepet-meni">
+                      <p className="pw-klepet-meni-h">{L('Deli s sodelavci', 'Share with collaborators')}</p>
+                      {sodelavci.length ? sodelavci.map(s => (
+                        <button type="button" key={s.id} className={`pw-klepet-vrsta${klepetIzbrani.includes(s.id) ? ' on' : ''}`} onClick={() => preklopiSodelavca(s.id)}>
+                          <span className="pw-klepet-av sm" aria-hidden>{s.ime.trim().charAt(0).toUpperCase()}<i className="pw-klepet-pika" data-st={prisotnost(s.id)} /></span>
+                          <span className="pw-klepet-vrsta-ime">{s.ime}<small>{prisotnost(s.id) === 'online' ? L('na voljo', 'available') : prisotnost(s.id) === 'idle' ? L('nedejaven', 'idle') : L('nedosegljiv', 'offline')}</small></span>
+                          {klepetIzbrani.includes(s.id) && <span className="pw-klepet-kljuk">✓</span>}
+                        </button>
+                      )) : <p className="pw-klepet-meni-prazno">{L('Ni sodelavcev. Dodaj jih v ekipi.', 'No collaborators yet. Add them in the team.')}</p>}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="pw-klepet-tok">
-                {klepetSporocila.length ? klepetSporocila.map(m => (
+                {klepetSporocila.length ? klepetSporocila.map(m => m.odMaila ? (
+                  <div key={m.id} className={`pw-klepet-pri${m.avtor === 'jaz' ? ' jaz' : ''}`}>
+                    <div className="pw-klepet-pri-glava"><Paperclip size={12} weight="bold" /> {m.izsek ? L('Označen del maila', 'Highlighted part') : L('Deljen mail', 'Shared mail')}</div>
+                    <div className="pw-klepet-pri-zad">{m.odMaila}</div>
+                    <div className="pw-klepet-pri-telo">{m.besedilo}</div>
+                  </div>
+                ) : (
                   <div key={m.id} className={`pw-klepet-b${m.avtor === 'jaz' ? ' pw-klepet-b-jaz' : ''}`}>{m.besedilo}</div>
-                )) : <p className="pw-klepet-prazno">{L('Začni pogovor ali deli mail v klepet (gumb »Deli v klepet«).', 'Start a conversation or share a mail (the “Share in chat” button).')}</p>}
+                )) : <p className="pw-klepet-prazno">{L('Izberi sodelavca in začni pogovor — ali v mailu označi del besedila in klikni »Deli v klepet«.', 'Choose a collaborator and start chatting — or highlight text in a mail and click “Share in chat”.')}</p>}
               </div>
               <form className="pw-klepet-vnos" onSubmit={posljiKlepet}>
-                <input value={klepetVnos} onChange={e => setKlepetVnos(e.target.value)} placeholder={L('Napiši sporočilo …', 'Write a message …')} aria-label={L('Sporočilo', 'Message')} />
-                <button type="submit" className="pw-klepet-poslji" disabled={!klepetVnos.trim()} aria-label={L('Pošlji', 'Send')}><ArrowBendUpRight size={16} weight="bold" /></button>
+                <input value={klepetVnos} onChange={e => setKlepetVnos(e.target.value)} placeholder={klepetIzbrani.length ? L('Napiši sporočilo …', 'Write a message …') : L('Najprej izberi sodelavca (+)', 'First choose a collaborator (+)')} aria-label={L('Sporočilo', 'Message')} disabled={!klepetIzbrani.length} />
+                <button type="submit" className="pw-klepet-poslji" disabled={!klepetVnos.trim() || !klepetIzbrani.length} aria-label={L('Pošlji', 'Send')}><ArrowBendUpRight size={16} weight="bold" /></button>
               </form>
             </aside>
           )}
