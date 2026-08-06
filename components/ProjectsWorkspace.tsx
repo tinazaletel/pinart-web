@@ -1129,7 +1129,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       const s = JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}');
       const pd = s.podpisPodatki as PodpisPodatki | undefined;
       if (pd && !podpisPrazen(pd)) {
-        podpisEl = podpisHtml(pd, pd.logo ? aktivniLogo() : '', typeof s.dokBarva === 'string' ? s.dokBarva : undefined);
+        podpisEl = podpisHtml(pd, pd.logo ? aktivniLogo() : '');
       } else {
         const plain = String(s.podpisMaila || '');
         if (plain.trim()) {

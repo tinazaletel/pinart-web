@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { PaintBrush, Sparkle } from '@phosphor-icons/react';
+import { PaintBrush, Sparkle, EnvelopeSimple } from '@phosphor-icons/react';
 import VidezDokumentov from '@/components/VidezDokumentov';
 import { preberiPupaStanje, nastaviPupaStanje } from '@/lib/pupaNastavitve';
 import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, nastaviLogoAktivne, aktivniLogo } from '@/lib/dokVidez';
@@ -22,10 +22,15 @@ export default function SettingsWorkspace({ base }: { base: string }) {
   const [nalozeno, setNalozeno] = useState(false);
   const [sporocilo, setSporocilo] = useState('');
   const datoteka = useRef<HTMLInputElement>(null);
+  const bannerRef = useRef<HTMLInputElement>(null);
+  const PODPIS_BARVE = ['#1A73E8', '#6E4FA6', '#111111', '#2F5D50', '#A44A3F', '#B8860B'];
   const [podpis, setPodpis] = useState('');
   const [podpisP, setPodpisP] = useState<PodpisPodatki>({});
   const [pupaVklop, setPupaVklop] = useState(true);
   const nastaviPodpisPolje = (k: keyof PodpisPodatki, v: string | boolean) => setPodpisP(prev => ({ ...prev, [k]: v }));
+  const dodajPovezavo = () => setPodpisP(prev => ({ ...prev, povezave: [...(prev.povezave || []), { oznaka: '', url: '' }] }));
+  const posodobiPovezavo = (i: number, polje: 'oznaka' | 'url', v: string) => setPodpisP(prev => { const next = [...(prev.povezave || [])]; next[i] = { ...next[i], [polje]: v }; return { ...prev, povezave: next }; });
+  const odstraniPovezavo = (i: number) => setPodpisP(prev => ({ ...prev, povezave: (prev.povezave || []).filter((_, x) => x !== i) }));
 
   useEffect(() => { setPupaVklop(preberiPupaStanje() !== 'izklopljena'); }, []);
   const preklopiPupo = (vklop: boolean) => { setPupaVklop(vklop); nastaviPupaStanje(vklop ? 'vklopljena' : 'izklopljena'); };
@@ -52,6 +57,13 @@ export default function SettingsWorkspace({ base }: { base: string }) {
     } catch { /* ignoriraj */ }
   }, [barva, font, podpis, podpisP, nalozeno]);
 
+  function naloziBanner(f?: File) {
+    if (!f) return;
+    if (f.size > 800_000) { setSporocilo('Banner je prevelik (največ 800 kB). Zmanjšaj ga in poskusi znova.'); return; }
+    const fr = new FileReader();
+    fr.onload = () => setPodpisP(prev => ({ ...prev, banner: String(fr.result || '') }));
+    fr.readAsDataURL(f);
+  }
   function naloziLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
@@ -121,12 +133,14 @@ export default function SettingsWorkspace({ base }: { base: string }) {
       </section>
 
       <section className={styles.card}>
-        <h2>Podpis pošte</h2>
+        <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem' }}><EnvelopeSimple size={20} weight="regular" /> Podpis pošte</h2>
         <p>Samodejno se doda na dno vsakega novega sporočila iz projekta. Izpolni polja — Flow sestavi oblikovan podpis s <b>klikabilnim telefonom, e-pošto in spletom</b>.</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '.7rem' }}>
           {([
             ['ime', 'Ime in priimek', 'Ana Novak'],
-            ['naziv', 'Naziv / podjetje', 'Studio · oblikovanje'],
+            ['funkcija', 'Funkcija / naziv', 'Direktorica'],
+            ['naziv', 'Podjetje', 'Studio d.o.o.'],
+            ['naslov', 'Naslov podjetja', 'Mladinska ulica 63, 1000 Ljubljana'],
             ['telefon', 'Telefon', '+386 40 123 456'],
             ['email', 'E-pošta', 'ime@domena.si'],
             ['splet', 'Spletna stran', 'domena.si'],
@@ -144,11 +158,53 @@ export default function SettingsWorkspace({ base }: { base: string }) {
         <label style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem', marginTop: '.8rem', fontSize: '.88rem', fontWeight: 600, cursor: 'pointer' }}>
           <input type="checkbox" checked={!!podpisP.logo} onChange={e => nastaviPodpisPolje('logo', e.target.checked)} /> Vključi logo v podpis
         </label>
+
+        <div style={{ marginTop: '.9rem' }}>
+          <p style={{ margin: '0 0 .4rem', fontSize: '.68rem', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: '#8a8177' }}>Povezave (socialna omrežja, portfelj, druge strani)</p>
+          {(podpisP.povezave || []).map((v, i) => (
+            <div key={i} style={{ display: 'flex', gap: '.5rem', marginBottom: '.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <input value={v.oznaka} onChange={e => posodobiPovezavo(i, 'oznaka', e.target.value)} placeholder="Oznaka (npr. Instagram)" style={{ font: 'inherit', fontSize: '.88rem', padding: '.45rem .6rem', borderRadius: '.5rem', border: '1px solid rgba(17,17,17,.15)', background: '#fff', width: '160px' }} />
+              <input value={v.url} onChange={e => posodobiPovezavo(i, 'url', e.target.value)} placeholder="https://…" style={{ font: 'inherit', fontSize: '.88rem', padding: '.45rem .6rem', borderRadius: '.5rem', border: '1px solid rgba(17,17,17,.15)', background: '#fff', flex: '1 1 180px' }} />
+              <button type="button" onClick={() => odstraniPovezavo(i)} aria-label="Odstrani povezavo" style={{ border: 0, background: 'none', color: '#a44a3f', fontSize: '1.2rem', cursor: 'pointer', lineHeight: 1 }}>×</button>
+            </div>
+          ))}
+          <button type="button" onClick={dodajPovezavo} style={{ border: '1px dashed rgba(17,17,17,.25)', background: 'transparent', color: '#4a4550', fontSize: '.82rem', fontWeight: 600, padding: '.4rem .8rem', borderRadius: '.5rem', cursor: 'pointer' }}>+ Dodaj povezavo</button>
+        </div>
+
+        <div style={{ marginTop: '.9rem' }}>
+          <p style={{ margin: '0 0 .4rem', fontSize: '.68rem', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: '#8a8177' }}>Barva povezav in ikon</p>
+          <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            {PODPIS_BARVE.map(b => (
+              <button key={b} type="button" aria-label={b} onClick={() => nastaviPodpisPolje('barva', b)} style={{ width: '28px', height: '28px', borderRadius: '50%', border: (podpisP.barva || '#1A73E8').toLowerCase() === b.toLowerCase() ? '2px solid #111' : '1px solid rgba(0,0,0,.15)', background: b, cursor: 'pointer', padding: 0 }} />
+            ))}
+            <label style={{ position: 'relative', width: '28px', height: '28px', borderRadius: '50%', border: '1px solid rgba(0,0,0,.15)', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1rem', overflow: 'hidden' }} title="Poljubna barva">
+              <input type="color" value={podpisP.barva || '#1A73E8'} onChange={e => nastaviPodpisPolje('barva', e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />+
+            </label>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '.9rem' }}>
+          <p style={{ margin: '0 0 .4rem', fontSize: '.68rem', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: '#8a8177' }}>Oglasni banner (neobvezno · širina 600 px)</p>
+          {podpisP.banner ? (
+            <div>
+              <img src={podpisP.banner} alt="" style={{ width: '100%', maxWidth: '600px', borderRadius: '8px', display: 'block', border: '1px solid rgba(0,0,0,.08)' }} />
+              <div style={{ display: 'flex', gap: '.5rem', marginTop: '.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                <input value={podpisP.bannerLink || ''} onChange={e => nastaviPodpisPolje('bannerLink', e.target.value)} placeholder="Povezava (npr. pinartflow.com)" style={{ font: 'inherit', fontSize: '.88rem', padding: '.45rem .6rem', borderRadius: '.5rem', border: '1px solid rgba(17,17,17,.15)', background: '#fff', flex: '1 1 200px' }} />
+                <button type="button" onClick={() => bannerRef.current?.click()} style={{ border: '1px solid rgba(17,17,17,.2)', background: '#fff', borderRadius: '.5rem', padding: '.4rem .8rem', fontSize: '.82rem', cursor: 'pointer' }}>Zamenjaj</button>
+                <button type="button" onClick={() => setPodpisP(prev => ({ ...prev, banner: '', bannerLink: '' }))} style={{ border: 0, background: 'none', color: '#a44a3f', fontSize: '.82rem', fontWeight: 600, cursor: 'pointer' }}>Odstrani</button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" onClick={() => bannerRef.current?.click()} style={{ border: '1px dashed rgba(17,17,17,.25)', background: 'transparent', color: '#4a4550', fontSize: '.82rem', fontWeight: 600, padding: '.5rem 1rem', borderRadius: '.5rem', cursor: 'pointer' }}>Naloži banner …</button>
+          )}
+          <input ref={bannerRef} type="file" accept="image/*" hidden onChange={e => { naloziBanner(e.target.files?.[0]); e.currentTarget.value = ''; }} />
+        </div>
+
         <div style={{ marginTop: '1rem', padding: '1rem 1.1rem', borderRadius: '.7rem', border: '1px solid rgba(17,17,17,.1)', background: '#FCFBF7' }}>
           <p style={{ margin: '0 0 .6rem', fontSize: '.68rem', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: '#8a8177' }}>Predogled</p>
           {podpisPrazen(podpisP)
             ? <p style={{ margin: 0, fontSize: '.85rem', color: '#9a9088' }}>Izpolni polja zgoraj za predogled podpisa.</p>
-            : <div dangerouslySetInnerHTML={{ __html: podpisHtml(podpisP, podpisP.logo ? aktivniLogo() : '', barva) }} />}
+            : <div dangerouslySetInnerHTML={{ __html: podpisHtml(podpisP, podpisP.logo ? aktivniLogo() : '') }} />}
         </div>
       </section>
 
