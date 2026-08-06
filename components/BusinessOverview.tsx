@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { Handshake, Receipt, Wallet, Tag, Clock, FileText, CheckCircle, TrendUp, Stack, Scroll, Suitcase } from '@phosphor-icons/react';
+import { Handshake, Receipt, Wallet, Tag, Clock, FileText, CheckCircle, TrendUp, Stack, Scroll, Suitcase, EnvelopeSimple, PaperPlaneRight } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, saveOfferAmount, saveOfferStatus } from '@/lib/pinartFlowStore';
 import { recordAccountingExport, saveBusinessGoal, saveCloudSettings } from '@/lib/pinartFlowCloud';
@@ -422,11 +422,11 @@ export default function BusinessOverview({ base }: { base: string }) {
           <div className={styles.bandBody}>
           <h2 id="task-title" className={styles.bandNaslov}>{L('Aktivne naloge', 'Active tasks')}</h2>
           {dashNaloge.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
-            {dashNaloge.map((n, i) => { const bg = n.stolpec === 'in_progress' ? 'var(--accent)' : n.stolpec === 'waiting' ? 'oklch(76% .14 75)' : n.stolpec === 'done' ? 'oklch(70% .15 155)' : 'oklch(80% .03 90)'; const lbl = n.stolpec === 'in_progress' ? L('V teku', 'In progress') : n.stolpec === 'waiting' ? L('Za pregled', 'For review') : n.stolpec === 'done' ? L('Končano', 'Done') : L('Za začeti', 'To do'); return (
+            {dashNaloge.map((n, i) => { const tone = n.stolpec === 'in_progress' ? 'info' : n.stolpec === 'waiting' ? 'waiting' : n.stolpec === 'done' ? 'success' : 'neutral'; const lbl = n.stolpec === 'in_progress' ? L('V teku', 'In progress') : n.stolpec === 'waiting' ? L('Za pregled', 'For review') : n.stolpec === 'done' ? L('Končano', 'Done') : L('Za začeti', 'To do'); return (
               <li key={i}><Link className={styles.dashRow} href={`${base}/kalkulator/naloge`}>
-                <span aria-hidden style={{ flex: 'none', width: '.5rem', height: '.5rem', borderRadius: '50%', background: bg }} />
+                <span className={styles[`status_${tone}`]} aria-hidden style={{ flex: '0 0 auto', display: 'grid', placeItems: 'center', width: '2rem', height: '2rem', borderRadius: '50%', background: 'var(--pill-bg)', color: 'var(--pill-ink)' }}><CheckCircle size={17} weight="regular" /></span>
                 <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}><b style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.naslov}</b>{n.oseba && <small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.oseba}</small>}</span>
-                <span style={{ flex: 'none', fontSize: '.62rem', fontWeight: 700, letterSpacing: '.03em', textTransform: 'uppercase', padding: '.18rem .5rem', borderRadius: '999px', color: n.stolpec === 'waiting' ? 'oklch(48% .13 70)' : 'var(--muted)', background: n.stolpec === 'waiting' ? 'oklch(90% .08 75)' : 'oklch(94% .006 87)' }}>{lbl}</span>
+                <span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{lbl}</span>
                 <span className={styles.dashRowArrow} aria-hidden>›</span>
               </Link></li>
             ); })}
@@ -439,7 +439,7 @@ export default function BusinessOverview({ base }: { base: string }) {
           <div className={styles.bandBody}>
           <h2 id="comm-title" className={styles.bandNaslov}>{L('Zadnja pošta', 'Recent mail')}</h2>
           {dashPosta.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
-            {dashPosta.map((v, i) => <li key={i}><Link className={styles.dashRow} href={`${base}/kalkulator/komunikacija`}><span aria-hidden style={{ flex: 'none', width: '.5rem', height: '.5rem', borderRadius: '50%', background: v.smer === 'prejeto' ? 'oklch(62% .16 160)' : 'oklch(66% .2 297)' }} /><span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}><b style={{ fontSize: '.84rem', color: 'var(--ink)', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.zadeva}</b><small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.kdo}</small></span><small style={{ flex: 'none', fontSize: '.66rem', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--muted)' }}>{v.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</small><span className={styles.dashRowArrow} aria-hidden>›</span></Link></li>)}
+            {dashPosta.map((v, i) => { const tone = v.smer === 'prejeto' ? 'success' : 'info'; return <li key={i}><Link className={styles.dashRow} href={`${base}/kalkulator/komunikacija`}><span className={styles[`status_${tone}`]} aria-hidden style={{ flex: '0 0 auto', display: 'grid', placeItems: 'center', width: '2rem', height: '2rem', borderRadius: '50%', background: 'var(--pill-bg)', color: 'var(--pill-ink)' }}>{v.smer === 'prejeto' ? <EnvelopeSimple size={16} weight="regular" /> : <PaperPlaneRight size={16} weight="regular" />}</span><span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}><b style={{ fontSize: '.84rem', color: 'var(--ink)', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.zadeva}</b><small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.kdo}</small></span><span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{v.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span><span className={styles.dashRowArrow} aria-hidden>›</span></Link></li>; })}
           </ul> : <div className={styles.emptyState}><span>+</span><div><strong>{L('Ni pošte.', 'No mail.')}</strong><p>{L('Projektni maili se zberejo tukaj — pošlji ali prejmi mail na projektu.', 'Project mail collects here — send or receive mail on a project.')}</p></div></div>}
           </div>
         </section>
