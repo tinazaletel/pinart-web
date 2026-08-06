@@ -76,6 +76,22 @@ function najdiTeloPonudbe(offer: FlowOffer): { telo: string; veljavnostDni?: str
   } catch { return { telo: '' }; }
 }
 
+/* poisce KLJUC (naziv zapisa) v arhivu kalkulatorja za to ponudbo — da jo lahko
+   »Odpri ponudbo« naloži nazaj v urejevalnik (kalkulator prebere ?odpri=<kljuc>).
+   Isto ujemanje kot najdiTeloPonudbe: najprej po stevilki, sicer po nazivu. */
+function najdiKljucPonudbe(offer: FlowOffer): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const arhiv = JSON.parse(localStorage.getItem(K_KALKULATOR_ARHIV) || '{}') as Record<string, ArhivKalkulatorZapis>;
+    const naslovOffer = offer.title.trim().toLocaleLowerCase('sl-SI');
+    const najden = Object.entries(arhiv).find(([, z]) =>
+      (offer.number && z.stevilkaPonudbe && z.stevilkaPonudbe === offer.number)
+      || (z.nazivPonudbe && z.nazivPonudbe.trim().toLocaleLowerCase('sl-SI') === naslovOffer)
+    );
+    return najden ? najden[0] : null;
+  } catch { return null; }
+}
+
 /* status pikica — ISTE barve/logika kot nadzorna plošča (statusTone/status_*):
    success=zelena, waiting=jantar, danger=rdeča, neutral=siva */
 type Odtenek = 'success' | 'waiting' | 'danger' | 'neutral';
@@ -246,6 +262,11 @@ export default function ArhivWorkspace({ base }: { base: string }) {
      polj ponudbe namesto injeciranega HTML-ja */
   const ponudbaDok = useMemo(
     () => (detajl?.vrsta === 'ponudba' ? najdiTeloPonudbe(detajl.zapis) : { telo: '' }),
+    [detajl]
+  );
+  /* kljuc arhivske ponudbe (za »Odpri ponudbo« -> kalkulator jo naloži nazaj) */
+  const odpriKljuc = useMemo(
+    () => (detajl?.vrsta === 'ponudba' ? najdiKljucPonudbe(detajl.zapis) : null),
     [detajl]
   );
 
@@ -696,7 +717,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   )}
                 </div>
 
-                <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/orodje`}>{L('Odpri v kalkulatorju', 'Open in calculator')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></a>
+                <a className="arh-povezava arh-povezava-sekundarna" href={odpriKljuc ? `${base}/kalkulator/orodje?odpri=${encodeURIComponent(odpriKljuc)}` : `${base}/kalkulator/orodje`}>{odpriKljuc ? L('Odpri ponudbo', 'Open offer') : L('Odpri v kalkulatorju', 'Open in calculator')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></a>
               </>;
             })()}
 

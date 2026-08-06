@@ -4662,6 +4662,22 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     setUvodKoncan(true); setUvodChat(false);
     setKorak(ponudbaStep);
   };
+  /* Odpri ponudbo iz Arhiva: ?odpri=<kljuc> -> naloži cel posnetek nazaj v urejevalnik.
+     Pocaka, da se arhiv naloži (odvisnost [arhiv]); URL nato pocisti, da refresh ne ponovi. */
+  const odpriRef = useRef(false);
+  useEffect(() => {
+    if (odpriRef.current || typeof window === 'undefined') return;
+    const zahtevan = new URLSearchParams(window.location.search).get('odpri');
+    if (!zahtevan) { odpriRef.current = true; return; }
+    const kljuci = Object.keys(arhiv);
+    if (!kljuci.length) return; /* arhiv se se ni naložil — poskusi ob naslednji spremembi */
+    const dekod = decodeURIComponent(zahtevan);
+    const najden = arhiv[dekod] ? dekod : kljuci.find(k => k.trim().toLocaleLowerCase('sl-SI') === dekod.trim().toLocaleLowerCase('sl-SI'));
+    odpriRef.current = true;
+    window.history.replaceState(null, '', window.location.pathname);
+    if (najden) naloziIzArhiva(najden);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arhiv]);
   const podvojiIzArhiva = (ime: string) => {
     const p = arhiv[ime];
     if (!p) return;
