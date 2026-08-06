@@ -17,6 +17,8 @@ import { preberiKlepet, dodajKlepet, nitId, type KlepetSporocilo } from '@/lib/k
 import { zagotoviNit, nalozSporocila, posljiSporocilo, narociSporocila, mojEmail, type OblacnoSporocilo } from '@/lib/klepetCloud';
 import { pullProjectMail, pushProjectMail, saveDraft, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent } from '@/lib/pinartMailCloud';
 import { posljiMail } from '@/lib/posta';
+import { type PodpisPodatki, podpisHtml, podpisPrazen } from '@/lib/podpis';
+import { aktivniLogo } from '@/lib/dokVidez';
 import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
 import { preberiSodelavci, shraniSodelavci } from '@/lib/sodelavci';
 import Toast from '@/components/Toast';
@@ -1120,11 +1122,24 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     if (!pisiOdprt) return;
     const el = pisiTeloRef.current;
     if (!el) return;
-    let podpis = '';
-    try { podpis = String(JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}').podpisMaila || ''); } catch { /* brez podpisa */ }
-    setImaPodpis(!!podpis.trim());
-    const varno = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    el.innerHTML = podpis.trim() ? `<div><br></div><div style="color:#777">${varno(podpis).replace(/\n/g, '<br>')}</div>` : '';
+    /* Podpis: če je nastavljen strukturiran podpis (podpisPodatki), vstavi oblikovan
+       HTML s klikabilnimi povezavami; sicer nadomestni star prosti podpis (escape-an). */
+    let podpisEl = '';
+    try {
+      const s = JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}');
+      const pd = s.podpisPodatki as PodpisPodatki | undefined;
+      if (pd && !podpisPrazen(pd)) {
+        podpisEl = podpisHtml(pd, pd.logo ? aktivniLogo() : '', typeof s.dokBarva === 'string' ? s.dokBarva : undefined);
+      } else {
+        const plain = String(s.podpisMaila || '');
+        if (plain.trim()) {
+          const varno = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          podpisEl = `<div style="color:#777">${varno(plain).replace(/\n/g, '<br>')}</div>`;
+        }
+      }
+    } catch { /* brez podpisa */ }
+    setImaPodpis(!!podpisEl);
+    el.innerHTML = podpisEl ? `<div><br></div>${podpisEl}` : '';
     el.focus();
     try { const sel = window.getSelection(); const range = document.createRange(); range.setStart(el, 0); range.collapse(true); sel?.removeAllRanges(); sel?.addRange(range); } catch { /* fokus ni ključen */ }
   }, [pisiOdprt]);

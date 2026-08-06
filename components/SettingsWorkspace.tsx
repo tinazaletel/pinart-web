@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import VidezDokumentov from '@/components/VidezDokumentov';
 import { preberiPupaStanje, nastaviPupaStanje } from '@/lib/pupaNastavitve';
-import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, nastaviLogoAktivne } from '@/lib/dokVidez';
+import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, nastaviLogoAktivne, aktivniLogo } from '@/lib/dokVidez';
+import { type PodpisPodatki, podpisHtml, podpisPrazen } from '@/lib/podpis';
 import styles from './SettingsWorkspace.module.css';
 
 /* Nastavitve videza (stran "Dizajn"). Vsebina je PRENESENA iz profila
@@ -21,7 +22,9 @@ export default function SettingsWorkspace({ base }: { base: string }) {
   const [sporocilo, setSporocilo] = useState('');
   const datoteka = useRef<HTMLInputElement>(null);
   const [podpis, setPodpis] = useState('');
+  const [podpisP, setPodpisP] = useState<PodpisPodatki>({});
   const [pupaVklop, setPupaVklop] = useState(true);
+  const nastaviPodpisPolje = (k: keyof PodpisPodatki, v: string | boolean) => setPodpisP(prev => ({ ...prev, [k]: v }));
 
   useEffect(() => { setPupaVklop(preberiPupaStanje() !== 'izklopljena'); }, []);
   const preklopiPupo = (vklop: boolean) => { setPupaVklop(vklop); nastaviPupaStanje(vklop ? 'vklopljena' : 'izklopljena'); };
@@ -33,6 +36,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
       if (s.dokBarva) setBarva(String(s.dokBarva));
       if (s.dokFont) setFont(String(s.dokFont));
       if (typeof s.podpisMaila === 'string') setPodpis(s.podpisMaila);
+      if (s.podpisPodatki && typeof s.podpisPodatki === 'object') setPodpisP(s.podpisPodatki as PodpisPodatki);
     } catch { /* pokvarjen zapis ignoriramo */ }
     try { setLogo(localStorage.getItem(K_LOGO) || ''); } catch { /* ignoriraj */ }
     setNalozeno(true);
@@ -43,9 +47,9 @@ export default function SettingsWorkspace({ base }: { base: string }) {
     if (!nalozeno) return;
     try {
       const s = JSON.parse(localStorage.getItem(K_NAST) || '{}');
-      localStorage.setItem(K_NAST, JSON.stringify({ ...s, dokBarva: barva, dokFont: font, podpisMaila: podpis }));
+      localStorage.setItem(K_NAST, JSON.stringify({ ...s, dokBarva: barva, dokFont: font, podpisMaila: podpis, podpisPodatki: podpisP }));
     } catch { /* ignoriraj */ }
-  }, [barva, font, podpis, nalozeno]);
+  }, [barva, font, podpis, podpisP, nalozeno]);
 
   function naloziLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -117,8 +121,31 @@ export default function SettingsWorkspace({ base }: { base: string }) {
 
       <section className={styles.card}>
         <h2>Podpis pošte</h2>
-        <p>Samodejno se doda na dno vsakega novega sporočila iz projekta. E-naslov lahko vključiš — vstavi se kot <b>navadno besedilo (ni klikabilen)</b>, da stranke raje kliknejo »Odgovori« kot pišejo na napačen naslov.</p>
-        <textarea value={podpis} onChange={e => setPodpis(e.target.value)} rows={6} placeholder={'Tina Zaletel\nPinart · oblikovanje\n+386 40 123 456\ntina@pinart.si\npinart.si\n\nProsim, odgovorite na to sporočilo.'} style={{ width: '100%', padding: '.7rem .8rem', fontFamily: 'inherit', fontSize: '.9rem', lineHeight: 1.5, resize: 'vertical', borderRadius: '.6rem', border: '1px solid rgba(17,17,17,.15)', background: '#fff' }} />
+        <p>Samodejno se doda na dno vsakega novega sporočila iz projekta. Izpolni polja — Flow sestavi oblikovan podpis s <b>klikabilnim telefonom, e-pošto in spletom</b>.</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '.7rem' }}>
+          {([
+            ['ime', 'Ime in priimek', 'Tina Zaletel'],
+            ['naziv', 'Naziv / podjetje', 'Pinart · oblikovanje'],
+            ['telefon', 'Telefon', '+386 40 123 456'],
+            ['email', 'E-pošta', 'tina@pinart.si'],
+            ['splet', 'Spletna stran', 'pinart.si'],
+            ['pripis', 'Zaključna vrstica (neobvezno)', 'Prosim, odgovorite na to sporočilo.'],
+          ] as const).map(([k, lbl, ph]) => (
+            <label key={k} style={{ display: 'flex', flexDirection: 'column', gap: '.3rem', fontSize: '.8rem', color: '#4a4550' }}>
+              {lbl}
+              <input value={(podpisP[k] as string) || ''} onChange={e => nastaviPodpisPolje(k, e.target.value)} placeholder={ph} style={{ font: 'inherit', fontSize: '.9rem', color: '#111', padding: '.55rem .7rem', borderRadius: '.5rem', border: '1px solid rgba(17,17,17,.15)', background: '#fff' }} />
+            </label>
+          ))}
+        </div>
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem', marginTop: '.8rem', fontSize: '.88rem', fontWeight: 600, cursor: 'pointer' }}>
+          <input type="checkbox" checked={!!podpisP.logo} onChange={e => nastaviPodpisPolje('logo', e.target.checked)} /> Vključi logo v podpis
+        </label>
+        <div style={{ marginTop: '1rem', padding: '1rem 1.1rem', borderRadius: '.7rem', border: '1px solid rgba(17,17,17,.1)', background: '#FCFBF7' }}>
+          <p style={{ margin: '0 0 .6rem', fontSize: '.68rem', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: '#8a8177' }}>Predogled</p>
+          {podpisPrazen(podpisP)
+            ? <p style={{ margin: 0, fontSize: '.85rem', color: '#9a9088' }}>Izpolni polja zgoraj za predogled podpisa.</p>
+            : <div dangerouslySetInnerHTML={{ __html: podpisHtml(podpisP, podpisP.logo ? aktivniLogo() : '', barva) }} />}
+        </div>
       </section>
 
       <section className={styles.card}>
