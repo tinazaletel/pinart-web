@@ -5,9 +5,12 @@
 
 import type { Nasvet } from '@/lib/copilot';
 
-export type PupaKontekst = { nasveti: Nasvet[]; kontekst: string; naslov?: string };
+/* korak = kratek opis, KJE je uporabnik (npr. onboarding korak), da Pupa svetuje
+   glede na trenutni zaslon. Loceno od `kontekst` (povzetek ponudbe), da ne sprozi
+   pozdrava »pregledala sem tvojo ponudbo«, ko ponudbe se ni. */
+export type PupaKontekst = { nasveti: Nasvet[]; kontekst: string; naslov?: string; korak?: string };
 
-let zadnji: PupaKontekst = { nasveti: [], kontekst: '', naslov: '' };
+let zadnji: PupaKontekst = { nasveti: [], kontekst: '', naslov: '', korak: '' };
 
 /* Orodje objavi svoj kontekst (nasvete + povzetek). Prazno = generična Pupa. */
 export function objaviPupaKontekst(k: PupaKontekst) {

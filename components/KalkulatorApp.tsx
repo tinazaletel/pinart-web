@@ -3106,11 +3106,28 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     return vrs.join('\n') + (nas ? `\n\nOpozorila Flow copilota:\n${nas}` : '');
   }, [r, copilotNasveti, trgNarocnika, narocnikPonudbe, nazivPonudbe, narocnikOseba]);
 
+  /* Kratek opis, KJE je uporabnik — da Pupa svetuje glede na trenutni korak
+     (npr. v uvodnem pogovoru pri podatkih podjetja). Uporablja le zgodaj
+     definirane vrednosti (uvodChat/chatKorak), da ni TDZ z naslovKoraka. */
+  const pupaKorak = useMemo(() => {
+    if (uvodChat) {
+      const m: Record<number, string> = {
+        0: 'vpisuje svoje ime',
+        1: 'izbira raven izkušenj',
+        2: 'vpisuje podatke svojega podjetja — polje »Ime / podjetje« je le za glavo ponudbe; če nima podjetja, naj vpiše svoje ime in priimek. Davčna, TRR, e-pošta, telefon in naslov so neobvezni',
+        4: 'izbira svoja delovna področja / trg',
+        5: 'izbira: nova ali obstoječa ponudba',
+      };
+      return `Uporabnik je v UVODNEM POGOVORU (onboarding). Trenutno: ${m[chatKorak] || 'na začetku'}. Odgovori kratko in konkretno glede TEGA koraka.`;
+    }
+    return 'Uporabnik je v kalkulatorju ponudbe (gradi ponudbo). Če vpraša o polju ali koraku, pomagaj konkretno.';
+  }, [uvodChat, chatKorak]);
+
   /* Objavi kontekst globalni Pupi (components/Pupa.tsx v layoutu). Ob odhodu s
      kalkulatorja kontekst počisti, da je Pupa na drugih orodjih generična. */
   useEffect(() => {
-    objaviPupaKontekst({ nasveti: copilotNasveti, kontekst: r && r.delo > 0 ? pupaKontekst : '' });
-  }, [copilotNasveti, pupaKontekst, r]);
+    objaviPupaKontekst({ nasveti: copilotNasveti, kontekst: r && r.delo > 0 ? pupaKontekst : '', korak: pupaKorak });
+  }, [copilotNasveti, pupaKontekst, r, pupaKorak]);
   useEffect(() => () => { pocistiPupaKontekst(); }, []);
 
   /* Poslji vprasanje Pupi (klice /api/pupa; zaledje potrebuje ANTHROPIC_API_KEY). */

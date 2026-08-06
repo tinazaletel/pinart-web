@@ -122,9 +122,11 @@ export default function Pupa() {
     setVnos('');
     setCaka(true);
     try {
+      const pk = preberiPupaKontekst();
+      const kontekstSKorakom = [pk.korak, pk.kontekst].filter(Boolean).join('\n\n');
       const res = await fetch('/api/pupa', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ vprasanje: q, kontekst: preberiPupaKontekst().kontekst, zgodovina }),
+        body: JSON.stringify({ vprasanje: q, kontekst: kontekstSKorakom, zgodovina }),
       });
       const data = await res.json();
       const odg = data.odgovor || data.napaka || 'Hmm, nekaj je zaškripalo.';

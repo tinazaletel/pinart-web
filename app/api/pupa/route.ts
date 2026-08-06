@@ -36,7 +36,7 @@ export async function POST(req: Request) {
   }
 
   const model = process.env.PUPA_MODEL || 'claude-sonnet-5';
-  const sistem = `${PERSONA}\n\n${PUPA_ZNANJE}\n\nKONTEKST PONUDBE:\n${body.kontekst || '(ni podatkov o ponudbi)'}`;
+  const sistem = `${PERSONA}\n\n${PUPA_ZNANJE}\n\nKONTEKST (kje je uporabnik + podatki ponudbe):\n${body.kontekst || '(ni podatkov)'}`;
   const zgodovina = Array.isArray(body.zgodovina) ? body.zgodovina.slice(-8) : [];
   const messages = [
     ...zgodovina
