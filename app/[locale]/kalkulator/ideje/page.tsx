@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import NazajLink from '@/components/NazajLink';
 import { setRequestLocale } from 'next-intl/server';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import IdejeWorkspace from '@/components/IdejeWorkspace';
@@ -22,7 +22,7 @@ export default async function IdejePage({ params }: { params: Promise<{ locale: 
       <section className={styles.workspace}>
         <header className={styles.topbar}>
           <div>
-            <Link href={`${base}/kalkulator/pregled`} style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.78rem', fontWeight: 600, color: 'rgba(17,17,17,.6)', textDecoration: 'none', marginBottom: '.5rem' }}>← Nazaj na nadzorno ploščo</Link>
+            <NazajLink label={locale === 'en' ? 'Back to dashboard' : 'Nazaj na nadzorno ploščo'} />
             <p className={styles.eyebrow}>{locale === 'en' ? 'MY IDEAS' : 'MOJE IDEJE'}</p>
             <h1>{locale === 'en' ? 'All ideas & status.' : 'Vse ideje & status.'}</h1>
           </div>

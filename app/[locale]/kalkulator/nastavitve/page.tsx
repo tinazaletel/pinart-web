@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import NazajLink from '@/components/NazajLink';
 import { setRequestLocale } from 'next-intl/server';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import SettingsWorkspace from '@/components/SettingsWorkspace';
@@ -23,7 +23,7 @@ export default async function NastavitvePage({ params }: { params: Promise<{ loc
       <section className={styles.workspace}>
         <header className={styles.topbar}>
           <div>
-            <Link href={`${base}/kalkulator/pregled`} style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.78rem', fontWeight: 600, color: 'rgba(17,17,17,.6)', textDecoration: 'none', marginBottom: '.5rem' }}>← Nazaj na nadzorno ploščo</Link>
+            <NazajLink label={locale === 'en' ? 'Back to dashboard' : 'Nazaj na nadzorno ploščo'} />
             <p className={styles.eyebrow}>{locale === 'en' ? 'SETTINGS' : 'NASTAVITVE'}</p>
             <h1>{locale === 'en' ? 'App settings.' : 'Nastavitve aplikacije.'}</h1>
           </div></header>

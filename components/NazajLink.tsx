@@ -3,30 +3,49 @@
 import { useRouter } from 'next/navigation';
 
 /**
- * "Nazaj" na samostojnih straneh (pogoji, zasebnost), ki nimajo Flow lupine
- * in zato ne menija ne pušcice.
+ * Enoten "Nazaj" gumb — pill s pravo puščico, ista oblika kot projektni detajl
+ * (.pw-nazaj). Uporablja se na samostojnih straneh (pogoji, zasebnost) IN na
+ * lupinskih straneh (nastavitve, ideje), da so VSI "Nazaj" enako oblikovani.
  *
- * Uporabi zgodovino brskalnika, ker sem lahko prides z vec mest: iz profila,
- * iz onboardinga, iz noge kalkulatorja ali iz Googla. Fiksna povezava bi
- * enega od teh vedno poslala na napacno mesto. Ce zgodovine ni (odprto v
- * novem zavihku), pade na `rezerva`.
+ * Prednost ima `router.back()` (vrne te točno tja, od koder si prišel), sicer
+ * pade na `rezerva` — npr. če stran odpreš direktno v novem zavihku.
  */
-export default function NazajLink({ rezerva = '/kalkulator/pregled' }: { rezerva?: string }) {
+export default function NazajLink({
+  rezerva = '/kalkulator/pregled',
+  label = 'Nazaj',
+}: {
+  rezerva?: string;
+  label?: string;
+}) {
   const router = useRouter();
   return (
-    <button type="button"
+    <button
+      type="button"
+      className="nazaj-pill"
       onClick={() => { if (window.history.length > 1) router.back(); else router.push(rezerva); }}
-      style={{
-        display: 'inline-flex', alignItems: 'center', gap: '.45rem',
-        minHeight: '2.75rem', padding: 0, border: 0, background: 'none',
-        color: 'rgba(17,17,17,.62)', font: 'inherit', fontSize: '.85rem', fontWeight: 600,
-        cursor: 'pointer',
-      }}>
-      <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor"
-        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M12 4.5 6.5 10l5.5 5.5" />
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M19 12H5M11 18l-6-6 6-6" />
       </svg>
-      Nazaj
+      {label}
+      <style jsx>{`
+        .nazaj-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: .4rem;
+          margin: 0 0 1rem;
+          padding: .55rem .95rem;
+          border: 1px solid oklch(93% .006 82 / .55);
+          border-radius: 999px;
+          background: oklch(98% .008 87 / .92);
+          font: 700 .72rem var(--font-sans), system-ui, sans-serif;
+          color: var(--ink);
+          cursor: pointer;
+          transition: background .15s, color .15s;
+        }
+        .nazaj-pill:hover { background: var(--ink); color: var(--paper); }
+      `}</style>
     </button>
   );
 }

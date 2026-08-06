@@ -1,6 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { routing, type Locale } from '@/i18n/routing';
-import BackButton from '@/components/BackButton';
+import NazajLink from '@/components/NazajLink';
 import { Link } from '@/i18n/routing';
 import Footer from '@/components/sections/Footer';
 
@@ -140,7 +140,7 @@ export default async function PrivacyPage({
       }}
     >
       <div style={{ maxWidth: '720px' }}>
-        <BackButton fallbackHref="/" >← Nazaj</BackButton>
+        <NazajLink rezerva="/" label="Nazaj" />
 
         <h1
           style={{
