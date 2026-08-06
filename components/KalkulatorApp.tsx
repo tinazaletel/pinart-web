@@ -2240,6 +2240,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [podlogaCover, setPodlogaCover] = useState('');
   const podlogaRef = useRef<HTMLInputElement>(null);
   const [podlogaMenuOdprt, setPodlogaMenuOdprt] = useState(false);
+  /* Uporabnikine naložene podloge (data URI) — shranjene, da jih lahko znova izbere ali izbriše. */
+  const [mojePodloge, setMojePodloge] = useState<string[]>([]);
+  useEffect(() => { try { const raw = localStorage.getItem('pinart-moje-podloge'); if (raw) setMojePodloge(JSON.parse(raw)); } catch { /* brez shranjenih */ } }, []);
   /* logo (data URL) — za glavo ponudbe (za tiste brez podloge) */
   const [logo, setLogo] = useState('');
   const logoRef = useRef<HTMLInputElement>(null);
@@ -3836,8 +3839,26 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     if (!file.type.startsWith('image/')) return;
     if (file.size > 6_000_000) { alert('Slika naj bo manjša od 6 MB.'); return; }
     const reader = new FileReader();
-    reader.onload = () => { setPodlogaCover(String(reader.result || '')); setPredlogaPinart(false); };
+    reader.onload = () => {
+      const url = String(reader.result || '');
+      setPodlogaCover(url); setPredlogaPinart(false);
+      /* shrani v seznam mojih podlog (da jo lahko znova izbereš ali izbrišeš) */
+      setMojePodloge(prev => {
+        const next = prev.includes(url) ? prev : [url, ...prev].slice(0, 12);
+        try { localStorage.setItem('pinart-moje-podloge', JSON.stringify(next)); } catch { /* shramba polna */ }
+        return next;
+      });
+    };
     reader.readAsDataURL(file);
+  };
+  /* odstrani naloženo podlogo iz shranjenih (in če je aktivna, jo počisti) */
+  const odstraniMojoPodlogo = (url: string) => {
+    setMojePodloge(prev => {
+      const next = prev.filter(u => u !== url);
+      try { localStorage.setItem('pinart-moje-podloge', JSON.stringify(next)); } catch { /* ignoriraj */ }
+      return next;
+    });
+    if (podlogaCover === url) setPodlogaCover('');
   };
   /* Dropdown za izbiro podloge naslovnice: privzeto / Pinart predloga / preset
      podloge / naloži svojo / odstrani. Nadomešča prejšnja dva ločena krogca in
@@ -3866,6 +3887,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <div className="podloga-dd-mreza">
                 {DOK_PODLOGE_A4.map(url => (
                   <button key={url} type="button" className={'podloga-dd-tile' + (podlogaCover === url ? ' on' : '')} style={{ backgroundImage: `url(${url})` }} aria-label={url.split('/').pop()} onClick={() => izberiPreset(url)} />
+                ))}
+                {mojePodloge.map((url, i) => (
+                  <div key={'moja-' + i} className={'podloga-dd-tile podloga-dd-tile-moja' + (podlogaCover === url ? ' on' : '')} style={{ backgroundImage: `url(${url})` }}>
+                    <button type="button" className="podloga-dd-tile-izberi" aria-label={L('Izberi mojo podlogo', 'Select my background')} onClick={() => izberiPreset(url)} />
+                    <button type="button" className="podloga-dd-tile-x" aria-label={L('Izbriši mojo podlogo', 'Delete my background')} title={L('Izbriši', 'Delete')} onClick={() => odstraniMojoPodlogo(url)}>×</button>
+                  </div>
                 ))}
               </div>
               <button type="button" className="podloga-dd-vrsta" onClick={() => podlogaRef.current?.click()}>{L('Naloži svojo …', 'Upload your own …')}</button>
@@ -6958,6 +6985,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .podloga-dd-tile { aspect-ratio: 1 / 1.414; border-radius: 6px; border: 1.5px solid rgba(17,17,17,.14); background-size: cover; background-position: center; background-color: #fff; cursor: pointer; padding: 0; transition: border-color .15s, transform .12s; }
         .cw .podloga-dd-tile:hover { transform: translateY(-1px); border-color: rgba(17,17,17,.45); }
         .cw .podloga-dd-tile.on { border-color: var(--ink); box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--ink); }
+        .cw .podloga-dd-tile-moja { position: relative; }
+        .cw .podloga-dd-tile-izberi { position: absolute; inset: 0; border: 0; background: transparent; cursor: pointer; padding: 0; border-radius: inherit; }
+        .cw .podloga-dd-tile-x { position: absolute; top: 3px; right: 3px; z-index: 1; width: 16px; height: 16px; border-radius: 50%; border: 0; background: rgba(20,15,18,.6); color: #fff; font-size: 12px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+        .cw .podloga-dd-tile-x:hover { background: #a44a3f; }
         .cw .logo-kvadrat { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; width: 2.7rem; height: 2.1rem; border: 1px dashed rgba(17,17,17,.32); border-radius: 8px; background: transparent; background-size: contain; background-repeat: no-repeat; background-position: center; color: rgba(17,17,17,.6); font-size: .56rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; transition: border-color .15s, color .15s; }
         .cw .logo-kvadrat:hover { border-color: var(--ink); color: var(--ink); }
         .cw .logo-kvadrat.ima { border-style: solid; border-color: rgba(17,17,17,.18); width: 3.2rem; }
