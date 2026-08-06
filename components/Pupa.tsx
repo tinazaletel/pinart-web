@@ -11,6 +11,8 @@ import { createPortal } from 'react-dom';
 import { usePathname } from 'next/navigation';
 import { Microphone, Sparkle } from '@phosphor-icons/react';
 import { preberiPupaKontekst, type PupaKontekst } from '@/lib/pupaBridge';
+import { preberiPupaStanje, nastaviPupaStanje, PUPA_STANJE_DOGODEK, type PupaStanje } from '@/lib/pupaNastavitve';
+import { getAccessTier, canUseFeature } from '@/lib/pinartFlowEntitlements';
 
 const OBRAZ = (px: number) => (
   <span aria-hidden style={{ position: 'relative', width: px, height: px, flex: 'none', borderRadius: '50%', background: 'conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)', display: 'inline-flex' }}>
@@ -32,6 +34,8 @@ export default function Pupa() {
   const L = (sl: string, en: string) => (locale === 'en' ? en : sl);
 
   const [mounted, setMounted] = useState(false);
+  const [stanje, setStanje] = useState<PupaStanje>('vklopljena');   /* SSR-varno; pravo stanje se prebere ob mountu */
+  const [pupaDovoljena, setPupaDovoljena] = useState(true);         /* paket dovoljuje AI (pro); free -> nadgradnja */
   const [odprt, setOdprt] = useState(false);
   const [ctx, setCtx] = useState<PupaKontekst>({ nasveti: [], kontekst: '', naslov: '' });
   const [spor, setSpor] = useState<Sporocilo[]>([]);
@@ -46,6 +50,11 @@ export default function Pupa() {
   useEffect(() => {
     setMounted(true);
     setCtx(preberiPupaKontekst());
+    setStanje(preberiPupaStanje());
+    void getAccessTier().then(t => setPupaDovoljena(canUseFeature(t, 'aiConnector'))).catch(() => undefined);
+    const onStanje = () => setStanje(preberiPupaStanje());
+    window.addEventListener(PUPA_STANJE_DOGODEK, onStanje);
+    window.addEventListener('storage', onStanje);
     const onCtx = () => setCtx(preberiPupaKontekst());
     const onOpen = (e: Event) => {
       const d = (e as CustomEvent).detail as { nacin?: 'chat' | 'glas' } | undefined;
@@ -54,7 +63,7 @@ export default function Pupa() {
     };
     window.addEventListener('pupa:kontekst', onCtx);
     window.addEventListener('pupa:odpri', onOpen);
-    return () => { window.removeEventListener('pupa:kontekst', onCtx); window.removeEventListener('pupa:odpri', onOpen); };
+    return () => { window.removeEventListener('pupa:kontekst', onCtx); window.removeEventListener('pupa:odpri', onOpen); window.removeEventListener(PUPA_STANJE_DOGODEK, onStanje); window.removeEventListener('storage', onStanje); };
   }, []);
 
   /* Samodejni pomik na dno ob novem sporočilu / med čakanjem / ob odprtju. */
@@ -170,6 +179,7 @@ export default function Pupa() {
   const jeSafari = mounted && typeof navigator !== 'undefined' && /^((?!chrome|android|crios|edg|opr|fxios).)*safari/i.test(navigator.userAgent);
 
   if (!mounted) return null;
+  if (stanje === 'izklopljena') return null;   /* izklopljena v Nastavitvah -> brez gumba */
 
   return createPortal(
     <>
@@ -213,7 +223,24 @@ export default function Pupa() {
             <button type="button" onClick={() => { if (typeof window !== 'undefined') window.speechSynthesis?.cancel(); setOdprt(false); }} aria-label={L('Zapri', 'Close')} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 24, lineHeight: 1, color: 'rgba(42,32,53,.5)', padding: 2 }}>×</button>
           </div>
 
-          {nacin === 'glas' ? (
+          {!pupaDovoljena ? (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', padding: '2rem 1.6rem', textAlign: 'center' }}>
+              {OBRAZ(56)}
+              <b style={{ fontSize: '1.05rem' }}>{L('Pupa je v paketu Pro', 'Pupa is a Pro feature')}</b>
+              <p style={{ margin: 0, fontSize: '.9rem', lineHeight: 1.5, color: 'rgba(42,32,53,.72)', maxWidth: '30ch' }}>{L('Pametna pomočnica za cene, pravice in besedilo je na voljo v paketu Pro. Nadgradi in Pupa ti pomaga pri vsaki ponudbi.', 'Your smart helper for pricing, rights and wording is available on Pro. Upgrade and Pupa helps with every quote.')}</p>
+              <a href={`${locale === 'en' ? '/en' : ''}/flow`} onClick={() => setOdprt(false)} style={{ textDecoration: 'none', border: 'none', borderRadius: 12, padding: '.65rem 1.2rem', background: '#2A2035', color: '#fff', fontWeight: 700, fontSize: '.9rem' }}>{L('Nadgradi na Pro', 'Upgrade to Pro')}</a>
+            </div>
+          ) : stanje === 'privolitev' ? (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', padding: '2rem 1.6rem', textAlign: 'center' }}>
+              {OBRAZ(56)}
+              <b style={{ fontSize: '1.05rem' }}>{L('Vklopiš Pupo?', 'Turn on Pupa?')}</b>
+              <p style={{ margin: 0, fontSize: '.88rem', lineHeight: 1.5, color: 'rgba(42,32,53,.72)', maxWidth: '32ch' }}>{L('Pupa je AI pomočnica. Ko jo vprašaš, se podatki trenutne ponudbe pošljejo AI ponudniku (Anthropic) samo zato, da ti odgovori. Podatki se NE uporabljajo za učenje modela. Pupo lahko kadar koli izklopiš v Nastavitvah.', 'Pupa is an AI helper. When you ask, your current quote details are sent to the AI provider (Anthropic) only to answer you. Data is NOT used to train the model. You can turn Pupa off anytime in Settings.')}</p>
+              <div style={{ display: 'flex', gap: '.6rem', marginTop: '.2rem' }}>
+                <button type="button" onClick={() => setOdprt(false)} style={{ border: '1px solid rgba(42,32,53,.2)', borderRadius: 12, padding: '.6rem 1rem', background: '#fff', color: '#2A2035', fontWeight: 600, fontSize: '.86rem', cursor: 'pointer' }}>{L('Ne zdaj', 'Not now')}</button>
+                <button type="button" onClick={() => { nastaviPupaStanje('vklopljena'); setStanje('vklopljena'); }} style={{ border: 'none', borderRadius: 12, padding: '.6rem 1.2rem', background: '#2A2035', color: '#fff', fontWeight: 700, fontSize: '.86rem', cursor: 'pointer' }}>{L('Vklopi Pupo', 'Turn on Pupa')}</button>
+              </div>
+            </div>
+          ) : nacin === 'glas' ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.25rem', padding: '1.5rem 1.4rem', textAlign: 'center' }}>
               {zadnjiA && <p style={{ margin: 0, maxWidth: '30ch', fontSize: '.94rem', lineHeight: 1.5, opacity: caka ? .35 : 1 }}>{zadnjiA.content}</p>}
               <button type="button" onClick={() => { if (!poslusa && !caka) glas(); }} aria-label={L('Tapni in govori', 'Tap to talk')}

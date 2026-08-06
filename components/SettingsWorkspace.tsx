@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import VidezDokumentov from '@/components/VidezDokumentov';
+import { preberiPupaStanje, nastaviPupaStanje } from '@/lib/pupaNastavitve';
 import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, nastaviLogoAktivne } from '@/lib/dokVidez';
 import styles from './SettingsWorkspace.module.css';
 
@@ -20,6 +21,10 @@ export default function SettingsWorkspace({ base }: { base: string }) {
   const [sporocilo, setSporocilo] = useState('');
   const datoteka = useRef<HTMLInputElement>(null);
   const [podpis, setPodpis] = useState('');
+  const [pupaVklop, setPupaVklop] = useState(true);
+
+  useEffect(() => { setPupaVklop(preberiPupaStanje() !== 'izklopljena'); }, []);
+  const preklopiPupo = (vklop: boolean) => { setPupaVklop(vklop); nastaviPupaStanje(vklop ? 'vklopljena' : 'izklopljena'); };
 
   /* Preberi obstojece nastavitve iz istega kljuca kot kalkulator. */
   useEffect(() => {
@@ -122,6 +127,17 @@ export default function SettingsWorkspace({ base }: { base: string }) {
           Ponovno te vpraša po imenu, trgu in izkušnjah. Tvoje cene, stranke in ponudbe ostanejo.
         </p>
         <button type="button" className={styles.gumb} onClick={ponastaviVprasalnik}>Ponovi vprašalnik</button>
+      </section>
+
+      <section className={styles.card}>
+        <h2>Pupa (AI pomočnica)</h2>
+        <p>
+          Pupa svetuje pri cenah, pravicah in besedilu. Ko jo vprašaš, se podatki trenutne ponudbe pošljejo AI ponudniku (Anthropic) samo zato, da ti odgovori — ne uporabijo se za učenje modela. Kadar koli jo lahko izklopiš.
+        </p>
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '.6rem', cursor: 'pointer', fontWeight: 600, fontSize: '.92rem' }}>
+          <input type="checkbox" checked={pupaVklop} onChange={e => preklopiPupo(e.target.checked)} style={{ width: 18, height: 18, cursor: 'pointer' }} />
+          {pupaVklop ? 'Pupa je vklopljena' : 'Pupa je izklopljena'}
+        </label>
       </section>
 
       {/* "Pomoč in kontakt" odstranjen: Pomoč je zdaj svoja stran v meniju,
