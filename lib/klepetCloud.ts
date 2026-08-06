@@ -147,3 +147,27 @@ export async function mojeNiti(): Promise<OblacnaNit[]> {
     return [];
   }
 }
+
+/* Za znacko obvestil: vrne mapo { threadId -> ISO cas zadnjega sporocila OD DRUGEGA (ne mene) }.
+   Niti brez tujega sporocila v mapi ni. 2 poizvedbi. Prazno ce nisem prijavljen. */
+export async function zadnjaTujaSporocila(): Promise<Record<string, string>> {
+  try {
+    const supa = createClient();
+    const email = await mojEmail();
+    if (!email) return {};
+    const { data: niti } = await supa.from('chat_thread').select('id');
+    const ids = (niti || []).map(n => String(n.id));
+    if (!ids.length) return {};
+    const { data: msgs } = await supa
+      .from('chat_message').select('thread_id, sender_email, created_at')
+      .in('thread_id', ids).order('created_at', { ascending: true });
+    const out: Record<string, string> = {};
+    (msgs || []).forEach(m => {
+      if (norm(String(m.sender_email ?? '')) === email) return; // moja sporocila ne stejejo
+      out[String(m.thread_id)] = String(m.created_at);          // ascending -> zadnje ostane
+    });
+    return out;
+  } catch {
+    return {};
+  }
+}

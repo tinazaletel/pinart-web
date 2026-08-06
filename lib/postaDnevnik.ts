@@ -24,6 +24,7 @@ export type PostaVnos = {
   izbrisano?: string;      // neobvezno: ISO cas izbrisa (Kos)
   zvezda?: boolean;        // neobvezno: oznaceno z zvezdico (pomembno)
   oznake?: string[];       // neobvezno: labele/oznake na sporocilu
+  prebrano?: boolean;      // neobvezno: je bilo prebrano (za stevec neprebranih na Komunikaciji)
 };
 
 const KLJUC = 'pinart-posta-dnevnik';
@@ -75,3 +76,14 @@ export const premakniPosto = (id: string, novProjectId: string): void => {
 export const nastaviOznakePoste = (id: string, oznake: string[]): void => {
   shraniVse(preberiVse().map(v => (v.id === id ? { ...v, oznake } : v)));
 };
+
+/* Oznaci zapis kot prebran (klic ob odpiranju sporocila). */
+export const oznaciPostoPrebrano = (id: string): void => {
+  const vsi = preberiVse();
+  if (!vsi.some(v => v.id === id && !v.prebrano)) return; // ni spremembe
+  shraniVse(vsi.map(v => (v.id === id ? { ...v, prebrano: true } : v)));
+};
+
+/* Stevilo neprebranih prejetih sporocil (za znacko na Komunikaciji). */
+export const stejNeprebranePoste = (): number =>
+  preberiVse().filter(v => v.smer === 'prejeto' && !v.izbrisano && !v.osnutek && !v.prebrano).length;

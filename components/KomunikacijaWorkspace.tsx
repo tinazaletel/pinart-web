@@ -9,7 +9,8 @@ import { useEffect, useRef, useState } from 'react';
 import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, MagnifyingGlass, Tray, NotePencil, Trash, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, ArrowBendUpLeft, ArrowBendUpRight, Smiley, Plus, UserPlus } from '@phosphor-icons/react';
 import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, dodajUdelezenca, type OblacnaNit, type OblacnoSporocilo } from '@/lib/klepetCloud';
 import { usePredogled } from '@/lib/predogled';
-import { preberiVsePoste, premakniPosto, nastaviOznakePoste, dodajPosto, type PostaVnos } from '@/lib/postaDnevnik';
+import { preberiVsePoste, premakniPosto, nastaviOznakePoste, dodajPosto, oznaciPostoPrebrano, type PostaVnos } from '@/lib/postaDnevnik';
+import { oznaciNitVideno, javiSpremembo } from '@/lib/komObvestila';
 import { preberiNaloge, shraniNaloge, type Naloga } from '@/lib/naloge';
 import { posljiMail } from '@/lib/posta';
 import { loadFlowData } from '@/lib/pinartFlowStore';
@@ -116,9 +117,9 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
     let ustavljeno = false;
     void (async () => {
       const msgs = await nalozSporocila(izbrana);
-      if (!ustavljeno) setSporocila(msgs);
+      if (!ustavljeno) { setSporocila(msgs); if (msgs.length) { oznaciNitVideno(izbrana, msgs[msgs.length - 1].createdAt); } }
     })();
-    odjavaRef.current = narociSporocila(izbrana, m => setSporocila(prev => (prev.some(p => p.id === m.id) ? prev : [...prev, m])));
+    odjavaRef.current = narociSporocila(izbrana, m => { setSporocila(prev => (prev.some(p => p.id === m.id) ? prev : [...prev, m])); if (izbrana) oznaciNitVideno(izbrana, m.createdAt); });
     return () => { ustavljeno = true; odjavaRef.current?.(); odjavaRef.current = null; };
   }, [izbrana, demo]);
 
@@ -289,7 +290,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
             return seznam.length ? (<>
               <div className="km-posta">
                 {prikaz.map(v => (
-                  <button type="button" key={v.id} className="km-mail-vrsta km-mail-btn" onClick={() => setBeriMail(v)}>
+                  <button type="button" key={v.id} className={`km-mail-vrsta km-mail-btn${v.smer === 'prejeto' && !v.prebrano ? ' neprebran' : ''}`} onClick={() => { setBeriMail(v); if (!v.prebrano) { if (!demo) oznaciPostoPrebrano(v.id); posodobiMail(v.id, { prebrano: true }); javiSpremembo(); } }}>
                     <span className="km-mail-check" aria-hidden />
                     <span className="km-mail-info"><b>{v.prejemniki.join(', ') || '—'}</b><span className="km-mail-zad">{v.zadeva || L('(brez zadeve)', '(no subject)')}</span>{projIme(v.projectId) && <span className="km-mail-proj" style={{ color: projBarva(v.projectId), background: `color-mix(in oklch, ${projBarva(v.projectId)} 12%, transparent)` }}><i aria-hidden style={{ background: projBarva(v.projectId) }} />{projIme(v.projectId)}</span>}</span>
                     <span className="km-mail-meta"><span className="km-mail-datum">{datum(v.datum)}</span><span className={`km-mail-smer ${v.smer}`}>{v.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span></span>
@@ -394,6 +395,8 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-posta .km-mail-vrsta{display:flex;align-items:center;gap:.75rem;width:100%;text-align:left;background:#fff;border:1px solid var(--k-line);border-radius:.85rem;padding:.7rem .9rem;cursor:pointer}
         .km-posta .km-mail-vrsta:hover{background:color-mix(in oklch,var(--k-purple) 5%,transparent);border-color:color-mix(in oklch,var(--k-purple) 25%,transparent)}
         .km-mail-check{flex:none;width:1.15rem;height:1.15rem;border:1.5px solid color-mix(in oklch,var(--k-ink) 22%,transparent);border-radius:.32rem}
+        .km-mail-vrsta.neprebran{border-color:color-mix(in oklch,var(--k-purple) 30%,transparent)}
+        .km-mail-vrsta.neprebran .km-mail-check{background:var(--k-purple);border-color:var(--k-purple);box-shadow:inset 0 0 0 2px #fff}
         .km-mail-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:.1rem}
         .km-mail-info b{font:700 .86rem var(--font-sans),sans-serif;color:var(--k-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .km-mail-zad{font:500 .8rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 62%,transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

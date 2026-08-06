@@ -9,6 +9,7 @@ import MeniOrodja from './MeniOrodja';
 import MeniSkupina from './MeniSkupina';
 import DeliAplikacijo from './DeliAplikacijo';
 import MeniProfil from './MeniProfil';
+import KomZnacka from './KomZnacka';
 import PaketZnak from './PaketZnak';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
@@ -58,7 +59,14 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
         Delo = ustvarjaš, Podatki = iščeš. */}
     <MeniSkupina naslov={L('Podatki', 'Data')} aktivna={active === 'clients' || active === 'prices' || active === 'expenses' || active === 'projects' || active === 'accounting' || active === 'komunikacija'}>
       {item('projects', `${base}/kalkulator/projekti`, '01', L('Projekti & arhiv', 'Projects & archive'), 'zgodovina')}
-      {item('komunikacija', `${base}/kalkulator/komunikacija`, '02', L('Komunikacija', 'Communication'), 'komunikacije')}
+      <Link className={`${styles.navItem} ${active === 'komunikacija' ? styles.active : ''}`} href={`${base}/kalkulator/komunikacija`} title={L('Komunikacija', 'Communication')}>
+        <span className={styles.navIkona} style={{ position: 'relative' }}><NavIkona vrsta="komunikacije" /><KomZnacka /></span>
+        <span className={styles.navStevilka}>02</span>
+        <span className={styles.navNapis}>{L('Komunikacija', 'Communication')}</span>
+        <span className={styles.navKljuc} aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>
+        </span>
+      </Link>
       {item('clients', `${base}/kalkulator/stranke`, '03', L('Stranke', 'Clients'), 'stranke')}
       {item('prices', `${base}/kalkulator/ceniki`, '04', L('Moji ceniki', 'Price lists'), 'ceniki')}
       {item('expenses', `${base}/kalkulator/stroski`, '05', L('Stroški', 'Expenses'), 'stroski', 'expenses')}
