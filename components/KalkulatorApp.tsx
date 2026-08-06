@@ -3859,7 +3859,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           <>
             <div className="podloga-dd-ozadje" onClick={() => setPodlogaMenuOdprt(false)} />
             <div className="podloga-dd-meni" role="menu">
-              <button type="button" className={'podloga-dd-vrsta' + (!podlogaCover && !predlogaPinart ? ' on' : '')} onClick={() => { setPredlogaPinart(false); setPodlogaCover(''); setPodlogaMenuOdprt(false); }}>{L('Privzeti dizajn', 'Default design')}</button>
+              <button type="button" className={'podloga-dd-vrsta' + (!podlogaCover && !predlogaPinart ? ' on' : '')} onClick={() => { setPredlogaPinart(false); setPodlogaCover(''); setPodlogaMenuOdprt(false); }}>{L('Brez podloge', 'No background')}</button>
               <button type="button" className={'podloga-dd-vrsta' + (predlogaPinart ? ' on' : '')} onClick={() => { setPredlogaPinart(true); setPodlogaCover(''); setPodlogaMenuOdprt(false); }}>{L('Pinart predloga', 'Pinart template')}</button>
               <div className="podloga-dd-locnica" />
               <span className="podloga-dd-oznaka">{L('Podloge', 'Backgrounds')}</span>
@@ -3869,9 +3869,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 ))}
               </div>
               <button type="button" className="podloga-dd-vrsta" onClick={() => podlogaRef.current?.click()}>{L('Naloži svojo …', 'Upload your own …')}</button>
-              {(podlogaCover || predlogaPinart) && (
-                <button type="button" className="podloga-dd-vrsta podloga-dd-odstrani" onClick={() => { setPodlogaCover(''); setPredlogaPinart(false); setPodlogaMenuOdprt(false); }}>{L('Odstrani podlogo', 'Remove background')}</button>
-              )}
             </div>
           </>
         )}
@@ -6930,7 +6927,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .tool-t .ti-box { border: 2px solid currentColor; border-radius: 3px; padding: 0 .1em; }
         .cw .tool-locnica { width: 1px; height: 1.7rem; background: rgba(17,17,17,.16); margin: 0 .2rem; }
         .cw .barvica-mavrica { background: conic-gradient(from 0deg, #FA4892, #F8E71C, #50E3C2, #7C3AED, #FA4892); border-color: rgba(17,17,17,.25); }
-        .cw .barvica { flex: none; width: 1.35rem; height: 1.35rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.22); cursor: pointer; padding: 0; }
+        .cw .barvica { flex: 0 0 auto; box-sizing: border-box; width: 1.35rem; height: 1.35rem; min-width: 1.35rem; aspect-ratio: 1 / 1; border-radius: 50%; border: 1px solid rgba(17,17,17,.22); cursor: pointer; padding: 0; }
         .cw .podloga-oznaka { font-size: .74rem; font-weight: 700; color: rgba(17,17,17,.6); letter-spacing: .02em; margin-right: .1rem; }
         .cw .podloga-krog { width: 1.7rem; height: 1.7rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.28); background: transparent; color: rgba(17,17,17,.6); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s, background .15s; }
         .cw .podloga-krog:hover { border-color: var(--ink); color: var(--ink); }
