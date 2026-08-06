@@ -6,7 +6,7 @@ import { localePath } from '@/i18n/routing';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import { loadFlowData, saveFlowCollection, type FlowInvoice } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
-import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne } from '@/lib/dokVidez';
+import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4 } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
 import { preberiPredogled, usePredogled } from '@/lib/predogled';
 import { posljiMail } from '@/lib/posta';
@@ -2239,6 +2239,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* podloga naslovnice (data URL slike); prazno = privzeti dizajn */
   const [podlogaCover, setPodlogaCover] = useState('');
   const podlogaRef = useRef<HTMLInputElement>(null);
+  const [podlogaMenuOdprt, setPodlogaMenuOdprt] = useState(false);
   /* logo (data URL) — za glavo ponudbe (za tiste brez podloge) */
   const [logo, setLogo] = useState('');
   const logoRef = useRef<HTMLInputElement>(null);
@@ -3837,6 +3838,45 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     const reader = new FileReader();
     reader.onload = () => { setPodlogaCover(String(reader.result || '')); setPredlogaPinart(false); };
     reader.readAsDataURL(file);
+  };
+  /* Dropdown za izbiro podloge naslovnice: privzeto / Pinart predloga / preset
+     podloge / naloži svojo / odstrani. Nadomešča prejšnja dva ločena krogca in
+     omogoča preklop med shranjenimi podlogami + jasno brisanje. */
+  const podlogaDropdown = () => {
+    const izberiPreset = (url: string) => { setPodlogaCover(url); setPredlogaPinart(false); setPodlogaMenuOdprt(false); };
+    const naLabela = podlogaCover ? L('Podloga', 'Background') : predlogaPinart ? 'Pinart' : L('Privzeto', 'Default');
+    return (
+      <div className="podloga-dd">
+        <button type="button" className="podloga-dd-gumb" onClick={() => setPodlogaMenuOdprt(o => !o)} aria-haspopup="menu" aria-expanded={podlogaMenuOdprt} title={L('Podloga naslovnice', 'Cover background')}>
+          <span className="podloga-dd-krog" style={podlogaCover ? { backgroundImage: `url(${podlogaCover})` } : undefined}>
+            {!podlogaCover && predlogaPinart && <Check size={11} weight="bold" />}
+          </span>
+          <span className="podloga-dd-lbl">{naLabela}</span>
+          <svg className="podloga-dd-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+        </button>
+        {podlogaMenuOdprt && (
+          <>
+            <div className="podloga-dd-ozadje" onClick={() => setPodlogaMenuOdprt(false)} />
+            <div className="podloga-dd-meni" role="menu">
+              <button type="button" className={'podloga-dd-vrsta' + (!podlogaCover && !predlogaPinart ? ' on' : '')} onClick={() => { setPredlogaPinart(false); setPodlogaCover(''); setPodlogaMenuOdprt(false); }}>{L('Privzeti dizajn', 'Default design')}</button>
+              <button type="button" className={'podloga-dd-vrsta' + (predlogaPinart ? ' on' : '')} onClick={() => { setPredlogaPinart(true); setPodlogaCover(''); setPodlogaMenuOdprt(false); }}>{L('Pinart predloga', 'Pinart template')}</button>
+              <div className="podloga-dd-locnica" />
+              <span className="podloga-dd-oznaka">{L('Podloge', 'Backgrounds')}</span>
+              <div className="podloga-dd-mreza">
+                {DOK_PODLOGE_A4.map(url => (
+                  <button key={url} type="button" className={'podloga-dd-tile' + (podlogaCover === url ? ' on' : '')} style={{ backgroundImage: `url(${url})` }} aria-label={url.split('/').pop()} onClick={() => izberiPreset(url)} />
+                ))}
+              </div>
+              <button type="button" className="podloga-dd-vrsta" onClick={() => podlogaRef.current?.click()}>{L('Naloži svojo …', 'Upload your own …')}</button>
+              {(podlogaCover || predlogaPinart) && (
+                <button type="button" className="podloga-dd-vrsta podloga-dd-odstrani" onClick={() => { setPodlogaCover(''); setPredlogaPinart(false); setPodlogaMenuOdprt(false); }}>{L('Odstrani podlogo', 'Remove background')}</button>
+              )}
+            </div>
+          </>
+        )}
+        <input ref={podlogaRef} type="file" accept="image/*" hidden onChange={e => { naloziPodlogo(e.target.files?.[0]); e.currentTarget.value = ''; setPodlogaMenuOdprt(false); }} />
+      </div>
+    );
   };
   /* naloZi logo (slika) kot data URL */
   const naloziLogo = (file?: File) => {
@@ -5582,14 +5622,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       <input ref={barvaRef} type="color" hidden onChange={e => uporabiBarvo(e.target.value)} />
       <span className="tool-locnica" aria-hidden />
       <span className="podloga-oznaka">{L('Podloga:', 'Background:')}</span>
-      <button type="button" className={'podloga-krog' + (predlogaPinart ? ' on' : '')} onClick={() => { const nov = !predlogaPinart; setPredlogaPinart(nov); if (nov) setPodlogaCover(''); }} title={L('Pinart predloga (oblikuje ponudbo po Pinart dizajnu)', 'Pinart template (styles the quote in the Pinart design)')} aria-label={L('Pinart predloga', 'Pinart template')}>
-        {predlogaPinart && <Check size={12} weight="bold" />}
-      </button>
-      <button type="button" className={'podloga-krog podloga-nalozi' + (podlogaCover ? ' on' : '')} onClick={() => podlogaRef.current?.click()} title={L('Naloži svojo podlogo (slika naslovnice)', 'Upload your own background (cover image)')} aria-label={L('Naloži podlogo', 'Upload background')}
-        style={podlogaCover ? { backgroundImage: `url(${podlogaCover})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
-        {!podlogaCover && <UploadSimple size={14} weight="bold" />}
-      </button>
-      <input ref={podlogaRef} type="file" accept="image/*" hidden onChange={e => { naloziPodlogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
+      {podlogaDropdown()}
       <span className="tool-locnica" aria-hidden />
       <button type="button" className={'logo-kvadrat' + (logo ? ' ima' : '')} onClick={() => logoRef.current?.click()}
         title={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')} aria-label={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')}
@@ -6908,6 +6941,26 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .podloga-krog:not(.podloga-nalozi) { background: conic-gradient(from 210deg, #ffd54a, #7be0a0, #63c7e8, #a78bfa, #f78fb0, #ffd54a); border-color: rgba(17,17,17,.22); color: #fff; }
         .cw .podloga-krog:not(.podloga-nalozi):hover { border-color: var(--ink); color: #fff; }
         .cw .podloga-krog:not(.podloga-nalozi).on { border-color: var(--ink); color: #fff; box-shadow: 0 0 0 2px rgba(17,17,17,.14); }
+        /* Podloga dropdown (nadomešča dva krogca): gumb + spustni meni s podlogami */
+        .cw .podloga-dd { position: relative; display: inline-flex; }
+        .cw .podloga-dd-gumb { display: inline-flex; align-items: center; gap: .4rem; height: 1.9rem; padding: 0 .55rem 0 .3rem; border: 1px solid rgba(17,17,17,.28); border-radius: 999px; background: var(--paper); color: rgba(17,17,17,.72); font: inherit; font-size: .74rem; font-weight: 600; cursor: pointer; transition: border-color .15s, color .15s; }
+        .cw .podloga-dd-gumb:hover { border-color: var(--ink); color: var(--ink); }
+        .cw .podloga-dd-krog { width: 1.35rem; height: 1.35rem; border-radius: 50%; flex: none; background-size: cover; background-position: center; display: inline-flex; align-items: center; justify-content: center; color: #fff; background-image: conic-gradient(from 210deg, #ffd54a, #7be0a0, #63c7e8, #a78bfa, #f78fb0, #ffd54a); }
+        .cw .podloga-dd-lbl { white-space: nowrap; }
+        .cw .podloga-dd-chev { opacity: .6; }
+        .cw .podloga-dd-ozadje { position: fixed; inset: 0; z-index: 40; }
+        .cw .podloga-dd-meni { position: absolute; z-index: 41; top: calc(100% + .4rem); left: 0; width: 220px; padding: .4rem; border-radius: 12px; border: 1px solid rgba(17,17,17,.12); background: var(--paper); box-shadow: 0 12px 34px rgba(20,15,18,.18); display: flex; flex-direction: column; gap: .1rem; }
+        .cw .podloga-dd-vrsta { text-align: left; padding: .5rem .6rem; border: 0; border-radius: 8px; background: transparent; color: var(--ink); font: inherit; font-size: .82rem; font-weight: 500; cursor: pointer; }
+        .cw .podloga-dd-vrsta:hover { background: rgba(17,17,17,.06); }
+        .cw .podloga-dd-vrsta.on { background: var(--ink); color: var(--paper); }
+        .cw .podloga-dd-odstrani { color: #a44a3f; font-weight: 600; }
+        .cw .podloga-dd-odstrani:hover { background: rgba(164,74,63,.1); color: #a44a3f; }
+        .cw .podloga-dd-locnica { height: 1px; background: rgba(17,17,17,.1); margin: .3rem .2rem; }
+        .cw .podloga-dd-oznaka { font-size: .62rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.45); padding: .2rem .6rem; }
+        .cw .podloga-dd-mreza { display: grid; grid-template-columns: repeat(3, 1fr); gap: .35rem; padding: .2rem .3rem .4rem; }
+        .cw .podloga-dd-tile { aspect-ratio: 1 / 1.414; border-radius: 6px; border: 1.5px solid rgba(17,17,17,.14); background-size: cover; background-position: center; background-color: #fff; cursor: pointer; padding: 0; transition: border-color .15s, transform .12s; }
+        .cw .podloga-dd-tile:hover { transform: translateY(-1px); border-color: rgba(17,17,17,.45); }
+        .cw .podloga-dd-tile.on { border-color: var(--ink); box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--ink); }
         .cw .logo-kvadrat { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; width: 2.7rem; height: 2.1rem; border: 1px dashed rgba(17,17,17,.32); border-radius: 8px; background: transparent; background-size: contain; background-repeat: no-repeat; background-position: center; color: rgba(17,17,17,.6); font-size: .56rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; transition: border-color .15s, color .15s; }
         .cw .logo-kvadrat:hover { border-color: var(--ink); color: var(--ink); }
         .cw .logo-kvadrat.ima { border-style: solid; border-color: rgba(17,17,17,.18); width: 3.2rem; }
@@ -9385,14 +9438,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <input ref={barvaRef} type="color" hidden onChange={e => uporabiBarvo(e.target.value)} />
                 <span className="tool-locnica" aria-hidden />
                 <span className="podloga-oznaka">{L('Podloga:', 'Background:')}</span>
-                <button type="button" className={'podloga-krog' + (predlogaPinart ? ' on' : '')} onClick={() => { const nov = !predlogaPinart; setPredlogaPinart(nov); if (nov) setPodlogaCover(''); }} title={L('Pinart predloga (oblikuje ponudbo po Pinart dizajnu)', 'Pinart template (styles the quote in the Pinart design)')} aria-label={L('Pinart predloga', 'Pinart template')}>
-                  {predlogaPinart && <Check size={12} weight="bold" />}
-                </button>
-                <button type="button" className={'podloga-krog podloga-nalozi' + (podlogaCover ? ' on' : '')} onClick={() => podlogaRef.current?.click()} title={L('Naloži svojo podlogo (slika naslovnice)', 'Upload your own background (cover image)')} aria-label={L('Naloži podlogo', 'Upload background')}
-                  style={podlogaCover ? { backgroundImage: `url(${podlogaCover})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
-                  {!podlogaCover && <UploadSimple size={14} weight="bold" />}
-                </button>
-                <input ref={podlogaRef} type="file" accept="image/*" hidden onChange={e => { naloziPodlogo(e.target.files?.[0]); e.currentTarget.value = ''; }} />
+                {podlogaDropdown()}
                 <span className="tool-locnica" aria-hidden />
                 <button type="button" className={'logo-kvadrat' + (logo ? ' ima' : '')} onClick={() => logoRef.current?.click()}
                   title={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')} aria-label={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')}

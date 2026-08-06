@@ -10,11 +10,10 @@
    vsaki spremembi aktivne predloge se njena barva/pisava/logo zrcalita nazaj
    skozi onBarva/onFont/onLogo, da starsevo stanje ostane usklajeno. */
 
-import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import {
   DOK_FONTI, DOK_FONT_IMENA, dokFontStack, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI,
   type DokPredloga, nalozitePredloge, shranitePredloge, noviIdPredloge,
-  DOK_PODLOGE_A4,
 } from '@/lib/dokVidez';
 
 const BARVE = ['#6E4FA6', '#7C4DD6', '#3730A3', '#111111', '#2F5D50', '#A44A3F', '#B8860B'];
@@ -113,50 +112,6 @@ export default function VidezDokumentov({
     }
   };
 
-  const platnicaRef = useRef<HTMLInputElement>(null);
-  const ozadjeRef = useRef<HTMLInputElement>(null);
-
-  /* uvoz lastne slike -> data URI, shranjen na aktivno predlogo (platnica/ozadje) */
-  const uvoziSliko = (file: File | undefined, polje: 'platnica' | 'ozadje') => {
-    if (!file || !aktivna) return;
-    if (file.size > 2_000_000) { window.alert('Slika je prevelika (nad 2 MB). Izberi manjšo ali stisnjeno.'); return; }
-    const r = new FileReader();
-    r.onload = () => posodobiPredlogo(aktivna.id, { [polje]: String(r.result || '') } as Partial<DokPredloga>);
-    r.readAsDataURL(file);
-  };
-
-  /* Kateri slot ima odprt izbirnik (galerija podlog + uvoz). */
-  const [chooserZa, setChooserZa] = useState<'platnica' | 'ozadje' | null>(null);
-  const refZa = (polje: 'platnica' | 'ozadje') => (polje === 'platnica' ? platnicaRef : ozadjeRef);
-  const izberiPodlogo2 = (polje: 'platnica' | 'ozadje', v: string | undefined) => {
-    if (aktivna) posodobiPredlogo(aktivna.id, { [polje]: v } as Partial<DokPredloga>);
-  };
-
-  /* En slot: velik A4 predogled izbrane podloge (+ koš za odstranitev) in kartica
-     »+«, ki odpre galerijo prednastavljenih podlog + uvoz svoje. */
-  const podlogaSlot = (polje: 'platnica' | 'ozadje', oznaka: string) => {
-    if (!aktivna) return null;
-    const vrednost = aktivna[polje];
-    return (
-      <div className="vd-slot-skupina">
-        <span className="vd-slot-naslov">{oznaka}</span>
-        <div className="vd-slot-row">
-          {vrednost && (
-            <div className="vd-slot vd-slot-izbran" style={{ backgroundImage: `url(${vrednost})` }}>
-              <button type="button" className="vd-slot-kos" onClick={() => izberiPodlogo2(polje, undefined)} title="Odstrani podlogo" aria-label={`Odstrani podlogo — ${oznaka}`}>
-                <svg viewBox="0 0 24 24" aria-hidden><path d="M4 7h16" /><path d="M10 11v6M14 11v6" /><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" /><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" /></svg>
-              </button>
-            </div>
-          )}
-          <button type="button" className="vd-slot vd-slot-dodaj" onClick={() => setChooserZa(polje)} title="Izberi ali uvozi podlogo" aria-label={`Dodaj podlogo — ${oznaka}`}>
-            <svg viewBox="0 0 24 24" aria-hidden><path d="M12 5v14M5 12h14" /></svg>
-            <span>{vrednost ? 'Zamenjaj' : 'Dodaj'}</span>
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="vd-ovoj">
       <p className="vd-uvod">Ta barva in pisava se uporabita na <b>vseh dokumentih</b> — ponudbah, računih in pogodbah. Nastaviš enkrat, stil je povsod enak.</p>
@@ -232,39 +187,14 @@ export default function VidezDokumentov({
         </div>
       )}
 
-      {nalozeno && aktivna && (
-        <div className="vd-blok">
-          <span className="vd-oznaka">Podloge dokumenta (neobvezno)</span>
-          <div className="vd-sloti">
-            {podlogaSlot('platnica', 'Podloga naslovnice')}
-            {podlogaSlot('ozadje', 'Podloga vsebinske strani')}
-          </div>
-          <input ref={platnicaRef} type="file" accept="image/*" hidden onChange={e => { uvoziSliko(e.target.files?.[0], 'platnica'); setChooserZa(null); e.currentTarget.value = ''; }} />
-          <input ref={ozadjeRef} type="file" accept="image/*" hidden onChange={e => { uvoziSliko(e.target.files?.[0], 'ozadje'); setChooserZa(null); e.currentTarget.value = ''; }} />
-        </div>
-      )}
-
-      {chooserZa && aktivna && (
-        <div className="vd-chooser-ovoj" role="dialog" aria-modal="true" onMouseDown={() => setChooserZa(null)}>
-          <div className="vd-chooser" onMouseDown={e => e.stopPropagation()}>
-            <div className="vd-chooser-glava">
-              <b>Izberi podlogo — {chooserZa === 'platnica' ? 'naslovnica' : 'vsebinska stran'}</b>
-              <button type="button" className="vd-chooser-zapri" onClick={() => setChooserZa(null)} aria-label="Zapri">×</button>
-            </div>
-            <div className="vd-chooser-mreza">
-              {DOK_PODLOGE_A4.map(url => (
-                <button key={url} type="button" className={'vd-choose-tile' + (aktivna[chooserZa] === url ? ' on' : '')} style={{ backgroundImage: `url(${url})` }} aria-label={url.split('/').pop()} onClick={() => { izberiPodlogo2(chooserZa, url); setChooserZa(null); }}>
-                  {aktivna[chooserZa] === url && <span className="vd-tile-check" aria-hidden>✓</span>}
-                </button>
-              ))}
-              <button type="button" className="vd-choose-tile vd-choose-uvoz" onClick={() => refZa(chooserZa).current?.click()} title="Uvozi svojo sliko (JPG ali PNG)">
-                <svg viewBox="0 0 24 24" aria-hidden><path d="M12 15V4" /><path d="M8 8l4-4 4 4" /><path d="M5 15v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3" /></svg>
-                <span>Uvozi svojo</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className="vd-predogled" style={{ '--vd-akcent': barva } as CSSProperties}>
+        <span className="vd-pred-kick">Ponudba — predogled</span>
+        <h3 style={{ fontFamily: dokFontStack(font) }}>Naslov dokumenta</h3>
+        {aktivna?.glava && <span className="vd-pred-glava">{aktivna.glava}</span>}
+        <span className="vd-pred-crta" />
+        <p>Tako izgledajo naslovi in poudarki v tvojih dokumentih.</p>
+        {aktivna?.noga && <p className="vd-pred-noga">{aktivna.noga}</p>}
+      </div>
 
       {(barva.toLowerCase() !== DOK_BARVA_PRIVZETA.toLowerCase() || font !== DOK_FONT_PRIVZETI) && (
         <button type="button" className="vd-ponastavi" onClick={() => {
@@ -312,33 +242,6 @@ export default function VidezDokumentov({
         .vd-predogled p { margin: 0; font-size: .9rem; color: #5a5560; line-height: 1.5; }
         .vd-ponastavi { align-self: flex-start; background: none; border: none; color: #8a8177; font-size: .82rem; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; padding: 0; }
         .vd-ponastavi:hover { color: #111; }
-        /* ── Podloge: velik slot na predogled + modal izbirnik ── */
-        .vd-sloti { display: flex; flex-wrap: wrap; gap: 1.6rem; }
-        .vd-slot-skupina { display: flex; flex-direction: column; gap: .6rem; flex: 1 1 210px; }
-        .vd-slot-naslov { font-size: .92rem; font-weight: 700; color: #2a2530; }
-        .vd-slot-row { display: flex; gap: .8rem; }
-        .vd-slot { position: relative; flex: 1 1 0; aspect-ratio: 1 / 1.414; max-width: 230px; border-radius: 12px; background-size: cover; background-position: center; }
-        .vd-slot-izbran { border: 1px solid rgba(17,17,17,.1); box-shadow: 0 6px 18px rgba(20,15,18,.12); }
-        .vd-slot-kos { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 46px; height: 46px; border-radius: 50%; border: 0; background: rgba(255,255,255,.85); color: #2a2530; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(20,15,18,.18); transition: background .15s; }
-        .vd-slot-kos:hover { background: #fff; }
-        .vd-slot-kos svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-        .vd-slot-dodaj { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .4rem; border: 1.5px dashed rgba(17,17,17,.22); background: #FCFBF7; color: #8a8177; font-size: .82rem; font-weight: 600; cursor: pointer; transition: border-color .15s, color .15s, background .15s; }
-        .vd-slot-dodaj:hover { border-color: rgba(17,17,17,.45); color: #111; background: #fff; }
-        .vd-slot-dodaj svg { width: 26px; height: 26px; stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; }
-        .vd-chooser-ovoj { position: fixed; inset: 0; z-index: 1000; background: rgba(20,15,18,.45); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
-        .vd-chooser { width: min(560px, 100%); max-height: 85vh; overflow: auto; background: #FCFBF7; border-radius: 16px; padding: 1.3rem 1.4rem 1.6rem; box-shadow: 0 20px 60px rgba(20,15,18,.35); }
-        .vd-chooser-glava { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-        .vd-chooser-glava b { font-size: 1rem; color: #111; }
-        .vd-chooser-zapri { border: 0; background: none; font-size: 1.5rem; line-height: 1; color: #8a8177; cursor: pointer; padding: 0 .2rem; }
-        .vd-chooser-zapri:hover { color: #111; }
-        .vd-chooser-mreza { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: .7rem; }
-        .vd-choose-tile { position: relative; aspect-ratio: 1 / 1.414; border-radius: 9px; border: 1.5px solid rgba(17,17,17,.14); background-size: cover; background-position: center; background-color: #fff; cursor: pointer; padding: 0; overflow: hidden; transition: border-color .15s, transform .15s, box-shadow .15s; }
-        .vd-choose-tile:hover { transform: translateY(-2px); border-color: rgba(17,17,17,.4); }
-        .vd-choose-tile.on { border-color: #111; box-shadow: 0 0 0 2px #FCFBF7, 0 0 0 3.5px #111; }
-        .vd-choose-uvoz { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .35rem; border-style: dashed; color: #8a8177; font-size: .74rem; font-weight: 600; }
-        .vd-choose-uvoz:hover { color: #111; }
-        .vd-choose-uvoz svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-        .vd-tile-check { position: absolute; top: 5px; right: 5px; width: 18px; height: 18px; border-radius: 50%; background: #111; color: #fff; font-size: 11px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
       `}</style>
     </div>
   );
