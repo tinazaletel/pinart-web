@@ -30,7 +30,7 @@ export async function POST(req: Request) {
   const kljuc = process.env.ANTHROPIC_API_KEY;
   if (!kljuc) {
     return NextResponse.json({
-      odgovor: 'Za pravi pogovor potrebujem AI zaledje. V datoteko .env.local dodaj ANTHROPIC_API_KEY, pa se lahko pogovarjava. Do takrat ti pomagam prek opozoril ob ponudbi.',
+      odgovor: 'Uf, trenutno ne morem do svojih možganov 🙈 Klepet z mano je začasno nedosegljiv — kmalu spet na voljo. Do takrat ti pomagam s sprotnimi namigi ob pripravi ponudbe.',
       brezKljuca: true,
     });
   }
