@@ -348,7 +348,7 @@
 .flowTools > *:nth-child(4)::before { animation: dotsGlow 6s ease-in-out infinite alternate; }
 .historyBand .tableWrap { margin-top: 0; margin-inline: -.7rem; overflow-x: hidden; background: transparent; }
 .historyBand .emptyState { padding: 0 1rem; border-radius: 1rem; background: oklch(98% .01 87); }
-.dashRow { display: flex; align-items: center; gap: .6rem; padding: .5rem .55rem; margin: 0 -.55rem; border-radius: .6rem; text-decoration: none; color: inherit; transition: background .14s; }
+.dashRow { display: flex; align-items: center; gap: .6rem; padding: .85rem .55rem; margin: 0 -.55rem; border-radius: .6rem; text-decoration: none; color: inherit; transition: background .14s; }
 .dashRow:hover { background: oklch(97.4% .011 84); }
 /* zelo svetle vmesne crte (kot zadnji projekti). dashRow je zavit v <li>, zato
    crta na li; ob hoverju se crta nad IN pod vrstico skrije (:has), da zaobljeno
