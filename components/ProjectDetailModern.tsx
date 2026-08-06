@@ -500,8 +500,9 @@ export default function ProjectDetailModern({
         .pm-iconbtn:hover { background:var(--pm-paper); }
         /* prihajajoci datumi */
         .pm-roki { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
-        .pm-rok { display:flex; align-items:center; gap:.55rem; padding:.5rem .6rem; margin:0 -.6rem; border-radius:9px; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); }
-        .pm-rok:first-child { border-top:0; }
+        .pm-rok { display:flex; align-items:center; gap:.55rem; padding:.72rem .6rem; margin:0 -.6rem; border-radius:10px; }
+        .pm-roki > li + li { border-top:1px solid color-mix(in oklch, var(--pm-ink) 9%, transparent); }
+        .pm-roki > li:has(.pm-rok-link:hover), .pm-roki > li:has(.pm-rok-link:hover) + li { border-top-color:transparent; }
         .pm-rok-pika { flex:none; width:.5rem; height:.5rem; border-radius:50%; background:var(--pm-acc); }
         .pm-rok-pika[data-late="true"] { background:oklch(58% .18 25); }
         .pm-rok-txt { flex:1; min-width:0; font-size:.82rem; color:var(--pm-ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -533,7 +534,7 @@ export default function ProjectDetailModern({
         .pm-modal-edit { display:inline-block; margin-top:1.1rem; text-decoration:none; font-size:.8rem; font-weight:600; color:var(--pm-acc); }
         /* seznami zapisa (pogodbe/racuni/stroski) */
         .pm-list { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
-        .pm-li { display:flex; align-items:center; gap:.5rem; padding:.66rem .6rem; margin:0 -.6rem; border-radius:10px; font-size:.83rem; color:var(--pm-ink); }
+        .pm-li { display:flex; align-items:center; gap:.5rem; padding:.72rem .6rem; margin:0 -.6rem; border-radius:10px; font-size:.83rem; color:var(--pm-ink); }
         .pm-list > li + li { border-top:1px solid color-mix(in oklch, var(--pm-ink) 9%, transparent); }
         .pm-list > li:has(.pm-li:hover), .pm-list > li:has(.pm-li:hover) + li { border-top-color:transparent; }
         .pm-li-n { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -557,7 +558,7 @@ export default function ProjectDetailModern({
         .pm-goal-t { flex:none; font-size:.66rem; font-weight:700; letter-spacing:.01em; color:var(--pm-acc); background:linear-gradient(135deg, color-mix(in oklch, var(--pm-acc) 16%, transparent), color-mix(in oklch, var(--pm-acc) 7%, transparent)); border-radius:999px; padding:.14rem .55rem; }
         /* crm dnevnik */
         .pm-crm-list { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
-        .pm-crm-vnos { display:flex; align-items:center; gap:.55rem; padding:.6rem 0; border-top:1px solid color-mix(in oklch, var(--pm-line) 60%, transparent); }
+        .pm-crm-vnos { display:flex; align-items:center; gap:.55rem; padding:.72rem 0; border-top:1px solid color-mix(in oklch, var(--pm-ink) 9%, transparent); }
         .pm-crm-vnos:first-child { border-top:0; }
         .pm-crm-tip { flex:none; font-size:.62rem; font-weight:700; letter-spacing:.02em; text-transform:uppercase; color:var(--pm-muted); background:color-mix(in oklch, var(--pm-line) 40%, transparent); border-radius:999px; padding:.12rem .45rem; }
         .pm-crm-opis { flex:1; min-width:0; font-size:.83rem; color:var(--pm-ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
