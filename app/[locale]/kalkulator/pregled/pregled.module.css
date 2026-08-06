@@ -347,7 +347,7 @@
 .flowTools > *:nth-child(4)::after { animation: orbDrift 10s ease-in-out -1s infinite alternate; }
 .flowTools > *:nth-child(4)::before { animation: dotsGlow 6s ease-in-out infinite alternate; }
 .historyBand .tableWrap { margin-top: 0; margin-inline: -.7rem; overflow-x: hidden; background: transparent; }
-.historyBand .emptyState { padding: 0 1rem; border-radius: 1rem; background: oklch(98% .01 87); }
+/* enotno z bazičnim .emptyState (kremna kartica) — brez posebnega paddinga */
 .dashRow { display: flex; align-items: center; gap: .6rem; padding: .85rem .55rem; margin: 0 -.55rem; border-radius: .6rem; text-decoration: none; color: inherit; transition: background .14s; }
 .dashRow:hover { background: oklch(97.4% .011 84); }
 /* zelo svetle vmesne crte (kot zadnji projekti). dashRow je zavit v <li>, zato
@@ -1195,8 +1195,10 @@
 .activity, .insight { padding: 1.5rem; border: 1px solid color-mix(in oklch, var(--ink) 7%, transparent); border-radius: 1.35rem; background: oklch(98% .01 87 / .92); }
 .panelHeading { display: flex; justify-content: space-between; align-items: center; }
 .panelHeading h2 { margin: 0; font: 500 1.7rem var(--font-serif), Georgia, serif; }
-.emptyState { display: flex; align-items: center; gap: 1rem; min-height: 9rem; margin-top: 1rem; border-top: 1px solid var(--line); }
-.emptyState > span { display: grid; place-items: center; width: 2.7rem; aspect-ratio: 1; border-radius: 50%; background: oklch(92% .04 297); font-size: 1.25rem; }
+/* enotno prazno stanje povsod: kremna kartica z zaobljenimi robovi (prej so
+   .historyBand imele podlago, .eventsBand pa samo črto zgoraj — neenotno) */
+.emptyState { display: flex; align-items: center; gap: 1rem; min-height: 9rem; margin-top: 1rem; padding: 1.25rem; border-radius: 1rem; background: oklch(98% .01 87); text-decoration: none; color: inherit; }
+.emptyState > span { display: grid; place-items: center; width: 2.7rem; aspect-ratio: 1; border-radius: 50%; background: oklch(92% .04 297); font-size: 1.25rem; line-height: 1; }
 .emptyState strong { font-size: .75rem; }
 .emptyState p { margin: .25rem 0 0; color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .68rem; }
 .insight { background: oklch(91% .055 297 / .94); }

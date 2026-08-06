@@ -79,6 +79,7 @@ export default function BusinessOverview({ base }: { base: string }) {
   const [dashNaloge, setDashNaloge] = useState<{ naslov: string; stolpec: string; oseba?: string }[]>([]);
   const [dashPosta, setDashPosta] = useState<{ smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string }[]>([]);
   useEffect(() => {
+    if (preview === 'empty') { setDashNaloge([]); setDashPosta([]); return; }
     if (preview !== 'mine') { setDashNaloge(DASH_DEMO_NALOGE); setDashPosta(DASH_DEMO_POSTA); return; }
     try {
       setDashNaloge(preberiNaloge().filter(n => n.stolpec !== 'done').sort((a, b) => (a.stolpec === 'waiting' ? -1 : 0) - (b.stolpec === 'waiting' ? -1 : 0)).slice(0, 4).map(n => ({ naslov: n.naslov, stolpec: n.stolpec, oseba: n.dodeljenoOsebaIme })));
@@ -440,7 +441,7 @@ export default function BusinessOverview({ base }: { base: string }) {
           <h2 id="comm-title" className={styles.bandNaslov}>{L('Zadnja pošta', 'Recent mail')}</h2>
           {dashPosta.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
             {dashPosta.map((v, i) => { const tone = v.smer === 'prejeto' ? 'success' : 'info'; return <li key={i}><Link className={styles.dashRow} href={`${base}/kalkulator/komunikacija`}><span className={styles[`status_${tone}`]} aria-hidden style={{ flex: '0 0 auto', display: 'grid', placeItems: 'center', width: '2rem', height: '2rem', borderRadius: '50%', background: 'var(--pill-bg)', color: 'var(--pill-ink)' }}>{v.smer === 'prejeto' ? <EnvelopeSimple size={16} weight="regular" /> : <PaperPlaneRight size={16} weight="regular" />}</span><span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}><b style={{ fontSize: '.84rem', color: 'var(--ink)', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.zadeva}</b><small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.kdo}</small></span><span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{v.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span><span className={styles.dashRowArrow} aria-hidden>›</span></Link></li>; })}
-          </ul> : <div className={styles.emptyState}><span>+</span><div><strong>{L('Ni pošte.', 'No mail.')}</strong><p>{L('Projektni maili se zberejo tukaj — pošlji ali prejmi mail na projektu.', 'Project mail collects here — send or receive mail on a project.')}</p></div></div>}
+          </ul> : <Link className={styles.emptyState} href={`${base}/kalkulator/komunikacija`}><span>+</span><div><strong>{L('Poveži svojo pošto', 'Connect your mail')}</strong><p>{L('Projektni maili in klepeti se zbirajo tukaj. Odpri Komunikacijo, da začneš.', 'Project mail and chats collect here. Open Communication to get started.')}</p></div></Link>}
           </div>
         </section>
       </div>

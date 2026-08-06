@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import type { Naloga, Sodelavec } from '@/lib/naloge';
 import { preberiNaloge, shraniNaloge } from '@/lib/naloge';
 import { preberiSodelavci, shraniSodelavci, VLOGE, vlogaOznaka } from '@/lib/sodelavci';
+import { usePredogled, demoSodelavci } from '@/lib/predogled';
 import { posljiMail } from '@/lib/posta';
 import styles from './SodelavciPanel.module.css';
 
@@ -25,17 +26,24 @@ export default function SodelavciPanel() {
   const [odhajaId, setOdhajaId] = useState('');
   const [naslednikId, setNaslednikId] = useState('');
   const [prenosSporocilo, setPrenosSporocilo] = useState('');
+  /* Predogled: »Prazno · nov uporabnik« = prazna ekipa, »Demo« = demo ekipa,
+     »Moji podatki« = prava shramba. Prej je vedno bral preberiSodelavci(), zato
+     je nov uporabnik videl demo sodelavce. */
+  const [preview] = usePredogled();
 
   useEffect(() => {
+    if (preview === 'empty') { setSodelavci([]); return; }
+    if (preview !== 'mine') { setSodelavci(demoSodelavci()); return; }
     setSodelavci(preberiSodelavci());
-  }, []);
+  }, [preview]);
 
   /* Vsaka sprememba ekipe (dodaj/uredi vlogo/aktiven/briši) gre skozi to
-     funkcijo — posodobi stanje in takoj shrani, da se Task Manager (bere
-     isti kljuc) vidi usklajen. */
+     funkcijo — posodobi stanje in v pravem načinu takoj shrani, da se Task
+     Manager (bere isti kljuc) vidi usklajen. V demo/praznem načinu NE piše v
+     pravo shrambo (predogled je samo za gledanje). */
   function posodobiEkipo(next: Sodelavec[]) {
     setSodelavci(next);
-    shraniSodelavci(next);
+    if (preview === 'mine') shraniSodelavci(next);
   }
 
   function spremeniVlogo(id: string, vloga: Sodelavec['vloga']) {
@@ -64,7 +72,9 @@ export default function SodelavciPanel() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setEkipaSporocilo('Sodelavec dodan (neveljaven e-naslov — vabilo ni poslano).'); return; }
     setEkipaSporocilo('Sodelavec dodan. Pošiljam vabilo …');
     const povezava = 'https://www.pinartflow.com/kalkulator/komunikacija';
-    const html = `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a"><p>Živjo ${ime.split(' ')[0]},</p><p>Dodani ste v ekipo v <b>Pinart Flow</b>.</p><p>Prijavite se s tem e-naslovom (<b>${email}</b>) in odprite Komunikacijo, da vidite deljeno delo in klepete:</p><p><a href="${povezava}" style="display:inline-block;background:#2A2035;color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:600">Odpri Pinart Flow</a></p><p style="color:#666;font-size:13px">Če gumb ne dela, odprite: ${povezava}</p></div>`;
+    const prvoIme = ime.split(' ')[0];
+    const pozdravIme = prvoIme ? prvoIme.charAt(0).toUpperCase() + prvoIme.slice(1) : prvoIme;
+    const html = `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a"><p>Živjo ${pozdravIme},</p><p>dodani ste v ekipo na <b>Pinart Flow</b>.</p><p>Prijavite se s tem e-naslovom (<b>${email}</b>) — z Googlom ali z geslom (gumb »Nov račun«) — in odprite Komunikacijo, da vidite deljeno delo in klepete:</p><p><a href="${povezava}" style="display:inline-block;background:#2A2035;color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:600">Odpri Pinart Flow</a></p><p style="color:#666;font-size:13px">Če gumb ne dela, odprite: ${povezava}</p></div>`;
     try {
       const rez = await posljiMail({ to: [email], subject: 'Povabilo v ekipo — Pinart Flow', html });
       setEkipaSporocilo(rez.ok ? `Sodelavec dodan + vabilo poslano na ${email}.` : `Sodelavec dodan (vabilo ni šlo: ${rez.napaka || 'napaka'}).`);
@@ -179,10 +189,6 @@ export default function SodelavciPanel() {
 
         {ekipaSporocilo && <p className={styles.opomba} role="status">{ekipaSporocilo}</p>}
 
-        <p className={styles.opomba}>
-          To je lokalni seznam ekipe. Pravo omejevanje dostopa (kdo vidi katere strani) pride s prijavo/zaledjem.
-        </p>
-
         <div className={styles.prenosBlok}>
           <h3 className={styles.prenosNaslov}>Prenos ob odhodu</h3>
           <p className={styles.opomba}>
@@ -228,8 +234,7 @@ export default function SodelavciPanel() {
           {prenosSporocilo && <p className={styles.opomba} role="status">{prenosSporocilo}</p>}
 
           <p className={styles.prenosOpozorilo}>
-            Login odhajajoče osebe ostane dejaven, dokler ni pravega večuporabniškega zaledja (prijava na osebo).
-            Zdaj se prenese le delo (naloge) + oseba postane neaktivna.
+            Prenese se delo (naloge), oseba pa postane neaktivna.
           </p>
         </div>
       </section>
