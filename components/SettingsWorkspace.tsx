@@ -124,11 +124,11 @@ export default function SettingsWorkspace({ base }: { base: string }) {
         <p>Samodejno se doda na dno vsakega novega sporočila iz projekta. Izpolni polja — Flow sestavi oblikovan podpis s <b>klikabilnim telefonom, e-pošto in spletom</b>.</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '.7rem' }}>
           {([
-            ['ime', 'Ime in priimek', 'Tina Zaletel'],
-            ['naziv', 'Naziv / podjetje', 'Pinart · oblikovanje'],
+            ['ime', 'Ime in priimek', 'Ana Novak'],
+            ['naziv', 'Naziv / podjetje', 'Studio · oblikovanje'],
             ['telefon', 'Telefon', '+386 40 123 456'],
-            ['email', 'E-pošta', 'tina@pinart.si'],
-            ['splet', 'Spletna stran', 'pinart.si'],
+            ['email', 'E-pošta', 'ime@domena.si'],
+            ['splet', 'Spletna stran', 'domena.si'],
             ['pripis', 'Zaključna vrstica (neobvezno)', 'Prosim, odgovorite na to sporočilo.'],
           ] as const).map(([k, lbl, ph]) => (
             <label key={k} style={{ display: 'flex', flexDirection: 'column', gap: '.3rem', fontSize: '.8rem', color: '#4a4550' }}>
