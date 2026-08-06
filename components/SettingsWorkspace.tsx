@@ -145,7 +145,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
             ['email', 'E-pošta', 'ime@domena.si'],
             ['splet', 'Spletna stran', 'domena.si'],
           ] as const).map(([k, lbl, ph]) => (
-            <label key={k} style={{ display: 'flex', flexDirection: 'column', gap: '.3rem', fontSize: '.8rem', color: '#4a4550' }}>
+            <label key={k} style={{ display: 'flex', flexDirection: 'column', gap: '.3rem', fontSize: '.8rem', color: '#4a4550', gridColumn: k === 'naslov' ? 'span 2' : undefined, gridColumnStart: k === 'telefon' ? 1 : undefined }}>
               {lbl}
               <input value={(podpisP[k] as string) || ''} onChange={e => nastaviPodpisPolje(k, e.target.value)} placeholder={ph} style={{ font: 'inherit', fontSize: '.9rem', color: '#111', padding: '.55rem .7rem', borderRadius: '.5rem', border: '1px solid rgba(17,17,17,.15)', background: '#fff' }} />
             </label>
