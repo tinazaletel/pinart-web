@@ -417,8 +417,37 @@ export default function BusinessOverview({ base }: { base: string }) {
       </div>
 
       <div className={styles.detailRow}>
+        <section className={styles.historyBand} aria-labelledby="task-title">
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('05 · NALOGE', '05 · TASKS')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/naloge`}><span className={styles.abTxt}>{L('Vse naloge', 'All tasks')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+          <div className={styles.bandBody}>
+          <h2 id="task-title" className={styles.bandNaslov}>{L('Aktivne naloge', 'Active tasks')}</h2>
+          {dashNaloge.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
+            {dashNaloge.map((n, i) => { const bg = n.stolpec === 'in_progress' ? 'var(--accent)' : n.stolpec === 'waiting' ? 'oklch(76% .14 75)' : n.stolpec === 'done' ? 'oklch(70% .15 155)' : 'oklch(80% .03 90)'; const lbl = n.stolpec === 'in_progress' ? L('V teku', 'In progress') : n.stolpec === 'waiting' ? L('Za pregled', 'For review') : n.stolpec === 'done' ? L('Končano', 'Done') : L('Za začeti', 'To do'); return (
+              <li key={i}><Link className={styles.dashRow} href={`${base}/kalkulator/naloge`}>
+                <span aria-hidden style={{ flex: 'none', width: '.5rem', height: '.5rem', borderRadius: '50%', background: bg }} />
+                <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}><b style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.naslov}</b>{n.oseba && <small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.oseba}</small>}</span>
+                <span style={{ flex: 'none', fontSize: '.62rem', fontWeight: 700, letterSpacing: '.03em', textTransform: 'uppercase', padding: '.18rem .5rem', borderRadius: '999px', color: n.stolpec === 'waiting' ? 'oklch(48% .13 70)' : 'var(--muted)', background: n.stolpec === 'waiting' ? 'oklch(90% .08 75)' : 'oklch(94% .006 87)' }}>{lbl}</span>
+                <span className={styles.dashRowArrow} aria-hidden>›</span>
+              </Link></li>
+            ); })}
+          </ul> : <div className={styles.emptyState}><span>+</span><div><strong>{L('Ni odprtih nalog.', 'No open tasks.')}</strong><p>{L('Naloge se prikažejo tukaj — dodaj jih v Task managerju.', 'Tasks appear here — add them in the Task manager.')}</p></div></div>}
+          </div>
+        </section>
+
+        <section className={styles.historyBand} aria-labelledby="comm-title">
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('06 · KOMUNIKACIJA', '06 · COMMUNICATION')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/komunikacija`}><span className={styles.abTxt}>{L('Odpri komunikacijo', 'Open communication')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+          <div className={styles.bandBody}>
+          <h2 id="comm-title" className={styles.bandNaslov}>{L('Zadnja pošta', 'Recent mail')}</h2>
+          {dashPosta.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
+            {dashPosta.map((v, i) => <li key={i}><Link className={styles.dashRow} href={`${base}/kalkulator/komunikacija`}><span aria-hidden style={{ flex: 'none', width: '.5rem', height: '.5rem', borderRadius: '50%', background: v.smer === 'prejeto' ? 'oklch(62% .16 160)' : 'oklch(66% .2 297)' }} /><span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}><b style={{ fontSize: '.84rem', color: 'var(--ink)', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.zadeva}</b><small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.kdo}</small></span><small style={{ flex: 'none', fontSize: '.66rem', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--muted)' }}>{v.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</small><span className={styles.dashRowArrow} aria-hidden>›</span></Link></li>)}
+          </ul> : <div className={styles.emptyState}><span>+</span><div><strong>{L('Ni pošte.', 'No mail.')}</strong><p>{L('Projektni maili se zberejo tukaj — pošlji ali prejmi mail na projektu.', 'Project mail collects here — send or receive mail on a project.')}</p></div></div>}
+          </div>
+        </section>
+      </div>
+
+      <div className={styles.detailRow}>
         <section className={styles.historyBand} id="accounting">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('05 · ZGODOVINA', '05 · HISTORY')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsi dokumenti', 'All documents')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('07 · ZGODOVINA', '07 · HISTORY')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsi dokumenti', 'All documents')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
         <div className={styles.bandBody}>
         <h2 className={styles.bandNaslov}>{L('Zadnji dokumenti', 'Recent documents')}</h2>
         {historyItems.length ? <div className={`${styles.tableWrap} ${styles.historyTable}`}><table><thead><tr><th>{L('Dokument', 'Document')}</th><th>{L('Stranka', 'Client')}</th><th>{L('Datum', 'Date')}</th><th>Status</th></tr></thead><tbody>{historyItems.map(item => <tr key={`${item.type}-${item.id}`} role="button" tabIndex={0} aria-label={L(`Odpri ${item.title}`, `Open ${item.title}`)} onClick={() => setSelectedDocument(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedDocument(item); } }}><td><div className={styles.documentCell}><span className={`${styles.documentIcon} ${styles[`document_${item.type === 'Ponudba' ? 'offer' : item.type === 'Pogodba' ? 'contract' : item.type === 'Račun' ? 'invoice' : 'expense'}`]}`}><HistoryIcon type={item.type} /></span><span><strong>{item.title}</strong><small>{item.subtitle ?? item.type}</small></span></div></td><td>{item.client}</td><td>{new Date(item.date).toLocaleDateString(dl)}</td><td>{statusOptions(item.type).length ? <span className={`${styles.statusField} ${styles[`status_${statusTone(item.status)}`]}`} data-editable={preview === 'mine' ? '' : undefined}><span className={styles.statusPill}>{item.status}</span><select aria-label={`Status: ${item.title}`} className={styles.statusSelect} value={item.status} disabled={preview !== 'mine'} title={preview !== 'mine' ? L('To so demo podatki — statusa ni mogoče spreminjati. Preklopi na »Moji podatki«.', 'This is demo data — the status cannot be changed. Switch to »My data«.') : undefined} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={e => updateDocumentStatus(item.type, item.id, e.target.value)}>{statusOptions(item.type).map(option => <option key={option}>{option}</option>)}</select></span> : <span className={`${styles.statusPill} ${styles.status_neutral}`}>{item.status}</span>}</td></tr>)}</tbody></table></div> : <div className={styles.emptyState}><span>+</span><div><strong>{L('Še nimaš dokumentov.', 'You have no documents yet.')}</strong><p>{L('Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj.', 'Offers, contracts, invoices and costs will appear here.')}</p></div></div>}
@@ -426,7 +455,7 @@ export default function BusinessOverview({ base }: { base: string }) {
       </section>
 
         <section className={styles.eventsBand} aria-labelledby="rev-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('06 · PRIHODKI', '06 · REVENUE')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsa poročila', 'All reports')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('08 · PRIHODKI', '08 · REVENUE')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsa poročila', 'All reports')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
           <h2 id="rev-title" className={styles.bandNaslov}>{L('Prihodki po mesecih', 'Revenue by month')}</h2>
           {(() => {
@@ -448,35 +477,6 @@ export default function BusinessOverview({ base }: { base: string }) {
               </div>
             </div>;
           })()}
-          </div>
-        </section>
-      </div>
-
-      <div className={styles.detailRow}>
-        <section className={styles.historyBand} aria-labelledby="task-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('07 · NALOGE', '07 · TASKS')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/naloge`}><span className={styles.abTxt}>{L('Vse naloge', 'All tasks')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
-          <div className={styles.bandBody}>
-          <h2 id="task-title" className={styles.bandNaslov}>{L('Aktivne naloge', 'Active tasks')}</h2>
-          {dashNaloge.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
-            {dashNaloge.map((n, i) => { const bg = n.stolpec === 'in_progress' ? 'var(--accent)' : n.stolpec === 'waiting' ? 'oklch(76% .14 75)' : n.stolpec === 'done' ? 'oklch(70% .15 155)' : 'oklch(80% .03 90)'; const lbl = n.stolpec === 'in_progress' ? L('V teku', 'In progress') : n.stolpec === 'waiting' ? L('Za pregled', 'For review') : n.stolpec === 'done' ? L('Končano', 'Done') : L('Za začeti', 'To do'); return (
-              <li key={i}><Link className={styles.dashRow} href={`${base}/kalkulator/naloge`}>
-                <span aria-hidden style={{ flex: 'none', width: '.5rem', height: '.5rem', borderRadius: '50%', background: bg }} />
-                <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}><b style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.naslov}</b>{n.oseba && <small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.oseba}</small>}</span>
-                <span style={{ flex: 'none', fontSize: '.62rem', fontWeight: 700, letterSpacing: '.03em', textTransform: 'uppercase', padding: '.18rem .5rem', borderRadius: '999px', color: n.stolpec === 'waiting' ? 'oklch(48% .13 70)' : 'var(--muted)', background: n.stolpec === 'waiting' ? 'oklch(90% .08 75)' : 'oklch(94% .006 87)' }}>{lbl}</span>
-                <span className={styles.dashRowArrow} aria-hidden>›</span>
-              </Link></li>
-            ); })}
-          </ul> : <div className={styles.emptyState}><span>+</span><div><strong>{L('Ni odprtih nalog.', 'No open tasks.')}</strong><p>{L('Naloge se prikažejo tukaj — dodaj jih v Task managerju.', 'Tasks appear here — add them in the Task manager.')}</p></div></div>}
-          </div>
-        </section>
-
-        <section className={styles.historyBand} aria-labelledby="comm-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('08 · KOMUNIKACIJA', '08 · COMMUNICATION')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/komunikacija`}><span className={styles.abTxt}>{L('Odpri komunikacijo', 'Open communication')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
-          <div className={styles.bandBody}>
-          <h2 id="comm-title" className={styles.bandNaslov}>{L('Zadnja pošta', 'Recent mail')}</h2>
-          {dashPosta.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
-            {dashPosta.map((v, i) => <li key={i}><Link className={styles.dashRow} href={`${base}/kalkulator/komunikacija`}><span aria-hidden style={{ flex: 'none', width: '.5rem', height: '.5rem', borderRadius: '50%', background: v.smer === 'prejeto' ? 'oklch(62% .16 160)' : 'oklch(66% .2 297)' }} /><span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}><b style={{ fontSize: '.84rem', color: 'var(--ink)', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.zadeva}</b><small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.kdo}</small></span><small style={{ flex: 'none', fontSize: '.66rem', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--muted)' }}>{v.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</small><span className={styles.dashRowArrow} aria-hidden>›</span></Link></li>)}
-          </ul> : <div className={styles.emptyState}><span>+</span><div><strong>{L('Ni pošte.', 'No mail.')}</strong><p>{L('Projektni maili se zberejo tukaj — pošlji ali prejmi mail na projektu.', 'Project mail collects here — send or receive mail on a project.')}</p></div></div>}
           </div>
         </section>
       </div>
