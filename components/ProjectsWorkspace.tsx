@@ -18,7 +18,8 @@ import { zagotoviNit, nalozSporocila, posljiSporocilo, narociSporocila, mojEmail
 import { pullProjectMail, pushProjectMail, saveDraft, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent } from '@/lib/pinartMailCloud';
 import { posljiMail } from '@/lib/posta';
 import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
-import { preberiSodelavci } from '@/lib/sodelavci';
+import { preberiSodelavci, shraniSodelavci } from '@/lib/sodelavci';
+import Toast from '@/components/Toast';
 import { preberiNaloge, shraniNaloge, type Sodelavec, type Naloga } from '@/lib/naloge';
 
 /* datumski filter (samo od–do; prazno ne omejuje) — enako kot arhiv */
@@ -992,6 +993,33 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     setKlepetIzbrani(novi);
     void sinhronizirajKlepet(novi);
   };
+  /* Povabi NOVEGA (ne le obstoječega sodelavca) po e-naslovu: doda ga med sodelavce,
+     izbere v nit IN mu pošlje mail vabilo z linkom (kot na Komunikacija hubu). */
+  const [vabiMail, setVabiMail] = useState('');
+  const [povabiToast, setPovabiToast] = useState('');
+  const povabiNaMail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const em = vabiMail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { setPovabiToast(L('Vpiši veljaven e-naslov.', 'Enter a valid email.')); return; }
+    if (nacin !== 'mine') { setPovabiToast(L('V predogledu ne povabiš.', 'Not available in preview.')); return; }
+    let sod = sodelavci.find(s => (s.email || '').toLowerCase() === em.toLowerCase());
+    if (!sod) {
+      sod = { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `sod-${Date.now()}`), ime: em.split('@')[0], email: em, vloga: 'clan', aktiven: true };
+      const noviSez = [...sodelavci, sod];
+      shraniSodelavci(noviSez); setSodelavci(noviSez);
+    }
+    const izbrani = klepetIzbrani.includes(sod.id) ? klepetIzbrani : [...klepetIzbrani, sod.id];
+    setKlepetIzbrani(izbrani);
+    await sinhronizirajKlepet(izbrani);
+    const povezava = `https://www.pinartflow.com${jeEn ? '/en' : ''}/kalkulator/komunikacija`;
+    const zadeva = jeEn ? 'You have been added to a chat — Pinart Flow' : 'Dodani ste v klepet — Pinart Flow';
+    const html = jeEn
+      ? `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a"><p>Hi,</p><p>You were added to a shared chat in <b>Pinart Flow</b>.</p><p>Sign in with this email (<b>${em}</b>) and open Communication to see the conversation and reply:</p><p><a href="${povezava}" style="display:inline-block;background:#2A2035;color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:600">Open chat in Flow</a></p><p style="color:#666;font-size:13px">If the button doesn't work, open: ${povezava}</p></div>`
+      : `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a"><p>Živjo,</p><p>Dodani ste v skupni klepet v <b>Pinart Flow</b>.</p><p>Prijavite se s tem e-naslovom (<b>${em}</b>) in odprite Komunikacijo, da vidite pogovor in odgovorite:</p><p><a href="${povezava}" style="display:inline-block;background:#2A2035;color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:600">Odpri klepet v Flow</a></p><p style="color:#666;font-size:13px">Če gumb ne dela, odprite: ${povezava}</p></div>`;
+    const rez = await posljiMail({ to: [em], subject: zadeva, html });
+    setVabiMail(''); setKlepetPicker(false);
+    setPovabiToast(rez.ok ? `${em} ${L('dodan + vabilo poslano.', 'added + invite sent.')}` : `${em} ${L('dodan (vabilo ni šlo).', 'added (invite failed).')}`);
+  };
   /* Odpre klepetni stolpec; če je podan mail, deli OZNAČEN del (ali cel mail) kot priponko. */
   const odpriKlepet = (mail?: PostaVnos | null) => {
     if (!selectedId) return;
@@ -1671,7 +1699,12 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                           <span className="pw-klepet-vrsta-ime">{s.ime}<small>{prisotnost(s.id) === 'online' ? L('na voljo', 'available') : prisotnost(s.id) === 'idle' ? L('nedejaven', 'idle') : L('nedosegljiv', 'offline')}</small></span>
                           {klepetIzbrani.includes(s.id) && <span className="pw-klepet-kljuk">✓</span>}
                         </button>
-                      )) : <p className="pw-klepet-meni-prazno">{L('Ni sodelavcev. Dodaj jih v ekipi.', 'No collaborators yet. Add them in the team.')}</p>}
+                      )) : <p className="pw-klepet-meni-prazno">{L('Ni sodelavcev. Dodaj jih spodaj po e-naslovu.', 'No collaborators yet. Add one by email below.')}</p>}
+                      <form onSubmit={povabiNaMail} style={{ display: 'flex', gap: '.35rem', padding: '.5rem .45rem .35rem', borderTop: '1px solid color-mix(in oklch, var(--ink) 8%, transparent)', marginTop: '.25rem' }}>
+                        <input type="email" value={vabiMail} onChange={e => setVabiMail(e.target.value)} placeholder={L('vpiši e-naslov …', 'enter an email …')} aria-label={L('Povabi po e-naslovu', 'Invite by email')} style={{ flex: 1, minWidth: 0, border: '1px solid color-mix(in oklch, var(--ink) 15%, transparent)', borderRadius: '.5rem', padding: '.42rem .55rem', fontSize: '.82rem', fontFamily: 'inherit', background: '#fff' }} />
+                        <button type="submit" style={{ flex: 'none', border: 0, borderRadius: '.5rem', background: 'var(--ink)', color: 'var(--paper)', padding: '.42rem .7rem', fontSize: '.78rem', fontWeight: 700, cursor: 'pointer' }}>{L('Povabi', 'Invite')}</button>
+                      </form>
+                      <p style={{ margin: '.15rem .45rem .1rem', fontSize: '.66rem', lineHeight: 1.35, color: 'color-mix(in oklch, var(--ink) 48%, transparent)' }}>{L('Pošljemo mu vabilo z linkom. E-naslov mora biti njegov prijavni.', 'We send them an invite with a link. Use their login email.')}</p>
                     </div>
                   )}
                 </div>
@@ -1691,6 +1724,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 <input value={klepetVnos} onChange={e => setKlepetVnos(e.target.value)} placeholder={klepetIzbrani.length ? L('Napiši sporočilo …', 'Write a message …') : L('Najprej izberi sodelavca (+)', 'First choose a collaborator (+)')} aria-label={L('Sporočilo', 'Message')} disabled={!klepetIzbrani.length} />
                 <button type="submit" className="pw-klepet-poslji" disabled={!klepetVnos.trim() || !klepetIzbrani.length} aria-label={L('Pošlji', 'Send')}><ArrowBendUpRight size={16} weight="bold" /></button>
               </form>
+              <Toast sporocilo={povabiToast} onClose={() => setPovabiToast('')} />
             </aside>
           )}
         </div>
