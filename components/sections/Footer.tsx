@@ -42,6 +42,7 @@ export default function Footer() {
           {/* Pinart Flow povezava odstranjena do launcha (produkt še ni javen). */}
           <a href="mailto:tina@pinart.si" style={{ color: TEXT, textDecoration: 'none' }}>tina@pinart.si</a>
           <a href={localePath(locale, `/zasebnost`)} style={{ color: TEXT, textDecoration: 'none' }}>{t('privacy')}</a>
+          <a href={localePath(locale, `/dostopnost`)} style={{ color: TEXT, textDecoration: 'none' }}>{locale === 'sl' ? 'Dostopnost' : 'Accessibility'}</a>
         </div>
       </div>
     </footer>
