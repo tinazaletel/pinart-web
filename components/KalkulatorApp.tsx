@@ -154,6 +154,17 @@ const KRATKO: Record<string, string> = {
   email: 'Email', pr: 'PR', video: 'Video', motion: 'Animacija',
   render3d: '3D', strategija: 'Strategija',
 };
+/* Kratke oznake za /en (orb mehurcki). SL KRATKO ostane privzeto. */
+const KRATKO_EN: Record<string, string> = {
+  cgp: 'Identity', logo: 'Logo', web: 'Website', kampanja: 'Ads',
+  publikacija: 'Print', embalaza: 'Packaging', ilustracija: 'Illustration',
+  direkcija: 'Direction', fotografija: 'Photography', copy: 'Copywriting',
+  interier: 'Interior', arhitektura: 'Architecture', razstava: 'Exhibitions',
+  produktni: 'Products', uxui: 'UX/UI', aplikacija: 'App',
+  dizajnsistem: 'Design system', smm: 'Social media', seo: 'SEO',
+  email: 'Email', pr: 'PR', video: 'Video', motion: 'Animation',
+  render3d: '3D', strategija: 'Strategy',
+};
 const KOLICINSKE: Record<string, string> = {
   logo: 'logotipov', ilustracija: 'ilustracij', fotografija: 'fotografiranj',
   copy: 'besedil', video: 'videov', motion: 'animacij', render3d: 'renderjev',
@@ -1840,6 +1851,16 @@ function InfoNamig({ besedilo, locale = 'sl' }: { besedilo: string; locale?: str
 export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { locale?: string; vLupini?: boolean }) {
   /* lahek prevajalnik za vidne nize UI: sl privzeto, en za anglescino */
   const L = (sl: string, en: string) => (locale === 'en' ? en : sl);
+  /* Prikaz imena/opisa podrocja (pricingCatalog): EN polje ob /en, sicer SL.
+     Ime se za shranjevanje/ujemanje ne uporablja tu — le za izpis. */
+  const podIme = (p: { ime: string; imeEn?: string }) => (locale === 'en' && p.imeEn ? p.imeEn : p.ime);
+  const podOpis = (p: { opis: string; opisEn?: string }) => (locale === 'en' && p.opisEn ? p.opisEn : p.opis);
+  /* Ime storitve za IZPIS v UI (izbirnik, cenik). Za shranjevanje/ujemanje in
+     telo ponudbe se drugod se vedno uporablja SL s.ime. Custom storitve nimajo
+     imeEn -> fallback na s.ime. */
+  const storIme = (s: { id?: string; ime: string; imeEn?: string }) => (locale === 'en' && s.imeEn ? s.imeEn : s.ime);
+  const kratkoIme = (s: { id: string; ime: string; imeEn?: string }) =>
+    locale === 'en' ? (KRATKO_EN[s.id] || storIme(s)) : (KRATKO[s.id] || s.ime);
   /* Vstopno soglasje (kot Paperform): pogoji pred prvo uporabo orodja.
      Sprejem se shrani lokalno; ob naslednjih obiskih se ne prikaze vec. */
   const [pogojiOk, setPogojiOk] = useState<boolean | null>(null);
@@ -2719,7 +2740,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <button key={p.id} type="button" className={'chip-podrocje' + (on ? ' on' : '')}
                     style={{ borderColor: on ? bar : 'rgba(17,17,17,.12)' }} onClick={() => preklopiPodrocje(p.id)}>
                     <span className="pi-pod" aria-hidden style={{ background: osvetli(bar, 0.8), color: zatemni(bar, 0.55) }}>{PODROCJE_IKONA[p.id]}</span>
-                    <b>{p.ime}</b>
+                    <b>{podIme(p)}</b>
                     <span className="chip-kljuk" aria-hidden style={{ borderColor: on ? bar : 'rgba(17,17,17,.2)', background: on ? bar : 'transparent' }}>{on ? '✓' : ''}</span>
                   </button>
                 ); })}
@@ -7301,9 +7322,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     <span className="pod-fill" aria-hidden />
                     <span className="pod-glava">
                       <span className="pod-ikona">{PODROCJE_IKONA[p.id]}</span>
-                      <h3>{p.ime}</h3>
+                      <h3>{podIme(p)}</h3>
                     </span>
-                    <p>{p.opis}</p>
+                    <p>{podOpis(p)}</p>
                   </button>
                 ))}
               </div>
@@ -7541,7 +7562,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           style={{ borderColor: on ? bar : 'rgba(17,17,17,.12)', boxShadow: on ? `0 6px 18px ${osvetli(bar, 0.5)}` : undefined }}
                           onClick={() => preklopiPodrocje(p.id)}>
                           <span className="pi-pod" aria-hidden style={{ background: osvetli(bar, 0.8), color: zatemni(bar, 0.55) }}>{PODROCJE_IKONA[p.id]}</span>
-                          <b>{p.ime}</b>
+                          <b>{podIme(p)}</b>
                           <span className="chip-kljuk" aria-hidden style={{ borderColor: on ? bar : 'rgba(17,17,17,.2)', background: on ? bar : 'transparent' }}>{on ? '✓' : ''}</span>
                         </button>
                       );
@@ -7601,11 +7622,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         onDragOver={e => e.preventDefault()}
                         onDrop={() => { if (dragIndex.current !== null) premakniStoritev(dragIndex.current, i); dragIndex.current = null; }}>
                         <span className="drag-rocaj" aria-hidden><DotsSixVertical size={18} weight="bold" /></span>
-                        <span className="cv-ime">{s.ime}</span>
-                        <input type="number" min={0} step={50} value={osnovaZa(s)} aria-label={L('Osnovna cena: ', 'Base price: ') + s.ime}
+                        <span className="cv-ime">{storIme(s)}</span>
+                        <input type="number" min={0} step={50} value={osnovaZa(s)} aria-label={L('Osnovna cena: ', 'Base price: ') + storIme(s)}
                           onChange={e => setOsnove({ ...osnove, [s.id]: Number(e.target.value) || 0 })} />
                         <span className="cv-znak">{vfx.znak}</span>
-                        <button type="button" className="brisi" title={L('Izbriši ', 'Delete ') + s.ime}
+                        <button type="button" className="brisi" title={L('Izbriši ', 'Delete ') + storIme(s)}
                           onClick={() => odstraniStoritev(s.id)}>×</button>
                       </div>
                     ))}
@@ -7616,7 +7637,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       {skrite.map(id => {
                         const st = STORITVE.find(x => x.id === id);
                         return st ? (
-                          <button key={id} type="button" className="cs-chip" onClick={() => povrniStoritev(id)}>↩ {st.ime}</button>
+                          <button key={id} type="button" className="cs-chip" onClick={() => povrniStoritev(id)}>↩ {storIme(st)}</button>
                         ) : null;
                       })}
                     </div>
@@ -7964,7 +7985,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           style={{ borderColor: on ? bar : 'rgba(17,17,17,.12)', boxShadow: on ? `0 6px 18px ${osvetli(bar, 0.5)}` : undefined }}
                           onClick={() => preklopi(obIzbor, p.id, setObIzbor)}>
                           <span className="pi-pod" aria-hidden style={{ background: osvetli(bar, 0.8), color: zatemni(bar, 0.55) }}>{PODROCJE_IKONA[p.id]}</span>
-                          <b>{p.ime}</b>
+                          <b>{podIme(p)}</b>
                           <span className="chip-kljuk" aria-hidden style={{ borderColor: on ? bar : 'rgba(17,17,17,.2)', background: on ? bar : 'transparent' }}>{on ? '✓' : ''}</span>
                         </button>
                       );
@@ -7973,7 +7994,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <div className="chat-vnos"><button type="button" className="gumb" disabled={obIzbor.size === 0} onClick={uvodPotrdiPodrocja}>{L('Naprej', 'Next')} <ArrowDown size={15} weight="bold" aria-hidden /></button></div>
                 </>
               )}
-              {chatKorak > 4 && obIzbor.size > 0 && uvodOdgovorMehur(4, [...obIzbor].map(id => PODROCJA.find(p => p.id === id)?.ime).filter(Boolean).join(', '))}
+              {chatKorak > 4 && obIzbor.size > 0 && uvodOdgovorMehur(4, [...obIzbor].map(id => { const p = PODROCJA.find(x => x.id === id); return p ? podIme(p) : null; }).filter(Boolean).join(', '))}
 
               {chatKorak >= 5 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
@@ -8073,7 +8094,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         onClick={() => izberiVrstico(s.id)}>
                         {/* ikona v nezno obarvanem krogu + POLNO ime (kot v retainerju) */}
                         <span className="orb-vrsta-ikona" aria-hidden style={{ background: osvetli(barvi[0], 0.82), color: barvi[0] }}>{ikonaZa(s.id)}</span>
-                        <span className="orb-vrsta-ime">{s.ime}</span>
+                        <span className="orb-vrsta-ime">{storIme(s)}</span>
                         <span className="orb-vrsta-cena">od {val(osnovaZa(s))}</span>
                         <span className="orb-vrsta-chk" aria-hidden>{on ? (q > 1 ? `✓${q}` : '✓') : '+'}</span>
                       </button>
@@ -8098,7 +8119,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     <button key={s.id} type="button"
                       className={'orb0' + (on ? ' aktiv' : '') + (MEHURCEK[s.id] ? ' orb0-foto' : '')}
                       aria-pressed={on}
-                      aria-label={`${s.ime}, od ${val(osnovaZa(s))}${on ? `, izbrano ×${q}` : ''}`}
+                      aria-label={`${storIme(s)}, ${L('od', 'from')} ${val(osnovaZa(s))}${on ? `, ${L('izbrano', 'selected')} ×${q}` : ''}`}
                       style={{
                         ['--orbd' as string]: `${Math.round(orbD * (tezaOrb(s.id)))}px`,
                         width: Math.round(orbD * (tezaOrb(s.id))), height: Math.round(orbD * (tezaOrb(s.id))),
@@ -8118,7 +8139,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         <>
                           <OrbSfera id={s.id} o1={barvi[0]} />
                           <span className="orb0-ikona" aria-hidden>{ikonaZa(s.id)}</span>
-                          <span className="orb0-ime">{KRATKO[s.id] || s.ime}</span>
+                          <span className="orb0-ime">{kratkoIme(s)}</span>
                           <span className="orb0-cena">od {val(osnovaZa(s))}</span>
                         </>
                       )}
@@ -8184,10 +8205,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             return (
                               <button key={s.id} type="button" className={'mreza-kvadrat' + (on ? ' on' : '')}
                                 style={{ ['--mb' as string]: bar, borderColor: on ? bar : undefined }}
-                                aria-pressed={on} aria-label={`${s.ime}, od ${val(osnovaZa(s))}${on ? `, izbrano ×${q}` : ''}`}
+                                aria-pressed={on} aria-label={`${storIme(s)}, ${L('od', 'from')} ${val(osnovaZa(s))}${on ? `, ${L('izbrano', 'selected')} ×${q}` : ''}`}
                                 onClick={() => izberiVrstico(s.id)}>
                                 <span className="mk-ikona" aria-hidden style={{ background: osvetli(bar, 0.82), color: zatemni(bar, 0.5) }}>{ikonaZa(s.id)}</span>
-                                <span className="mk-ime">{KRATKO[s.id] || s.ime}</span>
+                                <span className="mk-ime">{kratkoIme(s)}</span>
                                 <span className="mk-cena">od {val(osnovaZa(s))}</span>
                                 {on && (
                                   <span className="mk-kolic" role="button" tabIndex={0} title={L('Odstrani zadnjo vrstico te storitve', 'Remove the last row of this service')}
@@ -8284,9 +8305,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                               : <small className={odgovorjenih ? 'odg' : ''}>{q > 1 ? `${KOLICINSKE[l.sid] ? `${q} ${KOLICINSKE[l.sid]}` : `× ${q}`} · ` : ''}{status}</small>}
                           </button>
                           <span className="stepper0">
-                            <button type="button" aria-label={'Ena manj: ' + s.ime} onClick={() => spremeniKolicino(l.uid, -1)}>–</button>
+                            <button type="button" aria-label={L('Ena manj: ', 'One less: ') + storIme(s)} onClick={() => spremeniKolicino(l.uid, -1)}>–</button>
                             <b>{q}</b>
-                            <button type="button" aria-label={L('Ena več, ista cena: ', 'One more, same price: ') + s.ime} title={L('Še ena po isti ceni (količina). Za drugačno ceno klikni mehurček še enkrat.', 'One more at the same price (quantity). For a different price click the bubble again.')}
+                            <button type="button" aria-label={L('Ena več, ista cena: ', 'One more, same price: ') + storIme(s)} title={L('Še ena po isti ceni (količina). Za drugačno ceno klikni mehurček še enkrat.', 'One more at the same price (quantity). For a different price click the bubble again.')}
                               onClick={() => spremeniKolicino(l.uid, 1)}>+</button>
                           </span>
                           <span className="vrst0-cena">{val(osnovaZa(s) * q)}</span>
@@ -8483,7 +8504,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                                   style={{ borderColor: on ? bar : 'rgba(17,17,17,.12)', boxShadow: on ? `0 6px 18px ${osvetli(bar, 0.5)}` : undefined }}
                                   onClick={() => preklopiPodrocje(p.id)}>
                                   <span className="pi-pod" aria-hidden style={{ background: osvetli(bar, 0.8), color: zatemni(bar, 0.55) }}>{PODROCJE_IKONA[p.id]}</span>
-                                  <b>{p.ime}</b>
+                                  <b>{podIme(p)}</b>
                                   <span className="chip-kljuk" aria-hidden style={{ borderColor: on ? bar : 'rgba(17,17,17,.2)', background: on ? bar : 'transparent' }}>{on ? '✓' : ''}</span>
                                 </button>
                               );
@@ -8924,7 +8945,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 return createPortal(
                   <div className={`cw${vLupini ? ' cw-lupina' : ''}`}>
                     <div className="izbirnik-zastor" onClick={() => setPraviceOdprt(null)}>
-                      <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={'Pravice: ' + s.ime} onClick={e => e.stopPropagation()} data-lenis-prevent>
+                      <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={L('Pravice: ', 'Rights: ') + storIme(s)} onClick={e => e.stopPropagation()} data-lenis-prevent>
                         <div className="izbirnik-glava">
                           <span>Pravice: {s.ime}</span>
                           <button type="button" onClick={() => setPraviceOdprt(null)} aria-label={L('Zapri', 'Close')}>✕</button>

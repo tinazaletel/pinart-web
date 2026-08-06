@@ -30,7 +30,7 @@ export default async function PaketPage({ params }: { params: Promise<{ locale: 
         <div><p className={styles.eyebrow}>{locale === 'en' ? 'PLAN' : 'PAKET'}</p><h1>{locale === 'en' ? 'Plan and subscription.' : 'Paket in naročnina.'}</h1></div>
       </header>
 
-      <PaketiSeznam trenutni={paket === 'pro' ? 'pro' : 'free'} />
+      <PaketiSeznam trenutni={paket === 'pro' ? 'pro' : 'free'} locale={locale} />
     </section>
   </main>;
 }
