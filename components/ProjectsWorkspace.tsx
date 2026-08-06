@@ -147,7 +147,7 @@ const pwStyles = `
 .pw-status[data-tone='danger']{--pika:oklch(58% .19 25);--pill-bg:oklch(96.5% .03 28);--pill-ink:oklch(55% .11 27)}
 .pw-status[data-tone='neutral']{--pika:oklch(62% .02 70);--pill-bg:oklch(95.5% .008 87);--pill-ink:oklch(48% .015 70)}
 .pw-prazno{padding:2rem;color:var(--muted);font-size:.72rem;text-align:center;border:1px solid oklch(93% .006 82 / .55);border-radius:1.4rem;background:oklch(98% .008 87 / .92)}
-.pw-stran{padding:.25rem 1rem 1rem !important;scroll-margin-top:5.5rem}
+.pw-stran{padding:.25rem 1rem 1rem !important;margin-top:-1.5rem;scroll-margin-top:5.5rem}
 .pw-nazaj{display:inline-flex;align-items:center;gap:.4rem;margin:0 0 .8rem;padding:.55rem .95rem;border:1px solid oklch(93% .006 82 / .55);border-radius:999px;background:oklch(98% .008 87 / .92);font:700 .62rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
 .pw-nazaj:hover{background:var(--ink);color:var(--paper)}
 .pw-narocnik-link{color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:color-mix(in oklch,var(--ink) 35%,transparent)}
