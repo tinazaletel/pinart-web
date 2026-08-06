@@ -350,6 +350,11 @@
 .historyBand .emptyState { padding: 0 1rem; border-radius: 1rem; background: oklch(98% .01 87); }
 .dashRow { display: flex; align-items: center; gap: .6rem; padding: .5rem .55rem; margin: 0 -.55rem; border-radius: .6rem; text-decoration: none; color: inherit; transition: background .14s; }
 .dashRow:hover { background: oklch(97.4% .011 84); }
+/* zelo svetle vmesne crte (kot zadnji projekti). dashRow je zavit v <li>, zato
+   crta na li; ob hoverju se crta nad IN pod vrstico skrije (:has), da zaobljeno
+   ozadje ostane cisto (brez crte cez rob). */
+.dashList > li + li { border-top: 1px solid oklch(94% .006 82 / .5); }
+.dashList > li:has(> .dashRow:hover), .dashList > li:has(> .dashRow:hover) + li { border-top-color: transparent; }
 .dashRowArrow { margin-left: auto; flex: none; opacity: .38; font-size: 1rem; }
 .dashRow:hover .dashRowArrow { opacity: .7; }
 .overviewColumns { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; }
