@@ -1176,7 +1176,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           <div className="fl-bento-glava">
             <div>
               <h2>{t('Kaj dela Flow drugače?', 'What makes Flow different?')}</h2>
-              <p>{t('Ne le še eno orodje — orodje, ki ceni tvoje delo in poveže ves projekt. Tega chatbot, Excel ali asistent ne zmorejo.', 'More than another admin tool: Flow values your work and connects the whole project in one continuous workflow.')}</p>
+              <p>{t('Ne le še eno orodje — in ne prazen AI-workspace, ki ga sestaviš sam. Flow že pozna vrednost kreativnega dela in poveže ves projekt. Tega ChatGPT, Excel ali generično orodje ne zmorejo.', 'Not just another tool — and not an empty AI workspace you assemble yourself. Flow already understands the value of creative work and connects the whole project. ChatGPT, spreadsheets and generic tools can\'t.')}</p>
             </div>
             <a className="cta" href={kalkulator}>{t('Začni brezplačno', 'Start for free')} <ArrowRight size={16} weight="bold" /></a>
           </div>
