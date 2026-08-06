@@ -5494,9 +5494,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             <div key={x.id} className="postavka">
               <span>{x.ime}</span>
               <input type="number" min={1} step={1} value={x.kolicina} aria-label={(x.enota === 'ura' ? L('Ure', 'Hours') : L('Količina', 'Quantity')) + ': ' + x.ime} onChange={e => uredi(x.id, 'kolicina', Number(e.target.value) || 1)} />
-              <button type="button" className="enota-toggle" onClick={() => preklopiEnoto(x.id)} title={L('Preklopi enoto (kos / ura)', 'Switch unit (piece / hour)')}>{x.enota === 'ura' ? 'ur' : 'kos'}</button>
+              <button type="button" className="enota-toggle" onClick={() => preklopiEnoto(x.id)} title={L('Preklopi enoto (kos / ura)', 'Switch unit (piece / hour)')}>{x.enota === 'ura' ? L('ur', 'hr') : L('kos', 'pcs')}</button>
               <input type="number" min={0} step={10} value={x.cena} aria-label={L('Cena: ', 'Price: ') + x.ime} onChange={e => uredi(x.id, 'cena', Number(e.target.value) || 0)} />
-              <span className="enota">{x.enota === 'ura' ? '€/uro' : '€'}</span>
+              <span className="enota">{x.enota === 'ura' ? L('€/uro', '€/hr') : '€'}</span>
               <button type="button" title={L('Odstrani', 'Remove')} onClick={() => odstrani(x.id)}>×</button>
             </div>
           ))}
@@ -8327,10 +8327,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         <input type="number" min={1} step={1} value={x.kolicina} aria-label={(x.enota === 'ura' ? L('Ure', 'Hours') : L('Količina', 'Quantity')) + ': ' + x.ime}
                           onChange={e => uredi(x.id, 'kolicina', Number(e.target.value) || 1)} />
                         <button type="button" className="enota-toggle" onClick={() => preklopiEnoto(x.id)}
-                          title={L('Preklopi enoto (kos / ura)', 'Switch unit (piece / hour)')}>{x.enota === 'ura' ? 'ur' : 'kos'}</button>
+                          title={L('Preklopi enoto (kos / ura)', 'Switch unit (piece / hour)')}>{x.enota === 'ura' ? L('ur', 'hr') : L('kos', 'pcs')}</button>
                         <input type="number" min={0} step={10} value={x.cena} aria-label={L('Cena: ', 'Price: ') + x.ime}
                           onChange={e => uredi(x.id, 'cena', Number(e.target.value) || 0)} />
-                        <span className="enota">{x.enota === 'ura' ? '€/uro' : '€'}</span>
+                        <span className="enota">{x.enota === 'ura' ? L('€/uro', '€/hr') : '€'}</span>
                         <button type="button" title={L('Odstrani', 'Remove')} onClick={() => odstrani(x.id)}>×</button>
                       </div>
                     ))}

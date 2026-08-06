@@ -38,17 +38,18 @@ export function shraniProdukte(produkti: Produkt[]): void {
   localStorage.setItem(KLJUC, JSON.stringify(produkti));
 }
 
-export const ENOTE_PRODUKT: { id: ProduktEnota; ime: string }[] = [
-  { id: 'kos', ime: 'kos' },
-  { id: 'ura', ime: 'ura' },
-  { id: 'pavsal', ime: 'pavšal' },
-  { id: 'stran', ime: 'stran' },
-  { id: 'mesec', ime: 'mesec' },
+export const ENOTE_PRODUKT: { id: ProduktEnota; ime: string; imeEn: string }[] = [
+  { id: 'kos', ime: 'kos', imeEn: 'pcs' },
+  { id: 'ura', ime: 'ura', imeEn: 'hr' },
+  { id: 'pavsal', ime: 'pavšal', imeEn: 'flat rate' },
+  { id: 'stran', ime: 'stran', imeEn: 'page' },
+  { id: 'mesec', ime: 'mesec', imeEn: 'month' },
 ];
 
 const ENOTA_IME: Record<ProduktEnota, string> = Object.fromEntries(ENOTE_PRODUKT.map(e => [e.id, e.ime])) as Record<ProduktEnota, string>;
+const ENOTA_IME_EN: Record<ProduktEnota, string> = Object.fromEntries(ENOTE_PRODUKT.map(e => [e.id, e.imeEn])) as Record<ProduktEnota, string>;
 
-export const enotaIme = (enota?: ProduktEnota): string => ENOTA_IME[enota || 'kos'];
+export const enotaIme = (enota?: ProduktEnota, jeEn = false): string => (jeEn ? ENOTA_IME_EN : ENOTA_IME)[enota || 'kos'];
 
 /* Demo primeri za predogled (glej lib/predogled.ts) — realisticne sifre/cene/
    zaloge, da stran izgleda polno tudi brez pravih uporabniskih podatkov. */

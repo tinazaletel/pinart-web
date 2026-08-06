@@ -29,6 +29,7 @@ type Vrstica = { opis: string; kolicina: string; cena: string; popust: string; d
 const DDV_STOPNJE = ['22', '9.5', '5', '0'];
 const PRIVZETI_ROK_DNI = 15;
 const ENOTE_POSTAVK: PostavkaEnota[] = ['kos', 'ura', 'projekt', 'pavšal', 'mesec'];
+const ENOTA_POSTAVKA_EN: Record<PostavkaEnota, string> = { kos: 'pcs', ura: 'hr', projekt: 'project', 'pavšal': 'flat rate', mesec: 'month' };
 
 const esc =(s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
 const stev = (s: string) => { const n = Number(String(s).replace(',', '.')); return Number.isFinite(n) ? n : 0; };
@@ -792,7 +793,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
             </div>
             {shraniVrsticoIndex === i ? <div className="rc-shrani-editor">
               <label>{L('Ime v knjižnici', 'Name in library')}<input value={postavkaIme} onChange={event => setPostavkaIme(event.target.value)} placeholder={L('Npr. Oblikovanje logotipa', 'E.g. Logo design')} /></label>
-              <label>{L('Enota', 'Unit')}<select value={postavkaEnota} onChange={event => setPostavkaEnota(event.target.value as PostavkaEnota)}>{ENOTE_POSTAVK.map(enota => <option key={enota} value={enota}>{enota}</option>)}</select></label>
+              <label>{L('Enota', 'Unit')}<select value={postavkaEnota} onChange={event => setPostavkaEnota(event.target.value as PostavkaEnota)}>{ENOTE_POSTAVK.map(enota => <option key={enota} value={enota}>{jeEn ? ENOTA_POSTAVKA_EN[enota] : enota}</option>)}</select></label>
               <button type="button" className="rc-cip" onClick={shraniVrsticoKotPostavko} disabled={!postavkaIme.trim() || !v.opis.trim() || stev(v.cena) <= 0}>{L('Shrani postavko', 'Save item')}</button>
               <button type="button" className="rc-cip" onClick={() => setShraniVrsticoIndex(null)}>{L('Prekliči', 'Cancel')}</button>
             </div> : <button type="button" className="rc-shrani-postavko" onClick={() => odpriShranjevanjePostavke(i)} disabled={samoOgled || !v.opis.trim() || stev(v.cena) <= 0}>{L('Shrani vrstico kot postavko', 'Save row as item')}</button>}

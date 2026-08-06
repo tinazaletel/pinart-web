@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { useLocale } from 'next-intl';
 import { MagnifyingGlass } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { PRICING_SERVICES, type PricingService } from '@/lib/pricingCatalog';
@@ -51,6 +52,7 @@ export default function PriceListsWorkspace() {
      pisati v pravo shrambo (localStorage/cloud pravega racuna). */
   const [nacin] = usePredogled();
   const samoOgled = nacin !== 'mine';
+  const jeEn = useLocale() === 'en';
 
   const [profiles, setProfiles] = useState<Record<string, PriceProfile>>({});
   const [selected, setSelected] = useState('');
@@ -113,7 +115,7 @@ export default function PriceListsWorkspace() {
             <input className={styles.produktFormNaziv} required value={item.naziv} onChange={event => updateProdukt(item.id, { naziv: event.target.value })} placeholder="Naziv produkta" disabled={samoOgled} />
             <input className={styles.produktFormSifra} value={item.sifra || ''} onChange={event => updateProdukt(item.id, { sifra: event.target.value })} placeholder="Šifra artikla" disabled={samoOgled} />
             <input className={styles.produktFormOpis} value={item.opis || ''} onChange={event => updateProdukt(item.id, { opis: event.target.value })} placeholder="Opis" disabled={samoOgled} />
-            <span className={styles.produktFormCena}><input required min="0" step="0.01" type="number" value={item.cena} onChange={event => updateProdukt(item.id, { cena: Number(event.target.value) })} disabled={samoOgled} /><b>€</b><select value={item.enota || 'kos'} onChange={event => updateProdukt(item.id, { enota: event.target.value as ProduktEnota })} disabled={samoOgled}>{ENOTE_PRODUKT.map(enota => <option key={enota.id} value={enota.id}>{enota.ime}</option>)}</select></span>
+            <span className={styles.produktFormCena}><input required min="0" step="0.01" type="number" value={item.cena} onChange={event => updateProdukt(item.id, { cena: Number(event.target.value) })} disabled={samoOgled} /><b>€</b><select value={item.enota || 'kos'} onChange={event => updateProdukt(item.id, { enota: event.target.value as ProduktEnota })} disabled={samoOgled}>{ENOTE_PRODUKT.map(enota => <option key={enota.id} value={enota.id}>{jeEn ? enota.imeEn : enota.ime}</option>)}</select></span>
             <input className={styles.produktFormZaloga} min="0" type="number" value={item.zaloga ?? ''} onChange={event => updateProdukt(item.id, { zaloga: event.target.value === '' ? undefined : Number(event.target.value) })} placeholder="Zaloga" disabled={samoOgled} />
             <button type="button" onClick={() => setUrejaProdukt('')} disabled={samoOgled}>Shrani</button>
           </div>
@@ -125,7 +127,7 @@ export default function PriceListsWorkspace() {
               {item.opis && <p>{item.opis}</p>}
             </div>
             <div className={styles.produktMeta}>
-              <strong>{item.cena.toLocaleString('sl-SI', { maximumFractionDigits: 2 })} € / {enotaIme(item.enota)}</strong>
+              <strong>{item.cena.toLocaleString('sl-SI', { maximumFractionDigits: 2 })} € / {enotaIme(item.enota, jeEn)}</strong>
               <span>{item.zaloga != null ? `na zalogi: ${item.zaloga}` : '—'}</span>
             </div>
             <div className={styles.produktGumbi}>
