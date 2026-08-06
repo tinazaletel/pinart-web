@@ -3,6 +3,7 @@ import { setRequestLocale } from 'next-intl/server';
 import BusinessOverview from '@/components/BusinessOverview';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import OnboardingKartica from '@/components/OnboardingKartica';
+import PozdravPregled from '@/components/PozdravPregled';
 import styles from './pregled.module.css';
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export default async function PoslovniPregledPage({
         <header className={styles.topbar}>
           <div>
             <p className={styles.eyebrow}>{locale === 'en' ? 'BUSINESS OVERVIEW' : 'POSLOVNI PREGLED'}</p>
-            <h1>{locale === 'en' ? 'Welcome back, Tina.' : 'Dobrodošla nazaj, Tina.'} <span className={styles.wave} aria-hidden>👋</span></h1>
+            <PozdravPregled jeEn={locale === 'en'} />
             <p className={styles.topbarSub}>{locale === 'en' ? 'Here you can quickly create a proposal, track projects and keep an overview of everything that matters.' : 'Tukaj lahko hitro ustvariš ponudbo, slediš projektom in imaš pregled nad vsem, kar je pomembno.'}</p>
           </div></header>
 
