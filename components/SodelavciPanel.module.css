@@ -14,7 +14,7 @@
 .gumb { display: inline-grid; place-items: center; min-height: 2.75rem; padding: .6rem 1.1rem; border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font: 700 .85rem var(--font-sans), sans-serif; text-decoration: none; cursor: pointer; }
 .gumb:focus-visible { outline: 3px solid oklch(60% .2 270); outline-offset: 3px; }
 
-.opomba { margin: .8rem 0 0; color: color-mix(in oklch, var(--ink) 58%, transparent); font-size: .8rem; }
+.opomba { margin: .8rem 0 0; color: color-mix(in oklch, var(--ink) 68%, transparent); font-size: .8rem; }
 
 /* --- Sodelavci / ekipa --- */
 .ekipaSeznam { display: grid; gap: .55rem; margin: 0 0 1.1rem; padding: 0; list-style: none; }
@@ -25,7 +25,7 @@
 }
 .ekipaOseba { display: grid; gap: .1rem; margin-right: auto; min-width: 9rem; }
 .ekipaIme { font-weight: 650; font-size: .88rem; color: var(--ink); }
-.ekipaEmail { font-size: .74rem; color: color-mix(in oklch, var(--ink) 55%, transparent); }
+.ekipaEmail { font-size: .74rem; color: color-mix(in oklch, var(--ink) 68%, transparent); }
 
 .znacka {
   display: inline-flex; align-items: center; padding: .22rem .65rem; border-radius: 999px;
@@ -91,7 +91,7 @@
 .prenosNaslov { margin: 0 0 .35rem; font-size: .92rem; font-weight: 750; color: var(--ink); }
 .prenosVrstica { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-top: .7rem; }
 .prenosVrstica select { flex: 1 1 11rem; min-width: 0; }
-.prenosPuscica { color: color-mix(in oklch, var(--ink) 45%, transparent); font-weight: 700; flex: none; }
+.prenosPuscica { color: color-mix(in oklch, var(--ink) 68%, transparent); font-weight: 700; flex: none; }
 .prenosOpozorilo {
   margin: .9rem 0 0; padding: .7rem .9rem; border-radius: .7rem;
   border-left: 3px solid oklch(58% .19 300);

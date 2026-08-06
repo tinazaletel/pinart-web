@@ -134,10 +134,19 @@ export default function SettingsWorkspace({ base }: { base: string }) {
         <p>
           Pupa svetuje pri cenah, pravicah in besedilu. Ko jo vprašaš, se podatki trenutne ponudbe pošljejo AI ponudniku (Anthropic) samo zato, da ti odgovori — ne uporabijo se za učenje modela. Kadar koli jo lahko izklopiš.
         </p>
-        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '.6rem', cursor: 'pointer', fontWeight: 600, fontSize: '.92rem' }}>
-          <input type="checkbox" checked={pupaVklop} onChange={e => preklopiPupo(e.target.checked)} style={{ width: 18, height: 18, cursor: 'pointer' }} />
-          {pupaVklop ? 'Pupa je vklopljena' : 'Pupa je izklopljena'}
-        </label>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.6rem' }}>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={pupaVklop}
+            aria-label={pupaVklop ? 'Izklopi Pupo' : 'Vklopi Pupo'}
+            onClick={() => preklopiPupo(!pupaVklop)}
+            style={{ position: 'relative', width: '2.6rem', height: '1.5rem', flex: '0 0 auto', padding: 0, border: 0, borderRadius: '999px', cursor: 'pointer', background: pupaVklop ? 'var(--accent, oklch(66% .2 297))' : 'color-mix(in oklch, var(--ink) 25%, transparent)', transition: 'background .18s' }}
+          >
+            <span style={{ position: 'absolute', top: '50%', left: pupaVklop ? 'calc(100% - 1.3rem)' : '.2rem', transform: 'translateY(-50%)', width: '1.1rem', height: '1.1rem', borderRadius: '50%', background: '#fff', boxShadow: '0 1px 2px rgba(0,0,0,.28)', transition: 'left .18s' }} />
+          </button>
+          <span style={{ fontWeight: 600, fontSize: '.92rem' }}>{pupaVklop ? 'Pupa je vklopljena' : 'Pupa je izklopljena'}</span>
+        </div>
       </section>
 
       {/* "Pomoč in kontakt" odstranjen: Pomoč je zdaj svoja stran v meniju,

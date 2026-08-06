@@ -94,7 +94,7 @@
   flex: none; display: grid; place-items: center;
   width: 2.75rem; height: 2.75rem; padding: 0;
   border: 0; border-radius: 50%; background: none;
-  color: color-mix(in oklch, var(--ink) 55%, transparent); cursor: pointer;
+  color: color-mix(in oklch, var(--ink) 68%, transparent); cursor: pointer;
 }
 .okoGumb:hover { color: var(--ink); background: oklch(100% 0 0 / .45); }
 .skrijGumb:hover { background: oklch(100% 0 0 / .85); border-color: var(--ink); }
