@@ -6,7 +6,7 @@
    To je vstopna tocka, ki je manjkala, da sodelavec odpre skupno nit s svoje strani. */
 
 import { useEffect, useRef, useState } from 'react';
-import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, MagnifyingGlass, Tray, NotePencil, Trash } from '@phosphor-icons/react';
+import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, MagnifyingGlass, Tray, NotePencil, Trash, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, ArrowBendUpLeft, ArrowBendUpRight, Smiley } from '@phosphor-icons/react';
 import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, type OblacnaNit, type OblacnoSporocilo } from '@/lib/klepetCloud';
 import { usePredogled } from '@/lib/predogled';
 import { preberiVsePoste, type PostaVnos } from '@/lib/postaDnevnik';
@@ -155,10 +155,25 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
             <div className="km-posta-desno">
           {beriMail ? (
             <div className="km-branje">
-              <button type="button" className="km-nazaj" onClick={() => setBeriMail(null)}>← {L('Nazaj', 'Back')}</button>
-              <div className="km-branje-glava"><b>{beriMail.zadeva || L('(brez zadeve)', '(no subject)')}</b><small>{beriMail.prejemniki.join(', ')} · {datum(beriMail.datum)} · {beriMail.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</small></div>
+              <div className="km-branje-vrh">
+                <button type="button" className="km-nazaj" onClick={() => setBeriMail(null)}><ArrowBendUpLeft size={14} weight="bold" /> {L('Nazaj', 'Back')}</button>
+                <div className="km-orodja">
+                  <button type="button" className="km-ikonca" title={L('Premakni na drug projekt', 'Move to another project')} aria-label={L('Premakni', 'Move')}><FolderSimplePlus size={16} /></button>
+                  <button type="button" className="km-ikonca" title={L('Oznaka', 'Label')} aria-label={L('Oznaka', 'Label')}><Tag size={16} /></button>
+                  <button type="button" className="km-ikonca" title={L('V nalogo', 'Add to task')} aria-label={L('V nalogo', 'Add to task')}><CheckSquare size={16} /></button>
+                  <button type="button" className="km-ikonca" title={L('Pupa AI', 'Pupa AI')} aria-label="Pupa"><Sparkle size={16} /></button>
+                  <button type="button" className="km-ikonca" title={L('Natisni', 'Print')} aria-label={L('Natisni', 'Print')} onClick={() => { if (typeof window !== 'undefined') window.print(); }}><Printer size={16} /></button>
+                  <button type="button" className="km-ikonca" title={L('Zvezdica', 'Star')} aria-label={L('Zvezdica', 'Star')}><Star size={16} /></button>
+                </div>
+              </div>
+              <div className="km-branje-glava"><b>{beriMail.zadeva || L('(brez zadeve)', '(no subject)')}</b><small>{beriMail.prejemniki.join(', ')} · {datum(beriMail.datum)} · {beriMail.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</small>{projIme(beriMail.projectId) && <span className="km-mail-proj" style={{ color: projBarva(beriMail.projectId), background: `color-mix(in oklch, ${projBarva(beriMail.projectId)} 12%, transparent)`, marginTop: '.4rem' }}><i aria-hidden style={{ background: projBarva(beriMail.projectId) }} />{projIme(beriMail.projectId)}</span>}</div>
               <div className="km-branje-telo">{(beriMail.telo || beriMail.povzetek || L('(brez besedila)', '(no text)')).replace(/<[^>]+>/g, ' ')}</div>
-              <p className="km-branje-op">{L('Odgovori, posreduj, premakni in V nalogo pridejo z enotnim mail-klijentom (kmalu).', 'Reply, forward, move and Add-to-task arrive with the unified mail client (soon).')}</p>
+              <div className="km-branje-akcije">
+                <button type="button" className="km-akcija primarna"><ArrowBendUpLeft size={15} weight="bold" /> {L('Odgovori', 'Reply')}</button>
+                <button type="button" className="km-akcija"><ArrowBendUpRight size={15} weight="bold" /> {L('Posreduj', 'Forward')}</button>
+                <button type="button" className="km-akcija"><ChatCircle size={15} weight="bold" /> {L('Deli v klepet', 'Share in chat')}</button>
+              </div>
+              <p className="km-branje-op">{L('Gumbi zaživijo z enotnim mail-klijentom (kmalu).', 'Buttons come alive with the unified mail client (soon).')}</p>
             </div>
           ) : (() => {
             const q = postaIsk.trim().toLowerCase();
@@ -219,6 +234,8 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
               <div ref={dnoRef} />
             </div>
             <form className="km-vnos" onSubmit={poslji}>
+              <button type="button" className="km-vnos-ik" title={L('Priponka (kmalu)', 'Attachment (soon)')} aria-label={L('Priponka', 'Attachment')}><Paperclip size={16} /></button>
+              <button type="button" className="km-vnos-ik" title={L('Emoji (kmalu)', 'Emoji (soon)')} aria-label="Emoji"><Smiley size={16} /></button>
               <input value={vnos} onChange={e => setVnos(e.target.value)} placeholder={L('Napiši sporočilo …', 'Write a message …')} aria-label={L('Sporočilo', 'Message')} disabled={!izbrana} />
               <button type="submit" className="km-poslji" disabled={!vnos.trim() || !izbrana} aria-label={L('Pošlji', 'Send')}><PaperPlaneRight size={16} weight="fill" /></button>
             </form>
@@ -289,7 +306,17 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-branje-glava b{display:block;font:700 1rem var(--font-sans),sans-serif;color:var(--k-ink)}
         .km-branje-glava small{display:block;margin-top:.2rem;font:500 .74rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 50%,transparent)}
         .km-branje-telo{margin-top:.8rem;font:500 .88rem var(--font-sans),sans-serif;color:var(--k-ink);line-height:1.6;white-space:pre-wrap}
-        .km-branje-op{margin-top:1rem;padding-top:.8rem;border-top:1px solid var(--k-line);font:500 .74rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 45%,transparent)}
+        .km-branje-op{margin-top:1rem;padding-top:.8rem;border-top:1px solid var(--k-line);font:500 .72rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 40%,transparent)}
+        .km-branje-vrh{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-bottom:.9rem}
+        .km-orodja{display:flex;gap:.4rem;flex-wrap:wrap}
+        .km-ikonca{display:grid;place-items:center;width:2.3rem;height:2.3rem;border:1px solid var(--k-line);border-radius:50%;background:#fff;color:color-mix(in oklch,var(--k-ink) 68%,transparent);cursor:pointer;transition:background .14s,color .14s}
+        .km-ikonca:hover{background:color-mix(in oklch,var(--k-ink) 6%,transparent);color:var(--k-ink)}
+        .km-branje-akcije{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.1rem}
+        .km-akcija{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--k-line);border-radius:999px;padding:.55rem 1.1rem;font:700 .8rem var(--font-sans),sans-serif;color:var(--k-ink);background:#fff;cursor:pointer}
+        .km-akcija:hover{background:color-mix(in oklch,var(--k-ink) 6%,transparent)}
+        .km-akcija.primarna{background:var(--k-ink,#2a2620);color:#fff;border-color:transparent}
+        .km-vnos-ik{flex:none;display:grid;place-items:center;width:2.3rem;height:2.3rem;border:0;border-radius:50%;background:none;color:color-mix(in oklch,var(--k-ink) 55%,transparent);cursor:pointer}
+        .km-vnos-ik:hover{background:color-mix(in oklch,var(--k-ink) 7%,transparent);color:var(--k-ink)}
         .km-strani{display:flex;justify-content:center;align-items:center;gap:.3rem;margin:1rem 0 .2rem}
         .km-strani button{min-width:1.9rem;height:1.9rem;padding:0 .5rem;border:1px solid var(--k-line);border-radius:.5rem;background:#fff;color:var(--k-ink);font:600 .74rem var(--font-sans),sans-serif;cursor:pointer}
         .km-strani button:hover:not(:disabled){background:color-mix(in oklch,var(--k-purple) 6%,transparent)}
