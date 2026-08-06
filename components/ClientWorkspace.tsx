@@ -129,7 +129,11 @@ export default function ClientWorkspace() {
   const kontakti = samoOgled ? kontaktiDemo : (selected?.kontakti || []);
 
   useEffect(() => {
-    const calculator = JSON.parse(localStorage.getItem('pinart-kalkulator-narocniki') || '[]') as Array<CalculatorClient | string>;
+    /* Prave narocnike iz kalkulatorja primesamo SAMO v nacinu 'mine' — v predogledih
+       (empty/demo/zacetek) mora slika priti izkljucno iz podatkiZaPredogled. */
+    const calculator = nacin === 'mine'
+      ? JSON.parse(localStorage.getItem('pinart-kalkulator-narocniki') || '[]') as Array<CalculatorClient | string>
+      : [];
     const flow = podatkiZaPredogled(nacin, loadFlowData());
     const dashboard = flow.clients;
     const merged = new Map<string, Client>();

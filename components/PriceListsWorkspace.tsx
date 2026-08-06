@@ -68,6 +68,11 @@ export default function PriceListsWorkspace() {
   const [urejaProdukt, setUrejaProdukt] = useState('');
 
   useEffect(() => {
+    if (nacin === 'empty') {
+      /* Nov uporabnik: brez demo cenikov/profilov/produktov — prikaze se prazno stanje. */
+      setProfiles({}); setActive(''); setSelected(''); setProdukti([]);
+      return;
+    }
     if (nacin === 'demo') {
       const prvo = Object.keys(DEMO_PROFILI)[0];
       setProfiles(DEMO_PROFILI); setActive(prvo); setSelected(prvo);

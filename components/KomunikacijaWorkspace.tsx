@@ -47,6 +47,9 @@ const DEMO_SPOROCILA: Record<string, OblacnoSporocilo[]> = {
 export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const [nacin] = usePredogled();
+  /* demo ostane 'nacin !== mine' (samo-za-ogled: gating pisanja v pravo shrambo).
+     prazno = nov uporabnik: nobenih demo mailov/klepetov — vse prazno. */
+  const prazno = nacin === 'empty';
   const demo = nacin !== 'mine';
   const [email, setEmail] = useState<string | null>(null);
   const [niti, setNiti] = useState<OblacnaNit[]>([]);
@@ -84,6 +87,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   const [vabiEmail, setVabiEmail] = useState('');
   const [vabiTece, setVabiTece] = useState(false);
   useEffect(() => {
+    if (prazno) { setPosta([]); setProjMapa({}); return; }
     const vsi = demo ? DEMO_POSTA : preberiVsePoste();
     setPosta([...vsi].sort((a, b) => b.datum.localeCompare(a.datum)));
     if (demo) { setProjMapa({ 'demo-portal': 'Prenova portala · Rokus Klett' }); return; }
@@ -92,11 +96,12 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
       loadFlowData().offers.forEach(o => { m[o.id] = `${o.title || 'Projekt'}${o.client ? ' · ' + o.client : ''}`; });
       setProjMapa(m);
     } catch { setProjMapa({}); }
-  }, [demo]);
+  }, [demo, prazno]);
   const odjavaRef = useRef<(() => void) | null>(null);
   const dnoRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    if (prazno) { setEmail(null); setNiti([]); setIzbrana(null); setSporocila([]); setNalaganje(false); return; }
     if (demo) { setEmail(DEMO_EMAIL); setNiti(DEMO_NITI); setIzbrana(DEMO_NITI[0].threadId); setNalaganje(false); return; }
     let ustavljeno = false;
     void (async () => {
@@ -108,7 +113,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
       setNalaganje(false);
     })();
     return () => { ustavljeno = true; };
-  }, [demo]);
+  }, [demo, prazno]);
 
   useEffect(() => {
     odjavaRef.current?.(); odjavaRef.current = null;

@@ -220,7 +220,11 @@ export default function KoledarWorkspace() {
   /* V demo (polno poslovanje) napolni koledar z vzorčnimi dogodki — samo za prikaz,
      brez pisanja v localStorage — in privzeto vklopi roke nalog; sicer prava shramba. */
   useEffect(() => {
-    if (nacin === 'demo') {
+    if (nacin === 'empty') {
+      /* Nov uporabnik: prazen koledar — brez demo dogodkov in brez branja prave shrambe. */
+      setSestanki([]);
+      setPokaziNaloge(false);
+    } else if (nacin === 'demo') {
       setSestanki(demoSestanki());
       setPokaziNaloge(true);
     } else {

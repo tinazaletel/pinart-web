@@ -461,16 +461,17 @@ export default function TaskManagerWorkspace() {
   /* Task Manager je Tinino dogfooding orodje: v NASPROTJU z ostalimi delovnimi prostori (glej
      KoledarWorkspace/ClientWorkspace) ostane polno interaktiven (drag&drop, dodajanje, tagi,
      štoparica, seed razvojnih nalog) v VSEH načinih ogleda — tudi v predogledu/demo. localStorage
-     je per-brskalnik, zato pisanje tu ne pokvari nič skupnega. usePredogled() ohranjen zaradi
-     skladnosti klica hooka, njegov rezultat pa namenoma ne vpliva na samoOgled spodaj. */
-  usePredogled();
+     je per-brskalnik, zato pisanje tu ne pokvari nič skupnega. samoOgled ostane false (poln
+     interaktiven), predogledNacin pa vpliva SAMO na vir seznama nalog: v »Prazno · nov uporabnik«
+     je tabla prazna (iskren predogled), drag&drop/dodajanje ostanejo nedotaknjeni. */
+  const [predogledNacin] = usePredogled();
   const samoOgled = false;
 
   const trenutni = sodelavci.find((s) => s.id === trenutniId) || sodelavci[0];
   const jeVodjaAliAdmin = trenutni.vloga === 'vodja' || trenutni.vloga === 'admin';
 
   useEffect(() => {
-    setNaloge(preberiNaloge());
+    setNaloge(predogledNacin === 'empty' ? [] : preberiNaloge());
     setZgodovina(preberiZgodovino());
     setSodelavci(preberiSodelavci());
     setStranke(loadFlowData().clients);
@@ -478,7 +479,7 @@ export default function TaskManagerWorkspace() {
     setOddelki(preberiOddelki());
     setPrazniProjekti(preberiPrazneProjekte());
     setPodrocja(preberiPodrocja());
-  }, []);
+  }, [predogledNacin]);
 
   const posodobiInShrani = (noveNaloge: Naloga[]) => { setNaloge(noveNaloge); shraniNaloge(noveNaloge); };
 

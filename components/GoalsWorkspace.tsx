@@ -43,6 +43,13 @@ export default function GoalsWorkspace({ base }: { base: string }) {
   const [timeEntries, setTimeEntries] = useState<PrivateTimeEntry[]>([]);
 
   useEffect(() => {
+    if (nacin === 'empty') {
+      /* Nov uporabnik: brez pravih ciljev/stroskov iz localStorage — same privzete
+         vrednosti in prazni seznami (kot da si se pravkar registriral). */
+      setGoal(5000); setDesiredIncome(2000); setReservePercent(20);
+      setInvoices([]); setExpenses([]); setRecurring([]);
+      return;
+    }
     const flow = podatkiZaPredogled(nacin, loadFlowData());
     const settings = JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}');
     const goalSettings = JSON.parse(localStorage.getItem('pinart-dashboard-goal-settings') || '{}') as Partial<GoalSettings>;

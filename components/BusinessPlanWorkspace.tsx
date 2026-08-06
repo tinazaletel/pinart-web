@@ -149,8 +149,16 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
      ta zastavica nanje ne vpliva. */
   const [nacinPredogleda] = usePredogled();
   const samoOgled = nacinPredogleda !== 'mine';
+  /* prazno = nov uporabnik: ure/vnosi/dnevnik so PRAZNI (brez pravih/demo podatkov,
+     kot da si se pravkar registriral). samoOgled ostane za gating pisanja. */
+  const prazno = nacinPredogleda === 'empty';
 
   useEffect(() => {
+    if (prazno) {
+      /* Nov uporabnik: privzet načrt in prazen dnevnik ur — brez branja prave/oblačne shrambe. */
+      setPlan(DEFAULT_BUSINESS_PLAN); setEntries([]); setReady(true);
+      return;
+    }
     const localPlan = loadLocalPlan();
     const localEntries = loadLocalTimeEntries();
     setPlan(localPlan); setEntries(localEntries);
@@ -158,7 +166,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       if (cloudPlan) { setPlan(cloudPlan); saveLocalPlan(cloudPlan); }
       if (cloudEntries.length) { setEntries(cloudEntries); saveLocalTimeEntries(cloudEntries); }
     }).catch(() => undefined).finally(() => setReady(true));
-  }, []);
+  }, [prazno]);
 
   /* Cas bere skupna shramba (lib/tekoceMerjenje), da pavza velja tudi tu in da
      se merjenje ne izgubi ob osvezitvi strani. */
@@ -345,6 +353,13 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   };
 
   useEffect(() => {
+    if (prazno) {
+      /* Nov uporabnik: prazna evidenca prisotnosti — brez demo in brez branja shrambe. */
+      setPrisotnosti([]);
+      setDelovnikUre(8);
+      odpriPrisotnostDan(new Date().toISOString().slice(0, 10), []);
+      return;
+    }
     if (samoOgled) {
       /* Demo/predogled: evidenca je vnaprej napolnjena in se ne bere niti ne
          zapisuje v shrambo (glej demoPrisotnosti in samoOgled uporabo nizje). */
@@ -388,7 +403,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       } catch { /* brez prijave / brez tabele — ostane lokalno */ }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [samoOgled]);
+  }, [samoOgled, prazno]);
 
   /* Ko med merjenjem odscrollaš do dnevnika, štoparica izgine z zaslona.
      Zato jo takrat pokažemo kot plavajoč pas na dnu — čas mora biti ves čas viden. */
