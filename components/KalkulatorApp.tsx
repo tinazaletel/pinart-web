@@ -5623,7 +5623,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       <input ref={barvaRef} type="color" hidden onChange={e => uporabiBarvo(e.target.value)} />
       <span className="tool-locnica" aria-hidden />
             {podlogaDropdown()}
-      <span className="tool-locnica" aria-hidden />
       <button type="button" className={'logo-kvadrat' + (logo ? ' ima' : '')} onClick={() => logoRef.current?.click()}
         title={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')} aria-label={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')}
         style={logo ? { backgroundImage: `url(${logo})` } : undefined}>
@@ -6837,7 +6836,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .tonbar { display: flex; overflow-x: auto; }
           .cw .tonbar button { flex: 1 0 auto; }
         }
-        .cw .orodjarna { position: relative; display: flex; flex-wrap: wrap; overflow: visible; gap: .45rem; align-items: center; margin: 1rem 0 .8rem; padding-bottom: .2rem; }
+        .cw .orodjarna { position: relative; display: flex; flex-wrap: nowrap; overflow: visible; gap: .45rem; align-items: center; margin: 1rem 0 .8rem; padding-bottom: .2rem; }
         .cw .orodjarna > * { flex: none; }
         /* mobilni bottom-sheet ima navpičen prostor — tam naj se orodja ovijejo */
         .cw .orodjarna-sheet { flex-wrap: wrap; overflow-x: visible; }
@@ -9439,7 +9438,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <input ref={barvaRef} type="color" hidden onChange={e => uporabiBarvo(e.target.value)} />
                 <span className="tool-locnica" aria-hidden />
                                 {podlogaDropdown()}
-                <span className="tool-locnica" aria-hidden />
                 <button type="button" className={'logo-kvadrat' + (logo ? ' ima' : '')} onClick={() => logoRef.current?.click()}
                   title={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')} aria-label={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')}
                   style={logo ? { backgroundImage: `url(${logo})` } : undefined}>
