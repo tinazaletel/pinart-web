@@ -72,7 +72,7 @@ export interface DokPredloga {
    PPT (vodoravne) za poslovni načrt / predstavitve. Uporabnica lahko uvozi svojo. */
 export const DOK_PODLOGE_A4: string[] = [
   '/flow/1a_a4.jpg', '/flow/2_a4.jpg', '/flow/2a_a4.jpg',
-  '/flow/3_a4.jpg', '/flow/3a_a4.jpg', '/flow/4_a4.jpg',
+  '/flow/it_predloga.jpg', '/flow/it_predloga_1.jpg', '/flow/4_a4.jpg',
 ];
 export const DOK_PODLOGE_PPT: string[] = [
   '/flow/1_ptt.jpg', '/flow/2_ptt.jpg', '/flow/3_ptt.jpg', '/flow/4_ptt.jpg',
