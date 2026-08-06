@@ -3844,14 +3844,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      omogoča preklop med shranjenimi podlogami + jasno brisanje. */
   const podlogaDropdown = () => {
     const izberiPreset = (url: string) => { setPodlogaCover(url); setPredlogaPinart(false); setPodlogaMenuOdprt(false); };
-    const naLabela = podlogaCover ? L('Podloga', 'Background') : predlogaPinart ? 'Pinart' : L('Privzeto', 'Default');
     return (
       <div className="podloga-dd">
-        <button type="button" className="podloga-dd-gumb" onClick={() => setPodlogaMenuOdprt(o => !o)} aria-haspopup="menu" aria-expanded={podlogaMenuOdprt} title={L('Podloga naslovnice', 'Cover background')}>
-          <span className="podloga-dd-krog" style={podlogaCover ? { backgroundImage: `url(${podlogaCover})` } : undefined}>
-            {!podlogaCover && predlogaPinart && <Check size={11} weight="bold" />}
+        <button type="button" className="podloga-dd-gumb" onMouseDown={e => e.preventDefault()} onClick={() => setPodlogaMenuOdprt(o => !o)} aria-haspopup="menu" aria-expanded={podlogaMenuOdprt} title={L('Podloga naslovnice', 'Cover background')}>
+          <span className={'podloga-dd-krog' + (!podlogaCover && predlogaPinart ? ' pinart' : '')} style={podlogaCover ? { backgroundImage: `url(${podlogaCover})` } : undefined}>
+            {!podlogaCover && (predlogaPinart
+              ? <Check size={11} weight="bold" />
+              : <svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden><line x1="6" y1="18" x2="18" y2="6" stroke="#e5484d" strokeWidth="2" strokeLinecap="round" /></svg>)}
           </span>
-          <span className="podloga-dd-lbl">{naLabela}</span>
+          <span className="podloga-dd-lbl">{L('Podloga', 'Background')}</span>
           <svg className="podloga-dd-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
         </button>
         {podlogaMenuOdprt && (
@@ -5610,7 +5611,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'crke' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('crke'); }} title={L('Barvaj črke', 'Color the text')} aria-label={L('Barvaj črke', 'Color the text')}><span className="ti">T</span></button>
       <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'podlaga' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('podlaga'); }} title={L('Barvaj ozadje črk', 'Color the text background')} aria-label={L('Barvaj ozadje črk', 'Color the text background')}><span className="ti ti-box">T</span></button>
       <span className="tool-locnica" aria-hidden />
-      {['#111111', '#7C3AED', '#FA4892', '#EEE8D8', '#50E3C2'].map(barva => (
+      {['#111111', '#7C3AED', '#FA4892', '#50E3C2'].map(barva => (
         <button key={barva} type="button" className="barvica" style={{ background: barva }}
           aria-label={'Barva ' + barva}
           title={(barvaCilj === 'podlaga' ? L('Ozadje', 'Background') : L('Črke', 'Text')) + L(' — dvojni klik odstrani barvo', ' — double-click removes the color')}
@@ -5621,8 +5622,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
       <input ref={barvaRef} type="color" hidden onChange={e => uporabiBarvo(e.target.value)} />
       <span className="tool-locnica" aria-hidden />
-      <span className="podloga-oznaka">{L('Podloga:', 'Background:')}</span>
-      {podlogaDropdown()}
+            {podlogaDropdown()}
       <span className="tool-locnica" aria-hidden />
       <button type="button" className={'logo-kvadrat' + (logo ? ' ima' : '')} onClick={() => logoRef.current?.click()}
         title={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')} aria-label={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')}
@@ -6837,7 +6837,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .tonbar { display: flex; overflow-x: auto; }
           .cw .tonbar button { flex: 1 0 auto; }
         }
-        .cw .orodjarna { position: relative; display: flex; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; gap: .45rem; align-items: center; margin: 1rem 0 .8rem; padding-bottom: .2rem; }
+        .cw .orodjarna { position: relative; display: flex; flex-wrap: wrap; overflow: visible; gap: .45rem; align-items: center; margin: 1rem 0 .8rem; padding-bottom: .2rem; }
         .cw .orodjarna > * { flex: none; }
         /* mobilni bottom-sheet ima navpičen prostor — tam naj se orodja ovijejo */
         .cw .orodjarna-sheet { flex-wrap: wrap; overflow-x: visible; }
@@ -6931,7 +6931,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .tool-t .ti-box { border: 2px solid currentColor; border-radius: 3px; padding: 0 .1em; }
         .cw .tool-locnica { width: 1px; height: 1.7rem; background: rgba(17,17,17,.16); margin: 0 .2rem; }
         .cw .barvica-mavrica { background: conic-gradient(from 0deg, #FA4892, #F8E71C, #50E3C2, #7C3AED, #FA4892); border-color: rgba(17,17,17,.25); }
-        .cw .barvica { width: 1.35rem; height: 1.35rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.22); cursor: pointer; }
+        .cw .barvica { flex: none; width: 1.35rem; height: 1.35rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.22); cursor: pointer; padding: 0; }
         .cw .podloga-oznaka { font-size: .74rem; font-weight: 700; color: rgba(17,17,17,.6); letter-spacing: .02em; margin-right: .1rem; }
         .cw .podloga-krog { width: 1.7rem; height: 1.7rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.28); background: transparent; color: rgba(17,17,17,.6); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s, background .15s; }
         .cw .podloga-krog:hover { border-color: var(--ink); color: var(--ink); }
@@ -6945,7 +6945,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .podloga-dd { position: relative; display: inline-flex; }
         .cw .podloga-dd-gumb { display: inline-flex; align-items: center; gap: .4rem; height: 1.9rem; padding: 0 .55rem 0 .3rem; border: 1px solid rgba(17,17,17,.28); border-radius: 999px; background: var(--paper); color: rgba(17,17,17,.72); font: inherit; font-size: .74rem; font-weight: 600; cursor: pointer; transition: border-color .15s, color .15s; }
         .cw .podloga-dd-gumb:hover { border-color: var(--ink); color: var(--ink); }
-        .cw .podloga-dd-krog { width: 1.35rem; height: 1.35rem; border-radius: 50%; flex: none; background-size: cover; background-position: center; display: inline-flex; align-items: center; justify-content: center; color: #fff; background-image: conic-gradient(from 210deg, #ffd54a, #7be0a0, #63c7e8, #a78bfa, #f78fb0, #ffd54a); }
+        .cw .podloga-dd-krog { width: 1.35rem; height: 1.35rem; border-radius: 50%; flex: none; background-size: cover; background-position: center; background-color: #fff; border: 1px solid rgba(17,17,17,.25); display: inline-flex; align-items: center; justify-content: center; color: rgba(17,17,17,.5); }
+        .cw .podloga-dd-krog.pinart { background-image: conic-gradient(from 210deg, #ffd54a, #7be0a0, #63c7e8, #a78bfa, #f78fb0, #ffd54a); border-color: rgba(17,17,17,.2); color: #fff; }
         .cw .podloga-dd-lbl { white-space: nowrap; }
         .cw .podloga-dd-chev { opacity: .6; }
         .cw .podloga-dd-ozadje { position: fixed; inset: 0; z-index: 40; }
@@ -9426,7 +9427,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'crke' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('crke'); }} title={L('Barvaj črke', 'Color the text')} aria-label={L('Barvaj črke', 'Color the text')}><span className="ti">T</span></button>
                 <button type="button" className={'tool-krog tool-t' + (barvaCilj === 'podlaga' ? ' on' : '')} onMouseDown={e => { e.preventDefault(); setBarvaCilj('podlaga'); }} title={L('Barvaj ozadje črk', 'Color the text background')} aria-label={L('Barvaj ozadje črk', 'Color the text background')}><span className="ti ti-box">T</span></button>
                 <span className="tool-locnica" aria-hidden />
-                {['#111111', '#7C3AED', '#FA4892', '#EEE8D8', '#50E3C2'].map(barva => (
+                {['#111111', '#7C3AED', '#FA4892', '#50E3C2'].map(barva => (
                   <button key={barva} type="button" className="barvica" style={{ background: barva }}
                     aria-label={'Barva ' + barva}
                     title={(barvaCilj === 'podlaga' ? L('Ozadje', 'Background') : L('Črke', 'Text')) + L(' — dvojni klik odstrani barvo', ' — double-click removes the color')}
@@ -9437,8 +9438,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   onMouseDown={e => { e.preventDefault(); barvaRef.current?.click(); }} />
                 <input ref={barvaRef} type="color" hidden onChange={e => uporabiBarvo(e.target.value)} />
                 <span className="tool-locnica" aria-hidden />
-                <span className="podloga-oznaka">{L('Podloga:', 'Background:')}</span>
-                {podlogaDropdown()}
+                                {podlogaDropdown()}
                 <span className="tool-locnica" aria-hidden />
                 <button type="button" className={'logo-kvadrat' + (logo ? ' ima' : '')} onClick={() => logoRef.current?.click()}
                   title={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')} aria-label={logo ? L('Zamenjaj logo', 'Replace logo') : L('Dodaj logo', 'Add logo')}
