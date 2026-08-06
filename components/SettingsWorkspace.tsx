@@ -140,7 +140,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
             ['ime', 'Ime in priimek', 'Ana Novak'],
             ['funkcija', 'Funkcija / naziv', 'Direktorica'],
             ['naziv', 'Podjetje', 'Studio d.o.o.'],
-            ['naslov', 'Naslov podjetja', 'Mladinska ulica 63, 1000 Ljubljana'],
+            ['naslov', 'Naslov podjetja', 'Ulica 1, 1000 Ljubljana'],
             ['telefon', 'Telefon', '+386 40 123 456'],
             ['email', 'E-pošta', 'ime@domena.si'],
             ['splet', 'Spletna stran', 'domena.si'],
@@ -189,7 +189,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
             <div>
               <img src={podpisP.banner} alt="" style={{ width: '100%', maxWidth: '600px', borderRadius: '8px', display: 'block', border: '1px solid rgba(0,0,0,.08)' }} />
               <div style={{ display: 'flex', gap: '.5rem', marginTop: '.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <input value={podpisP.bannerLink || ''} onChange={e => nastaviPodpisPolje('bannerLink', e.target.value)} placeholder="Povezava (npr. pinartflow.com)" style={{ font: 'inherit', fontSize: '.88rem', padding: '.45rem .6rem', borderRadius: '.5rem', border: '1px solid rgba(17,17,17,.15)', background: '#fff', flex: '1 1 200px' }} />
+                <input value={podpisP.bannerLink || ''} onChange={e => nastaviPodpisPolje('bannerLink', e.target.value)} placeholder="Povezava (npr. mojastran.si)" style={{ font: 'inherit', fontSize: '.88rem', padding: '.45rem .6rem', borderRadius: '.5rem', border: '1px solid rgba(17,17,17,.15)', background: '#fff', flex: '1 1 200px' }} />
                 <button type="button" onClick={() => bannerRef.current?.click()} style={{ border: '1px solid rgba(17,17,17,.2)', background: '#fff', borderRadius: '.5rem', padding: '.4rem .8rem', fontSize: '.82rem', cursor: 'pointer' }}>Zamenjaj</button>
                 <button type="button" onClick={() => setPodpisP(prev => ({ ...prev, banner: '', bannerLink: '' }))} style={{ border: 0, background: 'none', color: '#a44a3f', fontSize: '.82rem', fontWeight: 600, cursor: 'pointer' }}>Odstrani</button>
               </div>
