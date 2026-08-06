@@ -7875,6 +7875,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                   <span className="chat-mehur"><b>{L('V imenu katerega podjetja izdajaš ponudbo?', 'On behalf of which company are you issuing the quote?')}</b><small>{L('Podatki za glavo ponudbe. Obvezno je le ime — če nimaš podjetja, vpiši svoje ime. Ostalo izpolni, kar imaš (lahko dopolniš pozneje).', 'Details for the quote header. Only the name is required — if you don\'t have a company, enter your own name. Fill in the rest as you have it (you can complete it later).')}</small></span></div>
               )}
+              {/* urejevalni mehurcek za podjetje (kot pri imenu/izkusnjah): ce onboarding
+                  ni bil dokoncan (uvodChat=false), da se podjetje vseeno vpisati/popraviti
+                  kar tu — ne le prek bannerja na plosci */}
+              {chatKorak > 2 && uvodOdgovorMehur(2, ponudnik.ime || L('—', '—'))}
               {uvodChat && chatKorak === 2 && (
                 <form className="uv-forma" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
                   <div className="uv-polje uv-polje-siroko">
