@@ -99,8 +99,8 @@ export default function AdminDostop() {
   const jePotekel = (d: Dodelitev) => !!d.velja_do && d.velja_do < danes;
 
   const INP: React.CSSProperties = {
-    padding: '.5rem .8rem', borderRadius: 10, border: '1px solid rgba(17,17,17,.14)',
-    background: '#fff', font: 'inherit', fontSize: '.85rem',
+    height: '2.6rem', boxSizing: 'border-box', padding: '.5rem .8rem', borderRadius: 10,
+    border: '1px solid rgba(17,17,17,.14)', background: '#fff', font: 'inherit', fontSize: '.85rem',
   };
   const TD = { padding: '.55rem .5rem', verticalAlign: 'top' } as const;
   const znak = (bg: string, fg: string): React.CSSProperties => ({
@@ -150,9 +150,9 @@ export default function AdminDostop() {
                 <td style={{ ...TD, opacity: .7 }}>{d.opomba || '—'}</td>
                 <td style={{ ...TD, whiteSpace: 'nowrap' }}>
                   <button type="button" onClick={() => uredi(d)} disabled={dela}
-                    style={{ ...INP, padding: '.3rem .7rem', cursor: 'pointer', marginRight: '.35rem', fontSize: '.72rem', fontWeight: 700 }}>Uredi</button>
+                    style={{ ...INP, height: 'auto', padding: '.3rem .7rem', cursor: 'pointer', marginRight: '.35rem', fontSize: '.72rem', fontWeight: 700 }}>Uredi</button>
                   <button type="button" onClick={() => izbrisi(d.email)} disabled={dela}
-                    style={{ ...INP, padding: '.3rem .7rem', cursor: 'pointer', fontSize: '.72rem', fontWeight: 700, color: '#b25476', borderColor: 'rgba(178,84,118,.35)' }}>Izbriši</button>
+                    style={{ ...INP, height: 'auto', padding: '.3rem .7rem', cursor: 'pointer', fontSize: '.72rem', fontWeight: 700, color: '#b25476', borderColor: 'rgba(178,84,118,.35)' }}>Izbriši</button>
                 </td>
               </tr>
             ))}
