@@ -114,6 +114,16 @@ export function narociSporocila(threadId: string, cb: (m: OblacnoSporocilo) => v
   return () => { void supa.removeChannel(ch); };
 }
 
+/* Doda udelezenca (po e-mailu) v obstojeco nit — RLS dovoli, ker sem ze udelezenec.
+   Vrne true ob uspehu. Email primerjava/hramba je normalizirana (lowercase). */
+export async function dodajUdelezenca(threadId: string, email: string, ime?: string): Promise<boolean> {
+  const e = norm(email);
+  if (!threadId || !e || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return false;
+  const supa = createClient();
+  const { error } = await supa.from('chat_participant').upsert({ thread_id: threadId, email: e, ime: ime || null }, { onConflict: 'thread_id,email' });
+  return !error;
+}
+
 export type OblacnaNit = { threadId: string; projectId?: string; udelezenci: { email: string; ime?: string }[] };
 
 /* Vse niti, kjer sem udelezenec (RLS poskrbi za filter) — za vpogled »skupni klepeti«.
