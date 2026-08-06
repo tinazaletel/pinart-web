@@ -1,4 +1,5 @@
 .shell {
+  --font-serif: var(--font-serif-flow); /* Flow = DM Serif Display (portfolio ostane Bodoni) */
   --paper: oklch(97% 0.012 87);
   --ink: oklch(19% 0.014 55);
   --line: oklch(93% 0.007 82);

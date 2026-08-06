@@ -1,11 +1,22 @@
-import { DM_Serif_Display, Archivo, Archivo_Narrow, Caveat } from 'next/font/google';
+import { Bodoni_Moda, DM_Serif_Display, Archivo, Archivo_Narrow, Caveat } from 'next/font/google';
 
-/* DM Serif Display — eleganten display serif za naslove (--font-serif),
-   klasicne stevke (za app z veliko zneski). Preizkus proti Bricolage.
-   Ker ni tanek, -webkit-text-stroke odebelitev iz Bodoni casov ni vec potrebna. */
-export const bodoni = DM_Serif_Display({
+/* Bodoni Moda = pisava naslovov za PORTFOLIO (pinart.si) — privzeti --font-serif.
+   Ker je tanka, je rahlo odebeljena prek -webkit-text-stroke v globals.css (outline). */
+export const bodoni = Bodoni_Moda({
   subsets: ['latin', 'latin-ext'],
   variable: '--font-serif',
+  axes: ['opsz'],
+  style: ['normal', 'italic'],
+  display: 'swap'
+});
+
+/* DM Serif Display = pisava naslovov za FLOW (pinartflow / /flow / /kalkulator) —
+   --font-serif-flow. Ni tanka, zato NE rabi -webkit-text-stroke. Flow vsebniki
+   (.fl, .cw, .shell) preglasijo --font-serif na to spremenljivko (globals.css);
+   portfolio ostane Bodoni (z outline). */
+export const dmSerif = DM_Serif_Display({
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-serif-flow',
   weight: '400',
   style: ['normal', 'italic'],
   display: 'swap'
@@ -46,4 +57,4 @@ export const caveat = Caveat({
   preload: false
 });
 
-export const fontVariables = `${bodoni.variable} ${archivo.variable} ${archivoNarrow.variable} ${caveat.variable}`;
+export const fontVariables = `${bodoni.variable} ${dmSerif.variable} ${archivo.variable} ${archivoNarrow.variable} ${caveat.variable}`;

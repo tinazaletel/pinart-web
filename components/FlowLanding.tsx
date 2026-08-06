@@ -479,7 +479,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   return (
     <div className="fl" ref={flRef}>
       <style dangerouslySetInnerHTML={{ __html: `
-        .fl { position: relative; z-index: 1; color: var(--ink); font-weight: 300; overflow-x: clip; }
+        .fl { --font-serif: var(--font-serif-flow); position: relative; z-index: 1; color: var(--ink); font-weight: 300; overflow-x: clip; }
 
         /* Ozadje: mreza + vijola/zelena animirani blobi (kot naslovnica) */
         /* POZOR: NE position:fixed! Znotraj Lenis transform ovoja se fixed obnaša
