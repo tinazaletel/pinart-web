@@ -10,10 +10,10 @@
    vsaki spremembi aktivne predloge se njena barva/pisava/logo zrcalita nazaj
    skozi onBarva/onFont/onLogo, da starsevo stanje ostane usklajeno. */
 
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   DOK_FONTI, DOK_FONT_IMENA, dokFontStack, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI,
-  type DokPredloga, nalozitePredloge, shranitePredloge, noviIdPredloge,
+  type DokPredloga, nalozitePredloge, shranitePredloge, noviIdPredloge, DOK_PODLOGE_A4,
 } from '@/lib/dokVidez';
 
 const BARVE = ['#6E4FA6', '#7C4DD6', '#3730A3', '#111111', '#2F5D50', '#A44A3F', '#B8860B'];
@@ -48,12 +48,16 @@ export default function VidezDokumentov({
   const [predloge, setPredloge] = useState<DokPredloga[]>([]);
   const [aktivnaId, setAktivnaId] = useState('');
   const [nalozeno, setNalozeno] = useState(false);
+  const [mojePodloge, setMojePodloge] = useState<string[]>([]);
+  const [podlOdprt, setPodlOdprt] = useState(false);
+  const platnicaRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const z = nalozitePredloge();
     setPredloge(z.predloge);
     setAktivnaId(z.aktivnaId);
     setNalozeno(true);
+    try { const raw = localStorage.getItem('pinart-moje-podloge'); if (raw) setMojePodloge(JSON.parse(raw)); } catch { /* brez */ }
   }, []);
 
   const aktivna = predloge.find(p => p.id === aktivnaId);
@@ -65,6 +69,26 @@ export default function VidezDokumentov({
       shranitePredloge(next, aktivnaId);
       return next;
     });
+  };
+
+  /* Podloga naslovnice na AKTIVNI predlogi (offer jo prevzame prek aktivnaPredloga().platnica).
+     Naložene podloge deljene z orodno vrstico kalkulatorja (localStorage 'pinart-moje-podloge'). */
+  const nastaviPlatnico = (v: string | undefined) => { if (aktivna) posodobiPredlogo(aktivna.id, { platnica: v }); setPodlOdprt(false); };
+  const uvoziPlatnico = (file?: File) => {
+    if (!file || !aktivna) return;
+    if (file.size > 2_000_000) { window.alert('Slika je prevelika (nad 2 MB). Izberi manjšo.'); return; }
+    const r = new FileReader();
+    r.onload = () => {
+      const url = String(r.result || '');
+      posodobiPredlogo(aktivna.id, { platnica: url });
+      setMojePodloge(prev => { const next = prev.includes(url) ? prev : [url, ...prev].slice(0, 12); try { localStorage.setItem('pinart-moje-podloge', JSON.stringify(next)); } catch { /* polno */ } return next; });
+      setPodlOdprt(false);
+    };
+    r.readAsDataURL(file);
+  };
+  const odstraniMojo = (url: string) => {
+    setMojePodloge(prev => { const next = prev.filter(u => u !== url); try { localStorage.setItem('pinart-moje-podloge', JSON.stringify(next)); } catch { /* ignoriraj */ } return next; });
+    if (aktivna?.platnica === url && aktivna) posodobiPredlogo(aktivna.id, { platnica: undefined });
   };
 
   const izberiBarvo = (b: string) => {
@@ -175,6 +199,42 @@ export default function VidezDokumentov({
 
       {nalozeno && aktivna && (
         <div className="vd-blok">
+          <span className="vd-oznaka">Podloga naslovnice (neobvezno)</span>
+          <div className="vd-podl">
+            <button type="button" className="vd-podl-gumb" onClick={() => setPodlOdprt(o => !o)} aria-haspopup="menu" aria-expanded={podlOdprt}>
+              <span className={'vd-podl-krog' + (aktivna.platnica ? ' ima' : '')} style={aktivna.platnica ? { backgroundImage: `url(${aktivna.platnica})` } : undefined}>
+                {!aktivna.platnica && <svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden><line x1="6" y1="18" x2="18" y2="6" stroke="#e5484d" strokeWidth="2" strokeLinecap="round" /></svg>}
+              </span>
+              <span>{aktivna.platnica ? 'Podloga izbrana' : 'Brez podloge'}</span>
+              <svg className="vd-podl-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            {podlOdprt && (
+              <>
+                <div className="vd-podl-ozadje" onClick={() => setPodlOdprt(false)} />
+                <div className="vd-podl-meni" role="menu">
+                  <button type="button" className={'vd-podl-vrsta' + (!aktivna.platnica ? ' on' : '')} onClick={() => nastaviPlatnico(undefined)}>Brez podloge</button>
+                  <div className="vd-podl-mreza">
+                    {DOK_PODLOGE_A4.map(url => (
+                      <button key={url} type="button" className={'vd-podl-tile' + (aktivna.platnica === url ? ' on' : '')} style={{ backgroundImage: `url(${url})` }} aria-label={url.split('/').pop()} onClick={() => nastaviPlatnico(url)} />
+                    ))}
+                    {mojePodloge.map((url, i) => (
+                      <div key={'m' + i} className={'vd-podl-tile vd-podl-moja' + (aktivna.platnica === url ? ' on' : '')} style={{ backgroundImage: `url(${url})` }}>
+                        <button type="button" className="vd-podl-izberi" aria-label="Izberi" onClick={() => nastaviPlatnico(url)} />
+                        <button type="button" className="vd-podl-x" aria-label="Izbriši" onClick={() => odstraniMojo(url)}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                  <button type="button" className="vd-podl-vrsta" onClick={() => platnicaRef.current?.click()}>Naloži svojo …</button>
+                </div>
+              </>
+            )}
+            <input ref={platnicaRef} type="file" accept="image/*" hidden onChange={e => { uvoziPlatnico(e.target.files?.[0]); e.currentTarget.value = ''; }} />
+          </div>
+        </div>
+      )}
+
+      {nalozeno && aktivna && (
+        <div className="vd-blok">
           <span className="vd-oznaka">Glava in noga dokumenta (neobvezno)</span>
           <label className="vd-pp">
             <span>Glava — kratek napis ob imenu (npr. slogan)</span>
@@ -242,6 +302,24 @@ export default function VidezDokumentov({
         .vd-predogled h3 { margin: .5rem 0 0; font-size: 1.7rem; font-weight: 600; color: #111; line-height: 1.1; }
         .vd-pred-crta { display: block; width: 48px; height: 2px; background: var(--vd-akcent); margin: .9rem 0; }
         .vd-predogled p { margin: 0; font-size: .9rem; color: #5a5560; line-height: 1.5; }
+        .vd-podl { position: relative; display: inline-flex; }
+        .vd-podl-gumb { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .8rem; border: 1.5px solid rgba(17,17,17,.15); border-radius: 999px; background: #fff; color: #111; font-size: .85rem; font-weight: 600; cursor: pointer; }
+        .vd-podl-gumb:hover { border-color: rgba(17,17,17,.4); }
+        .vd-podl-krog { width: 1.5rem; height: 1.5rem; border-radius: 50%; flex: none; background-size: cover; background-position: center; background-color: #fff; border: 1px solid rgba(17,17,17,.2); display: inline-flex; align-items: center; justify-content: center; }
+        .vd-podl-chev { opacity: .55; }
+        .vd-podl-ozadje { position: fixed; inset: 0; z-index: 40; }
+        .vd-podl-meni { position: absolute; z-index: 41; top: calc(100% + .4rem); left: 0; width: 260px; padding: .5rem; border-radius: 12px; border: 1px solid rgba(17,17,17,.12); background: #fff; box-shadow: 0 12px 34px rgba(20,15,18,.18); }
+        .vd-podl-vrsta { display: block; width: 100%; text-align: left; padding: .5rem .6rem; border: 0; border-radius: 8px; background: transparent; color: #111; font-size: .84rem; font-weight: 500; cursor: pointer; }
+        .vd-podl-vrsta:hover { background: rgba(17,17,17,.06); }
+        .vd-podl-vrsta.on { background: #111; color: #fff; }
+        .vd-podl-mreza { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; padding: .4rem .3rem; }
+        .vd-podl-tile { position: relative; aspect-ratio: 1 / 1.414; border-radius: 6px; border: 1.5px solid rgba(17,17,17,.14); background-size: cover; background-position: center; background-color: #fff; cursor: pointer; padding: 0; }
+        .vd-podl-tile:hover { border-color: rgba(17,17,17,.4); }
+        .vd-podl-tile.on { border-color: #111; box-shadow: 0 0 0 2px #fff, 0 0 0 3px #111; }
+        .vd-podl-moja { overflow: hidden; }
+        .vd-podl-izberi { position: absolute; inset: 0; border: 0; background: transparent; cursor: pointer; }
+        .vd-podl-x { position: absolute; top: 2px; right: 2px; z-index: 1; width: 16px; height: 16px; border-radius: 50%; border: 0; background: rgba(20,15,18,.6); color: #fff; font-size: 11px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+        .vd-podl-x:hover { background: #a44a3f; }
         .vd-ponastavi { align-self: flex-start; background: none; border: none; color: #8a8177; font-size: .82rem; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; padding: 0; }
         .vd-ponastavi:hover { color: #111; }
       `}</style>
