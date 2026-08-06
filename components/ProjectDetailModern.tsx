@@ -436,7 +436,7 @@ export default function ProjectDetailModern({
         .pm-act { display:inline-flex; align-items:center; height:1.9rem; box-sizing:border-box; text-decoration:none; border:1px solid color-mix(in oklch, var(--pm-ink) 7%, transparent); background:transparent; color:var(--pm-ink); border-radius:999px; padding:0 .8rem; font-size:.74rem; font-weight:650; white-space:nowrap; transition:background .16s ease; }
         .pm-act:hover { background:var(--pm-paper); }
         .pm-brief { background:linear-gradient(165deg, color-mix(in oklab, var(--pm-acc) 8%, var(--pm-card)), var(--pm-card) 72%); }
-        .pm-brow { display:flex; gap:.7rem; padding:.5rem 0; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); }
+        .pm-brow { display:flex; align-items:center; gap:.7rem; padding:.72rem 0; border-top:1px solid color-mix(in oklch, var(--pm-ink) 9%, transparent); }
         .pm-brow:first-of-type { border-top:0; }
         .pm-bk { flex:0 0 9rem; color:var(--pm-muted); font-size:.8rem; font-weight:600; }
         .pm-bv { font-size:.88rem; color:var(--pm-ink); }
@@ -580,8 +580,10 @@ export default function ProjectDetailModern({
         .pm-naloge > li:has(.pm-naloga:hover), .pm-naloge > li:has(.pm-naloga:hover) + li { border-top-color:transparent; }
         .pm-naloga-link { text-decoration:none; color:inherit; cursor:pointer; width:100%; box-sizing:border-box; background:none; border:0; text-align:left; font:inherit; }
         .pm-naloga-link:hover { background:var(--pm-paper); }
-        .pm-naloga-dot { flex:none; display:grid; place-items:center; width:1.7rem; height:1.7rem; border-radius:50%; background:oklch(94% .006 87); color:oklch(55% .015 70); }
-        .pm-naloga-dot svg { width:.95rem; height:.95rem; }
+        .pm-naloga-dot { flex:none; display:grid; place-items:center; width:1.5rem; height:1.5rem; border-radius:50%; background:oklch(94% .006 87); color:oklch(55% .015 70); }
+        .pm-naloga-dot svg { width:.88rem; height:.88rem; }
+        /* poenotena visina vseh vrstic (ne glede na ikono/piko) */
+        .pm-naloga, .pm-mail, .pm-li, .pm-rok, .pm-crm-vnos, .pm-brow { min-height:3rem; box-sizing:border-box; }
         .pm-naloga-dot[data-st="dela"] { background:color-mix(in oklch, var(--pm-acc) 14%, transparent); color:var(--pm-acc); }
         .pm-naloga-dot[data-st="pregled"] { background:oklch(95% .04 75); color:oklch(54% .11 65); }
         .pm-naloga-dot[data-st="koncano"] { background:oklch(94% .05 158); color:oklch(50% .1 158); }
