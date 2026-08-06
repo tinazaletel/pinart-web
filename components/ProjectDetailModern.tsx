@@ -180,7 +180,7 @@ export default function ProjectDetailModern({
                 {naloge.slice(0, 4).map(n => (
                   <li key={n.id}>
                     <button type="button" className="pm-naloga pm-naloga-link" onClick={() => setTaskOdprt(n)}>
-                      <span className="pm-naloga-dot" data-st={n.status} aria-hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg></span>
+                      <span className="pm-naloga-dot" data-st={n.status} aria-hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="m8.5 12.5 2.5 2.5 4.5-5" /></svg></span>
                       <span className="pm-naloga-t">{n.naslov}</span>
                       {n.oseba && <span className="pm-naloga-av" style={{ background: avatarOzadje(n.oseba) }} aria-hidden>{zacetnice(n.oseba)}</span>}
                     </button>
@@ -386,7 +386,7 @@ export default function ProjectDetailModern({
               <div className="pm-task-vrs">
                 <span className="pm-task-lbl">{L('Status', 'Status')}</span>
                 <span className="pm-task-status" data-st={taskOdprt.status}>
-                  <span className="pm-naloga-dot" data-st={taskOdprt.status} aria-hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg></span>
+                  <span className="pm-naloga-dot" data-st={taskOdprt.status} aria-hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="m8.5 12.5 2.5 2.5 4.5-5" /></svg></span>
                   {taskOdprt.status === 'koncano' ? L('Končano', 'Done') : taskOdprt.status === 'pregled' ? L('V pregledu', 'In review') : taskOdprt.status === 'dela' ? L('V teku', 'In progress') : L('Za začeti', 'To do')}
                 </span>
               </div>
@@ -446,12 +446,11 @@ export default function ProjectDetailModern({
         .pm-dok-prazno { display:block; width:100%; border:0; background:none; text-align:left; cursor:pointer; font:inherit; padding:.2rem 0; }
         .pm-dok-prazno:hover { color:var(--pm-acc); }
         .pm-mails { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
-        .pm-mail { display:flex; align-items:center; gap:.6rem; padding:.72rem .6rem; margin:0 -.6rem; border-radius:10px; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); }
-        .pm-mails li:first-child .pm-mail { border-top:0; }
+        .pm-mail { display:flex; align-items:center; gap:.6rem; padding:.72rem .6rem; margin:0 -.6rem; border-radius:10px; }
+        .pm-mails > li + li { border-top:1px solid color-mix(in oklch, var(--pm-ink) 9%, transparent); }
         .pm-mail-btn { width:100%; box-sizing:border-box; border:0; background:none; cursor:pointer; text-align:left; font:inherit; border-radius:10px; }
         .pm-mail-btn:hover { background:var(--pm-paper); }
-        .pm-mail:hover { border-top-color:transparent; }
-        .pm-mails li:has(.pm-mail:hover) + li .pm-mail { border-top-color:transparent; }
+        .pm-mails > li:has(.pm-mail-btn:hover), .pm-mails > li:has(.pm-mail-btn:hover) + li { border-top-color:transparent; }
         .pm-mail-kdo { flex:0 0 30%; min-width:0; font-size:.8rem; font-weight:600; color:var(--pm-ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .pm-mail-zad { flex:1; min-width:0; font-size:.82rem; color:var(--pm-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .pm-mail-dan { flex:none; font-size:.7rem; color:var(--pm-muted); font-variant-numeric:tabular-nums; }
@@ -534,10 +533,9 @@ export default function ProjectDetailModern({
         .pm-modal-edit { display:inline-block; margin-top:1.1rem; text-decoration:none; font-size:.8rem; font-weight:600; color:var(--pm-acc); }
         /* seznami zapisa (pogodbe/racuni/stroski) */
         .pm-list { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
-        .pm-li { display:flex; align-items:center; gap:.5rem; padding:.66rem .6rem; margin:0 -.6rem; border-top:1px solid color-mix(in oklab, var(--pm-line) 60%, transparent); border-radius:10px; font-size:.83rem; color:var(--pm-ink); }
-        .pm-list li:first-child .pm-li { border-top:0; }
-        .pm-li:hover { border-top-color:transparent; }
-        .pm-list li:has(.pm-li:hover) + li .pm-li { border-top-color:transparent; }
+        .pm-li { display:flex; align-items:center; gap:.5rem; padding:.66rem .6rem; margin:0 -.6rem; border-radius:10px; font-size:.83rem; color:var(--pm-ink); }
+        .pm-list > li + li { border-top:1px solid color-mix(in oklch, var(--pm-ink) 9%, transparent); }
+        .pm-list > li:has(.pm-li:hover), .pm-list > li:has(.pm-li:hover) + li { border-top-color:transparent; }
         .pm-li-n { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .pm-li-tip { flex:none; font-size:.56rem; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--pm-muted); background:color-mix(in oklch, var(--pm-line) 45%, transparent); border-radius:999px; padding:.12rem .42rem; }
         .pm-li-tip[data-tip="ponudba"] { color:var(--pm-acc); background:color-mix(in oklch, var(--pm-acc) 12%, transparent); }
@@ -576,10 +574,9 @@ export default function ProjectDetailModern({
         .pm-crm-pika { flex:none; width:.5rem; height:.5rem; border-radius:50%; }
         /* aktivni taski */
         .pm-naloge { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
-        .pm-naloga { display:flex; align-items:center; gap:.6rem; padding:.72rem .6rem; margin:0 -.6rem; border-top:1px solid color-mix(in oklch, var(--pm-line) 60%, transparent); border-radius:10px; }
-        .pm-naloge li:first-child .pm-naloga { border-top:0; }
-        .pm-naloga:hover { border-top-color:transparent; }
-        .pm-naloge li:has(.pm-naloga:hover) + li .pm-naloga { border-top-color:transparent; }
+        .pm-naloga { display:flex; align-items:center; gap:.6rem; padding:.72rem .6rem; margin:0 -.6rem; border-radius:10px; }
+        .pm-naloge > li + li { border-top:1px solid color-mix(in oklch, var(--pm-ink) 9%, transparent); }
+        .pm-naloge > li:has(.pm-naloga:hover), .pm-naloge > li:has(.pm-naloga:hover) + li { border-top-color:transparent; }
         .pm-naloga-link { text-decoration:none; color:inherit; cursor:pointer; width:100%; box-sizing:border-box; background:none; border:0; text-align:left; font:inherit; }
         .pm-naloga-link:hover { background:var(--pm-paper); }
         .pm-naloga-dot { flex:none; display:grid; place-items:center; width:1.7rem; height:1.7rem; border-radius:50%; background:oklch(94% .006 87); color:oklch(55% .015 70); }
