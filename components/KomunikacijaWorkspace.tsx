@@ -178,8 +178,18 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
     if (demo || !izbrana) { setVabiOdprt(false); setVabiEmail(''); setToast(L('V predogledu ne povabiš.', 'Not available in preview.')); return; }
     setVabiTece(true);
     const ok = await dodajUdelezenca(izbrana, em);
+    if (!ok) { setVabiTece(false); setToast(L('Ni uspelo. Poskusi znova.', 'Failed. Try again.')); return; }
+    /* pošlji e-mail vabilo z linkom za prijavo (RLS: vidi klepet, ko se prijavi s tem naslovom) */
+    const povezava = `https://www.pinartflow.com${jeEn ? '/en' : ''}/kalkulator/komunikacija`;
+    const kdo = email || (jeEn ? 'A Pinart Flow user' : 'Uporabnik Pinart Flow');
+    const zadeva = jeEn ? 'You have been added to a chat — Pinart Flow' : 'Dodani ste v klepet — Pinart Flow';
+    const html = jeEn
+      ? `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a"><p>Hi,</p><p><b>${kdo}</b> added you to a shared chat in <b>Pinart Flow</b>.</p><p>Sign in with this email (<b>${em}</b>) and open Communication to see the conversation and reply:</p><p><a href="${povezava}" style="display:inline-block;background:#2A2035;color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:600">Open chat in Flow</a></p><p style="color:#666;font-size:13px">If the button doesn't work, open: ${povezava}</p></div>`
+      : `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a"><p>Živjo,</p><p><b>${kdo}</b> te je dodal(a) v skupni klepet v <b>Pinart Flow</b>.</p><p>Prijavi se s tem e-naslovom (<b>${em}</b>) in odpri Komunikacijo, da vidiš pogovor in odgovoriš:</p><p><a href="${povezava}" style="display:inline-block;background:#2A2035;color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:600">Odpri klepet v Flow</a></p><p style="color:#666;font-size:13px">Če gumb ne dela, odpri: ${povezava}</p></div>`;
+    const rez = await posljiMail({ to: [em], subject: zadeva, html });
     setVabiTece(false);
-    if (ok) { setVabiOdprt(false); setVabiEmail(''); setToast(`${em} ${L('dodan v klepet.', 'added to chat.')}`); } else { setToast(L('Ni uspelo. Poskusi znova.', 'Failed. Try again.')); }
+    setVabiOdprt(false); setVabiEmail('');
+    setToast(rez.ok ? `${em} ${L('dodan + vabilo poslano.', 'added + invite sent.')}` : `${em} ${L('dodan (vabilo ni šlo).', 'added (invite failed).')}`);
   };
 
   return (
@@ -341,7 +351,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
                         <input type="email" value={vabiEmail} onChange={e => setVabiEmail(e.target.value)} placeholder="ime@domena.si" />
                         <button type="submit" disabled={vabiTece}>{vabiTece ? '…' : L('Dodaj', 'Add')}</button>
                       </div>
-                      <p className="km-vabi-op">{L('Njegov e-naslov mora biti enak prijavnemu.', 'Their email must match their login.')}</p>
+                      <p className="km-vabi-op">{L('Pošljemo mu vabilo z linkom. E-naslov mora biti enak njegovemu prijavnemu.', 'We send them an invite with a link. The email must match their login.')}</p>
                     </form>
                   )}
                 </span>
