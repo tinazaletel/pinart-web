@@ -14,6 +14,7 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import {
   DOK_FONTI, DOK_FONT_IMENA, dokFontStack, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI,
   type DokPredloga, nalozitePredloge, shranitePredloge, noviIdPredloge,
+  DOK_PODLOGE_A4,
 } from '@/lib/dokVidez';
 
 const BARVE = ['#6E4FA6', '#7C4DD6', '#3730A3', '#111111', '#2F5D50', '#A44A3F', '#B8860B'];
@@ -112,6 +113,45 @@ export default function VidezDokumentov({
     }
   };
 
+  /* uvoz lastne slike -> data URI, shranjen na aktivno predlogo (platnica/ozadje) */
+  const uvoziSliko = (file: File | undefined, polje: 'platnica' | 'ozadje') => {
+    if (!file || !aktivna) return;
+    if (file.size > 2_000_000) { window.alert('Slika je prevelika (nad 2 MB). Izberi manjšo ali stisnjeno.'); return; }
+    const r = new FileReader();
+    r.onload = () => posodobiPredlogo(aktivna.id, { [polje]: String(r.result || '') } as Partial<DokPredloga>);
+    r.readAsDataURL(file);
+  };
+
+  /* skupni izbirnik podloge (naslovnica / notranje strani) — prednastavljene A4
+     sličice + »Brez« + uvoz svoje. Vrednost se shrani na aktivno predlogo. */
+  const podlogaBlok = (polje: 'platnica' | 'ozadje', oznaka: string) => {
+    if (!aktivna) return null;
+    const vrednost = aktivna[polje];
+    const jeUvoz = !!vrednost && vrednost.startsWith('data:');
+    return (
+      <div className="vd-blok">
+        <span className="vd-oznaka">{oznaka}</span>
+        <div className="vd-podloge">
+          <button type="button" className={'vd-podloga vd-podloga-brez' + (!vrednost ? ' on' : '')}
+            onClick={() => posodobiPredlogo(aktivna.id, { [polje]: undefined } as Partial<DokPredloga>)}>Brez</button>
+          {DOK_PODLOGE_A4.map(url => (
+            <button key={url} type="button"
+              className={'vd-podloga' + (vrednost === url ? ' on' : '')}
+              style={{ backgroundImage: `url(${url})` }}
+              aria-label={`${oznaka} — ${url}`}
+              onClick={() => posodobiPredlogo(aktivna.id, { [polje]: url } as Partial<DokPredloga>)} />
+          ))}
+          <label className={'vd-podloga vd-podloga-uvoz' + (jeUvoz ? ' on' : '')}
+            style={jeUvoz ? { backgroundImage: `url(${vrednost})` } : undefined}
+            title="Uvozi svojo sliko">
+            <input type="file" accept="image/*" onChange={e => uvoziSliko(e.target.files?.[0], polje)} />
+            {!jeUvoz && <span aria-hidden>+</span>}
+          </label>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="vd-ovoj">
       <p className="vd-uvod">Ta barva in pisava se uporabita na <b>vseh dokumentih</b> — ponudbah, računih in pogodbah. Nastaviš enkrat, stil je povsod enak.</p>
@@ -187,6 +227,9 @@ export default function VidezDokumentov({
         </div>
       )}
 
+      {nalozeno && aktivna && podlogaBlok('platnica', 'Podloga naslovnice (neobvezno)')}
+      {nalozeno && aktivna && podlogaBlok('ozadje', 'Ozadje notranjih strani (neobvezno)')}
+
       <div className="vd-predogled" style={{ '--vd-akcent': barva } as CSSProperties}>
         <span className="vd-pred-kick">Ponudba — predogled</span>
         <h3 style={{ fontFamily: dokFontStack(font) }}>Naslov dokumenta</h3>
@@ -242,6 +285,15 @@ export default function VidezDokumentov({
         .vd-predogled p { margin: 0; font-size: .9rem; color: #5a5560; line-height: 1.5; }
         .vd-ponastavi { align-self: flex-start; background: none; border: none; color: #8a8177; font-size: .82rem; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; padding: 0; }
         .vd-ponastavi:hover { color: #111; }
+        .vd-podloge { display: flex; flex-wrap: wrap; gap: .5rem; }
+        .vd-podloga { width: 54px; height: 76px; border-radius: 8px; border: 1.5px solid rgba(17,17,17,.15); background-size: cover; background-position: center; background-color: #fff; cursor: pointer; padding: 0; position: relative; transition: border-color .15s, transform .15s; }
+        .vd-podloga:hover { transform: translateY(-2px); border-color: rgba(17,17,17,.4); }
+        .vd-podloga.on { border-color: #111; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #111; }
+        .vd-podloga-brez { display: flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 600; color: #8a8177; background: #fff; }
+        .vd-podloga-brez.on { color: #111; }
+        .vd-podloga-uvoz { display: flex; align-items: center; justify-content: center; overflow: hidden; border-style: dashed; }
+        .vd-podloga-uvoz input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .vd-podloga-uvoz span { font-size: 1.5rem; color: #8a8177; font-weight: 300; line-height: 1; }
       `}</style>
     </div>
   );

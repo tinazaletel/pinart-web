@@ -61,7 +61,22 @@ export interface DokPredloga {
   logo?: string;
   glava?: string;
   noga?: string;
+  /* Podlogi (ozadji) dokumenta — neobvezni. Vrednost je bodisi pot do prednastavljene
+     podloge (npr. '/flow/2a_a4.jpg') bodisi data: URI (uporabnica uvozi svojo).
+     `platnica` = ozadje naslovnice, `ozadje` = ozadje notranjih (vsebinskih) strani. */
+  platnica?: string;
+  ozadje?: string;
 }
+
+/* Prednastavljene podloge iz public/flow. A4 (pokončne) za ponudbe/dokumente,
+   PPT (vodoravne) za poslovni načrt / predstavitve. Uporabnica lahko uvozi svojo. */
+export const DOK_PODLOGE_A4: string[] = [
+  '/flow/1a_a4.jpg', '/flow/2_a4.jpg', '/flow/2a_a4.jpg',
+  '/flow/3_a4.jpg', '/flow/3a_a4.jpg', '/flow/4_a4.jpg',
+];
+export const DOK_PODLOGE_PPT: string[] = [
+  '/flow/1_ptt.jpg', '/flow/2_ptt.jpg', '/flow/3_ptt.jpg', '/flow/4_ptt.jpg',
+];
 
 const K_NAST = 'pinart-kalkulator-v2';
 const K_LOGO = 'pinart-kalkulator-logo';

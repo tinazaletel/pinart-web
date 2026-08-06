@@ -4002,7 +4002,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         <div class="ocp-foot"><div class="ocp-comp"><b>${escapeHtml(imeFirme.toUpperCase() || 'PINART')}</b>${footSub ? `<span>${footSub}</span>` : ''}</div><div class="ocp-proposal">${locale === 'en' ? 'DESIGN PROPOSAL' : 'PREDLOG PONUDBE'}<b>01</b></div></div>
       </div>`;
     }
-    const slika = podlogaCover ? ` offer-cover-slika" style="background-image:url('${podlogaCover}')` : '';
+    /* Naslovnica-podloga: per-ponudba upload (podlogaCover) ima prednost, sicer
+       privzetek iz aktivne predloge (Videz dokumentov → platnica). Prednastavljene
+       poti (/flow/…) pretvorimo v absolutne, da se naložijo tudi v PDF/mailu. */
+    const podlogaNaslov = podlogaCover || aktivnaPredloga().platnica || '';
+    const slikaUrl = !podlogaNaslov ? '' : podlogaNaslov.startsWith('data:') ? podlogaNaslov : (typeof window !== 'undefined' ? window.location.origin + podlogaNaslov : podlogaNaslov);
+    const slika = slikaUrl ? ` offer-cover-slika" style="background-image:url('${slikaUrl}')` : '';
     const logoHtml = logo ? `<img class="oc-logo" src="${logo}" alt="" />` : '';
     return `<div class="offer-cover${slika}">${logoHtml}<div class="oc-kicker">${escapeHtml(oznaka)}</div><h1 class="oc-naslov">${escapeHtml(naziv)}</h1><div class="oc-crta"></div><div class="oc-firma">${escapeHtml(ponudnik.ime.trim() || '')}</div>${za ? `<div class="oc-za">za ${escapeHtml(za)}</div>` : ''}<div class="oc-datum">${escapeHtml(datum)} · velja do ${escapeHtml(veljaDatum)}</div></div>`;
   };
@@ -4051,12 +4056,21 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     const t = ocistiTelo(izvozniHtml());
     return predlogaPinart ? dodajIkonoCeni(t) : t;
   };
+  /* Ozadje notranjih strani iz aktivne predloge (Videz dokumentov → ozadje).
+     Ne velja za Pinart predlogo (ta ima lasten dizajn). Absolutni URL za PDF/mail. */
+  const dokOzadjeStyle = (): string => {
+    if (predlogaPinart) return '';
+    const o = aktivnaPredloga().ozadje || '';
+    if (!o) return '';
+    const url = o.startsWith('data:') ? o : (typeof window !== 'undefined' ? window.location.origin + o : o);
+    return `background-image:url('${url}');background-size:210mm auto;background-repeat:repeat-y;background-position:top center;`;
+  };
   /* Sestavi cel samostojni HTML dokument ponudbe (isti niz uporabita prenos in mail). */
   const zgradiPonudbaDoc = (): string => {
     const telo = izvozTelo();
     return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${escapeHtml('Ponudba' + (stevilkaPonudbe ? ' ' + stevilkaPonudbe : ''))}</title>${dokFontLink(dokFont)}<style>${dokCss(OFFER_CSS)}
       body{max-width:820px;margin:40px auto;padding:0 26px 60px}
-      .offer-cover{margin-bottom:90px}</style></head><body style="${dokVars(dokBarva, dokFont)}" class="${predlogaPinart ? 'predloga' : ''}">${ponudbaNaslovnica()}${ponudbaGlava()}${telo}${dokNogaHtml()}</body></html>`;
+      .offer-cover{margin-bottom:90px}</style></head><body style="${dokVars(dokBarva, dokFont)};${dokOzadjeStyle()}" class="${predlogaPinart ? 'predloga' : ''}">${ponudbaNaslovnica()}${ponudbaGlava()}${telo}${dokNogaHtml()}</body></html>`;
   };
   const prenesi = () => {
     const naziv = nazivPonudbe.trim() || (r ? r.sez.map(s => s.ime).join(', ') : '');
