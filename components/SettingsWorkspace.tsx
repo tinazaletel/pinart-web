@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { PaintBrush, Sparkle } from '@phosphor-icons/react';
 import VidezDokumentov from '@/components/VidezDokumentov';
 import { preberiPupaStanje, nastaviPupaStanje } from '@/lib/pupaNastavitve';
 import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, nastaviLogoAktivne, aktivniLogo } from '@/lib/dokVidez';
@@ -94,7 +95,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
   return (
     <div className={styles.wrap}>
       <section className={styles.card}>
-        <h2>Videz dokumentov</h2>
+        <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem' }}><PaintBrush size={20} weight="regular" /> Videz dokumentov</h2>
         <p>Velja za vse dokumente — ponudbe, pogodbe, račune in dolgoročne ponudbe.</p>
 
         <div className={styles.logoRow}>
@@ -129,14 +130,17 @@ export default function SettingsWorkspace({ base }: { base: string }) {
             ['telefon', 'Telefon', '+386 40 123 456'],
             ['email', 'E-pošta', 'ime@domena.si'],
             ['splet', 'Spletna stran', 'domena.si'],
-            ['pripis', 'Zaključna vrstica (neobvezno)', 'Prosim, odgovorite na to sporočilo.'],
           ] as const).map(([k, lbl, ph]) => (
-            <label key={k} style={{ display: 'flex', flexDirection: 'column', gap: '.3rem', fontSize: '.8rem', color: '#4a4550', gridColumn: k === 'pripis' ? '1 / -1' : undefined }}>
+            <label key={k} style={{ display: 'flex', flexDirection: 'column', gap: '.3rem', fontSize: '.8rem', color: '#4a4550' }}>
               {lbl}
               <input value={(podpisP[k] as string) || ''} onChange={e => nastaviPodpisPolje(k, e.target.value)} placeholder={ph} style={{ font: 'inherit', fontSize: '.9rem', color: '#111', padding: '.55rem .7rem', borderRadius: '.5rem', border: '1px solid rgba(17,17,17,.15)', background: '#fff' }} />
             </label>
           ))}
         </div>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: '.3rem', fontSize: '.8rem', color: '#4a4550', marginTop: '.7rem' }}>
+          Zaključna vrstica (neobvezno)
+          <textarea value={podpisP.pripis || ''} onChange={e => nastaviPodpisPolje('pripis', e.target.value)} placeholder="Prosim, odgovorite na to sporočilo." rows={2} style={{ font: 'inherit', fontSize: '.9rem', color: '#111', padding: '.55rem .7rem', borderRadius: '.5rem', border: '1px solid rgba(17,17,17,.15)', background: '#fff', resize: 'vertical', minHeight: '2.6rem' }} />
+        </label>
         <label style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem', marginTop: '.8rem', fontSize: '.88rem', fontWeight: 600, cursor: 'pointer' }}>
           <input type="checkbox" checked={!!podpisP.logo} onChange={e => nastaviPodpisPolje('logo', e.target.checked)} /> Vključi logo v podpis
         </label>
@@ -149,15 +153,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
       </section>
 
       <section className={styles.card}>
-        <h2>Vprašalnik</h2>
-        <p>
-          Ponovno te vpraša po imenu, trgu in izkušnjah. Tvoje cene, stranke in ponudbe ostanejo.
-        </p>
-        <button type="button" className={styles.gumb} onClick={ponastaviVprasalnik}>Ponovi vprašalnik</button>
-      </section>
-
-      <section className={styles.card}>
-        <h2>Pupa (AI pomočnica)</h2>
+        <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem' }}><Sparkle size={20} weight="fill" /> Pupa (AI pomočnica)</h2>
         <p>
           Pupa svetuje pri cenah, pravicah in besedilu. Ko jo vprašaš, se podatki trenutne ponudbe pošljejo AI ponudniku (Anthropic) samo zato, da ti odgovori — ne uporabijo se za učenje modela. Kadar koli jo lahko izklopiš.
         </p>

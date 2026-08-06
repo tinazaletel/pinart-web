@@ -34,7 +34,7 @@ export function podpisHtml(p: PodpisPodatki, logoUrl = '', akcent = '#6E4FA6'): 
 
   const vrstice: string[] = [];
   if (tel) vrstice.push(`<a href="tel:${esc(tel.replace(/\s+/g, ''))}" style="color:#333;text-decoration:none">${esc(tel)}</a>`);
-  if (em) vrstice.push(`<a href="mailto:${esc(em)}" style="${link}">${esc(em)}</a>`);
+  if (em) vrstice.push(`<a href="mailto:${esc(em)}" style="${link}"><span style="opacity:.7">&#9993;</span>&nbsp;${esc(em)}</a>`);
   if (webHref) vrstice.push(`<a href="${esc(webHref)}" style="${link}">${esc(web.replace(/^https?:\/\//, '').replace(/\/$/, ''))}</a>`);
   const kontakt = vrstice.join('&nbsp;&nbsp;&middot;&nbsp;&nbsp;');
 

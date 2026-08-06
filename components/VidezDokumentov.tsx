@@ -221,6 +221,8 @@ export default function VidezDokumentov({
         .vd-predloga-izbrisi { background: none; border: none; color: #a44a3f; font-size: .8rem; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; padding: 0 0 .55rem; }
         .vd-predloga-izbrisi:hover { color: #7a332a; }
         .vd-pp { display: flex; flex-direction: column; gap: .35rem; font-size: .78rem; color: #4a4550; flex: 1 1 220px; }
+        /* v stolpcu (.vd-blok) flex-basis 220px postane VIŠINA → ogromne vrzeli; tu naj bo naravna višina */
+        .vd-blok > .vd-pp { flex: 0 0 auto; }
         .vd-pp input, .vd-pp textarea { font: inherit; font-size: .92rem; color: #111; padding: .55rem .75rem; border-radius: 9px; border: 1.5px solid rgba(17,17,17,.15); background: #fff; resize: vertical; }
         .vd-pp input:focus, .vd-pp textarea:focus { outline: none; border-color: rgba(17,17,17,.4); }
         .vd-pred-glava { display: block; margin-top: .3rem; font-size: .78rem; letter-spacing: .04em; color: var(--vd-akcent); font-weight: 600; }
