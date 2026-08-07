@@ -13,7 +13,7 @@ import KomZnacka from './KomZnacka';
 import PaketZnak from './PaketZnak';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
-type Section = 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings' | 'ekipa' | 'novprojekt' | 'ideje' | 'marketing' | 'komunikacija';
+type Section = 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings' | 'ekipa' | 'novprojekt' | 'ideje' | 'marketing' | 'komunikacija' | 'sef';
 
 /* Meni je razdeljen po tem, KAJ UPORABNIK POCNE, ne kaj stvar je:
    Delo = ustvarjas dokument za stranko · Podatki = vzdrzujes vnose · Nacrt = racunas/ciljas.
@@ -57,7 +57,7 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
     </MeniSkupina>
     {/* Arhiv (prej "Zgodovina") = kjer NAJDEŠ shranjeno; sodi pod Podatki, ne Drugo.
         Delo = ustvarjaš, Podatki = iščeš. */}
-    <MeniSkupina naslov={L('Podatki', 'Data')} aktivna={active === 'clients' || active === 'prices' || active === 'expenses' || active === 'projects' || active === 'accounting' || active === 'komunikacija'}>
+    <MeniSkupina naslov={L('Podatki', 'Data')} aktivna={active === 'clients' || active === 'prices' || active === 'expenses' || active === 'projects' || active === 'accounting' || active === 'komunikacija' || active === 'sef'}>
       {item('projects', `${base}/kalkulator/projekti`, '01', L('Projekti & arhiv', 'Projects & archive'), 'zgodovina')}
       <Link className={`${styles.navItem} ${active === 'komunikacija' ? styles.active : ''}`} href={`${base}/kalkulator/komunikacija`} title={L('Komunikacija', 'Communication')}>
         <span className={styles.navIkona} style={{ position: 'relative' }}><NavIkona vrsta="komunikacije" /><KomZnacka /></span>
@@ -71,6 +71,7 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
       {item('prices', `${base}/kalkulator/ceniki`, '04', L('Moji ceniki', 'Price lists'), 'ceniki')}
       {item('expenses', `${base}/kalkulator/stroski`, '05', L('Stroški', 'Expenses'), 'stroski', 'expenses')}
       {item('accounting', `${base}/kalkulator/racunovodstvo`, '06', L('Računovodstvo', 'Accounting'), 'racunovodstvo')}
+      {item('sef', `${base}/kalkulator/sef`, '07', L('Sef avtorstva', 'Authorship vault'), 'sef')}
     </MeniSkupina>
     <MeniSkupina naslov={L('Načrt', 'Plan')} aktivna={active === 'goals' || active === 'time' || active === 'plan' || active === 'naloge' || active === 'ideje' || active === 'koledar' || active === 'marketing'}>
       {item('goals', `${base}/kalkulator/cilji`, '01', L('Cilji', 'Goals'), 'cilji', 'businessInsights')}
