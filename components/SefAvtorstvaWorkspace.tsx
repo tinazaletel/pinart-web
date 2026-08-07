@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { ShieldCheck, UploadSimple, Copy, Check, Trash, DownloadSimple, MagnifyingGlass, LockKey, ArrowSquareOut } from '@phosphor-icons/react';
+import { usePredogled } from '@/lib/predogled';
 
 /* SEF AVTORSTVA (MVP) — nespremenljiv zapis DOKAZA o avtorstvu/datumu nastanka.
    Ne shranjujemo težkih datotek: shranimo kriptografski "prstni odtis" (SHA-256 hash)
@@ -17,6 +18,7 @@ type Zapis = {
   tip: string;
   hash: string;
   orodje: string;
+  kategorija?: string;
   posnetekIme?: string;
   posnetekHash?: string;
   opombe?: string;
@@ -25,6 +27,15 @@ type Zapis = {
 
 const KEY = 'pinart-sef-avtorstva';
 const ORODJA = ['Adobe Illustrator', 'Adobe Photoshop', 'Adobe InDesign', 'Figma', 'Procreate', 'Affinity Designer', 'Blender', 'Canva', 'Ročno / skica', 'Besedilo / dokument', 'Drugo'];
+const KATEGORIJE = ['Ilustracija', 'Logotip', 'Celostna grafična podoba', 'Embalaža', 'Splet / UI', 'Fotografija', 'Besedilo', 'Glasba', 'Video', 'Drugo'];
+
+/* Demo »polno poslovanje« — prikaže se v predogledu 'demo' (fiksni podatki, ne pravi zapisi). */
+const DEMO_ZAPISI: Zapis[] = [
+  { id: 'd1', naslov: 'Ilustracija Pupa', datoteka: 'pupa.ai', velikost: 2417000, tip: 'application/illustrator', hash: 'da96f4ef91d7495ca8a1e11473b0a9c2f8e1d6b4a2c9e0f3d7b1a5c8e2f4d6a90', orodje: 'Adobe Illustrator', kategorija: 'Ilustracija', posnetekIme: 'proces-pupa.png', posnetekHash: '4b2c…', opombe: 'Izvirni lik, ustvarjen pred AI izpeljankami.', ustvarjeno: '2026-03-12T09:24:00.000Z' },
+  { id: 'd2', naslov: 'Logotip — Kavarna Zrno', datoteka: 'zrno-logo.svg', velikost: 84000, tip: 'image/svg+xml', hash: '1f7a9c3e5b2d8f0a4c6e1b9d7f3a2c5e8b0d4f6a1c3e5b7d9f2a4c6e8b0d1f3a5', orodje: 'Adobe Illustrator', kategorija: 'Logotip', opombe: undefined, ustvarjeno: '2026-04-02T14:10:00.000Z' },
+  { id: 'd3', naslov: 'Embalaža čaja — serija', datoteka: 'caj-embalaza.psd', velikost: 15820000, tip: 'image/vnd.adobe.photoshop', hash: '9c0e2b4d6f8a1c3e5b7d9f0a2c4e6b8d0f1a3c5e7b9d1f2a4c6e8b0d2f4a6c8e0', orodje: 'Adobe Photoshop', kategorija: 'Embalaža', opombe: 'Za naročnika, licenca 2 leti EU.', ustvarjeno: '2026-05-19T11:47:00.000Z' },
+  { id: 'd4', naslov: 'Spletni hero — Studio', datoteka: 'hero.fig', velikost: 640000, tip: 'application/figma', hash: '3e5b7d9f1a2c4e6b8d0f2a4c6e8b0d1f3a5c7e9b1d3f5a7c9e1b3d5f7a9c1e3b5', orodje: 'Figma', kategorija: 'Splet / UI', opombe: undefined, ustvarjeno: '2026-06-30T16:05:00.000Z' },
+];
 
 async function sha256(file: File | Blob): Promise<string> {
   const buf = await file.arrayBuffer();
@@ -46,11 +57,15 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
   const [datoteka, setDatoteka] = useState<File | null>(null);
   const [naslov, setNaslov] = useState('');
   const [orodje, setOrodje] = useState('');
+  const [kategorija, setKategorija] = useState('');
   const [posnetek, setPosnetek] = useState<File | null>(null);
   const [opombe, setOpombe] = useState('');
   const [dela, setDela] = useState(false);
   const [kopiran, setKopiran] = useState<string | null>(null);
   const [preverjeno, setPreverjeno] = useState<null | { najden: Zapis | null; ime: string }>(null);
+  const [iskanje, setIskanje] = useState('');
+  const [filterKat, setFilterKat] = useState('');
+  const [nacin] = usePredogled();
   const preverjRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setZapisi(preberi()); }, []);
@@ -74,6 +89,7 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         tip: datoteka.type || '—',
         hash,
         orodje: orodje.trim(),
+        kategorija: kategorija.trim() || undefined,
         posnetekIme: posnetek?.name,
         posnetekHash,
         opombe: opombe.trim() || undefined,
@@ -81,7 +97,7 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
       };
       const novi = [zapis, ...zapisi];
       setZapisi(novi); shrani(novi);
-      setDatoteka(null); setNaslov(''); setOrodje(''); setPosnetek(null); setOpombe('');
+      setDatoteka(null); setNaslov(''); setOrodje(''); setKategorija(''); setPosnetek(null); setOpombe('');
     } finally { setDela(false); }
   };
 
@@ -126,6 +142,15 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
 
   const datum = (iso: string) => new Date(iso).toLocaleString(jeEn ? 'en-GB' : 'sl-SI', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
+  /* Predogled: 'empty' = brez vnosov, 'demo' = demo »polno poslovanje«, sicer pravi (localStorage). */
+  const osnovni = nacin === 'demo' ? DEMO_ZAPISI : nacin === 'empty' ? [] : zapisi;
+  const kategorijeVal = Array.from(new Set(osnovni.map(z => z.kategorija).filter(Boolean))) as string[];
+  const q = iskanje.trim().toLowerCase();
+  const vidni = osnovni.filter(z =>
+    (!filterKat || z.kategorija === filterKat) &&
+    (!q || [z.naslov, z.datoteka, z.orodje, z.kategorija, z.opombe].some(s => (s || '').toLowerCase().includes(q)))
+  );
+
   return (
     <div className="sef">
       <p className="sef-uvod">
@@ -149,6 +174,10 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
           <label className="sef-polje"><span>{L('S katerim orodjem', 'Created with')}</span>
             <input list="sef-orodja" value={orodje} onChange={e => setOrodje(e.target.value)} placeholder={L('npr. Adobe Illustrator', 'e.g. Adobe Illustrator')} />
             <datalist id="sef-orodja">{ORODJA.map(o => <option key={o} value={o} />)}</datalist>
+          </label>
+          <label className="sef-polje"><span>{L('Kategorija', 'Category')}</span>
+            <input list="sef-kategorije" value={kategorija} onChange={e => setKategorija(e.target.value)} placeholder={L('npr. Ilustracija', 'e.g. Illustration')} />
+            <datalist id="sef-kategorije">{KATEGORIJE.map(k => <option key={k} value={k} />)}</datalist>
           </label>
         </div>
 
@@ -180,35 +209,58 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         )}
       </section>
 
-      {/* SEZNAM */}
+      {/* SEZNAM — tabela z iskanjem in filtrom po kategorijah */}
       <section className="sef-seznam">
-        <h2>{L('Zaščitena dela', 'Protected works')} <span className="sef-st">{zapisi.length}</span></h2>
-        {zapisi.length === 0
+        <div className="sef-seznam-glava">
+          <h2>{L('Zaščitena dela', 'Protected works')} <span className="sef-st">{osnovni.length}</span></h2>
+          {osnovni.length > 0 && (
+            <label className="sef-iskalo">
+              <MagnifyingGlass size={16} />
+              <input value={iskanje} onChange={e => setIskanje(e.target.value)} placeholder={L('Išči po naslovu, orodju, opombi …', 'Search title, tool, notes …')} />
+            </label>
+          )}
+        </div>
+        {kategorijeVal.length > 0 && (
+          <div className="sef-filtri">
+            <button type="button" className={filterKat === '' ? 'on' : ''} onClick={() => setFilterKat('')}>{L('Vse', 'All')}</button>
+            {kategorijeVal.map(k => <button type="button" key={k} className={filterKat === k ? 'on' : ''} onClick={() => setFilterKat(k)}>{k}</button>)}
+          </div>
+        )}
+        {osnovni.length === 0
           ? <p className="sef-prazno">{L('Še nič zaščitenega. Naloži prvo delo zgoraj.', 'Nothing protected yet. Add your first work above.')}</p>
-          : <div className="sef-vrstice">
-              {zapisi.map(z => (
-                <article className="sef-vrstica" key={z.id}>
-                  <div className="sef-glava">
-                    <strong>{z.naslov}</strong>
-                    <time>{datum(z.ustvarjeno)}</time>
-                  </div>
-                  <div className="sef-meta">
-                    <span>{z.datoteka}</span>
-                    {z.orodje && <span className="sef-znacka">{z.orodje}</span>}
-                    {z.posnetekIme && <span className="sef-znacka">+ {L('screenshot', 'screenshot')}</span>}
-                  </div>
-                  {z.opombe && <p className="sef-opombe">{z.opombe}</p>}
-                  <div className="sef-hash">
-                    <code title={z.hash}>SHA-256 · {z.hash.slice(0, 24)}…</code>
-                    <button type="button" onClick={() => kopiraj(z.hash)} title={L('Kopiraj odtis', 'Copy fingerprint')}>{kopiran === z.hash ? <Check size={14} weight="bold" /> : <Copy size={14} />}</button>
-                  </div>
-                  <div className="sef-akcije">
-                    <button type="button" onClick={() => potrdilo(z)}><DownloadSimple size={15} /> {L('Potrdilo', 'Certificate')}</button>
-                    <button type="button" className="sef-brisi" onClick={() => izbrisi(z.id)}><Trash size={15} /> {L('Izbriši', 'Delete')}</button>
-                  </div>
-                </article>
-              ))}
-            </div>}
+          : vidni.length === 0
+            ? <p className="sef-prazno">{L('Ni zadetkov.', 'No matches.')}</p>
+            : <div className="sef-tabela-ovoj">
+                <table className="sef-tabela">
+                  <thead><tr>
+                    <th>{L('Delo', 'Work')}</th>
+                    <th>{L('Kategorija', 'Category')}</th>
+                    <th>{L('Orodje', 'Tool')}</th>
+                    <th>{L('Datum', 'Date')}</th>
+                    <th>{L('Odtis', 'Fingerprint')}</th>
+                    <th aria-hidden />
+                  </tr></thead>
+                  <tbody>
+                    {vidni.map(z => (
+                      <tr key={z.id}>
+                        <td className="sef-td-delo"><strong>{z.naslov}</strong><small>{z.datoteka}{z.posnetekIme ? ' · +screenshot' : ''}</small></td>
+                        <td>{z.kategorija ? <span className="sef-znacka">{z.kategorija}</span> : <span className="sef-crtica">—</span>}</td>
+                        <td className="sef-td-orodje">{z.orodje || '—'}</td>
+                        <td className="sef-td-datum">{datum(z.ustvarjeno)}</td>
+                        <td>
+                          <button type="button" className="sef-hash-btn" onClick={() => kopiraj(z.hash)} title={z.hash}>
+                            {kopiran === z.hash ? <><Check size={13} weight="bold" /> {L('kopirano', 'copied')}</> : <><code>{z.hash.slice(0, 10)}…</code><Copy size={12} /></>}
+                          </button>
+                        </td>
+                        <td className="sef-td-akcije">
+                          <button type="button" onClick={() => potrdilo(z)} title={L('Potrdilo', 'Certificate')}><DownloadSimple size={15} /></button>
+                          <button type="button" className="sef-brisi" onClick={() => izbrisi(z.id)} title={L('Izbriši', 'Delete')}><Trash size={15} /></button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>}
       </section>
 
       {/* REGISTRACIJA + POŠTENOST */}
@@ -228,7 +280,7 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         .sef { --line: rgba(17,17,17,.1); max-width: 46rem; margin: 0 auto; padding: .5rem 0 4rem; font-family: var(--font-sans), system-ui, sans-serif; color: var(--ink); }
         .sef-uvod { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.8); margin: 0 0 1.6rem; }
         .sef-uvod b { font-weight: 650; } .sef-uvod em { font-style: italic; color: var(--accent); font-weight: 600; }
-        .sef-kartica { border: 1px solid var(--line); border-radius: 18px; padding: 1.5rem; margin-bottom: 1.3rem; background: rgba(255,255,255,.55); }
+        .sef-kartica { border: 1px solid var(--line); border-radius: 18px; padding: 1.7rem; margin-bottom: 2rem; background: rgba(255,255,255,.55); }
         .sef h2 { display: flex; align-items: center; gap: .5rem; font-size: 1.08rem; font-weight: 650; margin: 0 0 1.1rem; }
         .sef h2 :global(svg) { color: var(--accent); }
         .sef-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .4rem; text-align: center; border: 1.5px dashed rgba(17,17,17,.22); border-radius: 14px; padding: 1.4rem 1rem; cursor: pointer; transition: border-color .15s, background .15s; color: rgba(17,17,17,.72); }
@@ -254,25 +306,37 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         .sef-najdba { display: flex; align-items: center; gap: .45rem; font-size: .88rem; font-weight: 600; margin: .9rem 0 0; padding: .7rem .9rem; border-radius: 10px; }
         .sef-najdba.ok { color: oklch(45% .13 155); background: oklch(95% .05 155); }
         .sef-najdba.ne { color: oklch(48% .12 40); background: oklch(96% .04 60); font-weight: 500; }
-        .sef-seznam h2 { font-size: 1.05rem; margin: 2rem 0 1rem; }
+        .sef-seznam { margin-top: 2.8rem; }
+        .sef-seznam-glava { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.2rem; }
+        .sef-seznam h2 { font-size: 1.12rem; margin: 0; }
         .sef-st { display: inline-grid; place-items: center; min-width: 1.4rem; height: 1.4rem; padding: 0 .4rem; border-radius: 999px; background: oklch(93% .05 297); color: var(--accent); font-size: .78rem; font-weight: 700; margin-left: .3rem; }
-        .sef-prazno { font-size: .9rem; color: rgba(17,17,17,.55); padding: 1.4rem; text-align: center; border: 1px dashed var(--line); border-radius: 14px; }
-        .sef-vrstice { display: grid; gap: .8rem; }
-        .sef-vrstica { border: 1px solid var(--line); border-radius: 14px; padding: 1rem 1.1rem; background: rgba(255,255,255,.6); }
-        .sef-glava { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
-        .sef-glava strong { font-size: 1rem; font-weight: 650; }
-        .sef-glava time { font-size: .78rem; color: rgba(17,17,17,.55); white-space: nowrap; }
-        .sef-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; margin-top: .35rem; font-size: .8rem; color: rgba(17,17,17,.62); }
-        .sef-znacka { font-size: .68rem; font-weight: 650; letter-spacing: .02em; color: var(--accent); background: oklch(95% .04 297); border-radius: 999px; padding: .12rem .5rem; }
-        .sef-opombe { font-size: .84rem; line-height: 1.5; color: rgba(17,17,17,.72); margin: .55rem 0 0; }
-        .sef-hash { display: flex; align-items: center; gap: .5rem; margin-top: .7rem; }
-        .sef-hash code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .74rem; color: rgba(17,17,17,.6); background: oklch(96% .006 285); border: 1px solid var(--line); border-radius: 7px; padding: .28rem .5rem; }
-        .sef-hash button { display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: rgba(17,17,17,.6); cursor: pointer; }
-        .sef-hash button:hover { color: var(--accent); border-color: var(--accent); }
-        .sef-akcije { display: flex; gap: .5rem; margin-top: .8rem; }
-        .sef-akcije button { display: inline-flex; align-items: center; gap: .35rem; font-family: inherit; font-size: .8rem; font-weight: 600; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: .42rem .8rem; cursor: pointer; transition: background .15s, border-color .15s; }
-        .sef-akcije button:hover { background: rgba(17,17,17,.04); border-color: rgba(17,17,17,.3); }
-        .sef-akcije .sef-brisi:hover { color: oklch(50% .16 25); border-color: oklch(70% .15 25); background: oklch(97% .03 25); }
+        .sef-iskalo { display: inline-flex; align-items: center; gap: .5rem; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: .48rem .95rem; color: rgba(17,17,17,.45); min-width: 15rem; }
+        .sef-iskalo:focus-within { border-color: var(--accent); }
+        .sef-iskalo input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: inherit; font-size: .88rem; color: var(--ink); }
+        .sef-filtri { display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: 1.2rem; }
+        .sef-filtri button { font-family: inherit; font-size: .8rem; font-weight: 600; color: rgba(17,17,17,.66); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: .38rem .85rem; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+        .sef-filtri button:hover { border-color: rgba(17,17,17,.3); }
+        .sef-filtri button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+        .sef-prazno { font-size: .9rem; color: rgba(17,17,17,.55); padding: 1.8rem; text-align: center; border: 1px dashed var(--line); border-radius: 14px; }
+        .sef-znacka { display: inline-block; font-size: .68rem; font-weight: 650; letter-spacing: .02em; color: var(--accent); background: oklch(95% .04 297); border-radius: 999px; padding: .12rem .55rem; white-space: nowrap; }
+        .sef-crtica { color: rgba(17,17,17,.35); }
+        .sef-tabela-ovoj { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; overflow-x: auto; background: rgba(255,255,255,.55); }
+        .sef-tabela { width: 100%; border-collapse: collapse; font-size: .86rem; }
+        .sef-tabela th { text-align: left; font-size: .66rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: rgba(17,17,17,.5); padding: .85rem 1.1rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
+        .sef-tabela td { padding: 1rem 1.1rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+        .sef-tabela tr:last-child td { border-bottom: none; }
+        .sef-tabela tbody tr:hover td { background: oklch(98% .012 297 / .6); }
+        .sef-td-delo strong { display: block; font-weight: 650; font-size: .92rem; }
+        .sef-td-delo small { display: block; font-size: .74rem; color: rgba(17,17,17,.5); margin-top: .14rem; }
+        .sef-td-orodje { color: rgba(17,17,17,.72); white-space: nowrap; }
+        .sef-td-datum { color: rgba(17,17,17,.6); white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .sef-hash-btn { display: inline-flex; align-items: center; gap: .35rem; font-family: inherit; font-size: .74rem; color: rgba(17,17,17,.6); background: oklch(96% .006 285); border: 1px solid var(--line); border-radius: 7px; padding: .32rem .58rem; cursor: pointer; white-space: nowrap; }
+        .sef-hash-btn code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+        .sef-hash-btn:hover { color: var(--accent); border-color: var(--accent); }
+        .sef-td-akcije { white-space: nowrap; text-align: right; }
+        .sef-td-akcije button { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: rgba(17,17,17,.6); cursor: pointer; margin-left: .35rem; transition: background .15s, border-color .15s, color .15s; }
+        .sef-td-akcije button:hover { color: var(--accent); border-color: var(--accent); }
+        .sef-td-akcije .sef-brisi:hover { color: oklch(50% .16 25); border-color: oklch(70% .15 25); background: oklch(97% .03 25); }
         .sef-registracija { background: oklch(97% .02 297 / .5); }
         .sef-linki { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 1rem; }
         .sef-linki a { display: inline-flex; align-items: center; gap: .3rem; font-size: .82rem; font-weight: 600; color: var(--ink); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: .42rem .8rem; transition: border-color .15s, background .15s; }
