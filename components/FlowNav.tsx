@@ -137,10 +137,20 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
         .flnav-burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
         .flnav-burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
 
-        /* predal čez cel zaslon, drsi OD LEVE PROTI DESNI; z-index 99 < header 100, zato
-           logo + X (v headerju) ostaneta vidna in klikljiva nad predalom. */
-        .flnav-drawer { position: fixed; inset: 0; z-index: 99; display: flex; flex-direction: column; gap: .2rem; padding: 4.6rem clamp(1.25rem, 5vw, 2rem) 2rem; background: var(--paper); overflow-y: auto; animation: flnavDrawer .3s cubic-bezier(.2,.8,.3,1) both; }
-        @keyframes flnavDrawer { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        /* full-screen overlay (kot pinart.si): vedno izrisan, se PRELIJE (opacity). z-index 99 <
+           header 100, zato logo + X ostaneta vidna/klikljiva nad njim. Povezave se pojavijo z zamikom. */
+        .flnav-drawer { position: fixed; inset: 0; z-index: 99; display: flex; flex-direction: column; gap: .2rem; padding: 4.6rem clamp(1.25rem, 5vw, 2rem) 2rem; background: var(--paper); overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity .38s ease; }
+        .flnav-drawer[data-open="true"] { opacity: 1; pointer-events: auto; }
+        .flnav-drawer > * { opacity: 0; transform: translateY(10px); transition: opacity .45s ease, transform .45s ease; }
+        .flnav-drawer[data-open="true"] > * { opacity: 1; transform: none; }
+        .flnav-drawer[data-open="true"] > *:nth-child(1) { transition-delay: .05s; }
+        .flnav-drawer[data-open="true"] > *:nth-child(2) { transition-delay: .1s; }
+        .flnav-drawer[data-open="true"] > *:nth-child(3) { transition-delay: .15s; }
+        .flnav-drawer[data-open="true"] > *:nth-child(4) { transition-delay: .2s; }
+        .flnav-drawer[data-open="true"] > *:nth-child(5) { transition-delay: .25s; }
+        .flnav-drawer[data-open="true"] > *:nth-child(6) { transition-delay: .3s; }
+        .flnav-drawer[data-open="true"] > *:nth-child(7) { transition-delay: .35s; }
+        .flnav-drawer[data-open="true"] > *:nth-child(8) { transition-delay: .4s; }
         .flnav-drawer > a { font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; font-weight: 600; color: var(--ink); text-decoration: none; padding: .95rem .3rem; border-bottom: 1px solid rgba(17,17,17,.08); }
         .flnav-drawer .flnav-login, .flnav-drawer .flnav-signup { text-align: center; margin-top: .9rem; border-bottom: 0; font-size: .95rem; }
         .flnav-drawer .flnav-login { border: 1px solid rgba(17,17,17,.2); }
@@ -156,18 +166,15 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
       `}} />
     </header>
 
-    {/* Predal IZVEN headerja (header ima backdrop-filter -> bi bil containing block za fixed).
-        Drsi od leve proti desni. */}
-    {open && (
-      <div className="flnav-drawer">
-        <a href={`${flow}#orodja`} onClick={close}>Pinart Flow</a>
-        <a href={kalk} onClick={close}>{isEn ? 'Free calculator' : 'Brezplačni kalkulator'}</a>
-        {LINKS.map(l => <a key={l.label} href={l.href} onClick={close}>{l.label}</a>)}
-        <a className="flnav-lang" href={languageHref} hrefLang={isEn ? 'sl' : 'en'}><span aria-hidden>{isEn ? '🇸🇮' : '🇬🇧'}</span>{isEn ? 'Slovenščina' : 'English'}</a>
-        <a className="flnav-login" href={prijava} onClick={close}>{isEn ? 'Log in' : 'Prijava'}</a>
-        <a className="flnav-signup" href={prijava} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
-      </div>
-    )}
+    {/* Full-screen overlay IZVEN headerja (kot pinart.si) — vedno izrisan, se PRELIJE (opacity),
+        z-index < header, da logo + X ostaneta zgoraj. Povezave se pojavijo z zamikom. */}
+    <div className="flnav-drawer" data-open={open} aria-hidden={!open}>
+      <a href={kalk} onClick={close}>{isEn ? 'Free calculator' : 'Brezplačni kalkulator'}</a>
+      {LINKS.map(l => <a key={l.label} href={l.href} onClick={close}>{l.label}</a>)}
+      <a className="flnav-lang" href={languageHref} hrefLang={isEn ? 'sl' : 'en'}><span aria-hidden>{isEn ? '🇸🇮' : '🇬🇧'}</span>{isEn ? 'Slovenščina' : 'English'}</a>
+      <a className="flnav-login" href={prijava} onClick={close}>{isEn ? 'Log in' : 'Prijava'}</a>
+      <a className="flnav-signup" href={prijava} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
+    </div>
     </>
   );
 }
