@@ -213,6 +213,10 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
         @media (max-width: 820px) {
           /* Mobile: bg video skrit — hero video je zdaj cist blok POD gumbi (glej .fl-hero-vid-mob) */
           .fl-video { display: none; }
+          /* Prej: overflow:hidden je mehurčke (in senco) ostro odrezal v ravni črti na
+             spodnjem robu heroja. Zdaj se ozadje mehko zbledi -> ni več trdega reza,
+             mehurček ob lebdenju izgine nežno namesto da bi bil prerezan. */
+          .fl-herobg { height: calc(100svh + 120px); -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 97%); mask-image: linear-gradient(to bottom, #000 78%, transparent 97%); }
         }
 
         .fl-bubbles { position: absolute; inset: 0; }

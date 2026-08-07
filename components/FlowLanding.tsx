@@ -114,26 +114,36 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
          v koš. Vrednosti (položaj 0.48/0.50, velikost, pot) so PRVA ocena — fino
          nastavljivo. Če pupe (še) ni, papir skrijemo. */
       if (vw <= 820) {
-        const pupaM = document.querySelector('.fl-hero-vid-mob img') as HTMLElement | null;
-        const rm = pupaM?.getBoundingClientRect();
-        if (!rm || rm.width === 0) { fly.style.opacity = '0'; return; }
         const docHm = document.documentElement.scrollHeight;
         const fracM = Math.min(1, Math.max(0, y / (docHm - vh)));
-        const startX = rm.left + rm.width * 0.48;   // laptop na pupi (x)
-        const startY = rm.top + rm.height * 0.50;   // laptop na pupi (y)
-        const baseScale = Math.max(0.4, rm.width / 620);   // velikost žogice glede na pupo
+        /* izhodišče = laptop na mobilni pupi (velja le dokler je hero na zaslonu) */
+        const pupaM = document.querySelector('.fl-hero-vid-mob img') as HTMLElement | null;
+        let startX = vw * 0.5, startY = vh * 0.5;
+        if (pupaM) { const rm = pupaM.getBoundingClientRect(); if (rm.width > 0) { startX = rm.left + rm.width * 0.5; startY = rm.top + rm.height * 0.44; } }
+        /* fiksni "pas" v vidnem polju (kot desktop) -> papir OSTANE viden skozi ves scroll,
+           ne odleti z vrha skupaj s hero-pupo (to je bil hrošč: viden le na koncu). */
+        const bandX = vw * 0.80, bandY = vh * 0.34;
+        const fallEnd = 0.14;   // zapusti hero v prvih ~14 % scrolla
+        let xM: number, tyM: number, scaleM: number;
+        if (fracM < fallEnd) {
+          const tt = fracM / fallEnd, e = tt * tt * (3 - 2 * tt);   // smoothstep
+          xM = startX + (bandX - startX) * e;
+          tyM = startY + (bandY - startY) * e + Math.sin(tt * Math.PI) * vh * 0.05;   // lok padca
+          scaleM = 0.52 + 0.33 * e;
+        } else {
+          xM = bandX + Math.sin((fracM - fallEnd) * 20) * vw * 0.07;   // rahlo vijuga po desni
+          tyM = bandY;
+          scaleM = 0.85;
+        }
+        /* liki: kepa -> ptič -> ladjica -> nazaj v kepo (ob padcu v koš) */
         let shapeM = 0;
-        if (fracM >= 0.75) shapeM = 0; else if (fracM >= 0.55) shapeM = 2; else if (fracM >= 0.32) shapeM = 1;
+        if (fracM >= 0.78) shapeM = 0; else if (fracM >= 0.58) shapeM = 2; else if (fracM >= 0.34) shapeM = 1;
         let oBallM = shapeM === 0 ? 1 : 0, oBirdM = shapeM === 1 ? 1 : 0, oBoatM = shapeM === 2 ? 1 : 0;
-        const leave = Math.min(1, Math.max(0, (fracM - 0.12) / 0.25));   // zapusti laptop pri ~12 %
-        let xM = startX + Math.sin(fracM * 7) * vw * 0.10 * leave;
-        let tyM = startY + leave * vh * 0.30;
-        let scaleM = baseScale * (1 + leave * 0.3);
         let rotM = fracM * 300, opM = 1;
         const kosM = kosRef.current;
         if (kosM) {
           const kr = kosM.getBoundingClientRect();
-          const d = Math.min(1, Math.max(0, (fracM - 0.75) / 0.15));
+          const d = Math.min(1, Math.max(0, (fracM - 0.8) / 0.14));   // padec v koš proti koncu
           if (d > 0) {
             xM += (kr.left + kr.width * 0.5 - xM) * d;
             tyM += (kr.top + kr.height * 0.28 - tyM) * d;
@@ -210,6 +220,45 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   }, [flyMounted]);
 
   const vrstaRef = useRef<HTMLDivElement>(null);
+
+  /* Showcase (Eno mesto): na mobilu so paneli vodoravni scroll-carousel (naslednji se
+     malce vidi). Klik na pill zapelje do panela; drs carousela posodobi aktivni pill.
+     Na desktopu ostane po starem: pill preklopi, viden je le aktiven panel. */
+  const scTrackRef = useRef<HTMLDivElement>(null);
+  const scPillsRef = useRef<HTMLDivElement>(null);
+  const jeMob = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 860px)').matches;
+  const izberiZavihek = (id: string) => {
+    setTaZavihek(id);
+    if (!jeMob()) return;
+    const panel = scTrackRef.current?.querySelector(`[data-sc="${id}"]`) as HTMLElement | null;
+    panel?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  };
+  /* drs carousela -> aktiven postane najbližji panel (samo mobilno) */
+  useEffect(() => {
+    const track = scTrackRef.current;
+    if (!track) return;
+    let raf = 0;
+    const oceni = () => {
+      raf = 0;
+      if (!jeMob()) return;
+      const sredina = track.scrollLeft + track.clientWidth / 2;
+      let best = '', bestD = Infinity;
+      track.querySelectorAll<HTMLElement>('[data-sc]').forEach(p => {
+        const c = p.offsetLeft + p.clientWidth / 2;
+        const d = Math.abs(c - sredina);
+        if (d < bestD) { bestD = d; best = p.dataset.sc || ''; }
+      });
+      if (best) setTaZavihek(prev => (prev === best ? prev : best));
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(oceni); };
+    track.addEventListener('scroll', onScroll, { passive: true });
+    return () => { track.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, []);
+  /* aktiven pill naj bo viden v drseči vrsti pillov */
+  useEffect(() => {
+    const active = scPillsRef.current?.querySelector('.fl-sc-pill.on') as HTMLElement | null;
+    active?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [taZavihek]);
 
   const VPRASANJA = isEn ? [
     { v: 'Is Flow really free?', o: 'The fair-pricing calculator is free forever and works without an account. Choose Premium or Pro when you need saved documents, clients, projects and the Pupa AI assistant.' },
@@ -349,7 +398,6 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       tocke: ['MCP dostop iz AI orodij', 'API za ponudbe, račune in stranke', 'Na tvojem paketu, brez skritih stroškov'],
       cta: 'Obvesti me', href: 'mailto:tina@pinart.si?subject=Flow%20MCP%20%26%20API' },
   ];
-  const zav = ZAVIHKI.find(z => z.id === taZavihek) ?? ZAVIHKI[0];
   const predoglediMock = (id: string) => {
     if (id === 'dokumenti') return (
       <div className="fl-mock">
@@ -508,7 +556,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl h1 em { font-style: italic; }
         .fl .lead { font-size: clamp(1.08rem, 2.1vw, 1.35rem); line-height: 1.55; color: rgba(17,17,17,.82); max-width: 46ch; margin: 0 0 2.2rem; }
         .fl .cta-vrsta { display: flex; flex-wrap: wrap; gap: .8rem; align-items: center; }
-        .fl .cta { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: .55rem; font-family: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; border-radius: 999px; padding: 1rem 2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); text-decoration: none; transition: transform .2s ease, box-shadow .2s ease; }
+        .fl .cta { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: .55rem; font-family: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; cursor: pointer; border-radius: 999px; padding: 1rem 2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); text-decoration: none; transition: transform .2s ease, box-shadow .2s ease; }
         .fl .cta svg { transition: transform .2s ease; }
         .fl .cta:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(40,25,60,.22); }
         .fl .cta:hover svg { transform: translateX(3px); }
@@ -662,8 +710,19 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-sc-badge.beta { color: oklch(50% .17 297); background: oklch(93% .06 300); }
         .fl-sc-badge.soon { color: rgba(17,17,17,.62); background: rgba(17,17,17,.08); }
         .fl-sc-pill.on .fl-sc-badge { background: rgba(255,255,255,.18); color: rgba(255,255,255,.92); }
-        .fl-sc-panel { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: clamp(1.6rem, 4vw, 3.2rem); align-items: center; border-radius: 26px; padding: clamp(2rem, 4vw, 3.2rem); background: linear-gradient(135deg, oklch(96% .03 297), oklch(95% .035 320), oklch(95% .03 165)); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 20px 60px rgba(40,25,60,.1); overflow: hidden; }
-        @media (max-width: 860px) { .fl-sc-panel { grid-template-columns: 1fr; } }
+        .fl-sc-track { position: relative; }
+        /* Desktop: viden je LE aktiven panel (.on) — po starem. */
+        .fl-sc-panel { position: relative; display: none; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: clamp(1.6rem, 4vw, 3.2rem); align-items: center; border-radius: 26px; padding: clamp(2rem, 4vw, 3.2rem); background: linear-gradient(135deg, oklch(96% .03 297), oklch(95% .035 320), oklch(95% .03 165)); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 20px 60px rgba(40,25,60,.1); overflow: hidden; }
+        .fl-sc-panel.on { display: grid; animation: flScIn .5s cubic-bezier(.16,1,.3,1); }
+        @media (max-width: 860px) {
+          /* Mobilno: carousel — vsi paneli side-by-side, vodoraven snap, naslednji se malce vidi. */
+          .fl-sc-track { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; scrollbar-width: none;
+            margin-inline: calc(50% - 50vw); padding: .5rem clamp(1.25rem, 5vw, 1.6rem) 1.2rem; scroll-padding-inline: clamp(1.25rem, 5vw, 1.6rem); }
+          .fl-sc-track::-webkit-scrollbar { display: none; }
+          .fl-sc-panel, .fl-sc-panel.on { display: grid; grid-template-columns: 1fr; flex: 0 0 86%; scroll-snap-align: center; animation: none; }
+          /* CTA v ožjem panelu naj bo manjši in v eni vrstici (ne »ODPRI / KALKULATOR«) */
+          .fl-sc-info .cta { align-self: flex-start; padding: .8rem 1.4rem; font-size: .76rem; letter-spacing: .07em; }
+        }
         .fl-sc-vizual { position: relative; }
         .fl-sc-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 14px; opacity: 0; transition: opacity .35s ease; box-shadow: 0 24px 60px rgba(40,25,60,.18); }
         .fl-sc-info h3 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.55rem, 3.6vw, 2.25rem); line-height: 1.08; margin: 0 0 .6rem; max-width: 18ch; }
@@ -820,16 +879,20 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 900px) {
           .fl-bento-mreza { grid-template-columns: 1fr 1fr; grid-auto-rows: 13rem; }
           .fl-bkarta.a { grid-column: 1; grid-row: 1 / span 2; }
-          .fl-bkarta.b { grid-column: 2; grid-row: 1; flex-direction: column; align-items: stretch; gap: 0; }
+          .fl-bkarta.b { grid-column: 2; grid-row: 1; flex-direction: column; align-items: stretch; gap: 0; justify-content: flex-start; }
           .fl-bkarta.c { grid-column: 2; grid-row: 2; }
           .fl-bkarta.d { grid-column: 1 / span 2; grid-row: 3; }
           .fl-btekst { flex: none; }
           .fl-bscreen { flex: none; width: auto; height: auto; min-height: 7rem; margin-top: 1rem; transform: none; aspect-ratio: 16 / 10; }
+          /* ilustracija poti (mapice/krivulje) potisnjena v spodnji del kartice, da NE prekriva naslova/besedila */
+          .fl-bkarta.b .fl-bnodes { top: auto; height: 56%; }
         }
         @media (max-width: 620px) {
           .fl-bento-mreza { grid-template-columns: 1fr; grid-auto-rows: auto; }
           .fl-bkarta { min-height: 12rem; }
           .fl-bkarta.a, .fl-bkarta.b, .fl-bkarta.c, .fl-bkarta.d { grid-column: 1; grid-row: auto; }
+          /* na telefonu ilustracija teče POD besedilom (ne čez) — konec prekrivanja */
+          .fl-bkarta.b .fl-bnodes { position: relative; right: auto; top: auto; bottom: auto; width: 100%; height: 8.5rem; margin-top: 1.1rem; }
         }
 
         /* Zakljucni CTA */
@@ -955,7 +1018,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-prop-kos { right: calc(21% - 90px); bottom: calc(100% - 2.7rem + 54px); width: clamp(7rem, 11vw, 12rem); animation: flPropBob 6.5s ease-in-out infinite; }
         .fl-prop-plant { left: 21%; width: clamp(10rem, 16vw, 17rem); animation: flPropBob 7.5s ease-in-out infinite; animation-delay: -2.4s; }
         @keyframes flPropBob { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-7px) rotate(-1deg); } }
-        @media (max-width: 720px) { .fl-prop-kos { right: 3%; width: 6rem; } .fl-prop-plant { left: 3%; width: 8.5rem; } }
+        /* Rastlina ima ~10,7 % prazne obrobe pod podstavkom, koš nič. Odmik +54/+10px je
+           poravnan za DESKTOP velikost; na mobilu je rastlina manjša -> kompenzacija premajhna
+           in kaktus pade nižje od koša. Zato mu tu dvignemo bazo (+32px), da stojita na isti črti. */
+        @media (max-width: 720px) { .fl-prop-kos { right: 3%; width: 6rem; } .fl-prop-plant { left: 3%; width: 8.5rem; bottom: calc(100% - 2.7rem + 32px); } }
         @media (prefers-reduced-motion: reduce) { .fl-prop { animation: none; } }
         /* leteci papirnati objekt — potuje po strani, se preliva, pade v kos (pozicija/prelivanje iz JS) */
         .fl-fly { position: fixed; left: 0; top: 0; width: clamp(8rem, 11vw, 13rem); aspect-ratio: 1; z-index: 20; pointer-events: none; opacity: 0; will-change: transform, opacity; }
@@ -1131,7 +1197,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <h2>{t('Vse tvoje poslovanje na enem mestu', 'Your whole creative business in one place')}</h2>
             <p>{t('Izberi, kje začneš. Vsako orodje teče iz istih podatkov — od poštene cene do računa.', 'Start anywhere. Every tool works from the same data, from a fair price to the final invoice.')}</p>
           </div>
-          <div className="fl-sc-pills" role="tablist" aria-label={t('Orodja Pinart Flow', 'Pinart Flow tools')}>
+          <div className="fl-sc-pills" ref={scPillsRef} role="tablist" aria-label={t('Orodja Pinart Flow', 'Pinart Flow tools')}>
             {ZAVIHKI.map(z => {
               const Ik = z.Ikona;
               return (
@@ -1141,7 +1207,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                   role="tab"
                   aria-selected={taZavihek === z.id}
                   className={`fl-sc-pill${taZavihek === z.id ? ' on' : ''}`}
-                  onClick={() => setTaZavihek(z.id)}
+                  onClick={() => izberiZavihek(z.id)}
                 >
                   <Ik size={17} weight="regular" />
                   {z.label}
@@ -1150,25 +1216,31 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               );
             })}
           </div>
-          <div className="fl-sc-panel">
-            <div className="fl-sc-info fl-sc-anim" key={`i-${zav.id}`}>
-              <h3>{zav.h}</h3>
-              <p>{zav.p}</p>
-              <ul className="fl-sc-tocke">
-                {zav.tocke.map(t => <li key={t}><CheckCircle size={18} weight="fill" />{t}</li>)}
-              </ul>
-              <a className={`cta${zav.zvrst === 'soon' || zav.zvrst === 'beta' ? ' duh' : ''}`} href={zav.href}>
-                {zav.cta} <ArrowRight size={16} weight="bold" />
-              </a>
-            </div>
-            <div className="fl-sc-vizual fl-sc-anim" key={`v-${zav.id}`} aria-hidden>
-              {predoglediMock(zav.id)}
-              {/* Video predstavitev produkta (kot Magnific). Ce datoteke se ni, onError skrije
-                  video in ostane ilustracija spodaj. Odlozi v /public/flow/showcase/<id>.mp4 */}
-              <video className="fl-sc-video" src={`/flow/showcase/${zav.id}.mp4`} autoPlay muted loop playsInline preload="metadata"
-                onCanPlay={e => { (e.currentTarget as HTMLVideoElement).style.opacity = '1'; }}
-                onError={e => { (e.currentTarget as HTMLVideoElement).style.opacity = '0'; }} />
-            </div>
+          {/* Desktop: viden le aktiven panel (.on). Mobilno: track je vodoravni scroll-carousel,
+              vsi paneli side-by-side, naslednji se malce vidi (peek). */}
+          <div className="fl-sc-track" ref={scTrackRef}>
+            {ZAVIHKI.map(z => (
+              <div className={`fl-sc-panel${taZavihek === z.id ? ' on' : ''}`} data-sc={z.id} key={z.id} role="tabpanel">
+                <div className="fl-sc-info">
+                  <h3>{z.h}</h3>
+                  <p>{z.p}</p>
+                  <ul className="fl-sc-tocke">
+                    {z.tocke.map(tk => <li key={tk}><CheckCircle size={18} weight="fill" />{tk}</li>)}
+                  </ul>
+                  <a className={`cta${z.zvrst === 'soon' || z.zvrst === 'beta' ? ' duh' : ''}`} href={z.href}>
+                    {z.cta} <ArrowRight size={16} weight="bold" />
+                  </a>
+                </div>
+                <div className="fl-sc-vizual" aria-hidden>
+                  {predoglediMock(z.id)}
+                  {/* Video predstavitev produkta (kot Magnific). Ce datoteke se ni, onError skrije
+                      video in ostane ilustracija spodaj. Odlozi v /public/flow/showcase/<id>.mp4 */}
+                  <video className="fl-sc-video" src={`/flow/showcase/${z.id}.mp4`} muted loop playsInline preload="none"
+                    onCanPlay={e => { (e.currentTarget as HTMLVideoElement).style.opacity = '1'; }}
+                    onError={e => { (e.currentTarget as HTMLVideoElement).style.opacity = '0'; }} />
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 

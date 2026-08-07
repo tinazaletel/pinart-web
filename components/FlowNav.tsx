@@ -11,10 +11,24 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
   const [open, setOpen] = useState(false);
   const [prodOpen, setProdOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);   /* mobilno: ob scrollu navzdol se umakne */
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
+    let lastY = window.scrollY;
+    let ticking = false;
+    const oceni = () => {
+      const y = window.scrollY;
+      setScrolled(y > 24);
+      /* 6px prag: brez njega drobno tresenje prsta vklaplja/izklaplja vrstico.
+         Navzdol (in mimo ~90px) => skrij; navzgor => takoj pokaži. (Umik le na mobilu — CSS.) */
+      if (Math.abs(y - lastY) > 6) {
+        setHidden(y > lastY && y > 90);
+        lastY = y;
+      }
+      ticking = false;
+    };
+    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(oceni); } };
+    oceni();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -39,7 +53,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
   const close = () => { setOpen(false); setProdOpen(false); };
 
   return (
-    <header className={`flnav${scrolled ? ' scrolled' : ''}`}>
+    <header className={`flnav${scrolled ? ' scrolled' : ''}${hidden && !open ? ' flnav-hidden' : ''}`}>
       <a className="flnav-brand" href={flow} onClick={close} aria-label="Pinart Flow">
         <span className="flnav-dot" aria-hidden />
         <strong className="flnav-pinart">Pinart</strong><span className="flnav-ff">FLOW</span><small>BETA</small>
@@ -87,8 +101,8 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
           padding: clamp(.85rem, 1.6vw, 1.25rem) clamp(1.25rem, 5vw, 5.5rem);
           background: color-mix(in oklch, var(--paper) 94%, transparent);
           /* frosted: ko hero presije skozi (0-24px skrola), je zabrisan, ne berljiv ghost-tekst */
-          -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-          transition: background .28s ease, box-shadow .28s ease, border-color .28s ease; border-bottom: 1px solid transparent; }
+          -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); will-change: transform;
+          transition: transform .32s cubic-bezier(.22,1,.36,1), background .28s ease, box-shadow .28s ease, border-color .28s ease; border-bottom: 1px solid transparent; }
         .flnav.scrolled { background: var(--paper); border-bottom-color: rgba(17,17,17,.08); box-shadow: 0 6px 24px rgba(40,25,60,.05); }
 
         .flnav-brand { display: inline-flex; align-items: center; gap: .5rem; text-decoration: none; color: var(--ink); }
@@ -135,8 +149,12 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
 
         @media (max-width: 900px) {
           .flnav-links, .flnav-actions { display: none; }
-          .flnav-burger { display: flex; }
-          .flnav { background: color-mix(in oklch, var(--paper) 92%, transparent); }
+          .flnav-burger { display: flex; width: 2.4rem; height: 2.4rem; }
+          /* nižja vrstica na telefonu (Tina: header je bil previsok) */
+          .flnav { padding-top: .5rem; padding-bottom: .5rem; background: color-mix(in oklch, var(--paper) 92%, transparent); }
+          /* umik ob scrollu navzdol (samo mobilno) — se vrne ob scrollu navzgor */
+          .flnav.flnav-hidden { transform: translateY(-100%); box-shadow: none; }
+          .flnav-drawer { inset: 3.4rem 0 0 0; }
         }
       `}} />
     </header>
