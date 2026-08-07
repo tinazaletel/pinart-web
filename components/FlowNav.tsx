@@ -139,7 +139,11 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
         .flnav-login:hover::after, .flnav-signup:hover::after { left: 170%; }
 
         .flnav-burger { display: none; flex-direction: column; gap: 4px; width: 2.6rem; height: 2.6rem; align-items: center; justify-content: center; background: none; border: 1px solid rgba(17,17,17,.16); border-radius: 999px; cursor: pointer; margin-left: auto; }
-        .flnav-burger span { width: 1.05rem; height: 1.5px; background: var(--ink); border-radius: 2px; transition: transform .2s, opacity .2s; }
+        .flnav-burger span { width: 1.05rem; height: 1.5px; background: var(--ink); border-radius: 2px; transform-origin: center; transition: transform .22s cubic-bezier(.2,.8,.3,1), opacity .18s ease; }
+        /* lojtrica -> X ko je meni odprt */
+        .flnav-burger[aria-expanded="true"] span:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
+        .flnav-burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+        .flnav-burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
 
         .flnav-drawer { position: fixed; inset: 3.9rem 0 0 0; z-index: 99; display: flex; flex-direction: column; gap: .2rem; padding: 1.2rem clamp(1.25rem, 5vw, 2rem) 2rem; background: var(--paper); overflow-y: auto; animation: flnavDrawer .26s cubic-bezier(.2,.8,.3,1) both; }
         @keyframes flnavDrawer { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }

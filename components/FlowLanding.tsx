@@ -173,6 +173,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         if (ball) ball.style.opacity = String(oBallM);
         if (bird) bird.style.opacity = String(oBirdM);
         if (boat) boat.style.opacity = String(oBoatM);
+        /* papir (fixed na body) ne sme štrleti čez rob -> sicer horizontalni scroll (iOS) */
+        const hwM = (fly.offsetWidth || 120) * scaleM / 2;
+        xM = Math.max(hwM + 14, Math.min(vw + 4 - hwM, xM));
         fly.style.opacity = String(opM);
         fly.style.transform = `translate(${xM - 10}px, ${tyM}px) translate(-50%, -50%) rotate(${rotM}deg) scale(${scaleM})`;
         return;
@@ -226,6 +229,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       if (ball) ball.style.opacity = String(oBall);
       if (bird) bird.style.opacity = String(oBird);
       if (boat) boat.style.opacity = String(oBoat);
+      const hw = (fly.offsetWidth || 160) * scale / 2;
+      x = Math.max(hw + 14, Math.min(vw + 4 - hw, x));
       fly.style.opacity = String(op);
       fly.style.transform = `translate(${x - 10}px, ${ty}px) translate(-50%, -50%) rotate(${rot}deg) scale(${scale})`;
     };
