@@ -140,7 +140,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
         /* predal čez cel zaslon, drsi OD LEVE PROTI DESNI; z-index 99 < header 100, zato
            logo + X (v headerju) ostaneta vidna in klikljiva nad predalom. */
         .flnav-drawer { position: fixed; inset: 0; z-index: 99; display: flex; flex-direction: column; gap: .2rem; padding: 4.6rem clamp(1.25rem, 5vw, 2rem) 2rem; background: var(--paper); overflow-y: auto; animation: flnavDrawer .3s cubic-bezier(.2,.8,.3,1) both; }
-        @keyframes flnavDrawer { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+        @keyframes flnavDrawer { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .flnav-drawer > a { font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; font-weight: 600; color: var(--ink); text-decoration: none; padding: .95rem .3rem; border-bottom: 1px solid rgba(17,17,17,.08); }
         .flnav-drawer .flnav-login, .flnav-drawer .flnav-signup { text-align: center; margin-top: .9rem; border-bottom: 0; font-size: .95rem; }
         .flnav-drawer .flnav-login { border: 1px solid rgba(17,17,17,.2); }
