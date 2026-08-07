@@ -113,7 +113,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
         .flnav-brand small { font-size: .56rem; font-weight: 700; letter-spacing: .1em; color: #b25476; border: 1px solid color-mix(in oklch, #b25476 45%, transparent); border-radius: 999px; padding: .12rem .4rem; align-self: center; }
 
         .flnav-links { display: flex; align-items: center; gap: 1.7rem; margin-left: auto; }
-        .flnav-links > a, .flnav-prod > button { font-family: var(--font-sans), system-ui, sans-serif; font-size: .84rem; font-weight: 600; letter-spacing: .01em; color: rgba(17,17,17,.72); text-decoration: none; background: none; border: 0; cursor: pointer; padding: 0; transition: color .16s; display: inline-flex; align-items: center; gap: .3rem; }
+        .flnav-links > a, .flnav-prod > button { font-family: var(--font-sans), system-ui, sans-serif; font-size: .84rem; font-weight: 600; letter-spacing: .01em; color: rgba(17,17,17,.72); text-decoration: none; background: none; border: 0; cursor: pointer; padding: 0; transition: color .16s; display: inline-flex; align-items: center; gap: .3rem; white-space: nowrap; }
         .flnav-links > a:hover, .flnav-prod > button:hover { color: var(--ink); }
         .flnav-prod { position: relative; }
         .flnav-prod > button svg { width: .8rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s; }
@@ -129,9 +129,9 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
         .flnav-lang { display: inline-flex; align-items: center; gap: .34rem; min-height: 2.35rem; padding: .42rem .5rem; border: 0; border-radius: 999px; color: rgba(17,17,17,.58); font: 600 .75rem/1 var(--font-sans), system-ui, sans-serif; text-decoration: none; background: transparent; transition: color .15s, background .15s; }
         .flnav-lang:hover { color: var(--ink); background: rgba(17,17,17,.05); }
         .flnav-lang span { font-size: 1rem; line-height: 1; }
-        .flnav-login { position: relative; overflow: hidden; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; font-weight: 600; color: var(--ink); text-decoration: none; padding: .55rem .95rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.2); transition: border-color .16s, background .16s; }
+        .flnav-login { position: relative; overflow: hidden; white-space: nowrap; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; font-weight: 600; color: var(--ink); text-decoration: none; padding: .55rem .95rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.2); transition: border-color .16s, background .16s; }
         .flnav-login:hover { border-color: var(--ink); background: rgba(17,17,17,.04); }
-        .flnav-signup { position: relative; overflow: hidden; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; font-weight: 700; color: var(--paper); text-decoration: none; padding: .58rem 1.1rem; border-radius: 999px; background: var(--ink); transition: transform .16s, box-shadow .16s; }
+        .flnav-signup { position: relative; overflow: hidden; white-space: nowrap; font-family: var(--font-sans), system-ui, sans-serif; font-size: .82rem; font-weight: 700; color: var(--paper); text-decoration: none; padding: .58rem 1.1rem; border-radius: 999px; background: var(--ink); transition: transform .16s, box-shadow .16s; }
         .flnav-signup:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(40,25,60,.2); }
         .flnav-login::after, .flnav-signup::after { content: ''; position: absolute; top: 0; left: -160%; width: 90%; height: 100%; transform: skewX(-18deg); transition: left .6s cubic-bezier(.19,1,.22,1); pointer-events: none; }
         .flnav-signup::after { background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.9) 50%, transparent 100%); }

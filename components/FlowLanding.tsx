@@ -96,6 +96,19 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
      in na koncu pade v kos (O nas). Cist scroll-driven (brez GSAP), Safari-varno; hidden na mob/reduce-motion. */
   const flyRef = useRef<HTMLDivElement>(null);
   const kosRef = useRef<HTMLImageElement>(null);
+  /* Mobilna pupa-scena: skalira se KOT CELOTA (620px design) glede na širino vsebnika.
+     Faktor računa JS (zanesljivo povsod, brez cqw), da se očala/teg-i/razmiki ne podrejo. */
+  const pupaSceneRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const scene = pupaSceneRef.current;
+    const wrap = scene?.parentElement;
+    if (!scene || !wrap) return;
+    const fit = () => { const w = wrap.clientWidth; if (w > 0) scene.style.transform = `scale(${w / 620})`; };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(wrap);
+    return () => ro.disconnect();
+  }, []);
   const [flyMounted, setFlyMounted] = useState(false);
   useEffect(() => { setFlyMounted(true); }, []);
   useEffect(() => {
@@ -113,13 +126,17 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
          leži na laptopu -> ob scrollu spremeni obliko (kepa->ptič->ladjica) -> pade
          v koš. Vrednosti (položaj 0.48/0.50, velikost, pot) so PRVA ocena — fino
          nastavljivo. Če pupe (še) ni, papir skrijemo. */
-      if (vw <= 820) {
+      /* Mobilna veja teče, kadar je vidna skalirna scena (.fl-hero-vid-mob) — to je zdaj tudi
+         v LEŽEČEM (nizek zaslon), ne le v portretu (<=820). Zaznamo po širini slike (display:none => 0). */
+      const scenaImg = document.querySelector('.fl-hero-vid-mob img') as HTMLElement | null;
+      const scenaVidna = !!scenaImg && scenaImg.getBoundingClientRect().width > 0;
+      if (scenaVidna) {
         const docHm = document.documentElement.scrollHeight;
         const fracM = Math.min(1, Math.max(0, y / (docHm - vh)));
-        /* izhodišče = laptop na mobilni pupi (velja le dokler je hero na zaslonu) */
-        const pupaM = document.querySelector('.fl-hero-vid-mob img') as HTMLElement | null;
+        /* izhodišče = laptop na skalirni pupi (velja le dokler je hero na zaslonu) */
+        const pupaM = scenaImg;
         let startX = vw * 0.5, startY = vh * 0.5;
-        if (pupaM) { const rm = pupaM.getBoundingClientRect(); if (rm.width > 0) { startX = rm.left + rm.width * 0.5; startY = rm.top + rm.height * 0.44; } }
+        if (pupaM) { const rm = pupaM.getBoundingClientRect(); if (rm.width > 0) { startX = rm.left + rm.width * 0.43; startY = rm.top + rm.height * 0.52; } }
         /* fiksni "pas" v vidnem polju (kot desktop) -> papir OSTANE viden skozi ves scroll,
            ne odleti z vrha skupaj s hero-pupo (to je bil hrošč: viden le na koncu). */
         const bandX = vw * 0.80, bandY = vh * 0.34;
@@ -566,14 +583,64 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl .cta.duh::after { background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.6) 50%, transparent 100%); }
         .fl .cta-note { font-size: .8rem; color: rgba(17,17,17,.6); }
         .fl-hero-vid-mob { display: none; }
+        /* SCENA (slika + odsev + teg-i) — GLOBALNO, da velja v PORTRETU IN LANDSCAPE (prej je bila
+           zaprta v @media <=820, zato v landscape slika ni bila zrcaljena in odsev/teg-i so bili narobe).
+           Zgrajena pri fiksnih 620px; JS jo skalira KOT CELOTO (transform: scale = širina/620). */
+        .fl-pupa-scene { position: absolute; top: 0; left: 0; width: 620px; height: 620px; transform-origin: top left; transform: scale(.5); }
+        .fl-pupa-scene > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; transform: scaleX(-1); display: block; }
+        .fl-pupa-scene .fl-notif { display: block; }
         @media (max-width: 820px) {
           .fl-hero { min-height: auto; }
-          /* 3D pupa slika (ista kot desktop .fl-pupa) — centrirana, zrcaljena kot na desktopu (scaleX -1) */
-          .fl-hero-vid-mob { display: block; margin: 1.6rem auto 0; width: 100%; max-width: 36rem; }
-          .fl-hero-vid-mob img { display: block; width: 100%; height: auto; transform: scaleX(-1); }
+          /* portret: scena kot centriran blok pod gumbi */
+          .fl-hero-vid-mob { display: block; position: relative; margin: 1.6rem auto 0; width: 100%; max-width: 30rem; aspect-ratio: 1; overflow: hidden; }
           /* visja specificnost (.fl .fl-potek), da premaga bazni negativni margin nize v datoteki
              (sicer kartice zlezejo GOR cez hero video) */
           .fl .fl-potek { margin: 3.2rem 0 0 !important; }
+        }
+        /* Ležeči (landscape) telefon — nizek viewport: naslov/podnaslov manjša, potek kartice
+           NE prekrivajo naslova (odstranimo velik negativni margin), ilustracija dobi več prostora. */
+        @media (min-width: 700px) and (max-height: 560px) {
+          .fl-hero { min-height: auto; }
+          .fl .kicker { font-size: .62rem; letter-spacing: .16em; }
+          /* manjši naslov + podnaslov, da gumbi pridejo v vidno polje (nizek zaslon) */
+          .fl h1 { font-size: clamp(1.55rem, 4.4vw, 2.3rem); line-height: 1.02; margin: .4rem 0 .7rem; }
+          .fl .lead { font-size: .82rem; line-height: 1.45; margin-bottom: 1rem; max-width: 34ch; }
+          .fl .cta-vrsta { gap: .5rem; }
+          .fl .cta { padding: .52rem 1rem; font-size: .68rem; }
+          /* "Kalkulator je brezplačen" v svojo vrstico POD gumboma */
+          .fl .cta-note { flex-basis: 100%; width: 100%; font-size: .72rem; margin-top: .15rem; }
+          .fl .fl-potek { margin: 2.4rem 0 0 !important; }
+          /* pupa = ISTA skalirna scena kot portret, a na DESNI (namesto bg .fl-video, ki je skrit).
+             .fl-hero je position:relative, zato absolutno sidranje deluje. */
+          /* velikost omejena po ŠIRINI in VIŠINI (84vh), da se kvadratna scena vedno prilega
+             nizkemu zaslonu (npr. 852×393 ne štrli pod rob). */
+          .fl-hero-vid-mob { display: block; position: absolute; right: 0; left: auto; top: -36px; margin: 0; width: min(56vw, 440px, 84vh); max-width: none; aspect-ratio: 1; overflow: hidden; z-index: 2; }
+        }
+        /* iPad / tablet (širok IN visok): privzeti naslov (do 5.2rem) je prevelik in »asistentko.«
+           se preveč približa podnaslovu — malo pomanjšamo naslov in podnaslov. */
+        /* iPad mini in podobni širok+NIZEK tablet (npr. mini landscape 1133×744). 13″ iPad je visok
+           (>900px) -> izvzet, tam je privzeti (desktop) videz OK. */
+        @media (min-width: 821px) and (max-width: 1200px) and (min-height: 561px) and (max-height: 900px) {
+          .fl h1 { font-size: clamp(2.3rem, 6vw, 3.9rem); }
+          .fl .lead { font-size: clamp(1.05rem, 1.7vw, 1.18rem); }
+          /* nižji hero -> gumbi pridejo višje; skoraj brez negativnega margina -> potek kartice
+             pridejo POD gumbe in jih ne prekrivajo (desktop -267px je za iPad prevelik). */
+          .fl-hero { min-height: calc(76svh + 20px); }
+          .fl .fl-potek { margin-top: -1rem !important; }
+        }
+        /* Pokončni tablet (visok+ozek, npr. 13" iPad 1024×1366): naslov malo manjši, hero nižji
+           (sicer je ogromna praznina), papirna kepa večja (na tem zaslonu je videti premajhna).
+           Velikost/pozicijo ilustracije uravnamo v FlowHeroBg (vodimo po širini). */
+        @media (min-width: 821px) and (max-width: 1200px) and (min-height: 901px) {
+          .fl h1 { font-size: clamp(2.5rem, 6.2vw, 4.2rem); }
+          .fl .lead { font-size: clamp(1.05rem, 1.6vw, 1.2rem); }
+          .fl-hero { min-height: calc(72svh + 40px); }
+          .fl-fly { width: 15rem; }
+        }
+        /* Sekcija "Zakaj zaupati" (4 kartice): na tablet širinah auto-fit da 3+1 (nesimetrično).
+           Na 481–1000px prisilimo 2×2 (uravnoteženo). !important premaga inline gridTemplateColumns. */
+        @media (min-width: 481px) and (max-width: 1000px) {
+          .fl-zaupanje-mreza { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
         }
 
         /* Poteka: od ponudbe do racuna */
@@ -719,9 +786,17 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           .fl-sc-track { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; scrollbar-width: none;
             margin-inline: calc(50% - 50vw); padding: .5rem clamp(1.25rem, 5vw, 1.6rem) 1.2rem; scroll-padding-inline: clamp(1.25rem, 5vw, 1.6rem); }
           .fl-sc-track::-webkit-scrollbar { display: none; }
+          /* pilli full-bleed do živega roba (naslednji pill sega do roba zaslona, ne do oder-paddinga) */
+          .fl-sc-pills { margin-inline: calc(50% - 50vw); max-width: none; justify-content: flex-start; padding: 0 clamp(1.25rem, 5vw, 1.6rem) .2rem; scroll-padding-inline: clamp(1.25rem, 5vw, 1.6rem); }
           .fl-sc-panel, .fl-sc-panel.on { display: grid; grid-template-columns: 1fr; flex: 0 0 86%; scroll-snap-align: center; animation: none; }
           /* CTA v ožjem panelu naj bo manjši in v eni vrstici (ne »ODPRI / KALKULATOR«) */
           .fl-sc-info .cta { align-self: flex-start; padding: .8rem 1.4rem; font-size: .76rem; letter-spacing: .07em; }
+        }
+        /* Ležeči (landscape) telefon: nizek+širok viewport -> panel spet 2-stolpčni
+           (tekst levo, slika/mock desno), da gre na eno stran brez dolgega drsanja.
+           Pride ZA mobilnim pravilom, da premaga single-column. */
+        @media (max-width: 950px) and (max-height: 560px) {
+          .fl-sc-panel, .fl-sc-panel.on { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); align-items: center; }
         }
         .fl-sc-vizual { position: relative; }
         .fl-sc-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 14px; opacity: 0; transition: opacity .35s ease; box-shadow: 0 24px 60px rgba(40,25,60,.18); }
@@ -894,6 +969,11 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           /* na telefonu ilustracija teče POD besedilom (ne čez) — konec prekrivanja */
           .fl-bkarta.b .fl-bnodes { position: relative; right: auto; top: auto; bottom: auto; width: 100%; height: 8.5rem; margin-top: 1.1rem; }
         }
+        @media (min-width: 621px) and (max-width: 900px) {
+          /* Tablet/landscape: vrstice so fiksne 13rem in "Pošteno ceno" kartico odrežejo (globus-animacija
+             skrita spodaj). Naj bo visoka čez 2 vrstici, da je animacija cela vidna. */
+          .fl-bkarta.d { grid-row: 3 / span 2; }
+        }
 
         /* Zakljucni CTA */
         .fl-konec { margin: 9.85rem 0 0; text-align: center; padding-top: 3.4rem; }
@@ -1022,6 +1102,12 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
            poravnan za DESKTOP velikost; na mobilu je rastlina manjša -> kompenzacija premajhna
            in kaktus pade nižje od koša. Zato mu tu dvignemo bazo (+32px), da stojita na isti črti. */
         @media (max-width: 720px) { .fl-prop-kos { right: 3%; width: 6rem; } .fl-prop-plant { left: 3%; width: 8.5rem; bottom: calc(100% - 2.7rem + 32px); } }
+        /* Tablet/landscape (721–1000px): rastlina je clamp-ana na 10rem (koš na 7rem), zato desktop odmik
+           spet ne poravna baz -> kaktus pade prenizko. Poravnamo bazo z bazo koša (+28px). */
+        @media (min-width: 721px) and (max-width: 1000px) { .fl-prop-plant { bottom: calc(100% - 2.7rem + 28px); } }
+        /* 1001–1700px: rastlina = 16vw (raste z zaslonom), zato prazna obroba (10,68 %) v px raste kot 2.56vw.
+           Bazo poravnamo zvezno (pri 1700px pride nazaj na desktop +10px, pri 1000px na +28px). */
+        @media (min-width: 1001px) and (max-width: 1700px) { .fl-prop-plant { bottom: calc(100% - 2.7rem + 54px - 2.56vw); } }
         @media (prefers-reduced-motion: reduce) { .fl-prop { animation: none; } }
         /* leteci papirnati objekt — potuje po strani, se preliva, pade v kos (pozicija/prelivanje iz JS) */
         .fl-fly { position: fixed; left: 0; top: 0; width: clamp(8rem, 11vw, 13rem); aspect-ratio: 1; z-index: 20; pointer-events: none; opacity: 0; will-change: transform, opacity; }
@@ -1101,8 +1187,23 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           </div>
           {/* Mobile: hero video kot cist blok POD gumbi (na desktopu skrit — tam je bg) */}
           <div className="fl-hero-vid-mob" aria-hidden>
-            {/* 3D pupa (ista kot desktop) — Tina: TA mora biti na mobilnem, ne star hero.mp4 */}
-            <img src="/flow/pupa3d.png" alt="" />
+            {/* ISTA scena kot desktop (slika + odsev + teg-i) v enem divu; skalira se KOT CELOTA
+               (transform: scale prek cqw), zato se razmiki/pozicije/velikosti NE podrejo. */}
+            <div className="fl-pupa-scene" ref={pupaSceneRef}>
+              <img src="/flow/pupa3d.png" alt="" />
+              <div className="fl-ocala" aria-hidden>
+                <span className="fl-leca fl-leca-l"><i /></span>
+                <span className="fl-leca fl-leca-r"><i /></span>
+              </div>
+              <div className="fl-notif" aria-hidden>
+                <span className="fl-chip fl-chip-1"><b className="ok"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg></b>{t('Ponudba sprejeta', 'Offer accepted')}</span>
+                <span className="fl-chip fl-chip-2"><b className="msg"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z" /></svg></b>{t('Nova stranka', 'New client')}</span>
+                <span className="fl-chip fl-chip-3"><b className="pay">€</b>{t('Plačano · 1.200 €', 'Paid · €1,200')}</span>
+                <span className="fl-chip fl-chip-4"><b className="ok"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg></b>{t('Račun poslan', 'Invoice sent')}</span>
+                <span className="fl-chip fl-chip-5"><b className="star"><svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z" /></svg></b>{t('Nova ocena · 5,0', 'New review · 5.0')}</span>
+                <span className="fl-chip fl-chip-6"><b className="ok"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg></b>{t('Pogodba podpisana', 'Contract signed')}</span>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1413,7 +1514,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           <div className="k" style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(17,17,17,.72)' }}>{t('Zakaj zaupati', 'Why trust Flow')}</div>
           <h2 style={{ fontFamily: 'var(--font-serif), serif', fontWeight: 500, fontSize: 'clamp(1.9rem, 5vw, 2.9rem)', lineHeight: 1.05, margin: '.55rem 0 .5rem', maxWidth: '20ch' }}>{t('Pošteno, varno, tvoje.', 'Fair, secure and yours.')}</h2>
           <p className="uvod" style={{ fontSize: '1rem', lineHeight: 1.6, color: 'rgba(17,17,17,.76)', maxWidth: '50ch', margin: '0 0 2.4rem' }}>{t('Nova beta brez referenc — a zaupanje si prisluživa odkrito, ne z izmišljenimi ocenami.', 'Flow is a new beta. We earn trust through transparency, not invented testimonials.')}</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(15.5rem, 1fr))', gap: '1.2rem' }}>
+          <div className="fl-zaupanje-mreza" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(15.5rem, 1fr))', gap: '1.2rem' }}>
             {(isEn ? [
               { Ik: ShieldCheck, ime: 'Your data stays yours', opis: 'Stored securely in the EU and accessible only to you. We never sell it; pricing insights use anonymous, aggregated data only.' },
               { Ik: ChatCircle, ime: 'A real person, not a department', opis: 'Flow is built by Tina, not an anonymous corporation. You can write to her directly and receive a real answer.' },

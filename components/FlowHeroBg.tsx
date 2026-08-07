@@ -218,6 +218,19 @@ export default function FlowHeroBg({ video = '/flow/hero-sequence.mp4' }: { vide
              mehurček ob lebdenju izgine nežno namesto da bi bil prerezan. */
           .fl-herobg { height: calc(100svh + 120px); -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 97%); mask-image: linear-gradient(to bottom, #000 78%, transparent 97%); }
         }
+        /* Ležeči telefon (nizek+širok, npr. 852×393): .fl-video je viden (>820px), a višinsko voden
+           -> drobna figura. Vodimo jo po ŠIRINI (ostane kvadrat -> očala poravnana) in zasidramo
+           desno spodaj, da je pupa lepo velika ob besedilu levo. */
+        /* Vsak NIZEK zaslon (ležeče, ≥700px): skrij bg .fl-video — pokaže se ISTA skalirna scena
+           (.fl-hero-vid-mob) na desni, kot v portretu (glej FlowLanding). Doslednost + ne drobna. */
+        @media (min-width: 700px) and (max-height: 560px) {
+          .fl-video { display: none; }
+        }
+        /* Pokončni tablet (visok+ozek, 13"/11" iPad, npr. 1024×1366): višinsko voden kvadrat prerase
+           zaslon -> ilustracija ogromna. Vodimo po ŠIRINI (ostane kvadrat -> očala poravnana), zasidramo desno. */
+        @media (min-width: 821px) and (max-width: 1200px) and (min-height: 901px) {
+          .fl-video { top: 110px; bottom: auto; right: -2%; width: min(64vw, 600px); height: auto; animation: none; }
+        }
 
         .fl-bubbles { position: absolute; inset: 0; }
         .fl-bubble { position: absolute; border-radius: 50%; pointer-events: auto; cursor: pointer;
