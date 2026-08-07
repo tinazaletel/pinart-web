@@ -157,7 +157,8 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         {L('Zabeleži ', 'Record ')}<b>{L('kdaj in s čim', 'when and with what')}</b>{L(' si nekaj ustvaril. Sef izračuna kriptografski prstni odtis (SHA-256) tvoje datoteke in trajno shrani datum — tako imaš dokaz o obstoju dela na določen dan (npr. ', ' you created something. The vault computes a cryptographic fingerprint (SHA-256) of your file and stores the date — so you have proof the work existed on a given day (e.g. ')}<em>{L('preden ga je AI prerisal', 'before an AI redrew it')}</em>{L(').', ').')}
       </p>
 
-      {/* NALOŽI / ZAŠČITI */}
+      <div className="sef-mreza">
+      {/* NALOŽI / ZAŠČITI (levi stolpec) */}
       <section className="sef-kartica">
         <h2><ShieldCheck size={20} weight="fill" /> {L('Zaščiti delo', 'Protect a work')}</h2>
         <label className={`sef-drop${datoteka ? ' ima' : ''}`}>
@@ -181,9 +182,12 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
           </label>
         </div>
 
-        <label className="sef-polje"><span>{L('Screenshot procesa (neobvezno — tudi ta se požigosa)', 'Process screenshot (optional — also fingerprinted)')}</span>
-          <input type="file" accept="image/*" onChange={e => setPosnetek(e.target.files?.[0] || null)} />
-        </label>
+        <div className="sef-polje"><span>{L('Screenshot procesa (neobvezno — tudi ta se požigosa)', 'Process screenshot (optional — also fingerprinted)')}</span>
+          <label className={`sef-drop mini${posnetek ? ' ima' : ''}`}>
+            <input type="file" accept="image/*" onChange={e => setPosnetek(e.target.files?.[0] || null)} />
+            <UploadSimple size={17} /> <span>{posnetek ? posnetek.name : L('Naloži screenshot', 'Upload screenshot')}</span>
+          </label>
+        </div>
         <label className="sef-polje"><span>{L('Opombe', 'Notes')}</span>
           <textarea value={opombe} onChange={e => setOpombe(e.target.value)} rows={2} placeholder={L('kontekst, naročnik, delovne datoteke (.ai/.psd) …', 'context, client, source files (.ai/.psd) …')} />
         </label>
@@ -194,6 +198,7 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         <p className="sef-mini"><LockKey size={13} weight="fill" /> {L('Datoteke ne pošiljamo nikamor — izračun teče v tvojem brskalniku. Shrani se le odtis + datum.', 'The file is never uploaded — hashing runs in your browser. Only the fingerprint + date are stored.')}</p>
       </section>
 
+      <div className="sef-stolpec">
       {/* PREVERI */}
       <section className="sef-kartica sef-preveri">
         <h2><MagnifyingGlass size={20} weight="regular" /> {L('Preveri delo', 'Verify a work')}</h2>
@@ -208,6 +213,21 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
             : <p className="sef-najdba ne">{L('Za to datoteko ni zapisa v sefu (ni zaščiteno ali je bila spremenjena).', 'No vault record for this file (not protected, or it was changed).')}</p>
         )}
       </section>
+
+      {/* REGISTRACIJA (desni stolpec, pod Preveri) */}
+      <section className="sef-kartica sef-registracija">
+        <h2>{L('Za dokončno registracijo', 'For formal registration')}</h2>
+        <p className="sef-mini2">{L('Sef je tvoj vsakodnevni dokaz. Za formalno zaščito (znamka, model, avtorska pravica) uporabi uradne registre:', 'The vault is your everyday proof. For formal protection (trademark, design, copyright) use the official registries:')}</p>
+        <div className="sef-linki">
+          <a href="https://www.uil-sipo.si/" target="_blank" rel="noopener noreferrer">UIL (SI) <ArrowSquareOut size={13} /></a>
+          <a href="https://euipo.europa.eu/" target="_blank" rel="noopener noreferrer">EUIPO (EU) <ArrowSquareOut size={13} /></a>
+          <a href="https://www.wipo.int/" target="_blank" rel="noopener noreferrer">WIPO <ArrowSquareOut size={13} /></a>
+          <a href="https://www.copyright.gov/" target="_blank" rel="noopener noreferrer">US Copyright <ArrowSquareOut size={13} /></a>
+        </div>
+        <p className="sef-opozorilo">{L('Pošteno: sef dokaže OBSTOJ in PRIORITETO dela na določen dan, ne absolutnega avtorstva. Najmočnejši dokaz so izvorne/delovne datoteke (.ai, .psd, sloji) + ta odtis. Overjen časovni žig (pravno veljaven) je naslednji korak.', 'Honest note: the vault proves the EXISTENCE and PRIORITY of a work on a date, not absolute authorship. Your strongest evidence is the source/working files (.ai, .psd, layers) + this fingerprint. A certified timestamp (legally valid) is the next step.')}</p>
+      </section>
+      </div>{/* /sef-stolpec */}
+      </div>{/* /sef-mreza */}
 
       {/* SEZNAM — tabela z iskanjem in filtrom po kategorijah */}
       <section className="sef-seznam">
@@ -263,24 +283,16 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
               </div>}
       </section>
 
-      {/* REGISTRACIJA + POŠTENOST */}
-      <section className="sef-kartica sef-registracija">
-        <h2>{L('Za dokončno registracijo', 'For formal registration')}</h2>
-        <p className="sef-mini2">{L('Sef je tvoj vsakodnevni dokaz. Za formalno zaščito (znamka, model, avtorska pravica) uporabi uradne registre:', 'The vault is your everyday proof. For formal protection (trademark, design, copyright) use the official registries:')}</p>
-        <div className="sef-linki">
-          <a href="https://www.uil-sipo.si/" target="_blank" rel="noopener noreferrer">UIL (SI) <ArrowSquareOut size={13} /></a>
-          <a href="https://euipo.europa.eu/" target="_blank" rel="noopener noreferrer">EUIPO (EU) <ArrowSquareOut size={13} /></a>
-          <a href="https://www.wipo.int/" target="_blank" rel="noopener noreferrer">WIPO <ArrowSquareOut size={13} /></a>
-          <a href="https://www.copyright.gov/" target="_blank" rel="noopener noreferrer">US Copyright <ArrowSquareOut size={13} /></a>
-        </div>
-        <p className="sef-opozorilo">{L('Pošteno: sef dokaže OBSTOJ in PRIORITETO dela na določen dan, ne absolutnega avtorstva. Najmočnejši dokaz so izvorne/delovne datoteke (.ai, .psd, sloji) + ta odtis. Overjen časovni žig (pravno veljaven) je naslednji korak.', 'Honest note: the vault proves the EXISTENCE and PRIORITY of a work on a date, not absolute authorship. Your strongest evidence is the source/working files (.ai, .psd, layers) + this fingerprint. A certified timestamp (legally valid) is the next step.')}</p>
-      </section>
-
       <style jsx>{`
         .sef { --line: rgba(17,17,17,.1); max-width: 46rem; margin: 0 auto; padding: .5rem 0 4rem; font-family: var(--font-sans), system-ui, sans-serif; color: var(--ink); }
         .sef-uvod { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.8); margin: 0 0 1.6rem; }
         .sef-uvod b { font-weight: 650; } .sef-uvod em { font-style: italic; color: var(--accent); font-weight: 600; }
         .sef-kartica { border: 1px solid var(--line); border-radius: 18px; padding: 1.7rem; margin-bottom: 2rem; background: rgba(255,255,255,.55); }
+        /* Desktop: 2 stolpca — levo »Zaščiti delo«, desno »Preveri« + »Za dokončno registracijo«. Tabela je spodaj (polna širina). */
+        .sef-mreza { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.3rem; align-items: start; margin-bottom: 2rem; }
+        .sef-mreza > .sef-kartica, .sef-stolpec > .sef-kartica { margin-bottom: 0; }
+        .sef-stolpec { display: grid; gap: 1.3rem; align-content: start; }
+        @media (max-width: 860px) { .sef-mreza { grid-template-columns: 1fr; } }
         .sef h2 { display: flex; align-items: center; gap: .5rem; font-size: 1.08rem; font-weight: 650; margin: 0 0 1.1rem; }
         .sef h2 :global(svg) { color: var(--accent); }
         .sef-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .4rem; text-align: center; border: 1.5px dashed rgba(17,17,17,.22); border-radius: 14px; padding: 1.4rem 1rem; cursor: pointer; transition: border-color .15s, background .15s; color: rgba(17,17,17,.72); }
@@ -297,7 +309,7 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         .sef-polje span { font-size: .8rem; font-weight: 600; color: rgba(17,17,17,.68); }
         .sef-polje input, .sef-polje textarea { font-family: inherit; font-size: .92rem; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: .6rem .7rem; }
         .sef-polje input:focus, .sef-polje textarea:focus { outline: none; border-color: var(--accent); }
-        .sef-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; margin-top: 1.2rem; width: 100%; font-family: inherit; font-size: .9rem; font-weight: 650; letter-spacing: .02em; color: var(--paper); background: var(--ink); border: none; border-radius: 999px; padding: .85rem 1.2rem; cursor: pointer; transition: transform .15s, opacity .15s; }
+        .sef-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; margin-top: 1.2rem; width: auto; align-self: flex-start; font-family: inherit; font-size: .9rem; font-weight: 650; letter-spacing: .02em; color: var(--paper); background: var(--ink); border: none; border-radius: 999px; padding: .85rem 1.6rem; cursor: pointer; transition: transform .15s, opacity .15s; }
         .sef-gumb:hover:not(:disabled) { transform: translateY(-1px); }
         .sef-gumb:disabled { opacity: .45; cursor: not-allowed; }
         .sef-mini { display: flex; align-items: center; gap: .4rem; font-size: .76rem; color: rgba(17,17,17,.55); margin: .8rem 0 0; }
