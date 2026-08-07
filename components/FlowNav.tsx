@@ -101,7 +101,9 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
           padding: clamp(.85rem, 1.6vw, 1.25rem) clamp(1.25rem, 5vw, 5.5rem);
           background: color-mix(in oklch, var(--paper) 94%, transparent);
           /* frosted: ko hero presije skozi (0-24px skrola), je zabrisan, ne berljiv ghost-tekst */
-          -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); will-change: transform;
+          -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+          /* NE will-change/transform tu: to naredi header containing block za position:fixed predal,
+             ki se potem ne razpre čez zaslon. Umik ob scrollu dosežemo z .flnav-hidden (transform). */
           transition: transform .32s cubic-bezier(.22,1,.36,1), background .28s ease, box-shadow .28s ease, border-color .28s ease; border-bottom: 1px solid transparent; }
         .flnav.scrolled { background: var(--paper); border-bottom-color: rgba(17,17,17,.08); box-shadow: 0 6px 24px rgba(40,25,60,.05); }
 
