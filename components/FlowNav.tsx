@@ -53,6 +53,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
   const close = () => { setOpen(false); setProdOpen(false); };
 
   return (
+    <>
     <header className={`flnav${scrolled ? ' scrolled' : ''}${hidden && !open ? ' flnav-hidden' : ''}`}>
       <a className="flnav-brand" href={flow} onClick={close} aria-label="Pinart Flow">
         <span className="flnav-dot" aria-hidden />
@@ -84,17 +85,6 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
       <button className="flnav-burger" type="button" onClick={() => setOpen(v => !v)} aria-label={open ? (isEn ? 'Close menu' : 'Zapri meni') : (isEn ? 'Menu' : 'Meni')} aria-expanded={open}>
         <span /><span /><span />
       </button>
-
-      {open && (
-        <div className="flnav-drawer">
-          <a href={`${flow}#orodja`} onClick={close}>Pinart Flow</a>
-          <a href={kalk} onClick={close}>{isEn ? 'Free calculator' : 'Brezplačni kalkulator'}</a>
-          {LINKS.map(l => <a key={l.label} href={l.href} onClick={close}>{l.label}</a>)}
-          <a className="flnav-lang" href={languageHref} hrefLang={isEn ? 'sl' : 'en'}><span aria-hidden>{isEn ? '🇸🇮' : '🇬🇧'}</span>{isEn ? 'Slovenščina' : 'English'}</a>
-          <a className="flnav-login" href={prijava} onClick={close}>{isEn ? 'Log in' : 'Prijava'}</a>
-          <a className="flnav-signup" href={prijava} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
-        </div>
-      )}
 
       <style dangerouslySetInnerHTML={{ __html: `
         .flnav { position: fixed; inset: 0 0 auto 0; z-index: 100; display: flex; align-items: center; gap: 1.4rem;
@@ -147,8 +137,10 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
         .flnav-burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
         .flnav-burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
 
-        .flnav-drawer { position: fixed; inset: 3.9rem 0 0 0; z-index: 99; display: flex; flex-direction: column; gap: .2rem; padding: 1.2rem clamp(1.25rem, 5vw, 2rem) 2rem; background: var(--paper); overflow-y: auto; animation: flnavDrawer .26s cubic-bezier(.2,.8,.3,1) both; }
-        @keyframes flnavDrawer { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        /* predal čez cel zaslon, drsi OD LEVE PROTI DESNI; z-index 99 < header 100, zato
+           logo + X (v headerju) ostaneta vidna in klikljiva nad predalom. */
+        .flnav-drawer { position: fixed; inset: 0; z-index: 99; display: flex; flex-direction: column; gap: .2rem; padding: 4.6rem clamp(1.25rem, 5vw, 2rem) 2rem; background: var(--paper); overflow-y: auto; animation: flnavDrawer .3s cubic-bezier(.2,.8,.3,1) both; }
+        @keyframes flnavDrawer { from { transform: translateX(-100%); } to { transform: translateX(0); } }
         .flnav-drawer > a { font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; font-weight: 600; color: var(--ink); text-decoration: none; padding: .95rem .3rem; border-bottom: 1px solid rgba(17,17,17,.08); }
         .flnav-drawer .flnav-login, .flnav-drawer .flnav-signup { text-align: center; margin-top: .9rem; border-bottom: 0; font-size: .95rem; }
         .flnav-drawer .flnav-login { border: 1px solid rgba(17,17,17,.2); }
@@ -160,9 +152,22 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
           .flnav { padding-top: .5rem; padding-bottom: .5rem; background: color-mix(in oklch, var(--paper) 92%, transparent); }
           /* umik ob scrollu navzdol (samo mobilno) — se vrne ob scrollu navzgor */
           .flnav.flnav-hidden { transform: translateY(-100%); box-shadow: none; }
-          .flnav-drawer { inset: 3.4rem 0 0 0; }
         }
       `}} />
     </header>
+
+    {/* Predal IZVEN headerja (header ima backdrop-filter -> bi bil containing block za fixed).
+        Drsi od leve proti desni. */}
+    {open && (
+      <div className="flnav-drawer">
+        <a href={`${flow}#orodja`} onClick={close}>Pinart Flow</a>
+        <a href={kalk} onClick={close}>{isEn ? 'Free calculator' : 'Brezplačni kalkulator'}</a>
+        {LINKS.map(l => <a key={l.label} href={l.href} onClick={close}>{l.label}</a>)}
+        <a className="flnav-lang" href={languageHref} hrefLang={isEn ? 'sl' : 'en'}><span aria-hidden>{isEn ? '🇸🇮' : '🇬🇧'}</span>{isEn ? 'Slovenščina' : 'English'}</a>
+        <a className="flnav-login" href={prijava} onClick={close}>{isEn ? 'Log in' : 'Prijava'}</a>
+        <a className="flnav-signup" href={prijava} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
+      </div>
+    )}
+    </>
   );
 }
