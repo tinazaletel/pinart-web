@@ -5336,19 +5336,17 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const glavaUI = () => (
     <>
       <span className="glava-levo">
-        {/* puscica PRED logotipom — enako kot na podstraneh nadzorne plosce */}
-        {odAdmina && (
-          <a className="glava-nazaj" href={localePath(locale, `/kalkulator/pregled`)} aria-label={L('Nazaj na nadzorno ploščo', 'Back to dashboard')} title={L('Nazaj na nadzorno ploščo', 'Back to dashboard')}>
-            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </a>
-        )}
+        {/* puscica NAZAJ v krogcu PRED logotipom (namesto slabo vidnega ✕ zapri).
+            Cilj: landing -> /flow, admin -> nadzorna plosca, sicer -> /kalkulator. */}
+        <a className="glava-nazaj" href={odAdmina ? localePath(locale, `/kalkulator/pregled`) : odFlow ? localePath(locale, `/flow`) : localePath(locale, `/kalkulator`)} aria-label={L('Nazaj', 'Back')} title={L('Nazaj', 'Back')}>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </a>
         <a className="glava-brand" href={odFlow ? localePath(locale, `/flow`) : localePath(locale, ``)} aria-label={odFlow ? 'Pinart Flow' : 'Pinart — domov'}>
           <span className="glava-dot" aria-hidden />
           <span className="glava-pinart">Pinart</span>
           <span className="glava-ime">{L('Kalkulator', 'Calculator')}</span>
           <span className="beta">BETA</span>
         </a>
-        <a className="zapri zapri-loceno" href={odAdmina ? localePath(locale, `/kalkulator/pregled`) : odFlow ? localePath(locale, `/flow`) : localePath(locale, `/kalkulator`)} aria-label={L('Zapri kalkulator', 'Close calculator')}>{L('✕ zapri', '✕ close')}</a>
       </span>
       <span className="glava-desno">
         {/* samo profil — preklop oblike in cene/storitve so v profil meniju (aplikacija / cene) */}
@@ -7578,14 +7576,17 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
-                <a className="profil-meni-vrsta" href={localePath(locale, `/kalkulator/admin`)} style={{ textDecoration: 'none' }}>
-                  <SquaresFour size={20} weight="bold" />
-                  <span>
-                    <strong>{L('Pregled poslovanja', 'Business overview')}</strong>
-                    <small>{L('koliko uporabnikov, kakšne cene, od kod so (interno)', 'how many users, what prices, where they are from (internal)')}</small>
-                  </span>
-                  <span className="pm-puscica" aria-hidden>→</span>
-                </a>
+                {/* Interna admin analitika — NE v brezplačnem kalkulatorju (odFlow = javni/free vstop). */}
+                {!odFlow && (
+                  <a className="profil-meni-vrsta" href={localePath(locale, `/kalkulator/admin`)} style={{ textDecoration: 'none' }}>
+                    <SquaresFour size={20} weight="bold" />
+                    <span>
+                      <strong>{L('Pregled poslovanja', 'Business overview')}</strong>
+                      <small>{L('koliko uporabnikov, kakšne cene, od kod so (interno)', 'how many users, what prices, where they are from (internal)')}</small>
+                    </span>
+                    <span className="pm-puscica" aria-hidden>→</span>
+                  </a>
+                )}
               </div>
             )}
 

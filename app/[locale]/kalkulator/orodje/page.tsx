@@ -19,22 +19,28 @@ export const metadata: Metadata = {
 
 export default async function KalkulatorOrodjePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ od?: string }>;
 }) {
   const { locale } = await params;
+  const { od } = await searchParams;
   setRequestLocale(locale);
 
   const base = locale === 'sl' ? '' : `/${locale}`;
   /* Vpisan uporabnik: kalkulator je eno od orodij Flowa in nosi isto ogrodje.
-     Nevpisan: samostojno orodje s svojo glavo — Flow menija zanj ni. */
+     Nevpisan: samostojno orodje s svojo glavo — Flow menija zanj ni.
+     ?od=flow (klik "Brezplačni kalkulator" z landinga) = marketinški/free vstop:
+     VEDNO samostojen kalkulator brez app menija, tudi če je uporabnik vpisan. */
+  const izLandinga = od === 'flow';
   let vpisan = false;
   try {
     const { data } = await createClient().auth.getUser();
     vpisan = !!data.user;
   } catch { vpisan = false; }
 
-  if (!vpisan) {
+  if (!vpisan || izLandinga) {
     return (
       <main style={{ minHeight: '100dvh' }}>
         <KalkulatorApp locale={locale} />
