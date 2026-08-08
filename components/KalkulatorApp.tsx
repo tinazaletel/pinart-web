@@ -169,6 +169,10 @@ const KOLICINSKE: Record<string, string> = {
   logo: 'logotipov', ilustracija: 'ilustracij', fotografija: 'fotografiranj',
   copy: 'besedil', video: 'videov', motion: 'animacij', render3d: 'renderjev',
 };
+const KOLICINSKE_EN: Record<string, string> = {
+  logo: 'logos', ilustracija: 'illustrations', fotografija: 'shoots',
+  copy: 'texts', video: 'videos', motion: 'animations', render3d: 'renders',
+};
 type TonPonudbe = 'formalno' | 'toplo' | 'direktno';
 
 /* Seed cenik za slovenski trg (2026): raven "samostojen", majhna stranka,
@@ -183,23 +187,23 @@ type TonPonudbe = 'formalno' | 'toplo' | 'direktno';
    digitalna izdaja NI vkljucena v tiskano; izvedeni produkti (app, merch)
    se vedno licencirajo loceno. */
 const PRAV_TRAJANJE = [
-  { id: '3m',        ime: '3 mesece',  mult: 0.3  },
-  { id: '6m',        ime: '6 mesecev', mult: 0.4  },
-  { id: '1',         ime: '1 leto',    mult: 0.5  },
-  { id: '3',         ime: '3 leta',    mult: 0.75 },
-  { id: '5',         ime: '5 let',     mult: 0.9  },
-  { id: '7',         ime: '7 let',     mult: 1.0  },
-  { id: '10',        ime: '10 let',    mult: 1.3  },
-  { id: 'neomejeno', ime: 'Neomejeno', mult: 1.8  },
+  { id: '3m',        ime: '3 mesece',  imeEn: '3 months',  mult: 0.3  },
+  { id: '6m',        ime: '6 mesecev', imeEn: '6 months',  mult: 0.4  },
+  { id: '1',         ime: '1 leto',    imeEn: '1 year',    mult: 0.5  },
+  { id: '3',         ime: '3 leta',    imeEn: '3 years',   mult: 0.75 },
+  { id: '5',         ime: '5 let',     imeEn: '5 years',   mult: 0.9  },
+  { id: '7',         ime: '7 let',     imeEn: '7 years',   mult: 1.0  },
+  { id: '10',        ime: '10 let',    imeEn: '10 years',  mult: 1.3  },
+  { id: 'neomejeno', ime: 'Neomejeno', imeEn: 'Unlimited', mult: 1.8  },
 ] as const;
 /* recepti pravic (en izbor na vrstici tabele; zdruzi vrsto prenosa + privzeto trajanje) */
-const RECEPTI: { id: string; ime: string; prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string }[] = [
-  { id: 'trajno',      ime: 'Trajno izključno',     prenos: 'izkljucni',   trajanje: 'neomejeno' },
-  { id: 'doba',        ime: 'Izključno za dobo',    prenos: 'izkljucni',   trajanje: '7' },
-  { id: 'neizkljucni', ime: 'Neizključno',          prenos: 'neizkljucni', trajanje: '7' },
-  { id: 'licenca',     ime: 'Samo licenca',         prenos: 'licenca',     trajanje: '7' },
-  { id: 'kampanja',    ime: 'Kampanjska licenca',   prenos: 'licenca',     trajanje: '3m' },
-  { id: 'tantieme',    ime: 'Prodajni produkt (tantieme)', prenos: 'izkljucni', trajanje: '3' },
+const RECEPTI: { id: string; ime: string; imeEn: string; prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string }[] = [
+  { id: 'trajno',      ime: 'Trajno izključno',     imeEn: 'Permanent exclusive',    prenos: 'izkljucni',   trajanje: 'neomejeno' },
+  { id: 'doba',        ime: 'Izključno za dobo',    imeEn: 'Exclusive for a term',   prenos: 'izkljucni',   trajanje: '7' },
+  { id: 'neizkljucni', ime: 'Neizključno',          imeEn: 'Non-exclusive',          prenos: 'neizkljucni', trajanje: '7' },
+  { id: 'licenca',     ime: 'Samo licenca',         imeEn: 'Licence only',           prenos: 'licenca',     trajanje: '7' },
+  { id: 'kampanja',    ime: 'Kampanjska licenca',   imeEn: 'Campaign licence',       prenos: 'licenca',     trajanje: '3m' },
+  { id: 'tantieme',    ime: 'Prodajni produkt (tantieme)', imeEn: 'Retail product (royalties)', prenos: 'izkljucni', trajanje: '3' },
 ];
 /* priporocena tantiema (% neto veleprodaje) po tipu storitve — iz raziskave (GAG/Licensing Intl):
    art/dizajn licensing 3-10 %, znamka/lik do 15 %, kanal mass 3-5 / specialty 5-10 */
@@ -228,7 +232,14 @@ const trajMultLeta = (leta: number): number => {
   const m = 0.18 + 0.62 * Math.log10(1 + leta / 1.4);
   return Math.max(0.22, Math.min(1.8, Math.round(m * 100) / 100));
 };
-const trajLetaVBesedo = (leta: number): string => {
+const trajLetaVBesedo = (leta: number, jeEn = false): string => {
+  if (jeEn) {
+    if (leta <= 0) return 'unlimited';
+    if (leta < 0.16) { const t = Math.max(1, Math.round(leta * 52)); return t === 1 ? '1 week' : `${t} weeks`; }
+    if (leta < 1) { const mo = Math.max(1, Math.round(leta * 12)); return mo === 1 ? '1 month' : `${mo} months`; }
+    const ly = Math.round(leta);
+    return ly === 1 ? '1 year' : `${ly} years`;
+  }
   if (leta <= 0) return 'neomejeno';
   if (leta < 0.16) { const t = Math.max(1, Math.round(leta * 52)); return t === 1 ? '1 teden' : t < 5 ? `${t} tedne` : `${t} tednov`; }
   if (leta < 1) { const mo = Math.max(1, Math.round(leta * 12)); return mo === 1 ? '1 mesec' : mo === 2 ? '2 meseca' : mo < 5 ? `${mo} mesece` : `${mo} mesecev`; }
@@ -236,28 +247,28 @@ const trajLetaVBesedo = (leta: number): string => {
   return l === 1 ? '1 leto' : l === 2 ? '2 leti' : l < 5 ? `${l} leta` : `${l} let`;
 };
 /* pogodbene klavzule (per storitev; vecinoma besedilo v ponudbo, ekskluzivnost vpliva na ceno) */
-const KLAVZULE: { id: string; ime: string; opis: string; mult?: number }[] = [
-  { id: 'moralne',      ime: 'Navedba avtorja',           opis: 'moralne pravice — avtor naveden ob delu' },
-  { id: 'ponatis',      ime: 'Obnova ob novi nakladi',    opis: 'ob ponatisu se licenca obnovi (izhodišče 50 %)' },
-  { id: 'ekskluz',      ime: 'Ekskluzivnost v kategoriji',opis: 'nihče drug v isti kategoriji izdelkov', mult: 0.25 },
-  { id: 'brezPredelav', ime: 'Prepoved predelave',        opis: 'brez sprememb dela brez soglasja avtorja' },
-  { id: 'porocanje',    ime: 'Letno poročilo o prodaji',  opis: 'naročnik letno sporoči obseg izkoriščanja (DSM čl. 19)' },
+const KLAVZULE: { id: string; ime: string; imeEn: string; opis: string; opisEn: string; mult?: number }[] = [
+  { id: 'moralne',      ime: 'Navedba avtorja',           imeEn: 'Author attribution',          opis: 'moralne pravice — avtor naveden ob delu',              opisEn: 'moral rights — the author is credited with the work' },
+  { id: 'ponatis',      ime: 'Obnova ob novi nakladi',    imeEn: 'Renewal on reprint',          opis: 'ob ponatisu se licenca obnovi (izhodišče 50 %)',       opisEn: 'on reprint the licence is renewed (starting at 50 %)' },
+  { id: 'ekskluz',      ime: 'Ekskluzivnost v kategoriji',imeEn: 'Category exclusivity',        opis: 'nihče drug v isti kategoriji izdelkov',                opisEn: 'no one else in the same product category', mult: 0.25 },
+  { id: 'brezPredelav', ime: 'Prepoved predelave',        imeEn: 'No modifications',            opis: 'brez sprememb dela brez soglasja avtorja',             opisEn: 'no changes to the work without the author’s consent' },
+  { id: 'porocanje',    ime: 'Letno poročilo o prodaji',  imeEn: 'Annual sales report',         opis: 'naročnik letno sporoči obseg izkoriščanja (DSM čl. 19)', opisEn: 'the client reports annual exploitation (DSM Art. 19)' },
 ];
 const PRAV_TERITORIJ = [
-  { id: 'slo',    ime: 'Slovenija', mult: 1.0 },
-  { id: 'eu',     ime: 'Evropa',    mult: 1.4 },
-  { id: 'global', ime: 'Globalno',  mult: 1.8 },
+  { id: 'slo',    ime: 'Slovenija', imeEn: 'Slovenia', mult: 1.0 },
+  { id: 'eu',     ime: 'Evropa',    imeEn: 'Europe',   mult: 1.4 },
+  { id: 'global', ime: 'Globalno',  imeEn: 'Global',   mult: 1.8 },
 ] as const;
 /* tisk + promocija izdelka sta VKLJUCENA v osnovo; tole so doplacila */
 const PRAV_MEDIJI_DODATNI = [
-  { id: 'digital',     ime: 'Digitalna izdaja',  opis: 'e-knjiga, splet — ločeno od tiska', mult: 0.3 },
-  { id: 'oglasevanje', ime: 'Širše oglaševanje', opis: 'kampanje izven samega izdelka',     mult: 0.5 },
-  { id: 'embalaza',    ime: 'Embalaža / merch',  opis: 'izdelki za nadaljnjo prodajo',      mult: 0.5 },
+  { id: 'digital',     ime: 'Digitalna izdaja',  imeEn: 'Digital edition',    opis: 'e-knjiga, splet — ločeno od tiska', opisEn: 'e-book, web — separate from print', mult: 0.3 },
+  { id: 'oglasevanje', ime: 'Širše oglaševanje', imeEn: 'Broader advertising', opis: 'kampanje izven samega izdelka',     opisEn: 'campaigns beyond the product itself', mult: 0.5 },
+  { id: 'embalaza',    ime: 'Embalaža / merch',  imeEn: 'Packaging / merch',  opis: 'izdelki za nadaljnjo prodajo',      opisEn: 'products for resale',      mult: 0.5 },
 ] as const;
 const PRAV_NAKLADA = [
-  { id: 'do3k',   ime: 'do 3.000',  mult: 1.0 },
-  { id: 'do10k',  ime: 'do 10.000', mult: 1.2 },
-  { id: 'nad10k', ime: 'nad 10.000', mult: 1.5 },
+  { id: 'do3k',   ime: 'do 3.000',  imeEn: 'up to 3,000',  mult: 1.0 },
+  { id: 'do10k',  ime: 'do 10.000', imeEn: 'up to 10,000', mult: 1.2 },
+  { id: 'nad10k', ime: 'nad 10.000', imeEn: 'over 10,000', mult: 1.5 },
 ] as const;
 /* privzet teritorij pravic izpeljan iz trga narocnika (kje se delo uporablja):
    Slovenija -> slo, Zahodna/Vzhodna EU -> eu, ZDA/MENA/Global -> global */
@@ -1492,133 +1503,133 @@ const RETAINER_PRIVZETA_URNA = 45; /* ce nima vpisane urne postavke v ceniku (EU
 const tedniBeseda = (n: number) =>
   n === 1 ? 'teden' : n === 2 ? 'tedna' : n <= 4 ? 'tedne' : 'tednov';
 
-type DodatnaMoznost = { ime: string; min: number; max?: number };
+type DodatnaMoznost = { ime: string; imeEn?: string; min: number; max?: number };
 const DODATNE_MOZNOSTI: Record<string, DodatnaMoznost[]> = {
   logo: [
-    { ime: 'dodatna idejna smer logotipa', min: 250 },
-    { ime: 'animacija logotipa (SVG ali video)', min: 350 },
-    { ime: 'dodatne aplikacije (vizitka, e-mail podpis)', min: 150 },
+    { ime: 'dodatna idejna smer logotipa', imeEn: 'additional logo concept direction', min: 250 },
+    { ime: 'animacija logotipa (SVG ali video)', imeEn: 'logo animation (SVG or video)', min: 350 },
+    { ime: 'dodatne aplikacije (vizitka, e-mail podpis)', imeEn: 'additional applications (business card, email signature)', min: 150 },
   ],
   cgp: [
-    { ime: 'dodatne tiskovine (mape, plakati, table)', min: 200, max: 400 },
-    { ime: 'razširjen set predlog za družbena omrežja', min: 250 },
-    { ime: 'animacija logotipa', min: 350 },
+    { ime: 'dodatne tiskovine (mape, plakati, table)', imeEn: 'additional print items (folders, posters, signs)', min: 200, max: 400 },
+    { ime: 'razširjen set predlog za družbena omrežja', imeEn: 'extended set of social media templates', min: 250 },
+    { ime: 'animacija logotipa', imeEn: 'logo animation', min: 350 },
   ],
   web: [
-    { ime: 'večjezičnost (dodaten jezik)', min: 300 },
-    { ime: 'napredna SEO analiza in optimizacija', min: 250 },
-    { ime: 'Google Analytics (GA4) integracija', min: 100 },
-    { ime: 'dodaten modul (blog, novice, galerija)', min: 150, max: 300 },
-    { ime: 'e-mail sistem (newsletter, kontaktna integracija)', min: 150 },
+    { ime: 'večjezičnost (dodaten jezik)', imeEn: 'multilingual (additional language)', min: 300 },
+    { ime: 'napredna SEO analiza in optimizacija', imeEn: 'advanced SEO analysis and optimisation', min: 250 },
+    { ime: 'Google Analytics (GA4) integracija', imeEn: 'Google Analytics (GA4) integration', min: 100 },
+    { ime: 'dodaten modul (blog, novice, galerija)', imeEn: 'additional module (blog, news, gallery)', min: 150, max: 300 },
+    { ime: 'e-mail sistem (newsletter, kontaktna integracija)', imeEn: 'email system (newsletter, contact integration)', min: 150 },
   ],
   kampanja: [
-    { ime: 'dodatni formati oglasov', min: 150, max: 300 },
-    { ime: 'e-mail marketing (zasnova in predloga)', min: 300 },
-    { ime: 'priprava objav za nadaljnje mesece', min: 250 },
+    { ime: 'dodatni formati oglasov', imeEn: 'additional ad formats', min: 150, max: 300 },
+    { ime: 'e-mail marketing (zasnova in predloga)', imeEn: 'email marketing (concept and template)', min: 300 },
+    { ime: 'priprava objav za nadaljnje mesece', imeEn: 'preparation of posts for the coming months', min: 250 },
   ],
   publikacija: [
-    { ime: 'interaktivni PDF', min: 200 },
-    { ime: 'e-publikacija (ePub)', min: 300 },
-    { ime: 'dodatna varianta naslovnice', min: 150 },
+    { ime: 'interaktivni PDF', imeEn: 'interactive PDF', min: 200 },
+    { ime: 'e-publikacija (ePub)', imeEn: 'e-publication (ePub)', min: 300 },
+    { ime: 'dodatna varianta naslovnice', imeEn: 'additional cover variant', min: 150 },
   ],
   embalaza: [
-    { ime: 'dodatna varianta ali okus', min: 250, max: 400 },
-    { ime: '3D vizualizacija embalaže', min: 350 },
-    { ime: 'fotografija izdelka za splet', min: 300 },
+    { ime: 'dodatna varianta ali okus', imeEn: 'additional variant or flavour', min: 250, max: 400 },
+    { ime: '3D vizualizacija embalaže', imeEn: '3D packaging visualisation', min: 350 },
+    { ime: 'fotografija izdelka za splet', imeEn: 'product photography for web', min: 300 },
   ],
   ilustracija: [
-    { ime: 'dodatna ilustracija', min: 150, max: 350 },
-    { ime: 'animacija ilustracije', min: 400 },
-    { ime: 'priprava za velike tiskane formate', min: 150 },
+    { ime: 'dodatna ilustracija', imeEn: 'additional illustration', min: 150, max: 350 },
+    { ime: 'animacija ilustracije', imeEn: 'illustration animation', min: 400 },
+    { ime: 'priprava za velike tiskane formate', imeEn: 'preparation for large print formats', min: 150 },
   ],
   direkcija: [
-    { ime: 'dodatni dan na lokaciji ali pri naročniku', min: 400 },
-    { ime: 'kreativna delavnica z ekipo naročnika', min: 500 },
+    { ime: 'dodatni dan na lokaciji ali pri naročniku', imeEn: 'additional day on location or at the client', min: 400 },
+    { ime: 'kreativna delavnica z ekipo naročnika', imeEn: 'creative workshop with the client team', min: 500 },
   ],
   fotografija: [
-    { ime: 'dodatna lokacija ali termin', min: 250 },
-    { ime: 'napredna retuša (na fotografijo)', min: 30, max: 60 },
-    { ime: 'kratki video posnetki ob fotografiranju', min: 400 },
+    { ime: 'dodatna lokacija ali termin', imeEn: 'additional location or session', min: 250 },
+    { ime: 'napredna retuša (na fotografijo)', imeEn: 'advanced retouching (per photo)', min: 30, max: 60 },
+    { ime: 'kratki video posnetki ob fotografiranju', imeEn: 'short video clips during the shoot', min: 400 },
   ],
   copy: [
-    { ime: 'dodatni sklop besedil', min: 200, max: 400 },
-    { ime: 'SEO članek', min: 150, max: 250 },
-    { ime: 'priročnik tona komunikacije (ton of voice)', min: 400 },
+    { ime: 'dodatni sklop besedil', imeEn: 'additional set of texts', min: 200, max: 400 },
+    { ime: 'SEO članek', imeEn: 'SEO article', min: 150, max: 250 },
+    { ime: 'priročnik tona komunikacije (ton of voice)', imeEn: 'tone of voice guide', min: 400 },
   ],
   interier: [
-    { ime: 'dodatna 3D vizualizacija', min: 250 },
-    { ime: 'styling za fotografiranje prostora', min: 300 },
-    { ime: 'nadzor izvedbe na terenu (dan)', min: 400 },
+    { ime: 'dodatna 3D vizualizacija', imeEn: 'additional 3D visualisation', min: 250 },
+    { ime: 'styling za fotografiranje prostora', imeEn: 'styling for the space photoshoot', min: 300 },
+    { ime: 'nadzor izvedbe na terenu (dan)', imeEn: 'on-site supervision (per day)', min: 400 },
   ],
   arhitektura: [
-    { ime: 'dodatna 3D vizualizacija', min: 300 },
-    { ime: 'izdelava PGD dokumentacije', min: 1500 },
-    { ime: 'nadzor gradnje (mesečno)', min: 500 },
+    { ime: 'dodatna 3D vizualizacija', imeEn: 'additional 3D visualisation', min: 300 },
+    { ime: 'izdelava PGD dokumentacije', imeEn: 'permit-level documentation', min: 1500 },
+    { ime: 'nadzor gradnje (mesečno)', imeEn: 'construction supervision (monthly)', min: 500 },
   ],
   razstava: [
-    { ime: 'dodatna 3D vizualizacija', min: 250 },
-    { ime: 'nadzor postavitve na dan dogodka', min: 350 },
-    { ime: 'tisk in produkcija grafik', min: 300 },
+    { ime: 'dodatna 3D vizualizacija', imeEn: 'additional 3D visualisation', min: 250 },
+    { ime: 'nadzor postavitve na dan dogodka', imeEn: 'setup supervision on the event day', min: 350 },
+    { ime: 'tisk in produkcija grafik', imeEn: 'printing and production of graphics', min: 300 },
   ],
   produktni: [
-    { ime: 'dodatna varianta izdelka', min: 300 },
-    { ime: 'izdelava fizičnega prototipa', min: 500 },
-    { ime: 'nadzor proizvodnje', min: 400 },
+    { ime: 'dodatna varianta izdelka', imeEn: 'additional product variant', min: 300 },
+    { ime: 'izdelava fizičnega prototipa', imeEn: 'physical prototype production', min: 500 },
+    { ime: 'nadzor proizvodnje', imeEn: 'production supervision', min: 400 },
   ],
   uxui: [
-    { ime: 'uporabniško testiranje', min: 300 },
-    { ime: 'dodaten jezik / lokalizacija', min: 250 },
-    { ime: 'design sistem dokumentacija', min: 400 },
+    { ime: 'uporabniško testiranje', imeEn: 'user testing', min: 300 },
+    { ime: 'dodaten jezik / lokalizacija', imeEn: 'additional language / localisation', min: 250 },
+    { ime: 'design sistem dokumentacija', imeEn: 'design system documentation', min: 400 },
   ],
   aplikacija: [
-    { ime: 'dodatna platforma (iOS/Android)', min: 500 },
-    { ime: 'backend / API povezava', min: 800 },
-    { ime: 'objava v trgovini (App Store / Google Play)', min: 200 },
+    { ime: 'dodatna platforma (iOS/Android)', imeEn: 'additional platform (iOS/Android)', min: 500 },
+    { ime: 'backend / API povezava', imeEn: 'backend / API integration', min: 800 },
+    { ime: 'objava v trgovini (App Store / Google Play)', imeEn: 'store submission (App Store / Google Play)', min: 200 },
   ],
   dizajnsistem: [
-    { ime: 'dodatne komponente', min: 150, max: 300 },
-    { ime: 'predloga za razvijalce (dev handoff)', min: 300 },
-    { ime: 'redno vzdrževanje sistema (mesečno)', min: 200 },
+    { ime: 'dodatne komponente', imeEn: 'additional components', min: 150, max: 300 },
+    { ime: 'predloga za razvijalce (dev handoff)', imeEn: 'developer handoff template', min: 300 },
+    { ime: 'redno vzdrževanje sistema (mesečno)', imeEn: 'regular system maintenance (monthly)', min: 200 },
   ],
   smm: [
-    { ime: 'dodatne objave', min: 150, max: 300 },
-    { ime: 'upravljanje oglaševalskega proračuna', min: 200 },
-    { ime: 'video / reels produkcija', min: 300 },
+    { ime: 'dodatne objave', imeEn: 'additional posts', min: 150, max: 300 },
+    { ime: 'upravljanje oglaševalskega proračuna', imeEn: 'ad budget management', min: 200 },
+    { ime: 'video / reels produkcija', imeEn: 'video / reels production', min: 300 },
   ],
   seo: [
-    { ime: 'mesečno spremljanje in poročanje', min: 200 },
-    { ime: 'linkbuilding', min: 250 },
-    { ime: 'tehnična implementacija popravkov', min: 300 },
+    { ime: 'mesečno spremljanje in poročanje', imeEn: 'monthly monitoring and reporting', min: 200 },
+    { ime: 'linkbuilding', imeEn: 'link building', min: 250 },
+    { ime: 'tehnična implementacija popravkov', imeEn: 'technical implementation of fixes', min: 300 },
   ],
   email: [
-    { ime: 'dodatna avtomatizacija', min: 150 },
-    { ime: 'mesečno vodenje', min: 200 },
-    { ime: 'A/B testiranje', min: 100 },
+    { ime: 'dodatna avtomatizacija', imeEn: 'additional automation', min: 150 },
+    { ime: 'mesečno vodenje', imeEn: 'monthly management', min: 200 },
+    { ime: 'A/B testiranje', imeEn: 'A/B testing', min: 100 },
   ],
   pr: [
-    { ime: 'organizacija dogodka za medije', min: 500 },
-    { ime: 'krizno komuniciranje (pripravljenost)', min: 400 },
-    { ime: 'video / foto za medije', min: 300 },
+    { ime: 'organizacija dogodka za medije', imeEn: 'organisation of a press event', min: 500 },
+    { ime: 'krizno komuniciranje (pripravljenost)', imeEn: 'crisis communications (readiness)', min: 400 },
+    { ime: 'video / foto za medije', imeEn: 'video / photo for media', min: 300 },
   ],
   video: [
-    { ime: 'dodatna varianta za družbena omrežja', min: 200, max: 400 },
-    { ime: 'dodaten snemalni dan', min: 500 },
-    { ime: 'glasba / zvočna oprema po meri', min: 250 },
+    { ime: 'dodatna varianta za družbena omrežja', imeEn: 'additional variant for social media', min: 200, max: 400 },
+    { ime: 'dodaten snemalni dan', imeEn: 'additional shooting day', min: 500 },
+    { ime: 'glasba / zvočna oprema po meri', imeEn: 'custom music / sound design', min: 250 },
   ],
   motion: [
-    { ime: 'dodatna verzija (dolžina/format)', min: 200 },
-    { ime: '3D elementi', min: 350 },
-    { ime: 'glasbena podlaga po meri', min: 200 },
+    { ime: 'dodatna verzija (dolžina/format)', imeEn: 'additional version (length/format)', min: 200 },
+    { ime: '3D elementi', imeEn: '3D elements', min: 350 },
+    { ime: 'glasbena podlaga po meri', imeEn: 'custom music track', min: 200 },
   ],
   render3d: [
-    { ime: 'dodaten pogled / slika', min: 150, max: 300 },
-    { ime: 'animacija vizualizacije (video)', min: 400 },
-    { ime: 'dodatna varianta materialov', min: 150 },
+    { ime: 'dodaten pogled / slika', imeEn: 'additional view / image', min: 150, max: 300 },
+    { ime: 'animacija vizualizacije (video)', imeEn: 'visualisation animation (video)', min: 400 },
+    { ime: 'dodatna varianta materialov', imeEn: 'additional material variant', min: 150 },
   ],
   strategija: [
-    { ime: 'dodatna delavnica z ekipo', min: 400 },
-    { ime: 'oblikovanje brand booka', min: 500 },
-    { ime: 'komunikacijski načrt za leto', min: 400 },
+    { ime: 'dodatna delavnica z ekipo', imeEn: 'additional team workshop', min: 400 },
+    { ime: 'oblikovanje brand booka', imeEn: 'brand book design', min: 500 },
+    { ime: 'komunikacijski načrt za leto', imeEn: 'annual communication plan', min: 400 },
   ],
 };
 
@@ -2259,8 +2270,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [projPrihodek, setProjPrihodek] = useState('');
   const [projDobicek, setProjDobicek] = useState('');
   const [izkusnje, setIzkusnje] = useState('samostojen');
-  const [mojTrg, setMojTrg] = useState('si');
-  const [trgNarocnika, setTrgNarocnika] = useState('si');
+  /* USA privzetek na /en (EN cilja na ZDA); SL ostane Slovenija. */
+  const [mojTrg, setMojTrg] = useState(locale === 'en' ? 'us' : 'si');
+  const [trgNarocnika, setTrgNarocnika] = useState(locale === 'en' ? 'us' : 'si');
   const [promet, setPromet] = useState('');
   const [dobicek, setDobicek] = useState('');
   const [dodatki, setDodatki] = useState<Set<string>>(new Set());
@@ -2457,7 +2469,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* Vec urnih postavk: IT/razvoj ima lahko drugo ceno kot art direkcija
      ali oblikovanje — v ponudbi se izpisejo poimensko. */
   const [urnePostavke, setUrnePostavke] = useState<{ ime: string; cena: string }[]>(
-    [{ ime: 'Dodatna dela', cena: '' }]);
+    [{ ime: L('Dodatna dela', 'Additional work'), cena: '' }]);
   const [avansPct, setAvansPct] = useState('50');
   /* Moji redni mesecni stroski (najem, programska oprema, zavarovanje ...) —
      zaenkrat informativno, za pregled; se NE vpletajo v izracun cene. */
@@ -2678,7 +2690,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         if (m) { setPredklic(m[1]); setPonudnik({ trr: '', ...s.ponudnik, telefon: m[2] }); }
       }
       if (s.urnePostavke?.length) setUrnePostavke(s.urnePostavke);
-      else if (s.urnaPostavka) setUrnePostavke([{ ime: 'Dodatna dela', cena: String(s.urnaPostavka) }]);
+      else if (s.urnaPostavka) setUrnePostavke([{ ime: L('Dodatna dela', 'Additional work'), cena: String(s.urnaPostavka) }]);
       if (s.avansPct !== undefined) setAvansPct(String(s.avansPct));
       if (s.nogaZnak === false) setNogaZnak(false);
       if (s.veljaKotPogodba) setVeljaKotPogodba(true);
@@ -3242,7 +3254,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       const jeNaklada = NAKLADA_STORITVE.includes(sid);
       const nak = jeNaklada ? (PRAV_NAKLADA.find(n => n.id === nakId) ?? PRAV_NAKLADA[0]) : PRAV_NAKLADA[0];
       const mult = t.mult * (1 + med.reduce((a, m) => a + m.mult, 0)) * nak.mult;
-      const opis = [['tisk + promocija', ...med.map(m => m.ime.toLowerCase())].join(' + '), t.ime, jeNaklada ? `naklada ${nak.ime}` : null].filter(Boolean).join(', ');
+      const jeEnOb = locale === 'en';
+      const medImena = med.map(m => (jeEnOb ? m.imeEn : m.ime).toLowerCase());
+      const opis = [[jeEnOb ? 'print + promotion' : 'tisk + promocija', ...medImena].join(' + '), jeEnOb ? t.imeEn : t.ime, jeNaklada ? `${jeEnOb ? 'print run ' : 'naklada '}${jeEnOb ? nak.imeEn : nak.ime}` : null].filter(Boolean).join(', ');
       return { mult, opis };
     };
     /* pravice PER STORITEV: baza (surove) razdeljena po delezu izvedbe storitve;
@@ -3266,9 +3280,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       const rocnoStorEur = zaokrozi((Number(rocnePraviceStoritvi[s.id]) || 0) / vfx.fx);
       const znesek = rocnoStorEur > 0 ? rocnoStorEur : znesekAuto;
       praviceBazaSum += sBaza; praviceAvtoSum += znesek; licencaAvtoSum += zaokrozi(sBaza * 0.2);
+      const trajRec = PRAV_TRAJANJE.find(t => t.id === rec.trajanje);
       const trajanjeIme = rec.trajanje === 'custom' && typeof rec.trajLeta === 'number'
-        ? trajLetaVBesedo(rec.trajLeta)
-        : (PRAV_TRAJANJE.find(t => t.id === rec.trajanje)?.ime ?? rec.trajanje);
+        ? trajLetaVBesedo(rec.trajLeta, locale === 'en')
+        : ((locale === 'en' ? trajRec?.imeEn : trajRec?.ime) ?? rec.trajanje);
       return { sid: s.id, ime: s.ime, prenos: rec.prenos, trajanje: rec.trajanje, trajanjeIme, znesek, znesekAuto, rocno: rocnoStorEur > 0, klavzule: rec.klavzule || [], tantiema: rec.tantiema, obsegOpis: ob.opis, obsegMult: ob.mult, opomba: (rec.opomba || '').trim() };
     });
     /* lastne pravice z enkratnim odkupom pristejemo k skupnemu znesku pravic
@@ -3603,7 +3618,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     if (obsegPonudbe === 'razsirjena') {
       v.push(L('OBSEG', 'SCOPE'));
       r.linije.forEach(l => {
-        const enota = KOLICINSKE[l.sid];
+        const enota = locale === 'en' ? KOLICINSKE_EN[l.sid] : KOLICINSKE[l.sid];
         v.push(`· ${storNaziv(l.sid, l.ime)}${l.kolicina > 1 ? ` — ${l.kolicina} ${enota || L('kosov', 'pcs')}` : ''}`);
       });
       postavke.forEach(x => v.push(`· ${x.ime}${x.enota === 'ura' ? ` — ${x.kolicina} ${L('ur', 'h')}` : x.kolicina > 1 ? ' × ' + x.kolicina : ''}`));
@@ -3743,7 +3758,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         v.push('');
         v.push(L('DODATNE MOŽNOSTI (po dogovoru)', 'ADDITIONAL OPTIONS (by agreement)'));
         moznosti.forEach(m =>
-          v.push(`· ${m.ime}: + ${cur(m.min)}${m.max ? (L(' do ', ' up to ')) + cur(m.max) : ''}`));
+          v.push(`· ${locale === 'en' && m.imeEn ? m.imeEn : m.ime}: + ${cur(m.min)}${m.max ? (L(' do ', ' up to ')) + cur(m.max) : ''}`));
       }
       v.push('');
     }
@@ -3761,7 +3776,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           const zn = pv.prenos === 'licenca' ? L('prek letne licence', 'via annual licence') : val(pv.znesek);
           v.push(`· ${pvNaziv} — ${vrsta}, ${pv.trajanjeIme}, ${pv.obsegOpis} (${zn})`);
         }
-        pv.klavzule.forEach(kid => { const k = KLAVZULE.find(x => x.id === kid); if (k) v.push(`  · ${k.opis}`); });
+        pv.klavzule.forEach(kid => { const k = KLAVZULE.find(x => x.id === kid); if (k) v.push(`  · ${locale === 'en' ? k.opisEn : k.opis}`); });
         if (pv.opomba) v.push(`  · ${L('opomba', 'note')}: ${pv.opomba}`);
       });
     }
@@ -3772,11 +3787,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         if (zn <= 0 && !l.ime.trim()) return;
         const znStr = `${zn.toLocaleString(locale === 'en' ? 'en-US' : 'sl-SI')} ${vfx.znak}`;
         const tipStr = l.tip === 'letno' ? L(`letna licenca, ${znStr}/leto`, `annual licence, ${znStr}/year`) : l.tip === 'mesecno' ? L(`mesečna licenca, ${znStr}/mesec`, `monthly licence, ${znStr}/month`) : L(`enkratni odkup, ${znStr}`, `one-time buyout, ${znStr}`);
+        const trajRecL = PRAV_TRAJANJE.find(t => t.id === l.trajanje);
         const trajStr = l.trajanje === 'custom' && typeof l.trajLeta === 'number'
-          ? trajLetaVBesedo(l.trajLeta)
-          : (l.trajanje ? (PRAV_TRAJANJE.find(t => t.id === l.trajanje)?.ime ?? '') : '');
+          ? trajLetaVBesedo(l.trajLeta, locale === 'en')
+          : (l.trajanje ? ((locale === 'en' ? trajRecL?.imeEn : trajRecL?.ime) ?? '') : '');
         v.push(`· ${ime} — ${tipStr}${trajStr ? `, ${trajStr}` : ''}`);
-        (l.klavzule || []).forEach(kid => { const k = KLAVZULE.find(x => x.id === kid); if (k) v.push(`  · ${k.opis}`); });
+        (l.klavzule || []).forEach(kid => { const k = KLAVZULE.find(x => x.id === kid); if (k) v.push(`  · ${locale === 'en' ? k.opisEn : k.opis}`); });
         if (l.opomba && l.opomba.trim()) v.push(`  · ${L('opomba', 'note')}: ${l.opomba.trim()}`);
       });
     }
@@ -5110,7 +5126,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     while (podjetja[ime]) { ime = `${imePodjetja.trim() || 'Novo podjetje'} (${i})`; i += 1; }
     const prazno: PodjetjeProfil = {
       ponudnik: { ime: '', davcna: '', email: '', telefon: '', naslov: '', trr: '' },
-      predklic: '+386', ddvZavezanec: false, ddvStopnja: '22', avansPct: '50', urnePostavke: [{ ime: 'Dodatna dela', cena: '' }],
+      predklic: '+386', ddvZavezanec: false, ddvStopnja: '22', avansPct: '50', urnePostavke: [{ ime: L('Dodatna dela', 'Additional work'), cena: '' }],
     };
     const nov = { ...podjetja, [ime]: prazno };
     setPodjetja(nov);
@@ -5147,7 +5163,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     shraniTrenutnoPodjetje();
     setPonudnik({ ime: '', davcna: '', email: '', telefon: '', naslov: '', trr: '' });
     setPredklic('+386'); setDdvZavezanec(false); setDdvStopnja('22'); setAvansPct('50');
-    setUrnePostavke([{ ime: 'Dodatna dela', cena: '' }]);
+    setUrnePostavke([{ ime: L('Dodatna dela', 'Additional work'), cena: '' }]);
     setAktivnoPodjetje(null);
   };
   /* dokler je neko podjetje aktivno, se vsaka sprememba podatkov sproti
@@ -5759,13 +5775,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, ime: e.target.value } : x))} />
           </div>
           <div className="polje">
-            <label htmlFor={`cw-ura-${i}`}>Znesek ({vfx.znak}/uro)</label>
+            <label htmlFor={`cw-ura-${i}`}>{L('Znesek', 'Amount')} ({vfx.znak}/{L('uro', 'hour')})</label>
             <div style={{ display: 'flex', gap: '.55rem', alignItems: 'center' }}>
               <input id={`cw-ura-${i}`} type="number" min={0} step={5} placeholder="50" style={{ flex: 1 }}
                 value={u.cena}
                 onChange={e => setUrnePostavke(urnePostavke.map((x, j) => j === i ? { ...x, cena: e.target.value } : x))} />
               {urnePostavke.length > 1 && (
-                <button type="button" aria-label={`Odstrani urno postavko ${u.ime || i + 1}`}
+                <button type="button" aria-label={`${L('Odstrani urno postavko', 'Remove hourly rate')} ${u.ime || i + 1}`}
                   onClick={() => setUrnePostavke(urnePostavke.filter((_, j) => j !== i))}
                   style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.25rem', color: 'var(--ink)', padding: '.2rem .4rem' }}>×</button>
               )}
@@ -8443,7 +8459,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         {/* ikona v nezno obarvanem krogu + POLNO ime (kot v retainerju) */}
                         <span className="orb-vrsta-ikona" aria-hidden style={{ background: osvetli(barvi[0], 0.82), color: barvi[0] }}>{ikonaZa(s.id)}</span>
                         <span className="orb-vrsta-ime">{storIme(s)}</span>
-                        <span className="orb-vrsta-cena">od {val(osnovaZa(s))}</span>
+                        <span className="orb-vrsta-cena">{L('od ', 'from ')}{val(osnovaZa(s))}</span>
                         <span className="orb-vrsta-chk" aria-hidden>{on ? (q > 1 ? `✓${q}` : '✓') : '+'}</span>
                       </button>
                     );
@@ -8488,7 +8504,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           <OrbSfera id={s.id} o1={barvi[0]} />
                           <span className="orb0-ikona" aria-hidden>{ikonaZa(s.id)}</span>
                           <span className="orb0-ime">{kratkoIme(s)}</span>
-                          <span className="orb0-cena">od {val(osnovaZa(s))}</span>
+                          <span className="orb0-cena">{L('od ', 'from ')}{val(osnovaZa(s))}</span>
                         </>
                       )}
                       {on && (
@@ -8557,7 +8573,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                                 onClick={() => izberiVrstico(s.id)}>
                                 <span className="mk-ikona" aria-hidden style={{ background: osvetli(bar, 0.82), color: zatemni(bar, 0.5) }}>{ikonaZa(s.id)}</span>
                                 <span className="mk-ime">{kratkoIme(s)}</span>
-                                <span className="mk-cena">od {val(osnovaZa(s))}</span>
+                                <span className="mk-cena">{L('od ', 'from ')}{val(osnovaZa(s))}</span>
                                 {on && (
                                   <span className="mk-kolic" role="button" tabIndex={0} title={L('Odstrani zadnjo vrstico te storitve', 'Remove the last row of this service')}
                                     onClick={e => { e.stopPropagation(); odvzemiStoritev(s.id); }}
@@ -8589,7 +8605,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <button type="button" className="ponudba0-zapri" aria-label={L('Zapri ponudbo', 'Close quote')} onClick={() => zapriMobilnoPonudbo()}>×</button>
                 <div className="ponudba0-glava">
                   <h2>{nazivPonudbe.trim() || L('Tvoja ponudba', 'Your quote')}</h2>
-                  <span className="ponudba0-chip">{vrstice.length === 1 ? '1 postavka'
+                  <span className="ponudba0-chip">{locale === 'en'
+                    ? (vrstice.length === 1 ? '1 item' : `${vrstice.length} items`)
+                    : vrstice.length === 1 ? '1 postavka'
                     : vrstice.length === 2 ? '2 postavki'
                       : vrstice.length === 3 || vrstice.length === 4 ? `${vrstice.length} postavke`
                         : `${vrstice.length} postavk`}</span>
@@ -8924,7 +8942,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         {neurejene.map(({ l, storitev }) => (
                           <button key={l.uid} type="button" className="izbor-preveri-gumb" onClick={() => odpriDetajl(l.uid)}>
                             <PencilSimple size={17} weight="bold" aria-hidden />
-                            Dopolni: {prikazVrstice(l, storitev!)}
+                            {L('Dopolni: ', 'Complete: ')}{prikazVrstice(l, storitev!)}
                           </button>
                         ))}
                       </span>
@@ -8959,7 +8977,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 </div>
                 <div className="polje">
                   <label htmlFor="cw-narocnik-email">{L('Email naročnika', 'Client email')}</label>
-                  <input id="cw-narocnik-email" type="email" placeholder={L('npr. pisarna@volk-babica.si', 'e.g. office@wolf-grandma.si')}
+                  <input id="cw-narocnik-email" type="email" placeholder={L('npr. pisarna@volk-babica.si', 'e.g. office@company.com')}
                     value={narocnikEmail} onChange={e => setNarocnikEmail(e.target.value)}
                     onBlur={() => zabeleziNarocnika(narocnikPonudbe)} />
                 </div>
@@ -8967,13 +8985,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <div className="numgrid">
                 <div className="polje">
                   <label htmlFor="cw-narocnik-naslov">{L('Naslov (ulica, kraj)', 'Address (street, city)')}</label>
-                  <input id="cw-narocnik-naslov" type="text" placeholder={L('npr. Dunajska cesta 1, 1000 Ljubljana', 'e.g. Dunajska cesta 1, 1000 Ljubljana')}
+                  <input id="cw-narocnik-naslov" type="text" placeholder={L('npr. Dunajska cesta 1, 1000 Ljubljana', 'e.g. 350 Fifth Ave, New York, NY 10118')}
                     value={narocnikNaslov} onChange={e => setNarocnikNaslov(e.target.value)}
                     onBlur={() => zabeleziNarocnika(narocnikPonudbe)} />
                 </div>
                 <div className="polje">
                   <label htmlFor="cw-narocnik-drzava">{L('Država', 'Country')} <span className="vec">{L('določi trg za ceno', 'sets the market for pricing')}</span></label>
-                  <IzbirnikDrzave id="cw-narocnik-drzava" placeholder={L('npr. Slovenija', 'e.g. Slovenia')}
+                  <IzbirnikDrzave id="cw-narocnik-drzava" placeholder={L('npr. Slovenija', 'e.g. United States')}
                     moznosti={DRZAVE.map(d => locale === 'en' ? d.imeEn : d.ime)}
                     value={custDrzavaNarocnik}
                     onChange={v => {
@@ -9100,10 +9118,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       </div>
                     </div>
                     <p className="hint" style={{ marginTop: '.5rem' }}>
-                      Kje preveriš:{' '}
-                      {(REGISTRI[trgNarocnika] ?? REGISTRI.si).concat(REGISTRI_UNIV).map((reg, i) => (
-                        <span key={reg.url}>{i > 0 && ' · '}<a href={reg.url} target="_blank" rel="noopener noreferrer">{reg.ime}</a></span>
-                      ))}. Prazno = mikro podjetje.
+                      {locale === 'en'
+                        ? 'Where to check: the company website · LinkedIn (headcount as a proxy). Empty = micro business.'
+                        : <>Kje preveriš:{' '}
+                          {(REGISTRI[trgNarocnika] ?? REGISTRI.si).concat(REGISTRI_UNIV).map((reg, i) => (
+                            <span key={reg.url}>{i > 0 && ' · '}<a href={reg.url} target="_blank" rel="noopener noreferrer">{reg.ime}</a></span>
+                          ))}. Prazno = mikro podjetje.</>}
                     </p>
                   </>
                 )}
@@ -9202,11 +9222,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         const recId = row.tantiema ? 'tantieme' : (RECEPTI.find(rc => rc.prenos === row.prenos && rc.trajanje === row.trajanje && rc.id !== 'tantieme')?.id ?? '');
                         return (
                           <div key={row.sid} className="prav-vrsta">
-                            <span className="prav-ime">{row.ime}{row.tantiema ? <small> · {row.tantiema} % tantieme</small> : row.klavzule.length > 0 ? <small> · {row.klavzule.length} klavzul</small> : null}</span>
-                            <select className="prav-recept" aria-label={'Pravice: ' + row.ime} value={recId}
+                            <span className="prav-ime">{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}{row.tantiema ? <small> · {row.tantiema} % {L('tantieme', 'royalties')}</small> : row.klavzule.length > 0 ? <small> · {row.klavzule.length} {L('klavzul', 'clauses')}</small> : null}</span>
+                            <select className="prav-recept" aria-label={L('Pravice: ', 'Rights: ') + row.ime} value={recId}
                               onChange={e => { const rc = RECEPTI.find(x => x.id === e.target.value); if (rc) nastaviPravRec(row.sid, { prenos: rc.prenos, trajanje: rc.trajanje, trajLeta: undefined, tantiema: rc.id === 'tantieme' ? tantiemaZa(row.sid) : undefined }); }}>
-                              {recId === '' && <option value="">Po meri ({row.trajanjeIme})</option>}
-                              {RECEPTI.map(rc => <option key={rc.id} value={rc.id}>{rc.ime}</option>)}
+                              {recId === '' && <option value="">{L('Po meri', 'Custom')} ({row.trajanjeIme})</option>}
+                              {RECEPTI.map(rc => <option key={rc.id} value={rc.id}>{locale === 'en' ? rc.imeEn : rc.ime}</option>)}
                             </select>
                             {urejamPravSid === row.sid ? (
                               <span className="prav-cena prav-cena-uredi">
@@ -9305,12 +9325,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                               {PRAV_TRAJANJE.map(t => (
                                 <button key={t.id} type="button" className={'pill' + (rec.trajanje === t.id ? ' on' : '')}
                                   onClick={() => nastaviPravRec(sid, { trajanje: t.id, trajLeta: undefined })}>
-                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{t.ime}</span>
+                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{locale === 'en' ? t.imeEn : t.ime}</span>
                                 </button>
                               ))}
                             </div>
                             <div className="cu-vrsta cu-po-meri">
-                              <span className={'pill' + (rec.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">{L('Po meri', 'Custom')}{rec.trajanje === 'custom' && typeof rec.trajLeta === 'number' ? `: ${trajLetaVBesedo(rec.trajLeta)}` : ''}</span></span>
+                              <span className={'pill' + (rec.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">{L('Po meri', 'Custom')}{rec.trajanje === 'custom' && typeof rec.trajLeta === 'number' ? `: ${trajLetaVBesedo(rec.trajLeta, locale === 'en')}` : ''}</span></span>
                               <input type="number" min={1} value={custStev} onChange={e => setCustStev(e.target.value)} className="cu-num" aria-label={L('Število', 'Number')} />
                               <select value={custEnota} onChange={e => setCustEnota(e.target.value as 'teden' | 'mesec' | 'leto')} className="cu-select" aria-label={L('Enota', 'Unit')}>
                                 <option value="teden">{L('tednov', 'weeks')}</option><option value="mesec">{L('mesecev', 'months')}</option><option value="leto">{L('let', 'years')}</option>
@@ -9326,7 +9346,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                                 return (
                                   <button key={k.id} type="button" className={'pill' + (on ? ' on' : '')}
                                     onClick={() => nastaviPravRec(sid, { klavzule: on ? (rec.klavzule || []).filter(x => x !== k.id) : [...(rec.klavzule || []), k.id] })}>
-                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{k.ime}<small>{k.opis}{k.mult ? ` · +${Math.round(k.mult * 100)} %` : ''}</small></span>
+                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{locale === 'en' ? k.imeEn : k.ime}<small>{locale === 'en' ? k.opisEn : k.opis}{k.mult ? ` · +${Math.round(k.mult * 100)} %` : ''}</small></span>
                                   </button>
                                 );
                               })}
@@ -9413,9 +9433,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 return createPortal(
                   <div className={`cw${vLupini ? ' cw-lupina' : ''}`}>
                     <div className="izbirnik-zastor" onClick={() => setLastnaOdprta(null)}>
-                      <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={'Pravica: ' + (l.ime || 'Lastna pravica')} onClick={e => e.stopPropagation()} data-lenis-prevent>
+                      <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={L('Pravica: ', 'Right: ') + (l.ime || L('Lastna pravica', 'Custom right'))} onClick={e => e.stopPropagation()} data-lenis-prevent>
                         <div className="izbirnik-glava">
-                          <span>Pravica: {l.ime || 'Lastna pravica'}</span>
+                          <span>{L('Pravica: ', 'Right: ')}{l.ime || L('Lastna pravica', 'Custom right')}</span>
                           <button type="button" onClick={() => setLastnaOdprta(null)} aria-label={L('Zapri', 'Close')}>✕</button>
                         </div>
                         <div className="detajl-telo">
@@ -9425,12 +9445,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                               {PRAV_TRAJANJE.map(t => (
                                 <button key={t.id} type="button" className={'pill' + (l.trajanje === t.id ? ' on' : '')}
                                   onClick={() => posodobiLastnoPravico(l.id, { trajanje: t.id, trajLeta: undefined })}>
-                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{t.ime}</span>
+                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{locale === 'en' ? t.imeEn : t.ime}</span>
                                 </button>
                               ))}
                             </div>
                             <div className="cu-vrsta cu-po-meri">
-                              <span className={'pill' + (l.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">{L('Po meri', 'Custom')}{l.trajanje === 'custom' && typeof l.trajLeta === 'number' ? `: ${trajLetaVBesedo(l.trajLeta)}` : ''}</span></span>
+                              <span className={'pill' + (l.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">{L('Po meri', 'Custom')}{l.trajanje === 'custom' && typeof l.trajLeta === 'number' ? `: ${trajLetaVBesedo(l.trajLeta, locale === 'en')}` : ''}</span></span>
                               <input type="number" min={1} value={custStev} onChange={e => setCustStev(e.target.value)} className="cu-num" aria-label={L('Število', 'Number')} />
                               <select value={custEnota} onChange={e => setCustEnota(e.target.value as 'teden' | 'mesec' | 'leto')} className="cu-select" aria-label={L('Enota', 'Unit')}>
                                 <option value="teden">{L('tednov', 'weeks')}</option><option value="mesec">{L('mesecev', 'months')}</option><option value="leto">{L('let', 'years')}</option>
@@ -9446,7 +9466,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                                 return (
                                   <button key={k.id} type="button" className={'pill' + (on ? ' on' : '')}
                                     onClick={() => posodobiLastnoPravico(l.id, { klavzule: on ? (l.klavzule || []).filter(x => x !== k.id) : [...(l.klavzule || []), k.id] })}>
-                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{k.ime}<small>{k.opis}</small></span>
+                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{locale === 'en' ? k.imeEn : k.ime}<small>{locale === 'en' ? k.opisEn : k.opis}</small></span>
                                   </button>
                                 );
                               })}
@@ -9902,10 +9922,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             {/* SEKUNDARNE akcije: tiho, brez ponovnega pošiljanja. */}
             <div className="posl-sekundarne">
               <button type="button" className="povezava" onClick={() => { kopiraj(); proslaviKonfeti(); }}>
-                <CopySimple size={16} /> {kopirano ? 'Skopirano ✓' : 'Kopiraj ponudbo'}
+                <CopySimple size={16} /> {kopirano ? L('Skopirano ✓', 'Copied ✓') : L('Kopiraj ponudbo', 'Copy quote')}
               </button>
               <button type="button" className="povezava" disabled={pdfNalaganje} onClick={() => { prenesiPdf(); proslaviKonfeti(); }} title={L('Prenese ponudbo kot PDF datoteko', 'Downloads the quote as a PDF file')}>
-                <FilePdf size={16} /> {pdfNalaganje ? 'Pripravljam PDF…' : 'Prenesi PDF'}
+                <FilePdf size={16} /> {pdfNalaganje ? L('Pripravljam PDF…', 'Preparing PDF…') : L('Prenesi PDF', 'Download PDF')}
               </button>
               <button type="button" className="povezava" onClick={() => { prenesi(); proslaviKonfeti(); }}>
                 <DownloadSimple size={16} /> {L('Prenesi besedilo', 'Download text')}
@@ -9981,7 +10001,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             <span className="fab-ikona" aria-hidden><FileText size={22} weight="regular" />
               {stPostavk > 0 && <span className="fab-tag">{stPostavk}</span>}
             </span>
-            <span className="fab-znesek">{L('Ponudba', 'Quote')}<b>od {val(skupajOkvirno)}</b></span>
+            <span className="fab-znesek">{L('Ponudba', 'Quote')}<b>{L('od ', 'from ')}{val(skupajOkvirno)}</b></span>
           </button>
         </>
       )}
