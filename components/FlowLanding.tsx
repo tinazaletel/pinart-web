@@ -4,7 +4,7 @@ import {
   FileText, Handshake, Scroll, Receipt, Wallet, Tag, Clock,
   Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, CaretLeft, CaretRight,
   ShieldCheck, Scales, ChatCircle, Sparkle, Plus, ChartLineUp, Robot, Plugs,
-  CalendarBlank, ListChecks, FolderOpen, Megaphone, PenNib,
+  CalendarBlank, ListChecks, FolderOpen, Megaphone, PenNib, Fingerprint,
 } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -484,26 +484,29 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     );
   };
 
-  const FUNKCIJE = isEn ? [
+  type Funkcija = { Ikona: React.ElementType; ime: string; opis: string; poudarek?: boolean; znacka?: string; href?: string };
+  const FUNKCIJE: Funkcija[] = isEn ? [
+    { Ikona: FileText, ime: 'The calculator stays free', opis: 'Calculate a fair price and build a proposal without an account or payment — no strings attached.', poudarek: true, znacka: 'Free · no sign-up', href: kalkulator },
     { Ikona: Robot, ime: 'AI that understands the market', opis: 'Pupa helps you set a fair price, understands usage rights and warns you when you are underpricing.' },
     { Ikona: SquaresFour, ime: 'One workspace instead of four', opis: 'Proposals, contracts, invoices, CRM, projects and tasks in one place.' },
+    { Ikona: Fingerprint, ime: 'Authorship vault', opis: 'Prove when and how you made your work — a cryptographic fingerprint and timestamp against AI theft.' },
     { Ikona: FolderOpen, ime: 'A whole project in one place', opis: 'Keep documents, deadlines and communication together instead of scattered across email.' },
     { Ikona: ListChecks, ime: 'Tasks that stay organised', opis: 'Turn project wishes into clear tasks and keep every project moving.' },
     { Ikona: Receipt, ime: 'From proposal to invoice', opis: 'The same data flows through proposals, contracts, invoices and expenses without retyping.' },
     { Ikona: Megaphone, ime: 'Marketing included', opis: 'Plan posts and campaigns alongside your projects in the same workspace.' },
     { Ikona: ShieldCheck, ime: 'Secure cloud storage', opis: 'Your data is stored in the EU and remains yours. Prices are only aggregated anonymously.' },
     { Ikona: Handshake, ime: 'Grows with you', opis: 'Start solo, then invite collaborators or clients only to the projects they need.' },
-    { Ikona: Sparkle, ime: 'The calculator stays free', opis: 'Calculate a fair price and build a proposal without an account or payment.' },
   ] : [
+    { Ikona: FileText, ime: 'Kalkulator za vedno brezplačen', opis: 'Pošteno ceno izračunaš in ponudbo sestaviš brez prijave in brez plačila. Za dokumente, stranke in projekte izbereš paket.', poudarek: true, znacka: 'Brezplačno · brez prijave', href: kalkulator },
     { Ikona: Robot, ime: 'AI, ki pozna trg in ceno', opis: 'AI asistentka Pupa pozna trg in avtorske pravice: pove ti pošteno ceno in te opozori, če se podcenjuješ.' },
     { Ikona: SquaresFour, ime: 'En program namesto štirih', opis: 'Vse-v-enem SaaS: ponudbe, pogodbe, računi, CRM, projekti in naloge na enem mestu. Konec skakanja med štirimi programi.' },
+    { Ikona: Fingerprint, ime: 'Sef avtorstva', opis: 'Dokaži, kdaj in s čim si delo ustvarila — kriptografski odtis in časovni žig proti AI kraji.' },
     { Ikona: FolderOpen, ime: 'Cel projekt na enem mestu', opis: 'Vsak projekt z dokumenti, roki in vso komunikacijo — pregledno, veliko bolje kot razmetani Gmail.' },
     { Ikona: ListChecks, ime: 'Naloge, ki se uredijo same', opis: 'Task manager drži projekt v teku. Poveš Pupi želje, ona jih razdeli v naloge.' },
     { Ikona: Receipt, ime: 'Od ponudbe do računa', opis: 'Ponudba, pogodba, račun in stroški tečejo iz istih podatkov — brez podvajanja in prepisovanja.' },
     { Ikona: Megaphone, ime: 'Tudi marketing', opis: 'Objave in kampanje načrtuješ ob projektih — marketing je del istega mesta.' },
     { Ikona: ShieldCheck, ime: 'Varno oblačno shranjevanje', opis: 'Podatki v oblaku (EU) — dostop imaš samo ti. Ne prodamo in ne delimo; cene se združijo anonimno, nikoli ime.' },
     { Ikona: Handshake, ime: 'Raste s tabo', opis: 'Začneš sam(a); ko studio zraste, povabiš sodelavca ali stranko na projekt — z dostopom samo do potrebnega.' },
-    { Ikona: Sparkle, ime: 'Kalkulator za vedno brezplačen', opis: 'Pošteno ceno izračunaš in ponudbo sestaviš brez prijave in brez plačila. Za dokumente, stranke in projekte izbereš paket.' },
   ];
 
   const KORAKI = isEn ? [
@@ -1014,6 +1017,12 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-funkcija-ikona { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; flex-shrink: 0; border-radius: 10px; background: oklch(29% .02 285); color: oklch(84% .11 297); }
         .fl-funkcija strong { display: block; font-size: 1rem; font-weight: 650; color: #fff; margin-bottom: .25rem; }
         .fl-funkcija p { font-size: .88rem; line-height: 1.5; color: oklch(70% .02 285); margin: 0; }
+        /* Poudarjen brezplacni kalkulator: klikljiva, obarvana kartica, da izstopa med funkcijami. */
+        .fl-funkcija-poudarek { text-decoration: none; padding: 1.15rem 1.25rem; border-radius: 16px; background: oklch(32% .06 297 / .5); border: 1px solid oklch(72% .14 297 / .42); transition: transform .18s ease, border-color .18s ease, background .18s ease; }
+        .fl-funkcija-poudarek:hover { transform: translateY(-2px); border-color: oklch(80% .15 297 / .7); background: oklch(35% .07 297 / .58); }
+        .fl-funkcija-poudarek .fl-funkcija-ikona { background: oklch(66% .19 297); color: #fff; }
+        .fl-funkcija-znacka { display: inline-block; margin-bottom: .45rem; padding: .14rem .55rem; border-radius: 999px; background: oklch(80% .13 297 / .22); color: oklch(86% .12 297); font-size: .62rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+        .fl-funkcija-cta { display: inline-flex; align-items: center; gap: .32rem; margin-top: .65rem; color: oklch(86% .13 297); font-size: .82rem; font-weight: 700; }
 
         /* Cenik (price plans, Magnific slog) */
         .fl-cenik { margin: 10.05rem 0 0; padding-top: 2.6rem; text-align: center; }
@@ -1485,12 +1494,18 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           <div className="fl-funkcije-mreza">
             {FUNKCIJE.map(f => {
               const Ikona = f.Ikona;
-              return (
-                <div className="fl-funkcija" key={f.ime}>
-                  <span className="fl-funkcija-ikona"><Ikona size={20} weight="regular" /></span>
-                  <div><strong>{f.ime}</strong><p>{f.opis}</p></div>
+              const vsebina = <>
+                <span className="fl-funkcija-ikona"><Ikona size={20} weight="regular" /></span>
+                <div>
+                  {f.znacka && <span className="fl-funkcija-znacka">{f.znacka}</span>}
+                  <strong>{f.ime}</strong>
+                  <p>{f.opis}</p>
+                  {f.poudarek && <span className="fl-funkcija-cta">{t('Odpri kalkulator', 'Open calculator')} <ArrowRight size={14} weight="bold" /></span>}
                 </div>
-              );
+              </>;
+              return f.poudarek && f.href
+                ? <a className="fl-funkcija fl-funkcija-poudarek" key={f.ime} href={f.href}>{vsebina}</a>
+                : <div className="fl-funkcija" key={f.ime}>{vsebina}</div>;
             })}
           </div>
         </section>
