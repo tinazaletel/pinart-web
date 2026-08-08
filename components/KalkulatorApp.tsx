@@ -2097,6 +2097,31 @@ function InfoNamig({ besedilo, locale = 'sl' }: { besedilo: string; locale?: str
 /* vLupini = kalkulator tece znotraj Flow ogrodja (vpisan uporabnik). Takrat
    svoje glave ne rise — zgornjo vrstico in meni prispeva ogrodje, sicer bi bili
    dve glavi ena nad drugo. */
+/* Cena, ki se ob spremembi "prišteje" navzgor (ease-out ~0.45 s) — obcutek, da se
+   ponudba gradi pred tabo. format = obstojeci valutni formatter (val). Spostuje
+   reduced-motion prek CSS ni potrebno; ce se vrednost ne spremeni, ni animacije. */
+function CenaCountUp({ value, format }: { value: number; format: (n: number) => string }) {
+  const [prikaz, setPrikaz] = useState(value);
+  const prikazRef = useRef(value);
+  useEffect(() => {
+    const od = prikazRef.current;
+    if (od === value) { prikazRef.current = value; setPrikaz(value); return; }
+    let raf = 0;
+    const t0 = performance.now();
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - t0) / 450);
+      const v = od + (value - od) * (1 - Math.pow(1 - p, 3));
+      prikazRef.current = v;
+      setPrikaz(v);
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else { prikazRef.current = value; setPrikaz(value); }
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+  return <>{format(Math.round(prikaz))}</>;
+}
+
 export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { locale?: string; vLupini?: boolean }) {
   /* lahek prevajalnik za vidne nize UI: sl privzeto, en za anglescino */
   const L = (sl: string, en: string) => (locale === 'en' ? en : sl);
@@ -6877,7 +6902,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .predlogi .svoja { font-weight: 500; }
 
         .cw .postavke { margin-top: 1.6rem; max-width: 540px; }
-        .cw .postavka { display: grid; grid-template-columns: 1fr 3rem 2.7rem 5.2rem auto auto; gap: .7rem; align-items: center; border-bottom: 1px solid oklch(93% .006 82 / .55); padding: .5rem 0; font-size: .92rem; }
+        .cw .postavka { display: grid; grid-template-columns: 1fr 3rem 2.7rem 5.2rem auto auto; gap: .7rem; align-items: center; border-bottom: 1px solid oklch(93% .006 82 / .55); padding: .5rem 0; font-size: .92rem; animation: pwPostavkaIn .42s cubic-bezier(.22, 1, .36, 1) both; }
+        /* Postavka "prileti" ob dodajanju — obcutek, da se ponudba gradi pred tabo. Ker je key=x.id, animira se samo NOVA vrstica (obstojece ostanejo). */
+        @keyframes pwPostavkaIn { from { opacity: 0; transform: translateY(9px) scale(.985); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .cw .postavka { animation: none; } }
         .cw .postavka input { border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: .95rem; padding: .1rem .5rem .2rem 0; color: var(--ink); text-align: right; border-radius: 0; width: 100%; }
         .cw .postavka .enota-toggle { border: 1px solid rgba(17,17,17,.28); border-radius: 999px; background: transparent; font-family: inherit; font-size: .72rem; font-weight: 600; padding: .18rem .5rem; cursor: pointer; color: var(--ink); opacity: 1; justify-self: center; }
         .cw .postavka .enota-toggle:hover { border-color: var(--ink); }
@@ -8783,7 +8811,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       <>
                         <div className="ponudba0-vsota-vrsta">
                           <span>Izvedba · okvirno{ddvZavezanec ? ' (brez DDV)' : ''}</span>
-                          <b>{val(okvirno)}</b>
+                          <b><CenaCountUp value={okvirno} format={val} /></b>
                         </div>
                         {ddvZavezanec && (
                           <div className="ponudba0-vsota-vrsta ponudba0-mini">
