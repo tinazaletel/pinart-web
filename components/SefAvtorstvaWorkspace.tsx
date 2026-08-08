@@ -26,8 +26,10 @@ type Zapis = {
 };
 
 const KEY = 'pinart-sef-avtorstva';
-const ORODJA = ['Adobe Illustrator', 'Adobe Photoshop', 'Adobe InDesign', 'Figma', 'Procreate', 'Affinity Designer', 'Blender', 'Canva', 'Ročno / skica', 'Besedilo / dokument', 'Drugo'];
-const KATEGORIJE = ['Ilustracija', 'Logotip', 'Celostna grafična podoba', 'Embalaža', 'Splet / UI', 'Fotografija', 'Besedilo', 'Glasba', 'Video', 'Drugo'];
+const ORODJA_SL = ['Adobe Illustrator', 'Adobe Photoshop', 'Adobe InDesign', 'Figma', 'Procreate', 'Affinity Designer', 'Blender', 'Canva', 'Ročno / skica', 'Besedilo / dokument', 'Drugo'];
+const ORODJA_EN = ['Adobe Illustrator', 'Adobe Photoshop', 'Adobe InDesign', 'Figma', 'Procreate', 'Affinity Designer', 'Blender', 'Canva', 'By hand / sketch', 'Text / document', 'Other'];
+const KATEGORIJE_SL = ['Ilustracija', 'Logotip', 'Celostna grafična podoba', 'Embalaža', 'Splet / UI', 'Fotografija', 'Besedilo', 'Glasba', 'Video', 'Drugo'];
+const KATEGORIJE_EN = ['Illustration', 'Logo', 'Brand identity', 'Packaging', 'Web / UI', 'Photography', 'Text', 'Music', 'Video', 'Other'];
 
 /* Demo »polno poslovanje« — prikaže se v predogledu 'demo' (fiksni podatki, ne pravi zapisi). */
 const DEMO_ZAPISI: Zapis[] = [
@@ -52,6 +54,8 @@ function shrani(z: Zapis[]) { try { localStorage.setItem(KEY, JSON.stringify(z))
 export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) {
   const jeEn = base === '/en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
+  const ORODJA = jeEn ? ORODJA_EN : ORODJA_SL;
+  const KATEGORIJE = jeEn ? KATEGORIJE_EN : KATEGORIJE_SL;
 
   const [zapisi, setZapisi] = useState<Zapis[]>([]);
   const [datoteka, setDatoteka] = useState<File | null>(null);
