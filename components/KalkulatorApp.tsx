@@ -947,41 +947,41 @@ const REGISTRI_UNIV = [
 /* Katalog podrobnih postavk za "+ dodaj": iskanje po imenu, kolicina, cena.
    Cene so osnove za slovenski trg; ob dodajanju se prilagodijo tvojemu trgu. */
 const KATALOG = [
-  { id: 'anim-logo',    ime: 'Animacija logotipa',                cena: 450 },
-  { id: 'anim-ikone',   ime: 'SVG animacija ikon (kos)',          cena: 90  },
-  { id: 'ikone-set',    ime: 'Set ikon / piktogramov (kos)',      cena: 60  },
-  { id: 'media-paket',  ime: 'Media paket za družbena omrežja',   cena: 650 },
-  { id: 'viral-ad',     ime: 'Viralni video oglas',               cena: 900 },
-  { id: 'banner-set',   ime: 'Set spletnih pasic (bannerjev)',    cena: 380 },
-  { id: 'naslovnice',   ime: 'Naslovnice za družbena omrežja',    cena: 180 },
-  { id: 'email-predloga', ime: 'E-mail predloga (newsletter)',    cena: 320 },
-  { id: 'landing',      ime: 'Pristajalna stran (landing page)',  cena: 950 },
-  { id: 'predstavitev', ime: 'Predloga za predstavitev (deck)',   cena: 480 },
-  { id: 'vizitke',      ime: 'Vizitke in dopisni papir',          cena: 260 },
-  { id: 'plakat',       ime: 'Plakat / oglas za tisk',            cena: 340 },
-  { id: 'brosura',      ime: 'Brošura (na stran)',                cena: 85  },
-  { id: 'embalaza-var', ime: 'Dodatna varianta embalaže',         cena: 520 },
-  { id: 'foto-dir',     ime: 'Art direkcija fotografiranja (dan)', cena: 700 },
-  { id: 'brand-book',   ime: 'Razširjen brand priročnik',         cena: 850 },
-  { id: 'najem-studio', ime: 'Najem foto studia (dan)',           cena: 250 },
-  { id: 'najem-oprema', ime: 'Najem opreme / luči (dan)',         cena: 180 },
-  { id: 'lokacija',     ime: 'Lokacija in prevoz (pavšal)',       cena: 120 },
-  { id: 'font-licenca', ime: 'Licenca pisave (za tisk)',          cena: 150 },
-  { id: 'sw-strosek',   ime: 'Programska oprema / naročnine (projekt)', cena: 100 },
-  { id: 'zvok',         ime: 'Zvočna podoba / jingle',            cena: 400 },
-  { id: '3d-render',    ime: '3D vizualizacija / render (kos)',   cena: 350 },
-  { id: 'motion',       ime: 'Motion graphics video (do 30 s)',   cena: 600 },
-  { id: 'foto-produkt', ime: 'Fotografiranje produktov (dan)',    cena: 600 },
-  { id: 'foto-portret', ime: 'Fotografiranje portretov / ekipe',  cena: 450 },
-  { id: 'foto-dogodek', ime: 'Fotografiranje dogodka (dan)',      cena: 550 },
-  { id: 'retusa',       ime: 'Obdelava / retuša fotografij (kos)', cena: 25 },
-  { id: 'ai-vizuali',   ime: 'AI generiranje fotografij / vizualov (paket)', cena: 350 },
-  { id: 'reel',         ime: 'Kratki video / reel (kos)',         cena: 350 },
-  { id: 'copy-web',     ime: 'Pisanje besedil za splet (na stran)', cena: 120 },
-  { id: 'pr-clanek',    ime: 'PR članek / sporočilo za javnost',  cena: 250 },
-  { id: 'naming',       ime: 'Naming / slogan',                   cena: 400 },
-  { id: 'scenarij',     ime: 'Scenarij za video / oglas',         cena: 300 },
-  { id: 'seo-opisi',    ime: 'SEO opisi izdelkov (kos)',          cena: 30 },
+  { id: 'anim-logo',    ime: 'Animacija logotipa',                imeEn: 'Logo animation',                       cena: 450 },
+  { id: 'anim-ikone',   ime: 'SVG animacija ikon (kos)',          imeEn: 'SVG icon animation (each)',            cena: 90  },
+  { id: 'ikone-set',    ime: 'Set ikon / piktogramov (kos)',      imeEn: 'Icon / pictogram set (each)',          cena: 60  },
+  { id: 'media-paket',  ime: 'Media paket za družbena omrežja',   imeEn: 'Social media asset pack',              cena: 650 },
+  { id: 'viral-ad',     ime: 'Viralni video oglas',               imeEn: 'Viral video ad',                       cena: 900 },
+  { id: 'banner-set',   ime: 'Set spletnih pasic (bannerjev)',    imeEn: 'Web banner set',                       cena: 380 },
+  { id: 'naslovnice',   ime: 'Naslovnice za družbena omrežja',    imeEn: 'Social media cover images',            cena: 180 },
+  { id: 'email-predloga', ime: 'E-mail predloga (newsletter)',    imeEn: 'Email template (newsletter)',          cena: 320 },
+  { id: 'landing',      ime: 'Pristajalna stran (landing page)',  imeEn: 'Landing page',                         cena: 950 },
+  { id: 'predstavitev', ime: 'Predloga za predstavitev (deck)',   imeEn: 'Presentation template (deck)',         cena: 480 },
+  { id: 'vizitke',      ime: 'Vizitke in dopisni papir',          imeEn: 'Business cards & letterhead',          cena: 260 },
+  { id: 'plakat',       ime: 'Plakat / oglas za tisk',            imeEn: 'Poster / print ad',                    cena: 340 },
+  { id: 'brosura',      ime: 'Brošura (na stran)',                imeEn: 'Brochure (per page)',                  cena: 85  },
+  { id: 'embalaza-var', ime: 'Dodatna varianta embalaže',         imeEn: 'Extra packaging variant',              cena: 520 },
+  { id: 'foto-dir',     ime: 'Art direkcija fotografiranja (dan)', imeEn: 'Photography art direction (day)',     cena: 700 },
+  { id: 'brand-book',   ime: 'Razširjen brand priročnik',         imeEn: 'Extended brand book',                  cena: 850 },
+  { id: 'najem-studio', ime: 'Najem foto studia (dan)',           imeEn: 'Photo studio rental (day)',            cena: 250 },
+  { id: 'najem-oprema', ime: 'Najem opreme / luči (dan)',         imeEn: 'Equipment / lighting rental (day)',    cena: 180 },
+  { id: 'lokacija',     ime: 'Lokacija in prevoz (pavšal)',       imeEn: 'Location & travel (flat rate)',        cena: 120 },
+  { id: 'font-licenca', ime: 'Licenca pisave (za tisk)',          imeEn: 'Font license (for print)',             cena: 150 },
+  { id: 'sw-strosek',   ime: 'Programska oprema / naročnine (projekt)', imeEn: 'Software / subscriptions (project)', cena: 100 },
+  { id: 'zvok',         ime: 'Zvočna podoba / jingle',            imeEn: 'Sound identity / jingle',              cena: 400 },
+  { id: '3d-render',    ime: '3D vizualizacija / render (kos)',   imeEn: '3D visualization / render (each)',     cena: 350 },
+  { id: 'motion',       ime: 'Motion graphics video (do 30 s)',   imeEn: 'Motion graphics video (up to 30 s)',   cena: 600 },
+  { id: 'foto-produkt', ime: 'Fotografiranje produktov (dan)',    imeEn: 'Product photography (day)',            cena: 600 },
+  { id: 'foto-portret', ime: 'Fotografiranje portretov / ekipe',  imeEn: 'Portrait / team photography',          cena: 450 },
+  { id: 'foto-dogodek', ime: 'Fotografiranje dogodka (dan)',      imeEn: 'Event photography (day)',              cena: 550 },
+  { id: 'retusa',       ime: 'Obdelava / retuša fotografij (kos)', imeEn: 'Photo editing / retouching (each)',   cena: 25 },
+  { id: 'ai-vizuali',   ime: 'AI generiranje fotografij / vizualov (paket)', imeEn: 'AI image / visual generation (pack)', cena: 350 },
+  { id: 'reel',         ime: 'Kratki video / reel (kos)',         imeEn: 'Short video / reel (each)',            cena: 350 },
+  { id: 'copy-web',     ime: 'Pisanje besedil za splet (na stran)', imeEn: 'Web copywriting (per page)',         cena: 120 },
+  { id: 'pr-clanek',    ime: 'PR članek / sporočilo za javnost',  imeEn: 'PR article / press release',           cena: 250 },
+  { id: 'naming',       ime: 'Naming / slogan',                   imeEn: 'Naming / slogan',                      cena: 400 },
+  { id: 'scenarij',     ime: 'Scenarij za video / oglas',         imeEn: 'Script for video / ad',                cena: 300 },
+  { id: 'seo-opisi',    ime: 'SEO opisi izdelkov (kos)',          imeEn: 'SEO product descriptions (each)',      cena: 30 },
 ];
 
 type Postavka = { id: string; ime: string; cena: number; kolicina: number; enota?: 'kos' | 'ura' };
@@ -3670,22 +3670,23 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   useEffect(() => { void zabeleziSPaketom('orodje_odprto'); }, []);
 
   const predlogi = useMemo(() => {
+    const kIme = (k: (typeof KATALOG)[number]) => locale === 'en' ? k.imeEn : k.ime;
     const q = brezSumnikov(iskanje.trim());
     if (!q) return KATALOG.slice(0, 6);
-    let zadetki = KATALOG.filter(k => brezSumnikov(k.ime).includes(q));
+    let zadetki = KATALOG.filter(k => brezSumnikov(kIme(k)).includes(q));
     // Slovenske koncnice: "fotografiranje" ne najde "fotografiranja" —
     // ce ni zadetkov, isci se s krajsanim korenom besede.
     if (!zadetki.length && q.length > 4) {
       const koren = q.slice(0, Math.max(4, q.length - 3));
-      zadetki = KATALOG.filter(k => brezSumnikov(k.ime).includes(koren));
+      zadetki = KATALOG.filter(k => brezSumnikov(kIme(k)).includes(koren));
     }
     return zadetki.slice(0, 6);
-  }, [iskanje]);
+  }, [iskanje, locale]);
 
   const dodajIzKataloga = (k: (typeof KATALOG)[number]) => {
     setPostavke(p => [...p, {
       id: k.id + '-' + p.length,
-      ime: k.ime,
+      ime: locale === 'en' ? k.imeEn : k.ime,
       cena: zaokrozi(k.cena * trg(mojTrg).lvl) || k.cena,
       kolicina: 1,
     }]);
@@ -5554,7 +5555,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           <div className="predlogi">
             {predlogi.map(k => (
               <button key={k.id} type="button" onClick={() => dodajIzKataloga(k)}>
-                {k.ime}<span>{val(zaokrozi(k.cena * trg(mojTrg).lvl) || k.cena)}</span>
+                {locale === 'en' ? k.imeEn : k.ime}<span>{val(zaokrozi(k.cena * trg(mojTrg).lvl) || k.cena)}</span>
               </button>
             ))}
             {iskanje.trim() && !predlogi.some(k => brezSumnikov(k.ime) === brezSumnikov(iskanje.trim())) && (
@@ -8448,7 +8449,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     <div className="predlogi">
                       {predlogi.map(k => (
                         <button key={k.id} type="button" onClick={() => dodajIzKataloga(k)}>
-                          {k.ime}<span>{val(zaokrozi(k.cena * trg(mojTrg).lvl) || k.cena)}</span>
+                          {locale === 'en' ? k.imeEn : k.ime}<span>{val(zaokrozi(k.cena * trg(mojTrg).lvl) || k.cena)}</span>
                         </button>
                       ))}
                       {iskanje.trim() && !predlogi.some(k => brezSumnikov(k.ime) === brezSumnikov(iskanje.trim())) && (
