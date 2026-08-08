@@ -221,6 +221,18 @@
 .feedback { position: fixed; z-index: 80; right: 1.2rem; bottom: 1.2rem; display: flex; align-items: center; gap: 1rem; max-width: 24rem; padding: .8rem 1rem; border-radius: .85rem; background: var(--ink); color: var(--paper); box-shadow: 0 1rem 3rem oklch(20% .03 55 / .2); font-size: .64rem; }
 .feedback button { border: 0; background: none; color: inherit; font-size: 1rem; cursor: pointer; }
 .flowBand, .historyBand, .resultsBand, .eventsBand, .detailsBand { margin-top: 1rem; padding: 1.5rem; border: 1px solid rgba(255,255,255,.6); border-radius: 1.2rem; background: rgba(255,255,255,.55); backdrop-filter: blur(18px) saturate(1.35); -webkit-backdrop-filter: blur(18px) saturate(1.35); box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .05), inset 0 1px 0 rgba(255,255,255,.5); }
+/* EN skupni glass za vse glavne vsebinske kartice (stranke, ceniki, cilji, stroški, računovodstvo).
+   Samo veliki paneli — vrstice/gumbi/kontrole ostanejo (imajo svoje ožje selektorje). */
+.clientDirectory, .clientProfile,
+.goalOverview, .goalBuilder, .goalChecklist, .goalHistory,
+.priceProfileList, .priceEditor, .produktEditor,
+.accountingHistory, .accountingForm,
+.expenseEditor, .expenseArchive, .recurringCosts {
+  background: rgba(255,255,255,.5) !important;
+  backdrop-filter: blur(18px) saturate(1.35);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .05), inset 0 1px 0 rgba(255,255,255,.5);
+}
 /* mockup-slog panela: bež pasica (title bar) na vrhu → belo telo */
 .flowBand, .historyBand, .resultsBand, .eventsBand { padding: 0; overflow: hidden; }
 .bandTop { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .55rem 1.1rem; background: transparent; border-bottom: 1px solid oklch(22% .015 60 / .06); }

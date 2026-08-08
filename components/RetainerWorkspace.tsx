@@ -658,9 +658,6 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         </button>
       </header>}
       <div className="rw-ozadje" aria-hidden>
-        <span className="rw-blob rw-blob-roza" />
-        <span className="rw-blob rw-blob-modra" />
-        <span className="rw-blob rw-blob-vijola" />
         <AmbientBubbles />
       </div>
 
@@ -1104,7 +1101,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-profil-admin{display:inline-block;margin-top:.4rem;font-size:.82rem;font-weight:600;color:rgba(17,17,17,.6);text-decoration:none;border:1px solid oklch(93% .006 82 / .55);border-radius:999px;padding:.5rem 1rem;transition:border-color .15s,color .15s}
         .rw-profil-admin:hover{border-color:var(--ink);color:var(--ink)}
         /* POSKUS: mrežno ozadje (kot naslovnica/FLOW), mehurčki ostanejo */
-        .rw-ozadje{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background-color:#fff}
+        .rw-ozadje{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background-color:transparent}
         /* nežna bloba (vijola + zelena) v ozadju, nad mrežo, komaj opazna */
         .rw-ozadje .rw-blob{position:absolute;width:min(58vw,720px);aspect-ratio:1;border-radius:50%;filter:blur(56px)}
         .rw-blob-roza{top:-16vh;left:-12vw;background:radial-gradient(circle, oklch(72% .2 300 / .85), transparent 66%);opacity:.62;animation:rwRoza 12s ease-in-out infinite}
