@@ -161,25 +161,13 @@
 .workspace { grid-column: 2; grid-row: 2; position: relative; isolation: isolate; min-width: 0; padding: 3rem clamp(.8rem, 1.2vw, 1.3rem) 2rem; overflow: hidden; }
 /* Console-slog: vsebina centrirana z max-sirino, ne razpotegnjena cez cel zaslon (Tina: ne mara full-width). Vsi podatki ostanejo. */
 .workspace > *:not(.detailBackdrop):not(:global(.cw)) { max-width: 1280px; margin-inline: auto; }
-/* Mikro-animacija ob nalaganju notranjih strani: naslov + paneli se necno "zapeljejo" gor.
-   Samo CSS transform/opacity (GPU), sprozi se ENKRAT ob mountu -> NE obremeni strani.
-   Velja za vse strani, ki delijo ta shell (.workspace). reduced-motion izvzet. */
-@keyframes pwUvodGor { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
-.topbar h1 { animation: pwUvodGor .5s cubic-bezier(.22, 1, .36, 1) both; }
-/* Paneli (neposredni otroci .workspace) priletijo ENEDEN ZA DRUGIM (kaskada). topbar je 1. otrok
-   in ni animiran, a steje v nth-child, zato paneli zacnejo pri 2. */
-/* Naslov (.topbar h1, zamik 0) VODI; paneli se zacnejo sele ~0.18s kasneje in
-   priletijo eden za drugim -> "najprej naslov, potem kartice/paneli". */
-.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)) { animation: pwUvodGor .58s cubic-bezier(.22, 1, .36, 1) both; }
-.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)):nth-child(2) { animation-delay: .18s; }
-.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)):nth-child(3) { animation-delay: .26s; }
-.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)):nth-child(4) { animation-delay: .34s; }
-.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)):nth-child(5) { animation-delay: .42s; }
-.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)):nth-child(6) { animation-delay: .5s; }
-.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)):nth-child(n+7) { animation-delay: .56s; }
-@media (prefers-reduced-motion: reduce) {
-  .topbar h1, .workspace > *:not(.topbar) { animation: none !important; }
-}
+/* Nezni "zapelje se gor" vstop SAMO za naslov strani (.topbar h1) — varno, nikoli ne skrije vsebine.
+   KASKADA PANELOV ODSTRANJENA: z animation-delay + fill:both je na nekaterih straneh puscala
+   vsebino trajno PROSOJNO (blank), ker se animacija ni vedno sprozila. Reveal panelov = kasneje,
+   pravilno prek scroll-observerja (ne prek CSS delay+fill). */
+@keyframes pwNaslovGor { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.topbar h1 { animation: pwNaslovGor .5s cubic-bezier(.22, 1, .36, 1) both; }
+@media (prefers-reduced-motion: reduce) { .topbar h1 { animation: none; } }
 .workspace::before, .workspace::after { content: none; }
 /* Mehki plavajoci mehurcki — poenoteni s Flow landing stranjo (bel highlight,
    nezen odtenek, mehka senca; brez trdih nasicenih gradientov in mocnega sija). */
