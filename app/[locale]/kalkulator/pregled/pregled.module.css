@@ -12,8 +12,8 @@
   /* prva vrstica = zgornja vrstica cez vso sirino (FlowTopBar) */
   grid-template-rows: auto minmax(0, 1fr);
   isolation: isolate;              /* stacking kontekst → ambientni mehurcki (z-index:-1) so nad ozadjem, pod vsebino */
-  /* čist app pass: umaknjeno ozadje (blobi + mreža) → mirna ploskev, vsebina diha */
-  background-color: oklch(99.6% .0015 90);
+  /* ozadje prosojno -> skozi sije skupna AuroraBackground (živo ozadje na vseh straneh) */
+  background-color: transparent;
   color: var(--ink);
   font-family: var(--font-sans), sans-serif;
   overflow-x: clip;
