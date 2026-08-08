@@ -12,6 +12,7 @@ import FloatingUI from '@/components/FloatingUI';
 import PageTransition from '@/components/PageTransition';
 import CookieBanner from '@/components/CookieBanner';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
+import ContentProtect from '@/components/ContentProtect';
 import '../globals.css';
 
 export function generateStaticParams() {
@@ -111,6 +112,14 @@ export default async function LocaleLayout({
     // laznjivo neujemanje. Velja samo za atribute tega elementa.
     <html lang={locale} className={fontVariables} suppressHydrationWarning>
       <head>
+        {/* Strojni AI opt-out: 'noai/noimageai' (upostevajo ga nekateri AI scraperji)
+            in 'tdm-reservation=1' = pridrzek pravice do besedilnega/podatkovnega
+            rudarjenja po cl. 4 DSM direktive (EU), pravno pomemben opt-out za ucenje AI.
+            Ne dodaja 'noindex' -> navadni iskalniki + AI-iskalni boti nas se najdejo. */}
+        <meta name="robots" content="noai, noimageai" />
+        <meta name="tdm-reservation" content="1" />
+        <meta name="tdm-policy" content="https://pinart.si/ai-politika" />
+        <meta name="copyright" content="© Pinart d.o.o. — brez AI treninga brez licence / no AI training without a licence" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -147,6 +156,7 @@ export default async function LocaleLayout({
           <PageTransition />
           <CookieBanner />
           <GoogleAnalytics />
+          <ContentProtect />
         </NextIntlClientProvider>
       </body>
     </html>

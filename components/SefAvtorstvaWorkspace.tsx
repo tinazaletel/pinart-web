@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ShieldCheck, UploadSimple, Copy, Check, Trash, DownloadSimple, MagnifyingGlass, LockKey, ArrowSquareOut } from '@phosphor-icons/react';
+import { ShieldCheck, UploadSimple, Copy, Check, Trash, DownloadSimple, MagnifyingGlass, LockKey, ArrowSquareOut, Fingerprint, FloppyDisk, CloudArrowUp } from '@phosphor-icons/react';
 import { usePredogled } from '@/lib/predogled';
 
 /* SEF AVTORSTVA (MVP) — nespremenljiv zapis DOKAZA o avtorstvu/datumu nastanka.
@@ -65,10 +65,12 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
   const [preverjeno, setPreverjeno] = useState<null | { najden: Zapis | null; ime: string }>(null);
   const [iskanje, setIskanje] = useState('');
   const [filterKat, setFilterKat] = useState('');
+  const [stran, setStran] = useState(1);
   const [nacin] = usePredogled();
   const preverjRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setZapisi(preberi()); }, []);
+  useEffect(() => { setStran(1); }, [iskanje, filterKat, nacin]);
 
   const izberiDatoteko = (f: File | null) => {
     setDatoteka(f);
@@ -150,12 +152,39 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
     (!filterKat || z.kategorija === filterKat) &&
     (!q || [z.naslov, z.datoteka, z.orodje, z.kategorija, z.opombe].some(s => (s || '').toLowerCase().includes(q)))
   );
+  /* Paginacija: 10 na stran; pager se pokaže šele, ko je zapisov več. */
+  const NA_STRAN = 10;
+  const strani = Math.max(1, Math.ceil(vidni.length / NA_STRAN));
+  const stranVar = Math.min(stran, strani);
+  const straniVidni = vidni.slice((stranVar - 1) * NA_STRAN, stranVar * NA_STRAN);
 
   return (
     <div className="sef">
       <p className="sef-uvod">
         {L('Zabeleži ', 'Record ')}<b>{L('kdaj in s čim', 'when and with what')}</b>{L(' si nekaj ustvaril. Sef izračuna kriptografski prstni odtis (SHA-256) tvoje datoteke in trajno shrani datum — tako imaš dokaz o obstoju dela na določen dan (npr. ', ' you created something. The vault computes a cryptographic fingerprint (SHA-256) of your file and stores the date — so you have proof the work existed on a given day (e.g. ')}<em>{L('preden ga je AI prerisal', 'before an AI redrew it')}</em>{L(').', ').')}
       </p>
+
+      {/* Kako deluje — 3 ključne razlage (kaj je odtis, obdrži original, oblak) */}
+      <div className="sef-kako">
+        <p className="sef-kako-glava">{L('Kako deluje', 'How it works')}</p>
+        <div className="sef-kako-mreza">
+          <div className="sef-kako-kartica">
+            <span className="sef-kako-ikona"><Fingerprint size={20} weight="regular" /></span>
+            <h3>{L('Prstni odtis', 'Fingerprint')}</h3>
+            <p>{L('SHA-256 je »digitalna DNK« datoteke — koda, ki se ob najmanjši spremembi popolnoma spremeni. Vsebine iz nje ni mogoče razbrati, ujemanje pa dokažeš.', 'SHA-256 is the file’s “digital DNA” — a code that changes completely on the smallest edit. The content can’t be read from it, but you can prove a match.')}</p>
+          </div>
+          <div className="sef-kako-kartica">
+            <span className="sef-kako-ikona"><FloppyDisk size={20} weight="regular" /></span>
+            <h3>{L('Original obdrži', 'Keep the original')}</h3>
+            <p>{L('Sef hrani dokaz (odtis + datum), ne nadomešča tvoje kopije. Izvirnik vedno ohrani na svojem računalniku.', 'The vault stores the proof (fingerprint + date); it doesn’t replace your copy. Always keep the original on your own computer.')}</p>
+          </div>
+          <div className="sef-kako-kartica">
+            <span className="sef-kako-ikona"><CloudArrowUp size={20} weight="regular" /></span>
+            <h3>{L('Oblačni trezor', 'Cloud vault')}</h3>
+            <p>{L('Kmalu: datoteko shrani pri nas — varneje, če izgubiš kopijo. A noben sistem ni brez napak, zato obdrži tudi svojo varnostno kopijo.', 'Soon: stores your file with us — safer if you lose your copy. No system is flawless, so keep your own backup too.')}</p>
+          </div>
+        </div>
+      </div>
 
       <div className="sef-mreza">
       {/* NALOŽI / ZAŠČITI (levi stolpec) */}
@@ -261,7 +290,7 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
                     <th aria-hidden />
                   </tr></thead>
                   <tbody>
-                    {vidni.map(z => (
+                    {straniVidni.map(z => (
                       <tr key={z.id}>
                         <td className="sef-td-delo"><strong>{z.naslov}</strong><small>{z.datoteka}{z.posnetekIme ? ' · +screenshot' : ''}</small></td>
                         <td>{z.kategorija ? <span className="sef-znacka">{z.kategorija}</span> : <span className="sef-crtica">—</span>}</td>
@@ -281,12 +310,32 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
                   </tbody>
                 </table>
               </div>}
+        {strani > 1 && (
+          <div className="sef-pager">
+            <button type="button" disabled={stranVar <= 1} onClick={() => setStran(stranVar - 1)}>{L('‹ Prejšnja', '‹ Prev')}</button>
+            <div className="sef-pager-st">
+              {Array.from({ length: strani }, (_, i) => i + 1).map(n => (
+                <button type="button" key={n} className={n === stranVar ? 'on' : ''} onClick={() => setStran(n)}>{n}</button>
+              ))}
+            </div>
+            <button type="button" disabled={stranVar >= strani} onClick={() => setStran(stranVar + 1)}>{L('Naslednja ›', 'Next ›')}</button>
+          </div>
+        )}
       </section>
 
       <style jsx>{`
         .sef { --line: rgba(17,17,17,.1); max-width: 46rem; margin: 0 auto; padding: .5rem 0 4rem; font-family: var(--font-sans), system-ui, sans-serif; color: var(--ink); }
         .sef-uvod { font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.8); margin: 0 0 1.6rem; }
         .sef-uvod b { font-weight: 650; } .sef-uvod em { font-style: italic; color: var(--accent); font-weight: 600; }
+        .sef-kako { margin: 0 0 2.2rem; }
+        .sef-kako-glava { font-size: .7rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin: 0 0 .9rem; }
+        .sef-kako-mreza { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        @media (max-width: 700px) { .sef-kako-mreza { grid-template-columns: 1fr; gap: .7rem; } }
+        .sef-kako-kartica { border: 1px solid var(--line); border-radius: 16px; padding: 1.15rem 1.2rem; background: rgba(255,255,255,.55); }
+        .sef-kako-ikona { display: inline-grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 11px; background: oklch(95% .04 297); margin-bottom: .7rem; }
+        .sef-kako-ikona :global(svg) { color: var(--accent); }
+        .sef-kako-kartica h3 { font-size: .92rem; font-weight: 650; margin: 0 0 .3rem; color: var(--ink); }
+        .sef-kako-kartica p { font-size: .82rem; line-height: 1.5; color: rgba(17,17,17,.66); margin: 0; }
         .sef-kartica { border: 1px solid var(--line); border-radius: 18px; padding: 1.7rem; margin-bottom: 2rem; background: rgba(255,255,255,.55); }
         /* Desktop: 2 stolpca — levo »Zaščiti delo«, desno »Preveri« + »Za dokončno registracijo«. Tabela je spodaj (polna širina). */
         .sef-mreza { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.3rem; align-items: start; margin-bottom: 2rem; }
@@ -349,6 +398,12 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         .sef-td-akcije button { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: rgba(17,17,17,.6); cursor: pointer; margin-left: .35rem; transition: background .15s, border-color .15s, color .15s; }
         .sef-td-akcije button:hover { color: var(--accent); border-color: var(--accent); }
         .sef-td-akcije .sef-brisi:hover { color: oklch(50% .16 25); border-color: oklch(70% .15 25); background: oklch(97% .03 25); }
+        .sef-pager { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .5rem; margin-top: 1.4rem; }
+        .sef-pager-st { display: flex; gap: .3rem; }
+        .sef-pager button { font-family: inherit; font-size: .82rem; font-weight: 600; color: rgba(17,17,17,.66); background: #fff; border: 1px solid var(--line); border-radius: 9px; min-width: 2rem; height: 2rem; padding: 0 .6rem; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+        .sef-pager button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+        .sef-pager button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+        .sef-pager button:disabled { opacity: .4; cursor: not-allowed; }
         .sef-registracija { background: oklch(97% .02 297 / .5); }
         .sef-linki { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 1rem; }
         .sef-linki a { display: inline-flex; align-items: center; gap: .3rem; font-size: .82rem; font-weight: 600; color: var(--ink); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: .42rem .8rem; transition: border-color .15s, background .15s; }

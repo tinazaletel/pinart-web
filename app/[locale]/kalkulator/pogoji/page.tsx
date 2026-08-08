@@ -4,15 +4,16 @@ import { localePath } from '@/i18n/routing';
 import NazajLink from '@/components/NazajLink';
 
 export const metadata: Metadata = {
-  title: 'Pinart kalkulator: pogoji uporabe',
-  description: 'Pogoji uporabe in varstvo podatkov za brezplačni Pinart kalkulator cen za kreativce.',
+  title: 'Pinart Flow: pogoji uporabe',
+  description: 'Pogoji uporabe in varstvo podatkov za platformo Pinart Flow ter brezplačni kalkulator cen za kreativce.',
   robots: { index: false },
 };
 
-/* Pogoji uporabe kalkulatorja — standardni osnutek; pred resno javno
+/* Pogoji uporabe Pinart Flow — standardni osnutek; pred resno javno
    kampanjo naj ga pregleda pravnik. Vsebinsko pokriva: informativnost
-   izracunov, odgovornost, DDV pridrzek, zasebnost (leadi + anonimne
-   cene + localStorage), avtorstvo orodja in spremembe storitve. */
+   izracunov, odgovornost, DDV pridrzek, narocnino in placilo, uporabniski
+   racun, oblacno shranjevanje (Supabase), komunikacije (Resend), Sef
+   avtorstva, zasebnost, podobdelovalce, avtorstvo orodja in spremembe. */
 export default async function KalkulatorPogojiPage({
   params,
 }: {
@@ -24,6 +25,7 @@ export default async function KalkulatorPogojiPage({
   const S: React.CSSProperties = { marginTop: '2.6rem' };
   const H: React.CSSProperties = { fontSize: '.78rem', fontWeight: 600, letterSpacing: '.18em', textTransform: 'uppercase', marginBottom: '.7rem' };
   const P: React.CSSProperties = { fontSize: '.95rem', lineHeight: 1.75, color: 'rgba(17,17,17,.8)', margin: '0 0 .8rem' };
+  const OSNUTEK: React.CSSProperties = { ...P, padding: '.8rem 1rem', border: '1px solid rgba(178,84,118,.4)', borderRadius: '.75rem', fontWeight: 600 };
 
   return (
     <main style={{ minHeight: '100dvh' }}>
@@ -32,15 +34,17 @@ export default async function KalkulatorPogojiPage({
             dalo priti sem, nazaj pa samo z gumbom brskalnika. */}
         <NazajLink />
         <p style={{ marginTop: '1.4rem', fontSize: '.72rem', fontWeight: 600, letterSpacing: '.24em', textTransform: 'uppercase', color: 'rgba(17,17,17,.72)' }}>
-          Pinart kalkulator
+          Pinart Flow
         </p>
         <h1 style={{ fontFamily: 'var(--font-serif), Didot, serif', fontWeight: 500, fontSize: 'clamp(2.2rem, 7vw, 3.6rem)', lineHeight: 1, letterSpacing: '-.01em', margin: '.6rem 0 1rem' }}>
           Pogoji uporabe
         </h1>
         <p style={P}>
-          Pinart kalkulator je brezplačno orodje studia Pinart (v nadaljevanju: ponudnik),
-          namenjeno kreativcem za informativni izračun cen njihovih storitev.
-          Z uporabo orodja se strinjaš s temi pogoji.
+          Pinart Flow je platforma družbe <strong>Pinart d.o.o.</strong>, Mladinska ulica 63,
+          1000 Ljubljana (v nadaljevanju: ponudnik), namenjena kreativcem za izračun poštenih
+          cen, pripravo ponudb, pogodb in računov ter vodenje strank in projektov. Brezplačni
+          kalkulator cen je del platforme in deluje tudi brez prijave. Z uporabo platforme ali
+          orodij se strinjaš s temi pogoji.
         </p>
 
         <section style={S}>
@@ -74,13 +78,25 @@ export default async function KalkulatorPogojiPage({
         </section>
 
         <section style={S}>
-          <h2 style={H}>2a. Naročnina in spremembe cen</h2>
+          <h2 style={H}>2a. Naročnina in plačilo</h2>
           <p style={P}>
-            Kalkulator poštenih cen je in ostane brezplačen. Za plačljive pakete (Premium, Pro)
-            veljajo cene, objavljene na strani ob naročilu. <strong>Cene naročnine lahko kadarkoli
-            spremenimo, tudi zvišamo.</strong> Spremembo objavimo vnaprej; začne veljati ob naslednjem
-            obračunskem obdobju. Že plačano obdobje ostane po ceni ob nakupu. Naročnino lahko kadarkoli
-            odpoveš in velja do konca plačanega obdobja.
+            Kalkulator poštenih cen je in ostane brezplačen. Za dostop do plačljivih paketov
+            (Premium, Pro) velja naročnina po cenah, objavljenih na strani ob nakupu.
+            Naročnina se obračunava vnaprej za izbrano obdobje (mesečno ali letno) in se
+            samodejno podaljšuje, dokler je ne odpoveš.
+          </p>
+          <p style={P}>
+            Plačila obdeluje <strong>zunanji pooblaščeni ponudnik plačil (Merchant of Record)</strong>,
+            ki v svojem imenu izda račun ter obračuna in poravna morebitni DDV glede na tvojo
+            državo. Ponudnik plačil je za ta namen samostojni upravljavec plačilnih podatkov;
+            ponudnik (Pinart d.o.o.) ne prejme in ne hrani celotne številke plačilne kartice.
+          </p>
+          <p style={P}>
+            <strong>Cene naročnine lahko kadarkoli spremenimo, tudi zvišamo.</strong> Spremembo
+            objavimo vnaprej; začne veljati ob naslednjem obračunskem obdobju. Že plačano obdobje
+            ostane po ceni ob nakupu. Naročnino lahko kadarkoli odpoveš in velja do konca
+            plačanega obdobja; sorazmerno vračilo za že začeto obdobje ni zagotovljeno, razen
+            če to zahteva prisilni predpis.
           </p>
         </section>
 
@@ -95,11 +111,67 @@ export default async function KalkulatorPogojiPage({
         </section>
 
         <section style={S}>
-          <h2 style={H}>4. Tvoji podatki v brskalniku</h2>
+          <h2 style={H}>4. Uporabniški račun in dostop</h2>
           <p style={P}>
-            Nastavitve orodja (tvoje cene, postavke, podatki za glavo ponudbe, profili)
-            se shranjujejo izključno lokalno v tvojem brskalniku (localStorage) in se
-            ne pošiljajo ponudniku. Izbrišeš jih z brisanjem podatkov brskalnika.
+            Za shranjevanje dokumentov in dostop do platforme ustvariš račun (npr. s prijavo
+            prek Googla). Za prijavo prejmemo tvoj e-naslov in ime iz izbranega ponudnika
+            prijave. Odgovarjaš za dejavnost na svojem računu in za varovanje dostopa. V času
+            zaprte bete je dostop mogoč na podlagi povabila; ponudnik lahko dostop, pakete ali
+            posamezne funkcije kadarkoli spremeni, omeji ali ukine.
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>4a. Kje se hranijo tvoji podatki</h2>
+          <p style={P}>
+            <strong>Brez prijave</strong> (npr. brezplačni kalkulator) se tvoje nastavitve, cene
+            in osnutki shranjujejo izključno lokalno v tvojem brskalniku (localStorage) in se ne
+            pošiljajo ponudniku; izbrišeš jih z brisanjem podatkov brskalnika.
+          </p>
+          <p style={P}>
+            <strong>Ko si prijavljen</strong>, se tvoji poslovni podatki (ponudbe, pogodbe,
+            računi, stranke, projekti, stroški, naloge in podobno) shranjujejo v oblačni bazi
+            ponudnika (Supabase, strežniki v EU). Podatki so vezani na tvoj račun in zasebni —
+            dostop je omejen s pravili na ravni baze. Ponudnik jih ne prodaja in ne razkriva
+            tretjim, razen podobdelovalcem, potrebnim za delovanje storitve (točka 8a), ali kadar
+            to zahteva zakon. Izbris računa ali podatkov lahko kadarkoli zahtevaš na tina@pinart.si.
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>4b. Komunikacije</h2>
+          <p style={P}>
+            Če uporabljaš funkcije komunikacije (projektni klepet, projektna pošta), se vsebina
+            sporočil shranjuje v oblačni bazi ponudnika, da je dostopna tebi in osebam, s katerimi
+            deliš projekt. Odhodna e-pošta se pošilja prek zunanjega ponudnika e-pošte (Resend).
+            Za vsebino svojih sporočil odgovarjaš sam.
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>4c. Sef avtorstva</h2>
+          <p style={OSNUTEK}>OSNUTEK — pravno mora potrditi odvetnik.</p>
+          <p style={P}>
+            Sef avtorstva izračuna kriptografski odtis (SHA-256) tvoje datoteke in ga skupaj z
+            datumom ter podatki o delu zabeleži kot dokaz o obstoju in prioriteti dela. Odtis je
+            enolični »prstni odtis« datoteke; iz njega ni mogoče rekonstruirati vsebine. Za
+            neodvisen časovni žig lahko uporabimo storitev OpenTimestamps, ki v javno verigo (Bitcoin)
+            zapiše <strong>samo odtis, nikoli datoteke</strong>. Če se odločiš za oblačni trezor
+            (plačljivo), se izvirna datoteka shrani v zasebno oblačno shrambo ponudnika (EU).
+          </p>
+          <p style={P}>
+            <strong>Iskrena meja:</strong> Sef dokazuje, da je določena datoteka obstajala na
+            določen dan (obstoj in prioriteta), <strong>ne pa absolutnega avtorstva</strong> ali
+            vizualne izvirnosti sloga. Ne nadomešča uradne registracije pravic (npr. pri pristojnem
+            uradu), ampak jo dopolnjuje. Ponudnik ne jamči pravne veljave dokaza v posameznem sporu.
+          </p>
+          <p style={{ ...P, fontWeight: 600 }}>
+            <strong>Original obdrži pri sebi.</strong> Sef je varnostna kopija in dokazilo, ne
+            edini izvod. Vedno ohrani izvirno datoteko na svoji napravi. Oblačni trezor zmanjša
+            tveganje izgube, a noben sistem ni brez napak: ponudnik ne jamči neprekinjenega
+            delovanja, razpoložljivosti ali trajne hrambe in <strong>ne odgovarja za izgubo,
+            poškodbo ali nedostopnost naloženih datotek</strong> (glejte tudi točko 9). Priporočamo,
+            da pomembna dela dodatno hraniš na lastni varnostni kopiji.
           </p>
         </section>
 
@@ -111,8 +183,10 @@ export default async function KalkulatorPogojiPage({
             (znamka ali projekt), izračunan znesek izvedbe in avtorskih pravic ter
             valuto. Zapis ne vsebuje imena, e-naslova, IP-naslova ali drugih osebnih
             podatkov in ga ni mogoče povezati s teboj. Podatki se shranijo v
-            ponudnikovo preglednico (Google Sheets) in se uporabijo izključno za
-            skupno statistiko cen na trgu za kreativce. Ko bo baza dovolj velika, bodo zbirni podatki (npr. mediane cen po storitvah in izkušnjah) na voljo uporabnikom orodja — vsak izračun torej prispeva k pregledu trga, ki ga kreativci danes nimamo.
+            ponudnikovo bazo in se uporabijo izključno za skupno statistiko cen na trgu
+            za kreativce. Ko bo baza dovolj velika, bodo zbirni podatki (npr. mediane cen po
+            storitvah in izkušnjah) na voljo uporabnikom orodja — vsak izračun torej prispeva
+            k pregledu trga, ki ga kreativci danes nimajo.
           </p>
         </section>
 
@@ -128,9 +202,7 @@ export default async function KalkulatorPogojiPage({
 
         <section style={S}>
           <h2 style={H}>7. Umetna inteligenca (Pupa) in varnost podatkov</h2>
-          <p style={{ ...P, padding: '.8rem 1rem', border: '1px solid rgba(178,84,118,.4)', borderRadius: '.75rem', fontWeight: 600 }}>
-            OSNUTEK — pravno mora potrditi odvetnik.
-          </p>
+          <p style={OSNUTEK}>OSNUTEK — pravno mora potrditi odvetnik.</p>
           <p style={P}>
             Pupa je izbirna pomočnica, ki deluje strežniško prek Anthropic Claude API,
             zato API ključ ni izpostavljen v brskalniku. Anthropic prejme samo vsebino,
@@ -160,18 +232,84 @@ export default async function KalkulatorPogojiPage({
           <h2 style={H}>8. Intelektualna lastnina</h2>
           <p style={P}>
             Orodje, njegova zasnova in vsebine so last ponudnika. Besedila ponudb,
-            ki jih ustvariš z orodjem, lahko prosto uporabljaš za svoje poslovanje.
+            pogodb in računov, ki jih ustvariš z orodjem, lahko prosto uporabljaš za
+            svoje poslovanje. Avtorske pravice na delih, ki jih naložiš v Sef ali
+            ustvariš sam, ostanejo tvoje.
           </p>
         </section>
 
         <section style={S}>
-          <h2 style={H}>9. Spremembe</h2>
+          <h2 style={H}>8a. Podobdelovalci</h2>
+          <p style={P}>
+            Za delovanje platforme uporabljamo zaupanja vredne podobdelovalce, ki podatke
+            obdelujejo izključno po naših navodilih:
+          </p>
+          <p style={{ ...P, color: 'rgba(17,17,17,.72)' }}>
+            — <strong>Supabase</strong> — oblačna baza in shramba (strežniki v EU)<br />
+            — <strong>Vercel</strong> — gostovanje in dostava spletne aplikacije<br />
+            — <strong>Resend</strong> — pošiljanje e-pošte<br />
+            — <strong>Google</strong> — prijava z Google računom (OAuth)<br />
+            — <strong>Anthropic</strong> — AI asistentka Pupa (samo ob uporabi)<br />
+            — <strong>OpenTimestamps / Bitcoin</strong> — neodvisni časovni žig sefa (prejme samo odtis)<br />
+            — pooblaščeni ponudnik plačil (Merchant of Record) — obdelava plačil naročnine
+          </p>
+          <p style={P}>
+            Aktualni seznam je na voljo na zahtevo na tina@pinart.si.
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>9. Omejitev odgovornosti</h2>
+          <p style={P}>
+            Ponudnik odgovarja le za škodo, povzročeno naklepno ali iz hude malomarnosti.
+            V največjem obsegu, ki ga dopušča pravo, ponudnik ne odgovarja za posredno,
+            posledično ali nepremoženjsko škodo (npr. izgubljen dobiček, izguba podatkov ali
+            posla). Skupna odgovornost ponudnika v zvezi s plačljivo storitvijo je omejena na
+            znesek, ki si ga zanjo plačal v zadnjih 12 mesecih. Nič v teh pogojih ne izključuje
+            odgovornosti, ki je po prisilnih predpisih ni mogoče izključiti (npr. za telesne
+            poškodbe ali pravice potrošnikov).
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>10. Odpoved in prenehanje</h2>
+          <p style={P}>
+            Uporabo lahko kadarkoli prenehaš in svoj račun izbrišeš. Ponudnik lahko dostop ali
+            račun začasno omeji ali ukine ob kršitvi teh pogojev, zlorabi ali zakonski zahtevi;
+            kadar je to razumno mogoče, te o tem predhodno obvesti. Ob prenehanju preneha pravica
+            do uporabe storitve; svoje podatke lahko pred izbrisom izvoziš. Določbe o odgovornosti,
+            intelektualni lastnini in reševanju sporov veljajo tudi po prenehanju.
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>11. Veljavno pravo in pristojnost</h2>
+          <p style={P}>
+            Za te pogoje in uporabo storitve velja pravo Republike Slovenije, brez pravil o
+            koliziji zakonov. Za spore je pristojno stvarno pristojno sodišče v Ljubljani, razen
+            če prisilni predpisi (npr. varstvo potrošnikov) določajo drugače. Morebitne spore
+            skušamo najprej rešiti sporazumno; kot potrošnik se lahko obrneš tudi na platformo EU
+            za spletno reševanje sporov (ec.europa.eu/consumers/odr).
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>12. Jezik</h2>
+          <p style={P}>
+            Ti pogoji so izvorno v slovenščini. Morebitni prevodi so zgolj v pomoč; v primeru
+            razhajanja prevlada slovenska različica.
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>13. Spremembe</h2>
           <p style={P}>
             Ponudnik lahko orodje in te pogoje kadarkoli spremeni, omeji ali ukine.
-            Velja različica pogojev, objavljena na tej strani.
+            Velja različica pogojev, objavljena na tej strani. O bistvenih spremembah te
+            obvestimo vnaprej.
           </p>
           <p style={{ ...P, color: 'rgba(17,17,17,.6)', fontSize: '.85rem' }}>
-            Zadnja sprememba: 7. 7. 2026 · Kontakt: tina@pinart.si
+            Zadnja sprememba: 7. 8. 2026 · Kontakt: tina@pinart.si
           </p>
         </section>
 

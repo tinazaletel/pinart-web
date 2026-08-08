@@ -18,19 +18,31 @@ const sl = {
     },
     {
       heading: '2. Kateri podatki se zbirajo',
-      text: `Prek kontaktnega obrazca na spletni strani zbiramo:\n– ime in priimek\n– e-poštni naslov\n– vsebino sporočila\n\nPodatki se zbirajo izključno na vašo pobudo, ko nam pišete.`,
+      text: `Glede na to, kako uporabljate storitev, obdelujemo:\n\n– Kontaktni obrazec: ime in priimek, e-naslov, vsebino sporočila (na vašo pobudo).\n– Uporabniški račun: e-naslov in ime, ki ju prejmemo od ponudnika prijave (npr. Google) ob prijavi.\n– Poslovni podatki v aplikaciji: ponudbe, pogodbe, računi, stranke, projekti, stroški in naloge, ki jih vnesete med uporabo (shranjeni na vaš račun).\n– Komunikacije: vsebina projektnega klepeta in projektne pošte, če te funkcije uporabljate.\n– Sef avtorstva: ime datoteke, kriptografski odtis (SHA-256), datum in podatki o delu; ob plačljivem trezorju tudi sama datoteka.\n– Anonimna statistika cen: brez osebnih podatkov in je ni mogoče povezati z vami (glejte spodaj).`,
     },
     {
       heading: '3. Namen in pravna podlaga obdelave',
-      text: `Podatke obdelujemo z namenom odgovora na vaše povpraševanje in morebitne nadaljnje poslovne komunikacije. Pravna podlaga je vaše soglasje (člen 6(1)(a) GDPR) oz. zakoniti interes (člen 6(1)(f) GDPR).`,
+      text: `Podatke obdelujemo za: (a) odgovor na povpraševanje in poslovno komunikacijo; (b) zagotavljanje in delovanje platforme (račun, shranjevanje dokumentov, komunikacije, sef); (c) obračun naročnine; (d) izboljševanje storitve.\n\nPravne podlage: izvajanje pogodbe oz. ukrepi pred sklenitvijo (člen 6(1)(b) GDPR) za delovanje platforme in naročnino; vaše soglasje (člen 6(1)(a) GDPR) npr. za obveščanje; zakoniti interes (člen 6(1)(f) GDPR) za varnost in izboljšave.`,
     },
     {
       heading: '4. Hramba podatkov',
-      text: `Podatke hranimo le toliko časa, kot je potrebno za uresničitev namena, za katerega so bili zbrani, oz. dokler ne zahtevate izbrisa.`,
+      text: `Podatke hranimo le toliko časa, kot je potrebno za namen obdelave, oz. dokler traja vaš račun. Po izbrisu računa ali na vašo zahtevo podatke izbrišemo, razen kadar jih moramo hraniti po zakonu (npr. računovodski predpisi za izdane račune).`,
     },
     {
-      heading: '5. Posredovanje tretjim osebam',
-      text: `Vaših podatkov ne prodajamo, ne dajemo v najem in jih ne posredujemo tretjim osebam, razen kadar to zahteva zakon ali kadar je to nujno za izvedbo storitve (npr. e-poštni ponudnik).`,
+      heading: '5. Kje se podatki hranijo',
+      text: `Poslovni podatki prijavljenih uporabnikov se hranijo v oblačni bazi in shrambi (Supabase, strežniki v Evropski uniji). Podatki so vezani na vaš račun in zaščiteni s pravili dostopa na ravni baze, tako da do njih dostopate le vi in osebe, s katerimi vsebino izrecno delite.`,
+    },
+    {
+      heading: '5a. Podobdelovalci',
+      text: `Vaših podatkov ne prodajamo in ne dajemo v najem. Za delovanje storitve jih obdelujejo naslednji podobdelovalci, izključno po naših navodilih:\n\n– Supabase — oblačna baza in shramba (EU)\n– Vercel — gostovanje in dostava aplikacije\n– Resend — pošiljanje e-pošte\n– Google — prijava z Google računom (OAuth)\n– Anthropic — AI asistentka Pupa (samo ob uporabi; glejte točko 9)\n– OpenTimestamps / Bitcoin — neodvisni časovni žig sefa (prejme samo odtis, nikoli datoteke)\n– pooblaščeni ponudnik plačil (Merchant of Record) — obdelava plačil naročnine\n\nPodatke posredujemo tretjim tudi, kadar to zahteva zakon. Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si.`,
+    },
+    {
+      heading: '5b. Sef avtorstva',
+      text: `Sef avtorstva shrani kriptografski odtis (SHA-256) vašega dela, datum in podatke o delu (npr. ime datoteke, orodje). Odtis je enolični »prstni odtis«; iz njega ni mogoče rekonstruirati vsebine. Za neodvisen časovni žig se lahko uporabi storitev OpenTimestamps, ki v javno verigo (Bitcoin) zapiše izključno odtis — vaša datoteka je nikoli ne zapusti.\n\nČe izberete plačljivi oblačni trezor, se izvirna datoteka (in morebitne izvorne datoteke) shrani v zasebni oblačni shrambi (Supabase, EU), dostopni le vam. Sef dokazuje obstoj in prioriteto dela na določen dan, ne pa absolutnega avtorstva, in ni nadomestilo za uradno registracijo pravic.`,
+    },
+    {
+      heading: '5c. Varnost',
+      text: `Podatke varujemo s tehničnimi in organizacijskimi ukrepi: šifriran prenos (TLS), dostop na ravni baze (vsak uporabnik vidi le svoje podatke) in prijava prek zaupanja vrednega ponudnika (Google OAuth). Noben sistem ni popolnoma neprebojen; za varovanje dostopa do svojega računa (npr. naprave in prijave) odgovarjate tudi sami.`,
     },
     {
       heading: '6. Google Analytics',
@@ -73,19 +85,31 @@ const en = {
     },
     {
       heading: '2. Data We Collect',
-      text: `Through the contact form on this website we collect:\n– first and last name\n– email address\n– message content\n\nData is collected only at your initiative when you reach out to us.`,
+      text: `Depending on how you use the service, we process:\n\n– Contact form: first and last name, email, message content (at your initiative).\n– User account: email and name received from your sign-in provider (e.g. Google) when you log in.\n– Business data in the app: proposals, contracts, invoices, clients, projects, expenses and tasks you enter while using the service (stored to your account).\n– Communications: the content of project chat and project mail, if you use those features.\n– Authorship vault: file name, cryptographic fingerprint (SHA-256), date and work details; and, with the paid vault, the file itself.\n– Anonymous pricing statistics: no personal data, cannot be linked to you (see below).`,
     },
     {
       heading: '3. Purpose and Legal Basis',
-      text: `We process your data for the purpose of responding to your inquiry and any subsequent business communication. The legal basis is your consent (Art. 6(1)(a) GDPR) or legitimate interest (Art. 6(1)(f) GDPR).`,
+      text: `We process your data to: (a) respond to inquiries and conduct business communication; (b) provide and operate the platform (account, document storage, communications, vault); (c) bill subscriptions; (d) improve the service.\n\nLegal bases: performance of a contract or pre-contractual steps (Art. 6(1)(b) GDPR) for platform operation and subscriptions; your consent (Art. 6(1)(a) GDPR) e.g. for updates; legitimate interest (Art. 6(1)(f) GDPR) for security and improvements.`,
     },
     {
       heading: '4. Data Retention',
-      text: `We retain your data only for as long as necessary to fulfil the purpose for which it was collected, or until you request deletion.`,
+      text: `We retain your data only for as long as necessary for the purpose of processing, or for as long as your account exists. After account deletion or on your request we delete your data, except where we must retain it by law (e.g. accounting rules for issued invoices).`,
     },
     {
-      heading: '5. Third-Party Sharing',
-      text: `We do not sell, rent, or share your data with third parties, except where required by law or strictly necessary for service delivery (e.g. email provider).`,
+      heading: '5. Where Your Data Is Stored',
+      text: `Business data of logged-in users is stored in a cloud database and storage (Supabase, servers in the European Union). Data is tied to your account and protected by database-level access rules, so only you and the people you explicitly share content with can access it.`,
+    },
+    {
+      heading: '5a. Subprocessors',
+      text: `We do not sell or rent your data. To operate the service it is processed by the following subprocessors, strictly on our instructions:\n\n– Supabase — cloud database and storage (EU)\n– Vercel — hosting and application delivery\n– Resend — sending email\n– Google — sign-in with a Google account (OAuth)\n– Anthropic — the AI assistant Pupa (only when used; see section 9)\n– OpenTimestamps / Bitcoin — independent timestamp for the vault (receives only the fingerprint, never the file)\n– an authorised payment provider (Merchant of Record) — subscription payment processing\n\nWe also share data with third parties where required by law. The current list of subprocessors is available on request at tina@pinart.si.`,
+    },
+    {
+      heading: '5b. Authorship Vault',
+      text: `The Authorship vault stores a cryptographic fingerprint (SHA-256) of your work, a date and work details (e.g. file name, tool). The fingerprint is a unique "fingerprint"; the content cannot be reconstructed from it. For an independent timestamp we may use OpenTimestamps, which writes only the fingerprint to a public chain (Bitcoin) — your file never leaves our system.\n\nIf you choose the paid cloud vault, the original file (and any source files) is stored in private cloud storage (Supabase, EU) accessible only to you. The vault proves the existence and priority of a work on a given date, not absolute authorship, and is not a substitute for formal rights registration.`,
+    },
+    {
+      heading: '5c. Security',
+      text: `We protect your data with technical and organisational measures: encrypted transport (TLS), database-level access control (each user sees only their own data), and sign-in through a trusted provider (Google OAuth). No system is completely impenetrable; you are also responsible for protecting access to your account (e.g. your device and login).`,
     },
     {
       heading: '6. Google Analytics',

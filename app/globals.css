@@ -1194,3 +1194,15 @@ html[data-cookie-consent] #cookie-banner { display: none !important; }
 @media (max-width: 980px) {
   .edge-right-ui[data-app] { display: none !important; }
 }
+
+/* Nezni deterrent proti kraji slik (site-wide, tudi pinart.si): onemogoci
+   vlecenje in izbor slik. Desni-klik "Shrani sliko" + dragstart lovi
+   components/ContentProtect.tsx. Le odvracilo (screenshot ostane mozen) —
+   prava obramba avtorstva = Sef + noai/TDM signal + pravni pogoji.
+   Izjema: elementi z .dovoli-sliko (npr. urejevalnik, kjer je vlecenje del UX). */
+img:not(.dovoli-sliko) {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
