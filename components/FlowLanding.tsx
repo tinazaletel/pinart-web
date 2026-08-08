@@ -46,7 +46,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const [heroIdx, setHeroIdx] = useState(0);
   useEffect(() => {
     if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const timer = window.setInterval(() => setHeroIdx(i => (i + 1) % heroTitles.length), 7000);
+    const timer = window.setInterval(() => setHeroIdx(i => (i + 1) % heroTitles.length), 4000);
     return () => window.clearInterval(timer);
   }, [heroTitles.length]);
 
