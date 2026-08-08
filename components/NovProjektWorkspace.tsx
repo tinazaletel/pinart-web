@@ -419,13 +419,13 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       @media (prefers-reduced-motion:reduce){.np-chat-bot,.np-chat-jaz,.np-chat-izbire,.np-chat-vnos{animation:none}}
       /* mehurcek bota: violet-mehka pika (isti "Pinart mehurcek" jezik kot ostali chat) + oblacek levo poravnan */
       .np-chat-bot{display:flex;max-width:94%}
-      .np-chat-bot .np-chat-mehur{position:relative;padding:.9rem 1.2rem .9rem 2.6rem;border-radius:18px;border-bottom-left-radius:6px;background:oklch(96% .022 300);border:1px solid color-mix(in oklch,var(--ink) 7%,transparent);font-size:.92rem;line-height:1.5}
+      .np-chat-bot .np-chat-mehur{position:relative;padding:.9rem 1.2rem .9rem 2.6rem;border-radius:18px;border-top-left-radius:6px;background:oklch(96% .012 297);border:none;font-size:.92rem;line-height:1.5}
       .np-chat-bot .np-chat-mehur::before{content:'';position:absolute;left:.85rem;top:1rem;width:1.2rem;height:1.2rem;border-radius:50%;background:radial-gradient(58% 48% at 30% 24%,rgba(255,255,255,.92),rgba(255,255,255,0) 62%),conic-gradient(from 210deg,#7C3AED,#EC4899,#F59E0B,#38BDF8,#7C3AED);box-shadow:0 2px 6px rgba(124,58,237,.28)}
       .np-chat-bot .np-chat-mehur b{display:block;font-weight:700;color:var(--ink)}
       .np-chat-bot .np-chat-mehur small{display:block;margin-top:.2rem;font-weight:400;font-size:.82rem;color:color-mix(in oklch,var(--ink) 62%,transparent)}
       /* moj odgovor: mint mehurcek, desno poravnan, klikljiv (odpre urejanje v mestu) */
       .np-chat-jaz{align-self:flex-end;max-width:94%}
-      .np-chat-mehur-ured{display:inline-flex;align-items:center;gap:.55rem;padding:.75rem 1.1rem;border-radius:18px;border-bottom-right-radius:6px;background:oklch(89% .05 165);border:1px solid color-mix(in oklch,var(--ink) 7%,transparent);color:var(--ink);font:inherit;font-size:.86rem;font-weight:600;text-align:left;cursor:pointer;transition:transform .15s,box-shadow .15s}
+      .np-chat-mehur-ured{display:inline-flex;align-items:center;gap:.55rem;padding:.75rem 1.1rem;border-radius:18px;border-top-right-radius:6px;background:oklch(90% .055 190);border:none;color:var(--ink);font:inherit;font-size:.86rem;font-weight:600;text-align:left;cursor:pointer;transition:transform .15s,box-shadow .15s}
       .np-chat-mehur-ured:hover{transform:translateY(-1px);box-shadow:0 7px 18px rgba(40,25,40,.13)}
       .np-chat-mehur-ured svg{opacity:.4;flex:none;transition:opacity .15s}
       .np-chat-mehur-ured:hover svg{opacity:.85}
