@@ -856,7 +856,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh{position:relative;min-height:100dvh;color:var(--ink);font-weight:400;overflow-x:clip}
 
         /* ozadje: papir + gradientna mreza + mehki blobi (kopija .rw-ozadje) */
-        .arh-ozadje{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background-color:#fff}
+        .arh-ozadje{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background-color:transparent}
         .arh-ozadje .arh-blob{position:absolute;width:min(60vw,760px);aspect-ratio:1;border-radius:50%;filter:blur(70px)}
         .arh-blob-roza{top:-16vh;left:-12vw;background:radial-gradient(circle, oklch(74% .18 300 / .55), transparent 68%);opacity:.12;animation:arhRoza 22s ease-in-out infinite}
         .arh-blob-modra{bottom:-22vh;right:-14vw;background:radial-gradient(circle, oklch(82% .15 162 / .55), transparent 68%);opacity:.1;animation:arhModra 25s ease-in-out infinite}

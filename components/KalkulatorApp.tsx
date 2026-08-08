@@ -5989,7 +5989,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* paper kapa cez vrh (notch/safe-area + morebiten pas nad glavo) da nic ne pogleda izpod */
         .cw::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: var(--paper); z-index: 31; pointer-events: none; }
         /* animirano ozadje: dva Tinina soft-gradient blob-a krozita in se krizata (fixed, z-index 0 — NIKOLI -1, Safari past) */
-        .cw-ozadje { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background-color: #fff; }
+        .cw-ozadje { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background-color: transparent; }
         .cw-ozadje .blob { position: absolute; width: min(60vw, 760px); aspect-ratio: 1; border-radius: 50%; will-change: transform; filter: blur(70px); }
         .cw-ozadje .blob-roza { top: -16vh; left: -12vw; background: radial-gradient(circle, oklch(74% .18 300 / .55), transparent 68%); opacity: .12; animation: blobRoza 22s ease-in-out infinite; }
         .cw-ozadje .blob-modra { bottom: -22vh; right: -14vw; background: radial-gradient(circle, oklch(82% .15 162 / .55), transparent 68%); opacity: .1; animation: blobModra 25s ease-in-out infinite; }
