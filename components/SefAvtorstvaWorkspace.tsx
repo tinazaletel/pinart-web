@@ -413,6 +413,8 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         .sef-linki a { display: inline-flex; align-items: center; gap: .3rem; font-size: .82rem; font-weight: 600; color: var(--ink); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: .42rem .8rem; transition: border-color .15s, background .15s; }
         .sef-linki a:hover { border-color: var(--accent); background: #fff; }
         .sef-opozorilo { font-size: .78rem; line-height: 1.55; color: rgba(17,17,17,.6); margin: 0; padding: .8rem .9rem; border-left: 2px solid var(--accent); background: rgba(255,255,255,.5); border-radius: 0 8px 8px 0; }
+        /* Enoten »Apple glass« videz na glavnih vsebinskih karticah */
+        .sef-kako-kartica, .sef-kartica:not(.sef-registracija) { background: rgba(255,255,255,.5) !important; backdrop-filter: blur(18px) saturate(1.35); -webkit-backdrop-filter: blur(18px) saturate(1.35); box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .05), inset 0 1px 0 rgba(255,255,255,.5); }
       `}</style>
     </div>
   );

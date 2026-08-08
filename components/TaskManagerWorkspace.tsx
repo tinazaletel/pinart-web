@@ -2110,6 +2110,9 @@ export default function TaskManagerWorkspace() {
           .tm-seed-sporocilo,.tm-demo-namig{grid-column:1/-1}
           .tm-x,.tm-kartica-x,.tm-cas-gumb,.tm-podopravilo-krog,.tm-podopravilo-dodeli-gumb,.tm-podopravilo-brisi,.tm-podrocje-plus{min-width:2.75rem;min-height:2.75rem}
         }
+
+        /* Enoten »Apple glass« videz na glavnih vsebinskih panelih (kanban stolpci) */
+        .tm-stolpec{background:rgba(255,255,255,.5) !important;backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);box-shadow:0 1px 2px oklch(30% .02 55 / .035),0 10px 26px oklch(30% .02 55 / .05),inset 0 1px 0 rgba(255,255,255,.5)}
       `}</style>
     </div>
   );
