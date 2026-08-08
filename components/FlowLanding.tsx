@@ -819,7 +819,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (prefers-reduced-motion: reduce) { .fl-sc-anim { animation: none; } }
 
         /* Predogledni mocki v prikazu */
-        .fl-mock { border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid rgba(17,17,17,.1); box-shadow: 0 24px 60px rgba(40,25,60,.18); }
+        /* Frosted glass mockup (moderno) — prosojno + backdrop-blur; lepo nad gradientnimi blobi. */
+        .fl-mock { border-radius: 16px; overflow: hidden; background: oklch(99% .006 297 / .66); backdrop-filter: blur(16px) saturate(1.25); -webkit-backdrop-filter: blur(16px) saturate(1.25); border: 1px solid rgba(255,255,255,.65); box-shadow: 0 24px 60px rgba(40,25,60,.18), inset 0 1px 0 rgba(255,255,255,.5); }
         .fl-mock-bar { display: flex; align-items: center; gap: .4rem; padding: .5rem .75rem; background: oklch(96% .008 87); border-bottom: 1px solid rgba(17,17,17,.07); }
         .fl-mock-bar i { width: .55rem; height: .55rem; border-radius: 50%; background: rgba(17,17,17,.18); }
         .fl-mock-bar small { margin-left: .5rem; font-size: .62rem; letter-spacing: .04em; color: rgba(17,17,17,.68); }
@@ -834,6 +835,21 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @keyframes flPupaDih { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
         @media (prefers-reduced-motion: reduce) { .fl-ava { animation: none; } }
         .fl-mockchip { position: absolute; right: 1.15rem; bottom: 1.15rem; display: inline-flex; align-items: center; gap: .4rem; padding: .5rem .72rem; border-radius: 12px; background: var(--ink); color: var(--paper); font-size: .74rem; font-weight: 700; box-shadow: 0 8px 20px rgba(40,25,60,.22); }
+        /* Samograditev: mehurčki priletijo eden za drugim, potem se nežno prezidajo (zanka = "watch it build"). */
+        @keyframes flMockBuild {
+          0% { opacity: 0; transform: translateY(10px) scale(.97); }
+          7% { opacity: 1; transform: none; }
+          86% { opacity: 1; transform: none; }
+          95% { opacity: 0; transform: translateY(-6px); }
+          100% { opacity: 0; transform: translateY(10px) scale(.97); }
+        }
+        .fl-mock-body > * { animation: flMockBuild 9.5s cubic-bezier(.22,1,.36,1) infinite backwards; }
+        .fl-mock-body > *:nth-child(1) { animation-delay: 0s; }
+        .fl-mock-body > *:nth-child(2) { animation-delay: .55s; }
+        .fl-mock-body > *:nth-child(3) { animation-delay: 1.1s; }
+        .fl-mock-body > *:nth-child(4) { animation-delay: 1.65s; }
+        .fl-mock-body > *:nth-child(5) { animation-delay: 2.2s; }
+        @media (prefers-reduced-motion: reduce) { .fl-mock-body > * { animation: none; } }
         .fl-doc { padding: 1.3rem 1.25rem; display: grid; gap: .45rem; align-content: start; min-height: 15.5rem; }
         .fl-doc-lp { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid rgba(17,17,17,.1); padding-bottom: .55rem; margin-bottom: .35rem; }
         .fl-doc-lp strong { font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.15rem; }
