@@ -164,9 +164,17 @@
 /* Mikro-animacija ob nalaganju notranjih strani: naslov + paneli se necno "zapeljejo" gor.
    Samo CSS transform/opacity (GPU), sprozi se ENKRAT ob mountu -> NE obremeni strani.
    Velja za vse strani, ki delijo ta shell (.workspace). reduced-motion izvzet. */
-@keyframes pwUvodGor { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes pwUvodGor { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 .topbar h1 { animation: pwUvodGor .5s cubic-bezier(.22, 1, .36, 1) both; }
-.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)) { animation: pwUvodGor .58s cubic-bezier(.22, 1, .36, 1) both; animation-delay: .08s; }
+/* Paneli (neposredni otroci .workspace) priletijo ENEDEN ZA DRUGIM (kaskada). topbar je 1. otrok
+   in ni animiran, a steje v nth-child, zato paneli zacnejo pri 2. */
+.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)) { animation: pwUvodGor .58s cubic-bezier(.22, 1, .36, 1) both; }
+.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)):nth-child(2) { animation-delay: .06s; }
+.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)):nth-child(3) { animation-delay: .14s; }
+.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)):nth-child(4) { animation-delay: .22s; }
+.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)):nth-child(5) { animation-delay: .3s; }
+.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)):nth-child(6) { animation-delay: .38s; }
+.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)):nth-child(n+7) { animation-delay: .44s; }
 @media (prefers-reduced-motion: reduce) {
   .topbar h1, .workspace > *:not(.topbar) { animation: none !important; }
 }
