@@ -990,9 +990,9 @@ const brezSumnikov = (s: string) =>
   s.toLowerCase().replace(/č/g, 'c').replace(/š/g, 's').replace(/ž/g, 'z');
 
 const PAKETI = [
-  { id: 'osnovni',     ime: 'Osnovni',     mult: 0.75, opis: 'ožji obseg, 1 krog popravkov, osnovni formati' },
-  { id: 'priporoceni', ime: 'Priporočeni', mult: 1,    opis: 'poln obseg, 2 kroga popravkov, vsi formati' },
-  { id: 'premium',     ime: 'Premium',     mult: 1.35, opis: 'razširjen obseg, 3 krogi popravkov, dodatna varianta, prednostni odziv' },
+  { id: 'osnovni',     ime: 'Osnovni',     imeEn: 'Basic',       mult: 0.75, opis: 'ožji obseg, 1 krog popravkov, osnovni formati',                                    opisEn: 'narrower scope, 1 revision round, basic formats' },
+  { id: 'priporoceni', ime: 'Priporočeni', imeEn: 'Recommended', mult: 1,    opis: 'poln obseg, 2 kroga popravkov, vsi formati',                                        opisEn: 'full scope, 2 revision rounds, all formats' },
+  { id: 'premium',     ime: 'Premium',     imeEn: 'Premium',     mult: 1.35, opis: 'razširjen obseg, 3 krogi popravkov, dodatna varianta, prednostni odziv',             opisEn: 'extended scope, 3 revision rounds, extra variant, priority response' },
 ];
 
 /* Konkretne alineje paketov v ponudbi (vzor: Tinine prave ponudbe — paket
@@ -1226,10 +1226,246 @@ const ALINEJE_PAKETOV: Record<string, [string[], string[], string[]]> = {
   ],
 };
 
+/* Angleske razlicice alinej paketov (za locale === 'en'). Struktura je
+   vzporedna ALINEJE_PAKETOV; v telu ponudbe se izbere po jeziku. */
+const ALINEJE_PAKETOV_EN: Record<string, [string[], string[], string[]]> = {
+  logo: [
+    ['logo: concept and final execution',
+      'files for print and web (SVG, PDF, PNG, EPS)',
+      'basic colour and typography guidelines'],
+    ['logo variants (horizontal, vertical, symbol)',
+      'mini usage guide (PDF)'],
+    ['extended guide with usage examples',
+      'SVG logo animation'],
+  ],
+  cgp: [
+    ['logo: design and final version',
+      'colour palette (CMYK, RGB, HEX)',
+      'typography for headings and body text',
+      'files for print and digital use',
+      'basic brand guidelines (PDF)'],
+    ['stationery: business card, letterhead, envelope',
+      'email signature and video-call background',
+      'social media templates'],
+    ['advanced brand manual (24+ pages)',
+      'presentation template (PowerPoint/Keynote)',
+      'SVG logo animation'],
+  ],
+  web: [
+    ['UX design: site structure and user journeys',
+      'design of key pages',
+      'responsive build for all devices',
+      'basic SEO (meta data, URL structure)',
+      'testing on devices and browsers'],
+    ['custom UI design (not template-based)',
+      'content and image optimisation',
+      'project management and coordination'],
+    ['animations and micro-interactions',
+      'advanced SEO optimisation',
+      'analytics (GA4) and basic measurement'],
+  ],
+  kampanja: [
+    ['campaign concept and key visual',
+      'adaptations for the agreed channels',
+      'file preparation for publishing'],
+    ['extended set of formats (feed, story, banners)',
+      'coordination with the printer or media buyer'],
+    ['additional key-visual variants for testing',
+      'templates for follow-up posts'],
+  ],
+  publikacija: [
+    ['design concept and typographic layout',
+      'layout of the agreed number of pages',
+      'preparation for print or digital publishing (PDF)'],
+    ['processing and placement of image material',
+      'communication with the printer and proof review'],
+    ['additional cover design variant',
+      'derivative versions (web PDF, e-publication)'],
+  ],
+  embalaza: [
+    ['packaging design concept',
+      'print preparation to specification (dieline/net)',
+      'production-ready files'],
+    ['adaptations for multiple variants or flavours',
+      'coordination with the printer and sample review'],
+    ['3D visualisation for presentation and sales',
+      'templates for further products in the line'],
+  ],
+  ilustracija: [
+    ['concept sketches and direction selection',
+      'production of the agreed illustrations',
+      'files in the agreed formats'],
+    ['colour variants and usage adaptations',
+      'basic usage instructions'],
+    ['extended visual world (additional motifs and elements)',
+      'preparation for animation'],
+  ],
+  direkcija: [
+    ['creative strategy and project direction',
+      'leading the design process',
+      'review and approval of deliverables'],
+    ['coordination of external contractors',
+      'regular reports and alignment'],
+    ['year-round creative plan',
+      'priority availability'],
+  ],
+  fotografija: [
+    ['photography to the agreed scope',
+      'basic editing of selected shots',
+      'delivery in digital formats'],
+    ['advanced editing (retouching)',
+      'selection and preparation for web and print'],
+    ['extended selection of shots',
+      'colour-matched series for consistent use'],
+  ],
+  copy: [
+    ['copy to the agreed scope',
+      'tone of voice aligned with the brand',
+      'language proofreading of the text'],
+    ['SEO basics (keywords in the copy)',
+      'adaptations for different channels'],
+    ['headline variants for testing',
+      'content plan for follow-up posts'],
+  ],
+  interier: [
+    ['spatial concept design',
+      'floor plans and furniture layout',
+      'selection of materials and colour palette'],
+    ['3D visualisations of the space',
+      'specification of furnishings and suppliers'],
+    ['on-site supervision of the works',
+      'additional design variant'],
+  ],
+  arhitektura: [
+    ['concept design',
+      'floor plans and sections',
+      'basic documentation'],
+    ['3D visualisations',
+      'construction drawings (permit level)'],
+    ['construction supervision',
+      'additional design variant'],
+  ],
+  razstava: [
+    ['layout concept',
+      'floor plans of the space',
+      'selection of materials'],
+    ['3D visualisations',
+      'graphic applications in the space'],
+    ['setup supervision on the event day',
+      'additional concept variant'],
+  ],
+  produktni: [
+    ['product concept design',
+      'technical documentation',
+      '3D model'],
+    ['physical prototype production',
+      'selection of materials and colour variants'],
+    ['production supervision',
+      'additional product variant'],
+  ],
+  uxui: [
+    ['UX design and user journeys',
+      'wireframes',
+      'UI design of key screens'],
+    ['interactive prototype',
+      'design system foundations'],
+    ['user testing',
+      'additional design variant'],
+  ],
+  aplikacija: [
+    ['UX/UI design of key screens',
+      'interactive prototype'],
+    ['design system',
+      'preparation of specifications for development'],
+    ['user testing',
+      'additional platform (iOS/Android)'],
+  ],
+  dizajnsistem: [
+    ['core components (colours, typography, buttons, fields)',
+      'usage documentation'],
+    ['extended component library',
+      'templates for key screens'],
+    ['developer handoff template',
+      'consistency oversight'],
+  ],
+  smm: [
+    ['content calendar',
+      'post design',
+      'basic copywriting'],
+    ['community management and comment replies',
+      'monthly report'],
+    ['advertising and targeting',
+      'video / reels content'],
+  ],
+  seo: [
+    ['technical SEO audit',
+      'basic keyword optimisation'],
+    ['content optimisation',
+      'technical fixes'],
+    ['monthly monitoring and reporting',
+      'link building'],
+  ],
+  email: [
+    ['template design',
+      'setup in the tool'],
+    ['automations (welcome, abandoned cart)',
+      'content writing'],
+    ['regular monthly sending',
+      'A/B testing'],
+  ],
+  pr: [
+    ['press releases',
+      'list of relevant media'],
+    ['media relations and securing coverage',
+      'regular monthly report'],
+    ['crisis communications (readiness)',
+      'organisation of a press event'],
+  ],
+  video: [
+    ['script and concept',
+      'filming',
+      'basic editing'],
+    ['colour grading and sound',
+      'subtitles'],
+    ['animation / motion elements',
+      'additional variant for social media'],
+  ],
+  motion: [
+    ['concept and storyboard',
+      'animation to the agreed scope'],
+    ['sound and music track',
+      'additional variants for channels'],
+    ['3D elements',
+      'additional subtitle language / version'],
+  ],
+  render3d: [
+    ['3D modelling from provided materials',
+      'basic visualisation'],
+    ['additional views',
+      'photorealistic rendering'],
+    ['animation / video visualisations',
+      'additional material variant'],
+  ],
+  strategija: [
+    ['market and competitor analysis',
+      'positioning and brand values'],
+    ['communication strategy',
+      'brand book document'],
+    ['workshops with the client team',
+      'additional strategy revision'],
+  ],
+};
+
 const POPRAVKI_PAKETA = [
   'vključen 1 krog popravkov',
   'vključena 2 kroga popravkov',
   'vključeni 3 krogi popravkov in prednostni odziv',
+];
+
+const POPRAVKI_PAKETA_EN = [
+  'includes 1 revision round',
+  'includes 2 revision rounds',
+  'includes 3 revision rounds and priority response',
 ];
 
 /* Razsirjena ponudba (vseh 5 tock iz revizije pravih ponudb):
@@ -1401,18 +1637,19 @@ const escapeHtml = (s: string) =>
 /* za hitro branje: v telesu (alineje/odstavki) samodejno poudarimo cene, %,
    trajanja in nekaj ključnih besed — brez rocnega markiranja povsod. */
 const poudari = (s: string): string => s
-  /* Narocnik: ime firme v svojo vrsto in krepko */
+  /* Narocnik: ime firme v svojo vrsto in krepko (SL + EN) */
   .replace(/^Naročnik:\s*(.+)$/, 'Naročnik<br><b>$1</b>')
+  .replace(/^Client:\s*(.+)$/, 'Client<br><b>$1</b>')
   /* ime storitve na zacetku vrstice (pred " — ") je krepko -> hitro branje */
   .replace(/^([^—<:]{2,60}?)\s—\s/, '<b>$1</b> — ')
   /* "Skupaj ..." oznake krepko */
-  .replace(/\b(Skupaj[^:<]{0,40}?):/g, '<b>$1</b>:')
+  .replace(/\b((?:Skupaj|Total|Production total)[^:<]{0,40}?):/g, '<b>$1</b>:')
   /* kljucni pogoji krepko za hitro branje */
-  .replace(/\b(avans)\b/gi, '<b>$1</b>')
-  .replace(/(po urni postavki)/gi, '<b>$1</b>')
+  .replace(/\b(avans|deposit)\b/gi, '<b>$1</b>')
+  .replace(/(po urni postavki|at the hourly rate|per hour)/gi, '<b>$1</b>')
   .replace(/(\d[\d.\s]*\s?(?:€|\$|£))/g, '<b>$1</b>')
   .replace(/(\b\d+\s?%)/g, '<b>$1</b>')
-  .replace(/(\b\d+(?:\s?[–-]\s?\d+)?\s?(?:let\b|leto\b|leta\b|tednov\b|teden\b|tedna\b|mesec(?:ev|a)?\b|ur\b|urah\b))/gi, '<b>$1</b>');
+  .replace(/(\b\d+(?:\s?[–-]\s?\d+)?\s?(?:let\b|leto\b|leta\b|tednov\b|teden\b|tedna\b|mesec(?:ev|a)?\b|ur\b|urah\b|weeks?\b|months?\b|hours?\b|years?\b|days?\b))/gi, '<b>$1</b>');
 const escP = (s: string) => poudari(escapeHtml(s));
 /* vrstica s ceno na koncu -> label levo, cena poravnana DESNO (flex) */
 const cenaDesno = (l: string): string => {
@@ -1428,12 +1665,13 @@ const ponudbaVHtml = (s: string): string =>
       if (lines.every(l => /^─+$/.test(l))) return '<hr>';
 
       const first = lines[0];
-      if (first.startsWith('PONUDBA:')) {
+      if (first.startsWith('PONUDBA:') || first.startsWith('OFFER:')) {
+        const jeEn = first.startsWith('OFFER:');
         const rest = lines.slice(1);
         const metaHtml = rest.length ? `<div class="offer-head-meta">${rest.map(escapeHtml).join('<br>')}</div>` : '';
-        return `<div class="offer-head"><div class="offer-head-t"><p class="offer-kicker">Ponudba</p><h1>${escapeHtml(first.replace('PONUDBA:', '').trim())}</h1></div>${metaHtml}</div>`;
+        return `<div class="offer-head"><div class="offer-head-t"><p class="offer-kicker">${jeEn ? 'Offer' : 'Ponudba'}</p><h1>${escapeHtml(first.replace(/^(PONUDBA|OFFER):/, '').trim())}</h1></div>${metaHtml}</div>`;
       }
-      if (/^(OBSEG|DODATNE INFORMACIJE|IZBERITE PAKET|CENA IN OBSEG|DOLGOROČNO SODELOVANJE|PLAČILO|POGOJI|PRAVICE|SPECIFIKACIJA CEN|AVTORSKE PRAVICE|PREDVIDEN ČAS IZVEDBE|VZDRŽEVANJE|DODATNE MOŽNOSTI)( \(.+\))?$/.test(first)) {
+      if (/^(OBSEG|DODATNE INFORMACIJE|IZBERITE PAKET|CENA IN OBSEG|DOLGOROČNO SODELOVANJE|PLAČILO|POGOJI|PRAVICE|SPECIFIKACIJA CEN|AVTORSKE PRAVICE|PREDVIDEN ČAS IZVEDBE|VZDRŽEVANJE|DODATNE MOŽNOSTI|SCOPE|ADDITIONAL INFORMATION|CHOOSE A PACKAGE|PRICE AND SCOPE|LONG-TERM COOPERATION|PAYMENT|TERMS|RIGHTS|PRICE BREAKDOWN|COPYRIGHT|ESTIMATED TIMELINE|MAINTENANCE|ADDITIONAL OPTIONS)( \(.+\))?$/.test(first)) {
         const rest = lines.slice(1);
         const body: string = rest.length ? ponudbaVHtml(rest.join('\n')) : '';
         return `<h2>${escapeHtml(first)}</h2>${body}`;
@@ -3309,60 +3547,67 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     /* Glava ponudbe je VEDNO prisotna — prazna polja pokazejo oglate
        oklepaje, ki uporabnika pozovejo, naj izpolni razdelek 01. */
     const v: string[] = [];
+    /* naziv storitve po jeziku: glavne storitve imajo imeEn (custom nimajo -> SL) */
+    const storNaziv = (sid: string, imeSl: string) => {
+      if (locale !== 'en') return imeSl;
+      const s = STORITVE.find(x => x.id === sid);
+      return s && s.imeEn && imeSl === s.ime ? s.imeEn : imeSl;
+    };
+    const sezNazivi = r.sez.map(s => storIme(s)).join(', ');
     const kontakt = [
-      ponudnik.davcna.trim() && 'Davčna št.: ' + ponudnik.davcna.trim(),
-      ponudnik.trr.trim() && 'TRR: ' + ponudnik.trr.trim(),
-      ponudnik.telefon.trim() && 'Tel.: ' + predklic + ' ' + ponudnik.telefon.trim(),
+      ponudnik.davcna.trim() && L('Davčna št.: ', 'VAT No.: ') + ponudnik.davcna.trim(),
+      ponudnik.trr.trim() && L('TRR: ', 'IBAN: ') + ponudnik.trr.trim(),
+      ponudnik.telefon.trim() && L('Tel.: ', 'Tel.: ') + predklic + ' ' + ponudnik.telefon.trim(),
       ponudnik.email.trim(),
     ].filter(Boolean).join(' · ');
     const narocnikKontakt = [
-      narocnikDavcna.trim() && 'Davčna št.: ' + narocnikDavcna.trim(),
+      narocnikDavcna.trim() && L('Davčna št.: ', 'VAT No.: ') + narocnikDavcna.trim(),
       narocnikEmail.trim(),
     ].filter(Boolean).join(' · ');
     /* 1) NAGOVOR — kratek spremni nagovor, LOCEN od same ponudbe (crta pod njim) */
     if (dolgorocno) {
-      v.push(tonPonudbe === 'formalno' ? 'Spoštovani,' : 'Pozdravljeni,');
-      v.push('v nadaljevanju pošiljam predlog za dolgoročno (mesečno) sodelovanje — obseg, mesečni znesek in pogoje.');
+      v.push(tonPonudbe === 'formalno' ? L('Spoštovani,', 'Dear Sir/Madam,') : L('Pozdravljeni,', 'Hello,'));
+      v.push(L('v nadaljevanju pošiljam predlog za dolgoročno (mesečno) sodelovanje — obseg, mesečni znesek in pogoje.', 'below is a proposal for a long-term (monthly) cooperation — scope, monthly amount and terms.'));
     } else if (tonPonudbe === 'formalno') {
-      v.push('Spoštovani,');
-      v.push('v nadaljevanju pošiljam strukturirano ponudbo za dogovorjeni obseg kreativnih storitev.');
+      v.push(L('Spoštovani,', 'Dear Sir/Madam,'));
+      v.push(L('v nadaljevanju pošiljam strukturirano ponudbo za dogovorjeni obseg kreativnih storitev.', 'below is a structured offer for the agreed scope of creative services.'));
     } else if (tonPonudbe === 'direktno') {
-      v.push('Pozdravljeni,');
-      v.push('spodaj je predlog obsega, paketov in cene. Izberite paket, ki najbolj ustreza tempu in ambiciji projekta.');
+      v.push(L('Pozdravljeni,', 'Hello,'));
+      v.push(L('spodaj je predlog obsega, paketov in cene. Izberite paket, ki najbolj ustreza tempu in ambiciji projekta.', 'below is a proposal of scope, packages and price. Choose the package that best fits the pace and ambition of the project.'));
     } else {
-      v.push('Pozdravljeni,');
-      v.push('hvala za povpraševanje. Pripravila sem tri možnosti, da lahko lažje izberemo pravi obseg za projekt.');
+      v.push(L('Pozdravljeni,', 'Hello,'));
+      v.push(L('hvala za povpraševanje. Pripravila sem tri možnosti, da lahko lažje izberemo pravi obseg za projekt.', 'thank you for your enquiry. I have prepared three options so we can more easily choose the right scope for the project.'));
     }
     v.push('');
     v.push(crta);   /* locilo -> <hr>: nagovor ločen od ponudbe */
     v.push('');
-    /* 2) NASLOV PONUDBE — "PONUDBA:" predpona postane VIDEN naslov
+    /* 2) NASLOV PONUDBE — "PONUDBA:"/"OFFER:" predpona postane VIDEN naslov
        (offer-kicker + h1 naziv + meta) v ponudbaVHtml. */
-    v.push(`PONUDBA: ${nazivPonudbe.trim() || r.sez.map(s => s.ime).join(', ')}`);
-    if (stevilkaPonudbe) v.push('Št. ' + stevilkaPonudbe);
-    v.push('Datum: ' + dat(danes));
-    v.push('Velja do: ' + dat(velja) + ` (${veljDni} dni)`);
+    v.push(`${L('PONUDBA', 'OFFER')}: ${nazivPonudbe.trim() || sezNazivi}`);
+    if (stevilkaPonudbe) v.push(L('Št. ', 'No. ') + stevilkaPonudbe);
+    v.push(L('Datum: ', 'Date: ') + dat(danes));
+    v.push(L('Velja do: ', 'Valid until: ') + dat(velja) + ` (${veljDni} ${L('dni', 'days')})`);
     v.push('');
     /* 3) TVOJI PODATKI (ponudnik) — v izvozu jih pokaze letterhead glava */
-    v.push(ponudnik.ime.trim() || '[Ime / podjetje — izpolni v razdelku 01]');
-    v.push(ponudnik.naslov.trim() || '[Naslov]');
-    v.push(kontakt || '[Davčna št. · TRR · Telefon · Email]');
+    v.push(ponudnik.ime.trim() || L('[Ime / podjetje — izpolni v razdelku 01]', '[Name / company — fill in section 01]'));
+    v.push(ponudnik.naslov.trim() || L('[Naslov]', '[Address]'));
+    v.push(kontakt || L('[Davčna št. · TRR · Telefon · Email]', '[VAT No. · IBAN · Phone · Email]'));
     v.push('');
     /* 4) NAROČNIK */
-    v.push('Naročnik: ' + (narocnikPonudbe.trim() || '[ime podjetja]'));
-    if (narocnikOseba.trim()) v.push('Kontaktna oseba: ' + narocnikOseba.trim());
+    v.push(L('Naročnik: ', 'Client: ') + (narocnikPonudbe.trim() || L('[ime podjetja]', '[company name]')));
+    if (narocnikOseba.trim()) v.push(L('Kontaktna oseba: ', 'Contact person: ') + narocnikOseba.trim());
     if (narocnikNaslov.trim()) v.push(narocnikNaslov.trim());
     if (narocnikKontakt) v.push(narocnikKontakt);
     v.push('');
     /* OBSEG (nastevanje storitev) le v razsirjeni; v kratki so storitve v "Vključuje" pri paketu */
     if (obsegPonudbe === 'razsirjena') {
-      v.push('OBSEG');
+      v.push(L('OBSEG', 'SCOPE'));
       r.linije.forEach(l => {
         const enota = KOLICINSKE[l.sid];
-        v.push(`· ${l.ime}${l.kolicina > 1 ? ` — ${l.kolicina} ${enota || 'kosov'}` : ''}`);
+        v.push(`· ${storNaziv(l.sid, l.ime)}${l.kolicina > 1 ? ` — ${l.kolicina} ${enota || L('kosov', 'pcs')}` : ''}`);
       });
-      postavke.forEach(x => v.push(`· ${x.ime}${x.enota === 'ura' ? ` — ${x.kolicina} ur` : x.kolicina > 1 ? ' × ' + x.kolicina : ''}`));
-      v.push('· [dopolni po potrebi]');
+      postavke.forEach(x => v.push(`· ${x.ime}${x.enota === 'ura' ? ` — ${x.kolicina} ${L('ur', 'h')}` : x.kolicina > 1 ? ' × ' + x.kolicina : ''}`));
+      v.push(L('· [dopolni po potrebi]', '· [add as needed]'));
     }
     const dodatniOdgovori = aktivnaVprasanja
       .map(vp => ({
@@ -3375,7 +3620,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       .filter(vp => vp.odgovor);
     if (dodatniOdgovori.length) {
       v.push('');
-      v.push('DODATNE INFORMACIJE');
+      v.push(L('DODATNE INFORMACIJE', 'ADDITIONAL INFORMATION'));
       /* pri vec instancah iste storitve odgovor pripisemo konkretni vrstici */
       dodatniOdgovori.forEach(vp => v.push(`· ${vp.vecInstanc ? vp.storitev + ' — ' : ''}${vp.label}: ${vp.odgovor}`));
     }
@@ -3383,28 +3628,28 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     if (dolgorocno && ret) {
       /* RETAINER (dolgorocno sodelovanje) — namesto paketov */
       const modelOpis = ret.model === 'ure'
-        ? `${ret.ure} ur na mesec`
+        ? L(`${ret.ure} ur na mesec`, `${ret.ure} hours per month`)
         : ret.model === 'paket'
-          ? 'dogovorjeni mesečni paket storitev'
-          : `${ret.ure} ur na mesec + dogovorjeni paket storitev`;
-      v.push('DOLGOROČNO SODELOVANJE');
+          ? L('dogovorjeni mesečni paket storitev', 'the agreed monthly service package')
+          : L(`${ret.ure} ur na mesec + dogovorjeni paket storitev`, `${ret.ure} hours per month + the agreed service package`);
+      v.push(L('DOLGOROČNO SODELOVANJE', 'LONG-TERM COOPERATION'));
       v.push('');
-      v.push(`MESEČNI ZNESEK  ·  ${val(ret.mesNeto)}${ddvZavezanec ? `  (z DDV ${zDdv(ret.mesNeto)})` : ''} / mesec`);
-      v.push(`  · Vključeno: ${modelOpis}`);
-      if (ret.ureBaza > 0) v.push(`  · Blok ur: ${ret.ure} h / mesec (urna postavka ${val(ret.urna)})`);
-      if (ret.paketBaza > 0) v.push(`  · Mesečni paket storitev: ${r.sez.map(s => s.ime).join(', ')} (${val(ret.paketBaza)} / mesec)`);
-      v.push(`  · Doba: ${ret.doba} mesecev${ret.popust > 0 ? ` — zavezni popust −${Math.round(ret.popust * 100)} % (redna cena ${val(ret.mesBruto)} / mesec)` : ''}`);
-      v.push(`  · Dodatne ure nad blokom: ${val(ret.overage)} / uro`);
-      v.push(`  · Odpovedni rok: ${ret.odpovedDni} dni`);
-      v.push(`  · Skupaj za dobo (${ret.doba} mes): ${val(ret.skupajDoba)}  ·  letna vrednost: ${val(ret.letno)}`);
+      v.push(`${L('MESEČNI ZNESEK', 'MONTHLY AMOUNT')}  ·  ${val(ret.mesNeto)}${ddvZavezanec ? `  (${L('z DDV', 'incl. VAT')} ${zDdv(ret.mesNeto)})` : ''} / ${L('mesec', 'month')}`);
+      v.push(`  · ${L('Vključeno', 'Included')}: ${modelOpis}`);
+      if (ret.ureBaza > 0) v.push(`  · ${L('Blok ur', 'Hour block')}: ${ret.ure} h / ${L('mesec', 'month')} (${L('urna postavka', 'hourly rate')} ${val(ret.urna)})`);
+      if (ret.paketBaza > 0) v.push(`  · ${L('Mesečni paket storitev', 'Monthly service package')}: ${sezNazivi} (${val(ret.paketBaza)} / ${L('mesec', 'month')})`);
+      v.push(`  · ${L('Doba', 'Term')}: ${ret.doba} ${L('mesecev', 'months')}${ret.popust > 0 ? ` — ${L('zavezni popust', 'commitment discount')} −${Math.round(ret.popust * 100)} % (${L('redna cena', 'regular price')} ${val(ret.mesBruto)} / ${L('mesec', 'month')})` : ''}`);
+      v.push(`  · ${L('Dodatne ure nad blokom', 'Extra hours over the block')}: ${val(ret.overage)} / ${L('uro', 'hour')}`);
+      v.push(`  · ${L('Odpovedni rok', 'Notice period')}: ${ret.odpovedDni} ${L('dni', 'days')}`);
+      v.push(`  · ${L('Skupaj za dobo', 'Total for the term')} (${ret.doba} ${L('mes', 'mo')}): ${val(ret.skupajDoba)}  ·  ${L('letna vrednost', 'annual value')}: ${val(ret.letno)}`);
       v.push('');
-      v.push('PLAČILO');
-      v.push('  · Mesečni znesek se zaračuna vnaprej, ob začetku vsakega meseca sodelovanja.');
-      v.push('  · Neporabljene ure se praviloma ne prenašajo v naslednji mesec (po dogovoru).');
-      v.push('  · Dodatno delo nad dogovorjenim blokom se obračuna po urni postavki zgoraj.');
+      v.push(L('PLAČILO', 'PAYMENT'));
+      v.push(L('  · Mesečni znesek se zaračuna vnaprej, ob začetku vsakega meseca sodelovanja.', '  · The monthly amount is invoiced in advance, at the start of each month of cooperation.'));
+      v.push(L('  · Neporabljene ure se praviloma ne prenašajo v naslednji mesec (po dogovoru).', '  · Unused hours generally do not carry over to the next month (by agreement).'));
+      v.push(L('  · Dodatno delo nad dogovorjenim blokom se obračuna po urni postavki zgoraj.', '  · Additional work over the agreed block is charged at the hourly rate above.'));
       v.push('');
     } else {
-    v.push(enaCena ? 'CENA IN OBSEG' : 'IZBERITE PAKET');
+    v.push(enaCena ? L('CENA IN OBSEG', 'PRICE AND SCOPE') : L('IZBERITE PAKET', 'CHOOSE A PACKAGE'));
     v.push('');
     /* cena posamezne storitve (za priporoceni paket) — vsota priceanih vrstic te storitve */
     const cenaStoritve = (sid: string) => r.linije.reduce((a, l, j) =>
@@ -3412,12 +3657,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     /* ena cena: izpisemo samo Priporoceni obseg kot koncno ceno (brez izbire paketov) */
     (enaCena ? [r.paketi[1]] : r.paketi).forEach((p, idx) => {
       const i = enaCena ? 1 : idx;
-      v.push(`${enaCena ? 'CENA' : p.ime.toUpperCase()}  ·  ${val(p.skupaj)}${ddvZavezanec ? `  (z DDV ${zDdv(p.skupaj)})` : ''}`);
+      const paketNaziv = locale === 'en' && (p as { imeEn?: string }).imeEn ? (p as { imeEn?: string }).imeEn! : p.ime;
+      v.push(`${enaCena ? L('CENA', 'PRICE') : paketNaziv.toUpperCase()}  ·  ${val(p.skupaj)}${ddvZavezanec ? `  (${L('z DDV', 'incl. VAT')} ${zDdv(p.skupaj)})` : ''}`);
       /* OSNOVNI (kratka) nacin: SAMO bistvo — 2 nujni aliniji, brez specifikacije
          in nastevanja pod storitvami (za stranke, ki jih detajli odbijejo) */
       if (obsegPonudbe === 'kratka') {
-        if ((p as { opis?: string }).opis) v.push(`  · ${(p as { opis?: string }).opis}`);
-        v.push(`  · Vključuje: ${r.sez.map(s => s.ime).join(', ')}`);
+        const pOpis = locale === 'en' && (p as { opisEn?: string }).opisEn ? (p as { opisEn?: string }).opisEn : (p as { opis?: string }).opis;
+        if (pOpis) v.push(`  · ${pOpis}`);
+        v.push(`  · ${L('Vključuje', 'Includes')}: ${sezNazivi}`);
         v.push('');
         return;
       }
@@ -3429,32 +3676,34 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       const kaziCene = obsegPonudbe === 'razsirjena';
       const m = (p as { mult?: number }).mult ?? 1;
       r.sez.forEach(s => {
-        const [jedro = [], nadgradnja = [], vrh = []] = ALINEJE_PAKETOV[s.id] ?? [];
+        const katalog = locale === 'en' ? (ALINEJE_PAKETOV_EN[s.id] ?? ALINEJE_PAKETOV[s.id]) : ALINEJE_PAKETOV[s.id];
+        const [jedro = [], nadgradnja = [], vrh = []] = katalog ?? [];
         const alineje = [...jedro, ...(i >= 1 ? nadgradnja : []), ...(i >= 2 ? vrh : [])];
         const cenaPripis = kaziCene ? `  —  ${val(cenaStoritve(s.id) * m)}` : '';
-        if (!alineje.length) { v.push(`  · ${s.ime}${cenaPripis}: izvedba po dogovorjenem obsegu`); return; }
-        if (vecStoritev || kaziCene) v.push(`  ${s.ime}${cenaPripis}`);
+        const sNaziv = storIme(s);
+        if (!alineje.length) { v.push(`  · ${sNaziv}${cenaPripis}: ${L('izvedba po dogovorjenem obsegu', 'production to the agreed scope')}`); return; }
+        if (vecStoritev || kaziCene) v.push(`  ${sNaziv}${cenaPripis}`);
         alineje.forEach(a => v.push(`  · ${a}`));
       });
       postavke.forEach((x, xi) => {
         const cenaX = kaziCene ? (r.vrsticeIzvedbe[r.linije.length + xi]?.cena || 0) * x.kolicina * m : 0;
-        v.push(`  · ${x.ime}${x.enota === 'ura' ? ` — ${x.kolicina} ur` : x.kolicina > 1 ? ' × ' + x.kolicina : ''}${cenaX ? `  —  ${val(cenaX)}` : ''}`);
+        v.push(`  · ${x.ime}${x.enota === 'ura' ? ` — ${x.kolicina} ${L('ur', 'h')}` : x.kolicina > 1 ? ' × ' + x.kolicina : ''}${cenaX ? `  —  ${val(cenaX)}` : ''}`);
       });
-      v.push(`  · ${POPRAVKI_PAKETA[i]}`);
+      v.push(`  · ${(locale === 'en' ? POPRAVKI_PAKETA_EN : POPRAVKI_PAKETA)[i]}`);
       if (kaziCene) {
-        v.push(`  · Skupaj izvedba: ${val(r.delo * m)}`);
+        v.push(`  · ${L('Skupaj izvedba', 'Production total')}: ${val(r.delo * m)}`);
         if (r.prenos === 'licenca')
-          v.push(`  · Avtorske pravice: prek letne licence ${val(r.licenca)} / leto (odkup ni vključen)`);
+          v.push(`  · ${L('Avtorske pravice: prek letne licence', 'Copyright: via annual licence')} ${val(r.licenca)} / ${L('leto (odkup ni vključen)', 'year (buyout not included)')}`);
         else
-          v.push(`  · Avtorske pravice (${r.prenos === 'neizkljucni' ? 'neizključni' : 'enkratni'} prenos): ${val(r.pravice)}`);
+          v.push(`  · ${L('Avtorske pravice', 'Copyright')} (${r.prenos === 'neizkljucni' ? L('neizključni', 'non-exclusive') : L('enkratni', 'one-time')} ${L('prenos', 'transfer')}): ${val(r.pravice)}`);
       }
       v.push('');
     });
     v.push(crta);
     if (r.popustPct) {
       v.push(enaCena
-        ? `V ceni je že upoštevan ${r.popustPct} % popust (redna cena: ${val(r.paketi[1].redna)}).`
-        : `V cenah je že upoštevan ${r.popustPct} % popust (redna cena paketa Priporočeni: ${val(r.paketi[1].redna)}).`);
+        ? L(`V ceni je že upoštevan ${r.popustPct} % popust (redna cena: ${val(r.paketi[1].redna)}).`, `The price already includes a ${r.popustPct} % discount (regular price: ${val(r.paketi[1].redna)}).`)
+        : L(`V cenah je že upoštevan ${r.popustPct} % popust (redna cena paketa Priporočeni: ${val(r.paketi[1].redna)}).`, `The prices already include a ${r.popustPct} % discount (regular price of the Recommended package: ${val(r.paketi[1].redna)}).`));
       v.push('');
     }
     }
@@ -3468,7 +3717,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       const urnaZaOceno = urnePostavke.map(u => Math.round(Number(u.cena)) || 0).find(n => n > 0) || 0;
       if (kaziUre && urnaZaOceno > 0) {
         const ur = Math.round((r.delo * vfx.fx) / urnaZaOceno / 5) * 5;
-        if (ur > 0) v.push(`Cena izvedbe temelji na okvirni oceni cca ${ur} delovnih ur po ${urnaZaOceno.toLocaleString('sl-SI')} ${vfx.znak}/uro.`);
+        if (ur > 0) v.push(L(`Cena izvedbe temelji na okvirni oceni cca ${ur} delovnih ur po ${urnaZaOceno.toLocaleString('sl-SI')} ${vfx.znak}/uro.`, `The production price is based on a rough estimate of approx. ${ur} working hours at ${urnaZaOceno.toLocaleString('en-US')} ${vfx.znak}/hour.`));
       }
       const trajanja = r.sez
         .map(s => TRAJANJE_TEDNOV[s.id])
@@ -3479,128 +3728,130 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           ? trajanja[0][1]
           : Math.ceil(trajanja.reduce((a, t) => a + t[1], 0) * 0.8);
         v.push('');
-        v.push('PREDVIDEN ČAS IZVEDBE');
-        v.push(`${od}–${zg} ${tedniBeseda(zg)} od potrditve vsebin in gradiv; točen terminski načrt uskladimo ob potrditvi.`);
+        v.push(L('PREDVIDEN ČAS IZVEDBE', 'ESTIMATED TIMELINE'));
+        v.push(L(`${od}–${zg} ${tedniBeseda(zg)} od potrditve vsebin in gradiv; točen terminski načrt uskladimo ob potrditvi.`, `${od}–${zg} ${zg === 1 ? 'week' : 'weeks'} from confirmation of content and materials; the exact schedule is agreed upon confirmation.`));
       }
       if (r.sez.some(s => s.id === 'web')) {
         v.push('');
-        v.push('VZDRŽEVANJE (po dogovoru)');
-        v.push(`· vzdrževanje spletne strani (posodobitve, varnostne kopije, 1 ura dela): ${cur(100)} / mesec`);
-        v.push(`· gostovanje in sistemske naročnine: ${cur(30)} / mesec`);
-        v.push('· pogodba za 12 mesecev; dodatne ure po urni postavki');
+        v.push(L('VZDRŽEVANJE (po dogovoru)', 'MAINTENANCE (by agreement)'));
+        v.push(L(`· vzdrževanje spletne strani (posodobitve, varnostne kopije, 1 ura dela): ${cur(100)} / mesec`, `· website maintenance (updates, backups, 1 hour of work): ${cur(100)} / month`));
+        v.push(L(`· gostovanje in sistemske naročnine: ${cur(30)} / mesec`, `· hosting and system subscriptions: ${cur(30)} / month`));
+        v.push(L('· pogodba za 12 mesecev; dodatne ure po urni postavki', '· 12-month contract; additional hours at the hourly rate'));
       }
       const moznosti = r.sez.flatMap(s => DODATNE_MOZNOSTI[s.id] ?? []);
       if (moznosti.length) {
         v.push('');
-        v.push('DODATNE MOŽNOSTI (po dogovoru)');
+        v.push(L('DODATNE MOŽNOSTI (po dogovoru)', 'ADDITIONAL OPTIONS (by agreement)'));
         moznosti.forEach(m =>
-          v.push(`· ${m.ime}: + ${cur(m.min)}${m.max ? ' do ' + cur(m.max) : ''}`));
+          v.push(`· ${m.ime}: + ${cur(m.min)}${m.max ? (L(' do ', ' up to ')) + cur(m.max) : ''}`));
       }
       v.push('');
     }
     /* AVTORSKE PRAVICE — po storitvah (razsirjena) + regijski pravni okvir */
     v.push('');
-    v.push('AVTORSKE PRAVICE');
+    v.push(L('AVTORSKE PRAVICE', 'COPYRIGHT'));
     if (obsegPonudbe === 'razsirjena' && r.praviceVrstice.length > 0) {
       r.praviceVrstice.forEach(pv => {
+        const pvNaziv = storNaziv((pv as { sid?: string }).sid ?? '', pv.ime);
         if (pv.tantiema) {
-          v.push(`· ${pv.ime} — prodajni produkt: predujem / minimalna garancija ${val(pv.znesek)} + tantieme ${pv.tantiema} % od neto veleprodaje`);
-          v.push('  · predujem je nepovraten in se poračuna s tantiemami; ob prekinitvi pravice revertirajo avtorju; naročnik letno poroča o prodaji');
+          v.push(`· ${pvNaziv} — ${L(`prodajni produkt: predujem / minimalna garancija ${val(pv.znesek)} + tantieme ${pv.tantiema} % od neto veleprodaje`, `retail product: advance / minimum guarantee ${val(pv.znesek)} + royalties ${pv.tantiema} % of net wholesale`)}`);
+          v.push(L('  · predujem je nepovraten in se poračuna s tantiemami; ob prekinitvi pravice revertirajo avtorju; naročnik letno poroča o prodaji', '  · the advance is non-refundable and offset against royalties; upon termination the rights revert to the author; the client reports on sales annually'));
         } else {
-          const vrsta = pv.prenos === 'licenca' ? 'licenca za rabo' : pv.prenos === 'neizkljucni' ? 'neizključni prenos' : 'izključni prenos';
-          const zn = pv.prenos === 'licenca' ? 'prek letne licence' : val(pv.znesek);
-          v.push(`· ${pv.ime} — ${vrsta}, ${pv.trajanjeIme}, ${pv.obsegOpis} (${zn})`);
+          const vrsta = pv.prenos === 'licenca' ? L('licenca za rabo', 'usage licence') : pv.prenos === 'neizkljucni' ? L('neizključni prenos', 'non-exclusive transfer') : L('izključni prenos', 'exclusive transfer');
+          const zn = pv.prenos === 'licenca' ? L('prek letne licence', 'via annual licence') : val(pv.znesek);
+          v.push(`· ${pvNaziv} — ${vrsta}, ${pv.trajanjeIme}, ${pv.obsegOpis} (${zn})`);
         }
         pv.klavzule.forEach(kid => { const k = KLAVZULE.find(x => x.id === kid); if (k) v.push(`  · ${k.opis}`); });
-        if (pv.opomba) v.push(`  · opomba: ${pv.opomba}`);
+        if (pv.opomba) v.push(`  · ${L('opomba', 'note')}: ${pv.opomba}`);
       });
     }
     if (obsegPonudbe === 'razsirjena') {
       lastnePravice.forEach(l => {
-        const ime = (l.ime || 'Lastna pravica').trim() || 'Lastna pravica';
+        const ime = (l.ime || L('Lastna pravica', 'Custom right')).trim() || L('Lastna pravica', 'Custom right');
         const zn = Number(l.znesek) || 0;
         if (zn <= 0 && !l.ime.trim()) return;
-        const znStr = `${zn.toLocaleString('sl-SI')} ${vfx.znak}`;
-        const tipStr = l.tip === 'letno' ? `letna licenca, ${znStr}/leto` : l.tip === 'mesecno' ? `mesečna licenca, ${znStr}/mesec` : `enkratni odkup, ${znStr}`;
+        const znStr = `${zn.toLocaleString(locale === 'en' ? 'en-US' : 'sl-SI')} ${vfx.znak}`;
+        const tipStr = l.tip === 'letno' ? L(`letna licenca, ${znStr}/leto`, `annual licence, ${znStr}/year`) : l.tip === 'mesecno' ? L(`mesečna licenca, ${znStr}/mesec`, `monthly licence, ${znStr}/month`) : L(`enkratni odkup, ${znStr}`, `one-time buyout, ${znStr}`);
         const trajStr = l.trajanje === 'custom' && typeof l.trajLeta === 'number'
           ? trajLetaVBesedo(l.trajLeta)
           : (l.trajanje ? (PRAV_TRAJANJE.find(t => t.id === l.trajanje)?.ime ?? '') : '');
         v.push(`· ${ime} — ${tipStr}${trajStr ? `, ${trajStr}` : ''}`);
         (l.klavzule || []).forEach(kid => { const k = KLAVZULE.find(x => x.id === kid); if (k) v.push(`  · ${k.opis}`); });
-        if (l.opomba && l.opomba.trim()) v.push(`  · opomba: ${l.opomba.trim()}`);
+        if (l.opomba && l.opomba.trim()) v.push(`  · ${L('opomba', 'note')}: ${l.opomba.trim()}`);
       });
     }
-    v.push(`· Skupaj vrednost pravic: ${val(r.pravice)}${r.raba === 'projekt' ? `; alternativa: tantieme ${r.tantiemePct} % od prodaje, obračunano letno` : ''}`);
+    v.push(`· ${L('Skupaj vrednost pravic', 'Total value of rights')}: ${val(r.pravice)}${r.raba === 'projekt' ? L(`; alternativa: tantieme ${r.tantiemePct} % od prodaje, obračunano letno`, `; alternative: royalties ${r.tantiemePct} % of sales, settled annually`) : ''}`);
     v.push('');   /* prazna vrstica -> pravni okvir je LOCEN odstavek, ne zlije se v zadnjo pikico */
     const rezimEU = ['si', 'west', 'east'].includes(trgNarocnika);
     if (rezimEU) {
-      v.push('Skladno s slovenskim in EU pravom (ZASP, DSM 2019): moralne avtorske pravice ostanejo avtorju in se ne prenašajo; nadomestilo je pošteno in sorazmerno; ob širši ali daljši rabi naročnik poroča o izkoriščanju dela.');
+      v.push(L('Skladno s slovenskim in EU pravom (ZASP, DSM 2019): moralne avtorske pravice ostanejo avtorju in se ne prenašajo; nadomestilo je pošteno in sorazmerno; ob širši ali daljši rabi naročnik poroča o izkoriščanju dela.', 'In accordance with Slovenian and EU law (ZASP, DSM 2019): moral rights remain with the author and are not transferred; remuneration is fair and proportionate; for broader or longer use the client reports on the exploitation of the work.'));
     } else if (trgNarocnika === 'us') {
-      v.push('Za naročnika iz ZDA/UK: prenos velja izrecno za navedeno rabo; ameriška »work for hire« doktrina ne velja samodejno za zunanjega avtorja; moralne pravice avtor ohrani.');
+      v.push(L('Za naročnika iz ZDA/UK: prenos velja izrecno za navedeno rabo; ameriška »work for hire« doktrina ne velja samodejno za zunanjega avtorja; moralne pravice avtor ohrani.', 'For a client from the US/UK: the transfer applies expressly to the stated use; the US "work for hire" doctrine does not automatically apply to an external author; the author retains moral rights.'));
     } else {
-      v.push('Za čezmejno rabo prenos velja izrecno za navedeno rabo in trajanje; širša, daljša ali drugačna raba se dogovori posebej.');
+      v.push(L('Za čezmejno rabo prenos velja izrecno za navedeno rabo in trajanje; širša, daljša ali drugačna raba se dogovori posebej.', 'For cross-border use the transfer applies expressly to the stated use and duration; broader, longer or different use is agreed separately.'));
     }
-    if (izjemePravice.trim()) v.push('Opomba: ' + izjemePravice.trim());
+    if (izjemePravice.trim()) v.push(L('Opomba: ', 'Note: ') + izjemePravice.trim());
     v.push('');
     if (valuta === 'eur') v.push(ddvZavezanec
-      ? `DDV: cene so brez DDV; ob izstavitvi računa se obračuna ${st} % DDV.`
-      : 'DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1.');
-    else if (ddvZavezanec) v.push('Davek: cene so brez davka; ob izstavitvi računa se obračuna veljavni davek.');
+      ? L(`DDV: cene so brez DDV; ob izstavitvi računa se obračuna ${st} % DDV.`, `VAT: prices exclude VAT; ${st} % VAT is charged upon invoicing.`)
+      : L('DDV ni obračunan na podlagi 1. odstavka 94. člena ZDDV-1.', 'VAT is not charged pursuant to Article 94(1) of the Slovenian VAT Act (ZDDV-1).'));
+    else if (ddvZavezanec) v.push(L('Davek: cene so brez davka; ob izstavitvi računa se obračuna veljavni davek.', 'Tax: prices exclude tax; the applicable tax is charged upon invoicing.'));
     v.push('');
-    v.push('POGOJI');
+    v.push(L('POGOJI', 'TERMS'));
     const avans = clamp(Math.round(Number(avansPct)) || 50, 10, 100);
-    v.push(`· ${avans} % avans ob potrditvi, preostanek ob predaji`);
+    v.push(L(`· ${avans} % avans ob potrditvi, preostanek ob predaji`, `· ${avans} % deposit on confirmation, the remainder on delivery`));
     const ure = urnePostavke
-      .map(u => ({ ime: (u.ime || '').trim() || 'dodatna dela', cena: Math.round(Number(u.cena)) || 0 }))
+      .map(u => ({ ime: (u.ime || '').trim() || L('dodatna dela', 'additional work'), cena: Math.round(Number(u.cena)) || 0 }))
       .filter(u => u.cena > 0);
-    const ddvPripis = ddvZavezanec ? ' + DDV' : '';
+    const ddvPripis = ddvZavezanec ? L(' + DDV', ' + VAT') : '';
+    const urnaLoc = (n: number) => n.toLocaleString(locale === 'en' ? 'en-US' : 'sl-SI');
     if (ure.length === 0) {
-      v.push('· popravki nad vključenimi krogi: po urni postavki');
+      v.push(L('· popravki nad vključenimi krogi: po urni postavki', '· revisions beyond the included rounds: at the hourly rate'));
     } else if (ure.length === 1) {
-      v.push(`· popravki nad vključenimi krogi in dodatna dela: ${ure[0].cena.toLocaleString('sl-SI')} ${vfx.znak}/uro${ddvPripis}`);
+      v.push(L(`· popravki nad vključenimi krogi in dodatna dela: ${urnaLoc(ure[0].cena)} ${vfx.znak}/uro${ddvPripis}`, `· revisions beyond the included rounds and additional work: ${urnaLoc(ure[0].cena)} ${vfx.znak}/hour${ddvPripis}`));
     } else {
-      v.push('· popravki nad vključenimi krogi in dodatna dela po urnih postavkah:');
-      ure.forEach(u => v.push(`· ${u.ime}: ${u.cena.toLocaleString('sl-SI')} ${vfx.znak}/uro${ddvPripis}`));
+      v.push(L('· popravki nad vključenimi krogi in dodatna dela po urnih postavkah:', '· revisions beyond the included rounds and additional work at hourly rates:'));
+      ure.forEach(u => v.push(L(`· ${u.ime}: ${urnaLoc(u.cena)} ${vfx.znak}/uro${ddvPripis}`, `· ${u.ime}: ${urnaLoc(u.cena)} ${vfx.znak}/hour${ddvPripis}`)));
     }
-    v.push('· delo izven dogovorjenega obsega te ponudbe se obravnava kot');
-    v.push('  nova, ločena ponudba');
+    v.push(L('· delo izven dogovorjenega obsega te ponudbe se obravnava kot', '· work outside the agreed scope of this offer is treated as'));
+    v.push(L('  nova, ločena ponudba', '  a new, separate offer'));
     if (veljaKotPogodba) {
-      v.push('· s pisno potrditvijo te ponudbe (npr. po e-pošti) ponudba velja kot');
-      v.push('  pogodba med naročnikom in izvajalcem; za obseg, cene in roke veljajo');
-      v.push('  pogoji te ponudbe');
+      v.push(L('· s pisno potrditvijo te ponudbe (npr. po e-pošti) ponudba velja kot', '· with written confirmation of this offer (e.g. by email) the offer serves as'));
+      v.push(L('  pogodba med naročnikom in izvajalcem; za obseg, cene in roke veljajo', '  a contract between the client and the contractor; the scope, prices and deadlines are governed by'));
+      v.push(L('  pogoji te ponudbe', '  the terms of this offer'));
     }
     v.push('');
     /* PRAVICE — locen naslov za lazje branje pogojev o pravicah */
-    v.push('PRAVICE');
-    v.push('· pravice veljajo za navedenega naročnika in navedeno rabo;');
-    v.push('  prenos na tretjo osebo ali širša raba se dogovori posebej');
+    v.push(L('PRAVICE', 'RIGHTS'));
+    v.push(L('· pravice veljajo za navedenega naročnika in navedeno rabo;', '· the rights apply to the stated client and the stated use;'));
+    v.push(L('  prenos na tretjo osebo ali širša raba se dogovori posebej', '  transfer to a third party or broader use is agreed separately'));
     if (r && r.prenos !== 'licenca') {
-      v.push('· obseg prenosa pravic (teritorij, mediji, naklada) je naveden pri vsaki storitvi zgoraj;');
-      v.push('  raba izven tega obsega se licencira posebej');
-      v.push('· izvedeni produkti (digitalne izdaje, aplikacije, licenčni izdelki)');
-      v.push('  niso vključeni in se licencirajo ločeno');
+      v.push(L('· obseg prenosa pravic (teritorij, mediji, naklada) je naveden pri vsaki storitvi zgoraj;', '· the scope of the rights transfer (territory, media, print run) is stated with each service above;'));
+      v.push(L('  raba izven tega obsega se licencira posebej', '  use outside this scope is licensed separately'));
+      v.push(L('· izvedeni produkti (digitalne izdaje, aplikacije, licenčni izdelki)', '· derivative products (digital editions, apps, licensed products)'));
+      v.push(L('  niso vključeni in se licencirajo ločeno', '  are not included and are licensed separately'));
     }
-    v.push('· moralne avtorske pravice ostanejo avtorju (navedba avtorstva)');
+    v.push(L('· moralne avtorske pravice ostanejo avtorju (navedba avtorstva)', '· moral rights remain with the author (attribution)'));
     v.push('');
     if (tonPonudbe === 'formalno') {
-      v.push('Za dodatna vprašanja ali prilagoditev obsega sem vam na voljo.');
-      v.push('Veselim se vašega odziva.');
+      v.push(L('Za dodatna vprašanja ali prilagoditev obsega sem vam na voljo.', 'I am available for any further questions or scope adjustments.'));
+      v.push(L('Veselim se vašega odziva.', 'I look forward to your reply.'));
     } else if (tonPonudbe === 'direktno') {
-      v.push('Če obseg ustreza, lahko naslednji korak začnemo s potrditvijo paketa in avansom.');
-      v.push('Za prilagoditve sem na voljo.');
+      v.push(L('Če obseg ustreza, lahko naslednji korak začnemo s potrditvijo paketa in avansom.', 'If the scope works, the next step is to confirm the package and pay the deposit.'));
+      v.push(L('Za prilagoditve sem na voljo.', 'I am available for adjustments.'));
     } else {
-      v.push('Hvala za povpraševanje in izkazano zaupanje. Veselim se');
-      v.push('morebitnega sodelovanja, za vsa vprašanja pa sem z veseljem');
-      v.push('na voljo.');
+      v.push(L('Hvala za povpraševanje in izkazano zaupanje. Veselim se', 'Thank you for your enquiry and your trust. I look forward to'));
+      v.push(L('morebitnega sodelovanja, za vsa vprašanja pa sem z veseljem', 'possible cooperation, and I am happy to help with'));
+      v.push(L('na voljo.', 'any questions.'));
     }
     v.push('');
-    v.push(ponudnik.ime.trim() || '[Ime]');
+    v.push(ponudnik.ime.trim() || L('[Ime]', '[Name]'));
     if (nogaZnak) {
       v.push('');
-      v.push(`${imeUporabnika.trim() ? 'Pripravila ' + imeUporabnika.trim() + ' s' : 'Pripravljeno s'} Pinart kalkulatorjem · pinart.si`);
+      v.push(L(`${imeUporabnika.trim() ? 'Pripravila ' + imeUporabnika.trim() + ' s' : 'Pripravljeno s'} Pinart kalkulatorjem · pinart.si`, `${imeUporabnika.trim() ? 'Prepared by ' + imeUporabnika.trim() + ' with' : 'Prepared with'} the Pinart calculator · pinart.si`));
     }
     return v.join('\n');
-  }, [r, ret, dolgorocno, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak, izjemePravice, lastnePravice, imeUporabnika, trgNarocnika, enaCena, stevilkaPonudbe, veljavnostDni, veljaKotPogodba]);
+  }, [r, ret, dolgorocno, valuta, ponudnik, ddvZavezanec, ddvStopnja, postavke, vfx, predklic, tonPonudbe, aktivnaVprasanja, odgovori, urnePostavke, nazivPonudbe, narocnikPonudbe, narocnikEmail, narocnikOseba, narocnikNaslov, narocnikDavcna, obsegPonudbe, avansPct, kaziUre, nogaZnak, izjemePravice, lastnePravice, imeUporabnika, trgNarocnika, enaCena, stevilkaPonudbe, veljavnostDni, veljaKotPogodba, locale]);
 
   /* Generirano besedilo je izhodisce; uporabnik ga lahko prosto ureja.
      Dokler ga ne uredi, sledi izracunu; po rocnem posegu ga ne prepisujemo. */
