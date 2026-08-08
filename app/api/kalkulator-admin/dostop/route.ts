@@ -41,7 +41,23 @@ export async function GET() {
     .order('dodan', { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ vrstice: data ?? [] });
+
+  /* Obogati z auth podatki: ali se je e-mail dejansko vpisal (obstaja uporabnik)
+     in kdaj je bil zadnji vpis. Stevila obiskov ne belezimo (analitika je anonimna).
+     listUsers je pri zaprti beti majhen; perPage=1000 zadosca. */
+  const authMap = new Map<string, { vpisan: boolean; zadnji_vpis: string | null }>();
+  try {
+    const { data: au } = await baza.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    for (const u of au?.users ?? []) {
+      if (u.email) authMap.set(u.email.toLowerCase(), { vpisan: true, zadnji_vpis: u.last_sign_in_at ?? null });
+    }
+  } catch { /* auth ni dosegljiv -> vrstice brez vpis podatka */ }
+
+  const vrstice = (data ?? []).map((d) => {
+    const u = authMap.get(String(d.email || '').toLowerCase());
+    return { ...d, vpisan: !!u, zadnji_vpis: u?.zadnji_vpis ?? null };
+  });
+  return NextResponse.json({ vrstice });
 }
 
 export async function POST(request: Request) {

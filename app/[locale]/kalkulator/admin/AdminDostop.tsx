@@ -23,6 +23,8 @@ type Dodelitev = {
   popust: number | null;
   opomba: string | null;
   dodan?: string;
+  vpisan?: boolean;          // ali se je e-mail dejansko prijavil (auth uporabnik obstaja)
+  zadnji_vpis?: string | null; // ISO zadnjega vpisa
 };
 
 const PRAZEN = { email: '', vrsta: 'tester' as Vrsta, velja_od: '', velja_do: '', popust: '', opomba: '' };
@@ -126,13 +128,13 @@ export default function AdminDostop() {
         background: '#fff', borderRadius: 16, padding: '.5rem 1.3rem 1rem',
         boxShadow: '0 4px 18px rgba(17,17,17,.05)', overflowX: 'auto', marginBottom: '1.6rem',
       }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.86rem', minWidth: 640 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.86rem', minWidth: 780 }}>
           <thead><tr style={{ textAlign: 'left', borderBottom: '1px solid rgba(17,17,17,.15)' }}>
-            <th style={TD}>E-mail</th><th style={TD}>Vrsta</th><th style={TD}>Obdobje</th>
+            <th style={TD}>E-mail</th><th style={TD}>Vrsta</th><th style={TD}>Vpisan?</th><th style={TD}>Zadnji vpis</th><th style={TD}>Obdobje</th>
             <th style={TD}>Popust</th><th style={TD}>Opomba</th><th style={TD}></th>
           </tr></thead>
           <tbody>
-            {nalagam && <tr><td colSpan={6} style={{ padding: '1.4rem .5rem', opacity: .6 }}>Nalagam…</td></tr>}
+            {nalagam && <tr><td colSpan={8} style={{ padding: '1.4rem .5rem', opacity: .6 }}>Nalagam…</td></tr>}
             {!nalagam && vrstice.map(d => (
               <tr key={d.email} style={{ borderBottom: '1px solid rgba(17,17,17,.06)', opacity: jePotekel(d) ? .5 : 1 }}>
                 <td style={TD}><strong>{d.email}</strong></td>
@@ -140,6 +142,14 @@ export default function AdminDostop() {
                   {d.vrsta === 'tester' && <span style={znak('rgba(124,58,237,.12)', '#6d28d9')}>Tester</span>}
                   {d.vrsta === 'nagrada' && <span style={znak('rgba(16,140,90,.14)', '#0f7a4d')}>Nagrada</span>}
                   {d.vrsta === 'popust' && <span style={znak('rgba(200,120,20,.14)', '#a35a12')}>Popust</span>}
+                </td>
+                <td style={TD}>
+                  {d.vpisan
+                    ? <span style={znak('rgba(16,140,90,.14)', '#0f7a4d')}>Da</span>
+                    : <span style={znak('rgba(17,17,17,.07)', 'rgba(17,17,17,.5)')}>Ne</span>}
+                </td>
+                <td style={{ ...TD, opacity: .7, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
+                  {d.zadnji_vpis ? new Date(d.zadnji_vpis).toLocaleDateString('sl-SI', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—'}
                 </td>
                 <td style={{ ...TD, opacity: .75, whiteSpace: 'nowrap' }}>
                   {d.velja_od || d.velja_do
@@ -156,7 +166,7 @@ export default function AdminDostop() {
                 </td>
               </tr>
             ))}
-            {!nalagam && !vrstice.length && <tr><td colSpan={6} style={{ padding: '1.4rem .5rem', opacity: .6 }}>Še ni dodelitev.</td></tr>}
+            {!nalagam && !vrstice.length && <tr><td colSpan={8} style={{ padding: '1.4rem .5rem', opacity: .6 }}>Še ni dodelitev.</td></tr>}
           </tbody>
         </table>
       </div>
