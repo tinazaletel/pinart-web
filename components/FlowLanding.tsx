@@ -921,6 +921,18 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-bkarta.b h3, .fl-bkarta.b > p { max-width: 15.5rem; }
         .fl-bnodes { position: absolute; right: -.9rem; top: -.5rem; bottom: -.9rem; width: 64%; }
         .fl-bnodes > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+        /* Črte se izrišejo same (stroke-draw v zanki): narišejo se, obstanejo, odtečejo, ponovijo. */
+        .fl-bnodes svg g path { stroke-dasharray: 1 1; stroke-dashoffset: 1; animation: flDrawLine 5.4s ease-in-out infinite; }
+        .fl-bnodes svg g path:nth-child(3), .fl-bnodes svg g path:nth-child(4) { animation-delay: .6s; }
+        @keyframes flDrawLine {
+          0% { stroke-dashoffset: 1; }
+          42% { stroke-dashoffset: 0; }
+          70% { stroke-dashoffset: 0; }
+          100% { stroke-dashoffset: -1; }
+        }
+        .fl-bnodes .fl-badge { animation: flBadgePulse 3.2s ease-in-out infinite; }
+        @keyframes flBadgePulse { 0%,100% { box-shadow: 0 6px 14px rgba(0,0,0,.45); } 50% { box-shadow: 0 6px 14px rgba(0,0,0,.45), 0 0 0 7px rgba(139,123,232,.16); } }
+        @media (prefers-reduced-motion: reduce) { .fl-bnodes svg g path { animation: none; stroke-dasharray: none; stroke-dashoffset: 0; } .fl-bnodes .fl-badge { animation: none; } }
         .fl-fold { position: absolute; z-index: 2; transform: translate(-50%, -50%); border-radius: 5px 11px 11px 11px; box-shadow: 0 12px 26px rgba(0,0,0,.45); }
         .fl-fold::before { content: ""; position: absolute; top: -8px; left: 0; width: 48%; height: 11px; border-radius: 5px 7px 0 0; background: inherit; }
         .fl-badge { position: absolute; z-index: 3; transform: translate(-50%, -50%); width: 42px; height: 42px; border-radius: 50%; background: #4a3d6b; border: 2px solid rgba(255,255,255,.14); display: grid; place-items: center; color: #fff; box-shadow: 0 6px 14px rgba(0,0,0,.45); }
@@ -1039,17 +1051,64 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* Banner brezplacnega kalkulatorja — TEMEN, z animiranim gradientom + lebdecimi zarki.
            BREZ lastnega max-width/padding — poravna se s sekcijami znotraj .fl-oder (sicer "stopnicka"). */
         .fl-kalk-banner { margin: clamp(3rem, 7vw, 5.5rem) 0 0; }
-        .fl-kalk-banner-in { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: clamp(1.4rem, 4vw, 3rem); flex-wrap: wrap; padding: clamp(2rem, 4.5vw, 3.3rem) clamp(1.8rem, 4vw, 3.2rem); border-radius: 24px; border: 1px solid oklch(62% .18 297 / .35); color: #fff; background: linear-gradient(120deg, #17102e 0%, #2a1657 26%, #3a1d78 50%, #221247 74%, #17102e 100%); background-size: 280% 280%; animation: flKalkGrad 16s ease-in-out infinite; box-shadow: 0 24px 60px oklch(30% .1 297 / .25); }
+        .fl-kalk-banner-in { position: relative; overflow: hidden; display: flex; align-items: flex-end; gap: clamp(1rem, 2.6vw, 2.2rem); flex-wrap: wrap; padding: clamp(1.5rem, 3vw, 2.3rem) clamp(1.8rem, 4vw, 3.2rem) 0; min-height: 202px; border-radius: 24px; border: 1px solid oklch(62% .18 297 / .35); color: #fff; background: linear-gradient(120deg, #17102e 0%, #2a1657 26%, #3a1d78 50%, #221247 74%, #17102e 100%); background-size: 280% 280%; animation: flKalkGrad 16s ease-in-out infinite; box-shadow: 0 24px 60px oklch(30% .1 297 / .25); }
         .fl-kalk-banner-in::before { content: ""; position: absolute; inset: -40%; z-index: 0; pointer-events: none; background: radial-gradient(40% 55% at 30% 40%, oklch(70% .18 297 / .5), transparent 70%), radial-gradient(38% 50% at 78% 66%, oklch(74% .15 200 / .4), transparent 72%); animation: flKalkBlob 18s ease-in-out infinite alternate; }
         .fl-kalk-banner-in > * { position: relative; z-index: 1; }
         @keyframes flKalkGrad { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
         @keyframes flKalkBlob { 0% { transform: translate3d(-6%, -4%, 0) scale(1); } 100% { transform: translate3d(6%, 5%, 0) scale(1.12); } }
-        .fl-kalk-eyebrow { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: oklch(86% .12 297); margin-bottom: .7rem; }
+        /* Žig "Brezplačno za vedno" — rubber-stamp, postrani, dvojni rob, rahel wobble. */
+        .fl-kalk-zig { position: absolute; z-index: 4; top: -22px; right: -14px; display: inline-flex; flex-direction: column; align-items: center; gap: .12rem; padding: .58rem 1.15rem .5rem; border: 2.5px solid rgba(255,255,255,.62); border-radius: 13px; background: linear-gradient(135deg, oklch(44% .16 300), oklch(28% .12 292)); color: #fff; text-transform: uppercase; transform: rotate(-12deg); transform-origin: center; box-shadow: inset 0 0 0 2px rgba(255,255,255,.2), 0 12px 26px rgba(20,10,40,.45); animation: flZigWobble 5.5s ease-in-out infinite; }
+        .fl-kalk-zig b { font-size: 1.3rem; font-weight: 800; letter-spacing: .04em; line-height: 1; }
+        .fl-kalk-zig i { font-style: normal; font-size: .6rem; font-weight: 700; letter-spacing: .3em; opacity: .8; }
+        @keyframes flZigWobble { 0%, 100% { transform: rotate(-12deg); } 50% { transform: rotate(-9.5deg) scale(1.025); } }
+        @media (prefers-reduced-motion: reduce) { .fl-kalk-zig { animation: none; } }
         .fl-kalk-txt h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.7rem, 3.4vw, 2.5rem); line-height: 1.05; margin: 0 0 .5rem; color: #fff; }
         .fl-kalk-txt p { font-size: 1rem; line-height: 1.5; color: rgba(255,255,255,.78); margin: 0; max-width: 42ch; }
-        .fl-kalk-cta { flex: none; display: inline-flex; align-items: center; gap: .5rem; padding: .95rem 1.75rem; border-radius: 999px; background: #fff; color: #17102e; font-size: .95rem; font-weight: 700; text-decoration: none; transition: transform .16s ease, box-shadow .16s ease; box-shadow: 0 8px 24px oklch(20% .05 297 / .3); }
+        .fl-kalk-cta { position: absolute; right: clamp(1.6rem, 4vw, 2.6rem); bottom: 20px; z-index: 2; display: inline-flex; align-items: center; gap: .5rem; padding: .95rem 1.75rem; border-radius: 999px; background: #fff; color: #17102e; font-size: .95rem; font-weight: 700; text-decoration: none; transition: transform .16s ease, box-shadow .16s ease; box-shadow: 0 8px 24px oklch(20% .05 297 / .3); }
         .fl-kalk-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 30px oklch(20% .08 297 / .42); }
-        @media (max-width: 640px) { .fl-kalk-banner-in { flex-direction: column; align-items: flex-start; } .fl-kalk-cta { width: 100%; justify-content: center; box-sizing: border-box; } }
+        /* Ilustracija = web okno + zaključena zgodba: vprašalnik -> mehurčki cen -> znesek na oblikovanem listu (zanka 11s). */
+        .fl-kalk-viz { position: relative; flex: none; width: 420px; max-width: 46vw; align-self: flex-end; margin-top: 1.6rem; }
+        .fl-kalk-txt { align-self: flex-start; max-width: 30rem; padding-bottom: 1.5rem; }
+        .fl-kvw { border-radius: 14px 14px 0 0; overflow: hidden; background: oklch(98% .01 297 / .92); backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2); border: 1px solid rgba(255,255,255,.5); box-shadow: 0 22px 46px rgba(20,10,40,.42), inset 0 1px 0 rgba(255,255,255,.6); }
+        .fl-kvw-bar { display: flex; align-items: center; gap: .34rem; padding: .42rem .62rem; background: oklch(96% .006 87 / .9); border-bottom: 1px solid rgba(17,17,17,.06); }
+        .fl-kvw-bar i { width: 7px; height: 7px; border-radius: 50%; background: rgba(17,17,17,.16); }
+        .fl-kvw-bar small { margin-left: .32rem; font-size: .6rem; font-weight: 600; color: rgba(17,17,17,.5); }
+        .fl-kvw-body { position: relative; height: 172px; overflow: hidden; }
+        /* shape transitions: mehka organska oblika, ki se stalno preoblikuje (ozadje zgodbe) */
+        .fl-kvw-blob { position: absolute; top: 50%; left: 50%; width: 118px; height: 118px; margin: -59px 0 0 -59px; z-index: 0; background: radial-gradient(circle at 34% 30%, oklch(82% .12 320 / .5), oklch(72% .13 250 / .32)); filter: blur(5px); animation: flBlobMorph 9s ease-in-out infinite; }
+        @keyframes flBlobMorph { 0%, 100% { border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%; transform: rotate(0deg) scale(1); } 33% { border-radius: 62% 38% 42% 58% / 55% 62% 38% 45%; transform: rotate(120deg) scale(1.1); } 66% { border-radius: 45% 55% 62% 38% / 40% 52% 48% 60%; transform: rotate(240deg) scale(.95); } }
+        .fl-kv-stage { position: absolute; inset: 0; padding: .7rem .8rem; opacity: 0; z-index: 1; }
+        .fl-kv-s1 { display: grid; align-content: start; gap: .42rem; animation: flKvS1 11s ease-in-out infinite; }
+        .fl-kv-s2 { animation: flKvS2 11s ease-in-out infinite; }
+        .fl-kv-s3 { display: grid; place-content: center; animation: flKvS3 11s ease-in-out infinite; }
+        @keyframes flKvS1 { 0% { opacity: 0; transform: translateY(8px); } 4% { opacity: 1; transform: none; } 27% { opacity: 1; transform: none; } 33% { opacity: 0; transform: translateY(-6px); } 100% { opacity: 0; } }
+        @keyframes flKvS2 { 0%, 33% { opacity: 0; transform: translateY(8px); } 38% { opacity: 1; transform: none; } 60% { opacity: 1; transform: none; } 66% { opacity: 0; transform: translateY(-6px); } 100% { opacity: 0; } }
+        @keyframes flKvS3 { 0%, 66% { opacity: 0; transform: translateY(8px); } 71% { opacity: 1; transform: none; } 95% { opacity: 1; transform: none; } 99% { opacity: 0; } 100% { opacity: 0; } }
+        /* faza 1 — pravi chat mehurčki */
+        .fl-kvw-msg { display: inline-flex; align-items: center; gap: .42rem; max-width: 88%; padding: .42rem .6rem; border-radius: 12px; font-size: .72rem; font-weight: 600; line-height: 1.25; }
+        .fl-kvw-msg.bot { background: oklch(96% .012 297); color: #2a2035; border-top-left-radius: 4px; justify-self: start; }
+        .fl-kvw-msg.me { background: oklch(90% .055 190); color: #223; border-top-right-radius: 4px; justify-self: end; }
+        .fl-kvw-ava { width: 15px; height: 15px; border-radius: 50%; flex: none; background: conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); }
+        /* faza 2 — orbi storitev: mehak radialni gradient z zabrisanim robom (kot pravi mehurčki), ikona + tesna labela */
+        .fl-kv-orb { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #fff; text-align: center; z-index: 1; animation: flKvFloat 5s ease-in-out infinite; }
+        .fl-kv-orb::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 46% 38%, var(--c1), var(--c2) 45%, transparent 72%); z-index: -1; }
+        .fl-kv-orb svg { position: relative; opacity: .96; }
+        .fl-kv-orb i { font-style: normal; font-size: .5rem; font-weight: 700; line-height: 1.05; }
+        .fl-kv-orb.o1 { width: 84px; height: 84px; left: 6px; top: 8px; --c1: oklch(72% .16 300); --c2: oklch(55% .17 288); }
+        .fl-kv-orb.o2 { width: 74px; height: 74px; left: 172px; top: 84px; --c1: oklch(80% .13 200); --c2: oklch(62% .15 220); animation-delay: -2s; }
+        .fl-kv-orb.o3 { width: 80px; height: 80px; right: 4px; top: 18px; --c1: oklch(80% .13 60); --c2: oklch(66% .16 45); animation-delay: -3s; }
+        /* faza 3 — znesek + oblikovan list */
+        .fl-kv-doc { width: 158px; padding: .72rem .78rem .82rem; border-radius: 12px; background: #fff; box-shadow: 0 12px 26px rgba(20,10,40,.28); display: grid; gap: .42rem; }
+        .fl-kv-doc-h { height: 12px; width: 60%; border-radius: 4px; background: linear-gradient(90deg, oklch(66% .2 297), oklch(70% .16 330)); }
+        .fl-kv-doc-l { height: 6px; border-radius: 3px; background: oklch(90% .015 297); }
+        .fl-kv-doc-l.s { width: 68%; }
+        .fl-kv-doc-t { justify-self: end; margin-top: .18rem; font-family: var(--font-serif), serif; font-weight: 600; font-size: 1.2rem; color: #2a1657; animation: flKvPulse 2.4s ease-in-out infinite; }
+        @keyframes flKvFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes flKvGrad { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @keyframes flKvPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+        @media (max-width: 900px) { .fl-kalk-viz { display: none; } }
+        @media (prefers-reduced-motion: reduce) { .fl-kv-stage { animation: none; opacity: 0; } .fl-kv-s3 { opacity: 1; } .fl-kv-orb, .fl-kvw-blob, .fl-kv-doc-t { animation: none; } }
+        @media (max-width: 900px) { .fl-kalk-banner-in { display: flex; flex-direction: column; align-items: flex-start; min-height: 0; padding-bottom: clamp(1.5rem, 4vw, 2rem); } .fl-kalk-txt { padding-bottom: 0; } .fl-kalk-cta { position: static; margin-top: 1.3rem; width: 100%; justify-content: center; box-sizing: border-box; } }
         @media (prefers-reduced-motion: reduce) { .fl-kalk-banner-in, .fl-kalk-banner-in::before { animation: none; } }
 
         /* Cenik (price plans, Magnific slog) */
@@ -1309,9 +1368,39 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         <section className="fl-kalk-banner">
           <div className="fl-kalk-banner-in">
             <div className="fl-kalk-txt">
-              <span className="fl-kalk-eyebrow">{t('Brezplačno za vedno', 'Free forever')}</span>
-              <h2>{t('Kalkulator poštenih cen je brezplačen.', 'The fair-price calculator is free.')}</h2>
+              <h2>{t('Kalkulator poštenih cen', 'The fair-price calculator')}</h2>
               <p>{t('Izračunaj pošteno ceno in sestavi ponudbo — brez prijave in brez plačila.', 'Work out a fair price and build a proposal — no sign-up, no payment.')}</p>
+            </div>
+            <div className="fl-kalk-viz" aria-hidden>
+              <span className="fl-kalk-zig" aria-label={t('Brezplačno za vedno', 'Free forever')}>
+                <b>{t('Brezplačno', 'Free')}</b>
+                <i>{t('za vedno', 'forever')}</i>
+              </span>
+              {/* Web okno + zaključena zgodba: vprašalnik (pravi mehurčki) -> cene -> znesek na oblikovanem listu (zanka) */}
+              <div className="fl-kvw">
+                <div className="fl-kvw-bar"><i /><i /><i /><small>{t('pinart kalkulator', 'pinart calculator')}</small></div>
+                <div className="fl-kvw-body">
+                  <div className="fl-kvw-blob" />
+                  <div className="fl-kv-stage fl-kv-s1">
+                    <span className="fl-kvw-msg bot"><span className="fl-kvw-ava" />{t('Kakšen projekt?', 'What kind of project?')}</span>
+                    <span className="fl-kvw-msg me">{t('Logotip', 'Logo')}</span>
+                    <span className="fl-kvw-msg bot"><span className="fl-kvw-ava" />{t('Kakšne izkušnje?', 'Experience level?')}</span>
+                  </div>
+                  <div className="fl-kv-stage fl-kv-s2">
+                    <span className="fl-kv-orb o1"><PenNib size={16} weight="regular" /><i>{t('Logotip', 'Logo')}</i></span>
+                    <span className="fl-kv-orb o2"><SquaresFour size={16} weight="regular" /><i>{t('Spletna', 'Website')}</i></span>
+                    <span className="fl-kv-orb o3"><FileText size={14} weight="regular" /><i>{t('Copy', 'Copy')}</i></span>
+                  </div>
+                  <div className="fl-kv-stage fl-kv-s3">
+                    <div className="fl-kv-doc">
+                      <span className="fl-kv-doc-h" />
+                      <span className="fl-kv-doc-l" />
+                      <span className="fl-kv-doc-l s" />
+                      <span className="fl-kv-doc-t">2.330 €</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <a className="fl-kalk-cta" href={kalkulator}>{t('Odpri kalkulator', 'Open calculator')} <ArrowRight size={17} weight="bold" /></a>
           </div>
@@ -1451,10 +1540,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                     <filter id="flNodeGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.4" /></filter>
                   </defs>
                   <g fill="none" stroke="url(#flNodeLine)" strokeLinecap="round">
-                    <path d="M44 80 C 112 80 96 150 176 150" strokeWidth="9" opacity=".4" filter="url(#flNodeGlow)" />
-                    <path d="M44 80 C 112 80 96 150 176 150" strokeWidth="5" />
-                    <path d="M150 58 C 214 58 214 96 268 96" strokeWidth="9" opacity=".4" filter="url(#flNodeGlow)" />
-                    <path d="M150 58 C 214 58 214 96 268 96" strokeWidth="5" />
+                    <path d="M44 80 C 112 80 96 150 176 150" strokeWidth="9" opacity=".4" filter="url(#flNodeGlow)" pathLength={1} />
+                    <path d="M44 80 C 112 80 96 150 176 150" strokeWidth="5" pathLength={1} />
+                    <path d="M150 58 C 214 58 214 96 268 96" strokeWidth="9" opacity=".4" filter="url(#flNodeGlow)" pathLength={1} />
+                    <path d="M150 58 C 214 58 214 96 268 96" strokeWidth="5" pathLength={1} />
                   </g>
                 </svg>
                 <div className="fl-fold" style={{ left: '44%', top: '37%', width: '33%', height: '42%', background: '#e9e08d' }} />
