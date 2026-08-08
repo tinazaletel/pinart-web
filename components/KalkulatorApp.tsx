@@ -5565,7 +5565,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   }, [vChatu, poMeh, klasicnaOblika, korak, r, stevilkaPonudbe]);
   /* naslov koraka kot chat oblacek (v chat obliki) */
   const chatVpr = (naslov: string, opis?: string) => (
-    <div className="chat-bot chat-vpr">
+    /* key=naslov: ob spremembi vprasanja (novo vprasanje ALI menjava produkta) se
+       element na novo vgradi -> mehka chatVzid animacija se vsakic ponovi. */
+    <div className="chat-bot chat-vpr" key={naslov}>
       <span className="chat-obraz" aria-hidden />
       <span className="chat-mehur"><b>{naslov}</b>{opis ? <small>{opis}</small> : null}</span>
     </div>
@@ -6395,8 +6397,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .uvod-enkrat { text-align: center; max-width: 42ch; margin: .8rem auto 0; font-size: .95rem; line-height: 1.5; color: rgba(17,17,17,.75); }
         /* razmik med podnaslovom in chatom (na .chat, ker .sub sili margin:0) — ~80px manj */
         .cw .uvod-oder .chat { display: flex; flex-direction: column; gap: .6rem; margin-top: clamp(1rem, 3vh, 1.8rem); }
-        .cw .chat-bot, .cw .chat-jaz, .cw .chat-izbire { animation: chatVzid .5s cubic-bezier(.16,1,.3,1) both; }
-        @keyframes chatVzid { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+        .cw .chat-bot, .cw .chat-jaz, .cw .chat-izbire { animation: chatVzid .66s cubic-bezier(.25, .8, .35, 1) both; }
+        /* Odgovori/izbire priletijo malenkost za vprasanjem -> bolj mehko, pogovorno. */
+        .cw .chat-izbire { animation-delay: .13s; }
+        @keyframes chatVzid { from { opacity: 0; transform: translateY(20px) scale(.98); } to { opacity: 1; transform: none; } }
         @media (prefers-reduced-motion: reduce) { .cw .chat-bot, .cw .chat-jaz, .cw .chat-izbire { animation: none; } }
         .cw .chat-bot { display: flex; align-items: flex-start; gap: .55rem; max-width: 82%; }
         .cw .chat-obraz { display: none; }
