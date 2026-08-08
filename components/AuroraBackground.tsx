@@ -24,7 +24,7 @@ export default function AuroraBackground() {
       <span className="pw-aurora-blob pw-aurora-vijola" />
       <style>{`
         body.pw-aurora-on { background-color: transparent !important; }
-        .pw-aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+        .pw-aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background-color: #fff; }
         .pw-aurora-blob { position: absolute; width: min(58vw, 720px); aspect-ratio: 1; border-radius: 50%; filter: blur(56px); }
         .pw-aurora-roza { top: -16vh; left: -12vw; background: radial-gradient(circle, oklch(72% .2 300 / .9), transparent 66%); opacity: .62; animation: pwAuroraRoza 12s ease-in-out infinite; }
         .pw-aurora-modra { bottom: -22vh; right: -14vw; background: radial-gradient(circle, oklch(80% .17 162 / .9), transparent 66%); opacity: .56; animation: pwAuroraModra 14s ease-in-out infinite; }
