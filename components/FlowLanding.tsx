@@ -1015,16 +1015,21 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-funkcija-ikona { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; flex-shrink: 0; border-radius: 10px; background: oklch(29% .02 285); color: oklch(84% .11 297); }
         .fl-funkcija strong { display: block; font-size: 1rem; font-weight: 650; color: #fff; margin-bottom: .25rem; }
         .fl-funkcija p { font-size: .88rem; line-height: 1.5; color: oklch(70% .02 285); margin: 0; }
-        /* Banner brezplacnega kalkulatorja (svetli del landinga, med laptop sekcijo in Orodji).
+        /* Banner brezplacnega kalkulatorja — TEMEN, z animiranim gradientom + lebdecimi zarki.
            BREZ lastnega max-width/padding — poravna se s sekcijami znotraj .fl-oder (sicer "stopnicka"). */
         .fl-kalk-banner { margin: clamp(3rem, 7vw, 5.5rem) 0 0; }
-        .fl-kalk-banner-in { display: flex; align-items: center; justify-content: space-between; gap: clamp(1.4rem, 4vw, 3rem); flex-wrap: wrap; padding: clamp(1.8rem, 4vw, 2.9rem) clamp(1.6rem, 4vw, 3rem); border-radius: 24px; border: 1px solid oklch(60% .18 297 / .28); background: linear-gradient(135deg, oklch(96% .035 297 / .85), oklch(97% .03 165 / .5)); }
-        .fl-kalk-eyebrow { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: oklch(52% .2 297); margin-bottom: .7rem; }
-        .fl-kalk-txt h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.7rem, 3.4vw, 2.5rem); line-height: 1.05; margin: 0 0 .5rem; color: var(--ink); }
-        .fl-kalk-txt p { font-size: 1rem; line-height: 1.5; color: rgba(17,17,17,.7); margin: 0; max-width: 42ch; }
-        .fl-kalk-cta { flex: none; display: inline-flex; align-items: center; gap: .5rem; padding: .95rem 1.75rem; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: .95rem; font-weight: 650; text-decoration: none; transition: transform .16s ease; }
-        .fl-kalk-cta:hover { transform: translateY(-2px); }
+        .fl-kalk-banner-in { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: clamp(1.4rem, 4vw, 3rem); flex-wrap: wrap; padding: clamp(2rem, 4.5vw, 3.3rem) clamp(1.8rem, 4vw, 3.2rem); border-radius: 24px; border: 1px solid oklch(62% .18 297 / .35); color: #fff; background: linear-gradient(120deg, #17102e 0%, #2a1657 26%, #3a1d78 50%, #221247 74%, #17102e 100%); background-size: 280% 280%; animation: flKalkGrad 16s ease-in-out infinite; box-shadow: 0 24px 60px oklch(30% .1 297 / .25); }
+        .fl-kalk-banner-in::before { content: ""; position: absolute; inset: -40%; z-index: 0; pointer-events: none; background: radial-gradient(40% 55% at 30% 40%, oklch(70% .18 297 / .5), transparent 70%), radial-gradient(38% 50% at 78% 66%, oklch(74% .15 200 / .4), transparent 72%); animation: flKalkBlob 18s ease-in-out infinite alternate; }
+        .fl-kalk-banner-in > * { position: relative; z-index: 1; }
+        @keyframes flKalkGrad { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @keyframes flKalkBlob { 0% { transform: translate3d(-6%, -4%, 0) scale(1); } 100% { transform: translate3d(6%, 5%, 0) scale(1.12); } }
+        .fl-kalk-eyebrow { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: oklch(86% .12 297); margin-bottom: .7rem; }
+        .fl-kalk-txt h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.7rem, 3.4vw, 2.5rem); line-height: 1.05; margin: 0 0 .5rem; color: #fff; }
+        .fl-kalk-txt p { font-size: 1rem; line-height: 1.5; color: rgba(255,255,255,.78); margin: 0; max-width: 42ch; }
+        .fl-kalk-cta { flex: none; display: inline-flex; align-items: center; gap: .5rem; padding: .95rem 1.75rem; border-radius: 999px; background: #fff; color: #17102e; font-size: .95rem; font-weight: 700; text-decoration: none; transition: transform .16s ease, box-shadow .16s ease; box-shadow: 0 8px 24px oklch(20% .05 297 / .3); }
+        .fl-kalk-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 30px oklch(20% .08 297 / .42); }
         @media (max-width: 640px) { .fl-kalk-banner-in { flex-direction: column; align-items: flex-start; } .fl-kalk-cta { width: 100%; justify-content: center; box-sizing: border-box; } }
+        @media (prefers-reduced-motion: reduce) { .fl-kalk-banner-in, .fl-kalk-banner-in::before { animation: none; } }
 
         /* Cenik (price plans, Magnific slog) */
         .fl-cenik { margin: 10.05rem 0 0; padding-top: 2.6rem; text-align: center; }
