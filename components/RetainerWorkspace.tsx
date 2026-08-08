@@ -611,6 +611,31 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
     return zbrani.filter(e => { const k = e.toLowerCase(); if (videni.has(k)) return false; videni.add(k); return true; });
   };
 
+  /* Urno postavko lahko urejaš KAR TUKAJ (ne le v Moje podjetje): posodobi lokalni
+     urna + zapiši nazaj v K_NAST.urnePostavke, da velja povsod (ponudbe, računi ...). */
+  const nastaviUrno = (v: number) => {
+    const cena = Math.max(0, Math.round(v) || 0);
+    setUrna(cena);
+    try {
+      const s = JSON.parse(localStorage.getItem(K_NAST) || '{}');
+      const arr: { cena: string }[] = Array.isArray(s.urnePostavke) ? s.urnePostavke : [];
+      let i = arr.findIndex(x => (Math.round(Number(x.cena)) || 0) > 0);
+      if (i < 0) { if (arr.length === 0) arr.push({ cena: '' }); i = 0; }
+      arr[i] = { ...arr[i], cena: String(cena) };
+      s.urnePostavke = arr;
+      localStorage.setItem(K_NAST, JSON.stringify(s));
+    } catch { /* prazno */ }
+  };
+
+  const nastaviValuto = (v: string) => {
+    setValuta(v);
+    try {
+      const s = JSON.parse(localStorage.getItem(K_NAST) || '{}');
+      s.valutaRacun = v;
+      localStorage.setItem(K_NAST, JSON.stringify(s));
+    } catch { /* prazno */ }
+  };
+
   const avatarIme = imeUporabnika.trim() || ponudnik.ime.trim();
   /* User (doprsje), NE PersonSimple — ta je enaka ikoni za dostopnost. */
   const avatarVsebina = avatarIme ? avatarIme.charAt(0).toUpperCase() : <User size={19} weight="regular" />;
@@ -714,7 +739,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
                 <div className="rw-cipi">
                   {URE_MOZNOSTI.map(u => <button key={u} type="button" className={'rw-cip' + (ure === u ? ' on' : '')} onClick={() => setUre(u)}>{u} h</button>)}
                   <input className="rw-num" type="number" min={1} step={1} value={ure} onChange={e => setUre(Math.max(1, Math.round(Number(e.target.value) || 1)))} />
-                  <span className="rw-mini">{tr('urna postavka', 'hourly rate')} {eur(urna)}</span>
+                  <span className="rw-mini rw-urna">{tr('urna postavka', 'hourly rate')} <input type="number" min={0} step={1} value={urna} onChange={e => nastaviUrno(Number(e.target.value))} aria-label={tr('urna postavka', 'hourly rate')} /><select value={valuta} onChange={e => nastaviValuto(e.target.value)} aria-label={tr('Valuta', 'Currency')}>{VALUTE_RACUN.map(v => <option key={v.id} value={v.id}>{v.id.toUpperCase()} {v.znak}</option>)}</select></span>
                 </div>
               </div>
             )}
@@ -1164,6 +1189,13 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-num{width:4.6rem;border:none;border-bottom:1px solid rgba(17,17,17,.3);background:transparent;padding:.35rem .3rem;font:inherit;font-size:.92rem;font-weight:600;text-align:right;color:var(--ink)}
         .rw-num:focus{outline:none;border-bottom-color:var(--ink)}
         .rw-mini{font-size:.8rem;color:rgba(17,17,17,.5)}
+        .rw-urna{display:inline-flex;align-items:center;gap:.4rem}
+        .rw-urna input{width:3.4rem;border:none;border-bottom:1.5px solid rgba(17,17,17,.22);background:transparent;padding:.15rem .1rem;font:inherit;font-size:.92rem;font-weight:700;text-align:right;color:var(--ink);-moz-appearance:textfield;appearance:textfield;transition:border-color .15s}
+        .rw-urna input::-webkit-outer-spin-button,.rw-urna input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+        .rw-urna input:focus{outline:none;border-bottom-color:var(--accent)}
+        .rw-urna select{-webkit-appearance:none;appearance:none;border:1px solid rgba(17,17,17,.16);border-radius:999px;background:rgba(255,255,255,.6) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>") no-repeat right .5rem center;font:inherit;font-size:.76rem;font-weight:700;color:var(--ink);cursor:pointer;padding:.24rem 1.5rem .24rem .7rem;transition:border-color .15s,background-color .15s}
+        .rw-urna select:hover{border-color:rgba(17,17,17,.32)}
+        .rw-urna select:focus{outline:none;border-color:var(--accent)}
 
         .rw-povz{margin-top:1.2rem;padding:1.7rem 1.6rem 1.8rem;border-radius:20px;background:rgba(255,255,255,.5);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.65);box-shadow:0 8px 30px rgba(17,17,17,.06),inset 0 1px 0 rgba(255,255,255,.6)}
         .rw-glavna{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding-bottom:.85rem;border-bottom:1px solid rgba(17,17,17,.1)}
