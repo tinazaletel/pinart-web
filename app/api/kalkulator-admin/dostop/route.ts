@@ -45,17 +45,26 @@ export async function GET() {
   /* Obogati z auth podatki: ali se je e-mail dejansko vpisal (obstaja uporabnik)
      in kdaj je bil zadnji vpis. Stevila obiskov ne belezimo (analitika je anonimna).
      listUsers je pri zaprti beti majhen; perPage=1000 zadosca. */
-  const authMap = new Map<string, { vpisan: boolean; zadnji_vpis: string | null }>();
+  const authMap = new Map<string, { id: string; vpisan: boolean; zadnji_vpis: string | null }>();
   try {
     const { data: au } = await baza.auth.admin.listUsers({ page: 1, perPage: 1000 });
     for (const u of au?.users ?? []) {
-      if (u.email) authMap.set(u.email.toLowerCase(), { vpisan: true, zadnji_vpis: u.last_sign_in_at ?? null });
+      if (u.email) authMap.set(u.email.toLowerCase(), { id: u.id, vpisan: true, zadnji_vpis: u.last_sign_in_at ?? null });
     }
   } catch { /* auth ni dosegljiv -> vrstice brez vpis podatka */ }
 
+  /* Obiski (engagement): dni aktivnosti + skupaj odprtij, po user_id. Ce tabele
+     'obiski' se ni (migracija nepognana), tiho -> stolpca ostaneta prazna. */
+  const obiskiMap = new Map<string, { dni: number; odprtij: number }>();
+  try {
+    const { data: ob } = await baza.from('obiski').select('user_id, dni, odprtij');
+    for (const o of ob ?? []) obiskiMap.set(o.user_id, { dni: o.dni ?? 0, odprtij: o.odprtij ?? 0 });
+  } catch { /* tabela morda se ne obstaja */ }
+
   const vrstice = (data ?? []).map((d) => {
     const u = authMap.get(String(d.email || '').toLowerCase());
-    return { ...d, vpisan: !!u, zadnji_vpis: u?.zadnji_vpis ?? null };
+    const ob = u ? obiskiMap.get(u.id) : undefined;
+    return { ...d, vpisan: !!u, zadnji_vpis: u?.zadnji_vpis ?? null, dni: ob?.dni ?? null, odprtij: ob?.odprtij ?? null };
   });
   return NextResponse.json({ vrstice });
 }

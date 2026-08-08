@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import FlowCloudBridge from '@/components/FlowCloudBridge';
+import ZabeleziObisk from '@/components/ZabeleziObisk';
 import SidebarUserMenu from '@/components/SidebarUserMenu';
 import AmbientBubbles from '@/components/AmbientBubbles';
 import FlowTopBar from './FlowTopBar';
@@ -86,6 +87,7 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
   </>;
   return <><AmbientBubbles /><PaketZnak /><FlowTopBar /><SidebarToggle vrsta="odpri" /><aside className={styles.sidebar} aria-label={L('Glavna navigacija', 'Main navigation')}><SidebarToggle vrsta="zapri" />
     <FlowCloudBridge />
+    <ZabeleziObisk />
     {/* logo in "zapri" sta zdaj v zgornji vrstici (FlowTopBar) — tu sta bila dvakrat */}
     <SidebarToggle vrsta="zapri" />
     {/* ikona lojtrice namesto napisa "Meni" */}
