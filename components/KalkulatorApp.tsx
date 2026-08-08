@@ -6180,10 +6180,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .orb0 { position: absolute; border: none; background: none; cursor: pointer; padding: 0; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; font-family: inherit; z-index: 1; animation: orb-plavaj var(--dur, 11s) ease-in-out var(--del, 0s) infinite, orb-vstop .7s cubic-bezier(.2,.8,.3,1) var(--vdel, 0s) both; will-change: transform; }
         .cw .orb0:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
         /* enoten CGP videz: ziva sredina -> mehko v prosojno rob, ena bela svetloba zgoraj levo */
-        .cw .orb0 .zar0 { position: absolute; inset: -14%; border-radius: 50%; z-index: 0; pointer-events: none; background: radial-gradient(54% 48% at 33% 27%, rgba(255,255,255,.72), rgba(255,255,255,0) 62%), radial-gradient(circle at 50% 52%, var(--o2, #C084FC) 0%, var(--o1, #7C3AED) 46%, transparent 73%); filter: blur(5px); opacity: .96; transform-origin: center; transition: opacity .3s, filter .3s, transform .35s cubic-bezier(.2,.8,.3,1); }
-        .cw .orb0:hover .zar0 { opacity: 1; filter: blur(4px); transform: scale(1.15); }
-        .cw .orb0-ikona, .cw .orb0-ime { transition: transform .3s cubic-bezier(.2,.8,.3,1); }
-        .cw .orb0:hover .orb0-ikona, .cw .orb0:hover .orb0-ime { transform: scale(1.08); }
+        .cw .orb0 .zar0 { position: absolute; inset: -14%; border-radius: 50%; z-index: 0; pointer-events: none; background: radial-gradient(54% 48% at 33% 27%, rgba(255,255,255,.72), rgba(255,255,255,0) 62%), radial-gradient(circle at 50% 52%, var(--o2, #C084FC) 0%, var(--o1, #7C3AED) 46%, transparent 73%); filter: blur(5px); opacity: .96; transition: opacity .3s, filter .3s; }
+        .cw .orb0:hover .zar0 { opacity: 1; filter: blur(3px); }
+        .cw .orb0:hover { filter: brightness(1.06) drop-shadow(0 9px 20px rgba(40,25,60,.24)); z-index: 3; }
         /* CGP-krogla (inline SVG) — senca + gradient + svetloba vrisani; zapolni orb (senca ~33% okoli) */
         .cw .orb0 .orb0-sfera { position: absolute; top: -22%; left: -22%; width: 144%; height: 144%; z-index: 0; pointer-events: none; }
         .cw .orb0::before { display: none; }  /* SVG krogla ima svojo svetlobo */
