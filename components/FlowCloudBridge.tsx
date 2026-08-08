@@ -3,12 +3,43 @@
 import { useEffect } from 'react';
 import { loadFlowData, writeFlowDataLocally } from '@/lib/pinartFlowStore';
 import { loadCloudSettings, loadOrganizationProfile, mergeFlowData, pullFlowData, pushFlowData, saveCloudSettings, saveOrganizationProfile } from '@/lib/pinartFlowCloud';
+import { createClient } from '@/utils/supabase/client';
+import { nastaviPredogled } from '@/lib/predogled';
 
 const SESSION_KEY = 'pinart-flow-cloud-bridge-v1';
+const MARKER_UPORABNIK = 'pinart-zadnji-uporabnik';
+
+/* Nov ali DRUG racun na tem brskalniku NE sme podedovati prejsnjega stanja:
+   - predogled ("Demo"/"Zacetek") je globalen v localStorage -> nov uporabnik bi
+     sicer videl izmisljeno ekipo/stranke/stroske (prijavil bi se in mislil, da so
+     to tuji podatki). Zato ga ob novem/drugem racunu ponastavimo na 'mine'.
+   - ob PREKLOPU racuna (druga oseba na istem brskalniku) pocistimo lokalne
+     'pinart-*' podatke PRED sinhronizacijo, da se ne prenesejo (bleed) v nov racun.
+   Prvi vpis na tem brskalniku (stored=null) NE brise -> ohrani migracijo iz
+   brezplacnega kalkulatorja (localStorage -> oblak). */
+async function poravnajRacun(): Promise<void> {
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const stored = localStorage.getItem(MARKER_UPORABNIK);
+    if (stored === user.id) return; // isti racun -> nic
+    if (stored && stored !== user.id) {
+      // PREKLOP racuna: pobrisi vse lokalne flow kljuce (razen markerja/piskotkov)
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('pinart-') && k !== MARKER_UPORABNIK && k !== 'pinart_cookie_consent') {
+          localStorage.removeItem(k);
+        }
+      }
+    }
+    nastaviPredogled('mine');                  // vedno pokazi PRAVE (prazne) podatke
+    localStorage.setItem(MARKER_UPORABNIK, user.id);
+  } catch { /* poravnava racuna ni kriticna za delovanje */ }
+}
 
 export default function FlowCloudBridge() {
   useEffect(() => {
-    if (sessionStorage.getItem(SESSION_KEY) === 'done') return;
     let cancelled = false;
 
     async function synchronize() {
@@ -72,7 +103,12 @@ export default function FlowCloudBridge() {
       }
     }
 
-    void synchronize();
+    (async () => {
+      await poravnajRacun();                 // VEDNO: nov/drug racun ne podeduje stanja
+      if (cancelled) return;
+      if (sessionStorage.getItem(SESSION_KEY) === 'done') return;  // sync le enkrat na sejo
+      await synchronize();
+    })();
     return () => { cancelled = true; };
   }, []);
 
