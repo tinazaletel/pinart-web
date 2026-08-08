@@ -161,6 +161,15 @@
 .workspace { grid-column: 2; grid-row: 2; position: relative; isolation: isolate; min-width: 0; padding: 3rem clamp(.8rem, 1.2vw, 1.3rem) 2rem; overflow: hidden; }
 /* Console-slog: vsebina centrirana z max-sirino, ne razpotegnjena cez cel zaslon (Tina: ne mara full-width). Vsi podatki ostanejo. */
 .workspace > *:not(.detailBackdrop):not(:global(.cw)) { max-width: 1280px; margin-inline: auto; }
+/* Mikro-animacija ob nalaganju notranjih strani: naslov + paneli se necno "zapeljejo" gor.
+   Samo CSS transform/opacity (GPU), sprozi se ENKRAT ob mountu -> NE obremeni strani.
+   Velja za vse strani, ki delijo ta shell (.workspace). reduced-motion izvzet. */
+@keyframes pwUvodGor { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.topbar h1 { animation: pwUvodGor .5s cubic-bezier(.22, 1, .36, 1) both; }
+.workspace > *:not(.topbar):not(.detailBackdrop):not(:global(.cw)) { animation: pwUvodGor .58s cubic-bezier(.22, 1, .36, 1) both; animation-delay: .08s; }
+@media (prefers-reduced-motion: reduce) {
+  .topbar h1, .workspace > *:not(.topbar) { animation: none !important; }
+}
 .workspace::before, .workspace::after { content: none; }
 /* Mehki plavajoci mehurcki — poenoteni s Flow landing stranjo (bel highlight,
    nezen odtenek, mehka senca; brez trdih nasicenih gradientov in mocnega sija). */
