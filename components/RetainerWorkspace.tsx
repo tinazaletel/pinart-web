@@ -635,6 +635,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       <div className="rw-ozadje" aria-hidden>
         <span className="rw-blob rw-blob-roza" />
         <span className="rw-blob rw-blob-modra" />
+        <span className="rw-blob rw-blob-vijola" />
         <AmbientBubbles />
       </div>
 
@@ -1081,8 +1082,10 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-ozadje{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background-color:#fff}
         /* nežna bloba (vijola + zelena) v ozadju, nad mrežo, komaj opazna */
         .rw-ozadje .rw-blob{position:absolute;width:min(60vw,760px);aspect-ratio:1;border-radius:50%;filter:blur(70px)}
-        .rw-blob-roza{top:-16vh;left:-12vw;background:radial-gradient(circle, oklch(74% .18 300 / .55), transparent 68%);opacity:.12;animation:rwRoza 22s ease-in-out infinite}
-        .rw-blob-modra{bottom:-22vh;right:-14vw;background:radial-gradient(circle, oklch(82% .15 162 / .55), transparent 68%);opacity:.1;animation:rwModra 25s ease-in-out infinite}
+        .rw-blob-roza{top:-16vh;left:-12vw;background:radial-gradient(circle, oklch(74% .18 300 / .7), transparent 68%);opacity:.4;animation:rwRoza 18s ease-in-out infinite}
+        .rw-blob-modra{bottom:-22vh;right:-14vw;background:radial-gradient(circle, oklch(82% .15 162 / .7), transparent 68%);opacity:.36;animation:rwModra 21s ease-in-out infinite}
+        .rw-blob-vijola{top:14vh;left:34vw;background:radial-gradient(circle, oklch(72% .2 288 / .7), transparent 68%);opacity:.32;animation:rwVijola 16s ease-in-out infinite}
+        @keyframes rwVijola{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-24vw,28vh) scale(1.2)}66%{transform:translate(22vw,-16vh) scale(.88)}}
         @keyframes rwRoza{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(32vw,24vh) scale(1.15)}50%{transform:translate(16vw,46vh) scale(.92)}75%{transform:translate(38vw,12vh) scale(1.08)}}
         @keyframes rwModra{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(-28vw,-22vh) scale(1.12)}50%{transform:translate(-44vw,-10vh) scale(.9)}75%{transform:translate(-16vw,-32vh) scale(1.06)}}
         @media (prefers-reduced-motion:reduce){.rw-blob{animation:none}}
@@ -1125,7 +1128,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         /* avatar klepet (prenesen iz kalkulatorja) */
         .rw-chat{display:flex;align-items:flex-start;gap:.55rem;max-width:90%;margin:0 0 1.2rem}
         .rw-obraz{display:none}
-        .rw-mehur{position:relative;background:#F7F2FF;border:1px solid rgba(185,160,230,.2);border-radius:18px;border-bottom-left-radius:5px;padding:.85rem 1.25rem .85rem 2.75rem;box-shadow:0 2px 10px rgba(40,25,40,.05)}
+        .rw-mehur{position:relative;background:oklch(96% .012 297);border:none;border-radius:18px;border-top-left-radius:5px;padding:.85rem 1.25rem .85rem 2.75rem;box-shadow:0 2px 12px rgba(40,25,40,.06)}
         .rw-mehur::before{content:"";position:absolute;left:.9rem;top:.95rem;width:1.3rem;height:1.3rem;border-radius:50%;background:radial-gradient(58% 48% at 30% 24%,rgba(255,255,255,.92),rgba(255,255,255,0) 62%),conic-gradient(from 210deg,#7C3AED,#EC4899,#F59E0B,#38BDF8,#7C3AED);box-shadow:0 2px 6px rgba(124,58,237,.28)}
         .rw-mehur b{display:block;color:var(--ink);font-weight:600;font-size:1.02rem;-webkit-text-stroke:0}
         .rw-mehur small{display:block;margin-top:.1rem;color:rgba(17,17,17,.64);font-size:.82rem}
@@ -1162,7 +1165,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-num:focus{outline:none;border-bottom-color:var(--ink)}
         .rw-mini{font-size:.8rem;color:rgba(17,17,17,.5)}
 
-        .rw-povz{margin-top:1.2rem;padding:1.7rem 1.6rem 1.8rem;border-radius:20px;background:#FCFBF7;border:1px solid rgba(17,17,17,.08);box-shadow:0 4px 18px rgba(17,17,17,.04)}
+        .rw-povz{margin-top:1.2rem;padding:1.7rem 1.6rem 1.8rem;border-radius:20px;background:rgba(255,255,255,.5);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.65);box-shadow:0 8px 30px rgba(17,17,17,.06),inset 0 1px 0 rgba(255,255,255,.6)}
         .rw-glavna{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding-bottom:.85rem;border-bottom:1px solid rgba(17,17,17,.1)}
         .rw-glavna span{font-size:.7rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(17,17,17,.55)}
         .rw-glavna b{font-family:var(--font-serif),Didot,serif;font-weight:700;font-size:clamp(1.55rem,3vw,2.05rem);letter-spacing:-.01em;color:var(--ink);-webkit-text-stroke:0}
@@ -1171,7 +1174,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-det li::before{content:"· ";color:var(--accent);font-weight:700}
         .rw-det b{color:var(--ink)}
 
-        .rw-mreza{display:grid;grid-template-columns:1fr 1fr;gap:1.3rem 1.5rem;background:#FCFBF7;border:1px solid rgba(17,17,17,.08);border-radius:16px;padding:1.5rem 1.6rem;box-shadow:0 4px 18px rgba(17,17,17,.04)}
+        .rw-mreza{display:grid;grid-template-columns:1fr 1fr;gap:1.3rem 1.5rem;background:rgba(255,255,255,.5);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.65);border-radius:16px;padding:1.5rem 1.6rem;box-shadow:0 8px 30px rgba(17,17,17,.06),inset 0 1px 0 rgba(255,255,255,.6)}
         .rw-mreza3{grid-template-columns:1fr 1fr 1fr}
         .rw-mreza-prav{grid-template-columns:1fr 9rem;align-items:start}
         .rw label{display:flex;flex-direction:column;gap:.35rem;font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(17,17,17,.6)}
@@ -1186,7 +1189,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-nedavni button:hover{border-color:var(--accent);color:var(--accent)}
 
         /* kartica + polja ENAKO kot pri kalkulatorju (Naročnik) */
-        .rw-kartica{background:#FCFBF7;border:1px solid rgba(17,17,17,.06);border-radius:20px;padding:1.6rem 1.7rem 1.7rem;box-shadow:0 4px 18px rgba(17,17,17,.04);max-width:760px}
+        .rw-kartica{background:rgba(255,255,255,.5);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.65);border-radius:20px;padding:1.6rem 1.7rem 1.7rem;box-shadow:0 8px 30px rgba(17,17,17,.06),inset 0 1px 0 rgba(255,255,255,.6);max-width:760px}
         .rw-kartica>.rw-knaslov{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.3rem 1rem;margin:0 0 1.1rem;font-weight:600;font-size:1.12rem;color:var(--ink)}
         .rw-knaslov .rw-vec{font-size:.82rem;font-weight:500;color:rgba(17,17,17,.55);text-transform:none;letter-spacing:0}
         .rw-numgrid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:none}

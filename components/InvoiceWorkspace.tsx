@@ -1036,7 +1036,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-mehur b{display:block;color:var(--ink);font-weight:600;font-size:1.02rem}
       .rc .rc-mehur small{display:block;margin-top:.1rem;color:rgba(17,17,17,.64);font-size:.82rem}
       /* vstopna forma (pilule+polja+gumb) v beli kartici — naslov+chat ostaneta na papirju nad njo */
-      .rc .rc-vstop-panel{background:#fff;border:1px solid rgba(17,17,17,.08);border-radius:20px;padding:1.6rem 1.5rem;box-shadow:0 12px 40px rgba(20,16,26,.05)}
+      .rc .rc-vstop-panel{background:rgba(255,255,255,.55);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.6);border-radius:20px;padding:1.6rem 1.5rem;box-shadow:0 12px 40px rgba(20,16,26,.05),inset 0 1px 0 rgba(255,255,255,.5)}
       .rc .rc-polja{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem 1.5rem;margin:0 0 1.3rem;min-width:0}
       .rc .rc-polja>*{min-width:0}
       .rc .rc-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.62)}

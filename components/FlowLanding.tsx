@@ -1067,7 +1067,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-kalk-cta { position: absolute; right: clamp(1.6rem, 4vw, 2.6rem); bottom: 20px; z-index: 2; display: inline-flex; align-items: center; gap: .5rem; padding: .95rem 1.75rem; border-radius: 999px; background: #fff; color: #17102e; font-size: .95rem; font-weight: 700; text-decoration: none; transition: transform .16s ease, box-shadow .16s ease; box-shadow: 0 8px 24px oklch(20% .05 297 / .3); }
         .fl-kalk-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 30px oklch(20% .08 297 / .42); }
         /* Ilustracija = web okno + zaključena zgodba: vprašalnik -> mehurčki cen -> znesek na oblikovanem listu (zanka 11s). */
-        .fl-kalk-viz { position: relative; flex: none; width: 420px; max-width: 46vw; align-self: flex-end; margin-top: 1.6rem; }
+        .fl-kalk-viz { position: relative; flex: none; width: 420px; max-width: 46vw; align-self: flex-end; margin-top: 1.6rem; margin-bottom: -2px; }
         .fl-kalk-txt { align-self: flex-start; max-width: 30rem; padding-bottom: 1.5rem; }
         .fl-kvw { border-radius: 14px 14px 0 0; overflow: hidden; background: oklch(98% .01 297 / .92); backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2); border: 1px solid rgba(255,255,255,.5); box-shadow: 0 22px 46px rgba(20,10,40,.42), inset 0 1px 0 rgba(255,255,255,.6); }
         .fl-kvw-bar { display: flex; align-items: center; gap: .34rem; padding: .42rem .62rem; background: oklch(96% .006 87 / .9); border-bottom: 1px solid rgba(17,17,17,.06); }
@@ -1094,7 +1094,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-kv-orb::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 46% 38%, var(--c1), var(--c2) 45%, transparent 72%); z-index: -1; }
         .fl-kv-orb svg { position: relative; opacity: .96; }
         .fl-kv-orb i { font-style: normal; font-size: .5rem; font-weight: 700; line-height: 1.05; }
-        .fl-kv-orb.o1 { width: 84px; height: 84px; left: 6px; top: 8px; --c1: oklch(72% .16 300); --c2: oklch(55% .17 288); }
+        .fl-kv-orb.o1 { width: 84px; height: 84px; left: 40px; top: 8px; --c1: oklch(72% .16 300); --c2: oklch(55% .17 288); }
         .fl-kv-orb.o2 { width: 74px; height: 74px; left: 172px; top: 84px; --c1: oklch(80% .13 200); --c2: oklch(62% .15 220); animation-delay: -2s; }
         .fl-kv-orb.o3 { width: 80px; height: 80px; right: 4px; top: 18px; --c1: oklch(80% .13 60); --c2: oklch(66% .16 45); animation-delay: -3s; }
         /* faza 3 — znesek + oblikovan list */

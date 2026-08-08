@@ -6180,8 +6180,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .orb0 { position: absolute; border: none; background: none; cursor: pointer; padding: 0; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; font-family: inherit; z-index: 1; animation: orb-plavaj var(--dur, 11s) ease-in-out var(--del, 0s) infinite, orb-vstop .7s cubic-bezier(.2,.8,.3,1) var(--vdel, 0s) both; will-change: transform; }
         .cw .orb0:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
         /* enoten CGP videz: ziva sredina -> mehko v prosojno rob, ena bela svetloba zgoraj levo */
-        .cw .orb0 .zar0 { position: absolute; inset: -14%; border-radius: 50%; z-index: 0; pointer-events: none; background: radial-gradient(54% 48% at 33% 27%, rgba(255,255,255,.72), rgba(255,255,255,0) 62%), radial-gradient(circle at 50% 52%, var(--o2, #C084FC) 0%, var(--o1, #7C3AED) 46%, transparent 73%); filter: blur(5px); opacity: .96; transition: opacity .3s, filter .3s; }
-        .cw .orb0:hover .zar0 { opacity: 1; filter: blur(3px); }
+        .cw .orb0 .zar0 { position: absolute; inset: -14%; border-radius: 50%; z-index: 0; pointer-events: none; background: radial-gradient(54% 48% at 33% 27%, rgba(255,255,255,.72), rgba(255,255,255,0) 62%), radial-gradient(circle at 50% 52%, var(--o2, #C084FC) 0%, var(--o1, #7C3AED) 46%, transparent 73%); filter: blur(5px); opacity: .96; transform-origin: center; transition: opacity .3s, filter .3s, transform .35s cubic-bezier(.2,.8,.3,1); }
+        .cw .orb0:hover .zar0 { opacity: 1; filter: blur(4px); transform: scale(1.15); }
+        .cw .orb0-ikona, .cw .orb0-ime { transition: transform .3s cubic-bezier(.2,.8,.3,1); }
+        .cw .orb0:hover .orb0-ikona, .cw .orb0:hover .orb0-ime { transform: scale(1.08); }
         /* CGP-krogla (inline SVG) — senca + gradient + svetloba vrisani; zapolni orb (senca ~33% okoli) */
         .cw .orb0 .orb0-sfera { position: absolute; top: -22%; left: -22%; width: 144%; height: 144%; z-index: 0; pointer-events: none; }
         .cw .orb0::before { display: none; }  /* SVG krogla ima svojo svetlobo */
@@ -6404,14 +6406,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         @media (prefers-reduced-motion: reduce) { .cw .chat-bot, .cw .chat-jaz, .cw .chat-izbire { animation: none; } }
         .cw .chat-bot { display: flex; align-items: flex-start; gap: .55rem; max-width: 82%; }
         .cw .chat-obraz { display: none; }
-        .cw .chat-bot .chat-mehur { position: relative; padding-left: 2.75rem; background: #F7F2FF; color: rgba(17,17,17,.72); border-bottom-left-radius: 5px; border-color: rgba(185,160,230,.2); }
+        .cw .chat-bot .chat-mehur { position: relative; padding-left: 2.75rem; background: oklch(96% .012 297); color: rgba(17,17,17,.72); border-top-left-radius: 5px; }
         /* majhna Pinart dot ikonica ZNOTRAJ oblacka (kot showcase mockup) */
         .cw .chat-bot .chat-mehur::before { content: ""; position: absolute; left: .9rem; top: .95rem; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 2px 6px rgba(124,58,237,.28); }
         .cw .chat-bot .chat-mehur b { display: block; color: var(--ink); font-weight: 700; font-size: 1.02rem; }
         .cw .chat-bot .chat-mehur small { display: block; margin-top: .1rem; color: rgba(17,17,17,.64); font-size: .82rem; }
         .cw .chat-jaz { align-self: flex-end; max-width: 88%; }
-        .cw .chat-jaz .chat-mehur { background: #d3f3ef; color: var(--ink); font-weight: 600; border-bottom-right-radius: 5px; border-color: rgba(150,215,205,.1); }
-        .cw .chat-mehur { border-radius: 18px; padding: .9rem 1.35rem; font-size: .95rem; line-height: 1.5; font-weight: 400; border: 1px solid rgba(255,255,255,.7); box-shadow: 0 2px 10px rgba(40,25,40,.05); }
+        .cw .chat-jaz .chat-mehur { background: oklch(90% .055 190); color: var(--ink); font-weight: 600; border-top-right-radius: 5px; }
+        .cw .chat-mehur { border-radius: 18px; padding: .9rem 1.35rem; font-size: .95rem; line-height: 1.5; font-weight: 400; border: none; box-shadow: 0 2px 12px rgba(40,25,40,.06); }
         .cw .chat-mehur-ured { font-family: inherit; font-size: .95rem; cursor: pointer; display: inline-flex; align-items: center; gap: .5rem; text-align: left; transition: transform .16s ease, box-shadow .16s ease, background .16s ease; }
         .cw .chat-mehur-ured svg { opacity: .4; flex: none; transition: opacity .16s ease; }
         .cw .chat-mehur-ured:hover { transform: translateY(-1px); box-shadow: 0 7px 18px rgba(40,25,40,.13); background: #aae6e1; }
