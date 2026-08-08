@@ -1015,6 +1015,15 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-funkcija-ikona { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; flex-shrink: 0; border-radius: 10px; background: oklch(29% .02 285); color: oklch(84% .11 297); }
         .fl-funkcija strong { display: block; font-size: 1rem; font-weight: 650; color: #fff; margin-bottom: .25rem; }
         .fl-funkcija p { font-size: .88rem; line-height: 1.5; color: oklch(70% .02 285); margin: 0; }
+        /* Banner brezplacnega kalkulatorja (svetli del landinga, med laptop sekcijo in Orodji). */
+        .fl-kalk-banner { max-width: 72rem; margin: clamp(3rem, 7vw, 5.5rem) auto 0; padding: 0 clamp(1.2rem, 5vw, 3rem); }
+        .fl-kalk-banner-in { display: flex; align-items: center; justify-content: space-between; gap: clamp(1.4rem, 4vw, 3rem); flex-wrap: wrap; padding: clamp(1.8rem, 4vw, 2.9rem) clamp(1.6rem, 4vw, 3rem); border-radius: 24px; border: 1px solid oklch(60% .18 297 / .28); background: linear-gradient(135deg, oklch(96% .035 297 / .85), oklch(97% .03 165 / .5)); }
+        .fl-kalk-eyebrow { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: oklch(52% .2 297); margin-bottom: .7rem; }
+        .fl-kalk-txt h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.7rem, 3.4vw, 2.5rem); line-height: 1.05; margin: 0 0 .5rem; color: var(--ink); }
+        .fl-kalk-txt p { font-size: 1rem; line-height: 1.5; color: rgba(17,17,17,.7); margin: 0; max-width: 42ch; }
+        .fl-kalk-cta { flex: none; display: inline-flex; align-items: center; gap: .5rem; padding: .95rem 1.75rem; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: .95rem; font-weight: 650; text-decoration: none; transition: transform .16s ease; }
+        .fl-kalk-cta:hover { transform: translateY(-2px); }
+        @media (max-width: 640px) { .fl-kalk-banner-in { flex-direction: column; align-items: flex-start; } .fl-kalk-cta { width: 100%; justify-content: center; box-sizing: border-box; } }
 
         /* Cenik (price plans, Magnific slog) */
         .fl-cenik { margin: 10.05rem 0 0; padding-top: 2.6rem; text-align: center; }
@@ -1267,6 +1276,17 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="fl-kalk-banner">
+          <div className="fl-kalk-banner-in">
+            <div className="fl-kalk-txt">
+              <span className="fl-kalk-eyebrow">{t('Brezplačno za vedno', 'Free forever')}</span>
+              <h2>{t('Kalkulator poštenih cen je brezplačen.', 'The fair-price calculator is free.')}</h2>
+              <p>{t('Izračunaj pošteno ceno in sestavi ponudbo — brez prijave in brez plačila.', 'Work out a fair price and build a proposal — no sign-up, no payment.')}</p>
+            </div>
+            <a className="fl-kalk-cta" href={kalkulator}>{t('Odpri kalkulator', 'Open calculator')} <ArrowRight size={17} weight="bold" /></a>
           </div>
         </section>
 
