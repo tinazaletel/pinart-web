@@ -1,15 +1,29 @@
+'use client';
+
+import { useEffect } from 'react';
+
 /* Skupno animirano AURORA ozadje (3 živi gradientni blobi) — EN kos za VSE strani.
    Fiksno, z-index -1 (kot AmbientBubbles), pod vsebino. Vsebina orodij je prosojna
-   (npr. .cw nima ozadja), zato aurora sije skozi. Retainer ima svoj bel .rw-ozadje
-   (z-index 0), ki tega prekrije -> tam ni dvojnika. Vrednosti = močni blobi, ki jih
-   je Tina potrdila (8.8.2026). */
+   (npr. .cw nima ozadja), zato aurora sije skozi.
+
+   POZOR (vzrok, da se prej ni videla): `body` ima neprosojno ozadje `--paper`, ki se
+   v vrstnem redu izrisovanja izriše NAD fiksnim elementom z z-index:-1. Zato ob vklopu
+   naredimo body PROSOJEN (samo dokler je aurora prisotna = /kalkulator strani); `html`
+   ostane `--paper` kot platno. Landing (druge poti) tega razreda nima -> nedotaknjen.
+   Retainer ima svoj bel .rw-ozadje (z-index 0), ki tega prekrije -> tam ni dvojnika. */
 export default function AuroraBackground() {
+  useEffect(() => {
+    document.body.classList.add('pw-aurora-on');
+    return () => document.body.classList.remove('pw-aurora-on');
+  }, []);
+
   return (
     <div className="pw-aurora" aria-hidden>
       <span className="pw-aurora-blob pw-aurora-roza" />
       <span className="pw-aurora-blob pw-aurora-modra" />
       <span className="pw-aurora-blob pw-aurora-vijola" />
       <style>{`
+        body.pw-aurora-on { background-color: transparent !important; }
         .pw-aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
         .pw-aurora-blob { position: absolute; width: min(58vw, 720px); aspect-ratio: 1; border-radius: 50%; filter: blur(56px); }
         .pw-aurora-roza { top: -16vh; left: -12vw; background: radial-gradient(circle, oklch(72% .2 300 / .85), transparent 66%); opacity: .5; animation: pwAuroraRoza 12s ease-in-out infinite; }
