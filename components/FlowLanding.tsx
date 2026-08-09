@@ -1116,7 +1116,28 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @keyframes flKvPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
         @media (max-width: 900px) { .fl-kalk-viz { display: none; } }
         @media (prefers-reduced-motion: reduce) { .fl-kv-stage { animation: none; opacity: 0; } .fl-kv-s3 { opacity: 1; } .fl-kv-orb, .fl-kvw-blob, .fl-kv-doc-t { animation: none; } }
-        @media (max-width: 900px) { .fl-kalk-banner-in { display: flex; flex-direction: column; align-items: flex-start; min-height: 0; padding-bottom: clamp(1.5rem, 4vw, 2rem); } .fl-kalk-txt { padding-bottom: 0; } .fl-kalk-cta { position: static; margin-top: 1.3rem; width: 100%; justify-content: center; box-sizing: border-box; } }
+        /* iPad / tablet (641–900): okno skrito, besedilo levo, lik desno (premiki resetirani), gumb spodaj-desno */
+        @media (min-width: 641px) and (max-width: 900px) {
+          .fl-kalk-banner-in { align-items: flex-start; min-height: 168px; padding-bottom: clamp(1.3rem, 4vw, 1.9rem); }
+          .fl-kalk-txt { max-width: min(54%, 26rem); padding-bottom: 0; }
+          .fl-kalk-lik { width: clamp(9rem, 30vw, 15rem); }
+          .fl-kalk-lik-img { transform: none !important; }
+          .fl-kalk-cta { position: absolute; right: clamp(1.2rem, 4vw, 2rem); bottom: 16px; width: auto; margin: 0; }
+        }
+        .fl-kalk-zig-mob { display: none; }
+        /* Mobile (<=640): NOV layout po skici — žig zgoraj-desno ob naslovu; spodaj okno LEVO + Pupa DESNO; gumb ČEZ na sredini. */
+        @media (max-width: 640px) {
+          .fl-kalk-banner-in { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "txt txt" "viz lik"; align-items: end; row-gap: .7rem; min-height: 0; padding: clamp(1.4rem, 5vw, 2rem) clamp(1.4rem, 5vw, 2rem) 0; }
+          .fl-kalk-txt { grid-area: txt; max-width: 100%; padding: 0 6.5rem 0 0; }
+          .fl-kalk-viz { grid-area: viz; display: block; width: 100%; max-width: 100%; align-self: end; margin: 0; transform: none; }
+          .fl-kalk-viz .fl-kalk-zig { display: none; }
+          .fl-kalk-lik { grid-area: lik; position: relative; right: auto; top: auto; bottom: auto; width: 100%; height: auto; aspect-ratio: 1 / 1.05; align-self: end; margin: 0 -.4rem -3px 0; }
+          .fl-kalk-lik-img { transform: none !important; }
+          .fl-kalk-cta { position: absolute; left: 50%; bottom: clamp(.9rem, 5vw, 1.8rem); transform: translateX(-50%); width: auto; margin: 0; z-index: 6; }
+          .fl-kalk-zig-mob { display: inline-flex; position: absolute; top: clamp(1rem, 5vw, 1.6rem); right: clamp(1rem, 5vw, 1.6rem); z-index: 6; flex-direction: column; align-items: center; gap: .1rem; padding: .42rem .85rem .36rem; border: 2px solid rgba(255,255,255,.6); border-radius: 11px; background: linear-gradient(135deg, oklch(44% .16 300), oklch(28% .12 292)); color: #fff; text-transform: uppercase; transform: rotate(-8deg); box-shadow: 0 8px 20px rgba(20,10,40,.4); }
+          .fl-kalk-zig-mob b { font-size: 1rem; font-weight: 800; letter-spacing: .04em; line-height: 1; }
+          .fl-kalk-zig-mob i { font-style: normal; font-size: .52rem; font-weight: 700; letter-spacing: .28em; opacity: .82; }
+        }
         @media (prefers-reduced-motion: reduce) { .fl-kalk-banner-in, .fl-kalk-banner-in::before { animation: none; } }
 
         /* Cenik (price plans, Magnific slog) */
@@ -1375,6 +1396,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
 
         <section className="fl-kalk-banner">
           <div className="fl-kalk-banner-in">
+            <span className="fl-kalk-zig-mob" aria-hidden><b>{t('Brezplačno', 'Free')}</b><i>{t('za vedno', 'forever')}</i></span>
             <div className="fl-kalk-txt">
               <h2>{t('Kalkulator', 'The fair-price')}<br />{t('poštenih cen', 'calculator')}</h2>
               <p>{t('Izračunaj pošteno ceno in sestavi ponudbo,', 'Work out a fair price and build a proposal,')}<br />{t('brez prijave in brez plačila.', 'no sign-up, no payment.')}</p>
