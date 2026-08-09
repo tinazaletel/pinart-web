@@ -6192,7 +6192,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .orb0-foto { background: none; }
         .cw .orb0-foto::before { display: none; }
         .cw .orb0-foto .orb0-svg { position: absolute; top: -24%; left: -24%; width: 148%; height: 148%; z-index: 0; pointer-events: none; -webkit-user-drag: none; user-select: none; transform-origin: center; transition: transform .28s cubic-bezier(.16,1,.3,1), filter .28s ease; }
-        .cw .orb0-foto:hover .orb0-svg { transform: scale(1.1); filter: brightness(1.05) saturate(1.12); }
+        .cw .orb0 .orb0-sfera { transform-origin: center; transition: transform .28s cubic-bezier(.16,1,.3,1); }
+        .cw .orb0:hover .orb0-svg, .cw .orb0:hover .orb0-sfera, .cw .orb0:hover .zar0 { transform: scale(1.12) !important; }
+        .cw .orb0:hover .orb0-svg { filter: brightness(1.05) saturate(1.12); }
         .cw .orb0 .orb0-ikona { position: relative; z-index: 1; display: block; margin-bottom: .12rem; filter: drop-shadow(0 1px 2px rgba(35,18,45,.45)); }
         .cw .orb0 .orb0-ikona svg { width: 24px; height: 24px; display: block; }
         .cw .orb0 .orb0-ime { position: relative; z-index: 1; font-weight: 700; font-size: .86rem; line-height: 1.12; padding: 0 1.1em; text-shadow: 0 1px 3px rgba(35,18,45,.5); }
