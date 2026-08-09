@@ -748,7 +748,7 @@
 .expenseEditorActions button { min-height: 2.6rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: .65rem; background: transparent; font: 800 .61rem var(--font-sans), sans-serif; cursor: pointer; }
 .expenseEditorActions button:last-child { border-color: var(--ink); background: var(--ink); color: var(--paper); }
 .expenseArchive > header { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
-.expenseList article { position: relative; display: grid; grid-template-columns: auto auto minmax(12rem, 1fr) minmax(10rem, .7fr) auto; align-items: center; gap: .8rem; min-height: 4.5rem; padding: .65rem .8rem; border-top: 1px solid rgba(17,17,17,.05); background: transparent; transition: background-color .18s ease; }
+.expenseList article { position: relative; display: grid; grid-template-columns: auto auto minmax(12rem, 1fr) minmax(10rem, .7fr) auto; align-items: center; gap: .8rem; min-height: 3.4rem; padding: .5rem .8rem; border-top: 1px solid rgba(17,17,17,.05); background: transparent; transition: background-color .18s ease; }
 .expenseList article:first-child { border-top: none; }
 .expenseList article:hover { background: #fff; }
 .expenseList article.expenseRowSel { background: oklch(96.5% .022 300); }
@@ -764,7 +764,15 @@
 .expenseList small { margin-top: .2rem; color: var(--muted); font-size: .54rem; }
 /* Uredi (svincnik) + izbris (×) sta zdaj enaka okrogla ikonska gumba, poravnana
    skupaj v zadnjem stolpcu kartice. */
-.expenseList .expenseActions { display: inline-flex; align-items: center; flex-wrap: nowrap; gap: .4rem; }
+.expenseList .expenseActions { position: relative; display: inline-flex; align-items: center; flex-wrap: nowrap; gap: .4rem; }
+.expenseList .expenseKebab { display: inline-flex; align-items: center; justify-content: center; width: 1.85rem; height: 1.85rem; aspect-ratio: 1; padding: 0; border-radius: 50%; border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent); background: #fff; color: var(--ink); cursor: pointer; }
+.expenseList .expenseKebab:hover { border-color: var(--ink); background: oklch(95% .01 87); }
+.expenseKebabBack { position: fixed; inset: 0; z-index: 40; }
+.expenseKebabMenu { position: absolute; top: calc(100% + .3rem); right: 0; z-index: 41; min-width: 9rem; padding: .3rem; border: 1px solid var(--line); border-radius: .7rem; background: #fff; box-shadow: 0 12px 34px rgba(20,15,18,.18); display: flex; flex-direction: column; gap: .1rem; }
+.expenseKebabMenu button { display: flex; align-items: center; gap: .5rem; width: 100%; padding: .5rem .6rem; border: 0; border-radius: .5rem; background: transparent; color: var(--ink); font: 600 .66rem var(--font-sans), sans-serif; cursor: pointer; text-align: left; }
+.expenseKebabMenu button:hover { background: oklch(96% .01 87); }
+.expenseKebabMenu .expenseKebabBrisi { color: oklch(52% .16 25); }
+.expenseKebabMenu .expenseKebabBrisi:hover { background: oklch(95% .04 25); }
 .expenseList .expenseEdit, .expenseList .expenseDelete { flex: none; }
 .expenseList .expenseEdit, .expenseList .expenseDelete { display: inline-flex; align-items: center; justify-content: center; width: 1.85rem; height: 1.85rem; aspect-ratio: 1; padding: 0; border-radius: 50%; line-height: 1; cursor: pointer; }
 .expenseList .expenseEdit { border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent); background: #fff; color: var(--ink); }
