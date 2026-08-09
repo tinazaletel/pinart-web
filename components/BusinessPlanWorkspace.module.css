@@ -130,7 +130,7 @@
 /* v pasu so gumbi ozji, sicer se "Ustavi" prelomi v drugo vrstico */
 .tecePas .skrijGumb { padding: .38rem .8rem; font-size: .74rem; }
 @media (prefers-reduced-motion: reduce) { .tecePika { animation: none; } }
-.ethics { display: grid; gap: .3rem; padding: 1rem; border-radius: 1rem; background: oklch(95% .025 87); }
+.ethics { display: grid; gap: .3rem; padding: 1rem; border-radius: 1rem; background: rgba(255,255,255,.55); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid rgba(255,255,255,.6); }
 .ethics span { color: var(--muted); font-size: .84rem; line-height: 1.45; }
 .history { display: grid; gap: .2rem; }
 .history header { display: flex; align-items: end; justify-content: space-between; padding-bottom: 1rem; }
@@ -332,8 +332,22 @@
 
 /* ── Mesečna evidenca: navigacija po mesecih ─────────────────────────────── */
 .mesecNav {
+  position: relative;
   display: flex; align-items: center; justify-content: center; gap: 1rem;
   margin-top: .3rem;
+}
+.mesecNav .mesecExport {
+  position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+  width: auto; height: auto; display: inline-flex; align-items: center; gap: .4rem;
+  border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.6);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  padding: .48rem .9rem; font: 700 .74rem var(--font-sans), sans-serif; color: var(--ink); cursor: pointer;
+}
+.mesecNav .mesecExport:hover:not(:disabled) { border-color: var(--ink); background: oklch(100% 0 0); }
+.mesecNav .mesecExport:disabled { opacity: .4; cursor: not-allowed; }
+@media (max-width: 720px) {
+  .mesecNav { flex-wrap: wrap; }
+  .mesecNav .mesecExport { position: static; transform: none; width: 100%; justify-content: center; margin-top: .5rem; }
 }
 .mesecNav strong { min-width: 11rem; text-align: center; font: 500 1.15rem var(--font-serif), Georgia, serif; -webkit-text-stroke: .3px var(--ink); text-shadow: 0 1px 2px oklch(100% 0 0 / .35); }
 .mesecNav button {

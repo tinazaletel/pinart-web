@@ -1018,18 +1018,13 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
         <button type="button" onClick={() => setMesec(premikMeseca(mesec, -1))} aria-label={L('Prejšnji mesec', 'Previous month')}>‹</button>
         <strong>{mesecOznaka(mesec)}</strong>
         <button type="button" onClick={() => setMesec(premikMeseca(mesec, 1))} aria-label={L('Naslednji mesec', 'Next month')}>›</button>
+        <button type="button" className={styles.mesecExport} onClick={izvoziHrCsv} disabled={prisotnostiMeseca.length === 0}
+          title={L('Prenesi mesečno evidenco kot CSV — za kadrovsko / plače ali uvoz v drug program', 'Download the monthly record as CSV — for HR / payroll or import into another program')}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M8 11l4 4 4-4M5 21h14" /></svg>
+          {L('Izvozi za HR (CSV)', 'Export for HR (CSV)')}
+        </button>
       </div>
 
-      {prisotnostiMeseca.length > 0 && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '-.2rem 0 .55rem' }}>
-          <button type="button" onClick={izvoziHrCsv}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', border: '1px solid oklch(86% .012 87)', background: '#fff', borderRadius: 999, padding: '.4rem .9rem', fontSize: '.76rem', fontWeight: 700, color: 'var(--ink)', cursor: 'pointer' }}
-            title={L('Prenesi mesečno evidenco kot CSV za kadrovsko / plače', 'Download the monthly record as CSV for HR / payroll')}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M8 11l4 4 4-4M5 21h14" /></svg>
-            {L('Izvozi za HR (CSV)', 'Export for HR (CSV)')}
-          </button>
-        </div>
-      )}
 
       <div className={styles.mesecTabelaOvoj}>
         <table className={styles.mesecTabela}>
