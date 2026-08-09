@@ -76,7 +76,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
 
       <div className="flnav-actions">
         <a className="flnav-login" href={prijava} onClick={close}>{isEn ? 'Log in' : 'Prijava'}</a>
-        <a className="flnav-signup" href={prijava} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
+        <a className="flnav-signup" href={`${prijava}?nov=1`} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
         <a className="flnav-lang" href={languageHref} hrefLang={isEn ? 'sl' : 'en'} aria-label={isEn ? 'Preklopi na slovenščino' : 'Switch to English'}>
           <span aria-hidden>{isEn ? '🇸🇮' : '🇬🇧'}</span>{isEn ? 'SL' : 'EN'}
         </a>
@@ -173,7 +173,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
       {LINKS.map(l => <a key={l.label} href={l.href} onClick={close}>{l.label}</a>)}
       <a className="flnav-lang" href={languageHref} hrefLang={isEn ? 'sl' : 'en'}><span aria-hidden>{isEn ? '🇸🇮' : '🇬🇧'}</span>{isEn ? 'Slovenščina' : 'English'}</a>
       <a className="flnav-login" href={prijava} onClick={close}>{isEn ? 'Log in' : 'Prijava'}</a>
-      <a className="flnav-signup" href={prijava} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
+      <a className="flnav-signup" href={`${prijava}?nov=1`} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
     </div>
     </>
   );

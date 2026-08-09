@@ -50,6 +50,9 @@ export default function AuthForm({ base }: { base: string }) {
     const next = params.get('next');
     if (next && next.startsWith('/') && !next.startsWith('//')) setCilj(next);
 
+    /* ?nov=1 (ali ?mode=signup) z landinga -> odpri takoj "Nov račun" tab, ne Prijava. */
+    if (params.get('nov') === '1' || params.get('mode') === 'signup') setMode('signup');
+
     const napaka = params.get('napaka');
     if (napaka) {
       setMessage({ type: 'error', text: prevediNapako(napaka, jeEn) });
