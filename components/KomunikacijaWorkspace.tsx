@@ -6,7 +6,7 @@
    To je vstopna tocka, ki je manjkala, da sodelavec odpre skupno nit s svoje strani. */
 
 import { useEffect, useRef, useState } from 'react';
-import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, MagnifyingGlass, Tray, NotePencil, Trash, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, ArrowBendUpLeft, ArrowBendUpRight, Smiley, Plus, UserPlus } from '@phosphor-icons/react';
+import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, MagnifyingGlass, Tray, NotePencil, Trash, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, ArrowBendUpLeft, ArrowBendUpRight, Smiley, Plus, UserPlus, List } from '@phosphor-icons/react';
 import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, dodajUdelezenca, type OblacnaNit, type OblacnoSporocilo } from '@/lib/klepetCloud';
 import { usePredogled } from '@/lib/predogled';
 import { preberiVsePoste, premakniPosto, nastaviOznakePoste, dodajPosto, oznaciPostoPrebrano, type PostaVnos } from '@/lib/postaDnevnik';
@@ -60,6 +60,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   const [zavihek, setZavihek] = useState<'klepet' | 'posta'>('posta');
   const [posta, setPosta] = useState<PostaVnos[]>([]);
   const [mapa, setMapa] = useState<'prejeto' | 'poslano' | 'osnutki' | 'kos'>('prejeto');
+  const [mapeOdprt, setMapeOdprt] = useState(false);
   const [postaIsk, setPostaIsk] = useState('');
   const [beriMail, setBeriMail] = useState<PostaVnos | null>(null);
   const [postaStran, setPostaStran] = useState(1);
@@ -221,10 +222,12 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
             <button type="button" className="km-nova" title={L('Nova pošta z huba: najprej izbereš projekt, nato pišeš (pride z enotnim klijentom)', 'New mail from the hub: first pick a project, then compose (comes with the unified client)')}><PaperPlaneRight size={14} weight="fill" /> {L('Nova pošta', 'New mail')}</button>
           </div>
           <div className="km-posta-body">
-            <aside className="km-mape" aria-label={L('Mape', 'Folders')}>
+            <button type="button" className="km-mape-trig" onClick={() => setMapeOdprt(true)} aria-label={L('Mape', 'Folders')} aria-expanded={mapeOdprt}><List size={16} weight="bold" /> <span>{mapa === 'prejeto' ? L('Prejeto', 'Inbox') : mapa === 'poslano' ? L('Poslano', 'Sent') : mapa === 'osnutki' ? L('Osnutki', 'Drafts') : L('Koš', 'Trash')}</span></button>
+            {mapeOdprt && <div className="km-mape-back" onClick={() => setMapeOdprt(false)} aria-hidden />}
+            <aside className={'km-mape' + (mapeOdprt ? ' odprt' : '')} aria-label={L('Mape', 'Folders')}>
               {([{ id: 'prejeto', ime: L('Prejeto', 'Inbox'), I: Tray }, { id: 'poslano', ime: L('Poslano', 'Sent'), I: PaperPlaneRight }, { id: 'osnutki', ime: L('Osnutki', 'Drafts'), I: NotePencil }, { id: 'kos', ime: L('Koš', 'Trash'), I: Trash }] as const).map(({ id, ime, I }) => {
                 const st = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === id).length;
-                return <button type="button" key={id} className={mapa === id ? 'on' : ''} onClick={() => { setMapa(id); setPostaStran(1); setBeriMail(null); }}><I size={16} weight={mapa === id ? 'fill' : 'regular'} /> <span className="km-mapa-ime">{ime}</span>{st ? <b>{st}</b> : null}</button>;
+                return <button type="button" key={id} className={mapa === id ? 'on' : ''} onClick={() => { setMapa(id); setPostaStran(1); setBeriMail(null); setMapeOdprt(false); }}><I size={16} weight={mapa === id ? 'fill' : 'regular'} /> <span className="km-mapa-ime">{ime}</span>{st ? <b>{st}</b> : null}</button>;
               })}
             </aside>
             <div className="km-posta-desno">
@@ -440,7 +443,20 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-mapa-ime{flex:1;min-width:0}
         .km-mape button b{font-size:.72rem;font-weight:700;opacity:.55}
         .km-posta-desno{flex:1;min-width:0}
-        @media (max-width:760px){.km-posta-body{flex-direction:column}.km-mape{width:100%;flex-direction:row;flex-wrap:wrap}.km-mape button{width:auto}}
+        .km-mape-trig{display:none}
+        @media (max-width:760px){
+          .km-posta-vrh{flex-wrap:nowrap;gap:.45rem}
+          .km-posta-vrh .km-iskalnik{flex:1 1 4rem;min-width:0}
+          .km-prejemniki{flex:none;max-width:8.2rem;padding:.5rem .6rem;font-size:.72rem}
+          .km-nova{flex:none;font-size:0;gap:0;padding:.6rem .75rem}
+          .km-posta-body{flex-direction:column}
+          .km-mape-trig{display:inline-flex;align-items:center;gap:.45rem;align-self:flex-start;border:1px solid var(--k-line);border-radius:999px;padding:.5rem .95rem;background:#fff;color:var(--k-ink);font:700 .8rem var(--font-sans),sans-serif;cursor:pointer}
+          .km-mape-back{position:fixed;inset:0;z-index:69;background:color-mix(in oklch,var(--k-ink) 34%,transparent);animation:kmFade .2s ease both}
+          .km-mape{position:fixed;left:0;top:0;bottom:0;z-index:70;width:min(78%,15rem);flex-direction:column;flex-wrap:nowrap;gap:.15rem;padding:1.15rem .8rem calc(1.15rem + env(safe-area-inset-bottom,0px));background:var(--k-paper,#fff);box-shadow:8px 0 40px color-mix(in oklch,var(--k-ink) 22%,transparent);transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.3,1);overflow-y:auto}
+          .km-mape.odprt{transform:none}
+          .km-mape button{width:100%}
+        }
+        @keyframes kmFade{from{opacity:0}to{opacity:1}}
         .km-mail-btn{width:100%;text-align:left;border:1px solid var(--k-line);cursor:pointer}
         .km-mail-btn:hover{background:color-mix(in oklch,var(--k-purple) 5%,transparent)}
         .km-mail-kazalec{margin-left:.5rem;opacity:.4}
