@@ -1123,7 +1123,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           .fl-kalk-viz { width: 300px; max-width: 37vw; }
           .fl-kalk-lik { width: clamp(10rem, 24vw, 15rem); }
           .fl-kalk-lik-img { transform: none !important; }
-          .fl-kalk-lik-img.a { transform: scale(1.85) !important; transform-origin: right bottom; }
+          .fl-kalk-lik-img.a { transform: translateX(20px) scale(1.85) !important; transform-origin: right bottom; }
           .fl-kalk-lik-img.b { transform: scale(1.2) !important; transform-origin: right bottom; }
         }
         .fl-kalk-zig-mob { display: none; }
