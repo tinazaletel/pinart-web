@@ -83,7 +83,7 @@ export function OrbSfera({ id, o1 }: { id: string; o1: string }) {
 /* orb0 CSS — skopiran iz kalkulatorja, scopan pod .rw (namesto .cw) */
 export const ORB0_CSS = `
   .rw .orb0 { position: absolute; border: none; background: none; cursor: pointer; padding: 0; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; font-family: inherit; z-index: 1; animation: rwOrbPlavaj var(--dur, 11s) ease-in-out var(--del, 0s) infinite, rwOrbVstop .7s ease var(--vdel, 0s) both; will-change: transform, filter; transition: filter .25s ease; }
-  .rw .orb0:hover { filter: brightness(1.06) drop-shadow(0 9px 20px rgba(40,25,60,.24)); z-index: 3; }
+  .rw .orb0:hover { filter: brightness(1.09) saturate(1.12) drop-shadow(0 12px 26px rgba(40,25,60,.3)); z-index: 3; }
   .rw .orb0.on { filter: drop-shadow(0 6px 16px rgba(40,25,60,.26)); }
   .rw .orb0:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
   @keyframes rwOrbVstop { from { opacity: 0; } to { opacity: 1; } }
