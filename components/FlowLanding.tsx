@@ -1078,6 +1078,11 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @keyframes flLikA { 0%, 42% { opacity: 1; } 50%, 92% { opacity: 0; } 100% { opacity: 1; } }
         @keyframes flLikB { 0%, 42% { opacity: 0; } 50%, 92% { opacity: 1; } 100% { opacity: 0; } }
         @media (prefers-reduced-motion: reduce) { .fl-kalk-lik-img.a { opacity: 1; animation: none; } .fl-kalk-lik-img.b { opacity: 0; animation: none; } }
+        /* Srednji desktop (1101–1300): iPad mini/Air/11" LANDSCAPE — pupa flush DESNO da ne prekrije žiga (13"+ ostane ideal) */
+        @media (min-width: 1101px) and (max-width: 1300px) {
+          .fl-kalk-lik-img.a { transform: translateX(0px) scale(1.32) !important; transform-origin: right bottom; }
+          .fl-kalk-lik-img.b { transform: translateX(-24px) scale(1.08) !important; transform-origin: right bottom; }
+        }
         .fl-kalk-txt { align-self: flex-start; max-width: 30rem; padding-bottom: 1.5rem; }
         .fl-kvw { border-radius: 14px 14px 0 0; overflow: hidden; background: oklch(98% .01 297 / .92); backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2); border: 1px solid rgba(255,255,255,.5); box-shadow: 0 22px 46px rgba(20,10,40,.42), inset 0 1px 0 rgba(255,255,255,.6); }
         .fl-kvw-bar { display: flex; align-items: center; gap: .34rem; padding: .42rem .62rem; background: oklch(96% .006 87 / .9); border-bottom: 1px solid rgba(17,17,17,.06); }
