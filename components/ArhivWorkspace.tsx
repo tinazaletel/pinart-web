@@ -894,6 +894,15 @@ export default function ArhivWorkspace({ base }: { base: string }) {
           .arh-pogled-preklop button{padding:.46rem .66rem}
           .arh-pp-ik{display:inline-flex}
           .arh-pp-txt{display:none}
+          /* Tabela = kartični preliv (brez horizontalnega scrolla): naziv v svojo vrsto, meta se ovije */
+          .arh-tabela-ovoj{overflow-x:hidden}
+          .arh-tabela{min-width:0}
+          .arh-tabela > header{display:none}
+          .arh-vrstica{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .7rem;padding:.8rem .85rem}
+          .arh-vrstica > *{min-width:0;font-size:.76rem;color:rgba(17,17,17,.6)}
+          .arh-vrstica > .arh-chk-cel{order:-1}
+          .arh-vrstica > .arh-glavna{flex:1 1 100%;font-size:.92rem;color:var(--ink)}
+          .arh-vrstica > .arh-glavna strong{font-size:.92rem}
         }
 
         .arh-panel{animation:arhSek .45s cubic-bezier(.16,1,.3,1) both;min-width:0}
