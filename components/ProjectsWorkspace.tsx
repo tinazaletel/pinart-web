@@ -1560,10 +1560,6 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             ? <select className="pw-status-select" aria-label={L('Spremeni status projekta', 'Change project status')} value={selected.real.status} onChange={event => naStatusProjekt(selected.real!, event.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
             : <select className="pw-status-select" aria-label={L('Spremeni status', 'Change status')} value={selected.offer.status} onChange={event => naStatusOffer(selected.offer.id, event.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
         </span></header>
-        <div className="pw-detajl-preklop" role="tablist" aria-label={L('Pogled projekta', 'Project view')}>
-          <button type="button" role="tab" aria-selected={pogledDetajl === 'tabelni'} className={pogledDetajl === 'tabelni' ? 'on' : ''} onClick={() => setPogledDetajl('tabelni')}>{L('Zapis', 'Record')}</button>
-          <button type="button" role="tab" aria-selected={pogledDetajl === 'moderni'} className={pogledDetajl === 'moderni' ? 'on' : ''} onClick={() => setPogledDetajl('moderni')}>{L('Delovni', 'Work')}</button>
-        </div>
         {pogledDetajl === 'moderni' ? (
           <ProjectDetailModern
             data={selected}
