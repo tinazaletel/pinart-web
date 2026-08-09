@@ -1131,7 +1131,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           .fl-kalk-txt { grid-area: txt; max-width: 100%; padding: 0 6.5rem 0 0; }
           .fl-kalk-viz { grid-area: viz; display: block; width: calc(100% + clamp(1.4rem, 5vw, 2rem)); max-width: none; align-self: end; margin: 0 0 0 calc(-1 * clamp(1.4rem, 5vw, 2rem)); transform: none; }
           .fl-kalk-viz .fl-kalk-zig { display: none; }
-          .fl-kalk-lik { grid-area: lik; position: relative; z-index: 2; right: auto; top: auto; bottom: auto; width: calc(100% + 7rem); height: auto; aspect-ratio: 1 / 1.05; align-self: end; margin: 0 -.6rem -3px -7rem; }
+          .fl-kalk-lik { grid-area: lik; position: relative; z-index: 2; right: auto; top: auto; bottom: auto; width: calc(100% + 13.25rem); height: auto; aspect-ratio: 1 / 1.05; align-self: end; margin: 0 -.6rem -3px -13.25rem; }
           .fl-kalk-lik-img { transform: none !important; }
           .fl-kalk-cta { position: absolute; left: 50%; bottom: clamp(.9rem, 5vw, 1.8rem); transform: translateX(-50%); width: auto; margin: 0; z-index: 6; }
           .fl-kalk-zig-mob { display: inline-flex; position: absolute; top: clamp(1rem, 5vw, 1.6rem); right: clamp(1rem, 5vw, 1.6rem); z-index: 6; flex-direction: column; align-items: center; gap: .1rem; padding: .42rem .85rem .36rem; border: 2px solid rgba(255,255,255,.6); border-radius: 11px; background: linear-gradient(135deg, oklch(44% .16 300), oklch(28% .12 292)); color: #fff; text-transform: uppercase; transform: rotate(-8deg); box-shadow: 0 8px 20px rgba(20,10,40,.4); }
