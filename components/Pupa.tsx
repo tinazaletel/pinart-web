@@ -264,8 +264,8 @@ export default function Pupa() {
               )}
             </div>
           ) : (
-          <><div ref={sporRef} style={{ position: 'relative', flex: 1, overflowY: 'auto', padding: '1rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
-            <div aria-hidden style={{ position: 'absolute', top: '38%', left: '50%', width: 190, height: 190, marginLeft: -95, marginTop: -95, zIndex: 0, pointerEvents: 'none', borderRadius: '50%', background: 'radial-gradient(circle at 34% 30%, rgba(180,140,255,.30), rgba(120,165,240,.15) 58%, transparent 72%)', filter: 'blur(9px)', animation: 'pupaBlob 9s ease-in-out infinite' }} />
+          <><div ref={sporRef} style={{ position: 'relative', flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '1rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+            {caka && <div aria-hidden style={{ position: 'absolute', top: '40%', left: '50%', width: 270, height: 270, marginLeft: -135, marginTop: -135, zIndex: 0, pointerEvents: 'none', borderRadius: '50%', background: 'radial-gradient(circle at 34% 30%, rgba(180,140,255,.46), rgba(120,165,240,.28) 55%, transparent 74%)', filter: 'blur(8px)', animation: 'pupaBlob 7s ease-in-out infinite' }} />}
             <div style={{ position: 'relative', zIndex: 1, alignSelf: 'flex-start', maxWidth: '92%', padding: '.65rem .8rem', borderRadius: 16, background: 'rgba(167,139,250,.12)', display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
               <p style={{ margin: 0, fontSize: '.88rem', lineHeight: 1.45 }}>
                 {imaPonudbo
