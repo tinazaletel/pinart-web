@@ -141,6 +141,17 @@ const pwStyles = `
 .pw-vrstica > span{min-width:0;font-size:.72rem;overflow-wrap:anywhere}
 .pw-glavna{display:flex;align-items:center;gap:.6rem;min-width:0}
 .pw-glavna strong{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.72rem}
+@media (max-width:640px){
+  /* Tabela projektov = kartični preliv (brez horizontalnega scrolla): naziv v svojo vrsto, meta se ovije. */
+  .pw-tabela-ovoj{overflow-x:hidden}
+  .pw-tabela{min-width:0}
+  .pw-tabela > header{display:none}
+  .pw-vrstica{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .7rem;padding:.8rem .85rem}
+  .pw-vrstica > span{font-size:.78rem;color:color-mix(in oklch,var(--ink) 60%,transparent)}
+  .pw-glavna{flex:1 1 100%}
+  .pw-glavna strong{font-size:.92rem}
+  .pw-vrstica .pw-status{font-size:.72rem}
+}
 .pw-ikona{display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:oklch(94% .045 295);color:var(--ink);flex:none}
 .pw-mut{color:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-desno{text-align:right;font-weight:700}

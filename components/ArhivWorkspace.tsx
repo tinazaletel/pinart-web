@@ -902,7 +902,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
           .arh-glava .mobtabs-gumb{min-height:2.5rem;padding:0 .6rem;font-size:.74rem;gap:.2rem}
           .arh-glava-filter{order:1;flex:0 1 auto;min-width:0;position:static}
           .arh-pogled-preklop{order:2}
-          .arh-akcija-mob{order:3;display:inline-flex}
+          .arh-akcija-mob{order:3;display:inline-flex;margin-left:auto}
           .af-mob-akcija{display:none}
           .arh-pogled-preklop{padding:.15rem}
           .arh-pogled-preklop button{padding:.4rem .5rem}
