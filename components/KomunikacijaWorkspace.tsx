@@ -316,7 +316,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
                 <div className="km-branje-akcije">
                   <button type="button" className="km-akcija primarna" onClick={() => odpriPisanje(beriMail, 'odgovor')}><ArrowBendUpLeft size={15} weight="bold" /> {L('Odgovori', 'Reply')}</button>
                   <button type="button" className="km-akcija" onClick={() => odpriPisanje(beriMail, 'posreduj')}><ArrowBendUpRight size={15} weight="bold" /> {L('Posreduj', 'Forward')}</button>
-                  <button type="button" className="km-akcija" onClick={deliVKlepet}><ChatCircle size={15} weight="bold" /> {L('Deli v klepet', 'Share in chat')}</button>
+                  <button type="button" className="km-akcija km-akcija-ikona" onClick={deliVKlepet} title={L('Deli v klepet', 'Share in chat')} aria-label={L('Deli v klepet', 'Share in chat')}><ChatCircle size={15} weight="bold" /> <span className="km-akcija-txt">{L('Deli v klepet', 'Share in chat')}</span></button>
                 </div>
               )}
             </div>
@@ -491,10 +491,12 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
           .km-nova{flex:none;width:2.9rem;height:2.9rem;padding:0;gap:0;justify-content:center}
           .km-nova-ik,.km-nova-txt{display:none}
           .km-nova-plus{display:inline-flex}
-          .km{padding-left:.9rem;padding-right:.9rem}
+          .km{padding-left:.35rem;padding-right:.35rem}
           .km-posta-body{flex-direction:column;align-items:stretch}
           .km-branje{padding:1rem}
           .km-posta .km-mail-vrsta{padding:.7rem .8rem}
+          .km-akcija-ikona{padding:.55rem}
+          .km-akcija-ikona .km-akcija-txt{display:none}
           .km-mape-trig{display:inline-flex;align-items:center;gap:.4rem;flex:none;height:2.9rem;box-sizing:border-box;margin-right:auto;border:1px solid var(--k-line);border-radius:999px;padding:0 1rem;background:#fff;color:var(--k-ink);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
           .km-mape-back{position:fixed;inset:0;z-index:199;background:color-mix(in oklch,var(--k-ink) 34%,transparent);animation:kmFade .2s ease both}
           .km-mape{position:fixed;left:0;top:0;bottom:0;z-index:200;width:min(78%,15rem);flex-direction:column;flex-wrap:nowrap;gap:.15rem;padding:calc(1.15rem + env(safe-area-inset-top,0px)) .8rem calc(1.15rem + env(safe-area-inset-bottom,0px));background:var(--k-paper,#fff);box-shadow:8px 0 40px color-mix(in oklch,var(--k-ink) 22%,transparent);transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.3,1);overflow-y:auto}
