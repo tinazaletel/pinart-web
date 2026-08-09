@@ -845,6 +845,7 @@
 .clientInitials { width: 2.2rem; aspect-ratio: 1; font-size: .58rem; }
 .clientProfileAvatar { flex: 0 0 auto; width: 4rem; aspect-ratio: 1; font-size: .9rem; }
 .clientEmpty { color: var(--muted); font-size: .63rem; text-align: center; }
+.clientBack { display: none; }
 .clientProfile > header { display: flex; align-items: center; gap: 1rem; padding: .4rem; }
 .clientProfile > header > div { flex: 1; }
 .clientProfile > header > div > span { color: var(--muted); font-size: .6rem; }
@@ -1290,6 +1291,11 @@
   .expenseList article { grid-template-columns: auto 1fr auto; }
   .expenseList article > div:nth-child(3) { grid-column: 2 / -1; }
   .clientLayout { grid-template-columns: 1fr; }
+  /* Mobilni master-detail: profil = samostojna stran z »nazaj«.
+     Ko je izbrana stranka -> skrij imenik, pokaži profil. Sicer obratno. */
+  .clientLayout[data-selected='1'] .clientDirectory { display: none; }
+  .clientLayout[data-selected='0'] .clientProfile { display: none; }
+  .clientBack { display: inline-flex; align-items: center; gap: .35rem; margin: 0 0 .8rem; padding: .5rem .9rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink); font: 700 .62rem var(--font-sans), sans-serif; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; }
   .clientEditor { grid-template-columns: 1fr; }
   .projectsLayout { grid-template-columns: 1fr; }
   .projectMoney { grid-template-columns: repeat(2, 1fr); }
