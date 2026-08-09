@@ -200,9 +200,9 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
         .af-sheet,.af-zastor{display:none !important}
         /* iskalnik ne raste greedy cez cel prostor -> max-width, da vrstica ni predolga/zbita */
         .af-poln{flex:1 1 11rem;max-width:17rem;min-width:0;display:flex;align-items:center;gap:.45rem;box-sizing:border-box;background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;padding:0 .95rem;color:color-mix(in oklch,var(--ink,#111) 50%,transparent)}
-        .af-poln:focus-within{border-color:var(--ink,#111)}
+        .af-poln:focus-within{border-color:var(--ink,#111);box-shadow:0 0 0 2.5px color-mix(in oklch,var(--purple,oklch(66% 0.2 297)) 42%,transparent)}
         .af-poln input{flex:1;min-width:0;border:none;background:none;font:inherit;font-weight:500;color:var(--ink,#111);padding:.62rem .25rem}
-        .af-poln input:focus{outline:none}
+        .af-poln input:focus{outline:none;box-shadow:none}
         .af-poln input::placeholder{color:color-mix(in oklch,var(--ink,#111) 45%,transparent)}
         /* datum: sprozilec (ikona + slovensko besedilo) + koledar kot popover pod njim */
         .af-datum{position:relative;flex:0 0 auto;min-width:0;display:inline-flex}
@@ -249,10 +249,11 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       /* razsirjeno iskanje: pilula cez CELO vrstico (animacija sirine iz leve) */
       .af-iskanje{position:absolute;inset:0;z-index:3;display:flex;align-items:center;gap:.45rem;box-sizing:border-box;background-color:color-mix(in oklch,var(--paper,#fff) 97%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;padding:0 .3rem 0 .85rem;color:color-mix(in oklch,var(--ink,#111) 55%,transparent);opacity:0;pointer-events:none;clip-path:inset(0 100% 0 0 round 999px);transition:clip-path .26s cubic-bezier(.2,.8,.3,1),opacity .18s}
       .af-iskanje.odprt{opacity:1;pointer-events:auto;clip-path:inset(0 0 0 0 round 999px)}
+      .af-iskanje:focus-within{border-color:var(--purple,oklch(66% 0.2 297));box-shadow:inset 0 0 0 1.5px color-mix(in oklch,var(--purple,oklch(66% 0.2 297)) 55%,transparent)}
       @media (prefers-reduced-motion:reduce){.af-iskanje{transition:none}}
       .af-iskanje svg{flex:none}
       .af-iskanje input{flex:1;min-width:0;min-height:2.2rem;border:none;background:none;font:inherit;font-size:16px;font-weight:500;color:var(--ink,#111);padding:.45rem .25rem}
-      .af-iskanje input:focus{outline:none}
+      .af-iskanje input:focus{outline:none;box-shadow:none}
       .af-iskanje input::placeholder{color:color-mix(in oklch,var(--ink,#111) 45%,transparent)}
       .af-iskanje-x{flex:none;width:2.1rem;height:2.1rem;display:inline-flex;align-items:center;justify-content:center;border:none;background-color:color-mix(in oklch,var(--ink,#111) 6%,transparent);border-radius:50%;font-size:1rem;line-height:1;color:var(--ink,#111);cursor:pointer}
       .af-iskanje-x:hover{background-color:var(--ink,#111);color:var(--paper,#fff)}

@@ -183,7 +183,7 @@ export default function Pupa() {
 
   return createPortal(
     <>
-      <style>{'.pupa-fab{transition:opacity .22s ease, transform .22s ease}body.pw-sheet-open .pupa-fab,body[data-detajl-odprt] .pupa-fab{opacity:0;transform:scale(.5);pointer-events:none}'}</style>
+      <style>{'.pupa-fab{transition:opacity .22s ease, transform .22s ease}body.pw-sheet-open .pupa-fab,body[data-detajl-odprt] .pupa-fab{opacity:0;transform:scale(.5);pointer-events:none}@media(max-width:640px){.pupa-fab{left:1.1rem!important;right:auto!important}}'}</style>
       {!odprt && (
         <button type="button" className="pupa-fab" onClick={() => setOdprt(true)} aria-label={L('Odpri Pupo', 'Open Pupa')} title={L('Pupa: pomočnica', 'Pupa: assistant')}
           style={{ position: 'fixed', right: '1.4rem', bottom: '1.4rem', zIndex: 90, width: 58, height: 58, flex: 'none', borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0, background: 'conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)', boxShadow: '0 12px 30px rgba(42,32,53,.30)' }}>
