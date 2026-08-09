@@ -127,6 +127,7 @@ const pwStyles = `
 .pw-tabela-naslov{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem 1rem .85rem;background:oklch(95% .035 300);border-bottom:1px solid rgba(17,17,17,.08)}
 .pw-tabela-naslov .${styles.eyebrow}{color:oklch(45% .12 300)}
 .pw-tabela-naslov strong{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:1.6rem;line-height:1;color:var(--ink)}
+.pw{--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.75rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 72%,transparent);border-bottom:1px solid oklch(93% .006 82 / .55)}
 .pw-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:0;border-top:1px solid rgba(17,17,17,.07);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
 .pw-tabela > button.pw-vrstica:first-of-type{border-top:0}
@@ -452,7 +453,7 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-posta-bulk-st{font:700 .72rem var(--font-sans),sans-serif;color:var(--ink)}
 .pw-posta-bulk-brisi{display:inline-flex;align-items:center;gap:.35rem;height:2.1rem;padding:0 .95rem;border:0;border-radius:999px;background:oklch(55% .18 25);color:#fff;font:700 .72rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-posta-bulk-obnovi{display:inline-flex;align-items:center;gap:.35rem;height:2.1rem;padding:0 .95rem;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:999px;background:#fff;color:var(--ink);font:700 .72rem var(--font-sans),sans-serif;cursor:pointer}
-.pw-posta-bulk-obnovi:hover{border-color:color-mix(in oklch,var(--purple) 45%,transparent);color:var(--purple)}
+.pw-posta-bulk-obnovi:hover{border-color:color-mix(in oklch,var(--purple) 45%,transparent);color:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-posta-bulk-x{border:0;background:none;color:color-mix(in oklch,var(--ink) 72%,transparent);font:600 .72rem var(--font-sans),sans-serif;cursor:pointer;margin-left:auto}
 @media (max-width:600px){.pw-posta-check{width:1.45rem;height:1.45rem}}
 .pw-posta-vrh{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
@@ -555,7 +556,7 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-vprasanje-vrstica{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding:.6rem .75rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.8rem;background:oklch(100% 0 0 / .55)}
 .pw-vprasanje-vrstica div{display:flex;flex-direction:column;gap:.15rem;min-width:0}
 .pw-vprasanje-vrstica b{font-size:.76rem;color:var(--ink);font-weight:700}
-.pw-vprasanje-vrstica span{font-size:.72rem;color:color-mix(in oklch,var(--ink) 62%,transparent)}
+.pw-vprasanje-vrstica span{font-size:.72rem;color:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-chat-sod-krog{display:grid;place-items:center;width:1.7rem;height:1.7rem;border-radius:50%;background:oklch(90% .045 297);color:oklch(40% .16 297);font-size:.6rem;font-weight:800;flex:none}
 @media (max-width:640px){
 .pw-link-obrazec{grid-template-columns:1fr}
@@ -1265,7 +1266,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               <div><p className={styles.eyebrow}>{L('06 · KOMUNIKACIJE', '06 · COMMUNICATIONS')}</p><h3>{L('Vse na enem mestu', 'All in one place')}</h3></div>
               {posta.length > 0 && (
                 <div className="pw-posta-search" style={{ position: 'relative', flex: '1 1 240px', minWidth: 0 }}>
-                  <MagnifyingGlass size={16} weight="bold" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'color-mix(in oklch, var(--ink) 45%, transparent)', pointerEvents: 'none' }} />
+                  <MagnifyingGlass size={16} weight="bold" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'color-mix(in oklch, var(--ink) 72%, transparent)', pointerEvents: 'none' }} />
                   <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder={L('Išči po pošti …', 'Search mail …')} style={{ width: '100%', boxSizing: 'border-box', height: '2.6rem', padding: '0 1rem 0 2.6rem', border: '1px solid color-mix(in oklch, var(--ink) 9%, transparent)', borderRadius: '999px', background: '#fff', font: '500 .85rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />
                 </div>
               )}

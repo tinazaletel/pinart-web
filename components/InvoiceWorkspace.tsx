@@ -430,7 +430,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     /* noga = fiksno 5 mm od SPODNJEGA roba strani (v spodnji rob @page margina) */
     return n ? `<div class="dok-noga" style="position:fixed;left:16mm;right:16mm;bottom:5mm;padding-top:8px;border-top:1px solid oklch(93% .006 82 / .55);font-size:8pt;color:#625c56;line-height:1.5">${esc(n).split('\n').join('<br>')}</div>` : '';
   };
-  const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}
+  const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#625c56;font-size:9pt}
     .rac-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin:6px 0 22px}
     .rac-title{display:flex;flex-direction:column;gap:2px}
     .rac-kicker{font-size:9pt;letter-spacing:.28em;text-transform:uppercase;color:#B25476}
@@ -904,6 +904,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     <style>{`
       /* rc- = novi stili obrazca za racun; pazi na .shell pravila (min-height 2.75rem
          na inputih, select padding-right 3rem !important) — mere so temu prilagojene. */
+      .rc{--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
       .rc .rc-postavke{min-width:0;padding:1rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.9rem;background:linear-gradient(135deg,oklch(98% .018 87),oklch(96% .025 62))}
       .rc .rc-postavke *{box-sizing:border-box;min-width:0}
       .rc .rc-post-glava{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap}
@@ -1034,12 +1035,12 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-mehur{position:relative;background:oklch(96% .012 297);border:none;border-radius:18px;border-top-left-radius:5px;padding:.85rem 1.25rem .85rem 2.75rem;box-shadow:0 2px 12px rgba(40,25,40,.06)}
       .rc .rc-mehur::before{content:"";position:absolute;left:.9rem;top:.95rem;width:1.3rem;height:1.3rem;border-radius:50%;background:radial-gradient(58% 48% at 30% 24%,rgba(255,255,255,.92),rgba(255,255,255,0) 62%),conic-gradient(from 210deg,#7C3AED,#EC4899,#F59E0B,#38BDF8,#7C3AED);box-shadow:0 2px 6px rgba(124,58,237,.28)}
       .rc .rc-mehur b{display:block;color:var(--ink);font-weight:600;font-size:1.02rem}
-      .rc .rc-mehur small{display:block;margin-top:.1rem;color:rgba(17,17,17,.64);font-size:.82rem}
+      .rc .rc-mehur small{display:block;margin-top:.1rem;color:rgba(17,17,17,.72);font-size:.82rem}
       /* vstopna forma (pilule+polja+gumb) v beli kartici — naslov+chat ostaneta na papirju nad njo */
       .rc .rc-vstop-panel{background:rgba(255,255,255,.55);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.6);border-radius:20px;padding:1.6rem 1.5rem;box-shadow:0 12px 40px rgba(20,16,26,.05),inset 0 1px 0 rgba(255,255,255,.5)}
       .rc .rc-polja{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem 1.5rem;margin:0 0 1.3rem;min-width:0}
       .rc .rc-polja>*{min-width:0}
-      .rc .rc-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.62)}
+      .rc .rc-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
       .rc .rc-polje input{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
       .rc .rc-polje input:focus{outline:none;border-color:var(--ink)}
       /* select: background-COLOR (NE shorthand background), da .shell select
@@ -1055,7 +1056,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       /* Vrsta (Račun | Predračun) na vstopu — pilule + drobni namig pod Predračunom */
       .rc .rc-vstop-vrsta{display:inline-flex;flex-direction:column;align-items:stretch;margin:0 0 1.1rem}
       .rc .rc-vstop-vrsta .rc-segpills{margin:0}
-      .rc .rc-vrsta-oznaka{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.62);margin:0 0 .4rem}
+      .rc .rc-vrsta-oznaka{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72);margin:0 0 .4rem}
       .rc .rc-vrsta-namig{margin:.35rem 0 0;text-align:right;font-size:.72rem;color:var(--muted)}
 
       /* ── vstopni iskalen combobox (izbira ponudbe): sprozilec izgleda kot polje,
