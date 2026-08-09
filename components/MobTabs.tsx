@@ -37,7 +37,7 @@ export default function MobTabs({ opcije, vrednost, naVrednost, label }: {
       <style>{`
         .mobtabs { display: none; }
         @media (max-width: 640px) {
-          .mobtabs { display: block; position: relative; width: 100%; }
+          .mobtabs { display: inline-block; position: relative; width: auto; max-width: 100%; }
           .mobtabs-hide { display: none !important; }
         }
         .mobtabs-gumb { display: flex; align-items: center; gap: .5rem; width: 100%; min-height: 2.9rem; padding: 0 .95rem; border: 1px solid color-mix(in oklch, var(--ink, #111) 14%, transparent); border-radius: 999px; background: color-mix(in oklch, var(--paper, #fff) 92%, transparent); color: var(--ink, #111); font: 700 .82rem var(--font-sans), system-ui, sans-serif; cursor: pointer; }

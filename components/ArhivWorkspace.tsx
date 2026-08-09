@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import Link from 'next/link';
-import { CaretDown, CaretUp, FileArrowDown, FileText, Receipt, Scroll, Warning } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, FileArrowDown, FileText, Receipt, Scroll, Warning, ListBullets, Kanban } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, saveOfferStatus, type FlowContract, type FlowContractStatus, type FlowInvoice, type FlowOffer, type FlowOfferStatus } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
@@ -521,8 +521,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             {/* PIPELINE POSLOV — preklop pogleda, samo na zavihku Projekti (glej pogledProjekti zgoraj) */}
             {zavihek === 'projekti' && (
               <div className="arh-segpills arh-pogled-preklop" role="tablist" aria-label={L('Pogled projektov', 'Projects view')}>
-                <button type="button" role="tab" aria-selected={pogledProjekti === 'seznam'} className={pogledProjekti === 'seznam' ? 'on' : ''} onClick={() => setPogledProjekti('seznam')}>{L('Seznam', 'List')}</button>
-                <button type="button" role="tab" aria-selected={pogledProjekti === 'pipeline'} className={pogledProjekti === 'pipeline' ? 'on' : ''} onClick={() => setPogledProjekti('pipeline')}>Pipeline</button>
+                <button type="button" role="tab" aria-selected={pogledProjekti === 'seznam'} className={pogledProjekti === 'seznam' ? 'on' : ''} onClick={() => setPogledProjekti('seznam')} title={L('Seznam', 'List')} aria-label={L('Seznam', 'List')}><ListBullets size={16} weight="bold" className="arh-pp-ik" /><span className="arh-pp-txt">{L('Seznam', 'List')}</span></button>
+                <button type="button" role="tab" aria-selected={pogledProjekti === 'pipeline'} className={pogledProjekti === 'pipeline' ? 'on' : ''} onClick={() => setPogledProjekti('pipeline')} title="Pipeline" aria-label="Pipeline"><Kanban size={16} weight="bold" className="arh-pp-ik" /><span className="arh-pp-txt">Pipeline</span></button>
               </div>
             )}
 
@@ -887,6 +887,14 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-segpills button.on{background:var(--ink);color:var(--paper)}
         .arh-zavihki{flex:0 0 auto}
         .arh-pogled-preklop{flex:0 0 auto}
+        .arh-pp-ik{display:none}
+        @media (max-width:640px){
+          .arh-glava .mobtabs{margin-right:auto}
+          .arh-glava{gap:.5rem}
+          .arh-pogled-preklop button{padding:.46rem .66rem}
+          .arh-pp-ik{display:inline-flex}
+          .arh-pp-txt{display:none}
+        }
 
         .arh-panel{animation:arhSek .45s cubic-bezier(.16,1,.3,1) both;min-width:0}
         @keyframes arhSek{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
