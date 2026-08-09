@@ -1351,7 +1351,8 @@
   .bandTitle > p:last-child { margin-top: .65rem; }
   .periodSwitch { width: max-content; margin-top: 1rem; }
   .sectionHeader { display: block; }
-  .sectionNote { align-items: flex-start; flex-direction: column; gap: .3rem; }
+  .sectionNote { align-items: flex-start; flex-direction: column; gap: .3rem; white-space: normal; }
+  .sectionNote span { overflow: visible; text-overflow: clip; white-space: normal; }
   .flowTools { grid-template-columns: 1fr 1fr; }
   .flowTools > * { min-height: 8rem; }
   .resultsGrid { grid-template-columns: 1fr 1fr; }
