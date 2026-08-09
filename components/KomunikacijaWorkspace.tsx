@@ -394,7 +394,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-prazno-box b{font:700 1.05rem var(--font-sans),sans-serif;color:var(--k-ink)}
         .km-prazno-box p{max-width:34ch;font:500 .85rem var(--font-sans),sans-serif;line-height:1.5}
         .km-mreza{display:grid;grid-template-columns:18rem 1fr;gap:1rem;height:min(72vh,640px)}
-        .km-seznam{overflow-y:auto;display:flex;flex-direction:column;gap:.3rem;background:#fff;border:1px solid var(--k-line);border-radius:1rem;padding:.5rem}
+        .km-seznam{overflow-y:auto;display:flex;flex-direction:column;gap:.3rem;background:rgba(255,255,255,.5);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid rgba(255,255,255,.55);border-radius:1rem;padding:.5rem}
         .km-nit{display:flex;align-items:center;gap:.6rem;width:100%;text-align:left;border:0;background:none;border-radius:.7rem;padding:.6rem .7rem;cursor:pointer}
         .km-nit:hover{background:color-mix(in oklch,var(--k-purple) 7%,transparent)}
         .km-nit.on{background:color-mix(in oklch,var(--k-purple) 12%,transparent)}
@@ -407,7 +407,8 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-zavihki button{display:inline-flex;align-items:center;gap:.4rem;border:0;background:none;border-radius:999px;padding:.5rem 1.1rem;font:700 .78rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 60%,transparent);cursor:pointer}
         .km-zavihki button.on{background:var(--k-ink,#2a2620);color:#fff}
         .km-posta{display:flex;flex-direction:column;gap:.4rem;max-width:52rem}
-        .km-posta .km-mail-vrsta{display:flex;align-items:center;gap:.75rem;width:100%;text-align:left;background:#fff;border:1px solid var(--k-line);border-radius:.85rem;padding:.7rem .9rem;cursor:pointer}
+        .km-posta .km-mail-vrsta{display:flex;align-items:center;gap:.75rem;width:100%;text-align:left;background:rgba(255,255,255,.5);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);border:1px solid rgba(255,255,255,.5);border-radius:.85rem;padding:.7rem .9rem;cursor:pointer;transition:background .16s ease,box-shadow .16s ease,transform .16s ease}
+        .km-posta .km-mail-vrsta:hover{background:#fff;box-shadow:0 8px 22px oklch(20% .03 55/.1);transform:translateY(-1px)}
         .km-posta .km-mail-vrsta:hover{background:color-mix(in oklch,var(--k-purple) 5%,transparent);border-color:color-mix(in oklch,var(--k-purple) 25%,transparent)}
         .km-mail-check{flex:none;width:1.15rem;height:1.15rem;border:1.5px solid color-mix(in oklch,var(--k-ink) 22%,transparent);border-radius:.32rem}
         .km-mail-vrsta.neprebran{border-color:color-mix(in oklch,var(--k-purple) 30%,transparent)}
@@ -443,7 +444,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-mail-btn{width:100%;text-align:left;border:1px solid var(--k-line);cursor:pointer}
         .km-mail-btn:hover{background:color-mix(in oklch,var(--k-purple) 5%,transparent)}
         .km-mail-kazalec{margin-left:.5rem;opacity:.4}
-        .km-branje{max-width:52rem;background:#fff;border:1px solid var(--k-line);border-radius:1rem;padding:1.2rem 1.3rem}
+        .km-branje{max-width:52rem;background:rgba(255,255,255,.5);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid rgba(255,255,255,.55);border-radius:1rem;padding:1.2rem 1.3rem}
         .km-nazaj{display:inline-flex;align-items:center;border:1px solid var(--k-line);background:#fff;border-radius:999px;padding:.4rem .9rem;font:700 .74rem var(--font-sans),sans-serif;color:var(--k-ink);cursor:pointer;margin-bottom:.8rem}
         .km-nazaj:hover{background:var(--k-ink,#2a2620);color:#fff;border-color:transparent}
         .km-branje-glava b{display:block;font:700 1rem var(--font-sans),sans-serif;color:var(--k-ink)}

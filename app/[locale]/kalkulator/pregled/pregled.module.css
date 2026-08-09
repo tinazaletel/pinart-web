@@ -737,7 +737,7 @@
 .expenseSummary article:nth-child(2) .subpageMetricIcon { color: oklch(58% .15 160); }
 .expenseSummary article:nth-child(3) .subpageMetricIcon { color: var(--purple); }
 .invoiceSummary article > :not(.subpageMetricIcon), .expenseSummary article > :not(.subpageMetricIcon) { position: relative; z-index: 1; }
-.expenseEditor, .expenseArchive, .recurringCosts { padding: 1.25rem; border: 1px solid color-mix(in oklch, var(--ink) 9%, transparent); border-radius: 1.4rem; background: #fff; }
+.expenseEditor, .expenseArchive, .recurringCosts { padding: 1.25rem; border: 1px solid rgba(255,255,255,.55); border-radius: 1.4rem; background: #fff; }
 .expenseEditor { display: grid; grid-template-columns: minmax(14rem, .35fr) 1fr; gap: 1.5rem; }
 .expenseEditor h2, .expenseArchive h2, .recurringCosts h2 { margin: 0; font: 500 clamp(1.45rem, 2.2vw, 2.05rem)/1 var(--font-serif), Georgia, serif; }
 .expenseEditor > div > p:last-child, .recurringCosts > div:first-child > p:last-child { color: var(--muted); font-size: .65rem; line-height: 1.5; }
@@ -783,7 +783,7 @@
    ena vrstica stroska raztegne cez 1000 px praznine */
 .recurringCosts { display: grid; grid-template-columns: minmax(19rem, .4fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
 .recurringCosts > div:last-child { display: grid; align-content: start; max-width: 46rem; }
-.recurringCosts article { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: .8rem; min-height: 3rem; padding: .5rem .7rem; border-bottom: 1px solid var(--line); font-size: .63rem; }
+.recurringCosts article { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: .8rem; min-height: 3rem; padding: .5rem .7rem; border-bottom: 1px solid rgba(17,17,17,.06); font-size: .63rem; }
 .recurringCosts article button { display: grid; place-items: center; width: 1.7rem; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 50%; background: none; cursor: pointer; }
 .recurringCosts > div:last-child > p { color: var(--muted); font-size: .8125rem; line-height: 1.5; }
 /* Vnos rednega stroska: prej brez sloga, zato sta se napis in polje stikala
