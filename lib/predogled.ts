@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import type { FlowClient, FlowContract, FlowData, FlowExpense, FlowInvoice, FlowOffer } from './pinartFlowStore';
 import type { Projekt } from './projekti';
 import type { Sodelavec } from './naloge';
+import { PRICING_SERVICES, type PricingService } from './pricingCatalog';
 
 /**
  * Predogled stanja: "Prazno" / "Moji" / "Demo".
@@ -89,6 +90,27 @@ function datumFiksni(letoOsnova: number, zamikDni: number): string {
 }
 
 const NASLOVI = ['Nova identiteta', 'Spletna stran', 'Letno poročilo', 'Kampanja', 'Embalaža', 'Ilustracije'];
+
+export type DemoCenovniProfil = {
+  osnove: Record<string, number>;
+  mojTrg: 'si';
+  izkusnje: 'samostojen';
+  mojeStoritve: PricingService[];
+};
+
+/** Realen cenovni profil za predogled »Demo · polno poslovanje«. */
+export function demoCenovniProfili(): Record<string, DemoCenovniProfil> {
+  return {
+    'Slovenija — lokalne stranke': {
+      mojTrg: 'si',
+      izkusnje: 'samostojen',
+      mojeStoritve: [],
+      osnove: Object.fromEntries(
+        PRICING_SERVICES.map(({ id, osnova }) => [id, osnova]),
+      ),
+    },
+  };
+}
 
 export function demoPodatki(): FlowData {
   const offers: FlowOffer[] = Array.from({ length: 12 }, (_, i) => ({
