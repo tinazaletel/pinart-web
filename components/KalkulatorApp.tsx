@@ -6302,7 +6302,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* align-items:flex-start + min-width:0 na naslovu: pri dolgem nazivu se flex element
            brez min-width:0 ne more skrciti pod svojo vsebino, zato je naslov ustil cez rob
            in ga je panel odrezal. Znacka ostane cela. */
-        .cw .ponudba0-glava { display: flex; align-items: flex-start; justify-content: space-between; gap: .7rem; padding-right: 2.6rem; }
+        .cw .ponudba0-glava { display: flex; align-items: flex-start; justify-content: space-between; gap: .7rem; padding-right: 3.4rem; }
         .cw .ponudba0-glava h2 { min-width: 0; overflow-wrap: anywhere; }
         .cw .ponudba0-chip { flex: 0 0 auto; white-space: nowrap; }
         @media (max-width: 640px) { .cw .ponudba0-glava h2 { font-size: 1.35rem; line-height: 1.15; } }
