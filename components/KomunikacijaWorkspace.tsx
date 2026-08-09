@@ -6,7 +6,7 @@
    To je vstopna tocka, ki je manjkala, da sodelavec odpre skupno nit s svoje strani. */
 
 import { useEffect, useRef, useState } from 'react';
-import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, MagnifyingGlass, Tray, NotePencil, Trash, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, ArrowBendUpLeft, ArrowBendUpRight, Smiley, Plus, UserPlus, List } from '@phosphor-icons/react';
+import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, MagnifyingGlass, Tray, NotePencil, Trash, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, ArrowBendUpLeft, ArrowBendUpRight, Smiley, Plus, UserPlus, List, FunnelSimple } from '@phosphor-icons/react';
 import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, dodajUdelezenca, type OblacnaNit, type OblacnoSporocilo } from '@/lib/klepetCloud';
 import { usePredogled } from '@/lib/predogled';
 import { preberiVsePoste, premakniPosto, nastaviOznakePoste, dodajPosto, oznaciPostoPrebrano, type PostaVnos } from '@/lib/postaDnevnik';
@@ -62,6 +62,12 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   const [mapa, setMapa] = useState<'prejeto' | 'poslano' | 'osnutki' | 'kos'>('prejeto');
   const [mapeOdprt, setMapeOdprt] = useState(false);
   const [iskOdprt, setIskOdprt] = useState(false);
+  const [filterOdprt, setFilterOdprt] = useState(false);
+  /* Ko je odprt drawer map ali slide-up prejemnikov, skrij Pupo (da ne prekriva menija) */
+  useEffect(() => {
+    document.body.classList.toggle('pw-sheet-open', mapeOdprt || filterOdprt);
+    return () => document.body.classList.remove('pw-sheet-open');
+  }, [mapeOdprt, filterOdprt]);
   const [postaIsk, setPostaIsk] = useState('');
   const [beriMail, setBeriMail] = useState<PostaVnos | null>(null);
   const [postaStran, setPostaStran] = useState(1);
@@ -215,16 +221,27 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
       {zavihek === 'posta' ? (
         <div className="km-posta-ovoj">
           <div className="km-posta-vrh">
+            <button type="button" className="km-mape-trig" onClick={() => setMapeOdprt(true)} aria-label={L('Mape', 'Folders')} aria-expanded={mapeOdprt}><List size={16} weight="bold" /> <span>{mapa === 'prejeto' ? L('Prejeto', 'Inbox') : mapa === 'poslano' ? L('Poslano', 'Sent') : mapa === 'osnutki' ? L('Osnutki', 'Drafts') : L('Koš', 'Trash')}</span></button>
             <button type="button" className="km-isk-krog" onClick={() => setIskOdprt(true)} aria-label={L('Išči', 'Search')}><MagnifyingGlass size={16} weight="bold" /></button>
             <div className={'km-iskalnik' + (iskOdprt ? ' odprt' : '')}><MagnifyingGlass size={15} weight="bold" /><input value={postaIsk} onChange={e => { setPostaIsk(e.target.value); setPostaStran(1); }} placeholder={L('Išči po pošti …', 'Search mail …')} aria-label={L('Išči', 'Search')} /><button type="button" className="km-isk-zapri" onClick={() => { setPostaIsk(''); setIskOdprt(false); }} aria-label={L('Zapri iskanje', 'Close search')}>✕</button></div>
-            <select className="km-prejemniki" value={postaOseba} onChange={e => { setPostaOseba(e.target.value); setPostaStran(1); setBeriMail(null); }} aria-label={L('Vsi prejemniki', 'All recipients')} title={L('Vsi prejemniki', 'All recipients')}>
+            <select className="km-prejemniki km-hide-mob" value={postaOseba} onChange={e => { setPostaOseba(e.target.value); setPostaStran(1); setBeriMail(null); }} aria-label={L('Vsi prejemniki', 'All recipients')} title={L('Vsi prejemniki', 'All recipients')}>
               <option value="">{L('Vsi prejemniki', 'All recipients')}</option>
               {prejemnikiVsi.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
+            <button type="button" className={'km-filter-krog' + (postaOseba ? ' aktiv' : '')} onClick={() => setFilterOdprt(true)} aria-label={L('Prejemniki', 'Recipients')} title={L('Prejemniki', 'Recipients')}><FunnelSimple size={16} weight={postaOseba ? 'fill' : 'bold'} /></button>
             <button type="button" className="km-nova" title={L('Nova pošta z huba: najprej izbereš projekt, nato pišeš (pride z enotnim klijentom)', 'New mail from the hub: first pick a project, then compose (comes with the unified client)')} aria-label={L('Nova pošta', 'New mail')}><PaperPlaneRight className="km-nova-ik" size={14} weight="fill" /> <span className="km-nova-txt">{L('Nova pošta', 'New mail')}</span><Plus className="km-nova-plus" size={18} weight="bold" /></button>
           </div>
+          {filterOdprt && <>
+            <div className="km-sheet-back" onClick={() => setFilterOdprt(false)} aria-hidden />
+            <div className="km-sheet" role="dialog" aria-label={L('Prejemniki', 'Recipients')}>
+              <div className="km-sheet-glava"><b>{L('Prejemniki', 'Recipients')}</b><button type="button" className="km-sheet-x" onClick={() => setFilterOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button></div>
+              <div className="km-sheet-telo">
+                <button type="button" className={postaOseba === '' ? 'on' : ''} onClick={() => { setPostaOseba(''); setPostaStran(1); setBeriMail(null); setFilterOdprt(false); }}>{L('Vsi prejemniki', 'All recipients')}</button>
+                {prejemnikiVsi.map(p => <button type="button" key={p} className={postaOseba === p ? 'on' : ''} onClick={() => { setPostaOseba(p); setPostaStran(1); setBeriMail(null); setFilterOdprt(false); }}>{p}</button>)}
+              </div>
+            </div>
+          </>}
           <div className="km-posta-body">
-            <button type="button" className="km-mape-trig" onClick={() => setMapeOdprt(true)} aria-label={L('Mape', 'Folders')} aria-expanded={mapeOdprt}><List size={16} weight="bold" /> <span>{mapa === 'prejeto' ? L('Prejeto', 'Inbox') : mapa === 'poslano' ? L('Poslano', 'Sent') : mapa === 'osnutki' ? L('Osnutki', 'Drafts') : L('Koš', 'Trash')}</span></button>
             {mapeOdprt && <div className="km-mape-back" onClick={() => setMapeOdprt(false)} aria-hidden />}
             <aside className={'km-mape' + (mapeOdprt ? ' odprt' : '')} aria-label={L('Mape', 'Folders')}>
               {([{ id: 'prejeto', ime: L('Prejeto', 'Inbox'), I: Tray }, { id: 'poslano', ime: L('Poslano', 'Sent'), I: PaperPlaneRight }, { id: 'osnutki', ime: L('Osnutki', 'Drafts'), I: NotePencil }, { id: 'kos', ime: L('Koš', 'Trash'), I: Trash }] as const).map(({ id, ime, I }) => {
@@ -431,6 +448,18 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-isk-krog{display:none}
         .km-isk-zapri{display:none}
         .km-nova-plus{display:none}
+        .km-filter-krog{display:none}
+        .km-sheet-back{position:fixed;inset:0;z-index:199;background:color-mix(in oklch,var(--k-ink) 34%,transparent);animation:kmFade .2s ease both}
+        .km-sheet{position:fixed;left:0;right:0;bottom:0;z-index:200;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -16px 44px color-mix(in oklch,var(--k-ink) 22%,transparent);max-height:70dvh;display:flex;flex-direction:column;animation:kmUp .3s cubic-bezier(.2,.8,.3,1) both}
+        @keyframes kmUp{from{transform:translateY(100%)}to{transform:none}}
+        .km-sheet-glava{position:relative;display:flex;align-items:center;justify-content:space-between;padding:1.3rem 1.2rem .7rem;border-bottom:1px solid var(--k-line)}
+        .km-sheet-glava::before{content:'';position:absolute;top:.5rem;left:50%;transform:translateX(-50%);width:2.4rem;height:.3rem;border-radius:999px;background:color-mix(in oklch,var(--k-ink) 18%,transparent)}
+        .km-sheet-glava b{font:700 1.02rem var(--font-sans),sans-serif;color:var(--k-ink)}
+        .km-sheet-x{width:2rem;height:2rem;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:color-mix(in oklch,var(--k-ink) 6%,transparent);color:var(--k-ink);font-size:1rem;line-height:1;cursor:pointer}
+        .km-sheet-telo{overflow-y:auto;padding:.5rem .8rem calc(1rem + env(safe-area-inset-bottom,0px))}
+        .km-sheet-telo button{display:block;width:100%;text-align:left;border:0;background:transparent;border-radius:12px;padding:.85rem .8rem;font:600 .9rem var(--font-sans),sans-serif;color:var(--k-ink);cursor:pointer}
+        .km-sheet-telo button:hover{background:color-mix(in oklch,var(--k-purple) 6%,transparent)}
+        .km-sheet-telo button.on{background:color-mix(in oklch,var(--k-purple) 12%,transparent);color:var(--k-ink)}
         .km-posta-vrh .km-iskalnik,.km-posta-vrh .km-prejemniki,.km-posta-vrh .km-nova{height:2.55rem;box-sizing:border-box;padding-top:0;padding-bottom:0}
         .km-posta-vrh .km-iskalnik{flex:1 1 15rem;margin-bottom:0}
         .km-prejemniki{flex:none;border:1px solid var(--k-line);border-radius:999px;padding:.5rem .9rem;font:600 .8rem var(--font-sans),sans-serif;color:var(--k-ink);background:#fff;cursor:pointer}
@@ -456,14 +485,19 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
           .km-iskalnik.odprt{display:flex;position:absolute;left:0;right:0;top:0;z-index:6;margin:0;height:2.9rem;box-sizing:border-box}
           .km-iskalnik.odprt input{font-size:16px}
           .km-isk-zapri{display:inline-flex;align-items:center;justify-content:center;flex:none;border:0;background:none;color:var(--k-ink);font-size:1rem;line-height:1;cursor:pointer;padding:.2rem .3rem}
-          .km-prejemniki{flex:none;width:2.9rem;height:2.9rem;padding:0;text-indent:-9999px;overflow:hidden;-webkit-appearance:none;appearance:none;color:transparent;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 256 256' fill='%23111'%3E%3Cpath d='M230 60a14 14 0 0 1-14 14H40a14 14 0 0 1 0-28h176a14 14 0 0 1 14 14Zm-30 54H56a14 14 0 0 0 0 28h144a14 14 0 0 0 0-28Zm-40 68h-64a14 14 0 0 0 0 28h64a14 14 0 0 0 0-28Z'/%3E%3C/svg%3E") no-repeat center;background-size:1.05rem}
+          .km-hide-mob{display:none}
+          .km-filter-krog{display:inline-flex;align-items:center;justify-content:center;flex:none;width:2.9rem;height:2.9rem;border-radius:50%;border:1px solid var(--k-line);background:#fff;color:var(--k-ink);cursor:pointer}
+          .km-filter-krog.aktiv{border-color:var(--k-purple);color:var(--k-purple)}
           .km-nova{flex:none;width:2.9rem;height:2.9rem;padding:0;gap:0;justify-content:center}
           .km-nova-ik,.km-nova-txt{display:none}
           .km-nova-plus{display:inline-flex}
-          .km-posta-body{flex-direction:column}
-          .km-mape-trig{display:inline-flex;align-items:center;gap:.45rem;align-self:flex-start;border:1px solid var(--k-line);border-radius:999px;padding:.5rem .95rem;background:#fff;color:var(--k-ink);font:700 .8rem var(--font-sans),sans-serif;cursor:pointer}
-          .km-mape-back{position:fixed;inset:0;z-index:69;background:color-mix(in oklch,var(--k-ink) 34%,transparent);animation:kmFade .2s ease both}
-          .km-mape{position:fixed;left:0;top:0;bottom:0;z-index:70;width:min(78%,15rem);flex-direction:column;flex-wrap:nowrap;gap:.15rem;padding:1.15rem .8rem calc(1.15rem + env(safe-area-inset-bottom,0px));background:var(--k-paper,#fff);box-shadow:8px 0 40px color-mix(in oklch,var(--k-ink) 22%,transparent);transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.3,1);overflow-y:auto}
+          .km{padding-left:.9rem;padding-right:.9rem}
+          .km-posta-body{flex-direction:column;align-items:stretch}
+          .km-branje{padding:1rem}
+          .km-posta .km-mail-vrsta{padding:.7rem .8rem}
+          .km-mape-trig{display:inline-flex;align-items:center;gap:.4rem;flex:none;height:2.9rem;box-sizing:border-box;margin-right:auto;border:1px solid var(--k-line);border-radius:999px;padding:0 1rem;background:#fff;color:var(--k-ink);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
+          .km-mape-back{position:fixed;inset:0;z-index:199;background:color-mix(in oklch,var(--k-ink) 34%,transparent);animation:kmFade .2s ease both}
+          .km-mape{position:fixed;left:0;top:0;bottom:0;z-index:200;width:min(78%,15rem);flex-direction:column;flex-wrap:nowrap;gap:.15rem;padding:calc(1.15rem + env(safe-area-inset-top,0px)) .8rem calc(1.15rem + env(safe-area-inset-bottom,0px));background:var(--k-paper,#fff);box-shadow:8px 0 40px color-mix(in oklch,var(--k-ink) 22%,transparent);transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.3,1);overflow-y:auto}
           .km-mape.odprt{transform:none}
           .km-mape button{width:100%}
         }
