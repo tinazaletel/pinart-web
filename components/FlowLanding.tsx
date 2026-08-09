@@ -1067,10 +1067,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-kalk-cta { position: absolute; right: clamp(1.6rem, 4vw, 2.6rem); bottom: 20px; z-index: 2; display: inline-flex; align-items: center; gap: .5rem; padding: .95rem 1.75rem; border-radius: 999px; background: #fff; color: #17102e; font-size: .95rem; font-weight: 700; text-decoration: none; transition: transform .16s ease, box-shadow .16s ease; box-shadow: 0 8px 24px oklch(20% .05 297 / .3); }
         .fl-kalk-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 30px oklch(20% .08 297 / .42); }
         /* Ilustracija = web okno + zaključena zgodba: vprašalnik -> mehurčki cen -> znesek na oblikovanem listu (zanka 11s). */
-        .fl-kalk-viz { position: relative; flex: none; width: 420px; max-width: 46vw; align-self: flex-end; margin-top: 1.6rem; margin-bottom: -2px; }
+        .fl-kalk-viz { position: relative; flex: none; width: 420px; max-width: 46vw; align-self: flex-end; margin-top: 1.6rem; margin-bottom: -2px; transform: translateX(-40px); }
         /* Pupa lik: absoluten (ne veča višine), odrezan do pasu (overflow), dve sliki cross-fade. */
-        .fl-kalk-lik { position: absolute; right: -1.5rem; bottom: -2px; width: clamp(15rem, 27vw, 23rem); aspect-ratio: 1 / 1; pointer-events: none; z-index: 3; }
-        .fl-kalk-lik-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: bottom right; opacity: 0; will-change: opacity; }
+        .fl-kalk-lik { position: absolute; right: 0; bottom: 0; height: 100%; width: 0; pointer-events: none; z-index: 3; }
+        .fl-kalk-lik-img { position: absolute; right: -.5rem; bottom: -2px; height: 116%; width: auto; opacity: 0; will-change: opacity; }
         .fl-kalk-lik-img.a { animation: flLikA 9s ease-in-out infinite; }
         .fl-kalk-lik-img.b { animation: flLikB 9s ease-in-out infinite; }
         @keyframes flLikA { 0%, 42% { opacity: 1; } 50%, 92% { opacity: 0; } 100% { opacity: 1; } }
@@ -1376,8 +1376,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         <section className="fl-kalk-banner">
           <div className="fl-kalk-banner-in">
             <div className="fl-kalk-txt">
-              <h2>{t('Kalkulator poštenih cen', 'The fair-price calculator')}</h2>
-              <p>{t('Izračunaj pošteno ceno in sestavi ponudbo — brez prijave in brez plačila.', 'Work out a fair price and build a proposal — no sign-up, no payment.')}</p>
+              <h2>{t('Kalkulator', 'The fair-price')}<br />{t('poštenih cen', 'calculator')}</h2>
+              <p>{t('Izračunaj pošteno ceno in sestavi ponudbo,', 'Work out a fair price and build a proposal,')}<br />{t('brez prijave in brez plačila.', 'no sign-up, no payment.')}</p>
             </div>
             <div className="fl-kalk-viz" aria-hidden>
               <span className="fl-kalk-zig" aria-label={t('Brezplačno za vedno', 'Free forever')}>
