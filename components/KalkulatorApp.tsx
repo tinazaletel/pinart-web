@@ -6302,7 +6302,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* align-items:flex-start + min-width:0 na naslovu: pri dolgem nazivu se flex element
            brez min-width:0 ne more skrciti pod svojo vsebino, zato je naslov ustil cez rob
            in ga je panel odrezal. Znacka ostane cela. */
-        .cw .ponudba0-glava { display: flex; align-items: flex-start; justify-content: space-between; gap: .7rem; }
+        .cw .ponudba0-glava { display: flex; align-items: flex-start; justify-content: space-between; gap: .7rem; padding-right: 2.6rem; }
         .cw .ponudba0-glava h2 { min-width: 0; overflow-wrap: anywhere; }
         .cw .ponudba0-chip { flex: 0 0 auto; white-space: nowrap; }
         @media (max-width: 640px) { .cw .ponudba0-glava h2 { font-size: 1.35rem; line-height: 1.15; } }
@@ -6533,7 +6533,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ponudba0.skrit-desktop { display: none; }
         .cw .oder0:has(.ponudba0.skrit-desktop) { grid-template-columns: 1fr; }
         .cw .ponudba-fab { display: none; }
-        .cw .ponudba-fab.fab-desktop { display: inline-flex; align-items: center; gap: .6rem; position: fixed; right: 1.4rem; bottom: 1.5rem; z-index: 60; padding: .6rem .95rem .6rem .7rem; border: none; border-radius: 999px; background: var(--ink); color: var(--paper); box-shadow: 0 12px 30px rgba(40,25,40,.3); cursor: pointer; font-family: inherit; transition: transform .2s ease; }
+        .cw .ponudba-fab.fab-desktop { display: inline-flex; align-items: center; gap: .6rem; position: fixed; right: 1.4rem; bottom: 6.6rem; z-index: 60; padding: .6rem .95rem .6rem .7rem; border: none; border-radius: 999px; background: var(--ink); color: var(--paper); box-shadow: 0 12px 30px rgba(40,25,40,.3); cursor: pointer; font-family: inherit; transition: transform .2s ease; }
         .cw .ponudba-fab.fab-desktop:active { transform: scale(.96); }
         .cw .ponudba-fab.fab-desktop .fab-ikona { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 2.3rem; height: 2.3rem; border-radius: 50%; background: rgba(255,255,255,.16); }
         .cw .ponudba-fab.fab-desktop .fab-tag { position: absolute; top: -.35rem; right: -.35rem; min-width: 1.3rem; height: 1.3rem; padding: 0 .3rem; border-radius: 999px; background: var(--accent); color: #fff; font-size: .72rem; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; border: 2px solid var(--ink); }
