@@ -1071,7 +1071,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* Pupa lik: absoluten (ne veča višine), odrezan do pasu (overflow), dve sliki cross-fade. */
         .fl-kalk-lik { position: absolute; right: 0; top: 0; bottom: 0; width: clamp(14rem, 26vw, 22rem); z-index: 3; pointer-events: none; }
         .fl-kalk-lik-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: right bottom; opacity: 0; will-change: opacity; }
-        .fl-kalk-lik-img.a { animation: flLikA 9s ease-in-out infinite; }
+        .fl-kalk-lik-img.a { animation: flLikA 9s ease-in-out infinite; transform: scale(1.14); transform-origin: right bottom; }
         .fl-kalk-lik-img.b { animation: flLikB 9s ease-in-out infinite; }
         @keyframes flLikA { 0%, 42% { opacity: 1; } 50%, 92% { opacity: 0; } 100% { opacity: 1; } }
         @keyframes flLikB { 0%, 42% { opacity: 0; } 50%, 92% { opacity: 1; } 100% { opacity: 0; } }
