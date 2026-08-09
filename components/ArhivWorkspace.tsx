@@ -20,6 +20,7 @@ import { loadFlowData, saveFlowCollection, saveOfferStatus, type FlowContract, t
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import ProjectsWorkspace from './ProjectsWorkspace';
 import ArhivFilter from './ArhivFilter';
+import MobTabs from '@/components/MobTabs';
 import AmbientBubbles from '@/components/AmbientBubbles';
 import SwapText from '@/components/SwapText';
 
@@ -510,7 +511,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
           {/* glava: zavihki (levo) + orodna vrstica aktivnega zavihka (desno) v ENI
               vrsti na namizju; flex-wrap ju na mobilnem prelomi v dve vrsti (locene) */}
           <div className="arh-glava">
-            <div className="arh-segpills arh-zavihki" role="tablist" aria-label="Arhiv">
+            <MobTabs label={L('Arhiv', 'Archive')} vrednost={zavihek} naVrednost={id => menjajZavihek(id as Zavihek)} opcije={[{ id: 'projekti', label: L('Projekti', 'Projects') }, { id: 'ponudbe', label: L('Ponudbe', 'Offers') }, { id: 'pogodbe', label: L('Pogodbe', 'Contracts') }, { id: 'racuni', label: L('Računi', 'Invoices') }]} />
+            <div className="arh-segpills arh-zavihki mobtabs-hide" role="tablist" aria-label="Arhiv">
               {(([['projekti', L('Projekti', 'Projects')], ['ponudbe', L('Ponudbe', 'Offers')], ['pogodbe', L('Pogodbe', 'Contracts')], ['racuni', L('Računi', 'Invoices')]]) as Array<[Zavihek, string]>).map(([v, n]) => (
                 <button key={v} type="button" role="tab" aria-selected={zavihek === v} className={zavihek === v ? 'on' : ''} onClick={() => menjajZavihek(v)}>{n}</button>
               ))}
