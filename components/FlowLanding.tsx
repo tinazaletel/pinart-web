@@ -1051,6 +1051,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* Banner brezplacnega kalkulatorja — TEMEN, z animiranim gradientom + lebdecimi zarki.
            BREZ lastnega max-width/padding — poravna se s sekcijami znotraj .fl-oder (sicer "stopnicka"). */
         .fl-kalk-banner { margin: clamp(3rem, 7vw, 5.5rem) 0 0; }
+        .fl-br-mob { display: none; }
         .fl-kalk-banner-in { position: relative; overflow: hidden; display: flex; align-items: flex-end; gap: clamp(1rem, 2.6vw, 2.2rem); flex-wrap: wrap; padding: clamp(1.5rem, 3vw, 2.3rem) clamp(1.8rem, 4vw, 3.2rem) 0; min-height: 202px; border-radius: 24px; border: none; color: #fff; background: linear-gradient(120deg, #17102e 0%, #2a1657 26%, #3a1d78 50%, #221247 74%, #17102e 100%); background-size: 280% 280%; animation: flKalkGrad 16s ease-in-out infinite; box-shadow: 0 24px 60px oklch(30% .1 297 / .25); }
         .fl-kalk-banner-in::before { content: ""; position: absolute; inset: -40%; z-index: 0; pointer-events: none; background: radial-gradient(40% 55% at 30% 40%, oklch(70% .18 297 / .5), transparent 70%), radial-gradient(38% 50% at 78% 66%, oklch(74% .15 200 / .4), transparent 72%); animation: flKalkBlob 18s ease-in-out infinite alternate; }
         .fl-kalk-banner-in > * { position: relative; z-index: 1; }
@@ -1127,12 +1128,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-kalk-zig-mob { display: none; }
         /* Mobile (<=640): NOV layout po skici — žig zgoraj-desno ob naslovu; spodaj okno LEVO + Pupa DESNO; gumb ČEZ na sredini. */
         @media (max-width: 640px) {
-          .fl-kalk-banner-in { display: grid; grid-template-columns: 1.4fr .75fr; grid-template-areas: "txt txt" "viz lik"; align-items: end; row-gap: .7rem; min-height: 0; padding: clamp(1.4rem, 5vw, 2rem) clamp(1.4rem, 5vw, 2rem) 0; }
+          .fl-kalk-banner-in { display: grid; grid-template-columns: 1.4fr .75fr; grid-template-areas: "txt txt" "viz lik"; align-items: end; row-gap: .2rem; min-height: 0; padding: clamp(1.15rem, 4vw, 1.5rem) clamp(1.4rem, 5vw, 2rem) 0; }
           .fl-kalk-txt { grid-area: txt; max-width: 100%; padding: 0 6.5rem 0 0; }
+          .fl-br-mob { display: inline; }
           .fl-kalk-viz { grid-area: viz; display: block; width: calc(100% + clamp(1.4rem, 5vw, 2rem)); max-width: none; align-self: end; margin: 0 0 0 calc(-1 * clamp(1.4rem, 5vw, 2rem)); transform: none; }
           .fl-kalk-viz .fl-kalk-zig { display: none; }
-          .fl-kalk-lik { grid-area: lik; position: relative; z-index: 2; right: auto; top: auto; bottom: auto; width: calc(100% + 13.25rem); height: auto; aspect-ratio: 1 / 1.05; align-self: end; margin: 0 -.6rem -3px -13.25rem; }
-          .fl-kalk-lik-img { transform: none !important; }
+          .fl-kalk-lik { grid-area: lik; position: relative; z-index: 2; right: auto; top: auto; bottom: auto; width: calc(100% + 13.25rem); height: auto; aspect-ratio: 1 / .8; align-self: end; margin: 0 -.6rem -3px -13.25rem; }
+          .fl-kalk-lik-img.a { transform: scale(1.2) !important; transform-origin: right bottom; }
+          .fl-kalk-lik-img.b { transform: translateX(26px) scale(.82) !important; transform-origin: right bottom; }
           .fl-kalk-cta { position: absolute; left: 50%; bottom: clamp(.9rem, 5vw, 1.8rem); transform: translateX(-50%); width: auto; margin: 0; z-index: 6; }
           .fl-kalk-zig-mob { display: inline-flex; position: absolute; top: clamp(1rem, 5vw, 1.6rem); right: clamp(1rem, 5vw, 1.6rem); z-index: 6; flex-direction: column; align-items: center; gap: .1rem; padding: .42rem .85rem .36rem; border: 2px solid rgba(255,255,255,.6); border-radius: 11px; background: linear-gradient(135deg, oklch(44% .16 300), oklch(28% .12 292)); color: #fff; text-transform: uppercase; transform: rotate(-8deg); box-shadow: 0 8px 20px rgba(20,10,40,.4); }
           .fl-kalk-zig-mob b { font-size: 1rem; font-weight: 800; letter-spacing: .04em; line-height: 1; }
@@ -1399,7 +1402,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <span className="fl-kalk-zig-mob" aria-hidden><b>{t('Brezplačno', 'Free')}</b><i>{t('za vedno', 'forever')}</i></span>
             <div className="fl-kalk-txt">
               <h2>{t('Kalkulator', 'The fair-price')}<br />{t('poštenih cen', 'calculator')}</h2>
-              <p>{t('Izračunaj pošteno ceno in sestavi ponudbo,', 'Work out a fair price and build a proposal,')}<br />{t('brez prijave in brez plačila.', 'no sign-up, no payment.')}</p>
+              <p>{t('Izračunaj pošteno ceno', 'Work out a fair price')} <br className="fl-br-mob" />{t('in sestavi ponudbo,', 'and build a proposal,')}<br />{t('brez prijave in brez plačila.', 'no sign-up, no payment.')}</p>
             </div>
             <div className="fl-kalk-viz" aria-hidden>
               <span className="fl-kalk-zig" aria-label={t('Brezplačno za vedno', 'Free forever')}>
