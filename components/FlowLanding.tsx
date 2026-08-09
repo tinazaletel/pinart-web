@@ -588,9 +588,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl .cta:hover svg { transform: translateX(3px); }
         .fl .cta::after { content: ''; position: absolute; top: 0; left: -160%; width: 90%; height: 100%; background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.95) 50%, transparent 100%); transform: skewX(-18deg); transition: left .6s cubic-bezier(.19,1,.22,1); pointer-events: none; }
         .fl .cta:hover::after { left: 170%; }
-        .fl .cta.duh { background: transparent; color: var(--ink); border-color: rgba(17,17,17,.28); }
+        .fl .cta.duh { background: transparent; color: var(--ink); border-color: rgba(17,17,17,.72); }
         .fl .cta.duh::after { background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.6) 50%, transparent 100%); }
-        .fl .cta-note { font-size: .8rem; color: rgba(17,17,17,.6); }
+        .fl .cta-note { font-size: .8rem; color: rgba(17,17,17,.72); }
         .fl-hero-vid-mob { display: none; }
         /* SCENA (slika + odsev + teg-i) — GLOBALNO, da velja v PORTRETU IN LANDSCAPE (prej je bila
            zaprta v @media <=820, zato v landscape slika ni bila zrcaljena in odsev/teg-i so bili narobe).
@@ -778,7 +778,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (max-width: 900px) { .fl-sc-pills { overflow-x: auto; justify-content: flex-start; scrollbar-width: none; padding-bottom: .2rem; } .fl-sc-pills::-webkit-scrollbar { display: none; } .fl-sc-pill { flex: 0 0 auto; } }
         .fl-sc-pill { display: inline-flex; align-items: center; gap: .5rem; padding: .58rem .95rem; border-radius: 999px; border: 1px solid rgba(17,17,17,.14); background: rgba(255,255,255,.72); font-family: var(--font-sans), system-ui, sans-serif; font-size: .85rem; font-weight: 600; color: rgba(17,17,17,.7); cursor: pointer; white-space: nowrap; transition: color .16s, border-color .16s, background .16s, transform .16s; }
         .fl-sc-pill svg { opacity: .75; }
-        .fl-sc-pill:hover { color: var(--ink); border-color: rgba(17,17,17,.3); transform: translateY(-1px); }
+        .fl-sc-pill:hover { color: var(--ink); border-color: rgba(17,17,17,.72); transform: translateY(-1px); }
         .fl-sc-pill.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
         .fl-sc-pill.on svg { opacity: 1; }
         .fl-sc-badge { font-size: .56rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; border-radius: 999px; padding: .16rem .44rem; }
@@ -865,13 +865,13 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-dash-kpi span { font-size: .7rem; color: rgba(17,17,17,.62); }
         .fl-dash-kpi strong { font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.5rem; }
         .fl-bench { display: grid; gap: .5rem; }
-        .fl-bench-label { display: flex; justify-content: space-between; font-size: .7rem; color: rgba(17,17,17,.6); }
+        .fl-bench-label { display: flex; justify-content: space-between; font-size: .7rem; color: rgba(17,17,17,.72); }
         .fl-bench-you { color: var(--ink); font-weight: 700; }
         .fl-bench-bar { position: relative; height: .62rem; border-radius: 999px; background: linear-gradient(90deg, oklch(88% .09 30), oklch(92% .1 90), oklch(85% .13 155)); }
         .fl-bench-mark { position: absolute; top: 50%; left: 68%; width: 1rem; height: 1rem; border-radius: 50%; background: var(--ink); border: 2px solid #fff; transform: translate(-50%, -50%); box-shadow: 0 2px 7px rgba(0,0,0,.28); }
         .fl-agent-note { margin-top: .3rem; display: flex; gap: .65rem; align-items: center; padding: .7rem .85rem; border-radius: 12px; background: oklch(95% .04 297); border: 1px solid oklch(88% .05 297); }
         .fl-agent-note b { font-size: .8rem; }
-        .fl-agent-note small { font-size: .7rem; color: rgba(17,17,17,.6); }
+        .fl-agent-note small { font-size: .7rem; color: rgba(17,17,17,.72); }
         .fl-agent-dot { position: relative; width: 1.9rem; height: 1.9rem; border-radius: 50%; flex: none; overflow: hidden; background: conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a); }
         .fl-code { position: relative; padding: 1.3rem 1.35rem; min-height: 15.5rem; background: oklch(22% .016 285); display: grid; gap: .55rem; align-content: start; }
         .fl-code-line { height: .5rem; border-radius: 999px; background: oklch(40% .03 285); }
@@ -1087,7 +1087,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-kvw { border-radius: 14px 14px 0 0; overflow: hidden; background: oklch(98% .01 297 / .92); backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2); border: 1px solid rgba(255,255,255,.5); box-shadow: 0 22px 46px rgba(20,10,40,.42), inset 0 1px 0 rgba(255,255,255,.6); }
         .fl-kvw-bar { display: flex; align-items: center; gap: .34rem; padding: .42rem .62rem; background: oklch(96% .006 87 / .9); border-bottom: 1px solid rgba(17,17,17,.06); }
         .fl-kvw-bar i { width: 7px; height: 7px; border-radius: 50%; background: rgba(17,17,17,.16); }
-        .fl-kvw-bar small { margin-left: .32rem; font-size: .6rem; font-weight: 600; color: rgba(17,17,17,.5); }
+        .fl-kvw-bar small { margin-left: .32rem; font-size: .6rem; font-weight: 600; color: rgba(17,17,17,.72); }
         .fl-kvw-body { position: relative; height: 172px; overflow: hidden; }
         /* shape transitions: mehka organska oblika, ki se stalno preoblikuje (ozadje zgodbe) */
         .fl-kvw-blob { position: absolute; top: 50%; left: 50%; width: 118px; height: 118px; margin: -59px 0 0 -59px; z-index: 0; background: radial-gradient(circle at 34% 30%, oklch(82% .12 320 / .5), oklch(72% .13 250 / .32)); filter: blur(5px); animation: flBlobMorph 9s ease-in-out infinite; }
@@ -1163,10 +1163,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-plan.izpost { border: 1.5px solid var(--ink); box-shadow: 0 22px 50px rgba(40,25,60,.14); }
         .fl-plan-znacka { position: absolute; top: -.7rem; left: 1.5rem; font-size: .6rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper); background: var(--ink); border-radius: 999px; padding: .28rem .7rem; }
         .fl-plan h3 { font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.6rem; margin: .3rem 0 .2rem; }
-        .fl-plan-za { font-size: .82rem; color: rgba(17,17,17,.6); margin: 0 0 1rem; min-height: 2.4em; }
+        .fl-plan-za { font-size: .82rem; color: rgba(17,17,17,.72); margin: 0 0 1rem; min-height: 2.4em; }
         .fl-plan-cena { display: flex; align-items: baseline; gap: .35rem; margin-bottom: 1.2rem; }
         .fl-plan-cena strong { font-family: var(--font-serif), serif; font-weight: 500; font-size: 2.6rem; line-height: 1; }
-        .fl-plan-cena span { font-size: .8rem; color: rgba(17,17,17,.6); }
+        .fl-plan-cena span { font-size: .8rem; color: rgba(17,17,17,.72); }
         .fl-plan-redna { margin-left: .25rem; color: rgba(17,17,17,.62); font-size: .95rem; text-decoration-thickness: 1px; }
         .fl-plan-ustanovna { margin: -.9rem 0 1.2rem; font-size: .68rem; font-weight: 700; letter-spacing: .04em; color: oklch(48% .16 350); }
         .fl-plan-cta { position: relative; overflow: hidden; display: block; text-align: center; font-size: .82rem; font-weight: 700; letter-spacing: .04em; text-decoration: none; padding: .8rem 1rem; border-radius: 999px; border: 1px solid var(--ink); color: var(--ink); transition: background .16s, color .16s, transform .16s; }
@@ -1178,14 +1178,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-plan-cta:hover::after { left: 170%; }
         .fl-plan.kmalu { opacity: .62; }
         .fl-plan.kmalu .fl-plan-znacka { background: rgba(17,17,17,.42); }
-        .fl-plan-cta.cakalna { pointer-events: none; border-style: dashed; border-color: rgba(17,17,17,.3); color: rgba(17,17,17,.62); }
+        .fl-plan-cta.cakalna { pointer-events: none; border-style: dashed; border-color: rgba(17,17,17,.72); color: rgba(17,17,17,.62); }
         .fl-plan-cta.cakalna::after { display: none; }
         .fl-plan-lista { list-style: none; margin: 1.4rem 0 0; padding: 1.3rem 0 0; border-top: 1px solid rgba(17,17,17,.1); display: grid; gap: .65rem; }
         .fl-plan-lista li { display: flex; align-items: flex-start; gap: .55rem; font-size: .86rem; line-height: 1.4; color: rgba(17,17,17,.82); }
         .fl-plan-lista li svg { flex-shrink: 0; margin-top: .06rem; }
         .fl-plan-lista li.da svg { color: oklch(55% .14 155); }
         .fl-plan-lista li.ne { color: rgba(17,17,17,.62); }
-        .fl-plan-lista li.ne svg { color: rgba(17,17,17,.3); }
+        .fl-plan-lista li.ne svg { color: rgba(17,17,17,.72); }
         .fl-cenik-opomba { font-size: .78rem; color: rgba(17,17,17,.62); margin: 1.9rem 0 0; }
 
         .fl-faq { margin: 10.05rem 0 0; padding-top: 3rem; display: flex; flex-wrap: wrap; gap: clamp(1.8rem, 4vw, 3.5rem); align-items: flex-start; }
