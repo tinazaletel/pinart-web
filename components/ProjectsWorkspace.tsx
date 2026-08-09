@@ -108,7 +108,7 @@ const pwStyles = `
 .pw-seznam-glava{display:flex;align-items:center;justify-content:space-between;padding:.1rem .2rem .9rem}
 .pw-seznam-glava strong{font:500 1.5rem var(--font-sans),system-ui,sans-serif;color:var(--ink)}
 .pw-tabela-ovoj{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:1.4rem}
-.pw-tabela{min-width:640px;display:grid;grid-template-columns:1.7rem minmax(0,2.1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr) 1.6rem;background:#fff;border:1px solid oklch(93% .006 82 / .55);border-radius:1.4rem;overflow:hidden}
+.pw-tabela{min-width:640px;display:grid;grid-template-columns:1.7rem minmax(0,2.1fr) minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr) 1.6rem;background:rgba(255,255,255,.55);border:1px solid rgba(17,17,17,.1);border-radius:1.4rem;overflow:hidden}
 .pw-chk-cel{display:flex;align-items:center;justify-content:center}
 .pw-chk{width:1.05rem;height:1.05rem;border-radius:.34rem;border:1.5px solid oklch(78% .02 80);background:#fff;cursor:pointer;flex:none;display:grid;place-items:center;transition:background .12s,border-color .12s}
 .pw-chk::after{content:"";width:.5rem;height:.28rem;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translate(0,-1px);opacity:0;transition:opacity .12s}
@@ -128,9 +128,9 @@ const pwStyles = `
 .pw-tabela-naslov .${styles.eyebrow}{color:oklch(45% .12 300)}
 .pw-tabela-naslov strong{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:1.6rem;line-height:1;color:var(--ink)}
 .pw-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.75rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid oklch(93% .006 82 / .55)}
-.pw-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:0;border-top:1px solid oklch(93% .006 82 / .55);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
+.pw-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:0;border-top:1px solid rgba(17,17,17,.07);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
 .pw-tabela > button.pw-vrstica:first-of-type{border-top:0}
-.pw-vrstica:hover{background:oklch(97.4% .011 84)}
+.pw-vrstica:hover{background:rgba(255,255,255,.5)}
 .pw-det-statusured,.pw-status-ured{position:relative;display:inline-flex;max-width:100%}
 .pw-det-statusured[data-editable] .pw-status,.pw-status-ured[data-editable] .pw-status{cursor:pointer}
 .pw-det-statusured[data-editable]::after,.pw-status-ured[data-editable]::after{content:none}
@@ -380,7 +380,7 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-vsi-strani button.pw-vsi-stran-aktivna{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 /* klikabilna vrstica (kartica + slide) -> predogled */
 .pw-vrstica-klik{cursor:pointer;transition:background .14s}
-.pw-vrstica-klik:hover{background:oklch(97.4% .011 84)}
+.pw-vrstica-klik:hover{background:rgba(255,255,255,.5)}
 .pw-vrstica-klik:focus-visible{outline:2px solid var(--akcent,#6E4FA6);outline-offset:2px}
 /* PREDOGLED dokumenta (panel z desne) */
 .pw-det-panel{width:min(42rem,100vw);animation:pwVsiIn .5s cubic-bezier(.16,1,.3,1) both}
