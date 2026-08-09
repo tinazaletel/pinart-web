@@ -818,7 +818,7 @@
   .recurringForm > label:nth-of-type(2) { width: auto; }
 }
 .clientPage { display: grid; gap: 1rem; }
-.clientToolbar { display: flex; gap: .7rem; }
+.clientToolbar { position: relative; display: flex; gap: .7rem; }
 .predogledBanner { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; margin-top: .9rem; padding: .7rem 1rem; border: 1px dashed color-mix(in oklch, var(--ink) 20%, transparent); border-radius: .9rem; background: oklch(97% .02 90 / .6); }
 .predogledBanner span { flex: 1 1 16rem; font: 500 .74rem/1.45 var(--font-sans), sans-serif; color: var(--muted); }
 .predogledBanner span strong { color: var(--ink); font-weight: 700; }
