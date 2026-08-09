@@ -2393,6 +2393,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   };
   /* mobile: ponudba je v nogi (FAB kosarica); tap odpre drsni panel */
   const [ponudbaOdprta, setPonudbaOdprta] = useState(false);
+  const [povzetekSkrit, setPovzetekSkrit] = useState(false);  /* desktop: panel skrčen v FAB */
   const ponudbaPolozajRef = useRef(0);
   const odpriMobilnoPonudbo = () => {
     ponudbaPolozajRef.current = window.scrollY;
@@ -6297,7 +6298,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .vodicka-karta b { display: block; color: var(--ink); font-size: .96rem; margin-bottom: .1rem; }
 
         /* ziva ponudba: steklena kartica */
-        .cw .ponudba0 { border-radius: 26px; padding: 1.5rem 1.4rem 5.5rem; display: flex; flex-direction: column; min-height: 0; background: rgba(255,255,255,.72); -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); border: 1px solid rgba(255,255,255,.75); box-shadow: 0 20px 60px rgba(40,25,40,.10); }
+        .cw .ponudba0 { position: relative; border-radius: 26px; padding: 1.5rem 1.4rem 5.5rem; display: flex; flex-direction: column; min-height: 0; background: rgba(255,255,255,.72); -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); border: 1px solid rgba(255,255,255,.75); box-shadow: 0 20px 60px rgba(40,25,40,.10); }
         /* align-items:flex-start + min-width:0 na naslovu: pri dolgem nazivu se flex element
            brez min-width:0 ne more skrciti pod svojo vsebino, zato je naslov ustil cez rob
            in ga je panel odrezal. Znacka ostane cela. */
@@ -6526,9 +6527,18 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ponudba0-vsota-vrsta.ponudba0-mini { font-size: .82rem; color: rgba(17,17,17,.55); margin-top: .35rem; }
         .cw .ponudba0-vsota-vrsta.ponudba0-mini + .ponudba0-vsota-vrsta { margin-top: .35rem; }
 
-        /* mobilna kosarica (FAB) + zapiralni gumb — privzeto skrita (na desktopu je panel fiksen desno) */
-        .cw .ponudba0-zapri { display: none; }
+        /* DESKTOP: × skrije panel v črn FAB (kot mobilna kosarica). */
+        .cw .ponudba0-zapri { position: absolute; top: .9rem; right: .9rem; z-index: 4; display: inline-flex; align-items: center; justify-content: center; width: 1.9rem; height: 1.9rem; padding: 0; border: 1px solid rgba(17,17,17,.12); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); color: rgba(17,17,17,.6); font-size: 1.25rem; line-height: 1; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+        .cw .ponudba0-zapri:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+        .cw .ponudba0.skrit-desktop { display: none; }
+        .cw .oder0:has(.ponudba0.skrit-desktop) { grid-template-columns: 1fr; }
         .cw .ponudba-fab { display: none; }
+        .cw .ponudba-fab.fab-desktop { display: inline-flex; align-items: center; gap: .6rem; position: fixed; right: 1.4rem; bottom: 1.5rem; z-index: 60; padding: .6rem .95rem .6rem .7rem; border: none; border-radius: 999px; background: var(--ink); color: var(--paper); box-shadow: 0 12px 30px rgba(40,25,40,.3); cursor: pointer; font-family: inherit; transition: transform .2s ease; }
+        .cw .ponudba-fab.fab-desktop:active { transform: scale(.96); }
+        .cw .ponudba-fab.fab-desktop .fab-ikona { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 2.3rem; height: 2.3rem; border-radius: 50%; background: rgba(255,255,255,.16); }
+        .cw .ponudba-fab.fab-desktop .fab-tag { position: absolute; top: -.35rem; right: -.35rem; min-width: 1.3rem; height: 1.3rem; padding: 0 .3rem; border-radius: 999px; background: var(--accent); color: #fff; font-size: .72rem; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; border: 2px solid var(--ink); }
+        .cw .ponudba-fab.fab-desktop .fab-znesek { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.05; font-size: .68rem; font-weight: 600; opacity: .8; padding-right: .35rem; }
+        .cw .ponudba-fab.fab-desktop .fab-znesek b { font-size: .92rem; font-weight: 800; opacity: 1; }
 
         @media (max-width: 1200px) {
           .cw .oder0 { grid-template-columns: 1fr; margin-top: .75rem; }
@@ -6538,6 +6548,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw:has(.ponudba0.odprta) .lupina-glava { z-index: 0; }
           /* ponudba NI vec vmes: postane drsni panel z desne (kosarica) */
           .cw .ponudba0 { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 90vw); border-radius: 20px 0 0 20px; margin: 0; z-index: 70; overflow-y: auto; transform: translateX(102%); transition: transform .32s cubic-bezier(.2,.8,.3,1); box-shadow: -18px 0 50px rgba(40,25,40,.22); background: rgba(255,255,255,.92); -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4); }
+          /* mobilno: 'skrit-desktop' (desktop skrivanje) ne velja — predal krmili .odprta */
+          .cw .ponudba0.skrit-desktop { display: flex; }
+          .cw .ponudba-fab.fab-desktop { position: fixed; right: 1rem; bottom: 5.4rem; }
           .cw .ponudba0.odprta { transform: translateX(0); }
           /* zapri: PRIPNJEN fiksno na vrh predala (ne odscrolla z vsebino), jasen napis "Zapri" */
           .cw .ponudba0-zapri { display: inline-flex; position: sticky; top: calc(.7rem + env(safe-area-inset-top, 0px)); align-self: flex-end; flex: none; height: 2.3rem; margin: 0 0 -2.3rem auto; align-items: center; justify-content: center; gap: .35rem; border: none; padding: 0 .9rem 0 .85rem; background: var(--ink); color: var(--paper); border-radius: 999px; font-family: inherit; font-size: .8rem; font-weight: 700; line-height: 1; cursor: pointer; z-index: 3; box-shadow: 0 8px 22px rgba(40,25,40,.28); }
@@ -8638,8 +8651,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
               {/* ── živa ponudba: desktop fiksno desno, mobile drsni panel (kosarica) ── */}
               {ponudbaOdprta && <div className="ponudba-backdrop" onClick={() => zapriMobilnoPonudbo()} aria-hidden />}
-              <aside className={'ponudba0' + (ponudbaOdprta ? ' odprta' : '')} aria-label={L('Tvoja ponudba', 'Your quote')} data-lenis-prevent>
-                <button type="button" className="ponudba0-zapri" aria-label={L('Zapri ponudbo', 'Close quote')} onClick={() => zapriMobilnoPonudbo()}>×</button>
+              <aside className={'ponudba0' + (ponudbaOdprta ? ' odprta' : '') + (povzetekSkrit ? ' skrit-desktop' : '')} aria-label={L('Tvoja ponudba', 'Your quote')} data-lenis-prevent>
+                <button type="button" className="ponudba0-zapri" aria-label={L('Zapri ponudbo', 'Close quote')} onClick={() => { setPovzetekSkrit(true); zapriMobilnoPonudbo(); }}>×</button>
                 <div className="ponudba0-glava">
                   <h2>{nazivPonudbe.trim() || L('Tvoja ponudba', 'Your quote')}</h2>
                   <span className="ponudba0-chip">{locale === 'en'
@@ -10033,8 +10046,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       {/* MOBILE: ponudba v nogi kot FAB (kosarica) — tap odpre drsni panel */}
       {korak === 0 && !klasicnaOblika && !uvodChat && (
         <>
-          <button type="button" className={'ponudba-fab' + (ponudbaOdprta ? ' skrit' : '')}
-            onClick={odpriMobilnoPonudbo} aria-label={L('Odpri ponudbo', 'Open quote')}>
+          <button type="button" className={'ponudba-fab' + (ponudbaOdprta ? ' skrit' : '') + (povzetekSkrit ? ' fab-desktop' : '')}
+            onClick={() => { setPovzetekSkrit(false); odpriMobilnoPonudbo(); }} aria-label={L('Odpri ponudbo', 'Open quote')}>
             <span className="fab-ikona" aria-hidden><FileText size={22} weight="regular" />
               {stPostavk > 0 && <span className="fab-tag">{stPostavk}</span>}
             </span>
