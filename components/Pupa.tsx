@@ -45,7 +45,26 @@ export default function Pupa() {
   const [zvok, setZvok] = useState(false);
   const [nacin, setNacin] = useState<'chat' | 'glas'>('chat');
   const [govoreca, setGovoreca] = useState(false);
+  const [skritScroll, setSkritScroll] = useState(false);
   const sporRef = useRef<HTMLDivElement>(null);
+
+  /* Pupa ne sme prekrivati vsebine: ko drsaš NAVZDOL (bereš), izgine; ko drsaš GOR ali si na vrhu, se vrne. */
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    let lastY = window.scrollY; let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const y = window.scrollY;
+        if (y > lastY + 6 && y > 120) setSkritScroll(true);
+        else if (y < lastY - 6 || y < 60) setSkritScroll(false);
+        lastY = y;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { window.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -183,9 +202,9 @@ export default function Pupa() {
 
   return createPortal(
     <>
-      <style>{'.pupa-fab{transition:opacity .22s ease, transform .22s ease}body.pw-sheet-open .pupa-fab,body[data-detajl-odprt] .pupa-fab{opacity:0;transform:scale(.5);pointer-events:none}@media(max-width:640px){.pupa-fab{left:1.1rem!important;right:auto!important}}'}</style>
+      <style>{'.pupa-fab{transition:opacity .22s ease, transform .22s ease}body.pw-sheet-open .pupa-fab,body[data-detajl-odprt] .pupa-fab,.pupa-fab.pupa-skrit{opacity:0;transform:translateY(160%) scale(.9);pointer-events:none}@media(max-width:640px){.pupa-fab{left:1.1rem!important;right:auto!important}}'}</style>
       {!odprt && (
-        <button type="button" className="pupa-fab" onClick={() => setOdprt(true)} aria-label={L('Odpri Pupo', 'Open Pupa')} title={L('Pupa: pomočnica', 'Pupa: assistant')}
+        <button type="button" className={'pupa-fab' + (skritScroll ? ' pupa-skrit' : '')} onClick={() => setOdprt(true)} aria-label={L('Odpri Pupo', 'Open Pupa')} title={L('Pupa: pomočnica', 'Pupa: assistant')}
           style={{ position: 'fixed', right: '1.4rem', bottom: '1.4rem', zIndex: 90, width: 58, height: 58, flex: 'none', borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0, background: 'conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)', boxShadow: '0 12px 30px rgba(42,32,53,.30)' }}>
           <svg viewBox="0 0 40 40" width="58" height="58" style={{ position: 'absolute', inset: 0 }}>
             <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
