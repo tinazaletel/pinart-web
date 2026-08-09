@@ -203,7 +203,7 @@ export default function Pupa() {
 
       {odprt && (
         <div role="dialog" aria-label="Pupa" style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(400px, 94vw)', zIndex: 95, background: '#fff', borderLeft: '1px solid rgba(42,32,53,.12)', boxShadow: '-16px 0 50px rgba(42,32,53,.18)', display: 'flex', flexDirection: 'column', color: '#2A2035' }}>
-          <style>{'@keyframes pupaRing{0%{box-shadow:0 0 0 0 rgba(224,86,122,.40)}100%{box-shadow:0 0 0 32px rgba(224,86,122,0)}}@keyframes pupaBreathe{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(124,58,237,.42)}50%{transform:scale(1.06);box-shadow:0 0 0 18px rgba(124,58,237,0)}}'}</style>
+          <style>{'@keyframes pupaRing{0%{box-shadow:0 0 0 0 rgba(224,86,122,.40)}100%{box-shadow:0 0 0 32px rgba(224,86,122,0)}}@keyframes pupaBreathe{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(124,58,237,.42)}50%{transform:scale(1.06);box-shadow:0 0 0 18px rgba(124,58,237,0)}}@keyframes pupaBlob{0%,100%{border-radius:42% 58% 55% 45% / 48% 42% 58% 52%;transform:rotate(0deg) scale(1)}33%{border-radius:62% 38% 42% 58% / 55% 62% 38% 45%;transform:rotate(120deg) scale(1.12)}66%{border-radius:45% 55% 62% 38% / 40% 52% 48% 60%;transform:rotate(240deg) scale(.94)}}@media (prefers-reduced-motion: reduce){[style*="pupaBlob"]{animation:none!important}}'}</style>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '1rem 1.1rem', borderBottom: '1px solid rgba(42,32,53,.08)' }}>
             {OBRAZ(34)}
             <div style={{ flex: 1, lineHeight: 1.2 }}>
@@ -264,8 +264,9 @@ export default function Pupa() {
               )}
             </div>
           ) : (
-          <><div ref={sporRef} style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
-            <div style={{ alignSelf: 'flex-start', maxWidth: '92%', padding: '.65rem .8rem', borderRadius: 16, background: 'rgba(167,139,250,.12)', display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+          <><div ref={sporRef} style={{ position: 'relative', flex: 1, overflowY: 'auto', padding: '1rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+            <div aria-hidden style={{ position: 'absolute', top: '38%', left: '50%', width: 190, height: 190, marginLeft: -95, marginTop: -95, zIndex: 0, pointerEvents: 'none', borderRadius: '50%', background: 'radial-gradient(circle at 34% 30%, rgba(180,140,255,.30), rgba(120,165,240,.15) 58%, transparent 72%)', filter: 'blur(9px)', animation: 'pupaBlob 9s ease-in-out infinite' }} />
+            <div style={{ position: 'relative', zIndex: 1, alignSelf: 'flex-start', maxWidth: '92%', padding: '.65rem .8rem', borderRadius: 16, background: 'rgba(167,139,250,.12)', display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
               <p style={{ margin: 0, fontSize: '.88rem', lineHeight: 1.45 }}>
                 {imaPonudbo
                   ? L('Zdravo! Pogledala sem tvojo ponudbo. Karkoli te zanima, kar vprašaj — pomagam s ceno, pravicami in besedilom.', 'Hi! I reviewed your quote. Ask me anything — I help with pricing, rights and wording.')
@@ -284,10 +285,10 @@ export default function Pupa() {
             </div>
 
             {spor.map((m, i) => (
-              <div key={i} style={{ alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '88%', padding: '.6rem .8rem', borderRadius: 16, background: m.role === 'user' ? '#2A2035' : 'rgba(167,139,250,.12)', color: m.role === 'user' ? '#fff' : '#2A2035', fontSize: '.88rem', lineHeight: 1.45, whiteSpace: 'pre-wrap' }}>{m.content}</div>
+              <div key={i} style={{ position: 'relative', zIndex: 1, alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '88%', padding: '.6rem .8rem', borderRadius: 16, background: m.role === 'user' ? '#2A2035' : 'rgba(167,139,250,.12)', color: m.role === 'user' ? '#fff' : '#2A2035', fontSize: '.88rem', lineHeight: 1.45, whiteSpace: 'pre-wrap' }}>{m.content}</div>
             ))}
             {caka && (
-              <div style={{ alignSelf: 'flex-start', padding: '.6rem .8rem', borderRadius: 16, background: 'rgba(167,139,250,.12)', fontSize: '.86rem', opacity: .7 }}>{L('Pupa razmišlja…', 'Pupa is thinking…')}</div>
+              <div style={{ position: 'relative', zIndex: 1, alignSelf: 'flex-start', padding: '.6rem .8rem', borderRadius: 16, background: 'rgba(167,139,250,.12)', fontSize: '.86rem', opacity: .7 }}>{L('Pupa razmišlja…', 'Pupa is thinking…')}</div>
             )}
           </div>
 
