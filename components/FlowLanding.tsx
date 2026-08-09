@@ -1411,8 +1411,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               </div>
             </div>
             <div className="fl-kalk-lik" aria-hidden>
-              <img src="/flow/pupa_sedi.png" alt="" className="fl-kalk-lik-img a" />
-              <img src="/flow/pupa_zamisljena.png" alt="" className="fl-kalk-lik-img b" />
+              <img src="/flow/pupa_sedi.png?v=3" alt="" className="fl-kalk-lik-img a" />
+              <img src="/flow/pupa_zamisljena.png?v=3" alt="" className="fl-kalk-lik-img b" />
             </div>
             <a className="fl-kalk-cta" href={kalkulator}>{t('Odpri kalkulator', 'Open calculator')} <ArrowRight size={17} weight="bold" /></a>
           </div>
