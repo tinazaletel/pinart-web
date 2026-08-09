@@ -130,7 +130,7 @@ const pwStyles = `
 .pw-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.75rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid oklch(93% .006 82 / .55)}
 .pw-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:0;border-top:1px solid rgba(17,17,17,.07);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
 .pw-tabela > button.pw-vrstica:first-of-type{border-top:0}
-.pw-vrstica:hover{background:rgba(255,255,255,.5)}
+.pw-vrstica:hover{background:#fff}
 .pw-det-statusured,.pw-status-ured{position:relative;display:inline-flex;max-width:100%}
 .pw-det-statusured[data-editable] .pw-status,.pw-status-ured[data-editable] .pw-status{cursor:pointer}
 .pw-det-statusured[data-editable]::after,.pw-status-ured[data-editable]::after{content:none}
@@ -380,7 +380,7 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-vsi-strani button.pw-vsi-stran-aktivna{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 /* klikabilna vrstica (kartica + slide) -> predogled */
 .pw-vrstica-klik{cursor:pointer;transition:background .14s}
-.pw-vrstica-klik:hover{background:rgba(255,255,255,.5)}
+.pw-vrstica-klik:hover{background:#fff}
 .pw-vrstica-klik:focus-visible{outline:2px solid var(--akcent,#6E4FA6);outline-offset:2px}
 /* PREDOGLED dokumenta (panel z desne) */
 .pw-det-panel{width:min(42rem,100vw);animation:pwVsiIn .5s cubic-bezier(.16,1,.3,1) both}

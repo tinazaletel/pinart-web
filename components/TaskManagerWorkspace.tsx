@@ -1855,7 +1855,7 @@ export default function TaskManagerWorkspace() {
         .tm-prazno{margin:.4rem;padding:1.2rem .6rem;border:1px dashed var(--line);border-radius:.8rem;color:var(--muted);font-size:.72rem;text-align:center}
 
         .tm-kartica{padding:.8rem .85rem;border:none;border-radius:.9rem;background:rgba(255,255,255,.5);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);box-shadow:0 6px 18px oklch(20% .03 55/.08),inset 0 1px 0 rgba(255,255,255,.55);cursor:pointer;transition:box-shadow .18s ease,transform .18s ease,background .18s ease}
-        .tm-kartica:hover{background:rgba(255,255,255,.64);box-shadow:0 11px 26px oklch(20% .03 55/.13),inset 0 1px 0 rgba(255,255,255,.6);transform:translateY(-1px)}
+        .tm-kartica:hover{background:#fff;box-shadow:0 11px 26px oklch(20% .03 55/.13),inset 0 1px 0 rgba(255,255,255,.7);transform:translateY(-1px)}
         .tm-kartica:active{cursor:grabbing;transform:none}
         .tm-kartica:focus-visible{outline:2px solid oklch(62% .19 300);outline-offset:2px}
         .tm-kartica-vrh{display:flex;align-items:center;gap:.4rem;min-height:1.15rem;margin-bottom:.5rem}
