@@ -510,8 +510,10 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
           {/* glava: zavihki (levo) + orodna vrstica aktivnega zavihka (desno) v ENI
               vrsti na namizju; flex-wrap ju na mobilnem prelomi v dve vrsti (locene) */}
+          {/* Mobilni preklopnik arhiva (Projekti/Ponudbe/Pogodbe/Računi) = slide-up NAD tabelo,
+              da orodna vrstica ostane čista (search · filter · pogled · +). Namizje = pills spodaj. */}
+          <div className="arh-zav-mob"><MobTabs label={L('Arhiv', 'Archive')} vrednost={zavihek} naVrednost={id => menjajZavihek(id as Zavihek)} opcije={[{ id: 'projekti', label: L('Projekti', 'Projects') }, { id: 'ponudbe', label: L('Ponudbe', 'Offers') }, { id: 'pogodbe', label: L('Pogodbe', 'Contracts') }, { id: 'racuni', label: L('Računi', 'Invoices') }]} /></div>
           <div className="arh-glava">
-            <MobTabs label={L('Arhiv', 'Archive')} vrednost={zavihek} naVrednost={id => menjajZavihek(id as Zavihek)} opcije={[{ id: 'projekti', label: L('Projekti', 'Projects') }, { id: 'ponudbe', label: L('Ponudbe', 'Offers') }, { id: 'pogodbe', label: L('Pogodbe', 'Contracts') }, { id: 'racuni', label: L('Računi', 'Invoices') }]} />
             <div className="arh-segpills arh-zavihki mobtabs-hide" role="tablist" aria-label="Arhiv">
               {(([['projekti', L('Projekti', 'Projects')], ['ponudbe', L('Ponudbe', 'Offers')], ['pogodbe', L('Pogodbe', 'Contracts')], ['racuni', L('Računi', 'Invoices')]]) as Array<[Zavihek, string]>).map(([v, n]) => (
                 <button key={v} type="button" role="tab" aria-selected={zavihek === v} className={zavihek === v ? 'on' : ''} onClick={() => menjajZavihek(v)}>{n}</button>
@@ -546,6 +548,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                 />
               </div>
             )}
+            {/* Mobilno: akcija (+) kot samostojen ZADNJI element vrstice (za pogledom), da je vrstni red
+                Projekti · iskalnik · filter · pogled · +. Na namizju je skrit (akcija ostane v ArhivFilter). */}
+            {filterCfg && <div className="arh-akcija-mob">{filterCfg.akcija}</div>}
           </div>
         </>}
 
@@ -888,9 +893,15 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-zavihki{flex:0 0 auto}
         .arh-pogled-preklop{flex:0 0 auto}
         .arh-pp-ik{display:none}
+        .arh-akcija-mob{display:none}
+        .arh-zav-mob{display:none}
         @media (max-width:640px){
-          .arh-glava .mobtabs{margin-right:auto}
-          .arh-glava{gap:.5rem}
+          .arh-zav-mob{display:block;margin:0 0 .85rem}
+          .arh-glava{gap:.45rem;flex-wrap:wrap;align-items:center}
+          .arh-glava-filter{order:1;flex:0 1 auto;min-width:0}
+          .arh-pogled-preklop{order:2}
+          .arh-akcija-mob{order:3;display:inline-flex;margin-left:auto}
+          .af-mob-akcija{display:none}
           .arh-pogled-preklop button{padding:.46rem .66rem}
           .arh-pp-ik{display:inline-flex}
           .arh-pp-txt{display:none}
