@@ -1,4 +1,5 @@
 import { setRequestLocale } from 'next-intl/server';
+import type { Metadata } from 'next';
 import { routing, type Locale } from '@/i18n/routing';
 import NazajLink from '@/components/NazajLink';
 import { Link } from '@/i18n/routing';
@@ -6,6 +7,17 @@ import Footer from '@/components/sections/Footer';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return locale === 'en'
+    ? { title: 'Privacy Policy | Pinart Flow', description: 'Privacy Policy for Pinart Flow.' }
+    : { title: 'Politika zasebnosti | Pinart Flow', description: 'Politika zasebnosti za Pinart Flow.' };
 }
 
 const sl = {
@@ -164,7 +176,7 @@ export default async function PrivacyPage({
       }}
     >
       <div style={{ maxWidth: '720px' }}>
-        <NazajLink rezerva="/" label="Nazaj" />
+        <NazajLink rezerva="/" label={locale === 'en' ? 'Back' : 'Nazaj'} />
 
         <h1
           style={{
@@ -193,6 +205,21 @@ export default async function PrivacyPage({
         >
           {content.updated}
         </p>
+
+        {locale === 'en' && (
+          <p
+            style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '0.88rem',
+              lineHeight: 1.5,
+              color: 'var(--ink)',
+              fontWeight: 700,
+              margin: '-2rem 0 3.5rem',
+            }}
+          >
+            DRAFT — pending legal review.
+          </p>
+        )}
 
         {content.sections.map((s, i) => (
           <section key={i} style={{ marginBottom: '2.5rem' }}>

@@ -3,11 +3,24 @@ import { setRequestLocale } from 'next-intl/server';
 import { localePath } from '@/i18n/routing';
 import NazajLink from '@/components/NazajLink';
 
-export const metadata: Metadata = {
-  title: 'Pinart Flow: pogoji uporabe',
-  description: 'Pogoji uporabe in varstvo podatkov za platformo Pinart Flow ter brezplačni kalkulator cen za kreativce.',
-  robots: { index: false },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return locale === 'en'
+    ? {
+        title: 'Pinart Flow: Terms of Use',
+        description: 'Terms of Use for Pinart Flow and its free pricing calculator for creatives.',
+        robots: { index: false },
+      }
+    : {
+        title: 'Pinart Flow: pogoji uporabe',
+        description: 'Pogoji uporabe in varstvo podatkov za platformo Pinart Flow ter brezplačni kalkulator cen za kreativce.',
+        robots: { index: false },
+      };
+}
 
 /* Pogoji uporabe Pinart Flow — standardni osnutek; pred resno javno
    kampanjo naj ga pregleda pravnik. Vsebinsko pokriva: informativnost
@@ -41,6 +54,7 @@ export default async function KalkulatorPogojiPage({
         <h1 style={{ fontFamily: 'var(--font-serif), Didot, serif', fontWeight: 500, fontSize: 'clamp(2.2rem, 7vw, 3.6rem)', lineHeight: 1, letterSpacing: '-.01em', margin: '.6rem 0 1rem' }}>
           {en ? 'Terms of Use' : 'Pogoji uporabe'}
         </h1>
+        {en && <p style={OSNUTEK}>DRAFT — pending legal review.</p>}
         <p style={P}>
           {en ? (
             <>
