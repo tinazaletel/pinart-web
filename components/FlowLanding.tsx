@@ -79,7 +79,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   useEffect(() => {
     const root = flRef.current;
     if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const sel = '.fl-potek h2, .fl-koraki > .fl-korak, .fl-laptop-txt, .fl-laptop-vizual, .fl-orodja-nadzor, .fl-showcase-glava, .fl-bento-glava, .fl-bento-mreza > *, .fl-konec > *, .fl-funkcije-glava, .fl-funkcije-mreza > *, .fl-cenik-mreza > *, .fl-faq-glava, .fl-faq-lista > *, .fl-zgodba-glava, .fl-zgodba-tekst > p';
+    const sel = '.fl-kalk-banner-in, .fl-potek h2, .fl-koraki > .fl-korak, .fl-laptop-txt, .fl-laptop-vizual, .fl-orodja-nadzor, .fl-showcase-glava, .fl-bento-glava, .fl-bento-mreza > *, .fl-konec > *, .fl-funkcije-glava, .fl-funkcije-mreza > *, .fl-cenik-mreza > *, .fl-faq-glava, .fl-faq-lista > *, .fl-zgodba-glava, .fl-zgodba-tekst > p';
     const targets = Array.from(root.querySelectorAll<HTMLElement>(sel));
     if (!targets.length) return;
     targets.forEach(el => el.classList.add('fl-reveal'));
@@ -1259,8 +1259,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-fly img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; filter: drop-shadow(0 14px 22px rgba(40,25,60,.22)); }
         /* leteči papir je zdaj viden tudi na mobilnem/pokončno — vezan na mobilno pupo (krmili JS) */
         /* mehki reveal sekcij ob drsanju (razred doda JS; reduce-motion = brez) */
-        .fl-reveal { transform: translateY(26px); transition: transform .85s cubic-bezier(.22,1,.36,1); }
-        .fl-reveal.fl-in { transform: none; }
+        .fl-reveal { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .85s cubic-bezier(.22,1,.36,1); }
+        .fl-reveal.fl-in { opacity: 1; transform: none; }
         /* hero naslov — besede se ob nalaganju nezno dvignejo (brez clipa, da ne obreze serifa) */
         /* rezervirana višina naslova (≈3 vrstice) — daljši/krajši naslov NE premika
            podnaslova in gumbov (Tina: besedilo se lahko premika, gumbi ostanejo). */
