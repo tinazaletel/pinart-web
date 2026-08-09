@@ -428,7 +428,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const dokNoga = () => {
     const n = aktivnaPredloga().noga?.trim();
     /* noga = fiksno 5 mm od SPODNJEGA roba strani (v spodnji rob @page margina) */
-    return n ? `<div class="dok-noga" style="position:fixed;left:16mm;right:16mm;bottom:5mm;padding-top:8px;border-top:1px solid oklch(93% .006 82 / .55);font-size:8pt;color:#9a9088;line-height:1.5">${esc(n).split('\n').join('<br>')}</div>` : '';
+    return n ? `<div class="dok-noga" style="position:fixed;left:16mm;right:16mm;bottom:5mm;padding-top:8px;border-top:1px solid oklch(93% .006 82 / .55);font-size:8pt;color:#625c56;line-height:1.5">${esc(n).split('\n').join('<br>')}</div>` : '';
   };
   const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}
     .rac-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin:6px 0 22px}
@@ -438,9 +438,9 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     .rac-meta{font-size:9pt;color:#444;text-align:right;line-height:1.5}
     .rac-meta b{display:block;font-size:7.5pt;letter-spacing:.12em;text-transform:uppercase;color:#B25476;margin-top:7px}
     .rac-stranki{margin:0 0 18px;font-size:10.5pt;color:#222;line-height:1.6}
-    .rac-l{display:block;font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:4px}
+    .rac-l{display:block;font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#625c56;margin-bottom:4px}
     .rac-tabela{width:100%;border-collapse:collapse;margin:8px 0 14px;font-size:10pt;color:#222}
-    .rac-tabela th{text-align:left;font-size:7.5pt;letter-spacing:.1em;text-transform:uppercase;color:#8a8177;border-bottom:1.5px solid #B25476;padding:0 8px 7px;font-weight:700}
+    .rac-tabela th{text-align:left;font-size:7.5pt;letter-spacing:.1em;text-transform:uppercase;color:#625c56;border-bottom:1.5px solid #B25476;padding:0 8px 7px;font-weight:700}
     .rac-tabela td{padding:9px 8px;border-bottom:1px solid #ece3d8;vertical-align:top}
     .rac-tabela th:not(:first-child),.rac-tabela td:not(:first-child){text-align:right;white-space:nowrap}
     .rac-vsote{margin-left:auto;width:300px;font-size:10.5pt;color:#222}
@@ -448,15 +448,15 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     .rac-skupaj{border-top:1.5px solid #B25476;margin-top:4px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13pt;font-weight:700;letter-spacing:-.01em;color:#111}
     .rac-placilo{margin:20px 0 0;font-size:10pt;color:#222;background:#f8f5ee;border:1px solid #eadfce;border-radius:9px;padding:13px 16px;line-height:1.7}
     .rac-opomba{font-size:9pt;color:#666;margin:10px 0 0}
-    .rac-noga-txt{font-size:8.2pt;color:#9a9088;margin-top:22px}
-    .rac-noga-brez{font-size:8.2pt;color:#8a8177;margin-top:14px;padding-top:9px;border-top:1px solid #e7e2d8;line-height:1.5}
+    .rac-noga-txt{font-size:8.2pt;color:#625c56;margin-top:22px}
+    .rac-noga-brez{font-size:8.2pt;color:#625c56;margin-top:14px;padding-top:9px;border-top:1px solid #e7e2d8;line-height:1.5}
     .rac-placano{display:inline-block;margin:18px 0 0;border:3px solid #2e7d5b;color:#2e7d5b;font-weight:700;letter-spacing:.22em;padding:6px 18px;border-radius:8px;transform:rotate(-5deg);font-size:16pt}
     .rac-podpis{margin-top:26px;max-width:260px;break-inside:avoid}
     .rac-podpis-crta{border-bottom:1px solid #111;min-height:34px;display:flex;align-items:flex-end;padding-bottom:4px}
     .podpis-img{display:block;max-height:40px;max-width:200px}
     .rac-podpis-ime{margin-top:5px;font-size:9.5pt;color:#222}
-    .rac-podpis-meta{font-size:8.5pt;color:#8a8177}`;
-  const doc = (body: string) => `<!doctype html><html lang="${jeEn ? 'en' : 'sl'}"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
+    .rac-podpis-meta{font-size:8.5pt;color:#625c56}`;
+  const doc = (body: string) => `<!doctype html><html lang="${jeEn ? 'en' : 'sl'}"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(`${DOC_CSS}.mut{color:#625c56!important}`)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
 
   /* postavke za dokument: novi racuni jih imajo shranjene; za STARE izpeljemo eno
      vrstico iz zneska (ce je bil izdajatelj zavezanec, je stari amount vseboval DDV) */
@@ -951,7 +951,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-znesek{display:grid;gap:.35rem;min-width:0}
       .rc .rc-znesek em{font:800 .58rem var(--font-sans),sans-serif;font-style:normal}
       .rc .rc-znesek b{display:flex;align-items:center;justify-content:flex-end;min-height:2.75rem;padding:0 .2rem;font:700 .72rem var(--font-sans),sans-serif;white-space:nowrap;overflow-wrap:anywhere}
-      .rc .rc-x{width:2rem;height:2.75rem;border:0;border-radius:.65rem;background:transparent;color:color-mix(in oklch,var(--ink) 55%,transparent);font-size:1.1rem;line-height:1;cursor:pointer}
+      .rc .rc-x{width:2rem;height:2.75rem;border:0;border-radius:.65rem;background:transparent;color:color-mix(in oklch,var(--ink) 72%,transparent);font-size:1.1rem;line-height:1;cursor:pointer}
       .rc .rc-x:hover:not(:disabled){color:var(--ink);background:oklch(100% 0 0/.6)}
       .rc .rc-x:disabled{opacity:.3;cursor:default}
       @media (max-width:760px){.rc .rc-shrani-editor{grid-template-columns:1fr 1fr}.rc .rc-shrani-editor .rc-cip{min-height:2.75rem}}
@@ -1021,7 +1021,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-nazaj-vrh{margin:0 0 .2rem;justify-self:start}
       .rc .rc-povezava{font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0;display:inline-flex;align-items:center;gap:.38rem}
       .rc .rc-povezava:hover{opacity:.6}
-      .rc .rc-mini{font-size:.8rem;color:rgba(17,17,17,.55)}
+      .rc .rc-mini{font-size:.8rem;color:rgba(17,17,17,.72)}
 
       /* ── vstop (pogled 'pregled'): SAMO vstop za nov racun — pregled/arhiv
          obstojecih racunov je preseljen v Arhiv. Brez bele kartice (kot retainer
@@ -1075,7 +1075,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-combo-naziv{flex:1;min-width:0}
       .rc .rc-combo-naziv strong{display:block;font-size:.9rem;font-weight:600;overflow-wrap:anywhere}
       .rc .rc-combo-opcija.on .rc-combo-naziv strong{font-weight:800}
-      .rc .rc-combo-naziv small{display:block;margin-top:.1rem;font-size:.74rem;color:rgba(17,17,17,.55)}
+      .rc .rc-combo-naziv small{display:block;margin-top:.1rem;font-size:.74rem;color:rgba(17,17,17,.72)}
       .rc .rc-combo-kljukica{flex:none;display:grid;place-items:center;width:1.5rem;height:1.5rem;border-radius:50%;background:var(--ink);color:var(--paper);font-size:.8rem}
       .rc .rc-combo-prazno{padding:.8rem .5rem}
       .rc .rc-combo-namig{margin:.5rem .3rem .1rem;font-size:.72rem;color:var(--muted)}
@@ -1114,7 +1114,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc-pon-naziv{flex:1;min-width:0}
       .rc-pon-naziv strong{display:block;font-size:.9rem;font-weight:600;overflow-wrap:anywhere}
       .rc-pon-vrstica.on .rc-pon-naziv strong{font-weight:800}
-      .rc-pon-naziv small{display:block;margin-top:.1rem;font-size:.74rem;color:rgba(17,17,17,.55)}
+      .rc-pon-naziv small{display:block;margin-top:.1rem;font-size:.74rem;color:rgba(17,17,17,.72)}
       .rc-pon-kljukica{flex:none;display:grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:50%;background:var(--ink);color:var(--paper);font-size:.85rem}
       .rc-pon-prazno{padding:.9rem .3rem}
 
@@ -1131,9 +1131,9 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc-knjiznica-item{display:grid;grid-template-columns:minmax(0,1fr) 2.75rem;align-items:stretch;border:1px solid rgba(17,17,17,.11);border-radius:.9rem;background:rgba(255,255,255,.72);overflow:hidden}
       .rc-knjiznica-izberi{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:4.4rem;padding:.75rem .9rem;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
       .rc-knjiznica-izberi:hover{background:rgba(139,92,246,.06)}
-      .rc-knjiznica-izberi span{min-width:0}.rc-knjiznica-izberi strong,.rc-knjiznica-izberi small{display:block}.rc-knjiznica-izberi strong{font-size:.95rem}.rc-knjiznica-izberi small{margin-top:.2rem;color:rgba(17,17,17,.58);overflow-wrap:anywhere}.rc-knjiznica-izberi>b{flex:none;font-size:.82rem;white-space:nowrap}
+      .rc-knjiznica-izberi span{min-width:0}.rc-knjiznica-izberi strong,.rc-knjiznica-izberi small{display:block}.rc-knjiznica-izberi strong{font-size:.95rem}.rc-knjiznica-izberi small{margin-top:.2rem;color:rgba(17,17,17,.72);overflow-wrap:anywhere}.rc-knjiznica-izberi>b{flex:none;font-size:.82rem;white-space:nowrap}
       .rc-knjiznica-brisi{border:0;border-left:1px solid rgba(17,17,17,.08);background:transparent;font-size:1.15rem;cursor:pointer}.rc-knjiznica-brisi:hover:not(:disabled){background:rgba(190,40,40,.08);color:#a31717}.rc-knjiznica-brisi:disabled{opacity:.3}
-      .rc-knjiznica-prazno{margin:0;padding:1.4rem .6rem;color:rgba(17,17,17,.6);line-height:1.5;text-align:center}
+      .rc-knjiznica-prazno{margin:0;padding:1.4rem .6rem;color:rgba(17,17,17,.72);line-height:1.5;text-align:center}
       @media (max-width:640px){.rc-knjiznica-back{align-items:end;padding:0}.rc-knjiznica{max-height:82dvh;border-radius:1.25rem 1.25rem 0 0;padding:1rem}.rc-knjiznica-izberi{align-items:flex-start;flex-direction:column;gap:.35rem}.rc-knjiznica-izberi>b{white-space:normal}}
 
       /* mobilno: NIC cez desni rob pri 390px — postavka se zlozi v 2 stolpca */

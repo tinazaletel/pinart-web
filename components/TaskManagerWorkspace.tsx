@@ -1751,7 +1751,7 @@ export default function TaskManagerWorkspace() {
       })()}
 
       <style>{`
-        .tm{padding:.9rem clamp(1rem,3vw,2.2rem) 4rem;min-width:0}
+        .tm{padding:.9rem clamp(1rem,3vw,2.2rem) 4rem;min-width:0;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
         .tm-glava{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem 1.5rem;margin-bottom:.85rem}
         .tm-glava-uvod{display:flex;align-items:flex-end;gap:1.25rem;min-width:0}
         .tm-eyebrow{margin:0 0 .35rem;font:800 .62rem var(--font-sans),sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
@@ -1818,10 +1818,10 @@ export default function TaskManagerWorkspace() {
         /* Uvoz/izvoz meni (spusti se pod ikono) */
         .tm-ie-w{position:relative;flex:none;display:inline-flex}
         .tm-ie-meni{position:absolute;top:calc(100% + .4rem);right:0;z-index:40;min-width:15rem;background:#fff;border:1px solid var(--line);border-radius:.8rem;box-shadow:0 14px 38px -14px color-mix(in oklch,var(--ink) 40%,transparent);padding:.4rem;display:flex;flex-direction:column;gap:.15rem}
-        .tm-ie-h{margin:.25rem .5rem .35rem;font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 50%,transparent)}
+        .tm-ie-h{margin:.25rem .5rem .35rem;font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 72%,transparent)}
         .tm-ie-meni button{display:flex;align-items:center;gap:.5rem;width:100%;text-align:left;border:0;background:none;border-radius:.55rem;padding:.55rem .6rem;font:600 .8rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
         .tm-ie-meni button:hover{background:color-mix(in oklch,var(--purple) 8%,transparent)}
-        .tm-ie-demo{color:color-mix(in oklch,var(--ink) 60%,transparent) !important;border-top:1px solid var(--line) !important;margin-top:.15rem;border-radius:0 0 .55rem .55rem !important}
+        .tm-ie-demo{color:color-mix(in oklch,var(--ink) 72%,transparent) !important;border-top:1px solid var(--line) !important;margin-top:.15rem;border-radius:0 0 .55rem .55rem !important}
         /* oznake (tagi) na kartici naloge — majhni čipi, klik = filter po tem tagu */
         .tm-kartica-oznake{display:flex;flex-wrap:wrap;gap:.3rem;margin:.5rem 0 0}
         .tm-oznaka-cip{padding:.15rem .5rem;border:1px solid var(--line);border-radius:999px;background:oklch(95% .02 300/.6);color:var(--ink);font:700 .6rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
@@ -1833,7 +1833,7 @@ export default function TaskManagerWorkspace() {
         .tm-oznaka-panel-cip span{padding:.28rem .3rem .28rem .6rem;color:var(--paper);font:700 .64rem var(--font-sans),sans-serif}
         .tm-oznaka-panel-brisi{padding:.28rem .55rem .28rem .2rem;border:none;background:transparent;color:var(--paper);opacity:.7;font-size:.9rem;line-height:1;cursor:pointer}
         .tm-oznaka-panel-brisi:hover{opacity:1}
-        .tm-oznaka-predlog{padding:.28rem .6rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--ink);opacity:.6;font:700 .62rem var(--font-sans),sans-serif;cursor:pointer}
+        .tm-oznaka-predlog{padding:.28rem .6rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:color-mix(in oklch,var(--ink) 72%,transparent);font:700 .62rem var(--font-sans),sans-serif;cursor:pointer}
         .tm-oznaka-predlog:hover{opacity:1;border-style:solid;border-color:var(--ink)}
         .tm-oznaka-dodaj{display:flex;gap:.5rem;margin:0 0 1.1rem}
         .tm-oznaka-dodaj input{flex:1;min-width:0;padding:.55rem .7rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0/.75);font:inherit;font-size:.78rem;color:var(--ink)}
@@ -2007,13 +2007,13 @@ export default function TaskManagerWorkspace() {
         .tm-teden-strelica:hover{background:var(--ink);color:var(--paper)}
         .tm-teden-naslov{display:flex;align-items:center;gap:.6rem}
         .tm-teden-naslov strong{font:600 1rem var(--font-sans),sans-serif;letter-spacing:-.01em;color:var(--ink)}
-        .tm-teden-danes{padding:.3rem .7rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);opacity:.65;font:700 .64rem var(--font-sans),sans-serif;cursor:pointer}
+        .tm-teden-danes{padding:.3rem .7rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:color-mix(in oklch,var(--ink) 72%,transparent);font:700 .64rem var(--font-sans),sans-serif;cursor:pointer}
         .tm-teden-danes:hover{opacity:1;border-color:var(--ink)}
         .tm-obdobje-preklop{display:inline-flex;gap:.2rem;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:#fff}
-        .tm-obdobje-preklop button{padding:.4rem .85rem;border:0;border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--ink);opacity:.62;cursor:pointer}
+        .tm-obdobje-preklop button{padding:.4rem .85rem;border:0;border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 72%,transparent);cursor:pointer}
         .tm-obdobje-preklop button.tm-pogled-on{background:var(--ink);color:var(--paper);opacity:1}
         .tm-plan-akcije{margin-left:auto;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
-        .tm-teden-dodaj{flex:none;padding:.35rem .75rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--ink);opacity:.65;font:700 .66rem var(--font-sans),sans-serif;cursor:pointer}
+        .tm-teden-dodaj{flex:none;padding:.35rem .75rem;border:1px dashed var(--line);border-radius:999px;background:transparent;color:color-mix(in oklch,var(--ink) 72%,transparent);font:700 .66rem var(--font-sans),sans-serif;cursor:pointer}
         .tm-teden-dodaj:hover{border-style:solid;border-color:var(--ink);opacity:1}
         .tm-plan-nov-projekt{max-width:26rem}
 
@@ -2026,12 +2026,12 @@ export default function TaskManagerWorkspace() {
         .tm-prenesi-cikel:hover{background:var(--ink);color:var(--paper);border-style:solid;border-color:var(--ink)}
 
         /* namig, da pisanje v predogledu (demo) ni na voljo — enak vzorec kot ostali prazni/opozorilni namigi */
-        .tm-demo-namig{margin:0;font:400 .74rem var(--font-sans),sans-serif;color:var(--ink);opacity:.6}
+        .tm-demo-namig{margin:0;font:400 .74rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 72%,transparent)}
 
         /* matrika: vrstice=projekti, stolpci=oddelki */
         .tm-matrika-drs{overflow-x:auto;border:1px solid var(--line);border-radius:1rem;background:oklch(97.5% .008 87/.5)}
         .tm-matrika{width:100%;border-collapse:collapse;min-width:38rem}
-        .tm-matrika thead th{position:sticky;top:0;padding:.7rem .9rem;text-align:left;font:800 .64rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);opacity:.6;background:oklch(97.5% .008 87/.95);border-bottom:1px solid var(--line);white-space:nowrap}
+        .tm-matrika thead th{position:sticky;top:0;padding:.7rem .9rem;text-align:left;font:800 .64rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 72%,transparent);background:oklch(97.5% .008 87/.95);border-bottom:1px solid var(--line);white-space:nowrap}
         .tm-matrika-sef{text-transform:none;letter-spacing:0;font-weight:600;opacity:.75}
         .tm-matrika-projekt-glava{min-width:9rem}
         .tm-matrika tbody th.tm-matrika-projekt{text-align:left;padding:.7rem .9rem;font:650 .82rem var(--font-serif),Georgia,serif;color:var(--ink);white-space:nowrap;border-bottom:1px solid var(--line);vertical-align:top}
@@ -2043,14 +2043,14 @@ export default function TaskManagerWorkspace() {
         .tm-celica-cip:hover{border-color:color-mix(in oklch,var(--ink) 30%,transparent);box-shadow:0 .3rem .8rem oklch(20% .03 55/.06)}
         .tm-celica-cip-tekst{flex:1;min-width:0;display:flex;flex-direction:column;gap:.05rem}
         .tm-celica-cip-tekst strong{font-size:.72rem;font-weight:650;line-height:1.2;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .tm-celica-cip-tekst em{font:400 .62rem var(--font-sans),sans-serif;font-style:normal;color:var(--ink);opacity:.55}
+        .tm-celica-cip-tekst em{font:400 .62rem var(--font-sans),sans-serif;font-style:normal;color:color-mix(in oklch,var(--ink) 72%,transparent)}
         .tm-celica-cip-pika{width:.45rem;height:.45rem;flex:none}
         .tm-status-nacrtovano .tm-celica-cip-pika{background:oklch(62% .19 300)}
         .tm-status-opravljeno .tm-celica-cip-pika{background:oklch(68% .16 150)}
         .tm-status-delno .tm-celica-cip-pika{background:oklch(74% .15 70)}
         .tm-status-preneseno .tm-celica-cip-pika{background:oklch(58% .16 30)}
-        .tm-celica-cip-znacka{flex:none;padding:.1rem .4rem;border-radius:999px;background:oklch(95% .01 87);color:var(--ink);opacity:.65;font:700 .58rem var(--font-sans),sans-serif}
-        .tm-celica-dodaj{align-self:flex-start;padding:.3rem .55rem;border:1px dashed var(--line);border-radius:.7rem;background:transparent;color:var(--ink);opacity:.4;font:700 .62rem var(--font-sans),sans-serif;cursor:pointer}
+        .tm-celica-cip-znacka{flex:none;padding:.1rem .4rem;border-radius:999px;background:oklch(95% .01 87);color:color-mix(in oklch,var(--ink) 72%,transparent);font:700 .58rem var(--font-sans),sans-serif}
+        .tm-celica-dodaj{align-self:flex-start;padding:.3rem .55rem;border:1px dashed var(--line);border-radius:.7rem;background:transparent;color:color-mix(in oklch,var(--ink) 72%,transparent);font:700 .62rem var(--font-sans),sans-serif;cursor:pointer}
         .tm-celica-dodaj:hover{opacity:1;border-style:solid;border-color:var(--ink)}
         .tm-celica-prazno{padding:.35rem 0;color:var(--ink);opacity:.3;font-size:.74rem}
 
@@ -2062,7 +2062,7 @@ export default function TaskManagerWorkspace() {
 
         /* lastna področja dela — čipi + gumb »+« za iskanje/dodajanje (urejljivo, ne trdo zakodirano) */
         .tm-podrocja{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin:-.4rem 0 .5rem}
-        .tm-podrocja-prazno{font:400 .68rem var(--font-sans),sans-serif;color:var(--ink);opacity:.6;margin:0}
+        .tm-podrocja-prazno{font:400 .68rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 72%,transparent);margin:0}
         .tm-podrocje-cip{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:transparent}
         .tm-podrocje-cip>button:first-child{padding:.28rem .55rem;border:none;background:transparent;color:var(--ink);font:700 .64rem var(--font-sans),sans-serif;cursor:pointer}
         .tm-podrocje-cip.tm-izbran{border-color:var(--ink);background:var(--ink)}

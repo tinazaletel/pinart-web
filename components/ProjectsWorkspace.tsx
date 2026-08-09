@@ -127,7 +127,7 @@ const pwStyles = `
 .pw-tabela-naslov{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem 1rem .85rem;background:oklch(95% .035 300);border-bottom:1px solid rgba(17,17,17,.08)}
 .pw-tabela-naslov .${styles.eyebrow}{color:oklch(45% .12 300)}
 .pw-tabela-naslov strong{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:1.6rem;line-height:1;color:var(--ink)}
-.pw-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.75rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid oklch(93% .006 82 / .55)}
+.pw-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.75rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 72%,transparent);border-bottom:1px solid oklch(93% .006 82 / .55)}
 .pw-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:0;border-top:1px solid rgba(17,17,17,.07);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
 .pw-tabela > button.pw-vrstica:first-of-type{border-top:0}
 .pw-vrstica:hover{background:#fff}
@@ -140,16 +140,16 @@ const pwStyles = `
 .pw-glavna{display:flex;align-items:center;gap:.6rem;min-width:0}
 .pw-glavna strong{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.72rem}
 .pw-ikona{display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:oklch(94% .045 295);color:var(--ink);flex:none}
-.pw-mut{color:var(--muted)}
+.pw-mut{color:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-desno{text-align:right;font-weight:700}
-.pw-kazalec{color:var(--muted);font-size:1.1rem;text-align:center}
+.pw-kazalec{color:color-mix(in oklch,var(--ink) 72%,transparent);font-size:1.1rem;text-align:center}
 .pw-status{display:inline-flex;align-items:center;gap:0;width:max-content;max-width:100%;padding:.4rem .85rem;border:1px solid color-mix(in oklch, var(--pill-ink, oklch(48% .015 70)) 14%, transparent);border-radius:999px;background:var(--pill-bg, oklch(95.5% .008 87));color:var(--pill-ink, oklch(48% .015 70));font-size:.78rem;font-weight:700;white-space:nowrap}
 .pw-status .pw-pika{width:.55rem;height:.55rem;border-radius:50%;background:var(--pika,oklch(62% .02 70));flex:none}
 .pw-status[data-tone='waiting']{--pika:oklch(72% .16 75);--pill-bg:oklch(96.5% .03 82);--pill-ink:oklch(54% .09 68)}
 .pw-status[data-tone='success']{--pika:oklch(62% .15 150);--pill-bg:oklch(96% .035 158);--pill-ink:oklch(50% .085 158)}
 .pw-status[data-tone='danger']{--pika:oklch(58% .19 25);--pill-bg:oklch(96.5% .03 28);--pill-ink:oklch(55% .11 27)}
 .pw-status[data-tone='neutral']{--pika:oklch(62% .02 70);--pill-bg:oklch(95.5% .008 87);--pill-ink:oklch(48% .015 70)}
-.pw-prazno{padding:2rem;color:var(--muted);font-size:.72rem;text-align:center;border:1px solid oklch(93% .006 82 / .55);border-radius:1.4rem;background:oklch(98% .008 87 / .92)}
+.pw-prazno{padding:2rem;color:color-mix(in oklch,var(--ink) 72%,transparent);font-size:.72rem;text-align:center;border:1px solid oklch(93% .006 82 / .55);border-radius:1.4rem;background:oklch(98% .008 87 / .92)}
 .pw-stran{padding:.25rem 1rem 1rem !important;margin-top:-1.5rem;scroll-margin-top:5.5rem}
 .pw-nazaj{display:inline-flex;align-items:center;gap:.4rem;margin:0 0 .8rem;padding:.55rem .95rem;border:1px solid oklch(93% .006 82 / .55);border-radius:999px;background:oklch(98% .008 87 / .92);font:700 .62rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
 .pw-nazaj:hover{background:var(--ink);color:var(--paper)}
@@ -167,7 +167,7 @@ const pwStyles = `
 .pw-naloga-panel{width:min(560px,94vw);padding:2.4rem 2rem}
 .pw-naloga-obr{display:flex;flex-direction:column;gap:.9rem;margin-top:.6rem}
 .pw-naloga-l{display:flex;flex-direction:column;gap:.35rem}
-.pw-naloga-l>span{font:700 .66rem var(--font-sans),sans-serif;letter-spacing:.05em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 55%,transparent)}
+.pw-naloga-l>span{font:700 .66rem var(--font-sans),sans-serif;letter-spacing:.05em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-naloga-l input,.pw-naloga-l textarea{width:100%;box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:.6rem;padding:.6rem .7rem;font:500 .88rem var(--font-sans),sans-serif;color:var(--ink);background:#fff;resize:vertical}
 .pw-naloga-l input:focus,.pw-naloga-l textarea:focus{outline:none;border-color:var(--purple)}
 .pw-naloga-l-opis textarea{min-height:9rem;line-height:1.55}
@@ -176,37 +176,37 @@ const pwStyles = `
 .pw-naloga-shrani{border:0;background:var(--ink);color:var(--paper);border-radius:999px;padding:.55rem 1.3rem;font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-naloga-shrani:disabled{opacity:.5;cursor:default}
 /* Dokumentacija slide */
-.pw-dok-uvod{margin:.1rem 0 .4rem;font:500 .85rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 60%,transparent);line-height:1.5}
+.pw-dok-uvod{margin:.1rem 0 .4rem;font:500 .85rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 72%,transparent);line-height:1.5}
 .pw-dok-linki{display:flex;flex-direction:column;gap:.5rem;margin:.3rem 0 .2rem}
 .pw-dok-vrstica{display:flex;align-items:center;gap:.6rem;padding:.7rem .85rem;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);border-radius:.7rem;background:#fff}
 .pw-dok-vrstica a{flex:1;min-width:0;display:flex;flex-direction:column;text-decoration:none;color:var(--ink);font:700 .88rem var(--font-sans),sans-serif}
 .pw-dok-vrstica a:hover{color:var(--purple)}
-.pw-dok-url{font:500 .72rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 45%,transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pw-dok-brisi{flex:none;border:0;background:none;color:color-mix(in oklch,var(--ink) 40%,transparent);cursor:pointer;font-size:.9rem;padding:.2rem}
+.pw-dok-url{font:500 .72rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 72%,transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pw-dok-brisi{flex:none;border:0;background:none;color:color-mix(in oklch,var(--ink) 72%,transparent);cursor:pointer;font-size:.9rem;padding:.2rem}
 .pw-dok-brisi:hover{color:oklch(55% .18 25)}
 .pw-dok-akc{flex:none;display:inline-flex;align-items:center;gap:.4rem}
 .pw-dok-uredi{border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);background:#fff;color:var(--ink);border-radius:999px;padding:.28rem .7rem;font:600 .72rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-dok-uredi:hover{border-color:var(--purple);color:var(--purple)}
 .pw-dok-vrstica-ur{border-color:var(--purple);box-shadow:0 0 0 2px color-mix(in oklch,var(--purple) 20%,transparent)}
-.pw-dok-prazno-t{margin:.4rem 0;font:500 .85rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 45%,transparent)}
+.pw-dok-prazno-t{margin:.4rem 0;font:500 .85rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-dok-obrazec{display:flex;flex-direction:column;gap:.7rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line)}
 .pw-dok-prazno{border:0;background:none;text-align:left;cursor:pointer;font:inherit;color:inherit;padding:0}
 .pw-dok-prazno:hover{color:var(--purple)}
 .pw-ai-panel{flex:none;width:360px}
-.pw-ai-load{display:flex;align-items:center;gap:.5rem;color:color-mix(in oklch,var(--ink) 60%,transparent);font:600 .85rem var(--font-sans),sans-serif;margin-top:.4rem}
+.pw-ai-load{display:flex;align-items:center;gap:.5rem;color:color-mix(in oklch,var(--ink) 72%,transparent);font:600 .85rem var(--font-sans),sans-serif;margin-top:.4rem}
 .pw-ai-pika{width:.45rem;height:.45rem;border-radius:999px;background:var(--purple);opacity:.35;animation:pwAiP 1s infinite ease-in-out}
 .pw-ai-pika:nth-child(2){animation-delay:.15s}.pw-ai-pika:nth-child(3){animation-delay:.3s}
 @keyframes pwAiP{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-2px)}}
 .pw-ai-napaka{background:color-mix(in oklch,var(--purple) 7%,#fff);border:1px solid color-mix(in oklch,var(--purple) 20%,transparent);border-radius:.7rem;padding:.8rem .9rem;font:500 .85rem var(--font-sans),sans-serif;color:var(--ink);line-height:1.5}
 .pw-ai-blok{display:flex;flex-direction:column;gap:.4rem}
-.pw-ai-blok h4{margin:0;font:700 .66rem var(--font-sans),sans-serif;letter-spacing:.05em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 55%,transparent)}
+.pw-ai-blok h4{margin:0;font:700 .66rem var(--font-sans),sans-serif;letter-spacing:.05em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-ai-povzetek{margin:0;font:500 .9rem var(--font-sans),sans-serif;color:var(--ink);line-height:1.55;background:#fff;border:1px solid color-mix(in oklch,var(--ink) 8%,transparent);border-radius:.7rem;padding:.75rem .85rem}
 .pw-ai-odg{width:100%;box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:.7rem;padding:.7rem .8rem;font:500 .88rem var(--font-sans),sans-serif;color:var(--ink);background:#fff;resize:vertical;line-height:1.55}
 .pw-ai-odg:focus{outline:none;border-color:var(--purple)}
 .pw-ai-akcije{display:flex;justify-content:flex-end;gap:.6rem;flex-wrap:wrap}
 .pw-ai-kopiraj{border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);background:#fff;color:var(--ink);border-radius:999px;padding:.5rem 1rem;font:600 .78rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-ai-uporabi{display:inline-flex;align-items:center;gap:.35rem;border:0;background:var(--purple);color:#fff;border-radius:999px;padding:.5rem 1.15rem;font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
-.pw-ai-opomba{margin:0;font:500 .74rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 45%,transparent);line-height:1.45}
+.pw-ai-opomba{margin:0;font:500 .74rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 72%,transparent);line-height:1.45}
 /* ── PANELNA LETEV: mail + Pupa (+ klepet) so STOLPCI vzporedno; NIKOLI se ne prekrivajo. ── */
 .pw-rail-back{position:fixed;inset:0;z-index:60;background:oklch(97% .006 87 / .4);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
 body.flow-rail-odprt .pupa-fab{display:none !important}
@@ -242,19 +242,19 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-klepet-pika[data-st="idle"]{background:oklch(78% .14 75)}
 .pw-klepet-pika[data-st="offline"]{background:oklch(72% .02 90)}
 .pw-klepet-kdo b{display:block;font:700 .88rem var(--font-sans),sans-serif;color:var(--kl-ink)}
-.pw-klepet-kdo small{display:block;font:500 .7rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 50%,transparent)}
+.pw-klepet-kdo small{display:block;font:500 .7rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 72%,transparent)}
 .pw-klepet-piker-w{position:relative;flex:none}
 .pw-klepet-dodaj{display:grid;place-items:center;width:2.2rem;height:2.2rem;border:1px solid color-mix(in oklch,var(--kl-ink) 16%,transparent);border-radius:50%;background:#fff;color:var(--kl-ink);cursor:pointer;transition:background .16s,color .16s,border-color .16s,transform .22s cubic-bezier(.16,1,.3,1)}
 .pw-klepet-dodaj:hover{border-color:var(--kl-purple);color:var(--kl-purple)}
 .pw-klepet-dodaj[aria-expanded="true"]{background:var(--kl-purple);color:#fff;border-color:transparent;transform:rotate(45deg)}
 .pw-klepet-meni{position:absolute;top:calc(100% + .4rem);right:0;z-index:20;width:15rem;background:#fff;border:1px solid var(--kl-line);border-radius:.8rem;box-shadow:0 14px 38px -14px color-mix(in oklch,var(--kl-ink) 40%,transparent);padding:.35rem}
-.pw-klepet-meni-h{margin:.25rem .5rem .3rem;font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in oklch,var(--kl-ink) 50%,transparent)}
-.pw-klepet-meni-prazno{margin:.4rem .5rem;font:500 .74rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 50%,transparent)}
+.pw-klepet-meni-h{margin:.25rem .5rem .3rem;font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in oklch,var(--kl-ink) 72%,transparent)}
+.pw-klepet-meni-prazno{margin:.4rem .5rem;font:500 .74rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 72%,transparent)}
 .pw-klepet-vrsta{display:flex;align-items:center;gap:.55rem;width:100%;text-align:left;border:0;background:none;border-radius:.55rem;padding:.4rem .5rem;cursor:pointer}
 .pw-klepet-vrsta:hover{background:color-mix(in oklch,var(--kl-purple) 8%,transparent)}
 .pw-klepet-vrsta.on{background:color-mix(in oklch,var(--kl-purple) 12%,transparent)}
 .pw-klepet-vrsta-ime{flex:1;min-width:0;font:600 .82rem var(--font-sans),sans-serif;color:var(--kl-ink)}
-.pw-klepet-vrsta-ime small{display:block;font:500 .66rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 48%,transparent)}
+.pw-klepet-vrsta-ime small{display:block;font:500 .66rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 72%,transparent)}
 .pw-klepet-kljuk{flex:none;color:var(--kl-purple);font-weight:800}
 .pw-klepet-tok{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;padding:1rem 1.1rem}
 .pw-klepet-b{max-width:82%;align-self:flex-start;padding:.5rem .8rem;border-radius:1.05rem;background:oklch(95% .008 87);color:var(--kl-ink);font:500 .85rem var(--font-sans),sans-serif;line-height:1.45;white-space:pre-wrap;word-break:break-word}
@@ -264,7 +264,7 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-klepet-pri-glava{display:inline-flex;align-items:center;gap:.3rem;font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--kl-purple)}
 .pw-klepet-pri-zad{font:700 .82rem var(--font-sans),sans-serif;color:var(--kl-ink);margin:.15rem 0}
 .pw-klepet-pri-telo{font:500 .8rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 78%,transparent);line-height:1.45;white-space:pre-wrap;word-break:break-word}
-.pw-klepet-prazno{margin:auto;text-align:center;font:500 .8rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 45%,transparent);padding:1rem;line-height:1.5}
+.pw-klepet-prazno{margin:auto;text-align:center;font:500 .8rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--kl-ink) 72%,transparent);padding:1rem;line-height:1.5}
 .pw-klepet-vnos{flex:none;display:flex;align-items:center;gap:.5rem;padding:.75rem .9rem;border-top:1px solid var(--kl-line)}
 .pw-klepet-vnos input{flex:1;min-width:0;border:1px solid color-mix(in oklch,var(--kl-ink) 10%,transparent);border-radius:999px;padding:.6rem .9rem;font:500 .85rem var(--font-sans),sans-serif;color:var(--kl-ink);background:#fff}
 .pw-klepet-vnos input:focus{outline:none;border-color:var(--kl-purple)}
@@ -389,9 +389,9 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-vsi-panel,.pw-det-panel{background:#fff !important}
 /* dejanski dokument pogodbe v panelu (PDF videz) */
 .pw-det-doktelo{margin-top:1.3rem;font-family:var(--font-sans),system-ui,sans-serif;color:var(--ink);font-size:.86rem;line-height:1.6}
-.pw-det-doktelo .kick{font-size:.6rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 45%,transparent);margin:0 0 .4rem}
+.pw-det-doktelo .kick{font-size:.6rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 72%,transparent);margin:0 0 .4rem}
 .pw-det-doktelo h1{font-family:var(--font-serif),Georgia,serif;font-weight:500;font-size:1.6rem;margin:0 0 .5rem;line-height:1.1}
-.pw-det-doktelo .meta{color:color-mix(in oklch,var(--ink) 55%,transparent);font-size:.75rem;margin:0 0 1.2rem}
+.pw-det-doktelo .meta{color:color-mix(in oklch,var(--ink) 72%,transparent);font-size:.75rem;margin:0 0 1.2rem}
 .pw-det-doktelo .parties{display:flex;flex-direction:column;gap:.15rem;margin:0 0 1.3rem;padding:.9rem 1rem;border:1px solid var(--line);border-radius:.7rem;font-size:.82rem;background:oklch(98% .006 87)}
 .pw-det-doktelo .parties p{margin:0}
 .pw-det-doktelo .pog-clen{margin:0 0 1.05rem}
@@ -400,7 +400,7 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-det-doktelo .sig{display:flex;gap:1.5rem;margin-top:2rem}
 .pw-det-doktelo .sig>div{flex:1;font-size:.78rem}
 .pw-det-doktelo .sig .lin{display:block;height:1px;background:var(--ink);margin:2rem 0 .4rem;opacity:.45}
-.pw-det-doktelo .sig span:first-child{display:block;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 45%,transparent);margin-bottom:.1rem}
+.pw-det-doktelo .sig span:first-child{display:block;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 72%,transparent);margin-bottom:.1rem}
 .pw-det-meta{display:flex;flex-wrap:wrap;gap:.4rem 1.4rem;margin:1rem 0;padding:.9rem 0;border-top:1px solid oklch(93% .006 82 / .55);border-bottom:1px solid oklch(93% .006 82 / .55)}
 .pw-det-meta span{display:flex;flex-direction:column;gap:.15rem}
 .pw-det-meta small{font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
@@ -453,7 +453,7 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-posta-bulk-brisi{display:inline-flex;align-items:center;gap:.35rem;height:2.1rem;padding:0 .95rem;border:0;border-radius:999px;background:oklch(55% .18 25);color:#fff;font:700 .72rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-posta-bulk-obnovi{display:inline-flex;align-items:center;gap:.35rem;height:2.1rem;padding:0 .95rem;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:999px;background:#fff;color:var(--ink);font:700 .72rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-posta-bulk-obnovi:hover{border-color:color-mix(in oklch,var(--purple) 45%,transparent);color:var(--purple)}
-.pw-posta-bulk-x{border:0;background:none;color:color-mix(in oklch,var(--ink) 55%,transparent);font:600 .72rem var(--font-sans),sans-serif;cursor:pointer;margin-left:auto}
+.pw-posta-bulk-x{border:0;background:none;color:color-mix(in oklch,var(--ink) 72%,transparent);font:600 .72rem var(--font-sans),sans-serif;cursor:pointer;margin-left:auto}
 @media (max-width:600px){.pw-posta-check{width:1.45rem;height:1.45rem}}
 .pw-posta-vrh{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
 .pw-posta-vrh b{font-size:.76rem;font-weight:700;color:var(--ink);overflow-wrap:anywhere}
@@ -476,7 +476,7 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 /* meni Premakni/Oznaka */
 .pw-mail-meni-w{position:relative;display:inline-flex}
 .pw-mail-meni{position:absolute;top:calc(100% + .5rem);left:0;z-index:50;min-width:15rem;background:#fff;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:.7rem;box-shadow:0 14px 34px -14px rgba(17,17,17,.28);padding:.4rem;display:flex;flex-direction:column;gap:.1rem}
-.pw-mail-meni-h{margin:.2rem .35rem .3rem;font:700 .58rem var(--font-sans),sans-serif;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 45%,transparent)}
+.pw-mail-meni-h{margin:.2rem .35rem .3rem;font:700 .58rem var(--font-sans),sans-serif;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-mail-meni>button{text-align:left;border:0;background:none;cursor:pointer;padding:.45rem .5rem;border-radius:.5rem;font:600 .78rem var(--font-sans),sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pw-mail-meni>button:hover{background:var(--paper)}
 .pw-mail-meni-prazno{margin:.3rem .35rem;font-size:.75rem;color:var(--muted)}
@@ -526,7 +526,7 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-pisi-telo:empty:before{content:attr(data-placeholder);color:var(--muted)}
 .pw-pisi-status{margin:0;font-size:.68rem;color:var(--muted)}
 .pw-pisi-podpis-opomnik{margin:.15rem 0 0}
-.pw-pisi-podpis-opomnik a{display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;color:color-mix(in oklch,var(--ink) 42%,transparent);text-decoration:none;font-weight:600}
+.pw-pisi-podpis-opomnik a{display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;color:color-mix(in oklch,var(--ink) 72%,transparent);text-decoration:none;font-weight:600}
 .pw-pisi-podpis-opomnik a:hover{color:var(--purple)}
 .pw-pisi-akcije{display:flex;justify-content:flex-end;gap:.5rem}
 .pw-pisi-preklic{padding:.45rem .9rem;border:1px solid color-mix(in oklch,var(--ink) 18%,transparent);border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
@@ -1134,7 +1134,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         const plain = String(s.podpisMaila || '');
         if (plain.trim()) {
           const varno = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-          podpisEl = `<div style="color:#777">${varno(plain).replace(/\n/g, '<br>')}</div>`;
+          podpisEl = `<div style="color:#666">${varno(plain).replace(/\n/g, '<br>')}</div>`;
         }
       }
     } catch { /* brez podpisa */ }
@@ -1310,7 +1310,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               {([{ id: 'prejeto', ime: L('Prejeto', 'Inbox'), Ikona: Tray }, { id: 'poslano', ime: L('Poslano', 'Sent'), Ikona: PaperPlaneTilt }, { id: 'osnutki', ime: L('Osnutki', 'Drafts'), Ikona: NotePencil }, { id: 'kos', ime: L('Koš', 'Trash'), Ikona: Trash }] as const).map(({ id, ime, Ikona }) => {
                 const st = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === id).length;
                 const on = mapa === id;
-                return <button key={id} type="button" onClick={() => { setMapa(id); setBeriMail(null); }} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', width: '100%', textAlign: 'left', border: 'none', background: on ? 'color-mix(in oklch, var(--ink) 9%, transparent)' : 'transparent', color: 'var(--ink)', borderRadius: '.6rem', padding: '.5rem .7rem', font: `${on ? 700 : 500} .78rem var(--font-sans), sans-serif`, cursor: 'pointer' }}><Ikona size={16} weight={on ? 'fill' : 'regular'} /><span style={{ flex: 1 }}>{ime}</span>{st ? <span style={{ fontWeight: 700, opacity: .55 }}>{st}</span> : null}</button>;
+                return <button key={id} type="button" onClick={() => { setMapa(id); setBeriMail(null); }} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', width: '100%', textAlign: 'left', border: 'none', background: on ? 'color-mix(in oklch, var(--ink) 9%, transparent)' : 'transparent', color: 'var(--ink)', borderRadius: '.6rem', padding: '.5rem .7rem', font: `${on ? 700 : 500} .78rem var(--font-sans), sans-serif`, cursor: 'pointer' }}><Ikona size={16} weight={on ? 'fill' : 'regular'} /><span style={{ flex: 1 }}>{ime}</span>{st ? <span style={{ fontWeight: 700, color: 'color-mix(in oklch, var(--ink) 72%, transparent)' }}>{st}</span> : null}</button>;
               })}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -1715,7 +1715,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                         <input type="email" value={vabiMail} onChange={e => setVabiMail(e.target.value)} placeholder={L('vpiši e-naslov …', 'enter an email …')} aria-label={L('Povabi po e-naslovu', 'Invite by email')} style={{ flex: 1, minWidth: 0, border: '1px solid color-mix(in oklch, var(--ink) 15%, transparent)', borderRadius: '.5rem', padding: '.42rem .55rem', fontSize: '.82rem', fontFamily: 'inherit', background: '#fff' }} />
                         <button type="submit" style={{ flex: 'none', border: 0, borderRadius: '.5rem', background: 'var(--ink)', color: 'var(--paper)', padding: '.42rem .7rem', fontSize: '.78rem', fontWeight: 700, cursor: 'pointer' }}>{L('Povabi', 'Invite')}</button>
                       </form>
-                      <p style={{ margin: '.15rem .45rem .1rem', fontSize: '.66rem', lineHeight: 1.35, color: 'color-mix(in oklch, var(--ink) 48%, transparent)' }}>{L('Pošljemo mu vabilo z linkom. E-naslov mora biti njegov prijavni.', 'We send them an invite with a link. Use their login email.')}</p>
+                      <p style={{ margin: '.15rem .45rem .1rem', fontSize: '.66rem', lineHeight: 1.35, color: 'color-mix(in oklch, var(--ink) 72%, transparent)' }}>{L('Pošljemo mu vabilo z linkom. E-naslov mora biti njegov prijavni.', 'We send them an invite with a link. Use their login email.')}</p>
                     </div>
                   )}
                 </div>

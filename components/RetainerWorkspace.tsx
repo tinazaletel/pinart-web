@@ -297,10 +297,10 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   };
   const dokNoga = () => {
     const n = aktivnaPredloga().noga?.trim();
-    return n ? `<div class="dok-noga" style="margin-top:24px;padding-top:10px;border-top:1px solid oklch(93% .006 82 / .55);font-size:8pt;color:#9a9088;line-height:1.6">${esc(n).split('\n').join('<br>')}</div>` : '';
+    return n ? `<div class="dok-noga" style="margin-top:24px;padding-top:10px;border-top:1px solid oklch(93% .006 82 / .55);font-size:8pt;color:#625c56;line-height:1.6">${esc(n).split('\n').join('<br>')}</div>` : '';
   };
   const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:400;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.big{font-family:'Helvetica Neue',Arial,sans-serif;font-size:16pt;color:#111;font-weight:700;letter-spacing:-.01em}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}.podpis-img{display:block;max-height:40px;max-width:180px;margin:0 0 -6px}`;
-  const doc = (body: string) => `<!doctype html><html lang="${jeEn ? 'en' : 'sl'}"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
+  const doc = (body: string) => `<!doctype html><html lang="${jeEn ? 'en' : 'sl'}"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(`${DOC_CSS}.mut,.sig>div>span:first-child{color:#625c56!important}`)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
 
   const modelOpis = jeEn
     ? (model === 'ure' ? `${ure} hours per month` : model === 'paket' ? 'agreed monthly service package' : `${ure} hours per month plus an agreed service package`)
@@ -1065,7 +1065,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       )}
 
       <style>{`
-        .rw{position:relative;min-height:100dvh;color:var(--ink);font-weight:400;overflow-x:clip}
+        .rw{position:relative;min-height:100dvh;color:var(--ink);font-weight:400;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
         /* header (kot kalkulator: Pinart | Dolgorocno | BETA  ...  x zapri) */
         .rw-glava{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:.85rem clamp(1.2rem,4vw,3rem);background:var(--paper);border-bottom:1px solid rgba(17,17,17,.08)}
         /* min-width:0 + shrink: brez tega leva skupina (z novo puscico) preraste prostor in
@@ -1087,21 +1087,21 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         @media (prefers-reduced-motion:reduce){.rw-profil-panel{animation:none}}
         .rw-profil-glava{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.6rem}
         .rw-profil-glava h2{margin:0;font-family:var(--font-serif),Didot,serif;font-size:1.9rem;font-weight:500;color:var(--ink)}
-        .rw-profil-x{font:inherit;font-size:.74rem;font-weight:600;color:rgba(17,17,17,.6);background:none;border:none;cursor:pointer;padding:.4rem}
+        .rw-profil-x{font:inherit;font-size:.74rem;font-weight:600;color:rgba(17,17,17,.72);background:none;border:none;cursor:pointer;padding:.4rem}
         .rw-profil-x:hover{color:var(--ink)}
         .rw-profil-sek{margin-bottom:2.2rem}
         .rw-profil-oznaka{display:block;font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem}
         .rw-profil-opis{margin:0 0 1rem;font-size:.86rem;line-height:1.5;color:#4a4550}
         .rw-profil-polja{display:grid;grid-template-columns:1fr 1fr;gap:.9rem 1rem}
         .rw-pp{display:flex;flex-direction:column;gap:.35rem}
-        .rw-pp>span{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8a8177}
+        .rw-pp>span{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#625c56}
         .rw-pp input,.rw-pp select{font:inherit;font-size:.98rem;font-weight:600;color:var(--ink);background:#FCFBF7;border:1px solid oklch(93% .006 82 / .55);border-radius:9px;padding:.6rem .7rem;width:100%}
         .rw-pp input:focus,.rw-pp select:focus{outline:none;border-color:var(--ink)}
         .rw-pp-tel{grid-column:1 / -1}
         .rw-pp-tel-vrsta{display:flex;gap:.5rem}
         .rw-pp-predklic{max-width:5rem;text-align:center}
         @media (max-width:520px){.rw-profil-polja{grid-template-columns:1fr}}
-        .rw-profil-admin{display:inline-block;margin-top:.4rem;font-size:.82rem;font-weight:600;color:rgba(17,17,17,.6);text-decoration:none;border:1px solid oklch(93% .006 82 / .55);border-radius:999px;padding:.5rem 1rem;transition:border-color .15s,color .15s}
+        .rw-profil-admin{display:inline-block;margin-top:.4rem;font-size:.82rem;font-weight:600;color:rgba(17,17,17,.72);text-decoration:none;border:1px solid oklch(93% .006 82 / .55);border-radius:999px;padding:.5rem 1rem;transition:border-color .15s,color .15s}
         .rw-profil-admin:hover{border-color:var(--ink);color:var(--ink)}
         /* POSKUS: mrežno ozadje (kot naslovnica/FLOW), mehurčki ostanejo */
         .rw-ozadje{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background-color:#fff}
@@ -1168,7 +1168,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-ov-ikona{display:grid;place-items:center;width:2.2rem;height:2.2rem;border-radius:50%;flex:none}
         .rw-ov-ikona svg{width:1.2rem;height:1.2rem}
         .rw-ov-ime{flex:1;min-width:0}
-        .rw-ov-chk{display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;flex:none;font-size:.85rem;font-weight:700;background:rgba(17,17,17,.06);color:rgba(17,17,17,.5)}
+        .rw-ov-chk{display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;flex:none;font-size:.85rem;font-weight:700;background:rgba(17,17,17,.06);color:rgba(17,17,17,.72)}
         .rw-ov.on .rw-ov-chk{background:#7C3AED;color:#fff}
         ${ORB0_CSS}
         .rw-lastne{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1rem}
@@ -1181,14 +1181,14 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-pill:hover{border-color:var(--ink)}
         .rw-pill.on{border-color:var(--accent);background:var(--accent);color:#fff;font-weight:600}
         .rw-vrsta{display:flex;align-items:baseline;flex-wrap:wrap;gap:.5rem .9rem;margin:.7rem 0}
-        .rw-oznaka{font-size:.82rem;font-weight:700;color:rgba(17,17,17,.5);min-width:6rem}
+        .rw-oznaka{font-size:.82rem;font-weight:700;color:rgba(17,17,17,.72);min-width:6rem}
         .rw-cipi{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center}
         .rw-cip{padding:.42rem .8rem;border:1px solid rgba(17,17,17,.2);border-radius:999px;background:rgba(255,255,255,.5);cursor:pointer;font:inherit;font-size:.86rem;color:var(--ink);transition:border-color .15s,background .15s,color .15s}
         .rw-cip:hover{border-color:var(--ink)}
         .rw-cip.on{border-color:var(--accent);background:var(--accent);color:#fff;font-weight:600}
         .rw-num{width:4.6rem;border:none;border-bottom:1px solid rgba(17,17,17,.3);background:transparent;padding:.35rem .3rem;font:inherit;font-size:.92rem;font-weight:600;text-align:right;color:var(--ink)}
         .rw-num:focus{outline:none;border-bottom-color:var(--ink)}
-        .rw-mini{font-size:.8rem;color:rgba(17,17,17,.5)}
+        .rw-mini{font-size:.8rem;color:rgba(17,17,17,.72)}
         .rw-urna{display:inline-flex;align-items:center;gap:.4rem}
         .rw-urna input{width:3.4rem;border:none;border-bottom:1.5px solid rgba(17,17,17,.22);background:transparent;padding:.15rem .1rem;font:inherit;font-size:.92rem;font-weight:700;text-align:right;color:var(--ink);-moz-appearance:textfield;appearance:textfield;transition:border-color .15s}
         .rw-urna input::-webkit-outer-spin-button,.rw-urna input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
@@ -1199,9 +1199,9 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
 
         .rw-povz{margin-top:1.2rem;padding:1.7rem 1.6rem 1.8rem;border-radius:20px;background:rgba(255,255,255,.5);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.65);box-shadow:0 8px 30px rgba(17,17,17,.06),inset 0 1px 0 rgba(255,255,255,.6)}
         .rw-glavna{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding-bottom:.85rem;border-bottom:1px solid rgba(17,17,17,.1)}
-        .rw-glavna span{font-size:.7rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(17,17,17,.55)}
+        .rw-glavna span{font-size:.7rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(17,17,17,.72)}
         .rw-glavna b{font-family:var(--font-serif),Didot,serif;font-weight:700;font-size:clamp(1.55rem,3vw,2.05rem);letter-spacing:-.01em;color:var(--ink);-webkit-text-stroke:0}
-        .rw-glavna em{font-family:inherit;font-style:normal;font-size:.9rem;font-weight:400;color:rgba(17,17,17,.5);-webkit-text-stroke:0}
+        .rw-glavna em{font-family:inherit;font-style:normal;font-size:.9rem;font-weight:400;color:rgba(17,17,17,.72);-webkit-text-stroke:0}
         .rw-det{list-style:none;margin:.8rem 0 0;padding:0;display:flex;flex-direction:column;gap:.32rem;font-size:.87rem;color:rgba(17,17,17,.72)}
         .rw-det li::before{content:"· ";color:var(--accent);font-weight:700}
         .rw-det b{color:var(--ink)}
@@ -1209,11 +1209,11 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-mreza{display:grid;grid-template-columns:1fr 1fr;gap:1.3rem 1.5rem;background:rgba(255,255,255,.5);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.65);border-radius:16px;padding:1.5rem 1.6rem;box-shadow:0 8px 30px rgba(17,17,17,.06),inset 0 1px 0 rgba(255,255,255,.6)}
         .rw-mreza3{grid-template-columns:1fr 1fr 1fr}
         .rw-mreza-prav{grid-template-columns:1fr 9rem;align-items:start}
-        .rw label{display:flex;flex-direction:column;gap:.35rem;font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(17,17,17,.6)}
+        .rw label{display:flex;flex-direction:column;gap:.35rem;font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(17,17,17,.72)}
         .rw label .rw-mini{letter-spacing:0;text-transform:none;font-weight:400}
         .rw-vnos{border:none;border-bottom:1px solid rgba(17,17,17,.4);background:transparent;padding:.35rem 0 .5rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:1.05rem;color:var(--ink);width:100%;border-radius:0}
         .rw-vnos:focus{outline:none;border-bottom:2px solid var(--ink);margin-bottom:-1px}
-        .rw-vnos::placeholder{color:rgba(17,17,17,.42);font-weight:400;font-size:.98rem}
+        .rw-vnos::placeholder{color:rgba(17,17,17,.72);font-weight:400;font-size:.98rem}
         .rw-txt{border:1px solid rgba(17,17,17,.2);border-radius:12px;padding:.7rem .8rem;font:inherit;font-size:.9rem;line-height:1.5;color:var(--ink);resize:vertical;min-height:8.5rem!important;field-sizing:content;background:rgba(255,255,255,.5);overflow:auto}
         .rw-txt:focus{outline:none;border-color:var(--ink)}
         .rw-nedavni{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-top:.9rem}
@@ -1223,21 +1223,21 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         /* kartica + polja ENAKO kot pri kalkulatorju (Naročnik) */
         .rw-kartica{background:rgba(255,255,255,.5);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.65);border-radius:20px;padding:1.6rem 1.7rem 1.7rem;box-shadow:0 8px 30px rgba(17,17,17,.06),inset 0 1px 0 rgba(255,255,255,.6);max-width:760px}
         .rw-kartica>.rw-knaslov{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.3rem 1rem;margin:0 0 1.1rem;font-weight:600;font-size:1.12rem;color:var(--ink)}
-        .rw-knaslov .rw-vec{font-size:.82rem;font-weight:500;color:rgba(17,17,17,.55);text-transform:none;letter-spacing:0}
+        .rw-knaslov .rw-vec{font-size:.82rem;font-weight:500;color:rgba(17,17,17,.72);text-transform:none;letter-spacing:0}
         .rw-numgrid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:none}
         .rw-numgrid+.rw-numgrid{margin-top:1.1rem}
         .rw-polje{display:flex;flex-direction:column}
         .rw-polje label{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(17,17,17,.7);margin-bottom:.3rem}
-        .rw-polje label .rw-vec{font-size:.68rem;font-weight:500;letter-spacing:0;text-transform:none;color:rgba(17,17,17,.5)}
+        .rw-polje label .rw-vec{font-size:.68rem;font-weight:500;letter-spacing:0;text-transform:none;color:rgba(17,17,17,.72)}
         .rw-polje input{width:100%;border:none;border-bottom:1px solid rgba(17,17,17,.45);background:transparent;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:1.1rem;padding:.35rem 0 .5rem;color:var(--ink);border-radius:0}
         .rw-polje input:focus{outline:none;border-bottom:2px solid var(--ink);margin-bottom:-1px}
-        .rw-polje input::placeholder{color:rgba(17,17,17,.42);font-weight:400;font-size:1rem}
+        .rw-polje input::placeholder{color:rgba(17,17,17,.72);font-weight:400;font-size:1rem}
         .rw-dodaj-gumb{display:inline-flex;align-items:center;gap:.4rem;font-family:inherit;font-size:.9rem;font-weight:600;color:var(--ink);background:transparent;border:1px dashed rgba(17,17,17,.35);border-radius:999px;padding:.55rem 1.1rem;cursor:pointer;transition:border-color .18s ease,background .18s ease}
         .rw-dodaj-gumb:hover{border-color:var(--ink);background:rgba(17,17,17,.03)}
         .rw-povezava{font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0;display:inline-flex;align-items:center;gap:.38rem}
         .rw-povezava:hover{opacity:.6}
         .rw-nar-nedavni{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-top:1.1rem}
-        .rw-nar-nedavni .rw-vec{font-size:.78rem;font-weight:500;color:rgba(17,17,17,.55);margin-right:.1rem}
+        .rw-nar-nedavni .rw-vec{font-size:.78rem;font-weight:500;color:rgba(17,17,17,.72);margin-right:.1rem}
         .rw-nar-chip{font-family:inherit;font-size:.78rem;font-weight:500;padding:.4rem .85rem;border-radius:999px;border:1px dashed rgba(17,17,17,.3);background:transparent;color:rgba(17,17,17,.72);cursor:pointer;transition:border-color .15s ease,color .15s ease}
         .rw-nar-chip:hover{border-color:var(--ink);color:var(--ink)}
         .rw-kartica-model>*{margin:0}
@@ -1276,8 +1276,8 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         /* predogled sirsi od chata (kot mehurcki) — vecje, berljive strani */
         .rw-predogled{position:relative;width:min(880px,94vw);left:50%;transform:translateX(-50%);margin-top:1.4rem;background:#e9e6e0;border:1px solid oklch(93% .006 82 / .55);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:18px;box-shadow:inset 0 1px 6px rgba(20,20,20,.06)}
         .rw-pred-stran{width:100%;max-width:794px;height:auto;display:block;box-shadow:0 6px 22px rgba(20,20,20,.14);border-radius:2px}
-        .rw-pred-prazno{color:rgba(17,17,17,.5);font-size:.9rem;padding:2.5rem 0}
-        .rw-pred-osvezi{position:absolute;top:10px;right:12px;font-size:.72rem;color:rgba(17,17,17,.55);background:rgba(255,255,255,.72);padding:.2rem .55rem;border-radius:999px}
+        .rw-pred-prazno{color:rgba(17,17,17,.72);font-size:.9rem;padding:2.5rem 0}
+        .rw-pred-osvezi{position:absolute;top:10px;right:12px;font-size:.72rem;color:rgba(17,17,17,.72);background:rgba(255,255,255,.72);padding:.2rem .55rem;border-radius:999px}
 
         /* UREDI/PREDOGLED + orodjarna + urejevalnik telesa — ENAKO kot kalkulator */
         .rw-pon-vrh{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:.4rem 0 1rem}
@@ -1285,7 +1285,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-segpills button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem .8rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
         .rw-segpills button.on{background:var(--ink);color:var(--paper)}
         .rw-segpills-sek{background:transparent;border-color:rgba(17,17,17,.14)}
-        .rw-segpills-sek button{font-weight:600;color:rgba(17,17,17,.6)}
+        .rw-segpills-sek button{font-weight:600;color:rgba(17,17,17,.72)}
         .rw-segpills-sek button.on{background:rgba(17,17,17,.09);color:var(--ink)}
         .rw-segpills-pogled button{display:inline-flex;align-items:center;gap:.35rem}
         /* ena vrstica (ne ovija) — vodoravni drs, ce orodij ni malo (npr. z odprto priponko) */
@@ -1308,7 +1308,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-podpis-vrsta{display:flex;gap:.5rem;margin:1rem 0 .7rem}
         .rw-podpis-platno{display:block;width:100%;height:170px;border:1px dashed rgba(17,17,17,.3);border-radius:12px;background:#fff;touch-action:none;cursor:crosshair}
         .rw-podpis-akcije{display:flex;gap:.6rem;margin-top:.8rem;flex-wrap:wrap;align-items:center}
-        .rw-podpis-ali{margin:1rem 0 .6rem;font-size:.72rem;color:rgba(17,17,17,.5);text-transform:uppercase;letter-spacing:.14em;font-weight:700}
+        .rw-podpis-ali{margin:1rem 0 .6rem;font-size:.72rem;color:rgba(17,17,17,.72);text-transform:uppercase;letter-spacing:.14em;font-weight:700}
         .rw-editor .podpis-img{display:block;max-height:52px;max-width:200px;margin:0 0 -8px}
         @media (max-width:640px){
           .rw-orodjarna.rw-orodjarna-sheet{position:fixed;left:0;right:0;bottom:0;z-index:80;margin:0;max-height:76dvh;overflow-y:auto;padding:0 1.2rem calc(1.5rem + env(safe-area-inset-bottom,0px));background:var(--paper);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px rgba(40,25,40,.22);transform:translateY(102%);transition:transform .32s cubic-bezier(.2,.8,.3,1)}
@@ -1330,7 +1330,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-priponka-cip{display:inline-flex;align-items:center;gap:.35rem;max-width:11rem;padding:.3rem .3rem .3rem .65rem;border-radius:999px;background:rgba(17,17,17,.06);font-size:.78rem}
         .rw-priponka-cip .rw-priponka-ime{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:8rem;border:none;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer;text-align:left}
         .rw-priponka-cip button.rw-priponka-ime{text-decoration:underline;text-underline-offset:.18em}
-        .rw-priponka-cip>button:last-child{display:inline-flex;align-items:center;justify-content:center;width:1.3rem;height:1.3rem;border:none;border-radius:50%;background:rgba(17,17,17,.08);color:rgba(17,17,17,.6);cursor:pointer;flex:none;padding:0}
+        .rw-priponka-cip>button:last-child{display:inline-flex;align-items:center;justify-content:center;width:1.3rem;height:1.3rem;border:none;border-radius:50%;background:rgba(17,17,17,.08);color:rgba(17,17,17,.72);cursor:pointer;flex:none;padding:0}
         .rw-priponka-cip>button:last-child:hover{background:var(--ink);color:var(--paper)}
         .rw-pisava-select{min-height:2.25rem;border:1px solid rgba(17,17,17,.22);background-color:rgba(255,255,255,.32);color:var(--ink);border-radius:999px;padding:0 1.7rem 0 .9rem;font-family:inherit;font-weight:600;font-size:.78rem;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .7rem center}
         .rw-barvica{width:1.35rem;height:1.35rem;border-radius:999px;border:1px solid rgba(17,17,17,.22);cursor:pointer;padding:0}
@@ -1346,7 +1346,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-editor .kick{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:.3rem}
         .rw-editor .big{font-family:var(--font-sans),system-ui,sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:-.01em}
         .rw-editor .meta{color:#666;font-size:.85rem;margin:.1rem 0 .6rem}
-        .rw-editor .mut{color:#8a8177;font-size:.82rem}
+        .rw-editor .mut{color:#625c56;font-size:.82rem}
         .rw-editor .pog-clen{margin:.7rem 0}
         .rw-editor .pog-clen h2{margin:.6rem 0 .2rem}
         .rw-editor .parties p{margin:.1rem 0}

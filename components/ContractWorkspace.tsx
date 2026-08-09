@@ -249,10 +249,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const dokNoga = () => {
     const n = aktivnaPredloga().noga?.trim();
     /* noga = fiksno 5 mm od SPODNJEGA roba strani (v spodnji rob @page margina); ponovi se na vsaki strani */
-    return n ? `<div class="dok-noga" style="position:fixed;left:16mm;right:16mm;bottom:5mm;padding-top:8px;border-top:1px solid oklch(93% .006 82 / .55);font-size:8pt;color:#9a9088;line-height:1.5">${esc(n).split('\n').join('<br>')}</div>` : '';
+    return n ? `<div class="dok-noga" style="position:fixed;left:16mm;right:16mm;bottom:5mm;padding-top:8px;border-top:1px solid oklch(93% .006 82 / .55);font-size:8pt;color:#625c56;line-height:1.5">${esc(n).split('\n').join('<br>')}</div>` : '';
   };
   const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:400;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}.podpis-img{display:block;max-height:40px;max-width:180px;margin:0 0 -6px}`;
-  const doc = (body: string) => `<!doctype html><html lang="${jeEn ? 'en' : 'sl'}"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(DOC_CSS)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
+  const doc = (body: string) => `<!doctype html><html lang="${jeEn ? 'en' : 'sl'}"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(`${DOC_CSS}.mut,.sig>div>span:first-child{color:#625c56!important}`)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
   useEffect(() => {
     setGlavaHtml(glava());
     const n = aktivnaPredloga().noga?.trim();
@@ -1232,7 +1232,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
     {/* stili kot retainer: navaden <style> (globalno), zato pg- predpona povsod */}
     <style>{`
-      .pg{min-width:0}
+      .pg{min-width:0;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
       .pg .pg-sek{min-width:0}
       .pg-sek{animation:pgSek .5s cubic-bezier(.16,1,.3,1) both}
       /* KONEC animacije mora biti transform:NONE (ne translateY(0)): vsak transform != none
@@ -1302,7 +1302,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
       /* vklop/izklop opcijskih clenov — majhne pilule-stikala v istem jeziku kot .pg-segpills */
       .pg-klavzule{margin:0 0 1rem}
-      .pg-klavzule-label{display:block;font-size:.66rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(17,17,17,.5);margin:0 0 .5rem}
+      .pg-klavzule-label{display:block;font-size:.66rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(17,17,17,.72);margin:0 0 .5rem}
       .pg-klavzule-pilule{display:flex;flex-wrap:wrap;gap:.4rem}
       .pg-segpills-mini{border:1px solid rgba(17,17,17,.18);background:rgba(255,255,255,.5);color:var(--ink);font-family:inherit;font-weight:600;font-size:.72rem;letter-spacing:.01em;padding:.34rem .72rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .16s,color .16s,border-color .16s}
       .pg-segpills-mini:hover{border-color:var(--ink)}
@@ -1336,7 +1336,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-combo-naziv{flex:1;min-width:0}
       .pg-combo-naziv strong{display:block;font-size:.9rem;font-weight:600;overflow-wrap:anywhere}
       .pg-combo-opcija.on .pg-combo-naziv strong{font-weight:800}
-      .pg-combo-naziv small{display:block;margin-top:.1rem;font-size:.74rem;color:rgba(17,17,17,.55)}
+      .pg-combo-naziv small{display:block;margin-top:.1rem;font-size:.74rem;color:rgba(17,17,17,.72)}
       .pg-combo-kljukica{flex:none;display:grid;place-items:center;width:1.5rem;height:1.5rem;border-radius:50%;background:var(--ink);color:var(--paper);font-size:.8rem}
       .pg-combo-prazno{padding:.8rem .5rem}
       .pg-combo-namig{margin:.5rem .3rem .1rem;font-size:.72rem;color:var(--muted)}
@@ -1354,7 +1354,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-kp-ikona{display:grid;place-items:center;width:2.1rem;height:2.1rem;border-radius:50%;background:oklch(92% .055 163);color:oklch(48% .14 164);flex:none}
       .pg-kp-info{flex:1;min-width:0}
       .pg-kp-info strong{display:block;font-size:.95rem;font-weight:700;overflow-wrap:anywhere}
-      .pg-kp-info small{display:block;margin-top:.12rem;font-size:.78rem;color:rgba(17,17,17,.58);overflow-wrap:anywhere}
+      .pg-kp-info small{display:block;margin-top:.12rem;font-size:.78rem;color:rgba(17,17,17,.72);overflow-wrap:anywhere}
       .pg-kp-kazalec{display:grid;place-items:center;width:1.7rem;height:1.7rem;border-radius:50%;background:rgba(17,17,17,.06);color:var(--ink);flex:none}
       .pg-kp-vec{padding:.15rem .95rem 1rem;border-top:1px dashed rgba(17,17,17,.12)}
       .pg-kp-vec ul{margin:.7rem 0 .8rem;padding-left:1.15rem;font-size:.85rem;line-height:1.55;color:rgba(17,17,17,.8)}
@@ -1392,7 +1392,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-op-vsebina{padding:1.6rem 2rem 3rem}
       .pg-op-meta{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:0 0 1.7rem}
       .pg-op-meta div{padding:1rem;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid rgba(17,17,17,.08)}
-      .pg-op-meta dt{font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.5)}
+      .pg-op-meta dt{font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
       .pg-op-meta dd{margin:.35rem 0 0;font-size:.98rem;font-weight:650;color:var(--ink);overflow-wrap:anywhere}
       .pg-op-obseg{padding:1.3rem 1.35rem;border:1px solid rgba(17,17,17,.1);border-radius:16px;background:rgba(255,255,255,.5)}
       .pg-op-obseg h3{margin:0 0 .8rem;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase}
@@ -1412,8 +1412,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-odvetnik-opis{margin:.4rem 0 .7rem;font-size:.74rem;line-height:1.45;color:rgba(17,17,17,.66)}
       .pg-odvetnik-vnos{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.82rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.5rem .65rem;margin-bottom:.65rem}
       .pg-odvetnik-vnos:focus{outline:none;border-color:var(--ink)}
-      .pg-odvetnik-vnos::placeholder{color:rgba(17,17,17,.4)}
-      .pg-odvetnik-namig{margin:.55rem 0 0;font-size:.78rem;color:rgba(17,17,17,.5)}
+      .pg-odvetnik-vnos::placeholder{color:rgba(17,17,17,.72)}
+      .pg-odvetnik-namig{margin:.55rem 0 0;font-size:.78rem;color:rgba(17,17,17,.72)}
       .pg-odvetnik-status{margin:.6rem 0 0;font-size:.85rem;color:rgba(17,17,17,.72)}
       .pg-odvetnik-ok{color:#1f7a4d}
       .pg-odvetnik-err{color:#b23434}
@@ -1428,7 +1428,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-noga-pill:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
       .pg-noga-pill.nova{color:var(--accent);border-color:var(--accent)}
       .pg-noga-pill.nova:hover{background:var(--accent);color:var(--paper)}
-      .pg-mini{font-size:.8rem;color:rgba(17,17,17,.55)}
+      .pg-mini{font-size:.8rem;color:rgba(17,17,17,.72)}
       .pg-napaka{color:#b23434;font-size:.86rem;margin:.6rem 0 0;text-align:center}
       .pg-cip{padding:.42rem .8rem;border:1px solid rgba(17,17,17,.2);border-radius:999px;background:rgba(255,255,255,.5);cursor:pointer;font:inherit;font-size:.86rem;color:var(--ink);transition:border-color .15s,background .15s,color .15s}
       .pg-cip:hover{border-color:var(--ink)}
@@ -1458,7 +1458,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-priponka-cip{display:inline-flex;align-items:center;gap:.35rem;max-width:11rem;padding:.3rem .3rem .3rem .65rem;border-radius:999px;background:rgba(17,17,17,.06);font-size:.78rem}
       .pg-priponka-cip .pg-priponka-ime{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:8rem;border:none;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer;text-align:left}
       .pg-priponka-cip button.pg-priponka-ime{text-decoration:underline;text-underline-offset:.18em}
-      .pg-priponka-cip>button:last-child{display:inline-flex;align-items:center;justify-content:center;width:1.3rem;height:1.3rem;border:none;border-radius:50%;background:rgba(17,17,17,.08);color:rgba(17,17,17,.6);cursor:pointer;flex:none;padding:0}
+      .pg-priponka-cip>button:last-child{display:inline-flex;align-items:center;justify-content:center;width:1.3rem;height:1.3rem;border:none;border-radius:50%;background:rgba(17,17,17,.08);color:rgba(17,17,17,.72);cursor:pointer;flex:none;padding:0}
       .pg-priponka-cip>button:last-child:hover{background:var(--ink);color:var(--paper)}
       .pg-pisava-select{min-height:2.25rem;border:1px solid rgba(17,17,17,.22);background-color:rgba(255,255,255,.32);color:var(--ink);border-radius:999px;padding:0 1.7rem 0 .9rem;font-family:inherit;font-weight:600;font-size:.78rem;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .7rem center}
       .pg-barvica{width:1.35rem;height:1.35rem;border-radius:999px;border:1px solid rgba(17,17,17,.22);cursor:pointer;padding:0}
@@ -1485,7 +1485,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-podpis-vrsta{display:flex;gap:.5rem;margin:1rem 0 .7rem}
       .pg-podpis-platno{display:block;width:100%;height:170px;border:1px dashed rgba(17,17,17,.3);border-radius:12px;background:#fff;touch-action:none;cursor:crosshair}
       .pg-podpis-akcije{display:flex;gap:.6rem;margin-top:.8rem;flex-wrap:wrap;align-items:center}
-      .pg-podpis-ali{margin:1rem 0 .6rem;font-size:.72rem;color:rgba(17,17,17,.5);text-transform:uppercase;letter-spacing:.14em;font-weight:700}
+      .pg-podpis-ali{margin:1rem 0 .6rem;font-size:.72rem;color:rgba(17,17,17,.72);text-transform:uppercase;letter-spacing:.14em;font-weight:700}
 
       .pg-editor,.pg-doktelo{width:100%;min-width:0;border:1px solid rgba(17,17,17,.22);background:#fff;padding:1.35rem;color:var(--ink);font-family:var(--font-sans),system-ui,sans-serif;font-size:.94rem;line-height:1.62;overflow:auto;border-radius:6px}
       .pg-editor{min-height:340px}
@@ -1498,7 +1498,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-editor li,.pg-doktelo li{margin:.2rem 0}
       .pg-editor .kick,.pg-doktelo .kick{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);font-weight:700;margin-bottom:.3rem}
       .pg-editor .meta,.pg-doktelo .meta{color:#666;font-size:.85rem;margin:.1rem 0 .6rem}
-      .pg-editor .mut,.pg-doktelo .mut{color:#8a8177;font-size:.82rem}
+      .pg-editor .mut,.pg-doktelo .mut{color:#625c56;font-size:.82rem}
       .pg-editor .pog-clen,.pg-doktelo .pog-clen{margin:.7rem 0}
       .pg-editor .pog-clen h2,.pg-doktelo .pog-clen h2{margin:.6rem 0 .2rem}
       .pg-editor .parties p,.pg-doktelo .parties p{margin:.1rem 0}
@@ -1512,8 +1512,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
       .pg-predogled{position:relative;width:100%;margin-top:1rem;background:#e9e6e0;border:1px solid oklch(93% .006 82 / .55);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:18px;box-shadow:inset 0 1px 6px rgba(20,20,20,.06)}
       .pg-pred-stran{width:100%;max-width:794px;height:auto;display:block;box-shadow:0 6px 22px rgba(20,20,20,.14);border-radius:2px}
-      .pg-pred-prazno{color:rgba(17,17,17,.5);font-size:.9rem;padding:2.5rem 0}
-      .pg-pred-osvezi{position:absolute;top:10px;right:12px;font-size:.72rem;color:rgba(17,17,17,.55);background:rgba(255,255,255,.72);padding:.2rem .55rem;border-radius:999px}
+      .pg-pred-prazno{color:rgba(17,17,17,.72);font-size:.9rem;padding:2.5rem 0}
+      .pg-pred-osvezi{position:absolute;top:10px;right:12px;font-size:.72rem;color:rgba(17,17,17,.72);background:rgba(255,255,255,.72);padding:.2rem .55rem;border-radius:999px}
 
       /* ── mobil: NIC ne sme cez desni rob pri 390px (kot retainer) ── */
       @media (max-width:640px){
