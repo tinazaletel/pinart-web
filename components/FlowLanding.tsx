@@ -1104,9 +1104,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-kv-orb::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 46% 38%, var(--c1), var(--c2) 45%, transparent 72%); z-index: -1; }
         .fl-kv-orb svg { position: relative; opacity: .96; }
         .fl-kv-orb i { font-style: normal; font-size: .5rem; font-weight: 700; line-height: 1.05; }
-        .fl-kv-orb.o1 { width: 84px; height: 84px; left: 40px; top: 8px; --c1: oklch(72% .16 300); --c2: oklch(55% .17 288); }
+        .fl-kv-orb.o1 { width: 84px; height: 84px; left: 16px; top: 8px; --c1: oklch(72% .16 300); --c2: oklch(55% .17 288); }
         .fl-kv-orb.o2 { width: 74px; height: 74px; left: 172px; top: 84px; --c1: oklch(80% .13 200); --c2: oklch(62% .15 220); animation-delay: -2s; }
-        .fl-kv-orb.o3 { width: 80px; height: 80px; right: 40px; top: 18px; --c1: oklch(80% .13 60); --c2: oklch(66% .16 45); animation-delay: -3s; }
+        .fl-kv-orb.o3 { width: 80px; height: 80px; right: 24px; top: 18px; --c1: oklch(80% .13 60); --c2: oklch(66% .16 45); animation-delay: -3s; }
         /* faza 3 — znesek + oblikovan list */
         .fl-kv-doc { width: 158px; padding: .72rem .78rem .82rem; border-radius: 12px; background: #fff; box-shadow: 0 12px 26px rgba(20,10,40,.28); display: grid; gap: .42rem; }
         .fl-kv-doc-h { height: 12px; width: 60%; border-radius: 4px; background: linear-gradient(90deg, oklch(66% .2 297), oklch(70% .16 330)); }
