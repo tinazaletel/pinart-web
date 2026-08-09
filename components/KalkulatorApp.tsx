@@ -280,7 +280,7 @@ const teritorijIzTrga = (trgId: string): string =>
 const PODROCJE_BARVA: Record<string, string> = {
   graficno: '#7C3AED', splet: '#0EA5A5', marketing: '#DB2777',
   foto: '#2563EB', direkcija: '#EA580C', prostor: '#5B9E1E',
-  produkcija: '#475569',
+  produkcija: '#475569', pr: '#0891B2', drugo: '#6B7280',
 };
 
 const IZKUSNJE = [
@@ -5347,6 +5347,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     foto:      <Camera size={22} />,
     direkcija: <Compass size={22} />,
     produkcija: <Layout size={22} />,
+    pr:        <Newspaper size={22} />,
+    drugo:     <DotsThree size={22} />,
   };
 
   const naslovKoraka = korak === 0 ? L('Kaj boš danes ustvarila?', 'What will you create today?')

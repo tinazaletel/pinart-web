@@ -28,6 +28,7 @@ export const PRICING_SERVICES: PricingService[] = [
   { id: 'motion', ime: 'Motion / animacija', imeEn: 'Motion / animation', osnova: 750 },
   { id: 'render3d', ime: '3D vizualizacije', imeEn: '3D visualizations', osnova: 650 },
   { id: 'strategija', ime: 'Brand strategija', imeEn: 'Brand strategy', osnova: 1100 },
+  { id: 'drugo', ime: 'Drugo / po dogovoru', imeEn: 'Other / custom', osnova: 0 },
 ];
 
 /* Podrocja dela. Ista razdelitev se uporablja v kalkulatorju (izbira ob
@@ -38,10 +39,12 @@ export type PricingPodrocje = { id: string; ime: string; imeEn?: string; opis: s
 export const PODROCJA: PricingPodrocje[] = [
   { id: 'graficno',  ime: 'Grafika in branding',       imeEn: 'Graphics and branding',            opis: 'logotip, CGP, tiskovine, embalaža, ilustracija',   opisEn: 'logo, visual identity, print, packaging, illustration',   storitve: ['logo', 'cgp', 'publikacija', 'embalaza', 'ilustracija'] },
   { id: 'splet',     ime: 'Splet in produkti',         imeEn: 'Web and products',                 opis: 'spletne strani, UX/UI, aplikacije',                opisEn: 'websites, UX/UI, apps',                                   storitve: ['web', 'uxui', 'aplikacija', 'dizajnsistem'] },
-  { id: 'marketing', ime: 'Marketing in oglasi',       imeEn: 'Marketing and ads',                opis: 'kampanje, social media, SEO, PR, besedila',        opisEn: 'campaigns, social media, SEO, PR, copy',                  storitve: ['kampanja', 'smm', 'seo', 'email', 'pr', 'copy'] },
+  { id: 'marketing', ime: 'Marketing in oglasi',       imeEn: 'Marketing and ads',                opis: 'kampanje, social media, SEO, besedila',            opisEn: 'campaigns, social media, SEO, copy',                      storitve: ['kampanja', 'smm', 'seo', 'email', 'copy'] },
   { id: 'foto',      ime: 'Foto, video, motion',       imeEn: 'Photo, video, motion',             opis: 'fotografiranje, video, motion, 3D',                opisEn: 'photography, video, motion, 3D',                          storitve: ['fotografija', 'video', 'motion', 'render3d'] },
   { id: 'direkcija', ime: 'Kreativna direkcija in strategija', imeEn: 'Creative direction and strategy', opis: 'vodenje, koncept, strategija',             opisEn: 'management, concept, strategy',                            storitve: ['direkcija', 'strategija'] },
   { id: 'prostor',   ime: 'Prostor in arhitektura',    imeEn: 'Space and architecture',           opis: 'interier, arhitektura, razstavni in produktni dizajn', opisEn: 'interior, architecture, exhibition and product design',   storitve: ['interier', 'arhitektura', 'razstava', 'produktni'] },
+  { id: 'pr',        ime: 'PR in odnosi z javnostmi',  imeEn: 'PR / public relations',            opis: 'sporočila za javnost, medijski odnosi, dogodki',   opisEn: 'press releases, media relations, events',                 storitve: ['pr'] },
+  { id: 'drugo',     ime: 'Drugo',                     imeEn: 'Other',                            opis: 'karkoli drugega — ceno določiš sam',               opisEn: 'anything else — you set the price',                       storitve: ['drugo'] },
 ];
 
 /* V bazo se shrani IME storitve, ne id — zato iskanje po imenu. */
