@@ -1064,13 +1064,13 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @media (prefers-reduced-motion: reduce) { .fl-kalk-zig { animation: none; } }
         .fl-kalk-txt h2 { font-family: var(--font-serif), serif; font-weight: 500; font-size: clamp(1.7rem, 3.4vw, 2.5rem); line-height: 1.05; margin: 0 0 .5rem; color: #fff; }
         .fl-kalk-txt p { font-size: 1rem; line-height: 1.5; color: rgba(255,255,255,.78); margin: 0; max-width: 42ch; }
-        .fl-kalk-cta { position: absolute; right: clamp(1.6rem, 4vw, 2.6rem); bottom: 20px; z-index: 2; display: inline-flex; align-items: center; gap: .5rem; padding: .95rem 1.75rem; border-radius: 999px; background: #fff; color: #17102e; font-size: .95rem; font-weight: 700; text-decoration: none; transition: transform .16s ease, box-shadow .16s ease; box-shadow: 0 8px 24px oklch(20% .05 297 / .3); }
+        .fl-kalk-cta { position: absolute; right: clamp(1.6rem, 4vw, 2.6rem); bottom: 20px; z-index: 5; display: inline-flex; align-items: center; gap: .5rem; padding: .95rem 1.75rem; border-radius: 999px; background: #fff; color: #17102e; font-size: .95rem; font-weight: 700; text-decoration: none; transition: transform .16s ease, box-shadow .16s ease; box-shadow: 0 8px 24px oklch(20% .05 297 / .3); }
         .fl-kalk-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 30px oklch(20% .08 297 / .42); }
         /* Ilustracija = web okno + zaključena zgodba: vprašalnik -> mehurčki cen -> znesek na oblikovanem listu (zanka 11s). */
         .fl-kalk-viz { position: relative; flex: none; width: 420px; max-width: 46vw; align-self: flex-end; margin-top: 1.6rem; margin-bottom: -3px; transform: translateX(-20px); }
         /* Pupa lik: absoluten (ne veča višine), odrezan do pasu (overflow), dve sliki cross-fade. */
-        .fl-kalk-lik { position: absolute; right: 1.5rem; bottom: 0; width: clamp(11rem, 20vw, 16rem); z-index: 3; pointer-events: none; }
-        .fl-kalk-lik-img { position: absolute; right: 0; bottom: 0; display: block; width: 100%; height: auto; opacity: 0; will-change: opacity; }
+        .fl-kalk-lik { position: absolute; right: 0; top: 0; bottom: 0; width: clamp(14rem, 26vw, 22rem); z-index: 3; pointer-events: none; }
+        .fl-kalk-lik-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: right bottom; opacity: 0; will-change: opacity; }
         .fl-kalk-lik-img.a { animation: flLikA 9s ease-in-out infinite; }
         .fl-kalk-lik-img.b { animation: flLikB 9s ease-in-out infinite; }
         @keyframes flLikA { 0%, 42% { opacity: 1; } 50%, 92% { opacity: 0; } 100% { opacity: 1; } }
@@ -1411,8 +1411,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               </div>
             </div>
             <div className="fl-kalk-lik" aria-hidden>
-              <img src="/flow/pupa_zamisljena.png" alt="" className="fl-kalk-lik-img a" />
-              <img src="/flow/pupa_sedi.png" alt="" className="fl-kalk-lik-img b" />
+              <img src="/flow/pupa_sedi.png" alt="" className="fl-kalk-lik-img a" />
+              <img src="/flow/pupa_zamisljena.png" alt="" className="fl-kalk-lik-img b" />
             </div>
             <a className="fl-kalk-cta" href={kalkulator}>{t('Odpri kalkulator', 'Open calculator')} <ArrowRight size={17} weight="bold" /></a>
           </div>
