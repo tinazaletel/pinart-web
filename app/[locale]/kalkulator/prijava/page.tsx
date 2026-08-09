@@ -13,6 +13,7 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
   const base = locale === 'sl' ? '' : `/${locale}`;
+  const jeEn = locale === 'en';
 
   return (
     <main className={styles.page}>
@@ -24,13 +25,13 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
       </a>
       <section className={styles.intro}>
         <p>PINART FLOW</p>
-        <h2>En program<br />namesto štirih.</h2>
-        <p className={styles.lead}>Ponudbe, pogodbe, računi, stroški, ceniki in naloge — vse na enem mestu. Nič več skakanja med Excelom, Canvo, ChatGPT in Gmailom.</p>
+        <h2>{jeEn ? <>One workspace<br />instead of four.</> : <>En program<br />namesto štirih.</>}</h2>
+        <p className={styles.lead}>{jeEn ? 'Proposals, contracts, invoices, expenses, price lists and tasks — all in one place. No more jumping between Excel, Canva, ChatGPT and Gmail.' : 'Ponudbe, pogodbe, računi, stroški, ceniki in naloge — vse na enem mestu. Nič več skakanja med Excelom, Canvo, ChatGPT in Gmailom.'}</p>
         <div className={styles.flowLine} aria-hidden="true"><span>01</span><span>02</span><span>03</span><span>04</span></div>
         <ul>
-          <li>Ve, koliko je vredno tvoje delo — poštena cena z avtorskimi pravicami</li>
-          <li>Pupa, AI asistentka, ki pozna trg in ceno</li>
-          <li>Vse teče iz istih podatkov: ponudba v račun z enim klikom</li>
+          <li>{jeEn ? 'Know what your work is worth — a fair price that includes copyright' : 'Ve, koliko je vredno tvoje delo — poštena cena z avtorskimi pravicami'}</li>
+          <li>{jeEn ? 'Pupa, the AI assistant who knows the market and pricing' : 'Pupa, AI asistentka, ki pozna trg in ceno'}</li>
+          <li>{jeEn ? 'Everything flows from the same data: proposal to invoice in one click' : 'Vse teče iz istih podatkov: ponudba v račun z enim klikom'}</li>
         </ul>
       </section>
       <AuthForm base={base} />
