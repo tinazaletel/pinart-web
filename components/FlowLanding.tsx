@@ -1115,21 +1115,19 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @keyframes flKvFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         @keyframes flKvGrad { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
         @keyframes flKvPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
-        @media (max-width: 900px) { .fl-kalk-viz { display: none; } }
         @media (prefers-reduced-motion: reduce) { .fl-kv-stage { animation: none; opacity: 0; } .fl-kv-s3 { opacity: 1; } .fl-kv-orb, .fl-kvw-blob, .fl-kv-doc-t { animation: none; } }
-        /* iPad / tablet (641–900): okno skrito, besedilo levo, lik desno (premiki resetirani), gumb spodaj-desno */
+        /* iPad / tablet (641–900): ISTI desktop banner (okno + lik + žig), le pomanjšan da se prilega brez preloma */
         @media (min-width: 641px) and (max-width: 900px) {
-          .fl-kalk-banner-in { align-items: flex-start; min-height: 168px; padding-bottom: clamp(1.3rem, 4vw, 1.9rem); }
-          .fl-kalk-txt { max-width: min(54%, 26rem); padding-bottom: 0; }
-          .fl-kalk-lik { width: clamp(9rem, 30vw, 15rem); }
-          .fl-kalk-lik-img { transform: none !important; }
-          .fl-kalk-cta { position: absolute; right: clamp(1.2rem, 4vw, 2rem); bottom: 16px; width: auto; margin: 0; }
+          .fl-kalk-txt { max-width: min(48%, 22rem); padding-bottom: 1rem; }
+          .fl-kalk-viz { width: 340px; max-width: 44vw; }
+          .fl-kalk-lik { width: clamp(13rem, 34vw, 20rem); }
         }
         .fl-kalk-zig-mob { display: none; }
         /* Mobile (<=640): NOV layout po skici — žig zgoraj-desno ob naslovu; spodaj okno LEVO + Pupa DESNO; gumb ČEZ na sredini. */
         @media (max-width: 640px) {
           .fl-kalk-banner-in { display: grid; grid-template-columns: 1.4fr .75fr; grid-template-areas: "txt txt" "viz lik"; align-items: end; row-gap: .2rem; min-height: 0; padding: clamp(1.15rem, 4vw, 1.5rem) clamp(1.4rem, 5vw, 2rem) 0; }
-          .fl-kalk-txt { grid-area: txt; max-width: 100%; padding: 0 6.5rem 0 0; }
+          .fl-kalk-txt { grid-area: txt; max-width: 100%; padding: 0 8.4rem 0 0; }
+          .fl-kalk-txt h2 { font-size: clamp(1.5rem, 6.4vw, 2rem); }
           .fl-br-mob { display: inline; }
           .fl-kalk-viz { grid-area: viz; display: block; width: calc(100% + clamp(1.4rem, 5vw, 2rem)); max-width: none; align-self: end; margin: 0 0 0 calc(-1 * clamp(1.4rem, 5vw, 2rem)); transform: none; }
           .fl-kalk-viz .fl-kalk-zig { display: none; }
