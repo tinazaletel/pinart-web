@@ -1117,13 +1117,15 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         @keyframes flKvGrad { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
         @keyframes flKvPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
         @media (prefers-reduced-motion: reduce) { .fl-kv-stage { animation: none; opacity: 0; } .fl-kv-s3 { opacity: 1; } .fl-kv-orb, .fl-kvw-blob, .fl-kv-doc-t { animation: none; } }
-        /* iPad / tablet (641–900): ISTI desktop banner (okno + lik + žig), le pomanjšan da se prilega brez preloma */
-        @media (min-width: 641px) and (max-width: 900px) {
+        /* Tablet / ožji landscape (641–1100): pupa flush DESNO, okno LEVO, gumb spodaj-desno.
+           Pokrije iPhone landscape + iPad portret (744–834) + iPad Pro portret (1024) + ožji landscape (1080).
+           Desktop banner (translateX kompozicija) velja šele >1100, kjer je dovolj širine. */
+        @media (min-width: 641px) and (max-width: 1100px) {
           .fl-kalk-txt { max-width: min(40%, 19rem); padding-bottom: 1rem; }
           .fl-kalk-viz { width: 300px; max-width: 37vw; }
           .fl-kalk-lik { width: clamp(10rem, 24vw, 15rem); }
           .fl-kalk-lik-img { transform: none !important; }
-          .fl-kalk-lik-img.a { transform: translateX(20px) scale(1.95) !important; transform-origin: right bottom; }
+          .fl-kalk-lik-img.a { transform: translateX(2.4vw) scale(1.95) !important; transform-origin: right bottom; }
           .fl-kalk-lik-img.b { transform: scale(1.2) !important; transform-origin: right bottom; }
         }
         .fl-kalk-zig-mob { display: none; }
