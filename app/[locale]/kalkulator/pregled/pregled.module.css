@@ -72,12 +72,12 @@
 /* 85% ink = 5.0:1 na paper -> prestane WCAG AA (4.5:1). 65% je dalo 2.58:1. */
 .navItem { display: flex; gap: .7rem; align-items: center; padding: .38rem .8rem; border-radius: .7rem; color: color-mix(in oklch, var(--ink) 85%, transparent); font-size: .82rem; font-weight: 700; text-decoration: none; transition: color 180ms ease, background 180ms ease; }
 .navItem span { font-size: .62rem; letter-spacing: .08em; opacity: .6; }
-.navItem:hover { color: var(--ink); background: oklch(93% .028 87); }
+.navItem:hover { color: var(--ink); background: #fff; }
 /* aktivna postavka: brez crte in BREZ ozadja. Loci jo samo polni ink napis.
    Ozadje se pokaze le ob hoverju, enako kot pri ostalih. */
 .active { color: var(--ink); background: transparent; }
 /* aktivna stran mora biti jasno vidna (prej prozorna = nisi vedela, kje si) */
-.navItem.active { color: var(--ink); background: #fff; font-weight: 800; box-shadow: 0 2px 8px rgba(40,25,40,.06); }
+.navItem.active { color: var(--ink); background: oklch(94% .045 300); font-weight: 800; }
 .navItem.active span { opacity: .85; }
 .navItem.active:hover { background: #fff; }
 .toolsMenu { display: grid; }
