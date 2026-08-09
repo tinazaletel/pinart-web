@@ -6528,7 +6528,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ponudba0-vsota-vrsta.ponudba0-mini + .ponudba0-vsota-vrsta { margin-top: .35rem; }
 
         /* DESKTOP: × skrije panel v črn FAB (kot mobilna kosarica). */
-        .cw .ponudba0-zapri { position: absolute; top: .9rem; right: .9rem; z-index: 4; display: inline-flex; align-items: center; justify-content: center; width: 1.9rem; height: 1.9rem; padding: 0; border: 1px solid rgba(17,17,17,.12); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); color: rgba(17,17,17,.6); font-size: 1.25rem; line-height: 1; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+        .cw .ponudba0-zapri { position: absolute; top: 1rem; right: 1rem; z-index: 4; display: inline-flex; align-items: center; justify-content: center; width: 1.85rem; height: 1.85rem; padding: 0; overflow: visible; border: 1px solid rgba(17,17,17,.12); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); color: rgba(17,17,17,.6); font-size: 1.05rem; line-height: 1; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
         .cw .ponudba0-zapri:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
         .cw .ponudba0.skrit-desktop { display: none; }
         .cw .oder0:has(.ponudba0.skrit-desktop) { grid-template-columns: 1fr; }
