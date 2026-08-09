@@ -897,8 +897,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-zav-mob{display:none}
         @media (max-width:640px){
           .arh-zav-mob{display:block;margin:0 0 .85rem}
-          .arh-glava{gap:.45rem;flex-wrap:wrap;align-items:center}
-          .arh-glava-filter{order:1;flex:0 1 auto;min-width:0}
+          /* pozicijsko sidrisce za iskalni overlay (.af-iskanje inset:0) -> pokrije CELO vrstico */
+          .arh-glava{gap:.45rem;flex-wrap:nowrap;align-items:center;position:relative}
+          .arh-glava-filter{order:1;flex:0 1 auto;min-width:0;position:static}
           .arh-pogled-preklop{order:2}
           .arh-akcija-mob{order:3;display:inline-flex;margin-left:auto}
           .af-mob-akcija{display:none}
