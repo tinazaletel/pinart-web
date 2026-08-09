@@ -7653,11 +7653,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             <div className="soglasje-tocke">
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Priporočene cene', 'Recommended prices')}</h3>
-                <p className="sg-t">{L('So pametno izhodišče, ne uradni cenik — nastale so iz izkušenj, tržno bazo pa šele gradimo. Svobodno jih prilagodi; končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.', 'They are a smart starting point, not an official price list — they come from experience, and we are still building the market database. Adjust them freely; the final price in your quotes is always your decision and your responsibility.')}</p>
+                <p className="sg-t">{L('So pametno izhodišče, ne uradni cenik — nastale so na podlagi AI raziskave trga, pravo podatkovno bazo pa šele gradimo. Svobodno jih prilagodi; končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.', 'They are a smart starting point, not an official price list — they are based on AI market research, and we are still building the real data-backed database. Adjust them freely; the final price in your quotes is always your decision and your responsibility.')}</p>
               </div>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Shranjeno pri tebi', 'Stored on your device')}</h3>
-                <p className="sg-t">{L('Tvoje cene, postavke in podatki ostanejo shranjeni samo v tvojem brskalniku — pri nas se nič ne shrani.', 'Your prices, items and data stay saved only in your browser — nothing is stored on our side.')}</p>
+                <p className="sg-t">{L('Ker nisi prijavljen/-a, cene, postavke in podatki ostanejo samo v tvojem brskalniku — pri nas se nič ne shrani. Ko se prijaviš, se varno shranijo v tvoj oblak (Flow) in so na voljo na vseh napravah.', 'Since you are not signed in, your prices, items and data stay only in your browser — nothing is stored on our side. When you sign in, they are securely saved to your cloud (Flow) and available on all your devices.')}</p>
               </div>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Vedno anonimno', 'Always anonymous')}</h3>
