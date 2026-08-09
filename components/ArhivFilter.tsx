@@ -243,8 +243,8 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       .af-akcija-gumb{display:inline-flex;align-items:center;justify-content:center;gap:.3rem;white-space:nowrap;padding:.7rem 1.1rem;border:none;border-radius:999px;background-color:var(--ink,#111);color:var(--paper,#fff);font:inherit;font-size:.82rem;font-weight:700;text-decoration:none;cursor:pointer;transition:transform .15s,opacity .15s}
       .af-akcija-gumb:hover{transform:translateY(-1px);opacity:.92}
       @media (max-width:640px){
-        .af-akcija-dodaj{width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;font-size:0}
-        .af-akcija-dodaj::before{content:'+';font-size:1.5rem;font-weight:800;line-height:1}
+        .af-akcija-dodaj{width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;font-size:0;display:grid;place-items:center;line-height:0}
+        .af-akcija-dodaj::before{content:'+';grid-area:1/1;font-size:1.6rem;font-weight:700;line-height:1}
       }
 
       .af-krog{position:relative;display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;padding:0;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);border-radius:50%;background-color:color-mix(in oklch,var(--paper,#fff) 70%,transparent);color:var(--ink,#111);cursor:pointer;transition:background-color .15s,color .15s}
@@ -264,7 +264,7 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
 
       /* sheet z dna — enak videz kot Oblikovanje/Podpis sheet pri pogodbah */
       .af-zastor{position:fixed;inset:0;background-color:color-mix(in oklch,var(--ink,#111) 34%,transparent);z-index:95}
-      .af-sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,102%);width:min(480px,100vw);z-index:96;background-color:var(--paper,#fff);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px color-mix(in oklch,var(--ink,#111) 22%,transparent);transition:transform .32s cubic-bezier(.2,.8,.3,1);max-height:76dvh;overflow-y:auto;padding:0 1.2rem calc(1.4rem + env(safe-area-inset-bottom,0px))}
+      .af-sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,102%);width:min(480px,100vw);z-index:96;background-color:var(--paper,#fff);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px color-mix(in oklch,var(--ink,#111) 22%,transparent);transition:transform .32s cubic-bezier(.2,.8,.3,1);max-height:92dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 1.2rem calc(1.4rem + env(safe-area-inset-bottom,0px))}
       .af-sheet.odprt{transform:translate(-50%,0)}
       @media (prefers-reduced-motion:reduce){.af-sheet{transition:none}}
       .af-glava{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;padding:1.35rem 0 .65rem;border-bottom:1px solid color-mix(in oklch,var(--ink,#111) 10%,transparent)}
