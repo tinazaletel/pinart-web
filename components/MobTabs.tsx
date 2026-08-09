@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { CaretDown } from '@phosphor-icons/react';
 
 export type MobTabOpcija = { id: string; label: string; znacka?: ReactNode };
@@ -17,6 +17,12 @@ export default function MobTabs({ opcije, vrednost, naVrednost, label }: {
 }) {
   const [odprt, setOdprt] = useState(false);
   const trenutna = opcije.find(o => o.id === vrednost) || opcije[0];
+
+  /* Ko je slide-up odprt, skrij Pupo (da ne prekriva menija) */
+  useEffect(() => {
+    document.body.classList.toggle('pw-sheet-open', odprt);
+    return () => document.body.classList.remove('pw-sheet-open');
+  }, [odprt]);
 
   return (
     <div className="mobtabs">

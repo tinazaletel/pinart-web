@@ -332,21 +332,21 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       statusVrednost: statusProjekt,
       onStatus: setStatusProjekt,
       statusOpcije: [{ vrednost: 'vse', oznaka: L('Vsi', 'All') }, { vrednost: 'aktivni', oznaka: L('Aktivni', 'Active') }, { vrednost: 'cakajo', oznaka: L('Čakajo', 'Pending') }, { vrednost: 'zakljuceni', oznaka: L('Zaključeni', 'Completed') }],
-      akcija: <Link className="af-akcija-gumb" href={`${base}/kalkulator/nov-projekt`}>{L('+ Nov projekt', '+ New project')}</Link>,
+      akcija: <Link className="af-akcija-gumb af-akcija-dodaj" href={`${base}/kalkulator/nov-projekt`} aria-label={L('Nov projekt', 'New project')} title={L('Nov projekt', 'New project')}>{L('+ Nov projekt', '+ New project')}</Link>,
     } : zavihek === 'ponudbe' ? {
       placeholder: L('Poišči ponudbo, stranko ali številko …', 'Search offers, clients or numbers …'),
       statusOznaka: L('Status ponudbe', 'Offer status'),
       statusVrednost: statusPonudba,
       onStatus: v => setStatusPonudba(v as 'vse' | FlowOfferStatus),
       statusOpcije: [{ vrednost: 'vse', oznaka: L('Vse', 'All') }, ...(Object.entries(offerLabels) as Array<[FlowOfferStatus, string]>).map(([v, n]) => ({ vrednost: v, oznaka: n }))],
-      akcija: <Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>{L('+ Nova ponudba', '+ New offer')}</Link>,
+      akcija: <Link className="af-akcija-gumb af-akcija-dodaj" href={`${base}/kalkulator/orodje`} aria-label={L('Nova ponudba', 'New offer')} title={L('Nova ponudba', 'New offer')}>{L('+ Nova ponudba', '+ New offer')}</Link>,
     } : zavihek === 'pogodbe' ? {
       placeholder: L('Poišči pogodbo ali stranko …', 'Search contracts or clients …'),
       statusOznaka: L('Status pogodbe', 'Contract status'),
       statusVrednost: statusPogodba,
       onStatus: v => setStatusPogodba(v as 'vse' | FlowContractStatus),
       statusOpcije: [{ vrednost: 'vse', oznaka: L('Vse', 'All') }, ...(Object.entries(contractLabels) as Array<[FlowContractStatus, string]>).map(([v, n]) => ({ vrednost: v, oznaka: n }))],
-      akcija: <Link className="af-akcija-gumb" href={`${base}/kalkulator/pogodbe`}>{L('+ Nova pogodba', '+ New contract')}</Link>,
+      akcija: <Link className="af-akcija-gumb af-akcija-dodaj" href={`${base}/kalkulator/pogodbe`} aria-label={L('Nova pogodba', 'New contract')} title={L('Nova pogodba', 'New contract')}>{L('+ Nova pogodba', '+ New contract')}</Link>,
     } : zavihek === 'racuni' ? {
       placeholder: L('Poišči račun, stranko ali številko …', 'Search invoices, clients or numbers …'),
       statusOznaka: L('Plačilo', 'Payment'),
@@ -355,7 +355,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       statusOpcije: [{ vrednost: 'vse', oznaka: L('Vsi', 'All') }, { vrednost: 'placano', oznaka: L('Plačani', 'Paid') }, { vrednost: 'odprto', oznaka: L('Odprti', 'Open') }],
       akcija: <>
         <Link className="af-akcija-gumb" href={`${base}/kalkulator/racunovodstvo`}>{L('Izvoz za računovodstvo', 'Export for accounting')}</Link>
-        <Link className="af-akcija-gumb" href={`${base}/kalkulator/racuni`}>{L('+ Nov račun', '+ New invoice')}</Link>
+        <Link className="af-akcija-gumb af-akcija-dodaj" href={`${base}/kalkulator/racuni`} aria-label={L('Nov račun', 'New invoice')} title={L('Nov račun', 'New invoice')}>{L('+ Nov račun', '+ New invoice')}</Link>
       </>,
     } : null;
 
