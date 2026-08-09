@@ -33,7 +33,7 @@ export default function AmbientBubbles() {
       ))}
       <style dangerouslySetInnerHTML={{ __html: `
         .ambient-mehurcki { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-        .ambient-mehurcki .amb { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); opacity: .5;
+        .ambient-mehurcki .amb { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); opacity: .28;
           background:
             radial-gradient(circle at 32% 27%, rgba(255,255,255,.9), rgba(255,255,255,.06) 42%, transparent 62%),
             radial-gradient(circle at 68% 74%, var(--amb-tint), transparent 72%);
