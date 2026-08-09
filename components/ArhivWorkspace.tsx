@@ -510,10 +510,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
           {/* glava: zavihki (levo) + orodna vrstica aktivnega zavihka (desno) v ENI
               vrsti na namizju; flex-wrap ju na mobilnem prelomi v dve vrsti (locene) */}
-          {/* Mobilni preklopnik arhiva (Projekti/Ponudbe/Pogodbe/Računi) = slide-up NAD tabelo,
-              da orodna vrstica ostane čista (search · filter · pogled · +). Namizje = pills spodaj. */}
-          <div className="arh-zav-mob"><MobTabs label={L('Arhiv', 'Archive')} vrednost={zavihek} naVrednost={id => menjajZavihek(id as Zavihek)} opcije={[{ id: 'projekti', label: L('Projekti', 'Projects') }, { id: 'ponudbe', label: L('Ponudbe', 'Offers') }, { id: 'pogodbe', label: L('Pogodbe', 'Contracts') }, { id: 'racuni', label: L('Računi', 'Invoices') }]} /></div>
           <div className="arh-glava">
+            {/* Preklopnik arhiva kot PRVI element orodne vrstice (mobilno slide-up); vse v ENI vrsti. */}
+            <MobTabs label={L('Arhiv', 'Archive')} vrednost={zavihek} naVrednost={id => menjajZavihek(id as Zavihek)} opcije={[{ id: 'projekti', label: L('Projekti', 'Projects') }, { id: 'ponudbe', label: L('Ponudbe', 'Offers') }, { id: 'pogodbe', label: L('Pogodbe', 'Contracts') }, { id: 'racuni', label: L('Računi', 'Invoices') }]} />
             <div className="arh-segpills arh-zavihki mobtabs-hide" role="tablist" aria-label="Arhiv">
               {(([['projekti', L('Projekti', 'Projects')], ['ponudbe', L('Ponudbe', 'Offers')], ['pogodbe', L('Pogodbe', 'Contracts')], ['racuni', L('Računi', 'Invoices')]]) as Array<[Zavihek, string]>).map(([v, n]) => (
                 <button key={v} type="button" role="tab" aria-selected={zavihek === v} className={zavihek === v ? 'on' : ''} onClick={() => menjajZavihek(v)}>{n}</button>
@@ -896,14 +895,17 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-akcija-mob{display:none}
         .arh-zav-mob{display:none}
         @media (max-width:640px){
-          .arh-zav-mob{display:block;margin:0 0 .85rem}
-          /* pozicijsko sidrisce za iskalni overlay (.af-iskanje inset:0) -> pokrije CELO vrstico */
-          .arh-glava{gap:.45rem;flex-wrap:nowrap;align-items:center;position:relative}
+          /* VSE v eni vrsti (kompaktno): Projekti · iskalnik · filter · pogled · +.
+             arh-glava = pozicijsko sidrisce za iskalni overlay (.af-iskanje inset:0 -> cela vrstica). */
+          .arh-glava{gap:.3rem;flex-wrap:nowrap;align-items:center;position:relative}
+          .arh-glava .mobtabs{order:0;flex:none}
+          .arh-glava .mobtabs-gumb{min-height:2.5rem;padding:0 .6rem;font-size:.74rem;gap:.2rem}
           .arh-glava-filter{order:1;flex:0 1 auto;min-width:0;position:static}
           .arh-pogled-preklop{order:2}
-          .arh-akcija-mob{order:3;display:inline-flex;margin-left:auto}
+          .arh-akcija-mob{order:3;display:inline-flex}
           .af-mob-akcija{display:none}
-          .arh-pogled-preklop button{padding:.46rem .66rem}
+          .arh-pogled-preklop{padding:.15rem}
+          .arh-pogled-preklop button{padding:.4rem .5rem}
           .arh-pp-ik{display:inline-flex}
           .arh-pp-txt{display:none}
           /* Tabela = kartični preliv (brez horizontalnega scrolla): naziv v svojo vrsto, meta se ovije */
