@@ -1127,9 +1127,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-kalk-zig-mob { display: none; }
         /* Mobile (<=640): NOV layout po skici — žig zgoraj-desno ob naslovu; spodaj okno LEVO + Pupa DESNO; gumb ČEZ na sredini. */
         @media (max-width: 640px) {
-          .fl-kalk-banner-in { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "txt txt" "viz lik"; align-items: end; row-gap: .7rem; min-height: 0; padding: clamp(1.4rem, 5vw, 2rem) clamp(1.4rem, 5vw, 2rem) 0; }
+          .fl-kalk-banner-in { display: grid; grid-template-columns: 1.4fr .75fr; grid-template-areas: "txt txt" "viz lik"; align-items: end; row-gap: .7rem; min-height: 0; padding: clamp(1.4rem, 5vw, 2rem) clamp(1.4rem, 5vw, 2rem) 0; }
           .fl-kalk-txt { grid-area: txt; max-width: 100%; padding: 0 6.5rem 0 0; }
-          .fl-kalk-viz { grid-area: viz; display: block; width: 100%; max-width: 100%; align-self: end; margin: 0; transform: none; }
+          .fl-kalk-viz { grid-area: viz; display: block; width: calc(100% + clamp(1.4rem, 5vw, 2rem)); max-width: none; align-self: end; margin: 0 0 0 calc(-1 * clamp(1.4rem, 5vw, 2rem)); transform: none; }
           .fl-kalk-viz .fl-kalk-zig { display: none; }
           .fl-kalk-lik { grid-area: lik; position: relative; right: auto; top: auto; bottom: auto; width: 100%; height: auto; aspect-ratio: 1 / 1.05; align-self: end; margin: 0 -.4rem -3px 0; }
           .fl-kalk-lik-img { transform: none !important; }
