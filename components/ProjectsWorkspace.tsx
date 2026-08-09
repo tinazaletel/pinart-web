@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom';
 import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, Paperclip } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
+import Paginacija from '@/components/Paginacija';
 import MetricIcon from '@/components/MetricIcon';
 import ProjectDetailModern from '@/components/ProjectDetailModern';
 import SwapText from '@/components/SwapText';
@@ -699,7 +700,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const visible = projects.filter(project => { const text = `${project.offer.title} ${project.offer.client} ${project.offer.number || ''}`.toLocaleLowerCase('sl-SI'); const match = text.includes(search.toLocaleLowerCase('sl-SI')); const state = filter === 'vse' || (filter === 'aktivni' ? project.offer.status === 'accepted' : filter === 'cakajo' ? project.offer.status === 'sent' : ['rejected'].includes(project.offer.status)); return match && state && vObdobju(project.offer.date, datumOd, datumDo); });
   /* paginacija seznama projektov (namesto neskončnega skrolanja) */
   const [projStran, setProjStran] = useState(1);
-  const NA_STRAN_PROJ = 12;
+  const NA_STRAN_PROJ = 10;
   const projStrani = Math.max(1, Math.ceil(visible.length / NA_STRAN_PROJ));
   const projStranA = Math.min(Math.max(1, projStran), projStrani);
   const projPrikaz = visible.slice((projStranA - 1) * NA_STRAN_PROJ, projStranA * NA_STRAN_PROJ);
@@ -1539,15 +1540,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   </button>
                 ); })}
               </div>
-              {projStrani > 1 && (
-                <nav className="pw-posta-strani pw-proj-strani" aria-label={L('Strani', 'Pages')}>
-                  <button type="button" disabled={projStranA <= 1} onClick={() => setProjStran(projStranA - 1)} aria-label={L('Prejšnja', 'Previous')}>‹</button>
-                  {Array.from({ length: projStrani }, (_, i) => i + 1).map(s => (
-                    <button type="button" key={s} className={s === projStranA ? 'on' : ''} onClick={() => setProjStran(s)} aria-current={s === projStranA ? 'page' : undefined}>{s}</button>
-                  ))}
-                  <button type="button" disabled={projStranA >= projStrani} onClick={() => setProjStran(projStranA + 1)} aria-label={L('Naslednja', 'Next')}>›</button>
-                </nav>
-              )}
+              <Paginacija stran={projStranA} strani={projStrani} naStran={setProjStran} />
             </div>
           ) : <p className="pw-prazno">{L('Ni projektov v tem pogledu.', 'No projects in this view.')}</p>}
         </div>
