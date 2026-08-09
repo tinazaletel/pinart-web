@@ -61,6 +61,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   const [posta, setPosta] = useState<PostaVnos[]>([]);
   const [mapa, setMapa] = useState<'prejeto' | 'poslano' | 'osnutki' | 'kos'>('prejeto');
   const [mapeOdprt, setMapeOdprt] = useState(false);
+  const [iskOdprt, setIskOdprt] = useState(false);
   const [postaIsk, setPostaIsk] = useState('');
   const [beriMail, setBeriMail] = useState<PostaVnos | null>(null);
   const [postaStran, setPostaStran] = useState(1);
@@ -214,12 +215,13 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
       {zavihek === 'posta' ? (
         <div className="km-posta-ovoj">
           <div className="km-posta-vrh">
-            <div className="km-iskalnik"><MagnifyingGlass size={15} weight="bold" /><input value={postaIsk} onChange={e => { setPostaIsk(e.target.value); setPostaStran(1); }} placeholder={L('Išči po pošti …', 'Search mail …')} aria-label={L('Išči', 'Search')} /></div>
-            <select className="km-prejemniki" value={postaOseba} onChange={e => { setPostaOseba(e.target.value); setPostaStran(1); setBeriMail(null); }} aria-label={L('Vsi prejemniki', 'All recipients')}>
+            <button type="button" className="km-isk-krog" onClick={() => setIskOdprt(true)} aria-label={L('Išči', 'Search')}><MagnifyingGlass size={16} weight="bold" /></button>
+            <div className={'km-iskalnik' + (iskOdprt ? ' odprt' : '')}><MagnifyingGlass size={15} weight="bold" /><input value={postaIsk} onChange={e => { setPostaIsk(e.target.value); setPostaStran(1); }} placeholder={L('Išči po pošti …', 'Search mail …')} aria-label={L('Išči', 'Search')} /><button type="button" className="km-isk-zapri" onClick={() => { setPostaIsk(''); setIskOdprt(false); }} aria-label={L('Zapri iskanje', 'Close search')}>✕</button></div>
+            <select className="km-prejemniki" value={postaOseba} onChange={e => { setPostaOseba(e.target.value); setPostaStran(1); setBeriMail(null); }} aria-label={L('Vsi prejemniki', 'All recipients')} title={L('Vsi prejemniki', 'All recipients')}>
               <option value="">{L('Vsi prejemniki', 'All recipients')}</option>
               {prejemnikiVsi.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
-            <button type="button" className="km-nova" title={L('Nova pošta z huba: najprej izbereš projekt, nato pišeš (pride z enotnim klijentom)', 'New mail from the hub: first pick a project, then compose (comes with the unified client)')}><PaperPlaneRight size={14} weight="fill" /> {L('Nova pošta', 'New mail')}</button>
+            <button type="button" className="km-nova" title={L('Nova pošta z huba: najprej izbereš projekt, nato pišeš (pride z enotnim klijentom)', 'New mail from the hub: first pick a project, then compose (comes with the unified client)')} aria-label={L('Nova pošta', 'New mail')}><PaperPlaneRight className="km-nova-ik" size={14} weight="fill" /> <span className="km-nova-txt">{L('Nova pošta', 'New mail')}</span><Plus className="km-nova-plus" size={18} weight="bold" /></button>
           </div>
           <div className="km-posta-body">
             <button type="button" className="km-mape-trig" onClick={() => setMapeOdprt(true)} aria-label={L('Mape', 'Folders')} aria-expanded={mapeOdprt}><List size={16} weight="bold" /> <span>{mapa === 'prejeto' ? L('Prejeto', 'Inbox') : mapa === 'poslano' ? L('Poslano', 'Sent') : mapa === 'osnutki' ? L('Osnutki', 'Drafts') : L('Koš', 'Trash')}</span></button>
@@ -425,7 +427,10 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-mail-smer.prejeto{color:oklch(48% .13 160)}
         .km-mail-proj{display:inline-flex;align-items:center;gap:.3rem;align-self:flex-start;margin-top:.1rem;max-width:100%;font:700 .64rem var(--font-sans),sans-serif;padding:.12rem .5rem .12rem .38rem;border-radius:999px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .km-mail-proj i{flex:none;width:.4rem;height:.4rem;border-radius:50%}
-        .km-posta-vrh{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem}
+        .km-posta-vrh{position:relative;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem}
+        .km-isk-krog{display:none}
+        .km-isk-zapri{display:none}
+        .km-nova-plus{display:none}
         .km-posta-vrh .km-iskalnik,.km-posta-vrh .km-prejemniki,.km-posta-vrh .km-nova{height:2.55rem;box-sizing:border-box;padding-top:0;padding-bottom:0}
         .km-posta-vrh .km-iskalnik{flex:1 1 15rem;margin-bottom:0}
         .km-prejemniki{flex:none;border:1px solid var(--k-line);border-radius:999px;padding:.5rem .9rem;font:600 .8rem var(--font-sans),sans-serif;color:var(--k-ink);background:#fff;cursor:pointer}
@@ -445,10 +450,16 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-posta-desno{flex:1;min-width:0}
         .km-mape-trig{display:none}
         @media (max-width:760px){
-          .km-posta-vrh{flex-wrap:nowrap;gap:.45rem}
-          .km-posta-vrh .km-iskalnik{flex:1 1 4rem;min-width:0}
-          .km-prejemniki{flex:none;max-width:8.2rem;padding:.5rem .6rem;font-size:.72rem}
-          .km-nova{flex:none;font-size:0;gap:0;padding:.6rem .75rem}
+          .km-posta-vrh{flex-wrap:nowrap;gap:.45rem;justify-content:flex-start}
+          .km-isk-krog{display:inline-flex;align-items:center;justify-content:center;flex:none;width:2.9rem;height:2.9rem;border-radius:50%;border:1px solid var(--k-line);background:#fff;color:var(--k-ink);cursor:pointer}
+          .km-iskalnik{display:none;margin-bottom:0}
+          .km-iskalnik.odprt{display:flex;position:absolute;left:0;right:0;top:0;z-index:6;margin:0;height:2.9rem;box-sizing:border-box}
+          .km-iskalnik.odprt input{font-size:16px}
+          .km-isk-zapri{display:inline-flex;align-items:center;justify-content:center;flex:none;border:0;background:none;color:var(--k-ink);font-size:1rem;line-height:1;cursor:pointer;padding:.2rem .3rem}
+          .km-prejemniki{flex:none;width:2.9rem;height:2.9rem;padding:0;text-indent:-9999px;overflow:hidden;-webkit-appearance:none;appearance:none;color:transparent;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 256 256' fill='%23111'%3E%3Cpath d='M230 60a14 14 0 0 1-14 14H40a14 14 0 0 1 0-28h176a14 14 0 0 1 14 14Zm-30 54H56a14 14 0 0 0 0 28h144a14 14 0 0 0 0-28Zm-40 68h-64a14 14 0 0 0 0 28h64a14 14 0 0 0 0-28Z'/%3E%3C/svg%3E") no-repeat center;background-size:1.05rem}
+          .km-nova{flex:none;width:2.9rem;height:2.9rem;padding:0;gap:0;justify-content:center}
+          .km-nova-ik,.km-nova-txt{display:none}
+          .km-nova-plus{display:inline-flex}
           .km-posta-body{flex-direction:column}
           .km-mape-trig{display:inline-flex;align-items:center;gap:.45rem;align-self:flex-start;border:1px solid var(--k-line);border-radius:999px;padding:.5rem .95rem;background:#fff;color:var(--k-ink);font:700 .8rem var(--font-sans),sans-serif;cursor:pointer}
           .km-mape-back{position:fixed;inset:0;z-index:69;background:color-mix(in oklch,var(--k-ink) 34%,transparent);animation:kmFade .2s ease both}
