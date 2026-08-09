@@ -6182,7 +6182,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* enoten CGP videz: ziva sredina -> mehko v prosojno rob, ena bela svetloba zgoraj levo */
         .cw .orb0 .zar0 { position: absolute; inset: -14%; border-radius: 50%; z-index: 0; pointer-events: none; transform-origin: center; background: radial-gradient(54% 48% at 33% 27%, rgba(255,255,255,.72), rgba(255,255,255,0) 62%), radial-gradient(circle at 50% 52%, var(--o2, #C084FC) 0%, var(--o1, #7C3AED) 46%, transparent 73%); filter: blur(5px); opacity: .96; transition: opacity .3s ease, filter .3s ease, transform .3s cubic-bezier(.16,1,.3,1); }
         .cw .orb0:hover .zar0 { opacity: 1; filter: blur(3px); }
-        .cw .orb0:hover { filter: brightness(1.09) saturate(1.12) drop-shadow(0 12px 26px rgba(40,25,60,.3)); z-index: 3; }
+        .cw .orb0:hover { filter: brightness(1.05) saturate(1.08) drop-shadow(0 8px 18px rgba(40,25,60,.16)); z-index: 3; }
         /* CGP-krogla (inline SVG) — senca + gradient + svetloba vrisani; zapolni orb (senca ~33% okoli) */
         .cw .orb0 .orb0-sfera { position: absolute; top: -22%; left: -22%; width: 144%; height: 144%; z-index: 0; pointer-events: none; }
         .cw .orb0::before { display: none; }  /* SVG krogla ima svojo svetlobo */
@@ -6191,7 +6191,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
            mehurcek zapolni mesto; skrijemo CSS sijaj in odsev. */
         .cw .orb0-foto { background: none; }
         .cw .orb0-foto::before { display: none; }
-        .cw .orb0-foto .orb0-svg { position: absolute; top: -24%; left: -24%; width: 148%; height: 148%; z-index: 0; pointer-events: none; -webkit-user-drag: none; user-select: none; }
+        .cw .orb0-foto .orb0-svg { position: absolute; top: -24%; left: -24%; width: 148%; height: 148%; z-index: 0; pointer-events: none; -webkit-user-drag: none; user-select: none; transform-origin: center; transition: transform .28s cubic-bezier(.16,1,.3,1), filter .28s ease; }
+        .cw .orb0-foto:hover .orb0-svg { transform: scale(1.1); filter: brightness(1.05) saturate(1.12); }
         .cw .orb0 .orb0-ikona { position: relative; z-index: 1; display: block; margin-bottom: .12rem; filter: drop-shadow(0 1px 2px rgba(35,18,45,.45)); }
         .cw .orb0 .orb0-ikona svg { width: 24px; height: 24px; display: block; }
         .cw .orb0 .orb0-ime { position: relative; z-index: 1; font-weight: 700; font-size: .86rem; line-height: 1.12; padding: 0 1.1em; text-shadow: 0 1px 3px rgba(35,18,45,.5); }
@@ -8315,10 +8316,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                   <span className="chat-mehur"><b>{L('V imenu katerega podjetja izdajaš ponudbo?', 'On behalf of which company are you issuing the quote?')}</b><small>{L('Podatki za glavo ponudbe. Obvezno je le ime — če nimaš podjetja, vpiši svoje ime. Ostalo izpolni, kar imaš (lahko dopolniš pozneje).', 'Details for the quote header. Only the name is required — if you don\'t have a company, enter your own name. Fill in the rest as you have it (you can complete it later).')}</small></span></div>
               )}
-              {/* urejevalni mehurcek za podjetje (kot pri imenu/izkusnjah): ce onboarding
-                  ni bil dokoncan (uvodChat=false), da se podjetje vseeno vpisati/popraviti
-                  kar tu — ne le prek bannerja na plosci */}
-              {chatKorak > 2 && uvodOdgovorMehur(2, ponudnik.ime || L('—', '—'))}
               {uvodChat && chatKorak === 2 && (
                 <form className="uv-forma" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
                   <div className="uv-polje uv-polje-siroko">
