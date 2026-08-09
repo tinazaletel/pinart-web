@@ -1123,7 +1123,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           .fl-kalk-viz { width: 300px; max-width: 37vw; }
           .fl-kalk-lik { width: clamp(10rem, 24vw, 15rem); }
           .fl-kalk-lik-img { transform: none !important; }
-          .fl-kalk-lik-img.a { transform: scale(1.35) !important; transform-origin: right bottom; }
+          .fl-kalk-lik-img.a { transform: scale(1.75) !important; transform-origin: right bottom; }
         }
         .fl-kalk-zig-mob { display: none; }
         /* Mobile (<=640): NOV layout po skici — žig zgoraj-desno ob naslovu; spodaj okno LEVO + Pupa DESNO; gumb ČEZ na sredini. */
