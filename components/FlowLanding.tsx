@@ -1069,8 +1069,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* Ilustracija = web okno + zaključena zgodba: vprašalnik -> mehurčki cen -> znesek na oblikovanem listu (zanka 11s). */
         .fl-kalk-viz { position: relative; flex: none; width: 420px; max-width: 46vw; align-self: flex-end; margin-top: 1.6rem; margin-bottom: -3px; transform: translateX(-20px); }
         /* Pupa lik: absoluten (ne veča višine), odrezan do pasu (overflow), dve sliki cross-fade. */
-        .fl-kalk-lik { position: absolute; right: 0; bottom: 0; height: 100%; width: 0; pointer-events: none; z-index: 3; }
-        .fl-kalk-lik-img { position: absolute; right: -.5rem; bottom: -2px; height: 116%; width: auto; opacity: 0; will-change: opacity; }
+        .fl-kalk-lik { position: absolute; right: 1.5rem; bottom: 0; width: clamp(11rem, 20vw, 16rem); z-index: 3; pointer-events: none; }
+        .fl-kalk-lik-img { position: absolute; right: 0; bottom: 0; display: block; width: 100%; height: auto; opacity: 0; will-change: opacity; }
         .fl-kalk-lik-img.a { animation: flLikA 9s ease-in-out infinite; }
         .fl-kalk-lik-img.b { animation: flLikB 9s ease-in-out infinite; }
         @keyframes flLikA { 0%, 42% { opacity: 1; } 50%, 92% { opacity: 0; } 100% { opacity: 1; } }
