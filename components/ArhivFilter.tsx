@@ -243,8 +243,10 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       .af-akcija-gumb{display:inline-flex;align-items:center;justify-content:center;gap:.3rem;white-space:nowrap;padding:.7rem 1.1rem;border:none;border-radius:999px;background-color:var(--ink,#111);color:var(--paper,#fff);font:inherit;font-size:.82rem;font-weight:700;text-decoration:none;cursor:pointer;transition:transform .15s,opacity .15s}
       .af-akcija-gumb:hover{transform:translateY(-1px);opacity:.92}
       @media (max-width:640px){
-        .af-akcija-dodaj{width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;font-size:0;display:grid;place-items:center;line-height:0}
-        .af-akcija-dodaj::before{content:'+';grid-area:1/1;font-size:1.6rem;font-weight:700;line-height:1}
+        .af-akcija-dodaj{position:relative;width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;font-size:0}
+        .af-akcija-dodaj::before,.af-akcija-dodaj::after{content:'';position:absolute;top:50%;left:50%;background:currentColor;border-radius:2px}
+        .af-akcija-dodaj::before{width:1rem;height:2.2px;transform:translate(-50%,-50%)}
+        .af-akcija-dodaj::after{width:2.2px;height:1rem;transform:translate(-50%,-50%)}
       }
 
       .af-krog{position:relative;display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;padding:0;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);border-radius:50%;background-color:color-mix(in oklch,var(--paper,#fff) 70%,transparent);color:var(--ink,#111);cursor:pointer;transition:background-color .15s,color .15s}
