@@ -1051,7 +1051,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         /* Banner brezplacnega kalkulatorja — TEMEN, z animiranim gradientom + lebdecimi zarki.
            BREZ lastnega max-width/padding — poravna se s sekcijami znotraj .fl-oder (sicer "stopnicka"). */
         .fl-kalk-banner { margin: clamp(3rem, 7vw, 5.5rem) 0 0; }
-        .fl-kalk-banner-in { position: relative; overflow: hidden; display: flex; align-items: flex-end; gap: clamp(1rem, 2.6vw, 2.2rem); flex-wrap: wrap; padding: clamp(1.5rem, 3vw, 2.3rem) clamp(1.8rem, 4vw, 3.2rem) 0; min-height: 202px; border-radius: 24px; border: 1px solid oklch(62% .18 297 / .35); color: #fff; background: linear-gradient(120deg, #17102e 0%, #2a1657 26%, #3a1d78 50%, #221247 74%, #17102e 100%); background-size: 280% 280%; animation: flKalkGrad 16s ease-in-out infinite; box-shadow: 0 24px 60px oklch(30% .1 297 / .25); }
+        .fl-kalk-banner-in { position: relative; overflow: hidden; display: flex; align-items: flex-end; gap: clamp(1rem, 2.6vw, 2.2rem); flex-wrap: wrap; padding: clamp(1.5rem, 3vw, 2.3rem) clamp(1.8rem, 4vw, 3.2rem) 0; min-height: 202px; border-radius: 24px; border: none; color: #fff; background: linear-gradient(120deg, #17102e 0%, #2a1657 26%, #3a1d78 50%, #221247 74%, #17102e 100%); background-size: 280% 280%; animation: flKalkGrad 16s ease-in-out infinite; box-shadow: 0 24px 60px oklch(30% .1 297 / .25); }
         .fl-kalk-banner-in::before { content: ""; position: absolute; inset: -40%; z-index: 0; pointer-events: none; background: radial-gradient(40% 55% at 30% 40%, oklch(70% .18 297 / .5), transparent 70%), radial-gradient(38% 50% at 78% 66%, oklch(74% .15 200 / .4), transparent 72%); animation: flKalkBlob 18s ease-in-out infinite alternate; }
         .fl-kalk-banner-in > * { position: relative; z-index: 1; }
         @keyframes flKalkGrad { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
@@ -1104,7 +1104,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-kv-orb i { font-style: normal; font-size: .5rem; font-weight: 700; line-height: 1.05; }
         .fl-kv-orb.o1 { width: 84px; height: 84px; left: 40px; top: 8px; --c1: oklch(72% .16 300); --c2: oklch(55% .17 288); }
         .fl-kv-orb.o2 { width: 74px; height: 74px; left: 172px; top: 84px; --c1: oklch(80% .13 200); --c2: oklch(62% .15 220); animation-delay: -2s; }
-        .fl-kv-orb.o3 { width: 80px; height: 80px; right: 4px; top: 18px; --c1: oklch(80% .13 60); --c2: oklch(66% .16 45); animation-delay: -3s; }
+        .fl-kv-orb.o3 { width: 80px; height: 80px; right: 40px; top: 18px; --c1: oklch(80% .13 60); --c2: oklch(66% .16 45); animation-delay: -3s; }
         /* faza 3 — znesek + oblikovan list */
         .fl-kv-doc { width: 158px; padding: .72rem .78rem .82rem; border-radius: 12px; background: #fff; box-shadow: 0 12px 26px rgba(20,10,40,.28); display: grid; gap: .42rem; }
         .fl-kv-doc-h { height: 12px; width: 60%; border-radius: 4px; background: linear-gradient(90deg, oklch(66% .2 297), oklch(70% .16 330)); }
