@@ -1418,7 +1418,10 @@
   .workspace { padding-inline: .5rem; }
   .topbar h1 { font-size: 2.3rem; overflow-wrap: anywhere; }
   .flowTools, .resultsGrid, .quickActions, .businessPulse,
-  .invoiceSummary, .expenseSummary { grid-template-columns: 1fr; }
+  .invoiceSummary { grid-template-columns: 1fr; }
+  .expenseSummary { grid-template-columns: 1fr 1fr; }
+  .expenseSummary article strong, .expenseSummary > button strong { font-size: 1.45rem; }
+  .expenseSummary > * { min-height: 6.5rem; padding: .8rem; }
   .donutPanel, .resultsGrid .goalPanel, .resultsGrid .waitingPanel,
   .clientResult, .businessIntro { grid-column: 1; }
   .flowTools > * { min-height: 9rem; }
@@ -2100,7 +2103,8 @@
   .topbar h1 { font-size: clamp(1.45rem, 6vw, 2rem); overflow-wrap: anywhere; }
   /* kartice in mreze: en stolpec, brez fiksnih minimumov */
   .flowTools, .resultsGrid, .quickActions, .businessPulse, .summary,
-  .expenseSummary, .invoiceSummary { grid-template-columns: minmax(0, 1fr) !important; }
+  .invoiceSummary { grid-template-columns: minmax(0, 1fr) !important; }
+  .expenseSummary { grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important; }
   .flowTools > *, .resultsGrid > *, .quickActions > *, .businessPulse > * { min-width: 0; }
   .previewBar { position: static; width: auto; margin: 0 0 1rem; }
   /* vodoravni drs samo tam, kjer je res potreben (tabele) */
