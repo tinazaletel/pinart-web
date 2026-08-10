@@ -361,18 +361,113 @@ export function mergeFlowData(cloud: FlowData, local: FlowData): FlowData {
   };
 }
 
+const BUSINESS_DOCUMENT_BUCKET = 'business-documents';
+const MAX_BUSINESS_DOCUMENT_BYTES = 25 * 1024 * 1024;
+const MAX_SIGNED_URL_SECONDS = 3600;
+const ALLOWED_BUSINESS_DOCUMENT_TYPES: Record<string, readonly string[]> = {
+  pdf: ['application/pdf'],
+  png: ['image/png'],
+  jpg: ['image/jpeg'],
+  jpeg: ['image/jpeg'],
+  webp: ['image/webp'],
+  docx: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+  xlsx: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+  csv: ['text/csv', 'application/csv'],
+  zip: ['application/zip', 'application/x-zip-compressed'],
+};
+
+export type BusinessDocumentFile = {
+  id: string;
+  organizationId: string;
+  uploadedBy: string;
+  bucket: string;
+  path: string;
+  name: string;
+  mime: string;
+  size: number;
+  section: string;
+  externalId: string;
+  scanStatus: 'pending' | 'clean' | 'infected';
+  createdAt: string;
+};
+
+function safePathSegment(value: string, label: string): string {
+  const cleaned = value.trim().replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+  if (!cleaned || value.includes('..') || value.startsWith('.')) throw new Error(`${label} ni veljaven.`);
+  return cleaned;
+}
+
+function validateBusinessDocument(file: File): { safeName: string; mime: string } {
+  const originalName = file.name.trim();
+  if (!originalName || originalName.length > 180 || originalName.startsWith('.') || originalName.includes('..')) {
+    throw new Error('Ime datoteke ni veljavno ali je predolgo.');
+  }
+  if (file.size <= 0 || file.size > MAX_BUSINESS_DOCUMENT_BYTES) {
+    throw new Error('Datoteka mora biti manjša od 25 MB.');
+  }
+  const extension = originalName.split('.').pop()?.toLowerCase() || '';
+  const allowedMime = ALLOWED_BUSINESS_DOCUMENT_TYPES[extension];
+  const mime = file.type.trim().toLowerCase();
+  if (!allowedMime || !mime || !allowedMime.includes(mime)) {
+    throw new Error('Dovoljene so datoteke PDF, PNG, JPG, WEBP, DOCX, XLSX, CSV in ZIP.');
+  }
+  const safeName = originalName.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^\.+/, '').slice(0, 180);
+  if (!safeName || safeName.includes('..')) throw new Error('Ime datoteke ni veljavno.');
+  return { safeName, mime };
+}
+
 export async function uploadBusinessDocument(file: File, section: string, externalId: string): Promise<string> {
   const context = await getOrganizationContext();
   if (!context) throw new Error('Prijava je potekla.');
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-');
-  const path = `${context.organizationId}/${section}/${externalId}/${Date.now()}-${safeName}`;
-  const { error } = await createClient().storage.from('business-documents').upload(path, file, { upsert: false });
+  const { safeName, mime } = validateBusinessDocument(file);
+  const safeSection = safePathSegment(section, 'Vrsta dokumenta');
+  const safeExternalId = safePathSegment(externalId, 'Povezava dokumenta');
+  const path = `${context.organizationId}/${safeSection}/${safeExternalId}/${Date.now()}-${safeName}`;
+  const supabase = createClient();
+  const { error } = await supabase.storage.from(BUSINESS_DOCUMENT_BUCKET).upload(path, file, {
+    upsert: false,
+    contentType: mime,
+  });
   if (error) throw error;
+  /* Ob lansiranju AV pregled še ni aktiven, zato je začetno stanje clean.
+     Ko bo worker priklopljen, se tu zamenja v pending, scan API pa ga zaključi. */
+  const { error: metadataError } = await supabase.from('document_files').insert({
+    organization_id: context.organizationId,
+    uploaded_by: context.userId,
+    bucket: BUSINESS_DOCUMENT_BUCKET,
+    path,
+    original_name: file.name,
+    mime,
+    size_bytes: file.size,
+    section: safeSection,
+    external_id: safeExternalId,
+    scan_status: 'clean',
+  });
+  if (metadataError) {
+    await supabase.storage.from(BUSINESS_DOCUMENT_BUCKET).remove([path]);
+    throw metadataError;
+  }
   return path;
 }
 
 export async function getBusinessDocumentUrl(path: string, expiresIn = 60): Promise<string> {
-  const { data, error } = await createClient().storage.from('business-documents').createSignedUrl(path, expiresIn);
+  const context = await getOrganizationContext();
+  if (!context) throw new Error('Prijava je potekla.');
+  if (!path.startsWith(`${context.organizationId}/`) || path.includes('..')) {
+    throw new Error('Datoteka ne pripada aktivni organizaciji.');
+  }
+  const supabase = createClient();
+  const { data: document, error: documentError } = await supabase
+    .from('document_files')
+    .select('bucket,scan_status,deleted_at')
+    .eq('organization_id', context.organizationId)
+    .eq('path', path)
+    .maybeSingle();
+  if (documentError) throw documentError;
+  if (!document || document.deleted_at) throw new Error('Datoteka ne obstaja ali je arhivirana.');
+  if (document.scan_status !== 'clean') throw new Error('Datoteka še ni varnostno potrjena.');
+  const seconds = Math.min(MAX_SIGNED_URL_SECONDS, Math.max(1, Number.isFinite(expiresIn) ? Math.floor(expiresIn) : 60));
+  const { data, error } = await supabase.storage.from(document.bucket).createSignedUrl(path, seconds);
   if (error) throw error;
   return data.signedUrl;
 }
@@ -380,9 +475,38 @@ export async function getBusinessDocumentUrl(path: string, expiresIn = 60): Prom
 export async function deleteBusinessDocument(path: string): Promise<void> {
   const context = await getOrganizationContext();
   if (!context) throw new Error('Prijava je potekla.');
-  if (!path.startsWith(`${context.organizationId}/`)) throw new Error('Datoteka ne pripada aktivni organizaciji.');
-  const { error } = await createClient().storage.from('business-documents').remove([path]);
+  if (!path.startsWith(`${context.organizationId}/`) || path.includes('..')) throw new Error('Datoteka ne pripada aktivni organizaciji.');
+  /* Storage objekt ostane za obnovitev/backup. Trajni purge je dovoljen le
+     prihodnji administratorski poti s service-role ključem. */
+  const { data, error } = await createClient().rpc('archive_document_file', {
+    p_organization_id: context.organizationId,
+    p_path: path,
+  });
   if (error) throw error;
+  if (data !== true) throw new Error('Datoteka ne obstaja ali je že arhivirana.');
+}
+
+export async function listOrgFiles(): Promise<BusinessDocumentFile[]> {
+  const context = await getOrganizationContext();
+  if (!context) throw new Error('Prijava je potekla.');
+  const { data, error } = await createClient().from('document_files').select(
+    'id,organization_id,uploaded_by,bucket,path,original_name,mime,size_bytes,section,external_id,scan_status,created_at',
+  ).eq('organization_id', context.organizationId).is('deleted_at', null).order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(item => ({
+    id: String(item.id),
+    organizationId: String(item.organization_id),
+    uploadedBy: String(item.uploaded_by),
+    bucket: String(item.bucket),
+    path: String(item.path),
+    name: String(item.original_name),
+    mime: String(item.mime),
+    size: Number(item.size_bytes),
+    section: String(item.section),
+    externalId: String(item.external_id),
+    scanStatus: item.scan_status as BusinessDocumentFile['scanStatus'],
+    createdAt: String(item.created_at),
+  }));
 }
 
 export async function saveCloudSettings(settings: Partial<CloudSettings>): Promise<void> {
