@@ -90,6 +90,7 @@ const overflowFix = `
 .${styles.projectsPage} > *{min-width:0;}
 .${styles.projectsToolbar} > label{min-width:0;}
 .${styles.projectsToolbar} input{width:100%;min-width:0;box-sizing:border-box;}
+.${styles.projectStory}{min-width:0;max-width:100%;overflow-x:clip;}
 .${styles.projectStory} h2,
 .${styles.projectStory} > header span{overflow-wrap:anywhere;}
 @media (max-width:640px){

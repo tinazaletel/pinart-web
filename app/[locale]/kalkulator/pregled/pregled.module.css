@@ -1329,7 +1329,7 @@
   .brand { overflow: hidden; }
   .brand > span:not(.brandMark), .brand small { flex: 0 0 auto; }
   .closeApp { min-height: 2.75rem; display: inline-flex; align-items: center; }
-  .workspace { padding: 2.2rem .9rem 3rem; }
+  .workspace { padding: 2.2rem .5rem 3rem; }
   .previewBar { align-items: flex-start; flex-direction: column; }
   .topbar { align-items: start; flex-wrap: wrap; gap: 1rem; }
   .topbar > div:first-child { min-width: 0; }
@@ -1415,7 +1415,7 @@
   .brand strong { font-size: .82rem; }
   .closeApp { padding-left: .45rem; }
   .mobileMenu summary { padding-inline: .85rem; }
-  .workspace { padding-inline: .75rem; }
+  .workspace { padding-inline: .5rem; }
   .topbar h1 { font-size: 2.3rem; overflow-wrap: anywhere; }
   .flowTools, .resultsGrid, .quickActions, .businessPulse,
   .invoiceSummary, .expenseSummary { grid-template-columns: 1fr; }
