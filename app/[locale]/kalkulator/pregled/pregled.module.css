@@ -765,6 +765,9 @@
 .expenseSwipeBrisi { background: oklch(57% .2 27); }
 .expenseList article:hover { background: #fff; }
 .expenseList article.expenseRowSel { background: oklch(96.5% .022 300); }
+/* tap-odziv (tap na vrstico = uredi): rahla vijola osvetlitev ob dotiku + brez sivega iOS highlighta */
+.expenseSwipe { -webkit-tap-highlight-color: transparent; }
+.expenseList article:active { background: oklch(95.5% .03 300); }
 .expenseChk { width: 1.05rem; height: 1.05rem; flex: none; accent-color: oklch(58% .18 300); cursor: pointer; }
 .expenseSelAll { display: inline-flex; align-items: center; gap: .5rem; margin: .1rem 0 .55rem; font-size: .72rem; font-weight: 700; color: var(--muted); cursor: pointer; }
 .expenseSelAll span { user-select: none; }
@@ -798,6 +801,14 @@
 .expenseList .expenseDelete { border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent); background: #fff; color: oklch(52% .16 25); }
 .expenseList .expenseDelete:hover { border-color: oklch(52% .16 25); background: oklch(95% .04 25); }
 .expenseCoin { display: grid; place-items: center; width: 2rem; aspect-ratio: 1; border-radius: 50%; background: var(--ink); color: var(--paper); font: 700 .7rem var(--font-sans), sans-serif; }
+/* prazno stanje (ni stroškov) — ikona + poziv + gumb */
+.expenseEmpty { display: grid; justify-items: center; gap: .5rem; padding: 2.75rem 1rem; text-align: center; }
+.expenseEmptyIkona { display: grid; place-items: center; width: 3.1rem; height: 3.1rem; border-radius: 50%; background: oklch(96% .02 300); color: oklch(48% .12 300); }
+.expenseEmpty strong { font: 500 clamp(1.25rem, 4vw, 1.5rem)/1 var(--font-serif), Georgia, serif; }
+.expenseEmpty p { max-width: 20rem; color: var(--muted); font-size: .72rem; line-height: 1.5; }
+.expenseEmpty button { margin-top: .35rem; padding: .6rem 1.3rem; border: 1px solid var(--ink); border-radius: 999px; background: var(--ink); color: var(--paper); font: 700 .66rem var(--font-sans), sans-serif; cursor: pointer; }
+/* plavajoči + (Dodaj strošek) — samo mobile; skrit ob izbiri/urejanju (pogojeno v JSX) */
+.expenseFab { display: none; }
 /* ── Znacke stroska: urejevalnik (izbrane + prosti vnos + predlogi) ── */
 .expenseTagsLabel { grid-column: 1 / -1; }
 .expenseTagsBox { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; min-height: 2.65rem; padding: .35rem .5rem; border: 1px solid var(--line); border-radius: .65rem; background: oklch(100% 0 0 / .8); }
@@ -1467,6 +1478,8 @@
   .expenseList article > :nth-child(1) { grid-area: chk; align-self: center; }
   /* večji checkbox na mobile, da ga je lahko zadeti (tap drugod po vrstici = odpre urejanje) */
   .expenseList .expenseChk { width: 1.4rem; height: 1.4rem; }
+  /* plavajoči + (Dodaj strošek) — desno spodaj, nad varno cono */
+  .expenseFab { display: inline-flex; align-items: center; justify-content: center; position: fixed; right: 1rem; bottom: calc(1.1rem + env(safe-area-inset-bottom, 0px)); z-index: 55; width: 3.2rem; height: 3.2rem; padding: 0; border: 0; border-radius: 50%; background: var(--ink); color: var(--paper); box-shadow: 0 10px 26px rgba(40,25,40,.34); cursor: pointer; }
   .expenseList article > :nth-child(2) { grid-area: coin; align-self: center; }
   .expenseList article > :nth-child(3) { grid-area: naziv; min-width: 0; }
   .expenseList article > :nth-child(4) { grid-area: znesek; text-align: right; min-width: 0; }
