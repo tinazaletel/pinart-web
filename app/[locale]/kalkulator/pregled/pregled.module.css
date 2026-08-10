@@ -1444,6 +1444,8 @@
   .expenseList article > :nth-child(5) { grid-area: kebab; align-self: center; justify-self: end; }
   .expenseList .expenseCoin { display: none; }
   .expenseEditor, .expenseArchive, .recurringCosts { padding-left: .35rem; padding-right: .35rem; }
+  /* Uredi strošek = samostojna stran: skrij povzetek + seznam, prikaži le urejevalnik */
+  .expense-editing .expenseSummary, .expense-editing .expenseArchive { display: none; }
   /* Tretji stolpec za puscico: pri dveh stolpcih je kot 4. otrok padla v novo vrstico
      in obvisela spodaj levo — videti je bila kot okrasek, ki ne vodi nikamor. */
   .clientDirectory > button, .projectIndex > button { grid-template-columns: auto minmax(0, 1fr) auto; }
