@@ -199,6 +199,9 @@ export default function Pupa() {
 
   if (!mounted) return null;
   if (stanje === 'izklopljena') return null;   /* izklopljena v Nastavitvah -> brez gumba */
+  /* Pred prijavo (login stran) Pupa ne sme biti vidna — je plačljiva/za prijavljene. Edina
+     neprijavljena stran pod /kalkulator je /prijava (drugam middleware preusmeri). */
+  if (/\/kalkulator\/prijava(\/|$)/.test(pathname)) return null;
 
   return createPortal(
     <>
