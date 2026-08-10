@@ -284,7 +284,10 @@ export async function pullFlowData(): Promise<FlowData | null> {
       items: Array.isArray(row.items) ? row.items : undefined, issuedAt: row.issued_at || undefined,
       version: row.version ? Number(row.version) : undefined, supersedesId: row.supersedes_id || undefined,
       stornoOfId: row.storno_of_id || undefined, cancelledAt: row.cancelled_at || undefined,
-      cancelReason: row.cancel_reason || undefined, deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined,
+      cancelReason: row.cancel_reason || undefined,
+      fiscalConfirmedAt: row.fiscal_confirmed_at || undefined, fiscalEor: row.fiscal_eor || undefined,
+      fiscalZoi: row.fiscal_zoi || undefined, fiscalProvider: row.fiscal_provider || undefined,
+      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined,
     })),
     expenses: (expensesResult.data || []).map(row => ({
       id: String(row.external_id || row.id), title: String(row.title), client: row.client_id ? clientNameById.get(String(row.client_id)) : undefined,

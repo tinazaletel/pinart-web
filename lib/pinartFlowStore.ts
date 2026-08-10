@@ -74,9 +74,28 @@ export type FlowInvoice = {
   stornoOfId?: string;
   cancelledAt?: string;
   cancelReason?: string;
+  /* Davcna potrditev je locena od internega zivljenjskega cikla dokumenta. */
+  fiscalConfirmedAt?: string;
+  fiscalEor?: string;
+  fiscalZoi?: string;
+  fiscalProvider?: string;
   deletedAt?: string;
   deletedBy?: string;
 };
+
+export type DavcniStatus = 'osnutek' | 'izdan' | 'placan';
+
+export function davcniStatus(invoice: Pick<FlowInvoice, 'paid' | 'status' | 'issuedAt'>): DavcniStatus {
+  if (invoice.paid || invoice.status === 'paid') return 'placan';
+  if (invoice.issuedAt || invoice.status === 'sent' || invoice.status === 'overdue' || invoice.status === 'cancelled') return 'izdan';
+  return 'osnutek';
+}
+
+export function jeDavcnoPotrjen(
+  invoice: Pick<FlowInvoice, 'fiscalConfirmedAt' | 'fiscalEor' | 'fiscalZoi'>,
+): boolean {
+  return Boolean(invoice.fiscalConfirmedAt?.trim() && invoice.fiscalEor?.trim() && invoice.fiscalZoi?.trim());
+}
 
 export type FlowExpense = {
   id: string;
