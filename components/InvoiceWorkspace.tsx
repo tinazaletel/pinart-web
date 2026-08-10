@@ -781,12 +781,12 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           {vrstice.map((v, i) => <Fragment key={i}>
             <div className={'rc-vrstica' + (ddvZavezanec ? '' : ' rc-brez-ddv')}>
               <label className="rc-opis">{L('Opis', 'Description')}<input required={i === 0} value={v.opis} onChange={event => popraviVrstico(i, 'opis', event.target.value)} placeholder={L('Opravljena storitev, obseg ali obdobje …', 'Service provided, scope or period …')} /></label>
-              <label>{L('Kol.', 'Qty.')}<input required min="0" step="0.5" type="number" inputMode="numeric" placeholder="1" value={v.kolicina} onChange={event => popraviVrstico(i, 'kolicina', event.target.value)} /></label>
-              <label>{L(`Cena brez ${davOzn}`, `Price excl. ${davOzn}`)}<input required={i === 0} min="0" step="0.01" type="number" inputMode="decimal" placeholder="0,00" value={v.cena} onChange={event => popraviVrstico(i, 'cena', event.target.value)} /></label>
-              <label>{L('Popust %', 'Discount %')}<input min="0" max="100" step="0.5" type="number" inputMode="decimal" value={v.popust} onChange={event => popraviVrstico(i, 'popust', event.target.value)} placeholder="0" /></label>
+              <label className="rc-kolicina">{L('Kol.', 'Qty.')}<input required min="0" step="0.5" type="number" inputMode="numeric" placeholder="1" value={v.kolicina} onChange={event => popraviVrstico(i, 'kolicina', event.target.value)} /></label>
+              <label className="rc-cena">{L(`Cena brez ${davOzn}`, `Price excl. ${davOzn}`)}<input required={i === 0} min="0" step="0.01" type="number" inputMode="decimal" placeholder="0,00" value={v.cena} onChange={event => popraviVrstico(i, 'cena', event.target.value)} /></label>
+              <label className="rc-popust">{L('Popust %', 'Discount %')}<input min="0" max="100" step="0.5" type="number" inputMode="decimal" value={v.popust} onChange={event => popraviVrstico(i, 'popust', event.target.value)} placeholder="0" /></label>
               {ddvZavezanec && (valuta === 'eur'
-                ? <label>{davOzn}<select value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)}>{DDV_STOPNJE.map(s => <option key={s} value={s}>{s.replace('.', ',')} %</option>)}</select></label>
-                : <label>{L(`${davOzn} %`, `${davOzn} %`)}<input min="0" max="30" step="0.1" type="number" inputMode="decimal" placeholder="0" value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)} /></label>)}
+                ? <label className="rc-davek">{davOzn}<select value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)}>{DDV_STOPNJE.map(s => <option key={s} value={s}>{s.replace('.', ',')} %</option>)}</select></label>
+                : <label className="rc-davek">{L(`${davOzn} %`, `${davOzn} %`)}<input min="0" max="30" step="0.1" type="number" inputMode="decimal" placeholder="0" value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)} /></label>)}
               {ddvZavezanec && valuta === 'eur' && (() => { const p = predlagajDdv(v.opis, v.ddv); return p ? <button type="button" className="rc-ddv-namig" title={`${p.razlog} ${L('(predlog, ne davčni nasvet)', '(suggestion, not tax advice)')}`} onClick={() => popraviVrstico(i, 'ddv', p.stopnja)}>💡 {p.stopnja.replace('.', ',')} %?</button> : null; })()}
               <span className="rc-znesek"><em>{L('Znesek', 'Amount')}</em><b>{eur2(vrsticaZnesek(izracun.postavke[i] || { opis: '', kolicina: 0, cena: 0 }))}</b></span>
               <button type="button" className="rc-x" onClick={() => setVrstice(rows => rows.length > 1 ? rows.filter((_, j) => j !== i) : rows)} aria-label={`${L('Odstrani postavko', 'Remove item')} ${i + 1}`} title={L('Odstrani postavko', 'Remove item')} disabled={vrstice.length < 2}>×</button>
@@ -904,7 +904,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     <style>{`
       /* rc- = novi stili obrazca za racun; pazi na .shell pravila (min-height 2.75rem
          na inputih, select padding-right 3rem !important) — mere so temu prilagojene. */
-      .rc{--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
+      .rc{min-width:0;max-width:100%;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
       .rc .rc-postavke{min-width:0;padding:1rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.9rem;background:linear-gradient(135deg,oklch(98% .018 87),oklch(96% .025 62))}
       .rc .rc-postavke *{box-sizing:border-box;min-width:0}
       .rc .rc-post-glava{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap}
@@ -935,7 +935,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-noga-stikalo input{width:1rem;height:1rem;accent-color:oklch(66% .2 297);cursor:pointer}
       .rc .rc-noga-polje textarea{width:100%;box-sizing:border-box;border:1px solid oklch(90% .006 82);border-radius:.6rem;padding:.6rem .7rem;font:500 .85rem var(--font-sans),system-ui,sans-serif;color:var(--ink);background:#fff;resize:vertical;text-transform:none;letter-spacing:normal}
       .rc .rc-noga-polje textarea:focus{outline:none;border-color:oklch(66% .2 297)}
-      .rc .rc-podpis-polja{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.9rem;margin:.9rem 0 0}
+      .rc .rc-podpis-polja{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.9rem;margin:.9rem 0 0}
       .rc .rc-podpis-platno{display:block;width:100%;height:150px;margin-top:.9rem;border:1px dashed rgba(17,17,17,.3);border-radius:12px;background:#fff;touch-action:none;cursor:crosshair}
       .rc .rc-podpis-akcije{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.7rem}
       .rc .rc-podpis-ali{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
@@ -944,7 +944,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-cip{padding:.42rem .8rem;border:1px solid rgba(17,17,17,.2);border-radius:999px;background:rgba(255,255,255,.5);cursor:pointer;font:inherit;font-size:.8rem;color:var(--ink);transition:border-color .15s,background .15s}
       .rc .rc-cip:hover:not(:disabled){border-color:var(--ink)}
       .rc .rc-cip:disabled{opacity:.45;cursor:default}
-      @media (max-width:640px){.rc .rc-podpis-polja{grid-template-columns:1fr}}
+      @media (max-width:640px){.rc .rc-podpis-polja{grid-template-columns:minmax(0,1fr)}}
       .rc .rc-vrstica{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(3.6rem,.5fr) minmax(6rem,.9fr) minmax(4.6rem,.65fr) minmax(5.8rem,.8fr) minmax(5.6rem,.8fr) 2rem;gap:.55rem;align-items:end;margin-top:.7rem}
       .rc .rc-vrstica.rc-brez-ddv{grid-template-columns:minmax(0,2.5fr) minmax(3.6rem,.5fr) minmax(6rem,.9fr) minmax(4.6rem,.65fr) minmax(5.6rem,.9fr) 2rem}
       .rc .rc-vrstica input,.rc .rc-vrstica select{width:100%}
@@ -955,7 +955,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-x{width:2rem;height:2.75rem;border:0;border-radius:.65rem;background:transparent;color:color-mix(in oklch,var(--ink) 72%,transparent);font-size:1.1rem;line-height:1;cursor:pointer}
       .rc .rc-x:hover:not(:disabled){color:var(--ink);background:oklch(100% 0 0/.6)}
       .rc .rc-x:disabled{opacity:.3;cursor:default}
-      @media (max-width:760px){.rc .rc-shrani-editor{grid-template-columns:1fr 1fr}.rc .rc-shrani-editor .rc-cip{min-height:2.75rem}}
+      @media (max-width:760px){.rc .rc-shrani-editor{grid-template-columns:repeat(2,minmax(0,1fr))}.rc .rc-shrani-editor .rc-cip{min-height:2.75rem}}
       .rc .rc-vsote{margin-left:auto;width:min(21rem,100%);display:grid;gap:.15rem;padding:.85rem 1rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.9rem;background:oklch(100% 0 0/.65)}
       .rc .rc-vsote>div{display:flex;align-items:baseline;justify-content:space-between;gap:.8rem;font-size:.62rem}
       .rc .rc-vsote>div span{font-weight:700;color:var(--muted)}
@@ -1014,7 +1014,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);margin:0 0 .3rem}
       .rc .rc-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 1.4rem;color:var(--ink)}
       /* na svoji strani je obrazec en stolpec (modul ima 2 koloni za inline vgradnjo) */
-      .rc .rc-obrazec{grid-template-columns:1fr}
+      .rc .rc-obrazec{grid-template-columns:minmax(0,1fr)}
       /* vec zracnosti okoli naslova obrazca */
       .rc .rc-obr-uvod{margin:1rem 0 2rem}
       .rc .rc-obr-uvod h2{margin:.15rem 0 .6rem}
@@ -1038,7 +1038,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-mehur small{display:block;margin-top:.1rem;color:rgba(17,17,17,.72);font-size:.82rem}
       /* vstopna forma (pilule+polja+gumb) v beli kartici — naslov+chat ostaneta na papirju nad njo */
       .rc .rc-vstop-panel{background:rgba(255,255,255,.55);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.6);border-radius:20px;padding:1.6rem 1.5rem;box-shadow:0 12px 40px rgba(20,16,26,.05),inset 0 1px 0 rgba(255,255,255,.5)}
-      .rc .rc-polja{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem 1.5rem;margin:0 0 1.3rem;min-width:0}
+      .rc .rc-polja{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem 1.5rem;margin:0 0 1.3rem;min-width:0}
       .rc .rc-polja>*{min-width:0}
       .rc .rc-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
       .rc .rc-polje input{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
@@ -1137,7 +1137,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc-knjiznica-prazno{margin:0;padding:1.4rem .6rem;color:rgba(17,17,17,.72);line-height:1.5;text-align:center}
       @media (max-width:640px){.rc-knjiznica-back{align-items:end;padding:0}.rc-knjiznica{max-height:82dvh;border-radius:1.25rem 1.25rem 0 0;padding:1rem}.rc-knjiznica-izberi{align-items:flex-start;flex-direction:column;gap:.35rem}.rc-knjiznica-izberi>b{white-space:normal}}
 
-      /* mobilno: NIC cez desni rob pri 390px — postavka se zlozi v 2 stolpca */
+      /* Mobilno: postavka postane kartica; naziv je zgoraj, meta levo, znesek/status desno. */
       @media (max-width: 760px){
         .rc .rc-vrstica,.rc .rc-vrstica.rc-brez-ddv{grid-template-columns:repeat(2,minmax(0,1fr));align-items:end}
         .rc .rc-opis{grid-column:1/-1}
@@ -1148,7 +1148,21 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       @media (max-width:640px){
         .rc .rc-chat{max-width:100%}
         .rc .rc-vstop-panel{padding:1.2rem 1.1rem;border-radius:16px}
-        .rc .rc-polja{grid-template-columns:1fr;gap:1rem}
+        .rc .rc-polja{grid-template-columns:minmax(0,1fr);gap:1rem}
+        .rc .rc-vrstica,.rc .rc-vrstica.rc-brez-ddv{
+          grid-template-columns:repeat(2,minmax(0,1fr));
+          grid-template-areas:"naziv naziv" "kolicina cena" "popust davek" "namig namig" "znesek brisi";
+          gap:.7rem;padding:.85rem;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:.9rem;background:rgba(255,255,255,.72);overflow:hidden
+        }
+        .rc .rc-vrstica.rc-brez-ddv{grid-template-areas:"naziv naziv" "kolicina cena" "popust popust" "znesek brisi"}
+        .rc .rc-opis{grid-area:naziv;grid-column:auto}
+        .rc .rc-kolicina{grid-area:kolicina}
+        .rc .rc-cena{grid-area:cena}
+        .rc .rc-popust{grid-area:popust}
+        .rc .rc-davek{grid-area:davek}
+        .rc .rc-ddv-namig{grid-area:namig;justify-self:start}
+        .rc .rc-znesek{grid-area:znesek;align-self:center}
+        .rc .rc-x{grid-area:brisi;grid-column:auto;justify-self:end;width:2.75rem}
       }
     `}</style>
   </div>;

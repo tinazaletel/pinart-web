@@ -1232,7 +1232,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
     {/* stili kot retainer: navaden <style> (globalno), zato pg- predpona povsod */}
     <style>{`
-      .pg{min-width:0;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
+      .pg{min-width:0;max-width:100%;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
       .pg .pg-sek{min-width:0}
       .pg-sek{animation:pgSek .5s cubic-bezier(.16,1,.3,1) both}
       /* KONEC animacije mora biti transform:NONE (ne translateY(0)): vsak transform != none
@@ -1308,7 +1308,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-segpills-mini:hover{border-color:var(--ink)}
       .pg-segpills-mini.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 
-      .pg-polja{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem 1.5rem;margin:0 0 1.1rem;min-width:0}
+      .pg-polja{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem 1.5rem;margin:0 0 1.1rem;min-width:0}
       .pg-polja>*{min-width:0}
       .pg-polja-email{grid-template-columns:minmax(0,26rem);margin-top:.4rem}
       .pg-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
@@ -1390,7 +1390,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-op-zapri{display:grid;place-items:center;flex:none;width:2.75rem;height:2.75rem;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:transparent;color:var(--ink);cursor:pointer}
       .pg-op-zapri:hover{background:var(--ink);color:var(--paper)}
       .pg-op-vsebina{padding:1.6rem 2rem 3rem}
-      .pg-op-meta{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:0 0 1.7rem}
+      .pg-op-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin:0 0 1.7rem}
       .pg-op-meta div{padding:1rem;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid rgba(17,17,17,.08)}
       .pg-op-meta dt{font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
       .pg-op-meta dd{margin:.35rem 0 0;font-size:.98rem;font-weight:650;color:var(--ink);overflow-wrap:anywhere}
@@ -1400,7 +1400,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-op-obseg p{margin:0;color:rgba(17,17,17,.72)}
       @keyframes pgOpBack{from{opacity:0}to{opacity:1}}
       @keyframes pgOpSheet{from{transform:translateX(100%)}to{transform:translateX(0)}}
-      @media (max-width:640px){.pg-op-sheet{width:100%}.pg-op-glava{padding:1.25rem 1rem 1rem}.pg-op-vsebina{padding:1rem}.pg-op-meta{grid-template-columns:1fr}.pg-op-back{backdrop-filter:none}}
+      @media (max-width:640px){.pg-op-sheet{width:100%}.pg-op-glava{padding:1.25rem 1rem 1rem}.pg-op-vsebina{padding:1rem}.pg-op-meta{grid-template-columns:minmax(0,1fr)}.pg-op-back{backdrop-filter:none}}
       @media (prefers-reduced-motion:reduce){.pg-op-back,.pg-op-sheet{animation:none}}
       /* Odvetnik: umirjen blok pod pošiljanjem naročniku — tanek okvir, isti jezik kot .pg-disc/.pg-polje */
       /* odvetnik = mali banner na DESNEM robu zaslona, stran od obrazca */
@@ -1519,7 +1519,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       @media (max-width:640px){
         .pg-chat{max-width:100%}
         .pg-vstop-panel{padding:1.2rem 1.1rem;border-radius:16px}
-        .pg-polja{grid-template-columns:1fr;gap:1rem}
+        .pg-polja{grid-template-columns:minmax(0,1fr);gap:1rem}
         .pg-zakljucek{padding:1.2rem 1rem 1.3rem}
         .pg-editor,.pg-editor h1,.pg-editor h2,.pg-editor p,.pg-editor li,.pg-doktelo,.pg-doktelo h1,.pg-doktelo h2,.pg-doktelo p,.pg-doktelo li{overflow-wrap:anywhere}
         /* podpisni stolpci se na ozkem zaslonu zlozijo navpicno (kot retainer) */

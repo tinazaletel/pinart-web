@@ -1065,7 +1065,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       )}
 
       <style>{`
-        .rw{position:relative;min-height:100dvh;color:var(--ink);font-weight:400;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
+        .rw{position:relative;min-width:0;max-width:100%;min-height:100dvh;color:var(--ink);font-weight:400;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
         /* header (kot kalkulator: Pinart | Dolgorocno | BETA  ...  x zapri) */
         .rw-glava{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:.85rem clamp(1.2rem,4vw,3rem);background:var(--paper);border-bottom:1px solid rgba(17,17,17,.08)}
         /* min-width:0 + shrink: brez tega leva skupina (z novo puscico) preraste prostor in
@@ -1092,7 +1092,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-profil-sek{margin-bottom:2.2rem}
         .rw-profil-oznaka{display:block;font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem}
         .rw-profil-opis{margin:0 0 1rem;font-size:.86rem;line-height:1.5;color:#4a4550}
-        .rw-profil-polja{display:grid;grid-template-columns:1fr 1fr;gap:.9rem 1rem}
+        .rw-profil-polja{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem 1rem}
         .rw-pp{display:flex;flex-direction:column;gap:.35rem}
         .rw-pp>span{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#625c56}
         .rw-pp input,.rw-pp select{font:inherit;font-size:.98rem;font-weight:600;color:var(--ink);background:#FCFBF7;border:1px solid oklch(93% .006 82 / .55);border-radius:9px;padding:.6rem .7rem;width:100%}
@@ -1100,7 +1100,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-pp-tel{grid-column:1 / -1}
         .rw-pp-tel-vrsta{display:flex;gap:.5rem}
         .rw-pp-predklic{max-width:5rem;text-align:center}
-        @media (max-width:520px){.rw-profil-polja{grid-template-columns:1fr}}
+        @media (max-width:520px){.rw-profil-polja{grid-template-columns:minmax(0,1fr)}}
         .rw-profil-admin{display:inline-block;margin-top:.4rem;font-size:.82rem;font-weight:600;color:rgba(17,17,17,.72);text-decoration:none;border:1px solid oklch(93% .006 82 / .55);border-radius:999px;padding:.5rem 1rem;transition:border-color .15s,color .15s}
         .rw-profil-admin:hover{border-color:var(--ink);color:var(--ink)}
         /* POSKUS: mrežno ozadje (kot naslovnica/FLOW), mehurčki ostanejo */
@@ -1161,7 +1161,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         /* razmetani (satasti) mehurcki — orb0 videz je skopiran iz kalkulatorja (Orb0.tsx) */
         /* mehurcki "gledajo cez" — polje je sirse od chata (kot pri kalkulatorju) */
         .rw-platno{position:relative;width:min(960px,96vw);left:50%;transform:translateX(-50%);margin-top:.2rem}
-        .rw-obseg-tabela{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.6rem;margin:0 0 .4rem}
+        .rw-obseg-tabela{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(210px,100%),1fr));gap:.6rem;margin:0 0 .4rem;min-width:0;max-width:100%}
         .rw-ov{display:flex;align-items:center;gap:.75rem;padding:.6rem .85rem;border-radius:12px;border:1px solid oklch(93% .006 82 / .55);background:#FCFBF7;font:inherit;font-size:.92rem;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;transition:border-color .16s,background .16s,transform .16s}
         .rw-ov:hover{border-color:rgba(17,17,17,.28);transform:translateY(-1px)}
         .rw-ov.on{border-color:#7C3AED;background:rgba(124,58,237,.07)}
@@ -1206,9 +1206,9 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-det li::before{content:"· ";color:var(--accent);font-weight:700}
         .rw-det b{color:var(--ink)}
 
-        .rw-mreza{display:grid;grid-template-columns:1fr 1fr;gap:1.3rem 1.5rem;background:rgba(255,255,255,.5);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.65);border-radius:16px;padding:1.5rem 1.6rem;box-shadow:0 8px 30px rgba(17,17,17,.06),inset 0 1px 0 rgba(255,255,255,.6)}
-        .rw-mreza3{grid-template-columns:1fr 1fr 1fr}
-        .rw-mreza-prav{grid-template-columns:1fr 9rem;align-items:start}
+        .rw-mreza{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.3rem 1.5rem;background:rgba(255,255,255,.5);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.65);border-radius:16px;padding:1.5rem 1.6rem;box-shadow:0 8px 30px rgba(17,17,17,.06),inset 0 1px 0 rgba(255,255,255,.6)}
+        .rw-mreza3{grid-template-columns:repeat(3,minmax(0,1fr))}
+        .rw-mreza-prav{grid-template-columns:minmax(0,1fr) minmax(0,9rem);align-items:start}
         .rw label{display:flex;flex-direction:column;gap:.35rem;font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(17,17,17,.72)}
         .rw label .rw-mini{letter-spacing:0;text-transform:none;font-weight:400}
         .rw-vnos{border:none;border-bottom:1px solid rgba(17,17,17,.4);background:transparent;padding:.35rem 0 .5rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:1.05rem;color:var(--ink);width:100%;border-radius:0}
@@ -1224,7 +1224,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-kartica{background:rgba(255,255,255,.5);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.65);border-radius:20px;padding:1.6rem 1.7rem 1.7rem;box-shadow:0 8px 30px rgba(17,17,17,.06),inset 0 1px 0 rgba(255,255,255,.6);max-width:760px}
         .rw-kartica>.rw-knaslov{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.3rem 1rem;margin:0 0 1.1rem;font-weight:600;font-size:1.12rem;color:var(--ink)}
         .rw-knaslov .rw-vec{font-size:.82rem;font-weight:500;color:rgba(17,17,17,.72);text-transform:none;letter-spacing:0}
-        .rw-numgrid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:none}
+        .rw-numgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2rem;max-width:none}
         .rw-numgrid+.rw-numgrid{margin-top:1.1rem}
         .rw-polje{display:flex;flex-direction:column}
         .rw-polje label{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(17,17,17,.72);margin-bottom:.3rem}
@@ -1242,7 +1242,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-nar-chip:hover{border-color:var(--ink);color:var(--ink)}
         .rw-kartica-model>*{margin:0}
         .rw-kartica-model>*+*{margin-top:1.15rem}
-        @media (max-width:560px){.rw-numgrid{grid-template-columns:1fr;gap:1.4rem}}
+        @media (max-width:560px){.rw-numgrid{grid-template-columns:minmax(0,1fr);gap:1.4rem}}
 
         .rw-gumbi{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.5rem}
         .rw-gumb{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:.5rem;border:none;border-radius:999px;padding:.85rem 1.6rem;font:inherit;font-weight:600;font-size:.98rem;cursor:pointer;background:var(--ink);color:var(--paper);transition:transform .2s,opacity .2s}
@@ -1353,10 +1353,12 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-editor .sig{display:flex;gap:2.5rem;margin-top:1.4rem}
         .rw-editor .sig>div{flex:1;font-size:.85rem;color:#444}
         .rw-editor .sig .lin{display:block;border-top:1px solid #111;margin:2rem 0 .3rem}
-        @media (max-width:600px){.rw-mreza,.rw-mreza3,.rw-mreza-prav{grid-template-columns:1fr}}
+        @media (max-width:600px){.rw-mreza,.rw-mreza3,.rw-mreza-prav,.rw-numgrid{grid-template-columns:minmax(0,1fr)}}
         /* ── Mobilni odrez po desni: koren .rw ima overflow-x:clip, zato NIC ne sme biti sirse od .rw-vsebina (min(700px,92vw)). ── */
         /* .rw-platno (min(960px,96vw)) in .rw-predogled (min(880px,94vw)) sta bila sirsa od starsa in centrirana (translateX) -> desni rob je gledal cez in bil odrezan. */
         @media (max-width:640px){
+          .rw-obseg-tabela{grid-template-columns:minmax(0,1fr);min-width:0}
+          .rw-obseg-tabela .rw-ov{min-width:0;max-width:100%;overflow:hidden}
           .rw-platno{width:min(960px,100%);max-width:100%}
           .rw-predogled{width:min(880px,100%);max-width:100%}
           .rw-kartica{max-width:100%}
