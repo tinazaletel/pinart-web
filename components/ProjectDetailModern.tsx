@@ -433,7 +433,7 @@ export default function ProjectDetailModern({
         .pm-card { background:var(--pm-card); border:1px solid var(--pm-line); border-radius:16px; padding:1.1rem 1.2rem; min-width:0; max-width:100%; overflow:hidden; }
         .pm-card > header h3 { min-width:0; overflow-wrap:anywhere; }
         /* Enaki stranski razmiki: NA PROJEKTU vrstica poravnana s karticami */
-        @media (max-width:640px){ .pm-card, .pm-team { padding-left:1rem; padding-right:1rem; } }
+        @media (max-width:640px){ .pm-team { padding-left:1rem; padding-right:1rem; } .pm-card { padding-left:.65rem; padding-right:.65rem; } }
         .pm-card > header { display:flex; align-items:center; justify-content:space-between; gap:.6rem; margin-bottom:.5rem; }
         .pm-card h3 { margin:0; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-title { font-family:var(--font-serif), Georgia, serif; font-size:1.3rem; margin:0 0 .7rem; color:var(--pm-ink); }
