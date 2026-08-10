@@ -11,9 +11,10 @@
    je prenesen iz RetainerWorkspace (rw-). Detajl panel z desne + lepljivi X so
    vzorec iz ContractWorkspace (styles.detailBackdrop/detailPanel + .pg-det-x). */
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { CaretDown, CaretUp, FileArrowDown, FileText, Receipt, Scroll, Warning, ListBullets, Kanban } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, saveOfferStatus, type FlowContract, type FlowContractStatus, type FlowInvoice, type FlowOffer, type FlowOfferStatus } from '@/lib/pinartFlowStore';
@@ -254,6 +255,18 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   const [izbrani, setIzbrani] = useState<Set<string>>(() => new Set());
   const [portalPripravljen, setPortalPripravljen] = useState(false);
   useEffect(() => { setPortalPripravljen(true); }, []);
+  /* Globinski link (npr. iz profila stranke »Povezano s stranko«): ?tip=ponudbe|pogodbe|racuni&odpri=<id>
+     odpre pravi zavihek + detajl točno tega dokumenta (specifikacija), NE projekta. Enkrat. */
+  const searchParams = useSearchParams();
+  const odprtoIzUrlRef = useRef(false);
+  useEffect(() => {
+    if (odprtoIzUrlRef.current) return;
+    const odpri = searchParams.get('odpri'); const tip = searchParams.get('tip');
+    if (!odpri || !tip) return;
+    if (tip === 'ponudbe') { const z = offers.find(o => o.id === odpri); if (z) { setZavihek('ponudbe'); setDetajl({ vrsta: 'ponudba', zapis: z } as Detajl); odprtoIzUrlRef.current = true; } }
+    else if (tip === 'pogodbe') { const z = contracts.find(c => c.id === odpri); if (z) { setZavihek('pogodbe'); setDetajl({ vrsta: 'pogodba', zapis: z } as Detajl); odprtoIzUrlRef.current = true; } }
+    else if (tip === 'racuni') { const z = invoices.find(r => r.id === odpri); if (z) { setZavihek('racuni'); setDetajl({ vrsta: 'racun', zapis: z } as Detajl); odprtoIzUrlRef.current = true; } }
+  }, [searchParams, offers, contracts, invoices]);
   const [izvazamPdf, setIzvazamPdf] = useState(false);
   const izKljuc = (vrsta: string, id: string) => `${vrsta}:${id}`;
   const preklopiIzbor = (k: string) => setIzbrani(prev => { const n = new Set(prev); if (n.has(k)) n.delete(k); else n.add(k); return n; });
@@ -354,7 +367,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       onStatus: v => setPlacano(v as 'vse' | 'placano' | 'odprto'),
       statusOpcije: [{ vrednost: 'vse', oznaka: L('Vsi', 'All') }, { vrednost: 'placano', oznaka: L('Plačani', 'Paid') }, { vrednost: 'odprto', oznaka: L('Odprti', 'Open') }],
       akcija: <>
-        <Link className="af-akcija-gumb" href={`${base}/kalkulator/racunovodstvo`}>{L('Izvoz za računovodstvo', 'Export for accounting')}</Link>
+        <Link className="af-akcija-gumb af-akcija-izvoz" href={`${base}/kalkulator/racunovodstvo`} aria-label={L('Izvoz za računovodstvo', 'Export for accounting')} title={L('Izvoz za računovodstvo', 'Export for accounting')}><FileArrowDown size={18} weight="bold" /><span className="af-akcija-tekst">{L('Izvoz za računovodstvo', 'Export for accounting')}</span></Link>
         <Link className="af-akcija-gumb af-akcija-dodaj" href={`${base}/kalkulator/racuni`} aria-label={L('Nov račun', 'New invoice')} title={L('Nov račun', 'New invoice')}>{L('+ Nov račun', '+ New invoice')}</Link>
       </>,
     } : null;

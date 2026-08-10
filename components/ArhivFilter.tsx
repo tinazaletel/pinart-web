@@ -187,7 +187,7 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       .af-vrstica{position:relative;display:flex;align-items:center;gap:.6rem;min-height:2.75rem;min-width:0}
       /* privzeto (mobilno) = kompaktni ikoni; namizni blok skrit */
       .af-mob{display:contents}
-      .af-mob-akcija{margin-left:auto;display:inline-flex;align-items:center;gap:.4rem;min-width:0}
+      .af-mob-akcija{margin-left:auto;display:inline-flex;align-items:center;gap:.6rem;min-width:0}
       .af-namizje{display:none}
       /* NAMIZJE: vse vidno v eni vrsti, iskalnik → datum → status → akcija */
       @media (min-width:641px){
@@ -247,6 +247,10 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
            .af IN .af-vrstica postaneta pozicijsko nevtralna, sidrisce je arh-glava (ArhivWorkspace). */
         .af{position:static}
         .af-vrstica{position:static}
+        /* Izvoz za racunovodstvo = mala ikona-krogec (kot search/filter), da ne stisne vrstice */
+        .af-akcija-izvoz{width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;background-color:color-mix(in oklch,var(--paper,#fff) 70%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);color:var(--ink,#111)}
+        .af-akcija-izvoz:hover{background-color:var(--ink,#111);color:var(--paper,#fff);transform:none}
+        .af-akcija-izvoz .af-akcija-tekst{display:none}
         .af-akcija-dodaj{position:relative;width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;font-size:0}
         .af-akcija-dodaj::before,.af-akcija-dodaj::after{content:'';position:absolute;top:50%;left:50%;background:currentColor;border-radius:2px}
         .af-akcija-dodaj::before{width:1.3rem;height:2.4px;transform:translate(-50%,-50%)}

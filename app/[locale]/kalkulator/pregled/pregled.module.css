@@ -515,6 +515,12 @@
 .linkedDocuments span { padding: .55rem .7rem; border-bottom: 1px solid var(--line); font-size: .63rem; }
 .projectBundle > button { width: 100%; padding: .7rem; border: 0; border-radius: .7rem; background: var(--ink); color: var(--paper); font: 750 .63rem var(--font-sans), sans-serif; cursor: pointer; }
 .detailClose { position: absolute; top: 1rem; right: 1rem; display: grid; place-items: center; width: 2rem; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 50%; background: none; color: inherit; font-size: 1.2rem; cursor: pointer; }
+/* Mobilni detajl (ponudba/pogodba/račun): celozaslonski + top-padding, da naslov pade POD
+   lepljivo glavo (.flowTopBar = 3.25rem, z-60; modal je ujet v transformiranem predniku, zato
+   z-index ne pomaga — clearance rešimo s paddingom). Manjši stranski padding (manj »zmazka«). */
+@media (max-width: 640px) {
+  .detailPanel { width: 100vw; padding: 4.35rem 1rem calc(6rem + env(safe-area-inset-bottom, 0px)); }
+}
 .resultsBand > .bandTitle { align-items: end; }
 .periodSwitch { display: flex; gap: .25rem; padding: .25rem; border: 1px solid var(--line); border-radius: 999px; background: #fff !important; }
 .periodSwitch button { padding: .5rem .8rem; border: 0; border-radius: 999px; background: transparent; color: color-mix(in oklch, var(--ink) 68%, transparent); font: 750 .59rem var(--font-sans), sans-serif; cursor: pointer; transition: color 160ms ease, background 160ms ease; }
@@ -863,8 +869,9 @@
 .clientEditor h2, .clientDirectory h2, .clientProfile h2 { margin: 0; font: 500 clamp(1.45rem, 2.2vw, 2.05rem)/1 var(--font-serif), Georgia, serif; }
 .clientEditor form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; }
 .clientEditor label { display: grid; gap: .35rem; font-size: .58rem; font-weight: 800; }
-.clientEditor input { min-width: 0; height: 2.65rem; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .65rem; background: oklch(100% 0 0 / .82); font: 500 .66rem var(--font-sans), sans-serif; }
-.clientEditor select { min-width: 0; height: 2.65rem; padding: 0 .45rem 0 .7rem; border: 1px solid var(--line); border-radius: .65rem; background-color: oklch(100% 0 0 / .82); font: 500 .66rem var(--font-sans), sans-serif; color: var(--ink); }
+/* glass polja (brez sivih outlinov): prosojno ozadje + blur + mehek svetel rob */
+.clientEditor input { min-width: 0; height: 2.65rem; padding: 0 .7rem; border: 1px solid color-mix(in oklch, #fff 60%, transparent); border-radius: .65rem; background: color-mix(in oklch, #fff 30%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); font: 500 .66rem var(--font-sans), sans-serif; }
+.clientEditor select { min-width: 0; height: 2.65rem; padding: 0 .45rem 0 .7rem; border: 1px solid color-mix(in oklch, #fff 60%, transparent); border-radius: .65rem; background-color: color-mix(in oklch, #fff 30%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); font: 500 .66rem var(--font-sans), sans-serif; color: var(--ink); }
 .clientEditorActions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: .5rem; }
 .clientEditorActions button { min-height: 2.6rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: .65rem; background: transparent; font: 800 .61rem var(--font-sans), sans-serif; cursor: pointer; }
 .clientEditorActions button:last-child { background: var(--ink); color: var(--paper); }
@@ -884,6 +891,46 @@
 .clientProfileAvatar { flex: 0 0 auto; width: 4rem; aspect-ratio: 1; font-size: .9rem; }
 .clientEmpty { color: var(--muted); font-size: .63rem; text-align: center; }
 .clientBack { display: none; }
+/* profil: back + svinčnik (uredi) na ISTI liniji → več prostora za ime podjetja */
+.clientProfileTop { display: flex; align-items: center; justify-content: space-between; gap: .5rem; width: 100%; margin: 0 0 .3rem; }
+/* svinčnik = poln temni krogec, potisnjen DESNO (brez sivega outlina); višja specifičnost povozi .shell */
+.shell .clientProfileTop .clientEditPen { display: inline-flex; align-items: center; justify-content: center; margin-left: auto; width: 2.4rem; height: 2.4rem; flex: none; padding: 0; border: 0; border-radius: 50%; background: var(--ink); color: var(--paper); cursor: pointer; transition: opacity .15s; }
+.shell .clientProfileTop .clientEditPen:hover { opacity: .9; }
+/* kontakt vrstica = tap za urejanje (ime + subtilni svinčnik); brez ločenih ✎/× */
+.clientKontaktEdit { display: flex; align-items: center; justify-content: space-between; gap: .6rem; width: 100%; padding: .15rem 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.clientKontaktEdit:disabled { cursor: default; opacity: .6; }
+.clientKontaktPen { flex: none; color: var(--muted); opacity: .55; transition: opacity .15s, color .15s; }
+.clientKontaktEdit:hover .clientKontaktPen, .clientKontaktEdit:active .clientKontaktPen { opacity: 1; color: var(--ink); }
+/* kontakt: jasna gumba Uredi (svinčnik) + Izbriši (koš) desno v vrstici */
+.shell .clientProfile .clientKontaktAkcija { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; flex: none; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: #fff; color: var(--ink); cursor: pointer; transition: border-color .15s, background .15s; }
+.shell .clientProfile .clientKontaktAkcija:hover { border-color: var(--ink); }
+.shell .clientProfile .clientKontaktAkcija:disabled { opacity: .4; cursor: default; }
+.shell .clientProfile .clientKontaktBrisiBtn { color: oklch(52% .16 25); border-color: color-mix(in oklch, oklch(52% .16 25) 40%, var(--line)); }
+.shell .clientProfile .clientKontaktBrisiBtn:hover { border-color: oklch(52% .16 25); background: oklch(95% .04 25); }
+/* koš (izbriši osebo) v urejanju kontakta — potisnjen levo, okrogel */
+.clientEditorActions .clientEditorDelete { margin-right: auto; width: 2.6rem; height: 2.6rem; min-height: 0; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; border-color: color-mix(in oklch, oklch(52% .16 25) 45%, var(--line)); background: transparent; color: oklch(52% .16 25); }
+.clientEditorActions .clientEditorDelete:hover { border-color: oklch(52% .16 25); background: oklch(95% .04 25); }
+/* email/tel čip se skrči (elipsa v spanu v JSX), da se ne odreže */
+.clientDnevnikProj { flex: 0 1 auto; min-width: 0; max-width: 100%; }
+@media (max-width: 980px) {
+  /* urejanje profila = samostojna stran: skrij vse ostalo, pokaži le urejevalnik */
+  :global(body.stranka-urejanje) .topbar,
+  :global(body.stranka-urejanje) .predogledBanner,
+  :global(body.stranka-urejanje) .clientToolbar,
+  :global(body.stranka-urejanje) .clientLayout { display: none; }
+  :global(body.stranka-urejanje) .clientEditor { border: 0; border-radius: 0; background: transparent; padding: .2rem .1rem 2rem; }
+  /* enak, manjši L/R padding za profil in urejevalnik */
+  .clientProfile, .clientEditor { padding-left: .55rem; padding-right: .55rem; }
+  /* glave sekcij: NE stiskaj podnaslova — stolpec, tekst čez celo širino, gumb levo */
+  .clientLinkGlava { flex-direction: column; align-items: stretch; }
+  .clientLinkGlava > button { align-self: flex-end; }
+  .clientLinkPodnaslov { max-width: none; }
+  /* Kontakti = ravna lista (brez kartice v kartici / odvečnih margin) */
+  .clientFinance + .clientLinki { border: 0; padding: 0; }
+  .clientFinance + .clientLinki .clientLinkSeznam { grid-template-columns: 1fr; gap: 0; }
+  .clientFinance + .clientLinki .clientLinkVrstica { border: 0; border-radius: 0; background: transparent; padding: .6rem 0; border-bottom: 1px solid var(--line); }
+  .clientFinance + .clientLinki .clientLinkVrstica:hover { background: transparent; }
+}
 .clientProfile > header { display: flex; align-items: center; gap: 1rem; padding: .4rem; }
 .clientProfile > header > div { flex: 1; }
 .clientProfile > header > div > span { color: var(--muted); font-size: .6rem; }
@@ -925,29 +972,8 @@
   color: color-mix(in oklch, var(--ink) 82%, var(--paper));
   cursor: not-allowed;
 }
-/* Kontaktna akcija uporablja isti kratek jezik kot glavni gumb profila. */
-.clientFinance + .clientLinki .clientLinkGumb {
-  font-size: 0;
-}
-.clientFinance + .clientLinki .clientLinkGumb::before {
-  content: '';
-  width: .9rem;
-  height: .9rem;
-  flex: 0 0 auto;
-  background: currentColor;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='16' d='m92.7 216 123.9-123.9a16 16 0 0 0 0-22.6l-30.1-30.1a16 16 0 0 0-22.6 0L40 163.3 32 224Z M144 60l52 52'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='16' d='m92.7 216 123.9-123.9a16 16 0 0 0 0-22.6l-30.1-30.1a16 16 0 0 0-22.6 0L40 163.3 32 224Z M144 60l52 52'/%3E%3C/svg%3E") center / contain no-repeat;
-}
-.clientFinance + .clientLinki .clientLinkGumb::after {
-  content: 'Uredi';
-  font: 700 .75rem/1 var(--font-sans), sans-serif;
-}
-.clientFinance + .clientLinki .clientLinkGlava:has(+ .clientEditor) .clientLinkGumb::before {
-  display: none;
-}
-.clientFinance + .clientLinki .clientLinkGlava:has(+ .clientEditor) .clientLinkGumb::after {
-  content: 'Zapri';
-}
+/* Kontaktni gumb ima zdaj pravo besedilo v JSX (»+ Dodaj osebo« / »Zapri«) —
+   stari ::before(svinčnik)+::after(Uredi) hack odstranjen (podvajal se je z besedilom). */
 .shell .clientProfile > header > button,
 .shell .clientProfile .clientLinkGumb,
 .shell .clientProfile .clientLinkBrisi {
@@ -985,7 +1011,7 @@
 .clientProjects { margin-top: 1rem; padding: .9rem; border: 1px solid var(--line); border-radius: .85rem; }
 .clientProjects h3 { margin: 0 0 .5rem; font: 600 1rem var(--font-serif), Georgia, serif; }
 .clientProjectList { display: flex; flex-direction: column; gap: .5rem; margin-top: .5rem; }
-.clientProjectRow { display: flex; flex-direction: column; gap: .35rem; padding: .7rem .85rem; border: 1px solid var(--line); border-radius: .75rem; background: oklch(95% .018 87); color: inherit; text-decoration: none; cursor: pointer; transition: background .14s; }
+.clientProjectRow { display: flex; flex-direction: column; gap: .35rem; padding: .7rem .85rem; border: 1px solid var(--line); border-radius: .75rem; background: #fff; color: inherit; text-decoration: none; cursor: pointer; transition: background .14s; }
 .clientProjectRow:hover { background: linear-gradient(125deg, oklch(94% .045 295), oklch(93% .04 165)); }
 .clientProjectVrh { display: flex; align-items: baseline; justify-content: space-between; gap: .6rem; }
 .clientProjectVrh strong:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .85rem; }
@@ -1332,6 +1358,12 @@
   /* Mobilni master-detail: profil = samostojna stran z »nazaj«.
      Ko je izbrana stranka -> skrij imenik, pokaži profil. Sicer obratno. */
   .clientLayout[data-selected='1'] .clientDirectory { display: none; }
+  /* profil = samostojna stran: skrij zgornji naslov (STRANKE) + iskalno vrstico + predogled banner */
+  :global(body.stranka-odprta) .topbar,
+  :global(body.stranka-odprta) .predogledBanner,
+  :global(body.stranka-odprta) .clientToolbar { display: none; }
+  .clientProfileTop .clientBack { margin: 0; }
+  .clientProfile { padding: .9rem .6rem; }
   .clientLayout[data-selected='0'] .clientProfile { display: none; }
   .clientBack { display: inline-flex; align-items: center; gap: .35rem; margin: 0 0 .8rem; padding: .5rem .9rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink); font: 700 .62rem var(--font-sans), sans-serif; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; }
   .clientEditor { grid-template-columns: 1fr; }
