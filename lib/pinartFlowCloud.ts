@@ -1,6 +1,8 @@
 import { createClient } from '@/utils/supabase/client';
 import { oznaciSinhronizirano } from './pinartFlowStore';
 import type { FlowClient, FlowContract, FlowData, FlowExpense, FlowInvoice, FlowOffer } from './pinartFlowStore';
+import { mergeByUpdatedAt } from './mergeByUpdatedAt';
+export { mergeByUpdatedAt } from './mergeByUpdatedAt';
 
 type OrganizationContext = { organizationId: string; userId: string };
 export type UserOrganization = { id: string; name: string };
@@ -340,18 +342,6 @@ export async function listAudit(recordId: string): Promise<DocumentAuditEntry[]>
     oldData: row.old_data || undefined, newData: row.new_data || undefined, createdAt: String(row.created_at),
   }));
 }
-
-export const mergeByUpdatedAt = <T extends { id: string; updatedAt?: string; deletedAt?: string }>(cloud: T[], local: T[]) => {
-  const items = new Map<string, T>();
-  for (const item of [...cloud, ...local]) {
-    const current = items.get(item.id);
-    if (!current) { items.set(item.id, item); continue; }
-    const currentTime = current.updatedAt ? Date.parse(current.updatedAt) : Number.NEGATIVE_INFINITY;
-    const itemTime = item.updatedAt ? Date.parse(item.updatedAt) : Number.NEGATIVE_INFINITY;
-    if (itemTime > currentTime || (itemTime === currentTime && !item.updatedAt)) items.set(item.id, item);
-  }
-  return [...items.values()].filter(item => !item.deletedAt);
-};
 
 export function mergeFlowData(cloud: FlowData, local: FlowData): FlowData {
   return {
