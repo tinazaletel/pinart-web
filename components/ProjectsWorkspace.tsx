@@ -176,7 +176,7 @@ const pwStyles = `
 .pw-narocnik-link{color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:color-mix(in oklch,var(--ink) 35%,transparent)}
 .pw-narocnik-link:hover{color:oklch(52% .17 300);text-decoration-color:currentColor}
 @media (max-width:640px){
-.pw-tabela{min-width:560px}
+.pw-tabela{min-width:0}
 }
 /* razdelki ZA 04 Stroški na detajlu projekta (05 Dokumentacija + placeholderji
    06 Komunikacije/07 Zapiski) — svoj pw- razdelek v duhu .projectNarrative
