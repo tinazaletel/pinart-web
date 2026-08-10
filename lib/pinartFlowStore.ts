@@ -1,5 +1,6 @@
 export type FlowOfferStatus = 'draft' | 'sent' | 'accepted' | 'rejected';
 export type FlowContractStatus = 'draft' | 'received' | 'review' | 'active' | 'signed';
+export type FlowInvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
 
 export type FlowOffer = {
   id: string;
@@ -10,6 +11,8 @@ export type FlowOffer = {
   scope: string[];
   status: FlowOfferStatus;
   agreedAmount: number;
+  deletedAt?: string;
+  deletedBy?: string;
 };
 
 /* Postavka racuna (ZDDV-1): cena je NA ENOTO in BREZ DDV; popust v %, ddv = stopnja v %. */
@@ -38,6 +41,7 @@ export type FlowInvoice = {
   client: string;
   amount: number;
   paid: boolean;
+  status?: FlowInvoiceStatus;
   date: string;
   dueDays?: number;
   sourceOfferId?: string;
@@ -64,6 +68,14 @@ export type FlowInvoice = {
   avansPct?: number;
   /* poln znesek dokumenta (za izracun preostanka / kasnejso pretvorbo v koncni racun) */
   polnaVrednost?: number;
+  issuedAt?: string;
+  version?: number;
+  supersedesId?: string;
+  stornoOfId?: string;
+  cancelledAt?: string;
+  cancelReason?: string;
+  deletedAt?: string;
+  deletedBy?: string;
 };
 
 export type FlowExpense = {
@@ -82,6 +94,8 @@ export type FlowExpense = {
   /* obdobje stroska: enkratni (privzeto), mesecni ali letni. Mesecni/letni sluzijo
      kot poslovna osnova (redni stroski). Odsotnost = enkratni (nazaj-zdruzljivo). */
   obdobje?: 'enkratni' | 'mesecni' | 'letni';
+  deletedAt?: string;
+  deletedBy?: string;
 };
 
 export type FlowContract = {
@@ -95,6 +109,8 @@ export type FlowContract = {
   fileName?: string;
   filePath?: string;
   notes?: string;
+  deletedAt?: string;
+  deletedBy?: string;
 };
 
 /* Ena kontaktna oseba pri stranki (npr. Honeywell ima vec ljudi, vsak svoj

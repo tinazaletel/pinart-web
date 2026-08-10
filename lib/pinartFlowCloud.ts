@@ -141,6 +141,8 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       issue_date: dateOnly(offer.date),
       scope: offer.scope,
       amount: offer.agreedAmount || 0,
+      deleted_at: offer.deletedAt || null,
+      deleted_by: offer.deletedBy || null,
       updated_at: new Date().toISOString(),
     })), { onConflict: 'organization_id,external_id' });
     if (error) throw error;
@@ -158,12 +160,21 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       offer_id: invoice.sourceOfferId ? offerByExternalId.get(invoice.sourceOfferId) || null : null,
       number: invoice.number || null,
       title: invoice.title || null,
-      status: invoice.paid ? 'paid' : 'sent',
+      status: invoice.status || (invoice.paid ? 'paid' : invoice.issuedAt ? 'sent' : 'draft'),
       issue_date: dateOnly(invoice.date),
       due_date: invoice.dueDays ? dateOnly(new Date(new Date(dateOnly(invoice.date)).getTime() + invoice.dueDays * 86400000).toISOString()) : null,
       paid_at: invoice.paid ? dateOnly(invoice.date) : null,
       amount: invoice.amount || 0,
+      items: invoice.items || [],
       file_path: invoice.filePath || null,
+      issued_at: invoice.issuedAt || null,
+      version: invoice.version || 1,
+      supersedes_id: invoice.supersedesId || null,
+      storno_of_id: invoice.stornoOfId || null,
+      cancelled_at: invoice.cancelledAt || null,
+      cancel_reason: invoice.cancelReason || null,
+      deleted_at: invoice.deletedAt || null,
+      deleted_by: invoice.deletedBy || null,
       updated_at: new Date().toISOString(),
     })), { onConflict: 'organization_id,external_id' });
     if (error) throw error;
@@ -181,6 +192,8 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       expense_date: dateOnly(expense.date),
       amount: expense.amount || 0,
       file_path: expense.filePath || null,
+      deleted_at: expense.deletedAt || null,
+      deleted_by: expense.deletedBy || null,
       updated_at: new Date().toISOString(),
     })), { onConflict: 'organization_id,external_id' });
     if (error) throw error;
@@ -198,6 +211,8 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       body: contract.body || null,
       file_path: contract.filePath || null,
       notes: contract.notes || null,
+      deleted_at: contract.deletedAt || null,
+      deleted_by: contract.deletedBy || null,
       updated_at: new Date().toISOString(),
     })), { onConflict: 'organization_id,external_id' });
     if (error) throw error;
@@ -211,8 +226,19 @@ export async function deleteCloudRecords(
   if (!externalIds.length) return;
   const context = await getOrganizationContext();
   if (!context) return;
-  const table = ({ offers: 'offers', invoices: 'invoices', expenses: 'expenses', contracts: 'contracts', clients: 'clients' } as const)[collection];
-  const { error } = await createClient().from(table).delete().eq('organization_id', context.organizationId).in('external_id', externalIds);
+  const supabase = createClient();
+  if (collection === 'clients') {
+    const { error } = await supabase.from('clients').delete().eq('organization_id', context.organizationId).in('external_id', externalIds);
+    if (error) throw error;
+    return;
+  }
+  if (collection === 'invoices') {
+    const { data, error: readError } = await supabase.from('invoices').select('external_id,issued_at').eq('organization_id', context.organizationId).in('external_id', externalIds);
+    if (readError) throw readError;
+    if ((data || []).some(row => row.issued_at)) throw new Error('Izdanega računa ni mogoče izbrisati. Uporabi storno.');
+  }
+  const table = ({ offers: 'offers', invoices: 'invoices', expenses: 'expenses', contracts: 'contracts' } as const)[collection];
+  const { error } = await supabase.from(table).update({ deleted_at: new Date().toISOString(), deleted_by: context.userId }).eq('organization_id', context.organizationId).in('external_id', externalIds);
   if (error) throw error;
 }
 
@@ -223,10 +249,10 @@ export async function pullFlowData(): Promise<FlowData | null> {
   const organizationId = context.organizationId;
   const [clientsResult, offersResult, invoicesResult, expensesResult, contractsResult] = await Promise.all([
     supabase.from('clients').select('*').eq('organization_id', organizationId),
-    supabase.from('offers').select('*').eq('organization_id', organizationId),
-    supabase.from('invoices').select('*').eq('organization_id', organizationId),
-    supabase.from('expenses').select('*').eq('organization_id', organizationId),
-    supabase.from('contracts').select('*').eq('organization_id', organizationId),
+    supabase.from('offers').select('*').eq('organization_id', organizationId).is('deleted_at', null),
+    supabase.from('invoices').select('*').eq('organization_id', organizationId).is('deleted_at', null),
+    supabase.from('expenses').select('*').eq('organization_id', organizationId).is('deleted_at', null),
+    supabase.from('contracts').select('*').eq('organization_id', organizationId).is('deleted_at', null),
   ]);
   const firstError = [clientsResult.error, offersResult.error, invoicesResult.error, expensesResult.error, contractsResult.error].find(Boolean);
   if (firstError) throw firstError;
@@ -245,28 +271,67 @@ export async function pullFlowData(): Promise<FlowData | null> {
       id: String(row.external_id || row.id), title: String(row.title), client: clientNameById.get(String(row.client_id)) || 'Brez stranke',
       date: String(row.issue_date), number: row.number || undefined, scope: Array.isArray(row.scope) ? row.scope.map(String) : [],
       status: row.status as FlowOffer['status'], agreedAmount: Number(row.amount) || 0,
+      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined,
     })),
     invoices: (invoicesResult.data || []).map(row => ({
       id: String(row.external_id || row.id), number: row.number || undefined, title: row.title || undefined,
       client: clientNameById.get(String(row.client_id)) || 'Brez stranke', amount: Number(row.amount) || 0,
-      paid: row.status === 'paid', date: String(row.issue_date),
+      paid: row.status === 'paid', status: row.status as FlowInvoice['status'], date: String(row.issue_date),
       dueDays: row.due_date ? Math.max(0, Math.round((new Date(String(row.due_date)).getTime() - new Date(String(row.issue_date)).getTime()) / 86400000)) : undefined,
       sourceOfferId: row.offer_id ? offerExternalById.get(String(row.offer_id)) : undefined,
       source: row.offer_id ? 'offer' : 'manual',
       filePath: row.file_path || undefined, fileName: row.file_path ? String(row.file_path).split('/').pop() : undefined,
+      items: Array.isArray(row.items) ? row.items : undefined, issuedAt: row.issued_at || undefined,
+      version: row.version ? Number(row.version) : undefined, supersedesId: row.supersedes_id || undefined,
+      stornoOfId: row.storno_of_id || undefined, cancelledAt: row.cancelled_at || undefined,
+      cancelReason: row.cancel_reason || undefined, deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined,
     })),
     expenses: (expensesResult.data || []).map(row => ({
       id: String(row.external_id || row.id), title: String(row.title), client: row.client_id ? clientNameById.get(String(row.client_id)) : undefined,
       amount: Number(row.amount) || 0, date: String(row.expense_date), sourceOfferId: row.offer_id ? offerExternalById.get(String(row.offer_id)) : undefined,
       company: row.supplier || undefined, category: row.category || undefined,
       filePath: row.file_path || undefined, fileName: row.file_path ? String(row.file_path).split('/').pop() : undefined,
+      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined,
     })),
     contracts: (contractsResult.data || []).map(row => ({
       id: String(row.external_id || row.id), title: String(row.title), client: clientNameById.get(String(row.client_id)) || 'Brez stranke',
       date: String(row.contract_date), status: row.status as FlowContract['status'], sourceOfferId: row.offer_id ? offerExternalById.get(String(row.offer_id)) : undefined,
       body: row.body || undefined, notes: row.notes || undefined, filePath: row.file_path || undefined, fileName: row.file_path ? String(row.file_path).split('/').pop() : undefined,
+      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined,
     })),
   };
+}
+
+export async function stornirajRacun(externalId: string, reason?: string): Promise<string> {
+  const context = await getOrganizationContext();
+  if (!context) throw new Error('Prijava je potekla.');
+  const supabase = createClient();
+  const { data: invoice, error: invoiceError } = await supabase.from('invoices').select('id').eq('organization_id', context.organizationId).eq('external_id', externalId).single();
+  if (invoiceError) throw invoiceError;
+  const { data, error } = await supabase.rpc('storniraj_racun', { p_id: invoice.id, p_razlog: reason || null });
+  if (error) throw error;
+  return String(data);
+}
+
+export type DocumentAuditEntry = {
+  id: string;
+  tableName: string;
+  recordId: string;
+  action: string;
+  oldData?: Record<string, unknown>;
+  newData?: Record<string, unknown>;
+  createdAt: string;
+};
+
+export async function listAudit(recordId: string): Promise<DocumentAuditEntry[]> {
+  const context = await getOrganizationContext();
+  if (!context) return [];
+  const { data, error } = await createClient().from('document_audit').select('*').eq('organization_id', context.organizationId).eq('record_id', recordId).order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(row => ({
+    id: String(row.id), tableName: String(row.table_name), recordId: String(row.record_id), action: String(row.action),
+    oldData: row.old_data || undefined, newData: row.new_data || undefined, createdAt: String(row.created_at),
+  }));
 }
 
 const merge = <T extends { id: string }>(cloud: T[], local: T[]) => {
