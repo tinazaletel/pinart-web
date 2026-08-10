@@ -47,7 +47,7 @@ export default function MobTabs({ opcije, vrednost, naVrednost, label }: {
           </div>
         </div>
       </>, document.body)}
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .mobtabs { display: none; }
         @media (max-width: 640px) {
           .mobtabs { display: inline-block; position: relative; width: auto; max-width: 100%; }
@@ -69,7 +69,7 @@ export default function MobTabs({ opcije, vrednost, naVrednost, label }: {
         .mobtabs-sheet-telo button.on { background: var(--ink, #111); color: var(--paper, #fff); }
         @keyframes mobtabsUp { from { transform: translateY(100%); } to { transform: none; } }
         @keyframes mobtabsFade { from { opacity: 0; } to { opacity: 1; } }
-      `}</style>
+      ` }} />
     </div>
   );
 }
