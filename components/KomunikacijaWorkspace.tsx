@@ -6,6 +6,7 @@
    To je vstopna tocka, ki je manjkala, da sodelavec odpre skupno nit s svoje strani. */
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, MagnifyingGlass, Tray, NotePencil, Trash, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, ArrowBendUpLeft, ArrowBendUpRight, Smiley, Plus, UserPlus, List, FunnelSimple } from '@phosphor-icons/react';
 import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, dodajUdelezenca, type OblacnaNit, type OblacnoSporocilo } from '@/lib/klepetCloud';
 import { usePredogled } from '@/lib/predogled';
@@ -63,6 +64,8 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   const [mapeOdprt, setMapeOdprt] = useState(false);
   const [iskOdprt, setIskOdprt] = useState(false);
   const [filterOdprt, setFilterOdprt] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   /* Ko je odprt drawer map ali slide-up prejemnikov, skrij Pupo (da ne prekriva menija) */
   useEffect(() => {
     document.body.classList.toggle('pw-sheet-open', mapeOdprt || filterOdprt);
@@ -217,6 +220,18 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         <button type="button" role="tab" aria-selected={zavihek === 'posta'} className={zavihek === 'posta' ? 'on' : ''} onClick={() => setZavihek('posta')}><EnvelopeSimple size={15} weight="bold" /> {L('Pošta', 'Mail')}{posta.length ? ` · ${posta.length}` : ''}</button>
         <button type="button" role="tab" aria-selected={zavihek === 'klepet'} className={zavihek === 'klepet' ? 'on' : ''} onClick={() => setZavihek('klepet')}><ChatCircle size={15} weight="bold" /> {L('Klepet', 'Chat')}</button>
       </div>
+
+      {/* Mobilna spodnja noga (Gmail slog): Pošta / Klepet — fiksno spodaj, prek portala na body
+          (da je transformiran prednik ne ujame). Namizje = zgornji km-zavihki. */}
+      {mounted && createPortal(
+        <nav className="km-noga" aria-label={L('Pošta / Klepet', 'Mail / Chat')}>
+          <button type="button" className={zavihek === 'posta' ? 'on' : ''} aria-current={zavihek === 'posta'} onClick={() => setZavihek('posta')}>
+            <EnvelopeSimple size={21} weight={zavihek === 'posta' ? 'fill' : 'regular'} /><span>{L('Pošta', 'Mail')}</span>{posta.length > 0 && <b>{posta.length}</b>}
+          </button>
+          <button type="button" className={zavihek === 'klepet' ? 'on' : ''} aria-current={zavihek === 'klepet'} onClick={() => setZavihek('klepet')}>
+            <ChatCircle size={21} weight={zavihek === 'klepet' ? 'fill' : 'regular'} /><span>{L('Klepet', 'Chat')}</span>
+          </button>
+        </nav>, document.body)}
 
       {zavihek === 'posta' ? (
         <div className="km-posta-ovoj">
@@ -428,6 +443,15 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-zavihki{display:inline-flex;gap:.3rem;margin:0 0 1.1rem;padding:.25rem;background:#fff;border:1px solid var(--k-line);border-radius:999px}
         .km-zavihki button{display:inline-flex;align-items:center;gap:.4rem;border:0;background:none;border-radius:999px;padding:.5rem 1.1rem;font:700 .78rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 60%,transparent);cursor:pointer}
         .km-zavihki button.on{background:var(--k-ink,#2a2620);color:#fff}
+        .km-noga{display:none}
+        @media (max-width:760px){
+          .km-zavihki{display:none}
+          .km{padding-bottom:5rem}
+          .km-noga{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:90;background:#fff;border-top:1px solid var(--k-line);padding:.35rem .5rem calc(.35rem + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 24px color-mix(in oklch,var(--k-ink) 10%,transparent)}
+          .km-noga button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.12rem;position:relative;border:0;background:none;padding:.4rem;color:color-mix(in oklch,var(--k-ink) 55%,transparent);font:700 .66rem var(--font-sans),sans-serif;cursor:pointer}
+          .km-noga button.on{color:var(--k-purple)}
+          .km-noga b{position:absolute;top:.05rem;left:calc(50% + .5rem);min-width:1.05rem;height:1.05rem;padding:0 .25rem;border-radius:999px;background:var(--k-purple);color:#fff;font-size:.58rem;display:grid;place-items:center;line-height:1}
+        }
         .km-posta{display:flex;flex-direction:column;gap:.4rem;max-width:52rem}
         .km-posta .km-mail-vrsta{display:flex;align-items:center;gap:.75rem;width:100%;text-align:left;background:rgba(255,255,255,.5);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);border:1px solid rgba(255,255,255,.5);border-radius:.85rem;padding:.7rem .9rem;cursor:pointer;transition:background .16s ease,box-shadow .16s ease,transform .16s ease}
         .km-posta .km-mail-vrsta:hover{background:#fff;box-shadow:0 8px 22px oklch(20% .03 55/.1);transform:translateY(-1px)}

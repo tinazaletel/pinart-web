@@ -1440,7 +1440,8 @@
   .expenseList article > :nth-child(4) { grid-area: znesek; text-align: right; min-width: 0; }
   .expenseList article > :nth-child(4) small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
   .expenseList article > :nth-child(5) { grid-area: kebab; align-self: center; justify-self: end; }
-  .expenseList .expenseCoin { width: 1.7rem; font-size: .62rem; }
+  .expenseList .expenseCoin { display: none; }
+  .expenseEditor, .expenseArchive, .recurringCosts { padding-left: .35rem; padding-right: .35rem; }
   /* Tretji stolpec za puscico: pri dveh stolpcih je kot 4. otrok padla v novo vrstico
      in obvisela spodaj levo — videti je bila kot okrasek, ki ne vodi nikamor. */
   .clientDirectory > button, .projectIndex > button { grid-template-columns: auto minmax(0, 1fr) auto; }
