@@ -236,7 +236,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         </nav>, document.body)}
 
       {zavihek === 'posta' ? (
-        <div className="km-posta-ovoj">
+        <div className={'km-posta-ovoj' + (beriMail ? ' km-bere' : '')}>
           <div className="km-posta-vrh">
             <button type="button" className="km-mape-trig" onClick={() => setMapeOdprt(true)} aria-label={L('Mape', 'Folders')} aria-expanded={mapeOdprt}><List size={16} weight="bold" /> <span>{mapa === 'prejeto' ? L('Prejeto', 'Inbox') : mapa === 'poslano' ? L('Poslano', 'Sent') : mapa === 'osnutki' ? L('Osnutki', 'Drafts') : L('Koš', 'Trash')}</span></button>
             <button type="button" className="km-isk-krog" onClick={() => setIskOdprt(true)} aria-label={L('Išči', 'Search')}><MagnifyingGlass size={16} weight="bold" /></button>
@@ -521,6 +521,8 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
           .km{padding-left:.35rem;padding-right:.35rem}
           .km-posta-body{flex-direction:column;align-items:stretch}
           .km-branje{padding:.9rem .55rem}
+          /* Odprt mail = samostojna stran (skrij toolbar + mape-trigger; ostane Nazaj gumb) */
+          .km-bere .km-posta-vrh, .km-bere .km-mape-trig{display:none}
           .km-posta .km-mail-vrsta{padding:.7rem .8rem}
           .km-akcija-ikona{padding:.55rem}
           .km-akcija-ikona .km-akcija-txt{display:none}
