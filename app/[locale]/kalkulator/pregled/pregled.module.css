@@ -793,8 +793,9 @@
 .expenseTagSuggestions button { padding: .3rem .65rem; border: 1px dashed var(--line); border-radius: 999px; background: transparent; color: color-mix(in oklch, var(--ink) 72%, transparent); font: 700 .75rem var(--font-sans), sans-serif; cursor: pointer; }
 .expenseTagSuggestions button:hover { border-style: solid; color: var(--ink); background: oklch(95% .01 87); }
 /* ── Znacke stroska: majhni cipi pod opisom v seznamu ── */
-.expenseItemTags { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .3rem; }
-.expenseItemTag { display: inline-flex; align-items: center; padding: .22rem .55rem; border: 1px solid var(--line); border-radius: 999px; background: oklch(96% .008 87); color: color-mix(in oklch, var(--ink) 78%, transparent); font-size: .68rem; font-weight: 700; white-space: nowrap; }
+.expenseItemTags { display: flex; flex-wrap: nowrap; gap: .3rem; margin-top: .3rem; overflow-x: auto; scrollbar-width: none; }
+.expenseItemTags::-webkit-scrollbar { display: none; }
+.expenseItemTag { flex: none; display: inline-flex; align-items: center; padding: .22rem .55rem; border: 0; border-radius: 999px; background: oklch(94% .05 var(--tag-h, 280)); color: oklch(42% .12 var(--tag-h, 280)); font-size: .68rem; font-weight: 700; white-space: nowrap; }
 /* ── Filter po znacki: enak jezik kot .invoiceFilters, a lomi v vec vrstic ── */
 .tagFilterRow { flex-wrap: wrap; row-gap: .3rem; margin-top: .6rem; width: 100%; }
 /* levi stolpec dovolj sirok, da se naslov ne lomi; desni omejen, sicer se
@@ -1433,7 +1434,8 @@
   .invoiceList article > *,
   .invoiceList article > div:nth-child(3), .invoiceList article > select { grid-column: 1; }
   /* Stroški kartica = ENA vrsta (eksplicitno): [✓] [€] [naziv/kategorija] [znesek/vir desno] [⋯] */
-  .expenseList article { grid-template-columns: auto auto minmax(0,1fr) auto auto; grid-template-areas: 'chk coin naziv znesek kebab'; column-gap: .5rem; row-gap: 0; align-items: center; padding: .55rem .4rem; min-height: 0; }
+  .expenseList article { grid-template-columns: auto auto minmax(0,1fr) auto auto; grid-template-areas: 'chk coin naziv znesek kebab' 'tags tags tags tags tags'; column-gap: .5rem; row-gap: .35rem; align-items: center; padding: .55rem .4rem; min-height: 0; }
+  .expenseList article > :nth-child(6) { grid-area: tags; }
   .expenseList article > :nth-child(1) { grid-area: chk; align-self: center; }
   .expenseList article > :nth-child(2) { grid-area: coin; align-self: center; }
   .expenseList article > :nth-child(3) { grid-area: naziv; min-width: 0; }

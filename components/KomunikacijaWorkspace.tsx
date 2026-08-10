@@ -520,7 +520,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
           .km-nova-plus{display:inline-flex}
           .km{padding-left:.35rem;padding-right:.35rem}
           .km-posta-body{flex-direction:column;align-items:stretch}
-          .km-branje{padding:1rem}
+          .km-branje{padding:.9rem .55rem}
           .km-posta .km-mail-vrsta{padding:.7rem .8rem}
           .km-akcija-ikona{padding:.55rem}
           .km-akcija-ikona .km-akcija-txt{display:none}
