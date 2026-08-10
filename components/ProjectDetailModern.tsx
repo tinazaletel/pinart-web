@@ -404,7 +404,7 @@ export default function ProjectDetailModern({
       , document.body)}
 
       <style dangerouslySetInnerHTML={{ __html: `
-        .pm { --pm-ink: var(--ink, oklch(19% 0.014 55)); --pm-paper: var(--paper, oklch(97% 0.012 87)); --pm-line: var(--line, oklch(93% 0.007 82)); --pm-acc: var(--purple, oklch(66% 0.2 297)); --pm-card: #fff; --pm-muted: color-mix(in oklch, var(--ink) 55%, transparent); --pm-soft: color-mix(in oklch, var(--ink) 42%, transparent); }
+        .pm { --pm-ink: var(--ink, oklch(19% 0.014 55)); --pm-paper: var(--paper, oklch(97% 0.012 87)); --pm-line: var(--line, oklch(93% 0.007 82)); --pm-acc: var(--purple, oklch(66% 0.2 297)); --pm-card: #fff; --pm-muted: color-mix(in oklch, var(--ink) 55%, transparent); --pm-soft: color-mix(in oklch, var(--ink) 42%, transparent); max-width:100%; overflow-x:clip; }
         .pm-team { display:flex; align-items:center; gap:.7rem; flex-wrap:wrap; background:var(--pm-card); border:1px solid var(--pm-line); border-radius:16px; padding:.8rem 1rem; margin-bottom:1.2rem; }
         .pm-team-lbl { font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-member { display:inline-flex; align-items:center; gap:.5rem; padding:.3rem .6rem .3rem .35rem; border-radius:999px; border:1px solid var(--pm-line); background:var(--pm-card); }
@@ -438,8 +438,8 @@ export default function ProjectDetailModern({
         .pm-brief { background:linear-gradient(165deg, color-mix(in oklab, var(--pm-acc) 8%, var(--pm-card)), var(--pm-card) 72%); }
         .pm-brow { display:flex; align-items:center; gap:.7rem; padding:.72rem 0; border-top:1px solid color-mix(in oklch, var(--pm-ink) 9%, transparent); }
         .pm-brow:first-of-type { border-top:0; }
-        .pm-bk { flex:0 0 9rem; color:var(--pm-muted); font-size:.8rem; font-weight:600; }
-        .pm-bv { font-size:.88rem; color:var(--pm-ink); }
+        .pm-bk { flex:0 0 7rem; min-width:0; color:var(--pm-muted); font-size:.8rem; font-weight:600; overflow-wrap:anywhere; }
+        .pm-bv { flex:1; min-width:0; font-size:.88rem; color:var(--pm-ink); overflow-wrap:anywhere; }
         .pm-cilji { display:flex; flex-direction:column; gap:.35rem; margin-top:.7rem; }
         .pm-cilj { font-size:.85rem; color:var(--pm-ink); }
         .pm-muted { color:var(--pm-muted); font-size:.86rem; margin:.2rem 0 0; }
@@ -454,7 +454,8 @@ export default function ProjectDetailModern({
         .pm-mail-kdo { flex:0 0 30%; min-width:0; font-size:.8rem; font-weight:600; color:var(--pm-ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .pm-mail-zad { flex:1; min-width:0; font-size:.82rem; color:var(--pm-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .pm-mail-dan { flex:none; font-size:.7rem; color:var(--pm-muted); font-variant-numeric:tabular-nums; }
-        .pm-fin { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; margin-bottom:.8rem; }
+        .pm-fin { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:.6rem; margin-bottom:.8rem; }
+        .pm-fin .pm-f b { overflow-wrap:anywhere; }
         .pm-f { border:1px solid var(--pm-line); border-radius:12px; padding:.7rem .8rem; background:var(--pm-paper); }
         .pm-f small { font-size:.72rem; color:var(--pm-muted); }
         .pm-f b { display:block; font-family:var(--font-sans), system-ui, sans-serif; font-weight:700; font-size:1.25rem; margin-top:.15rem; color:var(--pm-ink); }
