@@ -13,6 +13,7 @@ export type FlowOffer = {
   agreedAmount: number;
   deletedAt?: string;
   deletedBy?: string;
+  updatedAt?: string;
 };
 
 /* Postavka racuna (ZDDV-1): cena je NA ENOTO in BREZ DDV; popust v %, ddv = stopnja v %. */
@@ -81,6 +82,7 @@ export type FlowInvoice = {
   fiscalProvider?: string;
   deletedAt?: string;
   deletedBy?: string;
+  updatedAt?: string;
 };
 
 export type DavcniStatus = 'osnutek' | 'izdan' | 'placan';
@@ -115,6 +117,7 @@ export type FlowExpense = {
   obdobje?: 'enkratni' | 'mesecni' | 'letni';
   deletedAt?: string;
   deletedBy?: string;
+  updatedAt?: string;
 };
 
 export type FlowContract = {
@@ -130,6 +133,7 @@ export type FlowContract = {
   notes?: string;
   deletedAt?: string;
   deletedBy?: string;
+  updatedAt?: string;
 };
 
 /* Ena kontaktna oseba pri stranki (npr. Honeywell ima vec ljudi, vsak svoj
@@ -156,6 +160,7 @@ export type FlowClient = {
   /* neobvezno: vec kontaktnih oseb pri stranki — stari zapisi ga nimajo,
      privzemi prazen seznam, delujejo kot doslej */
   kontakti?: Kontakt[];
+  updatedAt?: string;
 };
 
 export type FlowData = {
@@ -177,6 +182,7 @@ type ArchivedOffer = {
 type LegacyClient = { ime?: string; email?: string; oseba?: string; telefon?: string; naslov?: string; davcna?: string };
 
 const FLOW_KEY = 'pinart-flow-data-v1';
+const UNSYNCED_KEY = 'pinart-flow-unsynced';
 const legacyKeys = {
   invoices: 'pinart-dashboard-invoices',
   expenses: 'pinart-dashboard-expenses',
@@ -259,6 +265,7 @@ export const writeFlowDataLocally = (data: FlowData) => {
 };
 
 const scheduleCloudSync = (data: FlowData) => {
+  oznaciNesinhronizirano();
   queueMicrotask(() => {
     import('./pinartFlowCloud')
       .then(({ pushFlowData }) => pushFlowData(data))
@@ -266,13 +273,30 @@ const scheduleCloudSync = (data: FlowData) => {
   });
 };
 
+type FlowRecord = FlowOffer | FlowInvoice | FlowExpense | FlowContract | FlowClient;
+
+const withUpdatedAt = <T extends FlowRecord>(nextItems: T[], previousItems: T[]): T[] => {
+  const previous = new Map(previousItems.map(item => [item.id, item]));
+  const now = new Date().toISOString();
+  return nextItems.map(item => {
+    const old = previous.get(item.id);
+    if (!old) return { ...item, updatedAt: item.updatedAt || now };
+    const { updatedAt: _nextUpdatedAt, ...nextComparable } = item;
+    const { updatedAt: _oldUpdatedAt, ...oldComparable } = old;
+    return JSON.stringify(nextComparable) === JSON.stringify(oldComparable)
+      ? { ...item, updatedAt: item.updatedAt || old.updatedAt }
+      : { ...item, updatedAt: now };
+  });
+};
+
 export const saveFlowCollection = <K extends 'invoices' | 'expenses' | 'contracts' | 'clients'>(key: K, items: FlowData[K]) => {
   const data = loadFlowData();
-  const nextIds = new Set(items.map(item => item.id));
+  const stampedItems = withUpdatedAt(items as FlowRecord[], data[key] as FlowRecord[]) as FlowData[K];
+  const nextIds = new Set(stampedItems.map(item => item.id));
   const removedIds = data[key].filter(item => !nextIds.has(item.id)).map(item => item.id);
-  const next = { ...data, [key]: items };
+  const next = { ...data, [key]: stampedItems };
   localStorage.setItem(FLOW_KEY, JSON.stringify(next));
-  localStorage.setItem(legacyKeys[key], JSON.stringify(items));
+  localStorage.setItem(legacyKeys[key], JSON.stringify(stampedItems));
   window.dispatchEvent(new CustomEvent('pinart-flow-change', { detail: { key } }));
   if (removedIds.length) queueMicrotask(() => import('./pinartFlowCloud').then(({ deleteCloudRecords }) => deleteCloudRecords(key, removedIds)).catch(error => console.error('Pinart Flow cloud delete:', error)));
   scheduleCloudSync(next);
@@ -280,12 +304,13 @@ export const saveFlowCollection = <K extends 'invoices' | 'expenses' | 'contract
 
 export const saveOffers = (offers: FlowOffer[]) => {
   const data = loadFlowData();
-  const nextIds = new Set(offers.map(offer => offer.id));
+  const stampedOffers = withUpdatedAt(offers, data.offers);
+  const nextIds = new Set(stampedOffers.map(offer => offer.id));
   const removedIds = data.offers.filter(offer => !nextIds.has(offer.id)).map(offer => offer.id);
-  const next = { ...data, offers };
+  const next = { ...data, offers: stampedOffers };
   localStorage.setItem(FLOW_KEY, JSON.stringify(next));
-  localStorage.setItem('pinart-dashboard-offer-status', JSON.stringify(Object.fromEntries(offers.map(offer => [offer.id, offer.status]))));
-  localStorage.setItem('pinart-dashboard-offer-amounts', JSON.stringify(Object.fromEntries(offers.map(offer => [offer.id, offer.agreedAmount]))));
+  localStorage.setItem('pinart-dashboard-offer-status', JSON.stringify(Object.fromEntries(stampedOffers.map(offer => [offer.id, offer.status]))));
+  localStorage.setItem('pinart-dashboard-offer-amounts', JSON.stringify(Object.fromEntries(stampedOffers.map(offer => [offer.id, offer.agreedAmount]))));
   window.dispatchEvent(new CustomEvent('pinart-flow-change', { detail: { key: 'offers' } }));
   if (removedIds.length) queueMicrotask(() => import('./pinartFlowCloud').then(({ deleteCloudRecords }) => deleteCloudRecords('offers', removedIds)).catch(error => console.error('Pinart Flow cloud delete:', error)));
   scheduleCloudSync(next);
@@ -293,13 +318,36 @@ export const saveOffers = (offers: FlowOffer[]) => {
 
 export const saveOfferAmount = (offerId: string, agreedAmount: number) => {
   const data = loadFlowData();
-  const offers = data.offers.map(offer => offer.id === offerId ? { ...offer, agreedAmount } : offer);
+  const offers = data.offers.map(offer => offer.id === offerId ? { ...offer, agreedAmount, updatedAt: new Date().toISOString() } : offer);
   localStorage.setItem(FLOW_KEY, JSON.stringify({ ...data, offers }));
   const amounts = read<Record<string, number>>('pinart-dashboard-offer-amounts', {});
   localStorage.setItem('pinart-dashboard-offer-amounts', JSON.stringify({ ...amounts, [offerId]: agreedAmount }));
   window.dispatchEvent(new CustomEvent('pinart-flow-change', { detail: { key: 'offers' } }));
   scheduleCloudSync({ ...data, offers });
 };
+
+export function oznaciNesinhronizirano(): void {
+  if (typeof window !== 'undefined') localStorage.setItem(UNSYNCED_KEY, '1');
+}
+
+export function oznaciSinhronizirano(): void {
+  if (typeof window !== 'undefined') localStorage.removeItem(UNSYNCED_KEY);
+}
+
+export function jeSamoLokalno(): boolean {
+  return typeof window !== 'undefined' && localStorage.getItem(UNSYNCED_KEY) === '1';
+}
+
+export function izvoziFlowJSON(): string {
+  const settingsKeys = [
+    'pinart-dashboard-goal', 'pinart-dashboard-goal-settings', 'pinart-flow-delovnik-ure',
+    'pinart-kalkulator-podjetja', 'pinart-kalkulator-profili', 'pinart-moje-podloge',
+  ];
+  const settings = typeof window === 'undefined' ? {} : Object.fromEntries(
+    settingsKeys.map(key => [key, read<unknown>(key, null)]),
+  );
+  return JSON.stringify({ exportedAt: new Date().toISOString(), data: loadFlowData(), settings }, null, 2);
+}
 
 export const saveOfferStatus = (offerId: string, status: FlowOfferStatus) => {
   const data = loadFlowData();

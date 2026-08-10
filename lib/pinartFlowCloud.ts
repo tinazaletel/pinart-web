@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/client';
+import { oznaciSinhronizirano } from './pinartFlowStore';
 import type { FlowClient, FlowContract, FlowData, FlowExpense, FlowInvoice, FlowOffer } from './pinartFlowStore';
 
 type OrganizationContext = { organizationId: string; userId: string };
@@ -121,7 +122,7 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       phone: client.phone || null,
       address: client.address || null,
       tax_number: client.tax || null,
-      updated_at: new Date().toISOString(),
+      updated_at: client.updatedAt || new Date(0).toISOString(),
     })), { onConflict: 'organization_id,external_id' });
     if (error) throw error;
   }
@@ -143,7 +144,7 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       amount: offer.agreedAmount || 0,
       deleted_at: offer.deletedAt || null,
       deleted_by: offer.deletedBy || null,
-      updated_at: new Date().toISOString(),
+      updated_at: offer.updatedAt || new Date(0).toISOString(),
     })), { onConflict: 'organization_id,external_id' });
     if (error) throw error;
   }
@@ -175,7 +176,7 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       cancel_reason: invoice.cancelReason || null,
       deleted_at: invoice.deletedAt || null,
       deleted_by: invoice.deletedBy || null,
-      updated_at: new Date().toISOString(),
+      updated_at: invoice.updatedAt || new Date(0).toISOString(),
     })), { onConflict: 'organization_id,external_id' });
     if (error) throw error;
   }
@@ -194,7 +195,7 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       file_path: expense.filePath || null,
       deleted_at: expense.deletedAt || null,
       deleted_by: expense.deletedBy || null,
-      updated_at: new Date().toISOString(),
+      updated_at: expense.updatedAt || new Date(0).toISOString(),
     })), { onConflict: 'organization_id,external_id' });
     if (error) throw error;
   }
@@ -213,10 +214,12 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       notes: contract.notes || null,
       deleted_at: contract.deletedAt || null,
       deleted_by: contract.deletedBy || null,
-      updated_at: new Date().toISOString(),
+      updated_at: contract.updatedAt || new Date(0).toISOString(),
     })), { onConflict: 'organization_id,external_id' });
     if (error) throw error;
   }
+
+  oznaciSinhronizirano();
 }
 
 export async function deleteCloudRecords(
@@ -249,10 +252,10 @@ export async function pullFlowData(): Promise<FlowData | null> {
   const organizationId = context.organizationId;
   const [clientsResult, offersResult, invoicesResult, expensesResult, contractsResult] = await Promise.all([
     supabase.from('clients').select('*').eq('organization_id', organizationId),
-    supabase.from('offers').select('*').eq('organization_id', organizationId).is('deleted_at', null),
-    supabase.from('invoices').select('*').eq('organization_id', organizationId).is('deleted_at', null),
-    supabase.from('expenses').select('*').eq('organization_id', organizationId).is('deleted_at', null),
-    supabase.from('contracts').select('*').eq('organization_id', organizationId).is('deleted_at', null),
+    supabase.from('offers').select('*').eq('organization_id', organizationId),
+    supabase.from('invoices').select('*').eq('organization_id', organizationId),
+    supabase.from('expenses').select('*').eq('organization_id', organizationId),
+    supabase.from('contracts').select('*').eq('organization_id', organizationId),
   ]);
   const firstError = [clientsResult.error, offersResult.error, invoicesResult.error, expensesResult.error, contractsResult.error].find(Boolean);
   if (firstError) throw firstError;
@@ -266,12 +269,13 @@ export async function pullFlowData(): Promise<FlowData | null> {
     clients: clients.map(row => ({
       id: String(row.external_id || row.id), name: String(row.name), email: row.email || undefined,
       contact: row.contact_name || undefined, phone: row.phone || undefined, address: row.address || undefined, tax: row.tax_number || undefined,
+      updatedAt: row.updated_at || undefined,
     })),
     offers: offers.map(row => ({
       id: String(row.external_id || row.id), title: String(row.title), client: clientNameById.get(String(row.client_id)) || 'Brez stranke',
       date: String(row.issue_date), number: row.number || undefined, scope: Array.isArray(row.scope) ? row.scope.map(String) : [],
       status: row.status as FlowOffer['status'], agreedAmount: Number(row.amount) || 0,
-      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined,
+      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined, updatedAt: row.updated_at || undefined,
     })),
     invoices: (invoicesResult.data || []).map(row => ({
       id: String(row.external_id || row.id), number: row.number || undefined, title: row.title || undefined,
@@ -287,20 +291,20 @@ export async function pullFlowData(): Promise<FlowData | null> {
       cancelReason: row.cancel_reason || undefined,
       fiscalConfirmedAt: row.fiscal_confirmed_at || undefined, fiscalEor: row.fiscal_eor || undefined,
       fiscalZoi: row.fiscal_zoi || undefined, fiscalProvider: row.fiscal_provider || undefined,
-      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined,
+      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined, updatedAt: row.updated_at || undefined,
     })),
     expenses: (expensesResult.data || []).map(row => ({
       id: String(row.external_id || row.id), title: String(row.title), client: row.client_id ? clientNameById.get(String(row.client_id)) : undefined,
       amount: Number(row.amount) || 0, date: String(row.expense_date), sourceOfferId: row.offer_id ? offerExternalById.get(String(row.offer_id)) : undefined,
       company: row.supplier || undefined, category: row.category || undefined,
       filePath: row.file_path || undefined, fileName: row.file_path ? String(row.file_path).split('/').pop() : undefined,
-      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined,
+      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined, updatedAt: row.updated_at || undefined,
     })),
     contracts: (contractsResult.data || []).map(row => ({
       id: String(row.external_id || row.id), title: String(row.title), client: clientNameById.get(String(row.client_id)) || 'Brez stranke',
       date: String(row.contract_date), status: row.status as FlowContract['status'], sourceOfferId: row.offer_id ? offerExternalById.get(String(row.offer_id)) : undefined,
       body: row.body || undefined, notes: row.notes || undefined, filePath: row.file_path || undefined, fileName: row.file_path ? String(row.file_path).split('/').pop() : undefined,
-      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined,
+      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined, updatedAt: row.updated_at || undefined,
     })),
   };
 }
@@ -337,17 +341,23 @@ export async function listAudit(recordId: string): Promise<DocumentAuditEntry[]>
   }));
 }
 
-const merge = <T extends { id: string }>(cloud: T[], local: T[]) => {
-  const items = new Map(cloud.map(item => [item.id, item]));
-  local.forEach(item => items.set(item.id, item));
-  return [...items.values()];
+export const mergeByUpdatedAt = <T extends { id: string; updatedAt?: string; deletedAt?: string }>(cloud: T[], local: T[]) => {
+  const items = new Map<string, T>();
+  for (const item of [...cloud, ...local]) {
+    const current = items.get(item.id);
+    if (!current) { items.set(item.id, item); continue; }
+    const currentTime = current.updatedAt ? Date.parse(current.updatedAt) : Number.NEGATIVE_INFINITY;
+    const itemTime = item.updatedAt ? Date.parse(item.updatedAt) : Number.NEGATIVE_INFINITY;
+    if (itemTime > currentTime || (itemTime === currentTime && !item.updatedAt)) items.set(item.id, item);
+  }
+  return [...items.values()].filter(item => !item.deletedAt);
 };
 
 export function mergeFlowData(cloud: FlowData, local: FlowData): FlowData {
   return {
     version: 1,
-    offers: merge(cloud.offers, local.offers), invoices: merge(cloud.invoices, local.invoices),
-    expenses: merge(cloud.expenses, local.expenses), contracts: merge(cloud.contracts, local.contracts), clients: merge(cloud.clients, local.clients),
+    offers: mergeByUpdatedAt(cloud.offers, local.offers), invoices: mergeByUpdatedAt(cloud.invoices, local.invoices),
+    expenses: mergeByUpdatedAt(cloud.expenses, local.expenses), contracts: mergeByUpdatedAt(cloud.contracts, local.contracts), clients: mergeByUpdatedAt(cloud.clients, local.clients),
   };
 }
 
