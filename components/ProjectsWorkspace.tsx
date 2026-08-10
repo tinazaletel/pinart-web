@@ -147,16 +147,16 @@ const pwStyles = `
   .pw-tabela-ovoj{overflow-x:hidden}
   .pw-tabela{min-width:0}
   .pw-tabela > header{display:none}
-  .pw-vrstica{display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:.7rem;row-gap:.12rem;align-items:center;padding:.7rem .85rem}
+  .pw-vrstica{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:'chk ime status' 'chk firma znesek';column-gap:.6rem;row-gap:.1rem;align-items:center;padding:.7rem .85rem}
   .pw-vrstica > *{min-width:0}
-  .pw-vrstica > :nth-child(1){grid-column:1;grid-row:1 / span 2;align-self:center}
-  .pw-vrstica > :nth-child(2){grid-column:2;grid-row:1}
-  .pw-vrstica > :nth-child(3){grid-column:2;grid-row:2;font-size:.76rem;color:color-mix(in oklch,var(--ink) 58%,transparent)}
+  .pw-vrstica > :nth-child(1){grid-area:chk;align-self:center}
+  .pw-vrstica > :nth-child(2){grid-area:ime}
+  .pw-vrstica > :nth-child(3){grid-area:firma;font-size:.76rem;color:color-mix(in oklch,var(--ink) 58%,transparent)}
   .pw-vrstica > :nth-child(4){display:none}
-  .pw-vrstica > :nth-child(5){grid-column:3;grid-row:1;justify-self:end}
-  .pw-vrstica > :nth-child(6){grid-column:3;grid-row:2;justify-self:end;font-weight:700}
+  .pw-vrstica > :nth-child(5){grid-area:status;justify-self:end}
+  .pw-vrstica > :nth-child(6){grid-area:znesek;justify-self:end;font-weight:700;font-size:.82rem;white-space:nowrap}
   .pw-vrstica > :nth-child(7){display:none}
-  .pw-glavna strong{font-size:.92rem}
+  .pw-glavna strong{font-size:.9rem}
 }
 .pw-ikona{display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:oklch(94% .045 295);color:var(--ink);flex:none}
 .pw-mut{color:color-mix(in oklch,var(--ink) 72%,transparent)}
