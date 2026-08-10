@@ -426,10 +426,12 @@ export default function ProjectDetailModern({
         .pm-add-manage { display:block; text-decoration:none; margin-top:.15rem; padding:.4rem .5rem; font-size:.74rem; font-weight:600; color:var(--pm-acc); border-top:1px solid var(--pm-line); }
         .pm-soon { font-size:.7rem; color:var(--pm-muted); font-style:italic; margin-left:auto; }
         .pm-empty { font-size:.85rem; color:var(--pm-muted); }
-        .pm-grid { display:grid; grid-template-columns:1fr; gap:1.1rem; }
+        .pm-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:1.1rem; }
+        .pm-grid > * { min-width:0; }
         @media (min-width:880px){ .pm-grid { grid-template-columns:1.7fr 1fr; align-items:start; } }
         .pm-col { display:flex; flex-direction:column; gap:1.1rem; }
-        .pm-card { background:var(--pm-card); border:1px solid var(--pm-line); border-radius:16px; padding:1.1rem 1.2rem; }
+        .pm-card { background:var(--pm-card); border:1px solid var(--pm-line); border-radius:16px; padding:1.1rem 1.2rem; min-width:0; max-width:100%; overflow:hidden; }
+        .pm-card > header h3 { min-width:0; overflow-wrap:anywhere; }
         .pm-card > header { display:flex; align-items:center; justify-content:space-between; gap:.6rem; margin-bottom:.5rem; }
         .pm-card h3 { margin:0; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-title { font-family:var(--font-serif), Georgia, serif; font-size:1.3rem; margin:0 0 .7rem; color:var(--pm-ink); }
