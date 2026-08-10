@@ -1391,6 +1391,8 @@
   .expenseEditor form { grid-template-columns: 1fr; }
   .expenseEditorActions { grid-column: 1; }
   .expenseArchive > header { align-items: flex-start; flex-direction: column; }
+  .expenseEditor, .expenseArchive, .recurringCosts { padding-left: .6rem; padding-right: .6rem; }
+  .expenseList .expenseActions { justify-self: end; }
   .expenseList article { grid-template-columns: auto 1fr auto; }
   .expenseList article > div:nth-child(3), .expenseList article > button { grid-column: 2; }
   .clientToolbar { align-items: center; flex-direction: row; gap: .5rem; }
