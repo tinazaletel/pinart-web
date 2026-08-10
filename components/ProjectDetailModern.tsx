@@ -416,6 +416,8 @@ export default function ProjectDetailModern({
         .pm-mx { border:0; background:none; cursor:pointer; color:var(--pm-muted); font-size:1rem; line-height:1; padding:0 .1rem 0 .2rem; border-radius:50%; }
         .pm-mx:hover { color:oklch(52% .18 25); }
         .pm-add-wrap { position:relative; display:inline-flex; }
+        /* Gumb za dodajanje sodelavcev poravnan DESNO v NA PROJEKTU vrstici */
+        .pm-team > .pm-addmember, .pm-team > .pm-add-wrap { margin-left:auto; }
         .pm-add-menu { position:absolute; top:calc(100% + .4rem); left:0; z-index:20; min-width:14rem; background:var(--pm-card); border:1px solid var(--pm-line); border-radius:12px; padding:.35rem; box-shadow:0 12px 30px -12px rgba(17,17,17,.25); display:flex; flex-direction:column; gap:.1rem; }
         .pm-add-opt { display:flex; align-items:center; gap:.5rem; width:100%; text-align:left; border:0; background:none; cursor:pointer; padding:.4rem .5rem; border-radius:8px; color:var(--pm-ink); }
         .pm-add-opt:hover { background:var(--pm-paper); }
