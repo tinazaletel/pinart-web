@@ -34,6 +34,16 @@ export function preberiPredogled(): Predogled {
   return v === 'empty' || v === 'demo' || v === 'zacetek' ? v : 'mine';
 }
 
+/** Varnostni preizkus za vse zapisovalne poti predstavitvenega načina. */
+export function jeDemo(): boolean {
+  return preberiPredogled() === 'demo';
+}
+
+/** Demo zapisi se nikoli ne smejo sinhronizirati v pravo organizacijo. */
+export function jeDemoId(id?: string | null): boolean {
+  return typeof id === 'string' && id.startsWith('demo-');
+}
+
 export function nastaviPredogled(vrednost: Predogled): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(KLJUC, vrednost);

@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/client';
 import { oznaciSinhronizirano } from './pinartFlowStore';
 import type { FlowClient, FlowContract, FlowData, FlowExpense, FlowInvoice, FlowOffer } from './pinartFlowStore';
 import { mergeByUpdatedAt } from './mergeByUpdatedAt';
+import { jeDemoId } from './predogled';
 export { mergeByUpdatedAt } from './mergeByUpdatedAt';
 
 type OrganizationContext = { organizationId: string; userId: string };
@@ -112,7 +113,15 @@ export async function pushFlowData(data: FlowData): Promise<void> {
   if (!context) return;
   const supabase = createClient();
   const organizationId = context.organizationId;
-  const clients = allClients(data);
+  const varniPodatki: FlowData = {
+    ...data,
+    clients: data.clients.filter(item => !jeDemoId(item.id)),
+    offers: data.offers.filter(item => !jeDemoId(item.id)),
+    invoices: data.invoices.filter(item => !jeDemoId(item.id)),
+    expenses: data.expenses.filter(item => !jeDemoId(item.id)),
+    contracts: data.contracts.filter(item => !jeDemoId(item.id)),
+  };
+  const clients = allClients(varniPodatki);
 
   if (clients.length) {
     const { error } = await supabase.from('clients').upsert(clients.map(client => ({
@@ -133,8 +142,8 @@ export async function pushFlowData(data: FlowData): Promise<void> {
   if (clientError) throw clientError;
   const clientByName = new Map((clientRows || []).map(row => [String(row.name).trim().toLocaleLowerCase('sl'), String(row.id)]));
 
-  if (data.offers.length) {
-    const { error } = await supabase.from('offers').upsert(data.offers.map(offer => ({
+  if (varniPodatki.offers.length) {
+    const { error } = await supabase.from('offers').upsert(varniPodatki.offers.map(offer => ({
       organization_id: organizationId,
       external_id: offer.id,
       client_id: clientByName.get(offer.client.trim().toLocaleLowerCase('sl')) || null,
@@ -155,8 +164,8 @@ export async function pushFlowData(data: FlowData): Promise<void> {
   if (offerError) throw offerError;
   const offerByExternalId = new Map((offerRows || []).map(row => [String(row.external_id), String(row.id)]));
 
-  if (data.invoices.length) {
-    const { error } = await supabase.from('invoices').upsert(data.invoices.map(invoice => ({
+  if (varniPodatki.invoices.length) {
+    const { error } = await supabase.from('invoices').upsert(varniPodatki.invoices.map(invoice => ({
       organization_id: organizationId,
       external_id: invoice.id,
       client_id: clientByName.get(invoice.client.trim().toLocaleLowerCase('sl')) || null,
@@ -183,8 +192,8 @@ export async function pushFlowData(data: FlowData): Promise<void> {
     if (error) throw error;
   }
 
-  if (data.expenses.length) {
-    const { error } = await supabase.from('expenses').upsert(data.expenses.map(expense => ({
+  if (varniPodatki.expenses.length) {
+    const { error } = await supabase.from('expenses').upsert(varniPodatki.expenses.map(expense => ({
       organization_id: organizationId,
       external_id: expense.id,
       client_id: expense.client ? clientByName.get(expense.client.trim().toLocaleLowerCase('sl')) || null : null,
@@ -202,8 +211,8 @@ export async function pushFlowData(data: FlowData): Promise<void> {
     if (error) throw error;
   }
 
-  if (data.contracts.length) {
-    const { error } = await supabase.from('contracts').upsert(data.contracts.map(contract => ({
+  if (varniPodatki.contracts.length) {
+    const { error } = await supabase.from('contracts').upsert(varniPodatki.contracts.map(contract => ({
       organization_id: organizationId,
       external_id: contract.id,
       client_id: clientByName.get(contract.client.trim().toLocaleLowerCase('sl')) || null,
@@ -228,22 +237,23 @@ export async function deleteCloudRecords(
   collection: 'offers' | 'invoices' | 'expenses' | 'contracts' | 'clients',
   externalIds: string[],
 ): Promise<void> {
-  if (!externalIds.length) return;
+  const varniIds = externalIds.filter(id => !jeDemoId(id));
+  if (!varniIds.length) return;
   const context = await getOrganizationContext();
   if (!context) return;
   const supabase = createClient();
   if (collection === 'clients') {
-    const { error } = await supabase.from('clients').delete().eq('organization_id', context.organizationId).in('external_id', externalIds);
+    const { error } = await supabase.from('clients').delete().eq('organization_id', context.organizationId).in('external_id', varniIds);
     if (error) throw error;
     return;
   }
   if (collection === 'invoices') {
-    const { data, error: readError } = await supabase.from('invoices').select('external_id,issued_at').eq('organization_id', context.organizationId).in('external_id', externalIds);
+    const { data, error: readError } = await supabase.from('invoices').select('external_id,issued_at').eq('organization_id', context.organizationId).in('external_id', varniIds);
     if (readError) throw readError;
     if ((data || []).some(row => row.issued_at)) throw new Error('Izdanega računa ni mogoče izbrisati. Uporabi storno.');
   }
   const table = ({ offers: 'offers', invoices: 'invoices', expenses: 'expenses', contracts: 'contracts' } as const)[collection];
-  const { error } = await supabase.from(table).update({ deleted_at: new Date().toISOString(), deleted_by: context.userId }).eq('organization_id', context.organizationId).in('external_id', externalIds);
+  const { error } = await supabase.from(table).update({ deleted_at: new Date().toISOString(), deleted_by: context.userId }).eq('organization_id', context.organizationId).in('external_id', varniIds);
   if (error) throw error;
 }
 
@@ -407,6 +417,7 @@ function validateBusinessDocument(file: File): { safeName: string; mime: string 
 }
 
 export async function uploadBusinessDocument(file: File, section: string, externalId: string): Promise<string> {
+  if (jeDemoId(externalId)) throw new Error('V predstavitvenem načinu nalaganje ni dovoljeno.');
   const context = await getOrganizationContext();
   if (!context) throw new Error('Prijava je potekla.');
   const { safeName, mime } = validateBusinessDocument(file);
@@ -591,6 +602,9 @@ export async function saveRetainerDraft(input: {
   packageAmount: number; monthlyAmount: number; durationMonths: number; noticeDays: number;
   rightsText: string; document?: { file: File; kind: 'offer' | 'contract' };
 }): Promise<void> {
+  if (jeDemoId(input.externalId) || jeDemoId(input.client.id)) {
+    throw new Error('V predstavitvenem načinu shranjevanje ni dovoljeno.');
+  }
   const context = await getOrganizationContext();
   if (!context) throw new Error('Prijava je potekla.');
   const supabase = createClient();
