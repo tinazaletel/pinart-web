@@ -157,6 +157,8 @@ const pwStyles = `
   /* znesek = poslovni podatek (skrit za sodelavce, ko bodo vloge); zaenkrat viden lastniku */
   .pw-vrstica > :nth-child(6){grid-area:znesek;justify-self:end;align-self:center;font-weight:700;font-size:.82rem;white-space:nowrap}
   .pw-vrstica > :nth-child(7){display:none}
+  .pw-glavna{gap:.3rem}
+  .pw-glavna i{margin-right:0 !important}
   .pw-glavna strong{font-size:.9rem}
 }
 .pw-ikona{display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:oklch(94% .045 295);color:var(--ink);flex:none}
