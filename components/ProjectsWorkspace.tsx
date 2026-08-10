@@ -147,14 +147,15 @@ const pwStyles = `
   .pw-tabela-ovoj{overflow-x:hidden}
   .pw-tabela{min-width:0}
   .pw-tabela > header{display:none}
-  .pw-vrstica{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:'chk ime status' 'chk firma znesek';column-gap:.6rem;row-gap:.1rem;align-items:center;padding:.7rem .85rem}
+  .pw-vrstica{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:'chk ime status' 'chk firma znesek' 'chk datum znesek';column-gap:.6rem;row-gap:.05rem;align-items:center;padding:.7rem .85rem}
   .pw-vrstica > *{min-width:0}
   .pw-vrstica > :nth-child(1){grid-area:chk;align-self:center}
   .pw-vrstica > :nth-child(2){grid-area:ime}
-  .pw-vrstica > :nth-child(3){grid-area:firma;font-size:.76rem;color:color-mix(in oklch,var(--ink) 58%,transparent)}
-  .pw-vrstica > :nth-child(4){display:none}
-  .pw-vrstica > :nth-child(5){grid-area:status;justify-self:end}
-  .pw-vrstica > :nth-child(6){grid-area:znesek;justify-self:end;font-weight:700;font-size:.82rem;white-space:nowrap}
+  .pw-vrstica > :nth-child(3){grid-area:firma;font-size:.76rem;color:color-mix(in oklch,var(--ink) 60%,transparent)}
+  .pw-vrstica > :nth-child(4){grid-area:datum;font-size:.72rem;color:color-mix(in oklch,var(--ink) 48%,transparent)}
+  .pw-vrstica > :nth-child(5){grid-area:status;justify-self:end;align-self:center}
+  /* znesek = poslovni podatek (skrit za sodelavce, ko bodo vloge); zaenkrat viden lastniku */
+  .pw-vrstica > :nth-child(6){grid-area:znesek;justify-self:end;align-self:center;font-weight:700;font-size:.82rem;white-space:nowrap}
   .pw-vrstica > :nth-child(7){display:none}
   .pw-glavna strong{font-size:.9rem}
 }
