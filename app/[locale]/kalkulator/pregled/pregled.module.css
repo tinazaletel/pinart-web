@@ -1424,10 +1424,14 @@
   .flowTools > * { min-height: 9rem; }
   .projectMoney { grid-template-columns: 1fr; }
   .contractDetailMeta { grid-template-columns: 1fr; }
-  .invoiceList article, .expenseList article { grid-template-columns: 1fr; }
-  .invoiceList article > *, .expenseList article > *,
-  .invoiceList article > div:nth-child(3), .invoiceList article > select,
-  .expenseList article > div:nth-child(3), .expenseList article > button { grid-column: 1; }
+  .invoiceList article { grid-template-columns: 1fr; }
+  .invoiceList article > *,
+  .invoiceList article > div:nth-child(3), .invoiceList article > select { grid-column: 1; }
+  /* Stroški kartica = VEČ stolpcev: [✓] [€] [naziv/kategorija] [znesek/vir desno] [⋯] */
+  .expenseList article { grid-template-columns: auto auto minmax(0,1fr) auto auto; gap: .15rem .5rem; align-items: center; padding: .6rem .5rem; min-height: 0; }
+  .expenseList article > * { grid-column: auto; }
+  .expenseList article > div:nth-child(4) { text-align: right; min-width: 0; }
+  .expenseList article > div:nth-child(4) small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
   /* Tretji stolpec za puscico: pri dveh stolpcih je kot 4. otrok padla v novo vrstico
      in obvisela spodaj levo — videti je bila kot okrasek, ki ne vodi nikamor. */
   .clientDirectory > button, .projectIndex > button { grid-template-columns: auto minmax(0, 1fr) auto; }
