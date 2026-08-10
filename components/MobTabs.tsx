@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { CaretDown } from '@phosphor-icons/react';
 
 export type MobTabOpcija = { id: string; label: string; znacka?: ReactNode };
@@ -16,6 +17,8 @@ export default function MobTabs({ opcije, vrednost, naVrednost, label }: {
   label?: string;
 }) {
   const [odprt, setOdprt] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const trenutna = opcije.find(o => o.id === vrednost) || opcije[0];
 
   /* Ko je slide-up odprt, skrij Pupo (da ne prekriva menija) */
@@ -31,7 +34,7 @@ export default function MobTabs({ opcije, vrednost, naVrednost, label }: {
         {trenutna?.znacka}
         <CaretDown size={15} weight="bold" className="mobtabs-chev" />
       </button>
-      {odprt && <>
+      {mounted && odprt && createPortal(<>
         <div className="mobtabs-back" onClick={() => setOdprt(false)} aria-hidden />
         <div className="mobtabs-sheet" role="menu">
           <div className="mobtabs-sheet-glava"><b>{label || 'Izberi'}</b><button type="button" className="mobtabs-sheet-x" onClick={() => setOdprt(false)} aria-label="Zapri">✕</button></div>
@@ -43,7 +46,7 @@ export default function MobTabs({ opcije, vrednost, naVrednost, label }: {
             ))}
           </div>
         </div>
-      </>}
+      </>, document.body)}
       <style>{`
         .mobtabs { display: none; }
         @media (max-width: 640px) {
