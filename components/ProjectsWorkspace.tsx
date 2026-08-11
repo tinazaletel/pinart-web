@@ -813,6 +813,12 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     setRealProjekti(prev => prev.map(p => (p.id === posodobljen.id ? posodobljen : p)));
     if (!samoOgled) shraniProjekt(posodobljen);
   };
+  /* brief/cilji inline urejanje v detajlu (ProjectDetailModern panel) — isti vzorec */
+  const naSaveBrief = (real: Projekt, patch: Partial<Projekt>) => {
+    const posodobljen: Projekt = { ...real, ...patch };
+    setRealProjekti(prev => prev.map(p => (p.id === posodobljen.id ? posodobljen : p)));
+    if (!samoOgled) shraniProjekt(posodobljen);
+  };
   /* projekt izpeljan iz ponudbe (ni pravega zapisa) -> status je status ponudbe */
   const naStatusOffer = (id: string, v: FlowOfferStatus) => {
     setOffers(prev => prev.map(o => (o.id === id ? { ...o, status: v } : o)));
@@ -1587,6 +1593,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             onToggleMember={selected.real ? (id: string) => preklopiDodeljen(selected.real!, id) : undefined}
             posta={posta}
             onOpenZapis={() => setPogledDetajl('tabelni')}
+            onSaveAgreed={!samoOgled ? (v: number) => saveAmount(selected.offer.id, v) : undefined}
+            onSaveBrief={selected.real && !samoOgled ? (patch: Partial<Projekt>) => naSaveBrief(selected.real!, patch) : undefined}
             onOdpriKomunikacije={() => setKomOdprt(true)}
             onOdpriVse={openVsi}
             onOdpriDokument={(tip, item) => setVrsticaDetajl({ tip, item })}

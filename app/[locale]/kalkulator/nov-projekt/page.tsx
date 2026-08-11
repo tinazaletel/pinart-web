@@ -4,6 +4,10 @@ import NovProjektWorkspace from '@/components/NovProjektWorkspace';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import styles from '../pregled/pregled.module.css';
 
+/* NovProjektWorkspace uporablja useSearchParams (?uredi=<id>) — force-dynamic preskoči
+   statični prerender (sicer 'next build' pade z "useSearchParams should be wrapped in Suspense"). */
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Ustvari projekt | Pinart Flow', robots: { index: false, follow: false } };
 
 export default async function NovProjektPage({ params }: { params: Promise<{ locale: string }> }) {
