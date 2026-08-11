@@ -1057,7 +1057,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
       .rc .rc-polje input{width:100%;max-width:100%;min-width:0;height:3rem;box-sizing:border-box;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
       .rc .rc-polje input:focus{outline:none;border-color:var(--ink)}
-      .rc .rc-polje input[type="date"]{font-size:.95rem !important;line-height:normal}
+      .rc .rc-polje input[type="date"]{font-size:.95rem !important;line-height:normal;max-width:12rem}
       /* select: background-COLOR (NE shorthand background), da .shell select
          (chevron background-image) ostane veljaven — past iz feedback_css_splosna_pravila */
       .rc .rc-polje select{width:100%;max-width:100%;min-width:0;height:3rem;box-sizing:border-box;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background-color:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
