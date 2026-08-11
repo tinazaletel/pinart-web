@@ -1363,7 +1363,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-kp-vec li{margin:.15rem 0}
       .pg-kp-strnjena{background:#FCFBF7;box-shadow:0 4px 14px rgba(17,17,17,.05);margin-bottom:1rem}
 
-      .pg-gumbi{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.8rem;margin-top:1.3rem;min-width:0}
+      .pg-gumbi{display:flex;flex-wrap:wrap;justify-content:center;gap:.8rem;margin-top:1.3rem;min-width:0}
       /* navadno besedilo s kljukico namesto ločenega gumba »+ ponudba« */
       .pg-checkbox{display:inline-flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--ink);cursor:pointer;user-select:none}
       .pg-checkbox input{width:1.05rem;height:1.05rem;accent-color:var(--accent,#B25476);cursor:pointer}
