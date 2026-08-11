@@ -8,7 +8,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf, ArrowRight } from '@phosphor-icons/react';
 import GumbNazaj from '@/components/ui/GumbNazaj';
 import GumbPrimarni from '@/components/ui/GumbPrimarni';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -982,14 +982,14 @@ export default function ContractWorkspace({ base }: { base: string }) {
                 <label className="pg-polje pg-polje-obseg">{L('Obseg (ena postavka na vrstico)', 'Scope (one item per line)')}
                   <textarea rows={4} placeholder={L('npr.\nLogotip\nVizitke in dopisni papir', 'e.g.\nLogo\nBusiness cards and letterhead')} value={rocniObseg} onChange={event => setRocniObseg(event.target.value)} />
                 </label>
-                <p className="pg-namig">{L('Priporočamo: najprej ustvari ', 'We recommend: first create an ')}<b>{L('ponudbo', 'offer')}</b>{L(' — obseg, cena in številka se v pogodbo prenesejo sami. ', ' — the scope, price and number carry over into the contract automatically. ')}<a href={`${base}/kalkulator/orodje`}>{L('Odpri kalkulator →', 'Open calculator →')}</a></p>
+                <p className="pg-namig">{L('Priporočamo: najprej ustvari ', 'We recommend: first create an ')}<b>{L('ponudbo', 'offer')}</b>{L(' — obseg, cena in številka se v pogodbo prenesejo sami. ', ' — the scope, price and number carry over into the contract automatically. ')}<a href={`${base}/kalkulator/orodje`}>{L('Odpri kalkulator', 'Open calculator')}<ArrowRight size={13} weight="bold" style={{ verticalAlign: '-2px', marginLeft: '.25rem' }} /></a></p>
               </>
             )}
             <div className="pg-gumbi">
               <GumbPrimarni onClick={pripraviPogodbo} puscica aria-label={L('Pripravi pogodbo', 'Prepare contract')}>{L('Pripravi pogodbo', 'Prepare contract')}</GumbPrimarni>
             </div>
             {/* pot "Od stranke": naloži že podpisano/prejeto pogodbo za pregled (ohranjena funkcija) */}
-            <button type="button" className="pg-povezava pg-odstranke-link" onClick={() => setOdStranke(true)}>{L('Imaš pogodbo od stranke? Naloži jo za pregled →', 'Have a contract from the client? Upload it for review →')}</button>
+            <button type="button" className="pg-povezava pg-odstranke-link" onClick={() => setOdStranke(true)}>{L('Imaš pogodbo od stranke? Naloži jo za pregled', 'Have a contract from the client? Upload it for review')}<ArrowRight size={13} weight="bold" style={{ verticalAlign: '-2px', marginLeft: '.25rem' }} /></button>
           </>
         ) : (
           /* pot "Od stranke": nalozi in preglej dokument — shrani takoj v arhiv (status Prejeta) */
