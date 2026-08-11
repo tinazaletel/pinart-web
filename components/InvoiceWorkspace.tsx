@@ -676,7 +676,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
             <input type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} />
           </label>
         </div>
-        <div className="rc-gumbi" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div className="rc-gumbi" style={{ display: 'flex', justifyContent: 'center' }}>
           <GumbPrimarni onClick={odpriObrazec} puscica aria-label={L('Pripravi račun', 'Prepare invoice')}>{predracun ? L('Pripravi predračun', 'Prepare pro forma') : L('Pripravi račun', 'Prepare invoice')}</GumbPrimarni>
         </div>
       </div>
@@ -858,7 +858,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           {nogaOn && <label className="rc-polje rc-noga-polje">{L('Besedilo noge', 'Footer text')}<textarea value={nogaText} onChange={event => setNogaText(event.target.value)} rows={2} placeholder={NOGA_PRIVZETA} /></label>}
         </div>
 
-        <div className={styles.invoiceSubmit} style={{ display: 'flex', justifyContent: 'flex-end' }}><GumbPrimarni type="submit" puscica>{L('Zaključi', 'Finish')}</GumbPrimarni></div>
+        <div className={styles.invoiceSubmit} style={{ display: 'flex', justifyContent: 'center' }}><GumbPrimarni type="submit" puscica>{L('Zaključi', 'Finish')}</GumbPrimarni></div>
       </form>
     </section>}
 
@@ -1055,11 +1055,11 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-polja{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem 1.5rem;margin:0 0 1.3rem;min-width:0}
       .rc .rc-polja>*{min-width:0}
       .rc .rc-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
-      .rc .rc-polje input{width:100%;max-width:100%;min-width:0;min-height:2.9rem;box-sizing:border-box;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
+      .rc .rc-polje input{width:100%;max-width:100%;min-width:0;height:3rem;box-sizing:border-box;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
       .rc .rc-polje input:focus{outline:none;border-color:var(--ink)}
       /* select: background-COLOR (NE shorthand background), da .shell select
          (chevron background-image) ostane veljaven — past iz feedback_css_splosna_pravila */
-      .rc .rc-polje select{width:100%;max-width:100%;min-width:0;min-height:2.9rem;box-sizing:border-box;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background-color:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
+      .rc .rc-polje select{width:100%;max-width:100%;min-width:0;height:3rem;box-sizing:border-box;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background-color:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
       .rc .rc-polje select:focus{outline:none;border-color:var(--ink)}
       .rc .rc-gumbi{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:.2rem}
 
