@@ -1,0 +1,59 @@
+/* UI-KIT — skupni slog za deljene gumbe (Nazaj, Primarni).
+   En CSS vir → dosleden videz + hover povsod. Barve prek CGP tokenov. */
+
+/* ── NAZAJ (glass pill) ── */
+.nazaj {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .5rem .95rem;
+  border: 1px solid color-mix(in oklch, var(--ink, #1c1815) 10%, transparent);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .6);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: 0 4px 16px rgba(40, 25, 40, .08);
+  color: var(--ink, #1c1815);
+  font: 700 .82rem var(--font-sans), system-ui, sans-serif;
+  letter-spacing: .01em;
+  text-transform: none;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.nazaj:hover {
+  background: var(--ink, #1c1815);
+  color: var(--paper, #fff);
+  border-color: var(--ink, #1c1815);
+  box-shadow: 0 6px 18px rgba(40, 25, 40, .16);
+}
+.nazaj:active { transform: translateY(1px); }
+
+/* ── PRIMARNI (temni pill + puščica) ── */
+.primarni {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  padding: .85rem 1.7rem;
+  border: 1px solid var(--ink, #1c1815);
+  border-radius: 999px;
+  background: var(--ink, #1c1815);
+  color: var(--paper, #fff);
+  font: 700 .74rem var(--font-sans), system-ui, sans-serif;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(40, 25, 40, .12);
+  transition: background .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.primarni:hover {
+  background: color-mix(in oklch, var(--ink, #1c1815) 88%, #fff);
+  box-shadow: 0 8px 22px rgba(40, 25, 40, .2);
+  transform: translateY(-1px);
+}
+.primarni:active { transform: translateY(0); box-shadow: 0 4px 14px rgba(40, 25, 40, .12); }
+.primarni:disabled { opacity: .5; cursor: default; box-shadow: none; transform: none; }

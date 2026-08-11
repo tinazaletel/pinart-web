@@ -1076,7 +1076,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       /* ── vstopni iskalen combobox (izbira ponudbe): sprozilec izgleda kot polje,
          panel z iskalnikom + seznam opcij se odpre pod njim ── */
       .rc .rc-combo{position:relative}
-      .rc .rc-combo-sprozilec{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem;text-align:left;cursor:pointer}
+      .rc .rc-combo-sprozilec{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;height:3rem;box-sizing:border-box;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem;text-align:left;cursor:pointer}
       .rc .rc-combo-sprozilec:focus{outline:none;border-color:var(--ink)}
       .rc .rc-combo-sprozilec>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .rc .rc-combo-sprozilec svg{flex:none}
