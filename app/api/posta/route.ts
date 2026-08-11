@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { omejiApi } from '@/lib/rate-limit';
 
 /* Strežniško pošiljanje e-pošte prek Resend. Ključ RESEND_API_KEY bere SAMO
    strežnik (nikoli klient). "From" naslov nastavi RESEND_FROM (npr.
@@ -15,6 +16,8 @@ export async function POST(request: Request) {
   if (authError || !user) {
     return NextResponse.json({ error: 'Prijava je potekla.' }, { status: 401 });
   }
+  const omejitev = await omejiApi(request, 'posta', 10, user.id);
+  if (omejitev) return omejitev;
 
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM || 'Pinart Flow <onboarding@resend.dev>';

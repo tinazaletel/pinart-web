@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { omejiApi } from '@/lib/rate-limit';
 
 type SendRequest = { recipient?: string; downloadUrl?: string; periodStart?: string; periodEnd?: string; demo?: boolean };
 
@@ -7,6 +8,8 @@ export async function POST(request: Request) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Prijava je potekla.' }, { status: 401 });
+  const omejitev = await omejiApi(request, 'racunovodstvo-send', 10, user.id);
+  if (omejitev) return omejitev;
 
   const body = await request.json().catch(() => ({})) as SendRequest;
   if (body.demo === true) {

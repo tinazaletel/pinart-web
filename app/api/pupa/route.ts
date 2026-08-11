@@ -7,6 +7,7 @@ import { NextResponse } from 'next/server';
 import { PUPA_ZNANJE } from '@/lib/pupaZnanje';
 import { createClient } from '@/utils/supabase/server';
 import { checkAiRateLimit, hashIp, recordAiTokens } from '@/lib/rateLimit';
+import { omejiApi } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -40,6 +41,9 @@ export async function POST(req: Request) {
   if (!hasAiConnector || !entitlement?.organization_id) {
     return NextResponse.json({ napaka: 'Pupa je na voljo v paketu Pro.' }, { status: 403 });
   }
+
+  const omejitev = await omejiApi(req, 'pupa', 20, user.id);
+  if (omejitev) return omejitev;
 
   let body: { vprasanje?: string; kontekst?: string; zgodovina?: Sporocilo[] };
   try {

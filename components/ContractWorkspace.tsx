@@ -1316,6 +1316,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.95rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
       .pg-polje input,.pg-polje select,.pg-polje textarea{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
       .pg-polje input:focus,.pg-polje select:focus,.pg-polje textarea:focus{outline:none;border-color:var(--ink)}
+      .pg-polje input[type="date"]{height:2.75rem;line-height:normal}
       .pg-polje textarea{resize:vertical;min-height:6.5rem;line-height:1.5;font-weight:500}
       .pg-polje-obseg{margin:0 0 1.1rem}
 

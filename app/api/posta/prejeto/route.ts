@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { omejiApi } from '@/lib/rate-limit';
 
 /* Sprejem DOHODNE e-pošte (inbound). Cloudflare Email Worker razčleni prispeli
    mail, izlušči token iz prejemnikovega naslova (<token>@pinartflow.com) in
@@ -21,6 +22,8 @@ export async function POST(request: Request) {
   if (request.headers.get('x-inbound-secret') !== secret) {
     return NextResponse.json({ error: 'Neavtorizirano.' }, { status: 401 });
   }
+  const omejitev = await omejiApi(request, 'posta-prejeto', 60);
+  if (omejitev) return omejitev;
 
   let b: {
     token?: string; from?: string; to?: string; subject?: string;
