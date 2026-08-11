@@ -877,7 +877,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         <div className="rc-podpis rc-noga-blok">
           <div className="rc-post-glava">
             <p className={styles.eyebrow}>{L('NOGA RAČUNA (NEOBVEZNO)', 'INVOICE FOOTER (OPTIONAL)')}</p>
-            <label className="rc-noga-stikalo"><input type="checkbox" checked={nogaOn} onChange={event => setNogaOn(event.target.checked)} /> {L('Prikaži nogo', 'Show footer')}</label>
+            <button type="button" className={'rc-noga-toggle' + (nogaOn ? ' on' : '')} role="switch" aria-checked={nogaOn} onClick={() => setNogaOn(v => !v)}><span className="rc-noga-track"><span className="rc-noga-knob" /></span>{L('Prikaži nogo', 'Show footer')}</button>
           </div>
           {nogaOn && <label className="rc-polje rc-noga-polje">{L('Besedilo noge', 'Footer text')}<textarea value={nogaText} onChange={event => setNogaText(event.target.value)} rows={2} placeholder={NOGA_PRIVZETA} /></label>}
         </div>
@@ -968,6 +968,11 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-podpis{min-width:0;margin-top:1.1rem;padding:1rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.9rem;background:oklch(100% 0 0/.55)}
       .rc .rc-noga-stikalo{display:inline-flex;align-items:center;gap:.4rem;font-size:.72rem;font-weight:600;letter-spacing:.02em;text-transform:none;color:rgba(17,17,17,.7);cursor:pointer}
       .rc .rc-noga-stikalo input{width:1rem;height:1rem;accent-color:oklch(66% .2 297);cursor:pointer}
+      .rc .rc-noga-toggle{display:inline-flex;align-items:center;gap:.55rem;padding:0;border:none;background:none;font:inherit;font-size:.72rem;font-weight:600;letter-spacing:.02em;color:rgba(17,17,17,.7);cursor:pointer}
+      .rc .rc-noga-track{position:relative;width:2.5rem;height:1.4rem;flex:none;border-radius:999px;background:rgba(17,17,17,.2);transition:background .2s ease}
+      .rc .rc-noga-toggle.on .rc-noga-track{background:oklch(66% .2 297)}
+      .rc .rc-noga-knob{position:absolute;top:2px;left:2px;width:calc(1.4rem - 4px);height:calc(1.4rem - 4px);border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s ease}
+      .rc .rc-noga-toggle.on .rc-noga-knob{transform:translateX(1.1rem)}
       .rc .rc-noga-polje textarea{width:100%;box-sizing:border-box;border:1px solid oklch(90% .006 82);border-radius:.6rem;padding:.6rem .7rem;font:500 .85rem var(--font-sans),system-ui,sans-serif;color:var(--ink);background:#fff;resize:vertical;text-transform:none;letter-spacing:normal}
       .rc .rc-noga-polje textarea:focus{outline:none;border-color:oklch(66% .2 297)}
       .rc .rc-podpis-polja{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.9rem;margin:.9rem 0 0}

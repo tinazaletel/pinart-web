@@ -703,7 +703,7 @@
 .invoiceLineItem { padding: 1rem; border: 1px solid var(--line); border-radius: .9rem; background: linear-gradient(135deg, oklch(98% .018 87), oklch(96% .025 62)); }
 .invoiceLineItem > div { display: grid; grid-template-columns: .35fr 1fr; gap: .7rem; margin-top: .7rem; }
 .invoiceSubmit { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.invoiceSubmit > button { min-width: 12rem; height: 2.75rem; border: 0; border-radius: .65rem; background: var(--ink); color: var(--paper); font: 800 .68rem var(--font-sans), sans-serif; cursor: pointer; }
+/* gumb slog daje GumbPrimarni (uikit) — brez override tu, sicer prepiše pill radius */
 .invoiceCreator form > button { height: 2.65rem; border: 0; border-radius: .65rem; background: var(--ink); color: var(--paper); font: 800 .62rem var(--font-sans), sans-serif; cursor: pointer; }
 .invoiceCheck { display: flex !important; align-items: center; flex-direction: row; }
 .invoiceCheck input { width: 1rem; height: 1rem; }
