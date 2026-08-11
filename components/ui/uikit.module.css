@@ -57,3 +57,8 @@
 }
 .primarni:active { transform: translateY(0); box-shadow: 0 4px 14px rgba(40, 25, 40, .12); }
 .primarni:disabled { opacity: .5; cursor: default; box-shadow: none; transform: none; }
+
+/* .shell button:not([aria-label]){font-size:.875rem!important} ima specifičnost (0,2,1) →
+   da oba gumba res dobita enak font (ne glede na aria-label), rabimo višjo (0,3,0). */
+.nazaj.nazaj.nazaj { font-size: .82rem !important; }
+.primarni.primarni.primarni { font-size: .74rem !important; line-height: 1.15 !important; }
