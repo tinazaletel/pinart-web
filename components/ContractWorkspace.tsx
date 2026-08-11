@@ -99,6 +99,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
   /* vrsta dokumenta: navadna pogodba o sodelovanju ali NDA (sporazum o varovanju zaupnih podatkov).
      Privzeto 'sodelovanje' = obstojece obnasanje nespremenjeno. */
   const [vrstaPog, setVrstaPog] = useState<VrstaPog>('sodelovanje');
+  const [vrstaSheetOdprt, setVrstaSheetOdprt] = useState(false); /* mobile: dropdown -> slide-up */
   /* izklopljeni opcijski cleni (po id) za trenutno vrsto; ob menjavi vrste se ponastavi na privzeto */
   const [izklKlavzule, setIzklKlavzule] = useState<Set<string>>(() => privzetoIzklop('sodelovanje'));
   const [offerId, setOfferId] = useState('');
@@ -909,12 +910,34 @@ export default function ContractWorkspace({ base }: { base: string }) {
         <span className="pg-mehur"><b>{L('Iz česa nastane pogodba?', 'What is the contract built from?')}</b><small>{L('Če obstaja ponudba, jo izberi — naročnik in obseg se predizpolnita. Sicer pusti »Brez ponudbe« za samostojno pogodbo.', 'If an offer exists, pick it — the client and scope are pre-filled. Otherwise leave “No offer” for a standalone contract.')}</small></span>
       </div>
       <section className="pg-sek pg-vstop-panel">
-        {/* vrsta dokumenta: 6 vrst pogodb (velja za ustvarjeno telo) */}
+        {/* vrsta dokumenta: 6 vrst pogodb. Desktop = pilule; mobile = dropdown -> slide-up */}
         <div className="pg-vrstapog" role="group" aria-label={L('Vrsta dokumenta', 'Document type')}>
           {VRSTE_POG.map(v => (
             <button key={v.id} type="button" aria-label={jeEn ? VRSTE_POG_EN[v.id].naziv : v.naziv} aria-pressed={vrstaPog === v.id} className={vrstaPog === v.id ? 'on' : ''} onClick={() => menjajVrsto(v.id)}>{jeEn ? VRSTE_LABEL_EN[v.id] : v.label}</button>
           ))}
         </div>
+        <button type="button" className="pg-vrsta-drop" aria-haspopup="dialog" aria-expanded={vrstaSheetOdprt} onClick={() => setVrstaSheetOdprt(true)}>
+          <span className="pg-vrsta-drop-oznaka">{L('Vrsta dokumenta', 'Document type')}</span>
+          <span className="pg-vrsta-drop-val">{jeEn ? VRSTE_LABEL_EN[vrstaPog] : VRSTE_POG.find(v => v.id === vrstaPog)!.label}<CaretDown size={16} weight="bold" aria-hidden /></span>
+        </button>
+        {vrstaSheetOdprt && (
+          <div className="pg-vrsta-back" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setVrstaSheetOdprt(false); }}>
+            <div className="pg-vrsta-sheet" role="dialog" aria-modal="true" aria-label={L('Vrsta dokumenta', 'Document type')}>
+              <div className="pg-vrsta-sheet-glava">
+                <p className="pg-vrsta-sheet-naslov">{L('VRSTA DOKUMENTA', 'DOCUMENT TYPE')}</p>
+                <button type="button" className="pg-vrsta-x" onClick={() => setVrstaSheetOdprt(false)} aria-label={L('Zapri', 'Close')}><X size={18} weight="bold" /></button>
+              </div>
+              <div className="pg-vrsta-seznam">
+                {VRSTE_POG.map(v => (
+                  <button key={v.id} type="button" className={'pg-vrsta-opcija' + (vrstaPog === v.id ? ' on' : '')} onClick={() => { menjajVrsto(v.id); setVrstaSheetOdprt(false); }}>
+                    <span>{jeEn ? VRSTE_LABEL_EN[v.id] : v.label}</span>
+                    {vrstaPog === v.id && <span className="pg-vrsta-kljukica" aria-hidden>✓</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
         {/* opcijski cleni trenutne vrste: klik vklopi/izklopi člen (številčenje se prilagodi samo) */}
         {!odStranke && (() => {
           const opcijski = cleniZaVrsto(vrstaPog).filter(c => c.opcijski);
@@ -1301,6 +1324,28 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-vrstapog{display:inline-flex;flex-wrap:wrap;background:rgba(255,255,255,.55);border:1px solid rgba(178,84,118,.28);border-radius:999px;padding:.3rem;gap:.45rem;margin:0 0 1rem}
       .pg-vrstapog button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem 1rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
       .pg-vrstapog button.on{background:var(--accent,#B25476);color:#fff}
+      /* mobile dropdown + slide-up namesto ovitih pilul */
+      .pg-vrsta-drop{display:none}
+      .pg-vrsta-drop-oznaka{font-size:.95rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
+      .pg-vrsta-drop-val{display:flex;align-items:center;justify-content:space-between;gap:.6rem;min-height:2.75rem;padding:.6rem .85rem;border:1px solid oklch(93% .006 82 / .55);border-radius:10px;background:rgba(255,255,255,.85);font-size:16px;font-weight:600;color:var(--ink)}
+      @media (max-width:640px){
+        .pg-vrstapog{display:none}
+        .pg-vrsta-drop{display:flex;flex-direction:column;gap:.35rem;width:100%;align-items:stretch;margin:0 0 1rem;padding:0;border:none;background:none;cursor:pointer;text-align:left}
+      }
+      .pg-vrsta-back{position:fixed;inset:0;z-index:120;background:rgba(28,21,24,.28);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;animation:pgVrstaBack .2s ease both}
+      @keyframes pgVrstaBack{from{opacity:0}to{opacity:1}}
+      .pg-vrsta-sheet{width:100%;box-sizing:border-box;background:var(--paper);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px rgba(40,25,40,.22);padding:1.2rem 1.1rem calc(1.4rem + env(safe-area-inset-bottom,0px));max-height:80dvh;overflow-y:auto;animation:pgVrstaUp .3s cubic-bezier(.2,.8,.3,1) both}
+      @keyframes pgVrstaUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+      @media (prefers-reduced-motion:reduce){.pg-vrsta-back,.pg-vrsta-sheet{animation:none}}
+      .pg-vrsta-sheet-glava{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.7rem}
+      .pg-vrsta-sheet-naslov{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
+      .pg-vrsta-x{width:2.1rem;height:2.1rem;flex:none;border-radius:50%;border:1px solid rgba(17,17,17,.16);background:var(--paper);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,color .15s}
+      .pg-vrsta-x:hover{background:var(--ink);color:var(--paper)}
+      .pg-vrsta-seznam{display:flex;flex-direction:column;gap:.2rem}
+      .pg-vrsta-opcija{display:flex;align-items:center;justify-content:space-between;gap:.7rem;width:100%;min-height:3rem;padding:.7rem .85rem;border:none;border-radius:12px;background:none;font:inherit;font-size:16px;font-weight:600;color:var(--ink);text-align:left;cursor:pointer;transition:background .15s,color .15s}
+      .pg-vrsta-opcija:hover{background:rgba(17,17,17,.05)}
+      .pg-vrsta-opcija.on{background:var(--ink);color:var(--paper)}
+      .pg-vrsta-kljukica{flex:none;font-size:.9rem}
 
       /* vklop/izklop opcijskih clenov — majhne pilule-stikala v istem jeziku kot .pg-segpills */
       .pg-klavzule{margin:0 0 1rem}
