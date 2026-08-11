@@ -198,7 +198,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const vstopIsk = vstopIskanje.trim().toLocaleLowerCase('sl-SI');
   const vstopSeznam = vstopIsk
     ? ponudbePoDatumu.filter(offer => `${offer.title} ${offer.client} ${offer.number || ''}`.toLocaleLowerCase('sl-SI').includes(vstopIsk))
-    : ponudbePoDatumu.slice(0, 8);
+    : ponudbePoDatumu.slice(0, 7);
   /* izbira ponudbe (ali "Brez ponudbe" = prazen id) nastavi offerId -> vir se izpelje sam */
   const izberiVVstopu = (id: string) => { setOfferId(id); setKartaOdprta(false); setRocnoTelo(false); setVstopOdprt(false); setVstopIskanje(''); };
   /* klik izven odprtega comboboxa ga zapre (desktop: panel je position:absolute znotraj .pg-combo) */
@@ -969,7 +969,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
                   </button>
                   {vstopOdprt && (() => {
                     const comboNotranjost = (<>
-                      <input className="pg-combo-iskalnik" type="search" autoFocus placeholder={L('Poišči ponudbo, stranko ali številko …', 'Search offer, client or number …')} aria-label={L('Poišči ponudbo, stranko ali številko', 'Search offer, client or number')} value={vstopIskanje} onChange={event => setVstopIskanje(event.target.value)} />
+                      <input className="pg-combo-iskalnik" type="search" autoFocus={!jeMobilni} placeholder={L('Poišči ponudbo, stranko ali številko …', 'Search offer, client or number …')} aria-label={L('Poišči ponudbo, stranko ali številko', 'Search offer, client or number')} value={vstopIskanje} onChange={event => setVstopIskanje(event.target.value)} />
                       <div className="pg-combo-seznam" role="listbox" aria-label={L('Ponudbe', 'Offers')}>
                         <button type="button" role="option" aria-selected={!offerId} className={'pg-combo-opcija' + (!offerId ? ' on' : '')} onClick={() => izberiVVstopu('')}>
                           <span className="pg-combo-naziv"><strong>{L('Brez ponudbe', 'No offer')}</strong><small>{L('Samostojna pogodba', 'Standalone contract')}</small></span>
@@ -983,7 +983,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
                         ))}
                         {!vstopSeznam.length && <p className="pg-mini pg-combo-prazno">{L('Ni ponudb za to iskanje.', 'No offers match this search.')}</p>}
                       </div>
-                      {!vstopIskanje.trim() && ponudbePoDatumu.length > 8 && <p className="pg-combo-namig">{L('Prikazanih zadnjih 8 — išči za vse.', 'Showing the last 8 — search to see all.')}</p>}
+                      {!vstopIskanje.trim() && ponudbePoDatumu.length > 7 && <p className="pg-combo-namig">{L('Prikazane zadnje — išči za vse.', 'Showing recent — search to see all.')}</p>}
                     </>);
                     if (jeMobilni && typeof document !== 'undefined') {
                       return createPortal(
