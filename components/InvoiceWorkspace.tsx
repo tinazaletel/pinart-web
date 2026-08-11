@@ -1054,10 +1054,10 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-vstop-panel{background:rgba(255,255,255,.55);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.6);border-radius:20px;padding:1.6rem 1.5rem;box-shadow:0 12px 40px rgba(20,16,26,.05),inset 0 1px 0 rgba(255,255,255,.5)}
       .rc .rc-polja{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem 1.5rem;margin:0 0 1.3rem;min-width:0}
       .rc .rc-polja>*{min-width:0}
-      .rc .rc-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
+      .rc .rc-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.95rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
       .rc .rc-polje input{width:100%;max-width:100%;min-width:0;height:3rem;box-sizing:border-box;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
       .rc .rc-polje input:focus{outline:none;border-color:var(--ink)}
-      .rc .rc-polje input[type="date"]{font-size:.95rem !important;font-weight:600;line-height:normal;text-align:left;max-width:12rem}
+      .rc .rc-polje input[type="date"]{font-size:16px !important;font-weight:600;line-height:normal;text-align:left;max-width:12rem}
       /* select: background-COLOR (NE shorthand background), da .shell select
          (chevron background-image) ostane veljaven — past iz feedback_css_splosna_pravila */
       .rc .rc-polje select{width:100%;max-width:100%;min-width:0;height:3rem;box-sizing:border-box;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background-color:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
@@ -1071,13 +1071,13 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       /* Vrsta (Račun | Predračun) na vstopu — pilule + drobni namig pod Predračunom */
       .rc .rc-vstop-vrsta{display:inline-flex;flex-direction:column;align-items:stretch;margin:0 0 1.1rem}
       .rc .rc-vstop-vrsta .rc-segpills{margin:0}
-      .rc .rc-vrsta-oznaka{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72);margin:0 0 .4rem}
+      .rc .rc-vrsta-oznaka{font-size:.95rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72);margin:0 0 .4rem}
       .rc .rc-vrsta-namig{margin:.35rem 0 0;text-align:right;font-size:.72rem;color:var(--muted)}
 
       /* ── vstopni iskalen combobox (izbira ponudbe): sprozilec izgleda kot polje,
          panel z iskalnikom + seznam opcij se odpre pod njim ── */
       .rc .rc-combo{position:relative}
-      .rc .rc-combo-sprozilec{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;height:3rem;box-sizing:border-box;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem;text-align:left;cursor:pointer}
+      .rc .rc-combo-sprozilec{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;height:3rem;box-sizing:border-box;min-width:0;font:inherit;font-size:16px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem;text-align:left;cursor:pointer}
       .rc .rc-combo-sprozilec:focus{outline:none;border-color:var(--ink)}
       .rc .rc-combo-sprozilec>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .rc .rc-combo-sprozilec svg{flex:none}

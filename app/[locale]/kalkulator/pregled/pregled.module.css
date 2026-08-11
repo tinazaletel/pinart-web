@@ -20,8 +20,6 @@
 }
 :global(body[data-dashboard-theme='dim']) .shell { --paper: oklch(91% .018 82); --ink: oklch(17% .015 55); --line: oklch(84% .015 78); }
 .shell :is(input, select, textarea) { min-height: 2.75rem; font-size: 16px !important; line-height: 1.35; }
-/* izbirna polja (select + datum) = 15.2px, da se ujemajo s combi/gumbi; vpisna (tipkalna) ostanejo 16px (berljivost + brez iOS zooma) */
-.shell :is(select, input[type='date']) { font-size: 15.2px !important; }
 .shell input::file-selector-button { min-height: 2.25rem; margin-right: .75rem; padding: 0 1.1rem; border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font: 700 14px var(--font-sans), sans-serif; cursor: pointer; transition: transform .18s ease, opacity .18s ease; }
 .shell input::file-selector-button:hover { transform: translateY(-1px); opacity: .9; }
 /* Datotecno polje: gumb je bil visji od skatle vnosa in je legel cez napis "no file selected".
