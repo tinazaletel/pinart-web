@@ -3,6 +3,7 @@ import { Resend } from 'resend';
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { omejiApi } from '@/lib/rate-limit';
+import { jeEmail, omejenNiz, preberiJson, sporociloValidacije } from '@/lib/validacija';
 
 /* Strežniško pošiljanje e-pošte prek Resend. Ključ RESEND_API_KEY bere SAMO
    strežnik (nikoli klient). "From" naslov nastavi RESEND_FROM (npr.
@@ -32,9 +33,9 @@ export async function POST(request: Request) {
     demo?: boolean;
   };
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Neveljaven zahtevek.' }, { status: 400 });
+    body = await preberiJson(request, 100_000);
+  } catch (error) {
+    return NextResponse.json({ error: sporociloValidacije(error) }, { status: 400 });
   }
 
   if (body.demo === true) {
@@ -61,18 +62,17 @@ export async function POST(request: Request) {
   const prejemniki = (Array.isArray(body.to) ? body.to : body.to ? [body.to] : [])
     .map((e) => String(e).trim())
     .filter(Boolean);
-  const epostaRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const vsiVeljavni = prejemniki.length > 0 && prejemniki.every((e) => epostaRe.test(e));
+  const vsiVeljavni = prejemniki.length > 0 && prejemniki.every(jeEmail);
   if (!vsiVeljavni || !body.subject || !body.html) {
     return NextResponse.json({ error: 'Manjka veljaven prejemnik, zadeva ali vsebina.' }, { status: 400 });
   }
   if (prejemniki.length > 50) {
     return NextResponse.json({ error: 'Preveč prejemnikov (največ 50).' }, { status: 400 });
   }
-  if (body.subject.length > 300) {
-    return NextResponse.json({ error: 'Zadeva je predolga.' }, { status: 400 });
+  if (!omejenNiz(body.subject, 300, true) || !omejenNiz(body.html, 90_000, true)) {
+    return NextResponse.json({ error: 'Zadeva ali vsebina ni veljavna.' }, { status: 400 });
   }
-  if (body.replyTo && !epostaRe.test(body.replyTo.trim())) {
+  if (body.replyTo && !jeEmail(body.replyTo.trim())) {
     return NextResponse.json({ error: 'Naslov za odgovor ni veljaven.' }, { status: 400 });
   }
 

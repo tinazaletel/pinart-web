@@ -8,6 +8,7 @@ import { PUPA_ZNANJE } from '@/lib/pupaZnanje';
 import { createClient } from '@/utils/supabase/server';
 import { checkAiRateLimit, hashIp, recordAiTokens } from '@/lib/rateLimit';
 import { omejiApi } from '@/lib/rate-limit';
+import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 
 export const runtime = 'nodejs';
 
@@ -47,9 +48,9 @@ export async function POST(req: Request) {
 
   let body: { vprasanje?: string; kontekst?: string; zgodovina?: Sporocilo[] };
   try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ napaka: 'Neveljaven zahtevek.' }, { status: 400 });
+    body = await preberiJson(req, 50_000);
+  } catch (error) {
+    return NextResponse.json({ napaka: sporociloValidacije(error) }, { status: 400 });
   }
 
   if (body.vprasanje !== undefined && typeof body.vprasanje !== 'string') {
@@ -61,10 +62,10 @@ export async function POST(req: Request) {
   const vprasanje = (body.vprasanje || '').trim();
   if (!vprasanje) return NextResponse.json({ napaka: 'Prazno vprašanje.' }, { status: 400 });
   if (vprasanje.length > MAX_VPRASANJE) {
-    return NextResponse.json({ napaka: 'Vprašanje je predolgo.' }, { status: 413 });
+    return NextResponse.json({ napaka: 'Vprašanje je predolgo.' }, { status: 400 });
   }
   if (typeof body.kontekst === 'string' && body.kontekst.length > MAX_KONTEKST) {
-    return NextResponse.json({ napaka: 'Kontekst je predolg.' }, { status: 413 });
+    return NextResponse.json({ napaka: 'Kontekst je predolg.' }, { status: 400 });
   }
   if (body.zgodovina !== undefined && !Array.isArray(body.zgodovina)) {
     return NextResponse.json({ napaka: 'Zgodovina ni veljavna.' }, { status: 400 });
@@ -78,7 +79,7 @@ export async function POST(req: Request) {
     || sporocilo.content.length > MAX_SPOROCILO
   );
   if (neveljavnaZgodovina) {
-    return NextResponse.json({ napaka: 'Zgodovina vsebuje neveljavno sporočilo.' }, { status: 413 });
+    return NextResponse.json({ napaka: 'Zgodovina vsebuje neveljavno sporočilo.' }, { status: 400 });
   }
 
   const kljuc = process.env.ANTHROPIC_API_KEY;

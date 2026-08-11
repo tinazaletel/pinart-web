@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { omejiApi } from '@/lib/rate-limit';
+import { jeEmail, preberiJson, sporociloValidacije } from '@/lib/validacija';
 
 type SendRequest = { recipient?: string; downloadUrl?: string; periodStart?: string; periodEnd?: string; demo?: boolean };
 
@@ -11,12 +12,14 @@ export async function POST(request: Request) {
   const omejitev = await omejiApi(request, 'racunovodstvo-send', 10, user.id);
   if (omejitev) return omejitev;
 
-  const body = await request.json().catch(() => ({})) as SendRequest;
+  let body: SendRequest;
+  try { body = await preberiJson<SendRequest>(request, 8_000); }
+  catch (error) { return NextResponse.json({ error: sporociloValidacije(error) }, { status: 400 }); }
   if (body.demo === true) {
     return NextResponse.json({ error: 'V predstavitvenem načinu pošiljanje ni dovoljeno.' }, { status: 403 });
   }
   const recipient = body.recipient?.trim().toLowerCase();
-  if (!recipient || !body.downloadUrl || !body.periodStart || !body.periodEnd) {
+  if (!recipient || !jeEmail(recipient) || !body.downloadUrl || !body.periodStart || !body.periodEnd) {
     return NextResponse.json({ error: 'Manjkajo podatki za pošiljanje.' }, { status: 400 });
   }
   let downloadUrl: URL;
