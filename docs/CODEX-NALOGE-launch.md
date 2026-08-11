@@ -739,3 +739,54 @@ jasnim PASS/FAIL; dokumentirano, kako jih Tina požene.
   interno / dodajaj nove izvoze, da komponente ostanejo nedotaknjene.
 - Po vsaki nalogi: `npx tsc --noEmit` = 0. Pred pushom (Tina) `next build`.
 ```
+
+---
+
+# NOVE NALOGE — paket 2026-08-11 (utrjevanje + verifikacija)
+
+> **POZOR — trki:** Claude/Tina trenutno aktivno urejata UI:
+> `components/InvoiceWorkspace.tsx`, `components/ContractWorkspace.tsx`,
+> `components/ProjectsWorkspace.tsx`, `components/ui/*` (GumbNazaj, GumbPrimarni,
+> uikit.module.css), `components/Toast.tsx`,
+> `app/[locale]/kalkulator/pregled/pregled.module.css`.
+> **Codex se teh datotek NE dotika.** Ostane v `lib/*`, `app/api/*`,
+> `supabase/migrations/*` (nove), `middleware.ts`, `utils/*`. Ista železna pravila
+> kot zgoraj.
+
+## #12 — Rate limiting na javnih/dragih API poteh  ⭐ (strošek + zloraba)
+Poti: `app/api/pupa/route.ts` (AI — plačljivi klici!), `app/api/posta/route.ts`,
+`app/api/posta/prejeto/route.ts`, `app/api/racunovodstvo/send/route.ts`.
+- Dodaj lahek limiter (`lib/rate-limit.ts`): ključ = `userId` (iz seje) ali IP
+  fallback; okno + max (npr. pupa: 20/min/uporabnika, mail: 10/min). Uporabi
+  Supabase tabelo `api_klici` (nova migracija, RLS service-role) ALI in-memory
+  Map, če je stateless dovolj — dokumentiraj izbiro.
+- Ob prekoračitvi vrni `429` + `{ napaka: 'Preveč zahtev, poskusi čez minuto.' }`.
+- **Verifikacija:** unit/skripta v `scripts/` ki v zanki pokliče route in potrdi 429.
+
+## #13 — Validacija vhodov (zod ali ročno) na VSEH `app/api/*` POST
+- Za vsak POST body: preveri tipe, obvezna polja, **omeji velikost** (npr.
+  pupa prompt ≤ 8 kB, mail telo ≤ 100 kB, priloge glej #7). Zavrni z `400` +
+  jasnim sporočilom, ne vrzi 500.
+- Centraliziraj sheme v `lib/validacija.ts`. Ne spuščaj neomejenih nizov v
+  Anthropic/Resend klice.
+- **Verifikacija:** skripta pošlje pokvarjen/prevelik body → pričakuj 400.
+
+## #14 — Izvoz + izbris uporabniških podatkov (GDPR, samo zaledje)
+- `app/api/uporabnik/izvoz/route.ts` — vrne ves uporabnikov podatek (računi,
+  ponudbe, pogodbe, stranke, Flow JSON) kot en JSON (za pravico do prenosljivosti).
+- `app/api/uporabnik/izbris/route.ts` — **soft-delete** (označi, ne uniči; glej
+  #3 vzorec), z audit zapisom. Trdi izbris NE (Tina/pravno kasneje).
+- Obe poti: samo lastnikovi podatki (seja), nikoli tuji; RLS + preverjanje `userId`.
+- **Verifikacija:** izvoz vrne le lastnikove vrstice; poskus tujega `userId` → 403.
+
+## #15 — Verifikacijski prehod #11 (poročilo PASS/FAIL)
+Poženi/dopolni varnostne skripte iz #11 in vrni tabelo PASS/FAIL za:
+- Demo-bleed: nov račun NE vidi demo/predogleda drugega (glej #10).
+- Cross-account read: uporabnik A ne prebere vrstic uporabnika B (računi/stranke/Flow).
+- RPC-ji: `dodeli_stevilko` (unikatnost pod sočasnostjo), `storniraj_racun`
+  (samo izdani, audit), entitlement helper (paket → dovoljenja).
+- Rezultat zapiši v `docs/CODEX-VARNOST-porocilo.md` (nova datoteka).
+
+**Vrstni red:** #15 (najprej ugotovi stanje) → #12 → #13 → #14.
+Vse ostane povratno združljivo; migracije aditivne; `tsc` = 0 po vsakem koraku.
+
