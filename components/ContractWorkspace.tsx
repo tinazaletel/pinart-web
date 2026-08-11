@@ -10,6 +10,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf } from '@phosphor-icons/react';
 import GumbNazaj from '@/components/ui/GumbNazaj';
+import GumbPrimarni from '@/components/ui/GumbPrimarni';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } from '@/lib/pinartFlowStore';
 import { deleteBusinessDocument, getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
@@ -985,7 +986,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
               </>
             )}
             <div className="pg-gumbi">
-              <button type="button" className="pg-gumb" aria-label={L('Pripravi pogodbo', 'Prepare contract')} onClick={pripraviPogodbo}>{L('Pripravi pogodbo →', 'Prepare contract →')}</button>
+              <GumbPrimarni onClick={pripraviPogodbo} puscica aria-label={L('Pripravi pogodbo', 'Prepare contract')}>{L('Pripravi pogodbo', 'Prepare contract')}</GumbPrimarni>
             </div>
             {/* pot "Od stranke": naloži že podpisano/prejeto pogodbo za pregled (ohranjena funkcija) */}
             <button type="button" className="pg-povezava pg-odstranke-link" onClick={() => setOdStranke(true)}>{L('Imaš pogodbo od stranke? Naloži jo za pregled →', 'Have a contract from the client? Upload it for review →')}</button>
@@ -1148,7 +1149,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       )}
 
       <div className="pg-gumbi">
-        <button type="button" className="pg-gumb" aria-label={L('Zaključi', 'Finish')} onClick={() => setPogled('zakljucek')}>{L('Zaključi →', 'Finish →')}</button>
+        <GumbPrimarni onClick={() => setPogled('zakljucek')} puscica aria-label={L('Zaključi', 'Finish')}>{L('Zaključi', 'Finish')}</GumbPrimarni>
       </div>
       {napaka && <p className="pg-napaka">{napaka}</p>}
       <p className="pg-mini" style={{ marginTop: '.7rem' }}>{L('Besedilo preveri; Pinart ne nadomešča pravnega svetovanja.', 'Please review the text; Pinart does not replace legal advice.')}</p>
@@ -1362,7 +1363,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-kp-vec li{margin:.15rem 0}
       .pg-kp-strnjena{background:#FCFBF7;box-shadow:0 4px 14px rgba(17,17,17,.05);margin-bottom:1rem}
 
-      .pg-gumbi{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.3rem;min-width:0}
+      .pg-gumbi{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.8rem;margin-top:1.3rem;min-width:0}
       /* navadno besedilo s kljukico namesto ločenega gumba »+ ponudba« */
       .pg-checkbox{display:inline-flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--ink);cursor:pointer;user-select:none}
       .pg-checkbox input{width:1.05rem;height:1.05rem;accent-color:var(--accent,#B25476);cursor:pointer}

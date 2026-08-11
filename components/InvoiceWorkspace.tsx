@@ -676,8 +676,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
             <input type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} />
           </label>
         </div>
-        <div className="rc-gumbi">
-          <button type="button" className="rc-gumb" aria-label={L('Pripravi račun', 'Prepare invoice')} onClick={odpriObrazec}>{predracun ? L('Pripravi predračun →', 'Prepare pro forma →') : L('Pripravi račun →', 'Prepare invoice →')}</button>
+        <div className="rc-gumbi" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <GumbPrimarni onClick={odpriObrazec} puscica aria-label={L('Pripravi račun', 'Prepare invoice')}>{predracun ? L('Pripravi predračun', 'Prepare pro forma') : L('Pripravi račun', 'Prepare invoice')}</GumbPrimarni>
         </div>
       </div>
     </section>}
@@ -971,13 +971,13 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-x:disabled{opacity:.3;cursor:default}
       @media (max-width:760px){.rc .rc-shrani-editor{grid-template-columns:repeat(2,minmax(0,1fr))}.rc .rc-shrani-editor .rc-cip{min-height:2.75rem}}
       .rc .rc-vsote{margin-left:auto;width:min(21rem,100%);display:grid;gap:.15rem;padding:.85rem 1rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.9rem;background:oklch(100% 0 0/.65)}
-      .rc .rc-vsote>div{display:flex;align-items:baseline;justify-content:space-between;gap:.8rem;font-size:.62rem}
+      .rc .rc-vsote>div{display:flex;align-items:baseline;justify-content:space-between;gap:.8rem;font-size:.8rem}
       .rc .rc-vsote>div span{font-weight:700;color:var(--muted)}
-      .rc .rc-vsote>div b{font-size:.68rem;white-space:nowrap}
+      .rc .rc-vsote>div b{font-size:.85rem;white-space:nowrap}
       .rc .rc-skupaj{margin-top:.3rem;padding-top:.45rem;border-top:1.5px solid color-mix(in oklch,var(--ink) 30%,transparent)}
       .rc .rc-vsote .rc-skupaj span{color:var(--ink);text-transform:uppercase;letter-spacing:.08em;font-size:.68rem;font-weight:800}
       .rc .rc-vsote .rc-skupaj b{font:750 1.42rem var(--font-sans),system-ui,sans-serif;letter-spacing:-.01em}
-      .rc .rc-klavzula{margin:.4rem 0 0;font-size:.56rem;line-height:1.5;color:var(--muted);font-weight:500}
+      .rc .rc-klavzula{margin:.5rem 0 0;font-size:.75rem;line-height:1.55;color:var(--muted);font-weight:500}
       .rc .rc-napaka{margin:.5rem 0 0;color:oklch(50% .18 25);font-size:.62rem;font-weight:700;text-align:center}
       /* ── ZAKLJUCEK racuna (enaki elementi kot ponudba/pogodba) ── */
       .rc .rc-zakljuci-gumb{display:flex;align-items:center;gap:.55rem;width:max-content;margin-left:auto;padding:.85rem 1.9rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:600 .82rem var(--font-sans),sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:transform .2s ease}
@@ -1033,8 +1033,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-obr-uvod{margin:1rem 0 2rem}
       .rc .rc-obr-uvod h2{margin:.15rem 0 .6rem}
       .rc .rc-obr-uvod > p:last-child{margin:0;line-height:1.55}
-      .rc .rc-nazaj-vrh{margin:0 0 .9rem;justify-self:start;display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .95rem;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(12px) saturate(1.3);backdrop-filter:blur(12px) saturate(1.3);color:var(--ink);font:700 .62rem var(--font-sans),sans-serif;letter-spacing:.04em;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s}
-      .rc .rc-nazaj-vrh:hover{background:#fff;border-color:var(--ink)}
+      .rc .rc-nazaj-vrh{margin:0 0 .9rem;justify-self:start}
       .rc .rc-povezava{font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0;display:inline-flex;align-items:center;gap:.38rem}
       .rc .rc-povezava:hover{opacity:.6}
       .rc .rc-mini{font-size:.8rem;color:rgba(17,17,17,.72)}
@@ -1056,11 +1055,11 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-polja{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem 1.5rem;margin:0 0 1.3rem;min-width:0}
       .rc .rc-polja>*{min-width:0}
       .rc .rc-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
-      .rc .rc-polje input{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
+      .rc .rc-polje input{width:100%;max-width:100%;min-width:0;min-height:2.9rem;box-sizing:border-box;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
       .rc .rc-polje input:focus{outline:none;border-color:var(--ink)}
       /* select: background-COLOR (NE shorthand background), da .shell select
          (chevron background-image) ostane veljaven — past iz feedback_css_splosna_pravila */
-      .rc .rc-polje select{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background-color:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
+      .rc .rc-polje select{width:100%;max-width:100%;min-width:0;min-height:2.9rem;box-sizing:border-box;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background-color:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
       .rc .rc-polje select:focus{outline:none;border-color:var(--ink)}
       .rc .rc-gumbi{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:.2rem}
 
