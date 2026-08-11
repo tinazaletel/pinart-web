@@ -920,7 +920,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
           <span className="pg-vrsta-drop-oznaka">{L('Vrsta dokumenta', 'Document type')}</span>
           <span className="pg-vrsta-drop-val">{jeEn ? VRSTE_LABEL_EN[vrstaPog] : VRSTE_POG.find(v => v.id === vrstaPog)!.label}<CaretDown size={16} weight="bold" aria-hidden /></span>
         </button>
-        {vrstaSheetOdprt && (
+        {vrstaSheetOdprt && typeof document !== 'undefined' && createPortal(
           <div className="pg-vrsta-back" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setVrstaSheetOdprt(false); }}>
             <div className="pg-vrsta-sheet" role="dialog" aria-modal="true" aria-label={L('Vrsta dokumenta', 'Document type')}>
               <div className="pg-vrsta-sheet-glava">
@@ -936,7 +936,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
                 ))}
               </div>
             </div>
-          </div>
+          </div>,
+          document.body,
         )}
         {/* opcijski cleni trenutne vrste: klik vklopi/izklopi člen (številčenje se prilagodi samo) */}
         {!odStranke && (() => {
