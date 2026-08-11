@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 
 /**
  * Upravljanje dodelitev zaprte bete (tabela flow_dostop): testerji, nagrajenci
@@ -74,8 +75,9 @@ export async function POST(request: Request) {
   const baza = createAdminClient();
   if (!baza) return NextResponse.json({ error: 'Baza ni nastavljena' }, { status: 500 });
 
-  let body: Record<string, unknown> = {};
-  try { body = await request.json(); } catch { /* prazno telo zavrnemo spodaj */ }
+  let body: Record<string, unknown>;
+  try { body = await preberiJson(request, 4_000); }
+  catch (error) { return NextResponse.json({ error: sporociloValidacije(error) }, { status: 400 }); }
 
   const email = ociEmail(body.email);
   if (!email || !email.includes('@')) return NextResponse.json({ error: 'Neveljaven e-mail' }, { status: 400 });

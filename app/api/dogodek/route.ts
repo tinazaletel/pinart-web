@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 
 /**
  * Anonimni dogodek uporabe: kaj se v orodju odpre, dokonča, izvozi.
@@ -37,8 +38,9 @@ export async function POST(request: Request) {
   const baza = createAdminClient();
   if (!baza) return NextResponse.json({ ok: false, reason: 'not-configured' });
 
-  let body: Record<string, unknown> = {};
-  try { body = await request.json(); } catch { /* prazno telo odbijemo spodaj */ }
+  let body: Record<string, unknown>;
+  try { body = await preberiJson(request, 8_000); }
+  catch (error) { return NextResponse.json({ error: sporociloValidacije(error) }, { status: 400 }); }
 
   const ime = String(body.ime ?? '');
   if (!DOVOLJENA_IMENA.has(ime)) {

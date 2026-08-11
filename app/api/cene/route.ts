@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 
 /**
  * Anonimna cenovna tocka iz kalkulatorja — skupna baza cen na trgu.
@@ -33,8 +34,9 @@ export async function POST(request: Request) {
      ne drugega, se pot obnasa kot prej: tiho ne stori nicesar. */
   if (!endpoint && !baza) return NextResponse.json({ ok: false, reason: 'not-configured' });
 
-  let body: Record<string, unknown> = {};
-  try { body = await request.json(); } catch { /* prazen zapis odbijemo spodaj */ }
+  let body: Record<string, unknown>;
+  try { body = await preberiJson(request, 16_000); }
+  catch (error) { return NextResponse.json({ error: sporociloValidacije(error) }, { status: 400 }); }
 
   /* ── nevidna bot-zascita (Turnstile) ─────────────────────────────────
      Aktivna sele, ko je vpisan TURNSTILE_SECRET_KEY. Do takrat preskocimo,

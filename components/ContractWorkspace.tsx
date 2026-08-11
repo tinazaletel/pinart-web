@@ -201,15 +201,15 @@ export default function ContractWorkspace({ base }: { base: string }) {
     : ponudbePoDatumu.slice(0, 10);
   /* izbira ponudbe (ali "Brez ponudbe" = prazen id) nastavi offerId -> vir se izpelje sam */
   const izberiVVstopu = (id: string) => { setOfferId(id); setKartaOdprta(false); setRocnoTelo(false); setVstopOdprt(false); setVstopIskanje(''); };
-  /* klik izven odprtega comboboxa ga zapre (panel je position:absolute znotraj .pg-combo, portal ni potreben) */
+  /* klik izven odprtega comboboxa ga zapre (desktop: panel je position:absolute znotraj .pg-combo) */
   useEffect(() => {
-    if (!vstopOdprt) return;
+    if (!vstopOdprt || jeMobilni) return;
     const zapri = (event: MouseEvent) => {
       if (vstopComboRef.current && !vstopComboRef.current.contains(event.target as Node)) { setVstopOdprt(false); setVstopIskanje(''); }
     };
     document.addEventListener('mousedown', zapri);
     return () => document.removeEventListener('mousedown', zapri);
-  }, [vstopOdprt]);
+  }, [vstopOdprt, jeMobilni]);
 
   /* e-posta narocnika: iz imenika strank (po imenu), da je "Poslji" en klik */
   useEffect(() => {
@@ -967,23 +967,40 @@ export default function ContractWorkspace({ base }: { base: string }) {
                     <span>{selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : L('Brez ponudbe', 'No offer')}</span>
                     <CaretDown size={14} weight="bold" aria-hidden />
                   </button>
-                  {vstopOdprt && <div className="pg-combo-panel" onKeyDown={event => { if (event.key === 'Escape') { setVstopOdprt(false); setVstopIskanje(''); } }}>
-                    <input className="pg-combo-iskalnik" type="search" autoFocus placeholder={L('Poišči ponudbo, stranko ali številko …', 'Search offer, client or number …')} aria-label={L('Poišči ponudbo, stranko ali številko', 'Search offer, client or number')} value={vstopIskanje} onChange={event => setVstopIskanje(event.target.value)} />
-                    <div className="pg-combo-seznam" role="listbox" aria-label={L('Ponudbe', 'Offers')}>
-                      <button type="button" role="option" aria-selected={!offerId} className={'pg-combo-opcija' + (!offerId ? ' on' : '')} onClick={() => izberiVVstopu('')}>
-                        <span className="pg-combo-naziv"><strong>{L('Brez ponudbe', 'No offer')}</strong><small>{L('Samostojna pogodba', 'Standalone contract')}</small></span>
-                        {!offerId && <span className="pg-combo-kljukica" aria-hidden>✓</span>}
-                      </button>
-                      {vstopSeznam.map(offer => (
-                        <button key={offer.id} type="button" role="option" aria-selected={offerId === offer.id} className={'pg-combo-opcija' + (offerId === offer.id ? ' on' : '')} onClick={() => izberiVVstopu(offer.id)}>
-                          <span className="pg-combo-naziv"><strong>{offer.title} · {offer.client}</strong>{offer.number && <small>{L('Št. ', 'No. ')}{offer.number}</small>}</span>
-                          {offerId === offer.id && <span className="pg-combo-kljukica" aria-hidden>✓</span>}
+                  {vstopOdprt && (() => {
+                    const comboNotranjost = (<>
+                      <input className="pg-combo-iskalnik" type="search" autoFocus placeholder={L('Poišči ponudbo, stranko ali številko …', 'Search offer, client or number …')} aria-label={L('Poišči ponudbo, stranko ali številko', 'Search offer, client or number')} value={vstopIskanje} onChange={event => setVstopIskanje(event.target.value)} />
+                      <div className="pg-combo-seznam" role="listbox" aria-label={L('Ponudbe', 'Offers')}>
+                        <button type="button" role="option" aria-selected={!offerId} className={'pg-combo-opcija' + (!offerId ? ' on' : '')} onClick={() => izberiVVstopu('')}>
+                          <span className="pg-combo-naziv"><strong>{L('Brez ponudbe', 'No offer')}</strong><small>{L('Samostojna pogodba', 'Standalone contract')}</small></span>
+                          {!offerId && <span className="pg-combo-kljukica" aria-hidden>✓</span>}
                         </button>
-                      ))}
-                      {!vstopSeznam.length && <p className="pg-mini pg-combo-prazno">{L('Ni ponudb za to iskanje.', 'No offers match this search.')}</p>}
-                    </div>
-                    {!vstopIskanje.trim() && ponudbePoDatumu.length > 10 && <p className="pg-combo-namig">{L('Prikazanih zadnjih 10 — išči za vse.', 'Showing the last 10 — search to see all.')}</p>}
-                  </div>}
+                        {vstopSeznam.map(offer => (
+                          <button key={offer.id} type="button" role="option" aria-selected={offerId === offer.id} className={'pg-combo-opcija' + (offerId === offer.id ? ' on' : '')} onClick={() => izberiVVstopu(offer.id)}>
+                            <span className="pg-combo-naziv"><strong>{offer.title} · {offer.client}</strong>{offer.number && <small>{L('Št. ', 'No. ')}{offer.number}</small>}</span>
+                            {offerId === offer.id && <span className="pg-combo-kljukica" aria-hidden>✓</span>}
+                          </button>
+                        ))}
+                        {!vstopSeznam.length && <p className="pg-mini pg-combo-prazno">{L('Ni ponudb za to iskanje.', 'No offers match this search.')}</p>}
+                      </div>
+                      {!vstopIskanje.trim() && ponudbePoDatumu.length > 10 && <p className="pg-combo-namig">{L('Prikazanih zadnjih 10 — išči za vse.', 'Showing the last 10 — search to see all.')}</p>}
+                    </>);
+                    if (jeMobilni && typeof document !== 'undefined') {
+                      return createPortal(
+                        <div className="pg-combo-back" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) { setVstopOdprt(false); setVstopIskanje(''); } }}>
+                          <div className="pg-combo-sheet" role="dialog" aria-modal="true" aria-label={L('Ponudba', 'Offer')}>
+                            <div className="pg-vrsta-sheet-glava">
+                              <p className="pg-vrsta-sheet-naslov">{L('PONUDBA', 'OFFER')}</p>
+                              <button type="button" className="pg-vrsta-x" onClick={() => { setVstopOdprt(false); setVstopIskanje(''); }} aria-label={L('Zapri', 'Close')}><X size={18} weight="bold" /></button>
+                            </div>
+                            {comboNotranjost}
+                          </div>
+                        </div>,
+                        document.body,
+                      );
+                    }
+                    return <div className="pg-combo-panel" onKeyDown={event => { if (event.key === 'Escape') { setVstopOdprt(false); setVstopIskanje(''); } }}>{comboNotranjost}</div>;
+                  })()}
                 </div>
               </div>
               <label className="pg-polje">{L('Datum pogodbe', 'Contract date')}
@@ -1347,6 +1364,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-vrsta-opcija:hover{background:rgba(17,17,17,.05)}
       .pg-vrsta-opcija.on{background:var(--ink);color:var(--paper)}
       .pg-vrsta-kljukica{flex:none;font-size:.9rem}
+      /* Ponudba combo -> slide-up sheet na mobilu (isti vzorec kot vrsta) */
+      .pg-combo-back{position:fixed;inset:0;z-index:120;background:rgba(28,21,24,.28);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;animation:pgVrstaBack .2s ease both}
+      .pg-combo-sheet{width:100%;box-sizing:border-box;background:var(--paper);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px rgba(40,25,40,.22);padding:1.1rem 1.1rem calc(1.2rem + env(safe-area-inset-bottom,0px));max-height:82dvh;overflow-y:auto;animation:pgVrstaUp .3s cubic-bezier(.2,.8,.3,1) both}
+      .pg-combo-sheet .pg-combo-seznam{max-height:none}
 
       /* vklop/izklop opcijskih clenov — majhne pilule-stikala v istem jeziku kot .pg-segpills */
       .pg-klavzule{margin:0 0 1rem}
