@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 
 /**
  * Rocna dodelitev paketa. Rabi se za troje:
@@ -22,8 +23,9 @@ export async function POST(request: Request) {
   const baza = createAdminClient();
   if (!baza) return NextResponse.json({ error: 'Baza ni nastavljena' }, { status: 500 });
 
-  let body: { organizationId?: string; paket?: string; opomba?: string } = {};
-  try { body = await request.json(); } catch { /* prazno telo zavrnemo spodaj */ }
+  let body: { organizationId?: string; paket?: string; opomba?: string };
+  try { body = await preberiJson(request, 4_000); }
+  catch (error) { return NextResponse.json({ error: sporociloValidacije(error) }, { status: 400 }); }
 
   const organizationId = String(body.organizationId || '');
   const paket = body.paket === 'pro' ? 'pro' : 'free';

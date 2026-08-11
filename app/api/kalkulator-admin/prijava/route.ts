@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 
 /**
  * Prijava v admin pregled cen (/kalkulator/admin). Eno samo geslo,
@@ -8,8 +9,9 @@ export async function POST(request: Request) {
   const geslo = process.env.KALKULATOR_ADMIN_GESLO;
   if (!geslo) return NextResponse.json({ ok: false, reason: 'not-configured' }, { status: 500 });
 
-  let body: { geslo?: string } = {};
-  try { body = await request.json(); } catch { /* prazno telo zavrnemo spodaj */ }
+  let body: { geslo?: string };
+  try { body = await preberiJson(request, 2_000); }
+  catch (error) { return NextResponse.json({ error: sporociloValidacije(error) }, { status: 400 }); }
 
   if (body.geslo !== geslo) {
     return NextResponse.json({ ok: false }, { status: 401 });

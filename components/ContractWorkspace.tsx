@@ -198,7 +198,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const vstopIsk = vstopIskanje.trim().toLocaleLowerCase('sl-SI');
   const vstopSeznam = vstopIsk
     ? ponudbePoDatumu.filter(offer => `${offer.title} ${offer.client} ${offer.number || ''}`.toLocaleLowerCase('sl-SI').includes(vstopIsk))
-    : ponudbePoDatumu.slice(0, 10);
+    : ponudbePoDatumu.slice(0, 8);
   /* izbira ponudbe (ali "Brez ponudbe" = prazen id) nastavi offerId -> vir se izpelje sam */
   const izberiVVstopu = (id: string) => { setOfferId(id); setKartaOdprta(false); setRocnoTelo(false); setVstopOdprt(false); setVstopIskanje(''); };
   /* klik izven odprtega comboboxa ga zapre (desktop: panel je position:absolute znotraj .pg-combo) */
@@ -983,7 +983,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
                         ))}
                         {!vstopSeznam.length && <p className="pg-mini pg-combo-prazno">{L('Ni ponudb za to iskanje.', 'No offers match this search.')}</p>}
                       </div>
-                      {!vstopIskanje.trim() && ponudbePoDatumu.length > 10 && <p className="pg-combo-namig">{L('Prikazanih zadnjih 10 — išči za vse.', 'Showing the last 10 — search to see all.')}</p>}
+                      {!vstopIskanje.trim() && ponudbePoDatumu.length > 8 && <p className="pg-combo-namig">{L('Prikazanih zadnjih 8 — išči za vse.', 'Showing the last 8 — search to see all.')}</p>}
                     </>);
                     if (jeMobilni && typeof document !== 'undefined') {
                       return createPortal(
@@ -1367,7 +1367,14 @@ export default function ContractWorkspace({ base }: { base: string }) {
       /* Ponudba combo -> slide-up sheet na mobilu (isti vzorec kot vrsta) */
       .pg-combo-back{position:fixed;inset:0;z-index:120;background:rgba(28,21,24,.28);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;animation:pgVrstaBack .2s ease both}
       .pg-combo-sheet{width:100%;box-sizing:border-box;background:var(--paper);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px rgba(40,25,40,.22);padding:1.1rem 1.1rem calc(1.2rem + env(safe-area-inset-bottom,0px));max-height:82dvh;overflow-y:auto;animation:pgVrstaUp .3s cubic-bezier(.2,.8,.3,1) both}
-      .pg-combo-sheet .pg-combo-seznam{max-height:none}
+      .pg-combo-sheet{overflow-x:hidden}
+      .pg-combo-sheet .pg-combo-iskalnik{width:100%;box-sizing:border-box;font:inherit;font-size:16px;font-weight:500;color:var(--ink);background:oklch(97% .004 84);border:1px solid oklch(90% .006 82);border-radius:14px;padding:.85rem 1rem;margin:0 0 .7rem;outline:none;transition:border-color .15s,box-shadow .15s}
+      .pg-combo-sheet .pg-combo-iskalnik:focus{border-color:var(--accent,#B25476);box-shadow:0 0 0 3px color-mix(in oklch,var(--accent,#B25476) 20%,transparent)}
+      .pg-combo-sheet .pg-combo-seznam{max-height:none;gap:.15rem;overflow-x:hidden}
+      .pg-combo-sheet .pg-combo-opcija{border-bottom:none;border-radius:14px;padding:.7rem .85rem;min-height:3.3rem}
+      .pg-combo-sheet .pg-combo-opcija:hover,.pg-combo-sheet .pg-combo-opcija:active{background:oklch(96% .006 84)}
+      .pg-combo-sheet .pg-combo-opcija.on{background:oklch(95% .012 84)}
+      .pg-combo-sheet .pg-combo-naziv strong{overflow-wrap:anywhere}
 
       /* vklop/izklop opcijskih clenov — majhne pilule-stikala v istem jeziku kot .pg-segpills */
       .pg-klavzule{margin:0 0 1rem}

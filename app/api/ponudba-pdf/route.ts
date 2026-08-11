@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { NapakaValidacije, preberiJson, sporociloValidacije } from '@/lib/validacija';
 
 /* Strežniški render ponudbe v PRAVI PDF (vektorski, oster) — prenese se kot
    datoteka (ne tisk). Lokalno uporabi nameščeni Chrome, na Vercelu @sparticuz/chromium. */
@@ -16,7 +17,7 @@ const lokalniChrome = (): string => {
 export async function POST(req: NextRequest) {
   let browser: import('puppeteer-core').Browser | undefined;
   try {
-    const { html, coverHtml, ime, footer, margin, bg, cssPages, hideFirstFooter } = (await req.json()) as { html?: string; coverHtml?: string; ime?: string; footer?: string; margin?: { top?: string; right?: string; bottom?: string; left?: string }; bg?: string; cssPages?: boolean; hideFirstFooter?: boolean };
+    const { html, coverHtml, ime, footer, margin, bg, cssPages, hideFirstFooter } = await preberiJson<{ html?: string; coverHtml?: string; ime?: string; footer?: string; margin?: { top?: string; right?: string; bottom?: string; left?: string }; bg?: string; cssPages?: boolean; hideFirstFooter?: boolean }>(req, 34_000_000);
     if (!html || typeof html !== 'string' || html.length > 16_000_000) {
       return NextResponse.json({ error: 'Neveljaven html' }, { status: 400 });
     }
@@ -135,6 +136,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (e) {
     try { await browser?.close(); } catch { /* ignore */ }
+    if (e instanceof NapakaValidacije) {
+      return NextResponse.json({ error: sporociloValidacije(e) }, { status: 400 });
+    }
     return NextResponse.json({ error: 'PDF ni uspel', detajl: String(e) }, { status: 500 });
   }
 }

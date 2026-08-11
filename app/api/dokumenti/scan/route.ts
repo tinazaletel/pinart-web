@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'crypto';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 
 const dovoljeniStatusi = new Set(['pending', 'clean', 'infected']);
 
@@ -21,9 +22,9 @@ export async function POST(request: Request) {
 
   let body: { path?: string; status?: string };
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Neveljaven zahtevek.' }, { status: 400 });
+    body = await preberiJson(request, 4_000);
+  } catch (error) {
+    return NextResponse.json({ error: sporociloValidacije(error) }, { status: 400 });
   }
   const path = String(body.path || '').trim();
   const status = String(body.status || '').trim();
