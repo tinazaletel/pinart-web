@@ -1323,7 +1323,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
          sprozilec izgleda kot polje, panel z iskalnikom + seznam opcij se odpre pod njim (position:absolute) */
       .pg-combo-polje{min-width:0}
       .pg-combo{position:relative}
-      .pg-combo-sprozilec{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-width:0;font:inherit;font-size:16px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem;text-align:left;cursor:pointer}
+      .pg-combo-sprozilec{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-height:2.75rem;box-sizing:border-box;min-width:0;font:inherit;font-size:16px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem;text-align:left;cursor:pointer}
       .pg-combo-sprozilec:focus{outline:none;border-color:var(--ink)}
       .pg-combo-sprozilec>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .pg-combo-sprozilec svg{flex:none}
