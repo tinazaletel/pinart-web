@@ -689,7 +689,7 @@
 .invoiceSummary > button span { display: grid; place-items: center; width: 2rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .3); border-radius: 50%; font-size: 1rem; }
 .invoiceSummary > button strong { margin-top: auto; font: 500 1.4rem var(--font-sans), Georgia, serif; }
 .invoiceSummary > button small { margin-top: .25rem; color: oklch(100% 0 0 / .6); }
-.invoiceCreator, .invoiceArchive { padding: 1.25rem; border: 1px solid color-mix(in oklch, var(--ink) 9%, transparent); border-radius: 1.4rem; background: oklch(98% .008 87 / .92); }
+.invoiceCreator, .invoiceArchive { padding: 1.25rem; border: 1px solid rgba(255,255,255,.6); border-radius: 1.4rem; background: rgba(255,255,255,.55); -webkit-backdrop-filter: blur(18px) saturate(1.35); backdrop-filter: blur(18px) saturate(1.35); box-shadow: 0 12px 40px rgba(20,16,26,.05), inset 0 1px 0 rgba(255,255,255,.5); }
 .invoiceCreator { display: grid; grid-template-columns: minmax(14rem, .28fr) 1fr; gap: 1.5rem; }
 .invoiceCreator h2, .invoiceArchive h2 { margin: 0; font: 500 clamp(1.45rem, 2.2vw, 2.05rem)/1 var(--font-serif), Georgia, serif; }
 .invoiceCreator > div > p:last-child { color: var(--muted); font-size: .65rem; line-height: 1.5; }
