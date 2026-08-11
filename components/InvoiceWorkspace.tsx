@@ -8,7 +8,7 @@
 
 import { FormEvent, Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt } from '@phosphor-icons/react';
+import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt, PenNib, X } from '@phosphor-icons/react';
 import GumbNazaj from '@/components/ui/GumbNazaj';
 import GumbPrimarni from '@/components/ui/GumbPrimarni';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -140,6 +140,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const [podpisDatum, setPodpisDatum] = useState(danesISO());
   const [podpisSlika, setPodpisSlika] = useState('');
   const [narisanPodpis, setNarisanPodpis] = useState(false);
+  const [podpisOdprt, setPodpisOdprt] = useState(false); /* popup (desktop) / slide-up (mobile) */
   const NOGA_PRIVZETA = jeEn ? 'This document is issued electronically and is valid without a stamp or signature.' : 'Dokument je izdan elektronsko in je veljaven brez žiga in podpisa.';
   const [nogaOn, setNogaOn] = useState(true);           /* neobvezna noga računa (privzeto vklopljena) */
   const [nogaText, setNogaText] = useState(NOGA_PRIVZETA);
@@ -822,32 +823,55 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           {!ddvZavezanec && valuta !== 'eur' && <p className="rc-klavzula">{L('Davek ni obračunan. Če na svojem trgu obračunavaš davek, vklopi »Obračunaj …« zgoraj.', 'No tax charged. If you charge tax in your market, turn on “Charge …” above.')}</p>}
         </div>
 
-        {/* podpis (neobvezen) — isti vzorec kot pri pogodbah: rocno narisan ali nalozen; izrise se na dnu racuna in v izvozu */}
+        {/* podpis (neobvezen) — strnjeno: naslov + pisalo; klik odpre popup (desktop) / slide-up (mobile) */}
         <div className="rc-podpis">
-          <div className="rc-post-glava"><p className={styles.eyebrow}>{L('PODPIS RAČUNA (NEOBVEZNO)', 'INVOICE SIGNATURE (OPTIONAL)')}</p>{podpisSlika && <button type="button" className="rc-povezava" onClick={odstraniPodpis}>{L('Odstrani podpis', 'Remove signature')}</button>}</div>
-          <div className="rc-podpis-polja">
-            <label className="rc-polje">{L('Ime podpisnika', 'Signer name')}<input value={podpisIme} onChange={event => setPodpisIme(event.target.value)} placeholder={ponudnik.ime || L('Ime in priimek', 'Full name')} /></label>
-            <label className="rc-polje">{L('Kraj', 'Place')}<input value={podpisKraj} onChange={event => setPodpisKraj(event.target.value)} placeholder={L('npr. Ljubljana', 'e.g. Ljubljana')} /></label>
-            <label className="rc-polje">{L('Datum podpisa', 'Signature date')}<input type="date" value={podpisDatum} onChange={event => setPodpisDatum(event.target.value)} /></label>
+          <div className="rc-post-glava">
+            <p className={styles.eyebrow}>{L('PODPIS RAČUNA (NEOBVEZNO)', 'INVOICE SIGNATURE (OPTIONAL)')}</p>
+            <button type="button" className="rc-podpis-trig" onClick={() => setPodpisOdprt(true)} aria-label={L('Uredi podpis', 'Edit signature')} title={L('Uredi podpis', 'Edit signature')}><PenNib size={18} /></button>
           </div>
-          {podpisSlika ? (
-            <div className="rc-podpis-prikaz">
+          {podpisSlika && (
+            <div className="rc-podpis-prikaz rc-podpis-mini">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={podpisSlika} alt={L('Podpis', 'Signature')} />
+              <button type="button" className="rc-povezava" onClick={odstraniPodpis}>{L('Odstrani podpis', 'Remove signature')}</button>
             </div>
-          ) : (
-            <>
-              <canvas ref={pripraviPlatno} className="rc-podpis-platno" onPointerDown={zacniRis} onPointerMove={risiPodpis} onPointerUp={koncajRis} onPointerCancel={koncajRis} />
-              <div className="rc-podpis-akcije">
-                <button type="button" className="rc-cip" onClick={pocistiPlatno}>{L('Počisti', 'Clear')}</button>
-                <button type="button" className="rc-cip" disabled={!narisanPodpis} onClick={uporabiNarisanPodpis}>{L('Uporabi narisan podpis', 'Use drawn signature')}</button>
-                <span className="rc-podpis-ali">{L('ali', 'or')}</span>
-                <button type="button" className="rc-cip" onClick={() => podpisDatotekaRef.current?.click()}>{L('Naloži sliko podpisa …', 'Upload signature image …')}</button>
-                <input ref={podpisDatotekaRef} type="file" accept="image/*" hidden onChange={naloziPodpisSliko} />
-              </div>
-            </>
           )}
         </div>
+
+        {podpisOdprt && (
+          <div className="rc-op-back" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setPodpisOdprt(false); }}>
+            <div className="rc-podpis-sheet" role="dialog" aria-modal="true" aria-label={L('Podpis računa', 'Invoice signature')}>
+              <div className="rc-podpis-glava">
+                <p className={styles.eyebrow}>{L('PODPIS RAČUNA', 'INVOICE SIGNATURE')}</p>
+                <button type="button" className="rc-podpis-x" onClick={() => setPodpisOdprt(false)} aria-label={L('Zapri', 'Close')}><X size={18} weight="bold" /></button>
+              </div>
+              <div className="rc-podpis-polja">
+                <label className="rc-polje">{L('Ime podpisnika', 'Signer name')}<input value={podpisIme} onChange={event => setPodpisIme(event.target.value)} placeholder={ponudnik.ime || L('Ime in priimek', 'Full name')} /></label>
+                <label className="rc-polje">{L('Kraj', 'Place')}<input value={podpisKraj} onChange={event => setPodpisKraj(event.target.value)} placeholder={L('npr. Ljubljana', 'e.g. Ljubljana')} /></label>
+                <label className="rc-polje">{L('Datum podpisa', 'Signature date')}<input type="date" value={podpisDatum} onChange={event => setPodpisDatum(event.target.value)} /></label>
+              </div>
+              {podpisSlika ? (
+                <div className="rc-podpis-prikaz">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={podpisSlika} alt={L('Podpis', 'Signature')} />
+                  <div className="rc-podpis-akcije"><button type="button" className="rc-cip" onClick={odstraniPodpis}>{L('Odstrani podpis', 'Remove signature')}</button></div>
+                </div>
+              ) : (
+                <>
+                  <canvas ref={pripraviPlatno} className="rc-podpis-platno" onPointerDown={zacniRis} onPointerMove={risiPodpis} onPointerUp={koncajRis} onPointerCancel={koncajRis} />
+                  <div className="rc-podpis-akcije">
+                    <button type="button" className="rc-cip" onClick={pocistiPlatno}>{L('Počisti', 'Clear')}</button>
+                    <button type="button" className="rc-cip" disabled={!narisanPodpis} onClick={uporabiNarisanPodpis}>{L('Uporabi narisan podpis', 'Use drawn signature')}</button>
+                    <span className="rc-podpis-ali">{L('ali', 'or')}</span>
+                    <button type="button" className="rc-cip" onClick={() => podpisDatotekaRef.current?.click()}>{L('Naloži sliko podpisa …', 'Upload signature image …')}</button>
+                    <input ref={podpisDatotekaRef} type="file" accept="image/*" hidden onChange={naloziPodpisSliko} />
+                  </div>
+                </>
+              )}
+              <div className="rc-podpis-koncaj"><GumbPrimarni onClick={() => setPodpisOdprt(false)}>{L('Gotovo', 'Done')}</GumbPrimarni></div>
+            </div>
+          </div>
+        )}
 
         {/* noga računa (neobvezna) — opomba »brez žiga in podpisa«, privzeto vklopljena, urejljiva */}
         <div className="rc-podpis rc-noga-blok">
@@ -956,6 +980,24 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-cip:hover:not(:disabled){border-color:var(--ink)}
       .rc .rc-cip:disabled{opacity:.45;cursor:default}
       @media (max-width:640px){.rc .rc-podpis-polja{grid-template-columns:minmax(0,1fr)}}
+      /* podpis: strnjen trigger (pisalo) + popup (desktop) / slide-up (mobile) */
+      .rc .rc-podpis-trig{width:2.5rem;height:2.5rem;flex:none;border-radius:50%;border:1px solid rgba(17,17,17,.22);background:var(--paper);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(17,17,17,.1);transition:background .15s,color .15s}
+      .rc .rc-podpis-trig:hover{background:var(--ink);color:var(--paper)}
+      .rc .rc-podpis-mini{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:.8rem}
+      .rc-op-back{position:fixed;inset:0;z-index:120;background:rgba(28,21,24,.28);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:1.5rem;animation:rcOpBack .2s ease both}
+      @keyframes rcOpBack{from{opacity:0}to{opacity:1}}
+      .rc-podpis-sheet{width:min(520px,100%);max-height:88dvh;overflow-y:auto;box-sizing:border-box;background:var(--paper);border:1px solid oklch(93% .006 82 / .55);border-radius:20px;box-shadow:0 24px 60px rgba(40,25,40,.28);padding:1.4rem;animation:rcSheetPop .24s cubic-bezier(.2,.8,.3,1) both}
+      @keyframes rcSheetPop{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+      .rc-podpis-glava{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.4rem}
+      .rc-podpis-x{width:2.1rem;height:2.1rem;flex:none;border-radius:50%;border:1px solid rgba(17,17,17,.16);background:var(--paper);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,color .15s}
+      .rc-podpis-x:hover{background:var(--ink);color:var(--paper)}
+      .rc-podpis-koncaj{display:flex;justify-content:center;margin-top:1.1rem}
+      @media (max-width:640px){
+        .rc-op-back{align-items:flex-end;padding:0}
+        .rc-podpis-sheet{width:100%;max-height:88dvh;border-radius:20px 20px 0 0;padding:1.2rem 1.1rem calc(1.4rem + env(safe-area-inset-bottom,0px));animation:rcSheetUp .3s cubic-bezier(.2,.8,.3,1) both}
+      }
+      @keyframes rcSheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+      @media (prefers-reduced-motion:reduce){.rc-op-back,.rc-podpis-sheet{animation:none}}
       .rc .rc-vrstica{display:grid;grid-template-columns:minmax(0,2fr) minmax(3.6rem,.55fr) minmax(5.4rem,1.1fr) minmax(4rem,.55fr) minmax(5rem,.75fr) minmax(4.8rem,.85fr) 1.8rem;gap:.45rem;align-items:end;margin-top:.7rem}
       .rc .rc-vrstica.rc-brez-ddv{grid-template-columns:minmax(0,2.3fr) minmax(3.6rem,.55fr) minmax(5.4rem,1.1fr) minmax(4rem,.55fr) minmax(4.8rem,.9fr) 1.8rem}
       .rc .rc-vrstica input,.rc .rc-vrstica select{width:100%}
