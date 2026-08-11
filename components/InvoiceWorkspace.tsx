@@ -945,13 +945,14 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-cip:hover:not(:disabled){border-color:var(--ink)}
       .rc .rc-cip:disabled{opacity:.45;cursor:default}
       @media (max-width:640px){.rc .rc-podpis-polja{grid-template-columns:minmax(0,1fr)}}
-      .rc .rc-vrstica{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(3.6rem,.5fr) minmax(6rem,.9fr) minmax(4.6rem,.65fr) minmax(5.8rem,.8fr) minmax(5.6rem,.8fr) 2rem;gap:.55rem;align-items:end;margin-top:.7rem}
-      .rc .rc-vrstica.rc-brez-ddv{grid-template-columns:minmax(0,2.5fr) minmax(3.6rem,.5fr) minmax(6rem,.9fr) minmax(4.6rem,.65fr) minmax(5.6rem,.9fr) 2rem}
+      .rc .rc-vrstica{display:grid;grid-template-columns:minmax(0,2fr) minmax(2.9rem,.5fr) minmax(5.4rem,1.1fr) minmax(3.4rem,.55fr) minmax(4.4rem,.7fr) minmax(4.8rem,.85fr) 1.8rem;gap:.45rem;align-items:end;margin-top:.7rem}
+      .rc .rc-vrstica.rc-brez-ddv{grid-template-columns:minmax(0,2.3fr) minmax(2.9rem,.5fr) minmax(5.4rem,1.1fr) minmax(3.4rem,.55fr) minmax(4.8rem,.9fr) 1.8rem}
       .rc .rc-vrstica input,.rc .rc-vrstica select{width:100%}
       .rc .rc-vrstica input[type='number']{text-align:right}
       .rc .rc-znesek{display:grid;gap:.35rem;min-width:0}
       .rc .rc-znesek em{font:800 .58rem var(--font-sans),sans-serif;font-style:normal}
-      .rc .rc-znesek b{display:flex;align-items:center;justify-content:flex-end;min-height:2.75rem;padding:0 .2rem;font:700 .72rem var(--font-sans),sans-serif;white-space:nowrap;overflow-wrap:anywhere}
+      .rc .rc-znesek b{display:flex;align-items:center;justify-content:flex-end;min-height:2.75rem;padding:0 .2rem;font:750 .88rem var(--font-sans),sans-serif;white-space:nowrap;overflow-wrap:anywhere}
+      .rc .rc-vrstica select{padding-left:.55rem;padding-right:1.2rem;background-position:right .4rem center !important;background-size:.8rem}
       .rc .rc-x{width:2rem;height:2.75rem;border:0;border-radius:.65rem;background:transparent;color:color-mix(in oklch,var(--ink) 72%,transparent);font-size:1.1rem;line-height:1;cursor:pointer}
       .rc .rc-x:hover:not(:disabled){color:var(--ink);background:oklch(100% 0 0/.6)}
       .rc .rc-x:disabled{opacity:.3;cursor:default}
@@ -961,8 +962,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-vsote>div span{font-weight:700;color:var(--muted)}
       .rc .rc-vsote>div b{font-size:.68rem;white-space:nowrap}
       .rc .rc-skupaj{margin-top:.3rem;padding-top:.45rem;border-top:1.5px solid color-mix(in oklch,var(--ink) 30%,transparent)}
-      .rc .rc-vsote .rc-skupaj span{color:var(--ink);text-transform:uppercase;letter-spacing:.08em;font-size:.56rem}
-      .rc .rc-vsote .rc-skupaj b{font:700 1.12rem var(--font-sans),system-ui,sans-serif;letter-spacing:-.01em}
+      .rc .rc-vsote .rc-skupaj span{color:var(--ink);text-transform:uppercase;letter-spacing:.08em;font-size:.68rem;font-weight:800}
+      .rc .rc-vsote .rc-skupaj b{font:750 1.42rem var(--font-sans),system-ui,sans-serif;letter-spacing:-.01em}
       .rc .rc-klavzula{margin:.4rem 0 0;font-size:.56rem;line-height:1.5;color:var(--muted);font-weight:500}
       .rc .rc-napaka{margin:.5rem 0 0;color:oklch(50% .18 25);font-size:.62rem;font-weight:700;text-align:center}
       /* ── ZAKLJUCEK racuna (enaki elementi kot ponudba/pogodba) ── */

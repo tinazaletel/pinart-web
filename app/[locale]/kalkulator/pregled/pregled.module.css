@@ -828,7 +828,8 @@
 .expenseTagSuggestions button { padding: .3rem .65rem; border: 1px dashed var(--line); border-radius: 999px; background: transparent; color: color-mix(in oklch, var(--ink) 72%, transparent); font: 700 .75rem var(--font-sans), sans-serif; cursor: pointer; }
 .expenseTagSuggestions button:hover { border-style: solid; color: var(--ink); background: oklch(95% .01 87); }
 /* ── Znacke stroska: majhni cipi pod opisom v seznamu ── */
-.expenseItemTags { display: flex; flex-wrap: nowrap; gap: .3rem; margin-top: .3rem; overflow-x: auto; scrollbar-width: none; }
+/* značke = svoja vrsta ČEZ CELO širino (sicer kot 6. grid-otrok razširijo 1. stolpec in premaknejo kovanec/naziv desno) */
+.expenseItemTags { grid-column: 1 / -1; min-width: 0; display: flex; flex-wrap: nowrap; gap: .3rem; margin-top: .3rem; overflow-x: auto; scrollbar-width: none; }
 .expenseItemTags::-webkit-scrollbar { display: none; }
 .expenseItemTag { flex: none; display: inline-flex; align-items: center; padding: .22rem .55rem; border: 0; border-radius: 999px; background: oklch(94% .05 var(--tag-h, 280)); color: oklch(42% .12 var(--tag-h, 280)); font-size: .68rem; font-weight: 700; white-space: nowrap; }
 /* ── Filter po znacki: enak jezik kot .invoiceFilters, a lomi v vec vrstic ── */
@@ -1649,6 +1650,16 @@
 .priceEditor > header button { min-height: 2.6rem; padding: 0 .9rem; border: 1px solid rgba(255,255,255,.6); border-radius: 999px; background: rgba(255,255,255,.55); backdrop-filter: blur(12px) saturate(1.3); -webkit-backdrop-filter: blur(12px) saturate(1.3); cursor: pointer; transition: background-color .16s; }
 .priceEditor > header button:hover { background: #fff; }
 .priceEditor > header .activatePriceList { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+/* Preimenuj = svinčnik, Izbriši = koš (okrogla ikonska gumba) */
+.priceEditor > header button.priceIconBtn { width: 2.5rem; min-width: 2.5rem; height: 2.5rem; min-height: 2.5rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: var(--ink); }
+.priceEditor > header button.priceIconBtnDel { border-color: color-mix(in oklch, oklch(52% .16 25) 45%, rgba(255,255,255,.6)); color: oklch(52% .16 25); }
+.priceEditor > header button.priceIconBtnDel:hover { background: oklch(95% .04 25); border-color: oklch(52% .16 25); }
+/* mobilni izbirnik cenika (dropdown) + »+ Nov cenik« — skrit na desktop, viden ≤680 */
+.priceMobBar { display: none; }
+.priceMobSelect { flex: 1 1 auto; min-width: 0; min-height: 2.75rem; padding: 0 2.2rem 0 .95rem; border: 1px solid var(--line); border-radius: 999px; background-color: #fff; color: var(--ink); font: 700 1rem var(--font-sans), sans-serif; -webkit-appearance: none; appearance: none; background-repeat: no-repeat; background-position: right .85rem center; background-size: 12px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); cursor: pointer; }
+.priceMobSelect:focus { outline: none; border-color: var(--ink); }
+.priceMobNew { flex: none; min-height: 2.75rem; padding: 0 1rem; border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font: 800 .82rem var(--font-sans), sans-serif; white-space: nowrap; cursor: pointer; }
+.priceMobNew:disabled { opacity: .4; cursor: default; }
 .priceSearch { width: min(100%, 32rem); min-height: 3rem; display: flex; align-items: center; gap: .7rem; margin-top: 1.2rem; padding: 0 .9rem; border: 1px solid rgba(255,255,255,.6); border-radius: 999px; background: rgba(255,255,255,.55); backdrop-filter: blur(12px) saturate(1.3); -webkit-backdrop-filter: blur(12px) saturate(1.3); transition: border-color .15s, box-shadow .15s; }
 /* fokus daj na ZAOBLJEN ovoj (ne na oglati notranji input) — sicer je vijoli obroc oglat */
 .priceSearch:focus-within { border-color: color-mix(in oklch, var(--purple) 55%, var(--line)); box-shadow: 0 0 0 2.5px color-mix(in oklch, var(--purple) 28%, transparent); }
@@ -1681,6 +1692,10 @@
 /* Produkti — preprost webshop-style vnos (locen od cenika storitev zgoraj).
    Sifra/zaloga sta globalni (lib/produkti.ts), ne per-cenik. */
 .produktEditor { padding: 1.2rem; border: 1px solid var(--line); border-radius: 1.4rem; background: #fff; }
+.produktGlava { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.produktReset { display: inline-flex; align-items: center; gap: .35rem; min-height: 2.2rem; padding: 0 .85rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink); font: 700 .74rem var(--font-sans), sans-serif; cursor: pointer; }
+.produktReset:hover { border-color: var(--ink); }
+.produktReset:disabled { opacity: .4; cursor: default; }
 .produktList { display: grid; gap: .7rem; margin-top: .8rem; }
 .produktCard { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 1.2rem; padding: 1.1rem 1.3rem; border: 1px solid var(--line); border-radius: 1rem; background: #fff; transition: background-color .18s ease; }
 .produktCard:hover { background: oklch(96.5% .018 87); }
@@ -1693,6 +1708,10 @@
 .produktMeta span { color: var(--muted); font-size: .9rem; }
 .produktGumbi { display: flex; gap: .5rem; }
 .produktGumbi button { min-height: 2.5rem; padding: 0 .9rem; border: 1px solid var(--line); border-radius: 999px; background: transparent; font-size: .85rem; font-weight: 650; cursor: pointer; }
+/* Uredi = svinčnik, Izbriši = koš (okrogla ikonska gumba) */
+.produktGumbi button.produktIkon { width: 2.4rem; min-width: 2.4rem; height: 2.4rem; min-height: 2.4rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: var(--ink); }
+.produktGumbi button.produktIkonDel { border-color: color-mix(in oklch, oklch(52% .16 25) 45%, var(--line)); color: oklch(52% .16 25); }
+.produktGumbi button.produktIkonDel:hover { background: oklch(95% .04 25); border-color: oklch(52% .16 25); }
 .produktForm { display: flex; flex-wrap: wrap; align-items: end; gap: .6rem; padding: 1rem 1.3rem; border: 1px solid var(--line); border-radius: 1rem; background: linear-gradient(125deg, oklch(96% .035 295), oklch(94% .04 165)); }
 .produktForm input, .produktForm select { min-height: 2.75rem; min-width: 0; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .65rem; background: oklch(100% 0 0 / .8); font-size: .9rem; }
 .produktFormNaziv { flex: 1 1 12rem; }
@@ -1709,7 +1728,7 @@
   .goalLargeDial { grid-column: 2; grid-row: 1 / span 2; }
   .summary { grid-template-columns: 1fr 1fr; }
   .goalsLayout { grid-template-columns: 1fr; }
-  .priceListsLayout { grid-template-columns: 1fr; }
+  .priceListsLayout { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 680px) {
@@ -1728,16 +1747,29 @@
   .goalChecklist > small { width: 100%; }
   .goalHistory { overflow: hidden; }
   .goalHistory > div { grid-template-columns: repeat(6, minmax(4.5rem, 1fr)); overflow-x: auto; }
-  .priceListIntro, .priceEditor > header { align-items: flex-start; flex-direction: column; }
-  .priceEditor > header > div:last-child { justify-content: flex-start; }
+  /* mobile: banner PROFILI CEN in poln seznam ven; namesto seznama = dropdown (priceMobBar) */
+  .priceListIntro { display: none; }
+  .priceProfileList { display: none; }
+  .priceMobBar { display: flex; align-items: center; gap: .5rem; }
+  /* icon gumba (svinčnik+koš) NAD naslov, desno (column-reverse) */
+  .priceEditor > header { align-items: stretch; flex-direction: column-reverse; }
+  .priceEditor > header > div:last-child { justify-content: flex-end; }
+  /* proti horizontalnemu prelivu (stran preširoka/odrezana) */
+  .priceListsPage, .priceListsLayout, .priceEditor, .priceMobBar, .addPriceService { min-width: 0; }
+  .priceEditor > header h2 { font-size: 1.6rem; overflow-wrap: anywhere; }
+  .addPriceService input { min-width: 0; max-width: 100%; }
+  .priceEditor { overflow-x: clip; }
   .priceRows > label { grid-template-columns: 1fr auto; gap: .6rem; padding: .55rem .3rem; min-height: 0; }
   .priceRows > label > span:last-child { justify-self: end; }
   .priceEditor { padding: .7rem; }
   .addPriceService { grid-template-columns: 1fr; }
   .priceViewSwitch { width: 100%; }
   .priceViewSwitch button { flex: 1; }
-  .produktCard { grid-template-columns: 1fr; justify-items: start; gap: .6rem; }
-  .produktMeta { justify-items: start; text-align: left; }
+  /* manjši padding; znesek DESNO (info levo čez obe vrsti, meta+gumbi desno) */
+  .produktCard { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'info meta' 'info gumbi'; align-items: start; gap: .35rem .7rem; padding: .7rem .8rem; }
+  .produktCard > div:first-child { grid-area: info; min-width: 0; }
+  .produktMeta { grid-area: meta; justify-items: end; text-align: right; }
+  .produktGumbi { grid-area: gumbi; justify-content: flex-end; align-self: end; }
   .produktGumbi { width: 100%; }
   .produktGumbi button { flex: 1; }
 }

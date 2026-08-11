@@ -2098,16 +2098,21 @@ export default function TaskManagerWorkspace() {
           .tm{padding:.75rem .75rem 4rem}
           .tm-podnaslov{max-width:none}
           .tm-uporabnik select{font-size:1rem}
-          .tm-pogled-filtri-vrsta{display:grid;grid-template-columns:minmax(0,1fr);gap:.5rem;width:100%}
-          .tm-pogled-preklop,.tm-filtri-vrsta,.tm-filtri,.tm-filter-oznaka{width:100%}
-          .tm-pogled-preklop button,.tm-filtri button{flex:1;min-width:0;padding-inline:.45rem}
-          .tm-filtri-vrsta{display:grid;grid-template-columns:minmax(0,1fr);gap:.5rem}
+          /* toolbar v MAX 2 vrstici: vrsta 1 = pogled + filtri (vodoravno drsljivo), vrsta 2 = akcije (drsljivo) */
+          .tm-pogled-filtri-vrsta{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .55rem;width:100%}
+          .tm-pogled-preklop{flex:none;width:auto}
+          .tm-filtri-vrsta{flex:1 1 0;min-width:0;display:flex;flex-wrap:nowrap;align-items:center;gap:.5rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+          .tm-filtri-vrsta::-webkit-scrollbar{display:none}
+          .tm-filtri,.tm-filter-oznaka{flex:none;width:auto}
+          .tm-pogled-preklop button,.tm-filtri button{flex:none;min-width:0;padding-inline:.7rem}
           .tm-filter-oznaka{font-size:1rem}
-          .tm-glava-akcije{display:grid;grid-template-columns:minmax(0,1fr) 2.75rem;gap:.5rem;width:100%;margin-left:0}
-          .tm-analitika-gumb{width:100%;justify-content:center}
-          .tm-orodje-ikona{width:2.75rem}
-          .tm-nova,.tm-seed-gumb-ai{grid-column:1/-1;width:100%;justify-content:center}
-          .tm-seed-sporocilo,.tm-demo-namig{grid-column:1/-1}
+          .tm-glava-akcije{flex:1 1 100%;display:flex;flex-wrap:nowrap;align-items:center;gap:.5rem;width:100%;margin-left:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+          .tm-glava-akcije::-webkit-scrollbar{display:none}
+          .tm-analitika-gumb{flex:none;width:auto;justify-content:center}
+          .tm-orodje-ikona{width:2.75rem;flex:none}
+          .tm-nova{flex:1 1 auto;min-width:8rem;justify-content:center}
+          .tm-seed-gumb-ai{flex:none;justify-content:center}
+          .tm-seed-sporocilo,.tm-demo-namig{flex-basis:100%}
           .tm-x,.tm-kartica-x,.tm-cas-gumb,.tm-podopravilo-krog,.tm-podopravilo-dodeli-gumb,.tm-podopravilo-brisi,.tm-podrocje-plus{min-width:2.75rem;min-height:2.75rem}
         }
 
