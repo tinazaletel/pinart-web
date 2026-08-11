@@ -8,7 +8,7 @@
 
 import { FormEvent, Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt } from '@phosphor-icons/react';
+import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt, ArrowRight } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, type FlowInvoiceItem, type FlowInvoiceSignature } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
@@ -32,7 +32,16 @@ const ENOTE_POSTAVK: PostavkaEnota[] = ['kos', 'ura', 'projekt', 'pavšal', 'mes
 const ENOTA_POSTAVKA_EN: Record<PostavkaEnota, string> = { kos: 'pcs', ura: 'hr', projekt: 'project', 'pavšal': 'flat rate', mesec: 'month' };
 
 const esc =(s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
-const stev = (s: string) => { const n = Number(String(s).replace(',', '.')); return Number.isFinite(n) ? n : 0; };
+/* SI format: pika = ločilo tisočic, vejica = decimalka. Če vnos vsebuje vejico → obravnavaj
+   kot SI (odstrani pike, vejico v piko: "25.000,00" → 25000). Če vejice NI, pusti piko kot
+   decimalko (nazaj-združljivo s starimi vnosi tipa "25.5"). */
+const stev = (s: string) => {
+  const t = String(s).trim();
+  if (!t) return 0;
+  const c = t.includes(',') ? t.replace(/\./g, '').replace(',', '.') : t;
+  const n = Number(c.replace(/[^\d.-]/g, ''));
+  return Number.isFinite(n) ? n : 0;
+};
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 const datStr = (d: Date) => `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}`;
 const danesISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -781,9 +790,9 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           {vrstice.map((v, i) => <Fragment key={i}>
             <div className={'rc-vrstica' + (ddvZavezanec ? '' : ' rc-brez-ddv')}>
               <label className="rc-opis">{L('Opis', 'Description')}<input required={i === 0} value={v.opis} onChange={event => popraviVrstico(i, 'opis', event.target.value)} placeholder={L('Opravljena storitev, obseg ali obdobje …', 'Service provided, scope or period …')} /></label>
-              <label className="rc-kolicina">{L('Kol.', 'Qty.')}<input required min="0" step="0.5" type="number" inputMode="numeric" placeholder="1" value={v.kolicina} onChange={event => popraviVrstico(i, 'kolicina', event.target.value)} /></label>
-              <label className="rc-cena">{L(`Cena brez ${davOzn}`, `Price excl. ${davOzn}`)}<input required={i === 0} min="0" step="0.01" type="number" inputMode="decimal" placeholder="0,00" value={v.cena} onChange={event => popraviVrstico(i, 'cena', event.target.value)} /></label>
-              <label className="rc-popust">{L('Popust %', 'Discount %')}<input min="0" max="100" step="0.5" type="number" inputMode="decimal" value={v.popust} onChange={event => popraviVrstico(i, 'popust', event.target.value)} placeholder="0" /></label>
+              <label className="rc-kolicina">{L('Kol.', 'Qty.')}<input required type="text" inputMode="decimal" placeholder="1" value={v.kolicina} onChange={event => popraviVrstico(i, 'kolicina', event.target.value)} /></label>
+              <label className="rc-cena">{L(`Cena brez ${davOzn}`, `Price excl. ${davOzn}`)}<input required={i === 0} type="text" inputMode="decimal" placeholder="0,00" value={v.cena} onChange={event => popraviVrstico(i, 'cena', event.target.value)} /></label>
+              <label className="rc-popust">{L('Popust %', 'Discount %')}<input type="text" inputMode="decimal" value={v.popust} onChange={event => popraviVrstico(i, 'popust', event.target.value)} placeholder="0" /></label>
               {ddvZavezanec && (valuta === 'eur'
                 ? <label className="rc-davek">{davOzn}<select value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)}>{DDV_STOPNJE.map(s => <option key={s} value={s}>{s.replace('.', ',')} %</option>)}</select></label>
                 : <label className="rc-davek">{L(`${davOzn} %`, `${davOzn} %`)}<input min="0" max="30" step="0.1" type="number" inputMode="decimal" placeholder="0" value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)} /></label>)}
@@ -847,7 +856,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           {nogaOn && <label className="rc-polje rc-noga-polje">{L('Besedilo noge', 'Footer text')}<textarea value={nogaText} onChange={event => setNogaText(event.target.value)} rows={2} placeholder={NOGA_PRIVZETA} /></label>}
         </div>
 
-        <div className={styles.invoiceSubmit}><button type="submit" className="rc-zakljuci-gumb">{L('Zaključi →', 'Finish →')}</button></div>
+        <div className={styles.invoiceSubmit}><button type="submit" className="rc-zakljuci-gumb">{L('Zaključi', 'Finish')} <ArrowRight size={15} weight="bold" /></button></div>
       </form>
     </section>}
 
@@ -945,12 +954,14 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-cip:hover:not(:disabled){border-color:var(--ink)}
       .rc .rc-cip:disabled{opacity:.45;cursor:default}
       @media (max-width:640px){.rc .rc-podpis-polja{grid-template-columns:minmax(0,1fr)}}
-      .rc .rc-vrstica{display:grid;grid-template-columns:minmax(0,2fr) minmax(2.9rem,.5fr) minmax(5.4rem,1.1fr) minmax(3.4rem,.55fr) minmax(4.4rem,.7fr) minmax(4.8rem,.85fr) 1.8rem;gap:.45rem;align-items:end;margin-top:.7rem}
-      .rc .rc-vrstica.rc-brez-ddv{grid-template-columns:minmax(0,2.3fr) minmax(2.9rem,.5fr) minmax(5.4rem,1.1fr) minmax(3.4rem,.55fr) minmax(4.8rem,.9fr) 1.8rem}
+      .rc .rc-vrstica{display:grid;grid-template-columns:minmax(0,2fr) minmax(3.6rem,.55fr) minmax(5.4rem,1.1fr) minmax(4rem,.55fr) minmax(5rem,.75fr) minmax(4.8rem,.85fr) 1.8rem;gap:.45rem;align-items:end;margin-top:.7rem}
+      .rc .rc-vrstica.rc-brez-ddv{grid-template-columns:minmax(0,2.3fr) minmax(3.6rem,.55fr) minmax(5.4rem,1.1fr) minmax(4rem,.55fr) minmax(4.8rem,.9fr) 1.8rem}
       .rc .rc-vrstica input,.rc .rc-vrstica select{width:100%}
-      .rc .rc-vrstica input[type='number']{text-align:right}
-      .rc .rc-znesek{display:grid;gap:.35rem;min-width:0}
-      .rc .rc-znesek em{font:800 .58rem var(--font-sans),sans-serif;font-style:normal}
+      .rc .rc-kolicina input,.rc .rc-cena input,.rc .rc-popust input,.rc .rc-davek input{text-align:right;padding-left:.4rem;padding-right:.45rem}
+      .rc .rc-vrstica label{font-size:14px;white-space:nowrap;min-width:0}
+      .rc .rc-vrstica input,.rc .rc-vrstica select{font-size:14px}
+      .rc .rc-znesek{display:grid;gap:.35rem;min-width:0;justify-items:end}
+      .rc .rc-znesek em{font:800 14px var(--font-sans),sans-serif;font-style:normal;text-align:right}
       .rc .rc-znesek b{display:flex;align-items:center;justify-content:flex-end;min-height:2.75rem;padding:0 .2rem;font:750 .88rem var(--font-sans),sans-serif;white-space:nowrap;overflow-wrap:anywhere}
       .rc .rc-vrstica select{padding-left:.55rem;padding-right:1.2rem;background-position:right .4rem center !important;background-size:.8rem}
       .rc .rc-x{width:2rem;height:2.75rem;border:0;border-radius:.65rem;background:transparent;color:color-mix(in oklch,var(--ink) 72%,transparent);font-size:1.1rem;line-height:1;cursor:pointer}
@@ -967,7 +978,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-klavzula{margin:.4rem 0 0;font-size:.56rem;line-height:1.5;color:var(--muted);font-weight:500}
       .rc .rc-napaka{margin:.5rem 0 0;color:oklch(50% .18 25);font-size:.62rem;font-weight:700;text-align:center}
       /* ── ZAKLJUCEK racuna (enaki elementi kot ponudba/pogodba) ── */
-      .rc .rc-zakljuci-gumb{width:max-content;padding:.85rem 1.9rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:600 .82rem var(--font-sans),sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:transform .2s ease}
+      .rc .rc-zakljuci-gumb{display:flex;align-items:center;gap:.55rem;width:max-content;margin-left:auto;padding:.85rem 1.9rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:600 .82rem var(--font-sans),sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:transform .2s ease}
       .rc .rc-zakljuci-gumb:hover{transform:translateY(-2px)}
       .rc .rc-zakljucek{padding-bottom:10rem}
       .rc .rc-zakljucek .rc-kicker-z,.rc .rc-zakljucek .rc-naslov-z,.rc .rc-zakljucek .rc-uvod-z{text-align:center}
@@ -1020,7 +1031,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-obr-uvod{margin:1rem 0 2rem}
       .rc .rc-obr-uvod h2{margin:.15rem 0 .6rem}
       .rc .rc-obr-uvod > p:last-child{margin:0;line-height:1.55}
-      .rc .rc-nazaj-vrh{margin:0 0 .2rem;justify-self:start}
+      .rc .rc-nazaj-vrh{margin:0 0 .9rem;justify-self:start;display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .95rem;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(12px) saturate(1.3);backdrop-filter:blur(12px) saturate(1.3);color:var(--ink);font:700 .62rem var(--font-sans),sans-serif;letter-spacing:.04em;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s}
+      .rc .rc-nazaj-vrh:hover{background:#fff;border-color:var(--ink)}
       .rc .rc-povezava{font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0;display:inline-flex;align-items:center;gap:.38rem}
       .rc .rc-povezava:hover{opacity:.6}
       .rc .rc-mini{font-size:.8rem;color:rgba(17,17,17,.72)}
