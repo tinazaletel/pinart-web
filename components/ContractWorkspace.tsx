@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf } from '@phosphor-icons/react';
+import GumbNazaj from '@/components/ui/GumbNazaj';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } from '@/lib/pinartFlowStore';
 import { deleteBusinessDocument, getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
@@ -992,7 +993,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
         ) : (
           /* pot "Od stranke": nalozi in preglej dokument — shrani takoj v arhiv (status Prejeta) */
           <>
-            <button type="button" className="pg-povezava pg-odstranke-nazaj" onClick={() => setOdStranke(false)}>{L('← Nazaj na ustvarjanje pogodbe', '← Back to creating a contract')}</button>
+            <GumbNazaj className="pg-odstranke-nazaj" onClick={() => setOdStranke(false)}>{L('Nazaj na ustvarjanje pogodbe', 'Back to creating a contract')}</GumbNazaj>
             <form onSubmit={saveUpload}>
               <div className="pg-polja">
                 <label className="pg-polje">{L('Naziv pogodbe', 'Contract title')}
@@ -1029,7 +1030,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* ── POGLED 2: DOKUMENT (samostojna stran — sredinski ozek stolpec, kot retainer) ── */}
     {pogled === 'dokument' && <section className="pg-sek pg-stran pg-stolpec">
       {/* jasna pot nazaj na vstopni korak — na vrhu, pred dokumentom */}
-      <button type="button" className="pg-povezava pg-nazaj-vrh" onClick={() => setPogled('nastavitve')}>{L('← Nazaj', '← Back')}</button>
+      <GumbNazaj className="pg-nazaj-vrh" onClick={() => setPogled('nastavitve')}>{L('Nazaj', 'Back')}</GumbNazaj>
       {vir === 'ponudba' && karticaPonudbe(true)}
       <div className="pg-pon-vrh">
         <div className="pg-segpills" role="group" aria-label={L('Pogled', 'View')}>

@@ -8,7 +8,9 @@
 
 import { FormEvent, Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt, ArrowRight } from '@phosphor-icons/react';
+import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt } from '@phosphor-icons/react';
+import GumbNazaj from '@/components/ui/GumbNazaj';
+import GumbPrimarni from '@/components/ui/GumbPrimarni';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, type FlowInvoiceItem, type FlowInvoiceSignature } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
@@ -682,7 +684,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
 
     {/* ── POGLED: OBRAZEC (svoja stran, sredinski stolpec — view-swap kot pogodbe) ── */}
     {pogled === 'obrazec' && <section className={`${styles.invoiceCreator} rc-sek rc-stran rc-stolpec rc-obrazec`}>
-      <button type="button" className="rc-povezava rc-nazaj-vrh" onClick={() => setPogled('pregled')}>{L('← Nazaj', '← Back')}</button>
+      <GumbNazaj className="rc-nazaj-vrh" onClick={() => setPogled('pregled')}>{L('Nazaj', 'Back')}</GumbNazaj>
       <div className="rc-obr-uvod">
         <p className={styles.eyebrow}>{L('NOV RAČUN', 'NEW INVOICE')}</p>
         <h2>{L('Vse sestavine po zakonu.', 'Every legally required part.')}</h2>
@@ -856,7 +858,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           {nogaOn && <label className="rc-polje rc-noga-polje">{L('Besedilo noge', 'Footer text')}<textarea value={nogaText} onChange={event => setNogaText(event.target.value)} rows={2} placeholder={NOGA_PRIVZETA} /></label>}
         </div>
 
-        <div className={styles.invoiceSubmit}><button type="submit" className="rc-zakljuci-gumb">{L('Zaključi', 'Finish')} <ArrowRight size={15} weight="bold" /></button></div>
+        <div className={styles.invoiceSubmit} style={{ display: 'flex', justifyContent: 'flex-end' }}><GumbPrimarni type="submit" puscica>{L('Zaključi', 'Finish')}</GumbPrimarni></div>
       </form>
     </section>}
 
