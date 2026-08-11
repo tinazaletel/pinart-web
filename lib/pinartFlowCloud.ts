@@ -108,6 +108,29 @@ function allClients(data: FlowData): FlowClient[] {
   return [...byName.values()];
 }
 
+type SyncPayload = { external_id: string; updated_at: string; deleted_at?: string | null };
+type CloudVersion = { external_id: string | null; updated_at: string | null; deleted_at?: string | null };
+
+const syncTime = (value?: string | null): number => {
+  if (!value) return Number.NEGATIVE_INFINITY;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : Number.NEGATIVE_INFINITY;
+};
+
+/** Prepreči, da zastarela naprava prepiše novejši oblak ali obudi tombstone. */
+function novejseOdOblaka<T extends SyncPayload>(localRows: T[], cloudRows: CloudVersion[]): T[] {
+  const cloudByExternalId = new Map(
+    cloudRows.filter(row => row.external_id).map(row => [String(row.external_id), row]),
+  );
+  return localRows.filter(local => {
+    const cloud = cloudByExternalId.get(local.external_id);
+    if (!cloud) return true;
+    if (cloud.deleted_at && !local.deleted_at) return false;
+    if (local.deleted_at && !cloud.deleted_at) return true;
+    return syncTime(local.updated_at) >= syncTime(cloud.updated_at);
+  });
+}
+
 export async function pushFlowData(data: FlowData): Promise<void> {
   const context = await getOrganizationContext();
   if (!context) return;
@@ -123,8 +146,18 @@ export async function pushFlowData(data: FlowData): Promise<void> {
   };
   const clients = allClients(varniPodatki);
 
+  const [clientVersions, offerVersions, invoiceVersions, expenseVersions, contractVersions] = await Promise.all([
+    supabase.from('clients').select('external_id,updated_at').eq('organization_id', organizationId),
+    supabase.from('offers').select('external_id,updated_at,deleted_at').eq('organization_id', organizationId),
+    supabase.from('invoices').select('external_id,updated_at,deleted_at').eq('organization_id', organizationId),
+    supabase.from('expenses').select('external_id,updated_at,deleted_at').eq('organization_id', organizationId),
+    supabase.from('contracts').select('external_id,updated_at,deleted_at').eq('organization_id', organizationId),
+  ]);
+  const versionError = [clientVersions.error, offerVersions.error, invoiceVersions.error, expenseVersions.error, contractVersions.error].find(Boolean);
+  if (versionError) throw versionError;
+
   if (clients.length) {
-    const { error } = await supabase.from('clients').upsert(clients.map(client => ({
+    const rows = novejseOdOblaka(clients.map(client => ({
       organization_id: organizationId,
       external_id: client.id,
       name: client.name,
@@ -134,8 +167,11 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       address: client.address || null,
       tax_number: client.tax || null,
       updated_at: client.updatedAt || new Date(0).toISOString(),
-    })), { onConflict: 'organization_id,external_id' });
-    if (error) throw error;
+    })), clientVersions.data || []);
+    if (rows.length) {
+      const { error } = await supabase.from('clients').upsert(rows, { onConflict: 'organization_id,external_id' });
+      if (error) throw error;
+    }
   }
 
   const { data: clientRows, error: clientError } = await supabase.from('clients').select('id,external_id,name').eq('organization_id', organizationId);
@@ -143,7 +179,7 @@ export async function pushFlowData(data: FlowData): Promise<void> {
   const clientByName = new Map((clientRows || []).map(row => [String(row.name).trim().toLocaleLowerCase('sl'), String(row.id)]));
 
   if (varniPodatki.offers.length) {
-    const { error } = await supabase.from('offers').upsert(varniPodatki.offers.map(offer => ({
+    const rows = novejseOdOblaka(varniPodatki.offers.map(offer => ({
       organization_id: organizationId,
       external_id: offer.id,
       client_id: clientByName.get(offer.client.trim().toLocaleLowerCase('sl')) || null,
@@ -156,8 +192,11 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       deleted_at: offer.deletedAt || null,
       deleted_by: offer.deletedBy || null,
       updated_at: offer.updatedAt || new Date(0).toISOString(),
-    })), { onConflict: 'organization_id,external_id' });
-    if (error) throw error;
+    })), offerVersions.data || []);
+    if (rows.length) {
+      const { error } = await supabase.from('offers').upsert(rows, { onConflict: 'organization_id,external_id' });
+      if (error) throw error;
+    }
   }
 
   const { data: offerRows, error: offerError } = await supabase.from('offers').select('id,external_id').eq('organization_id', organizationId);
@@ -165,7 +204,7 @@ export async function pushFlowData(data: FlowData): Promise<void> {
   const offerByExternalId = new Map((offerRows || []).map(row => [String(row.external_id), String(row.id)]));
 
   if (varniPodatki.invoices.length) {
-    const { error } = await supabase.from('invoices').upsert(varniPodatki.invoices.map(invoice => ({
+    const rows = novejseOdOblaka(varniPodatki.invoices.map(invoice => ({
       organization_id: organizationId,
       external_id: invoice.id,
       client_id: clientByName.get(invoice.client.trim().toLocaleLowerCase('sl')) || null,
@@ -188,12 +227,15 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       deleted_at: invoice.deletedAt || null,
       deleted_by: invoice.deletedBy || null,
       updated_at: invoice.updatedAt || new Date(0).toISOString(),
-    })), { onConflict: 'organization_id,external_id' });
-    if (error) throw error;
+    })), invoiceVersions.data || []);
+    if (rows.length) {
+      const { error } = await supabase.from('invoices').upsert(rows, { onConflict: 'organization_id,external_id' });
+      if (error) throw error;
+    }
   }
 
   if (varniPodatki.expenses.length) {
-    const { error } = await supabase.from('expenses').upsert(varniPodatki.expenses.map(expense => ({
+    const rows = novejseOdOblaka(varniPodatki.expenses.map(expense => ({
       organization_id: organizationId,
       external_id: expense.id,
       client_id: expense.client ? clientByName.get(expense.client.trim().toLocaleLowerCase('sl')) || null : null,
@@ -207,12 +249,15 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       deleted_at: expense.deletedAt || null,
       deleted_by: expense.deletedBy || null,
       updated_at: expense.updatedAt || new Date(0).toISOString(),
-    })), { onConflict: 'organization_id,external_id' });
-    if (error) throw error;
+    })), expenseVersions.data || []);
+    if (rows.length) {
+      const { error } = await supabase.from('expenses').upsert(rows, { onConflict: 'organization_id,external_id' });
+      if (error) throw error;
+    }
   }
 
   if (varniPodatki.contracts.length) {
-    const { error } = await supabase.from('contracts').upsert(varniPodatki.contracts.map(contract => ({
+    const rows = novejseOdOblaka(varniPodatki.contracts.map(contract => ({
       organization_id: organizationId,
       external_id: contract.id,
       client_id: clientByName.get(contract.client.trim().toLocaleLowerCase('sl')) || null,
@@ -226,8 +271,11 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       deleted_at: contract.deletedAt || null,
       deleted_by: contract.deletedBy || null,
       updated_at: contract.updatedAt || new Date(0).toISOString(),
-    })), { onConflict: 'organization_id,external_id' });
-    if (error) throw error;
+    })), contractVersions.data || []);
+    if (rows.length) {
+      const { error } = await supabase.from('contracts').upsert(rows, { onConflict: 'organization_id,external_id' });
+      if (error) throw error;
+    }
   }
 
   oznaciSinhronizirano();

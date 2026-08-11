@@ -335,7 +335,20 @@ export function oznaciSinhronizirano(): void {
 }
 
 export function jeSamoLokalno(): boolean {
-  return typeof window !== 'undefined' && localStorage.getItem(UNSYNCED_KEY) === '1';
+  if (typeof window === 'undefined') return false;
+  const projectRef = (() => {
+    try {
+      return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || '').hostname.split('.')[0];
+    } catch {
+      return '';
+    }
+  })();
+  const authCookiePrefix = projectRef ? `sb-${projectRef}-auth-token` : 'sb-';
+  const imaSejo = document.cookie.split(';').some(cookie => {
+    const name = cookie.trim().split('=')[0];
+    return name === authCookiePrefix || name.startsWith(`${authCookiePrefix}.`);
+  });
+  return !imaSejo || localStorage.getItem(UNSYNCED_KEY) === '1';
 }
 
 export function izvoziFlowJSON(): string {
