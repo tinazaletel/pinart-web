@@ -3,6 +3,9 @@ main = "src/index.js"
 compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Email Worker: sprozi ga Email Routing (pošta), NE HTTP. Zato brez workers.dev naslova.
+workers_dev = false
+
 # Nastavljivi VAR (Cloudflare -> Worker -> Settings -> Variables and Secrets):
 #   FLOW_INBOUND_URL  (plain Var)  = https://pinartflow.com/api/posta/prejeto
 #   INBOUND_SECRET    (Secret)     = ista vrednost kot v Vercel env
