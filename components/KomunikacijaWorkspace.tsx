@@ -617,7 +617,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-pisi input,.km-pisi textarea{border:1px solid var(--k-line);border-radius:.55rem;padding:.55rem .7rem;font:500 .9rem/1.5 var(--font-sans),sans-serif;background:#fff;color:var(--k-ink);text-transform:none;letter-spacing:0}
         .km-pisi input:focus,.km-pisi textarea:focus,.km-ai-odg:focus,.km-meni form input:focus{outline:2px solid color-mix(in oklch,var(--k-purple) 45%,transparent);outline-offset:1px;border-color:var(--k-purple)}
         .km-pisi textarea{resize:vertical}
-        .km-pisi-status{margin:0;font:600 .8rem var(--font-sans),sans-serif;color:oklch(55% .2 25)}
+        .km-pisi-status{margin:.2rem 0 0;padding:.65rem .85rem;border:1px solid oklch(78% .13 25);border-radius:.6rem;background:oklch(96% .04 25);color:oklch(45% .18 25);font:700 .85rem var(--font-sans),sans-serif}
         .km-pisi-akc{display:flex;justify-content:flex-end;gap:.5rem}
         .km-pisi-akc button{border:1px solid var(--k-line);background:#fff;border-radius:999px;padding:.55rem 1.2rem;font:700 .82rem var(--font-sans),sans-serif;color:var(--k-ink);cursor:pointer}
         .km-pisi-akc button.prim{background:var(--k-ink,#2a2620);border-color:transparent;color:#fff}
