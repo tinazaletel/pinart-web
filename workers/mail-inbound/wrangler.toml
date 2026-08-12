@@ -14,4 +14,5 @@ workers_dev = false
 # FLOW_INBOUND_URL lahko tu (spodaj) ali v dashboardu.
 
 [vars]
-FLOW_INBOUND_URL = "https://pinartflow.com/api/posta/prejeto"
+# www — ker pinartflow.com (brez www) 308-preusmerja; direktni naslov ohrani x-inbound-secret glavo
+FLOW_INBOUND_URL = "https://www.pinartflow.com/api/posta/prejeto"
