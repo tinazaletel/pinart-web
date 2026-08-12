@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, Paperclip } from '@phosphor-icons/react';
+import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, PaperPlaneRight, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, Paperclip, Check } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import Paginacija from '@/components/Paginacija';
@@ -572,8 +572,15 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-pisi-podpis-opomnik a:hover{color:var(--purple)}
 .pw-pisi-akcije{display:flex;justify-content:flex-end;gap:.5rem}
 .pw-pisi-preklic{padding:.45rem .9rem;border:1px solid color-mix(in oklch,var(--ink) 18%,transparent);border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
-.pw-pisi-poslji{padding:.45rem 1.1rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer}
-.pw-pisi-poslji:disabled{opacity:.5;cursor:not-allowed}
+.pw-pisi-poslji{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1.1rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer}
+.pw-pisi-poslji:disabled{opacity:.6;cursor:not-allowed}
+.pw-pisi-poslji .pw-send-ik{transition:transform .2s ease}
+.pw-pisi-poslji:hover:not(:disabled) .pw-send-ik{transform:translate(2px,-2px)}
+.pw-send-leti{animation:pwLeti 1s ease-in-out infinite}
+@keyframes pwLeti{0%{transform:translate(0,0);opacity:1}55%{transform:translate(11px,-11px);opacity:0}56%{transform:translate(-9px,5px);opacity:0}100%{transform:translate(0,0);opacity:1}}
+.pw-send-ok{animation:pwOk .38s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes pwOk{from{transform:scale(0) rotate(-25deg)}to{transform:scale(1) rotate(0)}}
+.pw-pisi-uspeh{margin:.2rem 0 0;padding:.65rem .85rem;border:1px solid oklch(75% .13 150);border-radius:.6rem;background:oklch(96% .05 150);color:oklch(42% .12 150);font:700 .85rem var(--font-sans),sans-serif}
 /* "00 · CILJI IN ŽELJE" — samostojna kartica NAD .projectNarrative (ne znotraj njegove
    4-stolpne mreže, ker so barve 02/03/04 vezane na nth-child; vrivanje bi jih premaknilo
    in podrlo obstoječe gradiente). Isti mehki violet/mint jezik kot .projectAgreement. */
@@ -974,6 +981,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [pisiZadeva, setPisiZadeva] = useState('');
   const [pisiStatus, setPisiStatus] = useState('');
   const [pisiPosiljam, setPisiPosiljam] = useState(false);
+  const [pisiUspeh, setPisiUspeh] = useState(false); /* zelena '✓ Poslano' potrditev pred zaprtjem (enako kot v hubu) */
   const pisiTeloRef = useRef<HTMLDivElement>(null);
   const [imaPodpis, setImaPodpis] = useState(true);   /* ali je nastavljen podpis maila (sicer opomnik) */
   const [linkOznaka, setLinkOznaka] = useState('');
@@ -1196,7 +1204,11 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     if (rez.ok) {
       const vnos = dodajPosto({ projectId: selectedId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim(), telo, povzetek: telo.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) });
       setPosta(p => [vnos, ...p]);
-      setPisiOdprt(false); setPisiZadeva(''); if (pisiTeloRef.current) pisiTeloRef.current.innerHTML = '';
+      /* pokaži '✓ Poslano' potrditev pred zaprtjem — enaka izkušnja kot v Komunikaciji */
+      setPisiStatus(''); setPisiUspeh(true); setPovabiToast(L('Poslano ✓', 'Sent ✓'));
+      window.setTimeout(() => {
+        setPisiUspeh(false); setPisiOdprt(false); setPisiZadeva(''); if (pisiTeloRef.current) pisiTeloRef.current.innerHTML = '';
+      }, 1400);
     } else {
       setPisiStatus(L('Napaka: ', 'Error: ') + (rez.napaka || L('pošiljanje ni uspelo.', 'sending failed.')));
     }
@@ -1376,7 +1388,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 </div>
                 <div className="pw-pisi-telo" ref={pisiTeloRef} contentEditable suppressContentEditableWarning role="textbox" aria-label={L('Besedilo sporočila', 'Message body')} data-placeholder={L('Napiši sporočilo …', 'Write a message …')} />
                 {!imaPodpis && <p className="pw-pisi-podpis-opomnik"><Link href={`${base}/kalkulator/nastavitve`}>{L('Nimaš podpisa — nastavi ga v nastavitvah', 'No signature yet — set it up in settings')} <svg className="puscica-svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link></p>}
-                {pisiStatus && <p className="pw-pisi-status">{pisiStatus}</p>}
+                {pisiStatus && <p className="pw-pisi-status">{pisiStatus}</p>}{pisiUspeh && <p className="pw-pisi-uspeh">✓ {L('Poslano', 'Sent')}</p>}
                 <div className="pw-pisi-akcije">
                   <button type="button" className="pw-pisi-preklic" onClick={() => setPisiOdprt(false)}>{L('Prekliči', 'Cancel')}</button>
                   <button type="button" className="pw-pisi-preklic" onClick={() => {
@@ -1387,7 +1399,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                     void saveDraft({ id, projectExternalId: selectedId, direction: 'out', toEmails: za ? [za] : [], subject: zadeva, bodyHtml: telo, isDraft: true, occurredAt: now }).catch(() => undefined);
                     setPisiOdprt(false); setMapa('osnutki'); setBeriMail(null);
                   }}>{L('Shrani osnutek', 'Save draft')}</button>
-                  <button type="button" className="pw-pisi-poslji" disabled={pisiPosiljam} onClick={posljiPisanje}>{pisiPosiljam ? L('Pošiljam …', 'Sending …') : L('Pošlji', 'Send')}</button>
+                  <button type="button" className="pw-pisi-poslji" disabled={pisiPosiljam || pisiUspeh} onClick={posljiPisanje}>{pisiPosiljam ? <>{L('Pošiljam …', 'Sending …')} <PaperPlaneRight size={15} weight="fill" className="pw-send-leti" /></> : pisiUspeh ? <><Check size={16} weight="bold" className="pw-send-ok" /> {L('Poslano', 'Sent')}</> : <>{L('Pošlji', 'Send')} <PaperPlaneRight size={15} weight="fill" className="pw-send-ik" /></>}</button>
                 </div>
               </div>
             )}
