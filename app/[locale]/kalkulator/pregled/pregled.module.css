@@ -2330,7 +2330,8 @@
   .meniProfil .profile { display: flex; padding: .35rem .2rem; }
   .meniProfil .userMenuWrap { margin-top: 0; }
   .meniProfil .userMenu { bottom: auto; top: calc(100% + .4rem); }
-  .meniZapriFlow { margin-top: .6rem; }
+  .meniZapriFlow { margin-top: .6rem; margin-bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px)); font-size: .8rem; font-weight: 600; color: color-mix(in oklch, var(--ink) 52%, transparent); opacity: .85; }
+.meniZapriFlow:hover { color: var(--ink); opacity: 1; }
 }
 
 
