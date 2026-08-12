@@ -92,6 +92,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   const [aiOdgovor, setAiOdgovor] = useState('');
   const [pisiVrsta, setPisiVrsta] = useState<false | 'odgovor' | 'posreduj' | 'nova'>(false);
   const [pisiProjekt, setPisiProjekt] = useState('');
+  const [pisiUspeh, setPisiUspeh] = useState(false); /* zelena '✓ Poslano' potrditev pred zaprtjem */
   const [pisiZa, setPisiZa] = useState('');
   const [pisiZadeva, setPisiZadeva] = useState('');
   const [pisiTelo, setPisiTelo] = useState('');
@@ -220,7 +221,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
     let replyTo = ''; if (!projId) { try { replyTo = String(JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}').ponudnik?.email || ''); } catch { /* brez profila */ } }
     const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, ...(projId ? { projectExternalId: projId } : { replyTo: replyTo || undefined }) });
     setPisiPosiljam(false);
-    if (rez.ok) { const nov = dodajPosto({ projectId: projId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim(), telo: pisiTelo, povzetek: pisiTelo.replace(/\s+/g, ' ').trim().slice(0, 160) }); setPosta(prev => [nov, ...prev].sort((a, b) => b.datum.localeCompare(a.datum))); setPisiVrsta(false); setToast(L('Poslano.', 'Sent.')); } else { setPisiStatus(L('Napaka: ', 'Error: ') + (rez.napaka || '')); }
+    if (rez.ok) { const nov = dodajPosto({ projectId: projId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim(), telo: pisiTelo, povzetek: pisiTelo.replace(/\s+/g, ' ').trim().slice(0, 160) }); setPosta(prev => [nov, ...prev].sort((a, b) => b.datum.localeCompare(a.datum))); setPisiStatus(''); setPisiUspeh(true); setToast(L('Poslano ✓', 'Sent ✓')); window.setTimeout(() => { setPisiVrsta(false); setPisiUspeh(false); }, 1400); } else { setPisiStatus(L('Napaka: ', 'Error: ') + (rez.napaka || '')); }
   };
   const deliVKlepet = () => { setZavihek('klepet'); setToast(L('Izberi sodelavca (+) in deli sporočilo.', 'Choose a collaborator (+) and share.')); };
   const povabiVKlepet = async (e: React.FormEvent) => {
@@ -292,8 +293,8 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
               <label>{L('Za', 'To')}<input type="email" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="ime@domena.si" /></label>
               <label>{L('Zadeva', 'Subject')}<input value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} /></label>
               <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} rows={6} /></label>
-              {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}
-              <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam}>{pisiPosiljam ? L('Pošiljam …', 'Sending …') : L('Pošlji', 'Send')}</button></div>
+              {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}{pisiUspeh && <p className="km-pisi-uspeh">✓ {L('Poslano', 'Sent')}</p>}
+              <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam || pisiUspeh}>{pisiPosiljam ? L('Pošiljam …', 'Sending …') : pisiUspeh ? L('✓ Poslano', '✓ Sent') : L('Pošlji', 'Send')}</button></div>
             </form>
           )}
           {filterOdprt && <>
@@ -374,8 +375,8 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
                   <label>{L('Za', 'To')}<input type="email" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="ime@domena.si" /></label>
                   <label>{L('Zadeva', 'Subject')}<input value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} /></label>
                   <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} rows={6} /></label>
-                  {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}
-                  <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam}>{pisiPosiljam ? L('Pošiljam …', 'Sending …') : L('Pošlji', 'Send')}</button></div>
+                  {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}{pisiUspeh && <p className="km-pisi-uspeh">✓ {L('Poslano', 'Sent')}</p>}
+                  <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam || pisiUspeh}>{pisiPosiljam ? L('Pošiljam …', 'Sending …') : pisiUspeh ? L('✓ Poslano', '✓ Sent') : L('Pošlji', 'Send')}</button></div>
                 </form>
               ) : (
                 <div className="km-branje-akcije">
@@ -636,6 +637,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-pisi input:focus,.km-pisi textarea:focus,.km-ai-odg:focus,.km-meni form input:focus{outline:2px solid color-mix(in oklch,var(--k-purple) 45%,transparent);outline-offset:1px;border-color:var(--k-purple)}
         .km-pisi textarea{resize:vertical}
         .km-pisi-status{margin:.2rem 0 0;padding:.65rem .85rem;border:1px solid oklch(78% .13 25);border-radius:.6rem;background:oklch(96% .04 25);color:oklch(45% .18 25);font:700 .85rem var(--font-sans),sans-serif}
+        .km-pisi-uspeh{margin:.2rem 0 0;padding:.65rem .85rem;border:1px solid oklch(75% .13 150);border-radius:.6rem;background:oklch(96% .05 150);color:oklch(42% .12 150);font:700 .85rem var(--font-sans),sans-serif}
         .km-pisi-akc{display:flex;justify-content:flex-end;gap:.5rem}
         .km-pisi-akc button{border:1px solid var(--k-line);background:#fff;border-radius:999px;padding:.55rem 1.2rem;font:700 .82rem var(--font-sans),sans-serif;color:var(--k-ink);cursor:pointer}
         .km-pisi-akc button.prim{background:var(--k-ink,#2a2620);border-color:transparent;color:#fff}
