@@ -294,7 +294,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
               <label>{L('Projekt', 'Project')}<input list="km-projekti-list" value={pisiProjekt} onChange={e => setPisiProjekt(e.target.value)} placeholder={L('Izberi ali vpiši projekt — prazno = skupna Komunikacija', 'Pick or type a project — empty = shared Communication')} />
                 <datalist id="km-projekti-list">{Object.entries(projMapa).map(([id, naziv]) => <option key={id} value={naziv} />)}</datalist>
               </label>
-              <label>{L('Za', 'To')}<input type="email" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="ime@domena.si" /></label>
+              <label>{L('Za', 'To')}<input type="email" list="km-prejemniki-list" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="ime@domena.si" /><datalist id="km-prejemniki-list">{prejemnikiVsi.map(p => <option key={p} value={p} />)}</datalist></label>
               <label>{L('Zadeva', 'Subject')}<input value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} /></label>
               <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} rows={6} /></label>
               {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}{pisiUspeh && <p className="km-pisi-uspeh">✓ {L('Poslano', 'Sent')}</p>}
@@ -376,7 +376,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
               {pisiVrsta ? (
                 <form className="km-pisi" onSubmit={posljiPisanje}>
                   <div className="km-pisi-glava"><b>{pisiVrsta === 'odgovor' ? L('Odgovori', 'Reply') : L('Posreduj', 'Forward')}</b><button type="button" aria-label={L('Zapri', 'Close')} onClick={() => setPisiVrsta(false)}>×</button></div>
-                  <label>{L('Za', 'To')}<input type="email" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="ime@domena.si" /></label>
+                  <label>{L('Za', 'To')}<input type="email" list="km-prejemniki-list" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="ime@domena.si" /><datalist id="km-prejemniki-list">{prejemnikiVsi.map(p => <option key={p} value={p} />)}</datalist></label>
                   <label>{L('Zadeva', 'Subject')}<input value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} /></label>
                   <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} rows={6} /></label>
                   {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}{pisiUspeh && <p className="km-pisi-uspeh">✓ {L('Poslano', 'Sent')}</p>}
@@ -550,7 +550,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-iskalnik{display:flex;align-items:center;gap:.5rem;background:#fff;border:1px solid var(--k-line);border-radius:999px;padding:.38rem .9rem;margin-bottom:1rem;color:color-mix(in oklch,var(--k-ink) 55%,transparent)}
         .km-iskalnik input{flex:1;min-width:0;border:0;background:none;outline:none;font:500 .85rem var(--font-sans),sans-serif;color:var(--k-ink)}
         .km-posta-body{display:flex;gap:1.3rem;align-items:flex-start}
-        .km-mape{flex:none;width:11rem;display:flex;flex-direction:column;gap:.4rem}
+        .km-mape{flex:none;width:11rem;display:flex;flex-direction:column;gap:.6rem}
         .km-mape button{display:flex;align-items:center;gap:.55rem;width:100%;text-align:left;border:0;background:none;border-radius:.6rem;padding:.6rem .7rem;font:700 .82rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 62%,transparent);cursor:pointer}
         .km-mape button:hover{background:color-mix(in oklch,var(--k-purple) 6%,transparent)}
         .km-mape button.on{background:color-mix(in oklch,var(--k-purple) 12%,transparent);color:var(--k-ink)}
@@ -581,7 +581,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
           .km-akcija-ikona .km-akcija-txt{display:none}
           .km-mape-trig{display:inline-flex;align-items:center;gap:.4rem;flex:none;height:2.9rem;box-sizing:border-box;margin-right:auto;border:1px solid var(--k-line);border-radius:999px;padding:0 1rem;background:#fff;color:var(--k-ink);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
           .km-mape-back{position:fixed;inset:0;z-index:199;background:color-mix(in oklch,var(--k-ink) 34%,transparent);animation:kmFade .2s ease both}
-          .km-mape{position:fixed;left:0;top:0;bottom:0;z-index:200;width:min(78%,15rem);flex-direction:column;flex-wrap:nowrap;gap:.4rem;padding:calc(1.15rem + env(safe-area-inset-top,0px)) .8rem calc(1.15rem + env(safe-area-inset-bottom,0px));background:var(--k-paper,#fff);box-shadow:8px 0 40px color-mix(in oklch,var(--k-ink) 22%,transparent);transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.3,1);overflow-y:auto}
+          .km-mape{position:fixed;left:0;top:0;bottom:0;z-index:200;width:min(78%,15rem);flex-direction:column;flex-wrap:nowrap;gap:.6rem;padding:calc(1.15rem + env(safe-area-inset-top,0px)) .8rem calc(1.15rem + env(safe-area-inset-bottom,0px));background:var(--k-paper,#fff);box-shadow:8px 0 40px color-mix(in oklch,var(--k-ink) 22%,transparent);transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.3,1);overflow-y:auto}
           .km-mape.odprt{transform:none}
           .km-mape button{width:100%}
         }
