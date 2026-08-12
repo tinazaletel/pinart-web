@@ -152,13 +152,18 @@ export async function POST(request: Request) {
     const projectExternalId = body.projectExternalId?.trim();
     let replyTo = body.replyTo?.trim();
     if (projectExternalId && !replyTo) {
-      const token = await zagotoviInboxToken(organizationId, projectExternalId);
-      const inboundDomain = (process.env.INBOUND_DOMAIN || 'pinartflow.com').trim().toLowerCase();
-      if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(inboundDomain)) {
-        await zakljuciDnevnik('failed', undefined, 'invalid_inbound_domain');
-        return NextResponse.json({ error: 'Domena za odgovore ni pravilno nastavljena.' }, { status: 503 });
+      /* FAIL-SOFT: če inbox tokena ne moremo pridobiti (npr. manjka grant za
+         service_role), se mail VSEENO pošlje — samo odgovori ne pridejo nazaj v
+         Flow. Sicer bi ena manjkajoča pravica ustavila celotno pošiljanje. */
+      try {
+        const inboundDomain = (process.env.INBOUND_DOMAIN || 'pinartflow.com').trim().toLowerCase();
+        if (/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(inboundDomain)) {
+          const token = await zagotoviInboxToken(organizationId, projectExternalId);
+          if (token) replyTo = `${token}@${inboundDomain}`;
+        }
+      } catch (tokErr) {
+        console.error('Inbox token ni uspel (pošiljam brez token reply-to):', tokErr instanceof Error ? tokErr.message : tokErr);
       }
-      replyTo = `${token}@${inboundDomain}`;
     }
     const { data, error } = await resend.emails.send({
       from,
