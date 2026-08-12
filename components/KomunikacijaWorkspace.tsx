@@ -217,7 +217,11 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
     const html = `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${pisiTelo.replace(/\n/g, '<br>')}</div>`;
     /* projectExternalId -> strežnik nastavi reply-to token (odgovori v Flow) + zapiše project_mail(out).
        nova: izbran projekt; odgovor/posreduj: projekt odprtega sporočila. brez projekta -> reply-to lastnik. */
-    const projId = (pisiVrsta === 'nova' ? pisiProjekt : beriMail?.projectId) || undefined;
+    /* nova: vpisano ime -> če se ujema z obstoječim projektom, uporabi njegov ID;
+       sicer je prosto vpisana oznaka (tag); prazno -> skupna Komunikacija. */
+    const projId = (pisiVrsta === 'nova'
+      ? (Object.entries(projMapa).find(([, naziv]) => naziv === pisiProjekt.trim())?.[0] || pisiProjekt.trim())
+      : beriMail?.projectId) || undefined;
     /* Brez izrecnega replyTo: strežnik nastavi inbox token (projektni ali skupni
        '__skupno__') -> odgovori strank pridejo NAZAJ v Flow (skupna Komunikacija). */
     const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, ...(projId ? { projectExternalId: projId } : {}) });
@@ -287,10 +291,9 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
           {pisiVrsta === 'nova' && (
             <form className="km-pisi km-pisi-nova" onSubmit={posljiPisanje}>
               <div className="km-pisi-glava"><b>{L('Nova pošta', 'New mail')}</b><button type="button" aria-label={L('Zapri', 'Close')} onClick={() => setPisiVrsta(false)}>×</button></div>
-              <label>{L('Projekt', 'Project')}<select value={pisiProjekt} onChange={e => setPisiProjekt(e.target.value)}>
-                <option value="">{L('Brez projekta — v skupno Komunikacijo', 'No project — to shared Communication')}</option>
-                {Object.entries(projMapa).map(([id, naziv]) => <option key={id} value={id}>{naziv}</option>)}
-              </select></label>
+              <label>{L('Projekt', 'Project')}<input list="km-projekti-list" value={pisiProjekt} onChange={e => setPisiProjekt(e.target.value)} placeholder={L('Izberi ali vpiši projekt — prazno = skupna Komunikacija', 'Pick or type a project — empty = shared Communication')} />
+                <datalist id="km-projekti-list">{Object.entries(projMapa).map(([id, naziv]) => <option key={id} value={naziv} />)}</datalist>
+              </label>
               <label>{L('Za', 'To')}<input type="email" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="ime@domena.si" /></label>
               <label>{L('Zadeva', 'Subject')}<input value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} /></label>
               <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} rows={6} /></label>
@@ -630,7 +633,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-ai-akc{display:flex;gap:.5rem;margin-top:.5rem}
         .km-ai-akc button{border:1px solid var(--k-line);background:#fff;border-radius:999px;padding:.45rem .95rem;font:700 .78rem var(--font-sans),sans-serif;color:var(--k-ink);cursor:pointer}
         .km-ai-akc button.prim{background:var(--k-purple);border-color:transparent;color:#fff}
-        .km-pisi{margin-top:1rem;display:flex;flex-direction:column;gap:.55rem;background:#fff;border:1px solid var(--k-line);border-radius:.9rem;padding:1rem}
+        .km-pisi{margin-top:1rem;display:flex;flex-direction:column;gap:.7rem;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(16px) saturate(1.35);backdrop-filter:blur(16px) saturate(1.35);border:1px solid rgba(255,255,255,.6);border-radius:1rem;padding:1.4rem;box-shadow:0 12px 40px rgba(20,16,26,.06)}
         .km-pisi-glava{display:flex;align-items:center;font:700 .92rem var(--font-sans),sans-serif;color:var(--k-ink)}
         .km-pisi-glava button{margin-left:auto;border:0;background:none;color:color-mix(in oklch,var(--k-ink) 50%,transparent);font-size:1.2rem;line-height:1;cursor:pointer}
         .km-pisi label{display:flex;flex-direction:column;gap:.28rem;font:700 .72rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in oklch,var(--k-ink) 52%,transparent)}
