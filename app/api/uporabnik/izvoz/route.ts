@@ -6,7 +6,11 @@ const ORGANIZACIJSKE_TABELE = [
   'clients', 'offers', 'contracts', 'invoices', 'expenses', 'retainers',
   'business_goals', 'business_canvases', 'business_plans', 'organization_settings',
   'accounting_exports', 'document_files', 'document_audit', 'project_mail',
-  'private_time_entries', 'dogodki', 'chat_thread', 'ai_usage', 'mail_log',
+  'project_inbox', 'chat_thread', 'mail_log',
+] as const;
+
+const OSEBNE_TABELE = [
+  'private_time_entries', 'presence_entries', 'ai_usage', 'user_data_requests',
 ] as const;
 
 export async function GET(request: Request) {
@@ -29,10 +33,19 @@ export async function GET(request: Request) {
   if (membershipError) return NextResponse.json({ error: 'Izvoza ni bilo mogoče pripraviti.' }, { status: 500 });
 
   const organizationIds = (memberships || []).map(row => String(row.organization_id));
-  const { data: profile } = await admin.from('profiles').select('*').eq('id', user.id).maybeSingle();
-  const { data: organizations } = organizationIds.length
+  const { data: profile, error: profileError } = await admin
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .maybeSingle();
+  if (profileError) return NextResponse.json({ error: 'Profila ni bilo mogoče izvoziti.' }, { status: 500 });
+
+  const { data: organizations, error: organizationsError } = organizationIds.length
     ? await admin.from('organizations').select('*').in('id', organizationIds)
-    : { data: [] };
+    : { data: [], error: null };
+  if (organizationsError) {
+    return NextResponse.json({ error: 'Organizacij ni bilo mogoče izvoziti.' }, { status: 500 });
+  }
 
   const podatki: Record<string, unknown[]> = {};
   for (const tabela of ORGANIZACIJSKE_TABELE) {
@@ -47,13 +60,24 @@ export async function GET(request: Request) {
     podatki[tabela] = data || [];
   }
 
-  await admin.from('user_data_requests').insert({
+  for (const tabela of OSEBNE_TABELE) {
+    const { data, error } = await admin.from(tabela).select('*').eq('user_id', user.id);
+    if (error) {
+      return NextResponse.json({ error: `Izvoz tabele ${tabela} ni uspel.` }, { status: 500 });
+    }
+    podatki[tabela] = data || [];
+  }
+
+  const { error: auditError } = await admin.from('user_data_requests').insert({
     user_id: user.id,
     request_type: 'export',
     status: 'completed',
     completed_at: new Date().toISOString(),
     metadata: { organization_count: organizationIds.length },
   });
+  if (auditError) {
+    return NextResponse.json({ error: 'Izvoza ni bilo mogoče zabeležiti.' }, { status: 500 });
+  }
 
   return NextResponse.json({
     format: 'pinart-flow-export',
@@ -67,4 +91,3 @@ export async function GET(request: Request) {
     headers: { 'Content-Disposition': `attachment; filename="pinart-flow-${new Date().toISOString().slice(0, 10)}.json"` },
   });
 }
-
