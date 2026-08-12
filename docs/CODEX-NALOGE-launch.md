@@ -866,3 +866,29 @@ Brez `projectExternalId` → obnašanje nespremenjeno.
    (razširitev #13) — naštej pokrite/ne-pokrite v poročilu.
 
 Železna pravila kot zgoraj. `tsc`=0. Migracije aditivne. NE UI, NE `pinartMailCloud.ts`.
+
+---
+
+# KOORDINACIJA 2026-08-12 (pozno) — naslednja naloga za Codex
+
+**Claude aktivno ureja MAIL:** `app/api/posta/route.ts`, `app/api/posta/prejeto/route.ts`,
+`lib/pinartMailCloud.ts`, `lib/inboxToken.ts`, `components/KomunikacijaWorkspace.tsx`,
+`components/ProjectsWorkspace.tsx`. **Codex se teh NE dotika.**
+
+**Codex naredi (po vrsti):**
+1. Če **#2** (dodeli_stevilko RPC) ali **#3** (zaklep/storno) še nista dokončana — dokončaj.
+2. **#10 — Strežniška demo izolacija (POMEMBNO, sveže):** Tina je na produkciji videla
+   demo podatke (računi/cilji/sodelavci), ki jih ni ustvarila = demo-bleed. Trenutno je
+   demo guard **le v UI** (glej `lib/predogled.ts` `jeDemo()`). Utrdi strežniško:
+   - Poskrbi, da se **demo/predogled podatki NIKOLI ne zapišejo v cloud** (pot
+     `lib/pinartFlowCloud.ts` `pushFlowData` / `scheduleCloudSync`): če je predogled
+     `demo`/`empty`/`zacetek`, push v Supabase **preskoči** (ali zavrne s flagom).
+     Vhodna točka: klient naj pošlje `preview`-stanje ali pa filtriraj demo `external_id`
+     prek `jeDemoId`. Ne razbij pravega »Moji podatki« sync-a.
+   - Kjer API piše (npr. že obstoječ demo-blok v `/api/posta` z `body.demo`), potrdi vzorec
+     in ga uporabi tudi drugod, kjer se piše v bazo iz klienta.
+   - Cilj: nov/drug pravi uporabnik dobi **PRAZNO** stanje, ne demo. Glej tudi
+     `components/FlowCloudBridge.tsx` (referenca, NE spreminjaj) `poravnajRacun()`.
+3. Če ostane čas: **#1** (davčni status MODEL, samo data — UI naredi Claude).
+
+Železna pravila kot zgoraj. `tsc`=0. Migracije aditivne. **NE mail datotek, NE UI.**
