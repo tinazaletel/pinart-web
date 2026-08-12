@@ -19,6 +19,7 @@ import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, ak
 import { predlagajDdv } from '@/lib/ddvSvet';
 import { VALUTE_RACUN } from '@/lib/valute';
 import PosljiBlok from '@/components/PosljiBlok';
+import { posljiMail } from '@/lib/posta';
 import { dodajPostavko, izbrisiPostavko, preberiPostavke, type Postavka, type PostavkaEnota } from '@/lib/postavke';
 
 const K_NAST = 'pinart-kalkulator-v2';
@@ -132,6 +133,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const [pdfId, setPdfId] = useState('');
   const [napaka, setNapaka] = useState('');
   const [obvestilo, setObvestilo] = useState('');   /* jasno opozorilo (namesto domačega »Fill out this field«) */
+  const [postaObvestilo, setPostaObvestilo] = useState<{ t: string; ok: boolean } | null>(null);   /* povratna info za »Pošlji v plačilo« (Flow send) */
 
   /* ── podpis na racunu — isti vzorec kot ContractWorkspace (canvas risanje ali
      nalozena slika, shranjena kot data URL); ime/kraj/datum so neobvezni. ── */
@@ -563,8 +565,11 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     } catch { setNapaka(L('PDF-ja ni bilo mogoče pripraviti. Poskusi znova.', 'The PDF could not be prepared. Please try again.')); } finally { setPdfId(''); }
   };
 
-  /* Poslji v placilo — mailto vzorec iz KalkulatorApp ("posljem racun st. ...") */
-  const posljiVPlacilo = (inv: FlowInvoice) => {
+  /* Poslji v placilo — če ima stranka veljaven e-naslov, gre PREK Flowa (Resend):
+     strežnik iz projectExternalId (sourceOfferId računa) nastavi reply-to token in
+     zapiše ODHODNO pošto v project_mail. Brez veljavnega e-naslova degradira na mailto
+     (odpre lokalni mail za ročni vnos) — enak vzorec kot Arhiv »Pošlji stranki«. */
+  const posljiVPlacilo = async (inv: FlowInvoice) => {
     const email = clients.find(c => c.name.trim().toLowerCase() === inv.client.trim().toLowerCase())?.email?.trim() || '';
     const izdaja = new Date(inv.date);
     const rok = new Date(izdaja.getTime() + (inv.dueDays ?? PRIVZETI_ROK_DNI) * 864e5);
@@ -581,7 +586,18 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     v.push('', L('Podroben račun prilagam v PDF.', 'A detailed invoice is attached as a PDF.'), '', L('Lep pozdrav,', 'Best regards,'));
     if (podpis) v.push(podpis);
     const zadeva = L(`Račun ${inv.number || ''}`, `Invoice ${inv.number || ''}`).trim();
-    window.location.href = `mailto:${email}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(v.join('\n'))}`;
+    const telo = v.join('\n');
+    /* brez veljavnega e-naslova: fallback na mailto (ročni vnos prejemnika) */
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      window.location.href = `mailto:${email}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`;
+      return;
+    }
+    const html = `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${telo.replace(/\n/g, '<br>')}</div>`;
+    setPostaObvestilo({ t: L('Pošiljam …', 'Sending …'), ok: true });
+    const rez = await posljiMail({ to: [email], subject: zadeva, html, projectExternalId: inv.sourceOfferId || undefined });
+    setPostaObvestilo(rez.ok
+      ? { t: L('Poslano stranki — v Komunikacijah.', 'Sent to client — in Communications.'), ok: true }
+      : { t: L('Napaka: ', 'Error: ') + (rez.napaka || L('pošiljanje ni uspelo.', 'sending failed.')), ok: false });
   };
 
   /* trenutni racun kot FlowInvoice (iz obrazca) — za HTML dokument v posiljanju;
@@ -692,6 +708,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         <p>{L('Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje in se izpišejo v glavi računa.', 'If an offer exists, select it — the client and item are pre-filled. The issuer details (name, address, tax number, IBAN) are read from the My company settings and printed in the invoice header.')}</p>
       </div>
       <Toast sporocilo={obvestilo} onClose={() => setObvestilo('')} ton="napaka" />
+      <Toast sporocilo={postaObvestilo?.t || ''} onClose={() => setPostaObvestilo(null)} ton={postaObvestilo?.ok ? 'uspeh' : 'napaka'} />
       <form noValidate onSubmit={event => {
         event.preventDefault();
         const obrazec = event.currentTarget;
