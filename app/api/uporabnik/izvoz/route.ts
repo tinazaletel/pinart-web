@@ -6,7 +6,7 @@ const ORGANIZACIJSKE_TABELE = [
   'clients', 'offers', 'contracts', 'invoices', 'expenses', 'retainers',
   'business_goals', 'business_canvases', 'business_plans', 'organization_settings',
   'accounting_exports', 'document_files', 'document_audit', 'project_mail',
-  'project_inbox', 'chat_thread', 'mail_log',
+  'organization_subscriptions', 'mail_log',
 ] as const;
 
 const OSEBNE_TABELE = [
@@ -68,6 +68,41 @@ export async function GET(request: Request) {
     podatki[tabela] = data || [];
   }
 
+  // Inbound token je varnostna poverilnica in ne sodi v prenosljiv izvoz.
+  const { data: projectInbox, error: projectInboxError } = organizationIds.length
+    ? await admin
+      .from('project_inbox')
+      .select('id, organization_id, project_external_id, created_at')
+      .in('organization_id', organizationIds)
+    : { data: [], error: null };
+  if (projectInboxError) {
+    return NextResponse.json({ error: 'Izvoz projektnih naslovov ni uspel.' }, { status: 500 });
+  }
+  podatki.project_inbox = projectInbox || [];
+
+  // Klepet je lahko med uporabniki različnih organizacij. Izvozimo le niti,
+  // kjer je prijavljeni uporabnik udeleženec, ne vseh niti njegove organizacije.
+  const userEmail = user.email?.trim().toLowerCase();
+  const { data: chatParticipants, error: chatParticipantsError } = userEmail
+    ? await admin.from('chat_participant').select('*').ilike('email', userEmail)
+    : { data: [], error: null };
+  if (chatParticipantsError) {
+    return NextResponse.json({ error: 'Izvoz udeležb v klepetih ni uspel.' }, { status: 500 });
+  }
+  const threadIds = [...new Set((chatParticipants || []).map(row => String(row.thread_id)))];
+  const { data: chatThreads, error: chatThreadsError } = threadIds.length
+    ? await admin.from('chat_thread').select('*').in('id', threadIds)
+    : { data: [], error: null };
+  const { data: chatMessages, error: chatMessagesError } = threadIds.length
+    ? await admin.from('chat_message').select('*').in('thread_id', threadIds)
+    : { data: [], error: null };
+  if (chatThreadsError || chatMessagesError) {
+    return NextResponse.json({ error: 'Izvoz klepetov ni uspel.' }, { status: 500 });
+  }
+  podatki.chat_participant = chatParticipants || [];
+  podatki.chat_thread = chatThreads || [];
+  podatki.chat_message = chatMessages || [];
+
   const { error: auditError } = await admin.from('user_data_requests').insert({
     user_id: user.id,
     request_type: 'export',
@@ -88,6 +123,10 @@ export async function GET(request: Request) {
     memberships: memberships || [],
     flow: podatki,
   }, {
-    headers: { 'Content-Disposition': `attachment; filename="pinart-flow-${new Date().toISOString().slice(0, 10)}.json"` },
+    headers: {
+      'Cache-Control': 'private, no-store',
+      'Content-Disposition': `attachment; filename="pinart-flow-${new Date().toISOString().slice(0, 10)}.json"`,
+      'X-Content-Type-Options': 'nosniff',
+    },
   });
 }

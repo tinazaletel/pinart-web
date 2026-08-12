@@ -50,7 +50,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Dostopa ni bilo mogoče dokončno onemogočiti.' }, { status: 500 });
   }
 
-  await admin.from('user_data_requests').update({ status: 'completed', completed_at: now }).eq('id', deletionRequest.id);
+  const { error: completedAuditError } = await admin
+    .from('user_data_requests')
+    .update({ status: 'completed', completed_at: now })
+    .eq('id', deletionRequest.id);
+  if (completedAuditError) {
+    return NextResponse.json({
+      error: 'Dostop je onemogočen, zaključka zahteve pa ni bilo mogoče zabeležiti.',
+    }, { status: 500 });
+  }
   return NextResponse.json({ ok: true, deletedAt: now, mode: 'soft-delete' });
 }
-
