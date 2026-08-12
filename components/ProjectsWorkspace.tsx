@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, PaperPlaneRight, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, Paperclip, Check } from '@phosphor-icons/react';
+import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, PaperPlaneRight, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, Paperclip, Check, List } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import Paginacija from '@/components/Paginacija';
@@ -328,14 +328,21 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-pisi-naslov{font:700 .8rem var(--font-sans),sans-serif;color:var(--ink)}
 .pw-pisi-x{display:grid;place-items:center;width:2rem;height:2rem;flex:none;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:50%;background:#fff;color:var(--ink);font-size:.9rem;line-height:1;cursor:pointer;transition:background .15s,color .15s}
 .pw-pisi-x:hover{background:var(--ink);color:var(--paper)}
+/* folder meni: desktop = inline stolpec (pw-posta-mape), mobilni pill+slide skrit */
+.pw-mape-trig{display:none}
+.pw-mape-back{display:none}
 /* MOBILE-FIRST: komunikacijski panel na telefonu */
 @media (max-width:640px){
   .pw-vsi-panel,.pw-det-panel,.pw-kom-panel,.pw-naloga-panel,.pw-ai-panel{width:100vw !important;max-width:100vw !important}
   .pw-vsi-panel,.pw-det-panel,.pw-naloga-panel,.pw-ai-panel{padding-left:1.1rem !important;padding-right:1.1rem !important}
   .pw-vsi-backdrop{backdrop-filter:none;-webkit-backdrop-filter:none}
   .pw-posta-body{flex-direction:column !important}
-  .pw-posta-mape{width:100% !important;flex-direction:row !important;flex-wrap:wrap !important;gap:.35rem !important;margin-bottom:.5rem}
-  .pw-posta-mape button{width:auto !important;flex:1 1 auto;justify-content:center !important;min-height:2.5rem}
+  /* folder meni = desni slide (kot hub, a z desne); pill sproži */
+  .pw-mape-trig{display:inline-flex;align-items:center;gap:.4rem;height:2.6rem;box-sizing:border-box;padding:0 1rem;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);border-radius:999px;background:#fff;color:var(--ink);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap;margin-bottom:.5rem}
+  .pw-mape-back{display:block;position:fixed;inset:0;z-index:1198;background:color-mix(in oklch,var(--ink) 34%,transparent)}
+  .pw-posta-mape{position:fixed !important;right:0;top:0;bottom:0;left:auto !important;z-index:1199;width:min(78%,15rem) !important;flex-direction:column !important;gap:.15rem !important;padding:calc(4.75rem + env(safe-area-inset-top,0px)) .8rem calc(1.15rem + env(safe-area-inset-bottom,0px)) !important;margin:0 !important;background:var(--paper,#fff);box-shadow:-8px 0 40px color-mix(in oklch,var(--ink) 22%,transparent);transform:translateX(100%);transition:transform .3s cubic-bezier(.2,.8,.3,1);overflow-y:auto}
+  .pw-posta-mape.odprt{transform:none}
+  .pw-posta-mape button{width:100% !important;min-height:2.6rem}
   .pw-kom-panel .pw-posta-glava{padding-right:.3rem}
   .pw-mail-meni{left:auto;right:0}
   /* detajl maila kot v hubu: »Nazaj« v svoji vrsti, akcijske ikone v ENI vrsti */
@@ -975,6 +982,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
      ni prazen; sicer beremo dejansko shranjeno pošto projekta. */
   const [posta, setPosta] = useState<PostaVnos[]>([]);
   const [mapa, setMapa] = useState<'prejeto' | 'poslano' | 'osnutki' | 'kos'>('poslano');
+  const [mapeOdprt, setMapeOdprt] = useState(false); /* mobilni folder meni (desni slide, kot hub) */
   const [beriMail, setBeriMail] = useState<PostaVnos | null>(null);
   const [postaIsk, setPostaIsk] = useState('');
   const [postaOseba, setPostaOseba] = useState('');   /* filter po prejemniku (ko vec oseb na projektu) */
@@ -1433,11 +1441,13 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               </div>
             )}
             <div className="pw-posta-body" style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '1rem', alignItems: 'flex-start', margin: '.75rem 0 0' }}>
-              <div className="pw-posta-mape" style={{ flex: 'none', width: 138, display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
+              <button type="button" className="pw-mape-trig" onClick={() => setMapeOdprt(true)} aria-expanded={mapeOdprt} aria-label={L('Mape', 'Folders')}><List size={16} weight="bold" /> <span>{mapa === 'prejeto' ? L('Prejeto', 'Inbox') : mapa === 'poslano' ? L('Poslano', 'Sent') : mapa === 'osnutki' ? L('Osnutki', 'Drafts') : L('Koš', 'Trash')}</span></button>
+              {mapeOdprt && <div className="pw-mape-back" onClick={() => setMapeOdprt(false)} aria-hidden />}
+              <div className={'pw-posta-mape' + (mapeOdprt ? ' odprt' : '')} style={{ flex: 'none', width: 138, display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
               {([{ id: 'prejeto', ime: L('Prejeto', 'Inbox'), Ikona: Tray }, { id: 'poslano', ime: L('Poslano', 'Sent'), Ikona: PaperPlaneTilt }, { id: 'osnutki', ime: L('Osnutki', 'Drafts'), Ikona: NotePencil }, { id: 'kos', ime: L('Koš', 'Trash'), Ikona: Trash }] as const).map(({ id, ime, Ikona }) => {
                 const st = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === id).length;
                 const on = mapa === id;
-                return <button key={id} type="button" onClick={() => { setMapa(id); setBeriMail(null); }} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', width: '100%', textAlign: 'left', border: 'none', background: on ? 'color-mix(in oklch, var(--ink) 9%, transparent)' : 'transparent', color: 'var(--ink)', borderRadius: '.6rem', padding: '.5rem .7rem', font: `${on ? 700 : 500} .78rem var(--font-sans), sans-serif`, cursor: 'pointer' }}><Ikona size={16} weight={on ? 'fill' : 'regular'} /><span style={{ flex: 1 }}>{ime}</span>{st ? <span style={{ fontWeight: 700, color: 'color-mix(in oklch, var(--ink) 72%, transparent)' }}>{st}</span> : null}</button>;
+                return <button key={id} type="button" onClick={() => { setMapa(id); setBeriMail(null); setMapeOdprt(false); }} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', width: '100%', textAlign: 'left', border: 'none', background: on ? 'color-mix(in oklch, var(--ink) 9%, transparent)' : 'transparent', color: 'var(--ink)', borderRadius: '.6rem', padding: '.5rem .7rem', font: `${on ? 700 : 500} .78rem var(--font-sans), sans-serif`, cursor: 'pointer' }}><Ikona size={16} weight={on ? 'fill' : 'regular'} /><span style={{ flex: 1 }}>{ime}</span>{st ? <span style={{ fontWeight: 700, color: 'color-mix(in oklch, var(--ink) 72%, transparent)' }}>{st}</span> : null}</button>;
               })}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
