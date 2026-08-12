@@ -338,6 +338,11 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
   .pw-posta-mape button{width:auto !important;flex:1 1 auto;justify-content:center !important;min-height:2.5rem}
   .pw-kom-panel .pw-posta-glava{padding-right:.3rem}
   .pw-mail-meni{left:auto;right:0}
+  /* detajl maila kot v hubu: »Nazaj« v svoji vrsti, akcijske ikone v ENI vrsti */
+  .pw-mail-orodja .pw-mail-nazaj{flex:1 1 100%;justify-content:flex-start}
+  .pw-mail-orodja .pw-mail-nazaj + *{margin-left:0}
+  .pw-mail-orodja{gap:.45rem}
+  .pw-mail-orodja>button,.pw-mail-orodja>a,.pw-mail-orodja .pw-mail-meni-w>button{width:2.15rem;height:2.15rem}
   .pw-naloga-panel{padding-top:1.4rem !important;overflow-y:auto}
   .pw-naloga-l-opis textarea{min-height:8rem}
   .pw-naloga-akcije{position:sticky;bottom:0;background:#fff;padding-top:.6rem}
@@ -1475,7 +1480,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               </div>
               <div style={{ position: 'relative', zIndex: 1, margin: '.4rem 0 0', padding: '.9rem 1rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.85rem', background: '#fff' }}>
                 <b style={{ display: 'block', fontSize: '.92rem' }}>{beriMail.zadeva || L('(brez zadeve)', '(no subject)')}</b>
-                <small style={{ display: 'block', color: 'var(--muted)', margin: '.15rem 0 .6rem' }}>{beriMail.prejemniki.join(', ')} · {datStr(beriMail.datum)}{casStr(beriMail.datum) ? ` ob ${casStr(beriMail.datum)}` : ''}</small>
+                <small style={{ display: 'block', color: 'var(--muted)', margin: '.15rem 0 .6rem' }}>{beriMail.prejemniki.join(', ')} · {datStr(beriMail.datum)}{casStr(beriMail.datum) ? ` ob ${casStr(beriMail.datum)}` : ''} · {beriMail.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</small>
                 {beriMail.telo
                   ? (beriMail.smer === 'prejeto'
                       ? <div style={{ whiteSpace: 'pre-wrap', fontSize: '.85rem', lineHeight: 1.55 }}>{beriTeloMaila(beriMail.telo) || L('(brez besedila)', '(no text)')}</div>
