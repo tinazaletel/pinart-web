@@ -497,6 +497,18 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-posta-bulk-obnovi:hover{border-color:color-mix(in oklch,var(--purple) 45%,transparent);color:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-posta-bulk-x{border:0;background:none;color:color-mix(in oklch,var(--ink) 72%,transparent);font:600 .72rem var(--font-sans),sans-serif;cursor:pointer;margin-left:auto}
 @media (max-width:600px){.pw-posta-check{width:1.45rem;height:1.45rem}}
+/* vrstica Koša: informacija + »Izprazni koš« */
+.pw-kos-vrsta{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin:.15rem 0 .5rem}
+.pw-kos-info{font:500 .72rem var(--font-sans),sans-serif;color:var(--muted)}
+.pw-kos-izprazni{display:inline-flex;align-items:center;gap:.35rem;height:2rem;padding:0 .9rem;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:999px;background:#fff;color:oklch(55% .18 25);font:700 .7rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s ease,color .15s ease}
+.pw-kos-izprazni:hover{background:oklch(55% .18 25);color:#fff;border-color:transparent}
+/* akcije na sami vrstici v Košu (obnovi/izbriši) — na desktopu na hover, na dotik vedno */
+.pw-vrstica-akc{flex:none;display:flex;align-items:center;gap:.3rem;margin-left:.35rem;opacity:0;transition:opacity .15s ease}
+.pw-posta-vrstica:hover .pw-vrstica-akc,.pw-posta-vrstica:focus-within .pw-vrstica-akc{opacity:1}
+.pw-vrstica-akc button{display:grid;place-items:center;width:1.85rem;height:1.85rem;padding:0;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:.5rem;background:#fff;color:var(--ink);cursor:pointer;transition:background .12s ease,color .12s ease,border-color .12s ease}
+.pw-vrstica-obnovi:hover{border-color:color-mix(in oklch,var(--purple) 45%,transparent);color:color-mix(in oklch,var(--purple) 70%,var(--ink))}
+.pw-vrstica-brisi:hover{background:oklch(55% .18 25);color:#fff;border-color:transparent}
+@media (hover:none){.pw-vrstica-akc{opacity:1}}
 .pw-posta-vrh{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
 .pw-posta-vrh b{font-size:.76rem;font-weight:700;color:var(--ink);overflow-wrap:anywhere}
 .pw-posta-smer{flex:none;display:inline-flex;align-items:center;padding:.2rem .5rem;border-radius:999px;background:oklch(91% .05 165);color:oklch(40% .1 165);font-size:.52rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
@@ -1480,6 +1492,19 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                     <button type="button" className="pw-posta-bulk-x" onClick={() => setIzbraniMaili(new Set())}>{L('Prekliči', 'Clear')}</button>
                   </div>
                 )}
+                {mapa === 'kos' && izbraniVMapi.length === 0 && (
+                  <div className="pw-kos-vrsta">
+                    <span className="pw-kos-info">{L('Izbrisano ostane v Košu, dokler ga ne počistiš.', 'Deleted items stay in Trash until you clear them.')}</span>
+                    <button type="button" className="pw-kos-izprazni" onClick={() => {
+                      if (!window.confirm(L('Dokončno izbrišem vse v Košu? Tega ni mogoče razveljaviti.', 'Permanently delete everything in Trash? This cannot be undone.'))) return;
+                      const ids = seznam.map(v => v.id);
+                      ids.forEach(id => void deleteProjectMailPermanent(id).catch(() => undefined));
+                      const set = new Set(ids);
+                      setPosta(p => p.filter(v => !set.has(v.id)));
+                      setBeriMail(null);
+                    }}><Trash size={14} weight="bold" /> {L('Izprazni koš', 'Empty trash')}</button>
+                  </div>
+                )}
                 <ul className="pw-posta-seznam">
                   {prikaz.map(vnos => (
                     <li key={vnos.id} className={'pw-posta-vrstica' + (izbraniMaili.has(vnos.id) ? ' pw-posta-izbran' : '') + (vnos.zvezda ? ' pw-posta-zvezda' : '')} onClick={() => setBeriMail(vnos)}>
@@ -1496,6 +1521,12 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                         {(vnos.oznake || []).length > 0 && <div className="pw-posta-oznake">{(vnos.oznake || []).map((oz, i) => <span key={`${oz}-${i}`} className="pw-posta-oz">{oz}</span>)}</div>}
                       </div>
                       {vnos.zvezda && <Star size={16} weight="fill" className="pw-posta-zv-ikona" aria-hidden />}
+                      {mapa === 'kos' && (
+                        <div className="pw-vrstica-akc" onClick={e => e.stopPropagation()}>
+                          <button type="button" className="pw-vrstica-obnovi" title={L('Obnovi', 'Restore')} aria-label={L('Obnovi', 'Restore')} onClick={() => { const id = vnos.id; void restoreProjectMail(id).catch(() => undefined); setPosta(p => p.map(v => v.id === id ? { ...v, izbrisano: undefined } : v)); }}><ArrowBendUpLeft size={15} weight="bold" /></button>
+                          <button type="button" className="pw-vrstica-brisi" title={L('Zbriši dokončno', 'Delete permanently')} aria-label={L('Zbriši dokončno', 'Delete permanently')} onClick={() => { const id = vnos.id; void deleteProjectMailPermanent(id).catch(() => undefined); setPosta(p => p.filter(v => v.id !== id)); setBeriMail(bm => (bm && bm.id === id ? null : bm)); }}><Trash size={15} weight="bold" /></button>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>
