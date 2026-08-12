@@ -93,7 +93,7 @@ export async function POST(req: Request) {
   const model = process.env.PUPA_MODEL || 'claude-sonnet-5';
   const forwardedFor = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
   const ip = forwardedFor || req.headers.get('x-real-ip') || 'unknown';
-  let rateLimitRequestId: string;
+  let rateLimitRequestId: string | undefined;
   const configuredLimit = Number(process.env.PUPA_RATE_LIMIT || 30);
   const hourlyLimit = Number.isFinite(configuredLimit) && configuredLimit > 0
     ? Math.floor(configuredLimit)
@@ -112,8 +112,10 @@ export async function POST(req: Request) {
     }
     rateLimitRequestId = rateLimit.requestId;
   } catch (error) {
-    console.error('PUPA rate-limit napaka:', error instanceof Error ? error.message : 'neznana napaka');
-    return NextResponse.json({ napaka: 'Pupa trenutno ni dosegljiva.' }, { status: 503 });
+    /* FAIL-OPEN: rate-limiter je zaščita, ne osrednja pot. Če tabela/RPC manjka,
+       Pupa VSEENO odgovori (sicer bi ena manjkajoča migracija ubila Pupo za vse). */
+    console.error('PUPA rate-limit napaka (nadaljujem brez omejitve):', error instanceof Error ? error.message : 'neznana napaka');
+    rateLimitRequestId = undefined;
   }
 
   const sistem = `${PERSONA}\n\n${PUPA_ZNANJE}\n\nKONTEKST (kje je uporabnik + podatki ponudbe):\n${body.kontekst || '(ni podatkov)'}`;
@@ -144,7 +146,7 @@ export async function POST(req: Request) {
       : '';
     if (!besedilo) console.error('PUPA je vrnila prazen odgovor.');
     const tokens = Number(data?.usage?.input_tokens || 0) + Number(data?.usage?.output_tokens || 0);
-    recordAiTokens(supabase, rateLimitRequestId, tokens).catch(error => {
+    if (rateLimitRequestId) recordAiTokens(supabase, rateLimitRequestId, tokens).catch(error => {
       console.error('PUPA beleženje porabe:', error instanceof Error ? error.message : 'neznana napaka');
     });
     const odgovor = besedilo || 'Hmm, tokrat nimam pravega odgovora. Poskusi drugače vprašati.';
