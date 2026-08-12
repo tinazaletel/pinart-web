@@ -1,0 +1,14 @@
+name = "pinart-mail-inbound"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Nastavljivi VAR (Cloudflare -> Worker -> Settings -> Variables and Secrets):
+#   FLOW_INBOUND_URL  (plain Var)  = https://pinartflow.com/api/posta/prejeto
+#   INBOUND_SECRET    (Secret)     = ista vrednost kot v Vercel env
+#
+# INBOUND_SECRET nastavi z:  wrangler secret put INBOUND_SECRET
+# FLOW_INBOUND_URL lahko tu (spodaj) ali v dashboardu.
+
+[vars]
+FLOW_INBOUND_URL = "https://pinartflow.com/api/posta/prejeto"

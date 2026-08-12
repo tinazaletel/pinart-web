@@ -790,3 +790,60 @@ Poženi/dopolni varnostne skripte iz #11 in vrni tabelo PASS/FAIL za:
 **Vrstni red:** #15 (najprej ugotovi stanje) → #12 → #13 → #14.
 Vse ostane povratno združljivo; migracije aditivne; `tsc` = 0 po vsakem koraku.
 
+---
+
+# NALOGA #16 — Mail zaledje: centraliziraj ODHODNO pošto (strežniško) + reply-to na token  ⭐ (dvosmerna pošta)
+
+> **Kontekst:** dvosmerna per-projekt pošta je ~70% zgrajena (`project_mail`,
+> `project_inbox`, `/api/posta/prejeto`, `lib/pinartMailCloud.ts`). Manjkata
+> ožičenji. Claude dela UI del (hub `KomunikacijaWorkspace` -> cloud, nit,
+> reply-to klici v komponentah). **Ti (Codex) delaš SAMO zaledje:**
+> `app/api/posta/route.ts`, `lib/posta.ts`, `lib/*` (nov strežniški helper),
+> `supabase/migrations/*`. **NE dotikaj se komponent** (Claude jih ureja).
+
+Trenutno `/api/posta` pošlje prek Resend + piše samo `mail_log` (metapodatki).
+Odhodni mail se NE zapiše v `project_mail`, reply-to je vedno lastnikov Gmail,
+zato inbound (odgovor stranke) nikoli ne pride na `token@pinartflow.com`.
+
+**Kaj naredi:**
+
+1. **Strežniški helper za inbox token** (nov, npr. `lib/inboxToken.ts`):
+   `zagotoviInboxToken(orgId, projectExternalId): Promise<string>` prek
+   `createAdminClient()` — poišče `project_inbox` po (org, project); če ga ni,
+   ustvari token formata `p` + 12 hex in vrne naslov-del. (Adaptacija obstoječega
+   `ensureProjectInboxToken` iz `lib/pinartMailCloud.ts`, ki je klientski.)
+
+2. **Razširi `/api/posta` POST body** z opcijskima poljema:
+   `projectExternalId?: string`, `clientId?: string` (validiraj prek
+   `lib/validacija.ts`, ostani povratno združljiv — brez njiju dela kot zdaj).
+
+3. **Ko je `projectExternalId` podan:**
+   - `reply_to` = `<token>@${INBOUND_DOMAIN}` (nov env `INBOUND_DOMAIN`,
+     privzeto `pinartflow.com`) — RAZEN če klicatelj eksplicitno poda `replyTo`
+     (takrat spoštuj podanega).
+   - Po uspešnem `resend.emails.send` **zapiši v `project_mail`** prek admin
+     klienta: `direction:'out'`, `organization_id`, `project_external_id`,
+     `client_id`, `from_email`, `to_emails`, `subject`, `body_html`/`body_text`,
+     **`message_id` = Resendov vrnjeni id**, `occurred_at`. (Server-side zapis je
+     zanesljivejši od klientskega `pushProjectMail`.)
+
+4. **Vrni `messageId`** (Resendov) v JSON odgovoru `/api/posta`.
+
+5. **`lib/posta.ts` `posljiMail`**: dodaj opcijska `projectExternalId`, `clientId`
+   v argumente in ju posreduj v body. Podpis ostane povratno združljiv
+   (obstoječi klici brez njiju delajo naprej). Vrni tudi `messageId`.
+
+6. **Org resolucija**: uporabi obstoječi vzorec za `organization_id` prijavljenega
+   uporabnika (kot drugod v API). Če helper obstaja, ga uporabi; sicer poizvedi.
+
+7. **Migracije**: preveri, da so `project_mail`, `project_inbox`, `mail_log` že
+   pokrite; če manjka indeks/stolpec za zgornje (npr. `client_id` na project_mail),
+   dodaj **aditivno** migracijo `add column if not exists`.
+
+**Železna pravila** kot zgoraj: `tsc`=0, aditivne migracije, service-role samo v
+`app/api/**`, ne razbij obstoječih klicev `posljiMail`. **Ne dotikaj se UI.**
+
+**Test/verifikacija:** klic `/api/posta` z `projectExternalId` → ustvari/najde
+token, pošlje z reply-to na token, zapiše `project_mail(out)` z `message_id`.
+Brez `projectExternalId` → obnašanje nespremenjeno.
+
