@@ -528,6 +528,9 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
         .km-vgrajeno{padding-left:.7rem;padding-right:.7rem;padding-top:2.4rem}
         .km-glava-vgrajeno{margin-bottom:1rem}
         .km-naslov-vgrajeno{margin:.1rem 0 0;font:800 1.1rem/1.2 var(--font-serif,Georgia),serif;color:var(--k-ink);letter-spacing:-.01em}
+        /* vgrajeno: notranje sekcije poravnaj na ISTI levi/desni rob kot naslov (brez dodatnega paddinga) */
+        .km-vgrajeno .km-branje{padding-left:0;padding-right:0}
+        .km-vgrajeno .km-posta-vrh,.km-vgrajeno .km-posta-top,.km-vgrajeno .km-posta{padding-left:0;padding-right:0}
         .km-eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,var(--k-purple));margin:0 0 .3rem}
         .km-glava h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--k-ink)}
         .km-uvod{font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72);margin:0 0 2rem;max-width:38rem}
