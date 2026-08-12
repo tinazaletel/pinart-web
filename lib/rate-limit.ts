@@ -25,17 +25,21 @@ export async function omejiApi(
   userId?: string,
   oknoSekund = 60,
 ): Promise<NextResponse | null> {
+  /* FAIL-OPEN: rate-limiter je zaščita, ne osrednja pot. Če limiter ne deluje
+     (manjka service-role, manjka RPC/migracija, napaka baze), NE blokiramo
+     legitimnega prometa — dovolimo (return null). Sicer bi ena manjkajoča
+     migracija ustavila pošiljanje/Pupo za vse. Nad-limit ostane 429. */
   const admin = createAdminClient();
   if (!admin) {
-    return NextResponse.json({ napaka: 'Storitev trenutno ni dosegljiva.' }, { status: 503 });
+    return null; // limiter ni konfiguriran -> fail-open
   }
 
   let kljucHash: string;
   try {
     kljucHash = hash(userId ? `user:${userId}` : `ip:${ipIzZahteve(request)}`);
   } catch (error) {
-    console.error('API limiter ni konfiguriran:', error instanceof Error ? error.message : error);
-    return NextResponse.json({ napaka: 'Storitev trenutno ni dosegljiva.' }, { status: 503 });
+    console.error('API limiter ni konfiguriran (fail-open):', error instanceof Error ? error.message : error);
+    return null; // fail-open
   }
 
   const { data, error } = await admin.rpc('preveri_api_omejitev', {
@@ -45,8 +49,8 @@ export async function omejiApi(
     p_okno_sekund: oknoSekund,
   });
   if (error) {
-    console.error('API rate-limit napaka:', error.message);
-    return NextResponse.json({ napaka: 'Storitev trenutno ni dosegljiva.' }, { status: 503 });
+    console.error('API rate-limit napaka (fail-open, dovolim):', error.message);
+    return null; // RPC ne deluje (npr. migracija ni pognana) -> fail-open, da pošiljanje ne obtiči
   }
   return data === true
     ? null
