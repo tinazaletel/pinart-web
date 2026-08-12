@@ -634,8 +634,8 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
           .km-akcija-ikona{padding:.55rem}
           .km-akcija-ikona .km-akcija-txt{display:none}
           .km-mape-trig{display:inline-flex;align-items:center;gap:.4rem;flex:none;height:2.9rem;box-sizing:border-box;margin-right:auto;border:1px solid var(--k-line);border-radius:999px;padding:0 1rem;background:#fff;color:var(--k-ink);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
-          .km-mape-back{position:fixed;inset:0;z-index:199;background:color-mix(in oklch,var(--k-ink) 34%,transparent);animation:kmFade .2s ease both}
-          .km-mape{position:fixed;left:0;top:0;bottom:0;z-index:200;width:min(78%,15rem);flex-direction:column;flex-wrap:nowrap;gap:.15rem;padding:calc(1.15rem + env(safe-area-inset-top,0px)) .8rem calc(1.15rem + env(safe-area-inset-bottom,0px));background:var(--k-paper,#fff);box-shadow:8px 0 40px color-mix(in oklch,var(--k-ink) 22%,transparent);transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.3,1);overflow-y:auto}
+          .km-mape-back{position:fixed;inset:0;z-index:1198;background:color-mix(in oklch,var(--k-ink) 34%,transparent);animation:kmFade .2s ease both}
+          .km-mape{position:fixed;left:0;top:0;bottom:0;z-index:1199;width:min(78%,15rem);flex-direction:column;flex-wrap:nowrap;gap:.15rem;padding:calc(4.75rem + env(safe-area-inset-top,0px)) .8rem calc(1.15rem + env(safe-area-inset-bottom,0px));background:var(--k-paper,#fff);box-shadow:8px 0 40px color-mix(in oklch,var(--k-ink) 22%,transparent);transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.3,1);overflow-y:auto}
           .km-mape.odprt{transform:none}
           .km-mape button{width:100%}
         }
