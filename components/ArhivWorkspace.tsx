@@ -24,6 +24,8 @@ import ArhivFilter from './ArhivFilter';
 import MobTabs from '@/components/MobTabs';
 import AmbientBubbles from '@/components/AmbientBubbles';
 import SwapText from '@/components/SwapText';
+import { posljiMail } from '@/lib/posta';
+import Toast from '@/components/Toast';
 
 type Zavihek = 'projekti' | 'ponudbe' | 'pogodbe' | 'racuni';
 
@@ -220,9 +222,23 @@ export default function ArhivWorkspace({ base }: { base: string }) {
     const c = ime.trim().toLocaleLowerCase('sl-SI');
     return (flow.clients || []).find(x => (x.name || '').trim().toLocaleLowerCase('sl-SI') === c)?.email || '';
   };
-  const posljiStranki = (ime: string, zadeva: string, telo: string) => {
+  const [postaObvestilo, setPostaObvestilo] = useState<{ t: string; ok: boolean } | null>(null);
+  /* Pošlji stranki: če ima stranka e-naslov, gre PREK Flowa (Resend) — reply-to =
+     token@pinartflow.com (strežnik iz projektId), zapis v project_mail(out). Če
+     e-naslova ni, degradira na mailto (odpre lokalni mail za ročni vnos). */
+  const posljiStranki = async (projektId: string | undefined, ime: string, zadeva: string, telo: string) => {
     if (typeof window === 'undefined') return;
-    window.location.href = `mailto:${encodeURIComponent(strankaEmail(ime))}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`;
+    const za = strankaEmail(ime).trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(za)) {
+      window.location.href = `mailto:${encodeURIComponent(za)}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`;
+      return;
+    }
+    const html = `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${telo.replace(/\n/g, '<br>')}</div>`;
+    setPostaObvestilo({ t: L('Pošiljam …', 'Sending …'), ok: true });
+    const rez = await posljiMail({ to: [za], subject: zadeva, html, projectExternalId: projektId });
+    setPostaObvestilo(rez.ok
+      ? { t: L('Poslano stranki — v Komunikacijah.', 'Sent to client — in Communications.'), ok: true }
+      : { t: L('Napaka: ', 'Error: ') + (rez.napaka || L('pošiljanje ni uspelo.', 'sending failed.')), ok: false });
   };
 
   const [zavihek, setZavihek] = useState<Zavihek>('projekti');
@@ -681,6 +697,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         )}
       </div>
 
+      <Toast sporocilo={postaObvestilo?.t || ''} ton={postaObvestilo?.ok ? 'uspeh' : 'napaka'} onClose={() => setPostaObvestilo(null)} />
+
       {/* ── DETAJL PANEL Z DESNE (vzorec ContractWorkspace: detailBackdrop + detailPanel + lepljivi X) ── */}
       {detajl && (
         <div className={styles.detailBackdrop + (izvazamPdf ? ' arh-zajem' : '')} role="presentation" onMouseDown={zapriDetajl}>
@@ -779,7 +797,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   ? <div className="arh-opomba-kartica" role="alert"><Warning size={20} weight="bold" aria-hidden /><div><strong>{L('Opozorilo', 'Warning')}</strong><p>{op.besedilo}</p></div></div>
                   : <div className="arh-opomba-blok"><strong>{L('Opomba', 'Note')}</strong><p>{op.besedilo}</p></div>)}
                 <div className="arh-akcije">
-                  <button type="button" className="arh-poslji" onClick={() => posljiStranki(c.client, L(`Pogodba — ${c.title}`, `Contract — ${c.title}`), L(`Pozdravljeni,\n\nv prilogi vam pošiljam pogodbo »${c.title}«. Prosim za pregled in podpis.\n\nLep pozdrav`, `Hello,\n\nplease find attached the contract "${c.title}". Kindly review and sign it.\n\nBest regards`))}>{L('Pošlji stranki', 'Send to client')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
+                  <button type="button" className="arh-poslji" onClick={() => posljiStranki(c.sourceOfferId, c.client, L(`Pogodba — ${c.title}`, `Contract — ${c.title}`), L(`Pozdravljeni,\n\nv prilogi vam pošiljam pogodbo »${c.title}«. Prosim za pregled in podpis.\n\nLep pozdrav`, `Hello,\n\nplease find attached the contract "${c.title}". Kindly review and sign it.\n\nBest regards`))}>{L('Pošlji stranki', 'Send to client')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
                   <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/pogodbe`}>{L('Uredi v Pogodbah', 'Edit in Contracts')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></a>
                 </div>
                 <p className="arh-mini">{L('Do postavitve pošiljanja s priponko pripni PDF ročno (Prenesi → priloži).', 'Until attachment sending is set up, attach the PDF manually (Download → attach).')}</p>
@@ -857,7 +875,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                     </div>
 
                     <div className="arh-akcije">
-                      <button type="button" className="arh-poslji" onClick={() => posljiStranki(r.client, L(`Račun ${r.number || ''}`.trim(), `Invoice ${r.number || ''}`.trim()), L(`Pozdravljeni,\n\nv prilogi vam pošiljam račun ${r.number || ''} v znesku ${eur(r.amount)}${typeof r.dueDays === 'number' ? `, z rokom plačila ${r.dueDays} dni` : ''}.\n\nLep pozdrav`, `Hello,\n\nplease find attached invoice ${r.number || ''} for ${eur(r.amount)}${typeof r.dueDays === 'number' ? `, due in ${r.dueDays} days` : ''}.\n\nBest regards`))}>{L('Pošlji stranki', 'Send to client')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
+                      <button type="button" className="arh-poslji" onClick={() => posljiStranki(r.sourceOfferId, r.client, L(`Račun ${r.number || ''}`.trim(), `Invoice ${r.number || ''}`.trim()), L(`Pozdravljeni,\n\nv prilogi vam pošiljam račun ${r.number || ''} v znesku ${eur(r.amount)}${typeof r.dueDays === 'number' ? `, z rokom plačila ${r.dueDays} dni` : ''}.\n\nLep pozdrav`, `Hello,\n\nplease find attached invoice ${r.number || ''} for ${eur(r.amount)}${typeof r.dueDays === 'number' ? `, due in ${r.dueDays} days` : ''}.\n\nBest regards`))}>{L('Pošlji stranki', 'Send to client')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
                       <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/racuni`}>{L('Uredi v Računih', 'Edit in Invoices')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></a>
                     </div>
                     <p className="arh-mini">{L('Do postavitve pošiljanja s priponko pripni PDF ročno (Prenesi → priloži).', 'Until attachment sending is set up, attach the PDF manually (Download → attach).')}</p>
