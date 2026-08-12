@@ -286,7 +286,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
               {prejemnikiVsi.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
             <button type="button" className={'km-filter-krog' + (postaOseba ? ' aktiv' : '')} onClick={() => setFilterOdprt(true)} aria-label={L('Prejemniki', 'Recipients')} title={L('Prejemniki', 'Recipients')}><FunnelSimple size={16} weight={postaOseba ? 'fill' : 'bold'} /></button>
-            <button type="button" className="km-nova" onClick={() => { setBeriMail(null); setPisiVrsta('nova'); setPisiProjekt(''); setPisiZa(''); setPisiZadeva(''); setPisiTelo(''); setPisiStatus(''); }} title={L('Nova pošta: izbereš projekt (za odgovore v Flow), prejemnika in napišeš.', 'New mail: pick a project (for replies in Flow), a recipient and compose.')} aria-label={L('Nova pošta', 'New mail')}><Plus className="km-nova-ik" size={16} weight="bold" /> <span className="km-nova-txt">{L('Nova pošta', 'New mail')}</span><Plus className="km-nova-plus" size={18} weight="bold" /></button>
+            <button type="button" className="km-nova" disabled={pisiVrsta === 'nova'} onClick={() => { setBeriMail(null); setPisiVrsta('nova'); setPisiProjekt(''); setPisiZa(''); setPisiZadeva(''); setPisiTelo(''); setPisiStatus(''); }} title={L('Nova pošta: izbereš projekt (za odgovore v Flow), prejemnika in napišeš.', 'New mail: pick a project (for replies in Flow), a recipient and compose.')} aria-label={L('Nova pošta', 'New mail')}><Plus className="km-nova-ik" size={16} weight="bold" /> <span className="km-nova-txt">{L('Nova pošta', 'New mail')}</span><Plus className="km-nova-plus" size={18} weight="bold" /></button>
           </div>
           {pisiVrsta === 'nova' && (
             <form className="km-pisi km-pisi-nova" onSubmit={posljiPisanje}>
@@ -544,13 +544,14 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-posta-vrh .km-iskalnik{flex:1 1 15rem;margin-bottom:0}
         .km-prejemniki{flex:none;border:1px solid var(--k-line);border-radius:999px;padding:.5rem .9rem;font:600 .8rem var(--font-sans),sans-serif;color:var(--k-ink);background:#fff;cursor:pointer}
         .km-nova{flex:none;display:inline-flex;align-items:center;gap:.4rem;border:0;border-radius:999px;padding:.55rem 1.1rem;font:700 .8rem var(--font-sans),sans-serif;color:#fff;background:var(--k-ink);cursor:pointer;transition:opacity .15s,transform .15s}
-        .km-nova:hover{opacity:.88;transform:translateY(-1px)}
+        .km-nova:hover:not(:disabled){opacity:.88;transform:translateY(-1px)}
+        .km-nova:disabled{opacity:.4;cursor:default;transform:none}
         .km-mail-telo{padding:.2rem 1rem 1rem 3.6rem;font:500 .84rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 80%,transparent);line-height:1.55;white-space:pre-wrap}
         .km-posta-ovoj{max-width:62rem}
         .km-iskalnik{display:flex;align-items:center;gap:.5rem;background:#fff;border:1px solid var(--k-line);border-radius:999px;padding:.38rem .9rem;margin-bottom:1rem;color:color-mix(in oklch,var(--k-ink) 55%,transparent)}
         .km-iskalnik input{flex:1;min-width:0;border:0;background:none;outline:none;font:500 .85rem var(--font-sans),sans-serif;color:var(--k-ink)}
         .km-posta-body{display:flex;gap:1.3rem;align-items:flex-start}
-        .km-mape{flex:none;width:11rem;display:flex;flex-direction:column;gap:.6rem}
+        .km-mape{flex:none;width:11rem;display:flex;flex-direction:column;gap:.15rem}
         .km-mape button{display:flex;align-items:center;gap:.55rem;width:100%;text-align:left;border:0;background:none;border-radius:.6rem;padding:.6rem .7rem;font:700 .82rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 62%,transparent);cursor:pointer}
         .km-mape button:hover{background:color-mix(in oklch,var(--k-purple) 6%,transparent)}
         .km-mape button.on{background:color-mix(in oklch,var(--k-purple) 12%,transparent);color:var(--k-ink)}
@@ -581,7 +582,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
           .km-akcija-ikona .km-akcija-txt{display:none}
           .km-mape-trig{display:inline-flex;align-items:center;gap:.4rem;flex:none;height:2.9rem;box-sizing:border-box;margin-right:auto;border:1px solid var(--k-line);border-radius:999px;padding:0 1rem;background:#fff;color:var(--k-ink);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
           .km-mape-back{position:fixed;inset:0;z-index:199;background:color-mix(in oklch,var(--k-ink) 34%,transparent);animation:kmFade .2s ease both}
-          .km-mape{position:fixed;left:0;top:0;bottom:0;z-index:200;width:min(78%,15rem);flex-direction:column;flex-wrap:nowrap;gap:.6rem;padding:calc(1.15rem + env(safe-area-inset-top,0px)) .8rem calc(1.15rem + env(safe-area-inset-bottom,0px));background:var(--k-paper,#fff);box-shadow:8px 0 40px color-mix(in oklch,var(--k-ink) 22%,transparent);transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.3,1);overflow-y:auto}
+          .km-mape{position:fixed;left:0;top:0;bottom:0;z-index:200;width:min(78%,15rem);flex-direction:column;flex-wrap:nowrap;gap:.15rem;padding:calc(1.15rem + env(safe-area-inset-top,0px)) .8rem calc(1.15rem + env(safe-area-inset-bottom,0px));background:var(--k-paper,#fff);box-shadow:8px 0 40px color-mix(in oklch,var(--k-ink) 22%,transparent);transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.3,1);overflow-y:auto}
           .km-mape.odprt{transform:none}
           .km-mape button{width:100%}
         }
