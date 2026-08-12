@@ -566,7 +566,7 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-pisi-telo{min-height:5.5rem;max-height:14rem;overflow-y:auto;padding:.6rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:.55rem;background:#fff;font:inherit;font-size:.82rem;line-height:1.55;color:var(--ink)}
 .pw-pisi-telo:focus{outline:none;border-color:oklch(58% .2 297)}
 .pw-pisi-telo:empty:before{content:attr(data-placeholder);color:var(--muted)}
-.pw-pisi-status{margin:0;font-size:.68rem;color:var(--muted)}
+.pw-pisi-status{margin:.2rem 0 0;padding:.6rem .8rem;border:1px solid oklch(78% .13 25);border-radius:.55rem;background:oklch(96% .04 25);color:oklch(45% .18 25);font-size:.8rem;font-weight:700}
 .pw-pisi-podpis-opomnik{margin:.15rem 0 0}
 .pw-pisi-podpis-opomnik a{display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;color:color-mix(in oklch,var(--ink) 72%,transparent);text-decoration:none;font-weight:600}
 .pw-pisi-podpis-opomnik a:hover{color:var(--purple)}
