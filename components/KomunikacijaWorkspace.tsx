@@ -90,7 +90,8 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   const [aiNalaganje, setAiNalaganje] = useState(false);
   const [aiPovzetek, setAiPovzetek] = useState('');
   const [aiOdgovor, setAiOdgovor] = useState('');
-  const [pisiVrsta, setPisiVrsta] = useState<false | 'odgovor' | 'posreduj'>(false);
+  const [pisiVrsta, setPisiVrsta] = useState<false | 'odgovor' | 'posreduj' | 'nova'>(false);
+  const [pisiProjekt, setPisiProjekt] = useState('');
   const [pisiZa, setPisiZa] = useState('');
   const [pisiZadeva, setPisiZadeva] = useState('');
   const [pisiTelo, setPisiTelo] = useState('');
@@ -212,11 +213,14 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
     const za = pisiZa.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(za)) { setPisiStatus(L('Vpiši veljaven e-naslov.', 'Enter a valid email.')); return; }
     setPisiPosiljam(true);
-    let replyTo = ''; try { replyTo = String(JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}').ponudnik?.email || ''); } catch { /* brez profila */ }
     const html = `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${pisiTelo.replace(/\n/g, '<br>')}</div>`;
-    const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, replyTo: replyTo || undefined });
+    /* projectExternalId -> strežnik nastavi reply-to token (odgovori v Flow) + zapiše project_mail(out).
+       nova: izbran projekt; odgovor/posreduj: projekt odprtega sporočila. brez projekta -> reply-to lastnik. */
+    const projId = (pisiVrsta === 'nova' ? pisiProjekt : beriMail?.projectId) || undefined;
+    let replyTo = ''; if (!projId) { try { replyTo = String(JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}').ponudnik?.email || ''); } catch { /* brez profila */ } }
+    const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, ...(projId ? { projectExternalId: projId } : { replyTo: replyTo || undefined }) });
     setPisiPosiljam(false);
-    if (rez.ok) { const nov = dodajPosto({ projectId: beriMail?.projectId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim(), telo: pisiTelo, povzetek: pisiTelo.replace(/\s+/g, ' ').trim().slice(0, 160) }); setPosta(prev => [nov, ...prev].sort((a, b) => b.datum.localeCompare(a.datum))); setPisiVrsta(false); setToast(L('Poslano.', 'Sent.')); } else { setPisiStatus(L('Napaka: ', 'Error: ') + (rez.napaka || '')); }
+    if (rez.ok) { const nov = dodajPosto({ projectId: projId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim(), telo: pisiTelo, povzetek: pisiTelo.replace(/\s+/g, ' ').trim().slice(0, 160) }); setPosta(prev => [nov, ...prev].sort((a, b) => b.datum.localeCompare(a.datum))); setPisiVrsta(false); setToast(L('Poslano.', 'Sent.')); } else { setPisiStatus(L('Napaka: ', 'Error: ') + (rez.napaka || '')); }
   };
   const deliVKlepet = () => { setZavihek('klepet'); setToast(L('Izberi sodelavca (+) in deli sporočilo.', 'Choose a collaborator (+) and share.')); };
   const povabiVKlepet = async (e: React.FormEvent) => {
@@ -276,8 +280,22 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
               {prejemnikiVsi.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
             <button type="button" className={'km-filter-krog' + (postaOseba ? ' aktiv' : '')} onClick={() => setFilterOdprt(true)} aria-label={L('Prejemniki', 'Recipients')} title={L('Prejemniki', 'Recipients')}><FunnelSimple size={16} weight={postaOseba ? 'fill' : 'bold'} /></button>
-            <button type="button" className="km-nova" title={L('Nova pošta z huba: najprej izbereš projekt, nato pišeš (pride z enotnim klijentom)', 'New mail from the hub: first pick a project, then compose (comes with the unified client)')} aria-label={L('Nova pošta', 'New mail')}><PaperPlaneRight className="km-nova-ik" size={14} weight="fill" /> <span className="km-nova-txt">{L('Nova pošta', 'New mail')}</span><Plus className="km-nova-plus" size={18} weight="bold" /></button>
+            <button type="button" className="km-nova" onClick={() => { setBeriMail(null); setPisiVrsta('nova'); setPisiProjekt(''); setPisiZa(''); setPisiZadeva(''); setPisiTelo(''); setPisiStatus(''); }} title={L('Nova pošta: izbereš projekt (za odgovore v Flow), prejemnika in napišeš.', 'New mail: pick a project (for replies in Flow), a recipient and compose.')} aria-label={L('Nova pošta', 'New mail')}><PaperPlaneRight className="km-nova-ik" size={14} weight="fill" /> <span className="km-nova-txt">{L('Nova pošta', 'New mail')}</span><Plus className="km-nova-plus" size={18} weight="bold" /></button>
           </div>
+          {pisiVrsta === 'nova' && (
+            <form className="km-pisi km-pisi-nova" onSubmit={posljiPisanje}>
+              <div className="km-pisi-glava"><b>{L('Nova pošta', 'New mail')}</b><button type="button" aria-label={L('Zapri', 'Close')} onClick={() => setPisiVrsta(false)}>×</button></div>
+              <label>{L('Projekt', 'Project')}<select value={pisiProjekt} onChange={e => setPisiProjekt(e.target.value)}>
+                <option value="">{L('Brez projekta (odgovori gredo v tvoj e-poštni predal)', 'No project (replies go to your inbox)')}</option>
+                {Object.entries(projMapa).map(([id, naziv]) => <option key={id} value={id}>{naziv}</option>)}
+              </select></label>
+              <label>{L('Za', 'To')}<input type="email" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="ime@domena.si" /></label>
+              <label>{L('Zadeva', 'Subject')}<input value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} /></label>
+              <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} rows={6} /></label>
+              {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}
+              <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam}>{pisiPosiljam ? L('Pošiljam …', 'Sending …') : L('Pošlji', 'Send')}</button></div>
+            </form>
+          )}
           {filterOdprt && <>
             <div className="km-sheet-back" onClick={() => setFilterOdprt(false)} aria-hidden />
             <div className="km-sheet" role="dialog" aria-label={L('Prejemniki', 'Recipients')}>
