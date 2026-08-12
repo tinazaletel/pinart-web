@@ -157,18 +157,26 @@ export async function POST(request: Request) {
        Če je klicatelj eksplicitno podal replyTo, ga spoštujemo (npr. odvetnik). */
     const projRef = projectExternalId || '__skupno__';
     let replyTo = body.replyTo?.trim();
+    let replyRef = ''; /* pod katerim projRef je bil token dejansko ustvarjen (diagnostika) */
     if (!replyTo) {
-      /* FAIL-SOFT: če tokena ne dobimo (npr. manjka grant), mail se VSEENO pošlje. */
-      try {
-        const inboundDomain = (process.env.INBOUND_DOMAIN || 'pinartflow.com').trim().toLowerCase();
-        if (/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(inboundDomain)) {
-          const token = await zagotoviInboxToken(organizationId, projRef);
-          if (token) replyTo = `${token}@${inboundDomain}`;
+      /* FAIL-SOFT + FALLBACK: najprej poskusi projektni token; če pade (npr. manjka
+         grant ali RLS), pade NAZAJ na skupni '__skupno__' token, ki zanesljivo dela —
+         tako odgovori VEDNO pridejo nazaj v Flow (vsaj v skupno Komunikacijo), ne v
+         osebni Gmail. Če vse pade, se mail vseeno pošlje (le brez token reply-to). */
+      const inboundDomain = (process.env.INBOUND_DOMAIN || 'pinartflow.com').trim().toLowerCase();
+      if (/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(inboundDomain)) {
+        const kandidati = projRef === '__skupno__' ? ['__skupno__'] : [projRef, '__skupno__'];
+        for (const ref of kandidati) {
+          try {
+            const token = await zagotoviInboxToken(organizationId, ref);
+            if (token) { replyTo = `${token}@${inboundDomain}`; replyRef = ref; break; }
+          } catch (tokErr) {
+            console.error(`Inbox token (${ref}) ni uspel:`, tokErr instanceof Error ? tokErr.message : tokErr);
+          }
         }
-      } catch (tokErr) {
-        console.error('Inbox token ni uspel (pošiljam brez token reply-to):', tokErr instanceof Error ? tokErr.message : tokErr);
       }
     }
+    console.log(`[posta] send org=${organizationId} projRef=${projRef} replyRef=${replyRef || '-'} replyTo=${replyTo ? replyTo.replace(/@.*/, '@…') : '(brez)'}`);
     const { data, error } = await resend.emails.send({
       from,
       to: prejemniki,
