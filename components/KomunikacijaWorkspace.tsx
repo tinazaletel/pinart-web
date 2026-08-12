@@ -46,7 +46,7 @@ const DEMO_SPOROCILA: Record<string, OblacnoSporocilo[]> = {
   ],
 };
 
-export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean }) {
+export default function KomunikacijaWorkspace({ jeEn = false, projektId, projektNaziv, vgrajeno = false }: { jeEn?: boolean; projektId?: string; projektNaziv?: string; vgrajeno?: boolean }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const [nacin] = usePredogled();
   /* demo ostane 'nacin !== mine' (samo-za-ogled: gating pisanja v pravo shrambo).
@@ -83,7 +83,9 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   const projBarva = (id?: string) => { const h = (id ? [...id].reduce((a, c) => a + c.charCodeAt(0), 0) : 0) % 360; return `oklch(62% .17 ${h})`; };
   const [postaOseba, setPostaOseba] = useState('');   /* filter po prejemniku */
   const [izbraniMaili, setIzbraniMaili] = useState<Set<string>>(new Set()); /* izbrani maili za skupinsko brisanje/obnovo */
-  const prejemnikiVsi = Array.from(new Set(posta.flatMap(v => v.prejemniki))).sort();
+  /* vgrajeno v projekt: pokaži SAMO pošto tega projekta (scoping). Brez projektId (hub) = vse. */
+  const vidnaPosta = projektId ? posta.filter(v => v.projectId === projektId) : posta;
+  const prejemnikiVsi = Array.from(new Set(vidnaPosta.flatMap(v => v.prejemniki))).sort();
   const [premakniOdprt, setPremakniOdprt] = useState(false);
   const [oznakaOdprt, setOznakaOdprt] = useState(false);
   const [oznakaVnos, setOznakaVnos] = useState('');
@@ -239,9 +241,9 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
        nova: izbran projekt; odgovor/posreduj: projekt odprtega sporočila. brez projekta -> reply-to lastnik. */
     /* nova: vpisano ime -> če se ujema z obstoječim projektom, uporabi njegov ID;
        sicer je prosto vpisana oznaka (tag); prazno -> skupna Komunikacija. */
-    const projId = (pisiVrsta === 'nova'
+    const projId = projektId || ((pisiVrsta === 'nova'
       ? (Object.entries(projMapa).find(([, naziv]) => naziv === pisiProjekt.trim())?.[0] || pisiProjekt.trim())
-      : beriMail?.projectId) || undefined;
+      : beriMail?.projectId) || undefined);
     /* Brez izrecnega replyTo: strežnik nastavi inbox token (projektni ali skupni
        '__skupno__') -> odgovori strank pridejo NAZAJ v Flow (skupna Komunikacija). */
     const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, ...(projId ? { projectExternalId: projId } : {}) });
@@ -271,15 +273,17 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   };
 
   return (
-    <div className="km">
+    <div className={'km' + (vgrajeno ? ' km-vgrajeno' : '')}>
+      {!vgrajeno && (
       <header className="km-glava">
         <p className="km-eyebrow">{L('Komunikacija', 'Communication')}</p>
         <h1>{L('Vsa komunikacija na enem mestu.', 'All communication in one place.')}</h1>
         <p className="km-uvod">{L('Klepeti s sodelavci in projektni maili — brez brskanja po projektih in brez šuma.', 'Team chats and project mail — no digging through projects, no noise.')}</p>
       </header>
+      )}
 
       <div className="km-zavihki" role="tablist">
-        <button type="button" role="tab" aria-selected={zavihek === 'posta'} className={zavihek === 'posta' ? 'on' : ''} onClick={() => setZavihek('posta')}><EnvelopeSimple size={15} weight="bold" /> {L('Pošta', 'Mail')}{posta.length ? ` · ${posta.length}` : ''}</button>
+        <button type="button" role="tab" aria-selected={zavihek === 'posta'} className={zavihek === 'posta' ? 'on' : ''} onClick={() => setZavihek('posta')}><EnvelopeSimple size={15} weight="bold" /> {L('Pošta', 'Mail')}{vidnaPosta.length ? ` · ${vidnaPosta.length}` : ''}</button>
         <button type="button" role="tab" aria-selected={zavihek === 'klepet'} className={zavihek === 'klepet' ? 'on' : ''} onClick={() => setZavihek('klepet')}><ChatCircle size={15} weight="bold" /> {L('Klepet', 'Chat')}</button>
       </div>
 
@@ -288,7 +292,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
       {mounted && createPortal(
         <nav className="km-noga" aria-label={L('Pošta / Klepet', 'Mail / Chat')}>
           <button type="button" className={zavihek === 'posta' ? 'on' : ''} aria-current={zavihek === 'posta'} onClick={() => setZavihek('posta')}>
-            <EnvelopeSimple size={21} weight={zavihek === 'posta' ? 'fill' : 'regular'} /><span>{L('Pošta', 'Mail')}</span>{posta.length > 0 && <b>{posta.length}</b>}
+            <EnvelopeSimple size={21} weight={zavihek === 'posta' ? 'fill' : 'regular'} /><span>{L('Pošta', 'Mail')}</span>{vidnaPosta.length > 0 && <b>{vidnaPosta.length}</b>}
           </button>
           <button type="button" className={zavihek === 'klepet' ? 'on' : ''} aria-current={zavihek === 'klepet'} onClick={() => setZavihek('klepet')}>
             <ChatCircle size={21} weight={zavihek === 'klepet' ? 'fill' : 'regular'} /><span>{L('Klepet', 'Chat')}</span>
@@ -335,7 +339,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
             {mapeOdprt && <div className="km-mape-back" onClick={() => setMapeOdprt(false)} aria-hidden />}
             <aside className={'km-mape' + (mapeOdprt ? ' odprt' : '')} aria-label={L('Mape', 'Folders')}>
               {([{ id: 'prejeto', ime: L('Prejeto', 'Inbox'), I: Tray }, { id: 'poslano', ime: L('Poslano', 'Sent'), I: PaperPlaneRight }, { id: 'osnutki', ime: L('Osnutki', 'Drafts'), I: NotePencil }, { id: 'kos', ime: L('Koš', 'Trash'), I: Trash }] as const).map(({ id, ime, I }) => {
-                const st = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === id).length;
+                const st = vidnaPosta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === id).length;
                 return <button type="button" key={id} className={mapa === id ? 'on' : ''} onClick={() => { setMapa(id); setPostaStran(1); setBeriMail(null); setMapeOdprt(false); }}><I size={16} weight={mapa === id ? 'fill' : 'regular'} /> <span className="km-mapa-ime">{ime}</span>{st ? <b>{st}</b> : null}</button>;
               })}
             </aside>
@@ -418,7 +422,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
             </div>
           ) : (() => {
             const q = postaIsk.trim().toLowerCase();
-            const seznam = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa).filter(v => !postaOseba || v.prejemniki.includes(postaOseba)).filter(v => !q || `${v.zadeva} ${v.prejemniki.join(' ')} ${projIme(v.projectId)}`.toLowerCase().includes(q));
+            const seznam = vidnaPosta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa).filter(v => !postaOseba || v.prejemniki.includes(postaOseba)).filter(v => !q || `${v.zadeva} ${v.prejemniki.join(' ')} ${projIme(v.projectId)}`.toLowerCase().includes(q));
             const izbraniVMapi = seznam.filter(v => izbraniMaili.has(v.id));
             const NA = 12; const strani = Math.max(1, Math.ceil(seznam.length / NA)); const stran = Math.min(Math.max(1, postaStran), strani); const prikaz = seznam.slice((stran - 1) * NA, stran * NA);
             return seznam.length ? (<>

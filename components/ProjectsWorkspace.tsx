@@ -23,6 +23,7 @@ import { aktivniLogo } from '@/lib/dokVidez';
 import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
 import { preberiSodelavci, shraniSodelavci } from '@/lib/sodelavci';
 import Toast from '@/components/Toast';
+import KomunikacijaWorkspace from '@/components/KomunikacijaWorkspace';
 import { preberiNaloge, shraniNaloge, type Sodelavec, type Naloga } from '@/lib/naloge';
 
 /* datumski filter (samo od–do; prazno ne omejuje) — enako kot arhiv */
@@ -1798,7 +1799,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
           {/* STOLPEC 1 · MAIL */}
           <aside className="pw-rail-col pw-kom-panel" role="dialog" aria-modal="true" aria-label={L('Komunikacija', 'Communication')}>
             <button type="button" className="pw-vsi-x" onClick={() => { setKomOdprt(false); setAiOdprt(false); setKlepetOdprt(false); }} aria-label={L('Zapri', 'Close')}>✕</button>
-            <div className="pw-rail-scroll">{komVsebina()}</div>
+            <div className="pw-rail-scroll"><KomunikacijaWorkspace jeEn={jeEn} projektId={selectedId} projektNaziv={selected?.offer.title} vgrajeno /></div>
           </aside>
           {/* STOLPEC 2 · PUPA */}
           {aiOdprt && (
