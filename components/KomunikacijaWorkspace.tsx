@@ -11,6 +11,7 @@ import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, Ma
 import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, dodajUdelezenca, type OblacnaNit, type OblacnoSporocilo } from '@/lib/klepetCloud';
 import { usePredogled } from '@/lib/predogled';
 import { preberiVsePoste, premakniPosto, nastaviOznakePoste, dodajPosto, oznaciPostoPrebrano, type PostaVnos } from '@/lib/postaDnevnik';
+import { pullAllMail } from '@/lib/pinartMailCloud';
 import { oznaciNitVideno, javiSpremembo } from '@/lib/komObvestila';
 import { preberiNaloge, shraniNaloge, type Naloga } from '@/lib/naloge';
 import { posljiMail } from '@/lib/posta';
@@ -101,14 +102,43 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   const [vabiTece, setVabiTece] = useState(false);
   useEffect(() => {
     if (prazno) { setPosta([]); setProjMapa({}); return; }
-    const vsi = demo ? DEMO_POSTA : preberiVsePoste();
-    setPosta([...vsi].sort((a, b) => b.datum.localeCompare(a.datum)));
+    const lokalni = demo ? DEMO_POSTA : preberiVsePoste();
+    setPosta([...lokalni].sort((a, b) => b.datum.localeCompare(a.datum)));
     if (demo) { setProjMapa({ 'demo-portal': 'Prenova portala · Rokus Klett' }); return; }
     try {
       const m: Record<string, string> = {};
       loadFlowData().offers.forEach(o => { m[o.id] = `${o.title || 'Projekt'}${o.client ? ' · ' + o.client : ''}`; });
       setProjMapa(m);
     } catch { setProjMapa({}); }
+    /* OBLAK: potegni vso projektno pošto (in+out) — da se prikažejo tudi DOHODNI
+       odgovori strank (webhook jih zapiše v project_mail). Zmešaj z lokalnimi
+       (dedup po smer|zadeva|dan|prejemniki); če oblak ni na voljo, ostane lokalno. */
+    let ziv = true;
+    (async () => {
+      try {
+        const cloud = await pullAllMail();
+        if (!ziv || !cloud.length) return;
+        const cloudVnosi: PostaVnos[] = cloud.map(m => ({
+          id: m.id || crypto.randomUUID(),
+          projectId: m.projectExternalId,
+          clientId: m.clientId,
+          smer: m.direction === 'in' ? 'prejeto' : 'poslano',
+          prejemniki: m.direction === 'in' ? (m.fromEmail ? [m.fromEmail] : []) : m.toEmails,
+          zadeva: m.subject || L('(brez zadeve)', '(no subject)'),
+          povzetek: m.summary || (m.bodyText || '').replace(/\s+/g, ' ').trim().slice(0, 160),
+          datum: m.occurredAt || new Date().toISOString(),
+          telo: m.bodyHtml || m.bodyText || '',
+          osnutek: m.isDraft || undefined,
+          izbrisano: m.deletedAt || undefined,
+          prebrano: m.direction === 'in' ? false : true,
+        }));
+        const kljuc = (v: PostaVnos) => `${v.smer}|${(v.zadeva || '').toLowerCase()}|${v.datum.slice(0, 10)}|${[...v.prejemniki].sort().join(',')}`;
+        const videni = new Set(cloudVnosi.map(kljuc));
+        const zdruzeni = [...cloudVnosi, ...lokalni.filter(v => !videni.has(kljuc(v)))];
+        setPosta(zdruzeni.sort((a, b) => b.datum.localeCompare(a.datum)));
+      } catch { /* oblak ni na voljo -> ostane lokalna pošta */ }
+    })();
+    return () => { ziv = false; };
   }, [demo, prazno]);
   const odjavaRef = useRef<(() => void) | null>(null);
   const dnoRef = useRef<HTMLDivElement | null>(null);
