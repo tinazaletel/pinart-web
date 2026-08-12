@@ -172,6 +172,24 @@ const pwStyles = `
 .pw-status[data-tone='success']{--pika:oklch(62% .15 150);--pill-bg:oklch(96% .035 158);--pill-ink:oklch(50% .085 158)}
 .pw-status[data-tone='danger']{--pika:oklch(58% .19 25);--pill-bg:oklch(96.5% .03 28);--pill-ink:oklch(55% .11 27)}
 .pw-status[data-tone='neutral']{--pika:oklch(62% .02 70);--pill-bg:oklch(95.5% .008 87);--pill-ink:oklch(48% .015 70)}
+/* custom status-meni (desktop popover pod pilulo) */
+.pw-statusmeni{position:absolute;top:calc(100% + .4rem);left:0;z-index:60;min-width:11rem;background:#fff;border:1px solid rgba(17,17,17,.1);border-radius:14px;box-shadow:0 16px 44px rgba(20,16,26,.16);padding:.4rem;animation:pwStMeni .16s ease both}
+@keyframes pwStMeni{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.pw-statusmeni-seznam{display:flex;flex-direction:column;gap:.1rem}
+.pw-statusmeni-opcija{display:flex;align-items:center;justify-content:space-between;gap:.7rem;width:100%;padding:.6rem .7rem;border:none;border-radius:9px;background:none;font:inherit;font-size:.85rem;font-weight:600;color:var(--ink);text-align:left;cursor:pointer;white-space:nowrap;transition:background .12s}
+.pw-statusmeni-opcija:hover{background:rgba(17,17,17,.05)}
+.pw-statusmeni-opcija.on{background:var(--ink);color:#fff}
+.pw-statusmeni-kljuk{flex:none}
+/* mobile: slide-up sheet */
+.pw-status-back{position:fixed;inset:0;z-index:130;overflow:hidden;background:rgba(28,21,24,.28);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;animation:pwStBack .2s ease both}
+@keyframes pwStBack{from{opacity:0}to{opacity:1}}
+.pw-status-sheet{width:100%;box-sizing:border-box;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -16px 44px rgba(40,25,40,.22);padding:1rem 1.1rem calc(1.3rem + env(safe-area-inset-bottom,0px));max-height:80dvh;overflow-y:auto;animation:pwStUp .3s cubic-bezier(.2,.8,.3,1) both}
+@keyframes pwStUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.pw-status-sheet-glava{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.pw-status-sheet-glava p{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.12em;color:rgba(17,17,17,.72)}
+.pw-status-x{width:2.1rem;height:2.1rem;flex:none;border:1px solid rgba(17,17,17,.16);border-radius:50%;background:#fff;color:var(--ink);cursor:pointer;font-size:.85rem}
+.pw-status-sheet .pw-statusmeni-opcija{min-height:3rem;font-size:16px;border-radius:12px;padding:.7rem .85rem}
+@media (prefers-reduced-motion:reduce){.pw-status-back,.pw-status-sheet,.pw-statusmeni{animation:none}}
 .pw-prazno{padding:2rem;color:color-mix(in oklch,var(--ink) 72%,transparent);font-size:.72rem;text-align:center;border:1px solid oklch(93% .006 82 / .55);border-radius:1.4rem;background:oklch(98% .008 87 / .92)}
 .pw-stran{padding:.25rem 1rem 1rem !important;margin-top:-1.5rem;scroll-margin-top:5.5rem}
 @media (max-width:640px){.pw-stran{padding-left:0 !important;padding-right:0 !important}}
@@ -683,10 +701,25 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [notranjeIskanje, setNotranjeIskanje] = useState('');
   const [notranjiFilter, setNotranjiFilter] = useState<ProjektStatus>('vse');
   const [notranjiDatumOd, setNotranjiDatumOd] = useState(''); const [notranjiDatumDo, setNotranjiDatumDo] = useState('');
+  const [statusUrejam, setStatusUrejam] = useState<string | null>(null); /* id odprtega status-menija (custom namesto nativnega selecta) */
+  const [jeMobilni, setJeMobilni] = useState(false);
   const search = iskanje ?? notranjeIskanje;
   const setSearch = (v: string) => { if (onIskanje) onIskanje(v); else setNotranjeIskanje(v); };
   const filter = (status as ProjektStatus | undefined) ?? notranjiFilter;
   const setFilter = (v: ProjektStatus) => { if (onStatus) onStatus(v); else setNotranjiFilter(v); };
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    const upd = () => setJeMobilni(mq.matches);
+    upd(); mq.addEventListener('change', upd);
+    return () => mq.removeEventListener('change', upd);
+  }, []);
+  useEffect(() => {
+    if (!statusUrejam) return;
+    const zapri = (e: MouseEvent) => { if (!(e.target as HTMLElement).closest('.pw-status-ured, .pw-det-statusured, .pw-status-back')) setStatusUrejam(null); };
+    const esc = (e: globalThis.KeyboardEvent) => { if (e.key === 'Escape') setStatusUrejam(null); };
+    document.addEventListener('mousedown', zapri); document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('mousedown', zapri); document.removeEventListener('keydown', esc); };
+  }, [statusUrejam]);
   const datumOd = datumOdZunaj ?? notranjiDatumOd;
   const setDatumOd = (v: string) => { if (onDatumOd) onDatumOd(v); else setNotranjiDatumOd(v); };
   const datumDo = datumDoZunaj ?? notranjiDatumDo;
@@ -823,6 +856,31 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const naStatusOffer = (id: string, v: FlowOfferStatus) => {
     setOffers(prev => prev.map(o => (o.id === id ? { ...o, status: v } : o)));
     if (!samoOgled) saveOfferStatus(id, v);
+  };
+
+  /* Custom status-meni (namesto nativnega <select>): desktop = popover pod pilulo, mobile = slide-up sheet. */
+  const statusMeni = (kljuc: string, opcije: Array<[string, string]>, izbrano: string, onIzberi: (v: string) => void) => {
+    const seznam = (
+      <div className="pw-statusmeni-seznam" role="listbox" aria-label={L('Status', 'Status')}>
+        {opcije.map(([v, label]) => (
+          <button key={v} type="button" role="option" aria-selected={v === izbrano} className={'pw-statusmeni-opcija' + (v === izbrano ? ' on' : '')} onClick={e => { e.stopPropagation(); onIzberi(v); setStatusUrejam(null); }}>
+            <span>{label}</span>{v === izbrano && <span className="pw-statusmeni-kljuk" aria-hidden>✓</span>}
+          </button>
+        ))}
+      </div>
+    );
+    if (jeMobilni && portalPripravljen) {
+      return createPortal(
+        <div className="pw-status-back" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setStatusUrejam(null); }}>
+          <div className="pw-status-sheet" role="dialog" aria-modal="true" aria-label={L('Spremeni status', 'Change status')} onMouseDown={e => e.stopPropagation()}>
+            <div className="pw-status-sheet-glava"><p>{L('STATUS', 'STATUS')}</p><button type="button" className="pw-status-x" onClick={() => setStatusUrejam(null)} aria-label={L('Zapri', 'Close')}>✕</button></div>
+            {seznam}
+          </div>
+        </div>,
+        document.body,
+      );
+    }
+    return <div className="pw-statusmeni" onMouseDown={e => e.stopPropagation()}>{seznam}</div>;
   };
 
   const selected = projects.find(project => project.offer.id === selectedId);
@@ -1558,10 +1616,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                     <span className="pw-mut">{project.offer.client}</span>
                     <span className="pw-mut">{datStr(project.offer.date)}</span>
                     <span><span className="pw-status-ured" data-editable="" title={L('Spremeni status', 'Change status')} onClick={e => e.stopPropagation()}>
-                      <span className="pw-status" data-tone={info.tone} style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>{project.real ? projektStatusOznaka[project.real.status] : statusLabel[project.offer.status]}<svg width="9" height="9" viewBox="0 0 12 8" fill="none" aria-hidden style={{ marginLeft: '.45rem', flex: 'none', opacity: .55 }}><path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
-                      {project.real
-                        ? <select className="pw-status-select" aria-label={L('Spremeni status projekta', 'Change project status')} value={project.real.status} onChange={e => naStatusProjekt(project.real!, e.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
-                        : <select className="pw-status-select" aria-label={L('Spremeni status', 'Change status')} value={project.offer.status} onChange={e => naStatusOffer(project.offer.id, e.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
+                      <button type="button" className="pw-status" data-tone={info.tone} aria-haspopup="listbox" aria-expanded={statusUrejam === project.offer.id} style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }} onClick={e => { e.stopPropagation(); setStatusUrejam(statusUrejam === project.offer.id ? null : project.offer.id); }}>{project.real ? projektStatusOznaka[project.real.status] : statusLabel[project.offer.status]}<svg width="9" height="9" viewBox="0 0 12 8" fill="none" aria-hidden style={{ marginLeft: '.45rem', flex: 'none', opacity: .55 }}><path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+                      {statusUrejam === project.offer.id && (project.real
+                        ? statusMeni(project.offer.id, Object.entries(projektStatusOznaka) as Array<[string, string]>, project.real.status, v => naStatusProjekt(project.real!, v as ProjektEntitetaStatus))
+                        : statusMeni(project.offer.id, Object.entries(statusLabel) as Array<[string, string]>, project.offer.status, v => naStatusOffer(project.offer.id, v as FlowOfferStatus)))}
                     </span></span>
                     <span className="pw-desno">{project.agreed ? money(project.agreed) : '—'}</span>
                     <span className="pw-kazalec" aria-hidden>›</span>
@@ -1577,10 +1635,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       <section ref={storyRef} className={`${styles.projectStory} pw-stran`}>
         <button type="button" className="pw-nazaj" onClick={goBack} aria-label={L('Nazaj na seznam projektov', 'Back to projects list')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M19 12H5M11 18l-6-6 6-6" /></svg> {L('Nazaj', 'Back')}</button>
         <header><div><p className={styles.eyebrow}>{L('PROJEKT', 'PROJECT')} · {selected.offer.number || L('BREZ ŠTEVILKE', 'NO NUMBER')}</p><h2>{selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><span className="pw-det-statusured" data-editable="" title={L('Spremeni status', 'Change status')}>
-          <span className="pw-status" data-tone={projectStatusInfo(selected.offer.status).tone} style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}><i aria-hidden style={pikaStil(projectStatusInfo(selected.offer.status).tone)} />{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}<svg width="9" height="9" viewBox="0 0 12 8" fill="none" aria-hidden style={{ marginLeft: '.45rem', flex: 'none', opacity: .55 }}><path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
-          {selected.real
-            ? <select className="pw-status-select" aria-label={L('Spremeni status projekta', 'Change project status')} value={selected.real.status} onChange={event => naStatusProjekt(selected.real!, event.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
-            : <select className="pw-status-select" aria-label={L('Spremeni status', 'Change status')} value={selected.offer.status} onChange={event => naStatusOffer(selected.offer.id, event.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
+          <button type="button" className="pw-status" data-tone={projectStatusInfo(selected.offer.status).tone} aria-haspopup="listbox" aria-expanded={statusUrejam === 'det-' + selected.offer.id} style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }} onClick={e => { e.stopPropagation(); setStatusUrejam(statusUrejam === 'det-' + selected.offer.id ? null : 'det-' + selected.offer.id); }}><i aria-hidden style={pikaStil(projectStatusInfo(selected.offer.status).tone)} />{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}<svg width="9" height="9" viewBox="0 0 12 8" fill="none" aria-hidden style={{ marginLeft: '.45rem', flex: 'none', opacity: .55 }}><path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+          {statusUrejam === 'det-' + selected.offer.id && (selected.real
+            ? statusMeni('det-' + selected.offer.id, Object.entries(projektStatusOznaka) as Array<[string, string]>, selected.real.status, v => naStatusProjekt(selected.real!, v as ProjektEntitetaStatus))
+            : statusMeni('det-' + selected.offer.id, Object.entries(statusLabel) as Array<[string, string]>, selected.offer.status, v => naStatusOffer(selected.offer.id, v as FlowOfferStatus)))}
         </span></header>
         {pogledDetajl === 'moderni' ? (
           <ProjectDetailModern
