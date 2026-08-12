@@ -847,3 +847,22 @@ zato inbound (odgovor stranke) nikoli ne pride na `token@pinartflow.com`.
 token, pošlje z reply-to na token, zapiše `project_mail(out)` z `message_id`.
 Brez `projectExternalId` → obnašanje nespremenjeno.
 
+
+---
+
+# KOORDINACIJA 2026-08-12 (po #16)
+
+**Claude dela MAIL UI** in se dotika: `lib/pinartMailCloud.ts` (dodaja `pullAllMail`),
+`components/KomunikacijaWorkspace.tsx`, `components/ProjectsWorkspace.tsx`,
+`components/ArhivWorkspace.tsx`, ostale mail-send komponente. **Codex teh NE dela.**
+
+**Codex naj naredi/dokonča (zaledje, brez UI, brez `pinartMailCloud.ts`):**
+1. **#14 — GDPR** (`app/api/uporabnik/izvoz`, `app/api/uporabnik/izbris`): če še ni,
+   dokončaj po opisu #14. Soft-delete, samo lastnikovi podatki, RLS + preverjanje userId.
+2. **#15 — Varnostno poročilo** (`docs/CODEX-VARNOST-porocilo.md`): poženi/dopolni
+   skripte in vrni PASS/FAIL za demo-bleed, cross-account, RPC-je (dodeli_stevilko,
+   storniraj_racun, entitlement). Če katera stvar pade, popravi v zaledju.
+3. Če ostane čas: preveri, da **VSI** `app/api/*` POST-i uporabljajo `lib/validacija.ts`
+   (razširitev #13) — naštej pokrite/ne-pokrite v poročilu.
+
+Železna pravila kot zgoraj. `tsc`=0. Migracije aditivne. NE UI, NE `pinartMailCloud.ts`.
