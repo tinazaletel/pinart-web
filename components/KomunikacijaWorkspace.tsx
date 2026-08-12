@@ -288,7 +288,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
             <form className="km-pisi km-pisi-nova" onSubmit={posljiPisanje}>
               <div className="km-pisi-glava"><b>{L('Nova pošta', 'New mail')}</b><button type="button" aria-label={L('Zapri', 'Close')} onClick={() => setPisiVrsta(false)}>×</button></div>
               <label>{L('Projekt', 'Project')}<select value={pisiProjekt} onChange={e => setPisiProjekt(e.target.value)}>
-                <option value="">{L('Brez projekta (odgovori gredo v tvoj e-poštni predal)', 'No project (replies go to your inbox)')}</option>
+                <option value="">{L('Brez projekta — v skupno Komunikacijo', 'No project — to shared Communication')}</option>
                 {Object.entries(projMapa).map(([id, naziv]) => <option key={id} value={id}>{naziv}</option>)}
               </select></label>
               <label>{L('Za', 'To')}<input type="email" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="ime@domena.si" /></label>
