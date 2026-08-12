@@ -191,6 +191,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   const nazivNiti = (n: OblacnaNit) => { const d = drugi(n); return d.length ? d.join(', ') : L('Klepet', 'Chat'); };
   const iniciala = (s: string) => (s || '?').trim().charAt(0).toUpperCase();
   const datum = (iso: string) => { try { return new Date(iso).toLocaleDateString(jeEn ? 'en-GB' : 'sl-SI'); } catch { return ''; } };
+  const cas = (iso: string) => { try { return new Date(iso).toLocaleTimeString(jeEn ? 'en-GB' : 'sl-SI', { hour: '2-digit', minute: '2-digit' }); } catch { return ''; } };
   const izbranaNit = niti.find(n => n.threadId === izbrana) || null;
 
   /* ── funkcije na branju pošte (uporabijo skupne knjižnice) ── */
@@ -352,7 +353,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
                   <button type="button" className={`km-ikonca${beriMail.zvezda ? ' zvezda' : ''}`} title={L('Zvezdica', 'Star')} aria-label={L('Zvezdica', 'Star')} onClick={() => toggleZvezda(beriMail)}><Star size={16} weight={beriMail.zvezda ? 'fill' : 'regular'} /></button>
                 </div>
               </div>
-              <div className="km-branje-glava"><b>{beriMail.zadeva || L('(brez zadeve)', '(no subject)')}</b><small>{beriMail.prejemniki.join(', ')} · {datum(beriMail.datum)} · {beriMail.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</small>{projIme(beriMail.projectId) && <span className="km-mail-proj" style={{ color: projBarva(beriMail.projectId), background: `color-mix(in oklch, ${projBarva(beriMail.projectId)} 12%, transparent)`, marginTop: '.4rem' }}><i aria-hidden style={{ background: projBarva(beriMail.projectId) }} />{projIme(beriMail.projectId)}</span>}{(beriMail.oznake || []).length > 0 && <span className="km-glava-oznake">{(beriMail.oznake || []).map((oz, i) => <span key={i} className="km-oznaka mala">{oz}</span>)}</span>}</div>
+              <div className="km-branje-glava"><b>{beriMail.zadeva || L('(brez zadeve)', '(no subject)')}</b><small>{beriMail.prejemniki.join(', ')} · {datum(beriMail.datum)}{cas(beriMail.datum) ? ` ${L('ob', 'at')} ${cas(beriMail.datum)}` : ''} · {beriMail.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</small>{projIme(beriMail.projectId) && <span className="km-mail-proj" style={{ color: projBarva(beriMail.projectId), background: `color-mix(in oklch, ${projBarva(beriMail.projectId)} 12%, transparent)`, marginTop: '.4rem' }}><i aria-hidden style={{ background: projBarva(beriMail.projectId) }} />{projIme(beriMail.projectId)}</span>}{(beriMail.oznake || []).length > 0 && <span className="km-glava-oznake">{(beriMail.oznake || []).map((oz, i) => <span key={i} className="km-oznaka mala">{oz}</span>)}</span>}</div>
               <div className="km-branje-telo">{(beriMail.telo || beriMail.povzetek || L('(brez besedila)', '(no text)')).replace(/<[^>]+>/g, ' ')}</div>
               {aiOdprt && (
                 <div className="km-ai">

@@ -1465,7 +1465,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               </div>
               <div style={{ position: 'relative', zIndex: 1, margin: '.4rem 0 0', padding: '.9rem 1rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.85rem', background: '#fff' }}>
                 <b style={{ display: 'block', fontSize: '.92rem' }}>{beriMail.zadeva || L('(brez zadeve)', '(no subject)')}</b>
-                <small style={{ display: 'block', color: 'var(--muted)', margin: '.15rem 0 .6rem' }}>{beriMail.prejemniki.join(', ')} · {datStr(beriMail.datum)}</small>
+                <small style={{ display: 'block', color: 'var(--muted)', margin: '.15rem 0 .6rem' }}>{beriMail.prejemniki.join(', ')} · {datStr(beriMail.datum)}{casStr(beriMail.datum) ? ` ob ${casStr(beriMail.datum)}` : ''}</small>
                 {beriMail.telo
                   ? (beriMail.smer === 'prejeto'
                       ? <div style={{ whiteSpace: 'pre-wrap', fontSize: '.85rem', lineHeight: 1.55 }}>{beriMail.telo.replace(/<[^>]+>/g, ' ')}</div>
