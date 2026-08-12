@@ -218,8 +218,9 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
     /* projectExternalId -> strežnik nastavi reply-to token (odgovori v Flow) + zapiše project_mail(out).
        nova: izbran projekt; odgovor/posreduj: projekt odprtega sporočila. brez projekta -> reply-to lastnik. */
     const projId = (pisiVrsta === 'nova' ? pisiProjekt : beriMail?.projectId) || undefined;
-    let replyTo = ''; if (!projId) { try { replyTo = String(JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}').ponudnik?.email || ''); } catch { /* brez profila */ } }
-    const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, ...(projId ? { projectExternalId: projId } : { replyTo: replyTo || undefined }) });
+    /* Brez izrecnega replyTo: strežnik nastavi inbox token (projektni ali skupni
+       '__skupno__') -> odgovori strank pridejo NAZAJ v Flow (skupna Komunikacija). */
+    const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, ...(projId ? { projectExternalId: projId } : {}) });
     setPisiPosiljam(false);
     if (rez.ok) { const nov = dodajPosto({ projectId: projId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim(), telo: pisiTelo, povzetek: pisiTelo.replace(/\s+/g, ' ').trim().slice(0, 160) }); setPosta(prev => [nov, ...prev].sort((a, b) => b.datum.localeCompare(a.datum))); setPisiStatus(''); setPisiUspeh(true); setToast(L('Poslano ✓', 'Sent ✓')); window.setTimeout(() => { setPisiVrsta(false); setPisiUspeh(false); }, 1400); } else { setPisiStatus(L('Napaka: ', 'Error: ') + (rez.napaka || '')); }
   };

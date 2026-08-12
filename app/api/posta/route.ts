@@ -150,15 +150,19 @@ export async function POST(request: Request) {
   const resend = new Resend(apiKey);
   try {
     const projectExternalId = body.projectExternalId?.trim();
+    /* Vsak mail, POSLAN IZ FLOW-a, dobi inbox token za reply-to, da odgovori
+       pridejo NAZAJ v Flow (skupna Komunikacija). Projekt je NEOBVEZEN — brez
+       njega gre v skupni org nabiralnik ('__skupno__'). NE pobiramo tujih mailov
+       iz Gmaila; ujamemo LE odgovore na naše pošte (gredo na token@domeno).
+       Če je klicatelj eksplicitno podal replyTo, ga spoštujemo (npr. odvetnik). */
+    const projRef = projectExternalId || '__skupno__';
     let replyTo = body.replyTo?.trim();
-    if (projectExternalId && !replyTo) {
-      /* FAIL-SOFT: če inbox tokena ne moremo pridobiti (npr. manjka grant za
-         service_role), se mail VSEENO pošlje — samo odgovori ne pridejo nazaj v
-         Flow. Sicer bi ena manjkajoča pravica ustavila celotno pošiljanje. */
+    if (!replyTo) {
+      /* FAIL-SOFT: če tokena ne dobimo (npr. manjka grant), mail se VSEENO pošlje. */
       try {
         const inboundDomain = (process.env.INBOUND_DOMAIN || 'pinartflow.com').trim().toLowerCase();
         if (/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(inboundDomain)) {
-          const token = await zagotoviInboxToken(organizationId, projectExternalId);
+          const token = await zagotoviInboxToken(organizationId, projRef);
           if (token) replyTo = `${token}@${inboundDomain}`;
         }
       } catch (tokErr) {
@@ -180,10 +184,12 @@ export async function POST(request: Request) {
     const messageId = data?.id;
     await zakljuciDnevnik('sent', messageId);
 
-    if (projectExternalId) {
+    /* Zapiši POSLANO v project_mail (projektni ali skupni), da se prikaže v
+       Komunikaciji. Fail-soft: če zapis ne uspe, mail je že poslan — ne rušimo. */
+    try {
       const { error: projectMailError } = await admin.from('project_mail').insert({
         organization_id: organizationId,
-        project_external_id: projectExternalId,
+        project_external_id: projRef,
         client_id: body.clientId || null,
         direction: 'out',
         from_email: from,
@@ -195,9 +201,10 @@ export async function POST(request: Request) {
         occurred_at: new Date().toISOString(),
       });
       if (projectMailError && projectMailError.code !== '23505') {
-        // Mail je že poslan: ne vrnemo napake, ki bi sprožila podvojeno pošiljanje.
-        console.error('Poslanega maila ni bilo mogoče zapisati v projekt:', projectMailError.message);
+        console.error('Poslanega maila ni bilo mogoče zapisati:', projectMailError.message);
       }
+    } catch (e) {
+      console.error('project_mail zapis ni uspel:', e instanceof Error ? e.message : e);
     }
 
     return NextResponse.json({ ok: true, id: messageId, messageId });
