@@ -274,11 +274,16 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
 
   return (
     <div className={'km' + (vgrajeno ? ' km-vgrajeno' : '')}>
-      {!vgrajeno && (
+      {!vgrajeno ? (
       <header className="km-glava">
         <p className="km-eyebrow">{L('Komunikacija', 'Communication')}</p>
         <h1>{L('Vsa komunikacija na enem mestu.', 'All communication in one place.')}</h1>
         <p className="km-uvod">{L('Klepeti s sodelavci in projektni maili — brez brskanja po projektih in brez šuma.', 'Team chats and project mail — no digging through projects, no noise.')}</p>
+      </header>
+      ) : (
+      <header className="km-glava km-glava-vgrajeno">
+        <p className="km-eyebrow">{L('Komunikacija', 'Communication')}</p>
+        <h2 className="km-naslov-vgrajeno">{projektNaziv || L('Projekt', 'Project')}</h2>
       </header>
       )}
 
@@ -519,6 +524,10 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
 
       <style dangerouslySetInnerHTML={{ __html: `
         .km{--k-ink:var(--ink,oklch(19% .014 55));--k-line:var(--line,oklch(93% .007 82));--k-purple:var(--purple,oklch(66% .2 297));max-width:1180px;margin:0 auto;padding:.2rem 1.2rem 1.4rem}
+        /* vgrajeno v projektni drawer: ožji padding + kompakten naslov projekta zgoraj */
+        .km-vgrajeno{padding-left:.7rem;padding-right:.7rem;padding-top:2.4rem}
+        .km-glava-vgrajeno{margin-bottom:1rem}
+        .km-naslov-vgrajeno{margin:.1rem 0 0;font:800 1.1rem/1.2 var(--font-serif,Georgia),serif;color:var(--k-ink);letter-spacing:-.01em}
         .km-eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,var(--k-purple));margin:0 0 .3rem}
         .km-glava h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--k-ink)}
         .km-uvod{font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72);margin:0 0 2rem;max-width:38rem}
