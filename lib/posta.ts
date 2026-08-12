@@ -10,6 +10,8 @@ export interface MailVsebina {
   /* neobvezen naslov za odgovore (npr. tvoja e-pošta) */
   replyTo?: string;
   organizationId?: string;
+  projectExternalId?: string;
+  clientId?: string;
   idempotencyKey?: string;
   demo?: boolean;
 }
@@ -18,6 +20,7 @@ export interface MailRezultat {
   ok: boolean;
   napaka?: string;
   id?: string;
+  messageId?: string;
 }
 
 export interface MailPredogled {
@@ -55,9 +58,9 @@ export async function posljiMail(v: MailVsebina): Promise<MailRezultat> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...v, idempotencyKey }),
     });
-    const data = await res.json().catch(() => ({} as { error?: string; id?: string }));
+    const data = await res.json().catch(() => ({} as { error?: string; id?: string; messageId?: string }));
     if (!res.ok) return { ok: false, napaka: data.error || 'Pošiljanje ni uspelo.' };
-    return { ok: true, id: data.id };
+    return { ok: true, id: data.id, messageId: data.messageId || data.id };
   } catch {
     return { ok: false, napaka: 'Ni povezave s strežnikom.' };
   }

@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { omejiApi } from '@/lib/rate-limit';
 import { jeEmail, omejenNiz, preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { zagotoviInboxToken } from '@/lib/inboxToken';
 
 /* Strežniško pošiljanje e-pošte prek Resend. Ključ RESEND_API_KEY bere SAMO
    strežnik (nikoli klient). "From" naslov nastavi RESEND_FROM (npr.
@@ -29,6 +30,8 @@ export async function POST(request: Request) {
     html?: string;
     replyTo?: string;
     organizationId?: string;
+    projectExternalId?: string;
+    clientId?: string;
     idempotencyKey?: string;
     demo?: boolean;
   };
@@ -75,10 +78,27 @@ export async function POST(request: Request) {
   if (body.replyTo && !jeEmail(body.replyTo.trim())) {
     return NextResponse.json({ error: 'Naslov za odgovor ni veljaven.' }, { status: 400 });
   }
+  if (body.projectExternalId !== undefined && !omejenNiz(body.projectExternalId, 200, true)) {
+    return NextResponse.json({ error: 'Projekt ni veljaven.' }, { status: 400 });
+  }
+  if (body.clientId !== undefined && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.clientId)) {
+    return NextResponse.json({ error: 'Stranka ni veljavna.' }, { status: 400 });
+  }
 
   const admin = createAdminClient();
   if (!admin) {
     return NextResponse.json({ error: 'Evidenca pošiljanja ni konfigurirana.' }, { status: 503 });
+  }
+  if (body.clientId) {
+    const { data: client } = await admin
+      .from('clients')
+      .select('id')
+      .eq('id', body.clientId)
+      .eq('organization_id', organizationId)
+      .maybeSingle();
+    if (!client) {
+      return NextResponse.json({ error: 'Stranka ni povezana s tem podjetjem.' }, { status: 403 });
+    }
   }
   const { data: existing } = await admin
     .from('mail_log')
@@ -87,7 +107,7 @@ export async function POST(request: Request) {
     .eq('idempotency_key', idempotencyKey)
     .maybeSingle();
   if (existing?.status === 'sent') {
-    return NextResponse.json({ ok: true, id: existing.provider_id, duplicate: true });
+    return NextResponse.json({ ok: true, id: existing.provider_id, messageId: existing.provider_id, duplicate: true });
   }
   if (existing?.status === 'pending') {
     return NextResponse.json({ error: 'To sporočilo se že pošilja.' }, { status: 409 });
@@ -129,20 +149,53 @@ export async function POST(request: Request) {
 
   const resend = new Resend(apiKey);
   try {
+    const projectExternalId = body.projectExternalId?.trim();
+    let replyTo = body.replyTo?.trim();
+    if (projectExternalId && !replyTo) {
+      const token = await zagotoviInboxToken(organizationId, projectExternalId);
+      const inboundDomain = (process.env.INBOUND_DOMAIN || 'pinartflow.com').trim().toLowerCase();
+      if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(inboundDomain)) {
+        await zakljuciDnevnik('failed', undefined, 'invalid_inbound_domain');
+        return NextResponse.json({ error: 'Domena za odgovore ni pravilno nastavljena.' }, { status: 503 });
+      }
+      replyTo = `${token}@${inboundDomain}`;
+    }
     const { data, error } = await resend.emails.send({
       from,
       to: prejemniki,
       subject: body.subject,
       html: body.html,
-      ...(body.replyTo ? { replyTo: body.replyTo } : {}),
+      ...(replyTo ? { replyTo } : {}),
     });
     if (error) {
       await zakljuciDnevnik('failed', undefined, 'provider_rejected');
       console.error('Resend je zavrnil pošiljanje:', error.message || 'neznana napaka');
       return NextResponse.json({ error: 'Pošiljanje ni uspelo.' }, { status: 502 });
     }
-    await zakljuciDnevnik('sent', data?.id);
-    return NextResponse.json({ ok: true, id: data?.id });
+    const messageId = data?.id;
+    await zakljuciDnevnik('sent', messageId);
+
+    if (projectExternalId) {
+      const { error: projectMailError } = await admin.from('project_mail').insert({
+        organization_id: organizationId,
+        project_external_id: projectExternalId,
+        client_id: body.clientId || null,
+        direction: 'out',
+        from_email: from,
+        to_emails: prejemniki,
+        subject: body.subject.trim(),
+        body_html: body.html,
+        body_text: body.html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
+        message_id: messageId,
+        occurred_at: new Date().toISOString(),
+      });
+      if (projectMailError && projectMailError.code !== '23505') {
+        // Mail je že poslan: ne vrnemo napake, ki bi sprožila podvojeno pošiljanje.
+        console.error('Poslanega maila ni bilo mogoče zapisati v projekt:', projectMailError.message);
+      }
+    }
+
+    return NextResponse.json({ ok: true, id: messageId, messageId });
   } catch (error) {
     await zakljuciDnevnik('failed', undefined, 'provider_exception');
     console.error('Pošiljanje e-pošte ni uspelo:', error instanceof Error ? error.message : 'neznana napaka');
