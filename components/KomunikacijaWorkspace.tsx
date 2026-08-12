@@ -10,8 +10,8 @@ import { createPortal } from 'react-dom';
 import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, MagnifyingGlass, Tray, NotePencil, Trash, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, ArrowBendUpLeft, ArrowBendUpRight, Smiley, Plus, UserPlus, List, FunnelSimple, Check } from '@phosphor-icons/react';
 import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, dodajUdelezenca, type OblacnaNit, type OblacnoSporocilo } from '@/lib/klepetCloud';
 import { usePredogled } from '@/lib/predogled';
-import { preberiVsePoste, premakniPosto, nastaviOznakePoste, dodajPosto, oznaciPostoPrebrano, type PostaVnos } from '@/lib/postaDnevnik';
-import { pullAllMail } from '@/lib/pinartMailCloud';
+import { preberiVsePoste, premakniPosto, nastaviOznakePoste, dodajPosto, oznaciPostoPrebrano, oznaciPostoIzbrisano, izbrisiPostoTrajno, type PostaVnos } from '@/lib/postaDnevnik';
+import { pullAllMail, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent } from '@/lib/pinartMailCloud';
 import { oznaciNitVideno, javiSpremembo } from '@/lib/komObvestila';
 import { preberiNaloge, shraniNaloge, type Naloga } from '@/lib/naloge';
 import { posljiMail } from '@/lib/posta';
@@ -82,6 +82,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   /* deterministična barva projekta (da jih v seznamu ločiš) */
   const projBarva = (id?: string) => { const h = (id ? [...id].reduce((a, c) => a + c.charCodeAt(0), 0) : 0) % 360; return `oklch(62% .17 ${h})`; };
   const [postaOseba, setPostaOseba] = useState('');   /* filter po prejemniku */
+  const [izbraniMaili, setIzbraniMaili] = useState<Set<string>>(new Set()); /* izbrani maili za skupinsko brisanje/obnovo */
   const prejemnikiVsi = Array.from(new Set(posta.flatMap(v => v.prejemniki))).sort();
   const [premakniOdprt, setPremakniOdprt] = useState(false);
   const [oznakaOdprt, setOznakaOdprt] = useState(false);
@@ -196,6 +197,10 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
 
   /* ── funkcije na branju pošte (uporabijo skupne knjižnice) ── */
   const posodobiMail = (id: string, sprem: Partial<PostaVnos>) => { setPosta(prev => prev.map(v => v.id === id ? { ...v, ...sprem } : v)); setBeriMail(m => m && m.id === id ? { ...m, ...sprem } : m); };
+  /* Skupinsko: v Koš (izbrisano=ISO) / obnovi / trajno izbriši — lokalni dnevnik + oblak (fail-soft). */
+  const vKosIzbrane = (ids: string[]) => { const iso = new Date().toISOString(); ids.forEach(id => { if (!demo) { oznaciPostoIzbrisano(id, iso); void trashProjectMail(id).catch(() => undefined); } }); const set = new Set(ids); setPosta(prev => prev.map(v => set.has(v.id) ? { ...v, izbrisano: iso } : v)); setBeriMail(m => (m && set.has(m.id) ? null : m)); setIzbraniMaili(new Set()); };
+  const obnoviIzbrane = (ids: string[]) => { ids.forEach(id => { if (!demo) { oznaciPostoIzbrisano(id, undefined); void restoreProjectMail(id).catch(() => undefined); } }); const set = new Set(ids); setPosta(prev => prev.map(v => set.has(v.id) ? { ...v, izbrisano: undefined } : v)); setIzbraniMaili(new Set()); };
+  const izbrisiTrajnoIzbrane = (ids: string[]) => { ids.forEach(id => { if (!demo) { izbrisiPostoTrajno(id); void deleteProjectMailPermanent(id).catch(() => undefined); } }); const set = new Set(ids); setPosta(prev => prev.filter(v => !set.has(v.id))); setBeriMail(m => (m && set.has(m.id) ? null : m)); setIzbraniMaili(new Set()); };
   const toggleZvezda = (m: PostaVnos) => posodobiMail(m.id, { zvezda: !m.zvezda });
   const premakniMail = (m: PostaVnos, pid: string) => { if (!demo) premakniPosto(m.id, pid); posodobiMail(m.id, { projectId: pid }); setPremakniOdprt(false); setToast(`${L('Premaknjeno v', 'Moved to')} ${projMapa[pid] || L('projekt', 'project')}.`); };
   const dodajOznako = (m: PostaVnos) => { const t = oznakaVnos.trim(); if (!t) return; const nove = [...(m.oznake || []), t]; if (!demo) nastaviOznakePoste(m.id, nove); posodobiMail(m.id, { oznake: nove }); setOznakaVnos(''); };
@@ -351,6 +356,12 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
                   <button type="button" className={`km-ikonca${aiOdprt ? ' on' : ''}`} title={L('Pupa AI', 'Pupa AI')} aria-label="Pupa" onClick={() => pozeniAi(beriMail)}><Sparkle size={16} /></button>
                   <button type="button" className="km-ikonca" title={L('Natisni', 'Print')} aria-label={L('Natisni', 'Print')} onClick={() => { if (typeof window !== 'undefined') window.print(); }}><Printer size={16} /></button>
                   <button type="button" className={`km-ikonca${beriMail.zvezda ? ' zvezda' : ''}`} title={L('Zvezdica', 'Star')} aria-label={L('Zvezdica', 'Star')} onClick={() => toggleZvezda(beriMail)}><Star size={16} weight={beriMail.zvezda ? 'fill' : 'regular'} /></button>
+                  {beriMail.izbrisano ? (<>
+                    <button type="button" className="km-ikonca" title={L('Obnovi', 'Restore')} aria-label={L('Obnovi', 'Restore')} onClick={() => obnoviIzbrane([beriMail.id])}><ArrowBendUpLeft size={16} /></button>
+                    <button type="button" className="km-ikonca km-ikonca-brisi" title={L('Zbriši dokončno', 'Delete permanently')} aria-label={L('Zbriši dokončno', 'Delete permanently')} onClick={() => { if (window.confirm(L('Dokončno izbrišem to sporočilo? Tega ni mogoče razveljaviti.', 'Permanently delete this message? This cannot be undone.'))) izbrisiTrajnoIzbrane([beriMail.id]); }}><Trash size={16} weight="bold" /></button>
+                  </>) : (
+                    <button type="button" className="km-ikonca km-ikonca-brisi" title={L('V koš', 'To trash')} aria-label={L('V koš', 'To trash')} onClick={() => vKosIzbrane([beriMail.id])}><Trash size={16} /></button>
+                  )}
                 </div>
               </div>
               <div className="km-branje-glava"><b>{beriMail.zadeva || L('(brez zadeve)', '(no subject)')}</b><small>{beriMail.prejemniki.join(', ')} · {datum(beriMail.datum)}{cas(beriMail.datum) ? ` ${L('ob', 'at')} ${cas(beriMail.datum)}` : ''} · {beriMail.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</small>{projIme(beriMail.projectId) && <span className="km-mail-proj" style={{ color: projBarva(beriMail.projectId), background: `color-mix(in oklch, ${projBarva(beriMail.projectId)} 12%, transparent)`, marginTop: '.4rem' }}><i aria-hidden style={{ background: projBarva(beriMail.projectId) }} />{projIme(beriMail.projectId)}</span>}{(beriMail.oznake || []).length > 0 && <span className="km-glava-oznake">{(beriMail.oznake || []).map((oz, i) => <span key={i} className="km-oznaka mala">{oz}</span>)}</span>}</div>
@@ -394,15 +405,26 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
           ) : (() => {
             const q = postaIsk.trim().toLowerCase();
             const seznam = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa).filter(v => !postaOseba || v.prejemniki.includes(postaOseba)).filter(v => !q || `${v.zadeva} ${v.prejemniki.join(' ')} ${projIme(v.projectId)}`.toLowerCase().includes(q));
+            const izbraniVMapi = seznam.filter(v => izbraniMaili.has(v.id));
             const NA = 12; const strani = Math.max(1, Math.ceil(seznam.length / NA)); const stran = Math.min(Math.max(1, postaStran), strani); const prikaz = seznam.slice((stran - 1) * NA, stran * NA);
             return seznam.length ? (<>
+              <div className="km-posta-top">
+                <label className="km-vsi-check">
+                  <input type="checkbox" checked={izbraniVMapi.length === seznam.length} ref={el => { if (el) el.indeterminate = izbraniVMapi.length > 0 && izbraniVMapi.length < seznam.length; }} onChange={e => setIzbraniMaili(e.target.checked ? new Set(seznam.map(v => v.id)) : new Set())} aria-label={L('Označi vse', 'Select all')} />
+                  <span>{izbraniVMapi.length > 0 ? `${izbraniVMapi.length} ${L('izbranih', 'selected')}` : L('Označi vse', 'Select all')}</span>
+                </label>
+                <div className="km-posta-top-akc">
+                  {mapa === 'kos' && <button type="button" className="km-akc-obnovi" disabled={izbraniVMapi.length === 0} onClick={() => obnoviIzbrane(izbraniVMapi.map(v => v.id))}><ArrowBendUpLeft size={14} weight="bold" /> {L('Obnovi', 'Restore')}</button>}
+                  <button type="button" className="km-akc-brisi" disabled={izbraniVMapi.length === 0} onClick={() => { const ids = izbraniVMapi.map(v => v.id); if (mapa === 'kos') { if (!window.confirm(L('Dokončno izbrišem izbrano? Tega ni mogoče razveljaviti.', 'Permanently delete the selected items? This cannot be undone.'))) return; izbrisiTrajnoIzbrane(ids); } else vKosIzbrane(ids); }}><Trash size={14} weight="bold" /> {mapa === 'kos' ? L('Zbriši dokončno', 'Delete permanently') : L('Izbriši', 'Delete')}</button>
+                </div>
+              </div>
               <div className="km-posta">
                 {prikaz.map(v => (
-                  <button type="button" key={v.id} className={`km-mail-vrsta km-mail-btn${v.smer === 'prejeto' && !v.prebrano ? ' neprebran' : ''}`} onClick={() => { setBeriMail(v); if (!v.prebrano) { if (!demo) oznaciPostoPrebrano(v.id); posodobiMail(v.id, { prebrano: true }); javiSpremembo(); } }}>
-                    <span className="km-mail-check" aria-hidden />
+                  <div key={v.id} role="button" tabIndex={0} className={`km-mail-vrsta km-mail-btn${v.smer === 'prejeto' && !v.prebrano ? ' neprebran' : ''}${izbraniMaili.has(v.id) ? ' izbran' : ''}`} onClick={() => { setBeriMail(v); if (!v.prebrano) { if (!demo) oznaciPostoPrebrano(v.id); posodobiMail(v.id, { prebrano: true }); javiSpremembo(); } }} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setBeriMail(v); if (!v.prebrano) { if (!demo) oznaciPostoPrebrano(v.id); posodobiMail(v.id, { prebrano: true }); javiSpremembo(); } } }}>
+                    <input type="checkbox" className="km-mail-chk" checked={izbraniMaili.has(v.id)} onClick={e => e.stopPropagation()} onChange={e => { const ch = e.target.checked; setIzbraniMaili(prev => { const n = new Set(prev); if (ch) n.add(v.id); else n.delete(v.id); return n; }); }} aria-label={L('Izberi sporočilo', 'Select message')} />
                     <span className="km-mail-info"><b>{v.prejemniki.join(', ') || '—'}</b><span className="km-mail-zad">{v.zadeva || L('(brez zadeve)', '(no subject)')}</span>{projIme(v.projectId) && <span className="km-mail-proj" style={{ color: projBarva(v.projectId), background: `color-mix(in oklch, ${projBarva(v.projectId)} 12%, transparent)` }}><i aria-hidden style={{ background: projBarva(v.projectId) }} />{projIme(v.projectId)}</span>}</span>
                     <span className="km-mail-meta"><span className="km-mail-datum">{datum(v.datum)}</span><span className={`km-mail-smer ${v.smer}`}>{v.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span></span>
-                  </button>
+                  </div>
                 ))}
               </div>
               {strani > 1 && (
@@ -516,6 +538,22 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-mail-check{flex:none;width:1.15rem;height:1.15rem;border:1.5px solid color-mix(in oklch,var(--k-ink) 22%,transparent);border-radius:.32rem}
         .km-mail-vrsta.neprebran{border-color:color-mix(in oklch,var(--k-purple) 30%,transparent)}
         .km-mail-vrsta.neprebran .km-mail-check{background:var(--k-purple);border-color:var(--k-purple);box-shadow:inset 0 0 0 2px #fff}
+        .km-mail-chk{flex:none;width:1.15rem;height:1.15rem;cursor:pointer;accent-color:var(--k-purple)}
+        .km-mail-vrsta.izbran{background:color-mix(in oklch,var(--k-purple) 9%,#fff);border-color:color-mix(in oklch,var(--k-purple) 35%,transparent)}
+        /* vrhnja orodna vrstica pošte: »Označi vse« + en delete gumb (siv → rdeč ko je kaj izbrano) */
+        .km-posta-top{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;max-width:52rem;margin:0 0 .5rem}
+        .km-vsi-check{display:inline-flex;align-items:center;gap:.5rem;font:600 .74rem var(--font-sans),sans-serif;color:var(--k-ink);cursor:pointer;user-select:none}
+        .km-vsi-check input{width:1.05rem;height:1.05rem;cursor:pointer;accent-color:var(--k-purple)}
+        .km-posta-top-akc{display:flex;align-items:center;gap:.4rem}
+        .km-akc-obnovi,.km-akc-brisi{display:inline-flex;align-items:center;gap:.35rem;height:2rem;padding:0 .9rem;border-radius:999px;font:700 .7rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease,opacity .15s ease}
+        .km-akc-obnovi{border:1px solid color-mix(in oklch,var(--k-ink) 14%,transparent);background:#fff;color:var(--k-ink)}
+        .km-akc-obnovi:disabled{opacity:.4;cursor:not-allowed}
+        .km-akc-obnovi:not(:disabled):hover{border-color:color-mix(in oklch,var(--k-purple) 45%,transparent)}
+        .km-akc-brisi{border:1px solid color-mix(in oklch,var(--k-ink) 14%,transparent);background:#fff;color:color-mix(in oklch,var(--k-ink) 42%,transparent)}
+        .km-akc-brisi:disabled{opacity:.55;cursor:not-allowed}
+        .km-akc-brisi:not(:disabled){background:oklch(55% .18 25);color:#fff;border-color:transparent}
+        .km-akc-brisi:not(:disabled):hover{background:oklch(50% .19 25)}
+        .km-ikonca-brisi:hover{background:oklch(55% .18 25);color:#fff;border-color:transparent}
         .km-mail-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:.1rem}
         .km-mail-info b{font:700 .86rem var(--font-sans),sans-serif;color:var(--k-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .km-mail-zad{font:500 .8rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 62%,transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

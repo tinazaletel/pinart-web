@@ -77,6 +77,16 @@ export const nastaviOznakePoste = (id: string, oznake: string[]): void => {
   shraniVse(preberiVse().map(v => (v.id === id ? { ...v, oznake } : v)));
 };
 
+/* Premakne zapis v Kos (izbrisano = ISO cas) ali ga obnovi (izbrisano = undefined). */
+export const oznaciPostoIzbrisano = (id: string, izbrisano?: string): void => {
+  shraniVse(preberiVse().map(v => (v.id === id ? { ...v, izbrisano } : v)));
+};
+
+/* Trajno odstrani zapis iz dnevnika (dokoncni izbris iz Kosa). */
+export const izbrisiPostoTrajno = (id: string): void => {
+  shraniVse(preberiVse().filter(v => v.id !== id));
+};
+
 /* Oznaci zapis kot prebran (klic ob odpiranju sporocila). */
 export const oznaciPostoPrebrano = (id: string): void => {
   const vsi = preberiVse();
