@@ -7,7 +7,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, MagnifyingGlass, Tray, NotePencil, Trash, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, ArrowBendUpLeft, ArrowBendUpRight, Smiley, Plus, UserPlus, List, FunnelSimple } from '@phosphor-icons/react';
+import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, MagnifyingGlass, Tray, NotePencil, Trash, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, ArrowBendUpLeft, ArrowBendUpRight, Smiley, Plus, UserPlus, List, FunnelSimple, Check } from '@phosphor-icons/react';
 import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, dodajUdelezenca, type OblacnaNit, type OblacnoSporocilo } from '@/lib/klepetCloud';
 import { usePredogled } from '@/lib/predogled';
 import { preberiVsePoste, premakniPosto, nastaviOznakePoste, dodajPosto, oznaciPostoPrebrano, type PostaVnos } from '@/lib/postaDnevnik';
@@ -298,7 +298,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
               <label>{L('Zadeva', 'Subject')}<input value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} /></label>
               <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} rows={6} /></label>
               {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}{pisiUspeh && <p className="km-pisi-uspeh">✓ {L('Poslano', 'Sent')}</p>}
-              <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam || pisiUspeh}>{pisiPosiljam ? L('Pošiljam …', 'Sending …') : pisiUspeh ? L('✓ Poslano', '✓ Sent') : L('Pošlji', 'Send')}</button></div>
+              <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam || pisiUspeh}>{pisiPosiljam ? <>{L('Pošiljam …', 'Sending …')} <PaperPlaneRight size={15} weight="fill" className="km-send-leti" /></> : pisiUspeh ? <><Check size={16} weight="bold" className="km-send-ok" /> {L('Poslano', 'Sent')}</> : <>{L('Pošlji', 'Send')} <PaperPlaneRight size={15} weight="fill" className="km-send-ik" /></>}</button></div>
             </form>
           )}
           {filterOdprt && <>
@@ -380,7 +380,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
                   <label>{L('Zadeva', 'Subject')}<input value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} /></label>
                   <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} rows={6} /></label>
                   {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}{pisiUspeh && <p className="km-pisi-uspeh">✓ {L('Poslano', 'Sent')}</p>}
-                  <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam || pisiUspeh}>{pisiPosiljam ? L('Pošiljam …', 'Sending …') : pisiUspeh ? L('✓ Poslano', '✓ Sent') : L('Pošlji', 'Send')}</button></div>
+                  <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam || pisiUspeh}>{pisiPosiljam ? <>{L('Pošiljam …', 'Sending …')} <PaperPlaneRight size={15} weight="fill" className="km-send-leti" /></> : pisiUspeh ? <><Check size={16} weight="bold" className="km-send-ok" /> {L('Poslano', 'Sent')}</> : <>{L('Pošlji', 'Send')} <PaperPlaneRight size={15} weight="fill" className="km-send-ik" /></>}</button></div>
                 </form>
               ) : (
                 <div className="km-branje-akcije">
@@ -645,8 +645,15 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-pisi-uspeh{margin:.2rem 0 0;padding:.65rem .85rem;border:1px solid oklch(75% .13 150);border-radius:.6rem;background:oklch(96% .05 150);color:oklch(42% .12 150);font:700 .85rem var(--font-sans),sans-serif}
         .km-pisi-akc{display:flex;justify-content:flex-end;gap:.5rem}
         .km-pisi-akc button{border:1px solid var(--k-line);background:#fff;border-radius:999px;padding:.55rem 1.2rem;font:700 .82rem var(--font-sans),sans-serif;color:var(--k-ink);cursor:pointer}
-        .km-pisi-akc button.prim{background:var(--k-ink,#2a2620);border-color:transparent;color:#fff}
-        .km-pisi-akc button:disabled{opacity:.5;cursor:default}
+        .km-pisi-akc button.prim{display:inline-flex;align-items:center;gap:.4rem;background:var(--k-ink,#2a2620);border-color:transparent;color:#fff;transition:opacity .15s,transform .15s}
+        .km-pisi-akc button.prim:hover:not(:disabled){transform:translateY(-1px)}
+        .km-pisi-akc button.prim .km-send-ik{transition:transform .2s ease}
+        .km-pisi-akc button.prim:hover:not(:disabled) .km-send-ik{transform:translate(2px,-2px)}
+        .km-pisi-akc button:disabled{opacity:1;cursor:default}
+        .km-send-leti{animation:kmLeti 1s ease-in-out infinite}
+        @keyframes kmLeti{0%{transform:translate(0,0);opacity:1}55%{transform:translate(11px,-11px);opacity:0}56%{transform:translate(-9px,5px);opacity:0}100%{transform:translate(0,0);opacity:1}}
+        .km-send-ok{animation:kmOk .38s cubic-bezier(.2,1.5,.4,1) both}
+        @keyframes kmOk{from{transform:scale(0) rotate(-25deg)}to{transform:scale(1) rotate(0)}}
         .km-strani{display:flex;justify-content:center;align-items:center;gap:.3rem;margin:1rem 0 .2rem}
         .km-strani button{min-width:1.9rem;height:1.9rem;padding:0 .5rem;border:1px solid var(--k-line);border-radius:.5rem;background:#fff;color:var(--k-ink);font:600 .74rem var(--font-sans),sans-serif;cursor:pointer}
         .km-strani button:hover:not(:disabled){background:color-mix(in oklch,var(--k-purple) 6%,transparent)}
