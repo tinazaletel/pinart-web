@@ -398,6 +398,8 @@ export default function TaskManagerWorkspace() {
   const [filter, setFilter] = useState<'vse' | 'moje' | 'zamujene'>('vse');
   /* filter po oznaki (tagu) — klik na cip na kartici ali spustni izbor nad desko */
   const [filterOznaka, setFilterOznaka] = useState<string>('');
+  /* locen filter po projektu — projekt in oznaka sta dva razlicna miselna modela */
+  const [filterProjekt, setFilterProjekt] = useState<string>('');
   /* prosto besedilo za novo oznako v panelu Podrobnosti naloge */
   const [novaOznaka, setNovaOznaka] = useState('');
   const [hitroOdprt, setHitroOdprt] = useState(false);
@@ -1023,16 +1025,24 @@ export default function TaskManagerWorkspace() {
 
   /* Vidnost po vlogi: clan vidi le sebi dodeljene naloge, vodja/admin vidita vse. */
   const vidneNaloge = trenutni.vloga === 'clan' ? naloge.filter((n) => n.dodeljenoOsebaId === trenutni.id) : naloge;
-  /* Hitri filter nad Kanban tablo: vse / moje / zamujene (rok pred danes in ni končano) + oznaka (tag) */
+  const strankaImeMap = new Map(stranke.map((s) => [s.id, s.name]));
+  /* Hitri filter nad Kanban tablo: vse / moje / zamujene + oznaka (tag) + projekt. */
   const danesStr = new Date().toISOString().slice(0, 10);
   const prikazaneNaloge = vidneNaloge.filter((n) => {
     if (filter === 'moje' && !(n.dodeljenoOsebaId === trenutni.id || (n.dodeljenoOseba || '') === trenutni.ime)) return false;
     if (filter === 'zamujene' && !(!!n.rok && n.rok < danesStr && n.stolpec !== 'done')) return false;
     if (filterOznaka && !(n.oznake || []).includes(filterOznaka)) return false;
+    if (filterProjekt === '__brez__' && n.projectId) return false;
+    if (filterProjekt && filterProjekt !== '__brez__' && n.projectId !== filterProjekt) return false;
     return true;
   });
   /* vse oznake, ki nastopajo na vidnih nalogah — za spustni izbor filtra */
   const vseOznake = Array.from(new Set(vidneNaloge.flatMap((n) => n.oznake || []))).sort((a, b) => a.localeCompare(b, 'sl'));
+  /* Projekti so iz dejansko vidnih nalog. Vrednost ostane stabilen projectId, uporabniku pa
+     pokazemo ime stranke/projekta, kadar je projectId povezava na CRM stranko. */
+  const vsiProjekti = Array.from(new Set(vidneNaloge.map((n) => n.projectId?.trim()).filter((v): v is string => !!v)))
+    .map((id) => ({ id, ime: strankaImeMap.get(id) || id }))
+    .sort((a, b) => a.ime.localeCompare(b.ime, 'sl'));
 
   /* Podatki za panel "Analitika ekipe" — izbrani sodelavec: st. nalog, koncanih, ur, zgodovina. */
   const analitikaSodelavec = sodelavci.find((s) => s.id === analitikaSodelavecId);
@@ -1045,7 +1055,6 @@ export default function TaskManagerWorkspace() {
     .slice(0, 10);
 
   /* stranka -> ime, za znacko na kartici + urejanje naloge */
-  const strankaImeMap = new Map(stranke.map((s) => [s.id, s.name]));
   const odprtaNaloga = naloge.find((n) => n.id === odprtaNalogaId) || null;
   const aktivniSodelavci = sodelavci.filter((s) => s.aktiven);
 
@@ -1086,6 +1095,11 @@ export default function TaskManagerWorkspace() {
                 {vseOznake.map((o) => <option key={o} value={o}>{o}</option>)}
               </select>
             )}
+            <select className="tm-filter-oznaka tm-filter-projekt" value={filterProjekt} onChange={(e) => setFilterProjekt(e.target.value)} aria-label="Filter po projektu">
+              <option value="">Vsi projekti</option>
+              {vsiProjekti.map((projekt) => <option key={projekt.id} value={projekt.id}>{projekt.ime}</option>)}
+              {vidneNaloge.some((n) => !n.projectId) && <option value="__brez__">Brez projekta</option>}
+            </select>
           </div>
         )}
         <div className="tm-glava-akcije">
