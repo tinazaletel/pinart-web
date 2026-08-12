@@ -1121,6 +1121,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
         @media (max-width:640px){
           .arh-det-meta{grid-template-columns:1fr}
+          /* × je fiksen v kotu (top:3.85rem, sega do ~6rem); spusti vsebino, da naslov pride POD × in se ne prekrivata */
+          .arh-detajl.arh-detajl{padding-top:6.4rem}
         }
       `}</style>
     </div>
