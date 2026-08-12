@@ -130,7 +130,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
           zadeva: m.subject || L('(brez zadeve)', '(no subject)'),
           povzetek: m.summary || (m.bodyText || '').replace(/\s+/g, ' ').trim().slice(0, 160),
           datum: m.occurredAt || new Date().toISOString(),
-          telo: m.bodyHtml || m.bodyText || '',
+          telo: m.direction === 'in' ? (m.bodyText || m.bodyHtml || '') : (m.bodyHtml || m.bodyText || ''),
           osnutek: m.isDraft || undefined,
           izbrisano: m.deletedAt || undefined,
           prebrano: m.direction === 'in' ? false : true,
@@ -193,6 +193,20 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
   const iniciala = (s: string) => (s || '?').trim().charAt(0).toUpperCase();
   const datum = (iso: string) => { try { return new Date(iso).toLocaleDateString(jeEn ? 'en-GB' : 'sl-SI'); } catch { return ''; } };
   const cas = (iso: string) => { try { return new Date(iso).toLocaleTimeString(jeEn ? 'en-GB' : 'sl-SI', { hour: '2-digit', minute: '2-digit' }); } catch { return ''; } };
+  /* Berljivo telo prejetega maila: ohrani prelome vrstic (br/p/div -> \n),
+     odstrani ostale tage, dekodira HTML entitete (&lt; -> <). Renderira se z
+     white-space: pre-wrap, da so odgovor, »Sent from iPhone« in citat ločeni. */
+  const beriTelo = (m?: PostaVnos | null): string => {
+    const raw = String(m?.telo || m?.povzetek || '');
+    return raw
+      .replace(/<\s*br\s*\/?\s*>/gi, '\n')
+      .replace(/<\/(p|div|li|tr|h[1-6]|blockquote)\s*>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/gi, ' ').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"').replace(/&#39;/gi, "'").replace(/&amp;/gi, '&')
+      .replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n')
+      .trim();
+  };
   const izbranaNit = niti.find(n => n.threadId === izbrana) || null;
 
   /* ── funkcije na branju pošte (uporabijo skupne knjižnice) ── */
@@ -365,7 +379,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
                 </div>
               </div>
               <div className="km-branje-glava"><b>{beriMail.zadeva || L('(brez zadeve)', '(no subject)')}</b><small>{beriMail.prejemniki.join(', ')} · {datum(beriMail.datum)}{cas(beriMail.datum) ? ` ${L('ob', 'at')} ${cas(beriMail.datum)}` : ''} · {beriMail.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</small>{projIme(beriMail.projectId) && <span className="km-mail-proj" style={{ color: projBarva(beriMail.projectId), background: `color-mix(in oklch, ${projBarva(beriMail.projectId)} 12%, transparent)`, marginTop: '.4rem' }}><i aria-hidden style={{ background: projBarva(beriMail.projectId) }} />{projIme(beriMail.projectId)}</span>}{(beriMail.oznake || []).length > 0 && <span className="km-glava-oznake">{(beriMail.oznake || []).map((oz, i) => <span key={i} className="km-oznaka mala">{oz}</span>)}</span>}</div>
-              <div className="km-branje-telo">{(beriMail.telo || beriMail.povzetek || L('(brez besedila)', '(no text)')).replace(/<[^>]+>/g, ' ')}</div>
+              <div className="km-branje-telo" style={{ whiteSpace: 'pre-wrap' }}>{beriTelo(beriMail) || L('(brez besedila)', '(no text)')}</div>
               {aiOdprt && (
                 <div className="km-ai">
                   <div className="km-ai-glava"><Sparkle size={15} weight="fill" /> {L('Pupa o tem sporočilu', 'Pupa on this message')}<button type="button" aria-label={L('Zapri', 'Close')} onClick={() => setAiOdprt(false)}>×</button></div>

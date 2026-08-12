@@ -38,6 +38,16 @@ const vObdobju = (dateStr: string, od: string, doD: string): boolean => {
 const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFractionDigits: 2 })} €`;
 const datStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('sl-SI'); };
 const casStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' }); };
+/* Berljivo telo prejetega maila: ohrani prelome (br/p/div -> \n), odstrani tage,
+   dekodira entitete (&lt; -> <). Renderira se z white-space: pre-wrap. Enako kot v Komunikacijah. */
+const beriTeloMaila = (raw?: string): string => String(raw || '')
+  .replace(/<\s*br\s*\/?\s*>/gi, '\n')
+  .replace(/<\/(p|div|li|tr|h[1-6]|blockquote)\s*>/gi, '\n')
+  .replace(/<[^>]+>/g, '')
+  .replace(/&nbsp;/gi, ' ').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+  .replace(/&quot;/gi, '"').replace(/&#39;/gi, "'").replace(/&amp;/gi, '&')
+  .replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n')
+  .trim();
 
 /* demo CRM dnevnik (predogled »polno poslovanje«) — nekaj vnosov, da kartica
    CRM v Delovnem pogledu ni prazna; pravi dnevnik je na strani stranke */
@@ -1299,7 +1309,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             zadeva: m.subject || '',
             povzetek: m.summary,
             datum: m.occurredAt || new Date().toISOString(),
-            telo: m.bodyHtml || m.bodyText,
+            telo: m.direction === 'in' ? (m.bodyText || m.bodyHtml) : (m.bodyHtml || m.bodyText),
             osnutek: m.isDraft,
             izbrisano: m.deletedAt,
           };
@@ -1468,7 +1478,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 <small style={{ display: 'block', color: 'var(--muted)', margin: '.15rem 0 .6rem' }}>{beriMail.prejemniki.join(', ')} · {datStr(beriMail.datum)}{casStr(beriMail.datum) ? ` ob ${casStr(beriMail.datum)}` : ''}</small>
                 {beriMail.telo
                   ? (beriMail.smer === 'prejeto'
-                      ? <div style={{ whiteSpace: 'pre-wrap', fontSize: '.85rem', lineHeight: 1.55 }}>{beriMail.telo.replace(/<[^>]+>/g, ' ')}</div>
+                      ? <div style={{ whiteSpace: 'pre-wrap', fontSize: '.85rem', lineHeight: 1.55 }}>{beriTeloMaila(beriMail.telo) || L('(brez besedila)', '(no text)')}</div>
                       : <div style={{ fontSize: '.85rem', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: beriMail.telo }} />)
                   : <p style={{ color: 'var(--muted)', fontSize: '.82rem' }}>{L('To sporočilo nima shranjenega besedila (starejši/lokalni zapis).', 'This message has no stored text (older/local record).')}</p>}
               </div>
