@@ -16,7 +16,7 @@ import { podatkiZaPredogled, usePredogled, demoSodelavci, demoRealZaOffer } from
 import { preberiPostoProjekta, dodajPosto, premakniPosto, nastaviOznakePoste, type PostaVnos } from '@/lib/postaDnevnik';
 import { preberiKlepet, dodajKlepet, nitId, type KlepetSporocilo } from '@/lib/klepet';
 import { zagotoviNit, nalozSporocila, posljiSporocilo, narociSporocila, mojEmail, type OblacnoSporocilo } from '@/lib/klepetCloud';
-import { pullProjectMail, pushProjectMail, saveDraft, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent } from '@/lib/pinartMailCloud';
+import { pullProjectMail, saveDraft, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent } from '@/lib/pinartMailCloud';
 import { posljiMail } from '@/lib/posta';
 import { type PodpisPodatki, podpisHtml, podpisPrazen } from '@/lib/podpis';
 import { aktivniLogo } from '@/lib/dokVidez';
@@ -1188,15 +1188,13 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     if (!telo) { setPisiStatus(L('Vpiši sporočilo.', 'Enter a message.')); return; }
     setPisiPosiljam(true); setPisiStatus(L('Pošiljam …', 'Sending …'));
     const html = `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${telo}</div>`;
-    /* »Odgovori-na« = tvoj pravi e-naslov (iz profila), da odgovori strank padejo
-       tja (npr. tvoj Gmail), ne na pošiljno domeno pinartflow.com, kjer pošte ni. */
-    let replyTo = '';
-    try { replyTo = String(JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}').ponudnik?.email || ''); } catch { /* brez profila */ }
-    const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, replyTo: replyTo || undefined });
+    /* reply-to = token@pinartflow.com — strežnik ga nastavi iz projectExternalId,
+       da odgovori strank padejo NAZAJ v Flow (dohodna pošta), ne v osebni Gmail.
+       Zapis v project_mail(out) z message_id naredi strežnik; tu le optimistični prikaz. */
+    const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, projectExternalId: selectedId });
     setPisiPosiljam(false);
     if (rez.ok) {
       const vnos = dodajPosto({ projectId: selectedId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim(), telo, povzetek: telo.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) });
-      void pushProjectMail({ projectExternalId: selectedId, direction: 'out', toEmails: [za], subject: pisiZadeva.trim(), occurredAt: new Date().toISOString() }).catch(() => undefined);
       setPosta(p => [vnos, ...p]);
       setPisiOdprt(false); setPisiZadeva(''); if (pisiTeloRef.current) pisiTeloRef.current.innerHTML = '';
     } else {
