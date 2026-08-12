@@ -62,6 +62,11 @@ export default {
       body: JSON.stringify(payload),
     });
 
+    /* DIAGNOSTIKA: izpiši status + telo odgovora Flow endpointa v CF log. */
+    let telo = '';
+    try { telo = await res.text(); } catch (e) { telo = '(brez telesa)'; }
+    console.log(`Flow endpoint (${endpoint}) token=${token} -> ${res.status} ${telo.slice(0, 300)}`);
+
     /* 404 = neznan token (projekt nima inboxa): zavrni, da posiljatelj ve.
        Ostale napake tiho pustimo (mail se ne izgubi v CF logu). */
     if (res.status === 404) {
