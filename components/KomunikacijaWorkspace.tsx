@@ -633,7 +633,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-ai-akc{display:flex;gap:.5rem;margin-top:.5rem}
         .km-ai-akc button{border:1px solid var(--k-line);background:#fff;border-radius:999px;padding:.45rem .95rem;font:700 .78rem var(--font-sans),sans-serif;color:var(--k-ink);cursor:pointer}
         .km-ai-akc button.prim{background:var(--k-purple);border-color:transparent;color:#fff}
-        .km-pisi{margin-top:1rem;display:flex;flex-direction:column;gap:.7rem;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(16px) saturate(1.35);backdrop-filter:blur(16px) saturate(1.35);border:1px solid rgba(255,255,255,.6);border-radius:1rem;padding:1.4rem;box-shadow:0 12px 40px rgba(20,16,26,.06)}
+        .km-pisi{margin:1rem 0 1.6rem;display:flex;flex-direction:column;gap:.7rem;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(16px) saturate(1.35);backdrop-filter:blur(16px) saturate(1.35);border:1px solid rgba(255,255,255,.6);border-radius:1rem;padding:1.4rem;box-shadow:0 12px 40px rgba(20,16,26,.06)}
         .km-pisi-glava{display:flex;align-items:center;font:700 .92rem var(--font-sans),sans-serif;color:var(--k-ink)}
         .km-pisi-glava button{margin-left:auto;border:0;background:none;color:color-mix(in oklch,var(--k-ink) 50%,transparent);font-size:1.2rem;line-height:1;cursor:pointer}
         .km-pisi label{display:flex;flex-direction:column;gap:.28rem;font:700 .72rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in oklch,var(--k-ink) 52%,transparent)}
