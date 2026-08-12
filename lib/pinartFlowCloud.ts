@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/client';
 import { oznaciSinhronizirano } from './pinartFlowStore';
 import type { FlowClient, FlowContract, FlowData, FlowExpense, FlowInvoice, FlowOffer } from './pinartFlowStore';
 import { mergeByUpdatedAt } from './mergeByUpdatedAt';
-import { jeDemoId } from './predogled';
+import { jeDemoId, jeSamoPredogled } from './predogled';
 export { mergeByUpdatedAt } from './mergeByUpdatedAt';
 
 type OrganizationContext = { organizationId: string; userId: string };
@@ -132,6 +132,7 @@ function novejseOdOblaka<T extends SyncPayload>(localRows: T[], cloudRows: Cloud
 }
 
 export async function pushFlowData(data: FlowData): Promise<void> {
+  if (jeSamoPredogled()) return;
   const context = await getOrganizationContext();
   if (!context) return;
   const supabase = createClient();
@@ -285,6 +286,7 @@ export async function deleteCloudRecords(
   collection: 'offers' | 'invoices' | 'expenses' | 'contracts' | 'clients',
   externalIds: string[],
 ): Promise<void> {
+  if (jeSamoPredogled()) return;
   const varniIds = externalIds.filter(id => !jeDemoId(id));
   if (!varniIds.length) return;
   const context = await getOrganizationContext();
@@ -319,9 +321,11 @@ export async function pullFlowData(): Promise<FlowData | null> {
   ]);
   const firstError = [clientsResult.error, offersResult.error, invoicesResult.error, expensesResult.error, contractsResult.error].find(Boolean);
   if (firstError) throw firstError;
-  const clients = clientsResult.data || [];
+  const brezDemo = <T extends { external_id?: unknown }>(rows: T[]): T[] =>
+    rows.filter(row => !jeDemoId(typeof row.external_id === 'string' ? row.external_id : null));
+  const clients = brezDemo(clientsResult.data || []);
   const clientNameById = new Map(clients.map(row => [String(row.id), String(row.name)]));
-  const offers = offersResult.data || [];
+  const offers = brezDemo(offersResult.data || []);
   const offerExternalById = new Map(offers.map(row => [String(row.id), String(row.external_id || row.id)]));
 
   return {
@@ -337,7 +341,7 @@ export async function pullFlowData(): Promise<FlowData | null> {
       status: row.status as FlowOffer['status'], agreedAmount: Number(row.amount) || 0,
       deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined, updatedAt: row.updated_at || undefined,
     })),
-    invoices: (invoicesResult.data || []).map(row => ({
+    invoices: brezDemo(invoicesResult.data || []).map(row => ({
       id: String(row.external_id || row.id), number: row.number || undefined, title: row.title || undefined,
       client: clientNameById.get(String(row.client_id)) || 'Brez stranke', amount: Number(row.amount) || 0,
       paid: row.status === 'paid', status: row.status as FlowInvoice['status'], date: String(row.issue_date),
@@ -353,14 +357,14 @@ export async function pullFlowData(): Promise<FlowData | null> {
       fiscalZoi: row.fiscal_zoi || undefined, fiscalProvider: row.fiscal_provider || undefined,
       deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined, updatedAt: row.updated_at || undefined,
     })),
-    expenses: (expensesResult.data || []).map(row => ({
+    expenses: brezDemo(expensesResult.data || []).map(row => ({
       id: String(row.external_id || row.id), title: String(row.title), client: row.client_id ? clientNameById.get(String(row.client_id)) : undefined,
       amount: Number(row.amount) || 0, date: String(row.expense_date), sourceOfferId: row.offer_id ? offerExternalById.get(String(row.offer_id)) : undefined,
       company: row.supplier || undefined, category: row.category || undefined,
       filePath: row.file_path || undefined, fileName: row.file_path ? String(row.file_path).split('/').pop() : undefined,
       deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined, updatedAt: row.updated_at || undefined,
     })),
-    contracts: (contractsResult.data || []).map(row => ({
+    contracts: brezDemo(contractsResult.data || []).map(row => ({
       id: String(row.external_id || row.id), title: String(row.title), client: clientNameById.get(String(row.client_id)) || 'Brez stranke',
       date: String(row.contract_date), status: row.status as FlowContract['status'], sourceOfferId: row.offer_id ? offerExternalById.get(String(row.offer_id)) : undefined,
       body: row.body || undefined, notes: row.notes || undefined, filePath: row.file_path || undefined, fileName: row.file_path ? String(row.file_path).split('/').pop() : undefined,

@@ -39,6 +39,12 @@ export function jeDemo(): boolean {
   return preberiPredogled() === 'demo';
 }
 
+/** Predogledni podatki nikoli ne smejo zapustiti brskalnika. */
+export function jeSamoPredogled(): boolean {
+  const nacin = preberiPredogled();
+  return nacin === 'demo' || nacin === 'empty' || nacin === 'zacetek';
+}
+
 /** Demo zapisi se nikoli ne smejo sinhronizirati v pravo organizacijo. */
 export function jeDemoId(id?: string | null): boolean {
   return typeof id === 'string' && id.startsWith('demo-');
