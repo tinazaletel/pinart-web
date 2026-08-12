@@ -280,7 +280,7 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
               {prejemnikiVsi.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
             <button type="button" className={'km-filter-krog' + (postaOseba ? ' aktiv' : '')} onClick={() => setFilterOdprt(true)} aria-label={L('Prejemniki', 'Recipients')} title={L('Prejemniki', 'Recipients')}><FunnelSimple size={16} weight={postaOseba ? 'fill' : 'bold'} /></button>
-            <button type="button" className="km-nova" onClick={() => { setBeriMail(null); setPisiVrsta('nova'); setPisiProjekt(''); setPisiZa(''); setPisiZadeva(''); setPisiTelo(''); setPisiStatus(''); }} title={L('Nova pošta: izbereš projekt (za odgovore v Flow), prejemnika in napišeš.', 'New mail: pick a project (for replies in Flow), a recipient and compose.')} aria-label={L('Nova pošta', 'New mail')}><PaperPlaneRight className="km-nova-ik" size={14} weight="fill" /> <span className="km-nova-txt">{L('Nova pošta', 'New mail')}</span><Plus className="km-nova-plus" size={18} weight="bold" /></button>
+            <button type="button" className="km-nova" onClick={() => { setBeriMail(null); setPisiVrsta('nova'); setPisiProjekt(''); setPisiZa(''); setPisiZadeva(''); setPisiTelo(''); setPisiStatus(''); }} title={L('Nova pošta: izbereš projekt (za odgovore v Flow), prejemnika in napišeš.', 'New mail: pick a project (for replies in Flow), a recipient and compose.')} aria-label={L('Nova pošta', 'New mail')}><Plus className="km-nova-ik" size={16} weight="bold" /> <span className="km-nova-txt">{L('Nova pošta', 'New mail')}</span><Plus className="km-nova-plus" size={18} weight="bold" /></button>
           </div>
           {pisiVrsta === 'nova' && (
             <form className="km-pisi km-pisi-nova" onSubmit={posljiPisanje}>
@@ -538,8 +538,8 @@ export default function KomunikacijaWorkspace({ jeEn = false }: { jeEn?: boolean
         .km-posta-vrh .km-iskalnik,.km-posta-vrh .km-prejemniki,.km-posta-vrh .km-nova{height:2.55rem;box-sizing:border-box;padding-top:0;padding-bottom:0}
         .km-posta-vrh .km-iskalnik{flex:1 1 15rem;margin-bottom:0}
         .km-prejemniki{flex:none;border:1px solid var(--k-line);border-radius:999px;padding:.5rem .9rem;font:600 .8rem var(--font-sans),sans-serif;color:var(--k-ink);background:#fff;cursor:pointer}
-        .km-nova{flex:none;display:inline-flex;align-items:center;gap:.4rem;border:0;border-radius:999px;padding:.55rem 1.1rem;font:700 .8rem var(--font-sans),sans-serif;color:#fff;background:color-mix(in oklch,var(--k-ink) 42%,transparent);cursor:pointer}
-        .km-nova:hover{background:color-mix(in oklch,var(--k-ink) 60%,transparent)}
+        .km-nova{flex:none;display:inline-flex;align-items:center;gap:.4rem;border:0;border-radius:999px;padding:.55rem 1.1rem;font:700 .8rem var(--font-sans),sans-serif;color:#fff;background:var(--k-ink);cursor:pointer;transition:opacity .15s,transform .15s}
+        .km-nova:hover{opacity:.88;transform:translateY(-1px)}
         .km-mail-telo{padding:.2rem 1rem 1rem 3.6rem;font:500 .84rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 80%,transparent);line-height:1.55;white-space:pre-wrap}
         .km-posta-ovoj{max-width:62rem}
         .km-iskalnik{display:flex;align-items:center;gap:.5rem;background:#fff;border:1px solid var(--k-line);border-radius:999px;padding:.38rem .9rem;margin-bottom:1rem;color:color-mix(in oklch,var(--k-ink) 55%,transparent)}
