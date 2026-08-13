@@ -3087,11 +3087,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      kalkulator ostane cisto projekten (dolgorocno se tu ne vklopi). */
 
   const odpriOnboarding = () => {
-    /* preslikaj trenutni set nazaj v podrocja (podrocje je izbrano, ce so vse
-       njegove storitve v setu) */
+    /* ODPORNO: ne prepiši uporabnikove izbire s strogo rekonstrukcijo. Prej `.every`:
+       če je področju manjkala ena storitev (npr. po širitvi kataloga ali ročnem
+       izklopu ene storitve), se je CELO področje »samo odkljukalo«. Zdaj OHRANIMO
+       obstoječi obIzbor in DODAMO področja, ki imajo VSAJ ENO aktivno storitev —
+       nikoli ne odkljukamo že izbranega. */
     const set = new Set(mojSet ?? []);
-    const areas = PODROCJA.filter(p => p.storitve.length > 0 && p.storitve.every(sid => set.has(sid))).map(p => p.id);
-    setObIzbor(new Set(areas));
+    const zAktivno = PODROCJA.filter(p => p.storitve.some(sid => set.has(sid))).map(p => p.id);
+    setObIzbor(prev => new Set([...prev, ...zAktivno]));
     setOnboardingOdprt(true);
   };
   const shraniOnboarding = () => {
