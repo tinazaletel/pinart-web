@@ -2883,12 +2883,22 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     const zahtevanUvod = typeof window !== 'undefined'
       && new URLSearchParams(window.location.search).get('uvod') === '1';
     if (zahtevanUvod) return;
-    const izpolnjeno = imeUporabnika.trim() !== '' || obIzbor.size > 0
-      || nazivPonudbe.trim() !== '' || uvodKoncan === true;
-    if (izpolnjeno) {
+    /* STROGA popolnost onboardinga (podatki so NALOZENI -> obIzbor/ponudnik niso
+       prazni po pomoti): ime + podjetje + vsaj eno področje. `izkusnje` ima privzeto
+       vrednost, zato ga ne štejemo. */
+    const onboardingPopoln = imeUporabnika.trim() !== '' && ponudnik.ime.trim() !== '' && obIzbor.size > 0;
+    /* ZACET = kakršenkoli signal, da je uporabnik že bil v pogovoru. */
+    const onboardingZacet = imeUporabnika.trim() !== '' || obIzbor.size > 0
+      || nazivPonudbe.trim() !== '' || (typeof chatKorak === 'number' && chatKorak > 0);
+    if (onboardingPopoln || uvodKoncan === true) {
+      /* res dokončan (ali izrecno preskočen) -> zapri pogovor, označi kot končan */
       setUvodChat(false);
       setOnboardingOdprt(false);
       if (uvodKoncan !== true) setUvodKoncan(true);
+    } else if (onboardingZacet) {
+      /* ZACET a NEDOKONCAN (npr. prekinjen pri »podjetje«) -> NADALJUJ pogovor, da
+         lahko dokončaš (vnos aktiven). NE označimo kot končano -> banner se pokaže. */
+      setUvodChat(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jeNalozeno]);
