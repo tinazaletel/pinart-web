@@ -5,8 +5,16 @@ import { PRICING_SERVICES, PODROCJA, podrocjeZaIme } from '@/lib/pricingCatalog'
    storitev ali jo pozabi uvrstiti v področje -> kalkulator jo napačno združi ali
    izpusti iz cene. (Točno to se je že zgodilo: "dizajnsistem" je bil brez področja.) */
 describe('cenovni katalog — celovitost', () => {
-  it('vsaka storitev ima pozitivno osnovno ceno', () => {
+  it('nobena osnovna cena ni negativna', () => {
     for (const s of PRICING_SERVICES) {
+      expect(s.osnova, s.id).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it('vsaka storitev razen "drugo" (po dogovoru) ima pozitivno osnovno ceno', () => {
+    // 'drugo' ima namenoma osnova: 0 — ceno določi uporabnik. Vse ostale morajo biti > 0.
+    for (const s of PRICING_SERVICES) {
+      if (s.id === 'drugo') continue;
       expect(s.osnova, s.id).toBeGreaterThan(0);
     }
   });
@@ -30,6 +38,25 @@ describe('cenovni katalog — celovitost', () => {
         expect(znani.has(id), `${id} v področju ${p.id} ne obstaja v katalogu`).toBe(true);
       }
     }
+  });
+
+  it('vsaj eno področje vsebuje storitev "web"', () => {
+    // Sidro: 'web' je jedrna storitev; če izgine iz vseh področij, se v kalkulatorju ne pokaže.
+    const jeWeb = PODROCJA.some(p => p.storitve.includes('web'));
+    expect(jeWeb).toBe(true);
+  });
+
+  it('vsaka storitev iz kataloga je uvrščena v natanko eno področje (brez sirot)', () => {
+    // Obratna smer prejšnjega testa: noben service ne sme ostati brez področja.
+    const razporejeni = new Set(PODROCJA.flatMap(p => p.storitve));
+    for (const s of PRICING_SERVICES) {
+      expect(razporejeni.has(s.id), `${s.id} ni v nobenem področju`).toBe(true);
+    }
+  });
+
+  it('področja nimajo podvojenih storitev (znotraj in med področji)', () => {
+    const vse = PODROCJA.flatMap(p => p.storitve);
+    expect(new Set(vse).size, 'storitev je navedena večkrat').toBe(vse.length);
   });
 
   it('podrocjeZaIme najde pravo področje po imenu storitve', () => {
