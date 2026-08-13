@@ -5523,7 +5523,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     </div>
   );
 
-  const izbranaPodrocja = jeOnboardan ? PODROCJA.filter(p => p.storitve.every(sid => mojSet!.includes(sid))) : PODROCJA;
+  /* področje pokažemo, če ima uporabnik VSAJ ENO njegovo storitev aktivno (.some).
+     Prej .every: če je manjkala ena storitev (npr. skrita ali kasneje dodana v katalog),
+     je izginilo CELO področje — zato so npr. spletni mehurčki »izginili«. Posamezne
+     storitve znotraj področja se še vedno filtrirajo po vidneStoritve spodaj. */
+  const izbranaPodrocja = jeOnboardan ? PODROCJA.filter(p => p.storitve.some(sid => mojSet!.includes(sid))) : PODROCJA;
   const mojeVidne = poVrstnemRedu(vidneStoritve.filter(s => s.id.startsWith('moja-')));
 
   /* Storitve za orbe na koraku 0: njena podrocja + lastne storitve, brez dvojnikov. */
