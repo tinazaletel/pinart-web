@@ -7358,6 +7358,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .predogled-stran { max-width: none; }
         }
         .cw .predogled-nalaga { display: flex; align-items: center; justify-content: center; height: 60vh; min-height: 420px; color: rgba(17,17,17,.72); font-size: .9rem; }
+        .cw .predogled-html { width: 100%; height: 72vh; min-height: 420px; border: 0; background: #fff; display: block; border-radius: 8px; }
         .cw .predogled-osvezi { position: absolute; top: .6rem; right: .6rem; background: rgba(17,17,17,.72); color: #fff; font-size: .72rem; padding: .3rem .6rem; border-radius: 999px; pointer-events: none; z-index: 2; }
         .cw .editor b, .cw .editor strong { font-weight: 900; color: var(--ink); }
         .cw .editor h1 b, .cw .editor h1 strong { font-weight: 900; }
@@ -9754,8 +9755,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       <img key={i} className="predogled-stran" src={u} alt={`Stran ${i + 1}`} />
                     ))}
                   </div>
+                ) : predogledNalaganje ? (
+                  <div className="predogled-nalaga">{L('Pripravljam predogled …', 'Preparing preview …')}</div>
                 ) : (
-                  <div className="predogled-nalaga">{predogledNalaganje ? L('Pripravljam predogled …', 'Preparing preview …') : L('Predogled ni na voljo', 'Preview not available')}</div>
+                  /* GRACEFUL FALLBACK: če strežniški PDF (brezglavi Chrome) ne uspe/timeouta,
+                     predogled NI prazen — pokažemo takojšen HTML predogled ponudbe. */
+                  <iframe className="predogled-html" title={L('Predogled ponudbe', 'Offer preview')} sandbox="allow-same-origin" srcDoc={ponudbaBodyDoc()} />
                 )}
                 {predogledNalaganje && predogledStrani.length > 0 && <div className="predogled-osvezi" role="status">{L('Osvežujem …', 'Refreshing …')}</div>}
               </div>
