@@ -125,6 +125,23 @@
 .comingCard strong { font: 500 1.1rem/1.1 var(--font-serif), Georgia, serif; }
 .comingCard > span:last-child { color: var(--muted); font-size: .8rem; line-height: 1.4; }
 .comingBadge { justify-self: start; margin-bottom: .15rem; padding: .18rem .5rem; border-radius: 999px; background: color-mix(in oklch, oklch(58% .2 297) 14%, transparent); color: color-mix(in oklch, oklch(46% .2 297) 92%, var(--ink)); font: 700 .62rem var(--font-sans), sans-serif; letter-spacing: .04em; text-transform: uppercase; }
+
+/* Mobilno: 2 stolpca KOMPAKTNIH kartic, da z več canvasi pregledaš več naenkrat
+   (ne dolg 1-stolpčni scroll). Foot se zloži, gumb »Razširi« čez celo širino. */
+@media (max-width: 560px) {
+  .canvasGrid, .comingSoonGrid { grid-template-columns: 1fr 1fr; gap: .7rem; }
+  .canvasCard, .newCanvasCard, .comingCard { min-height: 0; padding: .9rem; }
+  .canvasCard { gap: .6rem; }
+  .canvasCardName strong { font-size: 1.05rem; }
+  .canvasCardName > span { font-size: .76rem; }
+  .canvasCardCount { font-size: .92rem; }
+  .canvasDots { gap: .22rem; }
+  .canvasDots span { width: .42rem; height: .42rem; }
+  .canvasCardFoot { flex-direction: column; align-items: stretch; gap: .45rem; }
+  .canvasCardPlan { text-align: center; }
+  .newCanvasCard { align-items: center; text-align: center; justify-items: center; }
+  .comingCard strong { font-size: 1rem; }
+}
 .canvasCardFoot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
 .canvasCardDate { color: var(--muted); font-size: .78rem; }
 .canvasCardPlan { flex: none; padding: .38rem .65rem; border: 0; border-radius: 999px; background: color-mix(in oklch, oklch(58% .2 297) 12%, transparent); color: color-mix(in oklch, oklch(46% .2 297) 92%, var(--ink)); font: 700 .74rem var(--font-sans), sans-serif; cursor: pointer; transition: background .16s ease; }
