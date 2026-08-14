@@ -522,8 +522,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
                 plavajočih kartic (te so le na namizju). Isti podatki, klikljivi. */}
             <div className="pd-povzetek">
               {plava.map((p, i) => (
-                <a key={i} href={p.href} className="pd-pov-cip" style={{ ['--h' as string]: String(p.h) }}>
-                  <b>{p.vrednost}</b><span>{p.labela}</span>
+                <a key={i} href={p.href} className="pd-pov-cip" style={{ ['--h' as string]: String(p.h), animationDelay: `${(i % 3) * 0.5}s` }}>
+                  <span className="pd-k-pika" />
+                  <b>{p.vrednost}</b><small>{p.labela}</small>
                 </a>
               ))}
             </div>
@@ -692,9 +693,11 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         /* mobilni povzetek (skrit na namizju, kjer plavajo kartice) */
         .pd-povzetek { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin: .8rem 0 .2rem; }
         .pd-povzetek::-webkit-scrollbar { display: none; }
-        .pd-pov-cip { display: flex; align-items: baseline; gap: .35rem; min-width: 0; padding: .6rem .8rem; border: 1px solid rgba(255,255,255,.6); border-radius: 1rem; background: color-mix(in oklch, oklch(72% .14 var(--h)) 12%, rgba(255,255,255,.6)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); text-decoration: none; white-space: nowrap; }
-        .pd-pov-cip b { font: 700 .85rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
-        .pd-pov-cip span { font: 600 .68rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); }
+        /* mobilne kartice = ENAK stil kot desktop (steklo, pika, robovi, stolpec) + nežno lebdenje */
+        .pd-pov-cip { position: relative; display: flex; flex-direction: column; gap: .12rem; min-width: 0; padding: .8rem .95rem; border: 1px solid rgba(255,255,255,.6); border-radius: 1.1rem; background: color-mix(in oklch, oklch(72% .13 var(--h)) 10%, rgba(255,255,255,.58)); backdrop-filter: blur(14px) saturate(1.25); -webkit-backdrop-filter: blur(14px) saturate(1.25); box-shadow: 0 10px 30px oklch(50% .1 var(--h) / .14); text-decoration: none; animation: pdBobMini 6s ease-in-out infinite; transition: transform .2s ease, box-shadow .2s ease; }
+        .pd-pov-cip:active { transform: scale(.98); }
+        .pd-pov-cip b { font: 700 1rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
+        .pd-pov-cip small { font: 600 .66rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         @media (min-width: 1024px) { .pd-povzetek { display: none; } }
 
         .pd-hitre { display: flex; flex-wrap: wrap; gap: .45rem; margin: 1rem 0 .9rem; }
