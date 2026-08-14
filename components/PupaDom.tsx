@@ -132,7 +132,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
               {aiOdprt && (
                 <div className="pd-ai-meni" role="menu">
                   <button type="button" role="menuitem" className={aiNacin === 'pupa' ? 'on' : ''} onClick={() => izberiAi('pupa')}><b>Pupa AI</b><small>{L('Vključena v paket — Pinart krije strošek.', 'Included in your plan — Pinart covers the cost.')}</small></button>
-                  <button type="button" role="menuitem" className={aiNacin === 'moj' ? 'on' : ''} onClick={() => izberiAi('moj')}><b>{L('Moj AI', 'My AI')}</b><small>{L('Poveži svoj ChatGPT / Claude / Gemini (kmalu).', 'Connect your own ChatGPT / Claude / Gemini (soon).')}</small></button>
+                  <button type="button" role="menuitem" className={aiNacin === 'moj' ? 'on' : ''} onClick={() => izberiAi('moj')}><b>{L('Moj AI', 'My AI')}</b><small>{L('Poveži svoj AI prek API ali MCP (kmalu). Morebitno porabo plačaš svojemu ponudniku.', 'Connect your own AI via API or MCP (soon). You pay any usage to your provider.')}</small></button>
                   <button type="button" role="menuitem" className={aiNacin === 'brez' ? 'on' : ''} onClick={() => izberiAi('brez')}><b>{L('Brez AI', 'No AI')}</b><small>{L('Klasični vprašalniki; nič ne gre zunanjemu AI.', 'Classic questionnaires; nothing goes to an external AI.')}</small></button>
                 </div>
               )}
