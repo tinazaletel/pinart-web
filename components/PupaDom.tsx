@@ -630,7 +630,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-zgod-trig:hover { background: #fff; color: var(--ink, #1a1a1a); }
         .pd-zgod-back { position: fixed; inset: 0; z-index: 60; background: oklch(30% .03 300 / .18); animation: pdFade .2s ease; }
         @keyframes pdFade { from { opacity: 0; } to { opacity: 1; } }
-        .pd-zgod-panel { position: fixed; top: 0; right: 0; z-index: 61; height: 100dvh; width: min(20rem, 86vw); display: flex; flex-direction: column; gap: .5rem; padding: 1rem .8rem; background: #fff; border-left: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 10%, transparent); box-shadow: -14px 0 40px oklch(40% .08 300 / .16); transform: translateX(100%); transition: transform .28s cubic-bezier(.2,.85,.25,1); }
+        .pd-zgod-panel { position: fixed; top: 0; right: 0; z-index: 61; height: 100dvh; width: min(20rem, 86vw); display: flex; flex-direction: column; gap: .5rem; padding: 4rem .8rem 1rem; background: #fff; border-left: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 10%, transparent); box-shadow: -14px 0 40px oklch(40% .08 300 / .16); transform: translateX(100%); transition: transform .28s cubic-bezier(.2,.85,.25,1); }
         .pd-zgod-panel.odprt { transform: translateX(0); }
         .pd-zgod-glava { display: flex; align-items: center; justify-content: space-between; }
         .pd-zgod-glava span { font: 500 1rem var(--font-serif, Georgia), serif; color: var(--ink, #1a1a1a); }
