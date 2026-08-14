@@ -37,8 +37,10 @@ export default async function PoslovniPregledPage({
             <PozdravPregled jeEn={locale === 'en'} />
             <p className={styles.topbarSub}>{locale === 'en' ? 'Here you can quickly create a proposal, track projects and keep an overview of everything that matters.' : 'Tukaj lahko hitro ustvariš ponudbo, slediš projektom in imaš pregled nad vsem, kar je pomembno.'}</p>
           </div>
-          {/* Preklop pogleda: Pupa dom ⇄ Nadzorna plošča (Pupa dom zaklenjen brez Pupe v paketu) */}
-          <PogledPreklop base={base} aktiven="plosca" jeEn={locale === 'en'} imaPupo={imaPupo} />
+          {/* Preklop pogleda: Pupa ⇄ Nadzorna plošča — skrajno desno, poravnan na vrh (pod zvončkom) */}
+          <div style={{ alignSelf: 'flex-start' }}>
+            <PogledPreklop base={base} aktiven="plosca" jeEn={locale === 'en'} imaPupo={imaPupo} />
+          </div>
         </header>
 
         {/* nad pregledom, ne pod njim: kdor nastavitve ni koncal, vidi
