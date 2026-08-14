@@ -637,7 +637,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: .55rem; padding: .8rem .2rem; scrollbar-width: none; }
         .pd-nit::-webkit-scrollbar { display: none; }
         /* Pupa piše (pike) */
-        .pd-tipka { display: inline-flex; gap: .28rem; align-items: center; min-height: 1.3rem; }
+        .pd-tipka { display: inline-flex; gap: .3rem; align-items: center; min-height: 1.5rem; }
+        /* orb navpično centriran v »piše« oblačku, da ne štrli in oblaček obda vsebino */
+        .pd-vr.pupa .pd-mehur.pd-tipka::before { top: 50%; transform: translateY(-50%); }
         .pd-tipka span { width: .42rem; height: .42rem; border-radius: 50%; background: color-mix(in oklch, var(--ink, #1a1a1a) 38%, transparent); animation: pdTipka 1.2s infinite; }
         .pd-tipka span:nth-child(2) { animation-delay: .2s; }
         .pd-tipka span:nth-child(3) { animation-delay: .4s; }
