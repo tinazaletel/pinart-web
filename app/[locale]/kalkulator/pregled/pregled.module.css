@@ -134,8 +134,8 @@
   /* uporabniski meni na dnu: ostane samo krogec z zacetnico (razred je .avatar) */
   :global(body[data-meni='zaprt']) .profile { justify-content: center; gap: 0; padding-inline: 0; }
   :global(body[data-meni='zaprt']) .profile > span:not([class*='avatar']) { display: none; }
-  /* zaprt meni: profilni panel se odpre DESNO (flyout v vsebino), ne levo/odrezano */
-  :global(body[data-meni='zaprt']) .userMenu { left: calc(100% + .35rem); right: auto; bottom: 0; width: max-content; min-width: 11rem; }
+  /* zaprt meni: profilni panel se odpre DESNO (flyout v vsebino), ne levo/odrezano; ožji */
+  :global(body[data-meni='zaprt']) .userMenu { left: calc(100% + .35rem); right: auto; bottom: 0; width: 13rem; min-width: 0; }
 
 }
 @media (max-width: 980px) { .meniZapri, .meniOdpri { display: none !important; } }
