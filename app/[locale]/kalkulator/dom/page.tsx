@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import DashboardSidebar from '@/components/DashboardSidebar';
-import KalkulatorApp from '@/components/KalkulatorApp';
+import PupaDom from '@/components/PupaDom';
 import styles from '../pregled/pregled.module.css';
 
 /* NOVA stran (Faza 1 pogovorne smeri): Pupa začetni zaslon. Obstoječe strani
@@ -27,7 +27,7 @@ export default async function PupaDomPage({
     <main className={styles.shell}>
       <DashboardSidebar base={base} active="dom" />
       <section className={styles.workspace}>
-        <KalkulatorApp locale={locale} vLupini />
+        <PupaDom base={base} />
       </section>
     </main>
   );

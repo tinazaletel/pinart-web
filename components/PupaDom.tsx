@@ -11,6 +11,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Palette, Buildings, Browser, Megaphone, Camera, Compass, Layout, Newspaper, DotsThree } from '@phosphor-icons/react';
 import { lokalniOdgovori } from '@/lib/onboarding';
 import { PODROCJA } from '@/lib/pricingCatalog';
+import KalkulatorApp from '@/components/KalkulatorApp';
+import InvoiceWorkspace from '@/components/InvoiceWorkspace';
+import ExpenseWorkspace from '@/components/ExpenseWorkspace';
+import NovProjektWorkspace from '@/components/NovProjektWorkspace';
+import TaskManagerWorkspace from '@/components/TaskManagerWorkspace';
 
 /* a/b/c izbire za izkušnje — iste kot kalkulator (KalkulatorApp IZKUSNJE); PODROCJA iz lib */
 const IZKUSNJE_IZBIRE = [
@@ -48,6 +53,10 @@ function zatemni(hex: string, f: number) {
 export default function PupaDom({ base = '' }: { base?: string }) {
   const jeEn = base === '/en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
+  const locale = jeEn ? 'en' : 'sl';
+  /* Izbran tip iz vstopa → orodje se požene V ISTEM oknu (brez navigacije).
+     'ponudba' = pravi kalkulator; ostali = svoj obstoječi workspace. null = vstopni zaslon. */
+  const [tip, setTip] = useState<'ponudba' | 'racun' | 'strosek' | 'projekt' | 'naloga' | null>(null);
   const [ime, setIme] = useState('');
   const [vnos, setVnos] = useState('');
   const [priponka, setPriponka] = useState<File | null>(null);
@@ -110,35 +119,19 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
   const posljiVnos = () => {
     const t = vnos.trim();
-    if (aiNacin !== 'pupa') {
-      // Moj AI / Brez AI: klasični vodeni kalkulator
-      if (typeof window !== 'undefined') window.location.href = `${base}/kalkulator/orodje${t ? `?uvod=1&namig=${encodeURIComponent(t)}` : ''}`;
-      return;
-    }
     if (!t) return;
     const el = textRef.current;
-    // UREJANJE: popravi obstoječi odgovor V MESTU — posodobi PRAVO polje, NE premakni koraka
-    if (urejam !== null) {
-      const sp = sporocila.find(s => s.id === urejam);
-      setSporocila(prev => prev.map(s => (s.id === urejam ? { ...s, besedilo: t } : s)));
-      if (sp && typeof sp.korak === 'number' && sp.korak < VPRASANJA.length) {
-        setProfil(p => ({ ...p, [VPRASANJA[sp.korak as number].k]: t }));
-      }
-      setUrejam(null); setVnos(''); if (el) el.style.height = 'auto';
-      return;
-    }
-    // Pupa AI: pogovor V MESTU (isti chat ostane), z desne se odpre panel
-    if (!pogovor) {
-      // prvi vnos = izhodišče; Pupa začne s prvim vprašanjem (glava ponudbe)
-      setPogovor(true);
-      intentRef.current = t;
-      setSporocila([{ id: nextId(), kdo: 'jaz', besedilo: t, stanje: 'obdelano' }]);
-      const c = window.setTimeout(() => pupaVprasaj(0), 500); casovniki.current.push(c);
-    } else {
-      posljiBesedilo(t);
-    }
-    setVnos('');
-    if (el) el.style.height = 'auto';
+    // VSTOP → požene izbrano orodje V ISTEM oknu (brez navigacije). Tip ugotovimo iz besedila;
+    // privzeto = ponudba (pravi kalkulator). Pupa vklopljena bo vmes vprašala dodatno (Faza 2).
+    const s = t.toLowerCase();
+    let cilj: typeof tip = 'ponudba';
+    if (s.startsWith('izdaj račun') || s.startsWith('issue an invoice')) cilj = 'racun';
+    else if (s.startsWith('dodaj strošek') || s.startsWith('add an expense')) cilj = 'strosek';
+    else if (s.startsWith('ustvari nov projekt') || s.startsWith('ustvari projekt') || s.startsWith('start a')) cilj = 'projekt';
+    else if (s.startsWith('ustvari nalogo') || s.startsWith('create task')) cilj = 'naloga';
+    intentRef.current = t;
+    setVnos(''); if (el) el.style.height = 'auto';
+    setTip(cilj);
   };
 
   /* Razpored kartic: plavajoče (privzeto, lepo) ALI zbrane v okence v kotu
@@ -151,7 +144,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
      vnos ostane na dnu, z desne se odpre panel. Vprašanja = vajin obstoječi vprašalnik
      (Pupa vklopljena lahko vmes doda kontekstna vprašanja; izklopljena = ta zaporedja).
      Dizajn je ENAK ne glede na AI. */
-  const [pogovor, setPogovor] = useState(false);
+  const [pogovor] = useState(false); // (pogovor-v-oknu je nadomeščen z zagonom pravega orodja; ostane false)
   const [sporocila, setSporocila] = useState<Sporocilo[]>([]);
   const [korak, setKorak] = useState(0);
   const [profil, setProfil] = useState<Profil>({ ime: '', izkusnje: '', podjetje: '', podrocja: '' });
@@ -238,14 +231,22 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   ];
 
   /* hitre akcije = lahki POGOVORNI predlogi (napolnijo vnos), ne le linki (ChatGPT) */
-  const hitre: { ime: string; predlog?: string; href?: string; h: number }[] = [
-    { ime: L('Pripravi ponudbo', 'Create a quote'), predlog: L('Pripravi ponudbo za ', 'Create a quote for '), h: 297 },
-    { ime: L('Izdaj račun', 'Issue an invoice'), predlog: L('Izdaj račun za ', 'Issue an invoice for '), h: 200 },
-    { ime: L('Dodaj strošek', 'Add an expense'), predlog: L('Dodaj strošek: ', 'Add an expense: '), h: 60 },
-    { ime: L('Ustvari projekt', 'Start a project'), predlog: L('Ustvari nov projekt za ', 'Start a new project for '), h: 150 },
-    { ime: L('Ustvari nalogo', 'Create task'), predlog: L('Ustvari nalogo: ', 'Create task: '), h: 250 },
+  const hitre: { ime: string; tip?: typeof tip; href?: string; h: number }[] = [
+    { ime: L('Pripravi ponudbo', 'Create a quote'), tip: 'ponudba', h: 297 },
+    { ime: L('Izdaj račun', 'Issue an invoice'), tip: 'racun', h: 200 },
+    { ime: L('Dodaj strošek', 'Add an expense'), tip: 'strosek', h: 60 },
+    { ime: L('Ustvari projekt', 'Start a project'), tip: 'projekt', h: 150 },
+    { ime: L('Ustvari nalogo', 'Create task'), tip: 'naloga', h: 250 },
     { ime: L('Štoparica', 'Stopwatch'), href: `${base}/kalkulator/cas`, h: 190 },
   ];
+
+  // IZBRAN TIP → pravo orodje se požene V ISTEM oknu (nič navigacije). Za 'ponudba' je to
+  // pravi kalkulator (onboarding + živ panel + cena); ostali = svoj obstoječi workspace.
+  if (tip === 'ponudba') return <KalkulatorApp locale={locale} vLupini />;
+  if (tip === 'racun') return <InvoiceWorkspace base={base} />;
+  if (tip === 'strosek') return <ExpenseWorkspace />;
+  if (tip === 'projekt') return <NovProjektWorkspace base={base} />;
+  if (tip === 'naloga') return <TaskManagerWorkspace />;
 
   return (
     <div className={`pd${pogovor ? ' pogovor' : ''}`}>
@@ -402,7 +403,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
             <div className="pd-hitre">
               {hitre.map(h => (
-                <button type="button" key={h.ime} className="pd-cip" style={{ ['--h' as string]: String(h.h) }} onClick={() => { if (h.href) { if (typeof window !== 'undefined') window.location.href = h.href; } else if (h.predlog) predlagaj(h.predlog); }}>{h.ime}</button>
+                <button type="button" key={h.ime} className="pd-cip" style={{ ['--h' as string]: String(h.h) }} onClick={() => { if (h.href) { if (typeof window !== 'undefined') window.location.href = h.href; } else if (h.tip) setTip(h.tip); }}>{h.ime}</button>
               ))}
             </div>
           </>
