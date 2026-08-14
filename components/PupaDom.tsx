@@ -207,20 +207,29 @@ export default function PupaDom({ base = '' }: { base?: string }) {
           <div className="pd-nit">
             {sporocila.map(s => (
               <div key={s.id} className={`pd-vr ${s.kdo === 'jaz' ? 'jaz' : 'pupa'}`}>
-                <div className="pd-mehur">{s.besedilo}</div>
-                {s.kdo === 'jaz' && (
-                  <div className="pd-vr-meta">
-                    {s.stanje === 'cakanje' ? (
-                      <>
-                        <span className="pd-cak"><span className="pd-cakp" /><span className="pd-cakp" /><span className="pd-cakp" /> {L('v čakanju', 'queued')}</span>
-                        <button type="button" className="pd-vr-akc" onClick={() => urediSporocilo(s)}>{L('Uredi', 'Edit')}</button>
-                        <button type="button" className="pd-vr-akc" onClick={() => izbrisiSporocilo(s.id)}>{L('Izbriši', 'Delete')}</button>
-                      </>
-                    ) : (
-                      <span className="pd-obd">{L('prebrano', 'read')} ✓</span>
+                {s.kdo === 'pupa' && <span className="pd-vr-orb" aria-hidden />}
+                <div className="pd-vr-body">
+                  <div className="pd-mehur">
+                    {s.besedilo}
+                    {s.kdo === 'jaz' && (
+                      <button type="button" className="pd-vr-pen" onClick={() => urediSporocilo(s)} title={L('Uredi', 'Edit')} aria-label={L('Uredi', 'Edit')}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
+                      </button>
                     )}
                   </div>
-                )}
+                  {s.kdo === 'jaz' && (
+                    <div className="pd-vr-meta">
+                      {s.stanje === 'cakanje' ? (
+                        <>
+                          <span className="pd-cak"><span className="pd-cakp" /><span className="pd-cakp" /><span className="pd-cakp" /> {L('v čakanju', 'queued')}</span>
+                          <button type="button" className="pd-vr-akc" onClick={() => izbrisiSporocilo(s.id)}>{L('Izbriši', 'Delete')}</button>
+                        </>
+                      ) : (
+                        <span className="pd-obd">{L('prebrano', 'read')} ✓</span>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
             <div ref={koncRef} />
@@ -304,7 +313,16 @@ export default function PupaDom({ base = '' }: { base?: string }) {
           <div className="pd-p-polje"><span className="pd-p-ozn">{L('Stranka', 'Client')}</span><span className={`pd-p-vr${osnutek.stranka ? '' : ' prazno'}`}>{osnutek.stranka || L('— še ni —', '— not yet —')}</span></div>
           <div className="pd-p-postavke">
             <span className="pd-p-ozn">{L('Storitve', 'Services')}</span>
-            {osnutek.storitve.length === 0 ? <p className="pd-p-prazno">{L('Povej Pupi, kaj naj pripravi.', 'Tell Pupa what to prepare.')}</p> : (
+            {osnutek.storitve.length === 0 ? (
+              <div className="pd-p-doc">
+                <svg width="44" height="54" viewBox="0 0 46 56" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden>
+                  <path d="M7 3h20l12 12v38a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+                  <path d="M27 3v12h12" />
+                  <path d="M13 26h20M13 33h20M13 40h13" strokeLinecap="round" opacity=".55" />
+                </svg>
+                <p className="pd-p-prazno">{L('Povej Pupi, kaj naj pripravi — osnutek se sestavi tukaj.', 'Tell Pupa what to prepare — the draft builds here.')}</p>
+              </div>
+            ) : (
               <ul>{osnutek.storitve.map(s => <li key={s.id}><span>{s.ime}</span><b>{s.cena > 0 ? evro(s.cena) : L('po dogovoru', 'custom')}</b></li>)}</ul>
             )}
           </div>
@@ -423,12 +441,17 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd.pogovor .pd-plava, .pd.pogovor .pd-razpored { display: none; }
         .pd.pogovor .pd-center { width: min(33rem, 94vw); max-height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; }
         .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; display: flex; flex-direction: column; gap: .55rem; padding: .8rem .2rem; scrollbar-width: thin; }
-        .pd-vr { display: flex; flex-direction: column; gap: .18rem; max-width: 86%; }
-        .pd-vr.jaz { align-self: flex-end; align-items: flex-end; }
-        .pd-vr.pupa { align-self: flex-start; align-items: flex-start; }
-        .pd-mehur { padding: .6rem .85rem; border-radius: 1.15rem; font: 500 .93rem/1.45 var(--font-sans), sans-serif; box-shadow: 0 6px 18px oklch(40% .06 300 / .1); }
-        .pd-vr.pupa .pd-mehur { background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 10%, #fff); color: var(--ink, #1a1a1a); border-bottom-left-radius: .4rem; }
-        .pd-vr.jaz .pd-mehur { background: var(--ink, #2a2620); color: var(--paper, #faf7f2); border-bottom-right-radius: .4rem; }
+        .pd-vr { display: flex; max-width: 90%; }
+        .pd-vr.jaz { align-self: flex-end; }
+        .pd-vr.pupa { align-self: flex-start; gap: .55rem; align-items: flex-start; }
+        .pd-vr-orb { flex: none; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: conic-gradient(from 210deg, oklch(70% .19 300), oklch(72% .16 200), oklch(80% .13 150), oklch(78% .17 25), oklch(70% .19 300)); box-shadow: inset -2px -2px 5px oklch(100% 0 0 / .35), inset 2px 2px 5px oklch(30% .1 300 / .25); margin-top: .15rem; }
+        .pd-vr-body { display: flex; flex-direction: column; gap: .18rem; min-width: 0; }
+        .pd-vr.jaz .pd-vr-body { align-items: flex-end; }
+        .pd-mehur { position: relative; padding: .6rem .85rem; border-radius: 1.15rem; font: 500 .93rem/1.45 var(--font-sans), sans-serif; box-shadow: 0 6px 18px oklch(40% .06 300 / .1); }
+        .pd-vr.pupa .pd-mehur { background: #fff; color: var(--ink, #1a1a1a); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 7%, transparent); border-bottom-left-radius: .4rem; }
+        .pd-vr.jaz .pd-mehur { background: color-mix(in oklch, oklch(82% .1 165) 55%, #fff); color: var(--ink, #1a1a1a); border-bottom-right-radius: .4rem; padding-right: 2.1rem; }
+        .pd-vr-pen { position: absolute; top: .45rem; right: .5rem; display: grid; place-items: center; width: 1.35rem; height: 1.35rem; border: 0; border-radius: 50%; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease; }
+        .pd-vr-pen:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 9%, transparent); color: var(--ink, #1a1a1a); }
         .pd-vr-meta { display: flex; align-items: center; gap: .5rem; font: 600 .68rem var(--font-sans), sans-serif; padding: 0 .3rem; }
         .pd-cak { display: inline-flex; align-items: center; gap: .3rem; color: color-mix(in oklch, var(--ink, #1a1a1a) 48%, transparent); }
         .pd-cakp { width: .3rem; height: .3rem; border-radius: 50%; background: var(--purple, oklch(60% .2 297)); animation: pdCak 1.1s ease-in-out infinite; }
@@ -457,7 +480,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-p-postavke li span { font: 500 .88rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
         .pd-p-postavke li b { font: 700 .88rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); white-space: nowrap; }
         @keyframes pdPostavka { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-        .pd-p-prazno { margin: 0; font: 500 .84rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 40%, transparent); }
+        .pd-p-prazno { margin: 0; font: 500 .84rem/1.4 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 42%, transparent); }
+        .pd-p-doc { display: flex; flex-direction: column; align-items: center; gap: .55rem; padding: 1rem .4rem .3rem; text-align: center; }
+        .pd-p-doc svg { color: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 42%, transparent); }
         .pd-p-vsota { display: flex; align-items: baseline; justify-content: space-between; padding-top: .7rem; border-top: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 10%, transparent); }
         .pd-p-vsota span { font: 700 .78rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); }
         .pd-p-vsota b { font: 500 1.4rem var(--font-serif), Georgia, serif; color: var(--ink, #1a1a1a); }
