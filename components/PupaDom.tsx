@@ -75,7 +75,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
       <style jsx>{`
         .pd { max-width: 60rem; margin: 0 auto; padding: clamp(1rem, 4vw, 2.4rem) clamp(.9rem, 4vw, 1.6rem) 4rem; }
         .pd-eyebrow { margin: 0 0 .4rem; font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .16em; color: var(--purple, oklch(66% .2 297)); }
-        .pd-naslov { margin: 0 0 .5rem; font: 800 clamp(1.7rem, 4.5vw, 2.6rem)/1.1 var(--font-serif, Georgia), serif; color: var(--ink, #1a1a1a); letter-spacing: -.01em; }
+        .pd-naslov { margin: 0 0 .5rem; font: 500 clamp(1.7rem, 4.5vw, 2.6rem)/1.1 var(--font-serif), Georgia, serif; font-synthesis: none; color: var(--ink, #1a1a1a); letter-spacing: -.01em; }
         .pd-uvod { margin: 0 0 1.4rem; font: 500 1rem/1.55 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 66%, transparent); max-width: 40rem; }
         .pd-vnos { display: flex; gap: .6rem; align-items: stretch; background: #fff; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 12%, transparent); border-radius: 1rem; padding: .7rem .7rem .7rem 1rem; box-shadow: 0 10px 30px oklch(20% .03 55 / .06); }
         .pd-vnos textarea { flex: 1; min-width: 0; border: 0; outline: none; resize: none; background: transparent; font: 500 .95rem/1.5 var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
