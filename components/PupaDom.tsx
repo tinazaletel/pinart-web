@@ -8,7 +8,7 @@
    Glej memory: project_pupa_prvi_vmesnik, project_pupa_center_layout_ideja, project_flow_glass_aurora. */
 
 import { useEffect, useRef, useState } from 'react';
-import { Palette, Buildings, Browser, Megaphone, Camera, Compass, Layout, Newspaper, DotsThree } from '@phosphor-icons/react';
+import { Palette, Buildings, Browser, Megaphone, Camera, Compass, Layout, Newspaper, DotsThree, FileText, Receipt, Coins, FolderPlus, ListChecks } from '@phosphor-icons/react';
 import { lokalniOdgovori } from '@/lib/onboarding';
 import { PODROCJA } from '@/lib/pricingCatalog';
 import { nalozPogovore, nalozSporocila, ustvariPogovor, dodajSporocilo, type PupaPogovorPovzetek } from '@/lib/pupaCloud';
@@ -304,12 +304,12 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   ];
 
   /* hitre akcije = lahki POGOVORNI predlogi (napolnijo vnos), ne le linki (ChatGPT) */
-  const hitre: { ime: string; tip?: typeof tip; href?: string; h: number }[] = [
-    { ime: L('Pripravi ponudbo', 'Create a quote'), tip: 'ponudba', h: 297 },
-    { ime: L('Izdaj račun', 'Issue an invoice'), tip: 'racun', h: 200 },
-    { ime: L('Dodaj strošek', 'Add an expense'), tip: 'strosek', h: 60 },
-    { ime: L('Ustvari projekt', 'Start a project'), tip: 'projekt', h: 150 },
-    { ime: L('Ustvari nalogo', 'Create task'), tip: 'naloga', h: 250 },
+  const hitre: { ime: string; tip?: typeof tip; href?: string; h: number; ikona: React.ReactNode }[] = [
+    { ime: L('Pripravi ponudbo', 'Create a quote'), tip: 'ponudba', h: 297, ikona: <FileText size={16} weight="bold" /> },
+    { ime: L('Izdaj račun', 'Issue an invoice'), tip: 'racun', h: 200, ikona: <Receipt size={16} weight="bold" /> },
+    { ime: L('Dodaj strošek', 'Add an expense'), tip: 'strosek', h: 60, ikona: <Coins size={16} weight="bold" /> },
+    { ime: L('Ustvari projekt', 'Start a project'), tip: 'projekt', h: 150, ikona: <FolderPlus size={16} weight="bold" /> },
+    { ime: L('Ustvari nalogo', 'Create task'), tip: 'naloga', h: 250, ikona: <ListChecks size={16} weight="bold" /> },
     // Štoparica umaknjena iz vstopa: ni »ustvari« akcija; dostopna v meniju (Čas) in prek Pupe (»zaženi štoparico«).
   ];
 
@@ -518,7 +518,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
             <div className="pd-hitre">
               {hitre.map(h => (
-                <button type="button" key={h.ime} className="pd-cip" style={{ ['--h' as string]: String(h.h) }} onClick={() => { if (h.href) { if (typeof window !== 'undefined') window.location.href = h.href; } else if (h.tip) setTip(h.tip); }}>{h.ime}</button>
+                <button type="button" key={h.ime} className="pd-cip" style={{ ['--h' as string]: String(h.h) }} onClick={() => { if (h.href) { if (typeof window !== 'undefined') window.location.href = h.href; } else if (h.tip) setTip(h.tip); }}><span className="pd-cip-ik" aria-hidden>{h.ikona}</span>{h.ime}</button>
               ))}
             </div>
           </>
@@ -681,7 +681,8 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         @media (min-width: 1024px) { .pd-povzetek { display: none; } }
 
         .pd-hitre { display: flex; flex-wrap: wrap; gap: .45rem; margin: 1rem 0 .9rem; }
-        .pd-cip { padding: .45rem .9rem; border: 1px solid rgba(255,255,255,.6); border-radius: 999px; background: color-mix(in oklch, oklch(72% .14 var(--h)) 14%, rgba(255,255,255,.6)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font: 700 .78rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
+        .pd-cip { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.5rem; padding: .55rem 1rem; border: 1px solid rgba(255,255,255,.6); border-radius: 999px; background: color-mix(in oklch, oklch(72% .14 var(--h)) 14%, rgba(255,255,255,.6)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font: 700 .8rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+        .pd-cip-ik { display: inline-flex; color: color-mix(in oklch, oklch(58% .2 var(--h)) 85%, var(--ink, #1a1a1a)); }
         .pd-cip:hover { transform: translateY(-1px); box-shadow: 0 8px 20px oklch(55% .12 var(--h) / .2); }
         .pd-opomba { margin: 0; font: 500 .72rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); }
 
