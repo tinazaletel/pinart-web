@@ -108,6 +108,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   const osnutekRef = useRef<Osnutek>({ stranka: '', rok: '', storitve: [] });
   const preklicaniRef = useRef<Set<number>>(new Set());
   const koncRef = useRef<HTMLDivElement>(null);
+  const cakaRef = useRef<'stranka' | ''>(''); // kaj Pupa pričakuje (da gol odgovor postane npr. ime stranke)
   const skupaj = useMemo(() => osnutek.storitve.reduce((v, s) => v + s.cena, 0), [osnutek.storitve]);
   useEffect(() => { osnutekRef.current = osnutek; }, [osnutek]);
   useEffect(() => { if (pogovor) koncRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [sporocila, pogovor]);
@@ -115,9 +116,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
   function pupaOdgovori(poNovem: Osnutek) {
     let besedilo: string;
-    if (poNovem.storitve.length === 0) besedilo = L('Kaj naj pripravim? Npr. logotip, spletna stran, celostna podoba, katalog …', 'What should I prepare? E.g. logo, website, visual identity, catalogue …');
-    else if (!poNovem.stranka) { const sez = poNovem.storitve.map(s => s.ime.toLowerCase()).join(', '); besedilo = L(`Super — ${sez}. Za koga je (ime stranke)?`, `Great — ${sez}. Who is it for (client name)?`); }
-    else { const vsota = poNovem.storitve.reduce((v, s) => v + s.cena, 0); besedilo = L(`Pripravila sem osnutek za ${poNovem.stranka}: ${poNovem.storitve.length} ${poNovem.storitve.length === 1 ? 'postavka' : 'postavke'}, groba ocena ${evro(vsota)}. Preveri desno — če se ujema, odpri v urejevalniku.`, `Drafted for ${poNovem.stranka}: ${poNovem.storitve.length} item(s), rough estimate ${evro(vsota)}. Check on the right — if it fits, open it in the editor.`); }
+    if (poNovem.storitve.length === 0) { cakaRef.current = ''; besedilo = L('Kaj naj pripravim? Npr. logotip, spletna stran, celostna podoba, katalog …', 'What should I prepare? E.g. logo, website, visual identity, catalogue …'); }
+    else if (!poNovem.stranka) { cakaRef.current = 'stranka'; const sez = poNovem.storitve.map(s => s.ime.toLowerCase()).join(', '); besedilo = L(`Super — ${sez}. Za koga je (ime stranke)?`, `Great — ${sez}. Who is it for (client name)?`); }
+    else { cakaRef.current = ''; const vsota = poNovem.storitve.reduce((v, s) => v + s.cena, 0); besedilo = L(`Pripravila sem osnutek za ${poNovem.stranka}: ${poNovem.storitve.length} ${poNovem.storitve.length === 1 ? 'postavka' : 'postavke'}, groba ocena ${evro(vsota)}. Preveri desno — če se ujema, odpri v urejevalniku.`, `Drafted for ${poNovem.stranka}: ${poNovem.storitve.length} item(s), rough estimate ${evro(vsota)}. Check on the right — if it fits, open it in the editor.`); }
     setSporocila(prev => [...prev, { id: nextId(), kdo: 'pupa', besedilo }]);
   }
   function posljiBesedilo(text: string) {
@@ -128,6 +129,11 @@ export default function PupaDom({ base = '' }: { base?: string }) {
       if (preklicaniRef.current.has(mojId)) { preklicaniRef.current.delete(mojId); return; }
       setSporocila(prev => prev.map(s => (s.id === mojId ? { ...s, stanje: 'obdelano' } : s)));
       const poNovem = zdruzi(osnutekRef.current, preberi(t));
+      // če Pupa pričakuje ime stranke in ga v besedilu ni prek "za X", vzemi cel (kratek) odgovor
+      if (cakaRef.current === 'stranka' && !poNovem.stranka && !t.trim().endsWith('?') && t.trim().length <= 45) {
+        poNovem.stranka = t.replace(/[.,;:]+$/, '').trim();
+        cakaRef.current = '';
+      }
       osnutekRef.current = poNovem; setOsnutek(poNovem);
       const c2 = window.setTimeout(() => pupaOdgovori(poNovem), 450); casovniki.current.push(c2);
     }, 850);
@@ -439,15 +445,15 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         /* ===== POGOVOR V MESTU: isti chat, spodaj se odvija, panel se izvleče ===== */
         .pd.pogovor { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.4rem; align-content: center; }
         .pd.pogovor .pd-plava, .pd.pogovor .pd-razpored { display: none; }
-        .pd.pogovor .pd-center { width: min(33rem, 94vw); max-height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; }
-        .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; display: flex; flex-direction: column; gap: .55rem; padding: .8rem .2rem; scrollbar-width: thin; }
-        .pd-vr { display: flex; max-width: 90%; }
+        .pd.pogovor .pd-center { width: min(33rem, 94vw); max-height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; overflow-x: hidden; }
+        .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: .55rem; padding: .8rem .2rem; scrollbar-width: thin; }
+        .pd-vr { display: flex; max-width: 90%; min-width: 0; }
         .pd-vr.jaz { align-self: flex-end; }
         .pd-vr.pupa { align-self: flex-start; gap: .55rem; align-items: flex-start; }
         .pd-vr-orb { flex: none; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: conic-gradient(from 210deg, oklch(70% .19 300), oklch(72% .16 200), oklch(80% .13 150), oklch(78% .17 25), oklch(70% .19 300)); box-shadow: inset -2px -2px 5px oklch(100% 0 0 / .35), inset 2px 2px 5px oklch(30% .1 300 / .25); margin-top: .15rem; }
         .pd-vr-body { display: flex; flex-direction: column; gap: .18rem; min-width: 0; }
         .pd-vr.jaz .pd-vr-body { align-items: flex-end; }
-        .pd-mehur { position: relative; padding: .6rem .85rem; border-radius: 1.15rem; font: 500 .93rem/1.45 var(--font-sans), sans-serif; box-shadow: 0 6px 18px oklch(40% .06 300 / .1); }
+        .pd-mehur { position: relative; padding: .6rem .85rem; border-radius: 1.15rem; font: 500 .93rem/1.45 var(--font-sans), sans-serif; box-shadow: 0 6px 18px oklch(40% .06 300 / .1); overflow-wrap: anywhere; word-break: break-word; }
         .pd-vr.pupa .pd-mehur { background: #fff; color: var(--ink, #1a1a1a); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 7%, transparent); border-bottom-left-radius: .4rem; }
         .pd-vr.jaz .pd-mehur { background: color-mix(in oklch, oklch(82% .1 165) 55%, #fff); color: var(--ink, #1a1a1a); border-bottom-right-radius: .4rem; padding-right: 2.1rem; }
         .pd-vr-pen { position: absolute; top: .45rem; right: .5rem; display: grid; place-items: center; width: 1.35rem; height: 1.35rem; border: 0; border-radius: 50%; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease; }
