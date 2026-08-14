@@ -612,7 +612,8 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-naslov { margin: 0; font: 500 clamp(1.45rem, 3.4vw, 2.05rem)/1.1 var(--font-serif), Georgia, serif; font-synthesis: none; color: var(--ink, #1a1a1a); letter-spacing: -.01em; text-wrap: balance; }
         .pd-uvod { margin: .15rem 0 1.1rem; font: 500 .98rem/1.5 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); }
         /* Zgodovina: subtilen gumb desno (levo od razpored) + panel zdrsne z desne */
-        .pd-zgod-trig { position: absolute; top: .5rem; right: 1rem; z-index: 30; display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 14%, transparent); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease; }
+        /* zgodovina VEDNO vidna: fixed na viewport (pod glavo), da ne odplava ob scrollu */
+        .pd-zgod-trig { position: fixed; top: 4.3rem; right: 1.6rem; z-index: 63; display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 14%, transparent); border-radius: 50%; background: rgba(255,255,255,.82); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease; box-shadow: 0 4px 14px oklch(40% .06 300 / .14); }
         .pd-zgod-trig:hover { background: #fff; color: var(--ink, #1a1a1a); }
         .pd-zgod-back { position: fixed; inset: 0; z-index: 60; background: oklch(30% .03 300 / .18); animation: pdFade .2s ease; }
         @keyframes pdFade { from { opacity: 0; } to { opacity: 1; } }
@@ -723,11 +724,11 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-vr.jaz .pd-vr-body { align-items: flex-end; }
         .pd-mehur { position: relative; padding: .6rem .85rem; border-radius: 1.15rem; font: 500 .93rem/1.45 var(--font-sans), sans-serif; box-shadow: 0 6px 18px oklch(40% .06 300 / .1); overflow-wrap: anywhere; word-break: break-word; white-space: pre-line; }
         /* Pupin mehurček: bela barva, ENAKO zaobljeni robovi (base radius 1.15rem), orb poravnan s prvo vrstico, prejšnja velikost pisave */
-        .pd-vr.pupa .pd-mehur { position: relative; padding: .6rem .85rem .6rem 2.5rem; background: #fff; color: var(--ink, #1a1a1a); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 7%, transparent); border-top-left-radius: 5px; }
+        .pd-vr.pupa .pd-mehur { position: relative; padding: .6rem .85rem .6rem 2.5rem; background: rgba(255,255,255,.62); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3); color: var(--ink, #1a1a1a); border: 1px solid rgba(255,255,255,.7); border-top-left-radius: 5px; }
         .pd-vr.pupa .pd-mehur::before { content: ""; position: absolute; left: .72rem; top: .6rem; width: 1.25rem; height: 1.25rem; border-radius: 50%; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 2px 6px rgba(124,58,237,.28); }
         .pd-meh-q { display: block; font-weight: 700; }
         .pd-meh-pod { display: block; margin-top: .1rem; font-weight: 500; font-size: .84em; color: color-mix(in oklch, var(--ink, #1a1a1a) 52%, transparent); }
-        .pd-vr.jaz .pd-mehur { background: color-mix(in oklch, oklch(82% .1 165) 55%, #fff); color: var(--ink, #1a1a1a); border-top-right-radius: 5px; padding-right: 2.1rem; transition: opacity .25s ease, background .2s ease; }
+        .pd-vr.jaz .pd-mehur { background: color-mix(in oklch, oklch(84% .13 165) 42%, rgba(255,255,255,.5)); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3); color: var(--ink, #1a1a1a); border: 1px solid color-mix(in oklch, oklch(80% .12 165) 40%, rgba(255,255,255,.5)); border-top-right-radius: 5px; padding-right: 2.1rem; transition: opacity .25s ease, background .2s ease; }
         /* neprebrano = obledel mehurček; med urejanjem = SIV (namesto zelenega) */
         .pd-vr.jaz .pd-mehur.caka { opacity: .5; box-shadow: none; }
         .pd-vr.jaz .pd-mehur.ureja { background: color-mix(in oklch, var(--ink, #1a1a1a) 11%, #fff); box-shadow: inset 0 0 0 1.5px color-mix(in oklch, var(--ink, #1a1a1a) 20%, transparent); }
