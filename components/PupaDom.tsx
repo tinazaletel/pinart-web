@@ -177,7 +177,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
             ref={textRef}
             value={vnos}
             onChange={e => { setVnos(e.target.value); const el = e.currentTarget; el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 220)}px`; }}
-            onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); posljiVnos(); } }}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); posljiVnos(); } }}
             placeholder={L('npr. »Pripravi ponudbo za spletno stran za kavarno Luna, rok konec septembra«', 'e.g. “Prepare a quote for a website for Café Luna, deadline end of September”')}
             rows={2}
             aria-label={L('Napiši, kaj želiš', 'Write what you want')}
