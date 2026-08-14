@@ -690,9 +690,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-ai-meni b { font: 700 .82rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
         .pd-ai-meni small { font: 500 .7rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); }
         /* mobilni povzetek (skrit na namizju, kjer plavajo kartice) */
-        .pd-povzetek { display: flex; gap: .5rem; margin: .8rem 0 .2rem; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+        .pd-povzetek { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin: .8rem 0 .2rem; }
         .pd-povzetek::-webkit-scrollbar { display: none; }
-        .pd-pov-cip { flex: none; display: inline-flex; align-items: baseline; gap: .35rem; padding: .5rem .75rem; border: 1px solid rgba(255,255,255,.6); border-radius: 999px; background: color-mix(in oklch, oklch(72% .14 var(--h)) 12%, rgba(255,255,255,.6)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); text-decoration: none; white-space: nowrap; }
+        .pd-pov-cip { display: flex; align-items: baseline; gap: .35rem; min-width: 0; padding: .6rem .8rem; border: 1px solid rgba(255,255,255,.6); border-radius: 1rem; background: color-mix(in oklch, oklch(72% .14 var(--h)) 12%, rgba(255,255,255,.6)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); text-decoration: none; white-space: nowrap; }
         .pd-pov-cip b { font: 700 .85rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
         .pd-pov-cip span { font: 600 .68rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); }
         @media (min-width: 1024px) { .pd-povzetek { display: none; } }
