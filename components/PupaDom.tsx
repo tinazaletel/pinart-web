@@ -170,6 +170,16 @@ export default function PupaDom({ base = '' }: { base?: string }) {
           {glasNamig && <p className="pd-glas-namig" role="status">{glasNamig}</p>}
         </div>
 
+        {/* mobilni povzetek: kompromis — na telefonu ena čista vrstica namesto
+            plavajočih kartic (te so le na namizju). Isti podatki, klikljivi. */}
+        <div className="pd-povzetek">
+          {plava.map((p, i) => (
+            <Link key={i} href={p.href} className="pd-pov-cip" style={{ ['--h' as string]: String(p.h) }}>
+              <b>{p.vrednost}</b><span>{p.labela}</span>
+            </Link>
+          ))}
+        </div>
+
         <div className="pd-hitre">
           {hitre.map(h => (
             <button type="button" key={h.ime} className="pd-cip" style={{ ['--h' as string]: String(h.h) }} onClick={() => predlagaj(h.predlog)}>{h.ime}</button>
@@ -240,6 +250,14 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         /* klikljive plavajoče kartice: container ne blokira sredine, kartice so klik */
         .pd-kartica { pointer-events: auto; text-decoration: none; cursor: pointer; }
         .pd-kartica:hover { box-shadow: 0 18px 44px oklch(50% .1 var(--h) / .24); }
+        /* mobilni povzetek (skrit na namizju, kjer plavajo kartice) */
+        .pd-povzetek { display: flex; gap: .5rem; margin: .8rem 0 .2rem; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+        .pd-povzetek::-webkit-scrollbar { display: none; }
+        .pd-pov-cip { flex: none; display: inline-flex; align-items: baseline; gap: .35rem; padding: .5rem .75rem; border: 1px solid rgba(255,255,255,.6); border-radius: 999px; background: color-mix(in oklch, oklch(72% .14 var(--h)) 12%, rgba(255,255,255,.6)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); text-decoration: none; white-space: nowrap; }
+        .pd-pov-cip b { font: 700 .85rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
+        .pd-pov-cip span { font: 600 .68rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); }
+        @media (min-width: 1024px) { .pd-povzetek { display: none; } }
+
         .pd-hitre { display: flex; flex-wrap: wrap; gap: .45rem; margin: 1rem 0 .9rem; }
         .pd-cip { padding: .45rem .9rem; border: 1px solid rgba(255,255,255,.6); border-radius: 999px; background: color-mix(in oklch, oklch(72% .14 var(--h)) 14%, rgba(255,255,255,.6)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font: 700 .78rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
         .pd-cip:hover { transform: translateY(-1px); box-shadow: 0 8px 20px oklch(55% .12 var(--h) / .2); }
