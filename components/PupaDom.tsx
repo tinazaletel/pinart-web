@@ -700,10 +700,12 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         /* Pogovor: vnos PRIPET na dno, sporočila drsijo (scrollbar skrit). overflow: visible na
            .pd/.pd-center, da sence (vnos, mehurčki) NISO odrezane; drsi le nit (z vodoravnim paddingom
            za sence mehurčkov). */
-        .pd.pogovor { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.4rem; align-content: center; overflow: visible; }
+        /* Pogovor kot KALKULATOR: naravni tok (stran/kontent se pomika), VNOS = position:fixed na
+           viewport dno (isti vzorec kot .cw .noga). Sporočila dobijo spodnji prostor za pripeti vnos. */
+        .pd.pogovor { display: block; overflow: visible; }
         .pd.pogovor .pd-plava, .pd.pogovor .pd-razpored { display: none; }
-        .pd.pogovor .pd-center { width: min(48rem, 94vw); height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; overflow: visible; }
-        .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: .55rem; padding: .8rem 1.2rem; scrollbar-width: none; }
+        .pd.pogovor .pd-center { width: min(48rem, 94vw); margin: 0 auto; min-height: calc(100dvh - 4.5rem); display: block; overflow: visible; }
+        .pd-nit { display: flex; flex-direction: column; gap: .55rem; padding: .8rem 1.2rem 7.5rem; }
         .pd-nit::-webkit-scrollbar { display: none; }
         /* Pupa piše (pike) */
         .pd-tipka { display: inline-flex; gap: .3rem; align-items: center; min-height: 1.5rem; }
@@ -746,7 +748,11 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-vr-akc { border: 0; background: none; padding: 0; color: var(--purple, oklch(58% .2 297)); font: 600 .68rem var(--font-sans), sans-serif; cursor: pointer; text-decoration: underline; }
         .pd-vr-akc:hover { opacity: .75; }
         /* vnos VEDNO viden na dnu (ne scrolla z nitjo) */
-        .pd.pogovor .pd-vnos { flex: none; }
+        /* VNOS pripet na viewport dno — ISTI vzorec kot kalkulatorjeva .cw .noga (fixed; left = širina menija).
+           Neprosojno ozadje + senca, ker lebdi nad sporočili (fixed → senca se ne reže). */
+        .pd.pogovor .pd-vnos { position: fixed; bottom: .8rem; left: 17.5rem; right: 0; z-index: 62; width: auto; max-width: min(48rem, 94vw); margin: 0 auto; background: rgba(255,255,255,.95); box-shadow: 0 12px 34px oklch(40% .08 300 / .22); }
+        :global(body[data-meni='zaprt']) .pd.pogovor .pd-vnos { left: 4.4rem; }
+        @media (max-width: 980px) { .pd.pogovor .pd-vnos { left: 0; } }
 
         /* a/b/c izbire */
         .pd-izbire { display: flex; flex-wrap: wrap; gap: .5rem; padding: .1rem .1rem .3rem; align-self: flex-end; max-width: 92%; }
