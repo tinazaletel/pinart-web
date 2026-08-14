@@ -66,10 +66,12 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     try { setIme((lokalniOdgovori().ime || '').trim()); } catch { /* ignore */ }
   }, []);
 
-  /* Namerno DVE vrstici: ime zgoraj, vprašanje spodaj. Tako je pri kratkem ('Hej.')
-     in dolgem imenu ('Hej, Aleksandra.') vedno urejeno — nič grdih sirot. */
-  const pozdrav1 = ime ? L(`Hej, ${ime}.`, `Hi, ${ime}.`) : L('Hej.', 'Hi.');
-  const pozdrav2 = L('Kaj želiš danes?', "What's on today?");
+  /* Ena vrstica na namizju (za kratko IN dolgo ime je prostora dovolj); če je
+     res predolgo (npr. mobilni), text-wrap: balance lepo uravnovesi v dve vrstici
+     — brez grdih sirot. */
+  const pozdrav = ime
+    ? L(`Hej, ${ime}. Kaj želiš danes?`, `Hi, ${ime}. What's on today?`)
+    : L('Hej. Kaj želiš danes?', "Hi. What's on today?");
 
   const posljiVnos = () => {
     const t = vnos.trim();
@@ -136,7 +138,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
           <span className="pd-orb" aria-hidden />
           <div>
             <p className="pd-eyebrow">PUPA</p>
-            <h1 className="pd-naslov">{pozdrav1}<br />{pozdrav2}</h1>
+            <h1 className="pd-naslov">{pozdrav}</h1>
           </div>
         </div>
         <p className="pd-uvod">{L('Povej, kaj želiš ustvariti — Pupa uredi poslovni del.', 'Tell me what you want to create — Pupa handles the business part.')}</p>
