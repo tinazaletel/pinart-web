@@ -133,23 +133,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   const [zgodovina, setZgodovina] = useState<PupaPogovorPovzetek[]>([]);
   const [zgodovinaOdprta, setZgodovinaOdprta] = useState(false);
   const nalozenaNit = useRef(false);
-  useEffect(() => {
-    let ziv = true;
-    (async () => {
-      // OBLAK najprej: naloži zadnji pogovor (per-uporabnik). Če ni oblaka/prijave → localStorage.
-      const pogovori = await nalozPogovore();
-      if (!ziv) return;
-      if (pogovori.length > 0) {
-        setPogovorId(pogovori[0].id);
-        const spor = await nalozSporocila(pogovori[0].id);
-        if (ziv && spor.length) setPupaSpor(spor);
-      } else {
-        try { const raw = localStorage.getItem('pinart-pupa-nit'); if (raw) { const p = JSON.parse(raw); if (Array.isArray(p)) setPupaSpor(p); } } catch { /* ignore */ }
-      }
-      nalozenaNit.current = true;
-    })();
-    return () => { ziv = false; };
-  }, []);
+  /* Vsak vstop = NOVA seja (prazen pogovor, naslov spet vidiš). Prejšnje seje se
+     shranjujejo v oblak in jih najdeš v Zgodovini (desni panel). NE nalagamo zadnje samodejno. */
+  useEffect(() => { nalozenaNit.current = true; }, []);
   useEffect(() => {
     if (!nalozenaNit.current) return;
     try { localStorage.setItem('pinart-pupa-nit', JSON.stringify(pupaSpor)); } catch { /* ignore */ }
@@ -589,7 +575,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
         .pd-plava { position: absolute; inset: 0; z-index: 1; pointer-events: none; display: none; }
         /* gumb za preklop razporeda (zberi v kot / razprši) */
-        .pd-razpored { position: absolute; top: .75rem; right: .5rem; z-index: 30; display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 14%, transparent); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease, border-color .15s ease; }
+        .pd-razpored { position: absolute; top: .75rem; right: .5rem; z-index: 30; display: none; place-items: center; width: 2.4rem; height: 2.4rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 14%, transparent); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease, border-color .15s ease; }
         .pd-razpored:hover { background: #fff; color: var(--ink, #1a1a1a); }
         /* wrap nosi PLAVANJE (position + bob); kartica se POVEČA ob hoveru (brez konflikta transformov) */
         .pd-kartica-wrap { position: absolute; pointer-events: none; animation: pdBob 9s ease-in-out infinite; }
@@ -626,7 +612,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-naslov { margin: 0; font: 500 clamp(1.45rem, 3.4vw, 2.05rem)/1.1 var(--font-serif), Georgia, serif; font-synthesis: none; color: var(--ink, #1a1a1a); letter-spacing: -.01em; text-wrap: balance; }
         .pd-uvod { margin: .15rem 0 1.1rem; font: 500 .98rem/1.5 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); }
         /* Zgodovina: subtilen gumb desno (levo od razpored) + panel zdrsne z desne */
-        .pd-zgod-trig { position: absolute; top: .75rem; right: 3.25rem; z-index: 30; display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 14%, transparent); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease; }
+        .pd-zgod-trig { position: absolute; top: .5rem; right: 1rem; z-index: 30; display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 14%, transparent); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease; }
         .pd-zgod-trig:hover { background: #fff; color: var(--ink, #1a1a1a); }
         .pd-zgod-back { position: fixed; inset: 0; z-index: 60; background: oklch(30% .03 300 / .18); animation: pdFade .2s ease; }
         @keyframes pdFade { from { opacity: 0; } to { opacity: 1; } }
@@ -647,7 +633,8 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
         /* position+z-index: backdrop-filter naredi .pd-vnos svoj stacking context;
            brez tega dvига čipi (tudi backdrop-filter) prekrijejo AI meni. */
-        .pd-vnos { position: relative; z-index: 20; display: flex; flex-direction: column; gap: .5rem; background: rgba(255,255,255,.66); backdrop-filter: blur(18px) saturate(1.35); -webkit-backdrop-filter: blur(18px) saturate(1.35); border: 1px solid rgba(255,255,255,.75); border-radius: 1.2rem; padding: .95rem 1rem; box-shadow: 0 18px 50px oklch(40% .08 300 / .16); }
+        /* brez zunanje sence (workspace jo reže) — obroba za globino */
+        .pd-vnos { position: relative; z-index: 20; display: flex; flex-direction: column; gap: .5rem; background: rgba(255,255,255,.72); backdrop-filter: blur(18px) saturate(1.35); -webkit-backdrop-filter: blur(18px) saturate(1.35); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 12%, transparent); border-radius: 1.2rem; padding: .95rem 1rem; }
         .pd-vnos textarea { width: 100%; box-sizing: border-box; border: 0; outline: none; resize: none; background: transparent; font: 500 1rem/1.5 var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); min-height: 3.1rem; max-height: 220px; overflow-y: auto; transition: height .08s ease; }
         .pd-vnos textarea::placeholder { color: color-mix(in oklch, var(--ink, #1a1a1a) 42%, transparent); }
         /* brez grdega oglatega fokus ringa na textarea — obarva se ROB celotnega polja */
@@ -709,10 +696,13 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         }
 
         /* ===== POGOVOR V MESTU: isti chat, spodaj se odvija, panel se izvleče ===== */
-        .pd.pogovor { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.4rem; align-content: center; }
+        /* Pogovor: vnos PRIPET na dno, sporočila drsijo (scrollbar skrit). overflow: visible na
+           .pd/.pd-center, da sence (vnos, mehurčki) NISO odrezane; drsi le nit (z vodoravnim paddingom
+           za sence mehurčkov). */
+        .pd.pogovor { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.4rem; align-content: center; overflow: visible; }
         .pd.pogovor .pd-plava, .pd.pogovor .pd-razpored { display: none; }
-        .pd.pogovor .pd-center { width: min(48rem, 94vw); height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; overflow-x: hidden; }
-        .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: .55rem; padding: .8rem .2rem; scrollbar-width: none; }
+        .pd.pogovor .pd-center { width: min(48rem, 94vw); height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; overflow: visible; }
+        .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: .55rem; padding: .8rem 1.2rem; scrollbar-width: none; }
         .pd-nit::-webkit-scrollbar { display: none; }
         /* Pupa piše (pike) */
         .pd-tipka { display: inline-flex; gap: .3rem; align-items: center; min-height: 1.5rem; }
