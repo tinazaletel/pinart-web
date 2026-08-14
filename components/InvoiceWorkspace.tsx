@@ -18,6 +18,7 @@ import Toast from '@/components/Toast';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
 import { VALUTE_RACUN } from '@/lib/valute';
+import { naslednjaStevilka } from '@/lib/stevilcenje';
 import PosljiBlok from '@/components/PosljiBlok';
 import { posljiMail } from '@/lib/posta';
 import { dodajPostavko, izbrisiPostavko, preberiPostavke, type Postavka, type PostavkaEnota } from '@/lib/postavke';
@@ -378,16 +379,24 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   };
   const odstraniPodpis = () => setPodpisSlika('');
 
-  const save = (event?: FormEvent<HTMLFormElement>) => {
+  const save = async (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
     /* prej je v predogledu (demo) TIHO vrnil -> uporabnica je klikala Shrani in se ni zgodilo nič.
        Zdaj pove razlog: v demu ne pišemo v pravo bazo, treba je preklopiti na »Moji podatki«. */
     if (samoOgled) { setNapaka(L('To je predogled (demo) — račun ni shranjen. Za pravo shranjevanje preklopi na »Moji podatki« (preklopnik zgoraj).', 'This is a preview (demo) — the invoice is not saved. To really save, switch to »My data« (toggle above).')); return; }
     const items = izracun.postavke.filter(p => p.opis || p.cena);
     if (!items.length) { setNapaka(L('Dodaj vsaj eno postavko z opisom in ceno.', 'Add at least one item with a description and price.')); return; }
+    /* ŠTEVILKA: ob IZDAJI dodeli strežnik (atomsko, zaporedno, ločeni seriji račun/predračun) —
+       preprečuje podvajanje ob hkratnih izdajah. FAIL-SAFE: če RPC/migracija ni na voljo,
+       ostane ročna/provizorna številka, da izdaja NIKOLI ne pade. */
+    let stevilkaDok = stevilka.trim();
+    try {
+      const dodeljena = await naslednjaStevilka(predracun ? 'predracun' : 'racun');
+      if (dodeljena && dodeljena.trim()) stevilkaDok = dodeljena.trim();
+    } catch { /* strežniško številčenje trenutno ni na voljo → ostane ročna/provizorna */ }
     const invoice: FlowInvoice = {
       id: crypto.randomUUID(),
-      number: stevilka.trim(),
+      number: stevilkaDok,
       title: items[0].opis.slice(0, 90) || selectedOffer?.title,
       client: stranka.trim() || selectedOffer?.client || L('Brez stranke', 'No client'),
       amount: Math.round((avansJeDelni ? zaPlaciloAvans : izracun.zaPlacilo) * 100) / 100,
