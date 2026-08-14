@@ -359,7 +359,9 @@
 
 /* ── Mesečna tabela: overflow-x na ovoju, da tabela na mobilnem drsi vodoravno
    namesto da stisne stolpce cez rob zaslona (preverjeno pri 390px). ──────── */
-.mesecTabelaOvoj { overflow-x: auto; border: 1px solid var(--line); border-radius: 1rem; }
+/* min-width: 0 je nujen: .timer je grid, brez tega grid-item ne skrci pod min-width
+   tabele (34rem) → tabelo odreze .workspace overflow. Z 0 se ovoj skrci in overflow-x drsi. */
+.mesecTabelaOvoj { min-width: 0; max-width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 1rem; }
 .mesecTabela { width: 100%; min-width: 34rem; border-collapse: collapse; font-size: .84rem; }
 .mesecTabela thead th {
   padding: .6rem .85rem; border-bottom: 1px solid var(--line);

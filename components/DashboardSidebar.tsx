@@ -50,7 +50,7 @@ export default async function DashboardSidebar({ base, active }: { base: string;
   const menuVsebina = () => <>
     {/* Vrh menija: preklop Pupa ⇄ Home (nadzorna plošča) namesto samostojne postavke.
         Pupa zaklenjena brez Pupe v paketu (klik = alert za nadgradnjo). */}
-    <div>
+    <div className={styles.pogledOvoj}>
       <PogledPreklop base={base} aktiven={aktivenPreklop} jeEn={jeEn} imaPupo={imaPupo} />
     </div>
     {/* Na telefonu so skupine zaprte: 13 postavk hkrati ne gre v en zaslon,

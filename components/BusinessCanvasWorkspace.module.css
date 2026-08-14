@@ -52,7 +52,7 @@
 .savedCanvases > header p { margin: 0 0 .35rem; font-size: .75rem; font-weight: 850; letter-spacing: .14em; }
 .savedCanvases > header h2 { margin: 0; font: 500 clamp(1.35rem, 2vw, 1.9rem)/1.1 var(--font-serif), Georgia, serif; }
 .savedCanvases > header > span { display: grid; width: 2.5rem; aspect-ratio: 1; place-items: center; border-radius: 50%; background: oklch(93% .035 295); font-weight: 800; }
-.canvasTableWrap { overflow-x: auto; border-top: 1px solid var(--line); }
+.canvasTableWrap { min-width: 0; max-width: 100%; overflow-x: auto; border-top: 1px solid var(--line); }
 .canvasTableWrap table { width: 100%; min-width: 52rem; border-collapse: collapse; }
 .canvasTableWrap th, .canvasTableWrap td { padding: .9rem 1rem; border-bottom: 1px solid var(--line); text-align: left; }
 .canvasTableWrap th { color: var(--muted); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }

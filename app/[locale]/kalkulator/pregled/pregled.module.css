@@ -1733,9 +1733,18 @@
 }
 
 @media (max-width: 680px) {
-  .goalOverview { grid-template-columns: 1fr; gap: 1.2rem; }
-  .goalOverviewStats { grid-column: 1; grid-row: auto; flex-direction: column; gap: .8rem; }
-  .goalLargeDial { grid-column: 1; grid-row: auto; }
+  /* Mobilno: manj visine — tesnejsi odmiki, manjsi naslovi/dial (Tina: »prevec visine«). */
+  .goalsPage { gap: .7rem; }
+  .goalOverview { grid-template-columns: 1fr auto; align-items: center; gap: .9rem 1rem; min-height: 0; padding: 1.1rem 1.15rem; }
+  .goalOverview h2 { font-size: 2.5rem; }
+  .goalOverview > div:first-child > p:last-child { font-size: .78rem; }
+  .goalOverviewStats { grid-column: 1; grid-row: 2; flex-direction: row; flex-wrap: wrap; gap: .6rem 1.4rem; }
+  .goalOverviewStats span { min-width: 0; }
+  .goalLargeDial { grid-column: 2; grid-row: 1 / span 2; width: 5.6rem; }
+  .goalLargeDial strong { font-size: 1.35rem; }
+  .goalBuilder, .goalChecklist, .goalHistory { padding: 1.1rem 1.15rem; }
+  .goalBuilder { gap: 1rem; }
+  .goalBuilder header h2, .goalChecklist h2, .goalHistory h2 { font-size: 1.5rem; }
   /* na Ciljih ostanejo kartice VIDNE tudi na mobilnem — zložijo se v en stolpec */
   .summary { grid-template-columns: 1fr; }
   .goalEquation { grid-template-columns: 1fr; }
@@ -2330,8 +2339,13 @@
   /* tesneje, da vse gre v en zaslon brez drsenja */
   .mobileMenu .navItem { padding: .5rem .7rem; gap: .65rem; font-size: .82rem !important; }
   .mobileMenu .navGroup { margin: .5rem 0 .1rem; font-size: .52rem; }
-  /* orodja na ZACETEK predala, v eni vrstici: iskanje se raztegne, ikoni ob njem */
-  .meniOrodja { margin: 0 0 .6rem; padding: 0 0 .7rem; border-top: 0; border-bottom: 1px solid var(--line); }
+  /* orodja na ZACETEK predala, v eni vrstici: iskanje se raztegne, ikoni ob njem.
+     Brez locilne crte (Tina: grda) — presledek zadostuje. */
+  .meniOrodja { margin: 0 0 .5rem; padding: 0; border-top: 0; border-bottom: 0; }
+  /* Ko je mobilni predal ODPRT, plavajoca barvasto Pupa (orb) odpade — v meniju je
+     ze ✨ AI ikona, dva AI gumba sta odvec. Ko je predal ZAPRT, orb ostane (na mobilu
+     je takrat edini dostop do Pupe). :has() = brez JS. */
+  body:has(.mobileMenu[open]) :global(.pupa-fab) { display: none !important; }
   .meniOrodjaVrsta { flex-wrap: nowrap; gap: .45rem; padding: 0 .2rem .55rem; }
   .meniOrodjaVrsta .ukazGumb { flex: 1 1 auto; min-width: 0; }
   .meniOrodjaVrsta .headerTools { flex: none; flex-wrap: nowrap; }
@@ -2424,6 +2438,10 @@
    zaslon, pri stirih skupinah pa z lahkoto. */
 @media (max-width: 980px) {
   .meniSkupina { border-top: 1px solid color-mix(in oklch, var(--ink) 7%, transparent); }
+  /* Prva skupina (ORODJA) tik pod preklopom Pupa|Home: brez zgornje crte (Tina: grda) —
+     locnice med skupinami ostanejo, le tale prva odpade + malo zraka pod preklopom. */
+  .pogledOvoj { padding-bottom: .5rem; }
+  .pogledOvoj + .meniSkupina { border-top: 0; }
   .meniSkupinaGlava {
     display: flex; align-items: center; justify-content: space-between;
     width: 100%; min-height: 2.9rem; padding: 0 .7rem;
