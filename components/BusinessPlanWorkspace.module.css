@@ -376,6 +376,22 @@
 /* bolniska/dopust/praznik so cel dan brez ur — vrstica je nekoliko zbledela */
 .mesecTabela tbody tr[data-odsoten='true'] { color: var(--muted); background: oklch(97% .006 87 / .6); }
 .mesecTabela tbody td:last-child { text-align: center; }
+/* Mobilno: tabela naj FITA v telefon (ne drsi, ne reze) — brez fiksne 34rem sirine,
+   tesnejsi L/R padding + manjsi razmiki med Prihod/Malica/Odhod, manjsa pisava. (Tina) */
+@media (max-width: 640px) {
+  /* Kartica evidence z manjsim L/R paddingom → tabela ima vec prostora (Tina). */
+  .casPogled .evidenca { padding-left: .5rem; padding-right: .5rem; }
+  .mesecTabela { min-width: 0; font-size: .74rem; }
+  .mesecTabela thead th, .mesecTabela tbody td { padding-left: .28rem; padding-right: .28rem; }
+  .mesecTabela thead th:first-child, .mesecTabela tbody td:first-child { padding-left: .5rem; }
+  .mesecTabela thead th { font-size: .54rem; letter-spacing: .01em; }
+  .mesecTabela thead th:last-child, .mesecTabela tbody td:last-child { width: 1.4rem; padding-right: .2rem; }
+  /* casi + ure v eno vrstico (kratki), da se »30 min« / »7 h 45 min« ne lomi grdo */
+  .mesecTabela tbody td:nth-child(2), .mesecTabela tbody td:nth-child(3),
+  .mesecTabela tbody td:nth-child(4), .mesecTabela .mesecUre { white-space: nowrap; }
+  /* komentar dneva naj se lomi po BESEDAH, ne po crkah */
+  .mesecOpomba { overflow-wrap: break-word; word-break: normal; }
+}
 .mesecTabela tbody td:last-child button {
   padding: .2rem .5rem; border: 0; background: none;
   color: var(--muted); font-size: 1.05rem; line-height: 1; cursor: pointer;
@@ -407,6 +423,37 @@
 }
 .krajPilula[data-kraj='doma'] { background: oklch(93% .05 260); color: oklch(42% .13 260); }     /* modra = od doma */
 .krajPilula[data-kraj='pisarna'] { background: oklch(95% .008 87); color: oklch(46% .02 70); border-color: oklch(88% .012 87); }  /* nevtralna = na podjetju */
+
+/* ── Legenda barv za VRSTA + klikabilni »?« (privzeto skrito; pokaze se na mobilu,
+      kjer so v tabeli samo pikice namesto tekst-znack). ───────────────────── */
+.vrstaLegendaVrstica { display: none; }
+.legDot { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; background: var(--pika, oklch(62% .02 70)); flex: none; vertical-align: middle; }
+.legDot[data-vrsta='redno'] { --pika: oklch(62% .15 150); }
+.legDot[data-vrsta='sluzbena'] { --pika: oklch(72% .16 75); }
+.legDot[data-vrsta='dopust'] { --pika: oklch(56% .12 300); }
+.legDot[data-vrsta='bolniska'] { --pika: oklch(62% .02 70); }
+.legDot[data-kraj='doma'] { --pika: oklch(58% .15 260); }
+.legHelp { flex: none; width: 1.55rem; height: 1.55rem; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: #fff; color: var(--muted); font-weight: 800; font-size: .82rem; cursor: pointer; }
+.legHelp:hover { color: var(--ink); border-color: var(--ink); }
+.legRazlaga { position: absolute; z-index: 40; right: 0; top: calc(100% + .4rem); width: min(20rem, 90vw); padding: .9rem 1rem; border: 1px solid var(--line); border-radius: .9rem; background: #fff; box-shadow: 0 14px 40px oklch(30% .04 285 / .18); text-align: left; }
+.legRazlaga strong { display: block; margin-bottom: .55rem; font-size: .82rem; }
+.legRazlaga p { display: flex; align-items: start; gap: .5rem; margin: 0 0 .45rem; font-size: .74rem; line-height: 1.35; color: var(--muted); }
+.legRazlaga p .legDot { margin-top: .18rem; }
+.legRazlaga p b { color: var(--ink); font-weight: 700; }
+.legZapri { margin-top: .35rem; padding: .42rem .85rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; font: inherit; font-size: .72rem; cursor: pointer; }
+.legZapri:hover { border-color: var(--ink); }
+
+@media (max-width: 640px) {
+  .vrstaLegendaVrstica { position: relative; display: flex; align-items: center; gap: .5rem; margin: 0 0 .55rem; }
+  .vrstaLegenda { display: flex; flex-wrap: wrap; gap: .25rem .55rem; flex: 1; margin: 0; padding: 0; list-style: none; font-size: .6rem; color: var(--muted); }
+  .vrstaLegenda li { display: inline-flex; align-items: center; gap: .28rem; }
+  /* tabela VRSTA: samo pikice (prostor); tekst znack skrit, »Doma« odpade,
+     pika redno+doma postane modra. */
+  .mesecTabela .vrstaPilula { padding: 0; gap: 0; border: 0; background: none; font-size: 0; }
+  .mesecTabela .vrstaPilula::before { width: .64rem; height: .64rem; }
+  .mesecTabela .krajPilula { display: none; }
+  .mesecTabela .vrstaPilula:has(+ .krajPilula[data-kraj='doma']) { --pika: oklch(58% .15 260); }
+}
 
 /* ── Mesečni povzetek: velik Bodoni števec + napredovalni trak proti cilju ── */
 .mesecPovzetek { display: grid; gap: .55rem; margin-top: .2rem; padding: 1.1rem 1.2rem; border-radius: 1.1rem; background: oklch(95% .025 87); }
