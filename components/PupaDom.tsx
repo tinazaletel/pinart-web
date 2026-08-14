@@ -16,6 +16,8 @@ import InvoiceWorkspace from '@/components/InvoiceWorkspace';
 import ExpenseWorkspace from '@/components/ExpenseWorkspace';
 import NovProjektWorkspace from '@/components/NovProjektWorkspace';
 import TaskManagerWorkspace from '@/components/TaskManagerWorkspace';
+import ContractWorkspace from '@/components/ContractWorkspace';
+import RetainerWorkspace from '@/components/RetainerWorkspace';
 
 /* a/b/c izbire za izkušnje — iste kot kalkulator (KalkulatorApp IZKUSNJE); PODROCJA iz lib */
 const IZKUSNJE_IZBIRE = [
@@ -56,7 +58,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   const locale = jeEn ? 'en' : 'sl';
   /* Izbran tip iz vstopa → orodje se požene V ISTEM oknu (brez navigacije).
      'ponudba' = pravi kalkulator; ostali = svoj obstoječi workspace. null = vstopni zaslon. */
-  const [tip, setTip] = useState<'ponudba' | 'racun' | 'strosek' | 'projekt' | 'naloga' | null>(null);
+  const [tip, setTip] = useState<'ponudba' | 'racun' | 'strosek' | 'projekt' | 'naloga' | 'pogodba' | 'retainer' | null>(null);
   const [ime, setIme] = useState('');
   const [vnos, setVnos] = useState('');
   const [priponka, setPriponka] = useState<File | null>(null);
@@ -117,21 +119,69 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     ? L(`Hej, ${ime}. Kaj želiš danes?`, `Hi, ${ime}. What's on today?`)
     : L('Hej. Kaj želiš danes?', "Hi. What's on today?");
 
+  /* Pupa pogovor v domu (AI način): prosto besedilo = KLEPET, ne vsili orodja.
+     Orodja odpreš prek gumbov (ali kasneje prek Pupine potrditve). Vezano na obstoječi /api/pupa. */
+  const [pupaSpor, setPupaSpor] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
+  const [pupaCaka, setPupaCaka] = useState(false);
+  const klepet = pupaSpor.length > 0;
+  const pupaNitRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (klepet) pupaNitRef.current?.scrollTo({ top: pupaNitRef.current.scrollHeight, behavior: 'smooth' }); }, [pupaSpor, pupaCaka, klepet]);
+
+  async function posljiPupi(besedilo: string) {
+    const q = besedilo.trim();
+    if (!q || pupaCaka) return;
+    const zgo = pupaSpor.slice(-8);
+    setPupaSpor(s => [...s, { role: 'user', content: q }]);
+    setPupaCaka(true);
+    try {
+      const res = await fetch('/api/pupa', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          vprasanje: q,
+          kontekst: L('Uporabnik je v Pupa domu (vstopni pomočnik za samostojne kreativce). Pomagaj z nasvetom; če želi USTVARITI ponudbo/račun/projekt/nalogo, ga usmeri na ustrezen gumb v domu — ne izmišljaj si, da si to naredila.',
+                      'User is in the Pupa home (entry assistant for freelance creatives). Help with advice; if they want to CREATE a quote/invoice/project/task, point them to the matching button in the home — do not pretend you did it.'),
+          zgodovina: zgo,
+        }),
+      });
+      const data = await res.json();
+      const odg = data.odgovor || data.napaka || L('Hmm, nekaj je zaškripalo. Poskusi znova.', 'Hmm, something went wrong. Try again.');
+      setPupaSpor(s => [...s, { role: 'assistant', content: odg }]);
+    } catch {
+      setPupaSpor(s => [...s, { role: 'assistant', content: L('Ne morem do zaledja. Poskusi znova.', 'Cannot reach the backend. Try again.') }]);
+    } finally {
+      setPupaCaka(false);
+    }
+  }
+
+  /* Zazna JASEN namen ustvarjanja iz besedila (akcijski glagol + predmet). Pokrije tudi
+     pogodbo/dolgoročno (ki nista gumba). Sicer null → Pupa se pogovarja, ne vsili ponudbe. */
+  function zaznajTip(low: string): typeof tip {
+    if (low.startsWith('izdaj račun') || low.startsWith('izdaj racun') || low.startsWith('issue an invoice')) return 'racun';
+    if (low.startsWith('dodaj strošek') || low.startsWith('dodaj strosek') || low.startsWith('add an expense')) return 'strosek';
+    if (low.startsWith('ustvari projekt') || low.startsWith('ustvari nov projekt') || low.startsWith('start a project') || low.startsWith('start a new project')) return 'projekt';
+    if (low.startsWith('ustvari nalogo') || low.startsWith('create task') || low.startsWith('create a task')) return 'naloga';
+    if (low.startsWith('pripravi pogodbo') || low.startsWith('naredi pogodbo') || low.startsWith('create a contract')) return 'pogodba';
+    if (low.startsWith('pripravi retainer') || low.startsWith('dolgoročno') || low.startsWith('dolgorocno') || low.startsWith('retainer')) return 'retainer';
+    if (low.startsWith('pripravi ponudbo') || low.startsWith('naredi ponudbo') || low.startsWith('create a quote') || low.startsWith('create a proposal')) return 'ponudba';
+    return null;
+  }
+
   const posljiVnos = () => {
     const t = vnos.trim();
     if (!t) return;
     const el = textRef.current;
-    // VSTOP → požene izbrano orodje V ISTEM oknu (brez navigacije). Tip ugotovimo iz besedila;
-    // privzeto = ponudba (pravi kalkulator). Pupa vklopljena bo vmes vprašala dodatno (Faza 2).
-    const s = t.toLowerCase();
-    let cilj: typeof tip = 'ponudba';
-    if (s.startsWith('izdaj račun') || s.startsWith('issue an invoice')) cilj = 'racun';
-    else if (s.startsWith('dodaj strošek') || s.startsWith('add an expense')) cilj = 'strosek';
-    else if (s.startsWith('ustvari nov projekt') || s.startsWith('ustvari projekt') || s.startsWith('start a')) cilj = 'projekt';
-    else if (s.startsWith('ustvari nalogo') || s.startsWith('create task')) cilj = 'naloga';
+    const cilj = zaznajTip(t.toLowerCase());
+    // AI način (Pupa / Moj AI): JASEN namen ustvarjanja → odpre orodje; sicer = KLEPET (NE vsili ponudbe).
+    if (aiNacin === 'pupa' || aiNacin === 'moj') {
+      setVnos(''); if (el) el.style.height = 'auto';
+      if (cilj) { intentRef.current = t; setTip(cilj); }
+      else posljiPupi(t);
+      return;
+    }
+    // Brez AI: ni pogovora — prosto besedilo odpre orodje po tipu; privzeto ponudba.
     intentRef.current = t;
     setVnos(''); if (el) el.style.height = 'auto';
-    setTip(cilj);
+    setTip(cilj ?? 'ponudba');
   };
 
   /* Razpored kartic: plavajoče (privzeto, lepo) ALI zbrane v okence v kotu
@@ -240,16 +290,18 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     { ime: L('Štoparica', 'Stopwatch'), href: `${base}/kalkulator/cas`, h: 190 },
   ];
 
-  // IZBRAN TIP → pravo orodje se požene V ISTEM oknu (nič navigacije). Za 'ponudba' je to
-  // pravi kalkulator (onboarding + živ panel + cena); ostali = svoj obstoječi workspace.
+  // IZBRAN TIP → orodje se odpre V ISTEM oknu (brez navigacije). Stalni okvir že obstaja:
+  // stranski meni (s preklopom Pupa/Home) ostane; klik »Pupa« te vrne na vstop. Orodja = obstoječe komponente.
   if (tip === 'ponudba') return <KalkulatorApp locale={locale} vLupini />;
   if (tip === 'racun') return <InvoiceWorkspace base={base} />;
   if (tip === 'strosek') return <ExpenseWorkspace />;
   if (tip === 'projekt') return <NovProjektWorkspace base={base} />;
   if (tip === 'naloga') return <TaskManagerWorkspace />;
+  if (tip === 'pogodba') return <ContractWorkspace base={base} />;
+  if (tip === 'retainer') return <RetainerWorkspace base={base} vLupini />;
 
   return (
-    <div className={`pd${pogovor ? ' pogovor' : ''}`}>
+    <div className={`pd${klepet ? ' pogovor' : ''}`}>
       <div className="pd-aurora" aria-hidden><i className="a1" /><i className="a2" /><i className="a3" /></div>
 
       {/* Gumb: zberi tage v kot / razprši nazaj (le namizje) */}
@@ -284,7 +336,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
             <h1 className="pd-naslov">{pozdrav}</h1>
           </div>
         </div>
-        {!pogovor && <p className="pd-uvod">{L('Povej, kaj želiš ustvariti — Pupa uredi poslovni del.', 'Tell me what you want to create — Pupa handles the business part.')}</p>}
+        {!klepet && <p className="pd-uvod">{L('Povej ali vprašaj karkoli — Pupa svetuje in uredi poslovni del.', 'Say or ask anything — Pupa advises and handles the business part.')}</p>}
 
         {pogovor && (
           <div className="pd-nit">
@@ -342,6 +394,20 @@ export default function PupaDom({ base = '' }: { base?: string }) {
           </div>
         )}
 
+        {/* UNIVERZALNA PUPA: prosto besedilo = klepet (vezan na /api/pupa); jasen namen odpre orodje */}
+        {klepet && (
+          <div className="pd-nit" ref={pupaNitRef}>
+            {pupaSpor.map((m, i) => (
+              <div key={i} className={`pd-vr ${m.role === 'user' ? 'jaz' : 'pupa'}`}>
+                <div className="pd-vr-body"><div className="pd-mehur">{m.content}</div></div>
+              </div>
+            ))}
+            {pupaCaka && (
+              <div className="pd-vr pupa"><div className="pd-vr-body"><div className="pd-mehur pd-tipka"><span /><span /><span /></div></div></div>
+            )}
+          </div>
+        )}
+
         <div className="pd-vnos">
           <div className="pd-vnos-vrh">
             <div className="pd-ai" ref={aiRef}>
@@ -383,13 +449,13 @@ export default function PupaDom({ base = '' }: { base?: string }) {
               <button type="button" className={`pd-mik${poslusam ? ' posluam' : ''}`} onClick={glas} title={poslusam ? L('Poslušam … klikni za konec', 'Listening … click to stop') : L('Govori', 'Speak')} aria-label={L('Glas', 'Voice')} aria-pressed={poslusam}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4" /></svg>
               </button>
-              <button type="button" className="pd-poslji" onClick={posljiVnos}>{pogovor ? (urejam !== null ? L('Shrani', 'Save') : L('Pošlji', 'Send')) : L('Začni', 'Start')} <span aria-hidden>→</span></button>
+              <button type="button" className="pd-poslji" onClick={posljiVnos}>{klepet ? L('Pošlji', 'Send') : L('Začni', 'Start')} <span aria-hidden>→</span></button>
             </div>
           </div>
           {glasNamig && <p className="pd-glas-namig" role="status">{glasNamig}</p>}
         </div>
 
-        {!pogovor && (
+        {!klepet && (
           <>
             {/* mobilni povzetek: kompromis — na telefonu ena čista vrstica namesto
                 plavajočih kartic (te so le na namizju). Isti podatki, klikljivi. */}
@@ -556,6 +622,12 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd.pogovor .pd-center { width: min(33rem, 94vw); height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; overflow-x: hidden; }
         .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: .55rem; padding: .8rem .2rem; scrollbar-width: none; }
         .pd-nit::-webkit-scrollbar { display: none; }
+        /* Pupa piše (pike) */
+        .pd-tipka { display: inline-flex; gap: .28rem; align-items: center; }
+        .pd-tipka span { width: .42rem; height: .42rem; border-radius: 50%; background: color-mix(in oklch, var(--ink, #1a1a1a) 38%, transparent); animation: pdTipka 1.2s infinite; }
+        .pd-tipka span:nth-child(2) { animation-delay: .2s; }
+        .pd-tipka span:nth-child(3) { animation-delay: .4s; }
+        @keyframes pdTipka { 0%, 60%, 100% { opacity: .3; } 30% { opacity: 1; } }
         .pd-vr { display: flex; max-width: 90%; min-width: 0; }
         .pd-vr.jaz { align-self: flex-end; }
         .pd-vr.pupa { align-self: flex-start; gap: .55rem; align-items: flex-start; }
