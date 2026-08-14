@@ -7,8 +7,9 @@
    podatkovna povezava pride v naslednjem koraku. Kartice-v-pogovoru + glas = Faza 2.
    Glej memory: project_pupa_prvi_vmesnik, project_pupa_center_layout_ideja, project_flow_glass_aurora. */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { lokalniOdgovori } from '@/lib/onboarding';
+import { PRICING_SERVICES } from '@/lib/pricingCatalog';
 
 export default function PupaDom({ base = '' }: { base?: string }) {
   const jeEn = base === '/en';
@@ -75,14 +76,18 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
   const posljiVnos = () => {
     const t = vnos.trim();
-    if (typeof window === 'undefined') return;
-    if (aiNacin === 'pupa') {
-      // Pupa AI: pogovorni tok, ki v živo gradi osnutek ponudbe (Faza 2a)
-      window.location.href = `${base}/kalkulator/dom/pogovor${t ? `?namig=${encodeURIComponent(t)}` : ''}`;
-    } else {
+    if (aiNacin !== 'pupa') {
       // Moj AI / Brez AI: klasični vodeni kalkulator
-      window.location.href = `${base}/kalkulator/orodje${t ? `?uvod=1&namig=${encodeURIComponent(t)}` : ''}`;
+      if (typeof window !== 'undefined') window.location.href = `${base}/kalkulator/orodje${t ? `?uvod=1&namig=${encodeURIComponent(t)}` : ''}`;
+      return;
     }
+    if (!t) return;
+    // Pupa AI: pogovor V MESTU (isti chat ostane), desni panel se izvleče z osnutkom
+    if (urejam !== null) { setSporocila(prev => prev.filter(s => s.id !== urejam)); setUrejam(null); }
+    if (!pogovor) setPogovor(true);
+    posljiBesedilo(t);
+    setVnos('');
+    const el = textRef.current; if (el) el.style.height = 'auto';
   };
 
   /* Razpored kartic: plavajoče (privzeto, lepo) ALI zbrane v okence v kotu
@@ -90,6 +95,55 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   const [zbrano, setZbrano] = useState(false);
   useEffect(() => { try { setZbrano(localStorage.getItem('pinart-pupa-zbrano') === '1'); } catch { /* ignore */ } }, []);
   const preklopiRazpored = () => setZbrano(z => { const n = !z; try { localStorage.setItem('pinart-pupa-zbrano', n ? '1' : '0'); } catch { /* ignore */ } return n; });
+
+  /* POGOVOR V MESTU (Pupa AI): isti chat OSTANE, spodaj se odvija pogovor, z desne
+     se IZVLEČE panel z živim osnutkom. Vnos ostane vedno viden na dnu. */
+  const [pogovor, setPogovor] = useState(false);
+  const [sporocila, setSporocila] = useState<Sporocilo[]>([]);
+  const [osnutek, setOsnutek] = useState<Osnutek>({ stranka: '', rok: '', storitve: [] });
+  const [urejam, setUrejam] = useState<number | null>(null);
+  const idRef = useRef(1);
+  const nextId = () => idRef.current++;
+  const casovniki = useRef<number[]>([]);
+  const osnutekRef = useRef<Osnutek>({ stranka: '', rok: '', storitve: [] });
+  const preklicaniRef = useRef<Set<number>>(new Set());
+  const koncRef = useRef<HTMLDivElement>(null);
+  const skupaj = useMemo(() => osnutek.storitve.reduce((v, s) => v + s.cena, 0), [osnutek.storitve]);
+  useEffect(() => { osnutekRef.current = osnutek; }, [osnutek]);
+  useEffect(() => { if (pogovor) koncRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [sporocila, pogovor]);
+  useEffect(() => () => { casovniki.current.forEach(clearTimeout); }, []);
+
+  function pupaOdgovori(poNovem: Osnutek) {
+    let besedilo: string;
+    if (poNovem.storitve.length === 0) besedilo = L('Kaj naj pripravim? Npr. logotip, spletna stran, celostna podoba, katalog …', 'What should I prepare? E.g. logo, website, visual identity, catalogue …');
+    else if (!poNovem.stranka) { const sez = poNovem.storitve.map(s => s.ime.toLowerCase()).join(', '); besedilo = L(`Super — ${sez}. Za koga je (ime stranke)?`, `Great — ${sez}. Who is it for (client name)?`); }
+    else { const vsota = poNovem.storitve.reduce((v, s) => v + s.cena, 0); besedilo = L(`Pripravila sem osnutek za ${poNovem.stranka}: ${poNovem.storitve.length} ${poNovem.storitve.length === 1 ? 'postavka' : 'postavke'}, groba ocena ${evro(vsota)}. Preveri desno — če se ujema, odpri v urejevalniku.`, `Drafted for ${poNovem.stranka}: ${poNovem.storitve.length} item(s), rough estimate ${evro(vsota)}. Check on the right — if it fits, open it in the editor.`); }
+    setSporocila(prev => [...prev, { id: nextId(), kdo: 'pupa', besedilo }]);
+  }
+  function posljiBesedilo(text: string) {
+    const t = text.trim(); if (!t) return;
+    const mojId = nextId();
+    setSporocila(prev => [...prev, { id: mojId, kdo: 'jaz', besedilo: t, stanje: 'cakanje' }]);
+    const c = window.setTimeout(() => {
+      if (preklicaniRef.current.has(mojId)) { preklicaniRef.current.delete(mojId); return; }
+      setSporocila(prev => prev.map(s => (s.id === mojId ? { ...s, stanje: 'obdelano' } : s)));
+      const poNovem = zdruzi(osnutekRef.current, preberi(t));
+      osnutekRef.current = poNovem; setOsnutek(poNovem);
+      const c2 = window.setTimeout(() => pupaOdgovori(poNovem), 450); casovniki.current.push(c2);
+    }, 850);
+    casovniki.current.push(c);
+  }
+  function urediSporocilo(s: Sporocilo) { setVnos(s.besedilo); setUrejam(s.id); const el = textRef.current; if (el) el.focus(); }
+  function izbrisiSporocilo(id: number) { preklicaniRef.current.add(id); setSporocila(prev => prev.filter(s => s.id !== id)); if (urejam === id) { setUrejam(null); setVnos(''); } }
+  function odpriVUrejevalniku() {
+    if (typeof window === 'undefined') return;
+    try {
+      const KEY = 'pinart-kalkulator-v2';
+      const obst = JSON.parse(localStorage.getItem(KEY) || '{}');
+      localStorage.setItem(KEY, JSON.stringify({ ...obst, narocnikPonudbe: osnutek.stranka || obst.narocnikPonudbe || '', izbrane: osnutek.storitve.map(s => s.id), nazivPonudbe: osnutek.stranka ? L(`Ponudba — ${osnutek.stranka}`, `Quote — ${osnutek.stranka}`) : (obst.nazivPonudbe || '') }));
+    } catch { /* ignore */ }
+    window.location.href = `${base}/kalkulator/orodje?od=pregled`;
+  }
 
   /* PLAVAJOČE kartice (ambient) — podatki, kot jih imamo na nadzorni plošči.
      poz = položaj okoli sredine (desktop); h = odtenek; d = zamik animacije. */
@@ -112,7 +166,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   ];
 
   return (
-    <div className="pd">
+    <div className={`pd${pogovor ? ' pogovor' : ''}`}>
       <div className="pd-aurora" aria-hidden><i className="a1" /><i className="a2" /><i className="a3" /></div>
 
       {/* Gumb: zberi tage v kot / razprši nazaj (le namizje) */}
@@ -147,7 +201,31 @@ export default function PupaDom({ base = '' }: { base?: string }) {
             <h1 className="pd-naslov">{pozdrav}</h1>
           </div>
         </div>
-        <p className="pd-uvod">{L('Povej, kaj želiš ustvariti — Pupa uredi poslovni del.', 'Tell me what you want to create — Pupa handles the business part.')}</p>
+        {!pogovor && <p className="pd-uvod">{L('Povej, kaj želiš ustvariti — Pupa uredi poslovni del.', 'Tell me what you want to create — Pupa handles the business part.')}</p>}
+
+        {pogovor && (
+          <div className="pd-nit">
+            {sporocila.map(s => (
+              <div key={s.id} className={`pd-vr ${s.kdo === 'jaz' ? 'jaz' : 'pupa'}`}>
+                <div className="pd-mehur">{s.besedilo}</div>
+                {s.kdo === 'jaz' && (
+                  <div className="pd-vr-meta">
+                    {s.stanje === 'cakanje' ? (
+                      <>
+                        <span className="pd-cak"><span className="pd-cakp" /><span className="pd-cakp" /><span className="pd-cakp" /> {L('v čakanju', 'queued')}</span>
+                        <button type="button" className="pd-vr-akc" onClick={() => urediSporocilo(s)}>{L('Uredi', 'Edit')}</button>
+                        <button type="button" className="pd-vr-akc" onClick={() => izbrisiSporocilo(s.id)}>{L('Izbriši', 'Delete')}</button>
+                      </>
+                    ) : (
+                      <span className="pd-obd">{L('prebrano', 'read')} ✓</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+            <div ref={koncRef} />
+          </div>
+        )}
 
         <div className="pd-vnos">
           <div className="pd-vnos-vrh">
@@ -190,28 +268,52 @@ export default function PupaDom({ base = '' }: { base?: string }) {
               <button type="button" className={`pd-mik${poslusam ? ' posluam' : ''}`} onClick={glas} title={poslusam ? L('Poslušam … klikni za konec', 'Listening … click to stop') : L('Govori', 'Speak')} aria-label={L('Glas', 'Voice')} aria-pressed={poslusam}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4" /></svg>
               </button>
-              <button type="button" className="pd-poslji" onClick={posljiVnos}>{L('Začni', 'Start')} <span aria-hidden>→</span></button>
+              <button type="button" className="pd-poslji" onClick={posljiVnos}>{pogovor ? (urejam !== null ? L('Shrani', 'Save') : L('Pošlji', 'Send')) : L('Začni', 'Start')} <span aria-hidden>→</span></button>
             </div>
           </div>
           {glasNamig && <p className="pd-glas-namig" role="status">{glasNamig}</p>}
         </div>
 
-        {/* mobilni povzetek: kompromis — na telefonu ena čista vrstica namesto
-            plavajočih kartic (te so le na namizju). Isti podatki, klikljivi. */}
-        <div className="pd-povzetek">
-          {plava.map((p, i) => (
-            <a key={i} href={p.href} className="pd-pov-cip" style={{ ['--h' as string]: String(p.h) }}>
-              <b>{p.vrednost}</b><span>{p.labela}</span>
-            </a>
-          ))}
-        </div>
+        {!pogovor && (
+          <>
+            {/* mobilni povzetek: kompromis — na telefonu ena čista vrstica namesto
+                plavajočih kartic (te so le na namizju). Isti podatki, klikljivi. */}
+            <div className="pd-povzetek">
+              {plava.map((p, i) => (
+                <a key={i} href={p.href} className="pd-pov-cip" style={{ ['--h' as string]: String(p.h) }}>
+                  <b>{p.vrednost}</b><span>{p.labela}</span>
+                </a>
+              ))}
+            </div>
 
-        <div className="pd-hitre">
-          {hitre.map(h => (
-            <button type="button" key={h.ime} className="pd-cip" style={{ ['--h' as string]: String(h.h) }} onClick={() => predlagaj(h.predlog)}>{h.ime}</button>
-          ))}
-        </div>
+            <div className="pd-hitre">
+              {hitre.map(h => (
+                <button type="button" key={h.ime} className="pd-cip" style={{ ['--h' as string]: String(h.h) }} onClick={() => predlagaj(h.predlog)}>{h.ime}</button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
+
+      {pogovor && (
+        <aside className="pd-panel" aria-label={L('Osnutek ponudbe', 'Quote draft')}>
+          <div className="pd-p-glava">
+            <span className="pd-p-znak">{L('Osnutek ponudbe', 'Quote draft')}</span>
+            <span className="pd-p-status">{osnutek.storitve.length ? L('v pripravi', 'in progress') : L('čaka', 'waiting')}</span>
+          </div>
+          <div className="pd-p-polje"><span className="pd-p-ozn">{L('Stranka', 'Client')}</span><span className={`pd-p-vr${osnutek.stranka ? '' : ' prazno'}`}>{osnutek.stranka || L('— še ni —', '— not yet —')}</span></div>
+          <div className="pd-p-postavke">
+            <span className="pd-p-ozn">{L('Storitve', 'Services')}</span>
+            {osnutek.storitve.length === 0 ? <p className="pd-p-prazno">{L('Povej Pupi, kaj naj pripravi.', 'Tell Pupa what to prepare.')}</p> : (
+              <ul>{osnutek.storitve.map(s => <li key={s.id}><span>{s.ime}</span><b>{s.cena > 0 ? evro(s.cena) : L('po dogovoru', 'custom')}</b></li>)}</ul>
+            )}
+          </div>
+          {osnutek.rok && <div className="pd-p-polje"><span className="pd-p-ozn">{L('Rok', 'Deadline')}</span><span className="pd-p-vr">{osnutek.rok}</span></div>}
+          <div className="pd-p-vsota"><span>{L('Groba ocena', 'Rough estimate')}</span><b>{skupaj > 0 ? evro(skupaj) : '—'}</b></div>
+          <p className="pd-p-opomba">{L('Ocena iz osnovnih cen. Končno ceno določiš v urejevalniku.', 'Estimate from base prices. Final price is set in the editor.')}</p>
+          <button type="button" className="pd-p-odpri" onClick={odpriVUrejevalniku} disabled={osnutek.storitve.length === 0}>{L('Odpri v urejevalniku', 'Open in editor')} <span aria-hidden>→</span></button>
+        </aside>
+      )}
 
       <style jsx>{`
         .pd { position: relative; min-height: calc(100dvh - 3rem); overflow: hidden; display: grid; place-items: center; }
@@ -273,8 +375,11 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-mik.posluam { background: oklch(63% .2 25); border-color: transparent; color: #fff; animation: pdMik 1.1s ease-in-out infinite; }
         @keyframes pdMik { 0%,100% { box-shadow: 0 0 0 0 oklch(63% .2 25 / .5); } 50% { box-shadow: 0 0 0 7px oklch(63% .2 25 / 0); } }
         .pd-glas-namig { margin: .1rem 0 0; font: 500 .74rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); }
-        .pd-poslji { display: inline-flex; align-items: center; gap: .45rem; border: 0; border-radius: 999px; padding: .65rem 1.35rem; background: var(--ink, #2a2620); color: var(--paper, #faf7f2); font: 700 .85rem var(--font-sans), sans-serif; cursor: pointer; transition: transform .15s ease; }
-        .pd-poslji:hover { transform: translateY(-1px); }
+        /* črni gumb z gloss-reflekt sweep (kot obstoječi Flow gumbi) */
+        .pd-poslji { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: .45rem; border: 0; border-radius: 999px; padding: .65rem 1.35rem; background: var(--ink, #2a2620); color: var(--paper, #faf7f2); font: 700 .85rem var(--font-sans), sans-serif; cursor: pointer; transition: transform .15s ease, box-shadow .2s ease; }
+        .pd-poslji:hover { transform: translateY(-1px); box-shadow: 0 9px 24px oklch(30% .05 300 / .32); }
+        .pd-poslji::after { content: ''; position: absolute; top: 0; left: -160%; width: 90%; height: 100%; background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.9) 50%, transparent 100%); transform: skewX(-18deg); transition: left .6s cubic-bezier(.19,1,.22,1); pointer-events: none; }
+        .pd-poslji:hover::after { left: 160%; }
 
         /* AI način selektor (Pupa AI ▾) */
         .pd-vnos-vrh { display: flex; align-items: center; margin-bottom: .1rem; }
@@ -312,9 +417,124 @@ export default function PupaDom({ base = '' }: { base?: string }) {
           .pd-plava.zbrano .pd-kartica-wrap { position: static; pointer-events: auto; animation: pdBobMini 6s ease-in-out infinite; }
           .pd-plava.zbrano .pd-kartica { min-width: 0; }
         }
+
+        /* ===== POGOVOR V MESTU: isti chat, spodaj se odvija, panel se izvleče ===== */
+        .pd.pogovor { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.4rem; align-content: center; }
+        .pd.pogovor .pd-plava, .pd.pogovor .pd-razpored { display: none; }
+        .pd.pogovor .pd-center { width: min(33rem, 94vw); max-height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; }
+        .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; display: flex; flex-direction: column; gap: .55rem; padding: .8rem .2rem; scrollbar-width: thin; }
+        .pd-vr { display: flex; flex-direction: column; gap: .18rem; max-width: 86%; }
+        .pd-vr.jaz { align-self: flex-end; align-items: flex-end; }
+        .pd-vr.pupa { align-self: flex-start; align-items: flex-start; }
+        .pd-mehur { padding: .6rem .85rem; border-radius: 1.15rem; font: 500 .93rem/1.45 var(--font-sans), sans-serif; box-shadow: 0 6px 18px oklch(40% .06 300 / .1); }
+        .pd-vr.pupa .pd-mehur { background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 10%, #fff); color: var(--ink, #1a1a1a); border-bottom-left-radius: .4rem; }
+        .pd-vr.jaz .pd-mehur { background: var(--ink, #2a2620); color: var(--paper, #faf7f2); border-bottom-right-radius: .4rem; }
+        .pd-vr-meta { display: flex; align-items: center; gap: .5rem; font: 600 .68rem var(--font-sans), sans-serif; padding: 0 .3rem; }
+        .pd-cak { display: inline-flex; align-items: center; gap: .3rem; color: color-mix(in oklch, var(--ink, #1a1a1a) 48%, transparent); }
+        .pd-cakp { width: .3rem; height: .3rem; border-radius: 50%; background: var(--purple, oklch(60% .2 297)); animation: pdCak 1.1s ease-in-out infinite; }
+        .pd-cakp:nth-child(2) { animation-delay: .18s; }
+        .pd-cakp:nth-child(3) { animation-delay: .36s; }
+        @keyframes pdCak { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+        .pd-obd { color: color-mix(in oklch, var(--purple, oklch(58% .2 297)) 78%, transparent); }
+        .pd-vr-akc { border: 0; background: none; padding: 0; color: var(--purple, oklch(58% .2 297)); font: 600 .68rem var(--font-sans), sans-serif; cursor: pointer; text-decoration: underline; }
+        .pd-vr-akc:hover { opacity: .75; }
+        /* vnos VEDNO viden na dnu (ne scrolla z nitjo) */
+        .pd.pogovor .pd-vnos { flex: none; }
+
+        /* izvlečni desni panel z živim osnutkom */
+        .pd-panel { position: relative; z-index: 2; align-self: center; width: min(21rem, 94vw); display: flex; flex-direction: column; gap: .85rem; padding: 1.15rem 1.2rem; background: rgba(255,255,255,.72); backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4); border: 1px solid rgba(255,255,255,.8); border-radius: 1.2rem; box-shadow: 0 20px 55px oklch(40% .08 300 / .18); animation: pdPanelIn .5s cubic-bezier(.2,.85,.25,1) both; }
+        @keyframes pdPanelIn { from { opacity: 0; transform: translateX(48px) scale(.98); } to { opacity: 1; transform: none; } }
+        .pd-p-glava { display: flex; align-items: center; justify-content: space-between; }
+        .pd-p-znak { font: 700 .95rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
+        .pd-p-status { font: 600 .64rem var(--font-sans), sans-serif; padding: .2rem .55rem; border-radius: 999px; background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 12%, transparent); color: var(--purple, oklch(52% .2 297)); }
+        .pd-p-polje { display: flex; flex-direction: column; gap: .12rem; }
+        .pd-p-ozn { font: 700 .6rem var(--font-sans), sans-serif; letter-spacing: .08em; text-transform: uppercase; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); }
+        .pd-p-vr { font: 600 1rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
+        .pd-p-vr.prazno { color: color-mix(in oklch, var(--ink, #1a1a1a) 35%, transparent); font-weight: 500; }
+        .pd-p-postavke { display: flex; flex-direction: column; gap: .3rem; }
+        .pd-p-postavke ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .3rem; }
+        .pd-p-postavke li { display: flex; align-items: baseline; justify-content: space-between; gap: .8rem; padding: .5rem .65rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 8%, transparent); border-radius: .7rem; background: #fff; animation: pdPostavka .3s ease both; }
+        .pd-p-postavke li span { font: 500 .88rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
+        .pd-p-postavke li b { font: 700 .88rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); white-space: nowrap; }
+        @keyframes pdPostavka { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        .pd-p-prazno { margin: 0; font: 500 .84rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 40%, transparent); }
+        .pd-p-vsota { display: flex; align-items: baseline; justify-content: space-between; padding-top: .7rem; border-top: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 10%, transparent); }
+        .pd-p-vsota span { font: 700 .78rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); }
+        .pd-p-vsota b { font: 500 1.4rem var(--font-serif), Georgia, serif; color: var(--ink, #1a1a1a); }
+        .pd-p-opomba { margin: 0; font: 500 .7rem/1.4 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); }
+        .pd-p-odpri { position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: .45rem; border: 0; border-radius: 999px; padding: .75rem 1.2rem; background: var(--purple, oklch(58% .2 297)); color: #fff; font: 700 .88rem var(--font-sans), sans-serif; cursor: pointer; transition: transform .15s ease, box-shadow .2s ease; }
+        .pd-p-odpri:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 26px oklch(58% .2 297 / .4); }
+        .pd-p-odpri:disabled { opacity: .4; cursor: default; }
+        .pd-p-odpri::after { content: ''; position: absolute; top: 0; left: -160%; width: 90%; height: 100%; background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.85) 50%, transparent 100%); transform: skewX(-18deg); transition: left .6s cubic-bezier(.19,1,.22,1); pointer-events: none; }
+        .pd-p-odpri:hover:not(:disabled)::after { left: 160%; }
+
+        @media (max-width: 899px) {
+          .pd.pogovor { flex-direction: column; }
+          .pd.pogovor .pd-center { max-height: none; }
+          .pd-panel { width: min(36rem, 94vw); }
+        }
       `}</style>
     </div>
   );
+}
+
+/* ===== Pogovor: tipi + deterministično branje (odporno; prava AI = Faza 2b) ===== */
+type Sporocilo = { id: number; kdo: 'jaz' | 'pupa'; besedilo: string; stanje?: 'cakanje' | 'obdelano' };
+type Postavka = { id: string; ime: string; cena: number };
+type Osnutek = { stranka: string; rok: string; storitve: Postavka[] };
+
+const KLJUCI: { id: string; besede: string[] }[] = [
+  { id: 'logo', besede: ['logotip', 'logo'] },
+  { id: 'cgp', besede: ['celostn', 'cgp', 'grafičn podob', 'vizualn identitet', 'identitet'] },
+  { id: 'web', besede: ['spletn stran', 'spletno mesto', 'splet', 'spletn', 'website', 'landing', 'web'] },
+  { id: 'uxui', besede: ['ux', 'ui', 'uporabnišk izkušnj'] },
+  { id: 'aplikacija', besede: ['aplikacij', 'mobiln app', 'app'] },
+  { id: 'kampanja', besede: ['kampanj', 'oglas'] },
+  { id: 'publikacija', besede: ['publikacij', 'katalog', 'brošur', 'tiskovin', 'letak', 'zloženk'] },
+  { id: 'embalaza', besede: ['embalaž', 'packaging', 'etiket'] },
+  { id: 'ilustracija', besede: ['ilustracij'] },
+  { id: 'fotografija', besede: ['fotograf', 'foto'] },
+  { id: 'video', besede: ['video', 'snemanj'] },
+  { id: 'motion', besede: ['motion', 'animacij'] },
+  { id: 'smm', besede: ['social', 'instagram', 'družben omrežj', 'objav'] },
+  { id: 'seo', besede: ['seo'] },
+  { id: 'copy', besede: ['besedil', 'copywriting', 'copy'] },
+  { id: 'strategija', besede: ['strategij'] },
+  { id: 'interier', besede: ['interier', 'notranj oprem'] },
+  { id: 'render3d', besede: ['3d', 'render', 'vizualizacij'] },
+];
+const MESECI = ['januar', 'februar', 'marec', 'april', 'maj', 'junij', 'julij', 'avgust', 'september', 'oktober', 'november', 'december'];
+
+function preberi(text: string): { storitve: Postavka[]; stranka: string; rok: string } {
+  const t = text.toLowerCase();
+  const najdene: Postavka[] = [];
+  for (const k of KLJUCI) {
+    if (k.besede.some(b => t.includes(b))) {
+      const s = PRICING_SERVICES.find(x => x.id === k.id);
+      if (s && !najdene.some(n => n.id === s.id)) najdene.push({ id: s.id, ime: s.ime, cena: s.osnova });
+    }
+  }
+  let stranka = '';
+  for (const mm of text.matchAll(/\bza\s+([^,.;]{2,40}?)(?=\s*(?:,|;|\.|\brok\b|\bdo\b|$))/gi)) {
+    const kand = mm[1].trim();
+    if (kand && !KLJUCI.some(k => k.besede.some(b => kand.toLowerCase().includes(b)))) { stranka = kand; break; }
+  }
+  let rok = '';
+  const mes = MESECI.find(mm => t.includes(mm));
+  if (mes) rok = mes.charAt(0).toUpperCase() + mes.slice(1);
+  const rm = text.match(/\b(rok|do)\s+([^.,;]{2,30})/i);
+  if (rm && !rok) rok = rm[2].trim();
+  return { storitve: najdene, stranka, rok };
+}
+
+function zdruzi(o: Osnutek, d: { storitve: Postavka[]; stranka: string; rok: string }): Osnutek {
+  const storitve = [...o.storitve];
+  for (const s of d.storitve) if (!storitve.some(x => x.id === s.id)) storitve.push(s);
+  return { stranka: d.stranka || o.stranka, rok: d.rok || o.rok, storitve };
+}
+
+function evro(n: number): string {
+  return new Intl.NumberFormat('sl-SI', { maximumFractionDigits: 0 }).format(n) + ' €';
 }
 
 /* razčleni "top:8%;left:3%" v React style objekt */
