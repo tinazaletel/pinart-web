@@ -750,7 +750,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         /* vnos VEDNO viden na dnu (ne scrolla z nitjo) */
         /* VNOS pripet na viewport dno — ISTI vzorec kot kalkulatorjeva .cw .noga (fixed; left = širina menija).
            Neprosojno ozadje + senca, ker lebdi nad sporočili (fixed → senca se ne reže). */
-        .pd.pogovor .pd-vnos { position: fixed; bottom: .8rem; left: 17.5rem; right: 0; z-index: 62; width: auto; max-width: min(48rem, 94vw); margin: 0 auto; background: rgba(255,255,255,.95); box-shadow: 0 12px 34px oklch(40% .08 300 / .22); }
+        .pd.pogovor .pd-vnos { position: fixed; bottom: 0; left: 17.5rem; right: 0; z-index: 62; width: auto; max-width: min(48rem, 94vw); margin: 0 auto; background: rgba(255,255,255,.95); box-shadow: 0 -6px 30px oklch(40% .08 300 / .2); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
         :global(body[data-meni='zaprt']) .pd.pogovor .pd-vnos { left: 4.4rem; }
         @media (max-width: 980px) { .pd.pogovor .pd-vnos { left: 0; } }
 
