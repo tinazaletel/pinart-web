@@ -122,7 +122,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
       {/* PLAVAJOČE podatkovne kartice (desktop) — wrap plava/boba, kartica poveča ob hoveru */}
       <div className={`pd-plava${zbrano ? ' zbrano' : ''}`}>
         {plava.map((p, i) => (
-          <div key={i} className="pd-kartica-wrap" style={zbrano ? { animationDelay: `${p.d}s` } : { animationDelay: `${p.d}s`, ...pozStyle(p.poz) }}>
+          <div key={i} className="pd-kartica-wrap" style={zbrano ? { animationDelay: `${p.d}s`, animationDuration: `${5.5 + (i % 3) * 1.2}s` } : { animationDelay: `${p.d}s`, animationDuration: `${7 + (i % 3) * 2.2}s`, ...pozStyle(p.poz) }}>
             <a href={p.href} className="pd-kartica" style={{ ['--h' as string]: String(p.h) }}>
               <span className="pd-k-pika" />
               <b>{p.vrednost}</b>
@@ -228,7 +228,16 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-k-pika { position: absolute; top: .8rem; right: .8rem; width: .5rem; height: .5rem; border-radius: 50%; background: oklch(65% .19 var(--h)); box-shadow: 0 0 0 4px oklch(65% .19 var(--h) / .18); }
         .pd-kartica b { font: 700 1.15rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
         .pd-kartica small { font: 600 .66rem var(--font-sans), sans-serif; letter-spacing: .02em; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); }
-        @keyframes pdBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+        /* bogato lebdenje: drift v X+Y + nežna rotacija = bolj živo */
+        @keyframes pdBob {
+          0%   { transform: translate(0, 0) rotate(0deg); }
+          25%  { transform: translate(5px, -10px) rotate(1.1deg); }
+          50%  { transform: translate(-3px, -16px) rotate(-1.4deg); }
+          75%  { transform: translate(-6px, -7px) rotate(.9deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        /* umirjeno lebdenje za zbrano mrežo (brez prekrivanja) */
+        @keyframes pdBobMini { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
         .pd-center { position: relative; z-index: 2; width: min(37rem, 92vw); padding: clamp(1.2rem, 4vw, 2rem); text-align: left; }
         .pd-glava { display: flex; align-items: center; gap: .8rem; margin-bottom: .4rem; }
@@ -294,7 +303,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
           /* ZBRANO: 2-stolpčno okence v zgornjem desnem kotu (hitro pregledaš) */
           .pd-plava.zbrano { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; inset: auto; top: 3.7rem; right: 1rem; width: 21rem; z-index: 3; }
           /* zbrane naj ŠE VEDNO nežno lebdijo (zamaknjeno prek inline animationDelay) */
-          .pd-plava.zbrano .pd-kartica-wrap { position: static; pointer-events: auto; animation: pdBob 9s ease-in-out infinite; }
+          .pd-plava.zbrano .pd-kartica-wrap { position: static; pointer-events: auto; animation: pdBobMini 6s ease-in-out infinite; }
           .pd-plava.zbrano .pd-kartica { min-width: 0; }
         }
       `}</style>
