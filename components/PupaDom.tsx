@@ -468,7 +468,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         /* ===== POGOVOR V MESTU: isti chat, spodaj se odvija, panel se izvleče ===== */
         .pd.pogovor { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.4rem; align-content: center; }
         .pd.pogovor .pd-plava, .pd.pogovor .pd-razpored { display: none; }
-        .pd.pogovor .pd-center { width: min(33rem, 94vw); max-height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; overflow-x: hidden; }
+        .pd.pogovor .pd-center { width: min(33rem, 94vw); height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; overflow-x: hidden; }
         .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: .55rem; padding: .8rem .2rem; scrollbar-width: thin; }
         .pd-vr { display: flex; max-width: 90%; min-width: 0; }
         .pd-vr.jaz { align-self: flex-end; }
