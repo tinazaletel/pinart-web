@@ -207,11 +207,14 @@ export default function BusinessCanvasWorkspace() {
     </section>
     <section className={styles.intro}>
       <div><p>BUSINESS MODEL CANVAS</p><h2>Najprej razumi, kako tvoj posel ustvarja vrednost.</h2><span>Odgovori s kratkimi alinejami. Canvas ni izpit — je živ zemljevid poslovanja.</span></div>
-      <div
-        className={styles.progress}
-        style={{ background: `conic-gradient(from -90deg, oklch(72% .18 300), oklch(82% .13 288) ${(completed / 9) * 100}%, oklch(95% .02 300) 0)` }}
-        aria-label={`${completed} od 9 področij izpolnjenih`}
-      ><strong>{completed}<small>/ 9</small></strong><span>izpolnjenih področij</span></div>
+      <div className={styles.progressWrap}>
+        <div
+          className={styles.progress}
+          style={{ background: `conic-gradient(from -90deg, oklch(72% .18 300), oklch(82% .13 288) ${(completed / 9) * 100}%, oklch(95% .02 300) 0)` }}
+          aria-label={`${completed} od 9 področij izpolnjenih`}
+        ><strong>{completed}<small>/9</small></strong></div>
+        <span className={styles.progressLabel}>izpolnjenih področij</span>
+      </div>
     </section>
 
     <section className={styles.canvas} aria-label="Business Model Canvas">
@@ -236,7 +239,7 @@ export default function BusinessCanvasWorkspace() {
 
     <section className={styles.savedCanvases} aria-labelledby="saved-canvases-title">
       <header><div><p>SHRANJENI CANVASI</p><h2 id="saved-canvases-title">Tvoje poslovne ideje na enem mestu.</h2></div><span>{shownDocuments.length}</span></header>
-      {shownDocuments.length ? <div className={styles.canvasTableWrap}><table><thead><tr><th>Podjetje</th><th>Znamka ali projekt</th><th>Posodobljeno</th><th>Izpolnjeno</th><th><span className={styles.srOnly}>Dejanja</span></th></tr></thead><tbody>{shownDocuments.map(document => {
+      {shownDocuments.length ? <div className={styles.canvasTableWrap}><table><thead><tr><th>Podjetje</th><th>Znamka ali projekt</th><th>Shranjeno</th><th>Izpolnjeno</th><th><span className={styles.srOnly}>Dejanja</span></th></tr></thead><tbody>{shownDocuments.map(document => {
         const filled = BLOCKS.filter(block => document.blocks[block.key].trim()).length;
         return <tr key={document.id}><td><strong>{document.companyName || 'Brez podjetja'}</strong></td><td>{document.brandName || '—'}</td><td>{new Date(document.updatedAt).toLocaleDateString('sl-SI')}</td><td>{filled}/9</td><td><div className={styles.rowActions}><button type="button" onClick={() => preview === 'mine' && openDocument(document)} disabled={preview !== 'mine'} aria-label={`Odpri Canvas ${document.name}`} title="Odpri Canvas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></svg></button><button type="button" onClick={() => { if (preview === 'mine') openDocument(document); }} disabled={preview !== 'mine'} aria-label={`Uredi Canvas ${document.name}`}>Uredi</button><button type="button" onClick={() => expandDocument(document)} aria-label={`Razširi ${document.name} v poslovni načrt`}>Razširi v poslovni načrt</button><button type="button" disabled aria-label={`AI pomočnik za ${document.name} bo na voljo pozneje`} title="AI vodeni poslovni načrt bo na voljo pozneje"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5zM19 15l.7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7z" /></svg></button></div></td></tr>;
       })}</tbody></table></div> : <div className={styles.emptySaved}><strong>Še nimaš shranjenega Canvasa.</strong><span>Vpiši podjetje, izpolni Canvas in ga shrani. Nato se bo pojavil tukaj.</span></div>}
