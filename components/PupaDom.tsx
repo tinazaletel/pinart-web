@@ -823,11 +823,6 @@ export default function PupaDom({ base = '' }: { base?: string }) {
           .pd.pogovor { flex-direction: column; }
           .pd.pogovor .pd-center { max-height: none; }
           .pd-panel { width: min(36rem, 94vw); }
-          /* MOBILNI VSTOP: vsebina (naslov/kartice/gumbi) zgoraj, vpisno polje kot NOGA (fiksno spodaj) */
-          .pd:not(.pogovor) { justify-content: flex-start; }
-          .pd:not(.pogovor) .pd-center { padding-top: 1.4rem; padding-bottom: 7.5rem; }
-          .pd:not(.pogovor) .pd-vnos { position: fixed; left: .6rem; right: .6rem; bottom: .6rem; z-index: 40; margin: 0; background: rgba(255,255,255,.95); box-shadow: 0 -6px 24px oklch(40% .08 300 / .18); }
-          .pd:not(.pogovor) .pd-hitre { margin-bottom: .2rem; }
         }
       `}</style>
     </div>
