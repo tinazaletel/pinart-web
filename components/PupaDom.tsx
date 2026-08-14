@@ -126,6 +126,17 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   const klepet = pupaSpor.length > 0;
   const pupaNitRef = useRef<HTMLDivElement>(null);
   useEffect(() => { if (klepet) pupaNitRef.current?.scrollTo({ top: pupaNitRef.current.scrollHeight, behavior: 'smooth' }); }, [pupaSpor, pupaCaka, klepet]);
+  /* Zgodovina pogovora: SHRANI (za zdaj localStorage — da ob osvežitvi ostane).
+     PROPER post-launch: v oblak (Supabase, per-uporabnik, del projektnega/komunikacijskega zapisa). */
+  const nalozenaNit = useRef(false);
+  useEffect(() => {
+    try { const raw = localStorage.getItem('pinart-pupa-nit'); if (raw) { const p = JSON.parse(raw); if (Array.isArray(p)) setPupaSpor(p); } } catch { /* ignore */ }
+    nalozenaNit.current = true;
+  }, []);
+  useEffect(() => {
+    if (!nalozenaNit.current) return;
+    try { localStorage.setItem('pinart-pupa-nit', JSON.stringify(pupaSpor)); } catch { /* ignore */ }
+  }, [pupaSpor]);
 
   async function posljiPupi(besedilo: string) {
     const q = besedilo.trim();
@@ -517,14 +528,14 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-aurora .a3 { width: 36vw; height: 36vw; bottom: -12vw; left: 26vw; background: radial-gradient(circle, oklch(80% .12 150 / .75), transparent 68%); animation: pdFloat 32s ease-in-out infinite; }
         @keyframes pdFloat { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(2vw,-2vw) scale(1.06); } }
         /* Pupino srce (živa AI): mehki modro-vijola gradient za pogovorom, nežen srčni utrip */
-        .pd-srce { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); width: min(46vw, 34rem); height: min(46vw, 34rem); z-index: 1; pointer-events: none; border-radius: 50%; filter: blur(50px); background: radial-gradient(circle at 50% 45%, oklch(82% .09 285 / .6), oklch(85% .07 255 / .34) 46%, transparent 70%); animation: pdSrce 3.4s ease-in-out infinite; }
+        .pd-srce { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); width: min(50vw, 38rem); height: min(50vw, 38rem); z-index: 1; pointer-events: none; border-radius: 50%; filter: blur(46px); background: radial-gradient(circle at 50% 45%, oklch(78% .12 288 / .82), oklch(83% .1 258 / .5) 46%, transparent 70%); animation: pdSrce 3.4s ease-in-out infinite; }
         .pd-srce.bije { animation-duration: 1.7s; }
         @keyframes pdSrce {
-          0% { transform: translate(-50%, -50%) scale(1); opacity: .68; }
-          14% { transform: translate(-50%, -50%) scale(1.07); opacity: .96; }
-          28% { transform: translate(-50%, -50%) scale(1.01); opacity: .8; }
-          42% { transform: translate(-50%, -50%) scale(1.05); opacity: .9; }
-          60%, 100% { transform: translate(-50%, -50%) scale(1); opacity: .68; }
+          0% { transform: translate(-50%, -50%) scale(1); opacity: .85; }
+          14% { transform: translate(-50%, -50%) scale(1.08); opacity: 1; }
+          28% { transform: translate(-50%, -50%) scale(1.02); opacity: .92; }
+          42% { transform: translate(-50%, -50%) scale(1.06); opacity: .98; }
+          60%, 100% { transform: translate(-50%, -50%) scale(1); opacity: .85; }
         }
         @media (prefers-reduced-motion: reduce) { .pd-srce { animation: none; } }
 
