@@ -14,7 +14,7 @@ import KomZnacka from './KomZnacka';
 import PaketZnak from './PaketZnak';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
-type Section = 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings' | 'ekipa' | 'novprojekt' | 'ideje' | 'marketing' | 'komunikacija' | 'sef';
+type Section = 'dom' | 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings' | 'ekipa' | 'novprojekt' | 'ideje' | 'marketing' | 'komunikacija' | 'sef';
 
 /* Meni je razdeljen po tem, KAJ UPORABNIK POCNE, ne kaj stvar je:
    Delo = ustvarjas dokument za stranko · Podatki = vzdrzujes vnose · Nacrt = racunas/ciljas.
