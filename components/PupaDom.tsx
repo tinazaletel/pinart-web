@@ -553,11 +553,6 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd.pogovor { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.4rem; align-content: center; }
         .pd.pogovor .pd-plava, .pd.pogovor .pd-razpored { display: none; }
         .pd.pogovor .pd-center { width: min(33rem, 94vw); height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; overflow-x: hidden; }
-        /* v pogovoru je okno ožje -> kompaktna glava, da se pozdrav NE reže */
-        .pd.pogovor .pd-glava { margin-bottom: .3rem; }
-        .pd.pogovor .pd-orb { width: 2.2rem; height: 2.2rem; }
-        .pd.pogovor .pd-naslov { font-size: 1.35rem; line-height: 1.2; }
-        .pd.pogovor .pd-eyebrow { font-size: .56rem; margin-bottom: .05rem; }
         .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: .55rem; padding: .8rem .2rem; scrollbar-width: none; }
         .pd-nit::-webkit-scrollbar { display: none; }
         .pd-vr { display: flex; max-width: 90%; min-width: 0; }
