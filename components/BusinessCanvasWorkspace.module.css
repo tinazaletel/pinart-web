@@ -83,9 +83,48 @@
 .rowActions button:disabled { cursor: not-allowed; opacity: .42; }
 .rowActions svg { width: 1.15rem; height: 1.15rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .canvasToolbar input:focus-visible, .canvasToolbar select:focus-visible, .newCanvasButton:focus-visible, .rowActions button:focus-visible { outline: 3px solid oklch(60% .2 270); outline-offset: 2px; }
-.emptySaved { display: grid; gap: .35rem; padding: 1.5rem; border-top: 1px solid var(--line); }
+.emptySaved { display: grid; gap: .35rem; padding: 2rem 1.5rem; border: 1px dashed var(--line); border-radius: 1.35rem; text-align: center; justify-items: center; }
 .emptySaved span { color: var(--muted); }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+
+/* ── Dokumentni model: seznam kartic (dom) ⇄ urejevalnik ─────────────────── */
+.listHead { padding: .3rem .3rem 0; }
+.listHead p { margin: 0 0 .5rem; font-size: .75rem; font-weight: 850; letter-spacing: .14em; color: color-mix(in oklch, var(--ink) 58%, transparent); }
+.listHead h2 { margin: 0; font: 500 clamp(1.7rem, 3vw, 2.6rem)/1.02 var(--font-serif), Georgia, serif; }
+.listHead span { display: block; max-width: 54ch; margin-top: .55rem; color: var(--muted); line-height: 1.5; }
+
+.canvasGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1rem; }
+
+.newCanvasCard { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: .25rem; min-height: 10.5rem; padding: 1.3rem; border: 1.5px dashed color-mix(in oklch, oklch(58% .2 297) 40%, var(--line)); border-radius: 1.35rem; background: color-mix(in oklch, oklch(58% .2 297) 5%, rgba(255,255,255,.45)); color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
+.newCanvasCard:hover:not(:disabled) { transform: translateY(-2px); background: color-mix(in oklch, oklch(58% .2 297) 11%, rgba(255,255,255,.6)); box-shadow: 0 12px 30px oklch(50% .12 285 / .14); }
+.newCanvasCard:disabled { opacity: .5; cursor: not-allowed; }
+.newCanvasPlus { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; margin-bottom: .35rem; border-radius: 50%; background: oklch(58% .2 297); color: #fff; font-size: 1.5rem; line-height: 1; }
+.newCanvasCard strong { font-size: 1.1rem; font-weight: 700; }
+.newCanvasCard > span:last-child { color: var(--muted); font-size: .82rem; }
+
+.canvasCard { position: relative; display: flex; flex-direction: column; gap: .9rem; min-height: 10.5rem; padding: 1.3rem; border: 1px solid rgba(255,255,255,.6); border-radius: 1.35rem; background: rgba(255,255,255,.55); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3); box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .05); cursor: pointer; transition: transform .18s ease, box-shadow .18s ease; }
+.canvasCard:hover, .canvasCard:focus-visible { transform: translateY(-3px); box-shadow: 0 16px 38px oklch(45% .08 285 / .14); outline: none; }
+.canvasCardTop { display: flex; align-items: flex-start; justify-content: space-between; gap: .8rem; }
+.canvasCardName { min-width: 0; display: grid; gap: .2rem; }
+.canvasCardName strong { font: 500 1.25rem/1.15 var(--font-serif), Georgia, serif; overflow-wrap: anywhere; }
+.canvasCardName > span { color: var(--muted); font-size: .85rem; overflow-wrap: anywhere; }
+.canvasCardRing { flex: none; display: grid; place-items: center; width: 3.1rem; aspect-ratio: 1; border-radius: 50%; box-shadow: inset 0 0 0 .42rem var(--paper, oklch(98% .008 87)); }
+.canvasCardRing b { display: inline-flex; align-items: baseline; gap: .04rem; font: 600 .98rem var(--font-serif), Georgia, serif; }
+.canvasCardRing i { font-style: normal; font-size: .66rem; color: var(--muted); }
+.canvasCardFoot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.canvasCardDate { color: var(--muted); font-size: .78rem; }
+.canvasCardPlan { flex: none; padding: .38rem .65rem; border: 0; border-radius: 999px; background: color-mix(in oklch, oklch(58% .2 297) 12%, transparent); color: color-mix(in oklch, oklch(46% .2 297) 92%, var(--ink)); font: 700 .74rem var(--font-sans), sans-serif; cursor: pointer; transition: background .16s ease; }
+.canvasCardPlan:hover { background: color-mix(in oklch, oklch(58% .2 297) 22%, transparent); }
+
+/* Urejevalnik: vrh z »nazaj« + napredkom */
+.editorHead { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.editorBack { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.6rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.6); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); color: var(--ink); font: 700 .82rem var(--font-sans), sans-serif; cursor: pointer; transition: border-color .16s ease, background .16s ease; }
+.editorBack:hover { border-color: var(--ink); background: rgba(255,255,255,.82); }
+.editorHead .progressWrap { grid-auto-flow: column; align-items: center; gap: .7rem; }
+.editorHead .progress { width: 6.5rem; }
+.editorHead .progress::after { inset: .75rem; }
+.editorHead .progress strong { font-size: 1.7rem; }
+.editorHead .progressLabel { text-align: left; max-width: 7rem; }
 @media (max-width: 1100px) { .canvas { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: none; }.canvas article[data-block] { grid-area: auto; }.canvas article[data-block='value'] { grid-column: 1 / -1; } }
 @media (max-width: 700px) { .page { min-width: 0; }.canvasToolbar, .newCanvasForm { align-items: stretch; flex-direction: column; }.canvasToolbar label, .newCanvasForm label { flex-basis: auto; }.canvasToolbar button, .newCanvasForm > div, .newCanvasForm button { width: 100%; }.intro, .actions { grid-template-columns: 1fr; gap: 1.25rem; padding: 1.15rem; }.intro::after { right: -4rem; }.progress { width: 7rem; }.canvas { grid-template-columns: 1fr; }.canvas article[data-block='value'] { grid-column: auto; }.canvas article { min-width: 0; min-height: auto; padding: 1rem; }.canvas textarea { min-height: 8rem; }.actions > div:last-child, .plan footer { justify-content: stretch; flex-direction: column; }.saveFeedback { text-align: left; }.actions button, .plan footer button { width: 100%; min-height: 3rem; }.plan { min-width: 0; padding: 1rem; }.plan header { gap: .75rem; }.plan header > button { flex: 0 0 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }.plan pre { max-width: 100%; padding: 1rem; box-sizing: border-box; } }
 
