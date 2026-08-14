@@ -7,9 +7,8 @@
    podatkovna povezava pride v naslednjem koraku. Kartice-v-pogovoru + glas = Faza 2.
    Glej memory: project_pupa_prvi_vmesnik, project_pupa_center_layout_ideja, project_flow_glass_aurora. */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { lokalniOdgovori } from '@/lib/onboarding';
-import { PRICING_SERVICES } from '@/lib/pricingCatalog';
 
 export default function PupaDom({ base = '' }: { base?: string }) {
   const jeEn = base === '/en';
@@ -82,10 +81,17 @@ export default function PupaDom({ base = '' }: { base?: string }) {
       return;
     }
     if (!t) return;
-    // Pupa AI: pogovor V MESTU (isti chat ostane), desni panel se izvleče z osnutkom
+    // Pupa AI: pogovor V MESTU (isti chat ostane), z desne se odpre panel
     if (urejam !== null) { setSporocila(prev => prev.filter(s => s.id !== urejam)); setUrejam(null); }
-    if (!pogovor) setPogovor(true);
-    posljiBesedilo(t);
+    if (!pogovor) {
+      // prvi vnos = izhodišče; Pupa začne s prvim vprašanjem (glava ponudbe)
+      setPogovor(true);
+      intentRef.current = t;
+      setSporocila([{ id: nextId(), kdo: 'jaz', besedilo: t, stanje: 'obdelano' }]);
+      const c = window.setTimeout(() => pupaVprasaj(0), 500); casovniki.current.push(c);
+    } else {
+      posljiBesedilo(t);
+    }
     setVnos('');
     const el = textRef.current; if (el) el.style.height = 'auto';
   };
@@ -96,29 +102,39 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   useEffect(() => { try { setZbrano(localStorage.getItem('pinart-pupa-zbrano') === '1'); } catch { /* ignore */ } }, []);
   const preklopiRazpored = () => setZbrano(z => { const n = !z; try { localStorage.setItem('pinart-pupa-zbrano', n ? '1' : '0'); } catch { /* ignore */ } return n; });
 
-  /* POGOVOR V MESTU (Pupa AI): isti chat OSTANE, spodaj se odvija pogovor, z desne
-     se IZVLEČE panel z živim osnutkom. Vnos ostane vedno viden na dnu. */
+  /* POGOVOR SE NADALJUJE V ISTEM OKNU (nič se ne »odpre«): tekst se pomika navzgor,
+     vnos ostane na dnu, z desne se odpre panel. Vprašanja = vajin obstoječi vprašalnik
+     (Pupa vklopljena lahko vmes doda kontekstna vprašanja; izklopljena = ta zaporedja).
+     Dizajn je ENAK ne glede na AI. */
   const [pogovor, setPogovor] = useState(false);
   const [sporocila, setSporocila] = useState<Sporocilo[]>([]);
-  const [osnutek, setOsnutek] = useState<Osnutek>({ stranka: '', rok: '', storitve: [] });
+  const [korak, setKorak] = useState(0);
+  const [profil, setProfil] = useState<Profil>({ ime: '', izkusnje: '', podjetje: '', podrocja: '' });
   const [urejam, setUrejam] = useState<number | null>(null);
   const idRef = useRef(1);
   const nextId = () => idRef.current++;
   const casovniki = useRef<number[]>([]);
-  const osnutekRef = useRef<Osnutek>({ stranka: '', rok: '', storitve: [] });
+  const korakRef = useRef(0);
+  const intentRef = useRef('');
   const preklicaniRef = useRef<Set<number>>(new Set());
   const koncRef = useRef<HTMLDivElement>(null);
-  const cakaRef = useRef<'stranka' | ''>(''); // kaj Pupa pričakuje (da gol odgovor postane npr. ime stranke)
-  const skupaj = useMemo(() => osnutek.storitve.reduce((v, s) => v + s.cena, 0), [osnutek.storitve]);
-  useEffect(() => { osnutekRef.current = osnutek; }, [osnutek]);
+  useEffect(() => { korakRef.current = korak; }, [korak]);
   useEffect(() => { if (pogovor) koncRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [sporocila, pogovor]);
   useEffect(() => () => { casovniki.current.forEach(clearTimeout); }, []);
 
-  function pupaOdgovori(poNovem: Osnutek) {
-    let besedilo: string;
-    if (poNovem.storitve.length === 0) { cakaRef.current = ''; besedilo = L('Kaj naj pripravim? Npr. logotip, spletna stran, celostna podoba, katalog …', 'What should I prepare? E.g. logo, website, visual identity, catalogue …'); }
-    else if (!poNovem.stranka) { cakaRef.current = 'stranka'; const sez = poNovem.storitve.map(s => s.ime.toLowerCase()).join(', '); besedilo = L(`Super — ${sez}. Za koga je (ime stranke)?`, `Great — ${sez}. Who is it for (client name)?`); }
-    else { cakaRef.current = ''; const vsota = poNovem.storitve.reduce((v, s) => v + s.cena, 0); besedilo = L(`Pripravila sem osnutek za ${poNovem.stranka}: ${poNovem.storitve.length} ${poNovem.storitve.length === 1 ? 'postavka' : 'postavke'}, groba ocena ${evro(vsota)}. Preveri desno — če se ujema, odpri v urejevalniku.`, `Drafted for ${poNovem.stranka}: ${poNovem.storitve.length} item(s), rough estimate ${evro(vsota)}. Check on the right — if it fits, open it in the editor.`); }
+  /* ISTA vprašanja kot obstoječi vprašalnik (glava ponudbe). Naslednji sklop (storitve
+     s svojimi vprašanji) pride v naslednjem koraku — ta se veže na kalkulator. */
+  const VPRASANJA: { k: keyof Profil; q: string; pod?: string }[] = [
+    { k: 'ime', q: L('Živjo! Kako ti je ime?', 'Hi! What is your name?') },
+    { k: 'izkusnje', q: L('Kakšne izkušnje imaš?', 'How much experience do you have?'), pod: L('Vpliva na ceno ponudbe.', 'Affects the quote price.') },
+    { k: 'podjetje', q: L('V imenu katerega podjetja izdajaš ponudbo?', 'Under which company do you issue the quote?'), pod: L('Podatki za glavo ponudbe. Če nimaš podjetja, vpiši svoje ime.', 'Details for the quote header. If you have no company, enter your name.') },
+    { k: 'podrocja', q: L('S katerimi področji se ukvarjaš?', 'Which fields do you work in?'), pod: L('Izbereš lahko več.', 'You can pick several.') },
+  ];
+
+  function pupaVprasaj(k: number) {
+    const besedilo = k < VPRASANJA.length
+      ? VPRASANJA[k].q + (VPRASANJA[k].pod ? `\n${VPRASANJA[k].pod}` : '')
+      : L('Super — osnova je zbrana! Nadaljujeva z izbiro storitev in ceno.', "Great — the basics are set! Let's continue with services and pricing.");
     setSporocila(prev => [...prev, { id: nextId(), kdo: 'pupa', besedilo }]);
   }
   function posljiBesedilo(text: string) {
@@ -128,27 +144,30 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     const c = window.setTimeout(() => {
       if (preklicaniRef.current.has(mojId)) { preklicaniRef.current.delete(mojId); return; }
       setSporocila(prev => prev.map(s => (s.id === mojId ? { ...s, stanje: 'obdelano' } : s)));
-      const poNovem = zdruzi(osnutekRef.current, preberi(t));
-      // če Pupa pričakuje ime stranke in ga v besedilu ni prek "za X", vzemi cel (kratek) odgovor
-      if (cakaRef.current === 'stranka' && !poNovem.stranka && !t.trim().endsWith('?') && t.trim().length <= 45) {
-        poNovem.stranka = t.replace(/[.,;:]+$/, '').trim();
-        cakaRef.current = '';
-      }
-      osnutekRef.current = poNovem; setOsnutek(poNovem);
-      const c2 = window.setTimeout(() => pupaOdgovori(poNovem), 450); casovniki.current.push(c2);
+      const k = korakRef.current;
+      if (k < VPRASANJA.length) { const kljuc = VPRASANJA[k].k; setProfil(p => ({ ...p, [kljuc]: t })); }
+      const nk = Math.min(k + 1, VPRASANJA.length);
+      setKorak(nk); korakRef.current = nk;
+      const c2 = window.setTimeout(() => pupaVprasaj(nk), 450); casovniki.current.push(c2);
     }, 850);
     casovniki.current.push(c);
   }
   function urediSporocilo(s: Sporocilo) { setVnos(s.besedilo); setUrejam(s.id); const el = textRef.current; if (el) el.focus(); }
   function izbrisiSporocilo(id: number) { preklicaniRef.current.add(id); setSporocila(prev => prev.filter(s => s.id !== id)); if (urejam === id) { setUrejam(null); setVnos(''); } }
-  function odpriVUrejevalniku() {
+  function nadaljuj() {
     if (typeof window === 'undefined') return;
     try {
       const KEY = 'pinart-kalkulator-v2';
       const obst = JSON.parse(localStorage.getItem(KEY) || '{}');
-      localStorage.setItem(KEY, JSON.stringify({ ...obst, narocnikPonudbe: osnutek.stranka || obst.narocnikPonudbe || '', izbrane: osnutek.storitve.map(s => s.id), nazivPonudbe: osnutek.stranka ? L(`Ponudba — ${osnutek.stranka}`, `Quote — ${osnutek.stranka}`) : (obst.nazivPonudbe || '') }));
+      localStorage.setItem(KEY, JSON.stringify({
+        ...obst,
+        imeUporabnika: profil.ime || obst.imeUporabnika || '',
+        izkusnje: profil.izkusnje || obst.izkusnje || '',
+        ponudnik: { ...(obst.ponudnik || {}), ime: profil.podjetje || obst.ponudnik?.ime || '' },
+      }));
     } catch { /* ignore */ }
-    window.location.href = `${base}/kalkulator/orodje?od=pregled`;
+    const namig = intentRef.current.trim();
+    window.location.href = `${base}/kalkulator/orodje?od=pregled${namig ? `&namig=${encodeURIComponent(namig)}` : ''}`;
   }
 
   /* PLAVAJOČE kartice (ambient) — podatki, kot jih imamo na nadzorni plošči.
@@ -169,6 +188,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     { ime: L('Izdaj račun', 'Issue an invoice'), predlog: L('Izdaj račun za ', 'Issue an invoice for '), h: 200 },
     { ime: L('Dodaj strošek', 'Add an expense'), predlog: L('Dodaj strošek: ', 'Add an expense: '), h: 60 },
     { ime: L('Ustvari projekt', 'Start a project'), predlog: L('Ustvari nov projekt za ', 'Start a new project for '), h: 150 },
+    { ime: L('Ustvari task', 'Create task'), predlog: L('Ustvari nalogo: ', 'Create task: '), h: 250 },
   ];
 
   return (
@@ -215,23 +235,17 @@ export default function PupaDom({ base = '' }: { base?: string }) {
               <div key={s.id} className={`pd-vr ${s.kdo === 'jaz' ? 'jaz' : 'pupa'}`}>
                 {s.kdo === 'pupa' && <span className="pd-vr-orb" aria-hidden />}
                 <div className="pd-vr-body">
-                  <div className="pd-mehur">
-                    {s.besedilo}
-                    {s.kdo === 'jaz' && (
-                      <button type="button" className="pd-vr-pen" onClick={() => urediSporocilo(s)} title={L('Uredi', 'Edit')} aria-label={L('Uredi', 'Edit')}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
-                      </button>
-                    )}
-                  </div>
+                  {/* neprebrano = obledel mehurček (Pupa še ni prebrala); prebrano = poln */}
+                  <div className={`pd-mehur${s.kdo === 'jaz' && s.stanje === 'cakanje' ? ' caka' : ''}`}>{s.besedilo}</div>
                   {s.kdo === 'jaz' && (
                     <div className="pd-vr-meta">
-                      {s.stanje === 'cakanje' ? (
-                        <>
-                          <span className="pd-cak"><span className="pd-cakp" /><span className="pd-cakp" /><span className="pd-cakp" /> {L('v čakanju', 'queued')}</span>
-                          <button type="button" className="pd-vr-akc" onClick={() => izbrisiSporocilo(s.id)}>{L('Izbriši', 'Delete')}</button>
-                        </>
-                      ) : (
-                        <span className="pd-obd">{L('prebrano', 'read')} ✓</span>
+                      <button type="button" className="pd-vr-ikona" onClick={() => urediSporocilo(s)} title={L('Uredi', 'Edit')} aria-label={L('Uredi', 'Edit')}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
+                      </button>
+                      {s.stanje === 'cakanje' && (
+                        <button type="button" className="pd-vr-ikona" onClick={() => izbrisiSporocilo(s.id)} title={L('Izbriši (še neprebrano)', 'Delete (not read yet)')} aria-label={L('Izbriši', 'Delete')}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
+                        </button>
                       )}
                     </div>
                   )}
@@ -314,28 +328,27 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         <aside className="pd-panel" aria-label={L('Osnutek ponudbe', 'Quote draft')}>
           <div className="pd-p-glava">
             <span className="pd-p-znak">{L('Osnutek ponudbe', 'Quote draft')}</span>
-            <span className="pd-p-status">{osnutek.storitve.length ? L('v pripravi', 'in progress') : L('čaka', 'waiting')}</span>
+            <span className="pd-p-status">{korak > 0 ? L('v pripravi', 'in progress') : L('čaka', 'waiting')}</span>
           </div>
-          <div className="pd-p-polje"><span className="pd-p-ozn">{L('Stranka', 'Client')}</span><span className={`pd-p-vr${osnutek.stranka ? '' : ' prazno'}`}>{osnutek.stranka || L('— še ni —', '— not yet —')}</span></div>
-          <div className="pd-p-postavke">
-            <span className="pd-p-ozn">{L('Storitve', 'Services')}</span>
-            {osnutek.storitve.length === 0 ? (
-              <div className="pd-p-doc">
-                <svg width="44" height="54" viewBox="0 0 46 56" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden>
-                  <path d="M7 3h20l12 12v38a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
-                  <path d="M27 3v12h12" />
-                  <path d="M13 26h20M13 33h20M13 40h13" strokeLinecap="round" opacity=".55" />
-                </svg>
-                <p className="pd-p-prazno">{L('Povej Pupi, kaj naj pripravi — osnutek se sestavi tukaj.', 'Tell Pupa what to prepare — the draft builds here.')}</p>
-              </div>
-            ) : (
-              <ul>{osnutek.storitve.map(s => <li key={s.id}><span>{s.ime}</span><b>{s.cena > 0 ? evro(s.cena) : L('po dogovoru', 'custom')}</b></li>)}</ul>
-            )}
-          </div>
-          {osnutek.rok && <div className="pd-p-polje"><span className="pd-p-ozn">{L('Rok', 'Deadline')}</span><span className="pd-p-vr">{osnutek.rok}</span></div>}
-          <div className="pd-p-vsota"><span>{L('Groba ocena', 'Rough estimate')}</span><b>{skupaj > 0 ? evro(skupaj) : '—'}</b></div>
-          <p className="pd-p-opomba">{L('Ocena iz osnovnih cen. Končno ceno določiš v urejevalniku.', 'Estimate from base prices. Final price is set in the editor.')}</p>
-          <button type="button" className="pd-p-odpri" onClick={odpriVUrejevalniku} disabled={osnutek.storitve.length === 0}>{L('Odpri v urejevalniku', 'Open in editor')} <span aria-hidden>→</span></button>
+          {korak === 0 ? (
+            <div className="pd-p-doc">
+              <svg width="44" height="54" viewBox="0 0 46 56" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden>
+                <path d="M7 3h20l12 12v38a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+                <path d="M27 3v12h12" />
+                <path d="M13 26h20M13 33h20M13 40h13" strokeLinecap="round" opacity=".55" />
+              </svg>
+              <p className="pd-p-prazno">{L('Odgovori na vprašanja — glava ponudbe se sestavi tukaj.', 'Answer the questions — the quote header builds here.')}</p>
+            </div>
+          ) : (
+            <>
+              <div className="pd-p-polje"><span className="pd-p-ozn">{L('Ime', 'Name')}</span><span className={`pd-p-vr${profil.ime ? '' : ' prazno'}`}>{profil.ime || L('— še ni —', '— not yet —')}</span></div>
+              {profil.izkusnje && <div className="pd-p-polje"><span className="pd-p-ozn">{L('Izkušnje', 'Experience')}</span><span className="pd-p-vr">{profil.izkusnje}</span></div>}
+              {profil.podjetje && <div className="pd-p-polje"><span className="pd-p-ozn">{L('Podjetje', 'Company')}</span><span className="pd-p-vr">{profil.podjetje}</span></div>}
+              {profil.podrocja && <div className="pd-p-polje"><span className="pd-p-ozn">{L('Področja', 'Fields')}</span><span className="pd-p-vr">{profil.podrocja}</span></div>}
+            </>
+          )}
+          <p className="pd-p-opomba">{L('Ko je osnova zbrana, nadaljuješ z izbiro storitev in ceno.', 'Once the basics are set, continue with services and pricing.')}</p>
+          <button type="button" className="pd-p-odpri" onClick={nadaljuj} disabled={korak < VPRASANJA.length}>{L('Nadaljuj', 'Continue')} <span aria-hidden>→</span></button>
         </aside>
       )}
 
@@ -453,12 +466,15 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-vr-orb { flex: none; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: conic-gradient(from 210deg, oklch(70% .19 300), oklch(72% .16 200), oklch(80% .13 150), oklch(78% .17 25), oklch(70% .19 300)); box-shadow: inset -2px -2px 5px oklch(100% 0 0 / .35), inset 2px 2px 5px oklch(30% .1 300 / .25); margin-top: .15rem; }
         .pd-vr-body { display: flex; flex-direction: column; gap: .18rem; min-width: 0; }
         .pd-vr.jaz .pd-vr-body { align-items: flex-end; }
-        .pd-mehur { position: relative; padding: .6rem .85rem; border-radius: 1.15rem; font: 500 .93rem/1.45 var(--font-sans), sans-serif; box-shadow: 0 6px 18px oklch(40% .06 300 / .1); overflow-wrap: anywhere; word-break: break-word; }
+        .pd-mehur { position: relative; padding: .6rem .85rem; border-radius: 1.15rem; font: 500 .93rem/1.45 var(--font-sans), sans-serif; box-shadow: 0 6px 18px oklch(40% .06 300 / .1); overflow-wrap: anywhere; word-break: break-word; white-space: pre-line; }
         .pd-vr.pupa .pd-mehur { background: #fff; color: var(--ink, #1a1a1a); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 7%, transparent); border-bottom-left-radius: .4rem; }
-        .pd-vr.jaz .pd-mehur { background: color-mix(in oklch, oklch(82% .1 165) 55%, #fff); color: var(--ink, #1a1a1a); border-bottom-right-radius: .4rem; padding-right: 2.1rem; }
-        .pd-vr-pen { position: absolute; top: .45rem; right: .5rem; display: grid; place-items: center; width: 1.35rem; height: 1.35rem; border: 0; border-radius: 50%; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease; }
-        .pd-vr-pen:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 9%, transparent); color: var(--ink, #1a1a1a); }
-        .pd-vr-meta { display: flex; align-items: center; gap: .5rem; font: 600 .68rem var(--font-sans), sans-serif; padding: 0 .3rem; }
+        .pd-vr.jaz .pd-mehur { background: color-mix(in oklch, oklch(82% .1 165) 55%, #fff); color: var(--ink, #1a1a1a); border-bottom-right-radius: .4rem; transition: opacity .25s ease; }
+        /* neprebrano = obledel mehurček (Pupa še ni prebrala); prebrano = poln */
+        .pd-vr.jaz .pd-mehur.caka { opacity: .5; box-shadow: none; }
+        .pd-vr-ikona { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border: 0; border-radius: 50%; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 42%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease; }
+        .pd-vr-ikona:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 9%, transparent); color: var(--ink, #1a1a1a); }
+        .pd-vr-meta { display: flex; align-items: center; gap: .15rem; padding: 0 .2rem; opacity: 0; transition: opacity .15s ease; }
+        .pd-vr:hover .pd-vr-meta, .pd-vr .pd-mehur.caka ~ .pd-vr-meta { opacity: 1; }
         .pd-cak { display: inline-flex; align-items: center; gap: .3rem; color: color-mix(in oklch, var(--ink, #1a1a1a) 48%, transparent); }
         .pd-cakp { width: .3rem; height: .3rem; border-radius: 50%; background: var(--purple, oklch(60% .2 297)); animation: pdCak 1.1s ease-in-out infinite; }
         .pd-cakp:nth-child(2) { animation-delay: .18s; }
@@ -509,64 +525,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   );
 }
 
-/* ===== Pogovor: tipi + deterministično branje (odporno; prava AI = Faza 2b) ===== */
+/* ===== Pogovor: tipi ===== */
 type Sporocilo = { id: number; kdo: 'jaz' | 'pupa'; besedilo: string; stanje?: 'cakanje' | 'obdelano' };
-type Postavka = { id: string; ime: string; cena: number };
-type Osnutek = { stranka: string; rok: string; storitve: Postavka[] };
-
-const KLJUCI: { id: string; besede: string[] }[] = [
-  { id: 'logo', besede: ['logotip', 'logo'] },
-  { id: 'cgp', besede: ['celostn', 'cgp', 'grafičn podob', 'vizualn identitet', 'identitet'] },
-  { id: 'web', besede: ['spletn stran', 'spletno mesto', 'splet', 'spletn', 'website', 'landing', 'web'] },
-  { id: 'uxui', besede: ['ux', 'ui', 'uporabnišk izkušnj'] },
-  { id: 'aplikacija', besede: ['aplikacij', 'mobiln app', 'app'] },
-  { id: 'kampanja', besede: ['kampanj', 'oglas'] },
-  { id: 'publikacija', besede: ['publikacij', 'katalog', 'brošur', 'tiskovin', 'letak', 'zloženk'] },
-  { id: 'embalaza', besede: ['embalaž', 'packaging', 'etiket'] },
-  { id: 'ilustracija', besede: ['ilustracij'] },
-  { id: 'fotografija', besede: ['fotograf', 'foto'] },
-  { id: 'video', besede: ['video', 'snemanj'] },
-  { id: 'motion', besede: ['motion', 'animacij'] },
-  { id: 'smm', besede: ['social', 'instagram', 'družben omrežj', 'objav'] },
-  { id: 'seo', besede: ['seo'] },
-  { id: 'copy', besede: ['besedil', 'copywriting', 'copy'] },
-  { id: 'strategija', besede: ['strategij'] },
-  { id: 'interier', besede: ['interier', 'notranj oprem'] },
-  { id: 'render3d', besede: ['3d', 'render', 'vizualizacij'] },
-];
-const MESECI = ['januar', 'februar', 'marec', 'april', 'maj', 'junij', 'julij', 'avgust', 'september', 'oktober', 'november', 'december'];
-
-function preberi(text: string): { storitve: Postavka[]; stranka: string; rok: string } {
-  const t = text.toLowerCase();
-  const najdene: Postavka[] = [];
-  for (const k of KLJUCI) {
-    if (k.besede.some(b => t.includes(b))) {
-      const s = PRICING_SERVICES.find(x => x.id === k.id);
-      if (s && !najdene.some(n => n.id === s.id)) najdene.push({ id: s.id, ime: s.ime, cena: s.osnova });
-    }
-  }
-  let stranka = '';
-  for (const mm of text.matchAll(/\bza\s+([^,.;]{2,40}?)(?=\s*(?:,|;|\.|\brok\b|\bdo\b|$))/gi)) {
-    const kand = mm[1].trim();
-    if (kand && !KLJUCI.some(k => k.besede.some(b => kand.toLowerCase().includes(b)))) { stranka = kand; break; }
-  }
-  let rok = '';
-  const mes = MESECI.find(mm => t.includes(mm));
-  if (mes) rok = mes.charAt(0).toUpperCase() + mes.slice(1);
-  const rm = text.match(/\b(rok|do)\s+([^.,;]{2,30})/i);
-  if (rm && !rok) rok = rm[2].trim();
-  return { storitve: najdene, stranka, rok };
-}
-
-function zdruzi(o: Osnutek, d: { storitve: Postavka[]; stranka: string; rok: string }): Osnutek {
-  const storitve = [...o.storitve];
-  for (const s of d.storitve) if (!storitve.some(x => x.id === s.id)) storitve.push(s);
-  return { stranka: d.stranka || o.stranka, rok: d.rok || o.rok, storitve };
-}
-
-function evro(n: number): string {
-  return new Intl.NumberFormat('sl-SI', { maximumFractionDigits: 0 }).format(n) + ' €';
-}
+type Profil = { ime: string; izkusnje: string; podjetje: string; podrocja: string };
 
 /* razčleni "top:8%;left:3%" v React style objekt */
 function pozStyle(poz: string): React.CSSProperties {
