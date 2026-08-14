@@ -536,7 +536,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         /* umirjeno lebdenje za zbrano mrežo (brez prekrivanja) */
         @keyframes pdBobMini { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
-        .pd-center { position: relative; z-index: 2; width: min(37rem, 96vw); padding: clamp(1.2rem, 4vw, 2rem) clamp(.55rem, 2.2vw, 2rem); text-align: left; }
+        .pd-center { position: relative; z-index: 2; width: min(48rem, 96vw); padding: clamp(1.2rem, 4vw, 2rem) clamp(.55rem, 2.2vw, 2rem); text-align: left; }
         /* HOME (prazno): pozdrav → gumbi → vnos kot CENTRIRANA skupina — vnos je VIŠJE (ne visi na robu).
            Ko pogovor zraste (.pd.pogovor), se vnos prilepi na dno (glej postavitev pogovora spodaj). */
         .pd:not(.pogovor) { display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -619,7 +619,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         /* ===== POGOVOR V MESTU: isti chat, spodaj se odvija, panel se izvleče ===== */
         .pd.pogovor { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.4rem; align-content: center; }
         .pd.pogovor .pd-plava, .pd.pogovor .pd-razpored { display: none; }
-        .pd.pogovor .pd-center { width: min(33rem, 94vw); height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; overflow-x: hidden; }
+        .pd.pogovor .pd-center { width: min(48rem, 94vw); height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; overflow-x: hidden; }
         .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: .55rem; padding: .8rem .2rem; scrollbar-width: none; }
         .pd-nit::-webkit-scrollbar { display: none; }
         /* Pupa piše (pike) */
