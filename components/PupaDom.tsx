@@ -236,18 +236,20 @@ export default function PupaDom({ base = '' }: { base?: string }) {
               <div key={s.id} className={`pd-vr ${s.kdo === 'jaz' ? 'jaz' : 'pupa'}`}>
                 {s.kdo === 'pupa' && <span className="pd-vr-orb" aria-hidden />}
                 <div className="pd-vr-body">
-                  {/* neprebrano = obledel mehurček (Pupa še ni prebrala); prebrano = poln */}
-                  <div className={`pd-mehur${s.kdo === 'jaz' && s.stanje === 'cakanje' ? ' caka' : ''}`}>{s.besedilo}</div>
-                  {s.kdo === 'jaz' && (
-                    <div className="pd-vr-meta">
-                      <button type="button" className="pd-vr-ikona" onClick={() => urediSporocilo(s)} title={L('Uredi', 'Edit')} aria-label={L('Uredi', 'Edit')}>
+                  {/* neprebrano = obledel mehurček; med urejanjem = SIV (namesto zelenega); svinčnik V mehurčku */}
+                  <div className={`pd-mehur${s.kdo === 'jaz' && s.stanje === 'cakanje' ? ' caka' : ''}${urejam === s.id ? ' ureja' : ''}`}>
+                    {s.besedilo}
+                    {s.kdo === 'jaz' && (
+                      <button type="button" className="pd-vr-pen" onClick={() => urediSporocilo(s)} title={L('Uredi', 'Edit')} aria-label={L('Uredi', 'Edit')}>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
                       </button>
-                      {s.stanje === 'cakanje' && (
-                        <button type="button" className="pd-vr-ikona" onClick={() => izbrisiSporocilo(s.id)} title={L('Izbriši (še neprebrano)', 'Delete (not read yet)')} aria-label={L('Izbriši', 'Delete')}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
-                        </button>
-                      )}
+                    )}
+                  </div>
+                  {s.kdo === 'jaz' && s.stanje === 'cakanje' && (
+                    <div className="pd-vr-meta">
+                      <button type="button" className="pd-vr-ikona" onClick={() => izbrisiSporocilo(s.id)} title={L('Izbriši (še neprebrano)', 'Delete (not read yet)')} aria-label={L('Izbriši', 'Delete')}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -478,9 +480,14 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-vr.jaz .pd-vr-body { align-items: flex-end; }
         .pd-mehur { position: relative; padding: .6rem .85rem; border-radius: 1.15rem; font: 500 .93rem/1.45 var(--font-sans), sans-serif; box-shadow: 0 6px 18px oklch(40% .06 300 / .1); overflow-wrap: anywhere; word-break: break-word; white-space: pre-line; }
         .pd-vr.pupa .pd-mehur { background: #fff; color: var(--ink, #1a1a1a); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 7%, transparent); border-bottom-left-radius: .4rem; }
-        .pd-vr.jaz .pd-mehur { background: color-mix(in oklch, oklch(82% .1 165) 55%, #fff); color: var(--ink, #1a1a1a); border-bottom-right-radius: .4rem; transition: opacity .25s ease; }
-        /* neprebrano = obledel mehurček (Pupa še ni prebrala); prebrano = poln */
+        .pd-vr.jaz .pd-mehur { background: color-mix(in oklch, oklch(82% .1 165) 55%, #fff); color: var(--ink, #1a1a1a); border-bottom-right-radius: .4rem; padding-right: 2.1rem; transition: opacity .25s ease, background .2s ease; }
+        /* neprebrano = obledel mehurček; med urejanjem = SIV (namesto zelenega) */
         .pd-vr.jaz .pd-mehur.caka { opacity: .5; box-shadow: none; }
+        .pd-vr.jaz .pd-mehur.ureja { background: color-mix(in oklch, var(--ink, #1a1a1a) 11%, #fff); box-shadow: inset 0 0 0 1.5px color-mix(in oklch, var(--ink, #1a1a1a) 20%, transparent); }
+        /* svinčnik V mehurčku (zgoraj desno); poln ob hoveru ali med urejanjem */
+        .pd-vr-pen { position: absolute; top: .38rem; right: .4rem; display: grid; place-items: center; width: 1.4rem; height: 1.4rem; border: 0; border-radius: 50%; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 40%, transparent); cursor: pointer; opacity: .5; transition: opacity .15s ease, background .15s ease, color .15s ease; }
+        .pd-vr.jaz:hover .pd-vr-pen, .pd-mehur.ureja .pd-vr-pen { opacity: 1; }
+        .pd-vr-pen:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 12%, transparent); color: var(--ink, #1a1a1a); }
         .pd-vr-ikona { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border: 0; border-radius: 50%; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 42%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease; }
         .pd-vr-ikona:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 9%, transparent); color: var(--ink, #1a1a1a); }
         .pd-vr-meta { display: flex; align-items: center; gap: .15rem; padding: 0 .2rem; opacity: 0; transition: opacity .15s ease; }
