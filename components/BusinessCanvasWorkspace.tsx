@@ -202,11 +202,7 @@ export default function BusinessCanvasWorkspace() {
   return <div className={styles.page}>
     {notice && <div className={`${styles.notice} ${noticeIsError ? styles.noticeError : ''}`} role={noticeIsError ? 'alert' : 'status'}>{notice}<button type="button" onClick={() => setNotice('')} aria-label="Zapri obvestilo">×</button></div>}
     {view === 'list' ? <>
-      <section className={styles.listHead}>
-        <p>POSLOVNI DOKUMENTI</p>
-        <h2>Tvoje poslovne ideje na enem mestu.</h2>
-        <span>Business Model Canvas ni izpit — je živ zemljevid poslovanja. Odpri obstoječega ali začni novega. Kmalu tu tudi pitch in drugi dokumenti.</span>
-      </section>
+      <p className={styles.listSub}>Odpri obstoječ poslovni model ali začni novega. Kmalu tu tudi pitch in drugi dokumenti.</p>
       <section className={styles.canvasGrid} aria-label="Shranjeni canvasi">
         <button type="button" className={styles.newCanvasCard} disabled={preview !== 'mine'} onClick={startNewCanvas} title={preview !== 'mine' ? 'Demo je samo za predogled — prijavi se za svoj Canvas.' : undefined}>
           <span className={styles.newCanvasPlus} aria-hidden="true">+</span>
@@ -220,8 +216,11 @@ export default function BusinessCanvasWorkspace() {
             onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openDocument(document); } }}
             aria-label={`Odpri Canvas ${document.name}`}>
             <div className={styles.canvasCardTop}>
-              <div className={styles.canvasCardName}><strong>{document.companyName || 'Brez podjetja'}</strong><span>{document.brandName || '—'}</span></div>
-              <div className={styles.canvasCardRing} style={{ background: `conic-gradient(from -90deg, oklch(72% .18 300), oklch(82% .13 288) ${(filled / 9) * 100}%, oklch(93% .02 300) 0)` }} aria-hidden="true"><b>{filled}<i>/9</i></b></div>
+              <div className={styles.canvasCardName}><strong>{document.companyName || 'Brez podjetja'}</strong>{document.brandName && <span>{document.brandName}</span>}</div>
+              <span className={styles.canvasCardCount}>{filled}<i>/9</i></span>
+            </div>
+            <div className={styles.canvasDots} aria-hidden="true">
+              {BLOCKS.map(block => <span key={block.key} data-on={document.blocks[block.key].trim() ? 'true' : 'false'} />)}
             </div>
             <div className={styles.canvasCardFoot}>
               <span className={styles.canvasCardDate}>Shranjeno {new Date(document.updatedAt).toLocaleDateString('sl-SI')}</span>

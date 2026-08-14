@@ -92,6 +92,8 @@
 .listHead p { margin: 0 0 .5rem; font-size: .75rem; font-weight: 850; letter-spacing: .14em; color: color-mix(in oklch, var(--ink) 58%, transparent); }
 .listHead h2 { margin: 0; font: 500 clamp(1.7rem, 3vw, 2.6rem)/1.02 var(--font-serif), Georgia, serif; }
 .listHead span { display: block; max-width: 54ch; margin-top: .55rem; color: var(--muted); line-height: 1.5; }
+/* Samo podnaslov (naslov je ze v topbar strani »Posel na eni strani.«) — Tina: en naslov+podnaslov */
+.listSub { max-width: 56ch; margin: -.4rem .3rem 1.3rem; color: var(--muted); line-height: 1.5; }
 
 .canvasGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1rem; }
 
@@ -108,9 +110,12 @@
 .canvasCardName { min-width: 0; display: grid; gap: .2rem; }
 .canvasCardName strong { font: 500 1.25rem/1.15 var(--font-serif), Georgia, serif; overflow-wrap: anywhere; }
 .canvasCardName > span { color: var(--muted); font-size: .85rem; overflow-wrap: anywhere; }
-.canvasCardRing { flex: none; display: grid; place-items: center; width: 3.1rem; aspect-ratio: 1; border-radius: 50%; box-shadow: inset 0 0 0 .42rem var(--paper, oklch(98% .008 87)); }
-.canvasCardRing b { display: inline-flex; align-items: baseline; gap: .04rem; font: 600 .98rem var(--font-serif), Georgia, serif; }
-.canvasCardRing i { font-style: normal; font-size: .66rem; color: var(--muted); }
+.canvasCardCount { flex: none; display: inline-flex; align-items: baseline; gap: .04rem; font: 600 1.05rem var(--font-serif), Georgia, serif; color: color-mix(in oklch, var(--ink) 72%, transparent); }
+.canvasCardCount i { font-style: normal; font-size: .72rem; color: var(--muted); }
+/* 9 pikic = napolnjeni bloki (namesto muddy prstana) — cist, tematski napredek */
+.canvasDots { display: flex; flex-wrap: wrap; gap: .32rem; }
+.canvasDots span { width: .55rem; height: .55rem; border-radius: 50%; background: color-mix(in oklch, var(--ink) 12%, transparent); }
+.canvasDots span[data-on='true'] { background: oklch(64% .17 300); }
 .canvasCardFoot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
 .canvasCardDate { color: var(--muted); font-size: .78rem; }
 .canvasCardPlan { flex: none; padding: .38rem .65rem; border: 0; border-radius: 999px; background: color-mix(in oklch, oklch(58% .2 297) 12%, transparent); color: color-mix(in oklch, oklch(46% .2 297) 92%, var(--ink)); font: 700 .74rem var(--font-sans), sans-serif; cursor: pointer; transition: background .16s ease; }
