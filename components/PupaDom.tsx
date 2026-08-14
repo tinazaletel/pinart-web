@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Palette, Buildings, Browser, Megaphone, Camera, Compass, Layout, Newspaper, DotsThree } from '@phosphor-icons/react';
 import { lokalniOdgovori } from '@/lib/onboarding';
 import { PODROCJA } from '@/lib/pricingCatalog';
+import PogledPreklop from '@/components/PogledPreklop';
 import KalkulatorApp from '@/components/KalkulatorApp';
 import InvoiceWorkspace from '@/components/InvoiceWorkspace';
 import ExpenseWorkspace from '@/components/ExpenseWorkspace';
@@ -252,6 +253,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     <div className={`pd${pogovor ? ' pogovor' : ''}`}>
       <div className="pd-aurora" aria-hidden><i className="a1" /><i className="a2" /><i className="a3" /></div>
 
+      {/* Preklop pogleda: Pupa dom ⇄ Nadzorna plošča (tu si v Pupi, torej imaPupo) */}
+      <div className="pd-preklop"><PogledPreklop base={base} aktiven="dom" jeEn={jeEn} imaPupo /></div>
+
       {/* Gumb: zberi tage v kot / razprši nazaj (le namizje) */}
       <button type="button" className="pd-razpored" onClick={preklopiRazpored} aria-pressed={zbrano}
         title={zbrano ? L('Razprši kartice', 'Scatter cards') : L('Zberi v kot', 'Collect to corner')}>
@@ -440,6 +444,8 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
       <style jsx>{`
         .pd { position: relative; min-height: calc(100dvh - 3rem); overflow: hidden; display: grid; place-items: center; }
+        .pd-preklop { position: absolute; top: 1rem; left: 1rem; z-index: 30; }
+        @media (max-width: 560px) { .pd-preklop { top: .6rem; left: .6rem; } }
         /* EDINO ozadje: fiksno čez cel zaslon (ne panel-v-panelu) */
         .pd-aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; filter: blur(70px); opacity: .5; }
         .pd-aurora i { position: absolute; display: block; border-radius: 50%; }
