@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Palette, Buildings, Browser, Megaphone, Camera, Compass, Layout, Newspaper, DotsThree } from '@phosphor-icons/react';
 import { lokalniOdgovori } from '@/lib/onboarding';
 import { PODROCJA } from '@/lib/pricingCatalog';
+import { nalozPogovore, nalozSporocila, ustvariPogovor, dodajSporocilo, type PupaPogovorPovzetek } from '@/lib/pupaCloud';
 import KalkulatorApp from '@/components/KalkulatorApp';
 import InvoiceWorkspace from '@/components/InvoiceWorkspace';
 import ExpenseWorkspace from '@/components/ExpenseWorkspace';
@@ -128,15 +129,35 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   useEffect(() => { if (klepet) pupaNitRef.current?.scrollTo({ top: pupaNitRef.current.scrollHeight, behavior: 'smooth' }); }, [pupaSpor, pupaCaka, klepet]);
   /* Zgodovina pogovora: SHRANI (za zdaj localStorage — da ob osvežitvi ostane).
      PROPER post-launch: v oblak (Supabase, per-uporabnik, del projektnega/komunikacijskega zapisa). */
+  const [pogovorId, setPogovorId] = useState<string | null>(null);
+  const [zgodovina, setZgodovina] = useState<PupaPogovorPovzetek[]>([]);
+  const [zgodovinaOdprta, setZgodovinaOdprta] = useState(false);
   const nalozenaNit = useRef(false);
   useEffect(() => {
-    try { const raw = localStorage.getItem('pinart-pupa-nit'); if (raw) { const p = JSON.parse(raw); if (Array.isArray(p)) setPupaSpor(p); } } catch { /* ignore */ }
-    nalozenaNit.current = true;
+    let ziv = true;
+    (async () => {
+      // OBLAK najprej: naloži zadnji pogovor (per-uporabnik). Če ni oblaka/prijave → localStorage.
+      const pogovori = await nalozPogovore();
+      if (!ziv) return;
+      if (pogovori.length > 0) {
+        setPogovorId(pogovori[0].id);
+        const spor = await nalozSporocila(pogovori[0].id);
+        if (ziv && spor.length) setPupaSpor(spor);
+      } else {
+        try { const raw = localStorage.getItem('pinart-pupa-nit'); if (raw) { const p = JSON.parse(raw); if (Array.isArray(p)) setPupaSpor(p); } } catch { /* ignore */ }
+      }
+      nalozenaNit.current = true;
+    })();
+    return () => { ziv = false; };
   }, []);
   useEffect(() => {
     if (!nalozenaNit.current) return;
     try { localStorage.setItem('pinart-pupa-nit', JSON.stringify(pupaSpor)); } catch { /* ignore */ }
   }, [pupaSpor]);
+
+  async function odpriZgodovino() { setZgodovina(await nalozPogovore()); setZgodovinaOdprta(o => !o); }
+  async function naloziPogovor(id: string) { const spor = await nalozSporocila(id); setPogovorId(id); setPupaSpor(spor); setZgodovinaOdprta(false); }
+  function novPogovor() { setPupaSpor([]); setPogovorId(null); setZgodovinaOdprta(false); try { localStorage.removeItem('pinart-pupa-nit'); } catch { /* ignore */ } }
 
   async function posljiPupi(besedilo: string) {
     const q = besedilo.trim();
@@ -144,6 +165,10 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     const zgo = pupaSpor.slice(-8);
     setPupaSpor(s => [...s, { role: 'user', content: q }]);
     setPupaCaka(true);
+    // OBLAK: zagotovi pogovor + shrani uporabnikovo sporočilo (degradira brez prijave/oblaka)
+    let pid = pogovorId;
+    if (!pid) { pid = await ustvariPogovor(q); if (pid) setPogovorId(pid); }
+    if (pid) void dodajSporocilo(pid, 'user', q);
     try {
       const res = await fetch('/api/pupa', {
         method: 'POST', headers: { 'content-type': 'application/json' },
@@ -157,6 +182,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
       const data = await res.json();
       const odg = data.odgovor || data.napaka || L('Hmm, nekaj je zaškripalo. Poskusi znova.', 'Hmm, something went wrong. Try again.');
       setPupaSpor(s => [...s, { role: 'assistant', content: odg }]);
+      if (pid) void dodajSporocilo(pid, 'assistant', odg);
     } catch {
       setPupaSpor(s => [...s, { role: 'assistant', content: L('Ne morem do zaledja. Poskusi znova.', 'Cannot reach the backend. Try again.') }]);
     } finally {
@@ -349,6 +375,26 @@ export default function PupaDom({ base = '' }: { base?: string }) {
             <p className="pd-eyebrow">PUPA</p>
             <h1 className="pd-naslov">{pozdrav}</h1>
           </div>
+        </div>
+        {/* Pregled zgodovine Pupinih pogovorov (oblak, per-uporabnik) + nov pogovor */}
+        <div className="pd-zgod">
+          <button type="button" className="pd-zgod-gumb" onClick={odpriZgodovino} aria-expanded={zgodovinaOdprta}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 3v5h5" /><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" /><path d="M12 7v5l3 2" /></svg>
+            {L('Zgodovina', 'History')}
+          </button>
+          {klepet && <button type="button" className="pd-zgod-nov" onClick={novPogovor}>{L('Nov pogovor', 'New chat')}</button>}
+          {zgodovinaOdprta && (
+            <div className="pd-zgod-meni" role="menu">
+              {zgodovina.length === 0
+                ? <p className="pd-zgod-prazno">{L('Ni shranjenih pogovorov.', 'No saved chats.')}</p>
+                : zgodovina.map(z => (
+                  <button key={z.id} type="button" className={'pd-zgod-el' + (z.id === pogovorId ? ' on' : '')} onClick={() => naloziPogovor(z.id)}>
+                    <b>{z.naslov || L('Pogovor', 'Chat')}</b>
+                    <small>{new Date(z.updated_at).toLocaleDateString(jeEn ? 'en-GB' : 'sl-SI')}</small>
+                  </button>
+                ))}
+            </div>
+          )}
         </div>
         {!klepet && <p className="pd-uvod">{L('Povej ali vprašaj karkoli — Pupa svetuje in uredi poslovni del.', 'Say or ask anything — Pupa advises and handles the business part.')}</p>}
 
@@ -576,6 +622,16 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-eyebrow { margin: 0 0 .15rem; font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .18em; color: var(--purple, oklch(60% .2 297)); }
         .pd-naslov { margin: 0; font: 500 clamp(1.45rem, 3.4vw, 2.05rem)/1.1 var(--font-serif), Georgia, serif; font-synthesis: none; color: var(--ink, #1a1a1a); letter-spacing: -.01em; text-wrap: balance; }
         .pd-uvod { margin: .15rem 0 1.1rem; font: 500 .98rem/1.5 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); }
+        .pd-zgod { position: relative; z-index: 41; display: flex; align-items: center; gap: .5rem; margin: .1rem 0 .6rem; }
+        .pd-zgod-gumb, .pd-zgod-nov { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .6rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 12%, transparent); border-radius: 999px; background: rgba(255,255,255,.6); color: color-mix(in oklch, var(--ink, #1a1a1a) 65%, transparent); font: 600 .74rem var(--font-sans), sans-serif; cursor: pointer; transition: color .15s ease, background .15s ease; }
+        .pd-zgod-gumb:hover, .pd-zgod-nov:hover { color: var(--ink, #1a1a1a); background: #fff; }
+        .pd-zgod-meni { position: absolute; top: calc(100% + .35rem); left: 0; z-index: 42; width: min(20rem, 90vw); max-height: 18rem; overflow-y: auto; padding: .35rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 10%, transparent); border-radius: .9rem; background: #fff; box-shadow: 0 16px 40px oklch(40% .08 300 / .18); }
+        .pd-zgod-prazno { margin: 0; padding: .5rem .6rem; font: 500 .8rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); }
+        .pd-zgod-el { display: flex; flex-direction: column; gap: .1rem; width: 100%; text-align: left; padding: .5rem .6rem; border: 0; border-radius: .6rem; background: none; cursor: pointer; }
+        .pd-zgod-el:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 5%, transparent); }
+        .pd-zgod-el.on { background: color-mix(in oklch, var(--purple, oklch(58% .2 297)) 10%, transparent); }
+        .pd-zgod-el b { max-width: 100%; font: 600 .84rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pd-zgod-el small { font: 500 .68rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); }
 
         /* position+z-index: backdrop-filter naredi .pd-vnos svoj stacking context;
            brez tega dvига čipi (tudi backdrop-filter) prekrijejo AI meni. */
