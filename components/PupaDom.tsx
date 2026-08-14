@@ -183,12 +183,13 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   ];
 
   /* hitre akcije = lahki POGOVORNI predlogi (napolnijo vnos), ne le linki (ChatGPT) */
-  const hitre: { ime: string; predlog: string; h: number }[] = [
+  const hitre: { ime: string; predlog?: string; href?: string; h: number }[] = [
     { ime: L('Pripravi ponudbo', 'Create a quote'), predlog: L('Pripravi ponudbo za ', 'Create a quote for '), h: 297 },
     { ime: L('Izdaj račun', 'Issue an invoice'), predlog: L('Izdaj račun za ', 'Issue an invoice for '), h: 200 },
     { ime: L('Dodaj strošek', 'Add an expense'), predlog: L('Dodaj strošek: ', 'Add an expense: '), h: 60 },
+    { ime: L('Zaženi časovnik', 'Start timer'), href: `${base}/kalkulator/cas`, h: 190 },
     { ime: L('Ustvari projekt', 'Start a project'), predlog: L('Ustvari nov projekt za ', 'Start a new project for '), h: 150 },
-    { ime: L('Ustvari task', 'Create task'), predlog: L('Ustvari nalogo: ', 'Create task: '), h: 250 },
+    { ime: L('Ustvari nalogo', 'Create task'), predlog: L('Ustvari nalogo: ', 'Create task: '), h: 250 },
   ];
 
   return (
@@ -317,7 +318,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
             <div className="pd-hitre">
               {hitre.map(h => (
-                <button type="button" key={h.ime} className="pd-cip" style={{ ['--h' as string]: String(h.h) }} onClick={() => predlagaj(h.predlog)}>{h.ime}</button>
+                <button type="button" key={h.ime} className="pd-cip" style={{ ['--h' as string]: String(h.h) }} onClick={() => { if (h.href) { if (typeof window !== 'undefined') window.location.href = h.href; } else if (h.predlog) predlagaj(h.predlog); }}>{h.ime}</button>
               ))}
             </div>
           </>
