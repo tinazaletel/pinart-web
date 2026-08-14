@@ -17,8 +17,9 @@
 .intro p, .actions p, .plan header p { margin: 0 0 .5rem; font-size: .75rem; font-weight: 850; letter-spacing: .14em; }
 .intro h2, .actions h2, .plan h2 { max-width: 23ch; margin: 0; font: 500 clamp(1.7rem, 3vw, 2.7rem)/1.02 var(--font-serif), Georgia, serif; }
 .intro > div > span, .actions > div > span { display: block; max-width: 62ch; margin-top: .65rem; color: var(--muted); line-height: 1.5; }
-.progress { position: relative; z-index: 1; width: 10rem; aspect-ratio: 1; display: grid; place-items: center; align-content: center; border-radius: 50%; box-shadow: inset 0 0 0 1.1rem oklch(97% .01 87), 0 .8rem 2rem oklch(45% .08 285 / .1); text-align: center; }
-.progress strong { font: 500 2.15rem/1 var(--font-sans), system-ui, sans-serif; }.progress small { font-size: .9rem; }
+.progress { position: relative; z-index: 1; width: 10rem; aspect-ratio: 1; display: grid; place-items: center; align-content: center; border-radius: 50%; box-shadow: inset 0 0 0 1.35rem var(--paper, oklch(98% .008 87)), 0 .5rem 1.6rem oklch(50% .12 285 / .12); text-align: center; }
+.progress strong { display: inline-flex; align-items: baseline; gap: .05rem; font: 600 2.3rem/1 var(--font-serif, Georgia), serif; color: var(--ink); letter-spacing: -.02em; }
+.progress small { font: 600 .95rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 45%, transparent); }
 /* ozje in manjse, da besedilo ostane ZNOTRAJ notranjega kroga (ne strli ven) */
 .progress span { max-width: 6rem; margin-top: .25rem; color: color-mix(in oklch, var(--ink) 68%, transparent); font-size: .66rem; line-height: 1.2; text-wrap: balance; }
 .canvas { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-areas: 'partners partners activities activities value value relationships relationships segments segments' 'partners partners resources resources value value channels channels segments segments' 'costs costs costs costs costs revenue revenue revenue revenue revenue'; gap: .75rem; }

@@ -209,7 +209,7 @@ export default function BusinessCanvasWorkspace() {
       <div><p>BUSINESS MODEL CANVAS</p><h2>Najprej razumi, kako tvoj posel ustvarja vrednost.</h2><span>Odgovori s kratkimi alinejami. Canvas ni izpit — je živ zemljevid poslovanja.</span></div>
       <div
         className={styles.progress}
-        style={{ background: `conic-gradient(oklch(80% .11 300) ${(completed / 9) * 100}%, oklch(93% .03 300) 0)` }}
+        style={{ background: `conic-gradient(from -90deg, oklch(72% .18 300), oklch(82% .13 288) ${(completed / 9) * 100}%, oklch(95% .02 300) 0)` }}
         aria-label={`${completed} od 9 področij izpolnjenih`}
       ><strong>{completed}<small>/ 9</small></strong><span>izpolnjenih področij</span></div>
     </section>
