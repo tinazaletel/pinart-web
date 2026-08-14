@@ -230,6 +230,22 @@ export default function BusinessCanvasWorkspace() {
         })}
       </section>
       {!shownDocuments.length && <div className={styles.emptySaved}><strong>Še nimaš shranjenega Canvasa.</strong><span>Klikni »Nov Canvas«, izpolni ga in shrani. Nato se bo pojavil tukaj.</span></div>}
+      <section className={styles.comingSoon} aria-label="Kmalu na voljo">
+        <p className={styles.comingSoonHead}>Kmalu — Pupa jih bo pripravila zate iz tvojega Canvasa</p>
+        <div className={styles.comingSoonGrid}>
+          {[
+            { name: 'Pitch', desc: 'Kratka predstavitev zase — za stranke in partnerje' },
+            { name: 'SWOT', desc: 'Prednosti, slabosti, priložnosti, nevarnosti' },
+            { name: 'Persone', desc: 'Kdo so tvoje idealne stranke' },
+            { name: 'Problem', desc: 'Kateri problem rešuješ in za koga' },
+            { name: 'Brand brief', desc: 'Misija, vrednote in ton znamke' },
+          ].map(document => <div key={document.name} className={styles.comingCard} aria-disabled="true">
+            <span className={styles.comingBadge}>Kmalu</span>
+            <strong>{document.name}</strong>
+            <span>{document.desc}</span>
+          </div>)}
+        </div>
+      </section>
     </> : <>
       <section className={styles.editorHead}>
         <button type="button" className={styles.editorBack} onClick={() => { if (saveState === 'dirty' && !confirm('Imaš neshranjene spremembe. Zapreti brez shranjevanja?')) return; setPlanOpen(false); setView('list'); }}>← Vsi dokumenti</button>
