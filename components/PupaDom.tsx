@@ -76,7 +76,13 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   const posljiVnos = () => {
     const t = vnos.trim();
     if (typeof window === 'undefined') return;
-    window.location.href = `${base}/kalkulator/orodje${t ? `?uvod=1&namig=${encodeURIComponent(t)}` : ''}`;
+    if (aiNacin === 'pupa') {
+      // Pupa AI: pogovorni tok, ki v živo gradi osnutek ponudbe (Faza 2a)
+      window.location.href = `${base}/kalkulator/dom/pogovor${t ? `?namig=${encodeURIComponent(t)}` : ''}`;
+    } else {
+      // Moj AI / Brez AI: klasični vodeni kalkulator
+      window.location.href = `${base}/kalkulator/orodje${t ? `?uvod=1&namig=${encodeURIComponent(t)}` : ''}`;
+    }
   };
 
   /* Razpored kartic: plavajoče (privzeto, lepo) ALI zbrane v okence v kotu
