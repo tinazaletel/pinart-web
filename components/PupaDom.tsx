@@ -8,6 +8,7 @@
    Glej memory: project_pupa_prvi_vmesnik, project_pupa_center_layout_ideja, project_flow_glass_aurora. */
 
 import { useEffect, useRef, useState } from 'react';
+import { Palette, Buildings, Browser, Megaphone, Camera, Compass, Layout, Newspaper, DotsThree } from '@phosphor-icons/react';
 import { lokalniOdgovori } from '@/lib/onboarding';
 import { PODROCJA } from '@/lib/pricingCatalog';
 
@@ -19,6 +20,30 @@ const IZKUSNJE_IZBIRE = [
   { ime: 'Strokovnjak', opis: '8+ let, reference' },
   { ime: 'Ekspert', opis: 'nagrade, prepoznano ime' },
 ];
+
+/* KOPIJA iz KalkulatorApp: barve + ikone področij + osvetli/zatemni (za kartica-izbor) */
+const PODROCJE_BARVA: Record<string, string> = {
+  graficno: '#7C3AED', splet: '#0EA5A5', marketing: '#DB2777',
+  foto: '#2563EB', direkcija: '#EA580C', prostor: '#5B9E1E',
+  produkcija: '#475569', pr: '#0891B2', drugo: '#6B7280',
+};
+const PODROCJE_IKONA: Record<string, React.ReactNode> = {
+  graficno: <Palette size={22} />, prostor: <Buildings size={22} />, splet: <Browser size={22} />,
+  marketing: <Megaphone size={22} />, foto: <Camera size={22} />, direkcija: <Compass size={22} />,
+  produkcija: <Layout size={22} />, pr: <Newspaper size={22} />, drugo: <DotsThree size={22} />,
+};
+function osvetli(hex: string, amt: number) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+  const m = (c: number) => Math.max(0, Math.min(255, Math.round(c + (255 - c) * amt))).toString(16).padStart(2, '0');
+  return `#${m(r)}${m(g)}${m(b)}`;
+}
+function zatemni(hex: string, f: number) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+  const m = (c: number) => Math.max(0, Math.min(255, Math.round(c * f))).toString(16).padStart(2, '0');
+  return `#${m(r)}${m(g)}${m(b)}`;
+}
 
 export default function PupaDom({ base = '' }: { base?: string }) {
   const jeEn = base === '/en';
@@ -178,8 +203,12 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   function izbrisiSporocilo(id: number) { preklicaniRef.current.add(id); setSporocila(prev => prev.filter(s => s.id !== id)); if (urejam === id) { setUrejam(null); setVnos(''); } }
   /* a/b/c izbire */
   function izberiIzkusnjo(ime: string) { posljiBesedilo(ime); }
-  function preklopiPodrocje(ime: string) { setIzbranaPodrocja(prev => prev.includes(ime) ? prev.filter(x => x !== ime) : [...prev, ime]); }
-  function potrdiPodrocja() { if (!izbranaPodrocja.length) return; posljiBesedilo(izbranaPodrocja.join(', ')); setIzbranaPodrocja([]); }
+  function preklopiPodrocje(id: string) { setIzbranaPodrocja(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]); }
+  function potrdiPodrocja() {
+    if (!izbranaPodrocja.length) return;
+    const imena = izbranaPodrocja.map(id => { const p = PODROCJA.find(x => x.id === id); return p ? (jeEn ? (p.imeEn || p.ime) : p.ime) : id; });
+    posljiBesedilo(imena.join(', ')); setIzbranaPodrocja([]);
+  }
   function nadaljuj() {
     if (typeof window === 'undefined') return;
     try {
@@ -295,13 +324,17 @@ export default function PupaDom({ base = '' }: { base?: string }) {
               </div>
             )}
             {korak === 3 && sporocila.length > 0 && sporocila[sporocila.length - 1].kdo === 'pupa' && (
-              <div className="pd-izbire pd-izbire-vec">
-                {PODROCJA.map(p => (
-                  <button key={p.id} type="button" className={`pd-cip-izb${izbranaPodrocja.includes(p.ime) ? ' izbrano' : ''}`} onClick={() => preklopiPodrocje(p.ime)}>
-                    {jeEn ? (p.imeEn || p.ime) : p.ime}
-                  </button>
-                ))}
-                <button type="button" className="pd-izbire-potrdi" onClick={potrdiPodrocja} disabled={izbranaPodrocja.length === 0}>{L('Naprej', 'Next')} <span aria-hidden>→</span></button>
+              <div className="pd-izbire-vec">
+                <div className="chat-podrocja">
+                  {PODROCJA.map(p => { const bar = PODROCJE_BARVA[p.id] || '#7C3AED'; const on = izbranaPodrocja.includes(p.id); return (
+                    <button key={p.id} type="button" className={'chip-podrocje' + (on ? ' on' : '')} style={{ borderColor: on ? bar : 'rgba(17,17,17,.12)' }} onClick={() => preklopiPodrocje(p.id)}>
+                      <span className="pi-pod" aria-hidden style={{ background: osvetli(bar, 0.8), color: zatemni(bar, 0.55) }}>{PODROCJE_IKONA[p.id]}</span>
+                      <b>{jeEn ? (p.imeEn || p.ime) : p.ime}</b>
+                      <span className="chip-kljuk" aria-hidden style={{ borderColor: on ? bar : 'rgba(17,17,17,.2)', background: on ? bar : 'transparent' }}>{on ? '✓' : ''}</span>
+                    </button>
+                  ); })}
+                </div>
+                <button type="button" className="pd-izbire-potrdi" onClick={potrdiPodrocja} disabled={izbranaPodrocja.length === 0}>{L('Končano', 'Done')}</button>
               </div>
             )}
             <div ref={koncRef} />
@@ -563,10 +596,17 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-izbira:hover { transform: translateY(-1px); box-shadow: 0 8px 20px oklch(55% .12 297 / .18); background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 14%, #fff); }
         .pd-izbira b { font: 700 .85rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
         .pd-izbira small { font: 500 .68rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); }
-        .pd-cip-izb { padding: .45rem .8rem; border: 1px solid color-mix(in oklch, var(--purple, oklch(66% .2 297)) 26%, transparent); border-radius: 999px; background: #fff; font: 600 .8rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); cursor: pointer; transition: background .15s ease, border-color .15s ease; }
-        .pd-cip-izb:hover { background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 8%, #fff); }
-        .pd-cip-izb.izbrano { background: var(--purple, oklch(58% .2 297)); border-color: transparent; color: #fff; }
-        .pd-izbire-potrdi { padding: .5rem 1rem; border: 0; border-radius: 999px; background: var(--ink, #2a2620); color: var(--paper, #faf7f2); font: 700 .8rem var(--font-sans), sans-serif; cursor: pointer; }
+        /* KOPIJA kalkulatorjevih chip-podrocje kartic (ikona + ime + kljukica); mobile = čez celo širino */
+        .pd-izbire-vec { display: flex; flex-direction: column; gap: .6rem; align-items: flex-start; padding: .1rem .1rem .3rem; width: 100%; }
+        .chat-podrocja { display: flex; flex-wrap: wrap; gap: .6rem; margin: 0; max-width: 100%; }
+        .chip-podrocje { display: inline-flex; align-items: center; gap: .7rem; background: #fff; border: 1px solid oklch(93% .006 82 / .55); border-radius: 999px; padding: .55rem 1.2rem .55rem .55rem; font-family: inherit; font-size: 1rem; font-weight: 700; color: var(--ink, #1a1a1a); cursor: pointer; box-shadow: 0 2px 10px rgba(35,18,45,.05); transition: border-color .18s, box-shadow .18s, transform .2s cubic-bezier(.34,1.56,.5,1); }
+        .chip-podrocje:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(35,18,45,.1); }
+        .chip-podrocje .pi-pod { width: 2.15rem; height: 2.15rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+        .chip-podrocje .pi-pod svg { width: 1.15rem; height: 1.15rem; }
+        .chip-podrocje b { font-weight: 700; }
+        .chip-podrocje .chip-kljuk { width: 1.35rem; height: 1.35rem; border-radius: 50%; border: 1.5px solid; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .78rem; font-weight: 900; margin-left: .3rem; flex: none; transition: background .18s, border-color .18s; }
+        @media (max-width: 640px) { .chat-podrocja { flex-direction: column; } .chip-podrocje { width: 100%; } .chip-podrocje .chip-kljuk { margin-left: auto; } }
+        .pd-izbire-potrdi { padding: .55rem 1.3rem; border: 0; border-radius: 999px; background: var(--ink, #2a2620); color: var(--paper, #faf7f2); font: 700 .85rem var(--font-sans), sans-serif; cursor: pointer; }
         .pd-izbire-potrdi:disabled { opacity: .4; cursor: default; }
 
         /* izvlečni desni panel z živim osnutkom */
