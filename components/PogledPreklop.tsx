@@ -28,12 +28,12 @@ export default function PogledPreklop({
     <div className="pp" role="group" aria-label={L('Preklop pogleda', 'Switch view')}>
       {domZaklenjen ? (
         <button type="button" className="pp-g pp-lock" onClick={() => setOpozorilo(o => !o)} aria-haspopup="dialog" aria-expanded={opozorilo}>
-          {iskraSvg}{L('Pupa dom', 'Pupa home')}
+          {iskraSvg}Pupa
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
         </button>
       ) : (
         <a href={`${base}/kalkulator/dom`} className={'pp-g' + (aktiven === 'dom' ? ' on' : '')} aria-current={aktiven === 'dom' ? 'page' : undefined}>
-          {iskraSvg}{L('Pupa dom', 'Pupa home')}
+          {iskraSvg}Pupa
         </a>
       )}
       <a href={`${base}/kalkulator/pregled`} className={'pp-g' + (aktiven === 'plosca' ? ' on' : '')} aria-current={aktiven === 'plosca' ? 'page' : undefined}>
