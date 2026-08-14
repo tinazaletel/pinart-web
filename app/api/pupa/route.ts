@@ -50,6 +50,22 @@ export async function POST(req: Request) {
   const omejitev = await omejiApi(req, 'pupa', 20, user.id);
   if (omejitev) return omejitev;
 
+  // MESECNA KAPA (financna varnost): omeji SKUPNO mesecno porabo organizacije.
+  // FAIL-OPEN: ce RPC/tabela manjka, Pupa vseeno dela (rate-limit je zascita, ne osrednja pot).
+  const monthlyLimit = Number(process.env.PUPA_MONTHLY_LIMIT || 800);
+  if (Number.isFinite(monthlyLimit) && monthlyLimit > 0) {
+    try {
+      const { data: monthCount } = await supabase.rpc('ai_usage_month_count', {
+        p_organization_id: String(entitlement.organization_id),
+      });
+      if (typeof monthCount === 'number' && monthCount >= Math.floor(monthlyLimit)) {
+        return NextResponse.json({
+          napaka: 'Dosežen mesečni obseg Pupe za ta paket. Nadgradi paket ali počakaj do naslednjega meseca.',
+        }, { status: 429 });
+      }
+    } catch { /* FAIL-OPEN */ }
+  }
+
   let body: { vprasanje?: string; kontekst?: string; zgodovina?: Sporocilo[] };
   try {
     body = await preberiJson(req, 50_000);
