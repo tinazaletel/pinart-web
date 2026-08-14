@@ -9,6 +9,16 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { lokalniOdgovori } from '@/lib/onboarding';
+import { PODROCJA } from '@/lib/pricingCatalog';
+
+/* a/b/c izbire za izkušnje — iste kot kalkulator (KalkulatorApp IZKUSNJE); PODROCJA iz lib */
+const IZKUSNJE_IZBIRE = [
+  { ime: 'Študent', opis: 'ob študiju, prvi naročniki' },
+  { ime: 'Začetnik', opis: 'do 3 leta' },
+  { ime: 'Samostojen', opis: '3 do 8 let' },
+  { ime: 'Strokovnjak', opis: '8+ let, reference' },
+  { ime: 'Ekspert', opis: 'nagrade, prepoznano ime' },
+];
 
 export default function PupaDom({ base = '' }: { base?: string }) {
   const jeEn = base === '/en';
@@ -81,8 +91,18 @@ export default function PupaDom({ base = '' }: { base?: string }) {
       return;
     }
     if (!t) return;
+    const el = textRef.current;
+    // UREJANJE: popravi obstoječi odgovor V MESTU — posodobi PRAVO polje, NE premakni koraka
+    if (urejam !== null) {
+      const sp = sporocila.find(s => s.id === urejam);
+      setSporocila(prev => prev.map(s => (s.id === urejam ? { ...s, besedilo: t } : s)));
+      if (sp && typeof sp.korak === 'number' && sp.korak < VPRASANJA.length) {
+        setProfil(p => ({ ...p, [VPRASANJA[sp.korak as number].k]: t }));
+      }
+      setUrejam(null); setVnos(''); if (el) el.style.height = 'auto';
+      return;
+    }
     // Pupa AI: pogovor V MESTU (isti chat ostane), z desne se odpre panel
-    if (urejam !== null) { setSporocila(prev => prev.filter(s => s.id !== urejam)); setUrejam(null); }
     if (!pogovor) {
       // prvi vnos = izhodišče; Pupa začne s prvim vprašanjem (glava ponudbe)
       setPogovor(true);
@@ -93,7 +113,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
       posljiBesedilo(t);
     }
     setVnos('');
-    const el = textRef.current; if (el) el.style.height = 'auto';
+    if (el) el.style.height = 'auto';
   };
 
   /* Razpored kartic: plavajoče (privzeto, lepo) ALI zbrane v okence v kotu
@@ -111,6 +131,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   const [korak, setKorak] = useState(0);
   const [profil, setProfil] = useState<Profil>({ ime: '', izkusnje: '', podjetje: '', podrocja: '' });
   const [urejam, setUrejam] = useState<number | null>(null);
+  const [izbranaPodrocja, setIzbranaPodrocja] = useState<string[]>([]); // večizbor za področja (a/b/c)
   const idRef = useRef(1);
   const nextId = () => idRef.current++;
   const casovniki = useRef<number[]>([]);
@@ -140,7 +161,8 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   function posljiBesedilo(text: string) {
     const t = text.trim(); if (!t) return;
     const mojId = nextId();
-    setSporocila(prev => [...prev, { id: mojId, kdo: 'jaz', besedilo: t, stanje: 'cakanje' }]);
+    const k0 = korakRef.current; // ta odgovor pripada vprašanju k0 (za pravilno urejanje)
+    setSporocila(prev => [...prev, { id: mojId, kdo: 'jaz', besedilo: t, stanje: 'cakanje', korak: k0 }]);
     const c = window.setTimeout(() => {
       if (preklicaniRef.current.has(mojId)) { preklicaniRef.current.delete(mojId); return; }
       setSporocila(prev => prev.map(s => (s.id === mojId ? { ...s, stanje: 'obdelano' } : s)));
@@ -154,6 +176,10 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   }
   function urediSporocilo(s: Sporocilo) { setVnos(s.besedilo); setUrejam(s.id); const el = textRef.current; if (el) el.focus(); }
   function izbrisiSporocilo(id: number) { preklicaniRef.current.add(id); setSporocila(prev => prev.filter(s => s.id !== id)); if (urejam === id) { setUrejam(null); setVnos(''); } }
+  /* a/b/c izbire */
+  function izberiIzkusnjo(ime: string) { posljiBesedilo(ime); }
+  function preklopiPodrocje(ime: string) { setIzbranaPodrocja(prev => prev.includes(ime) ? prev.filter(x => x !== ime) : [...prev, ime]); }
+  function potrdiPodrocja() { if (!izbranaPodrocja.length) return; posljiBesedilo(izbranaPodrocja.join(', ')); setIzbranaPodrocja([]); }
   function nadaljuj() {
     if (typeof window === 'undefined') return;
     try {
@@ -258,6 +284,26 @@ export default function PupaDom({ base = '' }: { base?: string }) {
                 </div>
               </div>
             ))}
+            {/* a/b/c izbire (kot kalkulatorjev prelogin): izkušnje = enoizbor, področja = večizbor */}
+            {korak === 1 && sporocila.length > 0 && sporocila[sporocila.length - 1].kdo === 'pupa' && (
+              <div className="pd-izbire">
+                {IZKUSNJE_IZBIRE.map(iz => (
+                  <button key={iz.ime} type="button" className="pd-izbira" onClick={() => izberiIzkusnjo(iz.ime)}>
+                    <b>{iz.ime}</b><small>{iz.opis}</small>
+                  </button>
+                ))}
+              </div>
+            )}
+            {korak === 3 && sporocila.length > 0 && sporocila[sporocila.length - 1].kdo === 'pupa' && (
+              <div className="pd-izbire pd-izbire-vec">
+                {PODROCJA.map(p => (
+                  <button key={p.id} type="button" className={`pd-cip-izb${izbranaPodrocja.includes(p.ime) ? ' izbrano' : ''}`} onClick={() => preklopiPodrocje(p.ime)}>
+                    {jeEn ? (p.imeEn || p.ime) : p.ime}
+                  </button>
+                ))}
+                <button type="button" className="pd-izbire-potrdi" onClick={potrdiPodrocja} disabled={izbranaPodrocja.length === 0}>{L('Naprej', 'Next')} <span aria-hidden>→</span></button>
+              </div>
+            )}
             <div ref={koncRef} />
           </div>
         )}
@@ -510,6 +556,18 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         /* vnos VEDNO viden na dnu (ne scrolla z nitjo) */
         .pd.pogovor .pd-vnos { flex: none; }
 
+        /* a/b/c izbire */
+        .pd-izbire { display: flex; flex-wrap: wrap; gap: .5rem; padding: .1rem .1rem .3rem; align-self: flex-end; max-width: 92%; }
+        .pd-izbira { display: flex; flex-direction: column; align-items: flex-start; gap: .08rem; padding: .5rem .8rem; border: 1px solid color-mix(in oklch, var(--purple, oklch(66% .2 297)) 26%, transparent); border-radius: .9rem; background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 7%, #fff); cursor: pointer; text-align: left; transition: transform .15s ease, box-shadow .15s ease, background .15s ease; }
+        .pd-izbira:hover { transform: translateY(-1px); box-shadow: 0 8px 20px oklch(55% .12 297 / .18); background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 14%, #fff); }
+        .pd-izbira b { font: 700 .85rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
+        .pd-izbira small { font: 500 .68rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); }
+        .pd-cip-izb { padding: .45rem .8rem; border: 1px solid color-mix(in oklch, var(--purple, oklch(66% .2 297)) 26%, transparent); border-radius: 999px; background: #fff; font: 600 .8rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); cursor: pointer; transition: background .15s ease, border-color .15s ease; }
+        .pd-cip-izb:hover { background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 8%, #fff); }
+        .pd-cip-izb.izbrano { background: var(--purple, oklch(58% .2 297)); border-color: transparent; color: #fff; }
+        .pd-izbire-potrdi { padding: .5rem 1rem; border: 0; border-radius: 999px; background: var(--ink, #2a2620); color: var(--paper, #faf7f2); font: 700 .8rem var(--font-sans), sans-serif; cursor: pointer; }
+        .pd-izbire-potrdi:disabled { opacity: .4; cursor: default; }
+
         /* izvlečni desni panel z živim osnutkom */
         .pd-panel { position: relative; z-index: 2; align-self: center; width: min(21rem, 94vw); display: flex; flex-direction: column; gap: .85rem; padding: 1.15rem 1.2rem; background: rgba(255,255,255,.72); backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4); border: 1px solid rgba(255,255,255,.8); border-radius: 1.2rem; box-shadow: 0 20px 55px oklch(40% .08 300 / .18); animation: pdPanelIn .5s cubic-bezier(.2,.85,.25,1) both; }
         @keyframes pdPanelIn { from { opacity: 0; transform: translateX(48px) scale(.98); } to { opacity: 1; transform: none; } }
@@ -550,7 +608,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 }
 
 /* ===== Pogovor: tipi ===== */
-type Sporocilo = { id: number; kdo: 'jaz' | 'pupa'; besedilo: string; stanje?: 'cakanje' | 'obdelano' };
+type Sporocilo = { id: number; kdo: 'jaz' | 'pupa'; besedilo: string; stanje?: 'cakanje' | 'obdelano'; korak?: number };
 type Profil = { ime: string; izkusnje: string; podjetje: string; podrocja: string };
 
 /* razčleni "top:8%;left:3%" v React style objekt */
