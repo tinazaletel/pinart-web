@@ -53,6 +53,14 @@ export async function ustvariPogovor(naslov: string): Promise<string | null> {
   } catch { return null; }
 }
 
+/** Izbriši pogovor (in kaskadno sporočila). RLS dovoli le svoje. */
+export async function izbrisiPogovor(id: string): Promise<boolean> {
+  try {
+    const { error } = await createClient().from('pupa_conversation').delete().eq('id', id);
+    return !error;
+  } catch { return false; }
+}
+
 /** Dodaj sporočilo v pogovor + osveži updated_at (za vrstni red v zgodovini). */
 export async function dodajSporocilo(conversationId: string, role: 'user' | 'assistant', content: string): Promise<boolean> {
   try {

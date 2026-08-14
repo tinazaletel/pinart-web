@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Palette, Buildings, Browser, Megaphone, Camera, Compass, Layout, Newspaper, DotsThree, FileText, Receipt, Coins, FolderPlus, ListChecks } from '@phosphor-icons/react';
 import { lokalniOdgovori } from '@/lib/onboarding';
 import { PODROCJA } from '@/lib/pricingCatalog';
-import { nalozPogovore, nalozSporocila, ustvariPogovor, dodajSporocilo, type PupaPogovorPovzetek } from '@/lib/pupaCloud';
+import { nalozPogovore, nalozSporocila, ustvariPogovor, dodajSporocilo, izbrisiPogovor, type PupaPogovorPovzetek } from '@/lib/pupaCloud';
 import KalkulatorApp from '@/components/KalkulatorApp';
 import InvoiceWorkspace from '@/components/InvoiceWorkspace';
 import ExpenseWorkspace from '@/components/ExpenseWorkspace';
@@ -144,6 +144,11 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   async function odpriZgodovino() { setZgodovina(await nalozPogovore()); setZgodovinaOdprta(true); }
   async function naloziPogovor(id: string) { const spor = await nalozSporocila(id); setPogovorId(id); setPupaSpor(spor); setZgodovinaOdprta(false); }
   function novPogovor() { setPupaSpor([]); setPogovorId(null); setZgodovinaOdprta(false); try { localStorage.removeItem('pinart-pupa-nit'); } catch { /* ignore */ } }
+  async function briseZgodovino(id: string) {
+    await izbrisiPogovor(id);
+    setZgodovina(prev => prev.filter(z => z.id !== id));
+    if (id === pogovorId) { setPupaSpor([]); setPogovorId(null); try { localStorage.removeItem('pinart-pupa-nit'); } catch { /* ignore */ } }
+  }
 
   async function posljiPupi(besedilo: string) {
     const q = besedilo.trim();
@@ -341,9 +346,11 @@ export default function PupaDom({ base = '' }: { base?: string }) {
       </button>
 
       {/* Zgodovina Pupinih pogovorov — subtilen gumb desno, panel ZDRSNE z desne (kot ChatGPT/Claude) */}
-      <button type="button" className="pd-zgod-trig" onClick={odpriZgodovino} aria-expanded={zgodovinaOdprta} aria-label={L('Zgodovina pogovorov', 'Chat history')} title={L('Zgodovina', 'History')}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 3v5h5" /><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" /><path d="M12 7v5l3 2" /></svg>
-      </button>
+      {!zgodovinaOdprta && (
+        <button type="button" className="pd-zgod-trig" onClick={odpriZgodovino} aria-expanded={zgodovinaOdprta} aria-label={L('Zgodovina pogovorov', 'Chat history')} title={L('Zgodovina', 'History')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 3v5h5" /><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" /><path d="M12 7v5l3 2" /></svg>
+        </button>
+      )}
       {zgodovinaOdprta && <div className="pd-zgod-back" onClick={() => setZgodovinaOdprta(false)} aria-hidden />}
       <aside className={`pd-zgod-panel${zgodovinaOdprta ? ' odprt' : ''}`} aria-hidden={!zgodovinaOdprta}>
         <div className="pd-zgod-glava">
@@ -355,10 +362,15 @@ export default function PupaDom({ base = '' }: { base?: string }) {
           {zgodovina.length === 0
             ? <p className="pd-zgod-prazno">{L('Ni shranjenih pogovorov.', 'No saved chats.')}</p>
             : zgodovina.map(z => (
-              <button key={z.id} type="button" className={'pd-zgod-el' + (z.id === pogovorId ? ' on' : '')} onClick={() => naloziPogovor(z.id)}>
-                <b>{z.naslov || L('Pogovor', 'Chat')}</b>
-                <small>{new Date(z.updated_at).toLocaleDateString(jeEn ? 'en-GB' : 'sl-SI')}</small>
-              </button>
+              <div key={z.id} className={'pd-zgod-el' + (z.id === pogovorId ? ' on' : '')}>
+                <button type="button" className="pd-zgod-el-odpri" onClick={() => naloziPogovor(z.id)}>
+                  <b>{z.naslov || L('Pogovor', 'Chat')}</b>
+                  <small>{new Date(z.updated_at).toLocaleString(jeEn ? 'en-GB' : 'sl-SI', { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</small>
+                </button>
+                <button type="button" className="pd-zgod-el-brisi" onClick={() => briseZgodovino(z.id)} aria-label={L('Izbriši pogovor', 'Delete chat')} title={L('Izbriši', 'Delete')}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
+                </button>
+              </div>
             ))}
         </div>
       </aside>
@@ -626,11 +638,15 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-zgod-nov:hover { background: color-mix(in oklch, var(--purple, oklch(58% .2 297)) 14%, #fff); }
         .pd-zgod-seznam { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: .15rem; margin-top: .3rem; }
         .pd-zgod-prazno { margin: .5rem .2rem; font: 500 .82rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); }
-        .pd-zgod-el { display: flex; flex-direction: column; gap: .1rem; width: 100%; text-align: left; padding: .55rem .6rem; border: 0; border-radius: .6rem; background: none; cursor: pointer; }
+        .pd-zgod-el { display: flex; align-items: center; gap: .2rem; width: 100%; border-radius: .6rem; }
         .pd-zgod-el:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 5%, transparent); }
         .pd-zgod-el.on { background: color-mix(in oklch, var(--purple, oklch(58% .2 297)) 10%, transparent); }
+        .pd-zgod-el-odpri { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: .1rem; text-align: left; padding: .55rem .6rem; border: 0; background: none; cursor: pointer; }
         .pd-zgod-el b { max-width: 100%; font: 600 .84rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .pd-zgod-el small { font: 500 .68rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); }
+        .pd-zgod-el-brisi { flex: none; display: grid; place-items: center; width: 1.9rem; height: 1.9rem; margin-right: .25rem; border: 0; border-radius: .5rem; background: none; color: color-mix(in oklch, var(--ink, #1a1a1a) 40%, transparent); cursor: pointer; opacity: 0; transition: opacity .15s ease, color .15s ease, background .15s ease; }
+        .pd-zgod-el:hover .pd-zgod-el-brisi, .pd-zgod-el-brisi:focus-visible { opacity: 1; }
+        .pd-zgod-el-brisi:hover { color: oklch(58% .2 25); background: color-mix(in oklch, oklch(58% .2 25) 12%, transparent); }
 
         /* position+z-index: backdrop-filter naredi .pd-vnos svoj stacking context;
            brez tega dvига čipi (tudi backdrop-filter) prekrijejo AI meni. */
