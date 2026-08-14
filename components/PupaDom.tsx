@@ -304,6 +304,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     <div className={`pd${klepet ? ' pogovor' : ''}`}>
       <div className="pd-aurora" aria-hidden><i className="a1" /><i className="a2" /><i className="a3" /></div>
 
+      {/* Pupino srce: ko je AI Pupa živa, poleg aurore utripa mehki modro-vijola gradient (srčni utrip) */}
+      {aiNacin === 'pupa' && <div className={`pd-srce${pupaCaka ? ' bije' : ''}`} aria-hidden />}
+
       {/* Gumb: zberi tage v kot / razprši nazaj (le namizje) */}
       <button type="button" className="pd-razpored" onClick={preklopiRazpored} aria-pressed={zbrano}
         title={zbrano ? L('Razprši kartice', 'Scatter cards') : L('Zberi v kot', 'Collect to corner')}>
@@ -513,6 +516,17 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-aurora .a2 { width: 40vw; height: 40vw; top: 20vw; right: -10vw; background: radial-gradient(circle, oklch(78% .13 200 / .8), transparent 68%); animation: pdFloat 28s ease-in-out infinite reverse; }
         .pd-aurora .a3 { width: 36vw; height: 36vw; bottom: -12vw; left: 26vw; background: radial-gradient(circle, oklch(80% .12 150 / .75), transparent 68%); animation: pdFloat 32s ease-in-out infinite; }
         @keyframes pdFloat { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(2vw,-2vw) scale(1.06); } }
+        /* Pupino srce (živa AI): mehki modro-vijola gradient za pogovorom, nežen srčni utrip */
+        .pd-srce { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); width: min(46vw, 34rem); height: min(46vw, 34rem); z-index: 1; pointer-events: none; border-radius: 50%; filter: blur(50px); background: radial-gradient(circle at 50% 45%, oklch(82% .09 285 / .6), oklch(85% .07 255 / .34) 46%, transparent 70%); animation: pdSrce 3.4s ease-in-out infinite; }
+        .pd-srce.bije { animation-duration: 1.7s; }
+        @keyframes pdSrce {
+          0% { transform: translate(-50%, -50%) scale(1); opacity: .68; }
+          14% { transform: translate(-50%, -50%) scale(1.07); opacity: .96; }
+          28% { transform: translate(-50%, -50%) scale(1.01); opacity: .8; }
+          42% { transform: translate(-50%, -50%) scale(1.05); opacity: .9; }
+          60%, 100% { transform: translate(-50%, -50%) scale(1); opacity: .68; }
+        }
+        @media (prefers-reduced-motion: reduce) { .pd-srce { animation: none; } }
 
         .pd-plava { position: absolute; inset: 0; z-index: 1; pointer-events: none; display: none; }
         /* gumb za preklop razporeda (zberi v kot / razprši) */
