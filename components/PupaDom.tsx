@@ -7,7 +7,6 @@
    podatkovna povezava pride v naslednjem koraku. Kartice-v-pogovoru + glas = Faza 2.
    Glej memory: project_pupa_prvi_vmesnik, project_pupa_center_layout_ideja, project_flow_glass_aurora. */
 
-import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { lokalniOdgovori } from '@/lib/onboarding';
 
@@ -104,11 +103,11 @@ export default function PupaDom({ base = '' }: { base?: string }) {
       {/* PLAVAJOČE podatkovne kartice (desktop) */}
       <div className="pd-plava">
         {plava.map((p, i) => (
-          <Link key={i} href={p.href} className="pd-kartica" style={{ ['--h' as string]: String(p.h), animationDelay: `${p.d}s`, ...pozStyle(p.poz) }}>
+          <a key={i} href={p.href} className="pd-kartica" style={{ ['--h' as string]: String(p.h), animationDelay: `${p.d}s`, ...pozStyle(p.poz) }}>
             <span className="pd-k-pika" />
             <b>{p.vrednost}</b>
             <small>{p.labela}</small>
-          </Link>
+          </a>
         ))}
       </div>
 
@@ -174,9 +173,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
             plavajočih kartic (te so le na namizju). Isti podatki, klikljivi. */}
         <div className="pd-povzetek">
           {plava.map((p, i) => (
-            <Link key={i} href={p.href} className="pd-pov-cip" style={{ ['--h' as string]: String(p.h) }}>
+            <a key={i} href={p.href} className="pd-pov-cip" style={{ ['--h' as string]: String(p.h) }}>
               <b>{p.vrednost}</b><span>{p.labela}</span>
-            </Link>
+            </a>
           ))}
         </div>
 
