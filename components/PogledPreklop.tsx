@@ -67,7 +67,7 @@ export default function PogledPreklop({
         .pp-zapri { border: 0; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); font: 600 .78rem var(--font-sans), sans-serif; cursor: pointer; }
         @keyframes ppIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
         /* Zaprt meni (ozek pas 4.4rem): preklop = dve ikoni druga pod drugo, brez besedila */
-        :global(body[data-meni='zaprt']) .pp { flex-direction: column; gap: .3rem; padding: .15rem; margin: -.45rem 0 .5rem; background: transparent; border: 0; box-shadow: none; }
+        :global(body[data-meni='zaprt']) .pp { flex-direction: column; gap: .3rem; padding: 0; margin: 0 0 .35rem; background: transparent; border: 0; box-shadow: none; }
         :global(body[data-meni='zaprt']) .pp-txt, :global(body[data-meni='zaprt']) .pp-lockico { display: none; }
         :global(body[data-meni='zaprt']) .pp-g { width: 2.4rem; height: 2.4rem; padding: 0; gap: 0; justify-content: center; border-radius: .7rem; }
         :global(body[data-meni='zaprt']) .pp-alert { left: calc(100% + .5rem); right: auto; top: 0; }

@@ -125,8 +125,8 @@
   :global(body[data-meni='zaprt']) .sidebar { padding-inline: .7rem; align-items: center; overflow: visible; }
   :global(body[data-meni='zaprt']) .navItem { justify-content: center; gap: 0; padding-inline: 0; }
   :global(body[data-meni='zaprt']) .navNapis { display: none; }
-  :global(body[data-meni='zaprt']) .navGroup { height: 1px; margin: .9rem .4rem; padding: 0; overflow: hidden; background: var(--line); color: transparent; }
-  :global(body[data-meni='zaprt']) .nav { justify-items: center; width: 100%; }
+  :global(body[data-meni='zaprt']) .navGroup { height: 1px; margin: .5rem .4rem; padding: 0; overflow: hidden; background: var(--line); color: transparent; }
+  :global(body[data-meni='zaprt']) .nav { justify-items: center; width: 100%; padding-top: .4rem; padding-bottom: 1rem; }
   /* zozen meni: skrij "zapri" in pokazi "odpri" na robu pasu — prej je bil
      viden samo gumb za zlaganje, zato se meni ni dal vec razsiriti */
   :global(body[data-meni='zaprt']) .meniZapri { display: none; }
