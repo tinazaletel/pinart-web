@@ -385,14 +385,15 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         @keyframes pdBobMini { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
         .pd-center { position: relative; z-index: 2; width: min(37rem, 96vw); padding: clamp(1.2rem, 4vw, 2rem) clamp(.55rem, 2.2vw, 2rem); text-align: left; }
-        /* VPISNO POLJE KOT NOGA (mobile IN namizje): greeting + gumbi zgoraj, vnos pripet na spodnji rob */
-        .pd:not(.pogovor) { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
-        .pd:not(.pogovor) .pd-center { flex: 1 1 auto; display: flex; flex-direction: column; min-height: calc(100dvh - 3.5rem); }
-        .pd:not(.pogovor) .pd-glava { order: 0; margin-top: clamp(1rem, 12vh, 7rem); }
+        /* HOME (prazno): pozdrav → gumbi → vnos kot CENTRIRANA skupina — vnos je VIŠJE (ne visi na robu).
+           Ko pogovor zraste (.pd.pogovor), se vnos prilepi na dno (glej postavitev pogovora spodaj). */
+        .pd:not(.pogovor) { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .pd:not(.pogovor) .pd-center { display: flex; flex-direction: column; }
+        .pd:not(.pogovor) .pd-glava { order: 0; }
         .pd:not(.pogovor) .pd-uvod { order: 1; }
         .pd:not(.pogovor) .pd-povzetek { order: 3; }
         .pd:not(.pogovor) .pd-hitre { order: 4; margin-bottom: .3rem; }
-        .pd:not(.pogovor) .pd-vnos { order: 5; margin-top: auto; position: sticky; bottom: .8rem; }
+        .pd:not(.pogovor) .pd-vnos { order: 5; }
         .pd-glava { display: flex; align-items: center; gap: .8rem; margin-bottom: .4rem; }
         .pd-orb { flex: none; width: 3rem; height: 3rem; border-radius: 50%; background: conic-gradient(from 210deg, oklch(70% .19 300), oklch(72% .16 200), oklch(80% .13 150), oklch(78% .17 25), oklch(70% .19 300)); box-shadow: 0 8px 22px oklch(60% .18 300 / .38), inset -3px -4px 8px oklch(100% 0 0 / .35), inset 3px 4px 8px oklch(30% .1 300 / .25); animation: pdOrb 8s ease-in-out infinite; }
         @keyframes pdOrb { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(8deg); } }
