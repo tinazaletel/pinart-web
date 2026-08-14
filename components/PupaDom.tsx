@@ -528,14 +528,13 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-aurora .a3 { width: 36vw; height: 36vw; bottom: -12vw; left: 26vw; background: radial-gradient(circle, oklch(80% .12 150 / .75), transparent 68%); animation: pdFloat 32s ease-in-out infinite; }
         @keyframes pdFloat { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(2vw,-2vw) scale(1.06); } }
         /* Pupino srce (živa AI): mehki modro-vijola gradient za pogovorom, nežen srčni utrip */
-        .pd-srce { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); width: min(50vw, 38rem); height: min(50vw, 38rem); z-index: 1; pointer-events: none; border-radius: 50%; filter: blur(46px); background: radial-gradient(circle at 50% 45%, oklch(78% .12 288 / .82), oklch(83% .1 258 / .5) 46%, transparent 70%); animation: pdSrce 3.4s ease-in-out infinite; }
-        .pd-srce.bije { animation-duration: 1.7s; }
-        @keyframes pdSrce {
-          0% { transform: translate(-50%, -50%) scale(1); opacity: .85; }
-          14% { transform: translate(-50%, -50%) scale(1.08); opacity: 1; }
-          28% { transform: translate(-50%, -50%) scale(1.02); opacity: .92; }
-          42% { transform: translate(-50%, -50%) scale(1.06); opacity: .98; }
-          60%, 100% { transform: translate(-50%, -50%) scale(1); opacity: .85; }
+        /* ISTA animacija kot stranska Pupa (pupaBlob): organsko se preliva — border-radius morfa + vrti + rahlo diha, BREZ utripa */
+        .pd-srce { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); width: min(54vw, 42rem); height: min(54vw, 42rem); z-index: 1; pointer-events: none; border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%; filter: blur(44px); background: radial-gradient(circle at 40% 34%, oklch(74% .15 288 / .95), oklch(80% .12 255 / .6) 52%, transparent 74%); animation: pdSrceBlob 8s ease-in-out infinite; will-change: transform, border-radius; }
+        .pd-srce.bije { animation-duration: 4.5s; }
+        @keyframes pdSrceBlob {
+          0%, 100% { border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%; transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+          33% { border-radius: 62% 38% 42% 58% / 55% 62% 38% 45%; transform: translate(-50%, -50%) rotate(120deg) scale(1.1); }
+          66% { border-radius: 45% 55% 62% 38% / 40% 52% 48% 60%; transform: translate(-50%, -50%) rotate(240deg) scale(.95); }
         }
         @media (prefers-reduced-motion: reduce) { .pd-srce { animation: none; } }
 
