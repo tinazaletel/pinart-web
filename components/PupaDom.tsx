@@ -298,7 +298,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     { ime: L('Dodaj strošek', 'Add an expense'), tip: 'strosek', h: 60 },
     { ime: L('Ustvari projekt', 'Start a project'), tip: 'projekt', h: 150 },
     { ime: L('Ustvari nalogo', 'Create task'), tip: 'naloga', h: 250 },
-    { ime: L('Štoparica', 'Stopwatch'), href: `${base}/kalkulator/cas`, h: 190 },
+    // Štoparica umaknjena iz vstopa: ni »ustvari« akcija; dostopna v meniju (Čas) in prek Pupe (»zaženi štoparico«).
   ];
 
   // IZBRAN TIP → orodje se odpre V ISTEM oknu (brez navigacije). Stalni okvir že obstaja:
