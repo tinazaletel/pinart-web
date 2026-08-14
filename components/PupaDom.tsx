@@ -615,7 +615,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd:not(.pogovor) .pd-center { display: flex; flex-direction: column; }
         .pd:not(.pogovor) .pd-glava { order: 0; }
         .pd:not(.pogovor) .pd-uvod { order: 1; }
-        .pd:not(.pogovor) .pd-povzetek { order: 3; }
+        .pd:not(.pogovor) .pd-povzetek { order: 6; margin-top: 1.1rem; }
         .pd:not(.pogovor) .pd-hitre { order: 4; margin-bottom: 1.15rem; }
         .pd:not(.pogovor) .pd-vnos { order: 5; }
         .pd-glava { display: flex; align-items: center; gap: .8rem; margin-bottom: .4rem; }
