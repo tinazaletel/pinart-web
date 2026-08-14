@@ -697,14 +697,14 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         }
 
         /* ===== POGOVOR V MESTU: isti chat, spodaj se odvija, panel se izvleče ===== */
-        /* Pogovor: vnos PRIPET na dno, sporočila drsijo (scrollbar skrit). overflow: visible na
-           .pd/.pd-center, da sence (vnos, mehurčki) NISO odrezane; drsi le nit (z vodoravnim paddingom
-           za sence mehurčkov). */
-        .pd.pogovor { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.4rem; align-content: center; overflow: visible; }
+        /* Pogovor = NARAVNI scroll: NASLOV + sporočila skupaj drsijo (naslov odplava gor, poskrolaš
+           navzgor da ga vidiš), VNOS lepljivo na dnu. .pd.pogovor je drsni vsebnik (scrollbar skrit),
+           zato se sence ne režejo znotraj; mehurčki dobijo vodoravni padding za svoje sence. */
+        .pd.pogovor { display: block; overflow-y: auto; overflow-x: hidden; height: calc(100dvh - 3rem); scrollbar-width: none; }
+        .pd.pogovor::-webkit-scrollbar { display: none; }
         .pd.pogovor .pd-plava, .pd.pogovor .pd-razpored { display: none; }
-        .pd.pogovor .pd-center { width: min(48rem, 94vw); height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; overflow: visible; }
-        .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: .55rem; padding: .8rem 1.2rem; scrollbar-width: none; }
-        .pd-nit::-webkit-scrollbar { display: none; }
+        .pd.pogovor .pd-center { width: min(48rem, 94vw); margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; box-sizing: border-box; }
+        .pd-nit { flex: 1 1 auto; display: flex; flex-direction: column; gap: .55rem; padding: .8rem 1.2rem; overflow-x: hidden; }
         /* Pupa piše (pike) */
         .pd-tipka { display: inline-flex; gap: .3rem; align-items: center; min-height: 1.5rem; }
         /* orb navpično centriran v »piše« oblačku, da ne štrli in oblaček obda vsebino */
@@ -746,7 +746,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-vr-akc { border: 0; background: none; padding: 0; color: var(--purple, oklch(58% .2 297)); font: 600 .68rem var(--font-sans), sans-serif; cursor: pointer; text-decoration: underline; }
         .pd-vr-akc:hover { opacity: .75; }
         /* vnos VEDNO viden na dnu (ne scrolla z nitjo) */
-        .pd.pogovor .pd-vnos { flex: none; }
+        .pd.pogovor .pd-vnos { flex: none; position: sticky; bottom: 0; margin-top: .3rem; }
 
         /* a/b/c izbire */
         .pd-izbire { display: flex; flex-wrap: wrap; gap: .5rem; padding: .1rem .1rem .3rem; align-self: flex-end; max-width: 92%; }
@@ -797,8 +797,8 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-p-odpri:hover:not(:disabled)::after { left: 160%; }
 
         @media (max-width: 899px) {
-          .pd.pogovor { flex-direction: column; }
-          .pd.pogovor .pd-center { max-height: none; }
+          /* mobile pogovor: isti naravni scroll + lepljiv vnos; le višina upošteva mobilno glavo */
+          .pd.pogovor { height: calc(100svh - 3rem); }
           .pd-panel { width: min(36rem, 94vw); }
         }
       `}</style>
