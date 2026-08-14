@@ -145,6 +145,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-vnos { display: flex; flex-direction: column; gap: .5rem; background: rgba(255,255,255,.66); backdrop-filter: blur(18px) saturate(1.35); -webkit-backdrop-filter: blur(18px) saturate(1.35); border: 1px solid rgba(255,255,255,.75); border-radius: 1.2rem; padding: .95rem 1rem; box-shadow: 0 18px 50px oklch(40% .08 300 / .16); }
         .pd-vnos textarea { width: 100%; box-sizing: border-box; border: 0; outline: none; resize: none; background: transparent; font: 500 1rem/1.5 var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
         .pd-vnos textarea::placeholder { color: color-mix(in oklch, var(--ink, #1a1a1a) 42%, transparent); }
+        /* brez grdega oglatega fokus ringa na textarea — obarva se ROB celotnega polja */
+        .pd-vnos textarea:focus, .pd-vnos textarea:focus-visible { outline: none; box-shadow: none; }
+        .pd-vnos:focus-within { border-color: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 55%, transparent); box-shadow: 0 0 0 3px color-mix(in oklch, var(--purple, oklch(66% .2 297)) 16%, transparent), 0 18px 50px oklch(40% .08 300 / .16); }
         .pd-vnos-akc { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
         .pd-vnos-desno { display: flex; align-items: center; gap: .5rem; }
         .pd-add { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 12%, transparent); border-radius: 50%; background: #fff; color: color-mix(in oklch, var(--ink, #1a1a1a) 62%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease, transform .15s ease; }
