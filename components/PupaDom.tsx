@@ -8,7 +8,7 @@
    Glej memory: project_pupa_prvi_vmesnik, project_pupa_center_layout_ideja, project_flow_glass_aurora. */
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { lokalniOdgovori } from '@/lib/onboarding';
 
 export default function PupaDom({ base = '' }: { base?: string }) {
@@ -16,6 +16,8 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const [ime, setIme] = useState('');
   const [vnos, setVnos] = useState('');
+  const [priponka, setPriponka] = useState<File | null>(null);
+  const datotekaRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     try { setIme((lokalniOdgovori().ime || '').trim()); } catch { /* ignore */ }
@@ -78,6 +80,14 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         <p className="pd-uvod">{L('Povej, kaj želiš ustvariti — Pupa uredi poslovni del.', 'Tell me what you want to create — Pupa handles the business part.')}</p>
 
         <div className="pd-vnos">
+          {priponka && (
+            <div className="pd-priponka">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" /></svg>
+              <span>{priponka.name}</span>
+              <button type="button" className="pd-priponka-x" onClick={() => { setPriponka(null); if (datotekaRef.current) datotekaRef.current.value = ''; }} aria-label={L('Odstrani prilogo', 'Remove attachment')}>×</button>
+            </div>
+          )}
+          <input ref={datotekaRef} type="file" hidden onChange={e => setPriponka(e.target.files?.[0] ?? null)} />
           <textarea
             value={vnos}
             onChange={e => setVnos(e.target.value)}
@@ -87,10 +97,15 @@ export default function PupaDom({ base = '' }: { base?: string }) {
             aria-label={L('Napiši, kaj želiš', 'Write what you want')}
           />
           <div className="pd-vnos-akc">
-            <button type="button" className="pd-mik" title={L('Glas (kmalu)', 'Voice (soon)')} aria-label={L('Glas', 'Voice')} disabled>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4" /></svg>
+            <button type="button" className="pd-add" onClick={() => datotekaRef.current?.click()} title={L('Naloži prilogo za pogovor', 'Upload an attachment to discuss')} aria-label={L('Dodaj prilogo', 'Add attachment')}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg>
             </button>
-            <button type="button" className="pd-poslji" onClick={posljiVnos}>{L('Začni', 'Start')} <span aria-hidden>→</span></button>
+            <div className="pd-vnos-desno">
+              <button type="button" className="pd-mik" title={L('Glas (kmalu)', 'Voice (soon)')} aria-label={L('Glas', 'Voice')} disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4" /></svg>
+              </button>
+              <button type="button" className="pd-poslji" onClick={posljiVnos}>{L('Začni', 'Start')} <span aria-hidden>→</span></button>
+            </div>
           </div>
         </div>
 
@@ -130,7 +145,13 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-vnos { display: flex; flex-direction: column; gap: .5rem; background: rgba(255,255,255,.66); backdrop-filter: blur(18px) saturate(1.35); -webkit-backdrop-filter: blur(18px) saturate(1.35); border: 1px solid rgba(255,255,255,.75); border-radius: 1.2rem; padding: .95rem 1rem; box-shadow: 0 18px 50px oklch(40% .08 300 / .16); }
         .pd-vnos textarea { width: 100%; box-sizing: border-box; border: 0; outline: none; resize: none; background: transparent; font: 500 1rem/1.5 var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
         .pd-vnos textarea::placeholder { color: color-mix(in oklch, var(--ink, #1a1a1a) 42%, transparent); }
-        .pd-vnos-akc { display: flex; align-items: center; justify-content: flex-end; gap: .5rem; }
+        .pd-vnos-akc { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+        .pd-vnos-desno { display: flex; align-items: center; gap: .5rem; }
+        .pd-add { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 12%, transparent); border-radius: 50%; background: #fff; color: color-mix(in oklch, var(--ink, #1a1a1a) 62%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease, transform .15s ease; }
+        .pd-add:hover { background: var(--ink, #2a2620); color: var(--paper, #faf7f2); transform: translateY(-1px); }
+        .pd-priponka { display: inline-flex; align-items: center; gap: .4rem; align-self: flex-start; max-width: 100%; padding: .35rem .5rem .35rem .65rem; border: 1px solid color-mix(in oklch, var(--purple, oklch(66% .2 297)) 30%, transparent); border-radius: 999px; background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 8%, #fff); font: 600 .74rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
+        .pd-priponka span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 16rem; }
+        .pd-priponka-x { display: grid; place-items: center; width: 1.15rem; height: 1.15rem; border: 0; border-radius: 50%; background: color-mix(in oklch, var(--ink, #1a1a1a) 10%, transparent); color: var(--ink, #1a1a1a); font-size: .8rem; line-height: 1; cursor: pointer; }
         .pd-mik { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 12%, transparent); border-radius: 50%; background: #fff; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); cursor: not-allowed; opacity: .8; }
         .pd-poslji { display: inline-flex; align-items: center; gap: .45rem; border: 0; border-radius: 999px; padding: .65rem 1.35rem; background: var(--ink, #2a2620); color: var(--paper, #faf7f2); font: 700 .85rem var(--font-sans), sans-serif; cursor: pointer; transition: transform .15s ease; }
         .pd-poslji:hover { transform: translateY(-1px); }
