@@ -187,9 +187,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     { ime: L('Pripravi ponudbo', 'Create a quote'), predlog: L('Pripravi ponudbo za ', 'Create a quote for '), h: 297 },
     { ime: L('Izdaj račun', 'Issue an invoice'), predlog: L('Izdaj račun za ', 'Issue an invoice for '), h: 200 },
     { ime: L('Dodaj strošek', 'Add an expense'), predlog: L('Dodaj strošek: ', 'Add an expense: '), h: 60 },
-    { ime: L('Zaženi časovnik', 'Start timer'), href: `${base}/kalkulator/cas`, h: 190 },
     { ime: L('Ustvari projekt', 'Start a project'), predlog: L('Ustvari nov projekt za ', 'Start a new project for '), h: 150 },
     { ime: L('Ustvari nalogo', 'Create task'), predlog: L('Ustvari nalogo: ', 'Create task: '), h: 250 },
+    { ime: L('Štoparica', 'Stopwatch'), href: `${base}/kalkulator/cas`, h: 190 },
   ];
 
   return (
