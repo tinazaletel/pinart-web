@@ -697,13 +697,13 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         }
 
         /* ===== POGOVOR V MESTU: isti chat, spodaj se odvija, panel se izvleče ===== */
-        /* Pogovor: fiksna višina; VNOS PRIPET na dno (vedno viden), sporočila drsijo znotraj (scrollbar
-           skrit). Vrh niti mehko zbledi pod naslovom, da ni grdega odreza. Sence ne režejo (vnos brez
-           sence; mehurčki dobijo vodoravni padding). */
-        .pd.pogovor { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.4rem; align-content: center; }
+        /* Pogovor: vnos PRIPET na dno, sporočila drsijo (scrollbar skrit). overflow: visible na
+           .pd/.pd-center, da sence (vnos, mehurčki) NISO odrezane; drsi le nit (z vodoravnim paddingom
+           za sence mehurčkov). */
+        .pd.pogovor { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.4rem; align-content: center; overflow: visible; }
         .pd.pogovor .pd-plava, .pd.pogovor .pd-razpored { display: none; }
-        .pd.pogovor .pd-center { width: min(48rem, 94vw); height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; }
-        .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: .55rem; padding: 1.4rem 1.2rem .8rem; scrollbar-width: none; -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.8rem); mask-image: linear-gradient(to bottom, transparent 0, #000 1.8rem); }
+        .pd.pogovor .pd-center { width: min(48rem, 94vw); height: calc(100dvh - 4.5rem); display: flex; flex-direction: column; overflow: visible; }
+        .pd-nit { flex: 1 1 auto; min-height: 6rem; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: .55rem; padding: .8rem 1.2rem; scrollbar-width: none; }
         .pd-nit::-webkit-scrollbar { display: none; }
         /* Pupa piše (pike) */
         .pd-tipka { display: inline-flex; gap: .3rem; align-items: center; min-height: 1.5rem; }
@@ -746,7 +746,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-vr-akc { border: 0; background: none; padding: 0; color: var(--purple, oklch(58% .2 297)); font: 600 .68rem var(--font-sans), sans-serif; cursor: pointer; text-decoration: underline; }
         .pd-vr-akc:hover { opacity: .75; }
         /* vnos VEDNO viden na dnu (ne scrolla z nitjo) */
-        .pd.pogovor .pd-vnos { flex: none; margin-top: .3rem; }
+        .pd.pogovor .pd-vnos { flex: none; }
 
         /* a/b/c izbire */
         .pd-izbire { display: flex; flex-wrap: wrap; gap: .5rem; padding: .1rem .1rem .3rem; align-self: flex-end; max-width: 92%; }
@@ -797,9 +797,8 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-p-odpri:hover:not(:disabled)::after { left: 160%; }
 
         @media (max-width: 899px) {
-          /* mobile pogovor: fiksna višina z svh (mobilni trakovi), vnos ostane pripet na dno */
           .pd.pogovor { flex-direction: column; }
-          .pd.pogovor .pd-center { height: calc(100svh - 4.5rem); }
+          .pd.pogovor .pd-center { max-height: none; }
           .pd-panel { width: min(36rem, 94vw); }
         }
       `}</style>
