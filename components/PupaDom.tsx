@@ -483,7 +483,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-vr.jaz .pd-vr-body { align-items: flex-end; }
         .pd-mehur { position: relative; padding: .6rem .85rem; border-radius: 1.15rem; font: 500 .93rem/1.45 var(--font-sans), sans-serif; box-shadow: 0 6px 18px oklch(40% .06 300 / .1); overflow-wrap: anywhere; word-break: break-word; white-space: pre-line; }
         /* Pupin mehurček: bela barva, ENAKO zaobljeni robovi (base radius 1.15rem), orb poravnan s prvo vrstico, prejšnja velikost pisave */
-        .pd-vr.pupa .pd-mehur { position: relative; padding: .6rem .85rem .6rem 2.5rem; background: #fff; color: var(--ink, #1a1a1a); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 7%, transparent); }
+        .pd-vr.pupa .pd-mehur { position: relative; padding: .6rem .85rem .6rem 2.5rem; background: #fff; color: var(--ink, #1a1a1a); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 7%, transparent); border-top-left-radius: 5px; }
         .pd-vr.pupa .pd-mehur::before { content: ""; position: absolute; left: .72rem; top: .6rem; width: 1.25rem; height: 1.25rem; border-radius: 50%; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 2px 6px rgba(124,58,237,.28); }
         .pd-meh-q { display: block; font-weight: 700; }
         .pd-meh-pod { display: block; margin-top: .1rem; font-weight: 500; font-size: .84em; color: color-mix(in oklch, var(--ink, #1a1a1a) 52%, transparent); }
