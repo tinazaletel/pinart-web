@@ -482,11 +482,11 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-vr-body { display: flex; flex-direction: column; gap: .18rem; min-width: 0; }
         .pd-vr.jaz .pd-vr-body { align-items: flex-end; }
         .pd-mehur { position: relative; padding: .6rem .85rem; border-radius: 1.15rem; font: 500 .93rem/1.45 var(--font-sans), sans-serif; box-shadow: 0 6px 18px oklch(40% .06 300 / .1); overflow-wrap: anywhere; word-break: break-word; white-space: pre-line; }
-        /* Pupin mehurček = KOPIJA kalkulatorjevih vrednosti (padding/radius/font/orb); le bela barva ostane */
-        .pd-vr.pupa .pd-mehur { position: relative; padding: .9rem 1.35rem .9rem 2.75rem; background: #fff; color: var(--ink, #1a1a1a); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 7%, transparent); border-radius: 18px; border-top-left-radius: 5px; font-size: .95rem; line-height: 1.5; }
-        .pd-vr.pupa .pd-mehur::before { content: ""; position: absolute; left: .9rem; top: .95rem; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 2px 6px rgba(124,58,237,.28); }
-        .pd-meh-q { display: block; font-weight: 700; font-size: 1.02rem; }
-        .pd-meh-pod { display: block; margin-top: .1rem; font-weight: 500; font-size: .82rem; color: rgba(17,17,17,.64); }
+        /* Pupin mehurček: bela barva, ENAKO zaobljeni robovi (base radius 1.15rem), orb poravnan s prvo vrstico, prejšnja velikost pisave */
+        .pd-vr.pupa .pd-mehur { position: relative; padding: .6rem .85rem .6rem 2.5rem; background: #fff; color: var(--ink, #1a1a1a); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 7%, transparent); }
+        .pd-vr.pupa .pd-mehur::before { content: ""; position: absolute; left: .72rem; top: .6rem; width: 1.25rem; height: 1.25rem; border-radius: 50%; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 2px 6px rgba(124,58,237,.28); }
+        .pd-meh-q { display: block; font-weight: 700; }
+        .pd-meh-pod { display: block; margin-top: .1rem; font-weight: 500; font-size: .84em; color: color-mix(in oklch, var(--ink, #1a1a1a) 52%, transparent); }
         .pd-vr.jaz .pd-mehur { background: color-mix(in oklch, oklch(82% .1 165) 55%, #fff); color: var(--ink, #1a1a1a); border-bottom-right-radius: .4rem; padding-right: 2.1rem; transition: opacity .25s ease, background .2s ease; }
         /* neprebrano = obledel mehurček; med urejanjem = SIV (namesto zelenega) */
         .pd-vr.jaz .pd-mehur.caka { opacity: .5; box-shadow: none; }
