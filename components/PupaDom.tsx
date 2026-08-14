@@ -392,7 +392,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd:not(.pogovor) .pd-glava { order: 0; }
         .pd:not(.pogovor) .pd-uvod { order: 1; }
         .pd:not(.pogovor) .pd-povzetek { order: 3; }
-        .pd:not(.pogovor) .pd-hitre { order: 4; margin-bottom: .3rem; }
+        .pd:not(.pogovor) .pd-hitre { order: 4; margin-bottom: 1.15rem; }
         .pd:not(.pogovor) .pd-vnos { order: 5; }
         .pd-glava { display: flex; align-items: center; gap: .8rem; margin-bottom: .4rem; }
         .pd-orb { flex: none; width: 3rem; height: 3rem; border-radius: 50%; background: conic-gradient(from 210deg, oklch(70% .19 300), oklch(72% .16 200), oklch(80% .13 150), oklch(78% .17 25), oklch(70% .19 300)); box-shadow: 0 8px 22px oklch(60% .18 300 / .38), inset -3px -4px 8px oklch(100% 0 0 / .35), inset 3px 4px 8px oklch(30% .1 300 / .25); animation: pdOrb 8s ease-in-out infinite; }
