@@ -1181,7 +1181,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
               </div>
               <b>{duration(g.minute)}</b>
               <b>{urna ? `${money(urna)}/h` : L('brez vrednosti', 'no value')}</b>
-              <em data-extra={g.dodatno}>{g.dodatno ? L('Dodatno delo', 'Extra work') : L('Vključeno', 'Included')}</em>
+              <em data-extra={g.dodatno}>{g.dodatno ? L('Dodatno delo', 'Extra work') : L('V dogovoru', 'In scope')}</em>
               <div className={styles.akcije}>
                 <button type="button" className={styles.vrsticaGumb} data-glavni onClick={() => nadaljuj(g.zadnji)} disabled={!!running || !!pending} title={running || pending ? L('Najprej zaključi tekoče merjenje', 'Finish the current entry first') : L('Začni novo merjenje na tem projektu', 'Start a new entry on this project')}>{L('Nadaljuj', 'Continue')}</button>
                 {g.zaporedje.length === 1 && <>
