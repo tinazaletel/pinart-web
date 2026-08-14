@@ -5,8 +5,6 @@ import DashboardSidebar from '@/components/DashboardSidebar';
 import OnboardingKartica from '@/components/OnboardingKartica';
 import PozdravPregled from '@/components/PozdravPregled';
 import UvodPreusmeritev from '@/components/UvodPreusmeritev';
-import PogledPreklop from '@/components/PogledPreklop';
-import { paketUporabnika } from '@/lib/pravice';
 import styles from './pregled.module.css';
 
 export const metadata: Metadata = {
@@ -23,7 +21,6 @@ export default async function PoslovniPregledPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const base = locale === 'sl' ? '' : `/${locale}`;
-  const imaPupo = (await paketUporabnika()) === 'pro';
 
   return (
     <main className={styles.shell}>
@@ -36,10 +33,6 @@ export default async function PoslovniPregledPage({
             <p className={styles.eyebrow}>{locale === 'en' ? 'BUSINESS OVERVIEW' : 'POSLOVNI PREGLED'}</p>
             <PozdravPregled jeEn={locale === 'en'} />
             <p className={styles.topbarSub}>{locale === 'en' ? 'Here you can quickly create a proposal, track projects and keep an overview of everything that matters.' : 'Tukaj lahko hitro ustvariš ponudbo, slediš projektom in imaš pregled nad vsem, kar je pomembno.'}</p>
-          </div>
-          {/* Preklop pogleda: Pupa ⇄ Nadzorna plošča — skrajno desno, poravnan na vrh (pod zvončkom) */}
-          <div style={{ alignSelf: 'flex-start' }}>
-            <PogledPreklop base={base} aktiven="plosca" jeEn={locale === 'en'} imaPupo={imaPupo} />
           </div>
         </header>
 
