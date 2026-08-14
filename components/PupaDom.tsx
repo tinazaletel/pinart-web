@@ -104,7 +104,8 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
       <style jsx>{`
         .pd { position: relative; min-height: calc(100dvh - 3rem); overflow: hidden; display: grid; place-items: center; }
-        .pd-aurora { position: absolute; inset: 0; z-index: 0; pointer-events: none; filter: blur(64px); opacity: .5; }
+        /* EDINO ozadje: fiksno čez cel zaslon (ne panel-v-panelu) */
+        .pd-aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; filter: blur(70px); opacity: .5; }
         .pd-aurora i { position: absolute; display: block; border-radius: 50%; }
         .pd-aurora .a1 { width: 44vw; height: 44vw; top: -10vw; left: -8vw; background: radial-gradient(circle, oklch(72% .16 300 / .85), transparent 68%); animation: pdFloat 24s ease-in-out infinite; }
         .pd-aurora .a2 { width: 40vw; height: 40vw; top: 20vw; right: -10vw; background: radial-gradient(circle, oklch(78% .13 200 / .8), transparent 68%); animation: pdFloat 28s ease-in-out infinite reverse; }
