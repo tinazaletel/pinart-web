@@ -66,15 +66,22 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     try { setIme((lokalniOdgovori().ime || '').trim()); } catch { /* ignore */ }
   }, []);
 
-  const pozdrav = ime
-    ? L(`Hej, ${ime}. Kaj želiš danes?`, `Hi, ${ime}. What's on today?`)
-    : L('Hej. Kaj želiš danes?', "Hi. What's on today?");
+  /* Namerno DVE vrstici: ime zgoraj, vprašanje spodaj. Tako je pri kratkem ('Hej.')
+     in dolgem imenu ('Hej, Aleksandra.') vedno urejeno — nič grdih sirot. */
+  const pozdrav1 = ime ? L(`Hej, ${ime}.`, `Hi, ${ime}.`) : L('Hej.', 'Hi.');
+  const pozdrav2 = L('Kaj želiš danes?', "What's on today?");
 
   const posljiVnos = () => {
     const t = vnos.trim();
     if (typeof window === 'undefined') return;
     window.location.href = `${base}/kalkulator/orodje${t ? `?uvod=1&namig=${encodeURIComponent(t)}` : ''}`;
   };
+
+  /* Razpored kartic: plavajoče (privzeto, lepo) ALI zbrane v okence v kotu
+     (hitro pregledaš — ChatGPT predlog). Gumb zgoraj desno preklaplja; zapomni se. */
+  const [zbrano, setZbrano] = useState(false);
+  useEffect(() => { try { setZbrano(localStorage.getItem('pinart-pupa-zbrano') === '1'); } catch { /* ignore */ } }, []);
+  const preklopiRazpored = () => setZbrano(z => { const n = !z; try { localStorage.setItem('pinart-pupa-zbrano', n ? '1' : '0'); } catch { /* ignore */ } return n; });
 
   /* PLAVAJOČE kartice (ambient) — podatki, kot jih imamo na nadzorni plošči.
      poz = položaj okoli sredine (desktop); h = odtenek; d = zamik animacije. */
@@ -100,14 +107,26 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     <div className="pd">
       <div className="pd-aurora" aria-hidden><i className="a1" /><i className="a2" /><i className="a3" /></div>
 
-      {/* PLAVAJOČE podatkovne kartice (desktop) */}
-      <div className="pd-plava">
+      {/* Gumb: zberi tage v kot / razprši nazaj (le namizje) */}
+      <button type="button" className="pd-razpored" onClick={preklopiRazpored} aria-pressed={zbrano}
+        title={zbrano ? L('Razprši kartice', 'Scatter cards') : L('Zberi v kot', 'Collect to corner')}>
+        {zbrano ? (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" /></svg>
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
+        )}
+      </button>
+
+      {/* PLAVAJOČE podatkovne kartice (desktop) — wrap plava/boba, kartica poveča ob hoveru */}
+      <div className={`pd-plava${zbrano ? ' zbrano' : ''}`}>
         {plava.map((p, i) => (
-          <a key={i} href={p.href} className="pd-kartica" style={{ ['--h' as string]: String(p.h), animationDelay: `${p.d}s`, ...pozStyle(p.poz) }}>
-            <span className="pd-k-pika" />
-            <b>{p.vrednost}</b>
-            <small>{p.labela}</small>
-          </a>
+          <div key={i} className="pd-kartica-wrap" style={zbrano ? { animationDelay: `${p.d}s` } : { animationDelay: `${p.d}s`, ...pozStyle(p.poz) }}>
+            <a href={p.href} className="pd-kartica" style={{ ['--h' as string]: String(p.h) }}>
+              <span className="pd-k-pika" />
+              <b>{p.vrednost}</b>
+              <small>{p.labela}</small>
+            </a>
+          </div>
         ))}
       </div>
 
@@ -117,7 +136,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
           <span className="pd-orb" aria-hidden />
           <div>
             <p className="pd-eyebrow">PUPA</p>
-            <h1 className="pd-naslov">{pozdrav}</h1>
+            <h1 className="pd-naslov">{pozdrav1}<br />{pozdrav2}</h1>
           </div>
         </div>
         <p className="pd-uvod">{L('Povej, kaj želiš ustvariti — Pupa uredi poslovni del.', 'Tell me what you want to create — Pupa handles the business part.')}</p>
@@ -197,18 +216,24 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         @keyframes pdFloat { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(2vw,-2vw) scale(1.06); } }
 
         .pd-plava { position: absolute; inset: 0; z-index: 1; pointer-events: none; display: none; }
-        .pd-kartica { position: absolute; display: flex; flex-direction: column; gap: .1rem; min-width: 8.5rem; padding: .75rem .95rem; border: 1px solid rgba(255,255,255,.6); border-radius: .95rem; background: color-mix(in oklch, oklch(72% .13 var(--h)) 10%, rgba(255,255,255,.55)); backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2); box-shadow: 0 12px 34px oklch(50% .1 var(--h) / .14); animation: pdBob 9s ease-in-out infinite; }
+        /* gumb za preklop razporeda (zberi v kot / razprši) */
+        .pd-razpored { position: absolute; top: .75rem; right: .5rem; z-index: 30; display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 14%, transparent); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease, border-color .15s ease; }
+        .pd-razpored:hover { background: #fff; color: var(--ink, #1a1a1a); }
+        /* wrap nosi PLAVANJE (position + bob); kartica se POVEČA ob hoveru (brez konflikta transformov) */
+        .pd-kartica-wrap { position: absolute; pointer-events: none; animation: pdBob 9s ease-in-out infinite; }
+        .pd-kartica { position: relative; pointer-events: auto; display: flex; flex-direction: column; gap: .1rem; min-width: 8.5rem; padding: .75rem .95rem; border: 1px solid rgba(255,255,255,.6); border-radius: .95rem; background: color-mix(in oklch, oklch(72% .13 var(--h)) 10%, rgba(255,255,255,.55)); backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2); box-shadow: 0 12px 34px oklch(50% .1 var(--h) / .14); text-decoration: none; cursor: pointer; transition: transform .22s cubic-bezier(.2,.7,.2,1), box-shadow .22s ease; }
+        .pd-kartica:hover { transform: scale(1.07); box-shadow: 0 22px 50px oklch(50% .1 var(--h) / .3); z-index: 3; }
         .pd-k-pika { position: absolute; top: .8rem; right: .8rem; width: .5rem; height: .5rem; border-radius: 50%; background: oklch(65% .19 var(--h)); box-shadow: 0 0 0 4px oklch(65% .19 var(--h) / .18); }
         .pd-kartica b { font: 700 1.15rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
         .pd-kartica small { font: 600 .66rem var(--font-sans), sans-serif; letter-spacing: .02em; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); }
         @keyframes pdBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
 
-        .pd-center { position: relative; z-index: 2; width: min(34rem, 92vw); padding: clamp(1.2rem, 4vw, 2rem); text-align: left; }
+        .pd-center { position: relative; z-index: 2; width: min(37rem, 92vw); padding: clamp(1.2rem, 4vw, 2rem); text-align: left; }
         .pd-glava { display: flex; align-items: center; gap: .8rem; margin-bottom: .4rem; }
         .pd-orb { flex: none; width: 3rem; height: 3rem; border-radius: 50%; background: conic-gradient(from 210deg, oklch(70% .19 300), oklch(72% .16 200), oklch(80% .13 150), oklch(78% .17 25), oklch(70% .19 300)); box-shadow: 0 8px 22px oklch(60% .18 300 / .38), inset -3px -4px 8px oklch(100% 0 0 / .35), inset 3px 4px 8px oklch(30% .1 300 / .25); animation: pdOrb 8s ease-in-out infinite; }
         @keyframes pdOrb { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(8deg); } }
         .pd-eyebrow { margin: 0 0 .15rem; font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .18em; color: var(--purple, oklch(60% .2 297)); }
-        .pd-naslov { margin: 0; font: 500 clamp(1.6rem, 4.2vw, 2.4rem)/1.08 var(--font-serif), Georgia, serif; font-synthesis: none; color: var(--ink, #1a1a1a); letter-spacing: -.01em; }
+        .pd-naslov { margin: 0; font: 500 clamp(1.45rem, 3.4vw, 2.05rem)/1.1 var(--font-serif), Georgia, serif; font-synthesis: none; color: var(--ink, #1a1a1a); letter-spacing: -.01em; text-wrap: balance; }
         .pd-uvod { margin: .15rem 0 1.1rem; font: 500 .98rem/1.5 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); }
 
         /* position+z-index: backdrop-filter naredi .pd-vnos svoj stacking context;
@@ -248,9 +273,6 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-ai-meni button.on { background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 13%, transparent); }
         .pd-ai-meni b { font: 700 .82rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
         .pd-ai-meni small { font: 500 .7rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); }
-        /* klikljive plavajoče kartice: container ne blokira sredine, kartice so klik */
-        .pd-kartica { pointer-events: auto; text-decoration: none; cursor: pointer; }
-        .pd-kartica:hover { box-shadow: 0 18px 44px oklch(50% .1 var(--h) / .24); }
         /* mobilni povzetek (skrit na namizju, kjer plavajo kartice) */
         .pd-povzetek { display: flex; gap: .5rem; margin: .8rem 0 .2rem; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
         .pd-povzetek::-webkit-scrollbar { display: none; }
@@ -265,7 +287,14 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-opomba { margin: 0; font: 500 .72rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); }
 
         /* plavajoče kartice le na širših zaslonih (na telefonu bi bile v napoto) */
-        @media (min-width: 1024px) { .pd-plava { display: block; } }
+        @media (min-width: 1024px) {
+          .pd-plava { display: block; }
+          /* ZBRANO: 2-stolpčno okence v zgornjem desnem kotu (hitro pregledaš) */
+          .pd-plava.zbrano { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; inset: auto; top: 3.7rem; right: 1rem; width: 21rem; z-index: 3; }
+          /* zbrane naj ŠE VEDNO nežno lebdijo (zamaknjeno prek inline animationDelay) */
+          .pd-plava.zbrano .pd-kartica-wrap { position: static; pointer-events: auto; animation: pdBob 9s ease-in-out infinite; }
+          .pd-plava.zbrano .pd-kartica { min-width: 0; }
+        }
       `}</style>
     </div>
   );
