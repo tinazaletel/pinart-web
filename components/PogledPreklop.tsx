@@ -22,7 +22,8 @@ export default function PogledPreklop({
   const [opozorilo, setOpozorilo] = useState(false);
   const domZaklenjen = !imaPupo && aktiven !== 'dom';
 
-  const iskraSvg = <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2l1.7 5.3L19 9l-5.3 1.7L12 16l-1.7-5.3L5 9l5.3-1.7L12 2z" /></svg>;
+  /* dvojna zvezdica = ustaljena AI ikona (ista kot AI izbirnik v PupaDom) */
+  const iskraSvg = <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2l1.7 5.3L19 9l-5.3 1.7L12 16l-1.7-5.3L5 9l5.3-1.7L12 2z" /><path d="M18.5 13l.9 2.6L22 16.5l-2.6.9-.9 2.6-.9-2.6L15 16.5l2.6-.9.9-2.6z" opacity=".65" /></svg>;
 
   return (
     <div className="pp" role="group" aria-label={L('Preklop pogleda', 'Switch view')}>
@@ -66,7 +67,7 @@ export default function PogledPreklop({
         .pp-zapri { border: 0; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); font: 600 .78rem var(--font-sans), sans-serif; cursor: pointer; }
         @keyframes ppIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
         /* Zaprt meni (ozek pas 4.4rem): preklop = dve ikoni druga pod drugo, brez besedila */
-        :global(body[data-meni='zaprt']) .pp { flex-direction: column; gap: .3rem; padding: .15rem; background: transparent; border: 0; box-shadow: none; }
+        :global(body[data-meni='zaprt']) .pp { flex-direction: column; gap: .3rem; padding: .15rem; margin: -.45rem 0 .5rem; background: transparent; border: 0; box-shadow: none; }
         :global(body[data-meni='zaprt']) .pp-txt, :global(body[data-meni='zaprt']) .pp-lockico { display: none; }
         :global(body[data-meni='zaprt']) .pp-g { width: 2.4rem; height: 2.4rem; padding: 0; gap: 0; justify-content: center; border-radius: .7rem; }
         :global(body[data-meni='zaprt']) .pp-alert { left: calc(100% + .5rem); right: auto; top: 0; }
