@@ -234,12 +234,13 @@ export default function PupaDom({ base = '' }: { base?: string }) {
           <div className="pd-nit">
             {sporocila.map(s => (
               <div key={s.id} className={`pd-vr ${s.kdo === 'jaz' ? 'jaz' : 'pupa'}`}>
-                {s.kdo === 'pupa' && <span className="pd-vr-orb" aria-hidden />}
                 <div className="pd-vr-body">
-                  {/* neprebrano = obledel mehurček; med urejanjem = SIV (namesto zelenega); svinčnik V mehurčku */}
+                  {/* Pupin mehurček: gradient krogec (orb) je ZNOTRAJ mehurčka + krepko vprašanje + siv podnaslov */}
                   <div className={`pd-mehur${s.kdo === 'jaz' && s.stanje === 'cakanje' ? ' caka' : ''}${urejam === s.id ? ' ureja' : ''}`}>
-                    {s.kdo === 'pupa' && s.besedilo.includes('\n') ? (
-                      <><span className="pd-meh-q">{s.besedilo.slice(0, s.besedilo.indexOf('\n'))}</span><span className="pd-meh-pod">{s.besedilo.slice(s.besedilo.indexOf('\n') + 1)}</span></>
+                    {s.kdo === 'pupa' ? (
+                      s.besedilo.includes('\n')
+                        ? <><span className="pd-meh-q">{s.besedilo.slice(0, s.besedilo.indexOf('\n'))}</span><span className="pd-meh-pod">{s.besedilo.slice(s.besedilo.indexOf('\n') + 1)}</span></>
+                        : <span className="pd-meh-q">{s.besedilo}</span>
                     ) : s.besedilo}
                     {s.kdo === 'jaz' && (
                       <button type="button" className="pd-vr-pen" onClick={() => urediSporocilo(s)} title={L('Uredi', 'Edit')} aria-label={L('Uredi', 'Edit')}>
@@ -481,10 +482,12 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-vr-body { display: flex; flex-direction: column; gap: .18rem; min-width: 0; }
         .pd-vr.jaz .pd-vr-body { align-items: flex-end; }
         .pd-mehur { position: relative; padding: .6rem .85rem; border-radius: 1.15rem; font: 500 .93rem/1.45 var(--font-sans), sans-serif; box-shadow: 0 6px 18px oklch(40% .06 300 / .1); overflow-wrap: anywhere; word-break: break-word; white-space: pre-line; }
-        .pd-vr.pupa .pd-mehur { background: #fff; color: var(--ink, #1a1a1a); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 7%, transparent); border-bottom-left-radius: .4rem; }
+        .pd-vr.pupa .pd-mehur { position: relative; padding-left: 2.7rem; background: #fff; color: var(--ink, #1a1a1a); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 7%, transparent); border-bottom-left-radius: .4rem; }
+        /* majhen gradient krogec ZNOTRAJ mehurčka — kopija kalkulatorjevega ::before (1.3rem) */
+        .pd-vr.pupa .pd-mehur::before { content: ""; position: absolute; left: .85rem; top: .85rem; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 2px 6px rgba(124,58,237,.28); }
         /* hierarhija besedila: krepko vprašanje + svetlejši podnaslov (barva mehurčka OSTANE) */
         .pd-meh-q { display: block; font-weight: 700; }
-        .pd-meh-pod { display: block; margin-top: .18rem; font-size: .84em; font-weight: 500; color: color-mix(in oklch, var(--ink, #1a1a1a) 52%, transparent); }
+        .pd-meh-pod { display: block; margin-top: .1rem; font-size: .84em; font-weight: 500; color: color-mix(in oklch, var(--ink, #1a1a1a) 52%, transparent); }
         .pd-vr.jaz .pd-mehur { background: color-mix(in oklch, oklch(82% .1 165) 55%, #fff); color: var(--ink, #1a1a1a); border-bottom-right-radius: .4rem; padding-right: 2.1rem; transition: opacity .25s ease, background .2s ease; }
         /* neprebrano = obledel mehurček; med urejanjem = SIV (namesto zelenega) */
         .pd-vr.jaz .pd-mehur.caka { opacity: .5; box-shadow: none; }
