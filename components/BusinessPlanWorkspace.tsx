@@ -328,9 +328,6 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   const [vrstaVnos, setVrstaVnos] = useState<VrstaPrisotnosti>('redno');
   const [krajVnos, setKrajVnos] = useState<KrajDela>('pisarna');
   const [opombaVnos, setOpombaVnos] = useState('');
-  /* Legenda barv za VRSTA stolpec — na mobilu so v tabeli samo pikice (prostor),
-     legenda + klikabilni »?« razlozita, kaj katera barva pomeni. */
-  const [legendaOdprta, setLegendaOdprta] = useState(false);
   /* dan, za katerega trenutno vnasamo prisotnost — privzeto danes, a ga je
      mozno prestaviti (npr. da popravis pretekli dan) */
   const [prisotnostDan, setPrisotnostDan] = useState(() => new Date().toISOString().slice(0, 10));
@@ -1029,8 +1026,8 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       </div>
 
 
-      {/* Legenda barv (samo mobilno prek CSS) + klikabilni »?« z razlago. Na mobilu
-          so v stolpcu VRSTA samo pikice, tu je razlaga barv. */}
+      {/* Legenda barv (samo mobilno prek CSS): v stolpcu VRSTA so na telefonu samo
+          pikice, tu je razlaga barv. Brez »?« — legenda ze vse pove (Tina). */}
       <div className={styles.vrstaLegendaVrstica}>
         <ul className={styles.vrstaLegenda} aria-label={L('Legenda barv', 'Colour legend')}>
           <li><span className={styles.legDot} data-vrsta="redno" />{L('Redno', 'Regular')}</li>
@@ -1039,17 +1036,6 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
           <li><span className={styles.legDot} data-vrsta="dopust" />{L('Dopust / zasebno', 'Leave / personal')}</li>
           <li><span className={styles.legDot} data-vrsta="bolniska" />{L('Bolniška / praznik', 'Sick / holiday')}</li>
         </ul>
-        <button type="button" className={styles.legHelp} onClick={() => setLegendaOdprta(v => !v)}
-          aria-expanded={legendaOdprta} aria-label={L('Razlaga vrst dela', 'Explanation of work types')}>?</button>
-        {legendaOdprta && <div className={styles.legRazlaga} role="dialog" aria-label={L('Razlaga vrst dela', 'Explanation of work types')}>
-          <strong>{L('Kaj pomenijo barve', 'What the colours mean')}</strong>
-          <p><span className={styles.legDot} data-vrsta="redno" /><span><b>{L('Redno', 'Regular')}</b> — {L('običajen delovni dan v pisarni.', 'a normal working day at the office.')}</span></p>
-          <p><span className={styles.legDot} data-kraj="doma" /><span><b>{L('Delo od doma', 'Work from home')}</b> — {L('redno delo, opravljeno od doma.', 'regular work done from home.')}</span></p>
-          <p><span className={styles.legDot} data-vrsta="sluzbena" /><span><b>{L('Službena pot', 'Business trip')}</b> — {L('delo izven pisarne, na terenu.', 'work away from the office, on the field.')}</span></p>
-          <p><span className={styles.legDot} data-vrsta="dopust" /><span><b>{L('Dopust / zasebno', 'Leave / personal')}</b> — {L('odsotnost, cel dan brez ur.', 'absence, whole day without hours.')}</span></p>
-          <p><span className={styles.legDot} data-vrsta="bolniska" /><span><b>{L('Bolniška / praznik', 'Sick / holiday')}</b> — {L('odsotnost, cel dan brez ur.', 'absence, whole day without hours.')}</span></p>
-          <button type="button" className={styles.legZapri} onClick={() => setLegendaOdprta(false)}>{L('Zapri', 'Close')}</button>
-        </div>}
       </div>
 
       <div className={styles.mesecTabelaOvoj}>
