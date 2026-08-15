@@ -225,6 +225,9 @@ export default function Pupa() {
       {/* Pupa OB STRANI (plavajoči orb) OSTANE — osnovni paket. Na /dom je ni (dom JE Pupa,
           zgoraj return null); v advance paketu se Pupa združi v split okno (Pupa levo, orodje desno).
           Odpira jo tudi sparkle (✨) v glavi prek 'pupa:odpri'. */}
+      {/* Na MOBILU je orb spodaj desno vedno visel čez akcijske gumbe (Shrani/Pošlji/Pripravi
+          ponudbo). Zato ga tam prestavimo gor desno OB hamburger — desktop ostane spodaj desno. */}
+      <style>{'@media (max-width:760px){.pupa-fab{top:.45rem!important;bottom:auto!important;right:4.4rem!important;width:42px!important;height:42px!important;box-shadow:0 6px 16px rgba(42,32,53,.28)!important}.pupa-fab svg{width:100%!important;height:100%!important}}'}</style>
       {!odprt && (
         <button type="button" className={'pupa-fab' + (skritScroll ? ' pupa-skrit' : '')} onClick={() => setOdprt(true)} aria-label={L('Odpri Pupo', 'Open Pupa')} title={L('Pupa: pomočnica', 'Pupa: assistant')}
           style={{ position: 'fixed', right: '1.4rem', bottom: '1.4rem', zIndex: 90, width: 58, height: 58, flex: 'none', borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0, background: 'conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)', boxShadow: '0 12px 30px rgba(42,32,53,.30)' }}>
