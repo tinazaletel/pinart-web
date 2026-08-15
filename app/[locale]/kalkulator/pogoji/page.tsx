@@ -524,13 +524,40 @@ export default async function KalkulatorPogojiPage({
               <>
                 The platform is intended for business use by adults (persons 18 or older) with the legal
                 capacity to enter into a contract. By using it you confirm that you meet these conditions.
-                The platform is not intended for children.
+                The platform is not intended for children. In the United States it is not directed to children
+                and we do not knowingly collect data from anyone under 13 (COPPA); in the EEA, anyone under 16
+                needs the consent of a parent or guardian.
               </>
             ) : (
               <>
                 Platforma je namenjena poslovni uporabi polnoletnih oseb (18 let ali več) s poslovno
                 sposobnostjo za sklenitev pogodbe. Z uporabo potrjuješ, da izpolnjuješ te pogoje.
-                Platforma ni namenjena otrokom.
+                Platforma ni namenjena otrokom. V ZDA ni namenjena otrokom in zavestno ne zbiramo podatkov
+                oseb, mlajših od 13 let (COPPA); v EGP osebe, mlajše od 16 let, potrebujejo privolitev
+                staršev ali skrbnika.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>{en ? '4f. Export control and sanctions' : '4f. Izvozni nadzor in sankcije'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                You must comply with applicable export-control and sanctions laws, including United States
+                regulations (the Export Administration Regulations and the sanctions administered by OFAC) and
+                measures of the European Union. By using the platform you warrant that you are not located in an
+                embargoed territory, are not on any restricted-party or sanctions list, and will not use the
+                platform for any prohibited end use.
+              </>
+            ) : (
+              <>
+                Zavezuješ se k spoštovanju veljavnih predpisov o izvoznem nadzoru in sankcijah, vključno s
+                predpisi Združenih držav (Export Administration Regulations in sankcije, ki jih izvaja OFAC) ter
+                ukrepi Evropske unije. Z uporabo platforme jamčiš, da nisi v ozemlju pod embargom, nisi na
+                nobenem seznamu omejenih oseb ali sankcij in platforme ne boš uporabljal za noben prepovedan
+                namen.
               </>
             )}
           </p>
@@ -773,6 +800,38 @@ export default async function KalkulatorPogojiPage({
         </section>
 
         <section style={S}>
+          <h2 style={H}>{en ? '8d. Copyright complaints (US / DMCA)' : '8d. Prijava kršitev avtorskih pravic (ZDA / DMCA)'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                For users and content connected with the United States, the following notice-and-takedown
+                process applies under the DMCA (17 U.S.C. §512). If you are a rights holder and believe content
+                on the platform infringes your copyright, send a notice to our designated agent at tina@pinart.si
+                that includes: (a) your physical or electronic signature; (b) identification of the copyrighted
+                work; (c) identification of the allegedly infringing material and where it is located; (d) your
+                contact details; (e) a statement that you have a good-faith belief the use is not authorised; and
+                (f) a statement, under penalty of perjury, that the information is accurate and that you are
+                authorised to act. We will remove or disable access to the material and may terminate the accounts
+                of repeat infringers. The affected user may submit a counter-notification with the corresponding
+                elements under §512(g).
+              </>
+            ) : (
+              <>
+                Za uporabnike in vsebine, povezane z Združenimi državami, velja postopek prijave in odstranitve
+                po DMCA (17 U.S.C. §512). Če si imetnik pravic in meniš, da vsebina na platformi krši tvojo
+                avtorsko pravico, pošlji obvestilo našemu pooblaščenemu naslovu tina@pinart.si, ki naj vsebuje:
+                (a) tvoj fizični ali elektronski podpis; (b) opredelitev avtorskega dela; (c) opredelitev domnevno
+                sporne vsebine in kje se nahaja; (d) tvoje kontaktne podatke; (e) izjavo, da v dobri veri meniš,
+                da raba ni dovoljena; in (f) izjavo pod kazensko odgovornostjo, da so podatki točni in da si
+                pooblaščen za ravnanje. Vsebino bomo odstranili ali onemogočili dostop do nje in lahko ukinemo
+                račune ponavljajočih se kršiteljev. Zadevni uporabnik lahko vloži nasprotno obvestilo z
+                ustreznimi sestavinami po §512(g).
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
           <h2 style={H}>{en ? '9. Limitation of liability' : '9. Omejitev odgovornosti'}</h2>
           <p style={P}>
             {en ? (
@@ -1003,6 +1062,38 @@ export default async function KalkulatorPogojiPage({
                 Ti pogoji skupaj s politiko zasebnosti predstavljajo celoten dogovor med teboj in ponudnikom
                 glede uporabe platforme. Če ponudnik ob določeni priložnosti neke pravice ne uveljavi, se ji s
                 tem ne odpove.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>{en ? '11d. Dispute resolution for US users (arbitration)' : '11d. Reševanje sporov za uporabnike v ZDA (arbitraža)'}</h2>
+          <p style={OSNUTEK}>
+            {en
+              ? 'DRAFT — binding arbitration and a class-action waiver are a legal choice, not a requirement. Confirm scope and enforceability with a US attorney (FAA and state-law limits) before relying on this.'
+              : 'OSNUTEK — zavezujoča arbitraža in odpoved skupinski tožbi sta pravna izbira, ne zahteva. Pred uporabo naj obseg in izvršljivost potrdi odvetnik za ZDA (FAA in omejitve po pravu posamezne države).'}
+          </p>
+          <p style={P}>
+            {en ? (
+              <>
+                For users in the United States, and notwithstanding section 11, any dispute relating to these
+                terms or the platform will be resolved by binding arbitration on an individual basis. To the
+                extent permitted by law, you and the provider waive the right to a jury trial and to bring or
+                participate in a class or representative action. You may opt out of this section by emailing
+                tina@pinart.si within 30 days of first accepting these terms. Nothing here prevents either party
+                from seeking injunctive relief for misuse of intellectual property, or from bringing an
+                individual claim in small-claims court.
+              </>
+            ) : (
+              <>
+                Za uporabnike v Združenih državah in ne glede na 11. točko se vsak spor v zvezi s temi pogoji ali
+                platformo rešuje z zavezujočo arbitražo na individualni podlagi. V obsegu, ki ga dovoljuje pravo,
+                se ti in ponudnik odpovesta pravici do sojenja pred poroto ter do vložitve ali sodelovanja v
+                skupinski ali reprezentativni tožbi. To točko lahko zavrneš z e-pošto na tina@pinart.si v 30 dneh
+                od prvega sprejema teh pogojev. Nič v tej točki ne preprečuje nobeni stranki, da zahteva sodno
+                prepoved zaradi zlorabe intelektualne lastnine ali vloži individualni zahtevek pri sodišču za
+                spore majhne vrednosti.
               </>
             )}
           </p>
