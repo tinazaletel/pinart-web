@@ -2444,13 +2444,17 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* Puscica nazaj se ne sme zanasati SAMO na ?od=pregled — kalkulator lahko odpres tudi
      z zaznamkom ali z drugega mesta v aplikaciji. Ce obstaja seja, uporabnik ima kam nazaj.
      Brezplacni (neprijavljeni) obiskovalec je NE dobi, in ce Supabase manjka, tiho odnehamo. */
+  /* jePrijavljen: soglasje kartica se prilagodi (Flow/oblak verzija) in zahteva
+     potrditev pogojev; pogojiPotrjeni: gate za gumb "Razumem, gremo" pri prijavljenih. */
+  const [jePrijavljen, setJePrijavljen] = useState(false);
+  const [pogojiPotrjeni, setPogojiPotrjeni] = useState(false);
   useEffect(() => {
     let ziv = true;
     (async () => {
       try {
         const { createClient } = await import('@/utils/supabase/client');
         const { data } = await createClient().auth.getUser();
-        if (ziv && data.user) setOdAdmina(true);
+        if (ziv && data.user) { setOdAdmina(true); setJePrijavljen(true); }
       } catch { /* brez Supabase ostane brezplacni nacin */ }
     })();
     return () => { ziv = false; };
@@ -6666,6 +6670,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .se-preklop em { font-style: normal; color: rgba(17,17,17,.72); font-weight: 400; }
         .cw .se-note { margin: .8rem 0 0; font-size: .82rem; line-height: 1.5; color: rgba(17,17,17,.62); }
         .cw .soglasje-gumbi { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+        .cw .sg-potrdi { display: flex; align-items: flex-start; gap: .6rem; font-size: .95rem; line-height: 1.5; color: var(--ink); cursor: pointer; text-align: left; max-width: 34rem; }
+        .cw .sg-potrdi input { flex: none; width: 1.15rem; height: 1.15rem; margin-top: .18rem; accent-color: var(--accent, #B25476); cursor: pointer; }
+        .cw .sg-potrdi a { color: var(--accent, #B25476); text-decoration: underline; text-underline-offset: .2em; }
+        .cw .soglasje-gumbi .gumb:disabled { opacity: .45; cursor: not-allowed; transform: none; }
         .cw .napredek { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(17,17,17,.1); z-index: 40; }
         .cw .napredek i { display: block; height: 100%; background: var(--ink); transition: width .5s cubic-bezier(.16,1,.3,1); }
 
@@ -7704,6 +7712,20 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           <div className="soglasje-kartica">
             <h2>{L('Samo troje, preden začneš', 'Just three things before you start')}</h2>
             <div className="soglasje-tocke">
+              {jePrijavljen ? (<>
+              <div className="sg-blok">
+                <h3 className="sg-h">{L('Vse na enem mestu', 'Everything in one place')}</h3>
+                <p className="sg-t">{L('Flow ni samo kalkulator — ponudbe, računi, pogodbe, stranke, projekti, koledar in več. Ko se spoznava, te odložim na tvojo ploščo, kjer izbereš, kaj boš delal/-a.', 'Flow is more than a calculator — quotes, invoices, contracts, clients, projects, a calendar and more. Once we get to know each other, I drop you on your dashboard, where you choose what to do.')}</p>
+              </div>
+              <div className="sg-blok">
+                <h3 className="sg-h">{L('Shranjeno v tvojem oblaku', 'Saved in your cloud')}</h3>
+                <p className="sg-t">{L('Ker si prijavljen/-a, se vse varno shrani v tvoj Flow oblak in je na voljo na vseh napravah.', 'Since you are signed in, everything is securely saved to your Flow cloud and available on all your devices.')}</p>
+              </div>
+              <div className="sg-blok">
+                <h3 className="sg-h">{L('Tvoje ostane tvoje', 'Yours stays yours')}</h3>
+                <p className="sg-t">{L('Tvoja dela, cene in podatki so tvoji — ne delimo jih in jih lahko kadarkoli izvoziš.', 'Your work, prices and data are yours — we do not share them and you can export them any time.')}</p>
+              </div>
+              </>) : (<>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Priporočene cene', 'Recommended prices')}</h3>
                 <p className="sg-t">{L('So pametno izhodišče, ne uradni cenik — nastale so na podlagi AI raziskave trga, pravo podatkovno bazo pa šele gradimo. Svobodno jih prilagodi; končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.', 'They are a smart starting point, not an official price list — they are based on AI market research, and we are still building the real data-backed database. Adjust them freely; the final price in your quotes is always your decision and your responsibility.')}</p>
@@ -7716,11 +7738,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <h3 className="sg-h">{L('Vedno anonimno', 'Always anonymous')}</h3>
                 <p className="sg-t">{L('Ob prikazu izračuna anonimno zabeležimo le izbrane kategorije in zneske —', 'When the calculation is shown we anonymously record only the selected categories and amounts —')} <b>{L('brez imena, e-naslova ali IP-naslova', 'without name, email or IP address')}</b>{L(', nikoli povezano s teboj.', ', never linked to you.')}</p>
               </div>
+              </>)}
             </div>
+            {!jePrijavljen && (
             <div className="sg-motiv">
               <span className="sg-motiv-ozn">{L('★ Kaj imaš od tega', '★ What\'s in it for you')}</span>
               <p>{L('Skupaj gradimo', 'Together we\'re building')} <b>{L('prvo statistiko cen za kreativce', 'the first pricing statistics for creatives')}</b>{L(': ko bo baza dovolj velika, boš videl,', ': once the database is big enough, you\'ll see')} <b>{L('koliko kolegi s tvojimi izkušnjami dejansko računajo', 'how much peers with your experience actually charge')}</b> {L('— česar danes ne pove nihče.', '— which nobody tells you today.')}</p>
             </div>
+            )}
             <div className="soglasje-email">
               <label className="se-preklop">
                 <span className="se-tekst">
@@ -7749,8 +7774,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               )}
             </div>
             <div className="soglasje-gumbi">
-              <button type="button" className="gumb" onClick={sprejmiPogoje}>{L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
-              <a className="povezava" href={localePath(locale, `/kalkulator/pogoji`)}>{L('Preberi celotne pogoje', 'Read the full terms')}</a>
+              {jePrijavljen && (
+                <label className="sg-potrdi">
+                  <input type="checkbox" checked={pogojiPotrjeni} onChange={e => setPogojiPotrjeni(e.target.checked)} />
+                  <span>{L('Preletel/-a sem in potrjujem ', 'I have reviewed and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>.</span>
+                </label>
+              )}
+              <button type="button" className="gumb" onClick={sprejmiPogoje} disabled={jePrijavljen && !pogojiPotrjeni} title={jePrijavljen && !pogojiPotrjeni ? L('Najprej preleti in potrdi pogoje poslovanja.', 'First review and accept the terms of business.') : undefined}>{L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
+              {!jePrijavljen && <a className="povezava" href={localePath(locale, `/kalkulator/pogoji`)}>{L('Preberi celotne pogoje', 'Read the full terms')}</a>}
             </div>
           </div>
         </div>
