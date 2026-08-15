@@ -6443,6 +6443,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .chat-jaz { align-self: flex-end; max-width: 88%; }
         .cw .chat-jaz .chat-mehur { background: oklch(90% .055 190); color: var(--ink); font-weight: 600; border-top-right-radius: 5px; }
         .cw .chat-mehur { border-radius: 18px; padding: .9rem 1.35rem; font-size: .95rem; line-height: 1.5; font-weight: 400; border: none; box-shadow: 0 2px 12px rgba(40,25,40,.06); }
+        /* mobilni oblački: manj paddinga od teksta (besedilo bliže robu, več prostora) */
+        @media (max-width: 640px) { .cw .chat-mehur { padding: .68rem 1rem; } .cw .chat-bot .chat-mehur { padding-left: 2.5rem; } }
         .cw .chat-mehur-ured { font-family: inherit; font-size: .95rem; cursor: pointer; display: inline-flex; align-items: center; gap: .5rem; text-align: left; transition: transform .16s ease, box-shadow .16s ease, background .16s ease; }
         .cw .chat-mehur-ured svg { opacity: .4; flex: none; transition: opacity .16s ease; }
         .cw .chat-mehur-ured:hover { transform: translateY(-1px); box-shadow: 0 7px 18px rgba(40,25,40,.13); background: #aae6e1; }
