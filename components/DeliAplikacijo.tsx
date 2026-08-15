@@ -38,7 +38,7 @@ export default function DeliAplikacijo() {
         <circle cx="18" cy="5" r="2.6" /><circle cx="6" cy="12" r="2.6" /><circle cx="18" cy="19" r="2.6" />
         <path d="M8.4 10.8 15.6 6.4M8.4 13.2l7.2 4.4" />
       </svg>
-      <span>{sporocilo || 'Deli Pinart Flow'}</span>
+      <span>{sporocilo || 'Deli'}</span>
     </button>
   );
 }
