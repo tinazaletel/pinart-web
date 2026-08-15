@@ -318,6 +318,25 @@ export default async function KalkulatorPogojiPage({
         </section>
 
         <section style={S}>
+          <h2 style={H}>{en ? '3c. Support' : '3c. Podpora'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                We provide support by email at tina@pinart.si. We help as quickly as we reasonably can, but
+                during the beta we do not guarantee a specific response time or continuous availability.
+                Support covers use of the platform; it is not legal, tax or business advice.
+              </>
+            ) : (
+              <>
+                Podporo nudimo po e-pošti na tina@pinart.si. Pomagamo, kakor hitro razumno zmoremo, a v času
+                bete ne jamčimo določenega odzivnega časa ali neprekinjene razpoložljivosti. Podpora zajema
+                uporabo platforme; ni pravni, davčni ali poslovni nasvet.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
           <h2 style={H}>{en ? '4. User account and access' : '4. Uporabniški račun in dostop'}</h2>
           <p style={P}>
             {en ? (
@@ -723,6 +742,31 @@ export default async function KalkulatorPogojiPage({
                 tako obdelavo je na zahtevo na tina@pinart.si na voljo pogodba o obdelavi podatkov (DPA).
                 Sam odgovarjaš, da imaš zakonito podlago za vnos teh podatkov in da o tem obvestiš svoje
                 posameznike.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>{en ? '8c. Reporting content and your warranty' : '8c. Prijava sporne vsebine in jamstvo'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                You warrant that content you upload or create in the platform (works, files, texts, client
+                data) is yours or that you have the right to use it, and that it does not infringe the rights
+                of others or break the law. If you believe that content in the platform infringes your copyright
+                or other rights, or is unlawful or abusive, report it to tina@pinart.si with a description and,
+                where relevant, proof of your rights. We review such reports in good faith and may remove the
+                content or restrict the account concerned.
+              </>
+            ) : (
+              <>
+                Jamčiš, da je vsebina, ki jo naložiš ali ustvariš v platformi (dela, datoteke, besedila,
+                podatki strank), tvoja ali imaš pravico do njene uporabe ter da ne krši pravic drugih in ni v
+                nasprotju z zakonom. Če meniš, da vsebina v platformi krši tvoje avtorske ali druge pravice
+                oziroma je nezakonita ali žaljiva, jo prijavi na tina@pinart.si z opisom in po potrebi dokazilom
+                o svojih pravicah. Take prijave pregledamo v dobri veri in lahko vsebino odstranimo ali omejimo
+                zadevni račun.
               </>
             )}
           </p>
