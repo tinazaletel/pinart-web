@@ -6729,6 +6729,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .glava-avatar:hover { border-color: rgba(17,17,17,.72); }
 
         .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 8rem; }
+        /* Na mobilu so forme (.kartica) fill 100%, mehurčki pa max-width 92% — zato so
+           se forme dotikale roba, mehurčki pa ne. Damo celi .oder vsebini bolj radodaren
+           SIMETRIČEN rob (levo=desno), da je cela ponudba na isti navpičnici. */
+        @media (max-width: 640px) { .cw .oder { padding-left: 1.6rem; padding-right: 1.6rem; } }
         /* v Flow lupini je zgoraj ze glava strani, zato brez 7rem praznine */
         /* glava strani v lupini — ista mera kot pri retainerju */
         .cw .lupina-glava { width: min(1240px, 100%); margin: 0 auto; padding: clamp(1.6rem, 4vw, 2.6rem) clamp(1.2rem, 4vw, 3rem) 0; position: relative; z-index: 2; }
