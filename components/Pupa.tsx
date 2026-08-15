@@ -231,15 +231,19 @@ export default function Pupa() {
       {!odprt && (
         <button type="button" className={'pupa-fab' + (skritScroll ? ' pupa-skrit' : '')} onClick={() => setOdprt(true)} aria-label={L('Odpri Pupo', 'Open Pupa')} title={L('Pupa: pomočnica', 'Pupa: assistant')}
           style={{ position: 'fixed', right: '1.4rem', bottom: '1.4rem', zIndex: 90, width: 58, height: 58, flex: 'none', borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0, background: 'conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)', boxShadow: '0 12px 30px rgba(42,32,53,.30)' }}>
-          <svg viewBox="0 0 40 40" width="58" height="58" style={{ position: 'absolute', inset: 0 }}>
-            <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
-            <path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
-            <path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
-            <circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
-            <circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
-          </svg>
-          <Sparkle size={19} weight="fill" color="#ffcb1f" style={{ position: 'absolute', top: -10, right: -4, filter: 'drop-shadow(0 1px 2px rgba(42,32,53,.28))' }} aria-hidden />
-          <Sparkle size={11} weight="fill" color="#ffd54a" style={{ position: 'absolute', top: -3, right: -10, filter: 'drop-shadow(0 1px 2px rgba(42,32,53,.22))' }} aria-hidden />
+          <span className="pupa-fab-full">
+            <svg viewBox="0 0 40 40" width="58" height="58" style={{ position: 'absolute', inset: 0 }}>
+              <path d="M9.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+              <path d="M23.8 18.2q3.2-4.6 6.4 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+              <path d="M14.5 23.5q5.5 4.6 11 0" stroke="#2A2035" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+              <circle cx="11.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
+              <circle cx="28.5" cy="21.5" r="1.9" fill="rgba(255,120,170,.5)" />
+            </svg>
+            <Sparkle size={19} weight="fill" color="#ffcb1f" style={{ position: 'absolute', top: -10, right: -4, filter: 'drop-shadow(0 1px 2px rgba(42,32,53,.28))' }} aria-hidden />
+            <Sparkle size={11} weight="fill" color="#ffd54a" style={{ position: 'absolute', top: -3, right: -10, filter: 'drop-shadow(0 1px 2px rgba(42,32,53,.22))' }} aria-hidden />
+          </span>
+          {/* mobilna varianta: ista čista ✨ ikona kot v meniju/mailu (ne mavrični smiley) */}
+          <Sparkle className="pupa-fab-mini" size={18} weight="regular" color="#2A2035" aria-hidden />
           {nasveti.length > 0 && (
             <span aria-hidden style={{ position: 'absolute', bottom: -2, right: -2, minWidth: 18, height: 18, padding: '0 4px', borderRadius: 9, background: '#e0567a', color: '#fff', fontSize: '.66rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff' }}>{nasveti.length}</span>
           )}
