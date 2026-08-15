@@ -44,7 +44,7 @@ export default async function KalkulatorPogojiPage({
 
   return (
     <main style={{ minHeight: '100dvh' }}>
-      <div style={{ maxWidth: '680px', margin: '0 auto', padding: '8rem 1.4rem 6rem', color: 'var(--ink)', fontWeight: 300 }}>
+      <div style={{ maxWidth: '680px', margin: '0 auto', padding: 'clamp(2.25rem, 6vw, 5rem) 1.4rem 4rem', color: 'var(--ink)', fontWeight: 300 }}>
         {/* Brez tega je stran slepa ulica: iz profila ali onboardinga se je
             dalo priti sem, nazaj pa samo z gumbom brskalnika. */}
         <NazajLink />
