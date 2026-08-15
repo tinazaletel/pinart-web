@@ -2448,6 +2448,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      potrditev pogojev; pogojiPotrjeni: gate za gumb "Razumem, gremo" pri prijavljenih. */
   const [jePrijavljen, setJePrijavljen] = useState(false);
   const [pogojiPotrjeni, setPogojiPotrjeni] = useState(false);
+  const [vecMoznosti, setVecMoznosti] = useState(false); // mobilni slide-up "Več možnosti" (izvoz/shrani dejanja)
   useEffect(() => {
     let ziv = true;
     (async () => {
@@ -7491,6 +7492,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .posl-potrdi-txt b { font-weight: 700; word-break: break-word; }
         .cw .posl-potrdi-gumbi { display: flex; align-items: center; justify-content: center; gap: 1.1rem; flex-wrap: wrap; }
         .cw .posl-sekundarne { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 1.4rem; max-width: 560px; margin: 1.1rem auto 0; }
+        .cw .posl-vec-gumb, .cw .posl-sheet-glava, .cw .posl-sheet-back { display: none; }
         @media (prefers-reduced-motion: reduce) {
           .cw .posl-gumb, .cw .posl-gumb.je-uspeh { animation: none; transition: none; }
           .cw .posl-pike span { animation: none; opacity: 1; }
@@ -7501,8 +7503,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .posl-za { flex-direction: row; align-items: center; gap: .5rem; }
           .cw .posl-za-l { padding-top: 0; }
           .cw .posl-gumb { width: 100%; }
-          .cw .posl-sekundarne { column-gap: .35rem; row-gap: .35rem; }
-          .cw .posl-sekundarne .povezava { min-height: 44px; padding: .55rem .35rem; justify-content: center; }
+          /* Mobile: 5 sekundarnih dejanj skrijemo za gumb "Več možnosti" → slide-up sheet. */
+          .cw .posl-vec-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; margin: .9rem auto 0; padding: .7rem 1.4rem; border: 1px solid rgba(17,17,17,.22); border-radius: 999px; background: transparent; color: var(--ink); font: 700 .82rem var(--font-sans), sans-serif; cursor: pointer; }
+          .cw .posl-sheet-back { display: block; position: fixed; inset: 0; z-index: 130; background: rgba(28,21,24,.32); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); animation: poslSheetBack .2s ease both; }
+          @keyframes poslSheetBack { from { opacity: 0 } to { opacity: 1 } }
+          .cw .posl-sekundarne { position: fixed; left: 0; right: 0; bottom: 0; z-index: 131; flex-direction: column; flex-wrap: nowrap; justify-content: flex-start; align-items: stretch; gap: .1rem; max-width: none; margin: 0; padding: 1rem 1.1rem calc(1.4rem + env(safe-area-inset-bottom,0px)); background: var(--paper); border-radius: 22px 22px 0 0; box-shadow: 0 -16px 44px rgba(40,25,40,.22); transform: translateY(101%); transition: transform .32s cubic-bezier(.2,.8,.3,1); }
+          .cw .posl-sekundarne.odprt { transform: translateY(0); }
+          .cw .posl-sheet-glava { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .5rem; }
+          .cw .posl-sheet-glava span { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); }
+          .cw .posl-sheet-glava button { width: 2.1rem; height: 2.1rem; flex: none; border-radius: 50%; border: 1px solid rgba(17,17,17,.16); background: var(--paper); color: var(--ink); cursor: pointer; }
+          .cw .posl-sekundarne .povezava { min-height: 3rem; padding: .7rem .5rem; justify-content: flex-start; gap: .7rem; width: 100%; }
         }
         .cw .zakljucek-ikona { display: flex; justify-content: center; color: var(--accent); margin: .2rem 0 1.1rem; }
         .cw .zakljucek-sredina .zakljucek-ikona { justify-content: center; }
@@ -10041,8 +10051,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               </div>
               {mailStatus && <p className="mail-status" role="status">{mailStatus}</p>}
             </div>
-            {/* SEKUNDARNE akcije: tiho, brez ponovnega pošiljanja. */}
-            <div className="posl-sekundarne">
+            {/* SEKUNDARNE akcije: tiho, brez ponovnega pošiljanja. Na mobilu skrite za gumbom "Več možnosti" (slide-up). */}
+            <button type="button" className="posl-vec-gumb" onClick={() => setVecMoznosti(true)} aria-haspopup="dialog" aria-expanded={vecMoznosti}>{L('Več možnosti', 'More options')}</button>
+            {vecMoznosti && <div className="posl-sheet-back" onClick={() => setVecMoznosti(false)} aria-hidden />}
+            <div className={`posl-sekundarne${vecMoznosti ? ' odprt' : ''}`}>
+              <div className="posl-sheet-glava"><span>{L('Kaj s ponudbo?', 'What next?')}</span><button type="button" onClick={() => setVecMoznosti(false)} aria-label={L('Zapri', 'Close')}>✕</button></div>
               <button type="button" className="povezava" onClick={() => { kopiraj(); proslaviKonfeti(); }}>
                 <CopySimple size={16} /> {kopirano ? L('Skopirano ✓', 'Copied ✓') : L('Kopiraj ponudbo', 'Copy quote')}
               </button>
