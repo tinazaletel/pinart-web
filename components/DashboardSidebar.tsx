@@ -12,17 +12,21 @@ import DeliAplikacijo from './DeliAplikacijo';
 import MeniProfil from './MeniProfil';
 import KomZnacka from './KomZnacka';
 import PaketZnak from './PaketZnak';
+import PogledPreklop from './PogledPreklop';
+import { paketUporabnika } from '@/lib/pravice';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
-type Section = 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings' | 'ekipa' | 'novprojekt' | 'ideje' | 'marketing' | 'komunikacija' | 'sef';
+type Section = 'dom' | 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings' | 'ekipa' | 'novprojekt' | 'ideje' | 'marketing' | 'komunikacija' | 'sef';
 
 /* Meni je razdeljen po tem, KAJ UPORABNIK POCNE, ne kaj stvar je:
    Delo = ustvarjas dokument za stranko · Podatki = vzdrzujes vnose · Nacrt = racunas/ciljas.
    Prej je bil en sam predal "Orodja", zaradi cesar so bili ceniki hkrati orodje IN
    samostojna postavka (podvojena povezava), meja med orodjem in podatkom pa nejasna. */
-export default function DashboardSidebar({ base, active }: { base: string; active: Section }) {
+export default async function DashboardSidebar({ base, active }: { base: string; active: Section }) {
   const jeEn = base === '/en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
+  const imaPupo = (await paketUporabnika()) === 'pro';
+  const aktivenPreklop: 'dom' | 'plosca' | 'none' = active === 'dom' ? 'dom' : active === 'overview' ? 'plosca' : 'none';
   const item = (section: Section, href: string, number: string, label: string, ikona: NavIkonaVrsta, zaklenjeno?: string) =>
     <Link className={`${styles.navItem} ${active === section ? styles.active : ''}`} href={href} title={label}
       data-zaklenjeno={zaklenjeno}>
@@ -44,7 +48,11 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
       </span>
     </Link>;
   const menuVsebina = () => <>
-    {item('overview', `${base}/kalkulator/pregled`, '01', L('Nadzorna plošča', 'Dashboard'), 'pregled')}
+    {/* Vrh menija: preklop Pupa ⇄ Home (nadzorna plošča) namesto samostojne postavke.
+        Pupa zaklenjena brez Pupe v paketu (klik = alert za nadgradnjo). */}
+    <div className={styles.pogledOvoj}>
+      <PogledPreklop base={base} aktiven={aktivenPreklop} jeEn={jeEn} imaPupo={imaPupo} />
+    </div>
     {/* Na telefonu so skupine zaprte: 13 postavk hkrati ne gre v en zaslon,
         ce naj bo vsaka tapna tarca vsaj 44 px. Na namizju so odprte kot prej. */}
     <MeniSkupina naslov={L('Orodja', 'Tools')} aktivna={active === 'offer' || active === 'retainer' || active === 'contracts' || active === 'invoices' || active === 'novprojekt'}>
@@ -109,6 +117,7 @@ export default function DashboardSidebar({ base, active }: { base: string; activ
         <MeniProfil base={base} />
         <div className={styles.meniNoga}>
           <a className={styles.meniNogaGumb} href="mailto:tina@pinart.si?subject=Pinart%20Flow%20%E2%80%94%20povratna%20informacija">Feedback</a>
+          <Link className={styles.meniNogaGumb} href={`${base}/kalkulator/pogoji`}>{L('Pogoji', 'Terms')}</Link>
           <DeliAplikacijo />
         </div>
         {/* pot nazaj na Flow landing — v zgornji vrstici je na telefonu skrita */}

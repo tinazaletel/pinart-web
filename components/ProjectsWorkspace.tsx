@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, Paperclip } from '@phosphor-icons/react';
+import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, PaperPlaneRight, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, Paperclip, Check, List } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
+import Paginacija from '@/components/Paginacija';
 import MetricIcon from '@/components/MetricIcon';
 import ProjectDetailModern from '@/components/ProjectDetailModern';
 import SwapText from '@/components/SwapText';
@@ -15,13 +16,14 @@ import { podatkiZaPredogled, usePredogled, demoSodelavci, demoRealZaOffer } from
 import { preberiPostoProjekta, dodajPosto, premakniPosto, nastaviOznakePoste, type PostaVnos } from '@/lib/postaDnevnik';
 import { preberiKlepet, dodajKlepet, nitId, type KlepetSporocilo } from '@/lib/klepet';
 import { zagotoviNit, nalozSporocila, posljiSporocilo, narociSporocila, mojEmail, type OblacnoSporocilo } from '@/lib/klepetCloud';
-import { pullProjectMail, pushProjectMail, saveDraft, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent } from '@/lib/pinartMailCloud';
+import { pullProjectMail, saveDraft, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent } from '@/lib/pinartMailCloud';
 import { posljiMail } from '@/lib/posta';
 import { type PodpisPodatki, podpisHtml, podpisPrazen } from '@/lib/podpis';
 import { aktivniLogo } from '@/lib/dokVidez';
 import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
 import { preberiSodelavci, shraniSodelavci } from '@/lib/sodelavci';
 import Toast from '@/components/Toast';
+import KomunikacijaWorkspace from '@/components/KomunikacijaWorkspace';
 import { preberiNaloge, shraniNaloge, type Sodelavec, type Naloga } from '@/lib/naloge';
 
 /* datumski filter (samo od–do; prazno ne omejuje) — enako kot arhiv */
@@ -37,6 +39,16 @@ const vObdobju = (dateStr: string, od: string, doD: string): boolean => {
 const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFractionDigits: 2 })} €`;
 const datStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('sl-SI'); };
 const casStr = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' }); };
+/* Berljivo telo prejetega maila: ohrani prelome (br/p/div -> \n), odstrani tage,
+   dekodira entitete (&lt; -> <). Renderira se z white-space: pre-wrap. Enako kot v Komunikacijah. */
+const beriTeloMaila = (raw?: string): string => String(raw || '')
+  .replace(/<\s*br\s*\/?\s*>/gi, '\n')
+  .replace(/<\/(p|div|li|tr|h[1-6]|blockquote)\s*>/gi, '\n')
+  .replace(/<[^>]+>/g, '')
+  .replace(/&nbsp;/gi, ' ').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+  .replace(/&quot;/gi, '"').replace(/&#39;/gi, "'").replace(/&amp;/gi, '&')
+  .replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n')
+  .trim();
 
 /* demo CRM dnevnik (predogled »polno poslovanje«) — nekaj vnosov, da kartica
    CRM v Delovnem pogledu ni prazna; pravi dnevnik je na strani stranke */
@@ -89,6 +101,7 @@ const overflowFix = `
 .${styles.projectsPage} > *{min-width:0;}
 .${styles.projectsToolbar} > label{min-width:0;}
 .${styles.projectsToolbar} input{width:100%;min-width:0;box-sizing:border-box;}
+.${styles.projectStory}{min-width:0;max-width:100%;overflow-x:clip;}
 .${styles.projectStory} h2,
 .${styles.projectStory} > header span{overflow-wrap:anywhere;}
 @media (max-width:640px){
@@ -127,6 +140,7 @@ const pwStyles = `
 .pw-tabela-naslov{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem 1rem .85rem;background:oklch(95% .035 300);border-bottom:1px solid rgba(17,17,17,.08)}
 .pw-tabela-naslov .${styles.eyebrow}{color:oklch(45% .12 300)}
 .pw-tabela-naslov strong{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:1.6rem;line-height:1;color:var(--ink)}
+.pw{--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-tabela > header{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;gap:1.1rem;padding:.75rem .9rem;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 72%,transparent);border-bottom:1px solid oklch(93% .006 82 / .55)}
 .pw-vrstica{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:center;gap:1.1rem;padding:.85rem .9rem;border:0;border-top:1px solid rgba(17,17,17,.07);background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:background .14s}
 .pw-tabela > button.pw-vrstica:first-of-type{border-top:0}
@@ -139,6 +153,26 @@ const pwStyles = `
 .pw-vrstica > span{min-width:0;font-size:.72rem;overflow-wrap:anywhere}
 .pw-glavna{display:flex;align-items:center;gap:.6rem;min-width:0}
 .pw-glavna strong{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.72rem}
+@media (max-width:640px){
+  /* Tabela projektov = KARTICA (brez horizontalnega scrolla):
+     [✓] | ime + firma (1. stolpec, 2 vrsti) | status + znesek (2. stolpec, desno). */
+  .pw-tabela-ovoj{overflow-x:hidden}
+  .pw-tabela{min-width:0}
+  .pw-tabela > header{display:none}
+  .pw-vrstica{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:'chk ime status' 'chk firma znesek' 'chk datum znesek';column-gap:.6rem;row-gap:.05rem;align-items:center;padding:.7rem .85rem}
+  .pw-vrstica > *{min-width:0}
+  .pw-vrstica > :nth-child(1){grid-area:chk;align-self:center}
+  .pw-vrstica > :nth-child(2){grid-area:ime}
+  .pw-vrstica > :nth-child(3){grid-area:firma;font-size:.76rem;color:color-mix(in oklch,var(--ink) 60%,transparent)}
+  .pw-vrstica > :nth-child(4){grid-area:datum;font-size:.72rem;color:color-mix(in oklch,var(--ink) 48%,transparent)}
+  .pw-vrstica > :nth-child(5){grid-area:status;justify-self:end;align-self:center}
+  /* znesek = poslovni podatek (skrit za sodelavce, ko bodo vloge); zaenkrat viden lastniku */
+  .pw-vrstica > :nth-child(6){grid-area:znesek;justify-self:end;align-self:center;font-weight:700;font-size:.82rem;white-space:nowrap}
+  .pw-vrstica > :nth-child(7){display:none}
+  .pw-glavna{gap:.3rem}
+  .pw-glavna i{margin-right:0 !important}
+  .pw-glavna strong{font-size:.9rem}
+}
 .pw-ikona{display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:oklch(94% .045 295);color:var(--ink);flex:none}
 .pw-mut{color:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-desno{text-align:right;font-weight:700}
@@ -149,14 +183,33 @@ const pwStyles = `
 .pw-status[data-tone='success']{--pika:oklch(62% .15 150);--pill-bg:oklch(96% .035 158);--pill-ink:oklch(50% .085 158)}
 .pw-status[data-tone='danger']{--pika:oklch(58% .19 25);--pill-bg:oklch(96.5% .03 28);--pill-ink:oklch(55% .11 27)}
 .pw-status[data-tone='neutral']{--pika:oklch(62% .02 70);--pill-bg:oklch(95.5% .008 87);--pill-ink:oklch(48% .015 70)}
+/* custom status-meni (desktop popover pod pilulo) */
+.pw-statusmeni{position:absolute;top:calc(100% + .4rem);left:0;z-index:60;min-width:11rem;background:#fff;border:1px solid rgba(17,17,17,.1);border-radius:14px;box-shadow:0 16px 44px rgba(20,16,26,.16);padding:.4rem;animation:pwStMeni .16s ease both}
+@keyframes pwStMeni{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.pw-statusmeni-seznam{display:flex;flex-direction:column;gap:.1rem}
+.pw-statusmeni-opcija{display:flex;align-items:center;justify-content:space-between;gap:.7rem;width:100%;padding:.6rem .7rem;border:none;border-radius:9px;background:none;font:inherit;font-size:.85rem;font-weight:600;color:var(--ink);text-align:left;cursor:pointer;white-space:nowrap;transition:background .12s}
+.pw-statusmeni-opcija:hover{background:rgba(17,17,17,.05)}
+.pw-statusmeni-opcija.on{background:var(--ink);color:#fff}
+.pw-statusmeni-kljuk{flex:none}
+/* mobile: slide-up sheet */
+.pw-status-back{position:fixed;inset:0;z-index:130;overflow:hidden;background:rgba(28,21,24,.28);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;animation:pwStBack .2s ease both}
+@keyframes pwStBack{from{opacity:0}to{opacity:1}}
+.pw-status-sheet{width:100%;box-sizing:border-box;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -16px 44px rgba(40,25,40,.22);padding:1rem 1.1rem calc(1.3rem + env(safe-area-inset-bottom,0px));max-height:80dvh;overflow-y:auto;animation:pwStUp .3s cubic-bezier(.2,.8,.3,1) both}
+@keyframes pwStUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.pw-status-sheet-glava{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.pw-status-sheet-glava p{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.12em;color:rgba(17,17,17,.72)}
+.pw-status-x{width:2.1rem;height:2.1rem;flex:none;border:1px solid rgba(17,17,17,.16);border-radius:50%;background:#fff;color:var(--ink);cursor:pointer;font-size:.85rem}
+.pw-status-sheet .pw-statusmeni-opcija{min-height:3rem;font-size:16px;border-radius:12px;padding:.7rem .85rem}
+@media (prefers-reduced-motion:reduce){.pw-status-back,.pw-status-sheet,.pw-statusmeni{animation:none}}
 .pw-prazno{padding:2rem;color:color-mix(in oklch,var(--ink) 72%,transparent);font-size:.72rem;text-align:center;border:1px solid oklch(93% .006 82 / .55);border-radius:1.4rem;background:oklch(98% .008 87 / .92)}
 .pw-stran{padding:.25rem 1rem 1rem !important;margin-top:-1.5rem;scroll-margin-top:5.5rem}
-.pw-nazaj{display:inline-flex;align-items:center;gap:.4rem;margin:0 0 .8rem;padding:.55rem .95rem;border:1px solid oklch(93% .006 82 / .55);border-radius:999px;background:oklch(98% .008 87 / .92);font:700 .62rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
+@media (max-width:640px){.pw-stran{padding-left:0 !important;padding-right:0 !important}}
+.pw-nazaj{display:inline-flex;align-items:center;gap:.4rem;margin:0 0 .8rem;padding:.55rem .95rem;border:1px solid rgba(255,255,255,.7);border-radius:999px;background:#fff;box-shadow:0 4px 14px rgba(40,25,40,.06);font:700 .82rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
 .pw-nazaj:hover{background:var(--ink);color:var(--paper)}
 .pw-narocnik-link{color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:color-mix(in oklch,var(--ink) 35%,transparent)}
 .pw-narocnik-link:hover{color:oklch(52% .17 300);text-decoration-color:currentColor}
 @media (max-width:640px){
-.pw-tabela{min-width:560px}
+.pw-tabela{min-width:0}
 }
 /* razdelki ZA 04 Stroški na detajlu projekta (05 Dokumentacija + placeholderji
    06 Komunikacije/07 Zapiski) — svoj pw- razdelek v duhu .projectNarrative
@@ -276,16 +329,28 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-pisi-naslov{font:700 .8rem var(--font-sans),sans-serif;color:var(--ink)}
 .pw-pisi-x{display:grid;place-items:center;width:2rem;height:2rem;flex:none;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:50%;background:#fff;color:var(--ink);font-size:.9rem;line-height:1;cursor:pointer;transition:background .15s,color .15s}
 .pw-pisi-x:hover{background:var(--ink);color:var(--paper)}
+/* folder meni: desktop = inline stolpec (pw-posta-mape), mobilni pill+slide skrit */
+.pw-mape-trig{display:none}
+.pw-mape-back{display:none}
 /* MOBILE-FIRST: komunikacijski panel na telefonu */
 @media (max-width:640px){
   .pw-vsi-panel,.pw-det-panel,.pw-kom-panel,.pw-naloga-panel,.pw-ai-panel{width:100vw !important;max-width:100vw !important}
   .pw-vsi-panel,.pw-det-panel,.pw-naloga-panel,.pw-ai-panel{padding-left:1.1rem !important;padding-right:1.1rem !important}
   .pw-vsi-backdrop{backdrop-filter:none;-webkit-backdrop-filter:none}
   .pw-posta-body{flex-direction:column !important}
-  .pw-posta-mape{width:100% !important;flex-direction:row !important;flex-wrap:wrap !important;gap:.35rem !important;margin-bottom:.5rem}
-  .pw-posta-mape button{width:auto !important;flex:1 1 auto;justify-content:center !important;min-height:2.5rem}
+  /* folder meni = desni slide (kot hub, a z desne); pill sproži */
+  .pw-mape-trig{display:inline-flex;align-items:center;gap:.4rem;height:2.6rem;box-sizing:border-box;padding:0 1rem;border:1px solid color-mix(in oklch,var(--ink) 9%,transparent);border-radius:999px;background:#fff;color:var(--ink);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap;margin-bottom:.5rem}
+  .pw-mape-back{display:block;position:fixed;inset:0;z-index:1198;background:color-mix(in oklch,var(--ink) 34%,transparent)}
+  .pw-posta-mape{position:fixed !important;left:0;top:0;bottom:0;right:auto !important;z-index:1199;width:min(78%,15rem) !important;flex-direction:column !important;gap:.15rem !important;padding:calc(4.75rem + env(safe-area-inset-top,0px)) .8rem calc(1.15rem + env(safe-area-inset-bottom,0px)) !important;margin:0 !important;background:var(--paper,#fff);box-shadow:8px 0 40px color-mix(in oklch,var(--ink) 22%,transparent);transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.3,1);overflow-y:auto}
+  .pw-posta-mape.odprt{transform:none}
+  .pw-posta-mape button{width:100% !important;min-height:2.6rem}
   .pw-kom-panel .pw-posta-glava{padding-right:.3rem}
   .pw-mail-meni{left:auto;right:0}
+  /* detajl maila kot v hubu: »Nazaj« v svoji vrsti, akcijske ikone v ENI vrsti */
+  .pw-mail-orodja .pw-mail-nazaj{flex:1 1 100%;justify-content:flex-start}
+  .pw-mail-orodja .pw-mail-nazaj + *{margin-left:0}
+  .pw-mail-orodja{gap:.45rem}
+  .pw-mail-orodja>button,.pw-mail-orodja>a,.pw-mail-orodja .pw-mail-meni-w>button{width:2.15rem;height:2.15rem}
   .pw-naloga-panel{padding-top:1.4rem !important;overflow-y:auto}
   .pw-naloga-l-opis textarea{min-height:8rem}
   .pw-naloga-akcije{position:sticky;bottom:0;background:#fff;padding-top:.6rem}
@@ -452,9 +517,23 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-posta-bulk-st{font:700 .72rem var(--font-sans),sans-serif;color:var(--ink)}
 .pw-posta-bulk-brisi{display:inline-flex;align-items:center;gap:.35rem;height:2.1rem;padding:0 .95rem;border:0;border-radius:999px;background:oklch(55% .18 25);color:#fff;font:700 .72rem var(--font-sans),sans-serif;cursor:pointer}
 .pw-posta-bulk-obnovi{display:inline-flex;align-items:center;gap:.35rem;height:2.1rem;padding:0 .95rem;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:999px;background:#fff;color:var(--ink);font:700 .72rem var(--font-sans),sans-serif;cursor:pointer}
-.pw-posta-bulk-obnovi:hover{border-color:color-mix(in oklch,var(--purple) 45%,transparent);color:var(--purple)}
+.pw-posta-bulk-obnovi:hover{border-color:color-mix(in oklch,var(--purple) 45%,transparent);color:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-posta-bulk-x{border:0;background:none;color:color-mix(in oklch,var(--ink) 72%,transparent);font:600 .72rem var(--font-sans),sans-serif;cursor:pointer;margin-left:auto}
 @media (max-width:600px){.pw-posta-check{width:1.45rem;height:1.45rem}}
+/* vrhnja orodna vrstica pošte: »Označi vse« + en delete gumb (siv → rdeč ko je kaj izbrano) */
+.pw-posta-top{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin:.15rem 0 .5rem}
+.pw-vsi-check{display:inline-flex;align-items:center;gap:.5rem;font:600 .74rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer;user-select:none}
+.pw-vsi-check input{width:1.05rem;height:1.05rem;cursor:pointer;accent-color:var(--purple)}
+.pw-posta-top-akc{display:flex;align-items:center;gap:.4rem}
+.pw-akc-obnovi,.pw-akc-brisi{display:inline-flex;align-items:center;gap:.35rem;height:2rem;padding:0 .9rem;border-radius:999px;font:700 .7rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease,opacity .15s ease}
+.pw-akc-obnovi{border:1px solid color-mix(in oklch,var(--ink) 14%,transparent);background:#fff;color:var(--ink)}
+.pw-akc-obnovi:disabled{opacity:.4;cursor:not-allowed}
+.pw-akc-obnovi:not(:disabled):hover{border-color:color-mix(in oklch,var(--purple) 45%,transparent)}
+/* delete: siv/neaktiven dokler ni nič izbrano; ko označiš, se aktivira in postane rdeč */
+.pw-akc-brisi{border:1px solid color-mix(in oklch,var(--ink) 14%,transparent);background:#fff;color:color-mix(in oklch,var(--ink) 42%,transparent)}
+.pw-akc-brisi:disabled{opacity:.55;cursor:not-allowed}
+.pw-akc-brisi:not(:disabled){background:oklch(55% .18 25);color:#fff;border-color:transparent}
+.pw-akc-brisi:not(:disabled):hover{background:oklch(50% .19 25)}
 .pw-posta-vrh{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
 .pw-posta-vrh b{font-size:.76rem;font-weight:700;color:var(--ink);overflow-wrap:anywhere}
 .pw-posta-smer{flex:none;display:inline-flex;align-items:center;padding:.2rem .5rem;border-radius:999px;background:oklch(91% .05 165);color:oklch(40% .1 165);font-size:.52rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
@@ -524,14 +603,21 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-pisi-telo{min-height:5.5rem;max-height:14rem;overflow-y:auto;padding:.6rem .7rem;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:.55rem;background:#fff;font:inherit;font-size:.82rem;line-height:1.55;color:var(--ink)}
 .pw-pisi-telo:focus{outline:none;border-color:oklch(58% .2 297)}
 .pw-pisi-telo:empty:before{content:attr(data-placeholder);color:var(--muted)}
-.pw-pisi-status{margin:0;font-size:.68rem;color:var(--muted)}
+.pw-pisi-status{margin:.2rem 0 0;padding:.6rem .8rem;border:1px solid oklch(78% .13 25);border-radius:.55rem;background:oklch(96% .04 25);color:oklch(45% .18 25);font-size:.8rem;font-weight:700}
 .pw-pisi-podpis-opomnik{margin:.15rem 0 0}
 .pw-pisi-podpis-opomnik a{display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;color:color-mix(in oklch,var(--ink) 72%,transparent);text-decoration:none;font-weight:600}
 .pw-pisi-podpis-opomnik a:hover{color:var(--purple)}
 .pw-pisi-akcije{display:flex;justify-content:flex-end;gap:.5rem}
 .pw-pisi-preklic{padding:.45rem .9rem;border:1px solid color-mix(in oklch,var(--ink) 18%,transparent);border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
-.pw-pisi-poslji{padding:.45rem 1.1rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer}
-.pw-pisi-poslji:disabled{opacity:.5;cursor:not-allowed}
+.pw-pisi-poslji{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1.1rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer}
+.pw-pisi-poslji:disabled{opacity:.6;cursor:not-allowed}
+.pw-pisi-poslji .pw-send-ik{transition:transform .2s ease}
+.pw-pisi-poslji:hover:not(:disabled) .pw-send-ik{transform:translate(2px,-2px)}
+.pw-send-leti{animation:pwLeti 1s ease-in-out infinite}
+@keyframes pwLeti{0%{transform:translate(0,0);opacity:1}55%{transform:translate(11px,-11px);opacity:0}56%{transform:translate(-9px,5px);opacity:0}100%{transform:translate(0,0);opacity:1}}
+.pw-send-ok{animation:pwOk .38s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes pwOk{from{transform:scale(0) rotate(-25deg)}to{transform:scale(1) rotate(0)}}
+.pw-pisi-uspeh{margin:.2rem 0 0;padding:.65rem .85rem;border:1px solid oklch(75% .13 150);border-radius:.6rem;background:oklch(96% .05 150);color:oklch(42% .12 150);font:700 .85rem var(--font-sans),sans-serif}
 /* "00 · CILJI IN ŽELJE" — samostojna kartica NAD .projectNarrative (ne znotraj njegove
    4-stolpne mreže, ker so barve 02/03/04 vezane na nth-child; vrivanje bi jih premaknilo
    in podrlo obstoječe gradiente). Isti mehki violet/mint jezik kot .projectAgreement. */
@@ -555,7 +641,7 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-vprasanje-vrstica{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding:.6rem .75rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.8rem;background:oklch(100% 0 0 / .55)}
 .pw-vprasanje-vrstica div{display:flex;flex-direction:column;gap:.15rem;min-width:0}
 .pw-vprasanje-vrstica b{font-size:.76rem;color:var(--ink);font-weight:700}
-.pw-vprasanje-vrstica span{font-size:.72rem;color:color-mix(in oklch,var(--ink) 62%,transparent)}
+.pw-vprasanje-vrstica span{font-size:.72rem;color:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-chat-sod-krog{display:grid;place-items:center;width:1.7rem;height:1.7rem;border-radius:50%;background:oklch(90% .045 297);color:oklch(40% .16 297);font-size:.6rem;font-weight:800;flex:none}
 @media (max-width:640px){
 .pw-link-obrazec{grid-template-columns:1fr}
@@ -659,10 +745,25 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [notranjeIskanje, setNotranjeIskanje] = useState('');
   const [notranjiFilter, setNotranjiFilter] = useState<ProjektStatus>('vse');
   const [notranjiDatumOd, setNotranjiDatumOd] = useState(''); const [notranjiDatumDo, setNotranjiDatumDo] = useState('');
+  const [statusUrejam, setStatusUrejam] = useState<string | null>(null); /* id odprtega status-menija (custom namesto nativnega selecta) */
+  const [jeMobilni, setJeMobilni] = useState(false);
   const search = iskanje ?? notranjeIskanje;
   const setSearch = (v: string) => { if (onIskanje) onIskanje(v); else setNotranjeIskanje(v); };
   const filter = (status as ProjektStatus | undefined) ?? notranjiFilter;
   const setFilter = (v: ProjektStatus) => { if (onStatus) onStatus(v); else setNotranjiFilter(v); };
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    const upd = () => setJeMobilni(mq.matches);
+    upd(); mq.addEventListener('change', upd);
+    return () => mq.removeEventListener('change', upd);
+  }, []);
+  useEffect(() => {
+    if (!statusUrejam) return;
+    const zapri = (e: MouseEvent) => { if (!(e.target as HTMLElement).closest('.pw-status-ured, .pw-det-statusured, .pw-status-back')) setStatusUrejam(null); };
+    const esc = (e: globalThis.KeyboardEvent) => { if (e.key === 'Escape') setStatusUrejam(null); };
+    document.addEventListener('mousedown', zapri); document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('mousedown', zapri); document.removeEventListener('keydown', esc); };
+  }, [statusUrejam]);
   const datumOd = datumOdZunaj ?? notranjiDatumOd;
   const setDatumOd = (v: string) => { if (onDatumOd) onDatumOd(v); else setNotranjiDatumOd(v); };
   const datumDo = datumDoZunaj ?? notranjiDatumDo;
@@ -698,7 +799,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const visible = projects.filter(project => { const text = `${project.offer.title} ${project.offer.client} ${project.offer.number || ''}`.toLocaleLowerCase('sl-SI'); const match = text.includes(search.toLocaleLowerCase('sl-SI')); const state = filter === 'vse' || (filter === 'aktivni' ? project.offer.status === 'accepted' : filter === 'cakajo' ? project.offer.status === 'sent' : ['rejected'].includes(project.offer.status)); return match && state && vObdobju(project.offer.date, datumOd, datumDo); });
   /* paginacija seznama projektov (namesto neskončnega skrolanja) */
   const [projStran, setProjStran] = useState(1);
-  const NA_STRAN_PROJ = 12;
+  const NA_STRAN_PROJ = 10;
   const projStrani = Math.max(1, Math.ceil(visible.length / NA_STRAN_PROJ));
   const projStranA = Math.min(Math.max(1, projStran), projStrani);
   const projPrikaz = visible.slice((projStranA - 1) * NA_STRAN_PROJ, projStranA * NA_STRAN_PROJ);
@@ -789,10 +890,41 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     setRealProjekti(prev => prev.map(p => (p.id === posodobljen.id ? posodobljen : p)));
     if (!samoOgled) shraniProjekt(posodobljen);
   };
+  /* brief/cilji inline urejanje v detajlu (ProjectDetailModern panel) — isti vzorec */
+  const naSaveBrief = (real: Projekt, patch: Partial<Projekt>) => {
+    const posodobljen: Projekt = { ...real, ...patch };
+    setRealProjekti(prev => prev.map(p => (p.id === posodobljen.id ? posodobljen : p)));
+    if (!samoOgled) shraniProjekt(posodobljen);
+  };
   /* projekt izpeljan iz ponudbe (ni pravega zapisa) -> status je status ponudbe */
   const naStatusOffer = (id: string, v: FlowOfferStatus) => {
     setOffers(prev => prev.map(o => (o.id === id ? { ...o, status: v } : o)));
     if (!samoOgled) saveOfferStatus(id, v);
+  };
+
+  /* Custom status-meni (namesto nativnega <select>): desktop = popover pod pilulo, mobile = slide-up sheet. */
+  const statusMeni = (kljuc: string, opcije: Array<[string, string]>, izbrano: string, onIzberi: (v: string) => void) => {
+    const seznam = (
+      <div className="pw-statusmeni-seznam" role="listbox" aria-label={L('Status', 'Status')}>
+        {opcije.map(([v, label]) => (
+          <button key={v} type="button" role="option" aria-selected={v === izbrano} className={'pw-statusmeni-opcija' + (v === izbrano ? ' on' : '')} onClick={e => { e.stopPropagation(); onIzberi(v); setStatusUrejam(null); }}>
+            <span>{label}</span>{v === izbrano && <span className="pw-statusmeni-kljuk" aria-hidden>✓</span>}
+          </button>
+        ))}
+      </div>
+    );
+    if (jeMobilni && portalPripravljen) {
+      return createPortal(
+        <div className="pw-status-back" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setStatusUrejam(null); }}>
+          <div className="pw-status-sheet" role="dialog" aria-modal="true" aria-label={L('Spremeni status', 'Change status')} onMouseDown={e => e.stopPropagation()}>
+            <div className="pw-status-sheet-glava"><p>{L('STATUS', 'STATUS')}</p><button type="button" className="pw-status-x" onClick={() => setStatusUrejam(null)} aria-label={L('Zapri', 'Close')}>✕</button></div>
+            {seznam}
+          </div>
+        </div>,
+        document.body,
+      );
+    }
+    return <div className="pw-statusmeni" onMouseDown={e => e.stopPropagation()}>{seznam}</div>;
   };
 
   const selected = projects.find(project => project.offer.id === selectedId);
@@ -851,6 +983,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
      ni prazen; sicer beremo dejansko shranjeno pošto projekta. */
   const [posta, setPosta] = useState<PostaVnos[]>([]);
   const [mapa, setMapa] = useState<'prejeto' | 'poslano' | 'osnutki' | 'kos'>('poslano');
+  const [mapeOdprt, setMapeOdprt] = useState(false); /* mobilni folder meni (desni slide, kot hub) */
   const [beriMail, setBeriMail] = useState<PostaVnos | null>(null);
   const [postaIsk, setPostaIsk] = useState('');
   const [postaOseba, setPostaOseba] = useState('');   /* filter po prejemniku (ko vec oseb na projektu) */
@@ -886,6 +1019,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [pisiZadeva, setPisiZadeva] = useState('');
   const [pisiStatus, setPisiStatus] = useState('');
   const [pisiPosiljam, setPisiPosiljam] = useState(false);
+  const [pisiUspeh, setPisiUspeh] = useState(false); /* zelena '✓ Poslano' potrditev pred zaprtjem (enako kot v hubu) */
   const pisiTeloRef = useRef<HTMLDivElement>(null);
   const [imaPodpis, setImaPodpis] = useState(true);   /* ali je nastavljen podpis maila (sicer opomnik) */
   const [linkOznaka, setLinkOznaka] = useState('');
@@ -1100,17 +1234,19 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     if (!telo) { setPisiStatus(L('Vpiši sporočilo.', 'Enter a message.')); return; }
     setPisiPosiljam(true); setPisiStatus(L('Pošiljam …', 'Sending …'));
     const html = `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${telo}</div>`;
-    /* »Odgovori-na« = tvoj pravi e-naslov (iz profila), da odgovori strank padejo
-       tja (npr. tvoj Gmail), ne na pošiljno domeno pinartflow.com, kjer pošte ni. */
-    let replyTo = '';
-    try { replyTo = String(JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}').ponudnik?.email || ''); } catch { /* brez profila */ }
-    const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, replyTo: replyTo || undefined });
+    /* reply-to = token@pinartflow.com — strežnik ga nastavi iz projectExternalId,
+       da odgovori strank padejo NAZAJ v Flow (dohodna pošta), ne v osebni Gmail.
+       Zapis v project_mail(out) z message_id naredi strežnik; tu le optimistični prikaz. */
+    const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, projectExternalId: selectedId });
     setPisiPosiljam(false);
     if (rez.ok) {
       const vnos = dodajPosto({ projectId: selectedId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim(), telo, povzetek: telo.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) });
-      void pushProjectMail({ projectExternalId: selectedId, direction: 'out', toEmails: [za], subject: pisiZadeva.trim(), occurredAt: new Date().toISOString() }).catch(() => undefined);
       setPosta(p => [vnos, ...p]);
-      setPisiOdprt(false); setPisiZadeva(''); if (pisiTeloRef.current) pisiTeloRef.current.innerHTML = '';
+      /* pokaži '✓ Poslano' potrditev pred zaprtjem — enaka izkušnja kot v Komunikaciji */
+      setPisiStatus(''); setPisiUspeh(true); setPovabiToast(L('Poslano ✓', 'Sent ✓'));
+      window.setTimeout(() => {
+        setPisiUspeh(false); setPisiOdprt(false); setPisiZadeva(''); if (pisiTeloRef.current) pisiTeloRef.current.innerHTML = '';
+      }, 1400);
     } else {
       setPisiStatus(L('Napaka: ', 'Error: ') + (rez.napaka || L('pošiljanje ni uspelo.', 'sending failed.')));
     }
@@ -1187,7 +1323,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             zadeva: m.subject || '',
             povzetek: m.summary,
             datum: m.occurredAt || new Date().toISOString(),
-            telo: m.bodyHtml || m.bodyText,
+            telo: m.direction === 'in' ? (m.bodyText || m.bodyHtml) : (m.bodyHtml || m.bodyText),
             osnutek: m.isDraft,
             izbrisano: m.deletedAt,
           };
@@ -1265,7 +1401,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               <div><p className={styles.eyebrow}>{L('06 · KOMUNIKACIJE', '06 · COMMUNICATIONS')}</p><h3>{L('Vse na enem mestu', 'All in one place')}</h3></div>
               {posta.length > 0 && (
                 <div className="pw-posta-search" style={{ position: 'relative', flex: '1 1 240px', minWidth: 0 }}>
-                  <MagnifyingGlass size={16} weight="bold" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'color-mix(in oklch, var(--ink) 45%, transparent)', pointerEvents: 'none' }} />
+                  <MagnifyingGlass size={16} weight="bold" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'color-mix(in oklch, var(--ink) 72%, transparent)', pointerEvents: 'none' }} />
                   <input value={postaIsk} onChange={e => setPostaIsk(e.target.value)} placeholder={L('Išči po pošti …', 'Search mail …')} style={{ width: '100%', boxSizing: 'border-box', height: '2.6rem', padding: '0 1rem 0 2.6rem', border: '1px solid color-mix(in oklch, var(--ink) 9%, transparent)', borderRadius: '999px', background: '#fff', font: '500 .85rem var(--font-sans), sans-serif', color: 'var(--ink)' }} />
                 </div>
               )}
@@ -1290,7 +1426,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 </div>
                 <div className="pw-pisi-telo" ref={pisiTeloRef} contentEditable suppressContentEditableWarning role="textbox" aria-label={L('Besedilo sporočila', 'Message body')} data-placeholder={L('Napiši sporočilo …', 'Write a message …')} />
                 {!imaPodpis && <p className="pw-pisi-podpis-opomnik"><Link href={`${base}/kalkulator/nastavitve`}>{L('Nimaš podpisa — nastavi ga v nastavitvah', 'No signature yet — set it up in settings')} <svg className="puscica-svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link></p>}
-                {pisiStatus && <p className="pw-pisi-status">{pisiStatus}</p>}
+                {pisiStatus && <p className="pw-pisi-status">{pisiStatus}</p>}{pisiUspeh && <p className="pw-pisi-uspeh">✓ {L('Poslano', 'Sent')}</p>}
                 <div className="pw-pisi-akcije">
                   <button type="button" className="pw-pisi-preklic" onClick={() => setPisiOdprt(false)}>{L('Prekliči', 'Cancel')}</button>
                   <button type="button" className="pw-pisi-preklic" onClick={() => {
@@ -1301,16 +1437,18 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                     void saveDraft({ id, projectExternalId: selectedId, direction: 'out', toEmails: za ? [za] : [], subject: zadeva, bodyHtml: telo, isDraft: true, occurredAt: now }).catch(() => undefined);
                     setPisiOdprt(false); setMapa('osnutki'); setBeriMail(null);
                   }}>{L('Shrani osnutek', 'Save draft')}</button>
-                  <button type="button" className="pw-pisi-poslji" disabled={pisiPosiljam} onClick={posljiPisanje}>{pisiPosiljam ? L('Pošiljam …', 'Sending …') : L('Pošlji', 'Send')}</button>
+                  <button type="button" className="pw-pisi-poslji" disabled={pisiPosiljam || pisiUspeh} onClick={posljiPisanje}>{pisiPosiljam ? <>{L('Pošiljam …', 'Sending …')} <PaperPlaneRight size={15} weight="fill" className="pw-send-leti" /></> : pisiUspeh ? <><Check size={16} weight="bold" className="pw-send-ok" /> {L('Poslano', 'Sent')}</> : <>{L('Pošlji', 'Send')} <PaperPlaneRight size={15} weight="fill" className="pw-send-ik" /></>}</button>
                 </div>
               </div>
             )}
             <div className="pw-posta-body" style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '1rem', alignItems: 'flex-start', margin: '.75rem 0 0' }}>
-              <div className="pw-posta-mape" style={{ flex: 'none', width: 138, display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
+              <button type="button" className="pw-mape-trig" onClick={() => setMapeOdprt(true)} aria-expanded={mapeOdprt} aria-label={L('Mape', 'Folders')}><List size={16} weight="bold" /> <span>{mapa === 'prejeto' ? L('Prejeto', 'Inbox') : mapa === 'poslano' ? L('Poslano', 'Sent') : mapa === 'osnutki' ? L('Osnutki', 'Drafts') : L('Koš', 'Trash')}</span></button>
+              {mapeOdprt && <div className="pw-mape-back" onClick={() => setMapeOdprt(false)} aria-hidden />}
+              <div className={'pw-posta-mape' + (mapeOdprt ? ' odprt' : '')} style={{ flex: 'none', width: 138, display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
               {([{ id: 'prejeto', ime: L('Prejeto', 'Inbox'), Ikona: Tray }, { id: 'poslano', ime: L('Poslano', 'Sent'), Ikona: PaperPlaneTilt }, { id: 'osnutki', ime: L('Osnutki', 'Drafts'), Ikona: NotePencil }, { id: 'kos', ime: L('Koš', 'Trash'), Ikona: Trash }] as const).map(({ id, ime, Ikona }) => {
                 const st = posta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === id).length;
                 const on = mapa === id;
-                return <button key={id} type="button" onClick={() => { setMapa(id); setBeriMail(null); }} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', width: '100%', textAlign: 'left', border: 'none', background: on ? 'color-mix(in oklch, var(--ink) 9%, transparent)' : 'transparent', color: 'var(--ink)', borderRadius: '.6rem', padding: '.5rem .7rem', font: `${on ? 700 : 500} .78rem var(--font-sans), sans-serif`, cursor: 'pointer' }}><Ikona size={16} weight={on ? 'fill' : 'regular'} /><span style={{ flex: 1 }}>{ime}</span>{st ? <span style={{ fontWeight: 700, color: 'color-mix(in oklch, var(--ink) 72%, transparent)' }}>{st}</span> : null}</button>;
+                return <button key={id} type="button" onClick={() => { setMapa(id); setBeriMail(null); setMapeOdprt(false); }} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', width: '100%', textAlign: 'left', border: 'none', background: on ? 'color-mix(in oklch, var(--ink) 9%, transparent)' : 'transparent', color: 'var(--ink)', borderRadius: '.6rem', padding: '.5rem .7rem', font: `${on ? 700 : 500} .78rem var(--font-sans), sans-serif`, cursor: 'pointer' }}><Ikona size={16} weight={on ? 'fill' : 'regular'} /><span style={{ flex: 1 }}>{ime}</span>{st ? <span style={{ fontWeight: 700, color: 'color-mix(in oklch, var(--ink) 72%, transparent)' }}>{st}</span> : null}</button>;
               })}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -1353,10 +1491,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               </div>
               <div style={{ position: 'relative', zIndex: 1, margin: '.4rem 0 0', padding: '.9rem 1rem', border: '1px solid color-mix(in oklch, var(--ink) 5%, transparent)', borderRadius: '.85rem', background: '#fff' }}>
                 <b style={{ display: 'block', fontSize: '.92rem' }}>{beriMail.zadeva || L('(brez zadeve)', '(no subject)')}</b>
-                <small style={{ display: 'block', color: 'var(--muted)', margin: '.15rem 0 .6rem' }}>{beriMail.prejemniki.join(', ')} · {datStr(beriMail.datum)}</small>
+                <small style={{ display: 'block', color: 'var(--muted)', margin: '.15rem 0 .6rem' }}>{beriMail.prejemniki.join(', ')} · {datStr(beriMail.datum)}{casStr(beriMail.datum) ? ` ob ${casStr(beriMail.datum)}` : ''} · {beriMail.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</small>
                 {beriMail.telo
                   ? (beriMail.smer === 'prejeto'
-                      ? <div style={{ whiteSpace: 'pre-wrap', fontSize: '.85rem', lineHeight: 1.55 }}>{beriMail.telo.replace(/<[^>]+>/g, ' ')}</div>
+                      ? <div style={{ whiteSpace: 'pre-wrap', fontSize: '.85rem', lineHeight: 1.55 }}>{beriTeloMaila(beriMail.telo) || L('(brez besedila)', '(no text)')}</div>
                       : <div style={{ fontSize: '.85rem', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: beriMail.telo }} />)
                   : <p style={{ color: 'var(--muted)', fontSize: '.82rem' }}>{L('To sporočilo nima shranjenega besedila (starejši/lokalni zapis).', 'This message has no stored text (older/local record).')}</p>}
               </div>
@@ -1374,12 +1512,24 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               const stran = Math.min(Math.max(1, postaStran), strani);
               const prikaz = seznam.slice((stran - 1) * NA_STRAN, stran * NA_STRAN);
               return seznam.length ? (<>
-                {izbraniVMapi.length > 0 && (
-                  <div className="pw-posta-bulk">
-                    <span className="pw-posta-bulk-st">{izbraniVMapi.length} {L('izbranih', 'selected')}</span>
-                    {mapa === 'kos' && <button type="button" className="pw-posta-bulk-obnovi" onClick={() => { const ids = new Set(izbraniVMapi.map(v => v.id)); ids.forEach(id => void restoreProjectMail(id).catch(() => undefined)); setPosta(p => p.map(v => ids.has(v.id) ? { ...v, izbrisano: undefined } : v)); setIzbraniMaili(new Set()); }}><ArrowBendUpLeft size={14} weight="bold" /> {L('Obnovi', 'Restore')}</button>}
-                    <button type="button" className="pw-posta-bulk-brisi" onClick={() => { const vKos = mapa === 'kos'; const ids = new Set(izbraniVMapi.map(v => v.id)); ids.forEach(id => { if (vKos) void deleteProjectMailPermanent(id).catch(() => undefined); else void trashProjectMail(id).catch(() => undefined); }); setPosta(p => vKos ? p.filter(v => !ids.has(v.id)) : p.map(v => ids.has(v.id) ? { ...v, izbrisano: new Date().toISOString() } : v)); setIzbraniMaili(new Set()); }}><Trash size={14} weight="bold" /> {mapa === 'kos' ? L('Zbriši dokončno', 'Delete permanently') : L('Izbriši', 'Delete')}</button>
-                    <button type="button" className="pw-posta-bulk-x" onClick={() => setIzbraniMaili(new Set())}>{L('Prekliči', 'Clear')}</button>
+                {seznam.length > 0 && (
+                  <div className="pw-posta-top">
+                    <label className="pw-vsi-check">
+                      <input type="checkbox" checked={izbraniVMapi.length === seznam.length} ref={el => { if (el) el.indeterminate = izbraniVMapi.length > 0 && izbraniVMapi.length < seznam.length; }} onChange={e => setIzbraniMaili(e.target.checked ? new Set(seznam.map(v => v.id)) : new Set())} aria-label={L('Označi vse', 'Select all')} />
+                      <span>{izbraniVMapi.length > 0 ? `${izbraniVMapi.length} ${L('izbranih', 'selected')}` : L('Označi vse', 'Select all')}</span>
+                    </label>
+                    <div className="pw-posta-top-akc">
+                      {mapa === 'kos' && <button type="button" className="pw-akc-obnovi" disabled={izbraniVMapi.length === 0} onClick={() => { const ids = new Set(izbraniVMapi.map(v => v.id)); ids.forEach(id => void restoreProjectMail(id).catch(() => undefined)); setPosta(p => p.map(v => ids.has(v.id) ? { ...v, izbrisano: undefined } : v)); setIzbraniMaili(new Set()); }}><ArrowBendUpLeft size={14} weight="bold" /> {L('Obnovi', 'Restore')}</button>}
+                      <button type="button" className="pw-akc-brisi" disabled={izbraniVMapi.length === 0} onClick={() => {
+                        const vKos = mapa === 'kos';
+                        if (vKos && !window.confirm(L('Dokončno izbrišem izbrano? Tega ni mogoče razveljaviti.', 'Permanently delete the selected items? This cannot be undone.'))) return;
+                        const ids = new Set(izbraniVMapi.map(v => v.id));
+                        ids.forEach(id => { if (vKos) void deleteProjectMailPermanent(id).catch(() => undefined); else void trashProjectMail(id).catch(() => undefined); });
+                        setPosta(p => vKos ? p.filter(v => !ids.has(v.id)) : p.map(v => ids.has(v.id) ? { ...v, izbrisano: new Date().toISOString() } : v));
+                        setIzbraniMaili(new Set());
+                        setBeriMail(bm => (bm && ids.has(bm.id) ? null : bm));
+                      }}><Trash size={14} weight="bold" /> {mapa === 'kos' ? L('Zbriši dokončno', 'Delete permanently') : L('Izbriši', 'Delete')}</button>
+                    </div>
                   </div>
                 )}
                 <ul className="pw-posta-seznam">
@@ -1528,25 +1678,17 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                     <span className="pw-mut">{project.offer.client}</span>
                     <span className="pw-mut">{datStr(project.offer.date)}</span>
                     <span><span className="pw-status-ured" data-editable="" title={L('Spremeni status', 'Change status')} onClick={e => e.stopPropagation()}>
-                      <span className="pw-status" data-tone={info.tone} style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>{project.real ? projektStatusOznaka[project.real.status] : statusLabel[project.offer.status]}<svg width="9" height="9" viewBox="0 0 12 8" fill="none" aria-hidden style={{ marginLeft: '.45rem', flex: 'none', opacity: .55 }}><path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
-                      {project.real
-                        ? <select className="pw-status-select" aria-label={L('Spremeni status projekta', 'Change project status')} value={project.real.status} onChange={e => naStatusProjekt(project.real!, e.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
-                        : <select className="pw-status-select" aria-label={L('Spremeni status', 'Change status')} value={project.offer.status} onChange={e => naStatusOffer(project.offer.id, e.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
+                      <button type="button" className="pw-status" data-tone={info.tone} aria-haspopup="listbox" aria-expanded={statusUrejam === project.offer.id} style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }} onClick={e => { e.stopPropagation(); setStatusUrejam(statusUrejam === project.offer.id ? null : project.offer.id); }}>{project.real ? projektStatusOznaka[project.real.status] : statusLabel[project.offer.status]}<svg width="9" height="9" viewBox="0 0 12 8" fill="none" aria-hidden style={{ marginLeft: '.45rem', flex: 'none', opacity: .55 }}><path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+                      {statusUrejam === project.offer.id && (project.real
+                        ? statusMeni(project.offer.id, Object.entries(projektStatusOznaka) as Array<[string, string]>, project.real.status, v => naStatusProjekt(project.real!, v as ProjektEntitetaStatus))
+                        : statusMeni(project.offer.id, Object.entries(statusLabel) as Array<[string, string]>, project.offer.status, v => naStatusOffer(project.offer.id, v as FlowOfferStatus)))}
                     </span></span>
                     <span className="pw-desno">{project.agreed ? money(project.agreed) : '—'}</span>
                     <span className="pw-kazalec" aria-hidden>›</span>
                   </button>
                 ); })}
               </div>
-              {projStrani > 1 && (
-                <nav className="pw-posta-strani pw-proj-strani" aria-label={L('Strani', 'Pages')}>
-                  <button type="button" disabled={projStranA <= 1} onClick={() => setProjStran(projStranA - 1)} aria-label={L('Prejšnja', 'Previous')}>‹</button>
-                  {Array.from({ length: projStrani }, (_, i) => i + 1).map(s => (
-                    <button type="button" key={s} className={s === projStranA ? 'on' : ''} onClick={() => setProjStran(s)} aria-current={s === projStranA ? 'page' : undefined}>{s}</button>
-                  ))}
-                  <button type="button" disabled={projStranA >= projStrani} onClick={() => setProjStran(projStranA + 1)} aria-label={L('Naslednja', 'Next')}>›</button>
-                </nav>
-              )}
+              <Paginacija stran={projStranA} strani={projStrani} naStran={setProjStran} />
             </div>
           ) : <p className="pw-prazno">{L('Ni projektov v tem pogledu.', 'No projects in this view.')}</p>}
         </div>
@@ -1555,10 +1697,10 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       <section ref={storyRef} className={`${styles.projectStory} pw-stran`}>
         <button type="button" className="pw-nazaj" onClick={goBack} aria-label={L('Nazaj na seznam projektov', 'Back to projects list')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M19 12H5M11 18l-6-6 6-6" /></svg> {L('Nazaj', 'Back')}</button>
         <header><div><p className={styles.eyebrow}>{L('PROJEKT', 'PROJECT')} · {selected.offer.number || L('BREZ ŠTEVILKE', 'NO NUMBER')}</p><h2>{selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><span className="pw-det-statusured" data-editable="" title={L('Spremeni status', 'Change status')}>
-          <span className="pw-status" data-tone={projectStatusInfo(selected.offer.status).tone} style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}><i aria-hidden style={pikaStil(projectStatusInfo(selected.offer.status).tone)} />{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}<svg width="9" height="9" viewBox="0 0 12 8" fill="none" aria-hidden style={{ marginLeft: '.45rem', flex: 'none', opacity: .55 }}><path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
-          {selected.real
-            ? <select className="pw-status-select" aria-label={L('Spremeni status projekta', 'Change project status')} value={selected.real.status} onChange={event => naStatusProjekt(selected.real!, event.target.value as ProjektEntitetaStatus)}>{(Object.entries(projektStatusOznaka) as Array<[ProjektEntitetaStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
-            : <select className="pw-status-select" aria-label={L('Spremeni status', 'Change status')} value={selected.offer.status} onChange={event => naStatusOffer(selected.offer.id, event.target.value as FlowOfferStatus)}>{(Object.entries(statusLabel) as Array<[FlowOfferStatus, string]>).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>}
+          <button type="button" className="pw-status" data-tone={projectStatusInfo(selected.offer.status).tone} aria-haspopup="listbox" aria-expanded={statusUrejam === 'det-' + selected.offer.id} style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }} onClick={e => { e.stopPropagation(); setStatusUrejam(statusUrejam === 'det-' + selected.offer.id ? null : 'det-' + selected.offer.id); }}><i aria-hidden style={pikaStil(projectStatusInfo(selected.offer.status).tone)} />{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}<svg width="9" height="9" viewBox="0 0 12 8" fill="none" aria-hidden style={{ marginLeft: '.45rem', flex: 'none', opacity: .55 }}><path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+          {statusUrejam === 'det-' + selected.offer.id && (selected.real
+            ? statusMeni('det-' + selected.offer.id, Object.entries(projektStatusOznaka) as Array<[string, string]>, selected.real.status, v => naStatusProjekt(selected.real!, v as ProjektEntitetaStatus))
+            : statusMeni('det-' + selected.offer.id, Object.entries(statusLabel) as Array<[string, string]>, selected.offer.status, v => naStatusOffer(selected.offer.id, v as FlowOfferStatus)))}
         </span></header>
         {pogledDetajl === 'moderni' ? (
           <ProjectDetailModern
@@ -1571,6 +1713,8 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             onToggleMember={selected.real ? (id: string) => preklopiDodeljen(selected.real!, id) : undefined}
             posta={posta}
             onOpenZapis={() => setPogledDetajl('tabelni')}
+            onSaveAgreed={!samoOgled ? (v: number) => saveAmount(selected.offer.id, v) : undefined}
+            onSaveBrief={selected.real && !samoOgled ? (patch: Partial<Projekt>) => naSaveBrief(selected.real!, patch) : undefined}
             onOdpriKomunikacije={() => setKomOdprt(true)}
             onOdpriVse={openVsi}
             onOdpriDokument={(tip, item) => setVrsticaDetajl({ tip, item })}
@@ -1655,7 +1799,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
           {/* STOLPEC 1 · MAIL */}
           <aside className="pw-rail-col pw-kom-panel" role="dialog" aria-modal="true" aria-label={L('Komunikacija', 'Communication')}>
             <button type="button" className="pw-vsi-x" onClick={() => { setKomOdprt(false); setAiOdprt(false); setKlepetOdprt(false); }} aria-label={L('Zapri', 'Close')}>✕</button>
-            <div className="pw-rail-scroll">{komVsebina()}</div>
+            <div className="pw-rail-scroll"><KomunikacijaWorkspace jeEn={jeEn} projektId={selectedId} projektNaziv={selected?.offer.title} vgrajeno /></div>
           </aside>
           {/* STOLPEC 2 · PUPA */}
           {aiOdprt && (

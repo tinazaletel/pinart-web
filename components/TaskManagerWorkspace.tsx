@@ -5,7 +5,8 @@
    Bodoni, ink, akcent). Lasten prefiksiran <style> blok (tm-), da ne trči s .shell. */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Pause, Play, ChartBar, ChatCircleDots, Sparkle, UploadSimple, DownloadSimple, CaretLeft, CaretRight, Buildings, Circle, CheckCircle, UserPlus, Calendar } from '@phosphor-icons/react';
+import { Pause, Play, ChartBar, ChatCircleDots, Sparkle, UploadSimple, DownloadSimple, CaretLeft, CaretRight, CaretDown, Buildings, Circle, CheckCircle, UserPlus, Calendar, Plus, X } from '@phosphor-icons/react';
+import { createPortal } from 'react-dom';
 import Toast from '@/components/Toast';
 import {
   Naloga,
@@ -398,6 +399,9 @@ export default function TaskManagerWorkspace() {
   const [filter, setFilter] = useState<'vse' | 'moje' | 'zamujene'>('vse');
   /* filter po oznaki (tagu) — klik na cip na kartici ali spustni izbor nad desko */
   const [filterOznaka, setFilterOznaka] = useState<string>('');
+  /* locen filter po projektu — projekt in oznaka sta dva razlicna miselna modela */
+  const [filterProjekt, setFilterProjekt] = useState<string>('');
+  const [mobilniFilterOdprt, setMobilniFilterOdprt] = useState(false);
   /* prosto besedilo za novo oznako v panelu Podrobnosti naloge */
   const [novaOznaka, setNovaOznaka] = useState('');
   const [hitroOdprt, setHitroOdprt] = useState(false);
@@ -1023,16 +1027,25 @@ export default function TaskManagerWorkspace() {
 
   /* Vidnost po vlogi: clan vidi le sebi dodeljene naloge, vodja/admin vidita vse. */
   const vidneNaloge = trenutni.vloga === 'clan' ? naloge.filter((n) => n.dodeljenoOsebaId === trenutni.id) : naloge;
-  /* Hitri filter nad Kanban tablo: vse / moje / zamujene (rok pred danes in ni končano) + oznaka (tag) */
+  const strankaImeMap = new Map(stranke.map((s) => [s.id, s.name]));
+  /* Hitri filter nad Kanban tablo: vse / moje / zamujene + oznaka (tag) + projekt. */
   const danesStr = new Date().toISOString().slice(0, 10);
   const prikazaneNaloge = vidneNaloge.filter((n) => {
     if (filter === 'moje' && !(n.dodeljenoOsebaId === trenutni.id || (n.dodeljenoOseba || '') === trenutni.ime)) return false;
     if (filter === 'zamujene' && !(!!n.rok && n.rok < danesStr && n.stolpec !== 'done')) return false;
     if (filterOznaka && !(n.oznake || []).includes(filterOznaka)) return false;
+    if (filterProjekt === '__brez__' && n.projectId) return false;
+    if (filterProjekt && filterProjekt !== '__brez__' && n.projectId !== filterProjekt) return false;
     return true;
   });
   /* vse oznake, ki nastopajo na vidnih nalogah — za spustni izbor filtra */
   const vseOznake = Array.from(new Set(vidneNaloge.flatMap((n) => n.oznake || []))).sort((a, b) => a.localeCompare(b, 'sl'));
+  /* Projekti so iz dejansko vidnih nalog. Vrednost ostane stabilen projectId, uporabniku pa
+     pokazemo ime stranke/projekta, kadar je projectId povezava na CRM stranko. */
+  const vsiProjekti = Array.from(new Set(vidneNaloge.map((n) => n.projectId?.trim()).filter((v): v is string => !!v)))
+    .map((id) => ({ id, ime: strankaImeMap.get(id) || id }))
+    .sort((a, b) => a.ime.localeCompare(b.ime, 'sl'));
+  const filterNalogeNaziv = filter === 'moje' ? 'Moje naloge' : filter === 'zamujene' ? 'Zamujene' : 'Vse naloge';
 
   /* Podatki za panel "Analitika ekipe" — izbrani sodelavec: st. nalog, koncanih, ur, zgodovina. */
   const analitikaSodelavec = sodelavci.find((s) => s.id === analitikaSodelavecId);
@@ -1045,7 +1058,6 @@ export default function TaskManagerWorkspace() {
     .slice(0, 10);
 
   /* stranka -> ime, za znacko na kartici + urejanje naloge */
-  const strankaImeMap = new Map(stranke.map((s) => [s.id, s.name]));
   const odprtaNaloga = naloge.find((n) => n.id === odprtaNalogaId) || null;
   const aktivniSodelavci = sodelavci.filter((s) => s.aktiven);
 
@@ -1080,18 +1092,32 @@ export default function TaskManagerWorkspace() {
                 <button key={k} type="button" role="tab" aria-selected={filter === k} className={filter === k ? 'tm-filter-on' : ''} onClick={() => setFilter(k)}>{oznaka}{k === 'zamujene' && vidneNaloge.some((n) => !!n.rok && n.rok < danesStr && n.stolpec !== 'done') ? ' •' : ''}</button>
               ))}
             </div>
+            <button
+              type="button"
+              className="tm-mobilni-filter-gumb"
+              onClick={() => setMobilniFilterOdprt(true)}
+              aria-haspopup="dialog"
+              aria-expanded={mobilniFilterOdprt}
+            >
+              <span>{filterNalogeNaziv}</span><CaretDown size={16} weight="bold" />
+            </button>
             {vseOznake.length > 0 && (
               <select className="tm-filter-oznaka" value={filterOznaka} onChange={(e) => setFilterOznaka(e.target.value)} aria-label="Filter po oznaki">
                 <option value="">Vse oznake</option>
                 {vseOznake.map((o) => <option key={o} value={o}>{o}</option>)}
               </select>
             )}
+            <select className="tm-filter-oznaka tm-filter-projekt" value={filterProjekt} onChange={(e) => setFilterProjekt(e.target.value)} aria-label="Filter po projektu">
+              <option value="">Vsi projekti</option>
+              {vsiProjekti.map((projekt) => <option key={projekt.id} value={projekt.id}>{projekt.ime}</option>)}
+              {vidneNaloge.some((n) => !n.projectId) && <option value="__brez__">Brez projekta</option>}
+            </select>
           </div>
         )}
         <div className="tm-glava-akcije">
           {jeVodjaAliAdmin && (
-            <button type="button" className="tm-analitika-gumb" onClick={() => { setAnalitikaSodelavecId(sodelavci[0]?.id || ''); setPrikaziAnalitiko(true); }}>
-              <ChartBar size={16} weight="bold" /> Analitika
+            <button type="button" className="tm-analitika-gumb" aria-label="Analitika" title="Analitika" onClick={() => { setAnalitikaSodelavecId(sodelavci[0]?.id || ''); setPrikaziAnalitiko(true); }}>
+              <ChartBar size={18} weight="bold" /><span className="tm-akcija-tekst">Analitika</span>
             </button>
           )}
           <span className="tm-ie-w">
@@ -1109,13 +1135,33 @@ export default function TaskManagerWorkspace() {
             <input ref={datotekaRef} type="file" accept="application/json,.json" hidden onChange={uvoziNaloge} />
           </span>
           {!samoOgled ? (
-            <button type="button" className="tm-nova" onClick={() => { setPogled('kanban'); setAktivniStolpec('todo'); setPrikaziFormo(true); }}>+ Nova naloga</button>
+            <button type="button" className="tm-nova" aria-label="Nova naloga" title="Nova naloga" onClick={() => { setPogled('kanban'); setAktivniStolpec('todo'); setPrikaziFormo(true); }}><Plus size={18} weight="bold" /><span className="tm-akcija-tekst">Nova naloga</span></button>
           ) : (
             <p className="tm-demo-namig">Urejanje ni na voljo v predogledu (demo).</p>
           )}
-          <button type="button" className="tm-seed-gumb tm-seed-gumb-ai" onClick={() => { setPogled('kanban'); setHitroOdprt((o) => !o); }} title="Piši prosto, več nalog naenkrat — AI pomoč pri dodajanju"><Sparkle size={16} weight="fill" /> AI dodaj več</button>
+          <button type="button" className="tm-seed-gumb tm-seed-gumb-ai" aria-label="AI dodaj več nalog" onClick={() => { setPogled('kanban'); setHitroOdprt((o) => !o); }} title="Piši prosto, več nalog naenkrat — AI pomoč pri dodajanju"><Sparkle size={18} weight="fill" /><span className="tm-akcija-tekst">AI dodaj več</span></button>
         </div>
       </div>
+
+      {mobilniFilterOdprt && typeof document !== 'undefined' && createPortal(
+        <div className="tm-mobilni-sheet-zastor" onClick={() => setMobilniFilterOdprt(false)}>
+          <section className="tm-mobilni-sheet" role="dialog" aria-modal="true" aria-labelledby="tm-mobilni-filter-naslov" onClick={(e) => e.stopPropagation()}>
+            <div className="tm-mobilni-sheet-rocaj" aria-hidden="true" />
+            <div className="tm-mobilni-sheet-glava">
+              <div><p>FILTER NALOG</p><h2 id="tm-mobilni-filter-naslov">Katere naloge želiš videti?</h2></div>
+              <button type="button" onClick={() => setMobilniFilterOdprt(false)} aria-label="Zapri filter"><X size={20} /></button>
+            </div>
+            <div className="tm-mobilni-sheet-izbire">
+              {([['vse', 'Vse naloge'], ['moje', 'Moje naloge'], ['zamujene', 'Zamujene']] as const).map(([k, oznaka]) => (
+                <button key={k} type="button" aria-pressed={filter === k} className={filter === k ? 'tm-mobilni-sheet-on' : ''} onClick={() => { setFilter(k); setMobilniFilterOdprt(false); }}>
+                  <span>{oznaka}</span>{filter === k && <CheckCircle size={22} weight="fill" />}
+                </button>
+              ))}
+            </div>
+          </section>
+        </div>,
+        document.body,
+      )}
 
       {pogled === 'kanban' && hitroOdprt && (
         <form className="tm-forma" onSubmit={(e) => { e.preventDefault(); hitroDodaj(); }}>
@@ -1807,9 +1853,22 @@ export default function TaskManagerWorkspace() {
         .tm-filtri{display:inline-flex;align-items:center;min-height:2.75rem;gap:.2rem;margin:0;padding:.25rem;border:1px solid var(--line);border-radius:999px;background:#fff}
         .tm-filtri button{align-self:stretch;padding:0 .85rem;border:0;border-radius:999px;background:none;font:700 .68rem var(--font-sans),sans-serif;color:var(--muted);cursor:pointer}
         .tm-filtri button.tm-filter-on{background:var(--ink);color:var(--paper)}
+        .tm-mobilni-filter-gumb{display:none}
         /* filter po oznaki (tagu) — spustni izbor poleg vse/moje/zamujene */
         .tm-filter-oznaka{appearance:none;-webkit-appearance:none;-moz-appearance:none;min-height:2.75rem;padding:0 1.8rem 0 .85rem;border:1px solid var(--line);border-radius:999px;background-color:#fff;color:var(--ink);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer;background-repeat:no-repeat;background-position:right .6rem center;background-size:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
         .tm-filter-oznaka:focus{outline:none;border-color:var(--ink)}
+        .tm-mobilni-sheet-zastor{position:fixed;inset:0;z-index:1000;display:flex;align-items:flex-end;background:rgba(25,18,14,.2);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:tm-sheet-fade .22s ease-out}
+        .tm-mobilni-sheet{width:100%;padding:.55rem 1rem calc(1rem + env(safe-area-inset-bottom));border-radius:1.4rem 1.4rem 0 0;background:#fff;color:#17110e;box-shadow:0 -1.2rem 4rem rgba(25,18,14,.16);animation:tm-sheet-vstop .34s cubic-bezier(.16,1,.3,1)}
+        .tm-mobilni-sheet-rocaj{width:2.8rem;height:.25rem;margin:0 auto .85rem;border-radius:999px;background:#d7d0c5}
+        .tm-mobilni-sheet-glava{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+        .tm-mobilni-sheet-glava p{margin:0 0 .3rem;font:800 .62rem var(--font-sans),sans-serif;letter-spacing:.16em;color:#665f58}
+        .tm-mobilni-sheet-glava h2{margin:0;font:500 1.45rem/1.1 var(--font-serif),Georgia,serif}
+        .tm-mobilni-sheet-glava button{display:grid;place-items:center;width:2.75rem;height:2.75rem;border:1px solid #ded8cf;border-radius:50%;background:#fff;color:#17110e}
+        .tm-mobilni-sheet-izbire{display:grid;gap:.5rem}
+        .tm-mobilni-sheet-izbire button{display:flex;align-items:center;justify-content:space-between;min-height:3.25rem;padding:0 1rem;border:1px solid #ded8cf;border-radius:.9rem;background:#fff;color:#17110e;font:750 1rem var(--font-sans),sans-serif;text-align:left}
+        .tm-mobilni-sheet-izbire button.tm-mobilni-sheet-on{border-color:#17110e;background:#17110e;color:#fff}
+        @keyframes tm-sheet-fade{from{opacity:0}to{opacity:1}}
+        @keyframes tm-sheet-vstop{from{transform:translateY(105%)}to{transform:translateY(0)}}
         /* gumb "Naloži razvojne naloge (Flow)" v glavi + kratko sporocilo ob kliku */
         .tm-seed-gumb{flex:none;display:inline-flex;align-items:center;gap:.4rem;min-height:2.75rem;padding:0 1rem;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font:750 .7rem var(--font-sans),sans-serif;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
         .tm-orodje-ikona{width:2.75rem;padding:0;justify-content:center}
@@ -2098,18 +2157,25 @@ export default function TaskManagerWorkspace() {
           .tm{padding:.75rem .75rem 4rem}
           .tm-podnaslov{max-width:none}
           .tm-uporabnik select{font-size:1rem}
-          .tm-pogled-filtri-vrsta{display:grid;grid-template-columns:minmax(0,1fr);gap:.5rem;width:100%}
-          .tm-pogled-preklop,.tm-filtri-vrsta,.tm-filtri,.tm-filter-oznaka{width:100%}
-          .tm-pogled-preklop button,.tm-filtri button{flex:1;min-width:0;padding-inline:.45rem}
-          .tm-filtri-vrsta{display:grid;grid-template-columns:minmax(0,1fr);gap:.5rem}
-          .tm-filter-oznaka{font-size:1rem}
-          .tm-glava-akcije{display:grid;grid-template-columns:minmax(0,1fr) 2.75rem;gap:.5rem;width:100%;margin-left:0}
-          .tm-analitika-gumb{width:100%;justify-content:center}
-          .tm-orodje-ikona{width:2.75rem}
-          .tm-nova,.tm-seed-gumb-ai{grid-column:1/-1;width:100%;justify-content:center}
-          .tm-seed-sporocilo,.tm-demo-namig{grid-column:1/-1}
+          /* Mobilni toolbar: izbira nalog odpre spodnji panel; projekt ostane vedno dosegljiv. */
+          .tm-pogled-filtri-vrsta{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .55rem;width:100%}
+          .tm-pogled-preklop{flex:none;width:auto}
+          .tm-filtri-vrsta{order:2;flex:1 1 100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.5rem;overflow:visible}
+          .tm-filtri{display:none}
+          .tm-mobilni-filter-gumb{display:flex;align-items:center;justify-content:space-between;min-width:0;min-height:2.75rem;padding:0 .75rem 0 .9rem;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font:750 .82rem var(--font-sans),sans-serif}
+          .tm-mobilni-filter-gumb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+          .tm-filter-oznaka{width:100%;min-width:0;font-size:.82rem;padding-left:.9rem}
+          .tm-filter-projekt{grid-column:1/-1}
+          .tm-pogled-preklop button{flex:none;min-width:0;padding-inline:.7rem}
+          .tm-glava-akcije{order:1;flex:1 1 0;display:flex;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:.4rem;width:auto;margin-left:auto;overflow:visible}
+          .tm-analitika-gumb,.tm-orodje-ikona,.tm-nova,.tm-seed-gumb-ai{flex:none;width:2.75rem;min-width:2.75rem;min-height:2.75rem;padding:0;justify-content:center;border-radius:50%}
+          .tm-nova{background:var(--ink);color:var(--paper)}
+          .tm-akcija-tekst{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+          .tm-ie-meni{position:fixed;left:.75rem;right:.75rem;top:auto;bottom:calc(.75rem + env(safe-area-inset-bottom));min-width:0}
+          .tm-seed-sporocilo,.tm-demo-namig{flex-basis:100%}
           .tm-x,.tm-kartica-x,.tm-cas-gumb,.tm-podopravilo-krog,.tm-podopravilo-dodeli-gumb,.tm-podopravilo-brisi,.tm-podrocje-plus{min-width:2.75rem;min-height:2.75rem}
         }
+        @media (prefers-reduced-motion:reduce){.tm-mobilni-sheet-zastor,.tm-mobilni-sheet{animation:none}}
 
         /* Enoten »Apple glass« videz na glavnih vsebinskih panelih (kanban stolpci) */
         .tm-stolpec{background:rgba(255,255,255,.5) !important;backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);box-shadow:0 1px 2px oklch(30% .02 55 / .035),0 10px 26px oklch(30% .02 55 / .05),inset 0 1px 0 rgba(255,255,255,.5)}

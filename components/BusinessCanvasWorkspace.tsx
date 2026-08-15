@@ -74,6 +74,8 @@ export default function BusinessCanvasWorkspace() {
   const [notice, setNotice] = useState('');
   const [noticeIsError, setNoticeIsError] = useState(false);
   const [planOpen, setPlanOpen] = useState(false);
+  /* Dokumentni model: privzeto SEZNAM (kartice shranjenih), klik/»Nov« odpre UREJEVALNIK. */
+  const [view, setView] = useState<'list' | 'editor'>('list');
 
   useEffect(() => {
     let active = true;
@@ -180,7 +182,7 @@ export default function BusinessCanvasWorkspace() {
     setActiveId(document.id); setCanvas(document.blocks);
     setCompanyName(document.companyName); setBrandName(document.brandName);
     saveActiveCanvasId(document.id, storageScope);
-    setSaveState('idle'); setPlanOpen(false);
+    setSaveState('idle'); setPlanOpen(false); setView('editor');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     return true;
   };
@@ -188,7 +190,7 @@ export default function BusinessCanvasWorkspace() {
     if (saveState === 'dirty' && !confirm('Imaš neshranjene spremembe. Jih želiš zavreči in začeti nov Canvas?')) return;
     setActiveId(''); setCanvas({ ...EMPTY_BUSINESS_CANVAS });
     setCompanyName(''); setBrandName('');
-    setSaveState('idle'); setPlanOpen(false); setNotice('');
+    setSaveState('idle'); setPlanOpen(false); setNotice(''); setView('editor');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   const expandDocument = (document: BusinessCanvasDocument) => {
@@ -199,47 +201,87 @@ export default function BusinessCanvasWorkspace() {
 
   return <div className={styles.page}>
     {notice && <div className={`${styles.notice} ${noticeIsError ? styles.noticeError : ''}`} role={noticeIsError ? 'alert' : 'status'}>{notice}<button type="button" onClick={() => setNotice('')} aria-label="Zapri obvestilo">×</button></div>}
-    <section className={styles.canvasToolbar} aria-label="Podatki Business Canvasa">
-      {organizations.length > 1 && <label><span>Podjetje</span><select value={activeOrganizationId} onChange={event => { setActiveOrganization(event.target.value); window.location.reload(); }}>{organizations.map(organization => <option key={organization.id} value={organization.id}>{organization.name}</option>)}</select></label>}
-      <label><span>Podjetje ali organizacija</span><input value={shownCompanyName} readOnly={preview !== 'mine'} onChange={event => { setCompanyName(event.target.value); setSaveState('dirty'); }} placeholder="Npr. Rdeča kapica d.o.o." /></label>
-      <label><span>Znamka, projekt ali poslovna ideja</span><input value={shownBrandName} readOnly={preview !== 'mine'} onChange={event => { setBrandName(event.target.value); setSaveState('dirty'); }} placeholder="Npr. Ribbon Lips (neobvezno)" /></label>
-      <button type="button" className={styles.newCanvasButton} disabled={preview !== 'mine'} onClick={startNewCanvas}>+ Nov Canvas</button>
-    </section>
-    <section className={styles.intro}>
-      <div><p>BUSINESS MODEL CANVAS</p><h2>Najprej razumi, kako tvoj posel ustvarja vrednost.</h2><span>Odgovori s kratkimi alinejami. Canvas ni izpit — je živ zemljevid poslovanja.</span></div>
-      <div
-        className={styles.progress}
-        style={{ background: `conic-gradient(oklch(80% .11 300) ${(completed / 9) * 100}%, oklch(93% .03 300) 0)` }}
-        aria-label={`${completed} od 9 področij izpolnjenih`}
-      ><strong>{completed}<small>/ 9</small></strong><span>izpolnjenih področij</span></div>
-    </section>
+    {view === 'list' ? <>
+      <p className={styles.listSub}>Odpri obstoječ poslovni model ali začni novega. Kmalu tu tudi pitch in drugi dokumenti.</p>
+      <section className={styles.canvasGrid} aria-label="Shranjeni canvasi">
+        <button type="button" className={styles.newCanvasCard} disabled={preview !== 'mine'} onClick={startNewCanvas} title={preview !== 'mine' ? 'Demo je samo za predogled — prijavi se za svoj Canvas.' : undefined}>
+          <span className={styles.newCanvasPlus} aria-hidden="true">+</span>
+          <strong>Nov Canvas</strong>
+          <span>Začni nov poslovni model</span>
+        </button>
+        {shownDocuments.map(document => {
+          const filled = BLOCKS.filter(block => document.blocks[block.key].trim()).length;
+          return <article key={document.id} className={styles.canvasCard} role="button" tabIndex={0}
+            onClick={() => openDocument(document)}
+            onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openDocument(document); } }}
+            aria-label={`Odpri Canvas ${document.name}`}>
+            <div className={styles.canvasCardTop}>
+              <div className={styles.canvasCardName}><strong>{document.companyName || 'Brez podjetja'}</strong>{document.brandName && <span>{document.brandName}</span>}</div>
+              <span className={styles.canvasCardCount}>{filled}<i>/9</i></span>
+            </div>
+            <div className={styles.canvasDots} aria-hidden="true">
+              {BLOCKS.map(block => <span key={block.key} data-on={document.blocks[block.key].trim() ? 'true' : 'false'} />)}
+            </div>
+            <div className={styles.canvasCardFoot}>
+              <span className={styles.canvasCardDate}>Shranjeno {new Date(document.updatedAt).toLocaleDateString('sl-SI')}</span>
+              <button type="button" className={styles.canvasCardPlan} onClick={event => { event.stopPropagation(); expandDocument(document); }} aria-label={`Razširi ${document.name} v poslovni načrt`}>Razširi v načrt →</button>
+            </div>
+          </article>;
+        })}
+      </section>
+      {!shownDocuments.length && <div className={styles.emptySaved}><strong>Še nimaš shranjenega Canvasa.</strong><span>Klikni »Nov Canvas«, izpolni ga in shrani. Nato se bo pojavil tukaj.</span></div>}
+      <section className={styles.comingSoon} aria-label="Kmalu na voljo">
+        <p className={styles.comingSoonHead}>Kmalu — Pupa jih bo pripravila zate iz tvojega Canvasa</p>
+        <div className={styles.comingSoonGrid}>
+          {[
+            { name: 'Pitch', desc: 'Kratka predstavitev zase — za stranke in partnerje' },
+            { name: 'Problem', desc: 'Kateri problem rešuješ in za koga' },
+            { name: 'Persone', desc: 'Kdo so tvoje idealne stranke' },
+            { name: 'Vrednostna ponudba', desc: 'Value Proposition Canvas — kaj rešuješ za koga' },
+            { name: 'Empathy map', desc: 'Kaj stranka misli, čuti, vidi in sliši' },
+            { name: 'Journey map', desc: 'Pot stranke skozi izkušnjo' },
+            { name: 'SWOT', desc: 'Prednosti, slabosti, priložnosti, nevarnosti' },
+            { name: 'Brand brief', desc: 'Misija, vrednote in ton znamke' },
+          ].map(document => <div key={document.name} className={styles.comingCard} aria-disabled="true">
+            <span className={styles.comingBadge}>Kmalu</span>
+            <strong>{document.name}</strong>
+            <span>{document.desc}</span>
+          </div>)}
+        </div>
+      </section>
+    </> : <>
+      <section className={styles.editorHead}>
+        <button type="button" className={styles.editorBack} onClick={() => { if (saveState === 'dirty' && !confirm('Imaš neshranjene spremembe. Zapreti brez shranjevanja?')) return; setPlanOpen(false); setView('list'); }}>← Vsi dokumenti</button>
+        <div className={styles.progressWrap}>
+          <div className={styles.progress} style={{ background: `conic-gradient(from -90deg, oklch(72% .18 300), oklch(82% .13 288) ${(completed / 9) * 100}%, oklch(95% .02 300) 0)` }} aria-label={`${completed} od 9 področij izpolnjenih`}><strong>{completed}<small>/9</small></strong></div>
+          <span className={styles.progressLabel}>izpolnjenih področij</span>
+        </div>
+      </section>
+      <section className={styles.canvasToolbar} aria-label="Podatki Business Canvasa">
+        {organizations.length > 1 && <label><span>Podjetje</span><select value={activeOrganizationId} onChange={event => { setActiveOrganization(event.target.value); window.location.reload(); }}>{organizations.map(organization => <option key={organization.id} value={organization.id}>{organization.name}</option>)}</select></label>}
+        <label><span>Podjetje ali organizacija</span><input value={shownCompanyName} readOnly={preview !== 'mine'} onChange={event => { setCompanyName(event.target.value); setSaveState('dirty'); }} placeholder="Npr. Rdeča kapica d.o.o." /></label>
+        <label><span>Znamka, projekt ali poslovna ideja</span><input value={shownBrandName} readOnly={preview !== 'mine'} onChange={event => { setBrandName(event.target.value); setSaveState('dirty'); }} placeholder="Npr. Ribbon Lips (neobvezno)" /></label>
+      </section>
 
-    <section className={styles.canvas} aria-label="Business Model Canvas">
-      {BLOCKS.map(block => <article key={block.key} data-block={block.key}>
-        <header><span>{block.number}</span><CanvasIcon type={block.key} /><h3>{block.title}</h3></header>
-        <p>{block.hint}</p>
-        <textarea aria-label={block.title} value={shownCanvas[block.key]} onChange={event => update(block.key, event.target.value)} placeholder={block.example} readOnly={preview !== 'mine'} />
-      </article>)}
-    </section>
+      <section className={styles.canvas} aria-label="Business Model Canvas">
+        {BLOCKS.map(block => <article key={block.key} data-block={block.key}>
+          <header><span>{block.number}</span><CanvasIcon type={block.key} /><h3>{block.title}</h3></header>
+          <p>{block.hint}</p>
+          <textarea aria-label={block.title} value={shownCanvas[block.key]} onChange={event => update(block.key, event.target.value)} placeholder={block.example} readOnly={preview !== 'mine'} />
+        </article>)}
+      </section>
 
-    <section className={styles.actions}>
-      <div><p>NASLEDNJI KORAK</p><h2>Iz Canvasa do uporabnega načrta.</h2><span>Pinart pripravi osnovno strukturo. AI asistent bo nato postavljal dodatna vprašanja o trgu, konkurenci, prodaji, tveganjih in financah.</span></div>
-      <div className={styles.saveActions}><span className={styles.saveFeedback} data-state={saveState} aria-live="polite">{saveState === 'dirty' ? 'Neshranjene spremembe' : saveState === 'saving' ? 'Shranjujem …' : saveState === 'cloud' ? `✓ Shranjeno v oblak ob ${savedAt}` : saveState === 'local' ? `✓ Shranjeno v brskalnik ob ${savedAt}` : ''}</span><button type="button" className={styles.secondary} onClick={() => void save()} disabled={preview !== 'mine'} title={preview !== 'mine' ? 'Demo je samo za predogled.' : undefined}><span className={styles.saveIcon} data-state={saveState} aria-hidden="true"><svg viewBox="0 0 24 24">{saveState === 'cloud' || saveState === 'local' ? <><path d="M5 12h14M14 7l5 5-5 5" /></> : saveState === 'saving' ? <><path d="M20 12a8 8 0 1 1-2.3-5.7" /><path d="M20 4v5h-5" /></> : <><path d="M5 4h12l2 2v14H5z" /><path d="M8 4v6h8V4M8 20v-6h8v6" /></>}</svg></span>{saveState === 'cloud' || saveState === 'local' ? 'Shranjeno' : 'Shrani Canvas'}</button><button type="button" onClick={() => void preparePlan()}>Pripravi osnovni načrt</button></div>
-    </section>
+      <section className={styles.actions}>
+        <div><p>NASLEDNJI KORAK</p><h2>Iz Canvasa do uporabnega načrta.</h2><span>Pinart pripravi osnovno strukturo. AI asistent bo nato postavljal dodatna vprašanja o trgu, konkurenci, prodaji, tveganjih in financah.</span></div>
+        <div className={styles.saveActions}><span className={styles.saveFeedback} data-state={saveState} aria-live="polite">{saveState === 'dirty' ? 'Neshranjene spremembe' : saveState === 'saving' ? 'Shranjujem …' : saveState === 'cloud' ? `✓ Shranjeno v oblak ob ${savedAt}` : saveState === 'local' ? `✓ Shranjeno v brskalnik ob ${savedAt}` : ''}</span><button type="button" className={styles.secondary} onClick={() => void save()} disabled={preview !== 'mine'} title={preview !== 'mine' ? 'Demo je samo za predogled.' : undefined}><span className={styles.saveIcon} data-state={saveState} aria-hidden="true"><svg viewBox="0 0 24 24">{saveState === 'cloud' || saveState === 'local' ? <><path d="M5 12h14M14 7l5 5-5 5" /></> : saveState === 'saving' ? <><path d="M20 12a8 8 0 1 1-2.3-5.7" /><path d="M20 4v5h-5" /></> : <><path d="M5 4h12l2 2v14H5z" /><path d="M8 4v6h8V4M8 20v-6h8v6" /></>}</svg></span>{saveState === 'cloud' || saveState === 'local' ? 'Shranjeno' : 'Shrani Canvas'}</button><button type="button" onClick={() => void preparePlan()}>Pripravi osnovni načrt</button></div>
+      </section>
 
-    {planOpen && <section className={styles.plan} aria-labelledby="plan-title">
-      <header><div><p>OSNUTEK</p><h2 id="plan-title">Osnovni poslovni načrt</h2></div><button type="button" onClick={() => setPlanOpen(false)} aria-label="Zapri osnutek">×</button></header>
-      <pre>{plan}</pre>
-      <footer><button type="button" className={styles.secondary} onClick={copyPlan}><svg className={styles.buttonIcon} viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg>Kopiraj osnutek</button><button type="button" disabled title="Na voljo po povezavi Mistral AI">Nadaljuj z AI asistentom</button></footer>
-      <small>AI nadaljevanje se aktivira, ko povežemo Mistral. Canvas in osnovni osnutek že delujeta brez AI-ja.</small>
-    </section>}
-
-    <section className={styles.savedCanvases} aria-labelledby="saved-canvases-title">
-      <header><div><p>SHRANJENI CANVASI</p><h2 id="saved-canvases-title">Tvoje poslovne ideje na enem mestu.</h2></div><span>{shownDocuments.length}</span></header>
-      {shownDocuments.length ? <div className={styles.canvasTableWrap}><table><thead><tr><th>Podjetje</th><th>Znamka ali projekt</th><th>Posodobljeno</th><th>Izpolnjeno</th><th><span className={styles.srOnly}>Dejanja</span></th></tr></thead><tbody>{shownDocuments.map(document => {
-        const filled = BLOCKS.filter(block => document.blocks[block.key].trim()).length;
-        return <tr key={document.id}><td><strong>{document.companyName || 'Brez podjetja'}</strong></td><td>{document.brandName || '—'}</td><td>{new Date(document.updatedAt).toLocaleDateString('sl-SI')}</td><td>{filled}/9</td><td><div className={styles.rowActions}><button type="button" onClick={() => preview === 'mine' && openDocument(document)} disabled={preview !== 'mine'} aria-label={`Odpri Canvas ${document.name}`} title="Odpri Canvas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></svg></button><button type="button" onClick={() => { if (preview === 'mine') openDocument(document); }} disabled={preview !== 'mine'} aria-label={`Uredi Canvas ${document.name}`}>Uredi</button><button type="button" onClick={() => expandDocument(document)} aria-label={`Razširi ${document.name} v poslovni načrt`}>Razširi v poslovni načrt</button><button type="button" disabled aria-label={`AI pomočnik za ${document.name} bo na voljo pozneje`} title="AI vodeni poslovni načrt bo na voljo pozneje"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5zM19 15l.7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7z" /></svg></button></div></td></tr>;
-      })}</tbody></table></div> : <div className={styles.emptySaved}><strong>Še nimaš shranjenega Canvasa.</strong><span>Vpiši podjetje, izpolni Canvas in ga shrani. Nato se bo pojavil tukaj.</span></div>}
-    </section>
+      {planOpen && <section className={styles.plan} aria-labelledby="plan-title">
+        <header><div><p>OSNUTEK</p><h2 id="plan-title">Osnovni poslovni načrt</h2></div><button type="button" onClick={() => setPlanOpen(false)} aria-label="Zapri osnutek">×</button></header>
+        <pre>{plan}</pre>
+        <footer><button type="button" className={styles.secondary} onClick={copyPlan}><svg className={styles.buttonIcon} viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg>Kopiraj osnutek</button></footer>
+        <small>Osnutek nastane iz tvojega Canvasa. Ko povežeš svoj AI, ga bo Pupa razširila v celoten načrt in pitch.</small>
+      </section>}
+    </>}
   </div>;
 }

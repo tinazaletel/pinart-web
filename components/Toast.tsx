@@ -42,7 +42,7 @@ export default function Toast({
   const barva = ton === 'uspeh' ? 'oklch(62% .16 150)' : ton === 'napaka' ? 'oklch(58% .18 25)' : 'var(--purple, oklch(66% .2 297))';
 
   return createPortal(
-    <div className={`pw-toast${odhaja ? ' pw-toast-off' : ''}`} role="status" aria-live="polite">
+    <div className={`pw-toast${ton === 'napaka' ? ' pw-toast-napaka' : ''}${odhaja ? ' pw-toast-off' : ''}`} role={ton === 'napaka' ? 'alert' : 'status'} aria-live={ton === 'napaka' ? 'assertive' : 'polite'}>
       <span className="pw-toast-pika" style={{ background: barva }} />
       <span className="pw-toast-txt">{sporocilo}</span>
       <button type="button" className="pw-toast-x" onClick={() => { setOdhaja(true); window.setTimeout(() => zapriRef.current(), 240); }} aria-label="Zapri obvestilo">×</button>
@@ -50,6 +50,10 @@ export default function Toast({
         .pw-toast{position:fixed;top:1rem;left:50%;z-index:9999;display:inline-flex;align-items:center;gap:.6rem;max-width:min(92vw,30rem);padding:.7rem .8rem .7rem 1rem;background:#fff;border:1px solid color-mix(in oklch,var(--ink, #2a2620) 10%,transparent);border-radius:.85rem;box-shadow:0 12px 34px -12px color-mix(in oklch,var(--ink, #2a2620) 40%,transparent),0 2px 8px -4px color-mix(in oklch,var(--ink, #2a2620) 30%,transparent);animation:pwToastIn .32s cubic-bezier(.16,1,.3,1) both;transform:translateX(-50%)}
         .pw-toast-off{animation:pwToastOut .3s ease-in both}
         .pw-toast-pika{flex:none;width:.5rem;height:.5rem;border-radius:999px}
+        .pw-toast-napaka{background:oklch(96% .035 25);border-color:oklch(78% .13 25 / .6)}
+        .pw-toast-napaka .pw-toast-txt{color:oklch(46% .17 25)}
+        .pw-toast-napaka .pw-toast-x{color:oklch(56% .13 25)}
+        .pw-toast-napaka .pw-toast-pika{display:none}
         .pw-toast-txt{font:600 .82rem var(--font-sans),system-ui,sans-serif;color:var(--ink, #2a2620);line-height:1.4}
         .pw-toast-x{flex:none;border:0;background:none;color:color-mix(in oklch,var(--ink, #2a2620) 45%,transparent);font-size:1.05rem;line-height:1;cursor:pointer;padding:0 .1rem;margin-left:.1rem}
         .pw-toast-x:hover{color:var(--ink, #2a2620)}

@@ -9,6 +9,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf } from '@phosphor-icons/react';
+import GumbNazaj from '@/components/ui/GumbNazaj';
+import GumbPrimarni from '@/components/ui/GumbPrimarni';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } from '@/lib/pinartFlowStore';
 import { deleteBusinessDocument, getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
@@ -97,6 +99,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
   /* vrsta dokumenta: navadna pogodba o sodelovanju ali NDA (sporazum o varovanju zaupnih podatkov).
      Privzeto 'sodelovanje' = obstojece obnasanje nespremenjeno. */
   const [vrstaPog, setVrstaPog] = useState<VrstaPog>('sodelovanje');
+  const [vrstaSheetOdprt, setVrstaSheetOdprt] = useState(false); /* mobile: dropdown -> slide-up */
   /* izklopljeni opcijski cleni (po id) za trenutno vrsto; ob menjavi vrste se ponastavi na privzeto */
   const [izklKlavzule, setIzklKlavzule] = useState<Set<string>>(() => privzetoIzklop('sodelovanje'));
   const [offerId, setOfferId] = useState('');
@@ -195,18 +198,18 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const vstopIsk = vstopIskanje.trim().toLocaleLowerCase('sl-SI');
   const vstopSeznam = vstopIsk
     ? ponudbePoDatumu.filter(offer => `${offer.title} ${offer.client} ${offer.number || ''}`.toLocaleLowerCase('sl-SI').includes(vstopIsk))
-    : ponudbePoDatumu.slice(0, 10);
+    : ponudbePoDatumu.slice(0, 7);
   /* izbira ponudbe (ali "Brez ponudbe" = prazen id) nastavi offerId -> vir se izpelje sam */
   const izberiVVstopu = (id: string) => { setOfferId(id); setKartaOdprta(false); setRocnoTelo(false); setVstopOdprt(false); setVstopIskanje(''); };
-  /* klik izven odprtega comboboxa ga zapre (panel je position:absolute znotraj .pg-combo, portal ni potreben) */
+  /* klik izven odprtega comboboxa ga zapre (desktop: panel je position:absolute znotraj .pg-combo) */
   useEffect(() => {
-    if (!vstopOdprt) return;
+    if (!vstopOdprt || jeMobilni) return;
     const zapri = (event: MouseEvent) => {
       if (vstopComboRef.current && !vstopComboRef.current.contains(event.target as Node)) { setVstopOdprt(false); setVstopIskanje(''); }
     };
     document.addEventListener('mousedown', zapri);
     return () => document.removeEventListener('mousedown', zapri);
-  }, [vstopOdprt]);
+  }, [vstopOdprt, jeMobilni]);
 
   /* e-posta narocnika: iz imenika strank (po imenu), da je "Poslji" en klik */
   useEffect(() => {
@@ -251,7 +254,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     /* noga = fiksno 5 mm od SPODNJEGA roba strani (v spodnji rob @page margina); ponovi se na vsaki strani */
     return n ? `<div class="dok-noga" style="position:fixed;left:16mm;right:16mm;bottom:5mm;padding-top:8px;border-top:1px solid oklch(93% .006 82 / .55);font-size:8pt;color:#625c56;line-height:1.5">${esc(n).split('\n').join('<br>')}</div>` : '';
   };
-  const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:400;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8177;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}.podpis-img{display:block;max-height:40px;max-width:180px;margin:0 0 -6px}`;
+  const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#625c56;font-size:9pt}h1{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:400;font-size:20pt;margin:2px 0 4px;color:#111}.kick{font-size:8.5pt;letter-spacing:.24em;text-transform:uppercase;color:#B25476;font-weight:700}h2{font-size:8.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B25476;margin:11px 0 5px;padding-top:6px;border-top:1px solid #ecdfe4;break-after:avoid}p{margin:0 0 5px}ul{margin:.2rem 0 .7rem;padding-left:1.15rem}li{margin:3px 0;break-inside:avoid}.meta{color:#555;font-size:9.5pt;margin:2px 0 0}.pog-clen{margin:7px 0;break-inside:avoid}.pog-clen h2{border-top:0;padding-top:0;margin:6px 0 3px;font-size:9pt}.parties p{margin:.15rem 0}.sig{display:flex;gap:40px;margin-top:15px;break-inside:avoid}.sig>div{flex:1;font-size:9pt;color:#444;display:flex;flex-direction:column}.sig>div>span:first-child{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#625c56;margin-bottom:24px}.sig .lin{border-top:1px solid #111;margin-bottom:4px}.podpis-img{display:block;max-height:40px;max-width:180px;margin:0 0 -6px}`;
   const doc = (body: string) => `<!doctype html><html lang="${jeEn ? 'en' : 'sl'}"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(`${DOC_CSS}.mut,.sig>div>span:first-child{color:#625c56!important}`)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
   useEffect(() => {
     setGlavaHtml(glava());
@@ -907,12 +910,35 @@ export default function ContractWorkspace({ base }: { base: string }) {
         <span className="pg-mehur"><b>{L('Iz česa nastane pogodba?', 'What is the contract built from?')}</b><small>{L('Če obstaja ponudba, jo izberi — naročnik in obseg se predizpolnita. Sicer pusti »Brez ponudbe« za samostojno pogodbo.', 'If an offer exists, pick it — the client and scope are pre-filled. Otherwise leave “No offer” for a standalone contract.')}</small></span>
       </div>
       <section className="pg-sek pg-vstop-panel">
-        {/* vrsta dokumenta: 6 vrst pogodb (velja za ustvarjeno telo) */}
+        {/* vrsta dokumenta: 6 vrst pogodb. Desktop = pilule; mobile = dropdown -> slide-up */}
         <div className="pg-vrstapog" role="group" aria-label={L('Vrsta dokumenta', 'Document type')}>
           {VRSTE_POG.map(v => (
             <button key={v.id} type="button" aria-label={jeEn ? VRSTE_POG_EN[v.id].naziv : v.naziv} aria-pressed={vrstaPog === v.id} className={vrstaPog === v.id ? 'on' : ''} onClick={() => menjajVrsto(v.id)}>{jeEn ? VRSTE_LABEL_EN[v.id] : v.label}</button>
           ))}
         </div>
+        <button type="button" className="pg-vrsta-drop" aria-haspopup="dialog" aria-expanded={vrstaSheetOdprt} onClick={() => setVrstaSheetOdprt(true)}>
+          <span className="pg-vrsta-drop-oznaka">{L('Vrsta dokumenta', 'Document type')}</span>
+          <span className="pg-vrsta-drop-val">{jeEn ? VRSTE_LABEL_EN[vrstaPog] : VRSTE_POG.find(v => v.id === vrstaPog)!.label}<CaretDown size={16} weight="bold" aria-hidden /></span>
+        </button>
+        {vrstaSheetOdprt && typeof document !== 'undefined' && createPortal(
+          <div className="pg-vrsta-back" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setVrstaSheetOdprt(false); }}>
+            <div className="pg-vrsta-sheet" role="dialog" aria-modal="true" aria-label={L('Vrsta dokumenta', 'Document type')}>
+              <div className="pg-vrsta-sheet-glava">
+                <p className="pg-vrsta-sheet-naslov">{L('VRSTA DOKUMENTA', 'DOCUMENT TYPE')}</p>
+                <button type="button" className="pg-vrsta-x" onClick={() => setVrstaSheetOdprt(false)} aria-label={L('Zapri', 'Close')}><X size={18} weight="bold" /></button>
+              </div>
+              <div className="pg-vrsta-seznam">
+                {VRSTE_POG.map(v => (
+                  <button key={v.id} type="button" className={'pg-vrsta-opcija' + (vrstaPog === v.id ? ' on' : '')} onClick={() => { menjajVrsto(v.id); setVrstaSheetOdprt(false); }}>
+                    <span>{jeEn ? VRSTE_LABEL_EN[v.id] : v.label}</span>
+                    {vrstaPog === v.id && <span className="pg-vrsta-kljukica" aria-hidden>✓</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
         {/* opcijski cleni trenutne vrste: klik vklopi/izklopi člen (številčenje se prilagodi samo) */}
         {!odStranke && (() => {
           const opcijski = cleniZaVrsto(vrstaPog).filter(c => c.opcijski);
@@ -941,23 +967,40 @@ export default function ContractWorkspace({ base }: { base: string }) {
                     <span>{selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : L('Brez ponudbe', 'No offer')}</span>
                     <CaretDown size={14} weight="bold" aria-hidden />
                   </button>
-                  {vstopOdprt && <div className="pg-combo-panel" onKeyDown={event => { if (event.key === 'Escape') { setVstopOdprt(false); setVstopIskanje(''); } }}>
-                    <input className="pg-combo-iskalnik" type="search" autoFocus placeholder={L('Poišči ponudbo, stranko ali številko …', 'Search offer, client or number …')} aria-label={L('Poišči ponudbo, stranko ali številko', 'Search offer, client or number')} value={vstopIskanje} onChange={event => setVstopIskanje(event.target.value)} />
-                    <div className="pg-combo-seznam" role="listbox" aria-label={L('Ponudbe', 'Offers')}>
-                      <button type="button" role="option" aria-selected={!offerId} className={'pg-combo-opcija' + (!offerId ? ' on' : '')} onClick={() => izberiVVstopu('')}>
-                        <span className="pg-combo-naziv"><strong>{L('Brez ponudbe', 'No offer')}</strong><small>{L('Samostojna pogodba', 'Standalone contract')}</small></span>
-                        {!offerId && <span className="pg-combo-kljukica" aria-hidden>✓</span>}
-                      </button>
-                      {vstopSeznam.map(offer => (
-                        <button key={offer.id} type="button" role="option" aria-selected={offerId === offer.id} className={'pg-combo-opcija' + (offerId === offer.id ? ' on' : '')} onClick={() => izberiVVstopu(offer.id)}>
-                          <span className="pg-combo-naziv"><strong>{offer.title} · {offer.client}</strong>{offer.number && <small>{L('Št. ', 'No. ')}{offer.number}</small>}</span>
-                          {offerId === offer.id && <span className="pg-combo-kljukica" aria-hidden>✓</span>}
+                  {vstopOdprt && (() => {
+                    const comboNotranjost = (<>
+                      <input className="pg-combo-iskalnik" type="search" autoFocus={!jeMobilni} placeholder={L('Poišči ponudbo, stranko ali številko …', 'Search offer, client or number …')} aria-label={L('Poišči ponudbo, stranko ali številko', 'Search offer, client or number')} value={vstopIskanje} onChange={event => setVstopIskanje(event.target.value)} />
+                      <div className="pg-combo-seznam" role="listbox" aria-label={L('Ponudbe', 'Offers')}>
+                        <button type="button" role="option" aria-selected={!offerId} className={'pg-combo-opcija' + (!offerId ? ' on' : '')} onClick={() => izberiVVstopu('')}>
+                          <span className="pg-combo-naziv"><strong>{L('Brez ponudbe', 'No offer')}</strong><small>{L('Samostojna pogodba', 'Standalone contract')}</small></span>
+                          {!offerId && <span className="pg-combo-kljukica" aria-hidden>✓</span>}
                         </button>
-                      ))}
-                      {!vstopSeznam.length && <p className="pg-mini pg-combo-prazno">{L('Ni ponudb za to iskanje.', 'No offers match this search.')}</p>}
-                    </div>
-                    {!vstopIskanje.trim() && ponudbePoDatumu.length > 10 && <p className="pg-combo-namig">{L('Prikazanih zadnjih 10 — išči za vse.', 'Showing the last 10 — search to see all.')}</p>}
-                  </div>}
+                        {vstopSeznam.map(offer => (
+                          <button key={offer.id} type="button" role="option" aria-selected={offerId === offer.id} className={'pg-combo-opcija' + (offerId === offer.id ? ' on' : '')} onClick={() => izberiVVstopu(offer.id)}>
+                            <span className="pg-combo-naziv"><strong>{offer.title} · {offer.client}</strong>{offer.number && <small>{L('Št. ', 'No. ')}{offer.number}</small>}</span>
+                            {offerId === offer.id && <span className="pg-combo-kljukica" aria-hidden>✓</span>}
+                          </button>
+                        ))}
+                        {!vstopSeznam.length && <p className="pg-mini pg-combo-prazno">{L('Ni ponudb za to iskanje.', 'No offers match this search.')}</p>}
+                      </div>
+                      {!vstopIskanje.trim() && ponudbePoDatumu.length > 7 && <p className="pg-combo-namig">{L('Prikazane zadnje — išči za vse.', 'Showing recent — search to see all.')}</p>}
+                    </>);
+                    if (jeMobilni && typeof document !== 'undefined') {
+                      return createPortal(
+                        <div className="pg-combo-back" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) { setVstopOdprt(false); setVstopIskanje(''); } }}>
+                          <div className="pg-combo-sheet" role="dialog" aria-modal="true" aria-label={L('Ponudba', 'Offer')}>
+                            <div className="pg-vrsta-sheet-glava">
+                              <p className="pg-vrsta-sheet-naslov">{L('PONUDBA', 'OFFER')}</p>
+                              <button type="button" className="pg-vrsta-x" onClick={() => { setVstopOdprt(false); setVstopIskanje(''); }} aria-label={L('Zapri', 'Close')}><X size={18} weight="bold" /></button>
+                            </div>
+                            {comboNotranjost}
+                          </div>
+                        </div>,
+                        document.body,
+                      );
+                    }
+                    return <div className="pg-combo-panel" onKeyDown={event => { if (event.key === 'Escape') { setVstopOdprt(false); setVstopIskanje(''); } }}>{comboNotranjost}</div>;
+                  })()}
                 </div>
               </div>
               <label className="pg-polje">{L('Datum pogodbe', 'Contract date')}
@@ -984,7 +1027,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
               </>
             )}
             <div className="pg-gumbi">
-              <button type="button" className="pg-gumb" aria-label={L('Pripravi pogodbo', 'Prepare contract')} onClick={pripraviPogodbo}>{L('Pripravi pogodbo →', 'Prepare contract →')}</button>
+              <GumbPrimarni onClick={pripraviPogodbo} puscica aria-label={L('Pripravi pogodbo', 'Prepare contract')}>{L('Pripravi pogodbo', 'Prepare contract')}</GumbPrimarni>
             </div>
             {/* pot "Od stranke": naloži že podpisano/prejeto pogodbo za pregled (ohranjena funkcija) */}
             <button type="button" className="pg-povezava pg-odstranke-link" onClick={() => setOdStranke(true)}>{L('Imaš pogodbo od stranke? Naloži jo za pregled →', 'Have a contract from the client? Upload it for review →')}</button>
@@ -992,7 +1035,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
         ) : (
           /* pot "Od stranke": nalozi in preglej dokument — shrani takoj v arhiv (status Prejeta) */
           <>
-            <button type="button" className="pg-povezava pg-odstranke-nazaj" onClick={() => setOdStranke(false)}>{L('← Nazaj na ustvarjanje pogodbe', '← Back to creating a contract')}</button>
+            <GumbNazaj className="pg-odstranke-nazaj" onClick={() => setOdStranke(false)}>{L('Nazaj na ustvarjanje pogodbe', 'Back to creating a contract')}</GumbNazaj>
             <form onSubmit={saveUpload}>
               <div className="pg-polja">
                 <label className="pg-polje">{L('Naziv pogodbe', 'Contract title')}
@@ -1029,7 +1072,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* ── POGLED 2: DOKUMENT (samostojna stran — sredinski ozek stolpec, kot retainer) ── */}
     {pogled === 'dokument' && <section className="pg-sek pg-stran pg-stolpec">
       {/* jasna pot nazaj na vstopni korak — na vrhu, pred dokumentom */}
-      <button type="button" className="pg-povezava pg-nazaj-vrh" onClick={() => setPogled('nastavitve')}>{L('← Nazaj', '← Back')}</button>
+      <GumbNazaj className="pg-nazaj-vrh" onClick={() => setPogled('nastavitve')}>{L('Nazaj', 'Back')}</GumbNazaj>
       {vir === 'ponudba' && karticaPonudbe(true)}
       <div className="pg-pon-vrh">
         <div className="pg-segpills" role="group" aria-label={L('Pogled', 'View')}>
@@ -1147,7 +1190,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       )}
 
       <div className="pg-gumbi">
-        <button type="button" className="pg-gumb" aria-label={L('Zaključi', 'Finish')} onClick={() => setPogled('zakljucek')}>{L('Zaključi →', 'Finish →')}</button>
+        <GumbPrimarni onClick={() => setPogled('zakljucek')} puscica aria-label={L('Zaključi', 'Finish')}>{L('Zaključi', 'Finish')}</GumbPrimarni>
       </div>
       {napaka && <p className="pg-napaka">{napaka}</p>}
       <p className="pg-mini" style={{ marginTop: '.7rem' }}>{L('Besedilo preveri; Pinart ne nadomešča pravnega svetovanja.', 'Please review the text; Pinart does not replace legal advice.')}</p>
@@ -1232,7 +1275,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
     {/* stili kot retainer: navaden <style> (globalno), zato pg- predpona povsod */}
     <style>{`
-      .pg{min-width:0;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
+      .pg{min-width:0;max-width:100%;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
       .pg .pg-sek{min-width:0}
       .pg-sek{animation:pgSek .5s cubic-bezier(.16,1,.3,1) both}
       /* KONEC animacije mora biti transform:NONE (ne translateY(0)): vsak transform != none
@@ -1284,7 +1327,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-mehur{position:relative;background:oklch(96% .012 297);border:none;border-radius:18px;border-top-left-radius:5px;padding:.85rem 1.25rem .85rem 2.75rem;box-shadow:0 2px 12px rgba(40,25,40,.06)}
       .pg-mehur::before{content:"";position:absolute;left:.9rem;top:.95rem;width:1.3rem;height:1.3rem;border-radius:50%;background:radial-gradient(58% 48% at 30% 24%,rgba(255,255,255,.92),rgba(255,255,255,0) 62%),conic-gradient(from 210deg,#7C3AED,#EC4899,#F59E0B,#38BDF8,#7C3AED);box-shadow:0 2px 6px rgba(124,58,237,.28)}
       .pg-mehur b{display:block;color:var(--ink);font-weight:600;font-size:1.02rem}
-      .pg-mehur small{display:block;margin-top:.1rem;color:rgba(17,17,17,.64);font-size:.82rem}
+      .pg-mehur small{display:block;margin-top:.1rem;color:rgba(17,17,17,.72);font-size:.82rem}
       .pg-zakljucek{background:transparent;border:0;border-radius:0;padding:1.6rem 1.7rem 6rem;box-shadow:none}
 
       /* vstopna forma (pilule+polja+gumb) v beli kartici — naslov+chat ostaneta na papirju nad njo */
@@ -1299,21 +1342,56 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-vrstapog{display:inline-flex;flex-wrap:wrap;background:rgba(255,255,255,.55);border:1px solid rgba(178,84,118,.28);border-radius:999px;padding:.3rem;gap:.45rem;margin:0 0 1rem}
       .pg-vrstapog button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem 1rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
       .pg-vrstapog button.on{background:var(--accent,#B25476);color:#fff}
+      /* mobile dropdown + slide-up namesto ovitih pilul */
+      .pg-vrsta-drop{display:none}
+      .pg-vrsta-drop-oznaka{font-size:.95rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
+      .pg-vrsta-drop-val{display:flex;align-items:center;justify-content:space-between;gap:.6rem;min-height:2.75rem;padding:.6rem .85rem;border:1px solid oklch(93% .006 82 / .55);border-radius:10px;background:rgba(255,255,255,.85);font-size:16px;font-weight:600;color:var(--ink)}
+      @media (max-width:640px){
+        .pg-vrstapog{display:none}
+        .pg-vrsta-drop{display:flex;flex-direction:column;gap:.35rem;width:100%;align-items:stretch;margin:0 0 1rem;padding:0;border:none;background:none;cursor:pointer;text-align:left}
+      }
+      .pg-vrsta-back{position:fixed;inset:0;z-index:120;background:rgba(28,21,24,.28);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;animation:pgVrstaBack .2s ease both}
+      @keyframes pgVrstaBack{from{opacity:0}to{opacity:1}}
+      .pg-vrsta-sheet{width:100%;box-sizing:border-box;background:var(--paper);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px rgba(40,25,40,.22);padding:1.2rem 1.1rem calc(1.4rem + env(safe-area-inset-bottom,0px));max-height:80dvh;overflow-y:auto;animation:pgVrstaUp .3s cubic-bezier(.2,.8,.3,1) both}
+      @keyframes pgVrstaUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+      @media (prefers-reduced-motion:reduce){.pg-vrsta-back,.pg-vrsta-sheet{animation:none}}
+      .pg-vrsta-sheet-glava{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.7rem}
+      .pg-vrsta-sheet-naslov{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
+      .pg-vrsta-x{width:2.1rem;height:2.1rem;flex:none;border-radius:50%;border:1px solid rgba(17,17,17,.16);background:var(--paper);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,color .15s}
+      .pg-vrsta-x:hover{background:var(--ink);color:var(--paper)}
+      .pg-vrsta-seznam{display:flex;flex-direction:column;gap:.2rem}
+      .pg-vrsta-opcija{display:flex;align-items:center;justify-content:space-between;gap:.7rem;width:100%;min-height:3rem;padding:.7rem .85rem;border:none;border-radius:12px;background:none;font:inherit;font-size:16px;font-weight:600;color:var(--ink);text-align:left;cursor:pointer;transition:background .15s,color .15s}
+      .pg-vrsta-opcija:hover{background:rgba(17,17,17,.05)}
+      .pg-vrsta-opcija.on{background:var(--ink);color:var(--paper)}
+      .pg-vrsta-kljukica{flex:none;font-size:.9rem}
+      /* Ponudba combo -> slide-up sheet na mobilu (isti vzorec kot vrsta) */
+      .pg-combo-back{position:fixed;inset:0;z-index:120;overflow:hidden;background:rgba(28,21,24,.28);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;animation:pgVrstaBack .2s ease both}
+      .pg-combo-sheet{width:100%;box-sizing:border-box;background:var(--paper);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px rgba(40,25,40,.22);padding:1.1rem 1.1rem calc(1.2rem + env(safe-area-inset-bottom,0px));max-height:82dvh;overflow-y:auto;animation:pgVrstaUp .3s cubic-bezier(.2,.8,.3,1) both}
+      .pg-combo-sheet{overflow-x:hidden;overscroll-behavior:contain}
+      .pg-combo-sheet *{max-width:100%}
+      .pg-combo-sheet .pg-combo-iskalnik{width:100%;box-sizing:border-box;font:inherit;font-size:16px;font-weight:500;color:var(--ink);background:oklch(97% .004 84);border:1px solid oklch(90% .006 82);border-radius:14px;padding:.85rem 1rem;margin:0 0 .7rem;outline:none;transition:border-color .15s,box-shadow .15s}
+      .pg-combo-sheet .pg-combo-iskalnik:focus{border-color:var(--accent,#B25476);box-shadow:0 0 0 3px color-mix(in oklch,var(--accent,#B25476) 20%,transparent)}
+      .pg-combo-sheet .pg-combo-seznam{max-height:none;gap:.15rem;overflow-x:hidden;touch-action:pan-y}
+      .pg-combo-sheet .pg-combo-opcija{border-bottom:none;border-radius:14px;padding:.7rem .85rem;min-height:3.3rem}
+      .pg-combo-sheet .pg-combo-opcija:hover,.pg-combo-sheet .pg-combo-opcija:active{background:oklch(96% .006 84)}
+      .pg-combo-sheet .pg-combo-opcija.on{background:oklch(95% .012 84)}
+      .pg-combo-sheet .pg-combo-naziv strong{overflow-wrap:anywhere}
 
       /* vklop/izklop opcijskih clenov — majhne pilule-stikala v istem jeziku kot .pg-segpills */
       .pg-klavzule{margin:0 0 1rem}
-      .pg-klavzule-label{display:block;font-size:.66rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(17,17,17,.72);margin:0 0 .5rem}
+      .pg-klavzule-label{display:block;font-size:.95rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(17,17,17,.72);margin:0 0 .5rem}
       .pg-klavzule-pilule{display:flex;flex-wrap:wrap;gap:.4rem}
       .pg-segpills-mini{border:1px solid rgba(17,17,17,.18);background:rgba(255,255,255,.5);color:var(--ink);font-family:inherit;font-weight:600;font-size:.72rem;letter-spacing:.01em;padding:.34rem .72rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .16s,color .16s,border-color .16s}
       .pg-segpills-mini:hover{border-color:var(--ink)}
       .pg-segpills-mini.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 
-      .pg-polja{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem 1.5rem;margin:0 0 1.1rem;min-width:0}
+      .pg-polja{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem 1.5rem;margin:0 0 1.1rem;min-width:0}
       .pg-polja>*{min-width:0}
       .pg-polja-email{grid-template-columns:minmax(0,26rem);margin-top:.4rem}
-      .pg-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.62)}
+      .pg-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.95rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
       .pg-polje input,.pg-polje select,.pg-polje textarea{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
       .pg-polje input:focus,.pg-polje select:focus,.pg-polje textarea:focus{outline:none;border-color:var(--ink)}
+      .pg-polje input[type="date"]{height:2.75rem;line-height:normal}
       .pg-polje textarea{resize:vertical;min-height:6.5rem;line-height:1.5;font-weight:500}
       .pg-polje-obseg{margin:0 0 1.1rem}
 
@@ -1321,7 +1399,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
          sprozilec izgleda kot polje, panel z iskalnikom + seznam opcij se odpre pod njim (position:absolute) */
       .pg-combo-polje{min-width:0}
       .pg-combo{position:relative}
-      .pg-combo-sprozilec{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem;text-align:left;cursor:pointer}
+      .pg-combo-sprozilec{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-height:2.75rem;box-sizing:border-box;min-width:0;font:inherit;font-size:16px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem;text-align:left;cursor:pointer}
       .pg-combo-sprozilec:focus{outline:none;border-color:var(--ink)}
       .pg-combo-sprozilec>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .pg-combo-sprozilec svg{flex:none}
@@ -1361,7 +1439,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-kp-vec li{margin:.15rem 0}
       .pg-kp-strnjena{background:#FCFBF7;box-shadow:0 4px 14px rgba(17,17,17,.05);margin-bottom:1rem}
 
-      .pg-gumbi{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.3rem;min-width:0}
+      .pg-gumbi{display:flex;flex-wrap:wrap;justify-content:center;gap:.8rem;margin-top:1.3rem;min-width:0}
       /* navadno besedilo s kljukico namesto ločenega gumba »+ ponudba« */
       .pg-checkbox{display:inline-flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--ink);cursor:pointer;user-select:none}
       .pg-checkbox input{width:1.05rem;height:1.05rem;accent-color:var(--accent,#B25476);cursor:pointer}
@@ -1390,17 +1468,17 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-op-zapri{display:grid;place-items:center;flex:none;width:2.75rem;height:2.75rem;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:transparent;color:var(--ink);cursor:pointer}
       .pg-op-zapri:hover{background:var(--ink);color:var(--paper)}
       .pg-op-vsebina{padding:1.6rem 2rem 3rem}
-      .pg-op-meta{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:0 0 1.7rem}
+      .pg-op-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin:0 0 1.7rem}
       .pg-op-meta div{padding:1rem;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid rgba(17,17,17,.08)}
       .pg-op-meta dt{font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
       .pg-op-meta dd{margin:.35rem 0 0;font-size:.98rem;font-weight:650;color:var(--ink);overflow-wrap:anywhere}
       .pg-op-obseg{padding:1.3rem 1.35rem;border:1px solid rgba(17,17,17,.1);border-radius:16px;background:rgba(255,255,255,.5)}
       .pg-op-obseg h3{margin:0 0 .8rem;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase}
       .pg-op-obseg ul{margin:0;padding-left:1.2rem;line-height:1.65}
-      .pg-op-obseg p{margin:0;color:rgba(17,17,17,.62)}
+      .pg-op-obseg p{margin:0;color:rgba(17,17,17,.72)}
       @keyframes pgOpBack{from{opacity:0}to{opacity:1}}
       @keyframes pgOpSheet{from{transform:translateX(100%)}to{transform:translateX(0)}}
-      @media (max-width:640px){.pg-op-sheet{width:100%}.pg-op-glava{padding:1.25rem 1rem 1rem}.pg-op-vsebina{padding:1rem}.pg-op-meta{grid-template-columns:1fr}.pg-op-back{backdrop-filter:none}}
+      @media (max-width:640px){.pg-op-sheet{width:100%}.pg-op-glava{padding:1.25rem 1rem 1rem}.pg-op-vsebina{padding:1rem}.pg-op-meta{grid-template-columns:minmax(0,1fr)}.pg-op-back{backdrop-filter:none}}
       @media (prefers-reduced-motion:reduce){.pg-op-back,.pg-op-sheet{animation:none}}
       /* Odvetnik: umirjen blok pod pošiljanjem naročniku — tanek okvir, isti jezik kot .pg-disc/.pg-polje */
       /* odvetnik = mali banner na DESNEM robu zaslona, stran od obrazca */
@@ -1519,7 +1597,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       @media (max-width:640px){
         .pg-chat{max-width:100%}
         .pg-vstop-panel{padding:1.2rem 1.1rem;border-radius:16px}
-        .pg-polja{grid-template-columns:1fr;gap:1rem}
+        .pg-polja{grid-template-columns:minmax(0,1fr);gap:1rem}
         .pg-zakljucek{padding:1.2rem 1rem 1.3rem}
         .pg-editor,.pg-editor h1,.pg-editor h2,.pg-editor p,.pg-editor li,.pg-doktelo,.pg-doktelo h1,.pg-doktelo h2,.pg-doktelo p,.pg-doktelo li{overflow-wrap:anywhere}
         /* podpisni stolpci se na ozkem zaslonu zlozijo navpicno (kot retainer) */

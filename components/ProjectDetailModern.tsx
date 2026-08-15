@@ -61,7 +61,7 @@ const Puscica = () => (
 );
 
 export default function ProjectDetailModern({
-  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, ekipaStatus, agenti = [], links = [], crmVnosi = [], onOdpriKomunikacije, onOdpriVse, onOdpriDokument, naloge = [], onOdpriMail, onOdpriDokumentacija,
+  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, onSaveAgreed, onSaveBrief, ekipaStatus, agenti = [], links = [], crmVnosi = [], onOdpriKomunikacije, onOdpriVse, onOdpriDokument, naloge = [], onOdpriMail, onOdpriDokumentacija,
 }: {
   data: ModernProject;
   sodelavci: Sodelavec[];
@@ -72,6 +72,8 @@ export default function ProjectDetailModern({
   onToggleMember?: (sodelavecId: string) => void;
   posta?: PostaVnos[];
   onOpenZapis?: () => void;
+  onSaveAgreed?: (value: number) => void;
+  onSaveBrief?: (patch: Partial<Projekt>) => void;
   ekipaStatus?: Record<string, EkipaStanje>;
   agenti?: AgentClan[];
   links?: FlowProjectLink[];
@@ -87,6 +89,7 @@ export default function ProjectDetailModern({
   const { offer, real } = data;
   const [dodajOdprt, setDodajOdprt] = useState(false);
   const [briefOdprt, setBriefOdprt] = useState(false);
+  const [ciljiUrejam, setCiljiUrejam] = useState(false);
   const [taskOdprt, setTaskOdprt] = useState<NalogaLite | null>(null);
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -192,7 +195,7 @@ export default function ProjectDetailModern({
 
           {/* BRIEF */}
           <section className="pm-card pm-brief">
-            <header><h3>{L('BRIEF · ŽELJE STRANKE', 'BRIEF · CLIENT WISHES')}</h3>{imaBrief && <button type="button" className="pm-act" onClick={() => setBriefOdprt(true)}>{L('Več', 'More')} <Puscica /></button>}</header>
+            <header><h3>{L('BRIEF · ŽELJE STRANKE', 'BRIEF · CLIENT WISHES')}</h3>{real && <button type="button" className="pm-act" onClick={() => setBriefOdprt(true)}>{onSaveBrief ? L('Uredi', 'Edit') : L('Več', 'More')} <Puscica /></button>}</header>
             <div className="pm-title">{L('Kaj gradimo in za koga.', 'What we build and for whom.')}</div>
             {briefPolja.length ? briefPolja.map(([k, v]) => (
               <div key={k} className="pm-brow"><span className="pm-bk">{k}</span><span className="pm-bv">{v}</span></div>
@@ -201,14 +204,31 @@ export default function ProjectDetailModern({
             ) : <p className="pm-muted">{L('Brief še ni izpolnjen. Dodaš ga ob odprtju projekta (vprašanja).', 'The brief is not filled in yet. Add it when opening the project (questions).')}</p>}
           </section>
 
-          {cilji.length > 0 && (
+          {(cilji.length > 0 || (real && onSaveBrief)) && (
             <section className="pm-card">
-              <header><h3>{L('CILJI PROJEKTA', 'PROJECT GOALS')}</h3>{real && <Link className="pm-act" href={`${base}/kalkulator/projekti`}>{L('Uredi', 'Edit')} <Puscica /></Link>}</header>
-              <ul className="pm-goals">
-                {cilji.map(c => (
-                  <li key={c.id}><span className="pm-goal-b">{c.besedilo}</span>{(c.metrika || c.tarca) && <span className="pm-goal-t">{[c.metrika, c.tarca].filter(Boolean).join(' · ')}</span>}</li>
-                ))}
-              </ul>
+              <header><h3>{L('CILJI PROJEKTA', 'PROJECT GOALS')}</h3>{real && (onSaveBrief
+                ? <button type="button" className="pm-act" onClick={() => setCiljiUrejam(v => !v)}>{ciljiUrejam ? L('Končaj', 'Done') : L('Uredi', 'Edit')} <Puscica /></button>
+                : <button type="button" className="pm-act" onClick={() => setBriefOdprt(true)}>{L('Več', 'More')} <Puscica /></button>)}</header>
+              {ciljiUrejam && onSaveBrief && real ? (
+                <div className="pm-cilji-edit">
+                  {(real.cilji || []).map((c, i) => (
+                    <div key={c.id} className="pm-cilj-row">
+                      <input className="pm-inp" defaultValue={c.besedilo} placeholder={L('Cilj …', 'Goal …')} onBlur={e => onSaveBrief({ cilji: (real.cilji || []).map((x, j) => j === i ? { ...x, besedilo: e.target.value } : x) })} />
+                      <input className="pm-inp pm-inp-s" defaultValue={c.metrika || ''} placeholder={L('metrika', 'metric')} onBlur={e => onSaveBrief({ cilji: (real.cilji || []).map((x, j) => j === i ? { ...x, metrika: e.target.value.trim() || undefined } : x) })} />
+                      <input className="pm-inp pm-inp-s" defaultValue={c.tarca || ''} placeholder={L('tarča', 'target')} onBlur={e => onSaveBrief({ cilji: (real.cilji || []).map((x, j) => j === i ? { ...x, tarca: e.target.value.trim() || undefined } : x) })} />
+                      <button type="button" className="pm-cilj-x" aria-label={L('Odstrani cilj', 'Remove goal')} onClick={() => onSaveBrief({ cilji: (real.cilji || []).filter((_, j) => j !== i) })}>✕</button>
+                    </div>
+                  ))}
+                  <button type="button" className="pm-cilj-add" onClick={() => onSaveBrief({ cilji: [...(real.cilji || []), { id: crypto.randomUUID(), besedilo: '' }] })}>+ {L('Dodaj cilj', 'Add goal')}</button>
+                </div>
+              ) : (
+                <ul className="pm-goals">
+                  {cilji.map(c => (
+                    <li key={c.id}><span className="pm-goal-b">{c.besedilo}</span>{(c.metrika || c.tarca) && <span className="pm-goal-t">{[c.metrika, c.tarca].filter(Boolean).join(' · ')}</span>}</li>
+                  ))}
+                  {cilji.length === 0 && <li className="pm-muted">{L('Ni ciljev — klikni Uredi za dodajanje.', 'No goals — click Edit to add.')}</li>}
+                </ul>
+              )}
             </section>
           )}
 
@@ -236,7 +256,7 @@ export default function ProjectDetailModern({
               <h3>{L('KOMUNIKACIJA', 'COMMUNICATION')}{komAktivna.length ? ` · ${komAktivna.length}` : ''}</h3>
               {(onOdpriKomunikacije || onOpenZapis)
                 ? <button type="button" className="pm-act" onClick={onOdpriKomunikacije || onOpenZapis}>{L('Odpri vse', 'Open all')} <Puscica /></button>
-                : <Link className="pm-act" href={`${base}/kalkulator/projekti`}>{L('Odpri', 'Open')} <Puscica /></Link>}
+                : <Link className="pm-act" href={`${base}/kalkulator/projekti?projekt=${offer.id}`}>{L('Odpri', 'Open')} <Puscica /></Link>}
             </header>
             {komZadnje.length ? (
               <ul className="pm-mails">
@@ -275,9 +295,9 @@ export default function ProjectDetailModern({
         <div className="pm-col">
           {/* POSLOVNI ZAPIS — finance */}
           <section className="pm-card">
-            <header><h3>{L('POSLOVNI ZAPIS', 'BUSINESS RECORD')}</h3>{onOpenZapis && <button type="button" className="pm-act" onClick={onOpenZapis}>{L('Uredi', 'Edit')} <Puscica /></button>}</header>
+            <header><h3>{L('POSLOVNI ZAPIS', 'BUSINESS RECORD')}</h3></header>
             <div className="pm-fin">
-              <div className="pm-f"><small>{L('Dogovorjeno', 'Agreed')}</small><b>{data.agreed ? money(data.agreed) : '—'}</b><span className="pm-f-ic"><MetricIcon type="document" /></span></div>
+              <div className="pm-f"><small>{L('Dogovorjeno', 'Agreed')}</small>{onSaveAgreed ? <b><input type="number" min="0" step="0.01" defaultValue={data.agreed || ''} onChange={e => onSaveAgreed(Number(e.target.value))} aria-label={L('Dogovorjena vrednost', 'Agreed value')} style={{ width: '6rem', maxWidth: '100%', border: 0, borderBottom: '1.5px solid currentColor', background: 'transparent', font: 'inherit', color: 'inherit', padding: 0 }} /> €</b> : <b>{data.agreed ? money(data.agreed) : '—'}</b>}<span className="pm-f-ic"><MetricIcon type="document" /></span></div>
               <div className="pm-f"><small>{L('Zaračunano', 'Billed')}</small><b>{money(data.billed)}</b><span className="pm-f-ic"><MetricIcon type="paid" /></span></div>
               <div className="pm-f"><small>{L('Še ni zaračunano', 'Not yet billed')}</small><b>{data.agreed ? money(data.unbilled) : '—'}</b><span className="pm-f-ic"><MetricIcon type="cost" /></span></div>
               <div className="pm-f"><small>{L('Ocenjeni rezultat', 'Estimated result')}</small><b>{money(data.profit)}</b><span className="pm-f-ic"><MetricIcon type="profit" /></span></div>
@@ -357,20 +377,30 @@ export default function ProjectDetailModern({
               <button type="button" className="pm-modal-x" onClick={() => setBriefOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button>
             </header>
             <div className="pm-modal-body">
-              {briefPolja.map(([k, v]) => (
-                <div key={k} className="pm-qa"><span className="pm-qa-k">{k}</span><p className="pm-qa-v">{v}</p></div>
-              ))}
-              {cilji.length > 0 && (
-                <div className="pm-qa"><span className="pm-qa-k">{L('Cilji', 'Goals')}</span>
-                  <ul className="pm-qa-cilji">{cilji.map(c => <li key={c.id}><b>{c.besedilo}</b>{(c.metrika || c.tarca) && <small>{[c.metrika, c.tarca].filter(Boolean).join(' · ')}</small>}</li>)}</ul>
-                </div>
-              )}
-              {dodatna.map(v => (
-                <div key={v.id} className="pm-qa"><span className="pm-qa-k">{v.vprasanje}</span><p className="pm-qa-v">{v.odgovor}</p></div>
-              ))}
-              {!imaBrief && <p className="pm-muted">{L('Brief še ni izpolnjen.', 'The brief is not filled in yet.')}</p>}
+              {onSaveBrief && real ? (<>
+                {([[L('Cilj / želje', 'Goal / wishes'), 'zelje'], [L('Stranka', 'Client'), 'opisStranke'], [L('Panoga', 'Industry'), 'panoga'], [L('Ciljna publika', 'Target audience'), 'ciljnaSkupina'], [L('Dizajn želje', 'Design wishes'), 'dizajnZelje'], [L('Ton / glas', 'Tone / voice'), 'voice'], [L('Konkurenca', 'Competitors'), 'konkurenca']] as Array<[string, keyof Projekt]>).map(([label, key]) => (
+                  <label key={key} className="pm-qa pm-qa-edit"><span className="pm-qa-k">{label}</span><textarea className="pm-inp" rows={2} defaultValue={(real[key] as string) || ''} placeholder={L('Vpiši …', 'Type …')} onBlur={e => onSaveBrief({ [key]: e.target.value.trim() || undefined } as Partial<Projekt>)} /></label>
+                ))}
+                {dodatna.map(v => (
+                  <div key={v.id} className="pm-qa"><span className="pm-qa-k">{v.vprasanje}</span><p className="pm-qa-v">{v.odgovor}</p></div>
+                ))}
+                <p className="pm-muted pm-brief-namig">{L('Cilje urejaš v kartici »Cilji projekta«.', 'Edit goals in the »Project goals« card.')}</p>
+              </>) : (<>
+                {briefPolja.map(([k, v]) => (
+                  <div key={k} className="pm-qa"><span className="pm-qa-k">{k}</span><p className="pm-qa-v">{v}</p></div>
+                ))}
+                {cilji.length > 0 && (
+                  <div className="pm-qa"><span className="pm-qa-k">{L('Cilji', 'Goals')}</span>
+                    <ul className="pm-qa-cilji">{cilji.map(c => <li key={c.id}><b>{c.besedilo}</b>{(c.metrika || c.tarca) && <small>{[c.metrika, c.tarca].filter(Boolean).join(' · ')}</small>}</li>)}</ul>
+                  </div>
+                )}
+                {dodatna.map(v => (
+                  <div key={v.id} className="pm-qa"><span className="pm-qa-k">{v.vprasanje}</span><p className="pm-qa-v">{v.odgovor}</p></div>
+                ))}
+                {!imaBrief && <p className="pm-muted">{L('Brief še ni izpolnjen.', 'The brief is not filled in yet.')}</p>}
+              </>)}
             </div>
-            {real && <Link href={`${base}/kalkulator/projekti`} className="pm-modal-edit">{L('Uredi v projektih', 'Edit in projects')} <Puscica /></Link>}
+            {real && <Link href={`${base}/kalkulator/nov-projekt?uredi=${real.id}`} className="pm-modal-edit">{L('Celoten urejevalnik', 'Full editor')} <Puscica /></Link>}
           </div>
         </div>
       , document.body)}
@@ -404,7 +434,7 @@ export default function ProjectDetailModern({
       , document.body)}
 
       <style dangerouslySetInnerHTML={{ __html: `
-        .pm { --pm-ink: var(--ink, oklch(19% 0.014 55)); --pm-paper: var(--paper, oklch(97% 0.012 87)); --pm-line: var(--line, oklch(93% 0.007 82)); --pm-acc: var(--purple, oklch(66% 0.2 297)); --pm-card: #fff; --pm-muted: color-mix(in oklch, var(--ink) 55%, transparent); --pm-soft: color-mix(in oklch, var(--ink) 42%, transparent); }
+        .pm { --pm-ink: var(--ink, oklch(19% 0.014 55)); --pm-paper: var(--paper, oklch(97% 0.012 87)); --pm-line: var(--line, oklch(93% 0.007 82)); --pm-acc: var(--purple, oklch(66% 0.2 297)); --pm-card: #fff; --pm-muted: color-mix(in oklch, var(--ink) 55%, transparent); --pm-soft: color-mix(in oklch, var(--ink) 42%, transparent); max-width:100%; min-width:0; overflow-x:clip; }
         .pm-team { display:flex; align-items:center; gap:.7rem; flex-wrap:wrap; background:var(--pm-card); border:1px solid var(--pm-line); border-radius:16px; padding:.8rem 1rem; margin-bottom:1.2rem; }
         .pm-team-lbl { font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-member { display:inline-flex; align-items:center; gap:.5rem; padding:.3rem .6rem .3rem .35rem; border-radius:999px; border:1px solid var(--pm-line); background:var(--pm-card); }
@@ -416,6 +446,8 @@ export default function ProjectDetailModern({
         .pm-mx { border:0; background:none; cursor:pointer; color:var(--pm-muted); font-size:1rem; line-height:1; padding:0 .1rem 0 .2rem; border-radius:50%; }
         .pm-mx:hover { color:oklch(52% .18 25); }
         .pm-add-wrap { position:relative; display:inline-flex; }
+        /* Gumb za dodajanje sodelavcev poravnan DESNO v NA PROJEKTU vrstici */
+        .pm-team > .pm-addmember, .pm-team > .pm-add-wrap { margin-left:auto; }
         .pm-add-menu { position:absolute; top:calc(100% + .4rem); left:0; z-index:20; min-width:14rem; background:var(--pm-card); border:1px solid var(--pm-line); border-radius:12px; padding:.35rem; box-shadow:0 12px 30px -12px rgba(17,17,17,.25); display:flex; flex-direction:column; gap:.1rem; }
         .pm-add-opt { display:flex; align-items:center; gap:.5rem; width:100%; text-align:left; border:0; background:none; cursor:pointer; padding:.4rem .5rem; border-radius:8px; color:var(--pm-ink); }
         .pm-add-opt:hover { background:var(--pm-paper); }
@@ -426,20 +458,35 @@ export default function ProjectDetailModern({
         .pm-add-manage { display:block; text-decoration:none; margin-top:.15rem; padding:.4rem .5rem; font-size:.74rem; font-weight:600; color:var(--pm-acc); border-top:1px solid var(--pm-line); }
         .pm-soon { font-size:.7rem; color:var(--pm-muted); font-style:italic; margin-left:auto; }
         .pm-empty { font-size:.85rem; color:var(--pm-muted); }
-        .pm-grid { display:grid; grid-template-columns:1fr; gap:1.1rem; }
+        .pm-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:1.1rem; }
+        .pm-grid > * { min-width:0; }
         @media (min-width:880px){ .pm-grid { grid-template-columns:1.7fr 1fr; align-items:start; } }
         .pm-col { display:flex; flex-direction:column; gap:1.1rem; }
-        .pm-card { background:var(--pm-card); border:1px solid var(--pm-line); border-radius:16px; padding:1.1rem 1.2rem; }
+        .pm-card { background:var(--pm-card); border:1px solid var(--pm-line); border-radius:16px; padding:1.1rem 1.2rem; min-width:0; max-width:100%; overflow:hidden; }
+        .pm-card > header h3 { min-width:0; overflow-wrap:anywhere; }
+        /* Enaki stranski razmiki: NA PROJEKTU vrstica poravnana s karticami */
+        @media (max-width:640px){ .pm-team { padding-left:1rem; padding-right:1rem; } .pm-card { padding-left:.65rem; padding-right:.65rem; } }
         .pm-card > header { display:flex; align-items:center; justify-content:space-between; gap:.6rem; margin-bottom:.5rem; }
         .pm-card h3 { margin:0; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-title { font-family:var(--font-serif), Georgia, serif; font-size:1.3rem; margin:0 0 .7rem; color:var(--pm-ink); }
-        .pm-act { display:inline-flex; align-items:center; height:1.9rem; box-sizing:border-box; text-decoration:none; border:1px solid color-mix(in oklch, var(--pm-ink) 7%, transparent); background:transparent; color:var(--pm-ink); border-radius:999px; padding:0 .8rem; font-size:.74rem; font-weight:650; white-space:nowrap; transition:background .16s ease; }
+        .pm-act { display:inline-flex; align-items:center; gap:.3rem; height:1.9rem; box-sizing:border-box; cursor:pointer; text-decoration:none; border:1px solid color-mix(in oklch, var(--pm-ink) 24%, transparent); background:color-mix(in oklch, var(--pm-ink) 5%, transparent); color:var(--pm-ink); border-radius:999px; padding:0 .85rem; font-size:.74rem; font-weight:700; white-space:nowrap; transition:background .16s ease, border-color .16s ease; }
+        .pm-act:hover { background:#fff; color:var(--pm-ink); border-color:var(--pm-ink); }
+        /* urejljiva brief polja (inline v panelu) */
+        .pm-qa-edit { display:block; }
+        .pm-inp { width:100%; box-sizing:border-box; margin-top:.3rem; padding:.5rem .6rem; border:1px solid color-mix(in oklch, #fff 55%, transparent); border-radius:.55rem; background:color-mix(in oklch, #fff 34%, transparent); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); font:inherit; font-size:.9rem; color:var(--pm-ink); resize:vertical; }
+        .pm-inp:focus { outline:none; border-color:var(--pm-ink); }
+        .pm-cilji-edit { display:flex; flex-direction:column; gap:.4rem; margin-top:.35rem; }
+        .pm-cilj-row { display:flex; gap:.35rem; align-items:center; }
+        .pm-cilj-row .pm-inp { margin-top:0; }
+        .pm-inp-s { flex:0 0 5.5rem; min-width:0; }
+        .pm-cilj-x { flex:none; width:2rem; height:2rem; padding:0; border:1px solid color-mix(in oklch, oklch(52% .16 25) 40%, var(--pm-line)); border-radius:50%; background:transparent; color:oklch(52% .16 25); cursor:pointer; }
+        .pm-cilj-add { align-self:flex-start; margin-top:.1rem; padding:.4rem .85rem; border:1px dashed var(--pm-line); border-radius:999px; background:transparent; color:var(--pm-ink); font:inherit; font-size:.82rem; font-weight:600; cursor:pointer; }
         .pm-act:hover { background:var(--pm-paper); }
         .pm-brief { background:linear-gradient(165deg, color-mix(in oklab, var(--pm-acc) 8%, var(--pm-card)), var(--pm-card) 72%); }
         .pm-brow { display:flex; align-items:center; gap:.7rem; padding:.72rem 0; border-top:1px solid color-mix(in oklch, var(--pm-ink) 9%, transparent); }
         .pm-brow:first-of-type { border-top:0; }
-        .pm-bk { flex:0 0 9rem; color:var(--pm-muted); font-size:.8rem; font-weight:600; }
-        .pm-bv { font-size:.88rem; color:var(--pm-ink); }
+        .pm-bk { flex:0 0 7rem; min-width:0; color:var(--pm-muted); font-size:.8rem; font-weight:600; overflow-wrap:anywhere; }
+        .pm-bv { flex:1; min-width:0; font-size:.88rem; color:var(--pm-ink); overflow-wrap:anywhere; }
         .pm-cilji { display:flex; flex-direction:column; gap:.35rem; margin-top:.7rem; }
         .pm-cilj { font-size:.85rem; color:var(--pm-ink); }
         .pm-muted { color:var(--pm-muted); font-size:.86rem; margin:.2rem 0 0; }
@@ -454,7 +501,8 @@ export default function ProjectDetailModern({
         .pm-mail-kdo { flex:0 0 30%; min-width:0; font-size:.8rem; font-weight:600; color:var(--pm-ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .pm-mail-zad { flex:1; min-width:0; font-size:.82rem; color:var(--pm-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .pm-mail-dan { flex:none; font-size:.7rem; color:var(--pm-muted); font-variant-numeric:tabular-nums; }
-        .pm-fin { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; margin-bottom:.8rem; }
+        .pm-fin { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:.6rem; margin-bottom:.8rem; }
+        .pm-fin .pm-f b { overflow-wrap:anywhere; }
         .pm-f { border:1px solid var(--pm-line); border-radius:12px; padding:.7rem .8rem; background:var(--pm-paper); }
         .pm-f small { font-size:.72rem; color:var(--pm-muted); }
         .pm-f b { display:block; font-family:var(--font-sans), system-ui, sans-serif; font-weight:700; font-size:1.25rem; margin-top:.15rem; color:var(--pm-ink); }
@@ -519,8 +567,9 @@ export default function ProjectDetailModern({
         @media (prefers-reduced-motion:reduce){ .pm-modal { animation:none; } }
         .pm-modal-h { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
         .pm-modal-kick { margin:0 0 .2rem; font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
-        .pm-modal-h h2 { margin:0; font-family:var(--font-serif), Georgia, serif; font-size:1.5rem; color:var(--pm-ink); }
-        .pm-modal-x { flex:none; border:1px solid var(--pm-line); background:var(--pm-card); border-radius:999px; width:2rem; height:2rem; cursor:pointer; color:var(--pm-ink); }
+        .pm-modal-h h2 { margin:0; font-family:var(--font-sans), system-ui, sans-serif; font-weight:600; font-size:1.5rem; color:var(--pm-ink); }
+        .pm-modal-x { flex:none; display:grid; place-items:center; border:1px solid rgba(17,17,17,.18); background:var(--pm-card); border-radius:50%; width:2.2rem; height:2.2rem; padding:0; cursor:pointer; color:var(--pm-ink); font-size:1rem; line-height:1; box-shadow:0 4px 14px rgba(17,17,17,.1); transition:background .15s, color .15s; }
+        .pm-modal-x:hover { background:var(--pm-ink); color:var(--pm-card); }
         .pm-modal-body { display:flex; flex-direction:column; gap:.9rem; }
         .pm-task-vrs { display:flex; align-items:center; gap:.8rem; padding:.55rem 0; border-bottom:1px solid color-mix(in oklch, var(--pm-line) 60%, transparent); }
         .pm-task-lbl { flex:none; width:5rem; font-size:.68rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--pm-muted); }

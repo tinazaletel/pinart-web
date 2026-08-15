@@ -6,19 +6,23 @@
 
 import type { Sodelavec } from '@/lib/naloge';
 import { ZACETNI_SODELAVCI } from '@/lib/naloge';
+import { jeDemo } from '@/lib/predogled';
 
 const KLJUC = 'pinflow_sodelavci';
 
+/* Vzorčni sodelavci (Matej Novak …) SAMO v demo predogledu — sicer bi pravi
+   uporabnik videl izmišljene ljudi in mislil, da jih je nekdo dodal (slab UX).
+   Pravi uporabnik začne s PRAZNO ekipo in doda svoje. */
 export const preberiSodelavci = (): Sodelavec[] => {
-  if (typeof window === 'undefined') return ZACETNI_SODELAVCI;
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(KLJUC);
-    if (!raw) return ZACETNI_SODELAVCI;
-    const parsed = JSON.parse(raw) as Sodelavec[];
-    return Array.isArray(parsed) && parsed.length ? parsed : ZACETNI_SODELAVCI;
-  } catch {
-    return ZACETNI_SODELAVCI;
-  }
+    if (raw) {
+      const parsed = JSON.parse(raw) as Sodelavec[];
+      if (Array.isArray(parsed) && parsed.length) return parsed;
+    }
+  } catch { /* zasebni način */ }
+  return jeDemo() ? ZACETNI_SODELAVCI : [];
 };
 
 export const shraniSodelavci = (seznam: Sodelavec[]): void => {

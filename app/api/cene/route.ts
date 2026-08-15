@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { omejiApi } from '@/lib/rate-limit';
 
 /**
  * Anonimna cenovna tocka iz kalkulatorja — skupna baza cen na trgu.
@@ -27,14 +29,18 @@ const MAX_IZVEDBA = 300_000;
 const MAX_PRAVICE = 2_000_000;
 
 export async function POST(request: Request) {
+  const omejitev = await omejiApi(request, 'cene', 60);
+  if (omejitev) return omejitev;
+
   const endpoint = process.env.GOOGLE_SHEETS_CENE_WEBHOOK_URL;
   const baza = createAdminClient();
   /* Supabase je zdaj glavna shramba, Sheet ostane neobvezen. Ce ni ne enega
      ne drugega, se pot obnasa kot prej: tiho ne stori nicesar. */
   if (!endpoint && !baza) return NextResponse.json({ ok: false, reason: 'not-configured' });
 
-  let body: Record<string, unknown> = {};
-  try { body = await request.json(); } catch { /* prazen zapis odbijemo spodaj */ }
+  let body: Record<string, unknown>;
+  try { body = await preberiJson(request, 16_000); }
+  catch (error) { return NextResponse.json({ error: sporociloValidacije(error) }, { status: 400 }); }
 
   /* ── nevidna bot-zascita (Turnstile) ─────────────────────────────────
      Aktivna sele, ko je vpisan TURNSTILE_SECRET_KEY. Do takrat preskocimo,

@@ -4,6 +4,70 @@ import { aktivnaDodelitev, dodelitevOdklene } from '@/lib/dostop';
 
 export type AccessTier = 'anonymous' | 'free' | 'pro';
 
+export type FlowRole = 'owner' | 'admin' | 'accounting' | 'member' | 'viewer';
+export type FlowRoleAction =
+  | 'view'
+  | 'edit'
+  | 'issueInvoice'
+  | 'exportAccounting'
+  | 'delete'
+  | 'manageMembers'
+  | 'overrideInvoiceNumber';
+
+type DatabaseFlowRole = FlowRole | 'accountant';
+
+const ROLE_RANK: Record<FlowRole, number> = {
+  viewer: 1,
+  member: 2,
+  accounting: 3,
+  admin: 4,
+  owner: 5,
+};
+
+const normalizeRole = (role: DatabaseFlowRole | null | undefined): FlowRole | null => {
+  if (!role) return null;
+  return role === 'accountant' ? 'accounting' : role;
+};
+
+export function roleAtLeast(role: FlowRole | null, minimum: FlowRole): boolean {
+  return role !== null && ROLE_RANK[role] >= ROLE_RANK[minimum];
+}
+
+export function roleCan(role: FlowRole | null, action: FlowRoleAction): boolean {
+  if (action === 'view') return roleAtLeast(role, 'viewer');
+  if (action === 'edit') return roleAtLeast(role, 'member');
+  if (action === 'issueInvoice' || action === 'exportAccounting') {
+    return roleAtLeast(role, 'accounting');
+  }
+  return roleAtLeast(role, 'admin');
+}
+
+export const canIssueInvoice = (role: FlowRole | null) => roleCan(role, 'issueInvoice');
+export const canDelete = (role: FlowRole | null) => roleCan(role, 'delete');
+export const canManageMembers = (role: FlowRole | null) => roleCan(role, 'manageMembers');
+export const canExportAccounting = (role: FlowRole | null) => roleCan(role, 'exportAccounting');
+export const canOverrideNumber = (role: FlowRole | null) => roleCan(role, 'overrideInvoiceNumber');
+
+export async function getMembershipRole(): Promise<FlowRole | null> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data, error } = await supabase
+    .from('organization_members')
+    .select('organization_id,role')
+    .eq('user_id', user.id)
+    .order('created_at')
+    .limit(100);
+  if (error || !data?.length) return null;
+
+  const activeOrganization = typeof window === 'undefined'
+    ? null
+    : localStorage.getItem('pinart-flow-active-organization');
+  const membership = data.find(item => item.organization_id === activeOrganization) || data[0];
+  return normalizeRole(membership.role as DatabaseFlowRole);
+}
+
 export type FlowFeature =
   | 'calculator'
   | 'localPdf'

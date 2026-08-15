@@ -187,7 +187,7 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       .af-vrstica{position:relative;display:flex;align-items:center;gap:.6rem;min-height:2.75rem;min-width:0}
       /* privzeto (mobilno) = kompaktni ikoni; namizni blok skrit */
       .af-mob{display:contents}
-      .af-mob-akcija{margin-left:auto;display:inline-flex;align-items:center;gap:.4rem;min-width:0}
+      .af-mob-akcija{margin-left:auto;display:inline-flex;align-items:center;gap:.6rem;min-width:0}
       .af-namizje{display:none}
       /* NAMIZJE: vse vidno v eni vrsti, iskalnik → datum → status → akcija */
       @media (min-width:641px){
@@ -200,9 +200,9 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
         .af-sheet,.af-zastor{display:none !important}
         /* iskalnik ne raste greedy cez cel prostor -> max-width, da vrstica ni predolga/zbita */
         .af-poln{flex:1 1 11rem;max-width:17rem;min-width:0;display:flex;align-items:center;gap:.45rem;box-sizing:border-box;background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;padding:0 .95rem;color:color-mix(in oklch,var(--ink,#111) 50%,transparent)}
-        .af-poln:focus-within{border-color:var(--ink,#111)}
+        .af-poln:focus-within{border-color:var(--ink,#111);box-shadow:0 0 0 2.5px color-mix(in oklch,var(--purple,oklch(66% 0.2 297)) 42%,transparent)}
         .af-poln input{flex:1;min-width:0;border:none;background:none;font:inherit;font-weight:500;color:var(--ink,#111);padding:.62rem .25rem}
-        .af-poln input:focus{outline:none}
+        .af-poln input:focus{outline:none;box-shadow:none}
         .af-poln input::placeholder{color:color-mix(in oklch,var(--ink,#111) 45%,transparent)}
         /* datum: sprozilec (ikona + slovensko besedilo) + koledar kot popover pod njim */
         .af-datum{position:relative;flex:0 0 auto;min-width:0;display:inline-flex}
@@ -242,6 +242,20 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       /* ── akcijski gumb (skupni videz, npr. + Nova ponudba) ── */
       .af-akcija-gumb{display:inline-flex;align-items:center;justify-content:center;gap:.3rem;white-space:nowrap;padding:.7rem 1.1rem;border:none;border-radius:999px;background-color:var(--ink,#111);color:var(--paper,#fff);font:inherit;font-size:.82rem;font-weight:700;text-decoration:none;cursor:pointer;transition:transform .15s,opacity .15s}
       .af-akcija-gumb:hover{transform:translateY(-1px);opacity:.92}
+      @media (max-width:640px){
+        /* iskalni overlay naj se razpne cez CELO orodno vrstico (arh-glava), ne le cez .af:
+           .af IN .af-vrstica postaneta pozicijsko nevtralna, sidrisce je arh-glava (ArhivWorkspace). */
+        .af{position:static}
+        .af-vrstica{position:static}
+        /* Izvoz za racunovodstvo = mala ikona-krogec (kot search/filter), da ne stisne vrstice */
+        .af-akcija-izvoz{width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;background-color:color-mix(in oklch,var(--paper,#fff) 70%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);color:var(--ink,#111)}
+        .af-akcija-izvoz:hover{background-color:var(--ink,#111);color:var(--paper,#fff);transform:none}
+        .af-akcija-izvoz .af-akcija-tekst{display:none}
+        .af-akcija-dodaj{position:relative;width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;font-size:0}
+        .af-akcija-dodaj::before,.af-akcija-dodaj::after{content:'';position:absolute;top:50%;left:50%;background:currentColor;border-radius:2px}
+        .af-akcija-dodaj::before{width:1.3rem;height:2.4px;transform:translate(-50%,-50%)}
+        .af-akcija-dodaj::after{width:2.4px;height:1.3rem;transform:translate(-50%,-50%)}
+      }
 
       .af-krog{position:relative;display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;padding:0;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);border-radius:50%;background-color:color-mix(in oklch,var(--paper,#fff) 70%,transparent);color:var(--ink,#111);cursor:pointer;transition:background-color .15s,color .15s}
       .af-krog:hover{background-color:var(--ink,#111);color:var(--paper,#fff)}
@@ -249,17 +263,18 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       /* razsirjeno iskanje: pilula cez CELO vrstico (animacija sirine iz leve) */
       .af-iskanje{position:absolute;inset:0;z-index:3;display:flex;align-items:center;gap:.45rem;box-sizing:border-box;background-color:color-mix(in oklch,var(--paper,#fff) 97%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;padding:0 .3rem 0 .85rem;color:color-mix(in oklch,var(--ink,#111) 55%,transparent);opacity:0;pointer-events:none;clip-path:inset(0 100% 0 0 round 999px);transition:clip-path .26s cubic-bezier(.2,.8,.3,1),opacity .18s}
       .af-iskanje.odprt{opacity:1;pointer-events:auto;clip-path:inset(0 0 0 0 round 999px)}
+      .af-iskanje:focus-within{border-color:var(--purple,oklch(66% 0.2 297));box-shadow:inset 0 0 0 1.5px color-mix(in oklch,var(--purple,oklch(66% 0.2 297)) 55%,transparent)}
       @media (prefers-reduced-motion:reduce){.af-iskanje{transition:none}}
       .af-iskanje svg{flex:none}
       .af-iskanje input{flex:1;min-width:0;min-height:2.2rem;border:none;background:none;font:inherit;font-size:16px;font-weight:500;color:var(--ink,#111);padding:.45rem .25rem}
-      .af-iskanje input:focus{outline:none}
+      .af-iskanje input:focus{outline:none;box-shadow:none}
       .af-iskanje input::placeholder{color:color-mix(in oklch,var(--ink,#111) 45%,transparent)}
       .af-iskanje-x{flex:none;width:2.1rem;height:2.1rem;display:inline-flex;align-items:center;justify-content:center;border:none;background-color:color-mix(in oklch,var(--ink,#111) 6%,transparent);border-radius:50%;font-size:1rem;line-height:1;color:var(--ink,#111);cursor:pointer}
       .af-iskanje-x:hover{background-color:var(--ink,#111);color:var(--paper,#fff)}
 
       /* sheet z dna — enak videz kot Oblikovanje/Podpis sheet pri pogodbah */
       .af-zastor{position:fixed;inset:0;background-color:color-mix(in oklch,var(--ink,#111) 34%,transparent);z-index:95}
-      .af-sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,102%);width:min(480px,100vw);z-index:96;background-color:var(--paper,#fff);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px color-mix(in oklch,var(--ink,#111) 22%,transparent);transition:transform .32s cubic-bezier(.2,.8,.3,1);max-height:76dvh;overflow-y:auto;padding:0 1.2rem calc(1.4rem + env(safe-area-inset-bottom,0px))}
+      .af-sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,102%);width:min(480px,100vw);z-index:96;background-color:var(--paper,#fff);border-radius:20px 20px 0 0;box-shadow:0 -16px 44px color-mix(in oklch,var(--ink,#111) 22%,transparent);transition:transform .32s cubic-bezier(.2,.8,.3,1);max-height:92dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 1.2rem calc(1.4rem + env(safe-area-inset-bottom,0px))}
       .af-sheet.odprt{transform:translate(-50%,0)}
       @media (prefers-reduced-motion:reduce){.af-sheet{transition:none}}
       .af-glava{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;padding:1.35rem 0 .65rem;border-bottom:1px solid color-mix(in oklch,var(--ink,#111) 10%,transparent)}

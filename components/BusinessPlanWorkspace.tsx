@@ -1026,6 +1026,18 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       </div>
 
 
+      {/* Legenda barv (samo mobilno prek CSS): v stolpcu VRSTA so na telefonu samo
+          pikice, tu je razlaga barv. Brez »?« — legenda ze vse pove (Tina). */}
+      <div className={styles.vrstaLegendaVrstica}>
+        <ul className={styles.vrstaLegenda} aria-label={L('Legenda barv', 'Colour legend')}>
+          <li><span className={styles.legDot} data-vrsta="redno" />{L('Redno', 'Regular')}</li>
+          <li><span className={styles.legDot} data-kraj="doma" />{L('Od doma', 'From home')}</li>
+          <li><span className={styles.legDot} data-vrsta="sluzbena" />{L('Službena pot', 'Business trip')}</li>
+          <li><span className={styles.legDot} data-vrsta="dopust" />{L('Dopust / zasebno', 'Leave / personal')}</li>
+          <li><span className={styles.legDot} data-vrsta="bolniska" />{L('Bolniška / praznik', 'Sick / holiday')}</li>
+        </ul>
+      </div>
+
       <div className={styles.mesecTabelaOvoj}>
         <table className={styles.mesecTabela}>
           <thead><tr><th>{L('Dan', 'Day')}</th><th>{L('Prihod', 'Arrival')}</th><th>{L('Malica', 'Break')}</th><th>{L('Odhod', 'Departure')}</th><th>{L('Vrsta', 'Type')}</th><th>{L('Ure', 'Hours')}</th><th aria-hidden="true" /></tr></thead>
@@ -1169,7 +1181,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
               </div>
               <b>{duration(g.minute)}</b>
               <b>{urna ? `${money(urna)}/h` : L('brez vrednosti', 'no value')}</b>
-              <em data-extra={g.dodatno}>{g.dodatno ? L('Dodatno delo', 'Extra work') : L('Vključeno', 'Included')}</em>
+              <em data-extra={g.dodatno}>{g.dodatno ? L('Dodatno delo', 'Extra work') : L('V dogovoru', 'In scope')}</em>
               <div className={styles.akcije}>
                 <button type="button" className={styles.vrsticaGumb} data-glavni onClick={() => nadaljuj(g.zadnji)} disabled={!!running || !!pending} title={running || pending ? L('Najprej zaključi tekoče merjenje', 'Finish the current entry first') : L('Začni novo merjenje na tem projektu', 'Start a new entry on this project')}>{L('Nadaljuj', 'Continue')}</button>
                 {g.zaporedje.length === 1 && <>

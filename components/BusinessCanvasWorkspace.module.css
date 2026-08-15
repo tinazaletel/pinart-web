@@ -17,17 +17,33 @@
 .intro p, .actions p, .plan header p { margin: 0 0 .5rem; font-size: .75rem; font-weight: 850; letter-spacing: .14em; }
 .intro h2, .actions h2, .plan h2 { max-width: 23ch; margin: 0; font: 500 clamp(1.7rem, 3vw, 2.7rem)/1.02 var(--font-serif), Georgia, serif; }
 .intro > div > span, .actions > div > span { display: block; max-width: 62ch; margin-top: .65rem; color: var(--muted); line-height: 1.5; }
-.progress { position: relative; z-index: 1; width: 10rem; aspect-ratio: 1; display: grid; place-items: center; align-content: center; border-radius: 50%; box-shadow: inset 0 0 0 1.1rem oklch(97% .01 87), 0 .8rem 2rem oklch(45% .08 285 / .1); text-align: center; }
-.progress strong { font: 500 2.15rem/1 var(--font-sans), system-ui, sans-serif; }.progress small { font-size: .9rem; }
+/* Cist napredni prstan: barvni prstan zunaj (conic-gradient iz inline stila),
+   bel krog v sredini (::after), stevilka »9/9« + oznaka na sredini. */
+.progress { position: relative; z-index: 1; width: 10rem; aspect-ratio: 1; display: grid; place-items: center; align-content: center; border-radius: 50%; box-shadow: 0 .5rem 1.6rem oklch(50% .12 285 / .14); text-align: center; }
+.progress::after { content: ''; position: absolute; inset: 1.05rem; border-radius: 50%; background: var(--paper, oklch(98% .008 87)); box-shadow: inset 0 1px 3px oklch(50% .12 285 / .08); }
+.progress > * { position: relative; z-index: 1; }
+.progress strong { display: inline-flex; align-items: baseline; gap: .05rem; font: 600 2.3rem/1 var(--font-serif, Georgia), serif; color: var(--ink); letter-spacing: -.02em; }
+.progress small { font: 600 .95rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 45%, transparent); }
 /* ozje in manjse, da besedilo ostane ZNOTRAJ notranjega kroga (ne strli ven) */
-.progress span { max-width: 6rem; margin-top: .25rem; color: color-mix(in oklch, var(--ink) 68%, transparent); font-size: .66rem; line-height: 1.2; text-wrap: balance; }
+/* Napis JE ZUNAJ kroga (pod njim), da krog kaze samo »9/9« centrirano (Tina). */
+.progressWrap { display: grid; justify-items: center; align-content: center; gap: .5rem; }
+.progressLabel { max-width: 9rem; color: color-mix(in oklch, var(--ink) 68%, transparent); font-size: .72rem; line-height: 1.25; text-align: center; text-wrap: balance; }
 .canvas { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-areas: 'partners partners activities activities value value relationships relationships segments segments' 'partners partners resources resources value value channels channels segments segments' 'costs costs costs costs costs revenue revenue revenue revenue revenue'; gap: .75rem; }
-.canvas article { position: relative; isolation: isolate; overflow: hidden; min-height: 13rem; display: grid; grid-template-rows: auto auto 1fr; gap: .7rem; padding: 1.1rem; border: 1px solid oklch(83% .025 80 / .8); border-radius: 1.25rem; background: linear-gradient(145deg, oklch(98% .01 87), oklch(95% .025 87)); transition: transform .2s ease, box-shadow .2s ease; }
-.canvas article::after { content: ''; position: absolute; z-index: -1; right: -2.8rem; bottom: -3.6rem; width: 8.5rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .55); border-radius: 48% 52% 44% 56%; transform: rotate(18deg); }
+.canvas article { position: relative; isolation: isolate; overflow: hidden; min-height: 13rem; display: grid; grid-template-rows: auto auto 1fr; gap: .7rem; padding: 1.1rem; border: 1px solid oklch(83% .025 80 / .8); border-radius: 1.25rem; background: linear-gradient(145deg, oklch(98% .01 87), oklch(95% .025 87)); background-size: 240% 240%; animation: canvasFlow 18s ease-in-out infinite; transition: transform .2s ease, box-shadow .2s ease; }
+/* Animiran, prelivajoc gradient (aurora) namesto outline krogov (Tina). */
+.canvas article::before { content: ''; position: absolute; z-index: -1; inset: -40%; background: radial-gradient(circle at 32% 28%, oklch(100% 0 0 / .5), transparent 56%); animation: canvasAurora 22s ease-in-out infinite; pointer-events: none; }
+.canvas article:nth-of-type(2n)::before { animation-duration: 27s; animation-direction: reverse; }
+.canvas article:nth-of-type(3n) { animation-duration: 23s; }
+@keyframes canvasFlow { 0%, 100% { background-position: 0% 0%; } 50% { background-position: 100% 100%; } }
+@keyframes canvasAurora { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(16%, 10%) scale(1.05); } 66% { transform: translate(-12%, 14%) scale(1.02); } }
+@media (prefers-reduced-motion: reduce) { .canvas article, .canvas article::before { animation: none; } }
 .canvas article:focus-within { transform: translateY(-2px); box-shadow: 0 1rem 2.5rem oklch(45% .08 285 / .11); }
 .canvas article[data-block='partners'] { grid-area: partners; background: linear-gradient(145deg, oklch(96% .035 295), oklch(92% .055 292)); }.canvas article[data-block='activities'] { grid-area: activities; background: linear-gradient(145deg, oklch(96% .045 170), oklch(91% .075 167)); }.canvas article[data-block='resources'] { grid-area: resources; background: linear-gradient(145deg, oklch(97% .04 185), oklch(92% .055 205)); }.canvas article[data-block='value'] { grid-area: value; background: linear-gradient(145deg, oklch(91% .095 294), oklch(92% .085 165)); }.canvas article[data-block='relationships'] { grid-area: relationships; background: linear-gradient(145deg, oklch(97% .04 58), oklch(93% .065 48)); }.canvas article[data-block='channels'] { grid-area: channels; background: linear-gradient(145deg, oklch(97% .035 80), oklch(93% .055 72)); }.canvas article[data-block='segments'] { grid-area: segments; background: linear-gradient(145deg, oklch(95% .045 27), oklch(91% .075 35)); }.canvas article[data-block='costs'] { grid-area: costs; background: linear-gradient(145deg, oklch(96% .045 55), oklch(92% .075 45)); }.canvas article[data-block='revenue'] { grid-area: revenue; background: linear-gradient(145deg, oklch(95% .06 160), oklch(89% .09 170)); }
+/* per-blok gradient je shorthand in ponastavi background-size → tu ga vrnemo, da flow deluje */
+.canvas article[data-block] { background-size: 240% 240%; }
 .canvas header { display: grid; grid-template-columns: 1fr auto; gap: .45rem; align-items: start; }.canvas header > span:first-child { font-size: .72rem; font-weight: 850; letter-spacing: .12em; }.canvas h3 { grid-column: 1 / -1; max-width: 13ch; margin: 0; font: 500 clamp(1.25rem, 1.5vw, 1.65rem)/1.02 var(--font-serif), Georgia, serif; }.canvas p { max-width: 28ch; margin: 0; color: color-mix(in oklch, var(--ink) 68%, transparent); font-size: .8rem; line-height: 1.4; }
-.icon { display: grid; place-items: center; width: 2.35rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .72); border-radius: 50%; background: oklch(100% 0 0 / .42); backdrop-filter: blur(8px); }
+/* Brez outline kroga (Tina): samo nezna ikona, animiran gradient je vizualni poudarek. */
+.icon { display: grid; place-items: center; width: 2rem; aspect-ratio: 1; border: 0; background: none; opacity: .5; }
 .icon svg { width: 1.25rem; height: 1.25rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .canvas textarea { width: 100%; min-height: 7rem; field-sizing: content; overflow: hidden; padding: .8rem; resize: none; box-sizing: border-box; border: 1px solid oklch(100% 0 0 / .62); border-radius: .9rem; background: oklch(100% 0 0 / .68); box-shadow: inset 0 1px 0 oklch(100% 0 0 / .62); color: var(--ink); font: 500 16px/1.45 var(--font-manrope), sans-serif; backdrop-filter: blur(10px); }
 .canvas textarea::placeholder { color: color-mix(in oklch, var(--ink) 68%, transparent); }
@@ -47,13 +63,16 @@
 .buttonIcon { width: 1.2rem; height: 1.2rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .plan { display: grid; gap: 1rem; padding: 1.5rem; background: rgba(255,255,255,.55); }.plan header { display: flex; justify-content: space-between; align-items: start; }.plan pre { max-height: 36rem; overflow: auto; margin: 0; padding: 1.5rem; border: 1px solid oklch(22% .015 60 / .05); border-radius: 1rem; background: rgba(255,255,255,.55); white-space: pre-wrap; overflow-wrap: anywhere; font: 500 1rem/1.65 var(--font-manrope), sans-serif; }.plan > small { color: var(--muted); text-align: right; }
 .savedCanvases { overflow: hidden; border: 1px solid oklch(22% .015 60 / .05); border-radius: 1.45rem; background: rgba(255,255,255,.55); box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .045); }
-.savedCanvases > header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.35rem 1.5rem; }
+/* enak levi rob kot tabela (padding 1.1rem) — naslov poravnan s stolpci (Tina) */
+.savedCanvases > header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.3rem 1.1rem; }
 .savedCanvases > header p { margin: 0 0 .35rem; font-size: .75rem; font-weight: 850; letter-spacing: .14em; }
 .savedCanvases > header h2 { margin: 0; font: 500 clamp(1.35rem, 2vw, 1.9rem)/1.1 var(--font-serif), Georgia, serif; }
 .savedCanvases > header > span { display: grid; width: 2.5rem; aspect-ratio: 1; place-items: center; border-radius: 50%; background: oklch(93% .035 295); font-weight: 800; }
-.canvasTableWrap { overflow-x: auto; border-top: 1px solid var(--line); }
-.canvasTableWrap table { width: 100%; min-width: 52rem; border-collapse: collapse; }
-.canvasTableWrap th, .canvasTableWrap td { padding: .9rem 1rem; border-bottom: 1px solid var(--line); text-align: left; }
+.canvasTableWrap { min-width: 0; max-width: 100%; overflow-x: auto; border-top: 1px solid var(--line); }
+.canvasTableWrap table { width: 100%; min-width: 44rem; border-collapse: collapse; }
+.canvasTableWrap th, .canvasTableWrap td { padding: .8rem 1.1rem; border-bottom: 1px solid var(--line); text-align: left; }
+/* »Pinart d.o.o.« naj ostane v eni vrstici (ne pade v dve pri kratkem imenu) */
+.canvasTableWrap td strong { white-space: nowrap; }
 .canvasTableWrap th { color: var(--muted); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
 .canvasTableWrap tbody tr:last-child td { border-bottom: 0; }
 .canvasTableWrap td { font-size: .9rem; }
@@ -64,9 +83,79 @@
 .rowActions button:disabled { cursor: not-allowed; opacity: .42; }
 .rowActions svg { width: 1.15rem; height: 1.15rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .canvasToolbar input:focus-visible, .canvasToolbar select:focus-visible, .newCanvasButton:focus-visible, .rowActions button:focus-visible { outline: 3px solid oklch(60% .2 270); outline-offset: 2px; }
-.emptySaved { display: grid; gap: .35rem; padding: 1.5rem; border-top: 1px solid var(--line); }
+.emptySaved { display: grid; gap: .35rem; padding: 2rem 1.5rem; border: 1px dashed var(--line); border-radius: 1.35rem; text-align: center; justify-items: center; }
 .emptySaved span { color: var(--muted); }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+
+/* ── Dokumentni model: seznam kartic (dom) ⇄ urejevalnik ─────────────────── */
+.listHead { padding: .3rem .3rem 0; }
+.listHead p { margin: 0 0 .5rem; font-size: .75rem; font-weight: 850; letter-spacing: .14em; color: color-mix(in oklch, var(--ink) 58%, transparent); }
+.listHead h2 { margin: 0; font: 500 clamp(1.7rem, 3vw, 2.6rem)/1.02 var(--font-serif), Georgia, serif; }
+.listHead span { display: block; max-width: 54ch; margin-top: .55rem; color: var(--muted); line-height: 1.5; }
+/* Samo podnaslov (naslov je ze v topbar strani »Posel na eni strani.«) — Tina: en naslov+podnaslov */
+.listSub { max-width: 56ch; margin: -.4rem .3rem 1.3rem; color: var(--muted); line-height: 1.5; }
+
+.canvasGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1rem; }
+
+.newCanvasCard { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: .25rem; min-height: 10.5rem; padding: 1.3rem; border: 1.5px dashed color-mix(in oklch, oklch(58% .2 297) 40%, var(--line)); border-radius: 1.35rem; background: color-mix(in oklch, oklch(58% .2 297) 5%, rgba(255,255,255,.45)); color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
+.newCanvasCard:hover:not(:disabled) { transform: translateY(-2px); background: color-mix(in oklch, oklch(58% .2 297) 11%, rgba(255,255,255,.6)); box-shadow: 0 12px 30px oklch(50% .12 285 / .14); }
+.newCanvasCard:disabled { opacity: .5; cursor: not-allowed; }
+.newCanvasPlus { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; margin-bottom: .35rem; border-radius: 50%; background: oklch(58% .2 297); color: #fff; font-size: 1.5rem; line-height: 1; }
+.newCanvasCard strong { font-size: 1.1rem; font-weight: 700; }
+.newCanvasCard > span:last-child { color: var(--muted); font-size: .82rem; }
+
+.canvasCard { position: relative; display: flex; flex-direction: column; gap: .9rem; min-height: 10.5rem; padding: 1.3rem; border: 1px solid rgba(255,255,255,.6); border-radius: 1.35rem; background: rgba(255,255,255,.55); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3); box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .05); cursor: pointer; transition: transform .18s ease, box-shadow .18s ease; }
+.canvasCard:hover, .canvasCard:focus-visible { transform: translateY(-3px); box-shadow: 0 16px 38px oklch(45% .08 285 / .14); outline: none; }
+.canvasCardTop { display: flex; align-items: flex-start; justify-content: space-between; gap: .8rem; }
+.canvasCardName { min-width: 0; display: grid; gap: .2rem; }
+.canvasCardName strong { font: 500 1.25rem/1.15 var(--font-serif), Georgia, serif; overflow-wrap: anywhere; }
+.canvasCardName > span { color: var(--muted); font-size: .85rem; overflow-wrap: anywhere; }
+.canvasCardCount { flex: none; display: inline-flex; align-items: baseline; gap: .04rem; font: 600 1.05rem var(--font-serif), Georgia, serif; color: color-mix(in oklch, var(--ink) 72%, transparent); }
+.canvasCardCount i { font-style: normal; font-size: .72rem; color: var(--muted); }
+/* 9 pikic = napolnjeni bloki (namesto muddy prstana) — cist, tematski napredek */
+.canvasDots { display: flex; flex-wrap: wrap; gap: .32rem; }
+.canvasDots span { width: .55rem; height: .55rem; border-radius: 50%; background: color-mix(in oklch, var(--ink) 12%, transparent); }
+.canvasDots span[data-on='true'] { background: oklch(64% .17 300); }
+
+/* »Kmalu« placeholderji za prihodnje tipe dokumentov (Pitch/SWOT/Persone/Problem/Brief) */
+.comingSoon { margin-top: 1.6rem; padding-top: 1.4rem; border-top: 1px solid var(--line); }
+.comingSoonHead { margin: 0 .3rem 1rem; color: var(--muted); font-size: .8rem; font-weight: 700; }
+.comingSoonGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: .8rem; }
+.comingCard { position: relative; display: grid; align-content: start; gap: .3rem; padding: 1.1rem; border: 1px dashed var(--line); border-radius: 1.2rem; background: color-mix(in oklch, var(--ink) 2%, transparent); opacity: .72; }
+.comingCard strong { font: 500 1.1rem/1.1 var(--font-serif), Georgia, serif; }
+.comingCard > span:last-child { color: var(--muted); font-size: .8rem; line-height: 1.4; }
+.comingBadge { justify-self: start; margin-bottom: .15rem; padding: .18rem .5rem; border-radius: 999px; background: color-mix(in oklch, oklch(58% .2 297) 14%, transparent); color: color-mix(in oklch, oklch(46% .2 297) 92%, var(--ink)); font: 700 .62rem var(--font-sans), sans-serif; letter-spacing: .04em; text-transform: uppercase; }
+
+/* Mobilno: 2 stolpca KOMPAKTNIH kartic, da z več canvasi pregledaš več naenkrat
+   (ne dolg 1-stolpčni scroll). Foot se zloži, gumb »Razširi« čez celo širino. */
+@media (max-width: 560px) {
+  .canvasGrid, .comingSoonGrid { grid-template-columns: 1fr 1fr; gap: .7rem; }
+  .canvasCard, .newCanvasCard, .comingCard { min-height: 0; padding: .9rem; }
+  .canvasCard { gap: .6rem; }
+  .canvasCardName strong { font-size: 1.05rem; }
+  .canvasCardName > span { font-size: .76rem; }
+  .canvasCardCount { font-size: .92rem; }
+  .canvasDots { gap: .22rem; }
+  .canvasDots span { width: .42rem; height: .42rem; }
+  .canvasCardFoot { flex-direction: column; align-items: stretch; gap: .45rem; }
+  .canvasCardPlan { text-align: center; }
+  .newCanvasCard { align-items: center; text-align: center; justify-items: center; }
+  .comingCard strong { font-size: 1rem; }
+}
+.canvasCardFoot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.canvasCardDate { color: var(--muted); font-size: .78rem; }
+.canvasCardPlan { flex: none; padding: .38rem .65rem; border: 0; border-radius: 999px; background: color-mix(in oklch, oklch(58% .2 297) 12%, transparent); color: color-mix(in oklch, oklch(46% .2 297) 92%, var(--ink)); font: 700 .74rem var(--font-sans), sans-serif; cursor: pointer; transition: background .16s ease; }
+.canvasCardPlan:hover { background: color-mix(in oklch, oklch(58% .2 297) 22%, transparent); }
+
+/* Urejevalnik: vrh z »nazaj« + napredkom */
+.editorHead { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.editorBack { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.6rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.6); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); color: var(--ink); font: 700 .82rem var(--font-sans), sans-serif; cursor: pointer; transition: border-color .16s ease, background .16s ease; }
+.editorBack:hover { border-color: var(--ink); background: rgba(255,255,255,.82); }
+.editorHead .progressWrap { grid-auto-flow: column; align-items: center; gap: .7rem; }
+.editorHead .progress { width: 6.5rem; }
+.editorHead .progress::after { inset: .75rem; }
+.editorHead .progress strong { font-size: 1.7rem; }
+.editorHead .progressLabel { text-align: left; max-width: 7rem; }
 @media (max-width: 1100px) { .canvas { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: none; }.canvas article[data-block] { grid-area: auto; }.canvas article[data-block='value'] { grid-column: 1 / -1; } }
 @media (max-width: 700px) { .page { min-width: 0; }.canvasToolbar, .newCanvasForm { align-items: stretch; flex-direction: column; }.canvasToolbar label, .newCanvasForm label { flex-basis: auto; }.canvasToolbar button, .newCanvasForm > div, .newCanvasForm button { width: 100%; }.intro, .actions { grid-template-columns: 1fr; gap: 1.25rem; padding: 1.15rem; }.intro::after { right: -4rem; }.progress { width: 7rem; }.canvas { grid-template-columns: 1fr; }.canvas article[data-block='value'] { grid-column: auto; }.canvas article { min-width: 0; min-height: auto; padding: 1rem; }.canvas textarea { min-height: 8rem; }.actions > div:last-child, .plan footer { justify-content: stretch; flex-direction: column; }.saveFeedback { text-align: left; }.actions button, .plan footer button { width: 100%; min-height: 3rem; }.plan { min-width: 0; padding: 1rem; }.plan header { gap: .75rem; }.plan header > button { flex: 0 0 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }.plan pre { max-width: 100%; padding: 1rem; box-sizing: border-box; } }
 

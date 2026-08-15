@@ -12,6 +12,7 @@
    (lib/ics) ter predogled/demo (lib/predogled). Edge-to-edge (brez robov). */
 
 import { useLocale } from 'next-intl';
+import MobTabs from '@/components/MobTabs';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   CalendarPlus,
@@ -618,11 +619,12 @@ export default function KoledarWorkspace() {
           <button type="button" className="kol-danes" onClick={() => setIzbranDan(danes)}>{L('Danes', 'Today')}</button>
           <button type="button" className="kol-nav-gumb" onClick={() => premakni(1)} aria-label={L('Naprej', 'Next')}><CaretRight size={15} weight="bold" /></button>
           <strong className="kol-obseg">{obseg}</strong>
-          <div className="kol-seg" role="group" aria-label={L('Pogled koledarja', 'Calendar view')}>
+          <div className="kol-seg mobtabs-hide" role="group" aria-label={L('Pogled koledarja', 'Calendar view')}>
             <button type="button" data-aktiven={pogled === 'dan'} onClick={() => setPogled('dan')}>{L('Dan', 'Day')}</button>
             <button type="button" data-aktiven={pogled === 'teden'} onClick={() => setPogled('teden')}>{L('Teden', 'Week')}</button>
             <button type="button" data-aktiven={pogled === 'mesec'} onClick={() => setPogled('mesec')}>{L('Mesec', 'Month')}</button>
           </div>
+          <MobTabs label={L('Pogled koledarja', 'Calendar view')} vrednost={pogled} naVrednost={id => setPogled(id as Pogled)} opcije={[{ id: 'dan', label: L('Dan', 'Day') }, { id: 'teden', label: L('Teden', 'Week') }, { id: 'mesec', label: L('Mesec', 'Month') }]} />
         </div>
 
         <div className="kol-akcije">

@@ -170,7 +170,7 @@ export default async function PrivacyPage({
       style={{
         background: 'var(--paper)',
         minHeight: '100vh',
-        paddingTop: 'clamp(6rem, 12vw, 10rem)',
+        paddingTop: 'clamp(2.25rem, 6vw, 5rem)',
         paddingBottom: 'clamp(4rem, 8vw, 7rem)',
         paddingInline: 'clamp(1.5rem, 8vw, 12rem)',
       }}

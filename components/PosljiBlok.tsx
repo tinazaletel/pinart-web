@@ -9,7 +9,6 @@ import { useEffect, useState } from 'react';
 import { PaperPlaneTilt, Check, X, Plus } from '@phosphor-icons/react';
 import { posljiMail } from '@/lib/posta';
 import { dodajPosto } from '@/lib/postaDnevnik';
-import { pushProjectMail } from '@/lib/pinartMailCloud';
 
 export interface PosljiBlokProps {
   /* zadeva e-pošte */
@@ -88,19 +87,24 @@ export default function PosljiBlok({
     setPosiljamMail(true);
     setMailStatus('Pošiljam …');
     try {
-      const rez = await posljiMail({ to: prejemniki, subject, html: zgradiHtml(), replyTo: replyTo || undefined });
+      /* Ko je pošta vezana na projekt (projektId), NE nastavljamo reply-to na
+         lastnika — strežnik iz projectExternalId nastavi reply-to token in ODHODNO
+         pošto zapiše v project_mail. Owner reply-to obdržimo le za nevezano pošto. */
+      const rez = await posljiMail({
+        to: prejemniki,
+        subject,
+        html: zgradiHtml(),
+        projectExternalId: projektId || undefined,
+        clientId: clientId || undefined,
+        replyTo: projektId ? undefined : (replyTo || undefined),
+      });
       if (rez.ok) {
-        /* zabeleži v dnevnik pošte, če je zapis vezan na projekt/stranko —
-           tako se pošta pokaže na strani projekta (ProjectsWorkspace). Ko
-           projektId/clientId nista podana, se obnašanje ne spremeni. */
+        /* Lokalni dnevnik pošte (prikaz na strani projekta brez čakanja na oblak).
+           Odhodni zapis v oblak (project_mail) naredi strežnik ob projectExternalId —
+           zato tu ne kličemo več pushProjectMail (sicer bi bil zapis podvojen). */
         if (projektId || clientId) {
           try {
             dodajPosto({ projectId: projektId, clientId, smer: 'poslano', prejemniki, zadeva: subject, povzetek: undefined });
-            /* v oblak (per-projekt): samo ko je vezano na projekt (tabela zahteva
-               project_external_id). Fire-and-forget — ne sme prekiniti pošiljanja. */
-            if (projektId) {
-              void pushProjectMail({ projectExternalId: projektId, clientId, direction: 'out', toEmails: prejemniki, subject, occurredAt: new Date().toISOString() }).catch(() => undefined);
-            }
           } catch { /* zapis v dnevnik ne sme prekiniti uspešnega pošiljanja */ }
         }
         /* uspeh sporoči GUMB (»Poslano naročniku«); statusne vrstice ob uspehu

@@ -13,6 +13,14 @@
   box-sizing: border-box;
 }
 
+/* Mobilno: skrij scrollbar-trakove POVSOD (skrol ostane). Overlay scrollbari se na
+   pravih telefonih itak samodejno skrijejo — to poskrbi za dosleden »clean« videz
+   tudi v Safari Responsive Mode in pri portalanih sheetih (izven .shell). */
+@media (max-width: 640px) {
+  * { scrollbar-width: none; -ms-overflow-style: none; }
+  *::-webkit-scrollbar { width: 0; height: 0; display: none; }
+}
+
 h1, h2, h3, h4 {
   -webkit-text-stroke: 0;
 }

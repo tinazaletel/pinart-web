@@ -8,7 +8,9 @@
 
 import { FormEvent, Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt } from '@phosphor-icons/react';
+import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt, PenNib, X } from '@phosphor-icons/react';
+import GumbNazaj from '@/components/ui/GumbNazaj';
+import GumbPrimarni from '@/components/ui/GumbPrimarni';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, type FlowInvoiceItem, type FlowInvoiceSignature } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
@@ -16,7 +18,9 @@ import Toast from '@/components/Toast';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
 import { VALUTE_RACUN } from '@/lib/valute';
+import { naslednjaStevilka } from '@/lib/stevilcenje';
 import PosljiBlok from '@/components/PosljiBlok';
+import { posljiMail } from '@/lib/posta';
 import { dodajPostavko, izbrisiPostavko, preberiPostavke, type Postavka, type PostavkaEnota } from '@/lib/postavke';
 
 const K_NAST = 'pinart-kalkulator-v2';
@@ -32,7 +36,16 @@ const ENOTE_POSTAVK: PostavkaEnota[] = ['kos', 'ura', 'projekt', 'pavšal', 'mes
 const ENOTA_POSTAVKA_EN: Record<PostavkaEnota, string> = { kos: 'pcs', ura: 'hr', projekt: 'project', 'pavšal': 'flat rate', mesec: 'month' };
 
 const esc =(s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
-const stev = (s: string) => { const n = Number(String(s).replace(',', '.')); return Number.isFinite(n) ? n : 0; };
+/* SI format: pika = ločilo tisočic, vejica = decimalka. Če vnos vsebuje vejico → obravnavaj
+   kot SI (odstrani pike, vejico v piko: "25.000,00" → 25000). Če vejice NI, pusti piko kot
+   decimalko (nazaj-združljivo s starimi vnosi tipa "25.5"). */
+const stev = (s: string) => {
+  const t = String(s).trim();
+  if (!t) return 0;
+  const c = t.includes(',') ? t.replace(/\./g, '').replace(',', '.') : t;
+  const n = Number(c.replace(/[^\d.-]/g, ''));
+  return Number.isFinite(n) ? n : 0;
+};
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 const datStr = (d: Date) => `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}`;
 const danesISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -121,6 +134,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const [pdfId, setPdfId] = useState('');
   const [napaka, setNapaka] = useState('');
   const [obvestilo, setObvestilo] = useState('');   /* jasno opozorilo (namesto domačega »Fill out this field«) */
+  const [postaObvestilo, setPostaObvestilo] = useState<{ t: string; ok: boolean } | null>(null);   /* povratna info za »Pošlji v plačilo« (Flow send) */
 
   /* ── podpis na racunu — isti vzorec kot ContractWorkspace (canvas risanje ali
      nalozena slika, shranjena kot data URL); ime/kraj/datum so neobvezni. ── */
@@ -129,6 +143,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const [podpisDatum, setPodpisDatum] = useState(danesISO());
   const [podpisSlika, setPodpisSlika] = useState('');
   const [narisanPodpis, setNarisanPodpis] = useState(false);
+  const [podpisOdprt, setPodpisOdprt] = useState(false); /* popup (desktop) / slide-up (mobile) */
   const NOGA_PRIVZETA = jeEn ? 'This document is issued electronically and is valid without a stamp or signature.' : 'Dokument je izdan elektronsko in je veljaven brez žiga in podpisa.';
   const [nogaOn, setNogaOn] = useState(true);           /* neobvezna noga računa (privzeto vklopljena) */
   const [nogaText, setNogaText] = useState(NOGA_PRIVZETA);
@@ -364,16 +379,24 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   };
   const odstraniPodpis = () => setPodpisSlika('');
 
-  const save = (event?: FormEvent<HTMLFormElement>) => {
+  const save = async (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
     /* prej je v predogledu (demo) TIHO vrnil -> uporabnica je klikala Shrani in se ni zgodilo nič.
        Zdaj pove razlog: v demu ne pišemo v pravo bazo, treba je preklopiti na »Moji podatki«. */
     if (samoOgled) { setNapaka(L('To je predogled (demo) — račun ni shranjen. Za pravo shranjevanje preklopi na »Moji podatki« (preklopnik zgoraj).', 'This is a preview (demo) — the invoice is not saved. To really save, switch to »My data« (toggle above).')); return; }
     const items = izracun.postavke.filter(p => p.opis || p.cena);
     if (!items.length) { setNapaka(L('Dodaj vsaj eno postavko z opisom in ceno.', 'Add at least one item with a description and price.')); return; }
+    /* ŠTEVILKA: ob IZDAJI dodeli strežnik (atomsko, zaporedno, ločeni seriji račun/predračun) —
+       preprečuje podvajanje ob hkratnih izdajah. FAIL-SAFE: če RPC/migracija ni na voljo,
+       ostane ročna/provizorna številka, da izdaja NIKOLI ne pade. */
+    let stevilkaDok = stevilka.trim();
+    try {
+      const dodeljena = await naslednjaStevilka(predracun ? 'predracun' : 'racun');
+      if (dodeljena && dodeljena.trim()) stevilkaDok = dodeljena.trim();
+    } catch { /* strežniško številčenje trenutno ni na voljo → ostane ročna/provizorna */ }
     const invoice: FlowInvoice = {
       id: crypto.randomUUID(),
-      number: stevilka.trim(),
+      number: stevilkaDok,
       title: items[0].opis.slice(0, 90) || selectedOffer?.title,
       client: stranka.trim() || selectedOffer?.client || L('Brez stranke', 'No client'),
       amount: Math.round((avansJeDelni ? zaPlaciloAvans : izracun.zaPlacilo) * 100) / 100,
@@ -430,7 +453,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     /* noga = fiksno 5 mm od SPODNJEGA roba strani (v spodnji rob @page margina) */
     return n ? `<div class="dok-noga" style="position:fixed;left:16mm;right:16mm;bottom:5mm;padding-top:8px;border-top:1px solid oklch(93% .006 82 / .55);font-size:8pt;color:#625c56;line-height:1.5">${esc(n).split('\n').join('<br>')}</div>` : '';
   };
-  const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#8a8177;font-size:9pt}
+  const DOC_CSS = `@page{size:A4;margin:16mm 16mm 18mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{margin:0;color:#1a1622;font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;line-height:1.42}.lg{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:12px;border-bottom:1.5px solid #B25476;margin-bottom:20px}.lg .rt{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;color:#111}.lg .lg-logo{max-height:46px;max-width:180px;object-fit:contain;display:block}.mut{color:#625c56;font-size:9pt}
     .rac-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin:6px 0 22px}
     .rac-title{display:flex;flex-direction:column;gap:2px}
     .rac-kicker{font-size:9pt;letter-spacing:.28em;text-transform:uppercase;color:#B25476}
@@ -551,8 +574,11 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     } catch { setNapaka(L('PDF-ja ni bilo mogoče pripraviti. Poskusi znova.', 'The PDF could not be prepared. Please try again.')); } finally { setPdfId(''); }
   };
 
-  /* Poslji v placilo — mailto vzorec iz KalkulatorApp ("posljem racun st. ...") */
-  const posljiVPlacilo = (inv: FlowInvoice) => {
+  /* Poslji v placilo — če ima stranka veljaven e-naslov, gre PREK Flowa (Resend):
+     strežnik iz projectExternalId (sourceOfferId računa) nastavi reply-to token in
+     zapiše ODHODNO pošto v project_mail. Brez veljavnega e-naslova degradira na mailto
+     (odpre lokalni mail za ročni vnos) — enak vzorec kot Arhiv »Pošlji stranki«. */
+  const posljiVPlacilo = async (inv: FlowInvoice) => {
     const email = clients.find(c => c.name.trim().toLowerCase() === inv.client.trim().toLowerCase())?.email?.trim() || '';
     const izdaja = new Date(inv.date);
     const rok = new Date(izdaja.getTime() + (inv.dueDays ?? PRIVZETI_ROK_DNI) * 864e5);
@@ -569,7 +595,18 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     v.push('', L('Podroben račun prilagam v PDF.', 'A detailed invoice is attached as a PDF.'), '', L('Lep pozdrav,', 'Best regards,'));
     if (podpis) v.push(podpis);
     const zadeva = L(`Račun ${inv.number || ''}`, `Invoice ${inv.number || ''}`).trim();
-    window.location.href = `mailto:${email}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(v.join('\n'))}`;
+    const telo = v.join('\n');
+    /* brez veljavnega e-naslova: fallback na mailto (ročni vnos prejemnika) */
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      window.location.href = `mailto:${email}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`;
+      return;
+    }
+    const html = `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${telo.replace(/\n/g, '<br>')}</div>`;
+    setPostaObvestilo({ t: L('Pošiljam …', 'Sending …'), ok: true });
+    const rez = await posljiMail({ to: [email], subject: zadeva, html, projectExternalId: inv.sourceOfferId || undefined });
+    setPostaObvestilo(rez.ok
+      ? { t: L('Poslano stranki — v Komunikacijah.', 'Sent to client — in Communications.'), ok: true }
+      : { t: L('Napaka: ', 'Error: ') + (rez.napaka || L('pošiljanje ni uspelo.', 'sending failed.')), ok: false });
   };
 
   /* trenutni racun kot FlowInvoice (iz obrazca) — za HTML dokument v posiljanju;
@@ -665,21 +702,22 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
             <input type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} />
           </label>
         </div>
-        <div className="rc-gumbi">
-          <button type="button" className="rc-gumb" aria-label={L('Pripravi račun', 'Prepare invoice')} onClick={odpriObrazec}>{predracun ? L('Pripravi predračun →', 'Prepare pro forma →') : L('Pripravi račun →', 'Prepare invoice →')}</button>
+        <div className="rc-gumbi" style={{ display: 'flex', justifyContent: 'center' }}>
+          <GumbPrimarni onClick={odpriObrazec} puscica aria-label={L('Pripravi račun', 'Prepare invoice')}>{predracun ? L('Pripravi predračun', 'Prepare pro forma') : L('Pripravi račun', 'Prepare invoice')}</GumbPrimarni>
         </div>
       </div>
     </section>}
 
     {/* ── POGLED: OBRAZEC (svoja stran, sredinski stolpec — view-swap kot pogodbe) ── */}
     {pogled === 'obrazec' && <section className={`${styles.invoiceCreator} rc-sek rc-stran rc-stolpec rc-obrazec`}>
-      <button type="button" className="rc-povezava rc-nazaj-vrh" onClick={() => setPogled('pregled')}>{L('← Nazaj', '← Back')}</button>
+      <GumbNazaj className="rc-nazaj-vrh" onClick={() => setPogled('pregled')}>{L('Nazaj', 'Back')}</GumbNazaj>
       <div className="rc-obr-uvod">
         <p className={styles.eyebrow}>{L('NOV RAČUN', 'NEW INVOICE')}</p>
         <h2>{L('Vse sestavine po zakonu.', 'Every legally required part.')}</h2>
         <p>{L('Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje in se izpišejo v glavi računa.', 'If an offer exists, select it — the client and item are pre-filled. The issuer details (name, address, tax number, IBAN) are read from the My company settings and printed in the invoice header.')}</p>
       </div>
       <Toast sporocilo={obvestilo} onClose={() => setObvestilo('')} ton="napaka" />
+      <Toast sporocilo={postaObvestilo?.t || ''} onClose={() => setPostaObvestilo(null)} ton={postaObvestilo?.ok ? 'uspeh' : 'napaka'} />
       <form noValidate onSubmit={event => {
         event.preventDefault();
         const obrazec = event.currentTarget;
@@ -781,12 +819,12 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           {vrstice.map((v, i) => <Fragment key={i}>
             <div className={'rc-vrstica' + (ddvZavezanec ? '' : ' rc-brez-ddv')}>
               <label className="rc-opis">{L('Opis', 'Description')}<input required={i === 0} value={v.opis} onChange={event => popraviVrstico(i, 'opis', event.target.value)} placeholder={L('Opravljena storitev, obseg ali obdobje …', 'Service provided, scope or period …')} /></label>
-              <label>{L('Kol.', 'Qty.')}<input required min="0" step="0.5" type="number" inputMode="numeric" placeholder="1" value={v.kolicina} onChange={event => popraviVrstico(i, 'kolicina', event.target.value)} /></label>
-              <label>{L(`Cena brez ${davOzn}`, `Price excl. ${davOzn}`)}<input required={i === 0} min="0" step="0.01" type="number" inputMode="decimal" placeholder="0,00" value={v.cena} onChange={event => popraviVrstico(i, 'cena', event.target.value)} /></label>
-              <label>{L('Popust %', 'Discount %')}<input min="0" max="100" step="0.5" type="number" inputMode="decimal" value={v.popust} onChange={event => popraviVrstico(i, 'popust', event.target.value)} placeholder="0" /></label>
+              <label className="rc-kolicina">{L('Kol.', 'Qty.')}<input required type="text" inputMode="decimal" placeholder="1" value={v.kolicina} onChange={event => popraviVrstico(i, 'kolicina', event.target.value)} /></label>
+              <label className="rc-cena">{L(`Cena brez ${davOzn}`, `Price excl. ${davOzn}`)}<input required={i === 0} type="text" inputMode="decimal" placeholder="0,00" value={v.cena} onChange={event => popraviVrstico(i, 'cena', event.target.value)} /></label>
+              <label className="rc-popust">{L('Popust %', 'Discount %')}<input type="text" inputMode="decimal" value={v.popust} onChange={event => popraviVrstico(i, 'popust', event.target.value)} placeholder="0" /></label>
               {ddvZavezanec && (valuta === 'eur'
-                ? <label>{davOzn}<select value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)}>{DDV_STOPNJE.map(s => <option key={s} value={s}>{s.replace('.', ',')} %</option>)}</select></label>
-                : <label>{L(`${davOzn} %`, `${davOzn} %`)}<input min="0" max="30" step="0.1" type="number" inputMode="decimal" placeholder="0" value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)} /></label>)}
+                ? <label className="rc-davek">{davOzn}<select value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)}>{DDV_STOPNJE.map(s => <option key={s} value={s}>{s.replace('.', ',')} %</option>)}</select></label>
+                : <label className="rc-davek">{L(`${davOzn} %`, `${davOzn} %`)}<input min="0" max="30" step="0.1" type="number" inputMode="decimal" placeholder="0" value={v.ddv} onChange={event => popraviVrstico(i, 'ddv', event.target.value)} /></label>)}
               {ddvZavezanec && valuta === 'eur' && (() => { const p = predlagajDdv(v.opis, v.ddv); return p ? <button type="button" className="rc-ddv-namig" title={`${p.razlog} ${L('(predlog, ne davčni nasvet)', '(suggestion, not tax advice)')}`} onClick={() => popraviVrstico(i, 'ddv', p.stopnja)}>💡 {p.stopnja.replace('.', ',')} %?</button> : null; })()}
               <span className="rc-znesek"><em>{L('Znesek', 'Amount')}</em><b>{eur2(vrsticaZnesek(izracun.postavke[i] || { opis: '', kolicina: 0, cena: 0 }))}</b></span>
               <button type="button" className="rc-x" onClick={() => setVrstice(rows => rows.length > 1 ? rows.filter((_, j) => j !== i) : rows)} aria-label={`${L('Odstrani postavko', 'Remove item')} ${i + 1}`} title={L('Odstrani postavko', 'Remove item')} disabled={vrstice.length < 2}>×</button>
@@ -811,43 +849,66 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           {!ddvZavezanec && valuta !== 'eur' && <p className="rc-klavzula">{L('Davek ni obračunan. Če na svojem trgu obračunavaš davek, vklopi »Obračunaj …« zgoraj.', 'No tax charged. If you charge tax in your market, turn on “Charge …” above.')}</p>}
         </div>
 
-        {/* podpis (neobvezen) — isti vzorec kot pri pogodbah: rocno narisan ali nalozen; izrise se na dnu racuna in v izvozu */}
+        {/* podpis (neobvezen) — strnjeno: naslov + pisalo; klik odpre popup (desktop) / slide-up (mobile) */}
         <div className="rc-podpis">
-          <div className="rc-post-glava"><p className={styles.eyebrow}>{L('PODPIS RAČUNA (NEOBVEZNO)', 'INVOICE SIGNATURE (OPTIONAL)')}</p>{podpisSlika && <button type="button" className="rc-povezava" onClick={odstraniPodpis}>{L('Odstrani podpis', 'Remove signature')}</button>}</div>
-          <div className="rc-podpis-polja">
-            <label className="rc-polje">{L('Ime podpisnika', 'Signer name')}<input value={podpisIme} onChange={event => setPodpisIme(event.target.value)} placeholder={ponudnik.ime || L('Ime in priimek', 'Full name')} /></label>
-            <label className="rc-polje">{L('Kraj', 'Place')}<input value={podpisKraj} onChange={event => setPodpisKraj(event.target.value)} placeholder={L('npr. Ljubljana', 'e.g. Ljubljana')} /></label>
-            <label className="rc-polje">{L('Datum podpisa', 'Signature date')}<input type="date" value={podpisDatum} onChange={event => setPodpisDatum(event.target.value)} /></label>
+          <div className="rc-post-glava">
+            <p className={styles.eyebrow}>{L('PODPIS RAČUNA (NEOBVEZNO)', 'INVOICE SIGNATURE (OPTIONAL)')}</p>
+            <button type="button" className="rc-podpis-trig" onClick={() => setPodpisOdprt(true)} aria-label={L('Uredi podpis', 'Edit signature')} title={L('Uredi podpis', 'Edit signature')}><PenNib size={18} /></button>
           </div>
-          {podpisSlika ? (
-            <div className="rc-podpis-prikaz">
+          {podpisSlika && (
+            <div className="rc-podpis-prikaz rc-podpis-mini">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={podpisSlika} alt={L('Podpis', 'Signature')} />
+              <button type="button" className="rc-povezava" onClick={odstraniPodpis}>{L('Odstrani podpis', 'Remove signature')}</button>
             </div>
-          ) : (
-            <>
-              <canvas ref={pripraviPlatno} className="rc-podpis-platno" onPointerDown={zacniRis} onPointerMove={risiPodpis} onPointerUp={koncajRis} onPointerCancel={koncajRis} />
-              <div className="rc-podpis-akcije">
-                <button type="button" className="rc-cip" onClick={pocistiPlatno}>{L('Počisti', 'Clear')}</button>
-                <button type="button" className="rc-cip" disabled={!narisanPodpis} onClick={uporabiNarisanPodpis}>{L('Uporabi narisan podpis', 'Use drawn signature')}</button>
-                <span className="rc-podpis-ali">{L('ali', 'or')}</span>
-                <button type="button" className="rc-cip" onClick={() => podpisDatotekaRef.current?.click()}>{L('Naloži sliko podpisa …', 'Upload signature image …')}</button>
-                <input ref={podpisDatotekaRef} type="file" accept="image/*" hidden onChange={naloziPodpisSliko} />
-              </div>
-            </>
           )}
         </div>
+
+        {podpisOdprt && (
+          <div className="rc-op-back" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setPodpisOdprt(false); }}>
+            <div className="rc-podpis-sheet" role="dialog" aria-modal="true" aria-label={L('Podpis računa', 'Invoice signature')}>
+              <div className="rc-podpis-glava">
+                <p className={styles.eyebrow}>{L('PODPIS RAČUNA', 'INVOICE SIGNATURE')}</p>
+                <button type="button" className="rc-podpis-x" onClick={() => setPodpisOdprt(false)} aria-label={L('Zapri', 'Close')}><X size={18} weight="bold" /></button>
+              </div>
+              <div className="rc-podpis-polja">
+                <label className="rc-polje">{L('Ime podpisnika', 'Signer name')}<input value={podpisIme} onChange={event => setPodpisIme(event.target.value)} placeholder={ponudnik.ime || L('Ime in priimek', 'Full name')} /></label>
+                <label className="rc-polje">{L('Kraj', 'Place')}<input value={podpisKraj} onChange={event => setPodpisKraj(event.target.value)} placeholder={L('npr. Ljubljana', 'e.g. Ljubljana')} /></label>
+                <label className="rc-polje">{L('Datum podpisa', 'Signature date')}<input type="date" value={podpisDatum} onChange={event => setPodpisDatum(event.target.value)} /></label>
+              </div>
+              {podpisSlika ? (
+                <div className="rc-podpis-prikaz">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={podpisSlika} alt={L('Podpis', 'Signature')} />
+                  <div className="rc-podpis-akcije"><button type="button" className="rc-cip" onClick={odstraniPodpis}>{L('Odstrani podpis', 'Remove signature')}</button></div>
+                </div>
+              ) : (
+                <>
+                  <canvas ref={pripraviPlatno} className="rc-podpis-platno" onPointerDown={zacniRis} onPointerMove={risiPodpis} onPointerUp={koncajRis} onPointerCancel={koncajRis} />
+                  <div className="rc-podpis-akcije">
+                    <button type="button" className="rc-cip" onClick={pocistiPlatno}>{L('Počisti', 'Clear')}</button>
+                    <button type="button" className="rc-cip" disabled={!narisanPodpis} onClick={uporabiNarisanPodpis}>{L('Uporabi narisan podpis', 'Use drawn signature')}</button>
+                    <span className="rc-podpis-ali">{L('ali', 'or')}</span>
+                    <button type="button" className="rc-cip" onClick={() => podpisDatotekaRef.current?.click()}>{L('Naloži sliko podpisa …', 'Upload signature image …')}</button>
+                    <input ref={podpisDatotekaRef} type="file" accept="image/*" hidden onChange={naloziPodpisSliko} />
+                  </div>
+                </>
+              )}
+              <div className="rc-podpis-koncaj"><GumbPrimarni onClick={() => setPodpisOdprt(false)}>{L('Gotovo', 'Done')}</GumbPrimarni></div>
+            </div>
+          </div>
+        )}
 
         {/* noga računa (neobvezna) — opomba »brez žiga in podpisa«, privzeto vklopljena, urejljiva */}
         <div className="rc-podpis rc-noga-blok">
           <div className="rc-post-glava">
             <p className={styles.eyebrow}>{L('NOGA RAČUNA (NEOBVEZNO)', 'INVOICE FOOTER (OPTIONAL)')}</p>
-            <label className="rc-noga-stikalo"><input type="checkbox" checked={nogaOn} onChange={event => setNogaOn(event.target.checked)} /> {L('Prikaži nogo', 'Show footer')}</label>
+            <button type="button" className={'rc-noga-toggle' + (nogaOn ? ' on' : '')} role="switch" aria-checked={nogaOn} onClick={() => setNogaOn(v => !v)}><span className="rc-noga-track"><span className="rc-noga-knob" /></span>{L('Prikaži nogo', 'Show footer')}</button>
           </div>
           {nogaOn && <label className="rc-polje rc-noga-polje">{L('Besedilo noge', 'Footer text')}<textarea value={nogaText} onChange={event => setNogaText(event.target.value)} rows={2} placeholder={NOGA_PRIVZETA} /></label>}
         </div>
 
-        <div className={styles.invoiceSubmit}><button type="submit" className="rc-zakljuci-gumb">{L('Zaključi →', 'Finish →')}</button></div>
+        <div className={styles.invoiceSubmit} style={{ display: 'flex', justifyContent: 'center' }}><GumbPrimarni type="submit" puscica>{L('Zaključi', 'Finish')}</GumbPrimarni></div>
       </form>
     </section>}
 
@@ -904,7 +965,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     <style>{`
       /* rc- = novi stili obrazca za racun; pazi na .shell pravila (min-height 2.75rem
          na inputih, select padding-right 3rem !important) — mere so temu prilagojene. */
-      .rc .rc-postavke{min-width:0;padding:1rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.9rem;background:linear-gradient(135deg,oklch(98% .018 87),oklch(96% .025 62))}
+      .rc{min-width:0;max-width:100%;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
+      .rc .rc-postavke{min-width:0;padding:1rem;border:1px solid rgba(255,255,255,.6);border-radius:.9rem;background:rgba(255,255,255,.4);-webkit-backdrop-filter:blur(16px) saturate(1.35);backdrop-filter:blur(16px) saturate(1.35);box-shadow:0 8px 28px rgba(40,25,40,.06)}
       .rc .rc-postavke *{box-sizing:border-box;min-width:0}
       .rc .rc-post-glava{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap}
       .rc .rc-ddv-toggle{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:650;color:var(--ink);cursor:pointer;white-space:nowrap}
@@ -932,9 +994,14 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-podpis{min-width:0;margin-top:1.1rem;padding:1rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.9rem;background:oklch(100% 0 0/.55)}
       .rc .rc-noga-stikalo{display:inline-flex;align-items:center;gap:.4rem;font-size:.72rem;font-weight:600;letter-spacing:.02em;text-transform:none;color:rgba(17,17,17,.7);cursor:pointer}
       .rc .rc-noga-stikalo input{width:1rem;height:1rem;accent-color:oklch(66% .2 297);cursor:pointer}
+      .rc .rc-noga-toggle{display:inline-flex;align-items:center;gap:.55rem;padding:0;border:none;background:none;font:inherit;font-size:.72rem;font-weight:600;letter-spacing:.02em;color:rgba(17,17,17,.7);cursor:pointer}
+      .rc .rc-noga-track{position:relative;width:2.5rem;height:1.4rem;flex:none;border-radius:999px;background:rgba(17,17,17,.2);transition:background .2s ease}
+      .rc .rc-noga-toggle.on .rc-noga-track{background:oklch(66% .2 297)}
+      .rc .rc-noga-knob{position:absolute;top:2px;left:2px;width:calc(1.4rem - 4px);height:calc(1.4rem - 4px);border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s ease}
+      .rc .rc-noga-toggle.on .rc-noga-knob{transform:translateX(1.1rem)}
       .rc .rc-noga-polje textarea{width:100%;box-sizing:border-box;border:1px solid oklch(90% .006 82);border-radius:.6rem;padding:.6rem .7rem;font:500 .85rem var(--font-sans),system-ui,sans-serif;color:var(--ink);background:#fff;resize:vertical;text-transform:none;letter-spacing:normal}
       .rc .rc-noga-polje textarea:focus{outline:none;border-color:oklch(66% .2 297)}
-      .rc .rc-podpis-polja{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.9rem;margin:.9rem 0 0}
+      .rc .rc-podpis-polja{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.9rem;margin:.9rem 0 0}
       .rc .rc-podpis-platno{display:block;width:100%;height:150px;margin-top:.9rem;border:1px dashed rgba(17,17,17,.3);border-radius:12px;background:#fff;touch-action:none;cursor:crosshair}
       .rc .rc-podpis-akcije{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.7rem}
       .rc .rc-podpis-ali{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
@@ -943,29 +1010,50 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-cip{padding:.42rem .8rem;border:1px solid rgba(17,17,17,.2);border-radius:999px;background:rgba(255,255,255,.5);cursor:pointer;font:inherit;font-size:.8rem;color:var(--ink);transition:border-color .15s,background .15s}
       .rc .rc-cip:hover:not(:disabled){border-color:var(--ink)}
       .rc .rc-cip:disabled{opacity:.45;cursor:default}
-      @media (max-width:640px){.rc .rc-podpis-polja{grid-template-columns:1fr}}
-      .rc .rc-vrstica{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(3.6rem,.5fr) minmax(6rem,.9fr) minmax(4.6rem,.65fr) minmax(5.8rem,.8fr) minmax(5.6rem,.8fr) 2rem;gap:.55rem;align-items:end;margin-top:.7rem}
-      .rc .rc-vrstica.rc-brez-ddv{grid-template-columns:minmax(0,2.5fr) minmax(3.6rem,.5fr) minmax(6rem,.9fr) minmax(4.6rem,.65fr) minmax(5.6rem,.9fr) 2rem}
+      @media (max-width:640px){.rc .rc-podpis-polja{grid-template-columns:minmax(0,1fr)}}
+      /* podpis: strnjen trigger (pisalo) + popup (desktop) / slide-up (mobile) */
+      .rc .rc-podpis-trig{width:2.5rem;height:2.5rem;flex:none;border-radius:50%;border:1px solid rgba(17,17,17,.22);background:var(--paper);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(17,17,17,.1);transition:background .15s,color .15s}
+      .rc .rc-podpis-trig:hover{background:var(--ink);color:var(--paper)}
+      .rc .rc-podpis-mini{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:.8rem}
+      .rc-op-back{position:fixed;inset:0;z-index:120;background:rgba(28,21,24,.28);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:1.5rem;animation:rcOpBack .2s ease both}
+      @keyframes rcOpBack{from{opacity:0}to{opacity:1}}
+      .rc-podpis-sheet{width:min(520px,100%);max-height:88dvh;overflow-y:auto;box-sizing:border-box;background:var(--paper);border:1px solid oklch(93% .006 82 / .55);border-radius:20px;box-shadow:0 24px 60px rgba(40,25,40,.28);padding:1.4rem;animation:rcSheetPop .24s cubic-bezier(.2,.8,.3,1) both}
+      @keyframes rcSheetPop{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+      .rc-podpis-glava{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.4rem}
+      .rc-podpis-x{width:2.1rem;height:2.1rem;flex:none;border-radius:50%;border:1px solid rgba(17,17,17,.16);background:var(--paper);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,color .15s}
+      .rc-podpis-x:hover{background:var(--ink);color:var(--paper)}
+      .rc-podpis-koncaj{display:flex;justify-content:center;margin-top:1.1rem}
+      @media (max-width:640px){
+        .rc-op-back{align-items:flex-end;padding:0}
+        .rc-podpis-sheet{width:100%;max-height:88dvh;border-radius:20px 20px 0 0;padding:1.2rem 1.1rem calc(1.4rem + env(safe-area-inset-bottom,0px));animation:rcSheetUp .3s cubic-bezier(.2,.8,.3,1) both}
+      }
+      @keyframes rcSheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+      @media (prefers-reduced-motion:reduce){.rc-op-back,.rc-podpis-sheet{animation:none}}
+      .rc .rc-vrstica{display:grid;grid-template-columns:minmax(0,2fr) minmax(3.6rem,.55fr) minmax(5.4rem,1.1fr) minmax(4rem,.55fr) minmax(5rem,.75fr) minmax(4.8rem,.85fr) 1.8rem;gap:.45rem;align-items:end;margin-top:.7rem}
+      .rc .rc-vrstica.rc-brez-ddv{grid-template-columns:minmax(0,2.3fr) minmax(3.6rem,.55fr) minmax(5.4rem,1.1fr) minmax(4rem,.55fr) minmax(4.8rem,.9fr) 1.8rem}
       .rc .rc-vrstica input,.rc .rc-vrstica select{width:100%}
-      .rc .rc-vrstica input[type='number']{text-align:right}
-      .rc .rc-znesek{display:grid;gap:.35rem;min-width:0}
-      .rc .rc-znesek em{font:800 .58rem var(--font-sans),sans-serif;font-style:normal}
-      .rc .rc-znesek b{display:flex;align-items:center;justify-content:flex-end;min-height:2.75rem;padding:0 .2rem;font:700 .72rem var(--font-sans),sans-serif;white-space:nowrap;overflow-wrap:anywhere}
+      .rc .rc-kolicina input,.rc .rc-cena input,.rc .rc-popust input,.rc .rc-davek input{text-align:right;padding-left:.4rem;padding-right:.45rem}
+      .rc .rc-vrstica label{font-size:14px;white-space:nowrap;min-width:0}
+      .rc .rc-vrstica input,.rc .rc-vrstica select{font-size:14px}
+      .rc .rc-znesek{display:grid;gap:.35rem;min-width:0;justify-items:end}
+      .rc .rc-znesek em{font:800 14px var(--font-sans),sans-serif;font-style:normal;text-align:right}
+      .rc .rc-znesek b{display:flex;align-items:center;justify-content:flex-end;min-height:2.75rem;padding:0 .2rem;font:750 .88rem var(--font-sans),sans-serif;white-space:nowrap;overflow-wrap:anywhere}
+      .rc .rc-vrstica select{padding-left:.55rem;padding-right:1.2rem;background-position:right .4rem center !important;background-size:.8rem}
       .rc .rc-x{width:2rem;height:2.75rem;border:0;border-radius:.65rem;background:transparent;color:color-mix(in oklch,var(--ink) 72%,transparent);font-size:1.1rem;line-height:1;cursor:pointer}
       .rc .rc-x:hover:not(:disabled){color:var(--ink);background:oklch(100% 0 0/.6)}
       .rc .rc-x:disabled{opacity:.3;cursor:default}
-      @media (max-width:760px){.rc .rc-shrani-editor{grid-template-columns:1fr 1fr}.rc .rc-shrani-editor .rc-cip{min-height:2.75rem}}
+      @media (max-width:760px){.rc .rc-shrani-editor{grid-template-columns:repeat(2,minmax(0,1fr))}.rc .rc-shrani-editor .rc-cip{min-height:2.75rem}}
       .rc .rc-vsote{margin-left:auto;width:min(21rem,100%);display:grid;gap:.15rem;padding:.85rem 1rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.9rem;background:oklch(100% 0 0/.65)}
-      .rc .rc-vsote>div{display:flex;align-items:baseline;justify-content:space-between;gap:.8rem;font-size:.62rem}
+      .rc .rc-vsote>div{display:flex;align-items:baseline;justify-content:space-between;gap:.8rem;font-size:.8rem}
       .rc .rc-vsote>div span{font-weight:700;color:var(--muted)}
-      .rc .rc-vsote>div b{font-size:.68rem;white-space:nowrap}
+      .rc .rc-vsote>div b{font-size:.85rem;white-space:nowrap}
       .rc .rc-skupaj{margin-top:.3rem;padding-top:.45rem;border-top:1.5px solid color-mix(in oklch,var(--ink) 30%,transparent)}
-      .rc .rc-vsote .rc-skupaj span{color:var(--ink);text-transform:uppercase;letter-spacing:.08em;font-size:.56rem}
-      .rc .rc-vsote .rc-skupaj b{font:700 1.12rem var(--font-sans),system-ui,sans-serif;letter-spacing:-.01em}
-      .rc .rc-klavzula{margin:.4rem 0 0;font-size:.56rem;line-height:1.5;color:var(--muted);font-weight:500}
+      .rc .rc-vsote .rc-skupaj span{color:var(--ink);text-transform:uppercase;letter-spacing:.08em;font-size:.68rem;font-weight:800}
+      .rc .rc-vsote .rc-skupaj b{font:750 1.42rem var(--font-sans),system-ui,sans-serif;letter-spacing:-.01em}
+      .rc .rc-klavzula{margin:.5rem 0 0;font-size:.75rem;line-height:1.55;color:var(--muted);font-weight:500}
       .rc .rc-napaka{margin:.5rem 0 0;color:oklch(50% .18 25);font-size:.62rem;font-weight:700;text-align:center}
       /* ── ZAKLJUCEK racuna (enaki elementi kot ponudba/pogodba) ── */
-      .rc .rc-zakljuci-gumb{width:max-content;padding:.85rem 1.9rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:600 .82rem var(--font-sans),sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:transform .2s ease}
+      .rc .rc-zakljuci-gumb{display:flex;align-items:center;gap:.55rem;width:max-content;margin-left:auto;padding:.85rem 1.9rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:600 .82rem var(--font-sans),sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:transform .2s ease}
       .rc .rc-zakljuci-gumb:hover{transform:translateY(-2px)}
       .rc .rc-zakljucek{padding-bottom:10rem}
       .rc .rc-zakljucek .rc-kicker-z,.rc .rc-zakljucek .rc-naslov-z,.rc .rc-zakljucek .rc-uvod-z{text-align:center}
@@ -1013,12 +1101,12 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);margin:0 0 .3rem}
       .rc .rc-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 1.4rem;color:var(--ink)}
       /* na svoji strani je obrazec en stolpec (modul ima 2 koloni za inline vgradnjo) */
-      .rc .rc-obrazec{grid-template-columns:1fr}
+      .rc .rc-obrazec{grid-template-columns:minmax(0,1fr)}
       /* vec zracnosti okoli naslova obrazca */
       .rc .rc-obr-uvod{margin:1rem 0 2rem}
       .rc .rc-obr-uvod h2{margin:.15rem 0 .6rem}
       .rc .rc-obr-uvod > p:last-child{margin:0;line-height:1.55}
-      .rc .rc-nazaj-vrh{margin:0 0 .2rem;justify-self:start}
+      .rc .rc-nazaj-vrh{margin:0 0 .9rem;justify-self:start}
       .rc .rc-povezava{font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0;display:inline-flex;align-items:center;gap:.38rem}
       .rc .rc-povezava:hover{opacity:.6}
       .rc .rc-mini{font-size:.8rem;color:rgba(17,17,17,.72)}
@@ -1034,17 +1122,18 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-mehur{position:relative;background:oklch(96% .012 297);border:none;border-radius:18px;border-top-left-radius:5px;padding:.85rem 1.25rem .85rem 2.75rem;box-shadow:0 2px 12px rgba(40,25,40,.06)}
       .rc .rc-mehur::before{content:"";position:absolute;left:.9rem;top:.95rem;width:1.3rem;height:1.3rem;border-radius:50%;background:radial-gradient(58% 48% at 30% 24%,rgba(255,255,255,.92),rgba(255,255,255,0) 62%),conic-gradient(from 210deg,#7C3AED,#EC4899,#F59E0B,#38BDF8,#7C3AED);box-shadow:0 2px 6px rgba(124,58,237,.28)}
       .rc .rc-mehur b{display:block;color:var(--ink);font-weight:600;font-size:1.02rem}
-      .rc .rc-mehur small{display:block;margin-top:.1rem;color:rgba(17,17,17,.64);font-size:.82rem}
+      .rc .rc-mehur small{display:block;margin-top:.1rem;color:rgba(17,17,17,.72);font-size:.82rem}
       /* vstopna forma (pilule+polja+gumb) v beli kartici — naslov+chat ostaneta na papirju nad njo */
       .rc .rc-vstop-panel{background:rgba(255,255,255,.55);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.6);border-radius:20px;padding:1.6rem 1.5rem;box-shadow:0 12px 40px rgba(20,16,26,.05),inset 0 1px 0 rgba(255,255,255,.5)}
-      .rc .rc-polja{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem 1.5rem;margin:0 0 1.3rem;min-width:0}
+      .rc .rc-polja{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem 1.5rem;margin:0 0 1.3rem;min-width:0;align-items:end}
       .rc .rc-polja>*{min-width:0}
-      .rc .rc-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.62)}
-      .rc .rc-polje input{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
+      .rc .rc-polje{display:flex;flex-direction:column;gap:.35rem;font-size:.95rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72)}
+      .rc .rc-polje input{width:100%;max-width:100%;min-width:0;height:3rem;box-sizing:border-box;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
       .rc .rc-polje input:focus{outline:none;border-color:var(--ink)}
+      .rc .rc-polje input[type="date"]{font-size:16px !important;font-weight:600;line-height:normal;text-align:left;max-width:12rem}
       /* select: background-COLOR (NE shorthand background), da .shell select
          (chevron background-image) ostane veljaven — past iz feedback_css_splosna_pravila */
-      .rc .rc-polje select{width:100%;max-width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background-color:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
+      .rc .rc-polje select{width:100%;max-width:100%;min-width:0;height:3rem;box-sizing:border-box;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background-color:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem}
       .rc .rc-polje select:focus{outline:none;border-color:var(--ink)}
       .rc .rc-gumbi{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:.2rem}
 
@@ -1055,13 +1144,13 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       /* Vrsta (Račun | Predračun) na vstopu — pilule + drobni namig pod Predračunom */
       .rc .rc-vstop-vrsta{display:inline-flex;flex-direction:column;align-items:stretch;margin:0 0 1.1rem}
       .rc .rc-vstop-vrsta .rc-segpills{margin:0}
-      .rc .rc-vrsta-oznaka{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.62);margin:0 0 .4rem}
+      .rc .rc-vrsta-oznaka{font-size:.95rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(17,17,17,.72);margin:0 0 .4rem}
       .rc .rc-vrsta-namig{margin:.35rem 0 0;text-align:right;font-size:.72rem;color:var(--muted)}
 
       /* ── vstopni iskalen combobox (izbira ponudbe): sprozilec izgleda kot polje,
          panel z iskalnikom + seznam opcij se odpre pod njim ── */
       .rc .rc-combo{position:relative}
-      .rc .rc-combo-sprozilec{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-width:0;font:inherit;font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem;text-align:left;cursor:pointer}
+      .rc .rc-combo-sprozilec{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;height:3rem;box-sizing:border-box;min-width:0;font:inherit;font-size:16px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid oklch(93% .006 82 / .55);border-radius:10px;padding:.6rem .75rem;text-align:left;cursor:pointer}
       .rc .rc-combo-sprozilec:focus{outline:none;border-color:var(--ink)}
       .rc .rc-combo-sprozilec>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .rc .rc-combo-sprozilec svg{flex:none}
@@ -1136,7 +1225,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc-knjiznica-prazno{margin:0;padding:1.4rem .6rem;color:rgba(17,17,17,.72);line-height:1.5;text-align:center}
       @media (max-width:640px){.rc-knjiznica-back{align-items:end;padding:0}.rc-knjiznica{max-height:82dvh;border-radius:1.25rem 1.25rem 0 0;padding:1rem}.rc-knjiznica-izberi{align-items:flex-start;flex-direction:column;gap:.35rem}.rc-knjiznica-izberi>b{white-space:normal}}
 
-      /* mobilno: NIC cez desni rob pri 390px — postavka se zlozi v 2 stolpca */
+      /* Mobilno: postavka postane kartica; naziv je zgoraj, meta levo, znesek/status desno. */
       @media (max-width: 760px){
         .rc .rc-vrstica,.rc .rc-vrstica.rc-brez-ddv{grid-template-columns:repeat(2,minmax(0,1fr));align-items:end}
         .rc .rc-opis{grid-column:1/-1}
@@ -1147,7 +1236,21 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       @media (max-width:640px){
         .rc .rc-chat{max-width:100%}
         .rc .rc-vstop-panel{padding:1.2rem 1.1rem;border-radius:16px}
-        .rc .rc-polja{grid-template-columns:1fr;gap:1rem}
+        .rc .rc-polja{grid-template-columns:minmax(0,1fr);gap:1rem}
+        .rc .rc-vrstica,.rc .rc-vrstica.rc-brez-ddv{
+          grid-template-columns:repeat(2,minmax(0,1fr));
+          grid-template-areas:"naziv naziv" "kolicina cena" "popust davek" "namig namig" "znesek brisi";
+          gap:.7rem;padding:.85rem;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:.9rem;background:rgba(255,255,255,.72);overflow:hidden
+        }
+        .rc .rc-vrstica.rc-brez-ddv{grid-template-areas:"naziv naziv" "kolicina cena" "popust popust" "znesek brisi"}
+        .rc .rc-opis{grid-area:naziv;grid-column:auto}
+        .rc .rc-kolicina{grid-area:kolicina}
+        .rc .rc-cena{grid-area:cena}
+        .rc .rc-popust{grid-area:popust}
+        .rc .rc-davek{grid-area:davek}
+        .rc .rc-ddv-namig{grid-area:namig;justify-self:start}
+        .rc .rc-znesek{grid-area:znesek;align-self:center}
+        .rc .rc-x{grid-area:brisi;grid-column:auto;justify-self:end;width:2.75rem}
       }
     `}</style>
   </div>;

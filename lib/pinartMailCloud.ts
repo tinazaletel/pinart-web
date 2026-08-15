@@ -55,6 +55,21 @@ export async function pullProjectMail(projectExternalId: string): Promise<Projec
   return (data || []).map(fromRow);
 }
 
+/* VSA posta organizacije (vsi projekti), najnovejsa prva. Za osrednji hub
+   (Komunikacije), da se prikaze tudi DOHODNA (odgovori strank). [] brez prijave. */
+export async function pullAllMail(): Promise<ProjectMail[]> {
+  const context = await getOrganizationContext();
+  if (!context) return [];
+  const { data, error } = await createClient()
+    .from('project_mail')
+    .select('*')
+    .eq('organization_id', context.organizationId)
+    .order('occurred_at', { ascending: false })
+    .limit(500);
+  if (error) throw error;
+  return (data || []).map(fromRow);
+}
+
 /* Zabelezi eno posto (poslano zdaj; prejeto doda webhook v koraku 2). */
 export async function pushProjectMail(entry: ProjectMail): Promise<void> {
   const context = await getOrganizationContext();

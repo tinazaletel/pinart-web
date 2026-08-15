@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server';
+import { jeEmail, omejenNiz, preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { omejiApi } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
+  const omejitev = await omejiApi(request, 'inquiry', 10);
+  if (omejitev) return omejitev;
+
   const endpoint = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
-  const body = await request.json();
+  let body: Record<string, unknown>;
+  try { body = await preberiJson(request, 8_000); }
+  catch (error) { return NextResponse.json({ error: sporociloValidacije(error) }, { status: 400 }); }
 
   if (body.website) return NextResponse.json({ ok: true });
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email || '');
-  if (!body.name || !emailValid || !body.brief || body.name.length > 120 || body.brief.length > 5000) {
+  if (!omejenNiz(body.name, 120, true) || !jeEmail(body.email) || !omejenNiz(body.brief, 5000, true)) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
   if (!endpoint) {

@@ -1,0 +1,16 @@
+{
+  "name": "pinart-mail-inbound",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Email Worker — dohodna posta za Pinart Flow (token@pinartflow.com -> /api/posta/prejeto)",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "dependencies": {
+    "postal-mime": "^2.3.2"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}

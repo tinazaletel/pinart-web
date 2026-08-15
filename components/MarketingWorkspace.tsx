@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import MobTabs from '@/components/MobTabs';
 import { useLocale } from 'next-intl';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
@@ -333,7 +334,8 @@ export default function MarketingWorkspace({ base }: { base: string }) {
         <button className={styles.primary} type="button" onClick={() => odpriNovo()}><Plus size={19} /> {L('Nova kampanja', 'New campaign')}</button>
       </section>
 
-      <nav className={styles.tabs} aria-label={L('Marketing pogledi', 'Marketing views')}>
+      <MobTabs label={L('Marketing pogledi', 'Marketing views')} vrednost={zavihek} naVrednost={id => setZavihek(id as Zavihek)} opcije={[{ id: 'pregled', label: L('Pregled', 'Overview') }, { id: 'objave', label: L('Objave', 'Posts') }, { id: 'kampanje', label: L('Kampanje', 'Campaigns') }, { id: 'predloge', label: L('Predloge', 'Templates') }, { id: 'povezave', label: L('Povezave', 'Connections') }]} />
+      <nav className={`${styles.tabs} mobtabs-hide`} aria-label={L('Marketing pogledi', 'Marketing views')}>
         {([['pregled', L('Pregled', 'Overview')], ['objave', L('Objave', 'Posts')], ['kampanje', L('Kampanje', 'Campaigns')], ['predloge', L('Predloge', 'Templates')], ['povezave', L('Povezave', 'Connections')]] as const).map(([id, napis]) => (
           <button key={id} className={styles.tab} type="button" data-active={zavihek === id} onClick={() => setZavihek(id)}>{napis}</button>
         ))}

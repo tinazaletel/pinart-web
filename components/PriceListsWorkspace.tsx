@@ -2,7 +2,8 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useLocale } from 'next-intl';
-import { MagnifyingGlass } from '@phosphor-icons/react';
+import { MagnifyingGlass, PencilSimple, Trash, ArrowCounterClockwise } from '@phosphor-icons/react';
+import Paginacija from '@/components/Paginacija';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { PRICING_SERVICES, type PricingService } from '@/lib/pricingCatalog';
 import { saveCloudSettings } from '@/lib/pinartFlowCloud';
@@ -26,6 +27,7 @@ const TRG_OZNAKA: Record<string, string> = {
 };
 
 const zaokrozi10 = (n: number) => Math.round(n / 10) * 10;
+const CENIK_NA_STRAN = 10;
 
 /* Demo primeri (predogled 'demo', glej lib/predogled.ts): trije smiselni
    ceniki, da stran izgleda polno tudi brez shranjenih uporabniskih podatkov.
@@ -66,6 +68,7 @@ export default function PriceListsWorkspace() {
   const [pogled, setPogled] = useState<'storitve' | 'produkti'>('storitve');
   const [produkti, setProdukti] = useState<Produkt[]>([]);
   const [urejaProdukt, setUrejaProdukt] = useState('');
+  const [stran, setStran] = useState(1);
 
   useEffect(() => {
     if (nacin === 'empty') {
@@ -87,6 +90,13 @@ export default function PriceListsWorkspace() {
 
   const profile = profiles[selected];
   const services = useMemo(() => profile ? [...PRICING_SERVICES, ...(profile.mojeStoritve || [])].filter((item, index, all) => all.findIndex(service => service.id === item.id) === index).filter(item => item.ime.toLocaleLowerCase('sl-SI').includes(search.toLocaleLowerCase('sl-SI'))) : [], [profile, search]);
+  const steviloPostavk = pogled === 'storitve' ? services.length : produkti.length;
+  const strani = Math.max(1, Math.ceil(steviloPostavk / CENIK_NA_STRAN));
+  const varnaStran = Math.min(stran, strani);
+  const zacetekStrani = (varnaStran - 1) * CENIK_NA_STRAN;
+  const servicesStran = services.slice(zacetekStrani, zacetekStrani + CENIK_NA_STRAN);
+  const produktiStran = produkti.slice(zacetekStrani, zacetekStrani + CENIK_NA_STRAN);
+  useEffect(() => { setStran(1); }, [search, selected, pogled]);
   const persist = (next: Record<string, PriceProfile>) => { if (samoOgled) return; setProfiles(next); localStorage.setItem('pinart-kalkulator-profili', JSON.stringify(next)); void saveCloudSettings({ priceProfiles: next }); };
   const updateSettings = (name: string, nextProfile: PriceProfile) => { if (samoOgled) return; const settings = JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}'); localStorage.setItem('pinart-kalkulator-v2', JSON.stringify({ ...settings, aktivniCenik: name, osnove: nextProfile.osnove, mojTrg: nextProfile.mojTrg, izkusnje: nextProfile.izkusnje, mojeStoritve: nextProfile.mojeStoritve })); void saveCloudSettings({ activePriceProfile: name, priceProfiles: { ...profiles, [name]: nextProfile } }); };
   const create = () => { if (samoOgled) return; const settings = JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}'); let index = Object.keys(profiles).length + 1; let name = `Moj cenik ${index}`; while (profiles[name]) name = `Moj cenik ${++index}`; const item: PriceProfile = { osnove: settings.osnove || Object.fromEntries(PRICING_SERVICES.map(service => [service.id, service.osnova])), mojTrg: settings.mojTrg || 'si', izkusnje: settings.izkusnje || 'samostojen', mojeStoritve: settings.mojeStoritve || [] }; persist({ ...profiles, [name]: item }); setSelected(name); };
@@ -99,6 +109,19 @@ export default function PriceListsWorkspace() {
   /* Produkti — globalna shramba (lib/produkti.ts), locena od cenikov storitev. */
   const persistProdukti = (next: Produkt[]) => { if (samoOgled) return; setProdukti(next); shraniProdukte(next); };
   const addProdukt = () => { if (samoOgled) return; const id = `p-${crypto.randomUUID()}`; const nov: Produkt = { id, naziv: 'Nov produkt', sifra: '', opis: '', cena: 0, enota: 'kos' }; persistProdukti([...produkti, nov]); setUrejaProdukt(id); };
+  /* Ponastavi na privzeto: cenik/produkti so prednapolnjeni iz standardnega kataloga — če jih
+     spremeniš ali izbrišeš, jih tu vrneš na privzete vrednosti. */
+  const resetToDefaults = () => {
+    if (samoOgled) return;
+    if (pogled === 'storitve') {
+      if (!selected || !window.confirm('Ponastavim cene tega cenika na privzete (standardni katalog)?')) return;
+      const defaults = Object.fromEntries(PRICING_SERVICES.map(service => [service.id, service.osnova]));
+      persist({ ...profiles, [selected]: { ...profiles[selected], osnove: defaults } });
+    } else {
+      if (!window.confirm('Ponastavim produkte na privzete (standardni katalog)?')) return;
+      persistProdukti(demoProdukti());
+    }
+  };
   const updateProdukt = (id: string, patch: Partial<Produkt>) => { if (samoOgled) return; persistProdukti(produkti.map(item => item.id === id ? { ...item, ...patch } : item)); };
   const removeProdukt = (id: string) => { if (samoOgled) return; if (!window.confirm('Izbrišem ta produkt?')) return; persistProdukti(produkti.filter(item => item.id !== id)); if (urejaProdukt === id) setUrejaProdukt(''); };
 
@@ -110,12 +133,13 @@ export default function PriceListsWorkspace() {
       <button type="button" role="tab" aria-selected={pogled === 'produkti'} className={pogled === 'produkti' ? styles.priceViewActive : ''} onClick={() => setPogled('produkti')}>Produkti</button>
     </div>
     {pogled === 'storitve' ? <div className={styles.priceListsLayout}>
+      <div className={styles.priceMobBar}><select className={styles.priceMobSelect} value={selected || ''} onChange={event => setSelected(event.target.value)} aria-label="Izberi cenik">{Object.keys(profiles).map(name => <option key={name} value={name}>{name}{active === name ? ' · Aktiven' : ''}</option>)}</select><button type="button" className={styles.priceMobNew} onClick={create} disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : 'Nov cenik'}>+ Nov cenik</button></div>
       <aside className={styles.priceProfileList}><header><p className={styles.eyebrow}>MOJI CENIKI</p><strong>{Object.keys(profiles).length}</strong></header>{Object.keys(profiles).map(name => <button key={name} className={selected === name ? styles.priceProfileActive : ''} onClick={() => setSelected(name)}><span><strong>{name}</strong><small>{TRG_OZNAKA[profiles[name].mojTrg] || profiles[name].mojTrg}</small></span>{active === name && <b>Aktiven</b>}</button>)}{!Object.keys(profiles).length && <div className={styles.priceProfileEmpty}><strong>Še nimaš shranjenega cenika.</strong><p>Ustvari prvega iz trenutnih nastavitev kalkulatorja.</p></div>}</aside>
-      <section className={styles.priceEditor}>{profile ? <><header><div><p className={styles.eyebrow}>{active === selected ? 'AKTIVNI CENIK' : 'CENIK'}</p><h2>{selected}</h2><span>{services.length} storitev</span></div><div><button onClick={() => rename(selected)} disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : undefined}>Preimenuj</button><button onClick={() => remove(selected)} disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : undefined}>Izbriši</button>{active !== selected && <button className={styles.activatePriceList} onClick={activate} disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : undefined}>Uporabi v kalkulatorju</button>}</div></header><form className={styles.addPriceService} onSubmit={addService}><div><p className={styles.eyebrow}>NOVA STORITEV</p><strong>Dodaj svojo cenovno postavko</strong></div><input required name="name" placeholder="Ime storitve" disabled={samoOgled} /><input required min="0" name="price" step="10" type="number" placeholder="Cena" disabled={samoOgled} /><button disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : undefined}>+ Dodaj</button></form><label className={styles.priceSearch}><MagnifyingGlass className={styles.searchIcon} size={20} weight="regular" aria-hidden="true" style={IKONA_SLOG} /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Poišči storitev …" /></label><div className={styles.priceRows}>{services.map(service => <label key={service.id}><span><strong>{service.ime}</strong><small>{service.id.startsWith('custom-') ? 'Tvoja storitev' : 'Predlagana storitev'}</small></span><span><input min="0" step="10" type="number" value={profile.osnove[service.id] ?? service.osnova} onChange={event => setPrice(service.id, Number(event.target.value))} disabled={samoOgled} /><b>€</b></span></label>)}</div></> : <div className={styles.priceEditorEmpty}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><strong>Ustvari ali izberi cenik.</strong><p>Nato lahko prilagodiš svoje storitve in cene.</p></div>}</section>
+      <section className={styles.priceEditor}>{profile ? <><header><div><p className={styles.eyebrow}>{active === selected ? 'AKTIVNI CENIK' : 'CENIK'}</p><h2>{selected}</h2><span>{services.length} storitev</span></div><div><button className={styles.priceIconBtn} onClick={resetToDefaults} disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : 'Ponastavi cene na privzeto'} aria-label="Ponastavi na privzeto"><ArrowCounterClockwise size={16} weight="bold" /></button><button className={styles.priceIconBtn} onClick={() => rename(selected)} disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : 'Preimenuj cenik'} aria-label="Preimenuj cenik"><PencilSimple size={16} weight="bold" /></button><button className={`${styles.priceIconBtn} ${styles.priceIconBtnDel}`} onClick={() => remove(selected)} disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : 'Izbriši cenik'} aria-label="Izbriši cenik"><Trash size={16} weight="bold" /></button>{active !== selected && <button className={styles.activatePriceList} onClick={activate} disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : undefined}>Uporabi v kalkulatorju</button>}</div></header><form className={styles.addPriceService} onSubmit={addService}><div><p className={styles.eyebrow}>NOVA STORITEV</p><strong>Dodaj svojo cenovno postavko</strong></div><input required name="name" placeholder="Ime storitve" disabled={samoOgled} /><input required min="0" name="price" step="10" type="number" placeholder="Cena" disabled={samoOgled} /><button disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : undefined}>+ Dodaj</button></form><label className={styles.priceSearch}><MagnifyingGlass className={styles.searchIcon} size={20} weight="regular" aria-hidden="true" style={IKONA_SLOG} /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Poišči storitev …" /></label><div className={styles.priceRows}>{servicesStran.map(service => <label key={service.id}><span><strong>{service.ime}</strong><small>{service.id.startsWith('custom-') ? 'Tvoja storitev' : 'Storitev'}</small></span><span><input min="0" step="10" type="number" value={profile.osnove[service.id] ?? service.osnova} onChange={event => setPrice(service.id, Number(event.target.value))} disabled={samoOgled} /><b>€</b></span></label>)}</div><Paginacija stran={varnaStran} strani={strani} naStran={setStran} /></> : <div className={styles.priceEditorEmpty}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><strong>Ustvari ali izberi cenik.</strong><p>Nato lahko prilagodiš svoje storitve in cene.</p></div>}</section>
     </div> : <section className={styles.produktEditor}>
-      <p className={styles.eyebrow}>PRODUKTI</p>
+      <div className={styles.produktGlava}><p className={styles.eyebrow}>PRODUKTI</p><button type="button" className={styles.produktReset} onClick={resetToDefaults} disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : 'Ponastavi produkte na privzeto'} aria-label="Ponastavi na privzeto"><ArrowCounterClockwise size={15} weight="bold" /> Ponastavi</button></div>
       <div className={styles.produktList}>
-        {produkti.map(item => urejaProdukt === item.id ? (
+        {produktiStran.map(item => urejaProdukt === item.id ? (
           <div key={item.id} className={styles.produktForm}>
             <input className={styles.produktFormNaziv} required value={item.naziv} onChange={event => updateProdukt(item.id, { naziv: event.target.value })} placeholder="Naziv produkta" disabled={samoOgled} />
             <input className={styles.produktFormSifra} value={item.sifra || ''} onChange={event => updateProdukt(item.id, { sifra: event.target.value })} placeholder="Šifra artikla" disabled={samoOgled} />
@@ -136,13 +160,14 @@ export default function PriceListsWorkspace() {
               <span>{item.zaloga != null ? `na zalogi: ${item.zaloga}` : '—'}</span>
             </div>
             <div className={styles.produktGumbi}>
-              <button onClick={() => setUrejaProdukt(item.id)} disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : undefined}>Uredi</button>
-              <button onClick={() => removeProdukt(item.id)} disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : undefined}>Izbriši</button>
+              <button className={styles.produktIkon} onClick={() => setUrejaProdukt(item.id)} disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : 'Uredi'} aria-label="Uredi produkt"><PencilSimple size={15} weight="bold" /></button>
+              <button className={`${styles.produktIkon} ${styles.produktIkonDel}`} onClick={() => removeProdukt(item.id)} disabled={samoOgled} title={samoOgled ? 'Ni na voljo v predogledu (demo)' : 'Izbriši'} aria-label="Izbriši produkt"><Trash size={15} weight="bold" /></button>
             </div>
           </div>
         ))}
         {!produkti.length && <div className={styles.priceProfileEmpty}><strong>Še nimaš dodanega produkta.</strong><p>Dodaj prvega s klikom na »+ Nov produkt«.</p></div>}
       </div>
+      <Paginacija stran={varnaStran} strani={strani} naStran={setStran} />
     </section>}
   </div>;
 }

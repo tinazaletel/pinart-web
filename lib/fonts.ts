@@ -7,7 +7,10 @@ export const bodoni = Bodoni_Moda({
   variable: '--font-serif',
   axes: ['opsz'],
   style: ['normal', 'italic'],
-  display: 'swap'
+  display: 'swap',
+  /* utiša »Failed to find font override values« (next/font ne najde fallback
+     metrik za variabilni Bodoni); font se še naloži, brez sintetične prilagoditve. */
+  adjustFontFallback: false,
 });
 
 /* DM Serif Display = pisava naslovov za FLOW (pinartflow / /flow / /kalkulator) —

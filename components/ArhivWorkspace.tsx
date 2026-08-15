@@ -11,17 +11,21 @@
    je prenesen iz RetainerWorkspace (rw-). Detajl panel z desne + lepljivi X so
    vzorec iz ContractWorkspace (styles.detailBackdrop/detailPanel + .pg-det-x). */
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import Link from 'next/link';
-import { CaretDown, CaretUp, FileArrowDown, FileText, Receipt, Scroll, Warning } from '@phosphor-icons/react';
+import { useSearchParams } from 'next/navigation';
+import { CaretDown, CaretUp, FileArrowDown, FileText, Receipt, Scroll, Warning, ListBullets, Kanban } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, saveOfferStatus, type FlowContract, type FlowContractStatus, type FlowInvoice, type FlowOffer, type FlowOfferStatus } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import ProjectsWorkspace from './ProjectsWorkspace';
 import ArhivFilter from './ArhivFilter';
+import MobTabs from '@/components/MobTabs';
 import AmbientBubbles from '@/components/AmbientBubbles';
 import SwapText from '@/components/SwapText';
+import { posljiMail } from '@/lib/posta';
+import Toast from '@/components/Toast';
 
 type Zavihek = 'projekti' | 'ponudbe' | 'pogodbe' | 'racuni';
 
@@ -218,9 +222,23 @@ export default function ArhivWorkspace({ base }: { base: string }) {
     const c = ime.trim().toLocaleLowerCase('sl-SI');
     return (flow.clients || []).find(x => (x.name || '').trim().toLocaleLowerCase('sl-SI') === c)?.email || '';
   };
-  const posljiStranki = (ime: string, zadeva: string, telo: string) => {
+  const [postaObvestilo, setPostaObvestilo] = useState<{ t: string; ok: boolean } | null>(null);
+  /* Pošlji stranki: če ima stranka e-naslov, gre PREK Flowa (Resend) — reply-to =
+     token@pinartflow.com (strežnik iz projektId), zapis v project_mail(out). Če
+     e-naslova ni, degradira na mailto (odpre lokalni mail za ročni vnos). */
+  const posljiStranki = async (projektId: string | undefined, ime: string, zadeva: string, telo: string) => {
     if (typeof window === 'undefined') return;
-    window.location.href = `mailto:${encodeURIComponent(strankaEmail(ime))}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`;
+    const za = strankaEmail(ime).trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(za)) {
+      window.location.href = `mailto:${encodeURIComponent(za)}?subject=${encodeURIComponent(zadeva)}&body=${encodeURIComponent(telo)}`;
+      return;
+    }
+    const html = `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${telo.replace(/\n/g, '<br>')}</div>`;
+    setPostaObvestilo({ t: L('Pošiljam …', 'Sending …'), ok: true });
+    const rez = await posljiMail({ to: [za], subject: zadeva, html, projectExternalId: projektId });
+    setPostaObvestilo(rez.ok
+      ? { t: L('Poslano stranki — v Komunikacijah.', 'Sent to client — in Communications.'), ok: true }
+      : { t: L('Napaka: ', 'Error: ') + (rez.napaka || L('pošiljanje ni uspelo.', 'sending failed.')), ok: false });
   };
 
   const [zavihek, setZavihek] = useState<Zavihek>('projekti');
@@ -253,6 +271,18 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   const [izbrani, setIzbrani] = useState<Set<string>>(() => new Set());
   const [portalPripravljen, setPortalPripravljen] = useState(false);
   useEffect(() => { setPortalPripravljen(true); }, []);
+  /* Globinski link (npr. iz profila stranke »Povezano s stranko«): ?tip=ponudbe|pogodbe|racuni&odpri=<id>
+     odpre pravi zavihek + detajl točno tega dokumenta (specifikacija), NE projekta. Enkrat. */
+  const searchParams = useSearchParams();
+  const odprtoIzUrlRef = useRef(false);
+  useEffect(() => {
+    if (odprtoIzUrlRef.current) return;
+    const odpri = searchParams.get('odpri'); const tip = searchParams.get('tip');
+    if (!odpri || !tip) return;
+    if (tip === 'ponudbe') { const z = offers.find(o => o.id === odpri); if (z) { setZavihek('ponudbe'); setDetajl({ vrsta: 'ponudba', zapis: z } as Detajl); odprtoIzUrlRef.current = true; } }
+    else if (tip === 'pogodbe') { const z = contracts.find(c => c.id === odpri); if (z) { setZavihek('pogodbe'); setDetajl({ vrsta: 'pogodba', zapis: z } as Detajl); odprtoIzUrlRef.current = true; } }
+    else if (tip === 'racuni') { const z = invoices.find(r => r.id === odpri); if (z) { setZavihek('racuni'); setDetajl({ vrsta: 'racun', zapis: z } as Detajl); odprtoIzUrlRef.current = true; } }
+  }, [searchParams, offers, contracts, invoices]);
   const [izvazamPdf, setIzvazamPdf] = useState(false);
   const izKljuc = (vrsta: string, id: string) => `${vrsta}:${id}`;
   const preklopiIzbor = (k: string) => setIzbrani(prev => { const n = new Set(prev); if (n.has(k)) n.delete(k); else n.add(k); return n; });
@@ -331,21 +361,21 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       statusVrednost: statusProjekt,
       onStatus: setStatusProjekt,
       statusOpcije: [{ vrednost: 'vse', oznaka: L('Vsi', 'All') }, { vrednost: 'aktivni', oznaka: L('Aktivni', 'Active') }, { vrednost: 'cakajo', oznaka: L('Čakajo', 'Pending') }, { vrednost: 'zakljuceni', oznaka: L('Zaključeni', 'Completed') }],
-      akcija: <Link className="af-akcija-gumb" href={`${base}/kalkulator/nov-projekt`}>{L('+ Nov projekt', '+ New project')}</Link>,
+      akcija: <Link className="af-akcija-gumb af-akcija-dodaj" href={`${base}/kalkulator/nov-projekt`} aria-label={L('Nov projekt', 'New project')} title={L('Nov projekt', 'New project')}>{L('+ Nov projekt', '+ New project')}</Link>,
     } : zavihek === 'ponudbe' ? {
       placeholder: L('Poišči ponudbo, stranko ali številko …', 'Search offers, clients or numbers …'),
       statusOznaka: L('Status ponudbe', 'Offer status'),
       statusVrednost: statusPonudba,
       onStatus: v => setStatusPonudba(v as 'vse' | FlowOfferStatus),
       statusOpcije: [{ vrednost: 'vse', oznaka: L('Vse', 'All') }, ...(Object.entries(offerLabels) as Array<[FlowOfferStatus, string]>).map(([v, n]) => ({ vrednost: v, oznaka: n }))],
-      akcija: <Link className="af-akcija-gumb" href={`${base}/kalkulator/orodje`}>{L('+ Nova ponudba', '+ New offer')}</Link>,
+      akcija: <Link className="af-akcija-gumb af-akcija-dodaj" href={`${base}/kalkulator/orodje`} aria-label={L('Nova ponudba', 'New offer')} title={L('Nova ponudba', 'New offer')}>{L('+ Nova ponudba', '+ New offer')}</Link>,
     } : zavihek === 'pogodbe' ? {
       placeholder: L('Poišči pogodbo ali stranko …', 'Search contracts or clients …'),
       statusOznaka: L('Status pogodbe', 'Contract status'),
       statusVrednost: statusPogodba,
       onStatus: v => setStatusPogodba(v as 'vse' | FlowContractStatus),
       statusOpcije: [{ vrednost: 'vse', oznaka: L('Vse', 'All') }, ...(Object.entries(contractLabels) as Array<[FlowContractStatus, string]>).map(([v, n]) => ({ vrednost: v, oznaka: n }))],
-      akcija: <Link className="af-akcija-gumb" href={`${base}/kalkulator/pogodbe`}>{L('+ Nova pogodba', '+ New contract')}</Link>,
+      akcija: <Link className="af-akcija-gumb af-akcija-dodaj" href={`${base}/kalkulator/pogodbe`} aria-label={L('Nova pogodba', 'New contract')} title={L('Nova pogodba', 'New contract')}>{L('+ Nova pogodba', '+ New contract')}</Link>,
     } : zavihek === 'racuni' ? {
       placeholder: L('Poišči račun, stranko ali številko …', 'Search invoices, clients or numbers …'),
       statusOznaka: L('Plačilo', 'Payment'),
@@ -353,8 +383,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       onStatus: v => setPlacano(v as 'vse' | 'placano' | 'odprto'),
       statusOpcije: [{ vrednost: 'vse', oznaka: L('Vsi', 'All') }, { vrednost: 'placano', oznaka: L('Plačani', 'Paid') }, { vrednost: 'odprto', oznaka: L('Odprti', 'Open') }],
       akcija: <>
-        <Link className="af-akcija-gumb" href={`${base}/kalkulator/racunovodstvo`}>{L('Izvoz za računovodstvo', 'Export for accounting')}</Link>
-        <Link className="af-akcija-gumb" href={`${base}/kalkulator/racuni`}>{L('+ Nov račun', '+ New invoice')}</Link>
+        <Link className="af-akcija-gumb af-akcija-izvoz" href={`${base}/kalkulator/racunovodstvo`} aria-label={L('Izvoz za računovodstvo', 'Export for accounting')} title={L('Izvoz za računovodstvo', 'Export for accounting')}><FileArrowDown size={18} weight="bold" /><span className="af-akcija-tekst">{L('Izvoz za računovodstvo', 'Export for accounting')}</span></Link>
+        <Link className="af-akcija-gumb af-akcija-dodaj" href={`${base}/kalkulator/racuni`} aria-label={L('Nov račun', 'New invoice')} title={L('Nov račun', 'New invoice')}>{L('+ Nov račun', '+ New invoice')}</Link>
       </>,
     } : null;
 
@@ -510,7 +540,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
           {/* glava: zavihki (levo) + orodna vrstica aktivnega zavihka (desno) v ENI
               vrsti na namizju; flex-wrap ju na mobilnem prelomi v dve vrsti (locene) */}
           <div className="arh-glava">
-            <div className="arh-segpills arh-zavihki" role="tablist" aria-label="Arhiv">
+            {/* Preklopnik arhiva kot PRVI element orodne vrstice (mobilno slide-up); vse v ENI vrsti. */}
+            <MobTabs label={L('Arhiv', 'Archive')} vrednost={zavihek} naVrednost={id => menjajZavihek(id as Zavihek)} opcije={[{ id: 'projekti', label: L('Projekti', 'Projects') }, { id: 'ponudbe', label: L('Ponudbe', 'Offers') }, { id: 'pogodbe', label: L('Pogodbe', 'Contracts') }, { id: 'racuni', label: L('Računi', 'Invoices') }]} />
+            <div className="arh-segpills arh-zavihki mobtabs-hide" role="tablist" aria-label="Arhiv">
               {(([['projekti', L('Projekti', 'Projects')], ['ponudbe', L('Ponudbe', 'Offers')], ['pogodbe', L('Pogodbe', 'Contracts')], ['racuni', L('Računi', 'Invoices')]]) as Array<[Zavihek, string]>).map(([v, n]) => (
                 <button key={v} type="button" role="tab" aria-selected={zavihek === v} className={zavihek === v ? 'on' : ''} onClick={() => menjajZavihek(v)}>{n}</button>
               ))}
@@ -519,8 +551,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             {/* PIPELINE POSLOV — preklop pogleda, samo na zavihku Projekti (glej pogledProjekti zgoraj) */}
             {zavihek === 'projekti' && (
               <div className="arh-segpills arh-pogled-preklop" role="tablist" aria-label={L('Pogled projektov', 'Projects view')}>
-                <button type="button" role="tab" aria-selected={pogledProjekti === 'seznam'} className={pogledProjekti === 'seznam' ? 'on' : ''} onClick={() => setPogledProjekti('seznam')}>{L('Seznam', 'List')}</button>
-                <button type="button" role="tab" aria-selected={pogledProjekti === 'pipeline'} className={pogledProjekti === 'pipeline' ? 'on' : ''} onClick={() => setPogledProjekti('pipeline')}>Pipeline</button>
+                <button type="button" role="tab" aria-selected={pogledProjekti === 'seznam'} className={pogledProjekti === 'seznam' ? 'on' : ''} onClick={() => setPogledProjekti('seznam')} title={L('Seznam', 'List')} aria-label={L('Seznam', 'List')}><ListBullets size={16} weight="bold" className="arh-pp-ik" /><span className="arh-pp-txt">{L('Seznam', 'List')}</span></button>
+                <button type="button" role="tab" aria-selected={pogledProjekti === 'pipeline'} className={pogledProjekti === 'pipeline' ? 'on' : ''} onClick={() => setPogledProjekti('pipeline')} title="Pipeline" aria-label="Pipeline"><Kanban size={16} weight="bold" className="arh-pp-ik" /><span className="arh-pp-txt">Pipeline</span></button>
               </div>
             )}
 
@@ -544,6 +576,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                 />
               </div>
             )}
+            {/* Mobilno: akcija (+) kot samostojen ZADNJI element vrstice (za pogledom), da je vrstni red
+                Projekti · iskalnik · filter · pogled · +. Na namizju je skrit (akcija ostane v ArhivFilter). */}
+            {filterCfg && <div className="arh-akcija-mob">{filterCfg.akcija}</div>}
           </div>
         </>}
 
@@ -662,6 +697,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         )}
       </div>
 
+      <Toast sporocilo={postaObvestilo?.t || ''} ton={postaObvestilo?.ok ? 'uspeh' : 'napaka'} onClose={() => setPostaObvestilo(null)} />
+
       {/* ── DETAJL PANEL Z DESNE (vzorec ContractWorkspace: detailBackdrop + detailPanel + lepljivi X) ── */}
       {detajl && (
         <div className={styles.detailBackdrop + (izvazamPdf ? ' arh-zajem' : '')} role="presentation" onMouseDown={zapriDetajl}>
@@ -760,7 +797,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   ? <div className="arh-opomba-kartica" role="alert"><Warning size={20} weight="bold" aria-hidden /><div><strong>{L('Opozorilo', 'Warning')}</strong><p>{op.besedilo}</p></div></div>
                   : <div className="arh-opomba-blok"><strong>{L('Opomba', 'Note')}</strong><p>{op.besedilo}</p></div>)}
                 <div className="arh-akcije">
-                  <button type="button" className="arh-poslji" onClick={() => posljiStranki(c.client, L(`Pogodba — ${c.title}`, `Contract — ${c.title}`), L(`Pozdravljeni,\n\nv prilogi vam pošiljam pogodbo »${c.title}«. Prosim za pregled in podpis.\n\nLep pozdrav`, `Hello,\n\nplease find attached the contract "${c.title}". Kindly review and sign it.\n\nBest regards`))}>{L('Pošlji stranki', 'Send to client')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
+                  <button type="button" className="arh-poslji" onClick={() => posljiStranki(c.sourceOfferId, c.client, L(`Pogodba — ${c.title}`, `Contract — ${c.title}`), L(`Pozdravljeni,\n\nv prilogi vam pošiljam pogodbo »${c.title}«. Prosim za pregled in podpis.\n\nLep pozdrav`, `Hello,\n\nplease find attached the contract "${c.title}". Kindly review and sign it.\n\nBest regards`))}>{L('Pošlji stranki', 'Send to client')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
                   <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/pogodbe`}>{L('Uredi v Pogodbah', 'Edit in Contracts')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></a>
                 </div>
                 <p className="arh-mini">{L('Do postavitve pošiljanja s priponko pripni PDF ročno (Prenesi → priloži).', 'Until attachment sending is set up, attach the PDF manually (Download → attach).')}</p>
@@ -838,7 +875,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                     </div>
 
                     <div className="arh-akcije">
-                      <button type="button" className="arh-poslji" onClick={() => posljiStranki(r.client, L(`Račun ${r.number || ''}`.trim(), `Invoice ${r.number || ''}`.trim()), L(`Pozdravljeni,\n\nv prilogi vam pošiljam račun ${r.number || ''} v znesku ${eur(r.amount)}${typeof r.dueDays === 'number' ? `, z rokom plačila ${r.dueDays} dni` : ''}.\n\nLep pozdrav`, `Hello,\n\nplease find attached invoice ${r.number || ''} for ${eur(r.amount)}${typeof r.dueDays === 'number' ? `, due in ${r.dueDays} days` : ''}.\n\nBest regards`))}>{L('Pošlji stranki', 'Send to client')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
+                      <button type="button" className="arh-poslji" onClick={() => posljiStranki(r.sourceOfferId, r.client, L(`Račun ${r.number || ''}`.trim(), `Invoice ${r.number || ''}`.trim()), L(`Pozdravljeni,\n\nv prilogi vam pošiljam račun ${r.number || ''} v znesku ${eur(r.amount)}${typeof r.dueDays === 'number' ? `, z rokom plačila ${r.dueDays} dni` : ''}.\n\nLep pozdrav`, `Hello,\n\nplease find attached invoice ${r.number || ''} for ${eur(r.amount)}${typeof r.dueDays === 'number' ? `, due in ${r.dueDays} days` : ''}.\n\nBest regards`))}>{L('Pošlji stranki', 'Send to client')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></button>
                       <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/racuni`}>{L('Uredi v Računih', 'Edit in Invoices')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></a>
                     </div>
                     <p className="arh-mini">{L('Do postavitve pošiljanja s priponko pripni PDF ročno (Prenesi → priloži).', 'Until attachment sending is set up, attach the PDF manually (Download → attach).')}</p>
@@ -885,6 +922,33 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-segpills button.on{background:var(--ink);color:var(--paper)}
         .arh-zavihki{flex:0 0 auto}
         .arh-pogled-preklop{flex:0 0 auto}
+        .arh-pp-ik{display:none}
+        .arh-akcija-mob{display:none}
+        .arh-zav-mob{display:none}
+        @media (max-width:640px){
+          /* VSE v eni vrsti (kompaktno): Projekti · iskalnik · filter · pogled · +.
+             arh-glava = pozicijsko sidrisce za iskalni overlay (.af-iskanje inset:0 -> cela vrstica). */
+          .arh-glava{gap:.3rem;flex-wrap:nowrap;align-items:center;position:relative}
+          .arh-glava .mobtabs{order:0;flex:none}
+          .arh-glava .mobtabs-gumb{min-height:2.5rem;padding:0 .6rem;font-size:.74rem;gap:.2rem}
+          .arh-glava-filter{order:1;flex:0 1 auto;min-width:0;position:static}
+          .arh-pogled-preklop{order:2}
+          .arh-akcija-mob{order:3;display:inline-flex;margin-left:auto}
+          .af-mob-akcija{display:none}
+          .arh-pogled-preklop{padding:.15rem}
+          .arh-pogled-preklop button{padding:.4rem .5rem}
+          .arh-pp-ik{display:inline-flex}
+          .arh-pp-txt{display:none}
+          /* Tabela = kartični preliv (brez horizontalnega scrolla): naziv v svojo vrsto, meta se ovije */
+          .arh-tabela-ovoj{overflow-x:hidden}
+          .arh-tabela{min-width:0}
+          .arh-tabela > header{display:none}
+          .arh-vrstica{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .7rem;padding:.8rem .85rem}
+          .arh-vrstica > *{min-width:0;font-size:.76rem;color:rgba(17,17,17,.6)}
+          .arh-vrstica > .arh-chk-cel{order:-1}
+          .arh-vrstica > .arh-glavna{flex:1 1 100%;font-size:.92rem;color:var(--ink)}
+          .arh-vrstica > .arh-glavna strong{font-size:.92rem}
+        }
 
         .arh-panel{animation:arhSek .45s cubic-bezier(.16,1,.3,1) both;min-width:0}
         @keyframes arhSek{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
@@ -1075,6 +1139,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
 
         @media (max-width:640px){
           .arh-det-meta{grid-template-columns:1fr}
+          /* × je fiksen v kotu (top:3.85rem, sega do ~6rem); spusti vsebino, da naslov pride POD × in se ne prekrivata */
+          .arh-detajl.arh-detajl{padding-top:6.4rem}
         }
       `}</style>
     </div>

@@ -18,7 +18,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowRight, PencilSimple } from '@phosphor-icons/react';
 import { loadFlowData, saveProjectLinks, type FlowClient } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
@@ -49,6 +49,11 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
   const [clients, setClients] = useState<FlowClient[]>([]);
   const [sodelavci, setSodelavci] = useState<Sodelavec[]>([]);
   const [realProjekti, setRealProjekti] = useState<Projekt[]>([]);
+  /* urejanje obstoječega projekta: ?uredi=<id> naloži projekt, predizpolni obrazec in ob
+     shranjevanju POSODOBI (ohrani id/številko/created) namesto ustvari nov. Tako sta brief
+     IN cilji urejljiva v tem obrazcu (isto polje kot ob ustvarjanju). */
+  const searchParams = useSearchParams();
+  const [urejam, setUrejam] = useState<Projekt | null>(null);
 
   useEffect(() => {
     const flow = podatkiZaPredogled(nacin, loadFlowData());
@@ -56,6 +61,22 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     setSodelavci(preberiSodelavci());
     setRealProjekti(preberiProjekti());
   }, [nacin]);
+
+  useEffect(() => {
+    const id = searchParams.get('uredi');
+    if (!id) return;
+    const p = preberiProjekti().find(x => x.id === id || `real-${x.id}` === id);
+    if (!p) return;
+    setUrejam(p);
+    setObrazec({
+      naslov: p.naslov || '', strankaId: p.strankaId || '', zacetek: p.zacetek || '', rok: p.rok || '',
+      status: p.status || 'aktiven', opisStranke: p.opisStranke || '', panoga: p.panoga || '',
+      ciljnaSkupina: p.ciljnaSkupina || '', persona: { kdo: '', upo: '', pain: '', potrebe: '', cilji: '' } as Record<PersonaKljuc, string>,
+      dizajnZelje: p.dizajnZelje || '', voice: p.voice || '', konkurenca: p.konkurenca || '',
+      cilji: p.cilji || [], dodatnaVprasanja: p.dodatnaVprasanja || [], povezave: p.povezave || [], dodeljeni: p.dodeljeni || [],
+    });
+    setNovKorak(11);
+  }, [searchParams]);
 
   const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektStatus, opisStranke: '', panoga: '', ciljnaSkupina: '', persona: { kdo: '', upo: '', pain: '', potrebe: '', cilji: '' } as Record<PersonaKljuc, string>, dizajnZelje: '', voice: '', konkurenca: '', cilji: [] as ProjektCilj[], dodatnaVprasanja: [] as ProjektVprasanje[], povezave: [] as ProjektPovezava[], dodeljeni: [] as string[] });
   const [obrazec, setObrazec] = useState(prazenObrazec());
@@ -135,8 +156,8 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     if (!naslov) return;
     const stranka = clients.find(c => c.id === obrazec.strankaId);
     const projekt: Projekt = {
-      id: crypto.randomUUID(),
-      stevilka: naslednjaStevilka(realProjekti),
+      id: urejam?.id || crypto.randomUUID(),
+      stevilka: urejam?.stevilka || naslednjaStevilka(realProjekti),
       naslov,
       strankaId: stranka?.id,
       strankaIme: stranka?.name,
@@ -150,7 +171,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       zacetek: obrazec.zacetek || undefined,
       rok: obrazec.rok || undefined,
       status: obrazec.status,
-      created: new Date().toISOString(),
+      created: urejam?.created || new Date().toISOString(),
       dodatnaVprasanja: obrazec.dodatnaVprasanja.length ? obrazec.dodatnaVprasanja : undefined,
       povezave: obrazec.povezave.length ? obrazec.povezave : undefined,
       dodeljeni: obrazec.dodeljeni.length ? obrazec.dodeljeni : undefined,
@@ -384,7 +405,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
           </div>
 
           <div className="np-akcije">
-            <button type="button" className="np-gumb" onClick={shraniNovProjekt} disabled={!obrazec.naslov.trim()}>Ustvari projekt</button>
+            <button type="button" className="np-gumb" onClick={shraniNovProjekt} disabled={!obrazec.naslov.trim()}>{urejam ? 'Shrani spremembe' : 'Ustvari projekt'}</button>
             <Link className="np-gumb sek" href={`${base}/kalkulator/projekti`}>Prekliči</Link>
           </div>
         </>)}

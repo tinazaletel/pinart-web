@@ -1,5 +1,9 @@
 import { createClient } from '@/utils/supabase/client';
+import { oznaciSinhronizirano } from './pinartFlowStore';
 import type { FlowClient, FlowContract, FlowData, FlowExpense, FlowInvoice, FlowOffer } from './pinartFlowStore';
+import { mergeByUpdatedAt } from './mergeByUpdatedAt';
+import { jeDemoId, jeSamoPredogled } from './predogled';
+export { mergeByUpdatedAt } from './mergeByUpdatedAt';
 
 type OrganizationContext = { organizationId: string; userId: string };
 export type UserOrganization = { id: string; name: string };
@@ -104,15 +108,57 @@ function allClients(data: FlowData): FlowClient[] {
   return [...byName.values()];
 }
 
+type SyncPayload = { external_id: string; updated_at: string; deleted_at?: string | null };
+type CloudVersion = { external_id: string | null; updated_at: string | null; deleted_at?: string | null };
+
+const syncTime = (value?: string | null): number => {
+  if (!value) return Number.NEGATIVE_INFINITY;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : Number.NEGATIVE_INFINITY;
+};
+
+/** Prepreči, da zastarela naprava prepiše novejši oblak ali obudi tombstone. */
+function novejseOdOblaka<T extends SyncPayload>(localRows: T[], cloudRows: CloudVersion[]): T[] {
+  const cloudByExternalId = new Map(
+    cloudRows.filter(row => row.external_id).map(row => [String(row.external_id), row]),
+  );
+  return localRows.filter(local => {
+    const cloud = cloudByExternalId.get(local.external_id);
+    if (!cloud) return true;
+    if (cloud.deleted_at && !local.deleted_at) return false;
+    if (local.deleted_at && !cloud.deleted_at) return true;
+    return syncTime(local.updated_at) >= syncTime(cloud.updated_at);
+  });
+}
+
 export async function pushFlowData(data: FlowData): Promise<void> {
+  if (jeSamoPredogled()) return;
   const context = await getOrganizationContext();
   if (!context) return;
   const supabase = createClient();
   const organizationId = context.organizationId;
-  const clients = allClients(data);
+  const varniPodatki: FlowData = {
+    ...data,
+    clients: data.clients.filter(item => !jeDemoId(item.id)),
+    offers: data.offers.filter(item => !jeDemoId(item.id)),
+    invoices: data.invoices.filter(item => !jeDemoId(item.id)),
+    expenses: data.expenses.filter(item => !jeDemoId(item.id)),
+    contracts: data.contracts.filter(item => !jeDemoId(item.id)),
+  };
+  const clients = allClients(varniPodatki);
+
+  const [clientVersions, offerVersions, invoiceVersions, expenseVersions, contractVersions] = await Promise.all([
+    supabase.from('clients').select('external_id,updated_at').eq('organization_id', organizationId),
+    supabase.from('offers').select('external_id,updated_at,deleted_at').eq('organization_id', organizationId),
+    supabase.from('invoices').select('external_id,updated_at,deleted_at').eq('organization_id', organizationId),
+    supabase.from('expenses').select('external_id,updated_at,deleted_at').eq('organization_id', organizationId),
+    supabase.from('contracts').select('external_id,updated_at,deleted_at').eq('organization_id', organizationId),
+  ]);
+  const versionError = [clientVersions.error, offerVersions.error, invoiceVersions.error, expenseVersions.error, contractVersions.error].find(Boolean);
+  if (versionError) throw versionError;
 
   if (clients.length) {
-    const { error } = await supabase.from('clients').upsert(clients.map(client => ({
+    const rows = novejseOdOblaka(clients.map(client => ({
       organization_id: organizationId,
       external_id: client.id,
       name: client.name,
@@ -121,17 +167,20 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       phone: client.phone || null,
       address: client.address || null,
       tax_number: client.tax || null,
-      updated_at: new Date().toISOString(),
-    })), { onConflict: 'organization_id,external_id' });
-    if (error) throw error;
+      updated_at: client.updatedAt || new Date(0).toISOString(),
+    })), clientVersions.data || []);
+    if (rows.length) {
+      const { error } = await supabase.from('clients').upsert(rows, { onConflict: 'organization_id,external_id' });
+      if (error) throw error;
+    }
   }
 
   const { data: clientRows, error: clientError } = await supabase.from('clients').select('id,external_id,name').eq('organization_id', organizationId);
   if (clientError) throw clientError;
   const clientByName = new Map((clientRows || []).map(row => [String(row.name).trim().toLocaleLowerCase('sl'), String(row.id)]));
 
-  if (data.offers.length) {
-    const { error } = await supabase.from('offers').upsert(data.offers.map(offer => ({
+  if (varniPodatki.offers.length) {
+    const rows = novejseOdOblaka(varniPodatki.offers.map(offer => ({
       organization_id: organizationId,
       external_id: offer.id,
       client_id: clientByName.get(offer.client.trim().toLocaleLowerCase('sl')) || null,
@@ -141,36 +190,53 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       issue_date: dateOnly(offer.date),
       scope: offer.scope,
       amount: offer.agreedAmount || 0,
-      updated_at: new Date().toISOString(),
-    })), { onConflict: 'organization_id,external_id' });
-    if (error) throw error;
+      deleted_at: offer.deletedAt || null,
+      deleted_by: offer.deletedBy || null,
+      updated_at: offer.updatedAt || new Date(0).toISOString(),
+    })), offerVersions.data || []);
+    if (rows.length) {
+      const { error } = await supabase.from('offers').upsert(rows, { onConflict: 'organization_id,external_id' });
+      if (error) throw error;
+    }
   }
 
   const { data: offerRows, error: offerError } = await supabase.from('offers').select('id,external_id').eq('organization_id', organizationId);
   if (offerError) throw offerError;
   const offerByExternalId = new Map((offerRows || []).map(row => [String(row.external_id), String(row.id)]));
 
-  if (data.invoices.length) {
-    const { error } = await supabase.from('invoices').upsert(data.invoices.map(invoice => ({
+  if (varniPodatki.invoices.length) {
+    const rows = novejseOdOblaka(varniPodatki.invoices.map(invoice => ({
       organization_id: organizationId,
       external_id: invoice.id,
       client_id: clientByName.get(invoice.client.trim().toLocaleLowerCase('sl')) || null,
       offer_id: invoice.sourceOfferId ? offerByExternalId.get(invoice.sourceOfferId) || null : null,
       number: invoice.number || null,
       title: invoice.title || null,
-      status: invoice.paid ? 'paid' : 'sent',
+      status: invoice.status || (invoice.paid ? 'paid' : invoice.issuedAt ? 'sent' : 'draft'),
       issue_date: dateOnly(invoice.date),
       due_date: invoice.dueDays ? dateOnly(new Date(new Date(dateOnly(invoice.date)).getTime() + invoice.dueDays * 86400000).toISOString()) : null,
       paid_at: invoice.paid ? dateOnly(invoice.date) : null,
       amount: invoice.amount || 0,
+      items: invoice.items || [],
       file_path: invoice.filePath || null,
-      updated_at: new Date().toISOString(),
-    })), { onConflict: 'organization_id,external_id' });
-    if (error) throw error;
+      issued_at: invoice.issuedAt || null,
+      version: invoice.version || 1,
+      supersedes_id: invoice.supersedesId || null,
+      storno_of_id: invoice.stornoOfId || null,
+      cancelled_at: invoice.cancelledAt || null,
+      cancel_reason: invoice.cancelReason || null,
+      deleted_at: invoice.deletedAt || null,
+      deleted_by: invoice.deletedBy || null,
+      updated_at: invoice.updatedAt || new Date(0).toISOString(),
+    })), invoiceVersions.data || []);
+    if (rows.length) {
+      const { error } = await supabase.from('invoices').upsert(rows, { onConflict: 'organization_id,external_id' });
+      if (error) throw error;
+    }
   }
 
-  if (data.expenses.length) {
-    const { error } = await supabase.from('expenses').upsert(data.expenses.map(expense => ({
+  if (varniPodatki.expenses.length) {
+    const rows = novejseOdOblaka(varniPodatki.expenses.map(expense => ({
       organization_id: organizationId,
       external_id: expense.id,
       client_id: expense.client ? clientByName.get(expense.client.trim().toLocaleLowerCase('sl')) || null : null,
@@ -181,13 +247,18 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       expense_date: dateOnly(expense.date),
       amount: expense.amount || 0,
       file_path: expense.filePath || null,
-      updated_at: new Date().toISOString(),
-    })), { onConflict: 'organization_id,external_id' });
-    if (error) throw error;
+      deleted_at: expense.deletedAt || null,
+      deleted_by: expense.deletedBy || null,
+      updated_at: expense.updatedAt || new Date(0).toISOString(),
+    })), expenseVersions.data || []);
+    if (rows.length) {
+      const { error } = await supabase.from('expenses').upsert(rows, { onConflict: 'organization_id,external_id' });
+      if (error) throw error;
+    }
   }
 
-  if (data.contracts.length) {
-    const { error } = await supabase.from('contracts').upsert(data.contracts.map(contract => ({
+  if (varniPodatki.contracts.length) {
+    const rows = novejseOdOblaka(varniPodatki.contracts.map(contract => ({
       organization_id: organizationId,
       external_id: contract.id,
       client_id: clientByName.get(contract.client.trim().toLocaleLowerCase('sl')) || null,
@@ -198,21 +269,41 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       body: contract.body || null,
       file_path: contract.filePath || null,
       notes: contract.notes || null,
-      updated_at: new Date().toISOString(),
-    })), { onConflict: 'organization_id,external_id' });
-    if (error) throw error;
+      deleted_at: contract.deletedAt || null,
+      deleted_by: contract.deletedBy || null,
+      updated_at: contract.updatedAt || new Date(0).toISOString(),
+    })), contractVersions.data || []);
+    if (rows.length) {
+      const { error } = await supabase.from('contracts').upsert(rows, { onConflict: 'organization_id,external_id' });
+      if (error) throw error;
+    }
   }
+
+  oznaciSinhronizirano();
 }
 
 export async function deleteCloudRecords(
   collection: 'offers' | 'invoices' | 'expenses' | 'contracts' | 'clients',
   externalIds: string[],
 ): Promise<void> {
-  if (!externalIds.length) return;
+  if (jeSamoPredogled()) return;
+  const varniIds = externalIds.filter(id => !jeDemoId(id));
+  if (!varniIds.length) return;
   const context = await getOrganizationContext();
   if (!context) return;
-  const table = ({ offers: 'offers', invoices: 'invoices', expenses: 'expenses', contracts: 'contracts', clients: 'clients' } as const)[collection];
-  const { error } = await createClient().from(table).delete().eq('organization_id', context.organizationId).in('external_id', externalIds);
+  const supabase = createClient();
+  if (collection === 'clients') {
+    const { error } = await supabase.from('clients').delete().eq('organization_id', context.organizationId).in('external_id', varniIds);
+    if (error) throw error;
+    return;
+  }
+  if (collection === 'invoices') {
+    const { data, error: readError } = await supabase.from('invoices').select('external_id,issued_at').eq('organization_id', context.organizationId).in('external_id', varniIds);
+    if (readError) throw readError;
+    if ((data || []).some(row => row.issued_at)) throw new Error('Izdanega računa ni mogoče izbrisati. Uporabi storno.');
+  }
+  const table = ({ offers: 'offers', invoices: 'invoices', expenses: 'expenses', contracts: 'contracts' } as const)[collection];
+  const { error } = await supabase.from(table).update({ deleted_at: new Date().toISOString(), deleted_by: context.userId }).eq('organization_id', context.organizationId).in('external_id', varniIds);
   if (error) throw error;
 }
 
@@ -230,9 +321,11 @@ export async function pullFlowData(): Promise<FlowData | null> {
   ]);
   const firstError = [clientsResult.error, offersResult.error, invoicesResult.error, expensesResult.error, contractsResult.error].find(Boolean);
   if (firstError) throw firstError;
-  const clients = clientsResult.data || [];
+  const brezDemo = <T extends { external_id?: unknown }>(rows: T[]): T[] =>
+    rows.filter(row => !jeDemoId(typeof row.external_id === 'string' ? row.external_id : null));
+  const clients = brezDemo(clientsResult.data || []);
   const clientNameById = new Map(clients.map(row => [String(row.id), String(row.name)]));
-  const offers = offersResult.data || [];
+  const offers = brezDemo(offersResult.data || []);
   const offerExternalById = new Map(offers.map(row => [String(row.id), String(row.external_id || row.id)]));
 
   return {
@@ -240,61 +333,194 @@ export async function pullFlowData(): Promise<FlowData | null> {
     clients: clients.map(row => ({
       id: String(row.external_id || row.id), name: String(row.name), email: row.email || undefined,
       contact: row.contact_name || undefined, phone: row.phone || undefined, address: row.address || undefined, tax: row.tax_number || undefined,
+      updatedAt: row.updated_at || undefined,
     })),
     offers: offers.map(row => ({
       id: String(row.external_id || row.id), title: String(row.title), client: clientNameById.get(String(row.client_id)) || 'Brez stranke',
       date: String(row.issue_date), number: row.number || undefined, scope: Array.isArray(row.scope) ? row.scope.map(String) : [],
       status: row.status as FlowOffer['status'], agreedAmount: Number(row.amount) || 0,
+      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined, updatedAt: row.updated_at || undefined,
     })),
-    invoices: (invoicesResult.data || []).map(row => ({
+    invoices: brezDemo(invoicesResult.data || []).map(row => ({
       id: String(row.external_id || row.id), number: row.number || undefined, title: row.title || undefined,
       client: clientNameById.get(String(row.client_id)) || 'Brez stranke', amount: Number(row.amount) || 0,
-      paid: row.status === 'paid', date: String(row.issue_date),
+      paid: row.status === 'paid', status: row.status as FlowInvoice['status'], date: String(row.issue_date),
       dueDays: row.due_date ? Math.max(0, Math.round((new Date(String(row.due_date)).getTime() - new Date(String(row.issue_date)).getTime()) / 86400000)) : undefined,
       sourceOfferId: row.offer_id ? offerExternalById.get(String(row.offer_id)) : undefined,
       source: row.offer_id ? 'offer' : 'manual',
       filePath: row.file_path || undefined, fileName: row.file_path ? String(row.file_path).split('/').pop() : undefined,
+      items: Array.isArray(row.items) ? row.items : undefined, issuedAt: row.issued_at || undefined,
+      version: row.version ? Number(row.version) : undefined, supersedesId: row.supersedes_id || undefined,
+      stornoOfId: row.storno_of_id || undefined, cancelledAt: row.cancelled_at || undefined,
+      cancelReason: row.cancel_reason || undefined,
+      fiscalConfirmedAt: row.fiscal_confirmed_at || undefined, fiscalEor: row.fiscal_eor || undefined,
+      fiscalZoi: row.fiscal_zoi || undefined, fiscalProvider: row.fiscal_provider || undefined,
+      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined, updatedAt: row.updated_at || undefined,
     })),
-    expenses: (expensesResult.data || []).map(row => ({
+    expenses: brezDemo(expensesResult.data || []).map(row => ({
       id: String(row.external_id || row.id), title: String(row.title), client: row.client_id ? clientNameById.get(String(row.client_id)) : undefined,
       amount: Number(row.amount) || 0, date: String(row.expense_date), sourceOfferId: row.offer_id ? offerExternalById.get(String(row.offer_id)) : undefined,
       company: row.supplier || undefined, category: row.category || undefined,
       filePath: row.file_path || undefined, fileName: row.file_path ? String(row.file_path).split('/').pop() : undefined,
+      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined, updatedAt: row.updated_at || undefined,
     })),
-    contracts: (contractsResult.data || []).map(row => ({
+    contracts: brezDemo(contractsResult.data || []).map(row => ({
       id: String(row.external_id || row.id), title: String(row.title), client: clientNameById.get(String(row.client_id)) || 'Brez stranke',
       date: String(row.contract_date), status: row.status as FlowContract['status'], sourceOfferId: row.offer_id ? offerExternalById.get(String(row.offer_id)) : undefined,
       body: row.body || undefined, notes: row.notes || undefined, filePath: row.file_path || undefined, fileName: row.file_path ? String(row.file_path).split('/').pop() : undefined,
+      deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined, updatedAt: row.updated_at || undefined,
     })),
   };
 }
 
-const merge = <T extends { id: string }>(cloud: T[], local: T[]) => {
-  const items = new Map(cloud.map(item => [item.id, item]));
-  local.forEach(item => items.set(item.id, item));
-  return [...items.values()];
+export async function stornirajRacun(externalId: string, reason?: string): Promise<string> {
+  const context = await getOrganizationContext();
+  if (!context) throw new Error('Prijava je potekla.');
+  const supabase = createClient();
+  const { data: invoice, error: invoiceError } = await supabase.from('invoices').select('id').eq('organization_id', context.organizationId).eq('external_id', externalId).single();
+  if (invoiceError) throw invoiceError;
+  const { data, error } = await supabase.rpc('storniraj_racun', { p_id: invoice.id, p_razlog: reason || null });
+  if (error) throw error;
+  return String(data);
+}
+
+export type DocumentAuditEntry = {
+  id: string;
+  tableName: string;
+  recordId: string;
+  action: string;
+  oldData?: Record<string, unknown>;
+  newData?: Record<string, unknown>;
+  createdAt: string;
 };
+
+export async function listAudit(recordId: string): Promise<DocumentAuditEntry[]> {
+  const context = await getOrganizationContext();
+  if (!context) return [];
+  const { data, error } = await createClient().from('document_audit').select('*').eq('organization_id', context.organizationId).eq('record_id', recordId).order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(row => ({
+    id: String(row.id), tableName: String(row.table_name), recordId: String(row.record_id), action: String(row.action),
+    oldData: row.old_data || undefined, newData: row.new_data || undefined, createdAt: String(row.created_at),
+  }));
+}
 
 export function mergeFlowData(cloud: FlowData, local: FlowData): FlowData {
   return {
     version: 1,
-    offers: merge(cloud.offers, local.offers), invoices: merge(cloud.invoices, local.invoices),
-    expenses: merge(cloud.expenses, local.expenses), contracts: merge(cloud.contracts, local.contracts), clients: merge(cloud.clients, local.clients),
+    offers: mergeByUpdatedAt(cloud.offers, local.offers), invoices: mergeByUpdatedAt(cloud.invoices, local.invoices),
+    expenses: mergeByUpdatedAt(cloud.expenses, local.expenses), contracts: mergeByUpdatedAt(cloud.contracts, local.contracts), clients: mergeByUpdatedAt(cloud.clients, local.clients),
   };
 }
 
+const BUSINESS_DOCUMENT_BUCKET = 'business-documents';
+const MAX_BUSINESS_DOCUMENT_BYTES = 25 * 1024 * 1024;
+const MAX_SIGNED_URL_SECONDS = 3600;
+const ALLOWED_BUSINESS_DOCUMENT_TYPES: Record<string, readonly string[]> = {
+  pdf: ['application/pdf'],
+  png: ['image/png'],
+  jpg: ['image/jpeg'],
+  jpeg: ['image/jpeg'],
+  webp: ['image/webp'],
+  docx: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+  xlsx: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+  csv: ['text/csv', 'application/csv'],
+  zip: ['application/zip', 'application/x-zip-compressed'],
+};
+
+export type BusinessDocumentFile = {
+  id: string;
+  organizationId: string;
+  uploadedBy: string;
+  bucket: string;
+  path: string;
+  name: string;
+  mime: string;
+  size: number;
+  section: string;
+  externalId: string;
+  scanStatus: 'pending' | 'clean' | 'infected';
+  createdAt: string;
+};
+
+function safePathSegment(value: string, label: string): string {
+  const cleaned = value.trim().replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+  if (!cleaned || value.includes('..') || value.startsWith('.')) throw new Error(`${label} ni veljaven.`);
+  return cleaned;
+}
+
+function validateBusinessDocument(file: File): { safeName: string; mime: string } {
+  const originalName = file.name.trim();
+  if (!originalName || originalName.length > 180 || originalName.startsWith('.') || originalName.includes('..')) {
+    throw new Error('Ime datoteke ni veljavno ali je predolgo.');
+  }
+  if (file.size <= 0 || file.size > MAX_BUSINESS_DOCUMENT_BYTES) {
+    throw new Error('Datoteka mora biti manjša od 25 MB.');
+  }
+  const extension = originalName.split('.').pop()?.toLowerCase() || '';
+  const allowedMime = ALLOWED_BUSINESS_DOCUMENT_TYPES[extension];
+  const mime = file.type.trim().toLowerCase();
+  if (!allowedMime || !mime || !allowedMime.includes(mime)) {
+    throw new Error('Dovoljene so datoteke PDF, PNG, JPG, WEBP, DOCX, XLSX, CSV in ZIP.');
+  }
+  const safeName = originalName.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^\.+/, '').slice(0, 180);
+  if (!safeName || safeName.includes('..')) throw new Error('Ime datoteke ni veljavno.');
+  return { safeName, mime };
+}
+
 export async function uploadBusinessDocument(file: File, section: string, externalId: string): Promise<string> {
+  if (jeDemoId(externalId)) throw new Error('V predstavitvenem načinu nalaganje ni dovoljeno.');
   const context = await getOrganizationContext();
   if (!context) throw new Error('Prijava je potekla.');
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-');
-  const path = `${context.organizationId}/${section}/${externalId}/${Date.now()}-${safeName}`;
-  const { error } = await createClient().storage.from('business-documents').upload(path, file, { upsert: false });
+  const { safeName, mime } = validateBusinessDocument(file);
+  const safeSection = safePathSegment(section, 'Vrsta dokumenta');
+  const safeExternalId = safePathSegment(externalId, 'Povezava dokumenta');
+  const path = `${context.organizationId}/${safeSection}/${safeExternalId}/${Date.now()}-${safeName}`;
+  const supabase = createClient();
+  const { error } = await supabase.storage.from(BUSINESS_DOCUMENT_BUCKET).upload(path, file, {
+    upsert: false,
+    contentType: mime,
+  });
   if (error) throw error;
+  /* Ob lansiranju AV pregled še ni aktiven, zato je začetno stanje clean.
+     Ko bo worker priklopljen, se tu zamenja v pending, scan API pa ga zaključi. */
+  const { error: metadataError } = await supabase.from('document_files').insert({
+    organization_id: context.organizationId,
+    uploaded_by: context.userId,
+    bucket: BUSINESS_DOCUMENT_BUCKET,
+    path,
+    original_name: file.name,
+    mime,
+    size_bytes: file.size,
+    section: safeSection,
+    external_id: safeExternalId,
+    scan_status: 'clean',
+  });
+  if (metadataError) {
+    await supabase.storage.from(BUSINESS_DOCUMENT_BUCKET).remove([path]);
+    throw metadataError;
+  }
   return path;
 }
 
 export async function getBusinessDocumentUrl(path: string, expiresIn = 60): Promise<string> {
-  const { data, error } = await createClient().storage.from('business-documents').createSignedUrl(path, expiresIn);
+  const context = await getOrganizationContext();
+  if (!context) throw new Error('Prijava je potekla.');
+  if (!path.startsWith(`${context.organizationId}/`) || path.includes('..')) {
+    throw new Error('Datoteka ne pripada aktivni organizaciji.');
+  }
+  const supabase = createClient();
+  const { data: document, error: documentError } = await supabase
+    .from('document_files')
+    .select('bucket,scan_status,deleted_at')
+    .eq('organization_id', context.organizationId)
+    .eq('path', path)
+    .maybeSingle();
+  if (documentError) throw documentError;
+  if (!document || document.deleted_at) throw new Error('Datoteka ne obstaja ali je arhivirana.');
+  if (document.scan_status !== 'clean') throw new Error('Datoteka še ni varnostno potrjena.');
+  const seconds = Math.min(MAX_SIGNED_URL_SECONDS, Math.max(1, Number.isFinite(expiresIn) ? Math.floor(expiresIn) : 60));
+  const { data, error } = await supabase.storage.from(document.bucket).createSignedUrl(path, seconds);
   if (error) throw error;
   return data.signedUrl;
 }
@@ -302,9 +528,38 @@ export async function getBusinessDocumentUrl(path: string, expiresIn = 60): Prom
 export async function deleteBusinessDocument(path: string): Promise<void> {
   const context = await getOrganizationContext();
   if (!context) throw new Error('Prijava je potekla.');
-  if (!path.startsWith(`${context.organizationId}/`)) throw new Error('Datoteka ne pripada aktivni organizaciji.');
-  const { error } = await createClient().storage.from('business-documents').remove([path]);
+  if (!path.startsWith(`${context.organizationId}/`) || path.includes('..')) throw new Error('Datoteka ne pripada aktivni organizaciji.');
+  /* Storage objekt ostane za obnovitev/backup. Trajni purge je dovoljen le
+     prihodnji administratorski poti s service-role ključem. */
+  const { data, error } = await createClient().rpc('archive_document_file', {
+    p_organization_id: context.organizationId,
+    p_path: path,
+  });
   if (error) throw error;
+  if (data !== true) throw new Error('Datoteka ne obstaja ali je že arhivirana.');
+}
+
+export async function listOrgFiles(): Promise<BusinessDocumentFile[]> {
+  const context = await getOrganizationContext();
+  if (!context) throw new Error('Prijava je potekla.');
+  const { data, error } = await createClient().from('document_files').select(
+    'id,organization_id,uploaded_by,bucket,path,original_name,mime,size_bytes,section,external_id,scan_status,created_at',
+  ).eq('organization_id', context.organizationId).is('deleted_at', null).order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(item => ({
+    id: String(item.id),
+    organizationId: String(item.organization_id),
+    uploadedBy: String(item.uploaded_by),
+    bucket: String(item.bucket),
+    path: String(item.path),
+    name: String(item.original_name),
+    mime: String(item.mime),
+    size: Number(item.size_bytes),
+    section: String(item.section),
+    externalId: String(item.external_id),
+    scanStatus: item.scan_status as BusinessDocumentFile['scanStatus'],
+    createdAt: String(item.created_at),
+  }));
 }
 
 export async function saveCloudSettings(settings: Partial<CloudSettings>): Promise<void> {
@@ -399,6 +654,9 @@ export async function saveRetainerDraft(input: {
   packageAmount: number; monthlyAmount: number; durationMonths: number; noticeDays: number;
   rightsText: string; document?: { file: File; kind: 'offer' | 'contract' };
 }): Promise<void> {
+  if (jeDemoId(input.externalId) || jeDemoId(input.client.id)) {
+    throw new Error('V predstavitvenem načinu shranjevanje ni dovoljeno.');
+  }
   const context = await getOrganizationContext();
   if (!context) throw new Error('Prijava je potekla.');
   const supabase = createClient();

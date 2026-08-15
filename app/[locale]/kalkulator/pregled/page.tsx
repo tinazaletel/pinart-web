@@ -33,7 +33,8 @@ export default async function PoslovniPregledPage({
             <p className={styles.eyebrow}>{locale === 'en' ? 'BUSINESS OVERVIEW' : 'POSLOVNI PREGLED'}</p>
             <PozdravPregled jeEn={locale === 'en'} />
             <p className={styles.topbarSub}>{locale === 'en' ? 'Here you can quickly create a proposal, track projects and keep an overview of everything that matters.' : 'Tukaj lahko hitro ustvariš ponudbo, slediš projektom in imaš pregled nad vsem, kar je pomembno.'}</p>
-          </div></header>
+          </div>
+        </header>
 
         {/* nad pregledom, ne pod njim: kdor nastavitve ni koncal, vidi
             privzete stevilke in ne ve, zakaj mu ne ustrezajo */}
