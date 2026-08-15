@@ -32,7 +32,7 @@
 .flowLine span[data-on='true'] { color: var(--purple, oklch(58% .2 297)); }
 .izlozbaRotira li { display: flex; align-items: flex-start; gap: .65rem; animation: izlozbaVstop .5s cubic-bezier(.22, 1, .36, 1) both; }
 .izlozbaRotira li::before { content: none; }
-.izlIkona { flex: none; display: inline-grid; place-items: center; margin-top: .05rem; color: oklch(52% .15 164); }
+.izlIkona { flex: none; display: inline-grid; place-items: center; margin-top: .05rem; color: var(--purple, oklch(58% .2 297)); }
 @keyframes izlozbaVstop { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .izlozbaRotira li { animation: none; } }
 .authPanel { width: min(100%, 40rem); justify-self: end; padding: clamp(1.5rem, 4vw, 3.5rem); border: 1px solid var(--line); border-radius: 1.5rem; background: oklch(98.5% .008 87 / .96); box-shadow: 0 2rem 6rem oklch(20% .02 55 / .1); }
