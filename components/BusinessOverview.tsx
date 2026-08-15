@@ -313,7 +313,13 @@ export default function BusinessOverview({ base }: { base: string }) {
       <section className={styles.flowBand} id="tools" aria-labelledby="tools-title">
         <div className={styles.bandTop}><p className={styles.eyebrow}>{L('01 · ORODJA', '01 · TOOLS')}</p><div className={styles.sectionNote}><strong>Smart pricing</strong><span>{L('Cena po tvojih izkušnjah, trgu in naročniku.', 'Pricing based on your experience, the market and the client.')}</span></div></div>
         <div className={styles.bandBody}>
-        <h2 id="tools-title" className={styles.bandNaslov}>{L('Kaj boš danes uredila?', 'What will you take care of today?')}</h2>
+        <div className={styles.flowToolsGlava}>
+          <h2 id="tools-title" className={styles.bandNaslov}>{L('Kaj boš danes uredila?', 'What will you take care of today?')}</h2>
+          <div className={styles.flowToolsNav} aria-hidden="true">
+            <button type="button" onClick={() => drsniOrodja(-1)} aria-label={L('Nazaj', 'Back')}>‹</button>
+            <button type="button" onClick={() => drsniOrodja(1)} aria-label={L('Naprej', 'Next')}>›</button>
+          </div>
+        </div>
         <div className={styles.flowTools} ref={orodjaRef}>
           <Link className={styles.offerTool} href={`${base}/kalkulator/orodje`}>
             <b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b>
@@ -331,10 +337,6 @@ export default function BusinessOverview({ base }: { base: string }) {
           <Link href={`${base}/kalkulator/komunikacija`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>{L('Komunikacija', 'Communication')}</strong><small>{L('Maili in klepeti pri projektu', 'Project mail and chats')}</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
           <Link href={`${base}/kalkulator/sef`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>{L('Sef avtorstva', 'Authorship vault')}</strong><small>{L('Dokaži, da je delo tvoje', 'Prove the work is yours')}</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
           <Link href={`${base}/kalkulator/racunovodstvo`}><b className={styles.cardBubbles} aria-hidden><u /><u /><u /><u /></b><strong>{L('Računovodstvo', 'Accounting')}</strong><small>{L('Izdani računi in stroški na enem mestu', 'Issued invoices and expenses in one place')}</small><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></i></Link>
-        </div>
-        <div className={styles.flowToolsNav} aria-hidden="true">
-          <button type="button" onClick={() => drsniOrodja(-1)} aria-label={L('Nazaj', 'Back')}>‹</button>
-          <button type="button" onClick={() => drsniOrodja(1)} aria-label={L('Naprej', 'Next')}>›</button>
         </div>
         </div>
       </section>
