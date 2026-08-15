@@ -261,6 +261,35 @@ export default async function KalkulatorPogojiPage({
         </section>
 
         <section style={S}>
+          <h2 style={H}>{en ? '3b. Availability and third-party services' : '3b. Razpoložljivost in storitve tretjih'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                The platform depends on third-party services (e.g. hosting and database at Vercel and
+                Supabase, email at Resend, and the AI assistant Pupa via Anthropic). The provider does not
+                guarantee uninterrupted, timely, secure or error-free operation — occasional errors in
+                display, layout or functionality may occur — and may carry out maintenance or experience
+                outages, including of Pupa or another feature; such features may be temporarily or permanently
+                unavailable. To the maximum extent permitted by law, the provider is not liable
+                for downtime, interruptions or any resulting loss (see also sections 9 and 9c). We recommend
+                keeping your own backup of important data.
+              </>
+            ) : (
+              <>
+                Platforma je odvisna od storitev tretjih (npr. gostovanje in baza pri Vercel in Supabase,
+                e-pošta pri Resend ter AI asistentka Pupa prek Anthropic). Ponudnik ne jamči neprekinjenega,
+                pravočasnega, varnega ali brezhibnega delovanja — občasne napake v prikazu, postavitvi ali
+                delovanju so mogoče — ter lahko izvaja vzdrževanje ali doživi izpade, tudi Pupe ali druge
+                funkcije; take funkcije so lahko začasno ali trajno nedostopne.
+                V največjem obsegu, ki ga dopušča pravo, ponudnik ne odgovarja za izpade, prekinitve ali
+                morebitno posledično škodo (glejte tudi točki 9 in 9c). Priporočamo, da pomembne podatke
+                hraniš v lastni varnostni kopiji.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
           <h2 style={H}>{en ? '4. User account and access' : '4. Uporabniški račun in dostop'}</h2>
           <p style={P}>
             {en ? (
@@ -647,6 +676,31 @@ export default async function KalkulatorPogojiPage({
         </section>
 
         <section style={S}>
+          <h2 style={H}>{en ? '8b. Your clients’ data (data processing)' : '8b. Podatki tvojih strank (obdelava)'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                If, as a business user, you store your own clients&apos; or third parties&apos; personal data
+                in the platform (e.g. in clients, projects or communications), you act as the controller of
+                that data and the provider acts as your processor, processing it only to provide the service
+                and on your instructions. For such processing a data processing agreement (DPA) is available
+                on request at tina@pinart.si. You are responsible for having a lawful basis to enter that data
+                and for informing the individuals concerned.
+              </>
+            ) : (
+              <>
+                Če kot poslovni uporabnik v platformo shraniš osebne podatke svojih strank ali tretjih
+                (npr. v stranke, projekte ali komunikacije), si upravljavec teh podatkov, ponudnik pa je
+                tvoj obdelovalec, ki jih obdeluje le za zagotavljanje storitve in po tvojih navodilih. Za
+                tako obdelavo je na zahtevo na tina@pinart.si na voljo pogodba o obdelavi podatkov (DPA).
+                Sam odgovarjaš, da imaš zakonito podlago za vnos teh podatkov in da o tem obvestiš svoje
+                posameznike.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
           <h2 style={H}>{en ? '9. Limitation of liability' : '9. Omejitev odgovornosti'}</h2>
           <p style={P}>
             {en ? (
@@ -820,6 +874,63 @@ export default async function KalkulatorPogojiPage({
                 če prisilni predpisi (npr. varstvo potrošnikov) določajo drugače. Morebitne spore
                 skušamo najprej rešiti sporazumno; kot potrošnik se lahko obrneš tudi na platformo EU
                 za spletno reševanje sporov (ec.europa.eu/consumers/odr).
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>{en ? '11a. Notices' : '11a. Obveščanje'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                We send notices related to your account and these terms to the email tied to your account or
+                as an in-app message; keeping that address current is your responsibility. You can reach the
+                provider at tina@pinart.si.
+              </>
+            ) : (
+              <>
+                Obvestila v zvezi s tvojim računom in temi pogoji pošiljamo na e-naslov, vezan na tvoj račun,
+                ali kot sporočilo v aplikaciji; za ažurnost tega naslova odgovarjaš sam. Ponudnika dosežeš na
+                tina@pinart.si.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>{en ? '11b. Severability' : '11b. Delna neveljavnost'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                If any provision of these terms is found invalid or unenforceable, the remaining provisions
+                stay in full force, and the invalid provision is replaced by a valid one that comes closest to
+                its intended purpose.
+              </>
+            ) : (
+              <>
+                Če se katera določba teh pogojev izkaže za neveljavno ali neizvršljivo, ostanejo preostale
+                določbe v celoti veljavne, neveljavna določba pa se nadomesti z veljavno, ki je najbliže
+                njenemu namenu.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>{en ? '11c. Entire agreement and waiver' : '11c. Celovit dogovor in odpoved uveljavljanja'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                These terms, together with the privacy policy, constitute the entire agreement between you and
+                the provider regarding use of the platform. If the provider does not enforce a right on a given
+                occasion, it does not waive that right.
+              </>
+            ) : (
+              <>
+                Ti pogoji skupaj s politiko zasebnosti predstavljajo celoten dogovor med teboj in ponudnikom
+                glede uporabe platforme. Če ponudnik ob določeni priložnosti neke pravice ne uveljavi, se ji s
+                tem ne odpove.
               </>
             )}
           </p>
