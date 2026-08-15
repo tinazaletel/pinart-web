@@ -2,10 +2,17 @@
 
 /* Login izložba KROŽI skozi cel Flow — testerji pridejo naravnost na prijavo
    (ne scrollajo landinga), zato mora tu videti vse, kar Flow zna, ne le kalkulator.
-   3 sklopi se menjajo; flowLine številka označi aktivnega. */
+   3 sklopi se menjajo; vsaka alineja ima SVOJO ikono (da je menjava jasno vidna),
+   vrstice vstopijo zamaknjeno, flowLine številka označi aktivnega. */
 import { useEffect, useState } from 'react';
+import { Coins, Sparkle, Receipt, FileText, UsersThree, Target, ChatCircle, ShieldCheck, CalendarCheck } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/prijava/prijava.module.css';
 
+const IKONE = [
+  [Coins, Sparkle, Receipt],
+  [FileText, UsersThree, Target],
+  [ChatCircle, ShieldCheck, CalendarCheck],
+];
 const SKLOPI_SL = [
   ['Ve, koliko je vredno tvoje delo — poštena cena z avtorskimi pravicami', 'Pupa, AI asistentka, ki pozna trg in ceno', 'Vse teče iz istih podatkov: ponudba v račun z enim klikom'],
   ['Ponudbe, pogodbe in računi v tvojem slogu', 'Stranke, projekti in arhiv — vse na enem mestu', 'Stroški, ceniki in cilji: vedno veš, kje si'],
@@ -31,7 +38,14 @@ export default function PrijavaIzlozba({ jeEn }: { jeEn: boolean }) {
         {sklopi.map((_, k) => <span key={k} data-on={k === i ? 'true' : undefined}>{String(k + 1).padStart(2, '0')}</span>)}
       </div>
       <ul key={i} className={styles.izlozbaRotira} aria-live="polite">
-        {sklopi[i].map((t, k) => <li key={k}>{t}</li>)}
+        {sklopi[i].map((besedilo, k) => {
+          const Ikona = IKONE[i][k];
+          return (
+            <li key={k} style={{ animationDelay: `${k * 110}ms` }}>
+              <span className={styles.izlIkona}><Ikona size={20} weight="bold" /></span>{besedilo}
+            </li>
+          );
+        })}
       </ul>
     </>
   );
