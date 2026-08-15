@@ -6986,7 +6986,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         @media (prefers-reduced-motion: reduce) { .cw .kartica { animation: none; } }
         /* MOBILE: mehurčki so max-width 92% (imajo rob), kartice pa so bile 100% in so se
            dotikale roba. Damo VSEM karticam enak simetričen L/R rob kot mehurčkom. */
-        @media (max-width: 640px) { .cw .kartica { max-width: 92%; margin-left: auto; margin-right: auto; } }
+        @media (max-width: 640px) { .cw .kartica { max-width: none; } }
         .cw .kartica-neobvezno { background: transparent; border: 1px dashed rgba(17,17,17,.22); box-shadow: none; margin-top: -.4rem; }
         .cw .prav-napredno { margin: .2rem 0 0; }
         .cw .prav-napredno > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: .5rem; font-weight: 600; font-size: .92rem; color: rgba(17,17,17,.7); padding: .5rem 0; }
@@ -7673,7 +7673,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           /* ikonski, a z dovolj veliko tarco za prst (bil je 22x26px — pretezko zadeti) */
           .cw .glava .zapri-loceno { font-size: 0; gap: 0; display: inline-flex; align-items: center; justify-content: center; min-width: 2.75rem; min-height: 2.75rem; padding: 0 .35rem 0 .7rem; }
           .cw .glava .zapri-loceno::before { content: "✕"; font-size: 1rem; }
-          .cw .oder { align-items: flex-start; padding: 5.4rem 8px 8rem; }
+          .cw .oder { align-items: flex-start; padding: 5.4rem .9rem 8rem; }
           /* V prijavljeni lupini .workspace doda ~19px stranskega paddinga, zato
              je oznaka "07" padla ~20px od roba (namesto da bi se ga dotikala) —
              samostojna verzija tega paddinga nima. Kalkulator razlijemo nazaj do
