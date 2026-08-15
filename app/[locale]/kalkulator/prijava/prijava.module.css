@@ -27,7 +27,12 @@
 .intro ul { display: grid; gap: .7rem; margin: 1.8rem 0 0; padding: 0; list-style: none; font-size: 1rem; }
 .intro li::before { content: '✓'; margin-right: .7rem; color: oklch(52% .15 164); font-weight: 800; }
 .flowLine { display: grid; grid-template-columns: repeat(4, 1fr); max-width: 25rem; margin-top: 2rem; border-top: 1px solid var(--ink); }
-.flowLine span { padding-top: .5rem; font-size: .62rem; font-weight: 800; }
+.flowLine span { padding-top: .5rem; font-size: .62rem; font-weight: 800; transition: color .4s ease; }
+/* aktivni sklop izložbe: poudarjena številka + nežen vstop alinej ob menjavi */
+.flowLine span[data-on='true'] { color: var(--purple, oklch(58% .2 297)); }
+.izlozbaRotira { animation: izlozbaVstop .55s cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes izlozbaVstop { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .izlozbaRotira { animation: none; } }
 .authPanel { width: min(100%, 40rem); justify-self: end; padding: clamp(1.5rem, 4vw, 3.5rem); border: 1px solid var(--line); border-radius: 1.5rem; background: oklch(98.5% .008 87 / .96); box-shadow: 0 2rem 6rem oklch(20% .02 55 / .1); }
 .modeSwitch { width: max-content; display: flex; gap: .25rem; padding: .25rem; border-radius: 999px; background: oklch(90% .018 87); }
 .modeSwitch button { min-height: 2.75rem; padding: .65rem 1.1rem; border: 0; border-radius: 999px; background: transparent; color: oklch(42% .02 70); font: 750 1rem var(--font-manrope), sans-serif; cursor: pointer; }
