@@ -7434,7 +7434,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .posl-glava-vrsta { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .85rem; }
         .cw .posl-glava { font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .cw .posl-za { display: flex; align-items: center; gap: .6rem; }
-        .cw .posl-za-l { flex: 0 0 auto; font-size: .9rem; color: rgba(17,17,17,.72); }
+        .cw .posl-za-l { flex: 0 0 auto; font-size: .9rem; font-weight: 700; color: var(--ink); }
         .cw .posl-cipi { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; min-height: 2.7rem; padding: .38rem .5rem; border: 1px solid rgba(17,17,17,.2); border-radius: 12px; background: #fff; }
         .cw .posl-cipi:focus-within { border-color: var(--accent); }
         .cw .posl-cip { display: inline-flex; align-items: center; gap: .35rem; padding: .26rem .32rem .26rem .62rem; border-radius: 999px; font-size: .85rem; color: var(--ink); background: var(--paper, #f4f1ea); border: 1px solid oklch(93% .006 82 / .55); }
@@ -7498,7 +7498,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .posl-letalo-ovoj { margin-right: .45rem; }
         }
         @media (max-width: 640px) {
-          .cw .posl-za { flex-direction: column; gap: .35rem; }
+          .cw .posl-za { flex-direction: row; align-items: center; gap: .5rem; }
           .cw .posl-za-l { padding-top: 0; }
           .cw .posl-gumb { width: 100%; }
           .cw .posl-sekundarne { column-gap: .35rem; row-gap: .35rem; }
