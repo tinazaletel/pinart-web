@@ -1119,6 +1119,9 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         /* v Flow lupini NI samostojne .rw-glava, zato rezerva +3.4rem zanjo
            naredi prevelik prazen pas na vrhu — vsebina se zacne takoj */
         .rw.rw-lupina .rw-vsebina{padding-top:.6rem}
+        /* mobilni L/R odmik: 92vw je dal komaj 4vw ob strani (vsebina se je dotikala roba);
+           na telefonu damo jasen enakomeren razmik levo=desno kot na nadzorni plošči */
+        @media (max-width:640px){.rw-vsebina{width:100%;padding-left:1.25rem;padding-right:1.25rem;box-sizing:border-box}}
         .rw-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 .3rem}
         .rw-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
         .rw-uvod{font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72);margin:0 0 2.4rem;max-width:34rem}
