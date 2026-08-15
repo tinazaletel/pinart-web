@@ -1276,6 +1276,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* stili kot retainer: navaden <style> (globalno), zato pg- predpona povsod */}
     <style>{`
       .pg{min-width:0;max-width:100%;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
+      @media (max-width:640px){.pg{padding-left:.55rem;padding-right:.55rem;box-sizing:border-box}}
       .pg .pg-sek{min-width:0}
       .pg-sek{animation:pgSek .5s cubic-bezier(.16,1,.3,1) both}
       /* KONEC animacije mora biti transform:NONE (ne translateY(0)): vsak transform != none
