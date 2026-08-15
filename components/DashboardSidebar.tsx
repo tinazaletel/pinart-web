@@ -117,6 +117,7 @@ export default async function DashboardSidebar({ base, active }: { base: string;
         <MeniProfil base={base} />
         <div className={styles.meniNoga}>
           <a className={styles.meniNogaGumb} href="mailto:tina@pinart.si?subject=Pinart%20Flow%20%E2%80%94%20povratna%20informacija">Feedback</a>
+          <Link className={styles.meniNogaGumb} href={`${base}/kalkulator/pogoji`}>{L('Pogoji', 'Terms')}</Link>
           <DeliAplikacijo />
         </div>
         {/* pot nazaj na Flow landing — v zgornji vrstici je na telefonu skrita */}
