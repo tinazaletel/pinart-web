@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { omejiApi } from '@/lib/rate-limit';
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
  * Rocna dodelitev paketa. Rabi se za troje:
@@ -14,6 +17,9 @@ import { preberiJson, sporociloValidacije } from '@/lib/validacija';
  * geslo preveri TU, na strezniku, ne v vmesniku.
  */
 export async function POST(request: Request) {
+  const omejitev = await omejiApi(request, 'admin-paket', 30);
+  if (omejitev) return omejitev;
+
   const geslo = process.env.KALKULATOR_ADMIN_GESLO;
   const c = await cookies();
   if (!geslo || c.get('pinart_admin')?.value !== geslo) {
@@ -30,6 +36,7 @@ export async function POST(request: Request) {
   const organizationId = String(body.organizationId || '');
   const paket = body.paket === 'pro' ? 'pro' : 'free';
   if (!organizationId) return NextResponse.json({ error: 'Manjka podjetje' }, { status: 400 });
+  if (!UUID.test(organizationId)) return NextResponse.json({ error: 'Neveljaven ID podjetja' }, { status: 400 });
 
   /* upsert, ker vrstice za podjetje morda se ni; valid_until pustimo prazen =
      brez poteka, kar je ravno namen podarjenega paketa */

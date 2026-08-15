@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { omejiApi } from '@/lib/rate-limit';
 
 /**
  * Upravljanje dodelitev zaprte bete (tabela flow_dostop): testerji, nagrajenci
@@ -31,7 +32,9 @@ function ociDatum(v: unknown): string | null {
   return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const omejitev = await omejiApi(request, 'admin-dostop', 30);
+  if (omejitev) return omejitev;
   if (!(await preveriGeslo())) return NextResponse.json({ error: 'Ni dovoljenja' }, { status: 401 });
   const baza = createAdminClient();
   if (!baza) return NextResponse.json({ error: 'Baza ni nastavljena' }, { status: 500 });
@@ -71,6 +74,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const omejitev = await omejiApi(request, 'admin-dostop', 30);
+  if (omejitev) return omejitev;
   if (!(await preveriGeslo())) return NextResponse.json({ error: 'Ni dovoljenja' }, { status: 401 });
   const baza = createAdminClient();
   if (!baza) return NextResponse.json({ error: 'Baza ni nastavljena' }, { status: 500 });
@@ -100,6 +105,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const omejitev = await omejiApi(request, 'admin-dostop', 30);
+  if (omejitev) return omejitev;
   if (!(await preveriGeslo())) return NextResponse.json({ error: 'Ni dovoljenja' }, { status: 401 });
   const baza = createAdminClient();
   if (!baza) return NextResponse.json({ error: 'Baza ni nastavljena' }, { status: 500 });

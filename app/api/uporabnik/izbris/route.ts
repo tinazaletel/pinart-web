@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { createClient } from '@/utils/supabase/server';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { omejiApi } from '@/lib/rate-limit';
 
 type IzbrisRequest = { confirm?: string; userId?: string };
 
@@ -9,6 +10,9 @@ export async function POST(request: Request) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Prijava je potekla.' }, { status: 401 });
+
+  const omejitev = await omejiApi(request, 'uporabnik-izbris', 10, user.id);
+  if (omejitev) return omejitev;
 
   let body: IzbrisRequest;
   try { body = await preberiJson<IzbrisRequest>(request, 2_000); }

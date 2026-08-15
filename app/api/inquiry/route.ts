@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { jeEmail, omejenNiz, preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { omejiApi } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
+  const omejitev = await omejiApi(request, 'inquiry', 10);
+  if (omejitev) return omejitev;
+
   const endpoint = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
   let body: Record<string, unknown>;
   try { body = await preberiJson(request, 8_000); }

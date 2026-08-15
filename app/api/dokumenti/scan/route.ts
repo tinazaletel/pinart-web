@@ -2,6 +2,7 @@ import { timingSafeEqual } from 'crypto';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { omejiApi } from '@/lib/rate-limit';
 
 const dovoljeniStatusi = new Set(['pending', 'clean', 'infected']);
 
@@ -14,6 +15,12 @@ function enakSkrivniKljuc(received: string, expected: string): boolean {
 /* Integracijska tocka za prihodnji AV worker. Trenutno datotek ne pregleduje;
    sprejme le overjen rezultat workerja in posodobi evidenco. */
 export async function POST(request: Request) {
+  // IP-osnovna omejitev: to je strojna pot (worker), overjena s skupnim
+  // skrivnim kljucem, ne z uporabnisko prijavo — zato brez userId. Omejitev je
+  // pred preverjanjem kljuca, da upocasni tudi ugibanje skrivnosti.
+  const omejitev = await omejiApi(request, 'dokumenti-scan', 20);
+  if (omejitev) return omejitev;
+
   const expectedSecret = process.env.DOCUMENT_SCAN_SECRET || '';
   const receivedSecret = request.headers.get('x-document-scan-secret') || '';
   if (!expectedSecret || !receivedSecret || !enakSkrivniKljuc(receivedSecret, expectedSecret)) {

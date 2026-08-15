@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { createClient } from '@/utils/supabase/server';
+import { omejiApi } from '@/lib/rate-limit';
 
 const ORGANIZACIJSKE_TABELE = [
   'clients', 'offers', 'contracts', 'invoices', 'expenses', 'retainers',
@@ -17,6 +18,9 @@ export async function GET(request: Request) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Prijava je potekla.' }, { status: 401 });
+
+  const omejitev = await omejiApi(request, 'uporabnik-izvoz', 10, user.id);
+  if (omejitev) return omejitev;
 
   const zahtevaniUporabnik = new URL(request.url).searchParams.get('userId');
   if (zahtevaniUporabnik && zahtevaniUporabnik !== user.id) {

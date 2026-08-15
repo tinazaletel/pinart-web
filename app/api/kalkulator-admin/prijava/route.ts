@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { omejiApi } from '@/lib/rate-limit';
 
 /**
  * Prijava v admin pregled cen (/kalkulator/admin). Eno samo geslo,
  * eno samo skrbnico — brez uporabniskih racunov, brez baze.
  */
 export async function POST(request: Request) {
+  const omejitev = await omejiApi(request, 'admin-prijava', 5);
+  if (omejitev) return omejitev;
+
   const geslo = process.env.KALKULATOR_ADMIN_GESLO;
   if (!geslo) return NextResponse.json({ ok: false, reason: 'not-configured' }, { status: 500 });
 

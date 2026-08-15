@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { omejenNiz, preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { omejiApi } from '@/lib/rate-limit';
 import {
   encryptAiSecret,
   isAiConnectionType,
@@ -53,6 +54,8 @@ async function context(request: Request, requireAdmin = false, requestedOrganiza
 export async function GET(request: Request) {
   const ctx = await context(request);
   if ('error' in ctx) return ctx.error;
+  const omejitev = await omejiApi(request, 'ai-povezave', 30, ctx.user.id);
+  if (omejitev) return omejitev;
   const { data, error } = await ctx.admin
     .from('organization_ai_connections')
     .select('id,connection_type,provider,label,model,endpoint_url,secret_hint,permissions,status,last_tested_at,last_error,created_at,updated_at')
@@ -72,6 +75,8 @@ export async function POST(request: Request) {
   const organizationId = typeof body.organizationId === 'string' ? body.organizationId : '';
   const ctx = await context(request, true, organizationId);
   if ('error' in ctx) return ctx.error;
+  const omejitev = await omejiApi(request, 'ai-povezave', 30, ctx.user.id);
+  if (omejitev) return omejitev;
 
   const label = typeof body.label === 'string' ? body.label.trim() : '';
   const model = typeof body.model === 'string' ? body.model.trim() : null;
@@ -122,6 +127,8 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   const ctx = await context(request, true);
   if ('error' in ctx) return ctx.error;
+  const omejitev = await omejiApi(request, 'ai-povezave', 30, ctx.user.id);
+  if (omejitev) return omejitev;
   const id = new URL(request.url).searchParams.get('id');
   if (!id || !UUID.test(id)) return NextResponse.json({ error: 'Povezava ni veljavna.' }, { status: 400 });
   const { error } = await ctx.admin
