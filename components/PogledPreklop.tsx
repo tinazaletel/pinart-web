@@ -39,7 +39,7 @@ export default function PogledPreklop({
       )}
       <a href={`${base}/kalkulator/pregled`} className={'pp-g' + (aktiven === 'plosca' ? ' on' : '')} aria-current={aktiven === 'plosca' ? 'page' : undefined}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
-        <span className="pp-txt">Home</span>
+        <span className="pp-txt">{L('Domov', 'Home')}</span>
       </a>
 
       {opozorilo && (

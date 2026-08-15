@@ -6850,8 +6850,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .vp-svoje:focus, .cw .basegrid input:focus, .cw .cene-dodaj input:focus, .cw .cene-vrsta input:focus, .cw .paket-cena-uredi input:focus, .cw .postavka input:focus, .cw .prav-cena-uredi input:focus, .cw .strosek-vrsta input:focus, .cw .uredi-dodaj input:focus, .cw .podjetja-shrani input:focus {
           border-color: var(--accent, #7C3AED) !important; border-bottom-width: 1px !important; margin-bottom: 0 !important; }
 
-        .cw .izbirnik-gumb { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: .6rem; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .35rem 0 .5rem; color: var(--ink); border-radius: 0; cursor: pointer; text-align: left; }
-        .cw .izbirnik-gumb:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+        .cw .izbirnik-gumb { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: .6rem; border: 1px solid rgba(255,255,255,.6); background: rgba(255,255,255,.62); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); box-shadow: 0 3px 10px rgba(40,25,40,.045); font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .65rem .85rem; color: var(--ink); border-radius: 10px; cursor: pointer; text-align: left; box-sizing: border-box; transition: border-color .18s; }
+        .cw .izbirnik-gumb:focus-visible { border-color: var(--accent, #7C3AED); outline: none; }
         .cw .izbirnik-gumb svg { flex: none; opacity: .6; }
         .cw .valuta-gumb-mobile { display: none; }
         @media (max-width: 560px) {

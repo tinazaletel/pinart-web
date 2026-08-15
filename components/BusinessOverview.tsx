@@ -311,7 +311,7 @@ export default function BusinessOverview({ base }: { base: string }) {
           preozek — stiri gumbi v 12.7rem so se prekrivali in besedila ni bilo brati. */}
       {feedback && <div className={styles.feedback} role="status"><span>{feedback}</span><button type="button" onClick={() => setFeedback('')} aria-label={L('Zapri obvestilo', 'Close notification')}>×</button></div>}
       <section className={styles.flowBand} id="tools" aria-labelledby="tools-title">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('01 · ORODJA', '01 · TOOLS')}</p><div className={styles.sectionNote}><strong>Smart pricing</strong><span>{L('Cena po tvojih izkušnjah, trgu in naročniku.', 'Pricing based on your experience, the market and the client.')}</span></div></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('01 · ORODJA', '01 · TOOLS')}</p><div className={styles.sectionNote}><strong>{L('Pametna cena', 'Smart pricing')}</strong><span>{L('Cena po tvojih izkušnjah, trgu in naročniku.', 'Pricing based on your experience, the market and the client.')}</span></div></div>
         <div className={styles.bandBody}>
         <div className={styles.flowToolsGlava}>
           <h2 id="tools-title" className={styles.bandNaslov}>{L('Kaj boš danes uredila?', 'What will you take care of today?')}</h2>
