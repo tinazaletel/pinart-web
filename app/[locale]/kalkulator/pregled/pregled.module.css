@@ -242,7 +242,7 @@
 .bandNaslov { margin: 0 0 1rem; padding: 0; display: block; font: 500 clamp(1.25rem, 1.55vw, 1.6rem)/1.05 var(--font-serif), Georgia, serif; }
 /* paneli = flex stolpci, da so povezave "Pojdi na X" poravnane na dnu in vsebina zapolni prostor */
 .historyBand, .resultsBand, .eventsBand { display: flex; flex-direction: column; }
-.flowBand { margin-top: .9rem; }
+.flowBand { margin-top: 1rem; }
 .sectionHeader { display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; padding: .55rem .45rem 1rem; }
 .sectionHeader h2 { margin: 0; font: 500 clamp(1.25rem, 1.55vw, 1.6rem)/1.05 var(--font-serif), Georgia, serif; }
 .sectionHeader .eyebrow { margin-bottom: .55rem; }
@@ -267,8 +267,8 @@
      nazaj, da prva kartica ostane poravnana z naslovom, desno pa v živi rob. */
   padding: 1.1rem .75rem .85rem .6rem; }
 .flowTools::-webkit-scrollbar { display: none; }
-.flowTools > * { flex: 0 0 13.5rem; scroll-snap-align: start; position: relative; min-height: 9.5rem; display: flex; flex-direction: column; align-items: flex-start; padding: 1rem .8rem; border: 0; border-radius: 1rem; background: oklch(98% .01 87); color: inherit; font: inherit; text-align: left; text-decoration: none; cursor: pointer; overflow: hidden; transition: transform 340ms cubic-bezier(.22,1,.36,1), border-radius 340ms cubic-bezier(.22,1,.36,1), box-shadow 340ms cubic-bezier(.22,1,.36,1), filter 340ms ease-out; }
-@media (max-width: 640px) { .flowTools > * { flex: 0 0 9.4rem; min-height: 7.2rem; padding: .8rem; } .flowTools > * strong { font-size: .92rem; } .flowTools > * small { font-size: .66rem; } }
+.flowTools > * { flex: 0 0 13.5rem; scroll-snap-align: start; position: relative; min-height: 9.5rem; display: flex; flex-direction: column; align-items: flex-start; padding: 1rem .7rem; border: 0; border-radius: 1rem; background: oklch(98% .01 87); color: inherit; font: inherit; text-align: left; text-decoration: none; cursor: pointer; overflow: hidden; transition: transform 340ms cubic-bezier(.22,1,.36,1), border-radius 340ms cubic-bezier(.22,1,.36,1), box-shadow 340ms cubic-bezier(.22,1,.36,1), filter 340ms ease-out; }
+@media (max-width: 640px) { .flowTools > * { flex: 0 0 9.4rem; min-height: 7.2rem; padding: .8rem .65rem; } .flowTools > * strong { font-size: .92rem; } .flowTools > * small { font-size: .66rem; } }
 /* naslov + puščici v ISTI ravnini (puščici ne dodajo višine); majhen razmik do kartic */
 .flowToolsGlava { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0; }
 .flowToolsGlava .bandNaslov { margin: 0; }
@@ -345,7 +345,7 @@
 @media (prefers-reduced-motion: reduce) { .cardBubbles u { animation: none; } }
 .flowTools > *:nth-child(1n)::after {
   right: -.7rem; bottom: -.8rem; top: auto; left: auto;
-  width: 7.4rem; height: 7.4rem; aspect-ratio: auto;
+  width: 6.4rem; height: 6.4rem; aspect-ratio: auto;
   border: 0; box-shadow: none; border-radius: 0;
   background: center / contain no-repeat;
   filter: drop-shadow(0 .5rem .8rem oklch(30% .05 300 / .22));
@@ -354,7 +354,7 @@
 .flowTools > *:nth-child(1)::after { background-image: url('/flow/icon-ponudba.png'); }
 .flowTools > *:nth-child(2)::after { background-image: url('/flow/icon-racun.png'); animation-delay: -1s; }
 .flowTools > *:nth-child(3)::after { background-image: url('/flow/icon-projekt.png'); animation-delay: -2s; }
-.flowTools > *:nth-child(4)::after { background-image: url('/flow/icon-stranke.png'); animation-delay: -3s; width: 9.1rem; height: 9.1rem; right: -1.6rem; bottom: -1.7rem; }
+.flowTools > *:nth-child(4)::after { background-image: url('/flow/icon-stranke.png'); animation-delay: -3s; width: 7.9rem; height: 7.9rem; right: -1.4rem; bottom: -1.5rem; }
 .flowTools > *:nth-child(5)::after { background-image: url('/flow/icon-koledar.png'); animation-delay: -1.5s; }
 .flowTools > *:nth-child(6)::after { background-image: url('/flow/icon-dolgorocno.png'); animation-delay: -2.5s; }
 .flowTools > *:nth-child(7)::after { background-image: url('/flow/icon-cas.png'); animation-delay: -.5s; }
@@ -460,7 +460,7 @@
 /* fixed: stolpci se držijo določenih širin (projekt/status/rok) in ne prerastejo
    panela — sicer overflow-x:hidden odreže Status+Rok desno (mobilno). */
 .historyTable table { margin: 0; table-layout: fixed; width: 100%; }
-.historyTable th { padding: .7rem .5rem; background: transparent; border-bottom: 1px solid oklch(94% .006 82 / .42); font-size: .55rem; color: color-mix(in oklch, var(--ink) 68%, transparent); }
+.historyTable th { padding: .7rem .5rem; background: transparent; border-bottom: 1px solid oklch(94% .006 82 / .2); font-size: .55rem; color: color-mix(in oklch, var(--ink) 68%, transparent); }
 .historyTable td { height: 4.05rem; padding: .7rem .5rem; background: transparent; vertical-align: middle; }
 .historyTable td:nth-child(3) { white-space: nowrap; }
 .historyTable th:first-child, .historyTable td:first-child { padding-left: .7rem; }
@@ -1431,12 +1431,18 @@
   .quickActions { grid-template-columns: 1fr 1fr; }
   .quickActions > * { min-height: 7.5rem; }
   .businessPulse { grid-template-columns: 1fr 1fr; }
-  .historyBand .tableWrap th:first-child { width: 62%; }
-  .historyBand .tableWrap th:nth-child(2),
-  .historyBand .tableWrap td:nth-child(2),
-  .historyBand .tableWrap th:nth-child(3),
-  .historyBand .tableWrap td:nth-child(3) { display: none; }
-  .historyBand .tableWrap th:nth-child(4) { width: 38%; }
+  /* 4-stolpčna knjigovodska tabela (Dokument·Stranka·Datum·Status): na mobilu
+     skrij Stranko+Datum, pusti Dokument + Status. */
+  .accTable th:first-child { width: 62%; }
+  .accTable th:nth-child(2),
+  .accTable td:nth-child(2),
+  .accTable th:nth-child(3),
+  .accTable td:nth-child(3) { display: none; }
+  .accTable th:nth-child(4) { width: 38%; }
+  /* 3-stolpčna tabela projektov (Projekt·Status·Rok): pokaži VSE tri stolpce. */
+  .projTable th:first-child, .projTable td:first-child { width: 46%; }
+  .projTable th:nth-child(2), .projTable td:nth-child(2) { width: 31%; }
+  .projTable th:nth-child(3), .projTable td:nth-child(3) { width: 23%; }
   .dashboardGrid { grid-template-columns: 1fr; }
   .inlineForm form { grid-template-columns: 1fr; }
   .inlineForm .goalPlanner { grid-template-columns: 1fr; }
