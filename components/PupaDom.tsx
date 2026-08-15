@@ -317,10 +317,10 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   const plava: { labela: string; vrednost: string; h: number; poz: string; d: number; href: string }[] = [
     { labela: L('Prihodek ta mesec', 'Revenue this month'), vrednost: '4.850 €', h: 150, poz: 'top:9%;left:4%', d: 0, href: `${base}/kalkulator/racuni` },
     { labela: L('Aktivni projekti', 'Active projects'), vrednost: '3', h: 200, poz: 'top:35%;left:6%', d: 1.4, href: `${base}/kalkulator/projekti` },
-    { labela: L('Za plačilo', 'Awaiting payment'), vrednost: '1.350 €', h: 25, poz: 'bottom:13%;left:5%', d: 2.6, href: `${base}/kalkulator/racuni` },
+    { labela: L('Za plačilo', 'Awaiting payment'), vrednost: '1.350 €', h: 25, poz: 'bottom:18%;left:5%', d: 2.6, href: `${base}/kalkulator/racuni` },
     { labela: L('Naloge danes', 'Tasks today'), vrednost: '4', h: 297, poz: 'top:9%;right:5%', d: .7, href: `${base}/kalkulator/naloge` },
     { labela: L('Mesečni cilj', 'Monthly goal'), vrednost: '68 %', h: 60, poz: 'top:35%;right:7%', d: 2, href: `${base}/kalkulator/cilji` },
-    { labela: L('Nova sporočila', 'New messages'), vrednost: '2', h: 320, poz: 'bottom:13%;right:5%', d: 3.2, href: `${base}/kalkulator/komunikacija` },
+    { labela: L('Nova sporočila', 'New messages'), vrednost: '2', h: 320, poz: 'bottom:18%;right:5%', d: 3.2, href: `${base}/kalkulator/komunikacija` },
   ];
 
   /* hitre akcije = lahki POGOVORNI predlogi (napolnijo vnos), ne le linki (ChatGPT) */
