@@ -262,12 +262,16 @@
    na mobilu ena kompaktna vrsta (manj višine). »Peek« naslednje kartice = namig za drsanje. */
 /* »živi rob«: kartice bleedajo do desnega roba panela (odmik bandBody paddinga),
    tako da 6. kartica ni grdo odrezana sredi ničesar, ampak teče čez rob. */
-.flowTools { display: flex; gap: .65rem; margin-top: .45rem; margin-right: -1.1rem; padding-right: 1.1rem; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: .4rem; scroll-padding-inline: .1rem; }
+.flowTools { display: flex; gap: .65rem; margin-top: 0; margin-left: -.85rem; margin-right: -1.1rem; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-padding-inline: .85rem;
+  /* padding = prostor za (tesnejšo) senco, da overflow-x scroll ne odreže; margini bleedajo
+     nazaj, da prva kartica ostane poravnana z naslovom, desno pa v živi rob. */
+  padding: .85rem 1rem .85rem .85rem; }
 .flowTools::-webkit-scrollbar { display: none; }
 .flowTools > * { flex: 0 0 13.5rem; scroll-snap-align: start; position: relative; min-height: 9.5rem; display: flex; flex-direction: column; align-items: flex-start; padding: 1rem; border: 0; border-radius: 1rem; background: oklch(98% .01 87); color: inherit; font: inherit; text-align: left; text-decoration: none; cursor: pointer; overflow: hidden; transition: transform 340ms cubic-bezier(.22,1,.36,1), border-radius 340ms cubic-bezier(.22,1,.36,1), box-shadow 340ms cubic-bezier(.22,1,.36,1), filter 340ms ease-out; }
 @media (max-width: 640px) { .flowTools > * { flex: 0 0 9.4rem; min-height: 7.2rem; padding: .8rem; } .flowTools > * strong { font-size: .92rem; } .flowTools > * small { font-size: .66rem; } }
-/* naslov + puščici v ISTI ravnini (puščici ne dodajo višine) */
-.flowToolsGlava { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+/* naslov + puščici v ISTI ravnini (puščici ne dodajo višine); majhen razmik do kartic */
+.flowToolsGlava { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0; }
+.flowToolsGlava .bandNaslov { margin: 0; }
 /* puščici ‹ › za drsanje vrste orodij — samo desktop (na mobilu je swipe) */
 .flowToolsNav { display: flex; gap: .45rem; flex: none; }
 .flowToolsNav button { width: 2rem; height: 2rem; display: grid; place-items: center; border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent); border-radius: 50%; background: rgba(255,255,255,.7); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: var(--ink); font-size: 1.05rem; line-height: 1; cursor: pointer; transition: background .15s ease, border-color .15s ease, transform .12s ease; }
@@ -284,7 +288,7 @@
 .flowTools > *:nth-child(4)::before { right: .8rem; bottom: .7rem; width: 5.5rem; height: 3.8rem; background-image: radial-gradient(circle, oklch(100% 0 0 / .28) 1px, transparent 1.2px); background-size: .55rem .55rem; -webkit-mask-image: linear-gradient(135deg, transparent, #000); mask-image: linear-gradient(135deg, transparent, #000); }
 /* brez scale() in filter na hover: oboje prisili GPU re-rasterizacijo → tekst se zablura.
    Dvig + senca + tesnejši rob dajo enak občutek, tekst ostane oster. */
-.flowTools > *:hover { transform: translateY(-4px); border-radius: .75rem; box-shadow: 0 1.1rem 2.6rem oklch(22% .04 300 / .16); }
+.flowTools > *:hover { transform: translateY(-3px); border-radius: .75rem; box-shadow: 0 .5rem 1.1rem oklch(22% .04 300 / .15); }
 .flowTools .offerTool { background: linear-gradient(125deg, oklch(95% .03 300), oklch(88% .08 297), oklch(91% .06 322)); background-size: 220% 220%; color: var(--ink); animation: cardFlow 9s ease-in-out infinite alternate; }
 .flowTools > *:nth-child(2) { background: linear-gradient(125deg, oklch(95% .04 168), oklch(86% .1 165), oklch(91% .06 190)); background-size: 220% 220%; animation: cardFlow 11s ease-in-out -3s infinite alternate; }
 .flowTools > *:nth-child(3) { background: linear-gradient(125deg, oklch(95% .04 75), oklch(88% .085 62), oklch(91% .05 42)); background-size: 220% 220%; animation: cardFlow 10s ease-in-out -6s infinite alternate; }
@@ -294,15 +298,15 @@
 .flowTools > *:nth-child(7) { background: linear-gradient(125deg, oklch(95% .045 170), oklch(84% .1 165), oklch(91% .06 295)); background-size: 220% 220%; animation: cardFlow 10s ease-in-out -2s infinite alternate; }
 .flowTools > *:nth-child(8) { background: linear-gradient(125deg, oklch(94% .035 87), oklch(88% .065 60), oklch(91% .055 295)); background-size: 220% 220%; animation: cardFlow 13s ease-in-out -8s infinite alternate; }
 /* Vse kartice enak nezen VECTONSKI preliv (vijola->mint->roza, svetli) z VIDNIM valovanjem; identiteta gre na clay ikone. */
-.flowTools > *:nth-child(1n) { background: oklch(97.8% .006 87); background-size: auto; color: var(--ink); border: 1px solid oklch(22% .015 60 / .06); box-shadow: 0 .5rem 1.4rem oklch(30% .03 300 / .05); animation: none; }
+.flowTools > *:nth-child(1n) { background: oklch(97.8% .006 87); background-size: auto; color: var(--ink); border: 1px solid oklch(22% .015 60 / .06); box-shadow: 0 .2rem .55rem oklch(30% .03 300 / .08); animation: none; }
 /* naslov in podnaslov ne smeta cez ikono (desno zgoraj) */
 .flowTools strong, .flowTools small { padding-right: 3.1rem; }
 .flowTools span { position: relative; z-index: 2; font-size: .56rem; font-weight: 850; letter-spacing: .1em; }
 .flowTools strong { position: relative; z-index: 2; margin-top: .1rem; font: 600 1.2rem var(--font-sans), system-ui, sans-serif; letter-spacing: -.01em; -webkit-text-stroke: 0; }
 .flowTools small { position: relative; z-index: 2; margin-top: .3rem; color: color-mix(in oklch, currentColor 72%, transparent); font-size: .62rem; line-height: 1.35; }
-.flowTools i { z-index: 3; position: absolute; top: 1.2rem; right: 1.2rem; bottom: auto; left: auto; display: grid; place-items: center; width: 2.5rem; aspect-ratio: 1; border: 1px solid oklch(55% .03 300 / .12); border-radius: 50%; background: transparent; color: var(--ink); font: 500 1.25rem/1 var(--font-sans), sans-serif; font-style: normal; transition: background .16s ease, border-color .16s ease; }
+.flowTools i { z-index: 3; position: absolute; top: 1rem; right: .9rem; bottom: auto; left: auto; display: grid; place-items: center; width: 2.05rem; aspect-ratio: 1; border: 1px solid oklch(55% .03 300 / .12); border-radius: 50%; background: transparent; color: var(--ink); font: 500 1.05rem/1 var(--font-sans), sans-serif; font-style: normal; transition: background .16s ease, border-color .16s ease; }
 .flowTools > *:hover i { background: oklch(100% 0 0 / .65); border-color: oklch(30% .04 300 / .18); }
-.flowTools i svg { width: 18px; height: 18px; }
+.flowTools i svg { width: 15px; height: 15px; }
 .flowTools i svg { display: block; }
 .toolIcon { display: none; }
 .flowTools > *:nth-child(4) .toolIcon { stroke: var(--ink); }
