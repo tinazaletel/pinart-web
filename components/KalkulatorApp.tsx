@@ -7458,7 +7458,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
            z oživljenimi besedilnimi stanji. Vodoravno centriran. */
         /* skupni ovoj področja pošiljanja: stabilna višina, da gumb med fazami
            (Pošlji → potrditev → Pošiljam → Poslano → nazaj) navpično NE skoči */
-        .cw .posl-akcija { margin-top: .55rem; }
+        .cw .posl-akcija { margin-top: .2rem; }
         .cw .posl-gumb-vrsta { display: flex; justify-content: center; }
         .cw .posl-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-width: 11rem; min-height: 2.85rem; box-sizing: border-box; font-family: inherit; font-size: .92rem; font-weight: 600; letter-spacing: .01em; cursor: pointer; border-radius: 999px; padding: .8rem 2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s cubic-bezier(.22,1,.36,1), opacity .3s ease, background .55s cubic-bezier(.22,1,.36,1), border-color .55s cubic-bezier(.22,1,.36,1), color .55s cubic-bezier(.22,1,.36,1); }
         .cw .posl-gumb:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(35,18,45,.2); }
