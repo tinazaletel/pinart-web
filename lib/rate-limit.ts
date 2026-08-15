@@ -2,7 +2,16 @@ import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 
-const SPOROCILO = 'Preveč zahtev, poskusi čez minuto.';
+const SPOROCILO_SL = 'Preveč zahtev, poskusi čez minuto.';
+const SPOROCILO_EN = 'Too many requests, please try again in a minute.';
+
+/* API poti nimajo locale v poti, zato jezik uganemo iz referer (/en/...) ali
+   accept-language — da uporabnik dobi sporočilo v svojem jeziku. */
+function jeAngleski(request: Request): boolean {
+  const ref = request.headers.get('referer') || '';
+  if (/\/en(?:\/|$|\?)/.test(ref)) return true;
+  return /^en\b/i.test(request.headers.get('accept-language') || '');
+}
 
 function ipIzZahteve(request: Request): string {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
@@ -54,5 +63,5 @@ export async function omejiApi(
   }
   return data === true
     ? null
-    : NextResponse.json({ napaka: SPOROCILO }, { status: 429 });
+    : NextResponse.json({ napaka: jeAngleski(request) ? SPOROCILO_EN : SPOROCILO_SL }, { status: 429 });
 }
