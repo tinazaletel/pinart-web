@@ -6729,10 +6729,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .glava-avatar:hover { border-color: rgba(17,17,17,.72); }
 
         .cw .oder { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7rem clamp(1.2rem, 4vw, 3rem) 8rem; }
-        /* Na mobilu so forme (.kartica) fill 100%, mehurčki pa max-width 92% — zato so
-           se forme dotikale roba, mehurčki pa ne. Damo celi .oder vsebini bolj radodaren
-           SIMETRIČEN rob (levo=desno), da je cela ponudba na isti navpičnici. */
-        @media (max-width: 640px) { .cw .oder { padding-left: 1.6rem; padding-right: 1.6rem; } }
         /* v Flow lupini je zgoraj ze glava strani, zato brez 7rem praznine */
         /* glava strani v lupini — ista mera kot pri retainerju */
         .cw .lupina-glava { width: min(1240px, 100%); margin: 0 auto; padding: clamp(1.6rem, 4vw, 2.6rem) clamp(1.2rem, 4vw, 3rem) 0; position: relative; z-index: 2; }
@@ -6978,6 +6974,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
            enakem stilu; naslov kartice = h4. */
         .cw .kartica { animation: cwVstop .5s cubic-bezier(.16,1,.3,1) both; background: #FCFBF7; border: 1px solid rgba(17,17,17,.06); border-radius: 20px; padding: 1.6rem 1.7rem 1.7rem; box-shadow: 0 4px 18px rgba(17,17,17,.04); max-width: 760px; margin-bottom: 1.4rem; }
         @media (prefers-reduced-motion: reduce) { .cw .kartica { animation: none; } }
+        /* MOBILE: mehurčki so max-width 92% (imajo rob), kartice pa so bile 100% in so se
+           dotikale roba. Damo VSEM karticam enak simetričen L/R rob kot mehurčkom. */
+        @media (max-width: 640px) { .cw .kartica { max-width: 92%; margin-left: auto; margin-right: auto; } }
         .cw .kartica-neobvezno { background: transparent; border: 1px dashed rgba(17,17,17,.22); box-shadow: none; margin-top: -.4rem; }
         .cw .prav-napredno { margin: .2rem 0 0; }
         .cw .prav-napredno > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: .5rem; font-weight: 600; font-size: .92rem; color: rgba(17,17,17,.7); padding: .5rem 0; }
