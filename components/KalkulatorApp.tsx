@@ -3769,7 +3769,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     /* Razsirjena ponudba: cenik in okviri takoj za paketi (kot v njenih
        pravih ponudbah), ne na dnu, kjer se izgubijo. Pri retainerju NE (projektni okviri). */
     if (!dolgorocno && obsegPonudbe === 'razsirjena') {
-      const cur = (n: number) => Math.round(n * vfx.fx).toLocaleString('sl-SI') + ' ' + vfx.znak;
+      const cur = (n: number) => Math.round(n * vfx.fx).toLocaleString('sl-SI') + ' ' + vfx.znak;
       /* specifikacija cen je zdaj vpisana v priporocenem paketu zgoraj (ne locen razdelek) */
       /* Ura-osnova (kot v njenih pravih ponudbah): PRIVZETO SKRITA (value-based
          pozicioniranje); prikaze se le, ko jo vklopi s stikalom. */
