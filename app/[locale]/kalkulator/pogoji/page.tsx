@@ -76,6 +76,34 @@ export default async function KalkulatorPogojiPage({
         </p>
 
         <section style={S}>
+          <h2 style={H}>{en ? 'Definitions' : 'Pojmi'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                In these terms: <strong>the provider</strong> (or &quot;we&quot;) means Pinart d.o.o.;
+                <strong> the platform</strong> (or &quot;Pinart Flow&quot;) means the Pinart Flow application
+                together with its free pricing calculator and tools; <strong>you</strong> (or &quot;the user&quot;)
+                means the person using the platform; <strong>Pupa</strong> means our AI assistant (artificial
+                intelligence) integrated in the platform; <strong>AI output</strong> means content generated
+                by Pupa; <strong>the vault</strong> means the Authorship vault feature; a
+                <strong> subprocessor</strong> means a third party that processes data on the provider&apos;s
+                instructions.
+              </>
+            ) : (
+              <>
+                V teh pogojih: <strong>ponudnik</strong> (ali »mi«) pomeni Pinart d.o.o.;
+                <strong> platforma</strong> (ali »Pinart Flow«) pomeni aplikacijo Pinart Flow skupaj z
+                brezplačnim kalkulatorjem cen in orodji; <strong>ti</strong> (ali »uporabnik«) pomeni
+                osebo, ki uporablja platformo; <strong>Pupa</strong> pomeni našo AI pomočnico (umetno
+                inteligenco), vgrajeno v platformo; <strong>izhod AI</strong> pomeni vsebino, ki jo ustvari
+                Pupa; <strong>sef</strong> pomeni funkcijo Sef avtorstva; <strong>podobdelovalec</strong>
+                pomeni tretjo osebo, ki obdeluje podatke po navodilih ponudnika.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
           <h2 style={H}>{en ? '1. Informative nature of the calculations' : '1. Informativna narava izračunov'}</h2>
           <p style={P}>
             {en ? (
@@ -547,16 +575,16 @@ export default async function KalkulatorPogojiPage({
           <p style={P}>
             {en ? (
               <>
-                Pupa is an optional assistant that runs server-side via the Anthropic Claude API,
-                so the API key is not exposed in the browser. Anthropic receives only the content
+                Pupa is our optional AI assistant (artificial intelligence) that runs server-side via
+                the Anthropic Claude API, so the API key is not exposed in the browser. Anthropic receives only the content
                 you enter into Pupa, and the minimal context of the open tool or proposal
                 needed for a response; nothing else. Anthropic has no access to the Pinart
                 Flow database — it sees only the text of the individual request and cannot read or export the database.
               </>
             ) : (
               <>
-                Pupa je izbirna pomočnica, ki deluje strežniško prek Anthropic Claude API,
-                zato API ključ ni izpostavljen v brskalniku. Anthropic prejme samo vsebino,
+                Pupa je naša izbirna AI pomočnica (umetna inteligenca), ki deluje strežniško prek
+                Anthropic Claude API, zato API ključ ni izpostavljen v brskalniku. Anthropic prejme samo vsebino,
                 ki jo vneseš v Pupo, in minimalen kontekst odprtega orodja ali ponudbe,
                 potreben za odgovor; nič drugega. Anthropic nima dostopa do baze Pinart
                 Flow — vidi le besedilo posamezne zahteve in baze ne more brati ali izvoziti.
