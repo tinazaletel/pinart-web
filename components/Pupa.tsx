@@ -41,6 +41,7 @@ export default function Pupa() {
   const [spor, setSpor] = useState<Sporocilo[]>([]);
   const [vnos, setVnos] = useState('');
   const [caka, setCaka] = useState(false);
+  const prekiniRef = useRef<AbortController | null>(null);
   const [poslusa, setPoslusa] = useState(false);
   const [zvok, setZvok] = useState(false);
   const [nacin, setNacin] = useState<'chat' | 'glas'>('chat');
@@ -149,22 +150,36 @@ export default function Pupa() {
     setSpor(s => [...s, { role: 'user', content: q }]);
     setVnos('');
     setCaka(true);
+    const krmilnik = new AbortController();
+    prekiniRef.current = krmilnik;
     try {
       const pk = preberiPupaKontekst();
       const kontekstSKorakom = [pk.korak, pk.kontekst].filter(Boolean).join('\n\n');
       const res = await fetch('/api/pupa', {
         method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ vprasanje: q, kontekst: kontekstSKorakom, zgodovina }),
+        signal: krmilnik.signal,
       });
       const data = await res.json();
       const odg = data.odgovor || data.napaka || 'Hmm, nekaj je zaškripalo.';
       setSpor(s => [...s, { role: 'assistant', content: odg }]);
       if (zvok || nacin === 'glas') govori(odg);
-    } catch {
-      setSpor(s => [...s, { role: 'assistant', content: L('Ne morem do zaledja. Poskusi znova.', 'Cannot reach the backend. Try again.') }]);
+    } catch (e) {
+      /* Uporabnik je pritisnil Stop — brez sporočila o napaki. */
+      if ((e as Error)?.name !== 'AbortError') {
+        setSpor(s => [...s, { role: 'assistant', content: L('Ne morem do zaledja. Poskusi znova.', 'Cannot reach the backend. Try again.') }]);
+      }
     } finally {
       setCaka(false);
+      prekiniRef.current = null;
     }
+  };
+
+  /* Stop: prekine zahtevo do Pupe in ustavi morebitni govor. */
+  const prekini = () => {
+    prekiniRef.current?.abort();
+    try { window.speechSynthesis?.cancel(); } catch { /* ignore */ }
+    setCaka(false);
   };
 
   const glas = () => {
@@ -326,8 +341,15 @@ export default function Pupa() {
             </button>
             <input value={vnos} onChange={e => setVnos(e.target.value)} placeholder={poslusa ? L('Poslušam…', 'Listening…') : L('Vprašaj Pupo…', 'Ask Pupa…')}
               style={{ flex: 1, border: '1px solid rgba(42,32,53,.18)', borderRadius: 12, padding: '.55rem .75rem', fontSize: '.9rem', fontFamily: 'inherit', outline: 'none' }} />
-            <button type="submit" disabled={caka || !vnos.trim()}
-              style={{ flex: 'none', border: 'none', borderRadius: 12, padding: '.55rem .9rem', background: '#2A2035', color: '#fff', cursor: caka || !vnos.trim() ? 'default' : 'pointer', fontWeight: 600, opacity: caka || !vnos.trim() ? .5 : 1 }}>{L('Pošlji', 'Send')}</button>
+            {caka ? (
+              <button type="button" onClick={prekini} aria-label={L('Ustavi', 'Stop')} title={L('Ustavi', 'Stop')}
+                style={{ flex: 'none', border: 'none', borderRadius: 12, padding: '.55rem .9rem', background: '#2A2035', color: '#fff', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>
+                <span style={{ width: 11, height: 11, background: '#fff', borderRadius: 2, display: 'inline-block' }} aria-hidden="true" />{L('Ustavi', 'Stop')}
+              </button>
+            ) : (
+              <button type="submit" disabled={!vnos.trim()}
+                style={{ flex: 'none', border: 'none', borderRadius: 12, padding: '.55rem .9rem', background: '#2A2035', color: '#fff', cursor: !vnos.trim() ? 'default' : 'pointer', fontWeight: 600, opacity: !vnos.trim() ? .5 : 1 }}>{L('Pošlji', 'Send')}</button>
+            )}
           </form>
           </>
           )}
