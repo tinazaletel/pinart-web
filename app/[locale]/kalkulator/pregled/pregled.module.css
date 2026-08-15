@@ -356,9 +356,15 @@
 .flowTools > *:nth-child(3)::after { background-image: url('/flow/icon-projekt.png'); animation-delay: -2s; }
 .flowTools > *:nth-child(4)::after { background-image: url('/flow/icon-stranke.png'); animation-delay: -3s; width: 7.9rem; height: 7.9rem; right: -1.4rem; bottom: -1.5rem; }
 .flowTools > *:nth-child(5)::after { background-image: url('/flow/icon-koledar.png'); animation-delay: -1.5s; }
-.flowTools > *:nth-child(6)::after { background-image: url('/flow/icon-dolgorocno.png'); animation-delay: -2.5s; }
-.flowTools > *:nth-child(7)::after { background-image: url('/flow/icon-cas.png'); animation-delay: -.5s; }
-.flowTools > *:nth-child(8)::after { background-image: url('/flow/icon-dolgorocno.png'); animation-delay: -3.5s; }
+.flowTools > *:nth-child(6)::after { background-image: url('/flow/icon-pogodba.png'); animation-delay: -2.5s; }
+.flowTools > *:nth-child(7)::after { background-image: url('/flow/icon-dolgorocno.png'); animation-delay: -.5s; }
+.flowTools > *:nth-child(8)::after { background-image: url('/flow/icon-strosek.png'); animation-delay: -3.5s; }
+.flowTools > *:nth-child(9)::after { background-image: url('/flow/icon-ceniki.png'); animation-delay: -1.2s; }
+.flowTools > *:nth-child(10)::after { background-image: url('/flow/icon-naloge.png'); animation-delay: -2.2s; }
+.flowTools > *:nth-child(11)::after { background-image: url('/flow/icon-komunikacija.png'); animation-delay: -3.2s; }
+.flowTools > *:nth-child(12)::after { background-image: url('/flow/icon-sef.png'); animation-delay: -.8s; }
+.flowTools > *:nth-child(13)::after { background-image: url('/flow/icon-cas.png'); animation-delay: -1.8s; }
+.flowTools > *:nth-child(14)::after { background-image: url('/flow/icon-racunovodstvo.png'); animation-delay: -2.8s; }
 @keyframes iconBob { from { transform: translateY(0); } to { transform: translateY(-8px); } }
 @keyframes cardFlow {
   0% { background-position: 0% 10%; }
