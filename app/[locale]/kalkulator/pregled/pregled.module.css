@@ -364,7 +364,7 @@
 .flowTools > *:nth-child(11)::after { background-image: url('/flow/icon-komunikacija.png'); animation-delay: -3.2s; }
 .flowTools > *:nth-child(12)::after { background-image: url('/flow/icon-sef.png'); animation-delay: -.8s; }
 .flowTools > *:nth-child(13)::after { background-image: url('/flow/icon-cas.png'); animation-delay: -1.8s; }
-.flowTools > *:nth-child(14)::after { background-image: url('/flow/icon-racunovodstvo.png'); animation-delay: -2.8s; }
+.flowTools > *:nth-child(14)::after { background-image: url('/flow/icon-racunovodstvo.png'); animation-delay: -2.8s; width: 7.6rem; height: 7.6rem; right: -1rem; bottom: -1rem; }
 @keyframes iconBob { from { transform: translateY(0); } to { transform: translateY(-8px); } }
 @keyframes cardFlow {
   0% { background-position: 0% 10%; }
