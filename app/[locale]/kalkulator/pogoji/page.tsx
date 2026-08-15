@@ -196,6 +196,29 @@ export default async function KalkulatorPogojiPage({
         </section>
 
         <section style={S}>
+          <h2 style={H}>{en ? '2b. Refunds' : '2b. Vračila'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                Subscriptions are billed in advance for the selected period and are, as a rule,
+                non-refundable for a period already started, except where mandatory law provides
+                otherwise. If you are a consumer in the EU, a statutory 14-day withdrawal right may apply;
+                for digital services that begin at your request, this right ends once performance has begun
+                with your consent. If a payment was clearly charged in error, contact us at tina@pinart.si.
+              </>
+            ) : (
+              <>
+                Naročnina se obračuna vnaprej za izbrano obdobje in za že začeto obdobje praviloma ni
+                vračljiva, razen če prisilni predpis določa drugače. Če si potrošnik v EU, lahko velja
+                zakonska 14-dnevna pravica do odstopa; pri digitalnih storitvah, ki se začnejo na tvojo
+                zahtevo, ta pravica preneha, ko se izvajanje s tvojim soglasjem začne. Če je bilo plačilo
+                očitno obračunano pomotoma, nas kontaktiraj na tina@pinart.si.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
           <h2 style={H}>{en ? '3. No warranties' : '3. Brez jamstev'}</h2>
           <p style={P}>
             {en ? (
@@ -211,6 +234,27 @@ export default async function KalkulatorPogojiPage({
                 popolnost ali primernost izračunov za določen namen in ne odgovarja za
                 morebitno škodo, ki bi nastala z uporabo orodja ali zanašanjem na
                 njegove rezultate.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>{en ? '3a. Beta / early access' : '3a. Beta / zgodnji dostop'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                During the closed beta (early access), the platform is offered &quot;as is&quot; and is
+                under active development. Features may change, be added or removed, and beta data may
+                occasionally be reset or migrated. We recommend keeping your own backup of important
+                documents. Beta access may be limited or ended at any time.
+              </>
+            ) : (
+              <>
+                V času zaprte bete (zgodnji dostop) je platforma na voljo »takšna, kot je« in v
+                aktivnem razvoju. Funkcije se lahko spremenijo, dodajo ali odstranijo, beta podatki
+                pa se lahko občasno ponastavijo ali migrirajo. Priporočamo, da pomembne dokumente
+                hraniš v lastni varnostni kopiji. Dostop do bete lahko kadarkoli omejimo ali ukinemo.
               </>
             )}
           </p>
@@ -359,6 +403,58 @@ export default async function KalkulatorPogojiPage({
                 delovanja, razpoložljivosti ali trajne hrambe in <strong>ne odgovarja za izgubo,
                 poškodbo ali nedostopnost naloženih datotek</strong> (glejte tudi točko 9). Priporočamo,
                 da pomembna dela dodatno hraniš na lastni varnostni kopiji.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>{en ? '4d. Acceptable use' : '4d. Sprejemljiva raba'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                You agree to use the platform lawfully and fairly. You must not: (a) break the law or
+                infringe the rights of others; (b) introduce malware, viruses or malicious code, or in
+                any way damage, disrupt or compromise the platform, its code, security, availability or
+                content; (c) attempt to access other users&apos; data or bypass access controls; (d) copy,
+                reproduce, scrape or reuse any of the platform&apos;s content — text, visual design or code —
+                or otherwise infringe the copyright and other intellectual-property rights of the provider
+                or third parties; (e) resell, sublicense or reverse-engineer the platform; (f) send spam or
+                unlawful, misleading or abusive content through the communication features. We may restrict
+                or suspend an account that breaches these rules and pursue any damage caused.
+              </>
+            ) : (
+              <>
+                Zavezuješ se, da boš platformo uporabljal zakonito in pošteno. Ne smeš: (a) kršiti
+                zakonov ali pravic drugih; (b) vnašati zlonamerne programske opreme, virusov ali
+                škodljive kode ali na kakršenkoli način poškodovati, motiti ali ogroziti platforme,
+                njene kode, varnosti, razpoložljivosti ali vsebine; (c) poskušati dostopati do podatkov
+                drugih uporabnikov ali obiti nadzora dostopa; (d) kopirati, razmnoževati, strojno
+                pobirati ali ponovno uporabljati katere koli vsebine platforme — besedila, vizualne
+                zasnove ali kode — ali kako drugače kršiti avtorskih in drugih pravic intelektualne
+                lastnine ponudnika ali tretjih; (e) preprodajati, podeljevati podlicenc ali obratno
+                inženiriti platforme; (f) prek funkcij komunikacije pošiljati neželenih, nezakonitih,
+                zavajajočih ali žaljivih vsebin. Račun, ki krši ta pravila, lahko omejimo ali začasno
+                onemogočimo in uveljavljamo morebitno povzročeno škodo.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>{en ? '4e. Eligibility and age' : '4e. Upravičenost in starost'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                The platform is intended for business use by adults (persons 18 or older) with the legal
+                capacity to enter into a contract. By using it you confirm that you meet these conditions.
+                The platform is not intended for children.
+              </>
+            ) : (
+              <>
+                Platforma je namenjena poslovni uporabi polnoletnih oseb (18 let ali več) s poslovno
+                sposobnostjo za sklenitev pogodbe. Z uporabo potrjuješ, da izpolnjuješ te pogoje.
+                Platforma ni namenjena otrokom.
               </>
             )}
           </p>
@@ -578,6 +674,70 @@ export default async function KalkulatorPogojiPage({
         </section>
 
         <section style={S}>
+          <h2 style={H}>{en ? '9a. Decisions based on the tool and AI' : '9a. Odločitve na podlagi orodja in AI'}</h2>
+          <p style={OSNUTEK}>{en ? 'DRAFT — must be legally reviewed and approved by a lawyer.' : 'OSNUTEK — pravno mora potrditi odvetnik.'}</p>
+          <p style={P}>
+            {en ? (
+              <>
+                You use the platform and its AI tools (Pupa) at your own business risk. Calculations,
+                suggestions and AI outputs are informative and are not professional, legal, financial,
+                accounting or business advice. To the maximum extent permitted by law, the provider is not
+                liable for any business loss, lost profit or other consequences of decisions you make based
+                on the platform or its AI tools — including any AI output. Verify important decisions with a
+                suitable professional.
+              </>
+            ) : (
+              <>
+                Platformo in njena AI orodja (Pupa) uporabljaš na lastno poslovno odgovornost. Izračuni,
+                predlogi in izhodi AI so informativni in niso strokovni, pravni, finančni, računovodski ali
+                poslovni nasvet. V največjem obsegu, ki ga dopušča pravo, ponudnik ne odgovarja za poslovno
+                škodo, izgubljeni dobiček ali druge posledice odločitev, ki jih sprejmeš na podlagi platforme
+                ali njenih AI orodij — vključno s katerimkoli izhodom AI. Pomembne odločitve preveri pri
+                ustreznem strokovnjaku.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>{en ? '9b. Indemnification' : '9b. Odškodninska zaščita'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                You will indemnify the provider against third-party claims and any damage arising from your
+                unlawful use of the platform, your breach of these terms, or the content you upload, send or
+                publish through the platform.
+              </>
+            ) : (
+              <>
+                Ponudnika boš zavaroval pred zahtevki tretjih in vso škodo, ki izhaja iz tvoje nezakonite
+                uporabe platforme, tvoje kršitve teh pogojev ali vsebine, ki jo prek platforme naložiš,
+                pošlješ ali objaviš.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>{en ? '9c. Force majeure' : '9c. Višja sila'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                The provider is not liable for delay or failure in performance caused by circumstances beyond
+                its reasonable control (e.g. outages of hosting, internet or third-party providers,
+                cyber-attacks, natural events, strikes or acts of authorities).
+              </>
+            ) : (
+              <>
+                Ponudnik ne odgovarja za zamudo ali neizpolnitev zaradi okoliščin izven njegovega razumnega
+                nadzora (npr. izpadi gostovanja, interneta ali tretjih ponudnikov, kibernetski napadi, naravni
+                dogodki, stavke ali dejanja oblasti).
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
           <h2 style={H}>{en ? '10. Cancellation and termination' : '10. Odpoved in prenehanje'}</h2>
           <p style={P}>
             {en ? (
@@ -595,6 +755,48 @@ export default async function KalkulatorPogojiPage({
                 kadar je to razumno mogoče, te o tem predhodno obvesti. Ob prenehanju preneha pravica
                 do uporabe storitve; svoje podatke lahko pred izbrisom izvoziš. Določbe o odgovornosti,
                 intelektualni lastnini in reševanju sporov veljajo tudi po prenehanju.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>{en ? '10a. Assignment' : '10a. Prenos pogodbe'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                The provider may transfer these terms and the operation of the service to another company
+                (e.g. in a status change or acquisition), while preserving your rights under these terms; we
+                will notify you of any such transfer. You may not transfer your account to another person
+                without our consent.
+              </>
+            ) : (
+              <>
+                Ponudnik lahko te pogoje in izvajanje storitve prenese na drugo družbo (npr. ob statusni
+                spremembi ali prevzemu), pri čemer ohrani tvoje pravice po teh pogojih; o takem prenosu te
+                obvestimo. Svojega računa ne smeš prenesti na drugo osebo brez našega soglasja.
+              </>
+            )}
+          </p>
+        </section>
+
+        <section style={S}>
+          <h2 style={H}>{en ? '10b. Service discontinuation and data export' : '10b. Prenehanje storitve in izvoz podatkov'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                If the provider decides to discontinue the platform entirely, we will notify you in advance
+                (as a rule at least 30 days) by email and in the app. During that period you may export all
+                your data (proposals, contracts, invoices, clients, projects and the like); after it, the
+                data is deleted in accordance with the privacy policy. Data export is available at any time,
+                not only on discontinuation.
+              </>
+            ) : (
+              <>
+                Če se ponudnik odloči platformo v celoti ukiniti, te o tem obvestimo vnaprej (praviloma vsaj
+                30 dni) po e-pošti in v aplikaciji. V tem obdobju lahko izvoziš vse svoje podatke (ponudbe,
+                pogodbe, račune, stranke, projekte in podobno); po izteku se podatki izbrišejo skladno s
+                politiko zasebnosti. Izvoz podatkov je na voljo kadarkoli, ne le ob ukinitvi.
               </>
             )}
           </p>
@@ -658,7 +860,7 @@ export default async function KalkulatorPogojiPage({
             )}
           </p>
           <p style={{ ...P, color: 'rgba(17,17,17,.6)', fontSize: '.85rem' }}>
-            {en ? 'Last updated: 7 Aug 2026 · Contact: tina@pinart.si' : 'Zadnja sprememba: 7. 8. 2026 · Kontakt: tina@pinart.si'}
+            {en ? 'Last updated: 15 Aug 2026 · Contact: tina@pinart.si' : 'Zadnja sprememba: 15. 8. 2026 · Kontakt: tina@pinart.si'}
           </p>
         </section>
 
