@@ -4,7 +4,6 @@ import BusinessOverview from '@/components/BusinessOverview';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import OnboardingKartica from '@/components/OnboardingKartica';
 import PozdravPregled from '@/components/PozdravPregled';
-import UvodPreusmeritev from '@/components/UvodPreusmeritev';
 import styles from './pregled.module.css';
 
 export const metadata: Metadata = {
@@ -26,7 +25,6 @@ export default async function PoslovniPregledPage({
     <main className={styles.shell}>
       <DashboardSidebar base={base} active="overview" />
 
-      <UvodPreusmeritev base={base} />
       <section className={styles.workspace}>
         <header className={styles.topbar}>
           <div>
