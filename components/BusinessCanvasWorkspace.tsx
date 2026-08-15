@@ -235,9 +235,12 @@ export default function BusinessCanvasWorkspace() {
         <div className={styles.comingSoonGrid}>
           {[
             { name: 'Pitch', desc: 'Kratka predstavitev zase — za stranke in partnerje' },
-            { name: 'SWOT', desc: 'Prednosti, slabosti, priložnosti, nevarnosti' },
-            { name: 'Persone', desc: 'Kdo so tvoje idealne stranke' },
             { name: 'Problem', desc: 'Kateri problem rešuješ in za koga' },
+            { name: 'Persone', desc: 'Kdo so tvoje idealne stranke' },
+            { name: 'Vrednostna ponudba', desc: 'Value Proposition Canvas — kaj rešuješ za koga' },
+            { name: 'Empathy map', desc: 'Kaj stranka misli, čuti, vidi in sliši' },
+            { name: 'Journey map', desc: 'Pot stranke skozi izkušnjo' },
+            { name: 'SWOT', desc: 'Prednosti, slabosti, priložnosti, nevarnosti' },
             { name: 'Brand brief', desc: 'Misija, vrednote in ton znamke' },
           ].map(document => <div key={document.name} className={styles.comingCard} aria-disabled="true">
             <span className={styles.comingBadge}>Kmalu</span>
