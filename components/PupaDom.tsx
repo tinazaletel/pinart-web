@@ -673,7 +673,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         /* position+z-index: backdrop-filter naredi .pd-vnos svoj stacking context;
            brez tega dvига čipi (tudi backdrop-filter) prekrijejo AI meni. */
         /* brez zunanje sence (workspace jo reže) — obroba za globino */
-        .pd-vnos { position: relative; z-index: 20; display: flex; flex-direction: column; gap: .5rem; background: rgba(255,255,255,.72); backdrop-filter: blur(18px) saturate(1.35); -webkit-backdrop-filter: blur(18px) saturate(1.35); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 12%, transparent); border-radius: 1.2rem; padding: .95rem 1rem; }
+        .pd-vnos { position: relative; z-index: 20; display: flex; flex-direction: column; gap: .5rem; background: rgba(255,255,255,.55); backdrop-filter: blur(22px) saturate(1.45); -webkit-backdrop-filter: blur(22px) saturate(1.45); border: 1px solid rgba(255,255,255,.6); border-radius: 1.2rem; padding: .95rem 1rem; box-shadow: 0 8px 30px oklch(40% .08 300 / .1), inset 0 1px 0 rgba(255,255,255,.5); }
         .pd-vnos textarea { width: 100%; box-sizing: border-box; border: 0; outline: none; resize: none; background: transparent; font: 500 1rem/1.5 var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); min-height: 3.1rem; max-height: 220px; overflow-y: auto; transition: height .08s ease; }
         .pd-vnos textarea::placeholder { color: color-mix(in oklch, var(--ink, #1a1a1a) 42%, transparent); }
         /* brez grdega oglatega fokus ringa na textarea — obarva se ROB celotnega polja */
