@@ -7492,7 +7492,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .posl-potrdi-txt b { font-weight: 700; word-break: break-word; }
         .cw .posl-potrdi-gumbi { display: flex; align-items: center; justify-content: center; gap: 1.1rem; flex-wrap: wrap; }
         .cw .posl-sekundarne { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 1.4rem; max-width: 560px; margin: 1.1rem auto 0; }
-        .cw .posl-vec-gumb, .cw .posl-sheet-glava, .cw .posl-sheet-back { display: none; }
+        .cw .posl-vec-gumb, .cw .posl-sheet-glava, .cw .posl-sheet-back, .cw .posl-pretvori-m { display: none; }
         @media (prefers-reduced-motion: reduce) {
           .cw .posl-gumb, .cw .posl-gumb.je-uspeh { animation: none; transition: none; }
           .cw .posl-pike span { animation: none; opacity: 1; }
@@ -7507,8 +7507,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .posl-vec-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; margin: .9rem auto 0; padding: .7rem 1.4rem; border: 1px solid rgba(17,17,17,.22); border-radius: 999px; background: transparent; color: var(--ink); font: 700 .82rem var(--font-sans), sans-serif; cursor: pointer; }
           .cw .posl-sheet-back { display: block; position: fixed; inset: 0; z-index: 130; background: rgba(28,21,24,.32); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); animation: poslSheetBack .2s ease both; }
           @keyframes poslSheetBack { from { opacity: 0 } to { opacity: 1 } }
-          .cw .posl-sekundarne { position: fixed; left: 0; right: 0; bottom: 0; z-index: 131; flex-direction: column; flex-wrap: nowrap; justify-content: flex-start; align-items: stretch; gap: .1rem; max-width: none; margin: 0; padding: 1rem 1.1rem calc(1.4rem + env(safe-area-inset-bottom,0px)); background: var(--paper); border-radius: 22px 22px 0 0; box-shadow: 0 -16px 44px rgba(40,25,40,.22); transform: translateY(101%); transition: transform .32s cubic-bezier(.2,.8,.3,1); }
+          .cw .posl-sekundarne { position: fixed; left: 0; right: 0; bottom: 0; z-index: 131; box-sizing: border-box; max-height: 80dvh; overflow-y: auto; flex-direction: column; flex-wrap: nowrap; justify-content: flex-start; align-items: stretch; gap: .1rem; max-width: none; margin: 0; padding: 1rem 1.1rem calc(1.4rem + env(safe-area-inset-bottom,0px)); background: var(--paper); border-radius: 22px 22px 0 0; box-shadow: 0 -16px 44px rgba(40,25,40,.22); transform: translateY(101%); transition: transform .32s cubic-bezier(.2,.8,.3,1); }
           .cw .posl-sekundarne.odprt { transform: translateY(0); }
+          .cw .posl-pretvori-m { display: flex; }
+          .cw .rac-panel .rac-toggle { display: none; }
           .cw .posl-sheet-glava { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .5rem; }
           .cw .posl-sheet-glava span { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); }
           .cw .posl-sheet-glava button { width: 2.1rem; height: 2.1rem; flex: none; border-radius: 50%; border: 1px solid rgba(17,17,17,.16); background: var(--paper); color: var(--ink); cursor: pointer; }
@@ -10077,6 +10079,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <FileText size={16} /> {L('Ustvari pogodbo (PDF)', 'Create contract (PDF)')}
                 </button>
               )}
+              <button type="button" className="povezava posl-pretvori-m" onClick={() => { setVecMoznosti(false); odpriRacun(); }}>
+                <Receipt size={16} /> {L('Pretvori v račun', 'Convert to invoice')}
+              </button>
             </div>
             <div className="rac-panel">
               {!racunOdprt ? (
@@ -10141,7 +10146,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         </>
       )}
 
-      <div className={'noga' + (vChatu ? ' noga-ob-panelu' : '') + (onboardingOdprt ? ' noga-skrita' : '')}>
+      <div className={'noga' + (vChatu ? ' noga-ob-panelu' : '') + (onboardingOdprt || vecMoznosti ? ' noga-skrita' : '')}>
         <div className="noga-c">
           <div className="noga-gumbi">
             {(korak > 0 || (korak === 0 && !uvodChat && !klasicnaOblika)) && (
