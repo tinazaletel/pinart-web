@@ -124,6 +124,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
      Orodja odpreš prek gumbov (ali kasneje prek Pupine potrditve). Vezano na obstoječi /api/pupa. */
   const [pupaSpor, setPupaSpor] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
   const [pupaCaka, setPupaCaka] = useState(false);
+  const prekiniRef = useRef<AbortController | null>(null);
   const klepet = pupaSpor.length > 0;
   const pupaNitRef = useRef<HTMLDivElement>(null);
   useEffect(() => { if (klepet) pupaNitRef.current?.scrollTo({ top: pupaNitRef.current.scrollHeight, behavior: 'smooth' }); }, [pupaSpor, pupaCaka, klepet]);
@@ -156,6 +157,8 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     const zgo = pupaSpor.slice(-8);
     setPupaSpor(s => [...s, { role: 'user', content: q }]);
     setPupaCaka(true);
+    const krmilnik = new AbortController();
+    prekiniRef.current = krmilnik;
     // OBLAK: zagotovi pogovor + shrani uporabnikovo sporočilo (degradira brez prijave/oblaka)
     let pid = pogovorId;
     if (!pid) { pid = await ustvariPogovor(q); if (pid) setPogovorId(pid); }
@@ -169,17 +172,29 @@ export default function PupaDom({ base = '' }: { base?: string }) {
                       'User is in the Pupa home (entry assistant for freelance creatives). Help with advice; if they want to CREATE a quote/invoice/project/task, point them to the matching button in the home — do not pretend you did it.'),
           zgodovina: zgo,
         }),
+        signal: krmilnik.signal,
       });
       const data = await res.json();
       const odg = data.odgovor || data.napaka || L('Hmm, nekaj je zaškripalo. Poskusi znova.', 'Hmm, something went wrong. Try again.');
       setPupaSpor(s => [...s, { role: 'assistant', content: odg }]);
       if (pid) void dodajSporocilo(pid, 'assistant', odg);
-    } catch {
-      setPupaSpor(s => [...s, { role: 'assistant', content: L('Ne morem do zaledja. Poskusi znova.', 'Cannot reach the backend. Try again.') }]);
+    } catch (e) {
+      /* Uporabnik je pritisnil Stop — brez sporočila o napaki. */
+      if ((e as Error)?.name !== 'AbortError') {
+        setPupaSpor(s => [...s, { role: 'assistant', content: L('Ne morem do zaledja. Poskusi znova.', 'Cannot reach the backend. Try again.') }]);
+      }
     } finally {
       setPupaCaka(false);
+      prekiniRef.current = null;
     }
   }
+
+  /* Stop: prekine zahtevo do Pupe in ustavi morebitni govor. */
+  const prekini = () => {
+    prekiniRef.current?.abort();
+    try { window.speechSynthesis?.cancel(); } catch { /* ignore */ }
+    setPupaCaka(false);
+  };
 
   /* Zazna JASEN namen ustvarjanja iz besedila (akcijski glagol + predmet). Pokrije tudi
      pogodbo/dolgoročno (ki nista gumba). Sicer null → Pupa se pogovarja, ne vsili ponudbe. */
@@ -510,7 +525,13 @@ export default function PupaDom({ base = '' }: { base?: string }) {
               <button type="button" className={`pd-mik${poslusam ? ' posluam' : ''}`} onClick={glas} title={poslusam ? L('Poslušam … klikni za konec', 'Listening … click to stop') : L('Govori', 'Speak')} aria-label={L('Glas', 'Voice')} aria-pressed={poslusam}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4" /></svg>
               </button>
-              <button type="button" className="pd-poslji" onClick={posljiVnos}>{klepet ? L('Pošlji', 'Send') : L('Začni', 'Start')} <span aria-hidden>→</span></button>
+              {pupaCaka ? (
+                <button type="button" className="pd-poslji" onClick={prekini} aria-label={L('Ustavi', 'Stop')} title={L('Ustavi', 'Stop')}>
+                  <span aria-hidden style={{ width: '.62rem', height: '.62rem', background: 'currentColor', borderRadius: 2, display: 'inline-block', marginRight: '.4rem', verticalAlign: 'middle' }} />{L('Ustavi', 'Stop')}
+                </button>
+              ) : (
+                <button type="button" className="pd-poslji" onClick={posljiVnos}>{klepet ? L('Pošlji', 'Send') : L('Začni', 'Start')} <span aria-hidden>→</span></button>
+              )}
             </div>
           </div>
           {glasNamig && <p className="pd-glas-namig" role="status">{glasNamig}</p>}
