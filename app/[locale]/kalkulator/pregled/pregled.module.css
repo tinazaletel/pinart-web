@@ -1416,6 +1416,12 @@
   /* mobilni beli rob + notranji padding malce ožji (desktop ostane) */
   .bandTop, .bandBody { padding-inline: .9rem; }
   .onboardKartica { padding-inline: 1.05rem; }
+  /* 01 ORODJA: naslov ima na mobilu premalo prostora zgoraj (SMART PRICING se
+     prelomi pod eyebrow), zato mu damo enako zračnost kot 02 PROJEKTI */
+  .flowBand .bandTop { padding-top: 1.05rem; }
+  /* notranje svetle kartice (SMART PRICING + orodne kartice): ožji L/R padding */
+  .sectionNote { padding-inline: .7rem; }
+  .flowTools > * { padding-inline: .55rem; }
   .previewBar { align-items: flex-start; flex-direction: column; }
   .topbar { align-items: start; flex-wrap: wrap; gap: 1rem; }
   .topbar > div:first-child { min-width: 0; }
