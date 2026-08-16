@@ -694,7 +694,7 @@ export default function KoledarWorkspace() {
       )}
 
       <style>{`
-        .kol{width:100%;min-width:0;padding:.5rem 0 1.5rem;
+        .kol{width:100%;min-width:0;padding:.5rem .5rem 1.5rem;
           --kol-accent:oklch(58% .16 297);
           --kol-accent-soft:oklch(96% .03 297);
           --kol-zdaj:oklch(58% .19 25);

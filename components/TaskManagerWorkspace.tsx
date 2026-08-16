@@ -2154,7 +2154,7 @@ export default function TaskManagerWorkspace() {
           .tm-stolpec{scroll-snap-align:start}
         }
         @media (max-width:600px){
-          .tm{padding:.75rem .75rem 4rem}
+          .tm{padding:.75rem .5rem 4rem}
           .tm-podnaslov{max-width:none}
           .tm-uporabnik select{font-size:1rem}
           /* Mobilni toolbar: izbira nalog odpre spodnji panel; projekt ostane vedno dosegljiv. */
