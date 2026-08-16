@@ -513,6 +513,8 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-gumb.sek{background:transparent;color:var(--ink);border:1px solid rgba(17,17,17,.28)}
 
       @media (max-width:640px){
+        /* enak, uskladen rob (workspace .35 + 1.06 = 1.41rem), enak levo/desno */
+        .np-stolpec{padding-left:1.06rem;padding-right:1.06rem;box-sizing:border-box}
         .np-nov-mreza{grid-template-columns:1fr}
         .np-nov-cilj{grid-template-columns:1fr;gap:.35rem;padding:.65rem;border:1px solid var(--line);border-radius:.7rem}
         .np-chat-vnos,.np-chat-izbire{margin-left:0}
