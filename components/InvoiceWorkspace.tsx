@@ -952,7 +952,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     </section>}
 
     {pogled === 'zakljucek' && <div className="rc-noga"><div className="rc-noga-gumbi" style={{ flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
-      <button type="button" className="rc-noga-pill rc-noga-ikona" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label={L('Na vrh', 'To top')} title={L('Na vrh', 'To top')}><ArrowUp size={17} weight="bold" aria-hidden /></button>
+      <button type="button" className="rc-noga-pill rc-noga-ikona" onClick={() => setPogled('obrazec')} aria-label={L('Nazaj na urejanje', 'Back to editing')} title={L('Nazaj', 'Back')}><ArrowUp size={17} weight="bold" aria-hidden /></button>
       <button type="button" className="rc-noga-pill rc-noga-ikona" onClick={() => setPogled('obrazec')} aria-label={L('Uredi račun', 'Edit invoice')} title={L('Uredi račun', 'Edit invoice')}><PencilSimple size={16} weight="bold" aria-hidden /></button>
       <button type="button" className="rc-noga-pill nova" onClick={() => { setPogled('pregled'); setOfferId(''); }}><Plus size={15} weight="bold" aria-hidden /> {L('Nov račun', 'New invoice')}</button>
     </div></div>}

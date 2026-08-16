@@ -1251,8 +1251,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* Noga FIKSNO na dnu strani (kot retainer/ponudba): puscica-krog + pilule.
         Izven animirane sekcije, da je position:fixed vezan na stran. */}
     {pogled === 'zakljucek' && <div className="pg-noga"><div className="pg-noga-gumbi" style={{ flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
-      <button type="button" className="pg-noga-pill pg-noga-ikona" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label={L('Na vrh', 'To top')} title={L('Na vrh', 'To top')}><ArrowUp size={17} weight="bold" aria-hidden /></button>
-      <button type="button" className="pg-noga-pill pg-noga-ikona" onClick={() => setPogled('dokument')} aria-label={L('Uredi pogodbo', 'Edit contract')} title={L('Uredi pogodbo', 'Edit contract')}><PencilSimple size={16} weight="bold" aria-hidden /></button>
+      <button type="button" className="pg-noga-pill pg-noga-ikona" onClick={() => setPogled('dokument')} aria-label={L('Nazaj na urejanje', 'Back to editing')} title={L('Nazaj', 'Back')}><ArrowUp size={17} weight="bold" aria-hidden /></button>
+      <button type="button" className="pg-noga-pill pg-noga-ikona" onClick={() => setPogled('nastavitve')} aria-label={L('Uredi od začetka', 'Edit from start')} title={L('Uredi od začetka', 'Edit from start')}><PencilSimple size={16} weight="bold" aria-hidden /></button>
       <button type="button" className="pg-noga-pill nova" onClick={novaPogodba}><Plus size={15} weight="bold" aria-hidden /> {L('Nova pogodba', 'New contract')}</button>
     </div></div>}
 
