@@ -6497,7 +6497,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .chat-uredi .cu-vrsta input { border: 1px solid rgba(17,17,17,.3); border-radius: 12px; background: #fff; padding: .55rem .8rem; font-family: inherit; font-size: .95rem; color: var(--ink); min-width: 11rem; }
         .cw .chat-uredi .cu-opcije { display: flex; flex-wrap: wrap; gap: .45rem; justify-content: flex-end; }
         .cw .chat-uredi .chat-podrocja { margin: 0; justify-content: flex-end; }
-        .cw .noga-skrita { display: none; }
+        .cw .noga-skrita { display: none !important; }
         .cw .chat-izbire { display: flex; flex-direction: column; gap: .6rem; margin: .2rem 0 .2rem 3.05rem; }
         .cw .chat-opcija { display: flex; align-items: center; gap: .9rem; text-align: left; width: min(420px, 100%); background: rgba(255,255,255,.82); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(17,17,17,.1); border-radius: 16px; padding: 1rem 1.15rem; cursor: pointer; font-family: inherit; color: var(--ink); transition: transform .22s cubic-bezier(.34,1.56,.5,1), border-color .2s, box-shadow .22s; }
         .cw .chat-opcija:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 14px 30px rgba(142,52,89,.12); }
@@ -7493,6 +7493,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .posl-potrdi-gumbi { display: flex; align-items: center; justify-content: center; gap: 1.1rem; flex-wrap: wrap; }
         .cw .posl-sekundarne { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 1.4rem; max-width: 560px; margin: 1.1rem auto 0; }
         .cw .posl-vec-gumb, .cw .posl-sheet-glava, .cw .posl-sheet-back, .cw .posl-pretvori-m { display: none; }
+        /* Mobilni "Kaj s ponudbo?" sheet — PORTAL na body (nad vsem, full backdrop, prilepljen na dno). */
+        .cw .pmsheet-back { position: fixed; inset: 0; z-index: 200; background: rgba(28,21,24,.42); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); animation: pmFade .2s ease both; }
+        @keyframes pmFade { from { opacity: 0 } to { opacity: 1 } }
+        .cw .pmsheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 201; box-sizing: border-box; max-height: 85dvh; overflow-y: auto; display: flex; flex-direction: column; gap: .1rem; padding: 1rem 1.1rem calc(1.4rem + env(safe-area-inset-bottom,0px)); background: var(--paper); border-radius: 22px 22px 0 0; box-shadow: 0 -16px 44px rgba(40,25,40,.22); animation: pmUp .3s cubic-bezier(.2,.8,.3,1) both; }
+        @keyframes pmUp { from { transform: translateY(100%) } to { transform: translateY(0) } }
+        .cw .pmsheet-glava { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .5rem; }
+        .cw .pmsheet-glava span { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); }
+        .cw .pmsheet-glava button { width: 2.1rem; height: 2.1rem; flex: none; border-radius: 50%; border: 1px solid rgba(17,17,17,.16); background: var(--paper); color: var(--ink); cursor: pointer; font-size: 1rem; }
+        .cw .pmsheet .povezava { min-height: 3rem; padding: .7rem .5rem; justify-content: flex-start; gap: .7rem; width: 100%; text-align: left; }
         @media (prefers-reduced-motion: reduce) {
           .cw .posl-gumb, .cw .posl-gumb.je-uspeh { animation: none; transition: none; }
           .cw .posl-pike span { animation: none; opacity: 1; }
@@ -7505,11 +7514,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .posl-gumb { width: 100%; }
           /* Mobile: 5 sekundarnih dejanj skrijemo za gumb "Več možnosti" → slide-up sheet. */
           .cw .posl-vec-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; margin: .9rem auto 0; padding: .7rem 1.4rem; border: 1px solid rgba(17,17,17,.22); border-radius: 999px; background: transparent; color: var(--ink); font: 700 .82rem var(--font-sans), sans-serif; cursor: pointer; }
-          .cw .posl-sheet-back { display: block; position: fixed; inset: 0; z-index: 130; background: rgba(28,21,24,.32); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); animation: poslSheetBack .2s ease both; }
-          @keyframes poslSheetBack { from { opacity: 0 } to { opacity: 1 } }
-          .cw .posl-sekundarne { position: fixed; left: 0; right: 0; bottom: 0; z-index: 131; box-sizing: border-box; max-height: 80dvh; overflow-y: auto; flex-direction: column; flex-wrap: nowrap; justify-content: flex-start; align-items: stretch; gap: .1rem; max-width: none; margin: 0; padding: 1rem 1.1rem calc(1.4rem + env(safe-area-inset-bottom,0px)); background: var(--paper); border-radius: 22px 22px 0 0; box-shadow: 0 -16px 44px rgba(40,25,40,.22); transform: translateY(101%); transition: transform .32s cubic-bezier(.2,.8,.3,1); }
-          .cw .posl-sekundarne.odprt { transform: translateY(0); }
-          .cw .posl-pretvori-m { display: flex; }
+          .cw .posl-sekundarne { display: none; }
           .cw .rac-panel .rac-toggle { display: none; }
           .cw .posl-sheet-glava { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .5rem; }
           .cw .posl-sheet-glava span { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); }
@@ -10055,8 +10060,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             </div>
             {/* SEKUNDARNE akcije: tiho, brez ponovnega pošiljanja. Na mobilu skrite za gumbom "Več možnosti" (slide-up). */}
             <button type="button" className="posl-vec-gumb" onClick={() => setVecMoznosti(true)} aria-haspopup="dialog" aria-expanded={vecMoznosti}>{L('Več možnosti', 'More options')}</button>
-            {vecMoznosti && <div className="posl-sheet-back" onClick={() => setVecMoznosti(false)} aria-hidden />}
-            <div className={`posl-sekundarne${vecMoznosti ? ' odprt' : ''}`}>
+            {/* Mobilni sheet je PORTAL (spodaj), tu inline za desktop. */}
+            <div className="posl-sekundarne">
               <div className="posl-sheet-glava"><span>{L('Kaj s ponudbo?', 'What next?')}</span><button type="button" onClick={() => setVecMoznosti(false)} aria-label={L('Zapri', 'Close')}>✕</button></div>
               <button type="button" className="povezava" onClick={() => { kopiraj(); proslaviKonfeti(); }}>
                 <CopySimple size={16} /> {kopirano ? L('Skopirano ✓', 'Copied ✓') : L('Kopiraj ponudbo', 'Copy quote')}
@@ -10083,6 +10088,21 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <Receipt size={16} /> {L('Pretvori v račun', 'Convert to invoice')}
               </button>
             </div>
+            {vecMoznosti && typeof document !== 'undefined' && createPortal(
+              <div className="cw">
+                <div className="pmsheet-back" onClick={() => setVecMoznosti(false)} aria-hidden />
+                <div className="pmsheet" role="dialog" aria-modal="true" aria-label={L('Kaj s ponudbo?', 'What next?')}>
+                  <div className="pmsheet-glava"><span>{L('Kaj s ponudbo?', 'What next?')}</span><button type="button" onClick={() => setVecMoznosti(false)} aria-label={L('Zapri', 'Close')}>✕</button></div>
+                  <button type="button" className="povezava" onClick={() => { kopiraj(); proslaviKonfeti(); }}><CopySimple size={16} /> {kopirano ? L('Skopirano ✓', 'Copied ✓') : L('Kopiraj ponudbo', 'Copy quote')}</button>
+                  <button type="button" className="povezava" disabled={pdfNalaganje} onClick={() => { prenesiPdf(); proslaviKonfeti(); }}><FilePdf size={16} /> {pdfNalaganje ? L('Pripravljam PDF…', 'Preparing PDF…') : L('Prenesi PDF', 'Download PDF')}</button>
+                  <button type="button" className="povezava" onClick={() => { prenesi(); proslaviKonfeti(); }}><DownloadSimple size={16} /> {L('Prenesi besedilo', 'Download text')}</button>
+                  <button type="button" className="povezava" onClick={() => { prenesiCsv(); proslaviKonfeti(); }}><FileText size={16} /> {L('Izvozi postavke (CSV)', 'Export items (CSV)')}</button>
+                  <button type="button" className="povezava" onClick={() => { shraniVArhiv(); proslaviKonfeti(); }}><FloppyDisk size={16} /> {L('Shrani v arhiv', 'Save to archive')}</button>
+                  <button type="button" className="povezava" onClick={() => { setVecMoznosti(false); odpriRacun(); }}><Receipt size={16} /> {L('Pretvori v račun', 'Convert to invoice')}</button>
+                </div>
+              </div>,
+              document.body,
+            )}
             <div className="rac-panel">
               {!racunOdprt ? (
                 <button type="button" className="povezava rac-toggle" onClick={odpriRacun}>
