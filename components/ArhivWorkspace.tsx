@@ -908,6 +908,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 .3rem}
         .arh-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
         .arh-uvod{font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72);margin:0 0 2rem;max-width:38rem}
+        /* mobile: naslov+podnaslov + orodna vrstica (zavihki/gumbi) zamaknjeni na 1.41rem; tabela/seznam ostane širok */
+        @media (max-width:640px){.arh-kicker,.arh-h1,.arh-uvod,.arh-glava{padding-left:1.06rem;padding-right:1.06rem;box-sizing:border-box}}
 
         /* glava: zavihki (levo) + ArhivFilter aktivnega zavihka (desno) v ENI vrsti
            na namizju; flex-wrap na ozkem/mobilnem prelomi ArhivFilter pod zavihke
