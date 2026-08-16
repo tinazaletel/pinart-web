@@ -7629,14 +7629,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .noga .nazaj-g { font-family: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; border: none; background: none; cursor: pointer; color: rgba(17,17,17,.72); padding: .6rem 0; }
         .cw .noga .nazaj-g:hover { color: var(--ink); }
         .cw .noga-koncna { display: flex; align-items: center; gap: .9rem; }
-        .cw .noga .noga-koncna .nazaj-g { border: 1px solid var(--ink); border-radius: 999px; padding: .65rem 1.3rem; transition: background .18s ease, color .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
+        .cw .noga .noga-koncna .nazaj-g { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; border: 1px solid var(--ink); border-radius: 999px; padding: .95rem 1.5rem; transition: background .18s ease, color .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .noga .noga-koncna .nazaj-g:hover { background: var(--ink); color: var(--paper); transform: translateY(-2px); }
         .cw .noga .nazaj-g.nova { color: var(--accent); border-color: var(--accent); }
         .cw .noga .nazaj-g.nova:hover { background: var(--accent); color: var(--paper); }
         @media (max-width: 640px) {
           /* kompaktna vodoravna vrsta (ne dva nalozena gumba -> noga nizja, nic prekrivanja) */
           .cw .noga-koncna { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: .5rem; }
-          .cw .noga .noga-koncna .nazaj-g { text-align: center; padding: .55rem .85rem; font-size: .68rem; letter-spacing: .05em; }
+          .cw .noga .noga-koncna .nazaj-g { text-align: center; padding: .85rem 1.1rem; font-size: .72rem; letter-spacing: .05em; }
           /* Na zaključku je okrogli gumb samostojen »en korak nazaj«.
              Postavimo ga v tok neposredno ob »Uredi od začetka«. */
           .cw.cw-zakljucek .noga .noga-gumbi > .gumb-nazaj {
@@ -10205,8 +10205,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               </button>
             ) : (
               <div className="noga-koncna">
-                <button type="button" className="nazaj-g" onClick={() => setKorak(0)}>{L('← Uredi od začetka', '← Edit from the start')}</button>
-                <button type="button" className="nazaj-g nova" onClick={novaPonudba}>{L('↺ Nova ponudba', '↺ New quote')}</button>
+                <button type="button" className="nazaj-g" onClick={() => setKorak(0)}><PencilSimple size={15} weight="bold" aria-hidden /> {L('Uredi od začetka', 'Edit from the start')}</button>
+                <button type="button" className="nazaj-g nova" onClick={novaPonudba}><ArrowCounterClockwise size={15} weight="bold" aria-hidden /> {L('Nova ponudba', 'New quote')}</button>
               </div>
             )}
           </div>
