@@ -734,15 +734,19 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             <div className="rw-pills">
               {(['ure', 'paket', 'oboje'] as const).map(m => <button key={m} type="button" className={'rw-pill' + (model === m ? ' on' : '')} onClick={() => setModel(m)}>{m === 'ure' ? tr('Po urah', 'By hours') : m === 'paket' ? tr('Paket / mesec', 'Package / month') : tr('Oboje', 'Both')}</button>)}
             </div>
-            {model !== 'paket' && (
+            {model !== 'paket' && (<>
               <div className="rw-vrsta"><span className="rw-oznaka">{tr('Ure / mesec', 'Hours / month')}</span>
                 <div className="rw-cipi">
                   {URE_MOZNOSTI.map(u => <button key={u} type="button" className={'rw-cip' + (ure === u ? ' on' : '')} onClick={() => setUre(u)}>{u} h</button>)}
                   <input className="rw-num" type="number" min={1} step={1} value={ure} onChange={e => setUre(Math.max(1, Math.round(Number(e.target.value) || 1)))} />
-                  <span className="rw-mini rw-urna">{tr('urna postavka', 'hourly rate')} <input type="number" min={0} step={1} value={urna} onChange={e => nastaviUrno(Number(e.target.value))} aria-label={tr('urna postavka', 'hourly rate')} /><select value={valuta} onChange={e => nastaviValuto(e.target.value)} aria-label={tr('Valuta', 'Currency')}>{VALUTE_RACUN.map(v => <option key={v.id} value={v.id}>{v.id.toUpperCase()} {v.znak}</option>)}</select></span>
                 </div>
               </div>
-            )}
+              <div className="rw-vrsta"><span className="rw-oznaka">{tr('Urna postavka', 'Hourly rate')}</span>
+                <div className="rw-cipi">
+                  <span className="rw-urna"><input type="number" min={0} step={1} value={urna} onChange={e => nastaviUrno(Number(e.target.value))} aria-label={tr('urna postavka', 'hourly rate')} /><select value={valuta} onChange={e => nastaviValuto(e.target.value)} aria-label={tr('Valuta', 'Currency')}>{VALUTE_RACUN.map(v => <option key={v.id} value={v.id}>{v.id.toUpperCase()} {v.znak}</option>)}</select></span>
+                </div>
+              </div>
+            </>)}
             {model !== 'ure' && (
               <div className="rw-vrsta"><span className="rw-oznaka">{tr('Paket / mesec', 'Package / month')}</span>
                 <div className="rw-cipi"><input className="rw-num" style={{ width: '7rem' }} type="number" min={0} step={10} value={paketMes} onChange={e => setPaketMes(Math.max(0, Math.round(Number(e.target.value) || 0)))} /><span className="rw-mini">{tr(`${valZnak} fiksno na mesec za obseg`, `${valZnak} fixed per month for the scope`)}</span></div>
@@ -1363,7 +1367,10 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
           /* Kartice bliže robu kot tekst (kot ponudba): negativni rob potegne iz .rw-vsebina
              paddinga (1.06) → kartica na ~0.91rem, tekst ostane 1.41rem. + manjši padding/radij
              kot kalkulator. TO pravilo je ZA osnovnimi (.rw-kartica radij 20px, v.1227), zato velja. */
-          .rw-kartica,.rw-povz,.rw-mreza{padding:1.1rem;border-radius:14px;margin-left:-.5rem;margin-right:-.5rem}
+          .rw-vsebina .rw-kartica,.rw-vsebina .rw-povz,.rw-vsebina .rw-mreza{padding:1.1rem;border-radius:14px;margin-left:-.5rem;margin-right:-.5rem;max-width:none;box-sizing:border-box}
+          /* model pilule (Po urah / Paket / Oboje) v ENI vrstici — enaka širina, ne ovij */
+          .rw-pills{flex-wrap:nowrap;gap:.4rem}
+          .rw-pills .rw-pill{flex:1 1 0;min-width:0;padding:.6rem .35rem;font-size:.82rem;text-align:center;white-space:nowrap}
           .rw-obseg-tabela{grid-template-columns:minmax(0,1fr);min-width:0}
           .rw-obseg-tabela .rw-ov{min-width:0;max-width:100%;overflow:hidden}
           .rw-platno{width:min(960px,100%);max-width:100%}
