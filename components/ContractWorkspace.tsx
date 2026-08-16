@@ -8,9 +8,8 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf, Plus, ArrowUp } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf, Plus, ArrowUp, ArrowDown } from '@phosphor-icons/react';
 import GumbNazaj from '@/components/ui/GumbNazaj';
-import GumbPrimarni from '@/components/ui/GumbPrimarni';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } from '@/lib/pinartFlowStore';
 import { deleteBusinessDocument, getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
@@ -1026,9 +1025,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
                 <p className="pg-namig">{L('Priporočamo: najprej ustvari ', 'We recommend: first create an ')}<b>{L('ponudbo', 'offer')}</b>{L(' — obseg, cena in številka se v pogodbo prenesejo sami. ', ' — the scope, price and number carry over into the contract automatically. ')}<a href={`${base}/kalkulator/orodje`}>{L('Odpri kalkulator →', 'Open calculator →')}</a></p>
               </>
             )}
-            <div className="pg-gumbi">
-              <GumbPrimarni onClick={pripraviPogodbo} puscica aria-label={L('Pripravi pogodbo', 'Prepare contract')}>{L('Pripravi pogodbo', 'Prepare contract')}</GumbPrimarni>
-            </div>
             {/* pot "Od stranke": naloži že podpisano/prejeto pogodbo za pregled (ohranjena funkcija) */}
             <button type="button" className="pg-povezava pg-odstranke-link" onClick={() => setOdStranke(true)}>{L('Imaš pogodbo od stranke? Naloži jo za pregled →', 'Have a contract from the client? Upload it for review →')}</button>
           </>
@@ -1072,7 +1068,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* ── POGLED 2: DOKUMENT (samostojna stran — sredinski ozek stolpec, kot retainer) ── */}
     {pogled === 'dokument' && <section className="pg-sek pg-stran pg-stolpec">
       {/* jasna pot nazaj na vstopni korak — na vrhu, pred dokumentom */}
-      <GumbNazaj className="pg-nazaj-vrh" onClick={() => setPogled('nastavitve')}>{L('Nazaj', 'Back')}</GumbNazaj>
       {vir === 'ponudba' && karticaPonudbe(true)}
       <div className="pg-pon-vrh">
         <div className="pg-segpills" role="group" aria-label={L('Pogled', 'View')}>
@@ -1189,9 +1184,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
         </>
       )}
 
-      <div className="pg-gumbi">
-        <GumbPrimarni onClick={() => setPogled('zakljucek')} puscica aria-label={L('Zaključi', 'Finish')}>{L('Zaključi', 'Finish')}</GumbPrimarni>
-      </div>
       {napaka && <p className="pg-napaka">{napaka}</p>}
       <p className="pg-mini" style={{ marginTop: '.7rem' }}>{L('Besedilo preveri; Pinart ne nadomešča pravnega svetovanja.', 'Please review the text; Pinart does not replace legal advice.')}</p>
     </section>}
@@ -1250,10 +1242,21 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
     {/* Noga FIKSNO na dnu strani (kot retainer/ponudba): puscica-krog + pilule.
         Izven animirane sekcije, da je position:fixed vezan na stran. */}
-    {pogled === 'zakljucek' && <div className="pg-noga"><div className="pg-noga-gumbi" style={{ flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
-      <button type="button" className="pg-noga-pill pg-noga-ikona" onClick={() => setPogled('dokument')} aria-label={L('Nazaj na urejanje', 'Back to editing')} title={L('Nazaj', 'Back')}><ArrowUp size={17} weight="bold" aria-hidden /></button>
-      <button type="button" className="pg-noga-pill pg-noga-ikona" onClick={() => setPogled('nastavitve')} aria-label={L('Uredi od začetka', 'Edit from start')} title={L('Uredi od začetka', 'Edit from start')}><PencilSimple size={16} weight="bold" aria-hidden /></button>
-      <button type="button" className="pg-noga-pill nova" onClick={novaPogodba}><Plus size={15} weight="bold" aria-hidden /> {L('Nova pogodba', 'New contract')}</button>
+    {(pogled === 'nastavitve' || pogled === 'dokument' || pogled === 'zakljucek') && <div className="pg-noga"><div className="pg-noga-gumbi" style={{ flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+      {pogled === 'dokument' && (
+        <button type="button" className="pg-noga-pill pg-noga-ikona" onClick={() => setPogled('nastavitve')} aria-label={L('Nazaj', 'Back')} title={L('Nazaj', 'Back')}><ArrowUp size={17} weight="bold" aria-hidden /></button>
+      )}
+      {pogled === 'zakljucek' && (<>
+        <button type="button" className="pg-noga-pill pg-noga-ikona" onClick={() => setPogled('dokument')} aria-label={L('Korak nazaj', 'One step back')} title={L('Nazaj', 'Back')}><ArrowUp size={17} weight="bold" aria-hidden /></button>
+        <button type="button" className="pg-noga-pill pg-noga-ikona" onClick={() => setPogled('nastavitve')} aria-label={L('Uredi od začetka', 'Edit from start')} title={L('Uredi od začetka', 'Edit from start')}><PencilSimple size={16} weight="bold" aria-hidden /></button>
+        <button type="button" className="pg-noga-pill nova" onClick={novaPogodba}><Plus size={15} weight="bold" aria-hidden /> {L('Nova pogodba', 'New contract')}</button>
+      </>)}
+      {pogled === 'nastavitve' && (
+        <button type="button" className="pg-noga-naprej" onClick={pripraviPogodbo}>{L('Pripravi pogodbo', 'Prepare contract')} <ArrowDown size={16} weight="bold" aria-hidden /></button>
+      )}
+      {pogled === 'dokument' && (
+        <button type="button" className="pg-noga-naprej" onClick={() => setPogled('zakljucek')}>{L('Zaključi', 'Finish')} <ArrowDown size={16} weight="bold" aria-hidden /></button>
+      )}
     </div></div>}
 
     {/* Odvetnik: mali banner v SPODNJEM DESNEM kotu strani (izven animirane sekcije,
@@ -1286,7 +1289,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
          max-width namesto min(700px,92vw), ker je stars ozji od viewporta (stranski meni). */
       /* sredinski ozek stolpec SAMO za pogled dokumenta/zakljucka (kot retainer);
          landing (vstop + arhiv) ostane cez sirino delovnega prostora */
-      .pg-stolpec{width:100%;max-width:700px;margin-left:auto;margin-right:auto}
+      .pg-stolpec{width:100%;max-width:700px;margin-left:auto;margin-right:auto;padding-bottom:6.5rem}
       /* enotno vedenje kot Ponudba (KalkulatorApp .uvod-oder): prvo vprasanje/vstopni
          panel je navpicno na sredini vidnega polja (min-height glede na razpolozljivo
          visino + justify-content:center), ko se vsebina razsiri (izbira vira ipd.)
@@ -1501,6 +1504,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-koncna-krog:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
       .pg-noga-pill{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.78);border:1px solid var(--ink);border-radius:999px;padding:.75rem 1.4rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
       .pg-noga-ikona{width:3rem;height:3rem;padding:0;gap:0;border-radius:50%;flex:0 0 auto}
+      .pg-noga-naprej{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border-radius:999px;padding:.95rem 2.2rem;border:1px solid var(--ink);background:var(--ink);color:var(--paper);transition:transform .2s ease,box-shadow .2s ease}
+      .pg-noga-naprej:hover{transform:scale(1.06);box-shadow:0 8px 22px rgba(35,18,45,.18)}
+      .pg-noga-naprej:disabled{opacity:.45;cursor:default}
       .pg-noga-pill:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
       .pg-noga-pill.nova{color:var(--accent);border-color:var(--accent)}
       .pg-noga-pill.nova:hover{background:var(--accent);color:var(--paper)}
