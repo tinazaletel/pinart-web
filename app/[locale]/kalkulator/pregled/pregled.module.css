@@ -1968,6 +1968,7 @@
 
 /* Accounting export */
 .accountingPage { display: grid; gap: 1rem; padding-bottom: 2rem; }
+@media (max-width: 640px) { .accountingPage { padding-left: .5rem; padding-right: .5rem; box-sizing: border-box; } }
 .accountingSetup,
 .accountingHistory { border: 1px solid rgba(255,255,255,.6); border-radius: 1.5rem; background: rgba(255,255,255,.5); backdrop-filter: blur(18px) saturate(1.35); -webkit-backdrop-filter: blur(18px) saturate(1.35); box-shadow: 0 10px 26px oklch(30% .02 55 / .06), inset 0 1px 0 rgba(255,255,255,.5); padding: 1.5rem; }
 .accountingSetup { display: grid; grid-template-columns: minmax(15rem, .8fr) minmax(28rem, 1.2fr); gap: 2rem; align-items: start; }
