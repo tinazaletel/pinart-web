@@ -7701,7 +7701,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .lg-naslov { padding-left: 0; }
           /* Oder ima na telefonu natanko 8 px roba. Oznaka koraka se poravna
              na ta zunanji rob, namesto da z negativnim zamikom pade z zaslona. */
-          .cw .h1-step { position: absolute; top: 0; left: -8px; width: 2.15rem; height: 2.05rem; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); border-radius: 0 .35rem .35rem 0; font-size: .62rem; letter-spacing: .08em; }
+          .cw .h1-step { position: absolute; top: 0; left: -1.3rem; width: 2.15rem; height: 2.05rem; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); border-radius: 0 .35rem .35rem 0; font-size: .62rem; letter-spacing: .08em; }
           .cw .sub-vrsta { margin-bottom: 1.7rem; gap: .8rem; flex-wrap: nowrap; align-items: baseline; }
           .cw .sub { flex: 1 1 auto; font-size: .94rem; line-height: 1.5; }
           .cw .sub-vrsta .op-edit { margin-left: auto; text-align: right; flex: none; white-space: nowrap; justify-content: flex-end; line-height: 1.25; font-size: .66rem; letter-spacing: .13em; }
