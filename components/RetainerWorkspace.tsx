@@ -1189,13 +1189,13 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-cip{padding:.42rem .8rem;border:1px solid rgba(17,17,17,.2);border-radius:999px;background:rgba(255,255,255,.5);cursor:pointer;font:inherit;font-size:.86rem;color:var(--ink);transition:border-color .15s,background .15s,color .15s}
         .rw-cip:hover{border-color:var(--ink)}
         .rw-cip.on{border-color:var(--accent);background:var(--accent);color:#fff;font-weight:600}
-        .rw-num{width:4.6rem;border:none;border-bottom:1px solid rgba(17,17,17,.3);background:transparent;padding:.35rem .3rem;font:inherit;font-size:.92rem;font-weight:600;text-align:right;color:var(--ink)}
-        .rw-num:focus{outline:none;border-bottom-color:var(--ink)}
+        .rw-num{width:4.8rem;border:1px solid oklch(93% .006 82 / .55);border-radius:9px;background:#FCFBF7;padding:.42rem .55rem;font:inherit;font-size:.92rem;font-weight:600;text-align:right;color:var(--ink);transition:border-color .15s}
+        .rw-num:focus{outline:none;border-color:var(--ink)}
         .rw-mini{font-size:.8rem;color:rgba(17,17,17,.72)}
         .rw-urna{display:inline-flex;align-items:center;gap:.4rem}
-        .rw-urna input{width:3.4rem;border:none;border-bottom:1.5px solid rgba(17,17,17,.22);background:transparent;padding:.15rem .1rem;font:inherit;font-size:.92rem;font-weight:700;text-align:right;color:var(--ink);-moz-appearance:textfield;appearance:textfield;transition:border-color .15s}
+        .rw-urna input{width:3.8rem;border:1px solid oklch(93% .006 82 / .55);border-radius:9px;background:#FCFBF7;padding:.4rem .5rem;font:inherit;font-size:.92rem;font-weight:700;text-align:right;color:var(--ink);-moz-appearance:textfield;appearance:textfield;transition:border-color .15s}
         .rw-urna input::-webkit-outer-spin-button,.rw-urna input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-        .rw-urna input:focus{outline:none;border-bottom-color:var(--accent)}
+        .rw-urna input:focus{outline:none;border-color:var(--accent)}
         .rw-urna select{-webkit-appearance:none;appearance:none;border:1px solid rgba(17,17,17,.16);border-radius:999px;background:rgba(255,255,255,.6) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>") no-repeat right .5rem center;font:inherit;font-size:.76rem;font-weight:700;color:var(--ink);cursor:pointer;padding:.24rem 1.5rem .24rem .7rem;transition:border-color .15s,background-color .15s}
         .rw-urna select:hover{border-color:rgba(17,17,17,.32)}
         .rw-urna select:focus{outline:none;border-color:var(--accent)}
@@ -1214,8 +1214,8 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-mreza-prav{grid-template-columns:minmax(0,1fr) minmax(0,9rem);align-items:start}
         .rw label{display:flex;flex-direction:column;gap:.35rem;font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(17,17,17,.72)}
         .rw label .rw-mini{letter-spacing:0;text-transform:none;font-weight:400}
-        .rw-vnos{border:none;border-bottom:1px solid rgba(17,17,17,.4);background:transparent;padding:.35rem 0 .5rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:1.05rem;color:var(--ink);width:100%;border-radius:0}
-        .rw-vnos:focus{outline:none;border-bottom:2px solid var(--ink);margin-bottom:-1px}
+        .rw-vnos{border:1px solid oklch(93% .006 82 / .55);background:#FCFBF7;padding:.55rem .7rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:1.05rem;color:var(--ink);width:100%;border-radius:9px;transition:border-color .15s}
+        .rw-vnos:focus{outline:none;border-color:var(--ink)}
         .rw-vnos::placeholder{color:rgba(17,17,17,.72);font-weight:400;font-size:.98rem}
         .rw-txt{border:1px solid rgba(17,17,17,.2);border-radius:12px;padding:.7rem .8rem;font:inherit;font-size:.9rem;line-height:1.5;color:var(--ink);resize:vertical;min-height:8.5rem!important;field-sizing:content;background:rgba(255,255,255,.5);overflow:auto}
         .rw-txt:focus{outline:none;border-color:var(--ink)}
@@ -1232,8 +1232,8 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-polje{display:flex;flex-direction:column}
         .rw-polje label{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(17,17,17,.72);margin-bottom:.3rem}
         .rw-polje label .rw-vec{font-size:.68rem;font-weight:500;letter-spacing:0;text-transform:none;color:rgba(17,17,17,.72)}
-        .rw-polje input{width:100%;border:none;border-bottom:1px solid rgba(17,17,17,.45);background:transparent;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:1.1rem;padding:.35rem 0 .5rem;color:var(--ink);border-radius:0}
-        .rw-polje input:focus{outline:none;border-bottom:2px solid var(--ink);margin-bottom:-1px}
+        .rw-polje input{width:100%;border:1px solid oklch(93% .006 82 / .55);background:#FCFBF7;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:1.1rem;padding:.55rem .7rem;color:var(--ink);border-radius:9px;transition:border-color .15s}
+        .rw-polje input:focus{outline:none;border-color:var(--ink)}
         .rw-polje input::placeholder{color:rgba(17,17,17,.72);font-weight:400;font-size:1rem}
         .rw-dodaj-gumb{display:inline-flex;align-items:center;gap:.4rem;font-family:inherit;font-size:.9rem;font-weight:600;color:var(--ink);background:transparent;border:1px dashed rgba(17,17,17,.35);border-radius:999px;padding:.55rem 1.1rem;cursor:pointer;transition:border-color .18s ease,background .18s ease}
         .rw-dodaj-gumb:hover{border-color:var(--ink);background:rgba(17,17,17,.03)}
