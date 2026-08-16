@@ -1423,7 +1423,7 @@
   .closeApp { min-height: 2.75rem; display: inline-flex; align-items: center; }
   .workspace { padding: 2.2rem .35rem 3rem; }
   /* mobilni beli rob + notranji padding malce ožji (desktop ostane) */
-  .bandTop, .bandBody { padding-inline: .9rem; }
+  .bandTop, .bandBody { padding-inline: .72rem; }
   .onboardKartica { padding-inline: 1.05rem; }
   /* 01 ORODJA: naslov ima na mobilu premalo prostora zgoraj (SMART PRICING se
      prelomi pod eyebrow), zato mu damo enako zračnost kot 02 PROJEKTI */
