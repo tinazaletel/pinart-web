@@ -905,8 +905,8 @@
 .clientEditor form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; }
 .clientEditor label { display: grid; gap: .35rem; font-size: .58rem; font-weight: 800; }
 /* glass polja (brez sivih outlinov): prosojno ozadje + blur + mehek svetel rob */
-.clientEditor input { min-width: 0; height: 2.65rem; padding: 0 .7rem; border: 1px solid color-mix(in oklch, #fff 60%, transparent); border-radius: .65rem; background: color-mix(in oklch, #fff 30%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); font: 500 .66rem var(--font-sans), sans-serif; }
-.clientEditor select { min-width: 0; height: 2.65rem; padding: 0 .45rem 0 .7rem; border: 1px solid color-mix(in oklch, #fff 60%, transparent); border-radius: .65rem; background-color: color-mix(in oklch, #fff 30%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); font: 500 .66rem var(--font-sans), sans-serif; color: var(--ink); }
+.clientEditor input { min-width: 0; height: 2.65rem; padding: 0 .7rem; border: 1px solid color-mix(in oklch, var(--ink) 14%, transparent); border-radius: .65rem; background: color-mix(in oklch, #fff 30%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); font: 500 .66rem var(--font-sans), sans-serif; }
+.clientEditor select { min-width: 0; height: 2.65rem; padding: 0 .45rem 0 .7rem; border: 1px solid color-mix(in oklch, var(--ink) 14%, transparent); border-radius: .65rem; background-color: color-mix(in oklch, #fff 30%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); font: 500 .66rem var(--font-sans), sans-serif; color: var(--ink); }
 .clientEditorActions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: .5rem; }
 .clientEditorActions button { min-height: 2.6rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: .65rem; background: transparent; font: 800 .61rem var(--font-sans), sans-serif; cursor: pointer; }
 .clientEditorActions button:last-child { background: var(--ink); color: var(--paper); }
