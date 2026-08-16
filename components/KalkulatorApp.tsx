@@ -7703,6 +7703,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
              zato uvodni naslov pade na ~1.2rem — manj kot naslov nadzorne plošče (~1.9rem).
              Le uvodnemu naslovu povečamo rob, da se poravna z nadzorno ploščo. */
           .cw .lupina-glava { padding-left: 1.9rem; padding-right: 1.9rem; }
+          /* Uvodni klepetalni oblački poravnani z uvodnim naslovom (1.9rem od roba) — in
+             enako z desne, da se ne odrežejo. Enaka specifičnost kot osnovno pravilo, kasneje. */
+          .cw .korak-vsebina.siroko.uvod-faza { padding-left: .6rem; padding-right: .6rem; box-sizing: border-box; }
           /* Oder ima na telefonu natanko 8 px roba. Oznaka koraka se poravna
              na ta zunanji rob, namesto da z negativnim zamikom pade z zaslona. */
           .cw .h1-step { position: absolute; top: 0; left: -1.3rem; width: 2.15rem; height: 2.05rem; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); border-radius: 0 .35rem .35rem 0; font-size: .62rem; letter-spacing: .08em; }
