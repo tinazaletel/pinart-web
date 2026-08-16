@@ -164,7 +164,7 @@ const pwStyles = `
   .pw-vrstica > :nth-child(1){grid-area:chk;align-self:center}
   .pw-vrstica > :nth-child(2){grid-area:ime}
   .pw-vrstica > :nth-child(3){grid-area:firma;font-size:.76rem;color:color-mix(in oklch,var(--ink) 60%,transparent)}
-  .pw-vrstica > :nth-child(4){grid-area:datum;font-size:.72rem;color:color-mix(in oklch,var(--ink) 48%,transparent)}
+  .pw-vrstica > :nth-child(4){grid-area:datum;font-size:.72rem;color:color-mix(in oklch,var(--ink) 64%,transparent)}
   .pw-vrstica > :nth-child(5){grid-area:status;justify-self:end;align-self:center}
   /* znesek = poslovni podatek (skrit za sodelavce, ko bodo vloge); zaenkrat viden lastniku */
   .pw-vrstica > :nth-child(6){grid-area:znesek;justify-self:end;align-self:center;font-weight:700;font-size:.82rem;white-space:nowrap}
