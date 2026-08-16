@@ -1701,8 +1701,8 @@
 .priceEditor > header .activatePriceList { border-color: var(--ink); background: var(--ink); color: var(--paper); }
 /* Preimenuj = svinčnik, Izbriši = koš (okrogla ikonska gumba) */
 .priceEditor > header button.priceIconBtn { width: 2.5rem; min-width: 2.5rem; height: 2.5rem; min-height: 2.5rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: var(--ink); }
-.priceEditor > header button.priceIconBtnDel { border-color: color-mix(in oklch, oklch(52% .16 25) 45%, rgba(255,255,255,.6)); color: oklch(52% .16 25); }
-.priceEditor > header button.priceIconBtnDel:hover { background: oklch(95% .04 25); border-color: oklch(52% .16 25); }
+.priceEditor > header button.priceIconBtnDel { border-color: var(--line); color: var(--ink); }
+.priceEditor > header button.priceIconBtnDel:hover { background: oklch(96% .006 82); border-color: var(--ink); }
 /* mobilni izbirnik cenika (dropdown) + »+ Nov cenik« — skrit na desktop, viden ≤680 */
 .priceMobBar { display: none; }
 .priceMobSelect { flex: 1 1 auto; min-width: 0; min-height: 2.75rem; padding: 0 2.2rem 0 .95rem; border: 1px solid var(--line); border-radius: 999px; background-color: #fff; color: var(--ink); font: 700 1rem var(--font-sans), sans-serif; -webkit-appearance: none; appearance: none; background-repeat: no-repeat; background-position: right .85rem center; background-size: 12px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); cursor: pointer; }
