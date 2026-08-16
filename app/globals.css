@@ -1214,3 +1214,18 @@ img:not(.dovoli-sliko) {
   user-select: none;
   -webkit-user-select: none;
 }
+
+/* VALIDACIJA POVSOD: prazno/neveljavno OBVEZNO polje se obarva svetlo rdeče (kot opozorilo),
+   ko uporabnik poskusi naprej / oddati. :user-invalid = šele PO interakciji ali poskusu oddaje
+   (ne takoj ob nalaganju), zato ni moteče. Velja na vseh obrazcih v aplikaciji. */
+input:user-invalid,
+select:user-invalid,
+textarea:user-invalid {
+  background-color: #fdeaea !important;
+  border-color: #e5484d !important;
+  box-shadow: 0 0 0 1px rgba(229, 72, 77, 0.35) !important;
+}
+input:user-invalid::placeholder,
+textarea:user-invalid::placeholder {
+  color: #cf8b8b;
+}
