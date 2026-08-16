@@ -1276,7 +1276,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* stili kot retainer: navaden <style> (globalno), zato pg- predpona povsod */}
     <style>{`
       .pg{min-width:0;max-width:100%;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
-      @media (max-width:640px){.pg{padding-left:1.06rem;padding-right:1.06rem;box-sizing:border-box}.pg-vstop-panel{padding:1.1rem;border-radius:14px}}
+      @media (max-width:640px){.pg{padding-left:1.06rem;padding-right:1.06rem;box-sizing:border-box}.pg-vstop-panel{padding:1.1rem;border-radius:14px}.pg .pg-editor-ovoj{padding:1.1rem;margin-left:-.5rem;margin-right:-.5rem;max-width:none;box-sizing:border-box}}
       .pg .pg-sek{min-width:0}
       .pg-sek{animation:pgSek .5s cubic-bezier(.16,1,.3,1) both}
       /* KONEC animacije mora biti transform:NONE (ne translateY(0)): vsak transform != none
