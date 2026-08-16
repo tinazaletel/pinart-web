@@ -2150,7 +2150,7 @@ export default function TaskManagerWorkspace() {
           .tm-matrika tbody td,.tm-matrika-projekt-glava,.tm-matrika tbody th.tm-matrika-projekt{min-width:9rem}
         }
         @media (max-width:700px){
-          .tm-deska{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:min(82vw,22rem);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.6rem}
+          .tm-deska{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:min(82vw,22rem);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.6rem;margin-right:-.5rem;padding-right:.5rem;scroll-padding-right:.5rem}
           .tm-stolpec{scroll-snap-align:start}
         }
         @media (max-width:600px){
