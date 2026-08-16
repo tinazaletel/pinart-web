@@ -2158,7 +2158,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
        med sprejemom in ucinkom za en okvir izrise korak 0 (mehurcki) in slika
        utripne, kot da je napaka. React posodobitve v istem dogodku zdruzi. */
     const pn0 = preberiPredogled();
-    if (uvodKoncan === false && pn0 !== 'demo' && pn0 !== 'zacetek') {
+    /* onboarding je SAMOSTOJEN modul (dashboard), NE del ponudbe — v kalkulatorju
+       zaživi le pri brezplačnem/samostojnem vstopu (!vLupini). */
+    if (uvodKoncan === false && pn0 !== 'demo' && pn0 !== 'zacetek' && !vLupini) {
       if (klasicnaOblika) { setObIzbor(new Set()); setOnboardingOdprt(true); }
       else { setUvodChat(true); setChatKorak(0); }
     }
@@ -2434,7 +2436,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   useEffect(() => {
     try {
       const sp = new URL(window.location.href).searchParams;
-      if (sp.has('uvod')) { setUvodChat(true); setChatKorak(0); }
+      if (sp.has('uvod') && !vLupini) { setUvodChat(true); setChatKorak(0); }
       /* ?od=flow: prišel iz pinartflow.com landinga → "zapri" vrne na /flow */
       if (sp.get('od') === 'flow') setOdFlow(true);
       /* ?od=pregled: odprt iz admina → pokaži gumb NAZAJ na nadzorno ploščo */
@@ -2863,7 +2865,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
        efekta se ni nujno nalozen, zato je padel in te je vrglo na zacetek. */
     const uvodIzpolnjen = pn === 'demo' || pn === 'zacetek'
       || imeUporabnika.trim() !== '' || obIzbor.size > 0 || nazivPonudbe.trim() !== '' || uvodKoncan === true;
-    if (pogojiOk === true && ((uvodKoncan === false && !uvodIzpolnjen) || (zahtevanUvod && uvodKoncan !== null)) && !uvodChat && !onboardingOdprt) {
+    if (pogojiOk === true && !vLupini && ((uvodKoncan === false && !uvodIzpolnjen) || (zahtevanUvod && uvodKoncan !== null)) && !uvodChat && !onboardingOdprt) {
       if (klasicnaOblika) { setObIzbor(new Set()); setOnboardingOdprt(true); }
       /* ob vrnitvi s kartice nadaljuj, kjer si ostala (chatKorak je shranjen);
          na zacetek postavi samo pravi prvi obisk */
@@ -2900,9 +2902,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       setUvodChat(false);
       setOnboardingOdprt(false);
       if (uvodKoncan !== true) setUvodKoncan(true);
-    } else if (onboardingZacet) {
+    } else if (onboardingZacet && !vLupini) {
       /* ZACET a NEDOKONCAN (npr. prekinjen pri »podjetje«) -> NADALJUJ pogovor, da
-         lahko dokončaš (vnos aktiven). NE označimo kot končano -> banner se pokaže. */
+         lahko dokončaš (vnos aktiven). NE označimo kot končano -> banner se pokaže.
+         Samo brezplačni kalkulator (!vLupini) — v Flowu je onboarding svoj modul. */
       setUvodChat(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -5256,7 +5259,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     setNamigSkrit(false);
     setKorak(0);
     setKazemProfil(false);
-    setUvodChat(true);
+    if (!vLupini) setUvodChat(true);
   };
   const ponastaviVse = () => {
     if (typeof window === 'undefined') return;
@@ -8400,8 +8403,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 </div>
               )}
               {/* transkript vprasanj — samo MED onboardingom ali ko je bil opravljen ta obisk;
-                  za ze onboardanega (chatKorak 0, brez uvodChat) se NE prikaze, da vprasanje ne visi */}
-              {(uvodChat || chatKorak > 0) && (<>
+                  za ze onboardanega (chatKorak 0, brez uvodChat) se NE prikaze, da vprasanje ne visi.
+                  Za prijavljene (vLupini) se NE prikaze: onboarding je samostojen modul, ne del ponudbe. */}
+              {!vLupini && (uvodChat || chatKorak > 0) && (<>
               <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                 <span className="chat-mehur"><b>{L('Živjo! Kako ti je ime?', 'Hi! What\'s your name?')}</b></span></div>
               {chatKorak > 0 && uvodOdgovorMehur(0, imeUporabnika || '—')}
@@ -10194,7 +10198,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           if (zadnji) zadnji.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
                           else window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
                         }, 60);
-                      } else { setUvodChat(true); setChatKorak(6); }
+                      } else if (!vLupini) { setUvodChat(true); setChatKorak(6); }
                     }
                   : nazaj}><ArrowUp size={17} weight="bold" aria-hidden /></button>
             )}
