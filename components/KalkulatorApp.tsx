@@ -7699,6 +7699,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw.cw-lupina { margin-inline: calc(6px - clamp(1.2rem, 3vw, 3.5rem)); }
           .cw h1 { padding-left: 2.35rem; font-size: clamp(1.5rem, 6vw, 2rem); line-height: 1.05; margin-bottom: .6rem; }
           .cw .lg-naslov { padding-left: 0; }
+          /* .cw.cw-lupina se z negativnim marginom razlije do roba (za "07" oznako),
+             zato uvodni naslov pade na ~1.2rem — manj kot naslov nadzorne plošče (~1.9rem).
+             Le uvodnemu naslovu povečamo rob, da se poravna z nadzorno ploščo. */
+          .cw .lupina-glava { padding-left: 1.9rem; padding-right: 1.9rem; }
           /* Oder ima na telefonu natanko 8 px roba. Oznaka koraka se poravna
              na ta zunanji rob, namesto da z negativnim zamikom pade z zaslona. */
           .cw .h1-step { position: absolute; top: 0; left: -1.3rem; width: 2.15rem; height: 2.05rem; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); border-radius: 0 .35rem .35rem 0; font-size: .62rem; letter-spacing: .08em; }
