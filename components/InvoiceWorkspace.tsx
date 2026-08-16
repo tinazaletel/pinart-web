@@ -972,7 +972,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       @media (max-width:640px){.rc{padding-left:1.06rem;padding-right:1.06rem;box-sizing:border-box}
         /* obrazec kartica bliže robu = ENAKO kot pogodba; 3 razredi, da premaga
            .rc .rc-stolpec{margin:auto} (v.1098, ki je prej povozil -.5) */
-        .rc .rc-obrazec.rc-stolpec{padding:1.1rem;border-radius:14px;margin-left:-.5rem;margin-right:-.5rem;max-width:none;box-sizing:border-box}
+        .rc .rc-obrazec.rc-stolpec{padding:1.1rem;border-radius:14px;margin-left:-.5rem;margin-right:-.5rem;width:auto;max-width:none;box-sizing:border-box}
         /* Opis vnos čez celo širino postavke */
         .rc .rc-vrstica .rc-opis{grid-column:1/-1;width:100%;max-width:none}
         .rc .rc-vrstica .rc-opis input{width:100%;max-width:none}}
