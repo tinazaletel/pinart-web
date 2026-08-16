@@ -7650,21 +7650,18 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           }
           .cw.cw-zakljucek .noga { padding-inline: 8px; }
           .cw.cw-zakljucek .noga .noga-gumbi {
-            display: grid;
-            grid-template-columns: auto auto;
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: center;
             width: auto;
             max-width: calc(100vw - 16px);
-            column-gap: .55rem;
-            row-gap: .55rem;
+            gap: .55rem;
           }
           .cw.cw-zakljucek .noga-koncna { display: contents; }
           .cw.cw-zakljucek .noga .noga-koncna .nazaj-g {
             white-space: nowrap;
             padding-inline: .7rem;
-          }
-          .cw.cw-zakljucek .noga .noga-koncna .nova {
-            grid-column: 1 / -1;
-            justify-self: center;
           }
         }
         /* V stolpcu menija, NAD profilno ikono: levi rob poravnan z avatarjem
