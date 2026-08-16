@@ -335,6 +335,8 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         .sef-kako-glava { font-size: .7rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin: 0 0 .9rem; }
         .sef-kako-mreza { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
         @media (max-width: 700px) { .sef-kako-mreza { grid-template-columns: 1fr; gap: .7rem; } }
+        /* vsebina (uvod + kartice) poravnana z naslovom (1.41rem = workspace .35 + 1.06); .sef je imel horizontalni padding 0 */
+        @media (max-width: 640px) { .sef { padding-left: 1.06rem; padding-right: 1.06rem; box-sizing: border-box; } }
         .sef-kako-kartica { border: 1px solid var(--line); border-radius: 16px; padding: 1.15rem 1.2rem; background: rgba(255,255,255,.55); }
         .sef-kako-ikona { display: inline-grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 11px; background: oklch(95% .04 297); margin-bottom: .7rem; }
         .sef-kako-ikona :global(svg) { color: var(--accent); }
