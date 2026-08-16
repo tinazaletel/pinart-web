@@ -641,7 +641,7 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
           .km-nova{flex:none;width:2.9rem;height:2.9rem;padding:0;gap:0;justify-content:center}
           .km-nova-ik,.km-nova-txt{display:none}
           .km-nova-plus{display:inline-flex}
-          .km{padding-left:.35rem;padding-right:.35rem}
+          .km{padding-left:1.06rem;padding-right:1.06rem}
           .km-posta-body{flex-direction:column;align-items:stretch}
           .km-branje{padding:.9rem .55rem}
           /* Odprt mail = samostojna stran (skrij toolbar + mape-trigger; ostane Nazaj gumb) */
