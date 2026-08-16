@@ -966,7 +966,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       /* rc- = novi stili obrazca za racun; pazi na .shell pravila (min-height 2.75rem
          na inputih, select padding-right 3rem !important) — mere so temu prilagojene. */
       .rc{min-width:0;max-width:100%;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
-      @media (max-width:640px){.rc{padding-left:1.3rem;padding-right:1.3rem;box-sizing:border-box}}
+      @media (max-width:640px){.rc{padding-left:1.1rem;padding-right:1.1rem;box-sizing:border-box}}
       .rc .rc-postavke{min-width:0;padding:1rem;border:1px solid rgba(255,255,255,.6);border-radius:.9rem;background:rgba(255,255,255,.4);-webkit-backdrop-filter:blur(16px) saturate(1.35);backdrop-filter:blur(16px) saturate(1.35);box-shadow:0 8px 28px rgba(40,25,40,.06)}
       .rc .rc-postavke *{box-sizing:border-box;min-width:0}
       .rc .rc-post-glava{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap}
