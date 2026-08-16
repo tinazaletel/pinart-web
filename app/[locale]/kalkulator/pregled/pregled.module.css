@@ -1389,7 +1389,7 @@
   .expenseEditor, .recurringCosts { grid-template-columns: 1fr; }
   .expenseList article { grid-template-columns: auto 1fr auto; }
   .expenseList article > div:nth-child(3) { grid-column: 2 / -1; }
-  .clientLayout { grid-template-columns: 1fr; }
+  .clientLayout { grid-template-columns: 1fr; padding-left: 1.06rem; padding-right: 1.06rem; box-sizing: border-box; }
   /* Mobilni master-detail: profil = samostojna stran z »nazaj«.
      Ko je izbrana stranka -> skrij imenik, pokaži profil. Sicer obratno. */
   .clientLayout[data-selected='1'] .clientDirectory { display: none; }
