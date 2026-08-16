@@ -300,7 +300,7 @@ export default function AccountingWorkspace() {
     <section className={`zakljucek ${pregledOdprt ? 'zakljucek-odprt' : ''}`}>
       <button type="button" className="preglej-gumb" onClick={() => setPregledOdprt(value => !value)} aria-expanded={pregledOdprt}>
         <span><b>{pregledOdprt ? 'Priprava za računovodstvo' : 'Zaključi paket'}</b><small>{steviloDokumentov} dokumentov{izbraniBrezPriloge.length ? ` · ${izbraniBrezPriloge.length} brez priloge` : ' · pripravljeno za pošiljanje'}</small></span>
-        <span>{pregledOdprt ? 'Skrij pripravo' : 'Nadaljuj na pošiljanje'}</span>
+        <span>{pregledOdprt ? 'Skrij pripravo' : 'Nadaljuj na pošiljanje'}<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>{pregledOdprt ? <path d="M18 15l-6-6-6 6" /> : <path d="M5 12h14M13 6l6 6-6 6" />}</svg></span>
       </button>
       {pregledOdprt && <div className="pregled-paketa">
         <div><span>Obdobje</span><b>{datSlo(period.start)}–{datSlo(period.end)}</b></div>
@@ -389,7 +389,7 @@ export default function AccountingWorkspace() {
       .preglej-gumb { width:100%; min-height:4.25rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:.75rem 1rem; border:0; background:transparent; color:var(--ink); text-align:left; cursor:pointer; }
       .preglej-gumb > span:first-child { display:grid; gap:.1rem; }
       .preglej-gumb small { color:oklch(43% .012 60); }
-      .preglej-gumb > span:last-child { padding:.65rem 1rem; border-radius:999px; background:var(--ink); color:oklch(99% .003 75); font-weight:750; }
+      .preglej-gumb > span:last-child { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; flex:none; white-space:nowrap; padding:.7rem 1.2rem; border-radius:999px; background:var(--ink); color:oklch(99% .003 75); font-weight:600; font-size:.8rem; letter-spacing:.1em; text-transform:uppercase; }
       .pregled-paketa { display:grid; gap:.7rem; padding:0 1rem 1rem; }
       .pregled-paketa > div:not(.akcije) { display:grid; grid-template-columns:7rem minmax(0,1fr); gap:.75rem; padding-top:.65rem; border-top:1px solid oklch(91% .008 75); font-size:.8rem; }
       .pregled-paketa > div span { color:oklch(43% .012 60); }

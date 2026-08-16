@@ -203,7 +203,7 @@ const pwStyles = `
 @media (prefers-reduced-motion:reduce){.pw-status-back,.pw-status-sheet,.pw-statusmeni{animation:none}}
 .pw-prazno{padding:2rem;color:color-mix(in oklch,var(--ink) 72%,transparent);font-size:.72rem;text-align:center;border:1px solid oklch(93% .006 82 / .55);border-radius:1.4rem;background:oklch(98% .008 87 / .92)}
 .pw-stran{padding:.25rem 1rem 1rem !important;margin-top:-1.5rem;scroll-margin-top:5.5rem}
-@media (max-width:640px){.pw-stran{padding-left:0 !important;padding-right:0 !important}}
+@media (max-width:640px){.pw-stran{padding-left:.5rem !important;padding-right:.5rem !important}}
 .pw-nazaj{display:inline-flex;align-items:center;gap:.4rem;margin:0 0 .8rem;padding:.55rem .95rem;border:1px solid rgba(255,255,255,.7);border-radius:999px;background:#fff;box-shadow:0 4px 14px rgba(40,25,40,.06);font:700 .82rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
 .pw-nazaj:hover{background:var(--ink);color:var(--paper)}
 .pw-narocnik-link{color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:color-mix(in oklch,var(--ink) 35%,transparent)}
