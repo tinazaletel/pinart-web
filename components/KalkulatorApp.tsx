@@ -7714,6 +7714,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
              pa levo pri 1.9rem. Poravnamo oblačke z naslovom: levo, .6rem odmika v odru
              (oder 1.3 + .6 = 1.9rem), ne centrirano. */
           .cw .chat-koraki .chat-izbira { width: auto; margin-left: .6rem; margin-right: .6rem; }
+          /* ISTA poravnava za povzetek izbora (»V ponudbo sem dodala« / »Urejenih«) —
+             sicer je centriran (v. 6466/6478) in bolj zamaknjen kot ostali oblački. */
+          .cw .chat-koraki .izbor-povzetek { width: auto; margin-left: .6rem; margin-right: .6rem; }
           /* Oder ima na telefonu natanko 8 px roba. Oznaka koraka se poravna
              na ta zunanji rob, namesto da z negativnim zamikom pade z zaslona. */
           .cw .h1-step { position: absolute; top: 0; left: -1.3rem; width: 2.15rem; height: 2.05rem; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); border-radius: 0 .35rem .35rem 0; font-size: .62rem; letter-spacing: .08em; }
