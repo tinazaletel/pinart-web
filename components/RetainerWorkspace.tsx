@@ -980,17 +980,11 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             imeStranke={nar.ime.trim()}
             replyTo={ponudnik.email.trim() || undefined}
             kontakti={strankaKontakti()}
+            dodatneAkcije={[
+              { label: pdfNalaganje ? tr('Pripravljam …', 'Preparing …') : tr('Prenesi pogodbo (PDF)', 'Download agreement (PDF)'), onClick: () => prenesi('pogodba'), disabled: pdfNalaganje },
+              { label: tr('Prenesi retainer ponudbo (PDF)', 'Download retainer proposal (PDF)'), onClick: () => prenesi('ponudba'), disabled: pdfNalaganje },
+            ]}
           />
-          <div className="rw-prenosi">
-            <button type="button" className="rw-povezava" disabled={pdfNalaganje} onClick={() => prenesi('pogodba')}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M7 11l5 5 5-5M5 21h14" /></svg>
-              {pdfNalaganje ? tr('Pripravljam …', 'Preparing …') : tr('Prenesi pogodbo (PDF)', 'Download agreement (PDF)')}
-            </button>
-            <button type="button" className="rw-povezava" disabled={pdfNalaganje} onClick={() => prenesi('ponudba')}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M7 11l5 5 5-5M5 21h14" /></svg>
-              {tr('Prenesi retainer ponudbo (PDF)', 'Download retainer proposal (PDF)')}
-            </button>
-          </div>
         </section>)}
 
       </div>
@@ -1144,7 +1138,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-noga{position:fixed;bottom:0;left:17.5rem;right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,#fff 70%,transparent);z-index:40}
         :global(body[data-meni='zaprt']) .rw-noga{left:4.4rem}
         @media (max-width:980px){.rw-noga{left:0}}
-        .rw-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.8rem;position:relative}
+        .rw-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.7rem;position:relative;flex-wrap:nowrap}
         .rw-gumb-nazaj{width:3.1rem;height:3.1rem;border-radius:999px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:none;transition:background .18s ease,color .18s ease,transform .2s ease}
         .rw-gumb-nazaj:hover{background:var(--ink);color:var(--paper);transform:scale(1.08)}
         .rw-gumb-nazaj:active{transform:scale(.95)}

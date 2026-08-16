@@ -8,7 +8,7 @@
 
 import { FormEvent, Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt, PenNib, X } from '@phosphor-icons/react';
+import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt, PenNib, X, Plus, PencilSimple } from '@phosphor-icons/react';
 import GumbNazaj from '@/components/ui/GumbNazaj';
 import GumbPrimarni from '@/components/ui/GumbPrimarni';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -943,23 +943,17 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         samoOgled={samoOgled}
         kontakti={strankaKontakti()}
         projektId={offerId || undefined}
+        dodatneAkcije={[
+          { label: predracun ? L('Shrani predračun', 'Save pro forma') : L('Shrani račun', 'Save invoice'), onClick: () => save(), ikona: <FloppyDisk size={16} /> },
+          { label: pdfId ? L('Pripravljam …', 'Preparing …') : L('Prenesi (PDF)', 'Download (PDF)'), onClick: () => prenesiPdf(trenutniRacun()), disabled: !!pdfId, ikona: <FilePdf size={16} /> },
+          { label: L('Pošlji v plačilo', 'Send for payment'), onClick: () => posljiVPlacilo(trenutniRacun()), ikona: <PaperPlaneTilt size={16} /> },
+        ]}
       />
-      <div className="rc-prenosi">
-        <button type="button" className="rc-povezava-z" onClick={() => save()}>
-          <FloppyDisk size={16} /> {predracun ? L('Shrani predračun', 'Save pro forma') : L('Shrani račun', 'Save invoice')}
-        </button>
-        <button type="button" className="rc-povezava-z" disabled={!!pdfId} onClick={() => prenesiPdf(trenutniRacun())}>
-          <FilePdf size={16} /> {pdfId ? L('Pripravljam …', 'Preparing …') : L('Prenesi (PDF)', 'Download (PDF)')}
-        </button>
-        <button type="button" className="rc-povezava-z" onClick={() => posljiVPlacilo(trenutniRacun())}>
-          <PaperPlaneTilt size={16} /> {L('Pošlji v plačilo', 'Send for payment')}
-        </button>
-      </div>
     </section>}
 
     {pogled === 'zakljucek' && <div className="rc-noga"><div className="rc-noga-gumbi">
-      <button type="button" className="rc-noga-pill" onClick={() => setPogled('obrazec')}>{L('← Uredi račun', '← Edit invoice')}</button>
-      <button type="button" className="rc-noga-pill nova" onClick={() => { setPogled('pregled'); setOfferId(''); }}>{L('↺ Nov račun', '↺ New invoice')}</button>
+      <button type="button" className="rc-noga-pill rc-noga-ikona" onClick={() => setPogled('obrazec')} aria-label={L('Uredi račun', 'Edit invoice')} title={L('Uredi račun', 'Edit invoice')}><PencilSimple size={16} weight="bold" aria-hidden /></button>
+      <button type="button" className="rc-noga-pill nova" onClick={() => { setPogled('pregled'); setOfferId(''); }}><Plus size={15} weight="bold" aria-hidden /> {L('Nov račun', 'New invoice')}</button>
     </div></div>}
 
     <style>{`
@@ -1080,8 +1074,9 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc-noga{position:fixed;bottom:0;left:17.5rem;right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,var(--paper) 70%,transparent);z-index:40}
       :global(body[data-meni='zaprt']) .rc-noga{left:4.4rem}
       @media (max-width:980px){.rc-noga{left:0}}
-      .rc-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.8rem;flex-wrap:wrap}
-      .rc-noga-pill{font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.78);border:1px solid var(--ink);border-radius:999px;padding:.75rem 1.4rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
+      .rc-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.7rem;flex-wrap:nowrap}
+      .rc-noga-pill{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.78);border:1px solid var(--ink);border-radius:999px;padding:.75rem 1.4rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
+      .rc-noga-ikona{width:3rem;height:3rem;padding:0;gap:0;border-radius:50%;flex:0 0 auto}
       .rc-noga-pill:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
       .rc-noga-pill.nova{color:var(--accent);border-color:var(--accent)}
       .rc-noga-pill.nova:hover{background:var(--accent);color:var(--paper)}

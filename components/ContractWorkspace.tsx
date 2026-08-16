@@ -8,7 +8,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf, Plus } from '@phosphor-icons/react';
 import GumbNazaj from '@/components/ui/GumbNazaj';
 import GumbPrimarni from '@/components/ui/GumbPrimarni';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -1241,23 +1241,18 @@ export default function ContractWorkspace({ base }: { base: string }) {
         samoOgled={samoOgled}
         kontakti={strankaKontakti()}
         projektId={vir === 'ponudba' && selectedOffer ? selectedOffer.id : undefined}
+        dodatneAkcije={[
+          { label: shranjenaId ? L('Shranjeno ✓', 'Saved ✓') : L('Shrani', 'Save'), onClick: () => { shrani(); proslaviKonfeti(); }, ikona: <FloppyDisk size={16} /> },
+          { label: pdfNalaganje ? L('Pripravljam …', 'Preparing …') : L('Prenesi (PDF)', 'Download (PDF)'), onClick: () => { prenesi(); proslaviKonfeti(); }, disabled: pdfNalaganje, ikona: <FilePdf size={16} /> },
+        ]}
       />
-      {/* prenos-povezave POD blokom posiljanja (kot pri ponudbi) */}
-      <div className="pg-prenosi">
-        <button type="button" className="pg-povezava" aria-label={L('Shrani pogodbo', 'Save contract')} onClick={() => { shrani(); proslaviKonfeti(); }}>
-          <FloppyDisk size={16} /> {shranjenaId ? L('Shranjeno ✓', 'Saved ✓') : L('Shrani', 'Save')}
-        </button>
-        <button type="button" className="pg-povezava" aria-label={L('Prenesi pogodbo PDF', 'Download contract PDF')} disabled={pdfNalaganje} onClick={() => { prenesi(); proslaviKonfeti(); }}>
-          <FilePdf size={16} /> {pdfNalaganje ? L('Pripravljam …', 'Preparing …') : L('Prenesi (PDF)', 'Download (PDF)')}
-        </button>
-      </div>
     </section>}
 
     {/* Noga FIKSNO na dnu strani (kot retainer/ponudba): puscica-krog + pilule.
         Izven animirane sekcije, da je position:fixed vezan na stran. */}
     {pogled === 'zakljucek' && <div className="pg-noga"><div className="pg-noga-gumbi">
-      <button type="button" className="pg-noga-pill" onClick={() => setPogled('dokument')}>{L('← Uredi pogodbo', '← Edit contract')}</button>
-      <button type="button" className="pg-noga-pill nova" onClick={novaPogodba}>{L('↺ Nova pogodba', '↺ New contract')}</button>
+      <button type="button" className="pg-noga-pill pg-noga-ikona" onClick={() => setPogled('dokument')} aria-label={L('Uredi pogodbo', 'Edit contract')} title={L('Uredi pogodbo', 'Edit contract')}><PencilSimple size={16} weight="bold" aria-hidden /></button>
+      <button type="button" className="pg-noga-pill nova" onClick={novaPogodba}><Plus size={15} weight="bold" aria-hidden /> {L('Nova pogodba', 'New contract')}</button>
     </div></div>}
 
     {/* Odvetnik: mali banner v SPODNJEM DESNEM kotu strani (izven animirane sekcije,
@@ -1500,10 +1495,11 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-noga{position:fixed;bottom:0;left:17.5rem;right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,var(--paper) 70%,transparent);z-index:40}
       :global(body[data-meni='zaprt']) .pg-noga{left:4.4rem}
       @media (max-width:980px){.pg-noga{left:0}}
-      .pg-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.8rem;flex-wrap:wrap}
+      .pg-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.7rem;flex-wrap:nowrap}
       .pg-koncna-krog{display:grid;place-items:center;width:2.9rem;height:2.9rem;flex:none;border-radius:50%;border:1px solid var(--ink);background:none;color:var(--ink);cursor:pointer;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
       .pg-koncna-krog:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
-      .pg-noga-pill{font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.78);border:1px solid var(--ink);border-radius:999px;padding:.75rem 1.4rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
+      .pg-noga-pill{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.78);border:1px solid var(--ink);border-radius:999px;padding:.75rem 1.4rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
+      .pg-noga-ikona{width:3rem;height:3rem;padding:0;gap:0;border-radius:50%;flex:0 0 auto}
       .pg-noga-pill:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
       .pg-noga-pill.nova{color:var(--accent);border-color:var(--accent)}
       .pg-noga-pill.nova:hover{background:var(--accent);color:var(--paper)}
