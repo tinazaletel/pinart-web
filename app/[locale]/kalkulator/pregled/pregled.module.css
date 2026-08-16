@@ -729,6 +729,10 @@
 .invoiceCreator input, .invoiceCreator select { height: 2.75rem; }
 .invoiceCreator select, .invoiceCreator input[type='date'] { padding-right: 2.2rem; }
 .invoiceCreator textarea { width: 100%; min-height: 8.5rem; line-height: 1.5; resize: vertical; }
+/* mobile: kartica bliže robu + manjši radij/padding (kot retainer/pogodba/ponudba) */
+@media (max-width: 640px) {
+  .invoiceCreator { padding: 1.1rem; border-radius: 14px; margin-left: -.5rem; margin-right: -.5rem; max-width: none; box-sizing: border-box; }
+}
 .invoiceMetaFields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; }
 .invoiceLineItem { padding: 1rem; border: 1px solid var(--line); border-radius: .9rem; background: linear-gradient(135deg, oklch(98% .018 87), oklch(96% .025 62)); }
 .invoiceLineItem > div { display: grid; grid-template-columns: .35fr 1fr; gap: .7rem; margin-top: .7rem; }
