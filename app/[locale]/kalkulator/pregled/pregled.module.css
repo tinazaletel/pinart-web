@@ -1569,6 +1569,7 @@
   .expenseList article > :nth-child(5) { grid-area: kebab; align-self: center; justify-self: end; }
   .expenseList .expenseCoin { display: none; }
   .expenseEditor, .expenseArchive, .recurringCosts { padding-left: .35rem; padding-right: .35rem; }
+  .expensePage { padding-left: .5rem; padding-right: .5rem; box-sizing: border-box; }
   /* Uredi strošek = samostojna stran: skrij povzetek + seznam, prikaži le urejevalnik + Nazaj na vrhu */
   :global(.expense-editing) .expenseSummary, :global(.expense-editing) .expenseArchive { display: none; }
   .expenseBack { display: inline-flex; align-items: center; gap: .35rem; justify-self: start; margin: 0 0 .2rem; padding: .5rem .9rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink); font: 700 .62rem var(--font-sans), sans-serif; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; }
