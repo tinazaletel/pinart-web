@@ -1597,7 +1597,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       /* ── mobil: NIC ne sme cez desni rob pri 390px (kot retainer) ── */
       @media (max-width:640px){
         .pg-chat{max-width:100%}
-        .pg-vstop-panel{padding:1.1rem;border-radius:14px}
+        .pg-vstop-panel{padding:1.1rem;border-radius:14px;margin-left:-.5rem;margin-right:-.5rem}
         .pg-polja{grid-template-columns:minmax(0,1fr);gap:1rem}
         .pg-zakljucek{padding:1.2rem 1rem 1.3rem}
         .pg-editor,.pg-editor h1,.pg-editor h2,.pg-editor p,.pg-editor li,.pg-doktelo,.pg-doktelo h1,.pg-doktelo h2,.pg-doktelo p,.pg-doktelo li{overflow-wrap:anywhere}

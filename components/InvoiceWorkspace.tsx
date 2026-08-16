@@ -1236,7 +1236,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       }
       @media (max-width:640px){
         .rc .rc-chat{max-width:100%}
-        .rc .rc-vstop-panel{padding:1.1rem;border-radius:14px}
+        .rc .rc-vstop-panel{padding:1.1rem;border-radius:14px;margin-left:-.5rem;margin-right:-.5rem}
         .rc .rc-polja{grid-template-columns:minmax(0,1fr);gap:1rem}
         .rc .rc-vrstica,.rc .rc-vrstica.rc-brez-ddv{
           grid-template-columns:repeat(2,minmax(0,1fr));
