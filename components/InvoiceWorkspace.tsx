@@ -8,8 +8,7 @@
 
 import { FormEvent, Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt, PenNib, X } from '@phosphor-icons/react';
-import GumbNazaj from '@/components/ui/GumbNazaj';
+import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt, PenNib, X, Plus, PencilSimple, ArrowUp, ArrowDown } from '@phosphor-icons/react';
 import GumbPrimarni from '@/components/ui/GumbPrimarni';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, type FlowInvoiceItem, type FlowInvoiceSignature } from '@/lib/pinartFlowStore';
@@ -176,6 +175,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   }, []);
 
   const privzetiDdv = () => ddvZavezanec ? String(clamp(ddvStopnja, 0, 30)) : '22';
+  const [poskus, setPoskus] = useState(false);
   const novaVrstica = (): Vrstica => ({ opis: '', kolicina: '1', cena: '', popust: '', ddv: privzetiDdv() });
 
   const selectedOffer = offers.find(item => item.id === offerId);
@@ -702,15 +702,11 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
             <input type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} />
           </label>
         </div>
-        <div className="rc-gumbi" style={{ display: 'flex', justifyContent: 'center' }}>
-          <GumbPrimarni onClick={odpriObrazec} puscica aria-label={L('Pripravi račun', 'Prepare invoice')}>{predracun ? L('Pripravi predračun', 'Prepare pro forma') : L('Pripravi račun', 'Prepare invoice')}</GumbPrimarni>
-        </div>
       </div>
     </section>}
 
     {/* ── POGLED: OBRAZEC (svoja stran, sredinski stolpec — view-swap kot pogodbe) ── */}
     {pogled === 'obrazec' && <section className={`${styles.invoiceCreator} rc-sek rc-stran rc-stolpec rc-obrazec`}>
-      <GumbNazaj className="rc-nazaj-vrh" onClick={() => setPogled('pregled')}>{L('Nazaj', 'Back')}</GumbNazaj>
       <div className="rc-obr-uvod">
         <p className={styles.eyebrow}>{L('NOV RAČUN', 'NEW INVOICE')}</p>
         <h2>{L('Vse sestavine po zakonu.', 'Every legally required part.')}</h2>
@@ -718,17 +714,19 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       </div>
       <Toast sporocilo={obvestilo} onClose={() => setObvestilo('')} ton="napaka" />
       <Toast sporocilo={postaObvestilo?.t || ''} onClose={() => setPostaObvestilo(null)} ton={postaObvestilo?.ok ? 'uspeh' : 'napaka'} />
-      <form noValidate onSubmit={event => {
+      <form id="rc-obrazec-form" className={poskus ? 'rc-poskus' : undefined} noValidate onSubmit={event => {
         event.preventDefault();
         const obrazec = event.currentTarget;
         const manjka = obrazec.querySelector<HTMLInputElement>(':invalid');
         if (manjka) {
+          setPoskus(true);
           manjka.focus();
           manjka.scrollIntoView({ block: 'center', behavior: 'smooth' });
           const ime = (manjka.closest('label')?.textContent || '').trim().replace(/\s+/g, ' ') || L('polje', 'field');
           setObvestilo(L(`Izpolni polje: ${ime}`, `Please fill out: ${ime}`));
           return;
         }
+        setPoskus(false);
         setPogled('zakljucek');
       }}>
         {/* vrsta dokumenta: RAČUN (privzeto) ali PREDRAČUN (poziv k placilu vnaprej,
@@ -908,7 +906,6 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           {nogaOn && <label className="rc-polje rc-noga-polje">{L('Besedilo noge', 'Footer text')}<textarea value={nogaText} onChange={event => setNogaText(event.target.value)} rows={2} placeholder={NOGA_PRIVZETA} /></label>}
         </div>
 
-        <div className={styles.invoiceSubmit} style={{ display: 'flex', justifyContent: 'center' }}><GumbPrimarni type="submit" puscica>{L('Zaključi', 'Finish')}</GumbPrimarni></div>
       </form>
     </section>}
 
@@ -943,31 +940,41 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
         samoOgled={samoOgled}
         kontakti={strankaKontakti()}
         projektId={offerId || undefined}
+        dodatneAkcije={[
+          { label: predracun ? L('Shrani predračun', 'Save pro forma') : L('Shrani račun', 'Save invoice'), onClick: () => save(), ikona: <FloppyDisk size={16} /> },
+          { label: pdfId ? L('Pripravljam …', 'Preparing …') : L('Prenesi (PDF)', 'Download (PDF)'), onClick: () => prenesiPdf(trenutniRacun()), disabled: !!pdfId, ikona: <FilePdf size={16} /> },
+          { label: L('Pošlji v plačilo', 'Send for payment'), onClick: () => posljiVPlacilo(trenutniRacun()), ikona: <PaperPlaneTilt size={16} /> },
+        ]}
       />
-      <div className="rc-prenosi">
-        <button type="button" className="rc-povezava-z" onClick={() => save()}>
-          <FloppyDisk size={16} /> {predracun ? L('Shrani predračun', 'Save pro forma') : L('Shrani račun', 'Save invoice')}
-        </button>
-        <button type="button" className="rc-povezava-z" disabled={!!pdfId} onClick={() => prenesiPdf(trenutniRacun())}>
-          <FilePdf size={16} /> {pdfId ? L('Pripravljam …', 'Preparing …') : L('Prenesi (PDF)', 'Download (PDF)')}
-        </button>
-        <button type="button" className="rc-povezava-z" onClick={() => posljiVPlacilo(trenutniRacun())}>
-          <PaperPlaneTilt size={16} /> {L('Pošlji v plačilo', 'Send for payment')}
-        </button>
-      </div>
     </section>}
 
-    {pogled === 'zakljucek' && <div className="rc-noga"><div className="rc-noga-gumbi">
-      <button type="button" className="rc-noga-pill" onClick={() => setPogled('obrazec')}>{L('← Uredi račun', '← Edit invoice')}</button>
-      <button type="button" className="rc-noga-pill nova" onClick={() => { setPogled('pregled'); setOfferId(''); }}>{L('↺ Nov račun', '↺ New invoice')}</button>
+    {(pogled === 'pregled' || pogled === 'obrazec' || pogled === 'zakljucek') && <div className="rc-noga"><div className="rc-noga-gumbi" style={{ flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+      {pogled === 'obrazec' && (
+        <button type="button" className="rc-noga-pill rc-noga-ikona" onClick={() => setPogled('pregled')} aria-label={L('Nazaj', 'Back')} title={L('Nazaj', 'Back')}><ArrowUp size={17} weight="bold" aria-hidden /></button>
+      )}
+      {pogled === 'zakljucek' && (<>
+        <button type="button" className="rc-noga-pill rc-noga-ikona" onClick={() => setPogled('obrazec')} aria-label={L('Korak nazaj', 'One step back')} title={L('Nazaj', 'Back')}><ArrowUp size={17} weight="bold" aria-hidden /></button>
+        <button type="button" className="rc-noga-pill rc-noga-ikona" onClick={() => setPogled('pregled')} aria-label={L('Uredi od začetka', 'Edit from start')} title={L('Uredi od začetka', 'Edit from start')}><PencilSimple size={16} weight="bold" aria-hidden /></button>
+        <button type="button" className="rc-noga-pill nova" onClick={() => { setPogled('pregled'); setOfferId(''); }}><Plus size={15} weight="bold" aria-hidden /> {L('Nov račun', 'New invoice')}</button>
+      </>)}
+      {pogled === 'pregled' && (
+        <button type="button" className="rc-noga-naprej" onClick={odpriObrazec}>{predracun ? L('Pripravi predračun', 'Prepare pro forma') : L('Pripravi račun', 'Prepare invoice')} <ArrowDown size={16} weight="bold" aria-hidden /></button>
+      )}
+      {pogled === 'obrazec' && (
+        <button type="submit" form="rc-obrazec-form" className="rc-noga-naprej">{L('Zaključi', 'Finish')} <ArrowDown size={16} weight="bold" aria-hidden /></button>
+      )}
     </div></div>}
 
     <style>{`
       /* rc- = novi stili obrazca za racun; pazi na .shell pravila (min-height 2.75rem
          na inputih, select padding-right 3rem !important) — mere so temu prilagojene. */
       .rc{min-width:0;max-width:100%;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
+      @media (max-width:640px){.rc{padding-left:1.06rem;padding-right:1.06rem;box-sizing:border-box}}
       .rc .rc-postavke{min-width:0;padding:1rem;border:1px solid rgba(255,255,255,.6);border-radius:.9rem;background:rgba(255,255,255,.4);-webkit-backdrop-filter:blur(16px) saturate(1.35);backdrop-filter:blur(16px) saturate(1.35);box-shadow:0 8px 28px rgba(40,25,40,.06)}
       .rc .rc-postavke *{box-sizing:border-box;min-width:0}
+      /* prazna obvezna polja ob poskusu oddaje = svetlo rdeča (kot opozorilo/toast) */
+      .rc .rc-poskus input:invalid,.rc .rc-poskus select:invalid,.rc .rc-poskus textarea:invalid{background:#fdeaea;border-color:#e5484d;box-shadow:0 0 0 1px rgba(229,72,77,.35)}
+      .rc .rc-poskus input:invalid::placeholder{color:#cf8b8b}
       .rc .rc-post-glava{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap}
       .rc .rc-ddv-toggle{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:650;color:var(--ink);cursor:pointer;white-space:nowrap}
       .rc .rc-valuta{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:650;color:var(--ink);white-space:nowrap}
@@ -1079,8 +1086,11 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc-noga{position:fixed;bottom:0;left:17.5rem;right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,var(--paper) 70%,transparent);z-index:40}
       :global(body[data-meni='zaprt']) .rc-noga{left:4.4rem}
       @media (max-width:980px){.rc-noga{left:0}}
-      .rc-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.8rem;flex-wrap:wrap}
-      .rc-noga-pill{font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.78);border:1px solid var(--ink);border-radius:999px;padding:.75rem 1.4rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
+      .rc-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.7rem;flex-wrap:nowrap}
+      .rc-noga-pill{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.78);border:1px solid var(--ink);border-radius:999px;padding:.75rem 1.4rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
+      .rc-noga-ikona{width:3rem;height:3rem;padding:0;gap:0;border-radius:50%;flex:0 0 auto}
+      .rc-noga-naprej{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border-radius:999px;padding:.95rem 2.2rem;border:1px solid var(--ink);background:var(--ink);color:var(--paper);transition:transform .2s ease,box-shadow .2s ease}
+      .rc-noga-naprej:hover{transform:scale(1.06);box-shadow:0 8px 22px rgba(35,18,45,.18)}
       .rc-noga-pill:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
       .rc-noga-pill.nova{color:var(--accent);border-color:var(--accent)}
       .rc-noga-pill.nova:hover{background:var(--accent);color:var(--paper)}
@@ -1090,7 +1100,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       /* KONEC animacije mora biti transform:NONE (ne translateY(0)) — kot pogodbe */
       @keyframes rcStran{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
       @media (prefers-reduced-motion:reduce){.rc .rc-sek.rc-stran{animation:none}}
-      .rc .rc-stolpec{width:100%;max-width:700px;margin-left:auto;margin-right:auto}
+      .rc .rc-stolpec{width:100%;max-width:700px;margin-left:auto;margin-right:auto;padding-bottom:6.5rem}
       /* enotno vedenje kot Ponudba (KalkulatorApp .uvod-oder): prvo vprasanje/vstopni
          panel navpicno na sredini vidnega polja, nato ob rasti vsebine (izbira vira ipd.)
          naravno odteka navzgor in stran se skrola. 8.25rem = FlowTopBar (3.25rem) +
@@ -1235,7 +1245,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       }
       @media (max-width:640px){
         .rc .rc-chat{max-width:100%}
-        .rc .rc-vstop-panel{padding:1.2rem 1.1rem;border-radius:16px}
+        .rc .rc-vstop-panel{padding:1.1rem;border-radius:14px;margin-left:-.5rem;margin-right:-.5rem}
         .rc .rc-polja{grid-template-columns:minmax(0,1fr);gap:1rem}
         .rc .rc-vrstica,.rc .rc-vrstica.rc-brez-ddv{
           grid-template-columns:repeat(2,minmax(0,1fr));

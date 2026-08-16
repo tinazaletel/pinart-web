@@ -598,7 +598,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         @keyframes pdFloat { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(2vw,-2vw) scale(1.06); } }
         /* Pupino srce (živa AI): mehki modro-vijola gradient za pogovorom, nežen srčni utrip */
         /* ISTA animacija kot stranska Pupa (pupaBlob): organsko se preliva — border-radius morfa + vrti + rahlo diha, BREZ utripa */
-        .pd-srce { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); width: min(54vw, 42rem); height: min(54vw, 42rem); z-index: 1; pointer-events: none; border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%; filter: blur(42px); background: radial-gradient(circle at 40% 34%, oklch(64% .26 290 / .98), oklch(70% .2 262 / .72) 52%, transparent 74%); animation: pdSrceBlob 8s ease-in-out infinite; will-change: transform, border-radius; }
+        .pd-srce { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); width: min(49vw, 38rem); height: min(49vw, 38rem); z-index: 1; pointer-events: none; border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%; filter: blur(42px); background: radial-gradient(circle at 40% 34%, oklch(64% .26 290 / .98), oklch(70% .2 262 / .72) 52%, transparent 74%); animation: pdSrceBlob 8s ease-in-out infinite; will-change: transform, border-radius; }
         .pd-srce.bije { animation-duration: 4.5s; }
         @keyframes pdSrceBlob {
           0%, 100% { border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%; transform: translate(-50%, -50%) rotate(0deg) scale(1); }

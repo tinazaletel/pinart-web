@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
-import { User, TextAa, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp, TextB, TextItalic, PenNib, Paperclip, X } from '@phosphor-icons/react';
+import { User, TextAa, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp, TextB, TextItalic, PenNib, Paperclip, X, Plus } from '@phosphor-icons/react';
 import { getBusinessDocumentUrl, saveRetainerDraft, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { loadFlowData } from '@/lib/pinartFlowStore';
 import PosljiBlok from '@/components/PosljiBlok';
@@ -252,6 +252,9 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   const prviRender = useRef(true);
   useEffect(() => {
     if (prviRender.current) { prviRender.current = false; return; }
+    /* korak 0 = prvi zaslon z naslovom -> NIKOLI ne skoči (title mora ostati viden);
+        scrollamo le na 1+ (Naprej). Varuje tudi pred StrictMode dvojnim efektom. */
+    if (korak === 0) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const t = window.setTimeout(() => {
       const el = document.getElementById(`rw-korak-${korak}`);
@@ -734,15 +737,19 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             <div className="rw-pills">
               {(['ure', 'paket', 'oboje'] as const).map(m => <button key={m} type="button" className={'rw-pill' + (model === m ? ' on' : '')} onClick={() => setModel(m)}>{m === 'ure' ? tr('Po urah', 'By hours') : m === 'paket' ? tr('Paket / mesec', 'Package / month') : tr('Oboje', 'Both')}</button>)}
             </div>
-            {model !== 'paket' && (
+            {model !== 'paket' && (<>
               <div className="rw-vrsta"><span className="rw-oznaka">{tr('Ure / mesec', 'Hours / month')}</span>
                 <div className="rw-cipi">
                   {URE_MOZNOSTI.map(u => <button key={u} type="button" className={'rw-cip' + (ure === u ? ' on' : '')} onClick={() => setUre(u)}>{u} h</button>)}
                   <input className="rw-num" type="number" min={1} step={1} value={ure} onChange={e => setUre(Math.max(1, Math.round(Number(e.target.value) || 1)))} />
-                  <span className="rw-mini rw-urna">{tr('urna postavka', 'hourly rate')} <input type="number" min={0} step={1} value={urna} onChange={e => nastaviUrno(Number(e.target.value))} aria-label={tr('urna postavka', 'hourly rate')} /><select value={valuta} onChange={e => nastaviValuto(e.target.value)} aria-label={tr('Valuta', 'Currency')}>{VALUTE_RACUN.map(v => <option key={v.id} value={v.id}>{v.id.toUpperCase()} {v.znak}</option>)}</select></span>
                 </div>
               </div>
-            )}
+              <div className="rw-vrsta"><span className="rw-oznaka">{tr('Urna postavka', 'Hourly rate')}</span>
+                <div className="rw-cipi">
+                  <span className="rw-urna"><input type="number" min={0} step={1} value={urna} onChange={e => nastaviUrno(Number(e.target.value))} aria-label={tr('urna postavka', 'hourly rate')} /><select value={valuta} onChange={e => nastaviValuto(e.target.value)} aria-label={tr('Valuta', 'Currency')}>{VALUTE_RACUN.map(v => <option key={v.id} value={v.id}>{v.id.toUpperCase()} {v.znak}</option>)}</select></span>
+                </div>
+              </div>
+            </>)}
             {model !== 'ure' && (
               <div className="rw-vrsta"><span className="rw-oznaka">{tr('Paket / mesec', 'Package / month')}</span>
                 <div className="rw-cipi"><input className="rw-num" style={{ width: '7rem' }} type="number" min={0} step={10} value={paketMes} onChange={e => setPaketMes(Math.max(0, Math.round(Number(e.target.value) || 0)))} /><span className="rw-mini">{tr(`${valZnak} fiksno na mesec za obseg`, `${valZnak} fixed per month for the scope`)}</span></div>
@@ -976,23 +983,17 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             imeStranke={nar.ime.trim()}
             replyTo={ponudnik.email.trim() || undefined}
             kontakti={strankaKontakti()}
+            dodatneAkcije={[
+              { label: pdfNalaganje ? tr('Pripravljam …', 'Preparing …') : tr('Prenesi pogodbo (PDF)', 'Download agreement (PDF)'), onClick: () => prenesi('pogodba'), disabled: pdfNalaganje },
+              { label: tr('Prenesi retainer ponudbo (PDF)', 'Download retainer proposal (PDF)'), onClick: () => prenesi('ponudba'), disabled: pdfNalaganje },
+            ]}
           />
-          <div className="rw-prenosi">
-            <button type="button" className="rw-povezava" disabled={pdfNalaganje} onClick={() => prenesi('pogodba')}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M7 11l5 5 5-5M5 21h14" /></svg>
-              {pdfNalaganje ? tr('Pripravljam …', 'Preparing …') : tr('Prenesi pogodbo (PDF)', 'Download agreement (PDF)')}
-            </button>
-            <button type="button" className="rw-povezava" disabled={pdfNalaganje} onClick={() => prenesi('ponudba')}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M7 11l5 5 5-5M5 21h14" /></svg>
-              {tr('Prenesi retainer ponudbo (PDF)', 'Download retainer proposal (PDF)')}
-            </button>
-          </div>
         </section>)}
 
       </div>
 
       <div className="rw-noga">
-        <div className="rw-noga-gumbi">
+        <div className="rw-noga-gumbi" style={{ flexWrap: 'nowrap' }}>
           {/* NAZAJ — okrogel gumb; navigira nazaj skozi poglede/korake (kot kalkulator) */}
           {(pogled !== 'vprasanja' || korak > 0) && (
             <button type="button" className={'rw-gumb-nazaj' + (pogled === 'vprasanja' ? ' rw-gumb-nazaj-abs' : '')} aria-label={tr('Nazaj', 'Back')}
@@ -1016,9 +1017,9 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             </button>
           )}
           {pogled === 'zakljucek' && (
-            <div className="rw-noga-koncna">
-              <button type="button" className="rw-noga-pill" onClick={urediOdZacetka}>← {tr('Uredi od začetka', 'Edit from start')}</button>
-              <button type="button" className="rw-noga-pill nova" onClick={novaPonudba}>↺ {tr('Nova ponudba', 'New proposal')}</button>
+            <div className="rw-noga-koncna" style={{ flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+              <button type="button" className="rw-noga-pill rw-noga-ikona" onClick={urediOdZacetka} aria-label={tr('Uredi od začetka', 'Edit from start')} title={tr('Uredi od začetka', 'Edit from start')}><PencilSimple size={16} weight="bold" aria-hidden /></button>
+              <button type="button" className="rw-noga-pill nova" onClick={novaPonudba}><Plus size={15} weight="bold" aria-hidden /> {tr('Nova ponudba', 'New proposal')}</button>
             </div>
           )}
         </div>
@@ -1121,7 +1122,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw.rw-lupina .rw-vsebina{padding-top:.6rem}
         /* mobilni L/R odmik: 92vw je dal komaj 4vw ob strani (vsebina se je dotikala roba);
            na telefonu damo jasen enakomeren razmik levo=desno kot na nadzorni plošči */
-        @media (max-width:640px){.rw-vsebina{width:100%;padding-left:1.25rem;padding-right:1.25rem;box-sizing:border-box}}
+        @media (max-width:640px){.rw-vsebina{width:100%;padding-left:1.06rem;padding-right:1.06rem;box-sizing:border-box}}
         .rw-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 .3rem}
         .rw-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
         .rw-uvod{font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72);margin:0 0 2.4rem;max-width:34rem}
@@ -1140,7 +1141,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-noga{position:fixed;bottom:0;left:17.5rem;right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,#fff 70%,transparent);z-index:40}
         :global(body[data-meni='zaprt']) .rw-noga{left:4.4rem}
         @media (max-width:980px){.rw-noga{left:0}}
-        .rw-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.8rem;position:relative}
+        .rw-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.7rem;position:relative;flex-wrap:nowrap}
         .rw-gumb-nazaj{width:3.1rem;height:3.1rem;border-radius:999px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:none;transition:background .18s ease,color .18s ease,transform .2s ease}
         .rw-gumb-nazaj:hover{background:var(--ink);color:var(--paper);transform:scale(1.08)}
         .rw-gumb-nazaj:active{transform:scale(.95)}
@@ -1189,13 +1190,13 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-cip{padding:.42rem .8rem;border:1px solid rgba(17,17,17,.2);border-radius:999px;background:rgba(255,255,255,.5);cursor:pointer;font:inherit;font-size:.86rem;color:var(--ink);transition:border-color .15s,background .15s,color .15s}
         .rw-cip:hover{border-color:var(--ink)}
         .rw-cip.on{border-color:var(--accent);background:var(--accent);color:#fff;font-weight:600}
-        .rw-num{width:4.6rem;border:none;border-bottom:1px solid rgba(17,17,17,.3);background:transparent;padding:.35rem .3rem;font:inherit;font-size:.92rem;font-weight:600;text-align:right;color:var(--ink)}
-        .rw-num:focus{outline:none;border-bottom-color:var(--ink)}
+        .rw-num{width:4.8rem;border:1px solid oklch(93% .006 82 / .55);border-radius:9px;background:#FCFBF7;padding:.42rem .55rem;font:inherit;font-size:.92rem;font-weight:600;text-align:right;color:var(--ink);transition:border-color .15s}
+        .rw-num:focus{outline:none;border-color:var(--ink)}
         .rw-mini{font-size:.8rem;color:rgba(17,17,17,.72)}
         .rw-urna{display:inline-flex;align-items:center;gap:.4rem}
-        .rw-urna input{width:3.4rem;border:none;border-bottom:1.5px solid rgba(17,17,17,.22);background:transparent;padding:.15rem .1rem;font:inherit;font-size:.92rem;font-weight:700;text-align:right;color:var(--ink);-moz-appearance:textfield;appearance:textfield;transition:border-color .15s}
+        .rw-urna input{width:3.8rem;border:1px solid oklch(93% .006 82 / .55);border-radius:9px;background:#FCFBF7;padding:.4rem .5rem;font:inherit;font-size:.92rem;font-weight:700;text-align:right;color:var(--ink);-moz-appearance:textfield;appearance:textfield;transition:border-color .15s}
         .rw-urna input::-webkit-outer-spin-button,.rw-urna input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-        .rw-urna input:focus{outline:none;border-bottom-color:var(--accent)}
+        .rw-urna input:focus{outline:none;border-color:var(--accent)}
         .rw-urna select{-webkit-appearance:none;appearance:none;border:1px solid rgba(17,17,17,.16);border-radius:999px;background:rgba(255,255,255,.6) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>") no-repeat right .5rem center;font:inherit;font-size:.76rem;font-weight:700;color:var(--ink);cursor:pointer;padding:.24rem 1.5rem .24rem .7rem;transition:border-color .15s,background-color .15s}
         .rw-urna select:hover{border-color:rgba(17,17,17,.32)}
         .rw-urna select:focus{outline:none;border-color:var(--accent)}
@@ -1214,8 +1215,8 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-mreza-prav{grid-template-columns:minmax(0,1fr) minmax(0,9rem);align-items:start}
         .rw label{display:flex;flex-direction:column;gap:.35rem;font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(17,17,17,.72)}
         .rw label .rw-mini{letter-spacing:0;text-transform:none;font-weight:400}
-        .rw-vnos{border:none;border-bottom:1px solid rgba(17,17,17,.4);background:transparent;padding:.35rem 0 .5rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:1.05rem;color:var(--ink);width:100%;border-radius:0}
-        .rw-vnos:focus{outline:none;border-bottom:2px solid var(--ink);margin-bottom:-1px}
+        .rw-vnos{border:1px solid oklch(93% .006 82 / .55);background:#FCFBF7;padding:.55rem .7rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:1.05rem;color:var(--ink);width:100%;border-radius:9px;transition:border-color .15s}
+        .rw-vnos:focus{outline:none;border-color:var(--ink)}
         .rw-vnos::placeholder{color:rgba(17,17,17,.72);font-weight:400;font-size:.98rem}
         .rw-txt{border:1px solid rgba(17,17,17,.2);border-radius:12px;padding:.7rem .8rem;font:inherit;font-size:.9rem;line-height:1.5;color:var(--ink);resize:vertical;min-height:8.5rem!important;field-sizing:content;background:rgba(255,255,255,.5);overflow:auto}
         .rw-txt:focus{outline:none;border-color:var(--ink)}
@@ -1232,8 +1233,8 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-polje{display:flex;flex-direction:column}
         .rw-polje label{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(17,17,17,.72);margin-bottom:.3rem}
         .rw-polje label .rw-vec{font-size:.68rem;font-weight:500;letter-spacing:0;text-transform:none;color:rgba(17,17,17,.72)}
-        .rw-polje input{width:100%;border:none;border-bottom:1px solid rgba(17,17,17,.45);background:transparent;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:1.1rem;padding:.35rem 0 .5rem;color:var(--ink);border-radius:0}
-        .rw-polje input:focus{outline:none;border-bottom:2px solid var(--ink);margin-bottom:-1px}
+        .rw-polje input{width:100%;border:1px solid oklch(93% .006 82 / .55);background:#FCFBF7;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:1.1rem;padding:.55rem .7rem;color:var(--ink);border-radius:9px;transition:border-color .15s}
+        .rw-polje input:focus{outline:none;border-color:var(--ink)}
         .rw-polje input::placeholder{color:rgba(17,17,17,.72);font-weight:400;font-size:1rem}
         .rw-dodaj-gumb{display:inline-flex;align-items:center;gap:.4rem;font-family:inherit;font-size:.9rem;font-weight:600;color:var(--ink);background:transparent;border:1px dashed rgba(17,17,17,.35);border-radius:999px;padding:.55rem 1.1rem;cursor:pointer;transition:border-color .18s ease,background .18s ease}
         .rw-dodaj-gumb:hover{border-color:var(--ink);background:rgba(17,17,17,.03)}
@@ -1270,8 +1271,9 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         @keyframes rwKljukRis{to{stroke-dashoffset:0}}
         @media (prefers-reduced-motion:reduce){.rw-zakljucek-lik .pon-telo,.rw-zakljucek-lik .pon-senca,.rw-zakljucek-lik .pon-kljuk-znak,.rw-zakljucek-lik .pon-kljuk{animation:none}.rw-zakljucek-lik .pon-kljuk{stroke-dashoffset:0}}
         .rw-prenosi{display:flex;flex-wrap:wrap;justify-content:center;gap:.9rem 1.6rem;margin:1.4rem auto 0}
-        .rw-noga-koncna{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;justify-content:center}
-        .rw-noga-pill{font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.72);border:1px solid var(--ink);border-radius:999px;padding:.65rem 1.3rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
+        .rw-noga-koncna{display:flex;align-items:center;gap:.7rem;flex-wrap:nowrap;justify-content:center}
+        .rw-noga-pill{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.72);border:1px solid var(--ink);border-radius:999px;padding:.65rem 1.3rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
+        .rw-noga-ikona{width:3rem;height:3rem;padding:0;gap:0;border-radius:50%;flex:0 0 auto}
         .rw-noga-pill:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
         .rw-noga-pill.nova{color:var(--accent);border-color:var(--accent)}
         .rw-noga-pill.nova:hover{background:var(--accent);color:var(--paper)}
@@ -1360,6 +1362,13 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         /* ── Mobilni odrez po desni: koren .rw ima overflow-x:clip, zato NIC ne sme biti sirse od .rw-vsebina (min(700px,92vw)). ── */
         /* .rw-platno (min(960px,96vw)) in .rw-predogled (min(880px,94vw)) sta bila sirsa od starsa in centrirana (translateX) -> desni rob je gledal cez in bil odrezan. */
         @media (max-width:640px){
+          /* Kartice bliže robu kot tekst (kot ponudba): negativni rob potegne iz .rw-vsebina
+             paddinga (1.06) → kartica na ~0.91rem, tekst ostane 1.41rem. + manjši padding/radij
+             kot kalkulator. TO pravilo je ZA osnovnimi (.rw-kartica radij 20px, v.1227), zato velja. */
+          .rw-vsebina .rw-kartica,.rw-vsebina .rw-povz,.rw-vsebina .rw-mreza{padding:1.1rem;border-radius:14px;margin-left:-.5rem;margin-right:-.5rem;max-width:none;box-sizing:border-box}
+          /* model pilule (Po urah / Paket / Oboje) v ENI vrstici — enaka širina, ne ovij */
+          .rw-pills{flex-wrap:nowrap;gap:.4rem}
+          .rw-pills .rw-pill{flex:1 1 0;min-width:0;padding:.6rem .35rem;font-size:.82rem;text-align:center;white-space:nowrap}
           .rw-obseg-tabela{grid-template-columns:minmax(0,1fr);min-width:0}
           .rw-obseg-tabela .rw-ov{min-width:0;max-width:100%;overflow:hidden}
           .rw-platno{width:min(960px,100%);max-width:100%}

@@ -5,7 +5,8 @@
    Uporaba: <PosljiBlok subject="…" zgradiHtml={() => '<html>…'} privzetiPrejemnik="…" />
    Vsi razredi so scopeani pod .posl-root, da ne trčijo z drugimi pravili. */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { PaperPlaneTilt, Check, X, Plus } from '@phosphor-icons/react';
 import { posljiMail } from '@/lib/posta';
 import { dodajPosto } from '@/lib/postaDnevnik';
@@ -30,6 +31,11 @@ export interface PosljiBlokProps {
   projektId?: string;
   /* neobvezno: id stranke — zabeleži se skupaj s projektId (ali sam) */
   clientId?: string;
+  /* neobvezne dodatne akcije (npr. Prenesi PDF, Kopiraj) — na desktopu inline pod
+     send-blokom, na mobilu skrite pod gumbom »Več možnosti« (slide-up sheet). */
+  dodatneAkcije?: Array<{ label: string; onClick: () => void; disabled?: boolean; ikona?: ReactNode }>;
+  /* naslov »Več možnosti« sheeta (privzeto »Več možnosti«) */
+  vecNaslov?: string;
 }
 
 const jeVeljavenEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
@@ -44,7 +50,10 @@ export default function PosljiBlok({
   samoOgled = false,
   projektId,
   clientId,
+  dodatneAkcije = [],
+  vecNaslov = 'Več možnosti',
 }: PosljiBlokProps) {
+  const [vecOdprt, setVecOdprt] = useState(false);
   const [prejemniki, setPrejemniki] = useState<string[]>([]);
   const [prejemnikVnos, setPrejemnikVnos] = useState('');
   const [potrdiPosiljanje, setPotrdiPosiljanje] = useState(false);
@@ -217,13 +226,33 @@ export default function PosljiBlok({
         {mailStatus && <p className="posl-status" role="status">{mailStatus}</p>}
       </div>
 
+      {dodatneAkcije.length > 0 && (<>
+        {/* desktop: inline povezave; mobilno: skrite -> pod gumbom »Več možnosti« */}
+        <div className="posl-sekundarne">
+          {dodatneAkcije.map((a, i) => (
+            <button key={i} type="button" className="povezava" disabled={a.disabled} onClick={a.onClick}>{a.ikona}{a.label}</button>
+          ))}
+        </div>
+        <button type="button" className="posl-vec-gumb" onClick={() => setVecOdprt(true)}>{vecNaslov}</button>
+        {vecOdprt && typeof document !== 'undefined' && createPortal(
+          <div className="posl-root">
+            <div className="pmsheet-back" onClick={() => setVecOdprt(false)} aria-hidden />
+            <div className="pmsheet" role="dialog" aria-label={vecNaslov}>
+              <div className="pmsheet-glava"><span>{vecNaslov}</span><button type="button" onClick={() => setVecOdprt(false)} aria-label="Zapri"><X size={15} weight="bold" /></button></div>
+              {dodatneAkcije.map((a, i) => (
+                <button key={i} type="button" className="pmsheet-akcija" disabled={a.disabled} onClick={() => { a.onClick(); setVecOdprt(false); }}>{a.ikona}{a.label}</button>
+              ))}
+            </div>
+          </div>, document.body)}
+      </>)}
+
       <style>{`
         .posl-root { --posl-ink: var(--ink, #111); --posl-paper: var(--paper, #f4f1ea); --posl-accent: var(--accent, #B25476); }
         .posl-root .posl-blok { text-align: left; max-width: 560px; margin: 1.4rem auto 0; border: 1px solid oklch(92% .006 82 / .55); border-radius: 16px; background: rgba(255,255,255,.6); padding: 1.25rem 1.4rem 1.35rem; }
         .posl-root .posl-glava-vrsta { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .85rem; }
         .posl-root .posl-glava { font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.5); }
         .posl-root .posl-za { display: flex; align-items: center; gap: .6rem; }
-        .posl-root .posl-za-l { flex: 0 0 auto; font-size: .9rem; color: rgba(17,17,17,.6); }
+        .posl-root .posl-za-l { flex: 0 0 auto; font-size: .9rem; font-weight: 700; color: var(--posl-ink); }
         .posl-root .posl-cipi { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; min-height: 2.7rem; padding: .38rem .5rem; border: 1px solid oklch(92% .006 82 / .7); border-radius: 12px; background: #fff; }
         .posl-root .posl-cipi:focus-within { border-color: var(--posl-accent); }
         .posl-root .posl-cip { display: inline-flex; align-items: center; gap: .35rem; padding: .26rem .32rem .26rem .62rem; border-radius: 999px; font-size: .85rem; color: var(--posl-ink); background: var(--posl-paper); border: 1px solid rgba(17,17,17,.12); }
@@ -244,7 +273,7 @@ export default function PosljiBlok({
         .posl-root .posl-kontakt-opt span { color: rgba(17,17,17,.6); }
         .posl-root .posl-kontakt-opt:hover { background: var(--posl-paper); }
         /* Primarni gumb: črni pill z oživljenimi besedilnimi stanji. Vodoravno centriran. */
-        .posl-root .posl-akcija { margin-top: 1.05rem; }
+        .posl-root .posl-akcija { margin-top: .6rem; }
         .posl-root .posl-gumb-vrsta { display: flex; justify-content: center; }
         .posl-root .posl-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-width: 11rem; min-height: 2.85rem; box-sizing: border-box; font-family: inherit; font-size: .92rem; font-weight: 600; letter-spacing: .01em; cursor: pointer; border-radius: 999px; padding: .8rem 2rem; border: 1px solid var(--posl-ink); background: var(--posl-ink); color: var(--posl-paper); transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s cubic-bezier(.22,1,.36,1), opacity .3s ease, background .55s cubic-bezier(.22,1,.36,1), border-color .55s cubic-bezier(.22,1,.36,1), color .55s cubic-bezier(.22,1,.36,1); }
         .posl-root .posl-gumb:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(35,18,45,.2); }
@@ -268,13 +297,24 @@ export default function PosljiBlok({
         /* potrditveno besedilo je vedno prisotno (rezervira prostor), ob mirovanju
            samo nevidno — tako menjava faze ne premakne gumba navpično */
         .posl-root .posl-potrdi-txt { display: block; text-align: center; font-size: .88rem; color: var(--posl-ink); line-height: 1.5; margin-bottom: .7rem; }
-        .posl-root .posl-potrdi-txt.je-skrit { visibility: hidden; }
+        .posl-root .posl-potrdi-txt.je-skrit { display: none; }
         .posl-root .posl-potrdi-txt b { font-weight: 700; word-break: break-word; }
         .posl-root .posl-potrdi-gumbi { display: flex; align-items: center; justify-content: center; gap: 1.1rem; flex-wrap: wrap; }
         .posl-root .posl-status { margin: .6rem 0 0; font-size: .85rem; color: var(--posl-ink); text-align: center; }
         /* povezava (tekstovni gumb) — samostojno pravilo, ker blok ni nujno pod .cw */
         .posl-root .povezava { font-family: inherit; font-size: .88rem; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--posl-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .28em; padding: 0; display: inline-flex; align-items: center; gap: .38rem; }
         .posl-root .povezava:hover { opacity: .6; }
+        /* dodatne akcije: desktop inline, mobilno pod »Več možnosti« sheetom (portal na body) */
+        .posl-root .posl-sekundarne { display: flex; flex-wrap: wrap; justify-content: center; gap: .9rem 1.4rem; max-width: 560px; margin: 1.1rem auto 0; }
+        .posl-root .posl-vec-gumb { display: none; }
+        .posl-root .pmsheet-back { position: fixed; inset: 0; z-index: 200; background: rgba(28,21,24,.42); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+        .posl-root .pmsheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 201; box-sizing: border-box; max-height: 85dvh; overflow-y: auto; display: flex; flex-direction: column; gap: .1rem; padding: 1rem 1.1rem calc(1.4rem + env(safe-area-inset-bottom,0px)); background: #fff; border-radius: 22px 22px 0 0; box-shadow: 0 -16px 44px rgba(40,25,40,.22); }
+        .posl-root .pmsheet-glava { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .5rem; }
+        .posl-root .pmsheet-glava span { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); }
+        .posl-root .pmsheet-glava button { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; flex: none; border-radius: 50%; border: 1px solid rgba(17,17,17,.16); background: #fff; color: var(--posl-ink); cursor: pointer; }
+        .posl-root .pmsheet-akcija { min-height: 3rem; padding: .7rem .6rem; display: flex; align-items: center; justify-content: flex-start; gap: .7rem; width: 100%; text-align: left; border: 0; background: none; font: inherit; font-size: .95rem; color: var(--posl-ink); cursor: pointer; border-radius: 10px; }
+        .posl-root .pmsheet-akcija:hover { background: rgba(17,17,17,.05); }
+        .posl-root .pmsheet-akcija:disabled { opacity: .5; cursor: default; }
         @media (prefers-reduced-motion: reduce) {
           .posl-root .posl-gumb, .posl-root .posl-gumb.je-uspeh { animation: none; transition: none; }
           .posl-root .posl-pike span { animation: none; opacity: 1; }
@@ -282,9 +322,12 @@ export default function PosljiBlok({
           .posl-root .posl-letalo-ovoj { margin-right: .45rem; }
         }
         @media (max-width: 640px) {
-          .posl-root .posl-za { flex-direction: column; gap: .35rem; align-items: stretch; }
+          /* »Za« INLINE z inputom (kot ponudba), ne zložen; input čez preostalo širino */
+          .posl-root .posl-za { flex-direction: row; gap: .5rem; align-items: center; }
           .posl-root .posl-za-l { padding-top: 0; }
           .posl-root .posl-gumb { width: 100%; }
+          .posl-root .posl-sekundarne { display: none; }
+          .posl-root .posl-vec-gumb { display: flex; align-items: center; justify-content: center; gap: .4rem; width: fit-content; margin: .9rem auto 0; padding: .7rem 1.4rem; border: 1px solid rgba(17,17,17,.22); border-radius: 999px; background: transparent; color: var(--posl-ink); font-family: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; }
         }
       `}</style>
     </div>
