@@ -966,7 +966,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       /* rc- = novi stili obrazca za racun; pazi na .shell pravila (min-height 2.75rem
          na inputih, select padding-right 3rem !important) — mere so temu prilagojene. */
       .rc{min-width:0;max-width:100%;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
-      @media (max-width:640px){.rc{padding-left:.55rem;padding-right:.55rem;box-sizing:border-box}}
+      @media (max-width:640px){.rc{padding-left:.95rem;padding-right:.95rem;box-sizing:border-box}}
       .rc .rc-postavke{min-width:0;padding:1rem;border:1px solid rgba(255,255,255,.6);border-radius:.9rem;background:rgba(255,255,255,.4);-webkit-backdrop-filter:blur(16px) saturate(1.35);backdrop-filter:blur(16px) saturate(1.35);box-shadow:0 8px 28px rgba(40,25,40,.06)}
       .rc .rc-postavke *{box-sizing:border-box;min-width:0}
       .rc .rc-post-glava{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap}
@@ -1236,7 +1236,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       }
       @media (max-width:640px){
         .rc .rc-chat{max-width:100%}
-        .rc .rc-vstop-panel{padding:1.2rem 1.1rem;border-radius:16px}
+        .rc .rc-vstop-panel{padding:1.1rem;border-radius:14px}
         .rc .rc-polja{grid-template-columns:minmax(0,1fr);gap:1rem}
         .rc .rc-vrstica,.rc .rc-vrstica.rc-brez-ddv{
           grid-template-columns:repeat(2,minmax(0,1fr));

@@ -1276,7 +1276,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* stili kot retainer: navaden <style> (globalno), zato pg- predpona povsod */}
     <style>{`
       .pg{min-width:0;max-width:100%;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
-      @media (max-width:640px){.pg{padding-left:.55rem;padding-right:.55rem;box-sizing:border-box}}
+      @media (max-width:640px){.pg{padding-left:.95rem;padding-right:.95rem;box-sizing:border-box}.pg-vstop-panel{padding:1.1rem;border-radius:14px}}
       .pg .pg-sek{min-width:0}
       .pg-sek{animation:pgSek .5s cubic-bezier(.16,1,.3,1) both}
       /* KONEC animacije mora biti transform:NONE (ne translateY(0)): vsak transform != none
@@ -1597,7 +1597,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       /* ── mobil: NIC ne sme cez desni rob pri 390px (kot retainer) ── */
       @media (max-width:640px){
         .pg-chat{max-width:100%}
-        .pg-vstop-panel{padding:1.2rem 1.1rem;border-radius:16px}
+        .pg-vstop-panel{padding:1.1rem;border-radius:14px}
         .pg-polja{grid-template-columns:minmax(0,1fr);gap:1rem}
         .pg-zakljucek{padding:1.2rem 1rem 1.3rem}
         .pg-editor,.pg-editor h1,.pg-editor h2,.pg-editor p,.pg-editor li,.pg-doktelo,.pg-doktelo h1,.pg-doktelo h2,.pg-doktelo p,.pg-doktelo li{overflow-wrap:anywhere}
