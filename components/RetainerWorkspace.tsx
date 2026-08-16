@@ -990,7 +990,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       </div>
 
       <div className="rw-noga">
-        <div className="rw-noga-gumbi">
+        <div className="rw-noga-gumbi" style={{ flexWrap: 'nowrap' }}>
           {/* NAZAJ — okrogel gumb; navigira nazaj skozi poglede/korake (kot kalkulator) */}
           {(pogled !== 'vprasanja' || korak > 0) && (
             <button type="button" className={'rw-gumb-nazaj' + (pogled === 'vprasanja' ? ' rw-gumb-nazaj-abs' : '')} aria-label={tr('Nazaj', 'Back')}
@@ -1014,7 +1014,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
             </button>
           )}
           {pogled === 'zakljucek' && (
-            <div className="rw-noga-koncna">
+            <div className="rw-noga-koncna" style={{ flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
               <button type="button" className="rw-noga-pill rw-noga-ikona" onClick={urediOdZacetka} aria-label={tr('Uredi od začetka', 'Edit from start')} title={tr('Uredi od začetka', 'Edit from start')}><PencilSimple size={16} weight="bold" aria-hidden /></button>
               <button type="button" className="rw-noga-pill nova" onClick={novaPonudba}><Plus size={15} weight="bold" aria-hidden /> {tr('Nova ponudba', 'New proposal')}</button>
             </div>
