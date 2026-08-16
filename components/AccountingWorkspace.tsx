@@ -363,7 +363,7 @@ export default function AccountingWorkspace() {
       .pripravljenost .opozorilo { background:oklch(95% .035 70); color:oklch(35% .08 40); }
       .dokumenti { display:grid; gap:.55rem; }
       .skupina { overflow:hidden; border:1px solid oklch(90% .009 75); border-radius:1rem; background:oklch(99.6% .003 75); }
-      .skupina-opozorilo { border-color:oklch(82% .055 55); }
+      .skupina-opozorilo { border-color:oklch(91% .008 75); }
       .skupina-gumb { width:100%; min-height:4.1rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.8rem 1rem; border:0; background:transparent; color:var(--ink); text-align:left; cursor:pointer; }
       .skupina-gumb::-webkit-details-marker { display:none; }
       .skupina-gumb::marker { content:''; }
@@ -400,7 +400,7 @@ export default function AccountingWorkspace() {
       @media(max-width:760px){
         .pripravljenost { grid-template-columns:1fr; padding:1rem; }
         .pripravljenost dl { grid-template-columns:repeat(2,minmax(0,1fr)); }
-        .zakljucek { bottom:.4rem; margin-inline:-.25rem; }
+        .zakljucek { bottom:.4rem; margin-inline:0; }
         .preglej-gumb > span:last-child { padding:.6rem .8rem; font-size:.76rem; }
         .skupina-vsebina { padding-inline:.7rem; }
         .skupina-vsebina li { gap:.55rem; padding-inline:.6rem; }
