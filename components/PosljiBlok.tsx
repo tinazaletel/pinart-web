@@ -223,7 +223,7 @@ export default function PosljiBlok({
         .posl-root .posl-glava-vrsta { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .85rem; }
         .posl-root .posl-glava { font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.5); }
         .posl-root .posl-za { display: flex; align-items: center; gap: .6rem; }
-        .posl-root .posl-za-l { flex: 0 0 auto; font-size: .9rem; color: rgba(17,17,17,.6); }
+        .posl-root .posl-za-l { flex: 0 0 auto; font-size: .9rem; font-weight: 700; color: var(--posl-ink); }
         .posl-root .posl-cipi { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; min-height: 2.7rem; padding: .38rem .5rem; border: 1px solid oklch(92% .006 82 / .7); border-radius: 12px; background: #fff; }
         .posl-root .posl-cipi:focus-within { border-color: var(--posl-accent); }
         .posl-root .posl-cip { display: inline-flex; align-items: center; gap: .35rem; padding: .26rem .32rem .26rem .62rem; border-radius: 999px; font-size: .85rem; color: var(--posl-ink); background: var(--posl-paper); border: 1px solid rgba(17,17,17,.12); }
@@ -282,7 +282,8 @@ export default function PosljiBlok({
           .posl-root .posl-letalo-ovoj { margin-right: .45rem; }
         }
         @media (max-width: 640px) {
-          .posl-root .posl-za { flex-direction: column; gap: .35rem; align-items: stretch; }
+          /* »Za« INLINE z inputom (kot ponudba), ne zložen; input čez preostalo širino */
+          .posl-root .posl-za { flex-direction: row; gap: .5rem; align-items: center; }
           .posl-root .posl-za-l { padding-top: 0; }
           .posl-root .posl-gumb { width: 100%; }
         }
