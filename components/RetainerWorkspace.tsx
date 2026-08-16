@@ -252,6 +252,9 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   const prviRender = useRef(true);
   useEffect(() => {
     if (prviRender.current) { prviRender.current = false; return; }
+    /* korak 0 = prvi zaslon z naslovom -> NIKOLI ne skoči (title mora ostati viden);
+        scrollamo le na 1+ (Naprej). Varuje tudi pred StrictMode dvojnim efektom. */
+    if (korak === 0) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const t = window.setTimeout(() => {
       const el = document.getElementById(`rw-korak-${korak}`);
