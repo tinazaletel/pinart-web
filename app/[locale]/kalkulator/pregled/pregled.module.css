@@ -548,7 +548,8 @@
   .detailPanel { width: 100vw; padding: 4.35rem 1rem calc(6rem + env(safe-area-inset-bottom, 0px)); }
   /* SAMO naslov strani dobi udoben rob (workspace .8 + 1.3 = 2.1rem) — pasovi ostanejo
      oblikovani (blizu roba, storitvene kartice bleedajo v živi rob), ne pahnem jih noter. */
-  .topbar { padding-left: 1.1rem; padding-right: 1.1rem; box-sizing: border-box; }
+  /* enotni tekstovni rob povsod = 1.41rem (ws .35 + 1.06); tabele/orbi smejo biti širši */
+  .topbar { padding-left: 1.06rem; padding-right: 1.06rem; box-sizing: border-box; }
 }
 .resultsBand > .bandTitle { align-items: end; }
 .periodSwitch { display: flex; gap: .25rem; padding: .25rem; border: 1px solid var(--line); border-radius: 999px; background: #fff !important; }
