@@ -7027,12 +7027,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-ime small { font-weight: 500; color: rgba(17,17,17,.72); font-size: .78rem; }
         .cw .prav-podr { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.1rem; height: 2.1rem; border: 1px solid rgba(17,17,17,.2); background: transparent; color: rgba(17,17,17,.72); font-family: inherit; font-size: .76rem; font-weight: 600; border-radius: 999px; padding: 0; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s, background .15s; }
         .cw .prav-podr:hover { border-color: var(--ink); color: var(--ink); background: rgba(17,17,17,.05); }
-        .cw .prav-recept { border: 0; border-radius: 0; outline: 0; background-color: transparent; font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); padding: .3rem 1.4rem .3rem .2rem; appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .1rem center; }
-        .cw .prav-recept:focus-visible { box-shadow: inset 0 -2px 0 var(--accent); }
+        .cw .prav-recept { border: 1px solid rgba(255,255,255,.6); border-radius: 8px; outline: 0; background-color: rgba(255,255,255,.62); backdrop-filter: blur(12px) saturate(1.25); -webkit-backdrop-filter: blur(12px) saturate(1.25); box-shadow: 0 2px 8px rgba(40,25,40,.04); font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); padding: .38rem 1.5rem .38rem .7rem; appearance: none; -webkit-appearance: none; cursor: pointer; transition: border-color .15s; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .55rem center; }
+        .cw .prav-recept:focus-visible { border-color: var(--accent); }
         /* IZVZEM kompaktnih izbirnikov iz teznih .shell select globalov (font 16px!important,
            padding-right 3rem!important, velika 1.25rem kljukica) — sicer napihnejo kontrole in
            pokvarijo puscice; visja specificnost + !important povozi globalno pravilo starsa. */
-        .cw .prav-recept { font-size: .9rem !important; min-height: 0 !important; padding: .3rem 1.4rem .3rem .2rem !important; background-size: 12px 8px !important; background-position: right .1rem center !important; }
+        .cw .prav-recept { font-size: .9rem !important; min-height: 0 !important; padding: .38rem 1.5rem .38rem .7rem !important; background-size: 12px 8px !important; background-position: right .55rem center !important; }
         .cw .pisava-select { font-size: .78rem !important; min-height: 2.25rem !important; padding: 0 1.7rem 0 .9rem !important; background-size: 12px 8px !important; background-position: right .7rem center !important; }
         .cw .prav-cena { font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; min-width: 3.6rem; text-align: right; }
         .cw .prav-cena-gumb { border: 1px solid rgba(255,255,255,.6); background: rgba(255,255,255,.62); backdrop-filter: blur(12px) saturate(1.25); -webkit-backdrop-filter: blur(12px) saturate(1.25); cursor: pointer; color: var(--ink); padding: .32rem .6rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(40,25,40,.04); transition: border-color .15s, color .15s; }
@@ -7055,7 +7055,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .prav-ime { grid-area: ime; white-space: normal; }
           /* Vizualno ostaneta samo napis in puščica, dejanska dotikalna
              površina pa je WCAG-prijaznih 44 px in zapolni svoj stolpec. */
-          .cw .prav-recept { grid-area: recept; width: 100%; min-width: 0; min-height: 44px !important; padding: .7rem 1.75rem .7rem 0 !important; background-position: right .2rem center !important; }
+          .cw .prav-recept { grid-area: recept; width: 100%; min-width: 0; min-height: 44px !important; padding: .6rem 1.6rem .6rem .7rem !important; background-position: right .6rem center !important; }
           .cw .prav-cena { grid-area: cena; justify-self: end; }
           .cw .prav-podr { grid-area: podr; justify-self: end; }
           .cw .prav-vrsta-lastna .prav-lastna-akcije { grid-area: podr; }
