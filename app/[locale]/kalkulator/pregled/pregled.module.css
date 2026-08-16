@@ -1633,7 +1633,7 @@
 .goalChecklist { display: grid; grid-template-columns: minmax(16rem, .75fr) minmax(22rem, 1.25fr); column-gap: 2.5rem; align-items: start; padding: 1.5rem; }
 .goalChecklist > div { grid-column: 1; }
 .goalChecklist ul { grid-column: 2; grid-row: 1 / span 4; display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
-.goalChecklist li { position: relative; padding: .75rem .6rem .75rem 1.7rem; border-bottom: 1px solid var(--line); background: #fff; transition: background-color .18s ease; }
+.goalChecklist li { position: relative; padding: .75rem .6rem .75rem 1.7rem; border-bottom: 1px solid color-mix(in oklch, var(--ink) 6%, transparent); background: transparent; transition: background-color .18s ease; }
 .goalChecklist li:hover { background: oklch(96.5% .018 87); }
 .goalChecklist li::before { content: '✓'; position: absolute; left: 0; color: oklch(58% .14 155); font-weight: 900; }
 .goalChecklist a { grid-column: 1; width: max-content; margin-top: .9rem; color: inherit; font-weight: 800; text-decoration: none; }
