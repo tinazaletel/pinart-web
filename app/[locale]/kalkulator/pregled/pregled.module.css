@@ -1814,6 +1814,7 @@
   .priceEditor > header > div:last-child { justify-content: flex-end; }
   /* proti horizontalnemu prelivu (stran preširoka/odrezana) */
   .priceListsPage, .priceListsLayout, .priceEditor, .priceMobBar, .addPriceService { min-width: 0; }
+  .priceListsPage { padding-left: 1.06rem; padding-right: 1.06rem; box-sizing: border-box; }
   .priceEditor > header h2 { font-size: 1.6rem; overflow-wrap: anywhere; }
   .addPriceService input { min-width: 0; max-width: 100%; }
   .priceEditor { overflow-x: clip; }
