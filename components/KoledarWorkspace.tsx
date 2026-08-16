@@ -699,7 +699,7 @@ export default function KoledarWorkspace() {
           --kol-accent-soft:oklch(96% .03 297);
           --kol-zdaj:oklch(58% .19 25);
           --kol-crta:oklch(93.5% .005 90);
-          --kol-podlaga:var(--paper);
+          --kol-podlaga:oklch(100% 0 0);
           --kol-ura-sirina:3.5rem}
         .kol *{box-sizing:border-box}
         .kol-rob{padding-left:clamp(.6rem,2vw,1.1rem);padding-right:clamp(.6rem,2vw,1.1rem)}
