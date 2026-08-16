@@ -273,7 +273,7 @@ export default function PosljiBlok({
         .posl-root .posl-kontakt-opt span { color: rgba(17,17,17,.6); }
         .posl-root .posl-kontakt-opt:hover { background: var(--posl-paper); }
         /* Primarni gumb: črni pill z oživljenimi besedilnimi stanji. Vodoravno centriran. */
-        .posl-root .posl-akcija { margin-top: 1.05rem; }
+        .posl-root .posl-akcija { margin-top: .6rem; }
         .posl-root .posl-gumb-vrsta { display: flex; justify-content: center; }
         .posl-root .posl-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-width: 11rem; min-height: 2.85rem; box-sizing: border-box; font-family: inherit; font-size: .92rem; font-weight: 600; letter-spacing: .01em; cursor: pointer; border-radius: 999px; padding: .8rem 2rem; border: 1px solid var(--posl-ink); background: var(--posl-ink); color: var(--posl-paper); transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s cubic-bezier(.22,1,.36,1), opacity .3s ease, background .55s cubic-bezier(.22,1,.36,1), border-color .55s cubic-bezier(.22,1,.36,1), color .55s cubic-bezier(.22,1,.36,1); }
         .posl-root .posl-gumb:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(35,18,45,.2); }
@@ -297,7 +297,7 @@ export default function PosljiBlok({
         /* potrditveno besedilo je vedno prisotno (rezervira prostor), ob mirovanju
            samo nevidno — tako menjava faze ne premakne gumba navpično */
         .posl-root .posl-potrdi-txt { display: block; text-align: center; font-size: .88rem; color: var(--posl-ink); line-height: 1.5; margin-bottom: .7rem; }
-        .posl-root .posl-potrdi-txt.je-skrit { visibility: hidden; }
+        .posl-root .posl-potrdi-txt.je-skrit { display: none; }
         .posl-root .posl-potrdi-txt b { font-weight: 700; word-break: break-word; }
         .posl-root .posl-potrdi-gumbi { display: flex; align-items: center; justify-content: center; gap: 1.1rem; flex-wrap: wrap; }
         .posl-root .posl-status { margin: .6rem 0 0; font-size: .85rem; color: var(--posl-ink); text-align: center; }

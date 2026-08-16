@@ -10189,7 +10189,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
       <div className={'noga' + (vChatu ? ' noga-ob-panelu' : '') + (onboardingOdprt || vecMoznosti ? ' noga-skrita' : '')}>
         <div className="noga-c">
-          <div className="noga-gumbi">
+          <div className="noga-gumbi" style={{ flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
             {(korak > 0 || (korak === 0 && !uvodChat && !klasicnaOblika)) && (
               <button type="button" className="gumb-nazaj" aria-label={L('Nazaj', 'Back')}
                 onClick={korak === 0
@@ -10225,7 +10225,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <ArrowDown size={16} weight="bold" aria-hidden />
               </button>
             ) : (
-              <div className="noga-koncna">
+              <div className="noga-koncna" style={{ flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
                 <button type="button" className="nazaj-g nazaj-g-ikona" onClick={() => setKorak(0)} aria-label={L('Uredi od začetka', 'Edit from the start')} title={L('Uredi od začetka', 'Edit from the start')}><PencilSimple size={16} weight="bold" aria-hidden /></button>
                 <button type="button" className="nazaj-g nova" onClick={novaPonudba}><Plus size={15} weight="bold" aria-hidden /> {L('Nova ponudba', 'New quote')}</button>
               </div>

@@ -8,7 +8,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf, Plus } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf, Plus, ArrowUp } from '@phosphor-icons/react';
 import GumbNazaj from '@/components/ui/GumbNazaj';
 import GumbPrimarni from '@/components/ui/GumbPrimarni';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -1251,6 +1251,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     {/* Noga FIKSNO na dnu strani (kot retainer/ponudba): puscica-krog + pilule.
         Izven animirane sekcije, da je position:fixed vezan na stran. */}
     {pogled === 'zakljucek' && <div className="pg-noga"><div className="pg-noga-gumbi" style={{ flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+      <button type="button" className="pg-noga-pill pg-noga-ikona" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label={L('Na vrh', 'To top')} title={L('Na vrh', 'To top')}><ArrowUp size={17} weight="bold" aria-hidden /></button>
       <button type="button" className="pg-noga-pill pg-noga-ikona" onClick={() => setPogled('dokument')} aria-label={L('Uredi pogodbo', 'Edit contract')} title={L('Uredi pogodbo', 'Edit contract')}><PencilSimple size={16} weight="bold" aria-hidden /></button>
       <button type="button" className="pg-noga-pill nova" onClick={novaPogodba}><Plus size={15} weight="bold" aria-hidden /> {L('Nova pogodba', 'New contract')}</button>
     </div></div>}
