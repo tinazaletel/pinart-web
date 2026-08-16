@@ -1783,7 +1783,7 @@
 
 @media (max-width: 680px) {
   /* Mobilno: manj visine — tesnejsi odmiki, manjsi naslovi/dial (Tina: »prevec visine«). */
-  .goalsPage { gap: .7rem; }
+  .goalsPage { gap: .7rem; padding-left: .5rem; padding-right: .5rem; box-sizing: border-box; }
   .goalOverview { grid-template-columns: 1fr auto; align-items: center; gap: .9rem 1rem; min-height: 0; padding: 1.1rem 1.15rem; }
   .goalOverview h2 { font-size: 2.5rem; }
   .goalOverview > div:first-child > p:last-child { font-size: .78rem; }
