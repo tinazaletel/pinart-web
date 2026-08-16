@@ -175,6 +175,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   }, []);
 
   const privzetiDdv = () => ddvZavezanec ? String(clamp(ddvStopnja, 0, 30)) : '22';
+  const [poskus, setPoskus] = useState(false);
   const novaVrstica = (): Vrstica => ({ opis: '', kolicina: '1', cena: '', popust: '', ddv: privzetiDdv() });
 
   const selectedOffer = offers.find(item => item.id === offerId);
@@ -713,17 +714,19 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       </div>
       <Toast sporocilo={obvestilo} onClose={() => setObvestilo('')} ton="napaka" />
       <Toast sporocilo={postaObvestilo?.t || ''} onClose={() => setPostaObvestilo(null)} ton={postaObvestilo?.ok ? 'uspeh' : 'napaka'} />
-      <form id="rc-obrazec-form" noValidate onSubmit={event => {
+      <form id="rc-obrazec-form" className={poskus ? 'rc-poskus' : undefined} noValidate onSubmit={event => {
         event.preventDefault();
         const obrazec = event.currentTarget;
         const manjka = obrazec.querySelector<HTMLInputElement>(':invalid');
         if (manjka) {
+          setPoskus(true);
           manjka.focus();
           manjka.scrollIntoView({ block: 'center', behavior: 'smooth' });
           const ime = (manjka.closest('label')?.textContent || '').trim().replace(/\s+/g, ' ') || L('polje', 'field');
           setObvestilo(L(`Izpolni polje: ${ime}`, `Please fill out: ${ime}`));
           return;
         }
+        setPoskus(false);
         setPogled('zakljucek');
       }}>
         {/* vrsta dokumenta: RAČUN (privzeto) ali PREDRAČUN (poziv k placilu vnaprej,
@@ -969,6 +972,9 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       @media (max-width:640px){.rc{padding-left:1.06rem;padding-right:1.06rem;box-sizing:border-box}}
       .rc .rc-postavke{min-width:0;padding:1rem;border:1px solid rgba(255,255,255,.6);border-radius:.9rem;background:rgba(255,255,255,.4);-webkit-backdrop-filter:blur(16px) saturate(1.35);backdrop-filter:blur(16px) saturate(1.35);box-shadow:0 8px 28px rgba(40,25,40,.06)}
       .rc .rc-postavke *{box-sizing:border-box;min-width:0}
+      /* prazna obvezna polja ob poskusu oddaje = svetlo rdeča (kot opozorilo/toast) */
+      .rc .rc-poskus input:invalid,.rc .rc-poskus select:invalid,.rc .rc-poskus textarea:invalid{background:#fdeaea;border-color:#e5484d;box-shadow:0 0 0 1px rgba(229,72,77,.35)}
+      .rc .rc-poskus input:invalid::placeholder{color:#cf8b8b}
       .rc .rc-post-glava{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap}
       .rc .rc-ddv-toggle{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:650;color:var(--ink);cursor:pointer;white-space:nowrap}
       .rc .rc-valuta{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:650;color:var(--ink);white-space:nowrap}
