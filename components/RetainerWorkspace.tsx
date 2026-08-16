@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
-import { User, TextAa, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp, TextB, TextItalic, PenNib, Paperclip, X } from '@phosphor-icons/react';
+import { User, TextAa, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp, TextB, TextItalic, PenNib, Paperclip, X, Plus } from '@phosphor-icons/react';
 import { getBusinessDocumentUrl, saveRetainerDraft, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { loadFlowData } from '@/lib/pinartFlowStore';
 import PosljiBlok from '@/components/PosljiBlok';
@@ -1021,8 +1021,8 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
           )}
           {pogled === 'zakljucek' && (
             <div className="rw-noga-koncna">
-              <button type="button" className="rw-noga-pill" onClick={urediOdZacetka}>← {tr('Uredi od začetka', 'Edit from start')}</button>
-              <button type="button" className="rw-noga-pill nova" onClick={novaPonudba}>↺ {tr('Nova ponudba', 'New proposal')}</button>
+              <button type="button" className="rw-noga-pill rw-noga-ikona" onClick={urediOdZacetka} aria-label={tr('Uredi od začetka', 'Edit from start')} title={tr('Uredi od začetka', 'Edit from start')}><PencilSimple size={16} weight="bold" aria-hidden /></button>
+              <button type="button" className="rw-noga-pill nova" onClick={novaPonudba}><Plus size={15} weight="bold" aria-hidden /> {tr('Nova ponudba', 'New proposal')}</button>
             </div>
           )}
         </div>
@@ -1274,8 +1274,9 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         @keyframes rwKljukRis{to{stroke-dashoffset:0}}
         @media (prefers-reduced-motion:reduce){.rw-zakljucek-lik .pon-telo,.rw-zakljucek-lik .pon-senca,.rw-zakljucek-lik .pon-kljuk-znak,.rw-zakljucek-lik .pon-kljuk{animation:none}.rw-zakljucek-lik .pon-kljuk{stroke-dashoffset:0}}
         .rw-prenosi{display:flex;flex-wrap:wrap;justify-content:center;gap:.9rem 1.6rem;margin:1.4rem auto 0}
-        .rw-noga-koncna{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;justify-content:center}
-        .rw-noga-pill{font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.72);border:1px solid var(--ink);border-radius:999px;padding:.65rem 1.3rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
+        .rw-noga-koncna{display:flex;align-items:center;gap:.7rem;flex-wrap:nowrap;justify-content:center}
+        .rw-noga-pill{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;font-family:inherit;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(17,17,17,.72);border:1px solid var(--ink);border-radius:999px;padding:.65rem 1.3rem;background:none;transition:background .18s ease,color .18s ease,transform .2s cubic-bezier(.23,1,.32,1)}
+        .rw-noga-ikona{width:3rem;height:3rem;padding:0;gap:0;border-radius:50%;flex:0 0 auto}
         .rw-noga-pill:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
         .rw-noga-pill.nova{color:var(--accent);border-color:var(--accent)}
         .rw-noga-pill.nova:hover{background:var(--accent);color:var(--paper)}

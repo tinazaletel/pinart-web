@@ -7634,6 +7634,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .noga-koncna { display: flex; align-items: center; gap: .9rem; }
         .cw .noga .noga-koncna .nazaj-g { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; border: 1px solid var(--ink); border-radius: 999px; padding: .95rem 1.5rem; transition: background .18s ease, color .18s ease, transform .2s cubic-bezier(0.23,1,0.32,1); }
         .cw .noga .noga-koncna .nazaj-g:hover { background: var(--ink); color: var(--paper); transform: translateY(-2px); }
+        /* Uredi = krogec z ikono (kot gumb-nazaj), brez teksta; vsi trije v eni vrsti */
+        .cw .noga .noga-koncna .nazaj-g-ikona { width: 3rem; height: 3rem; padding: 0; gap: 0; border-radius: 50%; flex: 0 0 auto; }
         .cw .noga .nazaj-g.nova { color: var(--accent); border-color: var(--accent); }
         .cw .noga .nazaj-g.nova:hover { background: var(--accent); color: var(--paper); }
         @media (max-width: 640px) {
@@ -10224,8 +10226,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               </button>
             ) : (
               <div className="noga-koncna">
-                <button type="button" className="nazaj-g" onClick={() => setKorak(0)}><PencilSimple size={15} weight="bold" aria-hidden /> {L('Uredi od začetka', 'Edit from the start')}</button>
-                <button type="button" className="nazaj-g nova" onClick={novaPonudba}><ArrowCounterClockwise size={15} weight="bold" aria-hidden /> {L('Nova ponudba', 'New quote')}</button>
+                <button type="button" className="nazaj-g nazaj-g-ikona" onClick={() => setKorak(0)} aria-label={L('Uredi od začetka', 'Edit from the start')} title={L('Uredi od začetka', 'Edit from the start')}><PencilSimple size={16} weight="bold" aria-hidden /></button>
+                <button type="button" className="nazaj-g nova" onClick={novaPonudba}><Plus size={15} weight="bold" aria-hidden /> {L('Nova ponudba', 'New quote')}</button>
               </div>
             )}
           </div>
