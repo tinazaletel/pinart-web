@@ -969,7 +969,10 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       /* rc- = novi stili obrazca za racun; pazi na .shell pravila (min-height 2.75rem
          na inputih, select padding-right 3rem !important) — mere so temu prilagojene. */
       .rc{min-width:0;max-width:100%;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
-      @media (max-width:640px){.rc{padding-left:1.06rem;padding-right:1.06rem;box-sizing:border-box}}
+      @media (max-width:640px){.rc{padding-left:1.06rem;padding-right:1.06rem;box-sizing:border-box}
+        /* obrazec kartica bliže robu = ENAKO kot pogodba (.pg-vstop-panel); višja specifičnost
+           kot modul .invoiceCreator, da bleed zagotovo velja */
+        .rc .rc-obrazec{padding:1.1rem;border-radius:14px;margin-left:-.5rem;margin-right:-.5rem;max-width:none;box-sizing:border-box}}
       .rc .rc-postavke{min-width:0;padding:1rem;border:1px solid rgba(255,255,255,.6);border-radius:.9rem;background:rgba(255,255,255,.4);-webkit-backdrop-filter:blur(16px) saturate(1.35);backdrop-filter:blur(16px) saturate(1.35);box-shadow:0 8px 28px rgba(40,25,40,.06)}
       .rc .rc-postavke *{box-sizing:border-box;min-width:0}
       /* prazna obvezna polja ob poskusu oddaje = svetlo rdeča (kot opozorilo/toast) */
