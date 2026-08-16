@@ -1121,7 +1121,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw.rw-lupina .rw-vsebina{padding-top:.6rem}
         /* mobilni L/R odmik: 92vw je dal komaj 4vw ob strani (vsebina se je dotikala roba);
            na telefonu damo jasen enakomeren razmik levo=desno kot na nadzorni plošči */
-        @media (max-width:640px){.rw-vsebina{width:100%;padding-left:1.06rem;padding-right:1.06rem;box-sizing:border-box}.rw-kartica,.rw-povz,.rw-mreza{padding:1.1rem;border-radius:14px}}
+        @media (max-width:640px){.rw-vsebina{width:100%;padding-left:1.06rem;padding-right:1.06rem;box-sizing:border-box}}
         .rw-kicker{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 .3rem}
         .rw-h1{font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1;letter-spacing:-.012em;margin:0 0 .6rem;color:var(--ink)}
         .rw-uvod{font-size:1rem;line-height:1.55;color:rgba(17,17,17,.72);margin:0 0 2.4rem;max-width:34rem}
@@ -1360,6 +1360,10 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         /* ── Mobilni odrez po desni: koren .rw ima overflow-x:clip, zato NIC ne sme biti sirse od .rw-vsebina (min(700px,92vw)). ── */
         /* .rw-platno (min(960px,96vw)) in .rw-predogled (min(880px,94vw)) sta bila sirsa od starsa in centrirana (translateX) -> desni rob je gledal cez in bil odrezan. */
         @media (max-width:640px){
+          /* Kartice bliže robu kot tekst (kot ponudba): negativni rob potegne iz .rw-vsebina
+             paddinga (1.06) → kartica na ~0.91rem, tekst ostane 1.41rem. + manjši padding/radij
+             kot kalkulator. TO pravilo je ZA osnovnimi (.rw-kartica radij 20px, v.1227), zato velja. */
+          .rw-kartica,.rw-povz,.rw-mreza{padding:1.1rem;border-radius:14px;margin-left:-.5rem;margin-right:-.5rem}
           .rw-obseg-tabela{grid-template-columns:minmax(0,1fr);min-width:0}
           .rw-obseg-tabela .rw-ov{min-width:0;max-width:100%;overflow:hidden}
           .rw-platno{width:min(960px,100%);max-width:100%}
