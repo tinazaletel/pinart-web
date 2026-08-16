@@ -29,7 +29,7 @@
 .progressWrap { display: grid; justify-items: center; align-content: center; gap: .5rem; }
 .progressLabel { max-width: 9rem; color: color-mix(in oklch, var(--ink) 68%, transparent); font-size: .72rem; line-height: 1.25; text-align: center; text-wrap: balance; }
 .canvas { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-areas: 'partners partners activities activities value value relationships relationships segments segments' 'partners partners resources resources value value channels channels segments segments' 'costs costs costs costs costs revenue revenue revenue revenue revenue'; gap: .75rem; }
-.canvas article { position: relative; isolation: isolate; overflow: hidden; min-height: 13rem; display: grid; grid-template-rows: auto auto 1fr; gap: .7rem; padding: 1.1rem; border: 1px solid oklch(83% .025 80 / .8); border-radius: 1.25rem; background: linear-gradient(145deg, oklch(98% .01 87), oklch(95% .025 87)); background-size: 240% 240%; animation: canvasFlow 18s ease-in-out infinite; transition: transform .2s ease, box-shadow .2s ease; }
+.canvas article { position: relative; isolation: isolate; overflow: hidden; min-height: 13rem; display: grid; grid-template-rows: auto auto 1fr; gap: .7rem; padding: 1.1rem; border: 0; border-radius: 1.25rem; background: linear-gradient(145deg, oklch(98% .01 87), oklch(95% .025 87)); background-size: 240% 240%; animation: canvasFlow 18s ease-in-out infinite; transition: transform .2s ease, box-shadow .2s ease; }
 /* Animiran, prelivajoc gradient (aurora) namesto outline krogov (Tina). */
 .canvas article::before { content: ''; position: absolute; z-index: -1; inset: -40%; background: radial-gradient(circle at 32% 28%, oklch(100% 0 0 / .5), transparent 56%); animation: canvasAurora 22s ease-in-out infinite; pointer-events: none; }
 .canvas article:nth-of-type(2n)::before { animation-duration: 27s; animation-direction: reverse; }
@@ -97,7 +97,7 @@
 
 .canvasGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1rem; }
 
-.newCanvasCard { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: .25rem; min-height: 10.5rem; padding: 1.3rem; border: 1.5px dashed color-mix(in oklch, oklch(58% .2 297) 40%, var(--line)); border-radius: 1.35rem; background: color-mix(in oklch, oklch(58% .2 297) 5%, rgba(255,255,255,.45)); color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
+.newCanvasCard { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: .25rem; min-height: 10.5rem; padding: 1.3rem; border: 1.5px dashed var(--line); border-radius: 1.35rem; background: rgba(255,255,255,.45); color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
 .newCanvasCard:hover:not(:disabled) { transform: translateY(-2px); background: color-mix(in oklch, oklch(58% .2 297) 11%, rgba(255,255,255,.6)); box-shadow: 0 12px 30px oklch(50% .12 285 / .14); }
 .newCanvasCard:disabled { opacity: .5; cursor: not-allowed; }
 .newCanvasPlus { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; margin-bottom: .35rem; border-radius: 50%; background: oklch(58% .2 297); color: #fff; font-size: 1.5rem; line-height: 1; }
