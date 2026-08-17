@@ -13,7 +13,7 @@
 
 import { useLocale } from 'next-intl';
 import MobTabs from '@/components/MobTabs';
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import {
   CalendarPlus,
   Receipt,
@@ -206,6 +206,10 @@ export default function KoledarWorkspace() {
   const [naloge, setNaloge] = useState<Naloga[]>([]);
   const [pokaziNaloge, setPokaziNaloge] = useState(false);
   const [iskanje, setIskanje] = useState('');
+  /* iskanje je privzeto strnjeno v ikono; klik ga razširi -> orodna vrstica ostane ENA vrsta */
+  const [isciOdprt, setIsciOdprt] = useState(false);
+  const isciRef = useRef<HTMLInputElement | null>(null);
+  useEffect(() => { if (isciOdprt) isciRef.current?.focus(); }, [isciOdprt]);
   const [, setUra] = useState(0); // periodičen re-render (vsako minuto), da črta »zdaj« ostane točna
 
   const [obrazecOdprt, setObrazecOdprt] = useState(false);
@@ -640,9 +644,11 @@ export default function KoledarWorkspace() {
               <span>{zapadliRacuni.length} {L('zapadlo', 'overdue')}</span>
             </button>
           )}
-          <div className="kol-isci">
-            <MagnifyingGlass size={16} weight="bold" aria-hidden />
-            <input value={iskanje} onChange={(e) => setIskanje(e.target.value)} placeholder={L('Iskanje', 'Search')} aria-label={L('Filter in iskanje', 'Filter and search')} />
+          <div className={`kol-isci${isciOdprt || iskanje ? ' odprt' : ''}`}>
+            <button type="button" className="kol-isci-gumb" aria-label={L('Iskanje', 'Search')} aria-expanded={isciOdprt || !!iskanje} onClick={() => { if (isciOdprt && !iskanje) { setIsciOdprt(false); } else { setIsciOdprt(true); } }}>
+              <MagnifyingGlass size={16} weight="bold" aria-hidden />
+            </button>
+            <input ref={isciRef} value={iskanje} onChange={(e) => setIskanje(e.target.value)} onBlur={() => { if (!iskanje) setIsciOdprt(false); }} placeholder={L('Iskanje', 'Search')} aria-label={L('Filter in iskanje', 'Filter and search')} tabIndex={isciOdprt || iskanje ? 0 : -1} />
           </div>
         </div>
       </div>
@@ -721,11 +727,18 @@ export default function KoledarWorkspace() {
         .kol-seg button[data-aktiven='true']{opacity:1;color:var(--kol-accent);border-bottom-color:var(--kol-accent)}
 
         /* sekundarno: akcije (vizualno tišje, manjše) */
-        .kol-ustvari{flex:none;display:inline-flex;align-items:center;gap:.3rem;padding:.4rem .8rem;border:none;border-radius:999px;background:var(--kol-accent);color:#fff;font:650 .74rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
-        .kol-ustvari:hover{filter:brightness(1.06)}
-        .kol-isci{flex:1 1 12rem;min-width:7rem;display:flex;align-items:center;gap:.5rem;min-height:2.5rem;padding:0 .9rem;border:1px solid var(--line);border-radius:999px;background:oklch(98% .008 87 / .92);color:var(--ink)}
-        .kol-isci svg{flex:none;opacity:.5}
-        .kol-isci input{width:100%;min-width:0;border:none;background:transparent;outline:none;font:500 .78rem var(--font-sans),sans-serif;color:var(--ink)}
+        .kol-ustvari{flex:none;display:inline-flex;align-items:center;gap:.3rem;padding:.4rem .8rem;border:none;border-radius:999px;background:var(--ink);color:#fff;font:650 .74rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
+        .kol-ustvari:hover{filter:brightness(1.12)}
+        /* Iskanje: strnjeno v okroglo ikono; klik ga razširi v vnos (kot arhiv) -> orodna vrstica ostane ENA. */
+        .kol-isci{flex:none;display:flex;align-items:center;gap:.25rem;min-height:2.5rem}
+        .kol-isci-gumb{flex:none;display:grid;place-items:center;width:2.5rem;height:2.5rem;padding:0;border:1px solid var(--line);border-radius:999px;background:oklch(98% .008 87 / .92);color:var(--ink);cursor:pointer;transition:background .15s,color .15s}
+        .kol-isci-gumb:hover{background:var(--ink);color:#fff}
+        .kol-isci-gumb svg{opacity:.7}
+        .kol-isci input{width:0;min-width:0;padding:0;border:0;background:transparent;outline:none;font:500 .78rem var(--font-sans),sans-serif;color:var(--ink);opacity:0;transition:width .26s cubic-bezier(.2,.8,.3,1),opacity .18s,padding .2s}
+        .kol-isci.odprt{border:1px solid var(--line);border-radius:999px;background:oklch(98% .008 87 / .92);padding-right:.55rem}
+        .kol-isci.odprt .kol-isci-gumb{border:0;background:transparent;color:color-mix(in oklch,var(--ink) 55%,transparent)}
+        .kol-isci.odprt .kol-isci-gumb:hover{background:transparent;color:var(--ink)}
+        .kol-isci.odprt input{width:11rem;max-width:46vw;opacity:1;padding:.4rem .2rem}
         /* toggle-čip z OČITNIM vklop/izklop stanjem: izklop = tih outline, vklop = poln akcent */
         .kol-naloge-cip{flex:none;display:inline-flex;align-items:center;gap:.3rem;padding:.4rem .7rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);opacity:.6;font:600 .72rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
         .kol-naloge-cip:hover{opacity:.9;border-color:var(--kol-accent)}
@@ -857,7 +870,8 @@ export default function KoledarWorkspace() {
         @media (max-width:700px){
           .kol-orodna{gap:.5rem .7rem}
           .kol-akcije{width:100%;margin-left:0}
-          .kol-isci{flex-basis:100%}
+          .kol-isci.odprt{flex:1 1 100%}
+          .kol-isci.odprt input{width:100%;max-width:none}
           .kol-teden-notri{min-width:46rem}
           .kol-obseg{font-size:.86rem;margin-left:.25rem}
           .kol-mesec-celica{min-height:4.6rem;padding:.2rem}
