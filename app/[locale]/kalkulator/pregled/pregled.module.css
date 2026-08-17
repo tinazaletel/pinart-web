@@ -2394,7 +2394,10 @@
     position: fixed; z-index: 95; top: 0; right: 0; left: auto;
     width: min(20rem, 86vw); height: 100dvh; max-height: none;
     display: flex; flex-direction: column; gap: 0;
-    padding: 3.6rem .9rem 1rem; overflow: hidden;
+    padding: 3.6rem .9rem 1rem;
+    /* prej overflow:hidden -> ko je skupina razprta, ni šlo skrolati do spodnjih (Načrt).
+       Zdaj drsi navpično; harmonika (ena skupina odprta) meni tudi skrajša. */
+    overflow-y: auto; overscroll-behavior: contain;
     border: 0; border-left: 1px solid var(--line); border-radius: 0;
     box-shadow: -1rem 0 3rem oklch(20% .03 55 / .16);
     animation: predalDrsi .28s cubic-bezier(.22, 1, .36, 1);
