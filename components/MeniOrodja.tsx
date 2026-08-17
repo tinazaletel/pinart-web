@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { PersonSimple } from '@phosphor-icons/react';
 import FlowUkazi from './FlowUkazi';
 import DashboardHeaderTools from './DashboardHeaderTools';
@@ -17,9 +17,12 @@ export default function MeniOrodja() {
   const base = pathname.startsWith('/en/') ? '/en' : '';
   const jeEn = base === '/en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
+  const router = useRouter();
+  /* Na delovnih straneh (DashboardSidebar) kalkulatorjevega a11y-panela ni, zato
+     je dispatch dogodka mrtev — peljimo na informativno stran /dostopnost. */
   const odpriDostopnost = (event: React.MouseEvent<HTMLButtonElement>) => {
-    window.dispatchEvent(new CustomEvent('pinart:odpri-dostopnost'));
     event.currentTarget.closest('details')?.removeAttribute('open');
+    router.push(`${base}/dostopnost`);
   };
 
   return (
