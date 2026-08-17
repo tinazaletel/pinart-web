@@ -154,6 +154,9 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
         .flnav-drawer > a { font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; font-weight: 600; color: var(--ink); text-decoration: none; padding: .95rem .3rem; border-bottom: 1px solid rgba(17,17,17,.08); }
         .flnav-drawer .flnav-login, .flnav-drawer .flnav-signup { text-align: center; margin-top: .9rem; border-bottom: 0; font-size: .95rem; }
         .flnav-drawer .flnav-login { border: 1px solid rgba(17,17,17,.2); }
+        /* .flnav-drawer > a nastavi color:var(--ink) -> je prevozil bel tekst na signupu
+           (temno na temnem = prazen gumb). Vrni belo besedilo na CTA. */
+        .flnav-drawer .flnav-signup { color: var(--paper); }
 
         @media (max-width: 900px) {
           .flnav-links, .flnav-actions { display: none; }
