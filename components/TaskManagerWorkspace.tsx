@@ -404,6 +404,11 @@ export default function TaskManagerWorkspace() {
   const [mobilniFilterOdprt, setMobilniFilterOdprt] = useState(false);
   /* skupni »Filter« (oznake + projekti) v slide-up listu -> orodna vrstica ostane ENA */
   const [filterVecOdprt, setFilterVecOdprt] = useState(false);
+  /* Naloge veliko renderjajo iz datuma/časa (Date.now, danesStr) + localStorage -> strežniški
+     in klientski render se razlikujeta = hidracijski crash v produkciji. Poln render šele po
+     montaži, da sta SSR in prvi klient render enaka (kot Koledar). */
+  const [montiran, setMontiran] = useState(false);
+  useEffect(() => { setMontiran(true); }, []);
   /* prosto besedilo za novo oznako v panelu Podrobnosti naloge */
   const [novaOznaka, setNovaOznaka] = useState('');
   const [hitroOdprt, setHitroOdprt] = useState(false);
@@ -1062,6 +1067,9 @@ export default function TaskManagerWorkspace() {
   /* stranka -> ime, za znacko na kartici + urejanje naloge */
   const odprtaNaloga = naloge.find((n) => n.id === odprtaNalogaId) || null;
   const aktivniSodelavci = sodelavci.filter((s) => s.aktiven);
+
+  /* do montaže vrni prazen .tm (SSR = prvi klient render) -> brez hidracijskega neujemanja/crasha */
+  if (!montiran) return <div className="tm" aria-hidden="true" />;
 
   return (
     <div className="tm">
