@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { MagnifyingGlass, Globe, Phone, EnvelopeSimple, PencilSimple, CaretLeft, Trash } from '@phosphor-icons/react';
+import { MagnifyingGlass, Globe, Phone, EnvelopeSimple, PencilSimple, CaretLeft, Trash, DownloadSimple, UploadSimple } from '@phosphor-icons/react';
 import Paginacija from '@/components/Paginacija';
 import IskalnikMob from '@/components/IskalnikMob';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -15,6 +15,39 @@ import { preberiDnevnik, shraniDnevnik, zabeleziInterakcijo, DNEVNIK_TIPI, dnevn
 /* Ikone poenotene na Phosphor. Inline fill/stroke preglasi stare stroke-based
    CSS pravila (fill:none), da so Phosphor ikone vidne. */
 const IKONA_SLOG = { fill: 'currentColor', stroke: 'none' } as const;
+
+/* ── CSV uvoz/izvoz strank ──────────────────────────────────────────────────
+   Izvoz: BOM + CRLF, da Excel takoj pravilno odpre šumnike. Uvoz: zazna ločilo
+   (, ali ;), spoštuje narekovaje, prepozna glavo po ključnih besedah (sicer
+   pozicijsko), dedup po imenu. */
+const csvCel = (v: string): string => (/[",;\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v);
+function zaznajLocilo(text: string): string {
+  const prva = text.split(/\r?\n/, 1)[0] || '';
+  return prva.split(';').length > prva.split(',').length ? ';' : ',';
+}
+function razcleniCsv(text: string, loc: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = '';
+  let vNar = false;
+  for (let i = 0; i < text.length; i += 1) {
+    const c = text[i];
+    if (vNar) {
+      if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i += 1; } else vNar = false; }
+      else cell += c;
+    } else if (c === '"') vNar = true;
+    else if (c === loc) { row.push(cell); cell = ''; }
+    else if (c === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+    else if (c !== '\r') cell += c;
+  }
+  if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(x => x.trim() !== ''));
+}
+function najdiStolpec(glava: string[], kljuci: string[]): number {
+  const norm = glava.map(h => h.trim().toLowerCase());
+  for (const k of kljuci) { const i = norm.findIndex(h => h.includes(k)); if (i >= 0) return i; }
+  return -1;
+}
 
 /* status projekta (ponudba => projekt) — ista beseda/odtenek kot v ProjectsWorkspace
    (projectStatusInfo), da je jezik med "stranka" in "projekt" strani enoten */
@@ -278,6 +311,64 @@ export default function ClientWorkspace() {
     saveFlowCollection('clients', next);
     localStorage.setItem('pinart-kalkulator-narocniki', JSON.stringify(next.map(item => ({ ime: item.name, email: item.email, oseba: item.contact, naslov: item.address, davcna: item.tax, splet: item.website }))));
   };
+  /* Izvoz: CSV (Excel-varen: BOM + CRLF). Izvozi VSE stranke, ne le vidnih. */
+  const izvoziStranke = () => {
+    const glave = ['Ime', 'E-pošta', 'Kontaktna oseba', 'Telefon', 'Davčna', 'Naslov', 'Spletna stran'];
+    const telo = clients.map(c => [c.name, c.email || '', c.contact || '', c.phone || '', c.tax || '', c.address || '', c.website || '']);
+    const csv = [glave, ...telo].map(r => r.map(csvCel).join(',')).join('\r\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `stranke-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  };
+  /* Uvoz: izbereš CSV -> doda NOVE stranke (dedup po imenu). Ne prepiše obstoječih. */
+  const uvoziStranke = () => {
+    if (samoOgled) return;
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = '.csv,text/csv,text/plain';
+    inp.onchange = () => {
+      const file = inp.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const text = String(reader.result || '');
+          const rows = razcleniCsv(text, zaznajLocilo(text));
+          if (!rows.length) { window.alert(L('Datoteka je prazna.', 'The file is empty.')); return; }
+          const glava = rows[0];
+          const iName0 = najdiStolpec(glava, ['ime', 'naziv', 'name', 'stranka', 'podjetje']);
+          const imaGlavo = iName0 >= 0 || glava.some(h => /mail|telefon|phone|naslov|davčn|davcn|kontakt|web|splet/i.test(h));
+          const telo = imaGlavo ? rows.slice(1) : rows;
+          const col = (kljuci: string[], poz: number) => (imaGlavo ? najdiStolpec(glava, kljuci) : poz);
+          const iName = imaGlavo ? (iName0 >= 0 ? iName0 : 0) : 0;
+          const iEmail = col(['mail', 'email', 'pošt', 'post'], 1);
+          const iContact = col(['kontakt', 'oseba', 'contact'], 2);
+          const iPhone = col(['telefon', 'phone', 'tel'], 3);
+          const iTax = col(['davčn', 'davcn', 'tax', 'vat'], 4);
+          const iAddr = col(['naslov', 'address'], 5);
+          const iWeb = col(['splet', 'web', 'url', 'stran'], 6);
+          const val = (r: string[], i: number) => (i >= 0 && r[i] ? r[i].trim() : '');
+          const obstojeca = new Set(clients.map(c => c.name.trim().toLowerCase()));
+          const dodani: Client[] = [];
+          for (const r of telo) {
+            const name = val(r, iName);
+            if (!name || obstojeca.has(name.toLowerCase())) continue;
+            obstojeca.add(name.toLowerCase());
+            dodani.push({ id: crypto.randomUUID(), name, email: val(r, iEmail) || undefined, contact: val(r, iContact) || undefined, phone: val(r, iPhone) || undefined, address: val(r, iAddr) || undefined, tax: val(r, iTax) || undefined, website: val(r, iWeb) || undefined });
+          }
+          if (!dodani.length) { window.alert(L('Ni novih strank za uvoz (vse že obstajajo ali manjka ime).', 'No new clients to import (all exist already or the name is missing).')); return; }
+          persist([...dodani, ...clients]);
+          window.alert(L(`Uvoženih ${dodani.length} strank.`, `Imported ${dodani.length} clients.`));
+        } catch { window.alert(L('Uvoz ni uspel — preveri, da je datoteka CSV.', 'Import failed — please check the CSV file.')); }
+      };
+      reader.readAsText(file, 'utf-8');
+    };
+    inp.click();
+  };
   const save = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); const data = new FormData(event.currentTarget); const client: Client = { id: editing?.id || crypto.randomUUID(), name: String(data.get('name')), email: String(data.get('email') || ''), contact: String(data.get('contact') || ''), phone: [String(data.get('predklic') || '').trim(), String(data.get('phone') || '').trim()].filter(Boolean).join(' '), address: String(data.get('address') || ''), tax: String(data.get('tax') || ''), website: String(data.get('website') || '') }; const next = editing ? clients.map(item => item.id === editing.id ? client : item) : [client, ...clients]; persist(next); setSelected(client); setEditing(null); setOpen(false); };
   const remove = (client: Client) => { if (!window.confirm(L(`Izbrišem profil stranke »${client.name}«? Ponudbe, pogodbe in računi bodo ostali shranjeni.`, `Delete the profile for »${client.name}«? Offers, contracts and invoices will remain saved.`))) return; persist(clients.filter(item => item.id !== client.id)); setSelected(null); };
   const visible = clients.filter(client => [client.name, client.email, client.contact].some(value => value?.toLocaleLowerCase('sl-SI').includes(search.toLocaleLowerCase('sl-SI'))));
@@ -331,7 +422,7 @@ export default function ClientWorkspace() {
   }, [open]);
 
   return <div className={styles.clientPage}>
-    <section className={styles.clientToolbar}><IskalnikMob vrednost={search} naVrednost={setSearch} placeholder={L('Poišči stranko, kontakt ali e-pošto …', 'Search client, contact or email …')} label={L('Poišči stranko', 'Search client')} /><button onClick={() => { setEditing(null); setOpen(true); }}>{L('+ Nova stranka', '+ New client')}</button></section>
+    <section className={styles.clientToolbar}><IskalnikMob vrednost={search} naVrednost={setSearch} placeholder={L('Poišči stranko, kontakt ali e-pošto …', 'Search client, contact or email …')} label={L('Poišči stranko', 'Search client')} /><button type="button" onClick={uvoziStranke} disabled={samoOgled} title={L('Uvozi stranke iz CSV', 'Import clients from CSV')} aria-label={L('Uvozi stranke iz CSV', 'Import clients from CSV')} style={{ flex: 'none', display: 'inline-grid', placeItems: 'center', width: '3rem', minWidth: '3rem', minHeight: '3rem', padding: 0, borderRadius: '50%', border: '1px solid var(--line)', background: '#fff', color: 'var(--ink)', cursor: samoOgled ? 'default' : 'pointer', opacity: samoOgled ? 0.5 : 1 }}><UploadSimple size={16} weight="bold" /></button><button type="button" onClick={izvoziStranke} disabled={!clients.length} title={L('Izvozi stranke v CSV', 'Export clients to CSV')} aria-label={L('Izvozi stranke v CSV', 'Export clients to CSV')} style={{ flex: 'none', display: 'inline-grid', placeItems: 'center', width: '3rem', minWidth: '3rem', minHeight: '3rem', padding: 0, borderRadius: '50%', border: '1px solid var(--line)', background: '#fff', color: 'var(--ink)', cursor: clients.length ? 'pointer' : 'default', opacity: clients.length ? 1 : 0.5 }}><DownloadSimple size={16} weight="bold" /></button><button onClick={() => { setEditing(null); setOpen(true); }}>{L('+ Nova stranka', '+ New client')}</button></section>
     {samoOgled && <section className={styles.predogledBanner}><span><strong>{L('Predogled', 'Preview')}</strong>{L(' — vzorčni podatki, urejanje je izklopljeno. (V pravem orodju tega ni, vedno urejaš.)', ' — sample data, editing is disabled. (In the real tool this is gone, you always edit.)')}</span><button type="button" onClick={() => nastaviNacin('mine')}>{L('Preklopi na »Moji podatki«', 'Switch to »My data«')}</button></section>}
     {open && <section className={styles.clientEditor}><button type="button" className={styles.clientBack} onClick={() => { setOpen(false); setEditing(null); }} aria-label={L('Nazaj', 'Back')}><CaretLeft size={16} weight="bold" /> {L('Nazaj', 'Back')}</button><div><p className={styles.eyebrow}>{editing ? L('UREDI PROFIL', 'EDIT PROFILE') : L('NOVA STRANKA', 'NEW CLIENT')}</p><h2>{L('Podatki, ki jih potrebuješ.', 'The details you need.')}</h2></div><form onSubmit={save}><label>{L('Podjetje ali ime', 'Company or name')}<input required name="name" defaultValue={editing?.name} /></label><label>{L('Kontaktna oseba', 'Contact person')}<input name="contact" defaultValue={editing?.contact} /></label><label>{L('E-pošta', 'Email')}<input name="email" type="email" defaultValue={editing?.email} /></label><label>{L('Telefon', 'Phone')}<span style={{ display: 'flex', gap: '.4rem' }}><select name="predklic" defaultValue={razcleniTel(editing?.phone).koda} aria-label={L('Klicna koda', 'Dial code')} style={{ flex: 'none', width: '9rem' }}>{DIAL_KODE.map(k => <option key={k.koda} value={k.koda}>{k.zastava} {k.koda}</option>)}</select><input name="phone" defaultValue={razcleniTel(editing?.phone).num} inputMode="tel" placeholder="31 569 103" style={{ flex: 1, minWidth: 0 }} /></span></label><label>{L('Naslov', 'Address')}<input name="address" defaultValue={editing?.address} /></label><label>{L('Davčna številka', 'Tax number')}<input name="tax" defaultValue={editing?.tax} /></label><label>{L('Spletna stran', 'Website')}<input name="website" type="text" defaultValue={editing?.website} placeholder="www.primer.com" /></label><div className={styles.clientEditorActions}><button type="button" onClick={() => setOpen(false)}>{L('Prekliči', 'Cancel')}</button><button>{L('Shrani profil', 'Save profile')}</button></div></form></section>}
     <div className={styles.clientLayout} data-selected={selected ? '1' : '0'}><section className={styles.clientDirectory}><header><div><p className={styles.eyebrow}>{L('IMENIK', 'DIRECTORY')}</p><h2>{L(`${visible.length} strank`, `${visible.length} ${visible.length === 1 ? 'client' : 'clients'}`)}</h2></div></header>{visible.length ? imenikStran.map(client => { const result = stats.find(item => item.id === client.id); return <button key={client.id} className={selected?.id === client.id ? styles.clientActive : ''} onClick={() => setSelected(client)}><span className={styles.clientInitials}>{client.name.split(/\s+/).map(word => word[0]).join('').slice(0, 2).toUpperCase()}</span><span><strong>{client.name}</strong><small>{client.contact || client.email || L('Brez kontakta', 'No contact')}</small></span><span><strong>{money(result?.revenue || 0)}</strong><small>{L('plačano', 'paid')}</small></span><i>›</i></button>; }) : <p className={styles.clientEmpty}>{L('Ni najdenih strank.', 'No clients found.')}</p>}<Paginacija stran={stranImenikVarno} strani={straniImenik} naStran={setStranImenik} /></section>
