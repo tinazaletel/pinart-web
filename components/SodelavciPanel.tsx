@@ -5,7 +5,7 @@ import type { Naloga, Sodelavec } from '@/lib/naloge';
 import { preberiNaloge, shraniNaloge } from '@/lib/naloge';
 import { preberiSodelavci, shraniSodelavci, VLOGE, vlogaOznaka } from '@/lib/sodelavci';
 import { usePredogled, demoSodelavci } from '@/lib/predogled';
-import { posljiMail } from '@/lib/posta';
+import { posljiVabilo } from '@/lib/ekipa';
 import styles from './SodelavciPanel.module.css';
 
 /* Razdelek »Sodelavci« + pod-blok »Prenos ob odhodu«.
@@ -68,16 +68,20 @@ export default function SodelavciPanel() {
     const nov: Sodelavec = { id: 'sod_' + Date.now(), ime, email, vloga: novaVloga, aktiven: true };
     posodobiEkipo([...sodelavci, nov]);
     setNovoIme(''); setNovEmail(''); setNovaVloga('clan');
-    /* pošlji e-mail vabilo z linkom (če je e-naslov veljaven) */
+    /* Pravo vabilo (žeton -> član organizacije) pošljemo LE v pravem načinu.
+       V demo/praznem predogledu je dodajanje samo lokalna simulacija. */
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setEkipaSporocilo('Sodelavec dodan (neveljaven e-naslov — vabilo ni poslano).'); return; }
+    if (preview !== 'mine') { setEkipaSporocilo('Sodelavec dodan (predogled — vabilo se v pravem računu pošlje samodejno).'); return; }
     setEkipaSporocilo('Sodelavec dodan. Pošiljam vabilo …');
-    const povezava = 'https://www.pinartflow.com/kalkulator/komunikacija';
-    const prvoIme = ime.split(' ')[0];
-    const pozdravIme = prvoIme ? prvoIme.charAt(0).toUpperCase() + prvoIme.slice(1) : prvoIme;
-    const html = `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a"><p>Živjo ${pozdravIme},</p><p>dodani ste v ekipo na <b>Pinart Flow</b>.</p><p>Prijavite se s tem e-naslovom (<b>${email}</b>) — z Googlom ali z geslom (gumb »Nov račun«) — in odprite Komunikacijo, da vidite deljeno delo in klepete:</p><p><a href="${povezava}" style="display:inline-block;background:#2A2035;color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:600">Odpri Pinart Flow</a></p><p style="color:#666;font-size:13px">Če gumb ne dela, odprite: ${povezava}</p></div>`;
+    /* Vloga: admin -> poln dostop; vodja/član -> član organizacije (natančnejši
+       scoping vidljivosti pride v Fazi 4). */
+    const dbVloga = novaVloga === 'admin' ? 'admin' : 'member';
     try {
-      const rez = await posljiMail({ to: [email], subject: 'Povabilo v ekipo — Pinart Flow', html });
-      setEkipaSporocilo(rez.ok ? `Sodelavec dodan + vabilo poslano na ${email}.` : `Sodelavec dodan (vabilo ni šlo: ${rez.napaka || 'napaka'}).`);
+      const rez = await posljiVabilo(email, dbVloga);
+      if (!rez.ok) { setEkipaSporocilo(`Sodelavec dodan (vabilo ni šlo: ${rez.napaka || 'napaka'}).`); return; }
+      if (rez.poslano) setEkipaSporocilo(`Sodelavec dodan + vabilo poslano na ${email}.`);
+      else if (rez.povezava) setEkipaSporocilo(`Sodelavec dodan. Povezavo za sprejem deli ročno: ${rez.povezava}`);
+      else setEkipaSporocilo(`Sodelavec dodan${rez.napaka ? ` (${rez.napaka})` : ''}.`);
     } catch {
       setEkipaSporocilo('Sodelavec dodan (vabilo ni šlo).');
     }
