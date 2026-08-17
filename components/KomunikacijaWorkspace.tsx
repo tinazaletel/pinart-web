@@ -628,6 +628,19 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
         .km-mape button b{font-size:.72rem;font-weight:700;opacity:.55}
         .km-posta-desno{flex:1;min-width:0}
         .km-mape-trig{display:none}
+        /* Namizje/tablica (>760): Pošta/Klepet zavihki LEVO, akcije (iskalnik-ikona + prejemniki +
+           Nova pošta) DESNO -> ENA orodna vrstica. Iskalnik strnjen v ikono, odpre se kot overlay. */
+        @media (min-width:761px){
+          .km-zavihki{margin-bottom:0}
+          .km-posta-vrh{flex-wrap:nowrap;justify-content:flex-end;gap:.5rem;margin-top:-2.65rem;pointer-events:none}
+          .km-posta-vrh > *{pointer-events:auto}
+          .km-isk-krog{display:inline-flex;align-items:center;justify-content:center;flex:none;width:2.55rem;height:2.55rem;border-radius:50%;border:1px solid var(--k-line);background:#fff;color:var(--k-ink);cursor:pointer}
+          .km-isk-krog:hover{background:var(--k-ink);color:#fff}
+          .km-posta-vrh .km-iskalnik{display:none;flex:none;margin-bottom:0}
+          .km-posta-vrh .km-iskalnik.odprt{display:flex;position:absolute;inset:0;z-index:6;margin:0;background:#fff;border:1px solid color-mix(in oklch,var(--k-ink) 45%,transparent);border-radius:999px}
+          .km-posta-vrh .km-iskalnik.odprt input:focus,.km-posta-vrh .km-iskalnik.odprt input:focus-visible{outline:none;box-shadow:none}
+          .km-isk-zapri{display:inline-flex;align-items:center;justify-content:center;flex:none;border:0;background:none;color:var(--k-ink);font-size:1rem;line-height:1;cursor:pointer;padding:.2rem .4rem}
+        }
         @media (max-width:760px){
           .km-posta-vrh{flex-wrap:nowrap;gap:.45rem;justify-content:flex-start}
           .km-isk-krog{display:inline-flex;align-items:center;justify-content:center;flex:none;width:2.9rem;height:2.9rem;border-radius:50%;border:1px solid var(--k-line);background:#fff;color:var(--k-ink);cursor:pointer}
