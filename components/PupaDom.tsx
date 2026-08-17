@@ -737,6 +737,14 @@ export default function PupaDom({ base = '' }: { base?: string }) {
           .pd-plava.zbrano .pd-kartica { min-width: 0; }
         }
 
+        /* iPad / ožji zaslon (1024–1200): plavajoče kartice ostanejo raztresene, a se NE
+           dotikajo besedila/vnosa — sredinski stolpec je ožji, kartice manjše -> nastane
+           vodoravna zračnost na obeh straneh. */
+        @media (min-width: 1024px) and (max-width: 1200px) {
+          .pd:not(.pogovor) .pd-center { width: min(34rem, 82vw); }
+          .pd-plava .pd-kartica { min-width: 6.5rem; padding: .6rem .7rem; }
+        }
+
         /* ===== POGOVOR V MESTU: isti chat, spodaj se odvija, panel se izvleče ===== */
         /* Pogovor: vnos PRIPET na dno, sporočila drsijo (scrollbar skrit). overflow: visible na
            .pd/.pd-center, da sence (vnos, mehurčki) NISO odrezane; drsi le nit (z vodoravnim paddingom

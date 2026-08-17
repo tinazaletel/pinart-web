@@ -1,3 +1,4 @@
+@media (max-width: 640px) { .page { padding-left: .5rem; padding-right: .5rem; box-sizing: border-box; } }
 .page {
   --mk-violet: oklch(73% .15 300);
   --mk-mint: oklch(82% .11 165);

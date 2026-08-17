@@ -201,7 +201,7 @@
 .projektUre small { color: var(--muted); font-size: .8rem; }
 .empty { padding: 2rem 0; border-top: 1px solid var(--line); color: var(--muted); }
 @media (max-width: 1100px) { .summary { grid-template-columns: 1fr 1fr; } .layout { grid-template-columns: 1fr; } }
-@media (max-width: 700px) { .page { min-width: 0; }.fields { grid-template-columns: 1fr; }.plan, .timer, .history { min-width: 0; padding: 1rem; }.history header { align-items: flex-start; flex-direction: column; gap: .4rem; }.history article { grid-template-columns: minmax(0, 1fr) auto; gap: .65rem; }.history article > div { min-width: 0; }.history article > div span { overflow-wrap: anywhere; }.history article > b, .history article > em { justify-self: start; }.history article > b { grid-column: 1; }.history article > em { grid-column: 1; }.history article > .akcije { grid-column: 1 / -1; justify-self: start; gap: .5rem; padding-top: .2rem; }.history article > .akcije .izbrisi { min-width: 2.75rem; min-height: 2.75rem; }.running button { min-height: 3rem; }
+@media (max-width: 700px) { .page { min-width: 0; padding-left: .5rem; padding-right: .5rem; box-sizing: border-box; }.fields { grid-template-columns: 1fr; }.plan, .timer, .history { min-width: 0; padding: 1rem; }.history header { align-items: flex-start; flex-direction: column; gap: .4rem; }.history article { grid-template-columns: minmax(0, 1fr) auto; gap: .65rem; }.history article > div { min-width: 0; }.history article > div span { overflow-wrap: anywhere; }.history article > b, .history article > em { justify-self: start; }.history article > b { grid-column: 1; }.history article > em { grid-column: 1; }.history article > .akcije { grid-column: 1 / -1; justify-self: start; gap: .5rem; padding-top: .2rem; }.history article > .akcije .izbrisi { min-width: 2.75rem; min-height: 2.75rem; }.running button { min-height: 3rem; }
   /* Prisotnost na telefonu: en stolpec, cilj polje ni vec stisnjeno na levo */
   .prisotnostCilj { max-width: none; }
   .prisotnost { grid-template-columns: 1fr; }
@@ -466,7 +466,7 @@
 }
 
 /* ── Mesečni povzetek: velik Bodoni števec + napredovalni trak proti cilju ── */
-.mesecPovzetek { display: grid; gap: .55rem; margin-top: .2rem; padding: 1.1rem 1.2rem; border-radius: 1.1rem; background: oklch(95% .025 87); }
+.mesecPovzetek { display: grid; gap: .55rem; margin-top: .2rem; padding: 1.1rem 1.2rem; border-radius: 1.1rem; background: rgba(255,255,255,.42); backdrop-filter: blur(18px) saturate(1.3); -webkit-backdrop-filter: blur(18px) saturate(1.3); }
 .mesecPovzetekStevec { display: flex; align-items: baseline; gap: .65rem; flex-wrap: wrap; }
 .mesecPovzetekStevec span { color: var(--muted); font-size: .84rem; text-transform: capitalize; }
 .mesecPovzetekStevec strong { font: 500 2.15rem var(--font-serif), Georgia, serif; color: var(--ink); -webkit-text-stroke: .4px var(--ink); text-shadow: 0 1px 2px oklch(100% 0 0 / .35); }

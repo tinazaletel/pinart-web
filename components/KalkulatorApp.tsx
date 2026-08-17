@@ -5576,7 +5576,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* Velikost orba pada s stevilom storitev; pod minimum ne gre (mobile skrola). */
   /* Mobilno: velikost je nastavljena tako, da NAJVECJI mehurcek (utez 1.32) pri treh
      v vrsti pride ~16px od roba zaslona (375px): 0.19*375 - (84*1.32)/2 ≈ 16. */
-  const orbD = jeMobilni
+  /* »tesno« = mobilni ALI tablica (641–1200): orbi se prilagodijo širini (3 stolpci,
+     manjši premer, širši razmik), da se PRILEGAJO brez vodoravnega drsnika/rezanja.
+     Široki zaslon (>=1201, panel ob strani) obdrži velike orbe. */
+  const orbTesno = !jeSirokZaslon;
+  const orbD = orbTesno
     ? (orbStoritve.length <= 9 ? 100 : 96)
     : (orbStoritve.length <= 8 ? 176 : orbStoritve.length <= 14 ? 156 : 138);
   /* Mobilni razpon utezi stisnemo v 0.96–1.15, ker sta oba konca omejena:
@@ -5585,7 +5589,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      Pri osnovi 96 to da razpon 92–110px. */
   const tezaOrb = (id: string) => {
     const t = TEZA[id] ?? 1;
-    return jeMobilni ? 0.668 + 0.365 * t : t;
+    return orbTesno ? 0.668 + 0.365 * t : t;
   };
   /* mehurcki v pravih vrsticah, razmaknjeni; platno raste s stevilom -> stran scrolla */
   const orbN = orbStoritve.length + 1; /* + "dodaj" */
@@ -5617,7 +5621,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* SATASTA (honeycomb) postavitev: vrste se izmenjujejo siroka/ozja (npr. 3-2-3),
      ozje vrste centrirano padejo v vrzeli sirokih -> mehurcki NISO v ravnih navpicnih
      stolpcih, a kompozicija ostane uravnotezena. Pozicije se se dorecejo po formatu. */
-  const orbMax = orbN <= 4 ? 2 : jeMobilni ? 3 : orbN <= 14 ? 3 : 4;   /* mehurckov v siroki vrsti (mobilno max 3 -> 3-2-3) */
+  const orbMax = orbN <= 4 ? 2 : orbTesno ? 3 : orbN <= 14 ? 3 : 4;   /* mehurckov v siroki vrsti (mobilno/tablica max 3 -> 3-2-3) */
   const orbRowSizes = (() => {
     /* pakiraj storitve + "dodaj" skupaj; "dodaj" je zadnji element (zadnji mehurcek v zadnji vrsti) */
     const rs: number[] = []; let left = orbN, wide = true;
@@ -5630,8 +5634,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const orbRowStart = (() => { const a: number[] = []; let acc = 0; for (const s of orbRowSizes) { a.push(acc); acc += s; } return a; })();
   /* vrstica MORA biti visja od premera, sicer se vrste prekrivajo. Prej je bila
      desktop 1.02x-20 (manjsa od premera) = mehurcki so se dotikali. */
-  const orbRowH = jeMobilni ? Math.round(orbD * 1.34) : Math.round(orbD * 1.16);
-  const orbStep = (jeMobilni ? 70 : 84) / Math.max(orbMax - 1, 1);          /* mobilno: sirse razporedi po razpolozljivi sirini, da se sence mehurckov ne stikajo */
+  const orbRowH = orbTesno ? Math.round(orbD * 1.34) : Math.round(orbD * 1.16);
+  const orbStep = (orbTesno ? 70 : 84) / Math.max(orbMax - 1, 1);          /* mobilno/tablica: sirse razporedi po razpolozljivi sirini, da se sence mehurckov ne stikajo */
   const orbPoz = (i: number) => {
     let row = 0; while (row < orbVrstic - 1 && i >= orbRowStart[row + 1]) row++;
     const posInRow = i - orbRowStart[row];
@@ -6205,9 +6209,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .drz-seznam button { display: block; width: 100%; padding: .5rem .6rem; border: 0; border-radius: .45rem; background: none; color: var(--ink); font: inherit; font-size: .9rem; text-align: left; cursor: pointer; }
         .cw .drz-seznam button.on, .cw .drz-seznam button:hover { background: rgba(17,17,17,.07); }
 
-        /* Vodoravni drs samo v vmesnem obmocju (tablice), kjer siroka mreza res ne gre skozi.
-           Na telefonu so mehurcki 3-2-3 in se v sirino prilegajo -> drsnik je bil samo grd pas. */
-        @media (min-width: 641px) and (max-width: 1200px) { .cw .platno0-drs { overflow-x: auto; -webkit-overflow-scrolling: touch; } }
+        /* Tablice (641–1200) zdaj uporabljajo isto »tesno« postavitev orbov kot telefon
+           (orbTesno: 3-2-3, manjši premer) -> mehurcki se PRILEGAJO širini, zato NI
+           vodoravnega drsnika ne rezanja (prej je bil tu overflow-x:auto = grd pas). */
+        @media (min-width: 641px) and (max-width: 1200px) { .cw .platno0-drs { overflow-x: visible; } }
         @media (max-width: 640px) { .cw .platno0-drs { overflow-x: hidden; } }
         .cw .platno0 { position: relative; min-height: 56vh; padding-bottom: 5.5rem; }
         .cw .namig0 { position: absolute; left: 0; right: 0; bottom: .2rem; text-align: center; font-size: .78rem; color: rgba(17,17,17,.72); pointer-events: none; }
@@ -6877,7 +6882,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
            Kalkulator poti Lenisa ne uporabljajo, zato je fixed tukaj zanesljiv.
            Levi meni in header ostaneta nad plastjo, live ponudba pa nad njo. */
         @media (min-width: 1201px) {
-          .cw .detajl-oder { position: fixed; top: 3.25rem; right: 0; bottom: 0; left: 17.5rem; min-height: 0; z-index: 15; padding: 0 min(560px, 36vw) 0 0; align-items: stretch; justify-content: stretch; background: linear-gradient(135deg, rgba(255,255,255,.64) 0%, rgba(247,243,236,.74) 48%, rgba(242,247,244,.68) 100%); -webkit-backdrop-filter: blur(24px) saturate(1.18); backdrop-filter: blur(24px) saturate(1.18); overflow-y: auto; scrollbar-width: none; animation: detajlZapelji .36s cubic-bezier(.2,.85,.3,1) both; }
+          .cw .detajl-oder { position: fixed; top: 3.25rem; right: 0; bottom: 0; left: var(--sidebar-w, 17.5rem); min-height: 0; z-index: 15; padding: 0 min(560px, 36vw) 0 0; align-items: stretch; justify-content: stretch; background: linear-gradient(135deg, rgba(255,255,255,.64) 0%, rgba(247,243,236,.74) 48%, rgba(242,247,244,.68) 100%); -webkit-backdrop-filter: blur(24px) saturate(1.18); backdrop-filter: blur(24px) saturate(1.18); overflow-y: auto; scrollbar-width: none; animation: detajlZapelji .36s cubic-bezier(.2,.85,.3,1) both; }
           .cw .detajl-oder::before { content: ''; position: absolute; inset: 0 min(560px, 36vw) 0 0; pointer-events: none; background: linear-gradient(118deg, transparent 8%, rgba(255,255,255,.34) 30%, rgba(255,255,255,.08) 43%, transparent 62%); opacity: .48; mix-blend-mode: screen; }
           .cw .detajl-oder > .detajl-modal { position: relative; z-index: 1; }
           :global(body[data-meni='zaprt']) .cw .detajl-oder { left: 4.4rem; }
@@ -7616,7 +7621,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* V lupini je levo stranska vrstica (17.5rem, zlozena 4.4rem). Noga je
            position:fixed left:0, zato brez tega zamika NAPREJ centrira v celo
            sirino in izpade LEVO. Zamaknemo za sirino menija. */
-        .cw.cw-lupina .noga { left: 17.5rem; }
+        .cw.cw-lupina .noga { left: var(--sidebar-w, 17.5rem); }
         :global(body[data-meni='zaprt']) .cw.cw-lupina .noga { left: 4.4rem; }
         @media (max-width: 980px) { .cw.cw-lupina .noga { left: 0; } }
         /* ko je detajl-panel odprt, NAPREJ (noga) skrijemo — pripada spodnjemu koraku, ne detajlu (ta ima svoj × / Shrani) */

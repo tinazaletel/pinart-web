@@ -1496,7 +1496,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-odvetnik-ok{color:#1f7a4d}
       .pg-odvetnik-err{color:#b23434}
       .pg-odvetnik-znak{display:inline-block;vertical-align:middle;margin-left:.7rem;font-family:var(--font-sans),system-ui,sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#1f7a4d;background:oklch(95% .05 155);border:1px solid oklch(82% .1 155);border-radius:999px;padding:.22rem .6rem}
-      .pg-noga{position:fixed;bottom:0;left:17.5rem;right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,var(--paper) 70%,transparent);z-index:40}
+      .pg-noga{position:fixed;bottom:0;left:var(--sidebar-w,17.5rem);right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,var(--paper) 70%,transparent);z-index:40}
       :global(body[data-meni='zaprt']) .pg-noga{left:4.4rem}
       @media (max-width:980px){.pg-noga{left:0}}
       .pg-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.7rem;flex-wrap:nowrap}

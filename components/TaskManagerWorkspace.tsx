@@ -1807,7 +1807,10 @@ export default function TaskManagerWorkspace() {
         .tm-nova:hover{transform:translateY(-2px);box-shadow:0 .8rem 2rem oklch(22% .04 300/.22)}
 
         /* glava: preklop uporabnika + gumb za analitiko ekipe */
-        .tm-glava-akcije{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin-left:auto}
+        .tm-glava-akcije{display:flex;align-items:center;gap:.55rem;flex-wrap:nowrap;margin-left:auto}
+        /* »AI dodaj več« = samo ikona (kot uvoz/izvoz), da orodna vrstica ostane v eni vrstici */
+        .tm-seed-gumb-ai{width:2.75rem;padding:0;justify-content:center}
+        .tm-seed-gumb-ai .tm-akcija-tekst{display:none}
         .tm-uporabnik{display:flex;align-items:center;min-height:2.75rem;border:1px solid var(--line);border-radius:.8rem;background:#fff;overflow:hidden}
         .tm-uporabnik span{padding:0 .7rem;font:750 .58rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
         .tm-uporabnik select{align-self:stretch;min-width:13rem;padding:.55rem 2rem .55rem .75rem;border:0;border-left:1px solid var(--line);border-radius:0;background-color:#fff;font:inherit;font-size:.78rem;color:var(--ink)}
@@ -1856,6 +1859,9 @@ export default function TaskManagerWorkspace() {
         .tm-mobilni-filter-gumb{display:none}
         /* filter po oznaki (tagu) — spustni izbor poleg vse/moje/zamujene */
         .tm-filter-oznaka{appearance:none;-webkit-appearance:none;-moz-appearance:none;min-height:2.75rem;padding:0 1.8rem 0 .85rem;border:1px solid var(--line);border-radius:999px;background-color:#fff;color:var(--ink);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer;background-repeat:no-repeat;background-position:right .6rem center;background-size:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
+        /* .shell sili font-size:16px !important na VSE selecte -> ta dva sta bila večja od
+           sosednjih gumbov. Zvišana specifičnost + !important poravna velikost in sprosti prostor. */
+        .tm-pogled-filtri-vrsta .tm-filter-oznaka{font-size:.72rem !important}
         .tm-filter-oznaka:focus{outline:none;border-color:var(--ink)}
         .tm-mobilni-sheet-zastor{position:fixed;inset:0;z-index:1000;display:flex;align-items:flex-end;background:rgba(25,18,14,.2);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:tm-sheet-fade .22s ease-out}
         .tm-mobilni-sheet{width:100%;padding:.55rem 1rem calc(1rem + env(safe-area-inset-bottom));border-radius:1.4rem 1.4rem 0 0;background:#fff;color:#17110e;box-shadow:0 -1.2rem 4rem rgba(25,18,14,.16);animation:tm-sheet-vstop .34s cubic-bezier(.16,1,.3,1)}
@@ -2150,11 +2156,11 @@ export default function TaskManagerWorkspace() {
           .tm-matrika tbody td,.tm-matrika-projekt-glava,.tm-matrika tbody th.tm-matrika-projekt{min-width:9rem}
         }
         @media (max-width:700px){
-          .tm-deska{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:min(82vw,22rem);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.6rem}
+          .tm-deska{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:min(82vw,22rem);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.6rem;margin-right:-.5rem;padding-right:.5rem;scroll-padding-right:.5rem}
           .tm-stolpec{scroll-snap-align:start}
         }
         @media (max-width:600px){
-          .tm{padding:.75rem .75rem 4rem}
+          .tm{padding:.75rem .5rem 4rem}
           .tm-podnaslov{max-width:none}
           .tm-uporabnik select{font-size:1rem}
           /* Mobilni toolbar: izbira nalog odpre spodnji panel; projekt ostane vedno dosegljiv. */

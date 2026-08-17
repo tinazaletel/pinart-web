@@ -229,7 +229,9 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
          Select sam nima vec lastnega roba/ozadja (tega da pilula), appearance:none +
          lasten chevron kot background-image, da se puscica ne izgubi (past .shell select). ── */
       .af-status{display:inline-flex;align-items:center;gap:.4rem;flex:0 1 auto;min-width:0;box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);border-radius:999px;padding:0 .5rem 0 .85rem;transition:border-color .15s}
-      .af-status:focus-within{border-color:var(--ink,#111)}
+      /* fokus obroč na CELI pilulici (wrapperju), ne na golem selectu znotraj — da vijola sledi obliki gumba */
+      .af-status:focus-within{border-color:var(--ink,#111);box-shadow:0 0 0 2.5px color-mix(in oklch,var(--purple,oklch(66% 0.2 297)) 42%,transparent)}
+      .af-status .af-select:focus-visible{box-shadow:none}
       .af-status-ikona{flex:none;margin-right:.35rem;color:color-mix(in oklch,var(--ink,#111) 55%,transparent)}
       .af-select{min-width:0;max-width:100%;box-sizing:border-box;font:inherit;font-weight:600;color:var(--ink,#111);border:none;border-radius:999px;padding:.55rem 1.6rem .55rem .15rem;background-color:transparent;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='m5 7.5 5 5 5-5' fill='none' stroke='%231c1815' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0 center;background-size:1rem;-webkit-appearance:none;appearance:none;cursor:pointer}
       .af-select:focus{outline:none}

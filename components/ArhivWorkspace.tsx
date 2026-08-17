@@ -356,7 +356,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   };
   const filterCfg: FilterCfg | null =
     zavihek === 'projekti' ? {
-      placeholder: L('Poišči projekt, stranko ali številko …', 'Search projects, clients or numbers …'),
+      placeholder: L('Poišči projekt, stranko …', 'Search project, client …'),
       statusOznaka: L('Stanje projekta', 'Project status'),
       statusVrednost: statusProjekt,
       onStatus: setStatusProjekt,
