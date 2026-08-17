@@ -1581,7 +1581,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     {!selected && !zunanjiFilter && <ArhivFilter
       iskanje={search}
       onIskanje={setSearch}
-      placeholder={L('Poišči projekt, stranko ali številko ponudbe …', 'Search project, client or offer number …')}
+      placeholder={L('Poišči projekt, stranko …', 'Search project, client …')}
       datumOd={datumOd}
       datumDo={datumDo}
       onDatumOd={setDatumOd}

@@ -5576,7 +5576,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* Velikost orba pada s stevilom storitev; pod minimum ne gre (mobile skrola). */
   /* Mobilno: velikost je nastavljena tako, da NAJVECJI mehurcek (utez 1.32) pri treh
      v vrsti pride ~16px od roba zaslona (375px): 0.19*375 - (84*1.32)/2 ≈ 16. */
-  const orbD = jeMobilni
+  /* »tesno« = mobilni ALI tablica (641–1200): orbi se prilagodijo širini (3 stolpci,
+     manjši premer, širši razmik), da se PRILEGAJO brez vodoravnega drsnika/rezanja.
+     Široki zaslon (>=1201, panel ob strani) obdrži velike orbe. */
+  const orbTesno = !jeSirokZaslon;
+  const orbD = orbTesno
     ? (orbStoritve.length <= 9 ? 100 : 96)
     : (orbStoritve.length <= 8 ? 176 : orbStoritve.length <= 14 ? 156 : 138);
   /* Mobilni razpon utezi stisnemo v 0.96–1.15, ker sta oba konca omejena:
@@ -5585,7 +5589,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      Pri osnovi 96 to da razpon 92–110px. */
   const tezaOrb = (id: string) => {
     const t = TEZA[id] ?? 1;
-    return jeMobilni ? 0.668 + 0.365 * t : t;
+    return orbTesno ? 0.668 + 0.365 * t : t;
   };
   /* mehurcki v pravih vrsticah, razmaknjeni; platno raste s stevilom -> stran scrolla */
   const orbN = orbStoritve.length + 1; /* + "dodaj" */
@@ -5617,7 +5621,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* SATASTA (honeycomb) postavitev: vrste se izmenjujejo siroka/ozja (npr. 3-2-3),
      ozje vrste centrirano padejo v vrzeli sirokih -> mehurcki NISO v ravnih navpicnih
      stolpcih, a kompozicija ostane uravnotezena. Pozicije se se dorecejo po formatu. */
-  const orbMax = orbN <= 4 ? 2 : jeMobilni ? 3 : orbN <= 14 ? 3 : 4;   /* mehurckov v siroki vrsti (mobilno max 3 -> 3-2-3) */
+  const orbMax = orbN <= 4 ? 2 : orbTesno ? 3 : orbN <= 14 ? 3 : 4;   /* mehurckov v siroki vrsti (mobilno/tablica max 3 -> 3-2-3) */
   const orbRowSizes = (() => {
     /* pakiraj storitve + "dodaj" skupaj; "dodaj" je zadnji element (zadnji mehurcek v zadnji vrsti) */
     const rs: number[] = []; let left = orbN, wide = true;
@@ -5630,8 +5634,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const orbRowStart = (() => { const a: number[] = []; let acc = 0; for (const s of orbRowSizes) { a.push(acc); acc += s; } return a; })();
   /* vrstica MORA biti visja od premera, sicer se vrste prekrivajo. Prej je bila
      desktop 1.02x-20 (manjsa od premera) = mehurcki so se dotikali. */
-  const orbRowH = jeMobilni ? Math.round(orbD * 1.34) : Math.round(orbD * 1.16);
-  const orbStep = (jeMobilni ? 70 : 84) / Math.max(orbMax - 1, 1);          /* mobilno: sirse razporedi po razpolozljivi sirini, da se sence mehurckov ne stikajo */
+  const orbRowH = orbTesno ? Math.round(orbD * 1.34) : Math.round(orbD * 1.16);
+  const orbStep = (orbTesno ? 70 : 84) / Math.max(orbMax - 1, 1);          /* mobilno/tablica: sirse razporedi po razpolozljivi sirini, da se sence mehurckov ne stikajo */
   const orbPoz = (i: number) => {
     let row = 0; while (row < orbVrstic - 1 && i >= orbRowStart[row + 1]) row++;
     const posInRow = i - orbRowStart[row];
@@ -6205,9 +6209,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .drz-seznam button { display: block; width: 100%; padding: .5rem .6rem; border: 0; border-radius: .45rem; background: none; color: var(--ink); font: inherit; font-size: .9rem; text-align: left; cursor: pointer; }
         .cw .drz-seznam button.on, .cw .drz-seznam button:hover { background: rgba(17,17,17,.07); }
 
-        /* Vodoravni drs samo v vmesnem obmocju (tablice), kjer siroka mreza res ne gre skozi.
-           Na telefonu so mehurcki 3-2-3 in se v sirino prilegajo -> drsnik je bil samo grd pas. */
-        @media (min-width: 641px) and (max-width: 1200px) { .cw .platno0-drs { overflow-x: auto; -webkit-overflow-scrolling: touch; } }
+        /* Tablice (641–1200) zdaj uporabljajo isto »tesno« postavitev orbov kot telefon
+           (orbTesno: 3-2-3, manjši premer) -> mehurcki se PRILEGAJO širini, zato NI
+           vodoravnega drsnika ne rezanja (prej je bil tu overflow-x:auto = grd pas). */
+        @media (min-width: 641px) and (max-width: 1200px) { .cw .platno0-drs { overflow-x: visible; } }
         @media (max-width: 640px) { .cw .platno0-drs { overflow-x: hidden; } }
         .cw .platno0 { position: relative; min-height: 56vh; padding-bottom: 5.5rem; }
         .cw .namig0 { position: absolute; left: 0; right: 0; bottom: .2rem; text-align: center; font-size: .78rem; color: rgba(17,17,17,.72); pointer-events: none; }
