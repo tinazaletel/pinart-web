@@ -914,7 +914,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         /* glava: zavihki (levo) + ArhivFilter aktivnega zavihka (desno) v ENI vrsti
            na namizju; flex-wrap na ozkem/mobilnem prelomi ArhivFilter pod zavihke
            (locene vrstice), ker za skupno vrstico zmanjka prostora */
-        .arh-glava{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem .9rem;margin-bottom:1.1rem}
+        .arh-glava{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .5rem;margin-bottom:1.1rem}
         .arh-glava-filter{flex:1 1 22rem;min-width:0}
 
         /* zavihki + segpills (kopija .rw-segpills) */
