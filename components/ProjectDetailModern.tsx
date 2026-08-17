@@ -469,8 +469,8 @@ export default function ProjectDetailModern({
         .pm-card > header { display:flex; align-items:center; justify-content:space-between; gap:.6rem; margin-bottom:.5rem; }
         .pm-card h3 { margin:0; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-title { font-family:var(--font-serif), Georgia, serif; font-size:1.3rem; margin:0 0 .7rem; color:var(--pm-ink); }
-        .pm-act { display:inline-flex; align-items:center; gap:.3rem; height:1.9rem; box-sizing:border-box; cursor:pointer; text-decoration:none; border:1px solid color-mix(in oklch, var(--pm-ink) 12%, transparent); background:color-mix(in oklch, var(--pm-ink) 5%, transparent); color:var(--pm-ink); border-radius:999px; padding:0 .85rem; font-size:.74rem; font-weight:700; white-space:nowrap; transition:background .16s ease, border-color .16s ease; }
-        .pm-act:hover { background:#fff; color:var(--pm-ink); border-color:var(--pm-ink); }
+        .pm-act { display:inline-flex; align-items:center; gap:.3rem; height:1.9rem; box-sizing:border-box; cursor:pointer; text-decoration:none; border:1px solid transparent; background:color-mix(in oklch, var(--pm-ink) 7%, transparent); color:var(--pm-ink); border-radius:999px; padding:0 .85rem; font-size:.74rem; font-weight:700; white-space:nowrap; transition:background .16s ease, border-color .16s ease; }
+        .pm-act:hover { background:color-mix(in oklch, var(--pm-ink) 12%, transparent); color:var(--pm-ink); border-color:transparent; }
         /* urejljiva brief polja (inline v panelu) */
         .pm-qa-edit { display:block; }
         .pm-inp { width:100%; box-sizing:border-box; margin-top:.3rem; padding:.5rem .6rem; border:1px solid color-mix(in oklch, #fff 55%, transparent); border-radius:.55rem; background:color-mix(in oklch, #fff 34%, transparent); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); font:inherit; font-size:.9rem; color:var(--pm-ink); resize:vertical; }
