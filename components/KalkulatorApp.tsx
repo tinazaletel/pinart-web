@@ -3154,6 +3154,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const zabeleziNarocnika = (ime: string) => {
     const t = ime.trim();
     if (!t) return;
+    /* V predogledu/demo NE shranjuj naročnika (sicer demo imena — Inovis, Marand …
+       pricurljajo v prave »Moji podatki« stranke prek legacyClients). Demo = samo ogled. */
+    if (samoOgled) return;
     const zapis: NarocnikZapis = {
       ime: t,
       email: narocnikEmail.trim() || undefined,
