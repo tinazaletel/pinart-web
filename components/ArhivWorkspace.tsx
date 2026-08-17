@@ -927,6 +927,14 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-pp-ik{display:none}
         .arh-akcija-mob{display:none}
         .arh-zav-mob{display:none}
+        /* iPad / ozek prenosnik (641–1200): stisni zavihke + pogled=ikone, da glava (zavihki+filter)
+           ostane ENA vrstica (prej se je ArhivFilter prelomil pod zavihke). */
+        @media (min-width:641px) and (max-width:1200px){
+          .arh-segpills button{padding:.46rem .6rem;font-size:.68rem}
+          .arh-pogled-preklop .arh-pp-ik{display:inline-flex}
+          .arh-pogled-preklop .arh-pp-txt{display:none}
+          .arh-glava-filter{flex:1 1 15rem}
+        }
         @media (max-width:640px){
           /* VSE v eni vrsti (kompaktno): Projekti · iskalnik · filter · pogled · +.
              arh-glava = pozicijsko sidrisce za iskalni overlay (.af-iskanje inset:0 -> cela vrstica). */
