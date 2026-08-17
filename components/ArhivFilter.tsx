@@ -277,9 +277,13 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       /* ── akcijski gumb (skupni videz, npr. + Nova ponudba) ── */
       .af-akcija-gumb{display:inline-flex;align-items:center;justify-content:center;gap:.3rem;white-space:nowrap;padding:.7rem 1.1rem;border:none;border-radius:999px;background-color:var(--ink,#111);color:var(--paper,#fff);font:inherit;font-size:.82rem;font-weight:700;text-decoration:none;cursor:pointer;transition:transform .15s,opacity .15s}
       .af-akcija-gumb:hover{transform:translateY(-1px);opacity:.92}
-      /* iPad / ozek prenosnik (641–1200): Izvoz=ikona-krogec + ožji datum/status,
+      /* »Izvoz za računovodstvo« = VEDNO le ikona-krogec (bel, hover fill), na vseh širinah */
+      .af-akcija-izvoz{width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;background-color:#fff;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);color:var(--ink,#111);transition:background-color .16s,color .16s,transform .16s cubic-bezier(.2,.8,.3,1),box-shadow .16s}
+      .af-akcija-izvoz:hover{background-color:var(--ink,#111);color:var(--paper,#fff);transform:translateY(-1px);box-shadow:0 .4rem 1rem color-mix(in oklch,var(--ink,#111) 18%,transparent)}
+      .af-akcija-izvoz .af-akcija-tekst{display:none}
+      /* iPad (vključno 13"): Izvoz=ikona-krogec + ožji datum/status + nowrap,
          da orodna vrstica (zavihki + filter + akcija) ostane ENA vrsta. */
-      @media (min-width:641px) and (max-width:1200px){
+      @media (min-width:641px) and (max-width:1400px){
         .af-namizje{flex-wrap:nowrap;gap:.4rem}
         .af-akcija-izvoz{width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;background-color:#fff;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);color:var(--ink,#111)}
         .af-akcija-izvoz:hover{background-color:var(--ink,#111);color:var(--paper,#fff);transform:none}
