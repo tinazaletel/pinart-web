@@ -29,6 +29,24 @@ export default function MeniSkupina(
     return () => m.removeEventListener('change', uporabi);
   }, [aktivna]);
 
+  /* Harmonika (samo ena skupina odprta hkrati): ker je DashboardSidebar strežniška,
+     stanja ne moremo dvigniti — usklajujemo prek window dogodka. Ko se ena odpre,
+     se ostale zaprejo -> meni ostane kratek in dosegljiv (brez neskončnega scrolla). */
+  useEffect(() => {
+    const zapriDruge = (e: Event) => {
+      const ce = e as CustomEvent<string>;
+      if (ce.detail !== naslov) setOdprta(false);
+    };
+    window.addEventListener('meniSkupinaOdprta', zapriDruge as EventListener);
+    return () => window.removeEventListener('meniSkupinaOdprta', zapriDruge as EventListener);
+  }, [naslov]);
+
+  const preklopi = () => setOdprta(v => {
+    const naslednje = !v;
+    if (naslednje) window.dispatchEvent(new CustomEvent('meniSkupinaOdprta', { detail: naslov }));
+    return naslednje;
+  });
+
   if (siroko) {
     return <>
       <p className={styles.navGroup}>{naslov}</p>
@@ -45,7 +63,7 @@ export default function MeniSkupina(
   return (
     <div className={styles.meniSkupina}>
       <button type="button" className={styles.meniSkupinaGlava} aria-expanded={odprta}
-        onClick={() => setOdprta(v => !v)}>
+        onClick={preklopi}>
         <span>{naslov}</span>
         <span className={styles.meniSkupinaPuscica} data-odprta={odprta} aria-hidden="true">›</span>
       </button>
