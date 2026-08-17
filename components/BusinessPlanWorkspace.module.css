@@ -466,7 +466,7 @@
 }
 
 /* ── Mesečni povzetek: velik Bodoni števec + napredovalni trak proti cilju ── */
-.mesecPovzetek { display: grid; gap: .55rem; margin-top: .2rem; padding: 1.1rem 1.2rem; border-radius: 1.1rem; background: oklch(95% .025 87); }
+.mesecPovzetek { display: grid; gap: .55rem; margin-top: .2rem; padding: 1.1rem 1.2rem; border-radius: 1.1rem; background: rgba(255,255,255,.42); backdrop-filter: blur(18px) saturate(1.3); -webkit-backdrop-filter: blur(18px) saturate(1.3); }
 .mesecPovzetekStevec { display: flex; align-items: baseline; gap: .65rem; flex-wrap: wrap; }
 .mesecPovzetekStevec span { color: var(--muted); font-size: .84rem; text-transform: capitalize; }
 .mesecPovzetekStevec strong { font: 500 2.15rem var(--font-serif), Georgia, serif; color: var(--ink); -webkit-text-stroke: .4px var(--ink); text-shadow: 0 1px 2px oklch(100% 0 0 / .35); }

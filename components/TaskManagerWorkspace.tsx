@@ -1807,7 +1807,10 @@ export default function TaskManagerWorkspace() {
         .tm-nova:hover{transform:translateY(-2px);box-shadow:0 .8rem 2rem oklch(22% .04 300/.22)}
 
         /* glava: preklop uporabnika + gumb za analitiko ekipe */
-        .tm-glava-akcije{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin-left:auto}
+        .tm-glava-akcije{display:flex;align-items:center;gap:.55rem;flex-wrap:nowrap;margin-left:auto}
+        /* »AI dodaj več« = samo ikona (kot uvoz/izvoz), da orodna vrstica ostane v eni vrstici */
+        .tm-seed-gumb-ai{width:2.75rem;padding:0;justify-content:center}
+        .tm-seed-gumb-ai .tm-akcija-tekst{display:none}
         .tm-uporabnik{display:flex;align-items:center;min-height:2.75rem;border:1px solid var(--line);border-radius:.8rem;background:#fff;overflow:hidden}
         .tm-uporabnik span{padding:0 .7rem;font:750 .58rem var(--font-sans),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
         .tm-uporabnik select{align-self:stretch;min-width:13rem;padding:.55rem 2rem .55rem .75rem;border:0;border-left:1px solid var(--line);border-radius:0;background-color:#fff;font:inherit;font-size:.78rem;color:var(--ink)}
