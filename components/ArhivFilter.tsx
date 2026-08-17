@@ -131,11 +131,17 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       {/* NAMIZJE (>640): vse v vrsti, brez oznak skupin.
           vrstni red: iskalnik → datum → status dropdown → akcija */}
       <div className="af-namizje">
-        <span className={'af-poln' + (namIsci || iskanje ? ' odprt' : '')}>
-          <button type="button" className="af-poln-gumb" aria-label={ph} aria-expanded={namIsci || !!iskanje} onClick={() => { if (namIsci && !iskanje) setNamIsci(false); else setNamIsci(true); }}>
+        <span className="af-poln">
+          <button type="button" className="af-poln-gumb" aria-label={ph} aria-expanded={namIsci || !!iskanje} onClick={() => setNamIsci(true)}>
             <MagnifyingGlass size={16} aria-hidden />
           </button>
-          <input ref={namInputRef} type="search" value={iskanje} onChange={event => onIskanje(event.target.value)} onBlur={() => { if (!iskanje) setNamIsci(false); }} placeholder={ph} aria-label={ph} tabIndex={namIsci || iskanje ? 0 : -1} />
+          {(namIsci || iskanje) && (
+            <div className="af-poln-overlay">
+              <MagnifyingGlass size={16} aria-hidden />
+              <input ref={namInputRef} type="search" value={iskanje} onChange={event => onIskanje(event.target.value)} placeholder={ph} aria-label={ph} />
+              <button type="button" className="af-poln-x" aria-label={L('Zapri iskanje', 'Close search')} onClick={() => { onIskanje(''); setNamIsci(false); }}>✕</button>
+            </div>
+          )}
         </span>
         <div className="af-datum" ref={datumRef}>
           <button type="button" className="af-datum-sprozilec" aria-haspopup="dialog" aria-expanded={koledarOdprt} aria-label={L('Izberi obdobje', 'Select period')} onClick={() => setKoledarOdprt(v => !v)}>
@@ -206,17 +212,16 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
         .af-sheet,.af-zastor{display:none !important}
         /* iskalnik ne raste greedy cez cel prostor -> max-width, da vrstica ni predolga/zbita */
         /* strnjen v ikono; klik razširi v vnos -> orodna vrstica ostane ENA */
-        .af-poln{flex:none;display:flex;align-items:center;gap:.25rem;min-width:0;box-sizing:border-box;color:color-mix(in oklch,var(--ink,#111) 50%,transparent)}
+        .af-poln{flex:none;display:flex;align-items:center;width:2.75rem;min-width:2.75rem;box-sizing:border-box;color:color-mix(in oklch,var(--ink,#111) 50%,transparent)}
         .af-poln-gumb{flex:none;display:grid;place-items:center;width:2.75rem;height:2.75rem;padding:0;border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);color:color-mix(in oklch,var(--ink,#111) 55%,transparent);cursor:pointer;transition:background-color .15s,color .15s}
         .af-poln-gumb:hover{background-color:var(--ink,#111);color:var(--paper,#fff)}
-        .af-poln input{width:0;min-width:0;border:none;background:none;font:inherit;font-weight:500;color:var(--ink,#111);opacity:0;padding:0;transition:width .26s cubic-bezier(.2,.8,.3,1),opacity .18s,padding .2s}
-        .af-poln input:focus{outline:none;box-shadow:none}
-        /* odprt = OVERLAY cez celo filter-vrstico (kot mobilni .af-iskanje): NE potisne
-           sosedov v drugo vrstico. Neprosojno ozadje prekrije kontrole spodaj; blur zapre. */
-        .af-poln.odprt{position:absolute;inset:0;z-index:6;flex:1 1 auto;max-width:none;padding:0 .5rem 0 0;border:1px solid var(--ink,#111);border-radius:999px;background-color:color-mix(in oklch,var(--paper,#fff) 97%,transparent);box-shadow:0 0 0 2.5px color-mix(in oklch,var(--purple,oklch(66% 0.2 297)) 42%,transparent)}
-        .af-poln.odprt .af-poln-gumb{border:0;background:transparent}
-        .af-poln.odprt .af-poln-gumb:hover{background:transparent;color:var(--ink,#111)}
-        .af-poln.odprt input{width:100%;flex:1;opacity:1;padding:.62rem .25rem}
+        /* odprt iskalnik = OVERLAY (absolute cez CELO .af-namizje): ne potisne sosedov, ikona-slot
+           ostane v toku (NI poskoka ob zapiranju). ✕ desno zapre. */
+        .af-poln-overlay{position:absolute;inset:0;z-index:6;display:flex;align-items:center;gap:.35rem;padding:0 .35rem 0 .85rem;border:1px solid var(--ink,#111);border-radius:999px;background-color:color-mix(in oklch,var(--paper,#fff) 97%,transparent);box-shadow:0 0 0 2.5px color-mix(in oklch,var(--purple,oklch(66% 0.2 297)) 42%,transparent)}
+        .af-poln-overlay > svg{flex:none;color:color-mix(in oklch,var(--ink,#111) 50%,transparent)}
+        .af-poln-overlay input{flex:1;min-width:6rem;border:0;background:none;outline:none;font:inherit;font-weight:500;color:var(--ink,#111);padding:.62rem .1rem}
+        .af-poln-x{flex:none;width:2rem;height:2rem;display:grid;place-items:center;border:0;border-radius:50%;background-color:color-mix(in oklch,var(--ink,#111) 6%,transparent);color:var(--ink,#111);font-size:.85rem;line-height:1;cursor:pointer}
+        .af-poln-x:hover{background-color:var(--ink,#111);color:var(--paper,#fff)}
         .af-poln input::placeholder{color:color-mix(in oklch,var(--ink,#111) 45%,transparent)}
         /* datum: sprozilec (ikona + slovensko besedilo) + koledar kot popover pod njim */
         .af-datum{position:relative;flex:0 0 auto;min-width:0;display:inline-flex}
@@ -261,11 +266,13 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       /* iPad / ozek prenosnik (641–1200): Izvoz=ikona-krogec + ožji datum/status,
          da orodna vrstica (zavihki + filter + akcija) ostane ENA vrsta. */
       @media (min-width:641px) and (max-width:1200px){
+        .af-namizje{flex-wrap:nowrap;gap:.4rem}
         .af-akcija-izvoz{width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;background-color:color-mix(in oklch,var(--paper,#fff) 70%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);color:var(--ink,#111)}
         .af-akcija-izvoz:hover{background-color:var(--ink,#111);color:var(--paper,#fff);transform:none}
         .af-akcija-izvoz .af-akcija-tekst{display:none}
-        .af-datum-sprozilec{padding:.55rem .7rem}
-        .af-status{padding:0 .4rem 0 .7rem}
+        .af-datum-sprozilec{padding:.55rem .6rem;gap:.35rem}
+        .af-status{padding:0 .35rem 0 .6rem}
+        .af-akcija{flex:none;margin-left:auto}
       }
       @media (max-width:640px){
         /* iskalni overlay naj se razpne cez CELO orodno vrstico (arh-glava), ne le cez .af:
