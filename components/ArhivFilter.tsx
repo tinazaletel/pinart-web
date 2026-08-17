@@ -77,11 +77,19 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
   const [namIsci, setNamIsci] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const namInputRef = useRef<HTMLInputElement | null>(null);
+  const namPolnRef = useRef<HTMLSpanElement | null>(null);
   const datumRef = useRef<HTMLDivElement | null>(null);
 
   /* autofocus ob razsiritvi — sele po animaciji sirine se input ne premika pod prstom */
   useEffect(() => { if (iskanjeOdprto) inputRef.current?.focus(); }, [iskanjeOdprto]);
   useEffect(() => { if (namIsci) namInputRef.current?.focus(); }, [namIsci]);
+  /* klik izven iskalnika ga strne (poizvedba ostane -> rezultati še filtrirani) */
+  useEffect(() => {
+    if (!namIsci) return;
+    const klik = (e: MouseEvent) => { if (namPolnRef.current && !namPolnRef.current.contains(e.target as Node)) setNamIsci(false); };
+    document.addEventListener('mousedown', klik);
+    return () => document.removeEventListener('mousedown', klik);
+  }, [namIsci]);
 
   /* namizni popover koledarja: klik zunaj ali Escape zapre (isti vzorec kot IzbirnikDrzave) */
   useEffect(() => {
@@ -131,11 +139,11 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       {/* NAMIZJE (>640): vse v vrsti, brez oznak skupin.
           vrstni red: iskalnik → datum → status dropdown → akcija */}
       <div className="af-namizje">
-        <span className="af-poln">
-          <button type="button" className="af-poln-gumb" aria-label={ph} aria-expanded={namIsci || !!iskanje} onClick={() => setNamIsci(true)}>
+        <span className="af-poln" ref={namPolnRef}>
+          <button type="button" className={'af-poln-gumb' + (iskanje ? ' aktiv' : '')} aria-label={ph} aria-expanded={namIsci} onClick={() => setNamIsci(true)}>
             <MagnifyingGlass size={16} aria-hidden />
           </button>
-          {(namIsci || iskanje) && (
+          {namIsci && (
             <div className="af-poln-overlay">
               <MagnifyingGlass size={16} aria-hidden />
               <input ref={namInputRef} type="search" value={iskanje} onChange={event => onIskanje(event.target.value)} placeholder={ph} aria-label={ph} />
@@ -215,11 +223,14 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
         .af-poln{flex:none;display:flex;align-items:center;width:2.75rem;min-width:2.75rem;box-sizing:border-box;color:color-mix(in oklch,var(--ink,#111) 50%,transparent)}
         .af-poln-gumb{flex:none;display:grid;place-items:center;width:2.75rem;height:2.75rem;padding:0;border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);color:color-mix(in oklch,var(--ink,#111) 55%,transparent);cursor:pointer;transition:background-color .15s,color .15s}
         .af-poln-gumb:hover{background-color:var(--ink,#111);color:var(--paper,#fff)}
+        .af-poln-gumb.aktiv{background-color:var(--ink,#111);color:var(--paper,#fff);border-color:var(--ink,#111)}
         /* odprt iskalnik = OVERLAY (absolute cez CELO .af-namizje): ne potisne sosedov, ikona-slot
            ostane v toku (NI poskoka ob zapiranju). ✕ desno zapre. */
-        .af-poln-overlay{position:absolute;inset:0;z-index:6;display:flex;align-items:center;gap:.35rem;padding:0 .35rem 0 .85rem;border:1px solid var(--ink,#111);border-radius:999px;background-color:color-mix(in oklch,var(--paper,#fff) 97%,transparent);box-shadow:0 0 0 2.5px color-mix(in oklch,var(--purple,oklch(66% 0.2 297)) 42%,transparent)}
+        .af-poln-overlay{position:absolute;inset:0;z-index:6;display:flex;align-items:center;gap:.35rem;padding:0 .5rem 0 .85rem;border:1px solid color-mix(in oklch,var(--ink,#111) 45%,transparent);border-radius:999px;background-color:var(--paper,#fff)}
         .af-poln-overlay > svg{flex:none;color:color-mix(in oklch,var(--ink,#111) 50%,transparent)}
         .af-poln-overlay input{flex:1;min-width:6rem;border:0;background:none;outline:none;font:inherit;font-weight:500;color:var(--ink,#111);padding:.62rem .1rem}
+        /* brez vijola kvadrata: globalni :focus-visible obroč na inputu ugasnjen (okvir je na overlayu) */
+        .af-poln-overlay input:focus,.af-poln-overlay input:focus-visible{outline:none;box-shadow:none}
         .af-poln-x{flex:none;width:2rem;height:2rem;display:grid;place-items:center;border:0;border-radius:50%;background-color:color-mix(in oklch,var(--ink,#111) 6%,transparent);color:var(--ink,#111);font-size:.85rem;line-height:1;cursor:pointer}
         .af-poln-x:hover{background-color:var(--ink,#111);color:var(--paper,#fff)}
         .af-poln input::placeholder{color:color-mix(in oklch,var(--ink,#111) 45%,transparent)}
