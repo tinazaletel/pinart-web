@@ -198,7 +198,7 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       /* NAMIZJE: vse vidno v eni vrsti, iskalnik → datum → status → akcija */
       @media (min-width:641px){
         .af-mob{display:none}
-        .af-namizje{display:flex;flex:1 1 auto;flex-wrap:wrap;align-items:center;gap:.5rem .7rem;min-width:0}
+        .af-namizje{position:relative;display:flex;flex:1 1 auto;flex-wrap:wrap;align-items:center;gap:.5rem .7rem;min-width:0}
         /* POENOTENA VIŠINA vseh elementov vrstice (iskalnik/datum/status/akcija),
            da niso različno visoki; box-sizing, da padding ne razbije višine */
         .af-poln,.af-datum-sprozilec,.af-status,.af-akcija > *{height:2.75rem;box-sizing:border-box;display:inline-flex;align-items:center}
@@ -211,8 +211,9 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
         .af-poln-gumb:hover{background-color:var(--ink,#111);color:var(--paper,#fff)}
         .af-poln input{width:0;min-width:0;border:none;background:none;font:inherit;font-weight:500;color:var(--ink,#111);opacity:0;padding:0;transition:width .26s cubic-bezier(.2,.8,.3,1),opacity .18s,padding .2s}
         .af-poln input:focus{outline:none;box-shadow:none}
-        .af-poln.odprt{flex:1 1 12rem;max-width:20rem;border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);padding-right:.6rem}
-        .af-poln.odprt:focus-within{border-color:var(--ink,#111);box-shadow:0 0 0 2.5px color-mix(in oklch,var(--purple,oklch(66% 0.2 297)) 42%,transparent)}
+        /* odprt = OVERLAY cez celo filter-vrstico (kot mobilni .af-iskanje): NE potisne
+           sosedov v drugo vrstico. Neprosojno ozadje prekrije kontrole spodaj; blur zapre. */
+        .af-poln.odprt{position:absolute;inset:0;z-index:6;flex:1 1 auto;max-width:none;padding:0 .5rem 0 0;border:1px solid var(--ink,#111);border-radius:999px;background-color:color-mix(in oklch,var(--paper,#fff) 97%,transparent);box-shadow:0 0 0 2.5px color-mix(in oklch,var(--purple,oklch(66% 0.2 297)) 42%,transparent)}
         .af-poln.odprt .af-poln-gumb{border:0;background:transparent}
         .af-poln.odprt .af-poln-gumb:hover{background:transparent;color:var(--ink,#111)}
         .af-poln.odprt input{width:100%;flex:1;opacity:1;padding:.62rem .25rem}
@@ -257,6 +258,15 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       /* ── akcijski gumb (skupni videz, npr. + Nova ponudba) ── */
       .af-akcija-gumb{display:inline-flex;align-items:center;justify-content:center;gap:.3rem;white-space:nowrap;padding:.7rem 1.1rem;border:none;border-radius:999px;background-color:var(--ink,#111);color:var(--paper,#fff);font:inherit;font-size:.82rem;font-weight:700;text-decoration:none;cursor:pointer;transition:transform .15s,opacity .15s}
       .af-akcija-gumb:hover{transform:translateY(-1px);opacity:.92}
+      /* iPad / ozek prenosnik (641–1200): Izvoz=ikona-krogec + ožji datum/status,
+         da orodna vrstica (zavihki + filter + akcija) ostane ENA vrsta. */
+      @media (min-width:641px) and (max-width:1200px){
+        .af-akcija-izvoz{width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;background-color:color-mix(in oklch,var(--paper,#fff) 70%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);color:var(--ink,#111)}
+        .af-akcija-izvoz:hover{background-color:var(--ink,#111);color:var(--paper,#fff);transform:none}
+        .af-akcija-izvoz .af-akcija-tekst{display:none}
+        .af-datum-sprozilec{padding:.55rem .7rem}
+        .af-status{padding:0 .4rem 0 .7rem}
+      }
       @media (max-width:640px){
         /* iskalni overlay naj se razpne cez CELO orodno vrstico (arh-glava), ne le cez .af:
            .af IN .af-vrstica postaneta pozicijsko nevtralna, sidrisce je arh-glava (ArhivWorkspace). */
