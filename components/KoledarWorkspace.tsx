@@ -199,6 +199,10 @@ export default function KoledarWorkspace() {
   const samoOgled = nacin !== 'mine';
 
   const [izbranDan, setIzbranDan] = useState(danesISO());
+  /* »danes/zdaj« sta odvisna od trenutka renderja -> na strežniku ≠ v brskalniku = hidracijski
+     neujemanje. Zato ju uporabimo šele PO montaži (server + prvi klient render sta enaka). */
+  const [montiran, setMontiran] = useState(false);
+  useEffect(() => { setMontiran(true); }, []);
   const [pogled, setPogled] = useState<Pogled>('mesec');
   const [sestanki, setSestanki] = useState<Sestanek[]>([]);
   const [rokiRacunov, setRokiRacunov] = useState<RacunRok[]>([]);
@@ -258,7 +262,9 @@ export default function KoledarWorkspace() {
     setRokiRacunov(izRacunov);
   }, [nacin]);
 
-  const danes = danesISO();
+  /* prazen »danes« do montaže -> ni oznake danes/ni črte zdaj, dokler se strežniški in
+     klientski render ne poravnata; nato (montiran) prikažemo pravi datum/uro. */
+  const danes = montiran ? danesISO() : '';
   const zdaj = new Date();
   const zdajMin = zdaj.getHours() * 60 + zdaj.getMinutes();
   const zapadliRacuni = useMemo(
