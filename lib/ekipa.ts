@@ -27,7 +27,8 @@ export async function posljiVabilo(email: string, vloga: 'admin' | 'member' = 'm
 
 export interface ClanOblak { userId: string; email: string; fullName: string; role: string; isSelf: boolean; }
 export interface VabiloOblak { id: string; email: string; role: string; expiresAt: string; }
-export interface EkipaOblak { jeAdmin: boolean; clani: ClanOblak[]; vabila: VabiloOblak[]; }
+export interface SedeziOblak { zasedeni: number; meja: number; plan: string; planOznaka: string; }
+export interface EkipaOblak { jeAdmin: boolean; clani: ClanOblak[]; vabila: VabiloOblak[]; sedezi?: SedeziOblak; }
 
 /* Prebere pravo ekipo iz oblaka (člani + čakajoča vabila). null = ni povezano/napaka. */
 export async function preberiEkipo(): Promise<EkipaOblak | null> {
@@ -36,7 +37,7 @@ export async function preberiEkipo(): Promise<EkipaOblak | null> {
     if (!res.ok) return null;
     const data = await res.json().catch(() => null);
     if (!data || !Array.isArray(data.clani)) return null;
-    return { jeAdmin: Boolean(data.jeAdmin), clani: data.clani, vabila: Array.isArray(data.vabila) ? data.vabila : [] };
+    return { jeAdmin: Boolean(data.jeAdmin), clani: data.clani, vabila: Array.isArray(data.vabila) ? data.vabila : [], sedezi: data.sedezi };
   } catch {
     return null;
   }

@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { omejiApi } from '@/lib/rate-limit';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { mejaSedezev, planOznaka } from '@/lib/ekipaSedezi';
 
 /* Seznam ekipe v oblaku (Faza 3).
    Člane in čakajoča vabila preberemo prek UPORABNIKOVEGA (RLS) clienta — tako
@@ -78,7 +79,16 @@ export async function GET(request: Request) {
     vabila = (inviteRows || []).map((i) => ({ id: String(i.id), email: String(i.email), role: String(i.role), expiresAt: String(i.expires_at) }));
   }
 
-  return NextResponse.json({ jeAdmin, clani, vabila, brezKljuca: !admin });
+  /* Faza 5 — zasedenost sedežev po planu (za prikaz »X / Y sedežev«). */
+  const { data: sub } = await supabase
+    .from('organization_subscriptions')
+    .select('tier')
+    .eq('organization_id', ctx.organizationId)
+    .maybeSingle();
+  const plan = String(sub?.tier || 'free');
+  const sedezi = { zasedeni: rows.length + vabila.length, meja: mejaSedezev(plan), plan, planOznaka: planOznaka(plan) };
+
+  return NextResponse.json({ jeAdmin, clani, vabila, sedezi, brezKljuca: !admin });
 }
 
 export async function DELETE(request: Request) {

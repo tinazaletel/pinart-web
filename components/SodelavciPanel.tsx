@@ -177,6 +177,13 @@ export default function SodelavciPanel() {
           <h2>Ekipa v oblaku</h2>
           <p>Kdo ima <b>resničen dostop</b> do delovnega prostora — člani in čakajoča vabila. Vabilo se sprejme, ko se oseba prijavi z istim e-naslovom.</p>
 
+          {ekipa?.sedezi && (
+            <p className={styles.opomba}>
+              Sedeži: <b>{ekipa.sedezi.zasedeni} / {ekipa.sedezi.meja}</b> · {ekipa.sedezi.planOznaka} paket
+              {ekipa.sedezi.zasedeni >= ekipa.sedezi.meja && ' — meja dosežena (za več nadgradi paket)'}
+            </p>
+          )}
+
           {ekipaNalaga && !ekipa && <p className={styles.opomba}>Nalagam ekipo …</p>}
 
           {ekipa && ekipa.clani.length > 0 && (

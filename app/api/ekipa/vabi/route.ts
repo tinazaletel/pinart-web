@@ -3,6 +3,7 @@ import { Resend } from 'resend';
 import { createClient } from '@/utils/supabase/server';
 import { omejiApi } from '@/lib/rate-limit';
 import { jeEmail, preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { mejaSedezev, planOznaka } from '@/lib/ekipaSedezi';
 
 /* Vabilo v ekipo (organizacijo) — Faza 2 večuporabniškega sloja.
    Admin/owner organizacije ustvari vabilo:
@@ -65,6 +66,27 @@ export async function POST(request: Request) {
     .eq('organization_id', organizationId)
     .is('accepted_at', null)
     .ilike('email', email);
+
+  /* Faza 5 — sedeži po planu: sedež = član + čakajoče vabilo. Če je zasedenih
+     >= meja za plan organizacije, novega vabila ne dovolimo. */
+  const { data: sub } = await supabase
+    .from('organization_subscriptions')
+    .select('tier')
+    .eq('organization_id', organizationId)
+    .maybeSingle();
+  const plan = String(sub?.tier || 'free');
+  const meja = mejaSedezev(plan);
+  const [{ count: steviloClanov }, { count: steviloVabil }] = await Promise.all([
+    supabase.from('organization_members').select('user_id', { count: 'exact', head: true }).eq('organization_id', organizationId),
+    supabase.from('organization_invites').select('id', { count: 'exact', head: true }).eq('organization_id', organizationId).is('accepted_at', null).gt('expires_at', new Date().toISOString()),
+  ]);
+  const zasedeni = (steviloClanov || 0) + (steviloVabil || 0);
+  if (zasedeni >= meja) {
+    return NextResponse.json(
+      { error: `Dosežena meja sedežev (${meja}) za ${planOznaka(plan)} paket. Za več članov nadgradi paket.` },
+      { status: 403 },
+    );
+  }
 
   const { data: created, error: insertError } = await supabase
     .from('organization_invites')
