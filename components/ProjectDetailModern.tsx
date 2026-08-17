@@ -434,7 +434,7 @@ export default function ProjectDetailModern({
       , document.body)}
 
       <style dangerouslySetInnerHTML={{ __html: `
-        .pm { --pm-ink: var(--ink, oklch(19% 0.014 55)); --pm-paper: var(--paper, oklch(97% 0.012 87)); --pm-line: var(--line, oklch(93% 0.007 82)); --pm-acc: var(--purple, oklch(66% 0.2 297)); --pm-card: #fff; --pm-muted: color-mix(in oklch, var(--ink) 55%, transparent); --pm-soft: color-mix(in oklch, var(--ink) 42%, transparent); max-width:100%; min-width:0; overflow-x:clip; }
+        .pm { --pm-ink: var(--ink, oklch(19% 0.014 55)); --pm-paper: var(--paper, oklch(97% 0.012 87)); --pm-line: var(--line, oklch(93% 0.007 82)); --pm-acc: var(--purple, oklch(66% 0.2 297)); --pm-card: #fff; --pm-muted: color-mix(in oklch, var(--ink) 70%, var(--pm-card)); --pm-soft: color-mix(in oklch, var(--ink) 52%, var(--pm-card)); max-width:100%; min-width:0; overflow-x:clip; }
         .pm-team { display:flex; align-items:center; gap:.7rem; flex-wrap:wrap; background:var(--pm-card); border:1px solid var(--pm-line); border-radius:16px; padding:.8rem 1rem; margin-bottom:1.2rem; }
         .pm-team-lbl { font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-member { display:inline-flex; align-items:center; gap:.5rem; padding:.3rem .6rem .3rem .35rem; border-radius:999px; border:1px solid var(--pm-line); background:var(--pm-card); }
@@ -469,7 +469,7 @@ export default function ProjectDetailModern({
         .pm-card > header { display:flex; align-items:center; justify-content:space-between; gap:.6rem; margin-bottom:.5rem; }
         .pm-card h3 { margin:0; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-title { font-family:var(--font-serif), Georgia, serif; font-size:1.3rem; margin:0 0 .7rem; color:var(--pm-ink); }
-        .pm-act { display:inline-flex; align-items:center; gap:.3rem; height:1.9rem; box-sizing:border-box; cursor:pointer; text-decoration:none; border:1px solid color-mix(in oklch, var(--pm-ink) 24%, transparent); background:color-mix(in oklch, var(--pm-ink) 5%, transparent); color:var(--pm-ink); border-radius:999px; padding:0 .85rem; font-size:.74rem; font-weight:700; white-space:nowrap; transition:background .16s ease, border-color .16s ease; }
+        .pm-act { display:inline-flex; align-items:center; gap:.3rem; height:1.9rem; box-sizing:border-box; cursor:pointer; text-decoration:none; border:1px solid color-mix(in oklch, var(--pm-ink) 12%, transparent); background:color-mix(in oklch, var(--pm-ink) 5%, transparent); color:var(--pm-ink); border-radius:999px; padding:0 .85rem; font-size:.74rem; font-weight:700; white-space:nowrap; transition:background .16s ease, border-color .16s ease; }
         .pm-act:hover { background:#fff; color:var(--pm-ink); border-color:var(--pm-ink); }
         /* urejljiva brief polja (inline v panelu) */
         .pm-qa-edit { display:block; }
