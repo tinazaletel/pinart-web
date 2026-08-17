@@ -1859,6 +1859,9 @@ export default function TaskManagerWorkspace() {
         .tm-mobilni-filter-gumb{display:none}
         /* filter po oznaki (tagu) — spustni izbor poleg vse/moje/zamujene */
         .tm-filter-oznaka{appearance:none;-webkit-appearance:none;-moz-appearance:none;min-height:2.75rem;padding:0 1.8rem 0 .85rem;border:1px solid var(--line);border-radius:999px;background-color:#fff;color:var(--ink);font:700 .68rem var(--font-sans),sans-serif;cursor:pointer;background-repeat:no-repeat;background-position:right .6rem center;background-size:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
+        /* .shell sili font-size:16px !important na VSE selecte -> ta dva sta bila večja od
+           sosednjih gumbov. Zvišana specifičnost + !important poravna velikost in sprosti prostor. */
+        .tm-pogled-filtri-vrsta .tm-filter-oznaka{font-size:.72rem !important}
         .tm-filter-oznaka:focus{outline:none;border-color:var(--ink)}
         .tm-mobilni-sheet-zastor{position:fixed;inset:0;z-index:1000;display:flex;align-items:flex-end;background:rgba(25,18,14,.2);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:tm-sheet-fade .22s ease-out}
         .tm-mobilni-sheet{width:100%;padding:.55rem 1rem calc(1rem + env(safe-area-inset-bottom));border-radius:1.4rem 1.4rem 0 0;background:#fff;color:#17110e;box-shadow:0 -1.2rem 4rem rgba(25,18,14,.16);animation:tm-sheet-vstop .34s cubic-bezier(.16,1,.3,1)}

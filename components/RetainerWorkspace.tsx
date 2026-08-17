@@ -131,6 +131,15 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
     upd(); mq.addEventListener('change', upd);
     return () => mq.removeEventListener('change', upd);
   }, []);
+  /* tablica (641–1200): mehurcki uporabijo ISTO tesno postavitev kot telefon (3 v vrsti,
+     manjsi premer) -> se sorazmerno pomanjsajo in PRILEGAJO, brez odrezanih robov. */
+  const [jeTesno, setJeTesno] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1200px)');
+    const upd = () => setJeTesno(mq.matches);
+    upd(); mq.addEventListener('change', upd);
+    return () => mq.removeEventListener('change', upd);
+  }, []);
   const [ponudnik, setPonudnik] = useState<Ponudnik>({ ime: '', davcna: '', email: '', telefon: '', naslov: '', trr: '' });
   const [predklic, setPredklic] = useState('+386');
   const [urna, setUrna] = useState(PRIVZETA_URNA);
@@ -278,10 +287,10 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
   }, [model, ure, urna, paketMes, doba]);
 
   const vsiScope = [...scope, ...lastna];
-  const L = scatter(SCOPE.length + 1, jeMobilni); /* + "dodaj" mehurcek */
+  const L = scatter(SCOPE.length + 1, jeMobilni || jeTesno); /* + "dodaj" mehurcek; tablica = tesno */
   /* Enako kot kalkulator: na mobilu stisnemo razpon utezi, da je tudi najlazji mehurcek
      dovolj velik za svoj napis (npr. "Social media"), najtezji pa ne pride do roba. */
-  const tezaOrb = (t: number) => (jeMobilni ? 0.668 + 0.365 * t : t);
+  const tezaOrb = (t: number) => (jeMobilni || jeTesno ? 0.668 + 0.365 * t : t);
   const zDdv = (n: number) => Math.round(n * (1 + ddvStopnja / 100));
   const toggle = (id: string) => setScope(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
   const dodajLastno = () => { const v = scopeVnos.trim(); if (v && !lastna.includes(v)) setLastna(l => [...l, v]); setScopeVnos(''); };
@@ -1359,6 +1368,9 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         .rw-editor .sig>div{flex:1;font-size:.85rem;color:#444}
         .rw-editor .sig .lin{display:block;border-top:1px solid #111;margin:2rem 0 .3rem}
         @media (max-width:600px){.rw-mreza,.rw-mreza3,.rw-mreza-prav,.rw-numgrid{grid-template-columns:minmax(0,1fr)}}
+        /* Tablica (641–1200): platno mehurckov NE sme biti sirse od starsa (.rw-vsebina),
+           sicer .rw overflow-x:clip odreze robne orbe. Orbi so ze v tesni postavitvi (jeTesno). */
+        @media (min-width:641px) and (max-width:1200px){ .rw-platno{width:min(960px,100%);max-width:100%} }
         /* ── Mobilni odrez po desni: koren .rw ima overflow-x:clip, zato NIC ne sme biti sirse od .rw-vsebina (min(700px,92vw)). ── */
         /* .rw-platno (min(960px,96vw)) in .rw-predogled (min(880px,94vw)) sta bila sirsa od starsa in centrirana (translateX) -> desni rob je gledal cez in bil odrezan. */
         @media (max-width:640px){
