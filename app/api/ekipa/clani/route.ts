@@ -4,10 +4,14 @@ import { createAdminClient } from '@/utils/supabase/admin';
 import { omejiApi } from '@/lib/rate-limit';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 
-/* Seznam ekipe v oblaku (Faza 3). E-pošte članov so v auth.users (RLS jih klientu
-   ne izpostavi), zato jih preberemo strežniško prek admin (service_role) clienta.
-   - GET: člani (organization_members + profil + e-pošta) + čakajoča vabila (samo admin).
-   - DELETE: admin odstrani člana (user_id v body); ownerja in sebe ne more odstraniti. */
+/* Seznam ekipe v oblaku (Faza 3).
+   Člane in čakajoča vabila preberemo prek UPORABNIKOVEGA (RLS) clienta — tako
+   deluje TUDI brez service-role ključa (npr. lokalni dev):
+     - organization_members: politika "members read memberships" (član vidi svoj org),
+     - organization_invites: politika "admins read invites" (vidi le admin).
+   E-pošte/imena članov (iz auth.users/profiles, ki jih RLS klientu ne izpostavi)
+   dodamo LE, če je na voljo admin (service-role) client — sicer prikažemo vsaj
+   svojo e-pošto. Brez ključa panel še vedno deluje, le tuje e-pošte so skrite. */
 
 async function resolveContext(supabase: ReturnType<typeof createClient>, userId: string) {
   const { data } = await supabase
@@ -30,10 +34,8 @@ export async function GET(request: Request) {
   if (!ctx) return NextResponse.json({ error: 'Podjetje ni povezano.' }, { status: 403 });
   const jeAdmin = ctx.role === 'owner' || ctx.role === 'admin';
 
-  const admin = createAdminClient();
-  if (!admin) return NextResponse.json({ error: 'Ekipa v oblaku ni konfigurirana.' }, { status: 503 });
-
-  const { data: memberRows } = await admin
+  /* Člani prek RLS clienta (deluje brez service ključa). */
+  const { data: memberRows } = await supabase
     .from('organization_members')
     .select('user_id, role, created_at')
     .eq('organization_id', ctx.organizationId)
@@ -41,26 +43,32 @@ export async function GET(request: Request) {
   const rows = memberRows || [];
   const userIds = rows.map((r) => String(r.user_id));
 
-  const { data: profileRows } = userIds.length
-    ? await admin.from('profiles').select('id, full_name').in('id', userIds)
-    : { data: [] as { id: string; full_name: string | null }[] };
-  const imenaById = new Map((profileRows || []).map((p) => [String(p.id), p.full_name || '']));
+  /* E-pošte/imena SAMO če je admin client na voljo (best-effort obogatitev). */
+  const imenaById = new Map<string, string>();
+  const emailById = new Map<string, string>();
+  const admin = createAdminClient();
+  if (admin && userIds.length) {
+    const { data: profileRows } = await admin.from('profiles').select('id, full_name').in('id', userIds);
+    (profileRows || []).forEach((p: { id: string; full_name: string | null }) => imenaById.set(String(p.id), p.full_name || ''));
+    await Promise.all(userIds.map(async (uid) => {
+      try {
+        const { data: u } = await admin.auth.admin.getUserById(uid);
+        if (u?.user?.email) emailById.set(uid, u.user.email);
+      } catch { /* e-pošta ni kljucna */ }
+    }));
+  }
+  /* Svojo e-pošto poznamo vedno (iz seje) — tudi brez admin ključa. */
+  if (user.email) emailById.set(user.id, user.email);
 
-  /* E-pošta iz auth.users prek admin API (na člana; za majhne ekipe povsem OK). */
-  const clani = await Promise.all(rows.map(async (r) => {
+  const clani = rows.map((r) => {
     const uid = String(r.user_id);
-    let email = '';
-    try {
-      const { data: u } = await admin.auth.admin.getUserById(uid);
-      email = u?.user?.email || '';
-    } catch { /* e-pošta ni kljucna za prikaz */ }
-    return { userId: uid, email, fullName: imenaById.get(uid) || '', role: String(r.role), isSelf: uid === user.id };
-  }));
+    return { userId: uid, email: emailById.get(uid) || '', fullName: imenaById.get(uid) || '', role: String(r.role), isSelf: uid === user.id };
+  });
 
-  /* Čakajoča vabila vidi samo admin (RLS na organization_invites je admin-only). */
+  /* Čakajoča vabila — prek RLS clienta (admin read policy); deluje brez service ključa. */
   let vabila: { id: string; email: string; role: string; expiresAt: string }[] = [];
   if (jeAdmin) {
-    const { data: inviteRows } = await admin
+    const { data: inviteRows } = await supabase
       .from('organization_invites')
       .select('id, email, role, expires_at')
       .eq('organization_id', ctx.organizationId)
@@ -70,7 +78,7 @@ export async function GET(request: Request) {
     vabila = (inviteRows || []).map((i) => ({ id: String(i.id), email: String(i.email), role: String(i.role), expiresAt: String(i.expires_at) }));
   }
 
-  return NextResponse.json({ jeAdmin, clani, vabila });
+  return NextResponse.json({ jeAdmin, clani, vabila, brezKljuca: !admin });
 }
 
 export async function DELETE(request: Request) {
@@ -94,10 +102,8 @@ export async function DELETE(request: Request) {
   }
   if (targetId === user.id) return NextResponse.json({ error: 'Sebe ne moreš odstraniti.' }, { status: 400 });
 
-  const admin = createAdminClient();
-  if (!admin) return NextResponse.json({ error: 'Ekipa v oblaku ni konfigurirana.' }, { status: 503 });
-
-  const { data: target } = await admin
+  /* Preveri cilja prek RLS clienta (član vidi članstva svojega orga). */
+  const { data: target } = await supabase
     .from('organization_members')
     .select('role')
     .eq('organization_id', ctx.organizationId)
@@ -106,7 +112,8 @@ export async function DELETE(request: Request) {
   if (!target) return NextResponse.json({ error: 'Član ni v tej ekipi.' }, { status: 404 });
   if (String(target.role) === 'owner') return NextResponse.json({ error: 'Lastnika organizacije ni mogoče odstraniti.' }, { status: 400 });
 
-  const { error: delError } = await admin
+  /* Izbris prek RLS clienta — politika "admins manage memberships" dovoli adminu. */
+  const { error: delError } = await supabase
     .from('organization_members')
     .delete()
     .eq('organization_id', ctx.organizationId)
