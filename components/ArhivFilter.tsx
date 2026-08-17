@@ -73,11 +73,15 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
   const [iskanjeOdprto, setIskanjeOdprto] = useState(false);
   const [sheet, setSheet] = useState(false);
   const [koledarOdprt, setKoledarOdprt] = useState(false);
+  /* namizni iskalnik je strnjen v ikono; klik ga razširi -> orodna vrstica ostane ENA */
+  const [namIsci, setNamIsci] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const namInputRef = useRef<HTMLInputElement | null>(null);
   const datumRef = useRef<HTMLDivElement | null>(null);
 
   /* autofocus ob razsiritvi — sele po animaciji sirine se input ne premika pod prstom */
   useEffect(() => { if (iskanjeOdprto) inputRef.current?.focus(); }, [iskanjeOdprto]);
+  useEffect(() => { if (namIsci) namInputRef.current?.focus(); }, [namIsci]);
 
   /* namizni popover koledarja: klik zunaj ali Escape zapre (isti vzorec kot IzbirnikDrzave) */
   useEffect(() => {
@@ -127,9 +131,11 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       {/* NAMIZJE (>640): vse v vrsti, brez oznak skupin.
           vrstni red: iskalnik → datum → status dropdown → akcija */}
       <div className="af-namizje">
-        <span className="af-poln">
-          <MagnifyingGlass size={16} aria-hidden />
-          <input type="search" value={iskanje} onChange={event => onIskanje(event.target.value)} placeholder={ph} aria-label={ph} />
+        <span className={'af-poln' + (namIsci || iskanje ? ' odprt' : '')}>
+          <button type="button" className="af-poln-gumb" aria-label={ph} aria-expanded={namIsci || !!iskanje} onClick={() => { if (namIsci && !iskanje) setNamIsci(false); else setNamIsci(true); }}>
+            <MagnifyingGlass size={16} aria-hidden />
+          </button>
+          <input ref={namInputRef} type="search" value={iskanje} onChange={event => onIskanje(event.target.value)} onBlur={() => { if (!iskanje) setNamIsci(false); }} placeholder={ph} aria-label={ph} tabIndex={namIsci || iskanje ? 0 : -1} />
         </span>
         <div className="af-datum" ref={datumRef}>
           <button type="button" className="af-datum-sprozilec" aria-haspopup="dialog" aria-expanded={koledarOdprt} aria-label={L('Izberi obdobje', 'Select period')} onClick={() => setKoledarOdprt(v => !v)}>
@@ -199,10 +205,17 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
         .af-akcija > *{white-space:nowrap}
         .af-sheet,.af-zastor{display:none !important}
         /* iskalnik ne raste greedy cez cel prostor -> max-width, da vrstica ni predolga/zbita */
-        .af-poln{flex:1 1 11rem;max-width:17rem;min-width:0;display:flex;align-items:center;gap:.45rem;box-sizing:border-box;background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;padding:0 .95rem;color:color-mix(in oklch,var(--ink,#111) 50%,transparent)}
-        .af-poln:focus-within{border-color:var(--ink,#111);box-shadow:0 0 0 2.5px color-mix(in oklch,var(--purple,oklch(66% 0.2 297)) 42%,transparent)}
-        .af-poln input{flex:1;min-width:0;border:none;background:none;font:inherit;font-weight:500;color:var(--ink,#111);padding:.62rem .25rem}
+        /* strnjen v ikono; klik razširi v vnos -> orodna vrstica ostane ENA */
+        .af-poln{flex:none;display:flex;align-items:center;gap:.25rem;min-width:0;box-sizing:border-box;color:color-mix(in oklch,var(--ink,#111) 50%,transparent)}
+        .af-poln-gumb{flex:none;display:grid;place-items:center;width:2.75rem;height:2.75rem;padding:0;border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);color:color-mix(in oklch,var(--ink,#111) 55%,transparent);cursor:pointer;transition:background-color .15s,color .15s}
+        .af-poln-gumb:hover{background-color:var(--ink,#111);color:var(--paper,#fff)}
+        .af-poln input{width:0;min-width:0;border:none;background:none;font:inherit;font-weight:500;color:var(--ink,#111);opacity:0;padding:0;transition:width .26s cubic-bezier(.2,.8,.3,1),opacity .18s,padding .2s}
         .af-poln input:focus{outline:none;box-shadow:none}
+        .af-poln.odprt{flex:1 1 12rem;max-width:20rem;border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);padding-right:.6rem}
+        .af-poln.odprt:focus-within{border-color:var(--ink,#111);box-shadow:0 0 0 2.5px color-mix(in oklch,var(--purple,oklch(66% 0.2 297)) 42%,transparent)}
+        .af-poln.odprt .af-poln-gumb{border:0;background:transparent}
+        .af-poln.odprt .af-poln-gumb:hover{background:transparent;color:var(--ink,#111)}
+        .af-poln.odprt input{width:100%;flex:1;opacity:1;padding:.62rem .25rem}
         .af-poln input::placeholder{color:color-mix(in oklch,var(--ink,#111) 45%,transparent)}
         /* datum: sprozilec (ikona + slovensko besedilo) + koledar kot popover pod njim */
         .af-datum{position:relative;flex:0 0 auto;min-width:0;display:inline-flex}
