@@ -2155,6 +2155,18 @@ export default function TaskManagerWorkspace() {
           .tm-plan-akcije{margin-left:0;width:100%}
           .tm-matrika tbody td,.tm-matrika-projekt-glava,.tm-matrika tbody th.tm-matrika-projekt{min-width:9rem}
         }
+        /* iPad / ozek prenosnik (701–1240): stisni gumbe+selecte, da orodna vrstica ostane ENA.
+           Analitika -> samo ikona (kot uvoz/izvoz in AI); ožji razmiki + padding na segmentih/selectih. */
+        @media (min-width:701px) and (max-width:1240px){
+          .tm-pogled-filtri-vrsta{gap:.45rem}
+          .tm-glava-akcije{gap:.4rem}
+          .tm-analitika-gumb{width:2.75rem;min-width:2.75rem;padding:0;justify-content:center;border-radius:50%}
+          .tm-analitika-gumb .tm-akcija-tekst{display:none}
+          .tm-filtri button{padding:0 .6rem}
+          .tm-pogled-preklop button{padding:0 .62rem}
+          .tm-filter-oznaka{padding:0 1.5rem 0 .68rem}
+          .tm-nova{padding:0 .85rem}
+        }
         @media (max-width:700px){
           .tm-deska{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:min(82vw,22rem);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.6rem;margin-right:-.5rem;padding-right:.5rem;scroll-padding-right:.5rem}
           .tm-stolpec{scroll-snap-align:start}
