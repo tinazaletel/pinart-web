@@ -27,10 +27,15 @@ export default function SprejmiVabilo({ base }: { base: string }) {
       if (cancelled) return;
       if (!user) { setStanje('prijava'); return; }
       setStanje('sprejemam');
-      const { data, error } = await supabase.rpc('accept_organization_invitation', { invite_token: token });
+      const { data, error } = await supabase.rpc('accept_organization_invite', { invite_token: token });
       if (cancelled) return;
       if (error || !data) {
-        setNapaka(error?.message || 'Vabilo ni veljavno ali je poteklo.');
+        /* Najpogostejši vzrok: prijava z DRUGIM e-naslovom, kot je bilo vabilo.
+           Funkcija to zavrne ("belongs to another account"). Pokaži slovensko. */
+        const sporocilo = /another account/i.test(error?.message || '')
+          ? 'To vabilo je za drug e-naslov. Prijavi se z e-naslovom, na katerega si prejel/a vabilo.'
+          : 'Vabilo ni veljavno ali je poteklo.';
+        setNapaka(sporocilo);
         setStanje('napaka');
         return;
       }
