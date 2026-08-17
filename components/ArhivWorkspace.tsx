@@ -929,7 +929,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-zav-mob{display:none}
         /* iPad / ozek prenosnik (641–1200): stisni zavihke + pogled=ikone, da glava (zavihki+filter)
            ostane ENA vrstica (prej se je ArhivFilter prelomil pod zavihke). */
-        @media (min-width:641px) and (max-width:1200px){
+        @media (min-width:641px) and (max-width:1400px){
           .arh-segpills button{padding:.46rem .6rem;font-size:.68rem}
           .arh-pogled-preklop .arh-pp-ik{display:inline-flex}
           .arh-pogled-preklop .arh-pp-txt{display:none}
