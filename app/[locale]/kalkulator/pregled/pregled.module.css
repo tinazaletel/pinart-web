@@ -320,6 +320,13 @@
 .flowTools > *:hover i { background: oklch(100% 0 0 / .65); border-color: oklch(30% .04 300 / .18); }
 .flowTools i svg { width: 15px; height: 15px; }
 .flowTools i svg { display: block; }
+/* Mobilno: puščica-krogec odpade (kartice se tako ali tako scrollajo vodoravno + cela
+   je klikljiva) -> naslov dobi polno širino in dolge besede (Komunikacija/Računovodstvo)
+   ne tečejo več pod krogcem (grdo prekrivanje). */
+@media (max-width: 640px) {
+  .flowTools i { display: none; }
+  .flowTools strong, .flowTools small { padding-right: .4rem; }
+}
 .toolIcon { display: none; }
 .flowTools > *:nth-child(4) .toolIcon { stroke: var(--ink); }
 
