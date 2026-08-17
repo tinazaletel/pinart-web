@@ -221,8 +221,9 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
         /* iskalnik ne raste greedy cez cel prostor -> max-width, da vrstica ni predolga/zbita */
         /* strnjen v ikono; klik razširi v vnos -> orodna vrstica ostane ENA */
         .af-poln{flex:none;display:flex;align-items:center;width:2.75rem;min-width:2.75rem;box-sizing:border-box;color:color-mix(in oklch,var(--ink,#111) 50%,transparent)}
-        .af-poln-gumb{flex:none;display:grid;place-items:center;width:2.75rem;height:2.75rem;padding:0;border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);color:color-mix(in oklch,var(--ink,#111) 55%,transparent);cursor:pointer;transition:background-color .15s,color .15s}
-        .af-poln-gumb:hover{background-color:var(--ink,#111);color:var(--paper,#fff)}
+        .af-poln-gumb{flex:none;display:grid;place-items:center;width:2.75rem;height:2.75rem;padding:0;border:1px solid color-mix(in oklch,var(--ink,#111) 16%,transparent);border-radius:999px;background-color:#fff;color:color-mix(in oklch,var(--ink,#111) 55%,transparent);cursor:pointer;transition:background-color .16s,color .16s,transform .16s cubic-bezier(.2,.8,.3,1),box-shadow .16s}
+        .af-poln-gumb:hover{background-color:var(--ink,#111);color:var(--paper,#fff);transform:translateY(-1px);box-shadow:0 .4rem 1rem color-mix(in oklch,var(--ink,#111) 18%,transparent)}
+        .af-poln-gumb:active{transform:translateY(0)}
         .af-poln-gumb.aktiv{background-color:var(--ink,#111);color:var(--paper,#fff);border-color:var(--ink,#111)}
         /* odprt iskalnik = OVERLAY (absolute cez CELO .af-namizje): ne potisne sosedov, ikona-slot
            ostane v toku (NI poskoka ob zapiranju). ✕ desno zapre. */
@@ -245,8 +246,9 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
          iskalnik/status (rob+ozadje+radius), afordanca pride iz roba/hoverja
          pilule, NE iz kroga okrog ikone (ikona ostane mirna/svetla). Klik
          odpre koledar kot popover pod njim ── */
-      .af-datum-sprozilec{display:inline-flex;align-items:center;gap:.5rem;min-width:0;box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);border-radius:999px;padding:.55rem .95rem;font:inherit;color:inherit;cursor:pointer;transition:border-color .15s,background-color .15s}
-      .af-datum-sprozilec:hover{border-color:var(--ink,#111);background-color:color-mix(in oklch,var(--paper,#fff) 70%,transparent)}
+      .af-datum-sprozilec{display:inline-flex;align-items:center;gap:.5rem;min-width:0;box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);background-color:#fff;border-radius:999px;padding:.55rem .95rem;font:inherit;color:inherit;cursor:pointer;transition:border-color .16s,background-color .16s,transform .16s cubic-bezier(.2,.8,.3,1),box-shadow .16s}
+      .af-datum-sprozilec:hover{border-color:var(--ink,#111);background-color:#fff;transform:translateY(-1px);box-shadow:0 .4rem 1rem color-mix(in oklch,var(--ink,#111) 12%,transparent)}
+      .af-datum-sprozilec:active{transform:translateY(0)}
       .af-kolgumb{display:inline-flex;align-items:center;justify-content:center;flex:none;color:color-mix(in oklch,var(--ink,#111) 55%,transparent);transition:color .15s}
       .af-datum-sprozilec:hover .af-kolgumb{color:var(--ink,#111)}
       .af-datum-tekst{font-size:.85rem;font-weight:500;color:color-mix(in oklch,var(--ink,#111) 45%,transparent);white-space:nowrap}
@@ -258,7 +260,8 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
       /* ── STATUS: zaobljena pilula (kot iskalnik/datum) — [funnel ikona] [select] [chevron].
          Select sam nima vec lastnega roba/ozadja (tega da pilula), appearance:none +
          lasten chevron kot background-image, da se puscica ne izgubi (past .shell select). ── */
-      .af-status{display:inline-flex;align-items:center;gap:.4rem;flex:0 1 auto;min-width:0;box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);background-color:color-mix(in oklch,var(--paper,#fff) 85%,transparent);border-radius:999px;padding:0 .5rem 0 .85rem;transition:border-color .15s}
+      .af-status{display:inline-flex;align-items:center;gap:.4rem;flex:0 1 auto;min-width:0;box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);background-color:#fff;border-radius:999px;padding:0 .5rem 0 .85rem;transition:border-color .16s,transform .16s cubic-bezier(.2,.8,.3,1),box-shadow .16s}
+      .af-status:hover{border-color:color-mix(in oklch,var(--ink,#111) 40%,transparent);transform:translateY(-1px);box-shadow:0 .4rem 1rem color-mix(in oklch,var(--ink,#111) 12%,transparent)}
       /* fokus obroč na CELI pilulici (wrapperju), ne na golem selectu znotraj — da vijola sledi obliki gumba */
       .af-status:focus-within{border-color:var(--ink,#111);box-shadow:0 0 0 2.5px color-mix(in oklch,var(--purple,oklch(66% 0.2 297)) 42%,transparent)}
       .af-status .af-select:focus-visible{box-shadow:none}
@@ -278,7 +281,7 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
          da orodna vrstica (zavihki + filter + akcija) ostane ENA vrsta. */
       @media (min-width:641px) and (max-width:1200px){
         .af-namizje{flex-wrap:nowrap;gap:.4rem}
-        .af-akcija-izvoz{width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;background-color:color-mix(in oklch,var(--paper,#fff) 70%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);color:var(--ink,#111)}
+        .af-akcija-izvoz{width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;background-color:#fff;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);color:var(--ink,#111)}
         .af-akcija-izvoz:hover{background-color:var(--ink,#111);color:var(--paper,#fff);transform:none}
         .af-akcija-izvoz .af-akcija-tekst{display:none}
         .af-datum-sprozilec{padding:.55rem .6rem;gap:.35rem}
@@ -291,7 +294,7 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
         .af{position:static}
         .af-vrstica{position:static}
         /* Izvoz za racunovodstvo = mala ikona-krogec (kot search/filter), da ne stisne vrstice */
-        .af-akcija-izvoz{width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;background-color:color-mix(in oklch,var(--paper,#fff) 70%,transparent);border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);color:var(--ink,#111)}
+        .af-akcija-izvoz{width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;background-color:#fff;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);color:var(--ink,#111)}
         .af-akcija-izvoz:hover{background-color:var(--ink,#111);color:var(--paper,#fff);transform:none}
         .af-akcija-izvoz .af-akcija-tekst{display:none}
         .af-akcija-dodaj{position:relative;width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;font-size:0}
@@ -300,7 +303,7 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
         .af-akcija-dodaj::after{width:2.4px;height:1.3rem;transform:translate(-50%,-50%)}
       }
 
-      .af-krog{position:relative;display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;padding:0;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);border-radius:50%;background-color:color-mix(in oklch,var(--paper,#fff) 70%,transparent);color:var(--ink,#111);cursor:pointer;transition:background-color .15s,color .15s}
+      .af-krog{position:relative;display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;padding:0;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);border-radius:50%;background-color:#fff;color:var(--ink,#111);cursor:pointer;transition:background-color .15s,color .15s}
       .af-krog:hover{background-color:var(--ink,#111);color:var(--paper,#fff)}
       .af-stevec{position:absolute;top:-.3rem;right:-.3rem;min-width:1.05rem;height:1.05rem;padding:0 .25rem;border-radius:999px;background-color:var(--accent,#B25476);color:var(--paper,#fff);font-size:.62rem;font-weight:800;display:grid;place-items:center;line-height:1}
       /* razsirjeno iskanje: pilula cez CELO vrstico (animacija sirine iz leve) */

@@ -29,7 +29,9 @@ export default function IskalnikMob({ vrednost, naVrednost, placeholder, label }
 
       <style dangerouslySetInnerHTML={{ __html: `
         .iskmob { position: static; flex: none; display: inline-flex; }
-        .iskmob-krog { display: inline-flex; align-items: center; justify-content: center; width: 3rem; height: 3rem; flex: none; border-radius: 50%; border: 1px solid var(--line, rgba(17,17,17,.12)); background: color-mix(in oklch, var(--paper, #fff) 92%, transparent); color: var(--ink, #111); cursor: pointer; }
+        .iskmob-krog { display: inline-flex; align-items: center; justify-content: center; width: 3rem; height: 3rem; flex: none; border-radius: 50%; border: 1px solid var(--line, rgba(17,17,17,.12)); background: #fff; color: var(--ink, #111); cursor: pointer; transition: background .16s, color .16s, transform .16s cubic-bezier(.2,.8,.3,1), box-shadow .16s; }
+        .iskmob-krog:hover { background: var(--ink, #111); color: #fff; transform: translateY(-1px); box-shadow: 0 .4rem 1rem color-mix(in oklch, var(--ink, #111) 18%, transparent); }
+        .iskmob-krog:active { transform: translateY(0); }
         .iskmob-over { position: absolute; left: 0; right: 0; top: 0; z-index: 6; display: flex; align-items: center; gap: .5rem; min-height: 3rem; box-sizing: border-box; padding: 0 .5rem 0 1rem; border: 1px solid color-mix(in oklch, var(--ink, #111) 12%, transparent); border-radius: 999px; background: var(--paper, #fff); box-shadow: 0 6px 20px rgba(40,25,40,.08); color: color-mix(in oklch, var(--ink, #111) 55%, transparent); opacity: 0; pointer-events: none; clip-path: inset(0 100% 0 0 round 999px); transition: clip-path .26s cubic-bezier(.2,.8,.3,1), opacity .18s; }
         .iskmob-over.odprt { opacity: 1; pointer-events: auto; clip-path: inset(0 0 0 0 round 999px); }
         .iskmob-over:focus-within { border-color: var(--purple, oklch(66% .2 297)); box-shadow: 0 0 0 2.5px color-mix(in oklch, var(--purple, oklch(66% .2 297)) 30%, transparent); }
