@@ -478,7 +478,9 @@ export default function TaskManagerWorkspace() {
   const [predogledNacin] = usePredogled();
   const samoOgled = false;
 
-  const trenutni = sodelavci.find((s) => s.id === trenutniId) || sodelavci[0];
+  /* trenutni NIKOLI ne sme biti undefined: če je sodelavci prazen (npr. localStorage/oblak
+     vrne []), bi trenutni.vloga vrgel 'client-side exception'. Zato fallback na privzetega. */
+  const trenutni = sodelavci.find((s) => s.id === trenutniId) || sodelavci[0] || ZACETNI_SODELAVCI[0];
   const jeVodjaAliAdmin = trenutni.vloga === 'vodja' || trenutni.vloga === 'admin';
 
   useEffect(() => {
