@@ -1089,7 +1089,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       .rc .rc-povezava-z{display:inline-flex;align-items:center;gap:.4rem;font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em;padding:0}
       .rc .rc-povezava-z:hover{opacity:.6}
       .rc .rc-povezava-z:disabled{opacity:.45;cursor:default}
-      .rc-noga{position:fixed;bottom:0;left:17.5rem;right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,var(--paper) 70%,transparent);z-index:40}
+      .rc-noga{position:fixed;bottom:0;left:var(--sidebar-w,17.5rem);right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,var(--paper) 70%,transparent);z-index:40}
       :global(body[data-meni='zaprt']) .rc-noga{left:4.4rem}
       @media (max-width:980px){.rc-noga{left:0}}
       .rc-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.7rem;flex-wrap:nowrap}

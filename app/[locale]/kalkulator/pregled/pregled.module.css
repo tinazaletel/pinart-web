@@ -8,7 +8,10 @@
   --orange: oklch(76% 0.16 52);
   min-height: 100dvh;
   display: grid;
-  grid-template-columns: 17.5rem minmax(0, 1fr);
+  /* Širina levega menija je ENA spremenljivka -> mrežo IN vse fiksne noge (left)
+     krmili isti --sidebar-w. Zožitev na tablici/zlaganje spremeni SAMO to spremenljivko. */
+  --sidebar-w: 17.5rem;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
   /* prva vrstica = zgornja vrstica cez vso sirino (FlowTopBar) */
   grid-template-rows: auto minmax(0, 1fr);
   isolation: isolate;              /* stacking kontekst → ambientni mehurcki (z-index:-1) so nad ozadjem, pod vsebino */
@@ -121,7 +124,7 @@
 @media (min-width: 981px) {
   /* Zozen meni NE izgine — skrci se v ozek pas s samimi ikonami, kot v Supabase.
      Tako ostane navigacija dosegljiva z enim klikom, brez ugibanja, kam je sla. */
-  :global(body[data-meni='zaprt']) .shell { grid-template-columns: 4.4rem minmax(0, 1fr); }
+  :global(body[data-meni='zaprt']) .shell { --sidebar-w: 4.4rem; }
   :global(body[data-meni='zaprt']) .sidebar { padding-inline: .7rem; align-items: center; overflow: visible; }
   :global(body[data-meni='zaprt']) .navItem { justify-content: center; gap: 0; width: 2.2rem; height: 2.2rem; padding: 0; border-radius: .7rem; }
   :global(body[data-meni='zaprt']) .navNapis { display: none; }
@@ -139,9 +142,13 @@
 
 }
 @media (max-width: 980px) { .meniZapri, .meniOdpri { display: none !important; } }
-/* iPad / ožji prenosnik (981–1200): levi meni ožji (14rem), da vsebina dobi več širine.
+/* iPad / ožji prenosnik (981–1200): levi meni ožji (14rem) prek --sidebar-w -> mreža
+   IN vse noge sledijo. Manjši rob v meniju, da napisi (npr. »Računovodstvo«) niso odrezani.
    Zložen meni (data-meni='zaprt' → 4.4rem) ima višjo specifičnost in še vedno prevlada. */
-@media (min-width: 981px) and (max-width: 1200px) { .shell { grid-template-columns: 14rem minmax(0, 1fr); } }
+@media (min-width: 981px) and (max-width: 1200px) {
+  .shell { --sidebar-w: 14rem; }
+  .sidebar { padding-inline: .7rem; }
+}
 
 /* Naslov skupine v meniju (Delo / Podatki / Nacrt / Drugo) */
 /* 85% ink (5:1) — 45% je dalo 1.73:1, pade pod WCAG. Hierarhijo ohranijo manjsa

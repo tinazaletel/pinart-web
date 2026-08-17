@@ -6882,7 +6882,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
            Kalkulator poti Lenisa ne uporabljajo, zato je fixed tukaj zanesljiv.
            Levi meni in header ostaneta nad plastjo, live ponudba pa nad njo. */
         @media (min-width: 1201px) {
-          .cw .detajl-oder { position: fixed; top: 3.25rem; right: 0; bottom: 0; left: 17.5rem; min-height: 0; z-index: 15; padding: 0 min(560px, 36vw) 0 0; align-items: stretch; justify-content: stretch; background: linear-gradient(135deg, rgba(255,255,255,.64) 0%, rgba(247,243,236,.74) 48%, rgba(242,247,244,.68) 100%); -webkit-backdrop-filter: blur(24px) saturate(1.18); backdrop-filter: blur(24px) saturate(1.18); overflow-y: auto; scrollbar-width: none; animation: detajlZapelji .36s cubic-bezier(.2,.85,.3,1) both; }
+          .cw .detajl-oder { position: fixed; top: 3.25rem; right: 0; bottom: 0; left: var(--sidebar-w, 17.5rem); min-height: 0; z-index: 15; padding: 0 min(560px, 36vw) 0 0; align-items: stretch; justify-content: stretch; background: linear-gradient(135deg, rgba(255,255,255,.64) 0%, rgba(247,243,236,.74) 48%, rgba(242,247,244,.68) 100%); -webkit-backdrop-filter: blur(24px) saturate(1.18); backdrop-filter: blur(24px) saturate(1.18); overflow-y: auto; scrollbar-width: none; animation: detajlZapelji .36s cubic-bezier(.2,.85,.3,1) both; }
           .cw .detajl-oder::before { content: ''; position: absolute; inset: 0 min(560px, 36vw) 0 0; pointer-events: none; background: linear-gradient(118deg, transparent 8%, rgba(255,255,255,.34) 30%, rgba(255,255,255,.08) 43%, transparent 62%); opacity: .48; mix-blend-mode: screen; }
           .cw .detajl-oder > .detajl-modal { position: relative; z-index: 1; }
           :global(body[data-meni='zaprt']) .cw .detajl-oder { left: 4.4rem; }
@@ -7621,7 +7621,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* V lupini je levo stranska vrstica (17.5rem, zlozena 4.4rem). Noga je
            position:fixed left:0, zato brez tega zamika NAPREJ centrira v celo
            sirino in izpade LEVO. Zamaknemo za sirino menija. */
-        .cw.cw-lupina .noga { left: 17.5rem; }
+        .cw.cw-lupina .noga { left: var(--sidebar-w, 17.5rem); }
         :global(body[data-meni='zaprt']) .cw.cw-lupina .noga { left: 4.4rem; }
         @media (max-width: 980px) { .cw.cw-lupina .noga { left: 0; } }
         /* ko je detajl-panel odprt, NAPREJ (noga) skrijemo — pripada spodnjemu koraku, ne detajlu (ta ima svoj × / Shrani) */
