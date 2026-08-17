@@ -40,11 +40,11 @@ drop policy if exists "members insert offers" on public.offers;
 drop policy if exists "members update offers" on public.offers;
 drop policy if exists "admins delete offers" on public.offers;
 create policy "clani read scoped offers" on public.offers for select
-  using (public.sme_videti_zapis(organization_id, 'offers', id, created_by));
+  using (public.sme_videti_zapis(organization_id, 'offers', id, created_by, client_id));
 create policy "clani insert offers" on public.offers for insert
   with check (public.is_organization_member(organization_id));
 create policy "clani update scoped offers" on public.offers for update
-  using (public.sme_videti_zapis(organization_id, 'offers', id, created_by))
+  using (public.sme_videti_zapis(organization_id, 'offers', id, created_by, client_id))
   with check (public.is_organization_member(organization_id));
 create policy "admins delete offers" on public.offers for delete
   using (public.is_organization_admin(organization_id));
@@ -56,11 +56,11 @@ drop policy if exists "members insert invoices" on public.invoices;
 drop policy if exists "members update invoices" on public.invoices;
 drop policy if exists "admins delete invoices" on public.invoices;
 create policy "clani read scoped invoices" on public.invoices for select
-  using (public.sme_videti_zapis(organization_id, 'invoices', id, created_by));
+  using (public.sme_videti_zapis(organization_id, 'invoices', id, created_by, client_id));
 create policy "clani insert invoices" on public.invoices for insert
   with check (public.is_organization_member(organization_id));
 create policy "clani update scoped invoices" on public.invoices for update
-  using (public.sme_videti_zapis(organization_id, 'invoices', id, created_by))
+  using (public.sme_videti_zapis(organization_id, 'invoices', id, created_by, client_id))
   with check (public.is_organization_member(organization_id));
 create policy "admins delete invoices" on public.invoices for delete
   using (public.is_organization_admin(organization_id));
@@ -72,11 +72,11 @@ drop policy if exists "members insert contracts" on public.contracts;
 drop policy if exists "members update contracts" on public.contracts;
 drop policy if exists "admins delete contracts" on public.contracts;
 create policy "clani read scoped contracts" on public.contracts for select
-  using (public.sme_videti_zapis(organization_id, 'contracts', id, created_by));
+  using (public.sme_videti_zapis(organization_id, 'contracts', id, created_by, client_id));
 create policy "clani insert contracts" on public.contracts for insert
   with check (public.is_organization_member(organization_id));
 create policy "clani update scoped contracts" on public.contracts for update
-  using (public.sme_videti_zapis(organization_id, 'contracts', id, created_by))
+  using (public.sme_videti_zapis(organization_id, 'contracts', id, created_by, client_id))
   with check (public.is_organization_member(organization_id));
 create policy "admins delete contracts" on public.contracts for delete
   using (public.is_organization_admin(organization_id));
@@ -104,11 +104,11 @@ drop policy if exists "members insert expenses" on public.expenses;
 drop policy if exists "members update expenses" on public.expenses;
 drop policy if exists "admins delete expenses" on public.expenses;
 create policy "clani read scoped expenses" on public.expenses for select
-  using (public.sme_videti_zapis(organization_id, 'expenses', id, created_by));
+  using (public.sme_videti_zapis(organization_id, 'expenses', id, created_by, client_id));
 create policy "clani insert expenses" on public.expenses for insert
   with check (public.is_organization_member(organization_id));
 create policy "clani update scoped expenses" on public.expenses for update
-  using (public.sme_videti_zapis(organization_id, 'expenses', id, created_by))
+  using (public.sme_videti_zapis(organization_id, 'expenses', id, created_by, client_id))
   with check (public.is_organization_member(organization_id));
 create policy "admins delete expenses" on public.expenses for delete
   using (public.is_organization_admin(organization_id));

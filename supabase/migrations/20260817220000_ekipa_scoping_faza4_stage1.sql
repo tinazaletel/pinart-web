@@ -43,16 +43,22 @@ drop policy if exists "members read own record shares" on public.record_shares;
 create policy "members read own record shares" on public.record_shares for select
   using (shared_with = auth.uid() or public.is_organization_admin(organization_id));
 
--- 3) helper: sme član videti ta zapis? (admin/lastnik vse; sicer svoj ustvarjen ali deljen z njim)
-create or replace function public.sme_videti_zapis(target_org uuid, res text, rec_id uuid, owner uuid)
+-- 3) helper: sme član videti ta zapis? (admin/lastnik vse; sicer svoj ustvarjen,
+--    NEPOSREDNO deljen zapis, ali zapis, katerega STRANKA (related_client) je deljena
+--    z njim — tako »deli stranko« samodejno zajame vse njene ponudbe/račune/…).
+create or replace function public.sme_videti_zapis(target_org uuid, res text, rec_id uuid, owner uuid, related_client uuid default null)
 returns boolean language sql stable security definer set search_path = public as $$
   select public.is_organization_admin(target_org)
      or owner = auth.uid()
      or exists (
        select 1 from public.record_shares rs
        where rs.resource = res and rs.record_id = rec_id and rs.shared_with = auth.uid()
-     );
+     )
+     or (related_client is not null and exists (
+       select 1 from public.record_shares rs
+       where rs.resource = 'clients' and rs.record_id = related_client and rs.shared_with = auth.uid()
+     ));
 $$;
-grant execute on function public.sme_videti_zapis(uuid, text, uuid, uuid) to authenticated;
+grant execute on function public.sme_videti_zapis(uuid, text, uuid, uuid, uuid) to authenticated;
 grant select, insert, update, delete on public.record_shares to authenticated;
 revoke all on public.record_shares from anon;
