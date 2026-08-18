@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server';
 import { omejiApi } from '@/lib/rate-limit';
 import { jeEmail, preberiJson, sporociloValidacije } from '@/lib/validacija';
 import { mejaSedezev, planOznaka } from '@/lib/ekipaSedezi';
+import { posiljatelj } from '@/lib/posiljatelj';
 
 /* Vabilo v ekipo (organizacijo) — Faza 2 večuporabniškega sloja.
    Admin/owner organizacije ustvari vabilo:
@@ -123,7 +124,7 @@ export async function POST(request: Request) {
     });
   }
 
-  const from = process.env.RESEND_FROM || 'Pinart Flow <onboarding@resend.dev>';
+  const from = posiljatelj();
   const resend = new Resend(apiKey);
   const html = `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a"><p>Živjo,</p><p>povabljen/a si v ekipo <b>${escapeHtml(imePodjetja)}</b> na <b>Pinart Flow</b>.</p><p>Za sprejem se prijavi s tem e-naslovom (<b>${escapeHtml(email)}</b>) — z Googlom ali z geslom — in potrdi vabilo:</p><p><a href="${povezava}" style="display:inline-block;background:#2A2035;color:#fff;text-decoration:none;padding:11px 20px;border-radius:10px;font-weight:600">Sprejmi vabilo</a></p><p style="color:#666;font-size:13px">Če gumb ne dela, odpri: ${povezava}</p><p style="color:#999;font-size:12px">Povezava velja 7 dni. Če vabila nisi pričakoval/a, ga preprosto prezri.</p></div>`;
   try {
