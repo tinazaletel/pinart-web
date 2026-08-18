@@ -7117,7 +7117,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .pogodba-nasvet a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
         .cw .pogodba-noga { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: .3rem .45rem; margin: .8rem 0 0; font-size: .8rem; }
         .cw .pogodba-noga-check { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; color: var(--ink, #111); }
-        .cw .pogodba-noga-nasvet { color: rgba(120,78,10,.92); }
+        .cw .pogodba-noga-nasvet { color: #6E4FA6; }
         .cw .pogodba-noga-nasvet a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
         .cw .vp small { display: block; margin-bottom: .35rem; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
         .cw .vp label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .4rem 1rem; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
