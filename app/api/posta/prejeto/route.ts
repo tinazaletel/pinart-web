@@ -1,7 +1,15 @@
+import { timingSafeEqual } from 'crypto';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { omejiApi } from '@/lib/rate-limit';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
+
+/* Časovno-varno primerjanje skrivnosti (prepreči timing-uganjanje). */
+function enakSkrivniKljuc(received: string, expected: string): boolean {
+  const left = Buffer.from(received);
+  const right = Buffer.from(expected);
+  return left.length === right.length && timingSafeEqual(left, right);
+}
 
 /* Sprejem DOHODNE e-pošte (inbound). Cloudflare Email Worker razčleni prispeli
    mail, izlušči token iz prejemnikovega naslova (<token>@pinartflow.com) in
@@ -20,7 +28,7 @@ export async function POST(request: Request) {
   if (!secret) {
     return NextResponse.json({ error: 'Sprejem pošte še ni nastavljen (manjka INBOUND_SECRET).' }, { status: 503 });
   }
-  if (request.headers.get('x-inbound-secret') !== secret) {
+  if (!enakSkrivniKljuc(request.headers.get('x-inbound-secret') || '', secret)) {
     return NextResponse.json({ error: 'Neavtorizirano.' }, { status: 401 });
   }
   const omejitev = await omejiApi(request, 'posta-prejeto', 60);
