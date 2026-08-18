@@ -2468,7 +2468,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     if (document.getElementById(id)) return;
     const l = document.createElement('link');
     l.id = id; l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Roboto:wght@400;500&family=Lora:wght@400;600&display=swap';
+    l.href = 'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Montserrat:wght@400;600&family=Roboto:wght@400;500&family=Lora:wght@400;600&display=swap';
     document.head.appendChild(l);
   }, []);
   /* dvojni scrollbar: stran zadaj ima svojega, chat/onboarding pa svojega —
@@ -5956,7 +5956,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         onMouseDown={() => editorRef.current?.focus()}
         onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
         <option value="" disabled>{L('Pisava', 'Font')}</option>
-        <option value="Bodoni Moda">{L('Elegantna', 'Elegant')}</option>
+        <option value="DM Serif Display">DM Serif</option>
+        <option value="Bodoni Moda">Bodoni Moda</option>
         <option value="Montserrat">Montserrat</option>
         <option value="Roboto">Roboto</option>
         <option value="Lora">Lora</option>
@@ -9878,7 +9879,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   onMouseDown={() => editorRef.current?.focus()}
                   onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
                   <option value="" disabled>{L('Pisava', 'Font')}</option>
-                  <option value="Bodoni Moda">{L('Elegantna', 'Elegant')}</option>
+                  <option value="DM Serif Display">DM Serif</option>
+        <option value="Bodoni Moda">Bodoni Moda</option>
                   <option value="Montserrat">Montserrat</option>
                   <option value="Roboto">Roboto</option>
                   <option value="Lora">Lora</option>

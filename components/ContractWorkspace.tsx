@@ -1110,7 +1110,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
               <button type="button" className="pg-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title={L('Ležeče', 'Italic')} aria-label={L('Ležeče', 'Italic')}><TextItalic size={17} /></button>
               <select className="pg-pisava-select" aria-label={L('Pisava besedila', 'Text font')} defaultValue="" onMouseDown={() => editorRef.current?.focus()} onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
                 <option value="" disabled>{L('Pisava', 'Font')}</option>
-                <option value="Bodoni Moda">{L('Elegantna', 'Elegant')}</option>
+                <option value="DM Serif Display">DM Serif</option>
+                <option value="Bodoni Moda">Bodoni Moda</option>
                 <option value="Montserrat">Montserrat</option>
                 <option value="Georgia">Georgia</option>
                 <option value="Arial">Arial</option>

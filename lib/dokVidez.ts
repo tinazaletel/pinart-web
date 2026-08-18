@@ -3,10 +3,13 @@
    Shranjeno v K_NAST (pinart-kalkulator-v2) kot polji dokBarva / dokFont. */
 
 export const DOK_BARVA_PRIVZETA = '#6E4FA6';
-export const DOK_FONT_PRIVZETI = 'Bodoni Moda';
+/* Privzeta pisava dokumentov = DM Serif Display (ISTA serif kot naslovi v Flow
+   aplikaciji) — ne Bodoni Moda. Bodoni ostane na voljo v izbirniku. */
+export const DOK_FONT_PRIVZETI = 'DM Serif Display';
 
 /* Vsaka pisava: stack (CSS font-family) + google (kljuc za Google Fonts nalaganje). */
 export const DOK_FONTI: Record<string, { stack: string; google: string | null }> = {
+  'DM Serif Display': { stack: "'DM Serif Display',Georgia,serif", google: 'DM+Serif+Display:ital@0;1' },
   'Fraunces': { stack: "'Fraunces',Georgia,serif", google: 'Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700' },
   'Bodoni Moda': { stack: "'Bodoni Moda',Didot,Georgia,serif", google: 'Bodoni+Moda:opsz,wght@6..96,400;6..96,600;6..96,700' },
   'Playfair Display': { stack: "'Playfair Display',Georgia,serif", google: 'Playfair+Display:wght@400;500;600;700' },

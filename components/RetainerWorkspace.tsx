@@ -885,7 +885,8 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
                   <button type="button" className="rw-tool-krog" onMouseDown={e => { e.preventDefault(); oblikuj('italic'); }} title={tr('Ležeče', 'Italic')} aria-label={tr('Ležeče', 'Italic')}><TextItalic size={17} /></button>
                   <select className="rw-pisava-select" aria-label={tr('Pisava besedila', 'Text font')} defaultValue="" onMouseDown={() => editorRef.current?.focus()} onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
                     <option value="" disabled>{tr('Pisava', 'Font')}</option>
-                    <option value="Bodoni Moda">{tr('Elegantna', 'Elegant')}</option>
+                    <option value="DM Serif Display">DM Serif</option>
+                    <option value="Bodoni Moda">Bodoni Moda</option>
                     <option value="Montserrat">Montserrat</option>
                     <option value="Georgia">Georgia</option>
                     <option value="Arial">Arial</option>
