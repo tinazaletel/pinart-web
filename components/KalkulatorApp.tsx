@@ -1751,14 +1751,10 @@ const OFFER_CSS = `
       .oc-firma{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;font-weight:600;color:#111}
       .oc-za{font-size:10.5pt;color:#555;margin-top:6px}
       .oc-datum{font-size:9pt;color:#8a8078;margin-top:16px;letter-spacing:.05em}
-      .offer-cover-slika{background-size:cover;background-position:center;position:relative;color:#fff}
-      .offer-cover-slika::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,15,18,.35),rgba(20,15,18,.55))}
+      /* Podloga: slika se pokaze ČISTO (brez temne felhe); besedilo ostane temno
+         (podeduje osnovne .oc-* barve) — berljivo na svetlih podlogah. */
+      .offer-cover-slika{background-size:cover;background-position:center;position:relative}
       .offer-cover-slika>*{position:relative;z-index:1}
-      .offer-cover-slika .oc-kicker{color:#fff}
-      .offer-cover-slika .oc-naslov,.offer-cover-slika .oc-firma{color:#fff}
-      .offer-cover-slika .oc-za{color:rgba(255,255,255,.9)}
-      .offer-cover-slika .oc-datum{color:rgba(255,255,255,.8)}
-      .offer-cover-slika .oc-crta{background:#fff}
       /* Pinart predloga — lahka CSS tekstura notranjega telesa (brez tezkih JPG) */
       .predloga{background-color:#fdfbf7;background-image:radial-gradient(120% 60% at 50% -10%,rgba(178,84,118,.05),transparent 60%),linear-gradient(180deg,#fdfbf7,#f8f2ea)}
       /* Pinart predloga — ploscato telo brez kvadratkov (kartic) */
