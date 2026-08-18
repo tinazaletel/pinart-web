@@ -56,8 +56,10 @@ export async function POST(req: NextRequest) {
         process.env.AWS_LAMBDA_JS_RUNTIME = 'nodejs22.x';
       }
       const chromium = (await import('@sparticuz/chromium-min')).default;
+      /* POZOR: od novejsih izdaj so packi po arhitekturi — ime MORA imeti .x64
+         (bare "-pack.tar" ne obstaja -> 404 -> "Unexpected status code: 404"). */
       const CHROMIUM_PACK = process.env.CHROMIUM_PACK_URL
-        || 'https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.tar';
+        || 'https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.x64.tar';
       browser = await puppeteer.launch({
         args: chromium.args,
         executablePath: await chromium.executablePath(CHROMIUM_PACK),
