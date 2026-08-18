@@ -22,7 +22,7 @@ export async function generateMetadata({
 
 const sl = {
   title: 'Politika zasebnosti',
-  updated: 'Zadnja posodobitev: avgust 2026',
+  updated: 'Zadnja posodobitev: 18. avgust 2026',
   sections: [
     {
       heading: '1. Upravljavec osebnih podatkov',
@@ -89,7 +89,7 @@ Pravno podlago (privolitev ali zakoniti interes) mora pred objavo potrditi odvet
 
 const en = {
   title: 'Privacy Policy',
-  updated: 'Last updated: August 2026',
+  updated: 'Last updated: 18 August 2026',
   sections: [
     {
       heading: '1. Data Controller',
