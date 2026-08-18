@@ -13,7 +13,7 @@ import PosljiBlok from '@/components/PosljiBlok';
 import { OrbSfera, ORB_BARVE, ikonaZa, ORB0_CSS, osvetli } from './Orb0';
 import VidezDokumentov from './VidezDokumentov';
 import AmbientBubbles from '@/components/AmbientBubbles';
-import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo } from '@/lib/dokVidez';
+import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo, migrirajStariFont } from '@/lib/dokVidez';
 import { VALUTE_RACUN, valutaZnak } from '@/lib/valute';
 
 const K_NAST = 'pinart-kalkulator-v2';
@@ -212,6 +212,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
 
   useEffect(() => {
     try {
+      migrirajStariFont(); /* star Bodoni -> DM Serif (enkratno) */
       const s = JSON.parse(localStorage.getItem(K_NAST) || '{}');
       if (s.ponudnik) setPonudnik({ trr: '', ...s.ponudnik });
       if (s.predklic) setPredklic(s.predklic);

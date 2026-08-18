@@ -14,7 +14,7 @@ import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } from '@/lib/pinartFlowStore';
 import { deleteBusinessDocument, getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
-import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo } from '@/lib/dokVidez';
+import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo, migrirajStariFont } from '@/lib/dokVidez';
 import PosljiBlok from '@/components/PosljiBlok';
 import { posljiMail } from '@/lib/posta';
 
@@ -168,6 +168,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     setContracts(flow.contracts);
     setClients(flow.clients);
     try {
+      migrirajStariFont(); /* star Bodoni -> DM Serif (enkratno) */
       const s = JSON.parse(localStorage.getItem(K_NAST) || '{}');
       if (s.ponudnik) setPonudnik({ trr: '', ...s.ponudnik });
       if (s.predklic) setPredklic(s.predklic);
