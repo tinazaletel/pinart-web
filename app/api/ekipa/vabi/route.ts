@@ -129,11 +129,21 @@ export async function POST(request: Request) {
   try {
     const rez = await resend.emails.send({ from, to: [email], subject: `Povabilo v ekipo — ${imePodjetja}`, html });
     if (rez.error) {
-      return NextResponse.json({ ok: true, email, povezava, poslano: false, opozorilo: 'Vabilo ustvarjeno, e-pošte ni bilo mogoče poslati.' });
+      /* Pokazi PRAVI razlog (npr. neveljaven kljuc, nepreverjena domena, zavrnjen
+         prejemnik) — splosno sporocilo je onemogocalo diagnozo. */
+      console.error('EKIPA vabilo — Resend napaka:', rez.error);
+      return NextResponse.json({
+        ok: true, email, povezava, poslano: false,
+        opozorilo: `Vabilo ustvarjeno, e-pošte ni bilo mogoče poslati: ${String(rez.error.message || rez.error)}`,
+      });
     }
     return NextResponse.json({ ok: true, email, poslano: true });
-  } catch {
-    return NextResponse.json({ ok: true, email, povezava, poslano: false, opozorilo: 'Vabilo ustvarjeno, e-pošte ni bilo mogoče poslati.' });
+  } catch (error) {
+    console.error('EKIPA vabilo — klic ni uspel:', error);
+    return NextResponse.json({
+      ok: true, email, povezava, poslano: false,
+      opozorilo: `Vabilo ustvarjeno, e-pošte ni bilo mogoče poslati: ${error instanceof Error ? error.message : 'neznana napaka'}`,
+    });
   }
 }
 
