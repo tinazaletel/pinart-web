@@ -9855,7 +9855,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 ) : (
                   /* GRACEFUL FALLBACK: če strežniški PDF (brezglavi Chrome) ne uspe/timeouta,
                      predogled NI prazen — pokažemo takojšen HTML predogled ponudbe. */
-                  <iframe className="predogled-html" title={L('Predogled ponudbe', 'Offer preview')} sandbox="allow-same-origin" srcDoc={ponudbaBodyDoc()} />
+                  <iframe className="predogled-html" title={L('Predogled ponudbe', 'Offer preview')} sandbox="allow-same-origin" srcDoc={zgradiPonudbaDoc()} />
                 )}
                 {predogledNalaganje && predogledStrani.length > 0 && <div className="predogled-osvezi" role="status">{L('Osvežujem …', 'Refreshing …')}</div>}
               </div>
