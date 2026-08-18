@@ -14,7 +14,7 @@ import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, type FlowInvoiceItem, type FlowInvoiceSignature } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import Toast from '@/components/Toast';
-import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo } from '@/lib/dokVidez';
+import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo, migrirajStariFont } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
 import { VALUTE_RACUN } from '@/lib/valute';
 import { naslednjaStevilka } from '@/lib/stevilcenje';
@@ -162,6 +162,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   /* podatki podjetja + DDV zavezanost + videz dokumentov — kot RetainerWorkspace */
   useEffect(() => {
     try {
+      migrirajStariFont(); /* star Bodoni -> DM Serif (enkratno) */
       const s = JSON.parse(localStorage.getItem(K_NAST) || '{}');
       if (s.ponudnik) setPonudnik({ trr: '', ...s.ponudnik });
       if (s.predklic) setPredklic(s.predklic);

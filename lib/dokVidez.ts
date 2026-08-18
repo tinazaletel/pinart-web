@@ -42,8 +42,8 @@ export function dokVars(barva?: string, font?: string): string {
    Fallback ostane privzeti Bodoni/pink, ce spremenljivka ni nastavljena. */
 export function dokCss(css: string): string {
   return css
-    .split("'Bodoni Moda',Didot,'Bodoni MT',Georgia,serif").join("var(--dok-font,'Bodoni Moda',Didot,'Bodoni MT',Georgia,serif)")
-    .split("'Bodoni Moda',Didot,Georgia,serif").join("var(--dok-font,'Bodoni Moda',Didot,Georgia,serif)")
+    .split("'Bodoni Moda',Didot,'Bodoni MT',Georgia,serif").join("var(--dok-font,'DM Serif Display',Georgia,serif)")
+    .split("'Bodoni Moda',Didot,Georgia,serif").join("var(--dok-font,'DM Serif Display',Georgia,serif)")
     .split('#B25476').join('var(--akcent,#B25476)');
 }
 
@@ -115,12 +115,12 @@ export function noviIdPredloge(): string {
 export function migrirajStariFont(): void {
   try {
     const s = beriNast();
-    if (s.dokFontMigriran2) return;
-    const delno: Record<string, unknown> = { dokFontMigriran2: true };
+    if (s.dokFontMigriran3) return;
+    const delno: Record<string, unknown> = { dokFontMigriran3: true };
     if (s.dokFont === 'Bodoni Moda') delno.dokFont = DOK_FONT_PRIVZETI;
     if (Array.isArray(s.dokPredloge)) {
       delno.dokPredloge = (s.dokPredloge as DokPredloga[]).map(p =>
-        (p.ime === 'Privzeta' && p.font === 'Bodoni Moda') ? { ...p, font: DOK_FONT_PRIVZETI } : p
+        p.font === 'Bodoni Moda' ? { ...p, font: DOK_FONT_PRIVZETI } : p
       );
     }
     pisiNastDelno(delno);
