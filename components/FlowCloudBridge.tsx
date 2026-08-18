@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { loadFlowData, writeFlowDataLocally } from '@/lib/pinartFlowStore';
 import { loadCloudSettings, loadOrganizationProfile, mergeFlowData, pullFlowData, pushFlowData, saveCloudSettings, saveOrganizationProfile } from '@/lib/pinartFlowCloud';
 import { createClient } from '@/utils/supabase/client';
@@ -39,6 +39,11 @@ async function poravnajRacun(): Promise<void> {
 }
 
 export default function FlowCloudBridge() {
+  /* Prva sinhronizacija v seji lahko konca z window.location.reload() (spodaj), ker
+     komponente berejo localStorage ob montazi in dogodka o spremembi NIHCE ne poslusa.
+     Brez prekrivala uporabnik to vidi kot utrip: stran se pokaze -> izgine -> pokaze.
+     Zato med prvo sinhronizacijo pokrijemo vsebino z mirnim zaslonom. */
+  const [sinhronizira, setSinhronizira] = useState(false);
   useEffect(() => {
     let cancelled = false;
 
@@ -107,10 +112,22 @@ export default function FlowCloudBridge() {
       await poravnajRacun();                 // VEDNO: nov/drug racun ne podeduje stanja
       if (cancelled) return;
       if (sessionStorage.getItem(SESSION_KEY) === 'done') return;  // sync le enkrat na sejo
+      if (!cancelled) setSinhronizira(true);
       await synchronize();
+      if (!cancelled) setSinhronizira(false);
     })();
     return () => { cancelled = true; };
   }, []);
 
-  return null;
+  if (!sinhronizira) return null;
+  return (
+    <div aria-live="polite" style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: '#F5F2EA', color: '#8a8177',
+      font: '500 .9rem/1.5 system-ui, -apple-system, sans-serif', letterSpacing: '.02em',
+    }}>
+      Pripravljam tvoje podatke …
+    </div>
+  );
 }
