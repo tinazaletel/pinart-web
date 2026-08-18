@@ -51,7 +51,7 @@ export default async function KalkulatorPogojiPage({
         <p style={{ marginTop: '1.4rem', fontSize: '.72rem', fontWeight: 600, letterSpacing: '.24em', textTransform: 'uppercase', color: 'rgba(17,17,17,.72)' }}>
           Pinart Flow
         </p>
-        <h1 style={{ fontFamily: 'var(--font-serif), Didot, serif', fontWeight: 500, fontSize: 'clamp(2.2rem, 7vw, 3.6rem)', lineHeight: 1, letterSpacing: '-.01em', margin: '.6rem 0 1rem' }}>
+        <h1 style={{ fontFamily: 'var(--font-serif-flow), Georgia, serif', fontWeight: 400, fontSize: 'clamp(2.2rem, 7vw, 3.6rem)', lineHeight: 1, letterSpacing: '-.01em', margin: '.6rem 0 1rem' }}>
           {en ? 'Terms of Use' : 'Pogoji uporabe'}
         </h1>
         {en && <p style={OSNUTEK}>DRAFT — pending legal review.</p>}
