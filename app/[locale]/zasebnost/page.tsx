@@ -180,7 +180,7 @@ export default async function PrivacyPage({
 
         <h1
           style={{
-            fontFamily: 'var(--font-serif)',
+            fontFamily: 'var(--font-serif-flow)',
             fontSize: 'clamp(2.4rem, 5vw, 4rem)',
             fontWeight: 400,
             lineHeight: 1.05,
