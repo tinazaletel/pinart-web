@@ -6709,7 +6709,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* Okno s pogoji v Flow razlicici — uporabnik jih preleti pred potrditvijo. */
         .cw .sg-pogoji { display: flex; flex-direction: column; gap: .45rem; margin-top: 1.1rem; }
         .cw .sg-pogoji-ozn { font-size: .68rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: #8a8177; }
-        .cw .sg-pogoji-okvir { width: 100%; height: 32vh; min-height: 200px; border: 1px solid rgba(17,17,17,.14); border-radius: 12px; background: #fff; display: block; }
+        /* Flow: pogoji so GLAVNA vsebina kartice — visoko okno, gumb ceka na dnu. */
+        .cw .sg-pogoji-okvir { width: 100%; height: min(52vh, 560px); min-height: 260px; border: 1px solid rgba(17,17,17,.14); border-radius: 12px; background: #fff; display: block; }
+        .cw .sg-uvod { margin: 0; font-size: .95rem; line-height: 1.55; color: #4a4550; }
         .cw .sg-pogoji-namig { margin: 0; font-size: .78rem; color: #8a8177; }
         .cw .sg-potrdi-zaklenjen { opacity: .55; cursor: not-allowed; }
         .cw .sg-potrdi-zaklenjen input { cursor: not-allowed; }
@@ -7784,22 +7786,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         <div className="cw">
         <div className={`soglasje${pogojiOdhaja ? ' soglasje-odhaja' : ''}`} role="dialog" aria-modal="true" aria-label={L('Pogoji uporabe', 'Terms of use')}>
           <div className="soglasje-kartica">
-            <h2>{L('Samo troje, preden začneš', 'Just three things before you start')}</h2>
+            <h2>{vFlow ? L('Preden začneš', 'Before you begin') : L('Samo troje, preden začneš', 'Just three things before you start')}</h2>
             <div className="soglasje-tocke">
-              {vFlow ? (<>
-              <div className="sg-blok">
-                <h3 className="sg-h">{L('Vse na enem mestu', 'Everything in one place')}</h3>
-                <p className="sg-t">{L('Flow ni samo kalkulator — ponudbe, računi, pogodbe, stranke, projekti, koledar in več. Ko se spoznava, te odložim na tvojo ploščo, kjer izbereš, kaj boš delal/-a.', 'Flow is more than a calculator — quotes, invoices, contracts, clients, projects, a calendar and more. Once we get to know each other, I drop you on your dashboard, where you choose what to do.')}</p>
-              </div>
-              <div className="sg-blok">
-                <h3 className="sg-h">{L('Shranjeno v tvojem oblaku', 'Saved in your cloud')}</h3>
-                <p className="sg-t">{L('Ker si prijavljen/-a, se vse varno shrani v tvoj Flow oblak in je na voljo na vseh napravah.', 'Since you are signed in, everything is securely saved to your Flow cloud and available on all your devices.')}</p>
-              </div>
-              <div className="sg-blok">
-                <h3 className="sg-h">{L('Tvoje ostane tvoje', 'Yours stays yours')}</h3>
-                <p className="sg-t">{L('Tvoja dela, cene in podatki so tvoji — ne delimo jih in jih lahko kadarkoli izvoziš.', 'Your work, prices and data are yours — we do not share them and you can export them any time.')}</p>
-              </div>
-              </>) : (<>
+              {vFlow ? (
+              <p className="sg-uvod">{L('Preleti pogoje poslovanja do konca — gumb za potrditev te čaka na dnu.', 'Scroll through the terms of business to the end — the confirmation button is waiting at the bottom.')}</p>
+              ) : (<>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Priporočene cene', 'Recommended prices')}</h3>
                 <p className="sg-t">{L('So pametno izhodišče, ne uradni cenik — nastale so na podlagi AI raziskave trga, pravo podatkovno bazo pa šele gradimo. Svobodno jih prilagodi; končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.', 'They are a smart starting point, not an official price list — they are based on AI market research, and we are still building the real data-backed database. Adjust them freely; the final price in your quotes is always your decision and your responsibility.')}</p>
@@ -7820,6 +7811,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <p>{L('Skupaj gradimo', 'Together we\'re building')} <b>{L('prvo statistiko cen za kreativce', 'the first pricing statistics for creatives')}</b>{L(': ko bo baza dovolj velika, boš videl,', ': once the database is big enough, you\'ll see')} <b>{L('koliko kolegi s tvojimi izkušnjami dejansko računajo', 'how much peers with your experience actually charge')}</b> {L('— česar danes ne pove nihče.', '— which nobody tells you today.')}</p>
             </div>
             )}
+            {!vFlow && (
             <div className="soglasje-email">
               <label className="se-preklop">
                 <span className="se-tekst">
@@ -7847,6 +7839,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 </>
               )}
             </div>
+            )}
             {vFlow && (
               <div className="sg-pogoji">
                 <span className="sg-pogoji-ozn">{L('Pogoji poslovanja', 'Terms of business')}</span>
@@ -7866,7 +7859,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <span>{L('Preletel/-a sem in potrjujem ', 'I have reviewed and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>.</span>
                 </label>
               )}
-              <button type="button" className="gumb" onClick={sprejmiPogoje} disabled={vFlow && !pogojiPotrjeni} title={vFlow && !pogojiPotrjeni ? L('Najprej preleti in potrdi pogoje poslovanja.', 'First review and accept the terms of business.') : undefined}>{L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
+              <button type="button" className="gumb" onClick={sprejmiPogoje} disabled={vFlow && !pogojiPotrjeni} title={vFlow && !pogojiPotrjeni ? L('Najprej preleti in potrdi pogoje poslovanja.', 'First review and accept the terms of business.') : undefined}>{vFlow ? L('Se strinjam, gremo →', 'I agree, let\'s go →') : L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
               {!vFlow && <a className="povezava" href={localePath(locale, `/kalkulator/pogoji`)}>{L('Preberi celotne pogoje', 'Read the full terms')}</a>}
             </div>
           </div>
