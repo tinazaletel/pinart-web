@@ -20,12 +20,34 @@ export const DOK_FONTI: Record<string, { stack: string; google: string | null }>
 
 export const DOK_FONT_IMENA = Object.keys(DOK_FONTI);
 
+/* Sentinel: uporabnik je naložil SVOJO pisavo (brand/CGP). Prava pisava (dataUri)
+   je shranjena na AKTIVNI predlogi (customFont). V dokumentih se vgradi kot
+   @font-face z data: URI — brez zunanjega fetcha -> deluje tudi v PDF renderju. */
+export const DOK_CUSTOM_FONT = 'Moja pisava';
+const DOK_CUSTOM_FAMILY = 'DokLastna';
+
 export function dokFontStack(ime?: string): string {
+  if (ime === DOK_CUSTOM_FONT) return `'${DOK_CUSTOM_FAMILY}',Georgia,serif`;
   return (ime && DOK_FONTI[ime]?.stack) || DOK_FONTI[DOK_FONT_PRIVZETI].stack;
 }
 
-/* Google Fonts <link> za izbrano pisavo (za vgradnjo v <head> dokumenta). */
+/* @font-face pravilo za naloženo pisavo aktivne predloge (ali '' če je ni). */
+export function dokLastnaPisavaCss(): string {
+  try {
+    const cf = aktivnaPredloga().customFont;
+    if (cf?.dataUri) return `<style>@font-face{font-family:'${DOK_CUSTOM_FAMILY}';font-display:swap;src:url('${cf.dataUri}')}</style>`;
+  } catch { /* SSR/prazno */ }
+  return '';
+}
+
+/* Google Fonts <link> za izbrano pisavo (za vgradnjo v <head> dokumenta).
+   Za naloženo pisavo vrne vgrajen @font-face (data URI) namesto Google linka. */
 export function dokFontLink(ime?: string): string {
+  if (ime === DOK_CUSTOM_FONT) {
+    const css = dokLastnaPisavaCss();
+    if (css) return css;
+    ime = DOK_FONT_PRIVZETI; /* naložene pisave ni -> privzeta */
+  }
   const g = (ime && DOK_FONTI[ime]?.google) || DOK_FONTI[DOK_FONT_PRIVZETI].google;
   const pre = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>';
   return g ? `${pre}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=${g}&display=swap">` : pre;
@@ -69,6 +91,9 @@ export interface DokPredloga {
      `platnica` = ozadje naslovnice, `ozadje` = ozadje notranjih (vsebinskih) strani. */
   platnica?: string;
   ozadje?: string;
+  /* Naložena pisava (brand/CGP) — ime datoteke + data: URI (woff2/ttf/otf).
+     Ko je nastavljena in je font === DOK_CUSTOM_FONT, se vgradi v dokumente. */
+  customFont?: { ime: string; dataUri: string };
 }
 
 /* Prednastavljene podloge iz public/flow. A4 (pokončne) za ponudbe/dokumente,

@@ -12,7 +12,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
-  DOK_FONTI, DOK_FONT_IMENA, dokFontStack, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI,
+  DOK_FONTI, DOK_FONT_IMENA, dokFontStack, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, DOK_CUSTOM_FONT,
   type DokPredloga, nalozitePredloge, shranitePredloge, noviIdPredloge, DOK_PODLOGE_A4,
 } from '@/lib/dokVidez';
 
@@ -51,6 +51,7 @@ export default function VidezDokumentov({
   const [mojePodloge, setMojePodloge] = useState<string[]>([]);
   const [podlOdprt, setPodlOdprt] = useState(false);
   const platnicaRef = useRef<HTMLInputElement>(null);
+  const fontRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const z = nalozitePredloge();
@@ -58,6 +59,14 @@ export default function VidezDokumentov({
     setAktivnaId(z.aktivnaId);
     setNalozeno(true);
     try { const raw = localStorage.getItem('pinart-moje-podloge'); if (raw) setMojePodloge(JSON.parse(raw)); } catch { /* brez */ }
+    /* naloženo pisavo aktivne predloge vgradi v aplikacijo (predogled na zaslonu) */
+    const akt = z.predloge.find(p => p.id === z.aktivnaId);
+    const du = akt?.customFont?.dataUri;
+    if (du && typeof document !== 'undefined') {
+      let el = document.getElementById('dok-lastna-pisava') as HTMLStyleElement | null;
+      if (!el) { el = document.createElement('style'); el.id = 'dok-lastna-pisava'; document.head.appendChild(el); }
+      el.textContent = `@font-face{font-family:'DokLastna';font-display:swap;src:url('${du}')}`;
+    }
   }, []);
 
   const aktivna = predloge.find(p => p.id === aktivnaId);
@@ -89,6 +98,28 @@ export default function VidezDokumentov({
   const odstraniMojo = (url: string) => {
     setMojePodloge(prev => { const next = prev.filter(u => u !== url); try { localStorage.setItem('pinart-moje-podloge', JSON.stringify(next)); } catch { /* ignoriraj */ } return next; });
     if (aktivna?.platnica === url && aktivna) posodobiPredlogo(aktivna.id, { platnica: undefined });
+  };
+
+  /* Naložena pisava: vgradi @font-face v aplikacijo (za predogled na zaslonu).
+     V dokumentih (ponudba/pogodba/…) jo vgradi dokFontLink prek data: URI. */
+  const registrirajLastnoPisavo = (dataUri: string) => {
+    if (typeof document === 'undefined' || !dataUri) return;
+    let el = document.getElementById('dok-lastna-pisava') as HTMLStyleElement | null;
+    if (!el) { el = document.createElement('style'); el.id = 'dok-lastna-pisava'; document.head.appendChild(el); }
+    el.textContent = `@font-face{font-family:'DokLastna';font-display:swap;src:url('${dataUri}')}`;
+  };
+  const uvoziFont = (file?: File) => {
+    if (!file || !aktivna) return;
+    if (!/\.(woff2?|ttf|otf)$/i.test(file.name)) { window.alert('Podprte pisave: .woff2, .woff, .ttf, .otf'); return; }
+    if (file.size > 3_000_000) { window.alert('Pisava je prevelika (nad 3 MB). Izberi manjšo — najbolje .woff2.'); return; }
+    const r = new FileReader();
+    r.onload = () => {
+      const dataUri = String(r.result || '');
+      posodobiPredlogo(aktivna.id, { customFont: { ime: file.name, dataUri }, font: DOK_CUSTOM_FONT });
+      registrirajLastnoPisavo(dataUri);
+      onFont(DOK_CUSTOM_FONT);
+    };
+    r.readAsDataURL(file);
   };
 
   const izberiBarvo = (b: string) => {
@@ -194,7 +225,18 @@ export default function VidezDokumentov({
               {f}
             </button>
           ))}
+          {aktivna?.customFont && (
+            <button type="button"
+              className={'vd-font' + (font === DOK_CUSTOM_FONT ? ' on' : '')}
+              style={{ fontFamily: dokFontStack(DOK_CUSTOM_FONT) }} onClick={() => izberiFont(DOK_CUSTOM_FONT)}
+              title={aktivna.customFont.ime}>
+              {DOK_CUSTOM_FONT}
+            </button>
+          )}
+          <button type="button" className="vd-font vd-font-nalozi" onClick={() => fontRef.current?.click()}>+ Naloži svojo …</button>
         </div>
+        {aktivna?.customFont && <span className="vd-font-info">Naložena pisava: <b>{aktivna.customFont.ime}</b> — velja na tej predlogi.</span>}
+        <input ref={fontRef} type="file" accept=".woff2,.woff,.ttf,.otf,font/*" hidden onChange={e => { uvoziFont(e.target.files?.[0]); e.currentTarget.value = ''; }} />
       </div>
 
       {nalozeno && aktivna && (
@@ -297,6 +339,9 @@ export default function VidezDokumentov({
         .vd-font { padding: .6rem 1.1rem; border-radius: 999px; border: 1.5px solid rgba(17,17,17,.15); background: #fff; color: #111; font-size: 1.05rem; cursor: pointer; transition: border-color .15s, background .15s; }
         .vd-font:hover { border-color: rgba(17,17,17,.4); }
         .vd-font.on { border-color: #111; background: #111; color: #F5F2EA; }
+        .vd-font-nalozi { font-size: .82rem; border-style: dashed; color: #4a4550; }
+        .vd-font-nalozi:hover { border-style: solid; border-color: rgba(17,17,17,.4); }
+        .vd-font-info { font-size: .78rem; color: #6E4FA6; }
         .vd-predogled { border: 1px solid rgba(17,17,17,.1); border-radius: 14px; padding: 1.4rem 1.5rem; background: #FCFBF7; }
         .vd-pred-kick { font-size: .68rem; letter-spacing: .24em; text-transform: uppercase; font-weight: 700; color: var(--vd-akcent); }
         .vd-predogled h3 { margin: .5rem 0 0; font-size: 1.7rem; font-weight: 600; color: #111; line-height: 1.1; }
