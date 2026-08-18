@@ -6,7 +6,7 @@ import { localePath } from '@/i18n/routing';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import { loadFlowData, saveFlowCollection, type FlowInvoice } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
-import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4 } from '@/lib/dokVidez';
+import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4, migrirajStariFont } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
 import { preberiPredogled, usePredogled } from '@/lib/predogled';
 import { posljiMail } from '@/lib/posta';
@@ -1751,14 +1751,10 @@ const OFFER_CSS = `
       .oc-firma{font-family:'Bodoni Moda',Didot,Georgia,serif;font-size:15pt;font-weight:600;color:#111}
       .oc-za{font-size:10.5pt;color:#555;margin-top:6px}
       .oc-datum{font-size:9pt;color:#8a8078;margin-top:16px;letter-spacing:.05em}
-      .offer-cover-slika{background-size:cover;background-position:center;position:relative;color:#fff}
-      .offer-cover-slika::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,15,18,.35),rgba(20,15,18,.55))}
+      /* Podloga: slika se pokaze ČISTO (brez temne felhe); besedilo ostane temno
+         (podeduje osnovne .oc-* barve) — berljivo na svetlih podlogah. */
+      .offer-cover-slika{background-size:cover;background-position:center;position:relative}
       .offer-cover-slika>*{position:relative;z-index:1}
-      .offer-cover-slika .oc-kicker{color:#fff}
-      .offer-cover-slika .oc-naslov,.offer-cover-slika .oc-firma{color:#fff}
-      .offer-cover-slika .oc-za{color:rgba(255,255,255,.9)}
-      .offer-cover-slika .oc-datum{color:rgba(255,255,255,.8)}
-      .offer-cover-slika .oc-crta{background:#fff}
       /* Pinart predloga — lahka CSS tekstura notranjega telesa (brez tezkih JPG) */
       .predloga{background-color:#fdfbf7;background-image:radial-gradient(120% 60% at 50% -10%,rgba(178,84,118,.05),transparent 60%),linear-gradient(180deg,#fdfbf7,#f8f2ea)}
       /* Pinart predloga — ploscato telo brez kvadratkov (kartic) */
@@ -2468,7 +2464,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     if (document.getElementById(id)) return;
     const l = document.createElement('link');
     l.id = id; l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Roboto:wght@400;500&family=Lora:wght@400;600&display=swap';
+    l.href = 'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Montserrat:wght@400;600&family=Roboto:wght@400;500&family=Lora:wght@400;600&display=swap';
     document.head.appendChild(l);
   }, []);
   /* dvojni scrollbar: stran zadaj ima svojega, chat/onboarding pa svojega —
@@ -2687,6 +2683,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
   useEffect(() => {
     try {
+      migrirajStariFont(); /* star privzeti Bodoni -> DM Serif (enkratno), preden preberemo dokFont */
       const s = JSON.parse(localStorage.getItem(K_NAST) || '{}');
       if (s.osnove) setOsnove(s.osnove);
       if (s.izkusnje) setIzkusnje(s.izkusnje);
@@ -5956,7 +5953,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         onMouseDown={() => editorRef.current?.focus()}
         onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
         <option value="" disabled>{L('Pisava', 'Font')}</option>
-        <option value="Bodoni Moda">{L('Elegantna', 'Elegant')}</option>
+        <option value="DM Serif Display">DM Serif</option>
+        <option value="Bodoni Moda">Bodoni Moda</option>
         <option value="Montserrat">Montserrat</option>
         <option value="Roboto">Roboto</option>
         <option value="Lora">Lora</option>
@@ -7120,7 +7118,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .pogodba-nasvet a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
         .cw .pogodba-noga { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: .3rem .45rem; margin: .8rem 0 0; font-size: .8rem; }
         .cw .pogodba-noga-check { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; color: var(--ink, #111); }
-        .cw .pogodba-noga-nasvet { color: rgba(120,78,10,.92); }
+        .cw .pogodba-noga-nasvet { color: #6E4FA6; }
         .cw .pogodba-noga-nasvet a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
         .cw .vp small { display: block; margin-bottom: .35rem; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
         .cw .vp label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .4rem 1rem; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
@@ -9878,7 +9876,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   onMouseDown={() => editorRef.current?.focus()}
                   onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
                   <option value="" disabled>{L('Pisava', 'Font')}</option>
-                  <option value="Bodoni Moda">{L('Elegantna', 'Elegant')}</option>
+                  <option value="DM Serif Display">DM Serif</option>
+        <option value="Bodoni Moda">Bodoni Moda</option>
                   <option value="Montserrat">Montserrat</option>
                   <option value="Roboto">Roboto</option>
                   <option value="Lora">Lora</option>
