@@ -128,7 +128,13 @@ export async function POST(req: Request) {
       model,
     );
     if (!rateLimit.allowed) {
-      return NextResponse.json({ napaka: 'Preveč zahtev. Poskusi znova pozneje.' }, { status: 429 });
+      /* Prijazno sporocilo v Pupinem tonu + koliko je meja, da uporabnik ve, kaj se je zgodilo
+         (tiha napaka izgleda kot pokvarjena aplikacija). Okno je drsece 1 uro. */
+      return NextResponse.json({
+        napaka: `Uf, malo prehitro 😊 Dosegel/-la si urno mejo (${hourlyLimit} vprašanj na uro). Poskusi spet čez nekaj minut — vmes lahko mirno delaš naprej.`,
+        limit: true,
+        mejaNaUro: hourlyLimit,
+      }, { status: 429 });
     }
     rateLimitRequestId = rateLimit.requestId;
   } catch (error) {
