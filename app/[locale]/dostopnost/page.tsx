@@ -9,7 +9,7 @@ export function generateStaticParams() {
 
 const sl = {
   title: 'Izjava o dostopnosti',
-  updated: 'Zadnja posodobitev: avgust 2026',
+  updated: 'Zadnja posodobitev: 18. avgust 2026',
   sections: [
     {
       heading: '1. Naša zaveza',
@@ -40,7 +40,7 @@ const sl = {
 
 const en = {
   title: 'Accessibility Statement',
-  updated: 'Last updated: August 2026',
+  updated: 'Last updated: 18 August 2026',
   sections: [
     {
       heading: '1. Our Commitment',
