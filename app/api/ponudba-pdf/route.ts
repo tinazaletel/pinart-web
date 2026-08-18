@@ -43,10 +43,15 @@ export async function POST(req: NextRequest) {
     const puppeteer = await import('puppeteer-core');
     const naServerju = process.env.NODE_ENV === 'production' || !!process.env.VERCEL || !!process.env.AWS_REGION;
     if (naServerju) {
-      const chromium = (await import('@sparticuz/chromium')).default;
+      /* @sparticuz/chromium-min NE zapakira binarnega -> prenese celoten Chrome-pack
+         (binarni + VSE knjiznice, vkljucno z libnss3) ob zagonu z gostovanega URL.
+         Tako obidemo Next/Vercel file-tracing, ki .br knjiznic ni zajel -> 'libnss3.so'. */
+      const chromium = (await import('@sparticuz/chromium-min')).default;
+      const CHROMIUM_PACK = process.env.CHROMIUM_PACK_URL
+        || 'https://github.com/Sparticuz/chromium/releases/download/v129.0.0/chromium-v129.0.0-pack.tar';
       browser = await puppeteer.launch({
         args: chromium.args,
-        executablePath: await chromium.executablePath(),
+        executablePath: await chromium.executablePath(CHROMIUM_PACK),
         headless: true,
       });
     } else {
