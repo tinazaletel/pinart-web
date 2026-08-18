@@ -63,6 +63,38 @@ export async function prekliciVabilo(inviteId: string): Promise<{ ok: boolean; n
   } catch { return { ok: false, napaka: 'Napaka (povezava).' }; }
 }
 
+/* ── Deljenje zapisov s člani (Faza 4 Stage 3) ── */
+export type DeljivVir = 'clients' | 'offers' | 'invoices' | 'contracts' | 'retainers' | 'expenses';
+
+export async function preberiDeljenja(resource: DeljivVir, recordId: string): Promise<string[]> {
+  try {
+    const res = await fetch(`/api/ekipa/deli?resource=${encodeURIComponent(resource)}&recordId=${encodeURIComponent(recordId)}`);
+    if (!res.ok) return [];
+    const data = await res.json().catch(() => null);
+    return Array.isArray(data?.sharedWith) ? data.sharedWith : [];
+  } catch { return []; }
+}
+
+export async function deliZapis(resource: DeljivVir, recordId: string, sharedWith: string): Promise<{ ok: boolean; napaka?: string }> {
+  try {
+    const res = await fetch('/api/ekipa/deli', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ resource, recordId, sharedWith }),
+    });
+    const data = await res.json().catch(() => ({}));
+    return res.ok ? { ok: true } : { ok: false, napaka: data?.error || 'Napaka.' };
+  } catch { return { ok: false, napaka: 'Napaka (povezava).' }; }
+}
+
+export async function prekliciDeljenje(resource: DeljivVir, recordId: string, sharedWith: string): Promise<{ ok: boolean; napaka?: string }> {
+  try {
+    const res = await fetch('/api/ekipa/deli', {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ resource, recordId, sharedWith }),
+    });
+    const data = await res.json().catch(() => ({}));
+    return res.ok ? { ok: true } : { ok: false, napaka: data?.error || 'Napaka.' };
+  } catch { return { ok: false, napaka: 'Napaka (povezava).' }; }
+}
+
 /* Prenos lastništva na drugega člana; ti postaneš admin. */
 export async function prenesiLastnistvo(userId: string): Promise<{ ok: boolean; napaka?: string; opozorilo?: string }> {
   try {

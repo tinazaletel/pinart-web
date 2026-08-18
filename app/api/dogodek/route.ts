@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { omejiApi } from '@/lib/rate-limit';
 
 /**
  * Anonimni dogodek uporabe: kaj se v orodju odpre, dokonča, izvozi.
@@ -35,6 +36,10 @@ function ocisti(vrednost: unknown): string | number | boolean | null {
 }
 
 export async function POST(request: Request) {
+  /* Anonimni analitični dogodek -> IP-omejitev, da endpointa ni mogoče poplaviti. */
+  const omejitev = await omejiApi(request, 'dogodek', 60);
+  if (omejitev) return omejitev;
+
   const baza = createAdminClient();
   if (!baza) return NextResponse.json({ ok: false, reason: 'not-configured' });
 

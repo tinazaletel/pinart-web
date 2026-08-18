@@ -98,6 +98,22 @@ export function isSafeAiEndpoint(value: string | null | undefined): boolean {
     if (['localhost', '0.0.0.0', '::1'].includes(hostname)) return false;
     if (hostname.endsWith('.localhost') || hostname.endsWith('.local')
         || hostname.endsWith('.internal') || hostname.endsWith('.lan')) return false;
+    /* Blokiraj zasebne/rezervirane IP literale (SSRF v notranje storitve / cloud metadata). */
+    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(hostname)) {
+      const o = hostname.split('.').map(Number);
+      if (o.some((n) => n > 255)) return false;
+      const [a, b] = o;
+      if (a === 0 || a === 10 || a === 127
+          || (a === 172 && b >= 16 && b <= 31)
+          || (a === 192 && b === 168)
+          || (a === 169 && b === 254)            // cloud metadata (169.254.169.254)
+          || (a === 100 && b >= 64 && b <= 127)  // CGNAT 100.64/10
+          || a >= 224) return false;             // multicast/rezervirano
+    }
+    if (hostname.includes(':')) {                // IPv6 zasebni/rezervirani
+      const h = hostname.replace(/^\[|\]$/g, '');
+      if (h === '::' || /^f[cd][0-9a-f]{2}:/i.test(h) || /^fe80:/i.test(h)) return false;
+    }
     return true;
   } catch {
     return false;

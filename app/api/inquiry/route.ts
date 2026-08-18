@@ -22,7 +22,12 @@ export async function POST(request: Request) {
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ ...body, submittedAt: new Date().toISOString() }),
+    /* Pošlji SAMO potrjena polja (ne cel body) — da nevalidirane dodatne
+       ključe iz zahteve ne posredujemo naprej na Google Sheets webhook. */
+    body: JSON.stringify({
+      name: String(body.name), email: String(body.email), brief: String(body.brief),
+      submittedAt: new Date().toISOString(),
+    }),
     redirect: 'follow',
   });
 
