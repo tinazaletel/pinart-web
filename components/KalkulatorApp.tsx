@@ -7252,7 +7252,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .barva-cilj button { border: none; background: transparent; color: var(--ink); font-family: inherit; font-weight: 600; font-size: .74rem; padding: .5rem .72rem; cursor: pointer; min-height: 2.25rem; transition: background .15s; }
         .cw .barva-cilj button.on { background: var(--ink); color: var(--paper); }
         /* PRENOVLJENI TOOLBAR PONUDBE */
-        .cw .pon-vrh { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: .4rem 0 1rem; }
+        .cw .pon-vrh { display: flex; flex-wrap: nowrap; align-items: center; gap: .5rem; margin: .4rem 0 1rem; }
+        /* gumba (ponastavi + AI) OSTANETA v prvi vrstici ob toniranju (ne ovijeta se);
+           pilule se raje malo skrcijo (min-width:0), gumba imata fiksno sirino. */
+        .cw .pon-vrh .segpills { flex: 0 1 auto; min-width: 0; }
+        .cw .pon-vrh .pon-vrh-desno { flex: 0 0 auto; }
         /* Na telefonu naj gredo Uredi + Predogled + obe ikoni v ENO vrstico:
            vrstica se ne lomi, pilule se smejo skrciti, napisi so tesnejsi. */
         @media (max-width: 640px) {
