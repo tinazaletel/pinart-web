@@ -5,6 +5,7 @@ import { createAdminClient } from '@/utils/supabase/admin';
 import { omejiApi } from '@/lib/rate-limit';
 import { jeEmail, omejenNiz, preberiJson, sporociloValidacije } from '@/lib/validacija';
 import { zagotoviInboxToken } from '@/lib/inboxToken';
+import { posiljatelj } from '@/lib/posiljatelj';
 
 /* Strežniško pošiljanje e-pošte prek Resend. Ključ RESEND_API_KEY bere SAMO
    strežnik (nikoli klient). "From" naslov nastavi RESEND_FROM (npr.
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
   if (omejitev) return omejitev;
 
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM || 'Pinart Flow <onboarding@resend.dev>';
+  const from = posiljatelj();
 
   let body: {
     to?: string | string[];
