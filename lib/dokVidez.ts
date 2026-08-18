@@ -107,7 +107,28 @@ export function noviIdPredloge(): string {
    dokBarva/dokFont/logo (K_LOGO), jo shrani nazaj in vrne — tako nihce ne
    izgubi trenutne nastavitve. Ce aktivna predloga (id) ne obstaja vec
    (izbrisana), vrne prvo v seznamu. */
+/* Enkratna migracija: star privzeti font dokumentov je bil 'Bodoni Moda', zdaj je
+   'DM Serif Display'. Obstojeci racuni imajo 'Bodoni Moda' zapisan v K_NAST.dokFont
+   in v predlogi 'Privzeta' — CEPRAV ga niso zavestno izbrali (bil je le privzetek).
+   Enkrat ga zamenjamo na nov privzetek. Flag dokFontMigriran2 zagotovi, da se zgodi
+   LE ENKRAT in ne povozi kasnejse zavestne izbire Bodonija. */
+export function migrirajStariFont(): void {
+  try {
+    const s = beriNast();
+    if (s.dokFontMigriran2) return;
+    const delno: Record<string, unknown> = { dokFontMigriran2: true };
+    if (s.dokFont === 'Bodoni Moda') delno.dokFont = DOK_FONT_PRIVZETI;
+    if (Array.isArray(s.dokPredloge)) {
+      delno.dokPredloge = (s.dokPredloge as DokPredloga[]).map(p =>
+        (p.ime === 'Privzeta' && p.font === 'Bodoni Moda') ? { ...p, font: DOK_FONT_PRIVZETI } : p
+      );
+    }
+    pisiNastDelno(delno);
+  } catch { /* shramba nedostopna — preskoci */ }
+}
+
 export function nalozitePredloge(): { predloge: DokPredloga[]; aktivnaId: string } {
+  migrirajStariFont();
   const s = beriNast();
   let predloge: DokPredloga[] = Array.isArray(s.dokPredloge) ? (s.dokPredloge as DokPredloga[]) : [];
   let aktivnaId = typeof s.dokAktivnaPredloga === 'string' ? s.dokAktivnaPredloga : '';

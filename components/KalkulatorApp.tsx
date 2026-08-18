@@ -6,7 +6,7 @@ import { localePath } from '@/i18n/routing';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import { loadFlowData, saveFlowCollection, type FlowInvoice } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
-import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4 } from '@/lib/dokVidez';
+import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4, migrirajStariFont } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
 import { preberiPredogled, usePredogled } from '@/lib/predogled';
 import { posljiMail } from '@/lib/posta';
@@ -2683,6 +2683,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
   useEffect(() => {
     try {
+      migrirajStariFont(); /* star privzeti Bodoni -> DM Serif (enkratno), preden preberemo dokFont */
       const s = JSON.parse(localStorage.getItem(K_NAST) || '{}');
       if (s.osnove) setOsnove(s.osnove);
       if (s.izkusnje) setIzkusnje(s.izkusnje);
