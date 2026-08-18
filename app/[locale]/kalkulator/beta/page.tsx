@@ -35,7 +35,7 @@ export default function BetaZaklep() {
           letter-spacing: .11em; text-transform: uppercase; color: oklch(50% .16 300);
           background: oklch(95% .045 300); border-radius: 999px; padding: .3rem .75rem; margin-bottom: 1.3rem; }
         .beta-znak i { width: 7px; height: 7px; border-radius: 50%; background: oklch(62% .19 300); display: inline-block; }
-        .beta-h { font-family: var(--font-serif), Georgia, serif; font-size: clamp(1.7rem, 5vw, 2.3rem);
+        .beta-h { font-family: var(--font-serif-flow), Georgia, serif; font-size: clamp(1.7rem, 5vw, 2.3rem);
           line-height: 1.1; font-weight: 500; color: oklch(22% .02 300); margin: 0 0 .7rem; }
         .beta-p { font-size: .98rem; line-height: 1.6; color: oklch(40% .015 300); margin: 0 auto 1.7rem; max-width: 24rem; }
         .beta-p b { color: oklch(28% .02 300); font-weight: 700; }
