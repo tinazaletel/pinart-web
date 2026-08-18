@@ -1,7 +1,6 @@
 'use client';
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import styles from '@/app/[locale]/kalkulator/prijava/prijava.module.css';
 
@@ -27,7 +26,6 @@ function prevediNapako(sporocilo: string, jeEn = false): string {
 export default function AuthForm({ base }: { base: string }) {
   const jeEn = base === '/en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
-  const router = useRouter();
   const passwordInput = useRef<HTMLInputElement>(null);
   const [mode, setMode] = useState<Mode>('signin');
   const [loading, setLoading] = useState(false);
@@ -65,6 +63,14 @@ export default function AuthForm({ base }: { base: string }) {
      natancnim vpisom ne ujema, zato je Supabase tiho preusmeril na nadomestni naslov
      (koda je pristala na "/" in seja se ni ustvarila). Cist naslov brez poizvedbe se
      ujema z vpisom "…/auth/callback" in deluje tudi brez nadomestnih znakov. */
+  /* Po uspesni prijavi: EN sam prehod (polno nalaganje cilja). Prej je bilo
+     router.push(cilj) + router.refresh() — stran se je izrisala, refresh pa jo je
+     takoj znova zgradil, kar je uporabnik videl kot utrip (prikaz -> izgine ->
+     prikaz). Polno nalaganje strezniku takoj prinese svez piskotek seje. */
+  function vstopi() {
+    window.location.assign(cilj);
+  }
+
   function preusmeriNaCallback(next: string) {
     document.cookie = `flow_next=${encodeURIComponent(next)}; path=/; max-age=600; samesite=lax`;
     return `${window.location.origin}/auth/callback`;
@@ -116,8 +122,7 @@ export default function AuthForm({ base }: { base: string }) {
       }
       /* Ce je seja takoj na voljo, je potrditev izklopljena -> gremo naravnost naprej. */
       if (data.session) {
-        router.push(cilj);
-        router.refresh();
+        vstopi();
         return;
       }
       setNepotrjen(true);
@@ -134,8 +139,7 @@ export default function AuthForm({ base }: { base: string }) {
       return;
     }
 
-    router.push(cilj);
-    router.refresh();
+    vstopi();
   }
 
   async function posljiPotrditevZnova() {
