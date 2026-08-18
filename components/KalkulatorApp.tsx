@@ -2446,6 +2446,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      potrditev pogojev; pogojiPotrjeni: gate za gumb "Razumem, gremo" pri prijavljenih. */
   const [jePrijavljen, setJePrijavljen] = useState(false);
   const [pogojiPotrjeni, setPogojiPotrjeni] = useState(false);
+  /* pogojiPrebrani: kljukica se odklene sele, ko uporabnik preleti pogoje do dna. */
+  const [pogojiPrebrani, setPogojiPrebrani] = useState(false);
   const [vecMoznosti, setVecMoznosti] = useState(false); // mobilni slide-up "Več možnosti" (izvoz/shrani dejanja)
   useEffect(() => {
     let ziv = true;
@@ -2458,6 +2460,27 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     })();
     return () => { ziv = false; };
   }, []);
+  /* vFlow = uporabnik je v Flow ogrodju ALI je prijavljen. vLupini je SINHRON (prop),
+     jePrijavljen pa pride sele po asinhronem klicu na Supabase — brez vLupini se je
+     kartica pogojev pri vstopu v Flow lahko izrisala v razlicici za neprijavljene
+     (brez obvezne potrditve pogojev) in uporabnik je sel naprej brez potrditve. */
+  const vFlow = vLupini || jePrijavljen;
+  /* Pogoji v Flow razlicici: uporabnik jih mora preleteti do dna, sele nato se
+     odklene kljukica. Ce branja ni mogoce zaznati (varnostne omejitve brskalnika),
+     kljukico odklenemo, da uporabnik ni ujet. */
+  const naloziPogoje = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
+    try {
+      const okno = e.currentTarget.contentWindow;
+      const dok = e.currentTarget.contentDocument;
+      if (!okno || !dok) { setPogojiPrebrani(true); return; }
+      const preveri = () => {
+        const el = dok.documentElement;
+        if (el.scrollTop + okno.innerHeight >= el.scrollHeight - 80) setPogojiPrebrani(true);
+      };
+      okno.addEventListener('scroll', preveri, { passive: true });
+      preveri(); /* ce je vsebina krajsa od okvirja, je ze prebrana */
+    } catch { setPogojiPrebrani(true); }
+  };
   /* moderne pisave za urejevalnik ponudbe (best-effort; ce CSP blokira, gladek fallback na sistemsko) */
   useEffect(() => {
     const id = 'cw-editor-fonts';
@@ -6683,6 +6706,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .sg-potrdi { display: flex; align-items: flex-start; gap: .6rem; font-size: .95rem; line-height: 1.5; color: var(--ink); cursor: pointer; text-align: left; max-width: 34rem; }
         .cw .sg-potrdi input { flex: none; width: 1.15rem; height: 1.15rem; margin-top: .18rem; accent-color: var(--accent, #B25476); cursor: pointer; }
         .cw .sg-potrdi a { color: var(--accent, #B25476); text-decoration: underline; text-underline-offset: .2em; }
+        /* Okno s pogoji v Flow razlicici — uporabnik jih preleti pred potrditvijo. */
+        .cw .sg-pogoji { display: flex; flex-direction: column; gap: .45rem; margin-top: 1.1rem; }
+        .cw .sg-pogoji-ozn { font-size: .68rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: #8a8177; }
+        .cw .sg-pogoji-okvir { width: 100%; height: 32vh; min-height: 200px; border: 1px solid rgba(17,17,17,.14); border-radius: 12px; background: #fff; display: block; }
+        .cw .sg-pogoji-namig { margin: 0; font-size: .78rem; color: #8a8177; }
+        .cw .sg-potrdi-zaklenjen { opacity: .55; cursor: not-allowed; }
+        .cw .sg-potrdi-zaklenjen input { cursor: not-allowed; }
         .cw .soglasje-gumbi .gumb:disabled { opacity: .45; cursor: not-allowed; transform: none; }
         .cw .napredek { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(17,17,17,.1); z-index: 40; }
         .cw .napredek i { display: block; height: 100%; background: var(--ink); transition: width .5s cubic-bezier(.16,1,.3,1); }
@@ -7756,7 +7786,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           <div className="soglasje-kartica">
             <h2>{L('Samo troje, preden začneš', 'Just three things before you start')}</h2>
             <div className="soglasje-tocke">
-              {jePrijavljen ? (<>
+              {vFlow ? (<>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Vse na enem mestu', 'Everything in one place')}</h3>
                 <p className="sg-t">{L('Flow ni samo kalkulator — ponudbe, računi, pogodbe, stranke, projekti, koledar in več. Ko se spoznava, te odložim na tvojo ploščo, kjer izbereš, kaj boš delal/-a.', 'Flow is more than a calculator — quotes, invoices, contracts, clients, projects, a calendar and more. Once we get to know each other, I drop you on your dashboard, where you choose what to do.')}</p>
@@ -7784,7 +7814,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               </div>
               </>)}
             </div>
-            {!jePrijavljen && (
+            {!vFlow && (
             <div className="sg-motiv">
               <span className="sg-motiv-ozn">{L('★ Kaj imaš od tega', '★ What\'s in it for you')}</span>
               <p>{L('Skupaj gradimo', 'Together we\'re building')} <b>{L('prvo statistiko cen za kreativce', 'the first pricing statistics for creatives')}</b>{L(': ko bo baza dovolj velika, boš videl,', ': once the database is big enough, you\'ll see')} <b>{L('koliko kolegi s tvojimi izkušnjami dejansko računajo', 'how much peers with your experience actually charge')}</b> {L('— česar danes ne pove nihče.', '— which nobody tells you today.')}</p>
@@ -7817,15 +7847,27 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 </>
               )}
             </div>
+            {vFlow && (
+              <div className="sg-pogoji">
+                <span className="sg-pogoji-ozn">{L('Pogoji poslovanja', 'Terms of business')}</span>
+                <iframe className="sg-pogoji-okvir" title={L('Pogoji poslovanja', 'Terms of business')}
+                  src={localePath(locale, `/kalkulator/pogoji`)} onLoad={naloziPogoje} />
+                <p className="sg-pogoji-namig">
+                  {pogojiPrebrani
+                    ? L('Hvala — zdaj lahko potrdiš spodaj.', 'Thank you — you can confirm below.')
+                    : L('Preleti pogoje do konca, da jih lahko potrdiš.', 'Scroll through the terms to the end to confirm them.')}
+                </p>
+              </div>
+            )}
             <div className="soglasje-gumbi">
-              {jePrijavljen && (
-                <label className="sg-potrdi">
-                  <input type="checkbox" checked={pogojiPotrjeni} onChange={e => setPogojiPotrjeni(e.target.checked)} />
+              {vFlow && (
+                <label className={'sg-potrdi' + (pogojiPrebrani ? '' : ' sg-potrdi-zaklenjen')}>
+                  <input type="checkbox" checked={pogojiPotrjeni} disabled={!pogojiPrebrani} onChange={e => setPogojiPotrjeni(e.target.checked)} />
                   <span>{L('Preletel/-a sem in potrjujem ', 'I have reviewed and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>.</span>
                 </label>
               )}
-              <button type="button" className="gumb" onClick={sprejmiPogoje} disabled={jePrijavljen && !pogojiPotrjeni} title={jePrijavljen && !pogojiPotrjeni ? L('Najprej preleti in potrdi pogoje poslovanja.', 'First review and accept the terms of business.') : undefined}>{L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
-              {!jePrijavljen && <a className="povezava" href={localePath(locale, `/kalkulator/pogoji`)}>{L('Preberi celotne pogoje', 'Read the full terms')}</a>}
+              <button type="button" className="gumb" onClick={sprejmiPogoje} disabled={vFlow && !pogojiPotrjeni} title={vFlow && !pogojiPotrjeni ? L('Najprej preleti in potrdi pogoje poslovanja.', 'First review and accept the terms of business.') : undefined}>{L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
+              {!vFlow && <a className="povezava" href={localePath(locale, `/kalkulator/pogoji`)}>{L('Preberi celotne pogoje', 'Read the full terms')}</a>}
             </div>
           </div>
         </div>
