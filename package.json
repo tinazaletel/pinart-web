@@ -28,7 +28,7 @@
     "@lottiefiles/dotlottie-react": "^0.19.9",
     "@phosphor-icons/react": "^2.1.10",
     "@sparticuz/chromium": "^129.0.0",
-    "@sparticuz/chromium-min": "^129.0.0",
+    "@sparticuz/chromium-min": "^149.0.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.7",
     "@xyflow/react": "^12.11.2",
