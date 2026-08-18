@@ -863,7 +863,9 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img key={i} className="rw-pred-stran" src={u} alt={`${tr('Stran', 'Page')} ${i + 1}`} />
                 ))
-                : <div className="rw-pred-prazno">{predNal ? tr('Pripravljam predogled …', 'Preparing preview …') : tr('Predogled ni na voljo', 'Preview unavailable')}</div>}
+                : predNal
+                  ? <div className="rw-pred-prazno">{tr('Pripravljam predogled …', 'Preparing preview …')}</div>
+                  : <iframe className="rw-pred-html" title={tr('Predogled', 'Preview')} sandbox="allow-same-origin" srcDoc={doc(izvozniTelo())} style={{ width: '100%', minHeight: '70vh', border: 0, background: '#fff', borderRadius: 8, display: 'block' }} />}
               {predNal && predStrani.length > 0 && <div className="rw-pred-osvezi" role="status">{tr('Osvežujem …', 'Refreshing …')}</div>}
             </div>
           ) : (
