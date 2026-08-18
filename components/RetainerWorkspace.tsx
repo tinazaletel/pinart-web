@@ -866,7 +866,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
                 ))
                 : predNal
                   ? <div className="rw-pred-prazno">{tr('Pripravljam predogled …', 'Preparing preview …')}</div>
-                  : <iframe className="rw-pred-html" title={tr('Predogled', 'Preview')} sandbox="allow-same-origin" srcDoc={doc(izvozniTelo())} style={{ width: '100%', minHeight: '70vh', border: 0, background: '#fff', borderRadius: 8, display: 'block' }} />}
+                  : <iframe className="rw-pred-html" title={tr('Predogled', 'Preview')} sandbox="allow-same-origin" srcDoc={doc(izvozniTelo()).replace('</head>', "<style>html{background:#ece8e1}body{max-width:210mm!important;margin:22px auto 44px!important;background:#fff!important;box-shadow:0 14px 46px rgba(20,16,22,.16)!important;padding:20mm 18mm!important;border-radius:2px}</style></head>")} style={{ width: '100%', minHeight: '78vh', border: 0, background: '#ece8e1', borderRadius: 10, display: 'block' }} />}
               {predNal && predStrani.length > 0 && <div className="rw-pred-osvezi" role="status">{tr('Osvežujem …', 'Refreshing …')}</div>}
             </div>
           ) : (
