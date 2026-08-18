@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
          Tako obidemo Next/Vercel file-tracing, ki .br knjiznic ni zajel -> 'libnss3.so'. */
       const chromium = (await import('@sparticuz/chromium-min')).default;
       const CHROMIUM_PACK = process.env.CHROMIUM_PACK_URL
-        || 'https://github.com/Sparticuz/chromium/releases/download/v129.0.0/chromium-v129.0.0-pack.tar';
+        || 'https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.tar';
       browser = await puppeteer.launch({
         args: chromium.args,
         executablePath: await chromium.executablePath(CHROMIUM_PACK),
