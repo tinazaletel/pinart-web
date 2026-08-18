@@ -1089,7 +1089,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
               /* eslint-disable-next-line @next/next/no-img-element */
               <img key={i} className="pg-pred-stran" src={u} alt={L(`Stran ${i + 1}`, `Page ${i + 1}`)} />
             ))
-            : <div className="pg-pred-prazno">{predNal ? L('Pripravljam predogled …', 'Preparing preview …') : L('Predogled ni na voljo', 'Preview not available')}</div>}
+            : predNal
+              ? <div className="pg-pred-prazno">{L('Pripravljam predogled …', 'Preparing preview …')}</div>
+              : <iframe className="pg-pred-html" title={L('Predogled', 'Preview')} sandbox="allow-same-origin" srcDoc={doc(izvozniTelo())} style={{ width: '100%', minHeight: '70vh', border: 0, background: '#fff', borderRadius: 8, display: 'block' }} />}
           {predNal && predStrani.length > 0 && <div className="pg-pred-osvezi" role="status">{L('Osvežujem …', 'Refreshing …')}</div>}
         </div>
       ) : (
