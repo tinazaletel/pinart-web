@@ -144,7 +144,15 @@ export async function POST(req: Request) {
     rateLimitRequestId = undefined;
   }
 
-  const sistem = `${PERSONA}\n\n${PUPA_ZNANJE}\n\nKONTEKST (kje je uporabnik + podatki ponudbe):\n${body.kontekst || '(ni podatkov)'}`;
+  /* PREDPOMNJENJE (prompt caching): PERSONA + PUPA_ZNANJE sta ob vsakem klicu ENAKA
+     (~2000 tokenov), zato ju posljemo kot LOCEN blok s cache_control — predpomnjeno
+     branje stane ~10x manj in je hitrejse. KONTEKST se spreminja ob vsakem klicu,
+     zato mora biti ZA predpomnjenim blokom (sicer bi vsaka sprememba razveljavila
+     predpomnilnik). Vrstni red blokov je zato pomemben. */
+  const sistem = [
+    { type: 'text' as const, text: `${PERSONA}\n\n${PUPA_ZNANJE}`, cache_control: { type: 'ephemeral' as const } },
+    { type: 'text' as const, text: `KONTEKST (kje je uporabnik + podatki ponudbe):\n${body.kontekst || '(ni podatkov)'}` },
+  ];
   const messages = [
     ...zgodovina
       .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
@@ -171,7 +179,11 @@ export async function POST(req: Request) {
       ? data.content.filter((b: { type?: string; text?: string }) => b?.type === 'text' && typeof b.text === 'string').map((b: { text?: string }) => b.text).join('\n').trim()
       : '';
     if (!besedilo) console.error('PUPA je vrnila prazen odgovor.');
-    const tokens = Number(data?.usage?.input_tokens || 0) + Number(data?.usage?.output_tokens || 0);
+    /* Predpomnjeni tokeni se belezijo LOCENO od input_tokens — pristejemo jih, da
+       poraba ostane realna. cache_read = ~10x cenejsi, cache_creation = ~1.25x. */
+    const cacheRead = Number(data?.usage?.cache_read_input_tokens || 0);
+    const cacheWrite = Number(data?.usage?.cache_creation_input_tokens || 0);
+    const tokens = Number(data?.usage?.input_tokens || 0) + Number(data?.usage?.output_tokens || 0) + cacheRead + cacheWrite;
     if (rateLimitRequestId) recordAiTokens(supabase, rateLimitRequestId, tokens).catch(error => {
       console.error('PUPA beleženje porabe:', error instanceof Error ? error.message : 'neznana napaka');
     });
