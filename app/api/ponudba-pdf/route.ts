@@ -46,6 +46,15 @@ export async function POST(req: NextRequest) {
       /* @sparticuz/chromium-min NE zapakira binarnega -> prenese celoten Chrome-pack
          (binarni + VSE knjiznice, vkljucno z libnss3) ob zagonu z gostovanega URL.
          Tako obidemo Next/Vercel file-tracing, ki .br knjiznic ni zajel -> 'libnss3.so'. */
+      /* KLJUCNO: @sparticuz razpakira sistemske knjiznice (al2023.tar.br z libnss3)
+         in nastavi LD_LIBRARY_PATH SAMO, ce prepozna Lambda/AL2023 okolje
+         (AWS_EXECUTION_ENV / AWS_LAMBDA_JS_RUNTIME / VERCEL+Node>=20). Novejsi Vercel
+         runtime teh spremenljivk ne nastavi vec -> binarni se zazene, knjiznic pa ni
+         ("libnss3.so: cannot open shared object file"). Shim nastavimo PRED importom,
+         ker detekcija tece ob nalaganju modula. */
+      if (!process.env.AWS_LAMBDA_JS_RUNTIME && !process.env.AWS_EXECUTION_ENV) {
+        process.env.AWS_LAMBDA_JS_RUNTIME = 'nodejs22.x';
+      }
       const chromium = (await import('@sparticuz/chromium-min')).default;
       const CHROMIUM_PACK = process.env.CHROMIUM_PACK_URL
         || 'https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.tar';
@@ -148,6 +157,23 @@ export async function POST(req: NextRequest) {
     if (e instanceof NapakaValidacije) {
       return NextResponse.json({ error: sporociloValidacije(e) }, { status: 400 });
     }
-    return NextResponse.json({ error: 'PDF ni uspel', detajl: String(e) }, { status: 500 });
+    /* diagnostika okolja (brez skrivnosti) — pove, ZAKAJ Chrome ne najde knjiznic */
+    let diag: Record<string, unknown> = {};
+    try {
+      const { existsSync } = await import('node:fs');
+      const { tmpdir } = await import('node:os');
+      const { join } = await import('node:path');
+      diag = {
+        node: process.versions.node,
+        vercel: !!process.env.VERCEL,
+        awsLambdaJsRuntime: process.env.AWS_LAMBDA_JS_RUNTIME ?? null,
+        awsExecEnv: process.env.AWS_EXECUTION_ENV ?? null,
+        ldLibraryPath: process.env.LD_LIBRARY_PATH ?? null,
+        al2023: existsSync(join(tmpdir(), 'al2023')),
+        chromiumBin: existsSync(join(tmpdir(), 'chromium')),
+        pack: existsSync(join(tmpdir(), 'chromium-pack')),
+      };
+    } catch { /* diagnostika ni kriticna */ }
+    return NextResponse.json({ error: 'PDF ni uspel', detajl: String(e), diag }, { status: 500 });
   }
 }
