@@ -107,7 +107,12 @@ export async function POST(request: Request) {
     .maybeSingle();
   const imePodjetja = String(org?.name || 'ekipo').trim() || 'ekipo';
 
-  const origin = (request.headers.get('origin') || 'https://pinart.si').replace(/\/$/, '');
+  /* Povezava za sprejem MORA kazati na javno domeno — vabilo, ustvarjeno z
+     localhosta, bi sicer povabljencu poslalo localhost link, ki mu ne dela. */
+  const rawOrigin = (request.headers.get('origin') || '').replace(/\/$/, '');
+  const origin = !rawOrigin || rawOrigin.includes('localhost') || rawOrigin.includes('127.0.0.1')
+    ? 'https://www.pinartflow.com'
+    : rawOrigin;
   const povezava = `${origin}/kalkulator/ekipa/sprejmi?token=${created.token}`;
 
   const apiKey = process.env.RESEND_API_KEY;
