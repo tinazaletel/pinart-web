@@ -1744,7 +1744,7 @@ const OFFER_CSS = `
       /* naslov ponudbe poravnan LEVO, enako kot preostalo besedilo (ne podeduj centriranja) */
       .offer-head,.offer-head-t,.offer-head h1,.offer-head .offer-kicker{text-align:left;text-indent:0}
       .offer-head-meta{text-align:left;font-size:8.5pt;color:#666;line-height:1.6;white-space:normal;padding:0}
-      .offer-cover{box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:250mm;break-after:page;page-break-after:always;padding:18mm 12mm}
+      .offer-cover{box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;text-align:left;min-height:250mm;break-after:page;page-break-after:always;padding:22mm 18mm}
       .oc-kicker{font-size:9pt;letter-spacing:.3em;text-transform:uppercase;color:#B25476;font-weight:700;margin-bottom:20px}
       .oc-naslov{font-family:'Bodoni Moda',Didot,Georgia,serif;font-weight:500;font-size:32pt;line-height:1.1;letter-spacing:-.01em;color:#111;max-width:15em;margin:0}
       .oc-crta{width:56px;height:2px;background:#B25476;margin:24px 0}
