@@ -61,7 +61,7 @@ const Puscica = () => (
 );
 
 export default function ProjectDetailModern({
-  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, onSaveAgreed, onSaveBrief, ekipaStatus, agenti = [], links = [], crmVnosi = [], onOdpriKomunikacije, onOdpriVse, onOdpriDokument, naloge = [], onOdpriMail, onOdpriDokumentacija,
+  data, sodelavci, jeEn, base, money, canEditTeam = false, onToggleMember, posta = [], onOpenZapis, onSaveAgreed, onSaveBrief, onZgradiProjekt, ekipaStatus, agenti = [], links = [], crmVnosi = [], onOdpriKomunikacije, onOdpriVse, onOdpriDokument, naloge = [], onOdpriMail, onOdpriDokumentacija,
 }: {
   data: ModernProject;
   sodelavci: Sodelavec[];
@@ -74,6 +74,9 @@ export default function ProjectDetailModern({
   onOpenZapis?: () => void;
   onSaveAgreed?: (value: number) => void;
   onSaveBrief?: (patch: Partial<Projekt>) => void;
+  /* (A) ponudba se ni zgrajena v projekt -> gumb, ki iz nje ustvari pravi zapis
+     (sele takrat je brief uredljiv). Ni prikazan, ce projekt ze obstaja. */
+  onZgradiProjekt?: () => void;
   ekipaStatus?: Record<string, EkipaStanje>;
   agenti?: AgentClan[];
   links?: FlowProjectLink[];
@@ -195,7 +198,9 @@ export default function ProjectDetailModern({
 
           {/* BRIEF */}
           <section className="pm-card pm-brief">
-            <header><h3>{L('BRIEF · ŽELJE STRANKE', 'BRIEF · CLIENT WISHES')}</h3>{real && <button type="button" className="pm-act" onClick={() => setBriefOdprt(true)}>{onSaveBrief ? L('Uredi', 'Edit') : L('Več', 'More')} <Puscica /></button>}</header>
+            <header><h3>{L('BRIEF · ŽELJE STRANKE', 'BRIEF · CLIENT WISHES')}</h3>{real
+              ? <button type="button" className="pm-act" onClick={() => setBriefOdprt(true)}>{onSaveBrief ? L('Uredi', 'Edit') : L('Več', 'More')} <Puscica /></button>
+              : onZgradiProjekt && <button type="button" className="pm-act" onClick={onZgradiProjekt}>{L('Zgradi projekt iz ponudbe', 'Build project from quote')} <Puscica /></button>}</header>
             <div className="pm-title">{L('Kaj gradimo in za koga.', 'What we build and for whom.')}</div>
             {briefPolja.length ? briefPolja.map(([k, v]) => (
               <div key={k} className="pm-brow"><span className="pm-bk">{k}</span><span className="pm-bv">{v}</span></div>
