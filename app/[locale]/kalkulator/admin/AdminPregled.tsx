@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Fragment, useMemo, useState } from 'react';
 import type { Analitika, Obdobje } from './podatki';
 import { CENA_PRO_MESECNO } from './podatki';
+import RegisterOpomnik from './RegisterOpomnik';
 
 /* Inline slogi, ker admin namenoma nima skupnega ogrodja z aplikacijo. */
 const K = { background: '#fff', borderRadius: 16, padding: '1.1rem 1.3rem', boxShadow: '0 4px 18px rgba(17,17,17,.05)' } as const;
@@ -96,6 +97,10 @@ export default function AdminPregled({ podatki }: { podatki: Analitika }) {
       Prihodek je <b>ocena</b> iz števila aktivnih naročnin krat cena paketa, ne dejansko nakazan denar.
       Ko bo plačila obdeloval ponudnik, bo tu njegov podatek.
     </p>
+
+    {/* Opomnik na osvezitev registra podjetij — iskalnik dela iz posnetka
+        javnih zbirk, ki brez osvezitve zastara. */}
+    <RegisterOpomnik />
 
     {/* ── storitve po podrocjih ─────────────────────────────────────────── */}
     <h2 style={NASLOV}>Katere storitve se največkrat vpisujejo</h2>
