@@ -136,6 +136,7 @@ export default function ProjectDetailModern({
   ].filter(([, v]) => v && v.trim()) as Array<[string, string]> : [];
   /* pravi dostop clanov ekipe — risemo ga v isti vrstici kot imena za naloge */
   const dostop = useDostopProjekta(real?.id, real?.strankaId);
+  const [razlagaOdprta, setRazlagaOdprta] = useState(false);
   const cilji = real?.cilji?.filter(c => c.besedilo?.trim()) || [];
   const imaBrief = briefPolja.length > 0 || cilji.length > 0 || dodatna.length > 0;
 
@@ -146,6 +147,9 @@ export default function ProjectDetailModern({
           o istem (kdo je na projektu) in ju je bilo treba lociti na pamet. */}
       <div className="pm-team">
         <span className="pm-team-lbl">{L('Na projektu', 'On this project')}</span>
+        <button type="button" className="pm-pomoc" aria-expanded={razlagaOdprta}
+          aria-label={L('Kaj pomenijo oznake dostopa?', 'What do the access labels mean?')}
+          onClick={() => setRazlagaOdprta(o => !o)}>?</button>
         {zaPregled > 0 && <span className="pm-alert">{zaPregled} {jeEn ? 'awaiting your review' : (zaPregled === 1 ? 'čaka na tvoj pregled' : 'čakajo na tvoj pregled')}</span>}
 
         {/* clani ekipe s PRAVIM dostopom (imajo racun in prijavo) */}
@@ -159,12 +163,12 @@ export default function ProjectDetailModern({
               {urejaEkipo ? (
                 <button type="button" className="pm-raven" disabled={dostop.delam === c.userId || !dostop.polniMozen}
                   title={dostop.polniMozen
-                    ? L('Klikni: vidi projekt ⇄ vidi vse (tudi ponudbe, pogodbe, računi)', 'Click: sees the project ⇄ sees everything (incl. quotes, contracts, invoices)')
+                    ? L('Klikni za preklop Partner ⇄ Lead', 'Click to switch Partner ⇄ Lead')
                     : L('Polni dostop rabi pripeto stranko.', 'Full access needs a client attached.')}
                   onClick={() => dostop.nastavi(c.userId, c.raven === 'polni' ? 'sodelavec' : 'polni')}>
-                  {c.raven === 'polni' ? L('vidi vse', 'sees everything') : L('vidi projekt', 'sees the project')}
+                  {c.raven === 'polni' ? L('Lead', 'Lead') : L('Partner', 'Partner')}
                 </button>
-              ) : <small>{c.raven === 'polni' ? L('vidi vse', 'sees everything') : L('vidi projekt', 'sees the project')}</small>}
+              ) : <small>{c.raven === 'polni' ? L('Lead', 'Lead') : L('Partner', 'Partner')}</small>}
             </span>
             {urejaEkipo && <button type="button" className="pm-mx" disabled={dostop.delam === c.userId}
               onClick={() => dostop.nastavi(c.userId, 'brez')} aria-label={`${L('Odstrani', 'Remove')} ${c.ime}`}>×</button>}
@@ -175,7 +179,7 @@ export default function ProjectDetailModern({
         {vsiClani.map(c => (
           <span key={c.id} className={'pm-member' + (c.jeAgent ? ' pm-member-ai' : '')} data-st={c.stanje || ''}>
             <span className={'pm-av' + (c.jeAgent ? ' pm-av-ai' : '')}>{c.jeAgent ? '✦' : zacetnice(c.ime)}</span>
-            <span className="pm-mtxt"><b>{c.ime}</b><small>{c.jeAgent ? c.pod : [c.pod, L('brez dostopa', 'no access')].filter(Boolean).join(' · ')}</small></span>
+            <span className="pm-mtxt"><b>{c.ime}</b><small>{c.jeAgent ? c.pod : [c.pod, L('samo ime', 'name only')].filter(Boolean).join(' · ')}</small></span>
             {c.stanje && <span className="pm-st" data-st={c.stanje}>{stanjeOznaka(c.stanje)}</span>}
             {urejaEkipo && !c.jeAgent && <button type="button" className="pm-mx" onClick={() => onToggleMember!(c.id)} aria-label={`${L('Odstrani', 'Remove')} ${c.ime}`}>×</button>}
           </span>
@@ -190,21 +194,21 @@ export default function ProjectDetailModern({
               <div className="pm-add-menu">
                 {dostop.naVoljo.length > 0 && (
                   <>
-                    <p className="pm-add-skupina">{L('Člani ekipe — projekt bodo videli', 'Team members — will see the project')}</p>
+                    <p className="pm-add-skupina">{L('Člani ekipe — dobijo dostop', 'Team members — get access')}</p>
                     {dostop.naVoljo.map(c => (
                       /* nov clan zacne kot Sodelavec: finance so izrecna odlocitev */
                       <button key={c.userId} type="button" className="pm-add-opt"
                         disabled={!dostop.pripravljen}
                         title={dostop.pripravljen ? undefined : L('Projekt se sinhronizira — poskusi cez trenutek.', 'The project is syncing — try again in a moment.')}
                         onClick={() => { setDodajOdprt(false); dostop.nastavi(c.userId, 'sodelavec'); }}>
-                        <span className="pm-av pm-av-sm pm-av-dostop">{zacetnice(c.ime)}</span><b>{c.ime}</b><small>{L('vidi projekt', 'sees the project')}</small>
+                        <span className="pm-av pm-av-sm pm-av-dostop">{zacetnice(c.ime)}</span><b>{c.ime}</b><small>{L('Partner', 'Partner')}</small>
                       </button>
                     ))}
                   </>
                 )}
                 {naVoljo.length > 0 && (
                   <>
-                    <p className="pm-add-skupina">{L('Imena za naloge — projekta ne vidijo', 'Names for tasks — cannot see the project')}</p>
+                    <p className="pm-add-skupina">{L('Imena za naloge — brez prijave', 'Names for tasks — no login')}</p>
                     {naVoljo.map(s => (
                       <button key={s.id} type="button" className="pm-add-opt" onClick={() => { onToggleMember!(s.id); setDodajOdprt(false); }}>
                         <span className="pm-av pm-av-sm">{zacetnice(s.ime)}</span><b>{s.ime}</b><small>{vlogaOznaka(s.vloga)}</small>
@@ -222,12 +226,13 @@ export default function ProjectDetailModern({
         )}
         <span className="pm-soon">{L('AI agenti = kmalu', 'AI agents = soon')}</span>
       </div>
-      {dostop.naProjektu.length > 0 && (
-        <p className="pm-dostop-opomba">
-          {L('»Vidi projekt« pomeni brief, cilje, naloge, datoteke in komunikacijo — ponudb, pogodb, računov in stroškov ne. »Vidi vse« odpre tudi te. »Brez dostopa« je le ime za dodeljevanje nalog.',
-             '»Sees the project« means brief, goals, tasks, files and messages — not quotes, contracts, invoices or costs. »Sees everything« opens those too. »No access« is just a name for assigning tasks.')}
-          {!dostop.polniMozen ? ' ' + L('Polni dostop je zaklenjen, ker projekt nima pripete stranke.', 'Full access is locked because this project has no client attached.') : ''}
-        </p>
+      {razlagaOdprta && (
+        <div className="pm-dostop-opomba">
+          <><b>Partner</b> — {L('vidi projekt: brief, cilje, naloge, datoteke in komunikacijo. Ponudb, pogodb, računov in stroškov NE.', 'sees the project: brief, goals, tasks, files and messages. NOT quotes, contracts, invoices or costs.')}<br />
+          <b>Lead</b> — {L('vidi vse na projektu, tudi finančno in pravno.', 'sees everything on the project, including financial and legal.')}<br />
+          <b>{L('samo ime', 'name only')}</b> — {L('oseba brez prijave; služi le dodeljevanju nalog in ničesar ne vidi.', 'a person without a login; used only for assigning tasks and sees nothing.')}</>
+          {!dostop.polniMozen ? ' ' + L('»Vidi vse« je zaklenjen, ker projekt nima pripete stranke.', '»Sees everything« is locked because this project has no client attached.') : ''}
+        </div>
       )}
 
       <div className="pm-grid">
@@ -531,6 +536,8 @@ export default function ProjectDetailModern({
         .pm-raven { padding: 0; border: 0; background: transparent; font: inherit; font-size: .66rem; font-weight: 700; color: #6E4FA6; white-space: nowrap; cursor: pointer; }
         .pm-raven:disabled { opacity: .5; cursor: default; }
         .pm-add-skupina { margin: .35rem 0 .1rem; padding: 0 .6rem; font-size: .58rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #8a8177; }
+        .pm-pomoc { width: 1.05rem; height: 1.05rem; margin-left: .1rem; border: 1px solid var(--line, rgba(17,17,17,.2)); border-radius: 50%; background: transparent; color: #8a8177; font: 700 .62rem inherit; line-height: 1; cursor: pointer; }
+        .pm-pomoc:hover { border-color: #6E4FA6; color: #6E4FA6; }
         .pm-dostop-opomba { margin: -.4rem 0 1.1rem; font-size: .72rem; line-height: 1.45; color: #8a8177; }
         .pm-empty { font-size:.85rem; color:var(--pm-muted); }
         .pm-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:1.1rem; }
