@@ -508,10 +508,10 @@ export default function ProjectDetailModern({
         .pm-team { display:flex; align-items:center; gap:.7rem; flex-wrap:wrap; background:var(--pm-card); border:1px solid var(--pm-line); border-radius:16px; padding:.8rem 1rem; margin-bottom:1.2rem; }
         .pm-team-lbl { font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-member { display:inline-flex; align-items:center; gap:.5rem; padding:.3rem .6rem .3rem .35rem; border-radius:999px; border:1px solid var(--pm-line); background:var(--pm-card); }
-        .pm-av { width:1.7rem; height:1.7rem; border-radius:50%; display:grid; place-items:center; font-size:.7rem; font-weight:700; color:#fff; background:linear-gradient(135deg, var(--pm-acc), oklch(70% .16 320)); }
+        .pm-av { width:1.7rem; height:1.7rem; border-radius:50%; display:grid; place-items:center; font-size:.7rem; font-weight:700; color:#fff; background:linear-gradient(135deg, oklch(52% .17 297), oklch(50% .15 330)); }
         .pm-mtxt { display:inline-flex; align-items:baseline; gap:.3rem; min-width:0; }
         .pm-mtxt b { font-size:.8rem; font-weight:650; line-height:1.1; white-space:nowrap; }
-        .pm-mtxt small { font-size:.66rem; color:var(--pm-muted); white-space:nowrap; }
+        .pm-mtxt small, .pm-raven { font-size:.66rem; color:var(--pm-muted); white-space:nowrap; }
         .pm-addmember { text-decoration:none; display:inline-flex; align-items:center; gap:.3rem; border:1px dashed var(--pm-line); color:var(--pm-muted); border-radius:999px; padding:.42rem .7rem; font-size:.78rem; font-weight:600; }
         .pm-addmember:hover { border-color:var(--pm-acc); color:var(--pm-acc); }
         .pm-mx { border:0; background:none; cursor:pointer; color:var(--pm-muted); font-size:1rem; line-height:1; padding:0 .1rem 0 .2rem; border-radius:50%; }
@@ -533,7 +533,7 @@ export default function ProjectDetailModern({
         /* clan s pravim dostopom je vijolicno oznacen — loci ga od imena za naloge */
         .pm-member-dostop { border-color: rgba(110,79,166,.35); }
         .pm-av-dostop { background: #6E4FA6; color: #fff; }
-        .pm-raven { padding: 0; border: 0; background: transparent; font: inherit; font-size: .66rem; font-weight: 700; color: #6E4FA6; white-space: nowrap; cursor: pointer; }
+        .pm-raven { padding: 0; border: 0; background: transparent; font: inherit; font-weight: 700; cursor: pointer; }
         .pm-raven:disabled { opacity: .5; cursor: default; }
         .pm-add-skupina { margin: .35rem 0 .1rem; padding: 0 .6rem; font-size: .58rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #8a8177; }
         .pm-pomoc { width: 1.05rem; height: 1.05rem; margin-left: .1rem; border: 1px solid var(--line, rgba(17,17,17,.2)); border-radius: 50%; background: transparent; color: #8a8177; font: 700 .62rem inherit; line-height: 1; cursor: pointer; }
