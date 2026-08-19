@@ -217,6 +217,10 @@ export default function Pupa() {
   /* Pred prijavo (login stran) Pupa ne sme biti vidna — je plačljiva/za prijavljene. Edina
      neprijavljena stran pod /kalkulator je /prijava (drugam middleware preusmeri). */
   if (/\/kalkulator\/prijava(\/|$)/.test(pathname)) return null;
+  /* Tudi na ostalih "vratih" (novo geslo, zaprta beta, sprejem vabila) Pupa nima
+     kaj iskati: to niso delovne strani, uporabnik tam samo opravi en korak. */
+  if (/\/kalkulator\/(geslo|beta)(\/|$)/.test(pathname)) return null;
+  if (/\/kalkulator\/ekipa\/sprejmi(\/|$)/.test(pathname)) return null;
   /* Pupa dom JE Pupa (cel pogovorni vmesnik) — plavajoč orb bi bil odveč in podvojen. */
   if (/\/kalkulator\/dom(\/|$)/.test(pathname)) return null;
 

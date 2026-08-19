@@ -225,7 +225,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
 
       <div className="np-chat-tok">
         {/* POTEG IZ PONUDBE — projekt najpogosteje nastane iz potrjene ponudbe */}
-        {!urejam && offers.length > 0 && novKorak === 0 && (
+        {!urejam && offers.length > 0 && (
           <div className="np-poteg">
             <p className="np-poteg-naslov">Gradiš iz obstoječe ponudbe?</p>
             <p className="np-poteg-pod">Izberi jo in prenesem naslov ter stranko. Lahko tudi začneš iz nič.</p>
