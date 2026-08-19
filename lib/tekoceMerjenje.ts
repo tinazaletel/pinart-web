@@ -23,6 +23,9 @@ export type TekoceMerjenje = {
   pavza?: boolean;
   /* zahteva za ustavitev, oddana z druge strani (bližnjica v glavi) */
   ustavi?: boolean;
+  /* do kdaj je uporabnica potrdila, da merjenje NAMENOMA teče naprej —
+     opomnik do tega časa molči (glej jePozabljeno) */
+  potrjenoDo?: string;
 };
 
 const KLJUC = 'pinart-tekoce-merjenje';
@@ -97,6 +100,36 @@ export function useTekoceMerjenje(): { merjenje: TekoceMerjenje | null; sekunde:
   }, [merjenje]);
 
   return { merjenje, sekunde };
+}
+
+/* ── POZABLJENA ŠTOPARICA ────────────────────────────────────────────────────
+   Najpogostejša napaka pri merjenju časa ni napačen izračun, ampak pozabljena
+   štoparica: teče čez noč in naslednji dan pokaže štirinajst ur. Zato jo tu
+   prepoznamo in vmesnik ponudi popravek.
+
+   Za pozabljeno štejemo dvoje:
+     · teče več kot ŠEST ur brez pavze (daljša seja je mogoča, a redka), ali
+     · se je začela na PREJŠNJI koledarski dan (čez noč je skoraj vedno pomota).
+   Na pavzi ne opozarjamo — tam čas ne teče in nič se ne izgublja. */
+const MEJA_UR = 6;
+
+export function jePozabljeno(m: TekoceMerjenje | null): boolean {
+  if (!m || m.pavza) return false;
+  if (m.potrjenoDo && Date.now() < new Date(m.potrjenoDo).getTime()) return false;
+
+  const sekunde = sekundeMerjenja(m);
+  if (sekunde > MEJA_UR * 3600) return true;
+
+  const zacetek = new Date(m.zacetekPrvic || m.startedAt);
+  const danes = new Date();
+  return zacetek.toDateString() !== danes.toDateString();
+}
+
+/** »Teče naprej« — opomnik utihne za štiri ure, potem vpraša znova. */
+export function potrdiTek(): void {
+  const m = preberiMerjenje();
+  if (!m) return;
+  zapisiMerjenje({ ...m, potrjenoDo: new Date(Date.now() + 4 * 3600 * 1000).toISOString() });
 }
 
 export const zapisCasa = (s: number) =>
