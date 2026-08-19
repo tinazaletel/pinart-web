@@ -2448,6 +2448,20 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [pogojiPotrjeni, setPogojiPotrjeni] = useState(false);
   /* pogojiPrebrani: kljukica se odklene sele, ko uporabnik preleti pogoje do dna. */
   const [pogojiPrebrani, setPogojiPrebrani] = useState(false);
+  /* Ime NALOZENE (lastne) pisave — da je na voljo tudi v orodni vrstici ponudbe,
+     ne le v Nastavitvah. Pisavo hkrati registriramo kot @font-face 'DokLastna',
+     da se v urejevalniku res izrise (urejevalnik uporablja fontName ukaz). */
+  const [lastnaPisavaIme, setLastnaPisavaIme] = useState('');
+  useEffect(() => {
+    try {
+      const cf = aktivnaPredloga().customFont;
+      if (!cf?.dataUri) return;
+      setLastnaPisavaIme(cf.ime || 'Moja pisava');
+      let el = document.getElementById('dok-lastna-pisava') as HTMLStyleElement | null;
+      if (!el) { el = document.createElement('style'); el.id = 'dok-lastna-pisava'; document.head.appendChild(el); }
+      el.textContent = `@font-face{font-family:'DokLastna';font-display:swap;src:url('${cf.dataUri}')}`;
+    } catch { /* brez lastne pisave */ }
+  }, []);
   const [vecMoznosti, setVecMoznosti] = useState(false); // mobilni slide-up "Več možnosti" (izvoz/shrani dejanja)
   useEffect(() => {
     let ziv = true;
@@ -5976,6 +5990,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         onMouseDown={() => editorRef.current?.focus()}
         onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
         <option value="" disabled>{L('Pisava', 'Font')}</option>
+        {lastnaPisavaIme && <option value="DokLastna">{lastnaPisavaIme}</option>}
         <option value="DM Serif Display">DM Serif</option>
         <option value="Bodoni Moda">Bodoni Moda</option>
         <option value="Montserrat">Montserrat</option>
@@ -7071,7 +7086,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
            padding-right 3rem!important, velika 1.25rem kljukica) — sicer napihnejo kontrole in
            pokvarijo puscice; visja specificnost + !important povozi globalno pravilo starsa. */
         .cw .prav-recept { font-size: .9rem !important; min-height: 0 !important; padding: .38rem 1.5rem .38rem .7rem !important; background-size: 12px 8px !important; background-position: right .55rem center !important; }
-        .cw .pisava-select { font-size: .78rem !important; min-height: 2.25rem !important; padding: 0 1.7rem 0 .9rem !important; background-size: 12px 8px !important; background-position: right .7rem center !important; }
+        .cw .pisava-select { font-size: .78rem !important; min-height: 2.25rem !important; border-color: #6E4FA6 !important; padding: 0 1.7rem 0 .9rem !important; background-size: 12px 8px !important; background-position: right .7rem center !important; }
         .cw .prav-cena { font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.05rem; min-width: 3.6rem; text-align: right; }
         .cw .prav-cena-gumb { border: 1px solid rgba(255,255,255,.6); background: rgba(255,255,255,.62); backdrop-filter: blur(12px) saturate(1.25); -webkit-backdrop-filter: blur(12px) saturate(1.25); cursor: pointer; color: var(--ink); padding: .32rem .6rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(40,25,40,.04); transition: border-color .15s, color .15s; }
         .cw .prav-cena-gumb:hover { border-color: var(--accent); }
@@ -7279,7 +7294,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .tool-vel button { border: none; background: rgba(17,17,17,.07); border-radius: 6px; width: 1.5rem; height: 1.35rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); padding: 0; }
         .cw .tool-vel button:hover { background: var(--ink); color: var(--paper); }
         .cw .tool-ikona { padding: 0 .6rem; }
-        .cw .pisava-select { min-height: 2.25rem; border: 1px solid rgba(17,17,17,.22); background-color: rgba(255,255,255,.32); color: var(--ink); border-radius: 999px; padding: 0 1.7rem 0 .9rem; font-family: inherit; font-weight: 600; font-size: .78rem; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .7rem center; }
+        .cw .pisava-select { min-height: 2.25rem; border: 1.5px solid #6E4FA6; background-color: rgba(255,255,255,.32); color: var(--ink); border-radius: 999px; padding: 0 1.7rem 0 .9rem; font-family: inherit; font-weight: 600; font-size: .78rem; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .7rem center; }
         .cw .barva-cilj { gap: 0; padding: 0; overflow: hidden; }
         .cw .barva-cilj button { border: none; background: transparent; color: var(--ink); font-family: inherit; font-weight: 600; font-size: .74rem; padding: .5rem .72rem; cursor: pointer; min-height: 2.25rem; transition: background .15s; }
         .cw .barva-cilj button.on { background: var(--ink); color: var(--paper); }
@@ -9915,6 +9930,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   onMouseDown={() => editorRef.current?.focus()}
                   onChange={e => { const v = e.target.value; if (v) uporabiPisavo(v); e.currentTarget.value = ''; }}>
                   <option value="" disabled>{L('Pisava', 'Font')}</option>
+                  {lastnaPisavaIme && <option value="DokLastna">{lastnaPisavaIme}</option>}
                   <option value="DM Serif Display">DM Serif</option>
         <option value="Bodoni Moda">Bodoni Moda</option>
                   <option value="Montserrat">Montserrat</option>
