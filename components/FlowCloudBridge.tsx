@@ -131,8 +131,12 @@ export default function FlowCloudBridge() {
          vsakem nalaganju. Oboje tece POD prekrivalom in konca z NAJVEC ENO
          osvezitvijo — locena ucinka sta stran nalozila dvakrat in to se je
          videlo kot dvojni skok po prijavi. */
+      /* Prekrivalo SAMO ob prvi sinhronizaciji v seji (po prijavi), ko je zaslon
+         itak prazen in se konca s ponovnim nalozenjem. Ob navadnem osvezevanju
+         strani sinhronizacija tece TIHO v ozadju — sicer vsak F5 pokrije zaslon,
+         cetudi ni kaj pokazati. */
       const prvaVSeji = sessionStorage.getItem(SESSION_KEY) !== 'done';
-      if (!cancelled) setSinhronizira(true);
+      if (!cancelled && prvaVSeji) setSinhronizira(true);
 
       let osveziti = false;
       if (prvaVSeji) osveziti = await synchronize();
