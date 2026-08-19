@@ -464,7 +464,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     <div className="np-chat-prostor" aria-hidden />
 
     {/* stili kot pogodbe/računi: navaden <style> (globalno), zato np- predpona povsod */}
-    <style>{`
+    <style dangerouslySetInnerHTML={{ __html: `
       .np{min-width:0}
       .np-stolpec{width:100%;max-width:720px;margin:0 auto}
       /* enotno vedenje kot Ponudba (KalkulatorApp .uvod-oder): prvo vprasanje chata
@@ -570,6 +570,6 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         .np-chat-vnos,.np-chat-izbire{margin-left:0}
         .np-chat-bot,.np-chat-jaz{max-width:100%}
       }
-    `}</style>
+    ` }} />
   </div>;
 }

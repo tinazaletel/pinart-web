@@ -685,3 +685,25 @@ export async function saveRetainerDraft(input: {
 }
 
 export type { CloudSettings };
+
+/* ── Faza 4 Stage 3: lokalni zapis -> ID v bazi ─────────────────────────────
+   Lokalni zapisi imajo svoj id (shranjen v bazi kot external_id), record_shares
+   pa potrebuje PRAVI uuid vrstice. Ta funkcija ga poisce; vrne null, ce zapis se
+   ni sinhroniziran v oblak (takrat deljenje se ni mogoce). */
+export async function dbIdZaZapis(
+  collection: 'offers' | 'invoices' | 'expenses' | 'contracts' | 'clients',
+  externalId: string,
+): Promise<string | null> {
+  if (!externalId || jeDemoId(externalId) || jeSamoPredogled()) return null;
+  const context = await getOrganizationContext();
+  if (!context) return null;
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from(collection)
+    .select('id')
+    .eq('organization_id', context.organizationId)
+    .eq('external_id', externalId)
+    .limit(1);
+  if (error || !data?.[0]?.id) return null;
+  return String(data[0].id);
+}

@@ -453,7 +453,9 @@ export default function ProjectDetailModern({
         .pm-add-wrap { position:relative; display:inline-flex; }
         /* Gumb za dodajanje sodelavcev poravnan DESNO v NA PROJEKTU vrstici */
         .pm-team > .pm-addmember, .pm-team > .pm-add-wrap { margin-left:auto; }
-        .pm-add-menu { position:absolute; top:calc(100% + .4rem); left:0; z-index:20; min-width:14rem; background:var(--pm-card); border:1px solid var(--pm-line); border-radius:12px; padding:.35rem; box-shadow:0 12px 30px -12px rgba(17,17,17,.25); display:flex; flex-direction:column; gap:.1rem; }
+        /* Meni se sidra na DESNI rob gumba in se odpira levo — gumb '+ Dodaj' stoji na
+           desnem robu vrstice, zato ga je pri left:0 okvir odrezal. */
+        .pm-add-menu { position:absolute; top:calc(100% + .4rem); right:0; left:auto; z-index:20; min-width:14rem; max-width:min(18rem,78vw); background:var(--pm-card); border:1px solid var(--pm-line); border-radius:12px; padding:.35rem; box-shadow:0 12px 30px -12px rgba(17,17,17,.25); display:flex; flex-direction:column; gap:.1rem; }
         .pm-add-opt { display:flex; align-items:center; gap:.5rem; width:100%; text-align:left; border:0; background:none; cursor:pointer; padding:.4rem .5rem; border-radius:8px; color:var(--pm-ink); }
         .pm-add-opt:hover { background:var(--pm-paper); }
         .pm-add-opt b { font-size:.82rem; font-weight:600; }
