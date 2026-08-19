@@ -14,6 +14,7 @@ import { nastaviNapredek } from '@/lib/flowNapredek';
 import { pregledCopilot, type Nasvet } from '@/lib/copilot';
 import { objaviPupaKontekst, pocistiPupaKontekst, odpriPupo } from '@/lib/pupaBridge';
 import VidezDokumentov from '@/components/VidezDokumentov';
+import IskalnikPodjetij from '@/components/IskalnikPodjetij';
 import IzbirnikDrzave from '@/components/IzbirnikDrzave';
 import AmbientBubbles from '@/components/AmbientBubbles';
 import { ugotoviPaket, zabeleziSPaketom } from '@/lib/analitika';
@@ -2582,6 +2583,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [nazivPonudbe, setNazivPonudbe] = useState('');
   const [narocnikPonudbe, setNarocnikPonudbe] = useState('');
   const [nedavniNarocniki, setNedavniNarocniki] = useState<NarocnikZapis[]>([]);
+
   const [narocnikEmail, setNarocnikEmail] = useState('');
   const [posiljamMail, setPosiljamMail] = useState(false);
   const [mailStatus, setMailStatus] = useState('');
@@ -2693,6 +2695,25 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [cenaResetPotrdi, setCenaResetPotrdi] = useState(false); /* dvoklik potrditev ponastavitve cen */
   const [profili, setProfili] = useState<Record<string, Profil>>({});
   const [arhiv, setArhiv] = useState<Record<string, ShranjenaP>>({});
+  /* Njene ZE OBSTOJECE stranke za nasepetavalnik — isti vir kot cipi »nedavni«
+     pod poljem. Pokazejo se PRED registrom: njen zapis ima e-posto in kontaktno
+     osebo, javni register ju nima. */
+  const mojeStranke = useMemo(() => {
+    const zapisi: NarocnikZapis[] = [
+      ...nedavniNarocniki,
+      /* arhiv je lahko med nalaganjem se prazen/nedolocen — memo tece ob VSAKEM
+         izrisu, ne le na tem koraku, zato brez tega pade Object.values(null). */
+      ...Object.values(arhiv || {}).filter(a => a && a.narocnikPonudbe).map(a => ({
+        ime: a.narocnikPonudbe, email: a.narocnikEmail, oseba: a.narocnikOseba, naslov: a.narocnikNaslov, davcna: a.narocnikDavcna,
+      })),
+    ];
+    const videni = new Set<string>();
+    return zapisi.filter(z => {
+      const k = (z.ime || '').trim().toLowerCase();
+      if (!k || videni.has(k)) return false;
+      videni.add(k); return true;
+    });
+  }, [nedavniNarocniki, arhiv]);
   const [podjetja, setPodjetja] = useState<Record<string, PodjetjeProfil>>({});
   const [imePodjetja, setImePodjetja] = useState('');
   const [kopirano, setKopirano] = useState(false);
@@ -9184,9 +9205,35 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <div className="numgrid" style={{ marginTop: 0 }}>
                 <div className="polje">
                   <label htmlFor="cw-narocnik">{narocnikTip === 'fizicna' ? L('Ime in priimek', 'Full name') : L('Ime podjetja', 'Company name')}</label>
-                  <input id="cw-narocnik" type="text" placeholder={narocnikTip === 'fizicna' ? L('npr. Ana Novak', 'e.g. Ana Novak') : L('npr. Odvetniška družba Volk & Babica', 'e.g. Wolf & Grandma Law Firm')}
-                    value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)}
-                    onBlur={e => zabeleziNarocnika(e.target.value)} />
+                  {narocnikTip === 'fizicna' ? (
+                    <input id="cw-narocnik" type="text" placeholder={L('npr. Ana Novak', 'e.g. Ana Novak')}
+                      value={narocnikPonudbe} onChange={e => setNarocnikPonudbe(e.target.value)}
+                      onBlur={e => zabeleziNarocnika(e.target.value)} />
+                  ) : (
+                    /* Iskalnik po Poslovnem registru (AJPES) + davcna (FURS) — vtipkas
+                       »Ino« in dobis »Inovis« z naslovom in davcno. Le pri PODJETJU;
+                       fizicne osebe v registru ni. */
+                    <IskalnikPodjetij id="cw-narocnik" vrednost={narocnikPonudbe}
+                      naVrednost={v => setNarocnikPonudbe(v)}
+                      lastne={mojeStranke}
+                      naIzbiro={pod => {
+                        /* Lastna stranka nosi naslov ze v enem kosu; register ga
+                           vrne po delih, zato ga tam sestavimo. */
+                        const naslov = pod.vir === 'moje'
+                          ? (pod.naslov || '')
+                          : [pod.naslov, [pod.posta_st, pod.posta].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+                        if (naslov) setNarocnikNaslov(naslov);
+                        if (pod.email) setNarocnikEmail(pod.email);
+                        /* Kar je pri stranki ze vpisano, se tu ne vpisuje znova —
+                           davcno in kontaktno osebo prenesemo in sekcijo odpremo,
+                           da ju takoj vidi. */
+                        if (pod.davcna) setNarocnikDavcna(pod.davcna);
+                        if (pod.oseba) setNarocnikOseba(pod.oseba);
+                        if (pod.davcna || pod.oseba) setDodatniNarocnik(true);
+                        zabeleziNarocnika(pod.ime);
+                      }}
+                      jeEn={locale === 'en'} />
+                  )}
                 </div>
                 <div className="polje">
                   <label htmlFor="cw-narocnik-email">{L('Email naročnika', 'Client email')}</label>
