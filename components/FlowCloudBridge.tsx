@@ -164,7 +164,10 @@ export default function FlowCloudBridge() {
   if (!sinhronizira) return null;
   return (
     <div aria-live="polite" style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
+      /* Najvisji mozni sloj: cez prekrivalo je gledala Pupina ikona iz
+         glave, ki ima svoj z-index. Med pripravo podatkov ne sme biti
+         vidno nic — zaslon je takrat se prazen. */
+      position: 'fixed', inset: 0, zIndex: 2147483647,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: '#F5F2EA', color: '#8a8177',
       font: '500 .9rem/1.5 system-ui, -apple-system, sans-serif', letterSpacing: '.02em',
