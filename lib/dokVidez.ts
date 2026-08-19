@@ -56,7 +56,10 @@ export function dokFontLink(ime?: string): string {
 /* Inline style za <body>: nastavi CSS spremenljivki --akcent in --dok-font,
    ki ju dokumentni CSS uporablja (var(--akcent), var(--dok-font)). */
 export function dokVars(barva?: string, font?: string): string {
-  return `--akcent:${barva || DOK_BARVA_PRIVZETA};--dok-font:${dokFontStack(font)}`;
+  let kartica = '';
+  try { kartica = aktivnaPredloga().kartica || ''; } catch { /* SSR/prazno */ }
+  return `--akcent:${barva || DOK_BARVA_PRIVZETA};--dok-font:${dokFontStack(font)}`
+    + (kartica ? `;--dok-kartica:${kartica}` : '');
 }
 
 /* Dokumentni CSS -> zamenja fiksno barvo poudarka (#B25476) in pisavo naslovov
@@ -94,6 +97,9 @@ export interface DokPredloga {
   /* Naložena pisava (brand/CGP) — ime datoteke + data: URI (woff2/ttf/otf).
      Ko je nastavljena in je font === DOK_CUSTOM_FONT, se vgradi v dokumente. */
   customFont?: { ime: string; dataUri: string };
+  /* Barva kartic paketov v ponudbi (privzeto kremna #f8f5ee). Stranke s svojim
+     CGP pogosto hocejo drugacno — zato nastavljivo na predlogi. */
+  kartica?: string;
 }
 
 /* Prednastavljene podloge iz public/flow. A4 (pokončne) za ponudbe/dokumente,
