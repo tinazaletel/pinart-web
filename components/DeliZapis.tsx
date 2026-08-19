@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 import { preberiEkipo, preberiDeljenja, deliZapis, prekliciDeljenje, type DeljivVir, type EkipaOblak } from '@/lib/ekipa';
 import { dbIdZaZapis } from '@/lib/pinartFlowCloud';
 
-type Zbirka = 'offers' | 'invoices' | 'expenses' | 'contracts' | 'clients';
+type Zbirka = 'offers' | 'invoices' | 'expenses' | 'contracts' | 'clients' | 'projects';
 
 export default function DeliZapis({
   vir, lokalniId, naslov, jeEn = false,
