@@ -29,12 +29,16 @@ async function poravnajRacun(): Promise<void> {
     const stored = localStorage.getItem(MARKER_UPORABNIK);
     if (stored === user.id) return; // isti racun -> nic
     if (stored && stored !== user.id) {
-      // PREKLOP racuna: pobrisi vse lokalne flow kljuce (razen markerja/piskotkov)
+      /* PREKLOP racuna: pobrisi vse lokalne flow kljuce (razen markerja/piskotkov).
+         POZOR na dve predponi: vecina kljucev je "pinart-", shrambe projektov,
+         nalog in sestankov pa so "pinflow_". Ko je pravilo lovilo samo prvo, so
+         projekti in naloge prejsnjega racuna ostali v brskalniku in jih je videl
+         naslednji prijavljeni — najdeno 19. 8. 2026 na telefonu. Novih kljucev
+         zato NE poimenuj mimo teh dveh predpon. */
       for (let i = localStorage.length - 1; i >= 0; i--) {
         const k = localStorage.key(i);
-        if (k && k.startsWith('pinart-') && k !== MARKER_UPORABNIK && k !== 'pinart_cookie_consent') {
-          localStorage.removeItem(k);
-        }
+        if (!k || k === MARKER_UPORABNIK || k === 'pinart_cookie_consent') continue;
+        if (k.startsWith('pinart-') || k.startsWith('pinflow')) localStorage.removeItem(k);
       }
     }
     nastaviPredogled('mine');                  // vedno pokazi PRAVE (prazne) podatke
