@@ -152,16 +152,20 @@ export default function ProjectDetailModern({
         {dostop.naProjektu.map(c => (
           <span key={c.userId} className="pm-member pm-member-dostop">
             <span className="pm-av pm-av-dostop">{zacetnice(c.ime)}</span>
-            <span className="pm-mtxt"><b>{c.ime}</b><small>{c.raven === 'polni' ? L('polni dostop', 'full access') : L('sodelavec', 'collaborator')}</small></span>
-            {urejaEkipo && (
-              <select className="pm-raven" value={c.raven} disabled={dostop.delam === c.userId}
-                aria-label={L('Raven dostopa', 'Access level') + ' — ' + c.ime}
-                title={dostop.polniMozen ? undefined : L('Polni dostop rabi pripeto stranko.', 'Full access needs a client attached.')}
-                onChange={e => dostop.nastavi(c.userId, e.target.value as 'sodelavec' | 'polni')}>
-                <option value="sodelavec">{L('Sodelavec', 'Collaborator')}</option>
-                <option value="polni" disabled={!dostop.polniMozen}>{L('Polni dostop', 'Full access')}</option>
-              </select>
-            )}
+            <span className="pm-mtxt">
+              <b>{c.ime}</b>
+              {/* Raven stoji TAM, kjer je pri ostalih podnaslov, in je enako drobna —
+                  izbirnik je oznako razpihnil na dvojno velikost. Klik preklopi. */}
+              {urejaEkipo ? (
+                <button type="button" className="pm-raven" disabled={dostop.delam === c.userId || !dostop.polniMozen}
+                  title={dostop.polniMozen
+                    ? L('Klikni za preklop med Sodelavec in Polni dostop', 'Click to switch between Collaborator and Full access')
+                    : L('Polni dostop rabi pripeto stranko.', 'Full access needs a client attached.')}
+                  onClick={() => dostop.nastavi(c.userId, c.raven === 'polni' ? 'sodelavec' : 'polni')}>
+                  {c.raven === 'polni' ? L('polni dostop', 'full access') : L('sodelavec', 'collaborator')}
+                </button>
+              ) : <small>{c.raven === 'polni' ? L('polni dostop', 'full access') : L('sodelavec', 'collaborator')}</small>}
+            </span>
             {urejaEkipo && <button type="button" className="pm-mx" disabled={dostop.delam === c.userId}
               onClick={() => dostop.nastavi(c.userId, 'brez')} aria-label={`${L('Odstrani', 'Remove')} ${c.ime}`}>×</button>}
           </span>
@@ -523,7 +527,7 @@ export default function ProjectDetailModern({
         /* clan s pravim dostopom je vijolicno oznacen — loci ga od imena za naloge */
         .pm-member-dostop { border-color: rgba(110,79,166,.35); }
         .pm-av-dostop { background: #6E4FA6; color: #fff; }
-        .pm-raven { margin-left: .3rem; padding: .1rem .2rem; border: 0; border-radius: 6px; background: transparent; font: 700 .64rem inherit; color: #6E4FA6; cursor: pointer; }
+        .pm-raven { padding: 0; border: 0; background: transparent; font: inherit; font-size: .62rem; font-weight: 700; color: #6E4FA6; text-align: left; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 2px; }
         .pm-raven:disabled { opacity: .5; cursor: default; }
         .pm-add-skupina { margin: .35rem 0 .1rem; padding: 0 .6rem; font-size: .58rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #8a8177; }
         .pm-dostop-opomba { margin: -.4rem 0 1.1rem; font-size: .72rem; line-height: 1.45; color: #8a8177; }
@@ -599,7 +603,9 @@ export default function ProjectDetailModern({
         .pm-member { padding:.2rem .5rem .2rem .26rem; gap:.38rem; }
         .pm-av { width:1.45rem; height:1.45rem; font-size:.6rem; }
         .pm-mtxt b { font-size:.76rem; }
-        .pm-mtxt small { display:none; }
+        /* v ozjem oknu odpade podnaslov — z njim tudi raven dostopa,
+           sicer ima ena oznaka podpis, ostale pa ne (Tina, 20. 8. 2026) */
+        .pm-mtxt small, .pm-raven { display:none; }
         .pm-soon { display:none; }
         /* alert (nekdo/agent caka na tvoj pregled) */
         .pm-alert { display:inline-flex; align-items:center; gap:.35rem; font-size:.7rem; font-weight:700; color:oklch(48% .14 55); background:oklch(95% .06 75); border:1px solid oklch(80% .1 70); border-radius:999px; padding:.24rem .6rem; }
