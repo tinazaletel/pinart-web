@@ -162,9 +162,9 @@ export default function ProjectDetailModern({
                     ? L('Klikni za preklop med Sodelavec in Polni dostop', 'Click to switch between Collaborator and Full access')
                     : L('Polni dostop rabi pripeto stranko.', 'Full access needs a client attached.')}
                   onClick={() => dostop.nastavi(c.userId, c.raven === 'polni' ? 'sodelavec' : 'polni')}>
-                  {c.raven === 'polni' ? L('polni dostop', 'full access') : L('sodelavec', 'collaborator')}
+                  {c.raven === 'polni' ? L('vidi vse', 'sees everything') : L('vidi projekt', 'sees the project')}
                 </button>
-              ) : <small>{c.raven === 'polni' ? L('polni dostop', 'full access') : L('sodelavec', 'collaborator')}</small>}
+              ) : <small>{c.raven === 'polni' ? L('vidi vse', 'sees everything') : L('vidi projekt', 'sees the project')}</small>}
             </span>
             {urejaEkipo && <button type="button" className="pm-mx" disabled={dostop.delam === c.userId}
               onClick={() => dostop.nastavi(c.userId, 'brez')} aria-label={`${L('Odstrani', 'Remove')} ${c.ime}`}>×</button>}
@@ -175,7 +175,7 @@ export default function ProjectDetailModern({
         {vsiClani.map(c => (
           <span key={c.id} className={'pm-member' + (c.jeAgent ? ' pm-member-ai' : '')} data-st={c.stanje || ''}>
             <span className={'pm-av' + (c.jeAgent ? ' pm-av-ai' : '')}>{c.jeAgent ? '✦' : zacetnice(c.ime)}</span>
-            <span className="pm-mtxt"><b>{c.ime}</b><small>{c.jeAgent ? c.pod : L('samo naloge', 'tasks only')}</small></span>
+            <span className="pm-mtxt"><b>{c.ime}</b><small>{c.jeAgent ? c.pod : L('brez dostopa', 'no access')}</small></span>
             {c.stanje && <span className="pm-st" data-st={c.stanje}>{stanjeOznaka(c.stanje)}</span>}
             {urejaEkipo && !c.jeAgent && <button type="button" className="pm-mx" onClick={() => onToggleMember!(c.id)} aria-label={`${L('Odstrani', 'Remove')} ${c.ime}`}>×</button>}
           </span>
@@ -190,21 +190,21 @@ export default function ProjectDetailModern({
               <div className="pm-add-menu">
                 {dostop.naVoljo.length > 0 && (
                   <>
-                    <p className="pm-add-skupina">{L('Člani ekipe — dobijo dostop', 'Team members — get access')}</p>
+                    <p className="pm-add-skupina">{L('Člani ekipe — projekt bodo videli', 'Team members — will see the project')}</p>
                     {dostop.naVoljo.map(c => (
                       /* nov clan zacne kot Sodelavec: finance so izrecna odlocitev */
                       <button key={c.userId} type="button" className="pm-add-opt"
                         disabled={!dostop.pripravljen}
                         title={dostop.pripravljen ? undefined : L('Projekt se sinhronizira — poskusi cez trenutek.', 'The project is syncing — try again in a moment.')}
                         onClick={() => { setDodajOdprt(false); dostop.nastavi(c.userId, 'sodelavec'); }}>
-                        <span className="pm-av pm-av-sm pm-av-dostop">{zacetnice(c.ime)}</span><b>{c.ime}</b><small>{L('sodelavec', 'collaborator')}</small>
+                        <span className="pm-av pm-av-sm pm-av-dostop">{zacetnice(c.ime)}</span><b>{c.ime}</b><small>{L('vidi projekt', 'sees the project')}</small>
                       </button>
                     ))}
                   </>
                 )}
                 {naVoljo.length > 0 && (
                   <>
-                    <p className="pm-add-skupina">{L('Samo za naloge — brez dostopa', 'Tasks only — no access')}</p>
+                    <p className="pm-add-skupina">{L('Imena za naloge — projekta ne vidijo', 'Names for tasks — cannot see the project')}</p>
                     {naVoljo.map(s => (
                       <button key={s.id} type="button" className="pm-add-opt" onClick={() => { onToggleMember!(s.id); setDodajOdprt(false); }}>
                         <span className="pm-av pm-av-sm">{zacetnice(s.ime)}</span><b>{s.ime}</b><small>{vlogaOznaka(s.vloga)}</small>
@@ -224,8 +224,8 @@ export default function ProjectDetailModern({
       </div>
       {dostop.naProjektu.length > 0 && (
         <p className="pm-dostop-opomba">
-          {L('Sodelavec vidi brief, cilje, naloge, datoteke in komunikacijo — ponudb, pogodb, računov in stroškov ne. Polni dostop odpre tudi te.',
-             'A collaborator sees the brief, goals, tasks, files and messages — not quotes, contracts, invoices or costs. Full access opens those too.')}
+          {L('»Vidi projekt« pomeni brief, cilje, naloge, datoteke in komunikacijo — ponudb, pogodb, računov in stroškov ne. »Vidi vse« odpre tudi te. »Brez dostopa« je le ime za dodeljevanje nalog.',
+             '»Sees the project« means brief, goals, tasks, files and messages — not quotes, contracts, invoices or costs. »Sees everything« opens those too. »No access« is just a name for assigning tasks.')}
           {!dostop.polniMozen ? ' ' + L('Polni dostop je zaklenjen, ker projekt nima pripete stranke.', 'Full access is locked because this project has no client attached.') : ''}
         </p>
       )}
