@@ -16,6 +16,7 @@ import type { Projekt } from '@/lib/projekti';
 import type { Sodelavec } from '@/lib/naloge';
 import type { PostaVnos } from '@/lib/postaDnevnik';
 import { vlogaOznaka } from '@/lib/sodelavci';
+import DeliProjekt from '@/components/DeliProjekt';
 
 export type ModernProject = {
   offer: FlowOffer;
@@ -167,8 +168,15 @@ export default function ProjectDetailModern({
         ) : (
           <Link href={`${base}/kalkulator/ekipa`} className="pm-addmember">+ {L('Sodelavci', 'Collaborators')}</Link>
         )}
-        <span className="pm-soon">{L('Deljenje projekta + AI agenti = kmalu', 'Project sharing + AI agents = soon')}</span>
+        <span className="pm-soon">{L('AI agenti = kmalu', 'AI agents = soon')}</span>
       </div>
+      {/* Pravi dostop (prijava), loceno od imen zgoraj, ki sluzijo dodeljevanju
+          nalog. Komponenta se sama skrije, ce v ekipi ni clanov. */}
+      {real && (
+        <div className="pm-deli">
+          <DeliProjekt projektId={real.id} strankaId={real.strankaId} jeEn={jeEn} />
+        </div>
+      )}
 
       <div className="pm-grid">
         <div className="pm-col">
@@ -464,6 +472,7 @@ export default function ProjectDetailModern({
         .pm-add-empty { margin:0; padding:.5rem; font-size:.8rem; color:var(--pm-muted); }
         .pm-add-manage { display:block; text-decoration:none; margin-top:.15rem; padding:.4rem .5rem; font-size:.74rem; font-weight:600; color:var(--pm-acc); border-top:1px solid var(--pm-line); }
         .pm-soon { font-size:.7rem; color:var(--pm-muted); font-style:italic; margin-left:auto; }
+        .pm-deli { margin: .2rem 0 1.1rem; padding: .9rem 1.05rem; border: 1px solid var(--line, rgba(17,17,17,.1)); border-radius: 14px; background: #fff; }
         .pm-empty { font-size:.85rem; color:var(--pm-muted); }
         .pm-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:1.1rem; }
         .pm-grid > * { min-width:0; }
