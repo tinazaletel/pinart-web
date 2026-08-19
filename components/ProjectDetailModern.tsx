@@ -159,7 +159,7 @@ export default function ProjectDetailModern({
               {urejaEkipo ? (
                 <button type="button" className="pm-raven" disabled={dostop.delam === c.userId || !dostop.polniMozen}
                   title={dostop.polniMozen
-                    ? L('Klikni za preklop med Sodelavec in Polni dostop', 'Click to switch between Collaborator and Full access')
+                    ? L('Klikni: vidi projekt ⇄ vidi vse (tudi ponudbe, pogodbe, računi)', 'Click: sees the project ⇄ sees everything (incl. quotes, contracts, invoices)')
                     : L('Polni dostop rabi pripeto stranko.', 'Full access needs a client attached.')}
                   onClick={() => dostop.nastavi(c.userId, c.raven === 'polni' ? 'sodelavec' : 'polni')}>
                   {c.raven === 'polni' ? L('vidi vse', 'sees everything') : L('vidi projekt', 'sees the project')}
@@ -175,7 +175,7 @@ export default function ProjectDetailModern({
         {vsiClani.map(c => (
           <span key={c.id} className={'pm-member' + (c.jeAgent ? ' pm-member-ai' : '')} data-st={c.stanje || ''}>
             <span className={'pm-av' + (c.jeAgent ? ' pm-av-ai' : '')}>{c.jeAgent ? '✦' : zacetnice(c.ime)}</span>
-            <span className="pm-mtxt"><b>{c.ime}</b><small>{c.jeAgent ? c.pod : L('brez dostopa', 'no access')}</small></span>
+            <span className="pm-mtxt"><b>{c.ime}</b><small>{c.jeAgent ? c.pod : [c.pod, L('brez dostopa', 'no access')].filter(Boolean).join(' · ')}</small></span>
             {c.stanje && <span className="pm-st" data-st={c.stanje}>{stanjeOznaka(c.stanje)}</span>}
             {urejaEkipo && !c.jeAgent && <button type="button" className="pm-mx" onClick={() => onToggleMember!(c.id)} aria-label={`${L('Odstrani', 'Remove')} ${c.ime}`}>×</button>}
           </span>
