@@ -207,7 +207,9 @@ const zapisiSurovo = (naloge: Naloga[]): void => {
    samo takrat, ko se je naloga RES spremenila (sicer bi vsak zapis seznama
    naredil vse naloge "novejse" in po nepotrebnem prepisal oblak) */
 const podpisNaloge = (n: Naloga): string => {
-  const { updatedAt: _u, deletedAt: _d, ...jedro } = n;
+  const jedro: Record<string, unknown> = { ...n };
+  delete jedro.updatedAt;
+  delete jedro.deletedAt;
   return JSON.stringify(jedro);
 };
 
