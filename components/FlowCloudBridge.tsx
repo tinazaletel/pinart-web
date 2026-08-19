@@ -4,6 +4,11 @@ import { useEffect, useState } from 'react';
 import { loadFlowData, writeFlowDataLocally } from '@/lib/pinartFlowStore';
 import { loadCloudSettings, loadOrganizationProfile, mergeFlowData, pullFlowData, pushFlowData, saveCloudSettings, saveOrganizationProfile } from '@/lib/pinartFlowCloud';
 import { pushProjekti, sinhronizirajProjekte } from '@/lib/projektiOblak';
+import { pushDokVidez, sinhronizirajDokVidez } from '@/lib/dokVidezOblak';
+import { pushNaloge, sinhronizirajNaloge } from '@/lib/nalogeOblak';
+import { pushSestanki, sinhronizirajSestanke } from '@/lib/sestankiOblak';
+import { pushDnevnik, sinhronizirajDnevnik } from '@/lib/dnevnikOblak';
+import { pushKataloge, sinhronizirajKataloge } from '@/lib/katalogiOblak';
 import { createClient } from '@/utils/supabase/client';
 import { nastaviPredogled } from '@/lib/predogled';
 
@@ -132,7 +137,19 @@ export default function FlowCloudBridge() {
       let osveziti = false;
       if (prvaVSeji) osveziti = await synchronize();
 
-      const projektiSpremenjeni = await sinhronizirajProjekte();
+      /* Vse lahke shrambe (projekti, naloge, sestanki, dnevnik, katalogi, videz
+         dokumentov) tecejo ob VSAKEM nalaganju — vsaka je ena poizvedba. Vzporedno,
+         ker so med sabo neodvisne; ce ena pade, ostale to prezrejo. */
+      const izidi = await Promise.allSettled([
+        sinhronizirajProjekte(),
+        sinhronizirajNaloge(),
+        sinhronizirajSestanke(),
+        sinhronizirajDnevnik(),
+        sinhronizirajKataloge(),
+        sinhronizirajDokVidez(),
+      ]);
+      izidi.forEach(i => { if (i.status === 'rejected') console.error('Sinhronizacija shrambe ni uspela:', i.reason); });
+      const projektiSpremenjeni = izidi.some(i => i.status === 'fulfilled' && i.value === true);
       if (projektiSpremenjeni && sessionStorage.getItem(SESSION_KEY_PROJEKTI) !== 'done') {
         sessionStorage.setItem(SESSION_KEY_PROJEKTI, 'done');
         osveziti = true;
@@ -145,19 +162,31 @@ export default function FlowCloudBridge() {
     return () => { cancelled = true; };
   }, []);
 
-  /* Sproten prenos projektov v oblak: shramba javi spremembo (lib/projekti),
-     mi pa jo z zamikom pošljemo — zamik zato, da hitro zaporedje urejanj
-     (tipkanje v briefu) ne sproži klica ob vsakem pritisku tipke. */
+  /* Sproten prenos v oblak: vsaka shramba ob zapisu odda svoj dogodek, mi pa
+     z zamikom posljemo SAMO njo — zamik zato, da hitro zaporedje urejanj
+     (tipkanje v briefu) ne sprozi klica ob vsakem pritisku tipke. */
   useEffect(() => {
-    let cakalec: ReturnType<typeof setTimeout> | undefined;
-    const naSpremembo = () => {
-      if (cakalec) clearTimeout(cakalec);
-      cakalec = setTimeout(() => { pushProjekti().catch(() => { }); }, 1500);
+    const poDogodku: Record<string, () => Promise<unknown>> = {
+      'pinart-projekti-change': pushProjekti,
+      'pinart-naloge-change': pushNaloge,
+      'pinart-sestanki-change': pushSestanki,
+      'pinart-dnevnik-change': pushDnevnik,
+      'pinart-katalogi-change': pushKataloge,
+      'pinart-dokvidez-change': pushDokVidez,
     };
-    window.addEventListener('pinart-projekti-change', naSpremembo);
+    const cakalci = new Map<string, ReturnType<typeof setTimeout>>();
+    const posluhi = Object.keys(poDogodku).map(ime => {
+      const h = () => {
+        const prej = cakalci.get(ime);
+        if (prej) clearTimeout(prej);
+        cakalci.set(ime, setTimeout(() => { poDogodku[ime]().catch(() => { }); }, 1500));
+      };
+      window.addEventListener(ime, h);
+      return [ime, h] as const;
+    });
     return () => {
-      window.removeEventListener('pinart-projekti-change', naSpremembo);
-      if (cakalec) clearTimeout(cakalec);
+      posluhi.forEach(([ime, h]) => window.removeEventListener(ime, h));
+      cakalci.forEach(c => clearTimeout(c));
     };
   }, []);
 

@@ -9,6 +9,8 @@
    Prihodnost: sync zaloge s spletno trgovino (Shopify/WooCommerce ipd.) —
    NE zdaj, zaloga je trenutno samo rocno vnesen podatek. */
 
+import { oznaciKatalogSpremenjen } from '@/lib/katalogCas';
+
 export type ProduktEnota = 'kos' | 'ura' | 'pavsal' | 'stran' | 'mesec';
 
 export type Produkt = {
@@ -33,9 +35,13 @@ export function preberiProdukte(): Produkt[] {
   }
 }
 
+/* Ob zapisu se zabelezi cas zadnje spremembe in javi dogodek
+   'pinart-katalogi-change' — brez casa se ob sinhronizaciji (lib/katalogiOblak)
+   ne da ugotoviti, katera stran je novejsa. */
 export function shraniProdukte(produkti: Produkt[]): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(KLJUC, JSON.stringify(produkti));
+  oznaciKatalogSpremenjen('produkti');
 }
 
 export const ENOTE_PRODUKT: { id: ProduktEnota; ime: string; imeEn: string }[] = [

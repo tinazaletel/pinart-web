@@ -114,6 +114,22 @@ export const DOK_PODLOGE_PPT: string[] = [
 
 const K_NAST = 'pinart-kalkulator-v2';
 const K_LOGO = 'pinart-kalkulator-logo';
+/* Cas zadnje ZAVESTNE spremembe videza. Brez njega se ne da ugotoviti, katera
+   stran (naprava ali oblak) je novejsa — glej lib/dokVidezOblak.ts. Zapise ga
+   SAMO shranitePredloge (uporabnica je nekaj spremenila) oz. prenos iz oblaka
+   (tam ohranimo oblakov cas). Samodejna migracija ob prvem branju ga NE
+   nastavi — sicer bi svez brskalnik s privzeto predlogo izgledal "novejsi"
+   od oblaka in bi povozil pravi videz. */
+const K_CAS = 'dokVidezUpdatedAt';
+const DOGODEK = 'pinart-dokvidez-change';
+
+/* Javi spremembo, da jo lahko most (FlowCloudBridge) posije v oblak in da se
+   odprti vmesnik osvezi. Dogodek namesto neposrednega klica, ker bi uvoz
+   lib/dokVidezOblak tu naredil krog (dokVidezOblak uvaza to datoteko). */
+function objaviSpremembo(): void {
+  if (typeof window === 'undefined') return;
+  try { window.dispatchEvent(new CustomEvent(DOGODEK)); } catch { /* SSR/nedostopno */ }
+}
 
 /* Prebere celoten K_NAST zapis (varno — prazen objekt ob napaki/manjkajocem zapisu). */
 function beriNast(): Record<string, unknown> {
@@ -188,17 +204,48 @@ export function nalozitePredloge(): { predloge: DokPredloga[]; aktivnaId: string
    plosca polja (dokBarva/dokFont v K_NAST, logo v K_LOGO), da obstojeci doc
    builderji, ki berejo samo ta polja, samodejno dobijo pravi videz. */
 export function shranitePredloge(predloge: DokPredloga[], aktivnaId: string): void {
-  const aktivna = predloge.find(p => p.id === aktivnaId) || predloge[0];
+  zapisiDokVidez({ predloge, aktivnaId, updatedAt: new Date().toISOString() });
+}
+
+/* ── SLIKA VIDEZA (za sinhronizacijo z oblakom) ─────────────────────────────
+   Videz dokumentov je ENA nastavitev organizacije (znamka podjetja), ne zbirka
+   zapisov. Zato ga v oblak potuje kot cela slika: seznam predlog + aktivna +
+   cas zadnje spremembe. Glej lib/dokVidezOblak.ts. */
+
+export interface DokVidezSlika {
+  predloge: DokPredloga[];
+  aktivnaId: string;
+  /* ISO cas zadnje zavestne spremembe; manjka pri racunih od prej */
+  updatedAt?: string;
+}
+
+/* Prebere trenutno lokalno sliko (z vso obstojeco migracijsko logiko). */
+export function preberiDokVidez(): DokVidezSlika {
+  const { predloge, aktivnaId } = nalozitePredloge();
+  const s = beriNast();
+  const cas = s[K_CAS];
+  return { predloge, aktivnaId, updatedAt: typeof cas === 'string' ? cas : undefined };
+}
+
+/* Zapise celo sliko. Aktivno predlogo ZRCALI v stara plosca polja
+   (dokBarva/dokFont v K_NAST, logo v K_LOGO), da obstojeci doc builderji,
+   ki berejo samo ta polja, samodejno dobijo pravi videz.
+   updatedAt se ohrani kakrsen je (pri prenosu iz oblaka je to oblakov cas) —
+   ce ga ni, se postavi zdajsnji. */
+export function zapisiDokVidez(slika: DokVidezSlika): void {
+  const aktivna = slika.predloge.find(p => p.id === slika.aktivnaId) || slika.predloge[0];
   pisiNastDelno({
-    dokPredloge: predloge,
-    dokAktivnaPredloga: aktivnaId,
+    dokPredloge: slika.predloge,
+    dokAktivnaPredloga: aktivna?.id || slika.aktivnaId || '',
     dokBarva: aktivna?.barva || DOK_BARVA_PRIVZETA,
     dokFont: aktivna?.font || DOK_FONT_PRIVZETI,
+    [K_CAS]: slika.updatedAt || new Date().toISOString(),
   });
   try {
     if (aktivna?.logo) localStorage.setItem(K_LOGO, aktivna.logo);
     else localStorage.removeItem(K_LOGO);
   } catch { /* ignoriraj */ }
+  objaviSpremembo();
 }
 
 /* Vrne AKTIVNO predlogo (ali privzeto, ce se ni bilo nastavljeno nic). */

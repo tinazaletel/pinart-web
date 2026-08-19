@@ -3,6 +3,8 @@
    Produkcija) z neobveznim šefom (Sodelavec.id). Persist v localStorage, isti
    vzorec kot lib/podrocja.ts — nič trdo zakodiranega, uporabnik doda sam. */
 
+import { oznaciKatalogSpremenjen } from '@/lib/katalogCas';
+
 export interface Oddelek {
   id: string;
   ime: string;
@@ -22,6 +24,9 @@ export const preberiOddelki = (): Oddelek[] => {
   }
 };
 
+/* Ob zapisu se zabeleži čas zadnje spremembe in javi dogodek
+   'pinart-katalogi-change' — brez časa se ob sinhronizaciji (lib/katalogiOblak)
+   ne da ugotoviti, katera stran je novejša. */
 export const shraniOddelki = (list: Oddelek[]): void => {
   if (typeof window === 'undefined') return;
   try {
@@ -29,6 +34,7 @@ export const shraniOddelki = (list: Oddelek[]): void => {
   } catch (e) {
     console.error('Napaka pri shranjevanju oddelkov v localStorage:', e);
   }
+  oznaciKatalogSpremenjen('oddelki');
 };
 
 /* Doda nov oddelek (brez podvajanja, neobčutljivo na velike črke) in vrne nov seznam. */
