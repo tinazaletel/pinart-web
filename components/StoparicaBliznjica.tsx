@@ -44,8 +44,8 @@ export default function StoparicaBliznjica() {
         <button type="button" className="sb-opomnik-drugi" onClick={potrdiTek}>Teče naprej</button>
 
         <style jsx>{`
-          .sb-opomnik { display: inline-flex; align-items: center; flex-wrap: wrap; gap: .5rem; padding: .4rem .5rem .4rem .8rem; border: 1px solid #e0b64a; border-radius: 999px; background: #fdf6e3; }
-          .sb-opomnik-txt { display: inline-flex; flex-direction: column; line-height: 1.25; font-size: .74rem; color: #6b5a24; }
+          .sb-opomnik { display: inline-flex; align-items: center; flex-wrap: wrap; gap: .5rem; padding: .4rem .5rem .4rem .8rem; border: 1px solid #a4342a; border-radius: 999px; background: #fbeeec; }
+          .sb-opomnik-txt { display: inline-flex; flex-direction: column; line-height: 1.25; font-size: .74rem; color: #7d281f; }
           .sb-opomnik-txt b { font-weight: 700; }
           .sb-opomnik-txt small { font-size: .66rem; opacity: .75; }
           .sb-opomnik button { padding: .32rem .7rem; border-radius: 999px; font: 700 .7rem inherit; cursor: pointer; white-space: nowrap; }
