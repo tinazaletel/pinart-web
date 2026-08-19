@@ -1778,7 +1778,7 @@ const OFFER_CSS = `
       .offer-podnaslov{font-weight:700;margin:.85rem 0 .35rem;color:#111}
       .offer-vrstica{display:flex;justify-content:space-between;align-items:baseline;gap:1.2rem}
       .offer-cena{white-space:nowrap;font-weight:700;color:#111}
-      .offer-package{border:1px solid #e7ddd0;background:#f8f5ee;border-radius:9px;padding:14px 18px;margin:10px 0;break-inside:avoid;page-break-inside:avoid}
+      .offer-package{border:1px solid #e7ddd0;background:var(--dok-kartica,#f8f5ee);border-radius:9px;padding:14px 18px;margin:10px 0;break-inside:avoid;page-break-inside:avoid}
       .offer-package-head{break-after:avoid;break-inside:avoid;page-break-inside:avoid}
       .offer-podnaslov{break-after:avoid;break-inside:avoid;page-break-inside:avoid}
       p{break-inside:avoid;page-break-inside:avoid}

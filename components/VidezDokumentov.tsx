@@ -215,6 +215,24 @@ export default function VidezDokumentov({
         </div>
       </div>
 
+      {nalozeno && aktivna && (
+        <div className="vd-blok">
+          <span className="vd-oznaka">Barva kartic v ponudbi</span>
+          <p className="vd-namig">Ozadje paketnih kartic v dokumentu. Privzeto kremna — prilagodi svojemu CGP.</p>
+          <div className="vd-barve">
+            {['#f8f5ee', '#FFFFFF', '#F4F1EA', '#F2F4F7', '#F6F2F8', '#F1F5F2'].map(b => (
+              <button key={b} type="button" aria-label={b}
+                className={'vd-barva' + ((aktivna.kartica || '#f8f5ee').toLowerCase() === b.toLowerCase() ? ' on' : '')}
+                style={{ background: b }} onClick={() => posodobiPredlogo(aktivna.id, { kartica: b })} />
+            ))}
+            <label className="vd-barva vd-barva-custom" title="Poljubna barva">
+              <input type="color" value={aktivna.kartica || '#f8f5ee'} onChange={e => posodobiPredlogo(aktivna.id, { kartica: e.target.value })} />
+              <span aria-hidden>+</span>
+            </label>
+          </div>
+        </div>
+      )}
+
       <div className="vd-blok">
         <span className="vd-oznaka">Pisava naslovov</span>
         <div className="vd-fonti">
@@ -342,6 +360,7 @@ export default function VidezDokumentov({
         .vd-font-nalozi { font-size: .82rem; border-style: dashed; color: #4a4550; }
         .vd-font-nalozi:hover { border-style: solid; border-color: rgba(17,17,17,.4); }
         .vd-font-info { font-size: .78rem; color: #6E4FA6; }
+        .vd-namig { margin: -.3rem 0 .2rem; font-size: .8rem; color: #8a8177; line-height: 1.45; }
         .vd-predogled { border: 1px solid rgba(17,17,17,.1); border-radius: 14px; padding: 1.4rem 1.5rem; background: #FCFBF7; }
         .vd-pred-kick { font-size: .68rem; letter-spacing: .24em; text-transform: uppercase; font-weight: 700; color: var(--vd-akcent); }
         .vd-predogled h3 { margin: .5rem 0 0; font-size: 1.7rem; font-weight: 600; color: #111; line-height: 1.1; }
