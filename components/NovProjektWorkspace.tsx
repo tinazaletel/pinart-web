@@ -20,7 +20,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowRight, PencilSimple } from '@phosphor-icons/react';
-import { loadFlowData, saveProjectLinks, type FlowClient } from '@/lib/pinartFlowStore';
+import { loadFlowData, saveProjectLinks, type FlowClient, type FlowOffer } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { naslednjaStevilka, preberiProjekti, shraniProjekt, type Projekt, type ProjektCilj, type ProjektPovezava, type ProjektStatus, type ProjektVprasanje } from '@/lib/projekti';
 import { preberiSodelavci, vlogaOznaka } from '@/lib/sodelavci';
@@ -47,6 +47,10 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
   const router = useRouter();
   const [nacin, setPredogled] = usePredogled();
   const [clients, setClients] = useState<FlowClient[]>([]);
+  /* Ponudbe za POTEG: projekt se najpogosteje rodi iz potrjene ponudbe — namesto
+     prepisovanja naslova in stranke jo uporabnica izbere in podatki se prenesejo. */
+  const [offers, setOffers] = useState<FlowOffer[]>([]);
+  const [potegnjena, setPotegnjena] = useState<string>('');
   const [sodelavci, setSodelavci] = useState<Sodelavec[]>([]);
   const [realProjekti, setRealProjekti] = useState<Projekt[]>([]);
   /* urejanje obstoječega projekta: ?uredi=<id> naloži projekt, predizpolni obrazec in ob
@@ -58,6 +62,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
   useEffect(() => {
     const flow = podatkiZaPredogled(nacin, loadFlowData());
     setClients(flow.clients);
+    setOffers(flow.offers || []);
     setSodelavci(preberiSodelavci());
     setRealProjekti(preberiProjekti());
   }, [nacin]);
@@ -103,6 +108,18 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     const zmanjsanoGibanje = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     el.scrollIntoView({ behavior: zmanjsanoGibanje ? 'auto' : 'smooth', block: 'center' });
   }, [novKorak, urejamKorak]);
+
+  /* Poteg iz ponudbe: prenese naslov, stranko in stevilko; skoci na cilje,
+     ker sta prvi dve vprasanji s tem ze odgovorjeni. */
+  const potegniIzPonudbe = (offerId: string) => {
+    const o = offers.find(x => x.id === offerId);
+    if (!o) return;
+    const stranka = clients.find(c => c.name.trim().toLocaleLowerCase('sl-SI') === (o.client || '').trim().toLocaleLowerCase('sl-SI'));
+    setObrazec(prej => ({ ...prej, naslov: o.title || prej.naslov, strankaId: stranka?.id || prej.strankaId }));
+    setPotegnjena(offerId);
+    setNovKorak(k => (k < 2 ? 2 : k));
+    setUrejamKorak(null);
+  };
 
   const dodajCilj = () => setObrazec(o => ({ ...o, cilji: [...o.cilji, { id: crypto.randomUUID(), besedilo: '', metrika: '', tarca: '' }] }));
   const odstraniCilj = (id: string) => setObrazec(o => ({ ...o, cilji: o.cilji.filter(c => c.id !== id) }));
@@ -207,6 +224,22 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       <h1 className="np-h1">Začni nov projekt.</h1>
 
       <div className="np-chat-tok">
+        {/* POTEG IZ PONUDBE — projekt najpogosteje nastane iz potrjene ponudbe */}
+        {!urejam && offers.length > 0 && novKorak === 0 && (
+          <div className="np-poteg">
+            <p className="np-poteg-naslov">Gradiš iz obstoječe ponudbe?</p>
+            <p className="np-poteg-pod">Izberi jo in prenesem naslov ter stranko. Lahko tudi začneš iz nič.</p>
+            <select className="np-chat-polje" value={potegnjena} onChange={e => e.target.value && potegniIzPonudbe(e.target.value)} aria-label="Ponudba">
+              <option value="">Začni iz nič</option>
+              {offers.map(o => (
+                <option key={o.id} value={o.id}>
+                  {[o.number, o.title, o.client].filter(Boolean).join(' · ')}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* 0 · naslov */}
         {prikazan(0) && chatBot('Kako se projekt imenuje?', undefined, 0)}
         {odgovorjen(0) && chatOdgovor(0, obrazec.naslov.trim() || '—')}
@@ -455,6 +488,10 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-chat-polje{width:100%;box-sizing:border-box;padding:.75rem 1.1rem;border:1px solid rgba(17,17,17,.14);border-radius:999px;background:#fff;font:inherit;font-size:.9rem;font-weight:600;color:var(--ink);box-shadow:0 4px 14px rgba(40,25,40,.05);outline:none}
       textarea.np-chat-polje{border-radius:1rem;resize:vertical;min-height:5rem;font-weight:400;line-height:1.5;font-family:inherit}
       select.np-chat-polje{cursor:pointer}
+      /* poteg iz ponudbe — mirna kartica nad prvim vprasanjem */
+      .np-poteg{margin:0 0 1.6rem;padding:1rem 1.15rem;border:1px dashed rgba(17,17,17,.16);border-radius:1rem;background:rgba(255,255,255,.55);display:flex;flex-direction:column;gap:.5rem}
+      .np-poteg-naslov{margin:0;font-size:.95rem;font-weight:700;color:var(--ink)}
+      .np-poteg-pod{margin:0;font-size:.82rem;color:rgba(17,17,17,.6);line-height:1.45}
       .np-chat-polje:focus{border-color:color-mix(in oklch,var(--ink) 45%,transparent)}
       .np-chat-naprej{align-self:flex-start;display:inline-flex;align-items:center;gap:.45rem;padding:.95rem 2.2rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:600 .82rem var(--font-sans),sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
       .np-chat-naprej:disabled{opacity:.45;cursor:not-allowed}
