@@ -7,7 +7,7 @@
    pravo zaledje pride post-launch. Uporablja app CSS tokene (DM Serif/Archivo,
    --accent/--paper/--ink/--line), da samodejno sledi CGP. */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import MetricIcon from '@/components/MetricIcon';
@@ -17,6 +17,7 @@ import type { Sodelavec } from '@/lib/naloge';
 import type { PostaVnos } from '@/lib/postaDnevnik';
 import { vlogaOznaka } from '@/lib/sodelavci';
 import { useDostopProjekta } from '@/lib/useDostopProjekta';
+import { loadCloudTimeEntries, loadLocalTimeEntries, type PrivateTimeEntry } from '@/lib/pinartPlanning';
 
 export type ModernProject = {
   offer: FlowOffer;
@@ -137,6 +138,27 @@ export default function ProjectDetailModern({
   /* pravi dostop clanov ekipe — risemo ga v isti vrstici kot imena za naloge */
   const dostop = useDostopProjekta(real?.id, real?.strankaId);
   const [razlagaOdprta, setRazlagaOdprta] = useState(false);
+
+  /* Porabljene ure na tem projektu. Vnosi casa se vezejo na IME projekta (tako
+     jih zapise stoparica), zato primerjamo po imenu — brez sumnikov in velikih
+     crk, da »Flow web« in »flow web« nista dva projekta. */
+  const [vnosiCasa, setVnosiCasa] = useState<PrivateTimeEntry[]>([]);
+  useEffect(() => {
+    let ziv = true;
+    setVnosiCasa(loadLocalTimeEntries());
+    loadCloudTimeEntries().then(v => { if (ziv && v.length) setVnosiCasa(v); }).catch(() => { });
+    return () => { ziv = false; };
+  }, []);
+
+  const naslovProjekta = real?.naslov || data.offer?.title || '';
+  const minuteNaProjektu = useMemo(() => {
+    const kljuc = (s: string) => s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const iskan = kljuc(naslovProjekta);
+    if (!iskan) return 0;
+    return vnosiCasa
+      .filter(v => kljuc(v.projectName || '') === iskan)
+      .reduce((s, v) => s + (v.durationMinutes || 0), 0);
+  }, [vnosiCasa, naslovProjekta]);
   const cilji = real?.cilji?.filter(c => c.besedilo?.trim()) || [];
   const imaBrief = briefPolja.length > 0 || cilji.length > 0 || dodatna.length > 0;
 
@@ -375,6 +397,18 @@ export default function ProjectDetailModern({
           </section>
 
           {/* PONUDBE IN POGODBE (osnova projekta — obicajno 1 ponudba + 1 pogodba +aneks) */}
+          {minuteNaProjektu > 0 && (
+            <section className="pm-card pm-cas">
+              <header><h3>{L('PORABLJEN ČAS', 'TIME SPENT')}</h3>
+                <Link className="pm-iconbtn" href={`${base}/kalkulator/cas`} aria-label={L('Odpri merjenje časa', 'Open time tracking')}>↗</Link>
+              </header>
+              <p className="pm-cas-vsota">
+                <b>{Math.floor(minuteNaProjektu / 60)} h</b>
+                {minuteNaProjektu % 60 > 0 ? <span> {minuteNaProjektu % 60} min</span> : null}
+              </p>
+              <p className="pm-muted">{L('Sešteto iz merjenj, ki nosijo ime tega projekta.', 'Summed from time entries carrying this project name.')}</p>
+            </section>
+          )}
           <section className="pm-card">
             <header><h3>{L('PONUDBE IN POGODBE', 'OFFERS & CONTRACTS')}</h3><Link className="pm-iconbtn" href={`${base}/kalkulator/pogodbe`} aria-label={L('Dodaj pogodbo', 'Add contract')}>+</Link></header>
             <ul className="pm-list">
@@ -538,6 +572,9 @@ export default function ProjectDetailModern({
         .pm-add-skupina { margin: .35rem 0 .1rem; padding: 0 .6rem; font-size: .58rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #8a8177; }
         .pm-pomoc { width: 1.05rem; height: 1.05rem; margin-left: .1rem; border: 1px solid var(--line, rgba(17,17,17,.2)); border-radius: 50%; background: transparent; color: #8a8177; font: 700 .62rem inherit; line-height: 1; cursor: pointer; }
         .pm-pomoc:hover { border-color: #6E4FA6; color: #6E4FA6; }
+        .pm-cas-vsota { margin: .2rem 0 .35rem; font-size: 1.5rem; line-height: 1; color: var(--pm-ink); }
+        .pm-cas-vsota b { font-weight: 650; }
+        .pm-cas-vsota span { font-size: .95rem; color: var(--pm-muted); }
         .pm-dostop-opomba { margin: -.4rem 0 1.1rem; font-size: .72rem; line-height: 1.45; color: #8a8177; }
         .pm-empty { font-size:.85rem; color:var(--pm-muted); }
         .pm-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:1.1rem; }
