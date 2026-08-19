@@ -900,10 +900,39 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     setRealProjekti(prev => prev.map(p => (p.id === posodobljen.id ? posodobljen : p)));
     if (!samoOgled) shraniProjekt(posodobljen);
   };
+  /* ZGRADI PROJEKT IZ PONUDBE — projekt nastane sele, ko je posel potrjen, in
+     sicer po ODLOCITVI uporabnice (gumb), ne sam od sebe. Podatki se prenesejo
+     iz ponudbe; od tedaj je brief uredljiv, ker obstaja pravi zapis. */
+  const zgradiProjektIzPonudbe = (offer: FlowOffer): Projekt | undefined => {
+    if (samoOgled) return undefined;
+    const nov: Projekt = {
+      id: 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+      stevilka: offer.number,
+      naslov: offer.title,
+      strankaIme: offer.client || '',
+      zacetek: offer.date || new Date().toISOString().slice(0, 10),
+      status: 'aktiven',
+      created: new Date().toISOString(),
+    };
+    setRealProjekti(shraniProjekt(nov));
+    setSelectedId(`real-${nov.id}`);
+    return nov;
+  };
+
   /* projekt izpeljan iz ponudbe (ni pravega zapisa) -> status je status ponudbe */
   const naStatusOffer = (id: string, v: FlowOfferStatus) => {
     setOffers(prev => prev.map(o => (o.id === id ? { ...o, status: v } : o)));
     if (!samoOgled) saveOfferStatus(id, v);
+    /* (C) ob POTRDITVI ponudbe ponudimo gradnjo projekta — vprasamo, ne naredimo sami */
+    if (v === 'accepted' && !samoOgled) {
+      const offer = offers.find(o => o.id === id);
+      const zeObstaja = offer && realProjekti.some(p =>
+        p.naslov.trim().toLocaleLowerCase('sl-SI') === offer.title.trim().toLocaleLowerCase('sl-SI')
+        && (p.strankaIme || '').trim().toLocaleLowerCase('sl-SI') === (offer.client || '').trim().toLocaleLowerCase('sl-SI'));
+      if (offer && !zeObstaja && window.confirm(L('Ponudba je potrjena. Naj iz nje zgradim projekt?', 'The quote is accepted. Shall I build a project from it?'))) {
+        zgradiProjektIzPonudbe(offer);
+      }
+    }
   };
 
   /* Custom status-meni (namesto nativnega <select>): desktop = popover pod pilulo, mobile = slide-up sheet. */
@@ -1709,6 +1738,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         {pogledDetajl === 'moderni' ? (
           <ProjectDetailModern
             data={selected}
+            onZgradiProjekt={!selected.real && !samoOgled ? () => zgradiProjektIzPonudbe(selected.offer) : undefined}
             sodelavci={sodelavci}
             jeEn={jeEn}
             base={base}
