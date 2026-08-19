@@ -2,6 +2,8 @@
    Vsak studio ima svoja: dizajn = desktop/mobile/CGP; video studio =
    snemanje/montaža/zvok. Zato jih uporabnik določi sam, nič trdo zakodiranega. */
 
+import { oznaciKatalogSpremenjen } from '@/lib/katalogCas';
+
 export interface Podrocje {
   id: string;
   ime: string;
@@ -20,6 +22,9 @@ export const preberiPodrocja = (): Podrocje[] => {
   }
 };
 
+/* Ob zapisu se zabeleži čas zadnje spremembe in javi dogodek
+   'pinart-katalogi-change' — brez časa se ob sinhronizaciji (lib/katalogiOblak)
+   ne da ugotoviti, katera stran je novejša. */
 export const shraniPodrocja = (list: Podrocje[]): void => {
   if (typeof window === 'undefined') return;
   try {
@@ -27,6 +32,7 @@ export const shraniPodrocja = (list: Podrocje[]): void => {
   } catch (e) {
     console.error('Napaka pri shranjevanju področij v localStorage:', e);
   }
+  oznaciKatalogSpremenjen('podrocja');
 };
 
 /* Doda novo področje (brez podvajanja, neobčutljivo na velike črke) in vrne nov seznam. */

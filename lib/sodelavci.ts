@@ -7,6 +7,7 @@
 import type { Sodelavec } from '@/lib/naloge';
 import { ZACETNI_SODELAVCI } from '@/lib/naloge';
 import { jeDemo } from '@/lib/predogled';
+import { oznaciKatalogSpremenjen } from '@/lib/katalogCas';
 
 const KLJUC = 'pinflow_sodelavci';
 
@@ -25,9 +26,13 @@ export const preberiSodelavci = (): Sodelavec[] => {
   return jeDemo() ? ZACETNI_SODELAVCI : [];
 };
 
+/* Ob zapisu se zabeleži čas zadnje spremembe in javi dogodek
+   'pinart-katalogi-change' — brez časa se ob sinhronizaciji (lib/katalogiOblak)
+   ne da ugotoviti, katera stran je novejša. */
 export const shraniSodelavci = (seznam: Sodelavec[]): void => {
   if (typeof window === 'undefined') return;
   try { localStorage.setItem(KLJUC, JSON.stringify(seznam)); } catch { /* zasebni način */ }
+  oznaciKatalogSpremenjen('sodelavci');
 };
 
 export const VLOGE: { vloga: Sodelavec['vloga']; oznaka: string; opis: string }[] = [

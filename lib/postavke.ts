@@ -1,3 +1,5 @@
+import { oznaciKatalogSpremenjen } from '@/lib/katalogCas';
+
 export type PostavkaEnota = 'kos' | 'ura' | 'projekt' | 'pavšal' | 'mesec';
 
 export type Postavka = {
@@ -32,9 +34,13 @@ export function preberiPostavke(): Postavka[] {
   }
 }
 
+/* Ob zapisu se zabeleži čas zadnje spremembe in javi dogodek
+   'pinart-katalogi-change' — brez časa se ob sinhronizaciji (lib/katalogiOblak)
+   ne da ugotoviti, katera stran je novejša. */
 export function shraniPostavke(postavke: Postavka[]): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(KLJUC, JSON.stringify(postavke));
+  oznaciKatalogSpremenjen('postavke');
 }
 
 export function dodajPostavko(vnos: Omit<Postavka, 'id'>): Postavka {
