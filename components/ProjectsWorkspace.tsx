@@ -785,7 +785,11 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     const agreed = amounts[offer.id] || 0;
     return { offer, real, invoices: projectInvoices, expenses: projectExpenses, contracts: projectContracts, billed, paid, costs, agreed, unbilled: agreed ? agreed - billed : 0, profit: paid - costs };
   };
-  const offerProjects = useMemo(() => offers.map(offer => gradiVnos(offer, samoOgled ? demoRealZaOffer(offer.id) : undefined)), [offers, invoices, expenses, contracts, amounts, samoOgled]);
+  /* OSNUTEK ponudbe NI projekt: dokler ponudba ni poslana, dela še ni in v
+     Projektih nima kaj iskati (uporabnica: "projekt se je ustvaril, čeprav ga
+     nisem ustvarila in ne vem, ali ga sploh dobim"). Osnutki ostanejo v Ponudbah
+     in Arhivu; v Projekte pridejo, ko so poslani, sprejeti ali zavrnjeni. */
+  const offerProjects = useMemo(() => offers.filter(o => o.status !== 'draft').map(offer => gradiVnos(offer, samoOgled ? demoRealZaOffer(offer.id) : undefined)), [offers, invoices, expenses, contracts, amounts, samoOgled]);
   /* PRAVI projekti — zdruzeni s tistimi, izpeljanimi iz ponudb, BREZ podvajanja:
      ce ze obstaja ponudba z istim naslovom+stranko, ta ponudba ze predstavlja
      isti projekt v seznamu, zato se pravi zapis takrat ne podvoji. */
