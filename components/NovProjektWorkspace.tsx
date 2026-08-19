@@ -20,7 +20,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowRight, PencilSimple } from '@phosphor-icons/react';
-import { loadFlowData, saveProjectLinks, type FlowClient, type FlowOffer } from '@/lib/pinartFlowStore';
+import { loadFlowData, saveProjectLinks, type FlowClient, type FlowOffer, type FlowContract } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { naslednjaStevilka, preberiProjekti, shraniProjekt, type Projekt, type ProjektCilj, type ProjektPovezava, type ProjektStatus, type ProjektVprasanje } from '@/lib/projekti';
 import { preberiSodelavci, vlogaOznaka } from '@/lib/sodelavci';
@@ -50,6 +50,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
   /* Ponudbe za POTEG: projekt se najpogosteje rodi iz potrjene ponudbe — namesto
      prepisovanja naslova in stranke jo uporabnica izbere in podatki se prenesejo. */
   const [offers, setOffers] = useState<FlowOffer[]>([]);
+  const [contracts, setContracts] = useState<FlowContract[]>([]);
   const [potegnjena, setPotegnjena] = useState<string>('');
   const [sodelavci, setSodelavci] = useState<Sodelavec[]>([]);
   const [realProjekti, setRealProjekti] = useState<Projekt[]>([]);
@@ -63,6 +64,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     const flow = podatkiZaPredogled(nacin, loadFlowData());
     setClients(flow.clients);
     setOffers(flow.offers || []);
+    setContracts(flow.contracts || []);
     setSodelavci(preberiSodelavci());
     setRealProjekti(preberiProjekti());
   }, [nacin]);
@@ -111,12 +113,14 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
 
   /* Poteg iz ponudbe: prenese naslov, stranko in stevilko; skoci na cilje,
      ker sta prvi dve vprasanji s tem ze odgovorjeni. */
-  const potegniIzPonudbe = (offerId: string) => {
-    const o = offers.find(x => x.id === offerId);
-    if (!o) return;
-    const stranka = clients.find(c => c.name.trim().toLocaleLowerCase('sl-SI') === (o.client || '').trim().toLocaleLowerCase('sl-SI'));
-    setObrazec(prej => ({ ...prej, naslov: o.title || prej.naslov, strankaId: stranka?.id || prej.strankaId }));
-    setPotegnjena(offerId);
+  const potegniIzPonudbe = (kljuc: string) => {
+    const [vrsta, id] = kljuc.split(':');
+    const vir: { title?: string; client?: string } | undefined =
+      vrsta === 'p' ? contracts.find(x => x.id === id) : offers.find(x => x.id === id);
+    if (!vir) return;
+    const stranka = clients.find(c => c.name.trim().toLocaleLowerCase('sl-SI') === (vir.client || '').trim().toLocaleLowerCase('sl-SI'));
+    setObrazec(prej => ({ ...prej, naslov: vir.title || prej.naslov, strankaId: stranka?.id || prej.strankaId }));
+    setPotegnjena(kljuc);
     setNovKorak(k => (k < 2 ? 2 : k));
     setUrejamKorak(null);
   };
@@ -225,17 +229,26 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
 
       <div className="np-chat-tok">
         {/* POTEG IZ PONUDBE — projekt najpogosteje nastane iz potrjene ponudbe */}
-        {!urejam && offers.length > 0 && (
+        {!urejam && (offers.length > 0 || contracts.length > 0) && (
           <div className="np-poteg">
-            <p className="np-poteg-naslov">Gradiš iz obstoječe ponudbe?</p>
+            <p className="np-poteg-naslov">Gradiš iz obstoječe ponudbe ali pogodbe?</p>
             <p className="np-poteg-pod">Izberi jo in prenesem naslov ter stranko. Lahko tudi začneš iz nič.</p>
-            <select className="np-chat-polje" value={potegnjena} onChange={e => e.target.value && potegniIzPonudbe(e.target.value)} aria-label="Ponudba">
+            <select className="np-chat-polje" value={potegnjena} onChange={e => e.target.value && potegniIzPonudbe(e.target.value)} aria-label="Ponudba ali pogodba">
               <option value="">Začni iz nič</option>
-              {offers.map(o => (
-                <option key={o.id} value={o.id}>
-                  {[o.number, o.title, o.client].filter(Boolean).join(' · ')}
-                </option>
-              ))}
+              {offers.length > 0 && (
+                <optgroup label="Ponudbe">
+                  {offers.map(o => (
+                    <option key={o.id} value={`o:${o.id}`}>{[o.number, o.title, o.client].filter(Boolean).join(' · ')}</option>
+                  ))}
+                </optgroup>
+              )}
+              {contracts.length > 0 && (
+                <optgroup label="Pogodbe">
+                  {contracts.map(c => (
+                    <option key={c.id} value={`p:${c.id}`}>{[c.title, c.client].filter(Boolean).join(' · ')}</option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
         )}
