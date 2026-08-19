@@ -55,11 +55,11 @@ export default function FlowCloudBridge() {
   useEffect(() => {
     let cancelled = false;
 
-    async function synchronize() {
+    async function synchronize(): Promise<boolean> {
       try {
         const local = loadFlowData();
         const cloud = await pullFlowData();
-        if (!cloud || cancelled) return;
+        if (!cloud || cancelled) return false;
         const cloudSettings = await loadCloudSettings();
         const isLegacyMigrationComplete = Boolean(cloudSettings?.legacyMigrationCompletedAt);
         const merged = isLegacyMigrationComplete ? cloud : mergeFlowData(cloud, local);
@@ -109,38 +109,38 @@ export default function FlowCloudBridge() {
         }
         sessionStorage.setItem(SESSION_KEY, 'done');
         window.dispatchEvent(new CustomEvent('pinart-flow-change', { detail: { key: 'all' } }));
-        if (before !== JSON.stringify(merged) && !cancelled) window.location.reload();
+        return before !== JSON.stringify(merged);
+        return false;
       } catch (error) {
         console.error('Pinart Flow initial cloud sync:', error);
         window.dispatchEvent(new CustomEvent('pinart-flow-sync-error'));
+        return false;
       }
     }
 
     (async () => {
       await poravnajRacun();                 // VEDNO: nov/drug racun ne podeduje stanja
       if (cancelled) return;
-      if (sessionStorage.getItem(SESSION_KEY) === 'done') return;  // sync le enkrat na sejo
-      if (!cancelled) setSinhronizira(true);
-      await synchronize();
-      if (!cancelled) setSinhronizira(false);
-    })();
-    return () => { cancelled = true; };
-  }, []);
 
-  /* Projekti imajo lastno, lahko shrambo (lib/projekti), zato njihova
-     sinhronizacija NI vezana na enkratno sejno sinhronizacijo zgoraj — teče ob
-     vsakem odprtju strani. Ena poizvedba, zato je to poceni, in projekt,
-     ustvarjen na drugi napravi, se pokaže brez ponovne prijave. */
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const spremenjeno = await sinhronizirajProjekte();
-      if (cancelled || !spremenjeno) return;
-      /* Prišlo je nekaj novega iz oblaka. Stran osvežimo NAJVEČ enkrat na sejo,
-         sicer bi se ob vsakem nalaganju vrtela v krogu. */
-      if (sessionStorage.getItem(SESSION_KEY_PROJEKTI) === 'done') return;
-      sessionStorage.setItem(SESSION_KEY_PROJEKTI, 'done');
-      window.location.reload();
+      /* Podatki se sinhronizirajo enkrat na sejo, projekti (lahka poizvedba) ob
+         vsakem nalaganju. Oboje tece POD prekrivalom in konca z NAJVEC ENO
+         osvezitvijo — locena ucinka sta stran nalozila dvakrat in to se je
+         videlo kot dvojni skok po prijavi. */
+      const prvaVSeji = sessionStorage.getItem(SESSION_KEY) !== 'done';
+      if (!cancelled) setSinhronizira(true);
+
+      let osveziti = false;
+      if (prvaVSeji) osveziti = await synchronize();
+
+      const projektiSpremenjeni = await sinhronizirajProjekte();
+      if (projektiSpremenjeni && sessionStorage.getItem(SESSION_KEY_PROJEKTI) !== 'done') {
+        sessionStorage.setItem(SESSION_KEY_PROJEKTI, 'done');
+        osveziti = true;
+      }
+
+      if (cancelled) return;
+      if (osveziti) { window.location.reload(); return; }   // prekrivalo ostane do naklada
+      setSinhronizira(false);
     })();
     return () => { cancelled = true; };
   }, []);
