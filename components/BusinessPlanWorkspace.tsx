@@ -134,6 +134,19 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   const krajLabel = (k: KrajDela) => L(KRAJ_OZNAKA[k], k === 'pisarna' ? 'At the office' : 'Working from home');
   const [plan, setPlan] = useState<BusinessPlan>(DEFAULT_BUSINESS_PLAN);
   const [entries, setEntries] = useState<PrivateTimeEntry[]>([]);
+  /* Imena obstojecih projektov za nasepetavanje. Polje ostane prosto besedilo
+     (merjenje je mogoce tudi za nekaj, kar se ni projekt), a ce ime izberes iz
+     seznama, se ura pravilno prishteje projektu — ujemanje tece po imenu. */
+  const [imenaProjektov, setImenaProjektov] = useState<string[]>([]);
+  useEffect(() => {
+    try {
+      const p = (JSON.parse(localStorage.getItem('pinflow_projekti') || '[]') as Array<{ naslov?: string; deletedAt?: string }>)
+        .filter(x => x && !x.deletedAt && x.naslov).map(x => String(x.naslov));
+      const o = (JSON.parse(localStorage.getItem('pinart-flow-data-v1') || '{}') as { offers?: Array<{ title?: string }> })
+        .offers?.map(x => String(x.title || '')) || [];
+      setImenaProjektov(Array.from(new Set([...p, ...o].filter(Boolean))).sort((a, b) => a.localeCompare(b, 'sl')));
+    } catch { /* nasepetavanje ni kriticno */ }
+  }, []);
   const [running, setRunning] = useState<PrivateTimeEntry | null>(null);
   const [pending, setPending] = useState<PrivateTimeEntry | null>(null);
   const [pozabljeno, setPozabljeno] = useState<PrivateTimeEntry | null>(null);
@@ -889,7 +902,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             </button>
           </div>
         </div> : <form className={styles.timerForm} onSubmit={start}>
-          <label><span>{L('Projekt ali stranka', 'Project or client')}</span><input name="project" required placeholder={L('npr. Nova identiteta', 'e.g. New identity')} /></label>
+          <label><span>{L('Projekt ali stranka', 'Project or client')}</span><input name="project" required list="seznam-projektov" placeholder={L('npr. Nova identiteta', 'e.g. New identity')} /></label>
           <label><span>{L('Storitev', 'Service')}</span><input name="service" placeholder={L('npr. oblikovanje logotipa', 'e.g. logo design')} /></label>
           <label><span>{L('Vrednost tega dela', 'Value of this work')}</span><input name="amount" type="number" min="0" step="10" placeholder={L('Določiš lahko tudi ob zaključku', 'You can also set this when you finish')} /></label>
           <label><span>{L('Obseg', 'Scope')}</span><select name="scope"><option value="included">{L('Vključeno v dogovor', 'Included in the agreement')}</option><option value="extra">{L('Dodatno delo', 'Extra work')}</option></select></label>
@@ -909,7 +922,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             <div className={styles.reviewTitle}><strong>{L('Vpiši ure za nazaj', 'Add hours after the fact')}</strong><span>{L('Za dan, ko si delala, a nisi merila.', 'For a day you worked but did not track.')}</span></div>
             {poljeDan('dan', danesISO())}
             {poljeOdDo()}
-            <label><span>{L('Projekt ali stranka', 'Project or client')}</span><input name="project" required placeholder={L('npr. Nova identiteta', 'e.g. New identity')} /></label>
+            <label><span>{L('Projekt ali stranka', 'Project or client')}</span><input name="project" required list="seznam-projektov" placeholder={L('npr. Nova identiteta', 'e.g. New identity')} /></label>
             <label><span>{L('Storitev', 'Service')}</span><input name="service" placeholder={L('npr. oblikovanje logotipa', 'e.g. logo design')} /></label>
             <label><span>{L('Ure', 'Hours')}</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
             <label><span>{L('Minute', 'Minutes')}</span><input name="min" type="number" min="0" max="59" step="5" value={minVnos} onChange={e => setMinVnos(e.target.value)} /></label>
@@ -925,7 +938,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             <div className={styles.reviewTitle}><strong>{L('Uredi vnos', 'Edit entry')}</strong><span>{urejam.projectName}</span></div>
             {poljeDan('dan', urejam.startedAt.slice(0, 10))}
             {poljeOdDo()}
-            <label><span>{L('Projekt ali stranka', 'Project or client')}</span><input name="project" defaultValue={urejam.projectName} /></label>
+            <label><span>{L('Projekt ali stranka', 'Project or client')}</span><input name="project" list="seznam-projektov" defaultValue={urejam.projectName} /></label>
             <label><span>{L('Storitev', 'Service')}</span><input name="service" defaultValue={urejam.serviceName} /></label>
             <label><span>{L('Ure', 'Hours')}</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
             <label><span>{L('Minute', 'Minutes')}</span><input name="min" type="number" min="0" max="59" step="1" value={minVnos} onChange={e => setMinVnos(e.target.value)} /></label>
