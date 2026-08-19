@@ -604,9 +604,9 @@ export default function ProjectDetailModern({
         .pm-member { padding:.2rem .5rem .2rem .26rem; gap:.38rem; }
         .pm-av { width:1.45rem; height:1.45rem; font-size:.6rem; }
         .pm-mtxt b { font-size:.76rem; }
-        /* v ozjem oknu odpade podnaslov — z njim tudi raven dostopa,
-           sicer ima ena oznaka podpis, ostale pa ne (Tina, 20. 8. 2026) */
-        .pm-mtxt small, .pm-raven { display:none; }
+        /* Vloga se vidi VEDNO, tudi v ozjem oknu: pri vsaki osebi mora pisati,
+           kaj je — sodelavec s pravim dostopom ali le ime za naloge. Odkar
+           sta ime in vloga v isti vrstici, prostora ne zmanjka. */
         .pm-soon { display:none; }
         /* alert (nekdo/agent caka na tvoj pregled) */
         .pm-alert { display:inline-flex; align-items:center; gap:.35rem; font-size:.7rem; font-weight:700; color:oklch(48% .14 55); background:oklch(95% .06 75); border:1px solid oklch(80% .1 70); border-radius:999px; padding:.24rem .6rem; }
