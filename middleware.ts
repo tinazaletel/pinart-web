@@ -196,6 +196,22 @@ export default async function middleware(request: NextRequest) {
         dovoljen = false;
       }
     }
+    /* CLAN EKIPE ima dostop tudi brez lastne dodelitve: ce ga je lastnik povabil
+       in je vabilo sprejel, ga zaprta beta ne sme ustaviti — sicer sprejme vabilo,
+       postane clan, nato pa ga vrata vrzejo na "Flow je se v zaprti beti".
+       Dostop clana zivi od organizacije (in njenega paketa), ne od seznama testerjev. */
+    if (!dovoljen && supabase) {
+      try {
+        const { data: clanstvo } = await supabase
+          .from('organization_members')
+          .select('organization_id')
+          .eq('user_id', user.id)
+          .limit(1);
+        dovoljen = Array.isArray(clanstvo) && clanstvo.length > 0;
+      } catch {
+        /* ce poizvedba pade, ostane dovoljen = false (zaklep drzi) */
+      }
+    }
     if (!dovoljen) {
       const localePrefix = request.nextUrl.pathname.startsWith('/en/') ? '/en' : '';
       const betaUrl = request.nextUrl.clone();
