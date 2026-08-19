@@ -3,10 +3,14 @@
 import { useEffect, useState } from 'react';
 import { loadFlowData, writeFlowDataLocally } from '@/lib/pinartFlowStore';
 import { loadCloudSettings, loadOrganizationProfile, mergeFlowData, pullFlowData, pushFlowData, saveCloudSettings, saveOrganizationProfile } from '@/lib/pinartFlowCloud';
+import { pushProjekti, sinhronizirajProjekte } from '@/lib/projektiOblak';
 import { createClient } from '@/utils/supabase/client';
 import { nastaviPredogled } from '@/lib/predogled';
 
 const SESSION_KEY = 'pinart-flow-cloud-bridge-v1';
+/* ločen ključ: sinhronizacija projektov teče ob vsakem nalaganju, omejena je le
+   osvežitev strani (največ ena na sejo) */
+const SESSION_KEY_PROJEKTI = 'pinart-flow-projekti-reload-v1';
 const MARKER_UPORABNIK = 'pinart-zadnji-uporabnik';
 
 /* Nov ali DRUG racun na tem brskalniku NE sme podedovati prejsnjega stanja:
@@ -117,6 +121,40 @@ export default function FlowCloudBridge() {
       if (!cancelled) setSinhronizira(false);
     })();
     return () => { cancelled = true; };
+  }, []);
+
+  /* Projekti imajo lastno, lahko shrambo (lib/projekti), zato njihova
+     sinhronizacija NI vezana na enkratno sejno sinhronizacijo zgoraj — teče ob
+     vsakem odprtju strani. Ena poizvedba, zato je to poceni, in projekt,
+     ustvarjen na drugi napravi, se pokaže brez ponovne prijave. */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const spremenjeno = await sinhronizirajProjekte();
+      if (cancelled || !spremenjeno) return;
+      /* Prišlo je nekaj novega iz oblaka. Stran osvežimo NAJVEČ enkrat na sejo,
+         sicer bi se ob vsakem nalaganju vrtela v krogu. */
+      if (sessionStorage.getItem(SESSION_KEY_PROJEKTI) === 'done') return;
+      sessionStorage.setItem(SESSION_KEY_PROJEKTI, 'done');
+      window.location.reload();
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  /* Sproten prenos projektov v oblak: shramba javi spremembo (lib/projekti),
+     mi pa jo z zamikom pošljemo — zamik zato, da hitro zaporedje urejanj
+     (tipkanje v briefu) ne sproži klica ob vsakem pritisku tipke. */
+  useEffect(() => {
+    let cakalec: ReturnType<typeof setTimeout> | undefined;
+    const naSpremembo = () => {
+      if (cakalec) clearTimeout(cakalec);
+      cakalec = setTimeout(() => { pushProjekti().catch(() => { }); }, 1500);
+    };
+    window.addEventListener('pinart-projekti-change', naSpremembo);
+    return () => {
+      window.removeEventListener('pinart-projekti-change', naSpremembo);
+      if (cakalec) clearTimeout(cakalec);
+    };
   }, []);
 
   if (!sinhronizira) return null;

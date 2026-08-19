@@ -83,11 +83,20 @@ export interface Projekt {
      (ProjectsWorkspace pw-pipeline); ce se ni nastavljena, jo fazaProjekta
      spodaj izpelje iz status */
   faza?: ProjektFaza;
+  /* cas zadnje spremembe (ISO) — nujen za sinhronizacijo z oblakom
+     (lib/projektiOblak): ob srecanju lokalne in oblacne razlicice zmaga
+     novejsa. Stari zapisi ga nimajo; takrat velja created. */
+  updatedAt?: string;
+  /* nagrobnik: izbrisan projekt se NE odstrani takoj, ampak se oznaci, da
+     brisanje potuje v oblak in ga druga naprava ne obudi nazaj. preberiProjekti
+     take zapise odfiltrira, zato tega ni treba upostevati nikjer v vmesniku. */
+  deletedAt?: string;
 }
 
 const STORAGE_KEY = 'pinflow_projekti';
 
-export const preberiProjekti = (): Projekt[] => {
+/* vsi zapisi VKLJUCNO z nagrobniki — samo za sinhronizacijo */
+export const preberiProjektiVsi = (): Projekt[] => {
   if (typeof window === 'undefined') return [];
   try {
     const data = localStorage.getItem(STORAGE_KEY);
@@ -98,10 +107,16 @@ export const preberiProjekti = (): Projekt[] => {
   }
 };
 
+export const preberiProjekti = (): Projekt[] => preberiProjektiVsi().filter(p => !p.deletedAt);
+
 const shraniProjekte = (projekti: Projekt[]): void => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(projekti));
+    /* Javi spremembo, da jo FlowCloudBridge pošlje v oblak. Dogodek namesto
+       neposrednega klica, ker bi uvoz lib/projektiOblak tu naredil krog
+       (projektiOblak uvaza to datoteko). */
+    window.dispatchEvent(new CustomEvent('pinart-projekti-change'));
   } catch (e) {
     console.error('Napaka pri shranjevanju projektov v localStorage:', e);
   }
@@ -109,18 +124,25 @@ const shraniProjekte = (projekti: Projekt[]): void => {
 
 /* upsert: ce projekt s tem id ze obstaja, ga zamenja; sicer ga doda na zacetek */
 export const shraniProjekt = (projekt: Projekt): Projekt[] => {
-  const obstojeci = preberiProjekti();
-  const obstaja = obstojeci.some(p => p.id === projekt.id);
-  const naslednji = obstaja ? obstojeci.map(p => (p.id === projekt.id ? projekt : p)) : [projekt, ...obstojeci];
+  const obstojeci = preberiProjektiVsi();
+  const zigosan: Projekt = { ...projekt, updatedAt: new Date().toISOString() };
+  const obstaja = obstojeci.some(p => p.id === zigosan.id);
+  const naslednji = obstaja ? obstojeci.map(p => (p.id === zigosan.id ? zigosan : p)) : [zigosan, ...obstojeci];
   shraniProjekte(naslednji);
-  return naslednji;
+  return naslednji.filter(p => !p.deletedAt);
 };
 
+/* mehko brisanje — glej Projekt.deletedAt */
 export const izbrisiProjekt = (id: string): Projekt[] => {
-  const naslednji = preberiProjekti().filter(p => p.id !== id);
+  const cas = new Date().toISOString();
+  const naslednji = preberiProjektiVsi().map(p =>
+    p.id === id ? { ...p, deletedAt: cas, updatedAt: cas } : p);
   shraniProjekte(naslednji);
-  return naslednji;
+  return naslednji.filter(p => !p.deletedAt);
 };
+
+/* zapise celoten seznam (vkljucno z nagrobniki) — uporablja ga sinhronizacija */
+export const zapisiProjekteVsi = (projekti: Projekt[]): void => shraniProjekte(projekti);
 
 export const najdiProjekt = (id: string): Projekt | undefined => preberiProjekti().find(p => p.id === id);
 

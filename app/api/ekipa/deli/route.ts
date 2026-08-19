@@ -9,7 +9,7 @@ import { preberiJson, sporociloValidacije } from '@/lib/validacija';
    član samodejno vidi vse ponudbe/račune/… te stranke.
    ⚠️ Deluje šele, ko sta pognani migraciji Stage 1 (record_shares) + Stage 2 (RLS). */
 
-const DOVOLJENI_VIRI = new Set(['clients', 'offers', 'invoices', 'contracts', 'retainers', 'expenses']);
+const DOVOLJENI_VIRI = new Set(['clients', 'offers', 'invoices', 'contracts', 'retainers', 'expenses', 'projects']);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 async function adminContext(supabase: ReturnType<typeof createClient>, userId: string) {

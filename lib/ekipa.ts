@@ -64,7 +64,7 @@ export async function prekliciVabilo(inviteId: string): Promise<{ ok: boolean; n
 }
 
 /* ── Deljenje zapisov s člani (Faza 4 Stage 3) ── */
-export type DeljivVir = 'clients' | 'offers' | 'invoices' | 'contracts' | 'retainers' | 'expenses';
+export type DeljivVir = 'clients' | 'offers' | 'invoices' | 'contracts' | 'retainers' | 'expenses' | 'projects';
 
 export async function preberiDeljenja(resource: DeljivVir, recordId: string): Promise<string[]> {
   try {

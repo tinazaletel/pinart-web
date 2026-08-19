@@ -691,7 +691,7 @@ export type { CloudSettings };
    pa potrebuje PRAVI uuid vrstice. Ta funkcija ga poisce; vrne null, ce zapis se
    ni sinhroniziran v oblak (takrat deljenje se ni mogoce). */
 export async function dbIdZaZapis(
-  collection: 'offers' | 'invoices' | 'expenses' | 'contracts' | 'clients',
+  collection: 'offers' | 'invoices' | 'expenses' | 'contracts' | 'clients' | 'projects',
   externalId: string,
 ): Promise<string | null> {
   if (!externalId || jeDemoId(externalId) || jeSamoPredogled()) return null;
