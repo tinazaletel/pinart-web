@@ -57,6 +57,8 @@ export default function AuthForm({ base }: { base: string }) {
 
     /* ?nov=1 (ali ?mode=signup) z landinga -> odpri takoj "Nov račun" tab, ne Prijava. */
     if (params.get('nov') === '1' || params.get('mode') === 'signup') setMode('signup');
+    const ref = params.get('ref')?.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 32);
+    if (ref) document.cookie = `flow_ref=${ref}; path=/; max-age=2592000; samesite=lax`;
 
     const napaka = params.get('napaka');
     if (napaka) {
@@ -113,12 +115,13 @@ export default function AuthForm({ base }: { base: string }) {
     if (mode === 'signup') {
       const fullName = String(form.get('fullName') || '').trim();
       const companyName = String(form.get('companyName') || '').trim();
+      const referralCode = new URLSearchParams(window.location.search).get('ref')?.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 32) || undefined;
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: preusmeriNaCallback(cilj),
-          data: { full_name: fullName, company_name: companyName },
+          data: { full_name: fullName, company_name: companyName, referral_code: referralCode },
         },
       });
 
