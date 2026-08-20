@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { loadFlowData, writeFlowDataLocally } from '@/lib/pinartFlowStore';
 import { loadCloudSettings, loadOrganizationProfile, mergeFlowData, pullFlowData, pushFlowData, saveCloudSettings, saveOrganizationProfile } from '@/lib/pinartFlowCloud';
 import { pushProjekti, sinhronizirajProjekte } from '@/lib/projektiOblak';
@@ -62,6 +62,14 @@ export default function FlowCloudBridge() {
      Brez prekrivala uporabnik to vidi kot utrip: stran se pokaze -> izgine -> pokaze.
      Zato med prvo sinhronizacijo pokrijemo vsebino z mirnim zaslonom. */
   const [sinhronizira, setSinhronizira] = useState(false);
+  /* Prekrivalo prizgemo PRED prvim izrisom (useLayoutEffect tece pred risanjem),
+     sicer uporabnica vidi vsebino -> prekrivalo -> po osvezitvi spet vsebino,
+     kar izgleda kot dvojno nalaganje. Zdaj vidi le prekrivalo in nato vsebino. */
+  useLayoutEffect(() => {
+    try {
+      if (sessionStorage.getItem(SESSION_KEY) !== 'done') setSinhronizira(true);
+    } catch { /* zasebno okno */ }
+  }, []);
   useEffect(() => {
     let cancelled = false;
 
@@ -141,7 +149,7 @@ export default function FlowCloudBridge() {
          strani sinhronizacija tece TIHO v ozadju — sicer vsak F5 pokrije zaslon,
          cetudi ni kaj pokazati. */
       const prvaVSeji = sessionStorage.getItem(SESSION_KEY) !== 'done';
-      if (!cancelled && prvaVSeji) setSinhronizira(true);
+      if (!cancelled && prvaVSeji) setSinhronizira(true);   /* ze prizgano v useLayoutEffect; tu le za varnost */
 
       let osveziti = false;
       if (prvaVSeji) osveziti = await synchronize();
