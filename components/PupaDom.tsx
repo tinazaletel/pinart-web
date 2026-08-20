@@ -4,6 +4,7 @@ import { getOrganizationContext } from '@/lib/pinartFlowCloud';
 import BriefAgent from '@/components/BriefAgent';
 import PitchAgent from '@/components/PitchAgent';
 import CanvasAgent from '@/components/CanvasAgent';
+import AgentTabla from '@/components/AgentTabla';
 import { shraniProjekt } from '@/lib/projekti';
 
 /* PUPA DOM — pogovorni dom (Faza 1). Chat v OSPREDJU (sredina), podatki nadzorne
@@ -65,7 +66,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   const locale = jeEn ? 'en' : 'sl';
   /* Izbran tip iz vstopa → orodje se požene V ISTEM oknu (brez navigacije).
      'ponudba' = pravi kalkulator; ostali = svoj obstoječi workspace. null = vstopni zaslon. */
-  const [tip, setTip] = useState<'ponudba' | 'racun' | 'strosek' | 'projekt' | 'naloga' | 'pogodba' | 'retainer' | 'brief' | 'pitch' | 'canvas' | null>(null);
+  const [tip, setTip] = useState<'ponudba' | 'racun' | 'strosek' | 'projekt' | 'naloga' | 'pogodba' | 'retainer' | 'brief' | 'pitch' | 'canvas' | 'tabla' | null>(null);
   const [ime, setIme] = useState('');
   const [vnos, setVnos] = useState('');
   const [priponka, setPriponka] = useState<File | null>(null);
@@ -372,6 +373,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     { ime: L('Napiši brief', 'Write a brief'), tip: 'brief', h: 120, ikona: <FileText size={16} weight="bold" /> },
     { ime: L('Napiši pitch', 'Write a pitch'), tip: 'pitch', h: 180, ikona: <FileText size={16} weight="bold" /> },
     { ime: L('Napiši canvas', 'Write the canvas'), tip: 'canvas', h: 210, ikona: <FileText size={16} weight="bold" /> },
+    { ime: L('Več nalog hkrati', 'Several tasks at once'), tip: 'tabla', h: 140, ikona: <ListChecks size={16} weight="bold" /> },
     // Štoparica umaknjena iz vstopa: ni »ustvari« akcija; dostopna v meniju (Čas) in prek Pupe (»zaženi štoparico«).
   ];
 
@@ -389,6 +391,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     shraniProjekt({ ...projekt, pitch });
   }} />;
   if (tip === 'canvas') return <CanvasAgent base={base} />;
+  if (tip === 'tabla') return <AgentTabla />;
   if (tip === 'pogodba') return <ContractWorkspace base={base} />;
   if (tip === 'retainer') return <RetainerWorkspace base={base} vLupini />;
 
