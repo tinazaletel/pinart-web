@@ -138,6 +138,7 @@ export function demoPodatki(): FlowData {
     scope: ['Analiza in izhodišča', 'Oblikovanje', 'Priprava za tisk'].slice(0, 2 + (i % 2)),
     status: (['sent', 'accepted', 'accepted', 'draft', 'rejected'] as const)[i % 5],
     agreedAmount: 1200 + (i % 7) * 640,
+    licencaDo: i === 1 ? '2026-06-01' : i === 2 ? '2026-09-15' : undefined,
   }));
 
   /* demo postavke racuna (da predogled pokaze razclembo, ne le vsote): 2 postavki +

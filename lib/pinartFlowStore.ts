@@ -11,6 +11,7 @@ export type FlowOffer = {
   scope: string[];
   status: FlowOfferStatus;
   agreedAmount: number;
+  licencaDo?: string;
   deletedAt?: string;
   deletedBy?: string;
   updatedAt?: string;
@@ -180,6 +181,7 @@ type ArchivedOffer = {
   datum?: string;
   stevilkaPonudbe?: string;
   vrstice?: Array<{ ime?: string; kolicina?: number }>;
+  licencaDo?: string;
 };
 type LegacyClient = { ime?: string; email?: string; oseba?: string; telefon?: string; naslov?: string; davcna?: string };
 
@@ -216,6 +218,7 @@ const legacyOffers = (): FlowOffer[] => {
     scope: item.vrstice?.map(row => `${row.ime || 'Storitev'}${(row.kolicina || 1) > 1 ? ` × ${row.kolicina}` : ''}`) || [],
     status: statuses[id] || 'draft',
     agreedAmount: Number(amounts[id]) || 0,
+    licencaDo: item.licencaDo,
   }));
 };
 

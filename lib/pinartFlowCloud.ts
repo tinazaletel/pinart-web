@@ -190,6 +190,7 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       issue_date: dateOnly(offer.date),
       scope: offer.scope,
       amount: offer.agreedAmount || 0,
+      licenca_do: offer.licencaDo || null,
       deleted_at: offer.deletedAt || null,
       deleted_by: offer.deletedBy || null,
       updated_at: offer.updatedAt || new Date(0).toISOString(),
@@ -341,6 +342,7 @@ export async function pullFlowData(): Promise<FlowData | null> {
       id: String(row.external_id || row.id), title: String(row.title), client: clientNameById.get(String(row.client_id)) || 'Brez stranke',
       date: String(row.issue_date), number: row.number || undefined, scope: Array.isArray(row.scope) ? row.scope.map(String) : [],
       status: row.status as FlowOffer['status'], agreedAmount: Number(row.amount) || 0,
+      licencaDo: row.licenca_do || undefined,
       deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined, updatedAt: row.updated_at || undefined,
     })),
     invoices: brezDemo(invoicesResult.data || []).map(row => ({

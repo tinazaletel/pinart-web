@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { localePath } from '@/i18n/routing';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
-import { loadFlowData, saveFlowCollection, type FlowInvoice } from '@/lib/pinartFlowStore';
+import { loadFlowData, saveFlowCollection, saveOffers, type FlowInvoice } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4, migrirajStariFont } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
@@ -19,6 +19,7 @@ import IzbirnikDrzave from '@/components/IzbirnikDrzave';
 import AmbientBubbles from '@/components/AmbientBubbles';
 import { ugotoviPaket, zabeleziSPaketom } from '@/lib/analitika';
 import { VPRASANJA_PO_STORITVI, type ProjektnoVprasanje } from '@/lib/vprasanjaPoStoritvi';
+import { izracunajLicencoDo } from '@/lib/licencePotek';
 
 import {
   PenNib, Palette, Browser, Megaphone, BookOpen, Package, Gift,
@@ -1666,6 +1667,7 @@ type PravRec = { prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: stri
 type LastnaPravica = { id: string; ime: string; znesek: string; tip: 'enkratno' | 'letno' | 'mesecno'; trajanje?: string; trajLeta?: number; klavzule?: string[]; opomba?: string };
 type ShranjenaP = {
   datum: string;
+  licencaDo?: string;
   izbrane: string[];
   /* postavkovni model (2026-07-10): vrstice ponudbe — instance storitev z
      lastnim imenom (Inovis, Itforyou) ali kolicino (6 ilustracij) */
@@ -4832,8 +4834,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       try { priponkaFilePath = await uploadBusinessDocument(priponkaFile, 'offers', slugId); priponkaFileName = priponkaFile.name; }
       catch { priponkaFileName = priponkaFile.name; priponkaFilePath = undefined; }
     }
+    const datumPonudbe = new Date().toISOString();
+    const licencaDo = izracunajLicencoDo(datumPonudbe, [
+      ...vrstice.map(vrstica => pravRec(vrstica.sid)),
+      ...lastnePravice,
+    ]);
     const zapis: ShranjenaP = {
-      datum: new Date().toISOString(),
+      datum: datumPonudbe,
+      licencaDo,
       izbrane: [...izbrane], vrstice,
       odgovori, urejenePodrobnosti: [...urejenePodrobnosti], postavke, raba,
       promet, dobicek, projPrihodek, projDobicek, popust, dodatki: [...dodatki],
@@ -4857,6 +4865,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     const nov = { ...arhiv, [ime]: zapis };
     setArhiv(nov);
     try { localStorage.setItem(K_ARHIV, JSON.stringify(nov)); } catch { /* poln */ }
+    /* Arhiv je lokalna podrobna kopija; FlowOffer sproži še varen push istega roka v oblak. */
+    saveOffers(loadFlowData().offers);
     setPriponkaFile(null);
     setPriponkaIme(priponkaFileName || '');
     setPriponkaPot(priponkaFilePath || '');
