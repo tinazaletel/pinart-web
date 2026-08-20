@@ -84,12 +84,12 @@ export default function SidebarUserMenu({ base }: { base: string }) {
               krajsa kot iskanje zavihka na strani. */}
           <button type="button" role="menuitem" aria-expanded={nastOdprte}
             onClick={() => setNastOdprte(o => !o)}
-            style={{ display: 'flex', alignItems: 'center', gap: '.45rem', width: '100%', padding: 0, margin: 0, border: 0, background: 'transparent', font: 'inherit', color: 'inherit', cursor: 'pointer', textAlign: 'left' }}>
+            className={styles.userMenuSkupina}>
             <GearSix size={15} weight="bold" /> {L('Nastavitve', 'Settings')}
             <span aria-hidden style={{ marginLeft: 'auto', fontSize: '1.15rem', lineHeight: 1, opacity: .75, transform: nastOdprte ? 'rotate(90deg)' : 'none', transition: 'transform .15s' }}>›</span>
           </button>
           {nastOdprte && (
-            <span style={{ display: 'flex', flexDirection: 'column', gap: '.15rem', paddingLeft: '1.4rem', marginTop: '.15rem' }}>
+            <span className={styles.userMenuPod}>
               <Link href={`${base}/kalkulator/nastavitve?zavihek=dokumenti`} role="menuitem" onClick={() => setOdprt(false)}>{L('Videz dokumentov', 'Document look')}</Link>
               <Link href={`${base}/kalkulator/nastavitve?zavihek=ai`} role="menuitem" onClick={() => setOdprt(false)}>{L('AI orodja', 'AI tools')}</Link>
             </span>
