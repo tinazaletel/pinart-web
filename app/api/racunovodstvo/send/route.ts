@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { omejiApi } from '@/lib/rate-limit';
 import { jeEmail, preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { preberiClanstvo } from '@/lib/clanstvo';
 
 type SendRequest = { recipient?: string; downloadUrl?: string; periodStart?: string; periodEnd?: string; demo?: boolean };
 
@@ -32,8 +33,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Obdobje ni veljavno.' }, { status: 400 });
   }
 
-  const { data: memberships } = await supabase.from('organization_members').select('organization_id').eq('user_id', user.id).limit(1);
-  const organizationId = memberships?.[0]?.organization_id;
+  const membership = await preberiClanstvo(supabase, null, user.id);
+  const organizationId = membership && !membership.disabled_at ? membership.organization_id : null;
   if (!organizationId) return NextResponse.json({ error: 'Podjetje ni povezano.' }, { status: 403 });
   const { data: settings } = await supabase.from('organization_settings').select('accounting_email').eq('organization_id', organizationId).maybeSingle();
   if (!settings?.accounting_email || String(settings.accounting_email).trim().toLowerCase() !== recipient) {

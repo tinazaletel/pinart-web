@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { omejiApi } from '@/lib/rate-limit';
 import { hashPogodbe, hashZetona, novPodpisniZeton, varenPosnetekPogodbe } from '@/lib/podpisPogodbe';
+import { preberiClanstva } from '@/lib/clanstvo';
 
 export async function POST(request: Request) {
   const supabase = createClient();
@@ -22,8 +23,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ napaka: 'Manjkajo podatki pogodbe ali podpisnika.' }, { status: 400 });
   }
 
-  const { data: memberships } = await admin.from('organization_members').select('organization_id,role,disabled_at').eq('user_id', user.id);
-  const dovoljeniOrg = (memberships || []).filter(v => !v.disabled_at && (v.role === 'owner' || v.role === 'admin')).map(v => v.organization_id);
+  const memberships = await preberiClanstva(admin, user.id);
+  const dovoljeniOrg = memberships.filter(v => !v.disabled_at && (v.role === 'owner' || v.role === 'admin')).map(v => v.organization_id);
   if (!dovoljeniOrg.length) return NextResponse.json({ napaka: 'Za to dejanje nimaš dovoljenja.' }, { status: 403 });
   const { data: contract } = await admin.from('contracts').select('id,organization_id,locked_at').eq('external_id', externalId).in('organization_id', dovoljeniOrg).maybeSingle();
   if (!contract) return NextResponse.json({ napaka: 'Pogodbe ni bilo mogoče najti v oblaku.' }, { status: 404 });

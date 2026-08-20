@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server';
 import { omejiApi } from '@/lib/rate-limit';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 import { OBSEGI, ustvariNovKljuc, type Obseg } from '@/lib/apiKljuc';
+import { preberiClanstvo } from '@/lib/clanstvo';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,13 +28,8 @@ const NAJVEC_VELJAVNIH = 20;
 type Kontekst = { organizationId: string; role: string };
 
 async function kontekst(supabase: ReturnType<typeof createClient>, userId: string): Promise<Kontekst | null> {
-  const { data } = await supabase
-    .from('organization_members')
-    .select('organization_id, role')
-    .eq('user_id', userId)
-    .limit(1);
-  const vrstica = data?.[0];
-  return vrstica ? { organizationId: String(vrstica.organization_id), role: String(vrstica.role) } : null;
+  const vrstica = await preberiClanstvo(supabase, null, userId);
+  return vrstica && !vrstica.disabled_at ? { organizationId: vrstica.organization_id, role: vrstica.role } : null;
 }
 
 type Preverba =

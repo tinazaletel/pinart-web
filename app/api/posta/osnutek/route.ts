@@ -6,6 +6,7 @@ import { runAiProvider } from '@/lib/aiProviderClient';
 import { buildMailReplyPrompt, replySubject } from '@/lib/mailAiDraft';
 import { omejiApi } from '@/lib/rate-limit';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { preberiClanstvo } from '@/lib/clanstvo';
 
 export const runtime = 'nodejs';
 
@@ -47,8 +48,7 @@ export async function POST(request: Request) {
 
   const admin = createAdminClient();
   if (!admin) return NextResponse.json({ error: 'Poštno zaledje ni konfigurirano.' }, { status: 503 });
-  const { data: membership } = await admin.from('organization_members')
-    .select('disabled_at').eq('organization_id', organizationId).eq('user_id', user.id).maybeSingle();
+  const membership = await preberiClanstvo(admin, organizationId, user.id);
   if (!membership || membership.disabled_at) {
     return NextResponse.json({ error: 'Za to dejanje nimaš dovoljenja.' }, { status: 403 });
   }

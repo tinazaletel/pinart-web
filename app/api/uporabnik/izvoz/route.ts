@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { createClient } from '@/utils/supabase/server';
 import { omejiApi } from '@/lib/rate-limit';
+import { preberiClanstva } from '@/lib/clanstvo';
 
 const ORGANIZACIJSKE_TABELE = [
   'clients', 'offers', 'contracts', 'invoices', 'expenses', 'retainers',
@@ -30,13 +31,8 @@ export async function GET(request: Request) {
   const admin = createAdminClient();
   if (!admin) return NextResponse.json({ error: 'Izvoz ni konfiguriran.' }, { status: 503 });
 
-  const { data: memberships, error: membershipError } = await admin
-    .from('organization_members')
-    .select('*')
-    .eq('user_id', user.id);
-  if (membershipError) return NextResponse.json({ error: 'Izvoza ni bilo mogoče pripraviti.' }, { status: 500 });
-
-  const organizationIds = (memberships || []).map(row => String(row.organization_id));
+  const memberships = await preberiClanstva(admin, user.id);
+  const organizationIds = memberships.filter(row => !row.disabled_at).map(row => row.organization_id);
   const { data: profile, error: profileError } = await admin
     .from('profiles')
     .select('*')

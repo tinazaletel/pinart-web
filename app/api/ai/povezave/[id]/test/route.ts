@@ -5,6 +5,7 @@ import { decryptAiSecret } from '@/lib/aiConnections';
 import { testAiProvider } from '@/lib/aiProviderClient';
 import { omejiApi } from '@/lib/rate-limit';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { preberiClanstvo } from '@/lib/clanstvo';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const ADMIN_ROLES = new Set(['owner', 'admin']);
@@ -29,8 +30,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
   const admin = createAdminClient();
   if (!admin) return NextResponse.json({ error: 'Povezave AI niso konfigurirane.' }, { status: 503 });
-  const { data: membership } = await admin.from('organization_members')
-    .select('role,disabled_at').eq('organization_id', organizationId).eq('user_id', user.id).maybeSingle();
+  const membership = await preberiClanstvo(admin, organizationId, user.id);
   if (!membership || membership.disabled_at || !ADMIN_ROLES.has(membership.role)) {
     return NextResponse.json({ error: 'Za to dejanje nimaš dovoljenja.' }, { status: 403 });
   }

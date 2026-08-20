@@ -4,6 +4,7 @@ import { createAdminClient } from '@/utils/supabase/admin';
 import { omejiApi } from '@/lib/rate-limit';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 import { mejaSedezev, planOznaka } from '@/lib/ekipaSedezi';
+import { preberiClanstvo } from '@/lib/clanstvo';
 
 /* Seznam ekipe v oblaku (Faza 3).
    Člane in čakajoča vabila preberemo prek UPORABNIKOVEGA (RLS) clienta — tako
@@ -15,13 +16,8 @@ import { mejaSedezev, planOznaka } from '@/lib/ekipaSedezi';
    svojo e-pošto. Brez ključa panel še vedno deluje, le tuje e-pošte so skrite. */
 
 async function resolveContext(supabase: ReturnType<typeof createClient>, userId: string) {
-  const { data } = await supabase
-    .from('organization_members')
-    .select('organization_id, role')
-    .eq('user_id', userId)
-    .limit(1);
-  const row = data?.[0];
-  return row ? { organizationId: String(row.organization_id), role: String(row.role) } : null;
+  const row = await preberiClanstvo(supabase, null, userId);
+  return row && !row.disabled_at ? { organizationId: row.organization_id, role: row.role } : null;
 }
 
 export async function GET(request: Request) {
@@ -113,12 +109,7 @@ export async function DELETE(request: Request) {
   if (targetId === user.id) return NextResponse.json({ error: 'Sebe ne moreš odstraniti.' }, { status: 400 });
 
   /* Preveri cilja prek RLS clienta (član vidi članstva svojega orga). */
-  const { data: target } = await supabase
-    .from('organization_members')
-    .select('role')
-    .eq('organization_id', ctx.organizationId)
-    .eq('user_id', targetId)
-    .maybeSingle();
+  const target = await preberiClanstvo(supabase, ctx.organizationId, targetId);
   if (!target) return NextResponse.json({ error: 'Član ni v tej ekipi.' }, { status: 404 });
   if (String(target.role) === 'owner') return NextResponse.json({ error: 'Lastnika organizacije ni mogoče odstraniti.' }, { status: 400 });
 
