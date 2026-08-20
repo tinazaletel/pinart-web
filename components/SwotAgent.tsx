@@ -25,6 +25,7 @@ export default function SwotAgent({ base = '', onSave }: SwotAgentProps) {
   const [opis, setOpis] = useState(''); const [izid, setIzid] = useState<SwotPolja | null>(null);
   const [dela, setDela] = useState(false); const [napaka, setNapaka] = useState(''); const [shranjeno, setShranjeno] = useState(false);
   const [agenti, setAgenti] = useState<{ id: string; label: string }[]>([]); const [agent, setAgent] = useState(''); const [orgId, setOrgId] = useState('');
+  const [pot, setPot] = useState<'ai' | 'rocno'>('ai');
   const projekt = useMemo(() => projekti.find(p => p.id === projektId), [projekti, projektId]);
   useEffect(() => { const p = preberiProjekti(); setProjekti(p); setProjektId(p[0]?.id || ''); }, []);
   useEffect(() => { let ziv = true; void (async () => { try { const ctx = await getOrganizationContext(); if (!ctx || !ziv) return; setOrgId(ctx.organizationId); const r = await fetch(`/api/ai/povezave?organizationId=${ctx.organizationId}`); if (!r.ok) return; const d = await r.json(); setAgenti((d.connections || []).filter((c: { connection_type: string; provider: string; status: string }) => c.connection_type === 'api' && c.provider !== 'custom-mcp' && c.status !== 'disabled').map((c: { id: string; label: string }) => ({ id: c.id, label: c.label }))); } catch { /* Pupa ostane privzeta. */ } })(); return () => { ziv = false; }; }, []);
@@ -33,7 +34,7 @@ export default function SwotAgent({ base = '', onSave }: SwotAgentProps) {
     if (!opis.trim() || !projekt || dela) return; setDela(true); setNapaka(''); setShranjeno(false);
     const poziv = `${NAVODILO}\n\nProjekt: ${projekt.naslov}${projekt.strankaIme ? ` · ${projekt.strankaIme}` : ''}\n\nO čem gre in kdo je stranka: ${opis.trim()}`;
     try { const r = agent && orgId ? await fetch('/api/ai/izvedi', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ organizationId: orgId, connectionId: agent, prompt: poziv }) }) : await fetch('/api/pupa', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ vprasanje: poziv, kontekst: '', zgodovina: [] }) }); const d = await r.json(); const polja = izlusci(String(d.odgovor || d.text || '')); if (!polja) throw new Error('oblika'); setIzid(polja); }
-    catch { setNapaka(L('SWOT analize ni bilo mogoče pripraviti. Poskusi znova.', 'The SWOT analysis could not be prepared. Try again.')); } finally { setDela(false); }
+    catch { setNapaka(L('Pupa trenutno ni dosegljiva — lahko izpolniš sama.', 'Pupa is currently unavailable — you can fill it in yourself.')); setPot('rocno'); setIzid(v => v || { prednosti: '', slabosti: '', priloznosti: '', nevarnosti: '' }); } finally { setDela(false); }
   };
   const shrani = async () => { if (!izid || !projekt) return; try { if (onSave) await onSave(izid, projekt); else shraniProjekt({ ...projekt, swot: izid }); setShranjeno(true); setNapaka(''); } catch { setNapaka(L('SWOT analize ni bilo mogoče shraniti.', 'The SWOT analysis could not be saved.')); } };
   const polja: Array<[keyof SwotPolja, string]> = [['prednosti', L('Prednosti', 'Strengths')], ['slabosti', L('Slabosti', 'Weaknesses')], ['priloznosti', L('Priložnosti', 'Opportunities')], ['nevarnosti', L('Nevarnosti', 'Threats')]];

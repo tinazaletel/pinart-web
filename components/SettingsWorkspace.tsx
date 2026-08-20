@@ -11,6 +11,7 @@ import { preberiPupaStanje, nastaviPupaStanje } from '@/lib/pupaNastavitve';
 import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, nastaviLogoAktivne, aktivniLogo } from '@/lib/dokVidez';
 import { type PodpisPodatki, podpisHtml, podpisPrazen } from '@/lib/podpis';
 import styles from './SettingsWorkspace.module.css';
+import PriporociFlow from '@/components/PriporociFlow';
 
 /* Nastavitve videza (stran "Dizajn"). Vsebina je PRENESENA iz profila
    kalkulatorja (videz dokumentov, logotip), da ni na dveh mestih razlicno.
@@ -290,6 +291,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
       <section className={styles.card} style={{ display: zavihek === 'dokumenti' ? undefined : 'none' }}>
         <PovprasevanjeVgradnja />
       </section>
+      <section className={styles.card} style={{ display: zavihek === 'dokumenti' ? undefined : 'none' }}><PriporociFlow base={base} /></section>
 
       <section className={styles.card} style={{ display: zavihek === 'ai' ? undefined : 'none' }}>
         <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem' }}><PlugsConnected size={20} weight="regular" /> {base === '/en' ? 'My AI' : 'Moj AI'}</h2>
