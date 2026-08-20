@@ -163,8 +163,12 @@
 .userMenuWrap .profile { width: 100%; margin-top: 0; border-left: 0; border-right: 0; border-bottom: 0; background: none; font: inherit; text-align: left; cursor: pointer; }
 .userMenu { position: absolute; z-index: 80; bottom: calc(100% + .5rem); left: 0; width: 100%; min-width: 11rem; padding: .45rem; border: 1px solid var(--line); border-radius: .85rem; background: oklch(98% .01 87); box-shadow: 0 1rem 3rem oklch(20% .03 55 / .16); }
 .userMenuMail { margin: 0 0 .3rem; padding: .35rem .5rem; color: color-mix(in oklch, var(--ink) 68%, transparent); font-size: .62rem; overflow-wrap: anywhere; }
-.userMenu a, .userMenuOdjava { display: block; width: 100%; box-sizing: border-box; padding: .5rem; border: 0; border-radius: .5rem; background: none; color: var(--ink); font: 600 .72rem var(--font-sans), sans-serif; text-align: left; text-decoration: none; cursor: pointer; }
-.userMenu a:hover, .userMenuOdjava:hover { background: color-mix(in oklch, var(--ink) 8%, transparent); }
+.userMenu a, .userMenuOdjava, .userMenuSkupina { display: block; width: 100%; box-sizing: border-box; padding: .5rem; border: 0; border-radius: .5rem; background: none; color: var(--ink); font: 600 .72rem var(--font-sans), sans-serif; text-align: left; text-decoration: none; cursor: pointer; }
+.userMenu a:hover, .userMenuOdjava:hover, .userMenuSkupina:hover { background: color-mix(in oklch, var(--ink) 8%, transparent); }
+/* Sprozilec podmenija je GUMB, meni pa oblikuje povezave — brez tega ima drug
+   font in drug levi zamik kot sosedje (Tina, 20. 8. 2026). */
+.userMenuSkupina { display: flex; align-items: center; gap: .45rem; }
+.userMenuPod { display: flex; flex-direction: column; padding-left: 1.35rem; }
 .userMenuOdjava { margin-top: .35rem; padding-top: .55rem; border-top: 1px solid var(--line); border-radius: 0; }
 .avatar { display: grid; place-items: center; width: 2rem; aspect-ratio: 1; border-radius: 50%; background: var(--ink); color: var(--paper); font: 700 .75rem var(--font-sans), sans-serif; }
 .profile strong, .profile small { display: block; }
