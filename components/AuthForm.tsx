@@ -1,5 +1,7 @@
 'use client';
 
+import { potVstopneStrani } from '@/lib/vstopnaStran';
+
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import styles from '@/app/[locale]/kalkulator/prijava/prijava.module.css';
@@ -38,6 +40,9 @@ export default function AuthForm({ base }: { base: string }) {
   /* Kam po uspesni prijavi. Middleware ob zaklenjeni strani preusmeri sem z ?next=…,
      zato te mora prijava vrniti TJA (npr. na dolgorocno), ne vedno na pregled. */
   const [cilj, setCilj] = useState(`${base}/kalkulator/pregled`);
+  /* Uporabnicina izbira (Nastavitve → Kam po prijavi). Beremo jo v ucinku, ker
+     localStorage na strezniku ne obstaja in bi zacetno stanje razslo hidracijo. */
+  useEffect(() => { setCilj(potVstopneStrani(base)); }, [base]);
 
   /* Napaka iz /auth/callback (Google, potrditev, ponastavitev) pride kot ?napaka=…
      Beremo iz window.location, ne iz useSearchParams — tako stran ne potrebuje Suspense. */
@@ -46,6 +51,8 @@ export default function AuthForm({ base }: { base: string }) {
 
     /* Samo relativne poti (// bi bil zunanji naslov) — brez tega bi bil to odprt redirect. */
     const next = params.get('next');
+    /* ?next= (middleware ob zaklenjeni strani) je mocnejsi od nastavitve —
+       uporabnica se je hotela vrniti tja, kamor je sla. */
     if (next && next.startsWith('/') && !next.startsWith('//')) setCilj(next);
 
     /* ?nov=1 (ali ?mode=signup) z landinga -> odpri takoj "Nov račun" tab, ne Prijava. */

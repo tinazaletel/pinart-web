@@ -1,5 +1,7 @@
 'use client';
 
+import { preberiVstopnoStran, zapisiVstopnoStran, type VstopnaStran } from '@/lib/vstopnaStran';
+
 import { useEffect, useRef, useState } from 'react';
 import { PaintBrush, Sparkle, EnvelopeSimple, PlugsConnected } from '@phosphor-icons/react';
 import VidezDokumentov from '@/components/VidezDokumentov';
@@ -17,6 +19,10 @@ const K_NAST = 'pinart-kalkulator-v2';
 const K_LOGO = 'pinart-kalkulator-logo';
 
 export default function SettingsWorkspace({ base }: { base: string }) {
+  /* Izbrana vstopna stran; beremo v ucinku, ker localStorage na strezniku ni. */
+  const [vstopna, setVstopna] = useState<VstopnaStran>('domov');
+  useEffect(() => { setVstopna(preberiVstopnoStran()); }, []);
+
   const [barva, setBarva] = useState(DOK_BARVA_PRIVZETA);
   const [font, setFont] = useState(DOK_FONT_PRIVZETI);
   const [logo, setLogo] = useState('');
@@ -206,6 +212,29 @@ export default function SettingsWorkspace({ base }: { base: string }) {
           {podpisPrazen(podpisP)
             ? <p style={{ margin: 0, fontSize: '.85rem', color: '#9a9088' }}>Izpolni polja zgoraj za predogled podpisa.</p>
             : <div dangerouslySetInnerHTML={{ __html: podpisHtml(podpisP, podpisP.logo ? aktivniLogo() : '') }} />}
+        </div>
+      </section>
+
+      {/* KAM PO PRIJAVI — kdor Pupe ne uporablja, hoce pregled; kdor se z njo
+          pogovarja, hoce njo. Nastavitev je vezana na napravo (glej lib/vstopnaStran):
+          na telefonu je pogovor pogosto bolj uporaben kot tabela. */}
+      <section className={styles.card}>
+        <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem' }}><Sparkle size={20} weight="fill" /> Kam po prijavi</h2>
+        <p>Ko se prijaviš, te Flow odloži na to stran. Velja za to napravo — na telefonu imaš lahko drugače kot na računalniku.</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem', marginTop: '.6rem' }}>
+          {([['domov', 'Domov', 'Pregled poslovanja — številke, projekti, roki.'],
+             ['pupa', 'Pupa', 'Pogovor — poveš, kaj rabiš, in Pupa uredi.']] as const).map(([v, ime, opis]) => (
+            <button key={v} type="button"
+              onClick={() => { zapisiVstopnoStran(v); setVstopna(v); }}
+              style={{
+                flex: '1 1 14rem', textAlign: 'left', padding: '.75rem .9rem', borderRadius: '.85rem', cursor: 'pointer',
+                border: vstopna === v ? '1.5px solid #6E4FA6' : '1px solid rgba(17,17,17,.14)',
+                background: vstopna === v ? 'rgba(110,79,166,.06)' : '#fff',
+              }}>
+              <strong style={{ display: 'block', fontSize: '.9rem', color: vstopna === v ? '#4a2f70' : '#111' }}>{ime}</strong>
+              <span style={{ fontSize: '.8rem', lineHeight: 1.45, color: '#6b6459' }}>{opis}</span>
+            </button>
+          ))}
         </div>
       </section>
 
