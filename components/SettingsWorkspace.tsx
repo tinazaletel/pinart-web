@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { PaintBrush, Sparkle, EnvelopeSimple } from '@phosphor-icons/react';
+import { PaintBrush, Sparkle, EnvelopeSimple, PlugsConnected } from '@phosphor-icons/react';
 import VidezDokumentov from '@/components/VidezDokumentov';
+import MojAiPovezave from '@/components/MojAiPovezave';
 import { preberiPupaStanje, nastaviPupaStanje } from '@/lib/pupaNastavitve';
 import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, nastaviLogoAktivne, aktivniLogo } from '@/lib/dokVidez';
 import { type PodpisPodatki, podpisHtml, podpisPrazen } from '@/lib/podpis';
@@ -226,6 +227,16 @@ export default function SettingsWorkspace({ base }: { base: string }) {
           </button>
           <span style={{ fontWeight: 600, fontSize: '.92rem' }}>{pupaVklop ? 'Pupa je vklopljena' : 'Pupa je izklopljena'}</span>
         </div>
+      </section>
+
+      <section className={styles.card}>
+        <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem' }}><PlugsConnected size={20} weight="regular" /> {base === '/en' ? 'My AI' : 'Moj AI'}</h2>
+        <p>
+          {base === '/en'
+            ? 'Connect your own AI provider account. Not a subscription — you use your own key and pay usage to your provider.'
+            : 'Poveži svoj račun pri AI ponudniku. To ni naročnina — uporabiš svoj ključ in porabo plačuješ svojemu ponudniku.'}
+        </p>
+        <MojAiPovezave base={base} />
       </section>
 
       {/* "Pomoč in kontakt" odstranjen: Pomoč je zdaj svoja stran v meniju,
