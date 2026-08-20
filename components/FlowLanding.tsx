@@ -418,7 +418,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       tocke: ['Pove pošteno ceno in te opozori na podcenjevanje', 'Pozna avtorske pravice in licence', 'Klepet in glasovno upravljanje'],
       cta: 'Spoznaj Pupo', href: prijava },
     { id: 'mcpapi', Ikona: Plugs, label: 'Povezave', znacka: 'Na voljo', zvrst: 'free',
-      h: 'Povej, kaj rabiš — Flow to naredi',
+      h: 'Povej, kaj rabiš, in Flow to naredi',
       p: 'Brief, pitch, ponudba. Poveš po domače, kaj potrebuješ, in rezultat pristane na projektu — urejen in tvoj. Pupa je vključena v paket, nastavljati ni treba ničesar.',
       tocke: ['Pupa je vključena — nič ni treba nastavljati', 'Rezultat pristane na projektu, ne v tujem klepetu', 'Če želiš, pripelješ svojega agenta (ChatGPT, Claude, Gemini)'],
       cta: 'Kako deluje', href: 'mailto:tina@pinart.si?subject=Flow%20%E2%80%94%20izvoz%20podatkov' },
