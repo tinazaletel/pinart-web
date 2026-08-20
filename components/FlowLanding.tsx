@@ -395,7 +395,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { id: 'dokumenti', Ikona: Receipt, label: 'Documents', h: 'From proposal to invoice, without duplicate work', p: 'Proposals, contracts, invoices and expenses share the same data. Turn an approved proposal into an invoice in one click.', tocke: ['Numbering, due dates and payment status', 'Collaboration and rights-transfer agreements', 'A consistent look across documents'], cta: 'Explore tools', href: '#orodja' },
     { id: 'pregled', Ikona: ChartLineUp, label: 'Insights', h: 'Know what your work is worth', p: 'An anonymous market benchmark shows where your price sits, while the dashboard tracks revenue, payments and profit.', tocke: ['Market benchmark from anonymous prices', 'Revenue, payments and estimated profit', 'Goals and client profitability'], cta: 'Open dashboard', href: localePath(locale, '/kalkulator/pregled') },
     { id: 'agent', Ikona: Robot, label: 'Pupa', znacka: 'New', zvrst: 'beta', h: 'An AI assistant who understands creative pricing', p: 'Pupa understands the market and usage rights, helps you price fairly, writes clear proposal copy and answers questions by text or voice.', tocke: ['Flags underpricing', 'Understands usage rights and licensing', 'Text and voice interaction'], cta: 'Meet Pupa', href: prijava },
-    { id: 'mcpapi', Ikona: Plugs, label: 'MCP & API', znacka: 'Soon', zvrst: 'soon', h: 'Connect Flow to your tools', p: 'MCP and API access will connect Flow with your AI assistant, editor or accounting workflow.', tocke: ['MCP access from AI tools', 'API for proposals, invoices and clients', 'Included with your plan, no hidden fees'], cta: 'Notify me', href: 'mailto:tina@pinart.si?subject=Flow%20MCP%20%26%20API' },
+    { id: 'mcpapi', Ikona: Plugs, label: 'Your data', znacka: 'Available', zvrst: 'free', h: 'Your data stays yours', p: 'Everything you put into Flow remains yours. Export it anytime — to your accountant, a spreadsheet or your own tools.', tocke: ['Export clients, quotes, projects and invoices', 'API access with a key you can revoke yourself', 'No lock-in — we never hold your data hostage'], cta: 'How it works', href: 'mailto:tina@pinart.si?subject=Flow%20%E2%80%94%20data%20export' },
   ] : [
     { id: 'kalkulator', Ikona: FileText, label: 'Kalkulator', znacka: 'Brezplačno', zvrst: 'free',
       h: 'Poštena cena v nekaj klikih',
@@ -417,11 +417,11 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       p: 'Pupa je tvoja AI asistentka: pozna trg in avtorske pravice, pove ti pošteno ceno, ubesedi ponudbo in odgovori na tvoja vprašanja — pisno ali glasovno.',
       tocke: ['Pove pošteno ceno in te opozori na podcenjevanje', 'Pozna avtorske pravice in licence', 'Klepet in glasovno upravljanje'],
       cta: 'Spoznaj Pupo', href: prijava },
-    { id: 'mcpapi', Ikona: Plugs, label: 'MCP & API', znacka: 'Kmalu', zvrst: 'soon',
+    { id: 'mcpapi', Ikona: Plugs, label: 'Tvoji podatki', znacka: 'Na voljo', zvrst: 'free',
       h: 'Poveži Flow s svojimi orodji',
-      p: 'Prek MCP in API bo Flow dostopen iz tvojega AI pomočnika, urejevalnika ali računovodstva. V pripravi.',
-      tocke: ['MCP dostop iz AI orodij', 'API za ponudbe, račune in stranke', 'Na tvojem paketu, brez skritih stroškov'],
-      cta: 'Obvesti me', href: 'mailto:tina@pinart.si?subject=Flow%20MCP%20%26%20API' },
+      p: 'Podatki, ki jih vneseš v Flow, ostanejo tvoji. Kadarkoli jih izvoziš — v računovodski program, preglednico ali svoje orodje.',
+      tocke: ['Izvoz strank, ponudb, projektov in računov', 'Dostop prek API-ja s ključem, ki ga sama prekličeš', 'Brez ujetosti — nikoli te ne držimo za podatke'],
+      cta: 'Kako deluje', href: 'mailto:tina@pinart.si?subject=Flow%20%E2%80%94%20izvoz%20podatkov' },
   ];
   const predoglediMock = (id: string) => {
     if (id === 'dokumenti') return (
@@ -527,7 +527,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const CENIKI = isEn ? [
     { ime: 'Free', za: 'For getting started and one-off projects', cena: '0', enota: '€ forever', cta: 'Open calculator', href: kalkulator, izpost: false, znacka: '', kmalu: false, vkljuceno: ['Fair-pricing calculator', 'Proposal in three packages', 'Usage-rights and licence calculation', 'Editable proposal document', 'Email and PDF export', 'Unlimited cloud proposals', 'Proposal numbering'] },
     { ime: 'Premium', za: 'For regular client work', cena: '15', cenaMes: '18', enota: '€ / month', ustanovna: 'Founding price: €9/month for the first 50 users (limited time) · first month free', cta: 'Start free', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Most popular', kmalu: false, vkljuceno: ['Everything in Free', 'Pupa AI assistant — text and voice', 'Saved proposals, contracts and invoices', 'Retainers', 'Projects and archive', 'Client CRM and price lists', 'Expenses and goals', 'Tasks, calendar and time tracking', 'Business dashboard'] },
-    { ime: 'Pro', za: 'For small studios and collaborators', cena: '29', cenaMes: '35', enota: '€ / month', cta: 'Coming soon', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Soon', kmalu: true, vkljuceno: ['Everything in Premium', 'Anonymous market comparison', 'Revenue and profit analytics by client', 'Advanced Pupa task planning', 'Business framework and taxes', 'Accounting export', 'Project-level collaborator access', 'MCP & API access (coming soon)', 'Priority support'] },
+    { ime: 'Pro', za: 'For small studios and collaborators', cena: '29', cenaMes: '35', enota: '€ / month', cta: 'Coming soon', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Soon', kmalu: true, vkljuceno: ['Everything in Premium', 'Anonymous market comparison', 'Revenue and profit analytics by client', 'Advanced Pupa task planning', 'Business framework and taxes', 'Accounting export', 'Project-level collaborator access', 'Data export and API access', 'Priority support'] },
   ] : [
     {
       ime: 'Brezplačno', za: 'Za začetek in enkratne projekte', cena: '0', enota: '€ za vedno',
@@ -546,7 +546,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     {
       ime: 'Pro', za: 'Za mali studio in sodelavce', cena: '29', cenaMes: '35', enota: '€ / mesec',
       cta: 'Kmalu', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Kmalu', kmalu: true,
-      vkljuceno: ['Vse iz Premium', 'Primerjava s trgom — koliko za to zaračunajo drugi', 'Celoten analitični pregled — prihodki in dobiček po strankah', 'Napredna Pupa: sama razdeli naloge iz tvojih želja', 'Sinhronizacija med vsemi orodji', 'Poslovni okvir in davki', 'Posredovanje računovodstvu (izvoz)', 'Sodelavci z dostopom samo do izbranih projektov', 'MCP & API dostop (kmalu)', 'Prednostna podpora'],
+      vkljuceno: ['Vse iz Premium', 'Primerjava s trgom — koliko za to zaračunajo drugi', 'Celoten analitični pregled — prihodki in dobiček po strankah', 'Napredna Pupa: sama razdeli naloge iz tvojih želja', 'Sinhronizacija med vsemi orodji', 'Poslovni okvir in davki', 'Posredovanje računovodstvu (izvoz)', 'Sodelavci z dostopom samo do izbranih projektov', 'Izvoz podatkov in dostop prek API-ja', 'Prednostna podpora'],
     },
   ];
 
