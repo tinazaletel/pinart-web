@@ -13,6 +13,12 @@ import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 const IKONA_SLOG = { fill: 'currentColor', stroke: 'none' } as const;
 
 export default function DashboardHeaderTools() {
+  /* Na Pupinem domu iskrice ni: tam je Pupa ze cel zaslon, plavajoca razlicica
+     pa je izklopljena — klik bi torej samo prizgal stanje, ki se nikjer ne izrise
+     (Tina: »trikrat sem morala klikniti na Pupo«). */
+  const potPupe = usePathname() || '';
+  const naPupinemDomu = /\/kalkulator\/dom(\/|$)/.test(potPupe);
+
   const pathname = usePathname();
   const base = pathname?.startsWith('/en/') ? '/en' : '';
   const [aiOpen, setAiOpen] = useState(false);
@@ -33,7 +39,7 @@ export default function DashboardHeaderTools() {
   const count = notifications.offers + notifications.invoices;
   const hasAi = tier === 'pro';
   return <div className={styles.headerTools} aria-label="Uporabniške nastavitve">
-    <button type="button" className={`${styles.aiAssistant}${hasAi ? '' : ` ${styles.aiLocked}`}`} title={hasAi ? 'Odpri Pupo' : 'AI asistent · plačljivi paket'} aria-label={hasAi ? 'Odpri Pupo' : 'AI asistent je na voljo v plačljivem paketu'} aria-expanded={hasAi ? undefined : aiOpen} onClick={() => { setNotificationsOpen(false); if (hasAi) { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('pupa:odpri', { detail: { nacin: 'chat' } })); } else { setAiOpen(value => !value); } }}><Sparkle size={18} weight="regular" aria-hidden="true" style={IKONA_SLOG} />{!hasAi && <span className={styles.aiLock} aria-hidden="true">+</span>}</button>
+    {!naPupinemDomu && <button type="button" className={`${styles.aiAssistant}${hasAi ? '' : ` ${styles.aiLocked}`}`} title={hasAi ? 'Odpri Pupo' : 'AI asistent · plačljivi paket'} aria-label={hasAi ? 'Odpri Pupo' : 'AI asistent je na voljo v plačljivem paketu'} aria-expanded={hasAi ? undefined : aiOpen} onClick={() => { setNotificationsOpen(false); if (hasAi) { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('pupa:odpri', { detail: { nacin: 'chat' } })); } else { setAiOpen(value => !value); } }}><Sparkle size={18} weight="regular" aria-hidden="true" style={IKONA_SLOG} />{!hasAi && <span className={styles.aiLock} aria-hidden="true">+</span>}</button>}
     <button type="button" className={styles.notification} title="Poslovna opozorila" aria-label={`${count} poslovnih opozoril`} aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen(value => !value)}><Bell size={18} weight="regular" aria-hidden="true" style={IKONA_SLOG} />{count > 0 && <span>{count}</span>}</button>
     {/* Profilni gumb odstranjen: podvajal je uporabniski meni na dnu stranske vrstice (SidebarUserMenu). */}
     {aiOpen && !hasAi && <div className={`${styles.headerPopover} ${styles.aiPopover}`}><strong>Pupa · AI asistentka</strong><p>AI asistentka Pupa je del plačljivega paketa. Brezplačni kalkulator ostaja brezplačen.</p><Link className={styles.aiCta} href={`${base}/kalkulator/paket`}>Nadgradi paket</Link></div>}
