@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { PaintBrush, Sparkle, EnvelopeSimple, PlugsConnected } from '@phosphor-icons/react';
 import VidezDokumentov from '@/components/VidezDokumentov';
 import MojAiPovezave from '@/components/MojAiPovezave';
+import PovprasevanjeVgradnja from '@/components/PovprasevanjeVgradnja';
 import { preberiPupaStanje, nastaviPupaStanje } from '@/lib/pupaNastavitve';
 import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, nastaviLogoAktivne, aktivniLogo } from '@/lib/dokVidez';
 import { type PodpisPodatki, podpisHtml, podpisPrazen } from '@/lib/podpis';
@@ -282,6 +283,12 @@ export default function SettingsWorkspace({ base }: { base: string }) {
           </button>
           <span style={{ fontWeight: 600, fontSize: '.92rem' }}>{pupaVklop ? 'Pupa je vklopljena' : 'Pupa je izklopljena'}</span>
         </div>
+      </section>
+
+      {/* Obrazec za povprasevanje: vgradnja na TUJO spletno stran, zato sodi med
+          dokumente in orodja, ne med AI — je lead-gen, ne pomocnik. */}
+      <section className={styles.card} style={{ display: zavihek === 'dokumenti' ? undefined : 'none' }}>
+        <PovprasevanjeVgradnja />
       </section>
 
       <section className={styles.card} style={{ display: zavihek === 'ai' ? undefined : 'none' }}>
