@@ -31,6 +31,8 @@ export type BusinessCanvasDocument = {
   brandName: string;
   blocks: BusinessCanvas;
   updatedAt: string;
+  /* Neobvezna vez: canvas o podjetju lahko obstaja tudi brez projekta. */
+  projektExternalId?: string;
 };
 
 function newId(): string {
@@ -47,6 +49,7 @@ export function createCanvasDocument(companyName = '', brandName = ''): Business
     brandName,
     blocks: { ...EMPTY_BUSINESS_CANVAS },
     updatedAt: new Date().toISOString(),
+    projektExternalId: undefined,
   };
 }
 
@@ -119,7 +122,7 @@ export async function loadCloudCanvasDocuments(): Promise<BusinessCanvasDocument
   if (!context) return [];
   const { data, error } = await createClient()
     .from('business_canvases')
-    .select('id,name,company_name,brand_name,blocks,updated_at')
+    .select('id,name,company_name,brand_name,blocks,updated_at,projekt_external_id')
     .eq('organization_id', context.organizationId)
     .eq('is_archived', false)
     .order('updated_at', { ascending: false });
@@ -131,6 +134,7 @@ export async function loadCloudCanvasDocuments(): Promise<BusinessCanvasDocument
     brandName: String(row.brand_name || ''),
     blocks: { ...EMPTY_BUSINESS_CANVAS, ...(row.blocks as Partial<BusinessCanvas>) },
     updatedAt: String(row.updated_at),
+    projektExternalId: row.projekt_external_id ? String(row.projekt_external_id) : undefined,
   }));
 }
 
@@ -146,6 +150,7 @@ export async function saveCloudCanvasDocument(document: BusinessCanvasDocument):
     blocks: document.blocks,
     updated_at: document.updatedAt,
     is_archived: false,
+    projekt_external_id: document.projektExternalId || null,
   }, { onConflict: 'id' });
   if (error) throw error;
   return true;
