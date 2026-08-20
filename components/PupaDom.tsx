@@ -4,6 +4,7 @@ import { getOrganizationContext } from '@/lib/pinartFlowCloud';
 import BriefAgent from '@/components/BriefAgent';
 import PitchAgent from '@/components/PitchAgent';
 import CanvasAgent from '@/components/CanvasAgent';
+import { shraniProjekt } from '@/lib/projekti';
 
 /* PUPA DOM — pogovorni dom (Faza 1). Chat v OSPREDJU (sredina), podatki nadzorne
    plošče PLAVAJO okoli (ambient, glass), aurora v ozadju. »Moderno in sveže«.
@@ -382,7 +383,11 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   if (tip === 'projekt') return <NovProjektWorkspace base={base} />;
   if (tip === 'naloga') return <TaskManagerWorkspace />;
   if (tip === 'brief') return <BriefAgent base={base} />;
-  if (tip === 'pitch') return <PitchAgent base={base} />;
+  if (tip === 'pitch') return <PitchAgent base={base} onSave={(pitch, projekt) => {
+    /* Pitch pristane NA PROJEKTU — enako kot brief. Rezultat, ki nima kam
+       pristati, je le lepse zavit klepet. */
+    shraniProjekt({ ...projekt, pitch });
+  }} />;
   if (tip === 'canvas') return <CanvasAgent base={base} />;
   if (tip === 'pogodba') return <ContractWorkspace base={base} />;
   if (tip === 'retainer') return <RetainerWorkspace base={base} vLupini />;
