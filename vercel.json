@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/cron/agent-naloge",
+      "schedule": "* * * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.+\\.(?:jpg|jpeg|png|gif|webp|avif|svg|ico|mp4|webm|mp3|woff|woff2|ttf|otf))",
