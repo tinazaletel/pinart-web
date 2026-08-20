@@ -13,6 +13,36 @@
   box-sizing: border-box;
 }
 
+/* Enoten, vedno viden fokus tudi v starejših modulih, ki so odstranili outline. */
+:where(a, button, input, select, textarea, summary, [role="button"], [tabindex]):focus-visible {
+  outline: 3px solid #6E4FA6 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 2px var(--paper, #F5F2EA) !important;
+}
+
+.skip-link {
+  position: fixed;
+  top: .75rem;
+  left: .75rem;
+  z-index: 10000;
+  padding: .7rem 1rem;
+  border-radius: .5rem;
+  background: #111;
+  color: #fff;
+  font: 700 .9rem/1 var(--font-sans), sans-serif;
+  transform: translateY(-180%);
+}
+.skip-link:focus { transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
 /* Mobilno: skrij scrollbar-trakove POVSOD (skrol ostane). Overlay scrollbari se na
    pravih telefonih itak samodejno skrijejo — to poskrbi za dosleden »clean« videz
    tudi v Safari Responsive Mode in pri portalanih sheetih (izven .shell). */

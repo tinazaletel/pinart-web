@@ -5847,7 +5847,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       <style dangerouslySetInnerHTML={{ __html: `
         /* zgornji rob (overscroll / varno obmocje pod URL vrstico) = barva papirja, ne prosojno (da se ne vidi obrazec skozi) */
         html, body { background-color: var(--paper, oklch(97% 0.012 87)); }
-        .cw { --font-serif: var(--font-serif-flow); position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 300; overflow-x: clip; }
+        .cw { --font-serif: var(--font-serif-flow); position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 400; overflow-x: clip; }
         /* Ovoj portala na <body>: obstaja SAMO zato, da veljajo pravila ".cw ..." za predala.
            Brez tega bi podedoval min-height:100dvh + z-index:1 in kot prazna ploskev prekril
            celo aplikacijo (bela stran). Predala sta position:fixed, zato ovoja ne potrebujeta. */
@@ -6513,11 +6513,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .sg-potrdi a { color: var(--accent, #B25476); text-decoration: underline; text-underline-offset: .2em; }
         /* Okno s pogoji v Flow razlicici — uporabnik jih preleti pred potrditvijo. */
         .cw .sg-pogoji { display: flex; flex-direction: column; gap: .45rem; margin-top: 1.1rem; }
-        .cw .sg-pogoji-ozn { font-size: .68rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: #8a8177; }
+        .cw .sg-pogoji-ozn { font-size: .68rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: #6b655d; }
         /* Flow: pogoji so GLAVNA vsebina kartice — visoko okno, gumb ceka na dnu. */
         .cw .sg-pogoji-okvir { width: 100%; height: min(52vh, 560px); min-height: 260px; border: 1px solid rgba(17,17,17,.14); border-radius: 12px; background: #fff; display: block; }
         .cw .sg-uvod { margin: 0; font-size: .95rem; line-height: 1.55; color: #4a4550; }
-        .cw .sg-pogoji-namig { margin: 0; font-size: .78rem; color: #8a8177; }
+        .cw .sg-pogoji-namig { margin: 0; font-size: .78rem; color: #6b655d; }
         .cw .sg-potrdi-zaklenjen { opacity: .55; cursor: not-allowed; }
         .cw .sg-potrdi-zaklenjen input { cursor: not-allowed; }
         .cw .soglasje-gumbi .gumb:disabled { opacity: .45; cursor: not-allowed; transform: none; }
@@ -6651,7 +6651,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .kartica .opts { margin-top: 0; }
         .cw .izbira button { text-align: left; border: 1px solid rgba(17,17,17,.25); background: transparent; border-radius: 14px; padding: 1.4rem 1.5rem; cursor: pointer; font-family: inherit; color: var(--ink); transition: border-color .18s ease, background .18s ease, color .18s ease; }
         .cw .izbira button h3 { margin: 0 0 .3rem; font-family: var(--font-serif), serif; font-weight: 500; font-size: 1.3rem; }
-        .cw .izbira button p { margin: 0; font-size: .85rem; line-height: 1.55; color: rgba(17,17,17,.68); font-weight: 300; }
+        .cw .izbira button p { margin: 0; font-size: .85rem; line-height: 1.55; color: rgba(17,17,17,.72); font-weight: 400; }
         .cw .izbira button.on { background: var(--accent); border-color: var(--accent); color: var(--paper); }
         .cw .izbira button.on p { color: rgba(245,242,234,.82); }
 
@@ -8039,7 +8039,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <details ref={delovniCenikRef} className="cenik-card cenik-aktiven" open={delovniCenikOdprt}
                   onToggle={e => setDelovniCenikOdprt((e.currentTarget as HTMLDetailsElement).open)}>
                   <summary>
-                    <span className="cenik-ime-ovoj" onClick={e => { e.stopPropagation(); (e.currentTarget.querySelector('input') as HTMLInputElement | null)?.focus(); }}>
+                    <span className="cenik-ime-ovoj" role="button" tabIndex={0} onClick={e => { e.stopPropagation(); (e.currentTarget.querySelector('input') as HTMLInputElement | null)?.focus(); }} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); (e.currentTarget.querySelector('input') as HTMLInputElement | null)?.focus(); } }}>
                       <input className="cenik-ime-vnos" key={aktivniCenik || '__osnovni'}
                         defaultValue={aktivniCenik || ''} placeholder={L('Osnovni cenik', 'Base price list')} aria-label={L('Ime cenika — klikni za urejanje', 'Price list name — click to edit')}
                         onClick={e => e.stopPropagation()}

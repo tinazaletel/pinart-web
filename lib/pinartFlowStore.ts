@@ -369,8 +369,15 @@ export function izvoziFlowJSON(): string {
 
 export const saveOfferStatus = (offerId: string, status: FlowOfferStatus) => {
   const data = loadFlowData();
+  const prejsnja = data.offers.find(offer => offer.id === offerId);
   const offers = data.offers.map(offer => offer.id === offerId ? { ...offer, status } : offer);
   saveOffers(offers);
+  if (status === 'sent' && prejsnja?.status !== 'sent') {
+    const stranka = data.clients.find(client => client.name.trim().toLocaleLowerCase('sl') === prejsnja?.client.trim().toLocaleLowerCase('sl'));
+    if (stranka) queueMicrotask(() => import('./dnevnik').then(({ zabeleziInterakcijo }) => zabeleziInterakcijo(stranka.id, {
+      tip: 'email', projektId: offerId, besedilo: `Poslana ponudba: ${prejsnja?.title || offerId}`,
+    })));
+  }
 };
 
 /* Povezave do zunanjih datotek projekta (Figma/Miro/IDD/mapa Drive ipd.) —

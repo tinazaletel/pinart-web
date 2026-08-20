@@ -106,7 +106,7 @@ export default function NovoGesloForm({ base }: { base: string }) {
               </button>
             </span>
           </label>
-          <p aria-live="polite" style={{ margin: '-.35rem 0 0', fontSize: '.82rem', color: ujemata ? '#1a7f4b' : (neujemanje ? '#a4342a' : '#8a8177') }}>
+          <p aria-live="polite" style={{ margin: '-.35rem 0 0', fontSize: '.82rem', color: ujemata ? '#2F5D50' : (neujemanje ? '#a4342a' : '#6b655d') }}>
             {ujemata ? '✓ Gesli se ujemata' : (neujemanje ? 'Gesli se še ne ujemata' : 'Vsaj 8 znakov. Gesli se morata ujemati.')}
           </p>
 

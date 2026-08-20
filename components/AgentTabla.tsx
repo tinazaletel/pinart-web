@@ -291,7 +291,7 @@ export default function AgentTabla() {
 
       <style jsx>{`
         .at { max-width: 52rem; margin: 0 auto; padding: 2.2rem 1.2rem 4rem; display: flex; flex-direction: column; gap: 1rem; }
-        .at-nad { margin: 0; font-size: .64rem; font-weight: 800; letter-spacing: .18em; color: #8a8177; }
+        .at-nad { margin: 0; font-size: .64rem; font-weight: 800; letter-spacing: .18em; color: #6b655d; }
         h1 { margin: .2rem 0 .3rem; font-size: 1.9rem; font-family: var(--font-serif-flow, var(--font-serif)), serif; color: var(--ink, #111); }
         .at-pod { margin: 0; font-size: .88rem; line-height: 1.5; color: #6b655d; }
         .at-seznam { display: flex; flex-direction: column; gap: .55rem; }
@@ -312,7 +312,7 @@ export default function AgentTabla() {
         .at-dela .at-stanje { color: #6E4FA6; }
         .at-gotovo .at-stanje { color: #2F5D50; }
         .at-napaka .at-stanje { color: #a4342a; }
-        .at-kdo { margin-left: auto; font-size: .72rem; font-weight: 600; color: #8a8177; }
+        .at-kdo { margin-left: auto; font-size: .72rem; font-weight: 600; color: #6b655d; }
         .at-nadzor select { margin-left: auto; padding: .25rem .4rem; border: 1px solid rgba(17,17,17,.14); border-radius: .5rem; background: #fff; font: 600 .74rem inherit; }
         .at-drobni { padding: .25rem .6rem; border: 1px solid rgba(17,17,17,.16); border-radius: 999px; background: #fff; font: 700 .72rem inherit; color: #6b655d; cursor: pointer; }
         .at-drobni:hover { border-color: #a4342a; color: #a4342a; }

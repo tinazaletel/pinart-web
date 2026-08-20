@@ -50,7 +50,7 @@ export default function RegisterOpomnik() {
     }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.6rem', alignItems: 'baseline', justifyContent: 'space-between' }}>
         <strong style={{ fontSize: '.95rem', color: barva }}>{naslov}</strong>
-        <span style={{ fontSize: '.8rem', color: '#8a8177' }}>
+        <span style={{ fontSize: '.8rem', color: '#6b655d' }}>
           {cas
             ? `nazadnje ${cas.toLocaleDateString('sl-SI')} · pred ${dni} ${dni === 1 ? 'dnevom' : 'dnevi'}`
             : 'ni podatka o zadnji osvežitvi'}
@@ -74,7 +74,7 @@ export default function RegisterOpomnik() {
           background: kopirano ? '#1a7f4b' : '#fff', color: kopirano ? '#fff' : '#111',
           font: '600 .78rem system-ui, sans-serif', cursor: 'pointer',
         }}>{kopirano ? 'Kopirano ✓' : 'Kopiraj ukaz'}</button>
-        <span style={{ fontSize: '.76rem', color: '#8a8177' }}>
+        <span style={{ fontSize: '.76rem', color: '#6b655d' }}>
           poženeš v Terminalu, v mapi projekta — traja nekaj minut
         </span>
       </div>

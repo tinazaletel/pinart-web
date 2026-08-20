@@ -72,13 +72,21 @@ fokusabilni element.
 **8. Slike in ikone.** Okrasne ikone `aria-hidden="true"`; ikone, ki so edina
 vsebina gumba, rabijo `aria-label`. Vsebinske slike rabijo `alt`.
 
-**9. Izjava o dostopnosti.** Nova stran `/dostopnost` (in `/en/dostopnost`),
-po vzorcu obstoječih pravnih strani — **pozor:** samostojne strani rabijo
-`var(--font-serif-flow)`, ne `var(--font-serif)`, sicer dobiš napačno pisavo.
-Vsebina: h kateremu standardu se zavezujemo (WCAG 2.1 AA), kaj že deluje, kaj
-še ne, in **e-naslov za prijavo težave**. Poštena izjava o delnih pomanjklji-
-vostih je vredna več kot lepa trditev o popolni skladnosti.
-Dodaj povezavo v nogo, kjer so ostale pravne strani.
+**9. Izjava o dostopnosti — POZOR, obstaja in TRDI STVARI.**
+Strani NE piši na novo: `app/[locale]/dostopnost/page.tsx` že obstaja. Težava
+je, da v razdelku »Ukrepi za dostopnost« **že zdaj obljublja** kontrast 4,5 : 1,
+vidno oznako fokusa, nadomestna besedila in semantično strukturo.
+
+Tvoja naloga je, da vsako od teh trditev **narediš resnično** — ali pa trditev
+popraviš, da ustreza stanju.
+
+To je najpomembnejši del te runde. Neresnična izjava o dostopnosti je v
+sporu **slabša od nobene**: nasprotna stran jo predloži kot dokaz, da smo za
+pomanjkljivost vedeli in jo zamolčali. Vsako trditev, ki je po pregledu ne
+moreš podpreti, prestavi iz »Ukrepi« v »Znane omejitve«.
+
+Če dodajaš vsebino, ne pozabi: samostojne strani rabijo `var(--font-serif-flow)`,
+ne `var(--font-serif)`, sicer dobiš napačno pisavo.
 
 ## Česa NE delaj
 
