@@ -48,24 +48,46 @@ To je od treh edina, ki kaj spremeni. Če zmanjka časa, naj bo narejena ta.
 
 ---
 
-# 2. SWOT v dokumentnem hubu
+# 2. Šest manjkajočih dokumentov v poslovnem okviru
+
+Na strani **Poslovni okvir** (`components/BusinessCanvasWorkspace.tsx`) je mreža
+dokumentov. Brief in Pitch sta **že aktivna** (kartica z oznako »Na voljo«, ki
+pelje na `/kalkulator/dom?orodje=…`). Šest jih še nosi oznako »Kmalu«:
+
+Problem · Persone · Vrednostna ponudba · Empathy map · Journey map · SWOT ·
+Brand brief
+
+Naredi jih po **istem vzorcu** kot pitch in brief
 
 Pitch in brief že obstajata (`components/PitchAgent.tsx`,
 `components/BriefAgent.tsx`) in delujeta po istem vzorcu: preprost vpis →
 model vrne JSON → uporabnica pregleda → shrani na projekt.
 
-**Naredi SWOT po istem vzorcu.** Ne izmišljaj si novega; skopiraj vzorec.
+**Ne izmišljaj si novega vzorca; skopiraj obstoječega.** Vsak dokument je ista
+zgodba z drugimi polji.
 
-- Štiri polja: prednosti, slabosti, priložnosti, nevarnosti.
+Če ne moreš narediti vseh sedmih, naredi po vrsti: **SWOT, Persone, Problem** —
+te tri Tina rabi za sestanke. Ostale pusti pri »Kmalu«; delno obljubljena
+kartica je slabša od poštene.
+
+Polja po dokumentu:
+- **SWOT** — prednosti, slabosti, priložnosti, nevarnosti
+- **Persone** — ime persone, kaj dela, kaj jo tare, kaj si želi, kje jo najdeš
+- **Problem** — čigav problem, kako ga rešuje danes, zakaj to ne zadošča
+- **Vrednostna ponudba** — opravilo stranke, bolečine, koristi, naša rešitev
+- **Empathy map** — misli, čuti, vidi, sliši
+- **Journey map** — koraki poti, kaj stranka takrat čuti, kje se zatakne
+- **Brand brief** — misija, vrednote, ton govora, česa nikoli ne rečemo
+
 - Vpis naj bo v vsakdanjem jeziku — »o čem gre« in »kdo je stranka« —, ne
   obrazec s štirimi praznimi okni. Če bi uporabnica znala izpolniti štiri okna,
   orodja ne bi rabila.
-- Prikaz naj bo **štiri polja v mreži**, tiskljivo. Ne canvas.
+- Prikaz naj bo **polja v mreži**, tiskljivo. Ne canvas.
 - Shrani na projekt po istem vzorcu kot pitch (`shraniProjekt({ ...projekt,
-  swot })`); polje dodaj v `Projekt` v `lib/projekti.ts` kot neobvezno.
-- Doda se kot gumb v Pupinem domu — **ampak `components/PupaDom.tsx` je
-  prepovedan**. Komponento samo napiši in v poročilu povej, katero vrstico naj
-  dodam jaz.
+  swot })`); polja dodaj v `Projekt` v `lib/projekti.ts` kot neobvezna.
+- **`components/PupaDom.tsx` in `components/BusinessCanvasWorkspace.tsx` sta
+  prepovedana** — v njiju delam jaz. Komponente samo napiši in v poročilu povej,
+  katero vrstico naj dodam jaz; priklop v obe strani je moj.
 
 ## Česa NE delaj
 
