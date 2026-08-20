@@ -464,11 +464,19 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     if (id === 'mcpapi') return (
       <div className="fl-mock">
         <div className="fl-mock-bar"><i /><i /><i /><small>{t('povezave', 'connections')}</small></div>
-        <div className="fl-mock-body">
-          <span className="fl-msg bot"><span className="fl-ava" />{t('Kdo naj to naredi?', 'Who should do this?')}</span>
-          <span className="fl-msg me">{t('Pupa', 'Pupa')}</span>
+        {/* Skica posnema PRAVI videz Pupinega doma: živ preliv v ozadju in vpisno
+            polje z izbiro agenta. Ce oglašujemo pogovor, mora skica izgledati
+            kot pogovor — prazne vrstice kode so obljubljale nekaj drugega. */}
+        <div className="fl-mock-body fl-pupa-mock">
+          <span className="fl-pupa-aura" aria-hidden />
+          <span className="fl-msg bot"><span className="fl-ava" />{t('Kdo naj napiše brief?', 'Who should write the brief?')}</span>
           <span className="fl-msg me">{t('moj ChatGPT', 'my ChatGPT')}</span>
           <span className="fl-msg bot"><span className="fl-ava" />{t('Brief je na projektu.', 'The brief is on the project.')}</span>
+          <span className="fl-pupa-vnos">
+            <i className="fl-pupa-znacka">{t('moj ChatGPT', 'my ChatGPT')}</i>
+            <i className="fl-pupa-crta" />
+            <i className="fl-pupa-gumb">{t('Začni', 'Start')}</i>
+          </span>
         </div>
       </div>
     );
@@ -826,6 +834,18 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-mock-bar { display: flex; align-items: center; gap: .4rem; padding: .5rem .75rem; background: oklch(96% .008 87); border-bottom: 1px solid rgba(17,17,17,.07); }
         .fl-mock-bar i { width: .55rem; height: .55rem; border-radius: 50%; background: rgba(17,17,17,.18); }
         .fl-mock-bar small { margin-left: .5rem; font-size: .62rem; letter-spacing: .04em; color: rgba(17,17,17,.68); }
+        .fl-pupa-mock { position: relative; overflow: hidden; }
+        /* živ preliv, kot na Pupinem domu — počasen, da ne vleče pogleda nase */
+        .fl-pupa-aura { position: absolute; inset: -30%; z-index: 0; border-radius: 50%; filter: blur(38px); opacity: .55;
+          background: conic-gradient(from 0deg, #cbb7f0, #a9e3d5, #f4d7c4, #c3d5f7, #cbb7f0);
+          animation: fl-pupa-vrti 18s linear infinite; }
+        .fl-pupa-mock > .fl-msg, .fl-pupa-vnos { position: relative; z-index: 1; }
+        @keyframes fl-pupa-vrti { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) { .fl-pupa-aura { animation: none; } }
+        .fl-pupa-vnos { display: flex; align-items: center; gap: .5rem; margin-top: auto; padding: .5rem .55rem; border-radius: 999px; background: rgba(255,255,255,.82); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: 0 4px 16px rgba(17,17,17,.07); }
+        .fl-pupa-znacka { flex: none; padding: .2rem .5rem; border-radius: 999px; background: #fff; font-size: .58rem; font-weight: 800; font-style: normal; color: #6E4FA6; }
+        .fl-pupa-crta { flex: 1; height: .5rem; border-radius: 999px; background: rgba(17,17,17,.09); }
+        .fl-pupa-gumb { flex: none; padding: .22rem .6rem; border-radius: 999px; background: #111; color: #fff; font-size: .58rem; font-weight: 800; font-style: normal; }
         .fl-mock-body { position: relative; padding: 1.15rem; display: grid; gap: .65rem; min-height: 17rem; align-content: start; }
         .fl-msg { display: inline-flex; align-items: center; gap: .5rem; max-width: 82%; padding: .55rem .8rem; border-radius: 14px; font-size: .8rem; font-weight: 600; line-height: 1.3; }
         .fl-msg.bot { background: oklch(96% .012 297); color: var(--ink); border-top-left-radius: 4px; justify-self: start; }
