@@ -102,6 +102,22 @@ export default function AdminPregled({ podatki }: { podatki: Analitika }) {
         javnih zbirk, ki brez osvezitve zastara. */}
     <RegisterOpomnik />
 
+    <h2 style={NASLOV}>Pupina poraba ta mesec</h2>
+    <div style={{ ...K, overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.88rem', minWidth: 420 }}>
+        <thead><tr style={{ borderBottom: '1px solid rgba(17,17,17,.15)' }}>
+          <th style={TH}>Organizacija</th><th style={TH}>Paket</th><th style={TH}>Sporočil</th>
+        </tr></thead>
+        <tbody>
+          {podatki.pupaPoraba.map(p => <tr key={p.organizationId} style={{ borderBottom: '1px solid rgba(17,17,17,.06)' }}>
+            <td style={TD}>{p.organizacija}</td><td style={TD}>{p.paket}</td>
+            <td style={{ ...TD, fontWeight: 700 }}>{p.sporocil}</td>
+          </tr>)}
+          {!podatki.pupaPoraba.length && <tr><td colSpan={3} style={{ padding: '1.4rem .5rem', opacity: .6 }}>Ta mesec še ni porabe.</td></tr>}
+        </tbody>
+      </table>
+    </div>
+
     {/* ── storitve po podrocjih ─────────────────────────────────────────── */}
     <h2 style={NASLOV}>Katere storitve se največkrat vpisujejo</h2>
     <div style={{ ...K, overflowX: 'auto', padding: '.4rem 1.3rem 1rem' }}>

@@ -25,6 +25,7 @@ export type Storitev = { storitev: string; podrocje: string; stevilo: number; me
 export type Trg = { mojTrg: string; stevilo: number; mediana: number };
 export type Racuni = { paket: string; status: string; stevilo: number };
 export type Mesec = { mesec: string; sej: number; nevpisanih: number; dogodkov: number; cenovnihTock: number };
+export type PupaPoraba = { organizationId: string; organizacija: string; paket: string; sporocil: number };
 
 export type Analitika = {
   napaka?: string;
@@ -40,11 +41,12 @@ export type Analitika = {
   racunovSkupaj: number;
   proRacunov: number;
   ocenjenPrihodekMesecno: number;
+  pupaPoraba: PupaPoraba[];
 };
 
 const prazno: Analitika = {
   vir: 'brez', obdobje: 0, skupno: 0, skupine: [], storitve: [], trgi: [],
-  racuni: [], meseci: [], racunovSkupaj: 0, proRacunov: 0, ocenjenPrihodekMesecno: 0,
+  racuni: [], meseci: [], racunovSkupaj: 0, proRacunov: 0, ocenjenPrihodekMesecno: 0, pupaPoraba: [],
 };
 
 function mediana(v: number[]): number {
@@ -79,7 +81,13 @@ export async function pridobiAnalitiko(obdobje: Obdobje = 90): Promise<Analitika
     .order('created_at', { ascending: false }).limit(50000);
   if (od) { tocke = tocke.gte('created_at', od); dogodki = dogodki.gte('created_at', od); }
 
-  const [t, d, racuni] = await Promise.all([tocke, dogodki, baza.from('analitika_racuni').select('*')]);
+  const zacetekMeseca = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString();
+  const [t, d, racuni, aiPoraba, organizacije, narocnine] = await Promise.all([
+    tocke, dogodki, baza.from('analitika_racuni').select('*'),
+    baza.from('ai_usage').select('organization_id').gte('created_at', zacetekMeseca).limit(50000),
+    baza.from('organizations').select('id,name'),
+    baza.from('organization_subscriptions').select('organization_id,tier,status'),
+  ]);
 
   if (t.error) {
     return { ...prazno, obdobje, napaka: `Supabase: ${t.error.message}` };
@@ -154,12 +162,26 @@ export async function pridobiAnalitiko(obdobje: Obdobje = 90): Promise<Analitika
   const proRacunov = racuniV.filter(r => r.paket === 'pro' && r.status === 'active')
     .reduce((s, r) => s + r.stevilo, 0);
 
+  const imePoId = new Map((organizacije.data || []).map(o => [String(o.id), String(o.name)]));
+  const paketPoId = new Map((narocnine.data || []).map(n => [String(n.organization_id), String(n.tier)]));
+  const porabaPoId = new Map<string, number>();
+  for (const vrstica of aiPoraba.data || []) {
+    const id = String(vrstica.organization_id);
+    porabaPoId.set(id, (porabaPoId.get(id) || 0) + 1);
+  }
+  const pupaPoraba: PupaPoraba[] = [...porabaPoId.entries()].map(([organizationId, sporocil]) => ({
+    organizationId,
+    organizacija: imePoId.get(organizationId) || 'Neznana organizacija',
+    paket: paketPoId.get(organizationId) || 'free',
+    sporocil,
+  })).sort((a, b) => b.sporocil - a.sporocil);
+
   return {
     vir: 'supabase', obdobje,
     skupno: vrstice.length,
     zadnji: vrstice[0]?.created_at,
     skupine, storitve, trgi, meseci,
     racuni: racuniV, racunovSkupaj, proRacunov,
-    ocenjenPrihodekMesecno: proRacunov * CENA_PRO_MESECNO,
+    ocenjenPrihodekMesecno: proRacunov * CENA_PRO_MESECNO, pupaPoraba,
   };
 }

@@ -14,6 +14,8 @@ export type KlepetSporocilo = {
   datum: string;        // ISO
   odMaila?: string;     // neobvezno: zadeva maila, iz katerega je bilo deljeno
   izsek?: string;       // neobvezno: označen del maila (deljen v klepet)
+  updatedAt?: string;
+  deletedAt?: string;
 };
 
 /* Nit = deterministična oznaka pogovora iz izbranih sodelavcev (skupinski klepet). */
@@ -22,7 +24,7 @@ export const nitId = (sodelavecIds: string[]): string =>
 
 const KLJUC = 'pinart-klepet';
 
-const preberiVse = (): KlepetSporocilo[] => {
+export const preberiKlepetVsi = (): KlepetSporocilo[] => {
   if (typeof window === 'undefined') return [];
   try {
     const raw = JSON.parse(localStorage.getItem(KLJUC) || '[]');
@@ -32,15 +34,16 @@ const preberiVse = (): KlepetSporocilo[] => {
   }
 };
 
-const shraniVse = (v: KlepetSporocilo[]) => {
+export const zapisiKlepetVsi = (v: KlepetSporocilo[]) => {
   if (typeof window === 'undefined') return;
   localStorage.setItem(KLJUC, JSON.stringify(v));
+  window.dispatchEvent(new Event('pinart-klepet-local-change'));
 };
 
 /* sporočila ene niti (projekt + izbrani sodelavci), najstarejše prvo */
 export const preberiKlepet = (projectId: string, nit = ''): KlepetSporocilo[] =>
-  preberiVse()
-    .filter(m => m.projectId === projectId && (m.nit || '') === nit)
+  preberiKlepetVsi()
+    .filter(m => !m.deletedAt && m.projectId === projectId && (m.nit || '') === nit)
     .sort((a, b) => a.datum.localeCompare(b.datum));
 
 /* doda sporočilo in vrne posodobljen seznam projekta */
@@ -51,7 +54,8 @@ export const dodajKlepet = (
     ...vnos,
     id: vnos.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : String(Math.round(performance.now() * 1000))),
     datum: vnos.datum || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
-  shraniVse([...preberiVse(), nov]);
+  zapisiKlepetVsi([...preberiKlepetVsi(), nov]);
   return preberiKlepet(nov.projectId);
 };

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
-import { omejiApi } from '@/lib/rate-limit';
+import { omejiKalkulator } from '@/lib/rate-limit';
 
 /**
  * Anonimna cenovna tocka iz kalkulatorja — skupna baza cen na trgu.
@@ -29,7 +29,7 @@ const MAX_IZVEDBA = 300_000;
 const MAX_PRAVICE = 2_000_000;
 
 export async function POST(request: Request) {
-  const omejitev = await omejiApi(request, 'cene', 60);
+  const omejitev = await omejiKalkulator(request);
   if (omejitev) return omejitev;
 
   const endpoint = process.env.GOOGLE_SHEETS_CENE_WEBHOOK_URL;

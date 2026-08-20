@@ -24,7 +24,11 @@ type ConnectionBody = {
   endpointUrl?: unknown;
   secret?: unknown;
   permissions?: unknown;
+  id?: unknown;
+  status?: unknown;
 };
+
+const PATCH_STATUSI = new Set(['configured', 'disabled']);
 
 async function context(request: Request, requireAdmin = false, requestedOrganizationId?: string) {
   const supabase = createClient();
@@ -122,6 +126,43 @@ export async function POST(request: Request) {
     );
   }
   return NextResponse.json({ connection: data }, { status: 201 });
+}
+
+export async function PATCH(request: Request) {
+  let body: ConnectionBody;
+  try {
+    body = await preberiJson(request, 10_000);
+  } catch (error) {
+    return NextResponse.json({ error: sporociloValidacije(error) }, { status: 400 });
+  }
+  const organizationId = typeof body.organizationId === 'string' ? body.organizationId : '';
+  const ctx = await context(request, true, organizationId);
+  if ('error' in ctx) return ctx.error;
+  const omejitev = await omejiApi(request, 'ai-povezave', 30, ctx.user.id);
+  if (omejitev) return omejitev;
+
+  const id = typeof body.id === 'string' ? body.id : '';
+  const imaStatus = body.status !== undefined;
+  const imaDovoljenja = body.permissions !== undefined;
+  const status = typeof body.status === 'string' ? body.status : '';
+  if (!UUID.test(id) || (!imaStatus && !imaDovoljenja)
+      || (imaStatus && !PATCH_STATUSI.has(status))
+      || (imaDovoljenja && (!body.permissions || typeof body.permissions !== 'object' || Array.isArray(body.permissions)))) {
+    return NextResponse.json({ error: 'Sprememba povezave ni veljavna.' }, { status: 400 });
+  }
+  const spremembe: { status?: string; permissions?: ReturnType<typeof normalizeAiPermissions> } = {};
+  if (imaStatus) spremembe.status = status;
+  if (imaDovoljenja) spremembe.permissions = normalizeAiPermissions(body.permissions);
+  const { data, error } = await ctx.admin
+    .from('organization_ai_connections')
+    .update(spremembe)
+    .eq('id', id)
+    .eq('organization_id', ctx.organizationId)
+    .select('id,connection_type,provider,label,model,endpoint_url,secret_hint,permissions,status,last_tested_at,last_error,created_at,updated_at')
+    .maybeSingle();
+  if (error) return NextResponse.json({ error: 'Povezave ni bilo mogoče spremeniti.' }, { status: 500 });
+  if (!data) return NextResponse.json({ error: 'Povezave ni bilo mogoče najti.' }, { status: 404 });
+  return NextResponse.json({ connection: data });
 }
 
 export async function DELETE(request: Request) {

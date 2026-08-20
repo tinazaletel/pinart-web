@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { NapakaValidacije, preberiJson, sporociloValidacije } from '@/lib/validacija';
-import { omejiApi } from '@/lib/rate-limit';
+import { omejiKalkulator } from '@/lib/rate-limit';
 
 /* Strežniški render ponudbe v PRAVI PDF (vektorski, oster) — prenese se kot
    datoteka (ne tisk). Lokalno uporabi nameščeni Chrome, na Vercelu @sparticuz/chromium. */
@@ -16,7 +16,7 @@ const lokalniChrome = (): string => {
 };
 
 export async function POST(req: NextRequest) {
-  const omejitev = await omejiApi(req, 'ponudba-pdf', 20);
+  const omejitev = await omejiKalkulator(req);
   if (omejitev) return omejitev;
 
   let browser: import('puppeteer-core').Browser | undefined;

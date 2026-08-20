@@ -25,11 +25,13 @@ export type PostaVnos = {
   zvezda?: boolean;        // neobvezno: oznaceno z zvezdico (pomembno)
   oznake?: string[];       // neobvezno: labele/oznake na sporocilu
   prebrano?: boolean;      // neobvezno: je bilo prebrano (za stevec neprebranih na Komunikaciji)
+  updatedAt?: string;
+  deletedAt?: string;
 };
 
 const KLJUC = 'pinart-posta-dnevnik';
 
-const preberiVse = (): PostaVnos[] => {
+export const preberiVsoPostoSurovo = (): PostaVnos[] => {
   if (typeof window === 'undefined') return [];
   try {
     const raw = JSON.parse(localStorage.getItem(KLJUC) || '[]');
@@ -39,9 +41,23 @@ const preberiVse = (): PostaVnos[] => {
   }
 };
 
-const shraniVse = (vnosi: PostaVnos[]) => {
+export const zapisiVsoPostoSurovo = (vnosi: PostaVnos[]) => {
   if (typeof window === 'undefined') return;
   localStorage.setItem(KLJUC, JSON.stringify(vnosi));
+  window.dispatchEvent(new Event('pinart-posta-dnevnik-change'));
+};
+
+const preberiVse = (): PostaVnos[] => preberiVsoPostoSurovo().filter(v => !v.deletedAt);
+const shraniVse = (vnosi: PostaVnos[]) => {
+  const zdaj = new Date().toISOString();
+  const prejsnje = new Map(preberiVsoPostoSurovo().map(v => [v.id, v]));
+  const jedro = (v: PostaVnos) => JSON.stringify({ ...v, updatedAt: undefined, deletedAt: undefined });
+  const zive = vnosi.map(v => {
+    const prej = prejsnje.get(v.id); prejsnje.delete(v.id);
+    return { ...v, deletedAt: undefined, updatedAt: prej && jedro(prej) === jedro(v) ? (prej.updatedAt || prej.datum) : zdaj };
+  });
+  const nagrobniki = [...prejsnje.values()].map(v => v.deletedAt ? v : { ...v, updatedAt: zdaj, deletedAt: zdaj });
+  zapisiVsoPostoSurovo([...zive, ...nagrobniki]);
 };
 
 /* vsi zapisi, najnovejši prvi */
@@ -62,6 +78,7 @@ export const dodajPosto = (
     ...vnos,
     id: vnos.id || crypto.randomUUID(),
     datum: vnos.datum || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
   shraniVse([nov, ...preberiVse()]);
   return nov;
