@@ -45,7 +45,7 @@ export default async function Stran({ params }: { params: Promise<{ locale: stri
           <article key={p.id} style={{ padding: '1.1rem 1.2rem', border: '1px solid rgba(17,17,17,.1)', borderRadius: '1rem', background: '#fff' }}>
             <h2 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 700, color: '#111' }}>{p.ime}</h2>
             {p.model && (
-              <p style={{ margin: '.25rem 0 0', fontSize: '.78rem', color: '#8a8177' }}>
+              <p style={{ margin: '.25rem 0 0', fontSize: '.78rem', color: '#6b655d' }}>
                 {L('Privzeti model', 'Default model')}: <code>{p.model}</code>
               </p>
             )}

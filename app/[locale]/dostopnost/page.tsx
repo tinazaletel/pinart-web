@@ -9,7 +9,7 @@ export function generateStaticParams() {
 
 const sl = {
   title: 'Izjava o dostopnosti',
-  updated: 'Zadnja posodobitev: 18. avgust 2026',
+  updated: 'Zadnja posodobitev: 20. avgust 2026',
   sections: [
     {
       heading: '1. Naša zaveza',
@@ -21,11 +21,11 @@ const sl = {
     },
     {
       heading: '3. Ukrepi za dostopnost',
-      text: `Med drugim izvajamo:\n– barvni kontrast besedila skladno z zahtevo najmanj 4,5 : 1 (navadno besedilo)\n– semantično strukturo HTML (naslovi, gumbi, oznake polj)\n– vidno oznako fokusa pri navigaciji s tipkovnico\n– nadomestna besedila za pomembne slike in ikone\n– spoštovanje nastavitve »reduciraj gibanje« pri animacijah\n– prilagodljive velikosti besedila (relativne enote)`,
+      text: `Med drugim izvajamo:\n– enotno vidno oznako fokusa pri navigaciji s tipkovnico\n– povezavo »Preskoči na vsebino«\n– spoštovanje nastavitve »reduciraj gibanje« pri animacijah\n– prilagodljive velikosti besedila (relativne enote)`,
     },
     {
       heading: '4. Znane omejitve',
-      text: `Nekateri interaktivni deli (kalkulator, urejevalnik dokumentov, animacije na predstavitveni strani) morda še niso povsem dostopni z bralnikom zaslona ali izključno s tipkovnico. Te dele postopno izboljšujemo. Če naletite na oviro, nas obvestite in poiskali bomo rešitev.`,
+      text: `Nekateri interaktivni deli (kalkulator, urejevalnik dokumentov, modalna okna in animacije na predstavitveni strani) še niso povsem dostopni z bralnikom zaslona ali izključno s tipkovnico. Na posameznih mestih kontrast drobnega pomožnega besedila še ne dosega 4,5 : 1, vse slike in ikone pa še niso ročno preverjene. Te dele postopno izboljšujemo. Če naletite na oviro, nas obvestite in poiskali bomo rešitev.`,
     },
     {
       heading: '5. Povratne informacije in stik',
@@ -40,7 +40,7 @@ const sl = {
 
 const en = {
   title: 'Accessibility Statement',
-  updated: 'Last updated: 18 August 2026',
+  updated: 'Last updated: 20 August 2026',
   sections: [
     {
       heading: '1. Our Commitment',
@@ -52,11 +52,11 @@ const en = {
     },
     {
       heading: '3. Accessibility Measures',
-      text: `Among other things, we apply:\n– text colour contrast meeting the minimum 4.5 : 1 requirement (normal text)\n– semantic HTML structure (headings, buttons, field labels)\n– a visible focus indicator for keyboard navigation\n– alternative text for meaningful images and icons\n– honouring the "reduce motion" preference for animations\n– scalable text sizes (relative units)`,
+      text: `Among other things, we apply:\n– a consistent visible focus indicator for keyboard navigation\n– a “Skip to content” link\n– honouring the “reduce motion” preference for animations\n– scalable text sizes (relative units)`,
     },
     {
       heading: '4. Known Limitations',
-      text: `Some interactive parts (the calculator, the document editor, and animations on the marketing site) may not yet be fully accessible with a screen reader or by keyboard alone. We are improving these areas progressively. If you encounter a barrier, please let us know and we will look for a solution.`,
+      text: `Some interactive parts (the calculator, document editor, modal dialogs, and animations on the marketing site) are not yet fully accessible with a screen reader or by keyboard alone. Some small secondary text still falls below the 4.5 : 1 contrast threshold, and not every image and icon has been manually verified. We are improving these areas progressively. If you encounter a barrier, please let us know and we will look for a solution.`,
     },
     {
       heading: '5. Feedback and Contact',

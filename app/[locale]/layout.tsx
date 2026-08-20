@@ -145,10 +145,13 @@ export default async function LocaleLayout({
       </head>
       <body className="bg-paper text-ink antialiased">
         <NextIntlClientProvider messages={messages}>
+          <a className="skip-link" href="#glavna-vsebina">
+            {locale === 'en' ? 'Skip to content' : 'Preskoči na vsebino'}
+          </a>
           <Preloader />
           <SmoothScroll>
             <Nav />
-            {children}
+            <div id="glavna-vsebina" tabIndex={-1}>{children}</div>
           </SmoothScroll>
           <div className="grain pointer-events-none fixed inset-0 z-[100]" aria-hidden />
           <SectionDots />

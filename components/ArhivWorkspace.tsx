@@ -1129,7 +1129,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-doktelo li{margin:.2rem 0}
         .arh-doktelo .kick{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#B25476);font-weight:700;margin-bottom:.3rem}
         .arh-doktelo .meta{color:#666;font-size:.85rem;margin:.1rem 0 .6rem}
-        .arh-doktelo .mut{color:#8a8177;font-size:.82rem}
+        .arh-doktelo .mut{color:#6b655d;font-size:.82rem}
         .arh-doktelo .pog-clen{margin:.7rem 0}
         .arh-doktelo .pog-clen h2{margin:.6rem 0 .2rem}
         .arh-doktelo .parties p{margin:.1rem 0}
