@@ -17,6 +17,7 @@ import type { Sodelavec } from '@/lib/naloge';
 import type { PostaVnos } from '@/lib/postaDnevnik';
 import { vlogaOznaka } from '@/lib/sodelavci';
 import { useDostopProjekta } from '@/lib/useDostopProjekta';
+import DeliSStranko from '@/components/DeliSStranko';
 import { loadCloudTimeEntries, loadLocalTimeEntries, type PrivateTimeEntry } from '@/lib/pinartPlanning';
 
 export type ModernProject = {
@@ -248,6 +249,13 @@ export default function ProjectDetailModern({
         )}
         <span className="pm-soon">{L('AI agenti = kmalu', 'AI agents = soon')}</span>
       </div>
+      {/* Deljenje s STRANKO je nekaj drugega kot dostop ekipe: stranka nima
+          racuna in vidi bistveno manj. Zato loceno, tik pod ekipo. */}
+      {real && (
+        <div className="pm-deli-stranka">
+          <DeliSStranko projektId={real.id} jeEn={jeEn} />
+        </div>
+      )}
       {razlagaOdprta && (
         <div className="pm-dostop-opomba">
           <><b>Partner</b> — {L('vidi projekt: brief, cilje, naloge, datoteke in komunikacijo. Ponudb, pogodb, računov in stroškov NE.', 'sees the project: brief, goals, tasks, files and messages. NOT quotes, contracts, invoices or costs.')}<br />
@@ -575,6 +583,7 @@ export default function ProjectDetailModern({
         .pm-cas-vsota { margin: .2rem 0 .35rem; font-size: 1.5rem; line-height: 1; color: var(--pm-ink); }
         .pm-cas-vsota b { font-weight: 650; }
         .pm-cas-vsota span { font-size: .95rem; color: var(--pm-muted); }
+        .pm-deli-stranka { margin: .2rem 0 1.1rem; padding: .9rem 1.05rem; border: 1px solid var(--line, rgba(17,17,17,.1)); border-radius: 14px; background: #fff; }
         .pm-dostop-opomba { margin: -.4rem 0 1.1rem; font-size: .72rem; line-height: 1.45; color: #8a8177; }
         .pm-empty { font-size:.85rem; color:var(--pm-muted); }
         .pm-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:1.1rem; }

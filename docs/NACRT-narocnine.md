@@ -90,9 +90,10 @@ Stripe priporoča webhooke za usklajevanje naročnin in `invoice.paid` kot signa
 ### Neuspešno plačilo
 
 1. `invoice.payment_failed` zapiše neuspeh in stanje `past_due`/`incomplete`; uporabniku pošljemo varen poziv za posodobitev plačila v Stripe Customer Portalu.
-2. Za obnovljivo napako uporabimo Stripe Smart Retries. Ne ukinemo dostopa ob prvem začasnem neuspehu; obdržimo ga do `valid_until` in vnaprej dogovorjenega kratkega grace perioda.
-3. Ob poznejšem `invoice.paid` se dostop normalno podaljša. Ob `unpaid` ali dokončni odpovedi se po izteku `valid_until` vrne na Free.
-4. Za potrebno 3DS dejanje poslušamo `invoice.payment_action_required`. Stripeov pregled stanj: [How subscriptions work](https://docs.stripe.com/billing/subscriptions/overview).
+2. Za obnovljivo napako uporabimo Stripe Smart Retries. Ne vodimo lastnega odštevanja poskusov ali samostojnega grace obdobja: dostop ostane, dokler Stripe poskuša izterjavo.
+3. Dostop ugasne, ko Stripe naročnino označi `unpaid`, v vsakem primeru pa najpozneje 30 dni po prvem neuspelem plačilu. Ta meja je varnostni maksimum za primer napačno nastavljenega ali predolgega Stripeovega retry urnika.
+4. Med stanjem `past_due` aplikacija ostane uporabna, vendar kaže prijazno, nevsiljivo opozorilo in povezavo v Customer Portal. Ob poznejšem `invoice.paid` opozorilo izgine in dostop se normalno podaljša.
+5. Za potrebno 3DS dejanje poslušamo `invoice.payment_action_required`. Stripeov pregled stanj: [How subscriptions work](https://docs.stripe.com/billing/subscriptions/overview).
 
 ### Nadgradnja
 
@@ -141,7 +142,7 @@ Predlagana imena okolja:
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — `pk_test_…`/`pk_live_…`; potrebujemo ga le, če bo čelo uporabljalo Stripe.js. Pri povsem gostovanem Checkoutu ga lahko izpustimo.
 - `STRIPE_WEBHOOK_SECRET` — Developers → Webhooks → izbrani endpoint → Signing secret; to ni API key in je ločen za test/live endpoint.
 - `STRIPE_PRICE_PREMIUM_MONTHLY` in `STRIPE_PRICE_PRO_MONTHLY` — Products → posamezni mesečni Price.
-- Po potrebi `STRIPE_PRICE_PREMIUM_FOUNDING_MONTHLY`; ustanovne cene ne računamo v kodi.
+- `STRIPE_PRICE_PREMIUM_FOUNDING_MONTHLY` in po potrebi `STRIPE_PRICE_PRO_FOUNDING_MONTHLY` — ločeni trajni ceni za ustanovne člane; ustanovne cene ne računamo v kodi.
 - `STRIPE_CUSTOMER_PORTAL_CONFIGURATION_ID` — če uporabimo namensko konfiguracijo portala.
 - `APP_URL` — kanonični HTTPS origin za success/cancel/portal return URL-je.
 
@@ -161,14 +162,15 @@ Dashboard nastavitve: aktiviran Customer Portal (menjava kartice, računi, odpov
 
 1. Ob prvem uspešnem Stripe plačilu organizacijo povežemo s Stripe Customerjem in naročnino; `organization_subscriptions` postane plačana projekcija.
 2. `tester` in časovno veljavna `nagrada` še naprej odklepata Pro brez plačila. Plačilo ju ne izbriše in ne skrajša; aplikacija uporabi močnejšo trenutno pravico.
-3. `popust` ne odklepa dostopa. Pred Checkoutom se strežniško prebere enkrat, pretvori v vnaprej ustvarjen Stripe Coupon/Promotion Code ali namenski Price ter zabeleži, da je bil izkoriščen. Odstotka čelo nikoli ne določa.
-4. Če nagrajenec plača pred iztekom nagrade, predlog je začetek zaračunavanja po `velja_do` prek trial end/billing anchor. To mora Tina potrditi, ker alternativa pomeni takojšnje plačilo ob še veljavni nagradi.
-5. Ročni `organization_subscriptions.provider='rocno'` se ne prepiše samodejno brez jasne migracijske odločitve. Ob prvem plačilu ga prestavimo na `stripe`, prejšnjo ročno dodelitev pa ohranimo v revizijski sledi.
+3. `popust` ne odklepa dostopa. Časovno omejene akcije uporabljajo vnaprej ustvarjene Stripe Coupons in uporabniške Promotion Codes. Strežnik preveri dovoljeno kodo; odstotka ali trajanja čelo nikoli ne določa.
+4. Ustanovni člani uporabljajo ločen Stripe Price, ki zanje ostane trajen. To ni kupon in se ne spreminja ob koncu promocijske kampanje.
+5. Če nagrajenec izbere paket pred iztekom nagrade, se začetek zaračunavanja nastavi na `velja_do` prek trial end/billing anchor. Pred tem datumom ga Stripe ne bremeni.
+6. Ročni `organization_subscriptions.provider='rocno'` se ne prepiše samodejno brez jasne migracijske odločitve. Ob prvem plačilu ga prestavimo na `stripe`, prejšnjo ročno dodelitev pa ohranimo v revizijski sledi.
 
-## Odločitve, ki jih mora Tina potrditi pred kodo
+## Potrjene produktne odločitve (Tina, 20. 8. 2026)
 
-1. Ali nadgradnja velja takoj s preračunom, znižanje pa šele ob koncu obdobja?
-2. Kolikšen je grace period po neuspelem podaljšanju (predlog: največ 3 dni, vendar ne dlje od Stripeove končne odločitve)?
-3. Ali nagrajenci začnejo plačevati šele po `velja_do`?
-4. Ali ustanovna cena pomeni ločen trajni Price ali Stripe Coupon; predlog je ločen Price zaradi jasnejše revizije.
-5. Ali v prvi fazi uporabimo Stripe Checkout + Customer Portal (priporočeno) in brez lastnega obrazca za kartice?
+1. Nadgradnja velja takoj s preračunom; znižanje začne veljati ob koncu že plačanega obdobja.
+2. Dostop ostane med Stripeovimi poskusi izterjave in se ugasne ob `unpaid`; absolutna meja je 30 dni od prvega neuspeha. Vmes aplikacija kaže prijazno opozorilo.
+3. Nagrajenci začnejo plačevati šele po `velja_do`.
+4. Ustanovni člani dobijo ločen trajni Price; časovno omejene akcije uporabljajo kupone s Promotion Codes.
+5. Prva faza uporablja Stripe Checkout in Customer Portal, brez lastnega obrazca za kartice.
