@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { omejiApi } from '@/lib/rate-limit';
+import { preberiClanstvo } from '@/lib/clanstvo';
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -11,8 +12,8 @@ async function kontekst(request: Request) {
   if (!user) return { error: NextResponse.json({ napaka: 'Prijava je potekla.' }, { status: 401 }) };
   const admin = createAdminClient();
   if (!admin) return { error: NextResponse.json({ napaka: 'Nastavitve niso na voljo.' }, { status: 503 }) };
-  const { data: member } = await admin.from('organization_members').select('organization_id,role,disabled_at').eq('user_id', user.id).in('role', ['owner', 'admin']).is('disabled_at', null).limit(1).maybeSingle();
-  if (!member) return { error: NextResponse.json({ napaka: 'Za to dejanje nimaš dovoljenja.' }, { status: 403 }) };
+  const member = await preberiClanstvo(admin, null, user.id);
+  if (!member || member.disabled_at || (member.role !== 'owner' && member.role !== 'admin')) return { error: NextResponse.json({ napaka: 'Za to dejanje nimaš dovoljenja.' }, { status: 403 }) };
   const limit = await omejiApi(request, 'povprasevanje-nastavitve', 30, user.id);
   if (limit) return { error: limit };
   return { admin, organizationId: member.organization_id };

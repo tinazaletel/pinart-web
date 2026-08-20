@@ -1,7 +1,5 @@
-/* Pupa klepet — zaledje. Dobi vprasanje + kratek kontekst ponudbe + zgodovino,
-   in klice Anthropic model (ANTHROPIC_API_KEY iz okolja). Kljuc NIKOLI ne pride
-   na klienta. Ce kljuca ni, vrne prijazno sporocilo (klepet zaenkrat ne dela).
-   Model je nastavljiv prek PUPA_MODEL (privzeto claude-sonnet-5). */
+/* Pupa klepet — zaledje. Ponudnika izbere PUPA_PROVIDER; ključ in model sta
+   strežniška. Privzeti Anthropic ostaja le zaradi združljivosti starih okolij. */
 
 import { NextResponse } from 'next/server';
 import { PUPA_ZNANJE } from '@/lib/pupaZnanje';
@@ -10,6 +8,8 @@ import { checkAiRateLimit, hashIp, recordAiTokens } from '@/lib/rateLimit';
 import { omejiApi } from '@/lib/rate-limit';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 import { pupaMesecnaKvota } from '@/lib/paketi';
+import { runAiProvider } from '@/lib/aiProviderClient';
+import { pupaProviderConfig } from '@/lib/pupaProvider';
 
 export const runtime = 'nodejs';
 
@@ -109,15 +109,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ napaka: 'Zgodovina vsebuje neveljavno sporočilo.' }, { status: 400 });
   }
 
-  const kljuc = process.env.ANTHROPIC_API_KEY;
-  if (!kljuc) {
+  let provider;
+  try { provider = pupaProviderConfig(); }
+  catch (error) { console.error('PUPA ponudnik ni pravilno nastavljen:', error instanceof Error ? error.message : error); return NextResponse.json({ napaka: 'AI zaledje ni pravilno nastavljeno.' }, { status: 503 }); }
+  if (!provider) {
     return NextResponse.json({
       odgovor: 'Uf, trenutno ne morem do svojih možganov 🙈 Klepet z mano je začasno nedosegljiv — kmalu spet na voljo. Do takrat ti pomagam s sprotnimi namigi ob pripravi ponudbe.',
       brezKljuca: true,
     });
   }
 
-  const model = process.env.PUPA_MODEL || 'claude-sonnet-5';
+  const model = provider.connection.model || provider.connection.provider;
   const forwardedFor = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
   const ip = forwardedFor || req.headers.get('x-real-ip') || 'unknown';
   let rateLimitRequestId: string | undefined;
@@ -151,51 +153,15 @@ export async function POST(req: Request) {
     rateLimitRequestId = undefined;
   }
 
-  /* PREDPOMNJENJE (prompt caching): PERSONA + PUPA_ZNANJE sta ob vsakem klicu ENAKA
-     (~2000 tokenov), zato ju posljemo kot LOCEN blok s cache_control — predpomnjeno
-     branje stane ~10x manj in je hitrejse. KONTEKST se spreminja ob vsakem klicu,
-     zato mora biti ZA predpomnjenim blokom (sicer bi vsaka sprememba razveljavila
-     predpomnilnik). Vrstni red blokov je zato pomemben. */
-  const sistem = [
-    { type: 'text' as const, text: `${PERSONA}\n\n${PUPA_ZNANJE}`, cache_control: { type: 'ephemeral' as const } },
-    { type: 'text' as const, text: `KONTEKST (kje je uporabnik + podatki ponudbe):\n${body.kontekst || '(ni podatkov)'}` },
-  ];
-  const messages = [
-    ...zgodovina
-      .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
-      .map(m => ({ role: m.role, content: m.content })),
-    { role: 'user' as const, content: vprasanje },
-  ];
+  const zgodovinaPrompt = zgodovina.map(m => `${m.role === 'user' ? 'UPORABNIK' : 'PUPA'}: ${m.content}`).join('\n');
+  const prompt = `${PERSONA}\n\n${PUPA_ZNANJE}\n\nKONTEKST:\n${body.kontekst || '(ni podatkov)'}\n\n${zgodovinaPrompt ? `ZGODOVINA:\n${zgodovinaPrompt}\n\n` : ''}UPORABNIK: ${vprasanje}\nPUPA:`;
 
   try {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': kljuc,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({ model, max_tokens: 700, system: sistem, messages }),
-    });
-    if (!r.ok) {
-      console.error('PUPA Anthropic napaka:', r.status, r.statusText);
-      return NextResponse.json({ napaka: 'AI zaledje ni odgovorilo.' }, { status: 502 });
-    }
-    const data = await r.json();
-    const besedilo = Array.isArray(data?.content)
-      ? data.content.filter((b: { type?: string; text?: string }) => b?.type === 'text' && typeof b.text === 'string').map((b: { text?: string }) => b.text).join('\n').trim()
-      : '';
-    if (!besedilo) console.error('PUPA je vrnila prazen odgovor.');
-    /* Predpomnjeni tokeni se belezijo LOCENO od input_tokens — pristejemo jih, da
-       poraba ostane realna. cache_read = ~10x cenejsi, cache_creation = ~1.25x. */
-    const cacheRead = Number(data?.usage?.cache_read_input_tokens || 0);
-    const cacheWrite = Number(data?.usage?.cache_creation_input_tokens || 0);
-    const tokens = Number(data?.usage?.input_tokens || 0) + Number(data?.usage?.output_tokens || 0) + cacheRead + cacheWrite;
-    if (rateLimitRequestId) recordAiTokens(supabase, rateLimitRequestId, tokens).catch(error => {
+    const rezultat = await runAiProvider(provider.connection, provider.secret, prompt);
+    if (rateLimitRequestId) recordAiTokens(supabase, rateLimitRequestId, 0).catch(error => {
       console.error('PUPA beleženje porabe:', error instanceof Error ? error.message : 'neznana napaka');
     });
-    const odgovor = besedilo || 'Hmm, tokrat nimam pravega odgovora. Poskusi drugače vprašati.';
-    return NextResponse.json({ odgovor });
+    return NextResponse.json({ odgovor: rezultat.text });
   } catch (error) {
     console.error('PUPA klic ni uspel:', error instanceof Error ? error.message : 'neznana napaka');
     return NextResponse.json({ napaka: 'Napaka pri klicu AI zaledja.' }, { status: 500 });

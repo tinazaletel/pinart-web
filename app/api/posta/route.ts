@@ -6,6 +6,7 @@ import { omejiApi } from '@/lib/rate-limit';
 import { jeEmail, omejenNiz, preberiJson, sporociloValidacije } from '@/lib/validacija';
 import { zagotoviInboxToken } from '@/lib/inboxToken';
 import { posiljatelj } from '@/lib/posiljatelj';
+import { preberiClanstvo } from '@/lib/clanstvo';
 
 /* Strežniško pošiljanje e-pošte prek Resend. Ključ RESEND_API_KEY bere SAMO
    strežnik (nikoli klient). "From" naslov nastavi RESEND_FROM (npr.
@@ -51,13 +52,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Manjka veljaven ključ pošiljanja.' }, { status: 400 });
   }
 
-  let membershipQuery = supabase
-    .from('organization_members')
-    .select('organization_id')
-    .eq('user_id', user.id);
-  if (body.organizationId) membershipQuery = membershipQuery.eq('organization_id', body.organizationId);
-  const { data: memberships } = await membershipQuery.limit(1);
-  const organizationId = memberships?.[0]?.organization_id;
+  const membership = await preberiClanstvo(supabase, body.organizationId || null, user.id);
+  const organizationId = membership && !membership.disabled_at ? membership.organization_id : null;
   if (!organizationId) {
     return NextResponse.json({ error: 'Podjetje ni povezano.' }, { status: 403 });
   }

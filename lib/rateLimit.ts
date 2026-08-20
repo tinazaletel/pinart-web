@@ -12,7 +12,8 @@ export type AiRateLimitResult = {
 };
 
 export function hashIp(ip: string): string {
-  const salt = process.env.AI_RATE_LIMIT_SALT || process.env.ANTHROPIC_API_KEY || 'pinart-flow';
+  const salt = process.env.AI_RATE_LIMIT_SALT || process.env.PUPA_API_KEY
+    || process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY || 'pinart-flow';
   return createHash('sha256').update(`${salt}:${ip}`).digest('hex');
 }
 

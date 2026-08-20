@@ -11,6 +11,7 @@ import {
   maskAiSecret,
   normalizeAiPermissions,
 } from '@/lib/aiConnections';
+import { preberiClanstvo } from '@/lib/clanstvo';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const ADMIN_ROLES = new Set(['owner', 'admin']);
@@ -43,20 +44,7 @@ async function context(request: Request, requireAdmin = false, requestedOrganiza
   const admin = createAdminClient();
   if (!admin) return { error: NextResponse.json({ error: 'Povezave AI niso konfigurirane.' }, { status: 503 }) };
 
-  /* NE maybeSingle(): ta zahteva NATANKO eno vrstico in ob podvojenem clanstvu
-     (kar se v tej bazi ze zgodi) vrne prazno — koda to razume kot »ni clan« in
-     odgovori »nimas dovoljenja«, ceprav si lastnica. Zato vzamemo vse vrstice in
-     izberemo NAJMOCNEJSO vlogo. */
-  const { data: clanstva } = await admin
-    .from('organization_members')
-    .select('role,disabled_at')
-    .eq('organization_id', organizationId)
-    .eq('user_id', user.id);
-  const vrstice = (clanstva ?? []).filter(v => !v.disabled_at);
-  const membership = vrstice.find(v => v.role === 'owner')
-    ?? vrstice.find(v => v.role === 'admin')
-    ?? vrstice[0]
-    ?? null;
+  const membership = await preberiClanstvo(admin, organizationId, user.id);
   if (!membership || membership.disabled_at || (requireAdmin && !ADMIN_ROLES.has(membership.role))) {
     return { error: NextResponse.json({ error: 'Za to dejanje nimaš dovoljenja.' }, { status: 403 }) };
   }
