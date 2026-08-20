@@ -13,6 +13,7 @@ import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { preberiDnevnik, shraniDnevnik, zabeleziInterakcijo, DNEVNIK_TIPI, dnevnikTipLabel, type DnevnikVnos, type DnevnikTip } from '@/lib/dnevnik';
 import DeliZapis from '@/components/DeliZapis';
 import IskalnikPodjetij from '@/components/IskalnikPodjetij';
+import { jeLicencaPotekla } from '@/lib/licencePotek';
 
 /* Ikone poenotene na Phosphor. Inline fill/stroke preglasi stare stroke-based
    CSS pravila (fill:none), da so Phosphor ikone vidne. */
@@ -413,7 +414,7 @@ export default function ClientWorkspace() {
         {selectedProjects.map(offer => (
           <Link key={`offer-${offer.id}`} href={`${base}/kalkulator/arhiv?tip=ponudbe&odpri=${offer.id}`} className={styles.clientProjectRow}>
             <span className={styles.clientProjectVrh}><strong>{L('Ponudba', 'Offer')} · {offer.title}</strong><strong className={styles.clientProjectZnesek}>{offer.agreedAmount ? money(offer.agreedAmount) : '—'}</strong></span>
-            <span className={styles.clientProjectDno}><small>{offer.number ? `${L('Št.', 'No.')} ${offer.number} · ` : ''}{datStr(offer.date)}</small><i className={styles.clientProjectPika} data-tone={projectStatusInfo(offer.status, L).tone}>{projectStatusInfo(offer.status, L).label}</i></span>
+            <span className={styles.clientProjectDno}><small>{offer.number ? `${L('Št.', 'No.')} ${offer.number} · ` : ''}{datStr(offer.date)}</small>{jeLicencaPotekla(offer.licencaDo) && <i className={styles.clientProjectPika} style={{ color: '#a4342a', borderColor: '#a4342a' }}>{L('Licenca potekla', 'Licence expired')}</i>}<i className={styles.clientProjectPika} data-tone={projectStatusInfo(offer.status, L).tone}>{projectStatusInfo(offer.status, L).label}</i></span>
           </Link>
         ))}
         {selectedContracts.map(contract => (

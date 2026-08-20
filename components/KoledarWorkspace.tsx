@@ -40,7 +40,7 @@ type Pogled = 'dan' | 'teden' | 'mesec';
 
 type Postavka = {
   id: string;
-  tip: SestanekTip | 'racun' | 'naloga';
+  tip: SestanekTip | 'racun' | 'naloga' | 'licenca';
   naslov: string;
   ura?: string;
   datum?: string;
@@ -206,6 +206,7 @@ export default function KoledarWorkspace() {
   const [pogled, setPogled] = useState<Pogled>('mesec');
   const [sestanki, setSestanki] = useState<Sestanek[]>([]);
   const [rokiRacunov, setRokiRacunov] = useState<RacunRok[]>([]);
+  const [rokiLicenc, setRokiLicenc] = useState<RacunRok[]>([]);
   const [stranke, setStranke] = useState<FlowClient[]>([]);
   const [naloge, setNaloge] = useState<Naloga[]>([]);
   const [pokaziNaloge, setPokaziNaloge] = useState(false);
@@ -260,6 +261,11 @@ export default function KoledarWorkspace() {
       .map((r) => ({ datum: dodajDni(r.date, typeof r.dueDays === 'number' ? r.dueDays : 15), naslov: `${L('Plačilo · Račun', 'Payment · Invoice')} ${r.number || ''}`.trim(), pod: `${r.client || ''}${r.amount ? ' · ' + money(r.amount) : ''}` }))
       .filter((r) => r.datum);
     setRokiRacunov(izRacunov);
+    setRokiLicenc((flow.offers || []).filter(o => Boolean(o.licencaDo)).map(o => ({
+      datum: o.licencaDo!,
+      naslov: L('Podaljšanje licence', 'Licence renewal'),
+      pod: L(`Licenca pri stranki ${o.client} poteče. Predlagaj podaljšanje.`, `The licence for ${o.client} expires. Suggest a renewal.`),
+    })));
   }, [nacin]);
 
   /* prazen »danes« do montaže -> ni oznake danes/ni črte zdaj, dokler se strežniški in
@@ -333,7 +339,8 @@ export default function KoledarWorkspace() {
         .map((n) => ({ id: `naloga-${n.id}-${dan}`, tip: 'naloga' as const, naslov: n.naslov, pod: n.dodeljenoOsebaIme || n.dodeljenoOseba ? L('Dodeljeno: ', 'Assigned: ') + (n.dodeljenoOsebaIme || n.dodeljenoOseba) : undefined, icsOpis: n.opis, datum: dan }))
         .filter((p) => ujemaIskanje(p.naslov, p.pod))
       : [];
-    return [...racuni, ...dnevneNaloge];
+    const licence: Postavka[] = rokiLicenc.filter(r => r.datum === dan).map((r, i) => ({ id: `licenca-${dan}-${i}`, tip: 'licenca', naslov: r.naslov, pod: r.pod, icsOpis: r.pod, datum: dan }));
+    return [...racuni, ...licence, ...dnevneNaloge];
   };
 
   const mesecniDogodkiZaDan = (dan: string): Postavka[] => [...terminiZaDan(dan), ...rokiZaDan(dan)];

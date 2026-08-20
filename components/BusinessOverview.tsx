@@ -10,6 +10,7 @@ import { recordAccountingExport, saveBusinessGoal, saveCloudSettings } from '@/l
 import { demoPodatki, usePredogled } from '@/lib/predogled';
 import { preberiNaloge } from '@/lib/naloge';
 import { preberiVsePoste, type PostaVnos } from '@/lib/postaDnevnik';
+import { jeLicencaKmalu, jeLicencaPotekla } from '@/lib/licencePotek';
 
 /* Demo za nadzorno ploščo (»polno poslovanje«) — naloge + komunikacija */
 const DASH_DEMO_NALOGE: { naslov: string; stolpec: string; oseba?: string }[] = [
@@ -24,7 +25,7 @@ const DASH_DEMO_POSTA: { smer: 'poslano' | 'prejeto'; kdo: string; zadeva: strin
   { smer: 'prejeto', kdo: 'ana@rokusklett.si', zadeva: 'Gradiva in dostopi' },
 ];
 
-type Offer = { id: string; title: string; client: string; date: string; status: OfferStatus; scope?: string[]; offerNumber?: string };
+type Offer = { id: string; title: string; client: string; date: string; status: OfferStatus; scope?: string[]; offerNumber?: string; licencaDo?: string };
 type OfferStatus = 'draft' | 'sent' | 'accepted' | 'rejected';
 type Expense = { id: string; title: string; client: string; amount: number; date: string };
 type Invoice = { id: string; client: string; amount: number; paid: boolean; date: string; sourceOfferId?: string };
@@ -105,7 +106,7 @@ export default function BusinessOverview({ base }: { base: string }) {
   useEffect(() => {
     try {
       const flow = loadFlowData();
-      setOffers(flow.offers.map(item => ({ id: item.id, title: item.title, client: item.client, date: item.date, status: item.status, scope: item.scope, offerNumber: item.number })).sort((a, b) => b.date.localeCompare(a.date)));
+      setOffers(flow.offers.map(item => ({ id: item.id, title: item.title, client: item.client, date: item.date, status: item.status, scope: item.scope, offerNumber: item.number, licencaDo: item.licencaDo })).sort((a, b) => b.date.localeCompare(a.date)));
       setExpenses(flow.expenses.map(item => ({ ...item, client: item.client || '' })));
       setInvoices(flow.invoices);
       setContracts(flow.contracts);
@@ -304,6 +305,7 @@ export default function BusinessOverview({ base }: { base: string }) {
   const najboljsaStranka = clients[0];
   /* ime je lahko prazno: strosek sme biti brez stranke */
   const imeNajboljse = najboljsaStranka?.client || L('Brez stranke', 'No client');
+  const licence = offers.filter(o => jeLicencaPotekla(o.licencaDo) || jeLicencaKmalu(o.licencaDo)).sort((a, b) => (a.licencaDo || '').localeCompare(b.licencaDo || ''));
 
   return (
     <>
@@ -435,6 +437,17 @@ export default function BusinessOverview({ base }: { base: string }) {
       </div>
 
       <div className={styles.detailRow}>
+        <section className={styles.historyBand} aria-labelledby="licence-title">
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('05 · PRILOŽNOSTI', '05 · OPPORTUNITIES')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/koledar`}>{L('Koledar', 'Calendar')}</Link></div>
+          <div className={styles.bandBody}>
+            <h2 id="licence-title" className={styles.bandNaslov}>{L('Licence, ki potečejo', 'Licences expiring')}</h2>
+            {licence.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0 }}>{licence.map(o => {
+              const potekla = jeLicencaPotekla(o.licencaDo);
+              const datum = new Date(`${o.licencaDo}T00:00:00`).toLocaleDateString(dl);
+              return <li key={o.id} style={{ color: potekla ? '#a4342a' : '#8a8177', padding: '.55rem 0' }}><strong>{potekla ? L(`Licenca pri stranki ${o.client} je potekla ${datum}. Predlagaj podaljšanje.`, `The licence for ${o.client} expired on ${datum}. Suggest a renewal.`) : L(`Licenca pri stranki ${o.client} poteče ${datum}. Pripravi predlog podaljšanja.`, `The licence for ${o.client} expires on ${datum}. Prepare a renewal proposal.`)}</strong></li>;
+            })}</ul> : <p className={styles.tipText}>{L('V naslednjih 60 dneh ne poteče nobena licenca.', 'No licences expire in the next 60 days.')}</p>}
+          </div>
+        </section>
         <section className={styles.historyBand} aria-labelledby="task-title">
           <div className={styles.bandTop}><p className={styles.eyebrow}>{L('05 · NALOGE', '05 · TASKS')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/naloge`}><span className={styles.abTxt}>{L('Vse naloge', 'All tasks')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
