@@ -780,7 +780,7 @@
 .invoiceHint { margin: 0; color: var(--muted); font-size: .6rem; text-align: center; }
 .invoiceHint a { color: var(--ink); font-weight: 800; }
 .expensePage { display: grid; gap: 1rem; }
-.expenseSummary { display: grid; grid-template-columns: repeat(3, 1fr) minmax(11rem, .9fr); gap: .7rem; }
+.expenseSummary { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; }
 .expenseSummary > * { position: relative; overflow: hidden; min-height: 8rem; display: flex; flex-direction: column; align-items: flex-start; padding: 1rem; border: 1px solid color-mix(in oklch, var(--ink) 8%, transparent); border-radius: 1rem; background: oklch(98% .008 87 / .92); }
 .expenseSummary article:nth-child(1) { background: linear-gradient(140deg, oklch(96% .04 60), oklch(89% .075 52)); }
 .expenseSummary article:nth-child(2) { background: linear-gradient(140deg, oklch(96% .025 165), oklch(88% .065 165)); }
@@ -869,9 +869,6 @@
 .expenseEmptyIkona { display: grid; place-items: center; width: 3.1rem; height: 3.1rem; border-radius: 50%; background: oklch(96% .02 300); color: oklch(48% .12 300); }
 .expenseEmpty strong { font: 500 clamp(1.25rem, 4vw, 1.5rem)/1 var(--font-serif), Georgia, serif; }
 .expenseEmpty p { max-width: 20rem; color: var(--muted); font-size: .72rem; line-height: 1.5; }
-.expenseEmpty button { margin-top: .35rem; padding: .6rem 1.3rem; border: 1px solid var(--ink); border-radius: 999px; background: var(--ink); color: var(--paper); font: 700 .66rem var(--font-sans), sans-serif; cursor: pointer; }
-/* plavajoči + (Dodaj strošek) — samo mobile; skrit ob izbiri/urejanju (pogojeno v JSX) */
-.expenseFab { display: none; }
 /* ── Znacke stroska: urejevalnik (izbrane + prosti vnos + predlogi) ── */
 .expenseTagsLabel { grid-column: 1 / -1; }
 .expenseTagsBox { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; min-height: 2.65rem; padding: .35rem .5rem; border: 1px solid var(--line); border-radius: .65rem; background: oklch(100% 0 0 / .8); }
@@ -1583,8 +1580,6 @@
   .expenseList article > :nth-child(1) { grid-area: chk; align-self: center; }
   /* večji checkbox na mobile, da ga je lahko zadeti (tap drugod po vrstici = odpre urejanje) */
   .expenseList .expenseChk { width: 1.4rem; height: 1.4rem; }
-  /* plavajoči + (Dodaj strošek) — desno spodaj, nad varno cono */
-  .expenseFab { display: inline-flex; align-items: center; justify-content: center; position: fixed; right: 1rem; bottom: calc(1.1rem + env(safe-area-inset-bottom, 0px)); z-index: 55; width: 3.2rem; height: 3.2rem; padding: 0; border: 0; border-radius: 50%; background: var(--ink); color: var(--paper); box-shadow: 0 10px 26px rgba(40,25,40,.34); cursor: pointer; }
   .expenseList article > :nth-child(2) { grid-area: coin; align-self: center; }
   .expenseList article > :nth-child(3) { grid-area: naziv; min-width: 0; }
   .expenseList article > :nth-child(4) { grid-area: znesek; text-align: right; min-width: 0; }

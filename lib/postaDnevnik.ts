@@ -28,6 +28,8 @@ export type PostaVnos = {
   messageId?: string;
   inReplyTo?: string;
   references?: string[];
+  popravek?: boolean;      // oznaka: sporocilo vsebuje zahtevo za popravek
+  popravekResenAt?: string;// ISO cas resitve; brez vrednosti je popravek odprt
   updatedAt?: string;
   deletedAt?: string;
 };
@@ -95,6 +97,15 @@ export const premakniPosto = (id: string, novProjectId: string): void => {
 /* Nastavi oznake (labele) zapisa. */
 export const nastaviOznakePoste = (id: string, oznake: string[]): void => {
   shraniVse(preberiVse().map(v => (v.id === id ? { ...v, oznake } : v)));
+};
+
+/* Popravek ostane navadno sporocilo; ti polji mu dodata le oznako in stanje naloge. */
+export const nastaviPopravekPoste = (id: string, popravek: boolean, resenAt?: string): void => {
+  shraniVse(preberiVse().map(v => (v.id === id ? {
+    ...v,
+    popravek,
+    popravekResenAt: popravek ? resenAt : undefined,
+  } : v)));
 };
 
 /* Premakne zapis v Kos (izbrisano = ISO cas) ali ga obnovi (izbrisano = undefined). */
