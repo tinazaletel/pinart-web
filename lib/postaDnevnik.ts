@@ -25,6 +25,9 @@ export type PostaVnos = {
   zvezda?: boolean;        // neobvezno: oznaceno z zvezdico (pomembno)
   oznake?: string[];       // neobvezno: labele/oznake na sporocilu
   prebrano?: boolean;      // neobvezno: je bilo prebrano (za stevec neprebranih na Komunikaciji)
+  messageId?: string;
+  inReplyTo?: string;
+  references?: string[];
   updatedAt?: string;
   deletedAt?: string;
 };

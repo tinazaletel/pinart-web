@@ -109,9 +109,9 @@ export default function DeliZapis({
 
       <style jsx>{`
         .dz { display: flex; flex-direction: column; gap: .55rem; }
-        .dz-naslov { margin: 0; font-size: .72rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #8a8177; }
+        .dz-naslov { margin: 0; font-size: .72rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #6b655d; }
         .dz-zapis { font-weight: 500; letter-spacing: .02em; text-transform: none; }
-        .dz-tiho { margin: 0; font-size: .82rem; color: #8a8177; line-height: 1.45; }
+        .dz-tiho { margin: 0; font-size: .82rem; color: #6b655d; line-height: 1.45; }
         .dz-seznam { display: flex; flex-wrap: wrap; gap: .45rem; }
         .dz-clan { display: inline-flex; align-items: center; gap: .5rem; padding: .45rem .85rem; border-radius: 999px; border: 1.5px solid rgba(17,17,17,.15); background: #fff; color: #111; font: inherit; font-size: .82rem; font-weight: 600; cursor: pointer; transition: border-color .15s, background .15s, color .15s; }
         .dz-clan:hover:not(:disabled) { border-color: rgba(17,17,17,.4); }

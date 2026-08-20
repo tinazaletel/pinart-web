@@ -361,7 +361,7 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         .sef-drop.mini { flex-direction: row; padding: .85rem 1rem; font-size: .9rem; }
         .sef-drop input { display: none; }
         .sef-drop :global(svg) { color: var(--accent); }
-        .sef-drop small { font-size: .74rem; color: rgba(17,17,17,.55); }
+        .sef-drop small { font-size: .74rem; color: rgba(17,17,17,.72); }
         .sef-polja { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; margin-top: 1rem; }
         @media (max-width: 560px) { .sef-polja { grid-template-columns: 1fr; } }
         .sef-polje { display: flex; flex-direction: column; gap: .35rem; margin-top: 1rem; }
@@ -372,7 +372,7 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         .sef-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; margin-top: 1.2rem; width: auto; align-self: flex-start; font-family: inherit; font-size: .9rem; font-weight: 650; letter-spacing: .02em; color: var(--paper); background: var(--ink); border: none; border-radius: 999px; padding: .85rem 1.6rem; cursor: pointer; transition: transform .15s, opacity .15s; }
         .sef-gumb:hover:not(:disabled) { transform: translateY(-1px); }
         .sef-gumb:disabled { opacity: .45; cursor: not-allowed; }
-        .sef-mini { display: flex; align-items: center; gap: .4rem; font-size: .76rem; color: rgba(17,17,17,.55); margin: .8rem 0 0; }
+        .sef-mini { display: flex; align-items: center; gap: .4rem; font-size: .76rem; color: rgba(17,17,17,.72); margin: .8rem 0 0; }
         .sef-mini :global(svg) { color: oklch(55% .13 155); flex: none; }
         .sef-mini2 { font-size: .84rem; line-height: 1.5; color: rgba(17,17,17,.7); margin: 0 0 .9rem; }
         .sef-najdba { display: flex; align-items: center; gap: .45rem; font-size: .88rem; font-weight: 600; margin: .9rem 0 0; padding: .7rem .9rem; border-radius: 10px; }
@@ -382,24 +382,24 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         .sef-seznam-glava { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.2rem; }
         .sef-seznam h2 { font-size: 1.12rem; margin: 0; }
         .sef-st { display: inline-grid; place-items: center; min-width: 1.4rem; height: 1.4rem; padding: 0 .4rem; border-radius: 999px; background: oklch(93% .05 297); color: var(--accent); font-size: .78rem; font-weight: 700; margin-left: .3rem; }
-        .sef-iskalo { display: inline-flex; align-items: center; gap: .5rem; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: .48rem .95rem; color: rgba(17,17,17,.45); min-width: 15rem; }
+        .sef-iskalo { display: inline-flex; align-items: center; gap: .5rem; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: .48rem .95rem; color: rgba(17,17,17,.72); min-width: 15rem; }
         .sef-iskalo:focus-within { border-color: var(--accent); }
         .sef-iskalo input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: inherit; font-size: .88rem; color: var(--ink); }
         .sef-filtri { display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: 1.2rem; }
         .sef-filtri button { font-family: inherit; font-size: .8rem; font-weight: 600; color: rgba(17,17,17,.66); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: .38rem .85rem; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
         .sef-filtri button:hover { border-color: rgba(17,17,17,.3); }
         .sef-filtri button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-        .sef-prazno { font-size: .9rem; color: rgba(17,17,17,.55); padding: 1.8rem; text-align: center; border: 1px dashed var(--line); border-radius: 14px; }
+        .sef-prazno { font-size: .9rem; color: rgba(17,17,17,.72); padding: 1.8rem; text-align: center; border: 1px dashed var(--line); border-radius: 14px; }
         .sef-znacka { display: inline-block; font-size: .68rem; font-weight: 650; letter-spacing: .02em; color: var(--accent); background: oklch(95% .04 297); border-radius: 999px; padding: .12rem .55rem; white-space: nowrap; }
         .sef-crtica { color: rgba(17,17,17,.35); }
         .sef-tabela-ovoj { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; overflow-x: auto; background: rgba(255,255,255,.55); }
         .sef-tabela { width: 100%; border-collapse: collapse; font-size: .86rem; }
-        .sef-tabela th { text-align: left; font-size: .66rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: rgba(17,17,17,.5); padding: .85rem 1.1rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
+        .sef-tabela th { text-align: left; font-size: .66rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: rgba(17,17,17,.72); padding: .85rem 1.1rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
         .sef-tabela td { padding: 1rem 1.1rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
         .sef-tabela tr:last-child td { border-bottom: none; }
         .sef-tabela tbody tr:hover td { background: oklch(98% .012 297 / .6); }
         .sef-td-delo strong { display: block; font-weight: 650; font-size: .92rem; }
-        .sef-td-delo small { display: block; font-size: .74rem; color: rgba(17,17,17,.5); margin-top: .14rem; }
+        .sef-td-delo small { display: block; font-size: .74rem; color: rgba(17,17,17,.72); margin-top: .14rem; }
         .sef-td-orodje { color: rgba(17,17,17,.72); white-space: nowrap; }
         .sef-td-datum { color: rgba(17,17,17,.6); white-space: nowrap; font-variant-numeric: tabular-nums; }
         .sef-hash-btn { display: inline-flex; align-items: center; gap: .35rem; font-family: inherit; font-size: .74rem; color: rgba(17,17,17,.6); background: oklch(96% .006 285); border: 1px solid var(--line); border-radius: 7px; padding: .32rem .58rem; cursor: pointer; white-space: nowrap; }

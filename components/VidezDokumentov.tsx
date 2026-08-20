@@ -329,7 +329,7 @@ export default function VidezDokumentov({
         .vd-ovoj { display: flex; flex-direction: column; gap: 1.5rem; }
         .vd-uvod { margin: 0; font-size: .9rem; line-height: 1.55; color: #4a4550; }
         .vd-blok { display: flex; flex-direction: column; gap: .7rem; }
-        .vd-oznaka { font-size: .72rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #8a8177; }
+        .vd-oznaka { font-size: .72rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #6b655d; }
         .vd-predloge { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
         .vd-predloga { display: inline-flex; align-items: center; gap: .45rem; padding: .5rem .9rem; border-radius: 999px; border: 1.5px solid rgba(17,17,17,.15); background: #fff; color: #111; font-size: .82rem; font-weight: 600; cursor: pointer; transition: border-color .15s, background .15s, color .15s; }
         .vd-predloga:hover { border-color: rgba(17,17,17,.4); }
@@ -346,7 +346,7 @@ export default function VidezDokumentov({
         .vd-pp input, .vd-pp textarea { font: inherit; font-size: .92rem; color: #111; padding: .55rem .75rem; border-radius: 9px; border: 1.5px solid rgba(17,17,17,.15); background: #fff; resize: vertical; }
         .vd-pp input:focus, .vd-pp textarea:focus { outline: none; border-color: rgba(17,17,17,.4); }
         .vd-pred-glava { display: block; margin-top: .3rem; font-size: .78rem; letter-spacing: .04em; color: var(--vd-akcent); font-weight: 600; }
-        .vd-pred-noga { margin-top: .9rem !important; padding-top: .7rem; border-top: 1px solid rgba(17,17,17,.1); font-size: .78rem !important; color: #9a9088 !important; white-space: pre-line; }
+        .vd-pred-noga { margin-top: .9rem !important; padding-top: .7rem; border-top: 1px solid rgba(17,17,17,.1); font-size: .78rem !important; color: #6b655d !important; white-space: pre-line; }
         .vd-barve { display: flex; flex-wrap: wrap; gap: .6rem; }
         .vd-barva { width: 38px; height: 38px; border-radius: 999px; border: 2px solid rgba(0,0,0,.08); cursor: pointer; padding: 0; transition: transform .15s, box-shadow .15s; }
         .vd-barva:hover { transform: translateY(-2px); }
@@ -360,7 +360,7 @@ export default function VidezDokumentov({
         .vd-font-nalozi { font-size: .82rem; border-style: dashed; color: #4a4550; }
         .vd-font-nalozi:hover { border-style: solid; border-color: rgba(17,17,17,.4); }
         .vd-font-info { font-size: .78rem; color: #6E4FA6; }
-        .vd-namig { margin: -.3rem 0 .2rem; font-size: .8rem; color: #8a8177; line-height: 1.45; }
+        .vd-namig { margin: -.3rem 0 .2rem; font-size: .8rem; color: #6b655d; line-height: 1.45; }
         .vd-predogled { border: 1px solid rgba(17,17,17,.1); border-radius: 14px; padding: 1.4rem 1.5rem; background: #FCFBF7; }
         .vd-pred-kick { font-size: .68rem; letter-spacing: .24em; text-transform: uppercase; font-weight: 700; color: var(--vd-akcent); }
         .vd-predogled h3 { margin: .5rem 0 0; font-size: 1.7rem; font-weight: 600; color: #111; line-height: 1.1; }
@@ -384,7 +384,7 @@ export default function VidezDokumentov({
         .vd-podl-izberi { position: absolute; inset: 0; border: 0; background: transparent; cursor: pointer; }
         .vd-podl-x { position: absolute; top: 2px; right: 2px; z-index: 1; width: 16px; height: 16px; border-radius: 50%; border: 0; background: rgba(20,15,18,.6); color: #fff; font-size: 11px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
         .vd-podl-x:hover { background: #a44a3f; }
-        .vd-ponastavi { align-self: flex-start; background: none; border: none; color: #8a8177; font-size: .82rem; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; padding: 0; }
+        .vd-ponastavi { align-self: flex-start; background: none; border: none; color: #6b655d; font-size: .82rem; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; padding: 0; }
         .vd-ponastavi:hover { color: #111; }
       `}</style>
     </div>
