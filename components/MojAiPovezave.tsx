@@ -1,5 +1,7 @@
 'use client';
 
+import { AI_PONUDNIKI } from '@/lib/aiPonudniki';
+
 /* »Moj AI« — uporabnica poveze SVOJEGA AI ponudnika (svoj racun, svoj strosek).
    Zaledje je ze postavljeno in se ga tu NE dotikamo:
      GET    /api/ai/povezave?organizationId=…            → { connections: [...] }
@@ -29,69 +31,9 @@ type Povezava = {
 /* Ponudniki, ki jih uporabnica lahko izbere. Vrednosti so TOCNO tiste, ki jih
    dovoli zaledje (lib/aiConnections.ts → AI_PROVIDERS). »custom-mcp« tu ni,
    ker ga zaledje ne zna preveriti in zahteva MCP odjemalca. */
-const PONUDNIKI = [
-  { id: 'openai', ime: 'OpenAI (ChatGPT)', model: 'gpt-4.1-mini',
-    kjeSl: 'platform.openai.com → API keys', kjeEn: 'platform.openai.com → API keys',
-    url: 'https://platform.openai.com/api-keys',
-    korakiSl: ['Odpri platform.openai.com in se prijavi z računom, ki ga že uporabljaš za ChatGPT.',
-               'Zgoraj desno klikni svoj profil → »API keys«.',
-               'Klikni »Create new secret key« in ga poimenuj npr. »Pinart Flow«.',
-               'Kopiraj ključ (začne se s sk-). Pokaže se SAMO enkrat.',
-               'Za uporabo potrebuješ dobroimetje: Settings → Billing. Naročnina na ChatGPT Plus tu ne velja — API se plačuje ločeno.'],
-    korakiEn: ['Open platform.openai.com and sign in with the account you use for ChatGPT.',
-               'Top right, click your profile → “API keys”.',
-               'Click “Create new secret key” and name it e.g. “Pinart Flow”.',
-               'Copy the key (starts with sk-). It is shown ONLY once.',
-               'You need credit to use it: Settings → Billing. A ChatGPT Plus subscription does not cover the API — it is billed separately.'] },
-  { id: 'anthropic', ime: 'Anthropic (Claude)', model: 'claude-sonnet-4-20250514',
-    kjeSl: 'console.anthropic.com → API keys', kjeEn: 'console.anthropic.com → API keys',
-    url: 'https://console.anthropic.com/settings/keys',
-    korakiSl: ['Odpri console.anthropic.com in se prijavi.',
-               'V levem meniju izberi »API keys«.',
-               'Klikni »Create Key« in ga poimenuj npr. »Pinart Flow«.',
-               'Kopiraj ključ (začne se s sk-ant-). Pokaže se SAMO enkrat.',
-               'Za uporabo potrebuješ dobroimetje: »Plans & Billing«. Naročnina na Claude Pro tu ne velja.'],
-    korakiEn: ['Open console.anthropic.com and sign in.',
-               'In the left menu choose “API keys”.',
-               'Click “Create Key” and name it e.g. “Pinart Flow”.',
-               'Copy the key (starts with sk-ant-). It is shown ONLY once.',
-               'You need credit: “Plans & Billing”. A Claude Pro subscription does not cover the API.'] },
-  { id: 'google', ime: 'Google (Gemini)', model: 'gemini-2.5-flash',
-    kjeSl: 'aistudio.google.com → API key', kjeEn: 'aistudio.google.com → API key',
-    url: 'https://aistudio.google.com/app/apikey',
-    korakiSl: ['Odpri aistudio.google.com in se prijavi z Google računom.',
-               'Klikni »Get API key« oziroma »Create API key«.',
-               'Izberi projekt (ali pusti privzetega) in potrdi.',
-               'Kopiraj ključ.',
-               'Gemini ima brezplačno raven z omejitvami — za redno rabo vklopi obračun v Google Cloud.'],
-    korakiEn: ['Open aistudio.google.com and sign in with your Google account.',
-               'Click “Get API key” or “Create API key”.',
-               'Pick a project (or keep the default) and confirm.',
-               'Copy the key.',
-               'Gemini has a free tier with limits — for regular use enable billing in Google Cloud.'] },
-  { id: 'mistral', ime: 'Mistral', model: 'mistral-small-latest',
-    kjeSl: 'console.mistral.ai → API keys', kjeEn: 'console.mistral.ai → API keys',
-    url: 'https://console.mistral.ai/api-keys',
-    korakiSl: ['Odpri console.mistral.ai in se prijavi.',
-               'Izberi »API keys«.',
-               'Klikni »Create new key« in ga poimenuj.',
-               'Kopiraj ključ. Pokaže se SAMO enkrat.'],
-    korakiEn: ['Open console.mistral.ai and sign in.',
-               'Choose “API keys”.',
-               'Click “Create new key” and name it.',
-               'Copy the key. It is shown ONLY once.'] },
-  { id: 'openai-compatible', ime: 'Drug ponudnik (OpenAI-združljiv)', model: '',
-    kjeSl: 'pri svojem ponudniku', kjeEn: 'from your provider',
-    url: '',
-    korakiSl: ['To izberi, če tvoj ponudnik ponuja »OpenAI-združljiv« API (npr. Groq, Together, OpenRouter, lasten strežnik).',
-               'V njegovih nastavitvah ustvari API ključ in ga kopiraj.',
-               'Poišči še »Base URL« oziroma naslov API-ja — vpisati ga moraš v polje spodaj.',
-               'Vpiši tudi ime modela; brez njega ponudnik ne ve, kaj naj požene.'],
-    korakiEn: ['Choose this if your provider offers an “OpenAI-compatible” API (e.g. Groq, Together, OpenRouter, your own server).',
-               'Create an API key in their settings and copy it.',
-               'Find the “Base URL” — you must enter it in the field below.',
-               'Enter the model name too; without it the provider does not know what to run.'] },
-] as const;
+
+
+const PONUDNIKI = AI_PONUDNIKI;
 
 const IMENA_PONUDNIKOV: Record<string, string> = {
   openai: 'OpenAI',

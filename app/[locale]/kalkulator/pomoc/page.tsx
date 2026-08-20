@@ -17,6 +17,7 @@ export default async function PomocPage({ params }: { params: Promise<{ locale: 
   const kartice = [
     { naslov: 'Kako Flow deluje', opis: 'Pregled orodij in kaj katero naredi.', href: `${base}/flow`, zunanja: false },
     { naslov: 'Kako nastaviš ceno', opis: 'Odpri kalkulator in pojdi skozi vprašanja.', href: `${base}/kalkulator/orodje`, zunanja: false },
+    { naslov: 'Poveži svoj AI', opis: 'Kje dobiš ključ pri ChatGPT, Claudu, Geminiju — po korakih.', href: `${base}/kalkulator/pomoc/moj-ai`, zunanja: false },
     { naslov: 'Pogoji in zasebnost', opis: 'Kaj hranimo in česa ne.', href: `${base}/kalkulator/pogoji`, zunanja: false },
   ];
 
