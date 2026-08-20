@@ -31,12 +31,15 @@ import {
   type MarketingVrsta,
 } from '@/lib/marketing';
 import styles from './MarketingWorkspace.module.css';
+import { preberiNaloge, shraniNaloge, type Naloga } from '@/lib/naloge';
 
 type Zavihek = 'pregled' | 'objave' | 'kampanje' | 'predloge' | 'povezave';
 type SocialKanal = 'instagram' | 'facebook' | 'linkedin' | 'tiktok' | 'youtube' | 'x' | 'threads' | 'pinterest';
-type NacrtovanaObjava = { id: string; kanal: SocialKanal; besedilo: string; datum: string; ustvarjeno: string };
+type Kanal = SocialKanal | 'lasten';
+type NacrtovanaObjava = { id: string; kanal: Kanal; kanalIme?: string; kanalUrl?: string; naslov?: string; besedilo: string; datum: string; ustvarjeno: string; nalogaId?: string };
 
 const OBJAVE_KLJUC = 'pinart-flow-marketing-objave-v1';
+const KANALI_KLJUC = 'pinart-flow-marketing-kanali-v1';
 const SOCIAL_LINKI: Record<SocialKanal, string> = {
   instagram: 'https://www.instagram.com/',
   facebook: 'https://www.facebook.com/',
@@ -110,7 +113,8 @@ export default function MarketingWorkspace({ base }: { base: string }) {
   const [urejamId, setUrejamId] = useState<string | null>(null);
   const [obrazec, setObrazec] = useState(PRAZEN);
   const [objave, setObjave] = useState<NacrtovanaObjava[]>([]);
-  const [objava, setObjava] = useState<{ kanal: SocialKanal; besedilo: string; datum: string }>({ kanal: 'instagram', besedilo: '', datum: '' });
+  const [objava, setObjava] = useState<{ kanal: Kanal; kanalIme: string; kanalUrl: string; naslov: string; besedilo: string; datum: string }>({ kanal: 'instagram', kanalIme: '', kanalUrl: '', naslov: '', besedilo: '', datum: '' });
+  const [profilniNaslovi, setProfilniNaslovi] = useState<Partial<Record<SocialKanal, string>>>({});
   const [kopiranoId, setKopiranoId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -118,6 +122,8 @@ export default function MarketingWorkspace({ base }: { base: string }) {
     try {
       const shranjene = window.localStorage.getItem(OBJAVE_KLJUC);
       setObjave(shranjene ? JSON.parse(shranjene) : []);
+      const kanali = window.localStorage.getItem(KANALI_KLJUC);
+      setProfilniNaslovi(kanali ? JSON.parse(kanali) : {});
     } catch { setObjave([]); }
   }, []);
 
@@ -204,7 +210,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
     const naslednje = [nova, ...objave];
     setObjave(naslednje);
     window.localStorage.setItem(OBJAVE_KLJUC, JSON.stringify(naslednje));
-    setObjava({ kanal: objava.kanal, besedilo: '', datum: '' });
+    setObjava({ kanal: objava.kanal, kanalIme: objava.kanalIme, kanalUrl: objava.kanalUrl, naslov: '', besedilo: '', datum: '' });
   };
 
   const izbrisiObjavo = (id: string) => {
@@ -219,6 +225,18 @@ export default function MarketingWorkspace({ base }: { base: string }) {
     window.setTimeout(() => setKopiranoId((trenutni) => trenutni === vnos.id ? null : trenutni), 1800);
   };
 
+  const shraniProfilneNaslove = () => window.localStorage.setItem(KANALI_KLJUC, JSON.stringify(profilniNaslovi));
+  const oznakaKanala = (vnos: Pick<NacrtovanaObjava, 'kanal' | 'kanalIme'>) => vnos.kanal === 'lasten' ? (vnos.kanalIme || L('Lasten kanal', 'Custom channel')) : SOCIAL_OZNAKE[vnos.kanal];
+  const naslovKanala = (vnos: NacrtovanaObjava) => vnos.kanal === 'lasten' ? vnos.kanalUrl : (profilniNaslovi[vnos.kanal] || SOCIAL_LINKI[vnos.kanal]);
+  const ustvariNalogo = (vnos: NacrtovanaObjava) => {
+    if (vnos.nalogaId) return;
+    const zdaj = new Date().toISOString();
+    const naloga: Naloga = { id: crypto.randomUUID(), naslov: vnos.naslov?.trim() || `${oznakaKanala(vnos)} · ${vnos.besedilo.trim().slice(0, 70)}`, opis: vnos.besedilo, stolpec: 'todo', rok: vnos.datum, created: zdaj, oznake: ['marketing', 'objava'] };
+    shraniNaloge([naloga, ...preberiNaloge()]);
+    const naslednje = objave.map(o => o.id === vnos.id ? { ...o, nalogaId: naloga.id } : o);
+    setObjave(naslednje); window.localStorage.setItem(OBJAVE_KLJUC, JSON.stringify(naslednje));
+  };
+
   const Objave = () => (
     <section className={styles.postPlanner} aria-labelledby="objave-naslov">
       <header className={styles.sectionHeader}>
@@ -227,7 +245,9 @@ export default function MarketingWorkspace({ base }: { base: string }) {
       </header>
       <div className={styles.plannerGrid}>
         <form className={styles.postForm} onSubmit={shraniObjavo}>
-          <label>{L('Kanal', 'Channel')}<select value={objava.kanal} onChange={(e) => setObjava({ ...objava, kanal: e.target.value as SocialKanal })}>{(Object.keys(SOCIAL_OZNAKE) as SocialKanal[]).map((k) => <option key={k} value={k}>{SOCIAL_OZNAKE[k]}</option>)}</select></label>
+          <label>{L('Kanal', 'Channel')}<select value={objava.kanal} onChange={(e) => setObjava({ ...objava, kanal: e.target.value as Kanal })}>{(Object.keys(SOCIAL_OZNAKE) as SocialKanal[]).map((k) => <option key={k} value={k}>{SOCIAL_OZNAKE[k]}</option>)}<option value="lasten">{L('Lasten kanal …', 'Custom channel …')}</option></select></label>
+          {objava.kanal === 'lasten' && <><label>{L('Ime kanala', 'Channel name')}<input required value={objava.kanalIme} onChange={e => setObjava({ ...objava, kanalIme: e.target.value })} placeholder={L('Npr. Novičnik', 'E.g. Newsletter')} /></label><label>{L('Naslov (neobvezno)', 'URL (optional)')}<input type="url" value={objava.kanalUrl} onChange={e => setObjava({ ...objava, kanalUrl: e.target.value })} placeholder="https://…" /></label></>}
+          <label>{L('Naslov objave', 'Post title')}<input required value={objava.naslov} onChange={e => setObjava({ ...objava, naslov: e.target.value })} placeholder={L('Npr. Nova identiteta hotela', 'E.g. New hotel identity')} /></label>
           <label>{L('Datum objave', 'Post date')}<input required type="date" value={objava.datum} onChange={(e) => setObjava({ ...objava, datum: e.target.value })} />{objava.datum && <small style={{ display: 'block', marginTop: '.3rem', fontSize: '.72rem', color: 'rgba(17,17,17,.72)' }}>{new Date(objava.datum + 'T00:00:00').toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</small>}</label>
           <label className={styles.captionField}>{L('Besedilo objave', 'Post text')}<textarea required value={objava.besedilo} onChange={(e) => setObjava({ ...objava, besedilo: e.target.value })} placeholder={L('Napiši uvod, glavno sporočilo in jasen naslednji korak …', 'Write an intro, the main message and a clear next step …')} /></label>
           <p className={styles.manualNote}>{L('Flow vsebine ne objavi samodejno. Po shranjevanju jo kopiraš in odpreš izbrano omrežje.', 'Flow does not post content automatically. After saving, you copy it and open the chosen network.')}</p>
@@ -236,11 +256,12 @@ export default function MarketingWorkspace({ base }: { base: string }) {
         <div className={styles.postList} aria-live="polite">
           {objave.length === 0 ? <div className={styles.postEmpty}><ShareNetwork size={30} /><strong>{L('Še nimaš načrtovanih objav.', 'You have no planned posts yet.')}</strong><p>{L('Prva se bo po shranjevanju prikazala tukaj.', 'The first one will appear here after you save it.')}</p></div> : objave.map((vnos) => (
             <article className={styles.postCard} key={vnos.id}>
-              <header><span>{SOCIAL_OZNAKE[vnos.kanal]}</span><time dateTime={vnos.datum}>{new Date(`${vnos.datum}T12:00:00`).toLocaleDateString(dl)}</time></header>
-              <p>{vnos.besedilo}</p>
+              <header><span>{oznakaKanala(vnos)}</span><time dateTime={vnos.datum}>{new Date(`${vnos.datum}T12:00:00`).toLocaleDateString(dl)}</time></header>
+              {vnos.naslov && <h3>{vnos.naslov}</h3>}<p>{vnos.besedilo}</p>
               <div className={styles.postActions}>
                 <button className={styles.secondary} type="button" onClick={() => kopirajObjavo(vnos)}>{kopiranoId === vnos.id ? <Check size={18} /> : <Code size={18} />}{kopiranoId === vnos.id ? L('Kopirano', 'Copied') : L('Kopiraj besedilo', 'Copy text')}</button>
-                <a className={styles.primary} href={SOCIAL_LINKI[vnos.kanal]} target="_blank" rel="noreferrer">{L('Odpri', 'Open')} {SOCIAL_OZNAKE[vnos.kanal]} <ArrowRight size={18} /></a>
+                {naslovKanala(vnos) && <a className={styles.primary} href={naslovKanala(vnos)} target="_blank" rel="noreferrer">{L('Odpri', 'Open')} {oznakaKanala(vnos)} <ArrowRight size={18} /></a>}
+                <button className={styles.secondary} type="button" disabled={Boolean(vnos.nalogaId)} onClick={() => ustvariNalogo(vnos)}><CheckSquare size={18} />{vnos.nalogaId ? L('Naloga ustvarjena', 'Task created') : L('Ustvari nalogo', 'Create task')}</button>
                 <button className={styles.iconButton} type="button" onClick={() => izbrisiObjavo(vnos.id)} aria-label={L('Izbriši načrtovano objavo', 'Delete planned post')}><Trash size={19} /></button>
               </div>
             </article>
@@ -314,6 +335,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
         <div><p className={styles.sectionLabel}>{L('POVEZAVE', 'CONNECTIONS')}</p><h2 id="povezave-naslov">{L('Vse ostane v tvojem toku.', 'Everything stays in your flow.')}</h2><p>{L('Marketing se poveže z orodji, ki jih že uporabljaš v Flowu.', 'Marketing connects to the tools you already use in Flow.')}</p></div>
       </header>
       <div className={styles.integrationGrid}>
+        <article className={styles.integrationCard}><div className={styles.integrationHead}><ShareNetwork size={25} /><span className={styles.connectionState} data-ready="true">{L('Tvoji profili', 'Your profiles')}</span></div><h3>{L('Naslovi profilov', 'Profile URLs')}</h3><p>{L('Vpiši jih enkrat. Gumb »Odpri« te bo nato peljal naravnost na tvoj profil.', 'Enter them once. “Open” will then take you directly to your profile.')}</p>{(Object.keys(SOCIAL_OZNAKE) as SocialKanal[]).map(kanal => <label key={kanal} style={{ display: 'grid', gap: '.25rem', marginTop: '.5rem', color: '#6b655d', fontSize: '.75rem', fontWeight: 700 }}>{SOCIAL_OZNAKE[kanal]}<input type="url" value={profilniNaslovi[kanal] || ''} onChange={e => setProfilniNaslovi({ ...profilniNaslovi, [kanal]: e.target.value })} placeholder={SOCIAL_LINKI[kanal]} /></label>)}<button className={styles.secondary} type="button" onClick={shraniProfilneNaslove}>{L('Shrani naslove', 'Save URLs')}</button></article>
         <article className={styles.integrationCard}><div className={styles.integrationHead}><CalendarBlank size={25} /><span className={styles.connectionState} data-ready="true">{L('Vključeno', 'Enabled')}</span></div><h3>{L('Flow Koledar', 'Flow Calendar')}</h3><p>{L('Načrtovani datumi kampanj so pripravljeni za pregled ob drugih rokih.', 'Planned campaign dates are ready to review alongside your other deadlines.')}</p><Link className={styles.secondary} href={`${base}/kalkulator/koledar`}>{L('Odpri koledar', 'Open calendar')}</Link></article>
         <article className={styles.integrationCard}><div className={styles.integrationHead}><CheckSquare size={25} /><span className={styles.connectionState} data-ready="true">{L('Vključeno', 'Enabled')}</span></div><h3>{L('Flow Naloge', 'Flow Tasks')}</h3><p>{L('Pripravo besedil, vizualov in objav vodiš kot opravila.', 'You manage copy, visuals and post prep as tasks.')}</p><Link className={styles.secondary} href={`${base}/kalkulator/naloge`}>{L('Odpri naloge', 'Open tasks')}</Link></article>
         <article className={styles.integrationCard}><div className={styles.integrationHead}><EnvelopeSimple size={25} /><span className={styles.connectionState}>{L('Kmalu', 'Soon')}</span></div><h3>{L('Pošiljanje e-pošte', 'Email sending')}</h3><p>{L('Pred dejanskim pošiljanjem bomo dodali privolitev, odjavo in zanesljivo dostavo.', 'Before any real sending, we will add consent, unsubscribe and reliable delivery.')}</p></article>
