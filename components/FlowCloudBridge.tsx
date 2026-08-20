@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import { loadFlowData, writeFlowDataLocally } from '@/lib/pinartFlowStore';
 import { loadCloudSettings, loadOrganizationProfile, mergeFlowData, pullFlowData, pushFlowData, saveCloudSettings, saveOrganizationProfile } from '@/lib/pinartFlowCloud';
 import { pushProjekti, sinhronizirajProjekte } from '@/lib/projektiOblak';
+import { pushEvidencaCasa, sinhronizirajEvidencoCasa } from '@/lib/evidencaCasaOblak';
 import { pushDokVidez, sinhronizirajDokVidez } from '@/lib/dokVidezOblak';
 import { pushNaloge, sinhronizirajNaloge } from '@/lib/nalogeOblak';
 import { pushSestanki, sinhronizirajSestanke } from '@/lib/sestankiOblak';
@@ -159,6 +160,7 @@ export default function FlowCloudBridge() {
          ker so med sabo neodvisne; ce ena pade, ostale to prezrejo. */
       const izidi = await Promise.allSettled([
         sinhronizirajProjekte(),
+        sinhronizirajEvidencoCasa(),
         sinhronizirajNaloge(),
         sinhronizirajSestanke(),
         sinhronizirajDnevnik(),
@@ -192,6 +194,7 @@ export default function FlowCloudBridge() {
   useEffect(() => {
     const poDogodku: Record<string, () => Promise<unknown>> = {
       'pinart-projekti-change': pushProjekti,
+      'pinart-evidenca-casa-change': pushEvidencaCasa,
       'pinart-naloge-change': pushNaloge,
       'pinart-sestanki-change': pushSestanki,
       'pinart-dnevnik-change': pushDnevnik,

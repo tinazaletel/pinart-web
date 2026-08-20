@@ -3,7 +3,7 @@
 import {
   SquaresFour, FileText, Repeat, Handshake, Receipt, Users, Tag, Wallet,
   Target, Clock, Layout, Folders, GearSix, LifebuoyIcon, Kanban, CalendarBlank,
-  PaintBrush, FolderOpen, Calculator, ChatsCircle, Megaphone, ShieldCheck,
+  PaintBrush, FolderOpen, Calculator, ChatsCircle, Megaphone, ShieldCheck, ClipboardText,
 } from '@phosphor-icons/react';
 
 /**
@@ -16,7 +16,7 @@ import {
 export type NavIkonaVrsta =
   | 'pregled' | 'projekti' | 'ponudba' | 'retainer' | 'pogodba' | 'racuni'
   | 'stranke' | 'ceniki' | 'stroski'
-  | 'cilji' | 'cas' | 'okvir' | 'naloge' | 'koledar'
+  | 'cilji' | 'cas' | 'evidenca' | 'okvir' | 'naloge' | 'koledar'
   | 'zgodovina' | 'nastavitve' | 'dizajn' | 'pomoc' | 'racunovodstvo' | 'komunikacije' | 'marketing' | 'sef';
 
 const IKONE = {
@@ -31,6 +31,9 @@ const IKONE = {
   stroski: Wallet,
   cilji: Target,
   cas: Clock,
+  /* evidenca delovnega časa (ZEPDSV) — zapisnik, ne štoparica, zato podloga in
+     ne ura: ikona mora na prvi pogled ločiti obe postavki */
+  evidenca: ClipboardText,
   okvir: Layout,
   naloge: Kanban,
   koledar: CalendarBlank,
