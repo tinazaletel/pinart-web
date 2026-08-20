@@ -89,6 +89,13 @@ export interface Projekt {
     naslov?: string; problem?: string; resitev?: string; zakajMi?: string;
     obseg?: string; okvirnaCena?: string; naslednjiKorak?: string;
   };
+  /* SWOT je poslovni dokument projekta; v oblak gre z ostalim data jsonb. */
+  swot?: {
+    prednosti: string;
+    slabosti: string;
+    priloznosti: string;
+    nevarnosti: string;
+  };
   /* cas zadnje spremembe (ISO) — nujen za sinhronizacijo z oblakom
      (lib/projektiOblak): ob srecanju lokalne in oblacne razlicice zmaga
      novejsa. Stari zapisi ga nimajo; takrat velja created. */
