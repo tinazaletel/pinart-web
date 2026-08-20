@@ -395,7 +395,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { id: 'dokumenti', Ikona: Receipt, label: 'Documents', h: 'From proposal to invoice, without duplicate work', p: 'Proposals, contracts, invoices and expenses share the same data. Turn an approved proposal into an invoice in one click.', tocke: ['Numbering, due dates and payment status', 'Collaboration and rights-transfer agreements', 'A consistent look across documents'], cta: 'Explore tools', href: '#orodja' },
     { id: 'pregled', Ikona: ChartLineUp, label: 'Insights', h: 'Know what your work is worth', p: 'An anonymous market benchmark shows where your price sits, while the dashboard tracks revenue, payments and profit.', tocke: ['Market benchmark from anonymous prices', 'Revenue, payments and estimated profit', 'Goals and client profitability'], cta: 'Open dashboard', href: localePath(locale, '/kalkulator/pregled') },
     { id: 'agent', Ikona: Robot, label: 'Pupa', znacka: 'New', zvrst: 'beta', h: 'An AI assistant who understands creative pricing', p: 'Pupa understands the market and usage rights, helps you price fairly, writes clear proposal copy and answers questions by text or voice.', tocke: ['Flags underpricing', 'Understands usage rights and licensing', 'Text and voice interaction'], cta: 'Meet Pupa', href: prijava },
-    { id: 'mcpapi', Ikona: Plugs, label: 'Connections', znacka: 'Available', zvrst: 'free', h: 'Bring your own agent', p: 'Import the agent that already knows you and work with it inside Flow — next to Pupa. And export your data anytime, for example to your accountant.', tocke: ['Your ChatGPT or Claude works inside Flow, beside Pupa', 'Results land on the project, not in someone else\'s chat', 'Export your data to accounting or a spreadsheet'], cta: 'How it works', href: 'mailto:tina@pinart.si?subject=Flow%20%E2%80%94%20data%20export' },
+    { id: 'mcpapi', Ikona: Plugs, label: 'Connections', znacka: 'Available', zvrst: 'free', h: 'Say what you need — Flow makes it', p: 'Brief, pitch, quote. Say it in plain words and the result lands on the project — tidy and yours. Pupa is included in your plan; nothing to set up.', tocke: ['Pupa is included — nothing to set up', 'Results land on the project, not in someone else\'s chat', 'Bring your own agent if you like (ChatGPT, Claude, Gemini)'], cta: 'How it works', href: 'mailto:tina@pinart.si?subject=Flow%20%E2%80%94%20data%20export' },
   ] : [
     { id: 'kalkulator', Ikona: FileText, label: 'Kalkulator', znacka: 'Brezplačno', zvrst: 'free',
       h: 'Poštena cena v nekaj klikih',
@@ -418,9 +418,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       tocke: ['Pove pošteno ceno in te opozori na podcenjevanje', 'Pozna avtorske pravice in licence', 'Klepet in glasovno upravljanje'],
       cta: 'Spoznaj Pupo', href: prijava },
     { id: 'mcpapi', Ikona: Plugs, label: 'Povezave', znacka: 'Na voljo', zvrst: 'free',
-      h: 'Pripelji svojega agenta',
-      p: 'Uvozi agenta, ki te že pozna, in delaj z njim kar v Flowu — poleg Pupe. In kadarkoli izvoziš svoje podatke, na primer v računovodski program.',
-      tocke: ['Tvoj ChatGPT ali Claude dela v Flowu, ob Pupi', 'Rezultat pristane na projektu, ne v tujem klepetu', 'Izvoz podatkov v računovodstvo ali preglednico'],
+      h: 'Povej, kaj rabiš — Flow to naredi',
+      p: 'Brief, pitch, ponudba. Poveš po domače, kaj potrebuješ, in rezultat pristane na projektu — urejen in tvoj. Pupa je vključena v paket, nastavljati ni treba ničesar.',
+      tocke: ['Pupa je vključena — nič ni treba nastavljati', 'Rezultat pristane na projektu, ne v tujem klepetu', 'Če želiš, pripelješ svojega agenta (ChatGPT, Claude, Gemini)'],
       cta: 'Kako deluje', href: 'mailto:tina@pinart.si?subject=Flow%20%E2%80%94%20izvoz%20podatkov' },
   ];
   const predoglediMock = (id: string) => {
