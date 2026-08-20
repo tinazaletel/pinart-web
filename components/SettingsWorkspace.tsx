@@ -24,6 +24,12 @@ export default function SettingsWorkspace({ base }: { base: string }) {
      strani bi bila slabsa resitev — nastavitve, razprsene po vec poteh, so
      tezje najdljive od enega seznama. Zato skupine na ISTI strani. */
   const [zavihek, setZavihek] = useState<'dokumenti' | 'ai'>('dokumenti');
+  /* ?zavihek=ai pride iz podmenija v racunu — beremo v ucinku, da stran ne
+     rabi Suspense (isti vzorec kot AuthForm). */
+  useEffect(() => {
+    const v = new URLSearchParams(window.location.search).get('zavihek');
+    if (v === 'ai' || v === 'dokumenti') setZavihek(v);
+  }, []);
 
   /* Izbrana vstopna stran; beremo v ucinku, ker localStorage na strezniku ni. */
   const [vstopna, setVstopna] = useState<VstopnaStran>('domov');
@@ -120,16 +126,16 @@ export default function SettingsWorkspace({ base }: { base: string }) {
   return (
     <div className={styles.wrap}>
       <nav aria-label={base === '/en' ? 'Settings sections' : 'Razdelki nastavitev'}
-        style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem', marginBottom: '1rem' }}>
+        style={{ display: 'flex', gap: '1.4rem', margin: '0 0 1.6rem', borderBottom: '1px solid rgba(17,17,17,.12)' }}>
         {([['dokumenti', base === '/en' ? 'Documents' : 'Dokumenti'],
            ['ai', 'AI']] as const).map(([v, ime]) => (
-          <button key={v} type="button" onClick={() => setZavihek(v)} aria-current={zavihek === v ? 'true' : undefined}
+          <button key={v} type="button" onClick={() => setZavihek(v)} aria-current={zavihek === v ? 'page' : undefined}
             style={{
-              padding: '.45rem .95rem', borderRadius: 999, cursor: 'pointer',
-              font: '700 .8rem var(--font-sans), sans-serif',
-              border: zavihek === v ? '1.5px solid #6E4FA6' : '1px solid rgba(17,17,17,.14)',
-              background: zavihek === v ? '#6E4FA6' : '#fff',
-              color: zavihek === v ? '#fff' : '#4a453f',
+              padding: '0 .15rem .7rem', border: 0, background: 'transparent', cursor: 'pointer',
+              font: `${zavihek === v ? 800 : 600} 1rem var(--font-sans), sans-serif`,
+              color: zavihek === v ? '#111' : '#8a8177',
+              borderBottom: zavihek === v ? '2px solid #6E4FA6' : '2px solid transparent',
+              marginBottom: -1,
             }}>{ime}</button>
         ))}
       </nav>
