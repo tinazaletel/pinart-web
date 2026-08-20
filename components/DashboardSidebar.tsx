@@ -16,7 +16,7 @@ import PogledPreklop from './PogledPreklop';
 import { paketUporabnika } from '@/lib/pravice';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
-type Section = 'dom' | 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings' | 'ekipa' | 'novprojekt' | 'ideje' | 'marketing' | 'komunikacija' | 'sef';
+type Section = 'dom' | 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'evidenca' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings' | 'ekipa' | 'novprojekt' | 'ideje' | 'marketing' | 'komunikacija' | 'sef';
 
 /* Meni je razdeljen po tem, KAJ UPORABNIK POCNE, ne kaj stvar je:
    Delo = ustvarjas dokument za stranko · Podatki = vzdrzujes vnose · Nacrt = racunas/ciljas.
@@ -82,13 +82,17 @@ export default async function DashboardSidebar({ base, active }: { base: string;
       {item('accounting', `${base}/kalkulator/racunovodstvo`, '06', L('Računovodstvo', 'Accounting'), 'racunovodstvo')}
       {item('sef', `${base}/kalkulator/sef`, '07', L('Sef avtorstva', 'Authorship vault'), 'sef')}
     </MeniSkupina>
-    <MeniSkupina naslov={L('Načrt', 'Plan')} aktivna={active === 'goals' || active === 'time' || active === 'plan' || active === 'naloge' || active === 'ideje' || active === 'koledar' || active === 'marketing'}>
+    <MeniSkupina naslov={L('Načrt', 'Plan')} aktivna={active === 'goals' || active === 'time' || active === 'evidenca' || active === 'plan' || active === 'naloge' || active === 'ideje' || active === 'koledar' || active === 'marketing'}>
       {item('goals', `${base}/kalkulator/cilji`, '01', L('Cilji', 'Goals'), 'cilji', 'businessInsights')}
       {item('time', `${base}/kalkulator/cas`, '02', L('Čas', 'Time'), 'cas', 'businessInsights')}
-      {item('plan', `${base}/kalkulator/poslovni-nacrt`, '03', L('Poslovni okvir', 'Business framework'), 'okvir', 'businessInsights')}
-      {item('naloge', `${base}/kalkulator/naloge`, '04', L('Naloge', 'Tasks'), 'naloge')}
-      {item('koledar', `${base}/kalkulator/koledar`, '05', L('Koledar', 'Calendar'), 'koledar')}
-      {item('marketing', `${base}/kalkulator/marketing`, '06', 'Marketing', 'marketing')}
+      {/* Evidenca po ZEPDSV je nekaj DRUGEGA kot Čas: Čas meri ure na projektu,
+          evidenca beleži prihod/odmor/odhod za zakon. Zato svoja postavka —
+          in brez ključavnice, ker je zakonska obveznost, ne analitika. */}
+      {item('evidenca', `${base}/kalkulator/evidenca-casa`, '03', L('Evidenca časa', 'Time records'), 'evidenca')}
+      {item('plan', `${base}/kalkulator/poslovni-nacrt`, '04', L('Poslovni okvir', 'Business framework'), 'okvir', 'businessInsights')}
+      {item('naloge', `${base}/kalkulator/naloge`, '05', L('Naloge', 'Tasks'), 'naloge')}
+      {item('koledar', `${base}/kalkulator/koledar`, '06', L('Koledar', 'Calendar'), 'koledar')}
+      {item('marketing', `${base}/kalkulator/marketing`, '07', 'Marketing', 'marketing')}
     </MeniSkupina>
     {/* Pomoč odstranjena iz menija — podvaja se z »?« v headerju in AI asistentko (Pupa).
         Dizajn (videz dokumentov) je pod Moj profil. */}
