@@ -9,6 +9,11 @@ import { pushNaloge, sinhronizirajNaloge } from '@/lib/nalogeOblak';
 import { pushSestanki, sinhronizirajSestanke } from '@/lib/sestankiOblak';
 import { pushDnevnik, sinhronizirajDnevnik } from '@/lib/dnevnikOblak';
 import { pushKataloge, sinhronizirajKataloge } from '@/lib/katalogiOblak';
+import {
+  pushKlepet, pushMarketing, pushKomObvestila, pushPostaDnevnik, pushPupaNastavitve,
+  sinhronizirajKlepet, sinhronizirajMarketing, sinhronizirajKomObvestila,
+  sinhronizirajPostaDnevnik, sinhronizirajPupaNastavitve,
+} from '@/lib/preostaleShrambeOblak';
 import { createClient } from '@/utils/supabase/client';
 import { nastaviPredogled } from '@/lib/predogled';
 
@@ -151,6 +156,13 @@ export default function FlowCloudBridge() {
         sinhronizirajDnevnik(),
         sinhronizirajKataloge(),
         sinhronizirajDokVidez(),
+        /* zadnjih pet shramb (Codex, 20. 8.): klepet, marketing, obvestila,
+           poštni dnevnik, Pupine nastavitve — s tem ni več ničesar samo v brskalniku */
+        sinhronizirajKlepet(),
+        sinhronizirajMarketing(),
+        sinhronizirajKomObvestila(),
+        sinhronizirajPostaDnevnik(),
+        sinhronizirajPupaNastavitve(),
       ]);
       izidi.forEach(i => { if (i.status === 'rejected') console.error('Sinhronizacija shrambe ni uspela:', i.reason); });
       const projektiSpremenjeni = izidi.some(i => i.status === 'fulfilled' && i.value === true);
@@ -177,6 +189,11 @@ export default function FlowCloudBridge() {
       'pinart-dnevnik-change': pushDnevnik,
       'pinart-katalogi-change': pushKataloge,
       'pinart-dokvidez-change': pushDokVidez,
+      'pinart-klepet-local-change': pushKlepet,
+      'pinart-marketing-change': pushMarketing,
+      'pinart-kom-obvestila-change': pushKomObvestila,
+      'pinart-posta-dnevnik-change': pushPostaDnevnik,
+      'pupa:stanje': pushPupaNastavitve,
     };
     const cakalci = new Map<string, ReturnType<typeof setTimeout>>();
     const posluhi = Object.keys(poDogodku).map(ime => {

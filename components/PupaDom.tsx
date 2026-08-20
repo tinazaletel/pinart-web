@@ -2,6 +2,7 @@
 
 import { getOrganizationContext } from '@/lib/pinartFlowCloud';
 import BriefAgent from '@/components/BriefAgent';
+import PitchAgent from '@/components/PitchAgent';
 
 /* PUPA DOM — pogovorni dom (Faza 1). Chat v OSPREDJU (sredina), podatki nadzorne
    plošče PLAVAJO okoli (ambient, glass), aurora v ozadju. »Moderno in sveže«.
@@ -62,7 +63,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   const locale = jeEn ? 'en' : 'sl';
   /* Izbran tip iz vstopa → orodje se požene V ISTEM oknu (brez navigacije).
      'ponudba' = pravi kalkulator; ostali = svoj obstoječi workspace. null = vstopni zaslon. */
-  const [tip, setTip] = useState<'ponudba' | 'racun' | 'strosek' | 'projekt' | 'naloga' | 'pogodba' | 'retainer' | 'brief' | null>(null);
+  const [tip, setTip] = useState<'ponudba' | 'racun' | 'strosek' | 'projekt' | 'naloga' | 'pogodba' | 'retainer' | 'brief' | 'pitch' | null>(null);
   const [ime, setIme] = useState('');
   const [vnos, setVnos] = useState('');
   const [priponka, setPriponka] = useState<File | null>(null);
@@ -367,6 +368,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     /* Brief je prva akcija, kjer pogovor konca z ZAPISOM na projektu — ne z
        nasvetom, kateri gumb klikniti. Pitch pride po istem vzorcu kasneje. */
     { ime: L('Napiši brief', 'Write a brief'), tip: 'brief', h: 120, ikona: <FileText size={16} weight="bold" /> },
+    { ime: L('Napiši pitch', 'Write a pitch'), tip: 'pitch', h: 180, ikona: <FileText size={16} weight="bold" /> },
     // Štoparica umaknjena iz vstopa: ni »ustvari« akcija; dostopna v meniju (Čas) in prek Pupe (»zaženi štoparico«).
   ];
 
@@ -378,6 +380,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   if (tip === 'projekt') return <NovProjektWorkspace base={base} />;
   if (tip === 'naloga') return <TaskManagerWorkspace />;
   if (tip === 'brief') return <BriefAgent base={base} />;
+  if (tip === 'pitch') return <PitchAgent base={base} />;
   if (tip === 'pogodba') return <ContractWorkspace base={base} />;
   if (tip === 'retainer') return <RetainerWorkspace base={base} vLupini />;
 
