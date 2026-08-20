@@ -83,6 +83,12 @@ export interface Projekt {
      (ProjectsWorkspace pw-pipeline); ce se ni nastavljena, jo fazaProjekta
      spodaj izpelje iz status */
   faza?: ProjektFaza;
+  /* poslovni pitch, ki ga napise Pupa (components/PitchAgent) — zivi na
+     projektu, ker je vezan nanj; v bazi gre v data jsonb, zato ni migracije */
+  pitch?: {
+    naslov?: string; problem?: string; resitev?: string; zakajMi?: string;
+    obseg?: string; okvirnaCena?: string; naslednjiKorak?: string;
+  };
   /* cas zadnje spremembe (ISO) — nujen za sinhronizacijo z oblakom
      (lib/projektiOblak): ob srecanju lokalne in oblacne razlicice zmaga
      novejsa. Stari zapisi ga nimajo; takrat velja created. */
