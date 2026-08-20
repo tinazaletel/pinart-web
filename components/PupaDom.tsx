@@ -1,5 +1,7 @@
 'use client';
 
+import { getOrganizationContext } from '@/lib/pinartFlowCloud';
+
 /* PUPA DOM — pogovorni dom (Faza 1). Chat v OSPREDJU (sredina), podatki nadzorne
    plošče PLAVAJO okoli (ambient, glass), aurora v ozadju. »Moderno in sveže«.
    NOVA stran (/kalkulator/dom); obstoječe ostanejo nedotaknjene.
@@ -70,6 +72,30 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   /* AI način (ChatGPT spec): Pupa AI / Moj AI / Brez AI. Vidno ob vnosu, shranjeno.
      Za zdaj selektor izbere + zapomni način; prava Pupa/Moj AI pogovor = Faza 2/3. */
   const [aiNacin, setAiNacin] = useState<'pupa' | 'moj' | 'brez'>('pupa');
+  /* Povezani agenti uporabnice (»Moj AI«). Ko izbere svojega, porabo placa
+     SVOJEMU ponudniku — Pupin strosek pade na nic. Kljuci ostanejo na strezniku. */
+  const [agenti, setAgenti] = useState<{ id: string; label: string }[]>([]);
+  const [agent, setAgent] = useState('');
+  const orgRef = useRef<string>('');
+  useEffect(() => {
+    let ziv = true;
+    (async () => {
+      try {
+        const ctx = await getOrganizationContext();
+        if (!ctx || !ziv) return;
+        orgRef.current = ctx.organizationId;
+        const res = await fetch(`/api/ai/povezave?organizationId=${ctx.organizationId}`);
+        if (!res.ok) return;
+        const d = await res.json();
+        const upor = (d?.connections || [])
+          .filter((c: { connection_type: string; provider: string; status: string }) =>
+            c.connection_type === 'api' && c.provider !== 'custom-mcp' && c.status !== 'disabled')
+          .map((c: { id: string; label: string }) => ({ id: c.id, label: c.label }));
+        if (ziv) { setAgenti(upor); if (upor.length && !agent) setAgent(upor[0].id); }
+      } catch { /* brez povezav ostane Pupa */ }
+    })();
+    return () => { ziv = false; };
+  }, []);
   const [aiOdprt, setAiOdprt] = useState(false);
   useEffect(() => {
     try { const v = localStorage.getItem('pinart-ai-nacin'); if (v === 'pupa' || v === 'moj' || v === 'brez') setAiNacin(v); } catch { /* ignore */ }
@@ -164,7 +190,14 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     if (!pid) { pid = await ustvariPogovor(q); if (pid) setPogovorId(pid); }
     if (pid) void dodajSporocilo(pid, 'user', q);
     try {
-      const res = await fetch('/api/pupa', {
+      const naMoj = aiNacin === 'moj' && agent && orgRef.current;
+      const res = naMoj
+        ? await fetch('/api/ai/izvedi', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ organizationId: orgRef.current, connectionId: agent, prompt: q }),
+          signal: krmilnik.signal,
+        })
+        : await fetch('/api/pupa', {
         method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           vprasanje: q,
@@ -175,7 +208,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         signal: krmilnik.signal,
       });
       const data = await res.json();
-      const odg = data.odgovor || data.napaka || L('Hmm, nekaj je zaškripalo. Poskusi znova.', 'Hmm, something went wrong. Try again.');
+      const odg = data.odgovor || data.text || data.napaka || data.error || L('Hmm, nekaj je zaškripalo. Poskusi znova.', 'Hmm, something went wrong. Try again.');
       setPupaSpor(s => [...s, { role: 'assistant', content: odg }]);
       if (pid) void dodajSporocilo(pid, 'assistant', odg);
     } catch (e) {
@@ -494,7 +527,14 @@ export default function PupaDom({ base = '' }: { base?: string }) {
               {aiOdprt && (
                 <div className="pd-ai-meni" role="menu">
                   <button type="button" role="menuitem" className={aiNacin === 'pupa' ? 'on' : ''} onClick={() => izberiAi('pupa')}><b>Pupa AI</b><small>{L('Vključena v paket — Pinart krije strošek.', 'Included in your plan — Pinart covers the cost.')}</small></button>
-                  <button type="button" role="menuitem" className={aiNacin === 'moj' ? 'on' : ''} onClick={() => izberiAi('moj')}><b>{L('Moj AI', 'My AI')}</b><small>{L('Poveži svoj AI prek API ali MCP (kmalu). Morebitno porabo plačaš svojemu ponudniku.', 'Connect your own AI via API or MCP (soon). You pay any usage to your provider.')}</small></button>
+                  <button type="button" role="menuitem" className={aiNacin === 'moj' ? 'on' : ''} onClick={() => izberiAi('moj')}><b>{L('Moj AI', 'My AI')}</b><small>{agenti.length
+                    ? L('Porabo plačaš svojemu ponudniku.', 'You pay usage to your provider.')
+                    : L('Poveži svoj AI v Nastavitvah → Moj AI.', 'Connect your AI in Settings → My AI.')}</small></button>
+                  {aiNacin === 'moj' && agenti.length > 1 && agenti.map(a => (
+                    /* Ko je povezanih vec agentov, izberes, kateri odgovarja */
+                    <button key={a.id} type="button" role="menuitem" className={'pd-ai-pod' + (agent === a.id ? ' on' : '')}
+                      onClick={() => { setAgent(a.id); setAiOdprt(false); }}>{a.label}</button>
+                  ))}
                   <button type="button" role="menuitem" className={aiNacin === 'brez' ? 'on' : ''} onClick={() => izberiAi('brez')}><b>{L('Brez AI', 'No AI')}</b><small>{L('Klasični vprašalniki; nič ne gre zunanjemu AI.', 'Classic questionnaires; nothing goes to an external AI.')}</small></button>
                 </div>
               )}
