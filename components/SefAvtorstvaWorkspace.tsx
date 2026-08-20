@@ -1,14 +1,20 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ShieldCheck, UploadSimple, Copy, Check, Trash, DownloadSimple, MagnifyingGlass, LockKey, ArrowSquareOut, Fingerprint, FloppyDisk, CloudArrowUp } from '@phosphor-icons/react';
+import { ShieldCheck, UploadSimple, Copy, Check, Trash, DownloadSimple, MagnifyingGlass, LockKey, ArrowSquareOut, Fingerprint, FloppyDisk, CloudArrowUp, Stamp, Warning } from '@phosphor-icons/react';
 import { usePredogled } from '@/lib/predogled';
+import { preberiZige, preveriZig, shraniInZigosaj, zetonVBlob, type SefZigStanje } from '@/lib/sefOblak';
 
-/* SEF AVTORSTVA (MVP) — nespremenljiv zapis DOKAZA o avtorstvu/datumu nastanka.
+/* SEF AVTORSTVA — nespremenljiv zapis DOKAZA o avtorstvu/datumu nastanka.
    Ne shranjujemo težkih datotek: shranimo kriptografski "prstni odtis" (SHA-256 hash)
    + čas + orodje + opombe. Original obdržiš ti; pozneje delo PREVERIŠ (re-hash) in
    sef potrdi, da je to točno tvoja datoteka iz tega datuma.
-   NASLEDNJI KORAK (post-MVP): OVERJEN časovni žig (eIDAS / OpenTimestamps) + oblak. */
+
+   OVERJEN ČASOVNI ŽIG (RFC 3161): datum, ki ga postavimo mi, je pravno šibek —
+   zato prstni odtis pošljemo neodvisnemu strežniku, ki vrne podpisan časovni
+   žeton. Navzven gre SAMO zgostitev (32 bajtov), nikoli datoteka ali njeno ime.
+   Streznik: lib/casovniZig.ts + app/api/sef/zig; dokumentacija:
+   docs/SEF-casovni-zig.md. */
 
 type Zapis = {
   id: string;
@@ -23,6 +29,10 @@ type Zapis = {
   posnetekHash?: string;
   opombe?: string;
   ustvarjeno: string; // ISO — zabeleženo ob zaščiti (ne "zadnji shranjeni datum")
+  /* Overjen časovni žig — 'caka' dokler ga neodvisni strežnik ne potrdi. */
+  zigStanje?: SefZigStanje;
+  zigCas?: string;
+  zigStreznik?: string;
 };
 
 const KEY = 'pinart-sef-avtorstva';
@@ -33,10 +43,10 @@ const KATEGORIJE_EN = ['Illustration', 'Logo', 'Brand identity', 'Packaging', 'W
 
 /* Demo »polno poslovanje« — prikaže se v predogledu 'demo' (fiksni podatki, ne pravi zapisi). */
 const DEMO_ZAPISI: Zapis[] = [
-  { id: 'd1', naslov: 'Ilustracija Pupa', datoteka: 'pupa.ai', velikost: 2417000, tip: 'application/illustrator', hash: 'da96f4ef91d7495ca8a1e11473b0a9c2f8e1d6b4a2c9e0f3d7b1a5c8e2f4d6a90', orodje: 'Adobe Illustrator', kategorija: 'Ilustracija', posnetekIme: 'proces-pupa.png', posnetekHash: '4b2c…', opombe: 'Izvirni lik, ustvarjen pred AI izpeljankami.', ustvarjeno: '2026-03-12T09:24:00.000Z' },
-  { id: 'd2', naslov: 'Logotip — Kavarna Zrno', datoteka: 'zrno-logo.svg', velikost: 84000, tip: 'image/svg+xml', hash: '1f7a9c3e5b2d8f0a4c6e1b9d7f3a2c5e8b0d4f6a1c3e5b7d9f2a4c6e8b0d1f3a5', orodje: 'Adobe Illustrator', kategorija: 'Logotip', opombe: undefined, ustvarjeno: '2026-04-02T14:10:00.000Z' },
-  { id: 'd3', naslov: 'Embalaža čaja — serija', datoteka: 'caj-embalaza.psd', velikost: 15820000, tip: 'image/vnd.adobe.photoshop', hash: '9c0e2b4d6f8a1c3e5b7d9f0a2c4e6b8d0f1a3c5e7b9d1f2a4c6e8b0d2f4a6c8e0', orodje: 'Adobe Photoshop', kategorija: 'Embalaža', opombe: 'Za naročnika, licenca 2 leti EU.', ustvarjeno: '2026-05-19T11:47:00.000Z' },
-  { id: 'd4', naslov: 'Spletni hero — Studio', datoteka: 'hero.fig', velikost: 640000, tip: 'application/figma', hash: '3e5b7d9f1a2c4e6b8d0f2a4c6e8b0d1f3a5c7e9b1d3f5a7c9e1b3d5f7a9c1e3b5', orodje: 'Figma', kategorija: 'Splet / UI', opombe: undefined, ustvarjeno: '2026-06-30T16:05:00.000Z' },
+  { id: 'd1', naslov: 'Ilustracija Pupa', datoteka: 'pupa.ai', velikost: 2417000, tip: 'application/illustrator', hash: 'da96f4ef91d7495ca8a1e11473b0a9c2f8e1d6b4a2c9e0f3d7b1a5c8e2f4d6a90', orodje: 'Adobe Illustrator', kategorija: 'Ilustracija', posnetekIme: 'proces-pupa.png', posnetekHash: '4b2c…', opombe: 'Izvirni lik, ustvarjen pred AI izpeljankami.', ustvarjeno: '2026-03-12T09:24:00.000Z', zigStanje: 'overjeno', zigCas: '2026-03-12T09:24:11.000Z', zigStreznik: 'https://freetsa.org/tsr' },
+  { id: 'd2', naslov: 'Logotip — Kavarna Zrno', datoteka: 'zrno-logo.svg', velikost: 84000, tip: 'image/svg+xml', hash: '1f7a9c3e5b2d8f0a4c6e1b9d7f3a2c5e8b0d4f6a1c3e5b7d9f2a4c6e8b0d1f3a5', orodje: 'Adobe Illustrator', kategorija: 'Logotip', opombe: undefined, ustvarjeno: '2026-04-02T14:10:00.000Z', zigStanje: 'overjeno', zigCas: '2026-04-02T14:10:06.000Z', zigStreznik: 'https://freetsa.org/tsr' },
+  { id: 'd3', naslov: 'Embalaža čaja — serija', datoteka: 'caj-embalaza.psd', velikost: 15820000, tip: 'image/vnd.adobe.photoshop', hash: '9c0e2b4d6f8a1c3e5b7d9f0a2c4e6b8d0f1a3c5e7b9d1f2a4c6e8b0d2f4a6c8e0', orodje: 'Adobe Photoshop', kategorija: 'Embalaža', opombe: 'Za naročnika, licenca 2 leti EU.', ustvarjeno: '2026-05-19T11:47:00.000Z', zigStanje: 'overjeno', zigCas: '2026-05-19T11:47:09.000Z', zigStreznik: 'https://freetsa.org/tsr' },
+  { id: 'd4', naslov: 'Spletni hero — Studio', datoteka: 'hero.fig', velikost: 640000, tip: 'application/figma', hash: '3e5b7d9f1a2c4e6b8d0f2a4c6e8b0d1f3a5c7e9b1d3f5a7c9e1b3d5f7a9c1e3b5', orodje: 'Figma', kategorija: 'Splet / UI', opombe: undefined, ustvarjeno: '2026-06-30T16:05:00.000Z', zigStanje: 'caka' },
 ];
 
 async function sha256(file: File | Blob): Promise<string> {
@@ -71,10 +81,41 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
   const [filterKat, setFilterKat] = useState('');
   const [stran, setStran] = useState(1);
   const [nacin] = usePredogled();
+  /* id zapisa, ki se prav zdaj žigosa (gumb čaka) */
+  const [zigaSe, setZigaSe] = useState<string | null>(null);
+  /* sporočilo po zaščiti — tu pove, ali je čas že overjen */
+  const [zigSporocilo, setZigSporocilo] = useState<{ stanje: SefZigStanje; besedilo: string } | null>(null);
   const preverjRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setZapisi(preberi()); }, []);
   useEffect(() => { setStran(1); }, [iskanje, filterKat, nacin]);
+
+  /* Stanja žigov so resnica iz baze (uporabnik jih v svojem brskalniku ne more
+     popraviti), zato jih ob nalaganju prepišemo čez lokalno kopijo. */
+  useEffect(() => {
+    let veljavno = true;
+    preberiZige().then(zigi => {
+      if (!veljavno || !Object.keys(zigi).length) return;
+      setZapisi(prej => {
+        const novi = prej.map(z => {
+          const zig = zigi[z.id];
+          return zig ? { ...z, zigStanje: zig.stanje, zigCas: zig.cas, zigStreznik: zig.streznik } : z;
+        });
+        shrani(novi);
+        return novi;
+      });
+    });
+    return () => { veljavno = false; };
+  }, []);
+
+  /* Zapiši stanje žiga v zapis (lokalno + localStorage). */
+  const posodobiZig = (id: string, zig: { stanje: SefZigStanje; cas?: string; streznik?: string }) => {
+    setZapisi(prej => {
+      const novi = prej.map(z => (z.id === id ? { ...z, zigStanje: zig.stanje, zigCas: zig.cas, zigStreznik: zig.streznik } : z));
+      shrani(novi);
+      return novi;
+    });
+  };
 
   const izberiDatoteko = (f: File | null) => {
     setDatoteka(f);
@@ -84,6 +125,7 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
   const zasciti = async () => {
     if (!datoteka || dela) return;
     setDela(true);
+    setZigSporocilo(null);
     try {
       const hash = await sha256(datoteka);
       const posnetekHash = posnetek ? await sha256(posnetek) : undefined;
@@ -100,11 +142,46 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         posnetekHash,
         opombe: opombe.trim() || undefined,
         ustvarjeno: new Date().toISOString(),
+        zigStanje: 'caka',
       };
       const novi = [zapis, ...zapisi];
       setZapisi(novi); shrani(novi);
       setDatoteka(null); setNaslov(''); setOrodje(''); setKategorija(''); setPosnetek(null); setOpombe('');
+
+      /* Takoj po zaščiti poskusimo pridobiti overjen čas. Če ne uspe (ni
+         prijave, strežnik ne odgovori), zapis OSTANE — le brez overitve, ki jo
+         je mogoče kadar koli dodati z gumbom v tabeli. */
+      const zig = await shraniInZigosaj({
+        id: zapis.id, naslov: zapis.naslov, datoteka: zapis.datoteka, hash: zapis.hash,
+        orodje: zapis.orodje, kategorija: zapis.kategorija, opombe: zapis.opombe,
+        velikost: zapis.velikost, tip: zapis.tip,
+        posnetekIme: zapis.posnetekIme, posnetekHash: zapis.posnetekHash,
+        ustvarjeno: zapis.ustvarjeno,
+      });
+      posodobiZig(zapis.id, zig);
+      setZigSporocilo({ stanje: zig.stanje, besedilo: zigBesedilo(zig.stanje, zig.cas, zig.napaka) });
     } finally { setDela(false); }
+  };
+
+  /* Ročna overitev za zapis, ki žiga še nima (ali mu prvič ni uspelo).
+     V predogledu (demo/prazno) ne pošiljamo ničesar — ti zapisi niso pravi. */
+  const overiCas = async (z: Zapis) => {
+    if (zigaSe) return;
+    if (nacin !== 'mine') {
+      setZigSporocilo({ stanje: 'caka', besedilo: L('V predogledu overitev ni na voljo — to so predstavitveni zapisi.', 'Certification is not available in preview — these are demo records.') });
+      return;
+    }
+    setZigaSe(z.id);
+    try {
+      const zig = await shraniInZigosaj({
+        id: z.id, naslov: z.naslov, datoteka: z.datoteka, hash: z.hash,
+        orodje: z.orodje, kategorija: z.kategorija, opombe: z.opombe,
+        velikost: z.velikost, tip: z.tip, posnetekIme: z.posnetekIme, posnetekHash: z.posnetekHash,
+        ustvarjeno: z.ustvarjeno,
+      });
+      posodobiZig(z.id, zig);
+      setZigSporocilo({ stanje: zig.stanje, besedilo: zigBesedilo(zig.stanje, zig.cas, zig.napaka) });
+    } finally { setZigaSe(null); }
   };
 
   const izbrisi = (id: string) => {
@@ -119,7 +196,7 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
 
   const potrdilo = (z: Zapis) => {
     const cert = {
-      _: 'Pinart Flow — Potrdilo o zaščiti avtorstva (MVP)',
+      _: 'Pinart Flow — Potrdilo o zaščiti avtorstva',
       naslov: z.naslov,
       datoteka: z.datoteka,
       tip: z.tip,
@@ -129,12 +206,36 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
       posnetek: z.posnetekIme ? { ime: z.posnetekIme, sha256: z.posnetekHash } : null,
       opombe: z.opombe || null,
       zabelezeno: z.ustvarjeno,
-      opozorilo: 'MVP: lokalni zapis prstnega odtisa. Dokončni pravni dokaz = overjen časovni žig (eIDAS/OpenTimestamps) — v pripravi.',
+      overjen_casovni_zig: z.zigStanje === 'overjeno'
+        ? {
+            cas: z.zigCas,
+            streznik: z.zigStreznik,
+            standard: 'RFC 3161',
+            kako_preveriti: 'Žeton (zig_zeton) izvozi kot .tsr in preveri: openssl ts -verify -in zig.tsr -digest <sha256> -CAfile <certifikat TSA>. Podrobno: docs/SEF-casovni-zig.md',
+          }
+        : null,
+      opozorilo: z.zigStanje === 'overjeno'
+        ? 'Čas je potrdil neodvisen strežnik (RFC 3161). Za kvalificiran (eIDAS) žig je potreben plačljiv ponudnik zaupanja.'
+        : 'Datum v tem potrdilu je zabeležil Flow in ga neodvisni strežnik še ni overil.',
     };
     const blob = new Blob([JSON.stringify(cert, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `potrdilo-${z.naslov.replace(/[^\w-]+/g, '_').slice(0, 40)}.json`;
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+
+  /* Prenos podpisanega žetona (.tsr) — to je dokaz, ki ga tretja oseba preveri
+     z openssl, brez dostopa do Flowa (glej docs/SEF-casovni-zig.md). */
+  const prenesiZeton = async (z: Zapis) => {
+    const izid = await preveriZig(z.id);
+    if (!izid.zeton) {
+      setZigSporocilo({ stanje: 'napaka', besedilo: zigBesedilo('napaka', undefined, izid.napaka) });
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(zetonVBlob(izid.zeton));
+    a.download = `casovni-zig-${z.naslov.replace(/[^\w-]+/g, '_').slice(0, 40)}.tsr`;
     a.click(); URL.revokeObjectURL(a.href);
   };
 
@@ -147,6 +248,35 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
   };
 
   const datum = (iso: string) => new Date(iso).toLocaleString(jeEn ? 'en-GB' : 'sl-SI', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  /* »20. 8. 2026 ob 22:14« — pisano tako, kot bi človek povedal na glas. */
+  const datumZiga = (iso?: string) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const dan = d.toLocaleDateString(jeEn ? 'en-GB' : 'sl-SI', { day: 'numeric', month: jeEn ? 'short' : 'numeric', year: 'numeric' });
+    const ura = d.toLocaleTimeString(jeEn ? 'en-GB' : 'sl-SI', { hour: '2-digit', minute: '2-digit' });
+    return jeEn ? `${dan} at ${ura}` : `${dan} ob ${ura}`;
+  };
+
+  /* Razlaga stanja žiga v jeziku, ki ga razume tudi kdo, ki ni odvetnik. */
+  const zigBesedilo = (stanje: SefZigStanje, cas?: string, napaka?: string) => {
+    if (stanje === 'overjeno') {
+      return L(
+        `Overjeno pri neodvisnem strežniku ${datumZiga(cas)} — ta čas lahko preveri kdorkoli, tudi brez Flowa.`,
+        `Certified by an independent server ${datumZiga(cas)} — anyone can verify this time, even without Flow.`,
+      );
+    }
+    if (stanje === 'napaka') {
+      return L(
+        `Časa ni bilo mogoče overiti${napaka ? ` (${napaka})` : ''}. Zapis je shranjen; overitev lahko poskusiš znova.`,
+        `The time could not be certified${napaka ? ` (${napaka})` : ''}. The record is saved; you can try certifying again.`,
+      );
+    }
+    return L(
+      'Čas še ni overjen pri neodvisnem strežniku — do takrat datum potrjuje samo Flow.',
+      'The time is not certified by an independent server yet — until then, only Flow vouches for the date.',
+    );
+  };
 
   /* Predogled: 'empty' = brez vnosov, 'demo' = demo »polno poslovanje«, sicer pravi (localStorage). */
   const osnovni = nacin === 'demo' ? DEMO_ZAPISI : nacin === 'empty' ? [] : zapisi;
@@ -226,9 +356,16 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         </label>
 
         <button type="button" className="sef-gumb" disabled={!datoteka || dela} onClick={zasciti}>
-          {dela ? L('Računam prstni odtis …', 'Computing fingerprint …') : <><ShieldCheck size={17} weight="fill" /> {L('Zaščiti in zabeleži datum', 'Protect & record date')}</>}
+          {dela ? L('Računam prstni odtis in overjam čas …', 'Computing fingerprint and certifying time …') : <><ShieldCheck size={17} weight="fill" /> {L('Zaščiti in zabeleži datum', 'Protect & record date')}</>}
         </button>
+        {zigSporocilo && (
+          <p className={`sef-zig-sporocilo ${zigSporocilo.stanje}`}>
+            {zigSporocilo.stanje === 'overjeno' ? <Stamp size={16} weight="fill" /> : <Warning size={16} weight="regular" />}
+            <span>{zigSporocilo.besedilo}</span>
+          </p>
+        )}
         <p className="sef-mini"><LockKey size={13} weight="fill" /> {L('Datoteke ne pošiljamo nikamor — izračun teče v tvojem brskalniku. Shrani se le odtis + datum.', 'The file is never uploaded — hashing runs in your browser. Only the fingerprint + date are stored.')}</p>
+        <p className="sef-mini sef-mini-zig"><Stamp size={13} weight="fill" /> {L('Za overitev časa gre na neodvisni strežnik samo prstni odtis (32 bajtov) — strežnik ne izve, kaj si žigosal.', 'To certify the time, only the fingerprint (32 bytes) goes to an independent server — it never learns what you stamped.')}</p>
       </section>
 
       <div className="sef-stolpec">
@@ -242,7 +379,13 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         </label>
         {preverjeno && (
           preverjeno.najden
-            ? <p className="sef-najdba ok"><Check size={16} weight="bold" /> {L('Ujema se z zapisom:', 'Matches record:')} {preverjeno.najden.naslov} — {datum(preverjeno.najden.ustvarjeno)}</p>
+            ? <>
+                <p className="sef-najdba ok"><Check size={16} weight="bold" /> {L('Ujema se z zapisom:', 'Matches record:')} {preverjeno.najden.naslov} — {datum(preverjeno.najden.ustvarjeno)}</p>
+                <p className={`sef-zig-sporocilo ${preverjeno.najden.zigStanje || 'caka'}`}>
+                  {preverjeno.najden.zigStanje === 'overjeno' ? <Stamp size={16} weight="fill" /> : <Warning size={16} weight="regular" />}
+                  <span>{zigBesedilo(preverjeno.najden.zigStanje || 'caka', preverjeno.najden.zigCas)}</span>
+                </p>
+              </>
             : <p className="sef-najdba ne">{L('Za to datoteko ni zapisa v sefu (ni zaščiteno ali je bila spremenjena).', 'No vault record for this file (not protected, or it was changed).')}</p>
         )}
       </section>
@@ -257,7 +400,7 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
           <a href="https://www.wipo.int/" target="_blank" rel="noopener noreferrer">WIPO <ArrowSquareOut size={13} /></a>
           <a href="https://www.copyright.gov/" target="_blank" rel="noopener noreferrer">US Copyright <ArrowSquareOut size={13} /></a>
         </div>
-        <p className="sef-opozorilo">{L('Pošteno: sef dokaže OBSTOJ in PRIORITETO dela na določen dan, ne absolutnega avtorstva. Najmočnejši dokaz so izvorne/delovne datoteke (.ai, .psd, sloji) + ta odtis. Overjen časovni žig (pravno veljaven) je naslednji korak.', 'Honest note: the vault proves the EXISTENCE and PRIORITY of a work on a date, not absolute authorship. Your strongest evidence is the source/working files (.ai, .psd, layers) + this fingerprint. A certified timestamp (legally valid) is the next step.')}</p>
+        <p className="sef-opozorilo">{L('Pošteno: sef dokaže OBSTOJ in PRIORITETO dela na določen dan, ne absolutnega avtorstva. Najmočnejši dokaz so izvorne/delovne datoteke (.ai, .psd, sloji) + ta odtis. Čas overi neodvisen strežnik (standard RFC 3161) — kvalificiran (eIDAS) žig pri plačljivem ponudniku zaupanja je naslednja stopnja.', 'Honest note: the vault proves the EXISTENCE and PRIORITY of a work on a date, not absolute authorship. Your strongest evidence is the source/working files (.ai, .psd, layers) + this fingerprint. The time is certified by an independent server (RFC 3161) — a qualified (eIDAS) timestamp from a paid trust provider is the next step up.')}</p>
       </section>
       </div>{/* /sef-stolpec */}
       </div>{/* /sef-mreza */}
@@ -290,6 +433,7 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
                     <th>{L('Kategorija', 'Category')}</th>
                     <th>{L('Orodje', 'Tool')}</th>
                     <th>{L('Datum', 'Date')}</th>
+                    <th>{L('Overjen čas', 'Certified time')}</th>
                     <th>{L('Odtis', 'Fingerprint')}</th>
                     <th aria-hidden />
                   </tr></thead>
@@ -300,12 +444,32 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
                         <td>{z.kategorija ? <span className="sef-znacka">{z.kategorija}</span> : <span className="sef-crtica">—</span>}</td>
                         <td className="sef-td-orodje">{z.orodje || '—'}</td>
                         <td className="sef-td-datum">{datum(z.ustvarjeno)}</td>
+                        <td className="sef-td-zig">
+                          {z.zigStanje === 'overjeno'
+                            ? <span className="sef-zig ok" title={zigBesedilo('overjeno', z.zigCas)}><Stamp size={13} weight="fill" /> {datumZiga(z.zigCas)}</span>
+                            : <button
+                                type="button"
+                                className={`sef-zig-gumb${z.zigStanje === 'napaka' ? ' napaka' : ''}`}
+                                disabled={zigaSe === z.id}
+                                onClick={() => overiCas(z)}
+                                title={zigBesedilo(z.zigStanje || 'caka', z.zigCas)}
+                              >
+                                {zigaSe === z.id
+                                  ? L('Overjam …', 'Certifying …')
+                                  : z.zigStanje === 'napaka'
+                                    ? <><Warning size={13} /> {L('Poskusi znova', 'Try again')}</>
+                                    : <><Stamp size={13} /> {L('Overi čas', 'Certify time')}</>}
+                              </button>}
+                        </td>
                         <td>
                           <button type="button" className="sef-hash-btn" onClick={() => kopiraj(z.hash)} title={z.hash}>
                             {kopiran === z.hash ? <><Check size={13} weight="bold" /> {L('kopirano', 'copied')}</> : <><code>{z.hash.slice(0, 10)}…</code><Copy size={12} /></>}
                           </button>
                         </td>
                         <td className="sef-td-akcije">
+                          {z.zigStanje === 'overjeno' && (
+                            <button type="button" onClick={() => prenesiZeton(z)} title={L('Prenesi časovni žeton (.tsr) — z njim čas preveri kdorkoli', 'Download the timestamp token (.tsr) — anyone can verify the time with it')}><Stamp size={15} /></button>
+                          )}
                           <button type="button" onClick={() => potrdilo(z)} title={L('Potrdilo', 'Certificate')}><DownloadSimple size={15} /></button>
                           <button type="button" className="sef-brisi" onClick={() => izbrisi(z.id)} title={L('Izbriši', 'Delete')}><Trash size={15} /></button>
                         </td>
@@ -314,6 +478,12 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
                   </tbody>
                 </table>
               </div>}
+        {osnovni.length > 0 && (
+          <p className="sef-legenda">
+            <Stamp size={13} weight="fill" />
+            {L('»Overjen čas« pomeni, da je uro in datum potrdil neodvisen strežnik po standardu RFC 3161. Podpisan žeton je shranjen pri zapisu, zato ga lahko preveri kdorkoli — tudi brez Flowa.', '“Certified time” means an independent server confirmed the date and time using the RFC 3161 standard. The signed token is stored with the record, so anyone can verify it — even without Flow.')}
+          </p>
+        )}
         {strani > 1 && (
           <div className="sef-pager">
             <button type="button" disabled={stranVar <= 1} onClick={() => setStran(stranVar - 1)}>{L('‹ Prejšnja', '‹ Prev')}</button>
@@ -415,6 +585,24 @@ export default function SefAvtorstvaWorkspace({ base = '' }: { base?: string }) 
         .sef-pager button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
         .sef-pager button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
         .sef-pager button:disabled { opacity: .4; cursor: not-allowed; }
+        /* OVERJEN ČASOVNI ŽIG — vijola (#6E4FA6) za dejanje, zelena (#2F5D50) za
+           potrjeno, opekasta (#a4342a) za napako. Rumene ni. */
+        .sef-mini-zig :global(svg) { color: #6E4FA6; }
+        .sef-zig-sporocilo { display: flex; align-items: flex-start; gap: .45rem; font-size: .82rem; line-height: 1.5; margin: .9rem 0 0; padding: .7rem .9rem; border-radius: 10px; }
+        .sef-zig-sporocilo :global(svg) { flex: none; margin-top: .1rem; }
+        .sef-zig-sporocilo.overjeno { color: #2F5D50; background: rgba(47,93,80,.09); }
+        .sef-zig-sporocilo.caka { color: #6E4FA6; background: rgba(110,79,166,.08); }
+        .sef-zig-sporocilo.napaka { color: #a4342a; background: rgba(164,52,42,.08); }
+        .sef-td-zig { white-space: nowrap; }
+        .sef-zig { display: inline-flex; align-items: center; gap: .32rem; font-size: .76rem; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .sef-zig.ok { color: #2F5D50; }
+        .sef-zig-gumb { display: inline-flex; align-items: center; gap: .32rem; font-family: inherit; font-size: .76rem; font-weight: 600; color: #6E4FA6; background: rgba(110,79,166,.07); border: 1px solid rgba(110,79,166,.3); border-radius: 999px; padding: .32rem .7rem; cursor: pointer; white-space: nowrap; transition: background .15s, border-color .15s; }
+        .sef-zig-gumb:hover:not(:disabled) { background: rgba(110,79,166,.14); border-color: #6E4FA6; }
+        .sef-zig-gumb:disabled { opacity: .55; cursor: progress; }
+        .sef-zig-gumb.napaka { color: #a4342a; background: rgba(164,52,42,.07); border-color: rgba(164,52,42,.3); }
+        .sef-zig-gumb.napaka:hover:not(:disabled) { background: rgba(164,52,42,.13); border-color: #a4342a; }
+        .sef-legenda { display: flex; align-items: flex-start; gap: .4rem; font-size: .76rem; line-height: 1.55; color: rgba(17,17,17,.66); margin: .9rem 0 0; }
+        .sef-legenda :global(svg) { flex: none; margin-top: .16rem; color: #6E4FA6; }
         .sef-registracija { background: oklch(97% .02 297 / .5); }
         .sef-linki { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 1rem; }
         .sef-linki a { display: inline-flex; align-items: center; gap: .3rem; font-size: .82rem; font-weight: 600; color: var(--ink); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: .42rem .8rem; transition: border-color .15s, background .15s; }
