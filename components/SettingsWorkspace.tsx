@@ -19,6 +19,12 @@ const K_NAST = 'pinart-kalkulator-v2';
 const K_LOGO = 'pinart-kalkulator-logo';
 
 export default function SettingsWorkspace({ base }: { base: string }) {
+  /* ZAVIHKI: pet razdelkov je malo, a dva sta dolga (Videz dokumentov, Moj AI).
+     Na telefonu si moral cez cel dolg razdelek do kratkega za njim. Loceno
+     strani bi bila slabsa resitev — nastavitve, razprsene po vec poteh, so
+     tezje najdljive od enega seznama. Zato skupine na ISTI strani. */
+  const [zavihek, setZavihek] = useState<'dokumenti' | 'ai'>('dokumenti');
+
   /* Izbrana vstopna stran; beremo v ucinku, ker localStorage na strezniku ni. */
   const [vstopna, setVstopna] = useState<VstopnaStran>('domov');
   useEffect(() => { setVstopna(preberiVstopnoStran()); }, []);
@@ -113,7 +119,21 @@ export default function SettingsWorkspace({ base }: { base: string }) {
 
   return (
     <div className={styles.wrap}>
-      <section className={styles.card}>
+      <nav aria-label={base === '/en' ? 'Settings sections' : 'Razdelki nastavitev'}
+        style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem', marginBottom: '1rem' }}>
+        {([['dokumenti', base === '/en' ? 'Documents' : 'Dokumenti'],
+           ['ai', 'AI']] as const).map(([v, ime]) => (
+          <button key={v} type="button" onClick={() => setZavihek(v)} aria-current={zavihek === v ? 'true' : undefined}
+            style={{
+              padding: '.45rem .95rem', borderRadius: 999, cursor: 'pointer',
+              font: '700 .8rem var(--font-sans), sans-serif',
+              border: zavihek === v ? '1.5px solid #6E4FA6' : '1px solid rgba(17,17,17,.14)',
+              background: zavihek === v ? '#6E4FA6' : '#fff',
+              color: zavihek === v ? '#fff' : '#4a453f',
+            }}>{ime}</button>
+        ))}
+      </nav>
+      <section className={styles.card} style={{ display: zavihek === 'dokumenti' ? undefined : 'none' }}>
         <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem' }}><PaintBrush size={20} weight="regular" /> Videz dokumentov</h2>
         <p>Velja za vse dokumente — ponudbe, pogodbe, račune in dolgoročne ponudbe.</p>
 
@@ -139,7 +159,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
         {nalozeno && <VidezDokumentov barva={barva} font={font} onBarva={setBarva} onFont={setFont} logo={logo} onLogo={setLogo} />}
       </section>
 
-      <section className={styles.card}>
+      <section className={styles.card} style={{ display: zavihek === 'dokumenti' ? undefined : 'none' }}>
         <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem' }}><EnvelopeSimple size={20} weight="regular" /> Podpis pošte</h2>
         <p>Samodejno se doda na dno vsakega novega sporočila iz projekta. Izpolni polja — Flow sestavi oblikovan podpis s <b>klikabilnim telefonom, e-pošto in spletom</b>.</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '.7rem' }}>
@@ -218,7 +238,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
       {/* KAM PO PRIJAVI — kdor Pupe ne uporablja, hoce pregled; kdor se z njo
           pogovarja, hoce njo. Nastavitev je vezana na napravo (glej lib/vstopnaStran):
           na telefonu je pogovor pogosto bolj uporaben kot tabela. */}
-      <section className={styles.card}>
+      <section className={styles.card} style={{ display: zavihek === 'ai' ? undefined : 'none' }}>
         <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem' }}><Sparkle size={20} weight="fill" /> Kam po prijavi</h2>
         <p>Ko se prijaviš, te Flow odloži na to stran. Velja za to napravo — na telefonu imaš lahko drugače kot na računalniku.</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem', marginTop: '.6rem' }}>
@@ -238,7 +258,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
         </div>
       </section>
 
-      <section className={styles.card}>
+      <section className={styles.card} style={{ display: zavihek === 'ai' ? undefined : 'none' }}>
         <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem' }}><Sparkle size={20} weight="fill" /> Pupa (AI pomočnica)</h2>
         <p>
           Pupa svetuje pri cenah, pravicah in besedilu. Ko jo vprašaš, se podatki trenutne ponudbe pošljejo AI ponudniku (Anthropic) samo zato, da ti odgovori — ne uporabijo se za učenje modela. Kadar koli jo lahko izklopiš.
@@ -258,7 +278,7 @@ export default function SettingsWorkspace({ base }: { base: string }) {
         </div>
       </section>
 
-      <section className={styles.card}>
+      <section className={styles.card} style={{ display: zavihek === 'ai' ? undefined : 'none' }}>
         <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem' }}><PlugsConnected size={20} weight="regular" /> {base === '/en' ? 'My AI' : 'Moj AI'}</h2>
         <p>
           {base === '/en'
