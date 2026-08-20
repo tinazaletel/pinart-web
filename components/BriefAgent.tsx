@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
+import DokPanel from '@/components/DokPanel';
 import { useLocale } from 'next-intl';
 import { preberiProjekti, shraniProjekt, type Projekt } from '@/lib/projekti';
 import { getOrganizationContext } from '@/lib/pinartFlowCloud';
@@ -48,6 +49,9 @@ function izlusciJson(besedilo: string): Polja | null {
 export default function BriefAgent({ base = '' }: { base?: string }) {
   const locale = useLocale();
   const L = (sl: string, en: string) => (locale === 'en' ? en : sl);
+  /* Panel se odpre SAM, ko brief pride — rezultat, ki ga moras se poiskati,
+     je pol rezultata. Zapre se s krizcem ali Esc in ga lahko odpres nazaj. */
+  const [odprtPanel, setOdprtPanel] = useState(false);
 
   const [projekti, setProjekti] = useState<Projekt[]>([]);
   const [projektId, setProjektId] = useState('');
@@ -91,7 +95,7 @@ export default function BriefAgent({ base = '' }: { base?: string }) {
 
   const napisi = async () => {
     if (!opis.trim() || dela) return;
-    setDela(true); setNapaka(''); setIzid(null); setShranjeno(false);
+    setDela(true); setNapaka(''); setIzid(null); setShranjeno(false); setOdprtPanel(false);
     const poziv = [
       NAVODILO,
       projekt ? `Projekt: ${projekt.naslov}${projekt.strankaIme ? ` · stranka: ${projekt.strankaIme}` : ''}` : '',
@@ -114,6 +118,7 @@ export default function BriefAgent({ base = '' }: { base?: string }) {
       const polja = izlusciJson(besedilo);
       if (!polja) { setNapaka(L('Odgovor ni bil v pričakovani obliki. Poskusi znova.', 'The answer was not in the expected shape. Try again.')); return; }
       setIzid(polja);
+      setOdprtPanel(true);
     } catch {
       setNapaka(L('Ne morem do zaledja. Poskusi znova.', 'Cannot reach the backend. Try again.'));
     } finally {
@@ -157,7 +162,7 @@ export default function BriefAgent({ base = '' }: { base?: string }) {
           <div className="ba-vrsta">
             <label className="ba-polje">
               <span>{L('Za kateri projekt', 'For which project')}</span>
-              <select value={projektId} onChange={e => { setProjektId(e.target.value); setIzid(null); setShranjeno(false); }}>
+              <select value={projektId} onChange={e => { setProjektId(e.target.value); setIzid(null); setShranjeno(false); setOdprtPanel(false); }}>
                 {projekti.map(p => <option key={p.id} value={p.id}>{p.naslov}{p.strankaIme ? ` · ${p.strankaIme}` : ''}</option>)}
               </select>
             </label>
@@ -183,23 +188,37 @@ export default function BriefAgent({ base = '' }: { base?: string }) {
             <button type="button" className="ba-glavni" onClick={napisi} disabled={!opis.trim() || dela}>
               {dela ? L('Pišem …', 'Writing …') : L('Napiši brief', 'Write the brief')}
             </button>
-            {izid && !shranjeno && (
-              <button type="button" className="ba-drugi" onClick={shraniNaProjekt}>
-                {L('Shrani na projekt', 'Save to project')}
+            {izid && !odprtPanel && (
+              <button type="button" className="ba-drugi" onClick={() => setOdprtPanel(true)}>
+                {L('Pokaži brief', 'Show the brief')}
               </button>
-            )}
-            {shranjeno && projekt && (
-              <a className="ba-drugi" href={`${base}/kalkulator/projekti?projekt=${projekt.id}`}>
-                {L('Odpri projekt →', 'Open project →')}
-              </a>
             )}
           </div>
 
           {napaka && <p className="ba-napaka" role="alert">{napaka}</p>}
-          {shranjeno && <p className="ba-ok" role="status">{L('Brief je na projektu.', 'The brief is on the project.')}</p>}
 
-          {izid && (
-            <div className="ba-izid">
+          <DokPanel
+            odprt={odprtPanel && !!izid}
+            jeEn={locale === 'en'}
+            nadnaslov={L('Brief', 'Brief')}
+            naslov={projekt?.naslov || L('Brief', 'Brief')}
+            podnaslov={projekt?.strankaIme || undefined}
+            onZapri={() => setOdprtPanel(false)}
+            dejanja={<>
+              {!shranjeno && (
+                <button type="button" className="ba-glavni" onClick={shraniNaProjekt}>
+                  {L('Shrani na projekt', 'Save to project')}
+                </button>
+              )}
+              {shranjeno && projekt && (
+                <a className="ba-drugi" href={`${base}/kalkulator/projekti?projekt=${projekt.id}`}>
+                  {L('Odpri projekt →', 'Open project →')}
+                </a>
+              )}
+              {shranjeno && <span className="ba-ok" role="status">{L('Brief je na projektu.', 'The brief is on the project.')}</span>}
+            </>}
+          >
+            {izid && <>
               {([
                 [L('Stranka', 'Client'), izid.opisStranke],
                 [L('Panoga', 'Industry'), izid.panoga],
@@ -216,36 +235,56 @@ export default function BriefAgent({ base = '' }: { base?: string }) {
                   <ul>{(izid.cilji || []).map((c, i) => <li key={i}>{c}</li>)}</ul>
                 </div>
               )}
-            </div>
-          )}
+            </>}
+          </DokPanel>
         </>
       )}
 
       <style jsx>{`
         .ba { max-width: 46rem; margin: 0 auto; padding: 2.2rem 1.2rem 4rem; display: flex; flex-direction: column; gap: 1rem; }
-        .ba-nad { margin: 0; font-size: .64rem; font-weight: 800; letter-spacing: .18em; color: #8a8177; }
-        .ba-glava h1 { margin: .2rem 0 .3rem; font-size: 1.9rem; font-family: var(--font-serif-flow, var(--font-serif)), serif; color: var(--ink, #111); }
-        .ba-pod { margin: 0; font-size: .88rem; line-height: 1.5; color: #6b655d; }
+        .ba-nad { margin: 0 0 .15rem; font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .18em; color: var(--purple, oklch(60% .2 297)); }
+        .ba-glava h1 { margin: 0; font: 500 clamp(1.45rem, 3.4vw, 2.05rem)/1.1 var(--font-serif), Georgia, serif; font-synthesis: none; letter-spacing: -.01em; color: var(--ink, #1a1a1a); text-wrap: balance; }
+        .ba-pod { margin: .35rem 0 0; font: 500 .98rem/1.5 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); }
         .ba-vrsta { display: flex; flex-wrap: wrap; gap: .7rem; }
-        .ba-polje { flex: 1; min-width: 12rem; display: grid; gap: .3rem; font-size: .68rem; font-weight: 800; letter-spacing: .02em; color: #6b655d; }
+
+        /* Polje = mehko steklo, isto kot Pupin vnos. Brez belih skatel. */
+        .ba-polje { flex: 1; min-width: 12rem; display: grid; gap: .35rem; font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .1em; text-transform: uppercase; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); }
         .ba-ozko { flex: 0 0 12rem; }
-        .ba-polje select, .ba-polje textarea { width: 100%; padding: .6rem .7rem; border: 1px solid rgba(17,17,17,.14); border-radius: .7rem; background: #fff; font: 500 .88rem var(--font-sans), sans-serif; color: var(--ink, #111); }
-        .ba-polje textarea { resize: vertical; line-height: 1.5; }
-        .ba-akcije { display: flex; flex-wrap: wrap; gap: .5rem; }
-        .ba-glavni, .ba-drugi { padding: .65rem 1.1rem; border-radius: 999px; font: 800 .82rem var(--font-sans), sans-serif; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
-        .ba-glavni { border: 0; background: #6E4FA6; color: #fff; }
-        .ba-glavni:disabled { opacity: .5; cursor: default; }
-        .ba-drugi { border: 1px solid rgba(17,17,17,.16); background: #fff; color: var(--ink, #111); }
-        .ba-napaka { margin: 0; font-size: .84rem; font-weight: 600; color: #a4342a; }
-        .ba-ok { margin: 0; font-size: .84rem; font-weight: 600; color: #1a7f4b; }
-        .ba-prazno { margin: 0; font-size: .9rem; color: #6b655d; }
-        .ba-izid { display: flex; flex-direction: column; gap: .1rem; padding: 1rem 1.1rem; border: 1px solid rgba(17,17,17,.1); border-radius: 1rem; background: #fff; }
-        .ba-vrstica { display: grid; grid-template-columns: 9rem 1fr; gap: .8rem; padding: .55rem 0; }
-        .ba-vrstica + .ba-vrstica { border-top: 1px solid rgba(17,17,17,.07); }
-        .ba-vrstica b { font-size: .74rem; font-weight: 700; color: #6b655d; }
-        .ba-vrstica p, .ba-vrstica ul { margin: 0; font-size: .88rem; line-height: 1.5; color: var(--ink, #111); }
-        .ba-vrstica ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .25rem; }
-        @media (max-width: 640px) { .ba-vrstica { grid-template-columns: 1fr; gap: .15rem; } }
+        .ba-polje select, .ba-polje textarea { width: 100%; box-sizing: border-box; padding: .8rem .95rem; border: 1px solid rgba(255,255,255,.6); border-radius: 1.1rem;
+          background: rgba(255,255,255,.55); backdrop-filter: blur(22px) saturate(1.45); -webkit-backdrop-filter: blur(22px) saturate(1.45);
+          box-shadow: 0 8px 30px oklch(40% .08 300 / .1), inset 0 1px 0 rgba(255,255,255,.5);
+          font: 500 1rem/1.5 var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); text-transform: none; letter-spacing: normal; }
+        .ba-polje textarea { resize: vertical; min-height: 5.4rem; }
+        .ba-polje textarea::placeholder { color: color-mix(in oklch, var(--ink, #1a1a1a) 42%, transparent); }
+        .ba-polje select:focus, .ba-polje textarea:focus { outline: none; border-color: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 55%, transparent);
+          box-shadow: 0 0 0 3px color-mix(in oklch, var(--purple, oklch(66% .2 297)) 16%, transparent), 0 18px 50px oklch(40% .08 300 / .16); }
+
+        .ba-akcije { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+        /* Glavni gumb je Pupina temna pilula z odsevom — isti kot »Zacni«. */
+        .ba-glavni { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: .45rem; border: 0; border-radius: 999px; padding: .65rem 1.35rem;
+          background: var(--ink, #2a2620); color: var(--paper, #faf7f2); font: 700 .85rem var(--font-sans), sans-serif; cursor: pointer;
+          transition: transform .15s ease, box-shadow .2s ease; }
+        .ba-glavni:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 9px 24px oklch(30% .05 300 / .32); }
+        .ba-glavni::after { content: ''; position: absolute; top: 0; left: -160%; width: 90%; height: 100%; background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.9) 50%, transparent 100%); transform: skewX(-18deg); transition: left .6s cubic-bezier(.19,1,.22,1); pointer-events: none; }
+        .ba-glavni:hover:not(:disabled)::after { left: 160%; }
+        .ba-glavni:disabled { opacity: .45; cursor: default; }
+        /* Drugi gumb je stekleni mehurcek, ne bel gumb. */
+        .ba-drugi { display: inline-flex; align-items: center; gap: .4rem; padding: .6rem 1.1rem; border: 1px solid rgba(255,255,255,.6); border-radius: 999px;
+          background: color-mix(in oklch, oklch(72% .14 285) 14%, rgba(255,255,255,.6)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+          font: 700 .8rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+        .ba-drugi:hover { transform: translateY(-1px); box-shadow: 0 8px 20px oklch(55% .12 285 / .2); }
+
+        .ba-napaka { margin: 0; font: 600 .84rem var(--font-sans), sans-serif; color: #a4342a; }
+        .ba-ok { font: 600 .82rem var(--font-sans), sans-serif; color: #2F5D50; }
+        .ba-prazno { margin: 0; font: 500 .92rem/1.5 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); }
+
+        /* Vrstice dokumenta so v panelu (bel papir), zato tu brez stekla. */
+        .ba-vrstica { display: grid; grid-template-columns: 9rem 1fr; gap: 1rem; padding: .7rem 0; }
+        .ba-vrstica + .ba-vrstica { border-top: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 8%, transparent); }
+        .ba-vrstica b { font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .1em; text-transform: uppercase; color: color-mix(in oklch, var(--ink, #1a1a1a) 52%, transparent); }
+        .ba-vrstica p, .ba-vrstica ul { margin: 0; font: 500 .95rem/1.6 var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
+        .ba-vrstica ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3rem; }
+        @media (max-width: 640px) { .ba-vrstica { grid-template-columns: 1fr; gap: .2rem; } }
       `}</style>
     </div>
   );
