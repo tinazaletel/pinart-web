@@ -21,6 +21,8 @@ export type ProjectMail = {
   occurredAt?: string;
   isDraft?: boolean;
   deletedAt?: string;
+  popravek?: boolean;
+  popravekResenAt?: string;
 };
 
 const fromRow = (row: Record<string, unknown>): ProjectMail => ({
@@ -39,6 +41,8 @@ const fromRow = (row: Record<string, unknown>): ProjectMail => ({
   occurredAt: row.occurred_at ? String(row.occurred_at) : undefined,
   isDraft: row.is_draft === true,
   deletedAt: row.deleted_at ? String(row.deleted_at) : undefined,
+  popravek: row.is_revision === true,
+  popravekResenAt: row.revision_resolved_at ? String(row.revision_resolved_at) : undefined,
 });
 
 /* Vsa posta enega projekta, najnovejsa prva. [] brez prijave/tabele. */
@@ -159,5 +163,16 @@ export async function deleteProjectMailPermanent(id: string): Promise<void> {
   const context = await getOrganizationContext();
   if (!context) return;
   const { error } = await createClient().from('project_mail').delete().eq('id', id).eq('organization_id', context.organizationId);
+  if (error) throw error;
+}
+
+/* Oznaka popravka in kljukica reseno se hranita ob istem sporocilu. */
+export async function updateProjectMailRevision(id: string, popravek: boolean, resenAt?: string): Promise<void> {
+  const context = await getOrganizationContext();
+  if (!context) return;
+  const { error } = await createClient().from('project_mail').update({
+    is_revision: popravek,
+    revision_resolved_at: popravek ? (resenAt || null) : null,
+  }).eq('id', id).eq('organization_id', context.organizationId);
   if (error) throw error;
 }

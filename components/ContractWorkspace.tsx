@@ -124,6 +124,8 @@ export default function ContractWorkspace({ base }: { base: string }) {
   const [pdfNalaganje, setPdfNalaganje] = useState(false);
   /* id zadnje shranjene pogodbe — ponovni "Shrani" posodobi zapis, ne podvoji */
   const [shranjenaId, setShranjenaId] = useState('');
+  const [podpisnaPovezava, setPodpisnaPovezava] = useState('');
+  const [podpisNalaganje, setPodpisNalaganje] = useState(false);
   /* priponka (dodatna priloga k pogodbi — npr. PDF specifikacije, slika, dodatek).
      priponkaFile = izbrana, a se ne naložena datoteka (naloži se šele ob shrani(), ko je znan id zapisa);
      priponkaIme/priponkaPot = zadnje shranjeno stanje (ime za prikaz, pot za povezavo). */
@@ -768,6 +770,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
     }
     const telo = izvozniTelo();
     const obstojeca = contracts.find(c => c.id === shranjenaId);
+    if (obstojeca?.lockedAt) {
+      setNapaka(L('Podpisana pogodba je zaklenjena. Za spremembo ustvari novo pogodbo.', 'The signed contract is locked. Create a new contract to make changes.'));
+      return;
+    }
     const id = obstojeca?.id || crypto.randomUUID();
     /* priponka: ce je izbrana nova (se ne naložena) datoteka, jo poskusi naložiti zdaj — ce ne uspe
        (npr. brez oblaka), pogodba obdrzi ime priponke, samo brez povezave (kot pri stroskih) */
@@ -803,6 +809,19 @@ export default function ContractWorkspace({ base }: { base: string }) {
     /* po shranjevanju nazaj na prvo stran — nova pogodba je takoj vidna v arhivu
        (Tina: "naj se shrani in vrnem se na prvo stran") */
     setPogled('nastavitve');
+  };
+
+  const pripraviPodpisnoPovezavo = async () => {
+    if (!shranjenaId) { setNapaka(L('Pogodbo najprej shrani.', 'Save the contract first.')); return; }
+    if (!ponudnik.ime.trim()) { setNapaka(L('V nastavitvah vpiši ime izvajalca.', 'Enter the contractor name in settings.')); return; }
+    setPodpisNalaganje(true); setNapaka('');
+    try {
+      const response = await fetch('/api/pogodbe/podpis', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ externalId: shranjenaId, signerName: ponudnik.ime.trim(), clientEmail: narEmail.trim(), html: doc(izvozniTelo()) }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.napaka || L('Povezave ni bilo mogoče ustvariti.', 'Could not create the link.'));
+      setPodpisnaPovezava(String(data.url));
+    } catch (error) { setNapaka(error instanceof Error ? error.message : L('Povezave ni bilo mogoče ustvariti.', 'Could not create the link.')); }
+    setPodpisNalaganje(false);
   };
 
   /* ── pot "Od stranke": nalozen dokument (ohranjena stara logika: oblak, rezerva IndexedDB) ── */
@@ -1213,6 +1232,11 @@ export default function ContractWorkspace({ base }: { base: string }) {
       <h2 className="pg-naslov">{L('Zaključek.', 'Finish.')}{odvPoslano && <span className="pg-odvetnik-znak">{L('Pri odvetniku', 'With the lawyer')}</span>}</h2>
       <p className="pg-uvod">{L('Prenesi pogodbo', 'Download the contract')}{narocnikIme() ? L(' za ', ' for ') + narocnikIme() : ''}{L(', jo shrani ali pošlji naročniku.', ', save it or send it to the client.')}</p>
       <p className="pg-disc">{L('Pripravljeno iz vzorčne predloge kot pripomoček — ', 'Prepared from a sample template as an aid — ')}<b>{L('ni pravni nasvet', 'not legal advice')}</b>{L('. Pred podpisom priporočamo pregled pri odvetniku in prilagoditev konkretnemu poslu.', '. Before signing, we recommend a review by a lawyer and adaptation to the specific deal.')}</p>
+      <div className="pg-epodpis">
+        <b>{L('Soglasje s podpisno povezavo', 'Consent via signing link')}</b>
+        <p>{L('Zabeležijo se oba podpisnika, čas, IP in SHA-256 vsebine. To ni kvalificiran elektronski podpis po eIDAS in ga ne nadomešča. Po podpisu naročnika se pogodba zaklene.', 'Both signers, time, IP and the SHA-256 content hash are recorded. This is not a qualified electronic signature under eIDAS and does not replace one. The contract is locked after the client signs.')}</p>
+        {!podpisnaPovezava ? <button type="button" className="pg-gumb" disabled={podpisNalaganje || !shranjenaId} onClick={pripraviPodpisnoPovezavo}>{podpisNalaganje ? L('Pripravljam …', 'Preparing …') : shranjenaId ? L('Podpiši kot izvajalec in ustvari povezavo', 'Sign as contractor and create link') : L('Najprej shrani pogodbo', 'Save the contract first')}</button> : <div className="pg-epodpis-link"><input readOnly value={podpisnaPovezava} aria-label={L('Povezava za podpis naročnika', 'Client signing link')} /><button type="button" onClick={() => { void navigator.clipboard?.writeText(podpisnaPovezava); setNotice(L('Povezava je kopirana.', 'Link copied.')); }}>{L('Kopiraj', 'Copy')}</button></div>}
+      </div>
       <div className="pg-konfeti-ovoj">
         <div className="pg-konfeti" key={konfetiKljuc}>
           {konfetiKljuc > 0 && Array.from({ length: 22 }).map((_, i) => {
@@ -1325,6 +1349,12 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-prenosi{display:flex;flex-wrap:wrap;justify-content:center;gap:.9rem 1.6rem;margin:1.2rem 0 .4rem}
       .pg-disc{margin:-.4rem auto 1.4rem;padding:.7rem .95rem;max-width:34rem;text-align:center;font-size:.76rem;line-height:1.5;color:rgba(17,17,17,.66);background:oklch(97% .02 85);border:1px solid oklch(92% .03 82 / .7);border-radius:.7rem}
       .pg-disc b{color:rgba(17,17,17,.82)}
+      .pg-epodpis{display:grid;gap:.65rem;width:min(100%,38rem);margin:0 auto 1.2rem;padding:1rem;border:1px solid color-mix(in oklch,#6E4FA6 24%,transparent);border-radius:.9rem;background:color-mix(in oklch,#6E4FA6 6%,#fff);box-sizing:border-box}
+      .pg-epodpis>p{margin:0;color:#625b54;font-size:.76rem;line-height:1.5}
+      .pg-epodpis .pg-gumb{justify-self:start}
+      .pg-epodpis-link{display:flex;gap:.45rem;min-width:0}
+      .pg-epodpis-link input{flex:1;min-width:0;padding:.6rem .7rem;border:1px solid #8a8177;border-radius:.55rem;background:#fff;color:#28231f}
+      .pg-epodpis-link button{border:0;border-radius:.55rem;padding:.6rem .9rem;background:#6E4FA6;color:#fff;font-weight:700;cursor:pointer}
 
       /* chat mehurcek vstopnega vprasanja — isti videz kot RetainerWorkspace .rw-chat/.rw-mehur */
       .pg-chat{display:flex;align-items:flex-start;gap:.55rem;max-width:90%;margin:0 0 1.2rem}

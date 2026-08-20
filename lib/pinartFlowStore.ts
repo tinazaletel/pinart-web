@@ -131,6 +131,8 @@ export type FlowContract = {
   fileName?: string;
   filePath?: string;
   notes?: string;
+  lockedAt?: string;
+  signedContentHash?: string;
   deletedAt?: string;
   deletedBy?: string;
   updatedAt?: string;
