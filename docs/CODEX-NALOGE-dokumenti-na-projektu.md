@@ -50,6 +50,28 @@ Na podrobnostih projekta (`components/ProjectDetailModern.tsx`) dodaj razdelek
 
 **Ne dodajaj gumba za brisanje.** Dokumenti so del projekta, ne priponke.
 
+## To NI seznam dveh dokumentov — je kraj, kamor gre vse
+
+Tina (21. 8., 01:50): »tudi link do canvasa, brief, kar je fajn shraniti s
+projektom, pregled konkurence, vse.«
+
+Zato **ne zakodiraj seznama v JSX**. Naredi **en register vrst dokumentov** —
+na primer polje v `lib/` z zapisi `{ kljuc, ime, jeNaVoljo(projekt), odpri }` —
+in razdelek naj se izriše iz njega. Dodati nov dokument mora biti **ena
+vrstica**, ne nov blok pogojev. Vrst bo še precej.
+
+V register ob zagonu daj vse, kar že obstaja ali nastaja:
+- brief, pitch, SWOT in ostale iz enajste runde;
+- **pregled konkurence** in **raziskava stranke** iz druge naloge spodaj;
+- **povezavo na Canvas** — ta ne živi na projektu, ampak v Poslovnem okviru
+  (`lib/pinartCanvas`). Zato ni vrstica z vsebino, ampak **povezava** z jasno
+  oznako, da gre za poslovni dokument, ne projektnega.
+
+To razlikovanje ohrani: kar je **o projektu**, se hrani na projektu; kar je **o
+podjetju** (canvas, brand brief), ostane v Poslovnem okviru in je s projekta
+samo dosegljivo. Brez tega bo isti dokument čez mesec dni na dveh mestih z
+dvema različnima vsebinama.
+
 ---
 
 # 2. Dve novi Pupini opravili
