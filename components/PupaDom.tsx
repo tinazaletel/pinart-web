@@ -361,6 +361,20 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     { labela: L('Nova sporočila', 'New messages'), vrednost: '2', h: 320, poz: 'bottom:18%;right:5%', d: 3.2, href: `${base}/kalkulator/komunikacija` },
   ];
 
+  /* Devet gumbov naenkrat je seznam, ne ponudba. Prvih sest pokrije vsakdan,
+     ostalo pride na klik — da vstop ostane vabilo, ne kazalo. */
+  const [vseAkcije, setVseAkcije] = useState(false);
+
+  /* Orodje se da odpreti tudi iz naslova (?orodje=brief). Beremo iz
+     window.location, NE useSearchParams — ta zahteva force-dynamic in nam je
+     ze enkrat ustavil gradnjo. */
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const zeljeno = new URLSearchParams(window.location.search).get('orodje') || '';
+    const dovoljena = ['ponudba', 'racun', 'strosek', 'projekt', 'naloga', 'brief', 'pitch', 'canvas', 'tabla', 'pogodba', 'retainer'];
+    if (dovoljena.includes(zeljeno)) setTip(zeljeno as typeof tip);
+  }, []);
+
   /* hitre akcije = lahki POGOVORNI predlogi (napolnijo vnos), ne le linki (ChatGPT) */
   const hitre: { ime: string; tip?: typeof tip; href?: string; h: number; ikona: React.ReactNode }[] = [
     { ime: L('Pripravi ponudbo', 'Create a quote'), tip: 'ponudba', h: 297, ikona: <FileText size={16} weight="bold" /> },
@@ -610,9 +624,15 @@ export default function PupaDom({ base = '' }: { base?: string }) {
             </div>
 
             <div className="pd-hitre">
-              {hitre.map(h => (
+              {(vseAkcije ? hitre : hitre.slice(0, 6)).map(h => (
                 <button type="button" key={h.ime} className="pd-cip" style={{ ['--h' as string]: String(h.h) }} onClick={() => { if (h.href) { if (typeof window !== 'undefined') window.location.href = h.href; } else if (h.tip) setTip(h.tip); }}><span className="pd-cip-ik" aria-hidden>{h.ikona}</span>{h.ime}</button>
               ))}
+              {hitre.length > 6 && (
+                <button type="button" className="pd-vec" aria-expanded={vseAkcije}
+                  onClick={() => setVseAkcije(v => !v)}>
+                  {vseAkcije ? L('Manj', 'Less') : L('Več', 'More')}
+                </button>
+              )}
             </div>
           </>
         )}
@@ -783,6 +803,8 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-hitre { display: flex; flex-wrap: wrap; gap: .45rem; margin: 1rem 0 .9rem; }
         .pd-cip { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.5rem; padding: .55rem 1rem; border: 1px solid rgba(255,255,255,.6); border-radius: 999px; background: color-mix(in oklch, oklch(72% .14 var(--h)) 14%, rgba(255,255,255,.6)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font: 700 .8rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
         .pd-cip-ik { display: inline-flex; color: color-mix(in oklch, oklch(58% .2 var(--h)) 85%, var(--ink, #1a1a1a)); }
+        .pd-vec { align-self: center; padding: .55rem .3rem; border: 0; background: none; font: 700 .8rem var(--font-sans), sans-serif; color: #6E4FA6; text-decoration: underline; text-underline-offset: .22em; cursor: pointer; }
+        .pd-vec:hover { text-decoration-thickness: 2px; }
         .pd-cip:hover { transform: translateY(-1px); box-shadow: 0 8px 20px oklch(55% .12 var(--h) / .2); }
         .pd-opomba { margin: 0; font: 500 .72rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); }
 

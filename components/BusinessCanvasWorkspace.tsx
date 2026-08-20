@@ -10,6 +10,7 @@ import {
 } from '@/lib/pinartCanvas';
 import { getActiveOrganizationId, listUserOrganizations, setActiveOrganization, type UserOrganization } from '@/lib/pinartFlowCloud';
 import { usePredogled } from '@/lib/predogled';
+import { useLocale } from 'next-intl';
 import styles from './BusinessCanvasWorkspace.module.css';
 
 const BLOCKS: Array<{ key: keyof BusinessCanvas; number: string; title: string; hint: string; example: string }> = [
@@ -60,6 +61,8 @@ function CanvasIcon({ type }: { type: keyof BusinessCanvas }) {
 }
 
 export default function BusinessCanvasWorkspace() {
+  const locale = useLocale();
+  const base = locale === 'en' ? '/en' : '';
   const [preview] = usePredogled();
   const [canvas, setCanvas] = useState<BusinessCanvas>(EMPTY_BUSINESS_CANVAS);
   const [documents, setDocuments] = useState<BusinessCanvasDocument[]>([]);
@@ -202,7 +205,7 @@ export default function BusinessCanvasWorkspace() {
   return <div className={styles.page}>
     {notice && <div className={`${styles.notice} ${noticeIsError ? styles.noticeError : ''}`} role={noticeIsError ? 'alert' : 'status'}>{notice}<button type="button" onClick={() => setNotice('')} aria-label="Zapri obvestilo">×</button></div>}
     {view === 'list' ? <>
-      <p className={styles.listSub}>Odpri obstoječ poslovni model ali začni novega. Kmalu tu tudi pitch in drugi dokumenti.</p>
+      <p className={styles.listSub}>Odpri obstoječ poslovni model ali začni novega. Spodaj so dokumenti, ki jih Pupa napiše zate.</p>
       <section className={styles.canvasGrid} aria-label="Shranjeni canvasi">
         <button type="button" className={styles.newCanvasCard} disabled={preview !== 'mine'} onClick={startNewCanvas} title={preview !== 'mine' ? 'Demo je samo za predogled — prijavi se za svoj Canvas.' : undefined}>
           <span className={styles.newCanvasPlus} aria-hidden="true">+</span>
@@ -230,11 +233,15 @@ export default function BusinessCanvasWorkspace() {
         })}
       </section>
       {!shownDocuments.length && <div className={styles.emptySaved}><strong>Še nimaš shranjenega Canvasa.</strong><span>Klikni »Nov Canvas«, izpolni ga in shrani. Nato se bo pojavil tukaj.</span></div>}
-      <section className={styles.comingSoon} aria-label="Kmalu na voljo">
-        <p className={styles.comingSoonHead}>Kmalu — Pupa jih bo pripravila zate iz tvojega Canvasa</p>
+      <section className={styles.comingSoon} aria-label="Dokumenti, ki jih pripravi Pupa">
+        <p className={styles.comingSoonHead}>Pupa jih pripravi zate — iz pogovora, ne iz praznega obrazca</p>
         <div className={styles.comingSoonGrid}>
           {[
-            { name: 'Pitch', desc: 'Kratka predstavitev zase — za stranke in partnerje' },
+            /* orodje = obstaja in se odpre; brez njega je kartica se obljuba.
+               Kmalu pisemo SAMO tam, kjer res se ni — sicer stran obljublja
+               nekaj, cesar izdelek ne zna. */
+            { name: 'Brief', desc: 'Kaj delamo, za koga, do kdaj — zapiše se na projekt', orodje: 'brief' },
+            { name: 'Pitch', desc: 'Kratka predstavitev zase — za stranke in partnerje', orodje: 'pitch' },
             { name: 'Problem', desc: 'Kateri problem rešuješ in za koga' },
             { name: 'Persone', desc: 'Kdo so tvoje idealne stranke' },
             { name: 'Vrednostna ponudba', desc: 'Value Proposition Canvas — kaj rešuješ za koga' },
@@ -242,11 +249,18 @@ export default function BusinessCanvasWorkspace() {
             { name: 'Journey map', desc: 'Pot stranke skozi izkušnjo' },
             { name: 'SWOT', desc: 'Prednosti, slabosti, priložnosti, nevarnosti' },
             { name: 'Brand brief', desc: 'Misija, vrednote in ton znamke' },
-          ].map(document => <div key={document.name} className={styles.comingCard} aria-disabled="true">
-            <span className={styles.comingBadge}>Kmalu</span>
-            <strong>{document.name}</strong>
-            <span>{document.desc}</span>
-          </div>)}
+          ].map(document => document.orodje
+            ? <a key={document.name} className={`${styles.comingCard} ${styles.comingCardOn}`}
+                href={`${base}/kalkulator/dom?orodje=${document.orodje}`}>
+                <span className={styles.comingBadgeOn}>Na voljo</span>
+                <strong>{document.name}</strong>
+                <span>{document.desc}</span>
+              </a>
+            : <div key={document.name} className={styles.comingCard} aria-disabled="true">
+                <span className={styles.comingBadge}>Kmalu</span>
+                <strong>{document.name}</strong>
+                <span>{document.desc}</span>
+              </div>)}
         </div>
       </section>
     </> : <>

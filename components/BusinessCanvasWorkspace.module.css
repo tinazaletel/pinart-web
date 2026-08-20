@@ -124,6 +124,9 @@
 .comingCard { position: relative; display: grid; align-content: start; gap: .3rem; padding: 1.1rem; border: 1px dashed var(--line); border-radius: 1.2rem; background: color-mix(in oklch, var(--ink) 2%, transparent); opacity: .72; }
 .comingCard strong { font: 500 1.1rem/1.1 var(--font-serif), Georgia, serif; }
 .comingCard > span:last-child { color: var(--muted); font-size: .8rem; line-height: 1.4; }
+.comingCardOn { border-style: solid; border-color: color-mix(in oklch, oklch(58% .2 297) 34%, transparent); background: color-mix(in oklch, oklch(58% .2 297) 5%, transparent); opacity: 1; color: inherit; text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
+.comingCardOn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px color-mix(in oklch, oklch(58% .2 297) 18%, transparent); }
+.comingBadgeOn { justify-self: start; margin-bottom: .15rem; padding: .18rem .5rem; border-radius: 999px; background: color-mix(in oklch, oklch(58% .2 297) 22%, transparent); color: color-mix(in oklch, oklch(40% .2 297) 96%, var(--ink)); font: 700 .62rem var(--font-sans), sans-serif; letter-spacing: .04em; text-transform: uppercase; }
 .comingBadge { justify-self: start; margin-bottom: .15rem; padding: .18rem .5rem; border-radius: 999px; background: color-mix(in oklch, oklch(58% .2 297) 14%, transparent); color: color-mix(in oklch, oklch(46% .2 297) 92%, var(--ink)); font: 700 .62rem var(--font-sans), sans-serif; letter-spacing: .04em; text-transform: uppercase; }
 
 /* Mobilno: 2 stolpca KOMPAKTNIH kartic, da z več canvasi pregledaš več naenkrat
