@@ -57,9 +57,22 @@ export function dokFontLink(ime?: string): string {
    ki ju dokumentni CSS uporablja (var(--akcent), var(--dok-font)). */
 export function dokVars(barva?: string, font?: string): string {
   let kartica = '';
-  try { kartica = aktivnaPredloga().kartica || ''; } catch { /* SSR/prazno */ }
+  let ozadje = '';
+  try {
+    const predloga = aktivnaPredloga();
+    kartica = predloga.kartica || '';
+    const vir = predloga.ozadje || '';
+    if (vir) {
+      const url = vir.startsWith('data:') || typeof window === 'undefined'
+        ? vir
+        : `${window.location.origin}${vir}`;
+      /* Vključeno v body inline slog, zato isti niz velja v iframe predogledu,
+         HTML izvozu in strežniškem PDF renderju vseh dokumentov. */
+      ozadje = `;background-image:url('${url.replace(/'/g, '%27')}');background-size:210mm auto;background-repeat:repeat-y;background-position:top center`;
+    }
+  } catch { /* SSR/prazno */ }
   return `--akcent:${barva || DOK_BARVA_PRIVZETA};--dok-font:${dokFontStack(font)}`
-    + (kartica ? `;--dok-kartica:${kartica}` : '');
+    + (kartica ? `;--dok-kartica:${kartica}` : '') + ozadje;
 }
 
 /* Dokumentni CSS -> zamenja fiksno barvo poudarka (#B25476) in pisavo naslovov
