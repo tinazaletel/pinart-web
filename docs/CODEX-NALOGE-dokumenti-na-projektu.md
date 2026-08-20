@@ -72,6 +72,31 @@ podjetju** (canvas, brand brief), ostane v Poslovnem okviru in je s projekta
 samo dosegljivo. Brez tega bo isti dokument čez mesec dni na dveh mestih z
 dvema različnima vsebinama.
 
+### Vez manjka — to je pravo delo te naloge
+
+Tina (21. 8., 01:55): »ja sam je treba povezati.«
+
+Ima prav in tu ne gre za povezavo v smislu gumba. Canvas danes **ne ve, h
+kateremu projektu sodi** — v Poslovnem okviru je seznam dokumentov brez vsake
+vezi na projekt. Zato »odpri canvas« s projekta ne more odpreti *pravega*
+canvasa, ampak le seznam vseh. To ni povezava, to je bližnjica.
+
+Kaj naredi:
+
+- Poslovni dokument (canvas in kar bo še prišlo v okvir) dobi **neobvezno vez
+  na projekt** — polje `projektExternalId`. Neobvezno namerno: canvas o
+  podjetju ni od nobenega projekta in mora smeti ostati brez vezi.
+- Migracija **`20260821040000`**: stolpec na tabeli poslovnih dokumentov, plus
+  push/pull po istem vzorcu kot ostala polja.
+- Na projektu naštej **samo dokumente, vezane nanj**. Kjer vezi ni, pokaži
+  »Poveži obstoječi canvas« z izbiro iz seznama — in **»Ustvari novega«**, ki
+  novega takoj poveže.
+- V Poslovnem okviru naj kartica dokumenta pokaže, **h kateremu projektu
+  sodi**, če sodi. Vez mora biti vidna z obeh strani, sicer je pol vezi.
+
+Isti vzorec uporabi za vse prihodnje poslovne dokumente. Naredi ga enkrat in
+prav; to je tista vez, brez katere razdelek Dokumenti ostane okrasek.
+
 ---
 
 # 2. Dve novi Pupini opravili
