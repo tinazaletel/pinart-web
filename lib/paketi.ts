@@ -8,6 +8,18 @@
 
 export type PaketId = 'free' | 'premium' | 'pro';
 
+/* Finančna varovalka za Pupo na Pinartovem AI računu. Meje so na
+   organizacijo in koledarski mesec; lasten AI (/api/ai/izvedi) jih ne uporablja. */
+export const PUPA_MESECNE_KVOTE: Record<PaketId, number> = {
+  free: 0,
+  premium: 0,
+  pro: 800,
+};
+
+export function pupaMesecnaKvota(paket: string): number {
+  return PUPA_MESECNE_KVOTE[paket as PaketId] ?? 0;
+}
+
 export type Paket = {
   id: PaketId;
   ime: string;

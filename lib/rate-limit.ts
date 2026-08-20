@@ -5,6 +5,11 @@ import { createAdminClient } from '@/utils/supabase/admin';
 const SPOROCILO_SL = 'Preveč zahtev, poskusi čez minuto.';
 const SPOROCILO_EN = 'Too many requests, please try again in a minute.';
 
+/* Človek lahko ponudbo večkrat popravi in izvozi, avtomat pa s tema mejama ne
+   more hitro približati cenovnega modela. Ločeni poti preprečita mešanje oken. */
+export const KALKULATOR_NA_MINUTO = 30;
+export const KALKULATOR_NA_URO = 300;
+
 /* API poti nimajo locale v poti, zato jezik uganemo iz referer (/en/...) ali
    accept-language — da uporabnik dobi sporočilo v svojem jeziku. */
 function jeAngleski(request: Request): boolean {
@@ -64,4 +69,10 @@ export async function omejiApi(
   return data === true
     ? null
     : NextResponse.json({ napaka: jeAngleski(request) ? SPOROCILO_EN : SPOROCILO_SL }, { status: 429 });
+}
+
+export async function omejiKalkulator(request: Request): Promise<NextResponse | null> {
+  const minutna = await omejiApi(request, 'kalkulator-generiranje-minuta', KALKULATOR_NA_MINUTO);
+  if (minutna) return minutna;
+  return omejiApi(request, 'kalkulator-generiranje-ura', KALKULATOR_NA_URO, undefined, 3600);
 }

@@ -185,13 +185,13 @@ export default function IskalnikPodjetij({
         .ip-zadetek + .ip-zadetek { border-top: 1px solid var(--line, rgba(17,17,17,.08)); }
         .ip-zadetek.on { background: #F5F2EA; }
         .ip-zadetek strong { font-size: .86rem; font-weight: 600; color: var(--ink, #111); line-height: 1.3; }
-        .ip-zadetek small { font-size: .76rem; color: #8a8177; }
-        .ip-skupina { margin: 0; padding: .45rem .8rem .2rem; font-size: .62rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #8a8177; }
+        .ip-zadetek small { font-size: .76rem; color: #6b655d; }
+        .ip-skupina { margin: 0; padding: .45rem .8rem .2rem; font-size: .62rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #6b655d; }
         .ip-moja strong { color: #6E4FA6; }
-        .ip-tiho { margin: 0; padding: .55rem .8rem; font-size: .8rem; color: #8a8177; }
-        .ip-sporocilo { margin: .35rem 0 0; font-size: .74rem; line-height: 1.35; color: #8a8177; }
+        .ip-tiho { margin: 0; padding: .55rem .8rem; font-size: .8rem; color: #6b655d; }
+        .ip-sporocilo { margin: .35rem 0 0; font-size: .74rem; line-height: 1.35; color: #6b655d; }
         .ip-napaka { color: #a4342a; font-weight: 600; }
-        .ip-vir { display: block; padding: .4rem .8rem .5rem; border-top: 1px solid var(--line, rgba(17,17,17,.08)); font-size: .66rem; color: #8a8177; }
+        .ip-vir { display: block; padding: .4rem .8rem .5rem; border-top: 1px solid var(--line, rgba(17,17,17,.08)); font-size: .66rem; color: #6b655d; }
       `}</style>
     </div>
   );

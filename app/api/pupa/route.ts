@@ -9,6 +9,7 @@ import { createClient } from '@/utils/supabase/server';
 import { checkAiRateLimit, hashIp, recordAiTokens } from '@/lib/rateLimit';
 import { omejiApi } from '@/lib/rate-limit';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
+import { pupaMesecnaKvota } from '@/lib/paketi';
 
 export const runtime = 'nodejs';
 
@@ -52,15 +53,21 @@ export async function POST(req: Request) {
 
   // MESECNA KAPA (financna varnost): omeji SKUPNO mesecno porabo organizacije.
   // FAIL-OPEN: ce RPC/tabela manjka, Pupa vseeno dela (rate-limit je zascita, ne osrednja pot).
-  const monthlyLimit = Number(process.env.PUPA_MONTHLY_LIMIT || 800);
+  const monthlyLimit = pupaMesecnaKvota(String(entitlement.tier));
   if (Number.isFinite(monthlyLimit) && monthlyLimit > 0) {
     try {
       const { data: monthCount } = await supabase.rpc('ai_usage_month_count', {
         p_organization_id: String(entitlement.organization_id),
       });
       if (typeof monthCount === 'number' && monthCount >= Math.floor(monthlyLimit)) {
+        const zdaj = new Date();
+        const obnovitev = new Date(Date.UTC(zdaj.getUTCFullYear(), zdaj.getUTCMonth() + 1, 1));
         return NextResponse.json({
-          napaka: 'Dosežen mesečni obseg Pupe za ta paket. Nadgradi paket ali počakaj do naslednjega meseca.',
+          napaka: `Ta mesec je bilo porabljenih ${monthCount} od ${monthlyLimit} Pupinih sporočil. Kvota se obnovi ${obnovitev.toLocaleDateString('sl-SI', { timeZone: 'UTC' })}. Za nadaljevanje nadgradi paket ali poveži svoj AI v Nastavitve → Moj AI.`,
+          limit: true,
+          porabljeno: monthCount,
+          kvota: monthlyLimit,
+          obnovitev: obnovitev.toISOString(),
         }, { status: 429 });
       }
     } catch { /* FAIL-OPEN */ }

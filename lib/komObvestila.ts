@@ -21,9 +21,10 @@ export function preberiVideno(): Record<string, string> {
   }
 }
 
-function shraniVideno(m: Record<string, string>) {
+export function shraniVideno(m: Record<string, string>) {
   if (typeof window === 'undefined') return;
   try { localStorage.setItem(VIDENO_KEY, JSON.stringify(m)); } catch { /* poln localStorage */ }
+  try { window.dispatchEvent(new Event('pinart-kom-obvestila-change')); } catch { /* SSR */ }
 }
 
 /* Oznaci nit kot videno do casa (privzeto zdaj). Sprozi osvezitev znacke. */
