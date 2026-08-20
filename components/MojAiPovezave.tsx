@@ -30,11 +30,67 @@ type Povezava = {
    dovoli zaledje (lib/aiConnections.ts → AI_PROVIDERS). »custom-mcp« tu ni,
    ker ga zaledje ne zna preveriti in zahteva MCP odjemalca. */
 const PONUDNIKI = [
-  { id: 'openai', ime: 'OpenAI (ChatGPT)', model: 'gpt-4.1-mini', kjeSl: 'platform.openai.com → API keys', kjeEn: 'platform.openai.com → API keys' },
-  { id: 'anthropic', ime: 'Anthropic (Claude)', model: 'claude-sonnet-4-20250514', kjeSl: 'console.anthropic.com → API keys', kjeEn: 'console.anthropic.com → API keys' },
-  { id: 'google', ime: 'Google (Gemini)', model: 'gemini-2.5-flash', kjeSl: 'aistudio.google.com → API key', kjeEn: 'aistudio.google.com → API key' },
-  { id: 'mistral', ime: 'Mistral', model: 'mistral-small-latest', kjeSl: 'console.mistral.ai → API keys', kjeEn: 'console.mistral.ai → API keys' },
-  { id: 'openai-compatible', ime: 'Drug ponudnik (OpenAI-združljiv)', model: '', kjeSl: 'pri svojem ponudniku', kjeEn: 'from your provider' },
+  { id: 'openai', ime: 'OpenAI (ChatGPT)', model: 'gpt-4.1-mini',
+    kjeSl: 'platform.openai.com → API keys', kjeEn: 'platform.openai.com → API keys',
+    url: 'https://platform.openai.com/api-keys',
+    korakiSl: ['Odpri platform.openai.com in se prijavi z računom, ki ga že uporabljaš za ChatGPT.',
+               'Zgoraj desno klikni svoj profil → »API keys«.',
+               'Klikni »Create new secret key« in ga poimenuj npr. »Pinart Flow«.',
+               'Kopiraj ključ (začne se s sk-). Pokaže se SAMO enkrat.',
+               'Za uporabo potrebuješ dobroimetje: Settings → Billing. Naročnina na ChatGPT Plus tu ne velja — API se plačuje ločeno.'],
+    korakiEn: ['Open platform.openai.com and sign in with the account you use for ChatGPT.',
+               'Top right, click your profile → “API keys”.',
+               'Click “Create new secret key” and name it e.g. “Pinart Flow”.',
+               'Copy the key (starts with sk-). It is shown ONLY once.',
+               'You need credit to use it: Settings → Billing. A ChatGPT Plus subscription does not cover the API — it is billed separately.'] },
+  { id: 'anthropic', ime: 'Anthropic (Claude)', model: 'claude-sonnet-4-20250514',
+    kjeSl: 'console.anthropic.com → API keys', kjeEn: 'console.anthropic.com → API keys',
+    url: 'https://console.anthropic.com/settings/keys',
+    korakiSl: ['Odpri console.anthropic.com in se prijavi.',
+               'V levem meniju izberi »API keys«.',
+               'Klikni »Create Key« in ga poimenuj npr. »Pinart Flow«.',
+               'Kopiraj ključ (začne se s sk-ant-). Pokaže se SAMO enkrat.',
+               'Za uporabo potrebuješ dobroimetje: »Plans & Billing«. Naročnina na Claude Pro tu ne velja.'],
+    korakiEn: ['Open console.anthropic.com and sign in.',
+               'In the left menu choose “API keys”.',
+               'Click “Create Key” and name it e.g. “Pinart Flow”.',
+               'Copy the key (starts with sk-ant-). It is shown ONLY once.',
+               'You need credit: “Plans & Billing”. A Claude Pro subscription does not cover the API.'] },
+  { id: 'google', ime: 'Google (Gemini)', model: 'gemini-2.5-flash',
+    kjeSl: 'aistudio.google.com → API key', kjeEn: 'aistudio.google.com → API key',
+    url: 'https://aistudio.google.com/app/apikey',
+    korakiSl: ['Odpri aistudio.google.com in se prijavi z Google računom.',
+               'Klikni »Get API key« oziroma »Create API key«.',
+               'Izberi projekt (ali pusti privzetega) in potrdi.',
+               'Kopiraj ključ.',
+               'Gemini ima brezplačno raven z omejitvami — za redno rabo vklopi obračun v Google Cloud.'],
+    korakiEn: ['Open aistudio.google.com and sign in with your Google account.',
+               'Click “Get API key” or “Create API key”.',
+               'Pick a project (or keep the default) and confirm.',
+               'Copy the key.',
+               'Gemini has a free tier with limits — for regular use enable billing in Google Cloud.'] },
+  { id: 'mistral', ime: 'Mistral', model: 'mistral-small-latest',
+    kjeSl: 'console.mistral.ai → API keys', kjeEn: 'console.mistral.ai → API keys',
+    url: 'https://console.mistral.ai/api-keys',
+    korakiSl: ['Odpri console.mistral.ai in se prijavi.',
+               'Izberi »API keys«.',
+               'Klikni »Create new key« in ga poimenuj.',
+               'Kopiraj ključ. Pokaže se SAMO enkrat.'],
+    korakiEn: ['Open console.mistral.ai and sign in.',
+               'Choose “API keys”.',
+               'Click “Create new key” and name it.',
+               'Copy the key. It is shown ONLY once.'] },
+  { id: 'openai-compatible', ime: 'Drug ponudnik (OpenAI-združljiv)', model: '',
+    kjeSl: 'pri svojem ponudniku', kjeEn: 'from your provider',
+    url: '',
+    korakiSl: ['To izberi, če tvoj ponudnik ponuja »OpenAI-združljiv« API (npr. Groq, Together, OpenRouter, lasten strežnik).',
+               'V njegovih nastavitvah ustvari API ključ in ga kopiraj.',
+               'Poišči še »Base URL« oziroma naslov API-ja — vpisati ga moraš v polje spodaj.',
+               'Vpiši tudi ime modela; brez njega ponudnik ne ve, kaj naj požene.'],
+    korakiEn: ['Choose this if your provider offers an “OpenAI-compatible” API (e.g. Groq, Together, OpenRouter, your own server).',
+               'Create an API key in their settings and copy it.',
+               'Find the “Base URL” — you must enter it in the field below.',
+               'Enter the model name too; without it the provider does not know what to run.'] },
 ] as const;
 
 const IMENA_PONUDNIKOV: Record<string, string> = {
@@ -324,6 +380,12 @@ export default function MojAiPovezave({ base }: { base: string }) {
               placeholder={L('prilepi ključ sem', 'paste the key here')}
             />
             <small>{L(`Ključ dobiš na ${izbrani.kjeSl}.`, `You get the key at ${izbrani.kjeEn}.`)}</small>
+            {/* Navodila po korakih: »prilepi ključ sem« predpostavlja, da ves, kje ga dobis. */}
+            <details className="ma-kako">
+              <summary>{L('Kako dobim ključ?', 'How do I get a key?')}</summary>
+              <ol>{(jeEn ? izbrani.korakiEn : izbrani.korakiSl).map((k, i) => <li key={i}>{k}</li>)}</ol>
+              {izbrani.url && <a href={izbrani.url} target="_blank" rel="noopener noreferrer">{L('Odpri stran ponudnika →', 'Open the provider page →')}</a>}
+            </details>
           </label>
 
           <div className="ai-akcije">
@@ -348,6 +410,15 @@ export default function MojAiPovezave({ base }: { base: string }) {
       </p>
 
       <style jsx>{`
+        /* Navodila po korakih: privzeto zaprta, da obrazec ostane kratek. */
+        .ma-kako { margin-top: .4rem; }
+        .ma-kako summary { cursor: pointer; font-size: .78rem; font-weight: 700; color: #6E4FA6; list-style: none; }
+        .ma-kako summary::-webkit-details-marker { display: none; }
+        .ma-kako summary::before { content: '＋ '; font-weight: 700; }
+        .ma-kako[open] summary::before { content: '－ '; }
+        .ma-kako ol { margin: .5rem 0 .4rem; padding-left: 1.15rem; display: flex; flex-direction: column; gap: .35rem; font-size: .8rem; line-height: 1.5; color: #6b6459; }
+        .ma-kako a { font-size: .78rem; font-weight: 700; color: #6E4FA6; }
+
         .ai-ovoj { display: flex; flex-direction: column; gap: 1.2rem; }
         .ai-uvod { margin: 0; font-size: .9rem; line-height: 1.55; color: #4a4550; }
         .ai-varnost { padding: .85rem 1rem; border-radius: 12px; border: 1px solid rgba(110,79,166,.28); background: rgba(110,79,166,.06); font-size: .84rem; line-height: 1.55; color: #3d3646; }
