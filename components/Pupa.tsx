@@ -7,6 +7,7 @@
    osvežuje zanesljivo). */
 
 import { useEffect, useRef, useState } from 'react';
+import { getOrganizationContext } from '@/lib/pinartFlowCloud';
 import { createPortal } from 'react-dom';
 import { usePathname } from 'next/navigation';
 import { Microphone, Sparkle } from '@phosphor-icons/react';
@@ -41,6 +42,12 @@ export default function Pupa() {
   const [spor, setSpor] = useState<Sporocilo[]>([]);
   const [vnos, setVnos] = useState('');
   const [caka, setCaka] = useState(false);
+  /* POVEZANI AGENTI (»Moj AI«): uporabnica lahko isto vprašanje pošlje Pupi ali
+     svojemu povezanemu ponudniku. Prazen niz = Pupa. Ključi ostanejo na
+     strežniku — brskalnik pozna samo oznako in id povezave. */
+  const [agenti, setAgenti] = useState<{ id: string; label: string; provider: string }[]>([]);
+  const [agent, setAgent] = useState('');
+  const orgRef = useRef<string>('');
   const prekiniRef = useRef<AbortController | null>(null);
   const [poslusa, setPoslusa] = useState(false);
   const [zvok, setZvok] = useState(false);
@@ -155,13 +162,25 @@ export default function Pupa() {
     try {
       const pk = preberiPupaKontekst();
       const kontekstSKorakom = [pk.korak, pk.kontekst].filter(Boolean).join('\n\n');
-      const res = await fetch('/api/pupa', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ vprasanje: q, kontekst: kontekstSKorakom, zgodovina }),
-        signal: krmilnik.signal,
-      });
+      /* Izbran tuj agent gre skozi /api/ai/izvedi, ki pozna njegov ključ in
+         dovoljenja; Pupa gre po svoji poti. Kontekst dobita oba enak. */
+      const res = agent
+        ? await fetch('/api/ai/izvedi', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            organizationId: orgRef.current,
+            connectionId: agent,
+            prompt: [kontekstSKorakom, q].filter(Boolean).join('\n\n'),
+          }),
+          signal: krmilnik.signal,
+        })
+        : await fetch('/api/pupa', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ vprasanje: q, kontekst: kontekstSKorakom, zgodovina }),
+          signal: krmilnik.signal,
+        });
       const data = await res.json();
-      const odg = data.odgovor || data.napaka || 'Hmm, nekaj je zaškripalo.';
+      const odg = data.odgovor || data.text || data.napaka || data.error || 'Hmm, nekaj je zaškripalo.';
       setSpor(s => [...s, { role: 'assistant', content: odg }]);
       if (zvok || nacin === 'glas') govori(odg);
     } catch (e) {
@@ -350,6 +369,17 @@ export default function Pupa() {
               style={{ flex: 'none', width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(42,32,53,.18)', cursor: 'pointer', background: poslusa ? '#e0567a' : '#fff', color: poslusa ? '#fff' : '#2A2035', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
               <Microphone size={19} weight={poslusa ? 'fill' : 'regular'} />
             </button>
+            {agenti.length > 0 && (
+              /* Izbira, KDO odgovori. Pokaže se šele, ko je povezan vsaj en
+                 tvoj agent — sicer je izbira brez pomena. */
+              <select value={agent} onChange={e => setAgent(e.target.value)}
+                aria-label={L('Kdo naj odgovori', 'Who should answer')}
+                title={L('Kdo naj odgovori', 'Who should answer')}
+                style={{ flex: 'none', maxWidth: '8.5rem', padding: '.4rem .3rem', borderRadius: '.6rem', border: '1px solid rgba(42,32,53,.14)', background: '#fff', font: '600 .74rem inherit', color: '#2a2035', cursor: 'pointer' }}>
+                <option value="">Pupa</option>
+                {agenti.map(a => <option key={a.id} value={a.id}>{a.label}</option>)}
+              </select>
+            )}
             <input value={vnos} onChange={e => setVnos(e.target.value)} placeholder={poslusa ? L('Poslušam…', 'Listening…') : L('Vprašaj Pupo…', 'Ask Pupa…')}
               style={{ flex: 1, border: '1px solid rgba(42,32,53,.18)', borderRadius: 12, padding: '.55rem .75rem', fontSize: '.9rem', fontFamily: 'inherit', outline: 'none' }} />
             {caka ? (
