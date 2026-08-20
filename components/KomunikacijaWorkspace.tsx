@@ -18,6 +18,7 @@ import { posljiMail } from '@/lib/posta';
 import { loadFlowData } from '@/lib/pinartFlowStore';
 import Toast from '@/components/Toast';
 import { zdruziPostoVNiti } from '@/lib/postaNiti';
+import { zabeleziInterakcijo } from '@/lib/dnevnik';
 
 /* Demo pošta (»polno poslovanje«) — projektni maili na enem mestu, brez šuma. */
 const DEMO_POSTA: PostaVnos[] = [
@@ -262,7 +263,16 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
        '__skupno__') -> odgovori strank pridejo NAZAJ v Flow (skupna Komunikacija). */
     const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, ...(projId ? { projectExternalId: projId } : {}) });
     setPisiPosiljam(false);
-    if (rez.ok) { const nov = dodajPosto({ projectId: projId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim(), telo: pisiTelo, povzetek: pisiTelo.replace(/\s+/g, ' ').trim().slice(0, 160) }); setPosta(prev => [nov, ...prev].sort((a, b) => b.datum.localeCompare(a.datum))); setPisiStatus(''); setPisiUspeh(true); setToast(L('Poslano ✓', 'Sent ✓')); window.setTimeout(() => { setPisiVrsta(false); setPisiUspeh(false); }, 1400); } else { setPisiStatus(L('Napaka: ', 'Error: ') + (rez.napaka || '')); }
+    if (rez.ok) {
+      const nov = dodajPosto({ projectId: projId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim(), telo: pisiTelo, povzetek: pisiTelo.replace(/\s+/g, ' ').trim().slice(0, 160) });
+      setPosta(prev => [nov, ...prev].sort((a, b) => b.datum.localeCompare(a.datum)));
+      const flow = loadFlowData();
+      const ponudba = projId ? flow.offers.find(o => o.id === projId) : undefined;
+      const stranka = flow.clients.find(c => c.name.trim().toLocaleLowerCase('sl') === ponudba?.client.trim().toLocaleLowerCase('sl') || c.email?.toLocaleLowerCase() === za.toLocaleLowerCase() || c.kontakti?.some(k => k.email?.toLocaleLowerCase() === za.toLocaleLowerCase()));
+      if (stranka) zabeleziInterakcijo(stranka.id, { tip: 'email', besedilo: `Poslana e-pošta: ${pisiZadeva.trim()}`, projektId: projId });
+      setPisiStatus(''); setPisiUspeh(true); setToast(L('Poslano ✓', 'Sent ✓'));
+      window.setTimeout(() => { setPisiVrsta(false); setPisiUspeh(false); }, 1400);
+    } else { setPisiStatus(L('Napaka: ', 'Error: ') + (rez.napaka || '')); }
   };
   const deliVKlepet = () => { setZavihek('klepet'); setToast(L('Izberi sodelavca (+) in deli sporočilo.', 'Choose a collaborator (+) and share.')); };
   const povabiVKlepet = async (e: React.FormEvent) => {

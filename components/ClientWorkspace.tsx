@@ -14,6 +14,7 @@ import { preberiDnevnik, shraniDnevnik, zabeleziInterakcijo, DNEVNIK_TIPI, dnevn
 import DeliZapis from '@/components/DeliZapis';
 import IskalnikPodjetij from '@/components/IskalnikPodjetij';
 import { jeLicencaPotekla } from '@/lib/licencePotek';
+import { preberiProjekti, type Projekt } from '@/lib/projekti';
 
 /* Ikone poenotene na Phosphor. Inline fill/stroke preglasi stare stroke-based
    CSS pravila (fill:none), da so Phosphor ikone vidne. */
@@ -132,6 +133,7 @@ export default function ClientWorkspace() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [projekti, setProjekti] = useState<Projekt[]>([]);
   const [selected, setSelected] = useState<Client | null>(null);
   const profilRef = useRef<HTMLElement | null>(null);
   /* Mobilno: profil prevzame cel zaslon (samostojna stran z »nazaj«) — ob izbiri skoči na vrh. */
@@ -214,6 +216,7 @@ export default function ClientWorkspace() {
        tako klik na projekt tu odpre pravi projekt v ProjectsWorkspace. */
     setOffers(flow.offers);
     setInvoices(flow.invoices); setExpenses(flow.expenses); setContracts(flow.contracts);
+    setProjekti(nacin === 'mine' ? preberiProjekti() : []);
   }, [nacin]);
 
   /* ?stranka=<ime> (npr. klik na naročnika v projektu) -> samodejno izberi to stranko */
@@ -406,10 +409,28 @@ export default function ClientWorkspace() {
   const selectedContracts = selected ? contracts.filter(item => key(item.client) === key(selected.name)) : [];
   const selectedInvoices = selected ? invoices.filter(item => key(item.client) === key(selected.name)) : [];
   const selectedExpenses = selected ? expenses.filter(item => item.client && key(item.client) === key(selected.name)) : [];
+  const selectedRealProjects = selected ? projekti.filter(item => item.strankaId === selected.id || (item.strankaIme && key(item.strankaIme) === key(selected.name))) : [];
+  const zadnjeDelo = [...selectedRealProjects.map(p => p.updatedAt || p.created), ...selectedProjects.map(p => p.date)].filter(Boolean).sort().at(-1);
+  const zadnjiStik = dnevnik.map(v => v.created).filter(Boolean).sort().at(-1);
 
   const povezaniDokumenti = selected ? (
+    <>
+    <div className={styles.clientFinance}>
+      <span><small>{L('Skupaj plačano', 'Total paid')}</small><strong>{money(selectedInvoices.filter(item => item.paid).reduce((sum, item) => sum + item.amount, 0))}</strong></span>
+      <span><small>{L('Odprti računi', 'Open invoices')}</small><strong>{money(selectedInvoices.filter(item => !item.paid).reduce((sum, item) => sum + item.amount, 0))}</strong></span>
+      <span><small>{L('Zadnje delo', 'Last work')}</small><strong>{zadnjeDelo ? datStr(zadnjeDelo) : '—'}</strong></span>
+      <span><small>{L('Zadnji stik', 'Last contact')}</small><strong>{zadnjiStik ? datStr(zadnjiStik) : '—'}</strong></span>
+    </div>
+    {selectedRealProjects.length > 0 && <div className={styles.clientProjects}>
+      <h3>{L('Projekti', 'Projects')}</h3>
+      <div className={styles.clientProjectList}>{selectedRealProjects.map(projekt => <Link key={projekt.id} href={`${base}/kalkulator/projekti?projekt=real-${projekt.id}`} className={styles.clientProjectRow}><span className={styles.clientProjectVrh}><strong>{projekt.naslov}</strong></span><span className={styles.clientProjectDno}><small>{projekt.rok ? `${L('Rok', 'Due')} ${datStr(projekt.rok)}` : L('Brez roka', 'No deadline')}</small><i className={styles.clientProjectPika} data-tone={projekt.status === 'aktiven' ? 'success' : 'neutral'}>{projekt.status}</i></span></Link>)}</div>
+    </div>}
+    {selectedProjects.some(offer => offer.licencaDo) && <div className={styles.clientProjects}>
+      <h3>{L('Roki in podaljšanja', 'Deadlines and renewals')}</h3>
+      <div className={styles.clientProjectList}>{selectedProjects.filter(offer => offer.licencaDo).sort((a, b) => (a.licencaDo || '').localeCompare(b.licencaDo || '')).map(offer => <div key={`rok-${offer.id}`} className={styles.clientProjectRow}><span className={styles.clientProjectVrh}><strong>{jeLicencaPotekla(offer.licencaDo) ? L(`Licenca je potekla. Predlagaj podaljšanje.`, `Licence expired. Suggest a renewal.`) : L(`Licenca poteče. Pripravi predlog podaljšanja.`, `Licence expires. Prepare a renewal proposal.`)}</strong></span><span className={styles.clientProjectDno}><small>{datStr(offer.licencaDo!)}</small><i className={styles.clientProjectPika} style={jeLicencaPotekla(offer.licencaDo) ? { color: '#a4342a', borderColor: '#a4342a' } : undefined}>{offer.title}</i></span></div>)}</div>
+    </div>}
     <div className={styles.clientProjects}>
-      <h3>{L('Povezano s stranko', 'Linked to client')}</h3>
+      <h3>{L('Dokumenti', 'Documents')}</h3>
       <div className={styles.clientProjectList}>
         {selectedProjects.map(offer => (
           <Link key={`offer-${offer.id}`} href={`${base}/kalkulator/arhiv?tip=ponudbe&odpri=${offer.id}`} className={styles.clientProjectRow}>
@@ -432,6 +453,7 @@ export default function ClientWorkspace() {
       </div>
       {!selectedProjects.length && !selectedContracts.length && !selectedInvoices.length && <p className={styles.clientProjectPrazno}>{L('Ta stranka še nima ponudb, pogodb ali računov.', 'This client has no offers, contracts or invoices yet.')}</p>}
     </div>
+    </>
   ) : null;
 
   /* Mobilni »samostojna stran«: ko je stranka izbrana, skrij zgornji naslov (page .topbar) +
